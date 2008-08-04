@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758205AbYHDU0h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763969AbYHDU0v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758205AbYHDU0h (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 16:26:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758706AbYHDU0J
+	id S1763969AbYHDU0v (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 16:26:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763858AbYHDU0d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 16:26:09 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:45825 "EHLO mx2.suse.de"
+	Mon, 4 Aug 2008 16:26:33 -0400
+Received: from cantor.suse.de ([195.135.220.2]:48933 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758704AbYHDU0H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 16:26:07 -0400
-Date: Mon, 4 Aug 2008 13:15:45 -0700
+	id S1763844AbYHDU0c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Aug 2008 16:26:32 -0400
+Date: Mon, 4 Aug 2008 13:15:51 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -23,13 +23,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
        alan@lxorguk.ukuu.org.uk, Frank Seidel <fseidel@suse.de>,
+       Andreas Dilger <adilger@sun.com>,
        OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-Subject: [patch 16/33] FAT_VALID_MEDIA(): remove pointless test
-Message-ID: <20080804201545.GQ1139@suse.de>
+Subject: [patch 17/33] fat: detect media without partition table correctly
+Message-ID: <20080804201551.GR1139@suse.de>
 References: <20080804200515.110033151@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="fat_valid_media-remove-pointless-test.patch"
+Content-Disposition: inline; filename="fat-detect-media-without-partition-table-correctly.patch"
 In-Reply-To: <20080804201321.GA1139@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -41,54 +42,86 @@ know.
 
 ------------------
 
-From: Andrew Morton <akpm@linux-foundation.org>
+From: Frank Seidel <fseidel@suse.de>
 
-commit 73f20e58b1d586e9f6d3ddc3aad872829aca7743 upstream
+commit 0607fd02587a6b4b086dc746d63123c1f284db68 upstream
 
-The on-disk media specification field in FAT is only 8-bits, so testing for
-<=0xff is pointless, and can generate a "comparison is always true due to
-limited range of data type" warning.
+I received a complaint that some FAT formated medias (e.g.  sd memory cards)
+trigger a "unknown partition table" message even though there is no partition
+table and they work correctly, while in general (when e.g.  formated with
+mkdosfs or even Windows Vista) this message is not shown.
 
-While we're there, convert FAT_VALID_MEDIA() into a C function - the present
-implementation is buggy: it generates either one or two references to its
-argument.
+Currently this seems only to happen when the medias get formatted with Windows
+XP (and possibly Win 2000).  Then the boot indicator byte contains garbage
+(part of text message) and so do the other parts checked by msdos_paritition
+which then later triggers this message.
 
-Cc: Frank Seidel <fseidel@suse.de>
+References: novell bug #364365
+
+Most fat formatted media without partition table contains zeros in the boot
+indication and the other tested bytes and so falls through the checks in
+msdos_partition, leading it to return with 1 (all is fine).
+
+But some (e.g.  WinXP formatted) fat fomated medias don't use boot_ind and so
+the check fails and causes a "unkown partition table" warning eventhough there
+is none and everything would be fine.
+
+This additional check directly verifies if there is a fat formatted medium
+without a partition table.
+
+Signed-off-by: Frank Seidel <fseidel@suse.de>
+Cc: Andreas Dilger <adilger@sun.com>
 Acked-by: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/fat/inode.c           |    2 +-
- include/linux/msdos_fs.h |    6 +++++-
- 2 files changed, 6 insertions(+), 2 deletions(-)
+ fs/partitions/msdos.c |   20 +++++++++++++++++---
+ 1 file changed, 17 insertions(+), 3 deletions(-)
 
---- a/fs/fat/inode.c
-+++ b/fs/fat/inode.c
-@@ -1208,7 +1208,7 @@ int fat_fill_super(struct super_block *s
- 	 */
+--- a/fs/partitions/msdos.c
++++ b/fs/partitions/msdos.c
+@@ -18,7 +18,7 @@
+  *
+  *  Re-organised Feb 1998 Russell King
+  */
+-
++#include <linux/msdos_fs.h>
  
- 	media = b->media;
--	if (!FAT_VALID_MEDIA(media)) {
-+	if (!fat_valid_media(media)) {
- 		if (!silent)
- 			printk(KERN_ERR "FAT: invalid media value (0x%02x)\n",
- 			       media);
---- a/include/linux/msdos_fs.h
-+++ b/include/linux/msdos_fs.h
-@@ -58,7 +58,11 @@
- #define MSDOS_DOTDOT	"..         "	/* "..", padded to MSDOS_NAME chars */
+ #include "check.h"
+ #include "msdos.h"
+@@ -419,6 +419,7 @@ int msdos_partition(struct parsed_partit
+ 	Sector sect;
+ 	unsigned char *data;
+ 	struct partition *p;
++	struct fat_boot_sector *fb;
+ 	int slot;
  
- /* media of boot sector */
--#define FAT_VALID_MEDIA(x)	((0xF8 <= (x) && (x) <= 0xFF) || (x) == 0xF0)
-+static inline int fat_valid_media(u8 media)
-+{
-+	return 0xf8 <= media || media == 0xf0;
-+}
-+
- #define FAT_FIRST_ENT(s, x)	((MSDOS_SB(s)->fat_bits == 32 ? 0x0FFFFF00 : \
- 	MSDOS_SB(s)->fat_bits == 16 ? 0xFF00 : 0xF00) | (x))
+ 	data = read_dev_sector(bdev, 0, &sect);
+@@ -444,8 +445,21 @@ int msdos_partition(struct parsed_partit
+ 	p = (struct partition *) (data + 0x1be);
+ 	for (slot = 1; slot <= 4; slot++, p++) {
+ 		if (p->boot_ind != 0 && p->boot_ind != 0x80) {
+-			put_dev_sector(sect);
+-			return 0;
++			/*
++			 * Even without a valid boot inidicator value
++			 * its still possible this is valid FAT filesystem
++			 * without a partition table.
++			 */
++			fb = (struct fat_boot_sector *) data;
++			if (slot == 1 && fb->reserved && fb->fats
++				&& fat_valid_media(fb->media)) {
++				printk("\n");
++				put_dev_sector(sect);
++				return 1;
++			} else {
++				put_dev_sector(sect);
++				return 0;
++			}
+ 		}
+ 	}
  
 
 -- 
