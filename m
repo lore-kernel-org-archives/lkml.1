@@ -1,172 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765720AbYHDVtz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1766008AbYHDVuR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765720AbYHDVtz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 17:49:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1770320AbYHDVjk
+	id S1766008AbYHDVuR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 17:50:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964774AbYHDVj5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 17:39:40 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:56893 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1770238AbYHDVji (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 17:39:38 -0400
-Date: Tue, 5 Aug 2008 00:39:36 +0300 (EEST)
-From: Pekka J Enberg <penberg@cs.helsinki.fi>
-To: linux-kernel@vger.kernel.org, linux-mm@kvack.org
-cc: matthew@wil.cx, akpm@linux-foundation.org, cl@linux-foundation.org
-Subject: [RFC/PATCH] SLUB: dynamic per-cache MIN_PARTIAL
-Message-ID: <Pine.LNX.4.64.0808050037400.26319@sbz-30.cs.Helsinki.FI>
-Mime-Version: 1.0
+	Mon, 4 Aug 2008 17:39:57 -0400
+Received: from cantor.suse.de ([195.135.220.2]:55021 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030189AbYHDVj4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Aug 2008 17:39:56 -0400
+Date: Mon, 4 Aug 2008 14:30:34 -0700
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
+       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
+       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, Marcel Holtmann <marcel@holtmann.org>
+Subject: [patch 17/25] Bluetooth: Signal user-space for HIDP and BNEP
+	socket errors
+Message-ID: <20080804213034.GQ8014@suse.de>
+References: <20080804203506.816201392@mini.kroah.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Disposition: inline; filename="bluetooth-signal-user-space-for-hidp-and-bnep-socket-errors.patch"
+In-Reply-To: <20080804212725.GA7944@suse.de>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Pekka Enberg <penberg@cs.helsinki.fi>
+2.6.26-stable review patch.  If anyone has any objections, please let us
+know.
 
-This patch changes the static MIN_PARTIAL to a dynamic per-cache ->min_partial
-value that is calculated from object size. The bigger the object size, the more
-pages we keep on the partial list.
+------------------
 
-I tested SLAB, SLUB, and SLUB with this patch on Jens Axboe's 'netio' example
-script of the fio benchmarking tool. The script stresses the networking
-subsystem which should also give a fairly good beating of kmalloc() et al.
+From: Marcel Holtmann <marcel@holtmann.org>
 
-To run the test yourself, first clone the fio repository:
+commit ec8dab36e0738d3059980d144e34f16a26bbda7d upstream
 
-  git clone git://git.kernel.dk/fio.git
+When using the HIDP or BNEP kernel support, the user-space needs to
+know if the connection has been terminated for some reasons. Wake up
+the application if that happens. Otherwise kernel and user-space are
+no longer on the same page and weird behaviors can happen.
 
-and then run the following command n times on your machine:
+Signed-off-by: Marcel Holtmann <marcel@holtmann.org>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
-  time ./fio examples/netio
-
-The results on my 2-way 64-bit x86 machine are as follows:
-
-  [ the minimum, maximum, and average are captured from 50 individual runs ]
-
-                 real time (seconds)
-                 min      max      avg      sd
-  SLAB           22.76    23.38    22.98    0.17
-  SLUB           22.80    25.78    23.46    0.72
-  SLUB (dynamic) 22.74    23.54    23.00    0.20    
-
-                 sys time (seconds)
-                 min      max      avg      sd
-  SLAB           6.90     8.28     7.70     0.28
-  SLUB           7.42     16.95    8.89     2.28
-  SLUB (dynamic) 7.17     8.64     7.73     0.29    
-
-                 user time (seconds)
-                 min      max      avg      sd
-  SLAB           36.89    38.11    37.50    0.29
-  SLUB           30.85    37.99    37.06    1.67
-  SLUB (dynamic) 36.75    38.07    37.59    0.32    
-
-As you can see from the above numbers, this patch brings SLUB to the same level
-as SLAB for this particular workload fixing a ~2% regression. I'd expect this
-change to help similar workloads that allocate a lot of objects that are close
-to the size of a page.
-
-Cc: Matthew Wilcox <matthew@wil.cx>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Christoph Lameter <cl@linux-foundation.org>
-Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
 ---
- include/linux/slub_def.h |    1 +
- mm/slub.c                |   26 +++++++++++++++++++-------
- 2 files changed, 20 insertions(+), 7 deletions(-)
+ net/bluetooth/bnep/core.c |    5 +++++
+ net/bluetooth/hidp/core.c |   10 ++++++++++
+ 2 files changed, 15 insertions(+)
 
-Index: slab-2.6/include/linux/slub_def.h
-===================================================================
---- slab-2.6.orig/include/linux/slub_def.h	2008-08-05 00:35:42.000000000 +0300
-+++ slab-2.6/include/linux/slub_def.h	2008-08-05 00:36:21.000000000 +0300
-@@ -46,6 +46,7 @@
- struct kmem_cache_node {
- 	spinlock_t list_lock;	/* Protect partial list and nr_partial */
- 	unsigned long nr_partial;
-+	unsigned long min_partial;
- 	struct list_head partial;
- #ifdef CONFIG_SLUB_DEBUG
- 	atomic_long_t nr_slabs;
-Index: slab-2.6/mm/slub.c
-===================================================================
---- slab-2.6.orig/mm/slub.c	2008-08-05 00:35:42.000000000 +0300
-+++ slab-2.6/mm/slub.c	2008-08-05 00:36:27.000000000 +0300
-@@ -1329,7 +1329,7 @@
- 		n = get_node(s, zone_to_nid(zone));
+--- a/net/bluetooth/bnep/core.c
++++ b/net/bluetooth/bnep/core.c
+@@ -507,6 +507,11 @@ static int bnep_session(void *arg)
+ 	/* Delete network device */
+ 	unregister_netdev(dev);
  
- 		if (n && cpuset_zone_allowed_hardwall(zone, flags) &&
--				n->nr_partial > MIN_PARTIAL) {
-+				n->nr_partial > n->min_partial) {
- 			page = get_partial_node(n);
- 			if (page)
- 				return page;
-@@ -1381,7 +1381,7 @@
- 		slab_unlock(page);
- 	} else {
- 		stat(c, DEACTIVATE_EMPTY);
--		if (n->nr_partial < MIN_PARTIAL) {
-+		if (n->nr_partial < n->min_partial) {
- 			/*
- 			 * Adding an empty slab to the partial slabs in order
- 			 * to avoid page allocator overhead. This slab needs
-@@ -1913,9 +1913,21 @@
- #endif
- }
- 
--static void init_kmem_cache_node(struct kmem_cache_node *n)
-+static void
-+init_kmem_cache_node(struct kmem_cache_node *n, struct kmem_cache *s)
- {
- 	n->nr_partial = 0;
++	/* Wakeup user-space polling for socket errors */
++	s->sock->sk->sk_err = EUNATCH;
 +
-+	/*
-+	 * The larger the object size is, the more pages we want on the partial
-+	 * list to avoid pounding the page allocator excessively.
-+	 */
-+	n->min_partial = ilog2(s->size);
-+	if (n->min_partial < MIN_PARTIAL)
-+		n->min_partial = MIN_PARTIAL;
-+	else if (n->min_partial > MAX_PARTIAL)
-+		n->min_partial = MAX_PARTIAL;
++	wake_up_interruptible(s->sock->sk->sk_sleep);
 +
- 	spin_lock_init(&n->list_lock);
- 	INIT_LIST_HEAD(&n->partial);
- #ifdef CONFIG_SLUB_DEBUG
-@@ -2087,7 +2099,7 @@
- 	init_object(kmalloc_caches, n, 1);
- 	init_tracking(kmalloc_caches, n);
- #endif
--	init_kmem_cache_node(n);
-+	init_kmem_cache_node(n, kmalloc_caches);
- 	inc_slabs_node(kmalloc_caches, node, page->objects);
+ 	/* Release the socket */
+ 	fput(s->sock->file);
  
- 	/*
-@@ -2144,7 +2156,7 @@
- 
- 		}
- 		s->node[node] = n;
--		init_kmem_cache_node(n);
-+		init_kmem_cache_node(n, s);
+--- a/net/bluetooth/hidp/core.c
++++ b/net/bluetooth/hidp/core.c
+@@ -581,6 +581,12 @@ static int hidp_session(void *arg)
+ 		hid_free_device(session->hid);
  	}
- 	return 1;
- }
-@@ -2155,7 +2167,7 @@
  
- static int init_kmem_cache_nodes(struct kmem_cache *s, gfp_t gfpflags)
- {
--	init_kmem_cache_node(&s->local_node);
-+	init_kmem_cache_node(&s->local_node, s);
- 	return 1;
- }
- #endif
-@@ -2889,7 +2901,7 @@
- 			ret = -ENOMEM;
- 			goto out;
- 		}
--		init_kmem_cache_node(n);
-+		init_kmem_cache_node(n, s);
- 		s->node[nid] = n;
- 	}
- out:
++	/* Wakeup user-space polling for socket errors */
++	session->intr_sock->sk->sk_err = EUNATCH;
++	session->ctrl_sock->sk->sk_err = EUNATCH;
++
++	hidp_schedule(session);
++
+ 	fput(session->intr_sock->file);
+ 
+ 	wait_event_timeout(*(ctrl_sk->sk_sleep),
+@@ -879,6 +885,10 @@ int hidp_del_connection(struct hidp_conn
+ 			skb_queue_purge(&session->ctrl_transmit);
+ 			skb_queue_purge(&session->intr_transmit);
+ 
++			/* Wakeup user-space polling for socket errors */
++			session->intr_sock->sk->sk_err = EUNATCH;
++			session->ctrl_sock->sk->sk_err = EUNATCH;
++
+ 			/* Kill session thread */
+ 			atomic_inc(&session->terminate);
+ 			hidp_schedule(session);
+
+-- 
