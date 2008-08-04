@@ -1,111 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765006AbYHDUdk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764938AbYHDUdW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765006AbYHDUdk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 16:33:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764772AbYHDUce
+	id S1764938AbYHDUdW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 16:33:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764745AbYHDUcX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 16:32:34 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:46220 "EHLO mx2.suse.de"
+	Mon, 4 Aug 2008 16:32:23 -0400
+Received: from smtpout3.tre.se ([80.251.192.228]:20971 "EHLO smtpout3.tre.se"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764240AbYHDUcd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 16:32:33 -0400
-Date: Mon, 4 Aug 2008 13:16:28 -0700
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
-       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
-       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Takashi Iwai <tiwai@suse.de>,
-       Jaroslav Kysela <perex@perex.cz>
-Subject: [patch 32/33] ALSA: hda - Fix wrong volumes in AD1988 auto-probe
-	mode
-Message-ID: <20080804201628.GG1139@suse.de>
-References: <20080804200515.110033151@mini.kroah.org>
-MIME-Version: 1.0
+	id S1764744AbYHDUcV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Aug 2008 16:32:21 -0400
+Date: Mon, 4 Aug 2008 22:10:40 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: linux-kbuild@vger.kernel.org,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       Tim Bird <tim.bird@am.sony.com>
+Subject: Re: `make oldconfig' no longer updating `.config.old'?
+Message-ID: <20080804201040.GA28982@uranus.ravnborg.org>
+References: <Pine.LNX.4.64.0808040857340.23329@anakin>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="alsa-hda-fix-wrong-volumes-in-ad1988-auto-probe-mode.patch"
-In-Reply-To: <20080804201321.GA1139@suse.de>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0808040857340.23329@anakin>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2.6.25-stable review patch.  If anyone has any objections, please let us
-know.
+On Mon, Aug 04, 2008 at 09:02:43AM +0200, Geert Uytterhoeven wrote:
+> 	Hi,
+> 
+> I have the habit of doing `make .config{.old,}' after each config run,
+> to see what was changed. But since a few weeks, `make oldconfig' no longer
+> seems to update `.config.old'.
+> 
+> This also breaks the default behavior of `scripts/diffconfig' (`If no
+> config files are specified, .config and .config.old are used.').
+> 
+> Was this change intentional?
 
-------------------
+.config is with current kconfig updated only if a user visible
+symbol changes (or something like that).
+I had another similar report where .config was not created if
+missing and confi was not changed.
 
-From: Takashi Iwai <tiwai@suse.de>
+Fix is below and I will commit it soon.
 
-commit 43785eaeb1cfb8aed3cf8027f298b242f88fdc45 upstream
+	Sam
 
-Don't create mixer volume elements for Headphone and Speaker if they
-use the same DAC as normal line-outs on AD1988.  Otherwise the amp
-value gets screwed up, e.g.
-	https://bugzilla.novell.com/show_bug.cgi?id=398255
-
-Signed-off-by: Takashi Iwai <tiwai@suse.de>
-Signed-off-by: Jaroslav Kysela <perex@perex.cz>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
----
- sound/pci/hda/patch_analog.c |   32 +++++++++++++++++++++-----------
- 1 file changed, 21 insertions(+), 11 deletions(-)
-
---- a/sound/pci/hda/patch_analog.c
-+++ b/sound/pci/hda/patch_analog.c
-@@ -2558,7 +2558,7 @@ static int ad1988_auto_create_extra_out(
- {
- 	struct ad198x_spec *spec = codec->spec;
- 	hda_nid_t nid;
--	int idx, err;
-+	int i, idx, err;
- 	char name[32];
+diff --git a/scripts/kconfig/conf.c b/scripts/kconfig/conf.c
+index 9fba838..36b5eed 100644
+--- a/scripts/kconfig/conf.c
++++ b/scripts/kconfig/conf.c
+@@ -596,7 +596,7 @@ int main(int ac, char **av)
+ 		break;
+ 	}
  
- 	if (! pin)
-@@ -2566,16 +2566,26 @@ static int ad1988_auto_create_extra_out(
- 
- 	idx = ad1988_pin_idx(pin);
- 	nid = ad1988_idx_to_dac(codec, idx);
--	/* specify the DAC as the extra output */
--	if (! spec->multiout.hp_nid)
--		spec->multiout.hp_nid = nid;
--	else
--		spec->multiout.extra_out_nid[0] = nid;
--	/* control HP volume/switch on the output mixer amp */
--	sprintf(name, "%s Playback Volume", pfx);
--	if ((err = add_control(spec, AD_CTL_WIDGET_VOL, name,
--			       HDA_COMPOSE_AMP_VAL(nid, 3, 0, HDA_OUTPUT))) < 0)
--		return err;
-+	/* check whether the corresponding DAC was already taken */
-+	for (i = 0; i < spec->autocfg.line_outs; i++) {
-+		hda_nid_t pin = spec->autocfg.line_out_pins[i];
-+		hda_nid_t dac = ad1988_idx_to_dac(codec, ad1988_pin_idx(pin));
-+		if (dac == nid)
-+			break;
-+	}
-+	if (i >= spec->autocfg.line_outs) {
-+		/* specify the DAC as the extra output */
-+		if (!spec->multiout.hp_nid)
-+			spec->multiout.hp_nid = nid;
-+		else
-+			spec->multiout.extra_out_nid[0] = nid;
-+		/* control HP volume/switch on the output mixer amp */
-+		sprintf(name, "%s Playback Volume", pfx);
-+		err = add_control(spec, AD_CTL_WIDGET_VOL, name,
-+				  HDA_COMPOSE_AMP_VAL(nid, 3, 0, HDA_OUTPUT));
-+		if (err < 0)
-+			return err;
-+	}
- 	nid = ad1988_mixer_nids[idx];
- 	sprintf(name, "%s Playback Switch", pfx);
- 	if ((err = add_control(spec, AD_CTL_BIND_MUTE, name,
+-	if (conf_get_changed() && conf_write(NULL)) {
++	if (conf_write(NULL)) {
+ 		fprintf(stderr, _("\n*** Error during writing of the kernel configuration.\n\n"));
+ 		exit(1);
+ 	}
 
--- 
