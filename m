@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764212AbYHDU2l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764323AbYHDU31@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764212AbYHDU2l (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 16:28:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764113AbYHDU2N
+	id S1764323AbYHDU31 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 16:29:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764285AbYHDU27
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 16:28:13 -0400
-Received: from ns1.suse.de ([195.135.220.2]:49144 "EHLO mx1.suse.de"
+	Mon, 4 Aug 2008 16:28:59 -0400
+Received: from mx2.suse.de ([195.135.220.15]:46019 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762373AbYHDU2K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 16:28:10 -0400
-Date: Mon, 4 Aug 2008 13:16:01 -0700
+	id S1763843AbYHDU26 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Aug 2008 16:28:58 -0400
+Date: Mon, 4 Aug 2008 13:16:07 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Andreas Schwab <schwab@suse.de>,
-       Paul Mackerras <paulus@samba.org>
-Subject: [patch 21/33] Add compat handler for PTRACE_GETSIGINFO
-Message-ID: <20080804201601.GV1139@suse.de>
+       alan@lxorguk.ukuu.org.uk, Zhang Rui <rui.zhang@intel.com>,
+       Jean Delvare <khali@linux-fr.org>, Len Brown <len.brown@intel.com>
+Subject: [patch 23/33] ACPI: update thermal temperature
+Message-ID: <20080804201607.GX1139@suse.de>
 References: <20080804200515.110033151@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="add-compat-handler-for-ptrace_getsiginfo.patch"
+Content-Disposition: inline; filename="acpi-update-thermal-temperature.patch"
 In-Reply-To: <20080804201321.GA1139@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -41,87 +41,39 @@ know.
 
 ------------------
 
-From: Andreas Schwab <schwab@suse.de>
+From: Zhang, Rui <rui.zhang@intel.com>
 
-commit e4cc58944c1e2ce41e3079d4eb60c95e7ce04b2b upstream
+commit 76ecb4f2d7ea5c3aac8970b9529775316507c6d2 upstream
 
-Current versions of gdb require a working implementation of
-PTRACE_GETSIGINFO for proper watchpoint support.  Since struct siginfo
-contains pointers it must be converted when passed to a 32-bit debugger.
+Fix the problem that thermal_get_temp returns the cached value,
+which causes the temperature in generic thermal never updates.
 
-Signed-off-by: Andreas Schwab <schwab@suse.de>
-Signed-off-by: Paul Mackerras <paulus@samba.org>
+Signed-off-by: Zhang Rui <rui.zhang@intel.com>
+Acked-by: Jean Delvare <khali@linux-fr.org>
+Signed-off-by: Len Brown <len.brown@intel.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/powerpc/kernel/ppc32.h    |    2 ++
- arch/powerpc/kernel/ptrace32.c |   27 +++++++++++++++++++++++++++
- 2 files changed, 29 insertions(+)
+ drivers/acpi/thermal.c |    5 +++++
+ 1 file changed, 5 insertions(+)
 
---- a/arch/powerpc/kernel/ppc32.h
-+++ b/arch/powerpc/kernel/ppc32.h
-@@ -135,4 +135,6 @@ struct ucontext32 { 
- 	struct mcontext32	uc_mcontext;
- };
+--- a/drivers/acpi/thermal.c
++++ b/drivers/acpi/thermal.c
+@@ -891,10 +891,15 @@ static void acpi_thermal_check(void *dat
+ static int thermal_get_temp(struct thermal_zone_device *thermal, char *buf)
+ {
+ 	struct acpi_thermal *tz = thermal->devdata;
++	int result;
  
-+extern int copy_siginfo_to_user32(struct compat_siginfo __user *d, siginfo_t *s);
+ 	if (!tz)
+ 		return -EINVAL;
+ 
++	result = acpi_thermal_get_temperature(tz);
++	if (result)
++		return result;
 +
- #endif  /* _PPC64_PPC32_H */
---- a/arch/powerpc/kernel/ptrace32.c
-+++ b/arch/powerpc/kernel/ptrace32.c
-@@ -29,12 +29,15 @@
- #include <linux/security.h>
- #include <linux/signal.h>
- #include <linux/compat.h>
-+#include <linux/elf.h>
- 
- #include <asm/uaccess.h>
- #include <asm/page.h>
- #include <asm/pgtable.h>
- #include <asm/system.h>
- 
-+#include "ppc32.h"
-+
- /*
-  * does not yet catch signals sent when the child dies.
-  * in exit.c or in signal.c.
-@@ -64,6 +67,27 @@ static long compat_ptrace_old(struct tas
- 	return -EPERM;
+ 	return sprintf(buf, "%ld\n", KELVIN_TO_MILLICELSIUS(tz->temperature));
  }
  
-+static int compat_ptrace_getsiginfo(struct task_struct *child, compat_siginfo_t __user *data)
-+{
-+	siginfo_t lastinfo;
-+	int error = -ESRCH;
-+
-+	read_lock(&tasklist_lock);
-+	if (likely(child->sighand != NULL)) {
-+		error = -EINVAL;
-+		spin_lock_irq(&child->sighand->siglock);
-+		if (likely(child->last_siginfo != NULL)) {
-+			lastinfo = *child->last_siginfo;
-+			error = 0;
-+		}
-+		spin_unlock_irq(&child->sighand->siglock);
-+	}
-+	read_unlock(&tasklist_lock);
-+	if (!error)
-+		return copy_siginfo_to_user32(data, &lastinfo);
-+	return error;
-+}
-+
- long compat_arch_ptrace(struct task_struct *child, compat_long_t request,
- 			compat_ulong_t caddr, compat_ulong_t cdata)
- {
-@@ -282,6 +306,9 @@ long compat_arch_ptrace(struct task_stru
- 			0, PT_REGS_COUNT * sizeof(compat_long_t),
- 			compat_ptr(data));
- 
-+	case PTRACE_GETSIGINFO:
-+		return compat_ptrace_getsiginfo(child, compat_ptr(data));
-+
- 	case PTRACE_GETFPREGS:
- 	case PTRACE_SETFPREGS:
- 	case PTRACE_GETVRREGS:
 
 -- 
