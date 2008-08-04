@@ -1,57 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763853AbYHDVLp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764240AbYHDVMB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763853AbYHDVLp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 17:11:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763607AbYHDVK0
+	id S1764240AbYHDVMB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 17:12:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758833AbYHDVLf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 17:10:26 -0400
-Received: from e34.co.us.ibm.com ([32.97.110.152]:46902 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758680AbYHDVKX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 17:10:23 -0400
-Subject: Re: [RFC] [PATCH 0/5 V2] Huge page backed user-space stacks
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: Andrew Morton <akpm@linux-foundation.org>, ebmunson@us.ibm.com,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, libhugetlbfs-devel@lists.sourceforge.net,
-       abh@cray.com
-In-Reply-To: <20080731103137.GD1704@csn.ul.ie>
-References: <cover.1216928613.git.ebmunson@us.ibm.com>
-	 <20080730014308.2a447e71.akpm@linux-foundation.org>
-	 <20080730172317.GA14138@csn.ul.ie>
-	 <20080730103407.b110afc2.akpm@linux-foundation.org>
-	 <20080730193010.GB14138@csn.ul.ie>
-	 <20080730130709.eb541475.akpm@linux-foundation.org>
-	 <20080731103137.GD1704@csn.ul.ie>
-Content-Type: text/plain
-Date: Mon, 04 Aug 2008 14:10:11 -0700
-Message-Id: <1217884211.20260.144.camel@nimitz>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
+	Mon, 4 Aug 2008 17:11:35 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:53955 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758194AbYHDVLe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Aug 2008 17:11:34 -0400
+Message-ID: <4897707B.60404@garzik.org>
+Date: Mon, 04 Aug 2008 17:11:23 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: Ben Dooks <ben-linux@fluff.org>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [GIT PATCH] SCSI fixes for 2.6.27-rc1
+References: <1217800985.4179.55.camel@localhost.localdomain>	<20080804142927.GG8301@fluff.org.uk> <20080804151533.6fb01b0a@lxorguk.ukuu.org.uk>
+In-Reply-To: <20080804151533.6fb01b0a@lxorguk.ukuu.org.uk>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-07-31 at 11:31 +0100, Mel Gorman wrote:
-> We are a lot more reliable than we were although exact quantification is
-> difficult because it's workload dependent. For a long time, I've been able
-> to test bits and pieces with hugepages by allocating the pool at the time
-> I needed it even after days of uptime. Previously this required a reboot.
+Alan Cox wrote:
+>> I thought group (or non-person) submissions where explicitly
+>> prohibitted in the signoff section in Documentation/SubmittingPatches
+> 
+> Highpoint is a legal entity so highpoint can enter into agreements. Thats
+> a bit different from say "Dave the anonymous ferret" or "three people
+> down the pub"
+> 
+> In many ways companies that sign the patches themselves are being nicer
+> to their employees than those who encourage the current practise.
 
-This is also a pretty big expansion of fs/hugetlb/ use outside of the
-filesystem itself.  It is hacking the existing shared memory
-kernel-internal user to spit out effectively anonymous memory.
+(NOTE!! speaking for myself, not for other Red Hatters)
 
-Where do we draw the line where we stop using the filesystem for this?
-Other than the immediate code reuse, does it gain us anything?
+The solution I've settled upon is jgarzik@redhat.com for sign-offs, and 
+my usual addresses (jeff@garzik, jgarzik@pobox) for all email 
+communication and patch posting.
 
-I have to think that actually refactoring the filesystem code and making
-it usable for really anonymous memory, then using *that* in these
-patches would be a lot more sane.  Especially for someone that goes to
-look at it in a year. :)
+That makes it clear who is really signing off on the patches, while 
+still ensuring that if I get fired or leave Red Hat, the flow of 
+communication can be largely uninterrupted.
 
--- Dave
+For those who don't know, to prevent sensitive information leaks, it is 
+standard corporate policy for many companies these days to immediately 
+yank an email address the minute an employee's status changes.
+
+	Jeff
+
 
