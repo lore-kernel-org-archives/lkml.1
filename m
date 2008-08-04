@@ -1,57 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759259AbYHDRax@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757262AbYHDRd0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759259AbYHDRax (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 13:30:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753042AbYHDRao
+	id S1757262AbYHDRd0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 13:33:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754567AbYHDRdR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 13:30:44 -0400
-Received: from ik-out-1112.google.com ([66.249.90.181]:11823 "EHLO
-	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754257AbYHDRan (ORCPT
+	Mon, 4 Aug 2008 13:33:17 -0400
+Received: from astoria.ccjclearline.com ([64.235.106.9]:60472 "EHLO
+	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754433AbYHDRdQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 13:30:43 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=cBz4Q9keyCvqEnHyjfa/CumlyQDWtSPekU7miRlwtWFpmsKd6Am4KHVsL9MGjfBkJ+
-         CsSOOTroA1J1lZ1rbEqNNY213g2DUJiliLS0wp2qODx6TmurrfefuxavfmofJFOpwYqw
-         VfJKP+uz8nD4w5HoJCCnc8AffV33gO3kyIzZY=
-Message-ID: <f6b4565a0808041030v595dcba7s329b00b3e08dd532@mail.gmail.com>
-Date: Mon, 4 Aug 2008 13:30:33 -0400
-From: "Andrey Turovsky" <turova@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: usb-skeleton driver question
+	Mon, 4 Aug 2008 13:33:16 -0400
+Date: Mon, 4 Aug 2008 13:31:32 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@crashcourse.ca>
+X-X-Sender: rpjday@localhost.localdomain
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+cc: Andrew Morton <akpm@osdl.org>
+Subject: [PATCH] KBUILD:  Extend "menuconfig" for modules to simplify Kconfig
+ file.
+Message-ID: <alpine.LFD.1.10.0808041328440.6174@localhost.localdomain>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - crashcourse.ca
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello everyone,
 
-I hope this is not the wrong place for my question.  If it is, please
-let me know where I should go with it.
+Given that the init/Kconfig file uses a "menuconfig" directive for
+modules already, might as well wrap all the submenu entries in an "if"
+to toss all those dependencies.
 
-I am trying to develop a linux USB driver for communication between
-two linux-enabled embedded devices (though current development is
-being done on an ubuntu machine connected to one device).  Currently,
-the device simply send as much ascii data as it can through the USB
-connection.  The goal is to maximize throughput on the full speed
-connection.  I have gone through the relevant sections of the O'Reilly
-book "Linux Device Drivers", but am fairly confused as to how to
-actually go about writing the driver.
+Signed-off-by: Robert P. J. Day <rpjday@crashcourse.ca>
 
-I am starting with the usb-skeleton driver.  I changed the product and
-vendor IDs to match the device and get a friendly dmesg output: "USB
-Skeleton device now attached to USBSkel-192".  Unfortunately, I cannot
-find too much relevant information as to what to do next.  The part I
-need help with is figuring out how to connect to this device and read
-from it.  There are no new devices in /dev/ and even if I create one,
-I'm not sure how to link the driver to it.
+---
 
-Thanks for any help..
+diff --git a/init/Kconfig b/init/Kconfig
+index 7e6dae1..b678803 100644
+--- a/init/Kconfig
++++ b/init/Kconfig
+@@ -845,9 +845,10 @@ menuconfig MODULES
 
--Andrey
+ 	  If unsure, say Y.
+
++if MODULES
++
+ config MODULE_FORCE_LOAD
+ 	bool "Forced module loading"
+-	depends on MODULES
+ 	default n
+ 	help
+ 	  Allow loading of modules without version information (ie. modprobe
+@@ -856,7 +857,6 @@ config MODULE_FORCE_LOAD
+
+ config MODULE_UNLOAD
+ 	bool "Module unloading"
+-	depends on MODULES
+ 	help
+ 	  Without this option you will not be able to unload any
+ 	  modules (note that some modules may not be unloadable
+@@ -875,7 +875,6 @@ config MODULE_FORCE_UNLOAD
+
+ config MODVERSIONS
+ 	bool "Module versioning support"
+-	depends on MODULES
+ 	help
+ 	  Usually, you have to use modules compiled with your kernel.
+ 	  Saying Y here makes it sometimes possible to use modules
+@@ -886,7 +885,6 @@ config MODVERSIONS
+
+ config MODULE_SRCVERSION_ALL
+ 	bool "Source checksum for all modules"
+-	depends on MODULES
+ 	help
+ 	  Modules which contain a MODULE_VERSION get an extra "srcversion"
+ 	  field inserted into their modinfo section, which contains a
+@@ -898,11 +896,12 @@ config MODULE_SRCVERSION_ALL
+
+ config KMOD
+ 	def_bool y
+-	depends on MODULES
+ 	help
+ 	  This is being removed soon.  These days, CONFIG_MODULES
+ 	  implies CONFIG_KMOD, so use that instead.
+
++endif # MODULES
++
+ config STOP_MACHINE
+ 	bool
+ 	default y
+
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry:
+    Have classroom, will lecture.
+
+http://crashcourse.ca                          Waterloo, Ontario, CANADA
+========================================================================
