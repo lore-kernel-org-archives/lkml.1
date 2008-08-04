@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754088AbYHDVtH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765422AbYHDVth@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754088AbYHDVtH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 17:49:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765986AbYHDVjI
+	id S1765422AbYHDVth (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 17:49:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765478AbYHDVjc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 17:39:08 -0400
-Received: from cantor.suse.de ([195.135.220.2]:54930 "EHLO mx1.suse.de"
+	Mon, 4 Aug 2008 17:39:32 -0400
+Received: from mx2.suse.de ([195.135.220.15]:50208 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765528AbYHDVjG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 17:39:06 -0400
-Date: Mon, 4 Aug 2008 14:30:29 -0700
+	id S1770032AbYHDVjb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Aug 2008 17:39:31 -0400
+Date: Mon, 4 Aug 2008 14:30:31 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -24,13 +24,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
        alan@lxorguk.ukuu.org.uk, Jiri Kosina <jkosina@suse.cz>,
        Dmitry Torokhov <dtor@mail.ru>
-Subject: [patch 15/25] Input: i8042 - add Gericom Bellagio to nomux
+Subject: [patch 16/25] Input: i8042 - add Acer Aspire 1360 to nomux
 	blacklist
-Message-ID: <20080804213029.GO8014@suse.de>
+Message-ID: <20080804213031.GP8014@suse.de>
 References: <20080804203506.816201392@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="input-i8042-add-gericom-bellagio-to-nomux-blacklist.patch"
+Content-Disposition: inline; filename="input-i8042-add-acer-aspire-1360-to-nomux-blacklist.patch"
 In-Reply-To: <20080804212725.GA7944@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -44,12 +44,12 @@ know.
 
 From: Jiri Kosina <jkosina@suse.cz>
 
-commit 5b5b43d0b32ea586036638288c31179f00de5443 upstream
+commit 0376bce7b0659fe1e80d045860087072583ab93f upstream.
 
-Gericom Bellagio needs to be added to nomux blacklist, otherwise its
+Acer Aspire 1360 needs to be added to nomux blacklist, otherwise its
 touchpad misbehaves.
 
-Reported-by: Roland Kletzing <roland.kletzing@materna.de>
+Reported-by: Clark Tompsett <clarkt@cnsp.com>
 Signed-off-by: Jiri Kosina <jkosina@suse.cz>
 Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
@@ -60,19 +60,19 @@ Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 --- a/drivers/input/serio/i8042-x86ia64io.h
 +++ b/drivers/input/serio/i8042-x86ia64io.h
-@@ -303,6 +303,13 @@ static struct dmi_system_id __initdata i
- 			DMI_MATCH(DMI_BOARD_VENDOR, "Intel Corporation"),
+@@ -291,6 +291,13 @@ static struct dmi_system_id __initdata i
+ 			DMI_MATCH(DMI_PRODUCT_VERSION, "3000 N100"),
  		},
  	},
 +	{
-+		.ident = "Gericom Bellagio",
++		.ident = "Acer Aspire 1360",
 +		.matches = {
-+			DMI_MATCH(DMI_SYS_VENDOR, "Gericom"),
-+			DMI_MATCH(DMI_PRODUCT_NAME, "N34AS6"),
++			DMI_MATCH(DMI_SYS_VENDOR, "Acer"),
++			DMI_MATCH(DMI_PRODUCT_NAME, "Aspire 1360"),
 +		},
 +	},
  	{ }
  };
- #endif
+ 
 
 -- 
