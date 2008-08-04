@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760620AbYHDU3r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763006AbYHDUbR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760620AbYHDU3r (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 16:29:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764305AbYHDU3X
+	id S1763006AbYHDUbR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 16:31:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763318AbYHDUaM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 16:29:23 -0400
-Received: from mail.suse.de ([195.135.220.2]:49295 "EHLO mx1.suse.de"
+	Mon, 4 Aug 2008 16:30:12 -0400
+Received: from mx1.suse.de ([195.135.220.2]:49386 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764297AbYHDU3W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 16:29:22 -0400
-Date: Mon, 4 Aug 2008 13:16:09 -0700
+	id S1764545AbYHDUaJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Aug 2008 16:30:09 -0400
+Date: Mon, 4 Aug 2008 13:16:14 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Oliver Neukum <oneukum@suse.de>,
-       Dmitry Torokhov <dtor@mail.ru>
-Subject: [patch 24/33] Input: appletouch - implement reset-resume logic
-Message-ID: <20080804201609.GY1139@suse.de>
+       alan@lxorguk.ukuu.org.uk, Tejun Heo <tj@kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: [patch 26/33] pci: VT3336 cant do MSI either
+Message-ID: <20080804201614.GA1139@suse.de>
 References: <20080804200515.110033151@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="input-appletouch-implement-reset-resume-logic.patch"
+Content-Disposition: inline; filename="pci-vt3336-can-t-do-msi-either.patch"
 In-Reply-To: <20080804201321.GA1139@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -41,125 +41,34 @@ know.
 
 ------------------
 
-From: Oliver Neukum <oliver@neukum.org>
+From: Tejun Heo <tj@kernel.org>
 
-commit 90d95ef617a535a8832bdcb8dee07bf591e5dd82 upstream
+commit 66d715c95a39e84cd25204a665915621457d9691 upstream
 
-On some boxes the touchpad needs to be reinitialized after resume to make
-it function again. This fixes bugzilla #10825.
+It seems VT3336 can't do msi either as with its bro 3351.  Disable it.
+Reported in the following SUSE bug.
 
-Signed-off-by: Oliver Neukum <oneukum@suse.de>
-Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
+  https://bugzilla.novell.com/show_bug.cgi?id=300001
+
+Signed-off-by: Tejun Heo <tj@kernel.org>
+Acked-by: Jesse Barnes <jbarnes@virtuousgeek.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/input/mouse/appletouch.c |   49 ++++++++++++++++++++++++++++++++-------
- drivers/usb/core/quirks.c        |    3 ++
- 2 files changed, 44 insertions(+), 8 deletions(-)
+ drivers/pci/quirks.c |    1 +
+ 1 file changed, 1 insertion(+)
 
---- a/drivers/input/mouse/appletouch.c
-+++ b/drivers/input/mouse/appletouch.c
-@@ -589,6 +589,21 @@ static void atp_close(struct input_dev *
- 	dev->open = 0;
- }
+--- a/drivers/pci/quirks.c
++++ b/drivers/pci/quirks.c
+@@ -1675,6 +1675,7 @@ static void __init quirk_disable_all_msi
+ DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_SERVERWORKS, PCI_DEVICE_ID_SERVERWORKS_GCNB_LE, quirk_disable_all_msi);
+ DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_ATI, PCI_DEVICE_ID_ATI_RS400_200, quirk_disable_all_msi);
+ DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_ATI, PCI_DEVICE_ID_ATI_RS480, quirk_disable_all_msi);
++DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_VIA, PCI_DEVICE_ID_VIA_VT3336, quirk_disable_all_msi);
+ DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_VIA, PCI_DEVICE_ID_VIA_VT3351, quirk_disable_all_msi);
  
-+static int atp_handle_geyser(struct atp *dev)
-+{
-+	struct usb_device *udev = dev->udev;
-+
-+	if (!atp_is_fountain(dev)) {
-+		/* switch to raw sensor mode */
-+		if (atp_geyser_init(udev))
-+			return -EIO;
-+
-+		printk(KERN_INFO "appletouch: Geyser mode initialized.\n");
-+	}
-+
-+	return 0;
-+}
-+
- static int atp_probe(struct usb_interface *iface, const struct usb_device_id *id)
- {
- 	struct atp *dev;
-@@ -633,14 +648,6 @@ static int atp_probe(struct usb_interfac
- 	else
- 		dev->datalen = 81;
- 
--	if (!atp_is_fountain(dev)) {
--		/* switch to raw sensor mode */
--		if (atp_geyser_init(udev))
--			goto err_free_devs;
--
--		printk(KERN_INFO "appletouch: Geyser mode initialized.\n");
--	}
--
- 	dev->urb = usb_alloc_urb(0, GFP_KERNEL);
- 	if (!dev->urb)
- 		goto err_free_devs;
-@@ -654,6 +661,10 @@ static int atp_probe(struct usb_interfac
- 			 usb_rcvintpipe(udev, int_in_endpointAddr),
- 			 dev->data, dev->datalen, atp_complete, dev, 1);
- 
-+	error = atp_handle_geyser(dev);
-+	if (error)
-+		goto err_free_buffer;
-+
- 	usb_make_path(udev, dev->phys, sizeof(dev->phys));
- 	strlcat(dev->phys, "/input0", sizeof(dev->phys));
- 
-@@ -744,6 +755,20 @@ static void atp_disconnect(struct usb_in
- 	printk(KERN_INFO "input: appletouch disconnected\n");
- }
- 
-+static int atp_recover(struct atp *dev)
-+{
-+	int error;
-+
-+	error = atp_handle_geyser(dev);
-+	if (error)
-+		return error;
-+
-+	if (dev->open && usb_submit_urb(dev->urb, GFP_ATOMIC))
-+		return -EIO;
-+
-+	return 0;
-+}
-+
- static int atp_suspend(struct usb_interface *iface, pm_message_t message)
- {
- 	struct atp *dev = usb_get_intfdata(iface);
-@@ -764,12 +789,20 @@ static int atp_resume(struct usb_interfa
- 	return 0;
- }
- 
-+static int atp_reset_resume(struct usb_interface *iface)
-+{
-+	struct atp *dev = usb_get_intfdata(iface);
-+
-+	return atp_recover(dev);
-+}
-+
- static struct usb_driver atp_driver = {
- 	.name		= "appletouch",
- 	.probe		= atp_probe,
- 	.disconnect	= atp_disconnect,
- 	.suspend	= atp_suspend,
- 	.resume		= atp_resume,
-+	.reset_resume	= atp_reset_resume,
- 	.id_table	= atp_table,
- };
- 
---- a/drivers/usb/core/quirks.c
-+++ b/drivers/usb/core/quirks.c
-@@ -47,6 +47,9 @@ static const struct usb_device_id usb_qu
- 	/* Edirol SD-20 */
- 	{ USB_DEVICE(0x0582, 0x0027), .driver_info = USB_QUIRK_RESET_RESUME },
- 
-+	/* appletouch */
-+	{ USB_DEVICE(0x05ac, 0x021a), .driver_info = USB_QUIRK_RESET_RESUME },
-+
- 	/* M-Systems Flash Disk Pioneers */
- 	{ USB_DEVICE(0x08ec, 0x1000), .driver_info = USB_QUIRK_RESET_RESUME },
- 
+ /* Disable MSI on chipsets that are known to not support it */
 
 -- 
