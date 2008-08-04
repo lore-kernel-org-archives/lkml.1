@@ -1,329 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764042AbYHDVBx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763676AbYHDVDA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764042AbYHDVBx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 17:01:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759589AbYHDVA6
+	id S1763676AbYHDVDA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 17:03:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764028AbYHDVBv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 17:00:58 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:46360 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758888AbYHDVAx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 17:00:53 -0400
-From: Eric Paris <eparis@redhat.com>
-To: malware-list@lists.printk.net, linux-kernel@vger.kernel.org
-Cc: Eric Paris <eparis@redhat.com>
-Subject: [RFC 2/5] [TALPA] securityfs configuration interfaces
-Date: Mon,  4 Aug 2008 17:00:37 -0400
-Message-Id: <1217883640-29121-2-git-send-email-eparis@redhat.com>
-X-Mailer: git-send-email 1.5.5.2
-In-Reply-To: <1217883640-29121-1-git-send-email-eparis@redhat.com>
-References: <1217883640-29121-1-git-send-email-eparis@redhat.com>
+	Mon, 4 Aug 2008 17:01:51 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:38160 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1764004AbYHDVBu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Aug 2008 17:01:50 -0400
+Date: Mon, 4 Aug 2008 21:44:41 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: David Stuart <dstuart@rogers.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Problems with disk + network on 2.6.25.11-60.fc8
+Message-ID: <20080804214441.0811138e@lxorguk.ukuu.org.uk>
+In-Reply-To: <4897671F.1050003@rogers.com>
+References: <48973EB9.90408@rogers.com>
+	<20080804184232.601881a8@lxorguk.ukuu.org.uk>
+	<4897671F.1050003@rogers.com>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Each filter can choose to export a set of configuration options
-which is implemented through securityfs on the low-level.
+Ok so the pdc202xx_old hardware flakes out when you have very high
+network load (I'd guess in fact very high bus traffic).
 
-Signed-off-by: Eric Paris <eparis@redhat.com>
----
- security/talpa/Makefile              |    4 +-
- security/talpa/talpa.h               |   41 +++++++++
- security/talpa/talpa_common.c        |   54 ++++++++++++
- security/talpa/talpa_configuration.c |  155 ++++++++++++++++++++++++++++++++++
- 4 files changed, 253 insertions(+), 1 deletions(-)
- create mode 100644 security/talpa/talpa_common.c
- create mode 100644 security/talpa/talpa_configuration.c
+The actual log is the disk I/O timing out, then the drive being busy
+(probably due to the timeout and a DMA transfer getting stuck). We reset
+it and carry on.
 
-diff --git a/security/talpa/Makefile b/security/talpa/Makefile
-index 676fc90..41045d7 100644
---- a/security/talpa/Makefile
-+++ b/security/talpa/Makefile
-@@ -4,4 +4,6 @@
- 
- obj-$(CONFIG_TALPA) := talpa.o
- 
--talpa-y := talpa_interceptor.o
-+talpa-y :=	talpa_interceptor.o \
-+		talpa_common.o \
-+		talpa_configuration.o
-diff --git a/security/talpa/talpa.h b/security/talpa/talpa.h
-index 2c4fb6f..871b6d4 100644
---- a/security/talpa/talpa.h
-+++ b/security/talpa/talpa.h
-@@ -1,5 +1,6 @@
- /*
-  *  Copyright 2008 Sophos Plc
-+ *  Copyright (C) 2008 Red Hat, Inc., Eric Paris <eparis@redhat.com>
-  *
-  *  This program is free software; you can redistribute it and/or modify
-  *  it under the terms of the GNU General Public License as published by
-@@ -61,4 +62,44 @@ struct talpa_file_vetting {
- 	int code;
- };
- 
-+/**
-+ * struct talpa_configuration - configuration description for filters
-+ * @name: name of the configuration
-+ * @mode: access mode
-+ * @data: private data to pass to get and set callbacks
-+ * @get: callback to read out configuration value
-+ * @set: callback to write in configuration value
-+ *
-+ * Filter wanting to have configurable items passes in an array of these
-+ * structures at registration time. Last item should have name set to
-+ * NULL.
-+ * Get and set callbacks will be called with a pointer to a single
-+ * configuration item.
-+ * Set callback is guaranteed to provide a null-terminated string
-+ * with no newline characters and len set to string length.
-+ */
-+struct talpa_configuration {
-+	char *name;
-+	int mode;
-+	void *data;
-+	ssize_t (*get)(struct talpa_configuration *cfg, char *buf, size_t len);
-+	ssize_t (*set)(struct talpa_configuration *cfg, char *buf, size_t len);
-+};
-+
-+/**
-+ * talpa_register_configuration - register an array of configuration items
-+ * @group: group name
-+ * @name: filter name
-+ * @cfg: array of configuration items
-+ *
-+ * This is an internal function which will be called for filters which
-+ * specify configuration on registration time.
-+ */
-+extern struct dentry *talpa_register_configuration(char *name, struct talpa_configuration *cfg);
-+
-+/* Generic configuration get and set methods which can be used in simple cases. */
-+extern ssize_t talpa_generic_get_ulong(struct talpa_configuration *cfg, char *buf, size_t len);
-+extern ssize_t talpa_generic_set_ulong(struct talpa_configuration *cfg, char *buf, size_t len);
-+extern ssize_t talpa_generic_get_long(struct talpa_configuration *cfg, char *buf, size_t len);
-+
- #endif /* __TALPA_H__ */
-diff --git a/security/talpa/talpa_common.c b/security/talpa/talpa_common.c
-new file mode 100644
-index 0000000..2dd3eb1
---- /dev/null
-+++ b/security/talpa/talpa_common.c
-@@ -0,0 +1,54 @@
-+/*
-+ *  Copyright 2008 Sophos Plc
-+ *  Copyright (C) 2008 Red Hat, Inc., Eric Paris <eparis@redhat.com>
-+ *
-+ *  This program is free software; you can redistribute it and/or modify
-+ *  it under the terms of the GNU General Public License as published by
-+ *  the Free Software Foundation; either version 2, or (at your option)
-+ *  any later version.
-+ *
-+ *  This program is distributed in the hope that it will be useful,
-+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ *  GNU General Public License for more details.
-+ *
-+ *  You should have received a copy of the GNU General Public License
-+ *  along with this program; see the file COPYING.  If not, write to
-+ *  the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
-+ */
-+#include <linux/kernel.h>
-+#include <linux/gfp.h>
-+#include <linux/string.h>
-+#include <linux/slab.h>
-+#include <linux/errno.h>
-+
-+#include "talpa.h"
-+
-+ssize_t talpa_generic_get_ulong(struct talpa_configuration *cfg, char *buf, size_t len)
-+{
-+	int ret = snprintf(buf, len, "%lu\n", *((unsigned long *)cfg->data));
-+	if (ret > 0)
-+		ret++;
-+
-+	return ret;
-+}
-+
-+ssize_t talpa_generic_set_ulong(struct talpa_configuration *cfg, char *buf, size_t len)
-+{
-+	ssize_t ret = 0;
-+
-+	if (strict_strtoul(buf, 10, (unsigned long *)cfg->data))
-+		return -EINVAL;
-+
-+	return ret;
-+
-+}
-+
-+ssize_t talpa_generic_get_long(struct talpa_configuration *cfg, char *buf, size_t len)
-+{
-+	int ret = snprintf(buf, len, "%ld\n", *((long *)cfg->data));
-+	if (ret > 0)
-+		ret++;
-+
-+	return ret;
-+}
-diff --git a/security/talpa/talpa_configuration.c b/security/talpa/talpa_configuration.c
-new file mode 100644
-index 0000000..18378b5
---- /dev/null
-+++ b/security/talpa/talpa_configuration.c
-@@ -0,0 +1,155 @@
-+/*
-+ *  Copyright 2008 Sophos Plc
-+ *  Copyright (C) 2008 Red Hat, Inc., Eric Paris <eparis@redhat.com>
-+ *
-+ *  This program is free software; you can redistribute it and/or modify
-+ *  it under the terms of the GNU General Public License as published by
-+ *  the Free Software Foundation; either version 2, or (at your option)
-+ *  any later version.
-+ *
-+ *  This program is distributed in the hope that it will be useful,
-+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ *  GNU General Public License for more details.
-+ *
-+ *  You should have received a copy of the GNU General Public License
-+ *  along with this program; see the file COPYING.  If not, write to
-+ *  the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
-+ */
-+#include <linux/kernel.h>
-+#include <linux/list.h>
-+#include <linux/string.h>
-+#include <linux/slab.h>
-+#include <linux/fs.h>
-+#include <linux/security.h>
-+#include <linux/talpa.h>
-+#include <linux/init.h>
-+#include <linux/uaccess.h>
-+
-+#include "talpa.h"
-+
-+/* Talpa configuration root. */
-+static struct dentry *talpa_fs_root;
-+
-+/* Filesytem read function. */
-+static ssize_t talpa_fs_read(struct file *file, char __user *buf, size_t count, loff_t *ppos)
-+{
-+	struct talpa_configuration *cfg;
-+	char *data;
-+	ssize_t ret;
-+
-+
-+	cfg = (struct talpa_configuration *)file->f_dentry->d_inode->i_private;
-+	if (!cfg)
-+		return -EBADF;
-+
-+	if (!cfg->get)
-+		return -ENOSYS;
-+
-+	/* Return EOF for second read (whole value must be read in one go) */
-+	if (!count || file->f_pos)
-+		return 0;
-+
-+	data = kzalloc(count, GFP_KERNEL);
-+	if (!data)
-+		return -ENOMEM;
-+
-+	ret = cfg->get(cfg, data, count);
-+	if (ret > 0 && copy_to_user(buf, data, ret)) {
-+		kfree(data);
-+		return -EFAULT;
-+	}
-+
-+	kfree(data);
-+	*ppos = ret;
-+	return ret;
-+}
-+
-+/* Filesytem write function. */
-+static ssize_t talpa_fs_write(struct file *file, const char __user *buf, size_t count, loff_t *ppos)
-+{
-+	struct talpa_configuration *cfg;
-+	char *data, *ptr, *end;
-+	ssize_t ret;
-+	size_t len = 0;
-+
-+	cfg = (struct talpa_configuration *)file->f_dentry->d_inode->i_private;
-+	if (!cfg)
-+		return -EBADF;
-+
-+	if (!cfg->set)
-+		return -ENOSYS;
-+
-+	if (!count)
-+		return 0;
-+
-+	if (file->f_pos)
-+		return -EINVAL;
-+
-+	/* Make sure we have space in buffer is string is
-+	   not null-terminated. */
-+	data = kzalloc(count + 1, GFP_KERNEL);
-+	if (!data)
-+		return -ENOMEM;
-+
-+	if (copy_from_user(data, buf, count)) {
-+		kfree(data);
-+		return -EFAULT;
-+	}
-+
-+	/* Null terminate string on first newline and find out it's
-+	   resulting length. */
-+	ptr = data;
-+	end = data + count;
-+	while (ptr < end) {
-+		if (*ptr == 0 || *ptr == '\n') {
-+			*ptr = 0;
-+			break;
-+		}
-+		len++;
-+		ptr++;
-+	}
-+
-+	ret = cfg->set(cfg, data, len);
-+	if (ret >= 0) {
-+		*ppos = ret;
-+		ret = count;
-+	}
-+	kfree(data);
-+	return ret;
-+}
-+
-+static struct file_operations talpa_fs_ops = {
-+	.open = nonseekable_open,
-+	.read = talpa_fs_read,
-+	.write = talpa_fs_write,
-+};
-+
-+/* Externally visible registration function. */
-+struct dentry *talpa_register_configuration(char *name, struct talpa_configuration *cfg)
-+{
-+	struct dentry *subdir;
-+	struct dentry *param;
-+
-+	/* Get root sub-directory for this group. */
-+	subdir = securityfs_create_dir(name, talpa_fs_root);
-+	if (!subdir)
-+		return ERR_PTR(-ENOMEM);
-+
-+	/* Create files for configuration items. */
-+	for (; cfg->name != NULL; cfg++)
-+		param = securityfs_create_file(cfg->name, cfg->mode, subdir, cfg, &talpa_fs_ops);
-+
-+	return subdir;
-+}
-+
-+static __init int talpa_configuration_init(void)
-+{
-+	talpa_fs_root = securityfs_create_dir("talpa", NULL);
-+	if (!talpa_fs_root)
-+		return -ENOMEM;
-+
-+	return 0;
-+}
-+
-+__initcall(talpa_configuration_init);
--- 
-1.5.2.1
+Libata happens to log this a lot more visibly than old kernels which is
+useful but does mean people sometimes don't notice.
 
+The rest then fits - the freeze I'd expect as we block I/O while trying
+to get the drive back.
+
+Doubt the Nvidia module is involved as I'd then expect problems under
+high graphical load but you can certainly test that. I don't suppose
+you've got a spare PCI network card you could try instead to see if it is
+the network card bits ?
+
+Alan
