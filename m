@@ -1,63 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756624AbYHDQiE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758639AbYHDQjY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756624AbYHDQiE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 12:38:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758101AbYHDQhp
+	id S1758639AbYHDQjY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 12:39:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754339AbYHDQjP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 12:37:45 -0400
-Received: from mail.vyatta.com ([216.93.170.194]:42859 "EHLO mail.vyatta.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758051AbYHDQho (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 12:37:44 -0400
-X-Spam-Flag: NO
-X-Spam-Score: -1.633
-Date: Mon, 4 Aug 2008 09:37:42 -0700
-From: Stephen Hemminger <shemminger@vyatta.com>
-To: David Miller <davem@davemloft.net>
-Cc: greearb@candelatech.com, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: [RFC] netdev: debugging option
-Message-ID: <20080804093742.395d271e@extreme>
-In-Reply-To: <20080720.000509.20260185.davem@davemloft.net>
-References: <20080719011709.GA5947@disturbed>
-	<48821DEF.1040306@candelatech.com>
-	<20080719230424.190957a3@extreme>
-	<20080720.000509.20260185.davem@davemloft.net>
-Organization: Vyatta
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+	Mon, 4 Aug 2008 12:39:15 -0400
+Received: from viefep18-int.chello.at ([213.46.255.22]:14944 "EHLO
+	viefep18-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753803AbYHDQjO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Aug 2008 12:39:14 -0400
+X-SourceIP: 80.57.229.25
+Subject: Re: [RFC][PATCH 7/7] lockdep: spin_lock_nest_lock()
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Andrea Arcangeli <andrea@qumranet.com>
+Cc: Dave Jones <davej@redhat.com>, Roland Dreier <rdreier@cisco.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, jeremy@goop.org, hugh@veritas.com,
+       mingo@elte.hu, akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20080804162657.GI11476@duo.random>
+References: <20080804130317.994042639@chello.nl>
+	 <20080804131012.246115111@chello.nl> <ada63qgvppx.fsf@cisco.com>
+	 <1217859571.3589.7.camel@twins> <aday73cua99.fsf@cisco.com>
+	 <1217860332.3589.11.camel@twins> <20080804145318.GA17867@redhat.com>
+	 <1217861763.3589.13.camel@twins>  <20080804162657.GI11476@duo.random>
+Content-Type: text/plain
+Date: Mon, 04 Aug 2008 18:38:55 +0200
+Message-Id: <1217867935.3589.35.camel@twins>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 20 Jul 2008 00:05:09 -0700 (PDT)
-David Miller <davem@davemloft.net> wrote:
+On Mon, 2008-08-04 at 18:26 +0200, Andrea Arcangeli wrote:
+> On Mon, Aug 04, 2008 at 04:56:03PM +0200, Peter Zijlstra wrote:
+> > My guess is that the kvm thing attaches before there are any vma, and
+> > leaves after all the vma are gone. So it would never actually trigger.
+> 
+> Yes, lockdep seems to be fine with kvm in kernel mainline in my
+> current and past testing. Andrew asked me to check this long ago.
+> 
+> vmx ~ # zgrep LOCKDEP /proc/config.gz 
+> CONFIG_LOCKDEP_SUPPORT=y
+> CONFIG_LOCKDEP=y
+> CONFIG_DEBUG_LOCKDEP=y
 
-> From: Stephen Hemminger <shemminger@vyatta.com>
-> Date: Sat, 19 Jul 2008 23:04:24 -0700
-> 
-> > This adds a debugging option for network devices. It could grow to add other
-> > uses, but for now just add some messages about device reference counting.
-> > 
-> > Signed-off-by: Stephen Hemminger <shemminger@vyatta.com>
-> 
-> I think this is useful but it could use some minor
-> mods before we put it in.
-> 
-> For example, this thing will spam the logs in at least two
-> common cases:
-> 
-> 1) Lots of routing cache replacements
-> 
-> 2) For older drivers using netif_rx() (and therefore, every
->    current tunnel), every RX packet will trigger a log message
+You also need CONFIG_PROVE_LOCKING, but I'll assume that's set too.
 
-Fixed by later patch.
+> CPA self-test:
+>  4k 26112 large 1997 gb 0 x 2652[ffff880000000000-ffff8800bffff000]
+>  miss 262144
+>  4k 186880 large 1683 gb 0 x 43021[ffff880000000000-ffff8800bffff000]
+>  miss 262144
+>  4k 186880 large 1683 gb 0 x 43021[ffff880000000000-ffff8800bffff000]
+>  miss 262144
+> ok.
+> loaded kvm module ()
+> apic write: bad size=1 fee00030
+> Ignoring de-assert INIT to vcpu 0
+> Ignoring de-assert INIT to vcpu 0
+> kvm: emulating exchange as write
+> apic write: bad size=1 fee00030
+> Ignoring de-assert INIT to vcpu 0
+> Ignoring de-assert INIT to vcpu 0
+> apic write: bad size=1 fee00030
+> Ignoring de-assert INIT to vcpu 0
+> Ignoring de-assert INIT to vcpu 0
+> apic write: bad size=1 fee00030
+> Ignoring de-assert INIT to vcpu 0
+> apic write: bad size=1 fee00030
+> Ignoring de-assert INIT to vcpu 0
+> apic write: bad size=1 fee00030
+> Ignoring de-assert INIT to vcpu 0
+> Ignoring de-assert INIT to vcpu 0
+> Ignoring de-assert INIT to vcpu 0
+> 
+> I can't see lockdep errors in dmesg starting one more multiple VM in a
+> loop (all run on a quadcore).
 
-> So we really need to add some kind of run time enable and also a
-> filter of some sort, even if it's just on device.
+Dave Jones just handed me:
 
-The sysctl in the patch is default off, so unless it is turned on,
-the log is quiet
+  https://bugzilla.redhat.com/show_bug.cgi?id=457779
+
+
+> GRU is likely the same.
+> 
+> The only real place where lockdep is unusable in my experience is
+> preempt-RT, it grinds it to an halt during boot on 8-way before
+> reaching the shell.
+
+David Miller just did a patch that might fix that.
+
