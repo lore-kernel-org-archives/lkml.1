@@ -1,82 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762637AbYHDTyn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762796AbYHDTzy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762637AbYHDTyn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 15:54:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754998AbYHDTyg
+	id S1762796AbYHDTzy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 15:55:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759294AbYHDTzN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 15:54:36 -0400
-Received: from idcmail-mo2no.shaw.ca ([64.59.134.9]:53612 "EHLO
-	pd5mo1no-dmz.prod.shaw.ca" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753273AbYHDTyf (ORCPT
+	Mon, 4 Aug 2008 15:55:13 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:60710 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755187AbYHDTzL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 15:54:35 -0400
-X-Cloudmark-SP-Filtered: true
-X-Cloudmark-SP-Result: v=1.0 c=0 a=L4ZVBCqTRzGetBOK8xYA:9 a=MvpRr7ROSrCSptGr_RwA:7 a=l69JNAV75PrFQRAxlXP2oPC1QJ0A:4 a=XY8dIlDO8zIA:10 a=R8QeYpb7sUUA:10
-Message-ID: <48975E79.8010207@shaw.ca>
-Date: Mon, 04 Aug 2008 13:54:33 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
-MIME-Version: 1.0
-To: David Greaves <david@dgreaves.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: BUG and unresponsive system using cdparanoia on 2.6.26
-References: <fa.oIy/kfKdsiZFNy+hmBNbNiOY6F8@ifi.uio.no>
-In-Reply-To: <fa.oIy/kfKdsiZFNy+hmBNbNiOY6F8@ifi.uio.no>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 4 Aug 2008 15:55:11 -0400
+Date: Mon, 4 Aug 2008 12:54:09 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Karsten Keil <kkeil@suse.de>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/7] Add mISDN driver
+Message-Id: <20080804125409.6a40ad2d.randy.dunlap@oracle.com>
+In-Reply-To: <20080727010837.GA3415@pingi.kke.suse.de>
+References: <20080727010837.GA3415@pingi.kke.suse.de>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Greaves wrote:
-> Hi
-> 
-> 2 problems:
-> * unresponsive system
-> * BUG
-> 
-> I've been ripping some audio CDs recently under 2.6.26 and sometimes, I assume
-> when there have been imperfections/retries etc, the system has become
-> unresponsive - 10s of seconds for mouse movement, keystrokes to respond.
-> 
-> This resulted in many
->   kernel: ide: failed opcode was: unknown
->   kernel: hda: drive not ready for command
->   kernel: hda: status timeout: status=0xff { Busy }
+On Sun, 27 Jul 2008 03:08:37 +0200 Karsten Keil wrote:
 
-Yeah, presumably the drive has gone off into never never land trying to 
-read the disc for a long time..
+> Please pull this and the following patches from 
+> git://git.kernel.org/pub/scm/linux/kernel/git/kkeil/ISDN-2.6.git master
+> 
+> mISDN is a new modular ISDN driver, in the long term it should replace
+> the old I4L driver architecture for passiv ISDN cards.
 
-> 
-> top reported very high %si (>95%)
-> 
-> 
-> and when I tried (*something*) to recover using:
->   hdparm -w /dev/hda
->   hdparm -w /dev/hdb
-> I got a BUG.
-> 
-> I know it says 'dangerous' - so if the reply is "so don't do that then" I shall
-> respect it :)
-> OTOH this may be unexpected so I'm reporting it.
 
-Well, it's likely not "expected", but it's not generally a good thing to 
-do as it triggers not-well-tested code paths.. The IDE layer is supposed 
-to reset the drive itself in this case, and it appears it does.. but 
-then the command likely either gets retried or the next command comes in 
-and stalls the drive out again.
+> diff --git a/Documentation/isdn/README.mISDN b/Documentation/isdn/README.mISDN
+> new file mode 100644
+> index 0000000..cd8bf92
+> --- /dev/null
+> +++ b/Documentation/isdn/README.mISDN
+> @@ -0,0 +1,6 @@
+> +mISDN is a new modular ISDN driver, in the long term it should replace
 
-> 
-> All my drives are on sata channels, I just have a Plextor CDRW and a DVDRW on
-> the ide channel.
-> 
-> One additional comment, when the CD drive gets into this state, it persists
-> after a hibernate, cold boot and restore. It is fine after a cold reboot.
-> This suggests to me that the problem may be in the kernel/driver.
-> 
-> Let me know what else I can provide to help.
-> In the meantime I'll be trying 2.6.27-rc?
+   mISDN is a new modular ISDN driver. In the long term, it should replace
 
-Well, my recommendation would be first to try the newer libata driver 
-for your PATA controller and not use the old IDE layer (CONFIG_IDE). 
-libata drivers should be more robust against this sort of thing..
+> +the old I4L driver architecture for passiv ISDN cards.
+
+                                       passive
+
+> +It was designed to allow a broad range of applications and interfaces
+> +but only have the basic function in kernel, the interface to the user
+
+                                    in kernel. The interface
+
+> +space is based on sockets with a own address family AF_ISDN.
+
+                                  its own address family AF_ISDN.
+
+
+
+Sorry about the delayed response.
+
+---
+~Randy
+Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
+http://linuxplumbersconf.org/
