@@ -1,97 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760604AbYHDGnc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760572AbYHDGqm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760604AbYHDGnc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 02:43:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760595AbYHDGnD
+	id S1760572AbYHDGqm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 02:46:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755228AbYHDGqf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 02:43:03 -0400
-Received: from mga09.intel.com ([134.134.136.24]:58138 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760571AbYHDGnA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 02:43:00 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.31,303,1215414000"; 
-   d="scan'208";a="322819467"
-Subject: [patch 2/2] reduce tlb/cache flush times of agpgart memory
-	allocation
-From: Shaohua Li <shaohua.li@intel.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: airlied@linux.ie, Andrew Morton <akpm@linux-foundation.org>,
-       Ingo Molnar <mingo@redhat.com>, Arjan van de Ven <arjan@infradead.org>
-Content-Type: text/plain
-Date: Mon, 04 Aug 2008 14:51:30 +0800
-Message-Id: <1217832690.21811.9.camel@sli10-desk.sh.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 4 Aug 2008 02:46:35 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:36573 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755218AbYHDGqe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Aug 2008 02:46:34 -0400
+Date: Mon, 4 Aug 2008 08:28:23 +0200
+From: Pavel Machek <pavel@suse.cz>
+To: Ben Collins <ben.collins@canonical.com>
+Cc: Greg KH <greg@kroah.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       linux-kernel@vger.kernel.org,
+       pm list <linux-pm@lists.linux-foundation.org>
+Subject: Re: [PATCH 6/7] pm: Config option to disable handling of console during suspend/resume
+Message-ID: <20080804062823.GA22015@atrey.karlin.mff.cuni.cz>
+References: <24762.90.138.930.038.1036103001.ben.collins@canonical.com> <E1KKl4J-00068V-6f@swissweb.swissdisk.com> <20080729033309.GB12085@kroah.com> <200807292315.36511.rjw@sisk.pl> <1217368310.6066.56.camel@cunning> <20080730044716.GA2954@kroah.com> <1217427607.5976.104.camel@cunning>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1217427607.5976.104.camel@cunning>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-To reduce tlb/cache flush, makes agp memory allocation do one flush
-after all pages in a region are changed to uc.
+Hi!
 
-All agp drivers except agp-sgi uses agp_generic_alloc_page()
-for .agp_alloc_page, so the patch should work for them. agp-sgi is only
-for ia64, so not a problem too. 
+> > > diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+> > > index e7bea3e..6a042f8 100644
+> > > --- a/Documentation/kernel-parameters.txt
+> > > +++ b/Documentation/kernel-parameters.txt
+> > > @@ -2247,6 +2247,11 @@ and is between 256 and 4096 characters. It is defined in the file
+> > >  	vmpoff=		[KNL,S390] Perform z/VM CP command after power off.
+> > >  			Format: <command>
+> > >  
+> > > +	vt_switch=	[PM] Switch vt's during suspend/resume
+> > > +			Format: { 0 | 1 }
+> > > +			Default is normally '1', but depends on value of
+> > > +			the PM_DISABLE_CONSOLE config option.
+> > > +
+> > 
+> > Why a build time config option?  Why not just set the command line
+> > option if you need this?  And/or make it a sysctrl?
+> > 
+> > That way we don't have to add yet-another-config-option for distros and
+> > users to get wrong.
+> > 
+> > thanks,
+> 
+> Sysctl makes sense. I would rather not have to add a cmdline option to
+> default installs (and on upgrades). I'll redo the patch that way and
+> resend.
 
-Signed-off-by: Shaohua Li <shaohua.li@intel.com>
----
- drivers/char/agp/agp.h     |    4 ++++
- drivers/char/agp/generic.c |    4 +++-
- include/asm-x86/agp.h      |    3 +++
- 3 files changed, 10 insertions(+), 1 deletion(-)
-
-Index: linux/drivers/char/agp/generic.c
-===================================================================
---- linux.orig/drivers/char/agp/generic.c	2008-08-04 12:03:37.000000000 +0800
-+++ linux/drivers/char/agp/generic.c	2008-08-04 12:06:31.000000000 +0800
-@@ -274,6 +274,7 @@ struct agp_memory *agp_allocate_memory(s
- 		new->memory[i] = virt_to_gart(addr);
- 		new->page_count++;
- 	}
-+	map_page_into_agp_global_flush();
- 	new->bridge = bridge;
- 
- 	return new;
-@@ -1186,7 +1187,8 @@ void *agp_generic_alloc_page(struct agp_
- 	if (page == NULL)
- 		return NULL;
- 
--	map_page_into_agp(page);
-+	/* agp_allocate_memory will do flush */
-+	map_page_into_agp_noflush(page);
- 
- 	get_page(page);
- 	atomic_inc(&agp_bridge->current_memory_agp);
-Index: linux/include/asm-x86/agp.h
-===================================================================
---- linux.orig/include/asm-x86/agp.h	2008-08-04 12:03:37.000000000 +0800
-+++ linux/include/asm-x86/agp.h	2008-08-04 12:06:31.000000000 +0800
-@@ -15,6 +15,9 @@
- #define map_page_into_agp(page) set_pages_uc(page, 1)
- #define unmap_page_from_agp(page) set_pages_wb(page, 1)
- 
-+#define map_page_into_agp_noflush(page) set_pages_uc_noflush(page, 1)
-+#define map_page_into_agp_global_flush() set_memory_flush_all()
-+
- /*
-  * Could use CLFLUSH here if the cpu supports it. But then it would
-  * need to be called for each cacheline of the whole page so it may
-Index: linux/drivers/char/agp/agp.h
-===================================================================
---- linux.orig/drivers/char/agp/agp.h	2008-08-04 12:03:37.000000000 +0800
-+++ linux/drivers/char/agp/agp.h	2008-08-04 12:06:31.000000000 +0800
-@@ -30,6 +30,10 @@
- #define _AGP_BACKEND_PRIV_H 1
- 
- #include <asm/agp.h>	/* for flush_agp_cache() */
-+#ifndef map_page_into_agp_noflush
-+#define map_page_into_agp_noflush(page) map_page_into_agp(page)
-+#define map_page_into_agp_global_flush()
-+#endif
- 
- #define PFX "agpgart: "
- 
-
+Maybe have acpi_sleep=no_vt_switch? THat is already settable from
+userspace...?
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
 
