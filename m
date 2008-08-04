@@ -1,68 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763382AbYHDV34@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764294AbYHDVaT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763382AbYHDV34 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 17:29:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755767AbYHDV3s
+	id S1764294AbYHDVaT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 17:30:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762802AbYHDV37
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 17:29:48 -0400
-Received: from casper.infradead.org ([85.118.1.10]:37601 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755074AbYHDV3r (ORCPT
+	Mon, 4 Aug 2008 17:29:59 -0400
+Received: from out2.smtp.messagingengine.com ([66.111.4.26]:56486 "EHLO
+	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1763145AbYHDV35 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 17:29:47 -0400
-Date: Mon, 4 Aug 2008 14:27:52 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Andrea Arcangeli <andrea@qumranet.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Dave Jones <davej@redhat.com>,
-       Roland Dreier <rdreier@cisco.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, jeremy@goop.org, hugh@veritas.com,
-       mingo@elte.hu, akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] workaround minor lockdep bug triggered by
- mm_take_all_locks
-Message-ID: <20080804142752.23a59073@infradead.org>
-In-Reply-To: <20080804210954.GC12464@duo.random>
-References: <20080804145318.GA17867@redhat.com>
-	<1217861763.3589.13.camel@twins>
-	<20080804162657.GI11476@duo.random>
-	<1217867935.3589.35.camel@twins>
-	<20080804172728.GJ11476@duo.random>
-	<20080804174659.GK11476@duo.random>
-	<20080804175730.GL11476@duo.random>
-	<1217875739.3589.56.camel@twins>
-	<20080804201514.GB12464@duo.random>
-	<1217882242.3589.90.camel@twins>
-	<20080804210954.GC12464@duo.random>
-Organization: Intel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Mon, 4 Aug 2008 17:29:57 -0400
+X-Sasl-enc: BEHbwZoMqRsErY8TYWU5QlrJN0c6d6d+yQ9KrJj/N01T 1217885396
+Date: Mon, 4 Aug 2008 18:29:52 -0300
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: corentincj@iksaif.net, linux-kernel@vger.kernel.org,
+       linux-acpi@vger.kernel.org, IvDoorn@gmail.com
+Subject: Re: [PATCH 2/2] eeepc-laptop: Use standard interfaces
+Message-ID: <20080804212952.GC24927@khazad-dum.debian.net>
+References: <20080804170833.GA9513@srcf.ucam.org> <20080804171504.GB9513@srcf.ucam.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080804171504.GB9513@srcf.ucam.org>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+	1CDB 0FE3
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 4 Aug 2008 23:09:54 +0200
-Andrea Arcangeli <andrea@qumranet.com> wrote:
+On Mon, 04 Aug 2008, Matthew Garrett wrote:
+> +static int eeepc_wlan_rfkill_set(void *data, enum rfkill_state state)
+> +{
+> +	return set_acpi(CM_ASL_WLAN, state);
+> +}
+> +
+> +static int eeepc_wlan_rfkill_state(void *data, enum rfkill_state *state)
+> +{
+> +	*state = get_acpi(CM_ASL_WLAN);
+> +	return 0;
+> +}
 
-> On Mon, Aug 04, 2008 at 10:37:22PM +0200, Peter Zijlstra wrote:
-> > You're so wrong it not even funny. It reports about deadlocks before
-> > they happen. All it needs is to observe a lock order violation and
-> > it
-> 
-> Now tell me how it helps to report them... It tells me the system has
-> crashed and where, 
+This might just be style, but I'd rather you didn't do this unless get_acpi
+and set_acpi do take enum rfkill_state...  Doing state conversion would be a
+lot more future-proof, as well:
 
+Something like:
+	set_acpi(CM_ASL_WLAN, (state == RFKILL_STATE_UNBLOCKED) ? 0 : 1);
 
-I think you totally misunderstand things then.
+And:
 
-Lockdep will report a problem if it *ever* sees a BA order after it has
-seen a BA order. They don't have to happen at the same time. Or even
-within hours of eachother.
+	*state = get_acpi(CM_ASL_WLAN) ? RFKILL_STATE_SOFT_BLOCKED :
+						RFKILL_STATE_UNBLOCKED;
 
-They MIGHT happen... in a narrow time window, when you have a deadlock.
-But lockdep will warn you about the order violation without actually
-having to dealock... because the AB is likely to be done already most
-of the time when the BA happens.
+Adjust as needed.
+
+> +		ehotk->eeepc_wlan_rfkill->user_claim_unsupported = 0;
+
+This is not needed, and if we get rid of user_claim_unsupported later, your
+code wouldn't need changes if you get rid of that line.
+
+I have not paid much attention to it yet, but so far I have failed to
+understand what user_claim_unsupported is good for in the new style rfkill
+interface.
+
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
