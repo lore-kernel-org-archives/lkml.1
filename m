@@ -1,46 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756982AbYHDPru@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754889AbYHDP5W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756982AbYHDPru (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 11:47:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752998AbYHDPri
+	id S1754889AbYHDP5W (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 11:57:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753347AbYHDP5O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 11:47:38 -0400
-Received: from pxy2nd.nifty.com ([202.248.175.14]:60340 "HELO pxy2nd.nifty.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1756090AbYHDPrh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 11:47:37 -0400
-X-Nifty-SrcIP: [210.170.193.38]
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=pxy2nd-default; d=mbf.nifty.com;
-  b=v5GJhaV454bqksSjQ717oXVwWGcCOfIHee/mwq32OwAOMyWQHuFXvF2n58RUzI0Y1eqrfY/PF7RiIlofCBjB4g==  ;
-Date: Tue, 05 Aug 2008 00:09:43 +0900 (JST)
-Message-Id: <20080805.000943.208968239.takada@mbf.nifty.com>
-To: linux-kernel@vger.kernel.org
-Subject: How does RCU work?
-From: TAKADA Yoshihito <takada@mbf.nifty.com>
-X-Mailer: Mew version 6.1 on Emacs 22.2 / Mule 5.0 (SAKAKI)
+	Mon, 4 Aug 2008 11:57:14 -0400
+Received: from x346.tv-sign.ru ([89.108.83.215]:40723 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752998AbYHDP5N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Aug 2008 11:57:13 -0400
+Date: Mon, 4 Aug 2008 20:01:03 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Mark McLoughlin <markmc@redhat.com>, Roland McGrath <roland@redhat.com>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
+Subject: [PATCH 0/4] posix-timers: sys_timer_create: fix and cleanups
+Message-ID: <20080804160103.GA10515@tv-sign.ru>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
-I cannot understand mechanism. Somebody tell me it please.
+On top of
 
-In x86 kernel, CONFIG_PREEMPT_RCU=n (CONFIG_CLASSIC_RCU=y). rcu_read_lock() makes
-just preempt_disable().
-call_cru()/synchronize_rcu() running as a soft-IRQ.
-It's current CPU does not refer to protected data that when call_rcu() run. 
-Because soft-IRQ handler ran, it means current CPU is preempive. That is the CPU
-called rcu_read_unlock().
+	[PATCH 1/3] posix-timers: don't switch to ->group_leader if ->it_process dies
+	http://marc.info/?l=linux-kernel&m=121778560719812
 
-Well, current CPU is unlocked, but How does kernel know it other CPUs unlocked?
+	[PATCH 2/3] posix-timers: always do get_task_struct(timer->it_process)
+	http://marc.info/?l=linux-kernel&m=121778560719816
 
-call_ruc() calls force_quiescent_state() to reschedule other CPUs. 
-force_quiescent_state() calls smp_send_reschedule() to sends request to reshecule.
-It's just require to reschedule via inter Processor Interrupt. But call_rcu() does
-not wait for target CPUs handle IPI. Or, Do CPUs have it handled IPI request when
-return from smp_send_reschedule()?
+
+checkpatch.pl criticizes the first patch (line over 80 characters), but
+that line was just moved by this patch. Not sure what should be done in
+such a case, but this line is killed by the next patch anyway.
+
+I don't know how to test these changes. Fortunately they are rather simple,
+and the first patch obviously fixes the bug.
+
+Oleg.
 
