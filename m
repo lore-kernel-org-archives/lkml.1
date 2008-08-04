@@ -1,291 +1,245 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760690AbYHDG0b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760516AbYHDG3n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760690AbYHDG0b (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 02:26:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755463AbYHDG0M
+	id S1760516AbYHDG3n (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 02:29:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754783AbYHDG3e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 02:26:12 -0400
-Received: from viefep32-int.chello.at ([62.179.121.50]:48905 "EHLO
-	viefep32-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754783AbYHDG0L (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 02:26:11 -0400
-Subject: Re: VolanoMark regression with 2.6.27-rc1
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-Cc: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
-       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       Aneesh Kumar KV <aneesh.kumar@linux.vnet.ibm.com>,
-       Balbir Singh <balbir@in.ibm.com>
-In-Reply-To: <20080804055339.GB5444@linux.vnet.ibm.com>
-References: <1217474425.25608.150.camel@ymzhang>
-	 <1217489463.25608.157.camel@ymzhang> <1217489949.8157.78.camel@twins>
-	 <1217490560.25608.168.camel@ymzhang> <1217551154.25608.169.camel@ymzhang>
-	 <20080801051407.GA5232@linux.vnet.ibm.com>
-	 <1217826278.25608.198.camel@ymzhang>
-	 <20080804052228.GA5444@linux.vnet.ibm.com>
-	 <1217828278.25608.206.camel@ymzhang>
-	 <20080804055339.GB5444@linux.vnet.ibm.com>
-Content-Type: text/plain
-Date: Mon, 04 Aug 2008 08:26:11 +0200
-Message-Id: <1217831171.9016.42.camel@twins>
+	Mon, 4 Aug 2008 02:29:34 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:49417 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751352AbYHDG3d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Aug 2008 02:29:33 -0400
+Date: Mon, 4 Aug 2008 16:29:24 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: linux-next@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: linux-next: Tree for August 4
+Message-Id: <20080804162924.f3c5c3d4.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Mon__4_Aug_2008_16_29_24_+1000_05t07bYr4MbY+q/s"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-08-04 at 11:23 +0530, Dhaval Giani wrote:
+--Signature=_Mon__4_Aug_2008_16_29_24_+1000_05t07bYr4MbY+q/s
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> Peter, vatsa, any ideas?
+Hi all,
 
----
+[I managed to overwrite the merge log for today, sorry.  I have still
+appended a summary, though.]
 
-Revert:
-  a7be37ac8e1565e00880531f4e2aff421a21c803  sched: revert the revert of: weight calculations
-  c9c294a630e28eec5f2865f028ecfc58d45c0a5a  sched: fix calc_delta_asym()
-  ced8aa16e1db55c33c507174c1b1f9e107445865  sched: fix calc_delta_asym, #2
+Changes since next-20080801:
 
----
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 21f7da9..7afb0fc 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -1244,9 +1244,6 @@ static void resched_task(struct task_struct *p)
-  */
- #define SRR(x, y) (((x) + (1UL << ((y) - 1))) >> (y))
- 
--/*
-- * delta *= weight / lw
-- */
- static unsigned long
- calc_delta_mine(unsigned long delta_exec, unsigned long weight,
- 		struct load_weight *lw)
-@@ -1274,6 +1271,12 @@ calc_delta_mine(unsigned long delta_exec, unsigned long weight,
- 	return (unsigned long)min(tmp, (u64)(unsigned long)LONG_MAX);
- }
- 
-+static inline unsigned long
-+calc_delta_fair(unsigned long delta_exec, struct load_weight *lw)
-+{
-+	return calc_delta_mine(delta_exec, NICE_0_LOAD, lw);
-+}
-+
- static inline void update_load_add(struct load_weight *lw, unsigned long inc)
- {
- 	lw->weight += inc;
-diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
-index cf2cd6c..593af05 100644
---- a/kernel/sched_fair.c
-+++ b/kernel/sched_fair.c
-@@ -334,34 +334,6 @@ int sched_nr_latency_handler(struct ctl_table *table, int write,
- #endif
- 
- /*
-- * delta *= w / rw
-- */
--static inline unsigned long
--calc_delta_weight(unsigned long delta, struct sched_entity *se)
--{
--	for_each_sched_entity(se) {
--		delta = calc_delta_mine(delta,
--				se->load.weight, &cfs_rq_of(se)->load);
--	}
--
--	return delta;
--}
--
--/*
-- * delta *= rw / w
-- */
--static inline unsigned long
--calc_delta_fair(unsigned long delta, struct sched_entity *se)
--{
--	for_each_sched_entity(se) {
--		delta = calc_delta_mine(delta,
--				cfs_rq_of(se)->load.weight, &se->load);
--	}
--
--	return delta;
--}
--
--/*
-  * The idea is to set a period in which each task runs once.
-  *
-  * When there are too many tasks (sysctl_sched_nr_latency) we have to stretch
-@@ -390,80 +362,47 @@ static u64 __sched_period(unsigned long nr_running)
-  */
- static u64 sched_slice(struct cfs_rq *cfs_rq, struct sched_entity *se)
- {
--	return calc_delta_weight(__sched_period(cfs_rq->nr_running), se);
-+	u64 slice = __sched_period(cfs_rq->nr_running);
-+
-+	for_each_sched_entity(se) {
-+		cfs_rq = cfs_rq_of(se);
-+
-+		slice *= se->load.weight;
-+		do_div(slice, cfs_rq->load.weight);
-+	}
-+
-+
-+	return slice;
- }
- 
- /*
-  * We calculate the vruntime slice of a to be inserted task
-  *
-- * vs = s*rw/w = p
-+ * vs = s/w = p/rw
-  */
- static u64 sched_vslice_add(struct cfs_rq *cfs_rq, struct sched_entity *se)
- {
- 	unsigned long nr_running = cfs_rq->nr_running;
-+	unsigned long weight;
-+	u64 vslice;
- 
- 	if (!se->on_rq)
- 		nr_running++;
- 
--	return __sched_period(nr_running);
--}
--
--/*
-- * The goal of calc_delta_asym() is to be asymmetrically around NICE_0_LOAD, in
-- * that it favours >=0 over <0.
-- *
-- *   -20         |
-- *               |
-- *     0 --------+-------
-- *             .'
-- *    19     .'
-- *
-- */
--static unsigned long
--calc_delta_asym(unsigned long delta, struct sched_entity *se)
--{
--	struct load_weight lw = {
--		.weight = NICE_0_LOAD,
--		.inv_weight = 1UL << (WMULT_SHIFT-NICE_0_SHIFT)
--	};
-+	vslice = __sched_period(nr_running);
- 
- 	for_each_sched_entity(se) {
--		struct load_weight *se_lw = &se->load;
--		unsigned long rw = cfs_rq_of(se)->load.weight;
--
--#ifdef CONFIG_FAIR_SCHED_GROUP
--		struct cfs_rq *cfs_rq = se->my_q;
--		struct task_group *tg = NULL
--
--		if (cfs_rq)
--			tg = cfs_rq->tg;
--
--		if (tg && tg->shares < NICE_0_LOAD) {
--			/*
--			 * scale shares to what it would have been had
--			 * tg->weight been NICE_0_LOAD:
--			 *
--			 *   weight = 1024 * shares / tg->weight
--			 */
--			lw.weight *= se->load.weight;
--			lw.weight /= tg->shares;
--
--			lw.inv_weight = 0;
--
--			se_lw = &lw;
--			rw += lw.weight - se->load.weight;
--		} else
--#endif
-+		cfs_rq = cfs_rq_of(se);
- 
--		if (se->load.weight < NICE_0_LOAD) {
--			se_lw = &lw;
--			rw += NICE_0_LOAD - se->load.weight;
--		}
-+		weight = cfs_rq->load.weight;
-+		if (!se->on_rq)
-+			weight += se->load.weight;
- 
--		delta = calc_delta_mine(delta, rw, se_lw);
-+		vslice *= NICE_0_LOAD;
-+		do_div(vslice, weight);
- 	}
- 
--	return delta;
-+	return vslice;
- }
- 
- /*
-@@ -480,7 +419,11 @@ __update_curr(struct cfs_rq *cfs_rq, struct sched_entity *curr,
- 
- 	curr->sum_exec_runtime += delta_exec;
- 	schedstat_add(cfs_rq, exec_clock, delta_exec);
--	delta_exec_weighted = calc_delta_fair(delta_exec, curr);
-+	delta_exec_weighted = delta_exec;
-+	if (unlikely(curr->load.weight != NICE_0_LOAD)) {
-+		delta_exec_weighted = calc_delta_fair(delta_exec_weighted,
-+							&curr->load);
-+	}
- 	curr->vruntime += delta_exec_weighted;
- }
- 
-@@ -687,17 +630,8 @@ place_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int initial)
- 
- 	if (!initial) {
- 		/* sleeps upto a single latency don't count. */
--		if (sched_feat(NEW_FAIR_SLEEPERS)) {
--			unsigned long thresh = sysctl_sched_latency;
--
--			/*
--			 * convert the sleeper threshold into virtual time
--			 */
--			if (sched_feat(NORMALIZED_SLEEPER))
--				thresh = calc_delta_fair(thresh, se);
--
--			vruntime -= thresh;
--		}
-+		if (sched_feat(NEW_FAIR_SLEEPERS))
-+			vruntime -= sysctl_sched_latency;
- 
- 		/* ensure we never gain time by being placed backwards. */
- 		vruntime = max_vruntime(se->vruntime, vruntime);
-@@ -1277,13 +1211,11 @@ static unsigned long wakeup_gran(struct sched_entity *se)
- 	unsigned long gran = sysctl_sched_wakeup_granularity;
- 
- 	/*
--	 * More easily preempt - nice tasks, while not making it harder for
--	 * + nice tasks.
-+	 * More easily preempt - nice tasks, while not making
-+	 * it harder for + nice tasks.
- 	 */
--	if (sched_feat(ASYM_GRAN))
--		gran = calc_delta_asym(sysctl_sched_wakeup_granularity, se);
--	else
--		gran = calc_delta_fair(sysctl_sched_wakeup_granularity, se);
-+	if (unlikely(se->load.weight > NICE_0_LOAD))
-+		gran = calc_delta_fair(gran, &se->load);
- 
- 	return gran;
- }
-diff --git a/kernel/sched_features.h b/kernel/sched_features.h
-index 862b06b..6cd8734 100644
---- a/kernel/sched_features.h
-+++ b/kernel/sched_features.h
-@@ -1,5 +1,4 @@
- SCHED_FEAT(NEW_FAIR_SLEEPERS, 1)
--SCHED_FEAT(NORMALIZED_SLEEPER, 1)
- SCHED_FEAT(WAKEUP_PREEMPT, 1)
- SCHED_FEAT(START_DEBIT, 1)
- SCHED_FEAT(AFFINE_WAKEUPS, 1)
-@@ -7,7 +6,6 @@ SCHED_FEAT(CACHE_HOT_BUDDY, 1)
- SCHED_FEAT(SYNC_WAKEUPS, 1)
- SCHED_FEAT(HRTICK, 1)
- SCHED_FEAT(DOUBLE_TICK, 0)
--SCHED_FEAT(ASYM_GRAN, 1)
- SCHED_FEAT(LB_BIAS, 0)
- SCHED_FEAT(LB_WAKEUP_UPDATE, 1)
- SCHED_FEAT(ASYM_EFF_LOAD, 1)
+Temporarily dropped tree: v4l-dvb (got lots of conflicts against the
+version that was merged to Linus).
 
+Restored tree: acpi
 
+Linus' tree is fixed for the sparc and powerpc builds.
+
+The pci tree lost its conflict.
+
+The tip-core tree gained a conflict against Linus' tree.
+
+The kvm tree gained a conflict against Linus' tree.
+
+I have also applied the following patch for known problems:
+
+	hfcmulti is not supported on big endian
+	Add cuImage.mpc866ads to the bootwrapper as a cuboot-8xx target
+	m68k: some asm-sparc include files moved
+	Revert "Input: expand keycode space"
+
+The sparc(32) defconfig build still fails - this is probably a toolchain
+problem.  I have fixed this by reverting the these commits from Linus'
+tree:
+
+	UFS: add const to parser token table (f9247273cb69ba101877e946d2d83044409c=
+c8c5)
+	fix fs/nfs/nfsroot.c compilation (fb2e405fc1fc8b20d9c78eaa1c7fd5a297efde43)
+
+----------------------------------------------------------------------------
+
+I have created today's linux-next tree at
+git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
+(patches at
+http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/).  If you
+are tracking the linux-next tree using git, you should not use "git pull"
+to do so as that will try to merge the new linux-next release with the
+old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
+(see below).
+
+You can see which trees have been included by looking in the Next/Trees
+file in the source.  There are also quilt-import.log and merge.log files
+in the Next directory.  Between each merge, the tree was built with
+a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
+final fixups, it is also built with powerpc allnoconfig,
+44x_defconfig and allyesconfig and i386, sparc and sparc64 defconfig.
+
+Below is a summary of the state of the merge.
+
+We are up to 106 trees (counting Linus' and 14 trees of patches pending for
+Linus' tree), more are welcome (even if they are currently empty).
+Thanks to those who have contributed, and to those who haven't, please do.
+
+Status of my local build tests will be at
+http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
+advice about cross compilers/configs that work, we are always open to add
+more builds.
+
+Thanks to Jan Dittmer for adding the linux-next tree to his build tests
+at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
+Dunlap for doing many randconfig builds.
+
+There is a wiki covering stuff to do with linux-next at
+http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+$ git checkout master
+$ git reset --hard stable
+Merging origin/master
+Merging powerpc-merge/merge
+Merging scsi-rc-fixes/master
+Merging net-current/master
+Merging sparc-current/master
+Merging sound-current/for-linus
+Merging arm-current/master
+Merging pci-current/for-linus
+Merging wireless-current/master
+Merging kbuild-current/master
+Merging quilt/driver-core.current
+Merging quilt/usb.current
+Applying usb: two more functions are needed when CONFIG_PM is not set
+Merging cpufreq-current/fixes
+Merging input-current/for-linus
+Merging md-current/for-2.6.26
+Merging quilt/driver-core
+Applying driver-core: kobject verification fixup
+Merging quilt/usb
+Merging tip-core/auto-core-next
+CONFLICT (content): Merge conflict in include/asm-generic/vmlinux.lds.h
+Merging cpus4096/auto-cpus4096-next
+CONFLICT (content): Merge conflict in net/sunrpc/svc.c
+Merging ftrace/auto-ftrace-next
+Merging genirq/auto-genirq-next
+Merging safe-poison-pointers/auto-safe-poison-pointers-next
+Merging sched/auto-sched-next
+Merging stackprotector/auto-stackprotector-next
+Merging timers/auto-timers-next
+Merging x86/auto-x86-next
+CONFLICT (content): Merge conflict in arch/x86/kernel/genapic_64.c
+CONFLICT (content): Merge conflict in drivers/pci/dmar.c
+Merging pci/linux-next
+Merging quilt/device-mapper
+Merging hid/mm
+Merging quilt/i2c
+Merging quilt/kernel-doc
+Merging avr32/avr32-arch
+Merging s390/features
+Merging sh/master
+Merging jfs/next
+Merging kbuild/master
+Merging quilt/ide
+Merging libata/NEXT
+Merging nfs/linux-next
+Merging xfs/master
+CONFLICT (content): Merge conflict in fs/xfs/linux-2.6/xfs_super.c
+Merging infiniband/for-next
+Merging acpi/test
+Merging blackfin/for-linus
+Merging nfsd/nfsd-next
+Merging ieee1394/for-next
+Merging hwmon/testing
+Merging ubi/linux-next
+Merging kvm/master
+CONFLICT (content): Merge conflict in include/linux/kvm.h
+Merging dlm/next
+Merging scsi/master
+Merging ia64/test
+Merging tests/master
+Merging ocfs2/linux-next
+Merging quilt/m68k
+Merging powerpc/next
+Merging ext4/next
+Merging 4xx/next
+Merging async_tx/next
+Merging udf/for_next
+Merging net/master
+Merging sparc/master
+Merging galak/powerpc-next
+Merging mtd/master
+Merging wireless/master
+Merging crypto/master
+Merging vfs/for-next
+Merging sound/for-next
+Merging arm/devel
+Merging cpufreq/next
+Merging v9fs/for-next
+Merging quilt/rr
+Merging cifs/master
+Merging mmc/next
+Merging gfs2/master
+Merging input/next
+Merging semaphore/semaphore
+Merging semaphore-removal/semaphore-removal
+Merging bkl-removal/bkl-removal
+Merging trivial/next
+CONFLICT (content): Merge conflict in Documentation/edac.txt
+CONFLICT (content): Merge conflict in include/linux/securebits.h
+Merging ubifs/linux-next
+Merging lsm/for-next
+Merging block/for-next
+Merging embedded/master
+Merging firmware/master
+CONFLICT (content): Merge conflict in drivers/media/dvb/ttpci/Kconfig
+CONFLICT (content): Merge conflict in drivers/media/dvb/ttpci/Makefile
+Merging pcmcia/master
+Merging battery/master
+Merging leds/for-mm
+Merging backlight/for-mm
+Merging kgdb/kgdb-next
+Merging slab/for-next
+Merging m68knommu/for-next
+Merging uclinux/for-next
+Merging md/for-next
+Merging cris/for-next
+Merging kmemcheck/auto-kmemcheck-next
+Merging generic-ipi/auto-generic-ipi-next
+Merging mips/mips-for-linux-next
+Merging mfd/for-next
+Merging hdlc/hdlc-next
+Merging drm/drm-next
+Merging voltage/reg-for-linus
+Merging security-testing/next
+Merging lblnet/master
+Merging quilt/ttydev
+Merging agp/agp-next
+Merging powerpc/merge
+Applying hfcmulti is not supported on big endian
+Created commit 457bf7a: Revert "fix fs/nfs/nfsroot.c compilation"
+Created commit 2f1a6e3: Revert "UFS: add const to parser token table"
+Applying Add cuImage.mpc866ads to the bootwrapper as a cuboot-8xx target
+Applying m68k: some asm-sparc include files moved
+Created commit 5577e9a: Revert "Input: expand keycode space"
+
+--Signature=_Mon__4_Aug_2008_16_29_24_+1000_05t07bYr4MbY+q/s
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkiWocQACgkQjjKRsyhoI8xiggCgpJo2Qh+UZJoPM7kYv69HnXvf
+lwEAn0sougVs8MiRqAn8TYID785PNR+I
+=xsOj
+-----END PGP SIGNATURE-----
+
+--Signature=_Mon__4_Aug_2008_16_29_24_+1000_05t07bYr4MbY+q/s--
