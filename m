@@ -1,45 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759962AbYHDShm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760084AbYHDSiF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759962AbYHDShm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 14:37:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755584AbYHDShG
+	id S1760084AbYHDSiF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 14:38:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759942AbYHDShg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 14:37:06 -0400
-Received: from ch-smtp02.sth.basefarm.net ([80.76.149.213]:33126 "EHLO
-	ch-smtp02.sth.basefarm.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753287AbYHDShC (ORCPT
+	Mon, 4 Aug 2008 14:37:36 -0400
+Received: from casper.infradead.org ([85.118.1.10]:38429 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759932AbYHDShc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 14:37:02 -0400
-X-Mailer: exmh version 2.7.2 04/02/2003 (gentoo 2.7.2) with nmh-1.2
-To: linux-kernel@vger.kernel.org
-Subject: lirc drivers out of tree forever?
-Mime-Version: 1.0
+	Mon, 4 Aug 2008 14:37:32 -0400
+Date: Mon, 4 Aug 2008 11:34:44 -0700
+From: Greg KH <greg@kroah.com>
+To: Willy Tarreau <w@1wt.eu>
+Cc: oliver.pntr@gmail.com, stable@kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [stable] [RFC, 2.6.26.2-rc1] NFS: Ensure we call
+	nfs_sb_deactive() after releasing the directory inode
+Message-ID: <20080804183444.GB20191@kroah.com>
+References: <ec5c3df63eafa2691665b95e989d7c3c@zipernowsky.hu> <20080802174220.GF615@1wt.eu>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Date: Mon, 04 Aug 2008 20:36:53 +0200
-From: Anders Eriksson <aeriksson@fastmail.fm>
-Message-Id: <20080804183653.235052C400A@tippex.mynet.homeunix.org>
-X-Originating-IP: 83.252.237.76
-X-Scan-Result: No virus found in message 1KQ4vT-0007xu-6W.
-X-Scan-Signature: ch-smtp02.sth.basefarm.net 1KQ4vT-0007xu-6W afdd9382a062218e3e47d812fe8f4d62
+Content-Disposition: inline
+In-Reply-To: <20080802174220.GF615@1wt.eu>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, Aug 02, 2008 at 07:42:20PM +0200, Willy Tarreau wrote:
+> Oliver,
+> 
+> most of your mails are line-wrapped at some locations :
+> 
+> > diff --git a/fs/nfs/unlink.c b/fs/nfs/unlink.c
+> > index 3adf8b2..f089e58 100644
+> > --- a/fs/nfs/unlink.c
+> > +++ b/fs/nfs/unlink.c
+> > @@ -95,10 +95,11 @@ static void nfs_async_unlink_done(struct rpc_task
+> > *task, void *calldata)
+> ^^^^^^^^
+> see here.
+> 
+> You may have to fix your mailer (or use another one).
 
-Being a lirc user and trying to follow kernel stable releases, I asked the 
-lirc folks about their plans for eventual intrgration of the kernel releated 
-parts into the kernel tree.
+{sigh}
 
-http://www.nabble.com/kernel-integration-plans--td17171980.html
+Yes, all of these patches are linewrapped.
 
-The tail end of that thread suggests that there is an active drive to push 
-drivers _out_ of the kernel. Is that really the case, and is it the desired 
-way forward?
+Now, I can either go through and edit them all by hand and fix them up,
+or Oliver can fix his email client to not doing this anymore, saving
+everyone time in the future.
 
-IMHO, anything that calls itself a driver for a piece of hw should be in the
-kernel.
+I choose the latter.
 
-/Anders
+Oliver, consider all of the patches you just send out as dropped.  Can
+you resend the ones that are actually bugfixes, with out being
+linewrapped?
 
+thanks,
 
-
+greg k-h
