@@ -1,48 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759060AbYHDWDe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765324AbYHDWDx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759060AbYHDWDe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 18:03:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757602AbYHDWCx
+	id S1765324AbYHDWDx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 18:03:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764669AbYHDWDH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 18:02:53 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:55079
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1755813AbYHDWCw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 18:02:52 -0400
-Date: Mon, 04 Aug 2008 15:02:49 -0700 (PDT)
-Message-Id: <20080804.150249.71509974.davem@davemloft.net>
-To: tony.luck@intel.com
-Cc: nacc@us.ibm.com, mingo@elte.hu, linux-ia64@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [BISECTION RESULT] sched: revert cpu_clock to
- pre-27ec4407790d075c325e1f4da0a19c56953cce23 state
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <57C9024A16AD2D4C97DC78E552063EA308329110@orsmsx505.amr.corp.intel.com>
-References: <20080804194646.GA17390@us.ibm.com>
-	<57C9024A16AD2D4C97DC78E552063EA308328FB4@orsmsx505.amr.corp.intel.com>
-	<57C9024A16AD2D4C97DC78E552063EA308329110@orsmsx505.amr.corp.intel.com>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Mon, 4 Aug 2008 18:03:07 -0400
+Received: from ra.tuxdriver.com ([70.61.120.52]:4945 "EHLO ra.tuxdriver.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1764647AbYHDWDE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Aug 2008 18:03:04 -0400
+Date: Mon, 4 Aug 2008 17:54:39 -0400
+From: "John W. Linville" <linville@tuxdriver.com>
+To: Marcel Holtmann <marcel@holtmann.org>
+Cc: davem@davemloft.net, linux-wireless@vger.kernel.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: pull request: wireless-2.6 2008-08-04
+Message-ID: <20080804215439.GA9658@tuxdriver.com>
+References: <20080804193753.GA30345@tuxdriver.com> <1217882288.7819.19.camel@californication> <20080804204558.GA5866@tuxdriver.com> <1217886123.7819.23.camel@californication>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1217886123.7819.23.camel@californication>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "Luck, Tony" <tony.luck@intel.com>
-Date: Mon, 4 Aug 2008 15:00:47 -0700
+On Mon, Aug 04, 2008 at 11:42:03PM +0200, Marcel Holtmann wrote:
 
-> > I'd bet resonable sums of money that we are (once again) accessing
-> > per-cpu variables in code before ia64 has a chance to initialize
-> > things so that they can actually work. :-(
+> > > > Luis R. Rodriguez (4):
+> > > >       list.h: Add list_splice_tail() and list_splice_tail_init()
+> > > >       list.h: add list_cut_position()
+> > > 
+> > > have these two changes got reviewed on LKML? I don't see any ACKs for it
+> > > in the commit message.
+> > 
+> > Hmmm...no.  I thought the original patches had been copied to
+> > linux-kernel, but it looks like that is not the case.
+> > 
+> > The original patches are archived here:
+> > 
+> > 	http://marc.info/?l=linux-wireless&m=121783421908441&w=2
+> > 
+> > 	http://marc.info/?l=linux-wireless&m=121783422008445&w=2
+> > 
+> > What problems do you see with them?
 > 
-> I tried this simple hack to check ... per-cpu variables are
-> not usable until cpu_init() sets up the "ar.k3" register on
-> ia64.  So this hack checks to see if it is set before calling
-> cpu_clock():
+> I don't see a problem with these patches, but they should at least be
+> reviewed on LKML once. Changes to core kernel infrastructure should not
+> be merged silently via subsystem trees without any kind of ACKs.
 
-Can you guys on IA64 possibly set ar.k3 simply to zero or to some
-other similar value which cancels out the per-cpu computation?
+Yes, fine.  That wasn't my intent. :-)  The patches were originally
+posted about two weeks ago, too bad that didn't actually go to
+linux-kernel. :-(
 
-That's what sparc64 and other platforms do.
+John
+-- 
+John W. Linville
+linville@tuxdriver.com
