@@ -1,168 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754567AbYHDKEF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754172AbYHDKIT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754567AbYHDKEF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 06:04:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752902AbYHDKDx
+	id S1754172AbYHDKIT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 06:08:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752648AbYHDKIL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 06:03:53 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:36020 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752768AbYHDKDw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 06:03:52 -0400
-Date: Mon, 4 Aug 2008 11:03:47 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-Cc: Dave Johnson <djohnson@sw.starentnetworks.com>,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: cramfs and named-pipe
-Message-ID: <20080804100347.GU28946@ZenIV.linux.org.uk>
-References: <20080804.182143.218269280.nemoto@toshiba-tops.co.jp>
+	Mon, 4 Aug 2008 06:08:11 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:54636 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1752526AbYHDKIL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Aug 2008 06:08:11 -0400
+Message-ID: <4896D467.2070700@cn.fujitsu.com>
+Date: Mon, 04 Aug 2008 18:05:27 +0800
+From: Miao Xie <miaox@cn.fujitsu.com>
+Reply-To: miaox@cn.fujitsu.com
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080804.182143.218269280.nemoto@toshiba-tops.co.jp>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Thomas Gleixner <tglx@linutronix.de>
+CC: Linux-Kernel <linux-kernel@vger.kernel.org>
+Subject: [PATCH] nohz: fix wrong event handler after online an offlined cpu
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 04, 2008 at 06:21:43PM +0900, Atsushi Nemoto wrote:
-> After commit a97c9bf33f4612e2aed6f000f6b1d268b6814f3c (fix cramfs
-> making duplicate entries in inode cache) in kernel 2.6.14, named-pipe
-> on cramfs does not work properly.
-> 
-> It seems the commit make all named-pipe on cramfs share their inode
-> (and named-pipe buffer).  Is this fix correct?
+On the tickless system(CONFIG_NO_HZ=y and CONFIG_HIGH_RES_TIMERS=n), after I
+made an offlined cpu online, I found this cpu's event handler was
+tick_handle_periodic, not tick_nohz_handler.
 
-Eeek...  I'd rather not play these games with directories and devices nodes
-as well.  Rationale for the original patch simply doesn't apply for those.
+After debuging, I found this bug was caused by the wrong tick mode.
+the tick mode is not changed to NOHZ_MODE_INACTIVE when the cpu is offline.
 
-IOW, I think it would be much saner if we did the following: make ..._test()
-refuse to merge inodes with ->i_ino == 1, take inode setup back to
-get_cramfs_inode() and make ->drop_inode() evict ones with ->i_ino == 1
-immediately.  Comments?
+This patch fixes this bug.
 
-Patch below is completely untested; it builds, but that's it.
+Signed-off-by: Miao Xie <miaox@cn.fujitsu.com>
 
-diff --git a/fs/cramfs/inode.c b/fs/cramfs/inode.c
-index 0c3b618..c7722cc 100644
---- a/fs/cramfs/inode.c
-+++ b/fs/cramfs/inode.c
-@@ -43,58 +43,13 @@ static DEFINE_MUTEX(read_mutex);
- static int cramfs_iget5_test(struct inode *inode, void *opaque)
- {
- 	struct cramfs_inode *cramfs_inode = opaque;
--
--	if (inode->i_ino != CRAMINO(cramfs_inode))
--		return 0; /* does not match */
--
--	if (inode->i_ino != 1)
--		return 1;
--
--	/* all empty directories, char, block, pipe, and sock, share inode #1 */
--
--	if ((inode->i_mode != cramfs_inode->mode) ||
--	    (inode->i_gid != cramfs_inode->gid) ||
--	    (inode->i_uid != cramfs_inode->uid))
--		return 0; /* does not match */
--
--	if ((S_ISCHR(inode->i_mode) || S_ISBLK(inode->i_mode)) &&
--	    (inode->i_rdev != old_decode_dev(cramfs_inode->size)))
--		return 0; /* does not match */
--
--	return 1; /* matches */
-+	return inode->i_ino == CRAMINO(cramfs_inode) && inode->i_ino != 1;
- }
- 
- static int cramfs_iget5_set(struct inode *inode, void *opaque)
- {
--	static struct timespec zerotime;
- 	struct cramfs_inode *cramfs_inode = opaque;
--	inode->i_mode = cramfs_inode->mode;
--	inode->i_uid = cramfs_inode->uid;
--	inode->i_size = cramfs_inode->size;
--	inode->i_blocks = (cramfs_inode->size - 1) / 512 + 1;
--	inode->i_gid = cramfs_inode->gid;
--	/* Struct copy intentional */
--	inode->i_mtime = inode->i_atime = inode->i_ctime = zerotime;
- 	inode->i_ino = CRAMINO(cramfs_inode);
--	/* inode->i_nlink is left 1 - arguably wrong for directories,
--	   but it's the best we can do without reading the directory
--           contents.  1 yields the right result in GNU find, even
--	   without -noleaf option. */
--	if (S_ISREG(inode->i_mode)) {
--		inode->i_fop = &generic_ro_fops;
--		inode->i_data.a_ops = &cramfs_aops;
--	} else if (S_ISDIR(inode->i_mode)) {
--		inode->i_op = &cramfs_dir_inode_operations;
--		inode->i_fop = &cramfs_directory_operations;
--	} else if (S_ISLNK(inode->i_mode)) {
--		inode->i_op = &page_symlink_inode_operations;
--		inode->i_data.a_ops = &cramfs_aops;
--	} else {
--		inode->i_size = 0;
--		inode->i_blocks = 0;
--		init_special_inode(inode, inode->i_mode,
--			old_decode_dev(cramfs_inode->size));
--	}
- 	return 0;
- }
- 
-@@ -104,12 +59,48 @@ static struct inode *get_cramfs_inode(struct super_block *sb,
- 	struct inode *inode = iget5_locked(sb, CRAMINO(cramfs_inode),
- 					    cramfs_iget5_test, cramfs_iget5_set,
- 					    cramfs_inode);
-+	static struct timespec zerotime;
+---
+ include/linux/tick.h     |    5 ++++-
+ kernel/time/tick-sched.c |    6 +++++-
+ 2 files changed, 9 insertions(+), 2 deletions(-)
+
+diff --git a/include/linux/tick.h b/include/linux/tick.h
+index d3c0269..8cf8cfe 100644
+--- a/include/linux/tick.h
++++ b/include/linux/tick.h
+@@ -74,10 +74,13 @@ extern struct tick_device *tick_get_device(int cpu);
+ extern int tick_init_highres(void);
+ extern int tick_program_event(ktime_t expires, int force);
+ extern void tick_setup_sched_timer(void);
++# endif
 +
- 	if (inode && (inode->i_state & I_NEW)) {
-+		inode->i_mode = cramfs_inode->mode;
-+		inode->i_uid = cramfs_inode->uid;
-+		inode->i_size = cramfs_inode->size;
-+		inode->i_blocks = (cramfs_inode->size - 1) / 512 + 1;
-+		inode->i_gid = cramfs_inode->gid;
-+		/* Struct copy intentional */
-+		inode->i_mtime = inode->i_atime = inode->i_ctime = zerotime;
-+		/* inode->i_nlink is left 1 - arguably wrong for directories,
-+		   but it's the best we can do without reading the directory
-+	           contents.  1 yields the right result in GNU find, even
-+		   without -noleaf option. */
-+		if (S_ISREG(inode->i_mode)) {
-+			inode->i_fop = &generic_ro_fops;
-+			inode->i_data.a_ops = &cramfs_aops;
-+		} else if (S_ISDIR(inode->i_mode)) {
-+			inode->i_op = &cramfs_dir_inode_operations;
-+			inode->i_fop = &cramfs_directory_operations;
-+		} else if (S_ISLNK(inode->i_mode)) {
-+			inode->i_op = &page_symlink_inode_operations;
-+			inode->i_data.a_ops = &cramfs_aops;
-+		} else {
-+			inode->i_size = 0;
-+			inode->i_blocks = 0;
-+			init_special_inode(inode, inode->i_mode,
-+				old_decode_dev(cramfs_inode->size));
-+		}
- 		unlock_new_inode(inode);
- 	}
- 	return inode;
++# if defined CONFIG_NO_HZ || defined CONFIG_HIGH_RES_TIMERS
+ extern void tick_cancel_sched_timer(int cpu);
+ # else
+ static inline void tick_cancel_sched_timer(int cpu) { }
+-# endif /* HIGHRES */
++# endif
+ 
+ # ifdef CONFIG_GENERIC_CLOCKEVENTS_BROADCAST
+ extern struct tick_device *tick_get_broadcast_device(void);
+diff --git a/kernel/time/tick-sched.c b/kernel/time/tick-sched.c
+index 825b4c0..661a392 100644
+--- a/kernel/time/tick-sched.c
++++ b/kernel/time/tick-sched.c
+@@ -645,17 +645,21 @@ void tick_setup_sched_timer(void)
+ 		ts->nohz_mode = NOHZ_MODE_HIGHRES;
+ #endif
  }
++#endif /* HIGH_RES_TIMERS */
  
-+static void cramfs_drop_inode(struct inode *inode)
-+{
-+	if (inode->i_ino == 1)
-+		generic_delete_inode(inode);
-+	else
-+		generic_drop_inode(inode);
-+}
-+
- /*
-  * We have our own block cache: don't fill up the buffer cache
-  * with the rom-image, because the way the filesystem is set
-@@ -534,6 +525,7 @@ static const struct super_operations cramfs_ops = {
- 	.put_super	= cramfs_put_super,
- 	.remount_fs	= cramfs_remount,
- 	.statfs		= cramfs_statfs,
-+	.drop_inode	= cramfs_drop_inode,
- };
++#if defined CONFIG_NO_HZ || defined CONFIG_HIGH_RES_TIMERS 
+ void tick_cancel_sched_timer(int cpu)
+ {
+ 	struct tick_sched *ts = &per_cpu(tick_cpu_sched, cpu);
  
- static int cramfs_get_sb(struct file_system_type *fs_type,
++# ifdef CONFIG_HIGH_RES_TIMERS
+ 	if (ts->sched_timer.base)
+ 		hrtimer_cancel(&ts->sched_timer);
++# endif
+ 
+ 	ts->nohz_mode = NOHZ_MODE_INACTIVE;
+ }
+-#endif /* HIGH_RES_TIMERS */
++#endif
+ 
+ /**
+  * Async notification about clocksource changes
+-- 
+1.5.4.rc3
+
