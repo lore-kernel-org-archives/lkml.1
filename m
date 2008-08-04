@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754889AbYHDP5W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756711AbYHDP5g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754889AbYHDP5W (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 11:57:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753347AbYHDP5O
+	id S1756711AbYHDP5g (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 11:57:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753505AbYHDP5O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Mon, 4 Aug 2008 11:57:14 -0400
-Received: from x346.tv-sign.ru ([89.108.83.215]:40723 "EHLO mail.screens.ru"
+Received: from x346.tv-sign.ru ([89.108.83.215]:40731 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752998AbYHDP5N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1753152AbYHDP5N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 4 Aug 2008 11:57:13 -0400
-Date: Mon, 4 Aug 2008 20:01:03 +0400
+Date: Mon, 4 Aug 2008 20:01:06 +0400
 From: Oleg Nesterov <oleg@tv-sign.ru>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Mark McLoughlin <markmc@redhat.com>, Roland McGrath <roland@redhat.com>,
        Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
-Subject: [PATCH 0/4] posix-timers: sys_timer_create: fix and cleanups
-Message-ID: <20080804160103.GA10515@tv-sign.ru>
+Subject: [PATCH 4/4] posix-timers: sys_timer_create: cleanup the error handling
+Message-ID: <20080804160106.GA10527@tv-sign.ru>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -24,21 +24,60 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On top of
+Cleanup.
 
-	[PATCH 1/3] posix-timers: don't switch to ->group_leader if ->it_process dies
-	http://marc.info/?l=linux-kernel&m=121778560719812
+- sys_timer_create() is big and complicated. The code above the "out:"
+  label relies on the fact that "error" must be == 0. This is not very
+  robust, make the code more explicit. Remove the unneeded initialization
+  of error.
 
-	[PATCH 2/3] posix-timers: always do get_task_struct(timer->it_process)
-	http://marc.info/?l=linux-kernel&m=121778560719816
+- If idr_get_new() succeeds (as it normally should), we check the returned
+  value twice. Move the "-EAGAIN" check under "if (error)".
 
+Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
 
-checkpatch.pl criticizes the first patch (line over 80 characters), but
-that line was just moved by this patch. Not sure what should be done in
-such a case, but this line is killed by the next patch anyway.
-
-I don't know how to test these changes. Fortunately they are rather simple,
-and the first patch obviously fixes the bug.
-
-Oleg.
+--- 26-rc2/kernel/posix-timers.c~7_ERROR	2008-08-04 19:14:16.000000000 +0400
++++ 26-rc2/kernel/posix-timers.c	2008-08-04 19:37:07.000000000 +0400
+@@ -454,7 +454,7 @@ sys_timer_create(const clockid_t which_c
+ 		 struct sigevent __user *timer_event_spec,
+ 		 timer_t __user * created_timer_id)
+ {
+-	int error = 0;
++	int error;
+ 	struct k_itimer *new_timer;
+ 	int new_timer_id;
+ 	struct task_struct *process;
+@@ -478,9 +478,9 @@ sys_timer_create(const clockid_t which_c
+ 	error = idr_get_new(&posix_timers_id, (void *) new_timer,
+ 			    &new_timer_id);
+ 	spin_unlock_irq(&idr_lock);
+-	if (error == -EAGAIN)
+-		goto retry;
+-	else if (error) {
++	if (error) {
++		if (error == -EAGAIN)
++			goto retry;
+ 		/*
+ 		 * Weird looking, but we return EAGAIN if the IDR is
+ 		 * full (proper POSIX return value for this)
+@@ -541,6 +541,8 @@ sys_timer_create(const clockid_t which_c
+ 	new_timer->it_process = process;
+ 	list_add(&new_timer->list, &current->signal->posix_timers);
+ 	spin_unlock_irq(&current->sighand->siglock);
++
++	return 0;
+  	/*
+ 	 * In the case of the timer belonging to another task, after
+ 	 * the task is unlocked, the timer is owned by the other task
+@@ -548,9 +550,7 @@ sys_timer_create(const clockid_t which_c
+ 	 * new_timer after the unlock call.
+ 	 */
+ out:
+-	if (error)
+-		release_posix_timer(new_timer, it_id_set);
+-
++	release_posix_timer(new_timer, it_id_set);
+ 	return error;
+ }
+ 
 
