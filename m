@@ -1,74 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762796AbYHDTzy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762874AbYHDT4S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762796AbYHDTzy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 15:55:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759294AbYHDTzN
+	id S1762874AbYHDT4S (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 15:56:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759760AbYHDTzq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 15:55:13 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:60710 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755187AbYHDTzL (ORCPT
+	Mon, 4 Aug 2008 15:55:46 -0400
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:37172 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753271AbYHDTzp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 15:55:11 -0400
-Date: Mon, 4 Aug 2008 12:54:09 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Karsten Keil <kkeil@suse.de>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+	Mon, 4 Aug 2008 15:55:45 -0400
+Date: Mon, 4 Aug 2008 20:55:44 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.site
+To: Keith Packard <keithp@keithp.com>
+cc: Nick Piggin <nickpiggin@yahoo.com.au>,
+       Christoph Hellwig <hch@infradead.org>, Eric Anholt <eric@anholt.net>,
        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/7] Add mISDN driver
-Message-Id: <20080804125409.6a40ad2d.randy.dunlap@oracle.com>
-In-Reply-To: <20080727010837.GA3415@pingi.kke.suse.de>
-References: <20080727010837.GA3415@pingi.kke.suse.de>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Subject: Re: [PATCH] Export shmem_file_setup and shmem_getpage for DRM-GEM
+In-Reply-To: <1217877645.24714.87.camel@koto.keithp.com>
+Message-ID: <Pine.LNX.4.64.0808042055240.17041@blonde.site>
+References: <1217573919-7496-1-git-send-email-eric@anholt.net> 
+ <200808041902.23970.nickpiggin@yahoo.com.au>  <1217845590.24714.45.camel@koto.keithp.com>
+  <200808042043.46710.nickpiggin@yahoo.com.au>  <1217850352.24714.66.camel@koto.keithp.com>
+  <Pine.LNX.4.64.0808041720500.25617@blonde.site>  <1217870748.24714.79.camel@koto.keithp.com>
+  <Pine.LNX.4.64.0808041855050.5717@blonde.site> <1217877645.24714.87.camel@koto.keithp.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 27 Jul 2008 03:08:37 +0200 Karsten Keil wrote:
-
-> Please pull this and the following patches from 
-> git://git.kernel.org/pub/scm/linux/kernel/git/kkeil/ISDN-2.6.git master
+On Mon, 4 Aug 2008, Keith Packard wrote:
+> On Mon, 2008-08-04 at 19:39 +0100, Hugh Dickins wrote:
+> > For how long are these objects' pages pinned in memory like this?
 > 
-> mISDN is a new modular ISDN driver, in the long term it should replace
-> the old I4L driver architecture for passiv ISDN cards.
+> Forever? The only reason an object would get unpinned would be on
+> eviction from the GTT, and objects will only be evicted if we fill the
+> aperture with other stuff. When we add a register_shrinker callback,
+> we'll also unpin pages at that point.
+> 
+> A busy system should have the GTT entirely full, and that will be
+> somewhere between 256MB and 1GB.
 
+Okay, thanks for the warning.  It sounds like the shrinker will be
+important, but we'll also need to mark those pages as unevictable
+while they're unshrunk.  (Usually when drivers grab a large number
+of pages, they're not on any LRU to begin with: you're being nice
+by choosing swappable LRU pages - in the tmpfs case - but enough
+to upset the balance while they're not swappable.)  Offhand I can't
+say what will be the appropriate way to do that, it's something we
+need to revisit later (from your point of view it should amount to
+one function call or flag set somewhere, not any grand redesign).
 
-> diff --git a/Documentation/isdn/README.mISDN b/Documentation/isdn/README.mISDN
-> new file mode 100644
-> index 0000000..cd8bf92
-> --- /dev/null
-> +++ b/Documentation/isdn/README.mISDN
-> @@ -0,0 +1,6 @@
-> +mISDN is a new modular ISDN driver, in the long term it should replace
-
-   mISDN is a new modular ISDN driver. In the long term, it should replace
-
-> +the old I4L driver architecture for passiv ISDN cards.
-
-                                       passive
-
-> +It was designed to allow a broad range of applications and interfaces
-> +but only have the basic function in kernel, the interface to the user
-
-                                    in kernel. The interface
-
-> +space is based on sockets with a own address family AF_ISDN.
-
-                                  its own address family AF_ISDN.
-
-
-
-Sorry about the delayed response.
-
----
-~Randy
-Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
-http://linuxplumbersconf.org/
+Hugh
