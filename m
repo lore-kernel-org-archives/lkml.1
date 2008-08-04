@@ -1,78 +1,172 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765422AbYHDVth@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765720AbYHDVtz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765422AbYHDVth (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 17:49:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765478AbYHDVjc
+	id S1765720AbYHDVtz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 17:49:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1770320AbYHDVjk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 17:39:32 -0400
-Received: from mx2.suse.de ([195.135.220.15]:50208 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1770032AbYHDVjb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 17:39:31 -0400
-Date: Mon, 4 Aug 2008 14:30:31 -0700
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
-       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
-       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Jiri Kosina <jkosina@suse.cz>,
-       Dmitry Torokhov <dtor@mail.ru>
-Subject: [patch 16/25] Input: i8042 - add Acer Aspire 1360 to nomux
-	blacklist
-Message-ID: <20080804213031.GP8014@suse.de>
-References: <20080804203506.816201392@mini.kroah.org>
-MIME-Version: 1.0
+	Mon, 4 Aug 2008 17:39:40 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:56893 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1770238AbYHDVji (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Aug 2008 17:39:38 -0400
+Date: Tue, 5 Aug 2008 00:39:36 +0300 (EEST)
+From: Pekka J Enberg <penberg@cs.helsinki.fi>
+To: linux-kernel@vger.kernel.org, linux-mm@kvack.org
+cc: matthew@wil.cx, akpm@linux-foundation.org, cl@linux-foundation.org
+Subject: [RFC/PATCH] SLUB: dynamic per-cache MIN_PARTIAL
+Message-ID: <Pine.LNX.4.64.0808050037400.26319@sbz-30.cs.Helsinki.FI>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="input-i8042-add-acer-aspire-1360-to-nomux-blacklist.patch"
-In-Reply-To: <20080804212725.GA7944@suse.de>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2.6.26-stable review patch.  If anyone has any objections, please let us
-know.
+From: Pekka Enberg <penberg@cs.helsinki.fi>
 
-------------------
+This patch changes the static MIN_PARTIAL to a dynamic per-cache ->min_partial
+value that is calculated from object size. The bigger the object size, the more
+pages we keep on the partial list.
 
-From: Jiri Kosina <jkosina@suse.cz>
+I tested SLAB, SLUB, and SLUB with this patch on Jens Axboe's 'netio' example
+script of the fio benchmarking tool. The script stresses the networking
+subsystem which should also give a fairly good beating of kmalloc() et al.
 
-commit 0376bce7b0659fe1e80d045860087072583ab93f upstream.
+To run the test yourself, first clone the fio repository:
 
-Acer Aspire 1360 needs to be added to nomux blacklist, otherwise its
-touchpad misbehaves.
+  git clone git://git.kernel.dk/fio.git
 
-Reported-by: Clark Tompsett <clarkt@cnsp.com>
-Signed-off-by: Jiri Kosina <jkosina@suse.cz>
-Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+and then run the following command n times on your machine:
 
+  time ./fio examples/netio
+
+The results on my 2-way 64-bit x86 machine are as follows:
+
+  [ the minimum, maximum, and average are captured from 50 individual runs ]
+
+                 real time (seconds)
+                 min      max      avg      sd
+  SLAB           22.76    23.38    22.98    0.17
+  SLUB           22.80    25.78    23.46    0.72
+  SLUB (dynamic) 22.74    23.54    23.00    0.20    
+
+                 sys time (seconds)
+                 min      max      avg      sd
+  SLAB           6.90     8.28     7.70     0.28
+  SLUB           7.42     16.95    8.89     2.28
+  SLUB (dynamic) 7.17     8.64     7.73     0.29    
+
+                 user time (seconds)
+                 min      max      avg      sd
+  SLAB           36.89    38.11    37.50    0.29
+  SLUB           30.85    37.99    37.06    1.67
+  SLUB (dynamic) 36.75    38.07    37.59    0.32    
+
+As you can see from the above numbers, this patch brings SLUB to the same level
+as SLAB for this particular workload fixing a ~2% regression. I'd expect this
+change to help similar workloads that allocate a lot of objects that are close
+to the size of a page.
+
+Cc: Matthew Wilcox <matthew@wil.cx>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Christoph Lameter <cl@linux-foundation.org>
+Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
 ---
- drivers/input/serio/i8042-x86ia64io.h |    7 +++++++
- 1 file changed, 7 insertions(+)
+ include/linux/slub_def.h |    1 +
+ mm/slub.c                |   26 +++++++++++++++++++-------
+ 2 files changed, 20 insertions(+), 7 deletions(-)
 
---- a/drivers/input/serio/i8042-x86ia64io.h
-+++ b/drivers/input/serio/i8042-x86ia64io.h
-@@ -291,6 +291,13 @@ static struct dmi_system_id __initdata i
- 			DMI_MATCH(DMI_PRODUCT_VERSION, "3000 N100"),
- 		},
- 	},
-+	{
-+		.ident = "Acer Aspire 1360",
-+		.matches = {
-+			DMI_MATCH(DMI_SYS_VENDOR, "Acer"),
-+			DMI_MATCH(DMI_PRODUCT_NAME, "Aspire 1360"),
-+		},
-+	},
- 	{ }
- };
+Index: slab-2.6/include/linux/slub_def.h
+===================================================================
+--- slab-2.6.orig/include/linux/slub_def.h	2008-08-05 00:35:42.000000000 +0300
++++ slab-2.6/include/linux/slub_def.h	2008-08-05 00:36:21.000000000 +0300
+@@ -46,6 +46,7 @@
+ struct kmem_cache_node {
+ 	spinlock_t list_lock;	/* Protect partial list and nr_partial */
+ 	unsigned long nr_partial;
++	unsigned long min_partial;
+ 	struct list_head partial;
+ #ifdef CONFIG_SLUB_DEBUG
+ 	atomic_long_t nr_slabs;
+Index: slab-2.6/mm/slub.c
+===================================================================
+--- slab-2.6.orig/mm/slub.c	2008-08-05 00:35:42.000000000 +0300
++++ slab-2.6/mm/slub.c	2008-08-05 00:36:27.000000000 +0300
+@@ -1329,7 +1329,7 @@
+ 		n = get_node(s, zone_to_nid(zone));
  
-
--- 
+ 		if (n && cpuset_zone_allowed_hardwall(zone, flags) &&
+-				n->nr_partial > MIN_PARTIAL) {
++				n->nr_partial > n->min_partial) {
+ 			page = get_partial_node(n);
+ 			if (page)
+ 				return page;
+@@ -1381,7 +1381,7 @@
+ 		slab_unlock(page);
+ 	} else {
+ 		stat(c, DEACTIVATE_EMPTY);
+-		if (n->nr_partial < MIN_PARTIAL) {
++		if (n->nr_partial < n->min_partial) {
+ 			/*
+ 			 * Adding an empty slab to the partial slabs in order
+ 			 * to avoid page allocator overhead. This slab needs
+@@ -1913,9 +1913,21 @@
+ #endif
+ }
+ 
+-static void init_kmem_cache_node(struct kmem_cache_node *n)
++static void
++init_kmem_cache_node(struct kmem_cache_node *n, struct kmem_cache *s)
+ {
+ 	n->nr_partial = 0;
++
++	/*
++	 * The larger the object size is, the more pages we want on the partial
++	 * list to avoid pounding the page allocator excessively.
++	 */
++	n->min_partial = ilog2(s->size);
++	if (n->min_partial < MIN_PARTIAL)
++		n->min_partial = MIN_PARTIAL;
++	else if (n->min_partial > MAX_PARTIAL)
++		n->min_partial = MAX_PARTIAL;
++
+ 	spin_lock_init(&n->list_lock);
+ 	INIT_LIST_HEAD(&n->partial);
+ #ifdef CONFIG_SLUB_DEBUG
+@@ -2087,7 +2099,7 @@
+ 	init_object(kmalloc_caches, n, 1);
+ 	init_tracking(kmalloc_caches, n);
+ #endif
+-	init_kmem_cache_node(n);
++	init_kmem_cache_node(n, kmalloc_caches);
+ 	inc_slabs_node(kmalloc_caches, node, page->objects);
+ 
+ 	/*
+@@ -2144,7 +2156,7 @@
+ 
+ 		}
+ 		s->node[node] = n;
+-		init_kmem_cache_node(n);
++		init_kmem_cache_node(n, s);
+ 	}
+ 	return 1;
+ }
+@@ -2155,7 +2167,7 @@
+ 
+ static int init_kmem_cache_nodes(struct kmem_cache *s, gfp_t gfpflags)
+ {
+-	init_kmem_cache_node(&s->local_node);
++	init_kmem_cache_node(&s->local_node, s);
+ 	return 1;
+ }
+ #endif
+@@ -2889,7 +2901,7 @@
+ 			ret = -ENOMEM;
+ 			goto out;
+ 		}
+-		init_kmem_cache_node(n);
++		init_kmem_cache_node(n, s);
+ 		s->node[nid] = n;
+ 	}
+ out:
