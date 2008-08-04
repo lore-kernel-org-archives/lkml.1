@@ -1,64 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754623AbYHDMr5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755352AbYHDMs0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754623AbYHDMr5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 08:47:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752451AbYHDMrt
+	id S1755352AbYHDMs0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 08:48:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752597AbYHDMsS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 08:47:49 -0400
-Received: from ns1.q-leap.de ([153.94.51.193]:55739 "EHLO mail.q-leap.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752181AbYHDMrs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 08:47:48 -0400
-From: Bernd Schubert <bs@q-leap.de>
-To: linux-kernel@vger.kernel.org
-Subject: sysrq+t doesn't work for some threads
-Date: Mon, 4 Aug 2008 14:47:46 +0200
-User-Agent: KMail/1.9.9
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200808041447.47172.bs@q-leap.de>
+	Mon, 4 Aug 2008 08:48:18 -0400
+Received: from mail.free-electrons.com ([88.191.46.45]:43908 "EHLO
+	mail.free-electrons.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752451AbYHDMsQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Aug 2008 08:48:16 -0400
+Date: Mon, 4 Aug 2008 14:48:07 +0200
+From: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org,
+       michael@free-electrons.com, Matt Mackall <mpm@selenic.com>,
+       netdev@vger.kernel.org, davem@davemloft.net, akpm@linux-foundation.org
+Subject: Re: [patch 4/4] Configure out IGMP support
+Message-ID: <20080804144807.6b2374d9@surf>
+In-Reply-To: <1217619715.3454.488.camel@pmac.infradead.org>
+References: <20080731092703.661994657@free-electrons.com>
+	<20080731093221.565015353@free-electrons.com>
+	<1217619715.3454.488.camel@pmac.infradead.org>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.9; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+Le Fri, 01 Aug 2008 20:41:55 +0100,
+David Woodhouse <dwmw2@infradead.org> a écrit :
 
-I need to debug a lustre problem, where lustre threads take 100% cpu time and 
-also have a memory leak. The problem is, that sysrq+t doesn't work for these 
-threads. It nicely shows all stack traces, just the trouble some threads 
-won't show their traces:
+> The config option probably lives in net/Kconfig, not init/Kconfig.
 
-[69338.858825] ll_mdt_36     R  running task       0 21679      2 (L-TLB)
-[69338.865689] ll_mdt_37     S 0000000000000000     0 21680      2 (L-TLB)
-[69338.872676]  ffff8102e6d01dd0 0000000000000046 ffffffff88160325 
-00000000ffffffed
-[69338.880544]  0000000000000000 ffffffff8815e016 000000000000000a 
-ffff810322ef4ea0
-[69338.888318]  ffff81031e7477b0 00003f0797609cef 000000000003434e 
-ffff810322ef5050
-[69338.895957] Call Trace:
-[69338.898787]  [<ffffffff8828cab5>] :ptlrpc:ptlrpc_main+0xa55/0x1ce0
-[69338.905297]  [<ffffffff8020a2f8>] child_rip+0xa/0x12
+Yes, it could. But AFAIK, until now, all CONFIG_EMBEDDED-related
+options have been put in init/Kconfig. But if it's preferred, I can of
+course change the patch to move the config option to net/Kconfig.
 
+> And please could you make it clear how this interacts with
+> IP_MULTICAST?
+> 
+> We already have a CONFIG_IP_MULTICAST option, for which the help text
+> says "For more people, it's safe to say N'. And I think it defaults to
+> that too. What more does CONFIG_IGMP remove? It's not made clear by
+> the help text.
 
-But I really need to have the trace of ll_mdt_36, which is one of the 
-troublesome threads. Might this be a problem of the x86_64-mm-unwinder.patch 
-we always apply since it provides much better traces?
-This is with 2.6.22.19.
+The interaction of IGMP support with CONFIG_IP_MULTICAST is fairly
+unclear to me.
 
-Any help would be appreciated.
+A large portion of igmp.c is already under #ifdef CONFIG_IP_MULTICAST:
+all the igmp_*() functions, amongst which is igmp_rcv(), referenced in
+igmp_protocol in net/ipv4/af_inet.c, which is compiled-out
+when !CONFIG_IP_MULTICAST.
 
+All the proc-related code at the end of the file is only conditionnaly
+compiled on CONFIG_PROC_FS, but seems to in fact be only used if both
+CONFIG_IP_MULTICAST and CONFIG_PROC_FS are selected:
+igmp_mc_proc_init() in net/ipv4/ip_output.c is only called when
+CONFIG_IP_MULTICAST and CONFIG_PROC_FS are selected.
 
-Thanks,
-Bernd
+Besides that, it's unclear to me why the ip_mc_*() functions are useful
+when !CONFIG_IP_MULTICAST, but I'm probably missing something. They are
+used to implement setsockopt-operations related to multicast, hooks for
+the routing code to handle multicast-related traffic, etc.
 
-PS: Going to apply kdb now, maybe I get traces when I stop the system with 
-kdb.
+Sincerly,
 
-
+Thomas
 -- 
-Bernd Schubert
-Q-Leap Networks GmbH
+Thomas Petazzoni, Free Electrons
+Kernel, drivers and embedded Linux development,
+consulting, training and support.
+http://free-electrons.com
