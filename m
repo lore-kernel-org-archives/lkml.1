@@ -1,116 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759350AbYHDCOm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759211AbYHDCUV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759350AbYHDCOm (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Aug 2008 22:14:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754102AbYHDCOe
+	id S1759211AbYHDCUV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Aug 2008 22:20:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753861AbYHDCUH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Aug 2008 22:14:34 -0400
-Received: from ipmail01.adl6.internode.on.net ([203.16.214.146]:1148 "EHLO
-	ipmail01.adl6.internode.on.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753931AbYHDCOd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Aug 2008 22:14:33 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AkwMAJsBlkh5LBjh/2dsb2JhbACKZKMn
-X-IronPort-AV: E=Sophos;i="4.31,302,1215354600"; 
-   d="scan'208";a="163519627"
-Date: Mon, 4 Aug 2008 12:14:26 +1000
-From: Dave Chinner <david@fromorbit.com>
-To: "J. Bruce Fields" <bfields@fieldses.org>
-Cc: Neil Brown <neilb@suse.de>, Michael Shuey <shuey@purdue.edu>,
-       Shehjar Tikoo <shehjart@cse.unsw.edu.au>, linux-kernel@vger.kernel.org,
-       linux-nfs@vger.kernel.org, rees@citi.umich.edu, aglo@citi.umich.edu
-Subject: Re: high latency NFS
-Message-ID: <20080804021426.GF6119@disturbed>
-Mail-Followup-To: "J. Bruce Fields" <bfields@fieldses.org>,
-	Neil Brown <neilb@suse.de>, Michael Shuey <shuey@purdue.edu>,
-	Shehjar Tikoo <shehjart@cse.unsw.edu.au>,
-	linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org,
-	rees@citi.umich.edu, aglo@citi.umich.edu
-References: <200807241311.31457.shuey@purdue.edu> <20080730192110.GA17061@fieldses.org> <4890DFC7.3020309@cse.unsw.edu.au> <200807302235.50068.shuey@purdue.edu> <20080731031512.GA26203@fieldses.org> <18577.25513.494821.481623@notabene.brown> <20080801072320.GE6201@disturbed> <20080801191559.GI7764@fieldses.org> <20080804003206.GB6119@disturbed> <20080804011158.GA8066@fieldses.org>
+	Sun, 3 Aug 2008 22:20:07 -0400
+Received: from hera.kernel.org ([140.211.167.34]:58097 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753310AbYHDCUG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 Aug 2008 22:20:06 -0400
+Message-ID: <48966728.5080901@kernel.org>
+Date: Mon, 04 Aug 2008 11:19:20 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080804011158.GA8066@fieldses.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Juergen Kreileder <jk@blackdown.de>
+CC: Robert Hancock <hancockr@shaw.ca>, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org
+Subject: Re: SW-IOMMU / ata_piix errors with 2.6.27-rc1
+References: <fa.64b92XSd5HpCdpOYcDENnJSZJyw@ifi.uio.no> <4896157A.2020907@shaw.ca> <4896500E.2040304@blackdown.de>
+In-Reply-To: <4896500E.2040304@blackdown.de>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 04 Aug 2008 02:19:56 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Aug 03, 2008 at 09:11:58PM -0400, J. Bruce Fields wrote:
-> On Mon, Aug 04, 2008 at 10:32:06AM +1000, Dave Chinner wrote:
-> > On Fri, Aug 01, 2008 at 03:15:59PM -0400, J. Bruce Fields wrote:
-> > > On Fri, Aug 01, 2008 at 05:23:20PM +1000, Dave Chinner wrote:
-> > > > On Thu, Jul 31, 2008 at 05:03:05PM +1000, Neil Brown wrote:
-> > > > > You might want to track the max length of the request queue too and
-> > > > > start more threads if the queue is long, to allow a quick ramp-up.
-> > > > 
-> > > > Right, but even request queue depth is not a good indicator. You
-> > > > need to leep track of how many NFSDs are actually doing useful
-> > > > work. That is, if you've got an NFSD on the CPU that is hitting
-> > > > the cache and not blocking, you don't need more NFSDs to handle
-> > > > that load because they can't do any more work than the NFSD
-> > > > that is currently running is. 
-> > > > 
-> > > > i.e. take the solution that Greg banks used for the CPU scheduler
-> > > > overload issue (limiting the number of nfsds woken but not yet on
-> > > > the CPU),
-> > > 
-> > > I don't remember that, or wasn't watching when it happened.... Do you
-> > > have a pointer?
-> > 
-> > Ah, I thought that had been sent to mainline because it was
-> > mentioned in his LCA talk at the start of the year. Slides
-> > 65-67 here:
-> > 
-> > http://mirror.linux.org.au/pub/linux.conf.au/2007/video/talks/41.pdf
+Juergen Kreileder wrote:
+> Robert Hancock wrote:
+>> Juergen Kreileder wrote:
+>>> Hi,
+>>>
+>>> I get lots of errors like this with 2.6.27-rc1 on my
+>>> Macbook Pro (3rd generation), 2.6.26 seems to work fine:
+>>>
+>>> [  907.524509] DMA: Out of SW-IOMMU space for 45056 bytes at device 0000:00:1f.2
+>>> [  907.524783] ata3.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x0
+>>> [  907.524796] ata3.00: cmd 35/00:50:08:91:5c/00:01:0f:00:00/e0 tag 0 dma 172032 out
+>>> [  907.524798]          res 50/00:00:ff:90:5c/00:00:0f:00:00/ef Emask 0x40 (internal error)
+>>> [  907.524805] ata3.00: status: { DRDY }
+>>> [  907.646590] ata3.00: configured for UDMA/133
+>>> [  907.646624] ata3: EH complete
 > 
-> OK, so to summarize: when the rate of incoming rpc's is very high (and,
-> I guess, when we're serving everything out of cache and don't have IO
-> wait), all the nfsd threads will stay runable all the time.  That keeps
-> userspace processes from running (possibly for "minutes").  And that's a
-> problem even on a server dedicated only to nfs, since it affects portmap
-> and rpc.mountd.
+>>>
+>>> Any suggestions?
+>> You can try increasing the swiotlb size by booting with swiotlb=65536 
+>> (for 128MB) or swiotlb=131072 (for 256MB), and see if that makes the 
+>> problem go away.. It's unclear why you'd be running out of SWIOTLB space 
+>> now, though, if 2.6.26 worked fine..
+> 
+> Still happening, although 256M make it a bit harder to trigger.
 
-In a nutshell.
+Hmm... sounds like mapping is leaking.  Eh... iommu leak debug seems to
+support only AMD GART IOMMU.  How long does it take to reproduce the
+bug?  Once it happens, it never recovers, right?  Does the problem
+happen with minimal configuration w/ only libata enabled (no network, no
+sound, no usb...)?
 
-> The solution is given just as "limit the # of nfsd's woken but not yet
-> on CPU."  It'd be interesting to see more details.
-
-Simple counters, IIRC (memory hazy so it might be a bit different).
-Basically, when we queue a request we check a wakeup counter. If
-the wakeup counter is less than a certain threshold (e.g. 5) we
-issue a wakeup to get another NFSD running. When the NFSD first
-runs and dequeues a request, it then decrements the wakeup counter,
-effectively marking that NFSD as busy doing work. IIRC a small
-threshold was necessary to ensure we always had enough NFSDs ready
-to run if there was some I/O going on (i.e. a mixture of blocking
-and non-blocking RPCs).
-
-i.e. we need to track the wakeup-to-run latency to prevent waking too
-many NFSDs and loading the run queue unnecessarily.
-
-> Off hand, this seems like it should be at least partly the scheduler's
-> job.
-
-Partly, yes, in that the scheduler overhead shouldn't increase when we
-do this. However, from an efficiency point of view, if we are blindly
-waking NFSDs when it is not necessary then (IMO) we've got an NFSD
-problem....
-
-> E.g. could we tell it to schedule all the nfsd threads as a group?
-> I suppose the disadvantage to that is that we'd lose information about
-> how many threads are actually needed, hence lose the chance to reap
-> unneeded threads?
-
-I don't know enough about how the group scheduling works to be able
-to comment in detail. In theory it sounds like it would prevent
-the starvation problems, but if it prevents implementation of
-dynamic NFSD pools then I don't think it's a good idea....
-
-Cheers,
-
-Dave.
 -- 
-Dave Chinner
-david@fromorbit.com
+tejun
