@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765656AbYHDVhj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764361AbYHDViG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765656AbYHDVhj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 17:37:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765439AbYHDVf6
+	id S1764361AbYHDViG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 17:38:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765493AbYHDVgY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 17:35:58 -0400
-Received: from mx2.suse.de ([195.135.220.15]:49935 "EHLO mx2.suse.de"
+	Mon, 4 Aug 2008 17:36:24 -0400
+Received: from cantor.suse.de ([195.135.220.2]:54667 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762434AbYHDVf4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 17:35:56 -0400
-Date: Mon, 4 Aug 2008 14:29:49 -0700
+	id S1765477AbYHDVgU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Aug 2008 17:36:20 -0400
+Date: Mon, 4 Aug 2008 14:30:13 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org,
-       Neil Brown <neilb@suse.de>
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -23,13 +23,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Oliver Pinter <oliver.pntr@gmail.com>
-Subject: [patch 07/25] Close race in md_probe
-Message-ID: <20080804212949.GG8014@suse.de>
+       alan@lxorguk.ukuu.org.uk, Ingo Molnar <mingo@elte.hu>,
+       Oliver Pinter <oliver.pntr@gmail.com>,
+       Masami Hiramatsu <mhiramat@redhat.com>
+Subject: [patch 08/25] Kprobe smoke test lockdep warning
+Message-ID: <20080804213013.GH8014@suse.de>
 References: <20080804203506.816201392@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="close-race-in-md_probe.patch"
+Content-Disposition: inline; filename="kprobe-smoke-test-lockdep-warning.patch"
 In-Reply-To: <20080804212725.GA7944@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -42,39 +44,117 @@ know.
 
 ------------------
 
-From: Neil Brown <neilb@suse.de>
+From: Peter Zijlstra <peterz@infradead.org>
 
-[ Upstream commit f48ed538386cb41559282d989354e8f5d442d71c ]
+[ Upstream commit d54191b85e294c46f05a2249b1f55ae54930bcc7 ]
 
-There is a possible race in md_probe.  If two threads call md_probe
-for the same device, then one could exit (having checked that
-->gendisk exists) before the other has called kobject_init_and_add,
-thus returning an incomplete kobj which will cause problems when
-we try to add children to it.
+On Mon, 2008-04-21 at 18:54 -0400, Masami Hiramatsu wrote:
+> Thank you for reporting.
+>
+> Actually, kprobes tries to fixup thread's flags in post_kprobe_handler
+> (which is called from kprobe_exceptions_notify) by
+> trace_hardirqs_fixup_flags(pt_regs->flags). However, even the irq flag
+> is set in pt_regs->flags, true hardirq is still off until returning
+> from do_debug. Thus, lockdep assumes that hardirq is off without
+annotation.
+>
+> IMHO, one possible solution is that fixing hardirq flags right after
+> notify_die in do_debug instead of in post_kprobe_handler.
 
-So extend the range of protection of disks_mutex slightly to
-avoid this possibility.
+My reply to BZ 10489:
 
-Signed-off-by: Neil Brown <neilb@suse.de>
+> [    2.707509] Kprobe smoke test started
+> [    2.709300] ------------[ cut here ]------------
+> [    2.709420] WARNING: at kernel/lockdep.c:2658 check_flags+0x4d/0x12c()
+> [    2.709541] Modules linked in:
+> [    2.709588] Pid: 1, comm: swapper Not tainted 2.6.25.jml.057 #1
+> [    2.709588]  [<c0126acc>] warn_on_slowpath+0x41/0x51
+> [    2.709588]  [<c010bafc>] ? save_stack_trace+0x1d/0x3b
+> [    2.709588]  [<c0140a83>] ? save_trace+0x37/0x89
+> [    2.709588]  [<c011987d>] ? kernel_map_pages+0x103/0x11c
+> [    2.709588]  [<c0109803>] ? native_sched_clock+0xca/0xea
+> [    2.709588]  [<c0142958>] ? mark_held_locks+0x41/0x5c
+> [    2.709588]  [<c0382580>] ? kprobe_exceptions_notify+0x322/0x3af
+> [    2.709588]  [<c0142aff>] ? trace_hardirqs_on+0xf1/0x119
+> [    2.709588]  [<c03825b3>] ? kprobe_exceptions_notify+0x355/0x3af
+> [    2.709588]  [<c0140823>] check_flags+0x4d/0x12c
+> [    2.709588]  [<c0143c9d>] lock_release+0x58/0x195
+> [    2.709588]  [<c038347c>] ? __atomic_notifier_call_chain+0x0/0x80
+> [    2.709588]  [<c03834d6>] __atomic_notifier_call_chain+0x5a/0x80
+> [    2.709588]  [<c0383508>] atomic_notifier_call_chain+0xc/0xe
+> [    2.709588]  [<c013b6d4>] notify_die+0x2d/0x2f
+> [    2.709588]  [<c038168a>] do_debug+0x67/0xfe
+> [    2.709588]  [<c0381287>] debug_stack_correct+0x27/0x30
+> [    2.709588]  [<c01564c0>] ? kprobe_target+0x1/0x34
+> [    2.709588]  [<c0156572>] ? init_test_probes+0x50/0x186
+> [    2.709588]  [<c04fae48>] init_kprobes+0x85/0x8c
+> [    2.709588]  [<c04e947b>] kernel_init+0x13d/0x298
+> [    2.709588]  [<c04e933e>] ? kernel_init+0x0/0x298
+> [    2.709588]  [<c04e933e>] ? kernel_init+0x0/0x298
+> [    2.709588]  [<c0105ef7>] kernel_thread_helper+0x7/0x10
+> [    2.709588]  =======================
+> [    2.709588] ---[ end trace 778e504de7e3b1e3 ]---
+> [    2.709588] possible reason: unannotated irqs-off.
+> [    2.709588] irq event stamp: 370065
+> [    2.709588] hardirqs last  enabled at (370065): [<c0382580>]
+kprobe_exceptions_notify+0x322/0x3af
+> [    2.709588] hardirqs last disabled at (370064): [<c0381bb7>]
+do_int3+0x1d/0x7d
+> [    2.709588] softirqs last  enabled at (370050): [<c012b464>]
+__do_softirq+0xfa/0x100
+> [    2.709588] softirqs last disabled at (370045): [<c0107438>]
+do_softirq+0x74/0xd9
+> [    2.714751] Kprobe smoke test passed successfully
+
+how I love this stuff...
+
+Ok, do_debug() is a trap, this can happen at any time regardless of the
+machine's IRQ state. So the first thing we do is fix up the IRQ state.
+Then we call this die notifier stuff; and return with messed up IRQ
+state... YAY.
+
+So, kprobes fudges it..
+
+  notify_die(DIE_DEBUG)
+    kprobe_exceptions_notify()
+      post_kprobe_handler()
+        modify regs->flags
+        trace_hardirqs_fixup_flags(regs->flags);  <--- must be it
+
+So what's the use of modifying flags if they're not meant to take effect
+at some point.
+
+/me tries to reproduce issue; enable kprobes test thingy && boot
+
+OK, that reproduces..
+
+So the below makes it work - but I'm not getting this code; at the time
+I wrote that stuff I CC'ed each and every kprobe maintainer listed in
+the usual places but got no reposonse - can some please explain this
+stuff to me?
+
+Are the saved flags only for the TF bit or are they made in full effect
+later (and if so, where) ?
+
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Acked-by: Masami Hiramatsu <mhiramat@redhat.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 CC: Oliver Pinter <oliver.pntr@gmail.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/md/md.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/x86/kernel/kprobes.c |    1 -
+ 1 file changed, 1 deletion(-)
 
---- a/drivers/md/md.c
-+++ b/drivers/md/md.c
-@@ -3326,9 +3326,9 @@ static struct kobject *md_probe(dev_t de
- 	disk->queue = mddev->queue;
- 	add_disk(disk);
- 	mddev->gendisk = disk;
--	mutex_unlock(&disks_mutex);
- 	error = kobject_init_and_add(&mddev->kobj, &md_ktype, &disk->dev.kobj,
- 				     "%s", "md");
-+	mutex_unlock(&disks_mutex);
- 	if (error)
- 		printk(KERN_WARNING "md: cannot register %s/md - name in use\n",
- 		       disk->disk_name);
+--- a/arch/x86/kernel/kprobes.c
++++ b/arch/x86/kernel/kprobes.c
+@@ -860,7 +860,6 @@ static int __kprobes post_kprobe_handler
+ 
+ 	resume_execution(cur, regs, kcb);
+ 	regs->flags |= kcb->kprobe_saved_flags;
+-	trace_hardirqs_fixup_flags(regs->flags);
+ 
+ 	if ((kcb->kprobe_status != KPROBE_REENTER) && cur->post_handler) {
+ 		kcb->kprobe_status = KPROBE_HIT_SSDONE;
 
 -- 
