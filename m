@@ -1,56 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756796AbYHDOso@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757722AbYHDOtV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756796AbYHDOso (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 10:48:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753519AbYHDOse
+	id S1757722AbYHDOtV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 10:49:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754910AbYHDOtI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 10:48:34 -0400
-Received: from mail2.shareable.org ([80.68.89.115]:45889 "EHLO
-	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753075AbYHDOse (ORCPT
+	Mon, 4 Aug 2008 10:49:08 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:50894 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754471AbYHDOtH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 10:48:34 -0400
-Date: Mon, 4 Aug 2008 15:48:23 +0100
-From: Jamie Lokier <jamie@shareable.org>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: Matthew Wilcox <matthew@wil.cx>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, Mel Gorman <mel@skynet.ie>,
-       andi@firstfloor.org, Rik van Riel <riel@redhat.com>
-Subject: Re: No, really, stop trying to delete slab until you've finished making slub perform as well
-Message-ID: <20080804144823.GE18868@shareable.org>
-References: <20080801182324.572058187@lameter.com> <20080803015847.GD26461@parisc-linux.org> <48970779.80902@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <48970779.80902@linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Mon, 4 Aug 2008 10:49:07 -0400
+Subject: Re: [PATCH] Using Intel CRC32 instruction to accelerate CRC32c
+	algorithm by new crypto API.
+From: David Woodhouse <dwmw2@infradead.org>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Herbert Xu <herbert@gondor.apana.org.au>,
+       Austin Zhang <austin_zhang@linux.intel.com>, davem@davemloft.net,
+       linux-kernel@vger.kernel.org, linux-crypto@vger.kernel.org
+In-Reply-To: <20080804072015.0fcd23e7@infradead.org>
+References: <1217842507.20845.18.camel@localhost.localdomain>
+	 <1217844725.3454.580.camel@pmac.infradead.org>
+	 <1217846139.20845.25.camel@localhost.localdomain>
+	 <1217846726.3454.589.camel@pmac.infradead.org>
+	 <20080804140435.GA11227@gondor.apana.org.au>
+	 <20080804072015.0fcd23e7@infradead.org>
+Content-Type: text/plain
+Date: Mon, 04 Aug 2008 15:49:01 +0100
+Message-Id: <1217861341.3454.641.camel@pmac.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Lameter wrote:
-> Matthew Wilcox wrote:
-> > On Fri, May 09, 2008 at 07:21:01PM -0700, Christoph Lameter wrote:
-> >> - Add a patch that obsoletes SLAB and explains why SLOB does not support
-> >>   defrag (Either of those could be theoretically equipped to support
-> >>   slab defrag in some way but it seems that Andrew/Linus want to reduce
-> >>   the number of slab allocators).
-> > 
-> > Do we have to once again explain that slab still outperforms slub on at
-> > least one important benchmark?  I hope Nick Piggin finds time to finish
-> > tuning slqb; it already outperforms slub.
-> > 
+On Mon, 2008-08-04 at 07:20 -0700, Arjan van de Ven wrote:
+> On Mon, 4 Aug 2008 22:04:35 +0800
+> Herbert Xu <herbert@gondor.apana.org.au> wrote:
 > 
-> Uhh. I forgot to delete that statement. I did not include the patch
-> in the series.
+> > There only three crc32c users in the kernel tree and the crypto
+> > interface will serve the perfectly.
 > 
-> We have a fundamental issue design issue there. Queuing on free can result in
-> better performance as in SLAB. However, it limits concurrency (per node lock
-> taking) and causes latency spikes due to queue processing (f.e. one test load
-> had 118.65 vs. 34 usecs just by switching to SLUB).
+> isn't it a bit heavy for something as simple as a crc?
+> (which after all is one instruction now ;0)
 
-Vaguely on this topic, has anyone studied the effects of SLAB/SLUB
-etc. on MMUless systems?
+It does seem that way. For users who care about 'bloat' and are _only_
+interested in crc32, it's yet another chunk of extra infrastructure
+which offers no benefit to them.
 
--- Jamie
+And even for people who don't care about that, it doesn't look
+particularly good. It looks like btrfs would need either to keep setting
+up a crypto context and then tearing it down, or have a pool of
+long-standing contexts and do some kind of locking on them -- neither of
+which seem particularly optimal compared with just calling into
+libcrc32c.
+
+We can't even set up one context per cpu and disable preempt while we
+use it, can we? The routines are allowed to sleep?
+
+(Although I have to admit I do like the fact that it'd only be available
+through EXPORT_SYMBOL_GPL if we do force people to use the crypto
+API...)
+
+-- 
+David Woodhouse                            Open Source Technology Centre
+David.Woodhouse@intel.com                              Intel Corporation
+
+
+
