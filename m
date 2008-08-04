@@ -1,78 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764857AbYHDUjg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764994AbYHDUjv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764857AbYHDUjg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 16:39:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764029AbYHDUiW
+	id S1764994AbYHDUjv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 16:39:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764719AbYHDUjJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 16:38:22 -0400
-Received: from mail.suse.de ([195.135.220.2]:50080 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762132AbYHDUiQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 16:38:16 -0400
-Date: Mon, 4 Aug 2008 13:15:17 -0700
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
-       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
-       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Jiri Kosina <jkosina@suse.cz>,
-       Dmitry Torokhov <dtor@mail.ru>
-Subject: [patch 15/33] Input: i8042 - add Acer Aspire 1360 to nomux
-	blacklist
-Message-ID: <20080804201517.GP1139@suse.de>
-References: <20080804200515.110033151@mini.kroah.org>
+	Mon, 4 Aug 2008 16:39:09 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:55545 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1764251AbYHDUjH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Aug 2008 16:39:07 -0400
+Message-ID: <489768E9.2080405@sgi.com>
+Date: Mon, 04 Aug 2008 13:39:05 -0700
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="input-i8042-add-acer-aspire-1360-to-nomux-blacklist.patch"
-In-Reply-To: <20080804201321.GA1139@suse.de>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Alan Mayer <ajm@sgi.com>
+CC: "Eric W. Biederman" <ebiederm@xmission.com>, Cliff Wickman <cpw@sgi.com>,
+       jeremy@goop.org, rusty@rustcorp.com.au, suresh.b.siddha@intel.com,
+       mingo@elte.hu, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org, Dean Nelson <dcn@sgi.com>
+Subject: Re: [PATCH] x86_64:  Dynamically allocate arch specific system vectors
+References: <48922D16.1080704@sgi.com> <m13alp1z8w.fsf@frodo.ebiederm.org>	<20080801155120.GA21706@sgi.com> <m18wvgv4bj.fsf@frodo.ebiederm.org>	<4893856D.6060909@sgi.com> <m11w18tmb1.fsf@frodo.ebiederm.org> <48975A75.4010609@sgi.com>
+In-Reply-To: <48975A75.4010609@sgi.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2.6.25-stable review patch.  If anyone has any objections, please let us
-know.
 
-------------------
 
-From: Jiri Kosina <jkosina@suse.cz>
+Alan Mayer wrote:
+> 
+> 
+> Eric W. Biederman wrote:
+>> Alan Mayer <ajm@sgi.com> writes:
+>>
+>>> Okay, I think we have it now.  assign_irq_vector *almost* does what
+>>> we need.
+>>> One minor thing is that assign_irq_vector ANDs against
+>>> cpu_online_map.  We would
+>>> need cpu_possible_map, so we get the vector on offline cpus that may
+>>> come
+>>> online.  The other thing is that assign_irq_vector doesn't allow the
+>>> specification of interrupt priorities.  It would need to be modified
+>>> to handle
+>>> returning either a high priority vector or a low priority vector.  Would
+>>> modifying the api for assign_irq_vector be the proper approach?
+>>
+>> I don't know if it makes sense to modify assign_irq_vector or to have
+>> a companion function that uses the same data structures.
+>>
+>> I think I would work on the companion function and if the code
+>> can be made sufficiently similar merge the two functions.
+>>
+> Okay, If I understand you, here's what we can do.  We currently have
+> this function that does pretty much what the combination of create_irq()
+> and __assign_irq_vector() do.  We can accomplish the same thing that our
+> routine does using create_irq() and __assign_irq_vector() do if we make
+> the following changes:
+> 
+> __assign_irq_vector(int irq, cpumask_t mask) ==>
+>     __assign_irq_vector(int irq, cpumask_t mask, int priority);
+> 
+> priority has three values:  priority_none, priority_low, priority_high
+> priority_none means do everything the way it is done now.
+> priority_low means do everything the way its is done now, except use
+> cpu_possible_map rather than cpu_online_map.
+> priority_high means search the interrupt vectors from the top down,
+> rather than from the bottom up and use cpu_possible_map rather than
+> cpu_online_map.
 
-commit 0376bce7b0659fe1e80d045860087072583ab93f upstream.
+Checking to insure that at least one of the cpus is online seems to be
+prudent, as well as what happens when the last online cpu in the group
+goes offline?
 
-Acer Aspire 1360 needs to be added to nomux blacklist, otherwise its
-touchpad misbehaves.
-
-Reported-by: Clark Tompsett <clarkt@cnsp.com>
-Signed-off-by: Jiri Kosina <jkosina@suse.cz>
-Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
----
- drivers/input/serio/i8042-x86ia64io.h |    7 +++++++
- 1 file changed, 7 insertions(+)
-
---- a/drivers/input/serio/i8042-x86ia64io.h
-+++ b/drivers/input/serio/i8042-x86ia64io.h
-@@ -298,6 +298,13 @@ static struct dmi_system_id __initdata i
- 			DMI_MATCH(DMI_PRODUCT_VERSION, "3000 N100"),
- 		},
- 	},
-+	{
-+		.ident = "Acer Aspire 1360",
-+		.matches = {
-+			DMI_MATCH(DMI_SYS_VENDOR, "Acer"),
-+			DMI_MATCH(DMI_PRODUCT_NAME, "Aspire 1360"),
-+		},
-+	},
- 	{ }
- };
- 
-
--- 
+Thanks,
+Mike
+> 
+> create_irq(void) ==> create_irq(int priority, cpumask_t *mask)
+> priority_none, means do everything the way it is done now, passing in
+> TARGET_CPUS as the mask, but also sending the priority arg. into
+> __assign_irq_vector().
+> priority_low and priority_high means use create_irq()'s mask arg. as the
+> mask passed to __assign_irq_vector).
+> 
+> We would add an additional small routine on top of create_irq() to do
+> any massaging of the irq_desc, etc. that we need for these system vectors.
+> 
+> Is that what you were thinking about?
+> 
+>             --ajm
+> 
+>>> The interrupts don't necessarily fire on all cpus, it's just that
+>>> they *can*
+>>> fire on any cpu.  For example, the GRU triggers an interrupt (it is very
+>>> IPI'ish) to a particular cpu in the event of a GRU TLB fault. That
+>>> cpu handles
+>>> the fault and returns.  But the fault can happen on any cpu, so all
+>>> cpus need to
+>>> be registered for the same vector and irq. This is probably splitting
+>>> hairs; it
+>>> is certainly no different in principal from timer interrupts or
+>>> processor TLB
+>>> faults.
+>>
+>> Reasonable.  As long as you don't need to read a status register to
+>> figure
+>> out what to do that sounds reasonable.  This does sound very much like
+>> splitting hairs on a very platform specific capability.
+>>
+>> If we can generalize the mechanism to things like per cpu timer
+>> interrupts and such so that we reduced the total amount of code we
+>> have to maintain I would find it a very compelling mechanism.
+>>
+>>> As far as kernel_stat is concerned.  I see you're point.  NR_CPUS on our
+>>> machines is going to be big (4K? 8K? something like that).  NR_IRQS
+>>> is also
+>>> going to big because of that.  It's unfortunate since the actual
+>>> number of
+>>> interrupt sources is going to be an order of magnitude smaller, at
+>>> least.
+>>
+>> The number of interrupts sources is going to be smaller only because
+>> SGI machines have or at least appear to have poor I/O compared to most
+>> of the rest of machines in existence.  NR_CPUS*16 is a fairly
+>> reasonable estimate on most machines in existence.  In the short term
+>> it is going to get worse in the presence of MSI-X.  I was talking to a
+>> developer at Intel last week about 256 irqs for one card.  I keep
+>> having dreams about finding a way to just keep stats for a few cpus
+>> but alas I don't think that is going to happen.  Silly us.
+>>
+>> Eric
+>>
+> 
