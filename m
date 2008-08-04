@@ -1,18 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765792AbYHDVia@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765145AbYHDVjM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765792AbYHDVia (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 17:38:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765590AbYHDVgp
+	id S1765145AbYHDVjM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 17:39:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765639AbYHDVhd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 17:36:45 -0400
-Received: from mx1.suse.de ([195.135.220.2]:54710 "EHLO mx1.suse.de"
+	Mon, 4 Aug 2008 17:37:33 -0400
+Received: from cantor.suse.de ([195.135.220.2]:54796 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765222AbYHDVgo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 17:36:44 -0400
-Date: Mon, 4 Aug 2008 14:30:16 -0700
+	id S1765631AbYHDVhb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Aug 2008 17:37:31 -0400
+Date: Mon, 4 Aug 2008 14:30:20 -0700
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org,
-       David Howells <dhowells@redhat.com>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -23,58 +22,80 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, "David S.Miller" <davem@davemloft.net>,
-       Patrick McHardy <kaber@trash.net>,
-       Oliver Pinter <oliver.pntr@gmail.com>
-Subject: [patch 09/25] netfilter: xt_time: fix times time_mt()s use of
-	do_div()
-Message-ID: <20080804213016.GI8014@suse.de>
+       alan@lxorguk.ukuu.org.uk,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>
+Subject: [patch 11/25] SCSI: ch: fix ch_remove oops
+Message-ID: <20080804213020.GK8014@suse.de>
 References: <20080804203506.816201392@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="netfilter-xt_time-fix-time-s-time_mt-s-use-of-do_div.patch"
+Content-Disposition: inline; filename="scsi-ch-fix-ch_remove-oops.patch"
 In-Reply-To: <20080804212725.GA7944@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
 2.6.26-stable review patch.  If anyone has any objections, please let us
 know.
 
 ------------------
 
-From: David Howells <dhowells@redhat.com>
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
 
-[ Upstream commit 280763c053fee297d95b474f2c145990670371e6 ]
+commit 3d164fb09bb5cb8a223eddf634fc0d355714fcfe upstream.
 
-Fix netfilter xt_time's time_mt()'s use of do_div() on an s64 by using
-div_s64() instead.
+The following commit causes ch_remove oops:
 
-This was introduced by patch ee4411a1b1e0b679c99686629b5eab5a072ce49f
-("[NETFILTER]: x_tables: add xt_time match").
+commit 24b42566c3fcbb5a9011d1446783d0f5844ccd45
+Author: Greg Kroah-Hartman <gregkh@suse.de>
+Date:   Fri May 16 17:55:12 2008 -0700
 
-Signed-off-by: David Howells <dhowells@redhat.com>
-Signed-off-by: Patrick McHardy <kaber@trash.net>
-Signed-off-by: David S. Miller <davem@davemloft.net>
-CC: Oliver Pinter <oliver.pntr@gmail.com>
+    SCSI: fix race in device_create
+
+    There is a race from when a device is created with device_create() and
+    then the drvdata is set with a call to dev_set_drvdata() in which a
+    sysfs file could be open, yet the drvdata will be NULL, causing all
+    sorts of bad things to happen.
+
+    This patch fixes the problem by using the new function,
+    device_create_drvdata().  It fixes the problem in all of the scsi
+    drivers that need it.
+
+    Cc: Kay Sievers <kay.sievers@vrfy.org>
+    Cc: Doug Gilbert <dgilbert@interlog.com>
+    Cc: James E.J. Bottomley <James.Bottomley@HansenPartnership.com>
+    Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
+The problem is ch_probe stores ch's private data at a wrong place.
+
+We need to store it at scsi_device->sdev_gendev but the above patch
+stores it at device struct that device_create_drvdata returns. So we
+hit an oops when ch_remove accesses
+scsi_device->sdev_gendev->driver_data, which is NULL.
+
+Actually, there wasn't a race because ch doesn't create sysfs files
+with device struct that device_create returns. This patch puts back
+dev_set_drvdata() to set ch's private data properly.
+
+Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- net/netfilter/xt_time.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/scsi/ch.c |    1 +
+ 1 file changed, 1 insertion(+)
 
---- a/net/netfilter/xt_time.c
-+++ b/net/netfilter/xt_time.c
-@@ -173,7 +173,7 @@ time_mt(const struct sk_buff *skb, const
- 		__net_timestamp((struct sk_buff *)skb);
+--- a/drivers/scsi/ch.c
++++ b/drivers/scsi/ch.c
+@@ -926,6 +926,7 @@ static int ch_probe(struct device *dev)
+ 	if (init)
+ 		ch_init_elem(ch);
  
- 	stamp = ktime_to_ns(skb->tstamp);
--	do_div(stamp, NSEC_PER_SEC);
-+	stamp = div_s64(stamp, NSEC_PER_SEC);
++	dev_set_drvdata(dev, ch);
+ 	sdev_printk(KERN_INFO, sd, "Attached scsi changer %s\n", ch->name);
  
- 	if (info->flags & XT_TIME_LOCAL_TZ)
- 		/* Adjust for local timezone */
+ 	return 0;
 
 -- 
