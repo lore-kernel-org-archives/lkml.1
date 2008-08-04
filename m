@@ -1,62 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758022AbYHDDrJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755103AbYHDDr1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758022AbYHDDrJ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Aug 2008 23:47:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752861AbYHDDqy
+	id S1755103AbYHDDr1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Aug 2008 23:47:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755547AbYHDDrA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Aug 2008 23:46:54 -0400
-Received: from yw-out-2324.google.com ([74.125.46.28]:58383 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752106AbYHDDqx (ORCPT
+	Sun, 3 Aug 2008 23:47:00 -0400
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:40422 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755169AbYHDDq6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Aug 2008 23:46:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=xHWTnnbNvwqXcInBjH3gCZAUOJdeEWP6OG4GlXdLsuDxTzg3iColf8G4Ows/FPwTo3
-         K1ntyArO9Yy+mQPPeV2wr/vfb6lLzXywakbwSsOp4FYComhEt/7DJa322bUqCi7f7k86
-         1iDYW/atPg9SuKK1sCqPNn7boWVJR8gbXPuuI=
-Message-ID: <93655eb70808032046y594f38a3u16b7fa2cc6291b1d@mail.gmail.com>
-Date: Mon, 4 Aug 2008 09:16:52 +0530
-From: "Satish Eerpini" <eerpini@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Re: Kernel Installer
-In-Reply-To: <93655eb70808032045vd6130e9m147d3e3ae8b159b5@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Sun, 3 Aug 2008 23:46:58 -0400
+Subject: Re: [PATCH 1/2] pci: add misrouted interrupt error handling
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>, linux-pci@vger.kernel.org
+In-Reply-To: <20080804025137.GI26461@parisc-linux.org>
+References: <1217786532.4179.24.camel@localhost.localdomain>
+	 <20080804025137.GI26461@parisc-linux.org>
+Content-Type: text/plain
+Date: Sun, 03 Aug 2008 22:46:53 -0500
+Message-Id: <1217821613.4179.77.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <93655eb70808031350q16a5765bk3125e53bd042ba0e@mail.gmail.com>
-	 <20080803210051.GF7442@cs181140183.pp.htv.fi>
-	 <93655eb70808032045vd6130e9m147d3e3ae8b159b5@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Replacing the normal build output with something different doesn't make
-> anything easier.
->
-> Especially considering that your "once the .config file is set" seems to
-> assume the user already configured the kernel himself...
->
+On Sun, 2008-08-03 at 20:51 -0600, Matthew Wilcox wrote:
+> On Sun, Aug 03, 2008 at 01:02:12PM -0500, James Bottomley wrote:
+> > +static void pci_note_irq_problem(struct pci_dev *pdev, const char *reason)
+> > +{
+> > +	struct pci_dev *parent = to_pci_dev(pdev->dev.parent);
+> > +
+> > +	dev_printk(KERN_ERR, &pdev->dev,
+> > +		   "Potentially misrouted IRQ (Bridge %s %04x:%04x)\n",
+> > +		   parent->dev.bus_id, parent->vendor, parent->device);
+> > +	dev_printk(KERN_ERR, &pdev->dev, "%s\n", reason);
+> > +	dev_printk(KERN_ERR, &pdev->dev, "Please report to linux-kernel@vger.kernel.org\n");
+> > +	WARN_ON(1);
+> > +}
+> 
+> Will the dev_printk() strings be included in the kerneloops report?  And
+> what if there is no parent of the device?  Consider device 00:02.0 on my
+> laptop:
 
-i am not just trying to replace the output , i am not a stupid to
-waste my weekend sitting just to replace the output  :-),
-if u are interested , u can check out the entire TODO for the app here
-http://satish.playdrupal.com/?q=node/2
+No, but some of them take the prior strings (depending on the
+implementation).
 
-but in the process i am stuck at deciding the no of files that will be
-compiled , given that representing the entire compilation
-process as a progress bar , would give a clear idea of " how much is
-over" and "how much is left" !!!
+> 00:02.0 VGA compatible controller: Intel Corporation Mobile GM965/GL960 Integrated Graphics Controller (rev 03)
+>         Subsystem: Fujitsu Limited. Device 13fe
+>         Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx-
+>         Status: Cap+ 66MHz- UDF- FastB2B+ ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+>         Latency: 0
+>         Interrupt: pin A routed to IRQ 16
+
+There is always a parent device ... it might be the PCI root device, in
+which case the information will be blank, but there is always one.
+
+> > +enum pci_lost_interrupt_reason pci_lost_interrupt(struct pci_dev *pdev)
+> > +{
+> > +	if (pdev->msi_enabled || pdev->msix_enabled) {
+> > +		enum pci_lost_interrupt_reason ret;
+> > +
+> > +		if (pdev->msix_enabled) {
+> > +			pci_note_irq_problem(pdev, "MSIX routing failure");
+> > +			ret = PCI_LOST_IRQ_DISABLE_MSIX;
+> > +		} else {
+> > +			pci_note_irq_problem(pdev, "MSI routing failure");
+> > +			ret = PCI_LOST_IRQ_DISABLE_MSI;
+> > +		}
+> > +		return ret;
+> > +	}
+> 
+> Couldn't this be written more concisely as:
+> 
+> 	if (pdev->msix_enabled) {
+> 		pci_note_irq_problem(pdev, "MSIX routing failure");
+> 		return PCI_LOST_IRQ_DISABLE_MSIX;
+> 	}
+> 	if (pdev->msi_enabled) {
+> 		pci_note_irq_problem(pdev, "MSI routing failure");
+> 		return PCI_LOST_IRQ_DISABLE_MSI;
+> 	}
+
+The idea was to separate the cases in case something extra needs be
+done.  I think it's pretty much identical as far as the compiler
+optimises, and therefore probably not worth worrying about much.
+
+James
 
 
-Thanks
-Satish
-
-
-
--- 
-http://satish.playdrupal.com
