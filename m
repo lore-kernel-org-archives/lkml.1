@@ -1,52 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759416AbYHDFyX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759586AbYHDF60@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759416AbYHDFyX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 01:54:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753544AbYHDFyP
+	id S1759586AbYHDF60 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 01:58:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753561AbYHDF6R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 01:54:15 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:43216 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752916AbYHDFyO (ORCPT
+	Mon, 4 Aug 2008 01:58:17 -0400
+Received: from E23SMTP02.au.ibm.com ([202.81.18.163]:49318 "EHLO
+	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753255AbYHDFyP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 01:54:14 -0400
-Date: Sun, 3 Aug 2008 22:53:59 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Rusty Russell <rusty@rustcorp.com.au>
-cc: Paul Menage <menage@google.com>, linux-kernel@vger.kernel.org,
-       Matthew Wilcox <matthew@wil.cx>, "Randy.Dunlap" <rdunlap@xenotime.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Hellwig <hch@infradead.org>
-Subject: Re: [PATCH] Introduce down_try() so we can move away from
- down_trylock()
-In-Reply-To: <200808041328.45773.rusty@rustcorp.com.au>
-Message-ID: <alpine.LFD.1.10.0808032251050.3668@nehalem.linux-foundation.org>
-References: <200807291015.02865.rusty@rustcorp.com.au> <alpine.LFD.1.10.0808031031380.3668@nehalem.linux-foundation.org> <alpine.LFD.1.10.0808031034400.3668@nehalem.linux-foundation.org> <200808041328.45773.rusty@rustcorp.com.au>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Mon, 4 Aug 2008 01:54:15 -0400
+Date: Mon, 4 Aug 2008 11:23:39 +0530
+From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+       Aneesh Kumar KV <aneesh.kumar@linux.vnet.ibm.com>,
+       Balbir Singh <balbir@in.ibm.com>
+Subject: Re: VolanoMark regression with 2.6.27-rc1
+Message-ID: <20080804055339.GB5444@linux.vnet.ibm.com>
+Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+References: <1217474425.25608.150.camel@ymzhang> <1217489463.25608.157.camel@ymzhang> <1217489949.8157.78.camel@twins> <1217490560.25608.168.camel@ymzhang> <1217551154.25608.169.camel@ymzhang> <20080801051407.GA5232@linux.vnet.ibm.com> <1217826278.25608.198.camel@ymzhang> <20080804052228.GA5444@linux.vnet.ibm.com> <1217828278.25608.206.camel@ymzhang>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1217828278.25608.206.camel@ymzhang>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Mon, 4 Aug 2008, Rusty Russell wrote:
+On Mon, Aug 04, 2008 at 01:37:58PM +0800, Zhang, Yanmin wrote:
 > 
-> Someone sent me a patch documenting the illogic of down_trylock().  I decided 
-> to try to fix it rather than just bitch and moan.
+> On Mon, 2008-08-04 at 10:52 +0530, Dhaval Giani wrote:
+> > On Mon, Aug 04, 2008 at 01:04:38PM +0800, Zhang, Yanmin wrote:
+> > > 
+> > > On Fri, 2008-08-01 at 10:44 +0530, Dhaval Giani wrote:
+> > > > On Fri, Aug 01, 2008 at 08:39:14AM +0800, Zhang, Yanmin wrote:
+> > > > > 
+> > > > > On Thu, 2008-07-31 at 15:49 +0800, Zhang, Yanmin wrote:
+> > > > > > On Thu, 2008-07-31 at 09:39 +0200, Peter Zijlstra wrote:
+> > > > > > > On Thu, 2008-07-31 at 15:31 +0800, Zhang, Yanmin wrote:
+> > > > > > > > On Thu, 2008-07-31 at 11:20 +0800, Zhang, Yanmin wrote:
+> > > > > > > > > Ingo,
+> > > > > > > > > 
+> > > > > > > > Oh, it looks like they are the old issues in 2.6.26-rc1 and the 2 patches were reverted before 2.6.26.
+> > > > > > > > New patches are merged into 2.6.27-rc1, but the issues are still not resolved clearly.
+> > > > > > > > http://www.uwsg.iu.edu/hypermail/linux/kernel/0805.2/1148.html.
+> > > > > > > 
+> > > > > > > The new smp-group stuff doesn't remotely look like what was in .26
+> > > > > > > 
+> > > > > > > Also, on my quad (admittedly smaller than your machines) both volano and
+> > > > > > > sysbench didn't regress anymore - where they clearly did with the code
+> > > > > > > reverted from .26.
+> > > > > > The regression I reported exists on:
+> > > > > > 1) 8-core+HT(totally 16 logical processor) tulsa: 40% regression with volano, 8% with oltp;
+> > > > > > 2) 8-core+HT Montvale Itanium: 9% regression with volano; 8% with oltp;
+> > > > > > 3) 16-core tigerton: %70 with volano, %18 with oltp;
+> > > > > > 4) 8-core stoakley: %15 with oltp, testing failed with volanoMark.
+> > > > > > 
+> > > > > > So the issues are popular on different architectures.
+> > > > > I know kernel needs the features and it might not be a good idea to reject them over and over again.
+> > > > > I will collect more data on tigerton and try to optimize it.
+> > > > 
+> > > > Hi Yanmin,
+> > > > 
+> > > > Would it be possible for you to switch of the group scheduling feature
+> > > > and see if the regression still exists. In all our testing, we did not
+> > > > see a regression. I would like to eliminate it from your testing as
+> > > > well.
+> > > I tested with CONFIG_GROUP_SCHED=n. To test faster, I simplified the benchmark parameter.
+> > > 
+> > > volanoMark:
+> > > kernel				| 	result
+> > > ----------------------------------------------------------
+> > > 2.6.27-rc1_group		|	205901
+> > > ----------------------------------------------------------
+> > > 2.6.27-rc1_nogroup		|	303377
+> > > ----------------------------------------------------------
+> > > 2.6.26_group			|	529388
+> > > 
+> > 
+> > There seem to be two different regressions here. One in the user group
+> > scheduling (which I do remember did have problems) and something totally
+> > unrelated to group scheduling. In some of the runs I tried here, I got
+> > similar results for 2.6.27-rc1_nogroup and 2.6.27-rc1_cgroup
+> Does cgroup here mean CONFIG_CGROUPS? Or just a typo?
+> 
 
-I do agree that it is illogical. I just think your solution is worse than 
-the problem - turning one illogical function into a redundant one seems 
-the worse problem.
+It means CONFIG_CGROUP_SCHED.
 
-We could just fix the return value, since it's not used very much, but 
-we'd obviously never know what out-of-tree users there might be, so that's 
-not really a good solution either. But that's obviously why we'd then have 
-to rename it to something else, so whichever way we turn, we'd just be 
-screwed.
+> I never enable CONFIG_CGROUP.
+> 
+> >  but had bad
+> > results for user. Anyway, we will need to fix both the regressions.
+> That's great.
+> 
+> > Would it be possible for you to see what causes the regression between
+> > 2.6.26 and 2.6.27-rc1 for the non group scheduling case?
+> I will check it. But git bisect doesn't work on this issue. Mostly, it's still
+> caused by scheduler. If checking the old emails about 2.6.26-rc1, we can find the
+> major issues about scheduler are related to 2 patches, although I'm not sure
+> current regression is still caused by them.
+> 
 
-I'm much happier telling people to "just don't use semaphores any more".
-The _legacy_ users get down_trylock() right. 
+The current set of patches affect group scheduling. From your results,
+there is a big performance regression between the 2.6.26 group
+scheduling and 2.6.27-rc1 non group scheduling case (where normally non
+group scheduling case should have performed better). (I don't recall any
+major changes to the scheduler which would explain this regression).
+Peter, vatsa, any ideas?
 
-		Linus
+Thanks,
+-- 
+regards,
+Dhaval
