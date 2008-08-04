@@ -1,50 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758736AbYHDO4f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757362AbYHDO66@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758736AbYHDO4f (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 10:56:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754192AbYHDO4X
+	id S1757362AbYHDO66 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 10:58:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754012AbYHDO6u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 10:56:23 -0400
-Received: from 166-70-238-42.ip.xmission.com ([166.70.238.42]:58614 "EHLO
-	ns1.wolfmountaingroup.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754414AbYHDO4W (ORCPT
+	Mon, 4 Aug 2008 10:58:50 -0400
+Received: from rv-out-0506.google.com ([209.85.198.234]:11646 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753359AbYHDO6t (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 10:56:22 -0400
-Message-ID: <38597.166.70.238.45.1217860550.squirrel@webmail.wolfmountaingroup.com>
-In-Reply-To: <48971137.7090903@s5r6.in-berlin.de>
-References: <37460.166.70.238.45.1217831665.squirrel@webmail.wolfmountaingroup.com>
-    <48971137.7090903@s5r6.in-berlin.de>
-Date: Mon, 4 Aug 2008 08:35:50 -0600 (MDT)
-Subject: Re: [PATCH 2.6.27-rc1 11/25] mdb:  Merkey's Kernel Debugger 
-     2.6.27-rc1
-From: jmerkey@wolfmountaingroup.com
-To: "Stefan Richter" <stefanr@s5r6.in-berlin.de>
-Cc: jmerkey@wolfmountaingroup.com, linux-kernel@vger.kernel.org
-User-Agent: SquirrelMail/1.4.6
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
+	Mon, 4 Aug 2008 10:58:49 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:content-type:date:message-id:mime-version:x-mailer
+         :content-transfer-encoding;
+        b=qkv9WPokZXclRVX0Fw/oMR5Nq0CJZN3DO8+1gchs2uUPEev7svasrzYDuinELTOGZD
+         nJbd0BOJHw0Ijl7c99hAvJbsJW3j70nT/gl1E0m1GptKLWEJjl9/elQYV3Xqn29WJ71E
+         0HvUD//U7MvnfdU9+Xk4lU8C6MT+pY1mg7BUk=
+Subject: 
+From: lising <xing.starwill@gmail.com>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain
+Date: Mon, 04 Aug 2008 22:58:38 +0800
+Message-Id: <1217861918.7021.10.camel@lising-laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> jmerkey@wolfmountaingroup.com wrote:
->> --- a/debug/mdb-ia32-support.c	1969-12-31 17:00:00.000000000 -0700
->> +++ b/debug/mdb-ia32-support.c	2008-08-03 16:15:00.000000000 -0600
-> [...]
->> +BYTE *output_jmp_address(StackFrame *stackFrame, long val, long *delta)
->
-> This one is a challenge to read.  :-)
-> At least in MUAs which can't collapse C code nesting levels...
-> --
-> Stefan Richter
-> -=====-==--- =--- --=--
-> http://arcgraph.de/sr/
->
-
-Getting those arrows int jump labels was some work, I admit.
-
-Jeff
+which	
+unsubscribe linux-kernel xing.starwill@gmail.com
 
