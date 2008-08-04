@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764880AbYHDUc7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765006AbYHDUdk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764880AbYHDUc7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 16:32:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762011AbYHDUcV
+	id S1765006AbYHDUdk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 16:33:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764772AbYHDUce
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 16:32:21 -0400
-Received: from mx1.suse.de ([195.135.220.2]:49501 "EHLO mx1.suse.de"
+	Mon, 4 Aug 2008 16:32:34 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:46220 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764618AbYHDUbV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 16:31:21 -0400
-Date: Mon, 4 Aug 2008 13:16:21 -0700
+	id S1764240AbYHDUcd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Aug 2008 16:32:33 -0400
+Date: Mon, 4 Aug 2008 13:16:28 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Takashi Iwai <tiwai@suse.de>
-Subject: [patch 29/33] ALSA: emu10k1 - Fix inverted Analog/Digital mixer
-	switch on Audigy2
-Message-ID: <20080804201621.GD1139@suse.de>
+       alan@lxorguk.ukuu.org.uk, Takashi Iwai <tiwai@suse.de>,
+       Jaroslav Kysela <perex@perex.cz>
+Subject: [patch 32/33] ALSA: hda - Fix wrong volumes in AD1988 auto-probe
+	mode
+Message-ID: <20080804201628.GG1139@suse.de>
 References: <20080804200515.110033151@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="alsa-emu10k1-fix-inverted-analog-digital-mixer-switch-on-audigy2.patch"
+Content-Disposition: inline; filename="alsa-hda-fix-wrong-volumes-in-ad1988-auto-probe-mode.patch"
 In-Reply-To: <20080804201321.GA1139@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -43,87 +44,68 @@ know.
 
 From: Takashi Iwai <tiwai@suse.de>
 
-commit d2cd74b158d7214a556226e3312f9fb1de64d7ae upstream
+commit 43785eaeb1cfb8aed3cf8027f298b242f88fdc45 upstream
 
-On Audigy2 Platinum, the Analog/Digital mixer switch is inverted.
-	https://bugzilla.novell.com/show_bug.cgi?id=396204
-
-The patch adds a simple workaround.
-
-There might be another device requiring a similar fix, too (or fix for
-audigy2 generically), but right now I fix only the known broken one.
+Don't create mixer volume elements for Headphone and Speaker if they
+use the same DAC as normal line-outs on AD1988.  Otherwise the amp
+value gets screwed up, e.g.
+	https://bugzilla.novell.com/show_bug.cgi?id=398255
 
 Signed-off-by: Takashi Iwai <tiwai@suse.de>
+Signed-off-by: Jaroslav Kysela <perex@perex.cz>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- include/sound/emu10k1.h          |    1 +
- sound/pci/emu10k1/emu10k1_main.c |    1 +
- sound/pci/emu10k1/emumixer.c     |   13 ++++++++++---
- 3 files changed, 12 insertions(+), 3 deletions(-)
+ sound/pci/hda/patch_analog.c |   32 +++++++++++++++++++++-----------
+ 1 file changed, 21 insertions(+), 11 deletions(-)
 
---- a/include/sound/emu10k1.h
-+++ b/include/sound/emu10k1.h
-@@ -1670,6 +1670,7 @@ struct snd_emu_chip_details {
- 	unsigned char spi_dac;      /* SPI interface for DAC */
- 	unsigned char i2c_adc;      /* I2C interface for ADC */
- 	unsigned char adc_1361t;    /* Use Philips 1361T ADC */
-+	unsigned char invert_shared_spdif; /* analog/digital switch inverted */
- 	const char *driver;
- 	const char *name;
- 	const char *id;		/* for backward compatibility - can be NULL if not needed */
---- a/sound/pci/emu10k1/emu10k1_main.c
-+++ b/sound/pci/emu10k1/emu10k1_main.c
-@@ -1527,6 +1527,7 @@ static struct snd_emu_chip_details emu_c
- 	 .ca0151_chip = 1,
- 	 .spk71 = 1,
- 	 .spdif_bug = 1,
-+	 .invert_shared_spdif = 1,	/* digital/analog switch swapped */
- 	 .adc_1361t = 1,  /* 24 bit capture instead of 16bit. Fixes ALSA bug#324 */
- 	 .ac97_chip = 1} ,
- 	{.vendor = 0x1102, .device = 0x0004, .revision = 0x04,
---- a/sound/pci/emu10k1/emumixer.c
-+++ b/sound/pci/emu10k1/emumixer.c
-@@ -1578,6 +1578,10 @@ static int snd_emu10k1_shared_spdif_get(
- 		ucontrol->value.integer.value[0] = inl(emu->port + A_IOCFG) & A_IOCFG_GPOUT0 ? 1 : 0;
- 	else
- 		ucontrol->value.integer.value[0] = inl(emu->port + HCFG) & HCFG_GPOUT0 ? 1 : 0;
-+	if (emu->card_capabilities->invert_shared_spdif)
-+		ucontrol->value.integer.value[0] =
-+			!ucontrol->value.integer.value[0];
-+
- 	return 0;
- }
- 
-@@ -1586,15 +1590,18 @@ static int snd_emu10k1_shared_spdif_put(
+--- a/sound/pci/hda/patch_analog.c
++++ b/sound/pci/hda/patch_analog.c
+@@ -2558,7 +2558,7 @@ static int ad1988_auto_create_extra_out(
  {
- 	unsigned long flags;
- 	struct snd_emu10k1 *emu = snd_kcontrol_chip(kcontrol);
--	unsigned int reg, val;
-+	unsigned int reg, val, sw;
- 	int change = 0;
+ 	struct ad198x_spec *spec = codec->spec;
+ 	hda_nid_t nid;
+-	int idx, err;
++	int i, idx, err;
+ 	char name[32];
  
-+	sw = ucontrol->value.integer.value[0];
-+	if (emu->card_capabilities->invert_shared_spdif)
-+		sw = !sw;
- 	spin_lock_irqsave(&emu->reg_lock, flags);
- 	if ( emu->card_capabilities->i2c_adc) {
- 		/* Do nothing for Audigy 2 ZS Notebook */
- 	} else if (emu->audigy) {
- 		reg = inl(emu->port + A_IOCFG);
--		val = ucontrol->value.integer.value[0] ? A_IOCFG_GPOUT0 : 0;
-+		val = sw ? A_IOCFG_GPOUT0 : 0;
- 		change = (reg & A_IOCFG_GPOUT0) != val;
- 		if (change) {
- 			reg &= ~A_IOCFG_GPOUT0;
-@@ -1603,7 +1610,7 @@ static int snd_emu10k1_shared_spdif_put(
- 		}
- 	}
- 	reg = inl(emu->port + HCFG);
--	val = ucontrol->value.integer.value[0] ? HCFG_GPOUT0 : 0;
-+	val = sw ? HCFG_GPOUT0 : 0;
- 	change |= (reg & HCFG_GPOUT0) != val;
- 	if (change) {
- 		reg &= ~HCFG_GPOUT0;
+ 	if (! pin)
+@@ -2566,16 +2566,26 @@ static int ad1988_auto_create_extra_out(
+ 
+ 	idx = ad1988_pin_idx(pin);
+ 	nid = ad1988_idx_to_dac(codec, idx);
+-	/* specify the DAC as the extra output */
+-	if (! spec->multiout.hp_nid)
+-		spec->multiout.hp_nid = nid;
+-	else
+-		spec->multiout.extra_out_nid[0] = nid;
+-	/* control HP volume/switch on the output mixer amp */
+-	sprintf(name, "%s Playback Volume", pfx);
+-	if ((err = add_control(spec, AD_CTL_WIDGET_VOL, name,
+-			       HDA_COMPOSE_AMP_VAL(nid, 3, 0, HDA_OUTPUT))) < 0)
+-		return err;
++	/* check whether the corresponding DAC was already taken */
++	for (i = 0; i < spec->autocfg.line_outs; i++) {
++		hda_nid_t pin = spec->autocfg.line_out_pins[i];
++		hda_nid_t dac = ad1988_idx_to_dac(codec, ad1988_pin_idx(pin));
++		if (dac == nid)
++			break;
++	}
++	if (i >= spec->autocfg.line_outs) {
++		/* specify the DAC as the extra output */
++		if (!spec->multiout.hp_nid)
++			spec->multiout.hp_nid = nid;
++		else
++			spec->multiout.extra_out_nid[0] = nid;
++		/* control HP volume/switch on the output mixer amp */
++		sprintf(name, "%s Playback Volume", pfx);
++		err = add_control(spec, AD_CTL_WIDGET_VOL, name,
++				  HDA_COMPOSE_AMP_VAL(nid, 3, 0, HDA_OUTPUT));
++		if (err < 0)
++			return err;
++	}
+ 	nid = ad1988_mixer_nids[idx];
+ 	sprintf(name, "%s Playback Switch", pfx);
+ 	if ((err = add_control(spec, AD_CTL_BIND_MUTE, name,
 
 -- 
