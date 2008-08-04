@@ -1,56 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758838AbYHDQid@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756624AbYHDQiE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758838AbYHDQid (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 12:38:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753931AbYHDQiY
+	id S1756624AbYHDQiE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 12:38:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758101AbYHDQhp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 12:38:24 -0400
-Received: from casper.infradead.org ([85.118.1.10]:39204 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753776AbYHDQiY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 12:38:24 -0400
-Date: Mon, 4 Aug 2008 09:38:10 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Keith Packard <keithp@keithp.com>, Ingo Oeser <ioe-lkml@rameria.de>,
-       John Stoffel <john@stoffel.org>, Christoph Hellwig <hch@infradead.org>,
-       Eric Anholt <eric@anholt.net>, linux-kernel@vger.kernel.org
-Subject: Re: files/process scaling problem? (was: [PATCH] Export
- shmem_file_setup and shmem_getpage for DRM-GEM)
-Message-ID: <20080804093810.689c92fa@infradead.org>
-In-Reply-To: <20080804151146.71d9fcce@lxorguk.ukuu.org.uk>
-References: <1217573919-7496-1-git-send-email-eric@anholt.net>
-	<18581.43362.460694.60862@stoffel.org>
-	<1217785943.23437.330.camel@koto.keithp.com>
-	<200808040135.32563.ioe-lkml@rameria.de>
-	<1217809152.23437.401.camel@koto.keithp.com>
-	<20080804091930.164f31c3@lxorguk.ukuu.org.uk>
-	<20080804065101.6f70725a@infradead.org>
-	<20080804151146.71d9fcce@lxorguk.ukuu.org.uk>
-Organization: Intel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
+	Mon, 4 Aug 2008 12:37:45 -0400
+Received: from mail.vyatta.com ([216.93.170.194]:42859 "EHLO mail.vyatta.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758051AbYHDQho (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Aug 2008 12:37:44 -0400
+X-Spam-Flag: NO
+X-Spam-Score: -1.633
+Date: Mon, 4 Aug 2008 09:37:42 -0700
+From: Stephen Hemminger <shemminger@vyatta.com>
+To: David Miller <davem@davemloft.net>
+Cc: greearb@candelatech.com, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: [RFC] netdev: debugging option
+Message-ID: <20080804093742.395d271e@extreme>
+In-Reply-To: <20080720.000509.20260185.davem@davemloft.net>
+References: <20080719011709.GA5947@disturbed>
+	<48821DEF.1040306@candelatech.com>
+	<20080719230424.190957a3@extreme>
+	<20080720.000509.20260185.davem@davemloft.net>
+Organization: Vyatta
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 4 Aug 2008 15:11:46 +0100
-Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+On Sun, 20 Jul 2008 00:05:09 -0700 (PDT)
+David Miller <davem@davemloft.net> wrote:
 
-> On Mon, 4 Aug 2008 06:51:01 -0700
-> > the hard part is that DRI is a library that gets linked into
-> > existing applications... which already are using select ;-(
-> > 
-> > Fixing X is one thing and not impossible.. fixing all existing
-> > games in the field is quite another
+> From: Stephen Hemminger <shemminger@vyatta.com>
+> Date: Sat, 19 Jul 2008 23:04:24 -0700
 > 
-> X libraries provide the event loop 
+> > This adds a debugging option for network devices. It could grow to add other
+> > uses, but for now just add some messages about device reference counting.
+> > 
+> > Signed-off-by: Stephen Hemminger <shemminger@vyatta.com>
+> 
+> I think this is useful but it could use some minor
+> mods before we put it in.
+> 
+> For example, this thing will spam the logs in at least two
+> common cases:
+> 
+> 1) Lots of routing cache replacements
+> 
+> 2) For older drivers using netif_rx() (and therefore, every
+>    current tunnel), every RX packet will trigger a log message
 
-they do?
-I could have sworn things like glib etc do their own...
-but I'm no desktop guy so I can totally be wrong as well
+Fixed by later patch.
+
+> So we really need to add some kind of run time enable and also a
+> filter of some sort, even if it's just on device.
+
+The sysctl in the patch is default off, so unless it is turned on,
+the log is quiet
