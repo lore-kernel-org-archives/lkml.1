@@ -1,18 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758458AbYHDQHm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758728AbYHDQIU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758458AbYHDQHm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 12:07:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755935AbYHDQFP
+	id S1758728AbYHDQIU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 12:08:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756993AbYHDQFV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 12:05:15 -0400
-Received: from outbound-sin.frontbridge.com ([207.46.51.80]:53968 "EHLO
-	SG2EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755312AbYHDQFM (ORCPT
+	Mon, 4 Aug 2008 12:05:21 -0400
+Received: from outbound-dub.frontbridge.com ([213.199.154.16]:4622 "EHLO
+	IE1EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756820AbYHDQFT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 12:05:12 -0400
-X-BigFish: VPS11(z1039ozzz10d3izzz32i43j65h)
-X-Spam-TCS-SCL: 4:0
-X-WSS-ID: 0K533C4-03-PIX-01
+	Mon, 4 Aug 2008 12:05:19 -0400
+X-BigFish: VPS5(zz19c2kzz10d3izzz32i62h)
+X-Spam-TCS-SCL: 1:0
+X-FB-SS: 7,
+X-WSS-ID: 0K533C2-04-0UF-01
 From: Joerg Roedel <joerg.roedel@amd.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 CC: mingo@redhat.com, tglx@linutronix.de, hpa@zytor.com, rth@twiddle.net,
@@ -20,67 +21,84 @@ CC: mingo@redhat.com, tglx@linutronix.de, hpa@zytor.com, rth@twiddle.net,
        FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
        Muli Ben-Yehuda <muli@il.ibm.com>, linux-kernel@vger.kernel.org,
        Joerg Roedel <joerg.roedel@amd.com>
-Subject: [PATCH 06/10] x86, AMD IOMMU: convert driver to generic iommu_num_pages function
-Date: Mon, 4 Aug 2008 18:04:46 +0200
-Message-ID: <1217865890-3593-7-git-send-email-joerg.roedel@amd.com>
+Subject: [PATCH 03/10] powerpc: rename iommu_num_pages function to iommu_nr_pages
+Date: Mon, 4 Aug 2008 18:04:43 +0200
+Message-ID: <1217865890-3593-4-git-send-email-joerg.roedel@amd.com>
 X-Mailer: git-send-email 1.5.3.7
 In-Reply-To: <1217865890-3593-1-git-send-email-joerg.roedel@amd.com>
 References: <1217865890-3593-1-git-send-email-joerg.roedel@amd.com>
-X-OriginalArrivalTime: 04 Aug 2008 16:04:51.0683 (UTC) FILETIME=[D3D28B30:01C8F64B]
+X-OriginalArrivalTime: 04 Aug 2008 16:04:51.0521 (UTC) FILETIME=[D3B9D310:01C8F64B]
 MIME-Version: 1.0
 Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is a preparation patch for introducing a generic iommu_num_pages function.
+
 Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
 ---
- arch/x86/kernel/amd_iommu.c |   11 ++++++-----
- 1 files changed, 6 insertions(+), 5 deletions(-)
+ arch/powerpc/kernel/iommu.c |   12 ++++++------
+ 1 files changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/arch/x86/kernel/amd_iommu.c b/arch/x86/kernel/amd_iommu.c
-index f211341..108e003 100644
---- a/arch/x86/kernel/amd_iommu.c
-+++ b/arch/x86/kernel/amd_iommu.c
-@@ -182,7 +182,7 @@ static int iommu_flush_pages(struct amd_iommu *iommu, u16 domid,
- 		u64 address, size_t size)
+diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
+index 550a193..e2cf632 100644
+--- a/arch/powerpc/kernel/iommu.c
++++ b/arch/powerpc/kernel/iommu.c
+@@ -51,7 +51,7 @@ static int protect4gb = 1;
+ 
+ static void __iommu_free(struct iommu_table *, dma_addr_t, unsigned int);
+ 
+-static inline unsigned long iommu_num_pages(unsigned long vaddr,
++static inline unsigned long iommu_nr_pages(unsigned long vaddr,
+ 					    unsigned long slen)
  {
- 	int s = 0;
--	unsigned pages = iommu_nr_pages(address, size);
-+	unsigned pages = iommu_num_pages(address, size, PAGE_SIZE);
+ 	unsigned long npages;
+@@ -325,7 +325,7 @@ int iommu_map_sg(struct device *dev, struct iommu_table *tbl,
+ 		}
+ 		/* Allocate iommu entries for that segment */
+ 		vaddr = (unsigned long) sg_virt(s);
+-		npages = iommu_num_pages(vaddr, slen);
++		npages = iommu_nr_pages(vaddr, slen);
+ 		align = 0;
+ 		if (IOMMU_PAGE_SHIFT < PAGE_SHIFT && slen >= PAGE_SIZE &&
+ 		    (vaddr & ~PAGE_MASK) == 0)
+@@ -418,7 +418,7 @@ int iommu_map_sg(struct device *dev, struct iommu_table *tbl,
+ 			unsigned long vaddr, npages;
  
- 	address &= PAGE_MASK;
+ 			vaddr = s->dma_address & IOMMU_PAGE_MASK;
+-			npages = iommu_num_pages(s->dma_address, s->dma_length);
++			npages = iommu_nr_pages(s->dma_address, s->dma_length);
+ 			__iommu_free(tbl, vaddr, npages);
+ 			s->dma_address = DMA_ERROR_CODE;
+ 			s->dma_length = 0;
+@@ -452,7 +452,7 @@ void iommu_unmap_sg(struct iommu_table *tbl, struct scatterlist *sglist,
  
-@@ -554,8 +554,9 @@ static struct dma_ops_domain *dma_ops_domain_alloc(struct amd_iommu *iommu,
- 	if (iommu->exclusion_start &&
- 	    iommu->exclusion_start < dma_dom->aperture_size) {
- 		unsigned long startpage = iommu->exclusion_start >> PAGE_SHIFT;
--		int pages = iommu_nr_pages(iommu->exclusion_start,
--					    iommu->exclusion_length);
-+		int pages = iommu_num_pages(iommu->exclusion_start,
-+					    iommu->exclusion_length,
-+					    PAGE_SIZE);
- 		dma_ops_reserve_addresses(dma_dom, startpage, pages);
+ 		if (sg->dma_length == 0)
+ 			break;
+-		npages = iommu_num_pages(dma_handle, sg->dma_length);
++		npages = iommu_nr_pages(dma_handle, sg->dma_length);
+ 		__iommu_free(tbl, dma_handle, npages);
+ 		sg = sg_next(sg);
  	}
+@@ -584,7 +584,7 @@ dma_addr_t iommu_map_single(struct device *dev, struct iommu_table *tbl,
+ 	BUG_ON(direction == DMA_NONE);
  
-@@ -764,7 +765,7 @@ static dma_addr_t __map_single(struct device *dev,
- 	unsigned int pages;
- 	int i;
+ 	uaddr = (unsigned long)vaddr;
+-	npages = iommu_num_pages(uaddr, size);
++	npages = iommu_nr_pages(uaddr, size);
  
--	pages = iommu_nr_pages(paddr, size);
-+	pages = iommu_num_pages(paddr, size, PAGE_SIZE);
- 	paddr &= PAGE_MASK;
+ 	if (tbl) {
+ 		align = 0;
+@@ -617,7 +617,7 @@ void iommu_unmap_single(struct iommu_table *tbl, dma_addr_t dma_handle,
+ 	BUG_ON(direction == DMA_NONE);
  
- 	address = dma_ops_alloc_addresses(dev, dma_dom, pages);
-@@ -799,7 +800,7 @@ static void __unmap_single(struct amd_iommu *iommu,
- 	if ((dma_addr == 0) || (dma_addr + size > dma_dom->aperture_size))
- 		return;
- 
--	pages = iommu_nr_pages(dma_addr, size);
-+	pages = iommu_num_pages(dma_addr, size, PAGE_SIZE);
- 	dma_addr &= PAGE_MASK;
- 	start = dma_addr;
- 
+ 	if (tbl) {
+-		npages = iommu_num_pages(dma_handle, size);
++		npages = iommu_nr_pages(dma_handle, size);
+ 		iommu_free(tbl, dma_handle, npages);
+ 	}
+ }
 -- 
 1.5.3.7
 
