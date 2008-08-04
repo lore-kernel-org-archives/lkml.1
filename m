@@ -1,71 +1,296 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754050AbYHDJfF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754367AbYHDJg4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754050AbYHDJfF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 05:35:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752731AbYHDJey
+	id S1754367AbYHDJg4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 05:36:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752824AbYHDJgs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 05:34:54 -0400
-Received: from rv-out-0506.google.com ([209.85.198.226]:53557 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752422AbYHDJey (ORCPT
+	Mon, 4 Aug 2008 05:36:48 -0400
+Received: from mga10.intel.com ([192.55.52.92]:56305 "EHLO
+	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752816AbYHDJgr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 05:34:54 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=LsVGDIRrGHuYcG7B3dowmfVTRRyZ+7X/ndtE8Y+xXEbiZOmk9+i1jdOKvQ1E682nJF
-         GMOMKXIin6bW/OwWGCl8YmPZo3vxkTSgE0hG0pJY9wKw/OVGvzBev1q8v1gW18weJAEC
-         ZRNkYvkw2Ys2Jb2EGjGS6XyrWFM55FZMyx+fs=
-Message-ID: <c4e36d110808040234m2564cb7cveac6e8e8bbb68835@mail.gmail.com>
-Date: Mon, 4 Aug 2008 11:34:53 +0200
-From: "Zdenek Kabelac" <zdenek.kabelac@gmail.com>
-To: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-Subject: INFO: trying to register non-static key
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 4 Aug 2008 05:36:47 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.31,304,1215414000"; 
+   d="scan'208";a="367688896"
+Subject: [PATCH] Using Intel CRC32 instruction to accelerate CRC32c
+	algorithm by new crypto API.
+From: Austin Zhang <austin_zhang@linux.intel.com>
+To: herbert@gondor.apana.org.au, davem@davemloft.net
+Cc: linux-kernel@vger.kernel.org, linux-crypto@vger.kernel.org
+Content-Type: text/plain
+Date: Mon, 04 Aug 2008 05:35:07 -0400
+Message-Id: <1217842507.20845.18.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello
+>From Nehalem processor onward, Intel processors can support hardware 
+accelerated CRC32c algorithm with the new CRC32 instruction in SSE 4.2 
+instruction set.
+The patch detects the availability of the feature, and chooses the 
+most proper way to calculate CRC32c checksum.
+Byte code instructions are used for compiler compatibility.
+No MMX / XMM registers is involved in the implementation.
 
-Happened during reinsert of the loop module
+Signed-off-by: Austin Zhang <austin.zhang@intel.com>
+Signed-off-by: Kent Liu <kent.liu@intel.com>
+---
+ arch/x86/crypto/Makefile       |    2
+ arch/x86/crypto/crc32c-intel.c |  192 +++++++++++++++++++++++++++++++++++++++++
+ crypto/Kconfig                 |   11 ++
+ include/asm-x86/cpufeature.h   |    2
+ 4 files changed, 207 insertions(+)
 
-[ 7145.533707] INFO: trying to register non-static key.
-[ 7145.533713] the code is fine but needs lockdep annotation.
-[ 7145.533719] turning off the locking correctness validator.
-[ 7145.533728] Pid: 20864, comm: rmmod Not tainted 2.6.27-rc1 #56
-[ 7145.533733]
-[ 7145.533735] Call Trace:
-[ 7145.533751]  [<ffffffff81065d80>] ? static_obj+0x80/0x90
-[ 7145.533761]  [<ffffffff8106913f>] __lock_acquire+0x12af/0x13b0
-[ 7145.533770]  [<ffffffff8106646d>] ? trace_hardirqs_off+0xd/0x10
-[ 7145.533783]  [<ffffffff810135c0>] ? native_sched_clock+0x90/0xb0
-[ 7145.533794]  [<ffffffff81053172>] ? __cancel_work_timer+0x72/0x230
-[ 7145.533803]  [<ffffffff810692d6>] lock_acquire+0x96/0xe0
-[ 7145.533812]  [<ffffffff81053172>] ? __cancel_work_timer+0x72/0x230
-[ 7145.533824]  [<ffffffff810531a2>] __cancel_work_timer+0xa2/0x230
-[ 7145.533832]  [<ffffffff8104af2a>] ? try_to_del_timer_sync+0x5a/0x70
-[ 7145.533844]  [<ffffffff81319ab0>] ? sub_preempt_count+0x80/0x120
-[ 7145.533857]  [<ffffffff81315dc5>] ? _spin_unlock_irqrestore+0x45/0x90
-[ 7145.533866]  [<ffffffff8104af2a>] ? try_to_del_timer_sync+0x5a/0x70
-[ 7145.533875]  [<ffffffff810658d4>] ? lock_release_holdtime+0x74/0xd0
-[ 7145.533885]  [<ffffffff8105334b>] cancel_work_sync+0xb/0x10
-[ 7145.533897]  [<ffffffff8117e1d7>] blk_sync_queue+0x27/0x30
-[ 7145.533906]  [<ffffffff8117ffd3>] blk_release_queue+0x23/0x70
-[ 7145.533917]  [<ffffffff8118e792>] kobject_release+0x52/0xb0
-[ 7145.533926]  [<ffffffff8118e740>] ? kobject_release+0x0/0xb0
-[ 7145.533935]  [<ffffffff8118f807>] kref_put+0x37/0x70
-[ 7145.533943]  [<ffffffff8118e647>] kobject_put+0x27/0x60
-[ 7145.533951]  [<ffffffff8117e19b>] blk_cleanup_queue+0x5b/0x70
-[ 7145.533964]  [<ffffffffa03cd0b8>] loop_free+0x18/0x60 [loop]
-[ 7145.533976]  [<ffffffffa03cf90a>] loop_exit+0x6e/0xb6 [loop]
-[ 7145.533988]  [<ffffffff810742ff>] sys_delete_module+0x1cf/0x2d0
-[ 7145.533999]  [<ffffffff81315726>] ? trace_hardirqs_on_thunk+0x3a/0x3f
-[ 7145.534009]  [<ffffffff8106776b>] ? trace_hardirqs_on_caller+0x14b/0x1b0
-[ 7145.534023]  [<ffffffff8100c5bb>] system_call_fastpath+0x16/0x1b
+diff -Naurp linux-2.6/arch/x86/crypto/crc32c-intel.c linux-2.6-patch/arch/x86/crypto/crc32c-intel.c
+--- linux-2.6/arch/x86/crypto/crc32c-intel.c	1969-12-31 19:00:00.000000000 -0500
++++ linux-2.6-patch/arch/x86/crypto/crc32c-intel.c	2008-08-04 01:59:00.000000000 -0400
+@@ -0,0 +1,192 @@
++/*
++ * Using hardware provided CRC32 instruction to accelerate the CRC32 disposal.
++ * CRC32C polynomial:0x1EDC6F41(BE)/0x82F63B78(LE)
++ * CRC32 is a new instruction in Intel SSE4.2, the reference can be found at:
++ * http://www.intel.com/products/processor/manuals/
++ * Intel(R) 64 and IA-32 Architectures Software Developer's Manual
++ * Volume 2A: Instruction Set Reference, A-M
++ */
++#include <linux/init.h>
++#include <linux/module.h>
++#include <linux/string.h>
++#include <linux/kernel.h>
++#include <crypto/internal/hash.h>
++
++#include <asm/cpufeature.h>
++
++#define CHKSUM_BLOCK_SIZE	1
++#define CHKSUM_DIGEST_SIZE	4
++
++#ifdef CONFIG_X86_64
++#define REX_PRE "0x48, "
++#define SCALE_F 8
++#else
++#define REX_PRE
++#define SCALE_F 4
++#endif
++
++u32 crc32c_intel_le_hw_byte(u32 crc, unsigned char const *data, size_t length)
++{
++	while (length--) {
++		__asm__ __volatile__(
++			".byte 0xf2, 0xf, 0x38, 0xf0, 0xf1"
++			:"=S"(crc)
++			:"0"(crc), "c"(*data)
++		);
++		data++;
++	}
++
++	return crc;
++}
++
++u32 __pure crc32c_intel_le_hw(u32 crc, unsigned char const *p, size_t len)
++{
++	unsigned int iquotient = len / SCALE_F;
++	unsigned int iremainder = len % SCALE_F;
++#ifdef CONFIG_X86_64
++	u64 *ptmp = (u64 *)p;
++#else
++	u32 *ptmp = (u32 *)p;
++#endif
++
++	while (iquotient--) {
++		__asm__ __volatile__(
++			".byte 0xf2, " REX_PRE "0xf, 0x38, 0xf1, 0xf1;"
++			:"=S"(crc)
++			:"0"(crc), "c"(*ptmp)
++		);
++		ptmp++;
++	}
++
++	if (iremainder)
++		crc = crc32c_intel_le_hw_byte(crc, (unsigned char *)ptmp,
++				 iremainder);
++
++	return crc;
++}
++
++/*
++ * Setting the seed allows arbitrary accumulators and flexible XOR policy
++ * If your algorithm starts with ~0, then XOR with ~0 before you set
++ * the seed.
++ */
++static int crc32c_intel_setkey(struct crypto_ahash *hash, const u8 *key,
++			unsigned int keylen)
++{
++	u32 *mctx = crypto_ahash_ctx(hash);
++
++	if (keylen != sizeof(u32)) {
++		crypto_ahash_set_flags(hash, CRYPTO_TFM_RES_BAD_KEY_LEN);
++		return -EINVAL;
++	}
++	*mctx = le32_to_cpup((__le32 *)key);
++	return 0;
++}
++
++static int crc32c_intel_init(struct ahash_request *req)
++{
++	u32 *mctx = crypto_ahash_ctx(crypto_ahash_reqtfm(req));
++	u32 *crcp = ahash_request_ctx(req);
++
++	*crcp = *mctx;
++
++	return 0;
++}
++
++static int crc32c_intel_update(struct ahash_request *req)
++{
++	struct crypto_hash_walk walk;
++	u32 *crcp = ahash_request_ctx(req);
++	u32 crc = *crcp;
++	int nbytes;
++
++	for (nbytes = crypto_hash_walk_first(req, &walk); nbytes;
++	   nbytes = crypto_hash_walk_done(&walk, 0))
++	crc = crc32c_intel_le_hw(crc, walk.data, nbytes);
++
++	*crcp = crc;
++	return 0;
++}
++
++static int crc32c_intel_final(struct ahash_request *req)
++{
++	u32 *crcp = ahash_request_ctx(req);
++
++	*(__le32 *)req->result = ~cpu_to_le32p(crcp);
++	return 0;
++}
++
++static int crc32c_intel_digest(struct ahash_request *req)
++{
++	struct crypto_hash_walk walk;
++	u32 *mctx = crypto_ahash_ctx(crypto_ahash_reqtfm(req));
++	u32 crc = *mctx;
++	int nbytes;
++
++	for (nbytes = crypto_hash_walk_first(req, &walk); nbytes;
++	   nbytes = crypto_hash_walk_done(&walk, 0))
++		crc = crc32c_intel_le_hw(crc, walk.data, nbytes);
++
++	*(__le32 *)req->result = ~cpu_to_le32(crc);
++	return 0;
++}
++
++static int crc32c_intel_cra_init(struct crypto_tfm *tfm)
++{
++	u32 *key = crypto_tfm_ctx(tfm);
++
++	*key = ~0;
++
++	tfm->crt_ahash.reqsize = sizeof(u32);
++
++	if (cpu_has_xmm4_2)
++		return 0;
++	else
++		return -1;
++}
++
++static struct crypto_alg alg = {
++	.cra_name               =       "crc32c",
++	.cra_driver_name        =       "crc32c-intel",
++	.cra_priority           =       200,
++	.cra_flags              =       CRYPTO_ALG_TYPE_AHASH,
++	.cra_blocksize          =       CHKSUM_BLOCK_SIZE,
++	.cra_alignmask          =       3,
++	.cra_ctxsize            =       sizeof(u32),
++	.cra_module             =       THIS_MODULE,
++	.cra_list               =       LIST_HEAD_INIT(alg.cra_list),
++	.cra_init               =       crc32c_intel_cra_init,
++	.cra_type               =       &crypto_ahash_type,
++	.cra_u                  =       {
++		.ahash = {
++			.digestsize    =       CHKSUM_DIGEST_SIZE,
++			.setkey        =       crc32c_intel_setkey,
++			.init          =       crc32c_intel_init,
++			.update        =       crc32c_intel_update,
++			.final         =       crc32c_intel_final,
++			.digest        =       crc32c_intel_digest,
++		}
++	}
++};
++
++
++static int __init crc32c_intel_mod_init(void)
++{
++	return crypto_register_alg(&alg);
++}
++
++static void __exit crc32c_intel_mod_fini(void)
++{
++	crypto_unregister_alg(&alg);
++}
++
++module_init(crc32c_intel_mod_init);
++module_exit(crc32c_intel_mod_fini);
++
++MODULE_AUTHOR("Austin Zhang <austin.zhang@intel.com>, Kent Liu <kent.liu@intel.com>");
++MODULE_DESCRIPTION("CRC32c (Castagnoli) optimization using Intel Hardware.");
++MODULE_LICENSE("GPL");
++
++MODULE_ALIAS("crc32c");
++MODULE_ALIAS("crc32c-intel");
++
+diff -Naurp linux-2.6/arch/x86/crypto/Makefile linux-2.6-patch/arch/x86/crypto/Makefile
+--- linux-2.6/arch/x86/crypto/Makefile	2008-08-04 01:08:00.000000000 -0400
++++ linux-2.6-patch/arch/x86/crypto/Makefile	2008-08-04 01:59:00.000000000 -0400
+@@ -10,6 +10,8 @@ obj-$(CONFIG_CRYPTO_AES_X86_64) += aes-x
+ obj-$(CONFIG_CRYPTO_TWOFISH_X86_64) += twofish-x86_64.o
+ obj-$(CONFIG_CRYPTO_SALSA20_X86_64) += salsa20-x86_64.o
+ 
++obj-$(CONFIG_CRYPTO_CRC32C_INTEL) += crc32c-intel.o
++
+ aes-i586-y := aes-i586-asm_32.o aes_glue.o
+ twofish-i586-y := twofish-i586-asm_32.o twofish_glue.o
+ salsa20-i586-y := salsa20-i586-asm_32.o salsa20_glue.o
+diff -Naurp linux-2.6/crypto/Kconfig linux-2.6-patch/crypto/Kconfig
+--- linux-2.6/crypto/Kconfig	2008-08-04 01:08:00.000000000 -0400
++++ linux-2.6-patch/crypto/Kconfig	2008-08-04 01:59:00.000000000 -0400
+@@ -221,6 +221,17 @@ config CRYPTO_CRC32C
+ 	  See Castagnoli93.  This implementation uses lib/libcrc32c.
+           Module will be crc32c.
+ 
++config CRYPTO_CRC32C_INTEL
++        tristate "CRC32c INTEL hardware acceleration"
++        select CRYPTO_HASH
++        help
++          In Intel processor with SSE4.2 supported, the processor will
++          support CRC32C implemetation using hardware accelerated CRC32 
++          instruction. This option will create 'crc32c-intel' module,
++          which will enable any routine to use the CRC32 instruction to 
++          gain performance compared with software implementation.
++          Module will be crc32c-intel.
++
+ config CRYPTO_MD4
+ 	tristate "MD4 digest algorithm"
+ 	select CRYPTO_ALGAPI
+diff -Naurp linux-2.6/include/asm-x86/cpufeature.h linux-2.6-patch/include/asm-x86/cpufeature.h
+--- linux-2.6/include/asm-x86/cpufeature.h	2008-08-04 01:08:08.000000000 -0400
++++ linux-2.6-patch/include/asm-x86/cpufeature.h	2008-08-04 01:59:00.000000000 -0400
+@@ -91,6 +91,7 @@
+ #define X86_FEATURE_CX16	(4*32+13) /* CMPXCHG16B */
+ #define X86_FEATURE_XTPR	(4*32+14) /* Send Task Priority Messages */
+ #define X86_FEATURE_DCA		(4*32+18) /* Direct Cache Access */
++#define X86_FEATURE_XMM4_2	(4*32+20) /* Streaming SIMD Extensions-4.2 */
+ 
+ /* VIA/Cyrix/Centaur-defined CPU features, CPUID level 0xC0000001, word 5 */
+ #define X86_FEATURE_XSTORE	(5*32+ 2) /* on-CPU RNG present (xstore insn) */
+@@ -189,6 +190,7 @@ extern const char * const x86_power_flag
+ #define cpu_has_gbpages		boot_cpu_has(X86_FEATURE_GBPAGES)
+ #define cpu_has_arch_perfmon	boot_cpu_has(X86_FEATURE_ARCH_PERFMON)
+ #define cpu_has_pat		boot_cpu_has(X86_FEATURE_PAT)
++#define cpu_has_xmm4_2		boot_cpu_has(X86_FEATURE_XMM4_2)
+ 
+ #if defined(CONFIG_X86_INVLPG) || defined(CONFIG_X86_64)
+ # define cpu_has_invlpg		1
 
-Zdenek
