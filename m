@@ -1,47 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757174AbYHDO0h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756706AbYHDO2m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757174AbYHDO0h (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 10:26:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754012AbYHDO02
+	id S1756706AbYHDO2m (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 10:28:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754105AbYHDO2f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 10:26:28 -0400
-Received: from sj-iport-1.cisco.com ([171.71.176.70]:42245 "EHLO
-	sj-iport-1.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753797AbYHDO01 (ORCPT
+	Mon, 4 Aug 2008 10:28:35 -0400
+Received: from boogie.lpds.sztaki.hu ([193.224.70.237]:50950 "EHLO
+	boogie.lpds.sztaki.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754012AbYHDO2e (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 10:26:27 -0400
-X-IronPort-AV: E=Sophos;i="4.31,304,1215388800"; 
-   d="scan'208";a="61169469"
-From: Roland Dreier <rdreier@cisco.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, jeremy@goop.org, hugh@veritas.com,
-       mingo@elte.hu, akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       davej@redhat.com
-Subject: Re: [RFC][PATCH 7/7] lockdep: spin_lock_nest_lock()
-References: <20080804130317.994042639@chello.nl>
-	<20080804131012.246115111@chello.nl> <ada63qgvppx.fsf@cisco.com>
-	<1217859571.3589.7.camel@twins>
-X-Message-Flag: Warning: May contain useful information
-Date: Mon, 04 Aug 2008 07:26:26 -0700
-In-Reply-To: <1217859571.3589.7.camel@twins> (Peter Zijlstra's message of
-	"Mon, 04 Aug 2008 16:19:31 +0200")
-Message-ID: <aday73cua99.fsf@cisco.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	Mon, 4 Aug 2008 10:28:34 -0400
+Date: Mon, 4 Aug 2008 16:28:32 +0200
+From: Gabor Gombas <gombasg@sztaki.hu>
+To: Tejun Heo <htejun@gmail.com>
+Cc: Elias Oltmanns <eo@nebensachen.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Jeff Garzik <jeff@garzik.org>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       James Bottomley <James.Bottomley@hansenpartnership.com>,
+       Pavel Machek <pavel@ucw.cz>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/5] libata: Implement disk shock protection support
+Message-ID: <20080804142831.GW8749@boogie.lpds.sztaki.hu>
+References: <87prp1kvyy.fsf@denkblock.local> <20080726062142.29070.10413.stgit@denkblock.local> <4892B8FE.1070400@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 04 Aug 2008 14:26:26.0266 (UTC) FILETIME=[13EB6BA0:01C8F63E]
-Authentication-Results: sj-dkim-4; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim4002 verified; ); 
+Content-Disposition: inline
+In-Reply-To: <4892B8FE.1070400@gmail.com>
+X-Copyright: Forwarding or publishing without permission is prohibited.
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > No more than 48 locks (mutexes, rwlocks, spinlock, RCU, everything
- > covered by lockdep) held by any one code-path; including nested
- > interrupt contexts.
+On Fri, Aug 01, 2008 at 04:19:26PM +0900, Tejun Heo wrote:
 
-Does that mean that something like the new mm_take_all_locks() operation
-is going to explode if someone tries to use it with lockdep on?
+> However, SATA or not, there simply isn't a way to abort commands in ATA.
+>  Issuing random command while other commands are in progress simply is
+> state machine violation and there will be many interesting results
+> including complete system lockup (ATA controller dying while holding the
+> PCI bus).
 
- - R.
+A system lockup may be an acceptable compromise if that saves the
+hardware. Maybe the kernel should explicitely panic unless the
+controller/drive is known to be able to recover.
+
+Gabor
+
+-- 
+     ---------------------------------------------------------
+     MTA SZTAKI Computer and Automation Research Institute
+                Hungarian Academy of Sciences
+     ---------------------------------------------------------
