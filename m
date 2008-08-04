@@ -1,65 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757996AbYHDBvu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758934AbYHDBzd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757996AbYHDBvu (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Aug 2008 21:51:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752817AbYHDBvm
+	id S1758934AbYHDBzd (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Aug 2008 21:55:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753349AbYHDBzZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Aug 2008 21:51:42 -0400
-Received: from fg-out-1718.google.com ([72.14.220.159]:14039 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752030AbYHDBvm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Aug 2008 21:51:42 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=iVFql+rLQeXcMaR7hDmMRSrKrtm8baojGe77B3iz51CH6tBdoXT1Ro5PE1ahh3PTxP
-         rRhl8oFcM45Jy39oCkkfHiIGP2usUutDinZlGsDK8MOFAoIpUcO4KAUvW2tCNGGWP0zx
-         nh8Xc6SfT2HimrVGqUXkfBHN3FEh+x2loMLEc=
-Message-ID: <91b13c310808031851v2ca9923fuf543eb4fe9c92e2b@mail.gmail.com>
-Date: Mon, 4 Aug 2008 09:51:40 +0800
-From: "rae l" <crquan@gmail.com>
-To: "lkml - Kernel Mailing List" <linux-kernel@vger.kernel.org>
-Subject: some problems with latest cscope-15.6, the better way to generate cscope database change
-Cc: cscope-devel@lists.sourceforge.net
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+	Sun, 3 Aug 2008 21:55:25 -0400
+Received: from home.keithp.com ([63.227.221.253]:2962 "EHLO keithp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752909AbYHDBzY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 Aug 2008 21:55:24 -0400
+Subject: Re: [PATCH] Export shmem_file_setup and shmem_getpage for DRM-GEM
+From: Keith Packard <keithp@keithp.com>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: keithp@keithp.com, Eric Anholt <eric@anholt.net>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20080801205052.GA28747@infradead.org>
+References: <1217573919-7496-1-git-send-email-eric@anholt.net>
+	 <1217573919-7496-2-git-send-email-eric@anholt.net>
+	 <20080801205052.GA28747@infradead.org>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-M8lFRuOHcubjwbbXQfSp"
+Date: Sun, 03 Aug 2008 18:54:56 -0700
+Message-Id: <1217814896.23437.420.camel@koto.keithp.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Denis ChengRq <crquan@gmail.com>
 
-It's a problem about cscope target of kernel Makefile, and the cscope
-plugin of emacs:
-1. `make cscope` will generate cscope.files cscope.{in,po,}.out;
-2. the cscope plugin expect a cscope.out.{in,po,};
-3. the default `cscope -b` would generate cscope.{in,po,}.out;
+--=-M8lFRuOHcubjwbbXQfSp
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-There are three approach to solve it:
-1. modify the cscope C code;
-2. modify the cscope emacs plugin lisp code;
-3. modify the Makefile;
+On Fri, 2008-08-01 at 16:50 -0400, Christoph Hellwig wrote:
 
-I have tried to communicate with the cscope upstream, but later I
-realize the third approach is most meaningful.
-So here is the one line patch:
+> Nope.  Let the userspace protion create a file in shmfs instead of
+> adding fugly kernel interfaces hdiing this fact.
 
----
+shmem_file_setup is already public, just not exposed to kernel modules.
+I suppose we could have user space allocate the shmem file (either via
+tmpfs or sysv ipc). tmpfs suffers from the maxfd issue, while sysv ipc
+runs up against the SHMMAX value.
 
-diff --git a/Makefile b/Makefile
-index f156f40..9148c3f 100644
---- a/Makefile
-+++ b/Makefile
-@@ -1492,7 +1492,7 @@ quiet_cmd_cscope-file = FILELST cscope.files
-       cmd_cscope-file = (echo \-k; echo \-q; $(all-sources)) > cscope.files
+The other interface we use, shmem_getpage, doesn't seem supported
+through existing interfaces though. I don't want to map the file into
+any address space, I just need a pointer to the physical pages which
+underlie it. I'll take those pages and hand them to the graphics engine.
+shmem_getpage performs precisely the operation needed here.
 
- quiet_cmd_cscope = MAKE    cscope.out
--      cmd_cscope = cscope -b
-+      cmd_cscope = cscope -b -f cscope.out
+--=20
+keith.packard@intel.com
 
- cscope: FORCE
- 	$(call cmd,cscope-file)
+--=-M8lFRuOHcubjwbbXQfSp
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iD8DBQBIlmFwQp8BWwlsTdMRAvXUAKDS8yX3yMHq/CPGqRdF8zGN9ejiXACgsLpy
+QXDUyqy7tHAK55YRiY7laRU=
+=GnS9
+-----END PGP SIGNATURE-----
+
+--=-M8lFRuOHcubjwbbXQfSp--
+
