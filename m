@@ -1,53 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761210AbYHDTGI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761289AbYHDTHr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761210AbYHDTGI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 15:06:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761132AbYHDTFi
+	id S1761289AbYHDTHr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 15:07:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761257AbYHDTH3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 15:05:38 -0400
-Received: from viefep31-int.chello.at ([62.179.121.49]:53461 "EHLO
-	viefep31-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761116AbYHDTFd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 15:05:33 -0400
-Subject: Re: [PATCH] workaround minor lockdep bug triggered by
-	mm_take_all_locks
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Roland Dreier <rdreier@cisco.com>
-Cc: Andrea Arcangeli <andrea@qumranet.com>, Dave Jones <davej@redhat.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, jeremy@goop.org, hugh@veritas.com,
-       mingo@elte.hu, akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-In-Reply-To: <adazlnssj6h.fsf@cisco.com>
-References: <ada63qgvppx.fsf@cisco.com> <1217859571.3589.7.camel@twins>
-	 <aday73cua99.fsf@cisco.com> <1217860332.3589.11.camel@twins>
-	 <20080804145318.GA17867@redhat.com> <1217861763.3589.13.camel@twins>
-	 <20080804162657.GI11476@duo.random> <1217867935.3589.35.camel@twins>
-	 <20080804172728.GJ11476@duo.random> <20080804174659.GK11476@duo.random>
-	 <20080804175730.GL11476@duo.random> <1217875739.3589.56.camel@twins>
-	 <adazlnssj6h.fsf@cisco.com>
-Content-Type: text/plain
-Date: Mon, 04 Aug 2008 21:05:29 +0200
-Message-Id: <1217876729.3589.66.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 4 Aug 2008 15:07:29 -0400
+Received: from mail.fieldses.org ([66.93.2.214]:52597 "EHLO fieldses.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761248AbYHDTHW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Aug 2008 15:07:22 -0400
+Date: Mon, 4 Aug 2008 15:07:15 -0400
+To: Greg Banks <gnb@melbourne.sgi.com>
+Cc: NeilBrown <neilb@suse.de>, Michael Shuey <shuey@purdue.edu>,
+       Shehjar Tikoo <shehjart@cse.unsw.edu.au>, linux-kernel@vger.kernel.org,
+       linux-nfs@vger.kernel.org, rees@citi.umich.edu, aglo@citi.umich.edu
+Subject: Re: high latency NFS
+Message-ID: <20080804190715.GJ25940@fieldses.org>
+References: <20080730192110.GA17061@fieldses.org> <4890DFC7.3020309@cse.unsw.edu.au> <200807302235.50068.shuey@purdue.edu> <20080731031512.GA26203@fieldses.org> <18577.25513.494821.481623@notabene.brown> <20080801072320.GE6201@disturbed> <20080801191559.GI7764@fieldses.org> <20080804003206.GB6119@disturbed> <52873.192.168.1.70.1217813385.squirrel@neil.brown.name> <4896A4EE.9030706@melbourne.sgi.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4896A4EE.9030706@melbourne.sgi.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-08-04 at 11:56 -0700, Roland Dreier wrote:
-> > NAK, come-on, you didn't even bother to look at the available
->  > annotations..
+On Mon, Aug 04, 2008 at 04:42:54PM +1000, Greg Banks wrote:
+> NeilBrown wrote:
+> > On Mon, August 4, 2008 10:32 am, Dave Chinner wrote:
+> >   
+> >>>> i.e. take the solution that Greg banks used for the CPU scheduler
+> >>>> overload issue (limiting the number of nfsds woken but not yet on
+> >>>> the CPU),
+> >>>>         
+> >
+> > Ahh... I remembered Greg talking about that, went looking, and
+> > couldn't find it.  I couldn't even find any mail about it, yet I'm
+> > sure I saw a patch..
+> >   
+> http://marc.info/?l=linux-nfs&m=115501004819230&w=2
+> > Greg: Do you remember what happened to this?  Did I reject it for some
+> > reason, or did it never get sent?  or ...
+> >   
+> I think we got all caught up arguing about the other patches in the
+> batch (the last round of the everlasting  "dynamic nfsd management for
+> Linux" argument) and between us we managed to drop the patch on the ground.
 > 
-> Agree that this trylock-in-a-loop is a horrible hack that should never
-> be merged.
+> http://thread.gmane.org/gmane.linux.nfs/10372
 > 
-> However I wonder what you think the right way to annotate the
-> potentially unbounded number of locks taken in mm_take_all_locks() is?
+> I think the only part of that patchset that you explicitly rejected was
+> the one where I tried to kill off the useless "th" line in
+> /proc/net/rc/nfsd.
 
-Good question, one which I don't currently have an answer for - see my
-other mail why getting rid of the MAX_LOCK_DEPTH limitation is hard.
+Looks like that was me, apologies.  Breaking a documented interface to
+userspace just set off an alarm.  But if we really convince ourselves
+that it's useless, then OK.
 
-I'll give it another serious go tomorrow (if nothing else preempts me).
+(Though maybe your idea of leaving the line in place with just constant
+zeros is good.  Just because the data's useless doesn't mean someone out
+there may have a script that does otherwise useful things but that
+happens to fail if it can't parse /proc/net/rpc/nfsd.)
 
+Looks like it's been two years now--any chance of rebasing those patches
+and resending?
+
+--b.
