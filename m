@@ -1,67 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764955AbYHDV5A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765230AbYHDV5s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764955AbYHDV5A (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 17:57:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762564AbYHDVzy
+	id S1765230AbYHDV5s (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 17:57:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764818AbYHDV5R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 17:55:54 -0400
-Received: from h155.mvista.com ([63.81.120.155]:2955 "EHLO imap.sh.mvista.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1762454AbYHDVzx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 17:55:53 -0400
-Message-ID: <48977AE1.1070402@ru.mvista.com>
-Date: Tue, 05 Aug 2008 01:55:45 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
-MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Robert Hancock <hancockr@shaw.ca>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       James Bottomley <James.Bottomley@hansenpartnership.com>,
-       ksummit-2008-discuss@lists.linux-foundation.org,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-ide <linux-ide@vger.kernel.org>
-Subject: Re: Kernel Summit request for Discussion of future of ATA (libata)
- and IDE
-References: <fa.OGeO7gZvBG4obEzRbVltjSebgTQ@ifi.uio.no>	<fa.KtvYE2B2yrJqUleolhtMPN9ljAQ@ifi.uio.no>	<fa.AqEKTvguYFAzDFHy/We/8MpOqmo@ifi.uio.no>	<48976168.3020804@shaw.ca> <20080804205508.20a3f917@lxorguk.ukuu.org.uk>
-In-Reply-To: <20080804205508.20a3f917@lxorguk.ukuu.org.uk>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 4 Aug 2008 17:57:17 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:42834
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1757489AbYHDV5Q (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Aug 2008 17:57:16 -0400
+Date: Mon, 04 Aug 2008 14:57:13 -0700 (PDT)
+Message-Id: <20080804.145713.12569716.davem@davemloft.net>
+To: andrea@qumranet.com
+Cc: a.p.zijlstra@chello.nl, davej@redhat.com, rdreier@cisco.com,
+       torvalds@linux-foundation.org, jeremy@goop.org, hugh@veritas.com,
+       mingo@elte.hu, akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       arjan@infradead.org
+Subject: Re: [PATCH] workaround minor lockdep bug triggered by
+ mm_take_all_locks
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20080804210954.GC12464@duo.random>
+References: <20080804201514.GB12464@duo.random>
+	<1217882242.3589.90.camel@twins>
+	<20080804210954.GC12464@duo.random>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+From: Andrea Arcangeli <andrea@qumranet.com>
+Date: Mon, 4 Aug 2008 23:09:54 +0200
 
-Alan Cox wrote:
->> I was looking into the 32-bit PIO issue a bit yesterday. It looks like 
->> some of the VLB libata drivers are doing this internally already, so it 
->> shouldn't be hard to do this in the core. Only question is how we know 
->> generically if the controller can do it or not? It looks like in old
->>     
->
-> You don't. Basically it is controller dependant. Pretty much all the
-> newer controllers support the 32bit PIO data cycles. Most PCI controllers
-> it makes no speed difference but host bus controllers (especially
-> PIIX/ICH) really benefit.
->   
+> On Mon, Aug 04, 2008 at 10:37:22PM +0200, Peter Zijlstra wrote:
+> > You're so wrong it not even funny. It reports about deadlocks before
+> > they happen. All it needs is to observe a lock order violation and it
+> 
+> Now tell me how it helps to report them... It tells me the system has
+> crashed and where, it's not like I couldn't figure it out by myself
+> but just noticing nothing works and all cpus are spinning in some
+> spinlock slow path and pressing sysrq+t/p.
 
-    In what way if there's no speed gain?
+It tells you about deadlock scenerios that you haven't even encoutered
+yet.  It shows bugs for parallel code path sequences that have not
+even occurred yet.
 
->> supported. I couldn't track down where that bit was actually defined in 
->> the first place, all the way back to ATA-1 it seems to be indicated as 
->> reserved. Actually, I'm not sure why the drive cares in the first place, 
->> it would seem like a pure host controller issue..
->>     
->
-> It goes back before IDE into the depths of the original compaq spec. When
-> you have a device wired basically directly to the ISA bus (original IDE)
->   
-
-   ISA has only 8/16-bit data bus, so it could not have mattered 
-there... and I don't think that there ever was a direct connection 
-between the IDE and host bus other than ISA... except maybe EISA.
-
-MBR, Sergei
-
-
+But I think you're beyond the point of being able to see why lockdep
+is valuable.  So why don't we just move on.
