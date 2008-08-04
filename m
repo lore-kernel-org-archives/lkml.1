@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756718AbYHDVsb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752032AbYHDVsr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756718AbYHDVsb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 17:48:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765723AbYHDViV
+	id S1752032AbYHDVsr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 17:48:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762628AbYHDVip
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 17:38:21 -0400
-Received: from ns2.suse.de ([195.135.220.15]:50072 "EHLO mx2.suse.de"
+	Mon, 4 Aug 2008 17:38:45 -0400
+Received: from ns2.suse.de ([195.135.220.15]:50122 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765714AbYHDViT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 17:38:19 -0400
-Date: Mon, 4 Aug 2008 14:30:25 -0700
+	id S1765849AbYHDVin (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Aug 2008 17:38:43 -0400
+Date: Mon, 4 Aug 2008 14:30:27 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,15 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Mingming Cao <cmm@us.ibm.com>,
-       Jan Kara <jack@suse.cz>
-Subject: [patch 13/25] jbd: fix race between free buffer and commit
-	transaction
-Message-ID: <20080804213025.GM8014@suse.de>
+       alan@lxorguk.ukuu.org.uk, Jiri Kosina <jkosina@suse.cz>,
+       Dmitry Torokhov <dtor@mail.ru>
+Subject: [patch 14/25] Input: i8042 - add Intel D845PESV to nopnp list
+Message-ID: <20080804213027.GN8014@suse.de>
 References: <20080804203506.816201392@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="jbd-fix-race-between-free-buffer-and-commit-transaction.patch"
+Content-Disposition: inline; filename="input-i8042-add-intel-d845pesv-to-nopnp-list.patch"
 In-Reply-To: <20080804212725.GA7944@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -42,137 +41,100 @@ know.
 
 ------------------
 
-From: Mingming Cao <cmm@us.ibm.com>
+From: Jiri Kosina <jkosina@suse.cz>
 
-commit 3f31fddfa26b7594b44ff2b34f9a04ba409e0f91 upstream
+commit c3a34f4390396a4bede3f8b7bcc5153f50b974bb upstream
 
-journal_try_to_free_buffers() could race with jbd commit transaction when
-the later is holding the buffer reference while waiting for the data
-buffer to flush to disk.  If the caller of journal_try_to_free_buffers()
-request tries hard to release the buffers, it will treat the failure as
-error and return back to the caller.  We have seen the directo IO failed
-due to this race.  Some of the caller of releasepage() also expecting the
-buffer to be dropped when passed with GFP_KERNEL mask to the
-releasepage()->journal_try_to_free_buffers().
+This patch introduces i8042_dmi_nopnp_table to make it possible to perform
+DMI matches for systems that need 'i8042.nopnp' to work correctly, and
+introduces such an entry for Intel D845PESV -- this system doesn't
+detect PS2 mouse reliably without this option, as reported by Robert
+Lewis.
 
-With this patch, if the caller is passing the __GFP_WAIT and __GFP_FS to
-indicating this call could wait, in case of try_to_free_buffers() failed,
-let's waiting for journal_commit_transaction() to finish commit the
-current committing transaction, then try to free those buffers again.
+[dtor@mail.ru - make it compile if CONFIG_PNP is off - reported
+ by Randy Dunlap]
 
-[akpm@linux-foundation.org: coding-style fixes]
-Signed-off-by: Mingming Cao <cmm@us.ibm.com>
-Reviewed-by: Badari Pulavarty <pbadari@us.ibm.com>
-Acked-by: Jan Kara <jack@suse.cz>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Jiri Kosina <jkosina@suse.cz>
+Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/jbd/transaction.c |   57 +++++++++++++++++++++++++++++++++++++++++++++++++--
- mm/filemap.c         |    3 --
- 2 files changed, 56 insertions(+), 4 deletions(-)
+ drivers/input/serio/i8042-x86ia64io.h |   29 ++++++++++++++++++-----------
+ 1 file changed, 18 insertions(+), 11 deletions(-)
 
---- a/fs/jbd/transaction.c
-+++ b/fs/jbd/transaction.c
-@@ -1648,12 +1648,42 @@ out:
- 	return;
+--- a/drivers/input/serio/i8042-x86ia64io.h
++++ b/drivers/input/serio/i8042-x86ia64io.h
+@@ -63,7 +63,7 @@ static inline void i8042_write_command(i
+ 	outb(val, I8042_COMMAND_REG);
  }
  
-+/*
-+ * journal_try_to_free_buffers() could race with journal_commit_transaction()
-+ * The latter might still hold the a count on buffers when inspecting
-+ * them on t_syncdata_list or t_locked_list.
-+ *
-+ * journal_try_to_free_buffers() will call this function to
-+ * wait for the current transaction to finish syncing data buffers, before
-+ * tryinf to free that buffer.
-+ *
-+ * Called with journal->j_state_lock held.
-+ */
-+static void journal_wait_for_transaction_sync_data(journal_t *journal)
-+{
-+	transaction_t *transaction = NULL;
-+	tid_t tid;
-+
-+	spin_lock(&journal->j_state_lock);
-+	transaction = journal->j_committing_transaction;
-+
-+	if (!transaction) {
-+		spin_unlock(&journal->j_state_lock);
-+		return;
-+	}
-+
-+	tid = transaction->t_tid;
-+	spin_unlock(&journal->j_state_lock);
-+	log_wait_commit(journal, tid);
-+}
+-#if defined(__i386__) || defined(__x86_64__)
++#ifdef CONFIG_X86
  
- /**
-  * int journal_try_to_free_buffers() - try to free page buffers.
-  * @journal: journal for operation
-  * @page: to try and free
-- * @unused_gfp_mask: unused
-+ * @gfp_mask: we use the mask to detect how hard should we try to release
-+ * buffers. If __GFP_WAIT and __GFP_FS is set, we wait for commit code to
-+ * release the buffers.
-  *
-  *
-  * For all the buffers on this page,
-@@ -1682,9 +1712,11 @@ out:
-  * journal_try_to_free_buffer() is changing its state.  But that
-  * cannot happen because we never reallocate freed data as metadata
-  * while the data is part of a transaction.  Yes?
-+ *
-+ * Return 0 on failure, 1 on success
-  */
- int journal_try_to_free_buffers(journal_t *journal,
--				struct page *page, gfp_t unused_gfp_mask)
-+				struct page *page, gfp_t gfp_mask)
- {
- 	struct buffer_head *head;
- 	struct buffer_head *bh;
-@@ -1713,7 +1745,28 @@ int journal_try_to_free_buffers(journal_
- 		if (buffer_jbd(bh))
- 			goto busy;
- 	} while ((bh = bh->b_this_page) != head);
+ #include <linux/dmi.h>
+ 
+@@ -294,14 +294,19 @@ static struct dmi_system_id __initdata i
+ 	{ }
+ };
+ 
+-
+-
++#ifdef CONFIG_PNP
++static struct dmi_system_id __initdata i8042_dmi_nopnp_table[] = {
++	{
++		.ident = "Intel MBO Desktop D845PESV",
++		.matches = {
++			DMI_MATCH(DMI_BOARD_NAME, "D845PESV"),
++			DMI_MATCH(DMI_BOARD_VENDOR, "Intel Corporation"),
++		},
++	},
++	{ }
++};
+ #endif
+ 
+-#ifdef CONFIG_X86
+-
+-#include <linux/dmi.h>
+-
+ /*
+  * Some Wistron based laptops need us to explicitly enable the 'Dritek
+  * keyboard extension' to make their extra keys start generating scancodes.
+@@ -356,7 +361,6 @@ static struct dmi_system_id __initdata i
+ 
+ #endif /* CONFIG_X86 */
+ 
+-
+ #ifdef CONFIG_PNP
+ #include <linux/pnp.h>
+ 
+@@ -466,6 +470,11 @@ static int __init i8042_pnp_init(void)
+ 	int pnp_data_busted = 0;
+ 	int err;
+ 
++#ifdef CONFIG_X86
++	if (dmi_check_system(i8042_dmi_nopnp_table))
++		i8042_nopnp = 1;
++#endif
 +
- 	ret = try_to_free_buffers(page);
-+
-+	/*
-+	 * There are a number of places where journal_try_to_free_buffers()
-+	 * could race with journal_commit_transaction(), the later still
-+	 * holds the reference to the buffers to free while processing them.
-+	 * try_to_free_buffers() failed to free those buffers. Some of the
-+	 * caller of releasepage() request page buffers to be dropped, otherwise
-+	 * treat the fail-to-free as errors (such as generic_file_direct_IO())
-+	 *
-+	 * So, if the caller of try_to_release_page() wants the synchronous
-+	 * behaviour(i.e make sure buffers are dropped upon return),
-+	 * let's wait for the current transaction to finish flush of
-+	 * dirty data buffers, then try to free those buffers again,
-+	 * with the journal locked.
-+	 */
-+	if (ret == 0 && (gfp_mask & __GFP_WAIT) && (gfp_mask & __GFP_FS)) {
-+		journal_wait_for_transaction_sync_data(journal);
-+		ret = try_to_free_buffers(page);
-+	}
-+
- busy:
- 	return ret;
- }
---- a/mm/filemap.c
-+++ b/mm/filemap.c
-@@ -2581,9 +2581,8 @@ out:
-  * Otherwise return zero.
-  *
-  * The @gfp_mask argument specifies whether I/O may be performed to release
-- * this page (__GFP_IO), and whether the call may block (__GFP_WAIT).
-+ * this page (__GFP_IO), and whether the call may block (__GFP_WAIT & __GFP_FS).
-  *
-- * NOTE: @gfp_mask may go away, and this function may become non-blocking.
-  */
- int try_to_release_page(struct page *page, gfp_t gfp_mask)
- {
+ 	if (i8042_nopnp) {
+ 		printk(KERN_INFO "i8042: PNP detection disabled\n");
+ 		return 0;
+@@ -591,15 +600,13 @@ static int __init i8042_platform_init(vo
+         i8042_reset = 1;
+ #endif
+ 
+-#if defined(__i386__) || defined(__x86_64__)
++#ifdef CONFIG_X86
+ 	if (dmi_check_system(i8042_dmi_noloop_table))
+ 		i8042_noloop = 1;
+ 
+ 	if (dmi_check_system(i8042_dmi_nomux_table))
+ 		i8042_nomux = 1;
+-#endif
+ 
+-#ifdef CONFIG_X86
+ 	if (dmi_check_system(i8042_dmi_dritek_table))
+ 		i8042_dritek = 1;
+ #endif /* CONFIG_X86 */
 
 -- 
