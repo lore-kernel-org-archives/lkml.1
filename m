@@ -1,59 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758824AbYHDWDN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759060AbYHDWDe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758824AbYHDWDN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 18:03:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756025AbYHDWCw
+	id S1759060AbYHDWDe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 18:03:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757602AbYHDWCx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 18:02:52 -0400
-Received: from nf-out-0910.google.com ([64.233.182.185]:11126 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755813AbYHDWCu (ORCPT
+	Mon, 4 Aug 2008 18:02:53 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:55079
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1755813AbYHDWCw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 18:02:50 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=Xal2RHp37jqTAHnERXzua8c7D0v5z3V4Qh4ONTIl4JokQ9d6i+Hw02fU9VipACANax
-         pm+It1j/1T7sHM5542cV62L1dIHUmjariaH26DQMVrnNiN5oOpED5PBaG67XMzm12NnA
-         zOk2g35ooyh3956z5/hBZkbZtPoOLBJW0FLj0=
-Date: Tue, 5 Aug 2008 02:02:47 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Christoph Lameter <cl@linux-foundation.org>, akpm@linux-foundation.org,
+	Mon, 4 Aug 2008 18:02:52 -0400
+Date: Mon, 04 Aug 2008 15:02:49 -0700 (PDT)
+Message-Id: <20080804.150249.71509974.davem@davemloft.net>
+To: tony.luck@intel.com
+Cc: nacc@us.ibm.com, mingo@elte.hu, linux-ia64@vger.kernel.org,
        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] SLUB: detach SLUB_DEBUG and SYSFS
-Message-ID: <20080804220247.GA10159@martell.zuzino.mipt.ru>
-References: <20080801000405.GA7072@martell.zuzino.mipt.ru> <48941C2F.8010406@cs.helsinki.fi> <489702B9.5030204@linux-foundation.org> <48970DDD.4040607@cs.helsinki.fi>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <48970DDD.4040607@cs.helsinki.fi>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Subject: Re: [BISECTION RESULT] sched: revert cpu_clock to
+ pre-27ec4407790d075c325e1f4da0a19c56953cce23 state
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <57C9024A16AD2D4C97DC78E552063EA308329110@orsmsx505.amr.corp.intel.com>
+References: <20080804194646.GA17390@us.ibm.com>
+	<57C9024A16AD2D4C97DC78E552063EA308328FB4@orsmsx505.amr.corp.intel.com>
+	<57C9024A16AD2D4C97DC78E552063EA308329110@orsmsx505.amr.corp.intel.com>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 04, 2008 at 05:10:37PM +0300, Pekka Enberg wrote:
-> Christoph Lameter wrote:
->> Pekka Enberg wrote:
->>> Alexey Dobriyan wrote:
->>>> Right now, SYSFS=n means no SLUB debugging, no even basic poisoning,
->>>> to hell with tunables.
->>> Applied, thanks!
->> Do not apply. This partially reverts an earlier commit and would cause 
->> build
->> issues because the #ifdef parts in slub.c were not reverted.
->
-> Aww, crap. OK, taking it out.
+From: "Luck, Tony" <tony.luck@intel.com>
+Date: Mon, 4 Aug 2008 15:00:47 -0700
 
-OK, I'll test-compile it to death.
+> > I'd bet resonable sums of money that we are (once again) accessing
+> > per-cpu variables in code before ia64 has a chance to initialize
+> > things so that they can actually work. :-(
+> 
+> I tried this simple hack to check ... per-cpu variables are
+> not usable until cpu_init() sets up the "ar.k3" register on
+> ia64.  So this hack checks to see if it is set before calling
+> cpu_clock():
 
-For now, do you agree that SYSFS=n users shouldn't be discriminated
-against poisoning?
+Can you guys on IA64 possibly set ar.k3 simply to zero or to some
+other similar value which cancels out the per-cpu computation?
 
-As real world situation, NET_NS feature which is currently in
-active development doesn't work with SYSFS, so it was a bit of cold
-shower to realise that I did much testing of conntracking in netns
-without poisoning. :-(
-
+That's what sparc64 and other platforms do.
