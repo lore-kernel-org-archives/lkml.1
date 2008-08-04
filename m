@@ -1,179 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762339AbYHDWy4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758126AbYHDXD5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762339AbYHDWy4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 18:54:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751239AbYHDWyq
+	id S1758126AbYHDXD5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 19:03:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751278AbYHDXDn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 18:54:46 -0400
-Received: from e34.co.us.ibm.com ([32.97.110.152]:58406 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751176AbYHDWyp (ORCPT
+	Mon, 4 Aug 2008 19:03:43 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:22145 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750767AbYHDXDm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 18:54:45 -0400
-Date: Mon, 4 Aug 2008 15:54:38 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Lai Jiangshan <laijs@cn.fujitsu.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Dipankar Sarma <dipankar@in.ibm.com>,
-       Gautham Shenoy <ego@in.ibm.com>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC][PATCH 2/2] rcu classic: new algorithm for
-	callbacks-processing(v2)
-Message-ID: <20080804225438.GA18866@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <48708F2F.2060406@cn.fujitsu.com> <20080718140930.GT6875@elte.hu> <20080721100433.GC8384@linux.vnet.ibm.com> <20080801211053.GZ14851@linux.vnet.ibm.com> <489565BC.3000408@cn.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <489565BC.3000408@cn.fujitsu.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+	Mon, 4 Aug 2008 19:03:42 -0400
+Date: Mon, 4 Aug 2008 16:00:11 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: "Luis R. Rodriguez" <lrodriguez@atheros.com>
+Cc: <linville@tuxdriver.com>, <netdev@vger.kernel.org>,
+       <linux-kernel@vger.kernel.org>, <torvalds@linux-foundation.org>,
+       <linux-wireless@vger.kernel.org>, <ath9k-devel@venema.h4ckr.net>
+Subject: Re: [PATCH 2/4] list.h: add list_cut_position()
+Message-Id: <20080804160011.ec964f1f.randy.dunlap@oracle.com>
+In-Reply-To: <1217890089-12100-1-git-send-email-lrodriguez@atheros.com>
+References: <1217890089-12100-1-git-send-email-lrodriguez@atheros.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Aug 03, 2008 at 04:01:00PM +0800, Lai Jiangshan wrote:
-> Paul E. McKenney wrote:
+On Mon, 4 Aug 2008 15:48:09 -0700 Luis R. Rodriguez wrote:
+
+> This adds list_cut_position() which lets you cut a list into
+> two lists given a pivot in the list.
 > 
-> [...]
+> Signed-off-by: Luis R. Rodriguez <lrodriguez@atheros.com>
+> ---
+>  include/linux/list.h |   32 ++++++++++++++++++++++++++++++++
+>  1 files changed, 32 insertions(+), 0 deletions(-)
 > 
-> >>  /**
-> >>   * call_rcu - Queue an RCU callback for invocation after a grace period.
-> >>   * @head: structure to be used for queueing the RCU updates.
-> >> @@ -133,18 +172,11 @@ void call_rcu(struct rcu_head *head,
-> >>  				void (*func)(struct rcu_head *rcu))
-> >>  {
-> >>  	unsigned long flags;
-> >> -	struct rcu_data *rdp;
-> >>  
-> >>  	head->func = func;
-> >>  	head->next = NULL;
-> >>  	local_irq_save(flags);
-> > 
-> > I very much like the gathering of common code from call_rcu() and
-> > call_rcu_bh() into __call_rcu().  But why not also move the
-> > local_irq_save() and local_irq_restore() to __call_rcu(), perhaps
-> > along with the initialization of head->next?
-> 
-> We should put __get_cpu_var into preempt_disable critical section.
-> So I didn't move the local_irq_save() and local_irq_restore()
-> to __call_rcu().
+> diff --git a/include/linux/list.h b/include/linux/list.h
+> index 594f67c..2999b0f 100644
+> --- a/include/linux/list.h
+> +++ b/include/linux/list.h
+> @@ -214,6 +214,38 @@ static inline int list_is_singular(const struct list_head *head)
+>  	return !list_empty(head) && (head->next == head->prev);
+>  }
+>  
+> +static inline void __list_cut_position(struct list_head *list,
+> +		struct list_head *head, struct list_head *entry)
+> +{
+> +	struct list_head *new_first =
+> +		(entry->next != head) ? entry->next : head;
+> +	list->next = head->next;
+> +	list->next->prev = list;
+> +	list->prev = entry;
+> +	entry->next = list;
+> +	head->next = new_first;
+> +	new_first->prev = head;
+> +}
+> +
+> +/**
+> + * list_cut_position - cut a list into two
+> + * @list: a new list to add all removed entries
+> + * @head: a list with entries
+> + * @entry: an entry within head, could be the head itself
+> + *	and if so we won't won't cut the list
 
-Good point -- a preemption just at the call to __call_rcu() does need
-to be handled correctly.  I will update the patch.
+drop one "won't"
 
-> I greed your changes except the changes here.
-> percpu_ptr() may help for us.
 
-Tell me more about percpu_ptr().
+> + */
+> +static inline void list_cut_position(struct list_head *list,
+> +		struct list_head *head, struct list_head *entry)
+> +{
+> +	BUG_ON(list_empty(head));
+> +	if (list_is_singular(head))
+> +		BUG_ON(head->next != entry && head != entry);
+> +	if (entry == head)
+> +		INIT_LIST_HEAD(list);
+> +	else
+> +		__list_cut_position(list, head, entry);
+> +}
+> +
+>  static inline void __list_splice(const struct list_head *list,
+>  				 struct list_head *head)
+>  {
 
-> > (I understand the motivation for keeping the initialization of the
-> > fields of "head" at this level -- otherwise, you must add another
-> > argument to __call_rcu().  But might be worth considering...)
-> > 
-> >> -	rdp = &__get_cpu_var(rcu_data);
-> >> -	*rdp->nxttail = head;
-> >> -	rdp->nxttail = &head->next;
-> >> -	if (unlikely(++rdp->qlen > qhimark)) {
-> >> -		rdp->blimit = INT_MAX;
-> >> -		force_quiescent_state(rdp, &rcu_ctrlblk);
-> >> -	}
-> >> +	__call_rcu(head, &rcu_ctrlblk, &__get_cpu_var(rcu_data));
-> >>  	local_irq_restore(flags);
-> >>  }
-> >>  EXPORT_SYMBOL_GPL(call_rcu);
-> >> @@ -169,20 +201,11 @@ void call_rcu_bh(struct rcu_head *head,
-> >>  				void (*func)(struct rcu_head *rcu))
-> >>  {
-> >>  	unsigned long flags;
-> >> -	struct rcu_data *rdp;
-> >>  
-> >>  	head->func = func;
-> >>  	head->next = NULL;
-> >>  	local_irq_save(flags);
-> >> -	rdp = &__get_cpu_var(rcu_bh_data);
-> >> -	*rdp->nxttail = head;
-> >> -	rdp->nxttail = &head->next;
-> >> -
-> >> -	if (unlikely(++rdp->qlen > qhimark)) {
-> >> -		rdp->blimit = INT_MAX;
-> >> -		force_quiescent_state(rdp, &rcu_bh_ctrlblk);
-> >> -	}
-> >> -
-> >> +	__call_rcu(head, &rcu_bh_ctrlblk, &__get_cpu_var(rcu_bh_data));
-> >>  	local_irq_restore(flags);
-> >>  }
-> >>  EXPORT_SYMBOL_GPL(call_rcu_bh);
-> >> @@ -211,12 +234,6 @@ EXPORT_SYMBOL_GPL(rcu_batches_completed_
-> >>  static inline void raise_rcu_softirq(void)
-> >>  {
-> >>  	raise_softirq(RCU_SOFTIRQ);
-> >> -	/*
-> >> -	 * The smp_mb() here is required to ensure that this cpu's
-> >> -	 * __rcu_process_callbacks() reads the most recently updated
-> >> -	 * value of rcu->cur.
-> >> -	 */
-> >> -	smp_mb();
-> > 
-> > I have not yet convinced myself that it is OK to get rid of this memory
-> > barrier.  This memory barrier was intended order to handle the following
-> > sequence of events:
-> > 
-> > 	rcu_read_lock_bh();  /* no memory barrier. */
-> > 	p = rcu_dereference(some_global_pointer);
-> > 	do_something_with(p);
-> > 	rcu_read_unlock_bh();  /* no memory barrier. */
-> > 
-> > 	---- scheduling-clock interrupt occurs, eventually invoking
-> > 	---- rcu_check_callbacks()
-> > 
-> > 	---- And the access to "p" above could potentially be reordered
-> > 	---- into the grace-period computation
-> > 
-> > Such reordering is of course quite unlikely to be harmful, due to the
-> > long duration of RCU grace periods.  But I am paranoid.
-> > 
-> > If this memory barrier turns out to be necessary, one approach would
-> > to be to place it at the beginning of rcu_check_callbacks(), which is
-> > a better place for it in any case.
-> > 
-> > Thoughts?
-> 
-> I hasn't thought it before. I thought that smp_mb is used for
-> rcu->cur as the original comment had told.
-> 
-> I prefer to add memory barrier to rcu_process_callbacks as your patch.
 
-Yeah, that became clear as I wrote the code.  ;-)
-
-> But I has a question here:
-> 
-> In this case, p->rcu_head is not in donelist. So __rcu_process_callbacks
-> is only access to p->rcu_head(p->rcu_head.next). And other cpus don't
-> access to p->rcu_head which has been queued on this cpu' rcu_data.
-> 
-> Is this reordering harmful(How this reordering make other
-> cpus' access wrong)?
-
-I have a somewhat different goal here.  I want to simplify the memory
-ordering design without giving up too much performance -- the current
-state in mainline is much too fragile, in my opinion, especially given
-that the grace-period code paths are not fastpaths.
-
-Next step -- hierarchical grace-period detection to handle the 4096-CPU
-machines that I was being buttonholed about at OLS...
-
-Would you be interested in applying your multi-tailed list change to
-preemptable RCU?
-
-						Thanx, Paul
-
-> [...]
-> 
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+---
+~Randy
+Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
+http://linuxplumbersconf.org/
