@@ -1,53 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760954AbYHDS44@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761184AbYHDTCf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760954AbYHDS44 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 14:56:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760639AbYHDS4p
+	id S1761184AbYHDTCf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 15:02:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760708AbYHDTCM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 14:56:45 -0400
-Received: from sj-iport-3.cisco.com ([171.71.176.72]:47932 "EHLO
-	sj-iport-3.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759496AbYHDS4o (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 14:56:44 -0400
-X-IronPort-AV: E=Sophos;i="4.31,306,1215388800"; 
-   d="scan'208";a="92393062"
-From: Roland Dreier <rdreier@cisco.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Andrea Arcangeli <andrea@qumranet.com>, Dave Jones <davej@redhat.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, jeremy@goop.org, hugh@veritas.com,
-       mingo@elte.hu, akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] workaround minor lockdep bug triggered by mm_take_all_locks
-References: <ada63qgvppx.fsf@cisco.com> <1217859571.3589.7.camel@twins>
-	<aday73cua99.fsf@cisco.com> <1217860332.3589.11.camel@twins>
-	<20080804145318.GA17867@redhat.com> <1217861763.3589.13.camel@twins>
-	<20080804162657.GI11476@duo.random> <1217867935.3589.35.camel@twins>
-	<20080804172728.GJ11476@duo.random>
-	<20080804174659.GK11476@duo.random>
-	<20080804175730.GL11476@duo.random> <1217875739.3589.56.camel@twins>
-X-Message-Flag: Warning: May contain useful information
-Date: Mon, 04 Aug 2008 11:56:38 -0700
-In-Reply-To: <1217875739.3589.56.camel@twins> (Peter Zijlstra's message of
-	"Mon, 04 Aug 2008 20:48:59 +0200")
-Message-ID: <adazlnssj6h.fsf@cisco.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 04 Aug 2008 18:56:38.0707 (UTC) FILETIME=[D3499830:01C8F663]
-Authentication-Results: sj-dkim-4; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim4002 verified; ); 
+	Mon, 4 Aug 2008 15:02:12 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:58188 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755010AbYHDTCJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Aug 2008 15:02:09 -0400
+Subject: Re: Too many I/O controller patches
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: righi.andrea@gmail.com
+Cc: xen-devel@lists.xensource.com, containers@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org, virtualization@lists.linux-foundation.org,
+       dm-devel@redhat.com, agk@sourceware.org
+In-Reply-To: <489748E6.5080106@gmail.com>
+References: <20080804.175126.193692178.ryov@valinux.co.jp>
+	 <1217870433.20260.101.camel@nimitz>  <489748E6.5080106@gmail.com>
+Content-Type: text/plain
+Date: Mon, 04 Aug 2008 12:02:01 -0700
+Message-Id: <1217876521.20260.123.camel@nimitz>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > NAK, come-on, you didn't even bother to look at the available
- > annotations..
+On Mon, 2008-08-04 at 20:22 +0200, Andrea Righi wrote:
+> But I'm not yet convinced that limiting the IO writes at the device
+> mapper layer is the best solution. IMHO it would be better to throttle
+> applications' writes when they're dirtying pages in the page cache (the
+> io-throttle way), because when the IO requests arrive to the device
+> mapper it's too late (we would only have a lot of dirty pages that are
+> waiting to be flushed to the limited block devices, and maybe this could
+> lead to OOM conditions). IOW dm-ioband is doing this at the wrong level
+> (at least for my requirements). Ryo, correct me if I'm wrong or if I've
+> not understood the dm-ioband approach.
 
-Agree that this trylock-in-a-loop is a horrible hack that should never
-be merged.
+The avoid-lots-of-page-dirtying problem sounds like a hard one.  But, if
+you look at this in combination with the memory controller, they would
+make a great team.
 
-However I wonder what you think the right way to annotate the
-potentially unbounded number of locks taken in mm_take_all_locks() is?
+The memory controller keeps you from dirtying more than your limit of
+pages (and pinning too much memory) even if the dm layer is doing the
+throttling and itself can't throttle the memory usage.
 
- - R.
+I also don't think this is any different from the problems we have in
+the regular VM these days.  Right now, people can dirty lots of pages on
+devices that are slow.  The only thing dm-ioband would be added would be
+changing how those devices *got* slow. :)
+
+-- Dave
+
