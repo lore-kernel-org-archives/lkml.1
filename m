@@ -1,52 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758134AbYHDOUj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756450AbYHDO0E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758134AbYHDOUj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 10:20:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756245AbYHDOUX
+	id S1756450AbYHDO0E (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 10:26:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753797AbYHDOZy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 10:20:23 -0400
-Received: from casper.infradead.org ([85.118.1.10]:42584 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753338AbYHDOUV (ORCPT
+	Mon, 4 Aug 2008 10:25:54 -0400
+Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:51394 "EHLO
+	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753676AbYHDOZy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 10:20:21 -0400
-Date: Mon, 4 Aug 2008 07:20:15 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: David Woodhouse <dwmw2@infradead.org>,
-       Austin Zhang <austin_zhang@linux.intel.com>, davem@davemloft.net,
-       linux-kernel@vger.kernel.org, linux-crypto@vger.kernel.org
-Subject: Re: [PATCH] Using Intel CRC32 instruction to accelerate CRC32c
- algorithm by new crypto API.
-Message-ID: <20080804072015.0fcd23e7@infradead.org>
-In-Reply-To: <20080804140435.GA11227@gondor.apana.org.au>
-References: <1217842507.20845.18.camel@localhost.localdomain>
-	<1217844725.3454.580.camel@pmac.infradead.org>
-	<1217846139.20845.25.camel@localhost.localdomain>
-	<1217846726.3454.589.camel@pmac.infradead.org>
-	<20080804140435.GA11227@gondor.apana.org.au>
-Organization: Intel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 4 Aug 2008 10:25:54 -0400
+Message-ID: <48971137.7090903@s5r6.in-berlin.de>
+Date: Mon, 04 Aug 2008 16:24:55 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.16) Gecko/20080702 SeaMonkey/1.1.11
+MIME-Version: 1.0
+To: jmerkey@wolfmountaingroup.com
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2.6.27-rc1 11/25] mdb:  Merkey's Kernel Debugger 2.6.27-rc1
+References: <37460.166.70.238.45.1217831665.squirrel@webmail.wolfmountaingroup.com>
+In-Reply-To: <37460.166.70.238.45.1217831665.squirrel@webmail.wolfmountaingroup.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 4 Aug 2008 22:04:35 +0800
-Herbert Xu <herbert@gondor.apana.org.au> wrote:
+jmerkey@wolfmountaingroup.com wrote:
+> --- a/debug/mdb-ia32-support.c	1969-12-31 17:00:00.000000000 -0700
+> +++ b/debug/mdb-ia32-support.c	2008-08-03 16:15:00.000000000 -0600
+[...]
+> +BYTE *output_jmp_address(StackFrame *stackFrame, long val, long *delta)
 
-> There only three crc32c users in the kernel tree and the crypto
-> interface will serve the perfectly.
-
-isn't it a bit heavy for something as simple as a crc?
-(which after all is one instruction now ;0)
-
-
+This one is a challenge to read.  :-)
+At least in MUAs which can't collapse C code nesting levels...
 -- 
-If you want to reach me at my work email, use arjan@linux.intel.com
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+Stefan Richter
+-=====-==--- =--- --=--
+http://arcgraph.de/sr/
