@@ -1,113 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755437AbYHDRxS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752422AbYHDRzX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755437AbYHDRxS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 13:53:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751934AbYHDRxI
+	id S1752422AbYHDRzX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 13:55:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752269AbYHDRzK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 13:53:08 -0400
-Received: from E23SMTP06.au.ibm.com ([202.81.18.175]:52267 "EHLO
-	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751351AbYHDRxG convert rfc822-to-8bit (ORCPT
+	Mon, 4 Aug 2008 13:55:10 -0400
+Received: from wolverine02.qualcomm.com ([199.106.114.251]:24733 "EHLO
+	wolverine02.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751621AbYHDRzJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 13:53:06 -0400
-Message-ID: <489741F8.2080104@linux.vnet.ibm.com>
-Date: Mon, 04 Aug 2008 23:22:56 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
+	Mon, 4 Aug 2008 13:55:09 -0400
+X-IronPort-AV: E=McAfee;i="5200,2160,5352"; a="5129930"
+Message-ID: <48974294.70108@qualcomm.com>
+Date: Mon, 04 Aug 2008 10:55:32 -0700
+From: Max Krasnyansky <maxk@qualcomm.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-CC: Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
-       MinChan Kim <minchan.kim@gmail.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       linux-mm <linux-mm@kvack.org>, Rik van Riel <riel@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Race condition between putback_lru_page and mem_cgroup_move_list
-References: <28c262360808040736u7f364fc0p28d7ceea7303a626@mail.gmail.com> <1217863870.7065.62.camel@lts-notebook> <2f11576a0808040937y70f274e0j32f6b9c98b0f992d@mail.gmail.com>
-In-Reply-To: <2f11576a0808040937y70f274e0j32f6b9c98b0f992d@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+To: Dimitri Sivanich <sivanich@sgi.com>
+CC: linux-kernel@vger.kernel.org, Robert Hancock <hancockr@shaw.ca>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] x86: Remove EXPERIMENTAL restriction from CONFIG_HOTPLUG_CPU
+References: <20080730195831.GA31838@sgi.com>
+In-Reply-To: <20080730195831.GA31838@sgi.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-KOSAKI Motohiro wrote:
-> Hi
-> 
->>> I think this is a race condition if mem_cgroup_move_lists's comment isn't right.
->>> I am not sure that it was already known problem.
->>>
->>> mem_cgroup_move_lists assume the appropriate zone's lru lock is already held.
->>> but putback_lru_page calls mem_cgroup_move_lists without holding lru_lock.
->> Hmmm, the comment on mem_cgroup_move_lists() does say this.  Although,
->> reading thru' the code, I can't see why it requires this.  But then it's
->> Monday, here...
-> 
-> I also think zone's lru lock is unnecessary.
-> So, I guess below "it" indicate lock_page_cgroup, not zone lru lock.
-> 
-
-We need zone LRU lock, since the reclaim paths hold them. Not sure if I
-understand why you call zone's LRU lock unnecessary, could you elaborate please?
-
->  >> But we cannot safely get to page_cgroup without it, so just try_lock it:
-> 
-> if my assumption is true, comment modifying is better.
-> 
-> 
->>> Repeatedly, spin_[un/lock]_irq use in mem_cgroup_move_list have a big overhead
->>> while doing list iteration.
->>>
->>> Do we have to use pagevec ?
->> This shouldn't be necessary, IMO.  putback_lru_page() is used as
->> follows:
->>
->> 1) in vmscan.c [shrink_*_list()] when an unevictable page is
->> encountered.  This should be relatively rare.  Once vmscan sees an
->> unevictable page, it parks it on the unevictable lru list where it
->> [vmscan] won't see the page again until it becomes reclaimable.
->>
->> 2) as a replacement for move_to_lru() in page migration as the inverse
->> to isolate_lru_page().  We did this to catch patches that became
->> unevictable or, more importantly, evictable while page migration held
->> them isolated.  move_to_lru() already grabbed and released the zone lru
->> lock on each page migrated.
->>
->> 3) In m[un]lock_vma_page() and clear_page_mlock(), new with in the
->> "mlocked pages are unevictable" series.  This one can result in a storm
->> of zone lru traffic--e.g., mlock()ing or munlocking() a large segment or
->> mlockall() of a task with a lot of mapped address space.  Again, this is
->> probably a very rare event--unless you're stressing [stressing over?]
->> mlock(), as I've been doing :)--and often involves a major fault [page
->> allocation], per page anyway.
->>
->> I﻿ originally did have a pagevec for the unevictable lru but it
->> complicated ensuring that we don't strand evictable pages on the
->> unevictable list.  See the retry logic in putback_lru_page().
->>
->> As for the !UNEVICTABLE_LRU version, the only place this should be
->> called is from page migration as none of the other call sites are
->> compiled in or reachable when !UNEVICTABLE_LRU.
->>
->> Thoughts?
-> 
-> I think both opinion is correct.
-> unevictable lru related code doesn't require pagevec.
-> 
-> but mem_cgroup_move_lists is used by active/inactive list transition too.
-> then, pagevec is necessary for keeping reclaim throuput.
-> 
-
-It's on my TODO list. I hope to get to it soon.
-
-> Kim-san, Thank you nice point out!
-> I queued this fix to my TODO list.
 
 
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+Dimitri Sivanich wrote:
+> This removes the EXPERIMENTAL restriction from CONFIG_HOTPLUG_CPU on the x86 architecture.
+Looks good to me.
 
+> One question, should we default to 'Y'?
+That I'm not sure. I'd personally be ok if the default was 'Y'.
+
+Max
