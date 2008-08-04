@@ -1,25 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760708AbYHDGnS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760604AbYHDGnc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760708AbYHDGnS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 02:43:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759710AbYHDGmz
+	id S1760604AbYHDGnc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 02:43:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760595AbYHDGnD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 02:42:55 -0400
-Received: from mga11.intel.com ([192.55.52.93]:15650 "EHLO mga11.intel.com"
+	Mon, 4 Aug 2008 02:43:03 -0400
+Received: from mga09.intel.com ([134.134.136.24]:58138 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758819AbYHDGmy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 02:42:54 -0400
+	id S1760571AbYHDGnA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Aug 2008 02:43:00 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.31,303,1215414000"; 
-   d="scan'208";a="367642621"
-Subject: [patch 1/2] introduce two APIs for page attribute
+   d="scan'208";a="322819467"
+Subject: [patch 2/2] reduce tlb/cache flush times of agpgart memory
+	allocation
 From: Shaohua Li <shaohua.li@intel.com>
 To: lkml <linux-kernel@vger.kernel.org>
 Cc: airlied@linux.ie, Andrew Morton <akpm@linux-foundation.org>,
        Ingo Molnar <mingo@redhat.com>, Arjan van de Ven <arjan@infradead.org>
 Content-Type: text/plain
-Date: Mon, 04 Aug 2008 14:51:24 +0800
-Message-Id: <1217832684.21811.8.camel@sli10-desk.sh.intel.com>
+Date: Mon, 04 Aug 2008 14:51:30 +0800
+Message-Id: <1217832690.21811.9.camel@sli10-desk.sh.intel.com>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
@@ -27,138 +28,70 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Introduce two APIs for page attribute. flushing tlb/cache in every page
-attribute is expensive. AGP gart usually will do a lot of operations to
-change a page to uc, new APIs can reduce flush.
+To reduce tlb/cache flush, makes agp memory allocation do one flush
+after all pages in a region are changed to uc.
 
-Signed-off-by: Shaohua Li <shaohua.li@intel.com> 
+All agp drivers except agp-sgi uses agp_generic_alloc_page()
+for .agp_alloc_page, so the patch should work for them. agp-sgi is only
+for ia64, so not a problem too. 
+
+Signed-off-by: Shaohua Li <shaohua.li@intel.com>
 ---
- arch/x86/mm/pageattr.c       |   58 +++++++++++++++++++++++++++++++++++++------
- include/asm-x86/cacheflush.h |    3 ++
- 2 files changed, 53 insertions(+), 8 deletions(-)
+ drivers/char/agp/agp.h     |    4 ++++
+ drivers/char/agp/generic.c |    4 +++-
+ include/asm-x86/agp.h      |    3 +++
+ 3 files changed, 10 insertions(+), 1 deletion(-)
 
-Index: linux/arch/x86/mm/pageattr.c
+Index: linux/drivers/char/agp/generic.c
 ===================================================================
---- linux.orig/arch/x86/mm/pageattr.c	2008-08-04 11:58:41.000000000 +0800
-+++ linux/arch/x86/mm/pageattr.c	2008-08-04 12:04:58.000000000 +0800
-@@ -752,12 +752,12 @@ static inline int cache_attr(pgprot_t at
- 		(_PAGE_PAT | _PAGE_PAT_LARGE | _PAGE_PWT | _PAGE_PCD);
- }
+--- linux.orig/drivers/char/agp/generic.c	2008-08-04 12:03:37.000000000 +0800
++++ linux/drivers/char/agp/generic.c	2008-08-04 12:06:31.000000000 +0800
+@@ -274,6 +274,7 @@ struct agp_memory *agp_allocate_memory(s
+ 		new->memory[i] = virt_to_gart(addr);
+ 		new->page_count++;
+ 	}
++	map_page_into_agp_global_flush();
+ 	new->bridge = bridge;
  
--static int change_page_attr_set_clr(unsigned long addr, int numpages,
-+static int do_change_page_attr_set_clr(unsigned long addr, int numpages,
- 				    pgprot_t mask_set, pgprot_t mask_clr,
--				    int force_split)
-+				    int force_split, int *tlb_flush)
- {
- 	struct cpa_data cpa;
--	int ret, cache, checkalias;
-+	int ret, checkalias;
+ 	return new;
+@@ -1186,7 +1187,8 @@ void *agp_generic_alloc_page(struct agp_
+ 	if (page == NULL)
+ 		return NULL;
  
- 	/*
- 	 * Check, if we are requested to change a not supported
-@@ -792,9 +792,22 @@ static int change_page_attr_set_clr(unsi
- 	/*
- 	 * Check whether we really changed something:
- 	 */
--	if (!cpa.flushtlb)
--		goto out;
-+	*tlb_flush = cpa.flushtlb;
-+	cpa_fill_pool(NULL);
-+
-+	return ret;
-+}
-+
-+static int change_page_attr_set_clr(unsigned long addr, int numpages,
-+				    pgprot_t mask_set, pgprot_t mask_clr,
-+				    int force_split)
-+{
-+	int cache, flush_cache = 0, ret;
+-	map_page_into_agp(page);
++	/* agp_allocate_memory will do flush */
++	map_page_into_agp_noflush(page);
  
-+	ret = do_change_page_attr_set_clr(addr, numpages, mask_set, mask_clr,
-+		force_split, &flush_cache);
-+	if (!flush_cache)
-+		goto out;
- 	/*
- 	 * No need to flush, when we did not set any of the caching
- 	 * attributes:
-@@ -811,10 +824,7 @@ static int change_page_attr_set_clr(unsi
- 		cpa_flush_range(addr, numpages, cache);
- 	else
- 		cpa_flush_all(cache);
--
- out:
--	cpa_fill_pool(NULL);
--
- 	return ret;
- }
- 
-@@ -852,6 +862,30 @@ int set_memory_uc(unsigned long addr, in
- }
- EXPORT_SYMBOL(set_memory_uc);
- 
-+int set_memory_uc_noflush(unsigned long addr, int numpages)
-+{
-+	int flush;
-+	/*
-+	 * for now UC MINUS. see comments in ioremap_nocache()
-+	 */
-+	if (reserve_memtype(addr, addr + numpages * PAGE_SIZE,
-+			    _PAGE_CACHE_UC_MINUS, NULL))
-+		return -EINVAL;
-+	/*
-+	 * for now UC MINUS. see comments in ioremap_nocache()
-+	 */
-+	return do_change_page_attr_set_clr(addr, numpages,
-+				    __pgprot(_PAGE_CACHE_UC_MINUS),
-+					__pgprot(0), 0, &flush);
-+}
-+EXPORT_SYMBOL(set_memory_uc_noflush);
-+
-+void set_memory_flush_all(void)
-+{
-+	cpa_flush_all(1);
-+}
-+EXPORT_SYMBOL(set_memory_flush_all);
-+
- int _set_memory_wc(unsigned long addr, int numpages)
- {
- 	return change_page_attr_set(addr, numpages,
-@@ -926,6 +960,14 @@ int set_pages_uc(struct page *page, int 
- }
- EXPORT_SYMBOL(set_pages_uc);
- 
-+int set_pages_uc_noflush(struct page *page, int numpages)
-+{
-+	unsigned long addr = (unsigned long)page_address(page);
-+
-+	return set_memory_uc_noflush(addr, numpages);
-+}
-+EXPORT_SYMBOL(set_pages_uc_noflush);
-+
- int set_pages_wb(struct page *page, int numpages)
- {
- 	unsigned long addr = (unsigned long)page_address(page);
-Index: linux/include/asm-x86/cacheflush.h
+ 	get_page(page);
+ 	atomic_inc(&agp_bridge->current_memory_agp);
+Index: linux/include/asm-x86/agp.h
 ===================================================================
---- linux.orig/include/asm-x86/cacheflush.h	2008-08-04 11:58:41.000000000 +0800
-+++ linux/include/asm-x86/cacheflush.h	2008-08-04 12:05:16.000000000 +0800
-@@ -57,6 +57,8 @@ int _set_memory_uc(unsigned long addr, i
- int _set_memory_wc(unsigned long addr, int numpages);
- int _set_memory_wb(unsigned long addr, int numpages);
- int set_memory_uc(unsigned long addr, int numpages);
-+int set_memory_uc_noflush(unsigned long addr, int numpages);
-+void set_memory_flush_all(void);
- int set_memory_wc(unsigned long addr, int numpages);
- int set_memory_wb(unsigned long addr, int numpages);
- int set_memory_x(unsigned long addr, int numpages);
-@@ -87,6 +89,7 @@ int set_memory_4k(unsigned long addr, in
-  */
+--- linux.orig/include/asm-x86/agp.h	2008-08-04 12:03:37.000000000 +0800
++++ linux/include/asm-x86/agp.h	2008-08-04 12:06:31.000000000 +0800
+@@ -15,6 +15,9 @@
+ #define map_page_into_agp(page) set_pages_uc(page, 1)
+ #define unmap_page_from_agp(page) set_pages_wb(page, 1)
  
- int set_pages_uc(struct page *page, int numpages);
-+int set_pages_uc_noflush(struct page *page, int numpages);
- int set_pages_wb(struct page *page, int numpages);
- int set_pages_x(struct page *page, int numpages);
- int set_pages_nx(struct page *page, int numpages);
++#define map_page_into_agp_noflush(page) set_pages_uc_noflush(page, 1)
++#define map_page_into_agp_global_flush() set_memory_flush_all()
++
+ /*
+  * Could use CLFLUSH here if the cpu supports it. But then it would
+  * need to be called for each cacheline of the whole page so it may
+Index: linux/drivers/char/agp/agp.h
+===================================================================
+--- linux.orig/drivers/char/agp/agp.h	2008-08-04 12:03:37.000000000 +0800
++++ linux/drivers/char/agp/agp.h	2008-08-04 12:06:31.000000000 +0800
+@@ -30,6 +30,10 @@
+ #define _AGP_BACKEND_PRIV_H 1
+ 
+ #include <asm/agp.h>	/* for flush_agp_cache() */
++#ifndef map_page_into_agp_noflush
++#define map_page_into_agp_noflush(page) map_page_into_agp(page)
++#define map_page_into_agp_global_flush()
++#endif
+ 
+ #define PFX "agpgart: "
+ 
 
 
