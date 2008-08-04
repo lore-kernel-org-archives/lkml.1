@@ -1,58 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755187AbYHDQsY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757983AbYHDQuC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755187AbYHDQsY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 12:48:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757930AbYHDQsN
+	id S1757983AbYHDQuC (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 12:50:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754336AbYHDQtu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 12:48:13 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:52052 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1757276AbYHDQsL (ORCPT
+	Mon, 4 Aug 2008 12:49:50 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:27985 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753720AbYHDQtt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 12:48:11 -0400
-Date: Mon, 4 Aug 2008 12:48:09 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Alex Buell <alex.buell@munted.org.uk>
-cc: linux-kernel@vger.kernel.org, Robert Hancock <hancockr@shaw.ca>,
-       Tomas Styblo <tripie@cpan.org>, <linux-usb@vger.kernel.org>,
-       <usb-storage@lists.one-eyed-alien.net>
-Subject: Re: [PATCH] JMicron JM20337 USB-SATA data corruption bugfix - device
- 152d:2338
-In-Reply-To: <20080803100706.5e52ce90.alex.buell@munted.org.uk>
-Message-ID: <Pine.LNX.4.44L0.0808041245430.15613-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 4 Aug 2008 12:49:49 -0400
+Date: Mon, 4 Aug 2008 09:48:35 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: lkml <linux-kernel@vger.kernel.org>
+Cc: netdev <netdev@vger.kernel.org>, mchan@broadcom.com
+Subject: 2.6.27-rc1-git4 BUG: sched while atomic
+Message-Id: <20080804094835.da083484.randy.dunlap@oracle.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 3 Aug 2008, Alex Buell wrote:
+Usually (e.g., in 2.6.27-rc1 & earlier), I see lots of these messages for
+some reason:
 
-> > Which patch?  Several different ones have been posted.
-> 
-> This is the one that I applied:
-> Index: usb-2.6/drivers/usb/storage/transport.c
-> ===================================================================
-> --- usb-2.6.orig/drivers/usb/storage/transport.c
-> +++ usb-2.6/drivers/usb/storage/transport.c
-> @@ -663,7 +663,7 @@ void usb_stor_invoke_transport(struct sc
->  	}
->  
->  	/* Did we transfer less than the minimum amount required? */
-> -	if (srb->result == SAM_STAT_GOOD &&
-> +	if ((srb->result == SAM_STAT_GOOD || srb->sense_buffer[2] == 0) && scsi_bufflen(srb) - scsi_get_resid(srb) < srb->underflow)
->  		srb->result = (DID_ERROR << 16) | (SUGGEST_RETRY << 24); 
-> 
-> > The log doesn't provide much help.  We need to see a log with 
-> > CONFIG_USB_STORAGE_DEBUG enabled.
-> 
-> Which patch should I be trying out? 
+tg3: eth2: Link is up at 1000 Mbps, full duplex.
+tg3: eth2: Flow control is off for TX and off for RX.
+tg3: eth3: Link is up at 1000 Mbps, full duplex.
+tg3: eth3: Flow control is off for TX and off for RX.
+bnx2: eth1: using MSI
+bnx2: eth1 NIC SerDes Link is Up, 1000 Mbps full duplex
+tg3: eth2: Link is up at 1000 Mbps, full duplex.
+tg3: eth2: Flow control is off for TX and off for RX.
+tg3: eth3: Link is up at 1000 Mbps, full duplex.
+tg3: eth3: Flow control is off for TX and off for RX.
+bnx2: eth1: using MSI
+bnx2: eth1 NIC SerDes Link is Up, 1000 Mbps full duplex
+tg3: eth2: Link is up at 1000 Mbps, full duplex.
+tg3: eth2: Flow control is off for TX and off for RX.
+tg3: eth3: Link is up at 1000 Mbps, full duplex.
+tg3: eth3: Flow control is off for TX and off for RX.
+bnx2: eth1: using MSI
+bnx2: eth1 NIC SerDes Link is Up, 1000 Mbps full duplex
+tg3: eth2: Link is up at 1000 Mbps, full duplex.
+tg3: eth2: Flow control is off for TX and off for RX.
+tg3: eth3: Link is up at 1000 Mbps, full duplex.
+tg3: eth3: Flow control is off for TX and off for RX.
+bnx2: eth1: using MSI
 
-That's the right patch.  You should use it with 2.6.27-rc1.
 
-I just got one of those JMicron thingies; I'll try it out later today.  
-No SATA devices available for testing, though, only PATA.
+In 2.6.27-rc1-git4, I now see this (39 times):
 
-Alan Stern
+BUG: scheduling while atomic: ifconfig/16971/0x00000100
+Modules linked in: parport_pc lp parport tg3 lpfc cciss ehci_hcd ohci_hcd uhci_hcd
+Pid: 16971, comm: ifconfig Not tainted 2.6.27-rc1-git4 #1
 
+Call Trace:
+ [<ffffffff80283db9>] ? page_add_new_anon_rmap+0x20/0x22
+ [<ffffffff802310e9>] __schedule_bug+0x62/0x66
+ [<ffffffff80551146>] schedule+0x99/0x759
+ [<ffffffff8023dc9f>] ? __mod_timer+0xc1/0xd3
+ [<ffffffff8055584a>] ? do_page_fault+0x473/0x7dd
+ [<ffffffff80551ce4>] schedule_timeout+0x8d/0xb4
+ [<ffffffff8023d99e>] ? process_timeout+0x0/0xb
+ [<ffffffff80551cdf>] ? schedule_timeout+0x88/0xb4
+ [<ffffffff80551d24>] schedule_timeout_uninterruptible+0x19/0x1b
+ [<ffffffff8023dcc5>] msleep+0x14/0x1e
+ [<ffffffff80375f2f>] pci_set_power_state+0x1cd/0x292
+ [<ffffffff803739fc>] ? pci_bus_write_config_dword+0x64/0x73
+ [<ffffffffa00651b6>] tg3_set_power_state+0x58/0x884 [tg3]
+ [<ffffffff80552525>] ? __mutex_lock_slowpath+0x1d8/0x1e5
+ [<ffffffffa006b57a>] tg3_open+0x46/0x6cc [tg3]
+ [<ffffffff80552525>] ? __mutex_lock_slowpath+0x1d8/0x1e5
+ [<ffffffff804bdcfe>] dev_open+0x73/0xa8
+ [<ffffffff804bbf5e>] dev_change_flags+0xab/0x167
+ [<ffffffff804f7094>] devinet_ioctl+0x269/0x5da
+ [<ffffffff8026d9da>] ? unlock_page+0x2d/0x32
+ [<ffffffff804f7ca8>] inet_ioctl+0x92/0xaa
+ [<ffffffff804b2046>] sock_ioctl+0x1d1/0x1fb
+ [<ffffffff802a50aa>] vfs_ioctl+0x2a/0x77
+ [<ffffffff802a534c>] do_vfs_ioctl+0x255/0x272
+ [<ffffffff8055584a>] ? do_page_fault+0x473/0x7dd
+ [<ffffffff802a53ab>] sys_ioctl+0x42/0x67
+ [<ffffffff8020beeb>] system_call_fastpath+0x16/0x1b
+
+
+
+---
+~Randy
+Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
+http://linuxplumbersconf.org/
