@@ -1,296 +1,187 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754367AbYHDJg4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753822AbYHDJmN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754367AbYHDJg4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 05:36:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752824AbYHDJgs
+	id S1753822AbYHDJmN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 05:42:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751361AbYHDJl6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 05:36:48 -0400
-Received: from mga10.intel.com ([192.55.52.92]:56305 "EHLO
-	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752816AbYHDJgr (ORCPT
+	Mon, 4 Aug 2008 05:41:58 -0400
+Received: from smtp.wellnetcz.com ([212.24.148.102]:44819 "EHLO
+	smtp.wellnetcz.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750998AbYHDJl5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 05:36:47 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.31,304,1215414000"; 
-   d="scan'208";a="367688896"
-Subject: [PATCH] Using Intel CRC32 instruction to accelerate CRC32c
-	algorithm by new crypto API.
-From: Austin Zhang <austin_zhang@linux.intel.com>
-To: herbert@gondor.apana.org.au, davem@davemloft.net
-Cc: linux-kernel@vger.kernel.org, linux-crypto@vger.kernel.org
-Content-Type: text/plain
-Date: Mon, 04 Aug 2008 05:35:07 -0400
-Message-Id: <1217842507.20845.18.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
-Content-Transfer-Encoding: 7bit
+	Mon, 4 Aug 2008 05:41:57 -0400
+From: Jiri Slaby <jirislaby@gmail.com>
+To: stable@kernel.org
+Cc: greg@kroah.com, chrisw@sous-sol.org, linux-kernel@vger.kernel.org,
+       Jiri Slaby <jirislaby@gmail.com>,
+       "Luis R. Rodriguez" <mcgrof@gmail.com>,
+       "John W. Linville" <linville@tuxdriver.com>
+Subject: [PATCH 1/2] Ath5k: fix memory corruption
+Date: Mon,  4 Aug 2008 11:37:07 +0200
+Message-Id: <1217842628-22714-1-git-send-email-jirislaby@gmail.com>
+X-Mailer: git-send-email 1.5.6.2
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From Nehalem processor onward, Intel processors can support hardware 
-accelerated CRC32c algorithm with the new CRC32 instruction in SSE 4.2 
-instruction set.
-The patch detects the availability of the feature, and chooses the 
-most proper way to calculate CRC32c checksum.
-Byte code instructions are used for compiler compatibility.
-No MMX / XMM registers is involved in the implementation.
+Please consider these two patches for including in -stable.
+3a0f2c871849f23c1070965bf94dec3f9c0b479d
+10488f8ad62be3b860bad74e60b4fe6ab87aece3
+Both attached (1 per email).
 
-Signed-off-by: Austin Zhang <austin.zhang@intel.com>
-Signed-off-by: Kent Liu <kent.liu@intel.com>
+The issue fixed by the first patch is triggerable on noisy channels,
+so it's a real problem.
+
+The issue fixed by the second patch triggers often by loading and
+reloading the driver repeatedly, it's not hypothetical too.
+
+--
+
+When signal is noisy, hardware can use all RX buffers and since the last
+entry in the list is self-linked, it overwrites the entry until we link
+new buffers.
+
+Ensure that we don't free this last one until we are 100% sure that it
+is not used by the hardware anymore to not cause memory curruption as
+can be seen below.
+
+This is done by checking next buffer in the list. Even after that we
+know that the hardware refetched the new link and proceeded further
+(the next buffer is ready) we can finally free the overwritten buffer.
+
+We discard it since the status in its descriptor is overwritten (OR-ed
+by new status) too.
+
+=============================================================================
+BUG kmalloc-4096: Poison overwritten
+-----------------------------------------------------------------------------
+
+INFO: 0xffff810067419060-0xffff810067419667. First byte 0x8 instead of 0x6b
+INFO: Allocated in dev_alloc_skb+0x18/0x30 age=1118 cpu=1 pid=0
+INFO: Freed in skb_release_data+0x85/0xd0 age=1105 cpu=1 pid=3718
+INFO: Slab 0xffffe200019d0600 objects=7 used=0 fp=0xffff810067419048 flags=0x40000000000020c3
+INFO: Object 0xffff810067419048 @offset=4168 fp=0xffff81006741c120
+
+Bytes b4 0xffff810067419038:  4f 0b 02 00 01 00 00 00 5a 5a 5a 5a 5a 5a 5a 5a O.......ZZZZZZZZ
+  Object 0xffff810067419048:  6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b kkkkkkkkkkkkkkkk
+  Object 0xffff810067419058:  6b 6b 6b 6b 6b 6b 6b 6b 08 42 30 00 00 0b 6b 80 kkkkkkkk.B0...k.
+  Object 0xffff810067419068:  f0 5d 00 4f 62 08 a3 64 00 0c 42 16 52 e4 f0 5a 360].Ob.243d..B.R344360Z
+  Object 0xffff810067419078:  68 81 00 00 7b a5 b4 be 7d 3b 8f 53 cd d5 de 12 h...{245264276};.S315325336.
+  Object 0xffff810067419088:  96 10 0b 89 48 54 23 41 0f 4e 2d b9 37 c3 cb 29 ....HT#A.N-2717303313)
+  Object 0xffff810067419098:  d1 e0 de 14 8a 57 2a cc 3b 44 0d 78 7a 19 12 15 321340336..W*314;D.xz...
+  Object 0xffff8100674190a8:  a9 ec d4 35 a8 10 ec 8c 40 a7 06 0a 51 a7 48 bb 2513543245250.354.@247..Q247H273
+  Object 0xffff8100674190b8:  3e cf a1 c7 38 60 63 3f 51 15 c7 20 eb ba 65 30 >ϡ3078`c?Q.307.353272e0
+ Redzone 0xffff81006741a048:  bb bb bb bb bb bb bb bb                         273273273273273273273273
+ Padding 0xffff81006741a088:  5a 5a 5a 5a 5a 5a 5a 5a                         ZZZZZZZZ
+Pid: 3297, comm: ath5k_pci Not tainted 2.6.26-rc8-mm1_64 #427
+
+Call Trace:
+ [<ffffffff802a7306>] print_trailer+0xf6/0x150
+ [<ffffffff802a7485>] check_bytes_and_report+0x125/0x180
+ [<ffffffff802a75dc>] check_object+0xac/0x260
+ [<ffffffff802a9308>] __slab_alloc+0x368/0x6d0
+ [<ffffffff80544f82>] ? wireless_send_event+0x142/0x310
+ [<ffffffff804b1bd4>] ? __alloc_skb+0x44/0x150
+ [<ffffffff80544f82>] ? wireless_send_event+0x142/0x310
+ [<ffffffff802aa853>] __kmalloc_track_caller+0xc3/0xf0
+ [<ffffffff804b1bfe>] __alloc_skb+0x6e/0x150
+[... stack snipped]
+
+FIX kmalloc-4096: Restoring 0xffff810067419060-0xffff810067419667=0x6b
+
+FIX kmalloc-4096: Marking all objects used
+
+Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+Acked-by: Nick Kossifidis <mickflemm@gmail.com>
+Cc: Luis R. Rodriguez <mcgrof@gmail.com>
+Signed-off-by: John W. Linville <linville@tuxdriver.com>
 ---
- arch/x86/crypto/Makefile       |    2
- arch/x86/crypto/crc32c-intel.c |  192 +++++++++++++++++++++++++++++++++++++++++
- crypto/Kconfig                 |   11 ++
- include/asm-x86/cpufeature.h   |    2
- 4 files changed, 207 insertions(+)
+ drivers/net/wireless/ath5k/base.c |   32 +++++++++++++++++++++++++-------
+ drivers/net/wireless/ath5k/base.h |    2 +-
+ 2 files changed, 26 insertions(+), 8 deletions(-)
 
-diff -Naurp linux-2.6/arch/x86/crypto/crc32c-intel.c linux-2.6-patch/arch/x86/crypto/crc32c-intel.c
---- linux-2.6/arch/x86/crypto/crc32c-intel.c	1969-12-31 19:00:00.000000000 -0500
-+++ linux-2.6-patch/arch/x86/crypto/crc32c-intel.c	2008-08-04 01:59:00.000000000 -0400
-@@ -0,0 +1,192 @@
-+/*
-+ * Using hardware provided CRC32 instruction to accelerate the CRC32 disposal.
-+ * CRC32C polynomial:0x1EDC6F41(BE)/0x82F63B78(LE)
-+ * CRC32 is a new instruction in Intel SSE4.2, the reference can be found at:
-+ * http://www.intel.com/products/processor/manuals/
-+ * Intel(R) 64 and IA-32 Architectures Software Developer's Manual
-+ * Volume 2A: Instruction Set Reference, A-M
-+ */
-+#include <linux/init.h>
-+#include <linux/module.h>
-+#include <linux/string.h>
-+#include <linux/kernel.h>
-+#include <crypto/internal/hash.h>
-+
-+#include <asm/cpufeature.h>
-+
-+#define CHKSUM_BLOCK_SIZE	1
-+#define CHKSUM_DIGEST_SIZE	4
-+
-+#ifdef CONFIG_X86_64
-+#define REX_PRE "0x48, "
-+#define SCALE_F 8
-+#else
-+#define REX_PRE
-+#define SCALE_F 4
-+#endif
-+
-+u32 crc32c_intel_le_hw_byte(u32 crc, unsigned char const *data, size_t length)
-+{
-+	while (length--) {
-+		__asm__ __volatile__(
-+			".byte 0xf2, 0xf, 0x38, 0xf0, 0xf1"
-+			:"=S"(crc)
-+			:"0"(crc), "c"(*data)
-+		);
-+		data++;
+diff --git a/drivers/net/wireless/ath5k/base.c b/drivers/net/wireless/ath5k/base.c
+index d9769c5..ed51c4a 100644
+--- a/drivers/net/wireless/ath5k/base.c
++++ b/drivers/net/wireless/ath5k/base.c
+@@ -1682,20 +1682,21 @@ ath5k_tasklet_rx(unsigned long data)
+ 	struct ath5k_rx_status rs = {};
+ 	struct sk_buff *skb;
+ 	struct ath5k_softc *sc = (void *)data;
+-	struct ath5k_buf *bf;
++	struct ath5k_buf *bf, *bf_last;
+ 	struct ath5k_desc *ds;
+ 	int ret;
+ 	int hdrlen;
+ 	int pad;
+ 
+ 	spin_lock(&sc->rxbuflock);
++	if (list_empty(&sc->rxbuf)) {
++		ATH5K_WARN(sc, "empty rx buf pool\n");
++		goto unlock;
 +	}
-+
-+	return crc;
-+}
-+
-+u32 __pure crc32c_intel_le_hw(u32 crc, unsigned char const *p, size_t len)
-+{
-+	unsigned int iquotient = len / SCALE_F;
-+	unsigned int iremainder = len % SCALE_F;
-+#ifdef CONFIG_X86_64
-+	u64 *ptmp = (u64 *)p;
-+#else
-+	u32 *ptmp = (u32 *)p;
-+#endif
-+
-+	while (iquotient--) {
-+		__asm__ __volatile__(
-+			".byte 0xf2, " REX_PRE "0xf, 0x38, 0xf1, 0xf1;"
-+			:"=S"(crc)
-+			:"0"(crc), "c"(*ptmp)
-+		);
-+		ptmp++;
-+	}
-+
-+	if (iremainder)
-+		crc = crc32c_intel_le_hw_byte(crc, (unsigned char *)ptmp,
-+				 iremainder);
-+
-+	return crc;
-+}
-+
-+/*
-+ * Setting the seed allows arbitrary accumulators and flexible XOR policy
-+ * If your algorithm starts with ~0, then XOR with ~0 before you set
-+ * the seed.
-+ */
-+static int crc32c_intel_setkey(struct crypto_ahash *hash, const u8 *key,
-+			unsigned int keylen)
-+{
-+	u32 *mctx = crypto_ahash_ctx(hash);
-+
-+	if (keylen != sizeof(u32)) {
-+		crypto_ahash_set_flags(hash, CRYPTO_TFM_RES_BAD_KEY_LEN);
-+		return -EINVAL;
-+	}
-+	*mctx = le32_to_cpup((__le32 *)key);
-+	return 0;
-+}
-+
-+static int crc32c_intel_init(struct ahash_request *req)
-+{
-+	u32 *mctx = crypto_ahash_ctx(crypto_ahash_reqtfm(req));
-+	u32 *crcp = ahash_request_ctx(req);
-+
-+	*crcp = *mctx;
-+
-+	return 0;
-+}
-+
-+static int crc32c_intel_update(struct ahash_request *req)
-+{
-+	struct crypto_hash_walk walk;
-+	u32 *crcp = ahash_request_ctx(req);
-+	u32 crc = *crcp;
-+	int nbytes;
-+
-+	for (nbytes = crypto_hash_walk_first(req, &walk); nbytes;
-+	   nbytes = crypto_hash_walk_done(&walk, 0))
-+	crc = crc32c_intel_le_hw(crc, walk.data, nbytes);
-+
-+	*crcp = crc;
-+	return 0;
-+}
-+
-+static int crc32c_intel_final(struct ahash_request *req)
-+{
-+	u32 *crcp = ahash_request_ctx(req);
-+
-+	*(__le32 *)req->result = ~cpu_to_le32p(crcp);
-+	return 0;
-+}
-+
-+static int crc32c_intel_digest(struct ahash_request *req)
-+{
-+	struct crypto_hash_walk walk;
-+	u32 *mctx = crypto_ahash_ctx(crypto_ahash_reqtfm(req));
-+	u32 crc = *mctx;
-+	int nbytes;
-+
-+	for (nbytes = crypto_hash_walk_first(req, &walk); nbytes;
-+	   nbytes = crypto_hash_walk_done(&walk, 0))
-+		crc = crc32c_intel_le_hw(crc, walk.data, nbytes);
-+
-+	*(__le32 *)req->result = ~cpu_to_le32(crc);
-+	return 0;
-+}
-+
-+static int crc32c_intel_cra_init(struct crypto_tfm *tfm)
-+{
-+	u32 *key = crypto_tfm_ctx(tfm);
-+
-+	*key = ~0;
-+
-+	tfm->crt_ahash.reqsize = sizeof(u32);
-+
-+	if (cpu_has_xmm4_2)
-+		return 0;
-+	else
-+		return -1;
-+}
-+
-+static struct crypto_alg alg = {
-+	.cra_name               =       "crc32c",
-+	.cra_driver_name        =       "crc32c-intel",
-+	.cra_priority           =       200,
-+	.cra_flags              =       CRYPTO_ALG_TYPE_AHASH,
-+	.cra_blocksize          =       CHKSUM_BLOCK_SIZE,
-+	.cra_alignmask          =       3,
-+	.cra_ctxsize            =       sizeof(u32),
-+	.cra_module             =       THIS_MODULE,
-+	.cra_list               =       LIST_HEAD_INIT(alg.cra_list),
-+	.cra_init               =       crc32c_intel_cra_init,
-+	.cra_type               =       &crypto_ahash_type,
-+	.cra_u                  =       {
-+		.ahash = {
-+			.digestsize    =       CHKSUM_DIGEST_SIZE,
-+			.setkey        =       crc32c_intel_setkey,
-+			.init          =       crc32c_intel_init,
-+			.update        =       crc32c_intel_update,
-+			.final         =       crc32c_intel_final,
-+			.digest        =       crc32c_intel_digest,
++	bf_last = list_entry(sc->rxbuf.prev, struct ath5k_buf, list);
+ 	do {
+ 		rxs.flag = 0;
+ 
+-		if (unlikely(list_empty(&sc->rxbuf))) {
+-			ATH5K_WARN(sc, "empty rx buf pool\n");
+-			break;
+-		}
+ 		bf = list_first_entry(&sc->rxbuf, struct ath5k_buf, list);
+ 		BUG_ON(bf->skb == NULL);
+ 		skb = bf->skb;
+@@ -1705,8 +1706,24 @@ ath5k_tasklet_rx(unsigned long data)
+ 		pci_dma_sync_single_for_cpu(sc->pdev, sc->desc_daddr,
+ 				sc->desc_len, PCI_DMA_FROMDEVICE);
+ 
+-		if (unlikely(ds->ds_link == bf->daddr)) /* this is the end */
+-			break;
++		/*
++		 * last buffer must not be freed to ensure proper hardware
++		 * function. When the hardware finishes also a packet next to
++		 * it, we are sure, it doesn't use it anymore and we can go on.
++		 */
++		if (bf_last == bf)
++			bf->flags |= 1;
++		if (bf->flags) {
++			struct ath5k_buf *bf_next = list_entry(bf->list.next,
++					struct ath5k_buf, list);
++			ret = sc->ah->ah_proc_rx_desc(sc->ah, bf_next->desc,
++					&rs);
++			if (ret)
++				break;
++			bf->flags &= ~1;
++			/* skip the overwritten one (even status is martian) */
++			goto next;
 +		}
-+	}
-+};
-+
-+
-+static int __init crc32c_intel_mod_init(void)
-+{
-+	return crypto_register_alg(&alg);
-+}
-+
-+static void __exit crc32c_intel_mod_fini(void)
-+{
-+	crypto_unregister_alg(&alg);
-+}
-+
-+module_init(crc32c_intel_mod_init);
-+module_exit(crc32c_intel_mod_fini);
-+
-+MODULE_AUTHOR("Austin Zhang <austin.zhang@intel.com>, Kent Liu <kent.liu@intel.com>");
-+MODULE_DESCRIPTION("CRC32c (Castagnoli) optimization using Intel Hardware.");
-+MODULE_LICENSE("GPL");
-+
-+MODULE_ALIAS("crc32c");
-+MODULE_ALIAS("crc32c-intel");
-+
-diff -Naurp linux-2.6/arch/x86/crypto/Makefile linux-2.6-patch/arch/x86/crypto/Makefile
---- linux-2.6/arch/x86/crypto/Makefile	2008-08-04 01:08:00.000000000 -0400
-+++ linux-2.6-patch/arch/x86/crypto/Makefile	2008-08-04 01:59:00.000000000 -0400
-@@ -10,6 +10,8 @@ obj-$(CONFIG_CRYPTO_AES_X86_64) += aes-x
- obj-$(CONFIG_CRYPTO_TWOFISH_X86_64) += twofish-x86_64.o
- obj-$(CONFIG_CRYPTO_SALSA20_X86_64) += salsa20-x86_64.o
  
-+obj-$(CONFIG_CRYPTO_CRC32C_INTEL) += crc32c-intel.o
-+
- aes-i586-y := aes-i586-asm_32.o aes_glue.o
- twofish-i586-y := twofish-i586-asm_32.o twofish_glue.o
- salsa20-i586-y := salsa20-i586-asm_32.o salsa20_glue.o
-diff -Naurp linux-2.6/crypto/Kconfig linux-2.6-patch/crypto/Kconfig
---- linux-2.6/crypto/Kconfig	2008-08-04 01:08:00.000000000 -0400
-+++ linux-2.6-patch/crypto/Kconfig	2008-08-04 01:59:00.000000000 -0400
-@@ -221,6 +221,17 @@ config CRYPTO_CRC32C
- 	  See Castagnoli93.  This implementation uses lib/libcrc32c.
-           Module will be crc32c.
+ 		ret = sc->ah->ah_proc_rx_desc(sc->ah, ds, &rs);
+ 		if (unlikely(ret == -EINPROGRESS))
+@@ -1816,6 +1833,7 @@ accept:
+ next:
+ 		list_move_tail(&bf->list, &sc->rxbuf);
+ 	} while (ath5k_rxbuf_setup(sc, bf) == 0);
++unlock:
+ 	spin_unlock(&sc->rxbuflock);
+ }
  
-+config CRYPTO_CRC32C_INTEL
-+        tristate "CRC32c INTEL hardware acceleration"
-+        select CRYPTO_HASH
-+        help
-+          In Intel processor with SSE4.2 supported, the processor will
-+          support CRC32C implemetation using hardware accelerated CRC32 
-+          instruction. This option will create 'crc32c-intel' module,
-+          which will enable any routine to use the CRC32 instruction to 
-+          gain performance compared with software implementation.
-+          Module will be crc32c-intel.
-+
- config CRYPTO_MD4
- 	tristate "MD4 digest algorithm"
- 	select CRYPTO_ALGAPI
-diff -Naurp linux-2.6/include/asm-x86/cpufeature.h linux-2.6-patch/include/asm-x86/cpufeature.h
---- linux-2.6/include/asm-x86/cpufeature.h	2008-08-04 01:08:08.000000000 -0400
-+++ linux-2.6-patch/include/asm-x86/cpufeature.h	2008-08-04 01:59:00.000000000 -0400
-@@ -91,6 +91,7 @@
- #define X86_FEATURE_CX16	(4*32+13) /* CMPXCHG16B */
- #define X86_FEATURE_XTPR	(4*32+14) /* Send Task Priority Messages */
- #define X86_FEATURE_DCA		(4*32+18) /* Direct Cache Access */
-+#define X86_FEATURE_XMM4_2	(4*32+20) /* Streaming SIMD Extensions-4.2 */
+diff --git a/drivers/net/wireless/ath5k/base.h b/drivers/net/wireless/ath5k/base.h
+index 47f414b..d7e03e6 100644
+--- a/drivers/net/wireless/ath5k/base.h
++++ b/drivers/net/wireless/ath5k/base.h
+@@ -56,7 +56,7 @@
  
- /* VIA/Cyrix/Centaur-defined CPU features, CPUID level 0xC0000001, word 5 */
- #define X86_FEATURE_XSTORE	(5*32+ 2) /* on-CPU RNG present (xstore insn) */
-@@ -189,6 +190,7 @@ extern const char * const x86_power_flag
- #define cpu_has_gbpages		boot_cpu_has(X86_FEATURE_GBPAGES)
- #define cpu_has_arch_perfmon	boot_cpu_has(X86_FEATURE_ARCH_PERFMON)
- #define cpu_has_pat		boot_cpu_has(X86_FEATURE_PAT)
-+#define cpu_has_xmm4_2		boot_cpu_has(X86_FEATURE_XMM4_2)
- 
- #if defined(CONFIG_X86_INVLPG) || defined(CONFIG_X86_64)
- # define cpu_has_invlpg		1
+ struct ath5k_buf {
+ 	struct list_head	list;
+-	unsigned int		flags;	/* tx descriptor flags */
++	unsigned int		flags;	/* rx descriptor flags */
+ 	struct ath5k_desc	*desc;	/* virtual addr of desc */
+ 	dma_addr_t		daddr;	/* physical addr of desc */
+ 	struct sk_buff		*skb;	/* skbuff for buf */
+-- 
+1.5.6.2
 
