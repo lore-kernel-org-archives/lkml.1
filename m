@@ -1,26 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762285AbYHDVcl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764348AbYHDVdW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762285AbYHDVcl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 17:32:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758763AbYHDVbc
+	id S1764348AbYHDVdW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 17:33:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764668AbYHDVcZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 17:31:32 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:51896
+	Mon, 4 Aug 2008 17:32:25 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:51902
 	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1755074AbYHDVbb (ORCPT
+	by vger.kernel.org with ESMTP id S1764653AbYHDVcY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 17:31:31 -0400
-Date: Mon, 04 Aug 2008 14:31:28 -0700 (PDT)
-Message-Id: <20080804.143128.47731600.davem@davemloft.net>
-To: shemminger@vyatta.com
-Cc: greearb@candelatech.com, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: [RFC] netdev: debugging option
+	Mon, 4 Aug 2008 17:32:24 -0400
+Date: Mon, 04 Aug 2008 14:32:21 -0700 (PDT)
+Message-Id: <20080804.143221.31929542.davem@davemloft.net>
+To: a.p.zijlstra@chello.nl
+Cc: andrea@qumranet.com, davej@redhat.com, rdreier@cisco.com,
+       torvalds@linux-foundation.org, jeremy@goop.org, hugh@veritas.com,
+       mingo@elte.hu, akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCH 7/7] lockdep: spin_lock_nest_lock()
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <20080804093742.395d271e@extreme>
-References: <20080719230424.190957a3@extreme>
-	<20080720.000509.20260185.davem@davemloft.net>
-	<20080804093742.395d271e@extreme>
+In-Reply-To: <1217867935.3589.35.camel@twins>
+References: <1217861763.3589.13.camel@twins>
+	<20080804162657.GI11476@duo.random>
+	<1217867935.3589.35.camel@twins>
 X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -29,28 +30,15 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Stephen Hemminger <shemminger@vyatta.com>
-Date: Mon, 4 Aug 2008 09:37:42 -0700
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Date: Mon, 04 Aug 2008 18:38:55 +0200
 
-> On Sun, 20 Jul 2008 00:05:09 -0700 (PDT)
-> David Miller <davem@davemloft.net> wrote:
+> On Mon, 2008-08-04 at 18:26 +0200, Andrea Arcangeli wrote:
+> > The only real place where lockdep is unusable in my experience is
+> > preempt-RT, it grinds it to an halt during boot on 8-way before
+> > reaching the shell.
 > 
-> > From: Stephen Hemminger <shemminger@vyatta.com>
-> > Date: Sat, 19 Jul 2008 23:04:24 -0700
-> > 
-> > So we really need to add some kind of run time enable and also a
-> > filter of some sort, even if it's just on device.
-> 
-> The sysctl in the patch is default off, so unless it is turned on,
-> the log is quiet
+> David Miller just did a patch that might fix that.
 
-I get a feeling you think I can just apply your patch now.
-
-You can't respond to my gripes more than a week later and expect
-the patch to still be in my inbox ready to apply.  I delete the
-patch from my mailbox as soon as I have major issues with it.
-
-If you think your reply means that the patch should be applied you
-need to resubmit it.
-
-Thanks.
+Peter, your patches are just as effective at making all of my 64-cpu,
+128-cpu, etc. machines usable with lockdep.
