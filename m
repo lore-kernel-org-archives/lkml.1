@@ -1,57 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762237AbYHDT1A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762305AbYHDTaN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762237AbYHDT1A (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 15:27:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762097AbYHDT0q
+	id S1762305AbYHDTaN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 15:30:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754471AbYHDT37
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 15:26:46 -0400
-Received: from gw.goop.org ([64.81.55.164]:33029 "EHLO mail.goop.org"
+	Mon, 4 Aug 2008 15:29:59 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:46753 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762095AbYHDT0o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 15:26:44 -0400
-Message-ID: <489757EC.3000309@goop.org>
-Date: Mon, 04 Aug 2008 12:26:36 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	id S1754336AbYHDT36 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Aug 2008 15:29:58 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Nico Schottelius 
+	<nico-linux-kernel-bugreport20080731@schottelius.org>
+Subject: Re: Heavy suspend and io problems in 2.6.27-rc1-00156-g94ad374
+Date: Mon, 4 Aug 2008 21:32:40 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-next@vger.kernel.org
+References: <20080731210507.GA6094@denkbrett.schottelius.org> <20080804090654.GA4747@denkbrett.schottelius.org> <20080804161443.GA4905@denkbrett.schottelius.org>
+In-Reply-To: <20080804161443.GA4905@denkbrett.schottelius.org>
 MIME-Version: 1.0
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, hugh@veritas.com, mingo@elte.hu,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       davej@redhat.com
-Subject: Re: [RFC][PATCH 7/7] lockdep: spin_lock_nest_lock()
-References: <20080804130317.994042639@chello.nl>	 <20080804131012.246115111@chello.nl>  <48974512.7000206@goop.org> <1217876046.3589.61.camel@twins>
-In-Reply-To: <1217876046.3589.61.camel@twins>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200808042132.41020.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra wrote:
->>    3. release the outer lock before releasing the inner locks
->>     
->
-> Only if you then release the inner locks in the reverse order you took
-> them - the nested release code (releasing a lock that is not on the top
-> of the stack) basically pops and pushes all the locks, the push will
-> fail if the outer lock is released.
->   
+On Monday, 4 of August 2008, Nico Schottelius wrote:
+> Hello again!
+> 
+> I retested it with linux-next + updates from its branches
+> (=2.6.27-rc1-next-20080804-denkbrett-03792-g1d2be1a)
+> 
+> with and without the patch.
+> 
+> The result is still the same as below.
+> 
+> No xorg is running, btw.
+> 
+> Sincerly,
+> 
+> Nico
+> 
+> ps: I am using this tree:
+> 
+>    http://unix.schottelius.org/cgi-bin/gitweb.cgi?p=foreign/linux-2.6;a=summary
+> 
+>    Which is linux-next-20080804 + merges from the listed branches.
 
-OK.  I don't actually need to do this, but I was asking for 
-completeness.  But to clarify, you only need to do the reverse unlock if 
-you do it after unlocking the outer lock?  If you're still holding the 
-outer lock, you can unlock in any order?
+Well, fine, but this is not exactly helpful.
 
->> but it's not OK to try to use different outer locks for a given inner lock.
->>     
->
-> It doesn't validate this part - as with most lockdep annotations you can
-> annotate away real deadlocks.
->   
+Can you test the current Linus' tree with the patch from bug #11178, please?
 
-Hm, OK.
-
-
-    J
+Thanks,
+Rafael
