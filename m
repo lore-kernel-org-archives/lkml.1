@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763523AbYHDUXc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763601AbYHDUXu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763523AbYHDUXc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 16:23:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755185AbYHDUXR
+	id S1763601AbYHDUXu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 16:23:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762571AbYHDUXk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 16:23:17 -0400
-Received: from ns2.suse.de ([195.135.220.15]:45588 "EHLO mx2.suse.de"
+	Mon, 4 Aug 2008 16:23:40 -0400
+Received: from mx2.suse.de ([195.135.220.15]:45639 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762764AbYHDUXP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 16:23:15 -0400
-Date: Mon, 4 Aug 2008 13:15:02 -0700
+	id S1755185AbYHDUXj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Aug 2008 16:23:39 -0400
+Date: Mon, 4 Aug 2008 13:15:05 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Josef Bacik <jbacik@redhat.com>,
-       linux-ext4@vger.kernel.org, Jan Kara <jack@ucw.cz>
-Subject: [patch 09/33] jbd: fix possible journal overflow issues
-Message-ID: <20080804201502.GJ1139@suse.de>
+       alan@lxorguk.ukuu.org.uk, Jiri Kosina <jkosina@suse.cz>,
+       Dmitry Torokhov <dtor@mail.ru>
+Subject: [patch 10/33] Input: i8042 - retry failed CTR writes when resuming
+Message-ID: <20080804201505.GK1139@suse.de>
 References: <20080804200515.110033151@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="jbd-fix-possible-journal-overflow-issues.patch"
+Content-Disposition: inline; filename="input-i8042-retry-failed-ctr-writes-when-resuming.patch"
 In-Reply-To: <20080804201321.GA1139@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -41,114 +41,44 @@ know.
 
 ------------------
 
-From: Josef Bacik <jbacik@redhat.com>
+From: Jiri Kosina <jkosina@suse.cz>
 
-commit 5b9a499d77e9dd39c9e6611ea10c56a31604f274 upstream
+commit 2f6a77d56523c14651236bc401a99b0e2aca2fdd upstream
 
-There are several cases where the running transaction can get buffers added to
-its BJ_Metadata list which it never dirtied, which makes its t_nr_buffers
-counter end up larger than its t_outstanding_credits counter.
+There are systems that fail in i8042_resume() with
 
-This will cause issues when starting new transactions as while we are logging
-buffers we decrement t_outstanding_buffers, so when t_outstanding_buffers goes
-negative, we will report that we need less space in the journal than we
-actually need, so transactions will be started even though there may not be
-enough room for them.  In the worst case scenario (which admittedly is almost
-impossible to reproduce) this will result in the journal running out of space.
+	i8042: Can't write CTR to resume
 
-The fix is to only
-refile buffers from the committing transaction to the running transactions
-BJ_Modified list when b_modified is set on that journal, which is the only way
-to be sure if the running transaction has modified that buffer.
+as i8042_command(&i8042_ctr, I8042_CMD_CTL_WCTR) fails even though the
+controller claimed itself to be ready before.
 
-This patch also fixes an accounting error in journal_forget, it is possible
-that we can call journal_forget on a buffer without having modified it, only
-gotten write access to it, so instead of freeing a credit, we only do so if
-the buffer was modified.  The assert will help catch if this problem occurs.
-Without these two patches I could hit this assert within minutes of running
-postmark, with them this issue no longer arises.  Thank you,
+One retry after failing write fixes the problems on the failing systems.
 
-Signed-off-by: Josef Bacik <jbacik@redhat.com>
-Cc: <linux-ext4@vger.kernel.org>
-Acked-by: Jan Kara <jack@ucw.cz>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Reported-by: Helmut Schaa <hschaa@novell.com>
+Signed-off-by: Jiri Kosina <jkosina@suse.cz>
+Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/jbd/commit.c      |    3 +++
- fs/jbd/transaction.c |   21 ++++++++++++++++++---
- 2 files changed, 21 insertions(+), 3 deletions(-)
+ drivers/input/serio/i8042.c |    8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)
 
---- a/fs/jbd/commit.c
-+++ b/fs/jbd/commit.c
-@@ -472,6 +472,9 @@ void journal_commit_transaction(journal_
- 	 */
- 	commit_transaction->t_state = T_COMMIT;
- 
-+	J_ASSERT(commit_transaction->t_nr_buffers <=
-+		 commit_transaction->t_outstanding_credits);
-+
- 	descriptor = NULL;
- 	bufs = 0;
- 	while (commit_transaction->t_buffers) {
---- a/fs/jbd/transaction.c
-+++ b/fs/jbd/transaction.c
-@@ -1235,6 +1235,7 @@ int journal_forget (handle_t *handle, st
- 	struct journal_head *jh;
- 	int drop_reserve = 0;
- 	int err = 0;
-+	int was_modified = 0;
- 
- 	BUFFER_TRACE(bh, "entry");
- 
-@@ -1253,6 +1254,9 @@ int journal_forget (handle_t *handle, st
- 		goto not_jbd;
+--- a/drivers/input/serio/i8042.c
++++ b/drivers/input/serio/i8042.c
+@@ -938,8 +938,12 @@ static int i8042_resume(struct platform_
+ 	i8042_ctr |= I8042_CTR_AUXDIS | I8042_CTR_KBDDIS;
+ 	i8042_ctr &= ~(I8042_CTR_AUXINT | I8042_CTR_KBDINT);
+ 	if (i8042_command(&i8042_ctr, I8042_CMD_CTL_WCTR)) {
+-		printk(KERN_ERR "i8042: Can't write CTR to resume\n");
+-		return -EIO;
++		printk(KERN_WARNING "i8042: Can't write CTR to resume, retrying...\n");
++		msleep(50);
++		if (i8042_command(&i8042_ctr, I8042_CMD_CTL_WCTR)) {
++			printk(KERN_ERR "i8042: CTR write retry failed\n");
++			return -EIO;
++		}
  	}
  
-+	/* keep track of wether or not this transaction modified us */
-+	was_modified = jh->b_modified;
-+
- 	/*
- 	 * The buffer's going from the transaction, we must drop
- 	 * all references -bzzz
-@@ -1270,7 +1274,12 @@ int journal_forget (handle_t *handle, st
- 
- 		JBUFFER_TRACE(jh, "belongs to current transaction: unfile");
- 
--		drop_reserve = 1;
-+		/*
-+		 * we only want to drop a reference if this transaction
-+		 * modified the buffer
-+		 */
-+		if (was_modified)
-+			drop_reserve = 1;
- 
- 		/*
- 		 * We are no longer going to journal this buffer.
-@@ -1310,7 +1319,13 @@ int journal_forget (handle_t *handle, st
- 		if (jh->b_next_transaction) {
- 			J_ASSERT(jh->b_next_transaction == transaction);
- 			jh->b_next_transaction = NULL;
--			drop_reserve = 1;
-+
-+			/*
-+			 * only drop a reference if this transaction modified
-+			 * the buffer
-+			 */
-+			if (was_modified)
-+				drop_reserve = 1;
- 		}
- 	}
- 
-@@ -2135,7 +2150,7 @@ void __journal_refile_buffer(struct jour
- 	jh->b_transaction = jh->b_next_transaction;
- 	jh->b_next_transaction = NULL;
- 	__journal_file_buffer(jh, jh->b_transaction,
--				was_dirty ? BJ_Metadata : BJ_Reserved);
-+				jh->b_modified ? BJ_Metadata : BJ_Reserved);
- 	J_ASSERT_JH(jh, jh->b_transaction->t_state == T_RUNNING);
- 
- 	if (was_dirty)
+ 	if (i8042_mux_present) {
 
 -- 
