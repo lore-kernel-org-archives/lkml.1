@@ -1,62 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755267AbYHDPaS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756089AbYHDPb0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755267AbYHDPaS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 11:30:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753245AbYHDPaF
+	id S1756089AbYHDPb0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 11:31:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753325AbYHDPbT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 11:30:05 -0400
-Received: from mail2.shareable.org ([80.68.89.115]:48104 "EHLO
-	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753202AbYHDPaE (ORCPT
+	Mon, 4 Aug 2008 11:31:19 -0400
+Received: from g4t0017.houston.hp.com ([15.201.24.20]:16935 "EHLO
+	g4t0017.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753245AbYHDPbS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 11:30:04 -0400
-Date: Mon, 4 Aug 2008 16:29:49 +0100
-From: Jamie Lokier <jamie@shareable.org>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Miklos Szeredi <miklos@szeredi.hu>, torvalds@linux-foundation.org,
-       jens.axboe@oracle.com, akpm@linux-foundation.org,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [patch v3] splice: fix race with page invalidation
-Message-ID: <20080804152949.GH18868@shareable.org>
-References: <E1KO8DV-0004E4-6H@pomaz-ex.szeredi.hu> <200808011122.51792.nickpiggin@yahoo.com.au> <E1KOzMt-0003fa-Ah@pomaz-ex.szeredi.hu> <200808021426.50436.nickpiggin@yahoo.com.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200808021426.50436.nickpiggin@yahoo.com.au>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Mon, 4 Aug 2008 11:31:18 -0400
+Subject: Re: Race condition between putback_lru_page and
+	mem_cgroup_move_list
+From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+To: MinChan Kim <minchan.kim@gmail.com>
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>, linux-mm <linux-mm@kvack.org>,
+       Rik van Riel <riel@redhat.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <28c262360808040736u7f364fc0p28d7ceea7303a626@mail.gmail.com>
+References: <28c262360808040736u7f364fc0p28d7ceea7303a626@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Date: Mon, 04 Aug 2008 11:31:10 -0400
+Message-Id: <1217863870.7065.62.camel@lts-notebook>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 8bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nick Piggin wrote:
-> On Saturday 02 August 2008 04:28, Miklos Szeredi wrote:
-> > On Fri, 1 Aug 2008, Nick Piggin wrote:
-> > > Well, a) it probably makes sense in that case to provide another mode
-> > > of operation which fills the data synchronously from the sender and
-> > > copys it to the pipe (although the sender might just use read/write)
-> > > And b) we could *also* look at clearing PG_uptodate as an optimisation
-> > > iff that is found to help.
-> >
-> > IMO it's not worth it to complicate the API just for the sake of
-> > correctness in the so-very-rare read error case.  Users of the splice
-> > API will simply ignore this requirement, because things will work fine
-> > on ext3 and friends, and will break only rarely on NFS and FUSE.
-> >
-> > So I think it's much better to make the API simple: invalid pages are
-> > OK, and for I/O errors we return -EIO on the pipe.  It's not 100%
-> > correct, but all in all it will result in less buggy programs.
+On Mon, 2008-08-04 at 23:36 +0900, MinChan Kim wrote:
+> I think this is a race condition if mem_cgroup_move_lists's comment isn't right.
+> I am not sure that it was already known problem.
 > 
-> That's true, but I hate how we always (in the VM, at least) just brush
-> error handling under the carpet because it is too hard :(
+> mem_cgroup_move_lists assume the appropriate zone's lru lock is already held.
+> but putback_lru_page calls mem_cgroup_move_lists without holding lru_lock.
 > 
-> I guess your patch is OK, though. I don't see any reasons it could cause
-> problems...
 
-At least, if there are situations where the data received is not what
-a common sense programmer would expect (e.g. blocks of zeros, data
-from an unexpected time in syscall sequence, or something, or just
-"reliable except with FUSE and NFS"), please ensure it's documented in
-splice.txt or wherever.
+Hmmm, the comment on mem_cgroup_move_lists() does say this.  Although,
+reading thru' the code, I can't see why it requires this.  But then it's
+Monday, here...
 
--- Jamie
+
+> Repeatedly, spin_[un/lock]_irq use in mem_cgroup_move_list have a big overhead
+> while doing list iteration.
+> 
+> Do we have to use pagevec ?
+
+This shouldn't be necessary, IMO.  putback_lru_page() is used as
+follows:
+
+1) in vmscan.c [shrink_*_list()] when an unevictable page is
+encountered.  This should be relatively rare.  Once vmscan sees an
+unevictable page, it parks it on the unevictable lru list where it
+[vmscan] won't see the page again until it becomes reclaimable.
+
+2) as a replacement for move_to_lru() in page migration as the inverse
+to isolate_lru_page().  We did this to catch patches that became
+unevictable or, more importantly, evictable while page migration held
+them isolated.  move_to_lru() already grabbed and released the zone lru
+lock on each page migrated.
+
+3) In m[un]lock_vma_page() and clear_page_mlock(), new with in the
+"mlocked pages are unevictable" series.  This one can result in a storm
+of zone lru traffic--e.g., mlock()ing or munlocking() a large segment or
+mlockall() of a task with a lot of mapped address space.  Again, this is
+probably a very rare event--unless you're stressing [stressing over?]
+mlock(), as I've been doing :)--and often involves a major fault [page
+allocation], per page anyway.
+
+I﻿ originally did have a pagevec for the unevictable lru but it
+complicated ensuring that we don't strand evictable pages on the
+unevictable list.  See the retry logic in putback_lru_page().
+
+As for the !UNEVICTABLE_LRU version, the only place this should be
+called is from page migration as none of the other call sites are
+compiled in or reachable when !UNEVICTABLE_LRU.
+
+Thoughts?
+
+Lee
+> 
+
