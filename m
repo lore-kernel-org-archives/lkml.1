@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764054AbYHDU1k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764154AbYHDU2Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764054AbYHDU1k (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 16:27:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763431AbYHDU1V
+	id S1764154AbYHDU2Y (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 16:28:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764081AbYHDU1s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 16:27:21 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:45890 "EHLO mx2.suse.de"
+	Mon, 4 Aug 2008 16:27:48 -0400
+Received: from mx2.suse.de ([195.135.220.15]:45916 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763998AbYHDU1T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 16:27:19 -0400
-Date: Mon, 4 Aug 2008 13:15:56 -0700
+	id S1764073AbYHDU1r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Aug 2008 16:27:47 -0400
+Date: Mon, 4 Aug 2008 13:15:58 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Holger Macht <hmacht@suse.de>,
-       Len Brown <len.brown@intel.com>
-Subject: [patch 19/33] bay: exit if notify handler cannot be installed
-Message-ID: <20080804201556.GT1139@suse.de>
+       alan@lxorguk.ukuu.org.uk,
+       "Luis R. Rodriguez" <mcgrof@winlab.rutgers.edu>,
+       "John W. Linville" <linville@tuxdriver.com>, Jiri Benc <jbenc@suse.cz>
+Subject: [patch 20/33] ath5k: Use software encryption for now
+Message-ID: <20080804201558.GU1139@suse.de>
 References: <20080804200515.110033151@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="bay-exit-if-notify-handler-cannot-be-installed.patch"
+Content-Disposition: inline; filename="ath5k-use-software-encryption-for-now.patch"
 In-Reply-To: <20080804201321.GA1139@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -41,54 +42,36 @@ know.
 
 ------------------
 
-From: Holger Macht <hmacht@suse.de>
+From: Luis R. Rodriguez <mcgrof@winlab.rutgers.edu>
 
-commit 7efd52a407bed6a2b02015b8ebbff7beba155392 upstream
+Commit 6844e63a9458d15b4437aa467c99128d994b0f6c
 
-If acpi_install_notify_handler() for a bay device fails, the bay driver is
-superfluous.  Most likely, another driver (like libata) is already caring
-about this device anyway.  Furthermore,
-register_hotplug_dock_device(acpi_handle) from the dock driver must not be
-called twice with the same handler.  This would result in an endless loop
-consuming 100% of CPU.  So clean up and exit.
+Hardware encryption doesn't work yet so lets use software
+encryption for now.
 
-Signed-off-by: Holger Macht <hmacht@suse.de>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Len Brown <len.brown@intel.com>
+Changes-licensed-under: 3-Clause-BSD
+
+Signed-off-by: Luis R. Rodriguez <mcgrof@winlab.rutgers.edu>
+Signed-off-by: John W. Linville <linville@tuxdriver.com>
+Cc: Jiri Benc <jbenc@suse.cz>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/acpi/bay.c |   16 ++++++++++------
- 1 file changed, 10 insertions(+), 6 deletions(-)
+ drivers/net/wireless/ath5k/base.c |    4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
---- a/drivers/acpi/bay.c
-+++ b/drivers/acpi/bay.c
-@@ -299,16 +299,20 @@ static int bay_add(acpi_handle handle, i
- 	 */
- 	pdev->dev.uevent_suppress = 0;
+--- a/drivers/net/wireless/ath5k/base.c
++++ b/drivers/net/wireless/ath5k/base.c
+@@ -2864,7 +2864,9 @@ ath5k_set_key(struct ieee80211_hw *hw, e
  
--	if (acpi_bay_add_fs(new_bay)) {
--		platform_device_unregister(new_bay->pdev);
--		goto bay_add_err;
--	}
--
- 	/* register for events on this device */
- 	status = acpi_install_notify_handler(handle, ACPI_SYSTEM_NOTIFY,
- 			bay_notify, new_bay);
- 	if (ACPI_FAILURE(status)) {
--		printk(KERN_ERR PREFIX "Error installing bay notify handler\n");
-+		printk(KERN_INFO PREFIX "Error installing bay notify handler\n");
-+		platform_device_unregister(new_bay->pdev);
-+		goto bay_add_err;
-+	}
-+
-+	if (acpi_bay_add_fs(new_bay)) {
-+		acpi_remove_notify_handler(handle, ACPI_SYSTEM_NOTIFY,
-+					   bay_notify);
-+		platform_device_unregister(new_bay->pdev);
-+		goto bay_add_err;
- 	}
- 
- 	/* if we are on a dock station, we should register for dock
+ 	switch(key->alg) {
+ 	case ALG_WEP:
+-		break;
++	/* XXX: fix hardware encryption, its not working. For now
++	 * allow software encryption */
++		/* break; */
+ 	case ALG_TKIP:
+ 	case ALG_CCMP:
+ 		return -EOPNOTSUPP;
 
 -- 
