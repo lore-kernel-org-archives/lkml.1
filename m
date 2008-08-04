@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759061AbYHDVpn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756718AbYHDVsb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759061AbYHDVpn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 17:45:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765981AbYHDVnN
+	id S1756718AbYHDVsb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 17:48:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765723AbYHDViV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 17:43:13 -0400
-Received: from cantor.suse.de ([195.135.220.2]:55371 "EHLO mx1.suse.de"
+	Mon, 4 Aug 2008 17:38:21 -0400
+Received: from ns2.suse.de ([195.135.220.15]:50072 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765961AbYHDVnL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 17:43:11 -0400
-Date: Mon, 4 Aug 2008 14:30:51 -0700
+	id S1765714AbYHDViT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Aug 2008 17:38:19 -0400
+Date: Mon, 4 Aug 2008 14:30:25 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,17 +22,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, greg@kroah.com, chrisw@sous-sol.org,
-       Jiri Slaby <jirislaby@gmail.com>,
-       "Luis R. Rodriguez" <mcgrof@gmail.com>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       Nick Kossifidis <mickflemm@gmail.com>
-Subject: [patch 25/25] Ath5k: kill tasklets on shutdown
-Message-ID: <20080804213051.GY8014@suse.de>
+       alan@lxorguk.ukuu.org.uk, Mingming Cao <cmm@us.ibm.com>,
+       Jan Kara <jack@suse.cz>
+Subject: [patch 13/25] jbd: fix race between free buffer and commit
+	transaction
+Message-ID: <20080804213025.GM8014@suse.de>
 References: <20080804203506.816201392@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="ath5k-kill-tasklets-on-shutdown.patch"
+Content-Disposition: inline; filename="jbd-fix-race-between-free-buffer-and-commit-transaction.patch"
 In-Reply-To: <20080804212725.GA7944@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -44,34 +42,137 @@ know.
 
 ------------------
 
-From: Jiri Slaby <jirislaby@gmail.com>
+From: Mingming Cao <cmm@us.ibm.com>
 
-commit 10488f8ad62be3b860bad74e60b4fe6ab87aece3 upstream
+commit 3f31fddfa26b7594b44ff2b34f9a04ba409e0f91 upstream
 
-Don't forget to kill tasklets on stop to not panic if they
-fire after freeing some structures.
+journal_try_to_free_buffers() could race with jbd commit transaction when
+the later is holding the buffer reference while waiting for the data
+buffer to flush to disk.  If the caller of journal_try_to_free_buffers()
+request tries hard to release the buffers, it will treat the failure as
+error and return back to the caller.  We have seen the directo IO failed
+due to this race.  Some of the caller of releasepage() also expecting the
+buffer to be dropped when passed with GFP_KERNEL mask to the
+releasepage()->journal_try_to_free_buffers().
 
-Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
-Acked-by: Nick Kossifidis <mickflemm@gmail.com>
-Cc: Luis R. Rodriguez <mcgrof@gmail.com>
-Signed-off-by: John W. Linville <linville@tuxdriver.com>
+With this patch, if the caller is passing the __GFP_WAIT and __GFP_FS to
+indicating this call could wait, in case of try_to_free_buffers() failed,
+let's waiting for journal_commit_transaction() to finish commit the
+current committing transaction, then try to free those buffers again.
+
+[akpm@linux-foundation.org: coding-style fixes]
+Signed-off-by: Mingming Cao <cmm@us.ibm.com>
+Reviewed-by: Badari Pulavarty <pbadari@us.ibm.com>
+Acked-by: Jan Kara <jack@suse.cz>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/net/wireless/ath5k/base.c |    3 +++
- 1 file changed, 3 insertions(+)
+ fs/jbd/transaction.c |   57 +++++++++++++++++++++++++++++++++++++++++++++++++--
+ mm/filemap.c         |    3 --
+ 2 files changed, 56 insertions(+), 4 deletions(-)
 
---- a/drivers/net/wireless/ath5k/base.c
-+++ b/drivers/net/wireless/ath5k/base.c
-@@ -2453,6 +2453,9 @@ ath5k_stop_hw(struct ath5k_softc *sc)
- 	mutex_unlock(&sc->lock);
+--- a/fs/jbd/transaction.c
++++ b/fs/jbd/transaction.c
+@@ -1648,12 +1648,42 @@ out:
+ 	return;
+ }
  
- 	del_timer_sync(&sc->calib_tim);
-+	tasklet_kill(&sc->rxtq);
-+	tasklet_kill(&sc->txtq);
-+	tasklet_kill(&sc->restq);
++/*
++ * journal_try_to_free_buffers() could race with journal_commit_transaction()
++ * The latter might still hold the a count on buffers when inspecting
++ * them on t_syncdata_list or t_locked_list.
++ *
++ * journal_try_to_free_buffers() will call this function to
++ * wait for the current transaction to finish syncing data buffers, before
++ * tryinf to free that buffer.
++ *
++ * Called with journal->j_state_lock held.
++ */
++static void journal_wait_for_transaction_sync_data(journal_t *journal)
++{
++	transaction_t *transaction = NULL;
++	tid_t tid;
++
++	spin_lock(&journal->j_state_lock);
++	transaction = journal->j_committing_transaction;
++
++	if (!transaction) {
++		spin_unlock(&journal->j_state_lock);
++		return;
++	}
++
++	tid = transaction->t_tid;
++	spin_unlock(&journal->j_state_lock);
++	log_wait_commit(journal, tid);
++}
  
+ /**
+  * int journal_try_to_free_buffers() - try to free page buffers.
+  * @journal: journal for operation
+  * @page: to try and free
+- * @unused_gfp_mask: unused
++ * @gfp_mask: we use the mask to detect how hard should we try to release
++ * buffers. If __GFP_WAIT and __GFP_FS is set, we wait for commit code to
++ * release the buffers.
+  *
+  *
+  * For all the buffers on this page,
+@@ -1682,9 +1712,11 @@ out:
+  * journal_try_to_free_buffer() is changing its state.  But that
+  * cannot happen because we never reallocate freed data as metadata
+  * while the data is part of a transaction.  Yes?
++ *
++ * Return 0 on failure, 1 on success
+  */
+ int journal_try_to_free_buffers(journal_t *journal,
+-				struct page *page, gfp_t unused_gfp_mask)
++				struct page *page, gfp_t gfp_mask)
+ {
+ 	struct buffer_head *head;
+ 	struct buffer_head *bh;
+@@ -1713,7 +1745,28 @@ int journal_try_to_free_buffers(journal_
+ 		if (buffer_jbd(bh))
+ 			goto busy;
+ 	} while ((bh = bh->b_this_page) != head);
++
+ 	ret = try_to_free_buffers(page);
++
++	/*
++	 * There are a number of places where journal_try_to_free_buffers()
++	 * could race with journal_commit_transaction(), the later still
++	 * holds the reference to the buffers to free while processing them.
++	 * try_to_free_buffers() failed to free those buffers. Some of the
++	 * caller of releasepage() request page buffers to be dropped, otherwise
++	 * treat the fail-to-free as errors (such as generic_file_direct_IO())
++	 *
++	 * So, if the caller of try_to_release_page() wants the synchronous
++	 * behaviour(i.e make sure buffers are dropped upon return),
++	 * let's wait for the current transaction to finish flush of
++	 * dirty data buffers, then try to free those buffers again,
++	 * with the journal locked.
++	 */
++	if (ret == 0 && (gfp_mask & __GFP_WAIT) && (gfp_mask & __GFP_FS)) {
++		journal_wait_for_transaction_sync_data(journal);
++		ret = try_to_free_buffers(page);
++	}
++
+ busy:
  	return ret;
  }
+--- a/mm/filemap.c
++++ b/mm/filemap.c
+@@ -2581,9 +2581,8 @@ out:
+  * Otherwise return zero.
+  *
+  * The @gfp_mask argument specifies whether I/O may be performed to release
+- * this page (__GFP_IO), and whether the call may block (__GFP_WAIT).
++ * this page (__GFP_IO), and whether the call may block (__GFP_WAIT & __GFP_FS).
+  *
+- * NOTE: @gfp_mask may go away, and this function may become non-blocking.
+  */
+ int try_to_release_page(struct page *page, gfp_t gfp_mask)
+ {
 
 -- 
