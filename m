@@ -1,79 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761985AbYHDCih@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759481AbYHDCjU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761985AbYHDCih (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Aug 2008 22:38:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760920AbYHDCfE
+	id S1759481AbYHDCjU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Aug 2008 22:39:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759190AbYHDChp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Aug 2008 22:35:04 -0400
-Received: from 166-70-238-42.ip.xmission.com ([166.70.238.42]:44596 "EHLO
-	ns1.wolfmountaingroup.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761348AbYHDCfC (ORCPT
+	Sun, 3 Aug 2008 22:37:45 -0400
+Received: from smtpq1.tilbu1.nb.home.nl ([213.51.146.200]:33006 "EHLO
+	smtpq1.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761788AbYHDChn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Aug 2008 22:35:02 -0400
-Message-ID: <57601.166.70.238.45.1217816079.squirrel@webmail.wolfmountaingroup.com>
-Date: Sun, 3 Aug 2008 20:14:39 -0600 (MDT)
-Subject: [PATCH 2.6.26 24/25] mdb: Merkey's Kernel Debugger
-From: jmerkey@wolfmountaingroup.com
-To: linux-kernel@vger.kernel.org
-User-Agent: SquirrelMail/1.4.6
+	Sun, 3 Aug 2008 22:37:43 -0400
+Message-ID: <48966B6D.604@keyaccess.nl>
+Date: Mon, 04 Aug 2008 04:37:33 +0200
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080707)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
-References: 
-In-Reply-To: 
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+CC: Matthew Wilcox <matthew@wil.cx>,
+       Christoph Lameter <cl@linux-foundation.org>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       Mel Gorman <mel@skynet.ie>, andi@firstfloor.org,
+       Rik van Riel <riel@redhat.com>
+Subject: Re: No, really, stop trying to delete slab until you've finished
+ making slub perform as well
+References: <20080801182324.572058187@lameter.com> <20080803015847.GD26461@parisc-linux.org> <4896225D.9090203@cs.helsinki.fi>
+In-Reply-To: <4896225D.9090203@cs.helsinki.fi>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -1.0 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Netware Style Debugger for Linux written by Jeffrey Vernon Merkey
+On 03-08-08 23:25, Pekka Enberg wrote:
 
---- linux-2.6.26/lib/Kconfig.debug	2008-07-13 15:51:29.000000000 -0600 +++
-linux-2.6.26-mdb/lib/Kconfig.debug	2008-08-03 12:49:01.000000000 -0600 @@
--131,6 +131,31 @@
- 	  Say Y here if you are developing drivers or trying to debug and
-identify kernel problems.
+> Matthew Wilcox wrote:
 
-+config MDB
-+	bool "Merkey's Kernel Debugger"
-+	depends on DEBUG_KERNEL
-+	select KALLSYMS
-+	select KALLSYMS_ALL
-+	help
-+           NetWare style kernel debugger for Linux written by Jeffrey Vernon
-+	   Merkey.
-+
-+config MDB_CONSOLE_REDIRECTION
-+	bool "MDB Console Redirection Support"
-+	depends on MDB
-+	default y
-+	help
-+           Reset any Console Redirection to default system settings (0) 
-+           when the MDB debugger is active.  The Debugger will restore  +
-          the redirection to the custom settings when the debugger  +     
-     is exited.  This feature is useful on systems which by default
+>> Do we have to once again explain that slab still outperforms slub on at
+>> least one important benchmark?  I hope Nick Piggin finds time to finish
+>> tuning slqb; it already outperforms slub.
+> 
+> No, you don't have to. I haven't merged that patch nor do I intend to do 
+> so until the regressions are fixed.
+> 
+> And yes, I'm still waiting to hear from you how we're now doing with 
+> higher order page allocations...
 
-+           redirect printk output and the screen debugger output to a log
-+           file or system device, which can prevent the debugger screen
-from
-+           being visible.  Enabling this feature does not affect or disable
-+           remote operations via serial port.  It is recommended to enable
-+           this feature by default if intensive debugging is intended for
-+           the target system.
-+
- config DEBUG_SHIRQ
- 	bool "Debug shared IRQ handlers"
- 	depends on DEBUG_KERNEL && GENERIC_HARDIRQS
+General interested question -- I recently "accidentally" read some of 
+slub and I believe that it doesn't feature the cache colouring support 
+that slab did? Is that true, and if so, wasn't it needed/useful?
 
-
-By making a contribution to this project, I certify that the contribution
-was created in whole or in part by me and I have the right to submit it
-under the open source license indicated in the file
-
-Jeffrey Vernon Merkey
-
-
-
-
-
+Rene.
