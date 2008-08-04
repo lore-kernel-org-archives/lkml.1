@@ -1,73 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765283AbYHDWRD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765341AbYHDWRm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765283AbYHDWRD (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 18:17:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759979AbYHDWQn
+	id S1765341AbYHDWRm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 18:17:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752231AbYHDWRb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 18:16:43 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:46472 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759522AbYHDWQm (ORCPT
+	Mon, 4 Aug 2008 18:17:31 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:33698 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751147AbYHDWR3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 18:16:42 -0400
-Date: Mon, 4 Aug 2008 18:16:39 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Greg KH <gregkh@suse.de>
-cc: linux-kernel@vger.kernel.org, stable@kernel.org, Greg KH <greg@kroah.com>,
-       Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
-       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
-       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk
-Subject: Re: [patch 01/25] ftrace: remove unneeded documentation
-In-Reply-To: <20080804214627.GA8840@suse.de>
-Message-ID: <alpine.DEB.1.10.0808041810450.5205@gandalf.stny.rr.com>
-References: <20080804203506.816201392@mini.kroah.org> <20080804212932.GA8014@suse.de> <alpine.DEB.1.10.0808041741250.5205@gandalf.stny.rr.com> <20080804214627.GA8840@suse.de>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 4 Aug 2008 18:17:29 -0400
+Date: Mon, 4 Aug 2008 23:00:11 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Mark Lord <liml@rtr.ca>
+Cc: Robert Hancock <hancockr@shaw.ca>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       James Bottomley <James.Bottomley@hansenpartnership.com>,
+       ksummit-2008-discuss@lists.linux-foundation.org,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-ide <linux-ide@vger.kernel.org>
+Subject: Re: Kernel Summit request for Discussion of future of ATA (libata)
+ and IDE
+Message-ID: <20080804230011.1640f011@lxorguk.ukuu.org.uk>
+In-Reply-To: <48977EE3.8050806@rtr.ca>
+References: <fa.OGeO7gZvBG4obEzRbVltjSebgTQ@ifi.uio.no>
+	<fa.KtvYE2B2yrJqUleolhtMPN9ljAQ@ifi.uio.no>
+	<fa.AqEKTvguYFAzDFHy/We/8MpOqmo@ifi.uio.no>
+	<48976168.3020804@shaw.ca>
+	<20080804205508.20a3f917@lxorguk.ukuu.org.uk>
+	<48977EE3.8050806@rtr.ca>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 04 Aug 2008 18:12:51 -0400
+Mark Lord <liml@rtr.ca> wrote:
 
-On Mon, 4 Aug 2008, Greg KH wrote:
-
-> On Mon, Aug 04, 2008 at 05:42:20PM -0400, Steven Rostedt wrote:
-> > 
-> > On Mon, 4 Aug 2008, Greg KH wrote:
-> > 
-> > > 2.6.26-stable review patch.  If anyone has any objections, please let us know.
-> > 
-> > Well, I object to this patch, but I'm sure I'll be ignored.
+> Alan Cox wrote:
+> > You don't. Basically it is controller dependant. Pretty much all the
+> > newer controllers support the 32bit PIO data cycles. Most PCI controllers
+> > it makes no speed difference but host bus controllers (especially
+> > PIIX/ICH) really benefit.
+> ..
 > 
-> Why?  There is no ftrace code in the 2.6.26 kernel, so why would we
-> worry about keeping such documentation up to date, let alone even
-> present at all?
-> 
-> Why should this matter?
+> By "most PCI controllers", did you really mean "most add-on PCI (card) controllers"?
 
-Greg,
+Yes
 
-Don't get me wrong. I agree with the reason to pull it. It is the right 
-thing to do. But still, I don't like it, not because I disagree with it, 
-but simply, I liked the fact that the document made it in before the code.
+> Nearly all onboard "PCI" controllers (integrated into the host chipset) benefit hugely,
+> but I suppose that is what was meant by "host bus controllers".
 
-I just sold my 1994 Nissan Sentra because I seldom drove it. It was the 
-right thing to do. But I still don't like the fact that I don't have it 
-anymore.
-
-I don't like it. This is a feeling. Nothing to do with being technical. 
-Hence, I will not argue it.  I just want it on record that I do not 
-_like_ it. ;-)
-
-My objection was only symbolic.
-
--- Steve
+Yes
