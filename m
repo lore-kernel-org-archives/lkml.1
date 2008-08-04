@@ -1,46 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756424AbYHDPjU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754889AbYHDPn0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756424AbYHDPjU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 11:39:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753771AbYHDPjK
+	id S1754889AbYHDPn0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 11:43:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753273AbYHDPnR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 11:39:10 -0400
-Received: from ns2.suse.de ([195.135.220.15]:57164 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752844AbYHDPjJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 11:39:09 -0400
-From: Andreas Schwab <schwab@suse.de>
-To: Samuel Thibault <samuel.thibault@ens-lyon.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: ext3 seems to ignore ECC errors
-References: <20080804150353.GS4470@implementation.uk.xensource.com>
-X-Yow: ..  My pants just went on a wild rampage through
- a Long Island Bowling Alley!!
-Date: Mon, 04 Aug 2008 17:39:06 +0200
-In-Reply-To: <20080804150353.GS4470@implementation.uk.xensource.com> (Samuel
-	Thibault's message of "Mon, 4 Aug 2008 16:03:53 +0100")
-Message-ID: <je8wvczt5x.fsf@sykes.suse.de>
-User-Agent: Gnus/5.110009 (No Gnus v0.9) Emacs/22.2 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+	Mon, 4 Aug 2008 11:43:17 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:39229 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753053AbYHDPnQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Aug 2008 11:43:16 -0400
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: chris.mason@oracle.com (Chris Mason)
+Subject: Re: [PATCH] Using Intel CRC32 instruction to accelerate CRC32c	algorithm by new crypto API.
+Cc: dwmw2@infradead.org, austin_zhang@linux.intel.com,
+       herbert@gondor.apana.org.au, davem@davemloft.net,
+       linux-kernel@vger.kernel.org, linux-crypto@vger.kernel.org
+Organization: Core
+In-Reply-To: <1217857537.29139.70.camel@think.oraclecorp.com>
+X-Newsgroups: apana.lists.os.linux.cryptoapi,apana.lists.os.linux.kernel
+User-Agent: tin/1.7.4-20040225 ("Benbecula") (UNIX) (Linux/2.6.17-rc4 (i686))
+Message-Id: <E1KQ2D2-0003Fn-00@gondolin.me.apana.org.au>
+Date: Mon, 04 Aug 2008 23:42:56 +0800
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Samuel Thibault <samuel.thibault@ens-lyon.org> writes:
+Chris Mason <chris.mason@oracle.com> wrote:
+>
+>>From a performance point of view I'm probably reading the crypto API
+> code wrong, but it looks like my choices are to either have a long
+> standing context and use locking around the digest/hash calls to protect
+> internal crypto state, or create a new context every time and take a
+> perf hit while crypto looks up the right module.
 
-> However, to my surprise Linux (2.6.26) continued to mount the ext3
-> filesystem read/write, spitting out a lot of IDE errors.  Shouldn't
-> filesystems remount read-only and let the admin try to save data in such
-> case?
+You're looking at the old hash interface.  New users should use the
+ahash interface which was only recently added to the kernel.  It
+lets you store the state in the request object which you pass to
+the algorithm on every call.  This means that you only need one
+tfm in the entire system for crc32c.
 
-That's a tunable parameter of the filesystem, see tune2fs(8).
+BTW, don't let the a in ahash intimidate you.  It's meant to support
+synchronous implementations such as the Intel instruction just as
+well as asynchronous ones.
 
-Andreas.
+And if you're still not convinced here is the benchmark on the
+digest_null algorithm:
 
+testing speed of stub_digest_null
+test  0 (   16 byte blocks,   16 bytes per update,   1 updates):    190 cycles/operation,   11 cycles/byte
+test  1 (   64 byte blocks,   16 bytes per update,   4 updates):    367 cycles/operation,    5 cycles/byte
+test  2 (   64 byte blocks,   64 bytes per update,   1 updates):    192 cycles/operation,    3 cycles/byte
+test  3 (  256 byte blocks,   16 bytes per update,  16 updates):   1006 cycles/operation,    3 cycles/byte
+test  4 (  256 byte blocks,   64 bytes per update,   4 updates):    378 cycles/operation,    1 cycles/byte
+test  5 (  256 byte blocks,  256 bytes per update,   1 updates):    191 cycles/operation,    0 cycles/byte
+test  6 ( 1024 byte blocks,   16 bytes per update,  64 updates):   3557 cycles/operation,    3 cycles/byte
+test  7 ( 1024 byte blocks,  256 bytes per update,   4 updates):    365 cycles/operation,    0 cycles/byte
+test  8 ( 1024 byte blocks, 1024 bytes per update,   1 updates):    191 cycles/operation,    0 cycles/byte
+test  9 ( 2048 byte blocks,   16 bytes per update, 128 updates):   6903 cycles/operation,    3 cycles/byte
+test 10 ( 2048 byte blocks,  256 bytes per update,   8 updates):    574 cycles/operation,    0 cycles/byte
+test 11 ( 2048 byte blocks, 1024 bytes per update,   2 updates):    259 cycles/operation,    0 cycles/byte
+test 12 ( 2048 byte blocks, 2048 bytes per update,   1 updates):    192 cycles/operation,    0 cycles/byte
+test 13 ( 4096 byte blocks,   16 bytes per update, 256 updates):  13626 cycles/operation,    3 cycles/byte
+test 14 ( 4096 byte blocks,  256 bytes per update,  16 updates):   1008 cycles/operation,    0 cycles/byte
+test 15 ( 4096 byte blocks, 1024 bytes per update,   4 updates):    370 cycles/operation,    0 cycles/byte
+test 16 ( 4096 byte blocks, 4096 bytes per update,   1 updates):    193 cycles/operation,    0 cycles/byte
+test 17 ( 8192 byte blocks,   16 bytes per update, 512 updates):  27042 cycles/operation,    3 cycles/byte
+test 18 ( 8192 byte blocks,  256 bytes per update,  32 updates):   1854 cycles/operation,    0 cycles/byte
+test 19 ( 8192 byte blocks, 1024 bytes per update,   8 updates):    576 cycles/operation,    0 cycles/byte
+test 20 ( 8192 byte blocks, 4096 bytes per update,   2 updates):    253 cycles/operation,    0 cycles/byte
+test 21 ( 8192 byte blocks, 8192 bytes per update,   1 updates):    241 cycles/operation,    0 cycles/byte
+
+This is a dry run with a digest_null where all the functions
+are stubbed out (i.e., just a return 0).  So this measures the
+overhead of the benchmark itself.
+
+Now with a run over a digest_null that simply touches all the
+data:
+
+testing speed of digest_null
+test  0 (   16 byte blocks,   16 bytes per update,   1 updates):    193 cycles/operation,   12 cycles/byte
+test  1 (   64 byte blocks,   16 bytes per update,   4 updates):    369 cycles/operation,    5 cycles/byte
+test  2 (   64 byte blocks,   64 bytes per update,   1 updates):    193 cycles/operation,    3 cycles/byte
+test  3 (  256 byte blocks,   16 bytes per update,  16 updates):   1010 cycles/operation,    3 cycles/byte
+test  4 (  256 byte blocks,   64 bytes per update,   4 updates):    364 cycles/operation,    1 cycles/byte
+test  5 (  256 byte blocks,  256 bytes per update,   1 updates):    191 cycles/operation,    0 cycles/byte
+test  6 ( 1024 byte blocks,   16 bytes per update,  64 updates):   3538 cycles/operation,    3 cycles/byte
+test  7 ( 1024 byte blocks,  256 bytes per update,   4 updates):    370 cycles/operation,    0 cycles/byte
+test  8 ( 1024 byte blocks, 1024 bytes per update,   1 updates):    192 cycles/operation,    0 cycles/byte
+test  9 ( 2048 byte blocks,   16 bytes per update, 128 updates):   6927 cycles/operation,    3 cycles/byte
+test 10 ( 2048 byte blocks,  256 bytes per update,   8 updates):    576 cycles/operation,    0 cycles/byte
+test 11 ( 2048 byte blocks, 1024 bytes per update,   2 updates):    259 cycles/operation,    0 cycles/byte
+test 12 ( 2048 byte blocks, 2048 bytes per update,   1 updates):    192 cycles/operation,    0 cycles/byte
+test 13 ( 4096 byte blocks,   16 bytes per update, 256 updates):  13624 cycles/operation,    3 cycles/byte
+test 14 ( 4096 byte blocks,  256 bytes per update,  16 updates):   1001 cycles/operation,    0 cycles/byte
+test 15 ( 4096 byte blocks, 1024 bytes per update,   4 updates):    365 cycles/operation,    0 cycles/byte
+test 16 ( 4096 byte blocks, 4096 bytes per update,   1 updates):    192 cycles/operation,    0 cycles/byte
+test 17 ( 8192 byte blocks,   16 bytes per update, 512 updates):  27095 cycles/operation,    3 cycles/byte
+test 18 ( 8192 byte blocks,  256 bytes per update,  32 updates):   1854 cycles/operation,    0 cycles/byte
+test 19 ( 8192 byte blocks, 1024 bytes per update,   8 updates):    578 cycles/operation,    0 cycles/byte
+test 20 ( 8192 byte blocks, 4096 bytes per update,   2 updates):    255 cycles/operation,    0 cycles/byte
+test 21 ( 8192 byte blocks, 8192 bytes per update,   1 updates):    241 cycles/operation,    0 cycles/byte
+
+As you can see, the crypto API overhead is pretty much lost in
+the noise.
+
+Cheers,
 -- 
-Andreas Schwab, SuSE Labs, schwab@suse.de
-SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
-PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
