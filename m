@@ -1,187 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753822AbYHDJmN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754625AbYHDJmt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753822AbYHDJmN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 05:42:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751361AbYHDJl6
+	id S1754625AbYHDJmt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 05:42:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750965AbYHDJml
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 05:41:58 -0400
-Received: from smtp.wellnetcz.com ([212.24.148.102]:44819 "EHLO
+	Mon, 4 Aug 2008 05:42:41 -0400
+Received: from smtp.wellnetcz.com ([212.24.148.102]:44825 "EHLO
 	smtp.wellnetcz.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750998AbYHDJl5 (ORCPT
+	with ESMTP id S1752648AbYHDJmk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 05:41:57 -0400
+	Mon, 4 Aug 2008 05:42:40 -0400
 From: Jiri Slaby <jirislaby@gmail.com>
 To: stable@kernel.org
 Cc: greg@kroah.com, chrisw@sous-sol.org, linux-kernel@vger.kernel.org,
        Jiri Slaby <jirislaby@gmail.com>,
        "Luis R. Rodriguez" <mcgrof@gmail.com>,
        "John W. Linville" <linville@tuxdriver.com>
-Subject: [PATCH 1/2] Ath5k: fix memory corruption
-Date: Mon,  4 Aug 2008 11:37:07 +0200
-Message-Id: <1217842628-22714-1-git-send-email-jirislaby@gmail.com>
+Subject: [PATCH 2/2] Ath5k: kill tasklets on shutdown
+Date: Mon,  4 Aug 2008 11:37:08 +0200
+Message-Id: <1217842628-22714-2-git-send-email-jirislaby@gmail.com>
 X-Mailer: git-send-email 1.5.6.2
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+In-Reply-To: <1217842628-22714-1-git-send-email-jirislaby@gmail.com>
+References: <1217842628-22714-1-git-send-email-jirislaby@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Please consider these two patches for including in -stable.
-3a0f2c871849f23c1070965bf94dec3f9c0b479d
-10488f8ad62be3b860bad74e60b4fe6ab87aece3
-Both attached (1 per email).
-
-The issue fixed by the first patch is triggerable on noisy channels,
-so it's a real problem.
-
-The issue fixed by the second patch triggers often by loading and
-reloading the driver repeatedly, it's not hypothetical too.
-
---
-
-When signal is noisy, hardware can use all RX buffers and since the last
-entry in the list is self-linked, it overwrites the entry until we link
-new buffers.
-
-Ensure that we don't free this last one until we are 100% sure that it
-is not used by the hardware anymore to not cause memory curruption as
-can be seen below.
-
-This is done by checking next buffer in the list. Even after that we
-know that the hardware refetched the new link and proceeded further
-(the next buffer is ready) we can finally free the overwritten buffer.
-
-We discard it since the status in its descriptor is overwritten (OR-ed
-by new status) too.
-
-=============================================================================
-BUG kmalloc-4096: Poison overwritten
------------------------------------------------------------------------------
-
-INFO: 0xffff810067419060-0xffff810067419667. First byte 0x8 instead of 0x6b
-INFO: Allocated in dev_alloc_skb+0x18/0x30 age=1118 cpu=1 pid=0
-INFO: Freed in skb_release_data+0x85/0xd0 age=1105 cpu=1 pid=3718
-INFO: Slab 0xffffe200019d0600 objects=7 used=0 fp=0xffff810067419048 flags=0x40000000000020c3
-INFO: Object 0xffff810067419048 @offset=4168 fp=0xffff81006741c120
-
-Bytes b4 0xffff810067419038:  4f 0b 02 00 01 00 00 00 5a 5a 5a 5a 5a 5a 5a 5a O.......ZZZZZZZZ
-  Object 0xffff810067419048:  6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b kkkkkkkkkkkkkkkk
-  Object 0xffff810067419058:  6b 6b 6b 6b 6b 6b 6b 6b 08 42 30 00 00 0b 6b 80 kkkkkkkk.B0...k.
-  Object 0xffff810067419068:  f0 5d 00 4f 62 08 a3 64 00 0c 42 16 52 e4 f0 5a 360].Ob.243d..B.R344360Z
-  Object 0xffff810067419078:  68 81 00 00 7b a5 b4 be 7d 3b 8f 53 cd d5 de 12 h...{245264276};.S315325336.
-  Object 0xffff810067419088:  96 10 0b 89 48 54 23 41 0f 4e 2d b9 37 c3 cb 29 ....HT#A.N-2717303313)
-  Object 0xffff810067419098:  d1 e0 de 14 8a 57 2a cc 3b 44 0d 78 7a 19 12 15 321340336..W*314;D.xz...
-  Object 0xffff8100674190a8:  a9 ec d4 35 a8 10 ec 8c 40 a7 06 0a 51 a7 48 bb 2513543245250.354.@247..Q247H273
-  Object 0xffff8100674190b8:  3e cf a1 c7 38 60 63 3f 51 15 c7 20 eb ba 65 30 >ϡ3078`c?Q.307.353272e0
- Redzone 0xffff81006741a048:  bb bb bb bb bb bb bb bb                         273273273273273273273273
- Padding 0xffff81006741a088:  5a 5a 5a 5a 5a 5a 5a 5a                         ZZZZZZZZ
-Pid: 3297, comm: ath5k_pci Not tainted 2.6.26-rc8-mm1_64 #427
-
-Call Trace:
- [<ffffffff802a7306>] print_trailer+0xf6/0x150
- [<ffffffff802a7485>] check_bytes_and_report+0x125/0x180
- [<ffffffff802a75dc>] check_object+0xac/0x260
- [<ffffffff802a9308>] __slab_alloc+0x368/0x6d0
- [<ffffffff80544f82>] ? wireless_send_event+0x142/0x310
- [<ffffffff804b1bd4>] ? __alloc_skb+0x44/0x150
- [<ffffffff80544f82>] ? wireless_send_event+0x142/0x310
- [<ffffffff802aa853>] __kmalloc_track_caller+0xc3/0xf0
- [<ffffffff804b1bfe>] __alloc_skb+0x6e/0x150
-[... stack snipped]
-
-FIX kmalloc-4096: Restoring 0xffff810067419060-0xffff810067419667=0x6b
-
-FIX kmalloc-4096: Marking all objects used
+Don't forget to kill tasklets on stop to not panic if they
+fire after freeing some structures.
 
 Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
 Acked-by: Nick Kossifidis <mickflemm@gmail.com>
 Cc: Luis R. Rodriguez <mcgrof@gmail.com>
 Signed-off-by: John W. Linville <linville@tuxdriver.com>
 ---
- drivers/net/wireless/ath5k/base.c |   32 +++++++++++++++++++++++++-------
- drivers/net/wireless/ath5k/base.h |    2 +-
- 2 files changed, 26 insertions(+), 8 deletions(-)
+ drivers/net/wireless/ath5k/base.c |    3 +++
+ 1 files changed, 3 insertions(+), 0 deletions(-)
 
 diff --git a/drivers/net/wireless/ath5k/base.c b/drivers/net/wireless/ath5k/base.c
-index d9769c5..ed51c4a 100644
+index ed51c4a..c5bf8a2 100644
 --- a/drivers/net/wireless/ath5k/base.c
 +++ b/drivers/net/wireless/ath5k/base.c
-@@ -1682,20 +1682,21 @@ ath5k_tasklet_rx(unsigned long data)
- 	struct ath5k_rx_status rs = {};
- 	struct sk_buff *skb;
- 	struct ath5k_softc *sc = (void *)data;
--	struct ath5k_buf *bf;
-+	struct ath5k_buf *bf, *bf_last;
- 	struct ath5k_desc *ds;
- 	int ret;
- 	int hdrlen;
- 	int pad;
+@@ -2342,6 +2342,9 @@ ath5k_stop_hw(struct ath5k_softc *sc)
+ 	mutex_unlock(&sc->lock);
  
- 	spin_lock(&sc->rxbuflock);
-+	if (list_empty(&sc->rxbuf)) {
-+		ATH5K_WARN(sc, "empty rx buf pool\n");
-+		goto unlock;
-+	}
-+	bf_last = list_entry(sc->rxbuf.prev, struct ath5k_buf, list);
- 	do {
- 		rxs.flag = 0;
+ 	del_timer_sync(&sc->calib_tim);
++	tasklet_kill(&sc->rxtq);
++	tasklet_kill(&sc->txtq);
++	tasklet_kill(&sc->restq);
  
--		if (unlikely(list_empty(&sc->rxbuf))) {
--			ATH5K_WARN(sc, "empty rx buf pool\n");
--			break;
--		}
- 		bf = list_first_entry(&sc->rxbuf, struct ath5k_buf, list);
- 		BUG_ON(bf->skb == NULL);
- 		skb = bf->skb;
-@@ -1705,8 +1706,24 @@ ath5k_tasklet_rx(unsigned long data)
- 		pci_dma_sync_single_for_cpu(sc->pdev, sc->desc_daddr,
- 				sc->desc_len, PCI_DMA_FROMDEVICE);
- 
--		if (unlikely(ds->ds_link == bf->daddr)) /* this is the end */
--			break;
-+		/*
-+		 * last buffer must not be freed to ensure proper hardware
-+		 * function. When the hardware finishes also a packet next to
-+		 * it, we are sure, it doesn't use it anymore and we can go on.
-+		 */
-+		if (bf_last == bf)
-+			bf->flags |= 1;
-+		if (bf->flags) {
-+			struct ath5k_buf *bf_next = list_entry(bf->list.next,
-+					struct ath5k_buf, list);
-+			ret = sc->ah->ah_proc_rx_desc(sc->ah, bf_next->desc,
-+					&rs);
-+			if (ret)
-+				break;
-+			bf->flags &= ~1;
-+			/* skip the overwritten one (even status is martian) */
-+			goto next;
-+		}
- 
- 		ret = sc->ah->ah_proc_rx_desc(sc->ah, ds, &rs);
- 		if (unlikely(ret == -EINPROGRESS))
-@@ -1816,6 +1833,7 @@ accept:
- next:
- 		list_move_tail(&bf->list, &sc->rxbuf);
- 	} while (ath5k_rxbuf_setup(sc, bf) == 0);
-+unlock:
- 	spin_unlock(&sc->rxbuflock);
+ 	return ret;
  }
- 
-diff --git a/drivers/net/wireless/ath5k/base.h b/drivers/net/wireless/ath5k/base.h
-index 47f414b..d7e03e6 100644
---- a/drivers/net/wireless/ath5k/base.h
-+++ b/drivers/net/wireless/ath5k/base.h
-@@ -56,7 +56,7 @@
- 
- struct ath5k_buf {
- 	struct list_head	list;
--	unsigned int		flags;	/* tx descriptor flags */
-+	unsigned int		flags;	/* rx descriptor flags */
- 	struct ath5k_desc	*desc;	/* virtual addr of desc */
- 	dma_addr_t		daddr;	/* physical addr of desc */
- 	struct sk_buff		*skb;	/* skbuff for buf */
 -- 
 1.5.6.2
 
