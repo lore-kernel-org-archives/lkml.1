@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762270AbYHDHB5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762206AbYHDHCf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762270AbYHDHB5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 03:01:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759161AbYHDHBt
+	id S1762206AbYHDHCf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 03:02:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760996AbYHDHC0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 03:01:49 -0400
-Received: from 166-70-238-42.ip.xmission.com ([166.70.238.42]:50394 "EHLO
+	Mon, 4 Aug 2008 03:02:26 -0400
+Received: from 166-70-238-42.ip.xmission.com ([166.70.238.42]:50398 "EHLO
 	ns1.wolfmountaingroup.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757030AbYHDHBt (ORCPT
+	with ESMTP id S1759161AbYHDHC0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 03:01:49 -0400
-Message-ID: <45479.166.70.238.45.1217832083.squirrel@webmail.wolfmountaingroup.com>
-Date: Mon, 4 Aug 2008 00:41:23 -0600 (MDT)
-Subject: [PATCH 2.6.27-rc1 22/25] mdb:  Merkey's Kernel Debugger 2.6.27-rc1
+	Mon, 4 Aug 2008 03:02:26 -0400
+Message-ID: <45482.166.70.238.45.1217832120.squirrel@webmail.wolfmountaingroup.com>
+Date: Mon, 4 Aug 2008 00:42:00 -0600 (MDT)
+Subject: [PATCH 2.6.27-rc1 23/25] mdb:  Merkey's Kernel Debugger 2.6.27-rc1
 From: jmerkey@wolfmountaingroup.com
 To: linux-kernel@vger.kernel.org
 User-Agent: SquirrelMail/1.4.6
@@ -27,57 +27,47 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Netware style debugger for Linux written by Jeffrey Vernon Merkey
 
---- a/kernel/kallsyms.c	2008-08-03 16:10:19.000000000 -0600
-+++ b/kernel/kallsyms.c	2008-08-03 16:15:00.000000000 -0600
-@@ -477,5 +477,48 @@
+--- a/kernel/module.c	2008-08-03 16:10:19.000000000 -0600
++++ b/kernel/module.c	2008-08-03 16:15:00.000000000 -0600
+@@ -2503,6 +2503,38 @@
+ 	return 0;
  }
- __initcall(kallsyms_init);
 
 +#ifdef CONFIG_MDB
-+struct kallsym_iter mdb_iter;
-+int mdb_kallsyms(char *str, int (*print)(char *s, ...))
++int mdb_modules(char *str, int (*print)(char *s, ...))
 +{
-+    register loff_t pos = 0;
-+    register struct kallsym_iter *iter = &mdb_iter;
++	struct module *mod;
++	struct module_use *use;
 +
-+    if (!print)
-+       return 0;
++        if (!print)
++           return 0;
 +
-+    // set to beginning of the kallsyms list
-+    reset_iter(iter, 0);
-+    while (1)
-+    {
-+       // search the kallsyms list
-+       if (!update_iter(iter, pos++))
-+          break;
++	list_for_each_entry(mod, &modules, list)
++        {
++           if (str && *str && !strstr(mod->name, str))
++              continue;
 +
-+       if (!iter->name[0])
-+ 	  continue;
-+
-+       // if an exclusion search was specified, skip non-matching entries
-+       if (str && *str && !strstr(iter->name, str))
-+          continue;
-+
-+       if (iter->module_name[0])
-+       {
-+          if (print("%0*lx %c %s [%s]\n", (int)(2*sizeof(void*)),
-+	      iter->value, iter->type, iter->name,
-+	      iter->module_name))
-+             return 1;
-+       }
-+       else
-+       {
-+          if (print("%0*lx %c %s\n", (int)(2*sizeof(void*)),
-+   	      iter->value, iter->type, iter->name))
-+             return 1;
-+       }
-+    }
-+    return 0;
++	   print(" 0x%08p ", mod->module_core);
++	   print("%s", mod->name);
++	   print(" %lu %02u ", mod->init_size + mod->core_size,
++                 module_refcount(mod));
++	   list_for_each_entry(use, &mod->modules_which_use_me, list)
++		print("%s,", use->module_which_uses->name);
++  	   if (mod->init != NULL && mod->exit == NULL)
++	      print("[permanent],");
++	   print(" %s ", mod->state == MODULE_STATE_GOING ? "Unloading":
++	                mod->state == MODULE_STATE_COMING ? "Loading":
++		        "Live");
++	   if (print("\n"))
++              return 1;
++	}
++        return 0;
 +}
 +#endif
 +
- EXPORT_SYMBOL(__print_symbol);
- EXPORT_SYMBOL_GPL(sprint_symbol);
+ /* Look for this name: can be of form module:name. */
+ unsigned long module_kallsyms_lookup_name(const char *name)
+ {
 
 
 By making a contribution to this project, I certify that
