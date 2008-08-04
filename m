@@ -1,89 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764000AbYHDUhu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764175AbYHDUib@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764000AbYHDUhu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 16:37:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763311AbYHDUhd
+	id S1764175AbYHDUib (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 16:38:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762887AbYHDUiO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 16:37:33 -0400
-Received: from rv-out-0506.google.com ([209.85.198.232]:38941 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763216AbYHDUhc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 16:37:32 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=i4YoO3CB0/GAdwUnJMpV0/cNsbrS4f3UhekjNqvUlmqSxIy/lN/G/QGmXiIfZ0iYRd
-         dKhbgCQBBb6Bk/rjvTknT5F4JXmTZ1fbBc6VhDfJsua18fWEQQbmhajbC6H4qQ9Dw4d3
-         f2PlkTzbAOJojdsya3iPWAru/ZHtZBcGo7OYU=
-Message-ID: <a08621850808041337k1d1deb6fk78098d9fcd4930dd@mail.gmail.com>
-Date: Mon, 4 Aug 2008 22:37:30 +0200
-From: "Dushan Tcholich" <dusanc@gmail.com>
-To: "Robert Hancock" <hancockr@shaw.ca>
-Subject: Re: ksoftirqd high cpu load on kernels 2.6.24 to 2.6.27-rc1-mm1
-Cc: LKML <linux-kernel@vger.kernel.org>, romieu@fr.zoreil.com,
-       netdev@vger.kernel.org
-In-Reply-To: <48975BD3.6040709@shaw.ca>
+	Mon, 4 Aug 2008 16:38:14 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:38265 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758841AbYHDUiL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Aug 2008 16:38:11 -0400
+Message-ID: <489768A1.8000501@garzik.org>
+Date: Mon, 04 Aug 2008 16:37:53 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+To: Robert Hancock <hancockr@shaw.ca>
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       James Bottomley <James.Bottomley@hansenpartnership.com>,
+       ksummit-2008-discuss@lists.linux-foundation.org,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-ide <linux-ide@vger.kernel.org>
+Subject: Re: Kernel Summit request for Discussion of future of ATA (libata)
+ and IDE
+References: <fa.OGeO7gZvBG4obEzRbVltjSebgTQ@ifi.uio.no> <fa.KtvYE2B2yrJqUleolhtMPN9ljAQ@ifi.uio.no> <fa.AqEKTvguYFAzDFHy/We/8MpOqmo@ifi.uio.no> <48976168.3020804@shaw.ca>
+In-Reply-To: <48976168.3020804@shaw.ca>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <fa.wTMiBcGRgw2fBtdHwtX7y0lkc8s@ifi.uio.no>
-	 <48975BD3.6040709@shaw.ca>
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello
+Robert Hancock wrote:
+> Alan Cox wrote:
+>>> * There are still corner case in libata core - PIO is dead slow
+>>> compared to drivers/ide/,
+>>
+>> There are two there - libata keeps IRQs blocked for longer in PIO mode as
+>> well which is a factor for realtime that needs looking at, as well as
+>> using 16bit not 32bit I/O for most devices (which is trivial to fix). The
+>> IRQ masking stuff is more complex and old IDE handles it far better for
+>> PIO on non shared IRQ interfaces. That is actually probably the most
+>> complicated thing to address of the stuff you'd want to do if you were
+>> going to kill off old IDE.
+> 
+> I was looking into the 32-bit PIO issue a bit yesterday. It looks like 
+> some of the VLB libata drivers are doing this internally already, so it 
+> shouldn't be hard to do this in the core. Only question is how we know 
+> generically if the controller can do it or not? It looks like in old 
+> IDE, a few controllers explicitly disable it, but it appears that it 
+> doesn't default to on for any controller, so it's possible there are 
+> others on which it doesn't work. Presumably anything on an actual 16-bit 
+> bus (ISA, LPC, etc.) wouldn't like it, to start with.
 
-On Mon, Aug 4, 2008 at 9:43 PM, Robert Hancock <hancockr@shaw.ca> wrote:
-> Dushan Tcholich wrote:
->>
->> Hello
->>
->> This is my first bugreport on LKML so please be patient :)
->>
->> top always shows me that ksoftirqd usualy gets around 8%CPU, it
->> changes between 6 and 10%.
->> It's sometimes ksoftirqd/0 sometimes /1, differs on the reboot but
->> doesn't change during work.
->> I noticed it because it had very high time+, 500hours or so.
->> I reproduced these problems with kernels 2.6.24 .25 and .27-rc1-mm1. I
->> don't remember that this happened during .22 and .23 kernels, but I
->> can check again if it's necessary.
->> Timer freq is 1000Hz
->>
->> What I tried without changes with help from ##kernel:
->> 1. built kernel without kvm;
->> 2. disconnected all usb hw except mouse;
->> 3. run glxgears which consumed 98% CPU and ksoftirqd  2%;
->> 4. Tried to stress disk subsystem by copying a lot of small files on
->> the same partition:
->> time cp -R /usr/portage/* /tmp/1
->> real 2m17.530s
->> user 0m0.764s
->> sys 0m18.596s
->>
->> it was 127507 items 1.5GB, but just pdflush jumped to 14% from time to
->> time;
->> 5. disabled serial port in BIOS because my UPS was connected to it,
->> and I suspected that it was maybe polling too much;
->> 6. disconnected eth cable
->> 7. tried googling but all I found is that some people had similar
->> problem. Some TV cards were the culprit but I don't have that HW.
->>
->> If you need any more data please cc me as I'm not subscribed
->
-> It would be useful to try running oprofile on an otherwise idle system and
-> see where it reports the CPU time is being used..
->
-I googled a little and found out that oprofile is a little above my head.
-So as I thought that some driver or HW might be responsible for this I
-tried to disable various onboard HW and found out that if I disable
-onboard ethernet problem dissapears, so now I've added netdev and
-maintainer of R8169 driver to cc.
+FWIW there is already a patch from Willy Terreau (sp?) to add 32-bit I/O.
 
-Thanks
-Dushan
+I queued it for "later" because it had some issues that Alan pointed 
+out, IIRC.  I definitely want to push it in, though.
+
+	Jeff
+
+
+
