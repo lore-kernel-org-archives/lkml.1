@@ -1,85 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754269AbYHDXhd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759435AbYHDXjO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754269AbYHDXhd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 19:37:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753960AbYHDXhX
+	id S1759435AbYHDXjO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 19:39:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754466AbYHDXiz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 19:37:23 -0400
-Received: from mx2.schottelius.org ([62.65.138.77]:42616 "EHLO
-	mx2.schottelius.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752983AbYHDXhV (ORCPT
+	Mon, 4 Aug 2008 19:38:55 -0400
+Received: from an-out-0708.google.com ([209.85.132.242]:20457 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754056AbYHDXix (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 19:37:21 -0400
-Date: Tue, 5 Aug 2008 01:37:12 +0200
-From: Nico Schottelius 
-	<nico-linux-kernel-bugreport20080731@schottelius.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Nico Schottelius 
-	<nico-linux-kernel-bugreport20080731@schottelius.org>,
-       LKML <linux-kernel@vger.kernel.org>, linux-next@vger.kernel.org
-Subject: Re: Heavy suspend and io problems in 2.6.27-rc1-00156-g94ad374
-Message-ID: <20080804233712.GA4181@denkbrett.schottelius.org>
-Mail-Followup-To: Nico Schottelius <nico-linux-kernel-bugreport20080731@schottelius.org>,
-	"Rafael J. Wysocki" <rjw@sisk.pl>,
-	LKML <linux-kernel@vger.kernel.org>, linux-next@vger.kernel.org
-References: <20080731210507.GA6094@denkbrett.schottelius.org> <20080804090654.GA4747@denkbrett.schottelius.org> <20080804161443.GA4905@denkbrett.schottelius.org> <200808042132.41020.rjw@sisk.pl>
+	Mon, 4 Aug 2008 19:38:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=Ykps8ph3xHreY+UZMP2p+C0UaasnU4d/+e6mB9nepBMneUlpjZFin/7GsB4rTsBtse
+         iEGuPk54uj6IjbMFDmUgjK4YOtP2WAJwa9e65N5Wpc92OkBETKUv5HFA9eoynzdytnq2
+         qfvTud102EcatDUpQ0hsb2DGVJI1D3ZmamXf8=
+Message-ID: <dd18b0c30808041638qcc67ab8xe5247fa8a1bbd36e@mail.gmail.com>
+Date: Mon, 4 Aug 2008 16:38:52 -0700
+From: "Justin Mattock" <justinmattock@gmail.com>
+To: "Luis R. Rodriguez" <mcgrof@gmail.com>
+Subject: Re: pull request: wireless-2.6 2008-08-04
+Cc: "Marcel Holtmann" <marcel@holtmann.org>,
+       "John W. Linville" <linville@tuxdriver.com>, davem@davemloft.net,
+       linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <43e72e890808041545y1b1727c1t90db35721a9c9d8d@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="gBBFr7Ir9EOA20Yy"
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200808042132.41020.rjw@sisk.pl>
-User-Agent: echo $message | gpg -e $sender  -s | netcat mailhost 25
-X-Unix-Info: http://unix.schottelius.org/
-X-Netzseite: http://nico.schottelius.org/
-X-System-Info: denkbrett (Linux 2.6.26-next-20080725-denkbrett x86_64)
+References: <20080804193753.GA30345@tuxdriver.com>
+	 <1217882288.7819.19.camel@californication>
+	 <20080804204558.GA5866@tuxdriver.com>
+	 <1217886123.7819.23.camel@californication>
+	 <20080804215439.GA9658@tuxdriver.com>
+	 <1217889426.7819.26.camel@californication>
+	 <43e72e890808041545y1b1727c1t90db35721a9c9d8d@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Aug 4, 2008 at 3:45 PM, Luis R. Rodriguez <mcgrof@gmail.com> wrote:
+> On Mon, Aug 4, 2008 at 3:37 PM, Marcel Holtmann <marcel@holtmann.org> wrote:
+>> Hi John,
+>>
+>>> > > > > Luis R. Rodriguez (4):
+>>> > > > >       list.h: Add list_splice_tail() and list_splice_tail_init()
+>>> > > > >       list.h: add list_cut_position()
+>>> > > >
+>>> > > > have these two changes got reviewed on LKML? I don't see any ACKs for it
+>>> > > > in the commit message.
+>>> > >
+>>> > > Hmmm...no.  I thought the original patches had been copied to
+>>> > > linux-kernel, but it looks like that is not the case.
+>>> > >
+>>> > > The original patches are archived here:
+>>> > >
+>>> > >   http://marc.info/?l=linux-wireless&m=121783421908441&w=2
+>>> > >
+>>> > >   http://marc.info/?l=linux-wireless&m=121783422008445&w=2
+>>> > >
+>>> > > What problems do you see with them?
+>>> >
+>>> > I don't see a problem with these patches, but they should at least be
+>>> > reviewed on LKML once. Changes to core kernel infrastructure should not
+>>> > be merged silently via subsystem trees without any kind of ACKs.
+>>>
+>>> Yes, fine.  That wasn't my intent. :-)  The patches were originally
+>>> posted about two weeks ago, too bad that didn't actually go to
+>>> linux-kernel. :-(
+>>
+>> just post them to LKML (or let Luis do it) so they get reviewed. I
+>> really don't see an issue with them, but that is only me.
+>
+> I'll repost those specific patches and add lkml.
+>
+>  Luis
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
 
---gBBFr7Ir9EOA20Yy
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+I must be honest, I am really excited
+to see ath9k, finally an in kernel module
+for my wireless card.
 
-Rafael J. Wysocki [Mon, Aug 04, 2008 at 09:32:40PM +0200]:
-> On Monday, 4 of August 2008, Nico Schottelius wrote:
-> >=20
-> > I retested it with linux-next + updates from its branches
-> > (=3D2.6.27-rc1-next-20080804-denkbrett-03792-g1d2be1a)
->=20
-> Well, fine, but this is not exactly helpful.
->=20
-> Can you test the current Linus' tree with the patch from bug #11178, plea=
-se?
+regards;
 
-I am using 2.6.27-rc1-denkbrett-00555-g8f616cd-dirty now, latest fetch
-=66rom Linus' tree + the patch and the problem is the same: Wakeup works,
-but screen keeps on being blank.
-
-I am running next-20080725 now again, which works.
-
-Sincerly,
-
-Nico
-
---=20
-Think about Free and Open Source Software (FOSS).
-http://nico.schottelius.org/documentations/foss/the-term-foss/
-
-PGP: BFE4 C736 ABE5 406F 8F42  F7CF B8BE F92A 9885 188C
-
---gBBFr7Ir9EOA20Yy
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkiXkqgACgkQuL75KpiFGIw3VACdHcmeaD6mNROGVDMjKICDzi7d
-Hg8AoJcGXlud3LUtTMpbEk9FePiFgDJO
-=OHEx
------END PGP SIGNATURE-----
-
---gBBFr7Ir9EOA20Yy--
+-- 
+Justin P. Mattock
