@@ -1,60 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759218AbYHDWCe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758824AbYHDWDN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759218AbYHDWCe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 18:02:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759101AbYHDWCF
+	id S1758824AbYHDWDN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 18:03:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756025AbYHDWCw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 18:02:05 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:45697 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755200AbYHDWCE (ORCPT
+	Mon, 4 Aug 2008 18:02:52 -0400
+Received: from nf-out-0910.google.com ([64.233.182.185]:11126 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755813AbYHDWCu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 18:02:04 -0400
-Date: Mon, 4 Aug 2008 18:02:00 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Randy Dunlap <randy.dunlap@oracle.com>
-cc: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org, stable@kernel.org,
-       Greg KH <greg@kroah.com>, Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
-       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
-       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk
-Subject: Re: [patch 01/25] ftrace: remove unneeded documentation
-In-Reply-To: <20080804144922.393555d8.randy.dunlap@oracle.com>
-Message-ID: <alpine.DEB.1.10.0808041801330.5205@gandalf.stny.rr.com>
-References: <20080804203506.816201392@mini.kroah.org> <20080804212932.GA8014@suse.de> <alpine.DEB.1.10.0808041741250.5205@gandalf.stny.rr.com> <20080804144922.393555d8.randy.dunlap@oracle.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Mon, 4 Aug 2008 18:02:50 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=Xal2RHp37jqTAHnERXzua8c7D0v5z3V4Qh4ONTIl4JokQ9d6i+Hw02fU9VipACANax
+         pm+It1j/1T7sHM5542cV62L1dIHUmjariaH26DQMVrnNiN5oOpED5PBaG67XMzm12NnA
+         zOk2g35ooyh3956z5/hBZkbZtPoOLBJW0FLj0=
+Date: Tue, 5 Aug 2008 02:02:47 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Christoph Lameter <cl@linux-foundation.org>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] SLUB: detach SLUB_DEBUG and SYSFS
+Message-ID: <20080804220247.GA10159@martell.zuzino.mipt.ru>
+References: <20080801000405.GA7072@martell.zuzino.mipt.ru> <48941C2F.8010406@cs.helsinki.fi> <489702B9.5030204@linux-foundation.org> <48970DDD.4040607@cs.helsinki.fi>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48970DDD.4040607@cs.helsinki.fi>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Aug 04, 2008 at 05:10:37PM +0300, Pekka Enberg wrote:
+> Christoph Lameter wrote:
+>> Pekka Enberg wrote:
+>>> Alexey Dobriyan wrote:
+>>>> Right now, SYSFS=n means no SLUB debugging, no even basic poisoning,
+>>>> to hell with tunables.
+>>> Applied, thanks!
+>> Do not apply. This partially reverts an earlier commit and would cause 
+>> build
+>> issues because the #ifdef parts in slub.c were not reverted.
+>
+> Aww, crap. OK, taking it out.
 
-On Mon, 4 Aug 2008, Randy Dunlap wrote:
+OK, I'll test-compile it to death.
 
-> On Mon, 4 Aug 2008 17:42:20 -0400 (EDT) Steven Rostedt wrote:
-> 
-> > 
-> > On Mon, 4 Aug 2008, Greg KH wrote:
-> > 
-> > > 2.6.26-stable review patch.  If anyone has any objections, please let us know.
-> > 
-> > Well, I object to this patch, but I'm sure I'll be ignored.
-> > 
-> > -- Steve
-> 
-> You could argue that it doesn't meet stable rules criteria, but the file
-> isn't needed and can be confusing, so it makes sense to me to remove it.
+For now, do you agree that SYSFS=n users shouldn't be discriminated
+against poisoning?
 
-I understand why Greg's pulling it. That does not mean I have to like it.
-
--- Steve
+As real world situation, NET_NS feature which is currently in
+active development doesn't work with SYSFS, so it was a bit of cold
+shower to realise that I did much testing of conntracking in netns
+without poisoning. :-(
 
