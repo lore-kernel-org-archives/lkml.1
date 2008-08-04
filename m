@@ -1,39 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757444AbYHDATr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756442AbYHDAXk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757444AbYHDATr (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Aug 2008 20:19:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755999AbYHDATf
+	id S1756442AbYHDAXk (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Aug 2008 20:23:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752906AbYHDAXc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Aug 2008 20:19:35 -0400
-Received: from mta23.gyao.ne.jp ([125.63.38.249]:9611 "EHLO mx.gate01.com"
+	Sun, 3 Aug 2008 20:23:32 -0400
+Received: from namei.org ([69.55.235.186]:55025 "EHLO us.intercode.com.au"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755887AbYHDATe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Aug 2008 20:19:34 -0400
-Date: Mon, 4 Aug 2008 09:18:42 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Harvey Harrison <harvey.harrison@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 18/24] sh: use the new byteorder headers
-Message-ID: <20080804001842.GA7960@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Harvey Harrison <harvey.harrison@gmail.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	LKML <linux-kernel@vger.kernel.org>
-References: <1217379327.23389.129.camel@brick>
+	id S1753142AbYHDAXb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 Aug 2008 20:23:31 -0400
+Date: Mon, 4 Aug 2008 10:23:12 +1000 (EST)
+From: James Morris <jmorris@namei.org>
+X-X-Sender: jmorris@us.intercode.com.au
+To: Mimi Zohar <zohar@linux.vnet.ibm.com>
+cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       safford@watson.ibm.com, serue@linux.vnet.ibm.com, sailer@watson.ibm.com,
+       zohar@us.ibm.com
+Subject: Re: [Patch]integrity: ima policy update patch
+In-Reply-To: <1217618432.3401.3.camel@new-host-2.home>
+Message-ID: <Xine.LNX.4.64.0808041022170.19616@us.intercode.com.au>
+References: <1217618432.3401.3.camel@new-host-2.home>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1217379327.23389.129.camel@brick>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 29, 2008 at 05:55:27PM -0700, Harvey Harrison wrote:
-> Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
-> ---
->  arch/sh/include/asm/byteorder.h |   32 +++++++++++++++-----------------
->  1 files changed, 15 insertions(+), 17 deletions(-)
+On Fri, 1 Aug 2008, Mimi Zohar wrote:
+
+> - This patch adds support for policy definitions defined in terms of
+>   LSM subj_role, subj_type, and obj_role.
+> - Support for uid measurement policy definitions.
+> - Constrain the default INODE_PERMISSION measurement to only measure 
+>   files opened for read by root.
 > 
-Acked-by: Paul Mundt <lethal@linux-sh.org>
+> Signed-off-by: Mimi Zohar <zohar@us.ibm.com>
+
+Applied to 
+git://git.kernel.org/pub/scm/linux/kernel/git/jmorris/security-testing-2.6.git#devel
+
+Please use a more descriptive subject in the future.
+
+
+- James
+-- 
+James Morris
+<jmorris@namei.org>
