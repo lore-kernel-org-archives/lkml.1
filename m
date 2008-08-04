@@ -1,80 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760923AbYHDGtJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761055AbYHDGtc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760923AbYHDGtJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 02:49:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756777AbYHDGsz
+	id S1761055AbYHDGtc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 02:49:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755726AbYHDGtW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 02:48:55 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:57111 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754717AbYHDGsy (ORCPT
+	Mon, 4 Aug 2008 02:49:22 -0400
+Received: from 166-70-238-42.ip.xmission.com ([166.70.238.42]:48526 "EHLO
+	ns1.wolfmountaingroup.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755969AbYHDGtV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 02:48:54 -0400
-Date: Mon, 4 Aug 2008 08:48:53 +0200
-From: Pavel Machek <pavel@suse.cz>
-To: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Cc: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
-       lf_kernel_messages@lists.linux-foundation.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Michael Holzheu <holzheu@de.ibm.com>, Gerrit Huizenga <gh@us.ibm.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Randy Dunlap <randy.dunlap@oracle.com>, Jan Kara <jack@suse.cz>,
-       Sam Ravnborg <sam@ravnborg.org>, Joe Perches <joe@perches.com>,
-       Jochen Vo? <jochen.voss@googlemail.com>,
-       Kunai Takashi <kunai@linux-foundation.jp>,
-       Tim Bird <tim.bird@am.sony.com>
-Subject: Re: [patch 3/3] kmsg: convert xpram messages to kmsg api.
-Message-ID: <20080804064853.GB23933@atrey.karlin.mff.cuni.cz>
-References: <20080730165656.118280544@de.ibm.com> <20080730171157.550296160@de.ibm.com>
+	Mon, 4 Aug 2008 02:49:21 -0400
+Message-ID: <51623.166.70.238.45.1217831336.squirrel@webmail.wolfmountaingroup.com>
+Date: Mon, 4 Aug 2008 00:28:56 -0600 (MDT)
+Subject: [PATCH 2.6.27-rc1 3/25] mdb:  Merkey's Kernel Debugger 2.6.27-rc1
+From: jmerkey@wolfmountaingroup.com
+To: linux-kernel@vger.kernel.org
+User-Agent: SquirrelMail/1.4.6
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080730171157.550296160@de.ibm.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
-> From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-> 
-> Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
-> ---
-> 
->  Documentation/kmsg/s390/xpram |   54 ++++++++++++++++++++++++++++++++++++++++++
->  drivers/s390/block/xpram.c    |   41 ++++++++++++++-----------------
->  2 files changed, 73 insertions(+), 22 deletions(-)
-> 
-> Index: linux-2.6/Documentation/kmsg/s390/xpram
-> ===================================================================
-> --- /dev/null
-> +++ linux-2.6/Documentation/kmsg/s390/xpram
-> @@ -0,0 +1,54 @@
-> +/*?
-> + * Tag: xpram.1
-> + * Text: "%d is not a valid number of XPRAM devices"
-> + * Severity: Error
-> + * Parameter:
-> + *   @1: number of partitions
-> + * Description:
-> + * The number of XPRAM partitions specified for the 'devs' module parameter
-> + * or with the 'xpram.parts' kernel parameter must be an integer in the
-> + * range 1 to 32. The XPRAM device driver created a maximum of 32 partitions
-> + * that are probably not configured as intended.
-> + * User action:
-> + * If the XPRAM device driver has been compiled as a separate module,
-> + * unload the module and load it again with a correct value for the
-> + * 'devs' module parameter. If the XPRAM device driver has been compiled
-> + * into the kernel, correct the 'xpram.parts' parameter in the kernel
-> + * parameter line and restart Linux.
+Netware style debugger for Linux written by Jeffrey Vernon Merkey
 
-It is "Kernel command line". Plus, I do not think I find "User action"
-section really helpful here.
+--- a/debug/Makefile	1969-12-31 17:00:00.000000000 -0700
++++ b/debug/Makefile	2008-08-03 16:15:00.000000000 -0600
+@@ -0,0 +1,5 @@
++
++#
++obj-y		:=mdb.o mdb-base.o mdb-list.o mdb-logic.o mdb-os.o mdb-ia32.o
+mdb-ia32-support.o
++
++
 
-...user that does not understand what "between 1 and 32 means" is
-unlikely to know if the driver is built-in or module...
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+
+By making a contribution to this project, I certify that
+the contribution was created in whole or in part by me and I
+have the right to submit it under the open source license
+indicated in the file.
+
+Jeffrey Vernon Merkey
+
+
 
