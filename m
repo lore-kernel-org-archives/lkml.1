@@ -1,59 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757441AbYHDQNJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756204AbYHDQQq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757441AbYHDQNJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 12:13:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751920AbYHDQM4
+	id S1756204AbYHDQQq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 12:16:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753556AbYHDQQg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 12:12:56 -0400
-Received: from ns.suse.de ([195.135.220.2]:57979 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751852AbYHDQMz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 12:12:55 -0400
-From: Andreas Schwab <schwab@suse.de>
-To: Samuel Thibault <samuel.thibault@ens-lyon.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: ext3 seems to ignore ECC errors
-References: <20080804150353.GS4470@implementation.uk.xensource.com>
-	<je8wvczt5x.fsf@sykes.suse.de>
-	<20080804154727.GV4470@implementation.uk.xensource.com>
-X-Yow: My DIGITAL WATCH has an automatic SNOOZE FEATURE!!
-Date: Mon, 04 Aug 2008 18:12:54 +0200
-In-Reply-To: <20080804154727.GV4470@implementation.uk.xensource.com> (Samuel
-	Thibault's message of "Mon, 4 Aug 2008 16:47:27 +0100")
-Message-ID: <jeiqugyd15.fsf@sykes.suse.de>
-User-Agent: Gnus/5.110009 (No Gnus v0.9) Emacs/22.2 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+	Mon, 4 Aug 2008 12:16:36 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:58147 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751920AbYHDQQf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Aug 2008 12:16:35 -0400
+Subject: Re: [PATCH] Using Intel CRC32 instruction to accelerate
+	CRC32c	algorithm by new crypto API.
+From: Chris Mason <chris.mason@oracle.com>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: dwmw2@infradead.org, austin_zhang@linux.intel.com, davem@davemloft.net,
+       linux-kernel@vger.kernel.org, linux-crypto@vger.kernel.org
+In-Reply-To: <E1KQ2D2-0003Fn-00@gondolin.me.apana.org.au>
+References: <E1KQ2D2-0003Fn-00@gondolin.me.apana.org.au>
+Content-Type: text/plain
+Date: Mon, 04 Aug 2008 12:14:56 -0400
+Message-Id: <1217866496.29139.75.camel@think.oraclecorp.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Samuel Thibault <samuel.thibault@ens-lyon.org> writes:
+On Mon, 2008-08-04 at 23:42 +0800, Herbert Xu wrote:
+> Chris Mason <chris.mason@oracle.com> wrote:
+> >
+> >>From a performance point of view I'm probably reading the crypto API
+> > code wrong, but it looks like my choices are to either have a long
+> > standing context and use locking around the digest/hash calls to protect
+> > internal crypto state, or create a new context every time and take a
+> > perf hit while crypto looks up the right module.
+> 
+> You're looking at the old hash interface.  New users should use the
+> ahash interface which was only recently added to the kernel.  It
+> lets you store the state in the request object which you pass to
+> the algorithm on every call.  This means that you only need one
+> tfm in the entire system for crc32c.
+> 
 
-> Andreas Schwab, le Mon 04 Aug 2008 17:39:06 +0200, a écrit :
->> Samuel Thibault <samuel.thibault@ens-lyon.org> writes:
->> > However, to my surprise Linux (2.6.26) continued to mount the ext3
->> > filesystem read/write, spitting out a lot of IDE errors.  Shouldn't
->> > filesystems remount read-only and let the admin try to save data in such
->> > case?
->> 
->> That's a tunable parameter of the filesystem, see tune2fs(8).
->
-> Oh, I had assumed it was on by default, hum.  But now it reads
->
-> Errors behavior:          Remount read-only
->
-> and I am still getting the same behavior.  Indeed after some VFS
-> modifications time it gets remounted read-only, but shouldn't that
-> happen as soon as possible?
+Great to hear, that solves my main concern then.  There is still the
+embedded argument against needing all of crypto api just for libcrc32c.
 
-The block device may do some retries before passing the error on.
+It does make sense to me to have a libcrc32c that does the HW detection
+and uses HW assist when present, and just have the cypto api call that.
 
-Andreas.
+-chris
 
--- 
-Andreas Schwab, SuSE Labs, schwab@suse.de
-SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
-PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+
