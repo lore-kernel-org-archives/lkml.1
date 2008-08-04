@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758704AbYHDUZE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762867AbYHDU0U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758704AbYHDUZE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 16:25:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763063AbYHDUYw
+	id S1762867AbYHDU0U (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 16:26:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763142AbYHDUZQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 16:24:52 -0400
-Received: from ns2.suse.de ([195.135.220.15]:45731 "EHLO mx2.suse.de"
+	Mon, 4 Aug 2008 16:25:16 -0400
+Received: from ns1.suse.de ([195.135.220.2]:48830 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762960AbYHDUYv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 16:24:51 -0400
-Date: Mon, 4 Aug 2008 13:15:12 -0700
+	id S1763044AbYHDUZP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Aug 2008 16:25:15 -0400
+Date: Mon, 4 Aug 2008 13:15:14 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -24,13 +24,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
        alan@lxorguk.ukuu.org.uk, Jiri Kosina <jkosina@suse.cz>,
        Dmitry Torokhov <dtor@mail.ru>
-Subject: [patch 13/33] Input: i8042 - add Fujitsu-Siemens Amilo Pro V2030
-	to nomux table
-Message-ID: <20080804201512.GN1139@suse.de>
+Subject: [patch 14/33] Input: i8042 - add Fujitsu-Siemens Amilo Pro 2010 to
+	nomux list
+Message-ID: <20080804201514.GO1139@suse.de>
 References: <20080804200515.110033151@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="input-i8042-add-fujitsu-siemens-amilo-pro-v2030-to-nomux-table.patch"
+Content-Disposition: inline; filename="input-i8042-add-fujitsu-siemens-amilo-pro-2010-to-nomux-list.patch"
 In-Reply-To: <20080804201321.GA1139@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -44,13 +44,9 @@ know.
 
 From: Jiri Kosina <jkosina@suse.cz>
 
-Commit efd5184646d5d400fc538d093e9a0bec22a75551 upstream
+commit 3f79b1e94002791a42837a46b5817e87a0ac0873 upstream
 
-Fujitsu Siemens Amilo Pro V2030 needs nomux table entry, in addition to
-already existing entry for V2010 model (note that Fujitsu-Siemens changed
-the capitalization in the DMI data for product).
-
-Tested-by: Jiri Mleziva <jmleziva@tiscali.cz>
+Reported-by: Hans Aschauer <Hans.Aschauer@web.de>
 Signed-off-by: Jiri Kosina <jkosina@suse.cz>
 Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
@@ -61,14 +57,14 @@ Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 --- a/drivers/input/serio/i8042-x86ia64io.h
 +++ b/drivers/input/serio/i8042-x86ia64io.h
-@@ -193,6 +193,13 @@ static struct dmi_system_id __initdata i
+@@ -200,6 +200,13 @@ static struct dmi_system_id __initdata i
  		},
  	},
  	{
-+		.ident = "Fujitsu-Siemens Amilo Pro 2030",
++		.ident = "Fujitsu-Siemens Amilo Pro 2010",
 +		.matches = {
 +			DMI_MATCH(DMI_SYS_VENDOR, "FUJITSU SIEMENS"),
-+			DMI_MATCH(DMI_PRODUCT_NAME, "AMILO PRO V2030"),
++			DMI_MATCH(DMI_PRODUCT_NAME, "AMILO Pro V2010"),
 +		},
 +	},
 +	{
