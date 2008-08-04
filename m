@@ -1,94 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758204AbYHDPEP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755416AbYHDPM2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758204AbYHDPEP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 11:04:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754598AbYHDPEA
+	id S1755416AbYHDPM2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 11:12:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753053AbYHDPMS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 11:04:00 -0400
-Received: from smtp.eu.citrix.com ([62.200.22.115]:10166 "EHLO
-	SMTP.EU.CITRIX.COM" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751173AbYHDPD7 (ORCPT
+	Mon, 4 Aug 2008 11:12:18 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:44841 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750751AbYHDPMR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 11:03:59 -0400
-X-IronPort-AV: E=Sophos;i="4.31,304,1215388800"; 
-   d="scan'208";a="1277002"
-Date: Mon, 4 Aug 2008 16:03:53 +0100
-From: Samuel Thibault <samuel.thibault@ens-lyon.org>
-To: linux-kernel@vger.kernel.org
-Subject: ext3 seems to ignore ECC errors
-Message-ID: <20080804150353.GS4470@implementation.uk.xensource.com>
-Mail-Followup-To: Samuel Thibault <samuel.thibault@ens-lyon.org>,
-	linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-User-Agent: Mutt/1.5.12-2006-07-14
-X-OriginalArrivalTime: 04 Aug 2008 15:03:53.0534 (UTC) FILETIME=[4F654DE0:01C8F643]
+	Mon, 4 Aug 2008 11:12:17 -0400
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: arjan@infradead.org (Arjan van de Ven)
+Subject: Re: [PATCH] Using Intel CRC32 instruction to accelerate CRC32c algorithm by new crypto API.
+Cc: herbert@gondor.apana.org.au, dwmw2@infradead.org,
+       austin_zhang@linux.intel.com, davem@davemloft.net,
+       linux-kernel@vger.kernel.org, linux-crypto@vger.kernel.org
+Organization: Core
+In-Reply-To: <20080804072015.0fcd23e7@infradead.org>
+X-Newsgroups: apana.lists.os.linux.cryptoapi,apana.lists.os.linux.kernel
+User-Agent: tin/1.7.4-20040225 ("Benbecula") (UNIX) (Linux/2.6.17-rc4 (i686))
+Message-Id: <E1KQ1jD-00039b-00@gondolin.me.apana.org.au>
+Date: Mon, 04 Aug 2008 23:12:07 +0800
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+Arjan van de Ven <arjan@infradead.org> wrote:
+> On Mon, 4 Aug 2008 22:04:35 +0800
+> Herbert Xu <herbert@gondor.apana.org.au> wrote:
+> 
+>> There only three crc32c users in the kernel tree and the crypto
+>> interface will serve the perfectly.
+> 
+> isn't it a bit heavy for something as simple as a crc?
+> (which after all is one instruction now ;0)
 
-I am having qemu report to its guest that a device is read-only (because
-the backend format, file or device is) by returning ECC errors instead
-of letting the guest believe that the writes went fine, see patch below.
+Well AES on the PadLock is also a single instruction and nobody
+has ever complained :)
 
-However, to my surprise Linux (2.6.26) continued to mount the ext3
-filesystem read/write, spitting out a lot of IDE errors.  Shouldn't
-filesystems remount read-only and let the admin try to save data in such
-case?
+Seriously, the crypto code is extremely small on the data path.
+The heaviest part is the indirect function call but you have to
+have that in order to support multiple implementations cleanly.
 
-Samuel
+All the fat is on the control path, i.e., tfm allocation.  For
+crc32c you only need a single tfm since all the state is stored
+in the request object.
 
-Index: hw/ide.c
-===================================================================
---- hw/ide.c	(révision 4938)
-+++ hw/ide.c	(copie de travail)
-@@ -891,7 +891,6 @@
-     return 1;
- }
- 
--/* XXX: handle errors */
- static void ide_read_dma_cb(void *opaque, int ret)
- {
-     BMDMAState *bm = opaque;
-@@ -899,6 +898,14 @@
-     int n;
-     int64_t sector_num;
- 
-+    if (ret) {
-+        s->status = READY_STAT | ERR_STAT;
-+        s->error = ABRT_ERR | ECC_ERR;
-+        s->nsector = 0;
-+        ide_set_irq(s);
-+        goto eot;
-+    }
-+
-     n = s->io_buffer_size >> 9;
-     sector_num = ide_get_sector(s);
-     if (n > 0) {
-@@ -992,7 +999,6 @@
-     }
- }
- 
--/* XXX: handle errors */
- static void ide_write_dma_cb(void *opaque, int ret)
- {
-     BMDMAState *bm = opaque;
-@@ -1000,6 +1006,14 @@
-     int n;
-     int64_t sector_num;
- 
-+    if (ret) {
-+        s->status = READY_STAT | ERR_STAT;
-+        s->error = ABRT_ERR | ECC_ERR;
-+        s->nsector = 0;
-+        ide_set_irq(s);
-+        goto eot;
-+    }
-+
-     n = s->io_buffer_size >> 9;
-     sector_num = ide_get_sector(s);
-     if (n > 0) {
+Note that you should ignore the existing crc32c user, iSCSI as
+it was written before the new crypto hash interface was available.
+I will be converting it along with the other two crc32c users. to
+the new ahash interface.
+
+Cheers,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
