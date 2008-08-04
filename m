@@ -1,79 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1768100AbYHDVo5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759061AbYHDVpn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1768100AbYHDVo5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 17:44:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765483AbYHDVnE
+	id S1759061AbYHDVpn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 17:45:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765981AbYHDVnN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 17:43:04 -0400
-Received: from casper.infradead.org ([85.118.1.10]:49018 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1771054AbYHDVnA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 17:43:00 -0400
-Date: Mon, 4 Aug 2008 14:42:28 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Andrea Arcangeli <andrea@qumranet.com>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Dave Jones <davej@redhat.com>,
-       Roland Dreier <rdreier@cisco.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, jeremy@goop.org, hugh@veritas.com,
-       mingo@elte.hu, akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] workaround minor lockdep bug triggered by
- mm_take_all_locks
-Message-ID: <20080804144228.5f0c29c3@infradead.org>
-In-Reply-To: <20080804213018.GD12464@duo.random>
-References: <20080804162657.GI11476@duo.random>
-	<1217867935.3589.35.camel@twins>
-	<20080804172728.GJ11476@duo.random>
-	<20080804174659.GK11476@duo.random>
-	<20080804175730.GL11476@duo.random>
-	<1217875739.3589.56.camel@twins>
-	<20080804201514.GB12464@duo.random>
-	<1217882242.3589.90.camel@twins>
-	<20080804210954.GC12464@duo.random>
-	<84144f020808041414x2c1c8b82n5939b82e9a2ca99d@mail.gmail.com>
-	<20080804213018.GD12464@duo.random>
-Organization: Intel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Mon, 4 Aug 2008 17:43:13 -0400
+Received: from cantor.suse.de ([195.135.220.2]:55371 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1765961AbYHDVnL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Aug 2008 17:43:11 -0400
+Date: Mon, 4 Aug 2008 14:30:51 -0700
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
+       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
+       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, greg@kroah.com, chrisw@sous-sol.org,
+       Jiri Slaby <jirislaby@gmail.com>,
+       "Luis R. Rodriguez" <mcgrof@gmail.com>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       Nick Kossifidis <mickflemm@gmail.com>
+Subject: [patch 25/25] Ath5k: kill tasklets on shutdown
+Message-ID: <20080804213051.GY8014@suse.de>
+References: <20080804203506.816201392@mini.kroah.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline; filename="ath5k-kill-tasklets-on-shutdown.patch"
+In-Reply-To: <20080804212725.GA7944@suse.de>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 4 Aug 2008 23:30:18 +0200
-Andrea Arcangeli <andrea@qumranet.com> wrote:
+2.6.26-stable review patch.  If anyone has any objections, please let us
+know.
 
-> On Tue, Aug 05, 2008 at 12:14:48AM +0300, Pekka Enberg wrote:
-> > Sometimes it's hard to actually trigger a deadlock condition during
-> > development, especially if you're not developing on a big iron
-> > machine.
-> 
-> My understand is that lockdep can't do static analysis of code, it's
-> not a checker. It can only evaluate the locks in the order the cpu
-> takes them. And if the CPU never takes them in the wrong order because
-> only your unlikely to happen slow path takes them in the wrong order
+------------------
 
-yes lockdep will only complain WHEN you take them in the wrong order
+From: Jiri Slaby <jirislaby@gmail.com>
 
-But you claimed you would for sure be in a deadlock at that point which
-is generally not correct.
+commit 10488f8ad62be3b860bad74e60b4fe6ab87aece3 upstream
 
-> So now we learn lockdep also lead developers to think if their code
-> doesn't generate lockdep errors it will be safe in production, so
-> again more damage thanks to lockdep.
+Don't forget to kill tasklets on stop to not panic if they
+fire after freeing some structures.
 
-this comment totally puzzles me... rather than calling you naive...
-where was this said or even implied????
+Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+Acked-by: Nick Kossifidis <mickflemm@gmail.com>
+Cc: Luis R. Rodriguez <mcgrof@gmail.com>
+Signed-off-by: John W. Linville <linville@tuxdriver.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
+---
+ drivers/net/wireless/ath5k/base.c |    3 +++
+ 1 file changed, 3 insertions(+)
 
-
+--- a/drivers/net/wireless/ath5k/base.c
++++ b/drivers/net/wireless/ath5k/base.c
+@@ -2453,6 +2453,9 @@ ath5k_stop_hw(struct ath5k_softc *sc)
+ 	mutex_unlock(&sc->lock);
+ 
+ 	del_timer_sync(&sc->calib_tim);
++	tasklet_kill(&sc->rxtq);
++	tasklet_kill(&sc->txtq);
++	tasklet_kill(&sc->restq);
+ 
+ 	return ret;
+ }
 
 -- 
-If you want to reach me at my work email, use arjan@linux.intel.com
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
