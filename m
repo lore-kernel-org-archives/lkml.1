@@ -1,50 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753005AbYHDH60@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752866AbYHDIGW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753005AbYHDH60 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 03:58:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751808AbYHDH6S
+	id S1752866AbYHDIGW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 04:06:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752054AbYHDIGK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 03:58:18 -0400
-Received: from isilmar.linta.de ([213.133.102.198]:44685 "EHLO linta.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751519AbYHDH6R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 03:58:17 -0400
-Date: Mon, 4 Aug 2008 09:58:14 +0200
-From: Dominik Brodowski <linux@dominikbrodowski.net>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: linux-next: Tree for July 29
-Message-ID: <20080804075814.GA23495@isilmar.linta.de>
-Mail-Followup-To: Dominik Brodowski <linux@dominikbrodowski.net>,
-	Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-	LKML <linux-kernel@vger.kernel.org>,
-	Andrew Morton <akpm@linux-foundation.org>
-References: <20080729172337.b3d74100.sfr@canb.auug.org.au> <20080729144558.GC32430@isilmar.linta.de> <20080804005611.edda857c.sfr@canb.auug.org.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080804005611.edda857c.sfr@canb.auug.org.au>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Mon, 4 Aug 2008 04:06:10 -0400
+Received: from mtagate5.de.ibm.com ([195.212.29.154]:61447 "EHLO
+	mtagate5.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752050AbYHDIGI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Aug 2008 04:06:08 -0400
+Subject: Re: [patch 3/3] kmsg: convert xpram messages to kmsg api.
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Reply-To: schwidefsky@de.ibm.com
+To: Pavel Machek <pavel@suse.cz>
+Cc: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
+       lf_kernel_messages@lists.linux-foundation.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Michael Holzheu <holzheu@de.ibm.com>, Gerrit Huizenga <gh@us.ibm.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Randy Dunlap <randy.dunlap@oracle.com>, Jan Kara <jack@suse.cz>,
+       Sam Ravnborg <sam@ravnborg.org>, Joe Perches <joe@perches.com>,
+       Jochen Vo? <jochen.voss@googlemail.com>,
+       Kunai Takashi <kunai@linux-foundation.jp>,
+       Tim Bird <tim.bird@am.sony.com>
+In-Reply-To: <20080804064853.GB23933@atrey.karlin.mff.cuni.cz>
+References: <20080730165656.118280544@de.ibm.com>
+	 <20080730171157.550296160@de.ibm.com>
+	 <20080804064853.GB23933@atrey.karlin.mff.cuni.cz>
+Content-Type: text/plain
+Organization: IBM Corporation
+Date: Mon, 04 Aug 2008 10:06:03 +0200
+Message-Id: <1217837163.25291.3.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Stephen,
+On Mon, 2008-08-04 at 08:48 +0200, Pavel Machek wrote:
+> It is "Kernel command line". Plus, I do not think I find "User action"
+> section really helpful here.
 
-On Mon, Aug 04, 2008 at 12:56:11AM +1000, Stephen Rothwell wrote:
-> On Tue, 29 Jul 2008 16:45:58 +0200 Dominik Brodowski <linux@dominikbrodowski.net> wrote:
-> >
-> > On Tue, Jul 29, 2008 at 05:23:37PM +1000, Stephen Rothwell wrote:
-> > > Changes since next-20080728:
-> > 
-> > is linux-next now open for 2.6.28 stuff?
-> 
-> Yeah, I would say it is, now.  (Notice how I cleverly delayed it for a
-> week :-))
+Ok, I'll fix that.
 
-Excellent. (Notice how I cunningly predicted this and sneaked in lots of
-.28-stuff into pcmcia/master over the weekend ;-)).
+> ...user that does not understand what "between 1 and 32 means" is
+> unlikely to know if the driver is built-in or module...
 
-Best,
-	Dominik
+Yeah, it is a trivial example for a user action. Perhaps even too
+trivial. On the other hand it doesn't hurt either. At least it is good
+english thanks to our ID department.
+
+-- 
+blue skies,
+  Martin.
+
+"Reality continues to ruin my life." - Calvin.
+
+
