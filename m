@@ -1,124 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759907AbYHDSdd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759592AbYHDSfh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759907AbYHDSdd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 14:33:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759420AbYHDScF
+	id S1759592AbYHDSfh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 14:35:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755820AbYHDSfH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 14:32:05 -0400
-Received: from e36.co.us.ibm.com ([32.97.110.154]:35776 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759343AbYHDSb5 (ORCPT
+	Mon, 4 Aug 2008 14:35:07 -0400
+Received: from E23SMTP06.au.ibm.com ([202.81.18.175]:37639 "EHLO
+	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755485AbYHDSfF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 14:31:57 -0400
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-To: Avi Kivity <avi@argo.co.il>
-Cc: kvm-devel <kvm@vger.kernel.org>, Anthony Liguori <aliguori@us.ibm.com>,
-       linux-kernel@vger.kernel.org, Dave Hansen <dave@linux.vnet.ibm.com>
-Subject: [PATCH 4/4] kvm: reduce stack usage in kvm_pv_mmu_op()
-Date: Mon,  4 Aug 2008 11:31:37 -0700
-Message-Id: <1217874697-28491-1-git-send-email-dave@linux.vnet.ibm.com>
-X-Mailer: git-send-email 1.6.0.rc1.34.g0fe8c1
-In-Reply-To: <1217874693-28398-1-git-send-email-dave@linux.vnet.ibm.com>
-References: <1217874693-28398-1-git-send-email-dave@linux.vnet.ibm.com>
+	Mon, 4 Aug 2008 14:35:05 -0400
+Message-ID: <48974BD3.6050503@linux.vnet.ibm.com>
+Date: Tue, 05 Aug 2008 00:04:59 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
+MIME-Version: 1.0
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+CC: Ryo Tsuruta <ryov@valinux.co.jp>, xen-devel@lists.xensource.com,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       virtualization@lists.linux-foundation.org, dm-devel@redhat.com,
+       agk@sourceware.org, Andrea Righi <righi.andrea@gmail.com>
+Subject: Re: Too many I/O controller patches
+References: <20080804.175126.193692178.ryov@valinux.co.jp> <1217870433.20260.101.camel@nimitz>
+In-Reply-To: <1217870433.20260.101.camel@nimitz>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This time, we're in a hot path.  We can't use kmalloc() because
-it might impact performance.  So, we just stick the buffer that
-we need into the kvm_vcpu_arch structure.  This is used very
-often, so it is not really a waste.
+Dave Hansen wrote:
+> On Mon, 2008-08-04 at 17:51 +0900, Ryo Tsuruta wrote:
+>> This series of patches of dm-ioband now includes "The bio tracking mechanism,"
+>> which has been posted individually to this mailing list.
+>> This makes it easy for anybody to control the I/O bandwidth even when
+>> the I/O is one of delayed-write requests.
+> 
+> During the Containers mini-summit at OLS, it was mentioned that there
+> are at least *FOUR* of these I/O controllers floating around.  Have you
+> talked to the other authors?  (I've cc'd at least one of them).
+> 
+> We obviously can't come to any kind of real consensus with people just
+> tossing the same patches back and forth.
 
-We also have to move the buffer structure's definition to the
-arch-specific x86 kvm header.
+Ryo and Andrea - Naveen and Satoshi met up at OLS and discussed their approach.
+It would be really nice to see an RFC, I know Andrea did work on this and
+compared the approaches.
 
-Signed-off-by: Dave Hansen <dave@linux.vnet.ibm.com>
----
- arch/x86/kvm/mmu.c         |   23 ++++++++---------------
- include/asm-x86/kvm_host.h |   10 ++++++++++
- 2 files changed, 18 insertions(+), 15 deletions(-)
-
-diff --git a/arch/x86/kvm/mmu.c b/arch/x86/kvm/mmu.c
-index 0bfe2bd..c2ce32c 100644
---- a/arch/x86/kvm/mmu.c
-+++ b/arch/x86/kvm/mmu.c
-@@ -135,13 +135,6 @@ module_param(dbg, bool, 0644);
- #define ACC_USER_MASK    PT_USER_MASK
- #define ACC_ALL          (ACC_EXEC_MASK | ACC_WRITE_MASK | ACC_USER_MASK)
- 
--struct kvm_pv_mmu_op_buffer {
--	void *ptr;
--	unsigned len;
--	unsigned processed;
--	char buf[512] __aligned(sizeof(long));
--};
--
- struct kvm_rmap_desc {
- 	u64 *shadow_ptes[RMAP_EXT];
- 	struct kvm_rmap_desc *more;
-@@ -2287,18 +2280,18 @@ int kvm_pv_mmu_op(struct kvm_vcpu *vcpu, unsigned long bytes,
- 		  gpa_t addr, unsigned long *ret)
- {
- 	int r;
--	struct kvm_pv_mmu_op_buffer buffer;
-+	struct kvm_pv_mmu_op_buffer *buffer = &vcpu->arch.mmu_op_buffer;
- 
--	buffer.ptr = buffer.buf;
--	buffer.len = min_t(unsigned long, bytes, sizeof buffer.buf);
--	buffer.processed = 0;
-+	buffer->ptr = buffer->buf;
-+	buffer->len = min_t(unsigned long, bytes, sizeof buffer->buf);
-+	buffer->processed = 0;
- 
--	r = kvm_read_guest(vcpu->kvm, addr, buffer.buf, buffer.len);
-+	r = kvm_read_guest(vcpu->kvm, addr, buffer->buf, buffer->len);
- 	if (r)
- 		goto out;
- 
--	while (buffer.len) {
--		r = kvm_pv_mmu_op_one(vcpu, &buffer);
-+	while (buffer->len) {
-+		r = kvm_pv_mmu_op_one(vcpu, buffer);
- 		if (r < 0)
- 			goto out;
- 		if (r == 0)
-@@ -2307,7 +2300,7 @@ int kvm_pv_mmu_op(struct kvm_vcpu *vcpu, unsigned long bytes,
- 
- 	r = 1;
- out:
--	*ret = buffer.processed;
-+	*ret = buffer->processed;
- 	return r;
- }
- 
-diff --git a/include/asm-x86/kvm_host.h b/include/asm-x86/kvm_host.h
-index 0f3c531..ab0b351 100644
---- a/include/asm-x86/kvm_host.h
-+++ b/include/asm-x86/kvm_host.h
-@@ -195,6 +195,13 @@ struct kvm_mmu_page {
- 	};
- };
- 
-+struct kvm_pv_mmu_op_buffer {
-+	void *ptr;
-+	unsigned len;
-+	unsigned processed;
-+	char buf[512] __aligned(sizeof(long));
-+};
-+
- /*
-  * x86 supports 3 paging modes (4-level 64-bit, 3-level 64-bit, and 2-level
-  * 32-bit).  The kvm_mmu structure abstracts the details of the current mmu
-@@ -237,6 +244,9 @@ struct kvm_vcpu_arch {
- 	bool tpr_access_reporting;
- 
- 	struct kvm_mmu mmu;
-+	/* only needed in kvm_pv_mmu_op() path, but it's hot so
-+	 * put it here to avoid allocation */
-+	struct kvm_pv_mmu_op_buffer mmu_op_buffer;
- 
- 	struct kvm_mmu_memory_cache mmu_pte_chain_cache;
- 	struct kvm_mmu_memory_cache mmu_rmap_desc_cache;
 -- 
-1.5.4.3
-
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
