@@ -1,71 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755907AbYHDPNh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755711AbYHDPOf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755907AbYHDPNh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 11:13:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753202AbYHDPN2
+	id S1755711AbYHDPOf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 11:14:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753645AbYHDPOX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 11:13:28 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:53841 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753053AbYHDPN2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 11:13:28 -0400
-Date: Mon, 4 Aug 2008 11:11:58 -0400
-From: Rik van Riel <riel@redhat.com>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: Matthew Wilcox <matthew@wil.cx>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, Mel Gorman <mel@skynet.ie>,
-       andi@firstfloor.org
-Subject: Re: No, really, stop trying to delete slab until you've finished
- making slub perform as well
-Message-ID: <20080804111158.7f108047@cuia.bos.redhat.com>
-In-Reply-To: <48970779.80902@linux-foundation.org>
-References: <20080801182324.572058187@lameter.com>
-	<20080803015847.GD26461@parisc-linux.org>
-	<48970779.80902@linux-foundation.org>
-Organization: Red Hat, Inc
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
+	Mon, 4 Aug 2008 11:14:23 -0400
+Received: from agminet02.oracle.com ([141.146.126.229]:12411 "EHLO
+	agminet02.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751852AbYHDPOW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Aug 2008 11:14:22 -0400
+X-Greylist: delayed 5257 seconds by postgrey-1.27 at vger.kernel.org; Mon, 04 Aug 2008 11:14:22 EDT
+Subject: Re: [PATCH] Using Intel CRC32 instruction to accelerate CRC32c
+	algorithm by new crypto API.
+From: Chris Mason <chris.mason@oracle.com>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: Austin Zhang <austin_zhang@linux.intel.com>, herbert@gondor.apana.org.au,
+       davem@davemloft.net, linux-kernel@vger.kernel.org,
+       linux-crypto@vger.kernel.org
+In-Reply-To: <1217846726.3454.589.camel@pmac.infradead.org>
+References: <1217842507.20845.18.camel@localhost.localdomain>
+	 <1217844725.3454.580.camel@pmac.infradead.org>
+	 <1217846139.20845.25.camel@localhost.localdomain>
+	 <1217846726.3454.589.camel@pmac.infradead.org>
+Content-Type: text/plain
+Date: Mon, 04 Aug 2008 09:45:37 -0400
+Message-Id: <1217857537.29139.70.camel@think.oraclecorp.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.22.2 
 Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 04 Aug 2008 08:43:21 -0500
-Christoph Lameter <cl@linux-foundation.org> wrote:
-> Matthew Wilcox wrote:
-> > On Fri, May 09, 2008 at 07:21:01PM -0700, Christoph Lameter wrote:
-> >> - Add a patch that obsoletes SLAB and explains why SLOB does not support
-> >>   defrag (Either of those could be theoretically equipped to support
-> >>   slab defrag in some way but it seems that Andrew/Linus want to reduce
-> >>   the number of slab allocators).
-> > 
-> > Do we have to once again explain that slab still outperforms slub on at
-> > least one important benchmark?  I hope Nick Piggin finds time to finish
-> > tuning slqb; it already outperforms slub.
-> > 
+On Mon, 2008-08-04 at 11:45 +0100, David Woodhouse wrote:
+> On Mon, 2008-08-04 at 06:35 -0400, Austin Zhang wrote:
+> > On Mon, 2008-08-04 at 11:12 +0100, David Woodhouse wrote:
+> > > You could perhaps just use 'unsigned long' here, to avoid the ifdef.
+> > Thanks. 
+> > > And it would be nice if we could make libcrc32c use this too, rather
+> > > than just the 'crypto' users.
+> > From previous discussing, herbert would like to transfer the libcrc32c 
+> > interface by new crypto because there were few user using the current 
+> > libcrc32c interface. 
 > 
-> Uhh. I forgot to delete that statement. I did not include the patch in the series.
+> Are we deprecating libcrc32c, then? Or just turning it into a wrapper
+> around the crypto code?
 > 
-> We have a fundamental issue design issue there. Queuing on free can result in
-> better performance as in SLAB. However, it limits concurrency (per node lock
-> taking) and causes latency spikes due to queue processing (f.e. one test load
-> had 118.65 vs. 34 usecs just by switching to SLUB).
-> 
-> Could you address the performance issues in different ways? F.e. try to free
-> when the object is hot or free from multiple processors? SLAB has to take the
-> list_lock rather frequently under high concurrent loads (depends on queue
-> size). That will not occur with SLUB. So you actually can free (and allocate)
-> concurrently with high performance.
 
-I guess you could bypass the queueing on free for objects that
-come from a "local" SLUB page, only queueing objects that go
-onto remote pages.
+Long term I'd like to switch btrfs to the crypto api, but right now I'm
+using libcrc32c.
 
-That way workloads that already perform well with SLUB should
-keep the current performance, while workloads that currently
-perform badly with SLUB should get an improvement.
+>From a performance point of view I'm probably reading the crypto API
+code wrong, but it looks like my choices are to either have a long
+standing context and use locking around the digest/hash calls to protect
+internal crypto state, or create a new context every time and take a
+perf hit while crypto looks up the right module.
 
--- 
-All Rights Reversed
+Either way it looks slower than just calling good old libcrc32c.
+
+-chris
+
