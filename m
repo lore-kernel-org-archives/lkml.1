@@ -1,128 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755712AbYHDKLv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755964AbYHDKMn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755712AbYHDKLv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 06:11:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754976AbYHDKK6
+	id S1755964AbYHDKMn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 06:12:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753538AbYHDKMY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 06:10:58 -0400
-Received: from qb-out-0506.google.com ([72.14.204.233]:26698 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754913AbYHDKK5 (ORCPT
+	Mon, 4 Aug 2008 06:12:24 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:33757 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754548AbYHDKMV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 06:10:57 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=DDsdNC4p//nasU8Z/YLDGYKAEgn/aOoOSQFncmNBE2H1WL3OLHaIoGyerQHC4yv53E
-         WRDmf3wq/62lHCmCSVpzE7/nhwIPFED0NVqX0hu7Hu3Y0TrwrT75XIGBmb3EMiz2QJpv
-         T05m/O3T3OmmjZazK1HNnqOiUdoAoONbth6HU=
-From: Yinghai Lu <yhlu.kernel@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>, Mike Travis <travis@sgi.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Yinghai Lu <yhlu.kernel@gmail.com>
-Subject: [PATCH 03/04] x86: put timer_rand_state pointer into irq_desc
-Date: Mon,  4 Aug 2008 03:10:00 -0700
-Message-Id: <1217844601-4298-4-git-send-email-yhlu.kernel@gmail.com>
-X-Mailer: git-send-email 1.5.4.5
-In-Reply-To: <1217844601-4298-3-git-send-email-yhlu.kernel@gmail.com>
-References: <1217844601-4298-1-git-send-email-yhlu.kernel@gmail.com>
- <1217844601-4298-2-git-send-email-yhlu.kernel@gmail.com>
- <1217844601-4298-3-git-send-email-yhlu.kernel@gmail.com>
+	Mon, 4 Aug 2008 06:12:21 -0400
+Subject: Re: [PATCH] Using Intel CRC32 instruction to accelerate CRC32c
+	algorithm by new crypto API.
+From: David Woodhouse <dwmw2@infradead.org>
+To: Austin Zhang <austin_zhang@linux.intel.com>
+Cc: herbert@gondor.apana.org.au, davem@davemloft.net,
+       linux-kernel@vger.kernel.org, linux-crypto@vger.kernel.org
+In-Reply-To: <1217842507.20845.18.camel@localhost.localdomain>
+References: <1217842507.20845.18.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Mon, 04 Aug 2008 11:12:05 +0100
+Message-Id: <1217844725.3454.580.camel@pmac.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-so could remove timer_rand_state pointer array
+On Mon, 2008-08-04 at 05:35 -0400, Austin Zhang wrote:
+> +u32 __pure crc32c_intel_le_hw(u32 crc, unsigned char const *p, size_t
+> len)
+> +{
+> +       unsigned int iquotient = len / SCALE_F;
+> +       unsigned int iremainder = len % SCALE_F;
+> +#ifdef CONFIG_X86_64
+> +       u64 *ptmp = (u64 *)p;
+> +#else
+> +       u32 *ptmp = (u32 *)p;
+> +#endif
 
-Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+You could perhaps just use 'unsigned long' here, to avoid the ifdef.
 
-Index: linux-2.6/drivers/char/random.c
-===================================================================
---- linux-2.6.orig/drivers/char/random.c
-+++ linux-2.6/drivers/char/random.c
-@@ -559,13 +559,6 @@ struct timer_rand_state {
- 
- static struct timer_rand_state input_timer_state;
- 
--#ifdef CONFIG_HAVE_DYN_ARRAY
--static struct timer_rand_state **irq_timer_state;
--DEFINE_DYN_ARRAY(irq_timer_state, sizeof(struct timer_rand_state *), nr_irqs, PAGE_SIZE, NULL);
--#else
--static struct timer_rand_state *irq_timer_state[NR_IRQS];
--#endif
--
- /*
-  * This function adds entropy to the entropy "pool" by using timing
-  * delays.  It uses the timer_rand_state structure to make an estimate
-@@ -653,11 +646,20 @@ EXPORT_SYMBOL_GPL(add_input_randomness);
- 
- void add_interrupt_randomness(int irq)
- {
--	if (irq >= nr_irqs || irq_timer_state[irq] == NULL)
-+	struct timer_rand_state *state;
-+	struct irq_desc *desc;
-+
-+	if (irq >= nr_irqs)
-+		return;
-+
-+	desc = get_irq_desc(irq);
-+	state = desc->timer_rand_state;
-+
-+	if (state == NULL)
- 		return;
- 
- 	DEBUG_ENT("irq event %d\n", irq);
--	add_timer_randomness(irq_timer_state[irq], 0x100 + irq);
-+	add_timer_randomness(state, 0x100 + irq);
- }
- 
- #ifdef CONFIG_BLOCK
-@@ -916,8 +918,15 @@ module_init(rand_initialize);
- void rand_initialize_irq(int irq)
- {
- 	struct timer_rand_state *state;
-+	struct irq_desc *desc;
-+
-+	if (irq >= nr_irqs)
-+		return;
- 
--	if (irq >= nr_irqs || irq_timer_state[irq])
-+	desc = get_irq_desc(irq);
-+	state = desc->timer_rand_state;
-+
-+	if (state)
- 		return;
- 
- 	/*
-@@ -926,7 +935,7 @@ void rand_initialize_irq(int irq)
- 	 */
- 	state = kzalloc(sizeof(struct timer_rand_state), GFP_KERNEL);
- 	if (state)
--		irq_timer_state[irq] = state;
-+		desc->timer_rand_state = state;
- }
- 
- #ifdef CONFIG_BLOCK
-Index: linux-2.6/include/linux/irq.h
-===================================================================
---- linux-2.6.orig/include/linux/irq.h
-+++ linux-2.6/include/linux/irq.h
-@@ -129,6 +129,7 @@ struct irq_chip {
- 	const char	*typename;
- };
- 
-+struct timer_rand_state;
- /**
-  * struct irq_desc - interrupt descriptor
-  *
-@@ -158,6 +159,7 @@ struct irq_desc {
- 	unsigned int		irq;
- 	struct irq_desc		*next;
- #endif
-+	struct timer_rand_state *timer_rand_state;
- 	irq_flow_handler_t	handle_irq;
- 	struct irq_chip		*chip;
- 	struct msi_desc		*msi_desc;
+And it would be nice if we could make libcrc32c use this too, rather
+than just the 'crypto' users.
+
+-- 
+David Woodhouse                            Open Source Technology Centre
+David.Woodhouse@intel.com                              Intel Corporation
+
+
+
