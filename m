@@ -1,67 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757440AbYHDQ2B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758168AbYHDQ20@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757440AbYHDQ2B (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 12:28:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753238AbYHDQ1w
+	id S1758168AbYHDQ20 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 12:28:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754889AbYHDQ2Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 12:27:52 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:5988 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750751AbYHDQ1v (ORCPT
+	Mon, 4 Aug 2008 12:28:16 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:63889 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754658AbYHDQ2P (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 12:27:51 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=PBkWZ/RZiBk1kewzs2bT4SOVc6jkMr5b8tgkZxRI3eFxyoeyRM69LBKoPtd5SjC2N
-	PugpbDsOH2jXCQf4IxZqg==
-Message-ID: <6599ad830808040927h333a7841y411187833f38c1ac@mail.gmail.com>
-Date: Mon, 4 Aug 2008 09:27:30 -0700
-From: "Paul Menage" <menage@google.com>
-To: "Lai Jiangshan" <laijs@cn.fujitsu.com>
-Subject: Re: [PATCH] cpuset: Add comments for update_domain_attr_tree
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, "Paul Jackson" <pj@sgi.com>,
-       "Hidetoshi Seto" <seto.hidetoshi@jp.fujitsu.com>,
-       "Li Zefan" <lizf@cn.fujitsu.com>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <48916CC9.8020705@cn.fujitsu.com>
+	Mon, 4 Aug 2008 12:28:15 -0400
+Date: Mon, 4 Aug 2008 12:28:12 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Arnaldo Carvalho de Melo <acme@redhat.com>
+cc: Ming Lei <tom.leiming@gmail.com>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [RFC] ftrace: support tracing functions in one module
+In-Reply-To: <20080804161506.GA17964@ghostprotocols.net>
+Message-ID: <alpine.DEB.1.10.0808041225330.19776@gandalf.stny.rr.com>
+References: <d82e647a0808030050n3b72d96dh91c0ac94eadc34f@mail.gmail.com> <alpine.DEB.1.10.0808031042440.30870@gandalf.stny.rr.com> <d82e647a0808031911j20cc9588o813bb15a46df1db4@mail.gmail.com> <20080804161506.GA17964@ghostprotocols.net>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <489121F8.2020008@cn.fujitsu.com> <48916CC9.8020705@cn.fujitsu.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 31, 2008 at 12:42 AM, Lai Jiangshan <laijs@cn.fujitsu.com> wrote:
->
-> This patch was reviewed by Li Zefan and was revised on his suggestion before sent.
-> Thanks Li Zefan.
->
-> Reviewed-by: Li Zefan <lizf@cn.fujitsu.com>
->
-> Lai Jiangshan wrote:
->> Add comments for update_domain_attr_tree().
->>
->> Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
->> ---
->> diff --git a/kernel/cpuset.c b/kernel/cpuset.c
->> index adf66c0..fed1f42 100644
->> --- a/kernel/cpuset.c
->> +++ b/kernel/cpuset.c
->> @@ -487,15 +487,21 @@ update_domain_attr(struct sched_domain_attr *dattr, struct cpuset *c)
->>  {
->>       if (dattr->relax_domain_level < c->relax_domain_level)
->>               dattr->relax_domain_level = c->relax_domain_level;
->> -     return;
->>  }
->>
->> +/*
 
-If you're going to add a comment block, maybe it's worth making it
-docbook-compatible? So /** at the start, and then following the proper
-docbook style conventions in kernel-doc-nano-HOWTO.txt ?
+On Mon, 4 Aug 2008, Arnaldo Carvalho de Melo wrote:
+> > 
+> > Do you have the plan to support tracing functions in one module or in one kernel
+> > address range?
+> 
+> What about using:
+> 
+> [acme@doppio pahole]$ nm --defined-only /usr/lib/debug/lib/modules/2.6.24.7-75.el5rt/kernel/drivers/net/tg3.ko.debug | grep ' t ' | cut -d' ' -f3 | head 
+> __tg3_set_coalesce
+> __tg3_set_mac_addr
+> __tg3_set_rx_mode
+> _tw32_flush
+> tg3_5700_link_polarity
+> tg3_abort_hw
+> tg3_alloc_rx_skb
+> tg3_ape_driver_state_change
+> tg3_bmcr_reset
+> tg3_change_mtu
+> [acme@doppio pahole]$
+> 
+> Feed this to /sys/kernel/debug/tracing/set_ftrace_filter and you should
+> be set, no?
+> 
+> Ok, you need to have the kernel-debuginfo package installed, and I guess
+> we can get away with that, but for now, isn't that enough?
 
-Paul
+
+Or simply (again for tg3 :
+
+
+# awk '/\[tg3\]/ { print $3 }' /proc/kallsyms  \
+   > /debug/tracing/set_ftrace_filter
+
+-- Steve
+
