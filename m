@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756427AbYHDUWE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763293AbYHDUWa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756427AbYHDUWE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 16:22:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757957AbYHDUVu
+	id S1763293AbYHDUWa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 16:22:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762362AbYHDUWU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 16:21:50 -0400
-Received: from ns1.suse.de ([195.135.220.2]:48445 "EHLO mx1.suse.de"
+	Mon, 4 Aug 2008 16:22:20 -0400
+Received: from ns1.suse.de ([195.135.220.2]:48534 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762274AbYHDUVt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 16:21:49 -0400
-Date: Mon, 4 Aug 2008 13:14:55 -0700
+	id S1757957AbYHDUWS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Aug 2008 16:22:18 -0400
+Date: Mon, 4 Aug 2008 13:14:57 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Trond Myklebust <Trond.Myklebust@netapp.com>
-Subject: [patch 06/33] NFS: Ensure we zap only the access and acl caches
-	when setting new acls
-Message-ID: <20080804201455.GG1139@suse.de>
+       alan@lxorguk.ukuu.org.uk, Josef Bacik <jbacik@redhat.com>,
+       linux-ext4@vger.kernel.org, Jan Kara <jack@ucw.cz>
+Subject: [patch 07/33] jbd: fix the way the b_modified flag is cleared
+Message-ID: <20080804201457.GH1139@suse.de>
 References: <20080804200515.110033151@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="nfs-ensure-we-zap-only-the-access-and-acl-caches-when-setting-new-acls.patch"
+Content-Disposition: inline; filename="jbd-fix-the-way-the-b_modified-flag-is-cleared.patch"
 In-Reply-To: <20080804201321.GA1139@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -41,113 +41,96 @@ know.
 
 ------------------
 
-From: Trond Myklebust <Trond.Myklebust@netapp.com>
+From: Josef Bacik <jbacik@redhat.com>
 
-commit f41f741838480aeaa3a189cff6e210503cf9c42d upstream
+commit 5bc833feaa8b2236265764e7e81f44937be46eda upstream
 
-...and ensure that we obey the NFS_INO_INVALID_ACL flag when retrieving the
-acls.
+Currently at the start of a journal commit we loop through all of the buffers
+on the committing transaction and clear the b_modified flag (the flag that is
+set when a transaction modifies the buffer) under the j_list_lock.
 
-Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
+The problem is that everywhere else this flag is modified only under the jbd
+lock buffer flag, so it will race with a running transaction who could
+potentially set it, and have it unset by the committing transaction.
+
+This is also a big waste, you can have several thousands of buffers that you
+are clearing the modified flag on when you may not need to.  This patch
+removes this code and instead clears the b_modified flag upon entering
+do_get_write_access/journal_get_create_access, so if that transaction does
+indeed use the buffer then it will be accounted for properly, and if it does
+not then we know we didn't use it.
+
+That will be important for the next patch in this series.  Tested thoroughly
+by myself using postmark/iozone/bonnie++.
+
+Signed-off-by: Josef Bacik <jbacik@redhat.com>
+Cc: <linux-ext4@vger.kernel.org>
+Acked-by: Jan Kara <jack@ucw.cz>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/nfs/inode.c    |    4 +---
- fs/nfs/internal.h |    1 +
- fs/nfs/nfs3acl.c  |    9 ++++++---
- fs/nfs/nfs4proc.c |    6 +++++-
- 4 files changed, 13 insertions(+), 7 deletions(-)
+ fs/jbd/commit.c      |   16 ----------------
+ fs/jbd/transaction.c |   13 +++++++++++++
+ 2 files changed, 13 insertions(+), 16 deletions(-)
 
---- a/fs/nfs/inode.c
-+++ b/fs/nfs/inode.c
-@@ -57,8 +57,6 @@ static int enable_ino64 = NFS_64_BIT_INO
- static void nfs_invalidate_inode(struct inode *);
- static int nfs_update_inode(struct inode *, struct nfs_fattr *);
+--- a/fs/jbd/commit.c
++++ b/fs/jbd/commit.c
+@@ -407,22 +407,6 @@ void journal_commit_transaction(journal_
+ 	jbd_debug (3, "JBD: commit phase 2\n");
  
--static void nfs_zap_acl_cache(struct inode *);
+ 	/*
+-	 * First, drop modified flag: all accesses to the buffers
+-	 * will be tracked for a new trasaction only -bzzz
+-	 */
+-	spin_lock(&journal->j_list_lock);
+-	if (commit_transaction->t_buffers) {
+-		new_jh = jh = commit_transaction->t_buffers->b_tnext;
+-		do {
+-			J_ASSERT_JH(new_jh, new_jh->b_modified == 1 ||
+-					new_jh->b_modified == 0);
+-			new_jh->b_modified = 0;
+-			new_jh = new_jh->b_tnext;
+-		} while (new_jh != jh);
+-	}
+-	spin_unlock(&journal->j_list_lock);
 -
- static struct kmem_cache * nfs_inode_cachep;
+-	/*
+ 	 * Now start flushing things to disk, in the order they appear
+ 	 * on the transaction lists.  Data blocks go first.
+ 	 */
+--- a/fs/jbd/transaction.c
++++ b/fs/jbd/transaction.c
+@@ -609,6 +609,12 @@ repeat:
+ 		goto done;
  
- static inline unsigned long
-@@ -167,7 +165,7 @@ void nfs_zap_mapping(struct inode *inode
- 	}
- }
- 
--static void nfs_zap_acl_cache(struct inode *inode)
-+void nfs_zap_acl_cache(struct inode *inode)
- {
- 	void (*clear_acl_cache)(struct inode *);
- 
---- a/fs/nfs/internal.h
-+++ b/fs/nfs/internal.h
-@@ -153,6 +153,7 @@ extern void nfs_clear_inode(struct inode
- #ifdef CONFIG_NFS_V4
- extern void nfs4_clear_inode(struct inode *);
- #endif
-+void nfs_zap_acl_cache(struct inode *inode);
- 
- /* super.c */
- extern struct file_system_type nfs_xdev_fs_type;
---- a/fs/nfs/nfs3acl.c
-+++ b/fs/nfs/nfs3acl.c
-@@ -5,6 +5,8 @@
- #include <linux/posix_acl_xattr.h>
- #include <linux/nfsacl.h>
- 
-+#include "internal.h"
+ 	/*
++	 * this is the first time this transaction is touching this buffer,
++	 * reset the modified flag
++	 */
++	jh->b_modified = 0;
 +
- #define NFSDBG_FACILITY	NFSDBG_PROC
++	/*
+ 	 * If there is already a copy-out version of this buffer, then we don't
+ 	 * need to make another one
+ 	 */
+@@ -820,9 +826,16 @@ int journal_get_create_access(handle_t *
  
- ssize_t nfs3_listxattr(struct dentry *dentry, char *buffer, size_t size)
-@@ -205,6 +207,8 @@ struct posix_acl *nfs3_proc_getacl(struc
- 	status = nfs_revalidate_inode(server, inode);
- 	if (status < 0)
- 		return ERR_PTR(status);
-+	if (NFS_I(inode)->cache_validity & NFS_INO_INVALID_ACL)
-+		nfs_zap_acl_cache(inode);
- 	acl = nfs3_get_cached_acl(inode, type);
- 	if (acl != ERR_PTR(-EAGAIN))
- 		return acl;
-@@ -319,9 +323,8 @@ static int nfs3_proc_setacls(struct inod
- 	dprintk("NFS call setacl\n");
- 	msg.rpc_proc = &server->client_acl->cl_procinfo[ACLPROC3_SETACL];
- 	status = rpc_call_sync(server->client_acl, &msg, 0);
--	spin_lock(&inode->i_lock);
--	NFS_I(inode)->cache_validity |= NFS_INO_INVALID_ACCESS;
--	spin_unlock(&inode->i_lock);
-+	nfs_access_zap_cache(inode);
-+	nfs_zap_acl_cache(inode);
- 	dprintk("NFS reply setacl: %d\n", status);
- 
- 	/* pages may have been allocated at the xdr layer. */
---- a/fs/nfs/nfs4proc.c
-+++ b/fs/nfs/nfs4proc.c
-@@ -52,6 +52,7 @@
- #include "nfs4_fs.h"
- #include "delegation.h"
- #include "iostat.h"
-+#include "internal.h"
- 
- #define NFSDBG_FACILITY		NFSDBG_PROC
- 
-@@ -2707,6 +2708,8 @@ static ssize_t nfs4_proc_get_acl(struct 
- 	ret = nfs_revalidate_inode(server, inode);
- 	if (ret < 0)
- 		return ret;
-+	if (NFS_I(inode)->cache_validity & NFS_INO_INVALID_ACL)
-+		nfs_zap_acl_cache(inode);
- 	ret = nfs4_read_cached_acl(inode, buf, buflen);
- 	if (ret != -ENOENT)
- 		return ret;
-@@ -2734,7 +2737,8 @@ static int __nfs4_proc_set_acl(struct in
- 	nfs_inode_return_delegation(inode);
- 	buf_to_pages(buf, buflen, arg.acl_pages, &arg.acl_pgbase);
- 	ret = rpc_call_sync(NFS_CLIENT(inode), &msg, 0);
--	nfs_zap_caches(inode);
-+	nfs_access_zap_cache(inode);
-+	nfs_zap_acl_cache(inode);
- 	return ret;
- }
- 
+ 	if (jh->b_transaction == NULL) {
+ 		jh->b_transaction = transaction;
++
++		/* first access by this transaction */
++		jh->b_modified = 0;
++
+ 		JBUFFER_TRACE(jh, "file as BJ_Reserved");
+ 		__journal_file_buffer(jh, transaction, BJ_Reserved);
+ 	} else if (jh->b_transaction == journal->j_committing_transaction) {
++		/* first access by this transaction */
++		jh->b_modified = 0;
++
+ 		JBUFFER_TRACE(jh, "set next transaction");
+ 		jh->b_next_transaction = transaction;
+ 	}
 
 -- 
