@@ -1,66 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759509AbYHDWd2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757590AbYHDWdm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759509AbYHDWd2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 18:33:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756487AbYHDWaT
+	id S1757590AbYHDWdm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 18:33:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752009AbYHDWdP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 18:30:19 -0400
-Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:41721
-	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752231AbYHDWaR (ORCPT
+	Mon, 4 Aug 2008 18:33:15 -0400
+Received: from senator.holtmann.net ([87.106.208.187]:52020 "EHLO
+	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751176AbYHDWdO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 18:30:17 -0400
-Date: Tue, 5 Aug 2008 00:30:11 +0200
-From: Andrea Arcangeli <andrea@qumranet.com>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Dave Jones <davej@redhat.com>,
-       Roland Dreier <rdreier@cisco.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, jeremy@goop.org, hugh@veritas.com,
-       mingo@elte.hu, akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] workaround minor lockdep bug triggered by
-	mm_take_all_locks
-Message-ID: <20080804223011.GG12464@duo.random>
-References: <20080804172728.GJ11476@duo.random> <20080804174659.GK11476@duo.random> <20080804175730.GL11476@duo.random> <1217875739.3589.56.camel@twins> <20080804201514.GB12464@duo.random> <1217882242.3589.90.camel@twins> <20080804210954.GC12464@duo.random> <84144f020808041414x2c1c8b82n5939b82e9a2ca99d@mail.gmail.com> <20080804213018.GD12464@duo.random> <20080804144228.5f0c29c3@infradead.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080804144228.5f0c29c3@infradead.org>
+	Mon, 4 Aug 2008 18:33:14 -0400
+Subject: Re: pull request: wireless-2.6 2008-08-04
+From: Marcel Holtmann <marcel@holtmann.org>
+To: "John W. Linville" <linville@tuxdriver.com>
+Cc: davem@davemloft.net, linux-wireless@vger.kernel.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20080804215439.GA9658@tuxdriver.com>
+References: <20080804193753.GA30345@tuxdriver.com>
+	 <1217882288.7819.19.camel@californication>
+	 <20080804204558.GA5866@tuxdriver.com>
+	 <1217886123.7819.23.camel@californication>
+	 <20080804215439.GA9658@tuxdriver.com>
+Content-Type: text/plain
+Date: Tue, 05 Aug 2008 00:37:06 +0200
+Message-Id: <1217889426.7819.26.camel@californication>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 04, 2008 at 02:42:28PM -0700, Arjan van de Ven wrote:
-> yes lockdep will only complain WHEN you take them in the wrong order
+Hi John,
+
+> > > > > Luis R. Rodriguez (4):
+> > > > >       list.h: Add list_splice_tail() and list_splice_tail_init()
+> > > > >       list.h: add list_cut_position()
+> > > > 
+> > > > have these two changes got reviewed on LKML? I don't see any ACKs for it
+> > > > in the commit message.
+> > > 
+> > > Hmmm...no.  I thought the original patches had been copied to
+> > > linux-kernel, but it looks like that is not the case.
+> > > 
+> > > The original patches are archived here:
+> > > 
+> > > 	http://marc.info/?l=linux-wireless&m=121783421908441&w=2
+> > > 
+> > > 	http://marc.info/?l=linux-wireless&m=121783422008445&w=2
+> > > 
+> > > What problems do you see with them?
+> > 
+> > I don't see a problem with these patches, but they should at least be
+> > reviewed on LKML once. Changes to core kernel infrastructure should not
+> > be merged silently via subsystem trees without any kind of ACKs.
 > 
-> But you claimed you would for sure be in a deadlock at that point which
-> is generally not correct.
+> Yes, fine.  That wasn't my intent. :-)  The patches were originally
+> posted about two weeks ago, too bad that didn't actually go to
+> linux-kernel. :-(
 
-I already said I didn't know about that despite having spent a fair
-amount of time trying to understand why lockdep crashes systems at
-boot about an year ago. I admit I didn't understand much about it and
-reducing its computation time didn't look feasible, perhaps my fault,
-and I'm glad if Peter found a way to make it boot after 1 year.
+just post them to LKML (or let Luis do it) so they get reviewed. I
+really don't see an issue with them, but that is only me.
 
-> this comment totally puzzles me... rather than calling you naive...
-> where was this said or even implied????
+Regards
 
-It was just a logical conclusion of the statement that lockdep will
-warn of the following classes of locking bugs: "lock inversion
-scenarios"... There's no warning anywhere that it might not find them
-at all. Or point me to where it is warned you still have to read the
-code and verify it yourself, or you still risk to AB BA in
-production. If it was warned I wouldn't have mentioned it, people seem
-to talk like if lockdep is a checker doing static analyses of all
-paths when it can't.
+Marcel
 
-Partly of what I said before is true, even if I didn't understand the
-actual details of the AB BA memory it has by reading the code: the BA
-may happen only when system is OOM etc... so even lockdep memory may
-never find it. So my warning that code might AB BA deadlock even if
-lockdep doesn't warn sounds fair enough and without it I'm still
-afraid it can lead to developers think everything is ok with regard to
-AB BA. In any case (even if everyone already understand lockdep better
-than I did before this discussion), even if I'm wrong a sign of
-warning that lockdep isn't enough, can't hurt.
+
