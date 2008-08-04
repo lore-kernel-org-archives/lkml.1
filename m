@@ -1,48 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757672AbYHDWJD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763171AbYHDWJl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757672AbYHDWJD (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 18:09:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751535AbYHDWIx
+	id S1763171AbYHDWJl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 18:09:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751535AbYHDWJc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 18:08:53 -0400
-Received: from smtp-out003.kontent.com ([81.88.40.217]:53599 "EHLO
-	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750963AbYHDWIw (ORCPT
+	Mon, 4 Aug 2008 18:09:32 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:44310 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754052AbYHDWJc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 18:08:52 -0400
-From: Oliver Neukum <oliver@neukum.org>
-Organization: NOvell
-To: "Alfred E. Heggestad" <aeh@db.org>
-Subject: Re: [PATCH] input: driver for USB VoIP phones with CM109 chipset #2
-Date: Tue, 5 Aug 2008 00:08:48 +0200
-User-Agent: KMail/1.9.9
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-input@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-References: <200806271424.50425.oliver@neukum.org> <200808041356.57928.oliver@neukum.org> <489767D3.6070408@db.org>
-In-Reply-To: <489767D3.6070408@db.org>
+	Mon, 4 Aug 2008 18:09:32 -0400
+Message-ID: <48977D58.8010303@cs.helsinki.fi>
+Date: Tue, 05 Aug 2008 01:06:16 +0300
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+User-Agent: Thunderbird 2.0.0.16 (Macintosh/20080707)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Alexey Dobriyan <adobriyan@gmail.com>
+CC: Christoph Lameter <cl@linux-foundation.org>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] SLUB: detach SLUB_DEBUG and SYSFS
+References: <20080801000405.GA7072@martell.zuzino.mipt.ru> <48941C2F.8010406@cs.helsinki.fi> <489702B9.5030204@linux-foundation.org> <48970DDD.4040607@cs.helsinki.fi> <20080804220247.GA10159@martell.zuzino.mipt.ru>
+In-Reply-To: <20080804220247.GA10159@martell.zuzino.mipt.ru>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200808050008.48846.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Montag 04 August 2008 22:34:27 schrieb Alfred E. Heggestad:
-> > 
-> > Looks like urb_irq is not properly initialised. Is there really nothing in the syslog?
-> > Please print out urb->interval
-> > 
+Alexey Dobriyan wrote:
+> OK, I'll test-compile it to death.
 > 
-> urb->interval == 32
+> For now, do you agree that SYSFS=n users shouldn't be discriminated
+> against poisoning?
 > 
-> I added some more debugging in the driver, and after the module is loaded,
-> I press "TAB" in a shell to force Bell/Buzzer.
+> As real world situation, NET_NS feature which is currently in
+> active development doesn't work with SYSFS, so it was a bit of cold
+> shower to realise that I did much testing of conntracking in netns
+> without poisoning. :-(
 
-Can you printk the interval and the dev pointer in 
-cm109_urb_irq_callback?
-
-	Regards
-		Oliver
+I'm okay with that as long as it doesn't break the build :-)
