@@ -1,51 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756184AbYHDPUW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757087AbYHDPVm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756184AbYHDPUW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 11:20:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753502AbYHDPUK
+	id S1757087AbYHDPVm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 11:21:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753463AbYHDPV3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 11:20:10 -0400
-Received: from smtp.ctxuk.citrix.com ([62.200.22.115]:52880 "EHLO
-	SMTP.EU.CITRIX.COM" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753319AbYHDPUI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 11:20:08 -0400
-X-IronPort-AV: E=Sophos;i="4.31,304,1215388800"; 
-   d="scan'208";a="1277309"
-Date: Mon, 4 Aug 2008 16:20:02 +0100
-From: Samuel Thibault <samuel.thibault@ens-lyon.org>
-To: linux-kernel@vger.kernel.org
-Subject: Re: ext3 seems to ignore ECC errors
-Message-ID: <20080804152002.GT4470@implementation.uk.xensource.com>
-Mail-Followup-To: Samuel Thibault <samuel.thibault@ens-lyon.org>,
-	linux-kernel@vger.kernel.org
-References: <20080804150353.GS4470@implementation.uk.xensource.com>
+	Mon, 4 Aug 2008 11:21:29 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:45915 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754008AbYHDPV2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Aug 2008 11:21:28 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH] [PM] Fixes missing PM entries in sysfs without CONFIG_PM_SLEEP
+Date: Mon, 4 Aug 2008 17:24:22 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: "Dasgupta, Romit" <romit@ti.com>, David Engraf <david.engraf@netcom.eu>,
+       Greg KH <greg@kroah.com>,
+       "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+References: <Pine.LNX.4.44L0.0808041112580.2815-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0808041112580.2815-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20080804150353.GS4470@implementation.uk.xensource.com>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-OriginalArrivalTime: 04 Aug 2008 15:20:07.0687 (UTC) FILETIME=[94094170:01C8F645]
+Message-Id: <200808041724.24016.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Samuel Thibault, le Mon 04 Aug 2008 16:03:53 +0100, a écrit :
-> However, to my surprise Linux (2.6.26) continued to mount the ext3
-> filesystem read/write, spitting out a lot of IDE errors.
+On Monday, 4 of August 2008, Alan Stern wrote:
+> On Mon, 4 Aug 2008, Rafael J. Wysocki wrote:
+> 
+> > > Rafael, any objections?
+> > 
+> > Hm, well, one thing below.
+> 
+> > device_pm_add() can now be void and the error variable in there is not
+> > necessary any more.
+> 
+> Do you think we will want to make device_pm_add() return an error at 
+> some point in the future?
 
-Note: these look like
+Well, maybe, but not any time soon. :-)
 
-hdb: dma_intr: status=0x41 { DriveReady Error }
-hdb: dma_intr: error=0x44 { DriveStatusError UncorrectableError }, LBAsect=1189689234687, sector=70911
-ide: failed opcode was: unknown
-end_request: I/O/error, dev hdb sector 70911
-Buffer I/O error on device hdb1, logical block 8856
-lost page write due to I/O error on hdb1
-etc.
+> For example, earlier you had it fail if the parent device was asleep, instead
+> of just printing a warning. 
 
-So it seems the error is properly reported up to the filesystem
-((70911-63) * 512 / 4096 == 8856)
+Yes, I remeber it, but there still are some drivers that would break if we
+did that.
 
-Samuel
+Anyway, I think it won't be hard to change device_pm_add() to return error
+codes again if we decide to in future.
+
+Thanks,
+Rafael
