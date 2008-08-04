@@ -1,69 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758421AbYHDBTn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757565AbYHDBaL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758421AbYHDBTn (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Aug 2008 21:19:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753255AbYHDBTe
+	id S1757565AbYHDBaL (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Aug 2008 21:30:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752909AbYHDB34
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Aug 2008 21:19:34 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:57364
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752817AbYHDBTd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Aug 2008 21:19:33 -0400
-Date: Sun, 03 Aug 2008 18:19:34 -0700 (PDT)
-Message-Id: <20080803.181934.262275514.davem@davemloft.net>
-To: a.beregalov@gmail.com
-Cc: sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: sparc64: build failure at sys_sparc32.c
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <a4423d670807290138p4a666337id74fe1fa637932e4@mail.gmail.com>
-References: <20080729065914.GA30878@orion>
-	<20080729.001256.203097603.davem@davemloft.net>
-	<a4423d670807290138p4a666337id74fe1fa637932e4@mail.gmail.com>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Sun, 3 Aug 2008 21:29:56 -0400
+Received: from mx2.suse.de ([195.135.220.15]:35015 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752030AbYHDB3z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 Aug 2008 21:29:55 -0400
+From: "NeilBrown" <neilb@suse.de>
+To: "J. Bruce Fields" <bfields@fieldses.org>, "Neil Brown" <neilb@suse.de>,
+       "Michael Shuey" <shuey@purdue.edu>,
+       "Shehjar Tikoo" <shehjart@cse.unsw.edu.au>,
+       linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org,
+       rees@citi.umich.edu, aglo@citi.umich.edu
+Date: Mon, 4 Aug 2008 11:29:45 +1000 (EST)
+Message-ID: <52873.192.168.1.70.1217813385.squirrel@neil.brown.name>
+In-Reply-To: <20080804003206.GB6119@disturbed>
+References: <200807241311.31457.shuey@purdue.edu>
+    <20080730192110.GA17061@fieldses.org>
+    <4890DFC7.3020309@cse.unsw.edu.au>
+    <200807302235.50068.shuey@purdue.edu>
+    <20080731031512.GA26203@fieldses.org>
+    <18577.25513.494821.481623@notabene.brown>
+    <20080801072320.GE6201@disturbed> <20080801191559.GI7764@fieldses.org>
+    <20080804003206.GB6119@disturbed>
+Subject: Re: high latency NFS
+Cc: "Greg Banks" <gnb@melbourne.sgi.com>
+User-Agent: SquirrelMail/1.4.13
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "Alexander Beregalov" <a.beregalov@gmail.com>
-Date: Tue, 29 Jul 2008 12:38:38 +0400
+On Mon, August 4, 2008 10:32 am, Dave Chinner wrote:
+> On Fri, Aug 01, 2008 at 03:15:59PM -0400, J. Bruce Fields wrote:
+>> On Fri, Aug 01, 2008 at 05:23:20PM +1000, Dave Chinner wrote:
 
-> 2008/7/29 David Miller <davem@davemloft.net>:
-> > From: Alexander Beregalov <a.beregalov@gmail.com>
-> > Date: Tue, 29 Jul 2008 10:59:14 +0400
-> >
-> >> I am testing build using randconfig.
-> >>
-> >> arch/sparc64/kernel/sys_sparc32.c: In function 'sys32_chown16':
-> >> arch/sparc64/kernel/sys_sparc32.c:63: error: implicit declaration of
-> >> function 'low2highuid'
-> >> arch/sparc64/kernel/sys_sparc32.c:63: error: implicit declaration of
-> >> function 'low2highgid'
-> >> arch/sparc64/kernel/sys_sparc32.c: In function 'sys32_getresuid16':
-> >> arch/sparc64/kernel/sys_sparc32.c:106: error: implicit declaration of
-> >> function 'high2lowuid'
-> >> arch/sparc64/kernel/sys_sparc32.c: In function 'sys32_getresgid16':
-> >> arch/sparc64/kernel/sys_sparc32.c:123: error: implicit declaration of
-> >> function 'high2lowgid'
-> >>
-> >> These functions are defined in linux/highuid.h only if CONFIG_UID16 is enabled.
-> >
-> > Thanks, what kernel version is this?
-> 
-> It is current by default - .27-rc1. These files were not touched for a
-> long time.
-> But, OK, I will mention the kernel version every time.
+>> > i.e. take the solution that Greg banks used for the CPU scheduler
+>> > overload issue (limiting the number of nfsds woken but not yet on
+>> > the CPU),
+>>
+>> I don't remember that, or wasn't watching when it happened.... Do you
+>> have a pointer?
+>
+> Ah, I thought that had been sent to mainline because it was
+> mentioned in his LCA talk at the start of the year. Slides
+> 65-67 here:
+>
+> http://mirror.linux.org.au/pub/linux.conf.au/2007/video/talks/41.pdf
 
-This is basically setup to fail.
+Ahh... I remembered Greg talking about that, went looking, and
+couldn't find it.  I couldn't even find any mail about it, yet I'm
+sure I saw a patch..
 
-If SPARC64 && COMPAT this option should always be set.  But it's
-left as an option the user can still disable in this case down
-in init/Kconfig.
+Greg: Do you remember what happened to this?  Did I reject it for some
+reason, or did it never get sent?  or ...
 
-This can be triggered very likely on other platforms too.
+NeilBrown
 
-Can someone take a look at fixing this properly?  Make it something
-that is selected on necessary platforms, for example.
