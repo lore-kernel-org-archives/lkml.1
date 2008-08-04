@@ -1,93 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757997AbYHDP6f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756086AbYHDQBM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757997AbYHDP6f (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 11:58:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755371AbYHDP5Z
+	id S1756086AbYHDQBM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 12:01:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753864AbYHDQA4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 11:57:25 -0400
-Received: from x346.tv-sign.ru ([89.108.83.215]:40740 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754804AbYHDP5W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 11:57:22 -0400
-Date: Mon, 4 Aug 2008 20:01:04 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Mark McLoughlin <markmc@redhat.com>, Roland McGrath <roland@redhat.com>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
-Subject: [PATCH 1/4] posix-timers: sys_timer_create: remove the buggy PF_EXITING check
-Message-ID: <20080804160104.GA10518@tv-sign.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.11
+	Mon, 4 Aug 2008 12:00:56 -0400
+Received: from edna.telenet-ops.be ([195.130.132.58]:36311 "EHLO
+	edna.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753675AbYHDQA4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Aug 2008 12:00:56 -0400
+Date: Mon, 4 Aug 2008 18:00:53 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Arnd Bergmann <arnd@arndb.de>
+cc: Greg Ungerer <gerg@snapgear.com>, Sam Ravnborg <sam@ravnborg.org>,
+       linux arch <linux-arch@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linux/m68k <linux-m68k@vger.kernel.org>
+Subject: Re: kbuild now support arch/$ARCH/include - time for ARCHs to convert
+In-Reply-To: <200808041635.11854.arnd@arndb.de>
+Message-ID: <Pine.LNX.4.64.0808041750110.16461@anakin>
+References: <20080728200500.GA14284@uranus.ravnborg.org> <4892A719.5090302@snapgear.com>
+ <Pine.LNX.4.64.0808032205120.23329@anakin> <200808041635.11854.arnd@arndb.de>
+MIME-Version: 1.0
+Content-Type: MULTIPART/MIXED; BOUNDARY="-1463808415-1983824005-1217865653=:16461"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-sys_timer_create() return -EINVAL if the target thread has PF_EXITING.
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-This doesn't really make sense, the sub-thread can die right after unlock.
-And in fact, this is just wrong. Without SIGEV_THREAD_ID good_sigevent()
-returns ->group_leader, and it is very possible that the leader is already
-dead. This is OK, we shouldn't return the error in this case.
+---1463808415-1983824005-1217865653=:16461
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 
-Remove this check and the comment. Note that the "process" was found under
-tasklist_lock, it must have ->sighand != NULL.
+On Mon, 4 Aug 2008, Arnd Bergmann wrote:
+> On Sunday 03 August 2008, Geert Uytterhoeven wrote:
+> > There seem to be 3 classes of m68knommu header files:
+> >   1. Plain files (some of them may be (nearly) identical copies of the
+> >      m68k variants,
+> 
+> For reference, I found the files auxvec.h, device.h, emergency-restart.h,
+> futex.h, ioctl.h, irq_regs.h, kdebug.h, mutex.h and topology.h to be
+> entirely identical, so you may remove the m68knommu variants with your
+> approach.
 
-Also, remove a couple of unneeded initializations.
+Thanks for the list!
 
-Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
+> >   2. Files that just include the m68k variant,
+> >   3. Files that include the m68k variant and do something more (pci.h and
+> >      setup.h).
+> >
+> > Since I don't think we want to do the m68k/m68knommu merge right now
+> > (Sorry Arnd, I'll keep your script in mind anyway!), the simplest way is to:
+> >  - Remove all files from class 2, and add to the Makefile:
+> 
+> Does this work with the exported headers? I guess it should if you
+> always use the m68k exports for m68knommu as well, but if that's
+> possible is is a question you haven't answered yet.
 
---- 26-rc2/kernel/posix-timers.c~4_DONT_CHECK_EXIT	2008-08-03 21:13:25.000000000 +0400
-+++ 26-rc2/kernel/posix-timers.c	2008-08-04 16:50:29.000000000 +0400
-@@ -460,9 +460,9 @@ sys_timer_create(const clockid_t which_c
- 		 timer_t __user * created_timer_id)
- {
- 	int error = 0;
--	struct k_itimer *new_timer = NULL;
-+	struct k_itimer *new_timer;
- 	int new_timer_id;
--	struct task_struct *process = NULL;
-+	struct task_struct *process;
- 	unsigned long flags;
- 	sigevent_t event;
- 	int it_id_set = IT_ID_NOT_SET;
-@@ -523,32 +523,12 @@ sys_timer_create(const clockid_t which_c
- 
- 		read_lock(&tasklist_lock);
- 		if ((process = good_sigevent(&event))) {
--			/*
--			 * We may be setting up this process for another
--			 * thread.  It may be exiting.  To catch this
--			 * case the we check the PF_EXITING flag.  If
--			 * the flag is not set, the siglock will catch
--			 * him before it is too late (in exit_itimers).
--			 *
--			 * The exec case is a bit more invloved but easy
--			 * to code.  If the process is in our thread
--			 * group (and it must be or we would not allow
--			 * it here) and is doing an exec, it will cause
--			 * us to be killed.  In this case it will wait
--			 * for us to die which means we can finish this
--			 * linkage with our last gasp. I.e. no code :)
--			 */
-+			get_task_struct(process);
- 			spin_lock_irqsave(&process->sighand->siglock, flags);
--			if (!(process->flags & PF_EXITING)) {
--				get_task_struct(process);
--				new_timer->it_process = process;
--				list_add(&new_timer->list,
--					 &process->signal->posix_timers);
--				spin_unlock_irqrestore(&process->sighand->siglock, flags);
--			} else {
--				spin_unlock_irqrestore(&process->sighand->siglock, flags);
--				process = NULL;
--			}
-+			new_timer->it_process = process;
-+			list_add(&new_timer->list,
-+				&process->signal->posix_timers);
-+			spin_unlock_irqrestore(&process->sighand->siglock, flags);
- 		}
- 		read_unlock(&tasklist_lock);
- 		if (!process) {
+Oops, forgot about the exported headers... Don't know. Sam?
 
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
+---1463808415-1983824005-1217865653=:16461--
