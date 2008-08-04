@@ -1,94 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755103AbYHDDr1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754733AbYHDEB0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755103AbYHDDr1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Aug 2008 23:47:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755547AbYHDDrA
+	id S1754733AbYHDEB0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 00:01:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750809AbYHDEBR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Aug 2008 23:47:00 -0400
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:40422 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755169AbYHDDq6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Aug 2008 23:46:58 -0400
-Subject: Re: [PATCH 1/2] pci: add misrouted interrupt error handling
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: linux-scsi <linux-scsi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>, linux-pci@vger.kernel.org
-In-Reply-To: <20080804025137.GI26461@parisc-linux.org>
-References: <1217786532.4179.24.camel@localhost.localdomain>
-	 <20080804025137.GI26461@parisc-linux.org>
-Content-Type: text/plain
-Date: Sun, 03 Aug 2008 22:46:53 -0500
-Message-Id: <1217821613.4179.77.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
+	Mon, 4 Aug 2008 00:01:17 -0400
+Received: from mta23.gyao.ne.jp ([125.63.38.249]:26384 "EHLO mx.gate01.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750787AbYHDEBQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Aug 2008 00:01:16 -0400
+Date: Mon, 4 Aug 2008 13:00:25 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Mike Frysinger <vapier.adi@gmail.com>
+Cc: "Wu, Bryan" <Bryan.Wu@analog.com>, David Howells <dhowells@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-sh@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/3] binfmt_elf_fdpic: Convert initial stack alignment to arch_align_stack().
+Message-ID: <20080804040025.GA11127@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Mike Frysinger <vapier.adi@gmail.com>,
+	"Wu, Bryan" <Bryan.Wu@analog.com>,
+	David Howells <dhowells@redhat.com>,
+	Andrew Morton <akpm@linux-foundation.org>, linux-sh@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+References: <20080728150501.GC16555@linux-sh.org> <20080728150359.GA16555@linux-sh.org> <20080728150430.GB16555@linux-sh.org> <27552.1217599279@redhat.com> <20080801214448.GA13448@linux-sh.org> <8bd0f97a0808032024x18a31d29tb44ebc6216a2aed@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <8bd0f97a0808032024x18a31d29tb44ebc6216a2aed@mail.gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2008-08-03 at 20:51 -0600, Matthew Wilcox wrote:
-> On Sun, Aug 03, 2008 at 01:02:12PM -0500, James Bottomley wrote:
-> > +static void pci_note_irq_problem(struct pci_dev *pdev, const char *reason)
-> > +{
-> > +	struct pci_dev *parent = to_pci_dev(pdev->dev.parent);
-> > +
-> > +	dev_printk(KERN_ERR, &pdev->dev,
-> > +		   "Potentially misrouted IRQ (Bridge %s %04x:%04x)\n",
-> > +		   parent->dev.bus_id, parent->vendor, parent->device);
-> > +	dev_printk(KERN_ERR, &pdev->dev, "%s\n", reason);
-> > +	dev_printk(KERN_ERR, &pdev->dev, "Please report to linux-kernel@vger.kernel.org\n");
-> > +	WARN_ON(1);
-> > +}
+On Sun, Aug 03, 2008 at 11:24:21PM -0400, Mike Frysinger wrote:
+> On Fri, Aug 1, 2008 at 5:44 PM, Paul Mundt wrote:
+> > On Fri, Aug 01, 2008 at 03:01:19PM +0100, David Howells wrote:
+> >> Paul Mundt <lethal@linux-sh.org> wrote:
+> >> > +    * In some cases (e.g. Hyper-Threading), we want to avoid L1
+> >> > +    * evictions by the processes running on the same package. One
+> >> > +    * thing we can do is to shuffle the initial stack for them, so
+> >> > +    * we give the architecture an opportunity to do so here.
+> >> > +    */
+> >> >  #ifdef CONFIG_MMU
+> >> > -   sp = bprm->p;
+> >> > +   sp = arch_align_stack(bprm->p);
+> >> >  #else
+> >> > -   sp = mm->start_stack;
+> >> > +   sp = arch_align_stack(mm->start_stack);
+> >>
+> >> Ummm...  You're calling arch_align_stack() under NOMMU...  Is that really a
+> >> good idea?
+> >
+> > Not particularly, no.
+> >
+> >> You can't necessarily move the stack pointer without exiting the allocated
+> >> region or shrinking the amount of stack space the executable asked for.  If
+> >> you want to do this sort of thing, you need to tell the memory allocator what
+> >> you're up to - or at the very least allocate some slack.
+> >
+> > Yes, that's a good point, and one that probably ought to be documented
+> > alongside the initial alignment. I'll send an updated patch.
 > 
-> Will the dev_printk() strings be included in the kerneloops report?  And
-> what if there is no parent of the device?  Consider device 00:02.0 on my
-> laptop:
-
-No, but some of them take the prior strings (depending on the
-implementation).
-
-> 00:02.0 VGA compatible controller: Intel Corporation Mobile GM965/GL960 Integrated Graphics Controller (rev 03)
->         Subsystem: Fujitsu Limited. Device 13fe
->         Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx-
->         Status: Cap+ 66MHz- UDF- FastB2B+ ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
->         Latency: 0
->         Interrupt: pin A routed to IRQ 16
-
-There is always a parent device ... it might be the PCI root device, in
-which case the information will be blank, but there is always one.
-
-> > +enum pci_lost_interrupt_reason pci_lost_interrupt(struct pci_dev *pdev)
-> > +{
-> > +	if (pdev->msi_enabled || pdev->msix_enabled) {
-> > +		enum pci_lost_interrupt_reason ret;
-> > +
-> > +		if (pdev->msix_enabled) {
-> > +			pci_note_irq_problem(pdev, "MSIX routing failure");
-> > +			ret = PCI_LOST_IRQ_DISABLE_MSIX;
-> > +		} else {
-> > +			pci_note_irq_problem(pdev, "MSI routing failure");
-> > +			ret = PCI_LOST_IRQ_DISABLE_MSI;
-> > +		}
-> > +		return ret;
-> > +	}
+> fs/binfmt_elf_fdpic.c: In function 'create_elf_fdpic_tables':
+> fs/binfmt_elf_fdpic.c:497: error: implicit declaration of function
+> 'arch_align_stack'
+> make[1]: *** [fs/binfmt_elf_fdpic.o] Error 1
+> make: *** [fs] Error 2
 > 
-> Couldn't this be written more concisely as:
+> Blackfin lacks a arch_align_stack(x) in asm-blackfin/system.h ... i
+> imagine a stub will work for us like every other arch though
 > 
-> 	if (pdev->msix_enabled) {
-> 		pci_note_irq_problem(pdev, "MSIX routing failure");
-> 		return PCI_LOST_IRQ_DISABLE_MSIX;
-> 	}
-> 	if (pdev->msi_enabled) {
-> 		pci_note_irq_problem(pdev, "MSI routing failure");
-> 		return PCI_LOST_IRQ_DISABLE_MSI;
-> 	}
+> feel like doing that Bryan ?  i'm guessing Paul doesnt want to ... ;)
 
-The idea was to separate the cases in case something extra needs be
-done.  I think it's pretty much identical as far as the compiler
-optimises, and therefore probably not worth worrying about much.
+There's no need, as David pointed out, that was the wrong thing to do for
+the nommu case anyways. Here's an updated patch to replace the previous
+one:
 
-James
+Signed-off-by: Paul Mundt <lethal@linux-sh.org>
 
+---
 
+diff --git a/fs/binfmt_elf_fdpic.c b/fs/binfmt_elf_fdpic.c
+index 80c1f95..10c6cb8 100644
+--- a/fs/binfmt_elf_fdpic.c
++++ b/fs/binfmt_elf_fdpic.c
+@@ -472,9 +472,16 @@ static int create_elf_fdpic_tables(struct linux_binprm *bprm,
+ 	int loop;
+ 	int nr;	/* reset for each csp adjustment */
+ 
+-	/* we're going to shovel a whole load of stuff onto the stack */
+ #ifdef CONFIG_MMU
+-	sp = bprm->p;
++	/*
++	 * we're going to shovel a whole load of stuff onto the stack
++	 *
++	 * In some cases (e.g. Hyper-Threading), we want to avoid L1
++	 * evictions by the processes running on the same package. One
++	 * thing we can do is to shuffle the initial stack for them, so
++	 * we give the architecture an opportunity to do so here.
++	 */
++	sp = arch_align_stack(bprm->p);
+ #else
+ 	sp = mm->start_stack;
+ 
+@@ -499,20 +506,6 @@ static int create_elf_fdpic_tables(struct linux_binprm *bprm,
+ 			return -EFAULT;
+ 	}
+ 
+-#if defined(__i386__) && defined(CONFIG_SMP)
+-	/* in some cases (e.g. Hyper-Threading), we want to avoid L1 evictions
+-	 * by the processes running on the same package. One thing we can do is
+-	 * to shuffle the initial stack for them.
+-	 *
+-	 * the conditionals here are unneeded, but kept in to make the code
+-	 * behaviour the same as pre change unless we have hyperthreaded
+-	 * processors. This keeps Mr Marcelo Person happier but should be
+-	 * removed for 2.5
+-	 */
+-	if (smp_num_siblings > 1)
+-		sp = sp - ((current->pid % 64) << 7);
+-#endif
+-
+ 	sp &= ~7UL;
+ 
+ 	/* stack the load map(s) */
