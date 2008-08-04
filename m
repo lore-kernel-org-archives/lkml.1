@@ -1,76 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759897AbYHDRVr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759666AbYHDRVc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759897AbYHDRVr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 13:21:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759408AbYHDRVQ
+	id S1759666AbYHDRVc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 13:21:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758639AbYHDRUu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 13:21:16 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:55046 "EHLO mx1.redhat.com"
+	Mon, 4 Aug 2008 13:20:50 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:49369 "EHLO e4.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757380AbYHDRVO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 13:21:14 -0400
-Date: Mon, 4 Aug 2008 14:18:56 -0300
-From: Arnaldo Carvalho de Melo <acme@redhat.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Ming Lei <tom.leiming@gmail.com>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [RFC] ftrace: support tracing functions in one module
-Message-ID: <20080804171856.GB17964@ghostprotocols.net>
-Mail-Followup-To: Arnaldo Carvalho de Melo <acme@redhat.com>,
-	Steven Rostedt <rostedt@goodmis.org>,
-	Ming Lei <tom.leiming@gmail.com>, linux-kernel@vger.kernel.org,
-	Ingo Molnar <mingo@elte.hu>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Steven Rostedt <srostedt@redhat.com>
-References: <d82e647a0808030050n3b72d96dh91c0ac94eadc34f@mail.gmail.com> <alpine.DEB.1.10.0808031042440.30870@gandalf.stny.rr.com> <d82e647a0808031911j20cc9588o813bb15a46df1db4@mail.gmail.com> <20080804161506.GA17964@ghostprotocols.net> <alpine.DEB.1.10.0808041225330.19776@gandalf.stny.rr.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0808041225330.19776@gandalf.stny.rr.com>
-X-Url: http://oops.ghostprotocols.net:81/blog
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	id S1755466AbYHDRUs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Aug 2008 13:20:48 -0400
+Subject: Too many I/O controller patches
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: Ryo Tsuruta <ryov@valinux.co.jp>
+Cc: linux-kernel@vger.kernel.org, dm-devel@redhat.com,
+       containers@lists.linux-foundation.org,
+       virtualization@lists.linux-foundation.org,
+       xen-devel@lists.xensource.com, agk@sourceware.org,
+       Andrea Righi <righi.andrea@gmail.com>
+In-Reply-To: <20080804.175126.193692178.ryov@valinux.co.jp>
+References: <20080804.175126.193692178.ryov@valinux.co.jp>
+Content-Type: text/plain
+Date: Mon, 04 Aug 2008 10:20:33 -0700
+Message-Id: <1217870433.20260.101.camel@nimitz>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Em Mon, Aug 04, 2008 at 12:28:12PM -0400, Steven Rostedt escreveu:
-> 
-> On Mon, 4 Aug 2008, Arnaldo Carvalho de Melo wrote:
-> > > 
-> > > Do you have the plan to support tracing functions in one module or in one kernel
-> > > address range?
-> > 
-> > What about using:
-> > 
-> > [acme@doppio pahole]$ nm --defined-only /usr/lib/debug/lib/modules/2.6.24.7-75.el5rt/kernel/drivers/net/tg3.ko.debug | grep ' t ' | cut -d' ' -f3 | head 
-> > __tg3_set_coalesce
-> > __tg3_set_mac_addr
-> > __tg3_set_rx_mode
-> > _tw32_flush
-> > tg3_5700_link_polarity
-> > tg3_abort_hw
-> > tg3_alloc_rx_skb
-> > tg3_ape_driver_state_change
-> > tg3_bmcr_reset
-> > tg3_change_mtu
-> > [acme@doppio pahole]$
-> > 
-> > Feed this to /sys/kernel/debug/tracing/set_ftrace_filter and you should
-> > be set, no?
-> > 
-> > Ok, you need to have the kernel-debuginfo package installed, and I guess
-> > we can get away with that, but for now, isn't that enough?
-> 
-> 
-> Or simply (again for tg3 :
-> 
-> 
-> # awk '/\[tg3\]/ { print $3 }' /proc/kallsyms  \
->    > /debug/tracing/set_ftrace_filter
+On Mon, 2008-08-04 at 17:51 +0900, Ryo Tsuruta wrote:
+> This series of patches of dm-ioband now includes "The bio tracking mechanism,"
+> which has been posted individually to this mailing list.
+> This makes it easy for anybody to control the I/O bandwidth even when
+> the I/O is one of delayed-write requests.
 
-For the drivers that do proper namespacing, yes, that should be enough
-in most cases :)
+During the Containers mini-summit at OLS, it was mentioned that there
+are at least *FOUR* of these I/O controllers floating around.  Have you
+talked to the other authors?  (I've cc'd at least one of them).
 
-- Arnaldo
+We obviously can't come to any kind of real consensus with people just
+tossing the same patches back and forth.
+
+-- Dave
+
