@@ -1,97 +1,209 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762663AbYHDUBf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762457AbYHDUDI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762663AbYHDUBf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 16:01:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758016AbYHDUB0
+	id S1762457AbYHDUDI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 16:03:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756931AbYHDUCw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 16:01:26 -0400
-Received: from yw-out-2324.google.com ([74.125.46.28]:21192 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753167AbYHDUBZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 16:01:25 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=WO/IVBnLDaxdQPXcLQ/HE0l07sSBD8K+Jx1LHpIuaFBgB3ZrzzJZo3CqNU5Q6Ybl2o
-         nTsdsosb2BLkgWno4fQqlKmRm4pxDZY7PBafd0VPHTepMMs1K6cR+sXflLqe2vaeZrLg
-         einiiCyZrXd0huXs2bg3RSPGUVwBJabXhQlz8=
-Message-ID: <b647ffbd0808041301v665f1c45k85794ad18c735d2@mail.gmail.com>
-Date: Mon, 4 Aug 2008 22:01:23 +0200
-From: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>
-To: "Max Krasnyansky" <maxk@qualcomm.com>
-Subject: Re: [rfc-patch, bugfix] x86-microcode
-Cc: "Ingo Molnar" <mingo@elte.hu>,
-       "Tigran Aivazian" <tigran@aivazian.fsnet.co.uk>,
-       "H. Peter Anvin" <hpa@zytor.com>, "Peter Oruba" <peter.oruba@amd.com>,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <489758F6.9080601@qualcomm.com>
+	Mon, 4 Aug 2008 16:02:52 -0400
+Received: from ra.tuxdriver.com ([70.61.120.52]:2127 "EHLO ra.tuxdriver.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756150AbYHDUCt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Aug 2008 16:02:49 -0400
+Date: Mon, 4 Aug 2008 15:37:53 -0400
+From: "John W. Linville" <linville@tuxdriver.com>
+To: davem@davemloft.net
+Cc: linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: pull request: wireless-2.6 2008-08-04
+Message-ID: <20080804193753.GA30345@tuxdriver.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <1217778135.4912.40.camel@earth> <489758F6.9080601@qualcomm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/8/4 Max Krasnyansky <maxk@qualcomm.com>:
-> Dmitry Adamushko wrote:
->> Hi,
->>
->>
->> [ consider it a pre-release and RFC... I'm a bit in hurry now and just send what I have got by this moment.
->> Although, I expect it to be workable ]
->>
->>
->> this change is supposed to fix bug#11197 (note, its name "Oops in microcode sysfs registration" is misleading)
->>
->> The problem description can be found here:
->> http://www.ussg.iu.edu/hypermail/linux/kernel/0807.3/3791.html
->> or
->> http://lkml.org/lkml/2008/7/24/260
->>
->> perhaps it does look quite bulky for -rc, although it's mainly move-redesign-some-bits of the code and
->> I tried to preserve the original logic (even if it looked like a possible optimizations might had been applied)
->> as much as possible.
->>
->> The basic idea is that we introduce another mechanism to run ucode-updates on a target cpu
->> and replace set_cpus_allowed_ptr() in (1) cpu-hotplug events and (2) module load.
->>
->>
->> [1/2] x86-microcode: generic updates
->>
->> Basically, it introduces microcode_update_cpu() which can be run either from start_secondary()
->> (perhaps via a function pointer) or scheduled via keventd ([2/2]) and reworks the logic of cpu-hotplug events.
->>
->> [2/2] x86-microcode: do updates via workqueue
->
-> Looks good to me. You did not change the old interface which still does
-> set_cpus_allowed_ptr() (ie racy against sched_setaffinity())
+Dave,
 
-ah, right. I've only fixed reload_store() vs. cpu_down().
+Another big round of fixes for 2.6.27.  Included is also a renaming
+patch and some related patches that rename iwl4965 to iwlagn (reflecting
+that is supports iwl5000 as well).
 
-sched_setaffinity() calls get_online_cpus() so a pair of
-cpu_maps_update_begin() + cpu_hotplug_begin() would need to be used by
-the following code:
+The other big(ger) thing here is the new ath9k driver.  It is probably
+still far from perfect, but I'm hearing good reports on its
+functionality and the Atheros team (and others) have already been quite
+responsive on comments, etc.  I think it is best to go ahead and get it
+into 2.6.27.
 
-old_mask = p->cpus_allowed;
-set_cpus_allowed_ptr(p, new_mask);
-// do_something
-set_cpus_allowed_ptr(p, old_mask);
+Please let me know if there are problems!
 
-or we'd introduce another mutex to be used in both cases...  but I
-think we just can get rid of most of use-cases (if not all) by
-replacing them with schedule_work_on().
+Thanks,
 
+John
 
->
-> Max
->
+---
+
+Individual patches are available here:
+
+	http://www.kernel.org/pub/linux/kernel/people/linville/wireless-2.6/
+
+---
+
+The following changes since commit adf044c8778de98dae29c5ce9973b7e43964674f:
+  Sven Wegener (1):
+        net: Add missing extra2 parameter for ip_default_ttl sysctl
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/linville/wireless-2.6.git master
+
+Daniel Drake (1):
+      mac80211: automatic IBSS channel selection
+
+Denis V. Lunev (1):
+      iwlwifi: RS small compile warnings without CONFIG_IWLWIFI_DEBUG
+
+Emmanuel Grumbach (3):
+      mac80211: pass dtim_period to low level driver
+      iwlwifi: bug fix in AGG flow - cast const to ULL
+      iwlwifi: decrement rx skb counter in scan abort handler
+
+Esti Kummer (2):
+      iwlwifi: corrects power_level in sysfs
+      iwlwifi: set led register in disassociation
+
+Gregory Greenman (1):
+      iwlwifi: memory allocation optimization
+
+Ivo van Doorn (1):
+      rt2x00: Disable link tuning in rt2500usb
+
+Larry Finger (1):
+      p54: Fix potential concurrent access to private data
+
+Luis R. Rodriguez (4):
+      list.h: Add list_splice_tail() and list_splice_tail_init()
+      list.h: add list_cut_position()
+      ath5k: remove Atheros 11n devices from supported list
+      ath9k: Add new Atheros IEEE 802.11n driver
+
+Mohamed Abbas (1):
+      iwlwifi: add power save to 5000 HW
+
+Sven Wegener (1):
+      iwlwifi: Don't use buffer allocated on the stack for led names
+
+Tomas Winkler (14):
+      mac80211: make listen_interval be limited by low level driver
+      iwlwifi: move iwl4965_mac_ampdu_action to iwl4965-base.c
+      iwlwifi: move beacon handling to iwl4965-base.c
+      iwlwifi: move iwl4965_set_pwr_src to iwl4965-base.c
+      iwlwifi: rename iwl-4695-rs to iwl-agn-rs
+      iwlwifi: kill iwl4965_fill_rs_info
+      iwlwifi: use dtim_period from association, and set listen_interval
+      iwlwifi: rename iwl4965-base.c to iwl-agn.c
+      iwlwifi: fix checkpatch.pl errors
+      iwlwifi: rename 4965 to AGN
+      iwlwifi: HW bug fixes
+      iwlwifi: implement iwl5000_calc_rssi
+      iwlwifi: fix unhandled interrupt when HW rfkill is on
+      iwlwifi: grap nic access before accessing periphery registers
+
+Zhu Yi (1):
+      iwl3945: fix merge mistake for packet injection
+
+ MAINTAINERS                                        |    9 +
+ drivers/net/wireless/Kconfig                       |    1 +
+ drivers/net/wireless/Makefile                      |    1 +
+ drivers/net/wireless/ath5k/base.c                  |    2 -
+ drivers/net/wireless/ath9k/Kconfig                 |    8 +
+ drivers/net/wireless/ath9k/Makefile                |   11 +
+ drivers/net/wireless/ath9k/ath9k.h                 | 1066 +++
+ drivers/net/wireless/ath9k/beacon.c                |  977 +++
+ drivers/net/wireless/ath9k/core.c                  | 1961 +++++
+ drivers/net/wireless/ath9k/core.h                  | 1097 +++
+ drivers/net/wireless/ath9k/hw.c                    | 8563 ++++++++++++++++++++
+ drivers/net/wireless/ath9k/hw.h                    |  969 +++
+ drivers/net/wireless/ath9k/initvals.h              | 3146 +++++++
+ drivers/net/wireless/ath9k/main.c                  | 1533 ++++
+ drivers/net/wireless/ath9k/phy.c                   |  436 +
+ drivers/net/wireless/ath9k/phy.h                   |  543 ++
+ drivers/net/wireless/ath9k/rc.c                    | 2126 +++++
+ drivers/net/wireless/ath9k/rc.h                    |  316 +
+ drivers/net/wireless/ath9k/recv.c                  | 1318 +++
+ drivers/net/wireless/ath9k/reg.h                   | 1385 ++++
+ drivers/net/wireless/ath9k/regd.c                  | 1031 +++
+ drivers/net/wireless/ath9k/regd.h                  |  412 +
+ drivers/net/wireless/ath9k/regd_common.h           | 1915 +++++
+ drivers/net/wireless/ath9k/xmit.c                  | 2870 +++++++
+ drivers/net/wireless/iwlwifi/Kconfig               |   98 +-
+ drivers/net/wireless/iwlwifi/Makefile              |   13 +-
+ drivers/net/wireless/iwlwifi/iwl-3945-led.c        |   33 +-
+ drivers/net/wireless/iwlwifi/iwl-3945-led.h        |    1 +
+ drivers/net/wireless/iwlwifi/iwl-3945.c            |    7 +-
+ drivers/net/wireless/iwlwifi/iwl-4965.c            |  156 +-
+ drivers/net/wireless/iwlwifi/iwl-5000.c            |   71 +-
+ .../iwlwifi/{iwl-4965-rs.c => iwl-agn-rs.c}        |  327 +-
+ .../iwlwifi/{iwl-4965-rs.h => iwl-agn-rs.h}        |   23 +-
+ .../wireless/iwlwifi/{iwl4965-base.c => iwl-agn.c} |  232 +-
+ drivers/net/wireless/iwlwifi/iwl-commands.h        |   44 +-
+ drivers/net/wireless/iwlwifi/iwl-core.c            |    7 +-
+ drivers/net/wireless/iwlwifi/iwl-core.h            |    3 +-
+ drivers/net/wireless/iwlwifi/iwl-csr.h             |   10 +-
+ drivers/net/wireless/iwlwifi/iwl-debug.h           |    4 +-
+ drivers/net/wireless/iwlwifi/iwl-debugfs.c         |   11 +-
+ drivers/net/wireless/iwlwifi/iwl-dev.h             |   22 +-
+ drivers/net/wireless/iwlwifi/iwl-eeprom.c          |    3 +-
+ drivers/net/wireless/iwlwifi/iwl-hcmd.c            |    2 +-
+ drivers/net/wireless/iwlwifi/iwl-led.c             |   69 +-
+ drivers/net/wireless/iwlwifi/iwl-led.h             |    1 +
+ drivers/net/wireless/iwlwifi/iwl-power.c           |   45 +-
+ drivers/net/wireless/iwlwifi/iwl-power.h           |   33 +-
+ drivers/net/wireless/iwlwifi/iwl-prph.h            |   12 +-
+ drivers/net/wireless/iwlwifi/iwl-rx.c              |   59 +-
+ drivers/net/wireless/iwlwifi/iwl-scan.c            |    1 +
+ drivers/net/wireless/iwlwifi/iwl-sta.c             |    4 +-
+ drivers/net/wireless/iwlwifi/iwl-tx.c              |   78 +-
+ drivers/net/wireless/iwlwifi/iwl3945-base.c        |   58 +-
+ drivers/net/wireless/p54/p54.h                     |    1 +
+ drivers/net/wireless/p54/p54common.c               |    6 +
+ drivers/net/wireless/rt2x00/rt2500usb.c            |   14 +
+ include/linux/ieee80211.h                          |   13 +
+ include/linux/list.h                               |   77 +-
+ include/net/mac80211.h                             |   13 +-
+ net/mac80211/ieee80211_i.h                         |    1 +
+ net/mac80211/main.c                                |    5 +
+ net/mac80211/mlme.c                                |   39 +-
+ 62 files changed, 32565 insertions(+), 727 deletions(-)
+ create mode 100644 drivers/net/wireless/ath9k/Kconfig
+ create mode 100644 drivers/net/wireless/ath9k/Makefile
+ create mode 100644 drivers/net/wireless/ath9k/ath9k.h
+ create mode 100644 drivers/net/wireless/ath9k/beacon.c
+ create mode 100644 drivers/net/wireless/ath9k/core.c
+ create mode 100644 drivers/net/wireless/ath9k/core.h
+ create mode 100644 drivers/net/wireless/ath9k/hw.c
+ create mode 100644 drivers/net/wireless/ath9k/hw.h
+ create mode 100644 drivers/net/wireless/ath9k/initvals.h
+ create mode 100644 drivers/net/wireless/ath9k/main.c
+ create mode 100644 drivers/net/wireless/ath9k/phy.c
+ create mode 100644 drivers/net/wireless/ath9k/phy.h
+ create mode 100644 drivers/net/wireless/ath9k/rc.c
+ create mode 100644 drivers/net/wireless/ath9k/rc.h
+ create mode 100644 drivers/net/wireless/ath9k/recv.c
+ create mode 100644 drivers/net/wireless/ath9k/reg.h
+ create mode 100644 drivers/net/wireless/ath9k/regd.c
+ create mode 100644 drivers/net/wireless/ath9k/regd.h
+ create mode 100644 drivers/net/wireless/ath9k/regd_common.h
+ create mode 100644 drivers/net/wireless/ath9k/xmit.c
+ rename drivers/net/wireless/iwlwifi/{iwl-4965-rs.c => iwl-agn-rs.c} (89%)
+ rename drivers/net/wireless/iwlwifi/{iwl-4965-rs.h => iwl-agn-rs.h} (93%)
+ rename drivers/net/wireless/iwlwifi/{iwl4965-base.c => iwl-agn.c} (96%)
+
+Omnibus patch is available here:
+
+	http://www.kernel.org/pub/linux/kernel/people/linville/wireless-2.6-2008-08-04.patch.bz2
 
 -- 
-Best regards,
-Dmitry Adamushko
+John W. Linville
+linville@tuxdriver.com
