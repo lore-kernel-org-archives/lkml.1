@@ -1,104 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754482AbYHDJHK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753926AbYHDJSb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754482AbYHDJHK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 05:07:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752709AbYHDJG6
+	id S1753926AbYHDJSb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 05:18:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752537AbYHDJSW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 05:06:58 -0400
-Received: from mx2.schottelius.org ([62.65.138.77]:37903 "EHLO
-	mx2.schottelius.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752537AbYHDJG5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 05:06:57 -0400
-Date: Mon, 4 Aug 2008 11:06:54 +0200
-From: Nico Schottelius 
-	<nico-linux-kernel-bugreport20080731@schottelius.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-next@vger.kernel.org
-Subject: Re: Heavy suspend and io problems in 2.6.27-rc1-00156-g94ad374
-Message-ID: <20080804090654.GA4747@denkbrett.schottelius.org>
-Mail-Followup-To: Nico Schottelius <nico-linux-kernel-bugreport20080731@schottelius.org>,
-	"Rafael J. Wysocki" <rjw@sisk.pl>,
-	LKML <linux-kernel@vger.kernel.org>, linux-next@vger.kernel.org
-References: <20080731210507.GA6094@denkbrett.schottelius.org> <200807312349.47817.rjw@sisk.pl>
+	Mon, 4 Aug 2008 05:18:22 -0400
+Received: from ns1.q-leap.de ([153.94.51.193]:52354 "EHLO mail.q-leap.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752124AbYHDJSV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Aug 2008 05:18:21 -0400
+From: Bernd Schubert <bs@q-leap.de>
+To: "J. Bruce Fields" <bfields@fieldses.org>
+Subject: Re: high latency NFS
+Date: Mon, 4 Aug 2008 11:18:18 +0200
+User-Agent: KMail/1.9.9
+Cc: Neil Brown <neilb@suse.de>, Michael Shuey <shuey@purdue.edu>,
+       Shehjar Tikoo <shehjart@cse.unsw.edu.au>, linux-kernel@vger.kernel.org,
+       linux-nfs@vger.kernel.org, rees@citi.umich.edu, aglo@citi.umich.edu
+References: <200807241311.31457.shuey@purdue.edu> <20080804003206.GB6119@disturbed> <20080804011158.GA8066@fieldses.org>
+In-Reply-To: <20080804011158.GA8066@fieldses.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="Nq2Wo0NMKNjxTN9z"
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200807312349.47817.rjw@sisk.pl>
-User-Agent: echo $message | gpg -e $sender  -s | netcat mailhost 25
-X-Unix-Info: http://unix.schottelius.org/
-X-Netzseite: http://nico.schottelius.org/
-X-System-Info: denkbrett (Linux 2.6.26-next-20080725-denkbrett x86_64)
+Message-Id: <200808041118.19743.bs@q-leap.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Monday 04 August 2008 03:11:58 J. Bruce Fields wrote:
+> On Mon, Aug 04, 2008 at 10:32:06AM +1000, Dave Chinner wrote:
+> > On Fri, Aug 01, 2008 at 03:15:59PM -0400, J. Bruce Fields wrote:
+> > > On Fri, Aug 01, 2008 at 05:23:20PM +1000, Dave Chinner wrote:
+> > > > On Thu, Jul 31, 2008 at 05:03:05PM +1000, Neil Brown wrote:
+> > > > > You might want to track the max length of the request queue too and
+> > > > > start more threads if the queue is long, to allow a quick ramp-up.
+> > > >
+> > > > Right, but even request queue depth is not a good indicator. You
+> > > > need to leep track of how many NFSDs are actually doing useful
+> > > > work. That is, if you've got an NFSD on the CPU that is hitting
+> > > > the cache and not blocking, you don't need more NFSDs to handle
+> > > > that load because they can't do any more work than the NFSD
+> > > > that is currently running is.
+> > > >
+> > > > i.e. take the solution that Greg banks used for the CPU scheduler
+> > > > overload issue (limiting the number of nfsds woken but not yet on
+> > > > the CPU),
+> > >
+> > > I don't remember that, or wasn't watching when it happened.... Do you
+> > > have a pointer?
+> >
+> > Ah, I thought that had been sent to mainline because it was
+> > mentioned in his LCA talk at the start of the year. Slides
+> > 65-67 here:
+> >
+> > http://mirror.linux.org.au/pub/linux.conf.au/2007/video/talks/41.pdf
+>
+> OK, so to summarize: when the rate of incoming rpc's is very high (and,
+> I guess, when we're serving everything out of cache and don't have IO
+> wait), all the nfsd threads will stay runable all the time.  That keeps
+> userspace processes from running (possibly for "minutes").  And that's a
+> problem even on a server dedicated only to nfs, since it affects portmap
+> and rpc.mountd.
 
---Nq2Wo0NMKNjxTN9z
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Even worse, it affects user space HA software such as heartbeat and everyone 
+with reasonable timeouts will see spurious 'failures'. 
 
-Hello Rafael!
 
-I tested the patch and also linux-next-20080801:
-
-   linux-next-20080801: does not wake up
-   linux-next-20080801+patch: wakes up, console keeps on being black
-      -> no xorg running, as it cannot be run due to synaptics bug
-         (fixed in git, not in debian lenny packages)
-
-So I was able to type "reboot" when running the patch, while I had to
-force power-off on the main linux-next-tree.
-
-I am back on 2.6.26-next-20080725, which suspends and wakes up fine.
-
-Sincerly,
-
-Nico
-
-Rafael J. Wysocki [Thu, Jul 31, 2008 at 11:49:47PM +0200]:
-> On Thursday, 31 of July 2008, Nico Schottelius wrote:
-> > Hello=A1
-> >=20
-> > I've some serious problems with this kernel on the ibm t60:
-> >=20
-> > - wake up from suspend takes about 30 seconds
-> > - i need to switch to console and back to see xorg screen again (before:
-> >   only black)
-> > - after wake up, I get disk input/output errors, no access to sda is
-> >   possible
-> >=20
-> > As I could not do any dumps I took photos of the dmesg output with my
-> > camera and put them in high resolution to
-> >=20
-> >    http://home.schottelius.org/~nico/unix/linux/kernel/2.6.27-rc1-00156=
--g94ad374/
->=20
-> Can you test the fix in http://bugzilla.kernel.org/show_bug.cgi?id=3D1117=
-8, please?
->=20
-> Thanks,
-> Rafael
-
---=20
-Think about Free and Open Source Software (FOSS).
-http://nico.schottelius.org/documentations/foss/the-term-foss/
-
-PGP: BFE4 C736 ABE5 406F 8F42  F7CF B8BE F92A 9885 188C
-
---Nq2Wo0NMKNjxTN9z
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkiWxq4ACgkQuL75KpiFGIwMpgCgz7RhXNJ6mePSKLffQbG8J3ti
-C3UAoL9I6WWFvZXoyHIG5MULo+jzhQ9V
-=O6Zs
------END PGP SIGNATURE-----
-
---Nq2Wo0NMKNjxTN9z--
+-- 
+Bernd Schubert
+Q-Leap Networks GmbH
