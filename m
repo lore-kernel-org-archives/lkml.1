@@ -1,112 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762768AbYHDUQT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760849AbYHDUQf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762768AbYHDUQT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 16:16:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753273AbYHDUPV
+	id S1760849AbYHDUQf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 16:16:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756356AbYHDUQH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 16:15:21 -0400
-Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:51228
-	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755058AbYHDUPU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 16:15:20 -0400
-Date: Mon, 4 Aug 2008 22:15:14 +0200
-From: Andrea Arcangeli <andrea@qumranet.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Dave Jones <davej@redhat.com>, Roland Dreier <rdreier@cisco.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, jeremy@goop.org, hugh@veritas.com,
-       mingo@elte.hu, akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] workaround minor lockdep bug triggered by
-	mm_take_all_locks
-Message-ID: <20080804201514.GB12464@duo.random>
-References: <aday73cua99.fsf@cisco.com> <1217860332.3589.11.camel@twins> <20080804145318.GA17867@redhat.com> <1217861763.3589.13.camel@twins> <20080804162657.GI11476@duo.random> <1217867935.3589.35.camel@twins> <20080804172728.GJ11476@duo.random> <20080804174659.GK11476@duo.random> <20080804175730.GL11476@duo.random> <1217875739.3589.56.camel@twins>
+	Mon, 4 Aug 2008 16:16:07 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:45082 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755722AbYHDUQG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Aug 2008 16:16:06 -0400
+Date: Mon, 4 Aug 2008 13:13:21 -0700
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
+       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
+       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk
+Subject: [patch 00/33] 2.6.25-stable review cycle
+Message-ID: <20080804201321.GA1139@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1217875739.3589.56.camel@twins>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 04, 2008 at 08:48:59PM +0200, Peter Zijlstra wrote:
-> On Mon, 2008-08-04 at 19:57 +0200, Andrea Arcangeli wrote:
-> > From: Andrea Arcangeli <andrea@qumranet.com>
-> > 
-> > Lockdep can't recognize if spinlocks are at a different address. So
-> > using trylock in a loop is one way to avoid lockdep to generate false
-> > positives. After lockdep will be fixed this change can and should be
-> > reverted.
-> > 
-> > Signed-off-by: Andrea Arcangeli <andrea@qumranet.com>
-> 
-> NAK, come-on, you didn't even bother to look at the available
-> annotations..
+This is the start of the stable review cycle for the 2.6.25.15 release.
+There are 33 patches in this series, all will be posted as a response to
+this one.  If anyone has any issues with these being applied, please let
+us know.  If anyone is a maintainer of the proper subsystem, and wants
+to add a Signed-off-by: line to the patch, please respond with it.
 
-Let's say when I hear prove-locking my instinct tells me to walk away
-as fast as I can. I'll try to explain why I prefer the trylock loop
-(which btw is the only one that will hide the lockdep false positives
-here and I welcome you to fix it in another way, well another way that
-comes to mind is to call __raw_spin_lock which I didn't do because I
-don't like those lowlevel details in common code).
+These patches are sent out with a number of different people on the Cc:
+line.  If you wish to be a reviewer, please email stable@kernel.org to
+add your name to the list.  If you want to be off the reviewer list,
+also email us.
 
-So about prove-locking:
+Responses should be made by Wed, August 6, 12:00:00 UTC.  Anything
+received after that time might be too late.
 
-1) in production is disabled so when I get bugreports I've to grab
-   locking deadlock information as usual (sysrq+t/p or preferably
-   lkcd/kdump)
+The whole patch series can be found in one patch at:
+	kernel.org/pub/linux/kernel/v2.6/stable-review/patch-2.6.25.15-rc1.gz
+and the diffstat can be found below.
 
-2) while coding it's useless as well because I don't need this thing
-   to debug and fix any deadlocks
 
-3) this only finds bugs after the system is hung and I can fix it by
-   other means then
+thanks,
 
-Despite having used this for a while, it never happened to me that
-this has been useful as single time, I only run into false positives
-and systems grinding to an halt so not allowing debug kernels to run
-which reduced even more the ability to debug the kernel. I'm not aware
-of anybody else who was debugging that fixed bugs thanks to this
-code. So in my experience this only has hurt me and I don't want it
-ever enabled in anything I deal with.
+the -stable release team
+------------------
 
-If only this had a slight chance to find bugs that don't easily
-trigger at runtime it'd be an entirely different matter.
-
-To be clear: my criticism is only to prove-locking, for example I find
-very useful that there are other things like spinlock debug options
-that warns if you call GFP with GFP_KERNEL while you're in atomic
-context (which unfortunately only works with preempt enabled for no
-good reason because the atomic context is maintained by non-preempt
-too but anyway). The spinlock sleep debug effectively find bugs that
-would otherwise go unnoticed. Let's say I'm only interested in stuff
-that shows bugs that would otherwise go unnoticed, everything else I
-can debug it by myself without prove-locking printk in the logs.
-
-So this can only help if you aren't capable of running and decoding
-sysrq+p/t. And it can't help in production either because it has to be
-disabled there (and production would be the only place where
-explaining how to grab a sysrq+p/t is a problem, and normally it's
-simpler to grab kdump/lkcd).
-
-Furthermore I don't like to slowdown (up to grinding system to an halt
-before these fixes, but still not so fast) for this so unnecessary
-feature while debugging. This also explains why after checking that
-the patch was ok when Andrew asked it, I disabled prove-locking pretty
-quickly.
-
-So perhaps I misunderstand how lockdep works, in which case you're
-welcome to correct me, otherwise I'd really like to know if anybody
-really felt some bug couldn't be fixed in equal time without it (and I
-mean excluding production where obviously this is useless as it can't
-be possibly enabled). Understanding what are the implications of the
-deadlock is sure slower than comparing the disassembly of the
-sysrq+p/t (which 99% of has to be done anyway because the report comes
-from a production system, if the bug was reproducible it would have
-been tripped before it hit production).
-
-I see it as a didactical theoretical exercise, and I hope this
-explains why I prefer the trylock loop any day compared to any more
-complex prove-locking specific API polluting the common code.  And if
-it was for me I'd remove prove-locking from the kernel the moment it
-started to pollute the common code for zero debugging advantages.
+ Makefile                              |    2 
+ arch/powerpc/kernel/ppc32.h           |    2 
+ arch/powerpc/kernel/ptrace32.c        |   27 ++++++++++
+ arch/x86/mm/ioremap.c                 |    5 +
+ drivers/acpi/bay.c                    |   16 +++--
+ drivers/acpi/thermal.c                |   16 +++++
+ drivers/input/mouse/appletouch.c      |   49 +++++++++++++++---
+ drivers/input/serio/i8042-x86ia64io.h |   57 +++++++++++++++++----
+ drivers/input/serio/i8042.c           |    8 ++
+ drivers/net/wireless/ath5k/base.c     |    4 +
+ drivers/pci/quirks.c                  |    1 
+ drivers/ps3/ps3-lpm.c                 |    1 
+ drivers/scsi/megaraid/megaraid_mbox.c |   17 ++++++
+ drivers/scsi/megaraid/megaraid_mbox.h |    1 
+ drivers/usb/core/quirks.c             |    3 +
+ drivers/usb/host/ehci-hub.c           |    6 +-
+ drivers/usb/host/ehci.h               |    2 
+ fs/fat/inode.c                        |    2 
+ fs/jbd/commit.c                       |   19 +------
+ fs/jbd/transaction.c                  |   91 ++++++++++++++++++++++++++++++++--
+ fs/namei.c                            |   31 +++++++++--
+ fs/nfs/inode.c                        |    4 -
+ fs/nfs/internal.h                     |    1 
+ fs/nfs/nfs3acl.c                      |    9 ++-
+ fs/nfs/nfs4proc.c                     |    6 +-
+ fs/partitions/msdos.c                 |   20 ++++++-
+ fs/romfs/inode.c                      |   37 ++++++++-----
+ include/linux/msdos_fs.h              |    6 +-
+ include/sound/ac97_codec.h            |    1 
+ include/sound/emu10k1.h               |    1 
+ mm/filemap.c                          |    3 -
+ net/bluetooth/bnep/core.c             |    5 +
+ net/bluetooth/hidp/core.c             |   10 +++
+ sound/core/init.c                     |   36 +++++--------
+ sound/core/oss/mixer_oss.c            |    2 
+ sound/pci/ac97/ac97_patch.c           |   48 ++++++++++++-----
+ sound/pci/emu10k1/emu10k1_main.c      |    1 
+ sound/pci/emu10k1/emumixer.c          |   13 +++-
+ sound/pci/hda/patch_analog.c          |   33 ++++++++----
+ sound/usb/usbaudio.c                  |   35 +++++++++----
+ sound/usb/usbquirks.h                 |   75 ++++++++++++++--------------
+ 41 files changed, 521 insertions(+), 185 deletions(-)
