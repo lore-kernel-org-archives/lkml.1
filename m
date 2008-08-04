@@ -1,62 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765270AbYHDVed@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764835AbYHDVeu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765270AbYHDVed (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 17:34:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762643AbYHDVdn
+	id S1764835AbYHDVeu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 17:34:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764631AbYHDVd5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 17:33:43 -0400
-Received: from mx.logic.tuwien.ac.at ([128.130.175.19]:42269 "EHLO
-	mx.logic.tuwien.ac.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764994AbYHDVdm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 17:33:42 -0400
-Date: Mon, 4 Aug 2008 23:33:30 +0200
-To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, Len Brown <lenb@kernel.org>,
-       Thomas Renninger <trenn@suse.de>,
-       Arjan van de Ven <arjan@linux.intel.com>,
-       linux-acpi <linux-acpi@vger.kernel.org>,
-       "Moore, Robert" <robert.moore@intel.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andi Kleen <ak@linux.intel.com>,
-       Christian Kornacker <ckornacker@suse.de>
-Subject: Re: ACPI OSI disaster on latest HP laptops - critical temperature shutdown
-Message-ID: <20080804213330.GA18123@gamma.logic.tuwien.ac.at>
-References: <200807241727.41715.trenn@suse.de> <alpine.LFD.1.10.0807241952270.6098@localhost.localdomain> <200807251319.12786.trenn@suse.de> <alpine.LFD.1.10.0807250948320.3884@localhost.localdomain> <alpine.LFD.1.10.0808011706350.3011@localhost.localdomain> <20080801223657.GD23558@khazad-dum.debian.net> <20080802054204.GB12646@srcf.ucam.org> <20080802143833.GC14069@khazad-dum.debian.net> <20080802144452.GA25565@gamma.logic.tuwien.ac.at> <20080802145141.GA14626@khazad-dum.debian.net>
+	Mon, 4 Aug 2008 17:33:57 -0400
+Received: from mx1.suse.de ([195.135.220.2]:54404 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1763026AbYHDVdz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Aug 2008 17:33:55 -0400
+Date: Mon, 4 Aug 2008 14:29:37 -0700
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
+       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
+       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, Alexander Viro <viro@zeniv.linux.org.uk>,
+       Matt Waddel <matt.waddel@freescale.com>,
+       Greg Ungerer <gerg@snapgear.com>
+Subject: [patch 02/25] romfs_readpage: dont report errors for pages beyond
+	i_size
+Message-ID: <20080804212937.GB8014@suse.de>
+References: <20080804203506.816201392@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080802145141.GA14626@khazad-dum.debian.net>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: Norbert Preining <preining@logic.at>
+Content-Disposition: inline; filename="romfs_readpage-don-t-report-errors-for-pages-beyond-i_size.patch"
+In-Reply-To: <20080804212725.GA7944@suse.de>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Nerique,
+2.6.26-stable review patch.  If anyone has any objections, please let us
+know.
 
-On Sa, 02 Aug 2008, Henrique de Moraes Holschuh wrote:
-> Yes, it is a call to hwclock.  It recently started to cause lockups on my
-> ThinkPad T43 too (it is a regression of some sort, either in hwclock or the
+------------------
 
-Thanks a lot for that bit, didn't know and was already scared that my
-laptop was nearing its end. 
+From: Linus Torvalds <torvalds@linux-foundation.org>
 
-> But the thermal hang is something else entirely.  You have at least two
-> different bugs causing you grief.
+commit 0056e65f9e28d83ee1a3fb4f7d0041e838f03c34 upstream
 
-We will see how rc2++ behave. Thanks a lot.
+We zero-fill them like we are supposed to, and that's all fine.  It's
+only an error if the 'romfs_copyfrom()' routine isn't able to fill the
+data that is supposed to be there.
 
-Best wishes
+Most of the patch is really just re-organizing the code a bit, and using
+separate variables for the error value and for how much of the page we
+actually filled from the filesystem.
 
-Norbert
+Reported-and-tested-by: Chris Fester <cfester@wms.com>
+Cc: Alexander Viro <viro@zeniv.linux.org.uk>
+Cc: Matt Waddel <matt.waddel@freescale.com>
+Cc: Greg Ungerer <gerg@snapgear.com>
+Signed-of-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
--------------------------------------------------------------------------------
-Dr. Norbert Preining <preining@logic.at>        Vienna University of Technology
-Debian Developer <preining@debian.org>                         Debian TeX Group
-gpg DSA: 0x09C5B094      fp: 14DF 2E6C 0307 BE6D AD76  A9C0 D2BF 4AA3 09C5 B094
--------------------------------------------------------------------------------
-LISTOWEL (n.)
-The small mat on the bar designed to be more absorbent than the bar,
-but not as absorbent as your elbows.
-			--- Douglas Adams, The Meaning of Liff
+---
+ fs/romfs/inode.c |   37 +++++++++++++++++++++++--------------
+ 1 file changed, 23 insertions(+), 14 deletions(-)
+
+--- a/fs/romfs/inode.c
++++ b/fs/romfs/inode.c
+@@ -418,7 +418,8 @@ static int
+ romfs_readpage(struct file *file, struct page * page)
+ {
+ 	struct inode *inode = page->mapping->host;
+-	loff_t offset, avail, readlen;
++	loff_t offset, size;
++	unsigned long filled;
+ 	void *buf;
+ 	int result = -EIO;
+ 
+@@ -430,21 +431,29 @@ romfs_readpage(struct file *file, struct
+ 
+ 	/* 32 bit warning -- but not for us :) */
+ 	offset = page_offset(page);
+-	if (offset < i_size_read(inode)) {
+-		avail = inode->i_size-offset;
+-		readlen = min_t(unsigned long, avail, PAGE_SIZE);
+-		if (romfs_copyfrom(inode, buf, ROMFS_I(inode)->i_dataoffset+offset, readlen) == readlen) {
+-			if (readlen < PAGE_SIZE) {
+-				memset(buf + readlen,0,PAGE_SIZE-readlen);
+-			}
+-			SetPageUptodate(page);
+-			result = 0;
++	size = i_size_read(inode);
++	filled = 0;
++	result = 0;
++	if (offset < size) {
++		unsigned long readlen;
++
++		size -= offset;
++		readlen = size > PAGE_SIZE ? PAGE_SIZE : size;
++
++		filled = romfs_copyfrom(inode, buf, ROMFS_I(inode)->i_dataoffset+offset, readlen);
++
++		if (filled != readlen) {
++			SetPageError(page);
++			filled = 0;
++			result = -EIO;
+ 		}
+ 	}
+-	if (result) {
+-		memset(buf, 0, PAGE_SIZE);
+-		SetPageError(page);
+-	}
++
++	if (filled < PAGE_SIZE)
++		memset(buf + filled, 0, PAGE_SIZE-filled);
++
++	if (!result)
++		SetPageUptodate(page);
+ 	flush_dcache_page(page);
+ 
+ 	unlock_page(page);
+
+-- 
