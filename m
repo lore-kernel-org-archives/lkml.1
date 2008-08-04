@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758267AbYHDCac@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759980AbYHDCax@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758267AbYHDCac (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Aug 2008 22:30:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754123AbYHDCaY
+	id S1759980AbYHDCax (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Aug 2008 22:30:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754500AbYHDCan
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Aug 2008 22:30:24 -0400
-Received: from 166-70-238-42.ip.xmission.com ([166.70.238.42]:45134 "EHLO
+	Sun, 3 Aug 2008 22:30:43 -0400
+Received: from 166-70-238-42.ip.xmission.com ([166.70.238.42]:45141 "EHLO
 	ns1.wolfmountaingroup.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753939AbYHDCaY (ORCPT
+	with ESMTP id S1754231AbYHDCam (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Aug 2008 22:30:24 -0400
-Message-ID: <51542.166.70.238.45.1217815801.squirrel@webmail.wolfmountaingroup.com>
-Date: Sun, 3 Aug 2008 20:10:01 -0600 (MDT)
-Subject: [PATCH 2.6.26 1/25] mdb: Merkey's Kernel Debugger
+	Sun, 3 Aug 2008 22:30:42 -0400
+Message-ID: <51549.166.70.238.45.1217815820.squirrel@webmail.wolfmountaingroup.com>
+Date: Sun, 3 Aug 2008 20:10:20 -0600 (MDT)
+Subject: [PATCH 2.6.26 2/25] mdb: Merkey's Kernel Debugger
 From: jmerkey@wolfmountaingroup.com
 To: linux-kernel@vger.kernel.org
 User-Agent: SquirrelMail/1.4.6
@@ -29,26 +29,119 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Netware Style Debugger for Linux written by Jeffrey Vernon Merkey
 
---- linux-2.6.26/arch/x86/kernel/reboot.c	2008-07-13 15:51:29.000000000 -0600
-+++ linux-2.6.26-mdb/arch/x86/kernel/reboot.c	2008-08-03
+--- linux-2.6.26/arch/x86/kernel/traps_32.c	2008-07-13
+15:51:29.000000000 -0600
++++ linux-2.6.26-mdb/arch/x86/kernel/traps_32.c	2008-08-03
 12:49:01.000000000 -0600
-@@ -425,7 +425,16 @@
- 	/* O.K Now that I'm on the appropriate processor,
- 	 * stop all of the others.
- 	 */
-+#ifdef CONFIG_MDB
-+        // do not stop the other processors if the debugger is active +  
-     {
-+           extern atomic_t inmdb;
-+           if (!atomic_read(&inmdb))
-+	      smp_send_stop();
-+        }
-+#else
- 	smp_send_stop();
-+#endif // CONFIG_MDB
+@@ -45,6 +45,16 @@
+ #include <linux/edac.h>
  #endif
 
- 	lapic_shutdown();
++#ifdef CONFIG_MDB
++#define DEBUGGER_EXCEPTION        1
++#define NMI_EXCEPTION             2
++#define BREAKPOINT_EXCEPTION      3
++#define SOFTWARE_EXCEPTION       22
++
++extern unsigned char *mdb_oops;
++extern int mdb(int reason, int error, void *frame);
++#endif
++
+ #include <asm/arch_hooks.h>
+ #include <asm/stacktrace.h>
+ #include <asm/processor.h>
+@@ -467,6 +477,10 @@
+ 	die.lock_owner = -1;
+ 	add_taint(TAINT_DIE);
+ 	__raw_spin_unlock(&die.lock);
++#ifdef	CONFIG_MDB
++        mdb_oops = (unsigned char *)str;
++        mdb(SOFTWARE_EXCEPTION, err, regs);
++#endif
+ 	raw_local_irq_restore(flags);
+
+ 	if (!regs)
+@@ -592,7 +606,7 @@
+ }
+
+ DO_VM86_ERROR_INFO(0, SIGFPE,  "divide error", divide_error, FPE_INTDIV,
+regs->ip)
+-#ifndef CONFIG_KPROBES
++#if !defined(CONFIG_KPROBES) && !defined(CONFIG_MDB)
+ DO_VM86_ERROR(3, SIGTRAP, "int3", int3)
+ #endif
+ DO_VM86_ERROR(4, SIGSEGV, "overflow", overflow)
+@@ -733,6 +747,9 @@
+ {
+ 	if (notify_die(DIE_NMIUNKNOWN, "nmi", regs, reason, 2, SIGINT) ==
+NOTIFY_STOP)
+ 		return;
++#ifdef	CONFIG_MDB
++        mdb(NMI_EXCEPTION, reason, regs); // nmi is code 2
++#endif
+ #ifdef CONFIG_MCA
+ 	/*
+ 	 * Might actually be able to figure out what the guilty party
+@@ -771,6 +788,9 @@
+ 	printk(" on CPU%d, ip %08lx, registers:\n",
+ 		smp_processor_id(), regs->ip);
+ 	show_registers(regs);
++#ifdef	CONFIG_MDB
++        mdb(NMI_EXCEPTION, 0, regs); // nmi is code 2
++#endif
+ 	console_silent();
+ 	spin_unlock(&nmi_print_lock);
+ 	bust_spinlocks(0);
+@@ -795,6 +815,10 @@
+ 	if (!smp_processor_id())
+ 		reason = get_nmi_reason();
+
++#if defined(CONFIG_SMP) && defined(CONFIG_MDB)
++        if (mdb(NMI_EXCEPTION, 0, regs))
++           return;
++#endif
+ 	if (!(reason & 0xc0)) {
+ 		if (notify_die(DIE_NMI_IPI, "nmi_ipi", regs, reason, 2, SIGINT)
+ 							== NOTIFY_STOP)
+@@ -860,6 +884,10 @@
+ #ifdef CONFIG_KPROBES
+ void __kprobes do_int3(struct pt_regs *regs, long error_code)
+ {
++#ifdef	CONFIG_MDB
++        if (mdb(BREAKPOINT_EXCEPTION, error_code, regs))
++           return;
++#endif
+ 	trace_hardirqs_fixup();
+
+ 	if (notify_die(DIE_INT3, "int3", regs, error_code, 3, SIGTRAP)
+@@ -875,6 +903,16 @@
+ }
+ #endif
+
++#if defined(CONFIG_MDB) && !defined(CONFIG_KPROBES)
++fastcall void do_int3(struct pt_regs * regs, long error_code)
++{
++#ifdef	CONFIG_MDB
++        if (mdb(BREAKPOINT_EXCEPTION, error_code, regs))
++           return;
++#endif
++	do_trap(3, SIGTRAP, "int3", 1, regs, error_code, NULL);
++}
++#endif	/* CONFIG_KDB && !CONFIG_KPROBES */
+ /*
+  * Our handling of the processor debug registers is non-trivial.
+  * We do not clear them on entry and exit from the kernel. Therefore
+@@ -905,6 +943,10 @@
+ 	trace_hardirqs_fixup();
+
+ 	get_debugreg(condition, 6);
++#ifdef	CONFIG_MDB
++        if (mdb(DEBUGGER_EXCEPTION, error_code, regs))
++           return;
++#endif
+
+ 	/*
+ 	 * The processor cleared BTF, so don't mark that we need it set.
 
 By making a contribution to this project, I certify that the contribution
 was created in whole or in part by me and I have the right to submit it
