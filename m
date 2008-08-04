@@ -1,73 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753926AbYHDJSb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753961AbYHDJWL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753926AbYHDJSb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 05:18:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752537AbYHDJSW
+	id S1753961AbYHDJWL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 05:22:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752537AbYHDJV5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 05:18:22 -0400
-Received: from ns1.q-leap.de ([153.94.51.193]:52354 "EHLO mail.q-leap.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752124AbYHDJSV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 05:18:21 -0400
-From: Bernd Schubert <bs@q-leap.de>
-To: "J. Bruce Fields" <bfields@fieldses.org>
-Subject: Re: high latency NFS
-Date: Mon, 4 Aug 2008 11:18:18 +0200
-User-Agent: KMail/1.9.9
-Cc: Neil Brown <neilb@suse.de>, Michael Shuey <shuey@purdue.edu>,
-       Shehjar Tikoo <shehjart@cse.unsw.edu.au>, linux-kernel@vger.kernel.org,
-       linux-nfs@vger.kernel.org, rees@citi.umich.edu, aglo@citi.umich.edu
-References: <200807241311.31457.shuey@purdue.edu> <20080804003206.GB6119@disturbed> <20080804011158.GA8066@fieldses.org>
-In-Reply-To: <20080804011158.GA8066@fieldses.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Mon, 4 Aug 2008 05:21:57 -0400
+Received: from topsns2.toshiba-tops.co.jp ([202.230.225.126]:38608 "EHLO
+	topsns2.toshiba-tops.co.jp" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752478AbYHDJV4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Aug 2008 05:21:56 -0400
+Date: Mon, 04 Aug 2008 18:21:43 +0900 (JST)
+Message-Id: <20080804.182143.218269280.nemoto@toshiba-tops.co.jp>
+To: Dave Johnson <djohnson@sw.starentnetworks.com>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: cramfs and named-pipe
+From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+X-Fingerprint: 6ACA 1623 39BD 9A94 9B1A  B746 CA77 FE94 2874 D52F
+X-Pgp-Public-Key: http://wwwkeys.pgp.net/pks/lookup?op=get&search=0x2874D52F
+X-Mailer: Mew version 6.1 on Emacs 22.2 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200808041118.19743.bs@q-leap.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 04 August 2008 03:11:58 J. Bruce Fields wrote:
-> On Mon, Aug 04, 2008 at 10:32:06AM +1000, Dave Chinner wrote:
-> > On Fri, Aug 01, 2008 at 03:15:59PM -0400, J. Bruce Fields wrote:
-> > > On Fri, Aug 01, 2008 at 05:23:20PM +1000, Dave Chinner wrote:
-> > > > On Thu, Jul 31, 2008 at 05:03:05PM +1000, Neil Brown wrote:
-> > > > > You might want to track the max length of the request queue too and
-> > > > > start more threads if the queue is long, to allow a quick ramp-up.
-> > > >
-> > > > Right, but even request queue depth is not a good indicator. You
-> > > > need to leep track of how many NFSDs are actually doing useful
-> > > > work. That is, if you've got an NFSD on the CPU that is hitting
-> > > > the cache and not blocking, you don't need more NFSDs to handle
-> > > > that load because they can't do any more work than the NFSD
-> > > > that is currently running is.
-> > > >
-> > > > i.e. take the solution that Greg banks used for the CPU scheduler
-> > > > overload issue (limiting the number of nfsds woken but not yet on
-> > > > the CPU),
-> > >
-> > > I don't remember that, or wasn't watching when it happened.... Do you
-> > > have a pointer?
-> >
-> > Ah, I thought that had been sent to mainline because it was
-> > mentioned in his LCA talk at the start of the year. Slides
-> > 65-67 here:
-> >
-> > http://mirror.linux.org.au/pub/linux.conf.au/2007/video/talks/41.pdf
->
-> OK, so to summarize: when the rate of incoming rpc's is very high (and,
-> I guess, when we're serving everything out of cache and don't have IO
-> wait), all the nfsd threads will stay runable all the time.  That keeps
-> userspace processes from running (possibly for "minutes").  And that's a
-> problem even on a server dedicated only to nfs, since it affects portmap
-> and rpc.mountd.
+After commit a97c9bf33f4612e2aed6f000f6b1d268b6814f3c (fix cramfs
+making duplicate entries in inode cache) in kernel 2.6.14, named-pipe
+on cramfs does not work properly.
 
-Even worse, it affects user space HA software such as heartbeat and everyone 
-with reasonable timeouts will see spurious 'failures'. 
+It seems the commit make all named-pipe on cramfs share their inode
+(and named-pipe buffer).  Is this fix correct?
 
-
--- 
-Bernd Schubert
-Q-Leap Networks GmbH
+diff --git a/fs/cramfs/inode.c b/fs/cramfs/inode.c
+index 0c3b618..87754ff 100644
+--- a/fs/cramfs/inode.c
++++ b/fs/cramfs/inode.c
+@@ -61,6 +61,9 @@ static int cramfs_iget5_test(struct inode *inode, void *opaque)
+ 	    (inode->i_rdev != old_decode_dev(cramfs_inode->size)))
+ 		return 0; /* does not match */
+ 
++	if (S_ISFIFO(inode->i_mode))
++		return 0; /* does not match */
++
+ 	return 1; /* matches */
+ }
+ 
