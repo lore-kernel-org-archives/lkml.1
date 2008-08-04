@@ -1,71 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760208AbYHDGUZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760359AbYHDGWo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760208AbYHDGUZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 02:20:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754668AbYHDGUM
+	id S1760359AbYHDGWo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 02:22:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753688AbYHDGWg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 02:20:12 -0400
-Received: from smtp.movial.fi ([62.236.91.34]:56942 "EHLO smtp.movial.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754733AbYHDGUL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 02:20:11 -0400
-Message-ID: <48969F99.1060301@movial.fi>
-Date: Mon, 04 Aug 2008 09:20:09 +0300
-From: Dmitri Vorobiev <dmitri.vorobiev@movial.fi>
-Organization: Movial Creative Technologies
-User-Agent: Icedove 1.5.0.14eol (X11/20080509)
+	Mon, 4 Aug 2008 02:22:36 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:43753 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751972AbYHDGWf (ORCPT
+	<rfc822;@sgi.com:linux-kernel@vger.kernel.org>);
+	Mon, 4 Aug 2008 02:22:35 -0400
+Message-ID: <4896A197.3090004@sgi.com>
+Date: Mon, 04 Aug 2008 16:28:39 +1000
+From: Lachlan McIlroy <lachlan@sgi.com>
+Reply-To: lachlan@sgi.com
+User-Agent: Thunderbird 2.0.0.16 (X11/20080707)
 MIME-Version: 1.0
-To: Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>
-CC: Ingo Molnar <mingo@elte.hu>, hpa <hpa@zytor.com>,
-       tglx <tglx@linutronix.de>, Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 3/5] x86: Coding style fixes to arch/x86/lib/strstr_32.c
-References: <20080802212445.72fb1d77@paolo-desktop>
-In-Reply-To: <20080802212445.72fb1d77@paolo-desktop>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Nick Piggin <npiggin@suse.de>
+CC: Linux Memory Management List <linux-mm@kvack.org>, xfs@oss.sgi.com,
+       xen-devel@lists.xensource.com,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       dri-devel@lists.sourceforge.net
+Subject: Re: [rfc][patch 3/3] xfs: use new vmap API
+References: <20080728123438.GA13926@wotan.suse.de> <20080728123703.GC13926@wotan.suse.de>
+In-Reply-To: <20080728123703.GC13926@wotan.suse.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paolo Ciarrocchi wrote:
-> Before:
-> total: 3 errors, 0 warnings, 31 lines checked
-> 
-> After:
-> total: 0 errors, 0 warnings, 31 lines checked
-> 
-> paolo@paolo-desktop:~/linux.trees.git$ md5sum /tmp/strstr_32.o.*
+Looks good to me.
 
-It seems very tempting to merge this file with arch/x86/lib/string_32.c, or is there any compelling reason to keep these two separate?
-
-> c96006ec3387862e5bacb139207a3098  /tmp/strstr_32.o.after
-> c96006ec3387862e5bacb139207a3098  /tmp/strstr_32.o.before
+Nick Piggin wrote:
+> Implement XFS's large buffer support with the new vmap APIs. See the vmap
+> rewrite patch for some numbers.
 > 
-> Signed-off-by: Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>
+> Signed-off-by: Nick Piggin <npiggin@suse.de>
 > ---
->  arch/x86/lib/strstr_32.c |    6 +++---
->  1 files changed, 3 insertions(+), 3 deletions(-)
 > 
-> diff --git a/arch/x86/lib/strstr_32.c b/arch/x86/lib/strstr_32.c
-> index 42e8a50..8e2d55f 100644
-> --- a/arch/x86/lib/strstr_32.c
-> +++ b/arch/x86/lib/strstr_32.c
-> @@ -23,9 +23,9 @@ __asm__ __volatile__(
->  	"jne 1b\n\t"
->  	"xorl %%eax,%%eax\n\t"
->  	"2:"
-> -	:"=a" (__res), "=&c" (d0), "=&S" (d1)
-> -	:"0" (0), "1" (0xffffffff), "2" (cs), "g" (ct)
-> -	:"dx", "di");
-> +	: "=a" (__res), "=&c" (d0), "=&S" (d1)
-> +	: "0" (0), "1" (0xffffffff), "2" (cs), "g" (ct)
-> +	: "dx", "di");
->  return __res;
-
-It's strange that checkpatch.pl does not cater for such an obvious style violation as this last line.
-
-Dmitri
-
->  }
+> Index: linux-2.6/fs/xfs/linux-2.6/xfs_buf.c
+> ===================================================================
+> --- linux-2.6.orig/fs/xfs/linux-2.6/xfs_buf.c
+> +++ linux-2.6/fs/xfs/linux-2.6/xfs_buf.c
+> @@ -265,7 +265,7 @@ xfs_buf_free(
+>  		uint		i;
 >  
-
+>  		if ((bp->b_flags & XBF_MAPPED) && (bp->b_page_count > 1))
+> -			vunmap(bp->b_addr - bp->b_offset);
+> +			vm_unmap_ram(bp->b_addr - bp->b_offset, bp->b_page_count);
+>  
+>  		for (i = 0; i < bp->b_page_count; i++) {
+>  			struct page	*page = bp->b_pages[i];
+> @@ -387,8 +387,8 @@ _xfs_buf_map_pages(
+>  		bp->b_addr = page_address(bp->b_pages[0]) + bp->b_offset;
+>  		bp->b_flags |= XBF_MAPPED;
+>  	} else if (flags & XBF_MAPPED) {
+> -		bp->b_addr = vmap(bp->b_pages, bp->b_page_count,
+> -					VM_MAP, PAGE_KERNEL);
+> +		bp->b_addr = vm_map_ram(bp->b_pages, bp->b_page_count,
+> +					-1, PAGE_KERNEL);
+>  		if (unlikely(bp->b_addr == NULL))
+>  			return -ENOMEM;
+>  		bp->b_addr += bp->b_offset;
+> 
+> 
+> 
