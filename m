@@ -1,153 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755841AbYHDSMb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757263AbYHDSMp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755841AbYHDSMb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 14:12:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752692AbYHDSMW
+	id S1757263AbYHDSMp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 14:12:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755636AbYHDSMa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 14:12:22 -0400
-Received: from smtp-vbr17.xs4all.nl ([194.109.24.37]:4328 "EHLO
-	smtp-vbr17.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752269AbYHDSMW (ORCPT
+	Mon, 4 Aug 2008 14:12:30 -0400
+Received: from an-out-0708.google.com ([209.85.132.250]:45588 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753287AbYHDSM3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 14:12:22 -0400
-From: Hans Verkuil <hverkuil@xs4all.nl>
-To: david@identd.dyndns.org
-Subject: Re: V4L2 & request_module("char-major-...")
-Date: Mon, 4 Aug 2008 20:10:47 +0200
-User-Agent: KMail/1.9.9
-Cc: v4l <video4linux-list@redhat.com>, linux-kernel@vger.kernel.org
-References: <200807302324.15221.hverkuil@xs4all.nl> <4893E3AE.4000204@gmail.com>
-In-Reply-To: <4893E3AE.4000204@gmail.com>
+	Mon, 4 Aug 2008 14:12:29 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=u6nGLUcSt1xFBLFoCno4LGwG5UamkXKqZzEEbvztzC5xNmzVHGYVgZ7jay/ZbRsAFh
+         VxKMS5VphVUtXRusQ91GJniVhUBo85YjHxzFgMIShsjxVvu0++tERKV4iMNqLEEWO6fA
+         0uVyjXTNFnedcvDsEoaQjNz5r72LdMOv20ULg=
+Message-ID: <86802c440808041112h29204f5at447b0279e1b6d4eb@mail.gmail.com>
+Date: Mon, 4 Aug 2008 11:12:28 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Mike Travis" <travis@sgi.com>
+Subject: Re: [PATCH 02/04] x86: add get_irq_cfg in io_apic_64.c
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Dhaval Giani" <dhaval@linux.vnet.ibm.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <48971A1E.5040704@sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200808042010.47542.hverkuil@xs4all.nl>
+References: <1217844601-4298-1-git-send-email-yhlu.kernel@gmail.com>
+	 <1217844601-4298-2-git-send-email-yhlu.kernel@gmail.com>
+	 <1217844601-4298-3-git-send-email-yhlu.kernel@gmail.com>
+	 <48971A1E.5040704@sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 02 August 2008 06:33:50 David Ellingsworth wrote:
-> Hans Verkuil wrote:
-> > Hi all,
-> >
-> > I'm in the process of converting v4l2-dev.c (2.6.27, in earlier
-> > kernels it was called videodev.c) from using register_chrdev() to
-> > using register_chrdev_region() and cdev_add().
-> >
-> > The problem I have is that register_chrdev provides a
-> > file_operations struct. The video_open() function in there performs
-> > this piece of code when a video device is opened:
-> >
-> >         vfl = video_device[minor];
-> >         if (vfl == NULL) {
-> >                 mutex_unlock(&videodev_lock);
-> >                 request_module("char-major-%d-%d", VIDEO_MAJOR,
-> > minor); mutex_lock(&videodev_lock);
-> >                 vfl = video_device[minor];
-> >                 if (vfl == NULL) {
-> >                         mutex_unlock(&videodev_lock);
-> >                         unlock_kernel();
-> >                         return -ENODEV;
-> >                 }
-> >         }
-> >
-> > It checks if a V4L2 driver registered this particular minor, if not
-> > then it tries to load the appropriate module with a char-major-x-x
-> > alias. If still no luck, then we bail out.
-> >
-> > Now, as I understand it this can only happen if someone used mknod
-> > to create device nodes and is not using udev. It's not clear to me
-> > however how this can ever work: the char-major alias relies on the
-> > fact that someone has to link the minor number with an actual V4L
-> > driver, but you do not generally know what minor number will be
-> > used by a specific driver (depends on load order, etc). Or am I
-> > missing something?
-> >
-> > My questions are:
-> >
-> > 1) is this code still relevant?
+On Mon, Aug 4, 2008 at 8:02 AM, Mike Travis <travis@sgi.com> wrote:
+> Yinghai Lu wrote:
+>> preallocate size is 32, and if is not enough, get_irq_cfg will more with alloc_bootmem or kzalloc
+>>
+>> got:
+>> dyn_array irq_2_pin+0x0/0x8 size:0x8 nr:192 align:0x8
+>> dyn_array irq_cfgx+0x0/0x8 size:0x118 nr:32 align:0x1000
+>> dyn_array irq_desc+0x0/0x8 size:0x180 nr:32 align:0x1000
+>> dyn_array irq_2_iommu+0x0/0x8 size:0x10 nr:96 align:0x1000
+>> dyn_array irq_timer_state+0x0/0x50 size:0x8 nr:96 align:0x1000
+>> dyn_array total_size: 0x8600
+>> dyn_array irq_2_pin+0x0/0x8  ==> [0x28028000 - 0x28028600]
+>> dyn_array irq_cfgx+0x0/0x8  ==> [0x28029000 - 0x2802b300]
+>> dyn_array irq_desc+0x0/0x8  ==> [0x2802c000 - 0x2802f000]
+>> dyn_array irq_2_iommu+0x0/0x8  ==> [0x2802f000 - 0x2802f600]
+>> dyn_array irq_timer_state+0x0/0x50  ==> [0x28030000 - 0x28030300]
+>> ...
+>> ENABLING IO-APIC IRQs
+>> init IO_APIC IRQs
+>>  IO-APIC (apicid-pin) 0-0 not connected.
+>> IOAPIC[0]: Set routing entry (0-1 -> 0x31 -> IRQ 1 Mode:0 Active:0)
+>> IOAPIC[0]: Set routing entry (0-2 -> 0x30 -> IRQ 0 Mode:0 Active:0)
+>> IOAPIC[0]: Set routing entry (0-3 -> 0x33 -> IRQ 3 Mode:0 Active:0)
+>> IOAPIC[0]: Set routing entry (0-4 -> 0x34 -> IRQ 4 Mode:0 Active:0)
+>> IOAPIC[0]: Set routing entry (0-5 -> 0x35 -> IRQ 5 Mode:0 Active:0)
+>> IOAPIC[0]: Set routing entry (0-6 -> 0x36 -> IRQ 6 Mode:0 Active:0)
+>> IOAPIC[0]: Set routing entry (0-7 -> 0x37 -> IRQ 7 Mode:0 Active:0)
+>> IOAPIC[0]: Set routing entry (0-8 -> 0x38 -> IRQ 8 Mode:0 Active:0)
+>> IOAPIC[0]: Set routing entry (0-9 -> 0x39 -> IRQ 9 Mode:1 Active:0)
+>> IOAPIC[0]: Set routing entry (0-10 -> 0x3a -> IRQ 10 Mode:0 Active:0)
+>> IOAPIC[0]: Set routing entry (0-11 -> 0x3b -> IRQ 11 Mode:0 Active:0)
+>> IOAPIC[0]: Set routing entry (0-12 -> 0x3c -> IRQ 12 Mode:0 Active:0)
+>> IOAPIC[0]: Set routing entry (0-13 -> 0x3d -> IRQ 13 Mode:0 Active:0)
+>> IOAPIC[0]: Set routing entry (0-14 -> 0x3e -> IRQ 14 Mode:0 Active:0)
+>> IOAPIC[0]: Set routing entry (0-15 -> 0x3f -> IRQ 15 Mode:0 Active:0)
+>>  IO-APIC (apicid-pin) 0-16, 0-17, 0-18, 0-19, 0-20, 0-21, 0-22, 0-23, 1-0, 1-1, 1-2, 1-3, 1-4, 1-5, 1-6, 1-7, 1-8, 1-9, 1-10, 1-11, 1-12, 1-13, 1-14, 1-15, 1-16, 1-17, 1-18, 1-19, 1-20, 1-21, 1-22, 1-23 not connected.
+>> try to get more irq_cfg 32
+>> try to get more irq_cfg 32
+>> ..TIMER: vector=0x30 apic1=0 pin1=2 apic2=0 pin2=0
+>> ...
+>>
+>> Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+>>
+>> ---
+>>  arch/x86/kernel/io_apic_64.c |  181 +++++++++++++++++++++++++++++++++----------
+>>  1 file changed, 141 insertions(+), 40 deletions(-)
+>>
+>> Index: linux-2.6/arch/x86/kernel/io_apic_64.c
+>> ===================================================================
+>> --- linux-2.6.orig/arch/x86/kernel/io_apic_64.c
+>> +++ linux-2.6/arch/x86/kernel/io_apic_64.c
+>> @@ -57,7 +57,11 @@
+>>
+>>  #define __apicdebuginit(type) static type __init
+>>
+>> +struct irq_cfg;
+>> +
+>>  struct irq_cfg {
+>> +     unsigned int irq;
+>> +     struct irq_cfg *next;
+>>       cpumask_t domain;
+>>       cpumask_t old_domain;
+>        ^^^^^^^^^
+> One thought here... most interrupts cannot be serviced by any cpu in
+> the system, but instead need to be serviced by the cpu attached to
+> the ioapic or on the local node.  So defining some subset of cpumask_t
+> would save a lot of space.  For example:
 >
-> The code is relevant as long as v4l2-dev allocs and associates a
-> block of minor number with it's fops.
+>        nodecpumask_t {
+>                int     node;
+>                DEFINE_BITMAP(..., MAX_CPUS_PER_NODE);
+>        };
 >
-> > 2) if so, how can I replace this code when I switch to cdev since
-> > in that case there is no longer a video_open() that can be used for
-> > this.
+> And of course, providing some utilities to convert nodecpumask_t <==>
+> cpumask_t.
 >
-> It's interesting that you mention this, I've examined this same
-> problem. Essentially, if v4l2-dev only calls cdev_add on minor
-> numbers which have been used, there is no need to keep the
-> request_module call in video_open. Since v4l2-dev currently calls
-> register_chrdev in videodev_init, cdev_add is always called on the
-> entire block. If register_chrdev_region is used instead, cdev_add can
-> be called during video_register_device_index and the call to
-> request_module can be removed.
+> ("node" might not be the proper abstraction... maybe "irqcpumask_t"?)
+union irq_cpumask_t {
+            int     cpu;
+            unsigned long mask;
+};
 
-OK, clear.
+also thinking if we can have dyn_cpumask_t etc if NR_CPU=4096, but
+nr_cpus or nr_cpu_ids=32 in running time.
+with that distributions could have NR_CPU=4096 as default config...
 
-> > 3) I also saw after some googling this proposed patch:
-> > http://linux.derkeiler.com/Mailing-Lists/Kernel/2003-09/2925.html
-> > It adds a MODULE_ALIAS_CHARDEV_MAJOR line for videodev.c. Either
-> > this patch was never applied or quickly removed in videodev.c since
-> > it's not there. I'm not sure how this relates to the request_module
-> > in the current code and whether it should be added after all or
-> > not.
->
-> I haven't reviewed this patch, but converting v4l2-dev to use
-> register_chrdev_region is rather trivial. However, removing
-> video_open can't be done without a) patching char_dev or b) reference
-> counting the video_device struct. v4l2-dev currently uses a static
-> fops which references video_open. The dependency on v4l2-dev's fops
-> can be removed if the cdev struct passed to cdev_add is initialized
-> with the the fops provided by drivers which use v4l2-dev. This means
-> a cdev struct would be needed for every video_device struct created.
-> Embedding the cdev struct in the video_device struct and using
-> cdev_init would surely solve this problem,
-
-That was my plan.
-
-> but it exposes another 
-> problem.
->
-> The problem results from how the cdev struct is reference counted.
-> Taking a close look at char_dev you'll see that the reference count
-> of the kobject in the cdev struct is initialized during cdev_init or
-> cdev_alloc, incremented during cdev_open, and decremented during
-> cdev_del and __fputs(file_table.c) using cdev_get and cdev_put. Once
-> cdev's kobject reference count reaches 0, cdev_default_release or
-> cdev_dynamic_release will be called to cleanup or free the struct
-> depending on how it was initialized. Unfortunately,
-> cdev_default_release nor cdev_dynamic_release provide a way to
-> synchronize freeing of the containing struct. Thus, if a cdev struct
-> is embedded into the video_device struct, the video_device struct
-> must be reference counted in the same way which essentially ensures
-> keeping video_open and the addition of video_close. The alternative
-> is to add an optional release callback to the cdev struct and call
-> that function during
-> cdev_default_release and cdev_dynamic_release so that the containing
-> video_device struct may be freed properly.
->
-> In addition to the above problem, there is the issue of sysfs. The
-> video_device struct has a release callback, but it's use is far from
-> correct. Currently this callback _always_ occurs in
-> video_unregister_device when unregister_device is called. If a cdev
-> struct is embedded in the video_device struct, this would certainly
-> result in the freeing of the cdev struct at an inappropriate time.
-> Some thought will have to be given about how to handle this properly.
-> Personally, I believe the kobject callback (video_release) should
-> only free sysfs related structures and not the entire video_device
-> struct, like soo many drivers currently do.
->
-> I have some patches which address all of the above issues, but I have
-> not had time to thoroughly test them and have therefore not yet
-> submitted them. I'd be willing to send them to you if you're
-> interested.
-
-That would be very welcome. In the meantime I'll dig around some more to 
-understand how it works and how it is supposed to work.
-
-Thank you for your input, it's very welcome!
-
-       Hans
+YH
