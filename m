@@ -1,52 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757707AbYHDO3p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757983AbYHDO37@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757707AbYHDO3p (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 10:29:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754922AbYHDO3e
+	id S1757983AbYHDO37 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 10:29:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757527AbYHDO3l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 10:29:34 -0400
-Received: from aeryn.fluff.org.uk ([87.194.8.8]:55515 "EHLO
-	kira.home.fluff.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754105AbYHDO3d (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 10:29:33 -0400
-Date: Mon, 4 Aug 2008 15:29:27 +0100
-From: Ben Dooks <ben-linux@fluff.org>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [GIT PATCH] SCSI fixes for 2.6.27-rc1
-Message-ID: <20080804142927.GG8301@fluff.org.uk>
-References: <1217800985.4179.55.camel@localhost.localdomain>
-MIME-Version: 1.0
+	Mon, 4 Aug 2008 10:29:41 -0400
+Received: from mx1.suse.de ([195.135.220.2]:49024 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757477AbYHDO3k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Aug 2008 10:29:40 -0400
+Date: Mon, 4 Aug 2008 16:29:39 +0200
+From: Karsten Keil <kkeil@suse.de>
+To: isdn4linux@listserv.isdn4linux.de, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/4] Fix remaining big endian issue of hfcmulti
+Message-ID: <20080804142939.GA21702@pingi.kke.suse.de>
+References: <20080802151532.DE017A3C09@pingi.kke.suse.de> <1217851439.3454.605.camel@pmac.infradead.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1217800985.4179.55.camel@localhost.localdomain>
-X-Disclaimer: These are my own opinions, so there!
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <1217851439.3454.605.camel@pmac.infradead.org>
+Organization: SuSE Linux AG
+X-Operating-System: Linux 2.6.16.54-0.2.5-smp x86_64
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Aug 03, 2008 at 05:03:05PM -0500, James Bottomley wrote:
-> This is just a small selection of four fixes, one expanding driver
-> bindings and the other three fixing actual bugs (all of which need
-> backporting to 2.6.26 I'm afraid).
+On Mon, Aug 04, 2008 at 01:03:59PM +0100, David Woodhouse wrote:
+> On Sat, 2008-08-02 at 16:35 +0200, Karsten Keil wrote:
+> > The driver was not so bad at big endian at all, only the optimised fifo
+> > read/write functions need a fix, with this fix the driver works on
+> > a pegasus PPC machine.
 > 
-> The patch is available here:
+> Great; thanks.
 > 
-> master.kernel.org:/pub/scm/linux/kernel/git/jejb/scsi-rc-fixes-2.6.git
+> And the ztdummy parts? 
 > 
-> The short changelog is:
-> 
-> HighPoint Linux Team (1):
 
-I thought group (or non-person) submissions where explicitly
-prohibitted in the signoff section in Documentation/SubmittingPatches
+I on my TODO.
 
 -- 
-Ben (ben@fluff.org, http://www.fluff.org/)
-
-  'a smiley only costs 4 bytes'
+Karsten Keil
+SuSE Labs
+ISDN and VOIP development
+SUSE LINUX Products GmbH, Maxfeldstr.5 90409 Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
