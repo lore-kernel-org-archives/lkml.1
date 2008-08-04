@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764154AbYHDU2Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764281AbYHDU26@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764154AbYHDU2Y (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 16:28:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764081AbYHDU1s
+	id S1764281AbYHDU26 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 16:28:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763499AbYHDU2h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 16:27:48 -0400
-Received: from mx2.suse.de ([195.135.220.15]:45916 "EHLO mx2.suse.de"
+	Mon, 4 Aug 2008 16:28:37 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:45977 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764073AbYHDU1r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 16:27:47 -0400
-Date: Mon, 4 Aug 2008 13:15:58 -0700
+	id S1764201AbYHDU2f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Aug 2008 16:28:35 -0400
+Date: Mon, 4 Aug 2008 13:16:03 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,15 +22,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk,
-       "Luis R. Rodriguez" <mcgrof@winlab.rutgers.edu>,
-       "John W. Linville" <linville@tuxdriver.com>, Jiri Benc <jbenc@suse.cz>
-Subject: [patch 20/33] ath5k: Use software encryption for now
-Message-ID: <20080804201558.GU1139@suse.de>
+       alan@lxorguk.ukuu.org.uk, Arjan van de Ven <arjan@linux.intel.com>,
+       Zhang Rui <rui.zhang@intel.com>, Len Brown <len.brown@intel.com>
+Subject: [patch 22/33] ACPI: Reject below-freezing temperatures as invalid
+	critical temperatures
+Message-ID: <20080804201603.GW1139@suse.de>
 References: <20080804200515.110033151@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="ath5k-use-software-encryption-for-now.patch"
+Content-Disposition: inline; filename="acpi-reject-below-freezing-temperatures-as-invalid-critical-temperatures.patch"
 In-Reply-To: <20080804201321.GA1139@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -42,36 +42,47 @@ know.
 
 ------------------
 
-From: Luis R. Rodriguez <mcgrof@winlab.rutgers.edu>
+From: Arjan van de Ven <arjan@linux.intel.com>
 
-Commit 6844e63a9458d15b4437aa467c99128d994b0f6c
+commit a39a2d7c72b358c6253a2ec28e17b023b7f6f41c upstream
 
-Hardware encryption doesn't work yet so lets use software
-encryption for now.
+My laptop thinks that it's a good idea to give -73C as the critical
+CPU temperature.... which isn't the best thing since it causes a shutdown
+right at bootup.
 
-Changes-licensed-under: 3-Clause-BSD
+Temperatures below freezing are clearly invalid critical thresholds
+so just reject these as such.
 
-Signed-off-by: Luis R. Rodriguez <mcgrof@winlab.rutgers.edu>
-Signed-off-by: John W. Linville <linville@tuxdriver.com>
-Cc: Jiri Benc <jbenc@suse.cz>
+Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
+Acked-by: Zhang Rui <rui.zhang@intel.com>
+Signed-off-by: Len Brown <len.brown@intel.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/net/wireless/ath5k/base.c |    4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ drivers/acpi/thermal.c |   11 +++++++++--
+ 1 file changed, 9 insertions(+), 2 deletions(-)
 
---- a/drivers/net/wireless/ath5k/base.c
-+++ b/drivers/net/wireless/ath5k/base.c
-@@ -2864,7 +2864,9 @@ ath5k_set_key(struct ieee80211_hw *hw, e
- 
- 	switch(key->alg) {
- 	case ALG_WEP:
--		break;
-+	/* XXX: fix hardware encryption, its not working. For now
-+	 * allow software encryption */
-+		/* break; */
- 	case ALG_TKIP:
- 	case ALG_CCMP:
- 		return -EOPNOTSUPP;
+--- a/drivers/acpi/thermal.c
++++ b/drivers/acpi/thermal.c
+@@ -359,10 +359,17 @@ static int acpi_thermal_trips_update(str
+ 	if (flag & ACPI_TRIPS_CRITICAL) {
+ 		status = acpi_evaluate_integer(tz->device->handle,
+ 				"_CRT", NULL, &tz->trips.critical.temperature);
+-		if (ACPI_FAILURE(status)) {
++		/*
++		 * Treat freezing temperatures as invalid as well; some
++		 * BIOSes return really low values and cause reboots at startup.
++		 * Below zero (Celcius) values clearly aren't right for sure..
++		 * ... so lets discard those as invalid.
++		 */
++		if (ACPI_FAILURE(status) ||
++				tz->trips.critical.temperature <= 2732) {
+ 			tz->trips.critical.flags.valid = 0;
+ 			ACPI_EXCEPTION((AE_INFO, status,
+-					"No critical threshold"));
++					"No or invalid critical threshold"));
+ 			return -ENODEV;
+ 		} else {
+ 			tz->trips.critical.flags.valid = 1;
 
 -- 
