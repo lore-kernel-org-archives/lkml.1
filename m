@@ -1,245 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760516AbYHDG3n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760582AbYHDGcD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760516AbYHDG3n (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 02:29:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754783AbYHDG3e
+	id S1760582AbYHDGcD (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 02:32:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754783AbYHDGbx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 02:29:34 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:49417 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751352AbYHDG3d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 02:29:33 -0400
-Date: Mon, 4 Aug 2008 16:29:24 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: linux-next@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: linux-next: Tree for August 4
-Message-Id: <20080804162924.f3c5c3d4.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Mon__4_Aug_2008_16_29_24_+1000_05t07bYr4MbY+q/s"
+	Mon, 4 Aug 2008 02:31:53 -0400
+Received: from qb-out-0506.google.com ([72.14.204.226]:64795 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754717AbYHDGbx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Aug 2008 02:31:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:reply-to:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=FzJ/t2Ahg7sbT9/07WR58RnGPWykvUKzu+85WiWehGI25VV5GXIda2+pQe4puHadSD
+         WX7hZMxLUwQVIW+XIEaeZ6RCYBT47fhs3RHVDTUHRTuUetHOAU6IxB1R84jsuItuf4jf
+         SjpgldBh7ldb1mlBTfHwZ9U4aC6H1oBbGxRu0=
+Message-ID: <4896A252.3000907@gmail.com>
+Date: Mon, 04 Aug 2008 08:31:46 +0200
+From: Andrea Righi <righi.andrea@gmail.com>
+Reply-To: righi.andrea@gmail.com
+User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
+MIME-Version: 1.0
+To: Li Zefan <lizf@cn.fujitsu.com>
+CC: Balbir Singh <balbir@linux.vnet.ibm.com>, Paul Menage <menage@google.com>,
+       akpm@linux-foundation.org, Carl Henrik Lunde <chlunde@ping.uio.no>,
+       axboe@kernel.dk, matt@bluehost.com, roberto@unbit.it,
+       Marco Innocenti <m.innocenti@cineca.it>, randy.dunlap@oracle.com,
+       Divyesh Shah <dpshah@google.com>, subrata@linux.vnet.ibm.com,
+       eric.rannaud@gmail.com, containers@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -mm 2/3] i/o controller infrastructure
+References: <> <1217801698-13438-3-git-send-email-righi.andrea@gmail.com> <489651E6.90001@cn.fujitsu.com>
+In-Reply-To: <489651E6.90001@cn.fujitsu.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=GB2312
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Mon__4_Aug_2008_16_29_24_+1000_05t07bYr4MbY+q/s
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Li Zefan wrote:
+> Andrea Righi wrote:
+>> This is the core io-throttle kernel infrastructure. It creates the basic
+>> interfaces to cgroups and implements the I/O measurement and throttling
+>> functions.
+>>
+>> Signed-off-by: Andrea Righi <righi.andrea@gmail.com>
+>> ---
+>>  block/Makefile                |    2 ++
+>>  include/linux/cgroup_subsys.h |    6 ++++++
+>>  init/Kconfig                  |   10 ++++++++++
+>>  3 files changed, 18 insertions(+), 0 deletions(-)
+>>
+> 
+> where is block/blk-io-throttle.c and include/linux/blk-io-throttle.h?
+> 
 
-Hi all,
+mmmh.. they should have been here, I mean, in patch 2/3 but it seems
+they're gone in patch 1/3 (subject: i/o controller documentation):
 
-[I managed to overwrite the merge log for today, sorry.  I have still
-appended a summary, though.]
+Documentation of the block device I/O controller: description, usage,
+advantages and design.
 
-Changes since next-20080801:
+Signed-off-by: Andrea Righi <righi.andrea@gmail.com>
+---
+ Documentation/controllers/io-throttle.txt |  312 +++++++++++++
+ block/blk-io-throttle.c                   |  719 +++++++++++++++++++++++++++++
+ include/linux/blk-io-throttle.h           |   41 ++
+ 3 files changed, 1072 insertions(+), 0 deletions(-)
+ create mode 100644 Documentation/controllers/io-throttle.txt
+ create mode 100644 block/blk-io-throttle.c
+ create mode 100644 include/linux/blk-io-throttle.h
+...
 
-Temporarily dropped tree: v4l-dvb (got lots of conflicts against the
-version that was merged to Linus).
+I'm pretty sure I did a:
+git-commit -s Documentation/controllers/io-throttle.txt
+in my local branch (history confirms this), but, anyway, if you think
+it's worth it I can fix it and post the patchset again, just let me
+know.
 
-Restored tree: acpi
-
-Linus' tree is fixed for the sparc and powerpc builds.
-
-The pci tree lost its conflict.
-
-The tip-core tree gained a conflict against Linus' tree.
-
-The kvm tree gained a conflict against Linus' tree.
-
-I have also applied the following patch for known problems:
-
-	hfcmulti is not supported on big endian
-	Add cuImage.mpc866ads to the bootwrapper as a cuboot-8xx target
-	m68k: some asm-sparc include files moved
-	Revert "Input: expand keycode space"
-
-The sparc(32) defconfig build still fails - this is probably a toolchain
-problem.  I have fixed this by reverting the these commits from Linus'
-tree:
-
-	UFS: add const to parser token table (f9247273cb69ba101877e946d2d83044409c=
-c8c5)
-	fix fs/nfs/nfsroot.c compilation (fb2e405fc1fc8b20d9c78eaa1c7fd5a297efde43)
-
-----------------------------------------------------------------------------
-
-I have created today's linux-next tree at
-git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
-(patches at
-http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/).  If you
-are tracking the linux-next tree using git, you should not use "git pull"
-to do so as that will try to merge the new linux-next release with the
-old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
-(see below).
-
-You can see which trees have been included by looking in the Next/Trees
-file in the source.  There are also quilt-import.log and merge.log files
-in the Next directory.  Between each merge, the tree was built with
-a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
-final fixups, it is also built with powerpc allnoconfig,
-44x_defconfig and allyesconfig and i386, sparc and sparc64 defconfig.
-
-Below is a summary of the state of the merge.
-
-We are up to 106 trees (counting Linus' and 14 trees of patches pending for
-Linus' tree), more are welcome (even if they are currently empty).
-Thanks to those who have contributed, and to those who haven't, please do.
-
-Status of my local build tests will be at
-http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
-advice about cross compilers/configs that work, we are always open to add
-more builds.
-
-Thanks to Jan Dittmer for adding the linux-next tree to his build tests
-at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
-Dunlap for doing many randconfig builds.
-
-There is a wiki covering stuff to do with linux-next at
-http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
-$ git checkout master
-$ git reset --hard stable
-Merging origin/master
-Merging powerpc-merge/merge
-Merging scsi-rc-fixes/master
-Merging net-current/master
-Merging sparc-current/master
-Merging sound-current/for-linus
-Merging arm-current/master
-Merging pci-current/for-linus
-Merging wireless-current/master
-Merging kbuild-current/master
-Merging quilt/driver-core.current
-Merging quilt/usb.current
-Applying usb: two more functions are needed when CONFIG_PM is not set
-Merging cpufreq-current/fixes
-Merging input-current/for-linus
-Merging md-current/for-2.6.26
-Merging quilt/driver-core
-Applying driver-core: kobject verification fixup
-Merging quilt/usb
-Merging tip-core/auto-core-next
-CONFLICT (content): Merge conflict in include/asm-generic/vmlinux.lds.h
-Merging cpus4096/auto-cpus4096-next
-CONFLICT (content): Merge conflict in net/sunrpc/svc.c
-Merging ftrace/auto-ftrace-next
-Merging genirq/auto-genirq-next
-Merging safe-poison-pointers/auto-safe-poison-pointers-next
-Merging sched/auto-sched-next
-Merging stackprotector/auto-stackprotector-next
-Merging timers/auto-timers-next
-Merging x86/auto-x86-next
-CONFLICT (content): Merge conflict in arch/x86/kernel/genapic_64.c
-CONFLICT (content): Merge conflict in drivers/pci/dmar.c
-Merging pci/linux-next
-Merging quilt/device-mapper
-Merging hid/mm
-Merging quilt/i2c
-Merging quilt/kernel-doc
-Merging avr32/avr32-arch
-Merging s390/features
-Merging sh/master
-Merging jfs/next
-Merging kbuild/master
-Merging quilt/ide
-Merging libata/NEXT
-Merging nfs/linux-next
-Merging xfs/master
-CONFLICT (content): Merge conflict in fs/xfs/linux-2.6/xfs_super.c
-Merging infiniband/for-next
-Merging acpi/test
-Merging blackfin/for-linus
-Merging nfsd/nfsd-next
-Merging ieee1394/for-next
-Merging hwmon/testing
-Merging ubi/linux-next
-Merging kvm/master
-CONFLICT (content): Merge conflict in include/linux/kvm.h
-Merging dlm/next
-Merging scsi/master
-Merging ia64/test
-Merging tests/master
-Merging ocfs2/linux-next
-Merging quilt/m68k
-Merging powerpc/next
-Merging ext4/next
-Merging 4xx/next
-Merging async_tx/next
-Merging udf/for_next
-Merging net/master
-Merging sparc/master
-Merging galak/powerpc-next
-Merging mtd/master
-Merging wireless/master
-Merging crypto/master
-Merging vfs/for-next
-Merging sound/for-next
-Merging arm/devel
-Merging cpufreq/next
-Merging v9fs/for-next
-Merging quilt/rr
-Merging cifs/master
-Merging mmc/next
-Merging gfs2/master
-Merging input/next
-Merging semaphore/semaphore
-Merging semaphore-removal/semaphore-removal
-Merging bkl-removal/bkl-removal
-Merging trivial/next
-CONFLICT (content): Merge conflict in Documentation/edac.txt
-CONFLICT (content): Merge conflict in include/linux/securebits.h
-Merging ubifs/linux-next
-Merging lsm/for-next
-Merging block/for-next
-Merging embedded/master
-Merging firmware/master
-CONFLICT (content): Merge conflict in drivers/media/dvb/ttpci/Kconfig
-CONFLICT (content): Merge conflict in drivers/media/dvb/ttpci/Makefile
-Merging pcmcia/master
-Merging battery/master
-Merging leds/for-mm
-Merging backlight/for-mm
-Merging kgdb/kgdb-next
-Merging slab/for-next
-Merging m68knommu/for-next
-Merging uclinux/for-next
-Merging md/for-next
-Merging cris/for-next
-Merging kmemcheck/auto-kmemcheck-next
-Merging generic-ipi/auto-generic-ipi-next
-Merging mips/mips-for-linux-next
-Merging mfd/for-next
-Merging hdlc/hdlc-next
-Merging drm/drm-next
-Merging voltage/reg-for-linus
-Merging security-testing/next
-Merging lblnet/master
-Merging quilt/ttydev
-Merging agp/agp-next
-Merging powerpc/merge
-Applying hfcmulti is not supported on big endian
-Created commit 457bf7a: Revert "fix fs/nfs/nfsroot.c compilation"
-Created commit 2f1a6e3: Revert "UFS: add const to parser token table"
-Applying Add cuImage.mpc866ads to the bootwrapper as a cuboot-8xx target
-Applying m68k: some asm-sparc include files moved
-Created commit 5577e9a: Revert "Input: expand keycode space"
-
---Signature=_Mon__4_Aug_2008_16_29_24_+1000_05t07bYr4MbY+q/s
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkiWocQACgkQjjKRsyhoI8xiggCgpJo2Qh+UZJoPM7kYv69HnXvf
-lwEAn0sougVs8MiRqAn8TYID785PNR+I
-=xsOj
------END PGP SIGNATURE-----
-
---Signature=_Mon__4_Aug_2008_16_29_24_+1000_05t07bYr4MbY+q/s--
+Thanks for looking at it!
+-Andrea
