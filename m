@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759257AbYHDRL0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759048AbYHDRMP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759257AbYHDRL0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 13:11:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755072AbYHDRLP
+	id S1759048AbYHDRMP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 13:12:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755029AbYHDRL7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 13:11:15 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:55595 "EHLO
+	Mon, 4 Aug 2008 13:11:59 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:55599 "EHLO
 	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754415AbYHDRLN (ORCPT
+	with ESMTP id S1755024AbYHDRL6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 13:11:13 -0400
+	Mon, 4 Aug 2008 13:11:58 -0400
 From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: [PATCH 2/6] it8712f_wdt: Locking and coding style
+Subject: [PATCH 3/6] Locking and coding style
 To: torvalds@osdl.org, linux-kernel@vger.kernel.org, wim@iguana.be
-Date: Mon, 04 Aug 2008 17:54:01 +0100
-Message-ID: <20080804165327.15222.340.stgit@localhost.localdomain>
+Date: Mon, 04 Aug 2008 17:54:46 +0100
+Message-ID: <20080804165407.15222.90326.stgit@localhost.localdomain>
 In-Reply-To: <20080804164941.15222.24613.stgit@localhost.localdomain>
 References: <20080804164941.15222.24613.stgit@localhost.localdomain>
 User-Agent: StGIT/0.14.2
@@ -25,252 +25,326 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Kill off use of semaphores.
+Fix ioctl races and locking holes.
+
 From: Alan Cox <alan@redhat.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Alan Cox <alan@redhat.com>
 ---
 
- drivers/watchdog/it8712f_wdt.c |   77 ++++++++++++++--------------------------
- 1 files changed, 27 insertions(+), 50 deletions(-)
+ drivers/watchdog/s3c2410_wdt.c |  148 ++++++++++++++++++++++------------------
+ 1 files changed, 80 insertions(+), 68 deletions(-)
 
 
-diff --git a/drivers/watchdog/it8712f_wdt.c b/drivers/watchdog/it8712f_wdt.c
-index 445b7e8..51bfd57 100644
---- a/drivers/watchdog/it8712f_wdt.c
-+++ b/drivers/watchdog/it8712f_wdt.c
-@@ -30,9 +30,8 @@
- #include <linux/fs.h>
- #include <linux/pci.h>
- #include <linux/spinlock.h>
+diff --git a/drivers/watchdog/s3c2410_wdt.c b/drivers/watchdog/s3c2410_wdt.c
+index 98532c0..97b4a2e 100644
+--- a/drivers/watchdog/s3c2410_wdt.c
++++ b/drivers/watchdog/s3c2410_wdt.c
+@@ -46,9 +46,8 @@
+ #include <linux/platform_device.h>
+ #include <linux/interrupt.h>
+ #include <linux/clk.h>
 -
 -#include <asm/uaccess.h>
 -#include <asm/io.h>
 +#include <linux/uaccess.h>
 +#include <linux/io.h>
  
- #define NAME "it8712f_wdt"
+ #include <asm/arch/map.h>
  
-@@ -50,7 +49,7 @@ static int nowayout = WATCHDOG_NOWAYOUT;
- module_param(nowayout, int, 0);
- MODULE_PARM_DESC(nowayout, "Disable watchdog shutdown on close");
+@@ -65,8 +64,8 @@
+ static int nowayout	= WATCHDOG_NOWAYOUT;
+ static int tmr_margin	= CONFIG_S3C2410_WATCHDOG_DEFAULT_TIME;
+ static int tmr_atboot	= CONFIG_S3C2410_WATCHDOG_ATBOOT;
+-static int soft_noboot	= 0;
+-static int debug	= 0;
++static int soft_noboot;
++static int debug;
  
--static struct semaphore it8712f_wdt_sem;
-+static unsigned long wdt_open;
- static unsigned expect_close;
- static spinlock_t io_lock;
- static unsigned char revision;
-@@ -86,22 +85,19 @@ static unsigned short address;
- #define WDT_OUT_PWROK	0x10
- #define WDT_OUT_KRST	0x40
+ module_param(tmr_margin,  int, 0);
+ module_param(tmr_atboot,  int, 0);
+@@ -74,24 +73,23 @@ module_param(nowayout,    int, 0);
+ module_param(soft_noboot, int, 0);
+ module_param(debug,	  int, 0);
  
--static int
--superio_inb(int reg)
-+static int superio_inb(int reg)
+-MODULE_PARM_DESC(tmr_margin, "Watchdog tmr_margin in seconds. default=" __MODULE_STRING(CONFIG_S3C2410_WATCHDOG_DEFAULT_TIME) ")");
+-
+-MODULE_PARM_DESC(tmr_atboot, "Watchdog is started at boot time if set to 1, default=" __MODULE_STRING(CONFIG_S3C2410_WATCHDOG_ATBOOT));
+-
+-MODULE_PARM_DESC(nowayout, "Watchdog cannot be stopped once started (default=" __MODULE_STRING(WATCHDOG_NOWAYOUT) ")");
+-
++MODULE_PARM_DESC(tmr_margin, "Watchdog tmr_margin in seconds. default="
++		__MODULE_STRING(CONFIG_S3C2410_WATCHDOG_DEFAULT_TIME) ")");
++MODULE_PARM_DESC(tmr_atboot,
++		"Watchdog is started at boot time if set to 1, default="
++			__MODULE_STRING(CONFIG_S3C2410_WATCHDOG_ATBOOT));
++MODULE_PARM_DESC(nowayout, "Watchdog cannot be stopped once started (default="
++			__MODULE_STRING(WATCHDOG_NOWAYOUT) ")");
+ MODULE_PARM_DESC(soft_noboot, "Watchdog action, set to 1 to ignore reboots, 0 to reboot (default depends on ONLY_TESTING)");
+-
+ MODULE_PARM_DESC(debug, "Watchdog debug, set to >1 for debug, (default 0)");
+ 
+ 
+ typedef enum close_state {
+ 	CLOSE_STATE_NOT,
+-	CLOSE_STATE_ALLOW=0x4021
++	CLOSE_STATE_ALLOW = 0x4021
+ } close_state_t;
+ 
+-static DECLARE_MUTEX(open_lock);
+-
++static unsigned long open_lock;
+ static struct device    *wdt_dev;	/* platform device attached to */
+ static struct resource	*wdt_mem;
+ static struct resource	*wdt_irq;
+@@ -99,38 +97,58 @@ static struct clk	*wdt_clock;
+ static void __iomem	*wdt_base;
+ static unsigned int	 wdt_count;
+ static close_state_t	 allow_close;
++static DEFINE_SPINLOCK(wdt_lock);
+ 
+ /* watchdog control routines */
+ 
+ #define DBG(msg...) do { \
+ 	if (debug) \
+ 		printk(KERN_INFO msg); \
+-	} while(0)
++	} while (0)
+ 
+ /* functions */
+ 
+-static int s3c2410wdt_keepalive(void)
++static void s3c2410wdt_keepalive(void)
  {
- 	outb(reg, REG);
- 	return inb(VAL);
++	spin_lock(&wdt_lock);
+ 	writel(wdt_count, wdt_base + S3C2410_WTCNT);
+-	return 0;
++	spin_unlock(&wdt_lock);
  }
  
--static void
--superio_outb(int val, int reg)
-+static void superio_outb(int val, int reg)
+-static int s3c2410wdt_stop(void)
++static void __s3c2410wdt_stop(void)
  {
- 	outb(reg, REG);
- 	outb(val, VAL);
+ 	unsigned long wtcon;
+ 
++	spin_lock(&wdt_lock);
+ 	wtcon = readl(wdt_base + S3C2410_WTCON);
+ 	wtcon &= ~(S3C2410_WTCON_ENABLE | S3C2410_WTCON_RSTEN);
+ 	writel(wtcon, wdt_base + S3C2410_WTCON);
++	spin_unlock(&wdt_lock);
++}
+ 
+-	return 0;
++static void __s3c2410wdt_stop(void)
++{
++	unsigned long wtcon;
++
++	wtcon = readl(wdt_base + S3C2410_WTCON);
++	wtcon &= ~(S3C2410_WTCON_ENABLE | S3C2410_WTCON_RSTEN);
++	writel(wtcon, wdt_base + S3C2410_WTCON);
++}
++
++static void s3c2410wdt_stop(void)
++{
++	spin_lock(&wdt_lock);
++	__s3c2410wdt_stop();
++	spin_unlock(&wdt_lock);
  }
  
--static int
--superio_inw(int reg)
-+static int superio_inw(int reg)
+-static int s3c2410wdt_start(void)
++static void s3c2410wdt_start(void)
  {
- 	int val;
- 	outb(reg++, REG);
-@@ -111,15 +107,13 @@ superio_inw(int reg)
- 	return val;
+ 	unsigned long wtcon;
+ 
+-	s3c2410wdt_stop();
++	spin_lock(&wdt_lock);
++
++	__s3c2410wdt_stop();
+ 
+ 	wtcon = readl(wdt_base + S3C2410_WTCON);
+ 	wtcon |= S3C2410_WTCON_ENABLE | S3C2410_WTCON_DIV128;
+@@ -149,6 +167,7 @@ static int s3c2410wdt_start(void)
+ 	writel(wdt_count, wdt_base + S3C2410_WTDAT);
+ 	writel(wdt_count, wdt_base + S3C2410_WTCNT);
+ 	writel(wtcon, wdt_base + S3C2410_WTCON);
++	spin_unlock(&wdt_lock);
+ 
+ 	return 0;
+ }
+@@ -211,7 +230,7 @@ static int s3c2410wdt_set_heartbeat(int timeout)
+ 
+ static int s3c2410wdt_open(struct inode *inode, struct file *file)
+ {
+-	if(down_trylock(&open_lock))
++	if (test_and_set_bit(0, &open_lock))
+ 		return -EBUSY;
+ 
+ 	if (nowayout)
+@@ -231,15 +250,14 @@ static int s3c2410wdt_release(struct inode *inode, struct file *file)
+ 	 * 	Lock it in if it's a module and we set nowayout
+ 	 */
+ 
+-	if (allow_close == CLOSE_STATE_ALLOW) {
++	if (allow_close == CLOSE_STATE_ALLOW)
+ 		s3c2410wdt_stop();
+-	} else {
++	else {
+ 		dev_err(wdt_dev, "Unexpected close, not stopping watchdog\n");
+ 		s3c2410wdt_keepalive();
+ 	}
+-
+ 	allow_close = CLOSE_STATE_NOT;
+-	up(&open_lock);
++	clear_bit(0, &open_lock);
+ 	return 0;
  }
  
--static inline void
--superio_select(int ldn)
-+static inline void superio_select(int ldn)
- {
- 	outb(LDN, REG);
- 	outb(ldn, VAL);
- }
+@@ -249,7 +267,7 @@ static ssize_t s3c2410wdt_write(struct file *file, const char __user *data,
+ 	/*
+ 	 *	Refresh the timer.
+ 	 */
+-	if(len) {
++	if (len) {
+ 		if (!nowayout) {
+ 			size_t i;
  
--static inline void
--superio_enter(void)
-+static inline void superio_enter(void)
- {
- 	spin_lock(&io_lock);
- 	outb(0x87, REG);
-@@ -128,22 +122,19 @@ superio_enter(void)
- 	outb(0x55, REG);
- }
+@@ -265,7 +283,6 @@ static ssize_t s3c2410wdt_write(struct file *file, const char __user *data,
+ 					allow_close = CLOSE_STATE_ALLOW;
+ 			}
+ 		}
+-
+ 		s3c2410wdt_keepalive();
+ 	}
+ 	return len;
+@@ -273,48 +290,41 @@ static ssize_t s3c2410wdt_write(struct file *file, const char __user *data,
  
--static inline void
--superio_exit(void)
-+static inline void superio_exit(void)
- {
- 	outb(0x02, REG);
- 	outb(0x02, VAL);
- 	spin_unlock(&io_lock);
- }
+ #define OPTIONS WDIOF_SETTIMEOUT | WDIOF_KEEPALIVEPING | WDIOF_MAGICCLOSE
  
--static inline void
--it8712f_wdt_ping(void)
-+static inline void it8712f_wdt_ping(void)
- {
- 	inb(address);
- }
- 
--static void
--it8712f_wdt_update_margin(void)
-+static void it8712f_wdt_update_margin(void)
- {
- 	int config = WDT_OUT_KRST | WDT_OUT_PWROK;
- 	int units = margin;
-@@ -165,8 +156,7 @@ it8712f_wdt_update_margin(void)
- 	superio_outb(units, WDT_TIMEOUT);
- }
- 
--static int
--it8712f_wdt_get_status(void)
-+static int it8712f_wdt_get_status(void)
- {
- 	if (superio_inb(WDT_CONTROL) & 0x01)
- 		return WDIOF_CARDRESET;
-@@ -174,8 +164,7 @@ it8712f_wdt_get_status(void)
- 		return 0;
- }
- 
--static void
--it8712f_wdt_enable(void)
-+static void it8712f_wdt_enable(void)
- {
- 	printk(KERN_DEBUG NAME ": enabling watchdog timer\n");
- 	superio_enter();
-@@ -190,8 +179,7 @@ it8712f_wdt_enable(void)
- 	it8712f_wdt_ping();
- }
- 
--static void
--it8712f_wdt_disable(void)
-+static void it8712f_wdt_disable(void)
- {
- 	printk(KERN_DEBUG NAME ": disabling watchdog timer\n");
- 
-@@ -207,8 +195,7 @@ it8712f_wdt_disable(void)
- 	superio_exit();
- }
- 
--static int
--it8712f_wdt_notify(struct notifier_block *this,
-+static int it8712f_wdt_notify(struct notifier_block *this,
- 		    unsigned long code, void *unused)
- {
- 	if (code == SYS_HALT || code == SYS_POWER_OFF)
-@@ -222,9 +209,8 @@ static struct notifier_block it8712f_wdt_notifier = {
- 	.notifier_call = it8712f_wdt_notify,
+-static struct watchdog_info s3c2410_wdt_ident = {
++static const struct watchdog_info s3c2410_wdt_ident = {
+ 	.options          =     OPTIONS,
+ 	.firmware_version =	0,
+ 	.identity         =	"S3C2410 Watchdog",
  };
  
--static ssize_t
--it8712f_wdt_write(struct file *file, const char __user *data,
--	size_t len, loff_t *ppos)
-+static ssize_t it8712f_wdt_write(struct file *file, const char __user *data,
-+					size_t len, loff_t *ppos)
- {
- 	/* check for a magic close character */
- 	if (len) {
-@@ -245,9 +231,8 @@ it8712f_wdt_write(struct file *file, const char __user *data,
- 	return len;
- }
  
--static int
--it8712f_wdt_ioctl(struct inode *inode, struct file *file,
+-static int s3c2410wdt_ioctl(struct inode *inode, struct file *file,
 -	unsigned int cmd, unsigned long arg)
-+static long it8712f_wdt_ioctl(struct file *file, unsigned int cmd,
++static long s3c2410wdt_ioctl(struct file *file,	unsigned int cmd,
 +							unsigned long arg)
  {
  	void __user *argp = (void __user *)arg;
  	int __user *p = argp;
-@@ -302,19 +287,16 @@ it8712f_wdt_ioctl(struct inode *inode, struct file *file,
- 	}
- }
+ 	int new_margin;
  
--static int
--it8712f_wdt_open(struct inode *inode, struct file *file)
-+static int it8712f_wdt_open(struct inode *inode, struct file *file)
- {
- 	/* only allow one at a time */
--	if (down_trylock(&it8712f_wdt_sem))
-+	if (test_and_set_bit(0, &wdt_open))
- 		return -EBUSY;
- 	it8712f_wdt_enable();
+ 	switch (cmd) {
+-		default:
+-			return -ENOTTY;
 -
- 	return nonseekable_open(inode, file);
+-		case WDIOC_GETSUPPORT:
+-			return copy_to_user(argp, &s3c2410_wdt_ident,
+-				sizeof(s3c2410_wdt_ident)) ? -EFAULT : 0;
+-
+-		case WDIOC_GETSTATUS:
+-		case WDIOC_GETBOOTSTATUS:
+-			return put_user(0, p);
+-
+-		case WDIOC_KEEPALIVE:
+-			s3c2410wdt_keepalive();
+-			return 0;
+-
+-		case WDIOC_SETTIMEOUT:
+-			if (get_user(new_margin, p))
+-				return -EFAULT;
+-
+-			if (s3c2410wdt_set_heartbeat(new_margin))
+-				return -EINVAL;
+-
+-			s3c2410wdt_keepalive();
+-			return put_user(tmr_margin, p);
+-
+-		case WDIOC_GETTIMEOUT:
+-			return put_user(tmr_margin, p);
++	default:
++		return -ENOTTY;
++	case WDIOC_GETSUPPORT:
++		return copy_to_user(argp, &s3c2410_wdt_ident,
++			sizeof(s3c2410_wdt_ident)) ? -EFAULT : 0;
++	case WDIOC_GETSTATUS:
++	case WDIOC_GETBOOTSTATUS:
++		return put_user(0, p);
++	case WDIOC_KEEPALIVE:
++		s3c2410wdt_keepalive();
++		return 0;
++	case WDIOC_SETTIMEOUT:
++		if (get_user(new_margin, p))
++			return -EFAULT;
++		if (s3c2410wdt_set_heartbeat(new_margin))
++			return -EINVAL;
++		s3c2410wdt_keepalive();
++		return put_user(tmr_margin, p);
++	case WDIOC_GETTIMEOUT:
++		return put_user(tmr_margin, p);
+ 	}
  }
  
--static int
--it8712f_wdt_release(struct inode *inode, struct file *file)
-+static int it8712f_wdt_release(struct inode *inode, struct file *file)
- {
- 	if (expect_close != 42) {
- 		printk(KERN_WARNING NAME
-@@ -324,7 +306,7 @@ it8712f_wdt_release(struct inode *inode, struct file *file)
- 		it8712f_wdt_disable();
- 	}
- 	expect_close = 0;
--	up(&it8712f_wdt_sem);
-+	clear_bit(0, &wdt_open);
+@@ -324,7 +334,7 @@ static const struct file_operations s3c2410wdt_fops = {
+ 	.owner		= THIS_MODULE,
+ 	.llseek		= no_llseek,
+ 	.write		= s3c2410wdt_write,
+-	.ioctl		= s3c2410wdt_ioctl,
++	.unlocked_ioctl	= s3c2410wdt_ioctl,
+ 	.open		= s3c2410wdt_open,
+ 	.release	= s3c2410wdt_release,
+ };
+@@ -411,14 +421,15 @@ static int s3c2410wdt_probe(struct platform_device *pdev)
+ 	 * not, try the default value */
  
+ 	if (s3c2410wdt_set_heartbeat(tmr_margin)) {
+-		started = s3c2410wdt_set_heartbeat(CONFIG_S3C2410_WATCHDOG_DEFAULT_TIME);
++		started = s3c2410wdt_set_heartbeat(
++					CONFIG_S3C2410_WATCHDOG_DEFAULT_TIME);
+ 
+-		if (started == 0) {
+-			dev_info(dev,"tmr_margin value out of range, default %d used\n",
++		if (started == 0)
++			dev_info(dev,
++			   "tmr_margin value out of range, default %d used\n",
+ 			       CONFIG_S3C2410_WATCHDOG_DEFAULT_TIME);
+-		} else {
++		else
+ 			dev_info(dev, "default timer value is out of range, cannot start\n");
+-		}
+ 	}
+ 
+ 	ret = misc_register(&s3c2410wdt_miscdev);
+@@ -447,7 +458,7 @@ static int s3c2410wdt_probe(struct platform_device *pdev)
+ 		 (wtcon & S3C2410_WTCON_ENABLE) ?  "" : "in",
+ 		 (wtcon & S3C2410_WTCON_RSTEN) ? "" : "dis",
+ 		 (wtcon & S3C2410_WTCON_INTEN) ? "" : "en");
+-	
++
  	return 0;
+ 
+  err_clk:
+@@ -487,7 +498,7 @@ static int s3c2410wdt_remove(struct platform_device *dev)
+ 
+ static void s3c2410wdt_shutdown(struct platform_device *dev)
+ {
+-	s3c2410wdt_stop();	
++	s3c2410wdt_stop();
  }
-@@ -333,7 +315,7 @@ static const struct file_operations it8712f_wdt_fops = {
- 	.owner = THIS_MODULE,
- 	.llseek = no_llseek,
- 	.write = it8712f_wdt_write,
--	.ioctl = it8712f_wdt_ioctl,
-+	.unlocked_ioctl = it8712f_wdt_ioctl,
- 	.open = it8712f_wdt_open,
- 	.release = it8712f_wdt_release,
+ 
+ #ifdef CONFIG_PM
+@@ -540,7 +551,8 @@ static struct platform_driver s3c2410wdt_driver = {
  };
-@@ -344,8 +326,7 @@ static struct miscdevice it8712f_wdt_miscdev = {
- 	.fops = &it8712f_wdt_fops,
- };
  
--static int __init
--it8712f_wdt_find(unsigned short *address)
-+static int __init it8712f_wdt_find(unsigned short *address)
+ 
+-static char banner[] __initdata = KERN_INFO "S3C2410 Watchdog Timer, (c) 2004 Simtec Electronics\n";
++static char banner[] __initdata =
++	KERN_INFO "S3C2410 Watchdog Timer, (c) 2004 Simtec Electronics\n";
+ 
+ static int __init watchdog_init(void)
  {
- 	int err = -ENODEV;
- 	int chip_type;
-@@ -387,8 +368,7 @@ exit:
- 	return err;
- }
- 
--static int __init
--it8712f_wdt_init(void)
-+static int __init it8712f_wdt_init(void)
- {
- 	int err = 0;
- 
-@@ -404,8 +384,6 @@ it8712f_wdt_init(void)
- 
- 	it8712f_wdt_disable();
- 
--	sema_init(&it8712f_wdt_sem, 1);
--
- 	err = register_reboot_notifier(&it8712f_wdt_notifier);
- 	if (err) {
- 		printk(KERN_ERR NAME ": unable to register reboot notifier\n");
-@@ -430,8 +408,7 @@ out:
- 	return err;
- }
- 
--static void __exit
--it8712f_wdt_exit(void)
-+static void __exit it8712f_wdt_exit(void)
- {
- 	misc_deregister(&it8712f_wdt_miscdev);
- 	unregister_reboot_notifier(&it8712f_wdt_notifier);
 
