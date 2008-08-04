@@ -1,47 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762254AbYHDWCI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759218AbYHDWCe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762254AbYHDWCI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 18:02:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752371AbYHDWBv
+	id S1759218AbYHDWCe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 18:02:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759101AbYHDWCF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 18:01:51 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:55076
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752226AbYHDWBu (ORCPT
+	Mon, 4 Aug 2008 18:02:05 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:45697 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755200AbYHDWCE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 18:01:50 -0400
-Date: Mon, 04 Aug 2008 15:01:47 -0700 (PDT)
-Message-Id: <20080804.150147.78586437.davem@davemloft.net>
-To: linville@tuxdriver.com
-Cc: linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: pull request: wireless-2.6 2008-08-04
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20080804193753.GA30345@tuxdriver.com>
-References: <20080804193753.GA30345@tuxdriver.com>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Mon, 4 Aug 2008 18:02:04 -0400
+Date: Mon, 4 Aug 2008 18:02:00 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Randy Dunlap <randy.dunlap@oracle.com>
+cc: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org, stable@kernel.org,
+       Greg KH <greg@kroah.com>, Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
+       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
+       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk
+Subject: Re: [patch 01/25] ftrace: remove unneeded documentation
+In-Reply-To: <20080804144922.393555d8.randy.dunlap@oracle.com>
+Message-ID: <alpine.DEB.1.10.0808041801330.5205@gandalf.stny.rr.com>
+References: <20080804203506.816201392@mini.kroah.org> <20080804212932.GA8014@suse.de> <alpine.DEB.1.10.0808041741250.5205@gandalf.stny.rr.com> <20080804144922.393555d8.randy.dunlap@oracle.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "John W. Linville" <linville@tuxdriver.com>
-Date: Mon, 4 Aug 2008 15:37:53 -0400
 
-> Another big round of fixes for 2.6.27.  Included is also a renaming
-> patch and some related patches that rename iwl4965 to iwlagn (reflecting
-> that is supports iwl5000 as well).
-> 
-> The other big(ger) thing here is the new ath9k driver.  It is probably
-> still far from perfect, but I'm hearing good reports on its
-> functionality and the Atheros team (and others) have already been quite
-> responsive on comments, etc.  I think it is best to go ahead and get it
-> into 2.6.27.
-> 
-> Please let me know if there are problems!
+On Mon, 4 Aug 2008, Randy Dunlap wrote:
 
-I'm holding off on this pull until the list.h changes get so me lkml
-ACKs.
+> On Mon, 4 Aug 2008 17:42:20 -0400 (EDT) Steven Rostedt wrote:
+> 
+> > 
+> > On Mon, 4 Aug 2008, Greg KH wrote:
+> > 
+> > > 2.6.26-stable review patch.  If anyone has any objections, please let us know.
+> > 
+> > Well, I object to this patch, but I'm sure I'll be ignored.
+> > 
+> > -- Steve
+> 
+> You could argue that it doesn't meet stable rules criteria, but the file
+> isn't needed and can be confusing, so it makes sense to me to remove it.
+
+I understand why Greg's pulling it. That does not mean I have to like it.
+
+-- Steve
 
