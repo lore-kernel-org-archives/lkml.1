@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762053AbYHDG6v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762092AbYHDG71@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762053AbYHDG6v (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 02:58:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757384AbYHDG6m
+	id S1762092AbYHDG71 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 02:59:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756569AbYHDG7T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 02:58:42 -0400
-Received: from 166-70-238-42.ip.xmission.com ([166.70.238.42]:50373 "EHLO
+	Mon, 4 Aug 2008 02:59:19 -0400
+Received: from 166-70-238-42.ip.xmission.com ([166.70.238.42]:50377 "EHLO
 	ns1.wolfmountaingroup.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755218AbYHDG6l (ORCPT
+	with ESMTP id S1756165AbYHDG7S (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 02:58:41 -0400
-Message-ID: <51982.166.70.238.45.1217831896.squirrel@webmail.wolfmountaingroup.com>
-Date: Mon, 4 Aug 2008 00:38:16 -0600 (MDT)
-Subject: [PATCH 2.6.27-rc1 17/25] mdb:  Merkey's Kernel Debugger 2.6.27-rc1
+	Mon, 4 Aug 2008 02:59:18 -0400
+Message-ID: <51985.166.70.238.45.1217831932.squirrel@webmail.wolfmountaingroup.com>
+Date: Mon, 4 Aug 2008 00:38:52 -0600 (MDT)
+Subject: [PATCH 2.6.27-rc1 18/25] mdb:  Merkey's Kernel Debugger 2.6.27-rc1
 From: jmerkey@wolfmountaingroup.com
 To: linux-kernel@vger.kernel.org
 User-Agent: SquirrelMail/1.4.6
@@ -27,10 +27,9 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Netware style debugger for Linux written by Jeffrey Vernon Merkey
 
---- a/debug/mdb-os.h	1969-12-31 17:00:00.000000000 -0700
-+++ b/debug/mdb-os.h	2008-08-03 16:15:00.000000000 -0600
-@@ -0,0 +1,109 @@
-+
+--- a/debug/mdb-proc.h	1969-12-31 17:00:00.000000000 -0700
++++ b/debug/mdb-proc.h	2008-08-03 16:15:00.000000000 -0600
+@@ -0,0 +1,139 @@
 +
 +/***************************************************************************
 +*
@@ -61,84 +60,118 @@ Netware style debugger for Linux written by Jeffrey Vernon Merkey
 +*   suggestions, and comments about this software.
 +*
 +*   AUTHOR   :  Jeff V. Merkey
-+*   FILE     :  MDB-OS.H
++*   FILE     :  MDB-PROC.H
 +*   DESCRIP  :  Merkey's NetWare Debugger
 +*   DATE     :  April 8, 2008
 +*
 +***************************************************************************/
 +
-+#ifndef _MDB_OS_H
-+#define _MDB_OS_H
++#ifndef _MDB_PROC_H
++#define _MDB_PROC_H
 +
-+#define MAX_SYMBOL_LEN  KSYM_NAME_LEN+1
++#define MAX_PROCESSORS           NR_CPUS
++#define SYMBOL_DEBUG             0
 +
-+extern atomic_t inmdb;
-+extern BYTE *mdb_oops;
-+extern BYTE *last_mdb_oops;
-+extern BYTE symbuf[MAX_PROCESSORS][MAX_SYMBOL_LEN];
-+extern BYTE modbuf[MAX_PROCESSORS][MAX_SYMBOL_LEN];
-+extern BYTE workbuf[MAX_PROCESSORS][MAX_SYMBOL_LEN];
++// mdb-base.c
++extern ULONG needs_proceed;
++extern ULONG general_toggle;
++extern ULONG line_info_toggle;
++extern ULONG control_toggle;
++extern ULONG segment_toggle;
++extern ULONG numeric_toggle;
++extern ULONG reason_toggle;
 +
-+extern int mdb_kallsyms(char *str, int (*print)(char *s, ...));
-+extern int mdb_modules(char *str, int (*print)(char *s, ...));
-+extern int mdb_getkey(void);
-+extern int mdb_getlword(unsigned long *word, unsigned long addr, size_t
-size);
-+extern int mdb_putword(unsigned long addr, unsigned long word, size_t size);
-+extern unsigned long mdb_getword(unsigned long addr, size_t size);
-+extern int mdb_verify_rw(void *addr, size_t size);
-+extern ULONG ValidateAddress(ULONG addr, ULONG length);
-+extern int DisplayClosestSymbol(ULONG address);
-+extern void DumpOSSymbolTableMatch(BYTE *symbol);
-+extern void DumpOSSymbolTable(void);
-+extern ULONG GetValueFromSymbol(BYTE *symbol);
-+extern BYTE *GetModuleInfoFromSymbolValue(ULONG value, BYTE *buf, ULONG
-len);
-+extern BYTE *GetSymbolFromValue(ULONG value, BYTE *buf, ULONG len);
-+extern BYTE *GetSymbolFromValueWithOffset(ULONG value, ULONG *sym_offset,
-+                                          BYTE *buf, ULONG len);
-+extern BYTE *GetSymbolFromValueOffsetModule(ULONG value, ULONG *sym_offset,
-+                                     BYTE **module, BYTE *buf, ULONG len);
-+extern ULONG get_processor_id(void);
-+extern ULONG get_physical_processor(void);
-+extern ULONG fpu_present(void);
-+extern ULONG cpu_mttr_on(void);
-+extern BYTE *UpcaseString(BYTE *s);
-+extern void ClearScreen(void);
-+extern WORD ReadFS(void);
-+extern WORD ReadGS(void);
-+extern ULONG ReadDR(ULONG regnum);
-+extern void WriteDR(int regnum, ULONG contents);
-+extern ULONG ReadCR(int regnum);
-+extern void WriteCR(int regnum, ULONG contents);
-+extern ULONG ReadTR(void);
-+extern ULONG ReadLDTR(void);
-+extern void ReadGDTR(ULONG *v);
-+extern void ReadIDTR(ULONG *v);
-+extern void save_npx(NUMERIC_FRAME *v);
-+extern void load_npx(NUMERIC_FRAME *v);
-+extern ULONG ReadDR0(void);
-+extern ULONG ReadDR1(void);
-+extern ULONG ReadDR2(void);
-+extern ULONG ReadDR3(void);
-+extern ULONG ReadDR6(void);
-+extern ULONG ReadDR7(void);
-+extern void WriteDR0(ULONG v);
-+extern void WriteDR1(ULONG v);
-+extern void WriteDR2(ULONG v);
-+extern void WriteDR3(ULONG v);
-+extern void WriteDR6(ULONG v);
-+extern void WriteDR7(ULONG v);
-+extern ULONG ReadCR0(void);
-+extern ULONG ReadCR2(void);
-+extern ULONG ReadCR3(void);
-+extern ULONG ReadCR4(void);
-+extern void WriteCR0(ULONG v);
-+extern void WriteCR2(ULONG v);
-+extern void WriteCR3(ULONG v);
-+extern void WriteCR4(ULONG v);
-+extern void ReadMSR(ULONG r, ULONG *v1, ULONG *v2);
-+extern void WriteMSR(ULONG r, ULONG *v1, ULONG *v2);
++extern ULONG MajorVersion;
++extern ULONG MinorVersion;
++extern ULONG BuildVersion;
++extern BYTE *IA32Flags[];
++extern BYTE *BreakDescription[];
++extern BYTE *BreakLengthDescription[];
++extern BYTE *ExceptionDescription[];
++extern NUMERIC_FRAME npx[MAX_PROCESSORS];
++extern StackFrame ReferenceFrame[MAX_PROCESSORS];
++extern volatile ULONG debuggerActive;
++extern volatile ULONG ProcessorHold[MAX_PROCESSORS];
++extern volatile ULONG ProcessorState[MAX_PROCESSORS];
++extern volatile ULONG ProcessorMode[MAX_PROCESSORS];
++
++// mdb-ia32.c
++extern volatile BYTE *lastDumpAddress;
++extern volatile BYTE *lastLinkAddress;
++extern volatile ULONG lastUnasmAddress;
++extern volatile ULONG displayLength;
++extern volatile ULONG lastCommand;
++extern volatile ULONG lastCommandEntry;
++extern volatile BYTE lastDebugCommand[100];
++extern volatile ULONG lastDisplayLength;
++extern volatile BYTE debugCommand[100];
++extern volatile ULONG nextUnasmAddress;
++extern volatile ULONG pic1Value;
++extern volatile ULONG pic2Value;
++extern volatile ULONG BreakReserved[4];
++extern volatile ULONG BreakPoints[4];
++extern volatile ULONG BreakType[4];
++extern volatile ULONG BreakLength[4];
++extern volatile ULONG BreakTemp[4];
++extern volatile ULONG BreakGo[4];
++extern volatile ULONG BreakProceed[4];
++extern volatile ULONG BreakMask[MAX_PROCESSORS];
++extern volatile StackFrame *CurrentFrame[MAX_PROCESSORS];
++extern volatile ULONG NestedInterrupts[MAX_PROCESSORS];
++extern volatile ULONG ConditionalBreakpoint[4];
++extern volatile BYTE BreakCondition[4][256];
++extern volatile StackFrame lastStackFrame;
++extern volatile ULONG lastCR0;
++extern volatile ULONG lastCR2;
++extern volatile ULONG lastCR4;
++extern volatile ULONG CurrentDR7;
++extern volatile ULONG CurrentDR6[MAX_PROCESSORS];
++extern volatile ULONG repeatCommand;
++extern volatile ULONG totalLines;
++extern volatile ULONG debuggerInitialized;
++
++extern ULONG disassemble(StackFrame *stackFrame, ULONG p, ULONG count,
++                         ULONG use);
++extern void ClearDebuggerState(void);
++extern void displayMTRRRegisters(void);
++extern void DisplayGDT(BYTE *GDT_ADDRESS);
++extern void DisplayIDT(BYTE *IDT_ADDRESS);
++extern void SetDebugRegisters(void);
++extern void LoadDebugRegisters(void);
++extern void ClearTempBreakpoints(void);
++extern ULONG ValidBreakpoint(ULONG address);
++extern BYTE *dump(BYTE *p, ULONG count);
++extern BYTE *dumpWord(BYTE *p, ULONG count);
++extern BYTE *dumpDouble(BYTE *p, ULONG count);
++extern BYTE *dumpLinkedList(BYTE *p, ULONG count, ULONG offset);
++extern BYTE *dumpDoubleStack(StackFrame *stackFrame, BYTE *p, ULONG count);
++extern BYTE *dumpStack(StackFrame *stackFrame, BYTE *p, ULONG count);
++extern ULONG debugger_setup(ULONG processor, ULONG Exception, StackFrame
+*stackFrame, BYTE *panicMsg);
++extern ULONG debugger_entry(ULONG Exception, StackFrame *stackFrame,
+ULONG processor);
++extern ULONG debugger_command_entry(ULONG processor, ULONG Exception,
+StackFrame *stackFrame);
++extern ULONG ConsoleDisplayBreakReason(StackFrame *stackFrame,
++			       ULONG reason, ULONG processor,
++			       ULONG lastCommand);
++extern ULONG EvaluateExpression(StackFrame *stackFrame, BYTE **p, ULONG
+*type);
++extern ULONG EvaluateNumericExpression(StackFrame *stackFrame, BYTE **p,
++                                       ULONG *type);
++extern ULONG unassemble(StackFrame *stackFrame, ULONG ip, ULONG use,
++                        ULONG *ret);
++extern void DisplayASCIITable(void);
++extern BYTE *UpcaseString(BYTE *);
++extern ULONG validate_address(ULONG addr);
++extern ULONG ScreenInputFromKeyboard(BYTE *buffer, ULONG Start, ULONG
+Length);
++
++extern ULONG GetIP(StackFrame *);
++extern ULONG GetStackAddress(StackFrame *);
++extern ULONG GetStackSegment(StackFrame *);
++extern WORD read_memory(void *, void *, unsigned);
++
 +#endif
 +
 
