@@ -1,163 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760284AbYHDGRz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760208AbYHDGUZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760284AbYHDGRz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 02:17:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754284AbYHDGRs
+	id S1760208AbYHDGUZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 02:20:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754668AbYHDGUM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 02:17:48 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:42806 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751972AbYHDGRr (ORCPT
-	<rfc822;@sgi.com:linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 02:17:47 -0400
-Message-ID: <4896A070.2010805@sgi.com>
-Date: Mon, 04 Aug 2008 16:23:44 +1000
-From: Lachlan McIlroy <lachlan@sgi.com>
-Reply-To: lachlan@sgi.com
-User-Agent: Thunderbird 2.0.0.16 (X11/20080707)
+	Mon, 4 Aug 2008 02:20:12 -0400
+Received: from smtp.movial.fi ([62.236.91.34]:56942 "EHLO smtp.movial.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754733AbYHDGUL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Aug 2008 02:20:11 -0400
+Message-ID: <48969F99.1060301@movial.fi>
+Date: Mon, 04 Aug 2008 09:20:09 +0300
+From: Dmitri Vorobiev <dmitri.vorobiev@movial.fi>
+Organization: Movial Creative Technologies
+User-Agent: Icedove 1.5.0.14eol (X11/20080509)
 MIME-Version: 1.0
-To: Nick Piggin <npiggin@suse.de>
-CC: Linux Memory Management List <linux-mm@kvack.org>, xfs@oss.sgi.com,
-       xen-devel@lists.xensource.com,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       dri-devel@lists.sourceforge.net
-Subject: Re: [rfc][patch 2/3] xfs: remove vmap cache
-References: <20080728123438.GA13926@wotan.suse.de> <20080728123621.GB13926@wotan.suse.de>
-In-Reply-To: <20080728123621.GB13926@wotan.suse.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>
+CC: Ingo Molnar <mingo@elte.hu>, hpa <hpa@zytor.com>,
+       tglx <tglx@linutronix.de>, Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 3/5] x86: Coding style fixes to arch/x86/lib/strstr_32.c
+References: <20080802212445.72fb1d77@paolo-desktop>
+In-Reply-To: <20080802212445.72fb1d77@paolo-desktop>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nick Piggin wrote:
-> XFS's vmap batching simply defers a number (up to 64) of vunmaps, and keeps
-> track of them in a list. To purge the batch, it just goes through the list and
-> calls vunamp on each one. This is pretty poor: a global TLB flush is still
-> performed on each vunmap, with the most expensive parts of the operation
-> being the broadcast IPIs and locking involved in the SMP callouts, and the
-> locking involved in the vmap management -- none of these are avoided by just
-> batching up the calls. I'm actually surprised it ever made much difference
-> at all.
-So am I.
-
+Paolo Ciarrocchi wrote:
+> Before:
+> total: 3 errors, 0 warnings, 31 lines checked
 > 
-> Rip all this logic out of XFS completely. I improve vmap performance
-> and scalability directly in the previous and subsequent patch.
-Sounds good to me.
-
+> After:
+> total: 0 errors, 0 warnings, 31 lines checked
 > 
-> Signed-off-by: Nick Piggin <npiggin@suse.de>
+> paolo@paolo-desktop:~/linux.trees.git$ md5sum /tmp/strstr_32.o.*
+
+It seems very tempting to merge this file with arch/x86/lib/string_32.c, or is there any compelling reason to keep these two separate?
+
+> c96006ec3387862e5bacb139207a3098  /tmp/strstr_32.o.after
+> c96006ec3387862e5bacb139207a3098  /tmp/strstr_32.o.before
+> 
+> Signed-off-by: Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>
 > ---
+>  arch/x86/lib/strstr_32.c |    6 +++---
+>  1 files changed, 3 insertions(+), 3 deletions(-)
 > 
-> Index: linux-2.6/fs/xfs/linux-2.6/xfs_buf.c
-> ===================================================================
-> --- linux-2.6.orig/fs/xfs/linux-2.6/xfs_buf.c
-> +++ linux-2.6/fs/xfs/linux-2.6/xfs_buf.c
-> @@ -166,75 +166,6 @@ test_page_region(
+> diff --git a/arch/x86/lib/strstr_32.c b/arch/x86/lib/strstr_32.c
+> index 42e8a50..8e2d55f 100644
+> --- a/arch/x86/lib/strstr_32.c
+> +++ b/arch/x86/lib/strstr_32.c
+> @@ -23,9 +23,9 @@ __asm__ __volatile__(
+>  	"jne 1b\n\t"
+>  	"xorl %%eax,%%eax\n\t"
+>  	"2:"
+> -	:"=a" (__res), "=&c" (d0), "=&S" (d1)
+> -	:"0" (0), "1" (0xffffffff), "2" (cs), "g" (ct)
+> -	:"dx", "di");
+> +	: "=a" (__res), "=&c" (d0), "=&S" (d1)
+> +	: "0" (0), "1" (0xffffffff), "2" (cs), "g" (ct)
+> +	: "dx", "di");
+>  return __res;
+
+It's strange that checkpatch.pl does not cater for such an obvious style violation as this last line.
+
+Dmitri
+
 >  }
 >  
->  /*
-> - *	Mapping of multi-page buffers into contiguous virtual space
-> - */
-> -
-> -typedef struct a_list {
-> -	void		*vm_addr;
-> -	struct a_list	*next;
-> -} a_list_t;
-> -
-> -static a_list_t		*as_free_head;
-> -static int		as_list_len;
-> -static DEFINE_SPINLOCK(as_lock);
-> -
-> -/*
-> - *	Try to batch vunmaps because they are costly.
-> - */
-> -STATIC void
-> -free_address(
-> -	void		*addr)
-> -{
-> -	a_list_t	*aentry;
-> -
-> -#ifdef CONFIG_XEN
-> -	/*
-> -	 * Xen needs to be able to make sure it can get an exclusive
-> -	 * RO mapping of pages it wants to turn into a pagetable.  If
-> -	 * a newly allocated page is also still being vmap()ed by xfs,
-> -	 * it will cause pagetable construction to fail.  This is a
-> -	 * quick workaround to always eagerly unmap pages so that Xen
-> -	 * is happy.
-> -	 */
-> -	vunmap(addr);
-> -	return;
-> -#endif
-> -
-> -	aentry = kmalloc(sizeof(a_list_t), GFP_NOWAIT);
-> -	if (likely(aentry)) {
-> -		spin_lock(&as_lock);
-> -		aentry->next = as_free_head;
-> -		aentry->vm_addr = addr;
-> -		as_free_head = aentry;
-> -		as_list_len++;
-> -		spin_unlock(&as_lock);
-> -	} else {
-> -		vunmap(addr);
-> -	}
-> -}
-> -
-> -STATIC void
-> -purge_addresses(void)
-> -{
-> -	a_list_t	*aentry, *old;
-> -
-> -	if (as_free_head == NULL)
-> -		return;
-> -
-> -	spin_lock(&as_lock);
-> -	aentry = as_free_head;
-> -	as_free_head = NULL;
-> -	as_list_len = 0;
-> -	spin_unlock(&as_lock);
-> -
-> -	while ((old = aentry) != NULL) {
-> -		vunmap(aentry->vm_addr);
-> -		aentry = aentry->next;
-> -		kfree(old);
-> -	}
-> -}
-> -
-> -/*
->   *	Internal xfs_buf_t object manipulation
->   */
->  
-> @@ -334,7 +265,7 @@ xfs_buf_free(
->  		uint		i;
->  
->  		if ((bp->b_flags & XBF_MAPPED) && (bp->b_page_count > 1))
-> -			free_address(bp->b_addr - bp->b_offset);
-> +			vunmap(bp->b_addr - bp->b_offset);
->  
->  		for (i = 0; i < bp->b_page_count; i++) {
->  			struct page	*page = bp->b_pages[i];
-> @@ -456,8 +387,6 @@ _xfs_buf_map_pages(
->  		bp->b_addr = page_address(bp->b_pages[0]) + bp->b_offset;
->  		bp->b_flags |= XBF_MAPPED;
->  	} else if (flags & XBF_MAPPED) {
-> -		if (as_list_len > 64)
-> -			purge_addresses();
->  		bp->b_addr = vmap(bp->b_pages, bp->b_page_count,
->  					VM_MAP, PAGE_KERNEL);
->  		if (unlikely(bp->b_addr == NULL))
-> @@ -1739,8 +1668,6 @@ xfsbufd(
->  			count++;
->  		}
->  
-> -		if (as_list_len > 0)
-> -			purge_addresses();
->  		if (count)
->  			blk_run_address_space(target->bt_mapping);
->  
-> 
-> 
-> 
+
