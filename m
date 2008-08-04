@@ -1,50 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758055AbYHDXar@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754131AbYHDXbJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758055AbYHDXar (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 19:30:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752574AbYHDXaY
+	id S1754131AbYHDXbJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 19:31:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753555AbYHDXai
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 19:30:24 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:48712 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751934AbYHDXaX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 19:30:23 -0400
-Date: Mon, 4 Aug 2008 16:30:18 -0700
-From: Nishanth Aravamudan <nacc@us.ibm.com>
-To: "Luck, Tony" <tony.luck@intel.com>
-Cc: "mingo@elte.hu" <mingo@elte.hu>,
-       "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [BISECTION RESULT] sched: revert cpu_clock to
-	pre-27ec4407790d075c325e1f4da0a19c56953cce23 state
-Message-ID: <20080804233018.GD30096@us.ibm.com>
-References: <20080804194646.GA17390@us.ibm.com> <57C9024A16AD2D4C97DC78E552063EA308328FB4@orsmsx505.amr.corp.intel.com> <57C9024A16AD2D4C97DC78E552063EA308329110@orsmsx505.amr.corp.intel.com> <20080804224533.GC30096@us.ibm.com> <57C9024A16AD2D4C97DC78E552063EA3083291DF@orsmsx505.amr.corp.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <57C9024A16AD2D4C97DC78E552063EA3083291DF@orsmsx505.amr.corp.intel.com>
-X-Operating-System: Linux 2.6.26-rc9-00132-g9df2fe9 (x86_64)
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Mon, 4 Aug 2008 19:30:38 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:40141 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753260AbYHDXai (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Aug 2008 19:30:38 -0400
+Date: Tue, 5 Aug 2008 00:13:30 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: David Stuart <dstuart@rogers.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Problems with disk + network on 2.6.25.11-60.fc8
+Message-ID: <20080805001330.6d43bcbb@lxorguk.ukuu.org.uk>
+In-Reply-To: <48979079.9030409@rogers.com>
+References: <48973EB9.90408@rogers.com>
+	<20080804184232.601881a8@lxorguk.ukuu.org.uk>
+	<4897671F.1050003@rogers.com>
+	<20080804214441.0811138e@lxorguk.ukuu.org.uk>
+	<48979079.9030409@rogers.com>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 04.08.2008 [15:53:03 -0700], Luck, Tony wrote:
-> > Would you like me to test this patch on the box, to verify? It seems
-> > like you were able to reproduce the non-booting kernel?
+O> around the problem (originally I thought it was the on-board 
+> controller), so I have my doubts as to whether switching back would help.
 > 
-> As soon as I turned on CONFIG_PRINTK_TIME=y I hit what I presume was
-> the same problem.
-> 
-> If you have time to do so, then confirming that this is the same issue
-> that you are seeing on your system would be good.
+> Nonetheless, I will give it a try again and let you know the result.
 
-Turning off PRINTK_TIME or using your patch allows this box to boot, so
-I think it is the same.
 
-Thanks,
-Nish
-
--- 
-Nishanth Aravamudan <nacc@us.ibm.com>
-IBM Linux Technology Center
+That would be great - if it makes no difference, yet high network traffic
+is the key factor then it mostly eliminates bugs in the network drivers
+from suspicion. At that point its time to dig deeper into the chip config.
