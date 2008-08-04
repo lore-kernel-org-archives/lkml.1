@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760443AbYHDCcg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760877AbYHDCdW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760443AbYHDCcg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Aug 2008 22:32:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760225AbYHDCbx
+	id S1760877AbYHDCdW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Aug 2008 22:33:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753946AbYHDCcV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Aug 2008 22:31:53 -0400
-Received: from 166-70-238-42.ip.xmission.com ([166.70.238.42]:45182 "EHLO
+	Sun, 3 Aug 2008 22:32:21 -0400
+Received: from 166-70-238-42.ip.xmission.com ([166.70.238.42]:45198 "EHLO
 	ns1.wolfmountaingroup.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760639AbYHDCbw (ORCPT
+	with ESMTP id S1760440AbYHDCcU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Aug 2008 22:31:52 -0400
-Message-ID: <57496.166.70.238.45.1217815889.squirrel@webmail.wolfmountaingroup.com>
-Date: Sun, 3 Aug 2008 20:11:29 -0600 (MDT)
-Subject: [PATCH 2.6.26 7/25] mdb: Merkey's Kernel Debugger
+	Sun, 3 Aug 2008 22:32:20 -0400
+Message-ID: <57510.166.70.238.45.1217815917.squirrel@webmail.wolfmountaingroup.com>
+Date: Sun, 3 Aug 2008 20:11:57 -0600 (MDT)
+Subject: [PATCH 2.6.26 9/25] mdb: Merkey's Kernel Debugger
 From: jmerkey@wolfmountaingroup.com
 To: linux-kernel@vger.kernel.org
 User-Agent: SquirrelMail/1.4.6
@@ -29,9 +29,9 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Netware Style Debugger for Linux written by Jeffrey Vernon Merkey
 
---- linux-2.6.26/debug/mdb.h	1969-12-31 17:00:00.000000000 -0700
-+++ linux-2.6.26-mdb/debug/mdb.h	2008-08-03 12:49:01.000000000 -0600 @@
--0,0 +1,104 @@
+--- linux-2.6.26/debug/mdb-ia32.h	1969-12-31 17:00:00.000000000 -0700 +++
+linux-2.6.26-mdb/debug/mdb-ia32.h	2008-08-03 12:49:01.000000000 -0600 @@
+-0,0 +1,175 @@
 +
 +/***************************************************************************
 +*
@@ -62,77 +62,148 @@ within this code.
 +*   suggestions, and comments about this software.
 +*
 +*   AUTHOR   :  Jeff V. Merkey
-+*   FILE     :  MDB.H
++*   FILE     :  MDB-IA32.H
 +*   DESCRIP  :  Merkey's NetWare Debugger
 +*   DATE     :  April 8, 2008
 +*
 +***************************************************************************/
 +
-+#ifndef _MDB_H
-+#define _MDB_H
++#ifndef _MDB_IA32_H
++#define _MDB_IA32_H
 +
-+extern int mdb_printf(char *s, ...);
-+#define DBGPrint   mdb_printf
++typedef struct _StackFrame {
++   ULONG tReserved[7];
++   ULONG *tCR3;
++   ULONG tEIP;
++   ULONG tSystemFlags;
++   ULONG tEAX;
++   ULONG tECX;
++   ULONG tEDX;
++   ULONG tEBX;
++   ULONG tESP;
++   ULONG tEBP;
++   ULONG tESI;
++   ULONG tEDI;
++   WORD tES;
++   WORD Res1;
++   WORD tCS;
++   WORD Res2;
++   WORD tSS;
++   WORD Res3;
++   WORD tDS;
++   WORD Res4;
++   WORD tFS;
++   WORD Res5;
++   WORD tGS;
++   WORD Res6;
++   WORD tLDT;
++   WORD Res7;
++   ULONG tIOMap;
++} StackFrame;
 +
-+#define  TRUE               1
-+#define  FALSE              0
++//  128 bytes total size numeric register context
 +
-+#ifndef LONGLONG
-+typedef long long LONGLONG;
-+#endif
-+typedef unsigned long  ULONG;
-+typedef unsigned short WORD;
-+typedef unsigned char  BYTE;
++typedef struct _NPXREG {
++  WORD sig0;        //  10 bytes total size this structure
++  WORD sig1;
++  WORD sig2;
++  WORD sig3;
++  WORD exponent:15;
++  WORD sign:1;
++} NUMERIC_REGISTER_CONTEXT;
 +
-+#include <linux/version.h>
-+#include <linux/types.h>
-+#include <linux/sched.h>
-+#include <linux/kernel.h>
-+#include <linux/mm.h>
-+#include <linux/string.h>
-+#include <linux/stat.h>
-+#include <linux/errno.h>
-+#include <linux/fcntl.h>
-+#include <linux/slab.h>
-+#include <linux/vmalloc.h>
-+#include <linux/genhd.h>
-+#include <linux/hdreg.h>
-+#include <linux/fs.h>
-+#include <linux/major.h>
-+#include <linux/mm.h>
-+#include <linux/cdrom.h>
-+#include <linux/pagemap.h>
-+#include <linux/swap.h>
-+#include <linux/smp.h>
-+#include <linux/smp_lock.h>
-+#include <linux/ctype.h>
-+//#include <linux/pc_keyb.h>
-+#include <linux/keyboard.h>
-+#include <linux/console.h>
-+#include <linux/serial_reg.h>
-+#include <asm/uaccess.h>
-+#include <asm/system.h>
-+#include <asm/segment.h>
-+#include <asm/atomic.h>
-+#include <asm/msr.h>
-+#include <asm/io.h>
++typedef struct _NPX {
++  ULONG control;
++  ULONG status;
++  ULONG tag;
++  ULONG eip;
++  ULONG cs;
++  ULONG dataptr;
++  ULONG datasel;
++  NUMERIC_REGISTER_CONTEXT reg[8];    // 80 bytes
++  ULONG pad[5];
++} NUMERIC_FRAME;
 +
-+#ifdef CONFIG_SMP
-+#include <mach_apic.h>
-+#include <mach_ipi.h>
-+#endif
++//  128 bytes total size register context
 +
-+#define __KERNEL_SYSCALLS__
-+#include <linux/unistd.h>
-+#include <linux/kallsyms.h>
++typedef struct _CONTEXT_FRAME {
++    WORD cBackLink;
++    WORD cTSSReserved;
++    ULONG cESP0;
++    WORD cSS0;
++    WORD cSS0res;
++    ULONG cESP1;
++    WORD cSS1;
++    WORD cSS1res;
++    ULONG cESP2;
++    WORD cSS2;
++    WORD cSS2res;
++    ULONG cCR3;
++    ULONG cEIP;
++    ULONG cSystemFlags;
++    ULONG cEAX;
++    ULONG cECX;
++    ULONG cEDX;
++    ULONG cEBX;
++    ULONG cESP;
++    ULONG cEBP;
++    ULONG cESI;
++    ULONG cEDI;
++    ULONG cES;
++    ULONG cCS;
++    ULONG cSS;
++    ULONG cDS;
++    ULONG cFS;
++    ULONG cGS;
++    ULONG cLDT;
++    ULONG cIOPermissMap;
++    ULONG pad[6];
++} CONTEXT_FRAME;
 +
-+#include "mdb-ia32.h"
-+#include "mdb-list.h"
-+#include "mdb-ia32-proc.h"
-+#include "mdb-base.h"
-+#include "mdb-proc.h"
-+#include "mdb-os.h"
-+#include "mdb-keyboard.h"
++static inline void _cli(void)
++{
++	__asm__ __volatile__("cli" : : : "memory");
++}
++
++static inline void _sti(void)
++{
++	__asm__ __volatile__("sti" : : : "memory");
++}
++
++static inline unsigned long get_flags(void)
++{
++	unsigned long flags;
++
++	__asm__ __volatile__(
++		"pushfl ; popl %0"
++		: "=g" (flags)
++		: /* no input */
++	);
++	return flags;
++}
++
++static inline unsigned long save_flags(void)
++{
++	unsigned long flags;
++
++	__asm__ __volatile__(
++		"pushfl ; popl %0"
++		: "=g" (flags)
++		: /* no input */
++	);
++	__asm__ __volatile__("cli" : : : "memory");
++	return flags;
++}
++
++static inline void restore_flags(unsigned long flags)
++{
++	__asm__ __volatile__(
++		"pushl %0 ; popfl"
++		:
++		:"g" (flags)
++		:"memory", "cc"
++	);
++}
 +
 +#endif
 +
@@ -143,7 +214,6 @@ was created in whole or in part by me and I have the right to submit it
 under the open source license indicated in the file
 
 Jeffrey Vernon Merkey
-
 
 
 
