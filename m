@@ -1,64 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764506AbYHDVb4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764644AbYHDVcW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764506AbYHDVb4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 17:31:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764291AbYHDVaV
+	id S1764644AbYHDVcW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 17:32:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763111AbYHDVa3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 17:30:21 -0400
-Received: from yw-out-2324.google.com ([74.125.46.28]:43501 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764284AbYHDVaS (ORCPT
+	Mon, 4 Aug 2008 17:30:29 -0400
+Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:41159
+	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764303AbYHDVaY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 17:30:18 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=T6PWW0ZZcX378AAsn9QOEQsCnkpNYyLXSSRRBfQa+6ed7rWnZ10GUxMTuaLB9+cL73
-         Bj7oA8plFfl8IGTeceVmDKJAxOfx/AL+EtSjLm6OesLUcQdTZlcIFr/3u5bOgYTWU74z
-         yf5cyTTUyfNrzbCD/pIRKmuvUe1Nti5bG76QY=
-Message-ID: <93655eb70808041430u23e45454j23df07e081d25e02@mail.gmail.com>
-Date: Tue, 5 Aug 2008 03:00:16 +0530
-From: "Satish Eerpini" <eerpini@gmail.com>
-To: "Jeff Dike" <jdike@addtoit.com>
-Subject: Re: Kernel Installer
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20080804140328.GA6683@c2.user-mode-linux.org>
+	Mon, 4 Aug 2008 17:30:24 -0400
+Date: Mon, 4 Aug 2008 23:30:18 +0200
+From: Andrea Arcangeli <andrea@qumranet.com>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Dave Jones <davej@redhat.com>,
+       Roland Dreier <rdreier@cisco.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, jeremy@goop.org, hugh@veritas.com,
+       mingo@elte.hu, akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       arjan <arjan@infradead.org>
+Subject: Re: [PATCH] workaround minor lockdep bug triggered by
+	mm_take_all_locks
+Message-ID: <20080804213018.GD12464@duo.random>
+References: <20080804162657.GI11476@duo.random> <1217867935.3589.35.camel@twins> <20080804172728.GJ11476@duo.random> <20080804174659.GK11476@duo.random> <20080804175730.GL11476@duo.random> <1217875739.3589.56.camel@twins> <20080804201514.GB12464@duo.random> <1217882242.3589.90.camel@twins> <20080804210954.GC12464@duo.random> <84144f020808041414x2c1c8b82n5939b82e9a2ca99d@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <93655eb70808031350q16a5765bk3125e53bd042ba0e@mail.gmail.com>
-	 <20080803210051.GF7442@cs181140183.pp.htv.fi>
-	 <93655eb70808032045vd6130e9m147d3e3ae8b159b5@mail.gmail.com>
-	 <93655eb70808032046y594f38a3u16b7fa2cc6291b1d@mail.gmail.com>
-	 <20080804140328.GA6683@c2.user-mode-linux.org>
+In-Reply-To: <84144f020808041414x2c1c8b82n5939b82e9a2ca99d@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-yes i have been looking at make -n . but now , collectively parsing
-the .config file and the Make files seems to be more useful , ...
-what say ?
+On Tue, Aug 05, 2008 at 12:14:48AM +0300, Pekka Enberg wrote:
+> Sometimes it's hard to actually trigger a deadlock condition during
+> development, especially if you're not developing on a big iron
+> machine.
 
-On Mon, Aug 4, 2008 at 7:33 PM, Jeff Dike <jdike@addtoit.com> wrote:
-> On Mon, Aug 04, 2008 at 09:16:52AM +0530, Satish Eerpini wrote:
->> but in the process i am stuck at deciding the no of files that will be
->> compiled , given that representing the entire compilation
->> process as a progress bar , would give a clear idea of " how much is
->> over" and "how much is left" !!!
->
-> Look at make -n.  I suspect that its output won't match reality
-> perfectly, but it's probably good enough for a progress bar.
->
->                             Jeff
->
-> --
-> Work email - jdike at linux dot intel dot com
->
+My understand is that lockdep can't do static analysis of code, it's
+not a checker. It can only evaluate the locks in the order the cpu
+takes them. And if the CPU never takes them in the wrong order because
+only your unlikely to happen slow path takes them in the wrong order
+while the other cpus hold them in the opposite order, lockdep can't
+say nothing at all, how could it? If it would say something when the
+cpu doesn't deadlock a moment later, then it would be a false positive
+99% of the time.
 
+So now we learn lockdep also lead developers to think if their code
+doesn't generate lockdep errors it will be safe in production, so
+again more damage thanks to lockdep.
 
+Lockdep is a printk that reports that you were incredibly lucky, that
+you got the lock inversion during development even if there was only
+once chance in a thousand, and that you can celebrate. But I know I
+can figure it out by myself when the system has crashed without
+something eating all cpu and polluting kernel common code to tell me.
 
--- 
-http://satish.playdrupal.com
+In other words I imagine lockdep as something like this:
+
+	char *ptr = NULL
+	BUG_ON(!ptr); /* this is lockdep */
+	*ptr = 100;
+
+Luckily nobody dreams to add BUG_ON that checks for null pointer to
+dereference, as there's the mmu for that.
+
+The same way for the null pointer dereference, there are zerocost
+means to debug all sort of kernel crashing deadlocks.
+
+Now perhaps I misunderstood lockdep entirely but I doubt as this thing
+is driven by calls made by the spin_lock functions, and it can't know
+anything about the spin_lock that haven't been run by the cpu yet.
