@@ -1,64 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763367AbYHDWxb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764200AbYHDWxr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763367AbYHDWxb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 18:53:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752269AbYHDWwz
+	id S1764200AbYHDWxr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 18:53:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758849AbYHDWxI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 18:52:55 -0400
-Received: from h155.mvista.com ([63.81.120.155]:3844 "EHLO imap.sh.mvista.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751383AbYHDWwy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 18:52:54 -0400
-Message-ID: <4897883F.6020007@ru.mvista.com>
-Date: Tue, 05 Aug 2008 02:52:47 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
+	Mon, 4 Aug 2008 18:53:08 -0400
+Received: from mga09.intel.com ([134.134.136.24]:32550 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758726AbYHDWxG convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Aug 2008 18:53:06 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.31,306,1215414000"; 
+   d="scan'208";a="425936242"
+From: "Luck, Tony" <tony.luck@intel.com>
+To: Nishanth Aravamudan <nacc@us.ibm.com>
+CC: "mingo@elte.hu" <mingo@elte.hu>,
+       "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Date: Mon, 4 Aug 2008 15:53:03 -0700
+Subject: RE: [BISECTION RESULT] sched: revert cpu_clock to
+	pre-27ec4407790d075c325e1f4da0a19c56953cce23 state
+Thread-Topic: [BISECTION RESULT] sched: revert cpu_clock to
+	pre-27ec4407790d075c325e1f4da0a19c56953cce23 state
+Thread-Index: Acj2g+OJs5W/BU5oQ8GX1xUcgo9yfAAALCrw
+Message-ID: <57C9024A16AD2D4C97DC78E552063EA3083291DF@orsmsx505.amr.corp.intel.com>
+References: <20080804194646.GA17390@us.ibm.com>
+ <57C9024A16AD2D4C97DC78E552063EA308328FB4@orsmsx505.amr.corp.intel.com>
+ <57C9024A16AD2D4C97DC78E552063EA308329110@orsmsx505.amr.corp.intel.com>
+ <20080804224533.GC30096@us.ibm.com>
+In-Reply-To: <20080804224533.GC30096@us.ibm.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Robert Hancock <hancockr@shaw.ca>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       James Bottomley <James.Bottomley@hansenpartnership.com>,
-       ksummit-2008-discuss@lists.linux-foundation.org,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-ide <linux-ide@vger.kernel.org>
-Subject: Re: Kernel Summit request for Discussion of future of ATA (libata)
- and IDE
-References: <fa.OGeO7gZvBG4obEzRbVltjSebgTQ@ifi.uio.no>	<fa.KtvYE2B2yrJqUleolhtMPN9ljAQ@ifi.uio.no>	<fa.AqEKTvguYFAzDFHy/We/8MpOqmo@ifi.uio.no>	<48976168.3020804@shaw.ca>	<20080804205508.20a3f917@lxorguk.ukuu.org.uk>	<48977AE1.1070402@ru.mvista.com> <20080804224309.77ffd28e@lxorguk.ukuu.org.uk> <489786A7.8060400@ru.mvista.com>
-In-Reply-To: <489786A7.8060400@ru.mvista.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, I wrote:
->>>>> supported. I couldn't track down where that bit was actually 
->>>>> defined in the first place, all the way back to ATA-1 it seems to 
->>>>> be indicated as reserved. Actually, I'm not sure why the drive 
->>>>> cares in the first place, it would seem like a pure host 
->>>>> controller issue..
->>>>>             
->>>> It goes back before IDE into the depths of the original compaq 
->>>> spec. When
->>>> you have a device wired basically directly to the ISA bus (original 
->>>> IDE)
->>>>         
->>>    ISA has only 8/16-bit data bus, so it could not have mattered 
->>> there...     
->>
->> Depends what a 32bit I/O looks like on the 16bit bus - timing wise.
->>   
->
->   Two 16-bit reads at addresses 0x1x0 and 0x1x2 with the programmed 
-> recovery time, IIRC... It's just occured to me that in case of the 
-> 16-bit bus it should be how the drive treated the accesses at address 
-> 0x1x2 with IOCS16 asserted that could have mattered. If it honored 
-> them, 32-bit I/O could have worked even on a dumb ISA "controller", if 
-> not -- no way (unless you really had *something* between the ISA and 
-> the IDE cable).
+> Would you like me to test this patch on the box, to verify? It seems
+> like you were able to reproduce the non-booting kernel?
 
-    Oh, -IOCS16 is driven by device, not host. I give up then. :-)
+As soon as I turned on CONFIG_PRINTK_TIME=y I hit what I presume
+was the same problem.
 
-MBR, Sergei
+If you have time to do so, then confirming that this is the
+same issue that you are seeing on your system would be good.
 
+Thanks
 
+-Tony
