@@ -1,90 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759963AbYHDSty@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760715AbYHDSxr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759963AbYHDSty (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 14:49:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760325AbYHDStK
+	id S1760715AbYHDSxr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 14:53:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759936AbYHDSxW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 14:49:10 -0400
-Received: from viefep18-int.chello.at ([213.46.255.22]:57903 "EHLO
-	viefep15-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758496AbYHDStH (ORCPT
+	Mon, 4 Aug 2008 14:53:22 -0400
+Received: from out02.mta.xmission.com ([166.70.13.232]:40294 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754830AbYHDSxP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 14:49:07 -0400
-X-SourceIP: 80.57.229.25
-Subject: Re: [PATCH] workaround minor lockdep bug triggered by
-	mm_take_all_locks
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Andrea Arcangeli <andrea@qumranet.com>
-Cc: Dave Jones <davej@redhat.com>, Roland Dreier <rdreier@cisco.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, jeremy@goop.org, hugh@veritas.com,
-       mingo@elte.hu, akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20080804175730.GL11476@duo.random>
-References: <ada63qgvppx.fsf@cisco.com> <1217859571.3589.7.camel@twins>
-	 <aday73cua99.fsf@cisco.com> <1217860332.3589.11.camel@twins>
-	 <20080804145318.GA17867@redhat.com> <1217861763.3589.13.camel@twins>
-	 <20080804162657.GI11476@duo.random> <1217867935.3589.35.camel@twins>
-	 <20080804172728.GJ11476@duo.random> <20080804174659.GK11476@duo.random>
-	 <20080804175730.GL11476@duo.random>
-Content-Type: text/plain
-Date: Mon, 04 Aug 2008 20:48:59 +0200
-Message-Id: <1217875739.3589.56.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 4 Aug 2008 14:53:15 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Yinghai Lu <yhlu.kernel@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>, Mike Travis <travis@sgi.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+References: <1217732365-16595-1-git-send-email-yhlu.kernel@gmail.com>
+	<1217732365-16595-9-git-send-email-yhlu.kernel@gmail.com>
+	<1217732365-16595-10-git-send-email-yhlu.kernel@gmail.com>
+	<1217732365-16595-11-git-send-email-yhlu.kernel@gmail.com>
+	<1217732365-16595-12-git-send-email-yhlu.kernel@gmail.com>
+	<1217732365-16595-13-git-send-email-yhlu.kernel@gmail.com>
+	<1217732365-16595-14-git-send-email-yhlu.kernel@gmail.com>
+	<1217732365-16595-15-git-send-email-yhlu.kernel@gmail.com>
+	<1217732365-16595-16-git-send-email-yhlu.kernel@gmail.com>
+	<1217732365-16595-17-git-send-email-yhlu.kernel@gmail.com>
+	<1217732365-16595-18-git-send-email-yhlu.kernel@gmail.com>
+	<1217732365-16595-19-git-send-email-yhlu.kernel@gmail.com>
+	<1217732365-16595-20-git-send-email-yhlu.kernel@gmail.com>
+	<1217732365-16595-21-git-send-email-yhlu.kernel@gmail.com>
+	<1217732365-16595-22-git-send-email-yhlu.kernel@gmail.com>
+	<20080803161447.791705bb@lxorguk.ukuu.org.uk>
+	<m1hca150t8.fsf@frodo.ebiederm.org>
+	<20080804151734.0d82fbe9@lxorguk.ukuu.org.uk>
+Date: Mon, 04 Aug 2008 11:51:33 -0700
+In-Reply-To: <20080804151734.0d82fbe9@lxorguk.ukuu.org.uk> (Alan Cox's message
+	of "Mon, 4 Aug 2008 15:17:34 +0100")
+Message-ID: <m163qg62bu.fsf@frodo.ebiederm.org>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-SA-Exim-Connect-IP: 24.130.11.59
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa02 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Combo: ;Alan Cox <alan@lxorguk.ukuu.org.uk>
+X-Spam-Relay-Country: 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	* -0.7 BAYES_20 BODY: Bayesian spam probability is 5 to 20%
+	*      [score: 0.0511]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa02 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.4 FVGT_m_MULTI_ODD Contains multiple odd letter combinations
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+Subject: Re: [PATCH 21/25] serial: change remove NR_IRQS in 8250.c v2
+X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
+X-SA-Exim-Scanned: Yes (on mgr1.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-08-04 at 19:57 +0200, Andrea Arcangeli wrote:
-> From: Andrea Arcangeli <andrea@qumranet.com>
-> 
-> Lockdep can't recognize if spinlocks are at a different address. So
-> using trylock in a loop is one way to avoid lockdep to generate false
-> positives. After lockdep will be fixed this change can and should be
-> reverted.
-> 
-> Signed-off-by: Andrea Arcangeli <andrea@qumranet.com>
+Alan Cox <alan@lxorguk.ukuu.org.uk> writes:
 
-NAK, come-on, you didn't even bother to look at the available
-annotations..
+>> Looks like we can also tweak serial_do_unlink to free irq_info when
+>> the list goes empty, so we don't have a leak if the driver is ever
+>> unloaded.
+>
+> Like this (again not yet tested) 
+>
+> 8250: Remove NR_IRQ usage
+>
+> From: Alan Cox <alan@redhat.com>
 
-> ---
-> 
-> Resubmit because I didn't update the subject and so I improved the
-> comments too. This is mostly to show it's a bug in lockdep and it can
-> be trivially worked around without having to fix lockdep for real, any
-> superior solution to this hack is more than welcome and recommended.
-> 
-> diff -r 3469dce61df1 mm/mmap.c
-> --- a/mm/mmap.c	Tue Jul 29 20:01:28 2008 +0200
-> +++ b/mm/mmap.c	Mon Aug 04 19:54:27 2008 +0200
-> @@ -2279,8 +2279,12 @@ static void vm_lock_anon_vma(struct anon
->  		/*
->  		 * The LSB of head.next can't change from under us
->  		 * because we hold the mm_all_locks_mutex.
-> +		 *
-> +		 * spin_lock would confuse lockdep who doesn't notice
-> +		 * the 'anon_vma' always changing address.
->  		 */
-> -		spin_lock(&anon_vma->lock);
-> +		while (!spin_trylock(&anon_vma->lock))
-> +			cpu_relax();
->  		/*
->  		 * We can safely modify head.next after taking the
->  		 * anon_vma->lock. If some other vma in this mm shares
-> @@ -2310,7 +2314,12 @@ static void vm_lock_mapping(struct addre
->  		 */
->  		if (test_and_set_bit(AS_MM_ALL_LOCKS, &mapping->flags))
->  			BUG();
-> -		spin_lock(&mapping->i_mmap_lock);
-> +		/*
-> +		 * spin_lock would confuse lockdep who doesn't notice
-> +		 * the 'mapping' always changing address.
-> +		 */
-> +		while (!spin_trylock(&mapping->i_mmap_lock))
-> +			cpu_relax();
->  	}
->  }
+I think we've just about got it.
+
+>  /*
+>   * Here we define the default xmit fifo size used for each type of UART.
+> @@ -1541,9 +1545,32 @@ static void serial_do_unlink(struct irq_info *i, struct
+> uart_8250_port *up)
 >  
+>  static int serial_link_irq_chain(struct uart_8250_port *up)
+>  {
+> -	struct irq_info *i = irq_lists + up->port.irq;
+> +	struct hlist_head *h;
+> +	struct hlist_node *n;
+> +	struct irq_info *i;
+>  	int ret, irq_flags = up->port.flags & UPF_SHARE_IRQ ? IRQF_SHARED : 0;
+>  
+> +	mutex_lock(&hash_mutex);
+> +
+> +	h = &irq_lists[up->port.irq % NR_IRQ_HASH];
+> +	
+> +	hlist_for_each(n, h) {
+> +		i = hlist_entry(n, struct irq_info, node);
+> +		if (i->irq == up->port.irq)
+> +			break;
+> +	}
+> +
+> +	if (n == NULL) {
+> +		i = kzalloc(sizeof(struct irq_info), GFP_KERNEL);
+> +		if (i == NULL) {
+> +			mutex_unlock(&hash_mutex);
+> +			return -ENOMEM;
+> +		}
+> +		spin_lock_init(&i->lock);
+> +		hlist_add_head(&i->node, h);
+> +	}
+> +	mutex_unlock(&hash_mutex);
+> +
+>  	spin_lock_irq(&i->lock);
+>  
+>  	if (i->head) {
 
+Note there is also an error path that calls serial_do_unlink in serial_link_irq_chain.
+That we might want to free the entry in.  Do we want move hash table entry freeing
+into serial_do_unlink or duplicate it here?
+
+Eric
