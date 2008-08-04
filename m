@@ -1,74 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763956AbYHDWKG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763642AbYHDWLM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763956AbYHDWKG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 18:10:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757207AbYHDWJt
+	id S1763642AbYHDWLM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 18:11:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757354AbYHDWKy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 18:09:49 -0400
-Received: from smtp.blackdown.de ([78.47.134.53]:41164 "EHLO smtp.blackdown.de"
+	Mon, 4 Aug 2008 18:10:54 -0400
+Received: from mga02.intel.com ([134.134.136.20]:4017 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751535AbYHDWJr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 18:09:47 -0400
-Message-ID: <48977E1B.2090905@blackdown.de>
-Date: Tue, 05 Aug 2008 00:09:31 +0200
-From: Juergen Kreileder <jk@blackdown.de>
-Organization: Blackdown Java-Linux Team
-User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
+	id S1756411AbYHDWKx convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Aug 2008 18:10:53 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.31,306,1215414000"; 
+   d="scan'208";a="425925037"
+From: "Luck, Tony" <tony.luck@intel.com>
+To: David Miller <davem@davemloft.net>
+CC: "nacc@us.ibm.com" <nacc@us.ibm.com>, "mingo@elte.hu" <mingo@elte.hu>,
+       "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Date: Mon, 4 Aug 2008 15:10:40 -0700
+Subject: RE: [BISECTION RESULT] sched: revert cpu_clock to
+ pre-27ec4407790d075c325e1f4da0a19c56953cce23 state
+Thread-Topic: [BISECTION RESULT] sched: revert cpu_clock to
+ pre-27ec4407790d075c325e1f4da0a19c56953cce23 state
+Thread-Index: Acj2feJleuX1QcPGTCGNrzIdwXeTDQAAC6KA
+Message-ID: <57C9024A16AD2D4C97DC78E552063EA308329139@orsmsx505.amr.corp.intel.com>
+References: <20080804194646.GA17390@us.ibm.com>
+	<57C9024A16AD2D4C97DC78E552063EA308328FB4@orsmsx505.amr.corp.intel.com>
+	<57C9024A16AD2D4C97DC78E552063EA308329110@orsmsx505.amr.corp.intel.com>
+ <20080804.150249.71509974.davem@davemloft.net>
+In-Reply-To: <20080804.150249.71509974.davem@davemloft.net>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-To: Robert Hancock <hancockr@shaw.ca>, ath9k-devel@venema.h4ckr.net
-CC: Tejun Heo <tj@kernel.org>, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org
-Subject: Running out of SWIOTLB space (was: SW-IOMMU / ata_piix errors with
- 2.6.27-rc1)
-References: <fa.64b92XSd5HpCdpOYcDENnJSZJyw@ifi.uio.no> <4896157A.2020907@shaw.ca> <4896500E.2040304@blackdown.de> <48966728.5080901@kernel.org> <48966DAE.2020203@shaw.ca>
-In-Reply-To: <48966DAE.2020203@shaw.ca>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robert Hancock wrote:
-> Tejun Heo wrote:
->> Juergen Kreileder wrote:
->>> Robert Hancock wrote:
->>>> Juergen Kreileder wrote:
->>>>> Hi,
->>>>>
->>>>> I get lots of errors like this with 2.6.27-rc1 on my
->>>>> Macbook Pro (3rd generation), 2.6.26 seems to work fine:
->>>>>
->>>>> [  907.524509] DMA: Out of SW-IOMMU space for 45056 bytes at device 0000:00:1f.2
->>>>> [  907.524783] ata3.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x0
->>>>> [  907.524796] ata3.00: cmd 35/00:50:08:91:5c/00:01:0f:00:00/e0 tag 0 dma 172032 out
->>>>> [  907.524798]          res 50/00:00:ff:90:5c/00:00:0f:00:00/ef Emask 0x40 (internal error)
->>>>> [  907.524805] ata3.00: status: { DRDY }
->>>>> [  907.646590] ata3.00: configured for UDMA/133
->>>>> [  907.646624] ata3: EH complete
->>>>> Any suggestions?
->>>> You can try increasing the swiotlb size by booting with swiotlb=65536 
->>>> (for 128MB) or swiotlb=131072 (for 256MB), and see if that makes the 
->>>> problem go away.. It's unclear why you'd be running out of SWIOTLB space 
->>>> now, though, if 2.6.26 worked fine..
->>> Still happening, although 256M make it a bit harder to trigger.
->> Hmm... sounds like mapping is leaking.  Eh... iommu leak debug seems to
->> support only AMD GART IOMMU.  How long does it take to reproduce the
->> bug?  Once it happens, it never recovers, right?  Does the problem
->> happen with minimal configuration w/ only libata enabled (no network, no
->> sound, no usb...)?
-> 
-> Yes, that would be a good test.. Easiest way might be booting with 
-> init=/bin/sh and running some processes that do lots of disk access..
+> Can you guys on IA64 possibly set ar.k3 simply to zero or to some
+> other similar value which cancels out the per-cpu computation?
+>
+> That's what sparc64 and other platforms do.
 
-After a bit more testing I'm pretty sure the problem is caused by an
-external driver, namely the new ath9k driver.
+In cpu_init() we set ar.k3 to the base physical address of the percpu
+area.  The alt-dtlb miss handler uses this register to set up a
+TLB mapping from virtual address 0xffffffffffff0000 to this physical
+address.
 
-Sorry for the noise on the wrong lists.
+This means that most per-cpu accesses are very cheap (as the compiler
+can use a small -ve offset from register r0 to load the virtual
+address).
 
+Accessing ar.k3 is a bit slow ... so making the per-cpu code
+use that on every access to a per-cpu variable would be unpleasant.
 
-	Juergen
-
--- 
-Juergen Kreileder, Blackdown Java-Linux Team
-http://blog.blackdown.de/
+-Tony
