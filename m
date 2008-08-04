@@ -1,66 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756517AbYHDOpO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757820AbYHDOpi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756517AbYHDOpO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 10:45:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753789AbYHDOo7
+	id S1757820AbYHDOpi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 10:45:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756796AbYHDOpR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 10:44:59 -0400
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:52528 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753359AbYHDOo7 (ORCPT
+	Mon, 4 Aug 2008 10:45:17 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:35195 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1756659AbYHDOpQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 10:44:59 -0400
-Subject: Re: [GIT PATCH] SCSI fixes for 2.6.27-rc1
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Ben Dooks <ben-linux@fluff.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080804142927.GG8301@fluff.org.uk>
-References: <1217800985.4179.55.camel@localhost.localdomain>
-	 <20080804142927.GG8301@fluff.org.uk>
-Content-Type: text/plain
-Date: Mon, 04 Aug 2008 09:44:52 -0500
-Message-Id: <1217861092.3318.10.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
+	Mon, 4 Aug 2008 10:45:16 -0400
+Date: Mon, 4 Aug 2008 10:45:15 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: "Dasgupta, Romit" <romit@ti.com>
+cc: "Rafael J. Wysocki" <rjw@sisk.pl>, David Engraf <david.engraf@netcom.eu>,
+       Greg KH <greg@kroah.com>,
+       "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+Subject: Re: [PATCH] [PM] Fixes missing PM entries in sysfs without
+ CONFIG_PM_SLEEP
+In-Reply-To: <B85A65D85D7EB246BE421B3FB0FBB593013C91EF11@dbde02.ent.ti.com>
+Message-ID: <Pine.LNX.4.44L0.0808041041070.2815-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-08-04 at 15:29 +0100, Ben Dooks wrote:
-> On Sun, Aug 03, 2008 at 05:03:05PM -0500, James Bottomley wrote:
-> > This is just a small selection of four fixes, one expanding driver
-> > bindings and the other three fixing actual bugs (all of which need
-> > backporting to 2.6.26 I'm afraid).
-> > 
-> > The patch is available here:
-> > 
-> > master.kernel.org:/pub/scm/linux/kernel/git/jejb/scsi-rc-fixes-2.6.git
-> > 
-> > The short changelog is:
-> > 
-> > HighPoint Linux Team (1):
+On Sun, 3 Aug 2008, Dasgupta, Romit wrote:
+
+> Alan,
+>          Here is a patch for you. Tested with
 > 
-> I thought group (or non-person) submissions where explicitly
-> prohibitted in the signoff section in Documentation/SubmittingPatches
+> 1) CONFIG_SUSPEND, CONFIG_HIBERNATION i.e. with CONFIG_PM_SLEEP
+> 2) without CONFIG_PM_SLEEP but with CONFIG_PM
+> 3) without CONFIG_PM
 
-Not as I read it.  It says:
+I'd prefer to use the patch below.  Although it's a little longer, the 
+end result is slightly less complicated.  Also, it fixes two problems:
 
-        then you just add a line saying
-        
-                Signed-off-by: Random J Developer
-        <random@developer.example.org>
-        
-        using your real name (sorry, no pseudonyms or anonymous
-        contributions.)
-        
-Which doesn't preclude company signoffs (as long as it's a real
-company).  Of course, most companies worry about the legal liability
-from the GPL and the DCO, which is why we get so few of them.
+	dpm_sysfs_add/remove should be called whenever CONFIG_PM
+	is defined, regardless of CONFIG_PM_SLEEP.
 
-James
+	dev->power.status should be initialized to DPM_ON even if
+	CONFIG_PM isn't defined.
 
+Can you make sure it compiles properly under all three configurations?
+
+Rafael, any objections?
+
+Alan Stern
+
+
+
+Index: usb-2.6/drivers/base/power/power.h
+===================================================================
+--- usb-2.6.orig/drivers/base/power/power.h
++++ usb-2.6/drivers/base/power/power.h
+@@ -1,3 +1,8 @@
++static inline void device_pm_init(struct device *dev)
++{
++	dev->power.status = DPM_ON;
++}
++
+ #ifdef CONFIG_PM_SLEEP
+ 
+ /*
+Index: usb-2.6/drivers/base/core.c
+===================================================================
+--- usb-2.6.orig/drivers/base/core.c
++++ usb-2.6/drivers/base/core.c
+@@ -542,6 +542,7 @@ void device_initialize(struct device *de
+ 	spin_lock_init(&dev->devres_lock);
+ 	INIT_LIST_HEAD(&dev->devres_head);
+ 	device_init_wakeup(dev, 0);
++	device_pm_init(dev);
+ 	set_dev_node(dev, -1);
+ }
+ 
+@@ -898,6 +899,9 @@ int device_add(struct device *dev)
+ 	error = bus_add_device(dev);
+ 	if (error)
+ 		goto BusError;
++	error = dpm_sysfs_add(dev);
++	if (error)
++		goto DPMError;
+ 	error = device_pm_add(dev);
+ 	if (error)
+ 		goto PMError;
+@@ -922,6 +926,8 @@ int device_add(struct device *dev)
+ 	put_device(dev);
+ 	return error;
+  PMError:
++	dpm_sysfs_remove(dev);
++ DPMError:
+ 	bus_remove_device(dev);
+  BusError:
+ 	if (dev->bus)
+@@ -1008,6 +1014,7 @@ void device_del(struct device *dev)
+ 	struct class_interface *class_intf;
+ 
+ 	device_pm_remove(dev);
++	dpm_sysfs_remove(dev);
+ 	if (parent)
+ 		klist_del(&dev->knode_parent);
+ 	if (MAJOR(dev->devt)) {
+Index: usb-2.6/drivers/base/power/main.c
+===================================================================
+--- usb-2.6.orig/drivers/base/power/main.c
++++ usb-2.6/drivers/base/power/main.c
+@@ -69,7 +69,7 @@ void device_pm_unlock(void)
+  */
+ int device_pm_add(struct device *dev)
+ {
+-	int error;
++	int error = 0;
+ 
+ 	pr_debug("PM: Adding info for %s:%s\n",
+ 		 dev->bus ? dev->bus->name : "No Bus",
+@@ -89,11 +89,8 @@ int device_pm_add(struct device *dev)
+ 		 */
+ 		WARN_ON(true);
+ 	}
+-	error = dpm_sysfs_add(dev);
+-	if (!error) {
+-		dev->power.status = DPM_ON;
+-		list_add_tail(&dev->power.entry, &dpm_list);
+-	}
++
++	list_add_tail(&dev->power.entry, &dpm_list);
+ 	mutex_unlock(&dpm_list_mtx);
+ 	return error;
+ }
+@@ -110,7 +107,6 @@ void device_pm_remove(struct device *dev
+ 		 dev->bus ? dev->bus->name : "No Bus",
+ 		 kobject_name(&dev->kobj));
+ 	mutex_lock(&dpm_list_mtx);
+-	dpm_sysfs_remove(dev);
+ 	list_del_init(&dev->power.entry);
+ 	mutex_unlock(&dpm_list_mtx);
+ }
 
