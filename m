@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764751AbYHDUcY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764812AbYHDUcl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764751AbYHDUcY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 16:32:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764098AbYHDUbt
+	id S1764812AbYHDUcl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 16:32:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755872AbYHDUcM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 16:31:49 -0400
-Received: from mx1.suse.de ([195.135.220.2]:49557 "EHLO mx1.suse.de"
+	Mon, 4 Aug 2008 16:32:12 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:46188 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764182AbYHDUbq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 16:31:46 -0400
-Date: Mon, 4 Aug 2008 13:16:24 -0700
+	id S1764722AbYHDUcJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Aug 2008 16:32:09 -0400
+Date: Mon, 4 Aug 2008 13:16:26 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,13 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Takashi Iwai <tiwai@suse.de>
-Subject: [patch 30/33] ALSA: Fix Oops with usb-audio reconnection
-Message-ID: <20080804201624.GE1139@suse.de>
+       alan@lxorguk.ukuu.org.uk, Takashi Iwai <tiwai@suse.de>,
+       Jaroslav Kysela <perex@perex.cz>
+Subject: [patch 31/33] ALSA: hda - Add missing Thinkpad Z60m support
+Message-ID: <20080804201626.GF1139@suse.de>
 References: <20080804200515.110033151@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="alsa-fix-oops-with-usb-audio-reconnection.patch"
+Content-Disposition: inline; filename="alsa-hda-add-missing-thinkpad-z60m-support.patch"
 In-Reply-To: <20080804201321.GA1139@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -42,306 +43,28 @@ know.
 
 From: Takashi Iwai <tiwai@suse.de>
 
-Backport fixes for usb-audio Oops at reconnection.
+commit 470eaf6be78424fc499a5039e5d5fe58bace2bc3 upstream
 
-9eb70e6... [ALSA] usb-audio - Fix race in reconnection
-f18638d... [ALSA] Clean up snd_card_free*()
-73d38b1... [ALSA] Fix the race of card instance unregistration
+Added the missing SSID of Thinkpad Z60m for model=thinkpad with
+AD1981HD.
 
 Signed-off-by: Takashi Iwai <tiwai@suse.de>
+Signed-off-by: Jaroslav Kysela <perex@perex.cz>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- sound/core/init.c     |   36 ++++++++++--------------
- sound/usb/usbaudio.c  |   35 +++++++++++++++++------
- sound/usb/usbquirks.h |   75 +++++++++++++++++++++++++-------------------------
- 3 files changed, 79 insertions(+), 67 deletions(-)
+ sound/pci/hda/patch_analog.c |    1 +
+ 1 file changed, 1 insertion(+)
 
---- a/sound/core/init.c
-+++ b/sound/core/init.c
-@@ -311,6 +311,9 @@ int snd_card_disconnect(struct snd_card 
- 	struct file *file;
- 	int err;
+--- a/sound/pci/hda/patch_analog.c
++++ b/sound/pci/hda/patch_analog.c
+@@ -1563,6 +1563,7 @@ static const char *ad1981_models[AD1981_
  
-+	if (!card)
-+		return -EINVAL;
-+
- 	spin_lock(&card->files_lock);
- 	if (card->shutdown) {
- 		spin_unlock(&card->files_lock);
-@@ -322,6 +325,7 @@ int snd_card_disconnect(struct snd_card 
- 	/* phase 1: disable fops (user space) operations for ALSA API */
- 	mutex_lock(&snd_card_mutex);
- 	snd_cards[card->number] = NULL;
-+	snd_cards_lock &= ~(1 << card->number);
- 	mutex_unlock(&snd_card_mutex);
- 	
- 	/* phase 2: replace file->f_op with special dummy operations */
-@@ -360,6 +364,15 @@ int snd_card_disconnect(struct snd_card 
- 		snd_printk(KERN_ERR "not all devices for card %i can be disconnected\n", card->number);
- 
- 	snd_info_card_disconnect(card);
-+#ifndef CONFIG_SYSFS_DEPRECATED
-+	if (card->card_dev) {
-+		device_unregister(card->card_dev);
-+		card->card_dev = NULL;
-+	}
-+#endif
-+#ifdef CONFIG_PM
-+	wake_up(&card->power_sleep);
-+#endif
- 	return 0;	
- }
- 
-@@ -401,33 +414,14 @@ static int snd_card_do_free(struct snd_c
- 		snd_printk(KERN_WARNING "unable to free card info\n");
- 		/* Not fatal error */
- 	}
--#ifndef CONFIG_SYSFS_DEPRECATED
--	if (card->card_dev)
--		device_unregister(card->card_dev);
--#endif
- 	kfree(card);
- 	return 0;
- }
- 
--static int snd_card_free_prepare(struct snd_card *card)
--{
--	if (card == NULL)
--		return -EINVAL;
--	(void) snd_card_disconnect(card);
--	mutex_lock(&snd_card_mutex);
--	snd_cards[card->number] = NULL;
--	snd_cards_lock &= ~(1 << card->number);
--	mutex_unlock(&snd_card_mutex);
--#ifdef CONFIG_PM
--	wake_up(&card->power_sleep);
--#endif
--	return 0;
--}
--
- int snd_card_free_when_closed(struct snd_card *card)
- {
- 	int free_now = 0;
--	int ret = snd_card_free_prepare(card);
-+	int ret = snd_card_disconnect(card);
- 	if (ret)
- 		return ret;
- 
-@@ -447,7 +441,7 @@ EXPORT_SYMBOL(snd_card_free_when_closed)
- 
- int snd_card_free(struct snd_card *card)
- {
--	int ret = snd_card_free_prepare(card);
-+	int ret = snd_card_disconnect(card);
- 	if (ret)
- 		return ret;
- 
---- a/sound/usb/usbaudio.c
-+++ b/sound/usb/usbaudio.c
-@@ -1762,8 +1762,10 @@ static int check_hw_params_convention(st
- 
- 	channels = kcalloc(MAX_MASK, sizeof(u32), GFP_KERNEL);
- 	rates = kcalloc(MAX_MASK, sizeof(u32), GFP_KERNEL);
--	if (!channels || !rates)
-+	if (!channels || !rates) {
-+		err = -ENOMEM;
- 		goto __out;
-+	}
- 
- 	list_for_each(p, &subs->fmt_list) {
- 		struct audioformat *f;
-@@ -1916,7 +1918,10 @@ static int setup_hw_info(struct snd_pcm_
- 				     1000 * MIN_PACKS_URB,
- 				     /*(nrpacks * MAX_URBS) * 1000*/ UINT_MAX);
- 
--	if (check_hw_params_convention(subs)) {
-+	err = check_hw_params_convention(subs);
-+	if (err < 0)
-+		return err;
-+	else if (err) {
- 		hwc_debug("setting extra hw constraints...\n");
- 		if ((err = snd_pcm_hw_rule_add(runtime, 0, SNDRV_PCM_HW_PARAM_RATE,
- 					       hw_rule_rate, subs,
-@@ -2463,11 +2468,12 @@ static int parse_audio_format_i_type(str
- 		}
- 		break;
- 	case USB_AUDIO_FORMAT_PCM8:
--		/* Dallas DS4201 workaround */
-+		pcm_format = SNDRV_PCM_FORMAT_U8;
-+
-+		/* Dallas DS4201 workaround: it advertises U8 format, but really
-+		   supports S8. */
- 		if (chip->usb_id == USB_ID(0x04fa, 0x4201))
- 			pcm_format = SNDRV_PCM_FORMAT_S8;
--		else
--			pcm_format = SNDRV_PCM_FORMAT_U8;
- 		break;
- 	case USB_AUDIO_FORMAT_IEEE_FLOAT:
- 		pcm_format = SNDRV_PCM_FORMAT_FLOAT_LE;
-@@ -2671,12 +2677,23 @@ static int parse_audio_endpoints(struct 
- 	int format;
- 	struct audioformat *fp;
- 	unsigned char *fmt, *csep;
-+	int num;
- 
- 	dev = chip->dev;
- 
- 	/* parse the interface's altsettings */
- 	iface = usb_ifnum_to_if(dev, iface_no);
--	for (i = 0; i < iface->num_altsetting; i++) {
-+
-+	num = iface->num_altsetting;
-+
-+	/*
-+	 * Dallas DS4201 workaround: It presents 5 altsettings, but the last
-+	 * one misses syncpipe, and does not produce any sound.
-+	 */
-+	if (chip->usb_id == USB_ID(0x04fa, 0x4201))
-+		num = 4;
-+
-+	for (i = 0; i < num; i++) {
- 		alts = &iface->altsetting[i];
- 		altsd = get_iface_desc(alts);
- 		/* skip invalid one */
-@@ -3406,7 +3423,6 @@ static void snd_usb_audio_create_proc(st
- 
- static int snd_usb_audio_free(struct snd_usb_audio *chip)
- {
--	usb_chip[chip->index] = NULL;
- 	kfree(chip);
- 	return 0;
- }
-@@ -3600,8 +3616,8 @@ static void *snd_usb_audio_probe(struct 
- 				snd_card_set_dev(chip->card, &intf->dev);
- 				break;
- 			}
--		if (! chip) {
--			snd_printk(KERN_ERR "no available usb audio device\n");
-+		if (!chip) {
-+			printk(KERN_ERR "no available usb audio device\n");
- 			goto __error;
- 		}
- 	}
-@@ -3671,6 +3687,7 @@ static void snd_usb_audio_disconnect(str
- 		list_for_each(p, &chip->mixer_list) {
- 			snd_usb_mixer_disconnect(p);
- 		}
-+		usb_chip[chip->index] = NULL;
- 		mutex_unlock(&register_mutex);
- 		snd_card_free_when_closed(card);
- 	} else {
---- a/sound/usb/usbquirks.h
-+++ b/sound/usb/usbquirks.h
-@@ -39,6 +39,30 @@
- 	.idProduct = prod, \
- 	.bInterfaceClass = USB_CLASS_VENDOR_SPEC
- 
-+/* Creative/E-Mu devices */
-+{
-+	USB_DEVICE(0x041e, 0x3010),
-+	.driver_info = (unsigned long) & (const struct snd_usb_audio_quirk) {
-+		.vendor_name = "Creative Labs",
-+		.product_name = "Sound Blaster MP3+",
-+		.ifnum = QUIRK_NO_INTERFACE
-+	}
-+},
-+{
-+	/* E-Mu 0202 USB */
-+	.match_flags = USB_DEVICE_ID_MATCH_DEVICE,
-+	.idVendor = 0x041e,
-+	.idProduct = 0x3f02,
-+	.bInterfaceClass = USB_CLASS_AUDIO,
-+},
-+{
-+	/* E-Mu 0404 USB */
-+	.match_flags = USB_DEVICE_ID_MATCH_DEVICE,
-+	.idVendor = 0x041e,
-+	.idProduct = 0x3f04,
-+	.bInterfaceClass = USB_CLASS_AUDIO,
-+},
-+
- /*
-  * Logitech QuickCam: bDeviceClass is vendor-specific, so generic interface
-  * class matches do not take effect without an explicit ID match.
-@@ -97,19 +121,7 @@
- 	.bInterfaceClass = USB_CLASS_AUDIO,
- 	.bInterfaceSubClass = USB_SUBCLASS_AUDIO_CONTROL
- },
--/* E-Mu devices */
--{
--	.match_flags = USB_DEVICE_ID_MATCH_DEVICE,
--	.idVendor = 0x041e,
--	.idProduct = 0x3f02,
--	.bInterfaceClass = USB_CLASS_AUDIO,
--},
--{
--	.match_flags = USB_DEVICE_ID_MATCH_DEVICE,
--	.idVendor = 0x041e,
--	.idProduct = 0x3f04,
--	.bInterfaceClass = USB_CLASS_AUDIO,
--},
-+
- /*
-  * Yamaha devices
-  */
-@@ -1165,19 +1177,6 @@ YAMAHA_DEVICE(0x7010, "UB99"),
- 		}
- 	}
- },
--{
--	USB_DEVICE(0x582, 0x00a6),
--	.driver_info = (unsigned long) & (const struct snd_usb_audio_quirk) {
--		.vendor_name = "Roland",
--		.product_name = "Juno-G",
--		.ifnum = 0,
--		.type = QUIRK_MIDI_FIXED_ENDPOINT,
--		.data = & (const struct snd_usb_midi_endpoint_info) {
--			.out_cables = 0x0001,
--			.in_cables  = 0x0001
--		}
--	}
--},
- {	/*
- 	 * This quirk is for the "Advanced" modes of the Edirol UA-25.
- 	 * If the switch is not in an advanced setting, the UA-25 has
-@@ -1336,6 +1335,19 @@ YAMAHA_DEVICE(0x7010, "UB99"),
- },
- 	/* TODO: add Edirol MD-P1 support */
- {
-+	USB_DEVICE(0x582, 0x00a6),
-+	.driver_info = (unsigned long) & (const struct snd_usb_audio_quirk) {
-+		.vendor_name = "Roland",
-+		.product_name = "Juno-G",
-+		.ifnum = 0,
-+		.type = QUIRK_MIDI_FIXED_ENDPOINT,
-+		.data = & (const struct snd_usb_midi_endpoint_info) {
-+			.out_cables = 0x0001,
-+			.in_cables  = 0x0001
-+		}
-+	}
-+},
-+{
- 	/* Roland SH-201 */
- 	USB_DEVICE(0x0582, 0x00ad),
- 	.driver_info = (unsigned long) & (const struct snd_usb_audio_quirk) {
-@@ -1719,17 +1731,6 @@ YAMAHA_DEVICE(0x7010, "UB99"),
- 	}
- },
- 
--{
--	/* Creative Sound Blaster MP3+ */
--	USB_DEVICE(0x041e, 0x3010),
--	.driver_info = (unsigned long) & (const struct snd_usb_audio_quirk) {
--		.vendor_name = "Creative Labs",
--		.product_name = "Sound Blaster MP3+",
--		.ifnum = QUIRK_NO_INTERFACE
--	}
--	
--},
--
- /* Emagic devices */
- {
- 	USB_DEVICE(0x086a, 0x0001),
+ static struct snd_pci_quirk ad1981_cfg_tbl[] = {
+ 	SND_PCI_QUIRK(0x1014, 0x0597, "Lenovo Z60", AD1981_THINKPAD),
++	SND_PCI_QUIRK(0x1014, 0x05b7, "Lenovo Z60m", AD1981_THINKPAD),
+ 	/* All HP models */
+ 	SND_PCI_QUIRK(0x103c, 0, "HP nx", AD1981_HP),
+ 	SND_PCI_QUIRK(0x1179, 0x0001, "Toshiba U205", AD1981_TOSHIBA),
 
 -- 
