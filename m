@@ -1,68 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756237AbYHDNjT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754589AbYHDNmS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756237AbYHDNjT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 09:39:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753467AbYHDNjI
+	id S1754589AbYHDNmS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 09:42:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753043AbYHDNmJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 09:39:08 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:45512 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752460AbYHDNjF (ORCPT
+	Mon, 4 Aug 2008 09:42:09 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:39002 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752627AbYHDNmI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 09:39:05 -0400
-Message-ID: <489705E6.70103@linux-foundation.org>
-Date: Mon, 04 Aug 2008 08:36:38 -0500
-From: Christoph Lameter <cl@linux-foundation.org>
-User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
-MIME-Version: 1.0
-To: Christoph Lameter <cl@linux-foundation.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, akpm@linux-foundation.org,
-       Christoph Lameter <clameter@sgi.com>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, Mel Gorman <mel@skynet.ie>,
-       andi@firstfloor.org, Rik van Riel <riel@redhat.com>, mpm@selenic.com
-Subject: Re: [patch 15/19] Filesystem: XFS slab defragmentation
-References: <20080801182324.572058187@lameter.com> <20080801182347.427403976@lameter.com> <20080803014218.GA6119@disturbed>
-In-Reply-To: <20080803014218.GA6119@disturbed>
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 4 Aug 2008 09:42:08 -0400
+Subject: Re: [PATCH 3/4] Fix remaining big endian issue of hfcmulti
+From: David Woodhouse <dwmw2@infradead.org>
+To: Karsten Keil <kkeil@suse.de>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       isdn4linux@listserv.isdn4linux.de, linux-kernel@vger.kernel.org
+In-Reply-To: <20080802151532.DE017A3C09@pingi.kke.suse.de>
+References: <20080802151532.DE017A3C09@pingi.kke.suse.de>
+Content-Type: text/plain
+Date: Mon, 04 Aug 2008 13:03:59 +0100
+Message-Id: <1217851439.3454.605.camel@pmac.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dave Chinner wrote:
+On Sat, 2008-08-02 at 16:35 +0200, Karsten Keil wrote:
+> The driver was not so bad at big endian at all, only the optimised fifo
+> read/write functions need a fix, with this fix the driver works on
+> a pegasus PPC machine.
 
-> I think that hunk is mis-applied. You're configuring the
-> xfs_vnode_zone defrag after allocating the xfs_ioend_zone. This
-> should be afew lines higher up, right?
+Great; thanks.
 
-That would be nicer but its not a bug to have the setup where it is right now.
+And the ztdummy parts? 
 
-Fix:
+-- 
+David Woodhouse                            Open Source Technology Centre
+David.Woodhouse@intel.com                              Intel Corporation
 
 
-Subject: defrag/xfs: Move defrag setup directly after xfs_vnode_zone kmem
-cache creation
 
-Move the setup of the defrag directly after the creation of the xfs_vnode_zone
-
-Signed-off-by: Christoph Lameter <cl@linux-foundation.org>
-
-Index: linux-2.6/fs/xfs/linux-2.6/xfs_super.c
-===================================================================
---- linux-2.6.orig/fs/xfs/linux-2.6/xfs_super.c	2008-08-04 08:27:09.000000000
--0500
-+++ linux-2.6/fs/xfs/linux-2.6/xfs_super.c	2008-08-04 08:27:25.000000000 -0500
-@@ -2021,11 +2021,11 @@
- 	if (!xfs_vnode_zone)
- 		goto out;
-
-+	kmem_cache_setup_defrag(xfs_vnode_zone, get_inodes, kick_inodes);
-+
- 	xfs_ioend_zone = kmem_zone_init(sizeof(xfs_ioend_t), "xfs_ioend");
- 	if (!xfs_ioend_zone)
- 		goto out_destroy_vnode_zone;
--	kmem_cache_setup_defrag(xfs_vnode_zone, get_inodes, kick_inodes);
--
- 	xfs_ioend_pool = mempool_create_slab_pool(4 * MAX_BUF_PER_PAGE,
- 						  xfs_ioend_zone);
- 	if (!xfs_ioend_pool)
