@@ -1,102 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756953AbYHDDWS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756683AbYHDDYa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756953AbYHDDWS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Aug 2008 23:22:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752979AbYHDDWH
+	id S1756683AbYHDDYa (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Aug 2008 23:24:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752969AbYHDDYX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Aug 2008 23:22:07 -0400
-Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:39573 "EHLO
-	pd3mo1so-dmz.prod.shaw.ca" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752913AbYHDDWF (ORCPT
+	Sun, 3 Aug 2008 23:24:23 -0400
+Received: from wf-out-1314.google.com ([209.85.200.169]:14506 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752653AbYHDDYV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Aug 2008 23:22:05 -0400
-X-Cloudmark-SP-Filtered: true
-X-Cloudmark-SP-Result: v=1.0 c=0 a=VwQbUJbxAAAA:8 a=W0vUJOdyAAAA:8 a=dgOF77SLaJsav1JFRHIA:9 a=wX9nBo17Sd1pNISXESsA:7 a=ueikNKIANHvhNZWRbLb1V31136sA:4 a=UrG_RJUhHJwA:10
-Message-ID: <489675DC.2080906@shaw.ca>
-Date: Sun, 03 Aug 2008 21:22:04 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
-MIME-Version: 1.0
-To: linasvepstas@gmail.com
-CC: John Stoffel <john@stoffel.org>,
-       Alistair John Strachan <alistair@devzero.co.uk>,
+	Sun, 3 Aug 2008 23:24:21 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=vOZ4FHNercVkF0VDDY074tu4n/8kn8+Unuk7wG2E9sIhkmASsgdXOoUPs2am5gP6mH
+         onkzM2H3qQ+GsvL5l3VIdaH+VKIP0OOBW5MYBAxd1SEepj1uke7eLdETIZwwrxxWW1pb
+         pSF/o2eDNDCECjAKM2PEgVT/7fScvMlm552kA=
+Message-ID: <8bd0f97a0808032024x18a31d29tb44ebc6216a2aed@mail.gmail.com>
+Date: Sun, 3 Aug 2008 23:24:21 -0400
+From: "Mike Frysinger" <vapier.adi@gmail.com>
+To: "Paul Mundt" <lethal@linux-sh.org>, "Wu, Bryan" <Bryan.Wu@analog.com>
+Subject: Re: [PATCH 2/3] binfmt_elf_fdpic: Convert initial stack alignment to arch_align_stack().
+Cc: "David Howells" <dhowells@redhat.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>, linux-sh@vger.kernel.org,
        linux-kernel@vger.kernel.org
-Subject: Re: amd64 sata_nv (massive) memory corruption
-References: <fa.qB5d+HsAJ6G05jNoeU8Q9GV6Dow@ifi.uio.no> <fa.fxlDAHxOnGgcBiOH/EOauE67ZPc@ifi.uio.no> <fa.1WYUmN6FHR5yW+sXoYRFN22Y8S8@ifi.uio.no> <fa.LAUkvEUlYiF69V/F8F3wigxqH9w@ifi.uio.no> <fa.mXeFXYNkfZfUYPQcGwzok0IOIfY@ifi.uio.no> <fa.KjbvCGbUr2JeQTcwA1/sFGIIMik@ifi.uio.no>
-In-Reply-To: <fa.KjbvCGbUr2JeQTcwA1/sFGIIMik@ifi.uio.no>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+In-Reply-To: <20080801214448.GA13448@linux-sh.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080728150501.GC16555@linux-sh.org>
+	 <20080728150359.GA16555@linux-sh.org>
+	 <20080728150430.GB16555@linux-sh.org> <27552.1217599279@redhat.com>
+	 <20080801214448.GA13448@linux-sh.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linas Vepstas wrote:
-> What I don't like is that the corruption was utterly silent -- and disastereous:
-> Originally, I had the sata disk paired to a pata disk in a RAID array, and the
-> raid array was getting corrupted -- corrupted system files would get worse,
-> as I tried reinstalling them. It took a while to realize that it was the sata
-> disk, and it took a bit longer to realize it wasn't the disk itself, but the
-> bad-ram-on-sata-channel.
-> 
-> So I'm wondering: can we devise a test to validate system-bus interactions
-> like this? Clearly, the memtest86 test validates the RAM and the northbridge
-> bus between CPU and system RAM, so that seems OK.
+On Fri, Aug 1, 2008 at 5:44 PM, Paul Mundt wrote:
+> On Fri, Aug 01, 2008 at 03:01:19PM +0100, David Howells wrote:
+>> Paul Mundt <lethal@linux-sh.org> wrote:
+>> > +    * In some cases (e.g. Hyper-Threading), we want to avoid L1
+>> > +    * evictions by the processes running on the same package. One
+>> > +    * thing we can do is to shuffle the initial stack for them, so
+>> > +    * we give the architecture an opportunity to do so here.
+>> > +    */
+>> >  #ifdef CONFIG_MMU
+>> > -   sp = bprm->p;
+>> > +   sp = arch_align_stack(bprm->p);
+>> >  #else
+>> > -   sp = mm->start_stack;
+>> > +   sp = arch_align_stack(mm->start_stack);
+>>
+>> Ummm...  You're calling arch_align_stack() under NOMMU...  Is that really a
+>> good idea?
+>
+> Not particularly, no.
+>
+>> You can't necessarily move the stack pointer without exiting the allocated
+>> region or shrinking the amount of stack space the executable asked for.  If
+>> you want to do this sort of thing, you need to tell the memory allocator what
+>> you're up to - or at the very least allocate some slack.
+>
+> Yes, that's a good point, and one that probably ought to be documented
+> alongside the initial alignment. I'll send an updated patch.
 
-I wouldn't be sure about that..
+fs/binfmt_elf_fdpic.c: In function 'create_elf_fdpic_tables':
+fs/binfmt_elf_fdpic.c:497: error: implicit declaration of function
+'arch_align_stack'
+make[1]: *** [fs/binfmt_elf_fdpic.o] Error 1
+make: *** [fs] Error 2
 
-> 
-> I assume the sata controller is attached via pci or pci-e -- although the pci
-> controller and the sata controller are on the same chip, (nVidia nForce 570
-> chipset) so it may be an 'emulated' pci bus of some sort. The problem would
-> seem to be some sort of bus timing issue between this particular RAM,
-> and the pci bus in the chipset -- bad "eyes" on some signal line, or ground
-> bounce or whatever, or maybe a rare chipset bug.
+Blackfin lacks a arch_align_stack(x) in asm-blackfin/system.h ... i
+imagine a stub will work for us like every other arch though
 
-The SATA controller is part of the chipset, and I think it talks 
-HyperTransport directly, it only looks like PCI or PCI Express. These 
-systems have an on-die memory controller in the CPU, so the SATA 
-controller has to talk HyperTransport to the CPU which then is what 
-physically accesses the DIMMs.
-
-In theory the DIMMs have no idea whether the accesses are from the CPU 
-itself or from the chipset. However, it's possible that the particular 
-timing or burst sizes of the transfers done by the SATA controller 
-triggered a problem with marginal timing on the DIMMs and caused the 
-data corruption.
-
-> 
-> So the question is: is there some sort of sata (or pci) "loopback mode",
-> where we could pump data through all of the busses and controllers, up
-> near to the point where it would normally go out to the serdes to the disk,
-> but instead have it loop back, so that we could test the buses between
-> endpoints?  I've never heard of a pci/pci-e loopback, but that doesn't mean it
-> doesn't exist. I have no clue about SATA.  Is there possibly some ide or
-> scsi command that can be used to loop-back? Some sort of "send bytes
-> to disk, but don't actually write them to platter" command? Maybe just
-> a write to some scratch ram on the disk drive itself? Even just a few bytes
-> would be enough to implement a loopback test. Maybe some sort of
-> "queue this block, but don't write it yet", followed by a "give me dump of
-> the command queue" -- such a loopback test would have found my problem
-> pretty quickly I suspect.
-> 
-> Ideas solicited.
-
-I don't imagine that would be very useful in this case. The SATA link, 
-PCI Express bus, HyperTransport bus all have parity or CRC error 
-checking, so presumably they couldn't be likely to cause undetected 
-errors. The transitions between them could cause problems, and most 
-desktop machines don't have ECC memory which could catch memory timing 
-problems or bad RAM (which is rather unfortunate), so those are the most 
-likely places for a problem to show up.
-
-> 
-> --linas
-> 
-> p.s. the corruption appears to be single bits -- the rest of the word, and
-> surrounding words, seem fine.
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-
+feel like doing that Bryan ?  i'm guessing Paul doesnt want to ... ;)
+-mike
