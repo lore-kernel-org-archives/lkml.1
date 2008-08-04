@@ -1,45 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755183AbYHDKsi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754082AbYHDK5h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755183AbYHDKsi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 06:48:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753177AbYHDKs3
+	id S1754082AbYHDK5h (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 06:57:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752840AbYHDK53
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 06:48:29 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:39733 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753098AbYHDKs2 (ORCPT
+	Mon, 4 Aug 2008 06:57:29 -0400
+Received: from smtp106.mail.mud.yahoo.com ([209.191.85.216]:31184 "HELO
+	smtp106.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752190AbYHDK52 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 06:48:28 -0400
-Date: Mon, 4 Aug 2008 18:48:03 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Sebastian Siewior <linux-crypto@ml.breakpoint.cc>
-Cc: David Woodhouse <dwmw2@infradead.org>,
-       Austin Zhang <austin_zhang@linux.intel.com>, davem@davemloft.net,
-       linux-kernel@vger.kernel.org, linux-crypto@vger.kernel.org
-Subject: Re: [PATCH] Using Intel CRC32 instruction to accelerate CRC32c algorithm by new crypto API.
-Message-ID: <20080804104803.GA9834@gondor.apana.org.au>
-References: <1217842507.20845.18.camel@localhost.localdomain> <1217844725.3454.580.camel@pmac.infradead.org> <20080804102557.GA21265@Chamillionaire.breakpoint.cc>
+	Mon, 4 Aug 2008 06:57:28 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=W0CEEGzmzBIkglDkWt7amwrhoSkIZqH5j0WS+4Gu5Ln4Rjk4ptp/nuPEBJrF5T+zaupZHNz3Io3GthVaxM+1a8mVHX/N7Sq21XbW3LCPx0nrQVthUa83sGV72+hhb8WvXL1WXnoqy/6fm818h4TKQTBqYOZ5ZcrnRgcIVTdhS8g=  ;
+X-YMail-OSG: 2pMbSREVM1novQX4Ke9oBBb4DZR27Ffg6ClsYfu3uoK2GlCPT6svzdx4nP6RPqFc8GZKzeKhaIsqEYkHx8ONyGtIgjS8liNzTMWVVj2JpTuhDqfLmg1Qrm7IaR6xnAP68vc-
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: lachlan@sgi.com
+Subject: Re: [rfc][patch 3/3] xfs: use new vmap API
+Date: Mon, 4 Aug 2008 20:57:20 +1000
+User-Agent: KMail/1.9.5
+Cc: Nick Piggin <npiggin@suse.de>,
+       Linux Memory Management List <linux-mm@kvack.org>, xfs@oss.sgi.com,
+       xen-devel@lists.xensource.com,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       dri-devel@lists.sourceforge.net
+References: <20080728123438.GA13926@wotan.suse.de> <20080728123703.GC13926@wotan.suse.de> <4896A197.3090004@sgi.com>
+In-Reply-To: <4896A197.3090004@sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080804102557.GA21265@Chamillionaire.breakpoint.cc>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200808042057.20607.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 04, 2008 at 12:25:57PM +0200, Sebastian Siewior wrote:
+Thanks for taking a look. I'll send them over to -mm with patch 1,
+then, for some testing.
+
+On Monday 04 August 2008 16:28, Lachlan McIlroy wrote:
+> Looks good to me.
 >
-> I'm not sure if I remeber correctly but I thing Herbert was planning to
-> convert all users over to the crypto API to avoid compile time
-> dependency.
+> Nick Piggin wrote:
+> > Implement XFS's large buffer support with the new vmap APIs. See the vmap
+> > rewrite patch for some numbers.
 
-Yes that's the plan.  I've been busy with the crypto testing
-stuff but I'll get onto this soon.
-
-Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
