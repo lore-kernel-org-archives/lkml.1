@@ -1,73 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760494AbYHENnk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760845AbYHEN4i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760494AbYHENnk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 09:43:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757939AbYHENna
+	id S1760845AbYHEN4i (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 09:56:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758035AbYHEN4b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 09:43:30 -0400
-Received: from www.church-of-our-saviour.org ([69.25.196.31]:58885 "EHLO
-	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757215AbYHENn2 (ORCPT
+	Tue, 5 Aug 2008 09:56:31 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:38299 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755237AbYHEN4a (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 09:43:28 -0400
-Date: Tue, 5 Aug 2008 09:14:17 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Robert Hancock <hancockr@shaw.ca>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Gabor Gombas <gombasg@sztaki.hu>,
-       Tejun Heo <htejun@gmail.com>, Elias Oltmanns <eo@nebensachen.de>,
-       Jeff Garzik <jeff@garzik.org>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       James Bottomley <James.Bottomley@hansenpartnership.com>,
-       Pavel Machek <pavel@ucw.cz>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/5] libata: Implement disk shock protection support
-Message-ID: <20080805131417.GC8569@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Robert Hancock <hancockr@shaw.ca>,
-	Alan Cox <alan@lxorguk.ukuu.org.uk>,
-	Gabor Gombas <gombasg@sztaki.hu>, Tejun Heo <htejun@gmail.com>,
-	Elias Oltmanns <eo@nebensachen.de>, Jeff Garzik <jeff@garzik.org>,
-	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-	James Bottomley <James.Bottomley@hansenpartnership.com>,
-	Pavel Machek <pavel@ucw.cz>, linux-ide@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-References: <fa.nx0yFPJm+aNXPHgykUrOzZXvvIs@ifi.uio.no> <fa.NfEr7Ik6e8oextyWICW/jR5emeE@ifi.uio.no> <fa.zGvATZImeUo0tHJe4hzlk5+mTiM@ifi.uio.no> <fa.SRVleMItV5QEF7/tgCjSHz0ScJA@ifi.uio.no> <fa.YKbhgq8XUxH/Qg1ArE+73YsDlpE@ifi.uio.no> <4897D16F.3000504@shaw.ca>
+	Tue, 5 Aug 2008 09:56:30 -0400
+Date: Tue, 5 Aug 2008 07:55:59 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>
+Cc: linux-kernel@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>
+Subject: [PATCH] Make kthread_stop() not oops when passed a bad pointer
+Message-ID: <20080805135559.GQ26461@parisc-linux.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4897D16F.3000504@shaw.ca>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 04, 2008 at 10:05:03PM -0600, Robert Hancock wrote:
-> Yes, from what I've seen on these laptops, it doesn't take much to  
-> trigger the shock protection in Windows - lifting the front of the  
-> laptop off the table an inch and dropping it will do it, 
 
-A few years ago, I had a Thinkpad T21 laptop, accidentally slip
-through my butterfingers and dropped about an inch before it landed on
-the table.  Unfortunately, (a) the Thinkpad T21 laptop was rather
-heavy (compared to modern laptops), (b) it didn't have the rubber
-"bubble" on the bottom of the laptop to cushion the landing as the T22
-and T23's had (and I'm sure I know why it was added), and (c) the hard
-drive was active at the time.  It was enough to cause a head crash and
-Linux immediately started reporting an exponentially increasing number
-of write errors; the hard drive was totally unusable within an hour or
-so.
+Due to some botched error handling code in a driver I was writing, I
+recently called kthread_stop(NULL).  It's terribly exciting to discover
+that you've just oopsed while holding a mutex that's required in order
+to shut down.  Make kthread_stop a little more robust against numbskulls
+like me.
 
-So there's a reason why the anti-shock protection is set at a rather
-sensitive level...    
+Signed-off-by: Matthew Wilcox <willy@linux.intel.com>
 
-The real right answer though is to buy one of the laptop drives (such
-as the Seagate Momentus 7200.2 or 7200.3) which has the anti-shock
-detection built directly into the hard drive.  That way you don't have
-to have a daemon that sits in the OS waking up the CPU some 20 to 30
-times a second and burning up your battery even when the laptop is
-idle.
-
-							- Ted
+diff --git a/kernel/kthread.c b/kernel/kthread.c
+index 96cff2f..06c3477 100644
+--- a/kernel/kthread.c
++++ b/kernel/kthread.c
+@@ -201,6 +201,9 @@ int kthread_stop(struct task_struct *k)
+ {
+ 	int ret;
+ 
++	if (!k || IS_ERR(k))
++		return -EINVAL;
++
+ 	mutex_lock(&kthread_stop_lock);
+ 
+ 	/* It could exit after stop_info.k set, but before wake_up_process. */
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
