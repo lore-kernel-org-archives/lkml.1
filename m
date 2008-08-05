@@ -1,119 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763865AbYHEUu5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764497AbYHEUv0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763865AbYHEUu5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 16:50:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760997AbYHEUut
+	id S1764497AbYHEUv0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 16:51:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761189AbYHEUvF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 16:50:49 -0400
-Received: from fg-out-1718.google.com ([72.14.220.158]:9524 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760271AbYHEUus (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 16:50:48 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=uwgssqZtT9Cd25bm+VIr7t6lqMwo9LDyEydy7cXZVhOCT+AgKZD2DgRw6bMMqbdW3m
-         FPqWAlMzUDMhrr5o20w7nuX14fDjuslwP89LgLgwwgt9pj/7XytepCPdKIabafUjzH2y
-         QsJv2tCLDPrDX0Je7+LQRXYGWUPXFAL7isMr8=
-Date: Wed, 6 Aug 2008 00:50:41 +0400
-From: Alexander Beregalov <a.beregalov@gmail.com>
-To: mfasheh@suse.com, ocfs2-devel@oss.oracle.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] ocfs2/cluster/netdebug.c: fix warning
-Message-ID: <20080805205041.GD17320@orion>
-References: <20080805201036.GC17320@orion> <20080805202948.GL22600@mail.oracle.com>
-MIME-Version: 1.0
+	Tue, 5 Aug 2008 16:51:05 -0400
+Received: from smtpout3.tre.se ([80.251.192.228]:38658 "EHLO smtpout3.tre.se"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1764197AbYHEUvC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Aug 2008 16:51:02 -0400
+Date: Tue, 5 Aug 2008 22:43:32 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Roman Zippel <zippel@linux-m68k.org>
+Cc: Adrian Bunk <bunk@kernel.org>, Josh Boyer <jwboyer@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org
+Subject: Re: Kconfig no longer outputs a .config with freshly updated defconfigs
+Message-ID: <20080805204332.GB5464@uranus.ravnborg.org>
+References: <1217693013.2328.22.camel@localhost.localdomain> <20080802192646.GR19682@cs181140183.pp.htv.fi> <20080803080019.GA13265@uranus.ravnborg.org> <20080803100732.GA7442@cs181140183.pp.htv.fi> <20080804210848.GA29902@uranus.ravnborg.org> <Pine.LNX.4.64.0808050435320.6791@localhost.localdomain>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080805202948.GL22600@mail.oracle.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <Pine.LNX.4.64.0808050435320.6791@localhost.localdomain>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 05, 2008 at 01:29:48PM -0700, Joel Becker wrote:
-> 	suseconds_t is a signed long.  Can you change the format to %ld
-> and cast to long?  Unfortunately, we need the cast, as sparc64 and
-> parisc treat it as int.
+On Tue, Aug 05, 2008 at 04:50:16AM +0200, Roman Zippel wrote:
+> Hi,
+> 
+> On Mon, 4 Aug 2008, Sam Ravnborg wrote:
+> 
+> > > Why can't we simply always write the .config?
+> > 
+> > Hi Adrian.
+> > 
+> > I just pushed a patch that does this.
+> 
+> If I see it correctly that's not quite correct either. The old 
+> silentoldconfig does a few things differently than a normal config target, 
+> because it's a special target called by Kbuild when needed:
+> 
+> - bail out if input is needed but stdio is not a tty
+> - silent mode
+> - update .config only as needed
+> - always update autoconf
+> 
+> With the change to make the silent mode the default, the "silent" name has 
+> become a little obsolete and should probably be renamed, but whatever the 
+> name above actions should still be done if called by Kbuild internally.
 
-Then we should change cast from unsigned long to long for every tv_usec, right?
+silentoldconfig now always update .config - and that a bug.
+I was too hasty ghere - sorry.
+Will fix it during the weekend.
 
-
-From: Alexander Beregalov <a.beregalov@gmail.com>
-
-ocfs2/cluster/netdebug.c: fix warning
-
-fs/ocfs2/cluster/netdebug.c:154: warning: format '%lu' expects
-     type 'long unsigned int', but argument 17 has type 'suseconds_t'
-
-Joel Becker wrote:
->       suseconds_t is a signed long.  Can you change the format to %ld
-> and cast to long?  Unfortunately, we need the cast, as sparc64 and
-> parisc treat it as int.
-
-Signed-off-by: Alexander Beregalov <a.beregalov@gmail.com>
----
- 
- fs/ocfs2/cluster/netdebug.c |   26 +++++++++++++-------------
- 1 files changed, 13 insertions(+), 13 deletions(-)
-
-diff --git a/fs/ocfs2/cluster/netdebug.c b/fs/ocfs2/cluster/netdebug.c
-index d8bfa0e..52276c0 100644
---- a/fs/ocfs2/cluster/netdebug.c
-+++ b/fs/ocfs2/cluster/netdebug.c
-@@ -138,20 +138,20 @@ static int nst_seq_show(struct seq_file *seq, void *v)
- 			   "  message id:   %d\n"
- 			   "  message type: %u\n"
- 			   "  message key:  0x%08x\n"
--			   "  sock acquiry: %lu.%lu\n"
--			   "  send start:   %lu.%lu\n"
--			   "  wait start:   %lu.%lu\n",
-+			   "  sock acquiry: %lu.%ld\n"
-+			   "  send start:   %lu.%ld\n"
-+			   "  wait start:   %lu.%ld\n",
- 			   nst, (unsigned long)nst->st_task->pid,
- 			   (unsigned long)nst->st_task->tgid,
- 			   nst->st_task->comm, nst->st_node,
- 			   nst->st_sc, nst->st_id, nst->st_msg_type,
- 			   nst->st_msg_key,
- 			   nst->st_sock_time.tv_sec,
--			   (unsigned long)nst->st_sock_time.tv_usec,
-+			   (long)nst->st_sock_time.tv_usec,
- 			   nst->st_send_time.tv_sec,
--			   (unsigned long)nst->st_send_time.tv_usec,
-+			   (long)nst->st_send_time.tv_usec,
- 			   nst->st_status_time.tv_sec,
--			   nst->st_status_time.tv_usec);
-+			   (long)nst->st_status_time.tv_usec);
- 	}
- 
- 	spin_unlock(&o2net_debug_lock);
-@@ -276,7 +276,7 @@ static void *sc_seq_next(struct seq_file *seq, void *v, loff_t *pos)
- 	return sc; /* unused, just needs to be null when done */
- }
- 
--#define TV_SEC_USEC(TV) TV.tv_sec, (unsigned long)TV.tv_usec
-+#define TV_SEC_USEC(TV) TV.tv_sec, (long)TV.tv_usec
- 
- static int sc_seq_show(struct seq_file *seq, void *v)
- {
-@@ -309,12 +309,12 @@ static int sc_seq_show(struct seq_file *seq, void *v)
- 			   "  remote node:     %s\n"
- 			   "  page off:        %zu\n"
- 			   "  handshake ok:    %u\n"
--			   "  timer:           %lu.%lu\n"
--			   "  data ready:      %lu.%lu\n"
--			   "  advance start:   %lu.%lu\n"
--			   "  advance stop:    %lu.%lu\n"
--			   "  func start:      %lu.%lu\n"
--			   "  func stop:       %lu.%lu\n"
-+			   "  timer:           %lu.%ld\n"
-+			   "  data ready:      %lu.%ld\n"
-+			   "  advance start:   %lu.%ld\n"
-+			   "  advance stop:    %lu.%ld\n"
-+			   "  func start:      %lu.%ld\n"
-+			   "  func stop:       %lu.%ld\n"
- 			   "  func key:        %u\n"
- 			   "  func type:       %u\n",
- 			   sc,
+	Sam
