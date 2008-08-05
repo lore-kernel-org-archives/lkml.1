@@ -1,69 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763632AbYHEBHr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762691AbYHEBIJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763632AbYHEBHr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 21:07:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758922AbYHEBFa
+	id S1762691AbYHEBIJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 21:08:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752324AbYHEBGu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 21:05:30 -0400
-Received: from kumera.dghda.com ([80.68.90.171]:4447 "EHLO kumera.dghda.com"
+	Mon, 4 Aug 2008 21:06:50 -0400
+Received: from gate.crashing.org ([63.228.1.57]:35991 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758958AbYHEBF1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 21:05:27 -0400
-From: "Duane Griffin" <duaneg@dghda.com>
-To: linux-kernel@vger.kernel.org
-Cc: akpm@linux-foundation.org, sct@redhat.com, linux-ext4@vger.kernel.org,
-       Sami Liedes <sliedes@cc.hut.fi>, Duane Griffin <duaneg@dghda.com>
-Subject: [PATCH] jbd2: abort instead of waiting for nonexistent transactions
-Date: Tue,  5 Aug 2008 02:05:21 +0100
-Message-Id: <1217898321-3514-2-git-send-email-duaneg@dghda.com>
-X-Mailer: git-send-email 1.5.4.5
-In-Reply-To: <1217898321-3514-1-git-send-email-duaneg@dghda.com>
-References: <1217898321-3514-1-git-send-email-duaneg@dghda.com>
+	id S1752003AbYHEBGu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Aug 2008 21:06:50 -0400
+Subject: Re: [PATCH 1/3] powerpc - Initialize the irq radix tree earlier
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: Sebastien Dugue <sebastien.dugue@bull.net>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+       linux-rt-users@vger.kernel.org, paulus@samba.org,
+       michael@ellerman.id.au, jean-pierre.dion@bull.net,
+       gilles.carry@ext.bull.net, tinytim@us.ibm.com, tglx@linutronix.de,
+       rostedt@goodmis.org
+In-Reply-To: <1217898226.24157.120.camel@pasglop>
+References: <1217848124-3719-1-git-send-email-sebastien.dugue@bull.net>
+	 <1217848124-3719-2-git-send-email-sebastien.dugue@bull.net>
+	 <1217898226.24157.120.camel@pasglop>
+Content-Type: text/plain
+Date: Tue, 05 Aug 2008 11:05:03 +1000
+Message-Id: <1217898303.24157.122.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The __jbd2_log_wait_for_space function sits in a loop checkpointing
-transactions until there is sufficient space free in the journal. However,
-if there are no transactions to be processed (e.g. because the free space
-calculation is wrong due to a corrupted filesystem) it will never progress.
 
-Check for space being required when no transactions are outstanding and
-abort the journal instead of endlessly looping.
+>  - Remove the populating of the tree from the revmap function as
+>    you already do
+>  - Move it to irq_create_mapping() for the normal case
+>  - For pre-existing interrupt, have the generic code that initializes
+>    the radix tree walk through all interrupts and setup the revmap for
+>    them. If that needs locking vs. concurrent irq_create_mapping, it's
+>    easy to use one of the available spinlocks for that.
 
-This patch fixes the bug reported by Sami Liedes at:
-http://bugzilla.kernel.org/show_bug.cgi?id=10976
+And in fact, you may even be able to avoid GFP_ATOMIC completely here
+and switch it to GFP_KERNEL since irq_create_mapping() can sleep afaik,
+provided that you avoid the spinlocking.
 
-Signed-off-by: Duane Griffin <duaneg@dghda.com>
----
-diff --git a/fs/jbd2/checkpoint.c b/fs/jbd2/checkpoint.c
-index 91389c8..3c075c4 100644
---- a/fs/jbd2/checkpoint.c
-+++ b/fs/jbd2/checkpoint.c
-@@ -126,13 +126,24 @@ void __jbd2_log_wait_for_space(journal_t *journal)
- 
- 		/*
- 		 * Test again, another process may have checkpointed while we
--		 * were waiting for the checkpoint lock
-+		 * were waiting for the checkpoint lock. If there are no
-+		 * outstanding transactions there is nothing to checkpoint and
-+		 * we can't make progress. Abort the journal in this case.
- 		 */
- 		spin_lock(&journal->j_state_lock);
- 		nblocks = jbd_space_needed(journal);
- 		if (__jbd2_log_space_left(journal) < nblocks) {
-+			int chkpt = journal->j_checkpoint_transactions != NULL;
-+
- 			spin_unlock(&journal->j_state_lock);
--			jbd2_log_do_checkpoint(journal);
-+			if (chkpt) {
-+				jbd2_log_do_checkpoint(journal);
-+			} else {
-+				printk(KERN_ERR "%s: no transactions\n",
-+				       __func__);
-+				jbd2_journal_abort(journal, 0);
-+			}
-+
- 			spin_lock(&journal->j_state_lock);
- 		}
- 		mutex_unlock(&journal->j_checkpoint_mutex);
+Ben.
+
+
