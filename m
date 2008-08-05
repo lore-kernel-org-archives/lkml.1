@@ -1,52 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759394AbYHEDJt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760214AbYHEDOt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759394AbYHEDJt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 23:09:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755011AbYHEDJV
+	id S1760214AbYHEDOt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 23:14:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753252AbYHEDOl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 23:09:21 -0400
-Received: from topsns2.toshiba-tops.co.jp ([202.230.225.126]:14091 "EHLO
-	topsns2.toshiba-tops.co.jp" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751679AbYHEDJU (ORCPT
+	Mon, 4 Aug 2008 23:14:41 -0400
+Received: from smtp113.mail.mud.yahoo.com ([209.191.84.66]:23586 "HELO
+	smtp113.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1755355AbYHEDOk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 23:09:20 -0400
-Date: Tue, 05 Aug 2008 12:09:09 +0900 (JST)
-Message-Id: <20080805.120909.139657748.nemoto@toshiba-tops.co.jp>
-To: viro@ZenIV.linux.org.uk
-Cc: djohnson@sw.starentnetworks.com, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: cramfs and named-pipe
-From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-In-Reply-To: <20080804100347.GU28946@ZenIV.linux.org.uk>
-References: <20080804.182143.218269280.nemoto@toshiba-tops.co.jp>
-	<20080804100347.GU28946@ZenIV.linux.org.uk>
-X-Fingerprint: 6ACA 1623 39BD 9A94 9B1A  B746 CA77 FE94 2874 D52F
-X-Pgp-Public-Key: http://wwwkeys.pgp.net/pks/lookup?op=get&search=0x2874D52F
-X-Mailer: Mew version 6.1 on Emacs 22.2 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Mon, 4 Aug 2008 23:14:40 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=R7PMex2YiBEIhlD/zEWJHxgFa9iT70+1fX1akFPzX4YG5MjTIb3ZugV0tck6eWXIkqfnWpZ5/ivhbuMniQlbZoPzv+Mm1Ipss9eyT+uwOY9150FncFtx9Gd52tGFxGSffQv7+WC1tgJuYvSbgineafM1eCEn19uvkuMJ/YrL38A=  ;
+X-YMail-OSG: _II64uEVM1kPBrCsXgw4vUiPp9SAxpS.oMrNpngIrUvvjq4SkpFk8YNo5OinRabM62.obuMyiw9z.Vi6EXxW3yocp0KYNMB4i1esazHprki8wCLEN4wiz4cFZUWZ1c9iQp8-
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: Switching TestSetPageLocked to trylock_page
+Date: Tue, 5 Aug 2008 13:14:33 +1000
+User-Agent: KMail/1.9.5
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <200807311726.51816.nickpiggin@yahoo.com.au>
+In-Reply-To: <200807311726.51816.nickpiggin@yahoo.com.au>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200808051314.33791.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 4 Aug 2008 11:03:47 +0100, Al Viro <viro@ZenIV.linux.org.uk> wrote:
-> Eeek...  I'd rather not play these games with directories and devices nodes
-> as well.  Rationale for the original patch simply doesn't apply for those.
-> 
-> IOW, I think it would be much saner if we did the following: make ..._test()
-> refuse to merge inodes with ->i_ino == 1, take inode setup back to
-> get_cramfs_inode() and make ->drop_inode() evict ones with ->i_ino == 1
-> immediately.  Comments?
-> 
-> Patch below is completely untested; it builds, but that's it.
+On Thursday 31 July 2008 17:26, Nick Piggin wrote:
+> Hi,
+>
+> I'm wondering if I could get a patch merged which changes all
+> TestSetPageLocked and replaces them with trylock_page?
 
-Thanks, your patch works well for me.  But it looks a bit large for
-stable tree (100 line rule).
+Yes? No?
 
-With current code, I think no problem on empty directories and device
-nodes.  So how about fixing only FIFO case first (and send it to
-stable tree) and then go to your patch?
+The alternative is try to merge it via -mm or -next, but that just
+wastes everybodies time with conflicts of having these differences
+between -mm and mainline.
 
----
-Atsushi Nemoto
+
+>
+> It would be done so there are no functional changes.
+>
+> The reason I want to (aside from having a slightly more
+> intuitive API), is to facilitate the implementation of lockdep
+> on page lock, and also to use lock semantics bitops for the
+> lock rather than the big-hammer barriers that come with
+> test_and_set_bit.
+>
+> The lock bitops stuff is one of the parts of my patchset to speed
+> up page lock functions (which results in nearly 50% faster
+> pagecache throughput on my G5, and even slightly faster on x86)...
+>
+> Anyway, I remember you said these kinds of changes are appropriate
+> for just after -rc1, and I agree it shouldn't cause much pain.
+>
+> Fixing up patch conflicts is literally a matter of
+> s/!TestSetPageLocked/trylock_page
+> s/TestSetPageLocked/!trylock_page
+>
+> Thoughts?
