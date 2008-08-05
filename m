@@ -1,70 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759315AbYHEQW5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758864AbYHEQ0V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759315AbYHEQW5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 12:22:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760114AbYHEQWt
+	id S1758864AbYHEQ0V (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 12:26:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755565AbYHEQ0L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 12:22:49 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:36905 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756357AbYHEQWt (ORCPT
+	Tue, 5 Aug 2008 12:26:11 -0400
+Received: from e31.co.us.ibm.com ([32.97.110.149]:33609 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752754AbYHEQ0K (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 12:22:49 -0400
-Date: Tue, 5 Aug 2008 09:22:09 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: Linus Torvalds <torvalds@linuxfoundation.org>,
-       Andrew Morton <akpm@linuxfoundation.org>, linux-kernel@vger.kernel.org,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [PATCH] Make kthread_stop() not oops when passed a bad pointer
-Message-Id: <20080805092209.830f5d0a.akpm@linux-foundation.org>
-In-Reply-To: <20080805135559.GQ26461@parisc-linux.org>
-References: <20080805135559.GQ26461@parisc-linux.org>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	Tue, 5 Aug 2008 12:26:10 -0400
+Subject: Re: Too many I/O controller patches
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: Paul Menage <menage@google.com>
+Cc: righi.andrea@gmail.com, xen-devel@lists.xensource.com,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       virtualization@lists.linux-foundation.org, dm-devel@redhat.com,
+       agk@sourceware.org
+In-Reply-To: <6599ad830808042255y59215481l5463d4dca9fb2001@mail.gmail.com>
+References: <20080804.175126.193692178.ryov@valinux.co.jp>
+	 <1217870433.20260.101.camel@nimitz> <489748E6.5080106@gmail.com>
+	 <1217876521.20260.123.camel@nimitz> <48976A2A.9060600@gmail.com>
+	 <6599ad830808042255y59215481l5463d4dca9fb2001@mail.gmail.com>
+Content-Type: text/plain
+Date: Tue, 05 Aug 2008 09:25:37 -0700
+Message-Id: <1217953537.10907.30.camel@nimitz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.22.2 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 5 Aug 2008 07:55:59 -0600 Matthew Wilcox <matthew@wil.cx> wrote:
-
+On Mon, 2008-08-04 at 22:55 -0700, Paul Menage wrote:
 > 
-> Due to some botched error handling code in a driver I was writing, I
-> recently called kthread_stop(NULL).  It's terribly exciting to discover
-> that you've just oopsed while holding a mutex that's required in order
-> to shut down.  Make kthread_stop a little more robust against numbskulls
-> like me.
-> 
-> Signed-off-by: Matthew Wilcox <willy@linux.intel.com>
-> 
-> diff --git a/kernel/kthread.c b/kernel/kthread.c
-> index 96cff2f..06c3477 100644
-> --- a/kernel/kthread.c
-> +++ b/kernel/kthread.c
-> @@ -201,6 +201,9 @@ int kthread_stop(struct task_struct *k)
->  {
->  	int ret;
->  
-> +	if (!k || IS_ERR(k))
-> +		return -EINVAL;
-> +
->  	mutex_lock(&kthread_stop_lock);
->  
+> As Dave suggested, I think it would make more sense to have your
+> page-dirtying throttle points hook into the memory controller instead,
+> and allow the memory controller to track/limit dirty pages for a
+> cgroup, and potentially do throttling as part of that.
 
-hrm.
+Yeah, I'm sure we're going to have to get to setting the dirty ratio
+        
+        $ cat /proc/sys/vm/dirty_ratio
+        40
 
-a) as this is a programming error, the programmer would like it not
-   to be hidden.  A WARN_ON() would address that.
+on a per-container basis at *some* point.  We might as well do it
+earlier rather than later.
 
-b) there are many instances of
+-- Dave
 
-	if (p)
-		kthread_stop(p);
-
-   which could now be simplified to
-
-	kthread_stop(p);
-
-c) a) and b) are incompatible.
