@@ -1,65 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756904AbYHEGWq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757666AbYHEGXV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756904AbYHEGWq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 02:22:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751129AbYHEGWY
+	id S1757666AbYHEGXV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 02:23:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751996AbYHEGW7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 02:22:24 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:41559 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750723AbYHEGWX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 02:22:23 -0400
-Date: Tue, 5 Aug 2008 16:21:52 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: "John W. Linville" <linville@tuxdriver.com>
-Cc: linux-next@vger.kernel.org, David Miller <davem@davemloft.net>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Luis R. Rodriguez" <lrodriguez@atheros.com>
-Subject: linux-next: wireless-current tree build failure
-Message-Id: <20080805162152.2b55ae5c.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Tue__5_Aug_2008_16_21_52_+1000_a57gTnvlpP_RUlqf"
+	Tue, 5 Aug 2008 02:22:59 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:33967 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751346AbYHEGW6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Aug 2008 02:22:58 -0400
+Date: Tue, 05 Aug 2008 15:20:59 +0900
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: balbir@linux.vnet.ibm.com
+Subject: Re: Race condition between putback_lru_page and mem_cgroup_move_list
+Cc: kosaki.motohiro@jp.fujitsu.com, Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
+       MinChan Kim <minchan.kim@gmail.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       linux-mm <linux-mm@kvack.org>, Rik van Riel <riel@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <489741F8.2080104@linux.vnet.ibm.com>
+References: <2f11576a0808040937y70f274e0j32f6b9c98b0f992d@mail.gmail.com> <489741F8.2080104@linux.vnet.ibm.com>
+Message-Id: <20080805151956.A885.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.42 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Tue__5_Aug_2008_16_21_52_+1000_a57gTnvlpP_RUlqf
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Hi Balbir-san,
 
-Hi John,
+> > I also think zone's lru lock is unnecessary.
+> > So, I guess below "it" indicate lock_page_cgroup, not zone lru lock.
+> 
+> We need zone LRU lock, since the reclaim paths hold them. Not sure if I
+> understand why you call zone's LRU lock unnecessary, could you elaborate please?
 
-Today's linux-next build (powerpc allyesconfig) failed like this:
+I tought..
 
-drivers/net/wireless/ath9k/hw.c: In function 'ath9k_hw_9280_spur_mitigate':
-drivers/net/wireless/ath9k/hw.c:4660: internal compiler error: in expand_ex=
-pr_real_1, at expr.c:9199
+1. in general, one data structure should be protected by one lock.
+2. memcgroup lru is protected by mem_cgroup_per_zone::lru_lock.
 
-Clearly not our fault! :-) I have informed our toolchain person.  This
-was using the Debian gcc-4.3.  It also fails using the Debian 4.2
-compiler but not the 4.1 one.
 
-For now, I will apply the following patch to just stop it building on
-PowerPC.
+if zone LRU lock must be held, Why do mem_cgroup_per_zone::lru_lock exit?
+it should be removed?
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
 
---Signature=_Tue__5_Aug_2008_16_21_52_+1000_a57gTnvlpP_RUlqf
-Content-Type: application/pgp-signature
+Could you explain detail of "race condition with global reclaim race" ?
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
 
-iEYEARECAAYFAkiX8YEACgkQjjKRsyhoI8zKogCfQZ+T2UdUsrR/IDt9RYaEGPoA
-99wAn0k7H6CBAscrsD/gqtHyBoY6eJWe
-=j6yf
------END PGP SIGNATURE-----
 
---Signature=_Tue__5_Aug_2008_16_21_52_+1000_a57gTnvlpP_RUlqf--
+> > I think both opinion is correct.
+> > unevictable lru related code doesn't require pagevec.
+> > 
+> > but mem_cgroup_move_lists is used by active/inactive list transition too.
+> > then, pagevec is necessary for keeping reclaim throuput.
+> > 
+> 
+> It's on my TODO list. I hope to get to it soon.
+
+Very good news!
+Thanks.
+
+
+
