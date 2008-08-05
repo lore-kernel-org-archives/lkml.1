@@ -1,65 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760895AbYHELbZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759999AbYHELlP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760895AbYHELbZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 07:31:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758170AbYHELbR
+	id S1759999AbYHELlP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 07:41:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756878AbYHELk7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 07:31:17 -0400
-Received: from ns2.suse.de ([195.135.220.15]:34107 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757298AbYHELbO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 07:31:14 -0400
-Date: Tue, 5 Aug 2008 13:31:11 +0200
-From: Karsten Keil <kkeil@suse.de>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, isdn4linux@listserv.isdn4linux.de
-Subject: Re: [PATCH 3/4] Fix remaining big endian issue of hfcmulti
-Message-ID: <20080805113111.GA6827@pingi.kke.suse.de>
-References: <20080802151532.DE017A3C09@pingi.kke.suse.de> <1217910588.24157.151.camel@pasglop>
+	Tue, 5 Aug 2008 07:40:59 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:60467 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753953AbYHELk6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Aug 2008 07:40:58 -0400
+Date: Tue, 5 Aug 2008 12:23:28 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Greg KH <greg@kroah.com>
+Cc: Eric Paris <eparis@redhat.com>, malware-list@lists.printk.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: [malware-list] [RFC 0/5] [TALPA] Intro to a linux interface for
+ on access scanning
+Message-ID: <20080805122328.69a37c1d@lxorguk.ukuu.org.uk>
+In-Reply-To: <20080805005132.GA3661@kroah.com>
+References: <1217883616.27684.19.camel@localhost.localdomain>
+	<20080804223249.GA10517@kroah.com>
+	<1217896374.27684.53.camel@localhost.localdomain>
+	<20080805005132.GA3661@kroah.com>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1217910588.24157.151.camel@pasglop>
-Organization: SuSE Linux AG
-X-Operating-System: Linux 2.6.16.54-0.2.5-smp x86_64
-User-Agent: Mutt/1.5.9i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 05, 2008 at 02:29:48PM +1000, Benjamin Herrenschmidt wrote:
-> On Sat, 2008-08-02 at 16:35 +0200, Karsten Keil wrote:
-> > The driver was not so bad at big endian at all, only the optimised fifo
-> > read/write functions need a fix, with this fix the driver works on
-> > a pegasus PPC machine.
+> > It may be possible to do in glibc, LD_PRELOAD doesn't exactly work for
+> > suid binaries
 > 
-> This is however very broken... IE, you should instead use iomap
-> and thus get ioreadXX_rep() and writeXX_rep() (XX = 16 or 32) that
-> will do the right thing for you. IE, they will do the right amount
-> of memory barriers and will avoid the unnecessary double-swapping
-> you are doing there.
+> Are suid binaries something that you feel is necessary to scan from?
 > 
+> I don't see it on the list above :)
 
-Thanks for this hint, I didn't know that the repetive versions are
-for byte streams and not for eg. transfer of multiple u32.
-So it makes things lot easier the code should look like:
-
-	int l = len >> 2;
-
-	if (l) {
-		ioread32_rep(hc->pci_membase + A_FIFO_DATA0, data, l);
-		data += l << 2;
-	}
-	if (len & 2) {
-		ioread16_rep(hc->pci_membase + A_FIFO_DATA0, data, 1);
-		data += 2;
-	}
-	if (len & 1)
-		writeb(*data, hc->pci_membase + A_FIFO_DATA0);
-
--- 
-Karsten Keil
-SuSE Labs
-ISDN and VOIP development
-SUSE LINUX Products GmbH, Maxfeldstr.5 90409 Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+Doesn't work very well really does it - ld.so loads files too and can be
+attacked.
