@@ -1,98 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762197AbYHEQym@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762574AbYHEQ47@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762197AbYHEQym (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 12:54:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760889AbYHEQya
+	id S1762574AbYHEQ47 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 12:56:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760284AbYHEQz2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 12:54:30 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:37063 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758259AbYHEQy2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 12:54:28 -0400
-Date: Tue, 5 Aug 2008 10:54:27 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Matt Domsch <Matt_Domsch@dell.com>
-Cc: "Martin K. Petersen" <martin.petersen@oracle.com>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Ric Wheeler <rwheeler@redhat.com>, linux-scsi@vger.kernel.org,
-       linux-ide@vger.kernel.org, Jim Meyering <jim@meyering.net>,
-       linux-kernel@vger.kernel.org, Jeff Garzik <jeff@garzik.org>
-Subject: Re: tools support for non-512 byte sector sizes
-Message-ID: <20080805165426.GA2055@parisc-linux.org>
-References: <488F524F.6020905@redhat.com> <20080729182611.GB24924@parisc-linux.org> <1217356645.6103.48.camel@localhost.localdomain> <yq13alsr0g0.fsf@sermon.lab.mkp.net> <20080730135147.GA4513@auslistsprd01.us.dell.com> <20080801161149.GA26461@parisc-linux.org>
-MIME-Version: 1.0
+	Tue, 5 Aug 2008 12:55:28 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:4246 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752985AbYHEQz1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Aug 2008 12:55:27 -0400
+Date: Tue, 5 Aug 2008 18:47:53 +0200
+From: Pavel Machek <pavel@suse.cz>
+To: Russ Anderson <rja@sgi.com>
+Cc: mingo@elte.hu, tglx@linutronix.de, linux-kernel@vger.kernel.org,
+       Jack Steiner <steiner@sgi.com>
+Subject: Re: [patch] x86 BIOS interface for partitioning and system serial number on SGI UV
+Message-ID: <20080805164752.GB7426@ucw.cz>
+References: <20080731200002.GC25715@sgi.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080801161149.GA26461@parisc-linux.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20080731200002.GC25715@sgi.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 01, 2008 at 10:11:49AM -0600, Matthew Wilcox wrote:
-> Are they SCSI?  I just got round to trying 4k sector sizes in ata_ram
-> (after adding file backed capability) and found that libata currently
-> silently ignores the identify bits that report sector size.  I'll work
-> on fixing that this afternoon if nobody beats me to it.
+On Thu 2008-07-31 15:00:02, Russ Anderson wrote:
+> x86 BIOS interface for partitioning and system serial number on SGI UV
+> 
+> Signed-off-by: Russ Anderson <rja@sgi.com>
 
-OK, I have patches.  I'll send them to linux-ide.  If anyone wants to
-try them, I pushed out two trees; one for libata:
 
-http://git.kernel.org/?p=linux/kernel/git/willy/misc.git;a=shortlog;h=ata-large-sectors
+> +static int licenseID_show(struct seq_file *s, void *p)
+> +{
+> +	seq_printf(s, "0x%llx\n", sn_partition_serial_number_val());
+> +	return 0;
+> +}
+> +
+> +static int licenseID_open(struct inode *inode, struct file *file)
+> +{
+> +	return single_open(file, licenseID_show, NULL);
+> +}
+> +
+> +static int coherence_id_show(struct seq_file *s, void *p)
+> +{
+> +	seq_printf(s, "%d\n", partition_coherence_id());
+> +
+> +	return 0;
+> +}
+> +
+> +static int coherence_id_open(struct inode *inode, struct file *file)
+> +{
+> +	return single_open(file, coherence_id_show, NULL);
+> +}
+> +
+> +static const struct file_operations proc_partition_id_fops = {
+> +	.open		= partition_id_open,
+> +	.read		= seq_read,
+> +	.llseek		= seq_lseek,
+> +	.release	= single_release,
+> +};
+> +
+> +static const struct file_operations proc_system_sn_fops = {
+> +	.open		= system_serial_number_open,
+> +	.read		= seq_read,
+> +	.llseek		= seq_lseek,
+> +	.release	= single_release,
+> +};
+> +
+> +static const struct file_operations proc_license_id_fops = {
+> +	.open		= licenseID_open,
+> +	.read		= seq_read,
+> +	.llseek		= seq_lseek,
+> +	.release	= single_release,
+> +};
+> +
+> +static const struct file_operations proc_coherence_id_fops = {
+> +	.open		= coherence_id_open,
+> +	.read		= seq_read,
+> +	.llseek		= seq_lseek,
+> +	.release	= single_release,
+> +};
 
-and one for ata_ram supporting:
- - large sectors
- - file backing
-http://git.kernel.org/?p=linux/kernel/git/willy/misc.git;a=shortlog;h=ata-ram
+...serial numbers do not belong to /proc. Plus I'm not sure if stuff
+like licenseIDs even belongs to Linux. What is it good for?
 
-I hope that will help some more people do testing.
-
-Here's the dmesg from running:
-
-$ sudo modprobe ata_ram sector_size=4096 capacity=262144 nr_ports=2
-
-(note that you'll need at least 2.5GB of ram in your machine to try this,
-or Linux gets really unhappy.  You can, of course, reduce the capacity.
-Would there be interest in a lazily allocated option for ata_ram?)
-
-[ 1134.017240] scsi7 : ata_ram
-[ 1134.017420] scsi8 : ata_ram
-[ 1134.017489] ata8: SATA max UDMA/133 ata_ram_0
-[ 1134.017495] ata9: SATA max UDMA/133 ata_ram_1
-[ 1134.017557] ata8.00: ATA-8: Linux RAM Drive, 0.01, max UDMA7
-[ 1134.017563] ata8.00: 262144 sectors, multi 0: LBA 
-[ 1134.017602] ata8.00: configured for UDMA/133
-[ 1134.017631] ata9.00: ATA-8: Linux RAM Drive, 0.01, max UDMA7
-[ 1134.017636] ata9.00: 262144 sectors, multi 0: LBA 
-[ 1134.017668] ata9.00: configured for UDMA/133
-[ 1134.035741] scsi 7:0:0:0: Direct-Access     ATA      Linux RAM Drive  0.01 PQ: 0 ANSI: 5
-[ 1134.035904] sd 7:0:0:0: [sdb] 262144 4096-byte hardware sectors (1074 MB)
-[ 1134.035926] sd 7:0:0:0: [sdb] Write Protect is off
-[ 1134.035932] sd 7:0:0:0: [sdb] Mode Sense: 00 3a 00 00
-[ 1134.035961] sd 7:0:0:0: [sdb] Write cache: disabled, read cache: enabled, doesn't support DPO or FUA
-[ 1134.036039] sd 7:0:0:0: [sdb] 262144 4096-byte hardware sectors (1074 MB)
-[ 1134.036061] sd 7:0:0:0: [sdb] Write Protect is off
-[ 1134.036066] sd 7:0:0:0: [sdb] Mode Sense: 00 3a 00 00
-[ 1134.036095] sd 7:0:0:0: [sdb] Write cache: disabled, read cache: enabled, doesn't support DPO or FUA
-[ 1134.036119]  sdb: unknown partition table
-[ 1134.036276] sd 7:0:0:0: [sdb] Attached SCSI disk
-[ 1134.036463] sd 7:0:0:0: Attached scsi generic sg2 type 0
-[ 1134.036607] scsi 8:0:0:0: Direct-Access     ATA      Linux RAM Drive  0.01 PQ: 0 ANSI: 5
-[ 1134.036749] sd 8:0:0:0: [sdc] 262144 4096-byte hardware sectors (1074 MB)
-[ 1134.036768] sd 8:0:0:0: [sdc] Write Protect is off
-[ 1134.036774] sd 8:0:0:0: [sdc] Mode Sense: 00 3a 00 00
-[ 1134.036803] sd 8:0:0:0: [sdc] Write cache: disabled, read cache: enabled, doesn't support DPO or FUA
-[ 1134.036869] sd 8:0:0:0: [sdc] 262144 4096-byte hardware sectors (1074 MB)
-[ 1134.036888] sd 8:0:0:0: [sdc] Write Protect is off
-[ 1134.036895] sd 8:0:0:0: [sdc] Mode Sense: 00 3a 00 00
-[ 1134.036924] sd 8:0:0:0: [sdc] Write cache: disabled, read cache: enabled, doesn't support DPO or FUA
-[ 1134.036944]  sdc: unknown partition table
-[ 1134.037082] sd 8:0:0:0: [sdc] Attached SCSI disk
-[ 1134.037182] sd 8:0:0:0: Attached scsi generic sg3 type 0
-
+							Pavel
 -- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
