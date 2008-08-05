@@ -1,112 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758159AbYHEOcl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758265AbYHEOc5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758159AbYHEOcl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 10:32:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755957AbYHEOak
+	id S1758265AbYHEOc5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 10:32:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754885AbYHEOc1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 10:30:40 -0400
-Received: from mtagate1.de.ibm.com ([195.212.29.150]:62924 "EHLO
-	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755809AbYHEOai (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 10:30:38 -0400
-From: Joachim Fenkes <fenkes@de.ibm.com>
-To: Paul Mackerras <paulus@samba.org>,
-       "LinuxPPC-Dev" <linuxppc-dev@ozlabs.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "David S. Miller" <davem@davemloft.net>
-Subject: [PATCH] ibmebus/of_platform: Move "name" sysfs attribute into generic OF devices
-User-Agent: KMail/1.8.2
-Cc: Christoph Raisch <raisch@de.ibm.com>,
-       "Hoang-Nam Nguyen" <hnguyen@de.ibm.com>,
-       Stefan Roscher <stefan.roscher@de.ibm.com>,
-       Paul Mackerras <pmac@au1.ibm.com>,
-       Alexander Schmidt <alexschm@de.ibm.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, Olaf Hering <olaf@aepfle.de>
+	Tue, 5 Aug 2008 10:32:27 -0400
+Received: from ra.tuxdriver.com ([70.61.120.52]:3078 "EHLO ra.tuxdriver.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754083AbYHEOc0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Aug 2008 10:32:26 -0400
+Date: Tue, 5 Aug 2008 10:05:17 -0400
+From: "John W. Linville" <linville@tuxdriver.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: David Miller <davem@davemloft.net>, linux-wireless@vger.kernel.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: pull request: wireless-2.6 2008-08-04
+Message-ID: <20080805140517.GA7819@tuxdriver.com>
+References: <20080804193753.GA30345@tuxdriver.com> <20080804.150147.78586437.davem@davemloft.net> <20080805021710.GA21731@tuxdriver.com> <20080805.012814.215633850.davem@davemloft.net> <20080805232839.95235680.sfr@canb.auug.org.au>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Length: 2967
-Date: Tue, 5 Aug 2008 16:30:18 +0200
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200808051630.19619.fenkes@de.ibm.com>
+In-Reply-To: <20080805232839.95235680.sfr@canb.auug.org.au>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Recent of_platform changes made of_bus_type_init() overwrite the bus type's
-.dev_attrs list, so move ibmebus' "name" attribute (which is needed by eHCA
-userspace support) into generic OF device code. Tested on POWER.
+On Tue, Aug 05, 2008 at 11:28:39PM +1000, Stephen Rothwell wrote:
+> Hi David,
+> 
+> On Tue, 05 Aug 2008 01:28:14 -0700 (PDT) David Miller
+> <davem@davemloft.net> wrote:
+> >
+> > From: "John W. Linville" <linville@tuxdriver.com>
+> > Date: Mon, 4 Aug 2008 22:17:10 -0400
+> > 
+> > > On Mon, Aug 04, 2008 at 03:01:47PM -0700, David Miller wrote:
+> > > > I'm holding off on this pull until the list.h changes get so me lkml
+> > > > ACKs.
+> > > 
+> > > Sure, np.  I created a "no-ath9k" branch in case you are feeling
+> > > frisky -- it is the same except for omitting the list.h changes,
+> > > the ath5k pci table change, and the new ath9k driver.
+> > > 
+> > > 	git://git.kernel.org/pub/scm/linux/kernel/git/linville/wireless-2.6.git no-ath9k
+> > > 
+> > > Hth!
+> > 
+> > Due to the powerpc build failures the list.h stuff causes, I'm going
+>              ^^^^^^^
+> It was a sparc64 defconfig that failed due to the list.h changes.  The
+> powerpc build only failed when I added an include of <linux/bug.h> to
+> list.h.
+> 
+> The powerpc compiler got an internal error trying to compile the ath9k
+> code - but I don't know if there is anything we can to do to the source
+> to work around that.
 
-Signed-off-by: Joachim Fenkes <fenkes@de.ibm.com>
----
- arch/powerpc/kernel/ibmebus.c |   12 ------------
- drivers/of/device.c           |   10 ++++++++++
- 2 files changed, 10 insertions(+), 12 deletions(-)
+FWIW I fixed-up the wireless-2.6 tree to reflect what davem pulled -- a
+noop, but at least those patches shouldn't pollute -next tomorrow. :-)
 
-diff --git a/arch/powerpc/kernel/ibmebus.c b/arch/powerpc/kernel/ibmebus.c
-index 9d42eb5..a063622 100644
---- a/arch/powerpc/kernel/ibmebus.c
-+++ b/arch/powerpc/kernel/ibmebus.c
-@@ -233,17 +233,6 @@ void ibmebus_free_irq(u32 ist, void *dev_id)
- }
- EXPORT_SYMBOL(ibmebus_free_irq);
- 
--static ssize_t name_show(struct device *dev,
--			 struct device_attribute *attr, char *buf)
--{
--	return sprintf(buf, "%s\n", to_of_device(dev)->node->name);
--}
--
--static struct device_attribute ibmebus_dev_attrs[] = {
--	__ATTR_RO(name),
--	__ATTR_NULL
--};
--
- static char *ibmebus_chomp(const char *in, size_t count)
- {
- 	char *out = kmalloc(count + 1, GFP_KERNEL);
-@@ -327,7 +316,6 @@ static struct bus_attribute ibmebus_bus_attrs[] = {
- 
- struct bus_type ibmebus_bus_type = {
- 	.uevent    = of_device_uevent,
--	.dev_attrs = ibmebus_dev_attrs,
- 	.bus_attrs = ibmebus_bus_attrs
- };
- EXPORT_SYMBOL(ibmebus_bus_type);
-diff --git a/drivers/of/device.c b/drivers/of/device.c
-index 8a1d93a..51e5214 100644
---- a/drivers/of/device.c
-+++ b/drivers/of/device.c
-@@ -57,6 +57,15 @@ static ssize_t devspec_show(struct device *dev,
- 	return sprintf(buf, "%s\n", ofdev->node->full_name);
- }
- 
-+static ssize_t name_show(struct device *dev,
-+				struct device_attribute *attr, char *buf)
-+{
-+	struct of_device *ofdev;
-+
-+	ofdev = to_of_device(dev);
-+	return sprintf(buf, "%s\n", ofdev->node->name);
-+}
-+
- static ssize_t modalias_show(struct device *dev,
- 				struct device_attribute *attr, char *buf)
- {
-@@ -71,6 +80,7 @@ static ssize_t modalias_show(struct device *dev,
- 
- struct device_attribute of_platform_device_attrs[] = {
- 	__ATTR_RO(devspec),
-+	__ATTR_RO(name),
- 	__ATTR_RO(modalias),
- 	__ATTR_NULL
- };
+John
 -- 
-1.5.5
-
-
-
-
-
+John W. Linville
+linville@tuxdriver.com
