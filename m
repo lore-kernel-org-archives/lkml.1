@@ -1,81 +1,599 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759613AbYHESeg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760004AbYHESho@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759613AbYHESeg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 14:34:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755621AbYHESe2
+	id S1760004AbYHESho (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 14:37:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756299AbYHEShd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 14:34:28 -0400
-Received: from mail15.ca.com ([208.232.182.54]:45995 "EHLO mail15.ca.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755154AbYHESe1 convert rfc822-to-8bit (ORCPT
+	Tue, 5 Aug 2008 14:37:33 -0400
+Received: from cavan.codon.org.uk ([93.93.128.6]:49248 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756230AbYHESha (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 14:34:27 -0400
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Tue, 5 Aug 2008 14:37:30 -0400
+Date: Tue, 5 Aug 2008 19:37:25 +0100
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: airlied@linux.ie
+Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
+Subject: [PATCH] Add Intel ACPI IGD OpRegion support
+Message-ID: <20080805183725.GA4468@srcf.ucam.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [malware-list] [RFC 0/5] [TALPA] Intro to a linux interfaceforon access scanning
-Date: Tue, 5 Aug 2008 14:34:26 -0400
-Message-ID: <2629CC4E1D22A64593B02C43E85553030480743E@USILMS12.ca.com>
-In-Reply-To: <20080805112747.2c3c4650@infradead.org>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [malware-list] [RFC 0/5] [TALPA] Intro to a linux interfaceforon access scanning
-Thread-Index: Acj3KQYiKW5kppa5RvOkWuiKT4LOrAAAB2tQ
-References: <1217883616.27684.19.camel@localhost.localdomain><20080804223249.GA10517@kroah.com><1217896374.27684.53.camel@localhost.localdomain><2629CC4E1D22A64593B02C43E855530304807431@USILMS12.ca.com><1217948212.27684.120.camel@localhost.localdomain><2629CC4E1D22A64593B02C43E855530304807436@USILMS12.ca.com><1217956796.11547.12.camel@paris.rdu.redhat.com><20080805103840.1aaa64a5@infradead.org><2629CC4E1D22A64593B02C43E85553030480743B@USILMS12.ca.com> <20080805112747.2c3c4650@infradead.org>
-From: "Press, Jonathan" <Jonathan.Press@ca.com>
-To: "Arjan van de Ven" <arjan@infradead.org>
-Cc: "Eric Paris" <eparis@redhat.com>, "Greg KH" <greg@kroah.com>,
-       <linux-kernel@vger.kernel.org>, <malware-list@lists.printk.net>,
-       <linux-security-module@vger.kernel.org>
-X-OriginalArrivalTime: 05 Aug 2008 18:34:27.0130 (UTC) FILETIME=[E404D1A0:01C8F729]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-You're right...I am not talking about blocking at all -- which may be a
-further indication that I am missing the specific point of this thread.
+This adds the support necessary for allowing ACPI backlight control to 
+work on some newer Intel-based graphics systems. Tested on Thinkpad T61 
+and HP 2510p hardware.
 
-But be that as it may...  I don't want to have to use more than one
-interface to get all the events I am interested in.  I want to register
-as a client and listen, and get everything I need from the same place.
+Signed-off-by: Matthew Garrett <mjg@redhat.com>
 
+---
 
-Also, it seems to me that for my purposes, close is discrete enough.  It
-tells me that there is now something out there that should be looked at.
+diff --git a/drivers/gpu/drm/i915/Makefile b/drivers/gpu/drm/i915/Makefile
+index a9e6046..b032808 100644
+--- a/drivers/gpu/drm/i915/Makefile
++++ b/drivers/gpu/drm/i915/Makefile
+@@ -3,7 +3,7 @@
+ # Direct Rendering Infrastructure (DRI) in XFree86 4.1.0 and higher.
+ 
+ ccflags-y := -Iinclude/drm
+-i915-y := i915_drv.o i915_dma.o i915_irq.o i915_mem.o
++i915-y := i915_drv.o i915_dma.o i915_irq.o i915_mem.o i915_opregion.o
+ 
+ i915-$(CONFIG_COMPAT)   += i915_ioc32.o
+ 
+diff --git a/drivers/gpu/drm/i915/i915_dma.c b/drivers/gpu/drm/i915/i915_dma.c
+index b3c4ac9..cead62f 100644
+--- a/drivers/gpu/drm/i915/i915_dma.c
++++ b/drivers/gpu/drm/i915/i915_dma.c
+@@ -810,6 +810,8 @@ int i915_driver_load(struct drm_device *dev, unsigned long flags)
+ 	if (!IS_I945G(dev) && !IS_I945GM(dev))
+ 		pci_enable_msi(dev->pdev);
+ 
++	intel_opregion_init(dev);
++
+ 	spin_lock_init(&dev_priv->user_irq_lock);
+ 
+ 	return ret;
+@@ -827,6 +829,8 @@ int i915_driver_unload(struct drm_device *dev)
+ 	if (dev_priv->mmio_map)
+ 		drm_rmmap(dev, dev_priv->mmio_map);
+ 
++	intel_opregion_free(dev);
++
+ 	drm_free(dev->dev_private, sizeof(drm_i915_private_t),
+ 		 DRM_MEM_DRIVER);
+ 
+diff --git a/drivers/gpu/drm/i915/i915_drv.c b/drivers/gpu/drm/i915/i915_drv.c
+index 6c99aab..d95eca2 100644
+--- a/drivers/gpu/drm/i915/i915_drv.c
++++ b/drivers/gpu/drm/i915/i915_drv.c
+@@ -371,6 +371,8 @@ static int i915_suspend(struct drm_device *dev, pm_message_t state)
+ 
+ 	i915_save_vga(dev);
+ 
++	intel_opregion_free(dev);
++
+ 	if (state.event == PM_EVENT_SUSPEND) {
+ 		/* Shut down the device */
+ 		pci_disable_device(dev->pdev);
+@@ -532,6 +534,8 @@ static int i915_resume(struct drm_device *dev)
+ 
+ 	i915_restore_vga(dev);
+ 
++	intel_opregion_init(dev);
++
+ 	return 0;
+ }
+ 
+diff --git a/drivers/gpu/drm/i915/i915_drv.h b/drivers/gpu/drm/i915/i915_drv.h
+index 8daf0d8..e4bd01c 100644
+--- a/drivers/gpu/drm/i915/i915_drv.h
++++ b/drivers/gpu/drm/i915/i915_drv.h
+@@ -82,6 +82,14 @@ typedef struct _drm_i915_vbl_swap {
+ 	unsigned int sequence;
+ } drm_i915_vbl_swap_t;
+ 
++struct intel_opregion {
++	struct opregion_header *header;
++	struct opregion_acpi *acpi;
++	struct opregion_swsci *swsci;
++	struct opregion_asle *asle;
++	int enabled;
++};
++
+ typedef struct drm_i915_private {
+ 	drm_local_map_t *sarea;
+ 	drm_local_map_t *mmio_map;
+@@ -122,6 +130,8 @@ typedef struct drm_i915_private {
+ 	drm_i915_vbl_swap_t vbl_swaps;
+ 	unsigned int swaps_pending;
+ 
++	struct intel_opregion opregion;
++
+ 	/* Register state */
+ 	u8 saveLBB;
+ 	u32 saveDSPACNTR;
+@@ -244,6 +254,7 @@ extern int i915_vblank_pipe_get(struct drm_device *dev, void *data,
+ 				struct drm_file *file_priv);
+ extern int i915_vblank_swap(struct drm_device *dev, void *data,
+ 			    struct drm_file *file_priv);
++extern void i915_enable_irq(drm_i915_private_t *dev_priv, u32 mask);
+ 
+ /* i915_mem.c */
+ extern int i915_mem_alloc(struct drm_device *dev, void *data,
+@@ -258,6 +269,12 @@ extern void i915_mem_takedown(struct mem_block **heap);
+ extern void i915_mem_release(struct drm_device * dev,
+ 			     struct drm_file *file_priv, struct mem_block *heap);
+ 
++/* i915_opregion.c */
++extern int intel_opregion_init(struct drm_device *dev);
++extern void intel_opregion_free(struct drm_device *dev);
++extern void opregion_asle_intr(struct drm_device *dev);
++extern void opregion_enable_asle(struct drm_device *dev);
++
+ #define I915_READ(reg)          DRM_READ32(dev_priv->mmio_map, (reg))
+ #define I915_WRITE(reg,val)     DRM_WRITE32(dev_priv->mmio_map, (reg), (val))
+ #define I915_READ16(reg)	DRM_READ16(dev_priv->mmio_map, (reg))
+diff --git a/drivers/gpu/drm/i915/i915_irq.c b/drivers/gpu/drm/i915/i915_irq.c
+index 24d11ed..ae7d3a8 100644
+--- a/drivers/gpu/drm/i915/i915_irq.c
++++ b/drivers/gpu/drm/i915/i915_irq.c
+@@ -36,9 +36,11 @@
+ /** These are the interrupts used by the driver */
+ #define I915_INTERRUPT_ENABLE_MASK (I915_USER_INTERRUPT |		\
+ 				    I915_DISPLAY_PIPE_A_VBLANK_INTERRUPT | \
+-				    I915_DISPLAY_PIPE_B_VBLANK_INTERRUPT)
++				    I915_DISPLAY_PIPE_B_VBLANK_INTERRUPT | \
++				    I915_ASLE_INTERRUPT |		\
++				    I915_DISPLAY_PIPE_B_EVENT_INTERRUPT)
+ 
+-static inline void
++void
+ i915_enable_irq(drm_i915_private_t *dev_priv, u32 mask)
+ {
+ 	if ((dev_priv->irq_mask_reg & mask) != 0) {
+@@ -274,6 +276,9 @@ irqreturn_t i915_driver_irq_handler(DRM_IRQ_ARGS)
+ 		return IRQ_NONE;
+ 	}
+ 
++	I915_WRITE(PIPEASTAT, pipea_stats);
++	I915_WRITE(PIPEBSTAT, pipeb_stats);
++
+ 	I915_WRITE(IIR, iir);
+ 	if (dev->pdev->msi_enabled)
+ 		I915_WRITE(IMR, dev_priv->irq_mask_reg);
+@@ -306,14 +311,14 @@ irqreturn_t i915_driver_irq_handler(DRM_IRQ_ARGS)
+ 
+ 		if (dev_priv->swaps_pending > 0)
+ 			drm_locked_tasklet(dev, i915_vblank_tasklet);
+-		I915_WRITE(PIPEASTAT,
+-			pipea_stats|I915_VBLANK_INTERRUPT_ENABLE|
+-			PIPE_VBLANK_INTERRUPT_STATUS);
+-		I915_WRITE(PIPEBSTAT,
+-			pipeb_stats|I915_VBLANK_INTERRUPT_ENABLE|
+-			PIPE_VBLANK_INTERRUPT_STATUS);
+ 	}
+ 
++	if (iir & I915_ASLE_INTERRUPT)
++		opregion_asle_intr(dev);
++
++	if (iir & I915_DISPLAY_PIPE_B_EVENT_INTERRUPT)
++		opregion_asle_intr(dev);
++
+ 	return IRQ_HANDLED;
+ }
+ 
+@@ -661,10 +666,14 @@ void i915_driver_irq_postinstall(struct drm_device * dev)
+ 	if (dev_priv->vblank_pipe & DRM_I915_VBLANK_PIPE_B)
+ 		dev_priv->irq_mask_reg &= ~I915_DISPLAY_PIPE_B_VBLANK_INTERRUPT;
+ 
++	dev_priv->irq_mask_reg &= I915_INTERRUPT_ENABLE_MASK;
++
+ 	I915_WRITE(IMR, dev_priv->irq_mask_reg);
+ 	I915_WRITE(IER, I915_INTERRUPT_ENABLE_MASK);
+ 	(void) I915_READ(IER);
+ 
++	opregion_enable_asle(dev);
++
+ 	DRM_INIT_WAITQUEUE(&dev_priv->irq_queue);
+ }
+ 
+diff --git a/drivers/gpu/drm/i915/i915_opregion.c b/drivers/gpu/drm/i915/i915_opregion.c
+new file mode 100644
+index 0000000..1787a0c
+--- /dev/null
++++ b/drivers/gpu/drm/i915/i915_opregion.c
+@@ -0,0 +1,371 @@
++/*
++ * Copyright 2008 Intel Corporation <hong.liu@intel.com>
++ * Copyright 2008 Red Hat <mjg@redhat.com>
++ *
++ * Permission is hereby granted, free of charge, to any person obtaining
++ * a copy of this software and associated documentation files (the
++ * "Software"), to deal in the Software without restriction, including
++ * without limitation the rights to use, copy, modify, merge, publish,
++ * distribute, sub license, and/or sell copies of the Software, and to
++ * permit persons to whom the Software is furnished to do so, subject to
++ * the following conditions:
++ *
++ * The above copyright notice and this permission notice (including the
++ * next paragraph) shall be included in all copies or substantial
++ * portions of the Software.
++ *
++ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
++ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
++ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
++ * NON-INFRINGEMENT.  IN NO EVENT SHALL INTEL AND/OR ITS SUPPLIERS BE
++ * LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
++ * ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
++ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
++ * SOFTWARE.
++ *
++ */
++
++#include <linux/acpi.h>
++
++#include "drmP.h"
++#include "i915_drm.h"
++#include "i915_drv.h"
++
++#define PCI_ASLE 0xe4
++#define PCI_LBPC 0xf4
++#define PCI_ASLS 0xfc
++
++#define OPREGION_SZ            (8*1024)
++#define OPREGION_HEADER_OFFSET 0
++#define OPREGION_ACPI_OFFSET   0x100
++#define OPREGION_SWSCI_OFFSET  0x200
++#define OPREGION_ASLE_OFFSET   0x300
++#define OPREGION_VBT_OFFSET    0x1000
++
++#define OPREGION_SIGNATURE "IntelGraphicsMem"
++#define MBOX_ACPI      (1<<0)
++#define MBOX_SWSCI     (1<<1)
++#define MBOX_ASLE      (1<<2)
++
++struct opregion_header {
++       u8 signature[16];
++       u32 size;
++       u32 opregion_ver;
++       u8 bios_ver[32];
++       u8 vbios_ver[16];
++       u8 driver_ver[16];
++       u32 mboxes;
++       u8 reserved[164];
++} __attribute__((packed));
++
++/* OpRegion mailbox #1: public ACPI methods */
++struct opregion_acpi {
++       u32 drdy;       /* driver readiness */
++       u32 csts;       /* notification status */
++       u32 cevt;       /* current event */
++       u8 rsvd1[20];
++       u32 didl[8];    /* supported display devices ID list */
++       u32 cpdl[8];    /* currently presented display list */
++       u32 cadl[8];    /* currently active display list */
++       u32 nadl[8];    /* next active devices list */
++       u32 aslp;       /* ASL sleep time-out */
++       u32 tidx;       /* toggle table index */
++       u32 chpd;       /* current hotplug enable indicator */
++       u32 clid;       /* current lid state*/
++       u32 cdck;       /* current docking state */
++       u32 sxsw;       /* Sx state resume */
++       u32 evts;       /* ASL supported events */
++       u32 cnot;       /* current OS notification */
++       u32 nrdy;       /* driver status */
++       u8 rsvd2[60];
++} __attribute__((packed));
++
++/* OpRegion mailbox #2: SWSCI */
++struct opregion_swsci {
++       u32 scic;       /* SWSCI command|status|data */
++       u32 parm;       /* command parameters */
++       u32 dslp;       /* driver sleep time-out */
++       u8 rsvd[244];
++} __attribute__((packed));
++
++/* OpRegion mailbox #3: ASLE */
++struct opregion_asle {
++       u32 ardy;       /* driver readiness */
++       u32 aslc;       /* ASLE interrupt command */
++       u32 tche;       /* technology enabled indicator */
++       u32 alsi;       /* current ALS illuminance reading */
++       u32 bclp;       /* backlight brightness to set */
++       u32 pfit;       /* panel fitting state */
++       u32 cblv;       /* current brightness level */
++       u16 bclm[20];   /* backlight level duty cycle mapping table */
++       u32 cpfm;       /* current panel fitting mode */
++       u32 epfm;       /* enabled panel fitting modes */
++       u8 plut[74];    /* panel LUT and identifier */
++       u32 pfmb;       /* PWM freq and min brightness */
++       u8 rsvd[102];
++} __attribute__((packed));
++
++/* ASLE irq request bits */
++#define ASLE_SET_ALS_ILLUM     (1 << 0)
++#define ASLE_SET_BACKLIGHT     (1 << 1)
++#define ASLE_SET_PFIT          (1 << 2)
++#define ASLE_SET_PWM_FREQ      (1 << 3)
++#define ASLE_REQ_MSK           0xf
++
++/* response bits of ASLE irq request */
++#define ASLE_ALS_ILLUM_FAIL    (2<<10)
++#define ASLE_BACKLIGHT_FAIL    (2<<12)
++#define ASLE_PFIT_FAIL         (2<<14)
++#define ASLE_PWM_FREQ_FAIL     (2<<16)
++
++/* ASLE backlight brightness to set */
++#define ASLE_BCLP_VALID                (1<<31)
++#define ASLE_BCLP_MSK          (~(1<<31))
++
++/* ASLE panel fitting request */
++#define ASLE_PFIT_VALID         (1<<31)
++#define ASLE_PFIT_CENTER (1<<0)
++#define ASLE_PFIT_STRETCH_TEXT (1<<1)
++#define ASLE_PFIT_STRETCH_GFX (1<<2)
++
++/* PWM frequency and minimum brightness */
++#define ASLE_PFMB_BRIGHTNESS_MASK (0xff)
++#define ASLE_PFMB_BRIGHTNESS_VALID (1<<8)
++#define ASLE_PFMB_PWM_MASK (0x7ffffe00)
++#define ASLE_PFMB_PWM_VALID (1<<31)
++
++#define ASLE_CBLV_VALID         (1<<31)
++
++static u32 asle_set_backlight(struct drm_device *dev, u32 bclp)
++{
++	struct drm_i915_private *dev_priv = dev->dev_private;
++	struct opregion_asle *asle = dev_priv->opregion.asle;
++	u32 blc_pwm_ctl, blc_pwm_ctl2;
++
++	if (!(bclp & ASLE_BCLP_VALID))
++		return ASLE_BACKLIGHT_FAIL;
++
++	bclp &= ASLE_BCLP_MSK;
++	if (bclp < 0 || bclp > 255)
++		return ASLE_BACKLIGHT_FAIL;
++
++	blc_pwm_ctl = I915_READ(BLC_PWM_CTL);
++	blc_pwm_ctl &= ~BACKLIGHT_DUTY_CYCLE_MASK;
++	blc_pwm_ctl2 = I915_READ(BLC_PWM_CTL2);
++
++	if (blc_pwm_ctl2 & BLM_COMBINATION_MODE)
++		pci_write_config_dword(dev->pdev, PCI_LBPC, bclp);
++	else
++		I915_WRITE(BLC_PWM_CTL, blc_pwm_ctl | ((bclp * 0x101)-1));
++
++	asle->cblv = (bclp*0x64)/0xff | ASLE_CBLV_VALID;
++
++	return 0;
++}
++
++static u32 asle_set_als_illum(struct drm_device *dev, u32 alsi)
++{
++	/* alsi is the current ALS reading in lux. 0 indicates below sensor
++	   range, 0xffff indicates above sensor range. 1-0xfffe are valid */
++	return 0;
++}
++
++static u32 asle_set_pwm_freq(struct drm_device *dev, u32 pfmb)
++{
++	struct drm_i915_private *dev_priv = dev->dev_private;
++	if (pfmb & ASLE_PFMB_PWM_VALID) {
++		u32 blc_pwm_ctl = I915_READ(BLC_PWM_CTL);
++		u32 pwm = pfmb & ASLE_PFMB_PWM_MASK;
++		blc_pwm_ctl &= BACKLIGHT_DUTY_CYCLE_MASK;
++		pwm = pwm >> 9;
++		/* FIXME - what do we do with the PWM? */
++	}
++	return 0;
++}
++
++static u32 asle_set_pfit(struct drm_device *dev, u32 pfit)
++{
++	/* Panel fitting is currently controlled by the X code, so this is a
++	   noop until modesetting support works fully */
++	if (!(pfit & ASLE_PFIT_VALID))
++		return ASLE_PFIT_FAIL;
++	return 0;
++}
++
++void opregion_asle_intr(struct drm_device *dev)
++{
++	struct drm_i915_private *dev_priv = dev->dev_private;
++	struct opregion_asle *asle = dev_priv->opregion.asle;
++	u32 asle_stat = 0;
++	u32 asle_req;
++
++	if (!asle)
++		return;
++
++	asle_req = asle->aslc & ASLE_REQ_MSK;
++
++	if (!asle_req) {
++		DRM_DEBUG("non asle set request??\n");
++		return;
++	}
++
++	if (asle_req & ASLE_SET_ALS_ILLUM)
++		asle_stat |= asle_set_als_illum(dev, asle->alsi);
++
++	if (asle_req & ASLE_SET_BACKLIGHT)
++		asle_stat |= asle_set_backlight(dev, asle->bclp);
++
++	if (asle_req & ASLE_SET_PFIT)
++		asle_stat |= asle_set_pfit(dev, asle->pfit);
++
++	if (asle_req & ASLE_SET_PWM_FREQ)
++		asle_stat |= asle_set_pwm_freq(dev, asle->pfmb);
++
++	asle->aslc = asle_stat;
++}
++
++#define ASLE_ALS_EN    (1<<0)
++#define ASLE_BLC_EN    (1<<1)
++#define ASLE_PFIT_EN   (1<<2)
++#define ASLE_PFMB_EN   (1<<3)
++
++void opregion_enable_asle(struct drm_device *dev)
++{
++	struct drm_i915_private *dev_priv = dev->dev_private;
++	struct opregion_asle *asle = dev_priv->opregion.asle;
++
++	if (asle) {
++		u32 pipeb_stats = I915_READ(PIPEBSTAT);
++		if (IS_MOBILE(dev)) {
++			/* Many devices trigger events with a write to the
++			   legacy backlight controller, so we need to ensure
++			   that it's able to generate interrupts */
++			I915_WRITE(PIPEBSTAT, pipeb_stats |=
++				   I915_LEGACY_BLC_EVENT_ENABLE);
++			i915_enable_irq(dev_priv, I915_ASLE_INTERRUPT |
++					I915_DISPLAY_PIPE_B_EVENT_INTERRUPT);
++		} else
++			i915_enable_irq(dev_priv, I915_ASLE_INTERRUPT);
++
++		asle->tche = ASLE_ALS_EN | ASLE_BLC_EN | ASLE_PFIT_EN |
++			ASLE_PFMB_EN;
++		asle->ardy = 1;
++	}
++}
++
++#define ACPI_EV_DISPLAY_SWITCH (1<<0)
++#define ACPI_EV_LID            (1<<1)
++#define ACPI_EV_DOCK           (1<<2)
++
++static struct intel_opregion *system_opregion;
++
++int intel_opregion_video_event(struct notifier_block *nb, unsigned long val,
++			       void *data)
++{
++	/* The only video events relevant to opregion are 0x80. These indicate
++	   either a docking event, lid switch or display switch request. In
++	   Linux, these are handled by the dock, button and video drivers.
++	   We might want to fix the video driver to be opregion-aware in
++	   future, but right now we just indicate to the firmware that the
++	   request has been handled */
++
++	struct opregion_acpi *acpi;
++
++	if (!system_opregion)
++		return NOTIFY_DONE;
++
++	acpi = system_opregion->acpi;
++	acpi->csts = 0;
++
++	return NOTIFY_OK;
++}
++
++static struct notifier_block intel_opregion_notifier = {
++	.notifier_call = intel_opregion_video_event,
++};
++
++int intel_opregion_init(struct drm_device *dev)
++{
++	struct drm_i915_private *dev_priv = dev->dev_private;
++	struct intel_opregion *opregion = &dev_priv->opregion;
++	void *base;
++	u32 asls, mboxes;
++	int err = 0;
++
++	pci_read_config_dword(dev->pdev, PCI_ASLS, &asls);
++	DRM_DEBUG("graphic opregion physical addr: 0x%x\n", asls);
++	if (asls == 0) {
++		DRM_DEBUG("ACPI OpRegion not supported!\n");
++		return -ENOTSUPP;
++	}
++
++	base = ioremap(asls, OPREGION_SZ);
++	if (!base)
++		return -ENOMEM;
++
++	opregion->header = base;
++	if (memcmp(opregion->header->signature, OPREGION_SIGNATURE, 16)) {
++		DRM_DEBUG("opregion signature mismatch\n");
++		err = -EINVAL;
++		goto err_out;
++	}
++
++	mboxes = opregion->header->mboxes;
++	if (mboxes & MBOX_ACPI) {
++		DRM_DEBUG("Public ACPI methods supported\n");
++		opregion->acpi = base + OPREGION_ACPI_OFFSET;
++	} else {
++		DRM_DEBUG("Public ACPI methods not supported\n");
++		err = -ENOTSUPP;
++		goto err_out;
++	}
++	opregion->enabled = 1;
++
++	if (mboxes & MBOX_SWSCI) {
++		DRM_DEBUG("SWSCI supported\n");
++		opregion->swsci = base + OPREGION_SWSCI_OFFSET;
++	}
++	if (mboxes & MBOX_ASLE) {
++		DRM_DEBUG("ASLE supported\n");
++		opregion->asle = base + OPREGION_ASLE_OFFSET;
++	}
++
++	/* Notify BIOS we are ready to handle ACPI video ext notifs.
++	 * Right now, all the events are handled by the ACPI video module.
++	 * We don't actually need to do anything with them. */
++	opregion->acpi->csts = 0;
++	opregion->acpi->drdy = 1;
++
++	system_opregion = opregion;
++	register_acpi_notifier(&intel_opregion_notifier);
++
++	return 0;
++
++err_out:
++	iounmap(opregion->header);
++	opregion->header = NULL;
++	return err;
++}
++
++void intel_opregion_free(struct drm_device *dev)
++{
++	struct drm_i915_private *dev_priv = dev->dev_private;
++	struct intel_opregion *opregion = &dev_priv->opregion;
++
++	if (!opregion->enabled)
++		return;
++
++	opregion->acpi->drdy = 0;
++
++	system_opregion = NULL;
++	unregister_acpi_notifier(&intel_opregion_notifier);
++
++	/* just clear all opregion memory pointers now */
++	iounmap(opregion->header);
++	opregion->header = NULL;
++	opregion->acpi = NULL;
++	opregion->swsci = NULL;
++	opregion->asle = NULL;
++
++	opregion->enabled = 0;
++}
+diff --git a/drivers/gpu/drm/i915/i915_reg.h b/drivers/gpu/drm/i915/i915_reg.h
+index 477c64e..43ad2cb 100644
+--- a/drivers/gpu/drm/i915/i915_reg.h
++++ b/drivers/gpu/drm/i915/i915_reg.h
+@@ -740,6 +740,7 @@
+ #define BLC_PWM_CTL		0x61254
+ #define   BACKLIGHT_MODULATION_FREQ_SHIFT		(17)
+ #define BLC_PWM_CTL2		0x61250 /* 965+ only */
++#define   BLM_COMBINATION_MODE (1 << 30)
+ /*
+  * This is the most significant 15 bits of the number of backlight cycles in a
+  * complete cycle of the modulated backlight control.
 
-
-Jon
-
-
-
------Original Message-----
-From: Arjan van de Ven [mailto:arjan@infradead.org] 
-Sent: Tuesday, August 05, 2008 2:28 PM
-To: Press, Jonathan
-Cc: Eric Paris; Greg KH; linux-kernel@vger.kernel.org;
-malware-list@lists.printk.net; linux-security-module@vger.kernel.org
-Subject: Re: [malware-list] [RFC 0/5] [TALPA] Intro to a linux
-interfaceforon access scanning
-
-On Tue, 5 Aug 2008 14:04:26 -0400
-"Press, Jonathan" <Jonathan.Press@ca.com> wrote:
-
-> 
-> However, I want to point out that scanning on close is still an
-> integral part of AV protection, even if intercepting opens and execs
-> theoretically catches everything.
-
-
-but close is... very limited in value. Open is a discrete event
-traditionally associated withh permission checks.
-Close... not so.  (And if you mmap memory, you can then close the file
-and still write to it via the mmap)
-
-Lets ask it differently: what will you do if you find something nasty?
-You can't fail the close... so why block for it?
-And if you don't block for it... all you would need is an asynchronous
-notification... something like... inotify
-
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
