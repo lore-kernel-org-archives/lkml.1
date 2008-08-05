@@ -1,116 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761428AbYHESJB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762088AbYHESOB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761428AbYHESJB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 14:09:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761233AbYHESIw
+	id S1762088AbYHESOB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 14:14:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761346AbYHESNt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 14:08:52 -0400
-Received: from gw.goop.org ([64.81.55.164]:40891 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756525AbYHESIu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 14:08:50 -0400
-Message-ID: <48989727.8090804@goop.org>
-Date: Tue, 05 Aug 2008 11:08:39 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Tue, 5 Aug 2008 14:13:49 -0400
+Received: from rv-out-0506.google.com ([209.85.198.235]:5050 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761326AbYHESNr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Aug 2008 14:13:47 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent:sender;
+        b=rWmq7OVfqDcRwAGd9+ivlE9MUlaRQTetQaHicsvE82fCQA0MKgFkCHR3JhyQ4+Nd9M
+         d8gk3arRRDd0e7Asrj+WF8tOdItfhSD+A0hUt+CdGqghqTtU8Rdk5Z5vjPgVGzEjjcUC
+         RT4FsqxyxrCK1/X3NqhzsTCFA7C6a6WzDiY9o=
+Date: Tue, 5 Aug 2008 23:43:35 +0530
+From: Rabin Vincent <rabin@rab.in>
+To: Justin Mattock <justinmattock@gmail.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: BUG: cat /sys/devices/system/cpu/cpuidle/current_driver
+Message-ID: <20080805181335.GB1856@debian>
+References: <dd18b0c30808050759h2680842el87b384997978edd6@mail.gmail.com>
 MIME-Version: 1.0
-To: Alex Nixon <alex.nixon@citrix.com>
-CC: Christian Borntraeger <cborntra@de.ibm.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: Spinlock recursion in hvc_poll
-References: <48973E59.1000904@citrix.com> <489742CF.2030305@goop.org> <4898096F.4030607@citrix.com> <48987526.40500@goop.org> <48987DD8.8080009@citrix.com>
-In-Reply-To: <48987DD8.8080009@citrix.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <dd18b0c30808050759h2680842el87b384997978edd6@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alex Nixon wrote:
->>> Well I say fixed - it just means I can proceed to a spinlock recursion
->>> BUG() 2 secs into the boot process, but it should be easier to track down
->>> with printks and a coherent stack dump at my disposal.
->>>   
->>>       
->> What's the backtrace on this?
->>     
->
-> I just turned DEBUG_SPINLOCKS back on to try catch this bug again, and it
-> seems to occur (very roughly) 1/10 of the time, with nothing changing between
-> runs.
->   
+On Tue, Aug 05, 2008 at 07:59:31AM -0700, Justin Mattock wrote:
+> I noticed a thread about:
+> cat /sys/devices/system/cpu/cpuidle/current_driver
+> so I decided to see if this happens to me as well.
+> sure enough the first try gave me no response the
+> second try gave me a segfault <below is in dmesg>
+> 
+> [  292.680190] BUG: unable to handle kernel paging request at 72890e19
+> [  292.680201] IP: [<c02ebd1f>] show_current_driver+0x5/0x4c
+> [  292.680215] *pde = 00000000
+> [  292.680221] Oops: 0000 [#1] SMP
+> [  292.680229] Modules linked in: hci_usb cpufreq_ondemand
+> cpufreq_performance cpufreq_powersave rfcomm hidp l2cap bluetooth fan
+> battery ipmi_watchdog ipmi_msghandler uvcvideo uinput wlan_tkip
+> ieee80211_crypt_tkip ieee80211 ieee80211_crypt arpt_mangle
+> arptable_filter arp_tables nf_conntrack_ipv4 nf_conntrack
+> iptable_mangle iptable_filter ip_tables x_tables coretemp eeprom
+> acpi_cpufreq applesmc wlan_scan_sta ath_rate_sample firewire_ohci
+> firewire_core joydev isight_firmware snd_hda_intel ath_pci wlan
+> fglrx(P) ohci1394 appletouch snd_pcm ieee1394 ath_hal(P) video ac
+> snd_timer ehci_hcd pata_acpi thermal agpgart evdev uhci_hcd
+> snd_page_alloc snd_hwdep processor sbshc button
+> [  292.680335]
+> [  292.680341] Pid: 3645, comm: cat Tainted: P
+> (2.6.27-rc1-00156-g94ad374 #5)
+> [  292.680346] EIP: 0060:[<c02ebd1f>] EFLAGS: 00210282 CPU: 0
+> [  292.680353] EIP is at show_current_driver+0x5/0x4c
+> [  292.680358] EAX: f44ae7f4 EBX: c01a982c ECX: 0804e000 EDX: 00001000
+> [  292.680362] ESI: f44ae7e0 EDI: c04e0728 EBP: c04e0728 ESP: f1ecff64
+> [  292.680367]  DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
+> [  292.680372] Process cat (pid: 3645, ti=f1ece000 task=f1edc4e0
+> task.ti=f1ece000)
+> [  292.680377] Stack: c04e0a90 f1e0fd00 0804e000 c01a97a1 f1ecff90
+> c0175721 f1ecff9c 00001000
+> [  292.680392]        f1e0fd00 fffffff7 0804e000 f1ecffb0 c0175a14
+> f1ecff9c 00000000 00000000
+> [  292.680406]        00000000 00000003 00001000 f1ece000 c0102f9a
+> 00000003 0804e000 00001000
+> [  292.680421] Call Trace:
+> [  292.680425]  [<c01a97a1>] ? sysfs_read_file+0x0/0xe8
+> [  292.680436]  [<c0175721>] ? vfs_read+0x8a/0x106
+> [  292.680444]  [<c0175a14>] ? sys_read+0x3b/0x60
+> [  292.680452]  [<c0102f9a>] ? syscall_call+0x7/0xb
+> [  292.680461]  =======================
+> [  292.680464] Code: c3 58 5a b8 e0 7a 4e c0 e8 a5 ee 0a 00 89 d8 8b
+> 5d fc c9 c3 55 83 c0 30 89 e5 ba 4c 7b 4e c0 e8 3e f4 eb ff 5d c3 61
+> 63 70 69 5f <69> 64 6c 65 0a 00 e8 e1 ff 0a 00 a1 e0 4c 5e c0 85 c0 74
+> 13 50
+> [  292.680548] EIP: [<c02ebd1f>] show_current_driver+0x5/0x4c SS:ESP
+> 0068:f1ecff64
+> [  292.680559] ---[ end trace d308d2db96f6b752 ]---
+> 
+> the kernel is tainted(even though I'm trying to have an
+> untainted kernel). i.g. video driver
 
-OK, I added some cc:s.
+Thanks for the report.  Could you please try this patch posted in the
+original thread?
 
-This is definitely a relatively new bug, because I was running with 
-spinlock debugging on all the time a couple of months ago, with no problems.
+  http://lkml.org/lkml/2008/8/5/314
 
-> Backtrace attached.
->   
-(Should paste it inline so it gets quoted in replies.)
-
-> [    0.752696] Freeing unused kernel memory: 284k freed
-> [    0.772757] BUG: spinlock recursion on CPU#0, swapper/1
-> [    0.772782]  lock: eaca7000, .magic: dead4ead, .owner: swapper/1, .owner_cpu: 0
-> [    0.772814] Pid: 1, comm: swapper Not tainted 2.6.27-rc1 #350
-> [    0.772843]  [<c021f48d>] spin_bug+0x7c/0x87
-> [    0.772878]  [<c021f5d5>] _raw_spin_lock+0x35/0xda
-> [    0.772904]  [<c030c501>] _spin_lock_irqsave+0x3c/0x45
-> [    0.772932]  [<c027a394>] ? hvc_poll+0x15/0x1ac
-> [    0.772964]  [<c027a394>] hvc_poll+0x15/0x1ac
->   
-OK, I suspect this is a result of Christian Borntraeger's patches to 
-make hvc console cope without interrupts.  It's certainly a suggestive 
-set of changes in the right place in the code.
-
-But I have to admit I didn't look at the patches very closely when they 
-went by, so I'm just finger-pointing at the moment.  Perhaps it's a 
-pre-existing bug.
-
-    J
-
-> [    0.772990]  [<c0166b1f>] ? ftrace_record_ip+0x19f/0x1ee
-> [    0.773024]  [<c027a6a2>] hvc_handle_interrupt+0xf/0x21
-> [    0.773051]  [<c015f7dc>] handle_IRQ_event+0x1f/0x4f
-> [    0.773080]  [<c0160d1f>] handle_level_irq+0xc4/0xd1
-> [    0.773107]  [<c010b3ee>] do_IRQ+0x5c/0x7a
-> [    0.773133]  [<c0263573>] xen_evtchn_do_upcall+0xad/0x109
-> [    0.773164]  [<c01096cb>] xen_do_upcall+0x7/0xc
-> [    0.773189]  [<c0102227>] ? _stext+0x227/0x1000
-> [    0.773219]  [<c0105be3>] ? xen_force_evtchn_callback+0xf/0x14
-> [    0.773253]  [<c0106366>] check_events+0x8/0xe
-> [    0.773278]  [<c0106297>] ? xen_irq_enable_direct_end+0x0/0x1
-> [    0.773310]  [<c018bc07>] ? cache_alloc_refill+0x251/0x4b4
-> [    0.773342]  [<c0105be3>] ? xen_force_evtchn_callback+0xf/0x14
-> [    0.773375]  [<c0106366>] ? check_events+0x8/0xe
-> [    0.773405]  [<c018bef8>] __kmalloc+0x8e/0xd6
-> [    0.773428]  [<c010972b>] ? mcount_call+0x5/0xa
-> [    0.773457]  [<c01c3490>] __proc_create+0x78/0xfb
-> [    0.773485]  [<c01c380a>] proc_mkdir_mode+0x23/0x48
-> [    0.773512]  [<c01c3843>] proc_mkdir+0x14/0x16
-> [    0.773536]  [<c016112e>] register_irq_proc+0x70/0xca
-> [    0.773562]  [<c0160013>] setup_irq+0x1bc/0x1f2
-> [    0.773587]  [<c01600d2>] request_irq+0x89/0xa6
-> [    0.773614]  [<c027a693>] ? hvc_handle_interrupt+0x0/0x21
-> [    0.773645]  [<c027a681>] notifier_add_irq+0x2f/0x41
-> [    0.773670]  [<c027a2aa>] hvc_open+0x6f/0xc9
-> [    0.773693]  [<c027a23b>] ? hvc_open+0x0/0xc9
-> [    0.773720]  [<c026b436>] tty_open+0x198/0x299
-> [    0.773746]  [<c0190fbe>] chrdev_open+0x12c/0x143
-> [    0.773772]  [<c018d170>] __dentry_open+0x113/0x201
-> [    0.773797]  [<c018d282>] nameidata_to_filp+0x24/0x38
-> [    0.773823]  [<c0190e92>] ? chrdev_open+0x0/0x143
-> [    0.773852]  [<c019845d>] do_filp_open+0x351/0x636
-> [    0.773878]  [<c010972b>] ? mcount_call+0x5/0xa
-> [    0.773907]  [<c021f5f3>] ? _raw_spin_lock+0x53/0xda
-> [    0.773937]  [<c021f50c>] ? _raw_spin_unlock+0x74/0x78
-> [    0.773967]  [<c018cf19>] ? get_unused_fd_flags+0xad/0xb7
-> [    0.773997]  [<c018cf68>] do_sys_open+0x45/0xbb
-> [    0.774022]  [<c018d02a>] sys_open+0x23/0x2b
-> [    0.774046]  [<c0103048>] init_post+0x2a/0xce
-> [    0.774070]  [<c010967b>] ? kernel_thread_helper+0x7/0x10
-> [    0.774101]  =======================
->   
-
+Rabin
