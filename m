@@ -1,68 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761299AbYHEQgR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761798AbYHEQgu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761299AbYHEQgR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 12:36:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758259AbYHEQgA
+	id S1761798AbYHEQgu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 12:36:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758642AbYHEQgj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 12:36:00 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:52898 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757704AbYHEQf7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 12:35:59 -0400
-Date: Wed, 6 Aug 2008 02:35:52 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: "John W. Linville" <linville@tuxdriver.com>
-Cc: Adrian Bunk <bunk@kernel.org>, linux-next@vger.kernel.org,
-       David Miller <davem@davemloft.net>, LKML <linux-kernel@vger.kernel.org>,
-       "Luis R. Rodriguez" <lrodriguez@atheros.com>
-Subject: Re: linux-next: wireless-current tree build failure
-Message-Id: <20080806023552.604deebe.sfr@canb.auug.org.au>
-In-Reply-To: <20080805160026.GA14186@tuxdriver.com>
-References: <20080805162152.2b55ae5c.sfr@canb.auug.org.au>
-	<20080805153757.GB22895@cs181140183.pp.htv.fi>
-	<20080805160026.GA14186@tuxdriver.com>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+	Tue, 5 Aug 2008 12:36:39 -0400
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:52042 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753816AbYHEQgi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Aug 2008 12:36:38 -0400
+Subject: Re: [PATCH 2/2] fusion:  Implement generic interrupt misroute
+	handling
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: David Vrabel <david.vrabel@csr.com>
+Cc: "Moore, Eric" <Eric.Moore@lsi.com>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+       "Prakash, Sathya" <Sathya.Prakash@lsi.com>
+In-Reply-To: <48970A4D.2090309@csr.com>
+References: <1217786709.4179.27.camel@localhost.localdomain>
+	 <660360F4F2570145BD872F298951B17A3ADCEDB9@cosmail03.lsi.com>
+	 <48970A4D.2090309@csr.com>
+Content-Type: text/plain
+Date: Tue, 05 Aug 2008 09:36:27 -0700
+Message-Id: <1217954187.9923.15.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Wed__6_Aug_2008_02_35_52_+1000_msCt9SvUnmol.F5i"
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Wed__6_Aug_2008_02_35_52_+1000_msCt9SvUnmol.F5i
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Mon, 2008-08-04 at 14:55 +0100, David Vrabel wrote:
+> Moore, Eric wrote:
+> > Thanks, I will try this out.   However I thought I saw lost
+> > interrupts occurring randomly, meaning it was not necessarily the
+> > first config page access.  I'm back in the office on 8/11, I will
+> > test it out then and provide feedback.
+> 
+> Is this using MSI on a device without per-vector mask bits?  If so, then
+> this patch may help.
+> 
+> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=ce6fce4295ba727b36fdc73040e444bd1aae64cd
 
-Hi John,
+We don't really know what the problem is.  MSI interrupts get lost on
+older motherboards (the ones most likely to contain a 1030).  Why is
+anybody's guess although the clever money is on the motherboard bridge
+having issues.
 
-On Tue, 5 Aug 2008 12:00:26 -0400 "John W. Linville" <linville@tuxdriver.co=
-m> wrote:
->
-> I imagine that we would be happy to do that.  Anyone have a clue as to ho=
-w?
+James
 
-I think that "not yet" is the answer :-(
 
-If we don't get a useful answer soon, we may just have to merge the
-driver with appropriately commented negative "depends on" in Kconfig for
-the arches it breaks.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Wed__6_Aug_2008_02_35_52_+1000_msCt9SvUnmol.F5i
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkiYgWgACgkQjjKRsyhoI8wSjACeKVR1n7yBBXpaIISHU5xayr0B
-owQAnRjx12+Puvto7jbu5eWtRPMjXFaH
-=KdQo
------END PGP SIGNATURE-----
-
---Signature=_Wed__6_Aug_2008_02_35_52_+1000_msCt9SvUnmol.F5i--
