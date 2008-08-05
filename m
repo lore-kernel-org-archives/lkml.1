@@ -1,94 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763695AbYHEUo1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764126AbYHEUq2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763695AbYHEUo1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 16:44:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760181AbYHEUoO
+	id S1764126AbYHEUq2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 16:46:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755136AbYHEUpN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 16:44:14 -0400
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:48904 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758766AbYHEUoM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 16:44:12 -0400
-Subject: Re: [PATCH 1/2] pci: add misrouted interrupt error handling
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: linux-scsi <linux-scsi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>, linux-pci@vger.kernel.org
-In-Reply-To: <200808051003.10400.jbarnes@virtuousgeek.org>
-References: <1217786532.4179.24.camel@localhost.localdomain>
-	 <200808051003.10400.jbarnes@virtuousgeek.org>
-Content-Type: text/plain
-Date: Tue, 05 Aug 2008 13:44:01 -0700
-Message-Id: <1217969041.9923.64.camel@localhost.localdomain>
+	Tue, 5 Aug 2008 16:45:13 -0400
+Received: from smtpout3.tre.se ([80.251.192.228]:38025 "EHLO smtpout3.tre.se"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753707AbYHEUpL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Aug 2008 16:45:11 -0400
+Date: Tue, 5 Aug 2008 22:45:48 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: linux arch <linux-arch@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: kbuild now support arch/$ARCH/include - time for ARCHs to convert
+Message-ID: <20080805204548.GD5464@uranus.ravnborg.org>
+References: <20080728200500.GA14284@uranus.ravnborg.org> <200808051418.05324.rusty@rustcorp.com.au>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200808051418.05324.rusty@rustcorp.com.au>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-08-05 at 10:03 -0700, Jesse Barnes wrote:
-> On Sunday, August 03, 2008 11:02 am James Bottomley wrote:
-> > +/**
-> > + * pci_lost_interrupt - reports a lost PCI interrupt
-> > + * @pdev:	device whose interrupt is lost
-> > + *
-> > + * The primary function of this routine is to report a lost interrupt
-> > + * in a standard way which users can recognise (instead of blaming the
-> > + * driver).
-> > + *
-> > + * Returns:
-> > + *  a suggestion for fixing it (although the driver is not required to
-> > + * act on this).
-> > + */
-> > +enum pci_lost_interrupt_reason pci_lost_interrupt(struct pci_dev *pdev)
-> > +{
-> > +	if (pdev->msi_enabled || pdev->msix_enabled) {
-> > +		enum pci_lost_interrupt_reason ret;
-> > +
-> > +		if (pdev->msix_enabled) {
-> > +			pci_note_irq_problem(pdev, "MSIX routing failure");
-> > +			ret = PCI_LOST_IRQ_DISABLE_MSIX;
-> > +		} else {
-> > +			pci_note_irq_problem(pdev, "MSI routing failure");
-> > +			ret = PCI_LOST_IRQ_DISABLE_MSI;
-> > +		}
-> > +		return ret;
-> > +	}
-> > +#ifdef CONFIG_ACPI
-> > +	if (!(acpi_disabled || acpi_noirq)) {
-> > +		pci_note_irq_problem(pdev, "Potential ACPI misrouting please reboot with
-> > acpi=noirq"); +		/* currently no way to fix acpi on the fly */
-> > +		return PCI_LOST_IRQ_DISABLE_ACPI;
-> > +	}
-> > +#endif
-> > +	pci_note_irq_problem(pdev, "unknown cause (not MSI or ACPI)");
-> > +	return PCI_LOST_IRQ_NO_INFORMATION;
-> > +}
+On Tue, Aug 05, 2008 at 02:18:05PM +1000, Rusty Russell wrote:
+> On Tuesday 29 July 2008 06:05:00 Sam Ravnborg wrote:
+> > is is suggested to move the arch specific files under arch/
+> > and for the header files this is arch/$ARCH/include.
 > 
-> This seems to be a function that just returns what type of IRQ you're using or 
-> how it's routed and it isn't necessarily "lost interrupt" specific.
+> Well, it would have been nice to take the opportunity to separate user-visible 
+> header files and non-user-visible files.  We could have left the user-visible 
+> ones in place, for example: diffstat would then show when you were frobbing 
+> the userspace interface.
 
-So perhaps this routine should only note but not advise?  The drivers
-can then just call pci_interrupt_type to see if they can do anything.
+I would like to see this change too - but intentionally I would
+not try to mix it with the move of the header files. Lets get the
+move done now and fix the fall-outs, then we can take this logical next step.
 
-> This information is clearly useful to drivers both for informational purposes 
-> and for debugging problems, so on that front it looks good.  However, I think 
-> it should probably be called pci_interrupt_type(struct pci_dev *dev) or 
-> something instead, and just return an enum of either MSIX, MSI, or LINE 
-> (though I'm open to better names).  From that, the driver can infer what 
-> might be going wrong, though in the case of a LINE interrupt, all you can 
-> really do is report that there's probably a platform IRQ routing problem.
-
-The only thing that this can't do is ACPI ... but on the other hand once
-the IRQ routing is set by ACPI I'm not sure the driver can do anything
-to fix it.
-
-So ... depending on how the feedback goes, I'll plan to reroll this as a
-note but not advise function.
-
-James
-
-
-
+	Sam
