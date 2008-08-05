@@ -1,67 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761335AbYHEP4Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762067AbYHEP4j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761335AbYHEP4Y (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 11:56:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759827AbYHEP4O
+	id S1762067AbYHEP4j (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 11:56:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761456AbYHEP41
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 11:56:14 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:51182 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757481AbYHEP4N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 11:56:13 -0400
-Date: Wed, 6 Aug 2008 01:30:41 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: "John W. Linville" <linville@tuxdriver.com>
-Cc: David Miller <davem@davemloft.net>, linux-wireless@vger.kernel.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: pull request: wireless-2.6 2008-08-04
-Message-Id: <20080806013041.c0d3845b.sfr@canb.auug.org.au>
-In-Reply-To: <20080805140517.GA7819@tuxdriver.com>
-References: <20080804193753.GA30345@tuxdriver.com>
-	<20080804.150147.78586437.davem@davemloft.net>
-	<20080805021710.GA21731@tuxdriver.com>
-	<20080805.012814.215633850.davem@davemloft.net>
-	<20080805232839.95235680.sfr@canb.auug.org.au>
-	<20080805140517.GA7819@tuxdriver.com>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Wed__6_Aug_2008_01_30_41_+1000_TJM__bAHGSzDuJU="
+	Tue, 5 Aug 2008 11:56:27 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:43578 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1761372AbYHEP40 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Aug 2008 11:56:26 -0400
+Message-ID: <48987829.1060002@sgi.com>
+Date: Tue, 05 Aug 2008 08:56:25 -0700
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+MIME-Version: 1.0
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: Kyle Moffett <kyle@moffetthome.net>, Russ Anderson <rja@sgi.com>,
+       mingo@elte.hu, tglx@linutronix.de, linux-kernel@vger.kernel.org,
+       Jack Steiner <steiner@sgi.com>
+Subject: Re: x86 BIOS interface for partitioning and system serial number
+ on SGI UV
+References: <20080731195753.GB25715@sgi.com> <48934926.2010200@zytor.com>	 <20080804221951.GA252105@sgi.com> <f73f7ab80808042221v5bebcea9o7e536093373647cd@mail.gmail.com> <4898654A.9000904@sgi.com> <4898745F.2070902@zytor.com>
+In-Reply-To: <4898745F.2070902@zytor.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Wed__6_Aug_2008_01_30_41_+1000_TJM__bAHGSzDuJU=
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+H. Peter Anvin wrote:
+> Mike Travis wrote:
+>>
+>> Hi Kyle,
+>>
+>> As I'm very new to this development arena, could you explain a bit more
+>> on why this is considered "bad manners"?
+>>
+>> I'm not speaking of any particular change, but there are some
+>> realities in
+>> bringing a new product to market that depends heavily on new "features"
+>> being accepted into a specific kernel release.  I certainly do not want
+>> to "taint" any kernel code (and I'm always amazed at the dedication of
+>> so many individuals to insure this doesn't happen), but the line between
+>> acceptability (and not) seems to waver all over the place... ;-)
+>>
+> 
+> It's because it's your responsibility to get the code in by whenever you
+> need it to, but trying to push unfinished code with the motivation "we
+> need it in by <release>" violates the development model *and* is just
+> plain rude.
+> 
+> This comes down to the old saying "lack of planning on your part does
+> not constitute an emergency on my part."
+> 
+> In other words, if you want to push code in by a specific release, the
+> code needs to be *done* and properly submitted.  Submitting code that
+> has a big "real code goes here" comment, is ridiculous.
+> 
+> Unfortunately we have seen a *lot* of that from several people at SGI
+> over the last year.
+> 
+>     -hpa
 
-Hi John,
+Hi Peter,
 
-On Tue, 5 Aug 2008 10:05:17 -0400 "John W. Linville" <linville@tuxdriver.co=
-m> wrote:
->
-> FWIW I fixed-up the wireless-2.6 tree to reflect what davem pulled -- a
-> noop, but at least those patches shouldn't pollute -next tomorrow. :-)
+Ok, thanks, I do see your point (very clearly), as I prepare yet another
+"we really, really need this" patch... ;-)
 
-Thanks.  Every bit helps.  I am hoping my toolchain guy can come up with
-a workaround for us.  And you guys can figure out the list.h thing.
+[ok, it's only a led driver and the world won't stop if it doesn't show up
+in the kernel... ;-)]
 
---=20
 Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Wed__6_Aug_2008_01_30_41_+1000_TJM__bAHGSzDuJU=
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkiYciEACgkQjjKRsyhoI8xYqwCgkqX2g/MXPwqLJYXixCmbxOWK
-YvQAoJ/FHSMdLuedrmx93XFKljIJP8nH
-=a+w8
------END PGP SIGNATURE-----
-
---Signature=_Wed__6_Aug_2008_01_30_41_+1000_TJM__bAHGSzDuJU=--
+Mike
