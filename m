@@ -1,61 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762189AbYHEX22@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760781AbYHEXiR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762189AbYHEX22 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 19:28:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758294AbYHEX2U
+	id S1760781AbYHEXiR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 19:38:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756956AbYHEXiG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 19:28:20 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:16057 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753113AbYHEX2T (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 19:28:19 -0400
-Date: Tue, 5 Aug 2008 16:22:55 -0700
-From: Joel Becker <Joel.Becker@oracle.com>
-To: Alexander Beregalov <a.beregalov@gmail.com>
-Cc: mfasheh@suse.com, ocfs2-devel@oss.oracle.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] ocfs2/cluster/netdebug.c: fix warning
-Message-ID: <20080805232254.GO22600@mail.oracle.com>
-Mail-Followup-To: Alexander Beregalov <a.beregalov@gmail.com>,
-	mfasheh@suse.com, ocfs2-devel@oss.oracle.com,
-	linux-kernel@vger.kernel.org
-References: <20080805201036.GC17320@orion> <20080805202948.GL22600@mail.oracle.com> <20080805205041.GD17320@orion>
-MIME-Version: 1.0
+	Tue, 5 Aug 2008 19:38:06 -0400
+Received: from verein.lst.de ([213.95.11.210]:52436 "EHLO verein.lst.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754859AbYHEXiF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Aug 2008 19:38:05 -0400
+Date: Wed, 6 Aug 2008 01:37:19 +0200
+From: Christoph Hellwig <hch@lst.de>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: David Miller <davem@davemloft.net>, Christoph Hellwig <hch@lst.de>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [2.6 patch] feature-removal-schedule.txt: remove the NCR53C9x entry
+Message-ID: <20080805233718.GB2514@lst.de>
+References: <20080805200330.GJ22895@cs181140183.pp.htv.fi>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080805205041.GD17320@orion>
-X-Burt-Line: Trees are cool.
-X-Red-Smith: Ninety feet between bases is perhaps as close as man has ever
-	come to perfection.
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+In-Reply-To: <20080805200330.GJ22895@cs181140183.pp.htv.fi>
+User-Agent: Mutt/1.3.28i
+X-Spam-Score: 0.5 () REMOVE_REMOVAL_2WORD
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 06, 2008 at 12:50:41AM +0400, Alexander Beregalov wrote:
-> On Tue, Aug 05, 2008 at 01:29:48PM -0700, Joel Becker wrote:
-> > 	suseconds_t is a signed long.  Can you change the format to %ld
-> > and cast to long?  Unfortunately, we need the cast, as sparc64 and
-> > parisc treat it as int.
+This should really be easy enough for any merge window state, whoe wants
+to feed it to Linus?
+
+On Tue, Aug 05, 2008 at 11:03:30PM +0300, Adrian Bunk wrote:
+> Now that the driver is removed we should also remove the entry in 
+> Documentation/feature-removal-schedule.txt
 > 
-> Then we should change cast from unsigned long to long for every tv_usec, right?
-
-	Yup.
-
-Joel
-
--- 
-
-"You can get more with a kind word and a gun than you can with
- a kind word alone."
-         - Al Capone
-
-Joel Becker
-Principal Software Developer
-Oracle
-E-mail: joel.becker@oracle.com
-Phone: (650) 506-8127
+> Signed-off-by: Adrian Bunk <bunk@kernel.org>
+> Acked-by: Christoph Hellwig <hch@lst.de>
+> 
+> ---
+> 
+> This patch has been sent on:
+> - 1 Mar 2008
+> 
+> 6d7882f6e844eaf6551b3a3708e01d1784916435 foobar
+> diff --git a/Documentation/feature-removal-schedule.txt b/Documentation/feature-removal-schedule.txt
+> index c1d1fd0..a4530f0 100644
+> --- a/Documentation/feature-removal-schedule.txt
+> +++ b/Documentation/feature-removal-schedule.txt
+> @@ -19,15 +19,6 @@ Who:	Pavel Machek <pavel@suse.cz>
+>  
+>  ---------------------------
+>  
+> -What:	old NCR53C9x driver
+> -When:	October 2007
+> -Why:	Replaced by the much better esp_scsi driver.  Actual low-level
+> -	driver can be ported over almost trivially.
+> -Who:	David Miller <davem@davemloft.net>
+> -	Christoph Hellwig <hch@lst.de>
+> -
+> ----------------------------
+> -
+>  What:	Video4Linux API 1 ioctls and video_decoder.h from Video devices.
+>  When:	December 2008
+>  Files:	include/linux/video_decoder.h include/linux/videodev.h
+---end quoted text---
