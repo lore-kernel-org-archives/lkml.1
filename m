@@ -1,73 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761382AbYHEPip@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761524AbYHEPjA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761382AbYHEPip (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 11:38:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759039AbYHEPie
+	id S1761524AbYHEPjA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 11:39:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761384AbYHEPip
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 11:38:34 -0400
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:56411 "EHLO smtp4.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754528AbYHEPie (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 11:38:34 -0400
-Date: Tue, 5 Aug 2008 18:37:11 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: lethal@linux-sh.org
-Cc: linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [2.6 patch] fix SH7705_CACHE_32KB compilation
-Message-ID: <20080805153711.GA22895@cs181140183.pp.htv.fi>
+	Tue, 5 Aug 2008 11:38:45 -0400
+Received: from mail-out.m-online.net ([212.18.0.9]:49838 "EHLO
+	mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761281AbYHEPin (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Aug 2008 11:38:43 -0400
+X-Auth-Info: QgylhOFiHLFFuwzbBPRXZ2gaEktQVto0gaSHB1nNzJQ=
+X-Auth-Info: D4M4+GlHcr/4nEXhtMCYf3iIixw7BxIvN9SbHqUUQtA=
+X-Auth-Info: D4M4+GlHcr/4nEXhtMCYf3iIixw7BxIvN9SbHqUUQtA=
+X-Auth-Info: D4M4+GlHcr/4nEXhtMCYf3iIixw7BxIvN9SbHqUUQtA=
+X-Auth-Info: D4M4+GlHcr/4nEXhtMCYf3iIixw7BxIvN9SbHqUUQtA=
+X-Auth-Info: D4M4+GlHcr/4nEXhtMCYf3iIixw7BxIvN9SbHqUUQtA=
+X-Auth-Info: D4M4+GlHcr/4nEXhtMCYf3iIixw7BxIvN9SbHqUUQtA=
+Message-ID: <48987486.6010100@grandegger.com>
+Date: Tue, 05 Aug 2008 17:40:54 +0200
+From: Wolfgang Grandegger <wg@grandegger.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: paulmck@linux.vnet.ibm.com
+CC: Steven Rostedt <rostedt@goodmis.org>, Luotao Fu <l.fu@pengutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>,
+       RT <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: 2.6.24-rc8-rt1: Strange latencies on mpc5200 powerpc - RCU	issue?
+References: <20080130010716.GB16069@linux.vnet.ibm.com> <47A032E9.4080105@grandegger.com> <20080130102255.GA24890@linux.vnet.ibm.com> <47A0552D.20605@grandegger.com> <20080130105715.GE24890@linux.vnet.ibm.com> <20080130111559.GC20089@pengutronix.de> <486A3EBB.6030905@grandegger.com> <Pine.LNX.4.58.0807011036510.26650@gandalf.stny.rr.com> <486A573E.60107@grandegger.com> <486B607F.9040903@grandegger.com> <20080801210913.GC14851@linux.vnet.ibm.com>
+In-Reply-To: <20080801210913.GC14851@linux.vnet.ibm.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patches compile errors like the following caused by
-commit 51f3547d619956e9b428bfff17004d8f4d259a02
-(sh: Allow SH-3 and SH-5 to use common headers):
+Paul E. McKenney wrote:
+> On Wed, Jul 02, 2008 at 01:03:27PM +0200, Wolfgang Grandegger wrote:
+>> Wolfgang Grandegger wrote:
+>>> Steven Rostedt wrote:
+>>> There seems to be something in trace_mark() keeping latency low:
+>>>   http://lxr.linux.no/linux+v2.6.24.4/include/linux/marker.h#L52
+>>> I will follow your suggestions.
+>> I removed all "likely" and "unlikely" macros, but the latencies did not 
+>> improve. Then I added
+>>
+>> 	preempt_disable();
+>> 	preempt_enable();
+>>
+>> at the two locations mentioned above, like trace_mark() does,  and disabled 
+>> CONFIG_RCU_TRACE. That helped to keep the latencies low, and it did for 
+>> 2.6.25.8-rt7 as well. As I see it, adding preemption points seem to prevent 
+>> high latencies.
+> 
+> Interesting.  Perhaps a preempt_enable_no_resched() somewhere that
+> should be preempt_enable()?
 
-<--  snip  -->
+FYI, Thomas fixed the real problem a week ago and the patch went into 
+2.6.24.7-rt16. See his mail with the subject "2.6.24.7-rt16".
 
-...
-  CC      arch/sh/mm/init.o
-/home/bunk/linux/kernel-2.6/git/linux-2.6/arch/sh/mm/init.c: In function 'mem_init':
-/home/bunk/linux/kernel-2.6/git/linux-2.6/arch/sh/mm/init.c:232: error: implicit declaration of function 'p3_cache_init'
-make[2]: *** [arch/sh/mm/init.o] Error 1
-make[1]: *** [arch/sh/mm] Error 2
-...
-  CC      kernel/fork.o
-/home/bunk/linux/kernel-2.6/git/linux-2.6/kernel/fork.c: In function 'dup_mmap':
-/home/bunk/linux/kernel-2.6/git/linux-2.6/kernel/fork.c:323: error: implicit declaration of function 'flush_dcache_mmap_lock'
-/home/bunk/linux/kernel-2.6/git/linux-2.6/kernel/fork.c:325: error: implicit declaration of function 'flush_dcache_mmap_unlock'
-make[2]: *** [kernel/fork.o] Error 1
-
-<--  snip  -->
-
-Reported-by: Adrian Bunk <bunk@kernel.org>
-Signed-off-by: Adrian Bunk <bunk@kernel.org>
-
----
-4c8f23b049a9725bba4d84a68988077bd7fdc2c5 
-diff --git a/arch/sh/include/cpu-sh3/cpu/cacheflush.h b/arch/sh/include/cpu-sh3/cpu/cacheflush.h
-index abc9098..1ac27aa 100644
---- a/arch/sh/include/cpu-sh3/cpu/cacheflush.h
-+++ b/arch/sh/include/cpu-sh3/cpu/cacheflush.h
-@@ -29,6 +29,16 @@ void flush_cache_page(struct vm_area_struct *vma, unsigned long addr, unsigned l
- void flush_dcache_page(struct page *pg);
- void flush_icache_range(unsigned long start, unsigned long end);
- void flush_icache_page(struct vm_area_struct *vma, struct page *page);
-+
-+#define flush_dcache_mmap_lock(mapping)		do { } while (0)
-+#define flush_dcache_mmap_unlock(mapping)	do { } while (0)
-+
-+/* SH3 has unified cache so no special action needed here */
-+#define flush_cache_sigtramp(vaddr)		do { } while (0)
-+#define flush_icache_user_range(vma,pg,adr,len)	do { } while (0)
-+
-+#define p3_cache_init()				do { } while (0)
-+
- #else
- #include <cpu-common/cpu/cacheflush.h>
- #endif
-
+Wolfgang.
