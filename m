@@ -1,96 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764725AbYHEUWE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765466AbYHEUWa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764725AbYHEUWE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 16:22:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764597AbYHEURu
+	id S1765466AbYHEUWa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 16:22:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764998AbYHEUTt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 16:17:50 -0400
-Received: from casper.infradead.org ([85.118.1.10]:60745 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764576AbYHEURs (ORCPT
+	Tue, 5 Aug 2008 16:19:49 -0400
+Received: from an-out-0708.google.com ([209.85.132.240]:49951 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764990AbYHEUTr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 16:17:48 -0400
-Date: Tue, 5 Aug 2008 13:15:35 -0700
-From: Greg KH <greg@kroah.com>
-To: Eric Paris <eparis@redhat.com>
-Cc: malware-list@lists.printk.net, linux-kernel@vger.kernel.org
-Subject: Re: [malware-list] [RFC 0/5] [TALPA] Intro to a linux interface
-	for on access scanning
-Message-ID: <20080805201535.GC27192@kroah.com>
-References: <1217883616.27684.19.camel@localhost.localdomain> <20080804223249.GA10517@kroah.com> <1217896374.27684.53.camel@localhost.localdomain> <20080805005132.GA3661@kroah.com> <1217965563.27684.159.camel@localhost.localdomain>
+	Tue, 5 Aug 2008 16:19:47 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=bja8Qi3b0cli6U7OuXZx9oDKkc5K1epT1vn2uqSmIke2unToznPPscWU7WpKaNfQGP
+         krGaxBvFS51Ao2HjlPrXQKjLoioj1AAp/5YwDUBkvv2nfm8MvWQumA8szb9pxo7NNA48
+         sjKKOoLWVTmAXUqaFakDU8liFcDrsPv46Noqg=
+Message-ID: <dd18b0c30808051319h11e9b254s5275c99f49854f24@mail.gmail.com>
+Date: Tue, 5 Aug 2008 13:19:44 -0700
+From: "Justin Mattock" <justinmattock@gmail.com>
+To: "Rabin Vincent" <rabin@rab.in>
+Subject: Re: BUG: cat /sys/devices/system/cpu/cpuidle/current_driver
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080805181335.GB1856@debian>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1217965563.27684.159.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+References: <dd18b0c30808050759h2680842el87b384997978edd6@mail.gmail.com>
+	 <20080805181335.GB1856@debian>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 05, 2008 at 03:46:03PM -0400, Eric Paris wrote:
-> On Mon, 2008-08-04 at 17:51 -0700, Greg KH wrote:
-> > On Mon, Aug 04, 2008 at 08:32:54PM -0400, Eric Paris wrote:
-> 
-> > Oh, and after that, not using a binary interface, have we not learned
-> > from the ioctl mess?  I sure thought we had...
-> 
-> I don't see a reason why we can't use strings and key=value pairs for
-> any metadata being sent back and forth.  That seem more reasonable?
+On Tue, Aug 5, 2008 at 11:13 AM, Rabin Vincent <rabin@rab.in> wrote:
+> On Tue, Aug 05, 2008 at 07:59:31AM -0700, Justin Mattock wrote:
+>> I noticed a thread about:
+>> cat /sys/devices/system/cpu/cpuidle/current_driver
+>> so I decided to see if this happens to me as well.
+>> sure enough the first try gave me no response the
+>> second try gave me a segfault <below is in dmesg>
+>>
+>> [  292.680190] BUG: unable to handle kernel paging request at 72890e19
+>> [  292.680201] IP: [<c02ebd1f>] show_current_driver+0x5/0x4c
+>> [  292.680215] *pde = 00000000
+>> [  292.680221] Oops: 0000 [#1] SMP
+>> [  292.680229] Modules linked in: hci_usb cpufreq_ondemand
+>> cpufreq_performance cpufreq_powersave rfcomm hidp l2cap bluetooth fan
+>> battery ipmi_watchdog ipmi_msghandler uvcvideo uinput wlan_tkip
+>> ieee80211_crypt_tkip ieee80211 ieee80211_crypt arpt_mangle
+>> arptable_filter arp_tables nf_conntrack_ipv4 nf_conntrack
+>> iptable_mangle iptable_filter ip_tables x_tables coretemp eeprom
+>> acpi_cpufreq applesmc wlan_scan_sta ath_rate_sample firewire_ohci
+>> firewire_core joydev isight_firmware snd_hda_intel ath_pci wlan
+>> fglrx(P) ohci1394 appletouch snd_pcm ieee1394 ath_hal(P) video ac
+>> snd_timer ehci_hcd pata_acpi thermal agpgart evdev uhci_hcd
+>> snd_page_alloc snd_hwdep processor sbshc button
+>> [  292.680335]
+>> [  292.680341] Pid: 3645, comm: cat Tainted: P
+>> (2.6.27-rc1-00156-g94ad374 #5)
+>> [  292.680346] EIP: 0060:[<c02ebd1f>] EFLAGS: 00210282 CPU: 0
+>> [  292.680353] EIP is at show_current_driver+0x5/0x4c
+>> [  292.680358] EAX: f44ae7f4 EBX: c01a982c ECX: 0804e000 EDX: 00001000
+>> [  292.680362] ESI: f44ae7e0 EDI: c04e0728 EBP: c04e0728 ESP: f1ecff64
+>> [  292.680367]  DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
+>> [  292.680372] Process cat (pid: 3645, ti=f1ece000 task=f1edc4e0
+>> task.ti=f1ece000)
+>> [  292.680377] Stack: c04e0a90 f1e0fd00 0804e000 c01a97a1 f1ecff90
+>> c0175721 f1ecff9c 00001000
+>> [  292.680392]        f1e0fd00 fffffff7 0804e000 f1ecffb0 c0175a14
+>> f1ecff9c 00000000 00000000
+>> [  292.680406]        00000000 00000003 00001000 f1ece000 c0102f9a
+>> 00000003 0804e000 00001000
+>> [  292.680421] Call Trace:
+>> [  292.680425]  [<c01a97a1>] ? sysfs_read_file+0x0/0xe8
+>> [  292.680436]  [<c0175721>] ? vfs_read+0x8a/0x106
+>> [  292.680444]  [<c0175a14>] ? sys_read+0x3b/0x60
+>> [  292.680452]  [<c0102f9a>] ? syscall_call+0x7/0xb
+>> [  292.680461]  =======================
+>> [  292.680464] Code: c3 58 5a b8 e0 7a 4e c0 e8 a5 ee 0a 00 89 d8 8b
+>> 5d fc c9 c3 55 83 c0 30 89 e5 ba 4c 7b 4e c0 e8 3e f4 eb ff 5d c3 61
+>> 63 70 69 5f <69> 64 6c 65 0a 00 e8 e1 ff 0a 00 a1 e0 4c 5e c0 85 c0 74
+>> 13 50
+>> [  292.680548] EIP: [<c02ebd1f>] show_current_driver+0x5/0x4c SS:ESP
+>> 0068:f1ecff64
+>> [  292.680559] ---[ end trace d308d2db96f6b752 ]---
+>>
+>> the kernel is tainted(even though I'm trying to have an
+>> untainted kernel). i.g. video driver
+>
+> Thanks for the report.  Could you please try this patch posted in the
+> original thread?
+>
+>  http://lkml.org/lkml/2008/8/5/314
+>
+> Rabin
+>
 
-Sure, but do you really want to put a parser in the kernel (well, make
-that, yet-another-parser-in-the-kernel...)?
+Sure, I'll give that patch a try.
+just to let you know, it my take some time,
+(doing some external activities).
+I'll let you know.
+regards;
 
-> > > > Heh, so if you want to write a "virus" for Linux, just implement this
-> > > > flag.  What's to keep a "rogue" program from telling the kernel that all
-> > > > programs on the system are to be excluded?
-> > > 
-> > > Processes can only get this flag one of 2 ways.
-> > > 
-> > > 1) register as a client to make access decisions
-> > 
-> > How do you do that?
-> 
-> open the magic "vetting" file RW and you are a client who can answer
-> access decisions.
-
-What's to keep anyone from doing this?
-
-> > > Perf win, why bothering looking for malware in /proc when it can't
-> > > exist?  It doesn't take longer it just takes time having to do
-> > > 
-> > > userspace -> kernel -> userspace -> kernel -> userspace
-> > > 
-> > > just to cat /proc/mounts, all of this could probably be alliviated if we
-> > > cached access on non block backed files but then we have to come up with
-> > > a way to exclude only nfs/cifs.  I'd rather list the FSs that don't need
-> > > scanning every time than those that do....
-> > 
-> > How long does this whole process take?  Seriously is it worth the added
-> > kernel code for something that is not measurable?
-> 
-> Is it worth having 2 context switches for every open when none are
-> needed?  I plan to get numbers on that.
-
-Compared to the real time it takes in the "virus engine"?  I bet it's
-totally lost in the noise.  Those things are huge beasts with thousands
-to hundreds of thousands of context switches.
-
-> > > In kernel caching is clearly a huge perf win.
-> > 
-> > Why?  If the cache is also in userspace, it should be the same, right?
-> 
-> In kernel cache has 0 context switches for every open.  Userspace
-> caching has 2.  Every open has to block, switch to the context of the
-> userspace client/cache, get that decisions, and then switch back to the
-> original process.
-
-Again, compared to what?  If you in userspace are doing big complex
-things, such an overhead is trivial.
-
-And again, realize that Linux has the fastest context switches _by far_
-of any other operating system.  It is ok to do things in userspace, we
-are used to that :)
-
-thanks,
-
-greg k-h
+-- 
+Justin P. Mattock
