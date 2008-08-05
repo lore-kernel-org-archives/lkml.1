@@ -1,63 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763649AbYHEWAI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762944AbYHEWH3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763649AbYHEWAI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 18:00:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755924AbYHEV7j
+	id S1762944AbYHEWH3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 18:07:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756786AbYHEWGk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 17:59:39 -0400
-Received: from toronto-hs-216-138-233-67.s-ip.magma.ca ([216.138.233.67]:35908
-	"HELO yow.seanm.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1755074AbYHEV7i (ORCPT
+	Tue, 5 Aug 2008 18:06:40 -0400
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:56120 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755649AbYHEWGi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 17:59:38 -0400
-Date: Tue, 5 Aug 2008 17:59:37 -0400
-From: Sean MacLennan <smaclennan@pikatech.com>
-To: "Linus Torvalds" <torvalds@linux-foundation.org>
-Cc: "Karsten Keil" <kkeil@suse.de>,
-       "Benjamin Herrenschmidt" <benh@kernel.crashing.org>,
-       "Andreas.Eversberg" <Andreas.Eversberg@versatel.de>,
-       <isdn4linux@listserv.isdn4linux.de>, <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 3/4] Fix remaining big endian issue of hfcmulti
-Message-ID: <20080805175937.49a5ba32@lappy.seanm.ca>
-In-Reply-To: <alpine.LFD.1.10.0808051435260.3257@nehalem.linux-foundation.org>
-References: <20080802151532.DE017A3C09@pingi.kke.suse.de>
-	<1217910588.24157.151.camel@pasglop>
-	<20080805113111.GA6827@pingi.kke.suse.de>
-	<1217941466.24157.190.camel@pasglop>
-	<20080805172549.GA6052@pingi.kke.suse.de>
-	<alpine.LFD.1.10.0808051140250.3257@nehalem.linux-foundation.org>
-	<20080805210239.GB6052@pingi.kke.suse.de>
-	<20080805172324.45853d98@lappy.seanm.ca>
-	<alpine.LFD.1.10.0808051435260.3257@nehalem.linux-foundation.org>
-Organization: PIKA
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.9; i686-pc-linux-gnu)
-X-Message-Flag: Warning: This message may contain actual content.
+	Tue, 5 Aug 2008 18:06:38 -0400
+Date: Tue, 5 Aug 2008 23:06:15 +0100
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Rusty Russell <rusty@rustcorp.com.au>,
+       linux arch <linux-arch@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: kbuild now support arch/$ARCH/include - time for ARCHs to convert
+Message-ID: <20080805220615.GC18607@flint.arm.linux.org.uk>
+Mail-Followup-To: Sam Ravnborg <sam@ravnborg.org>,
+	Rusty Russell <rusty@rustcorp.com.au>,
+	linux arch <linux-arch@vger.kernel.org>,
+	LKML <linux-kernel@vger.kernel.org>
+References: <20080728200500.GA14284@uranus.ravnborg.org> <200808051418.05324.rusty@rustcorp.com.au> <20080805204548.GD5464@uranus.ravnborg.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080805204548.GD5464@uranus.ravnborg.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 5 Aug 2008 14:37:19 -0700 (PDT)
-"Linus Torvalds" <torvalds@linux-foundation.org> wrote:
-
-> On Tue, 5 Aug 2008, Sean MacLennan wrote:
+On Tue, Aug 05, 2008 at 10:45:48PM +0200, Sam Ravnborg wrote:
+> On Tue, Aug 05, 2008 at 02:18:05PM +1000, Rusty Russell wrote:
+> > On Tuesday 29 July 2008 06:05:00 Sam Ravnborg wrote:
+> > > is is suggested to move the arch specific files under arch/
+> > > and for the header files this is arch/$ARCH/include.
 > > 
-> > Why not select PIO or MMIO at config time?  
+> > Well, it would have been nice to take the opportunity to separate user-visible 
+> > header files and non-user-visible files.  We could have left the user-visible 
+> > ones in place, for example: diffstat would then show when you were frobbing 
+> > the userspace interface.
 > 
-> Umm. Then you can't run a generic driver that can do either. That's
-> the worst choice of all.
+> I would like to see this change too - but intentionally I would
+> not try to mix it with the move of the header files. Lets get the
+> move done now and fix the fall-outs, then we can take this logical
+> next step.
 
-But do we really need a generic driver that can do either? Maybe for the
-current mISDN driver, but when you get to other chip ports, say the
-xhfc, you have to select the low level interface at compile time. Or I
-should say you currently have to select at config time.
+Absolutely agreed.
 
-I'm not arguing that we *have* to do it this way. I just don't think we
-should throw out the simplest method without some thought. There is
-some precedence for a config time option, for example the 8139too
-ethernet driver.
+Some architectures (eg, ARM) have quite a large headache to solve with
+these changes.
 
-Cheers,
-   Sean
+Currently, I know Linus' tree builds fine for most ARM platforms (thanks
+to the ARM kautobuild project.)  However, I'm seeing unexpected build
+failures that don't make sense from the linux-next project.
+
+I've just wound my tree back to a "pristine" state for linux-next, and
+plan to wait for its next build to check whether its me or something else
+causing it.  What I'm referring to is:
+
+s3c2410_defconfig's showing:
+include/asm/arch/map.h:16:30: error: asm/plat-s3c/map.h: No such file or directory
+
+which, if its including it via include/ shouldn't be happening because
+plat-s3c hasn't moved from include/asm(-arm)/, the same as
+include/asm-arm/arch-s3c2410 hasn't moved in linux-next yet.
+
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
