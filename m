@@ -1,203 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762213AbYHEQsx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761798AbYHEQxL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762213AbYHEQsx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 12:48:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760750AbYHEQsp
+	id S1761798AbYHEQxL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 12:53:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759486AbYHEQw5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 12:48:45 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:59362 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760320AbYHEQso (ORCPT
+	Tue, 5 Aug 2008 12:52:57 -0400
+Received: from mail15.ca.com ([208.232.182.54]:37666 "EHLO mail15.ca.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757875AbYHEQw4 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 12:48:44 -0400
-Date: Tue, 5 Aug 2008 12:48:41 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-cc: linux-kernel@vger.kernel.org, mingo@elte.hu, akpm@linux-foundation.org,
-       oleg@tv-sign.ru, manfred@colorfullife.com, dipankar@in.ibm.com,
-       dvhltc@us.ibm.com, niv@us.ibm.com
-Subject: Re: [PATCH tip/core/rcu] classic RCU locking and memory-barrier
- cleanups
-In-Reply-To: <20080805162144.GA8297@linux.vnet.ibm.com>
-Message-ID: <alpine.DEB.1.10.0808051244550.27713@gandalf.stny.rr.com>
-References: <20080805162144.GA8297@linux.vnet.ibm.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Tue, 5 Aug 2008 12:52:56 -0400
+X-Greylist: delayed 909 seconds by postgrey-1.27 at vger.kernel.org; Tue, 05 Aug 2008 12:52:56 EDT
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [malware-list] [RFC 0/5] [TALPA] Intro to a linux interfaceforon access scanning
+Date: Tue, 5 Aug 2008 12:37:45 -0400
+Message-ID: <2629CC4E1D22A64593B02C43E855530304807436@USILMS12.ca.com>
+In-Reply-To: <1217948212.27684.120.camel@localhost.localdomain>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [malware-list] [RFC 0/5] [TALPA] Intro to a linux interfaceforon access scanning
+Thread-Index: Acj3C5CRxYz6D1ViR5OmSYrV5CPjlQACdAYg
+References: <1217883616.27684.19.camel@localhost.localdomain> <20080804223249.GA10517@kroah.com> <1217896374.27684.53.camel@localhost.localdomain> <2629CC4E1D22A64593B02C43E855530304807431@USILMS12.ca.com> <1217948212.27684.120.camel@localhost.localdomain>
+From: "Press, Jonathan" <Jonathan.Press@ca.com>
+To: "Eric Paris" <eparis@redhat.com>
+Cc: "Greg KH" <greg@kroah.com>, <linux-kernel@vger.kernel.org>,
+       <malware-list@lists.printk.net>
+X-OriginalArrivalTime: 05 Aug 2008 16:37:46.0562 (UTC) FILETIME=[975AEA20:01C8F719]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Regarding self-exclusion...  We are doing write-time scanning, or more
+accurately close-time scanning.  We don't block the close, but we do
+scan the file afterwards, and if it is infected, we perform any one of
+several actions -- such as report to user, rename, quarantine, delete,
+etc.  I would not want a self-excluded executable to be able to write
+something that I don't get to scan.
 
-On Tue, 5 Aug 2008, Paul E. McKenney wrote:
-> ---
-> 
->  rcuclassic.c |   51 +++++++++++++++++++++++++++++++++++++++++----------
->  1 file changed, 41 insertions(+), 10 deletions(-)
-> 
-> diff --git a/kernel/rcuclassic.c b/kernel/rcuclassic.c
-> index d3553ee..e6f42ef 100644
-> --- a/kernel/rcuclassic.c
-> +++ b/kernel/rcuclassic.c
-> @@ -86,6 +86,7 @@ static void force_quiescent_state(struct rcu_data *rdp,
->  	int cpu;
->  	cpumask_t cpumask;
->  	set_need_resched();
-> +	spin_lock(&rcp->lock);
->  	if (unlikely(!rcp->signaled)) {
->  		rcp->signaled = 1;
->  		/*
-> @@ -111,6 +112,7 @@ static void force_quiescent_state(struct rcu_data *rdp,
->  		for_each_cpu_mask(cpu, cpumask)
->  			smp_send_reschedule(cpu);
->  	}
-> +	spin_unlock(&rcp->lock);
->  }
->  #else
->  static inline void force_quiescent_state(struct rcu_data *rdp,
-> @@ -124,7 +126,9 @@ static void __call_rcu(struct rcu_head *head, struct rcu_ctrlblk *rcp,
->  		struct rcu_data *rdp)
->  {
->  	long batch;
-> -	smp_mb(); /* reads the most recently updated value of rcu->cur. */
-> +
-> +	head->next = NULL;
-> +	smp_mb(); /* Read of rcu->cur must happen after any change by caller. */
->  
->  	/*
->  	 * Determine the batch number of this callback.
-> @@ -174,7 +178,6 @@ void call_rcu(struct rcu_head *head,
->  	unsigned long flags;
->  
->  	head->func = func;
-> -	head->next = NULL;
->  	local_irq_save(flags);
->  	__call_rcu(head, &rcu_ctrlblk, &__get_cpu_var(rcu_data));
->  	local_irq_restore(flags);
-> @@ -203,7 +206,6 @@ void call_rcu_bh(struct rcu_head *head,
->  	unsigned long flags;
->  
->  	head->func = func;
-> -	head->next = NULL;
->  	local_irq_save(flags);
->  	__call_rcu(head, &rcu_bh_ctrlblk, &__get_cpu_var(rcu_bh_data));
->  	local_irq_restore(flags);
-> @@ -389,17 +391,17 @@ static void rcu_move_batch(struct rcu_data *this_rdp, struct rcu_head *list,
->  static void __rcu_offline_cpu(struct rcu_data *this_rdp,
->  				struct rcu_ctrlblk *rcp, struct rcu_data *rdp)
->  {
-> -	/* if the cpu going offline owns the grace period
-> +	/*
-> +	 * if the cpu going offline owns the grace period
->  	 * we can block indefinitely waiting for it, so flush
->  	 * it here
->  	 */
->  	spin_lock_bh(&rcp->lock);
->  	if (rcp->cur != rcp->completed)
->  		cpu_quiet(rdp->cpu, rcp);
-> -	spin_unlock_bh(&rcp->lock);
-> -	/* spin_lock implies smp_mb() */
+Regarding exclusion by name, etc...  You are right.  I am accustomed to
+thinking about our current architecture, which does not involve a
+published interface.  I have to adjust my thinking.  Putting such a
+feature into the kernel would not be a good idea.  We can handle it in
+user space.
 
-The spin_unlock is being removed here. Was that the smp_mb that was 
-implied or is it the above spin_lock_bh?
 
->  	rcu_move_batch(this_rdp, rdp->donelist, rdp->donetail, rcp->cur + 1);
->  	rcu_move_batch(this_rdp, rdp->nxtlist, rdp->nxttail[2], rcp->cur + 1);
-> +	spin_unlock_bh(&rcp->lock);
->  
->  	local_irq_disable();
->  	this_rdp->qlen += rdp->qlen;
-> @@ -433,16 +435,19 @@ static void rcu_offline_cpu(int cpu)
->  static void __rcu_process_callbacks(struct rcu_ctrlblk *rcp,
->  					struct rcu_data *rdp)
->  {
-> +	long completed_snap;
-> +
->  	if (rdp->nxtlist) {
->  		local_irq_disable();
-> +		completed_snap = ACCESS_ONCE(rcp->completed);
->  
->  		/*
->  		 * move the other grace-period-completed entries to
->  		 * [rdp->nxtlist, *rdp->nxttail[0]) temporarily
->  		 */
-> -		if (!rcu_batch_before(rcp->completed, rdp->batch))
-> +		if (!rcu_batch_before(completed_snap, rdp->batch))
->  			rdp->nxttail[0] = rdp->nxttail[1] = rdp->nxttail[2];
-> -		else if (!rcu_batch_before(rcp->completed, rdp->batch - 1))
-> +		else if (!rcu_batch_before(completed_snap, rdp->batch - 1))
->  			rdp->nxttail[0] = rdp->nxttail[1];
->  
->  		/*
-> @@ -483,20 +488,38 @@ static void __rcu_process_callbacks(struct rcu_ctrlblk *rcp,
->  
->  static void rcu_process_callbacks(struct softirq_action *unused)
->  {
-> +	/*
-> +	 * Memory references from any prior RCU read-side critical sections
-> +	 * executed by the interrupted code must be see before any RCU
-> +	 * grace-period manupulations below.
-> +	 */
-> +
-> +	smp_mb(); /* See above block comment. */
-> +
->  	__rcu_process_callbacks(&rcu_ctrlblk, &__get_cpu_var(rcu_data));
->  	__rcu_process_callbacks(&rcu_bh_ctrlblk, &__get_cpu_var(rcu_bh_data));
-> +
-> +	/*
-> +	 * Memory references from any later RCU read-side critical sections
-> +	 * executed by the interrupted code must be see after any RCU
-> +	 * grace-period manupulations above.
-> +	 */
-> +
-> +	smp_mb(); /* See above block comment. */
->  }
->  
->  static int __rcu_pending(struct rcu_ctrlblk *rcp, struct rcu_data *rdp)
->  {
->  	if (rdp->nxtlist) {
-> +		long completed_snap = ACCESS_ONCE(rcp->completed);
-> +
->  		/*
->  		 * This cpu has pending rcu entries and the grace period
->  		 * for them has completed.
->  		 */
-> -		if (!rcu_batch_before(rcp->completed, rdp->batch))
-> +		if (!rcu_batch_before(completed_snap, rdp->batch))
->  			return 1;
-> -		if (!rcu_batch_before(rcp->completed, rdp->batch - 1) &&
-> +		if (!rcu_batch_before(completed_snap, rdp->batch - 1) &&
->  				rdp->nxttail[0] != rdp->nxttail[1])
->  			return 1;
->  		if (rdp->nxttail[0] != &rdp->nxtlist)
-> @@ -547,6 +570,12 @@ int rcu_needs_cpu(int cpu)
->  	return !!rdp->nxtlist || !!rdp_bh->nxtlist || rcu_pending(cpu);
->  }
->  
-> +/*
-> + * Top-level function driving RCU grace-period detection, normally
-> + * invoked from the scheduler-clock interrupt.  This function simply
-> + * increments counters that are read only from softirq by this same
-> + * CPU, so there are no memory barriers required.
-> + */
->  void rcu_check_callbacks(int cpu, int user)
->  {
->  	if (user ||
-> @@ -590,6 +619,7 @@ void rcu_check_callbacks(int cpu, int user)
->  static void rcu_init_percpu_data(int cpu, struct rcu_ctrlblk *rcp,
->  						struct rcu_data *rdp)
->  {
-> +	spin_lock(&rcp->lock);
->  	memset(rdp, 0, sizeof(*rdp));
->  	rdp->nxttail[0] = rdp->nxttail[1] = rdp->nxttail[2] = &rdp->nxtlist;
->  	rdp->donetail = &rdp->donelist;
-> @@ -597,6 +627,7 @@ static void rcu_init_percpu_data(int cpu, struct rcu_ctrlblk *rcp,
->  	rdp->qs_pending = 0;
->  	rdp->cpu = cpu;
->  	rdp->blimit = blimit;
-> +	spin_unlock(&rcp->lock);
->  }
->  
->  static void __cpuinit rcu_online_cpu(int cpu)
+Jon
+
+
+
+-----Original Message-----
+From: Eric Paris [mailto:eparis@redhat.com] 
+Sent: Tuesday, August 05, 2008 10:57 AM
+To: Press, Jonathan
+Cc: Greg KH; linux-kernel@vger.kernel.org; malware-list@lists.printk.net
+Subject: RE: [malware-list] [RFC 0/5] [TALPA] Intro to a linux
+interfaceforon access scanning
+
+On Tue, 2008-08-05 at 10:41 -0400, Press, Jonathan wrote:
+> I share the concern here.  The idea that a piece of malware can
+exclude
+> itself seems nasty to me.  I am not an expert on writing malware, but
+it
+> intuitively seems to me to be a huge opportunity for creativity.  The
+> argument that it's ok because anything that the malware writes will
+> eventually be scanned anyway does not reassure me.
+
+You aren't doing write time scanning anyway.  This exclusion means that
+an 'excluded' process can OPEN things that would normally be called
+malware.  The model here doesn't talk about adding files with bad
+information to the system it talks about stopping that bad information
+from being opened and propagated further.  Thread exclusions as they are
+written in the patch only weaken security to those processes which
+actively choose to read malware, it in no way weakens the security of
+the system as a whole...
 > 
+> Also...  I was one of the people who brought up the idea of a process
+> exclusion when the requirements list was being developed.  I intended
+it
+> as a way that an AV application could exclude specific OTHER processes
+> by name (as selected by the AV user) -- not as a way that a process
+> would exclude itself.  I don't think that the implementation here
+> reflects this goal, which still seems to me to be a requirement.
+
+Wait wit, you'd rather have a 'privileged' process be allowed to exclude
+every other process on a system than have a it only be allowed to
+exclude itself? and somehow that is safer?
+
+"by name" is right out the window.  You are never going to win 'by name'
+on anything to do with the kernel  :)  Maybe you can get me to
+eventually buy into 'by pid' or something like that, but setting flags
+on other running processes is always going to be racy and scary for me.
+Can you show me some code on how to do this cleanly?  And why it needs
+to be done in kernel?
+
+What is the goal you are trying to achieve?  A performance win for the
+application in question or is this a security aware application that
+needs to be able to access 'sensitive' data?
+
+-Eric
+
+
