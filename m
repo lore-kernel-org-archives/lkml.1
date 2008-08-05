@@ -1,138 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760220AbYHENiL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760494AbYHENnk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760220AbYHENiL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 09:38:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755506AbYHENh4
+	id S1760494AbYHENnk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 09:43:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757939AbYHENna
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 09:37:56 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:35108 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755237AbYHENhz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 09:37:55 -0400
-Date: Tue, 5 Aug 2008 09:30:07 -0400
-From: Vivek Goyal <vgoyal@redhat.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: balbir@linux.vnet.ibm.com, Linux Containers <containers@lists.osdl.org>,
-       linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       libcg-devel <libcg-devel@lists.sourceforge.net>
-Subject: Re: [Libcg-devel] Control groups and Resource Management notes
-	(part II)
-Message-ID: <20080805133007.GC15193@redhat.com>
-References: <489315B2.2080506@linux.vnet.ibm.com> <4893B415.9070906@linux.vnet.ibm.com> <20080805160709.A88B.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	Tue, 5 Aug 2008 09:43:30 -0400
+Received: from www.church-of-our-saviour.org ([69.25.196.31]:58885 "EHLO
+	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757215AbYHENn2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Aug 2008 09:43:28 -0400
+Date: Tue, 5 Aug 2008 09:14:17 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Robert Hancock <hancockr@shaw.ca>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Gabor Gombas <gombasg@sztaki.hu>,
+       Tejun Heo <htejun@gmail.com>, Elias Oltmanns <eo@nebensachen.de>,
+       Jeff Garzik <jeff@garzik.org>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       James Bottomley <James.Bottomley@hansenpartnership.com>,
+       Pavel Machek <pavel@ucw.cz>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/5] libata: Implement disk shock protection support
+Message-ID: <20080805131417.GC8569@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Robert Hancock <hancockr@shaw.ca>,
+	Alan Cox <alan@lxorguk.ukuu.org.uk>,
+	Gabor Gombas <gombasg@sztaki.hu>, Tejun Heo <htejun@gmail.com>,
+	Elias Oltmanns <eo@nebensachen.de>, Jeff Garzik <jeff@garzik.org>,
+	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+	James Bottomley <James.Bottomley@hansenpartnership.com>,
+	Pavel Machek <pavel@ucw.cz>, linux-ide@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+References: <fa.nx0yFPJm+aNXPHgykUrOzZXvvIs@ifi.uio.no> <fa.NfEr7Ik6e8oextyWICW/jR5emeE@ifi.uio.no> <fa.zGvATZImeUo0tHJe4hzlk5+mTiM@ifi.uio.no> <fa.SRVleMItV5QEF7/tgCjSHz0ScJA@ifi.uio.no> <fa.YKbhgq8XUxH/Qg1ArE+73YsDlpE@ifi.uio.no> <4897D16F.3000504@shaw.ca>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080805160709.A88B.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <4897D16F.3000504@shaw.ca>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 05, 2008 at 04:45:30PM +0900, KOSAKI Motohiro wrote:
-> Hi balbir-san,
-> 
-> Thank you for nice minutes.
-> it is very helpful for non invited people (include me).
-> 
-> 
-> > 10. Freezer subsystem - The freezer system was discussed briefly. Serge
-> > mentioned the patches and wanted to collect feedback (if any) on them.
-> 
-> Who use it?
-> 
-> AFAIK the freezer is used by HPC guys in general.
-> but they think MPI process must be freezed.
-> 
-> Unfortunately, Opensource MPI implementation use various inter-process
-> communication method (e.g. SYSV IPC, socket, ptrace)
-> 
-> then, general freezer implementaion is very difficult.
-> 
-> 
-> > 11. OOM Handler - The OOM handler was discussed in detail. Balbir mentioned
-> > certain short comings of the OOM handler
-> > 	a. Logic - it is based on total_vm, is that the correct metric for
-> >                    OOMing?
-> > 	b. Concurrency - it kills several tasks at once
-> > 
-> > There was a discussion on moving the policy for OOM handling to user space. Paul
-> > described how the OOM handler has been modified at google to notify user space
-> > when a CPUSet runs out of memory. Balbir asked if OOMing on reaching limits is a
-> > good idea, it was generally discussed that it might not be such a good idea.
-> 
-> CPUSET based limitation is not easy to use (slightly).
-> memcgroup based is better.
-> 
-> In addition, notification on reaching limit can be very generic.
-> 
-> various limit (e.g. cpu time, memory usage), various notification
-> (e.g. kill process, send signal, inotify), various target
-> (each process on the cgroup or manager process) can be tought.
-> 
-> 
-> 
-> > Control group library
-> > =====================
-> > Dhaval and Balbir introduced libcgroups and the purpose of the library and the
-> > goals. Balbir described on paper what the current design looks like, it consists of
-> > 
-> > 	1. API
-> > 	2. Test framework
-> > 	3. A configuration subsystem
-> > 
-> > Dhaval discussed configuration syntax of XML versus home made. The issue of
-> > classification of tasks was brought up. The reason that we want to classify
-> > tasks is that we want them to move at fork/exec time to the correct cgroup so that
-> 
-> I don't recommend XML, because XML is tree based syntax but we want more fulexible
-> classification. then I guess XML reduce human readability.
-> 
-> 
-> > 1. They don't consume resources in the parents group
-> > 2. The movement is automatic
-> > 
-> > It was generally agreed upon that the classification should take place in user
-> > space. Eric and others suggested having a wrapper to start the application in
-> > the correct cgroup (wrapper around fork/exec). Dave suggested that one might
-> > even go the extent of hacking, such that a process is ptraced after fork/exec,
-> > moved to the correct group and resumed. Using SELinux contexts was also recommended.
-> > 
-> > Vivek brought up using PAM plugins to do classifications, this suggestion was
-> > nicely received. The decision was to do classification in user space and then
-> > think of kernel space if it cannot be done in user space. Denis suggested that
-> > classification is useful. In OpenVZ they classify all apache children to a
-> > different group. Balbir asked Denis to post their classification infrastructure
-> > as RFC.
-> 
-> I'm not sure about this issue.
-> but I like PAM approach.
-> 
+On Mon, Aug 04, 2008 at 10:05:03PM -0600, Robert Hancock wrote:
+> Yes, from what I've seen on these laptops, it doesn't take much to  
+> trigger the shock protection in Windows - lifting the front of the  
+> laptop off the table an inch and dropping it will do it, 
 
-Thanks balbir for nice summary.
+A few years ago, I had a Thinkpad T21 laptop, accidentally slip
+through my butterfingers and dropped about an inch before it landed on
+the table.  Unfortunately, (a) the Thinkpad T21 laptop was rather
+heavy (compared to modern laptops), (b) it didn't have the rubber
+"bubble" on the bottom of the laptop to cushion the landing as the T22
+and T23's had (and I'm sure I know why it was added), and (c) the hard
+drive was active at the time.  It was enough to cause a head crash and
+Linux immediately started reporting an exponentially increasing number
+of write errors; the hard drive was totally unusable within an hour or
+so.
 
-Well, it was Rik Van Riel's idea to use PAM plugins so that processes
-are put into right user cgroups upon login.
+So there's a reason why the anti-shock protection is set at a rather
+sensitive level...    
 
-Is pam based classification alone is sufficient? I noticed couple of
-instances which will avoid pam. For example.
+The real right answer though is to buy one of the laptop drives (such
+as the Seagate Momentus 7200.2 or 7200.3) which has the anti-shock
+detection built directly into the hard drive.  That way you don't have
+to have a daemon that sits in the OS waking up the CPU some 20 to 30
+times a second and burning up your battery even when the laptop is
+idle.
 
-- If one starts apache "service httpd start", then httpd threads change
-  their uid/gid to "apache/apache". But these threads will continue to
-  run in the cgroup belonging to root and will not go into apache cgroup.
-
-- apache also offers "suexec" tool which execs a CGI script under a 
-  different user than the user who has launched web server. I quickly
-  grepped for source code of suexec and it does not seem to be using
-  pam. That means CGI scripts running under some other user name will
-  continue to run in cgroup where apache is running.
-
-I am not sure how many more such corner cases are there. These cases can
-either be covered by modification of application or using some kind of
-wrapper around application or by writing classification daemon.
-
-Do we really need classification daemon to cover such cases or wrapper
-approach is sufficient? I remember somebody in minisummit was mentioning
-that it should work without any apache modifications.
-
-Thanks
-Vivek
+							- Ted
