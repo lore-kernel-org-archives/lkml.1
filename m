@@ -1,52 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762114AbYHETRd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762282AbYHETT7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762114AbYHETRd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 15:17:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756415AbYHETR0
+	id S1762282AbYHETT7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 15:19:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756644AbYHETTv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 15:17:26 -0400
-Received: from tomts10.bellnexxia.net ([209.226.175.54]:44975 "EHLO
-	tomts10-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756412AbYHETRZ (ORCPT
+	Tue, 5 Aug 2008 15:19:51 -0400
+Received: from an-out-0708.google.com ([209.85.132.244]:43798 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756337AbYHETTu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 15:17:25 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ag4FAABBmEhMRKxB/2dsb2JhbACBWIkaoz8
-Date: Tue, 5 Aug 2008 15:17:22 -0400
-From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-To: ltt-dev@lists.casi.polymtl.ca, linux-kernel@vger.kernel.org
-Subject: LTTng git repository on git.kernel.org
-Message-ID: <20080805191722.GA8283@Krystal>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 5 Aug 2008 15:19:50 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=ar1lKbZAgfHllAz7YJ62IYNsm5BkDUz52IppG7IOHn9XmcU9WeEkOPT5nEMvFUnCqF
+         OYUvYiDkEPMSFCpzrNyEY2W+GgqHMsp1SpVw3VPnBmemq4Dn3LWniqNFW9KTIrF2bvv5
+         G1LtaP5AQSXPwDgkQQqaZWC7P5GlgWgLvd+zg=
+Message-ID: <86802c440808051219o58a219a9j8022fc50bd6e1eaa@mail.gmail.com>
+Date: Tue, 5 Aug 2008 12:19:48 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "David Witbrodt" <dawitbro@sbcglobal.net>
+Subject: Re: HPET regression in 2.6.26 versus 2.6.25
+Cc: linux-kernel@vger.kernel.org, "Peter Zijlstra" <peterz@infradead.org>,
+       "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>
+In-Reply-To: <876206.46405.qm@web82102.mail.mud.yahoo.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 15:05:06 up 61 days, 23:46,  8 users,  load average: 0.85, 0.66,
-	0.85
-User-Agent: Mutt/1.5.16 (2007-06-11)
+References: <876206.46405.qm@web82102.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Tue, Aug 5, 2008 at 7:14 AM, David Witbrodt <dawitbro@sbcglobal.net> wrote:
+>
+>
+>> Since you have that git tree, could you try to see if the latest -git
+>> still has this problem?
+>
+>  I had forgotten to do that at the time I posted.
+>
+>  Last night, after the post, I _did_ try building "master".  The commit
+> date was from Aug. 1 -- I am at work right now, so I can't provide exact
+> info until I get home in about 6 hours.  I checked 'Makefile', and the
+> version there was 2.6.27-rc1, IIRC.
+>  It built fine, but same freeze was seen.
+>
+>  A reversion of the commit I mentioned _will_ solve the problem, but
+> looking at the code I saw that it was an attempt to provide better
+> functionality.  I'm willing to help test modifications to make the new
+> code work!
 
-I just populated the linux-2.6-lttng.git repository on git.kernel.org
-with my current LTTng release.
+please boot with "debug apic=verbose initcall_debut" to check exactly
+where it hangs...
 
-git://git.kernel.org/pub/scm/linux/kernel/git/compudj/linux-2.6-lttng.git
-http://www.kernel.org/pub/scm/linux/kernel/git/compudj/linux-2.6-lttng.git
-
-The matching tarball can be found at
-http://www.kernel.org/pub/linux/kernel/people/compudj/patches/2.6/2.6.26.1/
-
-Please refer to the "Compatibility list" and the "QUICKSTART GUIDE" on
-http://ltt.polymtl.ca to see which userland packages you need.
-
-Mathieu
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+YH
