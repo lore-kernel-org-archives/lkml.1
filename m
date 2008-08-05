@@ -1,103 +1,280 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763307AbYHEAnX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762668AbYHEApc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763307AbYHEAnX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 20:43:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756124AbYHEAnN
+	id S1762668AbYHEApc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 20:45:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756118AbYHEApM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 20:43:13 -0400
-Received: from out01.mta.xmission.com ([166.70.13.231]:54077 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754149AbYHEAnM (ORCPT
+	Mon, 4 Aug 2008 20:45:12 -0400
+Received: from soda.ext.ti.com ([198.47.26.145]:58271 "EHLO soda.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754803AbYHEApJ convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 20:43:12 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Robin Holt <holt@sgi.com>
-Cc: Stephen Champion <schamp@sgi.com>, linux-kernel@vger.kernel.org,
-       Pavel Emelyanov <xemul@openvz.org>, Oleg Nesterov <oleg@tv-sign.ru>,
-       Sukadev Bhattiprolu <sukadev@us.ibm.com>,
-       Paul Menage <menage@google.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <20080731193204.GG9663@sgi.com>
-	<m1iqul25rk.fsf@frodo.ebiederm.org> <20080731200835.GK9663@sgi.com>
-	<m1bq0d1zhz.fsf@frodo.ebiederm.org> <20080801120455.GP9663@sgi.com>
-	<m1proszj3r.fsf@frodo.ebiederm.org> <20080801191336.GK10501@sgi.com>
-	<m14p64zetj.fsf@frodo.ebiederm.org> <4896FFFE.7080400@sgi.com>
-	<m17iawy0tl.fsf@frodo.ebiederm.org> <20080804235838.GJ7290@sgi.com>
-Date: Mon, 04 Aug 2008 17:38:56 -0700
-In-Reply-To: <20080804235838.GJ7290@sgi.com> (Robin Holt's message of "Mon, 4
-	Aug 2008 18:58:38 -0500")
-Message-ID: <m163qgpa73.fsf@frodo.ebiederm.org>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Mon, 4 Aug 2008 20:45:09 -0400
+From: "Dasgupta, Romit" <romit@ti.com>
+To: Alan Stern <stern@rowland.harvard.edu>, "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: David Engraf <david.engraf@netcom.eu>, Greg KH <greg@kroah.com>,
+       "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+Date: Tue, 5 Aug 2008 05:49:36 +0530
+Subject: RE: [PATCH] [PM] Fixes missing PM entries in sysfs without
+ CONFIG_PM_SLEEP
+Thread-Topic: [PATCH] [PM] Fixes missing PM entries in sysfs without
+ CONFIG_PM_SLEEP
+Thread-Index: Acj2SRXVwz2jRASNT8eAOLjq8SS5QgARzKvQ
+Message-ID: <B85A65D85D7EB246BE421B3FB0FBB593013C9AE7E8@dbde02.ent.ti.com>
+References: <200808041724.24016.rjw@sisk.pl>
+ <Pine.LNX.4.44L0.0808041143350.3818-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0808041143350.3818-100000@iolanthe.rowland.org>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-SA-Exim-Connect-IP: 24.130.11.59
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa01 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;Robin Holt <holt@sgi.com>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	*  0.0 BAYES_50 BODY: Bayesian spam probability is 40 to 60%
-	*      [score: 0.4821]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa01 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-Subject: Re: [Patch] Scale pidhash_shift/pidhash_size up based on num_possible_cpus().
-X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
-X-SA-Exim-Scanned: Yes (on mgr1.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robin Holt <holt@sgi.com> writes:
+A minor change below: Removed old goto label PMError and introduced SysFSError.
+Tested with CONFIG_PM, CONFIG_PM_SLEEP, without CONFIG_PM and ofcourse with CONFIG_USB_SUSPEND. Works fine.
 
-> But if we simply scale based upon num_possible_cpus(), we get a relatively
-> representative scaling function.  Usually, customers buy machines with 1,
-> 2, or 4GB per cpu.  I would expect a waste of 256k, 512k, or even 1m to
-> be acceptable at this size of machine.
 
-For your customers, and your kernel thread workload, you get a
-reasonable representation.  For other different people and different
-workloads you don't.  I happen to know of a completely different
-class of workload that can do better.
+diff --git a/drivers/base/core.c b/drivers/base/core.c
+index 068aa1c..9c77939 100644
+--- a/drivers/base/core.c
++++ b/drivers/base/core.c
+@@ -541,6 +541,7 @@ void device_initialize(struct device *dev)
+        spin_lock_init(&dev->devres_lock);
+        INIT_LIST_HEAD(&dev->devres_head);
+        device_init_wakeup(dev, 0);
++       device_pm_init(dev);
+        set_dev_node(dev, -1);
+ }
 
-> For 2.6.27, would you accept an upper cap based on the memory size
-> algorithm you have now and adjusted for num_possible_cpus()?  Essentially
-> the first patch I posted.
+@@ -897,9 +898,10 @@ int device_add(struct device *dev)
+        error = bus_add_device(dev);
+        if (error)
+                goto BusError;
+-       error = device_pm_add(dev);
++       error = dpm_sysfs_add(dev);
+        if (error)
+-               goto PMError;
++               goto SysFSError;
++       device_pm_add(dev);
+        kobject_uevent(&dev->kobj, KOBJ_ADD);
+        bus_attach_device(dev);
+        if (parent)
+@@ -920,7 +922,7 @@ int device_add(struct device *dev)
+  Done:
+        put_device(dev);
+        return error;
+- PMError:
++ SysFSError:
+        bus_remove_device(dev);
+  BusError:
+        if (dev->bus)
+@@ -1007,6 +1009,7 @@ void device_del(struct device *dev)
+        struct class_interface *class_intf;
 
-I want to throw a screaming hissy fit.
+        device_pm_remove(dev);
++       dpm_sysfs_remove(dev);
+        if (parent)
+                klist_del(&dev->knode_parent);
+        if (MAJOR(dev->devt)) {
+diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+index 3250c52..d1f752b 100644
+--- a/drivers/base/power/main.c
++++ b/drivers/base/power/main.c
+@@ -67,10 +67,8 @@ void device_pm_unlock(void)
+  *     device_pm_add - add a device to the list of active devices
+  *     @dev:   Device to be added to the list
+  */
+-int device_pm_add(struct device *dev)
++void device_pm_add(struct device *dev)
+ {
+-       int error;
+-
+        pr_debug("PM: Adding info for %s:%s\n",
+                 dev->bus ? dev->bus->name : "No Bus",
+                 kobject_name(&dev->kobj));
+@@ -89,13 +87,8 @@ int device_pm_add(struct device *dev)
+                 */
+                WARN_ON(true);
+        }
+-       error = dpm_sysfs_add(dev);
+-       if (!error) {
+-               dev->power.status = DPM_ON;
+-               list_add_tail(&dev->power.entry, &dpm_list);
+-       }
++       list_add_tail(&dev->power.entry, &dpm_list);
+        mutex_unlock(&dpm_list_mtx);
+-       return error;
+ }
 
-The merge window has closed.  This is not a bug.  This is not a
-regression.  I don't see a single compelling reason to consider this
-for 2.6.27.  I asked for clarification so I could be certain you were
-solving the right problem.
+ /**
+@@ -110,7 +103,6 @@ void device_pm_remove(struct device *dev)
+                 dev->bus ? dev->bus->name : "No Bus",
+                 kobject_name(&dev->kobj));
+        mutex_lock(&dpm_list_mtx);
+-       dpm_sysfs_remove(dev);
+        list_del_init(&dev->power.entry);
+        mutex_unlock(&dpm_list_mtx);
+ }
+diff --git a/drivers/base/power/power.h b/drivers/base/power/power.h
+index a3252c0..41f51fa 100644
+--- a/drivers/base/power/power.h
++++ b/drivers/base/power/power.h
+@@ -1,3 +1,8 @@
++static inline void device_pm_init(struct device *dev)
++{
++       dev->power.status = DPM_ON;
++}
++
+ #ifdef CONFIG_PM_SLEEP
 
-Why didn't these patches show up 3 months ago when the last merge
-window closed?  Why not even earlier?
+ /*
+@@ -11,12 +16,12 @@ static inline struct device *to_device(struct list_head *entry)
+        return container_of(entry, struct device, power.entry);
+ }
 
-I totally agree that what we are doing could be done better, however
-at this point we should be looking at 2.6.28.  In which case looking
-at the general long term non-hack solution is the right way to go.  Can
-we scale to different workloads?
+-extern int device_pm_add(struct device *);
++extern void device_pm_add(struct device *);
+ extern void device_pm_remove(struct device *);
 
-For everyone with less then 4K cpus the current behavior is fine, and
-with 4k cpus it results in a modest slowdown.  This sounds useable.
+ #else /* CONFIG_PM_SLEEP */
 
-You have hit an extremely sore spot with me.  Anytime someone makes an
-argument that I hear as RHEL is going to ship 2.6.27 so we _need_ this
-patch in 2.6.27 I want to stop listening.  I just don't care.  Unfortunately
-I have heard that argument almost once a day for the last week, and I am
-tired of it.
+-static inline int device_pm_add(struct device *dev) { return 0; }
++static inline void device_pm_add(struct device *dev) {}
+ static inline void device_pm_remove(struct device *dev) {}
 
-Why hasn't someone complained that waitpid is still slow?
+ #endif
 
-Why haven't we seen patches to reduce the number of kernel threads since
-last time you had problems with the pid infrastructure?
+>-----Original Message-----
+>From: Alan Stern [mailto:stern@rowland.harvard.edu]
+>Sent: Monday, August 04, 2008 9:15 PM
+>To: Rafael J. Wysocki
+>Cc: Dasgupta, Romit; David Engraf; Greg KH; linux-usb@vger.kernel.org; linux-
+>kernel@vger.kernel.org; Linux-pm mailing list
+>Subject: Re: [PATCH] [PM] Fixes missing PM entries in sysfs without
+>CONFIG_PM_SLEEP
+>
+>On Mon, 4 Aug 2008, Rafael J. Wysocki wrote:
+>
+>> > Do you think we will want to make device_pm_add() return an error at
+>> > some point in the future?
+>>
+>> Well, maybe, but not any time soon. :-)
+>
+>Okay, here's the updated patch.  Awaiting comments from the testers...
+>
+>Alan Stern
+>
+>
+>
+>Index: usb-2.6/drivers/base/power/power.h
+>================================================================
+>===
+>--- usb-2.6.orig/drivers/base/power/power.h
+>+++ usb-2.6/drivers/base/power/power.h
+>@@ -1,3 +1,8 @@
+>+static inline void device_pm_init(struct device *dev)
+>+{
+>+       dev->power.status = DPM_ON;
+>+}
+>+
+> #ifdef CONFIG_PM_SLEEP
+>
+> /*
+>@@ -11,12 +16,12 @@ static inline struct device *to_device(s
+>        return container_of(entry, struct device, power.entry);
+> }
+>
+>-extern int device_pm_add(struct device *);
+>+extern void device_pm_add(struct device *);
+> extern void device_pm_remove(struct device *);
+>
+> #else /* CONFIG_PM_SLEEP */
+>
+>-static inline int device_pm_add(struct device *dev) { return 0; }
+>+static inline void device_pm_add(struct device *dev) {}
+> static inline void device_pm_remove(struct device *dev) {}
+>
+> #endif
+>Index: usb-2.6/drivers/base/core.c
+>================================================================
+>===
+>--- usb-2.6.orig/drivers/base/core.c
+>+++ usb-2.6/drivers/base/core.c
+>@@ -542,6 +542,7 @@ void device_initialize(struct device *de
+>        spin_lock_init(&dev->devres_lock);
+>        INIT_LIST_HEAD(&dev->devres_head);
+>        device_init_wakeup(dev, 0);
+>+       device_pm_init(dev);
+>        set_dev_node(dev, -1);
+> }
+>
+>@@ -898,9 +899,10 @@ int device_add(struct device *dev)
+>        error = bus_add_device(dev);
+>        if (error)
+>                goto BusError;
+>-       error = device_pm_add(dev);
+>+       error = dpm_sysfs_add(dev);
+>        if (error)
+>                goto PMError;
+>+       device_pm_add(dev);
+>        kobject_uevent(&dev->kobj, KOBJ_ADD);
+>        bus_attach_device(dev);
+>        if (parent)
+>@@ -1008,6 +1010,7 @@ void device_del(struct device *dev)
+>        struct class_interface *class_intf;
+>
+>        device_pm_remove(dev);
+>+       dpm_sysfs_remove(dev);
+>        if (parent)
+>                klist_del(&dev->knode_parent);
+>        if (MAJOR(dev->devt)) {
+>Index: usb-2.6/drivers/base/power/main.c
+>================================================================
+>===
+>--- usb-2.6.orig/drivers/base/power/main.c
+>+++ usb-2.6/drivers/base/power/main.c
+>@@ -67,10 +67,8 @@ void device_pm_unlock(void)
+>  *     device_pm_add - add a device to the list of active devices
+>  *     @dev:   Device to be added to the list
+>  */
+>-int device_pm_add(struct device *dev)
+>+void device_pm_add(struct device *dev)
+> {
+>-       int error;
+>-
+>        pr_debug("PM: Adding info for %s:%s\n",
+>                 dev->bus ? dev->bus->name : "No Bus",
+>                 kobject_name(&dev->kobj));
+>@@ -89,13 +87,9 @@ int device_pm_add(struct device *dev)
+>                 */
+>                WARN_ON(true);
+>        }
+>-       error = dpm_sysfs_add(dev);
+>-       if (!error) {
+>-               dev->power.status = DPM_ON;
+>-               list_add_tail(&dev->power.entry, &dpm_list);
+>-       }
+>+
+>+       list_add_tail(&dev->power.entry, &dpm_list);
+>        mutex_unlock(&dpm_list_mtx);
+>-       return error;
+> }
+>
+> /**
+>@@ -110,7 +104,6 @@ void device_pm_remove(struct device *dev
+>                 dev->bus ? dev->bus->name : "No Bus",
+>                 kobject_name(&dev->kobj));
+>        mutex_lock(&dpm_list_mtx);
+>-       dpm_sysfs_remove(dev);
+>        list_del_init(&dev->power.entry);
+>        mutex_unlock(&dpm_list_mtx);
+> }
 
-A very frustrated code reviewer.
-
-So yes.  If you are not interested in 2.6.28 and in the general problem,
-I'm not interested in this problem.
-
-Eric
