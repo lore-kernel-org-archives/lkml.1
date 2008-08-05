@@ -1,183 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757347AbYHEGIS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754617AbYHEGQz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757347AbYHEGIS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 02:08:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751586AbYHEGIC
+	id S1754617AbYHEGQz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 02:16:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752568AbYHEGQs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 02:08:02 -0400
-Received: from mail7.hitachi.co.jp ([133.145.228.42]:55656 "EHLO
-	mail7.hitachi.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751365AbYHEGH7 (ORCPT
+	Tue, 5 Aug 2008 02:16:48 -0400
+Received: from fms-01.valinux.co.jp ([210.128.90.1]:52235 "EHLO
+	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751287AbYHEGQr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 02:07:59 -0400
-X-AuditID: 0ac90647-ab49cba0000005be-a6-4897ee3c061b
-Message-ID: <4897EE26.10909@hitachi.com>
-Date: Tue, 05 Aug 2008 15:07:34 +0900
-From: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; ja-JP; rv:1.4) 
-    Gecko/20030624 Netscape/7.1 (ax)
-X-Accept-Language: ja
-MIME-Version: 1.0
-To: akpm@linux-foundation.org, adilger@clusterfs.com
-Cc: Andreas Dilger <adilger@sun.com>, Mike Snitzer <snitzer@gmail.com>,
-       sct@redhat.com, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, jack@suse.cz, jbacik@redhat.com,
-       cmm@us.ibm.com, tytso@mit.edu, tglx@linutronix.de,
-       yumiko.sugita.yf@hitachi.com, satoshi.oshima.fk@hitachi.com
-Subject: [PATCH 1/2] ext3: add an option to control error handling on file
-    data (another ver.)
-References: <488FD756.9060106@hitachi.com> 
-    <170fa0d20807300814o7741859eu8ad5d5b3b95e401c@mail.gmail.com> 
-    <20080730211703.GZ3342@webber.adilger.int> <489155A0.2070208@hitachi.com>
-In-Reply-To: <489155A0.2070208@hitachi.com>
-Content-Type: text/plain; charset="us-ascii"
+	Tue, 5 Aug 2008 02:16:47 -0400
+Date: Tue, 05 Aug 2008 15:16:42 +0900 (JST)
+Message-Id: <20080805.151642.31467169.taka@valinux.co.jp>
+To: righi.andrea@gmail.com
+Cc: dave@linux.vnet.ibm.com, xen-devel@lists.xensource.com,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       virtualization@lists.linux-foundation.org, dm-devel@redhat.com,
+       agk@sourceware.org
+Subject: Re: Too many I/O controller patches
+From: Hirokazu Takahashi <taka@valinux.co.jp>
+In-Reply-To: <48976A2A.9060600@gmail.com>
+References: <489748E6.5080106@gmail.com>
+	<1217876521.20260.123.camel@nimitz>
+	<48976A2A.9060600@gmail.com>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Here is the 'data_err=ignore is the default' version of the PATCH 1/2.
+Hi, Andrea,
 
-Thanks,
-Hidehiro Kawai
+I'm working with Ryo on dm-ioband and other stuff.
 
+> > On Mon, 2008-08-04 at 20:22 +0200, Andrea Righi wrote:
+> >> But I'm not yet convinced that limiting the IO writes at the device
+> >> mapper layer is the best solution. IMHO it would be better to throttle
+> >> applications' writes when they're dirtying pages in the page cache (the
+> >> io-throttle way), because when the IO requests arrive to the device
+> >> mapper it's too late (we would only have a lot of dirty pages that are
+> >> waiting to be flushed to the limited block devices, and maybe this could
+> >> lead to OOM conditions). IOW dm-ioband is doing this at the wrong level
+> >> (at least for my requirements). Ryo, correct me if I'm wrong or if I've
+> >> not understood the dm-ioband approach.
+> > 
+> > The avoid-lots-of-page-dirtying problem sounds like a hard one.  But, if
+> > you look at this in combination with the memory controller, they would
+> > make a great team.
+> > 
+> > The memory controller keeps you from dirtying more than your limit of
+> > pages (and pinning too much memory) even if the dm layer is doing the
+> > throttling and itself can't throttle the memory usage.
+> 
+> mmh... but in this way we would just move the OOM inside the cgroup,
+> that is a nice improvement, but the main problem is not resolved...
 
-Subject: [PATCH 1/2] ext3: add an option to control error handling on file data
+The concept of dm-ioband includes it should be used with cgroup memory
+controller as well as the bio cgroup. The memory controller is supposed
+to control memory allocation and dirty-page ratio inside each cgroup.
 
-If the journal doesn't abort when it gets an IO error in file data
-blocks, the file data corruption will spread silently.  Because
-most of applications and commands do buffered writes without fsync(),
-they don't notice the IO error.  It's scary for mission critical
-systems.  On the other hand, if the journal aborts whenever it gets
-an IO error in file data blocks, the system will easily become
-inoperable.  So this patch introduces a filesystem option to
-determine whether it aborts the journal or just call printk() when
-it gets an IO error in file data.
+Some guys of cgroup memory controller team just started to implement
+the latter mechanism. They try to make each cgroup have a threshold
+to limit the number of dirty pages in the group.
 
-If you mount a ext3 fs with data_err=abort option, it aborts on file
-data write error.  If you mount it with data_err=ignore, it doesn't
-abort, just call printk().  data_err=ignore is the default.
+I feel this is good approach since each functions can work independently.
 
-Signed-off-by: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
----
- Documentation/filesystems/ext3.txt |    5 +++++
- fs/ext3/super.c                    |   16 ++++++++++++++++
- fs/jbd/commit.c                    |    2 ++
- include/linux/ext3_fs.h            |    2 ++
- include/linux/jbd.h                |    3 +++
- 5 files changed, 28 insertions(+)
+> A safer approach IMHO is to force the tasks to wait synchronously on
+> each operation that directly or indirectly generates i/o.
+> 
+> In particular the solution used by the io-throttle controller to limit
+> the dirty-ratio in memory is to impose a sleep via
+> schedule_timeout_killable() in balance_dirty_pages() when a generic
+> process exceeds the limits defined for the belonging cgroup.
 
-Index: linux-2.6.27-rc1/Documentation/filesystems/ext3.txt
-===================================================================
---- linux-2.6.27-rc1.orig/Documentation/filesystems/ext3.txt
-+++ linux-2.6.27-rc1/Documentation/filesystems/ext3.txt
-@@ -96,6 +96,11 @@ errors=remount-ro(*)	Remount the filesys
- errors=continue		Keep going on a filesystem error.
- errors=panic		Panic and halt the machine if an error occurs.
- 
-+data_err=ignore(*)	Just print an error message if an error occurs
-+			in a file data buffer in ordered mode.
-+data_err=abort		Abort the journal if an error occurs in a file
-+			data buffer in ordered mode.
-+
- grpid			Give objects the same group ID as their creator.
- bsdgroups
- 
-Index: linux-2.6.27-rc1/fs/ext3/super.c
-===================================================================
---- linux-2.6.27-rc1.orig/fs/ext3/super.c
-+++ linux-2.6.27-rc1/fs/ext3/super.c
-@@ -625,6 +625,9 @@ static int ext3_show_options(struct seq_
- 	else if (test_opt(sb, DATA_FLAGS) == EXT3_MOUNT_WRITEBACK_DATA)
- 		seq_puts(seq, ",data=writeback");
- 
-+	if (test_opt(sb, DATA_ERR_ABORT))
-+		seq_puts(seq, ",data_err=abort");
-+
- 	ext3_show_quota_options(seq, sb);
- 
- 	return 0;
-@@ -754,6 +757,7 @@ enum {
- 	Opt_reservation, Opt_noreservation, Opt_noload, Opt_nobh, Opt_bh,
- 	Opt_commit, Opt_journal_update, Opt_journal_inum, Opt_journal_dev,
- 	Opt_abort, Opt_data_journal, Opt_data_ordered, Opt_data_writeback,
-+	Opt_data_err_abort, Opt_data_err_ignore,
- 	Opt_usrjquota, Opt_grpjquota, Opt_offusrjquota, Opt_offgrpjquota,
- 	Opt_jqfmt_vfsold, Opt_jqfmt_vfsv0, Opt_quota, Opt_noquota,
- 	Opt_ignore, Opt_barrier, Opt_err, Opt_resize, Opt_usrquota,
-@@ -796,6 +800,8 @@ static match_table_t tokens = {
- 	{Opt_data_journal, "data=journal"},
- 	{Opt_data_ordered, "data=ordered"},
- 	{Opt_data_writeback, "data=writeback"},
-+	{Opt_data_err_abort, "data_err=abort"},
-+	{Opt_data_err_ignore, "data_err=ignore"},
- 	{Opt_offusrjquota, "usrjquota="},
- 	{Opt_usrjquota, "usrjquota=%s"},
- 	{Opt_offgrpjquota, "grpjquota="},
-@@ -1011,6 +1017,12 @@ static int parse_options (char *options,
- 				sbi->s_mount_opt |= data_opt;
- 			}
- 			break;
-+		case Opt_data_err_abort:
-+			set_opt(sbi->s_mount_opt, DATA_ERR_ABORT);
-+			break;
-+		case Opt_data_err_ignore:
-+			clear_opt(sbi->s_mount_opt, DATA_ERR_ABORT);
-+			break;
- #ifdef CONFIG_QUOTA
- 		case Opt_usrjquota:
- 			qtype = USRQUOTA;
-@@ -1986,6 +1998,10 @@ static void ext3_init_journal_params(str
- 		journal->j_flags |= JFS_BARRIER;
- 	else
- 		journal->j_flags &= ~JFS_BARRIER;
-+	if (test_opt(sb, DATA_ERR_ABORT))
-+		journal->j_flags |= JFS_ABORT_ON_SYNCDATA_ERR;
-+	else
-+		journal->j_flags &= ~JFS_ABORT_ON_SYNCDATA_ERR;
- 	spin_unlock(&journal->j_state_lock);
- }
- 
-Index: linux-2.6.27-rc1/include/linux/ext3_fs.h
-===================================================================
---- linux-2.6.27-rc1.orig/include/linux/ext3_fs.h
-+++ linux-2.6.27-rc1/include/linux/ext3_fs.h
-@@ -380,6 +380,8 @@ struct ext3_inode {
- #define EXT3_MOUNT_QUOTA		0x80000 /* Some quota option set */
- #define EXT3_MOUNT_USRQUOTA		0x100000 /* "old" user quota */
- #define EXT3_MOUNT_GRPQUOTA		0x200000 /* "old" group quota */
-+#define EXT3_MOUNT_DATA_ERR_ABORT	0x400000 /* Abort on file data write
-+						  * error in ordered mode */
- 
- /* Compatibility, for having both ext2_fs.h and ext3_fs.h included at once */
- #ifndef _LINUX_EXT2_FS_H
-Index: linux-2.6.27-rc1/include/linux/jbd.h
-===================================================================
---- linux-2.6.27-rc1.orig/include/linux/jbd.h
-+++ linux-2.6.27-rc1/include/linux/jbd.h
-@@ -816,6 +816,9 @@ struct journal_s
- #define JFS_FLUSHED	0x008	/* The journal superblock has been flushed */
- #define JFS_LOADED	0x010	/* The journal superblock has been loaded */
- #define JFS_BARRIER	0x020	/* Use IDE barriers */
-+#define JFS_ABORT_ON_SYNCDATA_ERR	0x040  /* Abort the journal on file
-+						* data write error in ordered
-+						* mode */
- 
- /*
-  * Function declarations for the journaling transaction and buffer
-Index: linux-2.6.27-rc1/fs/jbd/commit.c
-===================================================================
---- linux-2.6.27-rc1.orig/fs/jbd/commit.c
-+++ linux-2.6.27-rc1/fs/jbd/commit.c
-@@ -482,6 +482,8 @@ void journal_commit_transaction(journal_
- 		printk(KERN_WARNING
- 			"JBD: Detected IO errors while flushing file data "
- 			"on %s\n", bdevname(journal->j_fs_dev, b));
-+		if (journal->j_flags & JFS_ABORT_ON_SYNCDATA_ERR)
-+			journal_abort(journal, err);
- 		err = 0;
- 	}
- 
+I guess it would make the memory controller team guys happier if you
+can help them design their dirty-page ratio controlling functionality
+much cooler and more generic. I think their goal is almost the same
+as yours.
 
+> Limiting read operations is a lot more easy, because they're always
+> synchronized with i/o requests.
+> 
+> -Andrea
 
+Thank you,
+Hirokazu Takahashi.
