@@ -1,69 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763092AbYHESth@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763219AbYHESwR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763092AbYHESth (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 14:49:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756622AbYHESta
+	id S1763219AbYHESwR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 14:52:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757364AbYHESwH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 14:49:30 -0400
-Received: from wf-out-1314.google.com ([209.85.200.173]:44479 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756620AbYHESt3 (ORCPT
+	Tue, 5 Aug 2008 14:52:07 -0400
+Received: from astoria.ccjclearline.com ([64.235.106.9]:51746 "EHLO
+	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756581AbYHESwG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 14:49:29 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=V6iageaCz/NHEDYFwJPkjGvXnqRAnZh+8gKbz6IZYubJtkFsQTmJ3s2/V19wRDzwPL
-         EAid9BDr2LDMvdej233/chBgmAlgYXP8seZSm4mY2MjS5sa99x4oj3yvgPpQe3lUuVq9
-         Vk7t5dEGBstmvF9TS4AMq+7rid5uy8UnmKHrU=
-Message-ID: <4898A0B2.3070201@gmail.com>
-Date: Tue, 05 Aug 2008 11:49:22 -0700
-From: Dean Hildebrand <seattleplus@gmail.com>
-User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
+	Tue, 5 Aug 2008 14:52:06 -0400
+Date: Tue, 5 Aug 2008 14:50:23 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@crashcourse.ca>
+X-X-Sender: rpjday@localhost.localdomain
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+cc: Andrew Morton <akpm@osdl.org>
+Subject: [PATCH] SOUND: Remove references to dead sound/oss vars
+ AEDSP16_{MSS,SBPRO}.
+Message-ID: <alpine.LFD.1.10.0808051444580.15734@localhost.localdomain>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: jbarnes@virtuousgeek.org, dada1@cosmosbay.com
-Subject: Re: PCI: Limit VPD length for Broadcom 5708S
-References: <aVL4E-5C9-7@gated-at.bofh.it>	<2d9716d7-99a4-4d17-9cae-83842e216c8c@y19g2000prn.googlegroups.com>
-In-Reply-To: <2d9716d7-99a4-4d17-9cae-83842e216c8c@y19g2000prn.googlegroups.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - crashcourse.ca
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+Remove the Kconfig definitions of unused variables AEDSP16_MSS and
+AEDSP16_SBPRO since they're:
 
-> I have no idea if 5706S and 5709S also needs this truncation ofVPDlength
+1) unused, and
+2) referenced incorrectly anyway.
 
-It seems that our IBM Blade servers using 5706S also require this
-fix.  We have confirmed that the patch below works on 2.6.27-rc1.
+Signed-off-by: Robert P. J. Day <rpjday@crashcourse.ca>
+
+---
+
+  while the sound/oss/Kconfig file defines the variables as
+AEDSP16_MSS and AEDSP16_SBPRO, they're (apparently) referenced thusly
+in aedsp16.c:
+
+#if defined(CONFIG_SOUND_AEDSP16_SBPRO) && defined(CONFIG_SOUND_AEDSP16_MSS)
+#error You have to enable only one of the MSS and SBPRO emulations.
+#endif
+
+in other words, not even spelled correctly.  so either something
+should be fixed or something should be removed.  i'm going with
+removal.
 
 
-diff -uprN linux-2.6.27-rc1/drivers/pci/quirks.c 
-linux-2.6.27-rc1-fix/drivers/pci/quirks.c
---- linux-2.6.27-rc1/drivers/pci/quirks.c       2008-08-05 
-10:51:42.000000000 -0700
-+++ linux-2.6.27-rc1-fix/drivers/pci/quirks.c   2008-08-05 
-10:50:57.000000000 -0700
-@@ -1756,9 +1756,10 @@ DECLARE_PCI_FIXUP_EARLY(PCI_VENDOR_ID_VI
-   */
-  static void __devinit quirk_brcm_570x_limit_vpd(struct pci_dev *dev)
-  {
--       /*  Only disable the VPD capability for 5706, 5708, and 5709 
-rev. A */
-+       /*  Only disable the VPD capability for 5706, 5706S, 5708, and 
-5709 rev. A */
-         if ((dev->device == PCI_DEVICE_ID_NX2_5706) ||
-             (dev->device == PCI_DEVICE_ID_NX2_5708) ||
-+           (dev->device == PCI_DEVICE_ID_NX2_5706S) ||
-             ((dev->device == PCI_DEVICE_ID_NX2_5709) &&
-              (dev->revision & 0xf0) == 0x0)) {
-                 if (dev->vpd)
+ sound/oss/Kconfig   |   28 ----------------------------
+ sound/oss/aedsp16.c |    8 --------
+ 2 files changed, 36 deletions(-)
 
-Please cc me on the response. Thanks,
-Dean Hildebrand
-IBM Almaden
-dhildeb@us.ibm.com
+diff --git a/sound/oss/Kconfig b/sound/oss/Kconfig
+index d4fafb6..906714a 100644
+--- a/sound/oss/Kconfig
++++ b/sound/oss/Kconfig
+@@ -546,34 +546,6 @@ config SC6600_CDROMBASE
+ 	  Base I/O port address for the CD-ROM interface of the Audio Excel
+ 	  DSP 16 card.
 
+-choice
+-	prompt "Audio Excel DSP 16"
+-	optional
+-	depends on SOUND_AEDSP16
+-
+-config AEDSP16_MSS
+-	bool "MSS emulation"
+-	depends on SOUND_MSS
+-	help
+-	  Answer Y if you want your audio card to emulate Microsoft Sound
+-	  System. You should then say Y to "Microsoft Sound System support"
+-	  and say N to "Audio Excel DSP 16 (SBPro emulation)".
+-
+-config AEDSP16_SBPRO
+-	bool "SBPro emulation"
+-	depends on SOUND_SB
+-	help
+-	  Answer Y if you want your audio card to emulate Sound Blaster Pro.
+-	  You should then say Y to "100% Sound Blaster compatibles
+-	  (SB16/32/64, ESS, Jazz16) support" and N to "Audio Excel DSP 16 (MSS
+-	  emulation)".
+-
+-	  If you compile the driver into the kernel, you have to add
+-	  "aedsp16=<io>,<irq>,<dma>,<mssio>,<mpuio>,<mouirq>" to the kernel
+-	  command line.
+-
+-endchoice
+-
+ config SOUND_VIDC
+ 	tristate "VIDC 16-bit sound"
+ 	depends on ARM && (ARCH_ACORN || ARCH_CLPS7500)
+diff --git a/sound/oss/aedsp16.c b/sound/oss/aedsp16.c
+index 51e1fde..a0274f3 100644
+--- a/sound/oss/aedsp16.c
++++ b/sound/oss/aedsp16.c
+@@ -29,14 +29,6 @@
+ #include "sound_config.h"
+
+ /*
+- * Sanity checks
+- */
+-
+-#if defined(CONFIG_SOUND_AEDSP16_SBPRO) && defined(CONFIG_SOUND_AEDSP16_MSS)
+-#error You have to enable only one of the MSS and SBPRO emulations.
+-#endif
+-
+-/*
+
+    READ THIS
+
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry:
+    Have classroom, will lecture.
+
+http://crashcourse.ca                          Waterloo, Ontario, CANADA
+========================================================================
