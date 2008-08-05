@@ -1,65 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760195AbYHELEj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759391AbYHELMA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760195AbYHELEj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 07:04:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753772AbYHELEM
+	id S1759391AbYHELMA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 07:12:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755165AbYHELK3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 07:04:12 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:45762 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752864AbYHELEL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 07:04:11 -0400
-Date: Tue, 5 Aug 2008 13:03:57 +0200
-From: Karel Zak <kzak@redhat.com>
-To: Christoph Hellwig <hch@lst.de>
-Cc: Jasper Bryant-Greene <jasper@amiton.co.nz>, linux-kernel@vger.kernel.org,
-       xfs@oss.sgi.com, util-linux-ng@vger.kernel.org
-Subject: Re: XFS noikeep remount in 2.6.27-rc1-next-20080730
-Message-ID: <20080805110357.GL21873@nb.net.home>
-References: <1217553598.3860.16.camel@luna.unix.geek.nz> <20080801073033.GF6201@disturbed> <20080801193133.GA838@lst.de>
+	Tue, 5 Aug 2008 07:10:29 -0400
+Received: from embla.aitel.hist.no ([158.38.50.22]:58224 "EHLO
+	embla.aitel.hist.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754429AbYHELK3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Aug 2008 07:10:29 -0400
+Message-ID: <48983521.9070203@aitel.hist.no>
+Date: Tue, 05 Aug 2008 13:10:25 +0200
+From: Helge Hafting <helge.hafting@aitel.hist.no>
+User-Agent: Mozilla-Thunderbird 2.0.0.14 (X11/20080509)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20080801193133.GA838@lst.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Herbert Xu <herbert@gondor.apana.org.au>
+CC: Arjan van de Ven <arjan@infradead.org>,
+       Chris Mason <chris.mason@oracle.com>, dwmw2@infradead.org,
+       austin_zhang@linux.intel.com, davem@davemloft.net,
+       linux-kernel@vger.kernel.org, linux-crypto@vger.kernel.org
+Subject: Re: [PATCH] Using Intel CRC32 instruction to accelerate	CRC32c algorithm
+ by new crypto API.
+References: <1217866496.29139.75.camel@think.oraclecorp.com> <E1KQ3Be-0003T3-00@gondolin.me.apana.org.au> <20080804100605.4f0921f4@infradead.org> <20080804171017.GA13725@gondor.apana.org.au> <20080804171316.GA13819@gondor.apana.org.au>
+In-Reply-To: <20080804171316.GA13819@gondor.apana.org.au>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 01, 2008 at 09:31:33PM +0200, Christoph Hellwig wrote:
-> I'ts most likely a fallout, but I wonder why.  To get this behaviour
-> moutn would have to add all the options it finds in /proc/self/mounts
-> to the command line.
+Herbert Xu wrote:
+> On Tue, Aug 05, 2008 at 01:10:17AM +0800, Herbert Xu wrote:
+>   
+>> I don't see why you couldn't do that for the crypto API too
+>> if you wanted to.  That way it would benefit all crypto users
+>> rather than just the crc32c (note the extra c) users.
+>>     
+>
+> Anyway, the point here is the crc32c is nothing special.  It's
+> just one out of many algorithms that has/will have hardware
+> acceleration support.
+>
+> Rather than doing ad-hoc implementations and optimising that
+> whenever such a thing pops up, let's spend our effort in creating
+> a common platform that can be reused.
+>   
+How about making crc32c an inline function then?
+On processors that have this feature, this compiles to that single
+instruction, plus whatever setup it needs. Nice and efficient.
+On other processors, either inline the algorithm or inline
+a call to an out of line function, depending on how bulky this is.
 
- mount(8) does not read and use /proc/self/mounts at all.
+Similiar for any other functions that may or may not have hw support.
 
-    Karel
-
-
- Man mount:
-
- remount
-
-     Attempt  to remount an already-mounted file system.  This is commonly used
-     to change the mount flags for a file system, especially to make a readonly
-     file system writeable. It does not change device or mount point.
-
-     The  remount  functionality follows the standard way how the mount command
-     works with options from fstab. It means the  mount  command  doesn’t  read
-     fstab (or mtab) only when a device and dir are fully specified.
-
-     mount -o remount,rw /dev/foo /dir
-
-     After  this  call  all  old mount options are replaced and arbitrary stuff
-     from fstab is ignored, except the loop= option which is internally  gener-
-     ated and maintained by the mount command.
-
-     mount -o remount,rw  /dir
-
-     After  this call mount reads fstab (or mtab) and merges these options with
-     options from command line ( -o ).
-
-
--- 
- Karel Zak  <kzak@redhat.com>
+Helge Hafting
