@@ -1,133 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762780AbYHEUER@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763470AbYHEUEb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762780AbYHEUER (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 16:04:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758888AbYHEUEB
+	id S1763470AbYHEUEb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 16:04:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762167AbYHEUEM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 16:04:01 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:33908 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758703AbYHEUEA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 16:04:00 -0400
-Subject: Re: [malware-list] [RFC 0/5] [TALPA] Intro to a linux interface
-	for on access scanning
-From: Eric Paris <eparis@redhat.com>
-To: Greg KH <greg@kroah.com>
-Cc: malware-list@lists.printk.net, linux-kernel@vger.kernel.org
-In-Reply-To: <20080805005132.GA3661@kroah.com>
-References: <1217883616.27684.19.camel@localhost.localdomain>
-	 <20080804223249.GA10517@kroah.com>
-	 <1217896374.27684.53.camel@localhost.localdomain>
-	 <20080805005132.GA3661@kroah.com>
-Content-Type: text/plain
-Date: Tue, 05 Aug 2008 15:46:03 -0400
-Message-Id: <1217965563.27684.159.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
+	Tue, 5 Aug 2008 16:04:12 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:51471 "EHLO
+	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762120AbYHEUEL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Aug 2008 16:04:11 -0400
+Date: Tue, 5 Aug 2008 21:57:06 +0200
+From: Pavel Machek <pavel@suse.cz>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: Zhang Rui <rui.zhang@intel.com>, Gautham R Shenoy <ego@in.ibm.com>,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       harbour@sfinx.od.ua, rjw@sisk.pl
+Subject: Re: +
+	pm-introduce-new-interfaces-schedule_work_on-and-queue_work_on.patch
+	added to -mm tree
+Message-ID: <20080805195706.GD7939@elf.ucw.cz>
+References: <200807111846.m6BIkeTj031024@imap1.linux-foundation.org> <20080712162149.GD603@tv-sign.ru> <20080722161900.GA17601@in.ibm.com> <20080724124349.GA182@tv-sign.ru> <1216948649.2669.21.camel@rzhang-dt> <20080725094246.GA110@tv-sign.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080725094246.GA110@tv-sign.ru>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-08-04 at 17:51 -0700, Greg KH wrote:
-> On Mon, Aug 04, 2008 at 08:32:54PM -0400, Eric Paris wrote:
+Hi!
 
-> Oh, and after that, not using a binary interface, have we not learned
-> from the ioctl mess?  I sure thought we had...
-
-I don't see a reason why we can't use strings and key=value pairs for
-any metadata being sent back and forth.  That seem more reasonable?
-
-
-
-> > > Heh, so if you want to write a "virus" for Linux, just implement this
-> > > flag.  What's to keep a "rogue" program from telling the kernel that all
-> > > programs on the system are to be excluded?
-> > 
-> > Processes can only get this flag one of 2 ways.
-> > 
-> > 1) register as a client to make access decisions
+> > > This means that
+> > >
+> > >         pm-schedule-sysrq-poweroff-on-boot-cpu.patch
+> > >
+> > > is not 100% right. It is still possible to hang/deadlock if we race
+> > > with cpu_down(first_cpu(cpu_online_map)).
+> >
+> > Yes, you're right.
+> > But then should we fix disable_nonboot_cpus as well?
+> >
+> > int disable_nonboot_cpus(void)
+> > {
+> >         first_cpu = first_cpu(cpu_online_map);
+> > 	...
+> >
+> >         for_each_online_cpu(cpu) {
+> >                 if (cpu == first_cpu)
+> >                         continue;
+> >                 error = _cpu_down(cpu, 1);
+> > 		...
+> >         }
+> > 	...
+> > }
 > 
-> How do you do that?
-
-open the magic "vetting" file RW and you are a client who can answer
-access decisions.
-
-> > 2) echo 1 into the magic file to enable the flag for themselves
+> Note that disable_nonboot_cpus() does first_cpu = first_cpu() under
+> cpu_maps_update_begin(), so we can't race with cpu-hotplug.
 > 
-> Simple enough :)
-> 
-> > > > 10. Filesystem exclusions
-> > > > -------------------------
-> > > > One pretty important optimization is not to scan things like /proc, /sys
-> > > > or similar. Basically all filesystems where user can not store
-> > > > arbitrary, potentially malicious, content could and should be excluded
-> > > > from scanning.
-> > > 
-> > > Why, does scanning these files take extra time?  Just curious.
-> > 
-> > Perf win, why bothering looking for malware in /proc when it can't
-> > exist?  It doesn't take longer it just takes time having to do
-> > 
-> > userspace -> kernel -> userspace -> kernel -> userspace
-> > 
-> > just to cat /proc/mounts, all of this could probably be alliviated if we
-> > cached access on non block backed files but then we have to come up with
-> > a way to exclude only nfs/cifs.  I'd rather list the FSs that don't need
-> > scanning every time than those that do....
-> 
-> How long does this whole process take?  Seriously is it worth the added
-> kernel code for something that is not measurable?
+> However, this afaics means that its name is wrong, and
+> printk("Disabling non-boot CPUs ...\n") is not right too.
+> What it does is disable_all_but_one_cpus().
 
-Is it worth having 2 context switches for every open when none are
-needed?  I plan to get numbers on that.
+I thought that first cpu is defined to be boot cpu?
 
-> 
-> > > > 11. Path exclusions
-> > > > -------------------
-> > > > The need for exclusions can be demonstrated with an example of a MySQL
-> > > > server. It's data files are frequently modified which means they would
-> > > > need to be constantly rescanned which is very bad for performance. Also,
-> > > > it is most often not even possible to reasonably scan them. Therefore
-> > > > the best solution is not to scan its database store which can simply be
-> > > > implemented by excluding the store subdirectory.
-> > > > 
-> > > > It is a relatively simple implementation which allows run-time
-> > > > configuration of a list of sub directories or files to exclude.
-> > > > Exclusion paths are relative to each process root. So for example if we
-> > > > want to exclude /var/lib/mysql/ and we have a mysql running in a chroot
-> > > > where from the outside that directory actually lives
-> > > > in /chroot/mysql/var/lib/mysql, /var/lib/mysql should actually be added
-> > > > to the exclusion list.
-> > > > 
-> > > > This is also not included in the initial patch set but will be coming
-> > > > shortly after.
-> > > 
-> > > Again, what's to keep all files to be marked as excluded?
-> > 
-> > You have to be root and I'll probably add an LSM hook?
-> 
-> Why an LSM hook?  You aren't an LSM.
+> And, it is not clear why disable_nonboot_cpus() assumes that
+> all but first_cpu(cpu_online_map) must have .hotpluggable == 1.
 
-Maybe a new hook, maybe just a capability call, something to make root
-not the 
+Where does it assume that?
 
-> > > > Closing remarks
-> > > > ---------------
-> > > > Although some may argue some of the filters are not necessary or may
-> > > > better be implemented in userspace, we think it is better to have them
-> > > > in kernel primarily for performance reasons.
-> > > 
-> > > Why?  What numbers do you have that say the kernel is faster in
-> > > implementing this?  This is the first mention of such a requirement, we
-> > > need to see real data to back it up please.
-> > 
-> > In kernel caching is clearly a huge perf win.
-> 
-> Why?  If the cache is also in userspace, it should be the same, right?
+It will fail if some CPUs can't be unplugged, and I'm afraid suspend
+can't work in such case... 
 
-In kernel cache has 0 context switches for every open.  Userspace
-caching has 2.  Every open has to block, switch to the context of the
-userspace client/cache, get that decisions, and then switch back to the
-original process.
+> And, if one of the callers really need to preserve the boot CPU,
+> I don't understand how it is guaranteed it must be first_cpu().
 
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
