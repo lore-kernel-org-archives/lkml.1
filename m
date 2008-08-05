@@ -1,131 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760769AbYHEKQU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759823AbYHEKaY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760769AbYHEKQU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 06:16:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756151AbYHEKQL
+	id S1759823AbYHEKaY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 06:30:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755456AbYHEKZn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 06:16:11 -0400
-Received: from kirsty.vergenet.net ([202.4.237.240]:41906 "EHLO
-	kirsty.vergenet.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751919AbYHEKQJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 06:16:09 -0400
-Date: Tue, 5 Aug 2008 20:16:07 +1000
-From: Simon Horman <horms@verge.net.au>
-To: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: [patch] PCI: check the return value of device_create_bin_file() in
-	pci_create_bus()
-Message-ID: <20080805101605.GA19382@verge.net.au>
+	Tue, 5 Aug 2008 06:25:43 -0400
+Received: from as4.cineca.com ([130.186.84.251]:46458 "EHLO as4.cineca.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751919AbYHEKZm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Aug 2008 06:25:42 -0400
+X-Greylist: delayed 3450 seconds by postgrey-1.27 at vger.kernel.org; Tue, 05 Aug 2008 06:25:42 EDT
+Message-ID: <48982A9D.2000803@gmail.com>
+From: Andrea Righi <righi.andrea@gmail.com>
+Reply-To: righi.andrea@gmail.com
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.12) Gecko/20070604 Thunderbird/1.5.0.12 Mnenhy/0.7.5.666
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Ryo Tsuruta <ryov@valinux.co.jp>
+Cc: linux-kernel@vger.kernel.org, dm-devel@redhat.com,
+       containers@lists.linux-foundation.org,
+       virtualization@lists.linux-foundation.org,
+       xen-devel@lists.xensource.com, agk@sourceware.org
+Subject: Re: [PATCH 4/7] bio-cgroup: Split the cgroup memory subsystem into
+ two parts
+References: <20080804.175214.226796876.ryov@valinux.co.jp>	<20080804.175254.71094191.ryov@valinux.co.jp>	<20080804.175707.104036289.ryov@valinux.co.jp> <20080804.175748.189722512.ryov@valinux.co.jp>
+In-Reply-To: <20080804.175748.189722512.ryov@valinux.co.jp>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
+Date: Tue,  5 Aug 2008 12:25:33 +0200 (MEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Check the return value of device_create_bin_file in pci_create_bus,
-unwind if neccessary, and propogate any errors to the caller.
+Ryo Tsuruta wrote:
+> +static int mem_cgroup_charge_common(struct page *page, struct mm_struct *mm,
+> +				gfp_t gfp_mask, enum charge_type ctype,
+> +				struct mem_cgroup *memcg)
+> +{
+> +	struct page_cgroup *pc;
+> +#ifdef CONFIG_CGROUP_MEM_RES_CTLR
+> +	struct mem_cgroup *mem;
+> +	unsigned long flags;
+> +	unsigned long nr_retries = MEM_CGROUP_RECLAIM_RETRIES;
+> +	struct mem_cgroup_per_zone *mz;
+> +#endif /* CONFIG_CGROUP_MEM_RES_CTLR */
+> +
+> +	pc = kmem_cache_alloc(page_cgroup_cache, gfp_mask);
+> +	if (unlikely(pc == NULL))
+> +		goto err;
+> +
+> +	/*
+> +	 * We always charge the cgroup the mm_struct belongs to.
+> +	 * The mm_struct's mem_cgroup changes on task migration if the
+> +	 * thread group leader migrates. It's possible that mm is not
+> +	 * set, if so charge the init_mm (happens for pagecache usage).
+> +	 */
+> +	if (likely(!memcg)) {
+> +		rcu_read_lock();
+> +#ifdef CONFIG_CGROUP_MEM_RES_CTLR
+> +		mem = mem_cgroup_from_task(rcu_dereference(mm->owner));
+> +		/*
+> +		 * For every charge from the cgroup, increment reference count
+> +		 */
+> +		css_get(&mem->css);
+> +#endif /* CONFIG_CGROUP_MEM_RES_CTLR */
+> +		rcu_read_unlock();
+> +	} else {
+> +#ifdef CONFIG_CGROUP_MEM_RES_CTLR
+> +		mem = memcg;
+> +		css_get(&memcg->css);
+> +#endif /* CONFIG_CGROUP_MEM_RES_CTLR */
+> +	}
+> +
+> +#ifdef CONFIG_CGROUP_MEM_RES_CTLR
+> +	while (res_counter_charge(&mem->res, PAGE_SIZE)) {
+> +		if (!(gfp_mask & __GFP_WAIT))
+> +			goto out;
+> +
+> +		if (try_to_free_mem_cgroup_pages(mem, gfp_mask))
+> +			continue;
+> +
+> +		/*
+> +		 * try_to_free_mem_cgroup_pages() might not give us a full
+> +		 * picture of reclaim. Some pages are reclaimed and might be
+> +		 * moved to swap cache or just unmapped from the cgroup.
+> +		 * Check the limit again to see if the reclaim reduced the
+> +		 * current usage of the cgroup before giving up
+> +		 */
+> +		if (res_counter_check_under_limit(&mem->res))
+> +			continue;
+> +
+> +		if (!nr_retries--) {
+> +			mem_cgroup_out_of_memory(mem, gfp_mask);
+> +			goto out;
+> +		}
+> +	}
+> +	pc->mem_cgroup = mem;
+> +#endif /* CONFIG_CGROUP_MEM_RES_CTLR */
 
-Signed-off-by: Simon Horman <horms@verge.net.au>
+you can remove some ifdefs doing:
 
---- 
+#ifdef CONFIG_CGROUP_MEM_RES_CTLR
+	if (likely(!memcg)) {
+		rcu_read_lock();
+		mem = mem_cgroup_from_task(rcu_dereference(mm->owner));
+		/*
+		 * For every charge from the cgroup, increment reference count
+		 */
+		css_get(&mem->css);
+		rcu_read_unlock();
+	} else {
+		mem = memcg;
+		css_get(&memcg->css);
+	}
+	while (res_counter_charge(&mem->res, PAGE_SIZE)) {
+		if (!(gfp_mask & __GFP_WAIT))
+			goto out;
 
-drivers/pci/probe.c: In function `pci_create_bus':
-drivers/pci/probe.c:66: warning: ignoring return value of `device_create_bin_file', declared with attribute warn_unused_result
-drivers/pci/probe.c:74: warning: ignoring return value of `device_create_bin_file', declared with attribute warn_unused_result
+		if (try_to_free_mem_cgroup_pages(mem, gfp_mask))
+			continue;
 
-# ia64-unknown-linux-gnu-gcc --version
-ia64-unknown-linux-gnu-gcc (GCC) 3.4.5
-Copyright (C) 2004 Free Software Foundation, Inc.
-This is free software; see the source for copying conditions.  There is NO
-warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+		/*
+		 * try_to_free_mem_cgroup_pages() might not give us a full
+		 * picture of reclaim. Some pages are reclaimed and might be
+		 * moved to swap cache or just unmapped from the cgroup.
+		 * Check the limit again to see if the reclaim reduced the
+		 * current usage of the cgroup before giving up
+		 */
+		if (res_counter_check_under_limit(&mem->res))
+			continue;
 
-Index: linux-2.6/drivers/pci/probe.c
-===================================================================
---- linux-2.6.orig/drivers/pci/probe.c	2008-08-05 19:58:43.000000000 +1000
-+++ linux-2.6/drivers/pci/probe.c	2008-08-05 19:59:15.000000000 +1000
-@@ -53,26 +53,37 @@ EXPORT_SYMBOL(no_pci_devices);
-  * a per-bus basis.  This routine creates the files and ties them into
-  * their associated read, write and mmap files from pci-sysfs.c
-  */
--static void pci_create_legacy_files(struct pci_bus *b)
-+static int pci_create_legacy_files(struct pci_bus *b)
- {
-+	int error;
-+
- 	b->legacy_io = kzalloc(sizeof(struct bin_attribute) * 2,
- 			       GFP_ATOMIC);
--	if (b->legacy_io) {
--		b->legacy_io->attr.name = "legacy_io";
--		b->legacy_io->size = 0xffff;
--		b->legacy_io->attr.mode = S_IRUSR | S_IWUSR;
--		b->legacy_io->read = pci_read_legacy_io;
--		b->legacy_io->write = pci_write_legacy_io;
--		device_create_bin_file(&b->dev, b->legacy_io);
--
--		/* Allocated above after the legacy_io struct */
--		b->legacy_mem = b->legacy_io + 1;
--		b->legacy_mem->attr.name = "legacy_mem";
--		b->legacy_mem->size = 1024*1024;
--		b->legacy_mem->attr.mode = S_IRUSR | S_IWUSR;
--		b->legacy_mem->mmap = pci_mmap_legacy_mem;
--		device_create_bin_file(&b->dev, b->legacy_mem);
-+	if (!b->legacy_io)
-+		return -ENOMEM;
-+
-+	b->legacy_io->attr.name = "legacy_io";
-+	b->legacy_io->size = 0xffff;
-+	b->legacy_io->attr.mode = S_IRUSR | S_IWUSR;
-+	b->legacy_io->read = pci_read_legacy_io;
-+	b->legacy_io->write = pci_write_legacy_io;
-+	error = device_create_bin_file(&b->dev, b->legacy_io);
-+	if (error)
-+		return error;
-+
-+	/* Allocated above after the legacy_io struct */
-+	b->legacy_mem = b->legacy_io + 1;
-+	b->legacy_mem->attr.name = "legacy_mem";
-+	b->legacy_mem->size = 1024*1024;
-+	b->legacy_mem->attr.mode = S_IRUSR | S_IWUSR;
-+	b->legacy_mem->mmap = pci_mmap_legacy_mem;
-+	error = device_create_bin_file(&b->dev, b->legacy_mem);
-+	if (error) {
-+		device_remove_bin_file(&b->dev, b->legacy_io);
-+		return error;
- 	}
-+
-+	return 0;
- }
- 
- void pci_remove_legacy_files(struct pci_bus *b)
-@@ -84,7 +95,7 @@ void pci_remove_legacy_files(struct pci_
- 	}
- }
- #else /* !HAVE_PCI_LEGACY */
--static inline void pci_create_legacy_files(struct pci_bus *bus) { return; }
-+static inline int pci_create_legacy_files(struct pci_bus *bus) { return 0; }
- void pci_remove_legacy_files(struct pci_bus *bus) { return; }
- #endif /* HAVE_PCI_LEGACY */
- 
-@@ -1157,7 +1168,9 @@ struct pci_bus * pci_create_bus(struct d
- 		goto dev_create_file_err;
- 
- 	/* Create legacy_io and legacy_mem files for this bus */
--	pci_create_legacy_files(b);
-+	error = pci_create_legacy_files(b);
-+	if (error)
-+		goto pci_create_legacy_files_err;
- 
- 	b->number = b->secondary = bus;
- 	b->resource[0] = &ioport_resource;
-@@ -1167,6 +1180,8 @@ struct pci_bus * pci_create_bus(struct d
- 
- 	return b;
- 
-+pci_create_legacy_files_err:
-+	device_remove_file(&b->dev, &dev_attr_cpuaffinity);
- dev_create_file_err:
- 	device_unregister(&b->dev);
- class_dev_reg_err:
+		if (!nr_retries--) {
+			mem_cgroup_out_of_memory(mem, gfp_mask);
+			goto out;
+		}
+	}
+	pc->mem_cgroup = mem;
+#endif /* CONFIG_CGROUP_MEM_RES_CTLR */
