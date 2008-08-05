@@ -1,53 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759822AbYHEIDB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760009AbYHEIEL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759822AbYHEIDB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 04:03:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754674AbYHEICl
+	id S1760009AbYHEIEL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 04:04:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754674AbYHEIDt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 04:02:41 -0400
-Received: from mtagate7.de.ibm.com ([195.212.29.156]:6945 "EHLO
-	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752821AbYHEICj (ORCPT
+	Tue, 5 Aug 2008 04:03:49 -0400
+Received: from mtagate1.de.ibm.com ([195.212.29.150]:45348 "EHLO
+	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753456AbYHEIDq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 04:02:39 -0400
-Message-ID: <489808E0.6000208@fr.ibm.com>
-Date: Tue, 05 Aug 2008 10:01:36 +0200
-From: Daniel Lezcano <dlezcano@fr.ibm.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Andreas B Aaen <andreas.aaen@tietoenator.com>
-CC: containers@lists.linux-foundation.org,
-       "Eric W. Biederman" <ebiederm@xmission.com>, Greg KH <gregkh@suse.de>,
-       Tejun Heo <htejun@gmail.com>, Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Al Viro <viro@ftp.linux.org.uk>,
-       Benjamin Thery <benjamin.thery@bull.net>,
-       Linux Netdev List <netdev@vger.kernel.org>
-Subject: Re: SYSFS support together with NET_NS status?
-References: <200808050940.59691.andreas.aaen@tietoenator.com>
-In-Reply-To: <200808050940.59691.andreas.aaen@tietoenator.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 5 Aug 2008 04:03:46 -0400
+Subject: Re: [patch 0/3] [RFC] kmsg macros and script, take x+1.
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Reply-To: schwidefsky@de.ibm.com
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
+       lf_kernel_messages@lists.linux-foundation.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Michael Holzheu <holzheu@de.ibm.com>, Gerrit Huizenga <gh@us.ibm.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Randy Dunlap <randy.dunlap@oracle.com>, Jan Kara <jack@suse.cz>,
+       Pavel Machek <pavel@ucw.cz>, Joe Perches <joe@perches.com>,
+       Jochen =?ISO-8859-1?Q?Vo=DF?= <jochen.voss@googlemail.com>,
+       Kunai Takashi <kunai@linux-foundation.jp>,
+       Tim Bird <tim.bird@am.sony.com>
+In-Reply-To: <20080804202614.GA29170@uranus.ravnborg.org>
+References: <20080730165656.118280544@de.ibm.com>
+	 <20080804202614.GA29170@uranus.ravnborg.org>
+Content-Type: text/plain
+Organization: IBM Corporation
+Date: Tue, 05 Aug 2008 10:03:29 +0200
+Message-Id: <1217923409.23678.5.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andreas B Aaen wrote:
-> Whats the status of the sysfs support for namespaces? Any idea when this will 
-> go upstream - and through which git tree?
+On Mon, 2008-08-04 at 22:26 +0200, Sam Ravnborg wrote:
+> > The lastest changes:
+> >  * kmsg.h has been moved from include/asm-s390 to include/linux
+> >  * The s390 specific documentation is now in Documentation/kmsg/s390
+> >  * The script checks for messages in the source file, Documentation/kmsg
+> >    and Documentation/kmsg/$SRCARCH
 > 
-> The patches from Eric W. Biederman isn't in the tree
-> git://git.kernel.org/pub/scm/linux/kernel/git/davem/net-2.6.git
-> which I have been following.
-> 
-> Upstream support for sysfs together with namespaces will definately help with 
-> more widespread usage of namespaces.
+> The tendency is that all ARCH specific files should be part of
+> arch/$ARCH/*
+> What is the correct approach here I dunno.
 
-Definitely agree :)
+Hmm, arch/$ARCH/kmsg. But then Documentation/kmsg doesn't really fit,
+does it? Don't no either.. 
 
-I think the patches should be first in the Greg-KH tree.
+-- 
+blue skies,
+  Martin.
 
-Eric asked Greg-KH about this patchset 2 days ago, perhaps I missed it 
-but I didn't see any answer yet.
+"Reality continues to ruin my life." - Calvin.
 
-   -- Daniel
+
