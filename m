@@ -1,112 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762040AbYHEV7r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763649AbYHEWAI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762040AbYHEV7r (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 17:59:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754732AbYHEVzJ
+	id S1763649AbYHEWAI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 18:00:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755924AbYHEV7j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 17:55:09 -0400
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:54435 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752002AbYHEVzI (ORCPT
+	Tue, 5 Aug 2008 17:59:39 -0400
+Received: from toronto-hs-216-138-233-67.s-ip.magma.ca ([216.138.233.67]:35908
+	"HELO yow.seanm.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1755074AbYHEV7i (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 17:55:08 -0400
-Subject: Re: [PATCH 1/2] pci: add misrouted interrupt error handling
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: linux-scsi <linux-scsi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>, linux-pci@vger.kernel.org
-In-Reply-To: <200808051415.59993.jbarnes@virtuousgeek.org>
-References: <1217786532.4179.24.camel@localhost.localdomain>
-	 <200808051353.52323.jbarnes@virtuousgeek.org>
-	 <1217969794.9923.70.camel@localhost.localdomain>
-	 <200808051415.59993.jbarnes@virtuousgeek.org>
-Content-Type: text/plain
-Date: Tue, 05 Aug 2008 14:54:56 -0700
-Message-Id: <1217973297.9923.80.camel@localhost.localdomain>
+	Tue, 5 Aug 2008 17:59:38 -0400
+Date: Tue, 5 Aug 2008 17:59:37 -0400
+From: Sean MacLennan <smaclennan@pikatech.com>
+To: "Linus Torvalds" <torvalds@linux-foundation.org>
+Cc: "Karsten Keil" <kkeil@suse.de>,
+       "Benjamin Herrenschmidt" <benh@kernel.crashing.org>,
+       "Andreas.Eversberg" <Andreas.Eversberg@versatel.de>,
+       <isdn4linux@listserv.isdn4linux.de>, <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 3/4] Fix remaining big endian issue of hfcmulti
+Message-ID: <20080805175937.49a5ba32@lappy.seanm.ca>
+In-Reply-To: <alpine.LFD.1.10.0808051435260.3257@nehalem.linux-foundation.org>
+References: <20080802151532.DE017A3C09@pingi.kke.suse.de>
+	<1217910588.24157.151.camel@pasglop>
+	<20080805113111.GA6827@pingi.kke.suse.de>
+	<1217941466.24157.190.camel@pasglop>
+	<20080805172549.GA6052@pingi.kke.suse.de>
+	<alpine.LFD.1.10.0808051140250.3257@nehalem.linux-foundation.org>
+	<20080805210239.GB6052@pingi.kke.suse.de>
+	<20080805172324.45853d98@lappy.seanm.ca>
+	<alpine.LFD.1.10.0808051435260.3257@nehalem.linux-foundation.org>
+Organization: PIKA
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.9; i686-pc-linux-gnu)
+X-Message-Flag: Warning: This message may contain actual content.
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-08-05 at 14:15 -0700, Jesse Barnes wrote:
-> On Tuesday, August 05, 2008 1:56 pm James Bottomley wrote:
-> > On Tue, 2008-08-05 at 13:53 -0700, Jesse Barnes wrote:
-> > > On Tuesday, August 05, 2008 1:44 pm James Bottomley wrote:
-> > > > On Tue, 2008-08-05 at 10:03 -0700, Jesse Barnes wrote:
-> > > > > This seems to be a function that just returns what type of IRQ you're
-> > > > > using or how it's routed and it isn't necessarily "lost interrupt"
-> > > > > specific.
-> > > >
-> > > > So perhaps this routine should only note but not advise?  The drivers
-> > > > can then just call pci_interrupt_type to see if they can do anything.
-> > >
-> > > If it's just a pci_irq_type function then it probably shouldn't print
-> > > anything, and leave that to the caller, since it might be used for other
-> > > purposes too (e.g. a driver load printk or something).  In the lost
-> > > interrupt case you already have to disable MSI or MSIX in the Fusion
-> > > driver, so you may as well put the printk there, right?  I guess I'm
-> > > saying it should neither note nor advise, just return the IRQ type.
-> >
-> > Well, no; the object was to have the layer that knew (PCI) print
-> > information which could be used to identify the problem.  Likely what
-> > the driver will say is something like "MSI isn't working and it's not my
-> > fault".  What I want is for PCI to print something that may be helpful
-> > to people trying to diagnose the problem.  Driver writers aren't going
-> > to get that right.
-> 
-> Yeah, I understand what you're trying to do, and given that there's only one 
-> user of this function (your fusion patch), I don't have a strong preference.
-> 
-> However, the function is really just telling the driver what type of IRQ a 
-> given PCI device currently has; it's not really a "lost interrupt" function 
-> at all.  So to me, it makes sense to just generalize it into a pci_irq_type 
-> function and let drivers do what they will with it.  It looks like this is 
-> the real lost interrupt detection:
-> 
-> +               /* May fail becuase of IRQ misrouting */
-> +               rc = mpt_get_manufacturing_pg_0(ioc);
-> +               if (rc) {
-> +			...
-> +                       printk(MYIOC_s_ERR_FMT "Cannot recover IRQ routing\n",
-> +                              ioc->name);
-> +                       return -1;
-> +               }
-> 
-> not the pci_lost_interrupt() function.  So it could just as easily be written 
-> as such:
-> 
-> +               /* May fail becuase of IRQ misrouting */
-> +               rc = mpt_get_manufacturing_pg_0(ioc);
-> +               if (rc) {
-> +			/* Lost an IRQ, see what type... */
-> +			int irq_type = pci_irq_type(dev);
-> +
-> +                       if (type == PCI_IRQ_MSI) {
-> +				/* Lost an MSI interrupt, try re-config w/o MSI */
-> +                               free_irq(ioc->pci_irq, ioc);
-> +                               ioc->msi_enable = 0;
-> +                               pci_disable_msi(ioc->pcidev);
-> +                               goto retry;
-> +                       }
-> +			/* This platform is just broken... */
-> +                       printk(MYIOC_s_ERR_FMT "Cannot recover from %s IRQ
-> +			       routing error\n", pci_irq_type_name(type), ioc->name);
-> +                       return -1;
-> +               }
-> 
-> or somesuch.  That seems just as simple for driver writers as your initial 
-> patch, and the function is named in accordance with what it actually does, 
-> rather than what it's used for...
+On Tue, 5 Aug 2008 14:37:19 -0700 (PDT)
+"Linus Torvalds" <torvalds@linux-foundation.org> wrote:
 
-It could, but if the bridge is the culprit (as it usually is for MSI
-problems), this print won't help identify it.
+> On Tue, 5 Aug 2008, Sean MacLennan wrote:
+> > 
+> > Why not select PIO or MMIO at config time?  
+> 
+> Umm. Then you can't run a generic driver that can do either. That's
+> the worst choice of all.
 
-Therefore, rather than give driver writers a recipe for "print this and
-this and go to the bridge and print this", I'd rather have a single PCI
-callback that prints all the (hopefully) relevant information that will
-allow either fixing or blacklisting.
+But do we really need a generic driver that can do either? Maybe for the
+current mISDN driver, but when you get to other chip ports, say the
+xhfc, you have to select the low level interface at compile time. Or I
+should say you currently have to select at config time.
 
-James
+I'm not arguing that we *have* to do it this way. I just don't think we
+should throw out the simplest method without some thought. There is
+some precedence for a config time option, for example the 8139too
+ethernet driver.
 
+Cheers,
+   Sean
