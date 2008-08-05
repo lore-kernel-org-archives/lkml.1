@@ -1,81 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764798AbYHEVsO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762040AbYHEV7r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764798AbYHEVsO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 17:48:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760378AbYHEVr4
+	id S1762040AbYHEV7r (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 17:59:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754732AbYHEVzJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 17:47:56 -0400
-Received: from molly.corsac.net ([81.57.48.219]:41860 "EHLO molly.corsac.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758102AbYHEVry (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 17:47:54 -0400
-X-Greylist: delayed 7405 seconds by postgrey-1.27 at vger.kernel.org; Tue, 05 Aug 2008 17:47:54 EDT
-Subject: Re: [PATCH] Add Intel ACPI IGD OpRegion support
-From: Yves-Alexis Perez <corsac@debian.org>
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: airlied@linux.ie, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
-In-Reply-To: <1217965470.5449.4.camel@hidalgo>
-References: <20080805183725.GA4468@srcf.ucam.org>
-	 <1217965470.5449.4.camel@hidalgo>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-6S+up+VBrlHFuEN81g2P"
-Date: Tue, 05 Aug 2008 23:47:54 +0200
-Message-Id: <1217972874.4540.3.camel@hidalgo>
+	Tue, 5 Aug 2008 17:55:09 -0400
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:54435 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752002AbYHEVzI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Aug 2008 17:55:08 -0400
+Subject: Re: [PATCH 1/2] pci: add misrouted interrupt error handling
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>, linux-pci@vger.kernel.org
+In-Reply-To: <200808051415.59993.jbarnes@virtuousgeek.org>
+References: <1217786532.4179.24.camel@localhost.localdomain>
+	 <200808051353.52323.jbarnes@virtuousgeek.org>
+	 <1217969794.9923.70.camel@localhost.localdomain>
+	 <200808051415.59993.jbarnes@virtuousgeek.org>
+Content-Type: text/plain
+Date: Tue, 05 Aug 2008 14:54:56 -0700
+Message-Id: <1217973297.9923.80.camel@localhost.localdomain>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 2008-08-05 at 14:15 -0700, Jesse Barnes wrote:
+> On Tuesday, August 05, 2008 1:56 pm James Bottomley wrote:
+> > On Tue, 2008-08-05 at 13:53 -0700, Jesse Barnes wrote:
+> > > On Tuesday, August 05, 2008 1:44 pm James Bottomley wrote:
+> > > > On Tue, 2008-08-05 at 10:03 -0700, Jesse Barnes wrote:
+> > > > > This seems to be a function that just returns what type of IRQ you're
+> > > > > using or how it's routed and it isn't necessarily "lost interrupt"
+> > > > > specific.
+> > > >
+> > > > So perhaps this routine should only note but not advise?  The drivers
+> > > > can then just call pci_interrupt_type to see if they can do anything.
+> > >
+> > > If it's just a pci_irq_type function then it probably shouldn't print
+> > > anything, and leave that to the caller, since it might be used for other
+> > > purposes too (e.g. a driver load printk or something).  In the lost
+> > > interrupt case you already have to disable MSI or MSIX in the Fusion
+> > > driver, so you may as well put the printk there, right?  I guess I'm
+> > > saying it should neither note nor advise, just return the IRQ type.
+> >
+> > Well, no; the object was to have the layer that knew (PCI) print
+> > information which could be used to identify the problem.  Likely what
+> > the driver will say is something like "MSI isn't working and it's not my
+> > fault".  What I want is for PCI to print something that may be helpful
+> > to people trying to diagnose the problem.  Driver writers aren't going
+> > to get that right.
+> 
+> Yeah, I understand what you're trying to do, and given that there's only one 
+> user of this function (your fusion patch), I don't have a strong preference.
+> 
+> However, the function is really just telling the driver what type of IRQ a 
+> given PCI device currently has; it's not really a "lost interrupt" function 
+> at all.  So to me, it makes sense to just generalize it into a pci_irq_type 
+> function and let drivers do what they will with it.  It looks like this is 
+> the real lost interrupt detection:
+> 
+> +               /* May fail becuase of IRQ misrouting */
+> +               rc = mpt_get_manufacturing_pg_0(ioc);
+> +               if (rc) {
+> +			...
+> +                       printk(MYIOC_s_ERR_FMT "Cannot recover IRQ routing\n",
+> +                              ioc->name);
+> +                       return -1;
+> +               }
+> 
+> not the pci_lost_interrupt() function.  So it could just as easily be written 
+> as such:
+> 
+> +               /* May fail becuase of IRQ misrouting */
+> +               rc = mpt_get_manufacturing_pg_0(ioc);
+> +               if (rc) {
+> +			/* Lost an IRQ, see what type... */
+> +			int irq_type = pci_irq_type(dev);
+> +
+> +                       if (type == PCI_IRQ_MSI) {
+> +				/* Lost an MSI interrupt, try re-config w/o MSI */
+> +                               free_irq(ioc->pci_irq, ioc);
+> +                               ioc->msi_enable = 0;
+> +                               pci_disable_msi(ioc->pcidev);
+> +                               goto retry;
+> +                       }
+> +			/* This platform is just broken... */
+> +                       printk(MYIOC_s_ERR_FMT "Cannot recover from %s IRQ
+> +			       routing error\n", pci_irq_type_name(type), ioc->name);
+> +                       return -1;
+> +               }
+> 
+> or somesuch.  That seems just as simple for driver writers as your initial 
+> patch, and the function is named in accordance with what it actually does, 
+> rather than what it's used for...
 
---=-6S+up+VBrlHFuEN81g2P
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+It could, but if the bridge is the culprit (as it usually is for MSI
+problems), this print won't help identify it.
 
-On mar, 2008-08-05 at 21:44 +0200, Yves-Alexis Perez wrote:
-> On mar, 2008-08-05 at 19:37 +0100, Matthew Garrett wrote:
-> > This adds the support necessary for allowing ACPI backlight control
-> > to=20
-> > work on some newer Intel-based graphics systems. Tested on Thinkpad
-> > T61=20
-> > and HP 2510p hardware.
->=20
-> Ok, I managed to apply it against drm-2.6/drm-next but it won't apply
-> against linux-acpi-2.6/test and I'm not sure how hard it is to cherry
-> pick the needed stuff from drm to acpi.
->=20
-> I'll try to build the drm-2.6/drm-next + patch but I guess it won't be
-> enough to test brightness keys?
+Therefore, rather than give driver writers a recipe for "print this and
+this and go to the bridge and print this", I'd rather have a single PCI
+callback that prints all the (hopefully) relevant information that will
+allow either fixing or blacklisting.
 
-Ok, I checked out drm-2.6/drm-next, created a local branch drm-next and
-applied OpRegion.
-Then I checked out linux-acpi-2.6/test, created a local branched, and
-merged then my local drm-next into it.
+James
 
-Built fine, rebooted into single user (without using acpi_backlight=3D).
-In single user, brightness keys still don't work.
-
-In booted into X (with hal, powersaved, dbus etc. running), and then,
-tada, brightness keys work. There is a 750ms (I guess) delay, and I
-don't know who is really responsible, I guess X is. (and thus I guess
-the opregion is the one needed, and X manages the brightness. If the
-kernel was, it would be working even in single user)
-
-Hope that can help understand the issues. Feel free to ask more info.
-
-Cheers,
---=20
-Yves-Alexis
-
---=-6S+up+VBrlHFuEN81g2P
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkiYyoUACgkQTUTAIMXAW64tPgCfdhbDmrvKm+nDe9qOaVOA2W/E
-7TEAoIE4+UwOkwC/Ko/+l1CIr5l65lEQ
-=bE5N
------END PGP SIGNATURE-----
-
---=-6S+up+VBrlHFuEN81g2P--
