@@ -1,159 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761247AbYHEMEp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761285AbYHEMIt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761247AbYHEMEp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 08:04:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757035AbYHEMEe
+	id S1761285AbYHEMIt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 08:08:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759571AbYHEMFT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 08:04:34 -0400
-Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:48138 "EHLO
-	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756864AbYHEMEd (ORCPT
+	Tue, 5 Aug 2008 08:05:19 -0400
+Received: from py-out-1112.google.com ([64.233.166.179]:46777 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759547AbYHEMFN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 08:04:33 -0400
-To: Takashi Sato <t-sato@yk.jp.nec.com>
-Cc: "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       "dm-devel@redhat.com" <dm-devel@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "viro@ZenIV.linux.org.uk" <viro@ZenIV.linux.org.uk>,
-       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>,
-       "xfs@oss.sgi.com" <xfs@oss.sgi.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       "axboe@kernel.dk" <axboe@kernel.dk>,
-       "mtk.manpages@googlemail.com" <mtk.manpages@googlemail.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 0/3] freeze feature ver 1.9
-In-reply-to: <20080805113411t-sato@mail.jp.nec.com>
-References: <20080805113411t-sato@mail.jp.nec.com>
-Message-Id: <20080805210321t-sato@mail.jp.nec.com>
-Mime-Version: 1.0
-X-Mailer: WeMail32[2.51] ID:1K0086
-From: Takashi Sato <t-sato@yk.jp.nec.com>
-Date: Tue, 5 Aug 2008 21:03:21 +0900
-Content-Type: text/plain; charset=us-ascii
+	Tue, 5 Aug 2008 08:05:13 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=DGZD56SSMveSzDrCo8LxVsAkXNTBvxRghNqf4oVTRCYDc1cpOg1Wkrw/9InkJHZLp9
+         0bR8727BcPfUD5ntvZWAGANnJGMmZgnkQwPhIRQvWrvnkOxUg6y23Qz9fvGe+Yu5e/80
+         MLu9bjdBR1s0OzfMvlVezV5tkS7WsqZqac18E=
+Message-ID: <e7d8f83e0808050505g4cf7fb4asc36bfa19e130f70d@mail.gmail.com>
+Date: Tue, 5 Aug 2008 22:05:12 +1000
+From: "Peter Dolding" <oiaohm@gmail.com>
+To: Cliffe <cliffe@ii.net>
+Subject: Re: [RFC 0/5] [TALPA] Intro to a linux interface for on access scanning
+Cc: "Greg KH" <greg@kroah.com>, "Casey Schaufler" <casey@schaufler-ca.com>,
+       "Eric Paris" <eparis@redhat.com>, malware-list@lists.printk.net,
+       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org
+In-Reply-To: <4897CFE0.2070008@ii.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1217883616.27684.19.camel@localhost.localdomain>
+	 <4897BFB4.9090309@schaufler-ca.com> <4897C2A7.7020601@ii.net>
+	 <20080805034611.GA11399@kroah.com> <4897CFE0.2070008@ii.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Tue, Aug 5, 2008 at 1:58 PM, Cliffe <cliffe@ii.net> wrote:
+> Greg KH wrote:
+>>
+>> On Tue, Aug 05, 2008 at 11:01:59AM +0800, Cliffe wrote:
+>>
+>>>
+>>> If we had stackable LSMs then the required functionality could simply be
+>>> built into the LSM interface. Then the anti-malware would simply stack
+>>> itself with other LSMs.
+>>>
+>>
+>> Could it really?  How would such an interface work?
+>>
+>> Remember, the big issue here isn't the kernel "hooks", but the fact that
+>> a lot of people are yet to be convinced that something like this needs
+>> to be within the kernel itself.
+>>
+>> Perhaps we should dig up the proposals for the filesystem-notify type
+>> patches, something like that might be all the majority of the virus
+>> people need, as they want to just scan things for Windows viruses, not
+>> Linux ones, and to do so "lazily" might be sufficient.
+>>
+>
+> From memory Dazuko is a LSM designed for this purpose, although it cannot be
+> used on systems running other LSMs due to the lack of stacking support. It
+> is used by a bunch of anti-malware programs including ClamAV and AVG.
 
-I sent the latest patch-set of the freeze feature (ver 1.9)
-as the following mail.
-The points are:
-- When multiple freeze requests arrive simultaneously, only the last
-  unfreeze process should unfreeze the frozen filesystem actually.
-  So I added the reference counter to the freeze feature.
-- I left the timeout feature in my patch-set because we need it for
-  the case someone dirties so much data that the freeze process is
-  swapped out.
+Sorry to say stacking support really does need to be taken with a grain of salt.
 
-Any comments?
+Deeper the stack worse the issue of creating system lag.
 
->When multiple freeze requests arrive simultaneously, only the last
->unfreeze process should unfreeze the frozen filesystem actually
->(as Dave Chinner, Eric Sandeen and Alasdair G Kergon commented).
->So I've added the reference counter to the freeze feature.
->It counts up in freeze_bdev() and counts down in thaw_bdev().
->When it becomes "0", thaw_bdev() will unfreeze actually.
->
->The following regular cases have worked correctly.
->
->A)
->1. dmsetup suspend
->2. FIFREEZE
->3. FITHAW
->4. dmsetup resume
->B)
->1. FIFREEZE
->2. dmsetup suspend
->3. dmsetup resume
->4. FITHAW
->
->But in the following case, the last FITHAW has been frozen
->for writing the super block because device-mapper layer is still frozen.
->It's a irregular case (app's bug) and the next "dmsetup resume"
->can solve it.  So I don't think it is a problem.
->C)
->1. dmsetup suspend
->2. FIFREEZE
->3. FITHAW
->4. FITHAW<- The thaw process was frozen.
->
->In my previous mail, I have mentioned considering removing the timeout
->feature.  But I leave it in my patch-set because we need it for the case
->someone dirties so much data that the freeze process is swapped out
->(as some people said).
->
->Currently, ext3 in mainline Linux doesn't have the freeze feature which
->suspends write requests.  So, we cannot take a backup which keeps
->the filesystem's consistency with the storage device's features
->(snapshot and replication) while it is mounted.
->In many case, a commercial filesystem (e.g. VxFS) has
->the freeze feature and it would be used to get the consistent backup.
->If Linux's standard filesytem ext3 has the freeze feature, we can do it
->without a commercial filesystem.
->
->So I have implemented the ioctls of the freeze feature.
->I think we can take the consistent backup with the following steps.
->1. Freeze the filesystem with the freeze ioctl.
->2. Separate the replication volume or create the snapshot
->   with the storage device's feature.
->3. Unfreeze the filesystem with the unfreeze ioctl.
->4. Take the backup from the separated replication volume
->   or the snapshot.
->
->[PATCH 1/3] Implement generic freeze feature
->  I have modified to set the suitable error number (EOPNOTSUPP)
->  in case the filesystem doesn't support the freeze feature.
->
->  The ioctls for the generic freeze feature are below.
->  o Freeze the filesystem
->    int ioctl(int fd, int FIFREEZE, arg)
->      fd: The file descriptor of the mountpoint
->      FIFREEZE: request code for the freeze
->      arg: Ignored
->      Return value: 0 if the operation succeeds. Otherwise, -1
->
->  o Unfreeze the filesystem
->    int ioctl(int fd, int FITHAW, arg)
->      fd: The file descriptor of the mountpoint
->      FITHAW: request code for unfreeze
->      arg: Ignored
->      Return value: 0 if the operation succeeds. Otherwise, -1
->
->[PATCH 2/3] Remove XFS specific ioctl interfaces for freeze feature
->  It removes XFS specific ioctl interfaces and request codes
->  for freeze feature.
->  This patch has been supplied by David Chinner.
->
->[PATCH 3/3] Add timeout feature
->  The timeout feature is added to freeze ioctl.  And new ioctl
->  to reset the timeout period is added.
->  o Freeze the filesystem
->    int ioctl(int fd, int FIFREEZE, long *timeout_sec)
->      fd: The file descriptor of the mountpoint
->      FIFREEZE: request code for the freeze
->      timeout_sec: the timeout period in seconds
->               If it's 0 or 1, the timeout isn't set.
->               This special case of "1" is implemented to keep
->               the compatibility with XFS applications.
->      Return value: 0 if the operation succeeds. Otherwise, -1
->
->  o Reset the timeout period
->    This is useful for the application to set the timeout_sec more accurately.
->    For example, the freezer resets the timeout_sec to 10 seconds every 5
->    seconds.  In this approach, even if the freezer causes a deadlock
->    by accessing the frozen filesystem, it will be solved by the timeout
->    in 10 seconds and the freezer can recognize that at the next reset
->    of timeout_sec.
->    int ioctl(int fd, int FIFREEZE_RESET_TIMEOUT, long *timeout_sec)
->      fd:file descriptor of mountpoint
->      FIFREEZE_RESET_TIMEOUT: request code for reset of timeout period
->      timeout_sec: new timeout period in seconds
->      Return value: 0 if the operation succeeds. Otherwise, -1
->      Error number: If the filesystem has already been unfrozen,
->                    errno is set to EINVAL.
->
->Any comments are very welcome.
->
->Cheers, Takashi
+Anti-malware stacking into LSM adding there own hooks need to be
+looked at as more of a problem than a solution.
+
+Lets take a simple example of Dazuko.   It catches all filesystem
+accesses and can alter them.   Side effect all protected documents by
+the LSM could end up going threw Dazuko so if a flaw is in the anti
+virus that can be exploited straight up complete system exposed.
+
+So really LSM stacking is not the correct solution.   More correct
+solution would be list out what features malware and virus scanners
+need and extend LSM interfaces so the main LSM could control where the
+antivirus/malware scanner was accessing.  Yes there are times you
+don't want virus scanners or malware scanners seeing everything.
+
+Containers is another issue around stacking.   Containers being added
+to Linux are providing more and more controls.  Currently LSM's are
+independent to this.   People have responded that it is light weight
+virtualisation so dones not need the need to run a different LSM
+secuirty construct inside a container.   Its that it is
+virtualistation is why it kinda need to.
+
+Now any stacking design of LSM's have to take into account the needs
+of containers.
+
+Of course prefered is no stacking for containers and some form of
+cross LSM mapping.  Like prime kernel LSM being selinux,  OS contained
+being smack so smack secuirty files coveted to selinux with host OS's
+limitations applied so container maintains its secuirty.
+
+Same could be applied to chroot's.   This is a common over site of the
+current LSM model.   chroot or containers running different
+distrobution inside there is no preformated  way of picking up the
+secuirty.   Note could even be the same distrubtion different version
+just at one point of time they changed secuirty systems.  So user is
+running a chroot or a container to run a old application that is
+needed.  But now its running without secuirty.    This is could become
+a major issue in time.
+
+So yes needs of stacking have some major headaches.  Its not just a
+malware issue.
+
+Peter Dolding
