@@ -1,96 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761599AbYHEXoY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763358AbYHEXoj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761599AbYHEXoY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 19:44:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754155AbYHEXkW
+	id S1763358AbYHEXoj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 19:44:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755190AbYHEXoQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 19:40:22 -0400
-Received: from ipmail04.adl2.internode.on.net ([203.16.214.57]:64263 "EHLO
-	ipmail04.adl2.internode.on.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754843AbYHEXkV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 19:40:21 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Aj0FAN9+mEh5LAiFXWdsb2JhbACKcoY6Hp06
-X-IronPort-AV: E=Sophos;i="4.31,312,1215354600"; 
-   d="scan'208";a="175042409"
-Date: Wed, 6 Aug 2008 09:39:57 +1000
-From: Dave Chinner <david@fromorbit.com>
-To: Karel Zak <kzak@redhat.com>
-Cc: Christoph Hellwig <hch@lst.de>, Jasper Bryant-Greene <jasper@amiton.co.nz>,
+	Tue, 5 Aug 2008 19:44:16 -0400
+Received: from [116.90.133.99] ([116.90.133.99]:49099 "EHLO mars.unix.geek.nz"
+	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1753018AbYHEXoP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Aug 2008 19:44:15 -0400
+Subject: Re: XFS noikeep remount in 2.6.27-rc1-next-20080730
+From: Jasper Bryant-Greene <jasper@amiton.co.nz>
+To: Dave Chinner <david@fromorbit.com>
+Cc: Karel Zak <kzak@redhat.com>, Christoph Hellwig <hch@lst.de>,
        linux-kernel@vger.kernel.org, xfs@oss.sgi.com,
        util-linux-ng@vger.kernel.org
-Subject: Re: XFS noikeep remount in 2.6.27-rc1-next-20080730
-Message-ID: <20080805233956.GI21635@disturbed>
-Mail-Followup-To: Karel Zak <kzak@redhat.com>,
-	Christoph Hellwig <hch@lst.de>,
-	Jasper Bryant-Greene <jasper@amiton.co.nz>,
-	linux-kernel@vger.kernel.org, xfs@oss.sgi.com,
-	util-linux-ng@vger.kernel.org
-References: <1217553598.3860.16.camel@luna.unix.geek.nz> <20080801073033.GF6201@disturbed> <20080801193133.GA838@lst.de> <20080805110357.GL21873@nb.net.home>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20080805110357.GL21873@nb.net.home>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20080805233956.GI21635@disturbed>
+References: <1217553598.3860.16.camel@luna.unix.geek.nz>
+	 <20080801073033.GF6201@disturbed> <20080801193133.GA838@lst.de>
+	 <20080805110357.GL21873@nb.net.home>  <20080805233956.GI21635@disturbed>
+Content-Type: text/plain
+Organization: Amiton Ltd
+Date: Wed, 06 Aug 2008 11:44:22 +1200
+Message-Id: <1217979862.2887.39.camel@luna.unix.geek.nz>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 05, 2008 at 01:03:57PM +0200, Karel Zak wrote:
-> On Fri, Aug 01, 2008 at 09:31:33PM +0200, Christoph Hellwig wrote:
-> > I'ts most likely a fallout, but I wonder why.  To get this behaviour
-> > moutn would have to add all the options it finds in /proc/self/mounts
-> > to the command line.
+On Wed, 2008-08-06 at 09:39 +1000, Dave Chinner wrote:
+> We're seeing the second case where mount is merging all the options in
+> /etc/fstab into the options passed into the remount command. How is
+> the filesystem expected to behave in these difference cases? The
+> first simply changes the ro/rw status, the second potentially
+> asks for the filesystem to change a bunch of other mount options
+> as well, which it may not be able to do.
 > 
->  mount(8) does not read and use /proc/self/mounts at all.
-> 
->     Karel
-> 
-> 
->  Man mount:
-> 
->  remount
-> 
->      Attempt  to remount an already-mounted file system.  This is commonly used
->      to change the mount flags for a file system, especially to make a readonly
->      file system writeable. It does not change device or mount point.
-> 
->      The  remount  functionality follows the standard way how the mount command
->      works with options from fstab. It means the  mount  command  doesn’t  read
->      fstab (or mtab) only when a device and dir are fully specified.
-> 
->      mount -o remount,rw /dev/foo /dir
-> 
->      After  this  call  all  old mount options are replaced and arbitrary stuff
->      from fstab is ignored, except the loop= option which is internally  gener-
->      ated and maintained by the mount command.
-> 
->      mount -o remount,rw  /dir
-> 
->      After  this call mount reads fstab (or mtab) and merges these options with
->      options from command line ( -o ).
+> So what is the correct behaviour? Should the filesystem *silently
+> ignore* unchangable options in the remount command, or should it
+> fail the remount and warn the user that certain options are not
+> allowed in remount?
 
-So, given the command at issue was:
+(forgive me, I'm an XFS user, not an XFS developer, so this might be
+ignorant)
 
-luna ~ # mount -o remount,rw /usr
+The filesystem presumably knows what options it was originally mounted
+with.
 
-We're seeing the second case where mount is merging all the options in
-/etc/fstab into the options passed into the remount command. How is
-the filesystem expected to behave in these difference cases? The
-first simply changes the ro/rw status, the second potentially
-asks for the filesystem to change a bunch of other mount options
-as well, which it may not be able to do.
+Thus if you take the difference of the set of options you were mounted
+with, and the set of options you are now being asked to remount with,
+you have the options which are being asked to change.
 
-So what is the correct behaviour? Should the filesystem *silently
-ignore* unchangable options in the remount command, or should it
-fail the remount and warn the user that certain options are not
-allowed in remount?
+If changing any of them is unsupported I would expect an error, but in
+this case the result of taking the above set difference would be merely
+replacing ro with rw, and thus the filesystem is presumably capable of
+doing the remount.
 
-Cheers,
+-jasper
 
-Dave.
--- 
-Dave Chinner
-david@fromorbit.com
