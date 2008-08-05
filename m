@@ -1,57 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759896AbYHEXiu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761599AbYHEXoY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759896AbYHEXiu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 19:38:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761774AbYHEXiX
+	id S1761599AbYHEXoY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 19:44:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754155AbYHEXkW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 19:38:23 -0400
-Received: from toronto-hs-216-138-233-67.s-ip.magma.ca ([216.138.233.67]:49467
-	"HELO yow.seanm.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1758237AbYHEXiJ (ORCPT
+	Tue, 5 Aug 2008 19:40:22 -0400
+Received: from ipmail04.adl2.internode.on.net ([203.16.214.57]:64263 "EHLO
+	ipmail04.adl2.internode.on.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754843AbYHEXkV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 19:38:09 -0400
-Date: Tue, 5 Aug 2008 19:38:08 -0400
-From: Sean MacLennan <smaclennan@pikatech.com>
-To: <benh@kernel.crashing.org>
-Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Karsten Keil" <kkeil@suse.de>,
-       "Andreas.Eversberg" <Andreas.Eversberg@versatel.de>,
-       <isdn4linux@listserv.isdn4linux.de>, <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 3/4] Fix remaining big endian issue of hfcmulti
-Message-ID: <20080805193808.40650f30@lappy.seanm.ca>
-In-Reply-To: <1217977459.24157.210.camel@pasglop>
-References: <20080802151532.DE017A3C09@pingi.kke.suse.de>
-	<1217910588.24157.151.camel@pasglop>
-	<20080805113111.GA6827@pingi.kke.suse.de>
-	<1217941466.24157.190.camel@pasglop>
-	<20080805172549.GA6052@pingi.kke.suse.de>
-	<alpine.LFD.1.10.0808051140250.3257@nehalem.linux-foundation.org>
-	<20080805210239.GB6052@pingi.kke.suse.de>
-	<20080805172324.45853d98@lappy.seanm.ca>
-	<alpine.LFD.1.10.0808051435260.3257@nehalem.linux-foundation.org>
-	<20080805175937.49a5ba32@lappy.seanm.ca>
-	<1217977459.24157.210.camel@pasglop>
-Organization: PIKA
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.9; i686-pc-linux-gnu)
-X-Message-Flag: Warning: This message may contain actual content.
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 5 Aug 2008 19:40:21 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Aj0FAN9+mEh5LAiFXWdsb2JhbACKcoY6Hp06
+X-IronPort-AV: E=Sophos;i="4.31,312,1215354600"; 
+   d="scan'208";a="175042409"
+Date: Wed, 6 Aug 2008 09:39:57 +1000
+From: Dave Chinner <david@fromorbit.com>
+To: Karel Zak <kzak@redhat.com>
+Cc: Christoph Hellwig <hch@lst.de>, Jasper Bryant-Greene <jasper@amiton.co.nz>,
+       linux-kernel@vger.kernel.org, xfs@oss.sgi.com,
+       util-linux-ng@vger.kernel.org
+Subject: Re: XFS noikeep remount in 2.6.27-rc1-next-20080730
+Message-ID: <20080805233956.GI21635@disturbed>
+Mail-Followup-To: Karel Zak <kzak@redhat.com>,
+	Christoph Hellwig <hch@lst.de>,
+	Jasper Bryant-Greene <jasper@amiton.co.nz>,
+	linux-kernel@vger.kernel.org, xfs@oss.sgi.com,
+	util-linux-ng@vger.kernel.org
+References: <1217553598.3860.16.camel@luna.unix.geek.nz> <20080801073033.GF6201@disturbed> <20080801193133.GA838@lst.de> <20080805110357.GL21873@nb.net.home>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20080805110357.GL21873@nb.net.home>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 06 Aug 2008 09:04:18 +1000
-"Benjamin Herrenschmidt" <benh@kernel.crashing.org> wrote:
+On Tue, Aug 05, 2008 at 01:03:57PM +0200, Karel Zak wrote:
+> On Fri, Aug 01, 2008 at 09:31:33PM +0200, Christoph Hellwig wrote:
+> > I'ts most likely a fallout, but I wonder why.  To get this behaviour
+> > moutn would have to add all the options it finds in /proc/self/mounts
+> > to the command line.
+> 
+>  mount(8) does not read and use /proc/self/mounts at all.
+> 
+>     Karel
+> 
+> 
+>  Man mount:
+> 
+>  remount
+> 
+>      Attempt  to remount an already-mounted file system.  This is commonly used
+>      to change the mount flags for a file system, especially to make a readonly
+>      file system writeable. It does not change device or mount point.
+> 
+>      The  remount  functionality follows the standard way how the mount command
+>      works with options from fstab. It means the  mount  command  doesn’t  read
+>      fstab (or mtab) only when a device and dir are fully specified.
+> 
+>      mount -o remount,rw /dev/foo /dir
+> 
+>      After  this  call  all  old mount options are replaced and arbitrary stuff
+>      from fstab is ignored, except the loop= option which is internally  gener-
+>      ated and maintained by the mount command.
+> 
+>      mount -o remount,rw  /dir
+> 
+>      After  this call mount reads fstab (or mtab) and merges these options with
+>      options from command line ( -o ).
 
-> If the size of the binary (or performances) involved in doing the two
-> type of IOs in a single driver is such that having the ability to
-> only use one is worth it (for embedded for example), then you can
-> provide a config option that allows to select which method to build
-> in the driver, but it's a good idea to allow building both with
-> runtime detection.
+So, given the command at issue was:
 
-Fair enough. I can agree to that.
+luna ~ # mount -o remount,rw /usr
+
+We're seeing the second case where mount is merging all the options in
+/etc/fstab into the options passed into the remount command. How is
+the filesystem expected to behave in these difference cases? The
+first simply changes the ro/rw status, the second potentially
+asks for the filesystem to change a bunch of other mount options
+as well, which it may not be able to do.
+
+So what is the correct behaviour? Should the filesystem *silently
+ignore* unchangable options in the remount command, or should it
+fail the remount and warn the user that certain options are not
+allowed in remount?
 
 Cheers,
-  Sean
+
+Dave.
+-- 
+Dave Chinner
+david@fromorbit.com
