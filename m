@@ -1,79 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762240AbYHEXwO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762757AbYHEXyE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762240AbYHEXwO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 19:52:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756382AbYHEXwB
+	id S1762757AbYHEXyE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 19:54:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755190AbYHEXxx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 19:52:01 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:39530 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756498AbYHEXwA (ORCPT
+	Tue, 5 Aug 2008 19:53:53 -0400
+Received: from an-out-0708.google.com ([209.85.132.243]:15475 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756168AbYHEXxw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 19:52:00 -0400
-Date: Tue, 5 Aug 2008 16:51:10 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Christoph Hellwig <hch@lst.de>
-Cc: Adrian Bunk <bunk@kernel.org>, David Miller <davem@davemloft.net>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] feature-removal-schedule.txt: remove the NCR53C9x
- entry
-Message-Id: <20080805165110.f0991143.akpm@linux-foundation.org>
-In-Reply-To: <20080805233718.GB2514@lst.de>
-References: <20080805200330.GJ22895@cs181140183.pp.htv.fi>
-	<20080805233718.GB2514@lst.de>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 5 Aug 2008 19:53:52 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=f7/53paj6rLklbrJO3qd/+UkC9fB6dO93ruktuP5iCKbYwQ+b9PXXK/Nuvjc6hGJRP
+         yVsLJuTrmm3FahSEXnyNEizYk7KFJbxj6kxPn9zLuzSiDS1+bCkrDAMZjDkXTJMiuxov
+         qCzT11LcC9LUy4dE2Iv1AHS3NWKYa+0Fx7p+Q=
+Message-ID: <86802c440808051653g2ef28df7h7615301f6db0b4f5@mail.gmail.com>
+Date: Tue, 5 Aug 2008 16:53:51 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH 00/25] dyn_array and nr_irqs support v3
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Dhaval Giani" <dhaval@linux.vnet.ibm.com>,
+       "Mike Travis" <travis@sgi.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <4898E1B4.60101@zytor.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1217732365-16595-1-git-send-email-yhlu.kernel@gmail.com>
+	 <4898DBD8.4000002@zytor.com>
+	 <86802c440808051615h57baa06ci5ab040048786b50d@mail.gmail.com>
+	 <4898E1B4.60101@zytor.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 6 Aug 2008 01:37:19 +0200 Christoph Hellwig <hch@lst.de> wrote:
-
-> On Tue, Aug 05, 2008 at 11:03:30PM +0300, Adrian Bunk wrote:
-> > Now that the driver is removed we should also remove the entry in 
-> > Documentation/feature-removal-schedule.txt
-> > 
-> > Signed-off-by: Adrian Bunk <bunk@kernel.org>
-> > Acked-by: Christoph Hellwig <hch@lst.de>
-> > 
-> > ---
-> > 
-> > This patch has been sent on:
-> > - 1 Mar 2008
-> > 
-> > 6d7882f6e844eaf6551b3a3708e01d1784916435 foobar
-> > diff --git a/Documentation/feature-removal-schedule.txt b/Documentation/feature-removal-schedule.txt
-> > index c1d1fd0..a4530f0 100644
-> > --- a/Documentation/feature-removal-schedule.txt
-> > +++ b/Documentation/feature-removal-schedule.txt
-> > @@ -19,15 +19,6 @@ Who:	Pavel Machek <pavel@suse.cz>
-> >  
-> >  ---------------------------
-> >  
-> > -What:	old NCR53C9x driver
-> > -When:	October 2007
-> > -Why:	Replaced by the much better esp_scsi driver.  Actual low-level
-> > -	driver can be ported over almost trivially.
-> > -Who:	David Miller <davem@davemloft.net>
-> > -	Christoph Hellwig <hch@lst.de>
-> > -
-> > ----------------------------
-> > -
-> >  What:	Video4Linux API 1 ioctls and video_decoder.h from Video devices.
-> >  When:	December 2008
-> >  Files:	include/linux/video_decoder.h include/linux/videodev.h
-> ---end quoted text---
+On Tue, Aug 5, 2008 at 4:26 PM, H. Peter Anvin <hpa@zytor.com> wrote:
+> Yinghai Lu wrote:
+>>
+>> i am working on dyn_array + condense irq_desc/irq_cfg.
+>>
+>> it will use dyn_array to allocate 32 entry for irq_desc/irq_cfg, and
+>> will use get_irq_desc via list to distribute it. later if need more,
+>> will allocate more 32 entries....
+>>
+>> so will send out v4.
+>>
 >
+> My understanding of dyn_array is that it only works at init time.
+> How does that work when you hotplug MSI-X devices?
 
-(pop toasting repaired)
+actually create irq_desc like Eric suggest, but allocate 32 entry one
+time, and use it one by one. share some init work function bewteen
+init stage and later.
 
-> This should really be easy enough for any merge window state, whoe wants
-> to feed it to Linus?
-> 
-
-I have it queued for my next Linuswards batch.  I tend to push
-non-code-related changes immediately.
-
+YH
