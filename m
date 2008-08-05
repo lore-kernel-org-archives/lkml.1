@@ -1,80 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758280AbYHEHmY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758383AbYHEHvh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758280AbYHEHmY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 03:42:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752734AbYHEHmO
+	id S1758383AbYHEHvh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 03:51:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754669AbYHEHu0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 03:42:14 -0400
-Received: from ik-out-1112.google.com ([66.249.90.177]:52107 "EHLO
-	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751142AbYHEHmN (ORCPT
+	Tue, 5 Aug 2008 03:50:26 -0400
+Received: from ti-out-0910.google.com ([209.85.142.189]:65341 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754648AbYHEHuY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 03:42:13 -0400
+	Tue, 5 Aug 2008 03:50:24 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=vAg7bo+1V/zBCwuCI8sQPbkef4/vGWF2gnir5juoELihP1hr/rgHJqZXeo88Fq7mUt
-         bzeEfnntLENG7cPT5THD0VtlXyvT4HOTl6e1bpDgkFfd+n/Krod1F1khEml/LAFfVDVf
-         vmU4enfz4ACmRuo+NMqB9GN7OAIGmKMProXNE=
-Message-ID: <ac9c93b10808050042u496bfa10nad7962eb0e9ec015@mail.gmail.com>
-Date: Tue, 5 Aug 2008 09:42:11 +0200
-From: "Frans Meulenbroeks" <fransmeulenbroeks@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: initramfs optimization suggestions
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=O2JCrT00R3o4DBNwEeLLCRTvDnd3V+1Nt15SM3Wb+Dy8n5FBfXxbUsnMbOk9lnTIhz
+         9wW94hPtkCTmrjDxIhcG1sTjD4wQGVUoJz6llNzH76PlhUNMDVbBr1d6w/e+Om0JRlQ7
+         1C2HFgtsBtQ5I5vm0EOfhWSyos3rjAl1CSvQw=
+Message-ID: <4898061B.6010406@gmail.com>
+Date: Tue, 05 Aug 2008 16:49:47 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Robert Hancock <hancockr@shaw.ca>
+CC: Elias Oltmanns <eo@nebensachen.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Jeff Garzik <jeff@garzik.org>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       James Bottomley <James.Bottomley@hansenpartnership.com>,
+       Pavel Machek <pavel@ucw.cz>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/5] libata: Implement disk shock protection support
+References: <fa.nx0yFPJm+aNXPHgykUrOzZXvvIs@ifi.uio.no> <fa.NfEr7Ik6e8oextyWICW/jR5emeE@ifi.uio.no> <fa.zGvATZImeUo0tHJe4hzlk5+mTiM@ifi.uio.no> <4897D433.5040409@shaw.ca>
+In-Reply-To: <4897D433.5040409@shaw.ca>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Upfront apologies if this is the wrong place to post this to.Just
-give me a gentle redirect to the right place in that case.]
+Robert Hancock wrote:
+>> However, SATA or not, there simply isn't a way to abort commands in ATA.
+>>  Issuing random command while other commands are in progress simply is
+>> state machine violation and there will be many interesting results
+>> including complete system lockup (ATA controller dying while holding the
+>> PCI bus).  The only reliable way to abort in-flight commands are by
+>> issuing hardreset.  However, ATA reset protocol is not designed for
+>> quick recovery.  The machine is gonna hit the ground hard way before the
+>> reset protocol is complete.
+> 
+> How long does hardreset have to take? I only see a 1ms delay in the
+> COMRESET process (sata_link_hardreset). I'd think it would be feasible
+> to do something like:
+> 
+> -stop the queue to prevent new commands from being issued
+> -wait a certain amount of time (20ms or so?) for existing command(s) to
+> complete, if they do then issue the idle command
+> -if time runs out, trigger a hardreset and then issue the idle command
+> 
+> The drive is going to take a little while to actually unload the heads
+> anyway, so a few milliseconds delay doesn't seem like a big deal..
 
-I've been looking into improving the boot time of an embedded linux
-system (monta vista based).
-While doing so I detected that initramfs initialisation was one of the
-places where a lot of time was spent, so I looked into it in some more
-detail and came up with the following findings & suggestions.
+Two major areas of delays are...
 
-First proposal:
-==========
+- Post-hardreset PHY readiness delay.  It depends on both the controller
+and drive.  Some combination might take pretty short while there are
+combinations which are known to take in the order of few seconds.  It's
+determined by sata_deb_timing_* arrays in libata-core.c.  In most cases,
+sata_deb_timing_normal works fine.  Currently, sil24 needs the long
+variant.  Using the normal one, the shortest possible timing would be a
+bit above 100ms as libata determines PHY is online only after the link
+state hasn't oscillate for that long.
 
-initramfs is build from a compressed cpio archive.
-Proposal is to introduce a build option to make the compression and
-decompression optional.
-Rationale 1: could be faster as it trades off I/O time (to read the
-image) against decompression time
-Rationale 2: for architectures that use compressed images (bzImage)
-actually we compress twice, which is not really efficient.
+- Device readiness (the initial TF w/ signature).  It depends on how the
+drive implementation.  If the drive is spinning, it's usually pretty
+quick but there's no guarantee.  Also, there's another problem that some
+controllers just can't wait for device readiness after hardreset and
+thus needs to perform softreset after hard one, which adds to the delay.
 
-I can implement this, but before spending time on it I would like to know if
-a) people consider this a good idea
-b) no one else already has doen this.
+Missing either of the above two can jam the reset sequence forcing a
+retry.  It might work with some combinations of devices but given that
+we wouldn't get too much test coverage I don't really think the overhead
+and risk are justifiable.
 
+>> The only way to solve this nicely is either to build the accelerometer
+>> into the drive and let the drive itself protect itself or implement a
+>> sideband signal to tell it to duck for cover.  For SATA, this sideband
+>> signal can be another OOB sequence.  If it's ever implemented this way,
+>> it will be in SControl, I guess.
+>>
+>> Well, short of that, all we can do is to wait for the currently
+>> in-flight commands to drain and hope that it happens before the machine
+>> hits the ground.  Also, that the harddrive is not going through one of
+>> the longish EH recovery sequences when it starts to fall.  :-(
+> 
+> Well, Lenovo (and others?) have implemented this in Windows somehow.. It
+> would be interesting to know what solution they used there (either
+> hardreset, issue the command even when busy, or just wait for the
+> commands to hopefully finish in time).
 
-Second proposal:
-============
+I think just waiting till the currently pending commands are complete
+and then issuing IDLE_IMMEDIATE would cover most of the cases.  Longer
+term, I really think there needs to be an out-of-band signal if this is
+gonna get done right.
 
-after decompressing the cpio archive all files are made using
-sys_open/sys_write/sys_close and friends.
-This implies that a lot of system calls and data copying is done.
-It would be nice if that could be avoided.
-I'm not fully into all details of how ramfs is implemented, but would
-it be possible to e.g. dump all blocks of a tmp ram fs into a data
-structure (e.g.an array of blocks) while making the kernel, and while
-booting the kernel initialise the fs cache with these data? (I guess
-this would be around fs/dcache.c; I understand the data here is
-kmalloc-ed, but it might be possible to initialise the cache with
-pointers to that data structure; due to the nature of ramfs they won't
-be deallocated anyway I assume).
-Does this sound feasible? Hidden snags? Appreciate your
-opinion/feedback/suggestions.
-
-Best regards, Frans.
-
-PS: if anyone has a pointer to a place which explains in full detail
-how linux fs internally works (apart from the source :-) ) I
-appreciate a reference. FM
+-- 
+tejun
