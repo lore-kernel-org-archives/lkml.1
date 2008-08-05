@@ -1,102 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763004AbYHEUOT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763699AbYHEUOn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763004AbYHEUOT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 16:14:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758710AbYHEUOJ
+	id S1763699AbYHEUOn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 16:14:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763534AbYHEUO2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 16:14:09 -0400
-Received: from wr-out-0506.google.com ([64.233.184.236]:8706 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758917AbYHEUOH (ORCPT
+	Tue, 5 Aug 2008 16:14:28 -0400
+Received: from saraswathi.solana.com ([198.99.130.12]:48069 "EHLO
+	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763507AbYHEUO1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 16:14:07 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=kUUGnSPgzomd3NCfwprA5H2KzZHn8UPtoLhjWG1/w99ZWQqoOP2N6NifGVwCGPEjW6
-         lKZHsME5+gmVQr5M5U4TCEWOB4kz4nfHoMervirJaU3TrqDn7Lhq0SEaP4OjMGooFBWT
-         4BEbNHixLosn9o/k+83EBHjkgwTWotavTCOWg=
-Date: Tue, 5 Aug 2008 16:14:03 -0400
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: "Alfred E. Heggestad" <aeh@db.org>
-Cc: Oliver Neukum <oliver@neukum.org>, linux-input@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] input: driver for USB VoIP phones with CM109 chipset #2
-Message-ID: <20080805201403.GA13557@anvil.corenet.prv>
-References: <200806271424.50425.oliver@neukum.org> <200808041356.57928.oliver@neukum.org> <489767D3.6070408@db.org> <200808050008.48846.oliver@neukum.org> <4898A8C2.2080307@db.org>
+	Tue, 5 Aug 2008 16:14:27 -0400
+Date: Tue, 5 Aug 2008 16:14:10 -0400
+From: Jeff Dike <jdike@addtoit.com>
+To: stable@kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       uml-devel <user-mode-linux-devel@lists.sourceforge.net>
+Subject: [PATCH 12/14] [UML] fix gcc ICEs and unresolved externs
+Message-ID: <20080805201410.GA11794@c2.user-mode-linux.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4898A8C2.2080307@db.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 05, 2008 at 09:23:46PM +0200, Alfred E. Heggestad wrote:
-> Aug  5 21:11:13 io kernel: cm109: cm109_urb_ctl_callback: buzzer_pending=0, ctl_urb_pending=1
-> Aug  5 21:11:13 io kernel: uhci_hcd 0000:00:1f.2: reserve dev 2 ep83-INT, period 32, phase 16, 14 us
->
+>From 4f81c5350b44bcc501ab6f8a089b16d064b4d2f6
 
-Ok, so urb_irq is pending here...
+There are various constraints on the use of unit-at-a-time:
+ - i386 uses no-unit-at-a-time for pre-4.0 (not 4.3)
+ - x86_64 uses unit-at-a-time always
 
-> ;;;
-> ;;; Press 'TAB' in shell to force Bell/Buzzer
-> ;;;
->
-> Aug  5 21:11:22 io kernel: cm109: cm109_toggle_buzzer_async: ctl_urb_pending=0 buzzer_pending=0
-> Aug  5 21:11:22 io kernel: cm109: cm109_submit_buzz_toggle: buzzer_state=1
-> Aug  5 21:11:22 io kernel: cm109: cm109_urb_ctl_callback: buzzer_pending=0, ctl_urb_pending=1
-> Aug  5 21:11:22 io kernel: cm109: cm109_urb_ctl_callback: usb_submit_urb (urb_irq) failed -22     <--- note -EINVAL
+Uli reported a crash on x86_64 with gcc 4.1.2 with unit-at-a-time,
+resulting in commit c0a18111e571138747a98af18b3a2124df56a0d1
 
-And we trying to re-submit it.... How about the patch below?
+Ingo reported a gcc internal error with gcc 4.3 with no-unit-at-a-timem,
+resulting in 22eecde2f9034764a3fd095eecfa3adfb8ec9a98
 
-Input: cm109 - fix issue with submitting urb_irq
+Benny Halevy is seeing extern inlines not resolved with gcc 4.3 with
+no-unit-at-a-time
 
-Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
+This patch reintroduces unit-at-a-time for gcc >= 4.0, bringing back the
+possibility of Uli's crash.  If that happens, we'll debug it.
+
+I started seeing both the internal compiler errors and unresolved
+inlines on Fedora 9.  This patch fixes both problems, without so far
+reintroducing the crash reported by Uli.
+
+Signed-off-by: Jeff Dike <jdike@linux.intel.com>
+Cc: Benny Halevy <bhalevy@panasas.com>
+Cc: Adrian Bunk <bunk@kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Ulrich Drepper <drepper@redhat.com>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 ---
+ arch/um/Makefile        |    1 -
+ arch/um/Makefile-i386   |    7 +++++++
+ arch/um/Makefile-x86_64 |    3 +++
+ 3 files changed, 10 insertions(+), 1 deletions(-)
 
- drivers/input/misc/cm109.c |    7 +++++--
- 1 files changed, 5 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/input/misc/cm109.c b/drivers/input/misc/cm109.c
-index d1ef394..a97f038 100644
---- a/drivers/input/misc/cm109.c
-+++ b/drivers/input/misc/cm109.c
-@@ -106,10 +106,11 @@ struct cm109_dev {
- 	dma_addr_t ctl_req_dma;
- 	struct urb *urb_ctl;
- 	/*
--	 * The 2 bitfields below are protected by ctl_submit_lock.
-+	 * The 3 bitfields below are protected by ctl_submit_lock.
- 	 * They have to be separate since they are accessed from IRQ
- 	 * context.
- 	 */
-+	unsigned irq_urb_pending:1;	/* irq_urb is in flight */
- 	unsigned ctl_urb_pending:1;	/* ctl_urb is in flight */
- 	unsigned buzzer_pending:1;	/* need to issue buzz command */
- 	spinlock_t ctl_submit_lock;
-@@ -332,6 +333,8 @@ static void cm109_urb_irq_callback(struct urb *urb)
+diff --git a/arch/um/Makefile b/arch/um/Makefile
+index dbeab15..ca40397 100644
+--- a/arch/um/Makefile
++++ b/arch/um/Makefile
+@@ -77,7 +77,6 @@ include $(srctree)/$(ARCH_DIR)/Makefile-os-$(OS)
+ KERNEL_DEFINES = $(strip -Derrno=kernel_errno -Dsigprocmask=kernel_sigprocmask \
+ 			 -Dmktime=kernel_mktime $(ARCH_KERNEL_DEFINES))
+ KBUILD_CFLAGS += $(KERNEL_DEFINES)
+-KBUILD_CFLAGS += $(call cc-option,-fno-unit-at-a-time,)
  
- 	spin_lock(&dev->ctl_submit_lock);
+ PHONY += linux
  
-+	dev->irq_urb_pending = 0;
+diff --git a/arch/um/Makefile-i386 b/arch/um/Makefile-i386
+index 561e373..302cbe5 100644
+--- a/arch/um/Makefile-i386
++++ b/arch/um/Makefile-i386
+@@ -32,4 +32,11 @@ cflags-y += $(call cc-option,-mpreferred-stack-boundary=2)
+ # an unresolved reference.
+ cflags-y += -ffreestanding
+ 
++# Disable unit-at-a-time mode on pre-gcc-4.0 compilers, it makes gcc use
++# a lot more stack due to the lack of sharing of stacklots.  Also, gcc
++# 4.3.0 needs -funit-at-a-time for extern inline functions.
++KBUILD_CFLAGS += $(shell if [ $(call cc-version) -lt 0400 ] ; then \
++			echo $(call cc-option,-fno-unit-at-a-time); \
++			else echo $(call cc-option,-funit-at-a-time); fi ;)
 +
- 	if (likely(!dev->shutting_down)) {
+ KBUILD_CFLAGS += $(cflags-y)
+diff --git a/arch/um/Makefile-x86_64 b/arch/um/Makefile-x86_64
+index 8ed362f..a9cd7e7 100644
+--- a/arch/um/Makefile-x86_64
++++ b/arch/um/Makefile-x86_64
+@@ -21,3 +21,6 @@ HEADER_ARCH := x86
  
- 		if (dev->buzzer_state)
-@@ -380,7 +383,7 @@ static void cm109_urb_ctl_callback(struct urb *urb)
- 			dev->buzzer_pending = 0;
- 			dev->ctl_urb_pending = 1;
- 			cm109_submit_buzz_toggle(dev);
--		} else {
-+		} else if (likely(!dev->irq_urb_pending)) {
- 			/* ask for key data */
- 			error = usb_submit_urb(dev->urb_irq, GFP_ATOMIC);
- 			if (error)
-
-
-
+ LINK-$(CONFIG_LD_SCRIPT_DYN) += -Wl,-rpath,/lib64
+ LINK-y += -m64
++
++# Do unit-at-a-time unconditionally on x86_64, following the host
++KBUILD_CFLAGS += $(call cc-option,-funit-at-a-time)
 -- 
-Dmitry
+1.5.5.1
+
