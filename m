@@ -1,67 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762066AbYHESr6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763092AbYHESth@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762066AbYHESr6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 14:47:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757818AbYHESru
+	id S1763092AbYHESth (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 14:49:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756622AbYHESta
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 14:47:50 -0400
-Received: from an-out-0708.google.com ([209.85.132.243]:38134 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757752AbYHESrt (ORCPT
+	Tue, 5 Aug 2008 14:49:30 -0400
+Received: from wf-out-1314.google.com ([209.85.200.173]:44479 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756620AbYHESt3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 14:47:49 -0400
+	Tue, 5 Aug 2008 14:49:29 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=tZxO1O4zZxmOOJ/gxzrUv+vq9oXtalnu3kTF1BMJnTZ2S5n332apOwSAbT4boO5tMt
-         cD7ziZUBTkWpkERrqHlUnfSk3JoFcp0NR3oRy7VJIwRyUqbfjloi4Q/bISalYig5f1Nd
-         Lg8IVOf2Qb3gIHR9VMK7SQeAfR/G5ieWnj1yE=
-Message-ID: <d4b6d3ea0808051147n4a494c0fj10a78c92890e354b@mail.gmail.com>
-Date: Tue, 5 Aug 2008 14:47:47 -0400
-From: "Michael Madore" <michael.madore@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: task blocked for more than 120 seconds (2.6.26.1)
-Cc: jens.axboe@oracle.com
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=V6iageaCz/NHEDYFwJPkjGvXnqRAnZh+8gKbz6IZYubJtkFsQTmJ3s2/V19wRDzwPL
+         EAid9BDr2LDMvdej233/chBgmAlgYXP8seZSm4mY2MjS5sa99x4oj3yvgPpQe3lUuVq9
+         Vk7t5dEGBstmvF9TS4AMq+7rid5uy8UnmKHrU=
+Message-ID: <4898A0B2.3070201@gmail.com>
+Date: Tue, 05 Aug 2008 11:49:22 -0700
+From: Dean Hildebrand <seattleplus@gmail.com>
+User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: linux-kernel@vger.kernel.org
+CC: jbarnes@virtuousgeek.org, dada1@cosmosbay.com
+Subject: Re: PCI: Limit VPD length for Broadcom 5708S
+References: <aVL4E-5C9-7@gated-at.bofh.it>	<2d9716d7-99a4-4d17-9cae-83842e216c8c@y19g2000prn.googlegroups.com>
+In-Reply-To: <2d9716d7-99a4-4d17-9cae-83842e216c8c@y19g2000prn.googlegroups.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-Running 2.6.26.1 I am receiving errors similar to the following when
-stress testing systems:
 
-INFO: task kjournald:1004 blocked for more than 120 seconds.
-"echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
-kjournald     D ffff81013d347000     0  1004      2
- ffff81013cce9de0 0000000000000046 ffff81013cce9d90 ffffffff810478c5
- ffff810001069378 ffff81013cdd2cc0 ffff810120454320 ffff81013cdd3010
- ffff81013cce9de0 ffffffff81048096 ffff81013cce9db0 0000000000000246
-Call Trace:
- [<ffffffff810478c5>] ? enqueue_hrtimer+0xd1/0xdf
- [<ffffffff81048096>] ? hrtimer_start+0x122/0x144
- [<ffffffffa0023be3>] :jbd:journal_commit_transaction+0xe9/0xd1e
- [<ffffffff8103bb2d>] ? lock_timer_base+0x26/0x4a
- [<ffffffff81045534>] ? autoremove_wake_function+0x0/0x38
- [<ffffffff8103bba7>] ? try_to_del_timer_sync+0x56/0x62
- [<ffffffffa002713e>] :jbd:kjournald+0xc3/0x1fb
- [<ffffffff81045534>] ? autoremove_wake_function+0x0/0x38
- [<ffffffffa002707b>] ? :jbd:kjournald+0x0/0x1fb
- [<ffffffff810453ff>] kthread+0x49/0x76
- [<ffffffff8100cd08>] child_rip+0xa/0x12
- [<ffffffff810453b6>] ? kthread+0x0/0x76
- [<ffffffff8100ccfe>] ? child_rip+0x0/0x12
+> I have no idea if 5706S and 5709S also needs this truncation ofVPDlength
 
-This is on a 16 core Intel system with a single SATA disk and 4GB of
-memory.  This particular instance of the error occurred after about an
-hour.
+It seems that our IBM Blade servers using 5706S also require this
+fix.  We have confirmed that the patch below works on 2.6.27-rc1.
 
-I was previously using 2.6.24.7 from Fedora 8 and that did not exhibit
-the problem.
 
-Mike Madore
+diff -uprN linux-2.6.27-rc1/drivers/pci/quirks.c 
+linux-2.6.27-rc1-fix/drivers/pci/quirks.c
+--- linux-2.6.27-rc1/drivers/pci/quirks.c       2008-08-05 
+10:51:42.000000000 -0700
++++ linux-2.6.27-rc1-fix/drivers/pci/quirks.c   2008-08-05 
+10:50:57.000000000 -0700
+@@ -1756,9 +1756,10 @@ DECLARE_PCI_FIXUP_EARLY(PCI_VENDOR_ID_VI
+   */
+  static void __devinit quirk_brcm_570x_limit_vpd(struct pci_dev *dev)
+  {
+-       /*  Only disable the VPD capability for 5706, 5708, and 5709 
+rev. A */
++       /*  Only disable the VPD capability for 5706, 5706S, 5708, and 
+5709 rev. A */
+         if ((dev->device == PCI_DEVICE_ID_NX2_5706) ||
+             (dev->device == PCI_DEVICE_ID_NX2_5708) ||
++           (dev->device == PCI_DEVICE_ID_NX2_5706S) ||
+             ((dev->device == PCI_DEVICE_ID_NX2_5709) &&
+              (dev->revision & 0xf0) == 0x0)) {
+                 if (dev->vpd)
+
+Please cc me on the response. Thanks,
+Dean Hildebrand
+IBM Almaden
+dhildeb@us.ibm.com
+
