@@ -1,55 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761237AbYHEN00@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761363AbYHEN3E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761237AbYHEN00 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 09:26:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756339AbYHEN0T
+	id S1761363AbYHEN3E (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 09:29:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755652AbYHEN2u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 09:26:19 -0400
-Received: from smtpeu1.atmel.com ([195.65.72.27]:34010 "EHLO bagnes.atmel.com"
+	Tue, 5 Aug 2008 09:28:50 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:50688 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755736AbYHEN0S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 09:26:18 -0400
-Date: Tue, 5 Aug 2008 15:26:09 +0200
-From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
-To: "Robert P. J. Day" <rpjday@crashcourse.ca>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: full list of unused CONFIGs under drivers/
-Message-ID: <20080805152609.1119f0b1@hskinnemo-gx745.norway.atmel.com>
-In-Reply-To: <alpine.LFD.1.10.0808031737280.16642@localhost.localdomain>
-References: <alpine.LFD.1.10.0808031737280.16642@localhost.localdomain>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.10; x86_64-pc-linux-gnu)
+	id S1755506AbYHEN2s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Aug 2008 09:28:48 -0400
+Date: Tue, 5 Aug 2008 23:28:39 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: David Miller <davem@davemloft.net>
+Cc: linville@tuxdriver.com, linux-wireless@vger.kernel.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: pull request: wireless-2.6 2008-08-04
+Message-Id: <20080805232839.95235680.sfr@canb.auug.org.au>
+In-Reply-To: <20080805.012814.215633850.davem@davemloft.net>
+References: <20080804193753.GA30345@tuxdriver.com>
+	<20080804.150147.78586437.davem@davemloft.net>
+	<20080805021710.GA21731@tuxdriver.com>
+	<20080805.012814.215633850.davem@davemloft.net>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 05 Aug 2008 13:26:10.0755 (UTC) FILETIME=[D351F930:01C8F6FE]
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Tue__5_Aug_2008_23_28_39_+1000_GoHZK0.xw2FNjiVO"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Robert P. J. Day" <rpjday@crashcourse.ca> wrote:
-> ===== MTD_NAND_ATMEL_ECC_SOFT
-> drivers/mtd/nand/Kconfig:313:config MTD_NAND_ATMEL_ECC_SOFT
+--Signature=_Tue__5_Aug_2008_23_28_39_+1000_GoHZK0.xw2FNjiVO
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-It may be unreferenced, but it behaves as expected. It's part of a set
-of three mutually exclusive choices, so after checking for the two
-others, there's no point checking for the last one.
+Hi David,
 
-Of course, we could apply the patch below ;-)
+On Tue, 05 Aug 2008 01:28:14 -0700 (PDT) David Miller
+<davem@davemloft.net> wrote:
+>
+> From: "John W. Linville" <linville@tuxdriver.com>
+> Date: Mon, 4 Aug 2008 22:17:10 -0400
+>=20
+> > On Mon, Aug 04, 2008 at 03:01:47PM -0700, David Miller wrote:
+> > > I'm holding off on this pull until the list.h changes get so me lkml
+> > > ACKs.
+> >=20
+> > Sure, np.  I created a "no-ath9k" branch in case you are feeling
+> > frisky -- it is the same except for omitting the list.h changes,
+> > the ath5k pci table change, and the new ath9k driver.
+> >=20
+> > 	git://git.kernel.org/pub/scm/linux/kernel/git/linville/wireless-2.6.gi=
+t no-ath9k
+> >=20
+> > Hth!
+>=20
+> Due to the powerpc build failures the list.h stuff causes, I'm going
+             ^^^^^^^
+It was a sparc64 defconfig that failed due to the list.h changes.  The
+powerpc build only failed when I added an include of <linux/bug.h> to
+list.h.
 
-Haavard
+The powerpc compiler got an internal error trying to compile the ath9k
+code - but I don't know if there is anything we can to do to the source
+to work around that.
 
-diff --git a/drivers/mtd/nand/atmel_nand.c b/drivers/mtd/nand/atmel_nand.c
-index 3387e0d..d5775a9 100644
---- a/drivers/mtd/nand/atmel_nand.c
-+++ b/drivers/mtd/nand/atmel_nand.c
-@@ -47,6 +47,10 @@
- #define no_ecc		0
- #endif
- 
-+#ifdef CONFIG_MTD_NAND_ATMEL_ECC_SOFT
-+/* Avoid incessant nagging */
-+#endif
-+
- /* Register access macros */
- #define ecc_readl(add, reg)				\
- 	__raw_readl(add + ATMEL_ECC_##reg)
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Tue__5_Aug_2008_23_28_39_+1000_GoHZK0.xw2FNjiVO
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkiYVYcACgkQjjKRsyhoI8wnmgCcDp5xDwUw81MpySveKaTHWRrN
+Vj4AoJTltUPIFSTYDpV0mYSgP0pmHINU
+=b/De
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__5_Aug_2008_23_28_39_+1000_GoHZK0.xw2FNjiVO--
