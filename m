@@ -1,128 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763219AbYHESwR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762149AbYHES5P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763219AbYHESwR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 14:52:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757364AbYHESwH
+	id S1762149AbYHES5P (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 14:57:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759315AbYHESzL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 14:52:07 -0400
-Received: from astoria.ccjclearline.com ([64.235.106.9]:51746 "EHLO
-	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756581AbYHESwG (ORCPT
+	Tue, 5 Aug 2008 14:55:11 -0400
+Received: from www.church-of-our-saviour.org ([69.25.196.31]:35734 "EHLO
+	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757326AbYHESzK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 14:52:06 -0400
-Date: Tue, 5 Aug 2008 14:50:23 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@crashcourse.ca>
-X-X-Sender: rpjday@localhost.localdomain
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-cc: Andrew Morton <akpm@osdl.org>
-Subject: [PATCH] SOUND: Remove references to dead sound/oss vars
- AEDSP16_{MSS,SBPRO}.
-Message-ID: <alpine.LFD.1.10.0808051444580.15734@localhost.localdomain>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Tue, 5 Aug 2008 14:55:10 -0400
+Date: Tue, 5 Aug 2008 14:54:38 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: "Press, Jonathan" <Jonathan.Press@ca.com>
+Cc: Greg KH <greg@kroah.com>, Arjan van de Ven <arjan@infradead.org>,
+       Eric Paris <eparis@redhat.com>, linux-kernel@vger.kernel.org,
+       malware-list@lists.printk.net, linux-security-module@vger.kernel.org
+Subject: Re: [malware-list] [RFC 0/5] [TALPA] Intro to a
+	linuxinterfaceforon access scanning
+Message-ID: <20080805185438.GA8453@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	"Press, Jonathan" <Jonathan.Press@ca.com>, Greg KH <greg@kroah.com>,
+	Arjan van de Ven <arjan@infradead.org>,
+	Eric Paris <eparis@redhat.com>, linux-kernel@vger.kernel.org,
+	malware-list@lists.printk.net,
+	linux-security-module@vger.kernel.org
+References: <20080805103840.1aaa64a5@infradead.org> <2629CC4E1D22A64593B02C43E85553030480743B@USILMS12.ca.com> <20080805181141.GA10700@kroah.com> <2629CC4E1D22A64593B02C43E85553030480743F@USILMS12.ca.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - crashcourse.ca
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <2629CC4E1D22A64593B02C43E85553030480743F@USILMS12.ca.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Aug 05, 2008 at 02:38:23PM -0400, Press, Jonathan wrote:
+> Is your point that Linux and Unix machines are less vulnerable to
+> viruses?  If so, that's not relevant to my point at all.  A Unix machine
+> can be a carrier, passing infections on to other vulnerable platforms
+> (guess which one).  An enterprise security system sees the entire
+> enterprise as an integrated whole -- not just individual machines with
+> their own separate attributes and no impact on each other at all.
 
-Remove the Kconfig definitions of unused variables AEDSP16_MSS and
-AEDSP16_SBPRO since they're:
+Sure, but if that's the case, you don't need to have a blocking open()
+interface.  Having inotify tell your application that a file
+descriptor that had been opened for writing has been closed
+(IN_CLOSE_WRITE) should be quite sufficient.
 
-1) unused, and
-2) referenced incorrectly anyway.
-
-Signed-off-by: Robert P. J. Day <rpjday@crashcourse.ca>
-
----
-
-  while the sound/oss/Kconfig file defines the variables as
-AEDSP16_MSS and AEDSP16_SBPRO, they're (apparently) referenced thusly
-in aedsp16.c:
-
-#if defined(CONFIG_SOUND_AEDSP16_SBPRO) && defined(CONFIG_SOUND_AEDSP16_MSS)
-#error You have to enable only one of the MSS and SBPRO emulations.
-#endif
-
-in other words, not even spelled correctly.  so either something
-should be fixed or something should be removed.  i'm going with
-removal.
-
-
- sound/oss/Kconfig   |   28 ----------------------------
- sound/oss/aedsp16.c |    8 --------
- 2 files changed, 36 deletions(-)
-
-diff --git a/sound/oss/Kconfig b/sound/oss/Kconfig
-index d4fafb6..906714a 100644
---- a/sound/oss/Kconfig
-+++ b/sound/oss/Kconfig
-@@ -546,34 +546,6 @@ config SC6600_CDROMBASE
- 	  Base I/O port address for the CD-ROM interface of the Audio Excel
- 	  DSP 16 card.
-
--choice
--	prompt "Audio Excel DSP 16"
--	optional
--	depends on SOUND_AEDSP16
--
--config AEDSP16_MSS
--	bool "MSS emulation"
--	depends on SOUND_MSS
--	help
--	  Answer Y if you want your audio card to emulate Microsoft Sound
--	  System. You should then say Y to "Microsoft Sound System support"
--	  and say N to "Audio Excel DSP 16 (SBPro emulation)".
--
--config AEDSP16_SBPRO
--	bool "SBPro emulation"
--	depends on SOUND_SB
--	help
--	  Answer Y if you want your audio card to emulate Sound Blaster Pro.
--	  You should then say Y to "100% Sound Blaster compatibles
--	  (SB16/32/64, ESS, Jazz16) support" and N to "Audio Excel DSP 16 (MSS
--	  emulation)".
--
--	  If you compile the driver into the kernel, you have to add
--	  "aedsp16=<io>,<irq>,<dma>,<mssio>,<mpuio>,<mouirq>" to the kernel
--	  command line.
--
--endchoice
--
- config SOUND_VIDC
- 	tristate "VIDC 16-bit sound"
- 	depends on ARM && (ARCH_ACORN || ARCH_CLPS7500)
-diff --git a/sound/oss/aedsp16.c b/sound/oss/aedsp16.c
-index 51e1fde..a0274f3 100644
---- a/sound/oss/aedsp16.c
-+++ b/sound/oss/aedsp16.c
-@@ -29,14 +29,6 @@
- #include "sound_config.h"
-
- /*
-- * Sanity checks
-- */
--
--#if defined(CONFIG_SOUND_AEDSP16_SBPRO) && defined(CONFIG_SOUND_AEDSP16_MSS)
--#error You have to enable only one of the MSS and SBPRO emulations.
--#endif
--
--/*
-
-    READ THIS
-
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry:
-    Have classroom, will lecture.
-
-http://crashcourse.ca                          Waterloo, Ontario, CANADA
-========================================================================
+						- Ted
