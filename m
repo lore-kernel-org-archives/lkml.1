@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763664AbYHEUPd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764072AbYHEUPy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763664AbYHEUPd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 16:15:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763558AbYHEUO3
+	id S1764072AbYHEUPy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 16:15:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763585AbYHEUOb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 16:14:29 -0400
-Received: from saraswathi.solana.com ([198.99.130.12]:48071 "EHLO
+	Tue, 5 Aug 2008 16:14:31 -0400
+Received: from saraswathi.solana.com ([198.99.130.12]:48072 "EHLO
 	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761998AbYHEUO2 (ORCPT
+	with ESMTP id S1758710AbYHEUOa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 16:14:28 -0400
-Date: Tue, 5 Aug 2008 16:14:05 -0400
+	Tue, 5 Aug 2008 16:14:30 -0400
+Date: Tue, 5 Aug 2008 16:14:06 -0400
 From: Jeff Dike <jdike@addtoit.com>
 To: stable@kernel.org
 Cc: LKML <linux-kernel@vger.kernel.org>,
        uml-devel <user-mode-linux-devel@lists.sourceforge.net>
-Subject: [PATCH 4/14] uml: track and make up lost ticks
-Message-ID: <20080805201405.GA11784@c2.user-mode-linux.org>
+Subject: [PATCH 6/14] uml: deal with host time going backwards
+Message-ID: <20080805201406.GA11786@c2.user-mode-linux.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -25,159 +25,46 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From fe2cc53ee013a4d4d0317d418e7019fe6533a5a8
-Alarm delivery could be noticably late in the !CONFIG_NOHZ case because lost
-ticks weren't being taken into account.  This is now treated more carefully,
-with the time between ticks being calculated and the appropriate number of
-ticks delivered to the timekeeping system.
+>From 06e1e4ffbd1932e288839b3140cda6b8141eb684
+
+Protection against the host's time going backwards (eg, ntp activity on
+the host) by keeping track of the time at the last tick and if it's
+greater than the current time, keep time stopped until the host catches
+up.
 
 Cc: Nix <nix@esperi.org.uk>
 Signed-off-by: Jeff Dike <jdike@linux.intel.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 ---
- arch/um/include/process.h |    4 +-
- arch/um/os-Linux/signal.c |    1 +
- arch/um/os-Linux/time.c   |   54 +++++++++++++++++++++++++++++++++++++++++---
- 3 files changed, 53 insertions(+), 6 deletions(-)
+ arch/um/os-Linux/time.c |    7 +++++++
+ 1 files changed, 7 insertions(+), 0 deletions(-)
 
-diff --git a/arch/um/include/process.h b/arch/um/include/process.h
-index 5af9157..348f8a3 100644
---- a/arch/um/include/process.h
-+++ b/arch/um/include/process.h
-@@ -8,8 +8,8 @@
- 
- #include <signal.h>
- 
--extern void sig_handler(int sig, struct sigcontext sc);
--extern void alarm_handler(int sig, struct sigcontext sc);
-+extern void sig_handler(int sig, struct sigcontext *sc);
-+extern void alarm_handler(int sig, struct sigcontext *sc);
- 
- #endif
- 
-diff --git a/arch/um/os-Linux/signal.c b/arch/um/os-Linux/signal.c
-index 3f1694b..5aade60 100644
---- a/arch/um/os-Linux/signal.c
-+++ b/arch/um/os-Linux/signal.c
-@@ -12,6 +12,7 @@
- #include "as-layout.h"
- #include "kern_util.h"
- #include "os.h"
-+#include "process.h"
- #include "sysdep/barrier.h"
- #include "sysdep/sigcontext.h"
- #include "user.h"
 diff --git a/arch/um/os-Linux/time.c b/arch/um/os-Linux/time.c
-index e492805..bee98f4 100644
+index bee98f4..dec5678 100644
 --- a/arch/um/os-Linux/time.c
 +++ b/arch/um/os-Linux/time.c
-@@ -9,7 +9,9 @@
- #include <time.h>
- #include <sys/time.h>
- #include "kern_constants.h"
-+#include "kern_util.h"
- #include "os.h"
-+#include "process.h"
- #include "user.h"
+@@ -106,6 +106,10 @@ static void deliver_alarm(void)
+ 	unsigned long long this_tick = os_nsecs();
+ 	int one_tick = UM_NSEC_PER_SEC / UM_HZ;
  
- int set_interval(void)
-@@ -58,12 +60,17 @@ static inline long long timeval_to_ns(const struct timeval *tv)
- long long disable_timer(void)
- {
- 	struct itimerval time = ((struct itimerval) { { 0, 0 }, { 0, 0 } });
-+	int remain, max = UM_NSEC_PER_SEC / UM_HZ;
++	/* Protection against the host's time going backwards */
++	if ((last_tick != 0) && (this_tick < last_tick))
++		this_tick = last_tick;
++
+ 	if (last_tick == 0)
+ 		last_tick = this_tick - one_tick;
  
- 	if (setitimer(ITIMER_VIRTUAL, &time, &time) < 0)
- 		printk(UM_KERN_ERR "disable_timer - setitimer failed, "
- 		       "errno = %d\n", errno);
- 
--	return timeval_to_ns(&time.it_value);
-+	remain = timeval_to_ns(&time.it_value);
-+	if (remain > max)
-+		remain = max;
-+
-+	return remain;
- }
- 
- long long os_nsecs(void)
-@@ -79,7 +86,44 @@ static int after_sleep_interval(struct timespec *ts)
- {
- 	return 0;
- }
-+
-+static void deliver_alarm(void)
-+{
-+	alarm_handler(SIGVTALRM, NULL);
-+}
-+
-+static unsigned long long sleep_time(unsigned long long nsecs)
-+{
-+	return nsecs;
-+}
-+
- #else
-+unsigned long long last_tick;
-+unsigned long long skew;
-+
-+static void deliver_alarm(void)
-+{
-+	unsigned long long this_tick = os_nsecs();
-+	int one_tick = UM_NSEC_PER_SEC / UM_HZ;
-+
-+	if (last_tick == 0)
-+		last_tick = this_tick - one_tick;
-+
-+	skew += this_tick - last_tick;
-+
-+	while (skew >= one_tick) {
-+		alarm_handler(SIGVTALRM, NULL);
-+		skew -= one_tick;
-+	}
-+
-+	last_tick = this_tick;
-+}
-+
-+static unsigned long long sleep_time(unsigned long long nsecs)
-+{
-+	return nsecs > skew ? nsecs - skew : 0;
-+}
-+
- static inline long long timespec_to_us(const struct timespec *ts)
- {
- 	return ((long long) ts->tv_sec * UM_USEC_PER_SEC) +
-@@ -102,6 +146,8 @@ static int after_sleep_interval(struct timespec *ts)
- 	 */
- 	if (start_usecs > usec)
+@@ -148,6 +152,9 @@ static int after_sleep_interval(struct timespec *ts)
  		start_usecs = usec;
+ 
+ 	start_usecs -= skew / UM_NSEC_PER_USEC;
++	if (start_usecs < 0)
++		start_usecs = 0;
 +
-+	start_usecs -= skew / UM_NSEC_PER_USEC;
  	tv = ((struct timeval) { .tv_sec  = start_usecs / UM_USEC_PER_SEC,
  				 .tv_usec = start_usecs % UM_USEC_PER_SEC });
  	interval = ((struct itimerval) { { 0, usec }, tv });
-@@ -113,8 +159,6 @@ static int after_sleep_interval(struct timespec *ts)
- }
- #endif
- 
--extern void alarm_handler(int sig, struct sigcontext *sc);
--
- void idle_sleep(unsigned long long nsecs)
- {
- 	struct timespec ts;
-@@ -126,10 +170,12 @@ void idle_sleep(unsigned long long nsecs)
- 	 */
- 	if (nsecs == 0)
- 		nsecs = UM_NSEC_PER_SEC / UM_HZ;
-+
-+	nsecs = sleep_time(nsecs);
- 	ts = ((struct timespec) { .tv_sec	= nsecs / UM_NSEC_PER_SEC,
- 				  .tv_nsec	= nsecs % UM_NSEC_PER_SEC });
- 
- 	if (nanosleep(&ts, &ts) == 0)
--		alarm_handler(SIGVTALRM, NULL);
-+		deliver_alarm();
- 	after_sleep_interval(&ts);
- }
 -- 
 1.5.5.1
 
