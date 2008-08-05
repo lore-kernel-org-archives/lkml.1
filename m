@@ -1,149 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756595AbYHEEee@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754175AbYHEEna@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756595AbYHEEee (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 00:34:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751981AbYHEEe0
+	id S1754175AbYHEEna (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 00:43:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751338AbYHEEnU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 00:34:26 -0400
-Received: from ozlabs.org ([203.10.76.45]:44042 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751613AbYHEEeZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 00:34:25 -0400
-Subject: Re: nfsd, v4: oops in find_acceptable_alias, ppc32 Linux,
-	post-2.6.27-rc1
-From: Michael Ellerman <michael@ellerman.id.au>
-Reply-To: michael@ellerman.id.au
-To: Paul Collins <paul@burly.ondioline.org>
-Cc: "J. Bruce Fields" <bfields@fieldses.org>, Neil Brown <neilb@suse.de>,
-       linuxppc-dev@ozlabs.org, nfsv4@linux-nfs.org,
+	Tue, 5 Aug 2008 00:43:20 -0400
+Received: from smtp119.mail.mud.yahoo.com ([209.191.84.76]:33242 "HELO
+	smtp119.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751217AbYHEEnT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Aug 2008 00:43:19 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=eQFGpZOJZegMAxqJD2h/MDgUlbv4UCWHgJpQiddVrN9jeVTqBJP84zu9rf4RT/gQOSso1zP/V8dI/Yvl0+cdb+03JOpBiVUrsA/WrTXSMLji45eURnUBYwixBNMzdPSdpDzhExGEf6dsX0hhFbS94pQfzFkVoRIu/VI31UDKcqM=  ;
+X-YMail-OSG: CgSWX7kVM1ngKoVP2gPwYyW9UfbVYD0LQukpU_jQFmIN_PIGuoyIbKK9JpNlBM8jFi7T0PEALR5idBHvqY.NY3Xw44vBidhCPUk_q3.bMzeWaETL1z.tegPLZPdA_CnQHHk-
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Keith Packard <keithp@keithp.com>
+Subject: Re: [PATCH] Export shmem_file_setup and shmem_getpage for DRM-GEM
+Date: Tue, 5 Aug 2008 14:43:11 +1000
+User-Agent: KMail/1.9.5
+Cc: Christoph Hellwig <hch@infradead.org>, Eric Anholt <eric@anholt.net>,
        linux-kernel@vger.kernel.org
-In-Reply-To: <8763qg5don.fsf@burly.wgtn.ondioline.org>
-References: <20080802184554.GB715@fieldses.org>
-	 <87abfvm4cc.fsf@burly.wgtn.ondioline.org>
-	 <877iayy4qc.fsf@burly.wgtn.ondioline.org>
-	 <18581.40960.737792.454035@notabene.brown>
-	 <87r696l1yo.fsf@burly.wgtn.ondioline.org>
-	 <18582.32935.501672.689845@notabene.brown>
-	 <87fxpll5zq.fsf@burly.wgtn.ondioline.org>
-	 <87y73dcd60.fsf@burly.wgtn.ondioline.org>
-	 <1217860597.12535.2.camel@localhost>
-	 <87hca05ws4.fsf@burly.wgtn.ondioline.org>
-	 <20080804205908.GA29890@fieldses.org> <1217895418.7951.7.camel@localhost>
-	 <8763qg5don.fsf@burly.wgtn.ondioline.org>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-HuoXUTJGldHexIr3LpT3"
-Date: Tue, 05 Aug 2008 04:34:22 +0000
-Message-Id: <1217910862.7951.22.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+References: <1217573919-7496-1-git-send-email-eric@anholt.net> <200808041902.23970.nickpiggin@yahoo.com.au> <1217887116.24714.118.camel@koto.keithp.com>
+In-Reply-To: <1217887116.24714.118.camel@koto.keithp.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200808051443.11858.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
---=-HuoXUTJGldHexIr3LpT3
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
-
-On Tue, 2008-08-05 at 15:43 +1200, Paul Collins wrote:
-> Michael Ellerman <michael@ellerman.id.au> writes:
->=20
-> > On Mon, 2008-08-04 at 16:59 -0400, J. Bruce Fields wrote:
-> >> On Tue, Aug 05, 2008 at 08:51:23AM +1200, Paul Collins wrote:
-> >> > Michael Ellerman <michael@ellerman.id.au> writes:
-> >> >=20
-> >> > > On Mon, 2008-08-04 at 22:00 +1200, Paul Collins wrote:
-> >> > >> Paul Collins <paul@burly.ondioline.org> writes:
-> >> > >>=20
-> >> > >> > Neil Brown <neilb@suse.de> writes:
-> >> > >> >> Could you try removing the 'static' declaration for nfsd_accep=
-table
-> >> > >> >> and recompile?
-> >> > >> >> Or maybe try a different compiler?
-> >> > >> >
-> >> > >> > I will give these a try this evening.
-> >> > >>=20
-> >> > >> I built myself a nice new cross compiler:
-> >> > >>=20
-> >> > >>         powerpc-linux-gnu-gcc-4.1 (GCC) 4.1.3 20080623 (prereleas=
-e) (Debian 4.1.2-23)
-> >> > >>=20
-> >> > >> and rebuilt 94ad374a0751f40d25e22e036c37f7263569d24c.  Running th=
-at on
-> >> > >> the server and 2.6.26 on the client, I got yet another Oops.  Thi=
-s one
-> >> > >> locked the machine up pretty good, so all I have is a picture:
-> >> > >>=20
-> >> > >> http://ondioline.org/~paul/DSCN1608.JPG
-> >> > >
-> >> > > Wow.
-> >> > >
-> >> > > Can you try building a kernel on the server? ie. not over NFS.
-> >> >=20
-> >> > Built kernels on the server with native gcc 4.2.4 and 4.3.1 and repe=
-ated
-> >> > the build test.
-> >> =20
-> >> But the build test itself was over nfs?  (And you can't reproduce the
-> >> same problem without nfs?)
+On Tuesday 05 August 2008 07:58, Keith Packard wrote:
+> On Mon, 2008-08-04 at 19:02 +1000, Nick Piggin wrote:
+> > > I suppose we could have user space allocate the shmem file (either via
+> > > tmpfs or sysv ipc). tmpfs suffers from the maxfd issue, while sysv ipc
+> > > runs up against the SHMMAX value.
 > >
-> > Yeah, I'm not clear on that either. What I was aiming at was can you ge=
-t
-> > it to oops somewhere else by not building over NFS - in which case we
-> > can rule NFS (more or less) out.
->=20
-> I think may be able to rule NFS out now.  I just got this Oops when Xorg
-> started on boot.
+> > This is how I'd suggested it work as well. I think a little bit
+> > more effort should be spent looking at making this work.
+>
+> Well, I've spent a day thinking about using existing user-space APIs to
+> get at shmem files. While it's nice that we've discovered a
+> filesystem-independent mechanism to pin file pages, we haven't found
+> anything similar for creating the files. In particular, what I want is:
+>
+>  1) Anonymous files backed by swap
+>  2) Freed when the last process using them exits
+>  3) That never appear in the file system
+>  4) Do not consume a low FD (yeah, I know, rewrite the desktop)
+>
+> So, what I could do is
+>
+> 	char	template[] = "/dev/shm/drm-XXXXXX";
+> 	int	fd;
+> 	fd = mkstemp (template);
+> 	unlink (template);
+> 	ftruncate (fd, size)
+> 	object = drm_create_an_object_for_a_file (fd);
+> 	close (fd);
+>
+> While I haven't written any code yet, this should work and will even be
+> compatible with my current user-space API. I have to create a DRM object
+> for the file in any case, and so I don't need to hold onto the fd.
+> Releasing the fd also eliminates any ulimit issues.
+>
+> The drm_create_an_object_for_a_file call could return another fd. But,
+> note that the original shmem fd has no real value to the application in
+> this case.
+>
+> I can imagine other cases where mapping non-shmem files would make sense
+> though, in particular it's fairly easy to envision mapping an image file
+> to the GTT and having the graphics process decode and display it without
+> any additional copies. I think this demonstrates the potential utility
+> of the general file mapping operation.
+>
+> But, I'd like to have you reconsider whether it makes sense for user
+> space to go through the above dance to create anonymous shared objects
+> when the kernel already supports precisely the desired semantics and
+> even exposes them to the ipc/shm implementation.
 
-Cool, that looks fairly convincing.
+In my opinion, doing this little song and dance (which is a few lines
+of quite well defined APIs, btw) in userspace is preferable to adding
+a single line or exporting a single function in kernel space. Unless
+there is a better reason than eliminating a few lines of userspace code.
 
-> In case anyone wants to disassemble it, I've uploaded the kernel to
-> http://ondioline.org/~paul/vmlinux-2.6.27-rc1-00158-g643fbd8 and the
-> config to http://ondioline.org/~paul/config-2.6.27-rc1-00158-g643fbd8
->=20
-> I've rebuilt a whole bunch of times in the course of this little
-> project, but the all four Oopses in this message are from the very
-> vmlinux linked above.
->=20
-> I have a couple of patches applied locally (a console font and a
-> Bluetooth HID quirk), so this is really Linus revision
-> 94ad374a0751f40d25e22e036c37f7263569d24c.
+I'm absolutely not against exporting a nice API for a swappable, object
+based memory allocator using ipc or shm to the wider kernel (with a nice
+API rather than just using shmem functions directly of course). But the
+fact that most or all of this seems to be able to be done in userspace
+just tells me that's where it should be prototyped first. It adds
+nothing to maintainence costs of the kernel code, and might actually be
+helpful to show some shortcomings of our user API definition or
+implementation.
 
-And you're _sure_ none of them has a "break-everything" hunk in it? :)
-
-
-I see you have FTRACE enabled. That's new and could potentially bugger
-things up without the compiler knowing, so can you turn that off.
-
-And can you enable CONFIG_CODE_PATCHING_SELFTEST and
-CONFIG_FTR_FIXUP_SELFTEST, that will enable tests of some code I changed
-that /could/ (maybe) cause random blow ups.
-
-Also, how old is the machine? Any chance you're just seeing random
-memory corruption?
-
-cheers
-
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-HuoXUTJGldHexIr3LpT3
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBIl9hOdSjSd0sB4dIRAhMaAKCWtT08+KJPnqvECqndEc2RyPl4SACeM+E0
-5C1btBZtusKye84h0OVH7tY=
-=tfPj
------END PGP SIGNATURE-----
-
---=-HuoXUTJGldHexIr3LpT3--
-
+In the worst case it completely fails, the effort will still show much
+better how and why it needs to be done in kernel.
