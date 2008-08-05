@@ -1,91 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764209AbYHEUiz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764374AbYHEUkA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764209AbYHEUiz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 16:38:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760692AbYHEUiq
+	id S1764374AbYHEUkA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 16:40:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762319AbYHEUjw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 16:38:46 -0400
-Received: from casper.infradead.org ([85.118.1.10]:60787 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755585AbYHEUip (ORCPT
+	Tue, 5 Aug 2008 16:39:52 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:35782 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757222AbYHEUjv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 16:38:45 -0400
-Date: Tue, 5 Aug 2008 13:38:32 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: "Press, Jonathan" <Jonathan.Press@ca.com>
-Cc: "Greg KH" <greg@kroah.com>, "Eric Paris" <eparis@redhat.com>,
-       <linux-kernel@vger.kernel.org>, <malware-list@lists.printk.net>,
-       <linux-security-module@vger.kernel.org>
-Subject: Re: [malware-list] [RFC 0/5] [TALPA] Intro to a linuxinterfaceforon
- access scanning
-Message-ID: <20080805133832.220d71c7@infradead.org>
-In-Reply-To: <2629CC4E1D22A64593B02C43E855530304AE4AD9@USILMS12.ca.com>
-References: <20080805112747.2c3c4650@infradead.org>
-	<2629CC4E1D22A64593B02C43E85553030480743E@USILMS12.ca.com>
-	<20080805183845.GA11375@kroah.com>
-	<2629CC4E1D22A64593B02C43E855530304AE4AD9@USILMS12.ca.com>
-Organization: Intel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
+	Tue, 5 Aug 2008 16:39:51 -0400
+Date: Tue, 5 Aug 2008 13:32:16 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Gerald Schaefer <gerald.schaefer@de.ibm.com>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       linux-s390@vger.kernel.org, schwidefsky@de.ibm.com,
+       heiko.carstens@de.ibm.com, nacc@us.ibm.com, agl@us.ibm.com
+Subject: Re: [PATCH] hugetlb: call arch_prepare_hugepage() for surplus pages
+Message-Id: <20080805133216.cc5c14cf.akpm@linux-foundation.org>
+In-Reply-To: <1217950147.5032.15.camel@localhost.localdomain>
+References: <1217950147.5032.15.camel@localhost.localdomain>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 5 Aug 2008 16:15:32 -0400
-"Press, Jonathan" <Jonathan.Press@ca.com> wrote:
+On Tue, 05 Aug 2008 17:29:07 +0200
+Gerald Schaefer <gerald.schaefer@de.ibm.com> wrote:
 
+> From: Gerald Schaefer <gerald.schaefer@de.ibm.com>
 > 
-> > Also, it seems to me that for my purposes, close is discrete enough.
-> It
-> > tells me that there is now something out there that should be looked
-> at.
+> The s390 software large page emulation implements shared page tables
+> by using page->index of the first tail page from a compound large page
+> to store page table information. This is set up in arch_prepare_hugepage(),
+> which is called from alloc_fresh_huge_page_node().
 > 
-> So, if you hook glibc to catch all calls to close, is that sufficient?
+> A similar call to arch_prepare_hugepage() is missing for surplus large
+> pages that are allocated in alloc_buddy_huge_page(), which breaks the
+> software emulation mode for (surplus) large pages on s390. This patch
+> adds the missing call to arch_prepare_hugepage(). It will have no effect
+> on other architectures where arch_prepare_hugepage() is a nop.
 > 
-> [JON PRESS]  Let's see...I'm going to use inotify for some events,
-> glibc for others, and this API for the rest.  Would you really want
-> to write an application like that?
+> Acked-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
+> Signed-off-by: Gerald Schaefer <gerald.schaefer@de.ibm.com>
+> ---
+> 
+>  mm/hugetlb.c |    7 ++++++-
+>  1 file changed, 6 insertions(+), 1 deletion(-)
+> 
+> Index: linux/mm/hugetlb.c
+> ===================================================================
+> --- linux.orig/mm/hugetlb.c
+> +++ linux/mm/hugetlb.c
+> @@ -565,7 +565,7 @@ static struct page *alloc_fresh_huge_pag
+>  		huge_page_order(h));
+>  	if (page) {
+>  		if (arch_prepare_hugepage(page)) {
+> -			__free_pages(page, HUGETLB_PAGE_ORDER);
+> +			__free_pages(page, huge_page_order(h));
 
-so you have to do 2 cases:
+As Nick pointed out, this is an unrelated bugfix.  I changelogged it. 
+Really it should have been two patches.
 
-1) inotify to notice files changing
- (no need to hook glibc for that, and no need to hook close() since you
- already get a notify for the change)
+>  			return NULL;
+>  		}
+>  		prep_new_huge_page(h, page, nid);
+> @@ -665,6 +665,11 @@ static struct page *alloc_buddy_huge_pag
+>  					__GFP_REPEAT|__GFP_NOWARN,
+>  					huge_page_order(h));
+>  
+> +	if (page && arch_prepare_hugepage(page)) {
+> +		__free_pages(page, huge_page_order(h));
+> +		return NULL;
+> +	}
+> +
+>  	spin_lock(&hugetlb_lock);
+>  	if (page) {
+>  		/*
 
-This is to catch the *creation* of "bad" content (say a browser saving a
-download or somesuch)
+afaict the second fix is needed in 2.6.26.x (but not 2.6.25.x), but
+this patch is not applicable to 2.6.26.x.
 
-By nature this is asynchronous for both performance and "what could you
-do if" reasons.
-(but so would the close() scan be, and again please explain how you
-deal with write-to-mmap-after-close)
+So if you want this fix to be backported into 2.6.26.x, please send a
+suitable version of it to stable@kernel.org.
 
-2) A synchronous check on open() or exec()
-
-This is to prevent *use* of "bad" content, either by an application
-opening a bad file, or by executing a "bad" program. 
-
-For neither do you need to hook the kernel; ld preload works great for
-this. 
-
-This does assume that at some point you have a transition from "ok"
-program to the first time you run a "bad" one (via exec or open); and
-that you catch it at that point.
-
-I don't yet buy the argument "but what if the virus corrupted your ld
-preload", because if it can do that your own virus scanner is also
-corrupted.
-
-
-Can you explain what gap is left after you do these two things?
-
-
-
--- 
-If you want to reach me at my work email, use arjan@linux.intel.com
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
