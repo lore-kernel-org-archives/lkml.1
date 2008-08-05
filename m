@@ -1,53 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761575AbYHEM1t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761900AbYHEM3p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761575AbYHEM1t (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 08:27:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759895AbYHEM1k
+	id S1761900AbYHEM3p (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 08:29:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756997AbYHEM3f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 08:27:40 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:47813 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760315AbYHEM1i (ORCPT
+	Tue, 5 Aug 2008 08:29:35 -0400
+Received: from mail0.lsil.com ([147.145.40.20]:44583 "EHLO mail0.lsil.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755991AbYHEM3d convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 08:27:38 -0400
-Date: Tue, 5 Aug 2008 06:26:58 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Simon Horman <horms@verge.net.au>
-Cc: Sven Wegener <sven.wegener@stealer.net>,
-       Michael Ellerman <michael@ellerman.id.au>, linux-kernel@vger.kernel.org,
-       linux-pci@vger.kernel.org, Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: [patch] PCI: check the return value of device_create_bin_file() in pci_create_bus()
-Message-ID: <20080805122639.GP26461@parisc-linux.org>
-References: <20080805101605.GA19382@verge.net.au> <1217932416.7758.4.camel@localhost> <20080805101605.GA19382@verge.net.au> <alpine.LNX.1.10.0808051224350.5671@titan.stealer.net> <20080805110006.GA13409@verge.net.au> <20080805111406.GA13899@verge.net.au> <20080805112814.GO26461@parisc-linux.org> <20080805121531.GA29763@verge.net.au>
+	Tue, 5 Aug 2008 08:29:33 -0400
+From: "Yang, Bo" <Bo.Yang@lsi.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: "'James.Bottomley@SteelEye.com'" <James.Bottomley@SteelEye.com>,
+       "'linux-scsi@vger.kernel.org'" <linux-scsi@vger.kernel.org>,
+       "'akpm@osdl.org'" <akpm@linuxfoundation.org>,
+       "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>,
+       "Patro, Sumant" <Sumant.Patro@lsi.com>,
+       "Austria, Winston" <Winston.Austria@lsi.com>,
+       "poswald@novell.com" <poswald@novell.com>
+Date: Tue, 5 Aug 2008 06:27:10 -0600
+Subject: RE: [PATCH 1/4] scsi: megaraid_sas - Add the dumy readl to force
+ PCI flush
+Thread-Topic: [PATCH 1/4] scsi: megaraid_sas - Add the dumy readl to force
+ PCI flush
+Thread-Index: Acj2lAl3zUjjF7/dTTmVgOc+JmEIDQAYovZJ
+Message-ID: <4B6A08C587958942AA3002690DD4F8C31AADD4C1@cosmail02.lsi.com>
+References: <FFD04EB4FBD32E4B929B6CFDEDA6AA0D632A9F@NAMAIL1.ad.lsil.com>
+	<4B6A08C587958942AA3002690DD4F8C31B08093F@cosmail02.lsi.com>,<20080804174128.a0877c27.akpm@linux-foundation.org>
+In-Reply-To: <20080804174128.a0877c27.akpm@linux-foundation.org>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080805121531.GA29763@verge.net.au>
-User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 05, 2008 at 10:15:32PM +1000, Simon Horman wrote:
-> On Tue, Aug 05, 2008 at 05:28:14AM -0600, Matthew Wilcox wrote:
-> > Yes, but you're essentially saying here that if I can't create a couple
-> > of poxy sysfs files, I can't have this PCI bus at all?  This seems like
-> > a bad decision to me.  I'd rather have a PCI bus without the files than
-> > no PCI bus at all.  By all means, we should whinge mightily if we can't
-> > create the files so the sysadmin has a chance of figuring out why things
-> > aren't quite working right, but I might have my root filesystem on a
-> > device on that PCI bus.
-> 
-> Are you suggesting just making pci_create_bus() have a big winge
-> using printk() but returning void regardless of what happens?
-> That sounds fine to me, though I guess it would also need to unwind
-> if the first call to device_create_bin_file() succeeds but the second
-> one doesn't.
+Thanks Andrew.
 
-Sounds like the right course of action to me.
+Bo Yang
 
--- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+________________________________________
+From: Andrew Morton [akpm@linux-foundation.org]
+Sent: Monday, August 04, 2008 8:41 PM
+To: Yang, Bo
+Cc: 'James.Bottomley@SteelEye.com'; 'linux-scsi@vger.kernel.org'; 'akpm@osdl.org'; 'linux-kernel@vger.kernel.org'; Patro, Sumant; Austria, Winston; poswald@novell.com
+Subject: Re: [PATCH 1/4] scsi: megaraid_sas - Add the dumy readl to force PCI flush
+
+On Fri, 1 Aug 2008 10:19:07 -0600 "Yang, Bo" <Bo.Yang@lsi.com> wrote:
+
+> MegaRAID SAS Driver get unexpected Interrupt.  Add the dumy readl to force PCI flush will fix this issue.
+>
+> Signed-off-by Bo Yang<bo.yang@lsi.com>
+>
+> ---
+> drivers/scsi/megaraid/megaraid_sas.c |    6 ++++++
+> 1 files changed, 6 insertions(+)
+>
+> diff -rupN linux-2.6.28_orig/drivers/scsi/megaraid/megaraid_sas.c linux-2.6.28_new/drivers/scsi/megaraid/megaraid_sas.c
+> --- linux-2.6.28_orig/drivers/scsi/megaraid/megaraid_sas.c      2008-07-31 12:00:58.000000000 -0400
+> +++ linux-2.6.28_new/drivers/scsi/megaraid/megaraid_sas.c       2008-07-31 12:30:35.000000000 -0400
+> @@ -198,6 +198,9 @@ megasas_clear_intr_xscale(struct megasas
+>          */
+>         writel(status, &regs->outbound_intr_status);
+>
+> +       /* Dummy readl to force pci flush */
+> +       readl(&regs->outbound_intr_status);
+> +
+>         return 0;
+>  }
+>
+> @@ -293,6 +296,9 @@ megasas_clear_intr_ppc(struct megasas_re
+>          */
+>         writel(status, &regs->outbound_doorbell_clear);
+>
+> +       /* Dummy readl to force pci flush */
+> +       readl(&regs->outbound_doorbell_clear);
+> +
+>         return 0;
+>  }
+>  /**
+
+These patches all had their tabs replaced with spaces.  I fixed them up.
+
+Please always run checkpatch on all patches.  checkpatch found this:
+
+ERROR: Macros with complex values should be enclosed in parenthesis
+#182: FILE: drivers/scsi/megaraid/megaraid_sas.h:586:
++#define MFI_GEN2_ENABLE_INTERRUPT_MASK         0x00000001 | 0x00000004
+
+which is a potential source of bugs.  I queued a patch to fix that also.
