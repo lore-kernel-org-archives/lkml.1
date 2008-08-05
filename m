@@ -1,85 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762953AbYHEDEX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759727AbYHEDEo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762953AbYHEDEX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 23:04:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758651AbYHEDEI
+	id S1759727AbYHEDEo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 23:04:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763041AbYHEDE2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 23:04:08 -0400
-Received: from smtp113.mail.mud.yahoo.com ([209.191.84.66]:21262 "HELO
-	smtp113.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1758935AbYHEDEF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 23:04:05 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=kxEAtNZNXft+U4W/i6ii3xCmQB+qkpwivYqNmiFUSfHznyyw2GFVWH0JqnYM+OaxoqBkeQJSX6wWlAFYcTC9U7VPMzaGb6pOsz+K0NzxEsS4JWfMAbuouofaxrAhrYSgtDiIUv0WtShs8gl+oJQc33kXUZBYX9qCFkVgk2bJZso=  ;
-X-YMail-OSG: Xk6kedAVM1mqNzfQ6r4dHIb56RPjRlRdUylbaZ6nZCDDXeb1FHMe1loCRdnu2doQawEaRZnzH1oeoT_2Nknoio0w3SEXWIiAiBZISxRvOlwgB0nGhSEy4pwCPBOE4BWxVPY-
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Jamie Lokier <jamie@shareable.org>, mtk.manpages@gmail.com
-Subject: Re: [patch v3] splice: fix race with page invalidation
-Date: Tue, 5 Aug 2008 12:57:12 +1000
-User-Agent: KMail/1.9.5
-Cc: Miklos Szeredi <miklos@szeredi.hu>, torvalds@linux-foundation.org,
-       jens.axboe@oracle.com, akpm@linux-foundation.org,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-References: <E1KO8DV-0004E4-6H@pomaz-ex.szeredi.hu> <200808021426.50436.nickpiggin@yahoo.com.au> <20080804152949.GH18868@shareable.org>
-In-Reply-To: <20080804152949.GH18868@shareable.org>
+	Mon, 4 Aug 2008 23:04:28 -0400
+Received: from c60.cesmail.net ([216.154.195.49]:59631 "EHLO c60.cesmail.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753505AbYHEDE0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Aug 2008 23:04:26 -0400
+Message-ID: <20080804230424.26ghqn81s0480ogk-cebfxv@webmail.spamcop.net>
+Date: Mon, 04 Aug 2008 23:04:24 -0400
+From: Pavel Roskin <proski@gnu.org>
+To: "John W. Linville" <linville@tuxdriver.com>
+Cc: David Miller <davem@davemloft.net>, linux-wireless@vger.kernel.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: pull request: wireless-2.6 2008-08-04
+References: <20080804193753.GA30345@tuxdriver.com>
+	<20080804.150147.78586437.davem@davemloft.net>
+	<20080805021710.GA21731@tuxdriver.com>
+In-Reply-To: <20080805021710.GA21731@tuxdriver.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	charset=ISO-8859-1;
+	DelSp="Yes";
+	format="flowed"
 Content-Disposition: inline
-Message-Id: <200808051257.12801.nickpiggin@yahoo.com.au>
+Content-Transfer-Encoding: 7bit
+User-Agent: Internet Messaging Program (IMP) H3 (4.1.4)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 05 August 2008 01:29, Jamie Lokier wrote:
-> Nick Piggin wrote:
-> > On Saturday 02 August 2008 04:28, Miklos Szeredi wrote:
-> > > On Fri, 1 Aug 2008, Nick Piggin wrote:
-> > > > Well, a) it probably makes sense in that case to provide another mode
-> > > > of operation which fills the data synchronously from the sender and
-> > > > copys it to the pipe (although the sender might just use read/write)
-> > > > And b) we could *also* look at clearing PG_uptodate as an
-> > > > optimisation iff that is found to help.
-> > >
-> > > IMO it's not worth it to complicate the API just for the sake of
-> > > correctness in the so-very-rare read error case.  Users of the splice
-> > > API will simply ignore this requirement, because things will work fine
-> > > on ext3 and friends, and will break only rarely on NFS and FUSE.
-> > >
-> > > So I think it's much better to make the API simple: invalid pages are
-> > > OK, and for I/O errors we return -EIO on the pipe.  It's not 100%
-> > > correct, but all in all it will result in less buggy programs.
-> >
-> > That's true, but I hate how we always (in the VM, at least) just brush
-> > error handling under the carpet because it is too hard :(
-> >
-> > I guess your patch is OK, though. I don't see any reasons it could cause
-> > problems...
->
-> At least, if there are situations where the data received is not what
-> a common sense programmer would expect (e.g. blocks of zeros, data
-> from an unexpected time in syscall sequence, or something, or just
-> "reliable except with FUSE and NFS"), please ensure it's documented in
-> splice.txt or wherever.
+Quoting "John W. Linville" <linville@tuxdriver.com>:
 
-Not quite true. Many filesystems can return -EIO, and truncate can
-partially zero pages.
+> Sure, np.  I created a "no-ath9k" branch in case you are feeling
+> frisky -- it is the same except for omitting the list.h changes,
+> the ath5k pci table change, and the new ath9k driver.
 
-Basically the man page should note that until the splice API is
-improved, then a) -EIO errors will be seen at the receiever, b)
-the pages can see transient zeroes (this is the case with read(2)
-as well, but splice has a much bigger window), and c) the sender
-does not send a snapshot of data because it can still be modified
-until it is recieved.
+You can keep the ath5k PCI table change.  Those devices are not  
+supported by ath5k and not going to be supported, especially since  
+ath9k supports them.  They are not even listed on  
+http://wireless.kernel.org/en/users/Drivers
 
-c is not too surprising for an asynchronous interface, but it is
-nice to document in case people are expecting COw or something.
-b and c can more or less be worked around by not doing silly things
-like truncating or scribbling on data until reciever really has it.
-a, I argue, should be fixed in API.
+The patch should go upstream quickly, so that potential ath9k users  
+don't have to blacklist ath5k.
+
+-- 
+Regards,
+Pavel Roskin
