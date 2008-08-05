@@ -1,120 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762905AbYHEUAi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762780AbYHEUER@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762905AbYHEUAi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 16:00:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761421AbYHEUA1
+	id S1762780AbYHEUER (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 16:04:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758888AbYHEUEB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 16:00:27 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:52928 "EHLO ogre.sisk.pl"
+	Tue, 5 Aug 2008 16:04:01 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:33908 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761394AbYHEUA0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 16:00:26 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Alessandro Guido <alessandro.guido@gmail.com>
-Subject: Re: "e100_probe: Error clearing wake event" when booting 2.6.27-rc1
-Date: Tue, 5 Aug 2008 22:03:07 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       pm list <linux-pm@lists.linux-foundation.org>
-References: <200808051730.27599.alessandro.guido@gmail.com>
-In-Reply-To: <200808051730.27599.alessandro.guido@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	id S1758703AbYHEUEA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Aug 2008 16:04:00 -0400
+Subject: Re: [malware-list] [RFC 0/5] [TALPA] Intro to a linux interface
+	for on access scanning
+From: Eric Paris <eparis@redhat.com>
+To: Greg KH <greg@kroah.com>
+Cc: malware-list@lists.printk.net, linux-kernel@vger.kernel.org
+In-Reply-To: <20080805005132.GA3661@kroah.com>
+References: <1217883616.27684.19.camel@localhost.localdomain>
+	 <20080804223249.GA10517@kroah.com>
+	 <1217896374.27684.53.camel@localhost.localdomain>
+	 <20080805005132.GA3661@kroah.com>
+Content-Type: text/plain
+Date: Tue, 05 Aug 2008 15:46:03 -0400
+Message-Id: <1217965563.27684.159.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200808052203.07815.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, 5 of August 2008, Alessandro Guido wrote:
-> [please cc me on replies]
+On Mon, 2008-08-04 at 17:51 -0700, Greg KH wrote:
+> On Mon, Aug 04, 2008 at 08:32:54PM -0400, Eric Paris wrote:
+
+> Oh, and after that, not using a binary interface, have we not learned
+> from the ioctl mess?  I sure thought we had...
+
+I don't see a reason why we can't use strings and key=value pairs for
+any metadata being sent back and forth.  That seem more reasonable?
+
+
+
+> > > Heh, so if you want to write a "virus" for Linux, just implement this
+> > > flag.  What's to keep a "rogue" program from telling the kernel that all
+> > > programs on the system are to be excluded?
+> > 
+> > Processes can only get this flag one of 2 ways.
+> > 
+> > 1) register as a client to make access decisions
 > 
-> I'm getting this error message when booting my laptop.
+> How do you do that?
+
+open the magic "vetting" file RW and you are a client who can answer
+access decisions.
+
+> > 2) echo 1 into the magic file to enable the flag for themselves
 > 
-> The commit that causes this is:
+> Simple enough :)
 > 
-> commit eb9d0fe40e313c0a74115ef456a2e43a6c8da72f
-> Author: Rafael J. Wysocki <rjw@sisk.pl>
-> Date:   Mon Jul 7 03:34:48 2008 +0200
+> > > > 10. Filesystem exclusions
+> > > > -------------------------
+> > > > One pretty important optimization is not to scan things like /proc, /sys
+> > > > or similar. Basically all filesystems where user can not store
+> > > > arbitrary, potentially malicious, content could and should be excluded
+> > > > from scanning.
+> > > 
+> > > Why, does scanning these files take extra time?  Just curious.
+> > 
+> > Perf win, why bothering looking for malware in /proc when it can't
+> > exist?  It doesn't take longer it just takes time having to do
+> > 
+> > userspace -> kernel -> userspace -> kernel -> userspace
+> > 
+> > just to cat /proc/mounts, all of this could probably be alliviated if we
+> > cached access on non block backed files but then we have to come up with
+> > a way to exclude only nfs/cifs.  I'd rather list the FSs that don't need
+> > scanning every time than those that do....
 > 
->     PCI ACPI: Rework PCI handling of wake-up
+> How long does this whole process take?  Seriously is it worth the added
+> kernel code for something that is not measurable?
+
+Is it worth having 2 context switches for every open when none are
+needed?  I plan to get numbers on that.
+
 > 
-> [very long commit message snipped]
+> > > > 11. Path exclusions
+> > > > -------------------
+> > > > The need for exclusions can be demonstrated with an example of a MySQL
+> > > > server. It's data files are frequently modified which means they would
+> > > > need to be constantly rescanned which is very bad for performance. Also,
+> > > > it is most often not even possible to reasonably scan them. Therefore
+> > > > the best solution is not to scan its database store which can simply be
+> > > > implemented by excluding the store subdirectory.
+> > > > 
+> > > > It is a relatively simple implementation which allows run-time
+> > > > configuration of a list of sub directories or files to exclude.
+> > > > Exclusion paths are relative to each process root. So for example if we
+> > > > want to exclude /var/lib/mysql/ and we have a mysql running in a chroot
+> > > > where from the outside that directory actually lives
+> > > > in /chroot/mysql/var/lib/mysql, /var/lib/mysql should actually be added
+> > > > to the exclusion list.
+> > > > 
+> > > > This is also not included in the initial patch set but will be coming
+> > > > shortly after.
+> > > 
+> > > Again, what's to keep all files to be marked as excluded?
+> > 
+> > You have to be root and I'll probably add an LSM hook?
 > 
-> Should I ignore that?
+> Why an LSM hook?  You aren't an LSM.
 
-The message is harmless, but it exposes the problem that e100_probe() should
-not use pci_enable_wake() for this purpose.
+Maybe a new hook, maybe just a capability call, something to make root
+not the 
 
-The appended patch makes it use pci_pme_active() instead.
+> > > > Closing remarks
+> > > > ---------------
+> > > > Although some may argue some of the filters are not necessary or may
+> > > > better be implemented in userspace, we think it is better to have them
+> > > > in kernel primarily for performance reasons.
+> > > 
+> > > Why?  What numbers do you have that say the kernel is faster in
+> > > implementing this?  This is the first mention of such a requirement, we
+> > > need to see real data to back it up please.
+> > 
+> > In kernel caching is clearly a huge perf win.
+> 
+> Why?  If the cache is also in userspace, it should be the same, right?
 
-Thanks,
-Rafael
+In kernel cache has 0 context switches for every open.  Userspace
+caching has 2.  Every open has to block, switch to the context of the
+userspace client/cache, get that decisions, and then switch back to the
+original process.
 
----
-PCI PM: Export pci_pme_active to drivers
-
-Export pci_pme_active() to drivers, so that they can clear the
-PME_status bit and disable PME# for the device without involving
-ACPI.
-
-Modify the e100 driver to use pci_pme_active() for this purpose.
-
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- drivers/net/e100.c  |    4 +---
- drivers/pci/pci.c   |    3 ++-
- include/linux/pci.h |    1 +
- 3 files changed, 4 insertions(+), 4 deletions(-)
-
-Index: linux-2.6/drivers/pci/pci.c
-===================================================================
---- linux-2.6.orig/drivers/pci/pci.c
-+++ linux-2.6/drivers/pci/pci.c
-@@ -1060,7 +1060,7 @@ bool pci_pme_capable(struct pci_dev *dev
-  * The caller must verify that the device is capable of generating PME# before
-  * calling this function with @enable equal to 'true'.
-  */
--static void pci_pme_active(struct pci_dev *dev, bool enable)
-+void pci_pme_active(struct pci_dev *dev, bool enable)
- {
- 	u16 pmcsr;
- 
-@@ -1945,6 +1945,7 @@ EXPORT_SYMBOL(pci_set_power_state);
- EXPORT_SYMBOL(pci_save_state);
- EXPORT_SYMBOL(pci_restore_state);
- EXPORT_SYMBOL(pci_pme_capable);
-+EXPORT_SYMBOL(pci_pme_active);
- EXPORT_SYMBOL(pci_enable_wake);
- EXPORT_SYMBOL(pci_target_state);
- EXPORT_SYMBOL(pci_prepare_to_sleep);
-Index: linux-2.6/include/linux/pci.h
-===================================================================
---- linux-2.6.orig/include/linux/pci.h
-+++ linux-2.6/include/linux/pci.h
-@@ -648,6 +648,7 @@ int pci_restore_state(struct pci_dev *de
- int pci_set_power_state(struct pci_dev *dev, pci_power_t state);
- pci_power_t pci_choose_state(struct pci_dev *dev, pm_message_t state);
- bool pci_pme_capable(struct pci_dev *dev, pci_power_t state);
-+void pci_pme_active(struct pci_dev *dev, bool enable);
- int pci_enable_wake(struct pci_dev *dev, pci_power_t state, int enable);
- pci_power_t pci_target_state(struct pci_dev *dev);
- int pci_prepare_to_sleep(struct pci_dev *dev);
-Index: linux-2.6/drivers/net/e100.c
-===================================================================
---- linux-2.6.orig/drivers/net/e100.c
-+++ linux-2.6/drivers/net/e100.c
-@@ -2738,9 +2738,7 @@ static int __devinit e100_probe(struct p
- 		nic->flags |= wol_magic;
- 
- 	/* ack any pending wake events, disable PME */
--	err = pci_enable_wake(pdev, 0, 0);
--	if (err)
--		DPRINTK(PROBE, ERR, "Error clearing wake event\n");
-+	pci_pme_active(pdev, false);
- 
- 	strcpy(netdev->name, "eth%d");
- 	if((err = register_netdev(netdev))) {
