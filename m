@@ -1,76 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764901AbYHEUww@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764960AbYHEUxq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764901AbYHEUww (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 16:52:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762941AbYHEUwl
+	id S1764960AbYHEUxq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 16:53:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759376AbYHEUxi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 16:52:41 -0400
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:37072 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756130AbYHEUwk (ORCPT
+	Tue, 5 Aug 2008 16:53:38 -0400
+Received: from mtagate1.de.ibm.com ([195.212.29.150]:7678 "EHLO
+	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758936AbYHEUxh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 16:52:40 -0400
-Subject: Re: [PATCH 2/2] fusion:  Implement generic interrupt misroute
-	handling
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: David Vrabel <david.vrabel@csr.com>, "Moore, Eric" <Eric.Moore@lsi.com>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-       "Prakash, Sathya" <Sathya.Prakash@lsi.com>
-In-Reply-To: <200808051038.39275.jbarnes@virtuousgeek.org>
-References: <1217786709.4179.27.camel@localhost.localdomain>
-	 <48970A4D.2090309@csr.com> <1217954187.9923.15.camel@localhost.localdomain>
-	 <200808051038.39275.jbarnes@virtuousgeek.org>
-Content-Type: text/plain
-Date: Tue, 05 Aug 2008 13:45:24 -0700
-Message-Id: <1217969124.9923.67.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+	Tue, 5 Aug 2008 16:53:37 -0400
+From: Christian Borntraeger <borntraeger@de.ibm.com>
+To: Alex Nixon <alex.nixon@citrix.com>
+Subject: Re: Spinlock recursion in hvc_poll
+Date: Tue, 5 Aug 2008 22:53:10 +0200
+User-Agent: KMail/1.9.9
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Rusty Russell <rusty@rustcorp.com.au>
+References: <48973E59.1000904@citrix.com> <48987DD8.8080009@citrix.com> <48989727.8090804@goop.org>
+In-Reply-To: <48989727.8090804@goop.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200808052253.10285.borntraeger@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-08-05 at 10:38 -0700, Jesse Barnes wrote:
-> On Tuesday, August 05, 2008 9:36 am James Bottomley wrote:
-> > On Mon, 2008-08-04 at 14:55 +0100, David Vrabel wrote:
-> > > Moore, Eric wrote:
-> > > > Thanks, I will try this out.   However I thought I saw lost
-> > > > interrupts occurring randomly, meaning it was not necessarily the
-> > > > first config page access.  I'm back in the office on 8/11, I will
-> > > > test it out then and provide feedback.
-> > >
-> > > Is this using MSI on a device without per-vector mask bits?  If so, then
-> > > this patch may help.
-> > >
-> > > http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit
-> > >;h=ce6fce4295ba727b36fdc73040e444bd1aae64cd
+Am Dienstag, 5. August 2008 schrieb Jeremy Fitzhardinge:
+> Alex Nixon wrote:
+> >>> Well I say fixed - it just means I can proceed to a spinlock recursion
+> >>> BUG() 2 secs into the boot process, but it should be easier to track 
+down
+> >>> with printks and a coherent stack dump at my disposal.
+> >>>   
+> >>>       
+> >> What's the backtrace on this?
+> >>     
 > >
-> > We don't really know what the problem is.  MSI interrupts get lost on
-> > older motherboards (the ones most likely to contain a 1030).  Why is
-> > anybody's guess although the clever money is on the motherboard bridge
-> > having issues.
-> 
-> David just got us to fix an MSI masking bug recently, which could be related.
-> 
-> The issue is that the PCI & interrupt handling code was disabling MSI during 
-> interrupt handling, which could end up causing missed interrupts.  When MSI 
-> is disabled, devices can still generate interrupts, but they'll go out the 
-> interrupt line instead, so unless your IRQ handler is also registered with 
-> that IRQ number, you'll probably lose them.
-> 
-> As of the last PCI upstream merge, we work around this issue by never masking 
-> MSI interrupts unless the device supports the MSI mask bit (as opposed to 
-> just the big hammer enable/disable flag).
+> > I just turned DEBUG_SPINLOCKS back on to try catch this bug again, and it
+> > seems to occur (very roughly) 1/10 of the time, with nothing changing 
+between
+> > runs.
 
-True, but this is orthogonal.
+Ok, this is a guess, I dont fully understand the backtrace.
 
-I'm trying to put together a diagnosing tool.  Once we know there's a
-problem and who has it, then we can try seeing if patches like this fix
-it.
+request_irq tries to call the handler if the IRQ is shared. The irq handler 
+calls hvc_poll and hvc_kill which might take the same spinlock. 
+Can you test it this patch fixes the problem?
 
-James
+Signed-off-by: Christian Borntraeger <borntraeger@de.ibm.com>
+---
+ drivers/char/hvc_console.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-
+Index: linux-2.6/drivers/char/hvc_console.c
+===================================================================
+--- linux-2.6.orig/drivers/char/hvc_console.c
++++ linux-2.6/drivers/char/hvc_console.c
+@@ -322,10 +322,11 @@ static int hvc_open(struct tty_struct *t
+ 
+ 	hp->tty = tty;
+ 
++	spin_unlock_irqrestore(&hp->lock, flags);
++
+ 	if (hp->ops->notifier_add)
+ 		rc = hp->ops->notifier_add(hp, hp->data);
+ 
+-	spin_unlock_irqrestore(&hp->lock, flags);
+ 
+ 
+ 	/*
