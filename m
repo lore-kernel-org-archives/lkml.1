@@ -1,54 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761424AbYHEM50@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762387AbYHEM5j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761424AbYHEM50 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 08:57:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759480AbYHEMus
+	id S1762387AbYHEM5j (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 08:57:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757384AbYHEM5P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 08:50:48 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:34831 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758064AbYHEMus (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 08:50:48 -0400
-Date: Tue, 5 Aug 2008 13:32:47 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "Kyle Moffett" <kyle@moffetthome.net>
-Cc: "Christoph Hellwig" <hch@infradead.org>, "Eric Paris" <eparis@redhat.com>,
-       "Greg KH" <greg@kroah.com>, malware-list@lists.printk.net,
-       linux-kernel@vger.kernel.org
-Subject: Re: [malware-list] [RFC 0/5] [TALPA] Intro to a linux interface for
- on access scanning
-Message-ID: <20080805133247.70f1f28b@lxorguk.ukuu.org.uk>
-In-Reply-To: <f73f7ab80808042249r4a29510foedbbae595c947028@mail.gmail.com>
-References: <1217883616.27684.19.camel@localhost.localdomain>
-	<20080804223249.GA10517@kroah.com>
-	<20080805002618.GA18215@infradead.org>
-	<1217897224.27684.66.camel@localhost.localdomain>
-	<20080805005415.GA10108@infradead.org>
-	<f73f7ab80808042249r4a29510foedbbae595c947028@mail.gmail.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 5 Aug 2008 08:57:15 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:40494 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752789AbYHEM5O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Aug 2008 08:57:14 -0400
+Date: Tue, 5 Aug 2008 08:56:34 -0400
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Simon Horman <horms@verge.net.au>
+Cc: kexec@lists.infradead.org, linux-ia64@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Tony Luck <tony.luck@intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: kdump, ia64: always reserve elfcore header memory in crash
+	kernel
+Message-ID: <20080805125634.GA15193@redhat.com>
+References: <20080805094825.GA9712@verge.net.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080805094825.GA9712@verge.net.au>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Much better solution:
+On Tue, Aug 05, 2008 at 07:48:27PM +1000, Simon Horman wrote:
+> elfcore header memory needs to be reserved in a crash kernel.
+> This means that the relevant code should be protected
+> by CONFIG_CRASH_DUMP rather than CONFIG_PROC_VMCORE.
+> 
+> Signed-off-by: Simon Horman <horms@verge.net.au>
+> 
+> --- 
+> Andrew, this patch fixes bug in the (unlikely) case where
+> an ia64 crashdump kernel does not have CONFIG_PROC_FS set.
+> I think it is worth including in 2.6.27. But breakage cases are
+> likely to be minimal to non-existent, so I am comfortable
+> with post 2.6.27 too.
+> 
+> This patch should be appended to the series,
+> "is_kdump_kernel() cleanup and related patches".
+> 
+> http://lists.infradead.org/pipermail/kexec/2008-July/002270.html
+> 
+> Index: linux-2.6/arch/ia64/kernel/efi.c
+> ===================================================================
+> --- linux-2.6.orig/arch/ia64/kernel/efi.c	2008-08-05 18:31:13.000000000 +1000
+> +++ linux-2.6/arch/ia64/kernel/efi.c	2008-08-05 18:31:21.000000000 +1000
+> @@ -1334,7 +1334,7 @@ kdump_find_rsvd_region (unsigned long si
+>  }
+>  #endif
+>  
+> -#ifdef CONFIG_PROC_VMCORE
+> +#ifdef CONFIG_CRASH_DUMP
+>  /* locate the size find a the descriptor at a certain address */
+>  unsigned long __init
+>  vmcore_find_descriptor_size (unsigned long address)
+> Index: linux-2.6/arch/ia64/kernel/setup.c
+> ===================================================================
+> --- linux-2.6.orig/arch/ia64/kernel/setup.c	2008-08-05 18:31:20.000000000 +1000
+> +++ linux-2.6/arch/ia64/kernel/setup.c	2008-08-05 18:31:21.000000000 +1000
+> @@ -352,7 +352,7 @@ reserve_memory (void)
+>  	}
+>  #endif
+>  
+> -#ifdef CONFIG_PROC_VMCORE
+> +#ifdef CONFIG_CRASH_KERNEL
+>  	if (reserve_elfcorehdr(&rsvd_region[n].start,
+>  			       &rsvd_region[n].end) == 0)
+>  		n++;
 
-And one which was found lacking about 1950...
+Hi Simon,
 
-> Problem solved.  Untrusted and possibly-compromised files can't be
-> executed, or even if they could be they can't do anything
+Thanks for the patch. One minor nit. I think compilation will fail
+in the case of CONFIG_PROC_VMCORE=n. Because reserve_elfcorehdr will
+try to use vmcore_unusabe() which is not available now?
 
-Two things
-- Scripts
-- Attacks based on compromising a live binary
-
-You can use SELinux to control what is executed and it is a very
-effective management control technique. However it doesn't control
-javascript in web pages, exploits that popen perl and chat to it and so
-on...
+Thanks
+Vivek
