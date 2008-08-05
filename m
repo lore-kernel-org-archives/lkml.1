@@ -1,68 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762212AbYHEXtR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762240AbYHEXwO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762212AbYHEXtR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 19:49:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755337AbYHEXtE
+	id S1762240AbYHEXwO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 19:52:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756382AbYHEXwB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 19:49:04 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:42840 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754938AbYHEXtC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 19:49:02 -0400
-Subject: Re: [malware-list] [RFC 0/5] [TALPA] Intro
-	toalinuxinterfaceforonaccess scanning
-From: Eric Paris <eparis@redhat.com>
-To: Al Viro <viro@ZenIV.linux.org.uk>
-Cc: Greg KH <greg@kroah.com>, "Press, Jonathan" <Jonathan.Press@ca.com>,
-       Theodore Tso <tytso@mit.edu>, Arjan van de Ven <arjan@infradead.org>,
-       linux-kernel@vger.kernel.org, malware-list@lists.printk.net,
-       linux-security-module@vger.kernel.org
-In-Reply-To: <20080805233743.GK28946@ZenIV.linux.org.uk>
-References: <2629CC4E1D22A64593B02C43E85553030480743B@USILMS12.ca.com>
-	 <20080805181141.GA10700@kroah.com>
-	 <2629CC4E1D22A64593B02C43E85553030480743F@USILMS12.ca.com>
-	 <20080805185438.GA8453@mit.edu>
-	 <2629CC4E1D22A64593B02C43E855530304AE4ADB@USILMS12.ca.com>
-	 <20080805211445.GA28304@kroah.com>
-	 <2629CC4E1D22A64593B02C43E855530304AE4ADC@USILMS12.ca.com>
-	 <20080805214415.GA5830@kroah.com>
-	 <2629CC4E1D22A64593B02C43E855530303E21D47@USILMS12.ca.com>
-	 <20080805222638.GA6395@kroah.com>
-	 <20080805233743.GK28946@ZenIV.linux.org.uk>
-Content-Type: text/plain
-Date: Tue, 05 Aug 2008 19:48:52 -0400
-Message-Id: <1217980132.27684.203.camel@localhost.localdomain>
+	Tue, 5 Aug 2008 19:52:01 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:39530 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756498AbYHEXwA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Aug 2008 19:52:00 -0400
+Date: Tue, 5 Aug 2008 16:51:10 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Christoph Hellwig <hch@lst.de>
+Cc: Adrian Bunk <bunk@kernel.org>, David Miller <davem@davemloft.net>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] feature-removal-schedule.txt: remove the NCR53C9x
+ entry
+Message-Id: <20080805165110.f0991143.akpm@linux-foundation.org>
+In-Reply-To: <20080805233718.GB2514@lst.de>
+References: <20080805200330.GJ22895@cs181140183.pp.htv.fi>
+	<20080805233718.GB2514@lst.de>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-08-06 at 00:37 +0100, Al Viro wrote:
-> On Tue, Aug 05, 2008 at 03:26:38PM -0700, Greg KH wrote:
-> > On Tue, Aug 05, 2008 at 06:12:34PM -0400, Press, Jonathan wrote:
-> > > Sorry for the top-post... but I give up.
-> > >  
-> > > I don't think I'm stupid, but frankly I don't understand the point of
-> > > the questions being asked in the last three responses to my statement.
-> > > I don't know why they are relevant, and I don't know how to answer
-> > > them in a framework that we can all understand at the same time.
-> 
-> Excuse me?  One of those questions had been a very specific yes-or-no one
-> and I certainly hope that we all can understand either answer to such...
-> 
-> For the record, the question is
-> 
-> "Do you or do you not expect the malware to be active on scanning host?"
+On Wed, 6 Aug 2008 01:37:19 +0200 Christoph Hellwig <hch@lst.de> wrote:
 
-I do believe for a number of AV vendors the answer is yes.  I will try
-to have some offline conversations with the right people at a number of
-vendors and work to better define the threats that they wish to or
-believe they are able to help mitigate.
+> On Tue, Aug 05, 2008 at 11:03:30PM +0300, Adrian Bunk wrote:
+> > Now that the driver is removed we should also remove the entry in 
+> > Documentation/feature-removal-schedule.txt
+> > 
+> > Signed-off-by: Adrian Bunk <bunk@kernel.org>
+> > Acked-by: Christoph Hellwig <hch@lst.de>
+> > 
+> > ---
+> > 
+> > This patch has been sent on:
+> > - 1 Mar 2008
+> > 
+> > 6d7882f6e844eaf6551b3a3708e01d1784916435 foobar
+> > diff --git a/Documentation/feature-removal-schedule.txt b/Documentation/feature-removal-schedule.txt
+> > index c1d1fd0..a4530f0 100644
+> > --- a/Documentation/feature-removal-schedule.txt
+> > +++ b/Documentation/feature-removal-schedule.txt
+> > @@ -19,15 +19,6 @@ Who:	Pavel Machek <pavel@suse.cz>
+> >  
+> >  ---------------------------
+> >  
+> > -What:	old NCR53C9x driver
+> > -When:	October 2007
+> > -Why:	Replaced by the much better esp_scsi driver.  Actual low-level
+> > -	driver can be ported over almost trivially.
+> > -Who:	David Miller <davem@davemloft.net>
+> > -	Christoph Hellwig <hch@lst.de>
+> > -
+> > ----------------------------
+> > -
+> >  What:	Video4Linux API 1 ioctls and video_decoder.h from Video devices.
+> >  When:	December 2008
+> >  Files:	include/linux/video_decoder.h include/linux/videodev.h
+> ---end quoted text---
+>
 
--Eric
+(pop toasting repaired)
 
-> I hope that relevance of that to the analysis of software involved in
-> scanning should be obvious.
+> This should really be easy enough for any merge window state, whoe wants
+> to feed it to Linus?
+> 
+
+I have it queued for my next Linuswards batch.  I tend to push
+non-code-related changes immediately.
 
