@@ -1,70 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765069AbYHEUyS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765249AbYHEUyz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765069AbYHEUyS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 16:54:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763480AbYHEUx6
+	id S1765249AbYHEUyz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 16:54:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758333AbYHEUyq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 16:53:58 -0400
-Received: from outbound-mail-132.bluehost.com ([67.222.39.22]:42284 "HELO
-	outbound-mail-132.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754334AbYHEUx5 (ORCPT
+	Tue, 5 Aug 2008 16:54:46 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:58898 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1762977AbYHEUyp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 16:53:57 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
-	b=c8M1ASvCJ0ePHNod+bGEcAx8tr4NVHFeurz8VGnWtY11oGR0ZkBxHx050tP9bwBzn5fsvCaDtzpJAtDomd5p1/p6+Ic8AtZtVkf1OMooDzIyNKy75xO0xNxiV9ok1kb5;
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: James Bottomley <James.Bottomley@hansenpartnership.com>
-Subject: Re: [PATCH 1/2] pci: add misrouted interrupt error handling
-Date: Tue, 5 Aug 2008 13:53:52 -0700
-User-Agent: KMail/1.9.9
-Cc: linux-scsi <linux-scsi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>, linux-pci@vger.kernel.org
-References: <1217786532.4179.24.camel@localhost.localdomain> <200808051003.10400.jbarnes@virtuousgeek.org> <1217969041.9923.64.camel@localhost.localdomain>
-In-Reply-To: <1217969041.9923.64.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+	Tue, 5 Aug 2008 16:54:45 -0400
+Date: Tue, 5 Aug 2008 21:36:59 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Greg KH <greg@kroah.com>
+Cc: Eric Paris <eparis@redhat.com>, malware-list@lists.printk.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: [malware-list] [RFC 0/5] [TALPA] Intro to a linux interface for
+ on access scanning
+Message-ID: <20080805213659.596eac48@lxorguk.ukuu.org.uk>
+In-Reply-To: <20080805170143.GA9639@kroah.com>
+References: <1217883616.27684.19.camel@localhost.localdomain>
+	<20080804223249.GA10517@kroah.com>
+	<1217896374.27684.53.camel@localhost.localdomain>
+	<20080805005132.GA3661@kroah.com>
+	<20080805122503.73ea5416@lxorguk.ukuu.org.uk>
+	<20080805170143.GA9639@kroah.com>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200808051353.52323.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, August 05, 2008 1:44 pm James Bottomley wrote:
-> On Tue, 2008-08-05 at 10:03 -0700, Jesse Barnes wrote:
-> > This seems to be a function that just returns what type of IRQ you're
-> > using or how it's routed and it isn't necessarily "lost interrupt"
-> > specific.
->
-> So perhaps this routine should only note but not advise?  The drivers
-> can then just call pci_interrupt_type to see if they can do anything.
+On Tue, 5 Aug 2008 10:01:43 -0700
+Greg KH <greg@kroah.com> wrote:
 
-If it's just a pci_irq_type function then it probably shouldn't print 
-anything, and leave that to the caller, since it might be used for other 
-purposes too (e.g. a driver load printk or something).  In the lost interrupt 
-case you already have to disable MSI or MSIX in the Fusion driver, so you may 
-as well put the printk there, right?  I guess I'm saying it should neither 
-note nor advise, just return the IRQ type.
+> On Tue, Aug 05, 2008 at 12:25:03PM +0100, Alan Cox wrote:
+> > > Again, do it all in userspace (caching, and scanning).  I still really
+> > > don't see the need to do this in the kernel becides it being "the way
+> > > people have always done it."
+> > 
+> > We don't have notifiers for file segment changes that are scalable that
+> > far.
+> 
+> I agree, but if we did, would that help out a lot here?  Lots of other
+> groups of people are needing/asking for something like this and if
+> someone can finally get it together to post something useful, that might
+> be a very good thing.
 
-> > This information is clearly useful to drivers both for informational
-> > purposes and for debugging problems, so on that front it looks good. 
-> > However, I think it should probably be called pci_interrupt_type(struct
-> > pci_dev *dev) or something instead, and just return an enum of either
-> > MSIX, MSI, or LINE (though I'm open to better names).  From that, the
-> > driver can infer what might be going wrong, though in the case of a LINE
-> > interrupt, all you can really do is report that there's probably a
-> > platform IRQ routing problem.
->
-> The only thing that this can't do is ACPI ... but on the other hand once
-> the IRQ routing is set by ACPI I'm not sure the driver can do anything
-> to fix it.
+A scalable notification scheme would certainly sort out content indexing
+systems more nicely. Open notifiers that scale let you do path indexing
+("People who opened file X also opened file Y" - both for optimising disk
+layouts and for application level 'what do I prompt the user with' stuff)
 
-Yeah, ACPI may or may not be the problem, all you'll really know is that 
-you've got a line interrupt that you failed to get...  The driver won't be 
-able to do much in that case aside from complain loudly.
+The only thing  I can see that is actually needed to get the whole thing
+working sweetly even for the virus and HSM cases is an LSM willing to
+bounce some opens via a user space helper. Even without that you could
+label content 'dubious' on close and relabel it accordingly in the
+asynchronous scanning app
 
-Thanks,
-Jesse
+Alan
