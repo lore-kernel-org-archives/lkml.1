@@ -1,50 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760619AbYHEPbR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760660AbYHEPcf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760619AbYHEPbR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 11:31:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758363AbYHEPa7
+	id S1760660AbYHEPcf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 11:32:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757404AbYHEPc0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 11:30:59 -0400
-Received: from fk-out-0910.google.com ([209.85.128.185]:11424 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758203AbYHEPa6 (ORCPT
+	Tue, 5 Aug 2008 11:32:26 -0400
+Received: from mtagate8.uk.ibm.com ([195.212.29.141]:45227 "EHLO
+	mtagate8.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756620AbYHEPcZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 11:30:58 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:mime-version:content-type
-         :content-transfer-encoding:content-disposition:message-id;
-        b=I6JZkY/o/HLBQ9WoFjx6Im7qsqM6FXE8wmk9VbTZ3iFYfrQwQPFnT7NVfSZOGmgnKI
-         89MxsqkorzHzpdcM0k3UoxesvLOhFAugE/BBYsGdO1+3f1xpqCpuCmhZtnb1RLERTrlI
-         d0ooCtRljGi5kvxQYIlEBY+mAA1YcdFbP6PAc=
-From: Alessandro Guido <alessandro.guido@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: "e100_probe: Error clearing wake event" when booting 2.6.27-rc1
-Date: Tue, 5 Aug 2008 17:30:26 +0200
-User-Agent: KMail/1.10.0 (Linux/2.6.27-rc1-00649-gca5de40; KDE/4.1.0; i686; ; )
-Cc: netdev@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+	Tue, 5 Aug 2008 11:32:25 -0400
+Subject: [PATCH] hugetlb: call arch_prepare_hugepage() for surplus pages
+From: Gerald Schaefer <gerald.schaefer@de.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       linux-s390@vger.kernel.org, schwidefsky@de.ibm.com,
+       heiko.carstens@de.ibm.com, Nishanth Aravamudan <nacc@us.ibm.com>,
+       Adam Litke <agl@us.ibm.com>
+Content-Type: text/plain
+Date: Tue, 05 Aug 2008 17:29:07 +0200
+Message-Id: <1217950147.5032.15.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-8.el5_2.2) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200808051730.27599.alessandro.guido@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[please cc me on replies]
+From: Gerald Schaefer <gerald.schaefer@de.ibm.com>
 
-I'm getting this error message when booting my laptop.
+The s390 software large page emulation implements shared page tables
+by using page->index of the first tail page from a compound large page
+to store page table information. This is set up in arch_prepare_hugepage(),
+which is called from alloc_fresh_huge_page_node().
 
-The commit that causes this is:
+A similar call to arch_prepare_hugepage() is missing for surplus large
+pages that are allocated in alloc_buddy_huge_page(), which breaks the
+software emulation mode for (surplus) large pages on s390. This patch
+adds the missing call to arch_prepare_hugepage(). It will have no effect
+on other architectures where arch_prepare_hugepage() is a nop.
 
-commit eb9d0fe40e313c0a74115ef456a2e43a6c8da72f
-Author: Rafael J. Wysocki <rjw@sisk.pl>
-Date:   Mon Jul 7 03:34:48 2008 +0200
+Acked-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Signed-off-by: Gerald Schaefer <gerald.schaefer@de.ibm.com>
+---
 
-    PCI ACPI: Rework PCI handling of wake-up
+ mm/hugetlb.c |    7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
 
-[very long commit message snipped]
+Index: linux/mm/hugetlb.c
+===================================================================
+--- linux.orig/mm/hugetlb.c
++++ linux/mm/hugetlb.c
+@@ -565,7 +565,7 @@ static struct page *alloc_fresh_huge_pag
+ 		huge_page_order(h));
+ 	if (page) {
+ 		if (arch_prepare_hugepage(page)) {
+-			__free_pages(page, HUGETLB_PAGE_ORDER);
++			__free_pages(page, huge_page_order(h));
+ 			return NULL;
+ 		}
+ 		prep_new_huge_page(h, page, nid);
+@@ -665,6 +665,11 @@ static struct page *alloc_buddy_huge_pag
+ 					__GFP_REPEAT|__GFP_NOWARN,
+ 					huge_page_order(h));
+ 
++	if (page && arch_prepare_hugepage(page)) {
++		__free_pages(page, huge_page_order(h));
++		return NULL;
++	}
++
+ 	spin_lock(&hugetlb_lock);
+ 	if (page) {
+ 		/*
 
-Should I ignore that?
