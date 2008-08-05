@@ -1,43 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762214AbYHEAfq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761155AbYHEAmA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762214AbYHEAfq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 20:35:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755389AbYHEAfi
+	id S1761155AbYHEAmA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 20:42:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757446AbYHEAll
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 20:35:38 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:55240 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757215AbYHEAfi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 20:35:38 -0400
-Subject: Re: [malware-list] [RFC 0/5] [TALPA] Intro to a linux
-	interface	for on access scanning
-From: Eric Paris <eparis@redhat.com>
-To: Greg KH <greg@kroah.com>
-Cc: linux-kernel@vger.kernel.org, malware-list@lists.printk.net
-In-Reply-To: <1217896374.27684.53.camel@localhost.localdomain>
-References: <1217883616.27684.19.camel@localhost.localdomain>
-	 <20080804223249.GA10517@kroah.com>
-	 <1217896374.27684.53.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Mon, 04 Aug 2008 20:35:34 -0400
-Message-Id: <1217896534.27684.55.camel@localhost.localdomain>
+	Mon, 4 Aug 2008 20:41:41 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:34521 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754133AbYHEAlk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Aug 2008 20:41:40 -0400
+Date: Mon, 4 Aug 2008 17:41:28 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Yang, Bo" <Bo.Yang@lsi.com>
+Cc: "'James.Bottomley@SteelEye.com'" <James.Bottomley@SteelEye.com>,
+       "'linux-scsi@vger.kernel.org'" <linux-scsi@vger.kernel.org>,
+       "'akpm@osdl.org'" <akpm@linuxfoundation.org>,
+       "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>,
+       "Patro, Sumant" <Sumant.Patro@lsi.com>,
+       "Austria, Winston" <Winston.Austria@lsi.com>,
+       "poswald@novell.com" <poswald@novell.com>
+Subject: Re: [PATCH 1/4] scsi: megaraid_sas - Add the dumy readl to force
+ PCI flush
+Message-Id: <20080804174128.a0877c27.akpm@linux-foundation.org>
+In-Reply-To: <4B6A08C587958942AA3002690DD4F8C31B08093F@cosmail02.lsi.com>
+References: <FFD04EB4FBD32E4B929B6CFDEDA6AA0D632A9F@NAMAIL1.ad.lsil.com>
+	<4B6A08C587958942AA3002690DD4F8C31B08093F@cosmail02.lsi.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-08-04 at 20:32 -0400, Eric Paris wrote:
+On Fri, 1 Aug 2008 10:19:07 -0600 "Yang, Bo" <Bo.Yang@lsi.com> wrote:
 
-> The model only makes claims about open and I want to be forthright with
-> its shortcomings.  It sounds rather unreasonable to think that every
-> time I want to read one bite from a file which is being concurrently
-> written by another process some virus scanner should have to reread and
-> validate the entire file.  I think as some point we have to accept the
+> MegaRAID SAS Driver get unexpected Interrupt.  Add the dumy readl to force PCI flush will fix this issue.
+> 
+> Signed-off-by Bo Yang<bo.yang@lsi.com>
+> 
+> ---
+> drivers/scsi/megaraid/megaraid_sas.c |    6 ++++++
+> 1 files changed, 6 insertions(+)
+> 
+> diff -rupN linux-2.6.28_orig/drivers/scsi/megaraid/megaraid_sas.c linux-2.6.28_new/drivers/scsi/megaraid/megaraid_sas.c
+> --- linux-2.6.28_orig/drivers/scsi/megaraid/megaraid_sas.c      2008-07-31 12:00:58.000000000 -0400
+> +++ linux-2.6.28_new/drivers/scsi/megaraid/megaraid_sas.c       2008-07-31 12:30:35.000000000 -0400
+> @@ -198,6 +198,9 @@ megasas_clear_intr_xscale(struct megasas
+>          */
+>         writel(status, &regs->outbound_intr_status);
+> 
+> +       /* Dummy readl to force pci flush */
+> +       readl(&regs->outbound_intr_status);
+> +
+>         return 0;
+>  }
+> 
+> @@ -293,6 +296,9 @@ megasas_clear_intr_ppc(struct megasas_re
+>          */
+>         writel(status, &regs->outbound_doorbell_clear);
+> 
+> +       /* Dummy readl to force pci flush */
+> +       readl(&regs->outbound_doorbell_clear);
+> +
+>         return 0;
+>  }
+>  /**
 
+These patches all had their tabs replaced with spaces.  I fixed them up.
 
-Sorry, can't help but laugh at myself for typing "bite".
+Please always run checkpatch on all patches.  checkpatch found this:
 
--Eric
+ERROR: Macros with complex values should be enclosed in parenthesis
+#182: FILE: drivers/scsi/megaraid/megaraid_sas.h:586:
++#define MFI_GEN2_ENABLE_INTERRUPT_MASK		0x00000001 | 0x00000004
 
+which is a potential source of bugs.  I queued a patch to fix that also.
