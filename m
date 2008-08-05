@@ -1,112 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763005AbYHEAm0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763307AbYHEAnX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763005AbYHEAm0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 20:42:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759227AbYHEAlr
+	id S1763307AbYHEAnX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 20:43:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756124AbYHEAnN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 20:41:47 -0400
-Received: from mu-out-0910.google.com ([209.85.134.188]:48928 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756021AbYHEAll (ORCPT
+	Mon, 4 Aug 2008 20:43:13 -0400
+Received: from out01.mta.xmission.com ([166.70.13.231]:54077 "EHLO
+	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754149AbYHEAnM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 20:41:41 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=Lqze8lZRvQyXBhPukOTeI19pUfoe0AOj83Qu4UielP20cZmfcVWMuWUd+kjQrsD8Qv
-         y8fTlW0+alCdlRrVZjCK6Ebe5KxndvgrwDazXjuwx7KSzLkhjQicF5JTwvVajbBDYFUz
-         TzutKK4J1QBQ0vLPP1wwYplQfq6y825po2858=
-Message-ID: <e9e943910808041741q4e95a96cu11dbe28cbf481c41@mail.gmail.com>
-Date: Tue, 5 Aug 2008 01:41:40 +0100
-From: "Duane Griffin" <duaneg@dghda.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: [PATCH] jbd: abort instead of waiting for nonexistent transactions
-Cc: linux-kernel@vger.kernel.org, sct@redhat.com, linux-ext4@vger.kernel.org,
-       "Sami Liedes" <sliedes@cc.hut.fi>
-In-Reply-To: <20080804170346.613238b8.akpm@linux-foundation.org>
+	Mon, 4 Aug 2008 20:43:12 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Robin Holt <holt@sgi.com>
+Cc: Stephen Champion <schamp@sgi.com>, linux-kernel@vger.kernel.org,
+       Pavel Emelyanov <xemul@openvz.org>, Oleg Nesterov <oleg@tv-sign.ru>,
+       Sukadev Bhattiprolu <sukadev@us.ibm.com>,
+       Paul Menage <menage@google.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <20080731193204.GG9663@sgi.com>
+	<m1iqul25rk.fsf@frodo.ebiederm.org> <20080731200835.GK9663@sgi.com>
+	<m1bq0d1zhz.fsf@frodo.ebiederm.org> <20080801120455.GP9663@sgi.com>
+	<m1proszj3r.fsf@frodo.ebiederm.org> <20080801191336.GK10501@sgi.com>
+	<m14p64zetj.fsf@frodo.ebiederm.org> <4896FFFE.7080400@sgi.com>
+	<m17iawy0tl.fsf@frodo.ebiederm.org> <20080804235838.GJ7290@sgi.com>
+Date: Mon, 04 Aug 2008 17:38:56 -0700
+In-Reply-To: <20080804235838.GJ7290@sgi.com> (Robin Holt's message of "Mon, 4
+	Aug 2008 18:58:38 -0500")
+Message-ID: <m163qgpa73.fsf@frodo.ebiederm.org>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1217893895-29165-1-git-send-email-duaneg@dghda.com>
-	 <20080804170346.613238b8.akpm@linux-foundation.org>
-X-Google-Sender-Auth: e9627876dae55bf2
+Content-Type: text/plain; charset=us-ascii
+X-SA-Exim-Connect-IP: 24.130.11.59
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa01 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Combo: ;Robin Holt <holt@sgi.com>
+X-Spam-Relay-Country: 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	*  0.0 BAYES_50 BODY: Bayesian spam probability is 40 to 60%
+	*      [score: 0.4821]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa01 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+Subject: Re: [Patch] Scale pidhash_shift/pidhash_size up based on num_possible_cpus().
+X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
+X-SA-Exim-Scanned: Yes (on mgr1.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/8/5 Andrew Morton <akpm@linux-foundation.org>:
-> On Tue,  5 Aug 2008 00:51:34 +0100 "Duane Griffin" <duaneg@dghda.com> wrote:
->
->> The __log_wait_for_space function sits in a loop checkpointing transactions
->> until there is sufficient space free in the journal. However, if there are
->> no transactions to be processed (e.g. because the free space calculation is
->> wrong due to a corrupted filesystem) it will never progress.
->>
->> Check for space being required when no transactions are outstanding and
->> abort the journal instead of endlessly looping.
->>
->> This patch fixes the bug reported by Sami Liedes at:
->> http://bugzilla.kernel.org/show_bug.cgi?id=10976
->>
->> Signed-off-by: Duane Griffin <duaneg@dghda.com>
->> Tested-by: Sami Liedes <sliedes@cc.hut.fi>
->> ---
->> diff --git a/fs/jbd/checkpoint.c b/fs/jbd/checkpoint.c
->> index a5432bb..9fac177 100644
->> --- a/fs/jbd/checkpoint.c
->> +++ b/fs/jbd/checkpoint.c
->> @@ -126,14 +126,29 @@ void __log_wait_for_space(journal_t *journal)
->>
->>               /*
->>                * Test again, another process may have checkpointed while we
->> -              * were waiting for the checkpoint lock
->> +              * were waiting for the checkpoint lock. If there are no
->> +              * outstanding transactions there is nothing to checkpoint and
->> +              * we can't make progress. Abort the journal in this case.
->>                */
->>               spin_lock(&journal->j_state_lock);
->> +             spin_lock(&journal->j_list_lock);
->>               nblocks = jbd_space_needed(journal);
->>               if (__log_space_left(journal) < nblocks) {
->> +                     int chkpt = journal->j_checkpoint_transactions != NULL;
->> +
->> +                     spin_unlock(&journal->j_list_lock);
->>                       spin_unlock(&journal->j_state_lock);
->> -                     log_do_checkpoint(journal);
->> +                     if (chkpt) {
->> +                             log_do_checkpoint(journal);
->> +                     } else {
->> +                             printk(KERN_ERR "%s: no transactions\n",
->> +                                    __func__);
->> +                             journal_abort(journal, 0);
->> +                     }
->> +
->>                       spin_lock(&journal->j_state_lock);
->> +             } else {
->> +                     spin_unlock(&journal->j_list_lock);
->>               }
->>               mutex_unlock(&journal->j_checkpoint_mutex);
->>       }
->
-> I don't expect that the additional taking of j_list_lock in here does
-> anything useful.
->
-> Plus..  after j_list_lock has been dropped, new transactions could
-> theoretically appear at journal->j_checkpoint_transactions, so we
-> _could_ reclaim more journal space.  But a) that probably couldn't
-> happen due to ->j_state_lock and lots of other things and b) it's
-> hopelessly theoretical even if it _could_ happen, methinks.  Just
-> sayin'..
+Robin Holt <holt@sgi.com> writes:
 
-Fair enough. I was just trying to be extra careful in taking the lock,
-so I'm happy to drop it if you think it is safe. It will simplify the
-patch significantly.
+> But if we simply scale based upon num_possible_cpus(), we get a relatively
+> representative scaling function.  Usually, customers buy machines with 1,
+> 2, or 4GB per cpu.  I would expect a waste of 256k, 512k, or even 1m to
+> be acceptable at this size of machine.
 
-Cheers,
-Duane.
+For your customers, and your kernel thread workload, you get a
+reasonable representation.  For other different people and different
+workloads you don't.  I happen to know of a completely different
+class of workload that can do better.
 
--- 
-"I never could learn to drink that blood and call it wine" - Bob Dylan
+> For 2.6.27, would you accept an upper cap based on the memory size
+> algorithm you have now and adjusted for num_possible_cpus()?  Essentially
+> the first patch I posted.
+
+I want to throw a screaming hissy fit.
+
+The merge window has closed.  This is not a bug.  This is not a
+regression.  I don't see a single compelling reason to consider this
+for 2.6.27.  I asked for clarification so I could be certain you were
+solving the right problem.
+
+Why didn't these patches show up 3 months ago when the last merge
+window closed?  Why not even earlier?
+
+I totally agree that what we are doing could be done better, however
+at this point we should be looking at 2.6.28.  In which case looking
+at the general long term non-hack solution is the right way to go.  Can
+we scale to different workloads?
+
+For everyone with less then 4K cpus the current behavior is fine, and
+with 4k cpus it results in a modest slowdown.  This sounds useable.
+
+You have hit an extremely sore spot with me.  Anytime someone makes an
+argument that I hear as RHEL is going to ship 2.6.27 so we _need_ this
+patch in 2.6.27 I want to stop listening.  I just don't care.  Unfortunately
+I have heard that argument almost once a day for the last week, and I am
+tired of it.
+
+Why hasn't someone complained that waitpid is still slow?
+
+Why haven't we seen patches to reduce the number of kernel threads since
+last time you had problems with the pid infrastructure?
+
+A very frustrated code reviewer.
+
+So yes.  If you are not interested in 2.6.28 and in the general problem,
+I'm not interested in this problem.
+
+Eric
