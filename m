@@ -1,72 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760684AbYHELTl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761234AbYHELUC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760684AbYHELTl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 07:19:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759720AbYHELTL
+	id S1761234AbYHELUC (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 07:20:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760859AbYHELTb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 07:19:11 -0400
-Received: from viefep18-int.chello.at ([213.46.255.22]:52836 "EHLO
-	viefep19-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1760667AbYHELTJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 07:19:09 -0400
-X-SourceIP: 212.186.3.226
-Message-ID: <489836D3.2050008@chello.at>
-Date: Tue, 05 Aug 2008 13:17:39 +0200
-From: "alois.klingler@chello.at" <alois.klingler@chello.at>
-Reply-To: alois.klingler@chello.at
-User-Agent: Icedove 1.5.0.14eol (X11/20080724)
+	Tue, 5 Aug 2008 07:19:31 -0400
+Received: from as2.cineca.com ([130.186.84.242]:59178 "EHLO as2.cineca.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760831AbYHELT3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Aug 2008 07:19:29 -0400
+Message-ID: <48981D18.2070006@gmail.com>
+From: Andrea Righi <righi.andrea@gmail.com>
+Reply-To: righi.andrea@gmail.com
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.12) Gecko/20070604 Thunderbird/1.5.0.12 Mnenhy/0.7.5.666
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Ondrej Zajicek <santiago@crfreenet.org>, MadLoisae@gmx.net,
-       Alexey Dobriyan <adobriyan@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-fbdev-devel@lists.sourceforge.net
-Subject: Re: kernel oops with framebuffer device vt8623fb
-References: <487E2911.5090701@gmx.net>	<20080717013917.GA1695@localhost.localdomain> <20080728204817.ebaa621b.akpm@linux-foundation.org>
-In-Reply-To: <20080728204817.ebaa621b.akpm@linux-foundation.org>
+To: Paul Menage <menage@google.com>
+Cc: Dave Hansen <dave@linux.vnet.ibm.com>, xen-devel@lists.xensource.com,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       virtualization@lists.linux-foundation.org, dm-devel@redhat.com,
+       agk@sourceware.org
+Subject: Re: Too many I/O controller patches
+References: <20080804.175126.193692178.ryov@valinux.co.jp>	 <1217870433.20260.101.camel@nimitz> <489748E6.5080106@gmail.com>	 <1217876521.20260.123.camel@nimitz> <48976A2A.9060600@gmail.com> <6599ad830808042255y59215481l5463d4dca9fb2001@mail.gmail.com>
+In-Reply-To: <6599ad830808042255y59215481l5463d4dca9fb2001@mail.gmail.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Date: Tue,  5 Aug 2008 11:27:52 +0200 (MEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
-
-This issue is still not fixed in 2.6.26.1 - may be there a way to commit 
-it in 2.6.26.2?
-
-Still, the provided patch I got on 07/17/2008 works great ...
-
-Thanks, anyway!
-
-kind regards, Alois
-
-
-Andrew Morton wrote:
-> On Thu, 17 Jul 2008 03:39:18 +0200 Ondrej Zajicek <santiago@crfreenet.org> wrote:
->
->   
->> On Wed, Jul 16, 2008 at 07:00:02PM +0200, MadLoisae@gmx.net wrote:
->>     
->>> Hi!
->>>
->>> I've updated my machine from 2.6.25.11 to 2.6.26 and I think I've found 
->>> a problem.
->>>
->>> If I load the module vt8623fb i get a kernel oops, if the VIA 8623 
->>> display framebuffer driver is compiled direct into kernel the system 
->>> hangs up very early at booting the kernel.
->>>       
->> I am sorry for mistake, here is a patch for 2.6.26 fixing the bug:
+Paul Menage wrote:
+> On Mon, Aug 4, 2008 at 1:44 PM, Andrea Righi <righi.andrea@gmail.com> wrote:
+>> A safer approach IMHO is to force the tasks to wait synchronously on
+>> each operation that directly or indirectly generates i/o.
 >>
->> Signed-off-by: Ondrej Zajicek <santiago@crfreenet.org>
->>     
->
-> I went back through the email thread and wrote your changelog for you. 
-> Not a very good one though.
->
-> It would be better were you to write your changelogs, please.
->
->
->   
+>> In particular the solution used by the io-throttle controller to limit
+>> the dirty-ratio in memory is to impose a sleep via
+>> schedule_timeout_killable() in balance_dirty_pages() when a generic
+>> process exceeds the limits defined for the belonging cgroup.
+>>
+>> Limiting read operations is a lot more easy, because they're always
+>> synchronized with i/o requests.
+> 
+> I think that you're conflating two issues:
+> 
+> - controlling how much dirty memory a cgroup can have at any given
+> time (since dirty memory is much harder/slower to reclaim than clean
+> memory)
+> 
+> - controlling how much effect a cgroup can have on a given I/O device.
+> 
+> By controlling the rate at which a task can generate dirty pages,
+> you're not really limiting either of these. I think you'd have to set
+> your I/O limits artificially low to prevent a case of a process
+> writing a large data file and then doing fsync() on it, which would
+> then hit the disk with the entire file at once, and blow away any QoS
+> guarantees for other groups.
 
+Anyway, dirty pages ratio is directly proportional to the IO that will
+be performed on the real device, isn't it? this wouldn't prevent IO
+bursts as you correctly say, but IMHO it is a simple and quite effective
+way to measure the IO write activity of each cgroup on each affected
+device.
+
+To prevent the IO peaks I usually reduce the vm_dirty_ratio, but, ok,
+this is a workaround, not the solution to the problem either.
+
+IMHO, based on the dirty-page rate measurement, we should apply both
+limiting methods: throttle dirty-pages ratio to prevent too many dirty
+pages in the system (harde to reclaim and generating
+unpredictable/unpleasant/unresponsiveness behaviour), and throttle the
+dispatching of IO requests at the device-mapper/IO-scheduler layer to
+smooth IO peaks/bursts, generated by fsync() and similar scenarios.
+
+Another different approach could be to implement the measurement in the
+elevator, looking at the elapsed between the IO request is issued to the
+drive and the request is served. So, look at the start time T1,
+completion time T2, take the difference (T2 - T1) and say: cgroup C1
+consumed an amount of IO of (T2 - T1), and also use a token-bucket
+policy to fill/reduce the "credits" of each IO cgroup in terms of IO
+time slots. This would be a more precise measurement, instead of trying
+to predict how expensive the IO operation will be, only looking at the
+dirty-page ratio. Then throttle both dirty-page ratio *and* the
+dispatching of the IO requests submitted by the cgroup that exceeds the
+limits.
+
+> 
+> As Dave suggested, I think it would make more sense to have your
+> page-dirtying throttle points hook into the memory controller instead,
+> and allow the memory controller to track/limit dirty pages for a
+> cgroup, and potentially do throttling as part of that.
+> 
+> Paul
+
+Yes, implementing page-drity throttling in memory controller seems
+absolutely reasonable. I can try to move in this direction, merge the
+page-dirty throttling in memory controller and also post the RFC.
+
+Thanks,
+-Andrea
