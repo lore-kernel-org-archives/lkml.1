@@ -1,105 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760287AbYHEIq3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759132AbYHEIqt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760287AbYHEIq3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 04:46:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758117AbYHEIqU
+	id S1759132AbYHEIqt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 04:46:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758877AbYHEIqW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 04:46:20 -0400
-Received: from viefep32-int.chello.at ([62.179.121.50]:40932 "EHLO
-	viefep32-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756193AbYHEIqT (ORCPT
+	Tue, 5 Aug 2008 04:46:22 -0400
+Received: from mailbox-us-s-12.mailhostingserver.com ([75.125.101.9]:55403
+	"EHLO mailbox-us-s-12.mailhostingserver.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757662AbYHEIqT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 5 Aug 2008 04:46:19 -0400
-Subject: Re: [RFC][PATCH 1/7] lockdep: Fix combinatorial explosion in lock
-	subgraph traversal.
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: David Miller <davem@davemloft.net>
-Cc: torvalds@linux-foundation.org, jeremy@goop.org, hugh@veritas.com,
-       mingo@elte.hu, akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       davej@redhat.com
-In-Reply-To: <20080805.013445.30774221.davem@davemloft.net>
-References: <20080804130317.994042639@chello.nl>
-	 <20080804131011.749503624@chello.nl>
-	 <20080805.013445.30774221.davem@davemloft.net>
-Content-Type: text/plain
-Date: Tue, 05 Aug 2008 10:46:13 +0200
-Message-Id: <1217925973.3589.108.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+X-Greylist: delayed 388 seconds by postgrey-1.27 at vger.kernel.org; Tue, 05 Aug 2008 04:46:19 EDT
+Date: Tue, 5 Aug 2008 10:39:46 +0200
+From: Matthias Kaehlcke <matthias@kaehlcke.net>
+To: Frans Meulenbroeks <fransmeulenbroeks@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: initramfs optimization suggestions
+Message-ID: <20080805083946.GC3165@traven>
+Mail-Followup-To: Matthias Kaehlcke <matthias@kaehlcke.net>,
+	Frans Meulenbroeks <fransmeulenbroeks@gmail.com>,
+	linux-kernel@vger.kernel.org
+References: <ac9c93b10808050042u496bfa10nad7962eb0e9ec015@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <ac9c93b10808050042u496bfa10nad7962eb0e9ec015@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-08-05 at 01:34 -0700, David Miller wrote:
-> From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> Date: Mon, 04 Aug 2008 15:03:18 +0200
+Hi Frans
+
+El Tue, Aug 05, 2008 at 09:42:11AM +0200 Frans Meulenbroeks ha dit:
+
+> [Upfront apologies if this is the wrong place to post this to.Just
+> give me a gentle redirect to the right place in that case.]
 > 
-> > When we traverse the graph, either forwards or backwards, we
-> > are interested in whether a certain property exists somewhere
-> > in a node reachable in the graph.
->  ...
-> > Signed-off-by: David S. Miller <davem@davemloft.net>
-> > Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> I've been looking into improving the boot time of an embedded linux
+> system (monta vista based).
+> While doing so I detected that initramfs initialisation was one of the
+> places where a lot of time was spent, so I looked into it in some more
+> detail and came up with the following findings & suggestions.
 > 
-> Peter, when Ingo added this to his tree he needed to add a build
-> fix of some sort.  Did you include that here?
+> First proposal:
+> ==========
 > 
-> I think the problem was that if CONFIG_PROVE_LOCKING is not
-> set, we need to add nop inline versions of lockdep_count_*_deps()
-> in kernel/lockdep_internals.h
+> initramfs is build from a compressed cpio archive.
+> Proposal is to introduce a build option to make the compression and
+> decompression optional.
+> Rationale 1: could be faster as it trades off I/O time (to read the
+> image) against decompression time
+> Rationale 2: for architectures that use compressed images (bzImage)
+> actually we compress twice, which is not really efficient.
 > 
-> See:
+> I can implement this, but before spending time on it I would like to know if
+> a) people consider this a good idea
+> b) no one else already has doen this.
 > 
-> http://marc.info/?l=linux-kernel&m=121758260130275&w=2
+> 
+> Second proposal:
+> ============
+> 
+> after decompressing the cpio archive all files are made using
+> sys_open/sys_write/sys_close and friends.
+> This implies that a lot of system calls and data copying is done.
+> It would be nice if that could be avoided.
+> I'm not fully into all details of how ramfs is implemented, but would
+> it be possible to e.g. dump all blocks of a tmp ram fs into a data
+> structure (e.g.an array of blocks) while making the kernel, and while
+> booting the kernel initialise the fs cache with these data? (I guess
+> this would be around fs/dcache.c; I understand the data here is
+> kmalloc-ed, but it might be possible to initialise the cache with
+> pointers to that data structure; due to the nature of ramfs they won't
+> be deallocated anyway I assume).
+> Does this sound feasible? Hidden snags? Appreciate your
+> opinion/feedback/suggestions.
+> 
+> Best regards, Frans.
+> 
+> PS: if anyone has a pointer to a place which explains in full detail
+> how linux fs internally works (apart from the source :-) ) I
+> appreciate a reference. FM
 
-Probably missed that, thanks for reminding me.
+you might want to get in touch with Robert P. J. Day
+(rpjday@crashcourse.ca>) who is also working on initramfs
+optimizations. see a recent thread on the kernelnewbies mailing list: 
+http://article.gmane.org/gmane.linux.kernel.kernelnewbies/26978
 
-Andrew, please pick up:
+-- 
+Matthias Kaehlcke
+Embedded Linux Engineer
+Barcelona
 
----
-From: Ingo Molnar <mingo@elte.hu>
-Date: Fri, 1 Aug 2008 11:23:50 +0200
-Subject: [PATCH] lockdep: build fix
-
-fix:
-
- kernel/built-in.o: In function `lockdep_stats_show':
- lockdep_proc.c:(.text+0x3cb2f): undefined reference to `lockdep_count_forward_deps'
- kernel/built-in.o: In function `l_show':
- lockdep_proc.c:(.text+0x3d02b): undefined reference to `lockdep_count_forward_deps'
- lockdep_proc.c:(.text+0x3d047): undefined reference to `lockdep_count_backward_deps'
-
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- kernel/lockdep_internals.h |   13 +++++++++++++
- 1 files changed, 13 insertions(+), 0 deletions(-)
-
-diff --git a/kernel/lockdep_internals.h b/kernel/lockdep_internals.h
-index 68d44ec..f5c6a14 100644
---- a/kernel/lockdep_internals.h
-+++ b/kernel/lockdep_internals.h
-@@ -53,8 +53,21 @@ extern unsigned int nr_process_chains;
- extern unsigned int max_lockdep_depth;
- extern unsigned int max_recursion_depth;
- 
-+#ifdef CONFIG_PROVE_LOCKING
- extern unsigned long lockdep_count_forward_deps(struct lock_class *);
- extern unsigned long lockdep_count_backward_deps(struct lock_class *);
-+#else
-+static inline unsigned long
-+lockdep_count_forward_deps(struct lock_class *class)
-+{
-+	return 0;
-+}
-+static inline unsigned long
-+lockdep_count_backward_deps(struct lock_class *class)
-+{
-+	return 0;
-+}
-+#endif
- 
- #ifdef CONFIG_DEBUG_LOCKDEP
- /*
-
-
+            You can chain me, you can torture me, you can even
+          destroy this body, but you will never imprison my mind
+                            (Mahatma Gandhi)
+                                                                 .''`.
+    using free software / Debian GNU/Linux | http://debian.org  : :'  :
+                                                                `. `'`
+gpg --keyserver pgp.mit.edu --recv-keys 47D8E5D4                  `-
