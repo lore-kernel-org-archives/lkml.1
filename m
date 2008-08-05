@@ -1,61 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760009AbYHEIEL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760203AbYHEIGU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760009AbYHEIEL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 04:04:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754674AbYHEIDt
+	id S1760203AbYHEIGU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 04:06:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755762AbYHEIGE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 04:03:49 -0400
-Received: from mtagate1.de.ibm.com ([195.212.29.150]:45348 "EHLO
-	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753456AbYHEIDq (ORCPT
+	Tue, 5 Aug 2008 04:06:04 -0400
+Received: from outbound-dub.frontbridge.com ([213.199.154.16]:62407 "EHLO
+	IE1EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1755370AbYHEIGA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 04:03:46 -0400
-Subject: Re: [patch 0/3] [RFC] kmsg macros and script, take x+1.
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Reply-To: schwidefsky@de.ibm.com
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
-       lf_kernel_messages@lists.linux-foundation.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Michael Holzheu <holzheu@de.ibm.com>, Gerrit Huizenga <gh@us.ibm.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Randy Dunlap <randy.dunlap@oracle.com>, Jan Kara <jack@suse.cz>,
-       Pavel Machek <pavel@ucw.cz>, Joe Perches <joe@perches.com>,
-       Jochen =?ISO-8859-1?Q?Vo=DF?= <jochen.voss@googlemail.com>,
-       Kunai Takashi <kunai@linux-foundation.jp>,
-       Tim Bird <tim.bird@am.sony.com>
-In-Reply-To: <20080804202614.GA29170@uranus.ravnborg.org>
-References: <20080730165656.118280544@de.ibm.com>
-	 <20080804202614.GA29170@uranus.ravnborg.org>
-Content-Type: text/plain
-Organization: IBM Corporation
-Date: Tue, 05 Aug 2008 10:03:29 +0200
-Message-Id: <1217923409.23678.5.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 5 Aug 2008 04:06:00 -0400
+X-BigFish: VPS-30(zz1432R98dR1805M936fQzz10d3izzz32i6bh43j61h)
+X-Spam-TCS-SCL: 0:0
+X-WSS-ID: 0K54B3N-04-NEM-01
+Date: Tue, 5 Aug 2008 09:49:35 +0200
+From: Joerg Roedel <joerg.roedel@amd.com>
+To: David Miller <davem@davemloft.net>
+CC: akpm@linux-foundation.org, mingo@redhat.com, tglx@linutronix.de,
+       hpa@zytor.com, rth@twiddle.net, paulus@samba.org,
+       benh@kernel.crashing.org, fujita.tomonori@lab.ntt.co.jp,
+       muli@il.ibm.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 10/10] sparc64: use iommu_num_pages function in IOMMU code
+Message-ID: <20080805074935.GA32012@amd.com>
+References: <1217865890-3593-1-git-send-email-joerg.roedel@amd.com> <1217865890-3593-11-git-send-email-joerg.roedel@amd.com> <20080804.142834.171476315.davem@davemloft.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <20080804.142834.171476315.davem@davemloft.net>
+User-Agent: mutt-ng/devel-r804 (Linux)
+X-OriginalArrivalTime: 05 Aug 2008 07:49:36.0031 (UTC) FILETIME=[CE53A2F0:01C8F6CF]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-08-04 at 22:26 +0200, Sam Ravnborg wrote:
-> > The lastest changes:
-> >  * kmsg.h has been moved from include/asm-s390 to include/linux
-> >  * The s390 specific documentation is now in Documentation/kmsg/s390
-> >  * The script checks for messages in the source file, Documentation/kmsg
-> >    and Documentation/kmsg/$SRCARCH
+On Mon, Aug 04, 2008 at 02:28:34PM -0700, David Miller wrote:
+> From: Joerg Roedel <joerg.roedel@amd.com>
+> Date: Mon, 4 Aug 2008 18:04:50 +0200
 > 
-> The tendency is that all ARCH specific files should be part of
-> arch/$ARCH/*
-> What is the correct approach here I dunno.
+> > Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
+> 
+> So we rename, then convert everything back.
+> 
+> This seems like a lot of commit masterbation for what is
+> clearly one single change.
 
-Hmm, arch/$ARCH/kmsg. But then Documentation/kmsg doesn't really fit,
-does it? Don't no either.. 
+I didn't want to change multiple architectures with a single patch so I
+splitted it up. The whole renaming in the beginning is to make the patch
+series bisectable. But if its no problem to change multiple
+architectures with one patch I will those changes in a single patch next
+time.
+
+Joerg
 
 -- 
-blue skies,
-  Martin.
-
-"Reality continues to ruin my life." - Calvin.
-
+           |           AMD Saxony Limited Liability Company & Co. KG
+ Operating |         Wilschdorfer Landstr. 101, 01109 Dresden, Germany
+ System    |                  Register Court Dresden: HRA 4896
+ Research  |              General Partner authorized to represent:
+ Center    |             AMD Saxony LLC (Wilmington, Delaware, US)
+           | General Manager of AMD Saxony LLC: Dr. Hans-R. Deppe, Thomas McCoy
 
