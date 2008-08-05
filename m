@@ -1,118 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761869AbYHESif@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762191AbYHESjP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761869AbYHESif (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 14:38:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756644AbYHESiZ
+	id S1762191AbYHESjP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 14:39:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758102AbYHESi4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 14:38:25 -0400
-Received: from mail15.ca.com ([208.232.182.54]:46328 "EHLO mail15.ca.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753851AbYHESiY convert rfc822-to-8bit (ORCPT
+	Tue, 5 Aug 2008 14:38:56 -0400
+Received: from casper.infradead.org ([85.118.1.10]:45981 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756644AbYHESiy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 14:38:24 -0400
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [malware-list] [RFC 0/5] [TALPA] Intro to a linuxinterfaceforon access scanning
-Date: Tue, 5 Aug 2008 14:38:23 -0400
-Message-ID: <2629CC4E1D22A64593B02C43E85553030480743F@USILMS12.ca.com>
-In-Reply-To: <20080805181141.GA10700@kroah.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [malware-list] [RFC 0/5] [TALPA] Intro to a linuxinterfaceforon access scanning
-Thread-Index: Acj3JyAJhqVKHn65SlKTO6blbvUmWwAALqAQ
-References: <20080805103840.1aaa64a5@infradead.org> <2629CC4E1D22A64593B02C43E85553030480743B@USILMS12.ca.com> <20080805181141.GA10700@kroah.com>
-From: "Press, Jonathan" <Jonathan.Press@ca.com>
-To: "Greg KH" <greg@kroah.com>
-Cc: "Arjan van de Ven" <arjan@infradead.org>, "Eric Paris" <eparis@redhat.com>,
+	Tue, 5 Aug 2008 14:38:54 -0400
+Date: Tue, 5 Aug 2008 11:38:52 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: "Press, Jonathan" <Jonathan.Press@ca.com>
+Cc: "Eric Paris" <eparis@redhat.com>, "Greg KH" <greg@kroah.com>,
        <linux-kernel@vger.kernel.org>, <malware-list@lists.printk.net>,
        <linux-security-module@vger.kernel.org>
-X-OriginalArrivalTime: 05 Aug 2008 18:38:23.0794 (UTC) FILETIME=[7114E120:01C8F72A]
+Subject: Re: [malware-list] [RFC 0/5] [TALPA] Intro to a linux
+ interfaceforon access scanning
+Message-ID: <20080805113852.69302dcb@infradead.org>
+In-Reply-To: <2629CC4E1D22A64593B02C43E85553030480743E@USILMS12.ca.com>
+References: <1217883616.27684.19.camel@localhost.localdomain>
+	<20080804223249.GA10517@kroah.com>
+	<1217896374.27684.53.camel@localhost.localdomain>
+	<2629CC4E1D22A64593B02C43E855530304807431@USILMS12.ca.com>
+	<1217948212.27684.120.camel@localhost.localdomain>
+	<2629CC4E1D22A64593B02C43E855530304807436@USILMS12.ca.com>
+	<1217956796.11547.12.camel@paris.rdu.redhat.com>
+	<20080805103840.1aaa64a5@infradead.org>
+	<2629CC4E1D22A64593B02C43E85553030480743B@USILMS12.ca.com>
+	<20080805112747.2c3c4650@infradead.org>
+	<2629CC4E1D22A64593B02C43E85553030480743E@USILMS12.ca.com>
+Organization: Intel
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> I think you might be missing the point a bit here, as the traditional
-Unix model that 
->> Linux has prevents much of what the "traditional AV" products need to
-do, right?
-
-Is your point that Linux and Unix machines are less vulnerable to
-viruses?  If so, that's not relevant to my point at all.  A Unix machine
-can be a carrier, passing infections on to other vulnerable platforms
-(guess which one).  An enterprise security system sees the entire
-enterprise as an integrated whole -- not just individual machines with
-their own separate attributes and no impact on each other at all.
+you're still top-posting!
+Please do not do that.. post your comments below the mail like anyone
+else does.
 
 
->>So how are you going about preventing the "infection from arriving"
->> with this proposed patchset?
+On Tue, 5 Aug 2008 14:34:26 -0400
+"Press, Jonathan" <Jonathan.Press@ca.com> wrote:
 
-I'm not endorsing or opposing the proposal until I digest it further.
+> But be that as it may...  I don't want to have to use more than one
+> interface to get all the events I am interested in.  I want to
+> register as a client and listen, and get everything I need from the
+> same place.
 
-However, I will say that while preventing infections from arriving is
-not foolproof, doing a scan-on-close with the option to delete or
-quarantine an infected file goes a long way.
-
-
-Jon
-
+that's your problem to be honest. Worst case you have a small wrapper
+to funnel various sources into one.
 
 
+> Also, it seems to me that for my purposes, close is discrete enough.
+> It tells me that there is now something out there that should be
+> looked at.
 
-
------Original Message-----
-From: Greg KH [mailto:greg@kroah.com] 
-Sent: Tuesday, August 05, 2008 2:12 PM
-To: Press, Jonathan
-Cc: Arjan van de Ven; Eric Paris; linux-kernel@vger.kernel.org;
-malware-list@lists.printk.net; linux-security-module@vger.kernel.org
-Subject: Re: [malware-list] [RFC 0/5] [TALPA] Intro to a
-linuxinterfaceforon access scanning
-
-
-A: No.
-Q: Should I include quotations after my reply?
-
-On Tue, Aug 05, 2008 at 02:04:26PM -0400, Press, Jonathan wrote:
-> I'm not sure if this is off the direct idea of this thread, or if I am
-> possibly missing the whole point.
-
-I think you might be missing the point a bit here, as the traditional
-Unix model that  Linux has prevents much of what the "traditional AV"
-products need to do, right?
-
-> However, I want to point out that scanning on close is still an
-integral
-> part of AV protection, even if intercepting opens and execs
-> theoretically catches everything.
-
-Great, then put a hook in glibc and catch all closes and then kick off
-your scanning.
-
-> You can say that there are four parts to the malware life cycle --
-> getting on a machine, residing there, causing local damage, and
-> propagating elsewhere.  It is part of the philosophy of AV protection
-> that you do everything you can to prevent all of them.
-
-But this proposed patchset does not do much to prevent all of these,
-right?
-
-> That's why there are scans on close, scheduled scans, and scans on
-> open.  Most of our users employ all three and do not rely on one or
-> two.  If an infection arrives on a machine and finds a home because it
-> is assumed that it will be caught when it is opened for use, then it
-> is just one more compromise away from doing damage and/or spreading.
-
-So how are you going about preventing the "infection from arriving" with
-this proposed patchset?
-
-Isn't that something that SELinux or another LSM can prevent better?
-
-thanks,
-
-greg k-h
-
+inotify tells you that. close does not.
