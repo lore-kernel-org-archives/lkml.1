@@ -1,119 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764187AbYHEVNC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763045AbYHEVN1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764187AbYHEVNC (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 17:13:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761651AbYHEVKW
+	id S1763045AbYHEVN1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 17:13:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762524AbYHEVMx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 17:10:22 -0400
-Received: from casper.infradead.org ([85.118.1.10]:32914 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758957AbYHEVKV (ORCPT
+	Tue, 5 Aug 2008 17:12:53 -0400
+Received: from web82105.mail.mud.yahoo.com ([209.191.84.218]:25659 "HELO
+	web82105.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1761569AbYHEVMw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 17:10:21 -0400
-Subject: Re: [PATCH RFC] pm_qos_requirement might sleep
-From: Peter Zijlstra <peterz@infradead.org>
-To: mgross@linux.intel.com
-Cc: John Kacur <jkacur@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
-       rt-users <linux-rt-users@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, arjan <arjan@infradead.org>
-In-Reply-To: <20080805204901.GA31132@linux.intel.com>
-References: <520f0cf10808041352h78bd4319x1802f018aeffe6dc@mail.gmail.com>
-	 <1217921101.3589.98.camel@twins>  <20080805204901.GA31132@linux.intel.com>
-Content-Type: text/plain
-Date: Tue, 05 Aug 2008 23:09:46 +0200
-Message-Id: <1217970588.29415.36.camel@lappy.programming.kicks-ass.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 5 Aug 2008 17:12:52 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=sbcglobal.net;
+  h=Received:X-Mailer:Date:From:Subject:To:Cc:MIME-Version:Content-Type:Message-ID;
+  b=F+RucoSVexOqRgoHYN+tKmd/JqEf//AvWtxeTtQQp9MS7nh+AgIeoYpkg0USEpMyhTl8OBOMwSHFngKZM/NGRTZI2btK/55D/fTfJgFOh1uHhpuBiLWK5RXEw5kQ8RVmn6hZsB2p0n9F1pF7jPad6gh76NbjivL1fSvNGoLHqJ8=;
+X-Mailer: YahooMailRC/1042.40 YahooMailWebService/0.7.218
+Date: Tue, 5 Aug 2008 14:12:51 -0700 (PDT)
+From: David Witbrodt <dawitbro@sbcglobal.net>
+Subject: Re: HPET regression in 2.6.26 versus 2.6.25
+To: linux-kernel@vger.kernel.org
+Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Yinghai Lu <yhlu.kernel@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <511283.28596.qm@web82105.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-08-05 at 13:49 -0700, mark gross wrote:
-> On Tue, Aug 05, 2008 at 09:25:01AM +0200, Peter Zijlstra wrote:
-> > On Mon, 2008-08-04 at 22:52 +0200, John Kacur wrote:
-> > > Even after applying some fixes posted by Chirag and Peter Z, I'm still
-> > > getting some messages in my log like this
-> > 
-> > > BUG: sleeping function called from invalid context swapper(0) at
-> > > kernel/rtmutex.c:743
-> > > in_atomic():1 [00000001], irqs_disabled():1
-> > > Pid: 0, comm: swapper Tainted: G        W 2.6.26.1-rt1.jk #2
-> > > 
-> > > Call Trace:
-> > >  [<ffffffff802305d3>] __might_sleep+0x12d/0x132
-> > >  [<ffffffff8046cdbe>] __rt_spin_lock+0x34/0x7d
-> > >  [<ffffffff8046ce15>] rt_spin_lock+0xe/0x10
-> > >  [<ffffffff802532e5>] pm_qos_requirement+0x1f/0x3c
-> > >  [<ffffffff803e1b7f>] menu_select+0x7b/0x9c
-> > >  [<ffffffff8020b1be>] ? default_idle+0x0/0x5a
-> > >  [<ffffffff8020b1be>] ? default_idle+0x0/0x5a
-> > >  [<ffffffff803e0b4b>] cpuidle_idle_call+0x68/0xd8
-> > >  [<ffffffff803e0ae3>] ? cpuidle_idle_call+0x0/0xd8
-> > >  [<ffffffff8020b1be>] ? default_idle+0x0/0x5a
-> > >  [<ffffffff8020b333>] cpu_idle+0xb2/0x12d
-> > >  [<ffffffff80466af0>] start_secondary+0x186/0x18b
-> > > 
-> > > ---------------------------
-> > > | preempt count: 00000001 ]
-> > > | 1-level deep critical section nesting:
-> > > ----------------------------------------
-> > > ... [<ffffffff8020b39c>] .... cpu_idle+0x11b/0x12d
-> > > ......[<ffffffff80466af0>] ..   ( <= start_secondary+0x186/0x18b)
-> > > 
-> > > The following simple patch makes the messages disappear - however,
-> > > there may be a better more fine grained solution, but the problem is
-> > > also that all the functions are designed to use the same lock.
-> > 
-> > Hmm, I think you're right - its called from the idle routine so we can't
-> > go about sleeping there.
-> > 
-> > The only trouble I have is with kernel/pm_qos_params.c:update_target()'s
-> > use of this lock - that is decidedly not O(1).
-> > 
-> > Mark, would it be possible to split that lock in two, one lock
-> > protecting pm_qos_array[], and one lock protecting the
-> > requirements.list ?
-> 
-> very likely, but I'm not sure how it will help.
-> 
-> the fine grain locking I had initially worked out on pm_qos was to have
-> a lock per pm_qos_object, that would be used for accessing the
-> requirement_list and the target_value.  But that isn't what you are
-> asking about is it?
-> 
-> Is what you want is a pm_qos_requirements_list_lock and a
-> pm_qos_target_value_lock, for each pm_qos_object instance?
-> 
-> I guess it wold work but besides giving the code spinlock diarrhea would
-> it really help solve the issue you are seeing? 
-
-The problem is that on -rt spinlocks turn into mutexes. And the above
-BUG tells us that the idle loop might end up scheduling due to trying to
-take this lock.
-
-Now, the way I read the code, pm_qos_lock protects multiple things:
-
- - pm_qos_array[target]->target_value
-
- - &pm_qos_array[pm_qos_class]->requirements.list
-
-Now, the thing is, we could turn the lock back into a real spinlock
-(raw_spinlock_t), but the loops in eg update_target() are not O(1) and
-could thus cause serious preempt-off latencies.
-
-My question was, and now having had a second look at the code I think it
-is, would it be possible to guard the list using a sleeping lock,
-protect the target_value using a (raw) spinlock.
-
-OTOH, just reading a (word aligned, word sized) value doesn't normally
-require serialization, esp if the update site is already serialized by
-other means.
-
-So could we perhaps remove the lock usage from pm_qos_requirement()? -
-that too would solve the issue.
 
 
- - Peter
+> Since you have that git tree, could you try to see if the latest -git
+> still has this problem?
 
+  In a previous msg I mentioned that I had tried compiling the HEAD of
+my git repository, but only after I had posted to LKML.  I was at work
+when I wrote the prev msg, so I could not provide details except from
+memory.
+
+  OK, now I'm home:
+======================================
+
+$ git-show
+commit 2b12a4c524812fb3f6ee590a02e65b95c8c32229
+Merge: 4744b43... 7f30491...
+Author: Linus Torvalds <torvalds@linux-foundation.org>
+Date:   Fri Aug 1 14:59:11 2008 -0700
+
+    Merge branch 'release' of git://git.kernel.org/pub/scm/linux/kernel/git/aegl/linux-2.6
+    
+    * 'release' of git://git.kernel.org/pub/scm/linux/kernel/git/aegl/linux-2.6:
+      [IA64] Move include/asm-ia64 to arch/ia64/include/asm
+
+$ head Makefile
+VERSION = 2
+PATCHLEVEL = 6
+SUBLEVEL = 27
+EXTRAVERSION = -rc1
+NAME = Rotary Wombat
+
+# *DOCUMENTATION*
+# To see a list of typical targets execute "make help"
+# More info can be located in ./README
+# Comments in this file are targeted only to the developer, do not
+======================================
+
+  This kernel built fine, but froze at boot just like the 2.6.26 kernels,
+unless using "hpet=disabled".
+  Sorry that I forgot to do this before my orig. post.
+
+Dave W.
