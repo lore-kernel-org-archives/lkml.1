@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759842AbYHEHHJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758405AbYHEHHk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759842AbYHEHHJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 03:07:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758626AbYHEGrr
+	id S1758405AbYHEHHk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 03:07:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754131AbYHEGrv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 02:47:47 -0400
-Received: from 166-70-238-42.ip.xmission.com ([166.70.238.42]:46581 "EHLO
+	Tue, 5 Aug 2008 02:47:51 -0400
+Received: from 166-70-238-42.ip.xmission.com ([166.70.238.42]:44144 "EHLO
 	ns1.wolfmountaingroup.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753676AbYHEGrY (ORCPT
+	with ESMTP id S1753756AbYHEGrY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 5 Aug 2008 02:47:24 -0400
 Date: Tue, 5 Aug 2008 00:26:36 -0600
 From: jmerkey@wolfmountaingroup.com
-Message-Id: <200808050626.m756QaPW003773@wolfmountaingroup.com>
+Message-Id: <200808050626.m756QaUd003772@wolfmountaingroup.com>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 2.6.27-rc1-git5 16/26] mdb: cleanup CONFIG_SMP and includes
+Subject: [PATCH 2.6.27-rc1-git5 15/26] mdb: remove Microsoft coding constructs
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -23,13 +23,14 @@ Centralized external definitions into include files and corrected
 the file to conform to Linux coding practices.  fixed word wrap
 problems with patches.
 
-cleanup CONFIG_SMP and includes and overall organization
+remove Novell/Microsoft legacy ULONG, WORD, and BYTE contructs from 
+includes and code.
 
 Signed-off-by: Jeffrey Vernon Merkey (jmerkey@wolfmountaingroup.com)
 
---- a/debug/mdb-os.c	1969-12-31 17:00:00.000000000 -0700
-+++ b/debug/mdb-os.c	2008-08-04 15:49:51.000000000 -0600
-@@ -0,0 +1,1097 @@
+--- a/debug/mdb-logic.c	1969-12-31 17:00:00.000000000 -0700
++++ b/debug/mdb-logic.c	2008-08-04 15:49:51.000000000 -0600
+@@ -0,0 +1,2377 @@
 +
 +/***************************************************************************
 +*
@@ -116,1014 +117,2294 @@ Signed-off-by: Jeffrey Vernon Merkey (jmerkey@wolfmountaingroup.com)
 +
 +#ifdef CONFIG_MDB
 +
-+// module symbol workspace
-+unsigned char symbuf[MAX_PROCESSORS][MAX_SYMBOL_LEN];
-+unsigned char modbuf[MAX_PROCESSORS][MAX_SYMBOL_LEN];
-+unsigned char workbuf[MAX_PROCESSORS][MAX_SYMBOL_LEN];
-+unsigned char traceBuf[MAX_SYMBOL_LEN];
++#define PROCESSOR_32        32
++#define PROCESSOR_64        64
 +
-+extern void touch_nmi_watchdog(void);
++#define DEBUG_EXPRESS        0
++#define DEBUG_BOOL           0
++#define DEBUG_LOGICAL        0
++#define DEBUG_LOGICAL_STACK  0
++#define DEBUG_BOOL_STACK     0
 +
-+int valid_stack_ptr(struct thread_info *tinfo, void *p)
-+{
-+    return ((p > (void *)tinfo) && (p < (void *)(tinfo + THREAD_SIZE - 3)));
-+}
++#define INVALID_EXPRESSION  0
++#define NUMERIC_EXPRESSION  1
++#define BOOLEAN_EXPRESSION  2
 +
-+unsigned long print_context_stack(struct thread_info *tinfo,
-+			  unsigned long *stack, unsigned long ebp,
-+                          unsigned long *rebp)
-+{
-+    register unsigned char *symbol;
-+    unsigned long addr, offset;
-+    unsigned char *modname;
++#define NUM_STACK_SIZE      256
++#define CONTEXT_STACK_SIZE  1024
++#define BOOL_STACK_SIZE     256
++#define LOGICAL_STACK_SIZE  256
 +
-+#ifdef	CONFIG_FRAME_POINTER
-+    while (valid_stack_ptr(tinfo, (void *)ebp)) 
-+    {
-+         // addr = *(unsigned long *)(ebp + 4);
-+	addr = mdb_getword((ebp + 4), 4);
++#define NULL_TOKEN            0
++#define NUMBER_TOKEN          1
++#define MINUS_TOKEN           2
++#define PLUS_TOKEN            3
++#define MULTIPLY_TOKEN        4
++#define DIVIDE_TOKEN          5
++#define GREATER_TOKEN         6
++#define LESS_TOKEN            7
++#define XOR_TOKEN             8
++#define AND_TOKEN             9
++#define OR_TOKEN             10
++#define NOT_TOKEN            11
++#define NEG_TOKEN            12
++#define EQUAL_TOKEN          13
++#define LEFT_SHIFT_TOKEN     14
++#define RIGHT_SHIFT_TOKEN    15
++#define SPACE_TOKEN          16
++#define FLAGS_TOKEN          17
++#define EAX_TOKEN            18
++#define EBX_TOKEN            19
++#define ECX_TOKEN            20
++#define EDX_TOKEN            21
++#define ESI_TOKEN            22
++#define EDI_TOKEN            23
++#define EBP_TOKEN            24
++#define ESP_TOKEN            25
++#define CS_TOKEN             26
++#define DS_TOKEN             27
++#define ES_TOKEN             28
++#define FS_TOKEN             29
++#define GS_TOKEN             30
++#define SS_TOKEN             31
++#define DREF_OPEN_TOKEN      32
++#define DREF_CLOSE_TOKEN     33
++#define MOD_TOKEN            34
++#define NUMBER_END           35
++#define GREATER_EQUAL_TOKEN  36
++#define LESS_EQUAL_TOKEN     37
++#define EIP_TOKEN            38
++#define ASSIGNMENT_TOKEN     39
++#define DWORD_TOKEN          40
++#define WORD_TOKEN           41
++#define BYTE_TOKEN           42
++#define LOGICAL_AND_TOKEN    43
++#define LOGICAL_OR_TOKEN     44
++#define CF_TOKEN             45
++#define PF_TOKEN             46
++#define AF_TOKEN             47
++#define ZF_TOKEN             48
++#define SF_TOKEN             49
++#define IF_TOKEN             50
++#define DF_TOKEN             51
++#define OF_TOKEN             52
++#define VM_TOKEN             53
++#define AC_TOKEN             54
++#define BB_TOKEN             55
++#define EB_TOKEN             56
++#define NOT_EQUAL_TOKEN      57
++#define INVALID_NUMBER_TOKEN 58
 +
-+        if (DBGPrint("[<%08lx>] ", addr))
-+           return 1;
++#define CF_FLAG   0x00000001   
++#define PF_FLAG   0x00000004
++#define AF_FLAG   0x00000010   
++#define ZF_FLAG   0x00000040
++#define SF_FLAG   0x00000080
++#define TF_FLAG   0x00000100  // ss flag
++#define IF_FLAG   0x00000200
++#define DF_FLAG   0x00000400   
++#define OF_FLAG   0x00000800
++#define NT_FLAG   0x00004000
++#define RF_FLAG   0x00010000  // resume flag
++#define VM_FLAG   0x00020000
++#define AC_FLAG   0x00040000   
++#define VIF_FLAG  0x00080000
++#define VIP_FLAG  0x00100000
++#define ID_FLAG   0x00200000
 +
-+        symbol = GetSymbolFromValueOffsetModule(addr, &offset, &modname, 
-+                                                traceBuf, MAX_SYMBOL_LEN);
-+        if (symbol)
-+        {
-+           if (modname)
-+           {   
-+              if (offset)
-+              {
-+                 if (DBGPrint("%s|%s+0x%X", modname, symbol, offset))
-+                    return 1;
-+              }
-+              else
-+              {
-+                 if (DBGPrint("%s|%s", modname, symbol))
-+                    return 1;
-+              }
-+           }
-+           else
-+           {
-+              if (offset)
-+              {
-+                 if (DBGPrint("%s+0x%X", symbol, offset))
-+                    return 1;
-+              }
-+              else
-+              {
-+                 if (DBGPrint("%s", symbol))
-+                    return 1;
-+              }
-+           }
-+        }
-+        if (DBGPrint("\n"))
-+           return 1;
++#define   ULONG_PTR         0
++#define   WORD_PTR          1
++#define   BYTE_PTR          2
 +
-+        // if (ebp == *(unsigned long *)ebp)
-+	if (ebp == mdb_getword(ebp, 4))
-+	   break;
++#define   CLASS_DATA        1
++#define   CLASS_ASSIGN      2
++#define   CLASS_PARTITION   3
++#define   CLASS_ARITHMETIC  4
++#define   CLASS_BOOLEAN     5
 +
-+        // ebp = *(unsigned long *)ebp;
-+	ebp = mdb_getword(ebp, 4);
-+    }
-+#else
-+    while (valid_stack_ptr(tinfo, stack)) 
-+    {
-+       addr = mdb_getword((unsigned long)stack, 4);
-+       stack++;
++unsigned char *exprDescription[]={
++     "INVALID",
++     "NUMERIC",
++     "BOOLEAN",
++     "???????",
++};
 +
-+       if (__kernel_text_address(addr))
-+       {
-+          if (DBGPrint("[<%08lx>] ", addr))
-+             return 1;
++unsigned char *parserDescription[]={
++     "NULL_TOKEN",
++     "NUMBER_TOKEN",
++     "MINUS_TOKEN",
++     "PLUS_TOKEN",
++     "MULTIPLY_TOKEN",
++     "DIVIDE_TOKEN",
++     "GREATER_TOKEN",
++     "LESS_TOKEN",
++     "XOR_TOKEN",
++     "AND_TOKEN",
++     "OR_TOKEN",
++     "NOT_TOKEN",
++     "NEG_TOKEN",
++     "EQUAL_TOKEN",
++     "LEFT_SHIFT_TOKEN",
++     "RIGHT_SHIFT_TOKEN",
++     "SPACE_TOKEN",
++     "FLAGS_TOKEN",
++     "EAX_TOKEN",
++     "EBX_TOKEN",
++     "ECX_TOKEN",
++     "EDX_TOKEN",
++     "ESI_TOKEN",
++     "EDI_TOKEN",
++     "EBP_TOKEN",
++     "ESP_TOKEN",
++     "CS_TOKEN",
++     "DS_TOKEN",
++     "ES_TOKEN",
++     "FS_TOKEN",
++     "GS_TOKEN",
++     "SS_TOKEN",
++     "DREF_OPEN_TOKEN",
++     "DREF_CLOSE_TOKEN",
++     "MOD_TOKEN",
++     "NUMBER_END",
++     "GREATER_EQUAL_TOKEN",
++     "LESS_EQUAL_TOKEN",
++     "EIP_TOKEN",
++     "ASSIGNMENT_TOKEN",
++     "Dunsigned short_TOKEN",
++     "unsigned short_TOKEN",
++     "unsigned char_TOKEN",
++     "LOGICAL_AND_TOKEN",
++     "LOGICAL_OR_TOKEN",
++     "CF_TOKEN",
++     "PF_TOKEN",
++     "AF_TOKEN",
++     "ZF_TOKEN",
++     "SF_TOKEN",
++     "IF_TOKEN",
++     "DF_TOKEN",
++     "OF_TOKEN",
++     "VM_TOKEN",
++     "AC_TOKEN",
++     "BEGIN_BRACKET",
++     "END_BRACKET",
++     "NOT_EQUAL_TOKEN"
++     "INVALID_NUMBER_TOKEN"
++};
 +
-+          symbol = GetSymbolFromValueOffsetModule(addr, &offset, &modname, 
-+                                                traceBuf, MAX_SYMBOL_LEN);
-+          if (symbol)
-+          {
-+             if (modname)
-+             {    
-+                if (offset)
-+                {
-+                   if (DBGPrint("%s|%s+0x%X", modname, symbol, offset))
-+                      return 1;
-+                }
-+                else
-+                {
-+                   if (DBGPrint("%s|%s", modname, symbol))
-+                      return 1;
-+                }
-+             }
-+             else
-+             {
-+                if (offset)  
-+                {
-+                   if (DBGPrint("%s+0x%X", symbol, offset))
-+                      return 1;
-+                }
-+                else
-+                {
-+                   if (DBGPrint("%s", symbol))
-+                      return 1;
-+                }
-+             }
-+          }
-+          if (DBGPrint("\n"))
-+             return 1;
-+       }
-+    }
++unsigned char TokenIndex[256];
++unsigned char TokenClass[256];
++unsigned char TokenType[256];
++unsigned long TokenValue[256];
++unsigned long TokenCount;
++
++unsigned long numStack[NUM_STACK_SIZE];
++unsigned long *sp;
++unsigned long *tos;
++unsigned long *bos;
++
++unsigned long contextStack[CONTEXT_STACK_SIZE];
++unsigned long *c_sp;
++unsigned long *c_tos;
++unsigned long *c_bos;
++
++unsigned long booleanStack[BOOL_STACK_SIZE];
++unsigned long *b_sp;
++unsigned long *b_tos;
++unsigned long *b_bos;
++
++unsigned long logicalStack[LOGICAL_STACK_SIZE];
++unsigned long *l_sp;
++unsigned long *l_tos;
++unsigned long *l_bos;
++
++extern unsigned long GetValueFromSymbol(unsigned char *symbolName);
++extern unsigned char delim_table[256];
++
++#ifdef LINUX_DRIVER
++spinlock_t expressLock = SPIN_LOCK_UNLOCKED;
++static long flags = 0;
 +#endif
-+    if (rebp)
-+       *rebp = ebp;
 +
-+    return 0;
-+}
-+
-+int bt_stack(struct task_struct *task, struct pt_regs *regs,
-+             unsigned long *stack)
++unsigned long GetNumber(unsigned char *p, unsigned char **rp, unsigned long *opl, unsigned long *retCode, unsigned long mode)
 +{
-+    unsigned long ebp = 0;
 +
-+    if (!task)
-+       task = current;
++    unsigned char *op, *pp = NULL;
++    unsigned long c = 0, decimal = 0, hex_found = 0, invalid = 0, valid = 0;
 +
-+    if (!stack) 
++    pp = op = p;
++    while (*p)
 +    {
-+       unsigned long dummy;
-+
-+       stack = &dummy;
-+       if (task && task != current)
-+       {  
-+          if (mdb_verify_rw((void *)&task->thread.sp, 4))
-+             return 0;
-+
-+          // stack = (unsigned long *)task->thread.esp;
-+          stack = (unsigned long *)
-+                  mdb_getword((unsigned long)&task->thread.sp, 4);
++       if (*p == 'X' || *p == 'x')  
++       {
++          hex_found = 1;
++          p++;
++          pp = p;
 +       }
-+    }
 +
-+#ifdef CONFIG_FRAME_POINTER
-+    if (!ebp) 
-+    {
-+       if (task == current) 
-+          asm ("movl %%ebp, %0" : "=r" (ebp) : );
++       if (*p >= '0' && *p <= '9')
++       {
++          valid++; 
++	  p++;
++       }
 +       else 
++       if (*p >= 'A' && *p <= 'F')
 +       {
-+          if (mdb_verify_rw((void *)task->thread.sp, 4))
-+             return 0;
-+
-+          // ebp = *(unsigned long *)task->thread.esp;
-+          ebp = (unsigned long)mdb_getword(task->thread.sp, 4);
-+       } 
-+    }
-+#endif
-+
-+    while (1) 
-+    {
-+       struct thread_info *context;
-+
-+       context = (struct thread_info *)
-+                 ((unsigned long)stack & (~(THREAD_SIZE - 1)));
-+
-+       if (mdb_verify_rw(context, 4))
-+          return 0;
-+
-+       if (print_context_stack(context, stack, ebp, &ebp))
-+          return 1;
-+
-+       if (mdb_verify_rw(&context->previous_esp, 4))
-+          return 0;
-+
-+       // stack = (unsigned long *)context->previous_esp;
-+       stack = (unsigned long *)
-+               mdb_getword((unsigned long)&context->previous_esp, 4);
-+       if (!stack)
++	  hex_found = 1;
++          valid++; 
++	  p++;
++       }
++       else 
++       if (*p >= 'a' && *p <= 'f')
++       {
++	  hex_found = 1;
++          valid++; 
++	  p++;
++       }
++       else 
++       if ((*p == 'R') || (*p == 'r'))
++       {
++	  decimal = 1;
++	  p++;
++       }
++       else 
++       if (delim_table[((*p) & 0xFF)])
++	  break;
++       else
++       {
++          invalid = 1;
 +          break;
-+
-+       touch_nmi_watchdog();
++       }
 +    }
-+    return 0;
-+}
 +
-+unsigned char *mdbprompt = "--- More (Q to Quit) ---";
-+int nextline = 0;
++    if (rp)
++       *rp = p;
++    if (opl)
++       *opl = (unsigned long)((unsigned long)p - (unsigned long) op);
 +
-+int mdb_printf(char *fmt, ...)
-+{
-+	char buffer[256];
-+	char keystroke[16];
-+	va_list	ap;
-+	int linecount;
-+	struct console *con;
-+//	struct console *c = console_drivers;
-+
-+        preempt_disable();
-+
-+        linecount = 23;
-+
-+	va_start(ap, fmt);
-+	vsprintf(buffer, fmt, ap);
-+	va_end(ap);
-+
-+	for (con = console_drivers; con; con = con->next) 
-+        {
-+	   if ((con->flags & CON_ENABLED) && con->write &&
-+	        (cpu_online(smp_processor_id()) ||
-+		(con->flags & CON_ANYTIME)))
-+  	      con->write(con, buffer, strlen(buffer));
-+	}
-+
-+//	while (c) 
-+//        {
-+//	   c->write(c, buffer, strlen(buffer));
-+//	   c = c->next;
-+//	}
-+
-+	if (strchr(buffer, '\n') != NULL) 
-+	   nextline++;
-+
-+	if (nextline == linecount) 
-+        {
-+	   nextline = 0;	
-+
-+	   for (con = console_drivers; con; con = con->next) 
-+           {
-+	      if ((con->flags & CON_ENABLED) && con->write &&
-+ 	           (cpu_online(smp_processor_id()) ||
-+	           (con->flags & CON_ANYTIME)))
-+	         con->write(con, mdbprompt, strlen(mdbprompt));
-+	   }  
-+
-+//	   c = console_drivers;
-+//	   while (c) 
-+//           {
-+//	      c->write(c, mdbprompt, strlen(mdbprompt));
-+//	      c = c->next;
-+//	   }
-+
-+	   keystroke[0] = (char)mdb_getkey();
-+	   nextline = 1;	
-+
-+	   if ((keystroke[0] == 'q') || (keystroke[0] == 'Q'))
-+           {
-+	      for (con = console_drivers; con; con = con->next) 
-+              {
-+		 if ((con->flags & CON_ENABLED) && con->write &&
-+ 		     (cpu_online(smp_processor_id()) ||
-+ 		     (con->flags & CON_ANYTIME)))
-+		    con->write(con, "\n", 1);
-+	      }  
-+
-+//	      c = console_drivers;
-+//  	      while (c) 
-+//              { 
-+//	         c->write(c, "\n", 1);
-+//	         c = c->next;
-+//	      }
-+
-+              preempt_enable();
-+              return 1;
-+           }
-+	}
-+        preempt_enable();
-+        return 0;
-+}
-+
-+
-+int mdb_serial_port = 0;
-+
-+int get_modem_char(void)
-+{
-+    unsigned char ch;
-+    int status;
-+
-+    if (mdb_serial_port == 0)
-+       return -1;
-+
-+    if ((status = inb(mdb_serial_port + UART_LSR)) & UART_LSR_DR) 
++    if (invalid && !valid)
 +    {
-+       ch = inb(mdb_serial_port + UART_RX);
-+       switch (ch)
-+       {
-+	   case 0x7f:
-+  	      ch = 8;
-+              break;
-+
-+           case '\t':
-+	      ch = ' ';
-+              break;
-+
-+           case 8:  // backspace
-+              break;
-+
-+	   case 13: // enter
-+	      mdb_printf("\n");
-+              break;
-+
-+           default:
-+	      if (!isprint(ch))
-+	         return(-1);
-+	      mdb_printf("%c", ch);
-+              break;
-+	}
-+ 	return ch;
++       if (retCode)
++          *retCode = -1;   // invalid string
++       return 0;
 +    }
-+    return -1;
++
++    p = pp;
++
++    if (mode)
++       decimal = 1;
++
++    if (decimal)
++    {
++       // parse as decimal number;
++       while (*p)
++       {
++	     if (*p >= '0' && *p <= '9')
++		c = (c * 10) + (*p - '0');
++	     else
++		break;
++	  p++;
++       }
++    }
++    else 
++    if (hex_found)
++    {
++       // parse as hex number;
++       while (*p)
++       {
++	  if (*p >= '0' && *p <= '9')
++	     c = (c << 4) | (*p - '0');
++	  else if (*p >= 'A' && *p <= 'F')
++	     c = (c << 4) | (*p - 'A' + 10);
++	  else if (*p >= 'a' && *p <= 'f')
++	     c = (c << 4) | (*p - 'a' + 10);
++	  else
++	     break;
++	  p++;
++       }
++    }
++    else  // default parses as hex
++    {
++       // parse as hex number;
++       while (*p)
++       {
++	  if (*p >= '0' && *p <= '9')
++	     c = (c << 4) | (*p - '0');
++	  else if (*p >= 'A' && *p <= 'F')
++	     c = (c << 4) | (*p - 'A' + 10);
++	  else if (*p >= 'a' && *p <= 'f')
++	     c = (c << 4) | (*p - 'a' + 10);
++	  else
++	     break;
++	  p++;
++       }
++    }
++
++    if (retCode)
++       *retCode = 0;   
++
++    return (c);
++
 +}
 +
-+int mdb_suppress_crlf = 0;
-+static int get_kbd_char(void)
++
++unsigned char *parseTokens(StackFrame *stackFrame, unsigned char *p, unsigned long mode)
 +{
-+	int	scancode, scanstatus;
-+	static int shift_lock;	/* CAPS LOCK state (0-off, 1-on) */
-+	static int shift_key;	/* Shift next keypress */
-+	static int ctrl_key;
-+	u_short keychar;
-+	extern u_short plain_map[], shift_map[], ctrl_map[];
 +
-+	if ((inb(KBD_STATUS_REG) & KBD_STAT_OBF) == 0)
-+		return -1;
++    register unsigned long i, value;
++    unsigned char symbol[256], *s;
++    unsigned char *tmp, *op;
++    unsigned long delta, retCode = 0;
 +
-+	/*
-+	 * Fetch the scancode
-+	 */
-+	scancode = inb(KBD_DATA_REG);
-+	scanstatus = inb(KBD_STATUS_REG);
++    op = p;
++    TokenCount = 0;
++    while (TokenCount < 200 && (unsigned long)p - (unsigned long)op < 200)
++    {
++       if (isalpha(*p) || *p == '_' ||  *p == '@' || *p == '$')
++       {
++	  s = p;
++	  for (i=0; i < 255; i++)
++          {
++             if (delim_table[((s[i]) & 0xFF)])
++                break;
 +
-+	/*
-+	 * Ignore mouse events.
-+	 */
-+	if (scanstatus & KBD_STAT_MOUSE_OBF)
-+		return -1;
++             if (!isprint(s[i]))
++                break;
 +
-+	/*
-+	 * Ignore release, trigger on make
-+	 * (except for shift keys, where we want to
-+	 *  keep the shift state so long as the key is
-+	 *  held down).
-+	 */
++	     symbol[i] = s[i];
++          }
++	  symbol[i] = '\0';
 +
-+	if (((scancode & 0x7f) == 0x2a) || 
-+            ((scancode & 0x7f) == 0x36)) 
-+        {
-+		/*
-+		 * Next key may use shift table
-+		 */
-+		if ((scancode & 0x80) == 0) {
-+			shift_key=1;
-+		} else {
-+			shift_key=0;
-+		}
-+		return -1;
-+	}
++	  value = GetValueFromSymbol(symbol);
++	  if (value)
++	  {
++	     TokenIndex[TokenCount] = (unsigned long) ((unsigned long) p - (unsigned long) op);
++	     TokenValue[TokenCount] = value;
++	     TokenType[TokenCount++] = NUMBER_TOKEN;
++	     p = &s[i];   // bump the pointer past the symbol
++	  }
++       }
 +
-+	if ((scancode & 0x7f) == 0x1d) {
-+		/*
-+		 * Left ctrl key
-+		 */
-+		if ((scancode & 0x80) == 0) {
-+			ctrl_key = 1;
-+		} else {
-+			ctrl_key = 0;
-+		}
-+		return -1;
-+	}
++       if (stackFrame)
++       {
++	 switch (*p)
++	 {
 +
-+	if ((scancode & 0x80) != 0)
-+		return -1;
++	  case '\0':
++	     TokenIndex[TokenCount] = (unsigned long) ((unsigned long) p - (unsigned long) op);
++	     TokenType[TokenCount++] = NULL_TOKEN;
++	     return (p);
 +
-+	scancode &= 0x7f;
++	  case ']':
++	     TokenIndex[TokenCount] = (unsigned long) ((unsigned long) p - (unsigned long) op);
++	     TokenType[TokenCount++] = DREF_CLOSE_TOKEN;
++	     p++;
++	     break;
 +
-+	/*
-+	 * Translate scancode
-+	 */
++	  case '(':
++	     TokenIndex[TokenCount] = (unsigned long) ((unsigned long) p - (unsigned long) op);
++	     TokenType[TokenCount++] = BB_TOKEN;
++	     p++;
++	     break;
 +
-+	if (scancode == 0x3a) {
-+		/*
-+		 * Toggle caps lock
-+		 */
-+		shift_lock ^= 1;
-+		return -1;
-+	}
++	  case ')':
++	     TokenIndex[TokenCount] = (unsigned long) ((unsigned long) p - (unsigned long) op);
++	     TokenType[TokenCount++] = EB_TOKEN;
++	     p++;
++	     break;
 +
-+	if (scancode == 0x0e) {
-+		/*
-+		 * Backspace
-+		 */
-+		return 8;
-+	}
++	  case '+':
++	     TokenIndex[TokenCount] = (unsigned long) ((unsigned long) p - (unsigned long) op);
++	     TokenType[TokenCount++] = PLUS_TOKEN;
++	     p++;
++	     break;
 +
-+	if (scancode == 0xe0) {
-+		return -1;
-+	}
++	  case '-':
++	     TokenIndex[TokenCount] = (unsigned long) ((unsigned long) p - (unsigned long) op);
++	     TokenType[TokenCount++] = MINUS_TOKEN;
++	     p++;
++	     break;
 +
-+	/*
-+	 * For Japanese 86/106 keyboards
-+	 * 	See comment in drivers/char/pc_keyb.c.
-+	 * 	- Masahiro Adegawa
-+	 */
-+	if (scancode == 0x73) {
-+		scancode = 0x59;
-+	} else if (scancode == 0x7d) {
-+		scancode = 0x7c;
-+	}
++	  case '*':
++	     TokenIndex[TokenCount] = (unsigned long) ((unsigned long) p - (unsigned long) op);
++	     TokenType[TokenCount++] = MULTIPLY_TOKEN;
++	     p++;
++	     break;
 +
-+	if (!shift_lock && !shift_key && !ctrl_key) {
-+		keychar = plain_map[scancode];
-+	} else if (shift_lock || shift_key) {
-+		keychar = shift_map[scancode];
-+	} else if (ctrl_key) {
-+		keychar = ctrl_map[scancode];
-+	} else {
-+		keychar = 0x0020;
-+		mdb_printf("Unknown state/scancode (%d)\n", scancode);
-+	}
++	  case '/':
++	     TokenIndex[TokenCount] = (unsigned long) ((unsigned long) p - (unsigned long) op);
++	     TokenType[TokenCount++] = DIVIDE_TOKEN;
++	     p++;
++	     break;
 +
-+	keychar &= 0x0fff;
-+	if (keychar == '\t')
-+		keychar = ' ';
-+	
-+        switch (keychar)
-+        {
-+           case K_F1:
-+           case K_F2:
-+           case K_F3:
-+           case K_F4:
-+           case K_F5:
-+           case K_F6:
-+           case K_F7:
-+           case K_F8:
-+           case K_F9:
-+           case K_F10:
-+           case K_F11:
-+           case K_F12:
-+	      return keychar;
-+           default:
-+              break;
-+        }
++	  case '%':
++	     TokenIndex[TokenCount] = (unsigned long) ((unsigned long) p - (unsigned long) op);
++	     TokenType[TokenCount++] = MOD_TOKEN;
++	     p++;
++	     break;
 +
-+	switch (KTYP(keychar)) 
-+        {
-+	   case KT_LETTER:
-+	   case KT_LATIN:
-+		if (isprint(keychar))
-+			break;		/* printable characters */
-+		/* drop through */
-+	   case KT_SPEC:
-+		if (keychar == K_ENTER)
-+			break;
-+		/* drop through */
-+           case KT_PAD:
-+                switch (keychar)
-+                { 
-+                   case K_P0:
-+                   case K_P1:
-+                   case K_P2:
-+                   case K_P4:
-+                   case K_P6:
-+                   case K_P7:
-+                   case K_P8:
-+                   case K_PDOT:
-+                      return keychar;
-+                }
-+                return -1;
++	  case '~':
++	     TokenIndex[TokenCount] = (unsigned long) ((unsigned long) p - (unsigned long) op);
++	     TokenType[TokenCount++] = NEG_TOKEN;
++	     p++;
++	     break;
 +
-+           case KT_CUR:
-+                switch (keychar)
-+                { 
-+                   case K_DOWN:
-+                   case K_LEFT:
-+                   case K_RIGHT:
-+                   case K_UP:
-+                      return keychar;
-+                }
-+                return -1;
++	  case '^':
++	     TokenIndex[TokenCount] = (unsigned long) ((unsigned long) p - (unsigned long) op);
++	     TokenType[TokenCount++] = XOR_TOKEN;
++	     p++;
++	     break;
 +
-+	   default:
-+		return(-1);	/* ignore unprintables */
-+	}
-+
-+	if ((scancode & 0x7f) == 0x1c) {
-+		/*
-+		 * enter key.  All done.  Absorb the release scancode.
-+		 */
-+		while ((inb(KBD_STATUS_REG) & KBD_STAT_OBF) == 0)
-+			;
-+
-+		/*
-+		 * Fetch the scancode
-+		 */
-+		scancode = inb(KBD_DATA_REG);
-+		scanstatus = inb(KBD_STATUS_REG);
-+
-+		while (scanstatus & KBD_STAT_MOUSE_OBF) 
-+                {
-+		   scancode = inb(KBD_DATA_REG);
-+		   scanstatus = inb(KBD_STATUS_REG);
-+		}
-+
-+                // enter-release error
-+		if (scancode != 0x9c) {} ;
-+
-+                if (!mdb_suppress_crlf)
-+		   mdb_printf("\n");
-+		return 13;
-+	}
-+
-+	/*
-+	 * echo the character.
-+	 */
-+	mdb_printf("%c", keychar & 0xff);
-+	return keychar & 0xff;
-+}
-+
-+int mdb_getkey(void)
-+{
-+   int key = -1;
-+
-+   for (;;) 
-+   {
-+      key = get_kbd_char();
-+      if (key != -1)
-+ 	 break;
-+
-+      touch_nmi_watchdog();
-+   }
-+   return key;
-+}
-+
-+int mdb_copy(void *to, void *from, size_t size)
-+{
-+    return __copy_to_user_inatomic(to, from, size);
-+}
-+
-+int mdb_verify_rw(void *addr, size_t size)
-+{
-+    unsigned char data[size];
-+    return (mdb_copy(data, addr, size));
-+}
-+
-+int mdb_getlword(unsigned long *word, unsigned long addr, size_t size)
-+{
-+	int err;
-+
-+	__u8  w1;
-+	__u16 w2;
-+	__u32 w4;
-+	__u64 w8;
-+
-+	*word = 0;	/* Default value if addr or size is invalid */
-+	switch (size) {
-+	case 1:
-+		if (!(err = mdb_copy(&w1, (void *)addr, size)))
-+			*word = w1;
++	  case '!':
++	     p++;
++	     if (*p == '=')
++	     {
++		TokenIndex[TokenCount] = (unsigned long) ((unsigned long) p - (unsigned long) op);
++		TokenType[TokenCount++] = NOT_EQUAL_TOKEN;
++		p++;
 +		break;
-+	case 2:
-+		if (!(err = mdb_copy(&w2, (void *)addr, size)))
-+			*word = w2;
-+		break;
-+	case 4:
-+		if (!(err = mdb_copy(&w4, (void *)addr, size)))
-+			*word = w4;
-+		break;
-+	case 8:
-+		if (size <= sizeof(*word)) 
-+                {
-+			if (!(err = mdb_copy(&w8, (void *)addr, size)))
-+				*word = w8;
-+			break;
-+		}
-+	default:
-+		err = -EFAULT;
-+	}
-+	return (err);
-+}
++	     }
++	     TokenIndex[TokenCount] = (unsigned long) ((unsigned long) p - (unsigned long) op);
++	     TokenType[TokenCount++] = NOT_TOKEN;
++	     break;
 +
-+int mdb_putword(unsigned long addr, unsigned long word, size_t size)
-+{
-+	int err;
-+	__u8  w1;
-+	__u16 w2;
-+	__u32 w4;
-+	__u64 w8;
++	  case ' ':   // drop spaces on the floor
++	     p++;
++	     break;
 +
-+	switch (size) {
-+	case 1:
-+		w1 = word;
-+		err = mdb_copy((void *)addr, &w1, size);
++	  //
++	  //  These cases require special handling
++	  //
++
++	  case 'p':
++	  case 'P':
++	     p++;
++	     if (*p == 'F' || *p == 'f')
++	     {
++		if (stackFrame)
++		   TokenValue[TokenCount] = stackFrame->tSystemFlags & PF_FLAG;
++		TokenIndex[TokenCount] = (unsigned long) ((unsigned long) p - (unsigned long) op);
++		TokenType[TokenCount++] = PF_TOKEN;
++		p++;
 +		break;
-+	case 2:
-+		w2 = word;
-+		err = mdb_copy((void *)addr, &w2, size);
++	     }
++	     break;
++
++	  case 'z':
++	  case 'Z':
++	     p++;
++	     if (*p == 'F' || *p == 'f')
++	     {
++		if (stackFrame)
++		   TokenValue[TokenCount] = stackFrame->tSystemFlags & ZF_FLAG;
++		TokenIndex[TokenCount] = (unsigned long) ((unsigned long) p - (unsigned long) op);
++		TokenType[TokenCount++] = ZF_TOKEN;
++		p++;
 +		break;
-+	case 4:
-+		w4 = word;
-+		err = mdb_copy((void *)addr, &w4, size);
++	     }
++	     break;
++
++	  case 'i':
++	  case 'I':
++	     p++;
++	     if (*p == 'F' || *p == 'f')
++	     {
++		if (stackFrame)
++		   TokenValue[TokenCount] = stackFrame->tSystemFlags & IF_FLAG;
++		TokenIndex[TokenCount] = (unsigned long) ((unsigned long) p - (unsigned long) op);
++		TokenType[TokenCount++] = IF_TOKEN;
++		p++;
 +		break;
-+	case 8:
-+		if (size <= sizeof(word)) 
-+                {
-+		   w8 = word;
-+		   err = mdb_copy((void *)addr, &w8, size);
++	     }
++	     break;
++
++	  case 'o':
++	  case 'O':
++	     p++;
++	     if (*p == 'F' || *p == 'f')
++	     {
++		if (stackFrame)
++		   TokenValue[TokenCount] = stackFrame->tSystemFlags & OF_FLAG;
++		TokenIndex[TokenCount] = (unsigned long) ((unsigned long) p - (unsigned long) op);
++		TokenType[TokenCount++] = OF_TOKEN;
++		p++;
++		break;
++	     }
++	     break;
++
++	  case 'v':
++	  case 'V':
++	     p++;
++	     if (*p == 'M' || *p == 'm')
++	     {
++		if (stackFrame)
++		   TokenValue[TokenCount] = stackFrame->tSystemFlags & VM_FLAG;
++		TokenIndex[TokenCount] = (unsigned long) ((unsigned long) p - (unsigned long) op);
++		TokenType[TokenCount++] = VM_TOKEN;
++		p++;
++		break;
++	     }
++	     break;
++
++	  case 'x':  
++	  case 'X':
++	  case '0':
++	  case '1':
++	  case '2':
++	  case '3':
++	  case '4':
++	  case '5':
++	  case '6':
++	  case '7':
++	  case '8':
++	  case '9':
++	     TokenIndex[TokenCount] = (unsigned long) ((unsigned long) p - (unsigned long) op);
++	     TokenValue[TokenCount] = GetNumber(p, &p, &delta, &retCode, mode);
++	     ((retCode) ? (TokenType[TokenCount++] = INVALID_NUMBER_TOKEN)
++	                : (TokenType[TokenCount++] = NUMBER_TOKEN));
++	     break;
++
++	  case 'a':
++	  case 'A':
++	     tmp = p;
++	     tmp++;
++	     if ((*tmp == 'F' || *tmp == 'f') && (*(tmp + 1) == ' ' || *(tmp + 1) == '=' ))
++	     {
++		if (stackFrame)
++		   TokenValue[TokenCount] = stackFrame->tSystemFlags & AF_FLAG;
++		TokenIndex[TokenCount] = (unsigned long) ((unsigned long) p - (unsigned long) op);
++		TokenType[TokenCount++] = AF_TOKEN;
++		p++;
++		p++;
++		break;
++	     }
++	     if ((*tmp == 'C' || *tmp == 'c') && (*(tmp + 1) == ' ' || *(tmp + 1) == '=' ))
++	     {
++		if (stackFrame)
++		   TokenValue[TokenCount] = stackFrame->tSystemFlags & AC_FLAG;
++		TokenIndex[TokenCount] = (unsigned long) ((unsigned long) p - (unsigned long) op);
++		TokenType[TokenCount++] = AC_TOKEN;
++		p++;
++		p++;
++		break;
++	     }
++	     TokenIndex[TokenCount] = (unsigned long) ((unsigned long) p - (unsigned long) op);
++	     TokenValue[TokenCount] = GetNumber(p, &p, &delta, &retCode, mode);
++	     ((retCode) ? (TokenType[TokenCount++] = INVALID_NUMBER_TOKEN)
++	                : (TokenType[TokenCount++] = NUMBER_TOKEN));
++	     break;
++
++
++	  case 'b':
++	  case 'B':
++	     TokenIndex[TokenCount] = (unsigned long) ((unsigned long) p - (unsigned long) op);
++	     TokenValue[TokenCount] = GetNumber(p, &p, &delta, &retCode, mode);
++	     ((retCode) ? (TokenType[TokenCount++] = INVALID_NUMBER_TOKEN)
++	                : (TokenType[TokenCount++] = NUMBER_TOKEN));
++	     break;
++
++	  case 'c':
++	  case 'C':
++	     tmp = p;
++	     tmp++;
++	     if (*tmp == 'S' || *tmp == 's')
++	     {
++		if (stackFrame)
++		   TokenValue[TokenCount] = stackFrame->tCS;
++		TokenIndex[TokenCount] = (unsigned long) ((unsigned long) p - (unsigned long) op);
++		TokenType[TokenCount++] = CS_TOKEN;
++		p++;
++		p++;
++		break;
++	     }
++	     if ((*tmp == 'F' || *tmp == 'f') && (*(tmp + 1) == ' ' || *(tmp + 1) == '=' ))
++	     {
++		if (stackFrame)
++		   TokenValue[TokenCount] = stackFrame->tSystemFlags & CF_FLAG;
++		TokenIndex[TokenCount] = (unsigned long) ((unsigned long) p - (unsigned long) op);
++		TokenType[TokenCount++] = CF_TOKEN;
++		p++;
++		p++;
++		break;
++	     }
++	     TokenIndex[TokenCount] = (unsigned long) ((unsigned long) p - (unsigned long) op);
++	     TokenValue[TokenCount] = GetNumber(p, &p, &delta, &retCode, mode);
++	     ((retCode) ? (TokenType[TokenCount++] = INVALID_NUMBER_TOKEN)
++	                : (TokenType[TokenCount++] = NUMBER_TOKEN));
++	     break;
++
++	  case 'd':
++	  case 'D':
++	     tmp = p;
++	     tmp++;
++	     if (*tmp == 'S' || *tmp == 's')
++	     {
++		if (stackFrame)
++		   TokenValue[TokenCount] = stackFrame->tDS;
++		TokenIndex[TokenCount] = (unsigned long) ((unsigned long) p - (unsigned long) op);
++		TokenType[TokenCount++] = DS_TOKEN;
++		p++;
++		p++;
++		break;
++	     }
++	     if ((*tmp == 'F' || *tmp == 'f') && (*(tmp + 1) == ' ' || *(tmp + 1) == '=' ))
++	     {
++		if (stackFrame)
++		   TokenValue[TokenCount] = stackFrame->tSystemFlags & DF_FLAG;
++		TokenIndex[TokenCount] = (unsigned long) ((unsigned long) p - (unsigned long) op);
++		TokenType[TokenCount++] = DF_TOKEN;
++		p++;
++		p++;
++		break;
++	     }
++	     TokenIndex[TokenCount] = (unsigned long) ((unsigned long) p - (unsigned long) op);
++	     TokenValue[TokenCount] = GetNumber(p, &p, &delta, &retCode, mode);
++	     ((retCode) ? (TokenType[TokenCount++] = INVALID_NUMBER_TOKEN)
++	                : (TokenType[TokenCount++] = NUMBER_TOKEN));
++	     break;
++
++	  case 'e':
++	  case 'E':
++	     tmp = p;
++	     tmp++;
++	     if (*tmp == 'A' || *tmp == 'a')
++	     {
++		tmp++;
++		if (*tmp == 'X' || *tmp == 'x')
++		{
++		   if (stackFrame)
++		      TokenValue[TokenCount] = stackFrame->tEAX;
++		   TokenIndex[TokenCount] = (unsigned long) ((unsigned long) p - (unsigned long) op);
++		   TokenType[TokenCount++] = EAX_TOKEN;
++		   p++;
++		   p++;
++		   p++;
 +		   break;
 +		}
-+	default:
-+		err = -EFAULT;
-+	}
-+	return (err);
-+}
++		TokenIndex[TokenCount] = (unsigned long) ((unsigned long) p - (unsigned long) op);
++		TokenValue[TokenCount] = GetNumber(p, &p, &delta, &retCode, 
++                                                   mode);
++	        ((retCode) ? (TokenType[TokenCount++] = INVALID_NUMBER_TOKEN)
++	                   : (TokenType[TokenCount++] = NUMBER_TOKEN));
++		break;
++	     }
++	     if (*tmp == 'B' || *tmp == 'b')
++	     {
++		tmp++;
++		if (*tmp == 'X' || *tmp == 'x')
++		{
++		   if (stackFrame)
++		      TokenValue[TokenCount] = stackFrame->tEBX;
++		   TokenIndex[TokenCount] = (unsigned long) ((unsigned long) p - (unsigned long) op);
++		   TokenType[TokenCount++] = EBX_TOKEN;
++		   p++;
++		   p++;
++		   p++;
++		   break;
++		}
++		if (*tmp == 'P' || *tmp == 'p')
++		{
++		   if (stackFrame)
++		      TokenValue[TokenCount] = stackFrame->tEBP;
++		   TokenIndex[TokenCount] = (unsigned long) ((unsigned long) p - (unsigned long) op);
++		   TokenType[TokenCount++] = EBP_TOKEN;
++		   p++;
++		   p++;
++		   p++;
++		   break;
++		}
++		TokenIndex[TokenCount] = (unsigned long) ((unsigned long) p - (unsigned long) op);
++		TokenValue[TokenCount] = GetNumber(p, &p, &delta, &retCode, 
++                                                   mode);
++	        ((retCode) ? (TokenType[TokenCount++] = INVALID_NUMBER_TOKEN)
++	                   : (TokenType[TokenCount++] = NUMBER_TOKEN));
++		break;
++	     }
++	     if (*tmp == 'C' || *tmp == 'c')
++	     {
++		tmp++;
++		if (*tmp == 'X' || *tmp == 'x')
++		{
++		   if (stackFrame)
++		      TokenValue[TokenCount] = stackFrame->tECX;
++		   TokenIndex[TokenCount] = (unsigned long) ((unsigned long) p - (unsigned long) op);
++		   TokenType[TokenCount++] = ECX_TOKEN;
++		   p++;
++		   p++;
++		   p++;
++		   break;
++		}
++		TokenIndex[TokenCount] = (unsigned long) ((unsigned long) p - (unsigned long) op);
++		TokenValue[TokenCount] = GetNumber(p, &p, &delta, &retCode, 
++                                                   mode);
++	        ((retCode) ? (TokenType[TokenCount++] = INVALID_NUMBER_TOKEN)
++	                   : (TokenType[TokenCount++] = NUMBER_TOKEN));
++		break;
++	     }
++	     if (*tmp == 'D' || *tmp == 'd')
++	     {
++		tmp++;
++		if (*tmp == 'X' || *tmp == 'x')
++		{
++		   if (stackFrame)
++		      TokenValue[TokenCount] = stackFrame->tEDX;
++		   TokenIndex[TokenCount] = (unsigned long) ((unsigned long) p - (unsigned long) op);
++		   TokenType[TokenCount++] = EDX_TOKEN;
++		   p++;
++		   p++;
++		   p++;
++		   break;
++		}
++		if (*tmp == 'I' || *tmp == 'i')
++		{
++		   if (stackFrame)
++		      TokenValue[TokenCount] = stackFrame->tEDI;
++		   TokenIndex[TokenCount] = (unsigned long) ((unsigned long) p - (unsigned long) op);
++		   TokenType[TokenCount++] = EDI_TOKEN;
++		   p++;
++		   p++;
++		   p++;
++		   break;
++		}
++		TokenIndex[TokenCount] = (unsigned long) ((unsigned long) p - (unsigned long) op);
++		TokenValue[TokenCount] = GetNumber(p, &p, &delta, &retCode, 
++                                                   mode);
++	        ((retCode) ? (TokenType[TokenCount++] = INVALID_NUMBER_TOKEN)
++	                   : (TokenType[TokenCount++] = NUMBER_TOKEN));
++		break;
++	     }
++	     if (*tmp == 'S' || *tmp == 's')
++	     {
++		tmp++;
++		if (*tmp == 'P' || *tmp == 'p')
++		{
++		   if (stackFrame)
++		      TokenValue[TokenCount] = stackFrame->tESP;
++		   TokenIndex[TokenCount] = (unsigned long) ((unsigned long) p - (unsigned long) op);
++		   TokenType[TokenCount++] = ESP_TOKEN;
++		   p++;
++		   p++;
++		   p++;
++		   break;
++		}
++		if (*tmp == 'I' || *tmp == 'i')
++		{
++		   if (stackFrame)
++		      TokenValue[TokenCount] = stackFrame->tESI;
++		   TokenIndex[TokenCount] = (unsigned long) ((unsigned long) p - (unsigned long) op);
++		   TokenType[TokenCount++] = ESI_TOKEN;
++		   p++;
++		   p++;
++		   p++;
++		   break;
++		}
++		if (stackFrame)
++		   TokenValue[TokenCount] = stackFrame->tES;
++		TokenIndex[TokenCount] = (unsigned long) ((unsigned long) p - (unsigned long) op);
++		TokenType[TokenCount++] = ES_TOKEN;
++		p++;
++		p++;
++		break;
++	     }
++	     if (*tmp == 'I' || *tmp == 'i')
++	     {
++		tmp++;
++		if (*tmp == 'P' || *tmp == 'p')
++		{
++		   if (stackFrame)
++		      TokenValue[TokenCount] = stackFrame->tEIP;
++		   TokenIndex[TokenCount] = (unsigned long) ((unsigned long) p - (unsigned long) op);
++		   TokenType[TokenCount++] = EIP_TOKEN;
++		   p++;
++		   p++;
++		   p++;
++		   break;
++		}
++	     }
++	     TokenIndex[TokenCount] = (unsigned long) ((unsigned long) p - (unsigned long) op);
++	     TokenValue[TokenCount] = GetNumber(p, &p, &delta, &retCode, mode);
++	     ((retCode) ? (TokenType[TokenCount++] = INVALID_NUMBER_TOKEN)
++	                : (TokenType[TokenCount++] = NUMBER_TOKEN));
++	     break;
 +
-+unsigned long mdb_getword(unsigned long addr, size_t size)
-+{
-+   unsigned long data = 0;
-+   register int ret;
-+   
-+   ret = mdb_getlword(&data, addr, size);
-+   if (ret)
-+      return 0;
++	  case 'f':
++	  case 'F':
++	     tmp = p;
++	     tmp++;
++	     if (*tmp == 'S' || *tmp == 's')
++	     {
++		if (stackFrame)
++		   TokenValue[TokenCount] = stackFrame->tFS;
++		TokenIndex[TokenCount] = (unsigned long) ((unsigned long) p - (unsigned long) op);
++		TokenType[TokenCount++] = FS_TOKEN;
++		p++;
++		p++;
++		break;
++	     }
++	     TokenIndex[TokenCount] = (unsigned long) ((unsigned long) p - (unsigned long) op);
++	     TokenValue[TokenCount] = GetNumber(p, &p, &delta, &retCode, mode);
++	     ((retCode) ? (TokenType[TokenCount++] = INVALID_NUMBER_TOKEN)
++	                : (TokenType[TokenCount++] = NUMBER_TOKEN));
++	     break;
 +
-+   return data;
-+}
++	  case 'g':
++	  case 'G':   // GS:
++	     p++;
++	     if (*p == 'S' || *p == 's')
++	     {
++		if (stackFrame)
++		   TokenValue[TokenCount] = stackFrame->tGS;
++		TokenIndex[TokenCount] = (unsigned long) ((unsigned long) p - (unsigned long) op);
++		TokenType[TokenCount++] = GS_TOKEN;
++		p++;
++		break;
++	     }
++	     break;
 +
-+int DisplayClosestSymbol(unsigned long address)
-+{
-+    char *modname;
-+    const char *name;
-+    unsigned long offset = 0, size;
-+    char namebuf[KSYM_NAME_LEN+1];
++	  case 's':
++	  case 'S':
++	     p++;
++	     if (*p == 'S' || *p == 's')
++	     {
++		if (stackFrame)
++		   TokenValue[TokenCount] = stackFrame->tSS;
++		TokenIndex[TokenCount] = (unsigned long) ((unsigned long) p - (unsigned long) op);
++		TokenType[TokenCount++] = SS_TOKEN;
++		p++;
++		break;
++	     }
++	     if (*p == 'F' || *p == 'f')
++	     {
++		if (stackFrame)
++		   TokenValue[TokenCount] = stackFrame->tSystemFlags & SF_FLAG;
++		TokenIndex[TokenCount] = (unsigned long) ((unsigned long) p - (unsigned long) op);
++		TokenType[TokenCount++] = SF_TOKEN;
++		p++;
++		break;
++	     }
++	     break;
 +
-+    name = kallsyms_lookup(address, &size, &offset, &modname, namebuf);
-+    if (!name)
-+       return -1;
++	  case '[':
++	     TokenIndex[TokenCount] = (unsigned long) ((unsigned long) p - (unsigned long) op);
++	     TokenType[TokenCount++] = DREF_OPEN_TOKEN;
++	     p++;
++	     if (*p == 'D' || *p == 'd')
++	     {
++		TokenIndex[TokenCount] = (unsigned long) ((unsigned long) p - (unsigned long) op);
++		TokenType[TokenCount++] = DWORD_TOKEN;
++		p++;
++		break;
++	     }
++	     if (*p == 'W' || *p == 'w')
++	     {
++		TokenIndex[TokenCount] = (unsigned long) ((unsigned long) p - (unsigned long) op);
++		TokenType[TokenCount++] = WORD_TOKEN;
++		p++;
++		break;
++	     }
++	     if (*p == 'B' || *p == 'b')
++	     {
++		TokenIndex[TokenCount] = (unsigned long) ((unsigned long) p - (unsigned long) op);
++		TokenType[TokenCount++] = BYTE_TOKEN;
++		p++;
++		break;
++	     }
++	     break;
 +
-+    if (modname)
-+    {
-+       if (offset)
-+          DBGPrint("%s|%s+0x%X\n", modname, name, offset);
++	  case '=':
++	     p++;
++	     if (*p == '=')
++	     {
++		TokenIndex[TokenCount] = (unsigned long) ((unsigned long) p - (unsigned long) op);
++		TokenType[TokenCount++] = EQUAL_TOKEN;
++		p++;
++		break;
++	     }
++	     TokenIndex[TokenCount] = (unsigned long) ((unsigned long) p - (unsigned long) op);
++	     TokenType[TokenCount++] = ASSIGNMENT_TOKEN;
++	     break;
++
++	  case '<':
++	     p++;
++	     if (*p == '<')
++	     {
++		TokenIndex[TokenCount] = (unsigned long) ((unsigned long) p - (unsigned long) op);
++		TokenType[TokenCount++] = LEFT_SHIFT_TOKEN;
++		p++;
++		break;
++	     }
++	     if (*p == '=')
++	     {
++		TokenIndex[TokenCount] = (unsigned long) ((unsigned long) p - (unsigned long) op);
++		TokenType[TokenCount++] = LESS_EQUAL_TOKEN;
++		p++;
++		break;
++	     }
++	     TokenIndex[TokenCount] = (unsigned long) ((unsigned long) p - (unsigned long) op);
++	     TokenType[TokenCount++] = LESS_TOKEN;
++	     break;
++
++	  case '>':
++	     p++;
++	     if (*p == '>')
++	     {
++		TokenIndex[TokenCount] = (unsigned long) ((unsigned long) p - (unsigned long) op);
++		TokenType[TokenCount++] = RIGHT_SHIFT_TOKEN;
++		p++;
++		break;
++	     }
++	     if (*p == '=')
++	     {
++		TokenIndex[TokenCount] = (unsigned long) ((unsigned long) p - (unsigned long) op);
++		TokenType[TokenCount++] = GREATER_EQUAL_TOKEN;
++		p++;
++		break;
++	     }
++	     TokenIndex[TokenCount] = (unsigned long) ((unsigned long) p - (unsigned long) op);
++	     TokenType[TokenCount++] = GREATER_TOKEN;
++	     break;
++
++	  case '|':
++	     p++;
++	     if (*p == '|')
++	     {
++		TokenIndex[TokenCount] = (unsigned long) ((unsigned long) p - (unsigned long) op);
++		TokenType[TokenCount++] = LOGICAL_OR_TOKEN;
++		p++;
++		break;
++	     }
++	     TokenIndex[TokenCount] = (unsigned long) ((unsigned long) p - (unsigned long) op);
++	     TokenType[TokenCount++] = OR_TOKEN;
++	     break;
++
++	  case '&':
++	     p++;
++	     if (*p == '&')
++	     {
++		TokenIndex[TokenCount] = (unsigned long) ((unsigned long) p - (unsigned long) op);
++		TokenType[TokenCount++] = LOGICAL_AND_TOKEN;
++		p++;
++		break;
++	     }
++	     TokenIndex[TokenCount] = (unsigned long) ((unsigned long) p - (unsigned long) op);
++	     TokenType[TokenCount++] = AND_TOKEN;
++	     break;
++
++	  default: // if we get a default, drop the character on the floor
++	     p++;
++	     break;
++
++	 }
++       }
 +       else
-+          DBGPrint("%s|%s\n", modname, name);
++       {
++	 switch (*p)
++	 {
++	  case '\0':
++	     TokenIndex[TokenCount] = (unsigned long) ((unsigned long) p - (unsigned long) op);
++	     TokenType[TokenCount++] = NULL_TOKEN;
++	     return (p);
++
++	  case ']':
++	     TokenIndex[TokenCount] = (unsigned long) ((unsigned long) p - (unsigned long) op);
++	     TokenType[TokenCount++] = DREF_CLOSE_TOKEN;
++	     p++;
++	     break;
++
++	  case '(':
++	     TokenIndex[TokenCount] = (unsigned long) ((unsigned long) p - (unsigned long) op);
++	     TokenType[TokenCount++] = BB_TOKEN;
++	     p++;
++	     break;
++
++	  case ')':
++	     TokenIndex[TokenCount] = (unsigned long) ((unsigned long) p - (unsigned long) op);
++	     TokenType[TokenCount++] = EB_TOKEN;
++	     p++;
++	     break;
++
++	  case '+':
++	     TokenIndex[TokenCount] = (unsigned long) ((unsigned long) p - (unsigned long) op);
++	     TokenType[TokenCount++] = PLUS_TOKEN;
++	     p++;
++	     break;
++
++	  case '-':
++	     TokenIndex[TokenCount] = (unsigned long) ((unsigned long) p - (unsigned long) op);
++	     TokenType[TokenCount++] = MINUS_TOKEN;
++	     p++;
++	     break;
++
++	  case '*':
++	     TokenIndex[TokenCount] = (unsigned long) ((unsigned long) p - (unsigned long) op);
++	     TokenType[TokenCount++] = MULTIPLY_TOKEN;
++	     p++;
++	     break;
++
++	  case '/':
++	     TokenIndex[TokenCount] = (unsigned long) ((unsigned long) p - (unsigned long) op);
++	     TokenType[TokenCount++] = DIVIDE_TOKEN;
++	     p++;
++	     break;
++
++	  case '%':
++	     TokenIndex[TokenCount] = (unsigned long) ((unsigned long) p - (unsigned long) op);
++	     TokenType[TokenCount++] = MOD_TOKEN;
++	     p++;
++	     break;
++
++	  case '~':
++	     TokenIndex[TokenCount] = (unsigned long) ((unsigned long) p - (unsigned long) op);
++	     TokenType[TokenCount++] = NEG_TOKEN;
++	     p++;
++	     break;
++
++	  case '^':
++	     TokenIndex[TokenCount] = (unsigned long) ((unsigned long) p - (unsigned long) op);
++	     TokenType[TokenCount++] = XOR_TOKEN;
++	     p++;
++	     break;
++
++	  case '!':
++	     p++;
++	     if (*p == '=')
++	     {
++		TokenIndex[TokenCount] = (unsigned long) ((unsigned long) p - (unsigned long) op);
++		TokenType[TokenCount++] = NOT_EQUAL_TOKEN;
++		p++;
++		break;
++	     }
++	     TokenIndex[TokenCount] = (unsigned long) ((unsigned long) p - (unsigned long) op);
++	     TokenType[TokenCount++] = NOT_TOKEN;
++	     break;
++
++	  case ' ':   // drop spaces on the floor
++	     p++;
++	     break;
++
++	  //
++	  //  These cases require special handling
++	  //
++
++	  case 'x':
++	  case 'X':
++	  case '0':
++	  case '1':
++	  case '2':
++	  case '3':
++	  case '4':
++	  case '5':
++	  case '6':
++	  case '7':
++	  case '8':
++	  case '9':
++	  case 'a':
++	  case 'A':
++	  case 'b':
++	  case 'B':
++	  case 'c':
++	  case 'C':
++	  case 'd':
++	  case 'D':
++	  case 'e':
++	  case 'E':
++	  case 'f':
++	  case 'F':
++	     TokenIndex[TokenCount] = (unsigned long) ((unsigned long) p - (unsigned long) op);
++	     TokenValue[TokenCount] = GetNumber(p, &p, &delta, &retCode, mode);
++	     ((retCode) ? (TokenType[TokenCount++] = INVALID_NUMBER_TOKEN)
++	                : (TokenType[TokenCount++] = NUMBER_TOKEN));
++	     break;
++
++	  case '[':
++	     TokenIndex[TokenCount] = (unsigned long) ((unsigned long) p - (unsigned long) op);
++	     TokenType[TokenCount++] = DREF_OPEN_TOKEN;
++	     p++;
++	     if (*p == 'D' || *p == 'd')
++	     {
++		TokenIndex[TokenCount] = (unsigned long) ((unsigned long) p - (unsigned long) op);
++		TokenType[TokenCount++] = DWORD_TOKEN;
++		p++;
++		break;
++	     }
++	     if (*p == 'W' || *p == 'w')
++	     {
++		TokenIndex[TokenCount] = (unsigned long) ((unsigned long) p - (unsigned long) op);
++		TokenType[TokenCount++] = WORD_TOKEN;
++		p++;
++		break;
++	     }
++	     if (*p == 'B' || *p == 'b')
++	     {
++		TokenIndex[TokenCount] = (unsigned long) ((unsigned long) p - (unsigned long) op);
++		TokenType[TokenCount++] = BYTE_TOKEN;
++		p++;
++		break;
++	     }
++	     break;
++
++	  case '=':
++	     p++;
++	     if (*p == '=')
++	     {
++		TokenIndex[TokenCount] = (unsigned long) ((unsigned long) p - (unsigned long) op);
++		TokenType[TokenCount++] = EQUAL_TOKEN;
++		p++;
++		break;
++	     }
++	     TokenIndex[TokenCount] = (unsigned long) ((unsigned long) p - (unsigned long) op);
++	     TokenType[TokenCount++] = ASSIGNMENT_TOKEN;
++	     break;
++
++	  case '<':
++	     p++;
++	     if (*p == '<')
++	     {
++		TokenIndex[TokenCount] = (unsigned long) ((unsigned long) p - (unsigned long) op);
++		TokenType[TokenCount++] = LEFT_SHIFT_TOKEN;
++		p++;
++		break;
++	     }
++	     if (*p == '=')
++	     {
++		TokenIndex[TokenCount] = (unsigned long) ((unsigned long) p - (unsigned long) op);
++		TokenType[TokenCount++] = LESS_EQUAL_TOKEN;
++		p++;
++		break;
++	     }
++	     TokenIndex[TokenCount] = (unsigned long) ((unsigned long) p - (unsigned long) op);
++	     TokenType[TokenCount++] = LESS_TOKEN;
++	     break;
++
++	  case '>':
++	     p++;
++	     if (*p == '>')
++	     {
++		TokenIndex[TokenCount] = (unsigned long) ((unsigned long) p - (unsigned long) op);
++		TokenType[TokenCount++] = RIGHT_SHIFT_TOKEN;
++		p++;
++		break;
++	     }
++	     if (*p == '=')
++	     {
++		TokenIndex[TokenCount] = (unsigned long) ((unsigned long) p - (unsigned long) op);
++		TokenType[TokenCount++] = GREATER_EQUAL_TOKEN;
++		p++;
++		break;
++	     }
++	     TokenIndex[TokenCount] = (unsigned long) ((unsigned long) p - (unsigned long) op);
++	     TokenType[TokenCount++] = GREATER_TOKEN;
++	     break;
++
++	  case '|':
++	     p++;
++	     if (*p == '|')
++	     {
++		TokenIndex[TokenCount] = (unsigned long) ((unsigned long) p - (unsigned long) op);
++		TokenType[TokenCount++] = LOGICAL_OR_TOKEN;
++		p++;
++		break;
++	     }
++	     TokenIndex[TokenCount] = (unsigned long) ((unsigned long) p - (unsigned long) op);
++	     TokenType[TokenCount++] = OR_TOKEN;
++	     break;
++
++	  case '&':
++	     p++;
++	     if (*p == '&')
++	     {
++		TokenIndex[TokenCount] = (unsigned long) ((unsigned long) p - (unsigned long) op);
++		TokenType[TokenCount++] = LOGICAL_AND_TOKEN;
++		p++;
++		break;
++	     }
++	     TokenIndex[TokenCount] = (unsigned long) ((unsigned long) p - (unsigned long) op);
++	     TokenType[TokenCount++] = AND_TOKEN;
++	     break;
++
++	  default: // if we get a default, drop the character on the floor
++	     p++;
++	     break;
++
++	 }
++       }
 +    }
-+    else
-+    {
-+       if (offset)
-+          DBGPrint("%s+0x%X\n", name, offset);
-+       else
-+          DBGPrint("%s\n", name);
-+    }
-+    return 0;
++    return p;
++
 +}
 +
-+void DumpOSSymbolTableMatch(unsigned char *symbol)
++void displayExpressionHelp(void)
 +{
-+    mdb_kallsyms(symbol, mdb_printf);
-+    return;
++
++       if (DBGPrint("Arithmetic Operators\n")) return;
++       if (DBGPrint("\n")) return;
++       if (DBGPrint("+   add\n")) return;
++       if (DBGPrint("-   subtract\n")) return;
++       if (DBGPrint("*   multiply\n")) return;
++       if (DBGPrint("/   divide\n")) return;
++       if (DBGPrint("<<  bit shift left\n")) return;
++       if (DBGPrint(">>  bit shift right\n")) return;
++       if (DBGPrint("|   OR operator\n")) return;
++       if (DBGPrint("&   AND operator\n")) return;
++       if (DBGPrint("^   XOR operator\n")) return;
++       if (DBGPrint("~   NEG operator\n")) return;
++       if (DBGPrint("%%   MODULO operator\n")) return;
++       if (DBGPrint("\n")) return;
++       if (DBGPrint("Example 1:\n")) return;
++       if (DBGPrint("(0)> .e (100 + 100)\n")) return;
++       if (DBGPrint("(0)> result = 0x200 (512)\n")) return;
++       if (DBGPrint("\n")) return;
++       if (DBGPrint("Example 2:\n")) return;
++       if (DBGPrint("(0)> .e (1 << 20)\n")) return;
++       if (DBGPrint("(0)> result = 0x00100000 (1,024,000)\n")) return;
++       if (DBGPrint("\n")) return;
++       if (DBGPrint("Example 3:\n")) return;
++       if (DBGPrint("(0)> .e (FEF023 & 100F)\n")) return;
++       if (DBGPrint("(0)> result = 0x1003 (4099)\n")) return;
++       if (DBGPrint("\n")) return;
++       if (DBGPrint("Boolean Operators (Conditional Breakpoint)\n")) return;
++       if (DBGPrint("\n")) return;
++       if (DBGPrint("==      is equal to\n")) return;
++       if (DBGPrint("!=      is not equal to\n")) return;
++       if (DBGPrint("!<expr> is not\n")) return;
++       if (DBGPrint(">       is greater than\n")) return;
++       if (DBGPrint("<       is less than\n")) return;
++       if (DBGPrint(">=      is greater than or equal to\n")) return;
++       if (DBGPrint("<=      if less than or equal to\n")) return;
++       if (DBGPrint("||      logical OR operator\n")) return;
++       if (DBGPrint("&&      logical AND operator\n")) return;
++       if (DBGPrint("\n")) return;
++       if (DBGPrint("all breakpoint conditions must be enclosed in brackets () to\n")) return;
++       if (DBGPrint("evaluate correctly\n")) return;
++       if (DBGPrint("\n")) return;
++       if (DBGPrint("Example 1 (Execute Breakpoint):\n")) return;
++       if (DBGPrint("(0)> b 37000 (EAX == 20 && EBX <= 4000)\n")) return;
++       if (DBGPrint("breakpoint will activate if condition is true (returns 1)\n")) return;
++       if (DBGPrint("\n")) return;
++       if (DBGPrint("Example 2 (IO Breakpoint):\n")) return;
++       if (DBGPrint("(0)> bi 3D4 (!EBX && [d ESI+40] != 2000)\n")) return;
++       if (DBGPrint("breakpoint will activate if condition is true (returns 1)\n")) return;
++       if (DBGPrint("\n")) return;
++       if (DBGPrint("\n")) return;
++       if (DBGPrint("Register Operators\n")) return;
++       if (DBGPrint("\n")) return;
++       if (DBGPrint("EAX, EBX, ECX, EDX        - general registers\n")) return;
++       if (DBGPrint("ESI, EDI, EBP, ESP        - pointer registers\n")) return;
++       if (DBGPrint("EIP, <symbol>             - instruction pointer or symbol\n")) return;
++       if (DBGPrint("CS, DS, ES, FS, GS, SS    - segment registers\n")) return;
++       if (DBGPrint("CF, PF, AF, ZF, SF, IF    - flags\n")) return;
++       if (DBGPrint("DF, OF, VM, AC\n")) return;
++       if (DBGPrint("=                         - set equal to\n")) return;
++       if (DBGPrint("\n")) return;
++       if (DBGPrint("Example 1:\n")) return;
++       if (DBGPrint("(0)> EAX = 0032700 \n")) return;
++       if (DBGPrint("EAX changed to 0x0032700\n")) return;
++       if (DBGPrint("\n")) return;
++       if (DBGPrint("Example 2:\n")) return;
++       if (DBGPrint("(0)> u thread_switch\n")) return;
++       if (DBGPrint("unassembles function thread_switch\n")) return;
++       if (DBGPrint("\n")) return;
++       if (DBGPrint("Example 3 (Dump):\n")) return;
++       if (DBGPrint("(0)> d EBP+ECX\n")) return;
++       if (DBGPrint("(dumps [d EBP + ECX])\n")) return;
++       if (DBGPrint("[addr] 00 00 00 01 02 04 07 ...\n")) return;
++       if (DBGPrint("[addr] 00 34 56 00 7A 01 00 ...\n")) return;
++       if (DBGPrint("\n")) return;
++       if (DBGPrint("Bracket Operators\n")) return;
++       if (DBGPrint("\n")) return;
++       if (DBGPrint("(       begin expression bracket\n")) return;
++       if (DBGPrint(")       end expression bracket\n")) return;
++       if (DBGPrint("[       begin pointer\n")) return;
++       if (DBGPrint("]       end pointer\n")) return;
++       if (DBGPrint("d       Dunsigned short reference\n")) return;
++       if (DBGPrint("w       unsigned short reference\n")) return;
++       if (DBGPrint("b       unsigned char reference\n")) return;
++       if (DBGPrint("<num>r  parse number as decimal not hex flag"
++                    " (e.g. 512r == 200)\n")) return;
++       if (DBGPrint("Note - Dunsigned short,unsigned short, and unsigned char dereference operators must\n"))          return;
++       if (DBGPrint("immediately follow pointer brackets (no spaces)\n"))                 return;
++       if (DBGPrint("i.e.  [d <addr/symbol>] or [w <addr/symbol>] or\n"))
++           return;
++       if (DBGPrint("[b <addr/symbol>], etc.\n")) 
++           return;
++       if (DBGPrint("\n")) return;
++       if (DBGPrint("Example 1 (dump):\n")) return;
++       if (DBGPrint("(0)> d [d EAX+100r] \n")) return;
++       if (DBGPrint("[eax + 100 (dec)] 00 00 00 01 02 04 07 00\n")) return;
++       if (DBGPrint("\n")) return;
++       if (DBGPrint("Example 2 (dump):\n")) return;
++       if (DBGPrint("(0)> d [w 003400] \n")) return;
++       if (DBGPrint("[addr (hex)] 00 22 00 01 02 04 07 ...\n")) return;
++       if (DBGPrint("[addr (hex)] 00 31 A1 00 6A 05 00 ...\n")) return;
++       if (DBGPrint("\n")) return;
++       if (DBGPrint("Example 3 (break):\n")) return;
++       if (DBGPrint("(0)> b = 7A000 (EAX + ECX == 30) && ([d B8000+50]  == 0x07)\n")) return;
++       if (DBGPrint("breakpoint will activate if condition is true (returns 1)\n")) return;
++       if (DBGPrint("\n")) return;
++
++       return;
++
 +}
 +
-+unsigned long GetValueFromSymbol(unsigned char *symbol)
++unsigned long deref(unsigned long type, unsigned long value)
 +{
-+   return ((unsigned long)kallsyms_lookup_name(symbol));
-+}
++   unsigned long *pd;
++   unsigned short *pw;
++   unsigned char *pb;
 +
-+
-+unsigned char *GetModuleInfoFromSymbolValue(unsigned long value, unsigned char *buf, unsigned long len)
-+{
-+    char *modname;
-+    const char *name;
-+    unsigned long offset, size;
-+    char namebuf[KSYM_NAME_LEN+1];
-+
-+    name = kallsyms_lookup(value, &size, &offset, &modname, namebuf);
-+    if (modname && buf)
-+    {
-+       strncpy(buf, modname, len);
-+       return (unsigned char *)buf;
-+    }
-+    return NULL;
-+}
-+
-+unsigned char *GetSymbolFromValue(unsigned long value, unsigned char *buf, unsigned long len)
-+{
-+    char *modname;
-+    const char *name;
-+    unsigned long offset, size;
-+    char namebuf[KSYM_NAME_LEN+1];
-+
-+    name = kallsyms_lookup(value, &size, &offset, &modname, namebuf);
-+    if (!name)
-+       return NULL;
-+
-+    if (!offset && buf)
-+    {
-+       strncpy(buf, namebuf, len);
-+       return (unsigned char *)buf;
-+    }
-+
-+    return NULL;
-+}
-+
-+unsigned char *GetSymbolFromValueWithOffset(unsigned long value, unsigned long *sym_offset,
-+                                   unsigned char *buf, unsigned long len)
-+{
-+    char *modname;
-+    const char *name;
-+    unsigned long offset, size;
-+    char namebuf[KSYM_NAME_LEN+1];
-+
-+    name = kallsyms_lookup(value, &size, &offset, &modname, namebuf);
-+    if (!name || !buf)
-+       return NULL;
-+
-+    if (sym_offset)
-+      *sym_offset = offset;
-+
-+    strncpy(buf, namebuf, len);
-+    return (unsigned char *)buf;
-+}
-+
-+unsigned char *GetSymbolFromValueOffsetModule(unsigned long value, unsigned long *sym_offset,
-+                                     unsigned char **module, unsigned char *buf, unsigned long len)
-+{
-+    char *modname;
-+    const char *name;
-+    unsigned long offset, size;
-+    char namebuf[KSYM_NAME_LEN+1];
-+
-+    name = kallsyms_lookup(value, &size, &offset, &modname, namebuf);
-+    if (!name || !buf)
-+       return NULL;
-+
-+    if (sym_offset)
-+      *sym_offset = offset;
-+
-+    if (module)
-+       *module = modname;
-+
-+    strncpy(buf, namebuf, len);
-+    return (unsigned char *)buf;
-+}
-+
-+unsigned long get_processor_id(void)
-+{
-+#if defined(CONFIG_SMP)
-+   return smp_processor_id();
-+#else
-+   return 0;
++   switch (type)
++   {
++      case ULONG_PTR:
++	 pd = (unsigned long *) value;
++#if (DEBUG_EXPRESS)
++	 DBGPrint("dref (d): [%08X]-> %08X\n", pd, 
++                  mdb_getword((unsigned long)pd, 4));
 +#endif
-+}
++	 return (unsigned long) mdb_getword((unsigned long)pd, 4);
 +
-+unsigned long get_physical_processor(void)
-+{
-+#if defined(CONFIG_SMP)
-+   return smp_processor_id();
-+#else
-+   return 0;
++      case WORD_PTR:
++	 pw = (unsigned short *) value;
++#if (DEBUG_EXPRESS)
++	 DBGPrint("dref (w): [%08X]-> %04X\n", pw, 
++                  mdb_getword((unsigned long)pw, 2));
 +#endif
++	 return (unsigned short) mdb_getword((unsigned long)pw, 2);
++
++      case BYTE_PTR:
++	 pb = (unsigned char *) value;
++#if (DEBUG_EXPRESS)
++	 DBGPrint("dref (b): [%08X]-> %02X\n", pb, 
++                  mdb_getword((unsigned long)pb, 1));
++#endif
++	 return (unsigned char) mdb_getword((unsigned long)pb, 1);
++
++      default:
++#if (DEBUG_EXPRESS)
++	 DBGPrint("dref (?): [0]-> 0\n");
++#endif
++	 return 0;
++   }
++
 +}
 +
-+unsigned long fpu_present(void)
++unsigned long ExpressPush(unsigned long i)
 +{
-+   if (boot_cpu_has(X86_FEATURE_FPU)) 
-+       return 1;
++     if (sp > bos)
++     {
++#if (DEBUG_EXPRESS)
++	DBGPrint("push : <err>\n");
++#endif
++	return 0;
++     }
++     *sp = i;
++#if (DEBUG_EXPRESS)
++     DBGPrint("push : %08X (%d)\n", *sp, *sp);
++#endif
++     sp++;
++     return 1;
++}
++
++unsigned long ExpressPop(void)
++{
++    sp--;
++    if (sp < tos)
++    {
++       sp++;
++#if (DEBUG_EXPRESS)
++       DBGPrint("pop  : <err>\n");
++#endif
++       return 0;
++    }
++#if (DEBUG_EXPRESS)
++    DBGPrint("pop  : %08X (%d)\n", *sp, *sp);
++#endif
++    return *sp;
++
++}
++
++unsigned long ContextPush(unsigned long i)
++{
++     if (c_sp > c_bos)
++     {
++#if (DEBUG_EXPRESS)
++	DBGPrint("cpush: <err>\n");
++#endif
++	return 0;
++     }
++     *c_sp = i;
++#if (DEBUG_EXPRESS)
++     DBGPrint("cpush: %08X (%d)\n", *c_sp, *c_sp);
++#endif
++     c_sp++;
++     return 1;
++}
++
++unsigned long ContextPop(void)
++{
++    c_sp--;
++    if (c_sp < c_tos)
++    {
++       c_sp++;
++#if (DEBUG_EXPRESS)
++       DBGPrint("cpop : <err>\n");
++#endif
++       return 0;
++    }
++#if (DEBUG_EXPRESS)
++    DBGPrint("cpop : %08X (%d)\n", *c_sp, *c_sp);
++#endif
++    return *c_sp;
++
++}
++
++unsigned long BooleanPush(unsigned long i)
++{
++     if (b_sp > b_bos)
++     {
++#if (DEBUG_BOOL_STACK)
++	DBGPrint("bpush: <err>\n");
++#endif
++	return 0;
++     }
++     *b_sp = i;
++#if (DEBUG_BOOL_STACK)
++     DBGPrint("bpush: %08X (%d)\n", *b_sp, *b_sp);
++#endif
++     b_sp++;
++     return 1;
++}
++
++unsigned long BooleanPop(void)
++{
++    b_sp--;
++    if (b_sp < b_tos)
++    {
++       b_sp++;
++#if (DEBUG_BOOL_STACK)
++       DBGPrint("bpop : <err>\n");
++#endif
++       return 0;
++    }
++#if (DEBUG_BOOL_STACK)
++    DBGPrint("bpop : %08X (%d)\n", *b_sp, *b_sp);
++#endif
++    return *b_sp;
++
++}
++
++unsigned long LogicalPush(unsigned long i)
++{
++     if (l_sp > l_bos)
++     {
++#if (DEBUG_LOGICAL_STACK)
++	DBGPrint("lpush: <err>\n");
++#endif
++	return 0;
++     }
++     *l_sp = i;
++#if (DEBUG_LOGICAL_STACK)
++     DBGPrint("lpush: %08X (%d)\n", *l_sp, *l_sp);
++#endif
++     l_sp++;
++     return 1;
++}
++
++unsigned long LogicalPop(void)
++{
++    l_sp--;
++    if (l_sp < l_tos)
++    {
++       l_sp++;
++#if (DEBUG_LOGICAL_STACK)
++       DBGPrint("lpop : <err>\n");
++#endif
++       return 0;
++    }
++#if (DEBUG_LOGICAL_STACK)
++    DBGPrint("lpop : %08X (%d)\n", *l_sp, *l_sp);
++#endif
++    return *l_sp;
++
++}
++
++void initNumericStacks(void)
++{
++
++    sp = numStack;
++    tos = sp;
++    bos = sp + NUM_STACK_SIZE - 1;
++
++    c_sp = contextStack;
++    c_tos = c_sp;
++    c_bos = c_sp + CONTEXT_STACK_SIZE - 1;
++
++    b_sp = booleanStack;
++    b_tos = b_sp;
++    b_bos = b_sp + BOOL_STACK_SIZE - 1;
++
++    l_sp = logicalStack;
++    l_tos = l_sp;
++    l_bos = l_sp + LOGICAL_STACK_SIZE - 1;
++
++}
++
++unsigned long ProcessOperator(unsigned long oper)
++{
++    unsigned long a, b;
++
++    b = ExpressPop();
++    a = ExpressPop();
++    switch(oper)
++    {
++       case NEG_TOKEN:
++	  break;
++
++       case LEFT_SHIFT_TOKEN:
++	  ExpressPush(a << (b % PROCESSOR_32));  // mod (b) to base 32
++	  break;
++
++       case RIGHT_SHIFT_TOKEN:
++	  ExpressPush(a >> (b % PROCESSOR_32));  // mob (b) to base 32
++	  break;
++
++       case PLUS_TOKEN:
++	  ExpressPush(a + b);
++	  break;
++
++       case XOR_TOKEN:
++	  ExpressPush(a ^ b);
++	  break;
++
++       case AND_TOKEN:
++	  ExpressPush(a & b);
++	  break;
++
++       case MOD_TOKEN:
++	  if (b) // if modulo by zero, drop value on the floor
++	     ExpressPush(a % b);
++	  else
++	     ExpressPush(0);
++	  break;
++
++       case OR_TOKEN:
++	  ExpressPush(a | b);
++	  break;
++
++       case MINUS_TOKEN:
++	  ExpressPush(a - b);
++	  break;
++
++       case MULTIPLY_TOKEN:
++	  ExpressPush(a * b);
++	  break;
++
++       case DIVIDE_TOKEN:
++	  if (b) // if divide by zero, drop value on the floor
++	     ExpressPush(a / b);
++	  else
++	     ExpressPush(0);
++	  break;
++
++    }
 +    return 0;
++
 +}
 +
-+extern unsigned long cpu_mttr_on(void)
++unsigned long ProcessBoolean(unsigned long oper)
 +{
-+   if (boot_cpu_has(X86_FEATURE_MTRR)) 
-+       return 1;
++
++    unsigned long a, b;
++
++    b = ExpressPop();
++    a = ExpressPop();
++    switch(oper)
++    {
++       case NOT_TOKEN:
++	  ExpressPush(a == b); // we pushed an imaginary zero on the stack
++	  break;               // this operation returns the boolean for (!x)
++
++       case GREATER_TOKEN:
++	  ExpressPush(a > b);
++	  break;
++
++       case LESS_TOKEN:
++	  ExpressPush(a < b);
++	  break;
++
++       case GREATER_EQUAL_TOKEN:
++	  ExpressPush(a >= b);
++	  break;
++
++       case LESS_EQUAL_TOKEN:
++	  ExpressPush(a <= b);
++	  break;
++
++       case EQUAL_TOKEN:
++	  ExpressPush(a == b);
++	  break;
++
++       case NOT_EQUAL_TOKEN:
++	  ExpressPush(a != b);
++	  break;
++    }
 +    return 0;
++
 +}
 +
-+unsigned char *UpcaseString(unsigned char *s)
++unsigned long ProcessLogical(unsigned long oper)
 +{
-+   register int i;
-+ 
-+   for (i=0; i < strlen(s); i++)     
-+      s[i] = toupper(s[i]);
-+   return s;
-+      
-+}
-+void ClearScreen(void)
-+{
-+    return;
-+}
 +
-+unsigned short ReadFS(void)
-+{
-+    unsigned short contents = 0;
++    unsigned long a, b;
 +
-+    __asm__ ("mov %%fs,%0\n\t":"=r"(contents));
-+    return contents;
-+}
++    b = ExpressPop();
++    a = ExpressPop();
++    switch(oper)
++    {
++       case LOGICAL_AND_TOKEN:
++	  ExpressPush(a && b);
++	  break;
 +
-+unsigned short ReadGS(void)
-+{
-+    unsigned short contents = 0;
++       case LOGICAL_OR_TOKEN:
++	  ExpressPush(a || b);
++	  break;
++    }
++    return 0;
 +
-+    __asm__ ("mov %%gs,%0\n\t":"=r"(contents));
-+    return contents;
 +}
 +
-+unsigned long ReadDR(unsigned long regnum)
++unsigned long ParseLogical(unsigned long logicalCount)
 +{
-+	unsigned long contents = 0;
 +
-+	switch(regnum) 
-+        {
-+	   case 0:
-+		__asm__ ("movl %%db0,%0\n\t":"=r"(contents));
-+		break;
-+	   case 1:
-+		__asm__ ("movl %%db1,%0\n\t":"=r"(contents));
-+		break;
-+	   case 2:
-+		__asm__ ("movl %%db2,%0\n\t":"=r"(contents));
-+		break;
-+	   case 3:
-+		__asm__ ("movl %%db3,%0\n\t":"=r"(contents));
-+		break;
-+	   case 4:
-+	   case 5:
-+		break;
-+	   case 6:
-+		__asm__ ("movl %%db6,%0\n\t":"=r"(contents));
-+		break;
-+	   case 7:
-+		__asm__ ("movl %%db7,%0\n\t":"=r"(contents));
-+		break;
-+	   default:
-+		break;
++    register int i, r;
++    unsigned long a;
++    unsigned long c = 0, lastClass = 0, oper = 0;
++
++    for (i=0; i < logicalCount; i++)
++       ExpressPush(LogicalPop());
++
++    for (i=0, r=0; i < (logicalCount / 2); i++)
++    {
++       a = ExpressPop();
++       TokenType[r] = NUMBER_TOKEN;
++       TokenValue[r++] = a;
++       a = ExpressPop();
++       TokenType[r] = a;  // get the operator type
++       TokenValue[r++] = 0;
++    }
++
++    initNumericStacks();
++
++#if (DEBUG_LOGICAL)
++     DBGPrint("\n");
++#endif
++    for (i=0; i < logicalCount; i++)
++    {
++#if DEBUG_LOGICAL
++       DBGPrint("token: %02X  value: %08X  type: %s\n", TokenType[i],
++	      TokenValue[i], parserDescription[TokenType[i]]);
++#endif
++       switch (TokenType[i])
++       {
++	  case LOGICAL_AND_TOKEN:
++	  case LOGICAL_OR_TOKEN:
++	     if (lastClass != CLASS_BOOLEAN)
++	     {
++		lastClass = CLASS_BOOLEAN;
++		oper = TokenType[i];
++	     }
++	     continue;
++
++	  case NUMBER_TOKEN:
++	     if (lastClass == CLASS_DATA)
++	     {
++		c = ExpressPop();
++		return c;
++	     }
++	     lastClass = CLASS_DATA;
++	     c = TokenValue[i];
++	     ExpressPush(c);
++	     if (oper)
++		oper = ProcessLogical(oper);
++	     continue;
++
++	  case NULL_TOKEN:
++	     c = ExpressPop();
++	     return c;
++
++	  default:
++	     continue;
++       }
++    }
++    return c;
++
++}
++
++unsigned long ParseBoolean(unsigned long booleanCount)
++{
++
++    register int i, r;
++    unsigned long a, oper = 0;
++    unsigned long c = 0, lastClass = 0, logicalCount = 0;
++
++    for (i=0; i < booleanCount; i++)
++       ExpressPush(BooleanPop());
++
++    for (i=0, r=0; i < (booleanCount / 2); i++)
++    {
++       a = ExpressPop();
++       TokenType[r] = NUMBER_TOKEN;
++       TokenValue[r++] = a;
++       a = ExpressPop();
++       TokenType[r] = a;  // get the operator type
++       TokenValue[r++] = 0;
++    }
++
++    initNumericStacks();
++
++#if (DEBUG_BOOL)
++     DBGPrint("\n");
++#endif
++    for (i=0; i < booleanCount; i++)
++    {
++#if DEBUG_BOOL
++       DBGPrint("token: %02X  value: %08X  type: %s\n", TokenType[i],
++	      TokenValue[i], parserDescription[TokenType[i]]);
++#endif
++       switch (TokenType[i])
++       {
++	  // partition operators
++	  case LOGICAL_AND_TOKEN:
++	  case LOGICAL_OR_TOKEN:
++	     c = ExpressPop();
++	     LogicalPush(c);
++	     logicalCount++;
++	     LogicalPush(TokenType[i]);
++	     logicalCount++;
++	     ExpressPush(c);
++	     oper = 0;
++	     lastClass = 0;
++	     continue;
++
++	  // boolean operators
++	  case NOT_TOKEN:
++	     if (lastClass != CLASS_BOOLEAN)
++	     {
++		ExpressPush(0);
++		lastClass = CLASS_BOOLEAN;
++		oper = TokenType[i];
++	     }
++	     continue;
++
++	  case GREATER_TOKEN:
++	  case LESS_TOKEN:
++	  case GREATER_EQUAL_TOKEN:
++	  case LESS_EQUAL_TOKEN:
++	  case EQUAL_TOKEN:
++	  case NOT_EQUAL_TOKEN:
++	     if (lastClass != CLASS_BOOLEAN)
++	     {
++		lastClass = CLASS_BOOLEAN;
++		oper = TokenType[i];
++	     }
++	     continue;
++
++	  case NUMBER_TOKEN:
++	     if (lastClass == CLASS_DATA)
++	     {
++		c = ExpressPop();
++		if (logicalCount)
++		{
++		   LogicalPush(c);
++		   logicalCount++;
++		   LogicalPush(0); // push null token
++		   logicalCount++;
++		   c = ParseLogical(logicalCount);
++		   return c;
++		}
++		return c;
++	     }
++	     lastClass = CLASS_DATA;
++	     c = TokenValue[i];
++	     ExpressPush(c);
++	     if (oper)
++		oper = ProcessBoolean(oper);
++	     continue;
++
++	  case NULL_TOKEN:
++	     c = ExpressPop();
++	     if (logicalCount)
++	     {
++		LogicalPush(c);
++		logicalCount++;
++		LogicalPush(0); // push null token
++		logicalCount++;
++		c = ParseLogical(logicalCount);
++		return c;
++	     }
++	     return c;
++
++	  default:
++	     continue;
++       }
++    }
++    return c;
++
++}
++
++unsigned long Evaluate(StackFrame *stackFrame, unsigned char **p, unsigned long *type, unsigned long mode)
++{
++
++     register int i;
++     unsigned long oper = 0, dref = 0, bracket = 0;
++     unsigned long dref_type = 0, lastClass = 0, lastToken = 0;
++     unsigned long neg_flag = 0, negative_flag = 0, c;
++     unsigned long booleanCount = 0;
++
++#ifdef MDB_ATOMIC
++     spin_lock_irqsave(&expressLock, flags);
++#endif
++
++     if (type)
++	*type = INVALID_EXPRESSION;
++#if (DEBUG_BOOL)
++     DBGPrint("\n");
++#endif
++#if (DEBUG_EXPRESS)
++     DBGPrint("\np: %08X  %s\n", *p, *p);
++#endif
++     parseTokens(stackFrame, *p, mode);
++     if (TokenCount)
++     {
++	initNumericStacks();
++	for (i=0; i < TokenCount; i++)
++	{
++#if (DEBUG_EXPRESS)
++	   DBGPrint("token: %s  lastClass: %d\n", parserDescription[TokenType[i]], lastClass);
++#endif
++	   switch (TokenType[i])
++	   {
++	      case INVALID_NUMBER_TOKEN:
++                 goto evaluate_error_exit;
++
++	      case NOT_TOKEN:
++		 if (lastClass != CLASS_DATA)
++		 {
++		    if (oper)
++		       oper = ProcessOperator(oper);
++		    c = ExpressPop();
++		    BooleanPush(c);
++		    booleanCount++;
++		    BooleanPush(TokenType[i]);
++		    booleanCount++;
++		    dref_type = 0;
++		    lastClass = 0;
++		    neg_flag  = 0;
++		    negative_flag = 0;
++		 }
++		 lastToken = NOT_TOKEN;
++		 continue;
++
++	      // boolean operators
++	      case GREATER_TOKEN:
++	      case LESS_TOKEN:
++	      case GREATER_EQUAL_TOKEN:
++	      case LESS_EQUAL_TOKEN:
++	      case LOGICAL_AND_TOKEN:
++	      case LOGICAL_OR_TOKEN:
++	      case EQUAL_TOKEN:
++	      case NOT_EQUAL_TOKEN:
++		 if (oper)
++		    oper = ProcessOperator(oper);
++		 c = ExpressPop();
++		 BooleanPush(c);
++		 booleanCount++;
++		 BooleanPush(TokenType[i]);
++		 booleanCount++;
++		 dref_type = 0;
++		 lastClass = 0;
++		 neg_flag  = 0;
++		 negative_flag = 0;
++		 lastToken = 0;
++		 continue;
++
++	      // partition operators
++	      case DWORD_TOKEN:
++		 if (dref)
++		    dref_type = ULONG_PTR;
++		 lastToken = 0;
++		 continue;
++
++	      case WORD_TOKEN:
++		 if (dref)
++		    dref_type = WORD_PTR;
++		 lastToken = 0;
++		 continue;
++
++	      case BYTE_TOKEN:
++		 if (dref)
++		    dref_type = BYTE_PTR;
++		 lastToken = 0;
++		 continue;
++
++	      case DREF_OPEN_TOKEN:   // push state and nest for de-reference
++		 if (lastClass == CLASS_DATA)
++		 {
++		    *p = (unsigned char *)((unsigned long)*p + (unsigned long)TokenIndex[i]);
++		    if (type)
++		    {
++		       if (booleanCount)
++			  *type = BOOLEAN_EXPRESSION;
++		       else
++			  *type = NUMERIC_EXPRESSION;
++		    }
++		    c = ExpressPop();
++		    if (booleanCount)
++		    {
++		       BooleanPush(c);
++		       booleanCount++;
++		       BooleanPush(0); // last operator is the null token
++		       booleanCount++;
++		       c = ParseBoolean(booleanCount);
++#if (DEBUG_BOOL)
++		       DBGPrint("be_N : (%d) = (%s)\n", c, c ? "TRUE" : "FALSE");
++#endif
++#ifdef MDB_ATOMIC
++		       spin_unlock_irqrestore(&expressLock, flags);
++#endif
++		       return c;
++		    }
++#if (DEBUG_EXPRESS)
++		    DBGPrint("ee_N : %08X (%d)\n", c, c);
++#endif
++#ifdef MDB_ATOMIC
++		    spin_unlock_irqrestore(&expressLock, flags);
++#endif
++		    return c;
++		 }
++		 dref++;
++		 ContextPush(dref_type);
++		 ContextPush(oper);
++		 ContextPush(lastClass);
++		 ContextPush(neg_flag);
++		 ContextPush(negative_flag);
++		 dref_type = 0;
++		 oper      = 0;
++		 lastClass = 0;
++		 neg_flag  = 0;
++		 negative_flag = 0;
++		 lastToken = 0;
++		 continue;
++
++	      case DREF_CLOSE_TOKEN:   // pop state, restore, and complete oper
++		 if (!dref)
++		    continue;
++		 c = deref(dref_type, ExpressPop());
++		 ExpressPush(c);
++		 negative_flag  = ContextPop();
++		 neg_flag  = ContextPop();
++		 ContextPop();
++		 oper      = ContextPop();
++		 dref_type = ContextPop();
++		 if (dref)
++		    dref--;
++		 lastClass = CLASS_DATA;
++
++		 c = ExpressPop();
++		 if (negative_flag)
++		    c = 0 - c;
++		 if (neg_flag)
++		    c = ~c;
++		 neg_flag = 0;
++		 negative_flag = 0;
++		 ExpressPush(c);
++
++		 if (oper)
++		    oper = ProcessOperator(oper);
++		 lastToken = 0;
++		 continue;
++
++	      case BB_TOKEN:
++		 if (lastClass == CLASS_DATA)
++		 {
++		    *p = (unsigned char *)((unsigned long)*p + (unsigned long)TokenIndex[i]);
++		    if (type)
++		    {
++		       if (booleanCount)
++			  *type = BOOLEAN_EXPRESSION;
++		       else
++			  *type = NUMERIC_EXPRESSION;
++		    }
++		    c = ExpressPop();
++		    if (booleanCount)
++		    {
++		       BooleanPush(c);
++		       booleanCount++;
++		       BooleanPush(0); // last operator is the null token
++		       booleanCount++;
++		       c = ParseBoolean(booleanCount);
++#if (DEBUG_BOOL)
++		       DBGPrint("be_N : (%d) = (%s)\n", c, c ? "TRUE" : "FALSE");
++#endif
++#ifdef MDB_ATOMIC
++		       spin_unlock_irqrestore(&expressLock, flags);
++#endif
++		       return c;
++		    }
++#if (DEBUG_EXPRESS)
++		    DBGPrint("ee_N : %08X (%d)\n", c, c);
++#endif
++#ifdef MDB_ATOMIC
++		    spin_unlock_irqrestore(&expressLock, flags);
++#endif
++		    return c;
++		 }
++		 bracket++;
++		 ContextPush(oper);
++		 ContextPush(lastClass);
++		 ContextPush(neg_flag);
++		 ContextPush(negative_flag);
++		 oper      = 0;
++		 lastClass = 0;
++		 neg_flag  = 0;
++		 negative_flag = 0;
++		 lastToken = 0;
++		 continue;
++
++	      case EB_TOKEN:
++		 if (!bracket)
++		    continue;
++		 negative_flag  = ContextPop();
++		 neg_flag  = ContextPop();
++		 ContextPop();
++		 oper      = ContextPop();
++		 if (bracket)
++		    bracket--;
++		 lastClass = CLASS_DATA;
++		 c = ExpressPop();
++		 if (negative_flag)
++		    c = 0 - c;
++		 if (neg_flag)
++		    c = ~c;
++		 neg_flag = 0;
++		 negative_flag = 0;
++		 ExpressPush(c);
++		 if (oper)
++		    oper = ProcessOperator(oper);
++		 lastToken = 0;
++		 continue;
++
++	      // arithmetic operators
++	      case NEG_TOKEN:
++		 neg_flag = 1;
++		 lastToken = 0;
++		 continue;
++
++	      case MINUS_TOKEN:
++		 if (lastClass == CLASS_ARITHMETIC)
++		 {
++		    lastToken = MINUS_TOKEN;
++		    negative_flag = 1;
++		    continue;
++		 }
++		 if (lastClass != CLASS_ARITHMETIC)
++		 {
++		    lastClass = CLASS_ARITHMETIC;
++		    oper = TokenType[i];
++		 }
++		 lastToken = 0;
++		 continue;
++
++	      case PLUS_TOKEN:
++	      case LEFT_SHIFT_TOKEN:
++	      case RIGHT_SHIFT_TOKEN:
++	      case XOR_TOKEN:
++	      case AND_TOKEN:
++	      case MOD_TOKEN:
++	      case OR_TOKEN:
++	      case MULTIPLY_TOKEN:
++	      case DIVIDE_TOKEN:
++		 if (lastClass != CLASS_ARITHMETIC)
++		 {
++		    lastClass = CLASS_ARITHMETIC;
++		    oper = TokenType[i];
++		 }
++		 lastToken = 0;
++		 continue;
++
++	      // data operators
++	      case CF_TOKEN:
++	      case PF_TOKEN:
++	      case AF_TOKEN:
++	      case ZF_TOKEN:
++	      case SF_TOKEN:
++	      case IF_TOKEN:
++	      case DF_TOKEN:
++	      case OF_TOKEN:
++	      case VM_TOKEN:
++	      case AC_TOKEN:
++	      case EIP_TOKEN:
++	      case FLAGS_TOKEN:
++	      case EAX_TOKEN:
++	      case EBX_TOKEN:
++	      case ECX_TOKEN:
++	      case EDX_TOKEN:
++	      case ESI_TOKEN:
++	      case EDI_TOKEN:
++	      case EBP_TOKEN:
++	      case ESP_TOKEN:
++	      case CS_TOKEN:
++	      case DS_TOKEN:
++	      case ES_TOKEN:
++	      case FS_TOKEN:
++	      case GS_TOKEN:
++	      case SS_TOKEN:
++	      case NUMBER_TOKEN:
++		 if (lastClass == CLASS_DATA)
++		 {
++		    *p = (unsigned char *)((unsigned long)*p + (unsigned long)TokenIndex[i]);
++		    if (type)
++		    {
++		       if (booleanCount)
++			  *type = BOOLEAN_EXPRESSION;
++		       else
++			  *type = NUMERIC_EXPRESSION;
++		    }
++		    c = ExpressPop();
++		    if (booleanCount)
++		    {
++		       BooleanPush(c);
++		       booleanCount++;
++		       BooleanPush(0); // last operator is the null token
++		       booleanCount++;
++		       c = ParseBoolean(booleanCount);
++#if (DEBUG_BOOL)
++		       DBGPrint("be_N : (%d) = (%s)\n", c, c ? "TRUE" : "FALSE");
++#endif
++#ifdef MDB_ATOMIC
++		       spin_unlock_irqrestore(&expressLock, flags);
++#endif
++		       return c;
++		    }
++#if (DEBUG_EXPRESS)
++		    DBGPrint("ee_N : %08X (%d)\n", c, c);
++#endif
++#ifdef MDB_ATOMIC
++		    spin_unlock_irqrestore(&expressLock, flags);
++#endif
++		    return c;
++		 }
++		 lastClass = CLASS_DATA;
++		 c = TokenValue[i];
++		 if (negative_flag)
++		    c = 0 - c;
++		 if (neg_flag)
++		    c = ~TokenValue[i];
++		 neg_flag = 0;
++		 negative_flag = 0;
++		 ExpressPush(c);
++		 if (oper)
++		    oper = ProcessOperator(oper);
++		 lastToken = 0;
++		 continue;
++
++	      case NULL_TOKEN:
++		 *p = (unsigned char *)((unsigned long)*p + (unsigned long)TokenIndex[i]);
++		 if (TokenCount > 1 && type)
++		 {
++		    if (booleanCount)
++		       *type = BOOLEAN_EXPRESSION;
++		    else
++		       *type = NUMERIC_EXPRESSION;
++		 }
++		 c = ExpressPop();
++		 if (booleanCount)
++		 {
++		    BooleanPush(c);
++		    booleanCount++;
++		    BooleanPush(0); // last operator is the null token
++		    booleanCount++;
++		    c = ParseBoolean(booleanCount);
++#if (DEBUG_BOOL)
++		    DBGPrint("be_N : (%d) = (%s)\n", c, c ? "TRUE" : "FALSE");
++#endif
++#ifdef MDB_ATOMIC
++		    spin_unlock_irqrestore(&expressLock, flags);
++#endif
++		    return c;
++		 }
++#if (DEBUG_EXPRESS)
++		 DBGPrint("ee_N : %08X (%d)\n", c, c);
++#endif
++#ifdef MDB_ATOMIC
++		 spin_unlock_irqrestore(&expressLock, flags);
++#endif
++		 return c;
++
++	      // assignment operators
++	      case ASSIGNMENT_TOKEN:
++		 lastToken = 0;
++		 continue;
++
++	      default:
++		 lastToken = 0;
++		 continue;
++	   }
 +	}
++     }
 +
-+	return contents;
++evaluate_error_exit:
++     if (type)
++	*type = INVALID_EXPRESSION;
++
++     if (lastToken) {};
++
++#ifdef MDB_ATOMIC
++     spin_unlock_irqrestore(&expressLock, flags);
++#endif
++     return 0;
++
 +}
 +
-+void WriteDR(int regnum, unsigned long contents)
++unsigned long EvaluateNumericExpression(StackFrame *stackFrame, unsigned char **p, unsigned long *type)
 +{
-+	switch(regnum) 
-+        {
-+	   case 0:
-+		__asm__ ("movl %0,%%db0\n\t"::"r"(contents));
-+		break;
-+	   case 1:
-+		__asm__ ("movl %0,%%db1\n\t"::"r"(contents));
-+		break;
-+	   case 2:
-+		__asm__ ("movl %0,%%db2\n\t"::"r"(contents));
-+		break;
-+	   case 3:
-+		__asm__ ("movl %0,%%db3\n\t"::"r"(contents));
-+		break;
-+	   case 4:
-+	   case 5:
-+		break;
-+	   case 6:
-+		__asm__ ("movl %0,%%db6\n\t"::"r"(contents));
-+		break;
-+	   case 7:
-+		__asm__ ("movl %0,%%db7\n\t"::"r"(contents));
-+		break;
-+	   default:
-+		break;
-+	}
++     register unsigned long c;
++     c = Evaluate(stackFrame, p, type, 1);
++     return c;
 +}
 +
-+unsigned long ReadCR(int regnum)
++unsigned long EvaluateExpression(StackFrame *stackFrame, unsigned char **p, unsigned long *type)
 +{
-+	unsigned long contents = 0;
-+
-+	switch(regnum) 
-+        {
-+	   case 0:
-+		__asm__ ("movl %%cr0,%0\n\t":"=r"(contents));
-+		break;
-+	   case 1:
-+		break;
-+	   case 2:
-+		__asm__ ("movl %%cr2,%0\n\t":"=r"(contents));
-+		break;
-+	   case 3:
-+		__asm__ ("movl %%cr3,%0\n\t":"=r"(contents));
-+		break;
-+	   case 4:
-+		__asm__ ("movl %%cr4,%0\n\t":"=r"(contents));
-+		break;
-+	   default:
-+		break;
-+	}
-+	return contents;
++     register unsigned long c;
++     c = Evaluate(stackFrame, p, type, 0);
++     return c;
 +}
 +
-+void WriteCR(int regnum, unsigned long contents)
++void EvaluateCommandExpression(StackFrame *stackFrame, unsigned char *p)
 +{
-+	switch(regnum) 
-+        {
-+	   case 0:
-+		__asm__ ("movl %0,%%cr0\n\t"::"r"(contents));
-+		break;
-+	   case 1:
-+		break;
-+	   case 2:
-+		__asm__ ("movl %0,%%cr2\n\t"::"r"(contents));
-+		break;
-+	   case 3:
-+		__asm__ ("movl %0,%%cr3\n\t"::"r"(contents));
-+		break;
-+	   case 4:
-+		__asm__ ("movl %0,%%cr4\n\t"::"r"(contents));
-+		break;
-+	   default:
-+		break;
-+	}
-+	return;
-+}
++     unsigned char *expr;
++     unsigned long type;
++     unsigned long c;
 +
-+unsigned long ReadTR(void)
-+{
-+   unsigned short tr;
++#if DEBUG_EXPRESS
++     DBGPrint("expr: [%s]\n", p);
++#endif
++     expr = p;
++     c = EvaluateExpression(stackFrame, &p, &type);
++     if (type)
++     {
++	DBGPrint("expr: %s = 0x%08X (%dr) (%s) bool(%i) = %s\n",
++		    expr, (unsigned)c, (int)c, exprDescription[type & 3],
++		    (c) ? 1 : 0, (c) ? "TRUE" : "FALSE");
++     }
++     else
++     {
++        DBGPrint("expression parameters invalid\n");
++	DBGPrint("expr: %s = 0x%08X (%dr) (results invalid) (%s)"
++                 " bool(%i) = %s\n",
++		 expr, (unsigned)c, (int)c, exprDescription[type & 3],
++		 (c) ? 1 : 0, (c) ? "TRUE" : "FALSE");
++     }
++     return;
 +
-+   __asm__ __volatile__("str %0":"=a"(tr));
-+
-+   return (unsigned long) tr;
-+}
-+
-+unsigned long ReadLDTR(void)
-+{
-+   unsigned short ldt;
-+ 
-+   __asm__ __volatile__("sldt %0":"=a"(ldt));
-+
-+   return (unsigned long) ldt;
-+}
-+
-+void ReadGDTR(unsigned long *v)
-+{
-+   __asm__ __volatile__("sgdt %0":"=m"(*v));
-+}
-+
-+void ReadIDTR(unsigned long *v)
-+{
-+    __asm__ __volatile__("sidt %0":"=m"(*v));
-+}
-+  
-+void save_npx(NUMERIC_FRAME *v)
-+{
-+    __asm__ __volatile__("fsave %0":"=m"(*v));
-+}
-+
-+void load_npx(NUMERIC_FRAME *v)
-+{
-+    __asm__ __volatile__("frstor %0":"=m"(*v));
-+}
-+
-+unsigned long ReadDR0(void)  {  return (ReadDR(0)); }
-+unsigned long ReadDR1(void)  {  return (ReadDR(1)); }
-+unsigned long ReadDR2(void)  {  return (ReadDR(2)); }
-+unsigned long ReadDR3(void)  {  return (ReadDR(3)); }
-+unsigned long ReadDR6(void)  {  return (ReadDR(6)); }
-+unsigned long ReadDR7(void)  {  return (ReadDR(7)); }
-+
-+void WriteDR0(unsigned long v) { WriteDR(0, v); }
-+void WriteDR1(unsigned long v) { WriteDR(1, v); }
-+void WriteDR2(unsigned long v) { WriteDR(2, v); }
-+void WriteDR3(unsigned long v) { WriteDR(3, v); }
-+void WriteDR6(unsigned long v) { WriteDR(6, v); }
-+void WriteDR7(unsigned long v) { WriteDR(7, v); }
-+
-+unsigned long ReadCR0(void) {  return (ReadCR(0)); }
-+unsigned long ReadCR2(void) {  return (ReadCR(2)); }
-+unsigned long ReadCR3(void) {  return (ReadCR(3)); }
-+unsigned long ReadCR4(void) {  return (ReadCR(4)); }
-+
-+void WriteCR0(unsigned long v) { WriteCR(0, v); }
-+void WriteCR2(unsigned long v) { WriteCR(2, v); }
-+void WriteCR3(unsigned long v) { WriteCR(3, v); }
-+void WriteCR4(unsigned long v) { WriteCR(4, v); }
-+
-+void ReadMSR(unsigned long r, unsigned long *v1, unsigned long *v2)
-+{
-+    unsigned long vv1, vv2;
-+
-+    rdmsr(r, vv1, vv2);
-+
-+    if (v1)
-+       *v1 = vv1;
-+    if (v2)
-+       *v2 = vv2;
-+}
-+
-+void WriteMSR(unsigned long r, unsigned long *v1, unsigned long *v2)
-+{
-+    unsigned long vv1 = 0, vv2 = 0;
-+
-+    if (v1)
-+       vv1 = *v1;
-+    if (v2)
-+       vv2 = *v2;
-+
-+    wrmsr(r, vv1, vv2);
 +}
 +
 +#endif
