@@ -1,72 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762768AbYHERjO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763090AbYHERjc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762768AbYHERjO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 13:39:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762494AbYHERiy
+	id S1763090AbYHERjc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 13:39:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762645AbYHERi6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 13:38:54 -0400
-Received: from outbound-mail-101.bluehost.com ([69.89.22.11]:60750 "HELO
-	outbound-mail-101.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1762477AbYHERiw (ORCPT
+	Tue, 5 Aug 2008 13:38:58 -0400
+Received: from casper.infradead.org ([85.118.1.10]:45853 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762564AbYHERi4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 13:38:52 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
-	b=OSvZ3zWoW/dfaR4NpKtX6m4Ao+ukkLJm1d1IAmoFhR0CxF8ji3ADrISZWYPgYiOpuY026oiQJ7z6IQN3fohjC1mZLN9PRU+cqYYAyauLtnaupUw3xWlRAniBliiKv4x3;
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: James Bottomley <James.Bottomley@hansenpartnership.com>
-Subject: Re: [PATCH 2/2] fusion:  Implement generic interrupt misroute handling
-Date: Tue, 5 Aug 2008 10:38:38 -0700
-User-Agent: KMail/1.9.9
-Cc: David Vrabel <david.vrabel@csr.com>, "Moore, Eric" <Eric.Moore@lsi.com>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-       "Prakash, Sathya" <Sathya.Prakash@lsi.com>
-References: <1217786709.4179.27.camel@localhost.localdomain> <48970A4D.2090309@csr.com> <1217954187.9923.15.camel@localhost.localdomain>
-In-Reply-To: <1217954187.9923.15.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+	Tue, 5 Aug 2008 13:38:56 -0400
+Date: Tue, 5 Aug 2008 10:38:40 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Eric Paris <eparis@redhat.com>
+Cc: "Press, Jonathan" <Jonathan.Press@ca.com>, Greg KH <greg@kroah.com>,
+       linux-kernel@vger.kernel.org, malware-list@lists.printk.net,
+       linux-security-module@vger.kernel.org
+Subject: Re: [malware-list] [RFC 0/5] [TALPA] Intro to a linux
+ interfaceforon access scanning
+Message-ID: <20080805103840.1aaa64a5@infradead.org>
+In-Reply-To: <1217956796.11547.12.camel@paris.rdu.redhat.com>
+References: <1217883616.27684.19.camel@localhost.localdomain>
+	<20080804223249.GA10517@kroah.com>
+	<1217896374.27684.53.camel@localhost.localdomain>
+	<2629CC4E1D22A64593B02C43E855530304807431@USILMS12.ca.com>
+	<1217948212.27684.120.camel@localhost.localdomain>
+	<2629CC4E1D22A64593B02C43E855530304807436@USILMS12.ca.com>
+	<1217956796.11547.12.camel@paris.rdu.redhat.com>
+Organization: Intel
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200808051038.39275.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, August 05, 2008 9:36 am James Bottomley wrote:
-> On Mon, 2008-08-04 at 14:55 +0100, David Vrabel wrote:
-> > Moore, Eric wrote:
-> > > Thanks, I will try this out.   However I thought I saw lost
-> > > interrupts occurring randomly, meaning it was not necessarily the
-> > > first config page access.  I'm back in the office on 8/11, I will
-> > > test it out then and provide feedback.
-> >
-> > Is this using MSI on a device without per-vector mask bits?  If so, then
-> > this patch may help.
-> >
-> > http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit
-> >;h=ce6fce4295ba727b36fdc73040e444bd1aae64cd
->
-> We don't really know what the problem is.  MSI interrupts get lost on
-> older motherboards (the ones most likely to contain a 1030).  Why is
-> anybody's guess although the clever money is on the motherboard bridge
-> having issues.
+On Tue, 05 Aug 2008 13:19:56 -0400
+Eric Paris <eparis@redhat.com> wrote:
 
-David just got us to fix an MSI masking bug recently, which could be related.
-
-The issue is that the PCI & interrupt handling code was disabling MSI during 
-interrupt handling, which could end up causing missed interrupts.  When MSI 
-is disabled, devices can still generate interrupts, but they'll go out the 
-interrupt line instead, so unless your IRQ handler is also registered with 
-that IRQ number, you'll probably lose them.
-
-As of the last PCI upstream merge, we work around this issue by never masking 
-MSI interrupts unless the device supports the MSI mask bit (as opposed to 
-just the big hammer enable/disable flag).
-
-Jesse
+> If you can outline the design of a better method that meets your needs
+> I'd be glad to try to code it.  In your mind how do you see programs
+> being able to exclude others while not being a security risk? 
 
 
+ok so lets be specific.
+You are trying to prevent an application from opening a "damaged" file,
+or from someone starting a "damaged" file.
+You are not trying to prevent anything once you have executed a damaged
+file; once you execute one of these for this part it's game over (to
+limit the damage other tools like selinux exist, but are outside the
+scope of talpa).
+
+So... as long as /sbin/init isn't compromised... intercepting exec and
+open (in all variants) is all you need.
+
+And this can be done from userland with the preload: the "workaround"
+from the preload assumes you've already executed malicious code, which
+is outside of your protection scope.
+
+What am I missing?
+
+-- 
+If you want to reach me at my work email, use arjan@linux.intel.com
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
