@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759273AbYHEHFj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757881AbYHEHF5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759273AbYHEHFj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 03:05:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758544AbYHEGrl
+	id S1757881AbYHEHF5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 03:05:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758600AbYHEGrn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 02:47:41 -0400
-Received: from 166-70-238-42.ip.xmission.com ([166.70.238.42]:44137 "EHLO
+	Tue, 5 Aug 2008 02:47:43 -0400
+Received: from 166-70-238-42.ip.xmission.com ([166.70.238.42]:44142 "EHLO
 	ns1.wolfmountaingroup.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753293AbYHEGrV (ORCPT
+	with ESMTP id S1753666AbYHEGrX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 02:47:21 -0400
-Date: Tue, 5 Aug 2008 00:26:35 -0600
+	Tue, 5 Aug 2008 02:47:23 -0400
+Date: Tue, 5 Aug 2008 00:26:36 -0600
 From: jmerkey@wolfmountaingroup.com
-Message-Id: <200808050626.m756QZmr003767@wolfmountaingroup.com>
+Message-Id: <200808050626.m756QaGC003770@wolfmountaingroup.com>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 2.6.27-rc1-git5 10/26] mdb: add is32 proc includes
+Subject: [PATCH 2.6.27-rc1-git5 13/26] mdb:  enable alternate debugger support 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -23,11 +23,13 @@ Centralized external definitions into include files and corrected
 the file to conform to Linux coding practices.  fixed word wrap
 problems with patches.
 
+enable alternate debugger interface.
+
 Signed-off-by: Jeffrey Vernon Merkey (jmerkey@wolfmountaingroup.com)
 
---- a/debug/mdb-ia32-proc.h	1969-12-31 17:00:00.000000000 -0700
-+++ b/debug/mdb-ia32-proc.h	2008-08-04 15:49:51.000000000 -0600
-@@ -0,0 +1,512 @@
+--- a/debug/mdb-list.c	1969-12-31 17:00:00.000000000 -0700
++++ b/debug/mdb-list.c	2008-08-04 15:49:51.000000000 -0600
+@@ -0,0 +1,631 @@
 +
 +/***************************************************************************
 +*
@@ -62,481 +64,600 @@ Signed-off-by: Jeffrey Vernon Merkey (jmerkey@wolfmountaingroup.com)
 +*
 +***************************************************************************/
 +
-+#ifndef _MDB_IA32_PROC_H
-+#define _MDB_IA32_PROC_H
-+
-+#define EXT_NMI_PORT             0x0461
-+#define NMI_IO_PORT              0x0462
-+#define NMI_CONTROL_PORT         0x0C6E
-+#define NMI_PORT                 0x61
-+#define PIC1_DEBUG_MASK          0xFC
-+#define PIC2_DEBUG_MASK          0xFF
-+#define EXCEPTION_ENTRIES        19
-+#define RESUME                   0x00010000
-+#define NESTED_TASK              0x00004000
-+#define SINGLE_STEP              0x00000100
-+#define INVALID_EXPRESSION       0
-+#define NUMERIC_EXPRESSION       1
-+#define BOOLEAN_EXPRESSION       2
-+
-+// DR7 Breakpoint Type and Length Fields
-+
-+#define BREAK_EXECUTE    0
-+#define BREAK_WRITE      1
-+#define BREAK_IOPORT     2
-+#define BREAK_READWRITE  3
-+#define ONE_BYTE_FIELD   0
-+#define TWO_BYTE_FIELD   1
-+#define UNDEFINED_FIELD  2
-+#define FOUR_BYTE_FIELD  3
-+
-+// DR7 Register
-+
-+#define L0_BIT   0x00000001
-+#define G0_BIT   0x00000002
-+#define L1_BIT   0x00000004
-+#define G1_BIT   0x00000008
-+#define L2_BIT   0x00000010
-+#define G2_BIT   0x00000020
-+#define L3_BIT   0x00000040
-+#define G3_BIT   0x00000080
-+#define LEXACT   0x00000100
-+#define GEXACT   0x00000200
-+#define GDETECT  0x00002000
-+#define DR7DEF   0x00000400
-+
-+// DR6 Register
-+
-+#define B0_BIT   0x00000001
-+#define B1_BIT   0x00000002
-+#define B2_BIT   0x00000004
-+#define B3_BIT   0x00000008
-+
-+#define BD_BIT   0x00002000
-+#define BS_BIT   0x00004000
-+#define BT_BIT   0x00008000
-+
-+// Memory Type Range Registers (MTRR)
-+
-+#define MTRR_PHYS_BASE_0    0x200
-+#define MTRR_PHYS_MASK_0    0x201
-+#define MTRR_PHYS_BASE_1    0x202
-+#define MTRR_PHYS_MASK_1    0x203
-+#define MTRR_PHYS_BASE_2    0x204
-+#define MTRR_PHYS_MASK_2    0x205
-+#define MTRR_PHYS_BASE_3    0x206
-+#define MTRR_PHYS_MASK_3    0x207
-+#define MTRR_PHYS_BASE_4    0x208
-+#define MTRR_PHYS_MASK_4    0x209
-+#define MTRR_PHYS_BASE_5    0x20A
-+#define MTRR_PHYS_MASK_5    0x20B
-+#define MTRR_PHYS_BASE_6    0x20C
-+#define MTRR_PHYS_MASK_6    0x20D
-+#define MTRR_PHYS_BASE_7    0x20E
-+#define MTRR_PHYS_MASK_7    0x20F
-+
-+// IA32 flags settings
-+
-+#define   CF_FLAG      0x00000001
-+#define   PF_FLAG      0x00000004
-+#define   AF_FLAG      0x00000010
-+#define   ZF_FLAG      0x00000040
-+#define   SF_FLAG      0x00000080
-+#define   TF_FLAG      0x00000100  // ss flag
-+#define   IF_FLAG      0x00000200
-+#define   DF_FLAG      0x00000400
-+#define   OF_FLAG      0x00000800
-+#define   NT_FLAG      0x00004000
-+#define   RF_FLAG      0x00010000  // resume flag
-+#define   VM_FLAG      0x00020000
-+#define   AC_FLAG      0x00040000
-+#define   VIF_FLAG     0x00080000
-+#define   VIP_FLAG     0x00100000
-+#define   ID_FLAGS     0x00200000
-+
-+typedef struct _GDT {
-+    unsigned short Limit;	    //	0xFFFF
-+    unsigned short Base1;	    //  0
-+    unsigned char Base2;	    //	0
-+    unsigned char GDTType;   //	10010010b
-+    unsigned char OtherType; //	11001111b
-+    unsigned char Base3;	    //	0
-+} GDT;
-+
-+typedef struct _IDT {
-+    unsigned short IDTLow;     //	0
-+    unsigned short IDTSegment; //	0x08
-+    unsigned char IDTSkip;    //	0
-+    unsigned char IDTFlags;   //	10001110b
-+    unsigned short IDTHigh;    //	0
-+} IDT;
-+
-+typedef struct _TSS {
-+    unsigned short TSSLimit;	// 0x0080
-+    unsigned short TSSBase1;	// 0
-+    unsigned char TSSBase2;	// 0
-+    unsigned char TSSType;	// 10001001b
-+    unsigned char TSSOtherType;	// 00000000b
-+    unsigned char TSSBase3;	// 0
-+} TSS;
-+
-+typedef struct _TSS_GATE {
-+    unsigned short TSSRes1;  	// 0
-+    unsigned short TSSSelector;	// 0
-+    unsigned char TSSRes2; 	// 0
-+    unsigned char TSSFlags;	// 10000101b
-+    unsigned short TSSRes3; 	// 0
-+} TSS_GATE;
-+
-+typedef struct _LDT {
-+    unsigned short LDTLimit;	// 0xFFFF
-+    unsigned short LDTBase1;	// 0
-+    unsigned char LDTBase2;	// 0
-+    unsigned char LDTGDTType;	// 10000010b
-+    unsigned char LDTOtherType;	// 10001111b
-+    unsigned char LDTBase3;	// 0
-+} LDT;
-+
-+extern unsigned long ReadDR0(void);
-+extern unsigned long ReadDR1(void);
-+extern unsigned long ReadDR2(void);
-+extern unsigned long ReadDR3(void);
-+extern unsigned long ReadDR6(void);
-+extern unsigned long ReadDR7(void);
-+extern void WriteDR0(unsigned long);
-+extern void WriteDR1(unsigned long);
-+extern void WriteDR2(unsigned long);
-+extern void WriteDR3(unsigned long);
-+extern void WriteDR6(unsigned long);
-+extern void WriteDR7(unsigned long);
-+extern unsigned long ReadCR0(void);
-+extern unsigned long ReadCR2(void);
-+extern unsigned long ReadCR3(void);
-+extern unsigned long ReadCR4(void);
-+extern void ReadGDTR(unsigned long *);
-+extern void ReadIDTR(unsigned long *);
-+extern unsigned long ReadLDTR(void);
-+extern unsigned long ReadTR(void);
-+
-+extern void ReadMSR(unsigned long msr, unsigned long *val1, unsigned long *val2);
-+extern void WriteMSR(unsigned long msr, unsigned long *val1, unsigned long *val2);
-+extern void MTRROpen(void);
-+extern void MTRRClose(void);
-+extern void save_npx(NUMERIC_FRAME *npx);
-+extern void load_npx(NUMERIC_FRAME *npx);
-+
-+extern unsigned long get_processor_id(void);
-+extern unsigned long get_physical_processor(void);
-+extern unsigned long fpu_present(void);
-+
-+extern void DisplayTSS(StackFrame *stackFrame);
-+extern void DisplayGeneralRegisters(StackFrame *stackFrame);
-+extern void DisplaySegmentRegisters(StackFrame *stackFrame);
-+extern void DisplayControlRegisters(unsigned long processor, StackFrame *stackFrame);
-+extern double ldexp(double v, int e);
-+extern void DisplayNPXRegisters(unsigned long processor);
-+
-+extern unsigned long processProceedACC(unsigned long key, void *stackFrame,
-+		  ACCELERATOR *accel);
-+extern unsigned long processTraceACC(unsigned long key, void *stackFrame,
-+		  ACCELERATOR *accel);
-+extern unsigned long processTraceSSBACC(unsigned long key, void *stackFrame,
-+		  ACCELERATOR *accel);
-+extern unsigned long processGoACC(unsigned long key, void *stackFrame,
-+		  ACCELERATOR *accel);
-+
-+extern unsigned long executeCommandHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser);
-+extern unsigned long processProceed(unsigned char *cmd,
-+		    StackFrame *stackFrame, unsigned long Exception,
-+		    DEBUGGER_PARSER *parser);
-+extern unsigned long processTrace(unsigned char *cmd,
-+		  StackFrame *stackFrame, unsigned long Exception,
-+		  DEBUGGER_PARSER *parser);
-+extern unsigned long processTraceSSB(unsigned char *cmd,
-+		  StackFrame *stackFrame, unsigned long Exception,
-+		  DEBUGGER_PARSER *parser);
-+extern unsigned long processGo(unsigned char *cmd,
-+	       StackFrame *stackFrame, unsigned long Exception,
-+	       DEBUGGER_PARSER *parser);
-+
-+
-+extern unsigned long processorCommandHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser);
-+extern unsigned long breakProcessor(unsigned char *cmd,
-+		    StackFrame *stackFrame, unsigned long Exception,
-+		    DEBUGGER_PARSER *parser);
-+extern unsigned long TSSDisplayHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser);
-+extern unsigned long TSSDisplay(unsigned char *cmd, 
-+                    StackFrame *stackFrame, unsigned long Exception,
-+		    DEBUGGER_PARSER *parser);
-+
-+extern unsigned long displayEAXHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser);
-+extern unsigned long ChangeEAXRegister(unsigned char *cmd,
-+		       StackFrame *stackFrame, unsigned long Exception,
-+		       DEBUGGER_PARSER *parser);
-+extern unsigned long ChangeORIGEAXRegister(unsigned char *cmd,
-+		       StackFrame *stackFrame, unsigned long Exception,
-+		       DEBUGGER_PARSER *parser);
-+
-+extern unsigned long displayEBXHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser);
-+extern unsigned long ChangeEBXRegister(unsigned char *cmd,
-+		       StackFrame *stackFrame, unsigned long Exception,
-+		       DEBUGGER_PARSER *parser);
-+
-+extern unsigned long displayECXHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser);
-+extern unsigned long ChangeECXRegister(unsigned char *cmd,
-+		       StackFrame *stackFrame, unsigned long Exception,
-+		       DEBUGGER_PARSER *parser);
-+
-+extern unsigned long displayEDXHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser);
-+extern unsigned long ChangeEDXRegister(unsigned char *cmd,
-+		       StackFrame *stackFrame, unsigned long Exception,
-+		       DEBUGGER_PARSER *parser);
-+
-+extern unsigned long displayESIHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser);
-+extern unsigned long ChangeESIRegister(unsigned char *cmd,
-+		       StackFrame *stackFrame, unsigned long Exception,
-+		       DEBUGGER_PARSER *parser);
-+
-+extern unsigned long displayEDIHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser);
-+extern unsigned long ChangeEDIRegister(unsigned char *cmd,
-+		       StackFrame *stackFrame, unsigned long Exception,
-+		       DEBUGGER_PARSER *parser);
-+
-+extern unsigned long displayEBPHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser);
-+extern unsigned long ChangeEBPRegister(unsigned char *cmd,
-+	       StackFrame *stackFrame, unsigned long Exception,
-+	       DEBUGGER_PARSER *parser);
-+
-+extern unsigned long displayESPHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser);
-+extern unsigned long ChangeESPRegister(unsigned char *cmd,
-+		       StackFrame *stackFrame, unsigned long Exception,
-+		       DEBUGGER_PARSER *parser);
-+
-+extern unsigned long displayEIPHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser);
-+extern unsigned long ChangeEIPRegister(unsigned char *cmd,
-+		       StackFrame *stackFrame, unsigned long Exception,
-+		       DEBUGGER_PARSER *parser);
-+
-+extern unsigned long displayCSHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser);
-+extern unsigned long ChangeCSRegister(unsigned char *cmd,
-+		      StackFrame *stackFrame, unsigned long Exception,
-+		      DEBUGGER_PARSER *parser);
-+
-+extern unsigned long displayDSHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser);
-+extern unsigned long ChangeDSRegister(unsigned char *cmd,
-+		      StackFrame *stackFrame, unsigned long Exception,
-+		      DEBUGGER_PARSER *parser);
-+
-+extern unsigned long displayESHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser);
-+extern unsigned long ChangeESRegister(unsigned char *cmd,
-+		      StackFrame *stackFrame, unsigned long Exception,
-+		      DEBUGGER_PARSER *parser);
-+
-+extern unsigned long displayFSHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser);
-+extern unsigned long ChangeFSRegister(unsigned char *cmd,
-+		      StackFrame *stackFrame, unsigned long Exception,
-+		      DEBUGGER_PARSER *parser);
-+
-+extern unsigned long displayGSHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser);
-+extern unsigned long ChangeGSRegister(unsigned char *cmd,
-+		      StackFrame *stackFrame, unsigned long Exception,
-+		      DEBUGGER_PARSER *parser);
-+
-+extern unsigned long displaySSHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser);
-+extern unsigned long ChangeSSRegister(unsigned char *cmd,
-+		      StackFrame *stackFrame, unsigned long Exception,
-+		      DEBUGGER_PARSER *parser);
-+
-+extern unsigned long displayRFHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser);
-+extern unsigned long ChangeRFFlag(unsigned char *cmd,
-+		  StackFrame *stackFrame, unsigned long Exception,
-+		  DEBUGGER_PARSER *parser);
-+
-+extern unsigned long displayTFHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser);
-+extern unsigned long ChangeTFFlag(unsigned char *cmd,
-+		  StackFrame *stackFrame, unsigned long Exception,
-+		  DEBUGGER_PARSER *parser);
-+
-+extern unsigned long displayZFHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser);
-+extern unsigned long ChangeZFFlag(unsigned char *cmd,
-+		  StackFrame *stackFrame, unsigned long Exception,
-+		  DEBUGGER_PARSER *parser);
-+
-+extern unsigned long displaySFHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser);
-+extern unsigned long ChangeSFFlag(unsigned char *cmd,
-+		  StackFrame *stackFrame, unsigned long Exception,
-+		  DEBUGGER_PARSER *parser);
-+
-+extern unsigned long displayPFHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser);
-+extern unsigned long ChangePFFlag(unsigned char *cmd,
-+		  StackFrame *stackFrame, unsigned long Exception,
-+		  DEBUGGER_PARSER *parser);
-+
-+extern unsigned long displayCFHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser);
-+extern unsigned long ChangeCFFlag(unsigned char *cmd,
-+		  StackFrame *stackFrame, unsigned long Exception,
-+		  DEBUGGER_PARSER *parser);
-+
-+extern unsigned long displayOFHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser);
-+extern unsigned long ChangeOFFlag(unsigned char *cmd,
-+		  StackFrame *stackFrame, unsigned long Exception,
-+		  DEBUGGER_PARSER *parser);
-+
-+extern unsigned long displayIFHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser);
-+extern unsigned long ChangeIFFlag(unsigned char *cmd,
-+		  StackFrame *stackFrame, unsigned long Exception,
-+		  DEBUGGER_PARSER *parser);
-+
-+extern unsigned long displayIDHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser);
-+extern unsigned long ChangeIDFlag(unsigned char *cmd,
-+		  StackFrame *stackFrame, unsigned long Exception,
-+		  DEBUGGER_PARSER *parser);
-+
-+extern unsigned long displayDFHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser);
-+extern unsigned long ChangeDFFlag(unsigned char *cmd,
-+		  StackFrame *stackFrame, unsigned long Exception,
-+		  DEBUGGER_PARSER *parser);
-+
-+extern unsigned long displayNTHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser);
-+extern unsigned long ChangeNTFlag(unsigned char *cmd,
-+		  StackFrame *stackFrame, unsigned long Exception,
-+		  DEBUGGER_PARSER *parser);
-+
-+extern unsigned long displayVMHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser);
-+extern unsigned long ChangeVMFlag(unsigned char *cmd,
-+	       StackFrame *stackFrame, unsigned long Exception,
-+	       DEBUGGER_PARSER *parser);
-+
-+extern unsigned long displayVIFHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser);
-+extern unsigned long ChangeVIFFlag(unsigned char *cmd,
-+		   StackFrame *stackFrame, unsigned long Exception,
-+		   DEBUGGER_PARSER *parser);
-+
-+extern unsigned long displayVIPHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser);
-+extern unsigned long ChangeVIPFlag(unsigned char *cmd,
-+		   StackFrame *stackFrame, unsigned long Exception,
-+		   DEBUGGER_PARSER *parser);
-+
-+extern unsigned long displayAFHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser);
-+extern unsigned long ChangeAFFlag(unsigned char *cmd,
-+		  StackFrame *stackFrame, unsigned long Exception,
-+		  DEBUGGER_PARSER *parser);
-+
-+extern unsigned long displayACHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser);
-+extern unsigned long ChangeACFlag(unsigned char *cmd,
-+		  StackFrame *stackFrame, unsigned long Exception,
-+		  DEBUGGER_PARSER *parser);
-+
-+extern unsigned long displayMTRRHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser);
-+extern unsigned long DisplayMTRRRegisters(unsigned char *cmd,
-+			  StackFrame *stackFrame, unsigned long Exception,
-+			  DEBUGGER_PARSER *parser);
-+
-+extern unsigned long displayGDTHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser);
-+extern unsigned long displayGDT(unsigned char *cmd,
-+		StackFrame *stackFrame, unsigned long Exception,
-+		DEBUGGER_PARSER *parser);
-+
-+extern unsigned long displayIDTHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser);
-+extern unsigned long displayIDT(unsigned char *cmd,
-+		   StackFrame *stackFrame, unsigned long Exception,
-+		   DEBUGGER_PARSER *parser);
-+
-+extern unsigned long evaluateExpressionHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser);
-+extern unsigned long evaluateExpression(unsigned char *cmd,
-+		   StackFrame *stackFrame, unsigned long Exception,
-+		   DEBUGGER_PARSER *parser);
-+
-+extern unsigned long displayDOSTableHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser);
-+extern unsigned long displayDOSTable(unsigned char *cmd,
-+		   StackFrame *stackFrame, unsigned long Exception,
-+		   DEBUGGER_PARSER *parser);
-+
-+extern unsigned long portCommandHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser);
-+extern unsigned long inputWordPort(unsigned char *cmd,
-+		   StackFrame *stackFrame, unsigned long Exception,
-+		   DEBUGGER_PARSER *parser);
-+extern unsigned long inputDoublePort(unsigned char *cmd,
-+		   StackFrame *stackFrame, unsigned long Exception,
-+		   DEBUGGER_PARSER *parser);
-+extern unsigned long inputBytePort(unsigned char *cmd,
-+		   StackFrame *stackFrame, unsigned long Exception,
-+		   DEBUGGER_PARSER *parser);
-+extern unsigned long inputPort(unsigned char *cmd,
-+		   StackFrame *stackFrame, unsigned long Exception,
-+		   DEBUGGER_PARSER *parser);
-+extern unsigned long outputWordPort(unsigned char *cmd,
-+		   StackFrame *stackFrame, unsigned long Exception,
-+		   DEBUGGER_PARSER *parser);
-+extern unsigned long outputDoublePort(unsigned char *cmd,
-+		   StackFrame *stackFrame, unsigned long Exception,
-+		   DEBUGGER_PARSER *parser);
-+extern unsigned long outputBytePort(unsigned char *cmd,
-+		   StackFrame *stackFrame, unsigned long Exception,
-+		   DEBUGGER_PARSER *parser);
-+extern unsigned long outputPort(unsigned char *cmd,
-+		   StackFrame *stackFrame, unsigned long Exception,
-+		   DEBUGGER_PARSER *parser);
-+
-+
-+extern unsigned long breakpointCommandHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser);
-+extern unsigned long breakpointClearAll(unsigned char *cmd,
-+			StackFrame *stackFrame, unsigned long Exception,
-+			DEBUGGER_PARSER *parser);
-+extern unsigned long breakpointClear(unsigned char *cmd,
-+		     StackFrame *stackFrame, unsigned long Exception,
-+		     DEBUGGER_PARSER *parser);
-+extern unsigned long breakpointMask(unsigned char *cmd,
-+		    StackFrame *stackFrame, unsigned long Exception,
-+		    DEBUGGER_PARSER *parser);
-+extern unsigned long breakpointWord1(unsigned char *cmd,
-+		     StackFrame *stackFrame, unsigned long Exception,
-+		     DEBUGGER_PARSER *parser);
-+extern unsigned long breakpointWord2(unsigned char *cmd,
-+		     StackFrame *stackFrame, unsigned long Exception,
-+		     DEBUGGER_PARSER *parser);
-+extern unsigned long breakpointWord4(unsigned char *cmd,
-+		     StackFrame *stackFrame, unsigned long Exception,
-+		     DEBUGGER_PARSER *parser);
-+extern unsigned long breakpointWord(unsigned char *cmd,
-+		    StackFrame *stackFrame, unsigned long Exception,
-+		    DEBUGGER_PARSER *parser);
-+extern unsigned long breakpointRead1(unsigned char *cmd,
-+		     StackFrame *stackFrame, unsigned long Exception,
-+		     DEBUGGER_PARSER *parser);
-+extern unsigned long breakpointRead2(unsigned char *cmd,
-+		     StackFrame *stackFrame, unsigned long Exception,
-+		     DEBUGGER_PARSER *parser);
-+extern unsigned long breakpointRead4(unsigned char *cmd,
-+		   StackFrame *stackFrame, unsigned long Exception,
-+		   DEBUGGER_PARSER *parser);
-+extern unsigned long breakpointRead(unsigned char *cmd,
-+		   StackFrame *stackFrame, unsigned long Exception,
-+		   DEBUGGER_PARSER *parser);
-+extern unsigned long breakpointIO1(unsigned char *cmd,
-+		   StackFrame *stackFrame, unsigned long Exception,
-+		   DEBUGGER_PARSER *parser);
-+extern unsigned long breakpointIO2(unsigned char *cmd,
-+		   StackFrame *stackFrame, unsigned long Exception,
-+		   DEBUGGER_PARSER *parser);
-+extern unsigned long breakpointIO4(unsigned char *cmd,
-+		   StackFrame *stackFrame, unsigned long Exception,
-+		   DEBUGGER_PARSER *parser);
-+extern unsigned long breakpointIO(unsigned char *cmd,
-+		   StackFrame *stackFrame, unsigned long Exception,
-+		   DEBUGGER_PARSER *parser);
-+extern unsigned long breakpointExecute(unsigned char *cmd,
-+		   StackFrame *stackFrame, unsigned long Exception,
-+		   DEBUGGER_PARSER *parser);
-+extern unsigned long breakpointShowTemp(unsigned char *cmd,
-+			StackFrame *stackFrame, unsigned long Exception,
-+			DEBUGGER_PARSER *parser);
-+extern unsigned long dump_ef(unsigned char *cmd,
-+		     StackFrame *stackFrame, unsigned long Exception,
-+		     DEBUGGER_PARSER *parser);
-+extern unsigned long dump_uf(unsigned char *cmd,
-+		     StackFrame *stackFrame, unsigned long Exception,
-+		     DEBUGGER_PARSER *parser);
++#include <linux/version.h>
++#include <linux/types.h>
++#include <linux/sched.h>
++#include <linux/kernel.h>
++#include <linux/mm.h>
++#include <linux/string.h>
++#include <linux/stat.h>
++#include <linux/errno.h>
++#include <linux/fcntl.h>
++#include <linux/slab.h>
++#include <linux/vmalloc.h>
++#include <linux/genhd.h>
++#include <linux/hdreg.h>
++#include <linux/fs.h>
++#include <linux/major.h>
++#include <linux/mm.h>
++#include <linux/cdrom.h>
++#include <linux/pagemap.h>
++#include <linux/swap.h>
++#include <linux/smp.h>
++#include <linux/smp_lock.h>
++#include <linux/ctype.h>
++#include <linux/keyboard.h>
++#include <linux/console.h>
++#include <linux/serial_reg.h>
++#include <asm/uaccess.h>
++#include <asm/system.h>
++#include <asm/segment.h>
++#include <asm/atomic.h>
++#include <asm/msr.h>
++#include <asm/io.h>
++
++#ifdef CONFIG_SMP
++#include <mach_apic.h>
++#include <mach_ipi.h>
++#endif
++
++#define __KERNEL_SYSCALLS__
++#include <linux/unistd.h>
++#include <linux/kallsyms.h>
++
++#include "mdb.h"
++#include "mdb-ia32.h"
++#include "mdb-list.h"
++#include "mdb-ia32-proc.h"
++#include "mdb-base.h"
++#include "mdb-proc.h"
++#include "mdb-os.h"
++#include "mdb-keyboard.h"
++
++#ifdef CONFIG_MDB
++
++#ifdef MDB_ATOMIC
++static spinlock_t accelLock = SPIN_LOCK_UNLOCKED;
++static long accelflags = 0;
++#endif
++
++ACCELERATOR *accelHead = 0;
++ACCELERATOR *accelTail = 0;
++
++unsigned long AccelRoutine(unsigned long key, void *p)
++{
++    register ACCELERATOR *accel;
++    unsigned long retCode;
++
++    accel = accelHead;
++    while (accel)
++    {
++       if (accel->accelFlags && accel->accelRoutine && accel->key == key)
++       {
++	  retCode = (accel->accelRoutine)(key, p, accel);
++	  return retCode;
++       }
++       accel = accel->accelNext;
++    }
++    return 0;
++}
++
++void ShowDebuggerAccelerators(void)
++{
++   register ACCELERATOR *accel;
++
++   DBGPrint("\nDebugger Keystroke Accelerator(s)\n");
++
++   accel = accelHead;
++   while (accel)
++   {
++      if (accel->shortHelp)
++         if (DBGPrint("%s\n", accel->shortHelp)) return;
++      accel = accel->accelNext;
++   }
++   return;
++}
++
++unsigned long IsAccelerator(unsigned long key)
++{
++    register ACCELERATOR *accel;
++    
++    accel = accelHead;
++    while (accel)
++    {
++       if (accel->accelFlags && accel->accelRoutine && accel->key == key)
++       {
++	  return 1;
++       }
++       accel = accel->accelNext;
++    }
++    return 0;
++}
++
++unsigned long AccelHelpRoutine(unsigned long key)
++{
++    register ACCELERATOR *accel;
++
++    accel = accelHead;
++    if (key)  // if we were passed a command string
++    {
++       while (accel)
++       {
++	  if (accel->accelFlags && accel->key == key)
++	  {
++	     if (accel->accelRoutineHelp)
++	     {
++		DBGPrint("Accelerator %08X\n", (unsigned)accel->key);
++		(accel->accelRoutineHelp)(key, accel);
++		return 1;
++	     }
++	     DBGPrint("Accelerator %08X\n", (unsigned)accel->key);
++	     return 1;
++	  }
++	  accel = accel->accelNext;
++       }
++       DBGPrint("Help for Accelerator [%08X] not found\n", (unsigned)key);
++       return 1;
++    }
++    else
++    {
++       DBGPrint("Accelerator(s)\n");
++       while (accel)
++       {
++	  if (accel->accelFlags && accel->key && !accel->supervisorCommand)
++	     DBGPrint("%08X         - %s\n", 
++                      (unsigned)accel->key, accel->shortHelp);
++	  accel = accel->accelNext;
++       }
++    }
++    return 0;
++}
++
++ACCELERATOR *insertAccel(ACCELERATOR *i, ACCELERATOR *top)
++{
++    ACCELERATOR *old, *p;
++
++    if (!accelTail)
++    {
++       i->accelNext = i->accelPrior = NULL;
++       accelTail = i;
++       return i;
++    }
++    p = top;
++    old = NULL;
++    while (p)
++    {
++       if (p->key < i->key)
++       {
++	  old = p;
++	  p = p->accelNext;
++       }
++       else
++       {
++	  if (p->accelPrior)
++	  {
++	     p->accelPrior->accelNext = i;
++	     i->accelNext = p;
++	     i->accelPrior = p->accelPrior;
++	     p->accelPrior = i;
++	     return top;
++	  }
++	  i->accelNext = p;
++	  i->accelPrior = NULL;
++	  p->accelPrior = i;
++	  return i;
++       }
++    }
++    old->accelNext = i;
++    i->accelNext = NULL;
++    i->accelPrior = old;
++    accelTail = i;
++    return accelHead;
++
++}
++
++unsigned long AddAccelRoutine(ACCELERATOR *newAccel)
++{
++    register ACCELERATOR *accel;
++
++#ifdef MDB_ATOMIC
++    spin_lock_irqsave(&accelLock, accelflags);
++#endif
++    accel = accelHead;
++    while (accel)
++    {
++       if (accel == newAccel || accel->key == newAccel->key)
++       {
++#ifdef MDB_ATOMIC
++	  spin_unlock_irqrestore(&accelLock, accelflags);  
++#endif
++	  return 1;
++       }
++       accel = accel->accelNext;
++    }
++    newAccel->accelFlags = -1;
++    accelHead = insertAccel(newAccel, accelHead);
++
++#ifdef MDB_ATOMIC
++    spin_unlock_irqrestore(&accelLock, accelflags);
++#endif
++    return 0;
++}
++
++unsigned long RemoveAccelRoutine(ACCELERATOR *newAccel)
++{
++    register ACCELERATOR *accel;
++
++#ifdef MDB_ATOMIC
++    spin_lock_irqsave(&accelLock, accelflags);
++#endif
++    accel = accelHead;
++    while (accel)
++    {
++       if (accel == newAccel)   // found, remove from list
++       {
++	  if (accelHead == newAccel)
++	  {
++	     accelHead = (void *) newAccel->accelNext;
++	     if (accelHead)
++		accelHead->accelPrior = NULL;
++	     else
++		accelTail = NULL;
++	  }
++	  else
++	  {
++	     newAccel->accelPrior->accelNext = newAccel->accelNext;
++	     if (newAccel != accelTail)
++		newAccel->accelNext->accelPrior = newAccel->accelPrior;
++	     else
++		accelTail = newAccel->accelPrior;
++	  }
++	  newAccel->accelNext = newAccel->accelPrior = 0;
++	  newAccel->accelFlags = 0;
++
++#ifdef MDB_ATOMIC
++	  spin_unlock_irqrestore(&accelLock, accelflags);
++#endif
++	  return 0;
++       }
++       accel = accel->accelNext;
++    }
++
++#ifdef MDB_ATOMIC
++    spin_unlock_irqrestore(&accelLock, accelflags);
++#endif
++    return -1;
++}
++
++#ifdef MDB_ATOMIC
++static spinlock_t altDebugLock = SPIN_LOCK_UNLOCKED;
++static long altflags = 0;
++#endif
++
++ALT_DEBUGGER *altDebugHead = 0;
++ALT_DEBUGGER *altDebugTail = 0;
++
++int AlternateDebuggerRoutine(int reason, int error, void *frame)
++{
++    register ALT_DEBUGGER *altDebug;
++    register unsigned long retCode;
++    unsigned long state;
++
++    state = save_flags();
++    altDebug = altDebugHead;
++    while (altDebug)
++    {
++       if (altDebug->AlternateDebugger)
++       {
++	  retCode = (altDebug->AlternateDebugger)(reason, error, frame);
++	  if (retCode)
++          {
++             restore_flags(state);
++	     return retCode;
++          }
++       }
++       altDebug = altDebug->altDebugNext;
++    }
++    restore_flags(state);
++    return 0;
++}
++
++unsigned long AddAlternateDebugger(ALT_DEBUGGER *Debugger)
++{
++    register ALT_DEBUGGER *altDebug;
++
++#ifdef MDB_ATOMIC
++    spin_lock_irqsave(&altDebugLock, altflags);
++#endif
++    altDebug = altDebugHead;
++    while (altDebug)
++    {
++       if (altDebug == Debugger)
++       {
++#ifdef MDB_ATOMIC
++	  spin_unlock_irqrestore(&altDebugLock, altflags);  
++#endif
++	  return 1;
++       }
++       altDebug = altDebug->altDebugNext;
++    }
++    if (!altDebugHead)
++    {
++       altDebugHead = Debugger;
++       altDebugTail = Debugger;
++       Debugger->altDebugNext = 0;
++       Debugger->altDebugPrior = 0;
++    }
++    else
++    {
++       altDebugTail->altDebugNext = Debugger;
++       Debugger->altDebugNext = 0;
++       Debugger->altDebugPrior = altDebugTail;
++       altDebugTail = Debugger;
++    }
++
++#ifdef MDB_ATOMIC
++    spin_unlock_irqrestore(&altDebugLock, altflags);
++#endif
++    return 0;
++}
++
++unsigned long RemoveAlternateDebugger(ALT_DEBUGGER *Debugger)
++{
++    register ALT_DEBUGGER *altDebug;
++
++#ifdef MDB_ATOMIC
++    spin_lock_irqsave(&altDebugLock, altflags);
++#endif
++    altDebug = altDebugHead;
++    while (altDebug)
++    {
++       if (altDebug == Debugger)   // found, remove from list
++       {
++	  if (altDebugHead == Debugger)
++	  {
++	     altDebugHead = (void *) Debugger->altDebugNext;
++	     if (altDebugHead)
++		altDebugHead->altDebugPrior = NULL;
++	     else
++		altDebugTail = NULL;
++	  }
++	  else
++	  {
++	     Debugger->altDebugPrior->altDebugNext = Debugger->altDebugNext;
++	     if (Debugger != altDebugTail)
++		Debugger->altDebugNext->altDebugPrior = Debugger->altDebugPrior;
++	     else
++		altDebugTail = Debugger->altDebugPrior;
++	  }
++	  Debugger->altDebugNext = Debugger->altDebugPrior = 0;
++
++#ifdef MDB_ATOMIC
++          spin_unlock_irqrestore(&altDebugLock, altflags);
++#endif
++	  return 0;
++       }
++       altDebug = altDebug->altDebugNext;
++    }
++#ifdef MDB_ATOMIC
++    spin_unlock_irqrestore(&altDebugLock, altflags);
++#endif
++    return -1;
++}
++
++#ifdef MDB_ATOMIC
++static spinlock_t debugParserLock = SPIN_LOCK_UNLOCKED;
++static long parserflags = 0;
++#endif
++
++DEBUGGER_PARSER *debugParserHead = 0;
++DEBUGGER_PARSER *debugParserTail = 0;
++
++unsigned long DebuggerParserRoutine(unsigned char *command, unsigned char *commandLine,
++			    StackFrame *stackFrame, unsigned long Exception)
++{
++    register DEBUGGER_PARSER *debugParser;
++    register unsigned long retCode, valid = 0;
++    register unsigned char *p;
++ 
++    p = commandLine;
++    if (!p)
++       return 0;
++
++    // if a passed string is just whitespace, return error
++    while (*p)
++    {
++       if ((*p != ' ') && (*p != '\n') && (*p != '\r'))
++       {
++          valid = 1;
++          break;
++       }
++       p++;
++    }
++    if (!valid)
++       return 0;
++
++    debugParser = debugParserHead;
++    while (debugParser)
++    {
++       if (debugParser->parserFlags && debugParser->DebugCommandParser &&
++	   strlen(debugParser->debugCommandName) == strlen(command) &&
++	   (!strcmp(debugParser->debugCommandName, UpcaseString(command))))
++       {
++	  retCode = (debugParser->DebugCommandParser)(commandLine, stackFrame,
++						      Exception, debugParser);
++	  if (retCode)
++	     return retCode;
++       }
++       debugParser = debugParser->debugNext;
++    }
++    DBGPrint("unknown mdb command -> %s\n", command);
++    return 0;
++}
++
++unsigned long DebuggerParserHelpRoutine(unsigned char *command, unsigned char *commandLine)
++{
++    extern void ShowDebuggerAccelerators(void);
++    register DEBUGGER_PARSER *debugParser;
++
++    debugParser = debugParserHead;
++    if (*command)  // if we were passed a command string
++    {
++       while (debugParser)
++       {
++	  if (debugParser->parserFlags &&
++	      strlen(debugParser->debugCommandName) == strlen(command) &&
++	      !strcmp(debugParser->debugCommandName, UpcaseString(command)))
++	  {
++	     if (debugParser->DebugCommandParserHelp)
++	     {
++		DBGPrint("Help for Command %s\n", 
++                         debugParser->debugCommandName);
++		(debugParser->DebugCommandParserHelp)(commandLine, debugParser);
++		return 1;
++	     }
++	     DBGPrint("Help for Command %s\n", debugParser->debugCommandName);
++	     return 1;
++	  }
++	  debugParser = debugParser->debugNext;
++       }
++       DBGPrint("Help for Command [%s] not found\n", command);
++       return 1;
++    }
++    else
++    {
++       DBGPrint("Debugger Command(s)\n");
++       while (debugParser)
++       {
++	  if (debugParser->parserFlags && debugParser->debugCommandName &&
++	      !debugParser->supervisorCommand)
++	     if (DBGPrint("%15s    - %s\n", debugParser->debugCommandName, 
++                      debugParser->shortHelp)) return 0;
++	  debugParser = debugParser->debugNext;
++       }
++       ShowDebuggerAccelerators();
++    }
++    return 0;
++}
++
++DEBUGGER_PARSER *insertDebuggerParser(DEBUGGER_PARSER *i, DEBUGGER_PARSER *top)
++{
++    DEBUGGER_PARSER *old, *p;
++
++    if (!debugParserTail)
++    {
++       i->debugNext = i->debugPrior = NULL;
++       debugParserTail = i;
++       return i;
++    }
++    p = top;
++    old = NULL;
++    while (p)
++    {
++       if (strcmp(p->debugCommandName, i->debugCommandName) < 0)
++       {
++	  old = p;
++	  p = p->debugNext;
++       }
++       else
++       {
++	  if (p->debugPrior)
++	  {
++	     p->debugPrior->debugNext = i;
++	     i->debugNext = p;
++	     i->debugPrior = p->debugPrior;
++	     p->debugPrior = i;
++	     return top;
++	  }
++	  i->debugNext = p;
++	  i->debugPrior = NULL;
++	  p->debugPrior = i;
++	  return i;
++       }
++    }
++    old->debugNext = i;
++    i->debugNext = NULL;
++    i->debugPrior = old;
++    debugParserTail = i;
++    return debugParserHead;
++
++}
++
++unsigned long AddDebuggerCommandParser(DEBUGGER_PARSER *parser)
++{
++    register DEBUGGER_PARSER *debugParser;
++
++#ifdef MDB_ATOMIC
++    spin_lock_irqsave(&debugParserLock, parserflags);
++#endif
++    debugParser = debugParserHead;
++    while (debugParser)
++    {
++       if (debugParser == parser ||
++	  (strlen(parser->debugCommandName) == strlen(debugParser->debugCommandName) &&
++	  (!strcmp(parser->debugCommandName, debugParser->debugCommandName))))
++       {
++#ifdef MDB_ATOMIC
++	  spin_unlock_irqrestore(&debugParserLock, parserflags);  
++#endif
++	  return 1;
++       }
++       debugParser = debugParser->debugNext;
++    }
++    parser->parserFlags = -1;
++    parser->debugCommandNameLength = strlen(parser->debugCommandName);
++
++    debugParserHead = insertDebuggerParser(parser, debugParserHead);
++
++#ifdef MDB_ATOMIC
++    spin_unlock_irqrestore(&debugParserLock, parserflags);
++#endif
++    return 0;
++}
++
++unsigned long RemoveDebuggerCommandParser(DEBUGGER_PARSER *parser)
++{
++    register DEBUGGER_PARSER *debugParser;
++
++#ifdef MDB_ATOMIC
++    spin_lock_irqsave(&debugParserLock, parserflags);
++#endif
++    debugParser = debugParserHead;
++    while (debugParser)
++    {
++       if (debugParser == parser)   // found, remove from list
++       {
++	  if (debugParserHead == parser)
++	  {
++	     debugParserHead = (void *) parser->debugNext;
++	     if (debugParserHead)
++		debugParserHead->debugPrior = NULL;
++	     else
++		debugParserTail = NULL;
++	  }
++	  else
++	  {
++	     parser->debugPrior->debugNext = parser->debugNext;
++	     if (parser != debugParserTail)
++		parser->debugNext->debugPrior = parser->debugPrior;
++	     else
++		debugParserTail = parser->debugPrior;
++	  }
++	  parser->debugNext = parser->debugPrior = 0;
++	  parser->parserFlags = 0;
++
++#ifdef MDB_ATOMIC
++	  spin_unlock_irqrestore(&debugParserLock, parserflags);
++#endif
++	  return 0;
++       }
++       debugParser = debugParser->debugNext;
++    }
++#ifdef MDB_ATOMIC
++    spin_unlock_irqrestore(&debugParserLock, parserflags);
++#endif
++    return -1;
++}
 +
 +#endif
 +
