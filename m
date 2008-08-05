@@ -1,318 +1,167 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760841AbYHENS4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760974AbYHENWU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760841AbYHENS4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 09:18:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754169AbYHENSp
+	id S1760974AbYHENWU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 09:22:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753453AbYHENWK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 09:18:45 -0400
-Received: from arroyo.ext.ti.com ([192.94.94.40]:57084 "EHLO arroyo.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753293AbYHENSo convert rfc822-to-8bit (ORCPT
+	Tue, 5 Aug 2008 09:22:10 -0400
+Received: from smtp1.stealer.net ([88.198.224.204]:48222 "EHLO
+	smtp1.stealer.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752684AbYHENWI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 09:18:44 -0400
-From: "Dasgupta, Romit" <romit@ti.com>
-To: David Engraf <david.engraf@netcom.eu>
-CC: Alan Stern <stern@rowland.harvard.edu>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Greg KH <greg@kroah.com>,
-       "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
-Date: Tue, 5 Aug 2008 18:38:13 +0530
-Subject: RE: [PATCH] [PM] Fixes missing PM entries in sysfs without
- CONFIG_PM_SLEEP
-Thread-Topic: [PATCH] [PM] Fixes missing PM entries in sysfs without
- CONFIG_PM_SLEEP
-Thread-Index: Acj2+6uLdxG1Y33iRLe4LXQkvx0jTAAAEfXw
-Message-ID: <B85A65D85D7EB246BE421B3FB0FBB593013C9AEE67@dbde02.ent.ti.com>
-References: <200808041724.24016.rjw@sisk.pl>
- <Pine.LNX.4.44L0.0808041143350.3818-100000@iolanthe.rowland.org>
- <B85A65D85D7EB246BE421B3FB0FBB593013C9AE7E8@dbde02.ent.ti.com>
- <48984E7D.6010603@netcom.eu>
-In-Reply-To: <48984E7D.6010603@netcom.eu>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
+	Tue, 5 Aug 2008 09:22:08 -0400
+Date: Tue, 5 Aug 2008 15:21:42 +0200 (CEST)
+From: Sven Wegener <sven.wegener@stealer.net>
+To: Simon Horman <horms@verge.net.au>
+cc: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Matthew Wilcox <matthew@wil.cx>
+Subject: Re: [patch] PCI: check the return value of device_create_bin_file()
+ in	pci_create_bus()
+In-Reply-To: <alpine.LNX.1.10.0808051224350.5671@titan.stealer.net>
+Message-ID: <alpine.LNX.1.10.0808051422070.5671@titan.stealer.net>
+References: <20080805101605.GA19382@verge.net.au> <alpine.LNX.1.10.0808051224350.5671@titan.stealer.net>
+User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
+Organization: STEALER.net
 MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Score: -2.5
+X-Spam-Bar: --
+X-Spam-Report: Scanned by SpamAssassin 3.2.1-gr1 2007-05-02 on smtp1.stealer.net at Tue, 05 Aug 2008 13:21:54 +0000
+	Bayes: 0.0001 Tokens: new, 329; hammy, 7; neutral, 3; spammy, 0.
+	AutoLearn: no
+	*  0.1 RDNS_NONE Delivered to trusted network by a host with no rDNS
+	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
+	*      [score: 0.0001]
+X-Spam-Signature: 2cf770d886d8c1ce94f8dee4d7d38727ddec1a62
+X-DomainKey-Status: no signature
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I think it is my mailer program that is adding the tabs.
-In Alan's patch I just changed the PMError label with SysFSError.
+On Tue, 5 Aug 2008, Sven Wegener wrote:
 
+> On Tue, 5 Aug 2008, Simon Horman wrote:
+> 
+> > Check the return value of device_create_bin_file in pci_create_bus,
+> > unwind if neccessary, and propogate any errors to the caller.
+> > 
+> > Signed-off-by: Simon Horman <horms@verge.net.au>
+> > 
+> > --- 
+> > 
+> > drivers/pci/probe.c: In function `pci_create_bus':
+> > drivers/pci/probe.c:66: warning: ignoring return value of `device_create_bin_file', declared with attribute warn_unused_result
+> > drivers/pci/probe.c:74: warning: ignoring return value of `device_create_bin_file', declared with attribute warn_unused_result
+> > 
+> > # ia64-unknown-linux-gnu-gcc --version
+> > ia64-unknown-linux-gnu-gcc (GCC) 3.4.5
+> > Copyright (C) 2004 Free Software Foundation, Inc.
+> > This is free software; see the source for copying conditions.  There is NO
+> > warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+> > 
+> > Index: linux-2.6/drivers/pci/probe.c
+> > ===================================================================
+> > --- linux-2.6.orig/drivers/pci/probe.c	2008-08-05 19:58:43.000000000 +1000
+> > +++ linux-2.6/drivers/pci/probe.c	2008-08-05 19:59:15.000000000 +1000
+> > @@ -53,26 +53,37 @@ EXPORT_SYMBOL(no_pci_devices);
+> >   * a per-bus basis.  This routine creates the files and ties them into
+> >   * their associated read, write and mmap files from pci-sysfs.c
+> >   */
+> > -static void pci_create_legacy_files(struct pci_bus *b)
+> > +static int pci_create_legacy_files(struct pci_bus *b)
+> >  {
+> > +	int error;
+> > +
+> >  	b->legacy_io = kzalloc(sizeof(struct bin_attribute) * 2,
+> >  			       GFP_ATOMIC);
+> > -	if (b->legacy_io) {
+> > -		b->legacy_io->attr.name = "legacy_io";
+> > -		b->legacy_io->size = 0xffff;
+> > -		b->legacy_io->attr.mode = S_IRUSR | S_IWUSR;
+> > -		b->legacy_io->read = pci_read_legacy_io;
+> > -		b->legacy_io->write = pci_write_legacy_io;
+> > -		device_create_bin_file(&b->dev, b->legacy_io);
+> > -
+> > -		/* Allocated above after the legacy_io struct */
+> > -		b->legacy_mem = b->legacy_io + 1;
+> > -		b->legacy_mem->attr.name = "legacy_mem";
+> > -		b->legacy_mem->size = 1024*1024;
+> > -		b->legacy_mem->attr.mode = S_IRUSR | S_IWUSR;
+> > -		b->legacy_mem->mmap = pci_mmap_legacy_mem;
+> > -		device_create_bin_file(&b->dev, b->legacy_mem);
+> > +	if (!b->legacy_io)
+> > +		return -ENOMEM;
+> > +
+> > +	b->legacy_io->attr.name = "legacy_io";
+> > +	b->legacy_io->size = 0xffff;
+> > +	b->legacy_io->attr.mode = S_IRUSR | S_IWUSR;
+> > +	b->legacy_io->read = pci_read_legacy_io;
+> > +	b->legacy_io->write = pci_write_legacy_io;
+> > +	error = device_create_bin_file(&b->dev, b->legacy_io);
+> > +	if (error)
+> > +		return error;
+> 
+> I'd release the memory here and NULLify legacy_io.
+> 
+> > +
+> > +	/* Allocated above after the legacy_io struct */
+> > +	b->legacy_mem = b->legacy_io + 1;
+> > +	b->legacy_mem->attr.name = "legacy_mem";
+> > +	b->legacy_mem->size = 1024*1024;
+> > +	b->legacy_mem->attr.mode = S_IRUSR | S_IWUSR;
+> > +	b->legacy_mem->mmap = pci_mmap_legacy_mem;
+> > +	error = device_create_bin_file(&b->dev, b->legacy_mem);
+> > +	if (error) {
+> > +		device_remove_bin_file(&b->dev, b->legacy_io);
+> > +		return error;
+> 
+> Here too.
+> 
+> Reason: If we fail to create the legacy_io file, legacy_mem will still be 
+> NULL, because it has been not initialized at that point. But we will try 
+> to remove it in pci_remove_legacy_files and in sysfs_remove_bin_file 
+> we're going to derefence it and blow up.
 
->-----Original Message-----
->From: linux-usb-owner@vger.kernel.org [mailto:linux-usb-owner@vger.kernel.org]
->On Behalf Of David Engraf
->Sent: Tuesday, August 05, 2008 6:29 PM
->To: Dasgupta, Romit
->Cc: Alan Stern; Rafael J. Wysocki; Greg KH; linux-usb@vger.kernel.org; linux-
->kernel@vger.kernel.org; Linux-pm mailing list
->Subject: Re: [PATCH] [PM] Fixes missing PM entries in sysfs without
->CONFIG_PM_SLEEP
->
->Alan's patch is working on my system with CONFIG_PM and without
->CONFIG_PM_SLEEP/CONFIG_USB_SUSPEND. Romit, I couldn't check your patch
->because I was getting errors from the patch program (maybe the tabs).
->
->Thanks again, David Engraf
->
->> A minor change below: Removed old goto label PMError and introduced
->SysFSError.
->> Tested with CONFIG_PM, CONFIG_PM_SLEEP, without CONFIG_PM and
->ofcourse with CONFIG_USB_SUSPEND. Works fine.
->>
->>
->> diff --git a/drivers/base/core.c b/drivers/base/core.c
->> index 068aa1c..9c77939 100644
->> --- a/drivers/base/core.c
->> +++ b/drivers/base/core.c
->> @@ -541,6 +541,7 @@ void device_initialize(struct device *dev)
->>         spin_lock_init(&dev->devres_lock);
->>         INIT_LIST_HEAD(&dev->devres_head);
->>         device_init_wakeup(dev, 0);
->> +       device_pm_init(dev);
->>         set_dev_node(dev, -1);
->>  }
->>
->> @@ -897,9 +898,10 @@ int device_add(struct device *dev)
->>         error = bus_add_device(dev);
->>         if (error)
->>                 goto BusError;
->> -       error = device_pm_add(dev);
->> +       error = dpm_sysfs_add(dev);
->>         if (error)
->> -               goto PMError;
->> +               goto SysFSError;
->> +       device_pm_add(dev);
->>         kobject_uevent(&dev->kobj, KOBJ_ADD);
->>         bus_attach_device(dev);
->>         if (parent)
->> @@ -920,7 +922,7 @@ int device_add(struct device *dev)
->>   Done:
->>         put_device(dev);
->>         return error;
->> - PMError:
->> + SysFSError:
->>         bus_remove_device(dev);
->>   BusError:
->>         if (dev->bus)
->> @@ -1007,6 +1009,7 @@ void device_del(struct device *dev)
->>         struct class_interface *class_intf;
->>
->>         device_pm_remove(dev);
->> +       dpm_sysfs_remove(dev);
->>         if (parent)
->>                 klist_del(&dev->knode_parent);
->>         if (MAJOR(dev->devt)) {
->> diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
->> index 3250c52..d1f752b 100644
->> --- a/drivers/base/power/main.c
->> +++ b/drivers/base/power/main.c
->> @@ -67,10 +67,8 @@ void device_pm_unlock(void)
->>   *     device_pm_add - add a device to the list of active devices
->>   *     @dev:   Device to be added to the list
->>   */
->> -int device_pm_add(struct device *dev)
->> +void device_pm_add(struct device *dev)
->>  {
->> -       int error;
->> -
->>         pr_debug("PM: Adding info for %s:%s\n",
->>                  dev->bus ? dev->bus->name : "No Bus",
->>                  kobject_name(&dev->kobj));
->> @@ -89,13 +87,8 @@ int device_pm_add(struct device *dev)
->>                  */
->>                 WARN_ON(true);
->>         }
->> -       error = dpm_sysfs_add(dev);
->> -       if (!error) {
->> -               dev->power.status = DPM_ON;
->> -               list_add_tail(&dev->power.entry, &dpm_list);
->> -       }
->> +       list_add_tail(&dev->power.entry, &dpm_list);
->>         mutex_unlock(&dpm_list_mtx);
->> -       return error;
->>  }
->>
->>  /**
->> @@ -110,7 +103,6 @@ void device_pm_remove(struct device *dev)
->>                  dev->bus ? dev->bus->name : "No Bus",
->>                  kobject_name(&dev->kobj));
->>         mutex_lock(&dpm_list_mtx);
->> -       dpm_sysfs_remove(dev);
->>         list_del_init(&dev->power.entry);
->>         mutex_unlock(&dpm_list_mtx);
->>  }
->> diff --git a/drivers/base/power/power.h b/drivers/base/power/power.h
->> index a3252c0..41f51fa 100644
->> --- a/drivers/base/power/power.h
->> +++ b/drivers/base/power/power.h
->> @@ -1,3 +1,8 @@
->> +static inline void device_pm_init(struct device *dev)
->> +{
->> +       dev->power.status = DPM_ON;
->> +}
->> +
->>  #ifdef CONFIG_PM_SLEEP
->>
->>  /*
->> @@ -11,12 +16,12 @@ static inline struct device *to_device(struct list_head
->*entry)
->>         return container_of(entry, struct device, power.entry);
->>  }
->>
->> -extern int device_pm_add(struct device *);
->> +extern void device_pm_add(struct device *);
->>  extern void device_pm_remove(struct device *);
->>
->>  #else /* CONFIG_PM_SLEEP */
->>
->> -static inline int device_pm_add(struct device *dev) { return 0; }
->> +static inline void device_pm_add(struct device *dev) {}
->>  static inline void device_pm_remove(struct device *dev) {}
->>
->>  #endif
->>
->>
->>> -----Original Message-----
->>> From: Alan Stern [mailto:stern@rowland.harvard.edu]
->>> Sent: Monday, August 04, 2008 9:15 PM
->>> To: Rafael J. Wysocki
->>> Cc: Dasgupta, Romit; David Engraf; Greg KH; linux-usb@vger.kernel.org; linux-
->>> kernel@vger.kernel.org; Linux-pm mailing list
->>> Subject: Re: [PATCH] [PM] Fixes missing PM entries in sysfs without
->>> CONFIG_PM_SLEEP
->>>
->>> On Mon, 4 Aug 2008, Rafael J. Wysocki wrote:
->>>
->>>
->>>>> Do you think we will want to make device_pm_add() return an error at
->>>>> some point in the future?
->>>>>
->>>> Well, maybe, but not any time soon. :-)
->>>>
->>> Okay, here's the updated patch.  Awaiting comments from the testers...
->>>
->>> Alan Stern
->>>
->>>
->>>
->>> Index: usb-2.6/drivers/base/power/power.h
->>>
->================================================================
->>> ===
->>> --- usb-2.6.orig/drivers/base/power/power.h
->>> +++ usb-2.6/drivers/base/power/power.h
->>> @@ -1,3 +1,8 @@
->>> +static inline void device_pm_init(struct device *dev)
->>> +{
->>> +       dev->power.status = DPM_ON;
->>> +}
->>> +
->>> #ifdef CONFIG_PM_SLEEP
->>>
->>> /*
->>> @@ -11,12 +16,12 @@ static inline struct device *to_device(s
->>>        return container_of(entry, struct device, power.entry);
->>> }
->>>
->>> -extern int device_pm_add(struct device *);
->>> +extern void device_pm_add(struct device *);
->>> extern void device_pm_remove(struct device *);
->>>
->>> #else /* CONFIG_PM_SLEEP */
->>>
->>> -static inline int device_pm_add(struct device *dev) { return 0; }
->>> +static inline void device_pm_add(struct device *dev) {}
->>> static inline void device_pm_remove(struct device *dev) {}
->>>
->>> #endif
->>> Index: usb-2.6/drivers/base/core.c
->>>
->================================================================
->>> ===
->>> --- usb-2.6.orig/drivers/base/core.c
->>> +++ usb-2.6/drivers/base/core.c
->>> @@ -542,6 +542,7 @@ void device_initialize(struct device *de
->>>        spin_lock_init(&dev->devres_lock);
->>>        INIT_LIST_HEAD(&dev->devres_head);
->>>        device_init_wakeup(dev, 0);
->>> +       device_pm_init(dev);
->>>        set_dev_node(dev, -1);
->>> }
->>>
->>> @@ -898,9 +899,10 @@ int device_add(struct device *dev)
->>>        error = bus_add_device(dev);
->>>        if (error)
->>>                goto BusError;
->>> -       error = device_pm_add(dev);
->>> +       error = dpm_sysfs_add(dev);
->>>        if (error)
->>>                goto PMError;
->>> +       device_pm_add(dev);
->>>        kobject_uevent(&dev->kobj, KOBJ_ADD);
->>>        bus_attach_device(dev);
->>>        if (parent)
->>> @@ -1008,6 +1010,7 @@ void device_del(struct device *dev)
->>>        struct class_interface *class_intf;
->>>
->>>        device_pm_remove(dev);
->>> +       dpm_sysfs_remove(dev);
->>>        if (parent)
->>>                klist_del(&dev->knode_parent);
->>>        if (MAJOR(dev->devt)) {
->>> Index: usb-2.6/drivers/base/power/main.c
->>>
->================================================================
->>> ===
->>> --- usb-2.6.orig/drivers/base/power/main.c
->>> +++ usb-2.6/drivers/base/power/main.c
->>> @@ -67,10 +67,8 @@ void device_pm_unlock(void)
->>>  *     device_pm_add - add a device to the list of active devices
->>>  *     @dev:   Device to be added to the list
->>>  */
->>> -int device_pm_add(struct device *dev)
->>> +void device_pm_add(struct device *dev)
->>> {
->>> -       int error;
->>> -
->>>        pr_debug("PM: Adding info for %s:%s\n",
->>>                 dev->bus ? dev->bus->name : "No Bus",
->>>                 kobject_name(&dev->kobj));
->>> @@ -89,13 +87,9 @@ int device_pm_add(struct device *dev)
->>>                 */
->>>                WARN_ON(true);
->>>        }
->>> -       error = dpm_sysfs_add(dev);
->>> -       if (!error) {
->>> -               dev->power.status = DPM_ON;
->>> -               list_add_tail(&dev->power.entry, &dpm_list);
->>> -       }
->>> +
->>> +       list_add_tail(&dev->power.entry, &dpm_list);
->>>        mutex_unlock(&dpm_list_mtx);
->>> -       return error;
->>> }
->>>
->>> /**
->>> @@ -110,7 +104,6 @@ void device_pm_remove(struct device *dev
->>>                 dev->bus ? dev->bus->name : "No Bus",
->>>                 kobject_name(&dev->kobj));
->>>        mutex_lock(&dpm_list_mtx);
->>> -       dpm_sysfs_remove(dev);
->>>        list_del_init(&dev->power.entry);
->>>        mutex_unlock(&dpm_list_mtx);
->>> }
->>>
->>
->>
->
->--
->To unsubscribe from this list: send the line "unsubscribe linux-usb" in
->the body of a message to majordomo@vger.kernel.org
->More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Uhm, this case can not happen in this version of the patch. We'll actually 
+fail registering the bus completely with this patch, so there should be no 
+chance that we'll ever go through pci_remove_legacy_files with legacy_io 
+!= NULL and legacy_mem == NULL. So no need to NULLify it. But with the 
+change Matthew suggested, we need to pay attention to it. Sorry for the 
+noise here.
+
+> >  	}
+> > +
+> > +	return 0;
+> >  }
+> >
+> >  void pci_remove_legacy_files(struct pci_bus *b)
+> > @@ -84,7 +95,7 @@ void pci_remove_legacy_files(struct pci_
+> >  	}
+> >  }
+> >  #else /* !HAVE_PCI_LEGACY */
+> > -static inline void pci_create_legacy_files(struct pci_bus *bus) { return; }
+> > +static inline int pci_create_legacy_files(struct pci_bus *bus) { return 0; }
+> >  void pci_remove_legacy_files(struct pci_bus *bus) { return; }
+> >  #endif /* HAVE_PCI_LEGACY */
+> >  
+> > @@ -1157,7 +1168,9 @@ struct pci_bus * pci_create_bus(struct d
+> >  		goto dev_create_file_err;
+> >  
+> >  	/* Create legacy_io and legacy_mem files for this bus */
+> > -	pci_create_legacy_files(b);
+> > +	error = pci_create_legacy_files(b);
+> > +	if (error)
+> > +		goto pci_create_legacy_files_err;
+> >  
+> >  	b->number = b->secondary = bus;
+> >  	b->resource[0] = &ioport_resource;
+> > @@ -1167,6 +1180,8 @@ struct pci_bus * pci_create_bus(struct d
+> >  
+> >  	return b;
+> >  
+> > +pci_create_legacy_files_err:
+> > +	device_remove_file(&b->dev, &dev_attr_cpuaffinity);
+> >  dev_create_file_err:
+> >  	device_unregister(&b->dev);
+> >  class_dev_reg_err:
