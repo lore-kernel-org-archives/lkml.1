@@ -1,79 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757711AbYHEFUR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758463AbYHEFV5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757711AbYHEFUR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 01:20:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753285AbYHEFUE
+	id S1758463AbYHEFV5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 01:21:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753293AbYHEFVt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 01:20:04 -0400
-Received: from home.keithp.com ([63.227.221.253]:1978 "EHLO keithp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753267AbYHEFUD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 01:20:03 -0400
-Subject: Re: [PATCH] Export shmem_file_setup and shmem_getpage for DRM-GEM
-From: Keith Packard <keithp@keithp.com>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: keithp@keithp.com, Christoph Hellwig <hch@infradead.org>,
-       Eric Anholt <eric@anholt.net>, linux-kernel@vger.kernel.org,
-       Dave Airlie <airlied@linux.ie>
-In-Reply-To: <200808051443.11858.nickpiggin@yahoo.com.au>
-References: <1217573919-7496-1-git-send-email-eric@anholt.net>
-	 <200808041902.23970.nickpiggin@yahoo.com.au>
-	 <1217887116.24714.118.camel@koto.keithp.com>
-	 <200808051443.11858.nickpiggin@yahoo.com.au>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-PW4+nbwIKal8CIohyTnh"
-Date: Mon, 04 Aug 2008 22:19:54 -0700
-Message-Id: <1217913594.24714.164.camel@koto.keithp.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
+	Tue, 5 Aug 2008 01:21:49 -0400
+Received: from po-out-1718.google.com ([72.14.252.159]:41642 "EHLO
+	po-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753797AbYHEFVr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Aug 2008 01:21:47 -0400
+Message-ID: <f73f7ab80808042221v5bebcea9o7e536093373647cd@mail.gmail.com>
+Date: Tue, 5 Aug 2008 01:21:46 -0400
+From: "Kyle Moffett" <kyle@moffetthome.net>
+To: "Russ Anderson" <rja@sgi.com>
+Subject: Re: x86 BIOS interface for partitioning and system serial number on SGI UV
+Cc: "H. Peter Anvin" <hpa@zytor.com>, mingo@elte.hu, tglx@linutronix.de,
+       linux-kernel@vger.kernel.org, "Jack Steiner" <steiner@sgi.com>
+In-Reply-To: <20080804221951.GA252105@sgi.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080731195753.GB25715@sgi.com> <48934926.2010200@zytor.com>
+	 <20080804221951.GA252105@sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Aug 4, 2008 at 6:19 PM, Russ Anderson <rja@sgi.com> wrote:
+> On Fri, Aug 01, 2008 at 10:34:30AM -0700, H. Peter Anvin wrote:
+>>Russ Anderson wrote:
+>>>+# define BIOS_CALL(result, a0, a1, a2, a3, a4, a5, a6, a7)          \
+>>>+    do {                                                            \
+>>>+            /* XXX - the real call goes here */                     \
+>>>+            result.status = BIOS_STATUS_UNIMPLEMENTED;              \
+>>>+            result.v0 = 0;                                          \
+>>>+            result.v1 = 0;                                          \
+>>>+    } while (0)
+>>
+>> I have more than a little problem with submitting patches like this.  We
+>> have no way to judge the suitability of the coding or the interface with
+>> the "meat" of the driver stubbed out!
+>
+> This is also code for hardware that does not exist.  In order for the
+> code to be in distro releases in time for the hardware to ship, we
+> must push it _before_ we have hardware.  The main concern is getting in
+> interfaces now, because the interfaces cannot change in a minor release.
+> Providing more "meat" is on the ToDo list.
 
---=-PW4+nbwIKal8CIohyTnh
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+These kinds of statements are not the way to get things done on LKML.
+Quite a number of people have gotten flamed/ignored/etc lately by
+making statements "We need this (unfinished code) in the kernel by
+2.6.27 because RHEL6 is going to use 2.6.27 and otherwise we won't be
+supported in RHEL6".
 
-On Tue, 2008-08-05 at 14:43 +1000, Nick Piggin wrote:
-
-> In my opinion, doing this little song and dance (which is a few lines
-> of quite well defined APIs, btw) in userspace is preferable to adding
-> a single line or exporting a single function in kernel space. Unless
-> there is a better reason than eliminating a few lines of userspace code.
-
-Yeah, Dave Airlie just reminded me of the real reason for creating an
-API within the kernel. We need this to support kernel mode setting where
-we want to provide a frame buffer console and smoothly transition to an
-X desktop. Ideally, the console would start before user mode was running
-so that our treasured boot messages could be displayed.
-
-> I'm absolutely not against exporting a nice API for a swappable, object
-> based memory allocator using ipc or shm to the wider kernel (with a nice
-> API rather than just using shmem functions directly of course).
-
-Yeah, we really only need a single argument.
-
-> In the worst case it completely fails, the effort will still show much
-> better how and why it needs to be done in kernel.
-
-Sure, let's see if Dave can address the need to allocate these objects
-from within the kernel. Of course, that allocation could also be done
-using existing kernel APIs.
-
---=20
-keith.packard@intel.com
-
---=-PW4+nbwIKal8CIohyTnh
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iD8DBQBIl+L6Qp8BWwlsTdMRAsIwAJ0RDalbwjAIuIUJ5DeaEpMYZnbMTgCgmC7u
-M7sUVyP6uThs9JAO9CS4DMg=
-=iYUm
------END PGP SIGNATURE-----
-
---=-PW4+nbwIKal8CIohyTnh--
-
+Cheers,
+Kyle Moffett
