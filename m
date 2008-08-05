@@ -1,61 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761664AbYHEPnX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761785AbYHEPnw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761664AbYHEPnX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 11:43:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756692AbYHEPnL
+	id S1761785AbYHEPnw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 11:43:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757871AbYHEPnj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 11:43:11 -0400
-Received: from g1t0027.austin.hp.com ([15.216.28.34]:36684 "EHLO
-	g1t0027.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756460AbYHEPnJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 11:43:09 -0400
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: James Bottomley <James.Bottomley@hansenpartnership.com>
-Subject: Re: [PATCH 1/2] pci: add misrouted interrupt error handling
-Date: Tue, 5 Aug 2008 09:42:07 -0600
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: linux-scsi <linux-scsi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>, linux-pci@vger.kernel.org
-References: <1217786532.4179.24.camel@localhost.localdomain> <200808041443.20942.bjorn.helgaas@hp.com> <1217894547.3318.38.camel@localhost.localdomain>
-In-Reply-To: <1217894547.3318.38.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+	Tue, 5 Aug 2008 11:43:39 -0400
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:35454 "EHLO e2.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759134AbYHEPni (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Aug 2008 11:43:38 -0400
+Subject: Re: [PATCH] hugetlb: call arch_prepare_hugepage() for surplus pages
+From: Adam Litke <agl@us.ibm.com>
+To: Gerald Schaefer <gerald.schaefer@de.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, linux-s390@vger.kernel.org, schwidefsky@de.ibm.com,
+       heiko.carstens@de.ibm.com, Nishanth Aravamudan <nacc@us.ibm.com>
+In-Reply-To: <1217950147.5032.15.camel@localhost.localdomain>
+References: <1217950147.5032.15.camel@localhost.localdomain>
+Content-Type: text/plain
+Organization: IBM
+Date: Tue, 05 Aug 2008 10:43:34 -0500
+Message-Id: <1217951014.13182.12.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200808050942.08123.bjorn.helgaas@hp.com>
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 04 August 2008 06:02:27 pm James Bottomley wrote:
-> On Mon, 2008-08-04 at 14:43 -0600, Bjorn Helgaas wrote:
-> > On Sunday 03 August 2008 12:02:12 pm James Bottomley wrote:
-> > > +static void pci_note_irq_problem(struct pci_dev *pdev, const char *reason)
-> > > +{
-> > > +	struct pci_dev *parent = to_pci_dev(pdev->dev.parent);
-> > > +
-> > > +	dev_printk(KERN_ERR, &pdev->dev,
-> > > +		   "Potentially misrouted IRQ (Bridge %s %04x:%04x)\n",
-> > > +		   parent->dev.bus_id, parent->vendor, parent->device);
-> > 
-> > Do you prefer "dev_printk(KERN_ERR, ...)" over "dev_err(...)"?  Easier
-> > to grep for the former, maybe?  If so, should we deprecate "dev_err()"
-> > and friends?  When I converted most of the PCI core to use dev_printk(),
-> > (80ccba1186d48f ...) I used dev_err(), but I don't really care one way
-> > or the other.
-> > 
-> > Maybe use pci_name(parent)?
-> > 
-> > I tried to standardize the PCI core on "[%04x/%04x]" for vendor/device ID.
+On Tue, 2008-08-05 at 17:29 +0200, Gerald Schaefer wrote:
+> From: Gerald Schaefer <gerald.schaefer@de.ibm.com>
 > 
-> To be honest I'm not really interested too much in the various API
-> preferences ... they can be fixed up later by the people who care.
+> The s390 software large page emulation implements shared page tables
+> by using page->index of the first tail page from a compound large page
+> to store page table information. This is set up in arch_prepare_hugepage(),
+> which is called from alloc_fresh_huge_page_node().
+> 
+> A similar call to arch_prepare_hugepage() is missing for surplus large
+> pages that are allocated in alloc_buddy_huge_page(), which breaks the
+> software emulation mode for (surplus) large pages on s390. This patch
+> adds the missing call to arch_prepare_hugepage(). It will have no effect
+> on other architectures where arch_prepare_hugepage() is a nop.
+> 
+> Acked-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
+> Signed-off-by: Gerald Schaefer <gerald.schaefer@de.ibm.com>
 
-I'm happy to fix it up later if you prefer.  I only mentioned it
-because doing it later adds churn and risk of breakage.
+Seems fine.
 
-Bjorn
+Acked-by: Adam Litke <agl@us.ibm.com>
+
+-- 
+Adam Litke - (agl at us.ibm.com)
+IBM Linux Technology Center
+
