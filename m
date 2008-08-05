@@ -1,70 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761372AbYHEQHH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761340AbYHEQIe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761372AbYHEQHH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 12:07:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754675AbYHEQGz
+	id S1761340AbYHEQIe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 12:08:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754675AbYHEQIZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 12:06:55 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:41913 "EHLO smtps.tip.net.au"
+	Tue, 5 Aug 2008 12:08:25 -0400
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:41526 "EHLO smtp6.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754516AbYHEQGy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 12:06:54 -0400
-Date: Wed, 6 Aug 2008 02:06:47 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Mauro Carvalho Chehab <mchehab@infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>, v4l-dvb-maintainer@linuxtv.org,
-       video4linux-list@redhat.com, Ralf Baechle <ralf@linux-mips.org>,
-       linux-mips@linux-mips.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: v4l/mips build problem
-Message-Id: <20080806020647.2cf11a2b.sfr@canb.auug.org.au>
-In-Reply-To: <20080805154122.GC22895@cs181140183.pp.htv.fi>
-References: <20080806012357.55625daf.sfr@canb.auug.org.au>
-	<20080805154122.GC22895@cs181140183.pp.htv.fi>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Wed__6_Aug_2008_02_06_47_+1000_hXNUOzlXW0oxCw40"
+	id S1752601AbYHEQIY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Aug 2008 12:08:24 -0400
+Date: Tue, 5 Aug 2008 18:44:29 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: lethal@linux-sh.org
+Cc: linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: rsk7203_defconfig build error
+Message-ID: <20080805154429.GD22895@cs181140183.pp.htv.fi>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Wed__6_Aug_2008_02_06_47_+1000_hXNUOzlXW0oxCw40
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Hi Paul,
 
-On Tue, 5 Aug 2008 18:41:22 +0300 Adrian Bunk <bunk@kernel.org> wrote:
->
-> On Wed, Aug 06, 2008 at 01:23:57AM +1000, Stephen Rothwell wrote:
-> > Hi all,
-> >=20
-> > Linus' current tree gets the following error during a mips allmodconfig
-> > build:
-> >=20
-> > drivers/media/video/vino.c:4364: error: implicit declaration of functio=
-n `video_usercopy'
->=20
-> Andrew fixed it with drivers-media-video-vinoc-needs-v4l2-ioctlh.patch=20
-> in -mm.
+rsk7203_defconfig fails to build with the following error:
 
-Maybe we should send that one Linusward ...
+<--  snip  -->
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+...
+  LD      .tmp_vmlinux1
+arch/sh/kernel/built-in.o:(__ksymtab+0xb8): undefined reference to `__udivsi3_i4i'
+arch/sh/kernel/built-in.o:(__ksymtab+0xc8): undefined reference to `__sdivsi3_i4i'
+make[1]: *** [.tmp_vmlinux1] Error 1
 
---Signature=_Wed__6_Aug_2008_02_06_47_+1000_hXNUOzlXW0oxCw40
-Content-Type: application/pgp-signature
+<--  snip  -->
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+That worked with 2.6.26, and these are far less undefined references 
+than in the cases where libgcc was missing.
 
-iEYEARECAAYFAkiYepcACgkQjjKRsyhoI8wMRgCggFHLNyfoQrKrKjpkSIGfIEcX
-F1oAoIERan3FacdwFgwxh5JPDSswWwkm
-=olAO
------END PGP SIGNATURE-----
+Does it build with your toolchain?
+Do you have any clue what's going wrong here?
 
---Signature=_Wed__6_Aug_2008_02_06_47_+1000_hXNUOzlXW0oxCw40--
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
