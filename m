@@ -1,80 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759172AbYHEWhx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763341AbYHEWiW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759172AbYHEWhx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 18:37:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761508AbYHEWhg
+	id S1763341AbYHEWiW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 18:38:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761703AbYHEWhl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 18:37:36 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:42774 "EHLO smtp5.pp.htv.fi"
+	Tue, 5 Aug 2008 18:37:41 -0400
+Received: from mx2.suse.de ([195.135.220.15]:52052 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758091AbYHEWhd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 18:37:33 -0400
-Date: Wed, 6 Aug 2008 01:36:09 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Tan Li <li.tan@intel.com>, Jerone Young <jyoung5@us.ibm.com>,
-       Hollis Blanchard <hollisb@us.ibm.com>, Avi Kivity <avi@qumranet.com>
-Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [2.6 patch] KVM: fix userspace ABI breakage
-Message-ID: <20080805223609.GC6477@cs181140183.pp.htv.fi>
+	id S1761578AbYHEWhj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Aug 2008 18:37:39 -0400
+Date: Tue, 5 Aug 2008 15:34:29 -0700
+From: Greg KH <gregkh@suse.de>
+To: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Cc: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
+       lf_kernel_messages@lists.linux-foundation.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Michael Holzheu <holzheu@de.ibm.com>, Gerrit Huizenga <gh@us.ibm.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>, Jan Kara <jack@suse.cz>,
+       Pavel Machek <pavel@ucw.cz>, Sam Ravnborg <sam@ravnborg.org>,
+       Joe Perches <joe@perches.com>,
+       Jochen =?iso-8859-1?B?Vm/f?= <jochen.voss@googlemail.com>,
+       Kunai Takashi <kunai@linux-foundation.jp>,
+       Tim Bird <tim.bird@am.sony.com>
+Subject: Re: [patch 3/3] kmsg: convert xpram messages to kmsg api.
+Message-ID: <20080805223429.GB6552@suse.de>
+References: <20080730165656.118280544@de.ibm.com> <20080730171157.550296160@de.ibm.com> <20080730194308.GB22441@suse.de> <1217493222.8555.8.camel@localhost>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <1217493222.8555.8.camel@localhost>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The following part of commit 9ef621d3be56e1188300476a8102ff54f7b6793f 
-(KVM: Support mixed endian machines) changed on the size of a struct 
-that is exported to userspace:
+On Thu, Jul 31, 2008 at 10:33:42AM +0200, Martin Schwidefsky wrote:
+> On Wed, 2008-07-30 at 12:43 -0700, Greg KH wrote:
+> > On Wed, Jul 30, 2008 at 06:56:59PM +0200, Martin Schwidefsky wrote:
+> > > Index: linux-2.6/Documentation/kmsg/s390/xpram
+> > > ===================================================================
+> > > --- /dev/null
+> > > +++ linux-2.6/Documentation/kmsg/s390/xpram
+> > > @@ -0,0 +1,54 @@
+> > > +/*?
+> > > + * Tag: xpram.1
+> > 
+> > Ick, so you are going to have to define a message number per file?
+> > How is that going to work, it looks like you use ids 0-2 below in the .c
+> > file, yet in this documentation file they are 1-3.  Off by one
+> > somewhere?  :)
+> 
+> The kmsg number 0 is special, the message tag will not include the
+> message number for id 0. And the script won't complain that the message
+> description is missing.
 
-include/linux/kvm.h:
+Was "0 is special" defined anywhere that I missed?
 
-@@ -318,14 +318,14 @@ struct kvm_trace_rec {
- 	__u32 vcpu_id;
- 	union {
- 		struct {
--			__u32 cycle_lo, cycle_hi;
-+			__u64 cycle_u64;
- 			__u32 extra_u32[KVM_TRC_EXTRA_MAX];
- 		} cycle;
- 		struct {
- 			__u32 extra_u32[KVM_TRC_EXTRA_MAX];
- 		} nocycle;
- 	} u;
--};
-+} __attribute__((packed));
- 
+> And yes, we WANT to define the message numbers per kmsg component. 
 
-Packing a struct was the correct idea, but it packed the wrong struct.
+But again, you have to manually match up numbers by hand, that's prone
+to get messy very quickly.
 
-Signed-off-by: Adrian Bunk <bunk@kernel.org>
+> > > + * Text: "%d is not a valid number of XPRAM devices"
+> > > + * Severity: Error
+> > > + * Parameter:
+> > > + *   @1: number of partitions
+> > > + * Description:
+> > > + * The number of XPRAM partitions specified for the 'devs' module parameter
+> > > + * or with the 'xpram.parts' kernel parameter must be an integer in the
+> > > + * range 1 to 32. The XPRAM device driver created a maximum of 32 partitions
+> > > + * that are probably not configured as intended.
+> > > + * User action:
+> > > + * If the XPRAM device driver has been compiled as a separate module,
+> > > + * unload the module and load it again with a correct value for the
+> > > + * 'devs' module parameter. If the XPRAM device driver has been compiled
+> > > + * into the kernel, correct the 'xpram.parts' parameter in the kernel
+> > > + * parameter line and restart Linux.
+> > > + */
+> > 
+> > Any way to put this stuff in the .c file itself?  It's hard enough
+> > getting people to update Documentation/ABI/, knowing to go modify
+> > something else in the Documentation directory is going to be _very_
+> > difficult.
+> 
+> Yes, already implemented. Just put the comment anywhere in the .c file
+> where the message is printed. The Documentation/kmsg directory is just
+> an additional option.
 
----
+Why not have your example show this?
 
-This patch has been sent on:
-- 21 Jul 2008
+> > > +#define KMSG_COMPONENT "xpram"
+> > 
+> > Can't you just use KBUILD_MODULE_NAME instead?  That makes it one less
+> > thing you have to define in the code (and forget about when moving files
+> > around or cut-and-pasting).
+> 
+> Two reason why we don't want to use KBUILD_MODULE_NAME:
+> 1) the message tag (message component + message id) should never change,
+> if you change the code structure the module name might change as well.
 
-857d4ddbb62bc61e44b8870cda8ea1c38c6e1905 
-diff --git a/include/linux/kvm.h b/include/linux/kvm.h
-index 0ea064c..ad11cfe 100644
---- a/include/linux/kvm.h
-+++ b/include/linux/kvm.h
-@@ -320,12 +320,12 @@ struct kvm_trace_rec {
- 		struct {
- 			__u64 cycle_u64;
- 			__u32 extra_u32[KVM_TRC_EXTRA_MAX];
--		} cycle;
-+		} __attribute__((packed)) cycle;
- 		struct {
- 			__u32 extra_u32[KVM_TRC_EXTRA_MAX];
- 		} nocycle;
- 	} u;
--} __attribute__((packed));
-+};
- 
- #define KVMIO 0xAE
- 
+Um, isn't that the point?  If the code structure changes, then perhaps
+the message also should change?  If not, it's trival to adjust.
 
+> 2) we want to be able to use the same kmsg component in multiple .c
+> files. 
 
+Why would this matter?  It's just a "tag", who cares about the actual
+name?
+
+thanks,
+
+greg k-h
