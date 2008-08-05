@@ -1,81 +1,165 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757401AbYHEFpf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752684AbYHEFr6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757401AbYHEFpf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 01:45:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752192AbYHEF3c
+	id S1752684AbYHEFr6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 01:47:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754072AbYHEFru
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 01:29:32 -0400
-Received: from an-out-0708.google.com ([209.85.132.246]:1155 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750859AbYHEF3b (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 01:29:31 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:references;
-        b=Z3XK1Gntzsf134ochKm8rPt5PeXn1Y+7HdBPZbzhKN0DHo2SEDZ3ea8BQlnRGfepuI
-         QdpeCr3tbsxBHDQehqrknaLE6IhIBiHYg75o1T0pvEtlrxGnBNotFOKlwHmFIZzJ6jEq
-         cFuZ56RzH+aS0AFWD1CXLUhe21lBF8VLzcf/Q=
-Message-ID: <3ae3aa420808042229l675ffd79p42a5691532b7ac3b@mail.gmail.com>
-Date: Tue, 5 Aug 2008 00:29:30 -0500
-From: "Linas Vepstas" <linasvepstas@gmail.com>
-Reply-To: linasvepstas@gmail.com
-To: "Robert Hancock" <hancockr@shaw.ca>
-Subject: Re: amd64 sata_nv (massive) memory corruption
-Cc: "John Stoffel" <john@stoffel.org>,
-       "Alistair John Strachan" <alistair@devzero.co.uk>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <489675DC.2080906@shaw.ca>
+	Tue, 5 Aug 2008 01:47:50 -0400
+Received: from ozlabs.org ([203.10.76.45]:55721 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752891AbYHEFrt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Aug 2008 01:47:49 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Subject: Re: [PATCH 1/2] Export get_user_pages_fast
+Date: Tue, 5 Aug 2008 15:47:34 +1000
+User-Agent: KMail/1.9.9
+Cc: benh@kernel.crashing.org, Andrew Morton <akpm@linux-foundation.org>,
+       Avi Kivity <avi@qumranet.com>, Adrian Bunk <bunk@kernel.org>,
+       lguest <lguest@ozlabs.org>, linux-kernel@vger.kernel.org
+References: <200807301438.55941.rusty@rustcorp.com.au> <1217494343.11188.437.camel@pasglop> <200807311856.39837.nickpiggin@yahoo.com.au>
+In-Reply-To: <200807311856.39837.nickpiggin@yahoo.com.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <fa.qB5d+HsAJ6G05jNoeU8Q9GV6Dow@ifi.uio.no>
-	 <fa.fxlDAHxOnGgcBiOH/EOauE67ZPc@ifi.uio.no>
-	 <fa.1WYUmN6FHR5yW+sXoYRFN22Y8S8@ifi.uio.no>
-	 <fa.LAUkvEUlYiF69V/F8F3wigxqH9w@ifi.uio.no>
-	 <fa.mXeFXYNkfZfUYPQcGwzok0IOIfY@ifi.uio.no>
-	 <fa.KjbvCGbUr2JeQTcwA1/sFGIIMik@ifi.uio.no> <489675DC.2080906@shaw.ca>
+Message-Id: <200808051547.34743.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/8/3 Robert Hancock <hancockr@shaw.ca>:
-> Linas Vepstas wrote:
->>
->> What I don't like is that the corruption was utterly silent --
-[...]
->> So the question is: is there some sort of sata (or pci) "loopback mode",
->> where we could pump data through all of the busses and controllers, up
->> near to the point where it would normally go out to the serdes to the
->> disk,
->> but instead have it loop back, so that we could test the buses between
->> endpoints?
->
-> I don't imagine that would be very useful in this case. The SATA link, PCI
-> Express bus, HyperTransport bus all have parity or CRC error checking, so
-> presumably they couldn't be likely to cause undetected errors. The
-> transitions between them could cause problems,
+On Thursday 31 July 2008 18:56:39 Nick Piggin wrote:
+> I see. Here we are, then.
 
-Well, but I suffered badly from an undetected error, in the sense
-that the operating system had no knowledge of it, and it corrupted
-data on disk as a result. As Alan Cox suggests, perhaps I didn't
-have EDAC turned on, or something ... I'm investigating now.
-But this is moot -- if there is software that already exists that
-could have reported the error to the kernel, then this software
-should have been installed/enabled/operating by default.
+I can't see this in linux-next?  I put it in mm/util.c instead of
+mm/memory.c: your version will barf on CONFIG_MMU=n AFAICT.
 
-> and most desktop machines
-> don't have ECC memory which could catch memory timing problems or bad RAM
+Since I'm the one who wants the export, I guess I'll fwd:
 
-I'm unclear on ECC memory: if a motherboard "supports ECC",
-does it mean it actually uses ECC bits in the bus between the
-memory controller and the RAM?  Or does it simply mean that
-it won't hang if I plug in ECC RAM (but otherwise ignore the bits)?
+mm: Make generic weak get_user_pages_fast and EXPORT_GPL it
 
-Personally I'm ready to pop $$$ for ECC it if will actually do
-something for me, this has been painful.
+Out of line get_user_pages_fast fallback implementation, make it a weak
+symbol, get rid of CONFIG_HAVE_GET_USER_PAGES_FAST.
 
---linas
+Export the symbol to modules so lguest can use it.
+
+Signed-off-by: Nick Piggin <npiggin@suse.de>
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+---
+ arch/powerpc/Kconfig |    3 ---
+ arch/x86/Kconfig     |    1 -
+ arch/x86/mm/Makefile |    3 +--
+ include/linux/mm.h   |   20 --------------------
+ mm/Kconfig           |    3 ---
+ mm/util.c            |   15 +++++++++++++++
+ 6 files changed, 16 insertions(+), 29 deletions(-)
+
+diff -r 607fc39e88f5 arch/powerpc/Kconfig
+--- a/arch/powerpc/Kconfig	Tue Aug 05 15:14:02 2008 +1000
++++ b/arch/powerpc/Kconfig	Tue Aug 05 15:46:04 2008 +1000
+@@ -41,9 +41,6 @@ config GENERIC_HARDIRQS
+ config GENERIC_HARDIRQS
+ 	bool
+ 	default y
+-
+-config HAVE_GET_USER_PAGES_FAST
+-	def_bool PPC64
+ 
+ config HAVE_SETUP_PER_CPU_AREA
+ 	def_bool PPC64
+diff -r 607fc39e88f5 arch/x86/Kconfig
+--- a/arch/x86/Kconfig	Tue Aug 05 15:14:02 2008 +1000
++++ b/arch/x86/Kconfig	Tue Aug 05 15:46:04 2008 +1000
+@@ -22,7 +22,6 @@ config X86
+ 	select HAVE_IDE
+ 	select HAVE_OPROFILE
+ 	select HAVE_IOREMAP_PROT
+-	select HAVE_GET_USER_PAGES_FAST
+ 	select HAVE_KPROBES
+ 	select ARCH_WANT_OPTIONAL_GPIOLIB
+ 	select HAVE_KRETPROBES
+diff -r 607fc39e88f5 arch/x86/mm/Makefile
+--- a/arch/x86/mm/Makefile	Tue Aug 05 15:14:02 2008 +1000
++++ b/arch/x86/mm/Makefile	Tue Aug 05 15:46:04 2008 +1000
+@@ -1,7 +1,6 @@ obj-y	:=  init_$(BITS).o fault.o ioremap
+ obj-y	:=  init_$(BITS).o fault.o ioremap.o extable.o pageattr.o mmap.o \
+-	    pat.o pgtable.o
++	    pat.o pgtable.o gup.o
+ 
+-obj-$(CONFIG_HAVE_GET_USER_PAGES_FAST) += gup.o
+ obj-$(CONFIG_X86_32)		+= pgtable_32.o
+ 
+ obj-$(CONFIG_HUGETLB_PAGE)	+= hugetlbpage.o
+diff -r 607fc39e88f5 include/linux/mm.h
+--- a/include/linux/mm.h	Tue Aug 05 15:14:02 2008 +1000
++++ b/include/linux/mm.h	Tue Aug 05 15:46:04 2008 +1000
+@@ -834,7 +834,6 @@ extern int mprotect_fixup(struct vm_area
+ 			  struct vm_area_struct **pprev, unsigned long start,
+ 			  unsigned long end, unsigned long newflags);
+ 
+-#ifdef CONFIG_HAVE_GET_USER_PAGES_FAST
+ /*
+  * get_user_pages_fast provides equivalent functionality to get_user_pages,
+  * operating on current and current->mm (force=0 and doesn't return any vmas).
+@@ -847,25 +846,6 @@ extern int mprotect_fixup(struct vm_area
+  */
+ int get_user_pages_fast(unsigned long start, int nr_pages, int write,
+ 			struct page **pages);
+-
+-#else
+-/*
+- * Should probably be moved to asm-generic, and architectures can include it if
+- * they don't implement their own get_user_pages_fast.
+- */
+-#define get_user_pages_fast(start, nr_pages, write, pages)	\
+-({								\
+-	struct mm_struct *mm = current->mm;			\
+-	int ret;						\
+-								\
+-	down_read(&mm->mmap_sem);				\
+-	ret = get_user_pages(current, mm, start, nr_pages,	\
+-					write, 0, pages, NULL);	\
+-	up_read(&mm->mmap_sem);					\
+-								\
+-	ret;							\
+-})
+-#endif
+ 
+ /*
+  * A callback you can register to apply pressure to ageable caches.
+diff -r 607fc39e88f5 mm/Kconfig
+--- a/mm/Kconfig	Tue Aug 05 15:14:02 2008 +1000
++++ b/mm/Kconfig	Tue Aug 05 15:46:04 2008 +1000
+@@ -76,9 +76,6 @@ config FLAT_NODE_MEM_MAP
+ config FLAT_NODE_MEM_MAP
+ 	def_bool y
+ 	depends on !SPARSEMEM
+-
+-config HAVE_GET_USER_PAGES_FAST
+-	bool
+ 
+ #
+ # Both the NUMA code and DISCONTIGMEM use arrays of pg_data_t's
+diff -r 607fc39e88f5 mm/util.c
+--- a/mm/util.c	Tue Aug 05 15:14:02 2008 +1000
++++ b/mm/util.c	Tue Aug 05 15:46:04 2008 +1000
+@@ -171,3 +171,18 @@ void arch_pick_mmap_layout(struct mm_str
+ 	mm->unmap_area = arch_unmap_area;
+ }
+ #endif
++
++int __attribute__((weak)) get_user_pages_fast(unsigned long start,
++				int nr_pages, int write, struct page **pages)
++{
++	struct mm_struct *mm = current->mm;
++	int ret;
++
++	down_read(&mm->mmap_sem);
++	ret = get_user_pages(current, mm, start, nr_pages,
++					write, 0, pages, NULL);
++	up_read(&mm->mmap_sem);
++
++	return ret;
++}
++EXPORT_SYMBOL_GPL(get_user_pages_fast);
