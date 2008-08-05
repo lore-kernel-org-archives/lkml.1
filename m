@@ -1,99 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764986AbYHEVWv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765341AbYHEVXS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764986AbYHEVWv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 17:22:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758285AbYHEVWl
+	id S1765341AbYHEVXS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 17:23:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763260AbYHEVWq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 17:22:41 -0400
-Received: from rgminet02.oracle.com ([148.87.113.119]:55683 "EHLO
-	rgminet02.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751552AbYHEVWj (ORCPT
+	Tue, 5 Aug 2008 17:22:46 -0400
+Received: from outbound-mail-103.bluehost.com ([69.89.22.13]:39207 "HELO
+	outbound-mail-103.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1763352AbYHEVWo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 17:22:39 -0400
-X-Greylist: delayed 8045 seconds by postgrey-1.27 at vger.kernel.org; Tue, 05 Aug 2008 17:22:39 EDT
-Subject: Btrfs v0.16 released
-From: Chris Mason <chris.mason@oracle.com>
-To: linux-btrfs <linux-btrfs@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>
-Content-Type: text/plain
-Date: Tue, 05 Aug 2008 15:01:16 -0400
-Message-Id: <1217962876.15342.33.camel@think.oraclecorp.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
+	Tue, 5 Aug 2008 17:22:44 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
+	b=tbPCVqJP3MQLV09+LYIYv1sprf8eqjV69YoTzQv6/Ul2Ful3OsFAX/OVQ291tEUiq8hiy9S5QhkLIrarX9tBPru33Z/vdzfZPefY75jsTOmjDFdjC43YVeSoOHTPKMYZ;
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: James Bottomley <James.Bottomley@hansenpartnership.com>
+Subject: Re: [PATCH 1/2] pci: add misrouted interrupt error handling
+Date: Tue, 5 Aug 2008 14:15:59 -0700
+User-Agent: KMail/1.9.9
+Cc: linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>, linux-pci@vger.kernel.org
+References: <1217786532.4179.24.camel@localhost.localdomain> <200808051353.52323.jbarnes@virtuousgeek.org> <1217969794.9923.70.camel@localhost.localdomain>
+In-Reply-To: <1217969794.9923.70.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Disposition: inline
+Message-Id: <200808051415.59993.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello everyone,
+On Tuesday, August 05, 2008 1:56 pm James Bottomley wrote:
+> On Tue, 2008-08-05 at 13:53 -0700, Jesse Barnes wrote:
+> > On Tuesday, August 05, 2008 1:44 pm James Bottomley wrote:
+> > > On Tue, 2008-08-05 at 10:03 -0700, Jesse Barnes wrote:
+> > > > This seems to be a function that just returns what type of IRQ you're
+> > > > using or how it's routed and it isn't necessarily "lost interrupt"
+> > > > specific.
+> > >
+> > > So perhaps this routine should only note but not advise?  The drivers
+> > > can then just call pci_interrupt_type to see if they can do anything.
+> >
+> > If it's just a pci_irq_type function then it probably shouldn't print
+> > anything, and leave that to the caller, since it might be used for other
+> > purposes too (e.g. a driver load printk or something).  In the lost
+> > interrupt case you already have to disable MSI or MSIX in the Fusion
+> > driver, so you may as well put the printk there, right?  I guess I'm
+> > saying it should neither note nor advise, just return the IRQ type.
+>
+> Well, no; the object was to have the layer that knew (PCI) print
+> information which could be used to identify the problem.  Likely what
+> the driver will say is something like "MSI isn't working and it's not my
+> fault".  What I want is for PCI to print something that may be helpful
+> to people trying to diagnose the problem.  Driver writers aren't going
+> to get that right.
 
-Btrfs v0.16 is available for download, please see
-http://btrfs.wiki.kernel.org/ for download links and project
-information.
+Yeah, I understand what you're trying to do, and given that there's only one 
+user of this function (your fusion patch), I don't have a strong preference.
 
-v0.16 has a shiny new disk format, and is not compatible with
-filesystems created by older Btrfs releases.  But, it should be the
-fastest Btrfs yet, with a wide variety of scalability fixes and new
-features.  
+However, the function is really just telling the driver what type of IRQ a 
+given PCI device currently has; it's not really a "lost interrupt" function 
+at all.  So to me, it makes sense to just generalize it into a pci_irq_type 
+function and let drivers do what they will with it.  It looks like this is 
+the real lost interrupt detection:
 
-There were quite a few contributors this time around, but big thanks to
-Josef Bacik and Yan Zheng for their help on this release.  Toei Rei also
-helped track down an important corruption problem.
++               /* May fail becuase of IRQ misrouting */
++               rc = mpt_get_manufacturing_pg_0(ioc);
++               if (rc) {
++			...
++                       printk(MYIOC_s_ERR_FMT "Cannot recover IRQ routing\n",
++                              ioc->name);
++                       return -1;
++               }
 
-Scalability and performance:
+not the pci_lost_interrupt() function.  So it could just as easily be written 
+as such:
 
-* Fine grained btree locking.  The large fs_mutex is finally gone.
-There is still some work to do on the locking during extent allocation,
-but the code is much more scalable than it was.
++               /* May fail becuase of IRQ misrouting */
++               rc = mpt_get_manufacturing_pg_0(ioc);
++               if (rc) {
++			/* Lost an IRQ, see what type... */
++			int irq_type = pci_irq_type(dev);
++
++                       if (type == PCI_IRQ_MSI) {
++				/* Lost an MSI interrupt, try re-config w/o MSI */
++                               free_irq(ioc->pci_irq, ioc);
++                               ioc->msi_enable = 0;
++                               pci_disable_msi(ioc->pcidev);
++                               goto retry;
++                       }
++			/* This platform is just broken... */
++                       printk(MYIOC_s_ERR_FMT "Cannot recover from %s IRQ
++			       routing error\n", pci_irq_type_name(type), ioc->name);
++                       return -1;
++               }
 
-* Helper threads for checksumming and other background tasks.  Most CPU
-intensive operations have been pushed off to helper threads to take
-advantage of SMP machines.  Streaming read and write throughput now
-scale to disk speed even with checksumming on.
+or somesuch.  That seems just as simple for driver writers as your initial 
+patch, and the function is named in accordance with what it actually does, 
+rather than what it's used for...
 
-* Improved data=ordered mode.  Metadata is now updated only after all
-the blocks in a data extent are on disk.  This allows btrfs to provide
-data=ordered semantics without waiting for all the dirty data in the FS
-to flush at commit time.  fsync and O_SYNC writes do not force down all
-the dirty data in the FS.
-
-* Faster cleanup of old transactions (Yan Zheng).  A new cache now
-dramatically reduces the amount of IO required to clean up and delete
-old snapshots.
-
-Major features (all from Josef Bacik):
-
-* ACL support.  ACLs are enabled by default, no special mount options
-required.
-
-* Orphan inode prevention, no more lost files after a crash
-
-* New directory index format, fixing some suboptimal corner cases in the
-original.
-
-There are still more disk format changes planned, but we're making every
-effort to get them out of the way as quickly as we can.  You can see the
-major features we have planned on the development timeline:
-
-http://btrfs.wiki.kernel.org/index.php/Development_timeline
-
-A few interesting statistics:
-
-Between v0.14 and v0.15:
-
-42 files changed, 6995 insertions(+), 3011 deletions(-)
-
-The btrfs kernel module now weighs in at 30,000 LOC, which means we're
-getting very close to the size of ext[34].
-
--chris
-
-
-
+Jesse
