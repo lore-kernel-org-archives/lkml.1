@@ -1,54 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762465AbYHEBiJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761575AbYHEBnJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762465AbYHEBiJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 21:38:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753765AbYHEBh4
+	id S1761575AbYHEBnJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 21:43:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758297AbYHEBmz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 21:37:56 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:34610 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752476AbYHEBh4 (ORCPT
-	<rfc822;@sgi.com:linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 21:37:56 -0400
-Message-ID: <4897B05A.7040002@sgi.com>
-Date: Tue, 05 Aug 2008 11:43:54 +1000
-From: Lachlan McIlroy <lachlan@sgi.com>
-Reply-To: lachlan@sgi.com
-User-Agent: Thunderbird 2.0.0.16 (X11/20080707)
-MIME-Version: 1.0
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-CC: Nick Piggin <npiggin@suse.de>,
-       Linux Memory Management List <linux-mm@kvack.org>, xfs@oss.sgi.com,
-       xen-devel@lists.xensource.com,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       dri-devel@lists.sourceforge.net
-Subject: Re: [rfc][patch 3/3] xfs: use new vmap API
-References: <20080728123438.GA13926@wotan.suse.de> <20080728123703.GC13926@wotan.suse.de> <4896A197.3090004@sgi.com> <200808042057.20607.nickpiggin@yahoo.com.au>
-In-Reply-To: <200808042057.20607.nickpiggin@yahoo.com.au>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 4 Aug 2008 21:42:55 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:58638 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751147AbYHEBmy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Aug 2008 21:42:54 -0400
+Date: Mon, 4 Aug 2008 18:42:28 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Duane Griffin" <duaneg@dghda.com>
+Cc: linux-kernel@vger.kernel.org, sct@redhat.com, linux-ext4@vger.kernel.org,
+       Sami Liedes <sliedes@cc.hut.fi>
+Subject: Re: [PATCH] jbd: abort instead of waiting for nonexistent
+ transactions
+Message-Id: <20080804184228.5964b1fd.akpm@linux-foundation.org>
+In-Reply-To: <1217898321-3514-1-git-send-email-duaneg@dghda.com>
+References: <1217898321-3514-1-git-send-email-duaneg@dghda.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Okay.  When the time comes will you push the XFS changes to mainline
-or would you like us to?
+On Tue,  5 Aug 2008 02:05:20 +0100 "Duane Griffin" <duaneg@dghda.com> wrote:
 
-Nick Piggin wrote:
-> Thanks for taking a look. I'll send them over to -mm with patch 1,
-> then, for some testing.
+> The __log_wait_for_space function sits in a loop checkpointing transactions
+> until there is sufficient space free in the journal. However, if there are
+> no transactions to be processed (e.g. because the free space calculation is
+> wrong due to a corrupted filesystem) it will never progress.
 > 
-> On Monday 04 August 2008 16:28, Lachlan McIlroy wrote:
->> Looks good to me.
->>
->> Nick Piggin wrote:
->>> Implement XFS's large buffer support with the new vmap APIs. See the vmap
->>> rewrite patch for some numbers.
+> Check for space being required when no transactions are outstanding and
+> abort the journal instead of endlessly looping.
 > 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> This patch fixes the bug reported by Sami Liedes at:
+> http://bugzilla.kernel.org/show_bug.cgi?id=10976
 > 
+> Signed-off-by: Duane Griffin <duaneg@dghda.com>
+> ---
+> diff --git a/fs/jbd/checkpoint.c b/fs/jbd/checkpoint.c
+> index a5432bb..af2b554 100644
+> --- a/fs/jbd/checkpoint.c
+> +++ b/fs/jbd/checkpoint.c
+> @@ -126,13 +126,24 @@ void __log_wait_for_space(journal_t *journal)
+>  
+>  		/*
+>  		 * Test again, another process may have checkpointed while we
+> -		 * were waiting for the checkpoint lock
+> +		 * were waiting for the checkpoint lock. If there are no
+> +		 * outstanding transactions there is nothing to checkpoint and
+> +		 * we can't make progress. Abort the journal in this case.
+>  		 */
+>  		spin_lock(&journal->j_state_lock);
+>  		nblocks = jbd_space_needed(journal);
+>  		if (__log_space_left(journal) < nblocks) {
+> +			int chkpt = journal->j_checkpoint_transactions != NULL;
+> +
+>  			spin_unlock(&journal->j_state_lock);
+> -			log_do_checkpoint(journal);
+> +			if (chkpt) {
+> +				log_do_checkpoint(journal);
+> +			} else {
+> +				printk(KERN_ERR "%s: no transactions\n",
+> +				       __func__);
+> +				journal_abort(journal, 0);
+> +			}
+> +
+>  			spin_lock(&journal->j_state_lock);
+>  		}
+>  		mutex_unlock(&journal->j_checkpoint_mutex);
+
+umm, OK, but...
+
+There's not really a lot of point in testing
+journal->j_checkpoint_transactions inside j_state_lock, is there? 
+Hence local variable chkpt isn't really needed.
+
+But log_do_checkpoint() already checks to see if there are any
+checkpointing transactions upon which to operate, so rather than doing
+log_do_checkpoint()'s work for it, perhaps it would be cleaner to teach
+log_do_checkpoint() to tell the caller whether it manage to do any
+work?
+
+The nice thing about that is that even if
+journal->j_checkpoint_transactions is NULL, log_do_checkpoint() might
+still be able to do some useful work in cleanup_journal_tail().
+
+otoh, two existing callers of log_do_checkpoint() already test
+journal->j_checkpoint_transactions before calling log_do_checkpoint(),
+so maybe that's pretty pointless.
+
+otoh2, those existing callers do the seemingly-unneeded
+spin_lock(j_list_lock).  hrm.  So if we're playing match-the-existing
+code, we should go with your first patches.
+
+ho hum, I guess I'll do "otoh2".
