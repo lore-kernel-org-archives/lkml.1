@@ -1,60 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762025AbYHERcd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761716AbYHERfB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762025AbYHERcd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 13:32:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759447AbYHERcY
+	id S1761716AbYHERfB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 13:35:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760266AbYHERew
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 13:32:24 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:4318 "EHLO spitz.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1760121AbYHERcX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 13:32:23 -0400
-Date: Tue, 5 Aug 2008 19:32:09 +0200
-From: Pavel Machek <pavel@suse.cz>
-To: david safford <safford@watson.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Mimi Zohar <zohar@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
-       serue@linux.vnet.ibm.com, sailer@watson.ibm.com, zohar@us.ibm.com,
-       Stephen Smalley <sds@tycho.nsa.gov>,
-       CaseySchaufler <casey@schaufler-ca.com>
-Subject: Re: [RFC][Patch 5/5]integrity: IMA as an integrity service provider
-Message-ID: <20080805173208.GA8380@ucw.cz>
-References: <1211555145.16195.18.camel@new-host> <20080528012242.a0e98d87.akpm@linux-foundation.org> <1214324930.3262.94.camel@localhost.localdomain>
-Mime-Version: 1.0
+	Tue, 5 Aug 2008 13:34:52 -0400
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:58249 "EHLO e3.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759507AbYHERev (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Aug 2008 13:34:51 -0400
+Date: Tue, 5 Aug 2008 10:34:47 -0700
+From: Nishanth Aravamudan <nacc@us.ibm.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: mingo@elte.hu, tony.luck@intel.com, linux-ia64@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>,
+       Bill Gatliff <bgat@billgatliff.com>,
+       Russell King - ARM Linux <linux@arm.linux.org.uk>
+Subject: Re: [BISECTION RESULT] sched: revert cpu_clock to
+	pre-27ec4407790d075c325e1f4da0a19c56953cce23 state
+Message-ID: <20080805173447.GD7812@us.ibm.com>
+References: <20080804194646.GA17390@us.ibm.com> <1217926585.3589.113.camel@twins>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1214324930.3262.94.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <1217926585.3589.113.camel@twins>
+X-Operating-System: Linux 2.6.26-rc9-00132-g9df2fe9 (x86_64)
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue 2008-06-24 12:28:50, david safford wrote:
-> On Wed, 2008-05-28 at 01:22 -0700, Andrew Morton wrote:
+On 05.08.2008 [10:56:25 +0200], Peter Zijlstra wrote:
+> On Mon, 2008-08-04 at 12:46 -0700, Nishanth Aravamudan wrote:
+> > Bisection on an x455 (2-node IA64) showed that commit
+> > 27ec4407790d075c325e1f4da0a19c56953cce23 (sched: make cpu_clock()
+> > globally synchronous) broke booting. I see the uncompressing initramfs
+> > message and then nothing on the console. I wait about 5 minutes (which
+> > is way longer than it takes for the first console messages to get
+> > printed normally). The commit immediately before it works fine.
+> > 
+> > The commit no longer cleanly reverts, but I tried to manually put things
+> > back to the way they were before in cpu_clock(). The resulting kernel
+> > boots fine. I could figure out a clean way to leave cpu_clock() in
+> > sched_clock.c because of all the rq dependencies from sched.c. The
+> > attempt I tested is below [1]. This patch is *NOT* for inclusion, just
+> > to demonstrate what I tested.
+> > 
+> > I'm happy to test any better patches.
 > 
-> > - I see lots of user file I/O being done from within the kernel. 
-> >   This makes eyebrows raise.  Also some other eyebrow-raising
-> >   file-related things in there.
-> > 
-> > Generally: the code is all moderately intrusive into the VFS and this
-> > sort of thing does need careful explanation and justification, please. 
-> > Once we have some understanding of what you're trying to achieve here
-> > we will inevitably ask "can't that be done in userspace".  So it would
-> > be best if your description were to preemptively answer all that.  
-> > 
-> > 
-> Sorry about this delayed response - we are about to repost for RFC, and
-> noticed we missed responding to this.
+> Does this work for you?
 > 
-> The Trusted Computing (TPM) model requires that all files be measured,
-> (hashed) and the measurement committed to the hardware TPM before any
-> data of the file is accessed in any way. In addition, if the measurement
-> is incorrect, all access to the file must be denied. 
+> ---
+> Subject: sched_clock: delay using sched_clock()
+> 
+> Some arch's can't handle sched_clock() being called too early - delay
+> this until sched_clock_init() has been called.
+> 
+> Reported-by: Bill Gatliff <bgat@billgatliff.com>
+> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> CC: Russell King - ARM Linux <linux@arm.linux.org.uk>
 
-TPM model may require this, but what is the benefit to the user/owner
-of the machine?
+Yep, this fixes things on the box, as well.
 
-							Pavel
+Tested-by: Nishanth Aravamudan <nacc@us.ibm.com>
+
+Thanks,
+Nish
+
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Nishanth Aravamudan <nacc@us.ibm.com>
+IBM Linux Technology Center
