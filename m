@@ -1,69 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763090AbYHERjc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763394AbYHERjs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763090AbYHERjc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 13:39:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762645AbYHERi6
+	id S1763394AbYHERjs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 13:39:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761291AbYHERjY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 13:38:58 -0400
-Received: from casper.infradead.org ([85.118.1.10]:45853 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762564AbYHERi4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 13:38:56 -0400
-Date: Tue, 5 Aug 2008 10:38:40 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Eric Paris <eparis@redhat.com>
-Cc: "Press, Jonathan" <Jonathan.Press@ca.com>, Greg KH <greg@kroah.com>,
-       linux-kernel@vger.kernel.org, malware-list@lists.printk.net,
-       linux-security-module@vger.kernel.org
-Subject: Re: [malware-list] [RFC 0/5] [TALPA] Intro to a linux
- interfaceforon access scanning
-Message-ID: <20080805103840.1aaa64a5@infradead.org>
-In-Reply-To: <1217956796.11547.12.camel@paris.rdu.redhat.com>
-References: <1217883616.27684.19.camel@localhost.localdomain>
-	<20080804223249.GA10517@kroah.com>
-	<1217896374.27684.53.camel@localhost.localdomain>
-	<2629CC4E1D22A64593B02C43E855530304807431@USILMS12.ca.com>
-	<1217948212.27684.120.camel@localhost.localdomain>
-	<2629CC4E1D22A64593B02C43E855530304807436@USILMS12.ca.com>
-	<1217956796.11547.12.camel@paris.rdu.redhat.com>
-Organization: Intel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
+	Tue, 5 Aug 2008 13:39:24 -0400
+Received: from mail.suse.de ([195.135.220.2]:53880 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762911AbYHERjX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Aug 2008 13:39:23 -0400
+Date: Tue, 5 Aug 2008 19:25:49 +0200
+From: Karsten Keil <kkeil@suse.de>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, isdn4linux@listserv.isdn4linux.de,
+       "Andreas.Eversberg" <Andreas.Eversberg@versatel.de>
+Subject: Re: [PATCH 3/4] Fix remaining big endian issue of hfcmulti
+Message-ID: <20080805172549.GA6052@pingi.kke.suse.de>
+References: <20080802151532.DE017A3C09@pingi.kke.suse.de> <1217910588.24157.151.camel@pasglop> <20080805113111.GA6827@pingi.kke.suse.de> <1217941466.24157.190.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1217941466.24157.190.camel@pasglop>
+Organization: SuSE Linux AG
+X-Operating-System: Linux 2.6.16.54-0.2.5-smp x86_64
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 05 Aug 2008 13:19:56 -0400
-Eric Paris <eparis@redhat.com> wrote:
+On Tue, Aug 05, 2008 at 11:04:26PM +1000, Benjamin Herrenschmidt wrote:
+> 
+> > Thanks for this hint, I didn't know that the repetive versions are
+> > for byte streams and not for eg. transfer of multiple u32.
+> > So it makes things lot easier the code should look like:
+> > 
+> > 	int l = len >> 2;
+> > 
+> > 	if (l) {
+> > 		ioread32_rep(hc->pci_membase + A_FIFO_DATA0, data, l);
+> > 		data += l << 2;
+> > 	}
+> > 	if (len & 2) {
+> > 		ioread16_rep(hc->pci_membase + A_FIFO_DATA0, data, 1);
+> > 		data += 2;
+> > 	}
+> > 	if (len & 1)
+> > 		writeb(*data, hc->pci_membase + A_FIFO_DATA0);
+> 
+> Don't mix the io* variants with the PCI variants. Use iowrite8 for the
+> last one and make sure you do a proper pci_iomap.
 
-> If you can outline the design of a better method that meets your needs
-> I'd be glad to try to code it.  In your mind how do you see programs
-> being able to exclude others while not being a security risk? 
+Yes, OK it need some cleanups in other places as well.
 
+> 
+> One cool thing with the new iomap stuff is that it also works for both
+> PIO and MMIO, so you no longer need to differenciate writeX from outX
+> as long as you use the right mapping stuff initially.
+> 
 
-ok so lets be specific.
-You are trying to prevent an application from opening a "damaged" file,
-or from someone starting a "damaged" file.
-You are not trying to prevent anything once you have executed a damaged
-file; once you execute one of these for this part it's game over (to
-limit the damage other tools like selinux exist, but are outside the
-scope of talpa).
+Yes this stuff looks really cool, but unfortunately in our case it is not
+so easy to remove the different IO functions for MMIO and PIO, since for
+MMIO the chip use a flat register model, for PIO it use indirect addressing
+via only 2 ports, one for the register offset and one for the data IO.
 
-So... as long as /sbin/init isn't compromised... intercepting exec and
-open (in all variants) is all you need.
-
-And this can be done from userland with the preload: the "workaround"
-from the preload assumes you've already executed malicious code, which
-is outside of your protection scope.
-
-What am I missing?
+Maybe we can use the trick from lib/iomap.c to detect which
+kind of IO is needed, but unfortunately PIO_OFFSET, PIO_MASK and
+PIO_RESERVED are not exported so it would need to copy the defines, which
+isn't a really clean solution.
 
 -- 
-If you want to reach me at my work email, use arjan@linux.intel.com
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+Karsten Keil
+SuSE Labs
+ISDN and VOIP development
+SUSE LINUX Products GmbH, Maxfeldstr.5 90409 Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
