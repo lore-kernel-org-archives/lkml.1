@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764675AbYHEUSS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764278AbYHEUS5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764675AbYHEUSS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 16:18:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763638AbYHEUOi
+	id S1764278AbYHEUS5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 16:18:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763654AbYHEUOk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 16:14:38 -0400
-Received: from saraswathi.solana.com ([198.99.130.12]:48089 "EHLO
+	Tue, 5 Aug 2008 16:14:40 -0400
+Received: from saraswathi.solana.com ([198.99.130.12]:48091 "EHLO
 	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763610AbYHEUOh (ORCPT
+	with ESMTP id S1763626AbYHEUOj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 16:14:37 -0400
-Date: Tue, 5 Aug 2008 16:14:09 -0400
+	Tue, 5 Aug 2008 16:14:39 -0400
+Date: Tue, 5 Aug 2008 16:14:11 -0400
 From: Jeff Dike <jdike@addtoit.com>
 To: stable@kernel.org
 Cc: LKML <linux-kernel@vger.kernel.org>,
        uml-devel <user-mode-linux-devel@lists.sourceforge.net>
-Subject: [PATCH 11/14] uml: work around broken host PTRACE_SYSEMU
-Message-ID: <20080805201409.GA11800@c2.user-mode-linux.org>
+Subject: [PATCH 14/14] uml: PATH_MAX needs limits.h
+Message-ID: <20080805201411.GA11802@c2.user-mode-linux.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -25,76 +25,32 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From f1ef9167ca4494a8c6d71d0031c73e9c8841eadd
+>From b6d8adf477439e7086224bc9674c6b6638780783
 
-Fedora broke PTRACE_SYSEMU again, and UML crashes as a result when it
-doesn't need to.  This patch makes the PTRACE_SYSEMU check fail gracefully
-and makes UML fall back to PTRACE_SYSCALL.
+From: Ingo Molnar <mingo@elte.hu>
 
+Include limits.h to get a definition of PATH_MAX.
+
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 Signed-off-by: Jeff Dike <jdike@linux.intel.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 ---
- arch/um/os-Linux/start_up.c |   25 ++++++++++++++++---------
- 1 files changed, 16 insertions(+), 9 deletions(-)
+ arch/um/os-Linux/helper.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-diff --git a/arch/um/os-Linux/start_up.c b/arch/um/os-Linux/start_up.c
-index b616e15..fd71bdb 100644
---- a/arch/um/os-Linux/start_up.c
-+++ b/arch/um/os-Linux/start_up.c
-@@ -122,8 +122,10 @@ static int stop_ptraced_child(int pid, int exitcode, int mustexit)
- {
- 	int status, n, ret = 0;
- 
--	if (ptrace(PTRACE_CONT, pid, 0, 0) < 0)
--		fatal_perror("stop_ptraced_child : ptrace failed");
-+	if (ptrace(PTRACE_CONT, pid, 0, 0) < 0) {
-+		perror("stop_ptraced_child : ptrace failed");
-+		return -1;
-+	}
- 	CATCH_EINTR(n = waitpid(pid, &status, 0));
- 	if (!WIFEXITED(status) || (WEXITSTATUS(status) != exitcode)) {
- 		int exit_with = WEXITSTATUS(status);
-@@ -203,7 +205,7 @@ static void __init check_sysemu(void)
- 	if (n < 0)
- 		fatal_perror("check_sysemu : wait failed");
- 	if (!WIFSTOPPED(status) || (WSTOPSIG(status) != SIGTRAP))
--		fatal("check_sysemu : expected SIGTRAP, got status = %d",
-+		fatal("check_sysemu : expected SIGTRAP, got status = %d\n",
- 		      status);
- 
- 	if (ptrace(PTRACE_GETREGS, pid, 0, regs) < 0)
-@@ -245,9 +247,11 @@ static void __init check_sysemu(void)
- 
- 		if (WIFSTOPPED(status) &&
- 		    (WSTOPSIG(status) == (SIGTRAP|0x80))) {
--			if (!count)
--				fatal("check_ptrace : SYSEMU_SINGLESTEP "
--				      "doesn't singlestep");
-+			if (!count) {
-+				non_fatal("check_ptrace : SYSEMU_SINGLESTEP "
-+					  "doesn't singlestep");
-+				goto fail;
-+			}
- 			n = ptrace(PTRACE_POKEUSR, pid, PT_SYSCALL_RET_OFFSET,
- 				   os_getpid());
- 			if (n < 0)
-@@ -257,9 +261,12 @@ static void __init check_sysemu(void)
- 		}
- 		else if (WIFSTOPPED(status) && (WSTOPSIG(status) == SIGTRAP))
- 			count++;
--		else
--			fatal("check_ptrace : expected SIGTRAP or "
--			      "(SIGTRAP | 0x80), got status = %d", status);
-+		else {
-+			non_fatal("check_ptrace : expected SIGTRAP or "
-+				  "(SIGTRAP | 0x80), got status = %d\n",
-+				  status);
-+			goto fail;
-+		}
- 	}
- 	if (stop_ptraced_child(pid, 0, 0) < 0)
- 		goto fail_stopped;
+diff --git a/arch/um/os-Linux/helper.c b/arch/um/os-Linux/helper.c
+index 679acce..b6b1096 100644
+--- a/arch/um/os-Linux/helper.c
++++ b/arch/um/os-Linux/helper.c
+@@ -7,6 +7,7 @@
+ #include <unistd.h>
+ #include <errno.h>
+ #include <sched.h>
++#include <linux/limits.h>
+ #include <sys/socket.h>
+ #include <sys/wait.h>
+ #include "kern_constants.h"
 -- 
 1.5.5.1
 
