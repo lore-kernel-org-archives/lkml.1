@@ -1,51 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759727AbYHEDEo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762328AbYHEDJd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759727AbYHEDEo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 23:04:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763041AbYHEDE2
+	id S1762328AbYHEDJd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 23:09:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754607AbYHEDHV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 23:04:28 -0400
-Received: from c60.cesmail.net ([216.154.195.49]:59631 "EHLO c60.cesmail.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753505AbYHEDE0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 23:04:26 -0400
-Message-ID: <20080804230424.26ghqn81s0480ogk-cebfxv@webmail.spamcop.net>
-Date: Mon, 04 Aug 2008 23:04:24 -0400
-From: Pavel Roskin <proski@gnu.org>
-To: "John W. Linville" <linville@tuxdriver.com>
-Cc: David Miller <davem@davemloft.net>, linux-wireless@vger.kernel.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: pull request: wireless-2.6 2008-08-04
-References: <20080804193753.GA30345@tuxdriver.com>
-	<20080804.150147.78586437.davem@davemloft.net>
-	<20080805021710.GA21731@tuxdriver.com>
-In-Reply-To: <20080805021710.GA21731@tuxdriver.com>
+	Mon, 4 Aug 2008 23:07:21 -0400
+Received: from outbound.icp-qv1-irony-out1.iinet.net.au ([203.59.1.108]:49949
+	"EHLO outbound.icp-qv1-irony-out1.iinet.net.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753505AbYHEDHU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Aug 2008 23:07:20 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AtMEAHRgl0jLO4pc/2dsb2JhbAAIimCkfA
+X-IronPort-AV: E=Sophos;i="4.31,307,1215360000"; 
+   d="scan'208";a="365709780"
+Message-ID: <4897C2A7.7020601@ii.net>
+Date: Tue, 05 Aug 2008 11:01:59 +0800
+From: Cliffe <cliffe@ii.net>
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset=ISO-8859-1;
-	DelSp="Yes";
-	format="flowed"
-Content-Disposition: inline
+To: Casey Schaufler <casey@schaufler-ca.com>
+CC: Eric Paris <eparis@redhat.com>, malware-list@lists.printk.net,
+       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org
+Subject: Re: [RFC 0/5] [TALPA] Intro to a linux interface for on access scanning
+References: <1217883616.27684.19.camel@localhost.localdomain> <4897BFB4.9090309@schaufler-ca.com>
+In-Reply-To: <4897BFB4.9090309@schaufler-ca.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-User-Agent: Internet Messaging Program (IMP) H3 (4.1.4)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting "John W. Linville" <linville@tuxdriver.com>:
+If we had stackable LSMs then the required functionality could simply be 
+built into the LSM interface. Then the anti-malware would simply stack 
+itself with other LSMs. In my opinion this is a perfect example for the 
+argument of stackable LSMs. So far we mainly have LSMs which provide an 
+extra access control mechanism (in addition to DAC). IMHO, Ideally DAC 
+could be another stackable LSM (enabled by default). Other security 
+schemes such as intrusion detection, firewalls/netfilter, anti-malware, 
+and application restrictions (sandboxes such as jails or finer grained 
+restrictions such as AppArmor) could all register LSMs onto the stack.
 
-> Sure, np.  I created a "no-ath9k" branch in case you are feeling
-> frisky -- it is the same except for omitting the list.h changes,
-> the ath5k pci table change, and the new ath9k driver.
+Additional infrastructure would be necessary. Permissible security 
+remains a item of contention. Perhaps I am naive but I think most LSMs 
+could work based on accept/reject. Where every LSM must accept an action 
+in order for it to be carried out.
 
-You can keep the ath5k PCI table change.  Those devices are not  
-supported by ath5k and not going to be supported, especially since  
-ath9k supports them.  They are not even listed on  
-http://wireless.kernel.org/en/users/Drivers
+MHO,
 
-The patch should go upstream quickly, so that potential ath9k users  
-don't have to blacklist ath5k.
+Cliffe.
 
--- 
-Regards,
-Pavel Roskin
+Casey Schaufler wrote:
+> Eric Paris wrote:
+>> Please contact me privately or (preferably the list) for questions,
+>> comments, discussions, flames, names, or anything.  I'll do complete
+>> rewrites of the patches if someone tells me how they don't meet their
+>> needs or how they can be done better.  I'm here to try to bridge the
+>> needs (and wants) of the anti-malware vendors with the technical
+>> realities of the kernel.  So everyone feel free to throw in your two
+>> cents and I'll try to reconcile it all.  These 5 patches are part 1.
+>> They give us a working able solution.
+>>
+>> >From my point of view patches forthcoming and mentioned below should
+>> help with performance for those who actually have userspace scanners but
+>> also could presents be implemented using this framework.
+>>
+>>   
+>
+> The LSM list (CCed) should be included in this discussion.
+>> Background
+>> ...
+>
+>
+> -- 
+> To unsubscribe from this list: send the line "unsubscribe 
+> linux-security-module" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>
+>
