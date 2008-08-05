@@ -1,52 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755131AbYHEOFN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755883AbYHEOGS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755131AbYHEOFN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 10:05:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750806AbYHEOE7
+	id S1755883AbYHEOGS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 10:06:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753896AbYHEOGJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 10:04:59 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:48415 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752689AbYHEOE6 (ORCPT
+	Tue, 5 Aug 2008 10:06:09 -0400
+Received: from casper.infradead.org ([85.118.1.10]:42534 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753875AbYHEOGI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 10:04:58 -0400
-Date: Tue, 5 Aug 2008 22:04:36 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Helge Hafting <helge.hafting@aitel.hist.no>
-Cc: Arjan van de Ven <arjan@infradead.org>,
-       Chris Mason <chris.mason@oracle.com>, dwmw2@infradead.org,
-       austin_zhang@linux.intel.com, davem@davemloft.net,
-       linux-kernel@vger.kernel.org, linux-crypto@vger.kernel.org
-Subject: Re: [PATCH] Using Intel CRC32 instruction to accelerate	CRC32c algorithm by new crypto API.
-Message-ID: <20080805140436.GA23405@gondor.apana.org.au>
-References: <1217866496.29139.75.camel@think.oraclecorp.com> <E1KQ3Be-0003T3-00@gondolin.me.apana.org.au> <20080804100605.4f0921f4@infradead.org> <20080804171017.GA13725@gondor.apana.org.au> <20080804171316.GA13819@gondor.apana.org.au> <48983521.9070203@aitel.hist.no>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <48983521.9070203@aitel.hist.no>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Tue, 5 Aug 2008 10:06:08 -0400
+Subject: Re: [malware-list] [RFC 0/5] [TALPA] Intro to a linux interface
+	for on access scanning
+From: Peter Zijlstra <peterz@infradead.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Christoph Hellwig <hch@infradead.org>, Eric Paris <eparis@redhat.com>,
+       Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <20080805123136.0073e52f@lxorguk.ukuu.org.uk>
+References: <1217883616.27684.19.camel@localhost.localdomain>
+	 <20080804223249.GA10517@kroah.com> <20080805002618.GA18215@infradead.org>
+	 <1217897224.27684.66.camel@localhost.localdomain>
+	 <20080805005415.GA10108@infradead.org>
+	 <20080805123136.0073e52f@lxorguk.ukuu.org.uk>
+Content-Type: text/plain; charset=UTF-8
+Date: Tue, 05 Aug 2008 16:06:04 +0200
+Message-Id: <1217945164.3589.128.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 05, 2008 at 01:10:25PM +0200, Helge Hafting wrote:
->
-> How about making crc32c an inline function then?
-> On processors that have this feature, this compiles to that single
-> instruction, plus whatever setup it needs. Nice and efficient.
-> On other processors, either inline the algorithm or inline
-> a call to an out of line function, depending on how bulky this is.
+On Tue, 2008-08-05 at 12:31 +0100, Alan Cox wrote:
+> > No, I want a sane security policy in kernelsapce that doesn't look
+> > at the content because doing security by content properly is equivalent
+> > to solving the halting problem.  I couldn't give a rats a** about
+> > windows viruses as they can't actually cause any harm on a Linux
+> > machine.
+> 
+> Go on then.. post patches.
+> 
+> I think your are being incredibly naïve. Our memory debugging is not 100%
+> solid but work by heuristic. Our lock analysis doesn't solve the halting
+> problem but is extremely useful and so on.
 
-Please read the thread carefully.  Being a single instruction
-is nothing special.  The same thing applies for other algorithms
-too, e.g., AES is also just a single instruction with the VIA
-PadLock (and Intel in future).
+Sure, but what's the point of partial security? It seems to me you're
+not secure until you're fully secure, so why bother with almost?
 
-The crypto API has handled this just fine.
+Every bug caught with the debuggers is one caught, yay :-)
 
-Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+Every virus let through is a pawned system, aww :-(
+
+
+
