@@ -1,66 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422681AbYHEVFy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763721AbYHEVJV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422681AbYHEVFy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 17:05:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762205AbYHEVFm
+	id S1763721AbYHEVJV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 17:09:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757777AbYHEVJO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 17:05:42 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:49612 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758967AbYHEVFl (ORCPT
+	Tue, 5 Aug 2008 17:09:14 -0400
+Received: from casper.infradead.org ([85.118.1.10]:32905 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756465AbYHEVJM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 17:05:41 -0400
-Date: Tue, 5 Aug 2008 22:05:24 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Arjan van de Ven <arjan@infradead.org>
+	Tue, 5 Aug 2008 17:09:12 -0400
+Date: Tue, 5 Aug 2008 14:08:52 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Eric Paris <eparis@redhat.com>
 Cc: "Press, Jonathan" <Jonathan.Press@ca.com>, Greg KH <greg@kroah.com>,
-       Eric Paris <eparis@redhat.com>, linux-kernel@vger.kernel.org,
-       malware-list@lists.printk.net, linux-security-module@vger.kernel.org
-Subject: Re: [malware-list] [RFC 0/5] [TALPA] Intro to a
-	linuxinterfaceforon access scanning
-Message-ID: <20080805210524.GH28946@ZenIV.linux.org.uk>
-References: <20080805112747.2c3c4650@infradead.org> <2629CC4E1D22A64593B02C43E85553030480743E@USILMS12.ca.com> <20080805183845.GA11375@kroah.com> <2629CC4E1D22A64593B02C43E855530304AE4AD9@USILMS12.ca.com> <20080805133832.220d71c7@infradead.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080805133832.220d71c7@infradead.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+       linux-kernel@vger.kernel.org, malware-list@lists.printk.net
+Subject: Re: [malware-list] [RFC 0/5] [TALPA] Intro to alinuxinterfaceforon
+ access scanning
+Message-ID: <20080805140852.24215700@infradead.org>
+In-Reply-To: <1217969467.27684.179.camel@localhost.localdomain>
+References: <20080805103840.1aaa64a5@infradead.org>
+	<2629CC4E1D22A64593B02C43E85553030480743B@USILMS12.ca.com>
+	<20080805181141.GA10700@kroah.com>
+	<2629CC4E1D22A64593B02C43E85553030480743F@USILMS12.ca.com>
+	<20080805201816.GD27192@kroah.com>
+	<2629CC4E1D22A64593B02C43E855530304AE4ADA@USILMS12.ca.com>
+	<1217969467.27684.179.camel@localhost.localdomain>
+Organization: Intel
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 05, 2008 at 01:38:32PM -0700, Arjan van de Ven wrote:
+On Tue, 05 Aug 2008 16:51:07 -0400
+Eric Paris <eparis@redhat.com> wrote:
 
-> This does assume that at some point you have a transition from "ok"
-> program to the first time you run a "bad" one (via exec or open); and
-> that you catch it at that point.
-> 
-> I don't yet buy the argument "but what if the virus corrupted your ld
-> preload", because if it can do that your own virus scanner is also
-> corrupted.
-> 
-> 
-> Can you explain what gap is left after you do these two things?
+> I think Alan and I have both described how greater linux security can
+> be gained through this interface compared to glibc or LD_PRELOAD even
+> if it isn't perfect security.  
 
-Actually, the real question (and the reason why I question the personal
-integrity of the people in "AV community" pushing that kind of trash)
-is very simple:
+I guess I missed that.
 
-Where Is Your Threat Profile?
+I will fully subscribe to the idea that  "the LD_PRELOAD way assumes you
+have a good->bad transition" might not be fully bullet proof (after
+all, if your init is compromised you won't have this transition)
 
-Various people had been asking for _years_ to define what the hell are you
-trying to prevent.  Not only there'd been no coherent answer (and no, this
-list of requirements is _not_ that - it's "what kind of hooks do we want"),
-you guys seem to be unable to decide whether you expect the malware in
-question to be passive or to be actively evading detection with infected
-processes running on the host that does scanning.
+but what else is the actual gap?
 
-Moreover, the answer seems to be changing back and forth to suit the needs
-of the moment in the argument.  Slightly exaggregated it goes like this:
-
--- Why don't you do $FOO?
--- Running virus would be able to evade $FOO, of course!
--- No shit, Sherlock; it would also be able to evade much more intrusive $BAR
-you are proposing; here's how <obvious evasion method>
--- Oh, but that's not a problem; think of Linux server with Windows clients
-and Windows viruses...
+-- 
+If you want to reach me at my work email, use arjan@linux.intel.com
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
