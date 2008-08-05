@@ -1,90 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763479AbYHES5b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762249AbYHETIZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763479AbYHES5b (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 14:57:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758850AbYHES47
+	id S1762249AbYHETIZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 15:08:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759161AbYHETIQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 14:56:59 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:41391 "EHLO mx1.redhat.com"
+	Tue, 5 Aug 2008 15:08:16 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:40091 "EHLO smtp4.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756652AbYHES46 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 14:56:58 -0400
-Subject: Re: [malware-list] [RFC 0/5] [TALPA] Intro to a linux interface
-	for on access scanning
-From: Eric Paris <eparis@redhat.com>
-To: Greg KH <greg@kroah.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, malware-list@lists.printk.net,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20080805170307.GB9639@kroah.com>
-References: <1217883616.27684.19.camel@localhost.localdomain>
-	 <20080804223249.GA10517@kroah.com>
-	 <1217896374.27684.53.camel@localhost.localdomain>
-	 <20080805005132.GA3661@kroah.com>
-	 <20080805122328.69a37c1d@lxorguk.ukuu.org.uk>
-	 <20080805170307.GB9639@kroah.com>
-Content-Type: text/plain
-Date: Tue, 05 Aug 2008 14:56:42 -0400
-Message-Id: <1217962602.27684.144.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
+	id S1756273AbYHETIP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Aug 2008 15:08:15 -0400
+Date: Tue, 5 Aug 2008 22:06:51 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: "John W. Linville" <linville@tuxdriver.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       David Miller <davem@davemloft.net>, LKML <linux-kernel@vger.kernel.org>,
+       "Luis R. Rodriguez" <lrodriguez@atheros.com>
+Subject: [2.6 patch] ath9k: work around gcc ICEs
+Message-ID: <20080805190651.GI22895@cs181140183.pp.htv.fi>
+References: <20080805162152.2b55ae5c.sfr@canb.auug.org.au> <20080805153757.GB22895@cs181140183.pp.htv.fi> <20080805160026.GA14186@tuxdriver.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20080805160026.GA14186@tuxdriver.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-08-05 at 10:03 -0700, Greg KH wrote:
-> On Tue, Aug 05, 2008 at 12:23:28PM +0100, Alan Cox wrote:
-> > > > It may be possible to do in glibc, LD_PRELOAD doesn't exactly work for
-> > > > suid binaries
+On Tue, Aug 05, 2008 at 12:00:26PM -0400, John W. Linville wrote:
+> On Tue, Aug 05, 2008 at 06:37:57PM +0300, Adrian Bunk wrote:
+> > On Tue, Aug 05, 2008 at 04:21:52PM +1000, Stephen Rothwell wrote:
+> > > Hi John,
 > > > 
-> > > Are suid binaries something that you feel is necessary to scan from?
+> > > Today's linux-next build (powerpc allyesconfig) failed like this:
 > > > 
-> > > I don't see it on the list above :)
+> > > drivers/net/wireless/ath9k/hw.c: In function 'ath9k_hw_9280_spur_mitigate':
+> > > drivers/net/wireless/ath9k/hw.c:4660: internal compiler error: in expand_expr_real_1, at expr.c:9199
+> > > 
+> > > Clearly not our fault! :-) I have informed our toolchain person.  This
+> > > was using the Debian gcc-4.3.  It also fails using the Debian 4.2
+> > > compiler but not the 4.1 one.
+> > >...
 > > 
-> > Doesn't work very well really does it - ld.so loads files too and can be
-> > attacked.
+> > Alexandros Couloumbis already opened a bug for this issue on mips, which 
+> > also seems to be affected:
+> >   http://gcc.gnu.org/bugzilla/show_bug.cgi?id=37014
+> > 
+> > It is a gcc bug, but we'll have to work around it in the ath9k driver.
 > 
-> But that's an "attack" vector, which virus scanners are not addressing.
-> They are going for the "is this file corrupted" type issue.  The
-> "normal" LSM interface is for malware itself, taking control of a
-> system.
+> I imagine that we would be happy to do that.  Anyone have a clue as to how?
 
-So you are arguing against the defense in depth theory?  LSM should
-solve it all so why bother?
+Patch below, verified to fix the issue with the following compilers:
+- powerpc 4.2.4
+- powerpc latest 4.3 SVN
+- powerpc latest 4.4 SVN
+- mips 4.2.4
+- mips 4.3.1
 
-I don't think that anyone is claiming that they don't address that
-vector.  They may not be perfect but they are infinitely better than the
-zero protection we offer today.  Clearly in the enterprise world the
-most useful purpose of these scanners is looking at inflight data
-crossing valid safe non-hacked linux processes, but the implementation I
-have given is such that we can start doing some validation on our own
-executables.  Remember the requirement wasn't just to scan data, it was
-to scan everything that gets opened.
+The patch has to be applied twice for fixing both copies of the
+same code.  :-)
 
-As an example of the usefulness of this approach as opposed to the
-LD_PRELOAD/glibc approach is that I could be used to minimize the impact
-of things like the recently much touted discussion about malicious
-repository mirrors.  Although clearly there were some flaws in the
-common conception of the problem, the ability to trick users into
-downloading and installing trojaned libraries is not something we can
-presently protect against with any mechanism.
+> John
 
-Lets assume that the black magic in userspace was able to spot a
-trojaned library running programs which would still be linked to the old
-files on disk would continue to work but you would very quickly find out
-there was trouble when everything that tried to open its shared library
-was getting EPERM.  Yes, yes, even I can think of ways around it (bad
-repo sends bad kernel first and waits until the machine is running the
-bad kernel to disable scanning) but by that time they already won.  And
-its possible that the userspace scanning could/would spot the trojaned
-kernel and report on it during install time.
+cu
+Adrian
 
 
-I'm going to run perf test this afternoon but I'm going to have to look
-for a test that is a good mix of reads,writes, and opens.  I strongly
-suspect that there will be a noticable perf lose in any other method
-that doesn't include in kernel caching.  (how can there not be with an
-extra context switch for every open?)
+<--  snip  -->
 
--Eric
 
+This patch works around an internal compiler error (gcc bug #37014) in 
+all gcc 4.2 compilers and the gcc 4.3 series up to at least 4.3.1
+on at least powerpc and mips.
+
+Many thanks to Andrew Pinski for analyzing the gcc bug.
+
+Signed-off-by: Adrian Bunk <bunk@kernel.org>
+
+---
+d1ec5b9fba6c50c7e98a85776a3b95d3a3a3179b 
+diff --git a/drivers/net/wireless/ath9k/hw.c b/drivers/net/wireless/ath9k/hw.c
+index 1f6f393..5edc56d 100644
+--- a/drivers/net/wireless/ath9k/hw.c
++++ b/drivers/net/wireless/ath9k/hw.c
+@@ -4801,7 +4801,11 @@
+ 
+ 	for (i = 0; i < 123; i++) {
+ 		if ((cur_vit_mask > lower) && (cur_vit_mask < upper)) {
+-			if ((abs(cur_vit_mask - bin)) < 75)
++
++			/* workaround for gcc bug #37014 */
++			volatile int tmp = abs(cur_vit_mask - bin);
++
++			if (tmp < 75)
+ 				mask_amt = 1;
+ 			else
+ 				mask_amt = 0;
