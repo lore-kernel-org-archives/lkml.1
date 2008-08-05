@@ -1,53 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761485AbYHEQ3e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761074AbYHEQck@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761485AbYHEQ3e (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 12:29:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756357AbYHEQ30
+	id S1761074AbYHEQck (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 12:32:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755460AbYHEQcc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 12:29:26 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:33158 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756218AbYHEQ3Z (ORCPT
+	Tue, 5 Aug 2008 12:32:32 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:52753 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753816AbYHEQcb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 12:29:25 -0400
-Date: Tue, 5 Aug 2008 09:26:50 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Adrian Bunk <bunk@kernel.org>,
-       Mauro Carvalho Chehab <mchehab@infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>, v4l-dvb-maintainer@linuxtv.org,
-       video4linux-list@redhat.com, Ralf Baechle <ralf@linux-mips.org>,
-       linux-mips@linux-mips.org
-Subject: Re: v4l/mips build problem
-Message-Id: <20080805092650.af88364a.akpm@linux-foundation.org>
-In-Reply-To: <20080806020647.2cf11a2b.sfr@canb.auug.org.au>
-References: <20080806012357.55625daf.sfr@canb.auug.org.au>
-	<20080805154122.GC22895@cs181140183.pp.htv.fi>
-	<20080806020647.2cf11a2b.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	Tue, 5 Aug 2008 12:32:31 -0400
+Date: Tue, 5 Aug 2008 11:32:30 -0500
+From: Russ Anderson <rja@sgi.com>
+To: Greg KH <greg@kroah.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, mingo@elte.hu, tglx@linutronix.de,
+       linux-kernel@vger.kernel.org, Jack Steiner <steiner@sgi.com>
+Subject: Re: x86 BIOS interface for partitioning and system serial number on SGI UV
+Message-ID: <20080805163229.GA14870@sgi.com>
+Reply-To: Russ Anderson <rja@sgi.com>
+References: <20080731195753.GB25715@sgi.com> <48934926.2010200@zytor.com> <20080804221951.GA252105@sgi.com> <4897A5FE.9070703@zytor.com> <20080805035450.GA11810@kroah.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080805035450.GA11810@kroah.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 6 Aug 2008 02:06:47 +1000 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
-
-> On Tue, 5 Aug 2008 18:41:22 +0300 Adrian Bunk <bunk@kernel.org> wrote:
+On Mon, Aug 04, 2008 at 08:54:50PM -0700, Greg KH wrote:
+> On Mon, Aug 04, 2008 at 05:59:42PM -0700, H. Peter Anvin wrote:
+> > Russ Anderson wrote:
+> >>> This really seems more that it should belong in sysfs -- 
+> >>> /sys/class/firmware presumably.
+> >> /proc/sgi_uv already exists, similar to /proc/sgi_sn on Itanium systems.
+> >> Would it be /sys/class/firmware?  Reading Documentation/sysfs-rules.txt
+> >> seems to indicate somewhere under /sys/devices, such as 
+> >> /sys/devices/system/,
+> >> but I may be wrong.
 > >
-> > On Wed, Aug 06, 2008 at 01:23:57AM +1000, Stephen Rothwell wrote:
-> > > Hi all,
-> > > 
-> > > Linus' current tree gets the following error during a mips allmodconfig
-> > > build:
-> > > 
-> > > drivers/media/video/vino.c:4364: error: implicit declaration of function `video_usercopy'
-> > 
-> > Andrew fixed it with drivers-media-video-vinoc-needs-v4l2-ioctlh.patch 
-> > in -mm.
+> > /sys/class/firmware is usually where firmware-related things end up, but 
+> > gregkh is the authority on sysfs organization.
 > 
-> Maybe we should send that one Linusward ...
-> 
+> /sys/class/firmware has a few users, but perhaps you are thinking of
+> /sys/firmware instead?  That's probably the better place for something
+> that is not using the firmware class itself.
 
-yup, I'll send it in unless it turned up in today's linux-next.
+Hi Greg,
+
+If /sys/firmware is the right place, that is where I will put it.
+
+Are the rules for /sys/firmware documented?  Documentation/sysfs-rules.txt
+does not mention /sys/firmware.  It seems to indicate that /sys/class
+should only contain symlinks:
+
+  There are currently three places for classification of devices:
+  /sys/block, /sys/class and /sys/bus. It is planned that these will
+  not contain any device directories themselves, but only flat lists of
+  symlinks pointing to the unified /sys/devices tree.
+
+Thanks,
+-- 
+Russ Anderson, OS RAS/Partitioning Project Lead  
+SGI - Silicon Graphics Inc          rja@sgi.com
