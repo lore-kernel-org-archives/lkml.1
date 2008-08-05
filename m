@@ -1,72 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762994AbYHESOp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762302AbYHESRS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762994AbYHESOp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 14:14:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761044AbYHESOf
+	id S1762302AbYHESRS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 14:17:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761180AbYHESRB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 14:14:35 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:40847 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756525AbYHESOe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 14:14:34 -0400
-Date: Tue, 5 Aug 2008 11:11:41 -0700
-From: Greg KH <greg@kroah.com>
-To: "Press, Jonathan" <Jonathan.Press@ca.com>
-Cc: Arjan van de Ven <arjan@infradead.org>, Eric Paris <eparis@redhat.com>,
-       linux-kernel@vger.kernel.org, malware-list@lists.printk.net,
-       linux-security-module@vger.kernel.org
-Subject: Re: [malware-list] [RFC 0/5] [TALPA] Intro to a linux
-	interfaceforon access scanning
-Message-ID: <20080805181141.GA10700@kroah.com>
-References: <20080805103840.1aaa64a5@infradead.org> <2629CC4E1D22A64593B02C43E85553030480743B@USILMS12.ca.com>
+	Tue, 5 Aug 2008 14:17:01 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:37100 "EHLO smtp4.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753851AbYHESRA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Aug 2008 14:17:00 -0400
+Date: Tue, 5 Aug 2008 21:15:36 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Bernhard Fischer <rep.dot.nop@gmail.com>
+Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>,
+       linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org,
+       michael@free-electrons.com, Matt Mackall <mpm@selenic.com>,
+       bcrl@kvack.org, linux-aio@kvack.org, akpm@linux-foundation.org
+Subject: Re: [patch 1/4] Configure out AIO support
+Message-ID: <20080805181536.GH22895@cs181140183.pp.htv.fi>
+References: <20080731092703.661994657@free-electrons.com> <20080731093220.690886851@free-electrons.com> <20080731100929.GA9206@mx.loc> <20080731101219.GC4221@cs181140183.pp.htv.fi> <20080731224222.GB9208@mx.loc>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <2629CC4E1D22A64593B02C43E85553030480743B@USILMS12.ca.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <20080731224222.GB9208@mx.loc>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Aug 01, 2008 at 12:42:22AM +0200, Bernhard Fischer wrote:
+> On Thu, Jul 31, 2008 at 01:12:19PM +0300, Adrian Bunk wrote:
+> >On Thu, Jul 31, 2008 at 12:09:29PM +0200, Bernhard Fischer wrote:
+> >> On Thu, Jul 31, 2008 at 11:27:04AM +0200, Thomas Petazzoni wrote:
+> >> >This patchs adds the CONFIG_AIO option which allows to remove support
+> >> >for asynchronous I/O operations, that are not necessarly used by
+> >> >applications, particularly on embedded devices. As this is a
+> >> >size-reduction option, it depends on CONFIG_EMBEDDED. It allows to
+> >> >save ~7 kilobytes of kernel code/data:
+> >> 
+> >> Shouldn't this also make sure not to install aio_abi.h or at least an
+> >> empty aio_abi.h?
+> >
+> >The userspace headers are independent of any kernel configuration
+> >(except for the architecture).
+> 
+> I beg to disagree:
+> internals as exposed by e.g. aio_abi.h are impl dependent. Noone except
+> the impl and it's users are interrested in it.
+>...
 
-A: No.
-Q: Should I include quotations after my reply?
+That's utter bullshit.
 
-On Tue, Aug 05, 2008 at 02:04:26PM -0400, Press, Jonathan wrote:
-> I'm not sure if this is off the direct idea of this thread, or if I am
-> possibly missing the whole point.
+The contents of aio_abi.h is a kernel<->userspace ABI that mustn't ever 
+change. [1]
 
-I think you might be missing the point a bit here, as the traditional
-Unix model that Linux has prevents much of what the "traditional AV"
-products need to do, right?
+cu
+Adrian
 
-> However, I want to point out that scanning on close is still an integral
-> part of AV protection, even if intercepting opens and execs
-> theoretically catches everything.
+[1] there are some exceptions like adding stuff (but not in existing 
+    structs), but basically the contents of aio_abi.h is cast in stone
 
-Great, then put a hook in glibc and catch all closes and then kick off
-your scanning.
+-- 
 
-> You can say that there are four parts to the malware life cycle --
-> getting on a machine, residing there, causing local damage, and
-> propagating elsewhere.  It is part of the philosophy of AV protection
-> that you do everything you can to prevent all of them.
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
-But this proposed patchset does not do much to prevent all of these,
-right?
-
-> That's why there are scans on close, scheduled scans, and scans on
-> open.  Most of our users employ all three and do not rely on one or
-> two.  If an infection arrives on a machine and finds a home because it
-> is assumed that it will be caught when it is opened for use, then it
-> is just one more compromise away from doing damage and/or spreading.
-
-So how are you going about preventing the "infection from arriving"
-with this proposed patchset?
-
-Isn't that something that SELinux or another LSM can prevent better?
-
-thanks,
-
-greg k-h
