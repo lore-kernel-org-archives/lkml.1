@@ -1,64 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764827AbYHEVVd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764986AbYHEVWv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764827AbYHEVVd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 17:21:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758665AbYHEVVY
+	id S1764986AbYHEVWv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 17:22:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758285AbYHEVWl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 17:21:24 -0400
-Received: from mu-out-0910.google.com ([209.85.134.187]:48813 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758512AbYHEVVX (ORCPT
+	Tue, 5 Aug 2008 17:22:41 -0400
+Received: from rgminet02.oracle.com ([148.87.113.119]:55683 "EHLO
+	rgminet02.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751552AbYHEVWj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 17:21:23 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=j5EHLszQEIGsJeaO9dRYHcMJ9tXyJZdEXxZWm35UszTFVVfmLT94nqy6ac5HFNLOSn
-         1tPlzVRIEmuPISvfmhgmPaFJorGHyiP0IAmK5OSBYxbc2Qf44sB4zLxgAlr4RdtrxKMm
-         hYNzfgODawF1xy5s2IXGM3HPrl82ICabBIpp0=
-Message-ID: <4898C44E.7020303@gmail.com>
-Date: Tue, 05 Aug 2008 23:21:18 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080720)
-MIME-Version: 1.0
-To: Ira Snyder <iws@ovro.caltech.edu>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: Simple UART driver help and TTY questions
-References: <20080805163307.GJ6257@ovro.caltech.edu>
-In-Reply-To: <20080805163307.GJ6257@ovro.caltech.edu>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=us-ascii; format=flowed
+	Tue, 5 Aug 2008 17:22:39 -0400
+X-Greylist: delayed 8045 seconds by postgrey-1.27 at vger.kernel.org; Tue, 05 Aug 2008 17:22:39 EDT
+Subject: Btrfs v0.16 released
+From: Chris Mason <chris.mason@oracle.com>
+To: linux-btrfs <linux-btrfs@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>
+Content-Type: text/plain
+Date: Tue, 05 Aug 2008 15:01:16 -0400
+Message-Id: <1217962876.15342.33.camel@think.oraclecorp.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
 Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/05/2008 06:33 PM, Ira Snyder wrote:
-> Hello LKML,
-> So, the problem I have is that when I install this driver, it seems to
-> return -EIO before it even hits any of the driver code. I checked this
-> by putting a printk at the beginning of every function call in the
-> module.
-> 
-> The error from busybox microcom is this:
-> microcom: can't tcsetattr for /dev/ttytiny0: Input/output error
-> 
-> And cat /dev/ttytiny0:
-> cat: /dev/ttytiny0: Input/output error
-> 
-> Previously to finding this code from LinuxJournal, I had tried to write
-> my own skeleton driver, basing it on the drivers/serial/ucc_uart.c code.
-> It has the exact same problem. I've attached it as well.
-> 
-> So, to the best of my research, it seems like the tcsetattr call would
-> come in at drivers/char/tty_ioctl.c in tty_mode_ioctl() (the TCSETS
-> case). Maybe I'm wrong, though.
-> 
-> I've built it against both ubuntu's stock kernel (2.6.24 based) and a
-> recent pull of the kernel.org kernel.
-> 
-> I'd really appreciate help figuring out what this problem is.
+Hello everyone,
 
-Attach straces of your tries.
+Btrfs v0.16 is available for download, please see
+http://btrfs.wiki.kernel.org/ for download links and project
+information.
+
+v0.16 has a shiny new disk format, and is not compatible with
+filesystems created by older Btrfs releases.  But, it should be the
+fastest Btrfs yet, with a wide variety of scalability fixes and new
+features.  
+
+There were quite a few contributors this time around, but big thanks to
+Josef Bacik and Yan Zheng for their help on this release.  Toei Rei also
+helped track down an important corruption problem.
+
+Scalability and performance:
+
+* Fine grained btree locking.  The large fs_mutex is finally gone.
+There is still some work to do on the locking during extent allocation,
+but the code is much more scalable than it was.
+
+* Helper threads for checksumming and other background tasks.  Most CPU
+intensive operations have been pushed off to helper threads to take
+advantage of SMP machines.  Streaming read and write throughput now
+scale to disk speed even with checksumming on.
+
+* Improved data=ordered mode.  Metadata is now updated only after all
+the blocks in a data extent are on disk.  This allows btrfs to provide
+data=ordered semantics without waiting for all the dirty data in the FS
+to flush at commit time.  fsync and O_SYNC writes do not force down all
+the dirty data in the FS.
+
+* Faster cleanup of old transactions (Yan Zheng).  A new cache now
+dramatically reduces the amount of IO required to clean up and delete
+old snapshots.
+
+Major features (all from Josef Bacik):
+
+* ACL support.  ACLs are enabled by default, no special mount options
+required.
+
+* Orphan inode prevention, no more lost files after a crash
+
+* New directory index format, fixing some suboptimal corner cases in the
+original.
+
+There are still more disk format changes planned, but we're making every
+effort to get them out of the way as quickly as we can.  You can see the
+major features we have planned on the development timeline:
+
+http://btrfs.wiki.kernel.org/index.php/Development_timeline
+
+A few interesting statistics:
+
+Between v0.14 and v0.15:
+
+42 files changed, 6995 insertions(+), 3011 deletions(-)
+
+The btrfs kernel module now weighs in at 30,000 LOC, which means we're
+getting very close to the size of ext[34].
+
+-chris
+
+
+
