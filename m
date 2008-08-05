@@ -1,50 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762949AbYHEXie@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759896AbYHEXiu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762949AbYHEXie (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 19:38:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761683AbYHEXiV
+	id S1759896AbYHEXiu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 19:38:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761774AbYHEXiX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 19:38:21 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:60484 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757785AbYHEXiI (ORCPT
+	Tue, 5 Aug 2008 19:38:23 -0400
+Received: from toronto-hs-216-138-233-67.s-ip.magma.ca ([216.138.233.67]:49467
+	"HELO yow.seanm.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1758237AbYHEXiJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 19:38:08 -0400
-Date: Wed, 6 Aug 2008 00:37:43 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Greg KH <greg@kroah.com>
-Cc: "Press, Jonathan" <Jonathan.Press@ca.com>, Theodore Tso <tytso@mit.edu>,
-       Arjan van de Ven <arjan@infradead.org>, Eric Paris <eparis@redhat.com>,
-       linux-kernel@vger.kernel.org, malware-list@lists.printk.net,
-       linux-security-module@vger.kernel.org
-Subject: Re: [malware-list] [RFC 0/5] [TALPA] Intro
-	toalinuxinterfaceforonaccess scanning
-Message-ID: <20080805233743.GK28946@ZenIV.linux.org.uk>
-References: <2629CC4E1D22A64593B02C43E85553030480743B@USILMS12.ca.com> <20080805181141.GA10700@kroah.com> <2629CC4E1D22A64593B02C43E85553030480743F@USILMS12.ca.com> <20080805185438.GA8453@mit.edu> <2629CC4E1D22A64593B02C43E855530304AE4ADB@USILMS12.ca.com> <20080805211445.GA28304@kroah.com> <2629CC4E1D22A64593B02C43E855530304AE4ADC@USILMS12.ca.com> <20080805214415.GA5830@kroah.com> <2629CC4E1D22A64593B02C43E855530303E21D47@USILMS12.ca.com> <20080805222638.GA6395@kroah.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080805222638.GA6395@kroah.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Tue, 5 Aug 2008 19:38:09 -0400
+Date: Tue, 5 Aug 2008 19:38:08 -0400
+From: Sean MacLennan <smaclennan@pikatech.com>
+To: <benh@kernel.crashing.org>
+Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Karsten Keil" <kkeil@suse.de>,
+       "Andreas.Eversberg" <Andreas.Eversberg@versatel.de>,
+       <isdn4linux@listserv.isdn4linux.de>, <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 3/4] Fix remaining big endian issue of hfcmulti
+Message-ID: <20080805193808.40650f30@lappy.seanm.ca>
+In-Reply-To: <1217977459.24157.210.camel@pasglop>
+References: <20080802151532.DE017A3C09@pingi.kke.suse.de>
+	<1217910588.24157.151.camel@pasglop>
+	<20080805113111.GA6827@pingi.kke.suse.de>
+	<1217941466.24157.190.camel@pasglop>
+	<20080805172549.GA6052@pingi.kke.suse.de>
+	<alpine.LFD.1.10.0808051140250.3257@nehalem.linux-foundation.org>
+	<20080805210239.GB6052@pingi.kke.suse.de>
+	<20080805172324.45853d98@lappy.seanm.ca>
+	<alpine.LFD.1.10.0808051435260.3257@nehalem.linux-foundation.org>
+	<20080805175937.49a5ba32@lappy.seanm.ca>
+	<1217977459.24157.210.camel@pasglop>
+Organization: PIKA
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.9; i686-pc-linux-gnu)
+X-Message-Flag: Warning: This message may contain actual content.
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 05, 2008 at 03:26:38PM -0700, Greg KH wrote:
-> On Tue, Aug 05, 2008 at 06:12:34PM -0400, Press, Jonathan wrote:
-> > Sorry for the top-post... but I give up.
-> >  
-> > I don't think I'm stupid, but frankly I don't understand the point of
-> > the questions being asked in the last three responses to my statement.
-> > I don't know why they are relevant, and I don't know how to answer
-> > them in a framework that we can all understand at the same time.
+On Wed, 06 Aug 2008 09:04:18 +1000
+"Benjamin Herrenschmidt" <benh@kernel.crashing.org> wrote:
 
-Excuse me?  One of those questions had been a very specific yes-or-no one
-and I certainly hope that we all can understand either answer to such...
+> If the size of the binary (or performances) involved in doing the two
+> type of IOs in a single driver is such that having the ability to
+> only use one is worth it (for embedded for example), then you can
+> provide a config option that allows to select which method to build
+> in the driver, but it's a good idea to allow building both with
+> runtime detection.
 
-For the record, the question is
+Fair enough. I can agree to that.
 
-"Do you or do you not expect the malware to be active on scanning host?"
-
-I hope that relevance of that to the analysis of software involved in
-scanning should be obvious.
+Cheers,
+  Sean
