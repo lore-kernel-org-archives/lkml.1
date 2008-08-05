@@ -1,72 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763644AbYHEUHY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763294AbYHEULb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763644AbYHEUHY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 16:07:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761649AbYHEUGt
+	id S1763294AbYHEULb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 16:11:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758688AbYHEULY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 16:06:49 -0400
-Received: from g5t0007.atlanta.hp.com ([15.192.0.44]:8355 "EHLO
-	g5t0007.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758395AbYHEUGr (ORCPT
+	Tue, 5 Aug 2008 16:11:24 -0400
+Received: from nf-out-0910.google.com ([64.233.182.189]:36598 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752257AbYHEULX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 16:06:47 -0400
-Subject: Re: [PATCH] serial 8250: tighten test for using backup timer
-From: Alex Williamson <alex.williamson@hp.com>
-To: Will Newton <will.newton@gmail.com>
-Cc: linux-serial <linux-serial@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Thomas Koeller <thomas@koeller.dyndns.org>
-In-Reply-To: <87a5b0800808050444t49480549t758f954c40139c4a@mail.gmail.com>
-References: <1205945437.6881.13.camel@lappy>
-	 <87a5b0800808050444t49480549t758f954c40139c4a@mail.gmail.com>
-Content-Type: text/plain
-Organization: HP OSLO R&D
-Date: Tue, 05 Aug 2008 14:06:43 -0600
-Message-Id: <1217966803.17091.72.camel@2710p.home>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
+	Tue, 5 Aug 2008 16:11:23 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=dYKjln7d4wRKdY9maiQnG48I1+8tsS05xU0stpehAvVyOICyJk2pn5A3RLU9wtjcLz
+         o7R0InWTZ9Zxp4/RsjmuQEcsNzbnSJVmvs69ZnKUbs3MpIlO4Bo576+iZ2X5a9j+Hh9V
+         J+rD2QQtJLEZjM8hLhl8hQnuy+qrPdvSjYVfg=
+Date: Wed, 6 Aug 2008 00:10:36 +0400
+From: Alexander Beregalov <a.beregalov@gmail.com>
+To: mfasheh@suse.com, joel.becker@oracle.com, ocfs2-devel@oss.oracle.com,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] ocfs2/cluster/netdebug.c: fix warning
+Message-ID: <20080805201036.GC17320@orion>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Will,
+From: Alexander Beregalov <a.beregalov@gmail.com>
 
-On Tue, 2008-08-05 at 12:44 +0100, Will Newton wrote:
-> Hi,
-> 
-> Sorry to not have picked up on this earlier, but this change seems to
-> break an old DesignWare UART I have in an SoC here. It has a number of
-> known issues, one of which is it does not appropriately reassert THRE.
-> 
-> What seems to happen is that the first time the port is opened the
-> code tests for incorrect reassertion of THRE and correctly sets up the
-> backup timer. The port is closed and subsequently reopened and this
-> time around the new logic prevents the backup timer from being
-> enabled. I'm not 100% sure of the details of the bug that is being
-> worked around here, but it appears that the second time the port is
-> opened it is not possible to detect the bug because the previous THRE
-> condition has already been acknowledged.
-> 
-> The attached patch fixes the problem for me and attempts to preserve
-> the new behaviour at the same time. Comments?
+ocfs2/cluster/netdebug.c: fix warning
 
-It would be nice if there was a simple procedure we could do on the UART
-to reset it to a state so the test works repeatedly.  However, with all
-the buggy UARTs out there, that could end up disturbing someone else.
+fs/ocfs2/cluster/netdebug.c:154: warning: format '%lu' expects
+	type 'long unsigned int', but argument 17 has type 'suseconds_t'
 
-This change works for me, though it is using up a bit in the bugs field;
-not that we seem to be allocating them at any great rate.  I think it
-would be worthy of a comment in the code to understand why this new
-block exists outside the test so we don't need to refer back to the
-commit changeset.
 
-Acked-by: Alex Williamson <alex.williamson@hp.com>
+Signed-off-by: Alexander Beregalov <a.beregalov@gmail.com>
+---
 
-Thanks, Alex
+ fs/ocfs2/cluster/netdebug.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
--- 
-Alex Williamson                             HP Open Source & Linux Org.
-
+diff --git a/fs/ocfs2/cluster/netdebug.c b/fs/ocfs2/cluster/netdebug.c
+index d8bfa0e..cdc0ed2 100644
+--- a/fs/ocfs2/cluster/netdebug.c
++++ b/fs/ocfs2/cluster/netdebug.c
+@@ -151,7 +151,7 @@ static int nst_seq_show(struct seq_file *seq, void *v)
+ 			   nst->st_send_time.tv_sec,
+ 			   (unsigned long)nst->st_send_time.tv_usec,
+ 			   nst->st_status_time.tv_sec,
+-			   nst->st_status_time.tv_usec);
++			   (unsigned long)nst->st_status_time.tv_usec);
+ 	}
+ 
+ 	spin_unlock(&o2net_debug_lock);
