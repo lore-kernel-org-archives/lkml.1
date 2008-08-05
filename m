@@ -1,64 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761524AbYHEPjA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761583AbYHEPjd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761524AbYHEPjA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 11:39:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761384AbYHEPip
+	id S1761583AbYHEPjd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 11:39:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759786AbYHEPjW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 11:38:45 -0400
-Received: from mail-out.m-online.net ([212.18.0.9]:49838 "EHLO
-	mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761281AbYHEPin (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 11:38:43 -0400
-X-Auth-Info: QgylhOFiHLFFuwzbBPRXZ2gaEktQVto0gaSHB1nNzJQ=
-X-Auth-Info: D4M4+GlHcr/4nEXhtMCYf3iIixw7BxIvN9SbHqUUQtA=
-X-Auth-Info: D4M4+GlHcr/4nEXhtMCYf3iIixw7BxIvN9SbHqUUQtA=
-X-Auth-Info: D4M4+GlHcr/4nEXhtMCYf3iIixw7BxIvN9SbHqUUQtA=
-X-Auth-Info: D4M4+GlHcr/4nEXhtMCYf3iIixw7BxIvN9SbHqUUQtA=
-X-Auth-Info: D4M4+GlHcr/4nEXhtMCYf3iIixw7BxIvN9SbHqUUQtA=
-X-Auth-Info: D4M4+GlHcr/4nEXhtMCYf3iIixw7BxIvN9SbHqUUQtA=
-Message-ID: <48987486.6010100@grandegger.com>
-Date: Tue, 05 Aug 2008 17:40:54 +0200
-From: Wolfgang Grandegger <wg@grandegger.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Tue, 5 Aug 2008 11:39:22 -0400
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:39774 "EHLO smtp6.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759725AbYHEPjU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Aug 2008 11:39:20 -0400
+Date: Tue, 5 Aug 2008 18:37:57 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: "John W. Linville" <linville@tuxdriver.com>, linux-next@vger.kernel.org,
+       David Miller <davem@davemloft.net>, LKML <linux-kernel@vger.kernel.org>,
+       "Luis R. Rodriguez" <lrodriguez@atheros.com>
+Subject: Re: linux-next: wireless-current tree build failure
+Message-ID: <20080805153757.GB22895@cs181140183.pp.htv.fi>
+References: <20080805162152.2b55ae5c.sfr@canb.auug.org.au>
 MIME-Version: 1.0
-To: paulmck@linux.vnet.ibm.com
-CC: Steven Rostedt <rostedt@goodmis.org>, Luotao Fu <l.fu@pengutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>,
-       RT <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: 2.6.24-rc8-rt1: Strange latencies on mpc5200 powerpc - RCU	issue?
-References: <20080130010716.GB16069@linux.vnet.ibm.com> <47A032E9.4080105@grandegger.com> <20080130102255.GA24890@linux.vnet.ibm.com> <47A0552D.20605@grandegger.com> <20080130105715.GE24890@linux.vnet.ibm.com> <20080130111559.GC20089@pengutronix.de> <486A3EBB.6030905@grandegger.com> <Pine.LNX.4.58.0807011036510.26650@gandalf.stny.rr.com> <486A573E.60107@grandegger.com> <486B607F.9040903@grandegger.com> <20080801210913.GC14851@linux.vnet.ibm.com>
-In-Reply-To: <20080801210913.GC14851@linux.vnet.ibm.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20080805162152.2b55ae5c.sfr@canb.auug.org.au>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul E. McKenney wrote:
-> On Wed, Jul 02, 2008 at 01:03:27PM +0200, Wolfgang Grandegger wrote:
->> Wolfgang Grandegger wrote:
->>> Steven Rostedt wrote:
->>> There seems to be something in trace_mark() keeping latency low:
->>>   http://lxr.linux.no/linux+v2.6.24.4/include/linux/marker.h#L52
->>> I will follow your suggestions.
->> I removed all "likely" and "unlikely" macros, but the latencies did not 
->> improve. Then I added
->>
->> 	preempt_disable();
->> 	preempt_enable();
->>
->> at the two locations mentioned above, like trace_mark() does,  and disabled 
->> CONFIG_RCU_TRACE. That helped to keep the latencies low, and it did for 
->> 2.6.25.8-rt7 as well. As I see it, adding preemption points seem to prevent 
->> high latencies.
+On Tue, Aug 05, 2008 at 04:21:52PM +1000, Stephen Rothwell wrote:
+> Hi John,
 > 
-> Interesting.  Perhaps a preempt_enable_no_resched() somewhere that
-> should be preempt_enable()?
+> Today's linux-next build (powerpc allyesconfig) failed like this:
+> 
+> drivers/net/wireless/ath9k/hw.c: In function 'ath9k_hw_9280_spur_mitigate':
+> drivers/net/wireless/ath9k/hw.c:4660: internal compiler error: in expand_expr_real_1, at expr.c:9199
+> 
+> Clearly not our fault! :-) I have informed our toolchain person.  This
+> was using the Debian gcc-4.3.  It also fails using the Debian 4.2
+> compiler but not the 4.1 one.
+>...
 
-FYI, Thomas fixed the real problem a week ago and the patch went into 
-2.6.24.7-rt16. See his mail with the subject "2.6.24.7-rt16".
+Alexandros Couloumbis already opened a bug for this issue on mips, which 
+also seems to be affected:
+  http://gcc.gnu.org/bugzilla/show_bug.cgi?id=37014
 
-Wolfgang.
+It is a gcc bug, but we'll have to work around it in the ath9k driver.
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
