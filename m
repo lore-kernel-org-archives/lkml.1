@@ -1,53 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761456AbYHEQMm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760407AbYHEQNK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761456AbYHEQMm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 12:12:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755655AbYHEQMe
+	id S1760407AbYHEQNK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 12:13:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755655AbYHEQMx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 12:12:34 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:40314 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752452AbYHEQMd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 12:12:33 -0400
-Subject: Re: [RFC] [PATCH 0/5 V2] Huge page backed user-space stacks
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: Andrew Morton <akpm@linux-foundation.org>, ebmunson@us.ibm.com,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, libhugetlbfs-devel@lists.sourceforge.net,
-       abh@cray.com
-In-Reply-To: <20080805111147.GD20243@csn.ul.ie>
-References: <cover.1216928613.git.ebmunson@us.ibm.com>
-	 <20080730014308.2a447e71.akpm@linux-foundation.org>
-	 <20080730172317.GA14138@csn.ul.ie>
-	 <20080730103407.b110afc2.akpm@linux-foundation.org>
-	 <20080730193010.GB14138@csn.ul.ie>
-	 <20080730130709.eb541475.akpm@linux-foundation.org>
-	 <20080731103137.GD1704@csn.ul.ie> <1217884211.20260.144.camel@nimitz>
-	 <20080805111147.GD20243@csn.ul.ie>
-Content-Type: text/plain
-Date: Tue, 05 Aug 2008 09:12:28 -0700
-Message-Id: <1217952748.10907.18.camel@nimitz>
+	Tue, 5 Aug 2008 12:12:53 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:52050 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756218AbYHEQMw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Aug 2008 12:12:52 -0400
+Date: Tue, 5 Aug 2008 09:12:29 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: alois.klingler@chello.at
+Cc: Ondrej Zajicek <santiago@crfreenet.org>, MadLoisae@gmx.net,
+       Alexey Dobriyan <adobriyan@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-fbdev-devel@lists.sourceforge.net
+Subject: Re: kernel oops with framebuffer device vt8623fb
+Message-Id: <20080805091229.a613d423.akpm@linux-foundation.org>
+In-Reply-To: <489836D3.2050008@chello.at>
+References: <487E2911.5090701@gmx.net>
+	<20080717013917.GA1695@localhost.localdomain>
+	<20080728204817.ebaa621b.akpm@linux-foundation.org>
+	<489836D3.2050008@chello.at>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-08-05 at 12:11 +0100, Mel Gorman wrote:
-> See, that's great until you start dealing with MAP_SHARED|MAP_ANONYMOUS.
-> To get that right between children, you end up something very fs-like
-> when the child needs to fault in a page that is already populated by the
-> parent. I strongly suspect we end up back at hugetlbfs backing it :/
+On Tue, 05 Aug 2008 13:17:39 +0200 "alois.klingler@chello.at" <alois.klingler@chello.at> wrote:
 
-Yeah, but the case I'm worried about is plain anonymous.  We already
-have the fs to back SHARED|ANONYMOUS, and they're not really
-anonymous. :)
+> 
+> Andrew Morton wrote:
+> > On Thu, 17 Jul 2008 03:39:18 +0200 Ondrej Zajicek <santiago@crfreenet.org> wrote:
+> >
+> >   
+> >> On Wed, Jul 16, 2008 at 07:00:02PM +0200, MadLoisae@gmx.net wrote:
+> >>     
+> >>> Hi!
+> >>>
+> >>> I've updated my machine from 2.6.25.11 to 2.6.26 and I think I've found 
+> >>> a problem.
+> >>>
+> >>> If I load the module vt8623fb i get a kernel oops, if the VIA 8623 
+> >>> display framebuffer driver is compiled direct into kernel the system 
+> >>> hangs up very early at booting the kernel.
+> >>>       
+> >> I am sorry for mistake, here is a patch for 2.6.26 fixing the bug:
+> >>
+> >> Signed-off-by: Ondrej Zajicek <santiago@crfreenet.org>
+> >>     
+> >
+> > I went back through the email thread and wrote your changelog for you. 
+> > Not a very good one though.
+> >
+> > It would be better were you to write your changelogs, please.
+> >
+>
+> Hi!
+> 
+> This issue is still not fixed in 2.6.26.1 - may be there a way to commit 
+> it in 2.6.26.2?
+> 
+> Still, the provided patch I got on 07/17/2008 works great ...
+> 
+> Thanks, anyway!
+> 
+> kind regards, Alois
+> 
 
-This patch *really* needs anonymous pages, and it kinda shoehorns them
-in with the filesystem.  Stacks aren't shared at all, so this is a
-perfect example of where we can forget the fs, right?
+(top-posting repaired)
 
--- Dave
-
+The fix will be in my next batch for Linus.  It'll be merged this week.
