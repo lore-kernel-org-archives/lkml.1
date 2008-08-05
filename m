@@ -1,89 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764374AbYHEUkA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764271AbYHEUl2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764374AbYHEUkA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 16:40:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762319AbYHEUjw
+	id S1764271AbYHEUl2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 16:41:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762729AbYHEUlT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 16:39:52 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:35782 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757222AbYHEUjv (ORCPT
+	Tue, 5 Aug 2008 16:41:19 -0400
+Received: from casper.infradead.org ([85.118.1.10]:60799 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758116AbYHEUlS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 16:39:51 -0400
-Date: Tue, 5 Aug 2008 13:32:16 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Gerald Schaefer <gerald.schaefer@de.ibm.com>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       linux-s390@vger.kernel.org, schwidefsky@de.ibm.com,
-       heiko.carstens@de.ibm.com, nacc@us.ibm.com, agl@us.ibm.com
-Subject: Re: [PATCH] hugetlb: call arch_prepare_hugepage() for surplus pages
-Message-Id: <20080805133216.cc5c14cf.akpm@linux-foundation.org>
-In-Reply-To: <1217950147.5032.15.camel@localhost.localdomain>
-References: <1217950147.5032.15.camel@localhost.localdomain>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Tue, 5 Aug 2008 16:41:18 -0400
+Date: Tue, 5 Aug 2008 13:41:10 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Eric Paris <eparis@redhat.com>, "Press, Jonathan" <Jonathan.Press@ca.com>,
+       Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
+       malware-list@lists.printk.net, linux-security-module@vger.kernel.org
+Subject: Re: [malware-list] [RFC 0/5] [TALPA] Intro to a linux
+ interfaceforon access scanning
+Message-ID: <20080805134110.781b1c4a@infradead.org>
+In-Reply-To: <20080805211243.382a878b@lxorguk.ukuu.org.uk>
+References: <1217883616.27684.19.camel@localhost.localdomain>
+	<20080804223249.GA10517@kroah.com>
+	<1217896374.27684.53.camel@localhost.localdomain>
+	<2629CC4E1D22A64593B02C43E855530304807431@USILMS12.ca.com>
+	<1217948212.27684.120.camel@localhost.localdomain>
+	<2629CC4E1D22A64593B02C43E855530304807436@USILMS12.ca.com>
+	<1217956796.11547.12.camel@paris.rdu.redhat.com>
+	<20080805103840.1aaa64a5@infradead.org>
+	<20080805182944.262f20d7@lxorguk.ukuu.org.uk>
+	<20080805110221.57e4b46c@infradead.org>
+	<20080805211243.382a878b@lxorguk.ukuu.org.uk>
+Organization: Intel
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 05 Aug 2008 17:29:07 +0200
-Gerald Schaefer <gerald.schaefer@de.ibm.com> wrote:
+On Tue, 5 Aug 2008 21:12:43 +0100
+Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
 
-> From: Gerald Schaefer <gerald.schaefer@de.ibm.com>
+> > this is post-compromise scenario; if you have enough root rights to
+> > do that then it's game over.
 > 
-> The s390 software large page emulation implements shared page tables
-> by using page->index of the first tail page from a compound large page
-> to store page table information. This is set up in arch_prepare_hugepage(),
-> which is called from alloc_fresh_huge_page_node().
-> 
-> A similar call to arch_prepare_hugepage() is missing for surplus large
-> pages that are allocated in alloc_buddy_huge_page(), which breaks the
-> software emulation mode for (surplus) large pages on s390. This patch
-> adds the missing call to arch_prepare_hugepage(). It will have no effect
-> on other architectures where arch_prepare_hugepage() is a nop.
-> 
-> Acked-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
-> Signed-off-by: Gerald Schaefer <gerald.schaefer@de.ibm.com>
-> ---
-> 
->  mm/hugetlb.c |    7 ++++++-
->  1 file changed, 6 insertions(+), 1 deletion(-)
-> 
-> Index: linux/mm/hugetlb.c
-> ===================================================================
-> --- linux.orig/mm/hugetlb.c
-> +++ linux/mm/hugetlb.c
-> @@ -565,7 +565,7 @@ static struct page *alloc_fresh_huge_pag
->  		huge_page_order(h));
->  	if (page) {
->  		if (arch_prepare_hugepage(page)) {
-> -			__free_pages(page, HUGETLB_PAGE_ORDER);
-> +			__free_pages(page, huge_page_order(h));
+> You still want to know if you spot this. And the root rights thing
+> assumes no selinux. For a large case of uses I would agree however.
 
-As Nick pointed out, this is an unrelated bugfix.  I changelogged it. 
-Really it should have been two patches.
+if selinux wouldn't stop a "not really root" root from writing to ld.so
+stuff you have a different problem ;-)
 
->  			return NULL;
->  		}
->  		prep_new_huge_page(h, page, nid);
-> @@ -665,6 +665,11 @@ static struct page *alloc_buddy_huge_pag
->  					__GFP_REPEAT|__GFP_NOWARN,
->  					huge_page_order(h));
->  
-> +	if (page && arch_prepare_hugepage(page)) {
-> +		__free_pages(page, huge_page_order(h));
-> +		return NULL;
-> +	}
-> +
->  	spin_lock(&hugetlb_lock);
->  	if (page) {
->  		/*
 
-afaict the second fix is needed in 2.6.26.x (but not 2.6.25.x), but
-this patch is not applicable to 2.6.26.x.
-
-So if you want this fix to be backported into 2.6.26.x, please send a
-suitable version of it to stable@kernel.org.
-
+-- 
+If you want to reach me at my work email, use arjan@linux.intel.com
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
