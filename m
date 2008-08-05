@@ -1,47 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758729AbYHEL3r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760895AbYHELbZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758729AbYHEL3r (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 07:29:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760357AbYHEL3h
+	id S1760895AbYHELbZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 07:31:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758170AbYHELbR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 07:29:37 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:57202 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756337AbYHEL3f (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 07:29:35 -0400
-Date: Tue, 5 Aug 2008 05:28:14 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Simon Horman <horms@verge.net.au>
-Cc: Sven Wegener <sven.wegener@stealer.net>,
-       Michael Ellerman <michael@ellerman.id.au>, linux-kernel@vger.kernel.org,
-       linux-pci@vger.kernel.org, Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: [patch] PCI: check the return value of device_create_bin_file() in pci_create_bus()
-Message-ID: <20080805112814.GO26461@parisc-linux.org>
-References: <20080805101605.GA19382@verge.net.au> <1217932416.7758.4.camel@localhost> <20080805101605.GA19382@verge.net.au> <alpine.LNX.1.10.0808051224350.5671@titan.stealer.net> <20080805110006.GA13409@verge.net.au> <20080805111406.GA13899@verge.net.au>
-MIME-Version: 1.0
+	Tue, 5 Aug 2008 07:31:17 -0400
+Received: from ns2.suse.de ([195.135.220.15]:34107 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757298AbYHELbO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Aug 2008 07:31:14 -0400
+Date: Tue, 5 Aug 2008 13:31:11 +0200
+From: Karsten Keil <kkeil@suse.de>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, isdn4linux@listserv.isdn4linux.de
+Subject: Re: [PATCH 3/4] Fix remaining big endian issue of hfcmulti
+Message-ID: <20080805113111.GA6827@pingi.kke.suse.de>
+References: <20080802151532.DE017A3C09@pingi.kke.suse.de> <1217910588.24157.151.camel@pasglop>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080805111406.GA13899@verge.net.au>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <1217910588.24157.151.camel@pasglop>
+Organization: SuSE Linux AG
+X-Operating-System: Linux 2.6.16.54-0.2.5-smp x86_64
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 05, 2008 at 09:14:07PM +1000, Simon Horman wrote:
-> Check the return value of device_create_bin_file in pci_create_bus,
-> unwind if necessary, and propagate any errors to the caller.
+On Tue, Aug 05, 2008 at 02:29:48PM +1000, Benjamin Herrenschmidt wrote:
+> On Sat, 2008-08-02 at 16:35 +0200, Karsten Keil wrote:
+> > The driver was not so bad at big endian at all, only the optimised fifo
+> > read/write functions need a fix, with this fix the driver works on
+> > a pegasus PPC machine.
+> 
+> This is however very broken... IE, you should instead use iomap
+> and thus get ioreadXX_rep() and writeXX_rep() (XX = 16 or 32) that
+> will do the right thing for you. IE, they will do the right amount
+> of memory barriers and will avoid the unnecessary double-swapping
+> you are doing there.
+> 
 
-Yes, but you're essentially saying here that if I can't create a couple
-of poxy sysfs files, I can't have this PCI bus at all?  This seems like
-a bad decision to me.  I'd rather have a PCI bus without the files than
-no PCI bus at all.  By all means, we should whinge mightily if we can't
-create the files so the sysadmin has a chance of figuring out why things
-aren't quite working right, but I might have my root filesystem on a
-device on that PCI bus.
+Thanks for this hint, I didn't know that the repetive versions are
+for byte streams and not for eg. transfer of multiple u32.
+So it makes things lot easier the code should look like:
+
+	int l = len >> 2;
+
+	if (l) {
+		ioread32_rep(hc->pci_membase + A_FIFO_DATA0, data, l);
+		data += l << 2;
+	}
+	if (len & 2) {
+		ioread16_rep(hc->pci_membase + A_FIFO_DATA0, data, 1);
+		data += 2;
+	}
+	if (len & 1)
+		writeb(*data, hc->pci_membase + A_FIFO_DATA0);
 
 -- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+Karsten Keil
+SuSE Labs
+ISDN and VOIP development
+SUSE LINUX Products GmbH, Maxfeldstr.5 90409 Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
