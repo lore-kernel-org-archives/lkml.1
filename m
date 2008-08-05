@@ -1,46 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761490AbYHEMSh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761399AbYHEMUn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761490AbYHEMSh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 08:18:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757556AbYHEMSK
+	id S1761399AbYHEMUn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 08:20:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758442AbYHEMUe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 08:18:10 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:51149 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754626AbYHEMSJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 08:18:09 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: David Miller <davem@davemloft.net>
-Subject: Re: BUG: scheduling while atomic: ip/23212/0x00000102
-Date: Tue, 5 Aug 2008 14:20:39 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: jbarnes@virtuousgeek.org, arekm@maven.pl, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-References: <200808050153.23537.rjw@sisk.pl> <200808051117.28824.rjw@sisk.pl> <20080805.023734.156470524.davem@davemloft.net>
-In-Reply-To: <20080805.023734.156470524.davem@davemloft.net>
+	Tue, 5 Aug 2008 08:20:34 -0400
+Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:57214
+	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757556AbYHEMUe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Aug 2008 08:20:34 -0400
+Date: Tue, 5 Aug 2008 14:20:24 +0200
+From: Andrea Arcangeli <andrea@qumranet.com>
+To: Roland Dreier <rdreier@cisco.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Dave Jones <davej@redhat.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, jeremy@goop.org, hugh@veritas.com,
+       mingo@elte.hu, akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       arjan <arjan@infradead.org>
+Subject: Re: [PATCH] workaround minor lockdep bug triggered by
+	mm_take_all_locks
+Message-ID: <20080805122024.GK12464@duo.random>
+References: <20080804172728.GJ11476@duo.random> <20080804174659.GK11476@duo.random> <20080804175730.GL11476@duo.random> <1217875739.3589.56.camel@twins> <20080804201514.GB12464@duo.random> <1217882242.3589.90.camel@twins> <20080804210954.GC12464@duo.random> <adar694rzks.fsf@cisco.com> <20080805021812.GI12464@duo.random> <adak5evsm9s.fsf@cisco.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200808051420.40032.rjw@sisk.pl>
+In-Reply-To: <adak5evsm9s.fsf@cisco.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, 5 of August 2008, David Miller wrote:
-> From: "Rafael J. Wysocki" <rjw@sisk.pl>
-> Date: Tue, 5 Aug 2008 11:17:28 +0200
+On Tue, Aug 05, 2008 at 05:02:07AM -0700, Roland Dreier wrote:
+> check_deadlock operates on classes of locks, so it can warn about
+> potential deadlocks, eg if we have
 > 
-> > Okay, but tg3 evidently wants to set the power state to D0 under a spinlock
-> > (without the delay required by the PCI PM spec, but well).
+> 	foo(obj1, obj2)
+> 	{
+> 		lock(obj1);
+> 		lock(obj2);
+> 		...
 > 
-> Please read the rest of your inbox, we found a way to fix
-> tg3 to not need to call this under a lock.
+> then foo(obj, obj); is a deadlock but lockdep can warn about foo(obj,
+> different_obj) without triggering the deadlock in reality.  Of course
+> this leads to false positives, and we sometimes have to change correct
+> code to help lockdep, but usually such rewriting leads to simpler
+> clearer better locking anyway.
 
-Thanks a lot, I've just read the message.
-
-[For the information of the people who are not subscribed to netdev, the fix
-patch is at http://marc.info/?l=linux-netdev&m=121791046925274&w=2]
-
-Rafael
+It surely doesn't lead to simpler and clearer better locking in the
+case we're discussing here, and I don't know of other cases where it
+leads to better locking but feel free to make examples.
