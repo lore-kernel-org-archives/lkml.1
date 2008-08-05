@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763567AbYHEUPI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763664AbYHEUPd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763567AbYHEUPI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 16:15:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763520AbYHEUO3
+	id S1763664AbYHEUPd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 16:15:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763558AbYHEUO3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Tue, 5 Aug 2008 16:14:29 -0400
-Received: from saraswathi.solana.com ([198.99.130.12]:48068 "EHLO
+Received: from saraswathi.solana.com ([198.99.130.12]:48071 "EHLO
 	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763506AbYHEUO1 (ORCPT
+	with ESMTP id S1761998AbYHEUO2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 16:14:27 -0400
-Date: Tue, 5 Aug 2008 16:14:03 -0400
+	Tue, 5 Aug 2008 16:14:28 -0400
+Date: Tue, 5 Aug 2008 16:14:05 -0400
 From: Jeff Dike <jdike@addtoit.com>
 To: stable@kernel.org
 Cc: LKML <linux-kernel@vger.kernel.org>,
        uml-devel <user-mode-linux-devel@lists.sourceforge.net>
-Subject: [PATCH 2/14] uml: fix bad NTP interaction with clock
-Message-ID: <20080805201403.GA11734@c2.user-mode-linux.org>
+Subject: [PATCH 4/14] uml: track and make up lost ticks
+Message-ID: <20080805201405.GA11784@c2.user-mode-linux.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -25,47 +25,159 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From cfd28f6695d0fc047478480791a21bdd4967f98e
+>From fe2cc53ee013a4d4d0317d418e7019fe6533a5a8
+Alarm delivery could be noticably late in the !CONFIG_NOHZ case because lost
+ticks weren't being taken into account.  This is now treated more carefully,
+with the time between ticks being calculated and the appropriate number of
+ticks delivered to the timekeeping system.
 
-UML's supposed nanosecond clock interacts badly with NTP when NTP
-decides that the clock has drifted ahead and needs to be slowed down.
-Slowing down the clock is done by decrementing the cycle-to-nanosecond
-multiplier, which is 1.  Decrementing that gives you 0 and time is
-stopped.
-
-This is fixed by switching to a microsecond clock, with a multiplier
-of 1000.
-
+Cc: Nix <nix@esperi.org.uk>
 Signed-off-by: Jeff Dike <jdike@linux.intel.com>
-Cc: WANG Cong <xiyou.wangcong@gmail.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 ---
- arch/um/kernel/time.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ arch/um/include/process.h |    4 +-
+ arch/um/os-Linux/signal.c |    1 +
+ arch/um/os-Linux/time.c   |   54 +++++++++++++++++++++++++++++++++++++++++---
+ 3 files changed, 53 insertions(+), 6 deletions(-)
 
-diff --git a/arch/um/kernel/time.c b/arch/um/kernel/time.c
-index e066e84..5036c81 100644
---- a/arch/um/kernel/time.c
-+++ b/arch/um/kernel/time.c
-@@ -74,7 +74,7 @@ static irqreturn_t um_timer(int irq, void *dev)
+diff --git a/arch/um/include/process.h b/arch/um/include/process.h
+index 5af9157..348f8a3 100644
+--- a/arch/um/include/process.h
++++ b/arch/um/include/process.h
+@@ -8,8 +8,8 @@
  
- static cycle_t itimer_read(void)
+ #include <signal.h>
+ 
+-extern void sig_handler(int sig, struct sigcontext sc);
+-extern void alarm_handler(int sig, struct sigcontext sc);
++extern void sig_handler(int sig, struct sigcontext *sc);
++extern void alarm_handler(int sig, struct sigcontext *sc);
+ 
+ #endif
+ 
+diff --git a/arch/um/os-Linux/signal.c b/arch/um/os-Linux/signal.c
+index 3f1694b..5aade60 100644
+--- a/arch/um/os-Linux/signal.c
++++ b/arch/um/os-Linux/signal.c
+@@ -12,6 +12,7 @@
+ #include "as-layout.h"
+ #include "kern_util.h"
+ #include "os.h"
++#include "process.h"
+ #include "sysdep/barrier.h"
+ #include "sysdep/sigcontext.h"
+ #include "user.h"
+diff --git a/arch/um/os-Linux/time.c b/arch/um/os-Linux/time.c
+index e492805..bee98f4 100644
+--- a/arch/um/os-Linux/time.c
++++ b/arch/um/os-Linux/time.c
+@@ -9,7 +9,9 @@
+ #include <time.h>
+ #include <sys/time.h>
+ #include "kern_constants.h"
++#include "kern_util.h"
+ #include "os.h"
++#include "process.h"
+ #include "user.h"
+ 
+ int set_interval(void)
+@@ -58,12 +60,17 @@ static inline long long timeval_to_ns(const struct timeval *tv)
+ long long disable_timer(void)
  {
--	return os_nsecs();
-+	return os_nsecs() / 1000;
+ 	struct itimerval time = ((struct itimerval) { { 0, 0 }, { 0, 0 } });
++	int remain, max = UM_NSEC_PER_SEC / UM_HZ;
+ 
+ 	if (setitimer(ITIMER_VIRTUAL, &time, &time) < 0)
+ 		printk(UM_KERN_ERR "disable_timer - setitimer failed, "
+ 		       "errno = %d\n", errno);
+ 
+-	return timeval_to_ns(&time.it_value);
++	remain = timeval_to_ns(&time.it_value);
++	if (remain > max)
++		remain = max;
++
++	return remain;
  }
  
- static struct clocksource itimer_clocksource = {
-@@ -82,7 +82,7 @@ static struct clocksource itimer_clocksource = {
- 	.rating		= 300,
- 	.read		= itimer_read,
- 	.mask		= CLOCKSOURCE_MASK(64),
--	.mult		= 1,
-+	.mult		= 1000,
- 	.shift		= 0,
- 	.flags		= CLOCK_SOURCE_IS_CONTINUOUS,
- };
+ long long os_nsecs(void)
+@@ -79,7 +86,44 @@ static int after_sleep_interval(struct timespec *ts)
+ {
+ 	return 0;
+ }
++
++static void deliver_alarm(void)
++{
++	alarm_handler(SIGVTALRM, NULL);
++}
++
++static unsigned long long sleep_time(unsigned long long nsecs)
++{
++	return nsecs;
++}
++
+ #else
++unsigned long long last_tick;
++unsigned long long skew;
++
++static void deliver_alarm(void)
++{
++	unsigned long long this_tick = os_nsecs();
++	int one_tick = UM_NSEC_PER_SEC / UM_HZ;
++
++	if (last_tick == 0)
++		last_tick = this_tick - one_tick;
++
++	skew += this_tick - last_tick;
++
++	while (skew >= one_tick) {
++		alarm_handler(SIGVTALRM, NULL);
++		skew -= one_tick;
++	}
++
++	last_tick = this_tick;
++}
++
++static unsigned long long sleep_time(unsigned long long nsecs)
++{
++	return nsecs > skew ? nsecs - skew : 0;
++}
++
+ static inline long long timespec_to_us(const struct timespec *ts)
+ {
+ 	return ((long long) ts->tv_sec * UM_USEC_PER_SEC) +
+@@ -102,6 +146,8 @@ static int after_sleep_interval(struct timespec *ts)
+ 	 */
+ 	if (start_usecs > usec)
+ 		start_usecs = usec;
++
++	start_usecs -= skew / UM_NSEC_PER_USEC;
+ 	tv = ((struct timeval) { .tv_sec  = start_usecs / UM_USEC_PER_SEC,
+ 				 .tv_usec = start_usecs % UM_USEC_PER_SEC });
+ 	interval = ((struct itimerval) { { 0, usec }, tv });
+@@ -113,8 +159,6 @@ static int after_sleep_interval(struct timespec *ts)
+ }
+ #endif
+ 
+-extern void alarm_handler(int sig, struct sigcontext *sc);
+-
+ void idle_sleep(unsigned long long nsecs)
+ {
+ 	struct timespec ts;
+@@ -126,10 +170,12 @@ void idle_sleep(unsigned long long nsecs)
+ 	 */
+ 	if (nsecs == 0)
+ 		nsecs = UM_NSEC_PER_SEC / UM_HZ;
++
++	nsecs = sleep_time(nsecs);
+ 	ts = ((struct timespec) { .tv_sec	= nsecs / UM_NSEC_PER_SEC,
+ 				  .tv_nsec	= nsecs % UM_NSEC_PER_SEC });
+ 
+ 	if (nanosleep(&ts, &ts) == 0)
+-		alarm_handler(SIGVTALRM, NULL);
++		deliver_alarm();
+ 	after_sleep_interval(&ts);
+ }
 -- 
 1.5.5.1
 
