@@ -1,55 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759612AbYHEI0k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760078AbYHEI2e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759612AbYHEI0k (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 04:26:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756251AbYHEI0Z
+	id S1760078AbYHEI2e (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 04:28:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756260AbYHEI2P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 04:26:25 -0400
-Received: from gate.crashing.org ([63.228.1.57]:59262 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755767AbYHEI0X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 04:26:23 -0400
-Subject: Re: [PATCH 10/10] sparc64: use iommu_num_pages function in IOMMU
-	code
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Joerg Roedel <joerg.roedel@amd.com>
-Cc: David Miller <davem@davemloft.net>, akpm@linux-foundation.org,
-       mingo@redhat.com, tglx@linutronix.de, hpa@zytor.com, rth@twiddle.net,
-       paulus@samba.org, fujita.tomonori@lab.ntt.co.jp, muli@il.ibm.com,
+	Tue, 5 Aug 2008 04:28:15 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:53872
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1754593AbYHEI2O (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Aug 2008 04:28:14 -0400
+Date: Tue, 05 Aug 2008 01:28:14 -0700 (PDT)
+Message-Id: <20080805.012814.215633850.davem@davemloft.net>
+To: linville@tuxdriver.com
+Cc: linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
        linux-kernel@vger.kernel.org
-In-Reply-To: <20080805074935.GA32012@amd.com>
-References: <1217865890-3593-1-git-send-email-joerg.roedel@amd.com>
-	 <1217865890-3593-11-git-send-email-joerg.roedel@amd.com>
-	 <20080804.142834.171476315.davem@davemloft.net>
-	 <20080805074935.GA32012@amd.com>
-Content-Type: text/plain
-Date: Tue, 05 Aug 2008 18:23:29 +1000
-Message-Id: <1217924609.24157.170.camel@pasglop>
+Subject: Re: pull request: wireless-2.6 2008-08-04
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20080805021710.GA21731@tuxdriver.com>
+References: <20080804193753.GA30345@tuxdriver.com>
+	<20080804.150147.78586437.davem@davemloft.net>
+	<20080805021710.GA21731@tuxdriver.com>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: "John W. Linville" <linville@tuxdriver.com>
+Date: Mon, 4 Aug 2008 22:17:10 -0400
 
-> I didn't want to change multiple architectures with a single patch so I
-> splitted it up. The whole renaming in the beginning is to make the patch
-> series bisectable. But if its no problem to change multiple
-> architectures with one patch I will those changes in a single patch next
-> time.
+> On Mon, Aug 04, 2008 at 03:01:47PM -0700, David Miller wrote:
+> > I'm holding off on this pull until the list.h changes get so me lkml
+> > ACKs.
+> 
+> Sure, np.  I created a "no-ath9k" branch in case you are feeling
+> frisky -- it is the same except for omitting the list.h changes,
+> the ath5k pci table change, and the new ath9k driver.
+> 
+> 	git://git.kernel.org/pub/scm/linux/kernel/git/linville/wireless-2.6.git no-ath9k
+> 
+> Hth!
 
-I wouldn't say there's a strict rule. It's a balance to find between
-the complexity of the patch, the risk of breaking archs, etc...
+Thanks John.
 
-In your case, the added churn of going through a temporary renamed
-helper represents more, imho, than the risk of breakage of what is
-a fairly trivial patch in the first place. Also, it only affects a few
-archs. So it's simpler or everybody to deal with a single patch even if
-that means it -might- need a rev or two in case it does indeed break
-something...
+Due to the powerpc build failures the list.h stuff causes, I'm going
+to pull this so I can do a push to Linus tonight.
 
-Ben.
-
-
+Although I highly encourare you to get that list.h stuff sorted out
+because I'd really like to see ath9k get merged in as that's a useful
+device to support for a lot of users.
