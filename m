@@ -1,56 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760424AbYHEKBN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761078AbYHEKBc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760424AbYHEKBN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 06:01:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755590AbYHEKA5
+	id S1761078AbYHEKBc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 06:01:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755590AbYHEKBT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 06:00:57 -0400
-Received: from mga10.intel.com ([192.55.52.92]:49757 "EHLO
-	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755042AbYHEKA4 (ORCPT
+	Tue, 5 Aug 2008 06:01:19 -0400
+Received: from fms-01.valinux.co.jp ([210.128.90.1]:54192 "EHLO
+	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1760608AbYHEKBR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 06:00:56 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.31,309,1215414000"; 
-   d="scan'208";a="367965995"
-Subject: Re: [PATCH] Using Intel CRC32 instruction to accelerate CRC32c
-	algorithm by new crypto API.
-From: Austin Zhang <austin_zhang@linux.intel.com>
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: davem@davemloft.net, linux-kernel@vger.kernel.org,
-       linux-crypto@vger.kernel.org
-In-Reply-To: <20080804141916.GC11415@gondor.apana.org.au>
-References: <1217842507.20845.18.camel@localhost.localdomain>
-	 <20080804141916.GC11415@gondor.apana.org.au>
-Content-Type: text/plain
-Date: Tue, 05 Aug 2008 05:59:11 -0400
-Message-Id: <1217930351.1613.4.camel@localhost.localdomain>
+	Tue, 5 Aug 2008 06:01:17 -0400
+Date: Tue, 05 Aug 2008 19:01:13 +0900 (JST)
+Message-Id: <20080805.190113.83913354.taka@valinux.co.jp>
+To: righi.andrea@gmail.com
+Cc: dave@linux.vnet.ibm.com, xen-devel@lists.xensource.com,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       virtualization@lists.linux-foundation.org, dm-devel@redhat.com,
+       agk@sourceware.org
+Subject: Re: Too many I/O controller patches
+From: Hirokazu Takahashi <taka@valinux.co.jp>
+In-Reply-To: <48981E03.5020406@gmail.com>
+References: <48976A2A.9060600@gmail.com>
+	<20080805.151642.31467169.taka@valinux.co.jp>
+	<48981E03.5020406@gmail.com>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-08-04 at 22:19 +0800, Herbert Xu wrote:
-> On Mon, Aug 04, 2008 at 05:35:07AM -0400, Austin Zhang wrote:
-> >
-> > +config CRYPTO_CRC32C_INTEL
-> > +        tristate "CRC32c INTEL hardware acceleration"
-> > +        select CRYPTO_HASH
-> 
-> You need some sort of a dependency here.  See what the other
-> assembly algorithms do it.
-> 
-> Cheers,
-How about:
-+config CRYPTO_CRC32C_INTEL
-+        tristate "CRC32c INTEL hardware acceleration"
-+       depends on X86
-+        select CRYPTO_ALGAPI
-+        help
-+          In Intel processor with SSE4.2 supported, the processor will
-......
+Hi,
 
-It should only depend on X86.
+> > Hi, Andrea,
+> > 
+> > I'm working with Ryo on dm-ioband and other stuff.
+> > 
+> >>> On Mon, 2008-08-04 at 20:22 +0200, Andrea Righi wrote:
+> >>>> But I'm not yet convinced that limiting the IO writes at the device
+> >>>> mapper layer is the best solution. IMHO it would be better to throttle
+> >>>> applications' writes when they're dirtying pages in the page cache (the
+> >>>> io-throttle way), because when the IO requests arrive to the device
+> >>>> mapper it's too late (we would only have a lot of dirty pages that are
+> >>>> waiting to be flushed to the limited block devices, and maybe this could
+> >>>> lead to OOM conditions). IOW dm-ioband is doing this at the wrong level
+> >>>> (at least for my requirements). Ryo, correct me if I'm wrong or if I've
+> >>>> not understood the dm-ioband approach.
+> >>> The avoid-lots-of-page-dirtying problem sounds like a hard one.  But, if
+> >>> you look at this in combination with the memory controller, they would
+> >>> make a great team.
+> >>>
+> >>> The memory controller keeps you from dirtying more than your limit of
+> >>> pages (and pinning too much memory) even if the dm layer is doing the
+> >>> throttling and itself can't throttle the memory usage.
+> >> mmh... but in this way we would just move the OOM inside the cgroup,
+> >> that is a nice improvement, but the main problem is not resolved...
+> > 
+> > The concept of dm-ioband includes it should be used with cgroup memory
+> > controller as well as the bio cgroup. The memory controller is supposed
+> > to control memory allocation and dirty-page ratio inside each cgroup.
+> > 
+> > Some guys of cgroup memory controller team just started to implement
+> > the latter mechanism. They try to make each cgroup have a threshold
+> > to limit the number of dirty pages in the group.
+> 
+> Interesting, they also post a patch or RFC?
+
+You can take a look at the thread start from
+http://www.ussg.iu.edu/hypermail/linux/kernel/0807.1/0472.html,
+whose subject is "[PATCH][RFC] dirty balancing for cgroups."
+
+This project has just started, so it would be a good time to
+discuss it with them.
+
+Thanks,
+Hirokazu Takahashi.
 
