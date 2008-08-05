@@ -1,69 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761102AbYHEWh3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759172AbYHEWhx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761102AbYHEWh3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 18:37:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758091AbYHEWhS
+	id S1759172AbYHEWhx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 18:37:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761508AbYHEWhg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 18:37:18 -0400
-Received: from mx2.suse.de ([195.135.220.15]:51997 "EHLO mx2.suse.de"
+	Tue, 5 Aug 2008 18:37:36 -0400
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:42774 "EHLO smtp5.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756970AbYHEWhQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 18:37:16 -0400
-Date: Tue, 5 Aug 2008 15:31:17 -0700
-From: Greg KH <gregkh@suse.de>
-To: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Cc: Kay Sievers <kay.sievers@vrfy.org>, linux-kernel@vger.kernel.org,
-       linux-s390@vger.kernel.org,
-       lf_kernel_messages@lists.linux-foundation.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Michael Holzheu <holzheu@de.ibm.com>, Gerrit Huizenga <gh@us.ibm.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>, Jan Kara <jack@suse.cz>,
-       Pavel Machek <pavel@ucw.cz>, Sam Ravnborg <sam@ravnborg.org>,
-       Joe Perches <joe@perches.com>,
-       Jochen =?iso-8859-1?B?Vm/f?= <jochen.voss@googlemail.com>,
-       Kunai Takashi <kunai@linux-foundation.jp>,
-       Tim Bird <tim.bird@am.sony.com>
-Subject: Re: [patch 1/3] kmsg: Kernel message catalog macros.
-Message-ID: <20080805223117.GA6552@suse.de>
-References: <20080730165656.118280544@de.ibm.com> <20080730171156.824640459@de.ibm.com> <3ae72650807301502h3e54e80yb405af7192048b89@mail.gmail.com> <20080730220432.GA24800@suse.de> <1217495404.8555.20.camel@localhost>
+	id S1758091AbYHEWhd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Aug 2008 18:37:33 -0400
+Date: Wed, 6 Aug 2008 01:36:09 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Tan Li <li.tan@intel.com>, Jerone Young <jyoung5@us.ibm.com>,
+       Hollis Blanchard <hollisb@us.ibm.com>, Avi Kivity <avi@qumranet.com>
+Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [2.6 patch] KVM: fix userspace ABI breakage
+Message-ID: <20080805223609.GC6477@cs181140183.pp.htv.fi>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <1217495404.8555.20.camel@localhost>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 31, 2008 at 11:10:04AM +0200, Martin Schwidefsky wrote:
-> On Wed, 2008-07-30 at 15:04 -0700, Greg KH wrote:
-> > On Thu, Jul 31, 2008 at 12:02:04AM +0200, Kay Sievers wrote:
-> > > On Wed, Jul 30, 2008 at 18:56, Martin Schwidefsky
-> > > <schwidefsky@de.ibm.com> wrote:
-> > > 
-> > > > +#define kmsg_dev_alert(id, dev, format, arg...) \
-> > > > +       printk(__KMSG_CHECK(ALERT, id) KMSG_COMPONENT \
-> > > > +               ": %s: " format, (dev)->bus_id , ## arg)
-> > > 
-> > > Care to use dev_name(), bus_id will be removed soon.
-> > 
-> > Hm, just use dev_printk() instead, it handles all of these kinds of
-> > changes automatically.
-> 
-> Using dev_printk won't work because of the order of the elements of the
-> printk. The kmsg tag should not have a "random" position in the printk
-> but should be the first element. If we use dev_printk the kmsg tag will
-> be the third element, for other kmsg printks it will be the first. In
-> addition the kmsg message tag for the device drivers already includes
-> the driver name ..
+The following part of commit 9ef621d3be56e1188300476a8102ff54f7b6793f 
+(KVM: Support mixed endian machines) changed on the size of a struct 
+that is exported to userspace:
 
-But the structure of dev_printk() is well definied and should be pretty
-trival to parse even with missing fields.
+include/linux/kvm.h:
 
-And if not, fix up dev_printk() to properly delinate when we have
-missing fields, why create a totally new thing here that we need to
-convert subsystems into?
+@@ -318,14 +318,14 @@ struct kvm_trace_rec {
+ 	__u32 vcpu_id;
+ 	union {
+ 		struct {
+-			__u32 cycle_lo, cycle_hi;
++			__u64 cycle_u64;
+ 			__u32 extra_u32[KVM_TRC_EXTRA_MAX];
+ 		} cycle;
+ 		struct {
+ 			__u32 extra_u32[KVM_TRC_EXTRA_MAX];
+ 		} nocycle;
+ 	} u;
+-};
++} __attribute__((packed));
+ 
 
-thanks,
+Packing a struct was the correct idea, but it packed the wrong struct.
 
-greg k-h
+Signed-off-by: Adrian Bunk <bunk@kernel.org>
+
+---
+
+This patch has been sent on:
+- 21 Jul 2008
+
+857d4ddbb62bc61e44b8870cda8ea1c38c6e1905 
+diff --git a/include/linux/kvm.h b/include/linux/kvm.h
+index 0ea064c..ad11cfe 100644
+--- a/include/linux/kvm.h
++++ b/include/linux/kvm.h
+@@ -320,12 +320,12 @@ struct kvm_trace_rec {
+ 		struct {
+ 			__u64 cycle_u64;
+ 			__u32 extra_u32[KVM_TRC_EXTRA_MAX];
+-		} cycle;
++		} __attribute__((packed)) cycle;
+ 		struct {
+ 			__u32 extra_u32[KVM_TRC_EXTRA_MAX];
+ 		} nocycle;
+ 	} u;
+-} __attribute__((packed));
++};
+ 
+ #define KVMIO 0xAE
+ 
+
+
