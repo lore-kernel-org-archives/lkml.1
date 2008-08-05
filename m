@@ -1,74 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762944AbYHEWH3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763950AbYHEWHr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762944AbYHEWH3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 18:07:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756786AbYHEWGk
+	id S1763950AbYHEWHr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 18:07:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759080AbYHEWHR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 18:06:40 -0400
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:56120 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755649AbYHEWGi (ORCPT
+	Tue, 5 Aug 2008 18:07:17 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:48246 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755582AbYHEWHQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 18:06:38 -0400
-Date: Tue, 5 Aug 2008 23:06:15 +0100
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Rusty Russell <rusty@rustcorp.com.au>,
-       linux arch <linux-arch@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: kbuild now support arch/$ARCH/include - time for ARCHs to convert
-Message-ID: <20080805220615.GC18607@flint.arm.linux.org.uk>
-Mail-Followup-To: Sam Ravnborg <sam@ravnborg.org>,
-	Rusty Russell <rusty@rustcorp.com.au>,
-	linux arch <linux-arch@vger.kernel.org>,
-	LKML <linux-kernel@vger.kernel.org>
-References: <20080728200500.GA14284@uranus.ravnborg.org> <200808051418.05324.rusty@rustcorp.com.au> <20080805204548.GD5464@uranus.ravnborg.org>
+	Tue, 5 Aug 2008 18:07:16 -0400
+Date: Tue, 5 Aug 2008 14:59:29 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: lkml <linux-kernel@vger.kernel.org>
+Cc: torvalds <torvalds@linux-foundation.org>, akpm <akpm@linux-foundation.org>,
+       schwidefsky@de.ibm.com
+Subject: [PATCH] docbook: fix s390 fatal error after header files moved
+Message-Id: <20080805145929.0443f8bf.randy.dunlap@oracle.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080805204548.GD5464@uranus.ravnborg.org>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 05, 2008 at 10:45:48PM +0200, Sam Ravnborg wrote:
-> On Tue, Aug 05, 2008 at 02:18:05PM +1000, Rusty Russell wrote:
-> > On Tuesday 29 July 2008 06:05:00 Sam Ravnborg wrote:
-> > > is is suggested to move the arch specific files under arch/
-> > > and for the header files this is arch/$ARCH/include.
-> > 
-> > Well, it would have been nice to take the opportunity to separate user-visible 
-> > header files and non-user-visible files.  We could have left the user-visible 
-> > ones in place, for example: diffstat would then show when you were frobbing 
-> > the userspace interface.
-> 
-> I would like to see this change too - but intentionally I would
-> not try to mix it with the move of the header files. Lets get the
-> move done now and fix the fall-outs, then we can take this logical
-> next step.
+From: Randy Dunlap <randy.dunlap@oracle.com>
+cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
 
-Absolutely agreed.
+Fix (fatal error) s390 docbook file to handle renamed header files.
 
-Some architectures (eg, ARM) have quite a large headache to solve with
-these changes.
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ Documentation/DocBook/s390-drivers.tmpl |    8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-Currently, I know Linus' tree builds fine for most ARM platforms (thanks
-to the ARM kautobuild project.)  However, I'm seeing unexpected build
-failures that don't make sense from the linux-next project.
-
-I've just wound my tree back to a "pristine" state for linux-next, and
-plan to wait for its next build to check whether its me or something else
-causing it.  What I'm referring to is:
-
-s3c2410_defconfig's showing:
-include/asm/arch/map.h:16:30: error: asm/plat-s3c/map.h: No such file or directory
-
-which, if its including it via include/ shouldn't be happening because
-plat-s3c hasn't moved from include/asm(-arm)/, the same as
-include/asm-arm/arch-s3c2410 hasn't moved in linux-next yet.
-
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+--- linux-2.6.27-rc1-git6.orig/Documentation/DocBook/s390-drivers.tmpl
++++ linux-2.6.27-rc1-git6/Documentation/DocBook/s390-drivers.tmpl
+@@ -100,7 +100,7 @@
+       the hardware structures represented here, please consult the Principles
+       of Operation.
+     </para>
+-!Iinclude/asm-s390/cio.h
++!Iarch/s390/include/asm/cio.h
+     </sect1>
+     <sect1 id="ccwdev">
+      <title>ccw devices</title>
+@@ -114,7 +114,7 @@
+       ccw device structure. Device drivers must not bypass those functions
+       or strange side effects may happen.
+     </para>
+-!Iinclude/asm-s390/ccwdev.h
++!Iarch/s390/include/asm/ccwdev.h
+ !Edrivers/s390/cio/device.c
+ !Edrivers/s390/cio/device_ops.c
+     </sect1>
+@@ -125,7 +125,7 @@
+ 	measurement data which is made available by the channel subsystem
+ 	for each channel attached device.
+   </para>
+-!Iinclude/asm-s390/cmb.h
++!Iarch/s390/include/asm/cmb.h
+ !Edrivers/s390/cio/cmf.c
+     </sect1>
+   </chapter>
+@@ -142,7 +142,7 @@
+   </para>
+    <sect1 id="ccwgroupdevices">
+     <title>ccw group devices</title>
+-!Iinclude/asm-s390/ccwgroup.h
++!Iarch/s390/include/asm/ccwgroup.h
+ !Edrivers/s390/cio/ccwgroup.c
+    </sect1>
+   </chapter>
