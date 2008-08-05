@@ -1,85 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762902AbYHERDY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761971AbYHERGT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762902AbYHERDY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 13:03:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760360AbYHERDQ
+	id S1761971AbYHERGT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 13:06:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760442AbYHERGH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 13:03:16 -0400
-Received: from outbound-mail-31.bluehost.com ([69.89.18.151]:50650 "HELO
-	outbound-mail-31.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1758794AbYHERDP (ORCPT
+	Tue, 5 Aug 2008 13:06:07 -0400
+Received: from 166-70-238-42.ip.xmission.com ([166.70.238.42]:60183 "EHLO
+	ns1.wolfmountaingroup.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759600AbYHERGF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 13:03:15 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
-	b=tL0fQxS60B0b0SheU/AnlvG8/NxjAzOIZsKUpmYWDxWdJCyrt0LSFrq8/bsNZe5NlFb6loOzL/v8ZBrXUn5eeu/PdzgR8pMapbM47MrYDQAaaGQlHCZ5/LrZFz4fIF3m;
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: James Bottomley <James.Bottomley@hansenpartnership.com>
-Subject: Re: [PATCH 1/2] pci: add misrouted interrupt error handling
-Date: Tue, 5 Aug 2008 10:03:10 -0700
-User-Agent: KMail/1.9.9
-Cc: linux-scsi <linux-scsi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>, linux-pci@vger.kernel.org
-References: <1217786532.4179.24.camel@localhost.localdomain>
-In-Reply-To: <1217786532.4179.24.camel@localhost.localdomain>
+	Tue, 5 Aug 2008 13:06:05 -0400
+Message-ID: <1599.69.2.248.210.1217954713.squirrel@webmail.wolfmountaingroup.com>
+In-Reply-To: <200808060238.56113.nickpiggin@yahoo.com.au>
+References: <17494.166.70.238.46.1217784156.squirrel@webmail.wolfmountaingroup.com>
+    <200808060145.22321.nickpiggin@yahoo.com.au>
+    <56575.166.70.238.45.1217950327.squirrel@webmail.wolfmountaingroup.com>
+    <200808060238.56113.nickpiggin@yahoo.com.au>
+Date: Tue, 5 Aug 2008 10:45:13 -0600 (MDT)
+Subject: Re: [ANNOUNCE] Merkey's Kernel Debugger
+From: jmerkey@wolfmountaingroup.com
+To: "Nick Piggin" <nickpiggin@yahoo.com.au>
+Cc: jmerkey@wolfmountaingroup.com, "Geert Uytterhoeven" <geert@linux-m68k.org>,
+       "Stefan Richter" <stefanr@s5r6.in-berlin.de>,
+       "Josh Boyer" <jwboyer@gmail.com>, linux-kernel@vger.kernel.org
+User-Agent: SquirrelMail/1.4.6
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200808051003.10400.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday, August 03, 2008 11:02 am James Bottomley wrote:
-> +/**
-> + * pci_lost_interrupt - reports a lost PCI interrupt
-> + * @pdev:	device whose interrupt is lost
-> + *
-> + * The primary function of this routine is to report a lost interrupt
-> + * in a standard way which users can recognise (instead of blaming the
-> + * driver).
-> + *
-> + * Returns:
-> + *  a suggestion for fixing it (although the driver is not required to
-> + * act on this).
-> + */
-> +enum pci_lost_interrupt_reason pci_lost_interrupt(struct pci_dev *pdev)
-> +{
-> +	if (pdev->msi_enabled || pdev->msix_enabled) {
-> +		enum pci_lost_interrupt_reason ret;
-> +
-> +		if (pdev->msix_enabled) {
-> +			pci_note_irq_problem(pdev, "MSIX routing failure");
-> +			ret = PCI_LOST_IRQ_DISABLE_MSIX;
-> +		} else {
-> +			pci_note_irq_problem(pdev, "MSI routing failure");
-> +			ret = PCI_LOST_IRQ_DISABLE_MSI;
-> +		}
-> +		return ret;
-> +	}
-> +#ifdef CONFIG_ACPI
-> +	if (!(acpi_disabled || acpi_noirq)) {
-> +		pci_note_irq_problem(pdev, "Potential ACPI misrouting please reboot with
-> acpi=noirq"); +		/* currently no way to fix acpi on the fly */
-> +		return PCI_LOST_IRQ_DISABLE_ACPI;
-> +	}
-> +#endif
-> +	pci_note_irq_problem(pdev, "unknown cause (not MSI or ACPI)");
-> +	return PCI_LOST_IRQ_NO_INFORMATION;
-> +}
+> On Wednesday 06 August 2008 01:32, jmerkey@wolfmountaingroup.com wrote:
+>> > On Wednesday 06 August 2008 01:19, jmerkey@wolfmountaingroup.com
+>> wrote:
+>
+>> > That would be great if you do work on kgdb... But I guess I do miss
+>> > the point, then. Is there a technical difference with kgdb that cannot
+>> > be worked around, a difference of opinion with maintainers, a wish to
+>> > have mdb features at short notice?
+>>
+>> Nick, its OK.  There have been 27,453 downloads of the patches from my
+>> ftp
+>> server since yesterday when I osted it -- from what I am seeing people
+>> are
+>> voting with their feet.   People can get it and I even posted it t
+>> SourceForge as well.  After ten years of working on Linux I thougt it
+>> would be nice for something I wrote to end up there.  It will happen
+>> when
+>> its time.  As it stands, people are using it and it is going to help a
+>> lot
+>> of folks, which is what this is all about.
+>>
+>> :-)
+>
+> That's all well and good :). But it didn't exactly answer my question.
+> My question was not what is the point of you writing these patches, but
+> what is the point of merging it into the kernel (over the alternatives).
+> It may seem like a trivial question, but it is one that must be answered
+> in order to be considered to get merged.
+>
 
-This seems to be a function that just returns what type of IRQ you're using or 
-how it's routed and it isn't necessarily "lost interrupt" specific.
+Integrated kernel debugger in linux (minimal one) and given that there are
+already patches to add tickets and text to locks and other tools, one more
+can only help.    This is by no means the full MDB debugger you have seen,
+just a pared down core I submitted.  The entire MDB debugger is much
+larger.
 
-This information is clearly useful to drivers both for informational purposes 
-and for debugging problems, so on that front it looks good.  However, I think 
-it should probably be called pci_interrupt_type(struct pci_dev *dev) or 
-something instead, and just return an enum of either MSIX, MSI, or LINE 
-(though I'm open to better names).  From that, the driver can infer what 
-might be going wrong, though in the case of a LINE interrupt, all you can 
-really do is report that there's probably a platform IRQ routing problem.
+I have been working on it for ten years, and you may or may not have
+noticed, I typically do not ask many questions these days from the
+community for my appliance and router development, nor ask for help for
+any of the companies I have created and sold based on Linux over the past
+ten years since I have tools to fix my stuff without needing a hardware
+based inverse assembler like most folks need to debug hardware and file
+systems on linux these days.
 
-Jesse
+:-)
+
+Jeff
+
+Jeff
+
