@@ -1,234 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763003AbYHET7k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762905AbYHEUAi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763003AbYHET7k (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 15:59:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761572AbYHET71
+	id S1762905AbYHEUAi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 16:00:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761421AbYHEUA1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 15:59:27 -0400
-Received: from curtis.curtisfong.org ([66.43.110.51]:48566 "EHLO
-	curtis.curtisfong.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758564AbYHET70 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 15:59:26 -0400
-X-Greylist: delayed 404 seconds by postgrey-1.27 at vger.kernel.org; Tue, 05 Aug 2008 15:59:26 EDT
-Date: Tue, 5 Aug 2008 12:52:32 -0700
-From: Nye Liu <nyet@nyet.org>
-To: linux-kernel@vger.kernel.org
-Cc: nyet@nyet.org, nyet@mrv.com
-Subject: [PATCH] INITRAMFS: Add option to preserve mtime from INITRAMFS
-	cpio images
-Message-ID: <20080805195232.GA5183@curtisfong.org>
+	Tue, 5 Aug 2008 16:00:27 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:52928 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761394AbYHEUA0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Aug 2008 16:00:26 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Alessandro Guido <alessandro.guido@gmail.com>
+Subject: Re: "e100_probe: Error clearing wake event" when booting 2.6.27-rc1
+Date: Tue, 5 Aug 2008 22:03:07 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       pm list <linux-pm@lists.linux-foundation.org>
+References: <200808051730.27599.alessandro.guido@gmail.com>
+In-Reply-To: <200808051730.27599.alessandro.guido@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Message-Id: <200808052203.07815.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Nye Liu <nyet@nyet.org>
+On Tuesday, 5 of August 2008, Alessandro Guido wrote:
+> [please cc me on replies]
+> 
+> I'm getting this error message when booting my laptop.
+> 
+> The commit that causes this is:
+> 
+> commit eb9d0fe40e313c0a74115ef456a2e43a6c8da72f
+> Author: Rafael J. Wysocki <rjw@sisk.pl>
+> Date:   Mon Jul 7 03:34:48 2008 +0200
+> 
+>     PCI ACPI: Rework PCI handling of wake-up
+> 
+> [very long commit message snipped]
+> 
+> Should I ignore that?
 
-When unpacking the cpio into the initramfs, mtimes are not preserved by
-default. This patch adds an INITRAMFS_PRESERVE_MTIME option that allows
-mtimes stored in the cpio image to be used when constructing the
-initramfs. For embedded applications that run exclusively out of the
-initramfs, this is invaluable.
+The message is harmless, but it exposes the problem that e100_probe() should
+not use pci_enable_wake() for this purpose.
 
-Signed-off-by: Nye Liu <nyet@nyet.org>
+The appended patch makes it use pci_pme_active() instead.
+
+Thanks,
+Rafael
 
 ---
+PCI PM: Export pci_pme_active to drivers
 
-diff --git a/init/initramfs.c b/init/initramfs.c
-index 644fc01..0dd0a73 100644
---- a/init/initramfs.c
-+++ b/init/initramfs.c
-@@ -7,6 +7,12 @@
- #include <linux/string.h>
- #include <linux/syscalls.h>
- 
-+#ifdef CONFIG_INITRAMFS_PRESERVE_MTIME
-+#include <linux/utime.h>
-+#include <linux/namei.h>
-+#include <linux/list.h>
-+#endif
-+
- static __initdata char *message;
- static void __init error(char *x)
+Export pci_pme_active() to drivers, so that they can clear the
+PME_status bit and disable PME# for the device without involving
+ACPI.
+
+Modify the e100 driver to use pci_pme_active() for this purpose.
+
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ drivers/net/e100.c  |    4 +---
+ drivers/pci/pci.c   |    3 ++-
+ include/linux/pci.h |    1 +
+ 3 files changed, 4 insertions(+), 4 deletions(-)
+
+Index: linux-2.6/drivers/pci/pci.c
+===================================================================
+--- linux-2.6.orig/drivers/pci/pci.c
++++ linux-2.6/drivers/pci/pci.c
+@@ -1060,7 +1060,7 @@ bool pci_pme_capable(struct pci_dev *dev
+  * The caller must verify that the device is capable of generating PME# before
+  * calling this function with @enable equal to 'true'.
+  */
+-static void pci_pme_active(struct pci_dev *dev, bool enable)
++void pci_pme_active(struct pci_dev *dev, bool enable)
  {
-@@ -72,6 +78,38 @@ static void __init free_hash(void)
- 	}
- }
+ 	u16 pmcsr;
  
-+#ifdef CONFIG_INITRAMFS_PRESERVE_MTIME
-+static __initdata LIST_HEAD(dir_list);
-+struct dir_entry {
-+	struct list_head list;
-+	char *name;
-+	struct utimbuf mtime;
-+};
-+
-+static void __init dir_add(const char *name, struct utimbuf mtime)
-+{
-+	struct dir_entry *de = kmalloc(sizeof(struct dir_entry), GFP_KERNEL);
-+	INIT_LIST_HEAD(&de->list);
-+	de->name = kstrdup(name, GFP_KERNEL);
-+	de->mtime = mtime;
-+	list_add(&de->list, &dir_list);
-+}
-+
-+static void __init dir_utime(void)
-+{
-+	struct list_head *e, *tmp;
-+	list_for_each_safe(e, tmp, &dir_list) {
-+		struct dir_entry *de = list_entry(e, struct dir_entry, list);
-+		list_del(e);
-+		sys_utime(de->name, &de->mtime);
-+		kfree(de->name);
-+		kfree(de);
-+	}
-+}
-+
-+static __initdata struct utimbuf mtime;
-+#endif
-+
- /* cpio header parsing */
+@@ -1945,6 +1945,7 @@ EXPORT_SYMBOL(pci_set_power_state);
+ EXPORT_SYMBOL(pci_save_state);
+ EXPORT_SYMBOL(pci_restore_state);
+ EXPORT_SYMBOL(pci_pme_capable);
++EXPORT_SYMBOL(pci_pme_active);
+ EXPORT_SYMBOL(pci_enable_wake);
+ EXPORT_SYMBOL(pci_target_state);
+ EXPORT_SYMBOL(pci_prepare_to_sleep);
+Index: linux-2.6/include/linux/pci.h
+===================================================================
+--- linux-2.6.orig/include/linux/pci.h
++++ linux-2.6/include/linux/pci.h
+@@ -648,6 +648,7 @@ int pci_restore_state(struct pci_dev *de
+ int pci_set_power_state(struct pci_dev *dev, pci_power_t state);
+ pci_power_t pci_choose_state(struct pci_dev *dev, pm_message_t state);
+ bool pci_pme_capable(struct pci_dev *dev, pci_power_t state);
++void pci_pme_active(struct pci_dev *dev, bool enable);
+ int pci_enable_wake(struct pci_dev *dev, pci_power_t state, int enable);
+ pci_power_t pci_target_state(struct pci_dev *dev);
+ int pci_prepare_to_sleep(struct pci_dev *dev);
+Index: linux-2.6/drivers/net/e100.c
+===================================================================
+--- linux-2.6.orig/drivers/net/e100.c
++++ linux-2.6/drivers/net/e100.c
+@@ -2738,9 +2738,7 @@ static int __devinit e100_probe(struct p
+ 		nic->flags |= wol_magic;
  
- static __initdata unsigned long ino, major, minor, nlink;
-@@ -97,6 +135,9 @@ static void __init parse_header(char *s)
- 	uid = parsed[2];
- 	gid = parsed[3];
- 	nlink = parsed[4];
-+#ifdef CONFIG_INITRAMFS_PRESERVE_MTIME
-+	mtime.actime = mtime.modtime = parsed[5];
-+#endif
- 	body_len = parsed[6];
- 	major = parsed[7];
- 	minor = parsed[8];
-@@ -130,6 +171,10 @@ static inline void __init eat(unsigned n)
- 	count -= n;
- }
+ 	/* ack any pending wake events, disable PME */
+-	err = pci_enable_wake(pdev, 0, 0);
+-	if (err)
+-		DPRINTK(PROBE, ERR, "Error clearing wake event\n");
++	pci_pme_active(pdev, false);
  
-+#ifdef CONFIG_INITRAMFS_PRESERVE_MTIME
-+static __initdata char *vcollected;
-+#endif
-+
- static __initdata char *collected;
- static __initdata int remains;
- static __initdata char *collect;
-@@ -271,6 +316,9 @@ static int __init do_name(void)
- 			if (wfd >= 0) {
- 				sys_fchown(wfd, uid, gid);
- 				sys_fchmod(wfd, mode);
-+#ifdef CONFIG_INITRAMFS_PRESERVE_MTIME
-+				vcollected = kstrdup(collected, GFP_KERNEL);
-+#endif
- 				state = CopyFile;
- 			}
- 		}
-@@ -278,12 +326,18 @@ static int __init do_name(void)
- 		sys_mkdir(collected, mode);
- 		sys_chown(collected, uid, gid);
- 		sys_chmod(collected, mode);
-+#ifdef CONFIG_INITRAMFS_PRESERVE_MTIME
-+		dir_add(collected, mtime);
-+#endif
- 	} else if (S_ISBLK(mode) || S_ISCHR(mode) ||
- 		   S_ISFIFO(mode) || S_ISSOCK(mode)) {
- 		if (maybe_link() == 0) {
- 			sys_mknod(collected, mode, rdev);
- 			sys_chown(collected, uid, gid);
- 			sys_chmod(collected, mode);
-+#ifdef CONFIG_INITRAMFS_PRESERVE_MTIME
-+			sys_utime(collected, &mtime);
-+#endif
- 		}
- 	}
- 	return 0;
-@@ -294,6 +348,10 @@ static int __init do_copy(void)
- 	if (count >= body_len) {
- 		sys_write(wfd, victim, body_len);
- 		sys_close(wfd);
-+#ifdef CONFIG_INITRAMFS_PRESERVE_MTIME
-+		sys_utime(vcollected, &mtime);
-+		kfree(vcollected);
-+#endif
- 		eat(body_len);
- 		state = SkipIt;
- 		return 0;
-@@ -305,12 +363,48 @@ static int __init do_copy(void)
- 	}
- }
- 
-+#ifdef CONFIG_INITRAMFS_PRESERVE_MTIME
-+static long __init sys_lutime(char __user * filename,
-+	struct utimbuf __user * times)
-+{
-+	int error;
-+	struct path path;
-+	struct inode * inode;
-+	struct iattr newattrs;
-+
-+	error = user_lpath(filename, &path);
-+	if (error) return error;
-+
-+	inode = path.dentry->d_inode;
-+
-+	newattrs.ia_valid = ATTR_CTIME | ATTR_MTIME | ATTR_ATIME;
-+	error = 0;
-+	if (IS_APPEND(inode) || IS_IMMUTABLE(inode))
-+		goto pput_and_out;
-+
-+	newattrs.ia_atime.tv_sec = times->actime;
-+	newattrs.ia_atime.tv_nsec = 0;
-+	newattrs.ia_mtime.tv_sec = times->modtime;
-+	newattrs.ia_mtime.tv_nsec = 0;
-+	newattrs.ia_valid |= ATTR_ATIME_SET | ATTR_MTIME_SET;
-+	mutex_lock(&inode->i_mutex);
-+	error = notify_change(path.dentry, &newattrs);
-+	mutex_unlock(&inode->i_mutex);
-+pput_and_out:
-+	path_put(&path);
-+	return error;
-+}
-+#endif
-+
- static int __init do_symlink(void)
- {
- 	collected[N_ALIGN(name_len) + body_len] = '\0';
- 	clean_path(collected, 0);
- 	sys_symlink(collected + N_ALIGN(name_len), collected);
- 	sys_lchown(collected, uid, gid);
-+#ifdef CONFIG_INITRAMFS_PRESERVE_MTIME
-+	sys_lutime(collected, &mtime);
-+#endif
- 	state = SkipIt;
- 	next_state = Reset;
- 	return 0;
-@@ -466,6 +560,9 @@ static char * __init unpack_to_rootfs(char *buf, unsigned len, int check_only)
- 		buf += inptr;
- 		len -= inptr;
- 	}
-+#ifdef CONFIG_INITRAMFS_PRESERVE_MTIME
-+	dir_utime();
-+#endif
- 	kfree(window);
- 	kfree(name_buf);
- 	kfree(symlink_buf);
-diff --git a/usr/Kconfig b/usr/Kconfig
-index 86cecb5..f7d9f60 100644
---- a/usr/Kconfig
-+++ b/usr/Kconfig
-@@ -44,3 +44,13 @@ config INITRAMFS_ROOT_GID
- 	  owned by group root in the initial ramdisk image.
- 
- 	  If you are not sure, leave it set to "0".
-+
-+config INITRAMFS_PRESERVE_MTIME
-+	bool "Preserve mtimes from INITRAMFS image"
-+	depends on BLK_DEV_INITRD
-+	default n
-+	help
-+	  Preserve mtimes (last modified times) for all items stored in the
-+	  initramfs image.
-+
-+	  If you are not sure, leave it set to "N"
+ 	strcpy(netdev->name, "eth%d");
+ 	if((err = register_netdev(netdev))) {
