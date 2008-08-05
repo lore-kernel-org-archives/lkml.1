@@ -1,96 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761703AbYHEPxO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761335AbYHEP4Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761703AbYHEPxO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 11:53:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759611AbYHEPw6
+	id S1761335AbYHEP4Y (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 11:56:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759827AbYHEP4O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 11:52:58 -0400
-Received: from 166-70-238-42.ip.xmission.com ([166.70.238.42]:36492 "EHLO
-	ns1.wolfmountaingroup.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756830AbYHEPw5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 11:52:57 -0400
-Message-ID: <56575.166.70.238.45.1217950327.squirrel@webmail.wolfmountaingroup.com>
-In-Reply-To: <200808060145.22321.nickpiggin@yahoo.com.au>
-References: <17494.166.70.238.46.1217784156.squirrel@webmail.wolfmountaingroup.com>
-    <200808060133.10457.nickpiggin@yahoo.com.au>
-    <44919.166.70.238.45.1217949560.squirrel@webmail.wolfmountaingroup.com>
-    <200808060145.22321.nickpiggin@yahoo.com.au>
-Date: Tue, 5 Aug 2008 09:32:07 -0600 (MDT)
-Subject: Re: [ANNOUNCE] Merkey's Kernel Debugger
-From: jmerkey@wolfmountaingroup.com
-To: "Nick Piggin" <nickpiggin@yahoo.com.au>
-Cc: jmerkey@wolfmountaingroup.com, "Geert Uytterhoeven" <geert@linux-m68k.org>,
-       "Stefan Richter" <stefanr@s5r6.in-berlin.de>,
-       "Josh Boyer" <jwboyer@gmail.com>, linux-kernel@vger.kernel.org
-User-Agent: SquirrelMail/1.4.6
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
+	Tue, 5 Aug 2008 11:56:14 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:51182 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757481AbYHEP4N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Aug 2008 11:56:13 -0400
+Date: Wed, 6 Aug 2008 01:30:41 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: "John W. Linville" <linville@tuxdriver.com>
+Cc: David Miller <davem@davemloft.net>, linux-wireless@vger.kernel.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: pull request: wireless-2.6 2008-08-04
+Message-Id: <20080806013041.c0d3845b.sfr@canb.auug.org.au>
+In-Reply-To: <20080805140517.GA7819@tuxdriver.com>
+References: <20080804193753.GA30345@tuxdriver.com>
+	<20080804.150147.78586437.davem@davemloft.net>
+	<20080805021710.GA21731@tuxdriver.com>
+	<20080805.012814.215633850.davem@davemloft.net>
+	<20080805232839.95235680.sfr@canb.auug.org.au>
+	<20080805140517.GA7819@tuxdriver.com>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__6_Aug_2008_01_30_41_+1000_TJM__bAHGSzDuJU="
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Wednesday 06 August 2008 01:19, jmerkey@wolfmountaingroup.com wrote:
->> > On Wednesday 06 August 2008 01:02, jmerkey@wolfmountaingroup.com
->> wrote:
->> >> > On Mon, 4 Aug 2008, jmerkey@wolfmountaingroup.com wrote:
->> >> >
->> >> > --
->> >> > Geert Uytterhoeven -- There's lots of Linux beyond ia32 --
->> >> > geert@linux-m68k.org
->> >>
->> >> No I was not, but I am now.  At any rate, I removed the
->> Microsoft-isms
->> >> from the code.  I can cut yet another patch for git6, but git5 was
->> there
->> >> -- GPL2 and all.  How about putting in into the kernel guys -- :-)
->> >
->> > Seriously? Because it doesn't seem to have had enough peer review,
->> > it hasn't had widespread testing in somewhere like linux-next or
->> > -mm, and we already have kgdb so you have to also explain why you
->> > can't improve kgdb in the areas it trails mdb.
->>
->> If you go back to LKML from 2000, this debugger has been around for 10
->> years.  I agree not in the hands of the public, but its very mature
->> in comparison to kdb or kgdb.
+--Signature=_Wed__6_Aug_2008_01_30_41_+1000_TJM__bAHGSzDuJU=
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+Hi John,
+
+On Tue, 5 Aug 2008 10:05:17 -0400 "John W. Linville" <linville@tuxdriver.co=
+m> wrote:
 >
-> OK I don't doubt that at all, but I just mean in terms of being reviewed
-> by Linux people and how it merges with the current kernel (eg. we now
-> have a debugger, which was unthinkable in 2000 :)).
->
->
->> > But the ideal outcome would be if you could contribute patches to
->> > kgdb to the point where it is as good as mdb. It is already in the
->> > tree and supported by a handful of architectures... any chance of
->> > that? (I don't know kernel debugger code, so I ask as an interested
->> > user)
->>
->> I plan to work on kdb and yes, there is a version of this that runs
->> as an alternate debugger of kdb - you can even switch back and forth
->> between them - but that misses the point as well.
->>
->> I can wait untl its more widespread -- or not.
->
-> That would be great if you do work on kgdb... But I guess I do miss
-> the point, then. Is there a technical difference with kgdb that cannot
-> be worked around, a difference of opinion with maintainers, a wish to
-> have mdb features at short notice?
+> FWIW I fixed-up the wireless-2.6 tree to reflect what davem pulled -- a
+> noop, but at least those patches shouldn't pollute -next tomorrow. :-)
 
+Thanks.  Every bit helps.  I am hoping my toolchain guy can come up with
+a workaround for us.  And you guys can figure out the list.h thing.
 
-Nick, its OK.  There have been 27,453 downloads of the patches from my ftp
-server since yesterday when I osted it -- from what I am seeing people are
-voting with their feet.   People can get it and I even posted it t
-SourceForge as well.  After ten years of working on Linux I thougt it
-would be nice for something I wrote to end up there.  It will happen when
-its time.  As it stands, people are using it and it is going to help a lot
-of folks, which is what this is all about.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-:-)
+--Signature=_Wed__6_Aug_2008_01_30_41_+1000_TJM__bAHGSzDuJU=
+Content-Type: application/pgp-signature
 
-Jeff
->
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
+iEYEARECAAYFAkiYciEACgkQjjKRsyhoI8xYqwCgkqX2g/MXPwqLJYXixCmbxOWK
+YvQAoJ/FHSMdLuedrmx93XFKljIJP8nH
+=a+w8
+-----END PGP SIGNATURE-----
 
+--Signature=_Wed__6_Aug_2008_01_30_41_+1000_TJM__bAHGSzDuJU=--
