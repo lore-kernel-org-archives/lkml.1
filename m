@@ -1,45 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759436AbYHECcg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756841AbYHECcw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759436AbYHECcg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 22:32:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754655AbYHECXF
+	id S1756841AbYHECcw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 22:32:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755934AbYHECcW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 22:23:05 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:34318 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753763AbYHECXD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 22:23:03 -0400
-Message-ID: <4897B7DB.7040507@zytor.com>
-Date: Mon, 04 Aug 2008 19:15:55 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Mon, 4 Aug 2008 22:32:22 -0400
+Received: from ra.tuxdriver.com ([70.61.120.52]:4482 "EHLO ra.tuxdriver.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755577AbYHECcV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Aug 2008 22:32:21 -0400
+Date: Mon, 4 Aug 2008 22:17:10 -0400
+From: "John W. Linville" <linville@tuxdriver.com>
+To: David Miller <davem@davemloft.net>
+Cc: linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: pull request: wireless-2.6 2008-08-04
+Message-ID: <20080805021710.GA21731@tuxdriver.com>
+References: <20080804193753.GA30345@tuxdriver.com> <20080804.150147.78586437.davem@davemloft.net>
 MIME-Version: 1.0
-To: Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>
-CC: Krzysztof Halasa <khc@pm.waw.pl>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, tglx <tglx@linutronix.de>
-Subject: Re: [PATCH 2/5] x86: Coding style fixes to arch/x86/kernel/bios_uv.c
-References: <20080802212406.047e8ae6@paolo-desktop> <48952DB3.20101@zytor.com>	 <48958DC2.7070506@s5r6.in-berlin.de>	 <m3iquigvqc.fsf@maximus.localdomain> <4d8e3fd30808030521t351a8564yfb93211f7239613c@mail.gmail.com>
-In-Reply-To: <4d8e3fd30808030521t351a8564yfb93211f7239613c@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080804.150147.78586437.davem@davemloft.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paolo Ciarrocchi wrote:
+On Mon, Aug 04, 2008 at 03:01:47PM -0700, David Miller wrote:
+> From: "John W. Linville" <linville@tuxdriver.com>
+> Date: Mon, 4 Aug 2008 15:37:53 -0400
 > 
-> _much worse_? Wow, I thought the opposite.
-> Anyway, that's just a coding style patch, feel free to simply not apply it as
-> it's really a matter of personal taste but be sure that I'm not
-> blindly changing the code
-> accordingly to checkpatch. That might be almost true when I started
-> doing this kind of patches months
-> ago but it's definitely not true anymore.
+> > Another big round of fixes for 2.6.27.  Included is also a renaming
+> > patch and some related patches that rename iwl4965 to iwlagn (reflecting
+> > that is supports iwl5000 as well).
+> > 
+> > The other big(ger) thing here is the new ath9k driver.  It is probably
+> > still far from perfect, but I'm hearing good reports on its
+> > functionality and the Atheros team (and others) have already been quite
+> > responsive on comments, etc.  I think it is best to go ahead and get it
+> > into 2.6.27.
+> > 
+> > Please let me know if there are problems!
 > 
+> I'm holding off on this pull until the list.h changes get so me lkml
+> ACKs.
 
-In this case, the real problem is that the original code used a switch 
-statement where it really should have used a table.
+Sure, np.  I created a "no-ath9k" branch in case you are feeling
+frisky -- it is the same except for omitting the list.h changes,
+the ath5k pci table change, and the new ath9k driver.
 
-	-hpa
+	git://git.kernel.org/pub/scm/linux/kernel/git/linville/wireless-2.6.git no-ath9k
+
+Hth!
+
+John
+-- 
+John W. Linville
+linville@tuxdriver.com
