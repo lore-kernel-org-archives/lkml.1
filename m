@@ -1,56 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762806AbYHESl1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762428AbYHESni@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762806AbYHESl1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 14:41:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758376AbYHESlS
+	id S1762428AbYHESni (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 14:43:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755986AbYHESn3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 14:41:18 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:60197 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757653AbYHESlR (ORCPT
+	Tue, 5 Aug 2008 14:43:29 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:50392 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755621AbYHESn3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 14:41:17 -0400
-Date: Tue, 5 Aug 2008 11:38:45 -0700
-From: Greg KH <greg@kroah.com>
-To: "Press, Jonathan" <Jonathan.Press@ca.com>
-Cc: Arjan van de Ven <arjan@infradead.org>, Eric Paris <eparis@redhat.com>,
-       linux-kernel@vger.kernel.org, malware-list@lists.printk.net,
-       linux-security-module@vger.kernel.org
-Subject: Re: [malware-list] [RFC 0/5] [TALPA] Intro to a linux
-	interfaceforon access scanning
-Message-ID: <20080805183845.GA11375@kroah.com>
-References: <20080805112747.2c3c4650@infradead.org> <2629CC4E1D22A64593B02C43E85553030480743E@USILMS12.ca.com>
+	Tue, 5 Aug 2008 14:43:29 -0400
+Date: Tue, 5 Aug 2008 11:42:56 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Karsten Keil <kkeil@suse.de>
+cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       linux-kernel@vger.kernel.org, isdn4linux@listserv.isdn4linux.de,
+       "Andreas.Eversberg" <Andreas.Eversberg@versatel.de>
+Subject: Re: [PATCH 3/4] Fix remaining big endian issue of hfcmulti
+In-Reply-To: <20080805172549.GA6052@pingi.kke.suse.de>
+Message-ID: <alpine.LFD.1.10.0808051140250.3257@nehalem.linux-foundation.org>
+References: <20080802151532.DE017A3C09@pingi.kke.suse.de> <1217910588.24157.151.camel@pasglop> <20080805113111.GA6827@pingi.kke.suse.de> <1217941466.24157.190.camel@pasglop> <20080805172549.GA6052@pingi.kke.suse.de>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <2629CC4E1D22A64593B02C43E85553030480743E@USILMS12.ca.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-A: http://en.wikipedia.org/wiki/Top_post
-Q: Were do I find info about this thing called top-posting?
-A: Because it messes up the order in which people normally read text.
-Q: Why is top-posting such a bad thing?
 
-On Tue, Aug 05, 2008 at 02:34:26PM -0400, Press, Jonathan wrote:
-> You're right...I am not talking about blocking at all -- which may be a
-> further indication that I am missing the specific point of this thread.
+On Tue, 5 Aug 2008, Karsten Keil wrote:
 > 
-> But be that as it may...  I don't want to have to use more than one
-> interface to get all the events I am interested in.  I want to register
-> as a client and listen, and get everything I need from the same place.
+> Maybe we can use the trick from lib/iomap.c to detect which
+> kind of IO is needed, but unfortunately PIO_OFFSET, PIO_MASK and
+> PIO_RESERVED are not exported so it would need to copy the defines, which
+> isn't a really clean solution.
 
-That's an implementation issue, not a requirement.  If it's a
-requirement, it sure is a lazy one :)
+Even if they were exported, you couldn't.
 
-> Also, it seems to me that for my purposes, close is discrete enough.  It
-> tells me that there is now something out there that should be looked at.
+lib/iomap.c is _not_ generic code. It's a library function for 
+architectures that don't do it some other way. But various architectures 
+can choose to not use lib/iomap.c at all - for example, they may have MMIO 
+and PIO in the same address space, so they don't need the conditionals at 
+all (because all the work was done at mapping time, not at runtime).
 
-So, if you hook glibc to catch all calls to close, is that sufficient?
+So if you actually have different models of operation for PIO and MMIO, 
+then yes, you need to handle that in the driver itself.
 
-thanks,
-
-greg k-h
+		Linus
