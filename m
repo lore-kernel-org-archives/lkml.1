@@ -1,96 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762203AbYHEM1Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761575AbYHEM1t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762203AbYHEM1Y (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 08:27:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759895AbYHEM0s
+	id S1761575AbYHEM1t (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 08:27:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759895AbYHEM1k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 08:26:48 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:51182 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759606AbYHEM0r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 08:26:47 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Subject: Re: 2.6.27-rc1-git4 BUG: sched while atomic
-Date: Tue, 5 Aug 2008 14:29:43 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: lkml <linux-kernel@vger.kernel.org>, netdev <netdev@vger.kernel.org>,
-       mchan@broadcom.com
-References: <20080804094835.da083484.randy.dunlap@oracle.com>
-In-Reply-To: <20080804094835.da083484.randy.dunlap@oracle.com>
+	Tue, 5 Aug 2008 08:27:40 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:47813 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760315AbYHEM1i (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Aug 2008 08:27:38 -0400
+Date: Tue, 5 Aug 2008 06:26:58 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Simon Horman <horms@verge.net.au>
+Cc: Sven Wegener <sven.wegener@stealer.net>,
+       Michael Ellerman <michael@ellerman.id.au>, linux-kernel@vger.kernel.org,
+       linux-pci@vger.kernel.org, Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: Re: [patch] PCI: check the return value of device_create_bin_file() in pci_create_bus()
+Message-ID: <20080805122639.GP26461@parisc-linux.org>
+References: <20080805101605.GA19382@verge.net.au> <1217932416.7758.4.camel@localhost> <20080805101605.GA19382@verge.net.au> <alpine.LNX.1.10.0808051224350.5671@titan.stealer.net> <20080805110006.GA13409@verge.net.au> <20080805111406.GA13899@verge.net.au> <20080805112814.GO26461@parisc-linux.org> <20080805121531.GA29763@verge.net.au>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200808051429.44451.rjw@sisk.pl>
+In-Reply-To: <20080805121531.GA29763@verge.net.au>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, 4 of August 2008, Randy Dunlap wrote:
-> Usually (e.g., in 2.6.27-rc1 & earlier), I see lots of these messages for
-> some reason:
+On Tue, Aug 05, 2008 at 10:15:32PM +1000, Simon Horman wrote:
+> On Tue, Aug 05, 2008 at 05:28:14AM -0600, Matthew Wilcox wrote:
+> > Yes, but you're essentially saying here that if I can't create a couple
+> > of poxy sysfs files, I can't have this PCI bus at all?  This seems like
+> > a bad decision to me.  I'd rather have a PCI bus without the files than
+> > no PCI bus at all.  By all means, we should whinge mightily if we can't
+> > create the files so the sysadmin has a chance of figuring out why things
+> > aren't quite working right, but I might have my root filesystem on a
+> > device on that PCI bus.
 > 
-> tg3: eth2: Link is up at 1000 Mbps, full duplex.
-> tg3: eth2: Flow control is off for TX and off for RX.
-> tg3: eth3: Link is up at 1000 Mbps, full duplex.
-> tg3: eth3: Flow control is off for TX and off for RX.
-> bnx2: eth1: using MSI
-> bnx2: eth1 NIC SerDes Link is Up, 1000 Mbps full duplex
-> tg3: eth2: Link is up at 1000 Mbps, full duplex.
-> tg3: eth2: Flow control is off for TX and off for RX.
-> tg3: eth3: Link is up at 1000 Mbps, full duplex.
-> tg3: eth3: Flow control is off for TX and off for RX.
-> bnx2: eth1: using MSI
-> bnx2: eth1 NIC SerDes Link is Up, 1000 Mbps full duplex
-> tg3: eth2: Link is up at 1000 Mbps, full duplex.
-> tg3: eth2: Flow control is off for TX and off for RX.
-> tg3: eth3: Link is up at 1000 Mbps, full duplex.
-> tg3: eth3: Flow control is off for TX and off for RX.
-> bnx2: eth1: using MSI
-> bnx2: eth1 NIC SerDes Link is Up, 1000 Mbps full duplex
-> tg3: eth2: Link is up at 1000 Mbps, full duplex.
-> tg3: eth2: Flow control is off for TX and off for RX.
-> tg3: eth3: Link is up at 1000 Mbps, full duplex.
-> tg3: eth3: Flow control is off for TX and off for RX.
-> bnx2: eth1: using MSI
-> 
-> 
-> In 2.6.27-rc1-git4, I now see this (39 times):
+> Are you suggesting just making pci_create_bus() have a big winge
+> using printk() but returning void regardless of what happens?
+> That sounds fine to me, though I guess it would also need to unwind
+> if the first call to device_create_bin_file() succeeds but the second
+> one doesn't.
 
-Please try the patch at http://marc.info/?l=linux-netdev&m=121791046925274&w=2
+Sounds like the right course of action to me.
 
-> BUG: scheduling while atomic: ifconfig/16971/0x00000100
-> Modules linked in: parport_pc lp parport tg3 lpfc cciss ehci_hcd ohci_hcd uhci_hcd
-> Pid: 16971, comm: ifconfig Not tainted 2.6.27-rc1-git4 #1
-> 
-> Call Trace:
->  [<ffffffff80283db9>] ? page_add_new_anon_rmap+0x20/0x22
->  [<ffffffff802310e9>] __schedule_bug+0x62/0x66
->  [<ffffffff80551146>] schedule+0x99/0x759
->  [<ffffffff8023dc9f>] ? __mod_timer+0xc1/0xd3
->  [<ffffffff8055584a>] ? do_page_fault+0x473/0x7dd
->  [<ffffffff80551ce4>] schedule_timeout+0x8d/0xb4
->  [<ffffffff8023d99e>] ? process_timeout+0x0/0xb
->  [<ffffffff80551cdf>] ? schedule_timeout+0x88/0xb4
->  [<ffffffff80551d24>] schedule_timeout_uninterruptible+0x19/0x1b
->  [<ffffffff8023dcc5>] msleep+0x14/0x1e
->  [<ffffffff80375f2f>] pci_set_power_state+0x1cd/0x292
->  [<ffffffff803739fc>] ? pci_bus_write_config_dword+0x64/0x73
->  [<ffffffffa00651b6>] tg3_set_power_state+0x58/0x884 [tg3]
->  [<ffffffff80552525>] ? __mutex_lock_slowpath+0x1d8/0x1e5
->  [<ffffffffa006b57a>] tg3_open+0x46/0x6cc [tg3]
->  [<ffffffff80552525>] ? __mutex_lock_slowpath+0x1d8/0x1e5
->  [<ffffffff804bdcfe>] dev_open+0x73/0xa8
->  [<ffffffff804bbf5e>] dev_change_flags+0xab/0x167
->  [<ffffffff804f7094>] devinet_ioctl+0x269/0x5da
->  [<ffffffff8026d9da>] ? unlock_page+0x2d/0x32
->  [<ffffffff804f7ca8>] inet_ioctl+0x92/0xaa
->  [<ffffffff804b2046>] sock_ioctl+0x1d1/0x1fb
->  [<ffffffff802a50aa>] vfs_ioctl+0x2a/0x77
->  [<ffffffff802a534c>] do_vfs_ioctl+0x255/0x272
->  [<ffffffff8055584a>] ? do_page_fault+0x473/0x7dd
->  [<ffffffff802a53ab>] sys_ioctl+0x42/0x67
->  [<ffffffff8020beeb>] system_call_fastpath+0x16/0x1b
-
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
