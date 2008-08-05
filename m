@@ -1,52 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753356AbYHEDvQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753076AbYHEDvw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753356AbYHEDvQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 23:51:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752262AbYHEDu7
+	id S1753076AbYHEDvw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 23:51:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752450AbYHEDvo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 23:50:59 -0400
-Received: from outbound.icp-qv1-irony-out4.iinet.net.au ([203.59.1.150]:49719
-	"EHLO outbound.icp-qv1-irony-out4.iinet.net.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751580AbYHEDu6 (ORCPT
+	Mon, 4 Aug 2008 23:51:44 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:44324 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752293AbYHEDvn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 23:50:58 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AtMEAMhql0jLO4pc/2dsb2JhbAAIimalFA
-X-IronPort-AV: E=Sophos;i="4.31,307,1215360000"; 
-   d="scan'208";a="255274781"
-Message-ID: <4897CCE2.90305@ii.net>
-Date: Tue, 05 Aug 2008 11:45:38 +0800
-From: Cliffe <cliffe@ii.net>
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
-MIME-Version: 1.0
-To: Casey Schaufler <casey@schaufler-ca.com>
-CC: Eric Paris <eparis@redhat.com>, malware-list@lists.printk.net,
-       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org
-Subject: Re: [RFC 0/5] [TALPA] Intro to a linux interface for on access scanning
-References: <1217883616.27684.19.camel@localhost.localdomain> <4897BFB4.9090309@schaufler-ca.com> <4897C2A7.7020601@ii.net> <4897CC9C.2090906@schaufler-ca.com>
-In-Reply-To: <4897CC9C.2090906@schaufler-ca.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 4 Aug 2008 23:51:43 -0400
+From: kamezawa.hiroyu@jp.fujitsu.com
+Message-ID: <3182585.1217908165040.kamezawa.hiroyu@jp.fujitsu.com>
+Date: Tue, 5 Aug 2008 12:49:25 +0900 (JST)
+To: balbir@linux.vnet.ibm.com
+Subject: Re: Re: Race condition between putback_lru_page and mem_cgroup_move_list
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
+       MinChan Kim <minchan.kim@gmail.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       linux-mm <linux-mm@kvack.org>, Rik van Riel <riel@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <489741F8.2080104@linux.vnet.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="iso-2022-jp"
 Content-Transfer-Encoding: 7bit
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Mailer: @nifty Webmail 2.0
+References: <489741F8.2080104@linux.vnet.ibm.com>
+ <28c262360808040736u7f364fc0p28d7ceea7303a626@mail.gmail.com> <1217863870.7065.62.camel@lts-notebook> <2f11576a0808040937y70f274e0j32f6b9c98b0f992d@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Casey Schaufler wrote:
-> Cliffe wrote:
->> Additional infrastructure would be necessary. Permissible security 
->> remains a item of contention. Perhaps I am naive but I think most 
->> LSMs could work based on accept/reject. Where every LSM must accept 
->> an action in order for it to be carried out.
+>KOSAKI Motohiro wrote:
+>> Hi
+>> 
+>>>> I think this is a race condition if mem_cgroup_move_lists's comment isn't
+ right.
+>>>> I am not sure that it was already known problem.
+>>>>
+>>>> mem_cgroup_move_lists assume the appropriate zone's lru lock is already h
+eld.
+>>>> but putback_lru_page calls mem_cgroup_move_lists without holding lru_lock
+.
+>>> Hmmm, the comment on mem_cgroup_move_lists() does say this.  Although,
+>>> reading thru' the code, I can't see why it requires this.  But then it's
+>>> Monday, here...
+>> 
+>> I also think zone's lru lock is unnecessary.
+>> So, I guess below "it" indicate lock_page_cgroup, not zone lru lock.
+>> 
 >
-> Please propose patches.
+>We need zone LRU lock, since the reclaim paths hold them. Not sure if I
+>understand why you call zone's LRU lock unnecessary, could you elaborate plea
+se?
 >
->> MHO,
->
-> Oh, humility isn't all it's cracked up to be. Show us all up and
-> write the code. I'm serious, I don't think there's anyone here who
-> would object to a really good stacking scheme.
 
-Ah, I'd love to give it a shot but I have this little PhD thesis and 
-related LSM and tools I need to work on. I just thought I'd put my 5c in.
+I guess the comment should be against mem_cgroup_isolate_pages()...
 
-Cliffe.
+Thanks,
+-Kame
+
