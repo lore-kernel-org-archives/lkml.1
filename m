@@ -1,74 +1,183 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755652AbYHEGGQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757347AbYHEGIS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755652AbYHEGGQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 02:06:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750772AbYHEGDs
+	id S1757347AbYHEGIS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 02:08:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751586AbYHEGIC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 02:03:48 -0400
-Received: from E23SMTP01.au.ibm.com ([202.81.18.162]:41853 "EHLO
-	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751463AbYHEGDr (ORCPT
+	Tue, 5 Aug 2008 02:08:02 -0400
+Received: from mail7.hitachi.co.jp ([133.145.228.42]:55656 "EHLO
+	mail7.hitachi.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751365AbYHEGH7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 02:03:47 -0400
-Message-ID: <4897ED3B.7020006@linux.vnet.ibm.com>
-Date: Tue, 05 Aug 2008 11:33:39 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
+	Tue, 5 Aug 2008 02:07:59 -0400
+X-AuditID: 0ac90647-ab49cba0000005be-a6-4897ee3c061b
+Message-ID: <4897EE26.10909@hitachi.com>
+Date: Tue, 05 Aug 2008 15:07:34 +0900
+From: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; ja-JP; rv:1.4) 
+    Gecko/20030624 Netscape/7.1 (ax)
+X-Accept-Language: ja
 MIME-Version: 1.0
-To: Paul Menage <menage@google.com>
-CC: righi.andrea@gmail.com, xen-devel@lists.xensource.com,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       virtualization@lists.linux-foundation.org, dm-devel@redhat.com,
-       agk@sourceware.org, Dave Hansen <dave@linux.vnet.ibm.com>
-Subject: Re: Too many I/O controller patches
-References: <20080804.175126.193692178.ryov@valinux.co.jp> <1217870433.20260.101.camel@nimitz> <489748E6.5080106@gmail.com> <1217876521.20260.123.camel@nimitz> <48976A2A.9060600@gmail.com> <6599ad830808042255y59215481l5463d4dca9fb2001@mail.gmail.com>
-In-Reply-To: <6599ad830808042255y59215481l5463d4dca9fb2001@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+To: akpm@linux-foundation.org, adilger@clusterfs.com
+Cc: Andreas Dilger <adilger@sun.com>, Mike Snitzer <snitzer@gmail.com>,
+       sct@redhat.com, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, jack@suse.cz, jbacik@redhat.com,
+       cmm@us.ibm.com, tytso@mit.edu, tglx@linutronix.de,
+       yumiko.sugita.yf@hitachi.com, satoshi.oshima.fk@hitachi.com
+Subject: [PATCH 1/2] ext3: add an option to control error handling on file
+    data (another ver.)
+References: <488FD756.9060106@hitachi.com> 
+    <170fa0d20807300814o7741859eu8ad5d5b3b95e401c@mail.gmail.com> 
+    <20080730211703.GZ3342@webber.adilger.int> <489155A0.2070208@hitachi.com>
+In-Reply-To: <489155A0.2070208@hitachi.com>
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Menage wrote:
-> On Mon, Aug 4, 2008 at 1:44 PM, Andrea Righi <righi.andrea@gmail.com> wrote:
->> A safer approach IMHO is to force the tasks to wait synchronously on
->> each operation that directly or indirectly generates i/o.
->>
->> In particular the solution used by the io-throttle controller to limit
->> the dirty-ratio in memory is to impose a sleep via
->> schedule_timeout_killable() in balance_dirty_pages() when a generic
->> process exceeds the limits defined for the belonging cgroup.
->>
->> Limiting read operations is a lot more easy, because they're always
->> synchronized with i/o requests.
-> 
-> I think that you're conflating two issues:
-> 
-> - controlling how much dirty memory a cgroup can have at any given
-> time (since dirty memory is much harder/slower to reclaim than clean
-> memory)
-> 
-> - controlling how much effect a cgroup can have on a given I/O device.
-> 
-> By controlling the rate at which a task can generate dirty pages,
-> you're not really limiting either of these. I think you'd have to set
-> your I/O limits artificially low to prevent a case of a process
-> writing a large data file and then doing fsync() on it, which would
-> then hit the disk with the entire file at once, and blow away any QoS
-> guarantees for other groups.
-> 
-> As Dave suggested, I think it would make more sense to have your
-> page-dirtying throttle points hook into the memory controller instead,
-> and allow the memory controller to track/limit dirty pages for a
-> cgroup, and potentially do throttling as part of that.
+Here is the 'data_err=ignore is the default' version of the PATCH 1/2.
 
-Yes, that would be nicer. The IO controller should control both read and write
-and dirty pages is mostly related to writes.
+Thanks,
+Hidehiro Kawai
 
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+
+Subject: [PATCH 1/2] ext3: add an option to control error handling on file data
+
+If the journal doesn't abort when it gets an IO error in file data
+blocks, the file data corruption will spread silently.  Because
+most of applications and commands do buffered writes without fsync(),
+they don't notice the IO error.  It's scary for mission critical
+systems.  On the other hand, if the journal aborts whenever it gets
+an IO error in file data blocks, the system will easily become
+inoperable.  So this patch introduces a filesystem option to
+determine whether it aborts the journal or just call printk() when
+it gets an IO error in file data.
+
+If you mount a ext3 fs with data_err=abort option, it aborts on file
+data write error.  If you mount it with data_err=ignore, it doesn't
+abort, just call printk().  data_err=ignore is the default.
+
+Signed-off-by: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
+---
+ Documentation/filesystems/ext3.txt |    5 +++++
+ fs/ext3/super.c                    |   16 ++++++++++++++++
+ fs/jbd/commit.c                    |    2 ++
+ include/linux/ext3_fs.h            |    2 ++
+ include/linux/jbd.h                |    3 +++
+ 5 files changed, 28 insertions(+)
+
+Index: linux-2.6.27-rc1/Documentation/filesystems/ext3.txt
+===================================================================
+--- linux-2.6.27-rc1.orig/Documentation/filesystems/ext3.txt
++++ linux-2.6.27-rc1/Documentation/filesystems/ext3.txt
+@@ -96,6 +96,11 @@ errors=remount-ro(*)	Remount the filesys
+ errors=continue		Keep going on a filesystem error.
+ errors=panic		Panic and halt the machine if an error occurs.
+ 
++data_err=ignore(*)	Just print an error message if an error occurs
++			in a file data buffer in ordered mode.
++data_err=abort		Abort the journal if an error occurs in a file
++			data buffer in ordered mode.
++
+ grpid			Give objects the same group ID as their creator.
+ bsdgroups
+ 
+Index: linux-2.6.27-rc1/fs/ext3/super.c
+===================================================================
+--- linux-2.6.27-rc1.orig/fs/ext3/super.c
++++ linux-2.6.27-rc1/fs/ext3/super.c
+@@ -625,6 +625,9 @@ static int ext3_show_options(struct seq_
+ 	else if (test_opt(sb, DATA_FLAGS) == EXT3_MOUNT_WRITEBACK_DATA)
+ 		seq_puts(seq, ",data=writeback");
+ 
++	if (test_opt(sb, DATA_ERR_ABORT))
++		seq_puts(seq, ",data_err=abort");
++
+ 	ext3_show_quota_options(seq, sb);
+ 
+ 	return 0;
+@@ -754,6 +757,7 @@ enum {
+ 	Opt_reservation, Opt_noreservation, Opt_noload, Opt_nobh, Opt_bh,
+ 	Opt_commit, Opt_journal_update, Opt_journal_inum, Opt_journal_dev,
+ 	Opt_abort, Opt_data_journal, Opt_data_ordered, Opt_data_writeback,
++	Opt_data_err_abort, Opt_data_err_ignore,
+ 	Opt_usrjquota, Opt_grpjquota, Opt_offusrjquota, Opt_offgrpjquota,
+ 	Opt_jqfmt_vfsold, Opt_jqfmt_vfsv0, Opt_quota, Opt_noquota,
+ 	Opt_ignore, Opt_barrier, Opt_err, Opt_resize, Opt_usrquota,
+@@ -796,6 +800,8 @@ static match_table_t tokens = {
+ 	{Opt_data_journal, "data=journal"},
+ 	{Opt_data_ordered, "data=ordered"},
+ 	{Opt_data_writeback, "data=writeback"},
++	{Opt_data_err_abort, "data_err=abort"},
++	{Opt_data_err_ignore, "data_err=ignore"},
+ 	{Opt_offusrjquota, "usrjquota="},
+ 	{Opt_usrjquota, "usrjquota=%s"},
+ 	{Opt_offgrpjquota, "grpjquota="},
+@@ -1011,6 +1017,12 @@ static int parse_options (char *options,
+ 				sbi->s_mount_opt |= data_opt;
+ 			}
+ 			break;
++		case Opt_data_err_abort:
++			set_opt(sbi->s_mount_opt, DATA_ERR_ABORT);
++			break;
++		case Opt_data_err_ignore:
++			clear_opt(sbi->s_mount_opt, DATA_ERR_ABORT);
++			break;
+ #ifdef CONFIG_QUOTA
+ 		case Opt_usrjquota:
+ 			qtype = USRQUOTA;
+@@ -1986,6 +1998,10 @@ static void ext3_init_journal_params(str
+ 		journal->j_flags |= JFS_BARRIER;
+ 	else
+ 		journal->j_flags &= ~JFS_BARRIER;
++	if (test_opt(sb, DATA_ERR_ABORT))
++		journal->j_flags |= JFS_ABORT_ON_SYNCDATA_ERR;
++	else
++		journal->j_flags &= ~JFS_ABORT_ON_SYNCDATA_ERR;
+ 	spin_unlock(&journal->j_state_lock);
+ }
+ 
+Index: linux-2.6.27-rc1/include/linux/ext3_fs.h
+===================================================================
+--- linux-2.6.27-rc1.orig/include/linux/ext3_fs.h
++++ linux-2.6.27-rc1/include/linux/ext3_fs.h
+@@ -380,6 +380,8 @@ struct ext3_inode {
+ #define EXT3_MOUNT_QUOTA		0x80000 /* Some quota option set */
+ #define EXT3_MOUNT_USRQUOTA		0x100000 /* "old" user quota */
+ #define EXT3_MOUNT_GRPQUOTA		0x200000 /* "old" group quota */
++#define EXT3_MOUNT_DATA_ERR_ABORT	0x400000 /* Abort on file data write
++						  * error in ordered mode */
+ 
+ /* Compatibility, for having both ext2_fs.h and ext3_fs.h included at once */
+ #ifndef _LINUX_EXT2_FS_H
+Index: linux-2.6.27-rc1/include/linux/jbd.h
+===================================================================
+--- linux-2.6.27-rc1.orig/include/linux/jbd.h
++++ linux-2.6.27-rc1/include/linux/jbd.h
+@@ -816,6 +816,9 @@ struct journal_s
+ #define JFS_FLUSHED	0x008	/* The journal superblock has been flushed */
+ #define JFS_LOADED	0x010	/* The journal superblock has been loaded */
+ #define JFS_BARRIER	0x020	/* Use IDE barriers */
++#define JFS_ABORT_ON_SYNCDATA_ERR	0x040  /* Abort the journal on file
++						* data write error in ordered
++						* mode */
+ 
+ /*
+  * Function declarations for the journaling transaction and buffer
+Index: linux-2.6.27-rc1/fs/jbd/commit.c
+===================================================================
+--- linux-2.6.27-rc1.orig/fs/jbd/commit.c
++++ linux-2.6.27-rc1/fs/jbd/commit.c
+@@ -482,6 +482,8 @@ void journal_commit_transaction(journal_
+ 		printk(KERN_WARNING
+ 			"JBD: Detected IO errors while flushing file data "
+ 			"on %s\n", bdevname(journal->j_fs_dev, b));
++		if (journal->j_flags & JFS_ABORT_ON_SYNCDATA_ERR)
++			journal_abort(journal, err);
+ 		err = 0;
+ 	}
+ 
+
+
