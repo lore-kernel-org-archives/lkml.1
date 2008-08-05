@@ -1,107 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761798AbYHEQxL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762197AbYHEQym@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761798AbYHEQxL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 12:53:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759486AbYHEQw5
+	id S1762197AbYHEQym (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 12:54:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760889AbYHEQya
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 12:52:57 -0400
-Received: from mail15.ca.com ([208.232.182.54]:37666 "EHLO mail15.ca.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757875AbYHEQw4 convert rfc822-to-8bit (ORCPT
+	Tue, 5 Aug 2008 12:54:30 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:37063 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758259AbYHEQy2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 12:52:56 -0400
-X-Greylist: delayed 909 seconds by postgrey-1.27 at vger.kernel.org; Tue, 05 Aug 2008 12:52:56 EDT
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Tue, 5 Aug 2008 12:54:28 -0400
+Date: Tue, 5 Aug 2008 10:54:27 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Matt Domsch <Matt_Domsch@dell.com>
+Cc: "Martin K. Petersen" <martin.petersen@oracle.com>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Ric Wheeler <rwheeler@redhat.com>, linux-scsi@vger.kernel.org,
+       linux-ide@vger.kernel.org, Jim Meyering <jim@meyering.net>,
+       linux-kernel@vger.kernel.org, Jeff Garzik <jeff@garzik.org>
+Subject: Re: tools support for non-512 byte sector sizes
+Message-ID: <20080805165426.GA2055@parisc-linux.org>
+References: <488F524F.6020905@redhat.com> <20080729182611.GB24924@parisc-linux.org> <1217356645.6103.48.camel@localhost.localdomain> <yq13alsr0g0.fsf@sermon.lab.mkp.net> <20080730135147.GA4513@auslistsprd01.us.dell.com> <20080801161149.GA26461@parisc-linux.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [malware-list] [RFC 0/5] [TALPA] Intro to a linux interfaceforon access scanning
-Date: Tue, 5 Aug 2008 12:37:45 -0400
-Message-ID: <2629CC4E1D22A64593B02C43E855530304807436@USILMS12.ca.com>
-In-Reply-To: <1217948212.27684.120.camel@localhost.localdomain>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [malware-list] [RFC 0/5] [TALPA] Intro to a linux interfaceforon access scanning
-Thread-Index: Acj3C5CRxYz6D1ViR5OmSYrV5CPjlQACdAYg
-References: <1217883616.27684.19.camel@localhost.localdomain> <20080804223249.GA10517@kroah.com> <1217896374.27684.53.camel@localhost.localdomain> <2629CC4E1D22A64593B02C43E855530304807431@USILMS12.ca.com> <1217948212.27684.120.camel@localhost.localdomain>
-From: "Press, Jonathan" <Jonathan.Press@ca.com>
-To: "Eric Paris" <eparis@redhat.com>
-Cc: "Greg KH" <greg@kroah.com>, <linux-kernel@vger.kernel.org>,
-       <malware-list@lists.printk.net>
-X-OriginalArrivalTime: 05 Aug 2008 16:37:46.0562 (UTC) FILETIME=[975AEA20:01C8F719]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080801161149.GA26461@parisc-linux.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Regarding self-exclusion...  We are doing write-time scanning, or more
-accurately close-time scanning.  We don't block the close, but we do
-scan the file afterwards, and if it is infected, we perform any one of
-several actions -- such as report to user, rename, quarantine, delete,
-etc.  I would not want a self-excluded executable to be able to write
-something that I don't get to scan.
+On Fri, Aug 01, 2008 at 10:11:49AM -0600, Matthew Wilcox wrote:
+> Are they SCSI?  I just got round to trying 4k sector sizes in ata_ram
+> (after adding file backed capability) and found that libata currently
+> silently ignores the identify bits that report sector size.  I'll work
+> on fixing that this afternoon if nobody beats me to it.
 
-Regarding exclusion by name, etc...  You are right.  I am accustomed to
-thinking about our current architecture, which does not involve a
-published interface.  I have to adjust my thinking.  Putting such a
-feature into the kernel would not be a good idea.  We can handle it in
-user space.
+OK, I have patches.  I'll send them to linux-ide.  If anyone wants to
+try them, I pushed out two trees; one for libata:
 
+http://git.kernel.org/?p=linux/kernel/git/willy/misc.git;a=shortlog;h=ata-large-sectors
 
-Jon
+and one for ata_ram supporting:
+ - large sectors
+ - file backing
+http://git.kernel.org/?p=linux/kernel/git/willy/misc.git;a=shortlog;h=ata-ram
 
+I hope that will help some more people do testing.
 
+Here's the dmesg from running:
 
------Original Message-----
-From: Eric Paris [mailto:eparis@redhat.com] 
-Sent: Tuesday, August 05, 2008 10:57 AM
-To: Press, Jonathan
-Cc: Greg KH; linux-kernel@vger.kernel.org; malware-list@lists.printk.net
-Subject: RE: [malware-list] [RFC 0/5] [TALPA] Intro to a linux
-interfaceforon access scanning
+$ sudo modprobe ata_ram sector_size=4096 capacity=262144 nr_ports=2
 
-On Tue, 2008-08-05 at 10:41 -0400, Press, Jonathan wrote:
-> I share the concern here.  The idea that a piece of malware can
-exclude
-> itself seems nasty to me.  I am not an expert on writing malware, but
-it
-> intuitively seems to me to be a huge opportunity for creativity.  The
-> argument that it's ok because anything that the malware writes will
-> eventually be scanned anyway does not reassure me.
+(note that you'll need at least 2.5GB of ram in your machine to try this,
+or Linux gets really unhappy.  You can, of course, reduce the capacity.
+Would there be interest in a lazily allocated option for ata_ram?)
 
-You aren't doing write time scanning anyway.  This exclusion means that
-an 'excluded' process can OPEN things that would normally be called
-malware.  The model here doesn't talk about adding files with bad
-information to the system it talks about stopping that bad information
-from being opened and propagated further.  Thread exclusions as they are
-written in the patch only weaken security to those processes which
-actively choose to read malware, it in no way weakens the security of
-the system as a whole...
-> 
-> Also...  I was one of the people who brought up the idea of a process
-> exclusion when the requirements list was being developed.  I intended
-it
-> as a way that an AV application could exclude specific OTHER processes
-> by name (as selected by the AV user) -- not as a way that a process
-> would exclude itself.  I don't think that the implementation here
-> reflects this goal, which still seems to me to be a requirement.
+[ 1134.017240] scsi7 : ata_ram
+[ 1134.017420] scsi8 : ata_ram
+[ 1134.017489] ata8: SATA max UDMA/133 ata_ram_0
+[ 1134.017495] ata9: SATA max UDMA/133 ata_ram_1
+[ 1134.017557] ata8.00: ATA-8: Linux RAM Drive, 0.01, max UDMA7
+[ 1134.017563] ata8.00: 262144 sectors, multi 0: LBA 
+[ 1134.017602] ata8.00: configured for UDMA/133
+[ 1134.017631] ata9.00: ATA-8: Linux RAM Drive, 0.01, max UDMA7
+[ 1134.017636] ata9.00: 262144 sectors, multi 0: LBA 
+[ 1134.017668] ata9.00: configured for UDMA/133
+[ 1134.035741] scsi 7:0:0:0: Direct-Access     ATA      Linux RAM Drive  0.01 PQ: 0 ANSI: 5
+[ 1134.035904] sd 7:0:0:0: [sdb] 262144 4096-byte hardware sectors (1074 MB)
+[ 1134.035926] sd 7:0:0:0: [sdb] Write Protect is off
+[ 1134.035932] sd 7:0:0:0: [sdb] Mode Sense: 00 3a 00 00
+[ 1134.035961] sd 7:0:0:0: [sdb] Write cache: disabled, read cache: enabled, doesn't support DPO or FUA
+[ 1134.036039] sd 7:0:0:0: [sdb] 262144 4096-byte hardware sectors (1074 MB)
+[ 1134.036061] sd 7:0:0:0: [sdb] Write Protect is off
+[ 1134.036066] sd 7:0:0:0: [sdb] Mode Sense: 00 3a 00 00
+[ 1134.036095] sd 7:0:0:0: [sdb] Write cache: disabled, read cache: enabled, doesn't support DPO or FUA
+[ 1134.036119]  sdb: unknown partition table
+[ 1134.036276] sd 7:0:0:0: [sdb] Attached SCSI disk
+[ 1134.036463] sd 7:0:0:0: Attached scsi generic sg2 type 0
+[ 1134.036607] scsi 8:0:0:0: Direct-Access     ATA      Linux RAM Drive  0.01 PQ: 0 ANSI: 5
+[ 1134.036749] sd 8:0:0:0: [sdc] 262144 4096-byte hardware sectors (1074 MB)
+[ 1134.036768] sd 8:0:0:0: [sdc] Write Protect is off
+[ 1134.036774] sd 8:0:0:0: [sdc] Mode Sense: 00 3a 00 00
+[ 1134.036803] sd 8:0:0:0: [sdc] Write cache: disabled, read cache: enabled, doesn't support DPO or FUA
+[ 1134.036869] sd 8:0:0:0: [sdc] 262144 4096-byte hardware sectors (1074 MB)
+[ 1134.036888] sd 8:0:0:0: [sdc] Write Protect is off
+[ 1134.036895] sd 8:0:0:0: [sdc] Mode Sense: 00 3a 00 00
+[ 1134.036924] sd 8:0:0:0: [sdc] Write cache: disabled, read cache: enabled, doesn't support DPO or FUA
+[ 1134.036944]  sdc: unknown partition table
+[ 1134.037082] sd 8:0:0:0: [sdc] Attached SCSI disk
+[ 1134.037182] sd 8:0:0:0: Attached scsi generic sg3 type 0
 
-Wait wit, you'd rather have a 'privileged' process be allowed to exclude
-every other process on a system than have a it only be allowed to
-exclude itself? and somehow that is safer?
-
-"by name" is right out the window.  You are never going to win 'by name'
-on anything to do with the kernel  :)  Maybe you can get me to
-eventually buy into 'by pid' or something like that, but setting flags
-on other running processes is always going to be racy and scary for me.
-Can you show me some code on how to do this cleanly?  And why it needs
-to be done in kernel?
-
-What is the goal you are trying to achieve?  A performance win for the
-application in question or is this a security aware application that
-needs to be able to access 'sensitive' data?
-
--Eric
-
-
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
