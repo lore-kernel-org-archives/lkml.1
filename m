@@ -1,68 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757666AbYHEGXV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755154AbYHEG2Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757666AbYHEGXV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 02:23:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751996AbYHEGW7
+	id S1755154AbYHEG2Z (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 02:28:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751287AbYHEG2S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 02:22:59 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:33967 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751346AbYHEGW6 (ORCPT
+	Tue, 5 Aug 2008 02:28:18 -0400
+Received: from fms-01.valinux.co.jp ([210.128.90.1]:50596 "EHLO
+	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751142AbYHEG2S (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 02:22:58 -0400
-Date: Tue, 05 Aug 2008 15:20:59 +0900
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: balbir@linux.vnet.ibm.com
-Subject: Re: Race condition between putback_lru_page and mem_cgroup_move_list
-Cc: kosaki.motohiro@jp.fujitsu.com, Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
-       MinChan Kim <minchan.kim@gmail.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       linux-mm <linux-mm@kvack.org>, Rik van Riel <riel@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <489741F8.2080104@linux.vnet.ibm.com>
-References: <2f11576a0808040937y70f274e0j32f6b9c98b0f992d@mail.gmail.com> <489741F8.2080104@linux.vnet.ibm.com>
-Message-Id: <20080805151956.A885.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+	Tue, 5 Aug 2008 02:28:18 -0400
+Date: Tue, 05 Aug 2008 15:28:16 +0900 (JST)
+Message-Id: <20080805.152816.105502343.taka@valinux.co.jp>
+To: dave@linux.vnet.ibm.com
+Cc: righi.andrea@gmail.com, xen-devel@lists.xensource.com,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       virtualization@lists.linux-foundation.org, dm-devel@redhat.com,
+       agk@sourceware.org
+Subject: Re: Too many I/O controller patches
+From: Hirokazu Takahashi <taka@valinux.co.jp>
+In-Reply-To: <1217883036.20260.137.camel@nimitz>
+References: <1217876521.20260.123.camel@nimitz>
+	<48976A2A.9060600@gmail.com>
+	<1217883036.20260.137.camel@nimitz>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Balbir-san,
+Hi,
 
-> > I also think zone's lru lock is unnecessary.
-> > So, I guess below "it" indicate lock_page_cgroup, not zone lru lock.
-> 
-> We need zone LRU lock, since the reclaim paths hold them. Not sure if I
-> understand why you call zone's LRU lock unnecessary, could you elaborate please?
-
-I tought..
-
-1. in general, one data structure should be protected by one lock.
-2. memcgroup lru is protected by mem_cgroup_per_zone::lru_lock.
-
-
-if zone LRU lock must be held, Why do mem_cgroup_per_zone::lru_lock exit?
-it should be removed?
-
-
-Could you explain detail of "race condition with global reclaim race" ?
-
-
-
-> > I think both opinion is correct.
-> > unevictable lru related code doesn't require pagevec.
+> > >> But I'm not yet convinced that limiting the IO writes at the device
+> > >> mapper layer is the best solution. IMHO it would be better to throttle
+> > >> applications' writes when they're dirtying pages in the page cache (the
+> > >> io-throttle way), because when the IO requests arrive to the device
+> > >> mapper it's too late (we would only have a lot of dirty pages that are
+> > >> waiting to be flushed to the limited block devices, and maybe this could
+> > >> lead to OOM conditions). IOW dm-ioband is doing this at the wrong level
+> > >> (at least for my requirements). Ryo, correct me if I'm wrong or if I've
+> > >> not understood the dm-ioband approach.
+> > > 
+> > > The avoid-lots-of-page-dirtying problem sounds like a hard one.  But, if
+> > > you look at this in combination with the memory controller, they would
+> > > make a great team.
+> > > 
+> > > The memory controller keeps you from dirtying more than your limit of
+> > > pages (and pinning too much memory) even if the dm layer is doing the
+> > > throttling and itself can't throttle the memory usage.
 > > 
-> > but mem_cgroup_move_lists is used by active/inactive list transition too.
-> > then, pagevec is necessary for keeping reclaim throuput.
+> > mmh... but in this way we would just move the OOM inside the cgroup,
+> > that is a nice improvement, but the main problem is not resolved...
 > > 
+> > A safer approach IMHO is to force the tasks to wait synchronously on
+> > each operation that directly or indirectly generates i/o.
 > 
-> It's on my TODO list. I hope to get to it soon.
+> Fine in theory, hard in practice. :)
+> 
+> I think the best we can hope for is to keep parity with what happens in
+> the rest of the kernel.  We already have a problem today with people
+> mmap()'ing lots of memory and dirtying it all at once.  Adding a i/o
+> bandwidth controller or a memory controller isn't really going to fix
+> that.  I think it is outside the scope of the i/o (and memory)
+> controllers until we solve it generically, first.
 
-Very good news!
-Thanks.
+Yes, that's right. This should be solved.
+
+But there is a good thing when you use a memory controller.
+A problem occurred in a certain cgroup will be confined in its cgroup.
+I think this is a great point, don't you think?
+
+Thank you,
+Hirokazu Takahashi.
+
 
 
 
