@@ -1,102 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761575AbYHEBnJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759227AbYHECFu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761575AbYHEBnJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 21:43:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758297AbYHEBmz
+	id S1759227AbYHECFu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 22:05:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755498AbYHECAL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 21:42:55 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:58638 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751147AbYHEBmy (ORCPT
+	Mon, 4 Aug 2008 22:00:11 -0400
+Received: from sj-iport-5.cisco.com ([171.68.10.87]:41037 "EHLO
+	sj-iport-5.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757569AbYHECAJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 21:42:54 -0400
-Date: Mon, 4 Aug 2008 18:42:28 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Duane Griffin" <duaneg@dghda.com>
-Cc: linux-kernel@vger.kernel.org, sct@redhat.com, linux-ext4@vger.kernel.org,
-       Sami Liedes <sliedes@cc.hut.fi>
-Subject: Re: [PATCH] jbd: abort instead of waiting for nonexistent
- transactions
-Message-Id: <20080804184228.5964b1fd.akpm@linux-foundation.org>
-In-Reply-To: <1217898321-3514-1-git-send-email-duaneg@dghda.com>
-References: <1217898321-3514-1-git-send-email-duaneg@dghda.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 4 Aug 2008 22:00:09 -0400
+From: Roland Dreier <rdreier@cisco.com>
+To: Andrea Arcangeli <andrea@qumranet.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Dave Jones <davej@redhat.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, jeremy@goop.org, hugh@veritas.com,
+       mingo@elte.hu, akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       arjan <arjan@infradead.org>
+Subject: Re: [PATCH] workaround minor lockdep bug triggered by mm_take_all_locks
+References: <20080804145318.GA17867@redhat.com>
+	<1217861763.3589.13.camel@twins> <20080804162657.GI11476@duo.random>
+	<1217867935.3589.35.camel@twins> <20080804172728.GJ11476@duo.random>
+	<20080804174659.GK11476@duo.random>
+	<20080804175730.GL11476@duo.random> <1217875739.3589.56.camel@twins>
+	<20080804201514.GB12464@duo.random> <1217882242.3589.90.camel@twins>
+	<20080804210954.GC12464@duo.random>
+X-Message-Flag: Warning: May contain useful information
+Date: Mon, 04 Aug 2008 19:00:03 -0700
+In-Reply-To: <20080804210954.GC12464@duo.random> (Andrea Arcangeli's message
+	of "Mon, 4 Aug 2008 23:09:54 +0200")
+Message-ID: <adar694rzks.fsf@cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 05 Aug 2008 02:00:03.0632 (UTC) FILETIME=[F9CD8300:01C8F69E]
+Authentication-Results: sj-dkim-3; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim3002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue,  5 Aug 2008 02:05:20 +0100 "Duane Griffin" <duaneg@dghda.com> wrote:
+ > The point is that this is a runtime evaluation of lock orders, if
+ > runtime isn't the lucky one that reproduces the deadlock, it'll find
+ > nothing at all.
 
-> The __log_wait_for_space function sits in a loop checkpointing transactions
-> until there is sufficient space free in the journal. However, if there are
-> no transactions to be processed (e.g. because the free space calculation is
-> wrong due to a corrupted filesystem) it will never progress.
-> 
-> Check for space being required when no transactions are outstanding and
-> abort the journal instead of endlessly looping.
-> 
-> This patch fixes the bug reported by Sami Liedes at:
-> http://bugzilla.kernel.org/show_bug.cgi?id=10976
-> 
-> Signed-off-by: Duane Griffin <duaneg@dghda.com>
-> ---
-> diff --git a/fs/jbd/checkpoint.c b/fs/jbd/checkpoint.c
-> index a5432bb..af2b554 100644
-> --- a/fs/jbd/checkpoint.c
-> +++ b/fs/jbd/checkpoint.c
-> @@ -126,13 +126,24 @@ void __log_wait_for_space(journal_t *journal)
->  
->  		/*
->  		 * Test again, another process may have checkpointed while we
-> -		 * were waiting for the checkpoint lock
-> +		 * were waiting for the checkpoint lock. If there are no
-> +		 * outstanding transactions there is nothing to checkpoint and
-> +		 * we can't make progress. Abort the journal in this case.
->  		 */
->  		spin_lock(&journal->j_state_lock);
->  		nblocks = jbd_space_needed(journal);
->  		if (__log_space_left(journal) < nblocks) {
-> +			int chkpt = journal->j_checkpoint_transactions != NULL;
-> +
->  			spin_unlock(&journal->j_state_lock);
-> -			log_do_checkpoint(journal);
-> +			if (chkpt) {
-> +				log_do_checkpoint(journal);
-> +			} else {
-> +				printk(KERN_ERR "%s: no transactions\n",
-> +				       __func__);
-> +				journal_abort(journal, 0);
-> +			}
-> +
->  			spin_lock(&journal->j_state_lock);
->  		}
->  		mutex_unlock(&journal->j_checkpoint_mutex);
+I think the point you miss is that lockdep can report a potential
+deadlock, even if the deadlock does not actually occur.  For example
+suppose there is an AB-BA deadlock somewhere.  For this to actually
+trigger, we have to have one CPU running the AB code path at exactly the
+moment another CPU runs the BA code path, with the right timing so one
+CPU holds A and tries to grab B while the other CPU already holds B.
 
-umm, OK, but...
+With lockdep, we just have to have the AB code path run once at any
+point, and then the BA code path run at any later time (even days after
+the AB code path has released all the locks).  And then we get a
+warning dump that explains the exact potential deadlock.
 
-There's not really a lot of point in testing
-journal->j_checkpoint_transactions inside j_state_lock, is there? 
-Hence local variable chkpt isn't really needed.
-
-But log_do_checkpoint() already checks to see if there are any
-checkpointing transactions upon which to operate, so rather than doing
-log_do_checkpoint()'s work for it, perhaps it would be cleaner to teach
-log_do_checkpoint() to tell the caller whether it manage to do any
-work?
-
-The nice thing about that is that even if
-journal->j_checkpoint_transactions is NULL, log_do_checkpoint() might
-still be able to do some useful work in cleanup_journal_tail().
-
-otoh, two existing callers of log_do_checkpoint() already test
-journal->j_checkpoint_transactions before calling log_do_checkpoint(),
-so maybe that's pretty pointless.
-
-otoh2, those existing callers do the seemingly-unneeded
-spin_lock(j_list_lock).  hrm.  So if we're playing match-the-existing
-code, we should go with your first patches.
-
-ho hum, I guess I'll do "otoh2".
+ - R.
