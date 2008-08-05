@@ -1,69 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761094AbYHEMYp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761444AbYHEM07@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761094AbYHEMYp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 08:24:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758781AbYHEMYi
+	id S1761444AbYHEM07 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 08:26:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758781AbYHEMZP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 08:24:38 -0400
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:53956 "EHLO smtp6.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756969AbYHEMYh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 08:24:37 -0400
-Date: Tue, 5 Aug 2008 15:23:15 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Bryan Wu <cooloney@kernel.org>
-Cc: sonic.zhang@analog.com, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       linux-kernel@vger.kernel.org, Mike Frysinger <vapier.adi@gmail.com>
-Subject: Re: serial/bfin_5xx.c build error
-Message-ID: <20080805122315.GB25371@cs181140183.pp.htv.fi>
-References: <20080802181624.GQ19682@cs181140183.pp.htv.fi> <386072610808042058lf994767qd4c941d8dc13d7c8@mail.gmail.com>
+	Tue, 5 Aug 2008 08:25:15 -0400
+Received: from mail.deathmatch.net ([70.167.247.36]:45639 "EHLO
+	mail.deathmatch.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759847AbYHEMZO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Aug 2008 08:25:14 -0400
+Date: Tue, 5 Aug 2008 08:24:08 -0400
+From: Bob Copeland <me@bobcopeland.com>
+To: Dave Young <hidave.darkstar@gmail.com>
+Cc: Jiri Slaby <jirislaby@gmail.com>, Pekka J Enberg <penberg@cs.helsinki.fi>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Johannes Berg <johannes@sipsolutions.net>, linux-kernel@vger.kernel.org,
+       linux-wireless@vger.kernel.org
+Subject: Re: [BUG] wireless : cpu stuck for 61s
+Message-ID: <20080805122408.GA5000@hash.localnet>
+References: <20080729055731.GA3265@darkstar> <1217334724.10489.47.camel@johannes.berg> <20080730020820.8bcc00e2.akpm@linux-foundation.org> <a8e1da0807300302m35a0a7c0q2ff2e0ab92a69239@mail.gmail.com> <20080730031047.54e13e2d.akpm@linux-foundation.org> <a8e1da0808010032h32c18054g3712466eb40f0acf@mail.gmail.com> <4896D34A.1000005@gmail.com> <a8e1da0808041829sac34939yd9163b02e6b8b515@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <386072610808042058lf994767qd4c941d8dc13d7c8@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <a8e1da0808041829sac34939yd9163b02e6b8b515@mail.gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 05, 2008 at 11:58:44AM +0800, Bryan Wu wrote:
-> On Sun, Aug 3, 2008 at 2:16 AM, Adrian Bunk <bunk@kernel.org> wrote:
-> > Seems to be broken by Alan's changes:
-> >
+On Tue, Aug 05, 2008 at 09:29:26AM +0800, Dave Young wrote:
+> With the patch I cann't reproduce the bug with 27-rc1 now.
 > 
-> I'm trying to locate the Alan's change, do you know it, Adrian?
-> 
-> > <--  snip  -->
-> >
-> > ...
-> >  CC      drivers/serial/bfin_5xx.o
-> > /home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/serial/bfin_5xx.c: In function 'bfin_serial_set_ldisc':
-> > /home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/serial/bfin_5xx.c:820: error: 'struct tty_ldisc' has no member named 'num'
-> > /home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/serial/bfin_5xx.c: In function 'bfin_serial_console_write':
-> > /home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/serial/bfin_5xx.c:1001: warning: comparison of distinct pointer types lacks a cast
-> > /home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/serial/bfin_5xx.c:1003: warning: comparison of distinct pointer types lacks a cast
-> > make[3]: *** [drivers/serial/bfin_5xx.o] Error 1
-> >
-> > <--  snip  -->
-> 
-> So is this bug in mainline upstream or linux-next latest tree?
+> >  [<c02375a6>] ? debugfs_create_file+0x46/0x210
+> >  [<c02375a6>] ? debugfs_create_file+0x46/0x210
+> >  [<c02375a6>] debugfs_create_file+0x46/0x210
+> >  [<c02377f1>] debugfs_create_dir+0x21/0x30
+> >  [<f8901f6d>] ieee80211_sta_debugfs_add+0x2d/0x150 [mac80211]
+> >  [<f88eba89>] sta_info_debugfs_add_work+0x89/0x130 [mac80211]
+> >  [<f890a170>] ? rate_control_pid_add_sta_debugfs+0x0/0x30 [mac80211]
 
-It was a bug in the mainline upstream kernel.
+I wonder if there were two separate problems here.  I looked into
+this with some detail yesterday and agree with Johannes that the above 
+trace is on locking the parent directory's i_mutex, but I too couldn't
+see any problems with sta_info_debugfs_add_work.  Other stuff could also 
+modify the directory with or without rtnl_lock, but not in a way that 
+to my untrained eyes would lead to deadlock.
 
-Alan fixed it with comit b1cbefe5d5fc2d4a6109961d914027172ce8e152 
-(blackfin: Fix compile failure in tty code) that went into
-Linus' tree last night.
-
-> Thanks
-> -Bryan
-
-cu
-Adrian
+Or is the trace just wrong?
 
 -- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+Bob Copeland %% www.bobcopeland.com
 
