@@ -1,47 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763472AbYHEVhs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762693AbYHEVig@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763472AbYHEVhs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 17:37:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756071AbYHEVhk
+	id S1762693AbYHEVig (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 17:38:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754676AbYHEVi1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 17:37:40 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:46169 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754279AbYHEVhk (ORCPT
+	Tue, 5 Aug 2008 17:38:27 -0400
+Received: from fg-out-1718.google.com ([72.14.220.158]:25077 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752364AbYHEVi0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 17:37:40 -0400
-Date: Tue, 5 Aug 2008 14:37:19 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Sean MacLennan <smaclennan@pikatech.com>
-cc: Karsten Keil <kkeil@suse.de>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       "Andreas.Eversberg" <Andreas.Eversberg@versatel.de>,
-       isdn4linux@listserv.isdn4linux.de, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/4] Fix remaining big endian issue of hfcmulti
-In-Reply-To: <20080805172324.45853d98@lappy.seanm.ca>
-Message-ID: <alpine.LFD.1.10.0808051435260.3257@nehalem.linux-foundation.org>
-References: <20080802151532.DE017A3C09@pingi.kke.suse.de> <1217910588.24157.151.camel@pasglop> <20080805113111.GA6827@pingi.kke.suse.de> <1217941466.24157.190.camel@pasglop> <20080805172549.GA6052@pingi.kke.suse.de> <alpine.LFD.1.10.0808051140250.3257@nehalem.linux-foundation.org>
- <20080805210239.GB6052@pingi.kke.suse.de> <20080805172324.45853d98@lappy.seanm.ca>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Tue, 5 Aug 2008 17:38:26 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=nbYUW0DpISCvHOpqUqWi/IKltR69UgKk2qVx0e70UtG0UeT4CSYAcKfJ6X40B9NTDT
+         xwxpd06vb+LJL3zwTPyRgbOtPjJyk+r0nhxuUZ4YJ3iNB2LF+HXrR9NAbQgkjuiMfRVv
+         BwecyrCYwTgoFORaGCdMTokJ+AGNSAQkjpUtU=
+Date: Wed, 6 Aug 2008 01:31:11 +0400
+From: Alexander Beregalov <a.beregalov@gmail.com>
+To: mchehab@infradead.org, v4l-dvb-maintainer@linuxtv.org,
+       video4linux-list@redhat.com, linux-kernel@vger.kernel.org
+Subject: [PATCH] saa7134-core.c: fix warning
+Message-ID: <20080805213111.GA17627@orion>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Alexander Beregalov <a.beregalov@gmail.com>
 
+saa7134-core.c: fix warning
 
-On Tue, 5 Aug 2008, Sean MacLennan wrote:
-> 
-> Why not select PIO or MMIO at config time?
+drivers/media/video/saa7134/saa7134-core.c:366: warning:
+'saa7134_buffer_requeue' defined but not used
 
-Umm. Then you can't run a generic driver that can do either. That's the 
-worst choice of all.
+Signed-off-by: Alexander Beregalov <a.beregalov@gmail.com>
+---
 
-As to where in the stack to do the choice - I suspect it's easier if it's 
-done at the lowest level, but that can cause performance issues (ie 
-testing that flag over and over again). The mmio code avoids some of the 
-performance issues exactly by doing the "repeat" versions - so for some 
-cases you can do the check once at the top, and then just repeat.
+ drivers/media/video/saa7134/saa7134-core.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-		Linus
+diff --git a/drivers/media/video/saa7134/saa7134-core.c b/drivers/media/video/saa7134/saa7134-core.c
+index 75d6184..0473a79 100644
+--- a/drivers/media/video/saa7134/saa7134-core.c
++++ b/drivers/media/video/saa7134/saa7134-core.c
+@@ -360,7 +360,7 @@ void saa7134_buffer_timeout(unsigned long data)
+ }
+ 
+ /* resends a current buffer in queue after resume */
+-
++#ifdef CONFIG_PM
+ static int saa7134_buffer_requeue(struct saa7134_dev *dev,
+ 				  struct saa7134_dmaqueue *q)
+ {
+@@ -384,7 +384,7 @@ static int saa7134_buffer_requeue(struct saa7134_dev *dev,
+ 
+ 	return 0;
+ }
+-
++#endif
+ /* ------------------------------------------------------------------ */
+ 
+ int saa7134_set_dmabits(struct saa7134_dev *dev)
