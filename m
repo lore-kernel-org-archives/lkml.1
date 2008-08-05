@@ -1,57 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759391AbYHELMA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757196AbYHELMX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759391AbYHELMA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 07:12:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755165AbYHELK3
+	id S1757196AbYHELMX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 07:12:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753957AbYHELLw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 07:10:29 -0400
-Received: from embla.aitel.hist.no ([158.38.50.22]:58224 "EHLO
-	embla.aitel.hist.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754429AbYHELK3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 07:10:29 -0400
-Message-ID: <48983521.9070203@aitel.hist.no>
-Date: Tue, 05 Aug 2008 13:10:25 +0200
-From: Helge Hafting <helge.hafting@aitel.hist.no>
-User-Agent: Mozilla-Thunderbird 2.0.0.14 (X11/20080509)
+	Tue, 5 Aug 2008 07:11:52 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:34263 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752357AbYHELLv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Aug 2008 07:11:51 -0400
+Date: Tue, 5 Aug 2008 12:11:48 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, ebmunson@us.ibm.com,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, libhugetlbfs-devel@lists.sourceforge.net,
+       abh@cray.com
+Subject: Re: [RFC] [PATCH 0/5 V2] Huge page backed user-space stacks
+Message-ID: <20080805111147.GD20243@csn.ul.ie>
+References: <cover.1216928613.git.ebmunson@us.ibm.com> <20080730014308.2a447e71.akpm@linux-foundation.org> <20080730172317.GA14138@csn.ul.ie> <20080730103407.b110afc2.akpm@linux-foundation.org> <20080730193010.GB14138@csn.ul.ie> <20080730130709.eb541475.akpm@linux-foundation.org> <20080731103137.GD1704@csn.ul.ie> <1217884211.20260.144.camel@nimitz>
 MIME-Version: 1.0
-To: Herbert Xu <herbert@gondor.apana.org.au>
-CC: Arjan van de Ven <arjan@infradead.org>,
-       Chris Mason <chris.mason@oracle.com>, dwmw2@infradead.org,
-       austin_zhang@linux.intel.com, davem@davemloft.net,
-       linux-kernel@vger.kernel.org, linux-crypto@vger.kernel.org
-Subject: Re: [PATCH] Using Intel CRC32 instruction to accelerate	CRC32c algorithm
- by new crypto API.
-References: <1217866496.29139.75.camel@think.oraclecorp.com> <E1KQ3Be-0003T3-00@gondolin.me.apana.org.au> <20080804100605.4f0921f4@infradead.org> <20080804171017.GA13725@gondor.apana.org.au> <20080804171316.GA13819@gondor.apana.org.au>
-In-Reply-To: <20080804171316.GA13819@gondor.apana.org.au>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <1217884211.20260.144.camel@nimitz>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Herbert Xu wrote:
-> On Tue, Aug 05, 2008 at 01:10:17AM +0800, Herbert Xu wrote:
->   
->> I don't see why you couldn't do that for the crypto API too
->> if you wanted to.  That way it would benefit all crypto users
->> rather than just the crc32c (note the extra c) users.
->>     
->
-> Anyway, the point here is the crc32c is nothing special.  It's
-> just one out of many algorithms that has/will have hardware
-> acceleration support.
->
-> Rather than doing ad-hoc implementations and optimising that
-> whenever such a thing pops up, let's spend our effort in creating
-> a common platform that can be reused.
->   
-How about making crc32c an inline function then?
-On processors that have this feature, this compiles to that single
-instruction, plus whatever setup it needs. Nice and efficient.
-On other processors, either inline the algorithm or inline
-a call to an out of line function, depending on how bulky this is.
+On (04/08/08 14:10), Dave Hansen didst pronounce:
+> On Thu, 2008-07-31 at 11:31 +0100, Mel Gorman wrote:
+> > We are a lot more reliable than we were although exact quantification is
+> > difficult because it's workload dependent. For a long time, I've been able
+> > to test bits and pieces with hugepages by allocating the pool at the time
+> > I needed it even after days of uptime. Previously this required a reboot.
+> 
+> This is also a pretty big expansion of fs/hugetlb/ use outside of the
+> filesystem itself.  It is hacking the existing shared memory
+> kernel-internal user to spit out effectively anonymous memory.
+> 
+> Where do we draw the line where we stop using the filesystem for this?
+> Other than the immediate code reuse, does it gain us anything?
+> 
+> I have to think that actually refactoring the filesystem code and making
+> it usable for really anonymous memory, then using *that* in these
+> patches would be a lot more sane.  Especially for someone that goes to
+> look at it in a year. :)
+> 
 
-Similiar for any other functions that may or may not have hw support.
+See, that's great until you start dealing with MAP_SHARED|MAP_ANONYMOUS.
+To get that right between children, you end up something very fs-like
+when the child needs to fault in a page that is already populated by the
+parent. I strongly suspect we end up back at hugetlbfs backing it :/
 
-Helge Hafting
+If you were going to do such a thing, you'd end up converting something
+like ramfs to hugetlbfs and sharing that.
+
+
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
