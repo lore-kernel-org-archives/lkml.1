@@ -1,173 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760799AbYHEPff@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759884AbYHEPgg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760799AbYHEPff (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 11:35:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758181AbYHEPf2
+	id S1759884AbYHEPgg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 11:36:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759277AbYHEPg2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 11:35:28 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:43413 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758638AbYHEPf0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 11:35:26 -0400
-Message-ID: <489872C5.2040508@redhat.com>
-Date: Tue, 05 Aug 2008 11:33:25 -0400
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Tue, 5 Aug 2008 11:36:28 -0400
+Received: from smtp118.mail.mud.yahoo.com ([209.191.84.167]:47421 "HELO
+	smtp118.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1759137AbYHEPg1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Aug 2008 11:36:27 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=kquGiu9pGwtIVs+xMCGi7YLJtZV/v20FJWi3sSaW2YG/QZv0e/A/Nxqqijzg8x7F+g9awI6uzRkwiUYxW8S2ids7eGKK/C8GNWaovHGx3lExGQryaMKSYtW6WXRVQqMX6bOkJZF0C3O318+CnDMgL/6rzB7Fv9/6j+oJNTZXe+E=  ;
+X-YMail-OSG: AyGfOYUVM1nqv_mnNR0GqFsmsRUxi988aLNaLjplVfxBClCLBaN5UCRAkKAKAbMIhTySLIjC.qlOVt0u3DeiMKNDM2GPJolSB_O0yVJRwNUlRUMGWPuvmL8xOKgC2me9FI0-
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Gerald Schaefer <gerald.schaefer@de.ibm.com>
+Subject: Re: [PATCH] hugetlb: call arch_prepare_hugepage() for surplus pages
+Date: Wed, 6 Aug 2008 01:36:16 +1000
+User-Agent: KMail/1.9.5
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, linux-s390@vger.kernel.org, schwidefsky@de.ibm.com,
+       heiko.carstens@de.ibm.com, Nishanth Aravamudan <nacc@us.ibm.com>,
+       Adam Litke <agl@us.ibm.com>
+References: <1217950147.5032.15.camel@localhost.localdomain>
+In-Reply-To: <1217950147.5032.15.camel@localhost.localdomain>
 MIME-Version: 1.0
-To: jmerkey@wolfmountaingroup.com
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2.6.27-rc1-git5 2/26] mdb: correct kprobes int3 trap
-References: <200808050626.m756QZ1g003755@wolfmountaingroup.com>
-In-Reply-To: <200808050626.m756QZ1g003755@wolfmountaingroup.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-2022-JP
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200808060136.17277.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jeffery,
+On Wednesday 06 August 2008 01:29, Gerald Schaefer wrote:
+> From: Gerald Schaefer <gerald.schaefer@de.ibm.com>
+>
+> The s390 software large page emulation implements shared page tables
+> by using page->index of the first tail page from a compound large page
+> to store page table information. This is set up in arch_prepare_hugepage(),
+> which is called from alloc_fresh_huge_page_node().
+>
+> A similar call to arch_prepare_hugepage() is missing for surplus large
+> pages that are allocated in alloc_buddy_huge_page(), which breaks the
+> software emulation mode for (surplus) large pages on s390. This patch
+> adds the missing call to arch_prepare_hugepage(). It will have no effect
+> on other architectures where arch_prepare_hugepage() is a nop.
+>
+> Acked-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
+> Signed-off-by: Gerald Schaefer <gerald.schaefer@de.ibm.com>
+> ---
+>
+>  mm/hugetlb.c |    7 ++++++-
+>  1 file changed, 6 insertions(+), 1 deletion(-)
+>
+> Index: linux/mm/hugetlb.c
+> ===================================================================
+> --- linux.orig/mm/hugetlb.c
+> +++ linux/mm/hugetlb.c
+> @@ -565,7 +565,7 @@ static struct page *alloc_fresh_huge_pag
+>  		huge_page_order(h));
+>  	if (page) {
+>  		if (arch_prepare_hugepage(page)) {
+> -			__free_pages(page, HUGETLB_PAGE_ORDER);
+> +			__free_pages(page, huge_page_order(h));
+>  			return NULL;
+>  		}
+>  		prep_new_huge_page(h, page, nid);
 
-Could you explain what is MDB and how it works?
-And please check your patch style by using scripts/checkpatch.pl.
-Your cording style seem to be different from linux coding style...
+This looks like a seperate bugfix?
 
-Thank you,
 
-jmerkey@wolfmountaingroup.com wrote:
-> Centralized external definitions into include files and corrected 
-> the file to conform to Linux coding practices.  fixed word wrap
-> problems with patches.
-> 
-> Corrected kprobes section for int3 trap where CONFIG_MDB is always 
-> true.
-> 
-> Signed-off-by: Jeffrey Vernon Merkey (jmerkey@wolfmountaingroup.com)
-> 
-> --- a/arch/x86/kernel/traps_32.c	2008-08-04 15:53:24.000000000 -0600
-> +++ b/arch/x86/kernel/traps_32.c	2008-08-04 16:00:25.000000000 -0600
-> @@ -46,6 +46,10 @@
->  #include <linux/edac.h>
->  #endif
->  
-> +#ifdef CONFIG_MDB
-> +#include <linux/mdb.h>
-> +#endif // CONFIG_MDB
+> @@ -665,6 +665,11 @@ static struct page *alloc_buddy_huge_pag
+>  					__GFP_REPEAT|__GFP_NOWARN,
+>  					huge_page_order(h));
+>
+> +	if (page && arch_prepare_hugepage(page)) {
+> +		__free_pages(page, huge_page_order(h));
+> +		return NULL;
+> +	}
 > +
->  #include <asm/arch_hooks.h>
->  #include <asm/stacktrace.h>
->  #include <asm/processor.h>
-> @@ -452,8 +456,15 @@
->   */
->  void die(const char *str, struct pt_regs *regs, long err)
->  {
-> -	unsigned long flags = oops_begin();
-> +#ifdef	CONFIG_MDB
-> +	unsigned long flags;
->  
-> +        mdb_oops = (unsigned char *)str;
-> +        mdb(SOFTWARE_EXCEPTION, err, regs); 
-> +	flags = oops_begin();
-> +#else
-> +	unsigned long flags = oops_begin();
-> +#endif // CONFIG_MDB	
->  	if (die_nest_count < 3) {
->  		report_bug(regs->ip, regs);
->  
-> @@ -573,9 +584,9 @@
->  }
->  
->  DO_VM86_ERROR_INFO(0, SIGFPE, "divide error", divide_error, FPE_INTDIV, regs->ip)
-> -#ifndef CONFIG_KPROBES
-> +#if !defined(CONFIG_KPROBES) && !defined(CONFIG_MDB)
->  DO_VM86_ERROR(3, SIGTRAP, "int3", int3)
-> -#endif
-> +#endif // CONFIG_MDB
->  DO_VM86_ERROR(4, SIGSEGV, "overflow", overflow)
->  DO_VM86_ERROR(5, SIGSEGV, "bounds", bounds)
->  DO_ERROR_INFO(6, SIGILL, "invalid opcode", invalid_op, ILL_ILLOPN, regs->ip, 0)
-> @@ -718,6 +729,9 @@
->  {
->  	if (notify_die(DIE_NMIUNKNOWN, "nmi", regs, reason, 2, SIGINT) == NOTIFY_STOP)
->  		return;
-> +#ifdef	CONFIG_MDB
-> +        mdb(NMI_EXCEPTION, reason, regs); // nmi is code 2
-> +#endif // CONFIG_MDB
->  #ifdef CONFIG_MCA
->  	/*
->  	 * Might actually be able to figure out what the guilty party
-> @@ -756,6 +770,9 @@
->  	printk(" on CPU%d, ip %08lx, registers:\n",
->  		smp_processor_id(), regs->ip);
->  	show_registers(regs);
-> +#ifdef	CONFIG_MDB
-> +        mdb(NMI_EXCEPTION, 0, regs); // nmi is code 2
-> +#endif // CONFIG_MDB
->  	if (do_panic)
->  		panic("Non maskable interrupt");
->  	console_silent();
-> @@ -785,6 +802,10 @@
->  	if (!cpu)
->  		reason = get_nmi_reason();
->  
-> +#if defined(CONFIG_SMP) && defined(CONFIG_MDB)
-> +        if (mdb(NMI_EXCEPTION, 0, regs))
-> +           return;
-> +#endif // CONFIG_MDB
->  	if (!(reason & 0xc0)) {
->  		if (notify_die(DIE_NMI_IPI, "nmi_ipi", regs, reason, 2, SIGINT)
->  								== NOTIFY_STOP)
-> @@ -850,6 +871,10 @@
->  #ifdef CONFIG_KPROBES
->  void __kprobes do_int3(struct pt_regs *regs, long error_code)
->  {
-> +#ifdef	CONFIG_MDB
-> +        if (mdb(BREAKPOINT_EXCEPTION, error_code, regs))
-> +           return;
-> +#endif // CONFIG_MDB
->  	trace_hardirqs_fixup();
->  
->  	if (notify_die(DIE_INT3, "int3", regs, error_code, 3, SIGTRAP)
-> @@ -865,6 +890,16 @@
->  }
->  #endif
->  
-> +#if !defined(CONFIG_KPROBES)
-> +fastcall void do_int3(struct pt_regs * regs, long error_code)
-> +{
-> +#if defined(CONFIG_MDB)
-> +        if (mdb(BREAKPOINT_EXCEPTION, error_code, regs))
-> +           return;
-> +#endif // CONFIG_MDB
-> +	do_trap(3, SIGTRAP, "int3", 1, regs, error_code, NULL);
-> +}
-> +#endif	
->  /*
->   * Our handling of the processor debug registers is non-trivial.
->   * We do not clear them on entry and exit from the kernel. Therefore
-> @@ -895,6 +930,10 @@
->  	trace_hardirqs_fixup();
->  
->  	get_debugreg(condition, 6);
-> +#ifdef	CONFIG_MDB
-> +        if (mdb(DEBUGGER_EXCEPTION, error_code, regs))
-> +           return;
-> +#endif // CONFIG_MDB	
->  
->  	/*
->  	 * The processor cleared BTF, so don't mark that we need it set.
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+>  	spin_lock(&hugetlb_lock);
+>  	if (page) {
+>  		/*
 
--- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America) Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
-
+Acked-by: Nick Piggin <npiggin@suse.de>
