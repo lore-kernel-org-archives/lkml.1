@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760160AbYHEHG0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760333AbYHEHGn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760160AbYHEHG0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 03:06:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758615AbYHEGro
+	id S1760333AbYHEHGn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 03:06:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753185AbYHEGro
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Tue, 5 Aug 2008 02:47:44 -0400
-Received: from 166-70-238-42.ip.xmission.com ([166.70.238.42]:44141 "EHLO
+Received: from 166-70-238-42.ip.xmission.com ([166.70.238.42]:44143 "EHLO
 	ns1.wolfmountaingroup.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753667AbYHEGrX (ORCPT
+	with ESMTP id S1753093AbYHEGrX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 5 Aug 2008 02:47:23 -0400
 Date: Tue, 5 Aug 2008 00:26:36 -0600
 From: jmerkey@wolfmountaingroup.com
-Message-Id: <200808050626.m756Qavd003769@wolfmountaingroup.com>
+Message-Id: <200808050626.m756Qag9003771@wolfmountaingroup.com>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 2.6.27-rc1-git5 12/26] mdb: add keyboard includes
+Subject: [PATCH 2.6.27-rc1-git5 14/26] mdb: add list support includes
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -25,10 +25,9 @@ problems with patches.
 
 Signed-off-by: Jeffrey Vernon Merkey (jmerkey@wolfmountaingroup.com)
 
---- a/debug/mdb-keyboard.h	1969-12-31 17:00:00.000000000 -0700
-+++ b/debug/mdb-keyboard.h	2008-08-04 15:49:51.000000000 -0600
-@@ -0,0 +1,138 @@
-+
+--- a/debug/mdb-list.h	1969-12-31 17:00:00.000000000 -0700
++++ b/debug/mdb-list.h	2008-08-04 15:49:51.000000000 -0600
+@@ -0,0 +1,84 @@
 +
 +/***************************************************************************
 +*
@@ -63,106 +62,53 @@ Signed-off-by: Jeffrey Vernon Merkey (jmerkey@wolfmountaingroup.com)
 +*
 +***************************************************************************/
 +
-+#undef KBD_REPORT_ERR			/* Report keyboard errors */
-+#define KBD_REPORT_UNKN			/* Report unknown scan codes */
-+#define KBD_REPORT_TIMEOUTS		/* Report keyboard timeouts */
-+#undef KBD_IS_FOCUS_9000		/* We have the brain-damaged FOCUS-9000 keyboard */
-+#undef INITIALIZE_MOUSE			/* Define if your PS/2 mouse needs initialization. */
++#ifndef _MDB_LIST
++#define _MDB_LIST
 +
++typedef struct _ACCELERATOR
++{
++    struct _ACCELERATOR *accelNext;
++    struct _ACCELERATOR *accelPrior;
++    unsigned long (*accelRoutine)(unsigned long key, void *p, struct _ACCELERATOR *parser);
++    unsigned long (*accelRoutineHelp)(unsigned long key, struct _ACCELERATOR *parser);
++    unsigned long accelFlags;
++    unsigned long key;
++    unsigned long supervisorCommand;
++    unsigned char *shortHelp;
++} ACCELERATOR;
 +
-+#define KBD_INIT_TIMEOUT 1000		/* Timeout in ms for initializing the keyboard */
-+#define KBC_TIMEOUT 250			/* Timeout in ms for sending to keyboard controller */
-+#define KBD_TIMEOUT 1000		/* Timeout in ms for keyboard command acknowledge */
++typedef struct _ALT_DEBUGGER 
++{
++    struct _ALT_DEBUGGER *altDebugNext;
++    struct _ALT_DEBUGGER *altDebugPrior;
++    int (*AlternateDebugger)(int reason, int error, void *frame);
++} ALT_DEBUGGER;
 +
-+/*
-+ *	Keyboard Controller Registers on normal PCs.
-+ */
++extern int AlternateDebuggerRoutine(int reason, int error, void *frame);
++extern unsigned long AddAlternateDebugger(ALT_DEBUGGER *Debugger);
++extern unsigned long RemoveAlternateDebugger(ALT_DEBUGGER *Debugger);
 +
-+#define KBD_STATUS_REG		0x64	/* Status register (R) */
-+#define KBD_CNTL_REG		0x64	/* Controller command register (W) */
-+#define KBD_DATA_REG		0x60	/* Keyboard data register (R/W) */
++typedef struct _DEBUGGER_PARSER {
++    struct _DEBUGGER_PARSER *debugNext;
++    struct _DEBUGGER_PARSER *debugPrior;
++    unsigned long (*DebugCommandParser)(unsigned char *commandLine,
++			       StackFrame *stackFrame, unsigned long Exception,
++			       struct _DEBUGGER_PARSER *parser);
++    unsigned long (*DebugCommandParserHelp)(unsigned char *commandLine,
++				   struct _DEBUGGER_PARSER *parser);
++    unsigned long parserFlags;
++    unsigned char *debugCommandName;
++    unsigned long debugCommandNameLength;
++    unsigned long supervisorCommand;
++    unsigned char *shortHelp;
++    unsigned long controlTransfer;
++} DEBUGGER_PARSER;
 +
-+/*
-+ *	Keyboard Controller Commands
-+ */
++extern unsigned long DebuggerParserRoutine(unsigned char *command, unsigned char *commandLine,
++			   StackFrame *stackFrame, unsigned long Exception);
++extern unsigned long DebuggerParserHelpRoutine(unsigned char *command, unsigned char *commandLine);
++extern unsigned long AddDebuggerCommandParser(DEBUGGER_PARSER *parser);
++extern unsigned long RemoveDebuggerCommandParser(DEBUGGER_PARSER *parser);
 +
-+#define KBD_CCMD_READ_MODE	0x20	/* Read mode bits */
-+#define KBD_CCMD_WRITE_MODE	0x60	/* Write mode bits */
-+#define KBD_CCMD_GET_VERSION	0xA1	/* Get controller version */
-+#define KBD_CCMD_MOUSE_DISABLE	0xA7	/* Disable mouse interface */
-+#define KBD_CCMD_MOUSE_ENABLE	0xA8	/* Enable mouse interface */
-+#define KBD_CCMD_TEST_MOUSE	0xA9	/* Mouse interface test */
-+#define KBD_CCMD_SELF_TEST	0xAA	/* Controller self test */
-+#define KBD_CCMD_KBD_TEST	0xAB	/* Keyboard interface test */
-+#define KBD_CCMD_KBD_DISABLE	0xAD	/* Keyboard interface disable */
-+#define KBD_CCMD_KBD_ENABLE	0xAE	/* Keyboard interface enable */
-+#define KBD_CCMD_WRITE_AUX_OBUF	0xD3    /* Write to output buffer as if
-+					   initiated by the auxiliary device */
-+#define KBD_CCMD_WRITE_MOUSE	0xD4	/* Write the following byte to the mouse */
-+
-+/*
-+ *	Keyboard Commands
-+ */
-+
-+#define KBD_CMD_SET_LEDS	0xED	/* Set keyboard leds */
-+#define KBD_CMD_SET_RATE	0xF3	/* Set typematic rate */
-+#define KBD_CMD_ENABLE		0xF4	/* Enable scanning */
-+#define KBD_CMD_DISABLE		0xF5	/* Disable scanning */
-+#define KBD_CMD_RESET		0xFF	/* Reset */
-+
-+/*
-+ *	Keyboard Replies
-+ */
-+
-+#define KBD_REPLY_POR		0xAA	/* Power on reset */
-+#define KBD_REPLY_ACK		0xFA	/* Command ACK */
-+#define KBD_REPLY_RESEND	0xFE	/* Command NACK, send the cmd again */
-+
-+/*
-+ *	Status Register Bits
-+ */
-+
-+#define KBD_STAT_OBF 		0x01	/* Keyboard output buffer full */
-+#define KBD_STAT_IBF 		0x02	/* Keyboard input buffer full */
-+#define KBD_STAT_SELFTEST	0x04	/* Self test successful */
-+#define KBD_STAT_CMD		0x08	/* Last write was a command write (0=data) */
-+#define KBD_STAT_UNLOCKED	0x10	/* Zero if keyboard locked */
-+#define KBD_STAT_MOUSE_OBF	0x20	/* Mouse output buffer full */
-+#define KBD_STAT_GTO 		0x40	/* General receive/xmit timeout */
-+#define KBD_STAT_PERR 		0x80	/* Parity error */
-+
-+#define AUX_STAT_OBF (KBD_STAT_OBF | KBD_STAT_MOUSE_OBF)
-+
-+/*
-+ *	Controller Mode Register Bits
-+ */
-+
-+#define KBD_MODE_KBD_INT	0x01	/* Keyboard data generate IRQ1 */
-+#define KBD_MODE_MOUSE_INT	0x02	/* Mouse data generate IRQ12 */
-+#define KBD_MODE_SYS 		0x04	/* The system flag (?) */
-+#define KBD_MODE_NO_KEYLOCK	0x08	/* The keylock doesn't affect the keyboard if set */
-+#define KBD_MODE_DISABLE_KBD	0x10	/* Disable keyboard interface */
-+#define KBD_MODE_DISABLE_MOUSE	0x20	/* Disable mouse interface */
-+#define KBD_MODE_KCC 		0x40	/* Scan code conversion to PC format */
-+#define KBD_MODE_RFU		0x80
-+
-+/*
-+ *	Mouse Commands
-+ */
-+
-+#define AUX_SET_RES		0xE8	/* Set resolution */
-+#define AUX_SET_SCALE11		0xE6	/* Set 1:1 scaling */
-+#define AUX_SET_SCALE21		0xE7	/* Set 2:1 scaling */
-+#define AUX_GET_SCALE		0xE9	/* Get scaling factor */
-+#define AUX_SET_STREAM		0xEA	/* Set stream mode */
-+#define AUX_SET_SAMPLE		0xF3	/* Set sample rate */
-+#define AUX_ENABLE_DEV		0xF4	/* Enable aux device */
-+#define AUX_DISABLE_DEV		0xF5	/* Disable aux device */
-+#define AUX_RESET		0xFF	/* Reset aux device */
-+#define AUX_ACK			0xFA	/* Command byte ACK. */
-+
-+#define AUX_BUF_SIZE		2048	/* This might be better divisible by
-+					   three to make overruns stay in sync
-+					   but then the read function would need
-+					   a lock etc - ick */
++#endif
 +
