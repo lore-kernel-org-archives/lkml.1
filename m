@@ -1,113 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756681AbYHEOZM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757977AbYHEO0d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756681AbYHEOZM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 10:25:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754475AbYHEOZA
+	id S1757977AbYHEO0d (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 10:26:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754082AbYHEO0Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 10:25:00 -0400
-Received: from ik-out-1112.google.com ([66.249.90.177]:41117 "EHLO
-	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754495AbYHEOY7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 10:24:59 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:subject:date:user-agent:mime-version:content-disposition:to
-         :content-type:message-id;
-        b=nM5zZ6byvpkOhaHEEksVcAPGS+7GUEKsQXhTPSOTk0vPxDrmKuvRewYRrAcGzZ5yuo
-         8OCHCzmEnIHfACg7b6zsz2xO1oUAQfamJIj/zpH7eTTdt52A41BfCtclE/Pq3tDoXgsN
-         f+wJunzHqMqWRGM2sBpu9BoLpqPh86jiLMiLg=
-From: Jordi Pujol <jordipujolp@gmail.com>
-Subject: Checking versions of the symbols in modules
-Date: Tue, 5 Aug 2008 16:24:52 +0200
-User-Agent: KMail/1.9.9
+	Tue, 5 Aug 2008 10:26:25 -0400
+Received: from h155.mvista.com ([63.81.120.155]:19471 "EHLO imap.sh.mvista.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754811AbYHEO0Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Aug 2008 10:26:24 -0400
+Message-ID: <4898630C.7090403@ru.mvista.com>
+Date: Tue, 05 Aug 2008 18:26:20 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
 MIME-Version: 1.0
-Content-Disposition: inline
-To: linux-kernel@vger.kernel.org
-Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_0KGmIX3zVXlg9tW"
-Message-Id: <200808051624.52983.jordipujolp@gmail.com>
+To: petkovbb@gmail.com
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, bzolnier@gmail.com,
+       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+Subject: Re: [PATCH 1/2] pata_legacy: export functionality to ide
+References: <20080715053356.GA18628@gollum.tnic> <200808021902.12191.bzolnier@gmail.com> <20080802183253.GA2239@gollum.tnic> <200808022046.16990.bzolnier@gmail.com> <20080803073756.GA8762@gollum.tnic> <20080803125907.67676948@lxorguk.ukuu.org.uk> <20080803143837.GA26672@gollum.tnic> <20080803162214.394b13a1@lxorguk.ukuu.org.uk> <20080803165135.GA31977@gollum.tnic>
+In-Reply-To: <20080803165135.GA31977@gollum.tnic>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Boundary-00=_0KGmIX3zVXlg9tW
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Hello.
 
-Hello,
+Borislav Petkov wrote:
 
-summary:
-In a kernel already compiled, we install new modules, some of that depend of 
-the others. after charging the first module the next one can not find the 
-symbols that uses from the first.
+> Avoid probing the io-ports in case an IDE PCI controller is present and it uses
+> the legacy iobases. If we still want to enforce the probing, we do
 
-Kernel version:
-Linux version 2.6.26.1-686-jp2 (root@pcjordi) (gcc version 4.3.1 (Debian 
-4.3.1-2) ) #1 SMP PREEMPT Tue Aug 5 11:34:33 CEST 2008
+> ide_generic.probe_mask=0x3f
 
-Full description:  
-In a kernel already compiled, we install new modules, some of them depending 
-from the others.  In this case the modules are lzma and squashfs-lzma 
-after charging the module lzma we verify in /proc/kallsyms that the symbols 
-have been exported and correctly noted. 
-When we charge the module squashfs that depends on the symbols of sqlzma, the 
-kernel responds:
-no symbol version for sqlzma_init
-Unknown symbol sqlzma_init 
-no symbol version for sqlzma_un 
-Unknown symbol sqlzma_un 
-no symbol version for sqlzma_fin 
-Unknown symbol sqlzma_fin
+> on the kernel command line. The iobase checking code is adapted from
+> drivers/ata/pata_legacy.c
 
-Keywords:
-modules, symbols
+> Signed-off-by: Borislav Petkov <petkovbb@gmail.com>
 
-workaround:
-my first solution was to compile a kernel with MODULE_FORCE_LOADING enabled, 
-and forcing modprobe to do that. That works,
+> diff --git a/drivers/ide/ide-generic.c b/drivers/ide/ide-generic.c
+> index 8fe8b5b..e9b7b69 100644
+> --- a/drivers/ide/ide-generic.c
+> +++ b/drivers/ide/ide-generic.c
+[...]
+> @@ -100,19 +100,71 @@ static const u16 legacy_bases[] = { 0x1f0, 0x170, 0x1e8, 0x168, 0x1e0, 0x160 };
+>  static const int legacy_irqs[]  = { 14, 15, 11, 10, 8, 12 };
+>  #endif
+>  
+> +
 
-the solution,
-inspecting the module.c source, 
-can be appreciated differences with the version 2.6.25 in the routine 
-check_version, so that previously has returned correct when the version for a 
-symbol was not found, but in this routine, version 2.6.26 returns error.  
-Works well after modifying some lines of module.c
+    Extra newline...
 
-Attached is the patch to module.c
+> +static void ide_generic_check_pci_legacy_iobases(int *primary, int *secondary)
+> +{
+> +	struct pci_dev *p = NULL;
+> +	u16 val;
+> +
+> +	for_each_pci_dev(p) {
+> +		int r;
+> +
+> +		for (r = 0; r < 6; r++) {
+> +			if (pci_resource_start(p, r) == 0x1f0)
+> +				*primary = 1;
+> +			if (pci_resource_start(p, r) == 0x170)
+> +				*secondary = 1;
+> +		}
+> +
+> +		/* Cyrix CS5510 pre SFF MWDMA ATA on the bridge */
+> +		if (p->vendor == 0x1078 && p->device == 0x0000)
+> +			*primary = *secondary = 1;
+> +
+> +		/* Cyrix CS5520 pre SFF MWDMA ATA on the bridge */
+> +		if (p->vendor == 0x1078 && p->device == 0x0002)
+> +			*primary = *secondary = 1;
 
-P.D. if the source of that modules is needed, lzma is from the sid repository 
-of Debian, and squashfs-lzma is my own develop, I can provide the Debian 
-package for it, 
+    I think the above two if statements should be collapsed into a single one.
 
-Thanks for that good kernel,
+> +
+> +		/* Intel MPIIX - PIO ATA on non PCI side of bridge */
+> +		if (p->vendor == 0x8086 && p->device == 0x1234) {
 
-Jordi Pujol
+    Also, perhaps it makes sense to #include <linux/pci_ids.h> and use the 
+macros defined there...
 
---Boundary-00=_0KGmIX3zVXlg9tW
-Content-Type: text/x-diff;
-  charset="iso 8859-15";
-  name="linux-2.6.26-kernel-module.c.diff"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
-	filename="linux-2.6.26-kernel-module.c.diff"
-
---- linux-2.6.26.1-old/kernel/module.c	2008-08-02 00:58:24.000000000 +0200
-+++ linux-2.6.26.1/kernel/module.c	2008-08-05 14:48:13.000000000 +0200
-@@ -936,9 +936,11 @@
- 		goto bad_version;
- 	}
- 
-+	/* Not in module's version table.  OK, but that taints the kernel. */
- 	printk(KERN_WARNING "%s: no symbol version for %s\n",
- 	       mod->name, symname);
--	return 0;
-+	add_taint_module(mod, TAINT_FORCED_MODULE);
-+	return 1;
- 
- bad_version:
- 	printk("%s: disagrees about version of symbol %s\n",
-
---Boundary-00=_0KGmIX3zVXlg9tW--
+MBR, Sergei
