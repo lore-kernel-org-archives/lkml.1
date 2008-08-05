@@ -1,85 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760720AbYHEJWy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760224AbYHEJ0B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760720AbYHEJWy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 05:22:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758697AbYHEJWq
+	id S1760224AbYHEJ0B (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 05:26:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756942AbYHEJZs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 05:22:46 -0400
-Received: from server.drzeus.cx ([85.8.24.28]:57818 "EHLO smtp.drzeus.cx"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755010AbYHEJWp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 05:22:45 -0400
-Date: Tue, 5 Aug 2008 11:22:34 +0200
-From: Pierre Ossman <drzeus-list@drzeus.cx>
-To: David =?UTF-8?B?SMOkcmRlbWFu?= <david@hardeman.nu>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: sdhci: Ricoh Co Ltd R5C822 SD/SDIO/MMC/MS/MSPro Host Adapter -
- disabling IRQ
-Message-ID: <20080805112234.759819fe@mjolnir.drzeus.cx>
-In-Reply-To: <20080802224725.GA6574@hardeman.nu>
-References: <20080624181656.GB14243@hardeman.nu>
-	<20080710083457.7887d363@mjolnir.drzeus.cx>
-	<20080711164706.GA8943@hardeman.nu>
-	<20080719015531.6c8a1981@mjolnir.drzeus.cx>
-	<20080802224725.GA6574@hardeman.nu>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.13.5; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=PGP-SHA1; boundary="=_freyr.drzeus.cx-5447-1217928163-0001-2"
+	Tue, 5 Aug 2008 05:25:48 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:51247 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1754896AbYHEJZq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Aug 2008 05:25:46 -0400
+Message-ID: <48981BB8.9060100@cn.fujitsu.com>
+Date: Tue, 05 Aug 2008 17:22:00 +0800
+From: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.5 (Windows/20070716)
+MIME-Version: 1.0
+To: David Miller <davem@davemloft.net>
+CC: netdev <netdev@vger.kernel.org>, linux-kernel@vger.kernel.org
+Subject: [PATCH 0/3] Fix kernel panic when calling tcp_(v4/v6)_md5_do_lookup
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
+If the following packet flow happen, kernel will panic.
+MathineA			MathineB
+		SYN
+	---------------------->    
+        	SYN+ACK
+	<----------------------
+		ACK(bad seq)
+	---------------------->
+When a bad seq ACK is received, tcp_v4_md5_do_lookup(skb->sk, ip_hdr(skb)->daddr))
+is finally called by tcp_v4_reqsk_send_ack(), but the first parameter(skb->sk) is 
+NULL at that moment, so kernel panic happens.
+This patch set fix this issue.
 
---=_freyr.drzeus.cx-5447-1217928163-0001-2
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+Below is the OOPS output:
 
-On Sun, 3 Aug 2008 00:47:25 +0200
-David H=C3=A4rdeman <david@hardeman.nu> wrote:
+[  302.812793] IP: [<c05cfaa6>] tcp_v4_md5_do_lookup+0x12/0x42
+[  302.817075] Oops: 0000 [#1] SMP 
+[  302.819815] Modules linked in: ipv6 loop dm_multipath rtc_cmos rtc_core rtc_lib pcspkr pcnet32 mii i2c_piix4 parport_pc i2c_core parport ac button ata_piix libata dm_mod mptspi mptscsih mptbase scsi_transport_spi sd_mod scsi_mod crc_t10dif ext3 jbd mbcache uhci_hcd ohci_hcd ehci_hcd [last unloaded: scsi_wait_scan]
+[  302.849946] 
+[  302.851198] Pid: 0, comm: swapper Not tainted (2.6.27-rc1-guijf #5)
+[  302.855184] EIP: 0060:[<c05cfaa6>] EFLAGS: 00010296 CPU: 0
+[  302.858296] EIP is at tcp_v4_md5_do_lookup+0x12/0x42
+[  302.861027] EAX: 0000001e EBX: 00000000 ECX: 00000046 EDX: 00000046
+[  302.864867] ESI: ceb69e00 EDI: 1467a8c0 EBP: cf75f180 ESP: c0792e54
+[  302.868333]  DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
+[  302.871287] Process swapper (pid: 0, ti=c0792000 task=c0712340 task.ti=c0746000)
+[  302.875592] Stack: c06f413a 00000000 cf75f180 ceb69e00 00000000 c05d0d86 000016d0 ceac5400 
+[  302.883275]        c05d28f8 000016d0 ceb69e00 ceb69e20 681bf6e3 00001000 00000000 0a67a8c0 
+[  302.890971]        ceac5400 c04250a3 c06f413a c0792eb0 c0792edc cf59a620 cf59a620 cf59a634 
+[  302.900140] Call Trace:
+[  302.902392]  [<c05d0d86>] tcp_v4_reqsk_send_ack+0x17/0x35
+[  302.907060]  [<c05d28f8>] tcp_check_req+0x156/0x372
+[  302.910082]  [<c04250a3>] printk+0x14/0x18
+[  302.912868]  [<c05d0aa1>] tcp_v4_do_rcv+0x1d3/0x2bf
+[  302.917423]  [<c05d26be>] tcp_v4_rcv+0x563/0x5b9
+[  302.920453]  [<c05bb20f>] ip_local_deliver_finish+0xe8/0x183
+[  302.923865]  [<c05bb10a>] ip_rcv_finish+0x286/0x2a3
+[  302.928569]  [<c059e438>] dev_alloc_skb+0x11/0x25
+[  302.931563]  [<c05a211f>] netif_receive_skb+0x2d6/0x33a
+[  302.934914]  [<d0917941>] pcnet32_poll+0x333/0x680 [pcnet32]
+[  302.938735]  [<c05a3b48>] net_rx_action+0x5c/0xfe
+[  302.941792]  [<c042856b>] __do_softirq+0x5d/0xc1
+[  302.944788]  [<c042850e>] __do_softirq+0x0/0xc1
+[  302.948999]  [<c040564b>] do_softirq+0x55/0x88
+[  302.951870]  [<c04501b1>] handle_fasteoi_irq+0x0/0xa4
+[  302.954986]  [<c04284da>] irq_exit+0x35/0x69
+[  302.959081]  [<c0405717>] do_IRQ+0x99/0xae
+[  302.961896]  [<c040422b>] common_interrupt+0x23/0x28
+[  302.966279]  [<c040819d>] default_idle+0x2a/0x3d
+[  302.969212]  [<c0402552>] cpu_idle+0xb2/0xd2
+[  302.972169]  =======================
+[  302.974274] Code: fc ff 84 d2 0f 84 df fd ff ff e9 34 fe ff ff 83 c4 0c 5b 5e 5f 5d c3 90 90 57 89 d7 56 53 89 c3 50 68 3a 41 6f c0 e8 e9 55 e5 ff <8b> 93 9c 04 00 00 58 85 d2 59 74 1e 8b 72 10 31 db 31 c9 85 f6 
+[  303.011610] EIP: [<c05cfaa6>] tcp_v4_md5_do_lookup+0x12/0x42 SS:ESP 0068:c0792e54
+[  303.018360] Kernel panic - not syncing: Fatal exception in interrupt
 
-> On Sat, Jul 19, 2008 at 01:55:31AM +0200, Pierre Ossman wrote:
-> >
-> >I see that you have an iwl4965. I got this precise problem when I
-> >toggled the rfkill switch on my laptop. It is fixed in 2.6.26 though.
-> >Could you try upgrading the kernel and see if it's the same bug?
->=20
-> Unfortunately the problem is still present with 2.6.26 (Debian package=20
-> linux-image-2.6.26-1-amd64):
->=20
 
-Weird. What kind of efforts have you done in determining the source of
-this interrupt? As I mentioned, I find it hard to believe that the card
-reader is doing this as it is completely passive until you insert a
-card.
 
-Have you tried booting in a single user mode? Or with a minimal set of
-modules loaded?
 
-Rgds
---=20
-     -- Pierre Ossman
-
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  rdesktop, core developer          http://www.rdesktop.org
-
-  WARNING: This correspondence is being monitored by the
-  Swedish government. Make sure your server uses encryption
-  for SMTP traffic and consider using PGP for end-to-end
-  encryption.
-
---=_freyr.drzeus.cx-5447-1217928163-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-
-iEYEARECAAYFAkiYG+EACgkQ7b8eESbyJLh/5wCfcoOSoZGrUkVmKIQ8y53md45m
-C3MAoLDkjLY++yDFSzOyUQTzw7B401Wd
-=wl0d
------END PGP SIGNATURE-----
-
---=_freyr.drzeus.cx-5447-1217928163-0001-2--
