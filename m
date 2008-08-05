@@ -1,129 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763191AbYHEAGA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760170AbYHEARS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763191AbYHEAGA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 20:06:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759037AbYHEAFx
+	id S1760170AbYHEARS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 20:17:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758646AbYHEARE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 20:05:53 -0400
-Received: from outbound-mail-160.bluehost.com ([67.222.39.40]:53349 "HELO
-	outbound-mail-160.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754274AbYHEAFw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 20:05:52 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
-	b=jEV9/iFd6e48wnNcWfpNv4o0t9Vjml5RrOIL5CRsfH6EnU6FZ4BMcLppei6zFqa9mQkgpqhuy1nFwQkwCOrEtHH4cF1Spspv80Nj84PoGn7+djeIcQA4khG6w5GL0tZg;
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: BUG: scheduling while atomic: ip/23212/0x00000102
-Date: Mon, 4 Aug 2008 17:05:45 -0700
-User-Agent: KMail/1.9.9
-Cc: David Miller <davem@davemloft.net>, arekm@maven.pl,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-References: <200808041845.10893.arekm@maven.pl> <200808041604.47219.jbarnes@virtuousgeek.org> <200808050153.23537.rjw@sisk.pl>
-In-Reply-To: <200808050153.23537.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200808041705.45317.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
+	Mon, 4 Aug 2008 20:17:04 -0400
+Received: from ozlabs.org ([203.10.76.45]:60658 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758324AbYHEARD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Aug 2008 20:17:03 -0400
+Subject: Re: nfsd, v4: oops in find_acceptable_alias, ppc32 Linux,
+	post-2.6.27-rc1
+From: Michael Ellerman <michael@ellerman.id.au>
+Reply-To: michael@ellerman.id.au
+To: "J. Bruce Fields" <bfields@fieldses.org>
+Cc: Paul Collins <paul@burly.ondioline.org>, Neil Brown <neilb@suse.de>,
+       linuxppc-dev@ozlabs.org, nfsv4@linux-nfs.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20080804205908.GA29890@fieldses.org>
+References: <20080802184554.GB715@fieldses.org>
+	 <87abfvm4cc.fsf@burly.wgtn.ondioline.org>
+	 <877iayy4qc.fsf@burly.wgtn.ondioline.org>
+	 <18581.40960.737792.454035@notabene.brown>
+	 <87r696l1yo.fsf@burly.wgtn.ondioline.org>
+	 <18582.32935.501672.689845@notabene.brown>
+	 <87fxpll5zq.fsf@burly.wgtn.ondioline.org>
+	 <87y73dcd60.fsf@burly.wgtn.ondioline.org>
+	 <1217860597.12535.2.camel@localhost>
+	 <87hca05ws4.fsf@burly.wgtn.ondioline.org>
+	 <20080804205908.GA29890@fieldses.org>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-+ixDnOjyyG3o7gE++zF7"
+Date: Tue, 05 Aug 2008 10:16:58 +1000
+Message-Id: <1217895418.7951.7.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, August 04, 2008 4:53 pm Rafael J. Wysocki wrote:
-> On Tuesday, 5 of August 2008, Jesse Barnes wrote:
-> > On Monday, August 04, 2008 3:10 pm Rafael J. Wysocki wrote:
-> > > > -	pci_read_config_word(tp->pdev,
-> > > > -			     pm + PCI_PM_CTRL,
-> > > > -			     &power_control);
-> > > > -	power_control |= PCI_PM_CTRL_PME_STATUS;
-> > > > -	power_control &= ~(PCI_PM_CTRL_STATE_MASK);
-> > > >  	switch (state) {
-> > > >  	case PCI_D0:
-> > > > -		power_control |= 0;
-> > > > -		pci_write_config_word(tp->pdev,
-> > > > -				      pm + PCI_PM_CTRL,
-> > > > -				      power_control);
-> > > > -		udelay(100);	/* Delay after power state change */
-> > > > +		pci_enable_wake(tp->pdev, state, false);
-> > > > +		pci_set_power_state(tp->pdev, PCI_D0);
+
+--=-+ixDnOjyyG3o7gE++zF7
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
+
+On Mon, 2008-08-04 at 16:59 -0400, J. Bruce Fields wrote:
+> On Tue, Aug 05, 2008 at 08:51:23AM +1200, Paul Collins wrote:
+> > Michael Ellerman <michael@ellerman.id.au> writes:
+> >=20
+> > > On Mon, 2008-08-04 at 22:00 +1200, Paul Collins wrote:
+> > >> Paul Collins <paul@burly.ondioline.org> writes:
+> > >>=20
+> > >> > Neil Brown <neilb@suse.de> writes:
+> > >> >> Could you try removing the 'static' declaration for nfsd_acceptab=
+le
+> > >> >> and recompile?
+> > >> >> Or maybe try a different compiler?
+> > >> >
+> > >> > I will give these a try this evening.
+> > >>=20
+> > >> I built myself a nice new cross compiler:
+> > >>=20
+> > >>         powerpc-linux-gnu-gcc-4.1 (GCC) 4.1.3 20080623 (prerelease) =
+(Debian 4.1.2-23)
+> > >>=20
+> > >> and rebuilt 94ad374a0751f40d25e22e036c37f7263569d24c.  Running that =
+on
+> > >> the server and 2.6.26 on the client, I got yet another Oops.  This o=
+ne
+> > >> locked the machine up pretty good, so all I have is a picture:
+> > >>=20
+> > >> http://ondioline.org/~paul/DSCN1608.JPG
 > > >
-> > > Still, I don't think drivers should access the standard PCI PM
-> > > registers directly, so perhaps there should be a version of
-> > > pci_set_power_state() using udelay() instead of msleep() or we can just
-> > > replace the msleep() in pci_set_power_state() with udelay()?
-> >
-> > I think we should get rid of the open coded PCI PM state management,
-> > since otherwise platform related bugs like the Intel PCIe PM quirk that
-> > sets pci_pm_d3_delay to 120ms would have to be duplicated around the
-> > tree.
-> >
-> > That said, waiting for 120ms with a busy wait seems a bit absurd if we
-> > can avoid it.  Either we need to find a way to make drivers only change
-> > states (which can be very slow) in non-atomic context or we'll need to
-> > add a busy wait variant of the power state call...
->
-> What about this?
->
-> It fixes the tg3 issue for me.
->
-> ---
->  drivers/net/tg3.c   |   19 +++++++++++++++++--
->  drivers/pci/pci.c   |   24 +++++++++++++++---------
->  include/linux/pci.h |    2 ++
->  3 files changed, 34 insertions(+), 11 deletions(-)
->
-> Index: linux-2.6/drivers/pci/pci.c
-> ===================================================================
-> --- linux-2.6.orig/drivers/pci/pci.c
-> +++ linux-2.6/drivers/pci/pci.c
-> @@ -421,6 +421,7 @@ static inline int platform_pci_sleep_wak
->   *                           given PCI device
->   * @dev: PCI device to handle.
->   * @state: PCI power state (D0, D1, D2, D3hot) to put the device into.
-> + * @delay: if set, time to wait for the device to change the state, in
-> microseconds *
->   * RETURN VALUE:
->   * -EINVAL if the requested state is invalid.
-> @@ -429,8 +430,8 @@ static inline int platform_pci_sleep_wak
->   * 0 if device already is in the requested state.
->   * 0 if device's power state has been successfully changed.
->   */
-> -static int
-> -pci_raw_set_power_state(struct pci_dev *dev, pci_power_t state)
-> +int pci_raw_set_power_state(struct pci_dev *dev, pci_power_t state,
-> +                            unsigned int delay)
->  {
->  	u16 pmcsr;
->  	bool need_restore = false;
-> @@ -486,12 +487,16 @@ pci_raw_set_power_state(struct pci_dev *
->  	/* enter specified state */
->  	pci_write_config_word(dev, dev->pm_cap + PCI_PM_CTRL, pmcsr);
->
-> -	/* Mandatory power management transition delays */
-> -	/* see PCI PM 1.1 5.6.1 table 18 */
-> -	if (state == PCI_D3hot || dev->current_state == PCI_D3hot)
-> -		msleep(pci_pm_d3_delay);
-> -	else if (state == PCI_D2 || dev->current_state == PCI_D2)
-> -		udelay(200);
-> +	if (delay) {
-> +		udelay(delay);
-> +	} else {
-> +		/* Mandatory power management transition delays */
-> +		/* see PCI PM 1.1 5.6.1 table 18 */
-> +		if (state == PCI_D3hot || dev->current_state == PCI_D3hot)
-> +			msleep(pci_pm_d3_delay);
-> +		else if (state == PCI_D2 || dev->current_state == PCI_D2)
-> +			udelay(200);
-> +	}
+> > > Wow.
+> > >
+> > > Can you try building a kernel on the server? ie. not over NFS.
+> >=20
+> > Built kernels on the server with native gcc 4.2.4 and 4.3.1 and repeate=
+d
+> > the build test.
+> =20
+> But the build test itself was over nfs?  (And you can't reproduce the
+> same problem without nfs?)
 
-I think this has the issue I mentioned above.  We want to honor platform D3 
-transition delays or we'll see the bugs they're intended to work around.  
-With this API, a driver could pass in a delay of 5us and void both the 
-platform bugs that pci_pm_d3_delay works around and the D2 transition time of 
-200us that the code already has...
+Yeah, I'm not clear on that either. What I was aiming at was can you get
+it to oops somewhere else by not building over NFS - in which case we
+can rule NFS (more or less) out.
 
-Jesse
+cheers
+
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-+ixDnOjyyG3o7gE++zF7
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBIl5v6dSjSd0sB4dIRAsjlAJ9tZtOzK3BT9Wz6eGJ3yhIjzsOTSACcCX94
+yVsiEvvlHItT46eesIKSGTg=
+=iU3B
+-----END PGP SIGNATURE-----
+
+--=-+ixDnOjyyG3o7gE++zF7--
+
