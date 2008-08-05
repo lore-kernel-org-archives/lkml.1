@@ -1,46 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761684AbYHEX1I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762189AbYHEX22@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761684AbYHEX1I (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 19:27:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756454AbYHEX04
+	id S1762189AbYHEX22 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 19:28:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758294AbYHEX2U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 19:26:56 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:42483 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751075AbYHEX0z (ORCPT
+	Tue, 5 Aug 2008 19:28:20 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:16057 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753113AbYHEX2T (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 19:26:55 -0400
-Message-ID: <4898E1B4.60101@zytor.com>
-Date: Tue, 05 Aug 2008 16:26:44 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Tue, 5 Aug 2008 19:28:19 -0400
+Date: Tue, 5 Aug 2008 16:22:55 -0700
+From: Joel Becker <Joel.Becker@oracle.com>
+To: Alexander Beregalov <a.beregalov@gmail.com>
+Cc: mfasheh@suse.com, ocfs2-devel@oss.oracle.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] ocfs2/cluster/netdebug.c: fix warning
+Message-ID: <20080805232254.GO22600@mail.oracle.com>
+Mail-Followup-To: Alexander Beregalov <a.beregalov@gmail.com>,
+	mfasheh@suse.com, ocfs2-devel@oss.oracle.com,
+	linux-kernel@vger.kernel.org
+References: <20080805201036.GC17320@orion> <20080805202948.GL22600@mail.oracle.com> <20080805205041.GD17320@orion>
 MIME-Version: 1.0
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>, Mike Travis <travis@sgi.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 00/25] dyn_array and nr_irqs support v3
-References: <1217732365-16595-1-git-send-email-yhlu.kernel@gmail.com>	 <4898DBD8.4000002@zytor.com> <86802c440808051615h57baa06ci5ab040048786b50d@mail.gmail.com>
-In-Reply-To: <86802c440808051615h57baa06ci5ab040048786b50d@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080805205041.GD17320@orion>
+X-Burt-Line: Trees are cool.
+X-Red-Smith: Ninety feet between bases is perhaps as close as man has ever
+	come to perfection.
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yinghai Lu wrote:
+On Wed, Aug 06, 2008 at 12:50:41AM +0400, Alexander Beregalov wrote:
+> On Tue, Aug 05, 2008 at 01:29:48PM -0700, Joel Becker wrote:
+> > 	suseconds_t is a signed long.  Can you change the format to %ld
+> > and cast to long?  Unfortunately, we need the cast, as sparc64 and
+> > parisc treat it as int.
 > 
-> i am working on dyn_array + condense irq_desc/irq_cfg.
-> 
-> it will use dyn_array to allocate 32 entry for irq_desc/irq_cfg, and
-> will use get_irq_desc via list to distribute it. later if need more,
-> will allocate more 32 entries....
-> 
-> so will send out v4.
-> 
+> Then we should change cast from unsigned long to long for every tv_usec, right?
 
-My understanding of dyn_array is that it only works at init time.  How 
-does that work when you hotplug MSI-X devices?
+	Yup.
 
-	-hpa
+Joel
+
+-- 
+
+"You can get more with a kind word and a gun than you can with
+ a kind word alone."
+         - Al Capone
+
+Joel Becker
+Principal Software Developer
+Oracle
+E-mail: joel.becker@oracle.com
+Phone: (650) 506-8127
