@@ -1,74 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759257AbYHEOgK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756871AbYHEOmO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759257AbYHEOgK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 10:36:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754680AbYHEOf4
+	id S1756871AbYHEOmO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 10:42:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755161AbYHEOl5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 10:35:56 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:48411 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754221AbYHEOfz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 10:35:55 -0400
-Message-ID: <4898654A.9000904@sgi.com>
-Date: Tue, 05 Aug 2008 07:35:54 -0700
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Tue, 5 Aug 2008 10:41:57 -0400
+Received: from fg-out-1718.google.com ([72.14.220.157]:8374 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753643AbYHEOl4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Aug 2008 10:41:56 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=DCidNAsja3bx2mpz2veJfG2eI9ojla8txpcHoQ/3+PKZSQ8b28kgQxOj84QGGmFVZu
+         DvxTV1Fw+CD7JIbLU7mYs6uRugleAwrS3bPmiyTYSOTMmp0oNptUAEE6ld56H+LobUMP
+         Tq7t6lyNJuO9RglnK1wzaY9d2V0Nz0nEBTjps=
+Message-ID: <58cb370e0808050741v7ff3f20awb3d91a84486f8547@mail.gmail.com>
+Date: Tue, 5 Aug 2008 16:41:54 +0200
+From: "Bartlomiej Zolnierkiewicz" <bzolnier@gmail.com>
+To: petkovbb@gmail.com
+Subject: Re: [PATCH 1/2] pata_legacy: export functionality to ide
+Cc: "Sergei Shtylyov" <sshtylyov@ru.mvista.com>,
+       "Alan Cox" <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org
+In-Reply-To: <9ea470500808050732s7be29360ge358790e955be06a@mail.gmail.com>
 MIME-Version: 1.0
-To: Kyle Moffett <kyle@moffetthome.net>
-CC: Russ Anderson <rja@sgi.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       mingo@elte.hu, tglx@linutronix.de, linux-kernel@vger.kernel.org,
-       Jack Steiner <steiner@sgi.com>
-Subject: Re: x86 BIOS interface for partitioning and system serial number
- on SGI UV
-References: <20080731195753.GB25715@sgi.com> <48934926.2010200@zytor.com>	 <20080804221951.GA252105@sgi.com> <f73f7ab80808042221v5bebcea9o7e536093373647cd@mail.gmail.com>
-In-Reply-To: <f73f7ab80808042221v5bebcea9o7e536093373647cd@mail.gmail.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080715053356.GA18628@gollum.tnic>
+	 <20080802183253.GA2239@gollum.tnic>
+	 <200808022046.16990.bzolnier@gmail.com>
+	 <20080803073756.GA8762@gollum.tnic>
+	 <20080803125907.67676948@lxorguk.ukuu.org.uk>
+	 <20080803143837.GA26672@gollum.tnic>
+	 <20080803162214.394b13a1@lxorguk.ukuu.org.uk>
+	 <20080803165135.GA31977@gollum.tnic> <4898630C.7090403@ru.mvista.com>
+	 <9ea470500808050732s7be29360ge358790e955be06a@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kyle Moffett wrote:
-> On Mon, Aug 4, 2008 at 6:19 PM, Russ Anderson <rja@sgi.com> wrote:
->> On Fri, Aug 01, 2008 at 10:34:30AM -0700, H. Peter Anvin wrote:
->>> Russ Anderson wrote:
->>>> +# define BIOS_CALL(result, a0, a1, a2, a3, a4, a5, a6, a7)          \
->>>> +    do {                                                            \
->>>> +            /* XXX - the real call goes here */                     \
->>>> +            result.status = BIOS_STATUS_UNIMPLEMENTED;              \
->>>> +            result.v0 = 0;                                          \
->>>> +            result.v1 = 0;                                          \
->>>> +    } while (0)
->>> I have more than a little problem with submitting patches like this.  We
->>> have no way to judge the suitability of the coding or the interface with
->>> the "meat" of the driver stubbed out!
->> This is also code for hardware that does not exist.  In order for the
->> code to be in distro releases in time for the hardware to ship, we
->> must push it _before_ we have hardware.  The main concern is getting in
->> interfaces now, because the interfaces cannot change in a minor release.
->> Providing more "meat" is on the ToDo list.
-> 
-> These kinds of statements are not the way to get things done on LKML.
-> Quite a number of people have gotten flamed/ignored/etc lately by
-> making statements "We need this (unfinished code) in the kernel by
-> 2.6.27 because RHEL6 is going to use 2.6.27 and otherwise we won't be
-> supported in RHEL6".
-> 
-> Cheers,
-> Kyle Moffett
+On Tue, Aug 5, 2008 at 4:32 PM, Boris Petkov <petkovbb@googlemail.com> wrote:
 
-Hi Kyle,
+[...]
 
-As I'm very new to this development arena, could you explain a bit more
-on why this is considered "bad manners"?
+> Will look into it later and redo the patch, thanks for reviewing. I
+> still haven't heard from
+> Bart, though, whether he's OK with the code duplication...?
 
-I'm not speaking of any particular change, but there are some realities in
-bringing a new product to market that depends heavily on new "features"
-being accepted into a specific kernel release.  I certainly do not want
-to "taint" any kernel code (and I'm always amazed at the dedication of
-so many individuals to insure this doesn't happen), but the line between
-acceptability (and not) seems to waver all over the place... ;-)
-
-Thanks,
-Mike
-
+Given Alan & Jeff concerns about moving it to <linux/ata.h>, just
+copying the function to ide_generic seems like a best solution for now.
