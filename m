@@ -1,280 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762668AbYHEApc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762103AbYHEArT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762668AbYHEApc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Aug 2008 20:45:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756118AbYHEApM
+	id S1762103AbYHEArT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Aug 2008 20:47:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755029AbYHEArL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Aug 2008 20:45:12 -0400
-Received: from soda.ext.ti.com ([198.47.26.145]:58271 "EHLO soda.ext.ti.com"
+	Mon, 4 Aug 2008 20:47:11 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:47905 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754803AbYHEApJ convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Aug 2008 20:45:09 -0400
-From: "Dasgupta, Romit" <romit@ti.com>
-To: Alan Stern <stern@rowland.harvard.edu>, "Rafael J. Wysocki" <rjw@sisk.pl>
-CC: David Engraf <david.engraf@netcom.eu>, Greg KH <greg@kroah.com>,
-       "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
-Date: Tue, 5 Aug 2008 05:49:36 +0530
-Subject: RE: [PATCH] [PM] Fixes missing PM entries in sysfs without
- CONFIG_PM_SLEEP
-Thread-Topic: [PATCH] [PM] Fixes missing PM entries in sysfs without
- CONFIG_PM_SLEEP
-Thread-Index: Acj2SRXVwz2jRASNT8eAOLjq8SS5QgARzKvQ
-Message-ID: <B85A65D85D7EB246BE421B3FB0FBB593013C9AE7E8@dbde02.ent.ti.com>
-References: <200808041724.24016.rjw@sisk.pl>
- <Pine.LNX.4.44L0.0808041143350.3818-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0808041143350.3818-100000@iolanthe.rowland.org>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-MIME-Version: 1.0
+	id S1754803AbYHEArK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Aug 2008 20:47:10 -0400
+Subject: Re: [malware-list] [RFC 0/5] [TALPA] Intro to a linux interface
+	for on access scanning
+From: Eric Paris <eparis@redhat.com>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Greg KH <greg@kroah.com>, malware-list@lists.printk.net,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20080805002618.GA18215@infradead.org>
+References: <1217883616.27684.19.camel@localhost.localdomain>
+	 <20080804223249.GA10517@kroah.com>  <20080805002618.GA18215@infradead.org>
+Content-Type: text/plain
+Date: Mon, 04 Aug 2008 20:47:04 -0400
+Message-Id: <1217897224.27684.66.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A minor change below: Removed old goto label PMError and introduced SysFSError.
-Tested with CONFIG_PM, CONFIG_PM_SLEEP, without CONFIG_PM and ofcourse with CONFIG_USB_SUSPEND. Works fine.
+On Mon, 2008-08-04 at 20:26 -0400, Christoph Hellwig wrote:
+> On Mon, Aug 04, 2008 at 03:32:49PM -0700, Greg KH wrote:
+> > >   1. Intercept file opens (exec also) for vetting (block until
+> > >   decision is made) and allow some userspace black magic to make
+> > >   decisions.
+> 
+> NACK, this kind of policy should be done in kernelspace.
 
+What?  You want to write and in kernel scanner for Window viruses?
 
-diff --git a/drivers/base/core.c b/drivers/base/core.c
-index 068aa1c..9c77939 100644
---- a/drivers/base/core.c
-+++ b/drivers/base/core.c
-@@ -541,6 +541,7 @@ void device_initialize(struct device *dev)
-        spin_lock_init(&dev->devres_lock);
-        INIT_LIST_HEAD(&dev->devres_head);
-        device_init_wakeup(dev, 0);
-+       device_pm_init(dev);
-        set_dev_node(dev, -1);
- }
+> 
+> > >   2. Intercept file closes for scanning post access
+> 
+> Not  even possible for mmap, and dumb otherwise, NACK.
 
-@@ -897,9 +898,10 @@ int device_add(struct device *dev)
-        error = bus_add_device(dev);
-        if (error)
-                goto BusError;
--       error = device_pm_add(dev);
-+       error = dpm_sysfs_add(dev);
-        if (error)
--               goto PMError;
-+               goto SysFSError;
-+       device_pm_add(dev);
-        kobject_uevent(&dev->kobj, KOBJ_ADD);
-        bus_attach_device(dev);
-        if (parent)
-@@ -920,7 +922,7 @@ int device_add(struct device *dev)
-  Done:
-        put_device(dev);
-        return error;
-- PMError:
-+ SysFSError:
-        bus_remove_device(dev);
-  BusError:
-        if (dev->bus)
-@@ -1007,6 +1009,7 @@ void device_del(struct device *dev)
-        struct class_interface *class_intf;
+I don't know when files get closed and can't preemptively scan to make
+sure it is clean for the next open?  Any writes are going to invalidate
+the allow/deny cache....
 
-        device_pm_remove(dev);
-+       dpm_sysfs_remove(dev);
-        if (parent)
-                klist_del(&dev->knode_parent);
-        if (MAJOR(dev->devt)) {
-diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-index 3250c52..d1f752b 100644
---- a/drivers/base/power/main.c
-+++ b/drivers/base/power/main.c
-@@ -67,10 +67,8 @@ void device_pm_unlock(void)
-  *     device_pm_add - add a device to the list of active devices
-  *     @dev:   Device to be added to the list
-  */
--int device_pm_add(struct device *dev)
-+void device_pm_add(struct device *dev)
- {
--       int error;
--
-        pr_debug("PM: Adding info for %s:%s\n",
-                 dev->bus ? dev->bus->name : "No Bus",
-                 kobject_name(&dev->kobj));
-@@ -89,13 +87,8 @@ int device_pm_add(struct device *dev)
-                 */
-                WARN_ON(true);
-        }
--       error = dpm_sysfs_add(dev);
--       if (!error) {
--               dev->power.status = DPM_ON;
--               list_add_tail(&dev->power.entry, &dpm_list);
--       }
-+       list_add_tail(&dev->power.entry, &dpm_list);
-        mutex_unlock(&dpm_list_mtx);
--       return error;
- }
+> 
+> > >   6. Scan files directly not relying on path.  Avoid races and problems with namespaces, chroot, containers, etc.
+> 
+> Explain? 
 
- /**
-@@ -110,7 +103,6 @@ void device_pm_remove(struct device *dev)
-                 dev->bus ? dev->bus->name : "No Bus",
-                 kobject_name(&dev->kobj));
-        mutex_lock(&dpm_list_mtx);
--       dpm_sysfs_remove(dev);
-        list_del_init(&dev->power.entry);
-        mutex_unlock(&dpm_list_mtx);
- }
-diff --git a/drivers/base/power/power.h b/drivers/base/power/power.h
-index a3252c0..41f51fa 100644
---- a/drivers/base/power/power.h
-+++ b/drivers/base/power/power.h
-@@ -1,3 +1,8 @@
-+static inline void device_pm_init(struct device *dev)
-+{
-+       dev->power.status = DPM_ON;
-+}
-+
- #ifdef CONFIG_PM_SLEEP
+The data connected with the file being opened must as reasonably as
+possible be the data the 'scanner' looks at.  Some foolish early
+discussion wanted to do simplistic things like pass a pathname to a
+scanner and have it call open on that path name.  I'm willing to
+entertain any other method of making the scanner look at the data the
+process is about to get.
 
- /*
-@@ -11,12 +16,12 @@ static inline struct device *to_device(struct list_head *entry)
-        return container_of(entry, struct device, power.entry);
- }
+> 
+> > >   9. Mark a processes as exempt from on access scanning
+> 
+> Nack, this completely defeats the purpose.
 
--extern int device_pm_add(struct device *);
-+extern void device_pm_add(struct device *);
- extern void device_pm_remove(struct device *);
+What? it allows a process to open a file that contains malware, how is
+that horrible.  If a process says "I want to see malware" it can then
+see malware.  Doesn't in any way affect other processes or the system
+security as a whole.  If 'bad' data gets into a file its going to get
+blocked from everything that doesn't actively choose to see it.
 
- #else /* CONFIG_PM_SLEEP */
+> 
+> > >  11. Exclude sub-trees from scanning based on filesystem path
+> > >  12. Include only certain sub-trees from scanning based on filesystem path
+> 
+> Nack, please no pathname based idiocies.
 
--static inline int device_pm_add(struct device *dev) { return 0; }
-+static inline void device_pm_add(struct device *dev) {}
- static inline void device_pm_remove(struct device *dev) {}
-
- #endif
-
->-----Original Message-----
->From: Alan Stern [mailto:stern@rowland.harvard.edu]
->Sent: Monday, August 04, 2008 9:15 PM
->To: Rafael J. Wysocki
->Cc: Dasgupta, Romit; David Engraf; Greg KH; linux-usb@vger.kernel.org; linux-
->kernel@vger.kernel.org; Linux-pm mailing list
->Subject: Re: [PATCH] [PM] Fixes missing PM entries in sysfs without
->CONFIG_PM_SLEEP
->
->On Mon, 4 Aug 2008, Rafael J. Wysocki wrote:
->
->> > Do you think we will want to make device_pm_add() return an error at
->> > some point in the future?
->>
->> Well, maybe, but not any time soon. :-)
->
->Okay, here's the updated patch.  Awaiting comments from the testers...
->
->Alan Stern
->
->
->
->Index: usb-2.6/drivers/base/power/power.h
->================================================================
->===
->--- usb-2.6.orig/drivers/base/power/power.h
->+++ usb-2.6/drivers/base/power/power.h
->@@ -1,3 +1,8 @@
->+static inline void device_pm_init(struct device *dev)
->+{
->+       dev->power.status = DPM_ON;
->+}
->+
-> #ifdef CONFIG_PM_SLEEP
->
-> /*
->@@ -11,12 +16,12 @@ static inline struct device *to_device(s
->        return container_of(entry, struct device, power.entry);
-> }
->
->-extern int device_pm_add(struct device *);
->+extern void device_pm_add(struct device *);
-> extern void device_pm_remove(struct device *);
->
-> #else /* CONFIG_PM_SLEEP */
->
->-static inline int device_pm_add(struct device *dev) { return 0; }
->+static inline void device_pm_add(struct device *dev) {}
-> static inline void device_pm_remove(struct device *dev) {}
->
-> #endif
->Index: usb-2.6/drivers/base/core.c
->================================================================
->===
->--- usb-2.6.orig/drivers/base/core.c
->+++ usb-2.6/drivers/base/core.c
->@@ -542,6 +542,7 @@ void device_initialize(struct device *de
->        spin_lock_init(&dev->devres_lock);
->        INIT_LIST_HEAD(&dev->devres_head);
->        device_init_wakeup(dev, 0);
->+       device_pm_init(dev);
->        set_dev_node(dev, -1);
-> }
->
->@@ -898,9 +899,10 @@ int device_add(struct device *dev)
->        error = bus_add_device(dev);
->        if (error)
->                goto BusError;
->-       error = device_pm_add(dev);
->+       error = dpm_sysfs_add(dev);
->        if (error)
->                goto PMError;
->+       device_pm_add(dev);
->        kobject_uevent(&dev->kobj, KOBJ_ADD);
->        bus_attach_device(dev);
->        if (parent)
->@@ -1008,6 +1010,7 @@ void device_del(struct device *dev)
->        struct class_interface *class_intf;
->
->        device_pm_remove(dev);
->+       dpm_sysfs_remove(dev);
->        if (parent)
->                klist_del(&dev->knode_parent);
->        if (MAJOR(dev->devt)) {
->Index: usb-2.6/drivers/base/power/main.c
->================================================================
->===
->--- usb-2.6.orig/drivers/base/power/main.c
->+++ usb-2.6/drivers/base/power/main.c
->@@ -67,10 +67,8 @@ void device_pm_unlock(void)
->  *     device_pm_add - add a device to the list of active devices
->  *     @dev:   Device to be added to the list
->  */
->-int device_pm_add(struct device *dev)
->+void device_pm_add(struct device *dev)
-> {
->-       int error;
->-
->        pr_debug("PM: Adding info for %s:%s\n",
->                 dev->bus ? dev->bus->name : "No Bus",
->                 kobject_name(&dev->kobj));
->@@ -89,13 +87,9 @@ int device_pm_add(struct device *dev)
->                 */
->                WARN_ON(true);
->        }
->-       error = dpm_sysfs_add(dev);
->-       if (!error) {
->-               dev->power.status = DPM_ON;
->-               list_add_tail(&dev->power.entry, &dpm_list);
->-       }
->+
->+       list_add_tail(&dev->power.entry, &dpm_list);
->        mutex_unlock(&dpm_list_mtx);
->-       return error;
-> }
->
-> /**
->@@ -110,7 +104,6 @@ void device_pm_remove(struct device *dev
->                 dev->bus ? dev->bus->name : "No Bus",
->                 kobject_name(&dev->kobj));
->        mutex_lock(&dpm_list_mtx);
->-       dpm_sysfs_remove(dev);
->        list_del_init(&dev->power.entry);
->        mutex_unlock(&dpm_list_mtx);
-> }
+Go read the long explainations, I already rules out path based
+inclusions.  I'm leaving exclusions up for grabs since I don't see it
+weakening the security model.
 
