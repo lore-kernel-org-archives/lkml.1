@@ -1,57 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763189AbYHERJt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758092AbYHEROj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763189AbYHERJt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 13:09:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760994AbYHERJH
+	id S1758092AbYHEROj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 13:14:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760157AbYHEROb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 13:09:07 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:44189 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760687AbYHERJF (ORCPT
+	Tue, 5 Aug 2008 13:14:31 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:54035 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1760119AbYHEROa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 13:09:05 -0400
-Date: Tue, 5 Aug 2008 10:04:57 -0700
-From: Greg KH <greg@kroah.com>
-To: Helge Hafting <helge.hafting@aitel.hist.no>
-Cc: Eric Paris <eparis@redhat.com>, malware-list@lists.printk.net,
-       linux-kernel@vger.kernel.org
-Subject: Re: [malware-list] [RFC 0/5] [TALPA] Intro to a linux interface
-	for on access scanning
-Message-ID: <20080805170457.GC9639@kroah.com>
-References: <1217883616.27684.19.camel@localhost.localdomain> <20080804223249.GA10517@kroah.com> <4898379D.2060709@aitel.hist.no>
+	Tue, 5 Aug 2008 13:14:30 -0400
+Message-ID: <489888FB.9060401@linux-foundation.org>
+Date: Tue, 05 Aug 2008 12:08:11 -0500
+From: Christoph Lameter <cl@linux-foundation.org>
+User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4898379D.2060709@aitel.hist.no>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Mel Gorman <mel@csn.ul.ie>
+CC: Yasunori Goto <y-goto@jp.fujitsu.com>,
+       Badari Pulavarty <pbadari@us.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-mm <linux-mm@kvack.org>,
+       Linux Kernel ML <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC:Patch: 000/008](memory hotplug) rough idea of pgdat removing
+References: <20080802090335.D6C8.E1E9C6FF@jp.fujitsu.com> <4897032E.5020601@linux-foundation.org> <20080805150434.BF32.E1E9C6FF@jp.fujitsu.com> <20080805111450.GE20243@csn.ul.ie>
+In-Reply-To: <20080805111450.GE20243@csn.ul.ie>
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 05, 2008 at 01:21:01PM +0200, Helge Hafting wrote:
-> Greg KH wrote:
->>
->>
->> I don't see anything in the list above that make this a requirement that
->> the code to do this be placed within the kernel.
->>
->> What is wrong with doing it in glibc or some other system-wide library
->> (LD_PRELOAD hooks, etc.)?
->>   
->
-> A linux virus would trivially get around that by doing its own syscalls
-> instead of using glibc. (It might still link dynamically to glibc so
-> you don't get suspicious, but won' actually use it when doing bad stuff.)
+Mel Gorman wrote:
 
-That's fine, then the file is corrupted.  It is when the "normal"
-program goes to load the file that we want to block and determine if we
-have a problem or not in the data.
+> Maybe I am missing something, but what is wrong with stop_machine during
+> memory hot-remove?
 
-virus scanners are not a security model in the aspect of SELinux or
-SMACK.  If they were, they would just use the LSM interface.  virus
-scanners are interested in blocking "normal" programs from reading
-invalid data from disk before acting on it or executing it.
-
-thanks,
-
-greg k-h
+Reclaim can sleep while going down a zonelist. There would need to be some
+form of synchronization to avoid removing a zone from the zonelist that we are
+just scanning.
