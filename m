@@ -1,69 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764074AbYHEUhw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764209AbYHEUiz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764074AbYHEUhw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 16:37:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755585AbYHEUho
+	id S1764209AbYHEUiz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 16:38:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760692AbYHEUiq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 16:37:44 -0400
-Received: from mail13.ca.com ([141.202.248.42]:14822 "EHLO mail13.ca.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754633AbYHEUhn convert rfc822-to-8bit (ORCPT
+	Tue, 5 Aug 2008 16:38:46 -0400
+Received: from casper.infradead.org ([85.118.1.10]:60787 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755585AbYHEUip (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 16:37:43 -0400
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [malware-list] [RFC 0/5] [TALPA] Intro to alinuxinterfaceforon access scanning
-Date: Tue, 5 Aug 2008 16:37:42 -0400
-Message-ID: <2629CC4E1D22A64593B02C43E855530304AE4ADB@USILMS12.ca.com>
-In-Reply-To: <20080805185438.GA8453@mit.edu>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [malware-list] [RFC 0/5] [TALPA] Intro to alinuxinterfaceforon access scanning
-Thread-Index: Acj3LLuW3asq0K4LQJ+rKcDzLJzuywADZuRw
-References: <20080805103840.1aaa64a5@infradead.org> <2629CC4E1D22A64593B02C43E85553030480743B@USILMS12.ca.com> <20080805181141.GA10700@kroah.com> <2629CC4E1D22A64593B02C43E85553030480743F@USILMS12.ca.com> <20080805185438.GA8453@mit.edu>
-From: "Press, Jonathan" <Jonathan.Press@ca.com>
-To: "Theodore Tso" <tytso@mit.edu>
-Cc: "Greg KH" <greg@kroah.com>, "Arjan van de Ven" <arjan@infradead.org>,
-       "Eric Paris" <eparis@redhat.com>, <linux-kernel@vger.kernel.org>,
-       <malware-list@lists.printk.net>,
+	Tue, 5 Aug 2008 16:38:45 -0400
+Date: Tue, 5 Aug 2008 13:38:32 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: "Press, Jonathan" <Jonathan.Press@ca.com>
+Cc: "Greg KH" <greg@kroah.com>, "Eric Paris" <eparis@redhat.com>,
+       <linux-kernel@vger.kernel.org>, <malware-list@lists.printk.net>,
        <linux-security-module@vger.kernel.org>
-X-OriginalArrivalTime: 05 Aug 2008 20:37:42.0279 (UTC) FILETIME=[1BDF0170:01C8F73B]
+Subject: Re: [malware-list] [RFC 0/5] [TALPA] Intro to a linuxinterfaceforon
+ access scanning
+Message-ID: <20080805133832.220d71c7@infradead.org>
+In-Reply-To: <2629CC4E1D22A64593B02C43E855530304AE4AD9@USILMS12.ca.com>
+References: <20080805112747.2c3c4650@infradead.org>
+	<2629CC4E1D22A64593B02C43E85553030480743E@USILMS12.ca.com>
+	<20080805183845.GA11375@kroah.com>
+	<2629CC4E1D22A64593B02C43E855530304AE4AD9@USILMS12.ca.com>
+Organization: Intel
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 5 Aug 2008 16:15:32 -0400
+"Press, Jonathan" <Jonathan.Press@ca.com> wrote:
+
+> 
+> > Also, it seems to me that for my purposes, close is discrete enough.
+> It
+> > tells me that there is now something out there that should be looked
+> at.
+> 
+> So, if you hook glibc to catch all calls to close, is that sufficient?
+> 
+> [JON PRESS]  Let's see...I'm going to use inotify for some events,
+> glibc for others, and this API for the rest.  Would you really want
+> to write an application like that?
+
+so you have to do 2 cases:
+
+1) inotify to notice files changing
+ (no need to hook glibc for that, and no need to hook close() since you
+ already get a notify for the change)
+
+This is to catch the *creation* of "bad" content (say a browser saving a
+download or somesuch)
+
+By nature this is asynchronous for both performance and "what could you
+do if" reasons.
+(but so would the close() scan be, and again please explain how you
+deal with write-to-mmap-after-close)
+
+2) A synchronous check on open() or exec()
+
+This is to prevent *use* of "bad" content, either by an application
+opening a bad file, or by executing a "bad" program. 
+
+For neither do you need to hook the kernel; ld preload works great for
+this. 
+
+This does assume that at some point you have a transition from "ok"
+program to the first time you run a "bad" one (via exec or open); and
+that you catch it at that point.
+
+I don't yet buy the argument "but what if the virus corrupted your ld
+preload", because if it can do that your own virus scanner is also
+corrupted.
 
 
------Original Message-----
-From: Theodore Tso [mailto:tytso@mit.edu] 
-Sent: Tuesday, August 05, 2008 2:55 PM
-To: Press, Jonathan
-Cc: Greg KH; Arjan van de Ven; Eric Paris; linux-kernel@vger.kernel.org;
-malware-list@lists.printk.net; linux-security-module@vger.kernel.org
-Subject: Re: [malware-list] [RFC 0/5] [TALPA] Intro to
-alinuxinterfaceforon access scanning
-
-On Tue, Aug 05, 2008 at 02:38:23PM -0400, Press, Jonathan wrote:
-> Is your point that Linux and Unix machines are less vulnerable to
-> viruses?  If so, that's not relevant to my point at all.  A Unix
-machine
-> can be a carrier, passing infections on to other vulnerable platforms
-> (guess which one).  An enterprise security system sees the entire
-> enterprise as an integrated whole -- not just individual machines with
-> their own separate attributes and no impact on each other at all.
-
-Sure, but if that's the case, you don't need to have a blocking open()
-interface.  Having inotify tell your application that a file
-descriptor that had been opened for writing has been closed
-(IN_CLOSE_WRITE) should be quite sufficient.
+Can you explain what gap is left after you do these two things?
 
 
-[JON PRESS]  I don't get the connection between what I said and your
-point about not needing blocking open() interface.  If I ftp into a
-Linux machine and GET an infected file, you want FTP to go right ahead
-and read it and send it to me over the wire?
 
+-- 
+If you want to reach me at my work email, use arjan@linux.intel.com
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
