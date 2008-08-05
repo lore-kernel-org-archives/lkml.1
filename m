@@ -1,63 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753185AbYHEHQw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760674AbYHEHTt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753185AbYHEHQw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 03:16:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754044AbYHEHP4
+	id S1760674AbYHEHTt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 03:19:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754131AbYHEHTk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 03:15:56 -0400
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:57186 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753940AbYHEHPz (ORCPT
+	Tue, 5 Aug 2008 03:19:40 -0400
+Received: from kirsty.vergenet.net ([202.4.237.240]:55226 "EHLO
+	kirsty.vergenet.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754127AbYHEHTi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 03:15:55 -0400
-Subject: Re: [PATCH 1/2] pci: add misrouted interrupt error handling
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Bjorn Helgaas <bjorn.helgaas@hp.com>
-Cc: linux-scsi <linux-scsi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>, linux-pci@vger.kernel.org
-In-Reply-To: <200808041443.20942.bjorn.helgaas@hp.com>
-References: <1217786532.4179.24.camel@localhost.localdomain>
-	 <200808041443.20942.bjorn.helgaas@hp.com>
-Content-Type: text/plain
-Date: Mon, 04 Aug 2008 17:02:27 -0700
-Message-Id: <1217894547.3318.38.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
+	Tue, 5 Aug 2008 03:19:38 -0400
+Date: Tue, 5 Aug 2008 17:19:36 +1000
+From: Simon Horman <horms@verge.net.au>
+To: Vivek Goyal <vgoyal@redhat.com>
+Cc: kexec@lists.infradead.org, linux-ia64@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 3/3] kdump: use is_vmcore_usable() and
+	vmcore_unusable() in reserve_elfcorehdr()
+Message-ID: <20080805071934.GA7824@verge.net.au>
+References: <20080729081235.293361145@vergenet.net> <20080729081629.715923799@vergenet.net> <20080730130131.GB16373@redhat.com> <20080731004842.GA1657@verge.net.au> <20080731132152.GB26782@redhat.com> <20080801040759.GG27241@verge.net.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080801040759.GG27241@verge.net.au>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-08-04 at 14:43 -0600, Bjorn Helgaas wrote:
-> On Sunday 03 August 2008 12:02:12 pm James Bottomley wrote:
-> > +static void pci_note_irq_problem(struct pci_dev *pdev, const char *reason)
-> > +{
-> > +	struct pci_dev *parent = to_pci_dev(pdev->dev.parent);
-> > +
-> > +	dev_printk(KERN_ERR, &pdev->dev,
-> > +		   "Potentially misrouted IRQ (Bridge %s %04x:%04x)\n",
-> > +		   parent->dev.bus_id, parent->vendor, parent->device);
+On Fri, Aug 01, 2008 at 02:08:01PM +1000, Simon Horman wrote:
+> On Thu, Jul 31, 2008 at 09:21:52AM -0400, Vivek Goyal wrote:
+> > On Thu, Jul 31, 2008 at 10:48:43AM +1000, Simon Horman wrote:
+> > > On Wed, Jul 30, 2008 at 09:01:31AM -0400, Vivek Goyal wrote:
+> > > > On Tue, Jul 29, 2008 at 06:12:38PM +1000, Simon Horman wrote:
+> > > > > After recent changes setting elfcorehdr_addr to ELFCORE_ADDR_MAX
+> > > > > will cause is_kdump_kernel() to return 0 when it should return 1.
+> > > > > Instead use vmcore_unusable(), which has been added for this purpose.
+> > > > > 
+> > > > > Signed-off-by: Simon Horman <horms@verge.net.au>
+> > > > > 
+> > > > > Index: linux-2.6/arch/ia64/kernel/setup.c
+> > > > > ===================================================================
+> > > > > --- linux-2.6.orig/arch/ia64/kernel/setup.c	2008-07-29 17:27:43.000000000 +1000
+> > > > > +++ linux-2.6/arch/ia64/kernel/setup.c	2008-07-29 17:50:50.000000000 +1000
+> > > > > @@ -502,11 +502,11 @@ int __init reserve_elfcorehdr(unsigned l
+> > > > >  	 * to work properly.
+> > > > >  	 */
+> > > > >  
+> > > > > -	if (elfcorehdr_addr >= ELFCORE_ADDR_MAX)
+> > > > > +	if (!is_vmcore_usable())
+> > > > >  		return -EINVAL;
+> > > > >  
+> > > > >  	if ((length = vmcore_find_descriptor_size(elfcorehdr_addr)) == 0) {
+> > > > > -		elfcorehdr_addr = ELFCORE_ADDR_MAX;
+> > > > > +		vmcore_unusable();
+> > > > >  		return -EINVAL;
+> > > > >  	}
+> > > > >  
+> > > > 
+> > > > Hi Simon,
+> > > > 
+> > > > I had a question. I am not very sure what reserve_elfcorehdr is doing
+> > > > but doing something similar to reserving some memory area where
+> > > > elfcoreheaders are.
+> > > 
+> > > Yes, that is my understanding of what it does.
+> > > 
+> > 
+> > In x86 we never have to reserve that elf header area as we know that
+> > booting kernel will never overwrite in that area. (Previous kernel has
+> > modified the memory map in such a way so that elf header memory area
+> > is not even part of memory range second kernel can use. 
+> > 
+> > Any idea, why do we need to reserve this area in IA64.
+> > 
+> > > > I see that reserve_elfcorehdr is under CONFIG_PROC_VMCORE. Will it work
+> > > > if CONFIG_PROC_VMCORE=n and somebody wants to use /dev/oldmem?
+> > > > Or reserve_elfcorehdr should be under CONFIG_CRASH_DUMP?
+> > > 
+> > > I'm not that familiar with /dev/oldmem, but as far as I can see,
+> > > read_oldmem doesn't do anything with ELF headers, so reservation
+> > > by vmcore_find_descriptor_size() should not be neccessary.
+> > > 
+> > 
+> > /dev/oldmem does not directly touch elfcorehdr. But it indirectly does in
+> > the sense that it is reading all the previous kernel's memory and dumping
+> > it to disk. That would include elfcorehdrs also.
+> > 
+> > Now if we need to do some kind of reservation for elf headers so that
+> > fs/vmcore.c code can read it, then same should be true for /dev/oldmem
+> > code also. Otherwise reserving elfcorehdr code should be redundant.
+> > 
+> > That's why I raised the question that why do we need to reserve that area
+> > in case of IA64. And if there is a genuine reason then probably that
+> > reason will hold valid in case of /dev/oldmem also and we might have
+> > to put is_vmcore_usable() definition also under CONFIG_CRASH_DUMP.
 > 
-> Do you prefer "dev_printk(KERN_ERR, ...)" over "dev_err(...)"?  Easier
-> to grep for the former, maybe?  If so, should we deprecate "dev_err()"
-> and friends?  When I converted most of the PCI core to use dev_printk(),
-> (80ccba1186d48f ...) I used dev_err(), but I don't really care one way
-> or the other.
+> Hi Vivek,
 > 
-> Maybe use pci_name(parent)?
-> 
-> I tried to standardize the PCI core on "[%04x/%04x]" for vendor/device ID.
+> yes, I do think that the problem is a bit deeper than my original response.
+> I'll investigate this further.
 
-To be honest I'm not really interested too much in the various API
-preferences ... they can be fixed up later by the people who care.
+Hi Vivek,
 
-What I am interested in is whether we can get this interface to give
-sufficient information to blacklist the offending motherboard if we can
-identify it as the source of the problem.  Since the usual culprit is
-the bridge, that's why I'm doing parent vendor/device pairs.  However,
-better suggestions for the information that should be displayed would be
-gratefully received.
+sorry for not getting back to you sooner. I think that the short answer
+to this question is that the code should be protected by
+CONFIG_CRASH_DUMP instead of CONFIG_PROC_VMCORE. This should ensure
+that the memory where the elfheader lies is not used by the crashkernel,
+regardless of if CONFIG_PROC_VMCORE is in effect or not.
 
-James
-
-
+I will make a patch for this ASAP.
