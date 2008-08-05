@@ -1,70 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757907AbYHEWbe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761102AbYHEWh3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757907AbYHEWbe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 18:31:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755578AbYHEWbK
+	id S1761102AbYHEWh3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 18:37:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758091AbYHEWhS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 18:31:10 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:42560 "EHLO smtp5.pp.htv.fi"
+	Tue, 5 Aug 2008 18:37:18 -0400
+Received: from mx2.suse.de ([195.135.220.15]:51997 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755246AbYHEWbJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 18:31:09 -0400
-Date: Wed, 6 Aug 2008 01:29:44 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: [2.6 patch] #error for gcc 4.1.{0,1}
-Message-ID: <20080805222944.GB6477@cs181140183.pp.htv.fi>
+	id S1756970AbYHEWhQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Aug 2008 18:37:16 -0400
+Date: Tue, 5 Aug 2008 15:31:17 -0700
+From: Greg KH <gregkh@suse.de>
+To: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Cc: Kay Sievers <kay.sievers@vrfy.org>, linux-kernel@vger.kernel.org,
+       linux-s390@vger.kernel.org,
+       lf_kernel_messages@lists.linux-foundation.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Michael Holzheu <holzheu@de.ibm.com>, Gerrit Huizenga <gh@us.ibm.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>, Jan Kara <jack@suse.cz>,
+       Pavel Machek <pavel@ucw.cz>, Sam Ravnborg <sam@ravnborg.org>,
+       Joe Perches <joe@perches.com>,
+       Jochen =?iso-8859-1?B?Vm/f?= <jochen.voss@googlemail.com>,
+       Kunai Takashi <kunai@linux-foundation.jp>,
+       Tim Bird <tim.bird@am.sony.com>
+Subject: Re: [patch 1/3] kmsg: Kernel message catalog macros.
+Message-ID: <20080805223117.GA6552@suse.de>
+References: <20080730165656.118280544@de.ibm.com> <20080730171156.824640459@de.ibm.com> <3ae72650807301502h3e54e80yb405af7192048b89@mail.gmail.com> <20080730220432.GA24800@suse.de> <1217495404.8555.20.camel@localhost>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <1217495404.8555.20.camel@localhost>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Jul 31, 2008 at 11:10:04AM +0200, Martin Schwidefsky wrote:
+> On Wed, 2008-07-30 at 15:04 -0700, Greg KH wrote:
+> > On Thu, Jul 31, 2008 at 12:02:04AM +0200, Kay Sievers wrote:
+> > > On Wed, Jul 30, 2008 at 18:56, Martin Schwidefsky
+> > > <schwidefsky@de.ibm.com> wrote:
+> > > 
+> > > > +#define kmsg_dev_alert(id, dev, format, arg...) \
+> > > > +       printk(__KMSG_CHECK(ALERT, id) KMSG_COMPONENT \
+> > > > +               ": %s: " format, (dev)->bus_id , ## arg)
+> > > 
+> > > Care to use dev_name(), bus_id will be removed soon.
+> > 
+> > Hm, just use dev_printk() instead, it handles all of these kinds of
+> > changes automatically.
+> 
+> Using dev_printk won't work because of the order of the elements of the
+> printk. The kmsg tag should not have a "random" position in the printk
+> but should be the first element. If we use dev_printk the kmsg tag will
+> be the third element, for other kmsg printks it will be the first. In
+> addition the kmsg message tag for the device drivers already includes
+> the driver name ..
 
-gcc 4.1.0 and 4.1.1 are known to miscompile the kernel:
-  http://gcc.gnu.org/bugzilla/show_bug.cgi?id=27781
+But the structure of dev_printk() is well definied and should be pretty
+trival to parse even with missing fields.
 
-Usage of weak functions has become a common pattern in the kernel, and 
-usages get added in each kernel version increasing the probability of 
-bugs with each kernel release.
+And if not, fix up dev_printk() to properly delinate when we have
+missing fields, why create a totally new thing here that we need to
+convert subsystems into?
 
-This miscompilation of weak functions can result in subtle runtime 
-errors.
+thanks,
 
-#error for gcc 4.1.0 and 4.1.1 to prevent users from running into
-this bug.
-
-Note:
-We already printed a #warning for gcc 4.1.0 due to a different bug.
-
-Signed-off-by: Adrian Bunk <bunk@kernel.org>
-
----
-
-If anyone has a better patch please step forward - otherwise I'm
-proposing this patch.
-
-This patch has been sent on:
-- 26 Jun 2008
-
-ee78871a1d85fe60958748c208389adb4031fefe diff --git a/init/main.c b/init/main.c
-index f7fb200..bede344 100644
---- a/init/main.c
-+++ b/init/main.c
-@@ -76,8 +76,9 @@
-  * trouble.
-  */
- 
--#if __GNUC__ == 4 && __GNUC_MINOR__ == 1 && __GNUC_PATCHLEVEL__ == 0
--#warning gcc-4.1.0 is known to miscompile the kernel.  A different compiler version is recommended.
-+/*  due to http://gcc.gnu.org/bugzilla/show_bug.cgi?id=27781  */
-+#if __GNUC__ == 4 && __GNUC_MINOR__ == 1 && (__GNUC_PATCHLEVEL__ == 0 || __GNUC_PATCHLEVEL__ == 1)
-+#error gcc 4.1.0 and 4.1.1 are known to miscompile the kernel.
- #endif
- 
- static int kernel_init(void *);
-
-
+greg k-h
