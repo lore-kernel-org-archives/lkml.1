@@ -1,58 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761583AbYHEPjd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761452AbYHEPkz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761583AbYHEPjd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 11:39:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759786AbYHEPjW
+	id S1761452AbYHEPkz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 11:40:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758771AbYHEPkL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 11:39:22 -0400
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:39774 "EHLO smtp6.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759725AbYHEPjU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 11:39:20 -0400
-Date: Tue, 5 Aug 2008 18:37:57 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: "John W. Linville" <linville@tuxdriver.com>, linux-next@vger.kernel.org,
-       David Miller <davem@davemloft.net>, LKML <linux-kernel@vger.kernel.org>,
-       "Luis R. Rodriguez" <lrodriguez@atheros.com>
-Subject: Re: linux-next: wireless-current tree build failure
-Message-ID: <20080805153757.GB22895@cs181140183.pp.htv.fi>
-References: <20080805162152.2b55ae5c.sfr@canb.auug.org.au>
+	Tue, 5 Aug 2008 11:40:11 -0400
+Received: from 166-70-238-42.ip.xmission.com ([166.70.238.42]:34508 "EHLO
+	ns1.wolfmountaingroup.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758726AbYHEPkK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Aug 2008 11:40:10 -0400
+Message-ID: <44919.166.70.238.45.1217949560.squirrel@webmail.wolfmountaingroup.com>
+In-Reply-To: <200808060133.10457.nickpiggin@yahoo.com.au>
+References: <17494.166.70.238.46.1217784156.squirrel@webmail.wolfmountaingroup.com>
+    <Pine.LNX.4.64.0808051140150.6309@anakin>
+    <33030.166.70.238.45.1217948565.squirrel@webmail.wolfmountaingroup.com>
+    <200808060133.10457.nickpiggin@yahoo.com.au>
+Date: Tue, 5 Aug 2008 09:19:20 -0600 (MDT)
+Subject: Re: [ANNOUNCE] Merkey's Kernel Debugger
+From: jmerkey@wolfmountaingroup.com
+To: "Nick Piggin" <nickpiggin@yahoo.com.au>
+Cc: jmerkey@wolfmountaingroup.com, "Geert Uytterhoeven" <geert@linux-m68k.org>,
+       "Stefan Richter" <stefanr@s5r6.in-berlin.de>,
+       "Josh Boyer" <jwboyer@gmail.com>, linux-kernel@vger.kernel.org
+User-Agent: SquirrelMail/1.4.6
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20080805162152.2b55ae5c.sfr@canb.auug.org.au>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 05, 2008 at 04:21:52PM +1000, Stephen Rothwell wrote:
-> Hi John,
-> 
-> Today's linux-next build (powerpc allyesconfig) failed like this:
-> 
-> drivers/net/wireless/ath9k/hw.c: In function 'ath9k_hw_9280_spur_mitigate':
-> drivers/net/wireless/ath9k/hw.c:4660: internal compiler error: in expand_expr_real_1, at expr.c:9199
-> 
-> Clearly not our fault! :-) I have informed our toolchain person.  This
-> was using the Debian gcc-4.3.  It also fails using the Debian 4.2
-> compiler but not the 4.1 one.
->...
+> On Wednesday 06 August 2008 01:02, jmerkey@wolfmountaingroup.com wrote:
+>> > On Mon, 4 Aug 2008, jmerkey@wolfmountaingroup.com wrote:
+>
+>> > --
+>> > Geert Uytterhoeven -- There's lots of Linux beyond ia32 --
+>> > geert@linux-m68k.org
+>>
+>> No I was not, but I am now.  At any rate, I removed the Microsoft-isms
+>> from the code.  I can cut yet another patch for git6, but git5 was there
+>> -- GPL2 and all.  How about putting in into the kernel guys -- :-)
+>
+> Seriously? Because it doesn't seem to have had enough peer review,
+> it hasn't had widespread testing in somewhere like linux-next or
+> -mm, and we already have kgdb so you have to also explain why you
+> can't improve kgdb in the areas it trails mdb.
 
-Alexandros Couloumbis already opened a bug for this issue on mips, which 
-also seems to be affected:
-  http://gcc.gnu.org/bugzilla/show_bug.cgi?id=37014
+If you go back to LKML from 2000, this debugger has been around for 10
+years.  I agree not in the hands of the public, but its very mature
+in comparison to kdb or kgdb.
 
-It is a gcc bug, but we'll have to work around it in the ath9k driver.
+>
+> But the ideal outcome would be if you could contribute patches to
+> kgdb to the point where it is as good as mdb. It is already in the
+> tree and supported by a handful of architectures... any chance of
+> that? (I don't know kernel debugger code, so I ask as an interested
+> user)
+>
 
-cu
-Adrian
+I plan to work on kdb and yes, there is a version of this that runs
+as an alternate debugger of kdb - you can even switch back and forth
+between them - but that misses the point as well.
 
--- 
+I can wait untl its more widespread -- or not.
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+Jeff
+
+
 
