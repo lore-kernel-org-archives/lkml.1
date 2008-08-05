@@ -1,61 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761330AbYHEPgt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761244AbYHEPhv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761330AbYHEPgt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 11:36:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759216AbYHEPgc
+	id S1761244AbYHEPhv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 11:37:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759039AbYHEPhn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 11:36:32 -0400
-Received: from x346.tv-sign.ru ([89.108.83.215]:42408 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760193AbYHEPgb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 11:36:31 -0400
-Date: Tue, 5 Aug 2008 19:40:04 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Roland McGrath <roland@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] posix-timers: lock_timer: make it readable
-Message-ID: <20080805154004.GA9761@tv-sign.ru>
-References: <20080805153213.GA9754@tv-sign.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080805153213.GA9754@tv-sign.ru>
-User-Agent: Mutt/1.5.11
+	Tue, 5 Aug 2008 11:37:43 -0400
+Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:54065 "EHLO
+	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754528AbYHEPhm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Aug 2008 11:37:42 -0400
+Message-ID: <4898738B.60608@s5r6.in-berlin.de>
+Date: Tue, 05 Aug 2008 17:36:43 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.16) Gecko/20080702 SeaMonkey/1.1.11
+MIME-Version: 1.0
+To: jmerkey@wolfmountaingroup.com
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2.6.27-rc1-git5 6/26] mdb: fix ScreenInputFromKeyBoard,
+ add Alternate Debugger Interface
+References: <200808050626.m756QZ1a003763@wolfmountaingroup.com>
+In-Reply-To: <200808050626.m756QZ1a003763@wolfmountaingroup.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/05, Oleg Nesterov wrote:
->
-> Cleanup. Imho makes the code much more understandable. At least this
-> patch lessens both the source and compiled code.
+jmerkey@wolfmountaingroup.com wrote:
+> --- a/debug/mdb.c	1969-12-31 17:00:00.000000000 -0700
+> +++ b/debug/mdb.c	2008-08-04 17:00:17.000000000 -0600
+...
+> +*   This program is free software; you can redistribute it and/or modify it
+> +*   under the terms of the GNU General Public License as published by the
+> +*   Free Software Foundation, version 2, or any later version.
 
-To simplify the review, I am posting the code with this patch applied.
+In other files you have:
 
-static struct k_itimer *lock_timer(timer_t timer_id, unsigned long *flags)
-{
-	struct k_itimer *timr;
-	/*
-	 * Watch out here.  We do a irqsave on the idr_lock and pass the
-	 * flags part over to the timer lock.  Must not let interrupts in
-	 * while we are moving the lock.
-	 */
-	spin_lock_irqsave(&idr_lock, *flags);
-	timr = idr_find(&posix_timers_id, (int)timer_id);
-	if (timr) {
-		spin_lock(&timr->it_lock);
-		if (timr->it_process &&
-		    same_thread_group(timr->it_process, current)) {
-			spin_unlock(&idr_lock);
-			return timr;
-		}
-		spin_unlock(&timr->it_lock);
-	}
-	spin_unlock_irqrestore(&idr_lock, *flags);
+> +*   This program is free software; you can redistribute it and/or modify it
+> +*   under the terms of the GNU General Public License as published by the
+> +*   Free Software Foundation, version 2.
 
-	return NULL;
-}
-
-Oleg.
-
+The kernel as a whole is indeed licensed under GPLv2 without "or later"
+clause, but certain parts can be (and are) licensed under alternative
+terms too.  I don't know how mdb fits into the picture, but since it is
+a port from other systems it seems to be of the kind which could have
+alternative terms (as long as GPLv2 is one of the options).  But don't
+take my word for it.
+-- 
+Stefan Richter
+-=====-==--- =--- --=-=
+http://arcgraph.de/sr/
