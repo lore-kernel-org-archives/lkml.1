@@ -1,104 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764341AbYHFBxf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763675AbYHFBzp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764341AbYHFBxf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 21:53:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760012AbYHFBxZ
+	id S1763675AbYHFBzp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 21:55:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755577AbYHFBzg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 21:53:25 -0400
-Received: from ti-out-0910.google.com ([209.85.142.191]:57299 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759841AbYHFBxX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 21:53:23 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=FfUHPUZZ/v0Jj0ZSMtXj9nkPw0ydEG5T5JSM9HGZz9/YTzF+sWBHgG+aii5NrwrUd2
-         /cY9Y7NsPzdOYDHjn2fKpMmzPaj1XQflrQv0RCTr0Yv9UKKPU7+wh+LpCqeiH4As01di
-         YFJbzfbZ45NUmOloRdU5W/ZWIJSAkk7GV/Om4=
-Message-ID: <a8e1da0808051853x67b2739eh28104ac76b53486c@mail.gmail.com>
-Date: Wed, 6 Aug 2008 09:53:21 +0800
-From: "Dave Young" <hidave.darkstar@gmail.com>
-To: "Bob Copeland" <me@bobcopeland.com>
-Subject: Re: [BUG] wireless : cpu stuck for 61s
-Cc: "Jiri Slaby" <jirislaby@gmail.com>,
-       "Pekka J Enberg" <penberg@cs.helsinki.fi>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Johannes Berg" <johannes@sipsolutions.net>,
-       linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org
-In-Reply-To: <a8e1da0808051851y752b3525l98271ceca4eb189a@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+	Tue, 5 Aug 2008 21:55:36 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:58954 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752845AbYHFBzf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Aug 2008 21:55:35 -0400
+Subject: Re: [malware-list] [RFC 0/5] [TALPA] Intro to a linux
+	interfaceforon access scanning
+From: Eric Paris <eparis@redhat.com>
+To: Rik van Riel <riel@redhat.com>
+Cc: Arjan van de Ven <arjan@infradead.org>,
+       "Press, Jonathan" <Jonathan.Press@ca.com>, Greg KH <greg@kroah.com>,
+       linux-kernel@vger.kernel.org, malware-list@lists.printk.net,
+       linux-security-module@vger.kernel.org
+In-Reply-To: <20080805203052.3de22dd2@bree.surriel.com>
+References: <1217883616.27684.19.camel@localhost.localdomain>
+	 <20080804223249.GA10517@kroah.com>
+	 <1217896374.27684.53.camel@localhost.localdomain>
+	 <2629CC4E1D22A64593B02C43E855530304807431@USILMS12.ca.com>
+	 <1217948212.27684.120.camel@localhost.localdomain>
+	 <2629CC4E1D22A64593B02C43E855530304807436@USILMS12.ca.com>
+	 <1217956796.11547.12.camel@paris.rdu.redhat.com>
+	 <20080805103840.1aaa64a5@infradead.org>
+	 <2629CC4E1D22A64593B02C43E85553030480743B@USILMS12.ca.com>
+	 <20080805112747.2c3c4650@infradead.org>
+	 <1217961574.27684.129.camel@localhost.localdomain>
+	 <20080805203052.3de22dd2@bree.surriel.com>
+Content-Type: text/plain
+Date: Tue, 05 Aug 2008 21:55:19 -0400
+Message-Id: <1217987719.27684.222.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080729055731.GA3265@darkstar>
-	 <1217334724.10489.47.camel@johannes.berg>
-	 <20080730020820.8bcc00e2.akpm@linux-foundation.org>
-	 <a8e1da0807300302m35a0a7c0q2ff2e0ab92a69239@mail.gmail.com>
-	 <20080730031047.54e13e2d.akpm@linux-foundation.org>
-	 <a8e1da0808010032h32c18054g3712466eb40f0acf@mail.gmail.com>
-	 <4896D34A.1000005@gmail.com>
-	 <a8e1da0808041829sac34939yd9163b02e6b8b515@mail.gmail.com>
-	 <20080805122408.GA5000@hash.localnet>
-	 <a8e1da0808051851y752b3525l98271ceca4eb189a@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 6, 2008 at 9:51 AM, Dave Young <hidave.darkstar@gmail.com> wrote:
-> On Tue, Aug 5, 2008 at 8:24 PM, Bob Copeland <me@bobcopeland.com> wrote:
->> On Tue, Aug 05, 2008 at 09:29:26AM +0800, Dave Young wrote:
->>> With the patch I cann't reproduce the bug with 27-rc1 now.
->>>
->>> >  [<c02375a6>] ? debugfs_create_file+0x46/0x210
->>> >  [<c02375a6>] ? debugfs_create_file+0x46/0x210
->>> >  [<c02375a6>] debugfs_create_file+0x46/0x210
->>> >  [<c02377f1>] debugfs_create_dir+0x21/0x30
->>> >  [<f8901f6d>] ieee80211_sta_debugfs_add+0x2d/0x150 [mac80211]
->>> >  [<f88eba89>] sta_info_debugfs_add_work+0x89/0x130 [mac80211]
->>> >  [<f890a170>] ? rate_control_pid_add_sta_debugfs+0x0/0x30 [mac80211]
->>
->> I wonder if there were two separate problems here.  I looked into
->> this with some detail yesterday and agree with Johannes that the above
->> trace is on locking the parent directory's i_mutex, but I too couldn't
->> see any problems with sta_info_debugfs_add_work.  Other stuff could also
->> modify the directory with or without rtnl_lock, but not in a way that
->> to my untrained eyes would lead to deadlock.
->
-> Yes,. I think so. It's the original bug for me, while testing I found
-> the mutex deadlock problem.
->
-> But this week I will have no time to trace it. so if I have time I
-> will keep tracing the problem
+On Tue, 2008-08-05 at 20:30 -0400, Rik van Riel wrote:
+> On Tue, 05 Aug 2008 14:39:34 -0400
+> Eric Paris <eparis@redhat.com> wrote:
+> > On Tue, 2008-08-05 at 11:27 -0700, Arjan van de Ven wrote:
+> 
+> > > but close is... very limited in value. Open is a discrete event
+> > > traditionally associated withh permission checks.
+> > > Close... not so.  (And if you mmap memory, you can then close the file
+> > > and still write to it via the mmap)
+> > 
+> > Thankfully my implementation will invalidate that close time check and
+> > caching result.  It does the invalidating the same place we update mtime
+> > and my understanding is that mmap has been updating mtime for quite a
+> > while now. 
+> 
+> Then isn't the close time check superfluous, since you do the
+> checks at change time already?
 
-Additional info,
+In the patches I posted, "checks" are done at open and close if the
+result is not already in the cache.  Every write invalidates the cache
+and thus the next open/close will do a "check."
 
-With the mutex fix patch, in 2.6.27-rc1 I seems can not reproduce the
-debugfs_add bug, (maybe need more test)
+So the longer a process keeps a file open the longer it is susceptible
+to "unclean" data existing in that file.
 
-But with 2.6.26, the bug can be reproduced. (The mutex fix patch need
-not to be applied because there's no such deadlock bug)
-
->
->>
->> Or is the trace just wrong?
->>
->> --
->> Bob Copeland %% www.bobcopeland.com
->>
->>
->
->
->
-> --
-> Regards
-> dave
->
-
-
-
--- 
-Regards
-dave
