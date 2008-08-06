@@ -1,32 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760249AbYHFFH5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758808AbYHFFLQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760249AbYHFFH5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Aug 2008 01:07:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753977AbYHFFHs
+	id S1758808AbYHFFLQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Aug 2008 01:11:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754467AbYHFFLA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Aug 2008 01:07:48 -0400
-Received: from g1t0026.austin.hp.com ([15.216.28.33]:10659 "EHLO
-	g1t0026.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753895AbYHFFHr (ORCPT
+	Wed, 6 Aug 2008 01:11:00 -0400
+Received: from g1t0028.austin.hp.com ([15.216.28.35]:43602 "EHLO
+	g1t0028.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753895AbYHFFK7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Aug 2008 01:07:47 -0400
-Date: Tue, 5 Aug 2008 23:07:45 -0600
+	Wed, 6 Aug 2008 01:10:59 -0400
+Date: Tue, 5 Aug 2008 23:10:57 -0600
 From: Alex Chiang <achiang@hp.com>
-To: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-Cc: Matthew Wilcox <matthew@wil.cx>, Pierre Ossman <drzeus-list@drzeus.cx>,
+To: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
+       Matthew Wilcox <matthew@wil.cx>, Pierre Ossman <drzeus-list@drzeus.cx>,
        Jesse Barnes <jbarnes@virtuousgeek.org>,
        LKML <linux-kernel@vger.kernel.org>, linux-pci@vger.kernel.org
-Subject: [PATCH 0/7] Fixups for duplicate slot names
-Message-ID: <20080806050745.GA31319@ldl.fc.hp.com>
+Subject: [PATCH 1/7] acpiphp: convert to a kmalloc'ed slot name
+Message-ID: <20080806051057.GB31319@ldl.fc.hp.com>
 Mail-Followup-To: Alex Chiang <achiang@hp.com>,
 	Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
 	Matthew Wilcox <matthew@wil.cx>,
 	Pierre Ossman <drzeus-list@drzeus.cx>,
 	Jesse Barnes <jbarnes@virtuousgeek.org>,
 	LKML <linux-kernel@vger.kernel.org>, linux-pci@vger.kernel.org
+References: <20080806050745.GA31319@ldl.fc.hp.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20080806050745.GA31319@ldl.fc.hp.com>
 User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 X-Brightmail-Tracker: AAAAAQAAAAI=
 X-Whitelist: TRUE
@@ -34,58 +36,87 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>:
->
-> With this change, kobject_init_and_add() called in
-> pci_create_slot() will show stack trace if a hotplug driver
-> attempts to register multiple slot with the same name. That is,
-> stack trace will be shown on the platform that wrongly assing
-> the physical slot number to multiple slots. I'm very sorry, but
-> I don't have enough time to consider how to fix it today.
 
-Hello Kenji-san,
+Callers of pci_hp_register() need to be converted from a
+char name[] to a char *name.
 
-You are obviously correct about my prior bad patch that simply
-removed the check in pci_hp_register() for duplicate names.
+This change allows pci_create_slot() to dynamically rename the
+sysfs name of the slot in the event of a name collision.
 
-I also talked with Willy, and he thought that the proper way to
-fix all these issues was not in the individual drivers, but in
-the PCI core, which I agree with.
+Signed-off-by: Alex Chiang <achiang@hp.com>
+---
+ drivers/pci/hotplug/acpiphp.h      |    2 +-
+ drivers/pci/hotplug/acpiphp_core.c |   17 ++++++++++-------
+ 2 files changed, 11 insertions(+), 8 deletions(-)
 
-Here is a patch series that attempts to implement Willy's
-suggestion.
-
-Patches 1--6 convert the callers of pci_hp_register/pci_create_slot
-from a static char name[] to a dynamically kmalloc'ed char *name.
-
-There are also cleanups in the individual drivers to remove the
-_slot_with_bus parameters.
-
-Patch 7/7 implements the collision rename logic. It's not the
-prettiest thing in the world, so your comments are welcome. :)
-
-It's getting late here and I haven't had time to really test it,
-other than a quick compile test, but I wanted to try and send it
-so that you could take a look and possibly try it. ;)
-
-These patches apply on top of Linus's latest tree.
-
-Thanks!
-
-/ac
-
- drivers/acpi/pci_slot.c                |   15 ++++++-
- drivers/pci/hotplug/acpiphp.h          |    2 -
- drivers/pci/hotplug/acpiphp_core.c     |   18 +++++----
- drivers/pci/hotplug/fakephp.c          |   16 ++++++--
- drivers/pci/hotplug/pci_hotplug_core.c |    4 --
- drivers/pci/hotplug/pciehp.h           |    6 +--
- drivers/pci/hotplug/pciehp_core.c      |    7 ---
- drivers/pci/hotplug/pciehp_hpc.c       |   19 ++++-----
- drivers/pci/hotplug/pcihp_skeleton.c   |   12 ++++--
- drivers/pci/hotplug/shpchp.h           |    5 +-
- drivers/pci/hotplug/shpchp_core.c      |   29 ++++----------
- drivers/pci/slot.c                     |   65 +++++++++++++++++++++++++++++----
- include/linux/pci.h                    |    3 -
- 13 files changed, 124 insertions(+), 77 deletions(-)
+diff --git a/drivers/pci/hotplug/acpiphp.h b/drivers/pci/hotplug/acpiphp.h
+index 5a58b07..2ac519d 100644
+--- a/drivers/pci/hotplug/acpiphp.h
++++ b/drivers/pci/hotplug/acpiphp.h
+@@ -63,7 +63,7 @@ struct slot {
+ 	struct hotplug_slot	*hotplug_slot;
+ 	struct acpiphp_slot	*acpi_slot;
+ 	struct hotplug_slot_info info;
+-	char name[SLOT_NAME_SIZE];
++	char *name;
+ };
+ 
+ /*
+diff --git a/drivers/pci/hotplug/acpiphp_core.c b/drivers/pci/hotplug/acpiphp_core.c
+index 0e496e8..ec164f4 100644
+--- a/drivers/pci/hotplug/acpiphp_core.c
++++ b/drivers/pci/hotplug/acpiphp_core.c
+@@ -301,6 +301,7 @@ static void release_slot(struct hotplug_slot *hotplug_slot)
+ 
+ 	dbg("%s - physical_slot = %s\n", __func__, hotplug_slot->name);
+ 
++	kfree(slot->name);
+ 	kfree(slot->hotplug_slot);
+ 	kfree(slot);
+ }
+@@ -315,9 +316,13 @@ int acpiphp_register_hotplug_slot(struct acpiphp_slot *acpiphp_slot)
+ 	if (!slot)
+ 		goto error;
+ 
++	slot->name = kzalloc(SLOT_NAME_SIZE, GFP_KERNEL);
++	if (!slot->name)
++		goto error_slot;
++
+ 	slot->hotplug_slot = kzalloc(sizeof(*slot->hotplug_slot), GFP_KERNEL);
+ 	if (!slot->hotplug_slot)
+-		goto error_slot;
++		goto error_name;
+ 
+ 	slot->hotplug_slot->info = &slot->info;
+ 
+@@ -336,23 +341,21 @@ int acpiphp_register_hotplug_slot(struct acpiphp_slot *acpiphp_slot)
+ 	slot->hotplug_slot->info->cur_bus_speed = PCI_SPEED_UNKNOWN;
+ 
+ 	acpiphp_slot->slot = slot;
+-	snprintf(slot->name, sizeof(slot->name), "%u", slot->acpi_slot->sun);
++	snprintf(slot->name, SLOT_NAME_SIZE, "%u", slot->acpi_slot->sun);
+ 
+ 	retval = pci_hp_register(slot->hotplug_slot,
+ 					acpiphp_slot->bridge->pci_bus,
+ 					acpiphp_slot->device);
+-	if (retval == -EBUSY)
+-		goto error_hpslot;
+-	if (retval) {
+-		err("pci_hp_register failed with error %d\n", retval);
++	if (retval)
+ 		goto error_hpslot;
+- 	}
+ 
+ 	info("Slot [%s] registered\n", slot->hotplug_slot->name);
+ 
+ 	return 0;
+ error_hpslot:
+ 	kfree(slot->hotplug_slot);
++error_name:
++	kfree(slot->name);
+ error_slot:
+ 	kfree(slot);
+ error:
+-- 
+1.6.0.rc0.g95f8
 
