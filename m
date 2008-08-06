@@ -1,43 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756732AbYHFKKT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756290AbYHFKQc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756732AbYHFKKT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Aug 2008 06:10:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753586AbYHFKKE
+	id S1756290AbYHFKQc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Aug 2008 06:16:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753288AbYHFKKe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Aug 2008 06:10:04 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:57610 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752003AbYHFKKB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Aug 2008 06:10:01 -0400
-Date: Wed, 6 Aug 2008 18:09:44 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Austin Zhang <austin_zhang@linux.intel.com>
-Cc: bunk@kernel.org, dwmw2@infradead.org, davem@davemloft.net,
-       randy.dunlap@oracle.com, linux-kernel@vger.kernel.org,
-       linux-crypto@vger.kernel.org
-Subject: Re: [PATCH] Using Intel CRC32 instruction to accelerate CRC32c algorithm by new crypto API -V3.
-Message-ID: <20080806100944.GA31448@gondor.apana.org.au>
-References: <1218000211.4231.23.camel@localhost.localdomain>
+	Wed, 6 Aug 2008 06:10:34 -0400
+Received: from pmx1.sophos.com ([213.31.172.16]:51382 "EHLO pmx1.sophos.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758055AbYHFKK3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Aug 2008 06:10:29 -0400
+In-Reply-To: <20080805225524.GB4006@fieldses.org>
+To: "J. Bruce Fields" <bfields@fieldses.org>
+Cc: Eric Paris <eparis@redhat.com>, linux-kernel@vger.kernel.org,
+       malware-list@lists.printk.net
+Subject: Re: [malware-list] [RFC 0/5] [TALPA] Intro to a linux interface for	on
+ access	scanning
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1218000211.4231.23.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+X-Mailer: Lotus Notes Release 7.0.2 September 26, 2006
+From: tvrtko.ursulin@sophos.com
+Date: Wed, 6 Aug 2008 11:09:34 +0100
+X-MIMETrack: S/MIME Sign by Notes Client on Tvrtko Ursulin/Dev/UK/Sophos(Release 7.0.2|September
+ 26, 2006) at 06/08/2008 11:10:23,
+	Serialize by Notes Client on Tvrtko Ursulin/Dev/UK/Sophos(Release 7.0.2|September
+ 26, 2006) at 06/08/2008 11:10:23,
+	Serialize complete at 06/08/2008 11:10:23,
+	S/MIME Sign failed at 06/08/2008 11:10:23: The cryptographic key was not
+ found,
+	Serialize by Router on Mercury/Servers/Sophos(Release 7.0.3|September 26, 2007) at
+ 06/08/2008 11:09:36,
+	Serialize complete at 06/08/2008 11:09:36
+Content-Type: text/plain; charset="US-ASCII"
+Message-Id: <20080806101028.B87BA2FE88B@pmx1.sophos.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 06, 2008 at 01:23:31AM -0400, Austin Zhang wrote:
-> ﻿﻿Revised by comments:
-> Add 'static' for limitation namespace;
-> Resend for fixing lines-folded by adjusting evolution config;
-> (The patch was created against 2.6.27-rc1)
+J. Bruce Fields wrote on 05/08/2008 23:55:24:
 
-Applied to cryptodev-2.6.  Thanks a lot Austin!
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+> On Mon, Aug 04, 2008 at 05:00:16PM -0400, Eric Paris wrote:
+> > Please contact me privately or (preferably the list) for questions,
+> > comments, discussions, flames, names, or anything.  I'll do complete
+> > rewrites of the patches if someone tells me how they don't meet their
+> > needs or how they can be done better.  I'm here to try to bridge the
+> > needs (and wants) of the anti-malware vendors with the technical
+> > realities of the kernel.  So everyone feel free to throw in your two
+> > cents and I'll try to reconcile it all.  These 5 patches are part 1.
+> > They give us a working able solution.
+> > 
+> > >From my point of view patches forthcoming and mentioned below should
+> > help with performance for those who actually have userspace scanners 
+but
+> > also could presents be implemented using this framework.
+> > 
+> > 
+> > Background
+> > ++++++++++
+> > There is a consensus in the security industry that protecting against
+> > malicious files (viruses, root kits, spyware, ad-ware, ...) by the way
+> > of so-called on-access scanning is usable and reasonable approach.
+> 
+> Can you point to any helpful explanations of that concensus?
+
+I can't, but everyone is doing it so that is at least an implied 
+consensus.
+ 
+> Off-hand it's surprising.  (A defense that depends on cataloging every
+> possible individual attack sounds difficult!)
+
+Maybe it is not how you imagine it? It is not a database of every possible 
+individual attack but there are more intelligent methods. But I am not an 
+expert in this field to explain it better..
+
+Tvrtko
+
+
+Sophos Plc, The Pentagon, Abingdon Science Park, Abingdon,
+OX14 3YP, United Kingdom.
+
+Company Reg No 2096520. VAT Reg No GB 348 3873 20.
+
