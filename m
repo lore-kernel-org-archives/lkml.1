@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765565AbYHFJEL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422683AbYHFJEz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765565AbYHFJEL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Aug 2008 05:04:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761057AbYHFIpw
+	id S1422683AbYHFJEz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Aug 2008 05:04:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763881AbYHFIp5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Aug 2008 04:45:52 -0400
+	Wed, 6 Aug 2008 04:45:57 -0400
 Received: from rv-out-0506.google.com ([209.85.198.238]:13145 "EHLO
 	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764209AbYHFIpn (ORCPT
+	with ESMTP id S1764267AbYHFIpu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Aug 2008 04:45:43 -0400
+	Wed, 6 Aug 2008 04:45:50 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=bQyfp1qPz7Sb+KH8n9UpDKv7YRAavX6FYIJ1og5ZsV3f4Q26rcGVGvBTgxgX3xHTHj
-         EqjwxxYUfNxTMRHHDEFZE/j9sLiRLiX76zdfq109DpbHHDz7S5pNlXFBTWdQUw0R1gZk
-         qNHwigQ0yrOr/csOUbAzNFnS+PkEz35cga2WU=
+        b=apyJs5SAHpmWbo5vhFV6PKbQOdSKoKrBCbFAqxWUuuWWqUaPh7ZcKOMfGA6LCsv1Wq
+         DuMQbDqoyPXBygiuZrl9Cy7WhQ7b0RqbK+PPln2KeTmb4yDUDjiiogZzq2w7kycUq/jg
+         t4PN5NUAcc1oC61dxegtwPHbrbHBygQ4JT+WU=
 From: Yinghai Lu <yhlu.kernel@gmail.com>
 To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
        "H. Peter Anvin" <hpa@zytor.com>,
@@ -23,11 +23,11 @@ To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
        Dhaval Giani <dhaval@linux.vnet.ibm.com>, Mike Travis <travis@sgi.com>,
        Andrew Morton <akpm@linux-foundation.org>
 Cc: linux-kernel@vger.kernel.org, Yinghai Lu <yhlu.kernel@gmail.com>
-Subject: [PATCH 31/33] replace loop with nr_irqs with for_each_irq_desc
-Date: Wed,  6 Aug 2008 01:43:13 -0700
-Message-Id: <1218012195-10429-32-git-send-email-yhlu.kernel@gmail.com>
+Subject: [PATCH 33/33] x86_64: add irq_desc in function in paramater
+Date: Wed,  6 Aug 2008 01:43:15 -0700
+Message-Id: <1218012195-10429-34-git-send-email-yhlu.kernel@gmail.com>
 X-Mailer: git-send-email 1.5.4.5
-In-Reply-To: <1218012195-10429-31-git-send-email-yhlu.kernel@gmail.com>
+In-Reply-To: <1218012195-10429-33-git-send-email-yhlu.kernel@gmail.com>
 References: <1218012195-10429-1-git-send-email-yhlu.kernel@gmail.com>
  <1218012195-10429-2-git-send-email-yhlu.kernel@gmail.com>
  <1218012195-10429-3-git-send-email-yhlu.kernel@gmail.com>
@@ -59,378 +59,755 @@ References: <1218012195-10429-1-git-send-email-yhlu.kernel@gmail.com>
  <1218012195-10429-29-git-send-email-yhlu.kernel@gmail.com>
  <1218012195-10429-30-git-send-email-yhlu.kernel@gmail.com>
  <1218012195-10429-31-git-send-email-yhlu.kernel@gmail.com>
+ <1218012195-10429-32-git-send-email-yhlu.kernel@gmail.com>
+ <1218012195-10429-33-git-send-email-yhlu.kernel@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-so don't all get_irq_desc at begining to allocate all.
-and only call that when needed
-
-/proc/interrupts related still use old ways... for compatablilty reason.
+So could remove some duplicated calling to get_irq_desc
 
 Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
 ---
- arch/x86/kernel/io_apic_64.c |   30 +++++++++++++++---------------
- arch/x86/kernel/irq_64.c     |    5 ++---
- arch/x86/kernel/irqinit_64.c |   17 +++++------------
- fs/proc/proc_misc.c          |    7 +++++--
- include/linux/irq.h          |   18 ++++++++++++++++++
- kernel/irq/handle.c          |   31 ++++++++++++++++++++++++++-----
- kernel/irq/internals.h       |    4 ++--
- kernel/irq/manage.c          |    2 +-
- kernel/irq/proc.c            |   10 +++++-----
- 9 files changed, 79 insertions(+), 45 deletions(-)
+ arch/x86/kernel/io_apic_32.c |    6 +++-
+ arch/x86/kernel/io_apic_64.c |   45 +++++++++++++++++------------------------
+ arch/x86/kernel/irq_32.c     |    3 +-
+ arch/x86/kernel/irq_64.c     |    8 ++++--
+ drivers/mfd/tc6393xb.c       |    7 ++++-
+ drivers/parisc/dino.c        |    3 +-
+ drivers/parisc/eisa.c        |    4 ++-
+ drivers/parisc/gsc.c         |    3 +-
+ drivers/parisc/superio.c     |    4 ++-
+ include/linux/irq.h          |   30 ++++++++++++++++++---------
+ init/main.c                  |    5 ++++
+ kernel/irq/chip.c            |   26 ++++++++++++++++++++++-
+ kernel/irq/handle.c          |   35 ++++++++++++++++++++++++++++---
+ kernel/irq/manage.c          |    8 +++++++
+ kernel/irq/migration.c       |   15 +++++++------
+ 15 files changed, 141 insertions(+), 61 deletions(-)
 
+diff --git a/arch/x86/kernel/io_apic_32.c b/arch/x86/kernel/io_apic_32.c
+index ac5413e..c470cd7 100644
+--- a/arch/x86/kernel/io_apic_32.c
++++ b/arch/x86/kernel/io_apic_32.c
+@@ -1975,7 +1975,8 @@ static unsigned int startup_ioapic_irq(unsigned int irq)
+ 
+ static void ack_ioapic_irq(unsigned int irq)
+ {
+-	move_native_irq(irq);
++	struct irq_desc *desc = get_irq_desc(irq);
++	move_native_irq(irq, desc);
+ 	ack_APIC_irq();
+ }
+ 
+@@ -1983,8 +1984,9 @@ static void ack_ioapic_quirk_irq(unsigned int irq)
+ {
+ 	unsigned long v;
+ 	int i;
++	struct irq_desc *desc = get_irq_desc(irq);
+ 
+-	move_native_irq(irq);
++	move_native_irq(irq, desc);
+ /*
+  * It appears there is an erratum which affects at least version 0x11
+  * of I/O APIC (that's the 82093AA and cores integrated into various
 diff --git a/arch/x86/kernel/io_apic_64.c b/arch/x86/kernel/io_apic_64.c
-index c8e4613..8bb6565 100644
+index 1416925..3a03a70 100644
 --- a/arch/x86/kernel/io_apic_64.c
 +++ b/arch/x86/kernel/io_apic_64.c
-@@ -129,6 +129,9 @@ static void __init init_work(void *data)
- 		cfg[i-1].next = &cfg[i];
+@@ -505,13 +505,12 @@ static void __target_IO_APIC_irq(unsigned int irq, unsigned int dest, u8 vector)
+ 	}
  }
  
-+#define for_each_irq_cfg(cfg)		\
-+	for(cfg = irq_cfgx; cfg && cfg->irq != -1U; cfg = cfg->next)
-+
- static struct irq_cfg *irq_cfgx;
- DEFINE_DYN_ARRAY(irq_cfgx, sizeof(struct irq_cfg), nr_irq_cfg, PAGE_SIZE, init_work);
- 
-@@ -1063,20 +1066,18 @@ static void __setup_vector_irq(int cpu)
- 	/* Initialize vector_irq on a new cpu */
- 	/* This function must be called with vector_lock held */
- 	int irq, vector;
-+	struct irq_cfg *cfg;
- 
- 	/* Mark the inuse vectors */
--	for (irq = 0; irq < nr_irqs; ++irq) {
--		struct irq_cfg *cfg = get_irq_cfg(irq);
--
-+	for_each_irq_cfg(cfg) {
- 		if (!cpu_isset(cpu, cfg->domain))
- 			continue;
- 		vector = cfg->vector;
-+		irq = cfg->irq;
- 		per_cpu(vector_irq, cpu)[vector] = irq;
- 	}
- 	/* Mark the free vectors */
- 	for (vector = 0; vector < NR_VECTORS; ++vector) {
--		struct irq_cfg *cfg;
--
- 		irq = per_cpu(vector_irq, cpu)[vector];
- 		if (irq < 0)
- 			continue;
-@@ -1312,6 +1313,7 @@ __apicdebuginit(void) print_IO_APIC(void)
- 	union IO_APIC_reg_01 reg_01;
- 	union IO_APIC_reg_02 reg_02;
- 	unsigned long flags;
-+	struct irq_cfg *cfg;
- 
- 	if (apic_verbosity == APIC_QUIET)
- 		return;
-@@ -1380,12 +1382,11 @@ __apicdebuginit(void) print_IO_APIC(void)
- 	}
- 	}
- 	printk(KERN_DEBUG "IRQ to pin mappings:\n");
--	for (i = 0; i < nr_irqs; i++) {
--		struct irq_cfg *cfg = get_irq_cfg(i);
-+	for_each_irq_cfg(cfg) {
- 		struct irq_pin_list *entry = cfg->irq_2_pin;
- 		if (!entry)
- 			continue;
--		printk(KERN_DEBUG "IRQ%d ", i);
-+		printk(KERN_DEBUG "IRQ%d ", cfg->irq);
- 		for (;;) {
- 			printk("-> %d:%d", entry->apic, entry->pin);
- 			if (!entry->next)
-@@ -1845,10 +1846,10 @@ unmask:
- 
- static void ir_irq_migration(struct work_struct *work)
+-static void set_ioapic_affinity_irq(unsigned int irq, cpumask_t mask)
++static void set_ioapic_affinity_irq(unsigned int irq, struct irq_desc *desc, cpumask_t mask)
  {
--	int irq;
-+	unsigned int irq;
+ 	struct irq_cfg *cfg = get_irq_cfg(irq);
+ 	unsigned long flags;
+ 	unsigned int dest;
+ 	cpumask_t tmp;
+-	struct irq_desc *desc;
+ 
+ 	cpus_and(tmp, mask, cpu_online_map);
+ 	if (cpus_empty(tmp))
+@@ -528,7 +527,6 @@ static void set_ioapic_affinity_irq(unsigned int irq, cpumask_t mask)
+ 	 */
+ 	dest = SET_APIC_LOGICAL_ID(dest);
+ 
+-	desc = get_irq_desc(irq);
+ 	spin_lock_irqsave(&ioapic_lock, flags);
+ 	__target_IO_APIC_irq(irq, dest, cfg->vector);
+ 	desc->affinity = mask;
+@@ -1874,7 +1872,7 @@ static void ir_irq_migration(struct work_struct *work)
+ 				continue;
+ 			}
+ 
+-			desc->chip->set_affinity(irq, desc->pending_mask);
++			desc->chip->set_affinity(irq, desc, desc->pending_mask);
+ 			spin_unlock_irqrestore(&desc->lock, flags);
+ 		}
+ 	}
+@@ -1883,10 +1881,8 @@ static void ir_irq_migration(struct work_struct *work)
+ /*
+  * Migrates the IRQ destination in the process context.
+  */
+-static void set_ir_ioapic_affinity_irq(unsigned int irq, cpumask_t mask)
++static void set_ir_ioapic_affinity_irq(unsigned int irq, struct irq_desc *desc, cpumask_t mask)
+ {
+-	struct irq_desc *desc = get_irq_desc(irq);
+-
+ 	if (desc->status & IRQ_LEVEL) {
+ 		desc->status |= IRQ_MOVE_PENDING;
+ 		desc->pending_mask = mask;
+@@ -1953,32 +1949,32 @@ static void irq_complete_move(unsigned int irq)
+ static inline void irq_complete_move(unsigned int irq) {}
+ #endif
+ #ifdef CONFIG_INTR_REMAP
+-static void ack_x2apic_level(unsigned int irq)
++static void ack_x2apic_level(unsigned int irq, struct irq_desc *desc)
+ {
+ 	ack_x2APIC_irq();
+ }
+ 
+-static void ack_x2apic_edge(unsigned int irq)
++static void ack_x2apic_edge(unsigned int irq, struct irq_desc *desc)
+ {
+ 	ack_x2APIC_irq();
+ }
+ #endif
+ 
+-static void ack_apic_edge(unsigned int irq)
++static void ack_apic_edge(unsigned int irq, struct irq_desc *desc)
+ {
+ 	irq_complete_move(irq);
+-	move_native_irq(irq);
++	move_native_irq(irq, desc);
+ 	ack_APIC_irq();
+ }
+ 
+-static void ack_apic_level(unsigned int irq)
++static void ack_apic_level(unsigned int irq, struct irq_desc *desc)
+ {
+ 	int do_unmask_irq = 0;
+ 
+ 	irq_complete_move(irq);
+ #ifdef CONFIG_GENERIC_PENDING_IRQ
+ 	/* If we are moving the irq we need to mask it */
+-	if (unlikely(get_irq_desc(irq)->status & IRQ_MOVE_PENDING)) {
++	if (unlikely(desc->status & IRQ_MOVE_PENDING)) {
+ 		do_unmask_irq = 1;
+ 		mask_IO_APIC_irq(irq);
+ 	}
+@@ -2019,7 +2015,7 @@ static void ack_apic_level(unsigned int irq)
+ 		 * and you can go talk to the chipset vendor about it.
+ 		 */
+ 		if (!io_apic_level_ack_pending(irq))
+-			move_masked_irq(irq);
++			move_masked_irq(irq, desc);
+ 		unmask_IO_APIC_irq(irq);
+ 	}
+ }
+@@ -2104,7 +2100,7 @@ static void mask_lapic_irq(unsigned int irq)
+ 	apic_write(APIC_LVT0, v | APIC_LVT_MASKED);
+ }
+ 
+-static void ack_lapic_irq (unsigned int irq)
++static void ack_lapic_irq (unsigned int irq, struct irq_desc *desc)
+ {
+ 	ack_APIC_irq();
+ }
+@@ -2595,13 +2591,12 @@ static int msi_compose_msg(struct pci_dev *pdev, unsigned int irq, struct msi_ms
+ }
+ 
+ #ifdef CONFIG_SMP
+-static void set_msi_irq_affinity(unsigned int irq, cpumask_t mask)
++static void set_msi_irq_affinity(unsigned int irq, struct irq_desc *desc, cpumask_t mask)
+ {
+ 	struct irq_cfg *cfg;
+ 	struct msi_msg msg;
+ 	unsigned int dest;
+ 	cpumask_t tmp;
+-	struct irq_desc *desc;
+ 
+ 	cpus_and(tmp, mask, cpu_online_map);
+ 	if (cpus_empty(tmp))
+@@ -2622,7 +2617,6 @@ static void set_msi_irq_affinity(unsigned int irq, cpumask_t mask)
+ 	msg.address_lo |= MSI_ADDR_DEST_ID(dest);
+ 
+ 	write_msi_msg(irq, &msg);
+-	desc = get_irq_desc(irq);
+ 	desc->affinity = mask;
+ }
+ 
+@@ -2631,13 +2625,12 @@ static void set_msi_irq_affinity(unsigned int irq, cpumask_t mask)
+  * Migrate the MSI irq to another cpumask. This migration is
+  * done in the process context using interrupt-remapping hardware.
+  */
+-static void ir_set_msi_irq_affinity(unsigned int irq, cpumask_t mask)
++static void ir_set_msi_irq_affinity(unsigned int irq, struct irq_desc *desc, cpumask_t mask)
+ {
+ 	struct irq_cfg *cfg;
+ 	unsigned int dest;
+ 	cpumask_t tmp, cleanup_mask;
+ 	struct irte irte;
+-	struct irq_desc *desc;
+ 
+ 	cpus_and(tmp, mask, cpu_online_map);
+ 	if (cpus_empty(tmp))
+@@ -2673,7 +2666,6 @@ static void ir_set_msi_irq_affinity(unsigned int irq, cpumask_t mask)
+ 		cfg->move_in_progress = 0;
+ 	}
+ 
+-	desc = get_irq_desc(irq);
+ 	desc->affinity = mask;
+ }
+ #endif
+@@ -2934,12 +2926,11 @@ static void target_ht_irq(unsigned int irq, unsigned int dest, u8 vector)
+ 	write_ht_irq_msg(irq, &msg);
+ }
+ 
+-static void set_ht_irq_affinity(unsigned int irq, cpumask_t mask)
++static void set_ht_irq_affinity(unsigned int irq, struct irq_desc *desc, cpumask_t mask)
+ {
+ 	struct irq_cfg *cfg;
+ 	unsigned int dest;
+ 	cpumask_t tmp;
+-	struct irq_desc *desc;
+ 
+ 	cpus_and(tmp, mask, cpu_online_map);
+ 	if (cpus_empty(tmp))
+@@ -2953,7 +2944,6 @@ static void set_ht_irq_affinity(unsigned int irq, cpumask_t mask)
+ 	dest = cpu_mask_to_apicid(tmp);
+ 
+ 	target_ht_irq(irq, dest, cfg->vector);
+-	desc = get_irq_desc(irq);
+ 	desc->affinity = mask;
+ }
+ #endif
+@@ -3081,6 +3071,7 @@ void __init setup_ioapic_dest(void)
+ {
+ 	int pin, ioapic, irq, irq_entry;
+ 	struct irq_cfg *cfg;
 +	struct irq_desc *desc;
  
--	for (irq = 0; irq < nr_irqs; irq++) {
--		struct irq_desc *desc = get_irq_desc(irq);
-+	for_each_irq_desc(irq, desc) {
- 		if (desc->status & IRQ_MOVE_PENDING) {
- 			unsigned long flags;
+ 	if (skip_ioapic_setup == 1)
+ 		return;
+@@ -3092,6 +3083,8 @@ void __init setup_ioapic_dest(void)
+ 				continue;
+ 			irq = pin_2_irq(irq_entry, ioapic, pin);
  
-@@ -2044,6 +2045,7 @@ static inline void init_IO_APIC_traps(void)
- {
- 	int irq;
- 	struct irq_desc *desc;
-+	struct irq_cfg *cfg;
++			desc = get_irq_desc(irq);
++
+ 			/* setup_IO_APIC_irqs could fail to get vector for some device
+ 			 * when you have too many devices, because at that time only boot
+ 			 * cpu is online.
+@@ -3103,10 +3096,10 @@ void __init setup_ioapic_dest(void)
+ 						  irq_polarity(irq_entry));
+ #ifdef CONFIG_INTR_REMAP
+ 			else if (intr_remapping_enabled)
+-				set_ir_ioapic_affinity_irq(irq, TARGET_CPUS);
++				set_ir_ioapic_affinity_irq(irq, desc, TARGET_CPUS);
+ #endif
+ 			else
+-				set_ioapic_affinity_irq(irq, TARGET_CPUS);
++				set_ioapic_affinity_irq(irq, desc, TARGET_CPUS);
+ 		}
  
- 	/*
- 	 * NOTE! The local APIC isn't very good at handling
-@@ -2056,10 +2058,8 @@ static inline void init_IO_APIC_traps(void)
- 	 * Also, we've got to be careful not to trash gate
- 	 * 0x80, because int 0x80 is hm, kind of importantish. ;)
- 	 */
--	for (irq = 0; irq < nr_irqs ; irq++) {
--		struct irq_cfg *cfg;
--
--		cfg = get_irq_cfg(irq);
-+	for_each_irq_cfg(cfg) {
-+		irq = cfg->irq;
- 		if (IO_APIC_IRQ(irq) && !cfg->vector) {
- 			/*
- 			 * Hmm.. We don't have an entry for this,
+ 	}
+diff --git a/arch/x86/kernel/irq_32.c b/arch/x86/kernel/irq_32.c
+index 4f2f16d..9bc710a 100644
+--- a/arch/x86/kernel/irq_32.c
++++ b/arch/x86/kernel/irq_32.c
+@@ -224,7 +224,7 @@ unsigned int do_IRQ(struct pt_regs *regs)
+ 	struct pt_regs *old_regs;
+ 	/* high bit used in ret_from_ code */
+ 	int overflow, irq = ~regs->orig_ax;
+-	struct irq_desc *desc = get_irq_desc(irq);
++	struct irq_desc *desc;
+ 
+ 	if (unlikely((unsigned)irq >= nr_irqs)) {
+ 		printk(KERN_EMERG "%s: cannot handle IRQ %d\n",
+@@ -232,6 +232,7 @@ unsigned int do_IRQ(struct pt_regs *regs)
+ 		BUG();
+ 	}
+ 
++	desc = get_irq_desc(irq);
+ 	old_regs = set_irq_regs(regs);
+ 	irq_enter();
+ 
 diff --git a/arch/x86/kernel/irq_64.c b/arch/x86/kernel/irq_64.c
-index dde7191..c2fe49f 100644
+index 118f24f..3c7412d 100644
 --- a/arch/x86/kernel/irq_64.c
 +++ b/arch/x86/kernel/irq_64.c
-@@ -224,17 +224,16 @@ void fixup_irqs(cpumask_t map)
+@@ -189,6 +189,7 @@ u64 arch_irq_stat(void)
+ asmlinkage unsigned int do_IRQ(struct pt_regs *regs)
  {
- 	unsigned int irq;
- 	static int warned;
+ 	struct pt_regs *old_regs = set_irq_regs(regs);
 +	struct irq_desc *desc;
  
--	for (irq = 0; irq < nr_irqs; irq++) {
-+	for_each_irq_desc(irq, desc) {
- 		cpumask_t mask;
- 		int break_affinity = 0;
- 		int set_affinity = 1;
--		struct irq_desc *desc;
+ 	/* high bit used in ret_from_ code  */
+ 	unsigned vector = ~regs->orig_ax;
+@@ -202,8 +203,9 @@ asmlinkage unsigned int do_IRQ(struct pt_regs *regs)
+ 	stack_overflow_check(regs);
+ #endif
  
- 		if (irq == 2)
- 			continue;
+-	if (likely(get_irq_desc_without_new(irq)))
+-		generic_handle_irq(irq);
++	desc = get_irq_desc_without_new(irq);
++	if (likely(desc))
++		generic_handle_irq(irq, desc);
+ 	else {
+ 		if (!disable_apic)
+ 			ack_APIC_irq();
+@@ -253,7 +255,7 @@ void fixup_irqs(cpumask_t map)
+ 			desc->chip->mask(irq);
  
--		desc = get_irq_desc(irq);
- 		/* interrupt's are disabled at this point */
- 		spin_lock(&desc->lock);
+ 		if (desc->chip->set_affinity)
+-			desc->chip->set_affinity(irq, mask);
++			desc->chip->set_affinity(irq, desc, mask);
+ 		else if (!(warned++))
+ 			set_affinity = 0;
  
-diff --git a/arch/x86/kernel/irqinit_64.c b/arch/x86/kernel/irqinit_64.c
-index 8a7a5a8..daed12a 100644
---- a/arch/x86/kernel/irqinit_64.c
-+++ b/arch/x86/kernel/irqinit_64.c
-@@ -142,25 +142,18 @@ static void __init init_ISA_irqs (void)
- 	init_bsp_APIC();
- 	init_8259A(0);
+diff --git a/drivers/mfd/tc6393xb.c b/drivers/mfd/tc6393xb.c
+index f4fd797..b5ec6ee 100644
+--- a/drivers/mfd/tc6393xb.c
++++ b/drivers/mfd/tc6393xb.c
+@@ -262,14 +262,17 @@ tc6393xb_irq(unsigned int irq, struct irq_desc *desc)
+ 	struct tc6393xb *tc6393xb = get_irq_data(irq);
+ 	unsigned int isr;
+ 	unsigned int i, irq_base;
++	struct irq_desc *descx;
  
--	for (i = 0; i < nr_irqs; i++) {
-+	for (i = 0; i < 16; i++) {
- 		struct irq_desc *desc = get_irq_desc(i);
+ 	irq_base = tc6393xb->irq_base;
  
- 		desc->status = IRQ_DISABLED;
- 		desc->action = NULL;
- 		desc->depth = 1;
- 
--		if (i < 16) {
--			/*
--			 * 16 old-style INTA-cycle interrupts:
--			 */
--			set_irq_chip_and_handler_name(i, &i8259A_chip,
-+		/*
-+		 * 16 old-style INTA-cycle interrupts:
-+		 */
-+		set_irq_chip_and_handler_name(i, &i8259A_chip,
- 						      handle_level_irq, "XT");
--		} else {
--			/*
--			 * 'high' PCI IRQs filled in on demand
--			 */
--			desc->chip = &no_irq_chip;
--		}
- 	}
+ 	while ((isr = ioread8(tc6393xb->scr + SCR_ISR) &
+ 				~ioread8(tc6393xb->scr + SCR_IMR)))
+ 		for (i = 0; i < TC6393XB_NR_IRQS; i++) {
+-			if (isr & (1 << i))
+-				generic_handle_irq(irq_base + i);
++			if (isr & (1 << i)) {
++				descx = get_irq_desc(irq_base + i);
++				generic_handle_irq(irq_base + i, descx);
++			}
+ 		}
  }
  
-diff --git a/fs/proc/proc_misc.c b/fs/proc/proc_misc.c
-index aeb0a40..32de344 100644
---- a/fs/proc/proc_misc.c
-+++ b/fs/proc/proc_misc.c
-@@ -502,6 +502,7 @@ static int show_stat(struct seq_file *p, void *v)
- 	u64 sum = 0;
- 	struct timespec boottime;
- 	unsigned int *per_irq_sum;
+diff --git a/drivers/parisc/dino.c b/drivers/parisc/dino.c
+index 224567f..8aac431 100644
+--- a/drivers/parisc/dino.c
++++ b/drivers/parisc/dino.c
+@@ -389,9 +389,10 @@ ilr_again:
+ 	do {
+ 		int local_irq = __ffs(mask);
+ 		int irq = dino_dev->global_irq[local_irq];
++		struct irq_desc *desc = get_irq_desc(irq);
+ 		DBG(KERN_DEBUG "%s(%d, %p) mask 0x%x\n",
+ 			__func__, irq, intr_dev, mask);
+-		__do_IRQ(irq);
++		__do_IRQ(irq, desc);
+ 		mask &= ~(1 << local_irq);
+ 	} while (mask);
+ 
+diff --git a/drivers/parisc/eisa.c b/drivers/parisc/eisa.c
+index cee63d8..1555d17 100644
+--- a/drivers/parisc/eisa.c
++++ b/drivers/parisc/eisa.c
+@@ -202,6 +202,7 @@ static irqreturn_t eisa_irq(int wax_irq, void *intr_dev)
+ {
+ 	int irq = gsc_readb(0xfc01f000); /* EISA supports 16 irqs */
+ 	unsigned long flags;
++	struct irq_desc *desc;
+         
+ 	spin_lock_irqsave(&eisa_irq_lock, flags);
+ 	/* read IRR command */
+@@ -233,7 +234,8 @@ static irqreturn_t eisa_irq(int wax_irq, void *intr_dev)
+ 	}
+ 	spin_unlock_irqrestore(&eisa_irq_lock, flags);
+ 
+-	__do_IRQ(irq);
++	desc = get_irq_desc(irq);
++	__do_IRQ(irq, desc);
+    
+ 	spin_lock_irqsave(&eisa_irq_lock, flags);
+ 	/* unmask */
+diff --git a/drivers/parisc/gsc.c b/drivers/parisc/gsc.c
+index e1dfea8..83000cc 100644
+--- a/drivers/parisc/gsc.c
++++ b/drivers/parisc/gsc.c
+@@ -87,7 +87,8 @@ irqreturn_t gsc_asic_intr(int gsc_asic_irq, void *dev)
+ 	do {
+ 		int local_irq = __ffs(irr);
+ 		unsigned int irq = gsc_asic->global_irq[local_irq];
+-		__do_IRQ(irq);
++		struct irq_desc *desc = get_irq_desc(irq);
++		__do_IRQ(irq, desc);
+ 		irr &= ~(1 << local_irq);
+ 	} while (irr);
+ 
+diff --git a/drivers/parisc/superio.c b/drivers/parisc/superio.c
+index 1463728..553de09 100644
+--- a/drivers/parisc/superio.c
++++ b/drivers/parisc/superio.c
+@@ -99,6 +99,7 @@ superio_interrupt(int parent_irq, void *devp)
+ {
+ 	u8 results;
+ 	u8 local_irq;
 +	struct irq_desc *desc;
  
- 	per_irq_sum = kzalloc(sizeof(unsigned int)*nr_irqs, GFP_KERNEL);
- 	if (!per_irq_sum)
-@@ -525,8 +526,10 @@ static int show_stat(struct seq_file *p, void *v)
- 		softirq = cputime64_add(softirq, kstat_cpu(i).cpustat.softirq);
- 		steal = cputime64_add(steal, kstat_cpu(i).cpustat.steal);
- 		guest = cputime64_add(guest, kstat_cpu(i).cpustat.guest);
--		for (j = 0; j < nr_irqs; j++) {
--			unsigned int temp = kstat_irqs_cpu(j, i);
-+		for_each_irq_desc(j, desc) {
-+			unsigned int temp;
-+
-+			temp = kstat_irqs_cpu(j, i);
- 			sum += temp;
- 			per_irq_sum[j] += temp;
- 		}
+ 	/* Poll the 8259 to see if there's an interrupt. */
+ 	outb (OCW3_POLL,IC_PIC1+0);
+@@ -139,7 +140,8 @@ superio_interrupt(int parent_irq, void *devp)
+ 	}
+ 
+ 	/* Call the appropriate device's interrupt */
+-	__do_IRQ(local_irq);
++	desc = get_irq_desc(local_irq);
++	__do_IRQ(local_irq, desc);
+ 
+ 	/* set EOI - forces a new interrupt if a lower priority device
+ 	 * still needs service.
 diff --git a/include/linux/irq.h b/include/linux/irq.h
-index 7fbc9c2..621abf4 100644
+index 621abf4..cc2d961 100644
 --- a/include/linux/irq.h
 +++ b/include/linux/irq.h
-@@ -193,10 +193,28 @@ struct irq_desc {
- } ____cacheline_internodealigned_in_smp;
+@@ -106,14 +106,26 @@ struct irq_chip {
+ 	void		(*enable)(unsigned int irq);
+ 	void		(*disable)(unsigned int irq);
  
- extern struct irq_desc *get_irq_desc(unsigned int irq);
-+extern struct irq_desc *get_irq_desc_without_new(unsigned int irq);
-+
-+#ifndef CONFIG_HAVE_SPARSE_IRQ
-+
- #ifndef CONFIG_HAVE_DYN_ARRAY
- /* could be removed if we get rid of all irq_desc reference */
- extern struct irq_desc irq_desc[NR_IRQS];
++#ifdef CONFIG_HAVE_SPARSE_IRQ
++	void		(*ack)(unsigned int irq, struct irq_desc *desc);
 +#else
-+extern struct irq_desc *irq_desc;
+ 	void		(*ack)(unsigned int irq);
 +#endif
-+
-+#define for_each_irq_desc(irq, desc)		\
-+	for (irq = 0, desc = irq_desc; irq < nr_irqs; irq++, desc = &irq_desc[irq])
-+
+ 	void		(*mask)(unsigned int irq);
+ 	void		(*mask_ack)(unsigned int irq);
+ 	void		(*unmask)(unsigned int irq);
++#ifdef CONFIG_HAVE_SPARSE_IRQ
++	void		(*eoi)(unsigned int irq, struct irq_desc *desc);
 +#else
-+
-+extern struct irq_desc *irq_descX;
-+#define for_each_irq_desc(irqX, desc)		\
-+	for (desc = irq_descX, irqX = desc->irq; desc && irqX != -1U; desc = desc->next, irqX = desc ? desc->irq: -1U)
-+
- #endif
-+
- #define kstat_irqs_this_cpu(DESC) \
- 	((DESC)->kstat_irqs[smp_processor_id()])
+ 	void		(*eoi)(unsigned int irq);
++#endif
  
-diff --git a/kernel/irq/handle.c b/kernel/irq/handle.c
-index 67f8d9d..a2750b8 100644
---- a/kernel/irq/handle.c
-+++ b/kernel/irq/handle.c
-@@ -111,7 +111,6 @@ static void init_kstat_irqs(struct irq_desc *desc, int nr_desc, int nr)
- 	}
- }
+ 	void		(*end)(unsigned int irq);
++#ifdef CONFIG_HAVE_SPARSE_IRQ
++	void		(*set_affinity)(unsigned int irq, struct irq_desc *desc, cpumask_t dest);
++#else
+ 	void		(*set_affinity)(unsigned int irq, cpumask_t dest);
++#endif
+ 	int		(*retrigger)(unsigned int irq);
+ 	int		(*set_type)(unsigned int irq, unsigned int flow_type);
+ 	int		(*set_wake)(unsigned int irq, unsigned int on);
+@@ -240,8 +252,8 @@ extern int setup_irq(unsigned int irq, struct irqaction *new);
+ #if defined(CONFIG_GENERIC_PENDING_IRQ) || defined(CONFIG_IRQBALANCE)
  
--
- static void __init init_work(void *data)
+ void set_pending_irq(unsigned int irq, cpumask_t mask);
+-void move_native_irq(int irq);
+-void move_masked_irq(int irq);
++void move_native_irq(int irq, struct irq_desc *desc);
++void move_masked_irq(int irq, struct irq_desc *desc);
+ 
+ #else /* CONFIG_GENERIC_PENDING_IRQ || CONFIG_IRQBALANCE */
+ 
+@@ -249,11 +261,11 @@ static inline void move_irq(int irq)
  {
- 	struct dyn_array *da = data;
-@@ -148,9 +147,27 @@ static int __init parse_nr_irq_desc(char *arg)
+ }
  
- early_param("nr_irq_desc", parse_nr_irq_desc);
- 
--static struct irq_desc *irq_desc;
--DEFINE_DYN_ARRAY(irq_desc, sizeof(struct irq_desc), nr_irq_desc, PAGE_SIZE, init_work);
-+struct irq_desc *irq_descX;
-+DEFINE_DYN_ARRAY(irq_descX, sizeof(struct irq_desc), nr_irq_desc, PAGE_SIZE, init_work);
- 
-+struct irq_desc *get_irq_desc_without_new(unsigned int irq)
-+{
-+	struct irq_desc *desc;
-+
-+	BUG_ON(irq == -1U);
-+
-+	desc = &irq_descX[0];
-+	while (desc) {
-+		if (desc->irq == irq)
-+			return desc;
-+
-+		if (desc->irq == -1U)
-+			return NULL;
-+
-+		desc = desc->next;
-+	}
-+	return NULL;
-+}
- struct irq_desc *get_irq_desc(unsigned int irq)
+-static inline void move_native_irq(int irq)
++static inline void move_native_irq(int irq, struct irq_desc *desc)
  {
- 	struct irq_desc *desc, *desc_pri;
-@@ -161,7 +178,7 @@ struct irq_desc *get_irq_desc(unsigned int irq)
- 
- 	BUG_ON(irq == -1U);
- 
--	desc_pri = desc = &irq_desc[0];
-+	desc_pri = desc = &irq_descX[0];
- 	while (desc) {
- 		if (desc->irq == irq)
- 			return desc;
-@@ -208,7 +225,7 @@ struct irq_desc *get_irq_desc(unsigned int irq)
  }
- #else
  
--static struct irq_desc *irq_desc;
-+struct irq_desc *irq_desc;
- DEFINE_DYN_ARRAY(irq_desc, sizeof(struct irq_desc), nr_irqs, PAGE_SIZE, init_work);
- 
- #endif
-@@ -238,6 +255,10 @@ struct irq_desc *get_irq_desc(unsigned int irq)
- 
- 	return NULL;
+-static inline void move_masked_irq(int irq)
++static inline void move_masked_irq(int irq, struct irq_desc *desc)
+ {
  }
-+struct irq_desc *get_irq_desc_without_new(unsigned int irq)
-+{
-+	return get_irq_desc(irq);
-+}
+ 
+@@ -265,7 +277,7 @@ static inline void set_pending_irq(unsigned int irq, cpumask_t mask)
+ 
+ #else /* CONFIG_SMP */
+ 
+-#define move_native_irq(x)
++#define move_native_irq(x, y)
+ #define move_masked_irq(x)
+ 
+ #endif /* CONFIG_SMP */
+@@ -306,7 +318,7 @@ extern void handle_bad_irq(unsigned int irq, struct irq_desc *desc);
+  * Monolithic do_IRQ implementation.
+  */
+ #ifndef CONFIG_GENERIC_HARDIRQS_NO__DO_IRQ
+-extern unsigned int __do_IRQ(unsigned int irq);
++extern unsigned int __do_IRQ(unsigned int irq, struct irq_desc *desc);
  #endif
  
  /*
-diff --git a/kernel/irq/internals.h b/kernel/irq/internals.h
-index 08a849a..605e88c 100644
---- a/kernel/irq/internals.h
-+++ b/kernel/irq/internals.h
-@@ -11,11 +11,11 @@ extern void irq_chip_set_defaults(struct irq_chip *chip);
- extern void compat_irq_chip_set_default_handler(struct irq_desc *desc);
- 
- #ifdef CONFIG_PROC_FS
--extern void register_irq_proc(unsigned int irq);
-+extern void register_irq_proc(unsigned int irq, struct irq_desc *desc);
- extern void register_handler_proc(unsigned int irq, struct irqaction *action);
- extern void unregister_handler_proc(unsigned int irq, struct irqaction *action);
+@@ -315,17 +327,15 @@ extern unsigned int __do_IRQ(unsigned int irq);
+  * irqchip-style controller then we call the ->handle_irq() handler,
+  * and it calls __do_IRQ() if it's attached to an irqtype-style controller.
+  */
+-static inline void generic_handle_irq(unsigned int irq)
++static inline void generic_handle_irq(unsigned int irq, struct irq_desc *desc)
+ {
+-	struct irq_desc *desc = get_irq_desc(irq);
+-
+ #ifdef CONFIG_GENERIC_HARDIRQS_NO__DO_IRQ
+ 	desc->handle_irq(irq, desc);
  #else
--static inline void register_irq_proc(unsigned int irq) { }
-+static inline void register_irq_proc(unsigned int irq, struct irq_desc *desc) { }
- static inline void register_handler_proc(unsigned int irq,
- 					 struct irqaction *action) { }
- static inline void unregister_handler_proc(unsigned int irq,
+ 	if (likely(desc->handle_irq))
+ 		desc->handle_irq(irq, desc);
+ 	else
+-		__do_IRQ(irq);
++		__do_IRQ(irq, desc);
+ #endif
+ }
+ 
+diff --git a/init/main.c b/init/main.c
+index 3454b4a..a0ecfdf 100644
+--- a/init/main.c
++++ b/init/main.c
+@@ -593,6 +593,11 @@ void pre_alloc_dyn_array(void)
+ 		if (da->init_work)
+ 			da->init_work(da);
+ 	}
++#else
++	unsigned int i;
++
++	for (i = 0; i < NR_IRQS; i++)
++		irq_desc[i].irq = i;
+ #endif
+ }
+ 
+diff --git a/kernel/irq/chip.c b/kernel/irq/chip.c
+index 2476e96..49cf429 100644
+--- a/kernel/irq/chip.c
++++ b/kernel/irq/chip.c
+@@ -310,7 +310,11 @@ static inline void mask_ack_irq(struct irq_desc *desc, int irq)
+ 		desc->chip->mask_ack(irq);
+ 	else {
+ 		desc->chip->mask(irq);
++#ifdef CONFIG_HAVE_SPARSE_IRQ
++		desc->chip->ack(irq, desc);
++#else
+ 		desc->chip->ack(irq);
++#endif
+ 	}
+ }
+ 
+@@ -450,7 +454,11 @@ handle_fasteoi_irq(unsigned int irq, struct irq_desc *desc)
+ 	spin_lock(&desc->lock);
+ 	desc->status &= ~IRQ_INPROGRESS;
+ out:
++#ifdef CONFIG_HAVE_SPARSE_IRQ
++	desc->chip->eoi(irq, desc);
++#else
+ 	desc->chip->eoi(irq);
++#endif
+ 
+ 	spin_unlock(&desc->lock);
+ }
+@@ -493,7 +501,11 @@ handle_edge_irq(unsigned int irq, struct irq_desc *desc)
+ 	kstat_irqs_this_cpu(desc)++;
+ 
+ 	/* Start handling the irq */
++#ifdef CONFIG_HAVE_SPARSE_IRQ
++	desc->chip->ack(irq, desc);
++#else
+ 	desc->chip->ack(irq);
++#endif
+ 
+ 	/* Mark the IRQ currently in progress.*/
+ 	desc->status |= IRQ_INPROGRESS;
+@@ -547,15 +559,25 @@ handle_percpu_irq(unsigned int irq, struct irq_desc *desc)
+ 
+ 	kstat_irqs_this_cpu(desc)++;
+ 
+-	if (desc->chip->ack)
++	if (desc->chip->ack) {
++#ifdef CONFIG_HAVE_SPARSE_IRQ
++		desc->chip->ack(irq, desc);
++#else
+ 		desc->chip->ack(irq);
++#endif
++	}
+ 
+ 	action_ret = handle_IRQ_event(irq, desc->action);
+ 	if (!noirqdebug)
+ 		note_interrupt(irq, desc, action_ret);
+ 
+-	if (desc->chip->eoi)
++	if (desc->chip->eoi) {
++#ifdef CONFIG_HAVE_SPARSE_IRQ
++		desc->chip->eoi(irq, desc);
++#else
+ 		desc->chip->eoi(irq);
++#endif
++	}
+ }
+ 
+ void
+diff --git a/kernel/irq/handle.c b/kernel/irq/handle.c
+index a2750b8..c603ac4 100644
+--- a/kernel/irq/handle.c
++++ b/kernel/irq/handle.c
+@@ -265,6 +265,13 @@ struct irq_desc *get_irq_desc_without_new(unsigned int irq)
+  * What should we do if we get a hw irq event on an illegal vector?
+  * Each architecture has to answer this themself.
+  */
++#ifdef CONFIG_HAVE_SPARSE_IRQ
++static void ack_bad(unsigned int irq, struct irq_desc *desc)
++{
++	print_irq_desc(irq, desc);
++	ack_bad_irq(irq);
++}
++#else
+ static void ack_bad(unsigned int irq)
+ {
+ 	struct irq_desc *desc;
+@@ -273,6 +280,7 @@ static void ack_bad(unsigned int irq)
+ 	print_irq_desc(irq, desc);
+ 	ack_bad_irq(irq);
+ }
++#endif
+ 
+ /*
+  * NOP functions
+@@ -281,6 +289,12 @@ static void noop(unsigned int irq)
+ {
+ }
+ 
++#ifdef CONFIG_HAVE_SPARSE_IRQ
++static void noop_desc(unsigned int irq, struct irq_desc *desc)
++{
++}
++#endif
++
+ static unsigned int noop_ret(unsigned int irq)
+ {
+ 	return 0;
+@@ -309,7 +323,11 @@ struct irq_chip dummy_irq_chip = {
+ 	.shutdown	= noop,
+ 	.enable		= noop,
+ 	.disable	= noop,
++#ifdef CONFIG_HAVE_SPARSE_IRQ
++	.ack		= noop_desc,
++#else
+ 	.ack		= noop,
++#endif
+ 	.mask		= noop,
+ 	.unmask		= noop,
+ 	.end		= noop,
+@@ -365,9 +383,8 @@ irqreturn_t handle_IRQ_event(unsigned int irq, struct irqaction *action)
+  * This is the original x86 implementation which is used for every
+  * interrupt type.
+  */
+-unsigned int __do_IRQ(unsigned int irq)
++unsigned int __do_IRQ(unsigned int irq, struct irq_desc *desc)
+ {
+-	struct irq_desc *desc = get_irq_desc(irq);
+ 	struct irqaction *action;
+ 	unsigned int status;
+ 
+@@ -378,8 +395,13 @@ unsigned int __do_IRQ(unsigned int irq)
+ 		/*
+ 		 * No locking required for CPU-local interrupts:
+ 		 */
+-		if (desc->chip->ack)
++		if (desc->chip->ack) {
++#ifdef CONFIG_HAVE_SPARSE_IRQ
++			desc->chip->ack(irq, desc);
++#else
+ 			desc->chip->ack(irq);
++#endif
++		}
+ 		if (likely(!(desc->status & IRQ_DISABLED))) {
+ 			action_ret = handle_IRQ_event(irq, desc->action);
+ 			if (!noirqdebug)
+@@ -390,8 +412,13 @@ unsigned int __do_IRQ(unsigned int irq)
+ 	}
+ 
+ 	spin_lock(&desc->lock);
+-	if (desc->chip->ack)
++	if (desc->chip->ack) {
++#ifdef CONFIG_HAVE_SPARSE_IRQ
++		desc->chip->ack(irq, desc);
++#else
+ 		desc->chip->ack(irq);
++#endif
++	}
+ 	/*
+ 	 * REPLAY is when Linux resends an IRQ that was dropped earlier
+ 	 * WAITING is used by probe to mark irqs that are being tested
 diff --git a/kernel/irq/manage.c b/kernel/irq/manage.c
-index f199122..13db003 100644
+index f6735a2..8539e6e 100644
 --- a/kernel/irq/manage.c
 +++ b/kernel/irq/manage.c
-@@ -466,7 +466,7 @@ int setup_irq(unsigned int irq, struct irqaction *new)
+@@ -95,7 +95,11 @@ int irq_set_affinity(unsigned int irq, cpumask_t cpumask)
+ 		unsigned long flags;
+ 
+ 		spin_lock_irqsave(&desc->lock, flags);
++#ifdef CONFIG_HAVE_SPARSE_IRQ
++		desc->chip->set_affinity(irq, desc, cpumask);
++#else
+ 		desc->chip->set_affinity(irq, cpumask);
++#endif
+ 		spin_unlock_irqrestore(&desc->lock, flags);
+ 	} else
+ 		set_pending_irq(irq, cpumask);
+@@ -122,7 +126,11 @@ int irq_select_affinity(unsigned int irq)
+ 
+ 	desc = get_irq_desc(irq);
+ 	desc->affinity = mask;
++#ifdef CONFIG_HAVE_SPARSE_IRQ
++	desc->chip->set_affinity(irq, desc, mask);
++#else
+ 	desc->chip->set_affinity(irq, mask);
++#endif
+ 
+ 	set_balance_irq_affinity(irq, mask);
+ 	return 0;
+diff --git a/kernel/irq/migration.c b/kernel/irq/migration.c
+index 4df637c..24cf2e0 100644
+--- a/kernel/irq/migration.c
++++ b/kernel/irq/migration.c
+@@ -12,9 +12,8 @@ void set_pending_irq(unsigned int irq, cpumask_t mask)
  	spin_unlock_irqrestore(&desc->lock, flags);
+ }
  
- 	new->irq = irq;
--	register_irq_proc(irq);
-+	register_irq_proc(irq, desc);
- 	new->dir = NULL;
- 	register_handler_proc(irq, new);
- 
-diff --git a/kernel/irq/proc.c b/kernel/irq/proc.c
-index 2d8b936..43c6c05 100644
---- a/kernel/irq/proc.c
-+++ b/kernel/irq/proc.c
-@@ -163,11 +163,10 @@ void register_handler_proc(unsigned int irq, struct irqaction *action)
- 
- #define MAX_NAMELEN 10
- 
--void register_irq_proc(unsigned int irq)
-+void register_irq_proc(unsigned int irq, struct irq_desc *desc)
+-void move_masked_irq(int irq)
++void move_masked_irq(int irq, struct irq_desc *desc)
  {
- 	char name [MAX_NAMELEN];
- 	struct proc_dir_entry *entry;
 -	struct irq_desc *desc = get_irq_desc(irq);
+ 	cpumask_t tmp;
  
- 	if (!root_irq_dir ||
- 		(desc->chip == &no_irq_chip) || desc->dir)
-@@ -226,7 +225,8 @@ void register_default_affinity_proc(void)
- 
- void init_irq_proc(void)
- {
--	int i;
-+	unsigned irq;
-+	struct irq_desc *desc;
- 
- 	/* create /proc/irq */
- 	root_irq_dir = proc_mkdir("irq", NULL);
-@@ -238,7 +238,7 @@ void init_irq_proc(void)
- 	/*
- 	 * Create entries for all existing IRQs.
+ 	if (likely(!(desc->status & IRQ_MOVE_PENDING)))
+@@ -53,15 +52,17 @@ void move_masked_irq(int irq)
+ 	 * masking the irqs.
  	 */
--	for (i = 0; i < nr_irqs; i++)
--		register_irq_proc(i);
-+	for_each_irq_desc(irq, desc)
-+		register_irq_proc(irq, desc);
+ 	if (likely(!cpus_empty(tmp))) {
+-		desc->chip->set_affinity(irq,tmp);
++#ifdef CONFIG_HAVE_SPARSE_IRQ
++		desc->chip->set_affinity(irq, desc, tmp);
++#else
++		desc->chip->set_affinity(irq, tmp);
++#endif
+ 	}
+ 	cpus_clear(desc->pending_mask);
+ }
+ 
+-void move_native_irq(int irq)
++void move_native_irq(int irq, struct irq_desc *desc)
+ {
+-	struct irq_desc *desc = get_irq_desc(irq);
+-
+ 	if (likely(!(desc->status & IRQ_MOVE_PENDING)))
+ 		return;
+ 
+@@ -69,7 +70,7 @@ void move_native_irq(int irq)
+ 		return;
+ 
+ 	desc->chip->mask(irq);
+-	move_masked_irq(irq);
++	move_masked_irq(irq, desc);
+ 	desc->chip->unmask(irq);
  }
  
 -- 
