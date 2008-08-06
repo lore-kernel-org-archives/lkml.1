@@ -1,82 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764053AbYHFDbd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757967AbYHFDbv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764053AbYHFDbd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 23:31:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751867AbYHFDaQ
+	id S1757967AbYHFDbv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 23:31:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752190AbYHFDbY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 23:30:16 -0400
-Received: from E23SMTP02.au.ibm.com ([202.81.18.163]:46220 "EHLO
-	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751197AbYHFDaO convert rfc822-to-8bit (ORCPT
+	Tue, 5 Aug 2008 23:31:24 -0400
+Received: from wolverine02.qualcomm.com ([199.106.114.251]:16283 "EHLO
+	wolverine02.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752668AbYHFDbW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 23:30:14 -0400
-Message-ID: <48991ABF.906@linux.vnet.ibm.com>
-Date: Wed, 06 Aug 2008 09:00:07 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
+	Tue, 5 Aug 2008 23:31:22 -0400
+X-IronPort-AV: E=McAfee;i="5200,2160,5354"; a="5180317"
+Message-ID: <48991B07.3050500@qualcomm.com>
+Date: Tue, 05 Aug 2008 20:31:19 -0700
+From: Max Krasnyansky <maxk@qualcomm.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-CC: Dave Hansen <dave@linux.vnet.ibm.com>, xen-devel@lists.xensource.com,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       virtualization@lists.linux-foundation.org, vtaras@openvz.org,
-       dm-devel@redhat.com, agk@sourceware.org, ngupta@google.com,
-       righi.andrea@gmail.com
-Subject: Re: Too many I/O controller patches
-References: <20080804.175126.193692178.ryov@valinux.co.jp> <1217870433.20260.101.camel@nimitz> <489748E6.5080106@gmail.com> <000901c8f6a5$fe64ba30$fb2e2e90$@jp.nec.com> <48981D3B.2020701@gmail.com> <1217953218.10907.25.camel@nimitz> <20080806114425.c0e9b24f.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20080806114425.c0e9b24f.kamezawa.hiroyu@jp.fujitsu.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+To: Jeff Chua <jeff.chua.linux@gmail.com>
+CC: lkml <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.27rc1 cannot boot more than 8CPUs
+References: <b6a2187b0808052015g698430fah95b5dc2c25dc396a@mail.gmail.com>
+In-Reply-To: <b6a2187b0808052015g698430fah95b5dc2c25dc396a@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-KAMEZAWA Hiroyuki wrote:
-> On Tue, 05 Aug 2008 09:20:18 -0700
-> Dave Hansen <dave@linux.vnet.ibm.com> wrote:
-> 
->> On Tue, 2008-08-05 at 11:28 +0200, Andrea Righi wrote:
->>>> Buffered write I/O is also related with cache system.
->>>> We must consider this problem as I/O control.
->>> Agree. At least, maybe we should consider if an IO controller could be
->>> a valid solution also for these problems.
->> Isn't this one of the core points that we keep going back and forth
->> over?  ﻿It seems like people are arguing in circles over this:
->>
->> Do we:
->> 	1. control potential memory usage by throttling I/O
->> or
->> 	2. Throttle I/O when memory is full
->>
->> I might lean toward (1) if we didn't already have a memory controller.
->> But, we have one, and it works.  Also, we *already* do (2) in the
->> kernel, so it would seem to graft well onto existing mechanisms that we
->> have.
->>
->> I/O controllers should not worry about memory.  
-> I agree here ;)
-> 
->> They're going to have a hard enough time getting the I/O part right. :)
->>
-> memcg have more problems now ;( 
-> 
-> Only a difficult thing to limit dirty-ratio in memcg is how-to-count dirty
-> pages. If I/O controller's hook helps, it's good.
-> 
-> My small concern is "What happens if we throttole I/O bandwidth too small
-> under some memcg." In such cgroup, we may see more OOMs because I/O will
-> not finish in time.
-> A system admin have to find some way to avoid this.
-> 
-> But please do I/O control first. Dirty-page control is related but different
-> layer's problem, I think.
+Jeff Chua wrote:
+> I've a Dell R900 with 4 quad-core Xeon processors (total 16CPUs), but
+> can only managed to boot up with CONFIG_NR_CPUS=8. Setting
+> CONFIG_NR_CPUS=16 causes the kernel to hang while booting.
 
-Yes, please solve the I/O control problem first.
+You could try booting CONFIG_NR_CPUS=16 with maxcpus=8 (kernel command line
+option).
 
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+If it boots you can then try bringing the rest of the cpus online manually
+	echo 1 > /sys/devices/system/cpu/cpu8/online
+         ...
+	echo 1 > /sys/devices/system/cpu/cpu15/online
 
+Might get a better OOPS/BUG_ON/etc report.
+
+Max
