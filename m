@@ -1,148 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763798AbYHFJF3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763613AbYHFJJl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763798AbYHFJF3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Aug 2008 05:05:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764404AbYHFIqa
+	id S1763613AbYHFJJl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Aug 2008 05:09:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756319AbYHFJC1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Aug 2008 04:46:30 -0400
-Received: from mtagate3.de.ibm.com ([195.212.29.152]:22532 "EHLO
-	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764221AbYHFIq2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Aug 2008 04:46:28 -0400
-Subject: Re: [patch 3/3] kmsg: convert xpram messages to kmsg api.
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Reply-To: schwidefsky@de.ibm.com
-To: Greg KH <gregkh@suse.de>
-Cc: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
-       lf_kernel_messages@lists.linux-foundation.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Michael Holzheu <holzheu@de.ibm.com>, Gerrit Huizenga <gh@us.ibm.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>, Jan Kara <jack@suse.cz>,
-       Pavel Machek <pavel@ucw.cz>, Sam Ravnborg <sam@ravnborg.org>,
-       Joe Perches <joe@perches.com>,
-       Jochen =?ISO-8859-1?Q?Vo=DF?= <jochen.voss@googlemail.com>,
-       Kunai Takashi <kunai@linux-foundation.jp>,
-       Tim Bird <tim.bird@am.sony.com>
-In-Reply-To: <20080805223429.GB6552@suse.de>
-References: <20080730165656.118280544@de.ibm.com>
-	 <20080730171157.550296160@de.ibm.com> <20080730194308.GB22441@suse.de>
-	 <1217493222.8555.8.camel@localhost>  <20080805223429.GB6552@suse.de>
-Content-Type: text/plain
-Organization: IBM Corporation
-Date: Wed, 06 Aug 2008 10:46:13 +0200
-Message-Id: <1218012373.20769.22.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 6 Aug 2008 05:02:27 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:38099 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756707AbYHFJC0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Aug 2008 05:02:26 -0400
+Date: Wed, 6 Aug 2008 10:02:22 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, ebmunson@us.ibm.com,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, libhugetlbfs-devel@lists.sourceforge.net,
+       abh@cray.com
+Subject: Re: [RFC] [PATCH 0/5 V2] Huge page backed user-space stacks
+Message-ID: <20080806090222.GD21190@csn.ul.ie>
+References: <20080730172317.GA14138@csn.ul.ie> <20080730103407.b110afc2.akpm@linux-foundation.org> <20080730193010.GB14138@csn.ul.ie> <20080730130709.eb541475.akpm@linux-foundation.org> <20080731103137.GD1704@csn.ul.ie> <1217884211.20260.144.camel@nimitz> <20080805111147.GD20243@csn.ul.ie> <1217952748.10907.18.camel@nimitz> <20080805162800.GJ20243@csn.ul.ie> <1217958805.10907.45.camel@nimitz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <1217958805.10907.45.camel@nimitz>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-08-05 at 15:34 -0700, Greg KH wrote:
-> On Thu, Jul 31, 2008 at 10:33:42AM +0200, Martin Schwidefsky wrote:
-> > On Wed, 2008-07-30 at 12:43 -0700, Greg KH wrote:
-> > > On Wed, Jul 30, 2008 at 06:56:59PM +0200, Martin Schwidefsky wrote:
-> > > > Index: linux-2.6/Documentation/kmsg/s390/xpram
-> > > > ===================================================================
-> > > > --- /dev/null
-> > > > +++ linux-2.6/Documentation/kmsg/s390/xpram
-> > > > @@ -0,0 +1,54 @@
-> > > > +/*?
-> > > > + * Tag: xpram.1
-> > > 
-> > > Ick, so you are going to have to define a message number per file?
-> > > How is that going to work, it looks like you use ids 0-2 below in the .c
-> > > file, yet in this documentation file they are 1-3.  Off by one
-> > > somewhere?  :)
+On (05/08/08 10:53), Dave Hansen didst pronounce:
+> On Tue, 2008-08-05 at 17:28 +0100, Mel Gorman wrote:
+> > Ok sure, you could do direct inserts for MAP_PRIVATE as conceptually it
+> > suits this patch.  However, I don't see what you gain. By reusing hugetlbfs,
+> > we get things like proper reservations which we can do for MAP_PRIVATE these
+> > days. Again, we could call that sort of thing directly if the reservation
+> > layer was split out separate from hugetlbfs but I still don't see the gain
+> > for all that churn.
 > > 
-> > The kmsg number 0 is special, the message tag will not include the
-> > message number for id 0. And the script won't complain that the message
-> > description is missing.
+> > What am I missing?
 > 
-> Was "0 is special" defined anywhere that I missed?
-
->From the patch description of the kernel message catalog script:
-
-The kmsg check is invoked with "make D=1" and reads the source files for
-all objects that are built by the current configuration and searches for
-matching kmsg descriptions for the kmsg messages in the source which
-have a messages id > 0. If a message description can not be found the
-script prints a blueprint and causes a make error.
-
-> > And yes, we WANT to define the message numbers per kmsg component. 
+> This is good for getting us incremental functionality.  It is probably
+> the smallest amount of code to get it functional.
 > 
-> But again, you have to manually match up numbers by hand, that's prone
-> to get messy very quickly.
 
-The kmsg catalog script if called with "make D=1" will check all the
-messages in the current build. When a message is introduced you have to
-pick a free number. The checking is done automatically and errors will
-be caught without trouble.
+I'm not keen on the idea of introducing another specialised path just for
+stacks. Testing coverage is tricky enough as it is and problems still slip
+through occasionally. Maybe going through hugetlbfs is less than ideal,
+but at least it is a shared path.
 
-> > > > + * Text: "%d is not a valid number of XPRAM devices"
-> > > > + * Severity: Error
-> > > > + * Parameter:
-> > > > + *   @1: number of partitions
-> > > > + * Description:
-> > > > + * The number of XPRAM partitions specified for the 'devs' module parameter
-> > > > + * or with the 'xpram.parts' kernel parameter must be an integer in the
-> > > > + * range 1 to 32. The XPRAM device driver created a maximum of 32 partitions
-> > > > + * that are probably not configured as intended.
-> > > > + * User action:
-> > > > + * If the XPRAM device driver has been compiled as a separate module,
-> > > > + * unload the module and load it again with a correct value for the
-> > > > + * 'devs' module parameter. If the XPRAM device driver has been compiled
-> > > > + * into the kernel, correct the 'xpram.parts' parameter in the kernel
-> > > > + * parameter line and restart Linux.
-> > > > + */
-> > > 
-> > > Any way to put this stuff in the .c file itself?  It's hard enough
-> > > getting people to update Documentation/ABI/, knowing to go modify
-> > > something else in the Documentation directory is going to be _very_
-> > > difficult.
-> > 
-> > Yes, already implemented. Just put the comment anywhere in the .c file
-> > where the message is printed. The Documentation/kmsg directory is just
-> > an additional option.
+> My concern is that we're going down a path that all large page usage
+> should be through the one and only filesystem.  Once we establish that
+> dependency, it is going to be awfully hard to undo it;
+
+Not much harder than it is to write any alternative in the first place
+:/
+
+> just think of all
+> of the inherent behavior in hugetlbfs.  So, we better be sure that the
+> filesystem really is the way to go, especially if we're going to start
+> having other areas of the kernel depend on it internally.
 > 
-> Why not have your example show this?
 
-Ok, fair enough.
+So far, it is working out as a decent model. It is able to track reservations
+and deal with the differences between SHARED and PRIVATE without massive
+difficulties. While we could add another specialised path to directly insert
+the pages into pagetables for private mappings, I find it hard to justify
+adding more test coverage problems. There might be minimal gains to be had
+in lock granularity but that's about it.
 
-> > > > +#define KMSG_COMPONENT "xpram"
-> > > 
-> > > Can't you just use KBUILD_MODULE_NAME instead?  That makes it one less
-> > > thing you have to define in the code (and forget about when moving files
-> > > around or cut-and-pasting).
-> > 
-> > Two reason why we don't want to use KBUILD_MODULE_NAME:
-> > 1) the message tag (message component + message id) should never change,
-> > if you change the code structure the module name might change as well.
+> That said, this particular patch doesn't appear *too* bound to hugetlb
+> itself.  But, some of its limitations *do* come from the filesystem,
+> like its inability to handle VM_GROWS...  
 > 
-> Um, isn't that the point?  If the code structure changes, then perhaps
-> the message also should change?  If not, it's trival to adjust.
 
-NO! The message nor the message tag should change if the message
-semantically still reports the same thing. If the meaning of the message
-changes then change the message AND the message tag.
-
-> > 2) we want to be able to use the same kmsg component in multiple .c
-> > files. 
-> 
-> Why would this matter?  It's just a "tag", who cares about the actual
-> name?
-
-The actual name is not really important, but if the name is choosen
-wisely it does convey information. Guess what "dasd.17" tells you
-something about the dasd driver, "zfcp.42" about the zfcp driver and so
-on. The code structure should not dictate how the message tag is
-created.
+The lack of VM_GROWSX is an issue, but on its own it does not justify
+the amount of churn necessary to support direct pagetable insertions for
+MAP_ANONYMOUS|MAP_PRIVATE. I think we'd need another case or two that would
+really benefit from direct insertions to pagetables instead of hugetlbfs so
+that the path would get adequately tested.
 
 -- 
-blue skies,
-  Martin.
-
-"Reality continues to ruin my life." - Calvin.
-
-
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
