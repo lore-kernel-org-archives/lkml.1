@@ -1,31 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759925AbYHFQoZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754556AbYHFQoo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759925AbYHFQoZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Aug 2008 12:44:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758909AbYHFQnb
+	id S1754556AbYHFQoo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Aug 2008 12:44:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757237AbYHFQnd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Aug 2008 12:43:31 -0400
-Received: from fg-out-1718.google.com ([72.14.220.154]:16883 "EHLO
+	Wed, 6 Aug 2008 12:43:33 -0400
+Received: from fg-out-1718.google.com ([72.14.220.157]:14041 "EHLO
 	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759478AbYHFQn3 (ORCPT
+	with ESMTP id S1759433AbYHFQn2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Aug 2008 12:43:29 -0400
+	Wed, 6 Aug 2008 12:43:28 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:subject:date:user-agent:cc:mime-version:content-disposition
          :message-id:content-type:content-transfer-encoding;
-        b=sW3En+VrwsaJSaF2gqEqutrSt94n7h9I2tFRSGiI2iGYiDGgeLyxMEHxVdIMRhxDuE
-         BdZy5WHbMK6dVeoU78lkf3pqKUzvZhLq7wbDP28bDHgDpchHDNfVA30usoioEFHaSZ23
-         Et/HLPY5UOEL5OtSLQgwuuyAKGRTWikTHPJ5c=
+        b=iBefCgJp9xn0ViBSw48ECn/sHjHyvipqOAlUF+agmjOWouZmgTx/gCGnNB1JIa71KX
+         ZfotnE9jRsxuK32sGK+uUMElp22wSkEzmM0313MITPwBsNX0GPUcGnVgOMwxicgLzFwN
+         mXkHK9hux4rOJYnlc4WKgpx4L4qgwFjOK4bW4=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: linux-ide@vger.kernel.org
-Subject: [PATCH 2/2] ide-floppy: add ide_floppy_format_ioctl() helper
-Date: Wed, 6 Aug 2008 18:37:23 +0200
+Subject: [PATCH 1/2] ide-floppy: remove needless parens
+Date: Wed, 6 Aug 2008 18:37:21 +0200
 User-Agent: KMail/1.9.9
 Cc: linux-kernel@vger.kernel.org, Borislav Petkov <petkovbb@gmail.com>
 MIME-Version: 1.0
 Content-Disposition: inline
-Message-Id: <200808061837.23906.bzolnier@gmail.com>
+Message-Id: <200808061837.21240.bzolnier@gmail.com>
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
@@ -33,109 +33,93 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Factor out IDEFLOPPY_IOCTL_FORMAT_* ioctls handling from
-  idefloppy_ioctl() to ide_floppy_format_ioctl().
-
-While at it:
-
-* Pass 'drive' instead of 'floppy' to ide_floppy_format_unit().
-
-* idefloppy_get_format_progress() -> ide_floppy_get_format_progress()
-
-There should be no functional changes caused by this patch.
-
 Cc: Borislav Petkov <petkovbb@gmail.com>
 Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- drivers/ide/ide-floppy.c |   46 +++++++++++++++++++++++++---------------------
- 1 file changed, 25 insertions(+), 21 deletions(-)
+ drivers/ide/ide-floppy.c |   27 ++++++++++++++++-----------
+ 1 file changed, 16 insertions(+), 11 deletions(-)
 
 Index: b/drivers/ide/ide-floppy.c
 ===================================================================
 --- a/drivers/ide/ide-floppy.c
 +++ b/drivers/ide/ide-floppy.c
-@@ -926,7 +926,7 @@ static int ide_floppy_get_format_capacit
-  * the dsc bit, and return either 0 or 65536.
-  */
+@@ -738,7 +738,7 @@ static int idefloppy_get_sfrp_bit(ide_dr
+ 		return 1;
  
--static int idefloppy_get_format_progress(ide_drive_t *drive, int __user *arg)
-+static int ide_floppy_get_format_progress(ide_drive_t *drive, int __user *arg)
- {
- 	idefloppy_floppy_t *floppy = drive->driver_data;
- 	struct ide_atapi_pc pc;
-@@ -1232,11 +1232,10 @@ static int ide_floppy_lockdoor(ide_drive
- 	return 0;
+ 	floppy->srfp = pc.buf[8 + 2] & 0x40;
+-	return (0);
++	return 0;
  }
  
--static int ide_floppy_format_unit(idefloppy_floppy_t *floppy,
--				  int __user *arg)
-+static int ide_floppy_format_unit(ide_drive_t *drive, int __user *arg)
- {
-+	idefloppy_floppy_t *floppy = drive->driver_data;
- 	struct ide_atapi_pc pc;
--	ide_drive_t *drive = floppy->drive;
- 	int blocks, length, flags, err = 0;
+ /*
+@@ -866,16 +866,17 @@ static int ide_floppy_get_format_capacit
+ 	int __user *argp;
  
- 	if (floppy->openers > 1) {
-@@ -1281,6 +1280,24 @@ out:
- 	return err;
+ 	if (get_user(u_array_size, arg))
+-		return (-EFAULT);
++		return -EFAULT;
+ 
+ 	if (u_array_size <= 0)
+-		return (-EINVAL);
++		return -EINVAL;
+ 
+ 	idefloppy_create_read_capacity_cmd(&pc);
+ 	if (idefloppy_queue_pc_tail(drive, &pc)) {
+ 		printk(KERN_ERR "ide-floppy: Can't get floppy parameters\n");
+-		return (-EIO);
++		return -EIO;
+ 	}
++
+ 	header_len = pc.buf[3];
+ 	desc_cnt = header_len / 8; /* capacity descriptor of 8 bytes */
+ 
+@@ -897,19 +898,22 @@ static int ide_floppy_get_format_capacit
+ 		length = be16_to_cpup((__be16 *)&pc.buf[desc_start + 6]);
+ 
+ 		if (put_user(blocks, argp))
+-			return(-EFAULT);
++			return -EFAULT;
++
+ 		++argp;
+ 
+ 		if (put_user(length, argp))
+-			return (-EFAULT);
++			return -EFAULT;
++
+ 		++argp;
+ 
+ 		++u_index;
+ 	}
+ 
+ 	if (put_user(u_index, arg))
+-		return (-EFAULT);
+-	return (0);
++		return -EFAULT;
++
++	return 0;
  }
  
-+static int ide_floppy_format_ioctl(ide_drive_t *drive, struct file *file,
-+				   unsigned int cmd, void __user *argp)
-+{
-+	switch (cmd) {
-+	case IDEFLOPPY_IOCTL_FORMAT_SUPPORTED:
-+		return 0;
-+	case IDEFLOPPY_IOCTL_FORMAT_GET_CAPACITY:
-+		return ide_floppy_get_format_capacities(drive, argp);
-+	case IDEFLOPPY_IOCTL_FORMAT_START:
-+		if (!(file->f_mode & 2))
-+			return -EPERM;
-+		return ide_floppy_format_unit(drive, (int __user *)argp);
-+	case IDEFLOPPY_IOCTL_FORMAT_GET_PROGRESS:
-+		return ide_floppy_get_format_progress(drive, argp);
-+	default:
-+		return -ENOTTY;
-+	}
-+}
+ /*
+@@ -931,7 +935,7 @@ static int idefloppy_get_format_progress
+ 	if (floppy->srfp) {
+ 		idefloppy_create_request_sense_cmd(&pc);
+ 		if (idefloppy_queue_pc_tail(drive, &pc))
+-			return (-EIO);
++			return -EIO;
  
- static int idefloppy_ioctl(struct inode *inode, struct file *file,
- 			unsigned int cmd, unsigned long arg)
-@@ -1292,23 +1309,12 @@ static int idefloppy_ioctl(struct inode 
- 	void __user *argp = (void __user *)arg;
- 	int err;
+ 		if (floppy->sense_key == 2 &&
+ 		    floppy->asc == 4 &&
+@@ -950,10 +954,11 @@ static int idefloppy_get_format_progress
  
--	switch (cmd) {
--	case CDROMEJECT:
--		/* fall through */
--	case CDROM_LOCKDOOR:
-+	if (cmd == CDROMEJECT || cmd == CDROM_LOCKDOOR)
- 		return ide_floppy_lockdoor(drive, &pc, arg, cmd);
--	case IDEFLOPPY_IOCTL_FORMAT_SUPPORTED:
--		return 0;
--	case IDEFLOPPY_IOCTL_FORMAT_GET_CAPACITY:
--		return ide_floppy_get_format_capacities(drive, argp);
--	case IDEFLOPPY_IOCTL_FORMAT_START:
--		if (!(file->f_mode & 2))
--			return -EPERM;
+ 		progress_indication = ((stat & ATA_DSC) == 0) ? 0 : 0x10000;
+ 	}
++
+ 	if (put_user(progress_indication, arg))
+-		return (-EFAULT);
++		return -EFAULT;
  
--		return ide_floppy_format_unit(floppy, (int __user *)arg);
--	case IDEFLOPPY_IOCTL_FORMAT_GET_PROGRESS:
--		return idefloppy_get_format_progress(drive, argp);
--	}
-+	err = ide_floppy_format_ioctl(drive, file, cmd, argp);
-+	if (err != -ENOTTY)
-+		return err;
+-	return (0);
++	return 0;
+ }
  
- 	/*
- 	 * skip SCSI_IOCTL_SEND_COMMAND (deprecated)
-@@ -1317,8 +1323,6 @@ static int idefloppy_ioctl(struct inode 
- 	if (cmd != CDROM_SEND_PACKET && cmd != SCSI_IOCTL_SEND_COMMAND)
- 		err = scsi_cmd_ioctl(file, bdev->bd_disk->queue,
- 					bdev->bd_disk, cmd, argp);
--	else
--		err = -ENOTTY;
- 
- 	if (err == -ENOTTY)
- 		err = generic_ide_ioctl(drive, file, bdev, cmd, arg);
+ static sector_t idefloppy_capacity(ide_drive_t *drive)
