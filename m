@@ -1,75 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758428AbYHFPdM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758761AbYHFPdo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758428AbYHFPdM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Aug 2008 11:33:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754933AbYHFPc6
+	id S1758761AbYHFPdo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Aug 2008 11:33:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758547AbYHFPdV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Aug 2008 11:32:58 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:26100 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754716AbYHFPc5 (ORCPT
+	Wed, 6 Aug 2008 11:33:21 -0400
+Received: from yw-out-2324.google.com ([74.125.46.29]:37583 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754933AbYHFPdU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Aug 2008 11:32:57 -0400
-Date: Wed, 6 Aug 2008 08:30:44 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Karsten Keil <kkeil@suse.de>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, isdn4linux@listserv.isdn4linux.de
-Subject: Re: [PATCH 3/3] Fix lockdep warning
-Message-Id: <20080806083044.e1668531.randy.dunlap@oracle.com>
-In-Reply-To: <20080806133031.D6BB7BC11C@pingi.kke.suse.de>
-References: <20080806133031.D6BB7BC11C@pingi.kke.suse.de>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 6 Aug 2008 11:33:20 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=DLFU9XWBQsVWJpZss+riOOcZIUQQgFT/aqUXbesW+7I5NCeAlwdvx1fZ7DkXCG5DA/
+         7tN4PyA7auOa42PwONsfBuwvym32SAA2xx4ZEPWAKZK691TPF/Q5c+qz2o4fcU7889n9
+         nJ1DBdqN39t6v+v3y7/F9XhqGYLEPLHsEwDzQ=
+Message-ID: <b6a2187b0808060833gc9d02caw2893ae8b021d1aa2@mail.gmail.com>
+Date: Wed, 6 Aug 2008 23:33:18 +0800
+From: "Jeff Chua" <jeff.chua.linux@gmail.com>
+To: "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Yinghai Lu" <yhlu.kernel@gmail.com>,
+       "David Miller" <davem@davemloft.net>,
+       "Max Krasnyansky" <maxk@qualcomm.com>, "Li Zefan" <lizf@cn.fujitsu.com>
+Subject: Re: 2.6.27rc1 cannot boot more than 8CPUs
+Cc: lkml <linux-kernel@vger.kernel.org>
+In-Reply-To: <b6a2187b0808052342s40a3079fq6c229e3f36faca26@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Disposition: inline
+References: <b6a2187b0808052015g698430fah95b5dc2c25dc396a@mail.gmail.com>
+	 <alpine.LFD.1.10.0808052259070.15995@nehalem.linux-foundation.org>
+	 <b6a2187b0808052342s40a3079fq6c229e3f36faca26@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed,  6 Aug 2008 15:30:31 +0200 (CEST) Karsten Keil wrote:
+On Wed, Aug 6, 2008 at 2:42 PM, Jeff Chua <jeff.chua.linux@gmail.com> wrote:
+> On Wed, Aug 6, 2008 at 2:01 PM, Linus Torvalds
+> <torvalds@linux-foundation.org> wrote:
+>> One trivial thing to try would be to just bisect it. I assume 2.6.26 is
+> Bisecting now.
 
-> use correct dynamic spinlock init function.
-> 
-> Signed-off-by: Karsten Keil <kkeil@suse.de>
+Thanks to all the great helpful suggestions from everyone, and this
+turns out that I just need to enable the following switches, so I
+didn't bisect further, and since it's first machine that I've tried
+with more than 8 CPUs so I wasn't sure whether 2.6.16 has the same
+problem, but if you wish, I could give 2.6.16 a try.
 
-Hi,
+> CONFIG_X86_GENERICARCH=y
+> CONFIG_X86_BIGSMP=y
 
-It would be a Really Good Thing if we could look at the subject line
-and see that this is for an ISDN driver instead of something else,
-like even the general lockdep framework.
+Thank you all for the great linux kernel!
 
-The Perfect Patch (http://www.zip.com.au/~akpm/linux/patches/stuff/tpp.txt)
-section 2.b. discusses this, but it isn't quite strong enough.  ;)
-
-
-Thanks.
-
-> ---
->  drivers/isdn/mISDN/tei.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/drivers/isdn/mISDN/tei.c b/drivers/isdn/mISDN/tei.c
-> index 6fbae42..d8af45c 100644
-> --- a/drivers/isdn/mISDN/tei.c
-> +++ b/drivers/isdn/mISDN/tei.c
-> @@ -1287,7 +1287,7 @@ create_teimanager(struct mISDNdevice *dev)
->  	if (!mgr)
->  		return -ENOMEM;
->  	INIT_LIST_HEAD(&mgr->layer2);
-> -	mgr->lock = __RW_LOCK_UNLOCKED(mgr->lock);
-> +	rwlock_init(&mgr->lock);
->  	skb_queue_head_init(&mgr->sendq);
->  	mgr->nextid = 1;
->  	mgr->lastid = MISDN_ID_NONE;
-> -- 
-
----
-~Randy
-Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
-http://linuxplumbersconf.org/
+Jeff.
