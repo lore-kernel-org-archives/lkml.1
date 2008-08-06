@@ -1,61 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763090AbYHFC5V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763586AbYHFDAx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763090AbYHFC5V (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 22:57:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757880AbYHFC5I
+	id S1763586AbYHFDAx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 23:00:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761030AbYHFDAl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 22:57:08 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:45232 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752844AbYHFC5H (ORCPT
+	Tue, 5 Aug 2008 23:00:41 -0400
+Received: from smtp109.prem.mail.sp1.yahoo.com ([98.136.44.54]:46258 "HELO
+	smtp109.prem.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1760860AbYHFDAk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 22:57:07 -0400
-Date: Tue, 5 Aug 2008 19:57:03 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: David Miller <davem@davemloft.net>
-cc: Andrew Morton <akpm@linux-foundation.org>, netdev@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ivo van Doorn <IvDoorn@gmail.com>
-Subject: Re: [GIT]: Networking
-In-Reply-To: <20080805.190020.244441681.davem@davemloft.net>
-Message-ID: <alpine.LFD.1.10.0808051937410.15995@nehalem.linux-foundation.org>
-References: <20080805.190020.244441681.davem@davemloft.net>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Tue, 5 Aug 2008 23:00:40 -0400
+X-YMail-OSG: LaEQC.MVM1moy2K42NwJvUAgrO7bVHFM62lC7R467Y0LdXMrTrP7Gf9uTmPYB1EwWaICPI_ObD5azv2fBvf9R6ghwMuwxZf1bhkHTssSBzkHZSa3tsTa.W.ByFFDy6l3k7c-
+X-Yahoo-Newman-Property: ymail-3
+Message-ID: <489913CF.1010708@schaufler-ca.com>
+Date: Tue, 05 Aug 2008 20:00:31 -0700
+From: Casey Schaufler <casey@schaufler-ca.com>
+User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Paul Moore <paul.moore@hp.com>
+CC: Cliffe <cliffe@ii.net>, Eric Paris <eparis@redhat.com>,
+       malware-list@lists.printk.net, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org
+Subject: Re: [RFC 0/5] [TALPA] Intro to a linux interface for on access scanning
+References: <1217883616.27684.19.camel@localhost.localdomain> <4897C2A7.7020601@ii.net> <4897CC9C.2090906@schaufler-ca.com> <200808051656.28231.paul.moore@hp.com>
+In-Reply-To: <200808051656.28231.paul.moore@hp.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Paul Moore wrote:
+> On Monday 04 August 2008 11:44:28 pm Casey Schaufler wrote:
+>   
+>> Cliffe wrote:
+>>     
+>>> Other security schemes such as intrusion detection,
+>>> firewalls/netfilter, anti-malware, and application restrictions
+>>> (sandboxes such as jails or finer grained restrictions such as
+>>> AppArmor) could all register LSMs onto the stack.
+>>>       
+>> Stacking is easy for files. It's a real pain in the backside for UDP
+>> packets.
+>>     
+>
+> How is it any better/worse for UDP packets than files?
+>   
+On delivery you'd need to decide what security scheme is actually
+available on the packet and in what order to interpret any inbound
+security data. If you had an MLS scheme that uses CIPSO, an integrity
+mechanism using IPSEC and a DAC scheme that assigns user ids by
+host address getting the ordering right and every domain registered
+properly in the networking stack would be a trick. Plus, making sure
+that any state the security scheme requires is tricky. Maybe it's not
+actually worse if the schemes agree on what qualifies as a security
+element, but if one scheme does access control outbound while another
+does inbound it will get hairy.
 
-
-On Tue, 5 Aug 2008, David Miller wrote:
-> 
-> There was going to be the addition of the ath9k wireless driver but
-> there was some fallout that is being worked on right now (linux/list.h
-> changes needed lkml review, ath9k driver triggered some gcc aborts,
-> all kinds of fun stuff :-) so hopefully it will make it in the next
-> pass.  I tried to wait an extra day for it to be resolved, but that
-> was optimistic.
-
-Talking about wireless driver updates - has anybody looked at the RaLink 
-wireless driver?  It's in the newer EeePC's (901 and 1000), and it 
-actually has a driver from the company which the comments make clear is 
-GPLv2 too, no apparent oddness or anything:
-
-	http://www.ralinktech.com.tw/data/drivers/2008_0708_RT2860_Linux_STA_v1.7.0.0.tar.bz2
-
-which admittedly apparently has some trivial problems (with a trivial 
-patch as seen at
-
-	http://fedoraforum.org/forum/showthread.php?t=195429
-
-I'd love to have that one working, since I have the hardware, and it's 
-actually reasonable (much more so than the original EeePC, in fact). What 
-channels should I go through? Is anybody working on integrating it 
-already?
-
-(Ivo van Doorn added to Cc, since he seems the go-to guy for the rt2x00 
-driver in the tree, and may have some input).
-
-		Linus
