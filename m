@@ -1,59 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762109AbYHFLGP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763378AbYHFLH3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762109AbYHFLGP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Aug 2008 07:06:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756657AbYHFLGA
+	id S1763378AbYHFLH3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Aug 2008 07:07:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756732AbYHFLHO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Aug 2008 07:06:00 -0400
-Received: from py-out-1112.google.com ([64.233.166.177]:28524 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755820AbYHFLF7 (ORCPT
+	Wed, 6 Aug 2008 07:07:14 -0400
+Received: from mga10.intel.com ([192.55.52.92]:5885 "EHLO
+	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754513AbYHFLHN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Aug 2008 07:05:59 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=TqykhvS560fnHL7KRiqplWXvoe4k95x3JhTcAOdcLUBz0qf/XqeqevN0XRgpFLnS95
-         kTPY2zNrrrBkcVBS8yZxsY1/hp7EzPSxiMsWgpV+27iVQ/p5/eJHzWgEsM2RM94QRgU4
-         evSnUgbbgwa+lzmnKmu3xJ1y1yXh5AehADl98=
-Message-ID: <8bd0f97a0808060405qf70ead2t2f2604802875197e@mail.gmail.com>
-Date: Wed, 6 Aug 2008 07:05:57 -0400
-From: "Mike Frysinger" <vapier.adi@gmail.com>
-To: "Vegard Nossum" <vegard.nossum@gmail.com>
-Subject: Re: [PATCH] blackfin/sram: use 'unsigned long' for irqflags
-Cc: "Bryan Wu" <cooloney@kernel.org>, "Julia Lawall" <julia@diku.dk>,
-       "Alexey Dobriyan" <adobriyan@gmail.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <20080806105836.GA2903@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080806105836.GA2903@localhost.localdomain>
+	Wed, 6 Aug 2008 07:07:13 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.31,314,1215414000"; 
+   d="scan'208";a="604447614"
+Subject: Re: [PATCH] Using Intel CRC32 instruction to accelerate CRC32c
+	algorithm by new crypto API -V3.
+From: Austin Zhang <austin_zhang@linux.intel.com>
+To: Pavel Machek <pavel@suse.cz>
+Cc: herbert@gondor.apana.org.au, bunk@kernel.org, dwmw2@infradead.org,
+       davem@davemloft.net, randy.dunlap@oracle.com,
+       linux-kernel@vger.kernel.org, linux-crypto@vger.kernel.org
+In-Reply-To: <20080806094226.GA23685@atrey.karlin.mff.cuni.cz>
+References: <1218000211.4231.23.camel@localhost.localdomain>
+	 <20080806094226.GA23685@atrey.karlin.mff.cuni.cz>
+Content-Type: text/plain; charset=UTF-8
+Date: Wed, 06 Aug 2008 07:05:27 -0400
+Message-Id: <1218020727.29030.16.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 6, 2008 at 6:58 AM, Vegard Nossum wrote:
-> From 3ef36948a88a968eec1b09859aa251dc6727df4e Mon Sep 17 00:00:00 2001
-> From: Vegard Nossum <vegard.nossum@gmail.com>
-> Date: Wed, 6 Aug 2008 12:00:23 +0200
-> Subject: [PATCH] blackfin/sram: use 'unsigned long' for irqflags
->
-> Using just 'unsigned' will make flags an unsigned int. While this is
-> arguably not an error on blackfin where sizeof(int) == sizeof(long),
-> the patch is still justified on the grounds of principle.
+Paval,
 
-indeed, thanks
+Thanks for your comments. 
 
-> The patch was generated using the Coccinelle semantic patch framework.
+On Wed, 2008-08-06 at 11:42 +0200, Pavel Machek wrote:
+> Copyright / GPL?
+Yes, as : ﻿+MODULE_LICENSE("GPL");
 
-spam ?
+> > +#ifdef CONFIG_X86_64
+> > +#define REX_PRE "0x48, "
+> > +#define SCALE_F 8
+> > +#else
+> > +#define REX_PRE
+> > +#define SCALE_F 4
+> > +#endif
+> 
+> Ouch...
+Any good suggestion will be appreciated. 
 
-> Cc: Julia Lawall <julia@diku.dk>
-> Cc: Alexey Dobriyan <adobriyan@gmail.com>
-> Signed-off-by: Vegard Nossum <vegard.nossum@gmail.com>
+> > +static u32 crc32c_intel_le_hw_byte(u32 crc, unsigned char const *data, size_t length)
+> > +{
+> > +	while (length--) {
+> > +		__asm__ __volatile__(
+> 
+> Are all the underscores neccessary?
+What's big impact if keep those underscores? Just keep ANSI C  style.
 
-should be CC Bryan Wu as well ...
--mike
+
+> 
+> > +		return -1;
+> 
+> That's supposed to be errno, right?
+Are you suggest "ENODEV"? It's a feature from the device but the device is exact here. 
+And for the crc32c algorithm, there would be possible that several
+algorithms registered themselves in crypto and user will don't care
+which implementation will server him even the hardware accelerated
+implementation don't exist in this processor. 
+
+
+
+
