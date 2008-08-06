@@ -1,67 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757356AbYHFGbo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758952AbYHFGe6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757356AbYHFGbo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Aug 2008 02:31:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755177AbYHFGbe
+	id S1758952AbYHFGe6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Aug 2008 02:34:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753510AbYHFGes
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Aug 2008 02:31:34 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:40699 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753627AbYHFGbd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Aug 2008 02:31:33 -0400
-Date: Wed, 6 Aug 2008 16:31:19 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, jeremy@xensource.com,
-       chrisw@sous-sol.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: linux-next: Tree for August 5 (XEN)
-Message-Id: <20080806163119.3adc4eb7.sfr@canb.auug.org.au>
-In-Reply-To: <4898FB2F.9060202@goop.org>
-References: <20080805175914.7649537f.sfr@canb.auug.org.au>
-	<20080805180316.b85d5547.randy.dunlap@oracle.com>
-	<4898FB2F.9060202@goop.org>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Wed__6_Aug_2008_16_31_19_+1000_.5RclWQDohRZb8EX"
+	Wed, 6 Aug 2008 02:34:48 -0400
+Received: from cavan.codon.org.uk ([93.93.128.6]:42739 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753369AbYHFGer (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Aug 2008 02:34:47 -0400
+Date: Wed, 6 Aug 2008 07:34:41 +0100
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Cc: Yves-Alexis Perez <corsac@debian.org>, airlied@linux.ie,
+       linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
+Subject: Re: [PATCH] Add Intel ACPI IGD OpRegion support
+Message-ID: <20080806063441.GA14455@srcf.ucam.org>
+References: <20080805183725.GA4468@srcf.ucam.org> <1217965470.5449.4.camel@hidalgo> <1217972874.4540.3.camel@hidalgo> <20080806001301.GA10630@srcf.ucam.org> <20080806023247.GA4665@khazad-dum.debian.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080806023247.GA4665@khazad-dum.debian.net>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Wed__6_Aug_2008_16_31_19_+1000_.5RclWQDohRZb8EX
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Tue, Aug 05, 2008 at 11:32:48PM -0300, Henrique de Moraes Holschuh wrote:
+> On Wed, 06 Aug 2008, Matthew Garrett wrote:
+> > The 750ms delay is from thinkpad-acpi. I sent a patch to Henrique which 
+> > makes it go away, but I'm not entirely sure what the ACPI method 
+> > concerned is supposed to be doing. The opregion code won't currently run 
+> > until X is started because the drm layer requires X to be the foreground 
+> > vt before handling IRQs.
+> 
+> Well, for what is it worth, thinkpad-acpi has a knob (brightness_mode) which
+> can be used.  Set it to CMOS mode (see docs).  From what I recall, it should
+> do what your patch does.
 
-On Tue, 05 Aug 2008 18:15:27 -0700 Jeremy Fitzhardinge <jeremy@goop.org> wr=
-ote:
->
-> I posted this patch the other day.  It's in tip.git, but I guess it=20
-> hasn't made it to next.
->=20
->     J
->=20
-> Subject: xen-balloon: fix up sysfs issues
+It doesn't seem to, no. I should have been clearer - the delay is in the 
+DSDT (not thinkpad-acpi itself), but there's a Thinkpad-specific ACPI 
+call that seems to be needed in order to delay it. Here's the patch 
+again.
 
-I have applied this to linux-next today - assuming it will turn up via one
-of the tip trees soon.
+diff --git a/drivers/misc/thinkpad_acpi.c b/drivers/misc/thinkpad_acpi.c
+index b596929..bbc45c8 100644
+--- a/drivers/misc/thinkpad_acpi.c
++++ b/drivers/misc/thinkpad_acpi.c
+@@ -899,6 +899,9 @@ static int __init tpacpi_check_std_acpi_brightness_support(void)
+ 
+ 	if (ACPI_SUCCESS(status) && bcl_levels > 2) {
+ 		tp_features.bright_acpimode = 1;
++		/* Set ACPI mode */
++		if (!acpi_evalf(hkey_handle, NULL, "PWMS", "vd", 0))
++			printk(TPACPI_INFO "Failed to claim backlight\n");
+ 		return (bcl_levels - 2);
+ 	}
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Wed__6_Aug_2008_16_31_19_+1000_.5RclWQDohRZb8EX
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkiZRTcACgkQjjKRsyhoI8zvAwCfebPiyxolyPe/j4DZ4sS4++wr
-XlEAn1ANOIzT7e8RF/P+Wet1FshmI0Bq
-=Mcoe
------END PGP SIGNATURE-----
-
---Signature=_Wed__6_Aug_2008_16_31_19_+1000_.5RclWQDohRZb8EX--
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
