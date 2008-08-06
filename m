@@ -1,59 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759538AbYHFQxW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760691AbYHFQxj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759538AbYHFQxW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Aug 2008 12:53:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755635AbYHFQui
+	id S1760691AbYHFQxj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Aug 2008 12:53:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755557AbYHFQxK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Aug 2008 12:50:38 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:61660 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754374AbYHFQue (ORCPT
+	Wed, 6 Aug 2008 12:53:10 -0400
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:52736 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752601AbYHFQxG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Aug 2008 12:50:34 -0400
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: Hugh Dickins <hugh@veritas.com>,
-       "Martin K. Petersen" <martin.petersen@oracle.com>,
+	Wed, 6 Aug 2008 12:53:06 -0400
+Subject: Re: [PATCH][SCS] sd: Read Capacity if (16) fails
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Hugh Dickins <hugh@veritas.com>
+Cc: "Martin K. Petersen" <martin.petersen@oracle.com>,
        Andrew Morton <akpm@linux-foundation.org>, linux-scsi@vger.kernel.org,
        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH][SCS] sd: Read Capacity if (16) fails
-From: "Martin K. Petersen" <martin.petersen@oracle.com>
-Organization: Oracle
+In-Reply-To: <1218040613.7493.13.camel@localhost.localdomain>
 References: <Pine.LNX.4.64.0808061500450.1109@blonde.site>
-	<yq1d4kmi5hl.fsf@sermon.lab.mkp.net>
-	<Pine.LNX.4.64.0808061629220.10184@blonde.site>
-	<1218040613.7493.13.camel@localhost.localdomain>
-Date: Wed, 06 Aug 2008 12:44:16 -0400
-In-Reply-To: <1218040613.7493.13.camel@localhost.localdomain> (James Bottomley's message of "Wed\, 06 Aug 2008 09\:36\:53 -0700")
-Message-ID: <yq1bq06w0tb.fsf@sermon.lab.mkp.net>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	 <yq1d4kmi5hl.fsf@sermon.lab.mkp.net>
+	 <Pine.LNX.4.64.0808061629220.10184@blonde.site>
+	 <1218040613.7493.13.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Wed, 06 Aug 2008 09:53:02 -0700
+Message-Id: <1218041582.7493.19.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>>>> "James" == James Bottomley <James.Bottomley@HansenPartnership.com> writes:
+On Wed, 2008-08-06 at 09:36 -0700, James Bottomley wrote:
+> On Wed, 2008-08-06 at 16:34 +0100, Hugh Dickins wrote:
+> >   PQual=0  Device_type=0  RMB=1  version=0x00  [no conformance
+> > claimed]
+> 
+> We could try using this as the trigger.  I assume all DIF supporting
+> devices must also claim conformance to SPC3/SBC2 or higher?
 
-James> On Wed, 2008-08-06 at 16:34 +0100, Hugh Dickins wrote:
->> PQual=0 Device_type=0 RMB=1 version=0x00 [no conformance claimed]
+Just to formalise it, that would be this patch.  Hugh, could you try it?
 
-James> We could try using this as the trigger.  I assume all DIF
-James> supporting devices must also claim conformance to SPC3/SBC2 or
-James> higher?
+Thanks,
 
-You'd think, wouldn't you?
+James
 
-Originally I only checked for PROTECT if version was SBC2 or better.
-But as it turns out I have drives that only report SBC and yet they do
-DIF.  This old version is apparently reported to prevent problems in
-other operating systems.
+---
 
-*sigh*
+diff --git a/include/scsi/scsi_device.h b/include/scsi/scsi_device.h
+index 291d56a..ffbc84a 100644
+--- a/include/scsi/scsi_device.h
++++ b/include/scsi/scsi_device.h
+@@ -426,7 +426,7 @@ static inline int scsi_device_enclosure(struct scsi_device *sdev)
+ 
+ static inline int scsi_device_protection(struct scsi_device *sdev)
+ {
+-	return sdev->inquiry[5] & (1<<0);
++	return sdev->scsi_level > SCSI_2 && sdev->inquiry[5] & (1<<0);
+ }
+ 
+ #define MODULE_ALIAS_SCSI_DEVICE(type) \
 
--- 
-Martin K. Petersen	Oracle Linux Engineering
 
