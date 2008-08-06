@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763599AbYHFJCi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764742AbYHFJCz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763599AbYHFJCi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Aug 2008 05:02:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758748AbYHFIpl
+	id S1764742AbYHFJCz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Aug 2008 05:02:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759215AbYHFIpn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Aug 2008 04:45:41 -0400
-Received: from rv-out-0506.google.com ([209.85.198.238]:13145 "EHLO
+	Wed, 6 Aug 2008 04:45:43 -0400
+Received: from rv-out-0506.google.com ([209.85.198.225]:12111 "EHLO
 	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761936AbYHFIpb (ORCPT
+	with ESMTP id S1758223AbYHFIpe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Aug 2008 04:45:31 -0400
+	Wed, 6 Aug 2008 04:45:34 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=AkrAWnOC1EuLdgBXIWsRc2xb1U3doYSk9bLg79fcv/qAfibSghevfStxhs3eascciP
-         f7/hVZKCQrfl5RPwvWVh4we53S52ZsUDcALdIi3h0N2gvBsu57sITXDUIO+dlfoLkaSo
-         mi6NCQDkLLDsSocmVzD4sXLdUgSwnxFwVA19c=
+        b=g+U8LsHiyWZIcj1RnEDuI2b658/+115HZ9V/Fi8kSE0cZsDUlOFAGxE0m2+RhvZ8TF
+         lIMnnGOgAWryZVu0WgrVcsrRLCwkxo2iCBesNA3kksEjBZQnby25UugKWkoJ1ZSuUk5u
+         oJAa5gyuSCcX4ez7qX5SSQC22Q+Fg+T+ODNKs=
 From: Yinghai Lu <yhlu.kernel@gmail.com>
 To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
        "H. Peter Anvin" <hpa@zytor.com>,
@@ -23,11 +23,11 @@ To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
        Dhaval Giani <dhaval@linux.vnet.ibm.com>, Mike Travis <travis@sgi.com>,
        Andrew Morton <akpm@linux-foundation.org>
 Cc: linux-kernel@vger.kernel.org, Yinghai Lu <yhlu.kernel@gmail.com>
-Subject: [PATCH 27/33] x86: add get_irq_cfg in io_apic_64.c
-Date: Wed,  6 Aug 2008 01:43:09 -0700
-Message-Id: <1218012195-10429-28-git-send-email-yhlu.kernel@gmail.com>
+Subject: [PATCH 28/33] x86: put irq_2_pin pointer into irq_cfg
+Date: Wed,  6 Aug 2008 01:43:10 -0700
+Message-Id: <1218012195-10429-29-git-send-email-yhlu.kernel@gmail.com>
 X-Mailer: git-send-email 1.5.4.5
-In-Reply-To: <1218012195-10429-27-git-send-email-yhlu.kernel@gmail.com>
+In-Reply-To: <1218012195-10429-28-git-send-email-yhlu.kernel@gmail.com>
 References: <1218012195-10429-1-git-send-email-yhlu.kernel@gmail.com>
  <1218012195-10429-2-git-send-email-yhlu.kernel@gmail.com>
  <1218012195-10429-3-git-send-email-yhlu.kernel@gmail.com>
@@ -55,430 +55,310 @@ References: <1218012195-10429-1-git-send-email-yhlu.kernel@gmail.com>
  <1218012195-10429-25-git-send-email-yhlu.kernel@gmail.com>
  <1218012195-10429-26-git-send-email-yhlu.kernel@gmail.com>
  <1218012195-10429-27-git-send-email-yhlu.kernel@gmail.com>
+ <1218012195-10429-28-git-send-email-yhlu.kernel@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-preallocate size is 32, and if is not enough, get_irq_cfg will more with alloc_bootmem or kzalloc
+preallocate 32 irq_2_pin, and use get_one_free_irq_2_pin to get one
+and link to irq_cfg if needed.
+so don't waste one for no irq is enabled.
 
 Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
 ---
- arch/x86/kernel/io_apic_64.c |  182 ++++++++++++++++++++++++++++++++---------
- 1 files changed, 142 insertions(+), 40 deletions(-)
+ arch/x86/kernel/io_apic_64.c |  162 +++++++++++++++++++++++++++++++-----------
+ 1 files changed, 121 insertions(+), 41 deletions(-)
 
 diff --git a/arch/x86/kernel/io_apic_64.c b/arch/x86/kernel/io_apic_64.c
-index 3734216..8908555 100644
+index 8908555..c8e4613 100644
 --- a/arch/x86/kernel/io_apic_64.c
 +++ b/arch/x86/kernel/io_apic_64.c
-@@ -57,7 +57,11 @@
- 
+@@ -58,10 +58,11 @@
  #define __apicdebuginit(type) static type __init
  
-+struct irq_cfg;
-+
+ struct irq_cfg;
+-
++struct irq_pin_list;
  struct irq_cfg {
-+	unsigned int irq;
-+	struct irq_cfg *next;
+ 	unsigned int irq;
+ 	struct irq_cfg *next;
++	struct irq_pin_list *irq_2_pin;
  	cpumask_t domain;
  	cpumask_t old_domain;
  	unsigned move_cleanup_count;
-@@ -67,34 +71,112 @@ struct irq_cfg {
+@@ -232,13 +233,66 @@ int pin_map_size;
+  * between pins and IRQs.
+  */
  
- /* irq_cfg is indexed by the sum of all RTEs in all I/O APICs. */
- static struct irq_cfg irq_cfg_legacy[] __initdata = {
--	[0]  = { .domain = CPU_MASK_ALL, .vector = IRQ0_VECTOR,  },
--	[1]  = { .domain = CPU_MASK_ALL, .vector = IRQ1_VECTOR,  },
--	[2]  = { .domain = CPU_MASK_ALL, .vector = IRQ2_VECTOR,  },
--	[3]  = { .domain = CPU_MASK_ALL, .vector = IRQ3_VECTOR,  },
--	[4]  = { .domain = CPU_MASK_ALL, .vector = IRQ4_VECTOR,  },
--	[5]  = { .domain = CPU_MASK_ALL, .vector = IRQ5_VECTOR,  },
--	[6]  = { .domain = CPU_MASK_ALL, .vector = IRQ6_VECTOR,  },
--	[7]  = { .domain = CPU_MASK_ALL, .vector = IRQ7_VECTOR,  },
--	[8]  = { .domain = CPU_MASK_ALL, .vector = IRQ8_VECTOR,  },
--	[9]  = { .domain = CPU_MASK_ALL, .vector = IRQ9_VECTOR,  },
--	[10] = { .domain = CPU_MASK_ALL, .vector = IRQ10_VECTOR, },
--	[11] = { .domain = CPU_MASK_ALL, .vector = IRQ11_VECTOR, },
--	[12] = { .domain = CPU_MASK_ALL, .vector = IRQ12_VECTOR, },
--	[13] = { .domain = CPU_MASK_ALL, .vector = IRQ13_VECTOR, },
--	[14] = { .domain = CPU_MASK_ALL, .vector = IRQ14_VECTOR, },
--	[15] = { .domain = CPU_MASK_ALL, .vector = IRQ15_VECTOR, },
-+	[0]  = { .irq =  0, .domain = CPU_MASK_ALL, .vector = IRQ0_VECTOR,  },
-+	[1]  = { .irq =  1, .domain = CPU_MASK_ALL, .vector = IRQ1_VECTOR,  },
-+	[2]  = { .irq =  2, .domain = CPU_MASK_ALL, .vector = IRQ2_VECTOR,  },
-+	[3]  = { .irq =  3, .domain = CPU_MASK_ALL, .vector = IRQ3_VECTOR,  },
-+	[4]  = { .irq =  4, .domain = CPU_MASK_ALL, .vector = IRQ4_VECTOR,  },
-+	[5]  = { .irq =  5, .domain = CPU_MASK_ALL, .vector = IRQ5_VECTOR,  },
-+	[6]  = { .irq =  6, .domain = CPU_MASK_ALL, .vector = IRQ6_VECTOR,  },
-+	[7]  = { .irq =  7, .domain = CPU_MASK_ALL, .vector = IRQ7_VECTOR,  },
-+	[8]  = { .irq =  8, .domain = CPU_MASK_ALL, .vector = IRQ8_VECTOR,  },
-+	[9]  = { .irq =  9, .domain = CPU_MASK_ALL, .vector = IRQ9_VECTOR,  },
-+	[10] = { .irq = 10, .domain = CPU_MASK_ALL, .vector = IRQ10_VECTOR, },
-+	[11] = { .irq = 11, .domain = CPU_MASK_ALL, .vector = IRQ11_VECTOR, },
-+	[12] = { .irq = 12, .domain = CPU_MASK_ALL, .vector = IRQ12_VECTOR, },
-+	[13] = { .irq = 13, .domain = CPU_MASK_ALL, .vector = IRQ13_VECTOR, },
-+	[14] = { .irq = 14, .domain = CPU_MASK_ALL, .vector = IRQ14_VECTOR, },
-+	[15] = { .irq = 15, .domain = CPU_MASK_ALL, .vector = IRQ15_VECTOR, },
- };
- 
--static struct irq_cfg *irq_cfg;
-+static struct irq_cfg irq_cfg_init = { .irq =  -1U, };
-+/* need to be biger than size of irq_cfg_legacy */
-+static int nr_irq_cfg = 32;
+-static struct irq_pin_list {
+-	short apic, pin;
+-	int next;
+-} *irq_2_pin;
++struct irq_pin_list {
++	int apic, pin;
++	struct irq_pin_list *next;
++};
 +
-+static int __init parse_nr_irq_cfg(char *arg)
++static struct irq_pin_list *irq_2_pin_head;
++/* fill one page ? */
++static int nr_irq_2_pin = 0x100;
++static struct irq_pin_list *irq_2_pin_ptr;
++static void __init irq_2_pin_init_work(void *data)
 +{
-+	if (arg) {
-+		nr_irq_cfg = simple_strtoul(arg, NULL, 0);
-+		if (nr_irq_cfg < 32)
-+			nr_irq_cfg = 32;
-+	}
-+	return 0;
-+}
-+
-+early_param("nr_irq_cfg", parse_nr_irq_cfg);
-+
-+static void init_one_irq_cfg(struct irq_cfg *cfg)
-+{
-+        memcpy(cfg, &irq_cfg_init, sizeof(struct irq_desc));
-+}
- 
- static void __init init_work(void *data)
- {
- 	struct dyn_array *da = data;
-+	struct irq_cfg *cfg;
++	struct dyn_array *da = data;
++	struct irq_pin_list *pin;
 +	int i;
- 
--	memcpy(*da->name, irq_cfg_legacy, sizeof(irq_cfg_legacy));
-+	cfg = *da->name;
 +
-+	memcpy(cfg, irq_cfg_legacy, sizeof(irq_cfg_legacy));
-+
-+	i = sizeof(irq_cfg_legacy)/sizeof(irq_cfg_legacy[0]);
-+	for (; i < *da->nr; i++)
-+		init_one_irq_cfg(&cfg[i]);
++	pin = *da->name;
 +
 +	for (i = 1; i < *da->nr; i++)
-+		cfg[i-1].next = &cfg[i];
- }
- 
--DEFINE_DYN_ARRAY(irq_cfg, sizeof(struct irq_cfg), nr_irqs, PAGE_SIZE, init_work);
-+static struct irq_cfg *irq_cfgx;
-+DEFINE_DYN_ARRAY(irq_cfgx, sizeof(struct irq_cfg), nr_irq_cfg, PAGE_SIZE, init_work);
++		pin[i-1].next = &pin[i];
 +
-+static struct irq_cfg *get_irq_cfg(unsigned int irq)
++	irq_2_pin_ptr = &pin[0];
++}
++DEFINE_DYN_ARRAY(irq_2_pin_head, sizeof(struct irq_pin_list), nr_irq_2_pin, PAGE_SIZE, irq_2_pin_init_work);
++
++static struct irq_pin_list *get_one_free_irq_2_pin(void)
 +{
-+	struct irq_cfg *cfg, *cfg_pri;
++	struct irq_pin_list *pin;
 +	int i;
-+	int count = 0;
 +
-+	BUG_ON(irq == -1U);
++	pin = irq_2_pin_ptr;
 +
-+	cfg_pri = cfg = &irq_cfgx[0];
-+	while (cfg) {
-+		if (cfg->irq == irq)
-+			return cfg;
-+
-+		if (cfg->irq == -1U) {
-+			cfg->irq = irq;
-+			return cfg;
-+		}
-+		cfg_pri = cfg;
-+		cfg = cfg->next;
-+		count++;
++	if (pin) {
++		irq_2_pin_ptr = pin->next;
++		pin->next = NULL;
++		return pin;
 +	}
 +
 +	/*
 +	 *  we run out of pre-allocate ones, allocate more
 +	 */
-+	printk(KERN_DEBUG "try to get more irq_cfg %d\n", nr_irq_cfg);
++	printk(KERN_DEBUG "try to get more irq_2_pin %d\n", nr_irq_2_pin);
 +
 +	if (after_bootmem)
-+		cfg = kzalloc(sizeof(struct irq_cfg)*nr_irq_cfg, GFP_ATOMIC);
++		pin = kzalloc(sizeof(struct irq_pin_list)*nr_irq_2_pin,
++				 GFP_ATOMIC);
 +	else
-+		cfg = __alloc_bootmem_nopanic(sizeof(struct irq_cfg)*nr_irq_cfg, PAGE_SIZE, 0);
++		pin = __alloc_bootmem_nopanic(sizeof(struct irq_pin_list) *
++				nr_irq_2_pin, PAGE_SIZE, 0);
 +
-+	if (!cfg)
-+		panic("please boot with nr_irq_cfg= %d\n", count * 2);
++	if (!pin)
++		panic("can not get more irq_2_pin\n");
 +
-+	for (i = 0; i < nr_irq_cfg; i++)
-+		init_one_irq_cfg(&cfg[i]);
-+
-+	for (i = 1; i < nr_irq_cfg; i++)
-+		cfg[i-1].next = &cfg[i];
-+
-+	cfg->irq = irq;
-+	cfg_pri->next = cfg;
-+
-+	return cfg;
++	for (i = 1; i < nr_irq_2_pin; i++)
++		pin[i-1].next = &pin[i];
+ 
+-DEFINE_DYN_ARRAY(irq_2_pin, sizeof(struct irq_pin_list), pin_map_size, sizeof(struct irq_pin_list), NULL);
++	irq_2_pin_ptr = pin->next;
++	pin->next = NULL;
+ 
++	return pin;
 +}
  
- static int assign_irq_vector(int irq, cpumask_t mask);
- 
-@@ -341,7 +423,7 @@ static void __target_IO_APIC_irq(unsigned int irq, unsigned int dest, u8 vector)
- 
- static void set_ioapic_affinity_irq(unsigned int irq, cpumask_t mask)
+ struct io_apic {
+ 	unsigned int index;
+@@ -280,16 +334,17 @@ static bool io_apic_level_ack_pending(unsigned int irq)
  {
--	struct irq_cfg *cfg = irq_cfg + irq;
-+	struct irq_cfg *cfg = get_irq_cfg(irq);
+ 	struct irq_pin_list *entry;
  	unsigned long flags;
- 	unsigned int dest;
- 	cpumask_t tmp;
-@@ -806,7 +888,7 @@ static int __assign_irq_vector(int irq, cpumask_t mask)
- 	struct irq_cfg *cfg;
++	struct irq_cfg *cfg = get_irq_cfg(irq);
  
- 	BUG_ON((unsigned)irq >= nr_irqs);
--	cfg = &irq_cfg[irq];
-+	cfg = get_irq_cfg(irq);
+ 	spin_lock_irqsave(&ioapic_lock, flags);
+-	entry = irq_2_pin + irq;
++	entry = cfg->irq_2_pin;
+ 	for (;;) {
+ 		unsigned int reg;
+ 		int pin;
  
- 	/* Only try and allocate irqs on cpus that are present */
- 	cpus_and(mask, mask, cpu_online_map);
-@@ -880,7 +962,7 @@ static void __clear_irq_vector(int irq)
- 	int cpu, vector;
- 
- 	BUG_ON((unsigned)irq >= nr_irqs);
--	cfg = &irq_cfg[irq];
-+	cfg = get_irq_cfg(irq);
- 	BUG_ON(!cfg->vector);
- 
- 	vector = cfg->vector;
-@@ -900,17 +982,23 @@ static void __setup_vector_irq(int cpu)
- 
- 	/* Mark the inuse vectors */
- 	for (irq = 0; irq < nr_irqs; ++irq) {
--		if (!cpu_isset(cpu, irq_cfg[irq].domain))
-+		struct irq_cfg *cfg = get_irq_cfg(irq);
-+
-+		if (!cpu_isset(cpu, cfg->domain))
- 			continue;
--		vector = irq_cfg[irq].vector;
-+		vector = cfg->vector;
- 		per_cpu(vector_irq, cpu)[vector] = irq;
+-		pin = entry->pin;
+-		if (pin == -1)
++		if (!entry)
+ 			break;
++		pin = entry->pin;
+ 		reg = io_apic_read(entry->apic, 0x10 + pin*2);
+ 		/* Is the remote IRR bit set? */
+ 		if (reg & IO_APIC_REDIR_REMOTE_IRR) {
+@@ -298,7 +353,7 @@ static bool io_apic_level_ack_pending(unsigned int irq)
+ 		}
+ 		if (!entry->next)
+ 			break;
+-		entry = irq_2_pin + entry->next;
++		entry = entry->next;
  	}
- 	/* Mark the free vectors */
- 	for (vector = 0; vector < NR_VECTORS; ++vector) {
-+		struct irq_cfg *cfg;
+ 	spin_unlock_irqrestore(&ioapic_lock, flags);
+ 
+@@ -319,21 +374,24 @@ static inline void io_apic_sync(unsigned int apic)
+ 									\
+ {									\
+ 	int pin;							\
+-	struct irq_pin_list *entry = irq_2_pin + irq;			\
++	struct irq_cfg *cfg;						\
++	struct irq_pin_list *entry;					\
+ 									\
+ 	BUG_ON(irq >= nr_irqs);						\
++	cfg = get_irq_cfg(irq);						\
++	entry = cfg->irq_2_pin;						\
+ 	for (;;) {							\
+ 		unsigned int reg;					\
+-		pin = entry->pin;					\
+-		if (pin == -1)						\
++		if (!entry)						\
+ 			break;						\
++		pin = entry->pin;					\
+ 		reg = io_apic_read(entry->apic, 0x10 + R + pin*2);	\
+ 		reg ACTION;						\
+ 		io_apic_modify(entry->apic, reg);			\
+ 		FINAL;							\
+ 		if (!entry->next)					\
+ 			break;						\
+-		entry = irq_2_pin + entry->next;			\
++		entry = entry->next;					\
+ 	}								\
+ }
+ 
+@@ -396,15 +454,20 @@ static void ioapic_mask_entry(int apic, int pin)
+ static void __target_IO_APIC_irq(unsigned int irq, unsigned int dest, u8 vector)
+ {
+ 	int apic, pin;
+-	struct irq_pin_list *entry = irq_2_pin + irq;
++	struct irq_cfg *cfg;
++	struct irq_pin_list *entry;
+ 
+ 	BUG_ON(irq >= nr_irqs);
++	cfg = get_irq_cfg(irq);
++	entry = cfg->irq_2_pin;
+ 	for (;;) {
+ 		unsigned int reg;
 +
- 		irq = per_cpu(vector_irq, cpu)[vector];
- 		if (irq < 0)
- 			continue;
--		if (!cpu_isset(cpu, irq_cfg[irq].domain))
++		if (!entry)
++			break;
 +
-+		cfg = get_irq_cfg(irq);
-+		if (!cpu_isset(cpu, cfg->domain))
- 			per_cpu(vector_irq, cpu)[vector] = -1;
+ 		apic = entry->apic;
+ 		pin = entry->pin;
+-		if (pin == -1)
+-			break;
+ 		/*
+ 		 * With interrupt-remapping, destination information comes
+ 		 * from interrupt-remapping table entry.
+@@ -417,7 +480,7 @@ static void __target_IO_APIC_irq(unsigned int irq, unsigned int dest, u8 vector)
+ 		io_apic_modify(apic, reg);
+ 		if (!entry->next)
+ 			break;
+-		entry = irq_2_pin + entry->next;
++		entry = entry->next;
  	}
  }
-@@ -1024,7 +1112,7 @@ static int setup_ioapic_entry(int apic, int irq,
- static void setup_IO_APIC_irq(int apic, int pin, unsigned int irq,
- 			      int trigger, int polarity)
- {
--	struct irq_cfg *cfg = irq_cfg + irq;
-+	struct irq_cfg *cfg = get_irq_cfg(irq);
- 	struct IO_APIC_route_entry entry;
- 	cpumask_t mask;
  
-@@ -1550,7 +1638,7 @@ static unsigned int startup_ioapic_irq(unsigned int irq)
- 
- static int ioapic_retrigger_irq(unsigned int irq)
+@@ -460,20 +523,34 @@ static void set_ioapic_affinity_irq(unsigned int irq, cpumask_t mask)
+ int first_free_entry;
+ static void add_pin_to_irq(unsigned int irq, int apic, int pin)
  {
--	struct irq_cfg *cfg = &irq_cfg[irq];
-+	struct irq_cfg *cfg = get_irq_cfg(irq);
- 	unsigned long flags;
- 
- 	spin_lock_irqsave(&vector_lock, flags);
-@@ -1597,7 +1685,7 @@ static DECLARE_DELAYED_WORK(ir_migration_work, ir_irq_migration);
-  */
- static void migrate_ioapic_irq(int irq, cpumask_t mask)
- {
--	struct irq_cfg *cfg = irq_cfg + irq;
+-	struct irq_pin_list *entry = irq_2_pin + irq;
 +	struct irq_cfg *cfg;
- 	struct irq_desc *desc;
- 	cpumask_t tmp, cleanup_mask;
- 	struct irte irte;
-@@ -1615,6 +1703,7 @@ static void migrate_ioapic_irq(int irq, cpumask_t mask)
- 	if (assign_irq_vector(irq, mask))
- 		return;
++	struct irq_pin_list *entry;
  
+ 	BUG_ON(irq >= nr_irqs);
+-	while (entry->next)
+-		entry = irq_2_pin + entry->next;
 +	cfg = get_irq_cfg(irq);
- 	cpus_and(tmp, cfg->domain, mask);
- 	dest = cpu_mask_to_apicid(tmp);
++	entry = cfg->irq_2_pin;
++	if (!entry) {
++		entry = get_one_free_irq_2_pin();
++		cfg->irq_2_pin = entry;
++		entry->apic = apic;
++		entry->pin = pin;
++		printk(KERN_DEBUG " 0 add_pin_to_irq: irq %d --> apic %d pin %d\n", irq, apic, pin);
++		return;
++	}
  
-@@ -1732,7 +1821,7 @@ asmlinkage void smp_irq_move_cleanup_interrupt(void)
- 			continue;
- 
- 		desc = get_irq_desc(irq);
--		cfg = irq_cfg + irq;
-+		cfg = get_irq_cfg(irq);
- 		spin_lock(&desc->lock);
- 		if (!cfg->move_cleanup_count)
- 			goto unlock;
-@@ -1751,7 +1840,7 @@ unlock:
- 
- static void irq_complete_move(unsigned int irq)
- {
--	struct irq_cfg *cfg = irq_cfg + irq;
-+	struct irq_cfg *cfg = get_irq_cfg(irq);
- 	unsigned vector, me;
- 
- 	if (likely(!cfg->move_in_progress))
-@@ -1888,7 +1977,10 @@ static inline void init_IO_APIC_traps(void)
- 	 * 0x80, because int 0x80 is hm, kind of importantish. ;)
- 	 */
- 	for (irq = 0; irq < nr_irqs ; irq++) {
--		if (IO_APIC_IRQ(irq) && !irq_cfg[irq].vector) {
-+		struct irq_cfg *cfg;
+-	if (entry->pin != -1) {
+-		entry->next = first_free_entry;
+-		entry = irq_2_pin + entry->next;
+-		if (++first_free_entry >= pin_map_size)
+-			panic("io_apic.c: ran out of irq_2_pin entries!");
++	while (entry->next) {
++		/* not again, please */
++		if (entry->apic == apic && entry->pin == pin)
++			return;
 +
-+		cfg = get_irq_cfg(irq);
-+		if (IO_APIC_IRQ(irq) && !cfg->vector) {
- 			/*
- 			 * Hmm.. We don't have an entry for this,
- 			 * so default to an old-fashioned 8259
-@@ -2025,7 +2117,7 @@ static inline void __init unlock_ExtINT_logic(void)
-  */
- static inline void __init check_timer(void)
- {
--	struct irq_cfg *cfg = irq_cfg + 0;
-+	struct irq_cfg *cfg = get_irq_cfg(0);
- 	int apic1, pin1, apic2, pin2;
- 	unsigned long flags;
- 	int no_pin1 = 0;
-@@ -2303,13 +2395,15 @@ int create_irq(void)
- 	int irq;
- 	int new;
- 	unsigned long flags;
-+	struct irq_cfg *cfg_new;
++		entry = entry->next;
+ 	}
++
++	entry->next = get_one_free_irq_2_pin();
++	entry = entry->next;
+ 	entry->apic = apic;
+ 	entry->pin = pin;
++	printk(KERN_DEBUG " x add_pin_to_irq: irq %d --> apic %d pin %d\n", irq, apic, pin);
+ }
  
- 	irq = -ENOSPC;
- 	spin_lock_irqsave(&vector_lock, flags);
- 	for (new = (nr_irqs - 1); new >= 0; new--) {
- 		if (platform_legacy_irq(new))
+ /*
+@@ -483,17 +560,24 @@ static void __init replace_pin_at_irq(unsigned int irq,
+ 				      int oldapic, int oldpin,
+ 				      int newapic, int newpin)
+ {
+-	struct irq_pin_list *entry = irq_2_pin + irq;
++	struct irq_cfg *cfg = get_irq_cfg(irq);
++	struct irq_pin_list *entry = cfg->irq_2_pin;
++	int replaced = 0;
+ 
+-	while (1) {
++	while (entry) {
+ 		if (entry->apic == oldapic && entry->pin == oldpin) {
+ 			entry->apic = newapic;
+ 			entry->pin = newpin;
+-		}
+-		if (!entry->next)
++			replaced = 1;
++			/* every one is different, right? */
+ 			break;
+-		entry = irq_2_pin + entry->next;
++		}
++		entry = entry->next;
+ 	}
++
++	/* why? call replace before add? */
++	if (!replaced)
++		add_pin_to_irq(irq, newapic, newpin);
+ }
+ 
+ 
+@@ -1297,15 +1381,16 @@ __apicdebuginit(void) print_IO_APIC(void)
+ 	}
+ 	printk(KERN_DEBUG "IRQ to pin mappings:\n");
+ 	for (i = 0; i < nr_irqs; i++) {
+-		struct irq_pin_list *entry = irq_2_pin + i;
+-		if (entry->pin < 0)
++		struct irq_cfg *cfg = get_irq_cfg(i);
++		struct irq_pin_list *entry = cfg->irq_2_pin;
++		if (!entry)
  			continue;
--		if (irq_cfg[new].vector != 0)
-+		cfg_new = get_irq_cfg(new);
-+		if (cfg_new->vector != 0)
- 			continue;
- 		if (__assign_irq_vector(new, TARGET_CPUS) == 0)
- 			irq = new;
-@@ -2343,7 +2437,7 @@ void destroy_irq(unsigned int irq)
- #ifdef CONFIG_PCI_MSI
- static int msi_compose_msg(struct pci_dev *pdev, unsigned int irq, struct msi_msg *msg)
+ 		printk(KERN_DEBUG "IRQ%d ", i);
+ 		for (;;) {
+ 			printk("-> %d:%d", entry->apic, entry->pin);
+ 			if (!entry->next)
+ 				break;
+-			entry = irq_2_pin + entry->next;
++			entry = entry->next;
+ 		}
+ 		printk("\n");
+ 	}
+@@ -1466,14 +1551,9 @@ void __init enable_IO_APIC(void)
  {
--	struct irq_cfg *cfg = irq_cfg + irq;
-+	struct irq_cfg *cfg;
- 	int err;
- 	unsigned dest;
- 	cpumask_t tmp;
-@@ -2353,6 +2447,7 @@ static int msi_compose_msg(struct pci_dev *pdev, unsigned int irq, struct msi_ms
- 	if (err)
- 		return err;
+ 	union IO_APIC_reg_01 reg_01;
+ 	int i8259_apic, i8259_pin;
+-	int i, apic;
++	int apic;
+ 	unsigned long flags;
  
-+	cfg = get_irq_cfg(irq);
- 	cpus_and(tmp, cfg->domain, tmp);
- 	dest = cpu_mask_to_apicid(tmp);
- 
-@@ -2410,7 +2505,7 @@ static int msi_compose_msg(struct pci_dev *pdev, unsigned int irq, struct msi_ms
- #ifdef CONFIG_SMP
- static void set_msi_irq_affinity(unsigned int irq, cpumask_t mask)
- {
--	struct irq_cfg *cfg = irq_cfg + irq;
-+	struct irq_cfg *cfg;
- 	struct msi_msg msg;
- 	unsigned int dest;
- 	cpumask_t tmp;
-@@ -2423,6 +2518,7 @@ static void set_msi_irq_affinity(unsigned int irq, cpumask_t mask)
- 	if (assign_irq_vector(irq, mask))
- 		return;
- 
-+	cfg = get_irq_cfg(irq);
- 	cpus_and(tmp, cfg->domain, mask);
- 	dest = cpu_mask_to_apicid(tmp);
- 
-@@ -2445,7 +2541,7 @@ static void set_msi_irq_affinity(unsigned int irq, cpumask_t mask)
-  */
- static void ir_set_msi_irq_affinity(unsigned int irq, cpumask_t mask)
- {
--	struct irq_cfg *cfg = irq_cfg + irq;
-+	struct irq_cfg *cfg;
- 	unsigned int dest;
- 	cpumask_t tmp, cleanup_mask;
- 	struct irte irte;
-@@ -2461,6 +2557,7 @@ static void ir_set_msi_irq_affinity(unsigned int irq, cpumask_t mask)
- 	if (assign_irq_vector(irq, mask))
- 		return;
- 
-+	cfg = get_irq_cfg(irq);
- 	cpus_and(tmp, cfg->domain, mask);
- 	dest = cpu_mask_to_apicid(tmp);
- 
-@@ -2667,7 +2764,7 @@ void arch_teardown_msi_irq(unsigned int irq)
- #ifdef CONFIG_SMP
- static void dmar_msi_set_affinity(unsigned int irq, cpumask_t mask)
- {
--	struct irq_cfg *cfg = irq_cfg + irq;
-+	struct irq_cfg *cfg;
- 	struct msi_msg msg;
- 	unsigned int dest;
- 	cpumask_t tmp;
-@@ -2680,6 +2777,7 @@ static void dmar_msi_set_affinity(unsigned int irq, cpumask_t mask)
- 	if (assign_irq_vector(irq, mask))
- 		return;
- 
-+	cfg = get_irq_cfg(irq);
- 	cpus_and(tmp, cfg->domain, mask);
- 	dest = cpu_mask_to_apicid(tmp);
- 
-@@ -2746,7 +2844,7 @@ static void target_ht_irq(unsigned int irq, unsigned int dest, u8 vector)
- 
- static void set_ht_irq_affinity(unsigned int irq, cpumask_t mask)
- {
--	struct irq_cfg *cfg = irq_cfg + irq;
-+	struct irq_cfg *cfg;
- 	unsigned int dest;
- 	cpumask_t tmp;
- 	struct irq_desc *desc;
-@@ -2758,6 +2856,7 @@ static void set_ht_irq_affinity(unsigned int irq, cpumask_t mask)
- 	if (assign_irq_vector(irq, mask))
- 		return;
- 
-+	cfg = get_irq_cfg(irq);
- 	cpus_and(tmp, cfg->domain, mask);
- 	dest = cpu_mask_to_apicid(tmp);
- 
-@@ -2780,7 +2879,7 @@ static struct irq_chip ht_irq_chip = {
- 
- int arch_setup_ht_irq(unsigned int irq, struct pci_dev *dev)
- {
--	struct irq_cfg *cfg = irq_cfg + irq;
-+	struct irq_cfg *cfg;
- 	int err;
- 	cpumask_t tmp;
- 
-@@ -2790,6 +2889,7 @@ int arch_setup_ht_irq(unsigned int irq, struct pci_dev *dev)
- 		struct ht_irq_msg msg;
- 		unsigned dest;
- 
-+		cfg = get_irq_cfg(irq);
- 		cpus_and(tmp, cfg->domain, tmp);
- 		dest = cpu_mask_to_apicid(tmp);
- 
-@@ -2888,6 +2988,7 @@ int acpi_get_override_irq(int bus_irq, int *trigger, int *polarity)
- void __init setup_ioapic_dest(void)
- {
- 	int pin, ioapic, irq, irq_entry;
-+	struct irq_cfg *cfg;
- 
- 	if (skip_ioapic_setup == 1)
- 		return;
-@@ -2903,7 +3004,8 @@ void __init setup_ioapic_dest(void)
- 			 * when you have too many devices, because at that time only boot
- 			 * cpu is online.
- 			 */
--			if (!irq_cfg[irq].vector)
-+			cfg = get_irq_cfg(irq);
-+			if (!cfg->vector)
- 				setup_IO_APIC_irq(ioapic, pin, irq,
- 						  irq_trigger(irq_entry),
- 						  irq_polarity(irq_entry));
+-	for (i = 0; i < pin_map_size; i++) {
+-		irq_2_pin[i].pin = -1;
+-		irq_2_pin[i].next = 0;
+-	}
+-
+ 	/*
+ 	 * The number of IO-APIC IRQ registers (== #pins):
+ 	 */
 -- 
 1.5.4.5
 
