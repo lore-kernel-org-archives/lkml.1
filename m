@@ -1,22 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762897AbYHFVTr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764026AbYHFVUm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762897AbYHFVTr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Aug 2008 17:19:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761674AbYHFVMo
+	id S1764026AbYHFVUm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Aug 2008 17:20:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758961AbYHFVMt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Aug 2008 17:12:44 -0400
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:59628 "EHLO smtp4.pp.htv.fi"
+	Wed, 6 Aug 2008 17:12:49 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:59640 "EHLO smtp4.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761655AbYHFVMl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Aug 2008 17:12:41 -0400
-Date: Thu, 7 Aug 2008 00:11:12 +0300
+	id S1758326AbYHFVMq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Aug 2008 17:12:46 -0400
+Date: Thu, 7 Aug 2008 00:11:18 +0300
 From: Adrian Bunk <bunk@kernel.org>
-To: Sunil Mushran <sunil.mushran@oracle.com>, Mark Fasheh <mfasheh@suse.com>,
-       joel.becker@oracle.com
-Cc: ocfs2-devel@oss.oracle.com, linux-kernel@vger.kernel.org,
+To: James.Bottomley@HansenPartnership.com
+Cc: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
        Andrew Morton <akpm@linux-foundation.org>
-Subject: [2.6 patch] ocfs2/cluster/tcp.c: make some functions static
-Message-ID: <20080806211112.GP1702@cs181140183.pp.htv.fi>
+Subject: [2.6 patch] drivers/scsi/a3000.c: make 2 functions static
+Message-ID: <20080806211118.GR1702@cs181140183.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -25,149 +24,62 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit 0f475b2abed6cbccee1da20a0bef2895eb2a0edd
-(ocfs2/net: Silence build warnings) made sense
-as far as it fixed compile warnings, but it was
-not required that it made the functions global.
+a3000_{detect,release}() can become static.
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
 
 This patch has been sent on:
-- 5 Jun 2008
+- 10 Jun 2008
 
- fs/ocfs2/cluster/tcp.c          |   44 ++++++++++++++++++++++++++------
- fs/ocfs2/cluster/tcp_internal.h |   32 -----------------------
- 2 files changed, 37 insertions(+), 39 deletions(-)
+ drivers/scsi/a3000.c |    6 ++++--
+ drivers/scsi/a3000.h |    3 ---
+ 2 files changed, 4 insertions(+), 5 deletions(-)
 
-dd88fbb63c1952663eed2f1d93b85a95938cf37c diff --git a/fs/ocfs2/cluster/tcp.c b/fs/ocfs2/cluster/tcp.c
-index a27d615..2bcf706 100644
---- a/fs/ocfs2/cluster/tcp.c
-+++ b/fs/ocfs2/cluster/tcp.c
-@@ -143,8 +143,8 @@ static void o2net_sc_postpone_idle(struct o2net_sock_container *sc);
- static void o2net_sc_reset_idle_timer(struct o2net_sock_container *sc);
+85a02587af2fff4f03fcecf3bb0f61fbe1cfadc3 diff --git a/drivers/scsi/a3000.c b/drivers/scsi/a3000.c
+index 8b449d8..6970ce8 100644
+--- a/drivers/scsi/a3000.c
++++ b/drivers/scsi/a3000.c
+@@ -25,6 +25,8 @@
  
- #ifdef CONFIG_DEBUG_FS
--void o2net_init_nst(struct o2net_send_tracking *nst, u32 msgtype,
--		    u32 msgkey, struct task_struct *task, u8 node)
-+static void o2net_init_nst(struct o2net_send_tracking *nst, u32 msgtype,
-+			   u32 msgkey, struct task_struct *task, u8 node)
+ static struct Scsi_Host *a3000_host = NULL;
+ 
++static int a3000_release(struct Scsi_Host *instance);
++
+ static irqreturn_t a3000_intr (int irq, void *dummy)
  {
- 	INIT_LIST_HEAD(&nst->st_net_debug_item);
- 	nst->st_task = task;
-@@ -153,31 +153,61 @@ void o2net_init_nst(struct o2net_send_tracking *nst, u32 msgtype,
- 	nst->st_node = node;
+ 	unsigned long flags;
+@@ -157,7 +159,7 @@ static void dma_stop(struct Scsi_Host *instance, struct scsi_cmnd *SCpnt,
+     }
  }
  
--void o2net_set_nst_sock_time(struct o2net_send_tracking *nst)
-+static void o2net_set_nst_sock_time(struct o2net_send_tracking *nst)
+-int __init a3000_detect(struct scsi_host_template *tpnt)
++static int __init a3000_detect(struct scsi_host_template *tpnt)
  {
- 	do_gettimeofday(&nst->st_sock_time);
- }
+     wd33c93_regs regs;
  
--void o2net_set_nst_send_time(struct o2net_send_tracking *nst)
-+static void o2net_set_nst_send_time(struct o2net_send_tracking *nst)
+@@ -232,7 +234,7 @@ static struct scsi_host_template driver_template = {
+ 
+ #include "scsi_module.c"
+ 
+-int a3000_release(struct Scsi_Host *instance)
++static int a3000_release(struct Scsi_Host *instance)
  {
- 	do_gettimeofday(&nst->st_send_time);
- }
+     wd33c93_release();
+     DMA(instance)->CNTR = 0;
+diff --git a/drivers/scsi/a3000.h b/drivers/scsi/a3000.h
+index 44a4ec7..c7afe16 100644
+--- a/drivers/scsi/a3000.h
++++ b/drivers/scsi/a3000.h
+@@ -11,9 +11,6 @@
  
--void o2net_set_nst_status_time(struct o2net_send_tracking *nst)
-+static void o2net_set_nst_status_time(struct o2net_send_tracking *nst)
- {
- 	do_gettimeofday(&nst->st_status_time);
- }
+ #include <linux/types.h>
  
--void o2net_set_nst_sock_container(struct o2net_send_tracking *nst,
-+static void o2net_set_nst_sock_container(struct o2net_send_tracking *nst,
- 					 struct o2net_sock_container *sc)
- {
- 	nst->st_sc = sc;
- }
- 
--void o2net_set_nst_msg_id(struct o2net_send_tracking *nst, u32 msg_id)
-+static void o2net_set_nst_msg_id(struct o2net_send_tracking *nst, u32 msg_id)
- {
- 	nst->st_id = msg_id;
- }
-+
-+#else  /* CONFIG_DEBUG_FS */
-+
-+static inline void o2net_init_nst(struct o2net_send_tracking *nst, u32 msgtype,
-+				  u32 msgkey, struct task_struct *task, u8 node)
-+{
-+}
-+
-+static inline void o2net_set_nst_sock_time(struct o2net_send_tracking *nst)
-+{
-+}
-+
-+static inline void o2net_set_nst_send_time(struct o2net_send_tracking *nst)
-+{
-+}
-+
-+static inline void o2net_set_nst_status_time(struct o2net_send_tracking *nst)
-+{
-+}
-+
-+static inline void o2net_set_nst_sock_container(struct o2net_send_tracking *nst,
-+						struct o2net_sock_container *sc)
-+{
-+}
-+
-+static inline void o2net_set_nst_msg_id(struct o2net_send_tracking *nst,
-+					u32 msg_id)
-+{
-+}
-+
- #endif /* CONFIG_DEBUG_FS */
- 
- static inline int o2net_reconnect_delay(void)
-diff --git a/fs/ocfs2/cluster/tcp_internal.h b/fs/ocfs2/cluster/tcp_internal.h
-index 18307ff..8d58cfe 100644
---- a/fs/ocfs2/cluster/tcp_internal.h
-+++ b/fs/ocfs2/cluster/tcp_internal.h
-@@ -224,42 +224,10 @@ struct o2net_send_tracking {
- 	struct timeval			st_send_time;
- 	struct timeval			st_status_time;
- };
+-int a3000_detect(struct scsi_host_template *);
+-int a3000_release(struct Scsi_Host *);
 -
--void o2net_init_nst(struct o2net_send_tracking *nst, u32 msgtype,
--		    u32 msgkey, struct task_struct *task, u8 node);
--void o2net_set_nst_sock_time(struct o2net_send_tracking *nst);
--void o2net_set_nst_send_time(struct o2net_send_tracking *nst);
--void o2net_set_nst_status_time(struct o2net_send_tracking *nst);
--void o2net_set_nst_sock_container(struct o2net_send_tracking *nst,
--				  struct o2net_sock_container *sc);
--void o2net_set_nst_msg_id(struct o2net_send_tracking *nst, u32 msg_id);
--
- #else
- struct o2net_send_tracking {
- 	u32	dummy;
- };
--
--static inline void o2net_init_nst(struct o2net_send_tracking *nst, u32 msgtype,
--				  u32 msgkey, struct task_struct *task, u8 node)
--{
--}
--static inline void o2net_set_nst_sock_time(struct o2net_send_tracking *nst)
--{
--}
--static inline void o2net_set_nst_send_time(struct o2net_send_tracking *nst)
--{
--}
--static inline void o2net_set_nst_status_time(struct o2net_send_tracking *nst)
--{
--}
--static inline void o2net_set_nst_sock_container(struct o2net_send_tracking *nst,
--						struct o2net_sock_container *sc)
--{
--}
--static inline void o2net_set_nst_msg_id(struct o2net_send_tracking *nst,
--					u32 msg_id)
--{
--}
- #endif	/* CONFIG_DEBUG_FS */
- 
- #endif /* O2CLUSTER_TCP_INTERNAL_H */
+ #ifndef CMD_PER_LUN
+ #define CMD_PER_LUN 2
+ #endif
 
