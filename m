@@ -1,84 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758289AbYHFIEb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758555AbYHFIKA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758289AbYHFIEb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Aug 2008 04:04:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756138AbYHFIEH
+	id S1758555AbYHFIKA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Aug 2008 04:10:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755999AbYHFIJr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Aug 2008 04:04:07 -0400
-Received: from zone0.gcu-squad.org ([212.85.147.21]:12152 "EHLO
-	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756136AbYHFIEE (ORCPT
+	Wed, 6 Aug 2008 04:09:47 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:39136 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755584AbYHFIJq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Aug 2008 04:04:04 -0400
-Date: Wed, 6 Aug 2008 09:31:18 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Greg KH <greg@kroah.com>
-Cc: Milton Miller <miltonm@bga.com>, Michael Ellerman <michael@ellerman.id.au>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-pci@vger.kernel.org
-Subject: Re: [PATCH/RFC] pci: dynids.use_driver_data considered harmful
-Message-ID: <20080806093118.05396ad4@hyperion.delvare>
-In-Reply-To: <20080717070759.GE22090@kroah.com>
-References: <for-27-patch1-0@bga.com>
-	<for-27-patch9@bga.com>
-	<20080712041137.GA5933@kroah.com>
-	<e6b3109a0ab047bea58ceecb8734761d@bga.com>
-	<0a67ecbf69649dce778db1b463e59c3a@bga.com>
-	<ad61f8387a737bc410e9d6dc3a8a5b63@bga.com>
-	<20080717070759.GE22090@kroah.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 6 Aug 2008 04:09:46 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <48995C47.6020808@s5r6.in-berlin.de>
+Date: Wed, 06 Aug 2008 10:09:43 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.16) Gecko/20080722 SeaMonkey/1.1.11
+MIME-Version: 1.0
+To: jmerkey@wolfmountaingroup.com
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2.6.26 4/25] mdb: Merkey's Kernel Debugger
+References: <57474.166.70.238.45.1217815846.squirrel@webmail.wolfmountaingroup.com>
+In-Reply-To: <57474.166.70.238.45.1217815846.squirrel@webmail.wolfmountaingroup.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Greg,
+jmerkey@wolfmountaingroup.com wrote on 2008-08-04:
+> +ULONG displayASCTable(BYTE *cmd,
+> +		     StackFrame *stackFrame, ULONG Exception,
+> +		     DEBUGGER_PARSER *parser)
+> +{
+> +
+> +     if (cmd) {};
+> +     if (stackFrame) {};
+> +     if (Exception) {};
+> +     if (parser) {};
+> +
+> +     DisplayASCIITable();
+> +     return TRUE;
+> +
+> +}
 
-On Thu, 17 Jul 2008 00:07:59 -0700, Greg KH wrote:
-> On Wed, Jul 16, 2008 at 05:18:18AM -0500, Milton Miller wrote:
-> >
-> > Greg,
-> >
-> > Please respond to this email and explain why the patch
-> >
-> > pci: dynids.use_driver_data considered harmful
-> >
-> > http://www.ussg.iu.edu/hypermail/linux/kernel/0807.1/index.html#2188
-> >
-> > should not be applied.   I am not arguing the correctness of
-> > the removed code, rather its utility and benefit to the linux
-> > community.
->
-> (...)  I'll try to get
-> to this by Monday, but my original point still stands, this was
-> implemented for a reason,
-
-Not a good enough argument, sorry. There have been many cases in the
-past where code has been withdrawn after some times because we
-realized that we got it wrong in the first place.
-
-So, please explain what the current code is good for. Honestly, my
-initial reaction to Milton's proposal was "what an idiot, this flag is
-there for an obvious safety reason and we don't want to remove it" but
-after reading both his arguments and the code, I found that I have
-nothing to backup my claim. If you do, please let us know your
-technical reasons.
-
->                           saying that not enough drivers use it properly
-> does not make the need for it to go away.  It is required for them, so
-> perhaps the other 419 drivers also need to have the flag set.  That's
-> pretty trivial to do, right?
-
-If you are suggesting to blindly set the flag to all PCI drivers (or
-even just all the ones which make use of the driver_data field -
-doesn't make a difference), this simply shows how useless this flag is.
-If you don't, then one would have to check the code of all drivers and
-add validation code for the driver_data value; but then this no longer
-falls into the "trivial" category.
-
-Thanks,
+Hmm, this construct of empty conditional blocks is new to me.  What is 
+its purpose?
 -- 
-Jean Delvare
+Stefan Richter
+-=====-==--- =--- --==-
+http://arcgraph.de/sr/
