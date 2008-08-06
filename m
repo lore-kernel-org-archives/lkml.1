@@ -1,86 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761983AbYHFFum@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760045AbYHFF7y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761983AbYHFFum (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Aug 2008 01:50:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752541AbYHFFue
+	id S1760045AbYHFF7y (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Aug 2008 01:59:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752926AbYHFF7o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Aug 2008 01:50:34 -0400
-Received: from smtp101.mail.mud.yahoo.com ([209.191.85.211]:23798 "HELO
-	smtp101.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752492AbYHFFud (ORCPT
+	Wed, 6 Aug 2008 01:59:44 -0400
+Received: from senator.holtmann.net ([87.106.208.187]:41151 "EHLO
+	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752730AbYHFF7n (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Aug 2008 01:50:33 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=ksGUm1q940bBiQt2LGCWNyH9NDR4i0XMFQA/j55/4mjEJ1a477hs7M5UoqDz9dIusaJFkE4YvabLHfQnusS8Lc57eCpsXms2LdENntYQlvV5FqIU7OvmUIxiOxbQU3nD2ySS7zfXXaBQ9XJ08jURQmurvRy0vTrcRs/fHkDMK+w=  ;
-X-YMail-OSG: 8FZQtD0VM1nnhR00fQuh9AsXmCD4pUw6brKn6Q9CS5AfxKFbdxT4LL.5scPftOfQd173ukszI7VhaJbu2h9hfmXQbOdypYO8oOZ1r2q8Hsh38Mi6PgTN7SFqrsrV.So.fH9BnBLDSQY3faxKeRM92HLV
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Andi Kleen <andi@firstfloor.org>
-Subject: Re: [ANNOUNCE] Merkey's Kernel Debugger
-Date: Wed, 6 Aug 2008 15:50:22 +1000
-User-Agent: KMail/1.9.5
-Cc: jmerkey@wolfmountaingroup.com, "Geert Uytterhoeven" <geert@linux-m68k.org>,
-       "Stefan Richter" <stefanr@s5r6.in-berlin.de>,
-       "Josh Boyer" <jwboyer@gmail.com>, linux-kernel@vger.kernel.org
-References: <17494.166.70.238.46.1217784156.squirrel@webmail.wolfmountaingroup.com> <200808060133.10457.nickpiggin@yahoo.com.au> <87r6926dsr.fsf@basil.nowhere.org>
-In-Reply-To: <87r6926dsr.fsf@basil.nowhere.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Wed, 6 Aug 2008 01:59:43 -0400
+Cc: David Miller <davem@davemloft.net>,
+       Andrew Morton <akpm@linux-foundation.org>, netdev@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ivo van Doorn <IvDoorn@gmail.com>
+Message-Id: <A0AAD67C-1F54-4D85-A413-91BBBE044452@holtmann.org>
+From: Marcel Holtmann <marcel@holtmann.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+In-Reply-To: <alpine.LFD.1.10.0808051937410.15995@nehalem.linux-foundation.org>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200808061550.22996.nickpiggin@yahoo.com.au>
+Mime-Version: 1.0 (Apple Message framework v928.1)
+Subject: Re: [GIT]: Networking
+Date: Wed, 6 Aug 2008 07:59:37 +0200
+References: <20080805.190020.244441681.davem@davemloft.net> <alpine.LFD.1.10.0808051937410.15995@nehalem.linux-foundation.org>
+X-Mailer: Apple Mail (2.928.1)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 06 August 2008 13:08, Andi Kleen wrote:
-> Nick Piggin <nickpiggin@yahoo.com.au> writes:
-> > Seriously? Because it doesn't seem to have had enough peer review,
-> > it hasn't had widespread testing in somewhere like linux-next or
-> > -mm, and we already have kgdb so you have to also explain why you
-> > can't improve kgdb in the areas it trails mdb.
-> >
-> > But the ideal outcome would be if you could contribute patches to
-> > kgdb to the point where it is as good as mdb. It is already in the
->
-> I don't think kgdb and a simple assembler debugger
-> are directly comparable. kgdb always requires a remote machine,
-> which has many advantages, but is also often very inconvenient
-> or impossible to arrange. An low overhead assembler debugger
-> can be always compiled in just in case.
->
-> Also at least for the x86 port the debugger interfaces should
-> be general enough now (see die hooks as a "debug vfs") that it would
-> be quite possible to have a multitude of debuggers just using
-> them. In fact that's already the cases, kprobes and kgdb and
-> kdump are all kinds of debuggers using such hooks.
->
-> As long as it doesn't impact the core code and the mdb
-> code itself is considered merge worthy and has clean interfaces
-> that would seem fine to me.It essentially would just live somewhere in
-> its own directory using the existing interfaces. My standard
-> test for seeing if a debugger has clean interfaces is to see
-> if it can be loaded as a module.
->
-> There are enough different debugging styles around that offering
-> developers different tools of which they can pick whatever suits
-> them is not a bad idea. Also as everyone knows debugging
-> is often a major time eater and if more tools are available that
-> can only help the kernel.
->
-> That said I haven't read the mdb code, not judging on its general
-> merge-worthiness or am really completely sure what are all the details
-> of a "netware style debugger", just a general high level comment on
-> debuggers. At least judging based on the patch sizes it at least
-> doesn't seem particularly bloated.  But of course it would need full
-> proper review first.
+Hi Linus,
 
-OK thanks for the info. I don't actually know debugger code as I
-said, so I wasn't against merging mdb if it offers things that
-kgdb fundamentally cannot.
+>> There was going to be the addition of the ath9k wireless driver but
+>> there was some fallout that is being worked on right now (linux/ 
+>> list.h
+>> changes needed lkml review, ath9k driver triggered some gcc aborts,
+>> all kinds of fun stuff :-) so hopefully it will make it in the next
+>> pass.  I tried to wait an extra day for it to be resolved, but that
+>> was optimistic.
+>
+> Talking about wireless driver updates - has anybody looked at the  
+> RaLink
+> wireless driver?  It's in the newer EeePC's (901 and 1000), and it
+> actually has a driver from the company which the comments make clear  
+> is
+> GPLv2 too, no apparent oddness or anything:
+>
+> 	http://www.ralinktech.com.tw/data/drivers/2008_0708_RT2860_Linux_STA_v1.7.0.0.tar.bz2
+>
+> which admittedly apparently has some trivial problems (with a trivial
+> patch as seen at
+>
+> 	http://fedoraforum.org/forum/showthread.php?t=195429
+>
+> I'd love to have that one working, since I have the hardware, and it's
+> actually reasonable (much more so than the original EeePC, in fact).  
+> What
+> channels should I go through? Is anybody working on integrating it
+> already?
 
-If so, then ensuring clean interfaces indeed would seem like a
-good first step to getting it merged.
+I looked at the driver and got it working. However my 901 seems to  
+have an issue with the antennas. I can do scans, but associating with  
+an access point or even thinking about transmit keeps failing. Even  
+with external antennas this still doesn't work. So either my EeePC is  
+broken or it needs some ACPI magic to enable it. Personally I think  
+mine is broken since the PCIe hotplug stuff works for the wireless  
+card and that seems to be their way of doing the rfkill.
+
+The driver itself is painful. It is full of ifdefs and some crazy  
+build magic. The integrated (to some degree optional) WPA code is  
+pretty ugly. It has also a full set of iwpriv commands to do all the  
+settings etc. :(
+
+Regards
+
+Marcel
+
