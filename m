@@ -1,79 +1,146 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762624AbYHFCbT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758402AbYHFCbg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762624AbYHFCbT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 22:31:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755148AbYHFCaJ
+	id S1758402AbYHFCbg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 22:31:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757331AbYHFCbF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 22:30:09 -0400
-Received: from idcmail-mo2no.shaw.ca ([64.59.134.9]:34969 "EHLO
-	pd5mo1no-dmz.prod.shaw.ca" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752817AbYHFCaI (ORCPT
+	Tue, 5 Aug 2008 22:31:05 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:62286 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757036AbYHFCbD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 22:30:08 -0400
-X-Cloudmark-SP-Filtered: true
-X-Cloudmark-SP-Result: v=1.0 c=0 a=zvaE46YoMEvhxEdyvrgA:9 a=mT_Ja8x8s9klpHoyag8A:7 a=Clk6zUWdMqsKDT3_tDQ9eIUKXBgA:4 a=ZCnnSLshPu8A:10 a=lN1hEWcJ4VIA:10
-Message-ID: <48990CA9.2060107@shaw.ca>
-Date: Tue, 05 Aug 2008 20:30:01 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
-MIME-Version: 1.0
-To: Tejun Heo <htejun@gmail.com>
-CC: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       James Bottomley <James.Bottomley@hansenpartnership.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-ide <linux-ide@vger.kernel.org>, Jeff Garzik <jeff@garzik.org>
-Subject: Re: Kernel Summit request for Discussion of future of ATA (libata)
- and IDE
-References: <fa.OGeO7gZvBG4obEzRbVltjSebgTQ@ifi.uio.no> <fa.KtvYE2B2yrJqUleolhtMPN9ljAQ@ifi.uio.no> <fa.AqEKTvguYFAzDFHy/We/8MpOqmo@ifi.uio.no> <48976168.3020804@shaw.ca> <20080804205508.20a3f917@lxorguk.ukuu.org.uk> <48977200.3050307@shaw.ca> <20080804220619.76b94ceb@lxorguk.ukuu.org.uk> <4898EE70.1030604@shaw.ca> <4898F3EA.7000507@gmail.com>
-In-Reply-To: <4898F3EA.7000507@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 5 Aug 2008 22:31:03 -0400
+Date: Tue, 5 Aug 2008 19:30:34 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, jeremy@xensource.com,
+       chrisw@sous-sol.org
+Subject: Re: linux-next: Tree for August 5 (XEN)
+Message-Id: <20080805193034.de32bf52.randy.dunlap@oracle.com>
+In-Reply-To: <4898FB2F.9060202@goop.org>
+References: <20080805175914.7649537f.sfr@canb.auug.org.au>
+	<20080805180316.b85d5547.randy.dunlap@oracle.com>
+	<4898FB2F.9060202@goop.org>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo wrote:
-> Robert Hancock wrote:
->> Here's my first cut at it. Compile tested only. This sets most controllers
->> to use 32-bit PIO except for those which could potentially be on a real ISA
->> or other 16-bit bus. It's a bit non-obvious what to do with some of the
->> drivers, so input is welcome.
->>
->> This implementation doesn't check the ata_id_has_dword_io at all, since it
->> would only make a difference on controllers where we don't really want to
->> use it anyway.
->>
->> It seems like regardless of whether we do 32-bit by default or not the 32-bit
->> data_xfer function should be added to libata core as we have several drivers
->> which duplicate the same code currently..
-> 
-> Great, just some minor nitpicks as I don't have much idea about 16 bit ones.
-> 
->> +unsigned int ata_sff_data_xfer(struct ata_device *dev, unsigned char *buf,
->> +			       unsigned int buflen, int rw)
->> +{
->> +	struct ata_port *ap = dev->link->ap;
->> +	void __iomem *data_addr = ap->ioaddr.data_addr;
->> +	unsigned int words = buflen >> 2;
-> 
-> dwords maybe?
-> 
->> +	unsigned int slop = buflen & 3;
->> +
->> +	/* Transfer multiple of 4 bytes */
->> +	if (rw == READ)
->> +		ioread32_rep(data_addr, buf, words);
->> +	else
->> +		iowrite32_rep(data_addr, buf, words);
->> +
->> +	/* Transfer trailing 1 byte, if any. */
-> 
-> 1byte?
+On Tue, 05 Aug 2008 18:15:27 -0700 Jeremy Fitzhardinge wrote:
 
-Yeah, those are both leftovers from the 16-bit code. I'll fix them up in 
-the next version, if the approach looks good..
+> Randy Dunlap wrote:
+> > These warnings have been around for several days now.
+> > Is there a patch available but not yet merged for linux-next?
+> >
+> >
+> > linux-next-20080805/drivers/xen/balloon.c:599: warning: initialization from incompatible pointer type
+> > linux-next-20080805/drivers/xen/balloon.c:600: warning: initialization from incompatible pointer type
+> > linux-next-20080805/drivers/xen/balloon.c:601: warning: initialization from incompatible pointer type
+> > linux-next-20080805/drivers/xen/balloon.c:602: warning: initialization from incompatible pointer type
+> > linux-next-20080805/drivers/xen/balloon.c:605: warning: initialization from incompatible pointer type
+> > linux-next-20080805/drivers/xen/balloon.c:635: warning: initialization from incompatible pointer type
+> >   
+> 
+> I posted this patch the other day.  It's in tip.git, but I guess it 
+> hasn't made it to next.
+> 
+
+Ack, looks good, fixes those warnings.
+Thanks.
+
 
 > 
-> Thanks.
+> Subject: xen-balloon: fix up sysfs issues
 > 
+> 1. Set the class so it doesn't clash with the normal memory class
+> 2. Fix up the sysfs show functions to match the new prototype
+> 3. Clean up use of memparse
+> 
+> Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+> Cc: viets@work.de
+> Cc: Andi Kleen <andi@firstfloor.org>
+> ---
+>  drivers/xen/balloon.c |   27 ++++++++++++---------------
+>  1 file changed, 12 insertions(+), 15 deletions(-)
+> 
+> ===================================================================
+> --- a/drivers/xen/balloon.c
+> +++ b/drivers/xen/balloon.c
+> @@ -60,7 +60,7 @@
+>  
+>  #define PAGES2KB(_p) ((_p)<<(PAGE_SHIFT-10))
+>  
+> -#define BALLOON_CLASS_NAME "memory"
+> +#define BALLOON_CLASS_NAME "xen_memory"
+>  
+>  struct balloon_stats {
+>  	/* We aim for 'current allocation' == 'target allocation'. */
+> @@ -588,12 +587,13 @@
+>  }
+>  
+>  
+> -#define BALLOON_SHOW(name, format, args...)			\
+> -	static ssize_t show_##name(struct sys_device *dev,	\
+> -				   char *buf)			\
+> -	{							\
+> -		return sprintf(buf, format, ##args);		\
+> -	}							\
+> +#define BALLOON_SHOW(name, format, args...)				\
+> +	static ssize_t show_##name(struct sys_device *dev,		\
+> +				   struct sysdev_attribute *attr,	\
+> +				   char *buf)				\
+> +	{								\
+> +		return sprintf(buf, format, ##args);			\
+> +	}								\
+>  	static SYSDEV_ATTR(name, S_IRUGO, show_##name, NULL)
+>  
+>  BALLOON_SHOW(current_kb, "%lu\n", PAGES2KB(balloon_stats.current_pages));
+> @@ -604,7 +604,8 @@
+>  	     (balloon_stats.hard_limit!=~0UL) ? PAGES2KB(balloon_stats.hard_limit) : 0);
+>  BALLOON_SHOW(driver_kb, "%lu\n", PAGES2KB(balloon_stats.driver_pages));
+>  
+> -static ssize_t show_target_kb(struct sys_device *dev, char *buf)
+> +static ssize_t show_target_kb(struct sys_device *dev, struct sysdev_attribute *attr,
+> +			      char *buf)
+>  {
+>  	return sprintf(buf, "%lu\n", PAGES2KB(balloon_stats.target_pages));
+>  }
+> @@ -614,19 +615,14 @@
+>  			       const char *buf,
+>  			       size_t count)
+>  {
+> -	char memstring[64], *endchar;
+> +	char *endchar;
+>  	unsigned long long target_bytes;
+>  
+>  	if (!capable(CAP_SYS_ADMIN))
+>  		return -EPERM;
+>  
+> -	if (count <= 1)
+> -		return -EBADMSG; /* runt */
+> -	if (count > sizeof(memstring))
+> -		return -EFBIG;   /* too long */
+> -	strcpy(memstring, buf);
+> +	target_bytes = memparse(buf, &endchar);
+>  
+> -	target_bytes = memparse(memstring, &endchar);
+>  	balloon_set_new_target(target_bytes >> PAGE_SHIFT);
+>  
+>  	return count;
+> 
+> 
+
+
+---
+~Randy
+Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
+http://linuxplumbersconf.org/
