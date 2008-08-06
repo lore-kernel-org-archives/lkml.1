@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756908AbYHFNap@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754573AbYHFNbA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756908AbYHFNap (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Aug 2008 09:30:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753994AbYHFNaM
+	id S1754573AbYHFNbA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Aug 2008 09:31:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754103AbYHFNaO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Aug 2008 09:30:12 -0400
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:47073 "EHLO
+	Wed, 6 Aug 2008 09:30:14 -0400
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:47138 "EHLO
 	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753207AbYHFNaG (ORCPT
+	with ESMTP id S1753450AbYHFNaI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Aug 2008 09:30:06 -0400
+	Wed, 6 Aug 2008 09:30:08 -0400
 From: Sebastien Dugue <sebastien.dugue@bull.net>
 To: linuxppc-dev@ozlabs.org
 Cc: linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org,
@@ -17,102 +17,247 @@ Cc: linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org,
        jean-pierre.dion@bull.net, gilles.carry@ext.bull.net,
        tinytim@us.ibm.com, tglx@linutronix.de, rostedt@goodmis.org,
        dwalker@mvista.com, sebastien.dugue@bull.net
-Subject: [PATCH 0/2 V3] powerpc - Make the irq reverse mapping tree lockless
-Date: Wed,  6 Aug 2008 15:30:27 +0200
-Message-Id: <1218029429-21114-1-git-send-email-sebastien.dugue@bull.net>
+Subject: [PATCH 1/2] powerpc - Separate the irq radix tree insertion and lookup
+Date: Wed,  6 Aug 2008 15:30:28 +0200
+Message-Id: <1218029429-21114-2-git-send-email-sebastien.dugue@bull.net>
 X-Mailer: git-send-email 1.5.5.rc2.1.gc953.dirty
+In-Reply-To: <1218029429-21114-1-git-send-email-sebastien.dugue@bull.net>
+References: <1218029429-21114-1-git-send-email-sebastien.dugue@bull.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+  irq_radix_revmap() currently serves 2 purposes, irq mapping lookup
+and insertion which happen in interrupt and process context respectively.
 
-  Hi ,
+  Separate the function into its 2 components, one for lookup only and one
+for insertion only.
 
-  here is V3 for the powerpc IRQ radix tree reverse mapping rework.
+  Fix the only user of the revmap tree (XICS) to use the new functions.
 
-  V2 -> V3: from comments by Benjamin Herrenschmidt and Daniel Walker
+  Also, move the insertion into the radix tree of those irqs that were
+requested before it was initialized at said tree initialization.
 
-  - Move the initialization of the radix tree back into irq_late_init() and
-    insert pre-existing irqs into the tree at that time.
-
-  - One whitespace cleanup.
-
-  V1 -> V2: from comments by Michael Ellerman
-
-  - Initialize the XICS radix tree in xics code and only for that irq_host
-    rather than doing it for all the hosts in the powerpc irq generic code
-    (although the hosts list only contain one entry at the moment).
-
-  - Add a comment in irq_radix_revmap_lookup() stating why it is safe to
-    perform a lookup even if the radix tree has not been initialized yet.
+  Mutual exclusion between the tree initialization and readers/writers is
+handled via an atomic variable (revmap_trees_allocated) set when the tree
+has been initialized and checked before any reader or writer access just
+like we used to check for tree.gfp_mask != 0 before.
 
 
-  The goal of this patchset is to simplify the locking constraints on the radix
-tree used for IRQ reverse mapping on the pSeries machines and provide lockless
-access to this tree.
+Signed-off-by: Sebastien Dugue <sebastien.dugue@bull.net>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Michael Ellerman <michael@ellerman.id.au>
+---
+ arch/powerpc/include/asm/irq.h        |   18 ++++++-
+ arch/powerpc/kernel/irq.c             |   76 ++++++++++++++++++++++++---------
+ arch/powerpc/platforms/pseries/xics.c |   11 ++---
+ 3 files changed, 74 insertions(+), 31 deletions(-)
 
-  This also solves the following BUG under preempt-rt:
-
-BUG: sleeping function called from invalid context swapper(1) at kernel/rtmutex.c:739
-in_atomic():1 [00000002], irqs_disabled():1
-Call Trace:
-[c0000001e20f3340] [c000000000010370] .show_stack+0x70/0x1bc (unreliable)
-[c0000001e20f33f0] [c000000000049380] .__might_sleep+0x11c/0x138
-[c0000001e20f3470] [c0000000002a2f64] .__rt_spin_lock+0x3c/0x98
-[c0000001e20f34f0] [c0000000000c3f20] .kmem_cache_alloc+0x68/0x184
-[c0000001e20f3590] [c000000000193f3c] .radix_tree_node_alloc+0xf0/0x144
-[c0000001e20f3630] [c000000000195190] .radix_tree_insert+0x18c/0x2fc
-[c0000001e20f36f0] [c00000000000c710] .irq_radix_revmap+0x1a4/0x1e4
-[c0000001e20f37b0] [c00000000003b3f0] .xics_startup+0x30/0x54
-[c0000001e20f3840] [c00000000008b864] .setup_irq+0x26c/0x370
-[c0000001e20f38f0] [c00000000008ba68] .request_irq+0x100/0x158
-[c0000001e20f39a0] [c0000000001ee9c0] .hvc_open+0xb4/0x148
-[c0000001e20f3a40] [c0000000001d72ec] .tty_open+0x200/0x368
-[c0000001e20f3af0] [c0000000000ce928] .chrdev_open+0x1f4/0x25c
-[c0000001e20f3ba0] [c0000000000c8bf0] .__dentry_open+0x188/0x2c8
-[c0000001e20f3c50] [c0000000000c8dec] .do_filp_open+0x50/0x70
-[c0000001e20f3d70] [c0000000000c8e8c] .do_sys_open+0x80/0x148
-[c0000001e20f3e20] [c00000000000928c] .init_post+0x4c/0x100
-[c0000001e20f3ea0] [c0000000003c0e0c] .kernel_init+0x428/0x478
-[c0000001e20f3f90] [c000000000027448] .kernel_thread+0x4c/0x68
-
-  The root cause of this bug lies in the fact that the XICS interrupt
-controller uses a radix tree for its reverse irq mapping and that we cannot
-allocate the tree nodes (even GFP_ATOMIC) with preemption disabled.
-
-  In fact, we have 2 nested preemption disabling when we want to allocate
-a new node:
-
-  - setup_irq() does a spin_lock_irqsave() before calling xics_startup() which
-    then calls irq_radix_revmap() to insert a new node in the tree
-
-  - irq_radix_revmap() also does a spin_lock_irqsave() (in irq_radix_wrlock())
-    before the radix_tree_insert()
-
-  Also, if an IRQ gets registered before the tree is initialized (namely the
-IPI), it will be inserted into the tree in interrupt context once the tree
-have been initialized, hence the need for a spin_lock_irqsave() in the
-insertion path.
-
-  This serie is split into 2 patches:
-
-  - The first patch splits irq_radix_revmap() into its 2 components: one
-    for lookup and one for insertion into the radix tree and moves the
-    insertion of pre-existing irq into the tree at irq_late_init() time.
-
-  - The second patch makes the radix tree fully lockless on the 
-    lookup side.
-
-
-  Here is the diffstat for the whole patchset:
-
- arch/powerpc/include/asm/irq.h        |   19 ++++-
- arch/powerpc/kernel/irq.c             |  148 ++++++++++++++------------------
- arch/powerpc/platforms/pseries/xics.c |   11 +--
- 3 files changed, 85 insertions(+), 93 deletions(-)
-
-  Thanks,
-
-  Sebastien.
-
+diff --git a/arch/powerpc/include/asm/irq.h b/arch/powerpc/include/asm/irq.h
+index a372f76..0a51376 100644
+--- a/arch/powerpc/include/asm/irq.h
++++ b/arch/powerpc/include/asm/irq.h
+@@ -236,15 +236,27 @@ extern unsigned int irq_find_mapping(struct irq_host *host,
+ extern unsigned int irq_create_direct_mapping(struct irq_host *host);
+ 
+ /**
+- * irq_radix_revmap - Find a linux virq from a hw irq number.
++ * irq_radix_revmap_insert - Insert a hw irq to linux virq number mapping.
++ * @host: host owning this hardware interrupt
++ * @virq: linux irq number
++ * @hwirq: hardware irq number in that host space
++ *
++ * This is for use by irq controllers that use a radix tree reverse
++ * mapping for fast lookup.
++ */
++extern void irq_radix_revmap_insert(struct irq_host *host, unsigned int virq,
++				    irq_hw_number_t hwirq);
++
++/**
++ * irq_radix_revmap_lookup - Find a linux virq from a hw irq number.
+  * @host: host owning this hardware interrupt
+  * @hwirq: hardware irq number in that host space
+  *
+  * This is a fast path, for use by irq controller code that uses radix tree
+  * revmaps
+  */
+-extern unsigned int irq_radix_revmap(struct irq_host *host,
+-				     irq_hw_number_t hwirq);
++extern unsigned int irq_radix_revmap_lookup(struct irq_host *host,
++					    irq_hw_number_t hwirq);
+ 
+ /**
+  * irq_linear_revmap - Find a linux virq from a hw irq number.
+diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
+index d972dec..dc8663a 100644
+--- a/arch/powerpc/kernel/irq.c
++++ b/arch/powerpc/kernel/irq.c
+@@ -441,6 +441,7 @@ static LIST_HEAD(irq_hosts);
+ static DEFINE_SPINLOCK(irq_big_lock);
+ static DEFINE_PER_CPU(unsigned int, irq_radix_reader);
+ static unsigned int irq_radix_writer;
++static atomic_t revmap_trees_allocated = ATOMIC_INIT(0);
+ struct irq_map_entry irq_map[NR_IRQS];
+ static unsigned int irq_virq_count = NR_IRQS;
+ static struct irq_host *irq_default_host;
+@@ -822,7 +823,7 @@ void irq_dispose_mapping(unsigned int virq)
+ 		break;
+ 	case IRQ_HOST_MAP_TREE:
+ 		/* Check if radix tree allocated yet */
+-		if (host->revmap_data.tree.gfp_mask == 0)
++		if (atomic_read(&revmap_trees_allocated) == 0)
+ 			break;
+ 		irq_radix_wrlock(&flags);
+ 		radix_tree_delete(&host->revmap_data.tree, hwirq);
+@@ -875,43 +876,55 @@ unsigned int irq_find_mapping(struct irq_host *host,
+ EXPORT_SYMBOL_GPL(irq_find_mapping);
+ 
+ 
+-unsigned int irq_radix_revmap(struct irq_host *host,
+-			      irq_hw_number_t hwirq)
++unsigned int irq_radix_revmap_lookup(struct irq_host *host,
++				     irq_hw_number_t hwirq)
+ {
+-	struct radix_tree_root *tree;
+ 	struct irq_map_entry *ptr;
+-	unsigned int virq;
++	unsigned int virq = NO_IRQ;
+ 	unsigned long flags;
+ 
+ 	WARN_ON(host->revmap_type != IRQ_HOST_MAP_TREE);
+ 
+-	/* Check if the radix tree exist yet. We test the value of
+-	 * the gfp_mask for that. Sneaky but saves another int in the
+-	 * structure. If not, we fallback to slow mode
++	/*
++	 * Check if the radix tree exist yet.
++	 * If not, we fallback to slow mode
+ 	 */
+-	tree = &host->revmap_data.tree;
+-	if (tree->gfp_mask == 0)
++	if (atomic_read(&revmap_trees_allocated) == 0)
+ 		return irq_find_mapping(host, hwirq);
+ 
+ 	/* Now try to resolve */
+ 	irq_radix_rdlock(&flags);
+-	ptr = radix_tree_lookup(tree, hwirq);
++	ptr = radix_tree_lookup(&host->revmap_data.tree, hwirq);
+ 	irq_radix_rdunlock(flags);
+ 
+ 	/* Found it, return */
+-	if (ptr) {
++	if (ptr)
+ 		virq = ptr - irq_map;
+-		return virq;
+-	}
+ 
+-	/* If not there, try to insert it */
+-	virq = irq_find_mapping(host, hwirq);
++	return virq;
++}
++
++void irq_radix_revmap_insert(struct irq_host *host, unsigned int virq,
++			     irq_hw_number_t hwirq)
++{
++	unsigned long flags;
++
++	WARN_ON(host->revmap_type != IRQ_HOST_MAP_TREE);
++
++	/*
++	 * Check if the radix tree exist yet.
++	 * If not, then the irq will be inserted into the tree when it gets
++	 * initialized.
++	 */
++	if (atomic_read(&revmap_trees_allocated) == 0)
++		return;
++
+ 	if (virq != NO_IRQ) {
+ 		irq_radix_wrlock(&flags);
+-		radix_tree_insert(tree, hwirq, &irq_map[virq]);
++		radix_tree_insert(&host->revmap_data.tree, hwirq,
++				  &irq_map[virq]);
+ 		irq_radix_wrunlock(flags);
+ 	}
+-	return virq;
+ }
+ 
+ unsigned int irq_linear_revmap(struct irq_host *host,
+@@ -1020,14 +1033,35 @@ void irq_early_init(void)
+ static int irq_late_init(void)
+ {
+ 	struct irq_host *h;
+-	unsigned long flags;
++	unsigned int i;
+ 
+-	irq_radix_wrlock(&flags);
++	/*
++	 * No mutual exclusion with respect to accessors of the tree is needed
++	 * here as the synchronization is done via the atomic variable
++	 * revmap_trees_allocated.
++	 */
+ 	list_for_each_entry(h, &irq_hosts, link) {
+ 		if (h->revmap_type == IRQ_HOST_MAP_TREE)
+ 			INIT_RADIX_TREE(&h->revmap_data.tree, GFP_ATOMIC);
+ 	}
+-	irq_radix_wrunlock(flags);
++
++	/*
++	 * Insert the reverse mapping for those interrupts already present
++	 * in irq_map[].
++	 */
++	for (i = 0; i < irq_virq_count; i++) {
++		if (irq_map[i].host &&
++		    (irq_map[i].host->revmap_type == IRQ_HOST_MAP_TREE))
++			radix_tree_insert(&irq_map[i].host->revmap_data.tree,
++					  irq_map[i].hwirq, &irq_map[i]);
++	}
++
++	/*
++	 * Make sure the radix trees inits are visible before setting
++	 * the flag
++	 */
++	smp_mb();
++	atomic_set(&revmap_trees_allocated, 1);
+ 
+ 	return 0;
+ }
+diff --git a/arch/powerpc/platforms/pseries/xics.c b/arch/powerpc/platforms/pseries/xics.c
+index 0fc830f..6b1a005 100644
+--- a/arch/powerpc/platforms/pseries/xics.c
++++ b/arch/powerpc/platforms/pseries/xics.c
+@@ -310,12 +310,6 @@ static void xics_mask_irq(unsigned int virq)
+ 
+ static unsigned int xics_startup(unsigned int virq)
+ {
+-	unsigned int irq;
+-
+-	/* force a reverse mapping of the interrupt so it gets in the cache */
+-	irq = (unsigned int)irq_map[virq].hwirq;
+-	irq_radix_revmap(xics_host, irq);
+-
+ 	/* unmask it */
+ 	xics_unmask_irq(virq);
+ 	return 0;
+@@ -346,7 +340,7 @@ static inline unsigned int xics_remap_irq(unsigned int vec)
+ 
+ 	if (vec == XICS_IRQ_SPURIOUS)
+ 		return NO_IRQ;
+-	irq = irq_radix_revmap(xics_host, vec);
++	irq = irq_radix_revmap_lookup(xics_host, vec);
+ 	if (likely(irq != NO_IRQ))
+ 		return irq;
+ 
+@@ -530,6 +524,9 @@ static int xics_host_map(struct irq_host *h, unsigned int virq,
+ {
+ 	pr_debug("xics: map virq %d, hwirq 0x%lx\n", virq, hw);
+ 
++	/* Insert the interrupt mapping into the radix tree for fast lookup */
++	irq_radix_revmap_insert(xics_host, virq, hw);
++
+ 	get_irq_desc(virq)->status |= IRQ_LEVEL;
+ 	set_irq_chip_and_handler(virq, xics_irq_chip, handle_fasteoi_irq);
+ 	return 0;
+-- 
+1.5.5.1
 
