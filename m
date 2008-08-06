@@ -1,81 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759896AbYHFSu3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760193AbYHFSvK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759896AbYHFSu3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Aug 2008 14:50:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755708AbYHFSuO
+	id S1760193AbYHFSvK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Aug 2008 14:51:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755708AbYHFSuz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Aug 2008 14:50:14 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:39111 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756125AbYHFSuL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Aug 2008 14:50:11 -0400
-Subject: Re: [malware-list] [RFC 0/5] [TALPA] Intro to a linux interface
-	for on access scanning
-From: Eric Paris <eparis@redhat.com>
-To: Greg KH <greg@kroah.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, malware-list@lists.printk.net,
+	Wed, 6 Aug 2008 14:50:55 -0400
+Received: from an-out-0708.google.com ([209.85.132.249]:37324 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756065AbYHFSuy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Aug 2008 14:50:54 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=uksdHGtdLh6XcmocRkHgXuVH9HjrQxH4GfOebKJEonGa20y2d8jpmuf3IMVd4jb0GO
+         9KZC3td6ScB/gz08YxTKJuuWk8K8aFV+IEGWYKkB8Hk7LYfhW0epNnWB5TjKaVki3h5S
+         oRhbjeMM3bz/H+n3CcEe/c2AeNZODzd+yKT+o=
+Message-ID: <86802c440808061150h3ad31052j8aa5ccc4a54edb2d@mail.gmail.com>
+Date: Wed, 6 Aug 2008 11:50:53 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [PATCH 00/33] dyn_array and nr_irqs support v4
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       "Dhaval Giani" <dhaval@linux.vnet.ibm.com>,
+       "Mike Travis" <travis@sgi.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
        linux-kernel@vger.kernel.org
-In-Reply-To: <20080805203007.GB27489@kroah.com>
-References: <1217883616.27684.19.camel@localhost.localdomain>
-	 <20080804223249.GA10517@kroah.com>
-	 <1217896374.27684.53.camel@localhost.localdomain>
-	 <20080805005132.GA3661@kroah.com>
-	 <20080805122328.69a37c1d@lxorguk.ukuu.org.uk>
-	 <20080805170307.GB9639@kroah.com>
-	 <1217962602.27684.144.camel@localhost.localdomain>
-	 <20080805203007.GB27489@kroah.com>
-Content-Type: text/plain
-Date: Wed, 06 Aug 2008 14:49:57 -0400
-Message-Id: <1218048597.27684.276.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+In-Reply-To: <86802c440808061129l2bbe1658w453a11b4f16ffc83@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1218011937-10084-1-git-send-email-yhlu.kernel@gmail.com>
+	 <m1hc9yjb7x.fsf@frodo.ebiederm.org>
+	 <86802c440808061129l2bbe1658w453a11b4f16ffc83@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-08-05 at 13:30 -0700, Greg KH wrote:
-> On Tue, Aug 05, 2008 at 02:56:42PM -0400, Eric Paris wrote:
+>>
+>> - Introduce get_irq_desc and the functions or function modifications
+>>  that pass a struct irq_desc * into the genirq code.
+>>
+>>  Although I absolutely hate the name get_irq_desc as it implies we are
+>>  reference counting something and need a corresponding put_irq_desc.
+>>  Since the lifetime rules don't require that.  Please just call the
+>>  function irq_desc().
+>
+> will check that.
+>
+how about get_irq_desc_without_new()?
 
-> > So you are arguing against the defense in depth theory?  LSM should
-> > solve it all so why bother?
-> 
-> No, I am saying I have yet to see a real requirement to justify that
-> this code goes into the kernel.
+irq_desc_without_new()
 
-While I try to get someone to talk to me, lets consider even the most
-simplistic threat model.  I'm not stating that this is the only threat
-that vendors wish to protect against, but I think we can all agree it is
-a meaningful threat.  Trying to get the AV vendors to talk about their
-products actual uses is like pulling teeth.
-
-This simple thread shows what I believe to be clear and compelling
-evidence of the need for an in kernel solution.  Lets just consider that
-we are a high input, high output, NFS file server with other OS's
-mounting this NFS share RW.
-
-Our goal is to stop, or at least reduce the throughput (I clearly
-document and accept the open to read race, and until we get a working
-revoke I don't see that changing) of malware across the NFS server.
-This data will not be attacking the NFS server.  We wish to slow and
-hopefully halt the spread of this data with minimal impact to the NFS
-server.
-
-Since the NFS server interacts directly with the VFS no purely userspace
-solution is possible.  I certainly hope noone tells me we should hook
-directly into nfsd and do everything else in userspace   :)
-
-The purpose of this e-mail is not to ask others to find 'the perfect
-solution for this one example' but merely to holp move away from the
-ideas that this can be done in GLIBC or in LD_PRELOAD.
-
-Maybe my code is all crap, I'm more than willing to accept that, it
-wouldn't be the first time, but I do see the open on the NFS server and
-I could do "something" with that file on the server.  I can continue to
-define lots of other threats that my interface is useful for (even if
-Greg dismissed one of them out of hand) but right now I'm trying to get
-all of the AV vendors to define what it is they do (and I think we all
-know they will claim to do exactly this)
-
--Eric
-
+YH
