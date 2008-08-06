@@ -1,53 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753994AbYHFMuv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754548AbYHFMwV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753994AbYHFMuv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Aug 2008 08:50:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753051AbYHFMpx
+	id S1754548AbYHFMwV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Aug 2008 08:52:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752910AbYHFMun
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Aug 2008 08:45:53 -0400
-Received: from out2.smtp.messagingengine.com ([66.111.4.26]:42589 "EHLO
-	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752749AbYHFMps (ORCPT
+	Wed, 6 Aug 2008 08:50:43 -0400
+Received: from ug-out-1314.google.com ([66.249.92.169]:61029 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752811AbYHFMum (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Aug 2008 08:45:48 -0400
-X-Sasl-enc: XgwIfH1MXkV80O65ILmNEZUOnXg44hVIC3JOttJirr62 1218026745
-Date: Wed, 6 Aug 2008 09:45:42 -0300
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Philip Langdale <philipl@overt.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Matthew Garrett <mjg59@srcf.ucam.org>,
-       toshiba_acpi@memebeam.org, Ivo van Doorn <ivdoorn@gmail.com>,
-       linux-wireless@vger.kernel.org
-Subject: Re: [PATCH 1/1] toshiba_acpi: Add support for bluetooth toggling
-	through rfkill (v2)
-Message-ID: <20080806124542.GD12783@khazad-dum.debian.net>
-References: <4894B1B4.6050003@overt.org> <20080803042613.GC6053@khazad-dum.debian.net> <48965716.6020508@overt.org> <20080805212416.GB21738@khazad-dum.debian.net> <48991B83.5030607@overt.org> <20080806122642.GA12783@khazad-dum.debian.net>
+	Wed, 6 Aug 2008 08:50:42 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=hqWzZMDyrhtLdeID7AID5OtjtH9sVUsNxtAcsaV2544Etqz/RbEqXN7fvEbzHKsUKb
+         uCwm3VdSIs0HuCedcbsaEI7Zt4GzjTt4eKKyyNfuLpR4zpYmp67sVuzPP8l6ykZVMH7G
+         BZsJ0mFHrQAznJ7nkoiJB7ETp/Uu4IpqmEyW4=
+Message-ID: <b9df5fa10808060550y483d1c1dh99bac10c158510df@mail.gmail.com>
+Date: Wed, 6 Aug 2008 18:50:37 +0600
+From: "Rakib Mullick" <rakib.mullick@gmail.com>
+To: pj@sgi.com, menage@google.com
+Subject: [PATCH] cpuset.c : Removes extra variable
+Cc: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080806122642.GA12783@khazad-dum.debian.net>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
-	1CDB 0FE3
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 06 Aug 2008, Henrique de Moraes Holschuh wrote:
-> Some network drivers want to do it themselves, so now it will be the job of
-> every driver to know whether it should do something or not.
-> 
-> To test your platform to know if you will need to do something, just comment
-> the rfkill->toggle_radio in rfkill_suspend, and check if your radios are
-> still transmitting when you suspend.  I really doubt any laptop has that
-> problem, though.
+Hello everyone, the following patch removes the use of int
+cpus_nonempty variable from 'update_flag' function.
 
-Oh, and if you don't have a way to test, you can just call your own private
-switch_my_radios_off() function in your driver's suspend() handler.  You
-don't even have to turn them back on on resume(), as rfkill will always do
-that for you.
+Thanks.
 
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+Signed-off-by: Md.Rakib H. Mullick (rakib.mullick@gmail.com)
+
+--- linux-2.6.27-rc2.orig/kernel/cpuset.c	2008-08-06 16:23:26.000000000 +0600
++++ linux-2.6.27-rc2/kernel/cpuset.c	2008-08-06 18:03:50.000000000 +0600
+@@ -1110,7 +1110,7 @@ static int update_flag(cpuset_flagbits_t
+ {
+ 	struct cpuset trialcs;
+ 	int err;
+-	int cpus_nonempty, balance_flag_changed;
++	int balance_flag_changed;
+
+ 	trialcs = *cs;
+ 	if (turning_on)
+@@ -1122,7 +1122,6 @@ static int update_flag(cpuset_flagbits_t
+ 	if (err < 0)
+ 		return err;
+
+-	cpus_nonempty = !cpus_empty(trialcs.cpus_allowed);
+ 	balance_flag_changed = (is_sched_load_balance(cs) !=
+ 		 			is_sched_load_balance(&trialcs));
+
+@@ -1130,7 +1129,7 @@ static int update_flag(cpuset_flagbits_t
+ 	cs->flags = trialcs.flags;
+ 	mutex_unlock(&callback_mutex);
+
+-	if (cpus_nonempty && balance_flag_changed)
++	if (!cpus_empty(trialcs.cpus_allowed) && balance_flag_changed)
+ 		rebuild_sched_domains();
+
+ 	return 0;
