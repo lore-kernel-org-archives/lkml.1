@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761646AbYHFVMk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932188AbYHFVNG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761646AbYHFVMk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Aug 2008 17:12:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422774AbYHFVL4
+	id S932188AbYHFVNG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Aug 2008 17:13:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422824AbYHFVMA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Aug 2008 17:11:56 -0400
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:59594 "EHLO smtp4.pp.htv.fi"
+	Wed, 6 Aug 2008 17:12:00 -0400
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:47617 "EHLO smtp6.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756476AbYHFVLz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Aug 2008 17:11:55 -0400
-Date: Thu, 7 Aug 2008 00:10:26 +0300
+	id S1422776AbYHFVL5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Aug 2008 17:11:57 -0400
+Date: Thu, 7 Aug 2008 00:10:29 +0300
 From: Adrian Bunk <bunk@kernel.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: [2.6 patch] telephony: remove CVS keywords
-Message-ID: <20080806211026.GE1702@cs181140183.pp.htv.fi>
+To: reiserfs-devel@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: [2.6 patch] reiserfs/procfs.c: remove CVS keywords
+Message-ID: <20080806211029.GF1702@cs181140183.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -33,35 +33,28 @@ Signed-off-by: Adrian Bunk <bunk@kernel.org>
 This patch has been sent on:
 - 20 May 2008
 
- drivers/telephony/ixj.c   |    2 --
- include/linux/telephony.h |    4 ----
- 2 files changed, 6 deletions(-)
+ fs/reiserfs/procfs.c |    3 ---
+ 1 file changed, 3 deletions(-)
 
-413f5fb4ebba4bbc4a2a0061ba475c897842e334 diff --git a/drivers/telephony/ixj.c b/drivers/telephony/ixj.c
-index 49cd979..127f761 100644
---- a/drivers/telephony/ixj.c
-+++ b/drivers/telephony/ixj.c
-@@ -42,8 +42,6 @@
-  ***************************************************************************/
+a41d213debad92b6672c39b577baf58641b5c54c diff --git a/fs/reiserfs/procfs.c b/fs/reiserfs/procfs.c
+index b9dbeec..37173fa 100644
+--- a/fs/reiserfs/procfs.c
++++ b/fs/reiserfs/procfs.c
+@@ -8,8 +8,6 @@
+ 
+ /* proc info support a la one created by Sizif@Botik.RU for PGC */
+ 
+-/* $Id: procfs.c,v 1.1.8.2 2001/07/15 17:08:42 god Exp $ */
+-
+ #include <linux/module.h>
+ #include <linux/time.h>
+ #include <linux/seq_file.h>
+@@ -621,7 +619,6 @@ int reiserfs_global_version_in_proc(char *buffer, char **start,
+ #endif
  
  /*
-- * $Log: ixj.c,v $
-- *
-  * Revision 4.8  2003/07/09 19:39:00  Daniele Bellucci
-  * Audit some copy_*_user and minor cleanup.
-  *
-diff --git a/include/linux/telephony.h b/include/linux/telephony.h
-index 0d0cf2a..5b2b626 100644
---- a/include/linux/telephony.h
-+++ b/include/linux/telephony.h
-@@ -28,10 +28,6 @@
-  * ON AN "AS IS" BASIS, AND QUICKNET TECHNOLOGIES, INC. HAS NO OBLIGATION
-  * TO PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
-  *
-- * Version:       $Revision: 4.2 $
-- *
-- * $Id: telephony.h,v 4.2 2001/08/06 07:09:43 craigs Exp $
-- *
-  *****************************************************************************/
- 
- #ifndef TELEPHONY_H
+- * $Log: procfs.c,v $
+  * Revision 1.1.8.2  2001/07/15 17:08:42  god
+  *  . use get_super() in procfs.c
+  *  . remove remove_save_link() from reiserfs_do_truncate()
+
