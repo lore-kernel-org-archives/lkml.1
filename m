@@ -1,131 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765048AbYHFJmm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764853AbYHFJnx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765048AbYHFJmm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Aug 2008 05:42:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758805AbYHFJma
+	id S1764853AbYHFJnx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Aug 2008 05:43:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757284AbYHFJnm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Aug 2008 05:42:30 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:37710 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759211AbYHFJm2 (ORCPT
+	Wed, 6 Aug 2008 05:43:42 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:53723
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752455AbYHFJnl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Aug 2008 05:42:28 -0400
-Date: Wed, 6 Aug 2008 11:42:26 +0200
-From: Pavel Machek <pavel@suse.cz>
-To: Austin Zhang <austin_zhang@linux.intel.com>
-Cc: herbert@gondor.apana.org.au, bunk@kernel.org, dwmw2@infradead.org,
-       davem@davemloft.net, randy.dunlap@oracle.com,
-       linux-kernel@vger.kernel.org, linux-crypto@vger.kernel.org
-Subject: Re: [PATCH] Using Intel CRC32 instruction to accelerate CRC32c algorithm by new crypto API -V3.
-Message-ID: <20080806094226.GA23685@atrey.karlin.mff.cuni.cz>
-References: <1218000211.4231.23.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1218000211.4231.23.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Wed, 6 Aug 2008 05:43:41 -0400
+Date: Wed, 06 Aug 2008 02:43:41 -0700 (PDT)
+Message-Id: <20080806.024341.188166414.davem@davemloft.net>
+To: a.beregalov@gmail.com
+Cc: sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] sparc: serio/i8042-sparcio.h: fix warning
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20080805211837.GE17320@orion>
+References: <20080805211837.GE17320@orion>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+From: Alexander Beregalov <a.beregalov@gmail.com>
+Date: Wed, 6 Aug 2008 01:18:37 +0400
 
-> ??????Revised by comments:
-> Add 'static' for limitation namespace;
-> Resend for fixing lines-folded by adjusting evolution config;
-> (The patch was created against 2.6.27-rc1)
+> sparc: i8042-sparcio.h: fix warning
 > 
-> >From NHM processor onward, Intel processors can support hardware accelerated
-> CRC32c algorithm with the new CRC32 instruction in SSE 4.2 instruction set.
-> The patch detects the availability of the feature, and chooses the most proper
-> way to calculate CRC32c checksum.
-> Byte code instructions are used for compiler compatibility.
-> No MMX / XMM registers is involved in the implementation.
+> drivers/input/serio/i8042-sparcio.h:95: warning: 'sparc_i8042_driver'
+> defined but not used
 > 
-> Signed-off-by: Austin Zhang <austin.zhang@intel.com>
-> Signed-off-by: Kent Liu <kent.liu@intel.com>
-> ---
->  arch/x86/crypto/Makefile       |    2
->  arch/x86/crypto/crc32c-intel.c |  190 +++++++++++++++++++++++++++++++++++++++++
->  crypto/Kconfig                 |   12 ++
->  include/asm-x86/cpufeature.h   |    2
->  4 files changed, 206 insertions(+)
-> 
-> diff -Naurp linux-2.6/arch/x86/crypto/crc32c-intel.c linux-2.6-patch/arch/x86/crypto/crc32c-intel.c
-> --- linux-2.6/arch/x86/crypto/crc32c-intel.c	1969-12-31 19:00:00.000000000 -0500
-> +++ linux-2.6-patch/arch/x86/crypto/crc32c-intel.c	2008-08-05 21:57:37.000000000 -0400
-> @@ -0,0 +1,190 @@
-> +/*
-> + * Using hardware provided CRC32 instruction to accelerate the CRC32 disposal.
-> + * CRC32C polynomial:0x1EDC6F41(BE)/0x82F63B78(LE)
-> + * CRC32 is a new instruction in Intel SSE4.2, the reference can be found at:
-> + * http://www.intel.com/products/processor/manuals/
-> + * Intel(R) 64 and IA-32 Architectures Software Developer's Manual
-> + * Volume 2A: Instruction Set Reference, A-M
+> Signed-off-by: Alexander Beregalov <a.beregalov@gmail.com>
 
-Copyright / GPL?
-
-> +#ifdef CONFIG_X86_64
-> +#define REX_PRE "0x48, "
-> +#define SCALE_F 8
-> +#else
-> +#define REX_PRE
-> +#define SCALE_F 4
-> +#endif
-
-Ouch...
-
-> +static u32 crc32c_intel_le_hw_byte(u32 crc, unsigned char const *data, size_t length)
-> +{
-> +	while (length--) {
-> +		__asm__ __volatile__(
-
-Are all the underscores neccessary?
-
-> +			".byte 0xf2, 0xf, 0x38, 0xf0, 0xf1"
-
-Ouch...
-
-
-> +static int crc32c_intel_final(struct ahash_request *req)
-> +{
-> +	u32 *crcp = ahash_request_ctx(req);
-> +
-> +	*(__le32 *)req->result = ~cpu_to_le32p(crcp);
-> +	return 0;
-
-This is not user visible, so le32 should be enough.
-
-> +static int __init crc32c_intel_mod_init(void)
-> +{
-> +	if (cpu_has_xmm4_2)
-> +		return crypto_register_alg(&alg);
-> +	else {
-> +		printk(KERN_ERR"No support in current hardware.\n");
-
-Missing space.
-
-> +		return -1;
-
-That's supposed to be errno, right?
-
-> +config CRYPTO_CRC32C_INTEL
-> +        tristate "CRC32c INTEL hardware acceleration"
-> +	depends on X86
-> +        select CRYPTO_ALGAPI
-> +        help
-> +          In Intel processor with SSE4.2 supported, the processor will
-> +          support CRC32C implementation using hardware accelerated CRC32
-> +          instruction. This option will create 'crc32c-intel' module,
-
-In Intel processor with SSE4.2, we can use hardware CRC32 acceleration.
-
-> +          which will enable any routine to use the CRC32 instruction to
-> +          gain performance compared with software implementation.
-> +          Module will be crc32c-intel.
-
-crc32c-intel.ko?
-
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Applied, thanks Alexander.
