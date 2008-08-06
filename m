@@ -1,113 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932123AbYHFU3U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030419AbYHFU3g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932123AbYHFU3U (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Aug 2008 16:29:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757719AbYHFU25
+	id S1030419AbYHFU3g (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Aug 2008 16:29:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422800AbYHFU3O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Aug 2008 16:28:57 -0400
-Received: from mail.atheros.com ([12.36.123.2]:31919 "EHLO mail.atheros.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756512AbYHFU2z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Aug 2008 16:28:55 -0400
-Date: Wed, 6 Aug 2008 13:28:54 -0700
-From: "Luis R. Rodriguez" <lrodriguez@atheros.com>
-To: Luis Rodriguez <Luis.Rodriguez@atheros.com>
-CC: Randy Dunlap <randy.dunlap@oracle.com>,
-       Jochen =?iso-8859-1?B?Vm/f?= <jochen.voss@googlemail.com>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
-       "ath9k-devel@venema.h4ckr.net" <ath9k-devel@venema.h4ckr.net>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linville@tuxdriver.com" <linville@tuxdriver.com>,
-       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [PATCH 2/4] list.h: add list_cut_position()
-Message-ID: <20080806202854.GP5605@tesla>
-References: <1217890089-12100-1-git-send-email-lrodriguez@atheros.com> <20080804160011.ec964f1f.randy.dunlap@oracle.com> <20080804231320.GG6447@tesla> <ef1cd66f0808050152g1dd8b96cl2df820607d480f0f@mail.gmail.com> <20080806182724.GI5605@tesla> <23052053.1218047754579.JavaMail.oracle@acsmt304.oracle.com> <20080806184520.GK5605@tesla>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-In-Reply-To: <20080806184520.GK5605@tesla>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 6 Aug 2008 16:29:14 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:37028 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1030266AbYHFU3M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Aug 2008 16:29:12 -0400
+Date: Wed, 6 Aug 2008 15:29:10 -0500
+From: Paul Jackson <pj@sgi.com>
+To: Max Krasnyansky <maxk@qualcomm.com>
+Cc: mingo@elte.hu, linux-kernel@vger.kernel.org, menage@google.com,
+       a.p.zijlstra@chello.nl, vegard.nossum@gmail.com, lizf@cn.fujitsu.com
+Subject: Re: [PATCH] cpuset: Rework sched domains and CPU hotplug handling
+ (2.6.27-rc1)
+Message-Id: <20080806152910.9e4f76a2.pj@sgi.com>
+In-Reply-To: <489A079E.5040903@qualcomm.com>
+References: <1217631552-22129-1-git-send-email-maxk@qualcomm.com>
+	<20080802063900.6615e5ca.pj@sgi.com>
+	<48948C3A.6050805@qualcomm.com>
+	<20080802225127.2b0d138b.pj@sgi.com>
+	<4895F3ED.4020805@qualcomm.com>
+	<20080804010033.0d1b0549.pj@sgi.com>
+	<48977E81.4040207@qualcomm.com>
+	<20080804225636.541527e8.pj@sgi.com>
+	<4898B873.6000308@qualcomm.com>
+	<20080805180521.be7010e1.pj@sgi.com>
+	<48991973.90109@qualcomm.com>
+	<20080805222927.6dd95f5f.pj@sgi.com>
+	<4899202B.6030303@qualcomm.com>
+	<20080805232856.78dd50f7.pj@sgi.com>
+	<489930B5.9030906@qualcomm.com>
+	<20080806004629.d321f3b0.pj@sgi.com>
+	<489A079E.5040903@qualcomm.com>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 06, 2008 at 11:45:20AM -0700, Luis Rodriguez wrote:
-> 
-> OK here's the new one.
-> --
-> 
-> This adds list_cut_position() which lets you cut a list into
-> two lists given a pivot in the list.
-> 
-> Signed-off-by: Luis R. Rodriguez <lrodriguez@atheros.com>
+Max K wrote:
+> Sure. That looks fine. Although inline_ will probably be a bit confusing 
+> since one may think that it has something to do with the C 'inline'.
+> I'd suggest either sync_rebuild_sched_domains() or simply 
+> rebuild_sched_domains().
 
-Here it is again but this time one which applies cleanly ontop of the
-list_cut_tail() patch I just reposted.
+Good point about "inline" confusions.
 
---
-list.h: add list_cut_position()
+I am willing to agree to "sync_rebuild_sched_domains()".
 
-This adds list_cut_position() which lets you cut a list into
-two lists given a pivot in the list.
-
-Signed-off-by: Luis R. Rodriguez <lrodriguez@atheros.com>
----
- include/linux/list.h |   40 ++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 40 insertions(+), 0 deletions(-)
-
-diff --git a/include/linux/list.h b/include/linux/list.h
-index 61034a6..78e5f1c 100644
---- a/include/linux/list.h
-+++ b/include/linux/list.h
-@@ -214,6 +214,46 @@ static inline int list_is_singular(const struct list_head *head)
- 	return !list_empty(head) && (head->next == head->prev);
- }
- 
-+static inline void __list_cut_position(struct list_head *list,
-+		struct list_head *head, struct list_head *entry)
-+{
-+	struct list_head *new_first = entry->next;
-+	list->next = head->next;
-+	list->next->prev = list;
-+	list->prev = entry;
-+	entry->next = list;
-+	head->next = new_first;
-+	new_first->prev = head;
-+}
-+
-+/**
-+ * list_cut_position - cut a list into two
-+ * @list: a new list to add all removed entries
-+ * @head: a list with entries
-+ * @entry: an entry within head, could be the head itself
-+ *	and if so we won't cut the list
-+ *
-+ * This helper moves the initial part of @head, up to and
-+ * including @entry, from @head to @list. You should
-+ * pass on @entry an element you know is on @head. @list
-+ * should be an empty list or a list you do not care about
-+ * losing its data.
-+ *
-+ */
-+static inline void list_cut_position(struct list_head *list,
-+		struct list_head *head, struct list_head *entry)
-+{
-+	if (list_empty(head))
-+		return;
-+	if (list_is_singular(head) &&
-+		(head->next != entry && head != entry))
-+		return;
-+	if (entry == head)
-+		INIT_LIST_HEAD(list);
-+	else
-+		__list_cut_position(list, head, entry);
-+}
-+
- static inline void __list_splice(const struct list_head *list,
- 				 struct list_head *prev,
- 				 struct list_head *next)
 -- 
-1.5.6.rc2.15.g457bb.dirty
-
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.940.382.4214
