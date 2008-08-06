@@ -1,50 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764207AbYHFP52@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760196AbYHFQC4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764207AbYHFP52 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Aug 2008 11:57:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030642AbYHFP5H
+	id S1760196AbYHFQC4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Aug 2008 12:02:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754832AbYHFQCr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Aug 2008 11:57:07 -0400
-Received: from smtp-vbr11.xs4all.nl ([194.109.24.31]:1205 "EHLO
-	smtp-vbr11.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030635AbYHFP5E (ORCPT
+	Wed, 6 Aug 2008 12:02:47 -0400
+Received: from sender-01.it.helsinki.fi ([128.214.205.139]:34097 "EHLO
+	sender-01.it.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756758AbYHFQCq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Aug 2008 11:57:04 -0400
-Message-ID: <4899C9C9.7000107@xs4all.nl>
-Date: Wed, 06 Aug 2008 17:56:57 +0200
-From: Udo van den Heuvel <udovdh@xs4all.nl>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: cf-gps op H2200 ipaq...
-X-Enigmail-Version: 0.95.2
-OpenPGP: id=8300CC02
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Wed, 6 Aug 2008 12:02:46 -0400
+X-Greylist: delayed 928 seconds by postgrey-1.27 at vger.kernel.org; Wed, 06 Aug 2008 12:02:46 EDT
+Message-Id: <200808061546.m76Fkwq1005199@ruuvi.it.helsinki.fi>
+From: Vesa-Matti Kari <vmkari@cc.helsinki.fi>
+To: sds@tycho.nsa.gov, jmorris@namei.org, eparis@parisplace.org
+Cc: linux-kernel@vger.kernel.org, selinux@tycho.nsa.gov
+Date: Wed, 6 Aug 2008 18:24:51 +0300
+Subject: [PATCH] selinux: conditional expression type validation was off-by-one
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Beste mensne,
+expr_isvalid() in conditional.c was off-by-one and allowed
+invalid expression type COND_LAST. However, it is this header file
+that needs to be fixed. That way the if-statement's disjunction's
+second component reads more naturally, "if expr type is greater than
+the last allowed value" ( rather than using ">=" in conditional.c):
 
-Is hier iemand die me verder kan helpen?
-Ik probeer een cf gps werkend te krijgen op mijn HP H2210 ipaq.
+  if (expr->expr_type <= 0 || expr->expr_type > COND_LAST)
 
-Als de kaart wordt geplaatst zie ik in dmesg:
-<5>[2334577.760000] pccard: PCMCIA card inserted into slot 0
-<5>[2334577.760000] pcmcia: registering new device pcmcia0.0
+Signed-off-by: Vesa-Matti Kari <vmkari@cc.helsinki.fi>
+---
+ security/selinux/ss/conditional.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-en er onstaan files onder /sys/devices/platform/pxa2xx-pcmcia.0.
-Ook gaat de rode led aan de zijkant van de globalsat bc337 branden
+diff --git a/security/selinux/ss/conditional.h b/security/selinux/ss/conditional.h
+index 65b9f83..53ddb01 100644
+--- a/security/selinux/ss/conditional.h
++++ b/security/selinux/ss/conditional.h
+@@ -28,7 +28,7 @@ struct cond_expr {
+ #define COND_XOR	5 /* bool ^ bool */
+ #define COND_EQ		6 /* bool == bool */
+ #define COND_NEQ	7 /* bool != bool */
+-#define COND_LAST	8
++#define COND_LAST	COND_NEQ
+ 	__u32 expr_type;
+ 	__u32 bool;
+ 	struct cond_expr *next;
+-- 
+1.5.4.1
 
-Wat moet er verder nog gebeuren om de gps te kunnen gebruiken?
-udev zou b.v. met pcmcia kernel modules gaan goochelen maar die lijken
-ingebakken in de 2.6.21 kernel op deze Ansgtrom 2007.12 distro.
-
-Ik zie geen devices verschijnen of andere meldingen.
-Hoe gaat het verder?
-
-Bij voorbaat dank voor bruikbare tips!
-
-Groeten,
-Udo
