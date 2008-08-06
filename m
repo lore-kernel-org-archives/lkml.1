@@ -1,67 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754699AbYHFGSx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758250AbYHFGa6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754699AbYHFGSx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Aug 2008 02:18:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757995AbYHFGSi
+	id S1758250AbYHFGa6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Aug 2008 02:30:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753627AbYHFGat
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Aug 2008 02:18:38 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:57757 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757795AbYHFGSh (ORCPT
+	Wed, 6 Aug 2008 02:30:49 -0400
+Received: from ozlabs.org ([203.10.76.45]:45819 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751042AbYHFGas convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Aug 2008 02:18:37 -0400
-Date: Tue, 5 Aug 2008 23:18:00 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Marcel Holtmann <marcel@holtmann.org>
-cc: David Miller <davem@davemloft.net>,
-       Andrew Morton <akpm@linux-foundation.org>, netdev@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ivo van Doorn <IvDoorn@gmail.com>
-Subject: Re: [GIT]: Networking
-In-Reply-To: <A0AAD67C-1F54-4D85-A413-91BBBE044452@holtmann.org>
-Message-ID: <alpine.LFD.1.10.0808052308080.15995@nehalem.linux-foundation.org>
-References: <20080805.190020.244441681.davem@davemloft.net> <alpine.LFD.1.10.0808051937410.15995@nehalem.linux-foundation.org> <A0AAD67C-1F54-4D85-A413-91BBBE044452@holtmann.org>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Wed, 6 Aug 2008 02:30:48 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Matthew Wilcox <matthew@wil.cx>
+Subject: Re: [PATCH] Make kthread_stop() not oops when passed a bad pointer
+Date: Wed, 6 Aug 2008 11:22:58 +1000
+User-Agent: KMail/1.9.9
+Cc: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>,
+       linux-kernel@vger.kernel.org
+References: <20080805135559.GQ26461@parisc-linux.org>
+In-Reply-To: <20080805135559.GQ26461@parisc-linux.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200808061122.59584.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tuesday 05 August 2008 23:55:59 Matthew Wilcox wrote:
+> Make kthread_stop a little more robust against numbskulls
+> like me.
+>
+> Signed-off-by: Matthew Wilcox <willy@linux.intel.com>
 
+Hi Willy,
 
-On Wed, 6 Aug 2008, Marcel Holtmann wrote:
-> 
-> I looked at the driver and got it working. However my 901 seems to have an
-> issue with the antennas. I can do scans, but associating with an access point
-> or even thinking about transmit keeps failing. Even with external antennas
-> this still doesn't work. So either my EeePC is broken or it needs some ACPI
-> magic to enable it. Personally I think mine is broken since the PCIe hotplug
-> stuff works for the wireless card and that seems to be their way of doing the
-> rfkill.
+I really do sympathize with your problem; but the quest is to figure out how 
+to identify it before the code is run, not to put a non-orthogonal bandaid 
+here which can hurt other cases.
 
-Yeah, the rfkill literally makes the chip go away from the PCI lists, it 
-seems. But your problems can certainly be somehow driver-related, I 
-haven't actually _tested_ that thing at all, I got the machine just as the 
-merge window started, so I've had no time to even play with it.
+How about a more ambitious "we've oopsed so break a mutex every 30 seconds of 
+waiting" patch?
 
-> The driver itself is painful. It is full of ifdefs and some crazy build magic.
-> The integrated (to some degree optional) WPA code is pretty ugly. It has also
-> a full set of iwpriv commands to do all the settings etc. :(
+> +     if (!k || IS_ERR(k))
+> +             return -EINVAL;
 
-Well, it's also trying to support both 2.4.x and 2.6 etc. Yeah, that is 
-horrid. At the same time, I can't say that the "rewrite it entirely" 
-approach of the previous-gen cards has worked very well either, since that 
-seems to have just perpetuated the problems. It would be great to try to 
-educate them, but I'm not finding even an email address in the sources.
+1) There's no reason that kthread_stop is uniquely difficult to use.  Why pick 
+on that one?
 
-Oh well. I can't really complain, since just the fact that they bothered 
-to even make sources available still makes them pretty responsible people, 
-even if the sources are pretty dang ugly.
+2) I know that kfree() handles NULL, but kthread_create/kthread_run never 
+return NULL, unlike kmalloc().
 
-All the capitalization etc makes me think they are all old DOS and Windows 
-programmers. UCHAR and USHORT indeed, along with CamelCase functions. 
+3) If we really want to pass a failed kthread_create() through kthread_stop(), 
+we should return PTR_ERR(k) here.  But that should only be done if it made it 
+harder for the callers to screw up, which I don't think it does.
 
-I dunno. 
+4) After a successful kthread_run(), kthread_stop() will always return the 
+value from the threadfn callback.  ie. kthread_stop() doesn't ever fail.  A 
+simple semantic, which this patch breaks.
 
-			Linus
+5) Covering up programmer errors is not good policy.  I dislike WARN_ON() 
+because an oops is much harder to miss.  Painful for you, but The System 
+Works.
+
+Sorry,
+Rusty.
