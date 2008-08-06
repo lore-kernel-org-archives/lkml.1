@@ -1,60 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759506AbYHFCV1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762273AbYHFCVs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759506AbYHFCV1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 22:21:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753931AbYHFCGr
+	id S1762273AbYHFCVs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 22:21:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750809AbYHFCQ4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 22:06:47 -0400
-Received: from 166-70-238-42.ip.xmission.com ([166.70.238.42]:58073 "EHLO
-	ns1.wolfmountaingroup.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757208AbYHFCGn (ORCPT
+	Tue, 5 Aug 2008 22:16:56 -0400
+Received: from kirsty.vergenet.net ([202.4.237.240]:33510 "EHLO
+	kirsty.vergenet.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751147AbYHFCQz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 22:06:43 -0400
-Message-ID: <45269.166.70.238.45.1217987147.squirrel@webmail.wolfmountaingroup.com>
-In-Reply-To: <20080806020152.GA24801@one.firstfloor.org>
-References: <51549.166.70.238.45.1217815820.squirrel@webmail.wolfmountaingroup.com>
-    <878wvb6i2o.fsf@basil.nowhere.org>
-    <44644.166.70.238.45.1217985860.squirrel@webmail.wolfmountaingroup.com>
-    <20080806020152.GA24801@one.firstfloor.org>
-Date: Tue, 5 Aug 2008 19:45:47 -0600 (MDT)
-Subject: Re: [PATCH 2.6.26 2/25] mdb: Merkey's Kernel Debugger
-From: jmerkey@wolfmountaingroup.com
-To: "Andi Kleen" <andi@firstfloor.org>
-Cc: jmerkey@wolfmountaingroup.com, "Andi Kleen" <andi@firstfloor.org>,
-       linux-kernel@vger.kernel.org
-User-Agent: SquirrelMail/1.4.6
+	Tue, 5 Aug 2008 22:16:55 -0400
+Date: Wed, 6 Aug 2008 12:16:53 +1000
+From: Simon Horman <horms@verge.net.au>
+To: Alexander Beregalov <a.beregalov@gmail.com>
+Cc: dhananjay@netxen.com, netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] netxen_nic_hw.c: fix warnings
+Message-ID: <20080806021653.GA19137@verge.net.au>
+References: <20080805200516.GB17320@orion>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080805200516.GB17320@orion>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Tue, Aug 05, 2008 at 07:24:20PM -0600, jmerkey@wolfmountaingroup.com
-> wrote:
->>
->> I'll post some patches with these changes and submit it as a module.  I
->> will of course need to patch the kernel to introduce the die notifiers
->> where
->> they are not and there's the issue of cross call NMI to stop other
->> processors on SMP.
->>
->> That's the real issues, Andi, is the xcall stuff for IPC to control all
->> the processors.
->
-> NMIs have die notifiers too. That said a cleaner way would be to
-> generalize
-> the synchronization code already in kdump and reuse that.
->
-> -Andi
->
+On Wed, Aug 06, 2008 at 12:05:16AM +0400, Alexander Beregalov wrote:
+> From: Alexander Beregalov <a.beregalov@gmail.com>
+> 
+> netxen_nic_hw.c: fix warnings
+> 
+> drivers/net/netxen/netxen_nic_hw.c:1414: warning: format '%llx' expects	type 'long long unsigned int', but argument 3 has type 'u64'
+> drivers/net/netxen/netxen_nic_hw.c:1487: warning: format '%llx' expects type 'long long unsigned int', but argument 3 has type 'u64'
 
-I can get that done.  debuggers as modules makes more sense anyway.
+This seems to be the agreed work-around for this.
 
-Jeff
+Acked-by: Simon Horman <horms@verge.net.au>
 
-
-
-
+> Signed-off-by: Alexander Beregalov <a.beregalov@gmail.com>
+> ---
+> 
+>  drivers/net/netxen/netxen_nic_hw.c |    6 ++++--
+>  1 files changed, 4 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/net/netxen/netxen_nic_hw.c b/drivers/net/netxen/netxen_nic_hw.c
+> index 96a3bc6..06a517b 100644
+> --- a/drivers/net/netxen/netxen_nic_hw.c
+> +++ b/drivers/net/netxen/netxen_nic_hw.c
+> @@ -1411,7 +1411,8 @@ static int netxen_nic_pci_mem_read_direct(struct netxen_adapter *adapter,
+>  		(netxen_nic_pci_is_same_window(adapter, off+size-1) == 0)) {
+>  		write_unlock_irqrestore(&adapter->adapter_lock, flags);
+>  		printk(KERN_ERR "%s out of bound pci memory access. "
+> -			"offset is 0x%llx\n", netxen_nic_driver_name, off);
+> +			"offset is 0x%llx\n", netxen_nic_driver_name,
+> +			(unsigned long long)off);
+>  		return -1;
+>  	}
+>  
+> @@ -1484,7 +1485,8 @@ netxen_nic_pci_mem_write_direct(struct netxen_adapter *adapter, u64 off,
+>  		(netxen_nic_pci_is_same_window(adapter, off+size-1) == 0)) {
+>  		write_unlock_irqrestore(&adapter->adapter_lock, flags);
+>  		printk(KERN_ERR "%s out of bound pci memory access. "
+> -			"offset is 0x%llx\n", netxen_nic_driver_name, off);
+> +			"offset is 0x%llx\n", netxen_nic_driver_name,
+> +			(unsigned long long)off);
+>  		return -1;
+>  	}
+>  
+> --
+> To unsubscribe from this list: send the line "unsubscribe netdev" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
