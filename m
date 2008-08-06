@@ -1,85 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763613AbYHFJJl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765058AbYHFJJ4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763613AbYHFJJl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Aug 2008 05:09:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756319AbYHFJC1
+	id S1765058AbYHFJJ4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Aug 2008 05:09:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756404AbYHFJJa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Aug 2008 05:02:27 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:38099 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756707AbYHFJC0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Aug 2008 05:02:26 -0400
-Date: Wed, 6 Aug 2008 10:02:22 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, ebmunson@us.ibm.com,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, libhugetlbfs-devel@lists.sourceforge.net,
-       abh@cray.com
-Subject: Re: [RFC] [PATCH 0/5 V2] Huge page backed user-space stacks
-Message-ID: <20080806090222.GD21190@csn.ul.ie>
-References: <20080730172317.GA14138@csn.ul.ie> <20080730103407.b110afc2.akpm@linux-foundation.org> <20080730193010.GB14138@csn.ul.ie> <20080730130709.eb541475.akpm@linux-foundation.org> <20080731103137.GD1704@csn.ul.ie> <1217884211.20260.144.camel@nimitz> <20080805111147.GD20243@csn.ul.ie> <1217952748.10907.18.camel@nimitz> <20080805162800.GJ20243@csn.ul.ie> <1217958805.10907.45.camel@nimitz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <1217958805.10907.45.camel@nimitz>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Wed, 6 Aug 2008 05:09:30 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:51005 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754519AbYHFJJ3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Aug 2008 05:09:29 -0400
+Date: Wed, 6 Aug 2008 09:51:18 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Robert Hancock <hancockr@shaw.ca>
+Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       James Bottomley <James.Bottomley@hansenpartnership.com>,
+       ksummit-2008-discuss@lists.linux-foundation.org,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-ide <linux-ide@vger.kernel.org>, Jeff Garzik <jeff@garzik.org>
+Subject: Re: Kernel Summit request for Discussion of future of ATA (libata)
+ and IDE
+Message-ID: <20080806095118.39035512@lxorguk.ukuu.org.uk>
+In-Reply-To: <4898EE70.1030604@shaw.ca>
+References: <fa.OGeO7gZvBG4obEzRbVltjSebgTQ@ifi.uio.no>
+	<fa.KtvYE2B2yrJqUleolhtMPN9ljAQ@ifi.uio.no>
+	<fa.AqEKTvguYFAzDFHy/We/8MpOqmo@ifi.uio.no>
+	<48976168.3020804@shaw.ca>
+	<20080804205508.20a3f917@lxorguk.ukuu.org.uk>
+	<48977200.3050307@shaw.ca>
+	<20080804220619.76b94ceb@lxorguk.ukuu.org.uk>
+	<4898EE70.1030604@shaw.ca>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (05/08/08 10:53), Dave Hansen didst pronounce:
-> On Tue, 2008-08-05 at 17:28 +0100, Mel Gorman wrote:
-> > Ok sure, you could do direct inserts for MAP_PRIVATE as conceptually it
-> > suits this patch.  However, I don't see what you gain. By reusing hugetlbfs,
-> > we get things like proper reservations which we can do for MAP_PRIVATE these
-> > days. Again, we could call that sort of thing directly if the reservation
-> > layer was split out separate from hugetlbfs but I still don't see the gain
-> > for all that churn.
-> > 
-> > What am I missing?
-> 
-> This is good for getting us incremental functionality.  It is probably
-> the smallest amount of code to get it functional.
-> 
+> Here's my first cut at it. Compile tested only. This sets most controllers
+> to use 32-bit PIO except for those which could potentially be on a real ISA
+> or other 16-bit bus. It's a bit non-obvious what to do with some of the
+> drivers, so input is welcome.
 
-I'm not keen on the idea of introducing another specialised path just for
-stacks. Testing coverage is tricky enough as it is and problems still slip
-through occasionally. Maybe going through hugetlbfs is less than ideal,
-but at least it is a shared path.
+Only thing I would do differently and definitely want to do differently
+is the assumption that we just turn on 32bit and see what occurs. We need
+to read/test/change controller by controller over to 32bit not just hope.
 
-> My concern is that we're going down a path that all large page usage
-> should be through the one and only filesystem.  Once we establish that
-> dependency, it is going to be awfully hard to undo it;
-
-Not much harder than it is to write any alternative in the first place
-:/
-
-> just think of all
-> of the inherent behavior in hugetlbfs.  So, we better be sure that the
-> filesystem really is the way to go, especially if we're going to start
-> having other areas of the kernel depend on it internally.
-> 
-
-So far, it is working out as a decent model. It is able to track reservations
-and deal with the differences between SHARED and PRIVATE without massive
-difficulties. While we could add another specialised path to directly insert
-the pages into pagetables for private mappings, I find it hard to justify
-adding more test coverage problems. There might be minimal gains to be had
-in lock granularity but that's about it.
-
-> That said, this particular patch doesn't appear *too* bound to hugetlb
-> itself.  But, some of its limitations *do* come from the filesystem,
-> like its inability to handle VM_GROWS...  
-> 
-
-The lack of VM_GROWSX is an issue, but on its own it does not justify
-the amount of churn necessary to support direct pagetable insertions for
-MAP_ANONYMOUS|MAP_PRIVATE. I think we'd need another case or two that would
-really benefit from direct insertions to pagetables instead of hugetlbfs so
-that the path would get adequately tested.
-
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+Alan
