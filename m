@@ -1,92 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758172AbYHFKaK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760883AbYHFKcv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758172AbYHFKaK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Aug 2008 06:30:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752217AbYHFK34
+	id S1760883AbYHFKcv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Aug 2008 06:32:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753438AbYHFKcl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Aug 2008 06:29:56 -0400
-Received: from yw-out-2324.google.com ([74.125.46.29]:22366 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753071AbYHFK3z (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Aug 2008 06:29:55 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=hPHTsH6YzRL5xGdaAdBuVe15mlKhSaPOKfQyomOrEuWAABqQ3fdedpi+u6dz4OSKOk
-         lC6tm/hq99n0weogwufdpHHRsWWo++xyAIr7OXKzqfwr2lI91a40PGikr42qZqkXOLeC
-         zkAaUNIjKO98zDJ+wYNs7RAZdGyS/WtltzsrE=
-Message-ID: <86802c440808060329u32a02d19l95de3b47ce6f3f15@mail.gmail.com>
-Date: Wed, 6 Aug 2008 03:29:54 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Dhaval Giani" <dhaval@linux.vnet.ibm.com>,
-       "Mike Travis" <travis@sgi.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: [PATCH 32/33] remove >= nr_irqs checking with config_have_sparse_irq
-Cc: linux-kernel@vger.kernel.org, "Yinghai Lu" <yhlu.kernel@gmail.com>
-In-Reply-To: <1218012195-10429-33-git-send-email-yhlu.kernel@gmail.com>
+	Wed, 6 Aug 2008 06:32:41 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:8321 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752285AbYHFKck (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Aug 2008 06:32:40 -0400
+Date: Wed, 6 Aug 2008 12:32:38 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: mike.miller@hp.com, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org
+Subject: Re: [PATCH 6/6] cciss: fix bug if scsi tape support is disabled
+Message-ID: <20080806103237.GL20055@kernel.dk>
+References: <20080730211842.GF1758@roadking.ldev.net> <20080804095633.GA20055@kernel.dk> <20080805153012.0076396e.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <1218012195-10429-1-git-send-email-yhlu.kernel@gmail.com>
-	 <1218012195-10429-25-git-send-email-yhlu.kernel@gmail.com>
-	 <1218012195-10429-26-git-send-email-yhlu.kernel@gmail.com>
-	 <1218012195-10429-27-git-send-email-yhlu.kernel@gmail.com>
-	 <1218012195-10429-28-git-send-email-yhlu.kernel@gmail.com>
-	 <1218012195-10429-29-git-send-email-yhlu.kernel@gmail.com>
-	 <1218012195-10429-30-git-send-email-yhlu.kernel@gmail.com>
-	 <1218012195-10429-31-git-send-email-yhlu.kernel@gmail.com>
-	 <1218012195-10429-32-git-send-email-yhlu.kernel@gmail.com>
-	 <1218012195-10429-33-git-send-email-yhlu.kernel@gmail.com>
+In-Reply-To: <20080805153012.0076396e.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 6, 2008 at 1:43 AM, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
-> Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
-> ---
->  arch/x86/kernel/io_apic_64.c |   36 ++++++++++++++++++++++++------------
->  arch/x86/kernel/irq_64.c     |    2 +-
->  drivers/char/random.c        |    4 ++++
->  fs/proc/proc_misc.c          |   29 +++++++++++++++++------------
->  kernel/irq/chip.c            |   28 +++++++++++++++++++++++++++-
->  kernel/irq/manage.c          |   37 +++++++++++++++++++++++++++++++------
->  6 files changed, 104 insertions(+), 32 deletions(-)
->
-> diff --git a/arch/x86/kernel/io_apic_64.c b/arch/x86/kernel/io_apic_64.c
-> index 8bb6565..1416925 100644
-> --- a/arch/x86/kernel/io_apic_64.c
-> +++ b/arch/x86/kernel/io_apic_64.c
+On Tue, Aug 05 2008, Andrew Morton wrote:
+> On Mon, 4 Aug 2008 11:56:33 +0200
+> Jens Axboe <jens.axboe@oracle.com> wrote:
+> 
+> > On Wed, Jul 30 2008, Mike Miller wrote:
+> > > Patch 6 of 6
+> > > 
+> > > Bug fix. If SCSI tape support is turned off we get an implicit declaration
+> > > of cciss_unregister_scsi error in cciss_remove_one.
+> > > Please consider this for inclusion.
+> > 
+> > Applied 1-6, thanks.
+> 
+> I'm not seeing these changes in linux-next nor in
+> master.kernel.org/pub/scm/linux/kernel/git/axboe/linux-2.6-block.git#for-next
+> nor in #for-akpm.
 
-========================================================
-> @@ -2475,16 +2486,17 @@ int create_irq(void)
->        int irq;
->        int new;
->        unsigned long flags;
-> -       struct irq_cfg *cfg_new;
-> +       struct irq_cfg *cfg_new, *cfg;
->
->        irq = -ENOSPC;
->        spin_lock_irqsave(&vector_lock, flags);
->        for (new = (nr_irqs - 1); new >= 0; new--) {
->                if (platform_legacy_irq(new))
->                        continue;
-> -               cfg_new = get_irq_cfg(new);
-> -               if (cfg_new->vector != 0)
-> +               cfg = get_irq_cfg_without_new(new);
-> +               if (!cfg || cfg->vector != 0)
->                        continue;
-> +               cfg_new = get_irq_cfg(new);
->                if (__assign_irq_vector(new, TARGET_CPUS) == 0)
->                        irq = new;
->                break;
-======================================
-change to create_irq is not needed, it will disabled msi
+Both are fixed up now!
 
-YH
+> Also, #for-next is empty, but #for-akpm has the single commit
+> 
+>     commit 7b87c0541a2d606c0b1a47fa8afbaeb32fad6d60
+>     Author: Jens Axboe <jens.axboe@oracle.com>
+>     Date:   Wed Jun 25 12:04:48 2008 +0200
+> 
+>         vmsplice: implement real vmsplice to userspace
+
+Not sure what to do about that one, actually. It's relatively simple,
+but... I'll probaly send it out for review soonish on linux-mm and
+linux-kernel.
+
+-- 
+Jens Axboe
+
