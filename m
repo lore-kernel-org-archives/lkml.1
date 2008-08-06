@@ -1,111 +1,185 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030205AbYHFTYY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964824AbYHFTYr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030205AbYHFTYY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Aug 2008 15:24:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754188AbYHFTYK
+	id S964824AbYHFTYr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Aug 2008 15:24:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759612AbYHFTYb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Aug 2008 15:24:10 -0400
-Received: from 166-70-238-42.ip.xmission.com ([166.70.238.42]:33055 "EHLO
-	ns1.wolfmountaingroup.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753940AbYHFTYJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Aug 2008 15:24:09 -0400
-Message-ID: <2663.69.2.248.210.1218049381.squirrel@webmail.wolfmountaingroup.com>
-In-Reply-To: <4899D6AA.4000501@redhat.com>
-References: <200808050626.m756QZ1g003755@wolfmountaingroup.com>   
-    <489872C5.2040508@redhat.com>
-    <39379.166.70.238.45.1217950104.squirrel@webmail.wolfmountaingroup.com>
-    <4899D6AA.4000501@redhat.com>
-Date: Wed, 6 Aug 2008 13:03:01 -0600 (MDT)
-Subject: Re: [PATCH 2.6.27-rc1-git5 2/26] mdb: correct kprobes int3 trap
-From: jmerkey@wolfmountaingroup.com
-To: "Masami Hiramatsu" <mhiramat@redhat.com>
-Cc: jmerkey@wolfmountaingroup.com, linux-kernel@vger.kernel.org
-User-Agent: SquirrelMail/1.4.6
+	Wed, 6 Aug 2008 15:24:31 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:56874 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030236AbYHFTY2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Aug 2008 15:24:28 -0400
+Date: Wed, 6 Aug 2008 15:23:54 -0400
+From: Josef Bacik <jbacik@redhat.com>
+To: Josef Bacik <jbacik@redhat.com>
+Cc: linux-kernel@vger.kernel.org, rwheeler@redhat.com, tglx@linutronix.de,
+       linux-fsdevel@vger.kernel.org, chris.mason@oracle.com,
+       linux-ext4@vger.kernel.org
+Subject: Re: [PATCH 2/2] improve ext3 fsync batching
+Message-ID: <20080806192354.GJ27394@unused.rdu.redhat.com>
+References: <20080806190819.GH27394@unused.rdu.redhat.com> <20080806191536.GI27394@unused.rdu.redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080806191536.GI27394@unused.rdu.redhat.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> jmerkey@wolfmountaingroup.com wrote:
->>> Hi Jeffery,
->>>
->>> Could you explain what is MDB and how it works?
->>
->>
->> MDB is a kernel debugger that uses the same general architecture
->> as the kernel debugger in Netware.  Unlike the variants of GNU
->> debuggers, MDB is geared towards folks from the intel/microsoft worlds
->> who are more accustomed to the old school Intel assembler model and
->> not the GNU variant that looks like an angry typewriter cursing at
->> the screen (%#*&!, etc.).
->
-> Would you have any document about MDB, or project-site url?
-> I think it is hard for anyone to understand what you like to
-> do only from these big patchset.
-
-If you install the patch and enter the debugger, you will find quite
-excellent documentation **inside** the debugger.  start with "help help"
-at the debugger console.
-
->
->> MDB has some features not yet in this first patch, but I will be adding
->> to
->> subsequent patches like the ability to create time based traces of
->> execution of code just like an ice does so you can set trigger
->> breakpoints
->> (kdb does not, nor kgdb), then go back ad look what happened in windows
->> of
->> time, as well as a much easier interface, smaller size, more flexible
->> and
->> pluggable command architecture -- a best of all -- it works and does not
->> crash every other release or on every third vendors PC architecture like
->> kdb does all the time.
->
-> Would you have talked with kdb/kgdb people?
-> Since linux kernel already have kgdb, I think you might better talk
-> about merging your functionality (and stability) to kgdb, or at least
-> talk about what part both debugger can share.
->
->> It has been in use by me since 1997, when I wrote it after I left
->> Novell.
->> It is mature, hardened, and very stable -- and follows an architecture
->> prove in the industry for over 20 years on Netware.
->
-> Out of curiously, is there anyone except for you using MDB?
->
-> Thank you,
-
-
-Network General (now NetScout)
-Several Others I do not have authority to name because of NDA agreements.
-
-Jeff
-
-
-
-
->
->>> And please check your patch style by using scripts/checkpatch.pl.
->>> Your cording style seem to be different from linux coding style...
->>>
->>> Thank you,
->>
->
->
-> --
-> Masami Hiramatsu
->
-> Software Engineer
-> Hitachi Computer Products (America) Inc.
-> Software Solutions Division
->
-> e-mail: mhiramat@redhat.com
->
+On Wed, Aug 06, 2008 at 03:15:36PM -0400, Josef Bacik wrote:
+> Hello,
+> 
+> Fsync batching in ext3 is somewhat flawed when it comes to disks that are very
+> fast.  Now we do an unconditional sleep for 1 second, which is great on slow
+> disks like SATA and such, but on fast disks this means just sitting around and
+> waiting for nothing.  This patch measures the time it takes to commit a
+> transaction to the disk, and sleeps based on the speed of the underlying disk.
+> Using the following fs_mark command to test the speeds
+> 
+> ./fs_mark -d /mnt/ext3-test -s 4096 -n 2000 -D 64 -t 2
+> 
+> I got the following results (with write cacheing turned off)
+> 
+> type	threads		with patch	without patch
+> sata	2		26.4		27.8
+> sata	4		44.6		44.4
+> sata	8		70.4		72.8
+> sata	16		75.2		89.6
+> sata	32		92.7		96.0
+> ram	1		2399.1		2398.8
+> ram	2		257.3		3603.0
+> ram	4		395.6		4827.9
+> ram	8		659.0		4721.1
+> ram	16		1326.4		4373.3
+> ram	32		1964.2		3816.3
 >
 
+Err sorry about that, the with patch and without patch colums should be
+reversed.  Thanks,
 
+Josef
+ 
+> I used a ramdisk to emulate a "fast" disk since I don't happen to have a
+> clariion sitting around.  I didn't test single thread in the sata case as it
+> should be relatively the same between the two.  Thanks,
+> 
+> Signed-off-by: Josef Bacik <jbacik@redhat.com>
+> 
+> Index: linux-2.6/fs/jbd/commit.c
+> ===================================================================
+> --- linux-2.6.orig/fs/jbd/commit.c
+> +++ linux-2.6/fs/jbd/commit.c
+> @@ -288,6 +288,8 @@ void journal_commit_transaction(journal_
+>  	int flags;
+>  	int err;
+>  	unsigned long blocknr;
+> +	ktime_t start_time;
+> +	u64 commit_time;
+>  	char *tagp = NULL;
+>  	journal_header_t *header;
+>  	journal_block_tag_t *tag = NULL;
+> @@ -400,6 +402,7 @@ void journal_commit_transaction(journal_
+>  	commit_transaction->t_state = T_FLUSH;
+>  	journal->j_committing_transaction = commit_transaction;
+>  	journal->j_running_transaction = NULL;
+> +	start_time = ktime_get();
+>  	commit_transaction->t_log_start = journal->j_head;
+>  	wake_up(&journal->j_wait_transaction_locked);
+>  	spin_unlock(&journal->j_state_lock);
+> @@ -873,6 +876,18 @@ restart_loop:
+>  	J_ASSERT(commit_transaction == journal->j_committing_transaction);
+>  	journal->j_commit_sequence = commit_transaction->t_tid;
+>  	journal->j_committing_transaction = NULL;
+> +	commit_time = ktime_to_ns(ktime_sub(ktime_get(), start_time));
+> +
+> +	/*
+> +	 * weight the commit time higher than the average time so we don't
+> +	 * react too strongly to vast changes in commit time
+> +	 */
+> +	if (likely(journal->j_average_commit_time))
+> +		journal->j_average_commit_time = (commit_time*3 +
+> +				journal->j_average_commit_time) / 4;
+> +	else
+> +		journal->j_average_commit_time = commit_time;
+> +
+>  	spin_unlock(&journal->j_state_lock);
+>  
+>  	if (commit_transaction->t_checkpoint_list == NULL &&
+> Index: linux-2.6/fs/jbd/transaction.c
+> ===================================================================
+> --- linux-2.6.orig/fs/jbd/transaction.c
+> +++ linux-2.6/fs/jbd/transaction.c
+> @@ -25,6 +25,7 @@
+>  #include <linux/timer.h>
+>  #include <linux/mm.h>
+>  #include <linux/highmem.h>
+> +#include <linux/hrtimer.h>
+>  
+>  static void __journal_temp_unlink_buffer(struct journal_head *jh);
+>  
+> @@ -49,6 +50,7 @@ get_transaction(journal_t *journal, tran
+>  {
+>  	transaction->t_journal = journal;
+>  	transaction->t_state = T_RUNNING;
+> +	transaction->t_start_time = ktime_get();
+>  	transaction->t_tid = journal->j_transaction_sequence++;
+>  	transaction->t_expires = jiffies + journal->j_commit_interval;
+>  	spin_lock_init(&transaction->t_handle_lock);
+> @@ -1361,7 +1363,7 @@ int journal_stop(handle_t *handle)
+>  {
+>  	transaction_t *transaction = handle->h_transaction;
+>  	journal_t *journal = transaction->t_journal;
+> -	int old_handle_count, err;
+> +	int err;
+>  	pid_t pid;
+>  
+>  	J_ASSERT(journal_current_handle() == handle);
+> @@ -1397,11 +1399,18 @@ int journal_stop(handle_t *handle)
+>  	 */
+>  	pid = current->pid;
+>  	if (handle->h_sync && journal->j_last_sync_writer != pid) {
+> +		u64 commit_time, trans_time;
+> +
+>  		journal->j_last_sync_writer = pid;
+> -		do {
+> -			old_handle_count = transaction->t_handle_count;
+> -			schedule_timeout_uninterruptible(1);
+> -		} while (old_handle_count != transaction->t_handle_count);
+> +
+> +		spin_lock(&journal->j_state_lock);
+> +		commit_time = journal->j_average_commit_time;
+> +		spin_unlock(&journal->j_state_lock);
+> +
+> +		trans_time = ktime_to_ns(ktime_sub(ktime_get(),
+> +						   transaction->t_start_time));
+> +		if (trans_time < commit_time)
+> +			hrtimer_sleep_ns(commit_time, 1);
+>  	}
+>  
+>  	current->journal_info = NULL;
+> Index: linux-2.6/include/linux/jbd.h
+> ===================================================================
+> --- linux-2.6.orig/include/linux/jbd.h
+> +++ linux-2.6/include/linux/jbd.h
+> @@ -543,6 +543,11 @@ struct transaction_s
+>  	unsigned long		t_expires;
+>  
+>  	/*
+> +	 * When this transaction started, in nanoseconds [no locking]
+> +	 */
+> +	ktime_t			t_start_time;
+> +
+> +	/*
+>  	 * How many handles used this transaction? [t_handle_lock]
+>  	 */
+>  	int t_handle_count;
+> @@ -800,6 +805,8 @@ struct journal_s
+>  
+>  	pid_t			j_last_sync_writer;
+>  
+> +	u64			j_average_commit_time;
+> +
+>  	/*
+>  	 * An opaque pointer to fs-private information.  ext3 puts its
+>  	 * superblock pointer here
