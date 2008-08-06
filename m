@@ -1,125 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754556AbYHFQoo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755849AbYHFQpL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754556AbYHFQoo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Aug 2008 12:44:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757237AbYHFQnd
+	id S1755849AbYHFQpL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Aug 2008 12:45:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760605AbYHFQo3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Aug 2008 12:43:33 -0400
-Received: from fg-out-1718.google.com ([72.14.220.157]:14041 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759433AbYHFQn2 (ORCPT
+	Wed, 6 Aug 2008 12:44:29 -0400
+Received: from elrond2.infotech.no ([82.134.31.41]:50851 "EHLO
+	elrond2.infotech.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760002AbYHFQo1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Aug 2008 12:43:28 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:mime-version:content-disposition
-         :message-id:content-type:content-transfer-encoding;
-        b=iBefCgJp9xn0ViBSw48ECn/sHjHyvipqOAlUF+agmjOWouZmgTx/gCGnNB1JIa71KX
-         ZfotnE9jRsxuK32sGK+uUMElp22wSkEzmM0313MITPwBsNX0GPUcGnVgOMwxicgLzFwN
-         mXkHK9hux4rOJYnlc4WKgpx4L4qgwFjOK4bW4=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: linux-ide@vger.kernel.org
-Subject: [PATCH 1/2] ide-floppy: remove needless parens
-Date: Wed, 6 Aug 2008 18:37:21 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, Borislav Petkov <petkovbb@gmail.com>
+	Wed, 6 Aug 2008 12:44:27 -0400
+Message-ID: <4899D4DF.50907@torque.net>
+Date: Wed, 06 Aug 2008 18:44:15 +0200
+From: Douglas Gilbert <dougg@torque.net>
+Reply-To: dougg@torque.net
+User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200808061837.21240.bzolnier@gmail.com>
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Hugh Dickins <hugh@veritas.com>
+CC: "Martin K. Petersen" <martin.petersen@oracle.com>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH][SCS] sd: Read Capacity if (16) fails
+References: <Pine.LNX.4.64.0808061500450.1109@blonde.site> <yq1d4kmi5hl.fsf@sermon.lab.mkp.net> <Pine.LNX.4.64.0808061629220.10184@blonde.site>
+In-Reply-To: <Pine.LNX.4.64.0808061629220.10184@blonde.site>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=US-ASCII; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Cc: Borislav Petkov <petkovbb@gmail.com>
-Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
----
- drivers/ide/ide-floppy.c |   27 ++++++++++++++++-----------
- 1 file changed, 16 insertions(+), 11 deletions(-)
+Hugh Dickins wrote:
+> On Wed, 6 Aug 2008, Martin K. Petersen wrote:
+>>>>>>> "Hugh" == Hugh Dickins <hugh@veritas.com> writes:
+>> Hugh> Commit e0597d70012c82e16ee152270a55d89d8bf66693 (sd: Identify
+>> Hugh> DIF protection type and application tag ownership) says that if
+>> Hugh> a disk is formatted with Inquiry bit PROTECT=1, it is required
+>> Hugh> to support Read Capacity(16).  But my SD cards, accessed by
+>> Hugh> builtin cardreader and generic USB storage, disagree.
+>>
+>> Argh.  That's really broken.  USB storage has no business setting
+>> PROTECT.
+>>
+>> Can you send me the sg_inq output so I can see what else they are
+>> returning?
+> 
+> sg_inq?  I assume that's the same as the inquiry_len bytes at inquiry:
+> 
+> 00000000: 00 8d 00 01 1f 01 00 00 47 65 6e 65 72 69 63 2d  ........Generic-
+> 00000010: 4d 75 6c 74 69 2d 43 61 72 64 20 20 20 20 20 20  Multi-Card      
+> 00000020: 31 2e 30 30                                      1.00
+> 
+> Ah, sg_inq is a command which spells that out, here you go:
+> 
+> standard INQUIRY:
+>   PQual=0  Device_type=0  RMB=1  version=0x00  [no conformance claimed]
+>   [AERC=0]  [TrmTsk=0]  NormACA=0  HiSUP=0  Resp_data_format=1
+>   SCCS=0  ACC=0  TGPS=0  3PC=0  Protect=1  BQue=0
+>   EncServ=0  MultiP=0  [MChngr=0]  [ACKREQQ=0]  Addr16=0
+>   [RelAdr=0]  WBus16=0  Sync=0  Linked=0  [TranDis=0]  CmdQue=0
+>     length=36 (0x24)   Peripheral device type: disk
+>  Vendor identification: Generic-
+>  Product identification: Multi-Card      
+>  Product revision level: 1.00
 
-Index: b/drivers/ide/ide-floppy.c
-===================================================================
---- a/drivers/ide/ide-floppy.c
-+++ b/drivers/ide/ide-floppy.c
-@@ -738,7 +738,7 @@ static int idefloppy_get_sfrp_bit(ide_dr
- 		return 1;
- 
- 	floppy->srfp = pc.buf[8 + 2] & 0x40;
--	return (0);
-+	return 0;
- }
- 
- /*
-@@ -866,16 +866,17 @@ static int ide_floppy_get_format_capacit
- 	int __user *argp;
- 
- 	if (get_user(u_array_size, arg))
--		return (-EFAULT);
-+		return -EFAULT;
- 
- 	if (u_array_size <= 0)
--		return (-EINVAL);
-+		return -EINVAL;
- 
- 	idefloppy_create_read_capacity_cmd(&pc);
- 	if (idefloppy_queue_pc_tail(drive, &pc)) {
- 		printk(KERN_ERR "ide-floppy: Can't get floppy parameters\n");
--		return (-EIO);
-+		return -EIO;
- 	}
-+
- 	header_len = pc.buf[3];
- 	desc_cnt = header_len / 8; /* capacity descriptor of 8 bytes */
- 
-@@ -897,19 +898,22 @@ static int ide_floppy_get_format_capacit
- 		length = be16_to_cpup((__be16 *)&pc.buf[desc_start + 6]);
- 
- 		if (put_user(blocks, argp))
--			return(-EFAULT);
-+			return -EFAULT;
-+
- 		++argp;
- 
- 		if (put_user(length, argp))
--			return (-EFAULT);
-+			return -EFAULT;
-+
- 		++argp;
- 
- 		++u_index;
- 	}
- 
- 	if (put_user(u_index, arg))
--		return (-EFAULT);
--	return (0);
-+		return -EFAULT;
-+
-+	return 0;
- }
- 
- /*
-@@ -931,7 +935,7 @@ static int idefloppy_get_format_progress
- 	if (floppy->srfp) {
- 		idefloppy_create_request_sense_cmd(&pc);
- 		if (idefloppy_queue_pc_tail(drive, &pc))
--			return (-EIO);
-+			return -EIO;
- 
- 		if (floppy->sense_key == 2 &&
- 		    floppy->asc == 4 &&
-@@ -950,10 +954,11 @@ static int idefloppy_get_format_progress
- 
- 		progress_indication = ((stat & ATA_DSC) == 0) ? 0 : 0x10000;
- 	}
-+
- 	if (put_user(progress_indication, arg))
--		return (-EFAULT);
-+		return -EFAULT;
- 
--	return (0);
-+	return 0;
- }
- 
- static sector_t idefloppy_capacity(ide_drive_t *drive)
+Classic, USB strikes again! One needs to go back to SCSI-1
+(1985 ?) to find when byte 5 bit 0 of an INQUIRY response
+could be used for anything other than PROTECT.
+So that bit is reserved in SCSI-2, SPC and SPC-2 then
+has its current meaning in SPC-3 and SPC-4.
+
+Doug Gilbert
+
