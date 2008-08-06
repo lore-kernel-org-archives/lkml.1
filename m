@@ -1,85 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755776AbYHFOHk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757124AbYHFOHP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755776AbYHFOHk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Aug 2008 10:07:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755750AbYHFOGt
+	id S1757124AbYHFOHP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Aug 2008 10:07:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754896AbYHFOGr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Aug 2008 10:06:49 -0400
-Received: from mailbackup.inode.at ([213.229.60.24]:59608 "EHLO
-	mailbackup.inode.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754951AbYHFOGs (ORCPT
+	Wed, 6 Aug 2008 10:06:47 -0400
+Received: from 166-70-238-42.ip.xmission.com ([166.70.238.42]:38923 "EHLO
+	ns1.wolfmountaingroup.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754754AbYHFOGq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Aug 2008 10:06:48 -0400
-Message-ID: <4899AF8E.20105@sbg.ac.at>
-Date: Wed, 06 Aug 2008 16:05:02 +0200
-From: Alexander Huemer <alexander.huemer@sbg.ac.at>
-User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
+	Wed, 6 Aug 2008 10:06:46 -0400
+Message-ID: <44898.166.70.238.45.1218030342.squirrel@webmail.wolfmountaingroup.com>
+In-Reply-To: <20080806135410.GA39185@dspnet.fr.eu.org>
+References: <17494.166.70.238.46.1217784156.squirrel@webmail.wolfmountaingroup.com>
+    <Pine.LNX.4.64.0808051140150.6309@anakin>
+    <33030.166.70.238.45.1217948565.squirrel@webmail.wolfmountaingroup.com>
+    <200808060133.10457.nickpiggin@yahoo.com.au>
+    <87r6926dsr.fsf@basil.nowhere.org> <4899A313.7020708@tmr.com>
+    <20080806135410.GA39185@dspnet.fr.eu.org>
+Date: Wed, 6 Aug 2008 07:45:42 -0600 (MDT)
+Subject: Re: [ANNOUNCE] Merkey's Kernel Debugger
+From: jmerkey@wolfmountaingroup.com
+To: "Olivier Galibert" <galibert@pobox.com>,
+       "Bill Davidsen" <davidsen@tmr.com>, linux-kernel@vger.kernel.org,
+       "Nick Piggin" <nickpiggin@yahoo.com.au>, jmerkey@wolfmountaingroup.com,
+       "Geert Uytterhoeven" <geert@linux-m68k.org>,
+       "Stefan Richter" <stefanr@s5r6.in-berlin.de>,
+       "Josh Boyer" <jwboyer@gmail.com>
+User-Agent: SquirrelMail/1.4.6
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: 2.6.27-rc1 mtrr fixes do not work
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-hi,
+> On Wed, Aug 06, 2008 at 09:11:47AM -0400, Bill Davidsen wrote:
+>> I would suggest that if it meets coding standards and doesn't break
+>> anything else it could be included in -mm (assume there's no objection
+>> there) and let people beat on it there, with the assumption that unless
+>> problems are found it will be promoted.
+>
+> It's a little too early for that.  Right now it's at the phase "how to
+> make it better integrate with the kernel", with the use of existing
+> hooks, adding the needed hooks to be more complete, working as a
+> module, etc.  When that is done then the philosophical aspects can
+> come into play, but it's not there yet.
+>
+>   OG.
+>
 
-mtrr is wrong on my machine. the fixes of 2.6.27-rc1 do not seem to work.
-bios is the newest version, mainboard vendor says it's not their fault.
-mainboard is tyan i5000pw.
-please tell me how i can help and cc me on answers, i am not subscribed.
+I have removed the hooks into the /arch/x86 sections and converted the
+debugger to use kprobes and notify_die as Andi suggested.  It also builds
+and loads as a module.
 
-here is some data:
+One serious point has to do with NMI handling on SMP since the notify_die
+handlers use this priorty calling mechanism.  I am still testing on SMP
+but it seems to work -- I just am a little uncomfortable with trusting an
+interface (notify_die) that can let someone come in and hook the NMI
+handlers when I MUST BE ABLE TO NMI AND HALT non-focus processors first.
 
-seaburg ~ # grep -E "(^\(WW\)|^\(EE\)|^\(NI\)|^\(??\))" /var/log/Xorg.0.log
-(WW) VESA(0): Failed to set up write-combining range (0xd8000000,0x2000000)
-seaburg ~ # dmesg|grep mtrr
-Command line: root=/dev/sda1 video=uvesafb:1280x1024-24@97,mtrr:3,ywrap 
-mtrr_gran_size=64m mtrr_chunk_size=1024m
-Kernel command line: root=/dev/sda1 
-video=uvesafb:1280x1024-24@97,mtrr:3,ywrap mtrr_gran_size=64m 
-mtrr_chunk_size=1024m
-mtrr: type mismatch for d8000000,800000 old: write-back new: write-combining
-mtrr: type mismatch for d8000000,400000 old: write-back new: write-combining
-mtrr: type mismatch for d8000000,200000 old: write-back new: write-combining
-mtrr: type mismatch for d8000000,100000 old: write-back new: write-combining
-mtrr: type mismatch for d8000000,80000 old: write-back new: write-combining
-mtrr: type mismatch for d8000000,40000 old: write-back new: write-combining
-mtrr: type mismatch for d8000000,20000 old: write-back new: write-combining
-mtrr: type mismatch for d8000000,10000 old: write-back new: write-combining
-mtrr: type mismatch for d8000000,8000 old: write-back new: write-combining
-mtrr: type mismatch for d8000000,4000 old: write-back new: write-combining
-mtrr: type mismatch for d8000000,2000 old: write-back new: write-combining
-mtrr: type mismatch for d8000000,1000 old: write-back new: write-combining
-mtrr: type mismatch for d8000000,2000000 old: write-back new: 
-write-combining
-seaburg ~ # cat /proc/mtrr
-reg00: base=0x00000000 (   0MB), size=198656MB: write-back, count=1
-reg01: base=0x80000000 (2048MB), size=197632MB: write-back, count=1
-reg02: base=0x100000000 (4096MB), size=197632MB: write-back, count=1
-seaburg ~ # grep MemTotal /proc/meminfo
-MemTotal:      4041308 kB
-seaburg ~ # lspci -v | grep -A10 VGA
-20:05.0 VGA compatible controller: XGI Technology Inc. (eXtreme Graphics 
-Innovation) Volari Z7 (prog-if 00 [VGA controller])
-        Subsystem: XGI Technology Inc. (eXtreme Graphics Innovation) 
-Volari Z7
-        Flags: 66MHz, medium devsel
-        BIST result: 00
-        Memory at d8000000 (32-bit, prefetchable) [size=64M]
-        Memory at dc300000 (32-bit, non-prefetchable) [size=256K]
-        I/O ports at 3000 [size=128]
-        Capabilities: [40] Power Management version 2
+I am adding a special NMI state to the chain notifier to handle this case
+where IT MUST BE CALLED FIRST and IT MUST BE THE ONLY EVENT CALLED.  I
+used the DIE_KERNELDEBUG to hook the keyboard handler in
+drivers/char/keyboard.c so we have the general hook into kprobes to handle
+enter debugger events.
 
-seaburg ~ # zcat /proc/config.gz | grep MTRR
-CONFIG_MTRR=y
-CONFIG_MTRR_SANITIZER=y
-CONFIG_MTRR_SANITIZER_ENABLE_DEFAULT=1
-CONFIG_MTRR_SANITIZER_SPARE_REG_NR_DEFAULT=1
-seaburg ~ # uname -a
-Linux seaburg 2.6.27-rc1-blackbit #3 SMP Wed Aug 6 00:34:51 CEST 2008 
-x86_64 Intel(R) Xeon(R) CPU E5420 @ 2.50GHz GenuineIntel GNU/Linux
-seaburg ~ #
-
+Jeff
 
