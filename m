@@ -1,56 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758734AbYHFSGv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760197AbYHFSHO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758734AbYHFSGv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Aug 2008 14:06:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753955AbYHFSFP
+	id S1760197AbYHFSHO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Aug 2008 14:07:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754692AbYHFSGk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Aug 2008 14:05:15 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:52594 "EHLO mx1.redhat.com"
+	Wed, 6 Aug 2008 14:06:40 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:52660 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753434AbYHFSFO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Aug 2008 14:05:14 -0400
-Date: Wed, 6 Aug 2008 14:04:58 -0400
-From: Rik van Riel <riel@redhat.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Christoph Hellwig <hch@infradead.org>, Eric Paris <eparis@redhat.com>,
-       Greg KH <greg@kroah.com>, malware-list@lists.printk.net,
-       linux-kernel@vger.kernel.org
-Subject: Re: [malware-list] [RFC 0/5] [TALPA] Intro to a linux interface for
- on access scanning
-Message-ID: <20080806140458.5d7c86a2@cuia.bos.redhat.com>
-In-Reply-To: <87zlnq6f27.fsf@basil.nowhere.org>
-References: <1217883616.27684.19.camel@localhost.localdomain>
-	<20080804223249.GA10517@kroah.com>
-	<20080805002618.GA18215@infradead.org>
-	<1217897224.27684.66.camel@localhost.localdomain>
-	<20080805005415.GA10108@infradead.org>
-	<87zlnq6f27.fsf@basil.nowhere.org>
-Organization: Red Hat, Inc
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
+	id S1753115AbYHFSGj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Aug 2008 14:06:39 -0400
+Subject: Re: [malware-list] [RFC 0/5] [TALPA] Intro to alinuxinterfaceforon
+	access scanning
+From: Eric Paris <eparis@redhat.com>
+To: Rik van Riel <riel@redhat.com>
+Cc: tvrtko.ursulin@sophos.com, Theodore Tso <tytso@MIT.EDU>,
+       linux-kernel@vger.kernel.org, malware-list@lists.printk.net,
+       linux-security-module@vger.kernel.org,
+       Arjan van de Ven <arjan@infradead.org>
+In-Reply-To: <20080806122500.538c3fc6@cuia.bos.redhat.com>
+References: <20080806114604.5a714d11@cuia.bos.redhat.com>
+	 <20080806161350.0660837659D@pmx1.sophos.com>
+	 <20080806122500.538c3fc6@cuia.bos.redhat.com>
+Content-Type: text/plain
+Date: Wed, 06 Aug 2008 14:06:29 -0400
+Message-Id: <1218045989.27684.257.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 06 Aug 2008 04:41:04 +0200
-Andi Kleen <andi@firstfloor.org> wrote:
-> Christoph Hellwig <hch@infradead.org> writes:
+On Wed, 2008-08-06 at 12:25 -0400, Rik van Riel wrote:
+> On Wed, 6 Aug 2008 17:12:56 +0100
+> tvrtko.ursulin@sophos.com wrote:
+> > Rik van Riel wrote on 06/08/2008 16:46:04:
 > 
-> > I couldn't give a rats a** about
-> > windows viruses as they can't actually cause any harm on a Linux
-> > machine.
+> > > More importantly, getting info on which bytes in a file changed
+> > > will also help backup programs and disk indexing programs.
+> > 
+> > True, but Nick mentioned some huge issues with access after close and 
+> > munmap in one of your previous postings. It sounds to me that would be a 
+> > huge VM/filesystem work to actually enable things like this.
 > 
-> My guess is that wine is good enough these days to run many Windows 
-> worms actually.
+> A universally useful large change is often easier to get into
+> the Linux kernel than a single-purpose hack.
 
-Firefox, Open Office and other applications are probably large and
-feature rich enough that making worms for them might be possible.
+Over engineering in a void for some supposed someday user isn't a good
+idea either.  If there are other people interested in working together
+to come up with a solution to multiple needs I'm here to help!
 
-Not being able to harm the operating system is not the same as not
-being able to harm the user.  We still want some protection from
-the latter...
+-Eric
 
--- 
-All Rights Reversed
