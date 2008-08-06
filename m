@@ -1,51 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755964AbYHGAEg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757289AbYHGAEw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755964AbYHGAEg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Aug 2008 20:04:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752698AbYHFXZa
+	id S1757289AbYHGAEw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Aug 2008 20:04:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753414AbYHFXru
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Aug 2008 19:25:30 -0400
-Received: from kirsty.vergenet.net ([202.4.237.240]:38741 "EHLO
-	kirsty.vergenet.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752951AbYHFXZ1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Aug 2008 19:25:27 -0400
-Date: Thu, 7 Aug 2008 09:25:24 +1000
-From: Simon Horman <horms@verge.net.au>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: Sven Wegener <sven.wegener@stealer.net>,
-       Michael Ellerman <michael@ellerman.id.au>, linux-kernel@vger.kernel.org,
-       linux-pci@vger.kernel.org, Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: [patch] PCI: check the return value of
-	device_create_bin_file() in pci_create_bus()
-Message-ID: <20080806232523.GF10636@verge.net.au>
-References: <1217932416.7758.4.camel@localhost> <20080805101605.GA19382@verge.net.au> <alpine.LNX.1.10.0808051224350.5671@titan.stealer.net> <20080805110006.GA13409@verge.net.au> <20080805111406.GA13899@verge.net.au> <20080805112814.GO26461@parisc-linux.org> <20080805121531.GA29763@verge.net.au> <20080805122639.GP26461@parisc-linux.org> <20080806005718.GE32143@verge.net.au> <20080806131900.GI2055@parisc-linux.org>
+	Wed, 6 Aug 2008 19:47:50 -0400
+Received: from tundra.namei.org ([65.99.196.166]:49677 "EHLO tundra.namei.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753206AbYHFXrt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Aug 2008 19:47:49 -0400
+Date: Thu, 7 Aug 2008 09:47:23 +1000 (EST)
+From: James Morris <jmorris@namei.org>
+To: Vesa-Matti Kari <vmkari@cc.helsinki.fi>
+cc: sds@tycho.nsa.gov, eparis@parisplace.org, linux-kernel@vger.kernel.org,
+       selinux@tycho.nsa.gov
+Subject: Re: [PATCH] selinux: conditional expression type validation was
+ off-by-one
+In-Reply-To: <200808061546.m76Fkwq1005199@ruuvi.it.helsinki.fi>
+Message-ID: <alpine.LRH.1.10.0808070945400.15561@tundra.namei.org>
+References: <200808061546.m76Fkwq1005199@ruuvi.it.helsinki.fi>
+User-Agent: Alpine 1.10 (LRH 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080806131900.GI2055@parisc-linux.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 06, 2008 at 07:19:01AM -0600, Matthew Wilcox wrote:
-> On Wed, Aug 06, 2008 at 10:57:21AM +1000, Simon Horman wrote:
-> > Check the return value of device_create_bin_file in pci_create_bus and
-> > unwind if necessary. Don't propagate error to caller, as failure to create
-> > these files shouldn't prevent PCI from being initialised.
-> 
-> Much better ... one nit though:
-> 
-> >  static void pci_create_legacy_files(struct pci_bus *b)
-> >  {
-> [...]
-> > +
-> > +	return 0;
-> 
-> I'm sure the compiler warns about that.
+On Wed, 6 Aug 2008, Vesa-Matti Kari wrote:
 
-Amusingly, yes.
+> expr_isvalid() in conditional.c was off-by-one and allowed
+> invalid expression type COND_LAST. However, it is this header file
+> that needs to be fixed. That way the if-statement's disjunction's
+> second component reads more naturally, "if expr type is greater than
+> the last allowed value" ( rather than using ">=" in conditional.c):
+> 
+>   if (expr->expr_type <= 0 || expr->expr_type > COND_LAST)
+> 
+> Signed-off-by: Vesa-Matti Kari <vmkari@cc.helsinki.fi>
 
+Thanks, nice catch.
+
+Applied to
+git://git.kernel.org/pub/scm/linux/kernel/git/jmorris/security-testing-2.6#next
+
+
+
+- James
 -- 
-Horms -> looks for somewhere to hide
+James Morris
+<jmorris@namei.org>
