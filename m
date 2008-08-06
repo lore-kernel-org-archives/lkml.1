@@ -1,116 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763741AbYHFLI7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763378AbYHFLKW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763741AbYHFLI7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Aug 2008 07:08:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755661AbYHFLIu
+	id S1763378AbYHFLKW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Aug 2008 07:10:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756657AbYHFLKJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Aug 2008 07:08:50 -0400
-Received: from pmx1.sophos.com ([213.31.172.16]:56302 "EHLO pmx1.sophos.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754179AbYHFLIt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Aug 2008 07:08:49 -0400
-In-Reply-To: <20080806105008.GF6477@cs181140183.pp.htv.fi>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Arjan van de Ven <arjan@infradead.org>, Greg KH <greg@kroah.com>,
-       "Press, Jonathan" <Jonathan.Press@ca.com>, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org, malware-list@lists.printk.net
-Subject: Re: [malware-list] [RFC 0/5] [TALPA] Intro to a	linuxinterfaceforon access
- scanning
+	Wed, 6 Aug 2008 07:10:09 -0400
+Received: from wr-out-0506.google.com ([64.233.184.233]:54046 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755661AbYHFLKI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Aug 2008 07:10:08 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:x-x-sender:to:cc:subject:message-id:mime-version
+         :content-type;
+        b=x5YLV5VHdLMEx5trA4HMcNcu6ip2li/KoOy6CX7CxZ8ipOkWzTGKpOd42C4K94AK9u
+         sgIgkvfFN6L92+vYjsHWRejr933yHiUNczTIiImh5/h5EZvC53fYphOtyA6kCkxZhiq5
+         7M75kn4Dv1MEfGlkYUx+CIApEilIZrjuq002o=
+Date: Wed, 6 Aug 2008 19:09:53 +0800 (SGT)
+From: Jeff Chua <jeff.chua.linux@gmail.com>
+X-X-Sender: root@boston.corp.fedex.com
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+cc: David Miller <davem@davemloft.net>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.27rc1 cannot boot more than 8CPUs
+Message-ID: <Pine.LNX.4.64.0808061908100.12476@boston.corp.fedex.com>
 MIME-Version: 1.0
-X-Mailer: Lotus Notes Release 7.0.2 September 26, 2006
-From: tvrtko.ursulin@sophos.com
-Date: Wed, 6 Aug 2008 12:07:57 +0100
-X-MIMETrack: S/MIME Sign by Notes Client on Tvrtko Ursulin/Dev/UK/Sophos(Release 7.0.2|September
- 26, 2006) at 06/08/2008 12:08:46,
-	Serialize by Notes Client on Tvrtko Ursulin/Dev/UK/Sophos(Release 7.0.2|September
- 26, 2006) at 06/08/2008 12:08:46,
-	Serialize complete at 06/08/2008 12:08:46,
-	S/MIME Sign failed at 06/08/2008 12:08:46: The cryptographic key was not
- found,
-	Serialize by Router on Mercury/Servers/Sophos(Release 7.0.3|September 26, 2007) at
- 06/08/2008 12:07:59,
-	Serialize complete at 06/08/2008 12:07:59
-Content-Type: text/plain; charset="US-ASCII"
-Message-Id: <20080806110851.C2DBC3764CE@pmx1.sophos.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk <bunk@kernel.org> wrote on 06/08/2008 11:50:08:
 
-> On Wed, Aug 06, 2008 at 11:05:43AM +0100, tvrtko.ursulin@sophos.com 
+On Wed, Aug 6, 2008 at 5:42 PM, Jeff Chua <jeff.chua.linux@gmail.com> 
 wrote:
-> > Greg KH wrote on 05/08/2008 21:26:21:
-> > 
-> > > > [JON PRESS]  I wouldn't call it lazy, actually.  It's more like
-> > > > "economical" or "ergonomic" -- or, dare I say it -- 
-"user-friendly." 
-> > In
-> > > > this case, the users are the AV vendors who will have to write to 
-the
-> > > > API that will come out of this spec.  We will be more inclined to
-> > > > appreciate the SDK (for want of a better term) if it covers all 
-the
-> > > > bases, rather than force us to go elsewhere for some of our
-> > > > requirements.  When we write SDKs, we try to make sure that our 
-users
-> > > > will find whatever they need.
-> > > 
-> > > But realize that you are adding an overhead on us, the kernel 
-community,
-> > > to make your life easier.  We are the ones that are taking our time 
-to
-> > > review and comment on this code.  We are the ones who will have to 
-live
-> > > with this code for forever, and maintain it over the lifetime of 
-linux.
-> > > So far, you all have shown no willingness to give anything back to 
-us at
-> > > all.
-> > 
-> > We all? How is that true? I for example wrote some code and am willing 
-to 
-> > help maintain it if it gets accepted. And as you describe it, it would 
-be 
-> > true for any submission because not all things are usefull for all 
-people, 
-> > while everything is baggage for the community. And who is the 
-community? I 
-> > thought all who take place in discussions, bug reporting, submitting 
-code, 
-> > fixing bugs etc are the community.
-> 
-> As an observer of this thread:
-> 
-> - Some set of requirements suddenly appears out of the void on 
->   linux-kernel.
+>>> CONFIG_X86_GENERICARCH=y
+>>> CONFIG_X86_BIGSMP=y
+>>> 8 more cpu need bigsmp mode.
 
-Because previously it was said to go away and come back with a clear list 
-of requirements. And here you make it sound like a negative thing. See 
-what I am talking about?
+> Just found it under " Subarchitecture Type (Generic architecture)",
+> and then it shows the CONFIG_X86_BIGSMP option.
 
-> - Noone is able and/or willing to exactly describe the problem(s) they 
->   are trying to solve.
+It works. Booted with 16CPUs. 32GB RAM.
 
-Hopefully we will get there. Very little time has passed since the 
-discussion has started, even less considering the time zone difference for 
-some.
- 
-> With this status quo the discussion is going nowhere - Linux kernel 
-> development does not work this way.
-> 
-> The aim is not to include this code, but to find the best technical 
-> solution for your problem(s) - no matter whether this will have anything
-> in common with the list of requirements and the code posted or not.
-
-I completely agree with that. Here I was just pointing out that what Greg 
-wrote was untrue and exaggerated so not helping the discussion at all.
-
-Tvrtko
+CPU0 L7345 1.86GHz  0C
+CPU1 L7345 1.86GHz  0C
+CPU2 L7345 1.86GHz  0C
+CPU3 L7345 1.86GHz  0C
+CPU4 L7345 1.86GHz  0C
+CPU5 L7345 1.86GHz  0C
+CPU6 L7345 1.86GHz  0C
+CPU7 L7345 1.86GHz  0C
+CPU8 L7345 1.86GHz  0C
+CPU9 L7345 1.86GHz  0C
+CPU10 L7345 1.86GHz  0C
+CPU11 L7345 1.86GHz  0C
+CPU12 L7345 1.86GHz  0C
+CPU13 L7345 1.86GHz  0C
+CPU14 L7345 1.86GHz  0C
+CPU15 L7345 1.86GHz  0C
 
 
-Sophos Plc, The Pentagon, Abingdon Science Park, Abingdon,
-OX14 3YP, United Kingdom.
+So, but setting the config not obvious. And should CONFIG_X86_PC be 
+considered as well as CONFIG_X86_GENERICARCH?
 
-Company Reg No 2096520. VAT Reg No GB 348 3873 20.
+With CONFIG_X86_PC, I can set CONFIG_SPARSEMEM=y.
+
+With CONFIG_X86_GENERICARCH, CONFIG_SPARSEMEM depends on CONFIG_NUMA.
+
+I'm using the patch below to enable sparsemem instead of flatmem, but 
+don't know what impact it has. System booted and running.
+
+It would be nice to automatically default CONFIG_X86_BIGSMP with CPUs > 8. 
+But I don't know to do that.
+
+
+Thanks,
+Jeff.
+
+
+--- linux/arch/x86/Kconfig.org	2008-08-06 18:41:08 +0800
++++ linux/arch/x86/Kconfig	2008-08-06 18:48:13 +0800
+@@ -1035,7 +1035,7 @@
+
+   config ARCH_FLATMEM_ENABLE
+   	def_bool y
+-	depends on X86_32 && ARCH_SELECT_MEMORY_MODEL && X86_PC && !NUMA
++	depends on X86_32 && ARCH_SELECT_MEMORY_MODEL && !NUMA
+
+   config ARCH_DISCONTIGMEM_ENABLE
+   	def_bool y
+@@ -1051,7 +1051,7 @@
+
+   config ARCH_SPARSEMEM_ENABLE
+   	def_bool y
+-	depends on X86_64 || NUMA || (EXPERIMENTAL && X86_PC)
++	depends on X86_64 || NUMA || (EXPERIMENTAL && X86_PC) || X86_GENERICARCH
+   	select SPARSEMEM_STATIC if X86_32
+   	select SPARSEMEM_VMEMMAP_ENABLE if X86_64
 
