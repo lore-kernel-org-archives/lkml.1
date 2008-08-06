@@ -1,80 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757990AbYHFAqW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760395AbYHFAyT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757990AbYHFAqW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 20:46:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754880AbYHFAqL
+	id S1760395AbYHFAyT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 20:54:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755261AbYHFAyD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 20:46:11 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:46769 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752400AbYHFAqK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 20:46:10 -0400
-Date: Tue, 5 Aug 2008 20:46:00 -0400
-From: Rik van Riel <riel@redhat.com>
-To: Eric Paris <eparis@redhat.com>
-Cc: Greg KH <greg@kroah.com>, Al Viro <viro@ZenIV.linux.org.uk>,
-       "Press, Jonathan" <Jonathan.Press@ca.com>, Theodore Tso <tytso@mit.edu>,
-       Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
-       malware-list@lists.printk.net, linux-security-module@vger.kernel.org
-Subject: Re: [malware-list] [RFC 0/5] [TALPA] Intro
- toalinuxinterfaceforonaccess scanning
-Message-ID: <20080805204600.03ceca31@bree.surriel.com>
-In-Reply-To: <1217982329.27684.214.camel@localhost.localdomain>
-References: <2629CC4E1D22A64593B02C43E85553030480743F@USILMS12.ca.com>
-	<20080805185438.GA8453@mit.edu>
-	<2629CC4E1D22A64593B02C43E855530304AE4ADB@USILMS12.ca.com>
-	<20080805211445.GA28304@kroah.com>
-	<2629CC4E1D22A64593B02C43E855530304AE4ADC@USILMS12.ca.com>
-	<20080805214415.GA5830@kroah.com>
-	<2629CC4E1D22A64593B02C43E855530303E21D47@USILMS12.ca.com>
-	<20080805222638.GA6395@kroah.com>
-	<20080805233743.GK28946@ZenIV.linux.org.uk>
-	<1217980132.27684.203.camel@localhost.localdomain>
-	<20080806001124.GA9079@kroah.com>
-	<1217982329.27684.214.camel@localhost.localdomain>
-Organization: Red Hat, Inc.
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 5 Aug 2008 20:54:03 -0400
+Received: from ipmail04.adl2.internode.on.net ([203.16.214.57]:32997 "EHLO
+	ipmail04.adl2.internode.on.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755063AbYHFAyA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Aug 2008 20:54:00 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Aj0FAHSQmEh5LAiFXWdsb2JhbACKcoY5Hp0O
+X-IronPort-AV: E=Sophos;i="4.31,313,1215354600"; 
+   d="scan'208";a="175099886"
+Date: Wed, 6 Aug 2008 10:53:54 +1000
+From: Dave Chinner <david@fromorbit.com>
+To: Jasper Bryant-Greene <jasper@amiton.co.nz>
+Cc: Karel Zak <kzak@redhat.com>, Christoph Hellwig <hch@lst.de>,
+       linux-kernel@vger.kernel.org, xfs@oss.sgi.com,
+       util-linux-ng@vger.kernel.org
+Subject: Re: XFS noikeep remount in 2.6.27-rc1-next-20080730
+Message-ID: <20080806005354.GL21635@disturbed>
+Mail-Followup-To: Jasper Bryant-Greene <jasper@amiton.co.nz>,
+	Karel Zak <kzak@redhat.com>, Christoph Hellwig <hch@lst.de>,
+	linux-kernel@vger.kernel.org, xfs@oss.sgi.com,
+	util-linux-ng@vger.kernel.org
+References: <1217553598.3860.16.camel@luna.unix.geek.nz> <20080801073033.GF6201@disturbed> <20080801193133.GA838@lst.de> <20080805110357.GL21873@nb.net.home> <20080805233956.GI21635@disturbed> <1217979862.2887.39.camel@luna.unix.geek.nz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1217979862.2887.39.camel@luna.unix.geek.nz>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 05 Aug 2008 20:25:29 -0400
-Eric Paris <eparis@redhat.com> wrote:
+On Wed, Aug 06, 2008 at 11:44:22AM +1200, Jasper Bryant-Greene wrote:
+> On Wed, 2008-08-06 at 09:39 +1000, Dave Chinner wrote:
+> > We're seeing the second case where mount is merging all the options in
+> > /etc/fstab into the options passed into the remount command. How is
+> > the filesystem expected to behave in these difference cases? The
+> > first simply changes the ro/rw status, the second potentially
+> > asks for the filesystem to change a bunch of other mount options
+> > as well, which it may not be able to do.
+> > 
+> > So what is the correct behaviour? Should the filesystem *silently
+> > ignore* unchangable options in the remount command, or should it
+> > fail the remount and warn the user that certain options are not
+> > allowed in remount?
+> 
+> (forgive me, I'm an XFS user, not an XFS developer, so this might be
+> ignorant)
+> 
+> The filesystem presumably knows what options it was originally mounted
+> with.
+> 
+> Thus if you take the difference of the set of options you were mounted
+> with, and the set of options you are now being asked to remount with,
+> you have the options which are being asked to change.
 
-> I don't think its hiding, I'm attempting to bring these companies who
-> just don't understand how to work in public
+Sure. But that does not answer my question about what to do with
+options that can't be changed. Options can come from more than just
+/etc/fstab - they can come from the mount command line itself as
+entered by the admin. What do we do if an option is specified that
+we do not support in a remount?
 
-That's not my worry.
+The problem is the way mount combines command line options with
+options in fstab. I'm not questioning what you did - I'm asking what
+the expected behaviour is supposed to be so we can make it behave
+the same way as all the other filesystems.
 
-My real worry is that the anti-virus companies have been working
-with an enforcement policy that has been evolving slowly from the
-DOS days, while today's threat model has changed considerably.
+> If changing any of them is unsupported I would expect an error, but in
+> this case the result of taking the above set difference would be merely
+> replacing ro with rw, and thus the filesystem is presumably capable of
+> doing the remount.
 
-I do not see how the proposed hooks would close off a system
-sufficiently to claim anything approaching security.
+Use the full device/directory syntax for the remount command and it
+will do just that. The command you issued was not a "pure" remount,rw,
+it was silently changed by mount....
 
-The way forward is to:
-1) define a threat model
-2) figure out what infrastructure is needed for protection
-3) come up with interfaces that also help other software
-   (eg. file range inotify to help disk indexing software)
+Cheers,
 
-Trying to shoe-horn the DOS anti-virus security model into a
-multi-user operating system with networking may not be sufficient
-protection for today's world.  Eg. it does not protect against
-script virusses fetched off web sites and executed directly in
-a browser, office suite or any gnome-vfs enabled program. This
-is a major vulnerability in modern systems.
-
-What problem are we really trying to solve?
-
-Which problems are out of scope?
-
-What infrastructure can solve the problem, while being useful 
-for other things too?
-
+Dave.
 -- 
-All rights reversed.
+Dave Chinner
+david@fromorbit.com
