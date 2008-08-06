@@ -1,88 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760395AbYHFAyT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761766AbYHFA5B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760395AbYHFAyT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 20:54:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755261AbYHFAyD
+	id S1761766AbYHFA5B (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 20:57:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753697AbYHFAz6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 20:54:03 -0400
-Received: from ipmail04.adl2.internode.on.net ([203.16.214.57]:32997 "EHLO
-	ipmail04.adl2.internode.on.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755063AbYHFAyA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 20:54:00 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Aj0FAHSQmEh5LAiFXWdsb2JhbACKcoY5Hp0O
-X-IronPort-AV: E=Sophos;i="4.31,313,1215354600"; 
-   d="scan'208";a="175099886"
-Date: Wed, 6 Aug 2008 10:53:54 +1000
-From: Dave Chinner <david@fromorbit.com>
-To: Jasper Bryant-Greene <jasper@amiton.co.nz>
-Cc: Karel Zak <kzak@redhat.com>, Christoph Hellwig <hch@lst.de>,
-       linux-kernel@vger.kernel.org, xfs@oss.sgi.com,
-       util-linux-ng@vger.kernel.org
-Subject: Re: XFS noikeep remount in 2.6.27-rc1-next-20080730
-Message-ID: <20080806005354.GL21635@disturbed>
-Mail-Followup-To: Jasper Bryant-Greene <jasper@amiton.co.nz>,
-	Karel Zak <kzak@redhat.com>, Christoph Hellwig <hch@lst.de>,
-	linux-kernel@vger.kernel.org, xfs@oss.sgi.com,
-	util-linux-ng@vger.kernel.org
-References: <1217553598.3860.16.camel@luna.unix.geek.nz> <20080801073033.GF6201@disturbed> <20080801193133.GA838@lst.de> <20080805110357.GL21873@nb.net.home> <20080805233956.GI21635@disturbed> <1217979862.2887.39.camel@luna.unix.geek.nz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1217979862.2887.39.camel@luna.unix.geek.nz>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 5 Aug 2008 20:55:58 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:47298 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752520AbYHFAz5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Aug 2008 20:55:57 -0400
+Date: Tue, 5 Aug 2008 20:51:29 -0400
+From: Rik van Riel <riel@redhat.com>
+To: "Press, Jonathan" <Jonathan.Press@ca.com>
+Cc: "Greg KH" <greg@kroah.com>, "Arjan van de Ven" <arjan@infradead.org>,
+       "Eric Paris" <eparis@redhat.com>, <linux-kernel@vger.kernel.org>,
+       <malware-list@lists.printk.net>,
+       <linux-security-module@vger.kernel.org>
+Subject: Re: [malware-list] [RFC 0/5] [TALPA] Intro to a linuxinterfaceforon
+ access scanning
+Message-ID: <20080805205129.37d873f0@bree.surriel.com>
+In-Reply-To: <2629CC4E1D22A64593B02C43E85553030480743F@USILMS12.ca.com>
+References: <20080805103840.1aaa64a5@infradead.org>
+	<2629CC4E1D22A64593B02C43E85553030480743B@USILMS12.ca.com>
+	<20080805181141.GA10700@kroah.com>
+	<2629CC4E1D22A64593B02C43E85553030480743F@USILMS12.ca.com>
+Organization: Red Hat, Inc.
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 06, 2008 at 11:44:22AM +1200, Jasper Bryant-Greene wrote:
-> On Wed, 2008-08-06 at 09:39 +1000, Dave Chinner wrote:
-> > We're seeing the second case where mount is merging all the options in
-> > /etc/fstab into the options passed into the remount command. How is
-> > the filesystem expected to behave in these difference cases? The
-> > first simply changes the ro/rw status, the second potentially
-> > asks for the filesystem to change a bunch of other mount options
-> > as well, which it may not be able to do.
-> > 
-> > So what is the correct behaviour? Should the filesystem *silently
-> > ignore* unchangable options in the remount command, or should it
-> > fail the remount and warn the user that certain options are not
-> > allowed in remount?
-> 
-> (forgive me, I'm an XFS user, not an XFS developer, so this might be
-> ignorant)
-> 
-> The filesystem presumably knows what options it was originally mounted
-> with.
-> 
-> Thus if you take the difference of the set of options you were mounted
-> with, and the set of options you are now being asked to remount with,
-> you have the options which are being asked to change.
+On Tue, 5 Aug 2008 14:38:23 -0400
+"Press, Jonathan" <Jonathan.Press@ca.com> wrote:
 
-Sure. But that does not answer my question about what to do with
-options that can't be changed. Options can come from more than just
-/etc/fstab - they can come from the mount command line itself as
-entered by the admin. What do we do if an option is specified that
-we do not support in a remount?
+> However, I will say that while preventing infections from arriving is
+> not foolproof, doing a scan-on-close with the option to delete or
+> quarantine an infected file goes a long way.
 
-The problem is the way mount combines command line options with
-options in fstab. I'm not questioning what you did - I'm asking what
-the expected behaviour is supposed to be so we can make it behave
-the same way as all the other filesystems.
+How can you, as a security professional, argue for a security measure
+that you know is flawed, when there is a mailing list full of people
+willing to help figure out what a working security measure would look
+like?
 
-> If changing any of them is unsupported I would expect an error, but in
-> this case the result of taking the above set difference would be merely
-> replacing ro with rw, and thus the filesystem is presumably capable of
-> doing the remount.
+Yes, abandoning some of the old DOS anti-virus security model may
+cause work, but surely that will be worth it if it leads to a more
+secure system?
 
-Use the full device/directory syntax for the remount command and it
-will do just that. The command you issued was not a "pure" remount,rw,
-it was silently changed by mount....
-
-Cheers,
-
-Dave.
 -- 
-Dave Chinner
-david@fromorbit.com
+All rights reversed.
