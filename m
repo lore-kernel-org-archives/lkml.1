@@ -1,88 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760730AbYHFL2m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763558AbYHFLfI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760730AbYHFL2m (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Aug 2008 07:28:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764049AbYHFL2Y
+	id S1763558AbYHFLfI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Aug 2008 07:35:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759529AbYHFLa1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Aug 2008 07:28:24 -0400
-Received: from yw-out-2324.google.com ([74.125.46.28]:38870 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763293AbYHFL2X (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Aug 2008 07:28:23 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=RtPpbh2wIBf751pSO2ibwfnCwN/LjDcj0QFjZRewpCK7F0/SiN1dvmbo0XrPtkIfGW
-         TllPT5MiYASSK7jXBheQm8tc61D59/0nGQdCz6Br80ONyvK65fQ4iRjkGtIigc33W5B6
-         Y/jGNx/BfdnRcKlNU273zFblotwUHYkpHIPH4=
-Message-ID: <19f34abd0808060428m1c317531v4a58679c4051c0e9@mail.gmail.com>
-Date: Wed, 6 Aug 2008 13:28:22 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "Mike Frysinger" <vapier.adi@gmail.com>
-Subject: Re: [PATCH] blackfin/sram: use 'unsigned long' for irqflags
-Cc: "Bryan Wu" <cooloney@kernel.org>, "Julia Lawall" <julia@diku.dk>,
-       "Alexey Dobriyan" <adobriyan@gmail.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <8bd0f97a0808060405qf70ead2t2f2604802875197e@mail.gmail.com>
+	Wed, 6 Aug 2008 07:30:27 -0400
+Received: from pmx1.sophos.com ([213.31.172.16]:58105 "EHLO pmx1.sophos.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759512AbYHFLa0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Aug 2008 07:30:26 -0400
+In-Reply-To: <200808062110.58764.nickpiggin@yahoo.com.au>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Eric Paris <eparis@redhat.com>, linux-kernel@vger.kernel.org,
+       malware-list@lists.printk.net
+Subject: Re: [malware-list] [RFC 0/5] [TALPA] Intro to a linux interface for	on
+ access scanning
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080806105836.GA2903@localhost.localdomain>
-	 <8bd0f97a0808060405qf70ead2t2f2604802875197e@mail.gmail.com>
+X-Mailer: Lotus Notes Release 7.0.2 September 26, 2006
+From: tvrtko.ursulin@sophos.com
+Date: Wed, 6 Aug 2008 12:29:34 +0100
+X-MIMETrack: S/MIME Sign by Notes Client on Tvrtko Ursulin/Dev/UK/Sophos(Release 7.0.2|September
+ 26, 2006) at 06/08/2008 12:30:22,
+	Serialize by Notes Client on Tvrtko Ursulin/Dev/UK/Sophos(Release 7.0.2|September
+ 26, 2006) at 06/08/2008 12:30:22,
+	Serialize complete at 06/08/2008 12:30:22,
+	S/MIME Sign failed at 06/08/2008 12:30:22: The cryptographic key was not
+ found,
+	Serialize by Router on Mercury/Servers/Sophos(Release 7.0.3|September 26, 2007) at
+ 06/08/2008 12:29:36,
+	Serialize complete at 06/08/2008 12:29:36
+Content-Type: text/plain; charset="US-ASCII"
+Message-Id: <20080806113028.35CD831682F@pmx1.sophos.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Nick Piggin <nickpiggin@yahoo.com.au> wrote on 06/08/2008 12:10:58:
 
-On Wed, Aug 6, 2008 at 1:05 PM, Mike Frysinger <vapier.adi@gmail.com> wrote:
-> On Wed, Aug 6, 2008 at 6:58 AM, Vegard Nossum wrote:
->> From 3ef36948a88a968eec1b09859aa251dc6727df4e Mon Sep 17 00:00:00 2001
->> From: Vegard Nossum <vegard.nossum@gmail.com>
->> Date: Wed, 6 Aug 2008 12:00:23 +0200
->> Subject: [PATCH] blackfin/sram: use 'unsigned long' for irqflags
->>
->> Using just 'unsigned' will make flags an unsigned int. While this is
->> arguably not an error on blackfin where sizeof(int) == sizeof(long),
->> the patch is still justified on the grounds of principle.
->
-> indeed, thanks
->
->> The patch was generated using the Coccinelle semantic patch framework.
->
-> spam ?
+> On Wednesday 06 August 2008 19:44, tvrtko.ursulin@sophos.com wrote:
+> > Nick Piggin wrote on 05/08/2008 19:08:05:
+> > > On Tuesday 05 August 2008 07:00, Eric Paris wrote:
+> > > > 5. Define which filesystems are cacheable and which are not
+> > >
+> > > This is practically impossible to do completely without rewriting a 
+lot
+> > > of code (which will never be accepted). I don't see why it is needed
+> >
+> > though
+> >
+> > > as the filesystem cache is supposed to be kept coherent with disk.
+> >
+> > Problem is with network filesystems. So could it be a flag somewhere 
+per
+> > filesystem which would say something like "this filesystem guarantees
+> > content of a file cannot change without get_write_access or
+> > file_update_time being called locally"? That doesn't sound like a lot 
+of
+> > code so what am I missing?
+> 
+> Maybe... but that's not the same as what requirement 5 calls for.
 
-Hm? I'm sorry, I don't understand what you mean by that. Do you think
-the credit is undeserved?
+I see what you mean, it should have been worded better. Nevertheless that 
+is what was intended by it - to enable caching only on filesystems where 
+it is safe to do so.
+ 
+> But depending on exactly what semantics you really call for, it can get
+> tricky to account for all of pagecache. Writes can happen through page
+> tables or get_user_pages. True that a process has to at some point have
+> write permission to the file, but the cache itself could be modified
+> even after the file is closed and all mmaps disappear.
 
->
->> Cc: Julia Lawall <julia@diku.dk>
->> Cc: Alexey Dobriyan <adobriyan@gmail.com>
->> Signed-off-by: Vegard Nossum <vegard.nossum@gmail.com>
->
-> should be CC Bryan Wu as well ...
-> -mike
->
+I don't have a very good understanding of the VM subsystem I must admit. 
+So in other words with the current kernel file modification time is not 
+necessarily correct - it represents when the file was last opened for 
+modification, not when it was actually modified? (While those two points 
+in time can be arbitrarily separated)
 
-Oh right. I believed that Bryan Wu is the maintainer who would
-eventually apply the patch, therefore I put him as a direct recipient
-of the e-mail (To-field) and that he would add his Signed-off-by line
-which would make the Cc-line redundant. I guess it makes some sense to
-also list the maintainer in the patch Ccs since the patch itself may
-be separate from the raw e-mail (e.g. in mail archives, which
-generally don't display To: or Cc: fields). I didn't realize this
-before.
+How would I use those methods for file modification? I am curious to make 
+a test case..
 
-Thanks.
+Tvrtko
 
 
-Vegard
+Sophos Plc, The Pentagon, Abingdon Science Park, Abingdon,
+OX14 3YP, United Kingdom.
 
--- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
+Company Reg No 2096520. VAT Reg No GB 348 3873 20.
+
