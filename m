@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759333AbYHFIpm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764341AbYHFIqR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759333AbYHFIpm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Aug 2008 04:45:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762154AbYHFIoL
+	id S1764341AbYHFIqR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Aug 2008 04:46:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762558AbYHFIoN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Aug 2008 04:44:11 -0400
+	Wed, 6 Aug 2008 04:44:13 -0400
 Received: from rv-out-0506.google.com ([209.85.198.225]:12111 "EHLO
 	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760209AbYHFIoI (ORCPT
+	with ESMTP id S1762002AbYHFIoK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Aug 2008 04:44:08 -0400
+	Wed, 6 Aug 2008 04:44:10 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=aAj7N2JpOYGY33ZOcUrsYbjJPsICZfyoWiNVbFJ6884OI7TWs+BTUFPoYXKM6LuXYz
-         2I0tI90r9E+tj2Za+Jn9XQUS05xFSLePKoBy75FHuMsIvA2Ie6wL4YXFaeqT15uDDZ51
-         t3KYr4EcWNhJIrZpUlMBREI11SEMkfrPtN1H0=
+        b=Y/sy07n8fTnQE0dPhXPdnxKvjgurkeLUxa1gDZDOGBgRZdYMZGfgN7DiMblLVaN/Gf
+         jEi+19g+rlIn+IxPZPIB3/zf6LnN0DCmDzy5fO+W3Oh6t2OEIK37AnTSjbWsshhi2dve
+         OAPhYH0uEylOMSicNN0rOPg23Sa26g8MCaJp8=
 From: Yinghai Lu <yhlu.kernel@gmail.com>
 To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
        "H. Peter Anvin" <hpa@zytor.com>,
@@ -23,142 +23,224 @@ To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
        Dhaval Giani <dhaval@linux.vnet.ibm.com>, Mike Travis <travis@sgi.com>,
        Andrew Morton <akpm@linux-foundation.org>
 Cc: linux-kernel@vger.kernel.org, Yinghai Lu <yhlu.kernel@gmail.com>
-Subject: [PATCH 03/33] add dyn_array support
-Date: Wed,  6 Aug 2008 01:42:45 -0700
-Message-Id: <1218012195-10429-4-git-send-email-yhlu.kernel@gmail.com>
+Subject: [PATCH 04/33] add per_cpu_dyn_array support
+Date: Wed,  6 Aug 2008 01:42:46 -0700
+Message-Id: <1218012195-10429-5-git-send-email-yhlu.kernel@gmail.com>
 X-Mailer: git-send-email 1.5.4.5
-In-Reply-To: <1218012195-10429-3-git-send-email-yhlu.kernel@gmail.com>
+In-Reply-To: <1218012195-10429-4-git-send-email-yhlu.kernel@gmail.com>
 References: <1218012195-10429-1-git-send-email-yhlu.kernel@gmail.com>
  <1218012195-10429-2-git-send-email-yhlu.kernel@gmail.com>
  <1218012195-10429-3-git-send-email-yhlu.kernel@gmail.com>
+ <1218012195-10429-4-git-send-email-yhlu.kernel@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-could have crazy big arrays and allocate them in bootmem at init stage.
-also also to allocate array according to size we need to use to avoid wasting
-memory
-use CONFIG_HAVE_DYN_ARRAY to enable it or not
+could make array in per_cpu is allocated dynamically too
 
 usage:
-
-|static struct irq_desc irq_desc_init __initdata = {
-|       .status = IRQ_DISABLED,
-|       .chip = &no_irq_chip,
-|       .handle_irq = handle_bad_irq,
-|       .depth = 1,
-|       .lock = __SPIN_LOCK_UNLOCKED(irq_desc->lock),
-|#ifdef CONFIG_SMP
-|       .affinity = CPU_MASK_ALL
-|#endif
+| /* in .h */
+|struct kernel_stat {
+|       struct cpu_usage_stat   cpustat;
+|       unsigned int *irqs;
 |};
 |
-|static void __init init_work(void *data)
-|{
-|       struct dyn_array *da = data;
-|       struct  irq_desc *desc;
-|       int i;
+| /* in .c */
+|DEFINE_PER_CPU(struct kernel_stat, kstat);
 |
-|       desc = *da->name;
-|
-|       for (i = 0; i < *da->nr; i++)
-|               memcpy(&desc[i], &irq_desc_init, sizeof(struct irq_desc));
-|}
-|
-|struct irq_desc *irq_desc;
-|DEFINE_DYN_ARRAY(irq_desc, sizeof(struct irq_desc), nr_irqs, PAGE_SIZE, init_work);
+|DEFINE_PER_CPU_DYN_ARRAY_ADDR(per_cpu__kstat_irqs, per_cpu__kstat.irqs, sizeof(unsigned int), nr_irqs, sizeof(unsigned long), NULL);
 
-after pre_alloc_dyn_array() after setup_arch(), that array is ready to use
-in this way could replace irq_desc[NR_IRQS] array with dyn_array irq_desc[nr_irqs]
-
-v2: remove _nopanic in pre_alloc_dyn_array()
+after setup_percpu()/per_cpu_alloc_dyn_array(), that dyn_array in per_cpu area is ready to use
 
 Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
 ---
- include/asm-generic/vmlinux.lds.h |    7 +++++++
- include/linux/init.h              |   23 +++++++++++++++++++++++
- init/main.c                       |   24 ++++++++++++++++++++++++
- 3 files changed, 54 insertions(+), 0 deletions(-)
+ arch/x86/kernel/setup_percpu.c    |    7 +++-
+ include/asm-generic/vmlinux.lds.h |    6 +++
+ include/linux/init.h              |   27 ++++++++++++++--
+ init/main.c                       |   63 +++++++++++++++++++++++++++++++++++-
+ 4 files changed, 96 insertions(+), 7 deletions(-)
 
+diff --git a/arch/x86/kernel/setup_percpu.c b/arch/x86/kernel/setup_percpu.c
+index 0e67f72..13ba7a8 100644
+--- a/arch/x86/kernel/setup_percpu.c
++++ b/arch/x86/kernel/setup_percpu.c
+@@ -140,7 +140,7 @@ static void __init setup_cpu_pda_map(void)
+  */
+ void __init setup_per_cpu_areas(void)
+ {
+-	ssize_t size = PERCPU_ENOUGH_ROOM;
++	ssize_t size, old_size;
+ 	char *ptr;
+ 	int cpu;
+ 
+@@ -148,7 +148,8 @@ void __init setup_per_cpu_areas(void)
+ 	setup_cpu_pda_map();
+ 
+ 	/* Copy section for each CPU (we discard the original) */
+-	size = PERCPU_ENOUGH_ROOM;
++	old_size = PERCPU_ENOUGH_ROOM;
++	size = old_size + per_cpu_dyn_array_size();
+ 	printk(KERN_INFO "PERCPU: Allocating %zd bytes of per cpu data\n",
+ 			  size);
+ 
+@@ -176,6 +177,8 @@ void __init setup_per_cpu_areas(void)
+ 		per_cpu_offset(cpu) = ptr - __per_cpu_start;
+ 		memcpy(ptr, __per_cpu_start, __per_cpu_end - __per_cpu_start);
+ 
++		per_cpu_alloc_dyn_array(cpu, ptr + old_size);
++
+ 	}
+ 
+ 	printk(KERN_DEBUG "NR_CPUS: %d, nr_cpu_ids: %d, nr_node_ids %d\n",
 diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
-index a44ec7a..1c3daac 100644
+index 1c3daac..e76244a 100644
 --- a/include/asm-generic/vmlinux.lds.h
 +++ b/include/asm-generic/vmlinux.lds.h
-@@ -214,6 +214,13 @@
-  * All archs are supposed to use RO_DATA() */
- #define RODATA RO_DATA(4096)
- 
-+#define DYN_ARRAY_INIT(align)							\
+@@ -220,6 +220,12 @@
+ 		VMLINUX_SYMBOL(__dyn_array_start) = .;			\
+ 		*(.dyn_array.init)					\
+ 		VMLINUX_SYMBOL(__dyn_array_end) = .;			\
++	}								\
 +	. = ALIGN((align));						\
-+	.dyn_array.init : AT(ADDR(.dyn_array.init) - LOAD_OFFSET) {	\
-+		VMLINUX_SYMBOL(__dyn_array_start) = .;			\
-+		*(.dyn_array.init)					\
-+		VMLINUX_SYMBOL(__dyn_array_end) = .;			\
-+	}
++	.per_cpu_dyn_array.init : AT(ADDR(.per_cpu_dyn_array.init) - LOAD_OFFSET) {	\
++		VMLINUX_SYMBOL(__per_cpu_dyn_array_start) = .;		\
++		*(.per_cpu_dyn_array.init)				\
++		VMLINUX_SYMBOL(__per_cpu_dyn_array_end) = .;		\
+ 	}
  #define SECURITY_INIT							\
  	.security_initcall.init : AT(ADDR(.security_initcall.init) - LOAD_OFFSET) { \
- 		VMLINUX_SYMBOL(__security_initcall_start) = .;		\
 diff --git a/include/linux/init.h b/include/linux/init.h
-index 915c5b9..c31cd94 100644
+index c31cd94..9fbe61b 100644
 --- a/include/linux/init.h
 +++ b/include/linux/init.h
-@@ -249,6 +249,29 @@ struct obs_kernel_param {
+@@ -258,12 +258,13 @@ struct dyn_array {
+ 	void (*init_work)(void *);
+ };
+ extern struct dyn_array *__dyn_array_start[], *__dyn_array_end[];
++extern struct dyn_array *__per_cpu_dyn_array_start[], *__per_cpu_dyn_array_end[];
  
- /* Relies on boot_command_line being set */
- void __init parse_early_param(void);
-+
-+struct dyn_array {
-+	void **name;
-+	unsigned long size;
-+	unsigned int *nr;
-+	unsigned long align;
-+	void (*init_work)(void *);
-+};
-+extern struct dyn_array *__dyn_array_start[], *__dyn_array_end[];
-+
+-#define DEFINE_DYN_ARRAY(nameX, sizeX, nrX, alignX, init_workX) \
++#define DEFINE_DYN_ARRAY_ADDR(nameX, addrX, sizeX, nrX, alignX, init_workX) \
+ 		static struct dyn_array __dyn_array_##nameX __initdata = \
+-		{	.name = (void **)&nameX,\
++		{	.name = (void **)&(nameX),\
+ 			.size = sizeX,\
+-			.nr   = &nrX,\
++			.nr   = &(nrX),\
+ 			.align = alignX,\
+ 			.init_work = init_workX,\
+ 		}; \
+@@ -271,7 +272,27 @@ extern struct dyn_array *__dyn_array_start[], *__dyn_array_end[];
+ 		__attribute__((__section__(".dyn_array.init"))) = \
+ 			&__dyn_array_##nameX
+ 
 +#define DEFINE_DYN_ARRAY(nameX, sizeX, nrX, alignX, init_workX) \
-+		static struct dyn_array __dyn_array_##nameX __initdata = \
-+		{	.name = (void **)&nameX,\
++	DEFINE_DYN_ARRAY_ADDR(nameX, nameX, sizeX, nrX, alignX, init_workX)
++
++#define DEFINE_PER_CPU_DYN_ARRAY_ADDR(nameX, addrX, sizeX, nrX, alignX, init_workX) \
++		static struct dyn_array __per_cpu_dyn_array_##nameX __initdata = \
++		{	.name = (void **)&(addrX),\
 +			.size = sizeX,\
-+			.nr   = &nrX,\
++			.nr   = &(nrX),\
 +			.align = alignX,\
 +			.init_work = init_workX,\
 +		}; \
-+		static struct dyn_array *__dyn_array_ptr_##nameX __used \
-+		__attribute__((__section__(".dyn_array.init"))) = \
-+			&__dyn_array_##nameX
++		static struct dyn_array *__per_cpu_dyn_array_ptr_##nameX __used \
++		__attribute__((__section__(".per_cpu_dyn_array.init"))) = \
++			&__per_cpu_dyn_array_##nameX
 +
-+extern void pre_alloc_dyn_array(void);
++#define DEFINE_PER_CPU_DYN_ARRAY(nameX, sizeX, nrX, alignX, init_workX) \
++	DEFINE_PER_CPU_DYN_ARRAY_ADDR(nameX, nameX, nrX, alignX, init_workX)
++
+ extern void pre_alloc_dyn_array(void);
++extern unsigned long per_cpu_dyn_array_size(void);
++extern void per_cpu_alloc_dyn_array(int cpu, char *ptr);
  #endif /* __ASSEMBLY__ */
  
  /**
 diff --git a/init/main.c b/init/main.c
-index 3f8fa37..a53f1cf 100644
+index a53f1cf..18478d3 100644
 --- a/init/main.c
 +++ b/init/main.c
-@@ -539,6 +539,29 @@ void __init __weak thread_info_cache_init(void)
+@@ -394,17 +394,19 @@ EXPORT_SYMBOL(__per_cpu_offset);
+ 
+ static void __init setup_per_cpu_areas(void)
  {
+-	unsigned long size, i;
++	unsigned long size, i, old_size;
+ 	char *ptr;
+ 	unsigned long nr_possible_cpus = num_possible_cpus();
+ 
+ 	/* Copy section for each CPU (we discard the original) */
+-	size = ALIGN(PERCPU_ENOUGH_ROOM, PAGE_SIZE);
++	old_size = PERCPU_ENOUGH_ROOM;
++	size = ALIGN(old_size + per_cpu_dyn_array_size(), PAGE_SIZE);
+ 	ptr = alloc_bootmem_pages(size * nr_possible_cpus);
+ 
+ 	for_each_possible_cpu(i) {
+ 		__per_cpu_offset[i] = ptr - __per_cpu_start;
+ 		memcpy(ptr, __per_cpu_start, __per_cpu_end - __per_cpu_start);
++		per_cpu_alloc_dyn_array(cpu, ptr + old_size);
+ 		ptr += size;
+ 	}
+ }
+@@ -562,6 +564,63 @@ void pre_alloc_dyn_array(void)
+ #endif
  }
  
-+void pre_alloc_dyn_array(void)
++unsigned long per_cpu_dyn_array_size(void)
 +{
++	unsigned long total_size = 0;
 +#ifdef CONFIG_HAVE_DYN_ARRAY
-+	unsigned long size, phys = 0;
++	unsigned long size;
 +	struct dyn_array **daa;
 +
-+	for (daa = __dyn_array_start ; daa < __dyn_array_end; daa++) {
++	for (daa = __per_cpu_dyn_array_start ; daa < __per_cpu_dyn_array_end; daa++) {
 +		struct dyn_array *da = *daa;
 +
 +		size = da->size * (*da->nr);
-+		print_fn_descriptor_symbol("dyna_array %s ", da->name);
++		print_fn_descriptor_symbol("per_cpu_dyna_array %s ", da->name);
++		printk(KERN_CONT "size:%#lx nr:%d align:%#lx\n",
++			da->size, *da->nr, da->align);
++		total_size += roundup(size, da->align);
++	}
++	if (total_size)
++		printk(KERN_DEBUG "per_cpu_dyna_array total_size: %#lx\n",
++			 total_size);
++#endif
++	return total_size;
++}
++
++void per_cpu_alloc_dyn_array(int cpu, char *ptr)
++{
++#ifdef CONFIG_HAVE_DYN_ARRAY
++	unsigned long size, phys;
++	struct dyn_array **daa;
++	unsigned long addr;
++	void **array;
++
++	phys = virt_to_phys(ptr);
++
++	for (daa = __per_cpu_dyn_array_start ; daa < __per_cpu_dyn_array_end; daa++) {
++		struct dyn_array *da = *daa;
++
++		size = da->size * (*da->nr);
++		print_fn_descriptor_symbol("per_cpu_dyna_array %s ", da->name);
 +		printk(KERN_CONT "size:%#lx nr:%d align:%#lx",
 +			da->size, *da->nr, da->align);
-+		*da->name = __alloc_bootmem(size, da->align, phys);
-+		phys = virt_to_phys(*da->name);
-+		printk(KERN_CONT " ==> [%#lx - %#lx]\n", phys, phys + size);
 +
-+		if (da->init_work)
++		phys = roundup(phys, da->align);
++		addr = (unsigned long)da->name;
++		addr += per_cpu_offset(cpu);
++		array = (void **)addr;
++		*array = phys_to_virt(phys);
++		*da->name = *array; /* so init_work could use it directly */
++		printk(KERN_CONT " %p ==> [%#lx - %#lx]\n", array, phys, phys + size);
++		phys += size;
++
++		if (da->init_work) {
 +			da->init_work(da);
++		}
 +	}
 +#endif
 +}
@@ -166,14 +248,6 @@ index 3f8fa37..a53f1cf 100644
  asmlinkage void __init start_kernel(void)
  {
  	char * command_line;
-@@ -576,6 +599,7 @@ asmlinkage void __init start_kernel(void)
- 	printk(KERN_NOTICE);
- 	printk(linux_banner);
- 	setup_arch(&command_line);
-+	pre_alloc_dyn_array();
- 	mm_init_owner(&init_mm, &init_task);
- 	setup_command_line(command_line);
- 	unwind_setup();
 -- 
 1.5.4.5
 
