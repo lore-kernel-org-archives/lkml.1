@@ -1,51 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755957AbYHFOpv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755183AbYHFOqS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755957AbYHFOpv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Aug 2008 10:45:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752190AbYHFOjD
+	id S1755183AbYHFOqS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Aug 2008 10:46:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753937AbYHFOpm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Aug 2008 10:39:03 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:41465 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752460AbYHFOjC (ORCPT
+	Wed, 6 Aug 2008 10:45:42 -0400
+Received: from mtagate6.de.ibm.com ([195.212.29.155]:23815 "EHLO
+	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753131AbYHFOpl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Aug 2008 10:39:02 -0400
-Date: Wed, 6 Aug 2008 08:38:45 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Grant Grundler <grundler@parisc-linux.org>
-Cc: jbarnes@virtuousgeek.org, linux-kernel@vger.kernel.org, eric@anholt.net,
-       Matthew Wilcox <willy@linux.intel.com>
-Subject: Re: [PATCH 3/3] PCI: Add pci_read_base() API
-Message-ID: <20080806143844.GL2055@parisc-linux.org>
-References: <1217266741-26519-1-git-send-email-matthew@wil.cx> <1217266741-26519-4-git-send-email-matthew@wil.cx> <20080804063833.GA21354@colo.lackof.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080804063833.GA21354@colo.lackof.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Wed, 6 Aug 2008 10:45:41 -0400
+Subject: [BUG] hugetlb: sleeping function called from invalid context
+From: Gerald Schaefer <gerald.schaefer@de.ibm.com>
+Reply-To: gerald.schaefer@de.ibm.com
+To: linux-kernel@vger.kernel.org
+Cc: linux-mm@kvack.org, schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com,
+       Mel Gorman <mel@csn.ul.ie>
+Content-Type: text/plain
+Date: Wed, 06 Aug 2008 16:43:22 +0200
+Message-Id: <1218033802.7764.31.camel@ubuntu>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 04, 2008 at 12:38:33AM -0600, Grant Grundler wrote:
-> On Mon, Jul 28, 2008 at 01:39:01PM -0400, Matthew Wilcox wrote:
-> > Some devices have a BAR at a non-standard address.  The pci_read_base()
-> > API allows us to probe these BARs and fill in a resource for it as if
-> > they were standard BARs.
-> 
-> Willy,
-> Can you add a comment to the code listing the offending device?
-> That way we know how to test next time this code changes.
+Hi,
 
-It's not an offending device -- devices are allowed to put whatever they
-want anywhere outside the first 0x40 bytes of config space.
+running the libhugetlbfs test suite I met the following bug:
 
-Eric Anholt's patches add a user for this interface.  If you want to see an
-example, download the Intel 3 Series Express Chipset Family Datashee
-(the filename is 316966.pdf) and see section 5.1.13 about the MCHBAR.
+BUG: sleeping function called from invalid context at include/linux/pagemap.h:294
+in_atomic():1, irqs_disabled():0
+CPU: 0 Not tainted 2.6.27-rc1 #3
+Process private (pid: 4531, task: 000000003f68e400, ksp: 000000002a7e3be8)
+0700000033a00700 000000002a7e3bf0 0000000000000002 0000000000000000 
+       000000002a7e3c90 000000002a7e3c08 000000002a7e3c08 0000000000016472 
+       0000000000000000 000000002a7e3be8 0000000000000000 0000000000000000 
+       000000002a7e3bf0 000000000000000c 000000002a7e3bf0 000000002a7e3c60 
+       0000000000337798 0000000000016472 000000002a7e3bf0 000000002a7e3c40 
+Call Trace:
+([<00000000000163f4>] show_trace+0x130/0x140)
+ [<00000000000164cc>] show_stack+0xc8/0xfc
+ [<0000000000016c62>] dump_stack+0xb2/0xc0
+ [<000000000003d64a>] __might_sleep+0x136/0x154
+ [<000000000008badc>] find_lock_page+0x50/0xb8
+ [<00000000000b9b08>] hugetlb_fault+0x4c4/0x684
+ [<00000000000a3e3c>] handle_mm_fault+0x8ec/0xb54
+ [<00000000003338aa>] do_protection_exception+0x32a/0x3b4
+ [<00000000000256b2>] sysc_return+0x0/0x8
+ [<0000000000400fba>] 0x400fba
 
--- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+While holding mm->page_table_lock, hugetlb_fault() calls hugetlbfs_pagecache_page(),
+which calls find_lock_page(), which may sleep.
+
+Thanks,
+Gerald
+
+
