@@ -1,247 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756863AbYHFNw3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758124AbYHFNwp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756863AbYHFNw3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Aug 2008 09:52:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754428AbYHFNuz
+	id S1758124AbYHFNwp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Aug 2008 09:52:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754332AbYHFNwW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Aug 2008 09:50:55 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:50241 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753231AbYHFNuy (ORCPT
+	Wed, 6 Aug 2008 09:52:22 -0400
+Received: from outbound-va3.frontbridge.com ([216.32.180.16]:39715 "EHLO
+	VA3EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753971AbYHFNwV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Aug 2008 09:50:54 -0400
-Date: Wed, 6 Aug 2008 14:09:43 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: ebiederm@xmission.com (Eric W. Biederman)
-Cc: Yinghai Lu <yhlu.kernel@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>, Mike Travis <travis@sgi.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: [PATCH] serial: Remove NR_IRQS usage
-Message-ID: <20080806140943.7d94a713@lxorguk.ukuu.org.uk>
-In-Reply-To: <m163qg62bu.fsf@frodo.ebiederm.org>
-References: <1217732365-16595-1-git-send-email-yhlu.kernel@gmail.com>
-	<1217732365-16595-11-git-send-email-yhlu.kernel@gmail.com>
-	<1217732365-16595-12-git-send-email-yhlu.kernel@gmail.com>
-	<1217732365-16595-13-git-send-email-yhlu.kernel@gmail.com>
-	<1217732365-16595-14-git-send-email-yhlu.kernel@gmail.com>
-	<1217732365-16595-15-git-send-email-yhlu.kernel@gmail.com>
-	<1217732365-16595-16-git-send-email-yhlu.kernel@gmail.com>
-	<1217732365-16595-17-git-send-email-yhlu.kernel@gmail.com>
-	<1217732365-16595-18-git-send-email-yhlu.kernel@gmail.com>
-	<1217732365-16595-19-git-send-email-yhlu.kernel@gmail.com>
-	<1217732365-16595-20-git-send-email-yhlu.kernel@gmail.com>
-	<1217732365-16595-21-git-send-email-yhlu.kernel@gmail.com>
-	<1217732365-16595-22-git-send-email-yhlu.kernel@gmail.com>
-	<20080803161447.791705bb@lxorguk.ukuu.org.uk>
-	<m1hca150t8.fsf@frodo.ebiederm.org>
-	<20080804151734.0d82fbe9@lxorguk.ukuu.org.uk>
-	<m163qg62bu.fsf@frodo.ebiederm.org>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 6 Aug 2008 09:52:21 -0400
+X-BigFish: VPS-37(zz1432R98dR4015M1805M936fQzz10d3izzz32i6bh61h)
+X-Spam-TCS-SCL: 0:0
+X-WSS-ID: 0K56MIS-02-REY-01
+Date: Wed, 6 Aug 2008 15:51:14 +0200
+From: Andreas Herrmann <andreas.herrmann3@amd.com>
+To: Rene Herman <rene.herman@keyaccess.nl>
+CC: Dave Airlie <airlied@gmail.com>, Shaohua Li <shaohua.li@intel.com>,
+       Yinghai Lu <yhlu.kernel@gmail.com>,
+       Arjan van de Ven <arjan@infradead.org>, dri-users@lists.sourceforge.net,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: AGP and PAT (induced?) problem (on AMD family 6)
+Message-ID: <20080806135114.GB6713@alberich.amd.com>
+References: <48972EA8.8040001@keyaccess.nl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <48972EA8.8040001@keyaccess.nl>
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-OriginalArrivalTime: 06 Aug 2008 13:51:18.0901 (UTC) FILETIME=[80A88A50:01C8F7CB]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Works on my test box with a quick test.
+On Mon, Aug 04, 2008 at 06:30:32PM +0200, Rene Herman wrote:
+> What _does_ solve this though is booting with the "nopat" command line 
+> parameter. I'm on 2.6.26.1 and have enabled PAT for my AMD Duron myself. 
+> With "nopat", there's no problem to be seen anymore -- exiting X 
+> specifically is instantaneous.
+>
+> With or without PAT, my /proc/mtrr is always:
+>
+> reg00: base=0x00000000 (   0MB), size= 512MB: write-back, count=1
+> reg01: base=0x20000000 ( 512MB), size= 256MB: write-back, count=1
+> reg02: base=0xe8000000 (3712MB), size=  64MB: write-combining, count=1
+>
+> under X joined by:
+>
+> reg03: base=0xe4000000 (3648MB), size=  32MB: write-combining, count=2
 
-8250: Remove NR_IRQ usage
-
-From: Alan Cox <alan@redhat.com>
-
-Signed-off-by: Alan Cox <alan@redhat.com>
-
----
-
- drivers/serial/68328serial.c |   11 +-----
- drivers/serial/8250.c        |   73 +++++++++++++++++++++++++++++++++---------
- 2 files changed, 60 insertions(+), 24 deletions(-)
+To get some more debug data, can you please retest with latest kernel
+(2.6.27-rc2) using "debugpat" kernel option and provide dmesg
+output plus contents of <debugfs>/x86/pat_memtype_list?
 
 
-diff --git a/drivers/serial/68328serial.c b/drivers/serial/68328serial.c
-index 381b12a..277b78d 100644
---- a/drivers/serial/68328serial.c
-+++ b/drivers/serial/68328serial.c
-@@ -66,7 +66,6 @@
- #endif
- 
- static struct m68k_serial m68k_soft[NR_PORTS];
--struct m68k_serial *IRQ_ports[NR_IRQS];
- 
- static unsigned int uart_irqs[NR_PORTS] = UART_IRQ_DEFNS;
- 
-@@ -375,15 +374,11 @@ clear_and_return:
-  */
- irqreturn_t rs_interrupt(int irq, void *dev_id)
- {
--	struct m68k_serial * info;
-+	struct m68k_serial * info = dev_id;
- 	m68328_uart *uart;
- 	unsigned short rx;
- 	unsigned short tx;
- 
--	info = IRQ_ports[irq];
--	if(!info)
--	    return IRQ_NONE;
--
- 	uart = &uart_addr[info->line];
- 	rx = uart->urx.w;
- 
-@@ -1383,8 +1378,6 @@ rs68328_init(void)
- 		   info->port, info->irq);
- 	    printk(" is a builtin MC68328 UART\n");
- 	    
--	    IRQ_ports[info->irq] = info;	/* waste of space */
--
- #ifdef CONFIG_M68VZ328
- 		if (i > 0 )
- 			PJSEL &= 0xCF;  /* PSW enable second port output */
-@@ -1393,7 +1386,7 @@ rs68328_init(void)
- 	    if (request_irq(uart_irqs[i],
- 			    rs_interrupt,
- 			    IRQF_DISABLED,
--			    "M68328_UART", NULL))
-+			    "M68328_UART", info))
-                 panic("Unable to attach 68328 serial interrupt\n");
- 	}
- 	local_irq_restore(flags);
-diff --git a/drivers/serial/8250.c b/drivers/serial/8250.c
-index 342e12f..6e9de80 100644
---- a/drivers/serial/8250.c
-+++ b/drivers/serial/8250.c
-@@ -145,11 +145,15 @@ struct uart_8250_port {
- };
- 
- struct irq_info {
--	spinlock_t		lock;
-+	struct			hlist_node node;
-+	int			irq;
-+	spinlock_t		lock;	/* Protects list not the hash */
- 	struct list_head	*head;
- };
- 
--static struct irq_info irq_lists[NR_IRQS];
-+#define NR_IRQ_HASH		32	/* Can be adjusted later */
-+static struct hlist_head irq_lists[NR_IRQ_HASH];
-+static DEFINE_MUTEX(hash_mutex);	/* Used to walk the hash */
- 
- /*
-  * Here we define the default xmit fifo size used for each type of UART.
-@@ -1535,15 +1539,43 @@ static void serial_do_unlink(struct irq_info *i, struct uart_8250_port *up)
- 		BUG_ON(i->head != &up->list);
- 		i->head = NULL;
- 	}
--
- 	spin_unlock_irq(&i->lock);
-+	/* List empty so throw away the hash node */
-+	if (i->head == NULL) {
-+		hlist_del(&i->node);
-+		kfree(i);
-+	}
- }
- 
- static int serial_link_irq_chain(struct uart_8250_port *up)
- {
--	struct irq_info *i = irq_lists + up->port.irq;
-+	struct hlist_head *h;
-+	struct hlist_node *n;
-+	struct irq_info *i;
- 	int ret, irq_flags = up->port.flags & UPF_SHARE_IRQ ? IRQF_SHARED : 0;
- 
-+	mutex_lock(&hash_mutex);
-+
-+	h = &irq_lists[up->port.irq % NR_IRQ_HASH];
-+	
-+	hlist_for_each(n, h) {
-+		i = hlist_entry(n, struct irq_info, node);
-+		if (i->irq == up->port.irq)
-+			break;
-+	}
-+
-+	if (n == NULL) {
-+		i = kzalloc(sizeof(struct irq_info), GFP_KERNEL);
-+		if (i == NULL) {
-+			mutex_unlock(&hash_mutex);
-+			return -ENOMEM;
-+		}
-+		spin_lock_init(&i->lock);
-+		i->irq = up->port.irq;
-+		hlist_add_head(&i->node, h);
-+	}
-+	mutex_unlock(&hash_mutex);
-+
- 	spin_lock_irq(&i->lock);
- 
- 	if (i->head) {
-@@ -1567,14 +1599,28 @@ static int serial_link_irq_chain(struct uart_8250_port *up)
- 
- static void serial_unlink_irq_chain(struct uart_8250_port *up)
- {
--	struct irq_info *i = irq_lists + up->port.irq;
-+	struct irq_info *i;
-+	struct hlist_node *n;
-+	struct hlist_head *h;
- 
--	BUG_ON(i->head == NULL);
-+	mutex_lock(&hash_mutex);
- 
--	if (list_empty(i->head))
-+	h = &irq_lists[up->port.irq % NR_IRQ_HASH];
-+	
-+	hlist_for_each(n, h) {
-+		i = hlist_entry(n, struct irq_info, node);
-+		if (i->irq == up->port.irq)
-+			break;
-+	}
-+	
-+	BUG_ON(n == NULL);
-+	BUG_ON(i->head == NULL);
-+	
-+	if (list_empty(i->head)) {
- 		free_irq(up->port.irq, i);
--
-+	}
- 	serial_do_unlink(i, up);
-+	mutex_unlock(&hash_mutex);
- }
- 
- /* Base timer interval for polling */
-@@ -2942,7 +2988,7 @@ EXPORT_SYMBOL(serial8250_unregister_port);
- 
- static int __init serial8250_init(void)
- {
--	int ret, i;
-+	int ret;
- 
- 	if (nr_uarts > UART_NR)
- 		nr_uarts = UART_NR;
-@@ -2951,9 +2997,6 @@ static int __init serial8250_init(void)
- 		"%d ports, IRQ sharing %sabled\n", nr_uarts,
- 		share_irqs ? "en" : "dis");
- 
--	for (i = 0; i < NR_IRQS; i++)
--		spin_lock_init(&irq_lists[i].lock);
--
- 	ret = uart_register_driver(&serial8250_reg);
- 	if (ret)
- 		goto out;
-@@ -2976,11 +3019,11 @@ static int __init serial8250_init(void)
- 		goto out;
- 
- 	platform_device_del(serial8250_isa_devs);
-- put_dev:
-+put_dev:
- 	platform_device_put(serial8250_isa_devs);
-- unreg_uart_drv:
-+unreg_uart_drv:
- 	uart_unregister_driver(&serial8250_reg);
-- out:
-+out:
- 	return ret;
- }
- 
+Thanks,
+
+Andreas
+
+
