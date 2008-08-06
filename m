@@ -1,27 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759884AbYHFPln@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760623AbYHFPlT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759884AbYHFPln (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Aug 2008 11:41:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759576AbYHFPj1
+	id S1760623AbYHFPlT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Aug 2008 11:41:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757554AbYHFPjY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Aug 2008 11:39:27 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:38211 "EHLO mx1.redhat.com"
+	Wed, 6 Aug 2008 11:39:24 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:38184 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755209AbYHFPjQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Aug 2008 11:39:16 -0400
+	id S1755943AbYHFPjN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Aug 2008 11:39:13 -0400
 Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
 	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
 	Kingdom.
 	Registered in England and Wales under Company Registration No. 3798903
 From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 15/24] CRED: Make inode_has_perm() and file_has_perm() take a
-	cred pointer [ver #7]
+Subject: [PATCH 19/24] CRED: Prettify commoncap.c [ver #7]
 To: jmorris@namei.org, akpm@linux-foundation.org, morgan@kernel.org
 Cc: sfr@canb.auug.org.au, dhowells@redhat.com, viro@ftp.linux.org.uk,
        casey@schaufler-ca.com, linux-security-module@vger.kernel.org,
        linux-kernel@vger.kernel.org
-Date: Wed, 06 Aug 2008 16:38:31 +0100
-Message-ID: <20080806153831.14351.2400.stgit@warthog.procyon.org.uk>
+Date: Wed, 06 Aug 2008 16:38:52 +0100
+Message-ID: <20080806153852.14351.50309.stgit@warthog.procyon.org.uk>
 In-Reply-To: <20080806153713.14351.91448.stgit@warthog.procyon.org.uk>
 References: <20080806153713.14351.91448.stgit@warthog.procyon.org.uk>
 User-Agent: StGIT/0.14.1
@@ -32,518 +31,537 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Make inode_has_perm() and file_has_perm() take a cred pointer rather than a
-task pointer.
+Prettify commoncap.c.
 
 Signed-off-by: David Howells <dhowells@redhat.com>
-Acked-by: James Morris <jmorris@namei.org>
 Acked-by: Serge Hallyn <serue@us.ibm.com>
+Reviewed-by: James Morris <jmorris@namei.org>
 ---
 
- security/selinux/hooks.c |  140 ++++++++++++++++++++++++++++++----------------
- 1 files changed, 92 insertions(+), 48 deletions(-)
+ security/commoncap.c |  304 +++++++++++++++++++++++++++++++++++++++++---------
+ 1 files changed, 247 insertions(+), 57 deletions(-)
 
 
-diff --git a/security/selinux/hooks.c b/security/selinux/hooks.c
-index 27d1779..fb76940 100644
---- a/security/selinux/hooks.c
-+++ b/security/selinux/hooks.c
-@@ -172,16 +172,25 @@ static int cred_alloc_security(struct cred *cred)
- }
- 
- /*
-+ * get the security ID of a set of credentials
-+ */
-+static inline u32 cred_sid(const struct cred *cred)
-+{
-+	const struct task_security_struct *tsec;
-+
-+	tsec = cred->security;
-+	return tsec->sid;
-+}
-+
-+/*
-  * get the security ID of a task
-  */
- static inline u32 task_sid(const struct task_struct *task)
- {
--	const struct task_security_struct *tsec;
- 	u32 sid;
- 
- 	rcu_read_lock();
--	tsec = __task_cred(task)->security;
--	sid = tsec->sid;
-+	sid = cred_sid(__task_cred(task));
- 	rcu_read_unlock();
- 	return sid;
- }
-@@ -196,6 +205,8 @@ static inline u32 current_sid(void)
- 	return tsec->sid;
- }
- 
-+/* Allocate and free functions for each kind of security blob. */
-+
- static int inode_alloc_security(struct inode *inode)
- {
- 	struct inode_security_struct *isec;
-@@ -1366,7 +1377,7 @@ static inline u32 signal_to_av(int sig)
- }
- 
- /*
-- * Check permission betweeen a pair of tasks, e.g. signal checks,
-+ * Check permission between a pair of tasks, e.g. signal checks,
-  * fork check, ptrace check, etc.
-  * tsk1 is the actor and tsk2 is the target
-  */
-@@ -1429,7 +1440,7 @@ static int task_has_system(struct task_struct *tsk,
- /* Check whether a task has a particular permission to an inode.
-    The 'adp' parameter is optional and allows other audit
-    data to be passed (e.g. the dentry). */
--static int inode_has_perm(struct task_struct *tsk,
-+static int inode_has_perm(const struct cred *cred,
- 			  struct inode *inode,
- 			  u32 perms,
- 			  struct avc_audit_data *adp)
-@@ -1441,7 +1452,7 @@ static int inode_has_perm(struct task_struct *tsk,
- 	if (unlikely(IS_PRIVATE(inode)))
- 		return 0;
- 
--	sid = task_sid(tsk);
-+	sid = cred_sid(cred);
- 	isec = inode->i_security;
- 
- 	if (!adp) {
-@@ -1456,17 +1467,18 @@ static int inode_has_perm(struct task_struct *tsk,
- /* Same as inode_has_perm, but pass explicit audit data containing
-    the dentry to help the auditing code to more easily generate the
-    pathname if needed. */
--static inline int dentry_has_perm(struct task_struct *tsk,
-+static inline int dentry_has_perm(const struct cred *cred,
- 				  struct vfsmount *mnt,
- 				  struct dentry *dentry,
- 				  u32 av)
- {
- 	struct inode *inode = dentry->d_inode;
- 	struct avc_audit_data ad;
-+
- 	AVC_AUDIT_DATA_INIT(&ad, FS);
- 	ad.u.fs.path.mnt = mnt;
- 	ad.u.fs.path.dentry = dentry;
--	return inode_has_perm(tsk, inode, av, &ad);
-+	return inode_has_perm(cred, inode, av, &ad);
- }
- 
- /* Check whether a task can use an open file descriptor to
-@@ -1477,14 +1489,14 @@ static inline int dentry_has_perm(struct task_struct *tsk,
-    has the same SID as the process.  If av is zero, then
-    access to the file is not checked, e.g. for cases
-    where only the descriptor is affected like seek. */
--static int file_has_perm(struct task_struct *tsk,
--				struct file *file,
--				u32 av)
-+static int file_has_perm(const struct cred *cred,
-+			 struct file *file,
-+			 u32 av)
- {
- 	struct file_security_struct *fsec = file->f_security;
- 	struct inode *inode = file->f_path.dentry->d_inode;
- 	struct avc_audit_data ad;
--	u32 sid = task_sid(tsk);
-+	u32 sid = cred_sid(cred);
- 	int rc;
- 
- 	AVC_AUDIT_DATA_INIT(&ad, FS);
-@@ -1496,14 +1508,16 @@ static int file_has_perm(struct task_struct *tsk,
- 				  FD__USE,
- 				  &ad);
- 		if (rc)
--			return rc;
-+			goto out;
- 	}
- 
- 	/* av is zero if only checking access to the descriptor. */
-+	rc = 0;
- 	if (av)
--		return inode_has_perm(tsk, inode, av, &ad);
-+		rc = inode_has_perm(cred, inode, av, &ad);
- 
--	return 0;
-+out:
-+	return rc;
- }
- 
- /* Check whether a task can create a file. */
-@@ -1662,13 +1676,13 @@ static inline int may_rename(struct inode *old_dir,
- }
- 
- /* Check whether a task can perform a filesystem operation. */
--static int superblock_has_perm(struct task_struct *tsk,
-+static int superblock_has_perm(const struct cred *cred,
- 			       struct super_block *sb,
- 			       u32 perms,
- 			       struct avc_audit_data *ad)
- {
- 	struct superblock_security_struct *sbsec;
--	u32 sid = task_sid(tsk);
-+	u32 sid = cred_sid(cred);
- 
- 	sbsec = sb->s_security;
- 	return avc_has_perm(sid, sbsec->sid, SECCLASS_FILESYSTEM, perms, ad);
-@@ -1910,6 +1924,7 @@ static int selinux_sysctl(ctl_table *table, int op)
- 
- static int selinux_quotactl(int cmds, int type, int id, struct super_block *sb)
- {
-+	const struct cred *cred = current_cred();
- 	int rc = 0;
- 
- 	if (!sb)
-@@ -1921,14 +1936,12 @@ static int selinux_quotactl(int cmds, int type, int id, struct super_block *sb)
- 	case Q_QUOTAOFF:
- 	case Q_SETINFO:
- 	case Q_SETQUOTA:
--		rc = superblock_has_perm(current, sb, FILESYSTEM__QUOTAMOD,
--					 NULL);
-+		rc = superblock_has_perm(cred, sb, FILESYSTEM__QUOTAMOD, NULL);
- 		break;
- 	case Q_GETFMT:
- 	case Q_GETINFO:
- 	case Q_GETQUOTA:
--		rc = superblock_has_perm(current, sb, FILESYSTEM__QUOTAGET,
--					 NULL);
-+		rc = superblock_has_perm(cred, sb, FILESYSTEM__QUOTAGET, NULL);
- 		break;
- 	default:
- 		rc = 0;  /* let the kernel handle invalid cmds */
-@@ -1939,7 +1952,9 @@ static int selinux_quotactl(int cmds, int type, int id, struct super_block *sb)
- 
- static int selinux_quota_on(struct dentry *dentry)
- {
--	return dentry_has_perm(current, NULL, dentry, FILE__QUOTAON);
-+	const struct cred *cred = current_cred();
-+
-+	return dentry_has_perm(cred, NULL, dentry, FILE__QUOTAON);
- }
- 
- static int selinux_syslog(int type)
-@@ -2136,6 +2151,7 @@ extern struct dentry *selinux_null;
- /* Derived from fs/exec.c:flush_old_files. */
- static inline void flush_unauthorized_files(struct files_struct *files)
- {
-+	const struct cred *cred = current_cred();
- 	struct avc_audit_data ad;
- 	struct file *file, *devnull = NULL;
- 	struct tty_struct *tty;
-@@ -2155,7 +2171,7 @@ static inline void flush_unauthorized_files(struct files_struct *files)
- 			   file may belong to another process and we are only
- 			   interested in the inode-based check here. */
- 			struct inode *inode = file->f_path.dentry->d_inode;
--			if (inode_has_perm(current, inode,
-+			if (inode_has_perm(cred, inode,
- 					   FILE__READ | FILE__WRITE, NULL)) {
- 				drop_tty = 1;
- 			}
-@@ -2190,7 +2206,7 @@ static inline void flush_unauthorized_files(struct files_struct *files)
- 				file = fget(i);
- 				if (!file)
- 					continue;
--				if (file_has_perm(current,
-+				if (file_has_perm(cred,
- 						  file,
- 						  file_to_av(file))) {
- 					sys_close(i);
-@@ -2462,6 +2478,7 @@ out:
- 
- static int selinux_sb_kern_mount(struct super_block *sb, void *data)
- {
-+	const struct cred *cred = current_cred();
- 	struct avc_audit_data ad;
- 	int rc;
- 
-@@ -2471,16 +2488,17 @@ static int selinux_sb_kern_mount(struct super_block *sb, void *data)
- 
- 	AVC_AUDIT_DATA_INIT(&ad, FS);
- 	ad.u.fs.path.dentry = sb->s_root;
--	return superblock_has_perm(current, sb, FILESYSTEM__MOUNT, &ad);
-+	return superblock_has_perm(cred, sb, FILESYSTEM__MOUNT, &ad);
- }
- 
- static int selinux_sb_statfs(struct dentry *dentry)
- {
-+	const struct cred *cred = current_cred();
- 	struct avc_audit_data ad;
- 
- 	AVC_AUDIT_DATA_INIT(&ad, FS);
- 	ad.u.fs.path.dentry = dentry->d_sb->s_root;
--	return superblock_has_perm(current, dentry->d_sb, FILESYSTEM__GETATTR, &ad);
-+	return superblock_has_perm(cred, dentry->d_sb, FILESYSTEM__GETATTR, &ad);
- }
- 
- static int selinux_mount(char *dev_name,
-@@ -2489,6 +2507,7 @@ static int selinux_mount(char *dev_name,
- 			 unsigned long flags,
- 			 void *data)
- {
-+	const struct cred *cred = current_cred();
- 	int rc;
- 
- 	rc = secondary_ops->sb_mount(dev_name, path, type, flags, data);
-@@ -2496,22 +2515,23 @@ static int selinux_mount(char *dev_name,
- 		return rc;
- 
- 	if (flags & MS_REMOUNT)
--		return superblock_has_perm(current, path->mnt->mnt_sb,
-+		return superblock_has_perm(cred, path->mnt->mnt_sb,
- 					   FILESYSTEM__REMOUNT, NULL);
- 	else
--		return dentry_has_perm(current, path->mnt, path->dentry,
-+		return dentry_has_perm(cred, path->mnt, path->dentry,
- 				       FILE__MOUNTON);
- }
- 
- static int selinux_umount(struct vfsmount *mnt, int flags)
- {
-+	const struct cred *cred = current_cred();
- 	int rc;
- 
- 	rc = secondary_ops->sb_umount(mnt, flags);
- 	if (rc)
- 		return rc;
- 
--	return superblock_has_perm(current, mnt->mnt_sb,
-+	return superblock_has_perm(cred, mnt->mnt_sb,
- 				   FILESYSTEM__UNMOUNT, NULL);
- }
- 
-@@ -2649,21 +2669,25 @@ static int selinux_inode_rename(struct inode *old_inode, struct dentry *old_dent
- 
- static int selinux_inode_readlink(struct dentry *dentry)
- {
--	return dentry_has_perm(current, NULL, dentry, FILE__READ);
-+	const struct cred *cred = current_cred();
-+
-+	return dentry_has_perm(cred, NULL, dentry, FILE__READ);
- }
- 
- static int selinux_inode_follow_link(struct dentry *dentry, struct nameidata *nameidata)
- {
-+	const struct cred *cred = current_cred();
- 	int rc;
- 
- 	rc = secondary_ops->inode_follow_link(dentry, nameidata);
- 	if (rc)
- 		return rc;
--	return dentry_has_perm(current, NULL, dentry, FILE__READ);
-+	return dentry_has_perm(cred, NULL, dentry, FILE__READ);
- }
- 
- static int selinux_inode_permission(struct inode *inode, int mask)
- {
-+	const struct cred *cred = current_cred();
- 	int rc;
- 
- 	rc = secondary_ops->inode_permission(inode, mask);
-@@ -2675,12 +2699,13 @@ static int selinux_inode_permission(struct inode *inode, int mask)
- 		return 0;
- 	}
- 
--	return inode_has_perm(current, inode,
-+	return inode_has_perm(cred, inode,
- 			       open_file_mask_to_av(inode->i_mode, mask), NULL);
- }
- 
- static int selinux_inode_setattr(struct dentry *dentry, struct iattr *iattr)
- {
-+	const struct cred *cred = current_cred();
- 	int rc;
- 
- 	rc = secondary_ops->inode_setattr(dentry, iattr);
-@@ -2692,18 +2717,22 @@ static int selinux_inode_setattr(struct dentry *dentry, struct iattr *iattr)
- 
- 	if (iattr->ia_valid & (ATTR_MODE | ATTR_UID | ATTR_GID |
- 			       ATTR_ATIME_SET | ATTR_MTIME_SET))
--		return dentry_has_perm(current, NULL, dentry, FILE__SETATTR);
-+		return dentry_has_perm(cred, NULL, dentry, FILE__SETATTR);
- 
--	return dentry_has_perm(current, NULL, dentry, FILE__WRITE);
-+	return dentry_has_perm(cred, NULL, dentry, FILE__WRITE);
- }
- 
- static int selinux_inode_getattr(struct vfsmount *mnt, struct dentry *dentry)
- {
--	return dentry_has_perm(current, mnt, dentry, FILE__GETATTR);
-+	const struct cred *cred = current_cred();
-+
-+	return dentry_has_perm(cred, mnt, dentry, FILE__GETATTR);
- }
- 
- static int selinux_inode_setotherxattr(struct dentry *dentry, const char *name)
- {
-+	const struct cred *cred = current_cred();
-+
- 	if (!strncmp(name, XATTR_SECURITY_PREFIX,
- 		     sizeof XATTR_SECURITY_PREFIX - 1)) {
- 		if (!strcmp(name, XATTR_NAME_CAPS)) {
-@@ -2718,7 +2747,7 @@ static int selinux_inode_setotherxattr(struct dentry *dentry, const char *name)
- 
- 	/* Not an attribute we recognize, so just check the
- 	   ordinary setattr permission. */
--	return dentry_has_perm(current, NULL, dentry, FILE__SETATTR);
-+	return dentry_has_perm(cred, NULL, dentry, FILE__SETATTR);
- }
- 
- static int selinux_inode_setxattr(struct dentry *dentry, const char *name,
-@@ -2803,12 +2832,16 @@ static void selinux_inode_post_setxattr(struct dentry *dentry, const char *name,
- 
- static int selinux_inode_getxattr(struct dentry *dentry, const char *name)
- {
--	return dentry_has_perm(current, NULL, dentry, FILE__GETATTR);
-+	const struct cred *cred = current_cred();
-+
-+	return dentry_has_perm(cred, NULL, dentry, FILE__GETATTR);
- }
- 
- static int selinux_inode_listxattr(struct dentry *dentry)
- {
--	return dentry_has_perm(current, NULL, dentry, FILE__GETATTR);
-+	const struct cred *cred = current_cred();
-+
-+	return dentry_has_perm(cred, NULL, dentry, FILE__GETATTR);
- }
- 
- static int selinux_inode_removexattr(struct dentry *dentry, const char *name)
-@@ -2919,6 +2952,7 @@ static void selinux_inode_getsecid(const struct inode *inode, u32 *secid)
- 
- static int selinux_revalidate_file_permission(struct file *file, int mask)
- {
-+	const struct cred *cred = current_cred();
- 	int rc;
- 	struct inode *inode = file->f_path.dentry->d_inode;
- 
-@@ -2931,7 +2965,7 @@ static int selinux_revalidate_file_permission(struct file *file, int mask)
- 	if ((file->f_flags & O_APPEND) && (mask & MAY_WRITE))
- 		mask |= MAY_APPEND;
- 
--	rc = file_has_perm(current, file,
-+	rc = file_has_perm(cred, file,
- 			   file_mask_to_av(inode->i_mode, mask));
- 	if (rc)
- 		return rc;
-@@ -2971,6 +3005,7 @@ static void selinux_file_free_security(struct file *file)
- static int selinux_file_ioctl(struct file *file, unsigned int cmd,
- 			      unsigned long arg)
- {
-+	const struct cred *cred = current_cred();
- 	u32 av = 0;
- 
- 	if (_IOC_DIR(cmd) & _IOC_WRITE)
-@@ -2980,11 +3015,13 @@ static int selinux_file_ioctl(struct file *file, unsigned int cmd,
- 	if (!av)
- 		av = FILE__IOCTL;
- 
--	return file_has_perm(current, file, av);
-+	return file_has_perm(cred, file, av);
- }
- 
- static int file_map_prot_check(struct file *file, unsigned long prot, int shared)
- {
-+	const struct cred *cred = current_cred();
-+
- #ifndef CONFIG_PPC32
- 	if ((prot & PROT_EXEC) && (!file || (!shared && (prot & PROT_WRITE)))) {
- 		/*
-@@ -3009,7 +3046,7 @@ static int file_map_prot_check(struct file *file, unsigned long prot, int shared
- 		if (prot & PROT_EXEC)
- 			av |= FILE__EXECUTE;
- 
--		return file_has_perm(current, file, av);
-+		return file_has_perm(cred, file, av);
- 	}
+diff --git a/security/commoncap.c b/security/commoncap.c
+index 3da0ada..c91b1af 100644
+--- a/security/commoncap.c
++++ b/security/commoncap.c
+@@ -39,16 +39,22 @@ int cap_netlink_recv(struct sk_buff *skb, int cap)
+ 		return -EPERM;
  	return 0;
  }
-@@ -3038,6 +3075,7 @@ static int selinux_file_mprotect(struct vm_area_struct *vma,
- 				 unsigned long reqprot,
- 				 unsigned long prot)
- {
-+	const struct cred *cred = current_cred();
- 	int rc;
+-
+ EXPORT_SYMBOL(cap_netlink_recv);
  
- 	rc = secondary_ops->file_mprotect(vma, reqprot, prot);
-@@ -3066,7 +3104,7 @@ static int selinux_file_mprotect(struct vm_area_struct *vma,
- 			 * modified content.  This typically should only
- 			 * occur for text relocations.
- 			 */
--			rc = file_has_perm(current, vma->vm_file,
-+			rc = file_has_perm(cred, vma->vm_file,
- 					   FILE__EXECMOD);
- 		}
- 		if (rc)
-@@ -3079,12 +3117,15 @@ static int selinux_file_mprotect(struct vm_area_struct *vma,
- 
- static int selinux_file_lock(struct file *file, unsigned int cmd)
+-/*
++/**
++ * cap_capable - Determine whether a task has a particular effective capability
++ * @tsk: The task to query
++ * @cap: The capability to check for
++ *
++ * Determine whether the nominated task has the specified capability amongst
++ * its effective set, returning 0 if it does, -ve if it does not.
++ *
+  * NOTE WELL: cap_capable() cannot be used like the kernel's capable()
+- * function.  That is, it has the reverse semantics: cap_capable()
+- * returns 0 when a task has a capability, but the kernel's capable()
+- * returns 1 for this case.
++ * function.  That is, it has the reverse semantics: cap_capable() returns 0
++ * when a task has a capability, but the kernel's capable() returns 1 for this
++ * case.
+  */
+-int cap_capable (struct task_struct *tsk, int cap)
++int cap_capable(struct task_struct *tsk, int cap)
  {
--	return file_has_perm(current, file, FILE__LOCK);
-+	const struct cred *cred = current_cred();
-+
-+	return file_has_perm(cred, file, FILE__LOCK);
+ 	__u32 cap_raised;
+ 
+@@ -59,6 +65,14 @@ int cap_capable (struct task_struct *tsk, int cap)
+ 	return cap_raised ? 0 : -EPERM;
  }
  
- static int selinux_file_fcntl(struct file *file, unsigned int cmd,
- 			      unsigned long arg)
++/**
++ * cap_settime - Determine whether the current process may set the system clock
++ * @ts: The time to set
++ * @tz: The timezone to set
++ *
++ * Determine whether the current process may set the system clock and timezone
++ * information, returning 0 if permission granted, -ve if denied.
++ */
+ int cap_settime(struct timespec *ts, struct timezone *tz)
  {
-+	const struct cred *cred = current_cred();
- 	int err = 0;
+ 	if (!capable(CAP_SYS_TIME))
+@@ -66,6 +80,15 @@ int cap_settime(struct timespec *ts, struct timezone *tz)
+ 	return 0;
+ }
  
- 	switch (cmd) {
-@@ -3095,7 +3136,7 @@ static int selinux_file_fcntl(struct file *file, unsigned int cmd,
- 		}
++/**
++ * cap_ptrace_may_access - Determine whether the current process may access
++ *			   another
++ * @child: The process to be accessed
++ * @mode: The mode of attachment.
++ *
++ * Determine whether a process may access another, returning 0 if permission
++ * granted, -ve if denied.
++ */
+ int cap_ptrace_may_access(struct task_struct *child, unsigned int mode)
+ {
+ 	int ret = 0;
+@@ -79,6 +102,13 @@ int cap_ptrace_may_access(struct task_struct *child, unsigned int mode)
+ 	return ret;
+ }
  
- 		if ((file->f_flags & O_APPEND) && !(arg & O_APPEND)) {
--			err = file_has_perm(current, file, FILE__WRITE);
-+			err = file_has_perm(cred, file, FILE__WRITE);
- 			break;
- 		}
- 		/* fall through */
-@@ -3105,7 +3146,7 @@ static int selinux_file_fcntl(struct file *file, unsigned int cmd,
- 	case F_GETOWN:
- 	case F_GETSIG:
- 		/* Just check FD__USE permission */
--		err = file_has_perm(current, file, 0);
-+		err = file_has_perm(cred, file, 0);
++/**
++ * cap_ptrace_traceme - Determine whether another process may trace the current
++ * @parent: The task proposed to be the tracer
++ *
++ * Determine whether the nominated task is permitted to trace the current
++ * process, returning 0 if permission is granted, -ve if denied.
++ */
+ int cap_ptrace_traceme(struct task_struct *parent)
+ {
+ 	int ret = 0;
+@@ -92,8 +122,18 @@ int cap_ptrace_traceme(struct task_struct *parent)
+ 	return ret;
+ }
+ 
+-int cap_capget (struct task_struct *target, kernel_cap_t *effective,
+-		kernel_cap_t *inheritable, kernel_cap_t *permitted)
++/**
++ * cap_capget - Retrieve a task's capability sets
++ * @target: The task from which to retrieve the capability sets
++ * @effective: The place to record the effective set
++ * @inheritable: The place to record the inheritable set
++ * @permitted: The place to record the permitted set
++ *
++ * This function retrieves the capabilities of the nominated task and returns
++ * them to the caller.
++ */
++int cap_capget(struct task_struct *target, kernel_cap_t *effective,
++	       kernel_cap_t *inheritable, kernel_cap_t *permitted)
+ {
+ 	const struct cred *cred;
+ 
+@@ -107,30 +147,35 @@ int cap_capget (struct task_struct *target, kernel_cap_t *effective,
+ 	return 0;
+ }
+ 
+-#ifdef CONFIG_SECURITY_FILE_CAPABILITIES
+-
++/*
++ * Determine whether the inheritable capabilities are limited to the old
++ * permitted set.  Returns 1 if they are limited, 0 if they are not.
++ */
+ static inline int cap_inh_is_capped(void)
+ {
+-	/*
+-	 * Return 1 if changes to the inheritable set are limited
+-	 * to the old permitted set. That is, if the current task
+-	 * does *not* possess the CAP_SETPCAP capability.
+-	 */
+-	return cap_capable(current, CAP_SETPCAP) != 0;
+-}
+-
+-static inline int cap_limit_ptraced_target(void) { return 1; }
+-
+-#else /* ie., ndef CONFIG_SECURITY_FILE_CAPABILITIES */
++#ifdef CONFIG_SECURITY_FILE_CAPABILITIES
+ 
+-static inline int cap_inh_is_capped(void) { return 1; }
+-static inline int cap_limit_ptraced_target(void)
+-{
+-	return !capable(CAP_SETPCAP);
++	/* they are so limited unless the current task has the CAP_SETPCAP
++	 * capability
++	 */
++	if (cap_capable(current, CAP_SETPCAP) == 0)
++		return 0;
++#endif
++	return 1;
+ }
+ 
+-#endif /* def CONFIG_SECURITY_FILE_CAPABILITIES */
+-
++/**
++ * cap_capset - Validate and apply proposed changes to current's capabilities
++ * @new: The proposed new credentials; alterations should be made here
++ * @old: The current task's current credentials
++ * @effective: A pointer to the proposed new effective capabilities set
++ * @inheritable: A pointer to the proposed new inheritable capabilities set
++ * @permitted: A pointer to the proposed new permitted capabilities set
++ *
++ * This function validates and applies a proposed mass change to the current
++ * process's capability sets.  The changes are made to the proposed new
++ * credentials, and assuming no error, will be committed by the caller of LSM.
++ */
+ int cap_capset(struct cred *new,
+ 	       const struct cred *old,
+ 	       const kernel_cap_t *effective,
+@@ -164,6 +209,9 @@ int cap_capset(struct cred *new,
+ 	return 0;
+ }
+ 
++/*
++ * Clear proposed capability sets for execve().
++ */
+ static inline void bprm_clear_caps(struct linux_binprm *bprm)
+ {
+ 	cap_clear(bprm->cred->cap_permitted);
+@@ -172,6 +220,17 @@ static inline void bprm_clear_caps(struct linux_binprm *bprm)
+ 
+ #ifdef CONFIG_SECURITY_FILE_CAPABILITIES
+ 
++/**
++ * cap_inode_need_killpriv - Determine if inode change affects privileges
++ * @dentry: The inode/dentry in being changed with change marked ATTR_KILL_PRIV
++ *
++ * Determine if an inode having a change applied that's marked ATTR_KILL_PRIV
++ * affects the security markings on that inode, and if it is, should
++ * inode_killpriv() be invoked or the change rejected?
++ *
++ * Returns 0 if granted; +ve if granted, but inode_killpriv() is required; and
++ * -ve to deny the change.
++ */
+ int cap_inode_need_killpriv(struct dentry *dentry)
+ {
+ 	struct inode *inode = dentry->d_inode;
+@@ -186,6 +245,14 @@ int cap_inode_need_killpriv(struct dentry *dentry)
+ 	return 1;
+ }
+ 
++/**
++ * cap_inode_killpriv - Erase the security markings on an inode
++ * @dentry: The inode/dentry to alter
++ *
++ * Erase the privilege-enhancing security markings on an inode.
++ *
++ * Returns 0 if successful, -ve on error.
++ */
+ int cap_inode_killpriv(struct dentry *dentry)
+ {
+ 	struct inode *inode = dentry->d_inode;
+@@ -196,6 +263,9 @@ int cap_inode_killpriv(struct dentry *dentry)
+ 	return inode->i_op->removexattr(dentry, XATTR_NAME_CAPS);
+ }
+ 
++/*
++ * Extract the on-exec-apply capability sets for an executable file.
++ */
+ static inline int cap_from_disk(struct vfs_cap_data *caps,
+ 				struct linux_binprm *bprm, unsigned size,
+ 				bool *effective)
+@@ -264,7 +334,11 @@ static inline int cap_from_disk(struct vfs_cap_data *caps,
+ 	return *effective ? ret : 0;
+ }
+ 
+-/* Locate any VFS capabilities: */
++/*
++ * Attempt to get the on-exec apply capability sets for an executable file from
++ * its xattrs and, if present, apply them to the proposed credentials being
++ * constructed by execve().
++ */
+ static int get_file_caps(struct linux_binprm *bprm, bool *effective)
+ {
+ 	struct dentry *dentry;
+@@ -324,7 +398,31 @@ static inline int get_file_caps(struct linux_binprm *bprm, bool *effective)
+ #endif
+ 
+ /*
+- * set up the new credentials for an exec'd task
++ * Determine whether a exec'ing process's new permitted capabilities should be
++ * limited to just what it already has.
++ *
++ * This prevents processes that are being ptraced from gaining access to
++ * CAP_SETPCAP, unless the process they're tracing already has it, and the
++ * binary they're executing has filecaps that elevate it.
++ *
++ *  Returns 1 if they should be limited, 0 if they are not.
++ */
++static inline int cap_limit_ptraced_target(void)
++{
++#ifndef CONFIG_SECURITY_FILE_CAPABILITIES
++	if (capable(CAP_SETPCAP))
++		return 0;
++#endif
++	return 1;
++}
++
++/**
++ * cap_bprm_set_creds - Set up the proposed credentials for execve().
++ * @bprm: The execution parameters, including the proposed creds
++ *
++ * Set up the proposed credentials for a new execution context being
++ * constructed by execve().  The proposed creds in @bprm->cred is altered,
++ * which won't take effect immediately.  Returns 0 if successful, -ve on error.
+  */
+ int cap_bprm_set_creds(struct linux_binprm *bprm)
+ {
+@@ -392,10 +490,15 @@ int cap_bprm_set_creds(struct linux_binprm *bprm)
+ 	return 0;
+ }
+ 
+-/*
+- * determine whether a secure execution is required
+- * - the creds have been committed at this point, and are no longer available
+- *   through bprm
++/**
++ * cap_bprm_secureexec - Determine whether a secure execution is required
++ * @bprm: The execution parameters
++ *
++ * Determine whether a secure execution is required, return 1 if it is, and 0
++ * if it is not.
++ *
++ * The credentials have been committed by this point, and so are no longer
++ * available through @bprm->cred.
+  */
+ int cap_bprm_secureexec(struct linux_binprm *bprm)
+ {
+@@ -412,6 +515,20 @@ int cap_bprm_secureexec(struct linux_binprm *bprm)
+ 		cred->egid != cred->gid);
+ }
+ 
++/**
++ * cap_inode_setxattr - Determine whether an xattr may be altered
++ * @dentry: The inode/dentry being altered
++ * @name: The name of the xattr to be changed
++ * @value: The value that the xattr will be changed to
++ * @size: The size of value
++ * @flags: The replacement flag
++ *
++ * Determine whether an xattr may be altered or set on an inode, returning 0 if
++ * permission is granted, -ve if denied.
++ *
++ * This is used to make sure security xattrs don't get updated or set by those
++ * who aren't privileged to do so.
++ */
+ int cap_inode_setxattr(struct dentry *dentry, const char *name,
+ 		       const void *value, size_t size, int flags)
+ {
+@@ -419,28 +536,42 @@ int cap_inode_setxattr(struct dentry *dentry, const char *name,
+ 		if (!capable(CAP_SETFCAP))
+ 			return -EPERM;
+ 		return 0;
+-	} else if (!strncmp(name, XATTR_SECURITY_PREFIX,
++	}
++
++	if (!strncmp(name, XATTR_SECURITY_PREFIX,
+ 		     sizeof(XATTR_SECURITY_PREFIX) - 1)  &&
+ 	    !capable(CAP_SYS_ADMIN))
+ 		return -EPERM;
+ 	return 0;
+ }
+ 
++/**
++ * cap_inode_removexattr - Determine whether an xattr may be removed
++ * @dentry: The inode/dentry being altered
++ * @name: The name of the xattr to be changed
++ *
++ * Determine whether an xattr may be removed from an inode, returning 0 if
++ * permission is granted, -ve if denied.
++ *
++ * This is used to make sure security xattrs don't get removed by those who
++ * aren't privileged to remove them.
++ */
+ int cap_inode_removexattr(struct dentry *dentry, const char *name)
+ {
+ 	if (!strcmp(name, XATTR_NAME_CAPS)) {
+ 		if (!capable(CAP_SETFCAP))
+ 			return -EPERM;
+ 		return 0;
+-	} else if (!strncmp(name, XATTR_SECURITY_PREFIX,
++	}
++
++	if (!strncmp(name, XATTR_SECURITY_PREFIX,
+ 		     sizeof(XATTR_SECURITY_PREFIX) - 1)  &&
+ 	    !capable(CAP_SYS_ADMIN))
+ 		return -EPERM;
+ 	return 0;
+ }
+ 
+-/* moved from kernel/sys.c. */
+-/* 
++/*
+  * cap_emulate_setxuid() fixes the effective / permitted capabilities of
+  * a process after a call to setuid, setreuid, or setresuid.
+  *
+@@ -454,10 +585,10 @@ int cap_inode_removexattr(struct dentry *dentry, const char *name)
+  *  3) When set*uiding _from_ euid != 0 _to_ euid == 0, the effective
+  *  capabilities are set to the permitted capabilities.
+  *
+- *  fsuid is handled elsewhere. fsuid == 0 and {r,e,s}uid!= 0 should 
++ *  fsuid is handled elsewhere. fsuid == 0 and {r,e,s}uid!= 0 should
+  *  never happen.
+  *
+- *  -astor 
++ *  -astor
+  *
+  * cevans - New behaviour, Oct '99
+  * A process may, via prctl(), elect to keep its capabilities when it
+@@ -483,35 +614,46 @@ static inline void cap_emulate_setxuid(struct cred *new, const struct cred *old)
+ 		new->cap_effective = new->cap_permitted;
+ }
+ 
++/**
++ * cap_task_fix_setuid - Fix up the results of setuid() call
++ * @new: The proposed credentials
++ * @old: The current task's current credentials
++ * @flags: Indications of what has changed
++ *
++ * Fix up the results of setuid() call before the credential changes are
++ * actually applied, returning 0 to grant the changes, -ve to deny them.
++ */
+ int cap_task_fix_setuid(struct cred *new, const struct cred *old, int flags)
+ {
+ 	switch (flags) {
+ 	case LSM_SETID_RE:
+ 	case LSM_SETID_ID:
+ 	case LSM_SETID_RES:
+-		/* Copied from kernel/sys.c:setreuid/setuid/setresuid. */
++		/* juggle the capabilities to follow [RES]UID changes unless
++		 * otherwise suppressed */
+ 		if (!issecure(SECURE_NO_SETUID_FIXUP))
+ 			cap_emulate_setxuid(new, old);
  		break;
- 	case F_GETLK:
- 	case F_SETLK:
-@@ -3119,7 +3160,7 @@ static int selinux_file_fcntl(struct file *file, unsigned int cmd,
- 			err = -EINVAL;
- 			break;
+-	case LSM_SETID_FS:
+-		/* Copied from kernel/sys.c:setfsuid. */
+ 
+-		/*
++	case LSM_SETID_FS:
++		/* juggle the capabilties to follow FSUID changes, unless
++		 * otherwise suppressed
++		 *
+ 		 * FIXME - is fsuser used for all CAP_FS_MASK capabilities?
+ 		 *          if not, we might be a bit too harsh here.
+ 		 */
+ 		if (!issecure(SECURE_NO_SETUID_FIXUP)) {
+-			if (old->fsuid == 0 && new->fsuid != 0) {
++			if (old->fsuid == 0 && new->fsuid != 0)
+ 				new->cap_effective =
+ 					cap_drop_fs_set(new->cap_effective);
+-			}
+-			if (old->fsuid != 0 && new->fsuid == 0) {
++
++			if (old->fsuid != 0 && new->fsuid == 0)
+ 				new->cap_effective =
+ 					cap_raise_fs_set(new->cap_effective,
+ 							 new->cap_permitted);
+-			}
  		}
--		err = file_has_perm(current, file, FILE__LOCK);
-+		err = file_has_perm(cred, file, FILE__LOCK);
  		break;
++
+ 	default:
+ 		return -EINVAL;
  	}
- 
-@@ -3160,11 +3201,14 @@ static int selinux_file_send_sigiotask(struct task_struct *tsk,
- 
- static int selinux_file_receive(struct file *file)
- {
--	return file_has_perm(current, file, file_to_av(file));
-+	const struct cred *cred = current_cred();
-+
-+	return file_has_perm(cred, file, file_to_av(file));
+@@ -544,28 +686,50 @@ static inline int cap_safe_nice(struct task_struct *p)
+ 	return 0;
  }
  
- static int selinux_dentry_open(struct file *file)
+-int cap_task_setscheduler (struct task_struct *p, int policy,
++/**
++ * cap_task_setscheduler - Detemine if scheduler policy change is permitted
++ * @p: The task to affect
++ * @policy: The policy to effect
++ * @lp: The parameters to the scheduling policy
++ *
++ * Detemine if the requested scheduler policy change is permitted for the
++ * specified task, returning 0 if permission is granted, -ve if denied.
++ */
++int cap_task_setscheduler(struct task_struct *p, int policy,
+ 			   struct sched_param *lp)
  {
-+	const struct cred *cred = current_cred();
- 	struct file_security_struct *fsec;
- 	struct inode *inode;
- 	struct inode_security_struct *isec;
-@@ -3188,7 +3232,7 @@ static int selinux_dentry_open(struct file *file)
- 	 * new inode label or new policy.
- 	 * This check is not redundant - do not remove.
- 	 */
--	return inode_has_perm(current, inode, file_to_av(file), NULL);
-+	return inode_has_perm(cred, inode, file_to_av(file), NULL);
+ 	return cap_safe_nice(p);
  }
  
- /* task security operations */
+-int cap_task_setioprio (struct task_struct *p, int ioprio)
++/**
++ * cap_task_ioprio - Detemine if I/O priority change is permitted
++ * @p: The task to affect
++ * @ioprio: The I/O priority to set
++ *
++ * Detemine if the requested I/O priority change is permitted for the specified
++ * task, returning 0 if permission is granted, -ve if denied.
++ */
++int cap_task_setioprio(struct task_struct *p, int ioprio)
+ {
+ 	return cap_safe_nice(p);
+ }
+ 
+-int cap_task_setnice (struct task_struct *p, int nice)
++/**
++ * cap_task_ioprio - Detemine if task priority change is permitted
++ * @p: The task to affect
++ * @nice: The nice value to set
++ *
++ * Detemine if the requested task priority change is permitted for the
++ * specified task, returning 0 if permission is granted, -ve if denied.
++ */
++int cap_task_setnice(struct task_struct *p, int nice)
+ {
+ 	return cap_safe_nice(p);
+ }
+ 
+ /*
+- * called from kernel/sys.c for prctl(PR_CABSET_DROP)
+- * done without task_capability_lock() because it introduces
+- * no new races - i.e. only another task doing capget() on
+- * this task could get inconsistent info.  There can be no
+- * racing writer bc a task can only change its own caps.
++ * Implement PR_CAPBSET_DROP.  Attempt to remove the specified capability from
++ * the current task's bounding set.  Returns 0 on success, -ve on error.
+  */
+ static long cap_prctl_drop(struct cred *new, unsigned long cap)
+ {
+@@ -594,6 +758,18 @@ int cap_task_setnice (struct task_struct *p, int nice)
+ }
+ #endif
+ 
++/**
++ * cap_task_prctl - Implement process control functions for this security module
++ * @option: The process control function requested
++ * @arg2, @arg3, @arg4, @arg5: The argument data for this function
++ *
++ * Allow process control functions (sys_prctl()) to alter capabilities; may
++ * also deny access to other functions not otherwise implemented here.
++ *
++ * Returns 0 or +ve on success, -ENOSYS if this function is not implemented
++ * here, other -ve on error.  If -ENOSYS is returned, sys_prctl() and other LSM
++ * modules will consider performing the function.
++ */
+ int cap_task_prctl(int option, unsigned long arg2, unsigned long arg3,
+ 		   unsigned long arg4, unsigned long arg5)
+ {
+@@ -699,13 +875,28 @@ error:
+ 	return error;
+ }
+ 
+-int cap_syslog (int type)
++/**
++ * cap_syslog - Determine whether syslog function is permitted
++ * @type: Function requested
++ *
++ * Determine whether the current process is permitted to use a particular
++ * syslog function, returning 0 if permission is granted, -ve if not.
++ */
++int cap_syslog(int type)
+ {
+ 	if ((type != 3 && type != 10) && !capable(CAP_SYS_ADMIN))
+ 		return -EPERM;
+ 	return 0;
+ }
+ 
++/**
++ * cap_vm_enough_memory - Determine whether a new virtual mapping is permitted
++ * @mm: The VM space in which the new mapping is to be made
++ * @pages: The size of the mapping
++ *
++ * Determine whether the allocation of a new virtual mapping by the current
++ * task is permitted, returning 0 if permission is granted, -ve if not.
++ */
+ int cap_vm_enough_memory(struct mm_struct *mm, long pages)
+ {
+ 	int cap_sys_admin = 0;
+@@ -714,4 +905,3 @@ int cap_vm_enough_memory(struct mm_struct *mm, long pages)
+ 		cap_sys_admin = 1;
+ 	return __vm_enough_memory(mm, pages, cap_sys_admin);
+ }
+-
 
