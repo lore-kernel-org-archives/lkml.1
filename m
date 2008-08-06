@@ -1,49 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759973AbYHFBMy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762808AbYHFBNa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759973AbYHFBMy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 21:12:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757066AbYHFBMK
+	id S1762808AbYHFBNa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 21:13:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762703AbYHFBM0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 21:12:10 -0400
-Received: from an-out-0708.google.com ([209.85.132.244]:27189 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756742AbYHFBMI (ORCPT
+	Tue, 5 Aug 2008 21:12:26 -0400
+Received: from 69-30-77-85.dq1sn.easystreet.com ([69.30.77.85]:58374 "EHLO
+	camus.anholt.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762305AbYHFBMY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 21:12:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=UtCzpuiYdQP7q/Mqikb/eagNU5ihr+0KV0t67drA25gPTba0nh61wpXdRl+c2vd05r
-         XYgYMyOJ9x1tSyQjhy1nzEFMJaNhD33tTsjCnjCet7k+opz9n+nJBLeOr9q57+/bVQii
-         Ni+3n4jzS5aB3+7M2beXsenf65latv/8HzVqM=
-Message-ID: <43e72e890808051812y1f6b18ecpac089e45d4c18b84@mail.gmail.com>
-Date: Tue, 5 Aug 2008 18:12:07 -0700
-From: "Luis R. Rodriguez" <mcgrof@gmail.com>
-To: "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>
-Subject: CRDA and uevent
-Cc: "linux kernel" <linux-kernel@vger.kernel.org>,
-       "Marcel Holtmann" <marcel@holtmann.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+	Tue, 5 Aug 2008 21:12:24 -0400
+Subject: Re: [PATCH] drm: Add GEM ("graphics execution manager") to i915
+	driver.
+From: Eric Anholt <eric@anholt.net>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: linux-kernel@vger.kernel.org, keithp@keithp.com
+In-Reply-To: <20080801084405.62d3c823.randy.dunlap@oracle.com>
+References: <1217573919-7496-1-git-send-email-eric@anholt.net>
+	 <1217573919-7496-2-git-send-email-eric@anholt.net>
+	 <1217573919-7496-3-git-send-email-eric@anholt.net>
+	 <20080801084405.62d3c823.randy.dunlap@oracle.com>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-AUbXbItARCj4ClNC9AvR"
+Date: Tue, 05 Aug 2008 18:11:56 -0700
+Message-Id: <1217985116.7524.44.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-At OLS we reviewed how CRDA [1] and its integration with the kernel
-works. One comment was to have the kernel call a uevent instead of
-calling call_usermodehelper() as this is a better accepted way of
-calling user mode helpers and it provides a better framework. I still
-am not sold on this but regardless I'd like to give it a shot. It
-seems we would need to register a class for this.
 
-Marcel I know you also mentioned about using device platform for this?
-Is this correct or did I misunderstand? Can you elaborate a bit?
+--=-AUbXbItARCj4ClNC9AvR
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Thanks,
+On Fri, 2008-08-01 at 08:44 -0700, Randy Dunlap wrote:
+> On Thu, 31 Jul 2008 23:58:39 -0700 Eric Anholt wrote:
+>=20
+> > GEM allows the creation of persistent buffer objects accessible by the
+> > graphics device through new ioctls for managing execution of commands o=
+n the
+> > device.  The userland API is almost entirely driver-specific to ensure =
+that
+> > any driver building on this model can easily map the interface to indiv=
+idual
+> > driver requirements.
+> >=20
+> > GEM is used by the 2d driver for managing its internal state allocation=
+s and
+> > will be used for pixmap storage to reduce memory consumption and enable
+> > zero-copy GLX_EXT_texture_from_pixmap, and in the 3d driver is used to =
+enable
+> > GL_EXT_framebuffer_object and GL_ARB_pixel_buffer_object.
+>=20
+> "the 2d driver" ... "the 3d driver".
+> Just curious:  Is there only one of each of these?
 
-  Luis
+"The 2D driver" means xf86-video-intel xorg driver in userland.
+"The 3D driver" means i9[16]5_dri.so mesa driver in userland.
 
-[1] http://wireless.kernel.org/en/developers/Regulatory/CRDA
+> > diff --git a/drivers/gpu/drm/drm_agpsupport.c b/drivers/gpu/drm/drm_agp=
+support.c
+> > index aefa5ac..2639be2 100644
+> > --- a/drivers/gpu/drm/drm_agpsupport.c
+> > +++ b/drivers/gpu/drm/drm_agpsupport.c
+> > @@ -33,6 +33,7 @@
+> > =20
+> >  #include "drmP.h"
+> >  #include <linux/module.h>
+> > +#include <asm/agp.h>
+> > =20
+> >  #if __OS_HAS_AGP
+> > =20
+> > @@ -452,4 +453,52 @@ int drm_agp_unbind_memory(DRM_AGP_MEM * handle)
+> >  	return agp_unbind_memory(handle);
+> >  }
+> > =20
+> > -#endif				/* __OS_HAS_AGP */
+> > +/**
+>=20
+> In the kernel source tree, "/**" means "beginning of kernel-doc notation"=
+,
+> so please don't use it when kernel-doc isn't being used.
+> (in multiple places/files)
+
+The codebase this is coming from uses doxygen.  I hadn't checked to see
+if all the doxygen was converted to kernel-doc.
+
+--=20
+Eric Anholt
+eric@anholt.net                         eric.anholt@intel.com
+
+
+
+--=-AUbXbItARCj4ClNC9AvR
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkiY+lwACgkQHUdvYGzw6vc1yACcDvvbic4exOyJj5YRF638eqwH
+RfoAn0qnivlJZRKFdA48d9tfLjDD7grL
+=/oJY
+-----END PGP SIGNATURE-----
+
+--=-AUbXbItARCj4ClNC9AvR--
