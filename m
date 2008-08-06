@@ -1,26 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760623AbYHFPlT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964808AbYHFPmA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760623AbYHFPlT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Aug 2008 11:41:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757554AbYHFPjY
+	id S964808AbYHFPmA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Aug 2008 11:42:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759951AbYHFPj3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Aug 2008 11:39:24 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:38184 "EHLO mx1.redhat.com"
+	Wed, 6 Aug 2008 11:39:29 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:38220 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755943AbYHFPjN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Aug 2008 11:39:13 -0400
+	id S1755624AbYHFPjQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Aug 2008 11:39:16 -0400
 Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
 	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
 	Kingdom.
 	Registered in England and Wales under Company Registration No. 3798903
 From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 19/24] CRED: Prettify commoncap.c [ver #7]
+Subject: [PATCH 13/24] CRED: Separate per-task-group keyrings from
+	signal_struct [ver #7]
 To: jmorris@namei.org, akpm@linux-foundation.org, morgan@kernel.org
 Cc: sfr@canb.auug.org.au, dhowells@redhat.com, viro@ftp.linux.org.uk,
        casey@schaufler-ca.com, linux-security-module@vger.kernel.org,
        linux-kernel@vger.kernel.org
-Date: Wed, 06 Aug 2008 16:38:52 +0100
-Message-ID: <20080806153852.14351.50309.stgit@warthog.procyon.org.uk>
+Date: Wed, 06 Aug 2008 16:38:21 +0100
+Message-ID: <20080806153821.14351.95508.stgit@warthog.procyon.org.uk>
 In-Reply-To: <20080806153713.14351.91448.stgit@warthog.procyon.org.uk>
 References: <20080806153713.14351.91448.stgit@warthog.procyon.org.uk>
 User-Agent: StGIT/0.14.1
@@ -31,537 +32,590 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Prettify commoncap.c.
+Separate per-task-group keyrings from signal_struct and dangle their anchor
+from the cred struct rather than the signal_struct.
 
 Signed-off-by: David Howells <dhowells@redhat.com>
-Acked-by: Serge Hallyn <serue@us.ibm.com>
 Reviewed-by: James Morris <jmorris@namei.org>
 ---
 
- security/commoncap.c |  304 +++++++++++++++++++++++++++++++++++++++++---------
- 1 files changed, 247 insertions(+), 57 deletions(-)
+ include/linux/cred.h         |   16 +++++++
+ include/linux/key.h          |    8 +--
+ include/linux/sched.h        |    6 ---
+ kernel/cred.c                |   61 ++++++++++++++++++++++++++
+ kernel/fork.c                |    8 ---
+ security/keys/process_keys.c |   99 +++++++++++++++++-------------------------
+ security/keys/request_key.c  |   34 ++++++--------
+ 7 files changed, 132 insertions(+), 100 deletions(-)
 
 
-diff --git a/security/commoncap.c b/security/commoncap.c
-index 3da0ada..c91b1af 100644
---- a/security/commoncap.c
-+++ b/security/commoncap.c
-@@ -39,16 +39,22 @@ int cap_netlink_recv(struct sk_buff *skb, int cap)
- 		return -EPERM;
- 	return 0;
- }
--
- EXPORT_SYMBOL(cap_netlink_recv);
- 
--/*
-+/**
-+ * cap_capable - Determine whether a task has a particular effective capability
-+ * @tsk: The task to query
-+ * @cap: The capability to check for
-+ *
-+ * Determine whether the nominated task has the specified capability amongst
-+ * its effective set, returning 0 if it does, -ve if it does not.
-+ *
-  * NOTE WELL: cap_capable() cannot be used like the kernel's capable()
-- * function.  That is, it has the reverse semantics: cap_capable()
-- * returns 0 when a task has a capability, but the kernel's capable()
-- * returns 1 for this case.
-+ * function.  That is, it has the reverse semantics: cap_capable() returns 0
-+ * when a task has a capability, but the kernel's capable() returns 1 for this
-+ * case.
-  */
--int cap_capable (struct task_struct *tsk, int cap)
-+int cap_capable(struct task_struct *tsk, int cap)
- {
- 	__u32 cap_raised;
- 
-@@ -59,6 +65,14 @@ int cap_capable (struct task_struct *tsk, int cap)
- 	return cap_raised ? 0 : -EPERM;
- }
- 
-+/**
-+ * cap_settime - Determine whether the current process may set the system clock
-+ * @ts: The time to set
-+ * @tz: The timezone to set
-+ *
-+ * Determine whether the current process may set the system clock and timezone
-+ * information, returning 0 if permission granted, -ve if denied.
-+ */
- int cap_settime(struct timespec *ts, struct timezone *tz)
- {
- 	if (!capable(CAP_SYS_TIME))
-@@ -66,6 +80,15 @@ int cap_settime(struct timespec *ts, struct timezone *tz)
- 	return 0;
- }
- 
-+/**
-+ * cap_ptrace_may_access - Determine whether the current process may access
-+ *			   another
-+ * @child: The process to be accessed
-+ * @mode: The mode of attachment.
-+ *
-+ * Determine whether a process may access another, returning 0 if permission
-+ * granted, -ve if denied.
-+ */
- int cap_ptrace_may_access(struct task_struct *child, unsigned int mode)
- {
- 	int ret = 0;
-@@ -79,6 +102,13 @@ int cap_ptrace_may_access(struct task_struct *child, unsigned int mode)
- 	return ret;
- }
- 
-+/**
-+ * cap_ptrace_traceme - Determine whether another process may trace the current
-+ * @parent: The task proposed to be the tracer
-+ *
-+ * Determine whether the nominated task is permitted to trace the current
-+ * process, returning 0 if permission is granted, -ve if denied.
-+ */
- int cap_ptrace_traceme(struct task_struct *parent)
- {
- 	int ret = 0;
-@@ -92,8 +122,18 @@ int cap_ptrace_traceme(struct task_struct *parent)
- 	return ret;
- }
- 
--int cap_capget (struct task_struct *target, kernel_cap_t *effective,
--		kernel_cap_t *inheritable, kernel_cap_t *permitted)
-+/**
-+ * cap_capget - Retrieve a task's capability sets
-+ * @target: The task from which to retrieve the capability sets
-+ * @effective: The place to record the effective set
-+ * @inheritable: The place to record the inheritable set
-+ * @permitted: The place to record the permitted set
-+ *
-+ * This function retrieves the capabilities of the nominated task and returns
-+ * them to the caller.
-+ */
-+int cap_capget(struct task_struct *target, kernel_cap_t *effective,
-+	       kernel_cap_t *inheritable, kernel_cap_t *permitted)
- {
- 	const struct cred *cred;
- 
-@@ -107,30 +147,35 @@ int cap_capget (struct task_struct *target, kernel_cap_t *effective,
- 	return 0;
- }
- 
--#ifdef CONFIG_SECURITY_FILE_CAPABILITIES
--
-+/*
-+ * Determine whether the inheritable capabilities are limited to the old
-+ * permitted set.  Returns 1 if they are limited, 0 if they are not.
-+ */
- static inline int cap_inh_is_capped(void)
- {
--	/*
--	 * Return 1 if changes to the inheritable set are limited
--	 * to the old permitted set. That is, if the current task
--	 * does *not* possess the CAP_SETPCAP capability.
--	 */
--	return cap_capable(current, CAP_SETPCAP) != 0;
--}
--
--static inline int cap_limit_ptraced_target(void) { return 1; }
--
--#else /* ie., ndef CONFIG_SECURITY_FILE_CAPABILITIES */
-+#ifdef CONFIG_SECURITY_FILE_CAPABILITIES
- 
--static inline int cap_inh_is_capped(void) { return 1; }
--static inline int cap_limit_ptraced_target(void)
--{
--	return !capable(CAP_SETPCAP);
-+	/* they are so limited unless the current task has the CAP_SETPCAP
-+	 * capability
-+	 */
-+	if (cap_capable(current, CAP_SETPCAP) == 0)
-+		return 0;
-+#endif
-+	return 1;
- }
- 
--#endif /* def CONFIG_SECURITY_FILE_CAPABILITIES */
--
-+/**
-+ * cap_capset - Validate and apply proposed changes to current's capabilities
-+ * @new: The proposed new credentials; alterations should be made here
-+ * @old: The current task's current credentials
-+ * @effective: A pointer to the proposed new effective capabilities set
-+ * @inheritable: A pointer to the proposed new inheritable capabilities set
-+ * @permitted: A pointer to the proposed new permitted capabilities set
-+ *
-+ * This function validates and applies a proposed mass change to the current
-+ * process's capability sets.  The changes are made to the proposed new
-+ * credentials, and assuming no error, will be committed by the caller of LSM.
-+ */
- int cap_capset(struct cred *new,
- 	       const struct cred *old,
- 	       const kernel_cap_t *effective,
-@@ -164,6 +209,9 @@ int cap_capset(struct cred *new,
- 	return 0;
- }
- 
-+/*
-+ * Clear proposed capability sets for execve().
-+ */
- static inline void bprm_clear_caps(struct linux_binprm *bprm)
- {
- 	cap_clear(bprm->cred->cap_permitted);
-@@ -172,6 +220,17 @@ static inline void bprm_clear_caps(struct linux_binprm *bprm)
- 
- #ifdef CONFIG_SECURITY_FILE_CAPABILITIES
- 
-+/**
-+ * cap_inode_need_killpriv - Determine if inode change affects privileges
-+ * @dentry: The inode/dentry in being changed with change marked ATTR_KILL_PRIV
-+ *
-+ * Determine if an inode having a change applied that's marked ATTR_KILL_PRIV
-+ * affects the security markings on that inode, and if it is, should
-+ * inode_killpriv() be invoked or the change rejected?
-+ *
-+ * Returns 0 if granted; +ve if granted, but inode_killpriv() is required; and
-+ * -ve to deny the change.
-+ */
- int cap_inode_need_killpriv(struct dentry *dentry)
- {
- 	struct inode *inode = dentry->d_inode;
-@@ -186,6 +245,14 @@ int cap_inode_need_killpriv(struct dentry *dentry)
- 	return 1;
- }
- 
-+/**
-+ * cap_inode_killpriv - Erase the security markings on an inode
-+ * @dentry: The inode/dentry to alter
-+ *
-+ * Erase the privilege-enhancing security markings on an inode.
-+ *
-+ * Returns 0 if successful, -ve on error.
-+ */
- int cap_inode_killpriv(struct dentry *dentry)
- {
- 	struct inode *inode = dentry->d_inode;
-@@ -196,6 +263,9 @@ int cap_inode_killpriv(struct dentry *dentry)
- 	return inode->i_op->removexattr(dentry, XATTR_NAME_CAPS);
- }
- 
-+/*
-+ * Extract the on-exec-apply capability sets for an executable file.
-+ */
- static inline int cap_from_disk(struct vfs_cap_data *caps,
- 				struct linux_binprm *bprm, unsigned size,
- 				bool *effective)
-@@ -264,7 +334,11 @@ static inline int cap_from_disk(struct vfs_cap_data *caps,
- 	return *effective ? ret : 0;
- }
- 
--/* Locate any VFS capabilities: */
-+/*
-+ * Attempt to get the on-exec apply capability sets for an executable file from
-+ * its xattrs and, if present, apply them to the proposed credentials being
-+ * constructed by execve().
-+ */
- static int get_file_caps(struct linux_binprm *bprm, bool *effective)
- {
- 	struct dentry *dentry;
-@@ -324,7 +398,31 @@ static inline int get_file_caps(struct linux_binprm *bprm, bool *effective)
- #endif
+diff --git a/include/linux/cred.h b/include/linux/cred.h
+index 5c4e098..28e1d0e 100644
+--- a/include/linux/cred.h
++++ b/include/linux/cred.h
+@@ -72,6 +72,21 @@ extern int in_group_p(gid_t);
+ extern int in_egroup_p(gid_t);
  
  /*
-- * set up the new credentials for an exec'd task
-+ * Determine whether a exec'ing process's new permitted capabilities should be
-+ * limited to just what it already has.
-+ *
-+ * This prevents processes that are being ptraced from gaining access to
-+ * CAP_SETPCAP, unless the process they're tracing already has it, and the
-+ * binary they're executing has filecaps that elevate it.
-+ *
-+ *  Returns 1 if they should be limited, 0 if they are not.
++ * The common credentials for a thread group
++ * - shared by CLONE_THREAD
 + */
-+static inline int cap_limit_ptraced_target(void)
-+{
-+#ifndef CONFIG_SECURITY_FILE_CAPABILITIES
-+	if (capable(CAP_SETPCAP))
-+		return 0;
++#ifdef CONFIG_KEYS
++struct thread_group_cred {
++	atomic_t	usage;
++	pid_t		tgid;			/* thread group process ID */
++	spinlock_t	lock;
++	struct key	*session_keyring;	/* keyring inherited over fork */
++	struct key	*process_keyring;	/* keyring private to this process */
++	struct rcu_head	rcu;			/* RCU deletion hook */
++};
 +#endif
-+	return 1;
++
++/*
+  * The security context of a task
+  *
+  * The parts of the context break down into two categories:
+@@ -114,6 +129,7 @@ struct cred {
+ 					 * keys to */
+ 	struct key	*thread_keyring; /* keyring private to this thread */
+ 	struct key	*request_key_auth; /* assumed request_key authority */
++	struct thread_group_cred *tgcred; /* thread-group shared credentials */
+ #endif
+ #ifdef CONFIG_SECURITY
+ 	void		*security;	/* subjective LSM security */
+diff --git a/include/linux/key.h b/include/linux/key.h
+index 599a37c..1a18ae9 100644
+--- a/include/linux/key.h
++++ b/include/linux/key.h
+@@ -278,9 +278,7 @@ extern ctl_table key_sysctls[];
+  */
+ extern void switch_uid_keyring(struct user_struct *new_user);
+ extern int copy_keys(unsigned long clone_flags, struct task_struct *tsk);
+-extern int copy_thread_group_keys(struct task_struct *tsk);
+ extern void exit_keys(struct task_struct *tsk);
+-extern void exit_thread_group_keys(struct signal_struct *tg);
+ extern int suid_keys(struct task_struct *tsk);
+ extern int exec_keys(struct task_struct *tsk);
+ extern void key_fsuid_changed(struct task_struct *tsk);
+@@ -289,8 +287,8 @@ extern void key_init(void);
+ 
+ #define __install_session_keyring(keyring)				\
+ ({									\
+-	struct key *old_session = current->signal->session_keyring;	\
+-	current->signal->session_keyring = keyring;			\
++	struct key *old_session = current->cred->tgcred->session_keyring; \
++	current->cred->tgcred->session_keyring = keyring;		\
+ 	old_session;							\
+ })
+ 
+@@ -307,9 +305,7 @@ extern void key_init(void);
+ #define switch_uid_keyring(u)		do { } while(0)
+ #define __install_session_keyring(k)	NULL
+ #define copy_keys(f,t)			0
+-#define copy_thread_group_keys(t)	0
+ #define exit_keys(t)			do { } while(0)
+-#define exit_thread_group_keys(tg)	do { } while(0)
+ #define suid_keys(t)			do { } while(0)
+ #define exec_keys(t)			do { } while(0)
+ #define key_fsuid_changed(t)		do { } while(0)
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index 041b153..7916519 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -529,12 +529,6 @@ struct signal_struct {
+ 
+ 	struct list_head cpu_timers[3];
+ 
+-	/* keep the process-shared keyrings here so that they do the right
+-	 * thing in threads created with CLONE_THREAD */
+-#ifdef CONFIG_KEYS
+-	struct key *session_keyring;	/* keyring inherited over fork */
+-	struct key *process_keyring;	/* keyring private to this process */
+-#endif
+ #ifdef CONFIG_BSD_PROCESS_ACCT
+ 	struct pacct_struct pacct;	/* per-process accounting information */
+ #endif
+diff --git a/kernel/cred.c b/kernel/cred.c
+index 2195841..6090cb6 100644
+--- a/kernel/cred.c
++++ b/kernel/cred.c
+@@ -17,6 +17,17 @@
+ #include <linux/security.h>
+ 
+ /*
++ * The common credentials for the initial task's thread group
++ */
++#ifdef CONFIG_KEYS
++static struct thread_group_cred init_tgcred = {
++	.usage	= ATOMIC_INIT(2),
++	.tgid	= 0,
++	.lock	= SPIN_LOCK_UNLOCKED,
++};
++#endif
++
++/*
+  * The initial credentials for the initial task
+  */
+ struct cred init_cred = {
+@@ -28,9 +39,40 @@ struct cred init_cred = {
+ 	.cap_bset		= CAP_INIT_BSET,
+ 	.user			= INIT_USER,
+ 	.group_info		= &init_groups,
++#ifdef CONFIG_KEYS
++	.tgcred			= &init_tgcred,
++#endif
+ };
+ 
+ /*
++ * Dispose of the shared task group credentials
++ */
++#ifdef CONFIG_KEYS
++static void put_tgcred_rcu(struct rcu_head *rcu)
++{
++	struct thread_group_cred *tgcred =
++		container_of(rcu, struct thread_group_cred, rcu);
++
++	BUG_ON(atomic_read(&tgcred->usage) != 0);
++
++	key_put(tgcred->session_keyring);
++	key_put(tgcred->process_keyring);
++	kfree(tgcred);
++}
++#endif
++
++/*
++ * Release a set of thread group credentials.
++ */
++static void put_tgcred(struct thread_group_cred *tgcred)
++{
++#ifdef CONFIG_KEYS
++	if (atomic_dec_and_test(&tgcred->usage))
++		call_rcu(&tgcred->rcu, put_tgcred_rcu);
++#endif
 +}
 +
-+/**
-+ * cap_bprm_set_creds - Set up the proposed credentials for execve().
-+ * @bprm: The execution parameters, including the proposed creds
-+ *
-+ * Set up the proposed credentials for a new execution context being
-+ * constructed by execve().  The proposed creds in @bprm->cred is altered,
-+ * which won't take effect immediately.  Returns 0 if successful, -ve on error.
-  */
- int cap_bprm_set_creds(struct linux_binprm *bprm)
- {
-@@ -392,10 +490,15 @@ int cap_bprm_set_creds(struct linux_binprm *bprm)
- 	return 0;
- }
- 
--/*
-- * determine whether a secure execution is required
-- * - the creds have been committed at this point, and are no longer available
-- *   through bprm
-+/**
-+ * cap_bprm_secureexec - Determine whether a secure execution is required
-+ * @bprm: The execution parameters
-+ *
-+ * Determine whether a secure execution is required, return 1 if it is, and 0
-+ * if it is not.
-+ *
-+ * The credentials have been committed by this point, and so are no longer
-+ * available through @bprm->cred.
-  */
- int cap_bprm_secureexec(struct linux_binprm *bprm)
- {
-@@ -412,6 +515,20 @@ int cap_bprm_secureexec(struct linux_binprm *bprm)
- 		cred->egid != cred->gid);
- }
- 
-+/**
-+ * cap_inode_setxattr - Determine whether an xattr may be altered
-+ * @dentry: The inode/dentry being altered
-+ * @name: The name of the xattr to be changed
-+ * @value: The value that the xattr will be changed to
-+ * @size: The size of value
-+ * @flags: The replacement flag
-+ *
-+ * Determine whether an xattr may be altered or set on an inode, returning 0 if
-+ * permission is granted, -ve if denied.
-+ *
-+ * This is used to make sure security xattrs don't get updated or set by those
-+ * who aren't privileged to do so.
-+ */
- int cap_inode_setxattr(struct dentry *dentry, const char *name,
- 		       const void *value, size_t size, int flags)
- {
-@@ -419,28 +536,42 @@ int cap_inode_setxattr(struct dentry *dentry, const char *name,
- 		if (!capable(CAP_SETFCAP))
- 			return -EPERM;
- 		return 0;
--	} else if (!strncmp(name, XATTR_SECURITY_PREFIX,
-+	}
-+
-+	if (!strncmp(name, XATTR_SECURITY_PREFIX,
- 		     sizeof(XATTR_SECURITY_PREFIX) - 1)  &&
- 	    !capable(CAP_SYS_ADMIN))
- 		return -EPERM;
- 	return 0;
- }
- 
-+/**
-+ * cap_inode_removexattr - Determine whether an xattr may be removed
-+ * @dentry: The inode/dentry being altered
-+ * @name: The name of the xattr to be changed
-+ *
-+ * Determine whether an xattr may be removed from an inode, returning 0 if
-+ * permission is granted, -ve if denied.
-+ *
-+ * This is used to make sure security xattrs don't get removed by those who
-+ * aren't privileged to remove them.
-+ */
- int cap_inode_removexattr(struct dentry *dentry, const char *name)
- {
- 	if (!strcmp(name, XATTR_NAME_CAPS)) {
- 		if (!capable(CAP_SETFCAP))
- 			return -EPERM;
- 		return 0;
--	} else if (!strncmp(name, XATTR_SECURITY_PREFIX,
-+	}
-+
-+	if (!strncmp(name, XATTR_SECURITY_PREFIX,
- 		     sizeof(XATTR_SECURITY_PREFIX) - 1)  &&
- 	    !capable(CAP_SYS_ADMIN))
- 		return -EPERM;
- 	return 0;
- }
- 
--/* moved from kernel/sys.c. */
--/* 
 +/*
-  * cap_emulate_setxuid() fixes the effective / permitted capabilities of
-  * a process after a call to setuid, setreuid, or setresuid.
-  *
-@@ -454,10 +585,10 @@ int cap_inode_removexattr(struct dentry *dentry, const char *name)
-  *  3) When set*uiding _from_ euid != 0 _to_ euid == 0, the effective
-  *  capabilities are set to the permitted capabilities.
-  *
-- *  fsuid is handled elsewhere. fsuid == 0 and {r,e,s}uid!= 0 should 
-+ *  fsuid is handled elsewhere. fsuid == 0 and {r,e,s}uid!= 0 should
-  *  never happen.
-  *
-- *  -astor 
-+ *  -astor
-  *
-  * cevans - New behaviour, Oct '99
-  * A process may, via prctl(), elect to keep its capabilities when it
-@@ -483,35 +614,46 @@ static inline void cap_emulate_setxuid(struct cred *new, const struct cred *old)
- 		new->cap_effective = new->cap_permitted;
- }
- 
-+/**
-+ * cap_task_fix_setuid - Fix up the results of setuid() call
-+ * @new: The proposed credentials
-+ * @old: The current task's current credentials
-+ * @flags: Indications of what has changed
-+ *
-+ * Fix up the results of setuid() call before the credential changes are
-+ * actually applied, returning 0 to grant the changes, -ve to deny them.
-+ */
- int cap_task_fix_setuid(struct cred *new, const struct cred *old, int flags)
- {
- 	switch (flags) {
- 	case LSM_SETID_RE:
- 	case LSM_SETID_ID:
- 	case LSM_SETID_RES:
--		/* Copied from kernel/sys.c:setreuid/setuid/setresuid. */
-+		/* juggle the capabilities to follow [RES]UID changes unless
-+		 * otherwise suppressed */
- 		if (!issecure(SECURE_NO_SETUID_FIXUP))
- 			cap_emulate_setxuid(new, old);
- 		break;
--	case LSM_SETID_FS:
--		/* Copied from kernel/sys.c:setfsuid. */
- 
--		/*
-+	case LSM_SETID_FS:
-+		/* juggle the capabilties to follow FSUID changes, unless
-+		 * otherwise suppressed
-+		 *
- 		 * FIXME - is fsuser used for all CAP_FS_MASK capabilities?
- 		 *          if not, we might be a bit too harsh here.
- 		 */
- 		if (!issecure(SECURE_NO_SETUID_FIXUP)) {
--			if (old->fsuid == 0 && new->fsuid != 0) {
-+			if (old->fsuid == 0 && new->fsuid != 0)
- 				new->cap_effective =
- 					cap_drop_fs_set(new->cap_effective);
--			}
--			if (old->fsuid != 0 && new->fsuid == 0) {
-+
-+			if (old->fsuid != 0 && new->fsuid == 0)
- 				new->cap_effective =
- 					cap_raise_fs_set(new->cap_effective,
- 							 new->cap_permitted);
--			}
- 		}
- 		break;
-+
- 	default:
- 		return -EINVAL;
- 	}
-@@ -544,28 +686,50 @@ static inline int cap_safe_nice(struct task_struct *p)
- 	return 0;
- }
- 
--int cap_task_setscheduler (struct task_struct *p, int policy,
-+/**
-+ * cap_task_setscheduler - Detemine if scheduler policy change is permitted
-+ * @p: The task to affect
-+ * @policy: The policy to effect
-+ * @lp: The parameters to the scheduling policy
-+ *
-+ * Detemine if the requested scheduler policy change is permitted for the
-+ * specified task, returning 0 if permission is granted, -ve if denied.
-+ */
-+int cap_task_setscheduler(struct task_struct *p, int policy,
- 			   struct sched_param *lp)
- {
- 	return cap_safe_nice(p);
- }
- 
--int cap_task_setioprio (struct task_struct *p, int ioprio)
-+/**
-+ * cap_task_ioprio - Detemine if I/O priority change is permitted
-+ * @p: The task to affect
-+ * @ioprio: The I/O priority to set
-+ *
-+ * Detemine if the requested I/O priority change is permitted for the specified
-+ * task, returning 0 if permission is granted, -ve if denied.
-+ */
-+int cap_task_setioprio(struct task_struct *p, int ioprio)
- {
- 	return cap_safe_nice(p);
- }
- 
--int cap_task_setnice (struct task_struct *p, int nice)
-+/**
-+ * cap_task_ioprio - Detemine if task priority change is permitted
-+ * @p: The task to affect
-+ * @nice: The nice value to set
-+ *
-+ * Detemine if the requested task priority change is permitted for the
-+ * specified task, returning 0 if permission is granted, -ve if denied.
-+ */
-+int cap_task_setnice(struct task_struct *p, int nice)
- {
- 	return cap_safe_nice(p);
- }
- 
- /*
-- * called from kernel/sys.c for prctl(PR_CABSET_DROP)
-- * done without task_capability_lock() because it introduces
-- * no new races - i.e. only another task doing capget() on
-- * this task could get inconsistent info.  There can be no
-- * racing writer bc a task can only change its own caps.
-+ * Implement PR_CAPBSET_DROP.  Attempt to remove the specified capability from
-+ * the current task's bounding set.  Returns 0 on success, -ve on error.
+  * The RCU callback to actually dispose of a set of credentials
   */
- static long cap_prctl_drop(struct cred *new, unsigned long cap)
- {
-@@ -594,6 +758,18 @@ int cap_task_setnice (struct task_struct *p, int nice)
- }
+ static void put_cred_rcu(struct rcu_head *rcu)
+@@ -41,6 +83,7 @@ static void put_cred_rcu(struct rcu_head *rcu)
+ 
+ 	key_put(cred->thread_keyring);
+ 	key_put(cred->request_key_auth);
++	put_tgcred(cred->tgcred);
+ 	put_group_info(cred->group_info);
+ 	free_uid(cred->user);
+ 	security_cred_free(cred);
+@@ -71,12 +114,30 @@ int copy_creds(struct task_struct *p, unsigned long clone_flags)
+ 	if (!pcred)
+ 		return -ENOMEM;
+ 
++#ifdef CONFIG_KEYS
++	if (clone_flags & CLONE_THREAD) {
++		atomic_inc(&pcred->tgcred->usage);
++	} else {
++		pcred->tgcred = kmalloc(sizeof(struct cred), GFP_KERNEL);
++		if (!pcred->tgcred) {
++			kfree(pcred);
++			return -ENOMEM;
++		}
++		atomic_set(&pcred->tgcred->usage, 1);
++		spin_lock_init(&pcred->tgcred->lock);
++		pcred->tgcred->process_keyring = NULL;
++		pcred->tgcred->session_keyring =
++			key_get(p->cred->tgcred->session_keyring);
++	}
++#endif
++
+ #ifdef CONFIG_SECURITY
+ 	pcred->security = NULL;
  #endif
  
-+/**
-+ * cap_task_prctl - Implement process control functions for this security module
-+ * @option: The process control function requested
-+ * @arg2, @arg3, @arg4, @arg5: The argument data for this function
-+ *
-+ * Allow process control functions (sys_prctl()) to alter capabilities; may
-+ * also deny access to other functions not otherwise implemented here.
-+ *
-+ * Returns 0 or +ve on success, -ENOSYS if this function is not implemented
-+ * here, other -ve on error.  If -ENOSYS is returned, sys_prctl() and other LSM
-+ * modules will consider performing the function.
-+ */
- int cap_task_prctl(int option, unsigned long arg2, unsigned long arg3,
- 		   unsigned long arg4, unsigned long arg5)
+ 	ret = security_cred_alloc(pcred);
+ 	if (ret < 0) {
++		put_tgcred(pcred->tgcred);
+ 		kfree(pcred);
+ 		return ret;
+ 	}
+diff --git a/kernel/fork.c b/kernel/fork.c
+index 8993a45..b3254d5 100644
+--- a/kernel/fork.c
++++ b/kernel/fork.c
+@@ -760,7 +760,6 @@ void __cleanup_sighand(struct sighand_struct *sighand)
+ static int copy_signal(unsigned long clone_flags, struct task_struct *tsk)
  {
-@@ -699,13 +875,28 @@ error:
- 	return error;
- }
+ 	struct signal_struct *sig;
+-	int ret;
  
--int cap_syslog (int type)
-+/**
-+ * cap_syslog - Determine whether syslog function is permitted
-+ * @type: Function requested
-+ *
-+ * Determine whether the current process is permitted to use a particular
-+ * syslog function, returning 0 if permission is granted, -ve if not.
-+ */
-+int cap_syslog(int type)
- {
- 	if ((type != 3 && type != 10) && !capable(CAP_SYS_ADMIN))
- 		return -EPERM;
- 	return 0;
- }
+ 	if (clone_flags & CLONE_THREAD) {
+ 		atomic_inc(&current->signal->count);
+@@ -772,12 +771,6 @@ static int copy_signal(unsigned long clone_flags, struct task_struct *tsk)
+ 	if (!sig)
+ 		return -ENOMEM;
  
-+/**
-+ * cap_vm_enough_memory - Determine whether a new virtual mapping is permitted
-+ * @mm: The VM space in which the new mapping is to be made
-+ * @pages: The size of the mapping
-+ *
-+ * Determine whether the allocation of a new virtual mapping by the current
-+ * task is permitted, returning 0 if permission is granted, -ve if not.
-+ */
- int cap_vm_enough_memory(struct mm_struct *mm, long pages)
- {
- 	int cap_sys_admin = 0;
-@@ -714,4 +905,3 @@ int cap_vm_enough_memory(struct mm_struct *mm, long pages)
- 		cap_sys_admin = 1;
- 	return __vm_enough_memory(mm, pages, cap_sys_admin);
- }
+-	ret = copy_thread_group_keys(tsk);
+-	if (ret < 0) {
+-		kmem_cache_free(signal_cachep, sig);
+-		return ret;
+-	}
 -
+ 	atomic_set(&sig->count, 1);
+ 	atomic_set(&sig->live, 1);
+ 	init_waitqueue_head(&sig->wait_chldexit);
+@@ -835,7 +828,6 @@ static int copy_signal(unsigned long clone_flags, struct task_struct *tsk)
+ 
+ void __cleanup_signal(struct signal_struct *sig)
+ {
+-	exit_thread_group_keys(sig);
+ 	kmem_cache_free(signal_cachep, sig);
+ }
+ 
+diff --git a/security/keys/process_keys.c b/security/keys/process_keys.c
+index d3fa0ae..b0a6060 100644
+--- a/security/keys/process_keys.c
++++ b/security/keys/process_keys.c
+@@ -189,7 +189,7 @@ int install_process_keyring(void)
+ 
+ 	might_sleep();
+ 
+-	if (!tsk->signal->process_keyring) {
++	if (!tsk->cred->tgcred->process_keyring) {
+ 		sprintf(buf, "_pid.%u", tsk->tgid);
+ 
+ 		keyring = keyring_alloc(buf, tsk->cred->uid, tsk->cred->gid, tsk,
+@@ -200,12 +200,12 @@ int install_process_keyring(void)
+ 		}
+ 
+ 		/* attach keyring */
+-		spin_lock_irq(&tsk->sighand->siglock);
+-		if (!tsk->signal->process_keyring) {
+-			tsk->signal->process_keyring = keyring;
++		spin_lock_irq(&tsk->cred->tgcred->lock);
++		if (!tsk->cred->tgcred->process_keyring) {
++			tsk->cred->tgcred->process_keyring = keyring;
+ 			keyring = NULL;
+ 		}
+-		spin_unlock_irq(&tsk->sighand->siglock);
++		spin_unlock_irq(&tsk->cred->tgcred->lock);
+ 
+ 		key_put(keyring);
+ 	}
+@@ -235,11 +235,11 @@ static int install_session_keyring(struct key *keyring)
+ 		sprintf(buf, "_ses.%u", tsk->tgid);
+ 
+ 		flags = KEY_ALLOC_QUOTA_OVERRUN;
+-		if (tsk->signal->session_keyring)
++		if (tsk->cred->tgcred->session_keyring)
+ 			flags = KEY_ALLOC_IN_QUOTA;
+ 
+-		keyring = keyring_alloc(buf, tsk->cred->uid, tsk->cred->gid, tsk,
+-					flags, NULL);
++		keyring = keyring_alloc(buf, tsk->cred->uid, tsk->cred->gid,
++					tsk, flags, NULL);
+ 		if (IS_ERR(keyring))
+ 			return PTR_ERR(keyring);
+ 	}
+@@ -248,10 +248,10 @@ static int install_session_keyring(struct key *keyring)
+ 	}
+ 
+ 	/* install the keyring */
+-	spin_lock_irq(&tsk->sighand->siglock);
+-	old = tsk->signal->session_keyring;
+-	rcu_assign_pointer(tsk->signal->session_keyring, keyring);
+-	spin_unlock_irq(&tsk->sighand->siglock);
++	spin_lock_irq(&tsk->cred->tgcred->lock);
++	old = tsk->cred->tgcred->session_keyring;
++	rcu_assign_pointer(tsk->cred->tgcred->session_keyring, keyring);
++	spin_unlock_irq(&tsk->cred->tgcred->lock);
+ 
+ 	/* we're using RCU on the pointer, but there's no point synchronising
+ 	 * on it if it didn't previously point to anything */
+@@ -266,28 +266,6 @@ static int install_session_keyring(struct key *keyring)
+ 
+ /*****************************************************************************/
+ /*
+- * copy the keys in a thread group for fork without CLONE_THREAD
+- */
+-int copy_thread_group_keys(struct task_struct *tsk)
+-{
+-	key_check(current->thread_group->session_keyring);
+-	key_check(current->thread_group->process_keyring);
+-
+-	/* no process keyring yet */
+-	tsk->signal->process_keyring = NULL;
+-
+-	/* same session keyring */
+-	rcu_read_lock();
+-	tsk->signal->session_keyring =
+-		key_get(rcu_dereference(current->signal->session_keyring));
+-	rcu_read_unlock();
+-
+-	return 0;
+-
+-} /* end copy_thread_group_keys() */
+-
+-/*****************************************************************************/
+-/*
+  * copy the keys for fork
+  */
+ int copy_keys(unsigned long clone_flags, struct task_struct *tsk)
+@@ -307,17 +285,6 @@ int copy_keys(unsigned long clone_flags, struct task_struct *tsk)
+ 
+ /*****************************************************************************/
+ /*
+- * dispose of thread group keys upon thread group destruction
+- */
+-void exit_thread_group_keys(struct signal_struct *tg)
+-{
+-	key_put(tg->session_keyring);
+-	key_put(tg->process_keyring);
+-
+-} /* end exit_thread_group_keys() */
+-
+-/*****************************************************************************/
+-/*
+  * dispose of per-thread keys upon thread exit
+  */
+ void exit_keys(struct task_struct *tsk)
+@@ -344,10 +311,10 @@ int exec_keys(struct task_struct *tsk)
+ 	key_put(old);
+ 
+ 	/* discard the process keyring from a newly exec'd task */
+-	spin_lock_irq(&tsk->sighand->siglock);
+-	old = tsk->signal->process_keyring;
+-	tsk->signal->process_keyring = NULL;
+-	spin_unlock_irq(&tsk->sighand->siglock);
++	spin_lock_irq(&tsk->cred->tgcred->lock);
++	old = tsk->cred->tgcred->process_keyring;
++	tsk->cred->tgcred->process_keyring = NULL;
++	spin_unlock_irq(&tsk->cred->tgcred->lock);
+ 
+ 	key_put(old);
+ 
+@@ -452,9 +419,9 @@ key_ref_t search_process_keyrings(struct key_type *type,
+ 	}
+ 
+ 	/* search the process keyring second */
+-	if (context->signal->process_keyring) {
++	if (cred->tgcred->process_keyring) {
+ 		key_ref = keyring_search_aux(
+-			make_key_ref(context->signal->process_keyring, 1),
++			make_key_ref(cred->tgcred->process_keyring, 1),
+ 			context, type, description, match);
+ 		if (!IS_ERR(key_ref))
+ 			goto found;
+@@ -473,11 +440,11 @@ key_ref_t search_process_keyrings(struct key_type *type,
+ 	}
+ 
+ 	/* search the session keyring */
+-	if (context->signal->session_keyring) {
++	if (cred->tgcred->session_keyring) {
+ 		rcu_read_lock();
+ 		key_ref = keyring_search_aux(
+ 			make_key_ref(rcu_dereference(
+-					     context->signal->session_keyring),
++					     cred->tgcred->session_keyring),
+ 				     1),
+ 			context, type, description, match);
+ 		rcu_read_unlock();
+@@ -586,11 +553,13 @@ key_ref_t lookup_user_key(key_serial_t id, int create, int partial,
+ {
+ 	struct request_key_auth *rka;
+ 	struct task_struct *t = current;
+-	struct cred *cred = current_cred();
++	struct cred *cred;
+ 	struct key *key;
+ 	key_ref_t key_ref, skey_ref;
+ 	int ret;
+ 
++try_again:
++	cred = get_current_cred();
+ 	key_ref = ERR_PTR(-ENOKEY);
+ 
+ 	switch (id) {
+@@ -604,6 +573,7 @@ key_ref_t lookup_user_key(key_serial_t id, int create, int partial,
+ 				key = ERR_PTR(ret);
+ 				goto error;
+ 			}
++			goto reget_creds;
+ 		}
+ 
+ 		key = cred->thread_keyring;
+@@ -612,7 +582,7 @@ key_ref_t lookup_user_key(key_serial_t id, int create, int partial,
+ 		break;
+ 
+ 	case KEY_SPEC_PROCESS_KEYRING:
+-		if (!t->signal->process_keyring) {
++		if (!cred->tgcred->process_keyring) {
+ 			if (!create)
+ 				goto error;
+ 
+@@ -621,15 +591,16 @@ key_ref_t lookup_user_key(key_serial_t id, int create, int partial,
+ 				key = ERR_PTR(ret);
+ 				goto error;
+ 			}
++			goto reget_creds;
+ 		}
+ 
+-		key = t->signal->process_keyring;
++		key = cred->tgcred->process_keyring;
+ 		atomic_inc(&key->usage);
+ 		key_ref = make_key_ref(key, 1);
+ 		break;
+ 
+ 	case KEY_SPEC_SESSION_KEYRING:
+-		if (!t->signal->session_keyring) {
++		if (!cred->tgcred->session_keyring) {
+ 			/* always install a session keyring upon access if one
+ 			 * doesn't exist yet */
+ 			ret = install_user_keyrings();
+@@ -639,10 +610,11 @@ key_ref_t lookup_user_key(key_serial_t id, int create, int partial,
+ 				cred->user->session_keyring);
+ 			if (ret < 0)
+ 				goto error;
++			goto reget_creds;
+ 		}
+ 
+ 		rcu_read_lock();
+-		key = rcu_dereference(t->signal->session_keyring);
++		key = rcu_dereference(cred->tgcred->session_keyring);
+ 		atomic_inc(&key->usage);
+ 		rcu_read_unlock();
+ 		key_ref = make_key_ref(key, 1);
+@@ -765,6 +737,12 @@ invalid_key:
+ 	key_ref = ERR_PTR(ret);
+ 	goto error;
+ 
++	/* if we attempted to install a keyring, then it may have caused new
++	 * creds to be installed */
++reget_creds:
++	put_cred(cred);
++	goto try_again;
++
+ } /* end lookup_user_key() */
+ 
+ /*****************************************************************************/
+@@ -777,6 +755,7 @@ invalid_key:
+ long join_session_keyring(const char *name)
+ {
+ 	struct task_struct *tsk = current;
++	struct cred *cred = current->cred;
+ 	struct key *keyring;
+ 	long ret;
+ 
+@@ -787,7 +766,7 @@ long join_session_keyring(const char *name)
+ 			goto error;
+ 
+ 		rcu_read_lock();
+-		ret = rcu_dereference(tsk->signal->session_keyring)->serial;
++		ret = rcu_dereference(cred->tgcred->session_keyring)->serial;
+ 		rcu_read_unlock();
+ 		goto error;
+ 	}
+@@ -799,7 +778,7 @@ long join_session_keyring(const char *name)
+ 	keyring = find_keyring_by_name(name, false);
+ 	if (PTR_ERR(keyring) == -ENOKEY) {
+ 		/* not found - try and create a new one */
+-		keyring = keyring_alloc(name, tsk->cred->uid, tsk->cred->gid, tsk,
++		keyring = keyring_alloc(name, cred->uid, cred->gid, tsk,
+ 					KEY_ALLOC_IN_QUOTA, NULL);
+ 		if (IS_ERR(keyring)) {
+ 			ret = PTR_ERR(keyring);
+diff --git a/security/keys/request_key.c b/security/keys/request_key.c
+index 650cc3e..fe5d4fb 100644
+--- a/security/keys/request_key.c
++++ b/security/keys/request_key.c
+@@ -66,7 +66,6 @@ static int call_sbin_request_key(struct key_construction *cons,
+ 				 const char *op,
+ 				 void *aux)
+ {
+-	struct task_struct *tsk = current;
+ 	const struct cred *cred = current_cred();
+ 	key_serial_t prkey, sskey;
+ 	struct key *key = cons->key, *authkey = cons->authkey, *keyring;
+@@ -105,18 +104,13 @@ static int call_sbin_request_key(struct key_construction *cons,
+ 		cred->thread_keyring->serial : 0);
+ 
+ 	prkey = 0;
+-	if (tsk->signal->process_keyring)
+-		prkey = tsk->signal->process_keyring->serial;
++	if (cred->tgcred->process_keyring)
++		prkey = cred->tgcred->process_keyring->serial;
+ 
+-	sprintf(keyring_str[1], "%d", prkey);
+-
+-	if (tsk->signal->session_keyring) {
+-		rcu_read_lock();
+-		sskey = rcu_dereference(tsk->signal->session_keyring)->serial;
+-		rcu_read_unlock();
+-	} else {
++	if (cred->tgcred->session_keyring)
++		sskey = rcu_dereference(cred->tgcred->session_keyring)->serial;
++	else
+ 		sskey = cred->user->session_keyring->serial;
+-	}
+ 
+ 	sprintf(keyring_str[2], "%d", sskey);
+ 
+@@ -218,7 +212,7 @@ static int construct_key(struct key *key, const void *callout_info,
+ static void construct_get_dest_keyring(struct key **_dest_keyring)
+ {
+ 	struct request_key_auth *rka;
+-	struct task_struct *tsk = current;
++	const struct cred *cred = current_cred();
+ 	struct key *dest_keyring = *_dest_keyring, *authkey;
+ 
+ 	kenter("%p", dest_keyring);
+@@ -230,11 +224,11 @@ static void construct_get_dest_keyring(struct key **_dest_keyring)
+ 	} else {
+ 		/* use a default keyring; falling through the cases until we
+ 		 * find one that we actually have */
+-		switch (tsk->cred->jit_keyring) {
++		switch (cred->jit_keyring) {
+ 		case KEY_REQKEY_DEFL_DEFAULT:
+ 		case KEY_REQKEY_DEFL_REQUESTOR_KEYRING:
+-			if (tsk->cred->request_key_auth) {
+-				authkey = tsk->cred->request_key_auth;
++			if (cred->request_key_auth) {
++				authkey = cred->request_key_auth;
+ 				down_read(&authkey->sem);
+ 				rka = authkey->payload.data;
+ 				if (!test_bit(KEY_FLAG_REVOKED,
+@@ -247,19 +241,19 @@ static void construct_get_dest_keyring(struct key **_dest_keyring)
+ 			}
+ 
+ 		case KEY_REQKEY_DEFL_THREAD_KEYRING:
+-			dest_keyring = key_get(tsk->cred->thread_keyring);
++			dest_keyring = key_get(cred->thread_keyring);
+ 			if (dest_keyring)
+ 				break;
+ 
+ 		case KEY_REQKEY_DEFL_PROCESS_KEYRING:
+-			dest_keyring = key_get(tsk->signal->process_keyring);
++			dest_keyring = key_get(cred->tgcred->process_keyring);
+ 			if (dest_keyring)
+ 				break;
+ 
+ 		case KEY_REQKEY_DEFL_SESSION_KEYRING:
+ 			rcu_read_lock();
+ 			dest_keyring = key_get(
+-				rcu_dereference(tsk->signal->session_keyring));
++				rcu_dereference(cred->tgcred->session_keyring));
+ 			rcu_read_unlock();
+ 
+ 			if (dest_keyring)
+@@ -267,11 +261,11 @@ static void construct_get_dest_keyring(struct key **_dest_keyring)
+ 
+ 		case KEY_REQKEY_DEFL_USER_SESSION_KEYRING:
+ 			dest_keyring =
+-				key_get(tsk->cred->user->session_keyring);
++				key_get(cred->user->session_keyring);
+ 			break;
+ 
+ 		case KEY_REQKEY_DEFL_USER_KEYRING:
+-			dest_keyring = key_get(tsk->cred->user->uid_keyring);
++			dest_keyring = key_get(cred->user->uid_keyring);
+ 			break;
+ 
+ 		case KEY_REQKEY_DEFL_GROUP_KEYRING:
 
