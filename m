@@ -1,29 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760954AbYHFSDY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758734AbYHFSGv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760954AbYHFSDY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Aug 2008 14:03:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754309AbYHFSDP
+	id S1758734AbYHFSGv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Aug 2008 14:06:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753955AbYHFSFP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Aug 2008 14:03:15 -0400
-Received: from zone0.gcu-squad.org ([212.85.147.21]:25496 "EHLO
-	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754733AbYHFSDN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Aug 2008 14:03:13 -0400
-Date: Wed, 6 Aug 2008 20:03:01 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "Mark M. Hoffman" <mhoffman@lightlink.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       lm-sensors <lm-sensors@lm-sensors.org>
-Subject: Re: [GIT PATCH] hwmon updates against v2.6.26
-Message-ID: <20080806200301.6597e42d@hyperion.delvare>
-In-Reply-To: <20080806085324.58d65849.akpm@linux-foundation.org>
-References: <20080801041026.GI3375@mars.solarsys.private>
-	<20080806103903.6b9eec76@hyperion.delvare>
-	<20080806085324.58d65849.akpm@linux-foundation.org>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
+	Wed, 6 Aug 2008 14:05:15 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:52594 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753434AbYHFSFO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Aug 2008 14:05:14 -0400
+Date: Wed, 6 Aug 2008 14:04:58 -0400
+From: Rik van Riel <riel@redhat.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Christoph Hellwig <hch@infradead.org>, Eric Paris <eparis@redhat.com>,
+       Greg KH <greg@kroah.com>, malware-list@lists.printk.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: [malware-list] [RFC 0/5] [TALPA] Intro to a linux interface for
+ on access scanning
+Message-ID: <20080806140458.5d7c86a2@cuia.bos.redhat.com>
+In-Reply-To: <87zlnq6f27.fsf@basil.nowhere.org>
+References: <1217883616.27684.19.camel@localhost.localdomain>
+	<20080804223249.GA10517@kroah.com>
+	<20080805002618.GA18215@infradead.org>
+	<1217897224.27684.66.camel@localhost.localdomain>
+	<20080805005415.GA10108@infradead.org>
+	<87zlnq6f27.fsf@basil.nowhere.org>
+Organization: Red Hat, Inc
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -31,40 +34,23 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andrew,
-
-On Wed, 6 Aug 2008 08:53:24 -0700, Andrew Morton wrote:
-> On Wed, 6 Aug 2008 10:39:03 +0200 Jean Delvare <khali@linux-fr.org> wrote:
-> > I have a number of hwmon patches in my local kernel tree which I wrote
-> > and that have been reviewed by a trusted developer, or that have been
-> > posted to the lm-sensors list and that I have reviewed. I consider
-> > these ready to go upstream. I plan to gather these into a public tree
-> > and push them to Linus today or tomorrow. In the future, I will
-> > probably have such a tree available to be included in linux-next.
-> > 
-> > Don't get me wrong, I am _not_ volunteering to become the new hwmon
-> > subsystem maintainer. Remember, I've been there before and you know how
-> > it ended. But in the absence of a subsystem maintainer, I don't want
-> > hwmon patches to be lost (and especially not mine) and I don't think
-> > that pushing everything to Andrew is a good solution either. So I'm
-> > just proposing to do my part of the work. But if Andrew really prefers
-> > to pick all the patches, I am not insisting either.
+On Wed, 06 Aug 2008 04:41:04 +0200
+Andi Kleen <andi@firstfloor.org> wrote:
+> Christoph Hellwig <hch@infradead.org> writes:
 > 
-> That would be great, thanks.
+> > I couldn't give a rats a** about
+> > windows viruses as they can't actually cause any harm on a Linux
+> > machine.
 > 
-> But it does mean that I'd prefer that any hwmon patches which I pick up
-> are merged via that tree if that's OK.  Which all does end up making
-> you look awfully like an hwmon maintainer..
+> My guess is that wine is good enough these days to run many Windows 
+> worms actually.
 
-No, that's not OK, sorry. This goes beyond what I can offer at this
-point in time.
+Firefox, Open Office and other applications are probably large and
+feature rich enough that making worms for them might be possible.
 
-I offered to push selected patches to Linus, with no other guarantee
-than the fact that said patches have been carefully reviewed and are
-believed to be correct. I do not have the time to do more than that.
-
-If this isn't OK with you, then I will have to withdraw my proposal.
-It's up to you.
+Not being able to harm the operating system is not the same as not
+being able to harm the user.  We still want some protection from
+the latter...
 
 -- 
-Jean Delvare
+All Rights Reversed
