@@ -1,131 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763854AbYHFFqm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761983AbYHFFum@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763854AbYHFFqm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Aug 2008 01:46:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753205AbYHFFqd
+	id S1761983AbYHFFum (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Aug 2008 01:50:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752541AbYHFFue
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Aug 2008 01:46:33 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:51474 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752962AbYHFFqc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Aug 2008 01:46:32 -0400
-Date: Wed, 6 Aug 2008 00:46:29 -0500
-From: Paul Jackson <pj@sgi.com>
-To: Max Krasnyansky <maxk@qualcomm.com>
-Cc: mingo@elte.hu, linux-kernel@vger.kernel.org, menage@google.com,
-       a.p.zijlstra@chello.nl, vegard.nossum@gmail.com, lizf@cn.fujitsu.com
-Subject: Re: [PATCH] cpuset: Rework sched domains and CPU hotplug handling
- (2.6.27-rc1)
-Message-Id: <20080806004629.d321f3b0.pj@sgi.com>
-In-Reply-To: <489930B5.9030906@qualcomm.com>
-References: <1217631552-22129-1-git-send-email-maxk@qualcomm.com>
-	<20080802063900.6615e5ca.pj@sgi.com>
-	<48948C3A.6050805@qualcomm.com>
-	<20080802225127.2b0d138b.pj@sgi.com>
-	<4895F3ED.4020805@qualcomm.com>
-	<20080804010033.0d1b0549.pj@sgi.com>
-	<48977E81.4040207@qualcomm.com>
-	<20080804225636.541527e8.pj@sgi.com>
-	<4898B873.6000308@qualcomm.com>
-	<20080805180521.be7010e1.pj@sgi.com>
-	<48991973.90109@qualcomm.com>
-	<20080805222927.6dd95f5f.pj@sgi.com>
-	<4899202B.6030303@qualcomm.com>
-	<20080805232856.78dd50f7.pj@sgi.com>
-	<489930B5.9030906@qualcomm.com>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 6 Aug 2008 01:50:34 -0400
+Received: from smtp101.mail.mud.yahoo.com ([209.191.85.211]:23798 "HELO
+	smtp101.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752492AbYHFFud (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Aug 2008 01:50:33 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=ksGUm1q940bBiQt2LGCWNyH9NDR4i0XMFQA/j55/4mjEJ1a477hs7M5UoqDz9dIusaJFkE4YvabLHfQnusS8Lc57eCpsXms2LdENntYQlvV5FqIU7OvmUIxiOxbQU3nD2ySS7zfXXaBQ9XJ08jURQmurvRy0vTrcRs/fHkDMK+w=  ;
+X-YMail-OSG: 8FZQtD0VM1nnhR00fQuh9AsXmCD4pUw6brKn6Q9CS5AfxKFbdxT4LL.5scPftOfQd173ukszI7VhaJbu2h9hfmXQbOdypYO8oOZ1r2q8Hsh38Mi6PgTN7SFqrsrV.So.fH9BnBLDSQY3faxKeRM92HLV
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Andi Kleen <andi@firstfloor.org>
+Subject: Re: [ANNOUNCE] Merkey's Kernel Debugger
+Date: Wed, 6 Aug 2008 15:50:22 +1000
+User-Agent: KMail/1.9.5
+Cc: jmerkey@wolfmountaingroup.com, "Geert Uytterhoeven" <geert@linux-m68k.org>,
+       "Stefan Richter" <stefanr@s5r6.in-berlin.de>,
+       "Josh Boyer" <jwboyer@gmail.com>, linux-kernel@vger.kernel.org
+References: <17494.166.70.238.46.1217784156.squirrel@webmail.wolfmountaingroup.com> <200808060133.10457.nickpiggin@yahoo.com.au> <87r6926dsr.fsf@basil.nowhere.org>
+In-Reply-To: <87r6926dsr.fsf@basil.nowhere.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200808061550.22996.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Max, replying to pj:
-> > ...  Such naming controversies are usually
-> > a sign of code duplication or improper factoring.
-> I'm not sure what you're referring to. There was no back an forth.
+On Wednesday 06 August 2008 13:08, Andi Kleen wrote:
+> Nick Piggin <nickpiggin@yahoo.com.au> writes:
+> > Seriously? Because it doesn't seem to have had enough peer review,
+> > it hasn't had widespread testing in somewhere like linux-next or
+> > -mm, and we already have kgdb so you have to also explain why you
+> > can't improve kgdb in the areas it trails mdb.
+> >
+> > But the ideal outcome would be if you could contribute patches to
+> > kgdb to the point where it is as good as mdb. It is already in the
+>
+> I don't think kgdb and a simple assembler debugger
+> are directly comparable. kgdb always requires a remote machine,
+> which has many advantages, but is also often very inconvenient
+> or impossible to arrange. An low overhead assembler debugger
+> can be always compiled in just in case.
+>
+> Also at least for the x86 port the debugger interfaces should
+> be general enough now (see die hooks as a "debug vfs") that it would
+> be quite possible to have a multitude of debuggers just using
+> them. In fact that's already the cases, kprobes and kgdb and
+> kdump are all kinds of debuggers using such hooks.
+>
+> As long as it doesn't impact the core code and the mdb
+> code itself is considered merge worthy and has clean interfaces
+> that would seem fine to me.It essentially would just live somewhere in
+> its own directory using the existing interfaces. My standard
+> test for seeing if a debugger has clean interfaces is to see
+> if it can be loaded as a module.
+>
+> There are enough different debugging styles around that offering
+> developers different tools of which they can pick whatever suits
+> them is not a bad idea. Also as everyone knows debugging
+> is often a major time eater and if more tools are available that
+> can only help the kernel.
+>
+> That said I haven't read the mdb code, not judging on its general
+> merge-worthiness or am really completely sure what are all the details
+> of a "netware style debugger", just a general high level comment on
+> debuggers. At least judging based on the patch sizes it at least
+> doesn't seem particularly bloated.  But of course it would need full
+> proper review first.
 
-I was referring to an earlier discussion, which resulted in a patch
-which includes the line:
+OK thanks for the info. I don't actually know debugger code as I
+said, so I wasn't against merging mdb if it offers things that
+kgdb fundamentally cannot.
 
-    __rebuild_sched_domains() has been renamed to async_rebuild_sched_domains().
-
-> What I'm saying is that I do not think it's the best
-> to change all the paths to be async.
-
-But you seemed to be saying that the reason it was not
-best to do so was because it was best not to change more
-than necessary.
-
-Perhaps I still don't understand your metric.  Apparently
-it is not CPU cycles, nor "least change", but something else?
-
-> I still do not see a good reason why. IMO exceptions are acceptable.
-> Only domain rebuilds triggered by cpuset fs writes need to be async.
-> I do not see a good technical reason why the rest needs to be converted
-> and retested.
-
-Well, your metric seems clear enough there - minimize effort of
-code conversion and testing.
-
-
-How about this ... two routines quite identical and parallel,
-even in their names, except that one is async and the other not:
-
-==================================================================
-
-/*
- * Rebuild scheduler domains, asynchronously in a separate thread.
- *
- * If the flag 'sched_load_balance' of any cpuset with non-empty
- * 'cpus' changes, or if the 'cpus' allowed changes in any cpuset
- * which has that flag enabled, or if any cpuset with a non-empty
- * 'cpus' is removed, then call this routine to rebuild the
- * scheduler's dynamic sched domains.
- *
- * The rebuild_sched_domains() and partition_sched_domains()
- * routines must nest cgroup_lock() inside get_online_cpus(),
- * but such cpuset changes as these must nest that locking the
- * other way, holding cgroup_lock() for much of the code.
- *
- * So in order to avoid an ABBA deadlock, the cpuset code handling
- * these user changes delegates the actual sched domain rebuilding
- * to a separate workqueue thread, which ends up processing the
- * above rebuild_sched_domains_thread() function.
- */
-static void async_rebuild_sched_domains(void)
-{
-        queue_work(cpuset_wq, &rebuild_sched_domains_work);
-}
-
-/*
- * Accomplishes the same scheduler domain rebuild as the above
- * async_rebuild_sched_domains(), however it directly calls the
- * rebuild routine inline, rather than calling it via a separate
- * asynchronous work thread.
- *
- * This can only be called from code that is not holding
- * cgroup_mutex (not nested in a cgroup_lock() call.)
- */
-void inline_rebuild_sched_domains(void)
-{
-        rebuild_sched_domains_thread(NULL);
-}
-
-==================================================================
-
-> To be fair the fact that you had trouble understanding my code does
-> not automatically mean that it was not artistic ;-).
-
-Quite so ... my mental capacities are modest and easily distracted ;).
-
-Likely this explains in part why I fuss so much over keeping code
-straight forward, with minimal twists, and turns, and duplications
-with non-essential variations in detail.
-
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.940.382.4214
+If so, then ensuring clean interfaces indeed would seem like a
+good first step to getting it merged.
