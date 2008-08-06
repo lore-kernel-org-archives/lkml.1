@@ -1,88 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932111AbYHFVwT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755508AbYHFVxU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932111AbYHFVwT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Aug 2008 17:52:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752845AbYHFVvv
+	id S1755508AbYHFVxU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Aug 2008 17:53:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752577AbYHFVxJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Aug 2008 17:51:51 -0400
-Received: from smtp1.stealer.net ([88.198.224.204]:60417 "EHLO
-	smtp1.stealer.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752559AbYHFVvt (ORCPT
+	Wed, 6 Aug 2008 17:53:09 -0400
+Received: from www.church-of-our-saviour.org ([69.25.196.31]:58375 "EHLO
+	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752567AbYHFVxG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Aug 2008 17:51:49 -0400
-Date: Wed, 6 Aug 2008 23:51:34 +0200 (CEST)
-From: Sven Wegener <sven.wegener@stealer.net>
-To: "Rafael C. de Almeida" <almeidaraf@gmail.com>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: Weird behaviour on /proc/stat
-In-Reply-To: <489A0B27.80604@gmail.com>
-Message-ID: <alpine.LNX.1.10.0808062318460.5671@titan.stealer.net>
-References: <489A0B27.80604@gmail.com>
-User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
-Organization: STEALER.net
+	Wed, 6 Aug 2008 17:53:06 -0400
+Date: Wed, 6 Aug 2008 17:52:44 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Eric Paris <eparis@redhat.com>
+Cc: Greg KH <greg@kroah.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       malware-list@lists.printk.net, linux-kernel@vger.kernel.org
+Subject: Re: [malware-list] [RFC 0/5] [TALPA] Intro to a linux interface
+	for on access scanning
+Message-ID: <20080806215244.GA21462@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Eric Paris <eparis@redhat.com>, Greg KH <greg@kroah.com>,
+	Alan Cox <alan@lxorguk.ukuu.org.uk>, malware-list@lists.printk.net,
+	linux-kernel@vger.kernel.org
+References: <20080804223249.GA10517@kroah.com> <1217896374.27684.53.camel@localhost.localdomain> <20080805005132.GA3661@kroah.com> <20080805122328.69a37c1d@lxorguk.ukuu.org.uk> <20080805170307.GB9639@kroah.com> <1217962602.27684.144.camel@localhost.localdomain> <20080805203007.GB27489@kroah.com> <1218048597.27684.276.camel@localhost.localdomain> <20080806210202.GA9413@mit.edu> <1218058081.5837.49.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Score: -1.0
-X-Spam-Bar: -
-X-Spam-Report: Scanned by SpamAssassin 3.2.1-gr1 2007-05-02 on smtp1.stealer.net at Wed, 06 Aug 2008 21:51:48 +0000
-	Bayes: 0.0443 Tokens: new, 251; hammy, 3; neutral, 8; spammy, 0.
-	AutoLearn: no
-	*  0.1 RDNS_NONE Delivered to trusted network by a host with no rDNS
-	* -1.1 BAYES_05 BODY: Bayesian spam probability is 1 to 5%
-	*      [score: 0.0443]
-X-Spam-Signature: b2a1e38b5f5a15377862548c0cfab93297c1acb2
-X-DomainKey-Status: no signature
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1218058081.5837.49.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 6 Aug 2008, Rafael C. de Almeida wrote:
+On Wed, Aug 06, 2008 at 05:28:01PM -0400, Eric Paris wrote:
+> > In this scenario, are you positing that you are worried about Windows
+> > malware, or Linux malware?  What OS are the clients running?  I will
+> > note that Windows has such a sucky NFS implementation that nearly all
+> > Widows clients will be running CIFS/SMB, not NFS
+> 
+> I believe I specifically did not make any such claims at all about the
+> client OS and merely claimed the intended target was not the linux NFS
+> server.
 
-> I've executed the following code on a intel core 2 quad (linux 2.6.21.5):
-> 
-> for (( x=0; x < 1800; x = x+1 )); do
->         head -n5 /proc/stat |
->         awk '{ print $2+$3+$4+$5+$6+$7+$8+$9 }' |
->         awk 'BEGIN { x=0 } { if (NR == 1) y=$0; else x=x+$1; } END {
-> print y, x }' |
->         awk '{ print $0, $1-$2 }' >> values
->         sleep 1;
-> done
-> 
-> My expectation was that the values file would have only 0s on the second
-> field. It didn't happen. Actually, it was always a value greater than 0.
-> So I went to the kernel code. The utilization is summed up here:
-> 
-> 	http://lxr.linux.no/linux+v2.6.21.5/fs/proc/proc_misc.c#L463
-> 
-> Reading that file, if anything the sum of all the cpuX fields should be
-> greater than the cpu line. After all, it happens later and, if
-> information regarding the utilization is updated during the generation
-> of the output, then the cpuX lines should have a greater value.
-> 
-> I also noted that on
-> 	http://lxr.linux.no/linux+v2.6.21.5/fs/proc/proc_misc.c#L463
-> for_each_possible_cpu is used. While on
-> 	http://lxr.linux.no/linux+v2.6.21.5/fs/proc/proc_misc.c#L487
-> for_each_online_cpu is used. All the cores on the system are online, so
-> where could be the extra utilization that's being added to the first
-> line result?
-> 
-> I wish I had a machine with 4 cores which I could test changes on that
-> code, so I could investigate things a little further. But the only
-> machine I can change the kernel is my home computer which has only one
-> core  :(.
+I know you didn't say; that's why I asked.  :-)
 
-It's expected behaviour, but it is indeed misleading. Here's the reason 
-why it happens: In the kernel we're accounting time based on CONFIG_HZ 
-(which I suspect is 1000 in your case) but are exporting values based on 
-USER_HZ (100, historic reasons) to userspace. So we're effectively 
-dividing the values by 10. Well, that division obviously leaves a 
-remainder in most cases, which is dropped. You see in the code that for 
-the summary we first add all in-kernel values up and then do the 
-conversion (cputime64_to_clock_t) to userspace values. So we're actually 
-adding up all the remainders, which we drop when converting each per-cpu 
-data on its own. This leads to a couple of additional jiffies being 
-accounted in the summary.
+I dispute your assertion that this quesiton is irrelevant.  It's
+highly relevant, because if it's Windows clients, they ***won't*** be
+using NFS.
 
-Sven
+As for other large desktop OS's, that would be MacOS and Linux;
+anything else?  And the big, huge, vast difference between Windows and
+MacOS/Linux is that with Windows, in practice people ran with
+Administrator privileges because most applications (including at one
+point Microsoft Visual Studio :-) died and/or completely refused to
+install if you didn't have Administrator privileges.  So people very
+regularly ran with Root privs.  With Vista, you no longer run with
+root privileges by default --- instead, applications still assume they
+have Administrator privileges, causing the Really Annoying Popup boxes
+to pop up each time the application needs to do something that require
+privileges --- which has trained users to mindlessly click "OK" each
+time the Annoying Popup Box comes up.
+
+Given that MacOS and Linux don't have these flaws with respect to
+applications regularly expecting root privileges, will you admit that
+perhaps some of the extreme scanning tactics that were required by
+AntiVirus vendors might be not as necessary for "other desktops"?
+
+Asking the question is important because if they are spending all of
+their time on Windows virii, then your "elementary threat" is really
+an "elementary strawman".  Or, at the very least, it's a low priority
+effort, since the number of virii out in the field for Linux and MacOS
+desktops is in the noise compared to Windows.  I know that it's
+convenient for AV vendors to claim in their marketing literature that
+this is only because Windows is more popular, but while that might be
+part of it, it is also true that there are significant, structural
+differences between Windows and those other large desktop candidates.
+
+> Your argument is irrelevant for the threat given and you seem to have
+> contorted the actual point of the statements to fit something else.  But
+> I'm sure you a fan of multiple layers of security that you don't
+> actually believe that "just check on the clients" is the right thing to
+> do.
+
+Giving up my water bottles and having to take off my shoes at airport
+security has been justified in the name of "multiple layers of
+security".  No, I'm NOT a fan of mindlessly using "defense in depth"
+as an excuse for arbitrary amounts of security and giving up arbitrary
+amounts of my private data.  You need to prove to me that from a cost
+benefit tradeoff it's really worth it.
+
+   	       	    	    	     	  	 - Ted
