@@ -1,82 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763496AbYHFFhp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761089AbYHFFnl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763496AbYHFFhp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Aug 2008 01:37:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752335AbYHFFaW
+	id S1761089AbYHFFnl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Aug 2008 01:43:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751934AbYHFFne
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Aug 2008 01:30:22 -0400
-Received: from qb-out-0506.google.com ([72.14.204.235]:55858 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751513AbYHFFaT (ORCPT
+	Wed, 6 Aug 2008 01:43:34 -0400
+Received: from ti-out-0910.google.com ([209.85.142.186]:21123 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751287AbYHFFnd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Aug 2008 01:30:19 -0400
-Message-ID: <489936E5.7020509@colorfullife.com>
-Date: Wed, 06 Aug 2008 07:30:13 +0200
-From: Manfred Spraul <manfred@colorfullife.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Wed, 6 Aug 2008 01:43:33 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:message-id;
+        b=tq94bchRjvTk1vh8UkIiQCccPLUhQEjbIL+AgNsphUbwA58xf0YvadQEANwTHvsUBK
+         TmXTQYf3vW4D0CS+nemVNSnO7JHGW8M4TQoN2aaM4yvzWGeEqaZs4YaONEgI/Q/JLij6
+         hqJjRDzbeu37y2y19ttC8BnB6MHQxr5NOrLyg=
+From: MinChan Kim <minchan.kim@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Lameter <cl@linux-foundation.org>
+Subject: [PATCH][migration] Trivial cleanup
+Date: Wed, 6 Aug 2008 14:42:54 +0900
+User-Agent: KMail/1.9.9
+Cc: linux-mm <linux-mm@kvack.org>, LKML <linux-kernel@vger.kernel.org>
+References: <20080805135559.GQ26461@parisc-linux.org> <20080805092209.830f5d0a.akpm@linux-foundation.org>
+In-Reply-To: <20080805092209.830f5d0a.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: paulmck@linux.vnet.ibm.com
-CC: linux-kernel@vger.kernel.org, mingo@elte.hu, akpm@linux-foundation.org,
-       oleg@tv-sign.ru, dipankar@in.ibm.com, rostedt@goodmis.org,
-       dvhltc@us.ibm.com, niv@us.ibm.com
-Subject: Re: [PATCH tip/core/rcu] classic RCU locking and memory-barrier cleanups
-References: <20080805162144.GA8297@linux.vnet.ibm.com>
-In-Reply-To: <20080805162144.GA8297@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200808061442.55159.minchan.kim@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Paul,
+This is a trivial cleanup.
+Anyone doesn't use it any more.  
 
-Paul E. McKenney wrote:
-> This patch is in preparation for moving to a hierarchical
-> algorithm to allow the very large SMP machines -- requested by some
-> people at OLS, and there seem to have been a few recent patches in the
-> 4096-CPU direction as well.
+Signed-off-by: MinChan Kim <minchan.kim@gmail.com>
+---
+ mm/mempolicy.c |    1 -
+ 1 files changed, 0 insertions(+), 1 deletions(-)
 
-I thought about hierarchical RCU, but I never found the time to 
-implement it.
-Do you have a concept in mind?
-
-Right now, I try to understand the current code first - and some of it 
-doesn't make much sense.
-
-There are three per-cpu lists:
-->nxt
-->cur
-->done.
-
-Obviously, there must be a quiescent state between cur and done.
-But why does the code require a quiescent state between nxt and cur?
-I think that's superflous. The only thing that is required is that all 
-cpus have moved their callbacks from nxt to cur. That doesn't need a 
-quiescent state, this operation could be done in hard interrupt as well.
-
-Thus I think this should work:
-
-1) A callback is inserted into ->nxt.
-2) As soon as too many objects are sitting in the ->nxt lists, a new rcu 
-cycle is started.
-3) As soon as a cpu sees that a new rcu cycle is started, it moves it's 
-callbacks from ->nxt to ->cur. No checks for hard_irq_count & friends 
-necessary. Especially: same rule for _bh and normal.
-4) As soon as all cpus have moved their lists from ->nxt to ->cur, the 
-real grace period is started.
-5) As soon as all cpus passed a quiescent state (i.e.: now with tests 
-for hard_irq_count, different rules for _bh and normal), the list is 
-moved from ->cur to ->completed. Once in completed, they can be 
-destroyed by performing the callbacks.
-
-What do you think? would that work? It doesn't make much sense that step 
-3) tests for a quiescent state.
-
-Step 2) could depend memory pressure.
-Step 3) and 4) could be accelerated by force_quiescent_state(), if the 
-memory pressure is too high.
-
---
-    Manfred
--> nxt
+diff --git a/mm/mempolicy.c b/mm/mempolicy.c
+index 97020c0..36f4257 100644
+--- a/mm/mempolicy.c
++++ b/mm/mempolicy.c
+@@ -808,7 +808,6 @@ static int migrate_to_node(struct mm_struct *mm, int 
+source, int dest,
+ int do_migrate_pages(struct mm_struct *mm,
+ 	const nodemask_t *from_nodes, const nodemask_t *to_nodes, int flags)
+ {
+-	LIST_HEAD(pagelist);
+ 	int busy = 0;
+ 	int err = 0;
+ 	nodemask_t tmp;
+-- 
+1.5.4.3
 
