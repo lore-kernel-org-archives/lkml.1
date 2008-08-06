@@ -1,138 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756841AbYHFXUw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756090AbYHFXny@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756841AbYHFXUw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Aug 2008 19:20:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752637AbYHFXUm
+	id S1756090AbYHFXny (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Aug 2008 19:43:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754042AbYHFXaZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Aug 2008 19:20:42 -0400
-Received: from py-out-1112.google.com ([64.233.166.177]:25303 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752106AbYHFXUk (ORCPT
+	Wed, 6 Aug 2008 19:30:25 -0400
+Received: from kirsty.vergenet.net ([202.4.237.240]:47505 "EHLO
+	kirsty.vergenet.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753544AbYHFXaV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Aug 2008 19:20:40 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=qK3MHEZY3H0Gjwv9PAL1FlRNbwVx8OCTIiqmWg2vdX9x8cKPT5RB8z91Fosgq244Qk
-         x8nXBMRvjXVwvVKFRBxUlCcYaauLlgGFPEvbNU9GI2lds9x0MkNvdi1VzsDCfunNO/KG
-         USmVSQbOTqMGfB16xC8IJGWhQvT0Y+UYhBnv0=
-Message-ID: <e7d8f83e0808061620j111b6cf8w8eded1e6a3325a4b@mail.gmail.com>
-Date: Thu, 7 Aug 2008 09:20:38 +1000
-From: "Peter Dolding" <oiaohm@gmail.com>
-To: davecb@sun.com
-Subject: Re: [malware-list] [RFC 0/5] [TALPA] Intro to a linux interfaceforon access scanning
-Cc: "Press, Jonathan" <Jonathan.Press@ca.com>,
-       "Rik van Riel" <riel@redhat.com>, "Greg KH" <greg@kroah.com>,
-       "Arjan van de Ven" <arjan@infradead.org>,
-       "Eric Paris" <eparis@redhat.com>, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org
-In-Reply-To: <48998BA3.3080804@sun.com>
+	Wed, 6 Aug 2008 19:30:21 -0400
+Date: Thu, 7 Aug 2008 09:30:20 +1000
+From: Simon Horman <horms@verge.net.au>
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: Sven Wegener <sven.wegener@stealer.net>,
+       Michael Ellerman <michael@ellerman.id.au>, linux-kernel@vger.kernel.org,
+       linux-pci@vger.kernel.org, Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: Re: [patch] PCI: check the return value of
+	device_create_bin_file() in pci_create_bus()
+Message-ID: <20080806233018.GG10636@verge.net.au>
+References: <20080805101605.GA19382@verge.net.au> <alpine.LNX.1.10.0808051224350.5671@titan.stealer.net> <20080805110006.GA13409@verge.net.au> <20080805111406.GA13899@verge.net.au> <20080805112814.GO26461@parisc-linux.org> <20080805121531.GA29763@verge.net.au> <20080805122639.GP26461@parisc-linux.org> <20080806005718.GE32143@verge.net.au> <20080806131900.GI2055@parisc-linux.org> <20080806232523.GF10636@verge.net.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20080805103840.1aaa64a5@infradead.org>
-	 <2629CC4E1D22A64593B02C43E85553030480743B@USILMS12.ca.com>
-	 <20080805181141.GA10700@kroah.com>
-	 <2629CC4E1D22A64593B02C43E85553030480743F@USILMS12.ca.com>
-	 <20080805205129.37d873f0@bree.surriel.com>
-	 <2629CC4E1D22A64593B02C43E855530304AE4AE3@USILMS12.ca.com>
-	 <e7d8f83e0808060538m361eca9xa349fe08fdb20f12@mail.gmail.com>
-	 <2629CC4E1D22A64593B02C43E855530304AE4AE6@USILMS12.ca.com>
-	 <e7d8f83e0808060657v6723510fma8ca6defbdbb65aa@mail.gmail.com>
-	 <48998BA3.3080804@sun.com>
+In-Reply-To: <20080806232523.GF10636@verge.net.au>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 8/6/08, David Collier-Brown <davecb@sun.com> wrote:
->
->
-> Peter Dolding wrote:
->  > My main issue is TALPA, dazuko and so on of Anti-Virus Filesystem
->> monitoring are all going to break anyhow when
->> http://lwn.net/Articles/251224/ Credentials get added and common
->> filesystem caching gets added.
->>
->> You want to change a permissions on a file/object before its opened.
->> So does the Credential user space daemon on file systems that cannot
->> store secuirty information.  We only really need 1 location in the
->> source base for this.  Expand Credentials slightly to allow anti
->> viruses to operate by by problem.   Even better when FS-Cache can sit
->> on top of Credentials correctly no need for anti virus software to
->> have independent caching of blocked and allowed files.  FS-Cache picks
->> a large amount of this up.
->>
->> Basically TALPA, dazuko and so on of Anti-Virus Filesystem monitoring
->> don't fit in the future design of Linux.   All they will be is
->> duplication of a existing interface.  A interface that complete avoids
->> the stacking issue.
->
-> Then in a real sense you've solved much of their problem for them (;-))
-> After this comes engineering, so that they can re-use the scanning
-> mechanisms they already have, but from a different caller.
->
-> The requirements are probably that they know
-> - is this an open for read or write (somewhat less time-sensitive)?
-> - is the data present, or do we have to wait?
-> - if so, for what?
-> as of the time they start looking at the file.  Having a race-free
-> mechanism using credentials and RCU is, IMHO, A Really Good Thing.
->
-> Another thing they and we will likely need is a way to discover
-> if a file is inacessable due to an AV operation, and if the time
-> it has been inacessable is less than or equal to a scanning
-> upper bound by file size or beyond it.  The latter is for repair
-> of broken state introduced by the AV process failing.
->
-> --dave
->
-Failed daemon support has to exist in Credentials for filesystems that
-cannot store all the security data and needing third party support.
-This is the issue same features basically required to do the same
-things.  Different reasons.
+Check the return value of device_create_bin_file in pci_create_bus and
+unwind if necessary. Don't propagate error to caller, as failure to create
+these files shouldn't prevent PCI from being initialised.
 
-One to virus scan.  One to fix up security lacking file systems.  From
-what I see exactly the same set of features are needed.
+Cc: Sven Wegener <sven.wegener@stealer.net>
+Cc: Michael Ellerman <michael@ellerman.id.au>
+Cc: Matthew Wilcox <matthew@wil.cx>
+Signed-off-by: Simon Horman <horms@verge.net.au>
 
-At most only 1 feature is missing a form of copy on write.   Adding
-this at credentials level over the complete system would not be a bad
-thing.  A option to cache writes for scanning even write to like a
-journal for latter applying once scanned.   This could even come as
-part of the generic file system cache.
+--- 
 
-This is why I am kinda scratching my head.   Creating new files also
-have to go past Credentials.  Even creating and editing files have to
-go past Credentials.
+Tue, 5 Aug 2008 21:14:07 +1000
+* Revised the patch to free and NULLify b->legacy_io in
+  pci_create_legacy_files() on error. Thanks to
+  Sven Wegener and Michael Ellerman for pointing out this omission.
 
-It seams like the best place to look to hook in correctly even better
-most of the hook is already there.  Hooking into Credentials is far
-better than hooking into syscalls.   Since if a new special feature
-filesystem access syscall is added it will still enter Credentials.
-On top Credentials interface is under the VFS.  Its between the raw
-filesystem and the VFS.   So no more path based errors.
+Wed, 06 Aug 2008 10:49:30 +1000
+* Don't propagate error to caller, as failure to create these files
+  shouldn't prevent PCI from being initialised.
+  Thanks to Matthew Wilcox
 
-Yes deeper into the OS to the correct location.  Anti-virus methods
-are too shallow.  AppArmor and some other secuirty systems like it
-have the same path based issue because LSM is too shallow.
-Anti-Virus company answer has been to root kit out of the LSM API
-wrong answer.  Correct answer is get to the correct location in the
-OS.
+Thu, 07 Aug 2008 09:28:56 +1000
+* Remove spurious return value.
+  Amusingly this patch was introducing warnings :-)
 
-Note clamfs is on the right path using fuse since this goes under the
-VFS and not effected by path issues and is not root kitting the OS.
-Of course credentials do the job better.
+This patch resolves the following warnings:
 
-Really Anti-Virus guys give as a shopping list of exactly what you
-need to do.   Key word need.   Hooking syscall's most likely is not a
-need but a want.   Even worse a want in the wrong location to give 100
-percent coverage.  Ie when a new syscall is added it creates a
-backdoor around you scanners.
+drivers/pci/probe.c: In function `pci_create_bus':
+drivers/pci/probe.c:66: warning: ignoring return value of `device_create_bin_file', declared with attribute warn_unused_result
+drivers/pci/probe.c:74: warning: ignoring return value of `device_create_bin_file', declared with attribute warn_unused_result
 
-Peter Dolding
+# ia64-unknown-linux-gnu-gcc --version
+ia64-unknown-linux-gnu-gcc (GCC) 3.4.5
+Copyright (C) 2004 Free Software Foundation, Inc.
+This is free software; see the source for copying conditions.  There is NO
+warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-PS I really wound not mind a better paid job.   The developers who
-have to created all these incorrect ways have to been paid more than
-me.
+Index: linux-2.6/drivers/pci/probe.c
+===================================================================
+--- linux-2.6.orig/drivers/pci/probe.c	2008-08-07 09:08:32.000000000 +1000
++++ linux-2.6/drivers/pci/probe.c	2008-08-07 09:14:53.000000000 +1000
+@@ -52,27 +52,46 @@ EXPORT_SYMBOL(no_pci_devices);
+  * Some platforms allow access to legacy I/O port and ISA memory space on
+  * a per-bus basis.  This routine creates the files and ties them into
+  * their associated read, write and mmap files from pci-sysfs.c
++ *
++ * On error unwind, but don't propogate the error to the caller
++ * as it is ok to set up the PCI bus without these files.
+  */
+ static void pci_create_legacy_files(struct pci_bus *b)
+ {
++	int error;
++
+ 	b->legacy_io = kzalloc(sizeof(struct bin_attribute) * 2,
+ 			       GFP_ATOMIC);
+-	if (b->legacy_io) {
+-		b->legacy_io->attr.name = "legacy_io";
+-		b->legacy_io->size = 0xffff;
+-		b->legacy_io->attr.mode = S_IRUSR | S_IWUSR;
+-		b->legacy_io->read = pci_read_legacy_io;
+-		b->legacy_io->write = pci_write_legacy_io;
+-		device_create_bin_file(&b->dev, b->legacy_io);
+-
+-		/* Allocated above after the legacy_io struct */
+-		b->legacy_mem = b->legacy_io + 1;
+-		b->legacy_mem->attr.name = "legacy_mem";
+-		b->legacy_mem->size = 1024*1024;
+-		b->legacy_mem->attr.mode = S_IRUSR | S_IWUSR;
+-		b->legacy_mem->mmap = pci_mmap_legacy_mem;
+-		device_create_bin_file(&b->dev, b->legacy_mem);
+-	}
++	if (!b->legacy_io)
++		return;
++
++	b->legacy_io->attr.name = "legacy_io";
++	b->legacy_io->size = 0xffff;
++	b->legacy_io->attr.mode = S_IRUSR | S_IWUSR;
++	b->legacy_io->read = pci_read_legacy_io;
++	b->legacy_io->write = pci_write_legacy_io;
++	error = device_create_bin_file(&b->dev, b->legacy_io);
++	if (error)
++		goto legacy_io_err;
++
++	/* Allocated above after the legacy_io struct */
++	b->legacy_mem = b->legacy_io + 1;
++	b->legacy_mem->attr.name = "legacy_mem";
++	b->legacy_mem->size = 1024*1024;
++	b->legacy_mem->attr.mode = S_IRUSR | S_IWUSR;
++	b->legacy_mem->mmap = pci_mmap_legacy_mem;
++	error = device_create_bin_file(&b->dev, b->legacy_mem);
++	if (error)
++		goto legacy_mem_err;
++
++	return;
++
++legacy_mem_err:
++	device_remove_bin_file(&b->dev, b->legacy_io);
++legacy_io_err:
++	kfree(b->legacy_io);
++	b->legacy_io = NULL;
++	return;
+ }
+ 
+ void pci_remove_legacy_files(struct pci_bus *b)
