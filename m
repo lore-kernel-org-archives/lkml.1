@@ -1,73 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760917AbYHFUNp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761846AbYHFUOW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760917AbYHFUNp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Aug 2008 16:13:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754546AbYHFUNh
+	id S1761846AbYHFUOW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Aug 2008 16:14:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758064AbYHFUOG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Aug 2008 16:13:37 -0400
-Received: from wolverine01.qualcomm.com ([199.106.114.254]:51655 "EHLO
-	wolverine01.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751555AbYHFUNg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Aug 2008 16:13:36 -0400
-X-IronPort-AV: E=McAfee;i="5200,2160,5355"; a="5371535"
-Message-ID: <489A05EF.7000108@qualcomm.com>
-Date: Wed, 06 Aug 2008 13:13:35 -0700
-From: Max Krasnyansky <maxk@qualcomm.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Rakib Mullick <rakib.mullick@gmail.com>
-CC: pj@sgi.com, menage@google.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] cpuset : Handling improper memory allocation.
-References: <b9df5fa10808061022r34e3a009k5060c8fab06bcd5c@mail.gmail.com>
-In-Reply-To: <b9df5fa10808061022r34e3a009k5060c8fab06bcd5c@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Wed, 6 Aug 2008 16:14:06 -0400
+Received: from mga09.intel.com ([134.134.136.24]:21127 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758306AbYHFUOE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Aug 2008 16:14:04 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.31,316,1215414000"; 
+   d="scan'208";a="426702490"
+Date: Wed, 6 Aug 2008 13:14:02 -0700
+From: Suresh Siddha <suresh.b.siddha@intel.com>
+To: Wolfgang Walter <wolfgang.walter@stwm.de>
+Cc: Herbert Xu <herbert@gondor.apana.org.au>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>
+Subject: Re: Kernel oops with 2.6.26, padlock and ipsec: probably problem with fpu state changes
+Message-ID: <20080806201401.GA607@linux-os.sc.intel.com>
+References: <200807171653.59177.wolfgang.walter@stwm.de> <200807301411.01622.wolfgang.walter@stwm.de> <20080806103354.GA31623@gondor.apana.org.au> <200808061933.25631.wolfgang.walter@stwm.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200808061933.25631.wolfgang.walter@stwm.de>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rakib Mullick wrote:
-> This patch makes sure that , if kmalloc fails in
-> "rebuild_sched_domains", then we've a place to go. If anything else,
-> please let me know.
+On Wed, Aug 06, 2008 at 10:33:25AM -0700, Wolfgang Walter wrote:
+> Hello Herbert,
 > 
-
-partition_sched_domains() can deal with attrs==NULL case. So we do not
-have to abort domain building.
-
-Max
-
-
-> Thanks.
+> I think I finally found the problem.
 > 
-> Signed-off-by: Md.Rakib H. Mullick (rakib.mullick@gmail.com)
-> 
-> --- linux-2.6.27-rc2.orig/kernel/cpuset.c	2008-08-06 16:23:26.000000000 +0600
-> +++ linux-2.6.27-rc2/kernel/cpuset.c	2008-08-06 23:07:59.504441992 +0600
-> @@ -615,7 +615,8 @@ void rebuild_sched_domains(void)
->  		if (dattr) {
->  			*dattr = SD_ATTR_INIT;
->  			update_domain_attr_tree(dattr, &top_cpuset);
-> -		}
-> +		} else
-> +			goto rebuild;
->  		*doms = top_cpuset.cpus_allowed;
->  		goto rebuild;
->  	}
-> @@ -685,6 +686,8 @@ restart:
->  	if (!doms)
->  		goto rebuild;
->  	dattr = kmalloc(ndoms * sizeof(struct sched_domain_attr), GFP_KERNEL);
-> +	if (!dattr)
-> +		goto rebuild;
-> 
->  	for (nslot = 0, i = 0; i < csn; i++) {
->  		struct cpuset *a = csa[i];
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+> Here a short description again: all our routers with a via C3 using padlock for AES-encryption are
+> crashing with 2.6.26 while they work fine with 2.6.25. Not using padlock
+> (i.e. using the i386 assembler version of AES) they just work fine.
 
+Both the padlock version or asm version don't use FP/math registers, right?
+It is interesting that you don't see the problem with asm version
+but see the problem with padlock version.
+
+Does disabling CONFIG_PREEMPT in 2.6.26 change anything? And also,
+can you provide the complete kernel log till the point of failure(oops
+that you sent doesn't have the call trace info)
+
+thanks,
+suresh
