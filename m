@@ -1,57 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763850AbYHFB1c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762154AbYHFBpF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763850AbYHFB1c (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 21:27:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753004AbYHFB1G
+	id S1762154AbYHFBpF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 21:45:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755953AbYHFBgI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 21:27:06 -0400
-Received: from ug-out-1314.google.com ([66.249.92.171]:39632 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751852AbYHFB1F (ORCPT
+	Tue, 5 Aug 2008 21:36:08 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:57861 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756110AbYHFBgH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 21:27:05 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:date:user-agent:mime-version:content-disposition:subject
-         :content-type:content-transfer-encoding:message-id;
-        b=NMnWufEP82e44AT0R2nO7fdRyn1nK2eDae4tPX09PlsnZTMtZ6OwIMXdINYsMW7Fpj
-         eeXzCUY5+W/RzLQS4yYjRkV0FQGdgSC+kOKFI29kCvjNRHK2H+VeM1PdBziGFVReesHB
-         VopvoqmsZAzOIs9k9a5mu6B8PKV3+yfxHVjNY=
-From: Michael Brennan <brennan.brisad@gmail.com>
-To: linux-kernel@vger.kernel.org
-Date: Wed, 6 Aug 2008 03:25:54 +0200
-User-Agent: KMail/1.9.9
+	Tue, 5 Aug 2008 21:36:07 -0400
+To: jmerkey@wolfmountaingroup.com
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2.6.26 2/25] mdb: Merkey's Kernel Debugger
+From: Andi Kleen <andi@firstfloor.org>
+References: <51549.166.70.238.45.1217815820.squirrel@webmail.wolfmountaingroup.com>
+In-Reply-To: <51549.166.70.238.45.1217815820.squirrel@webmail.wolfmountaingroup.com> (jmerkey@wolfmountaingroup.com's message of "Sun, 3 Aug 2008 20:10:20 -0600 (MDT)")
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
+Date: Wed, 06 Aug 2008 03:35:59 +0200
+Message-ID: <878wvb6i2o.fsf@basil.nowhere.org>
 MIME-Version: 1.0
-Content-Disposition: inline
-Subject: Waking up from suspend regression
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200808060325.54537.brennan.brisad@gmail.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+jmerkey@wolfmountaingroup.com writes:
+> regs->ip)
+> -#ifndef CONFIG_KPROBES
+> +#if !defined(CONFIG_KPROBES) && !defined(CONFIG_MDB)
+>  DO_VM86_ERROR(3, SIGTRAP, "int3", int3)
+>  #endif
+>  DO_VM86_ERROR(4, SIGSEGV, "overflow", overflow)
+> @@ -733,6 +747,9 @@
+>  {
+>  	if (notify_die(DIE_NMIUNKNOWN, "nmi", regs, reason, 2, SIGINT) ==
+> NOTIFY_STOP)
+>  		return;
+> +#ifdef	CONFIG_MDB
+> +        mdb(NMI_EXCEPTION, reason, regs); // nmi is code 2
+> +#endif
 
-I am having some major problems with the newest kernels on my Thinkpad R61i 
-and I'm doing my best trying to debug the problems.
+This should be all using die notifiers (register_die etc.) like the 
+other kernel debuggers, not own hooks. As you can see there is already
+a notify_die call around basically all the places you put in a mdb()
+call, and you can just hook in there. If your other interfaces to the core 
+kernel are clean enough this would even allow to use your debugger as a module.
 
-One problem is waking up from suspend to RAM. Earlier kernels worked fine 
-(e.g. 2.6.25), but with the latest the system is unusable after waking up.
-When trying to wake the computer up it first is completely unresponsive with a 
-black screen. After about 40 seconds it comes back alive and shows the locked 
-screensaver. But whatever I do I just get error messages, trying to unlock 
-the screen, it says authentication failed for some reason. If I try to log in 
-from console I just get kernel messages about I/O errors from the SATA HDD.
-
-I have bisected this and get this behavior after the patch: 
-[ce6fce4295ba727b36fdc73040e444bd1aae64cd] PCI MSI: Don't disable MSIs if the 
-mask bit isn't supported
-
-I hope this is of any help at all.
-
-Thanks
-
--- 
-Michael Brennan
+-Andi
