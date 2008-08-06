@@ -1,129 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758967AbYHFTD6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758590AbYHFTJS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758967AbYHFTD6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Aug 2008 15:03:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756129AbYHFTDu
+	id S1758590AbYHFTJS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Aug 2008 15:09:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753626AbYHFTJB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Aug 2008 15:03:50 -0400
-Received: from tallyho.bytemark.co.uk ([80.68.81.166]:35811 "EHLO
-	tallyho.bytemark.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756020AbYHFTDs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Aug 2008 15:03:48 -0400
-From: Andy Whitcroft <apw@shadowen.org>
-To: Gerald Schaefer <gerald.schaefer@de.ibm.com>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, schwidefsky@de.ibm.com,
-       heiko.carstens@de.ibm.com, Mel Gorman <mel@csn.ul.ie>,
-       Andy Whitcroft <apw@shadowen.org>
-Subject: [PATCH 1/1] allocate structures for reservation tracking in hugetlbfs outside of spinlocks
-Date: Wed,  6 Aug 2008 20:03:45 +0100
-Message-Id: <1218049425-19416-1-git-send-email-apw@shadowen.org>
-X-Mailer: git-send-email 1.6.0.rc1.258.g80295
-In-Reply-To: <1218033802.7764.31.camel@ubuntu>
-References: <1218033802.7764.31.camel@ubuntu>
+	Wed, 6 Aug 2008 15:09:01 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:40640 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753218AbYHFTJA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Aug 2008 15:09:00 -0400
+Date: Wed, 6 Aug 2008 15:08:19 -0400
+From: Josef Bacik <jbacik@redhat.com>
+To: linux-kernel@vger.kernel.org
+Cc: rwheeler@redhat.com, tglx@linutronix.de, linux-fsdevel@vger.kernel.org,
+       chris.mason@oracle.com, linux-ext4@vger.kernel.org
+Subject: [PATCH 1/2] add hrtimer_sleep_ns helper function
+Message-ID: <20080806190819.GH27394@unused.rdu.redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Gerald, could you see if this works for you it seems to for us on
-an x86 build.  If it does we can push it up to Andrew.]
+Hello,
 
-In the normal case, hugetlbfs reserves hugepages at map time so that the
-pages exist for future faults.  A struct file_region is used to track
-when reservations have been consumed and where.  These file_regions
-are allocated as necessary with kmalloc() which can sleep with the
-mm->page_table_lock held.  This is wrong and triggers may-sleep warning
-when PREEMPT is enabled.
+This patch adds a function so that things within the kernel can sleep for
+nanoseconds.  This is needed for the next patch in the series.  Thank you,
 
-Updates to the underlying file_region are done in two phases.  The first
-phase prepares the region for the change, allocating any necessary memory,
-without actually making the change.  The second phase actually commits
-the change.  This patch makes use of this by checking the reservations
-before the page_table_lock is taken; triggering any necessary allocations.
-This may then be safely repeated within the locks without any allocations
-being required.
+Signed-off-by: Josef Bacik <jbacik@redhat.com>
 
-Credit to Mel Gorman for diagnosing this failure and initial versions of
-the patch.
-
-Signed-off-by: Andy Whitcroft <apw@shadowen.org>
----
- mm/hugetlb.c |   44 +++++++++++++++++++++++++++++++++++---------
- 1 files changed, 35 insertions(+), 9 deletions(-)
-
-diff --git a/mm/hugetlb.c b/mm/hugetlb.c
-index 28a2980..c4413ae 100644
---- a/mm/hugetlb.c
-+++ b/mm/hugetlb.c
-@@ -1937,6 +1937,15 @@ retry:
- 			lock_page(page);
- 	}
+Index: linux-2.6/include/linux/hrtimer.h
+===================================================================
+--- linux-2.6.orig/include/linux/hrtimer.h
++++ linux-2.6/include/linux/hrtimer.h
+@@ -345,6 +345,7 @@ extern long hrtimer_nanosleep_restart(st
  
-+	/*
-+	 * If we are going to COW a private mapping later, we examine the
-+	 * pending reservations for this page now. This will ensure that
-+	 * any allocations necessary to record that reservation occur outside
-+	 * the spinlock.
-+	 */
-+	if (write_access && !(vma->vm_flags & VM_SHARED))
-+		vma_needs_reservation(h, vma, address);
-+
- 	spin_lock(&mm->page_table_lock);
- 	size = i_size_read(mapping->host) >> huge_page_shift(h);
- 	if (idx >= size)
-@@ -1973,6 +1982,7 @@ int hugetlb_fault(struct mm_struct *mm, struct vm_area_struct *vma,
- 	pte_t *ptep;
- 	pte_t entry;
- 	int ret;
-+	struct page *pagecache_page = NULL;
- 	static DEFINE_MUTEX(hugetlb_instantiation_mutex);
- 	struct hstate *h = hstate_vma(vma);
+ extern void hrtimer_init_sleeper(struct hrtimer_sleeper *sl,
+ 				 struct task_struct *tsk);
++extern int hrtimer_sleep_ns(u64 ns, int interruptible);
  
-@@ -1995,19 +2005,35 @@ int hugetlb_fault(struct mm_struct *mm, struct vm_area_struct *vma,
+ /* Soft interrupt function to run the hrtimer queues: */
+ extern void hrtimer_run_queues(void);
+Index: linux-2.6/kernel/hrtimer.c
+===================================================================
+--- linux-2.6.orig/kernel/hrtimer.c
++++ linux-2.6/kernel/hrtimer.c
+@@ -1459,12 +1459,14 @@ void hrtimer_init_sleeper(struct hrtimer
+ #endif
+ }
  
- 	ret = 0;
+-static int __sched do_nanosleep(struct hrtimer_sleeper *t, enum hrtimer_mode mode)
++static int __sched do_nanosleep(struct hrtimer_sleeper *t, enum hrtimer_mode mode,
++				int interruptible)
+ {
+ 	hrtimer_init_sleeper(t, current);
  
-+	/*
-+	 * If we are going to COW the mapping later, we examine the pending
-+	 * reservations for this page now. This will ensure that any
-+	 * allocations necessary to record that reservation occur outside the
-+	 * spinlock. For private mappings, we also lookup the pagecache
-+	 * page now as it is used to determine if a reservation has been
-+	 * consumed.
-+	 */
-+	if (write_access && !pte_write(entry)) {
-+		vma_needs_reservation(h, vma, address);
-+
-+		if (!(vma->vm_flags & VM_SHARED))
-+			pagecache_page = hugetlbfs_pagecache_page(h,
-+								vma, address);
-+	}
-+
- 	spin_lock(&mm->page_table_lock);
- 	/* Check for a racing update before calling hugetlb_cow */
- 	if (likely(pte_same(entry, huge_ptep_get(ptep))))
--		if (write_access && !pte_write(entry)) {
--			struct page *page;
--			page = hugetlbfs_pagecache_page(h, vma, address);
--			ret = hugetlb_cow(mm, vma, address, ptep, entry, page);
--			if (page) {
--				unlock_page(page);
--				put_page(page);
--			}
--		}
-+		if (write_access && !pte_write(entry))
-+			ret = hugetlb_cow(mm, vma, address, ptep, entry,
-+							pagecache_page);
- 	spin_unlock(&mm->page_table_lock);
-+
-+	if (pagecache_page) {
-+		unlock_page(pagecache_page);
-+		put_page(pagecache_page);
-+	}
-+
- 	mutex_unlock(&hugetlb_instantiation_mutex);
+ 	do {
+-		set_current_state(TASK_INTERRUPTIBLE);
++		set_current_state(interruptible ? TASK_INTERRUPTIBLE :
++				  TASK_UNINTERRUPTIBLE);
+ 		hrtimer_start(&t->timer, t->timer.expires, mode);
+ 		if (!hrtimer_active(&t->timer))
+ 			t->task = NULL;
+@@ -1482,6 +1484,22 @@ static int __sched do_nanosleep(struct h
+ 	return t->task == NULL;
+ }
  
- 	return ret;
--- 
-1.6.0.rc1.258.g80295
-
++int hrtimer_sleep_ns(u64 ns, int interruptible)
++{
++	struct hrtimer_sleeper t;
++	int ret = 0;
++
++	hrtimer_init_on_stack(&t.timer, CLOCK_MONOTONIC, HRTIMER_MODE_ABS);
++	t.timer.expires = ktime_add_ns(ktime_get(), ns);
++
++	ret = do_nanosleep(&t, HRTIMER_MODE_ABS, interruptible);
++
++	destroy_hrtimer_on_stack(&t.timer);
++
++	return ret;
++}
++EXPORT_SYMBOL_GPL(hrtimer_sleep_ns);
++
+ static int update_rmtp(struct hrtimer *timer, struct timespec __user *rmtp)
+ {
+ 	struct timespec rmt;
+@@ -1508,7 +1526,7 @@ long __sched hrtimer_nanosleep_restart(s
+ 				HRTIMER_MODE_ABS);
+ 	t.timer.expires.tv64 = restart->nanosleep.expires;
+ 
+-	if (do_nanosleep(&t, HRTIMER_MODE_ABS))
++	if (do_nanosleep(&t, HRTIMER_MODE_ABS, 1))
+ 		goto out;
+ 
+ 	rmtp = restart->nanosleep.rmtp;
+@@ -1534,7 +1552,7 @@ long hrtimer_nanosleep(struct timespec *
+ 
+ 	hrtimer_init_on_stack(&t.timer, clockid, mode);
+ 	t.timer.expires = timespec_to_ktime(*rqtp);
+-	if (do_nanosleep(&t, mode))
++	if (do_nanosleep(&t, mode, 1))
+ 		goto out;
+ 
+ 	/* Absolute timers do not update the rmtp value and restart: */
