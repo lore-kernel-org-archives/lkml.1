@@ -1,74 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756171AbYHFWfH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756693AbYHFWjT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756171AbYHFWfH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Aug 2008 18:35:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752257AbYHFWey
+	id S1756693AbYHFWjT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Aug 2008 18:39:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753825AbYHFWjL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Aug 2008 18:34:54 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:41416 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752577AbYHFWex (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Aug 2008 18:34:53 -0400
-Date: Wed, 6 Aug 2008 18:34:52 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Simon Arlott <simon@fire.lp0.eu>
-cc: Rene Herman <rene.herman@keyaccess.nl>,
-       Arjan van de Ven <arjan@infradead.org>, <linux-kernel@vger.kernel.org>,
-       <mingo@elte.hu>, Daniel Walker <dwalker@mvista.com>,
-       USB list <linux-usb@vger.kernel.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: Re: [PATCH RFC] USB: Add HCD fastboot
-In-Reply-To: <489A1C68.3000905@simon.arlott.org.uk>
-Message-ID: <Pine.LNX.4.44L0.0808061828010.2145-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 6 Aug 2008 18:39:11 -0400
+Received: from server.drzeus.cx ([85.8.24.28]:43116 "EHLO smtp.drzeus.cx"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753837AbYHFWjK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Aug 2008 18:39:10 -0400
+Date: Thu, 7 Aug 2008 00:39:03 +0200
+From: Pierre Ossman <drzeus@drzeus.cx>
+To: Vitaly Luban <vitaly@luban.org>
+Cc: linux-kernel@vger.kernel.org, Vitaly Luban <vitaly@luban.org>
+Subject: Re: [PATCH] Tokyo Electron SDIO controller (Ellen) support
+Message-ID: <20080807003903.7f6dcb00@mjolnir.drzeus.cx>
+In-Reply-To: <47511ADA.20506@luban.org>
+References: <47511ADA.20506@luban.org>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.13.5; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=PGP-SHA1; boundary="=_freyr.drzeus.cx-23585-1218062348-0001-2"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 6 Aug 2008, Simon Arlott wrote:
+This is a MIME-formatted message.  If you see this text it means that your
+E-mail software does not support MIME-formatted messages.
 
-> > Doing the HCD initcalls last certainly ought to work.
-> 
-> Right - so then all that's needed is to move usb/ before most other things that 
-> take a while to init, and it has some time to initialise usb devices in the 
-> background.
+--=_freyr.drzeus.cx-23585-1218062348-0001-2
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-Not exactly -- you should move most of usb/ forward so that it comes
-before usb/host/.  Or alternatively move usb/host/ later so that it 
-comes after the rest of usb/.
+On Sat, 01 Dec 2007 00:27:06 -0800
+Vitaly Luban <vitaly@luban.org> wrote:
 
-> > So what exactly do you recommend?
-> 
-> I'm not an expert on what can be done with the Makefile process, perhaps there's 
-> an easier way to move things around based on a config option. If host init is 
-> moved before device init for everyone, wouldn't there be too many side effects?
+> Kernel "pci_ids.h" file has data for that card missing.
+>=20
+> Also, Ellen needs some control bits flipped before it functions properly=
+=20
+> as SDIO controller by the spec.
+> Should apply clenly to Linus and Drzeus trees. Please apply.
+>=20
+> Signed-off-by:  Vitaly Luban <vitaly@luban.org>
+>=20
+>=20
 
-Doesn't the host init _already_ come before device init?  If host init 
-were moved _after_ device init, I don't think there would be a lot of 
-side effects.  But it's hard to be sure without trying it.
+The separation has now finally been performed in case you want to
+revisit this patch.
 
-> Lack of a keyboard makes it impossible to do anything if the module fails to 
-> load... as I understand it when the HCD init runs, any BIOS emulation stops?
+Rgds
+--=20
+     -- Pierre Ossman
 
-That's right.  The host driver kicks the BIOS off the hardware.
+  WARNING: This correspondence is being monitored by the
+  Swedish government. Make sure your server uses encryption
+  for SMTP traffic and consider using PGP for end-to-end
+  encryption.
 
-> Although if HCD is a module too...
-> 
-> >> If even one device driver and the hcd is compiled in, they'd need to 
-> >> wait for every USB device to finish init before the usbhid probe could complete.
-> > 
-> > What if usbhid is the one device driver that is compiled in?  :-)
-> 
-> That was the situation I was thinking of - surely that would be compiled in 
-> if the HCDs were?
+--=_freyr.drzeus.cx-23585-1218062348-0001-2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename=signature.asc
 
-I noticed in your logs earlier that some of your USB drivers were 
-compiled in and others weren't.  Maybe if _all_ of them were compiled 
-in you wouldn't experience as much contention and the init delays would 
-be shorter.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
 
-Alan Stern
+iEYEARECAAYFAkiaKAoACgkQ7b8eESbyJLhpOQCfQu23gXOsfKSqf0JJSUSGYoBy
+3d0AoJJIcrXYJhxsXDtx1AHaAb5lpP09
+=jMdd
+-----END PGP SIGNATURE-----
 
+--=_freyr.drzeus.cx-23585-1218062348-0001-2--
