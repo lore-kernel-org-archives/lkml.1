@@ -1,199 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764485AbYHFVec@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763012AbYHFVeu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764485AbYHFVec (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Aug 2008 17:34:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751610AbYHFV2h
+	id S1763012AbYHFVeu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Aug 2008 17:34:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756542AbYHFV2o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Aug 2008 17:28:37 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:36975 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750936AbYHFV2g (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Aug 2008 17:28:36 -0400
-Date: Wed, 6 Aug 2008 14:28:05 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: linux-kernel@vger.kernel.org, ospite@studenti.unina.it,
-       Matthew Wilcox <matthew@wil.cx>, Nick Piggin <nickpiggin@yahoo.com.au>
-Subject: Re: BUG in VFS or block layer
-Message-Id: <20080806142805.9db6f52f.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0808061628280.2145-100000@iolanthe.rowland.org>
-References: <Pine.LNX.4.44L0.0808061628280.2145-100000@iolanthe.rowland.org>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Wed, 6 Aug 2008 17:28:44 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:59258 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756086AbYHFV2n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Aug 2008 17:28:43 -0400
+Subject: Re: [malware-list] [RFC 0/5] [TALPA] Intro to a linux interface
+	for on access scanning
+From: Eric Paris <eparis@redhat.com>
+To: Theodore Tso <tytso@mit.edu>
+Cc: Greg KH <greg@kroah.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       malware-list@lists.printk.net, linux-kernel@vger.kernel.org
+In-Reply-To: <20080806210202.GA9413@mit.edu>
+References: <1217883616.27684.19.camel@localhost.localdomain>
+	 <20080804223249.GA10517@kroah.com>
+	 <1217896374.27684.53.camel@localhost.localdomain>
+	 <20080805005132.GA3661@kroah.com>
+	 <20080805122328.69a37c1d@lxorguk.ukuu.org.uk>
+	 <20080805170307.GB9639@kroah.com>
+	 <1217962602.27684.144.camel@localhost.localdomain>
+	 <20080805203007.GB27489@kroah.com>
+	 <1218048597.27684.276.camel@localhost.localdomain>
+	 <20080806210202.GA9413@mit.edu>
+Content-Type: text/plain
+Date: Wed, 06 Aug 2008 17:28:01 -0400
+Message-Id: <1218058081.5837.49.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 6 Aug 2008 16:40:02 -0400 (EDT)
-Alan Stern <stern@rowland.harvard.edu> wrote:
-
-> This bug is certainly present in 2.6.27-rc2, and it may be present in
-> several earlier kernel versions too, perhaps as far back as 2.6.25.
-> What happens is that in the presence of certain I/O errors, user
-> processes can hang.  Here is a procedure for recreating the bug:
+On Wed, 2008-08-06 at 17:02 -0400, Theodore Tso wrote:
+> On Wed, Aug 06, 2008 at 02:49:57PM -0400, Eric Paris wrote:
+> > 
+> > This simple thread shows what I believe to be clear and compelling
+> > evidence of the need for an in kernel solution.  Lets just consider that
+> > we are a high input, high output, NFS file server with other OS's
+> > mounting this NFS share RW.
+> > 
+> > Our goal is to stop, or at least reduce the throughput (I clearly
+> > document and accept the open to read race, and until we get a working
+> > revoke I don't see that changing) of malware across the NFS server.
+> > This data will not be attacking the NFS server.  We wish to slow and
+> > hopefully halt the spread of this data with minimal impact to the NFS
+> > server.
 > 
-> Make sure that CONFIG_USB_GADGET and CONFIG_USB_GADGET_DUMMY_HCD are
-> enabled as modules, as well as CONFIG_USB_FILE_STORAGE.  Apply the
-> patch below and build the drivers.  Then create a blank image file with
-> 1 MB of zeros and load the drivers:
-> 
-> 	dd if=/dev/zero of=image bs=1M count=1
-> 	modprobe dummy-hcd
-> 	modprobe g-file-storage file=image
-> 
-> The patch causes a number of sector-read errors to occur, replicating 
-> those in the log attached to 
-> 
-> 	http://marc.info/?l=linux-usb&m=121802760208717&w=2
-> 
-> On my system this leads hald-probe-storage to hang during exit with the
-> following stack trace:
-> 
-> [   85.330010] hald-probe-st D e6d17cac     0  2031   1658
-> [   85.330174]        e6d17cd0 00000046 00000000 e6d17cac ee78d160 e6d83a20 e6d83b74 00000000 
-> [   85.330600]        efb76940 e6d17cb8 c04c447b c17e2024 e6d17cc0 c04c2f0b e6d17cc8 c19d1180 
-> [   85.331066]        c17e2024 c19c8210 e6d17cdc c059c67d e707da48 e6d17cec c0447f64 e6d17d10 
-> [   85.331534] Call Trace:
-> [   85.331693]  [<c04c447b>] ? generic_unplug_device+0x16/0x3a
-> [   85.331860]  [<c04c2f0b>] ? blk_unplug+0xc/0xe
-> [   85.332023]  [<c059c67d>] io_schedule+0x1e/0x28
-> [   85.332149]  [<c0447f64>] sync_page+0x46/0x4c
-> [   85.332276]  [<c059c8c1>] __wait_on_bit_lock+0x30/0x59
-> [   85.332403]  [<c0447f1e>] ? sync_page+0x0/0x4c
-> [   85.332566]  [<c0447ee0>] __lock_page+0x4e/0x56
-> [   85.332692]  [<c042d957>] ? wake_bit_function+0x0/0x43
-> [   85.332858]  [<c044f0b9>] lock_page+0x27/0x2a
-> [   85.332985]  [<c044f6b4>] truncate_inode_pages_range+0x218/0x27a
-> [   85.333117]  [<c0438485>] ? trace_hardirqs_on_caller+0xe1/0x102
-> [   85.333283]  [<c04384b1>] ? trace_hardirqs_on+0xb/0xd
-> [   85.333448]  [<c044f722>] truncate_inode_pages+0xc/0x12
-> [   85.333576]  [<c048590b>] kill_bdev+0x2c/0x2f
-> [   85.333704]  [<c0485e51>] __blkdev_put+0x4c/0x12b
-> [   85.333830]  [<c0473747>] ? d_free+0x25/0x37
-> [   85.333992]  [<c0485f3a>] blkdev_put+0xa/0xc
-> [   85.334117]  [<c04865a7>] blkdev_close+0x25/0x28
-> [   85.334243]  [<c04667a3>] __fput+0xae/0x13c
-> [   85.334368]  [<c0466848>] fput+0x17/0x19
-> [   85.334492]  [<c04644b8>] filp_close+0x50/0x5a
-> [   85.334618]  [<c041ee6d>] put_files_struct+0x68/0xaa
-> [   85.334746]  [<c041eedd>] exit_files+0x2e/0x32
-> [   85.334871]  [<c041fe4e>] do_exit+0x1df/0x64a
-> [   85.334997]  [<c04257a4>] ? set_tsk_thread_flag+0xb/0xd
-> [   85.335162]  [<c04384b1>] ? trace_hardirqs_on+0xb/0xd
-> [   85.335326]  [<c042033a>] sys_exit_group+0x0/0x11
-> [   85.335453]  [<c04276e9>] get_signal_to_deliver+0x2ee/0x32d
-> [   85.335582]  [<c040260e>] do_notify_resume+0x6b/0x5ff
-> [   85.335711]  [<c04384b1>] ? trace_hardirqs_on+0xb/0xd
-> [   85.335875]  [<c059cf5c>] ? __mutex_unlock_slowpath+0xf4/0x103
-> [   85.336042]  [<c059cf73>] ? mutex_unlock+0x8/0xa
-> [   85.336204]  [<c04858d1>] ? block_llseek+0x94/0xa2
-> [   85.336368]  [<c0466220>] ? vfs_read+0x78/0xa8
-> [   85.336531]  [<c0465aa1>] ? do_sync_read+0x0/0xe9
-> [   85.336694]  [<c0466479>] ? sys_read+0x53/0x5d
-> [   85.336857]  [<c04030f6>] work_notifysig+0x13/0x19
-> [   85.336984]  =======================
-> 
-> I don't know enough about the VFS or block layers to track this down 
-> any further.
-> 
-> Alan Stern
-> 
-> 
-> Index: usb-2.6/drivers/usb/gadget/file_storage.c
-> ===================================================================
-> --- usb-2.6.orig/drivers/usb/gadget/file_storage.c
-> +++ usb-2.6/drivers/usb/gadget/file_storage.c
-> @@ -1569,6 +1569,11 @@ static int do_read(struct fsg_dev *fsg)
->  	}
->  	file_offset = ((loff_t) lba) << 9;
->  
-> +	if (lba >= 100) {
-> +		curlun->sense_data = 0x030000;
-> +		return -EINVAL;
-> +	}
-> +
->  	/* Carry out the file reads */
->  	amount_left = fsg->data_size_from_cmnd;
->  	if (unlikely(amount_left == 0))
+> In this scenario, are you positing that you are worried about Windows
+> malware, or Linux malware?  What OS are the clients running?  I will
+> note that Windows has such a sucky NFS implementation that nearly all
+> Widows clients will be running CIFS/SMB, not NFS
 
-What the VFS will do is
+I believe I specifically did not make any such claims at all about the
+client OS and merely claimed the intended target was not the linux NFS
+server.  I didn't make those claims because they are irrelevant and so
+that people could not jump on those details and try to offload the
+solution to the wrong place.  Maybe the client is not Windows but
+another large desktop OS who actually has a reasonable NFS client?  How
+do you turn this into a straw man argument then?  Remember, I'm not
+claiming that my solution for the entirety of the threads that AV
+vendors claim to want to protect again, I simply claim that a
+GLIBC/LD_PRELOAD solution is easily shown to be infeasible for even the
+most elementary of threats.
 
-- lock the page
+> --- so the right
+> solution there is to integrate the virus checking with Samba ---
+> especially since the one AV vendor has already admitted the actual
+> virus signature checking has to be done in userspace.
 
-- put the page into a BIO and send it down to the block layer
+<snide> I believe they all are going to claim it has to be in some
+userspace proprietary application for them to keep making money </snide>
 
-- later, wait for IO completion.  It does this by running
-  lock_page[_killable](), which will waiting for the page to come unlocked.
+> For Linux clients, one question that immediately rises is the
+> end-to-end argument.  Wouldn't be far better to run whatever security
+> solution on the client?  After all, a Virus checking on an NFS server
+> isn't going to help the user if they accidentally track in the virus
+> on a USB stick.  (Especially if it is an infected Macro virus in an
+> office document.)
 
-  The page comes unlocked via the device driver, usually within the
-  IO completion interrupt.
+Your argument is irrelevant for the threat given and you seem to have
+contorted the actual point of the statements to fit something else.  But
+I'm sure you a fan of multiple layers of security that you don't
+actually believe that "just check on the clients" is the right thing to
+do.  Linux client side checking is most likely going to be something
+that vendors claim to want to do but has no bearing on if out of kernel
+scanning is feasible for NFS servers.  Nor if you want to look at the
+"end-to-end argument" as you claim can excluding server side scanning be
+a reasonable choice.
 
+How many clients machines at your location are controlled by some IT
+organization?  How many servers?  I think it's quite obvious that unless
+the answer to the first question is "all" then we would want scanning on
+both the client and the server.  I think there are many organizations in
+which many, or even most, machines with access to an NFS server can be
+controlled so as to enforce scanning, but its not reasonable, at least
+in my mind, to throw out server side NFS scanning unless you can control
+ALL of the clients.
 
-A common cause of userspace lockups during IO errors is that the driver
-layer screwed up and didn't run the completion callback.
+-Eric
 
-Now, according to the above trace, the above code sequence _did_ work
-OK.  Or at least, it ran to completion.  It was later, when we tried to
-truncate a file that we stumbled across a permanently-locked page.
+-Eric
 
-So it would appear that the VFS read() code successfully completed, but
-left locked pages behind it, which caused the truncate to hang.
-
-
-Aside: why does this code in do_generic_file_read() return -EIO when it
-got a signal?
-
-
-page_not_up_to_date:
-                /* Get exclusive access to the page ... */
-                if (lock_page_killable(page))
-                        goto readpage_eio;
-
-
-
-One possible problem is here:
-
-readpage:
-		/* Start the actual read. The read will unlock the page. */
-		error = mapping->a_ops->readpage(filp, page);
-
-		if (unlikely(error)) {
-			if (error == AOP_TRUNCATED_PAGE) {
-				page_cache_release(page);
-				goto find_page;
-			}
-			goto readpage_error;
-		}
-
-the VFS layer assumes that if ->readpage() returned a synchronous error
-then the page was already unlocked within ->readpage().  Usually this
-means that the driver layer had to run the BIO completion callback to
-do that unlocking.  It is possible that the USB code forgot to do this.
-This would explain what you're seeing.
-
-So...  would you be able to verify that the USB, layer is correctly
-calling bio->bi_end_io() for the offending requests?
-
-
-Aside2: why does this code:
-
-readpage:
-		/* Start the actual read. The read will unlock the page. */
-		error = mapping->a_ops->readpage(filp, page);
-
-		if (unlikely(error)) {
-			if (error == AOP_TRUNCATED_PAGE) {
-				page_cache_release(page);
-				goto find_page;
-			}
-			goto readpage_error;
-		}
-
-		if (!PageUptodate(page)) {
-			if (lock_page_killable(page))
-				goto readpage_eio;
-
-return EIO if lock_page_killable() saw a signal?
