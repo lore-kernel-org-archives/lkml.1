@@ -1,133 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759914AbYHFULw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757981AbYHFUMO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759914AbYHFULw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Aug 2008 16:11:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757118AbYHFUKk
+	id S1757981AbYHFUMO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Aug 2008 16:12:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751555AbYHFULo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Aug 2008 16:10:40 -0400
-Received: from wolverine02.qualcomm.com ([199.106.114.251]:9558 "EHLO
-	wolverine02.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756467AbYHFUKd (ORCPT
+	Wed, 6 Aug 2008 16:11:44 -0400
+Received: from wolverine01.qualcomm.com ([199.106.114.254]:46754 "EHLO
+	wolverine01.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750713AbYHFULn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Aug 2008 16:10:33 -0400
-X-Greylist: delayed 575 seconds by postgrey-1.27 at vger.kernel.org; Wed, 06 Aug 2008 16:10:32 EDT
-X-IronPort-AV: E=McAfee;i="5200,2160,5355"; a="5202678"
-From: Max.Krasnyansky@qualcomm.com
-To: mingo@elte.hu, akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, Max Krasnyansky <maxk@qualcomm.com>,
-       lizf@cn.fujitsu.com, jeff.chua.linux@gmail.com
-Subject: [PATCH] Resurect proper handling of maxcpus= kernel option
-Date: Wed,  6 Aug 2008 13:00:54 -0700
-Message-Id: <1218052854-5020-1-git-send-email-Krasnyansky@qualcomm.com>
-X-Mailer: git-send-email 1.5.5.1
+	Wed, 6 Aug 2008 16:11:43 -0400
+X-IronPort-AV: E=McAfee;i="5200,2160,5355"; a="5371481"
+Message-ID: <489A057E.8090405@qualcomm.com>
+Date: Wed, 06 Aug 2008 13:11:42 -0700
+From: Max Krasnyansky <maxk@qualcomm.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Li Zefan <lizf@cn.fujitsu.com>
+CC: Jeff Chua <jeff.chua.linux@gmail.com>, lkml <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.27rc1 cannot boot more than 8CPUs
+References: <b6a2187b0808052015g698430fah95b5dc2c25dc396a@mail.gmail.com>	 <48991B07.3050500@qualcomm.com>	 <b6a2187b0808052050h35e2786fwfbf1e1dd5c37d8cf@mail.gmail.com>	 <48992085.3050203@qualcomm.com> <b6a2187b0808052106l1c553df4lab4e9e9f29de356d@mail.gmail.com> <48992D35.9020005@qualcomm.com> <48992E5A.3050303@cn.fujitsu.com>
+In-Reply-To: <48992E5A.3050303@cn.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Max Krasnyansky <maxk@qualcomm.com>
+Li Zefan wrote:
+> Max Krasnyansky wrote:
+>> Jeff Chua wrote:
+>>> On Wed, Aug 6, 2008 at 11:54 AM, Max Krasnyansky <maxk@qualcomm.com>
+>>> wrote:
+>>>
+>>>> Are you running 32-bit kernel ?
+>>> Yes. But, does it matter?
+>> It used to. 64-bit kernel used to handle maxcpus option as documented in
+>> the Documentation/cpu-hotplug.txt and 32-bit one was broken.
+>> I just looked at the latest code and realized that both are now broken.
+>> They ignore cpu id > maxcpus instead of not-booting them.
+>>
+> 
+> Yes. I have an x86_64 box with 4 cpus, but yesterday when I booted up with maxcpus=2,
+> I didn't see the other 2 cpus.
+> 
+>> I'll send a patch that fixes that tomorrow.
+>>
+> 
+> greate :)
 
-For some reason we had redundant parsers registered for maxcpus=. 
-One in init/main.c and another in arch/x86/smpboot.c
-So I nuked the one in arch/x86.
+I just sent it and CC'ed both of you guys.
+	[PATCH] Resurect proper handling of maxcpus= kernel option
 
-Also 64-bit kernels used to handle maxcpus= as documented in
-Documentation/cpu-hotplug.txt. CPUs with 'id > maxcpus' are initialized
-but not booted. 32-bit version for some reason ignored them even though
-all the infrastructure for booting them later is there.
+Jeff, maybe you can try again booting with maxcpus=8 and then bringing 
+them online one by one to see where/what fails.
 
-In the current mainline both 64 and 32 bit versions are broken. I'm
-too lazy to look through git history but I'm guessing it happened as
-part of the i386 and x86_64 unification.
+Max
 
-This patch restores the correct behaviour. I've tested x86_64 version on
-4- and 8- way Core2 and 2-way Opteron based machines. Various config
-combinations SMP, !SMP, CPU_HOTPLUG, !CPU_HOTPLUG.
-Booted with maxcpus=1 and maxcpus=4, etc. Everything is working as expected.
-
-I cannot test 32-bit version (no 32-bit machines here).
-
-Signed-off-by: Max Krasnyansky <maxk@qualcomm.com>
-Cc: lizf@cn.fujitsu.com
-Cc: jeff.chua.linux@gmail.com
----
- arch/x86/kernel/apic_32.c |    8 --------
- arch/x86/kernel/apic_64.c |    7 -------
- arch/x86/kernel/smpboot.c |   14 --------------
- 3 files changed, 0 insertions(+), 29 deletions(-)
-
-diff --git a/arch/x86/kernel/apic_32.c b/arch/x86/kernel/apic_32.c
-index d6c8983..71d49cc 100644
---- a/arch/x86/kernel/apic_32.c
-+++ b/arch/x86/kernel/apic_32.c
-@@ -1454,8 +1454,6 @@ void disconnect_bsp_APIC(int virt_wire_setup)
- 	}
- }
- 
--unsigned int __cpuinitdata maxcpus = NR_CPUS;
--
- void __cpuinit generic_processor_info(int apicid, int version)
- {
- 	int cpu;
-@@ -1482,12 +1480,6 @@ void __cpuinit generic_processor_info(int apicid, int version)
- 		return;
- 	}
- 
--	if (num_processors >= maxcpus) {
--		printk(KERN_WARNING "WARNING: maxcpus limit of %i reached."
--			" Processor ignored.\n", maxcpus);
--		return;
--	}
--
- 	num_processors++;
- 	cpus_complement(tmp_map, cpu_present_map);
- 	cpu = first_cpu(tmp_map);
-diff --git a/arch/x86/kernel/apic_64.c b/arch/x86/kernel/apic_64.c
-index 7f1f030..446c062 100644
---- a/arch/x86/kernel/apic_64.c
-+++ b/arch/x86/kernel/apic_64.c
-@@ -90,7 +90,6 @@ static unsigned long apic_phys;
- 
- unsigned long mp_lapic_addr;
- 
--unsigned int __cpuinitdata maxcpus = NR_CPUS;
- /*
-  * Get the LAPIC version
-  */
-@@ -1062,12 +1061,6 @@ void __cpuinit generic_processor_info(int apicid, int version)
- 		return;
- 	}
- 
--	if (num_processors >= maxcpus) {
--		printk(KERN_WARNING "WARNING: maxcpus limit of %i reached."
--		       " Processor ignored.\n", maxcpus);
--		return;
--	}
--
- 	num_processors++;
- 	cpus_complement(tmp_map, cpu_present_map);
- 	cpu = first_cpu(tmp_map);
-diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
-index 3325127..4fcce79 100644
---- a/arch/x86/kernel/smpboot.c
-+++ b/arch/x86/kernel/smpboot.c
-@@ -1370,17 +1370,3 @@ void __cpu_die(unsigned int cpu)
- 	BUG();
- }
- #endif
--
--/*
-- * If the BIOS enumerates physical processors before logical,
-- * maxcpus=N at enumeration-time can be used to disable HT.
-- */
--static int __init parse_maxcpus(char *arg)
--{
--	extern unsigned int maxcpus;
--
--	if (arg)
--		maxcpus = simple_strtoul(arg, NULL, 0);
--	return 0;
--}
--early_param("maxcpus", parse_maxcpus);
--- 
-1.5.5.1
 
