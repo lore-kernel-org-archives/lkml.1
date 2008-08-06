@@ -1,66 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761057AbYHFIdt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760003AbYHFIja@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761057AbYHFIdt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Aug 2008 04:33:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754574AbYHFIdl
+	id S1760003AbYHFIja (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Aug 2008 04:39:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754068AbYHFIgZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Aug 2008 04:33:41 -0400
-Received: from ti-out-0910.google.com ([209.85.142.191]:45555 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754497AbYHFIdk (ORCPT
+	Wed, 6 Aug 2008 04:36:25 -0400
+Received: from mtagate8.de.ibm.com ([195.212.29.157]:13662 "EHLO
+	mtagate8.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753815AbYHFIgY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Aug 2008 04:33:40 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=kvMNIprrPAhbG1Zfr1PQ9jy1tYNUsJrJ2VWuteLWyS79En+PFz/AF8DfKfiD3uxoKU
-         UTKpJFZDxmqmvt1L0V24BoPc+nIm+9uojtSEZBIAWC0s5axzxcs8MEgKVHOgG3CpzgbZ
-         GCqq7L+OSox77/KtHPGkZE1Cpvwv3p+X1H4wY=
-Message-ID: <489961B9.6010207@gmail.com>
-Date: Wed, 06 Aug 2008 17:32:57 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
-MIME-Version: 1.0
-To: Jens Axboe <jens.axboe@oracle.com>
-CC: Michael Brennan <brennan.brisad@gmail.com>, linux-kernel@vger.kernel.org,
-       rjw@sisk.pl, matthew@wil.cx, jeff@garzik.org
-Subject: Re: Waking up from suspend regression
-References: <200808060325.54537.brennan.brisad@gmail.com> <20080806083129.GC20055@kernel.dk>
-In-Reply-To: <20080806083129.GC20055@kernel.dk>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 6 Aug 2008 04:36:24 -0400
+Subject: Re: [patch 1/3] kmsg: Kernel message catalog macros.
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Reply-To: schwidefsky@de.ibm.com
+To: Greg KH <gregkh@suse.de>
+Cc: Kay Sievers <kay.sievers@vrfy.org>, linux-kernel@vger.kernel.org,
+       linux-s390@vger.kernel.org,
+       lf_kernel_messages@lists.linux-foundation.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Michael Holzheu <holzheu@de.ibm.com>, Gerrit Huizenga <gh@us.ibm.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>, Jan Kara <jack@suse.cz>,
+       Pavel Machek <pavel@ucw.cz>, Sam Ravnborg <sam@ravnborg.org>,
+       Joe Perches <joe@perches.com>,
+       Jochen =?ISO-8859-1?Q?Vo=DF?= <jochen.voss@googlemail.com>,
+       Kunai Takashi <kunai@linux-foundation.jp>,
+       Tim Bird <tim.bird@am.sony.com>
+In-Reply-To: <20080805223117.GA6552@suse.de>
+References: <20080730165656.118280544@de.ibm.com>
+	 <20080730171156.824640459@de.ibm.com>
+	 <3ae72650807301502h3e54e80yb405af7192048b89@mail.gmail.com>
+	 <20080730220432.GA24800@suse.de> <1217495404.8555.20.camel@localhost>
+	 <20080805223117.GA6552@suse.de>
+Content-Type: text/plain
+Organization: IBM Corporation
+Date: Wed, 06 Aug 2008 10:35:16 +0200
+Message-Id: <1218011716.20769.12.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jens Axboe wrote:
-> On Wed, Aug 06 2008, Michael Brennan wrote:
->> Hi,
->>
->> I am having some major problems with the newest kernels on my Thinkpad R61i 
->> and I'm doing my best trying to debug the problems.
->>
->> One problem is waking up from suspend to RAM. Earlier kernels worked fine 
->> (e.g. 2.6.25), but with the latest the system is unusable after waking up.
->> When trying to wake the computer up it first is completely unresponsive with a 
->> black screen. After about 40 seconds it comes back alive and shows the locked 
->> screensaver. But whatever I do I just get error messages, trying to unlock 
->> the screen, it says authentication failed for some reason. If I try to log in 
->> from console I just get kernel messages about I/O errors from the SATA HDD.
->>
->> I have bisected this and get this behavior after the patch: 
->> [ce6fce4295ba727b36fdc73040e444bd1aae64cd] PCI MSI: Don't disable MSIs if the 
->> mask bit isn't supported
+On Tue, 2008-08-05 at 15:31 -0700, Greg KH wrote:
+> On Thu, Jul 31, 2008 at 11:10:04AM +0200, Martin Schwidefsky wrote:
+> > On Wed, 2008-07-30 at 15:04 -0700, Greg KH wrote:
+> > > On Thu, Jul 31, 2008 at 12:02:04AM +0200, Kay Sievers wrote:
+> > > > On Wed, Jul 30, 2008 at 18:56, Martin Schwidefsky
+> > > > <schwidefsky@de.ibm.com> wrote:
+> > > > 
+> > > > > +#define kmsg_dev_alert(id, dev, format, arg...) \
+> > > > > +       printk(__KMSG_CHECK(ALERT, id) KMSG_COMPONENT \
+> > > > > +               ": %s: " format, (dev)->bus_id , ## arg)
+> > > > 
+> > > > Care to use dev_name(), bus_id will be removed soon.
+> > > 
+> > > Hm, just use dev_printk() instead, it handles all of these kinds of
+> > > changes automatically.
+> > 
+> > Using dev_printk won't work because of the order of the elements of the
+> > printk. The kmsg tag should not have a "random" position in the printk
+> > but should be the first element. If we use dev_printk the kmsg tag will
+> > be the third element, for other kmsg printks it will be the first. In
+> > addition the kmsg message tag for the device drivers already includes
+> > the driver name ..
 > 
-> Same here, sata is dead after the resume. Thinkpad X60.
-> 
+> But the structure of dev_printk() is well definied and should be pretty
+> trival to parse even with missing fields.
 
-Known bug && patch available.
+The missing field is the message tag. Which is the key for the message
+lookup. As far as the kmsg catalog is concerned this is a pretty
+important field that may not be missing from the printk itself.
 
-http://bugzilla.kernel.org/show_bug.cgi?id=11178
+> And if not, fix up dev_printk() to properly delinate when we have
+> missing fields, why create a totally new thing here that we need to
+> convert subsystems into?
+
+To "fix" dev_printk would mean to add the message tag. Which requires to
+change all callers. The better approach is to add a new printk wrapper
+and decide for each subsystem if it shouuld be converted. I'm not
+advocating to change everything. The kmsg macros is a way to document
+the message from a piece of code if you choose to use these macros. 
+
+What could be done is to move the kmsg_dev_xxx macros to
+include/linux/device.h if you want to keep all device printk related
+definitions in one place. Would that be more acceptable ?
 
 -- 
-tejun
+blue skies,
+  Martin.
+
+"Reality continues to ruin my life." - Calvin.
+
+
