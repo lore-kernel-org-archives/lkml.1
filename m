@@ -1,53 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758678AbYHFS4t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758967AbYHFTD6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758678AbYHFS4t (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Aug 2008 14:56:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755676AbYHFS4l
+	id S1758967AbYHFTD6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Aug 2008 15:03:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756129AbYHFTDu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Aug 2008 14:56:41 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:38415 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754499AbYHFS4k (ORCPT
+	Wed, 6 Aug 2008 15:03:50 -0400
+Received: from tallyho.bytemark.co.uk ([80.68.81.166]:35811 "EHLO
+	tallyho.bytemark.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756020AbYHFTDs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Aug 2008 14:56:40 -0400
-Date: Wed, 6 Aug 2008 20:57:19 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Jason Wessel <jason.wessel@windriver.com>
-Cc: Andi Kleen <andi@firstfloor.org>, jmerkey@wolfmountaingroup.com,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Geert Uytterhoeven <geert@linux-m68k.org>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Josh Boyer <jwboyer@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: [ANNOUNCE] Merkey's Kernel Debugger
-Message-ID: <20080806185719.GE24801@one.firstfloor.org>
-References: <17494.166.70.238.46.1217784156.squirrel@webmail.wolfmountaingroup.com> <Pine.LNX.4.64.0808051140150.6309@anakin> <33030.166.70.238.45.1217948565.squirrel@webmail.wolfmountaingroup.com> <200808060133.10457.nickpiggin@yahoo.com.au> <87r6926dsr.fsf@basil.nowhere.org> <4899DD9F.6020007@windriver.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4899DD9F.6020007@windriver.com>
-User-Agent: Mutt/1.4.2.1i
+	Wed, 6 Aug 2008 15:03:48 -0400
+From: Andy Whitcroft <apw@shadowen.org>
+To: Gerald Schaefer <gerald.schaefer@de.ibm.com>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, schwidefsky@de.ibm.com,
+       heiko.carstens@de.ibm.com, Mel Gorman <mel@csn.ul.ie>,
+       Andy Whitcroft <apw@shadowen.org>
+Subject: [PATCH 1/1] allocate structures for reservation tracking in hugetlbfs outside of spinlocks
+Date: Wed,  6 Aug 2008 20:03:45 +0100
+Message-Id: <1218049425-19416-1-git-send-email-apw@shadowen.org>
+X-Mailer: git-send-email 1.6.0.rc1.258.g80295
+In-Reply-To: <1218033802.7764.31.camel@ubuntu>
+References: <1218033802.7764.31.camel@ubuntu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> It depends how you look at the problem.  I would agree that the use of
+[Gerald, could you see if this works for you it seems to for us on
+an x86 build.  If it does we can push it up to Andrew.]
 
-Yes I left the possibility of a "someone writing a in kernel kgdb UI" 
-out. Indeed that would be a possibility. 
+In the normal case, hugetlbfs reserves hugepages at map time so that the
+pages exist for future faults.  A struct file_region is used to track
+when reservations have been consumed and where.  These file_regions
+are allocated as necessary with kmalloc() which can sleep with the
+mm->page_table_lock held.  This is wrong and triggers may-sleep warning
+when PREEMPT is enabled.
 
-On the other hand I'm not sure it would save all that much code 
-versus just directly working on top of die notifiers.
+Updates to the underlying file_region are done in two phases.  The first
+phase prepares the region for the change, allocating any necessary memory,
+without actually making the change.  The second phase actually commits
+the change.  This patch makes use of this by checking the reservations
+before the page_table_lock is taken; triggering any necessary allocations.
+This may then be safely repeated within the locks without any allocations
+being required.
 
-Also the gdb stub interface definitely has its limitations too.
+Credit to Mel Gorman for diagnosing this failure and initial versions of
+the patch.
 
-> > be quite possible to have a multitude of debuggers just using
-> > them. In fact that's already the cases, kprobes and kgdb and
-> > kdump are all kinds of debuggers using such hooks.
-> >
-> 
-> I would agree that the possibility exists to use the hooks directly,
+Signed-off-by: Andy Whitcroft <apw@shadowen.org>
+---
+ mm/hugetlb.c |   44 +++++++++++++++++++++++++++++++++++---------
+ 1 files changed, 35 insertions(+), 9 deletions(-)
 
-It's not just a possibility, they are already used by multiple
-debugger like subsystems. e.g. kprobes is certainly a kind of debugger.
+diff --git a/mm/hugetlb.c b/mm/hugetlb.c
+index 28a2980..c4413ae 100644
+--- a/mm/hugetlb.c
++++ b/mm/hugetlb.c
+@@ -1937,6 +1937,15 @@ retry:
+ 			lock_page(page);
+ 	}
+ 
++	/*
++	 * If we are going to COW a private mapping later, we examine the
++	 * pending reservations for this page now. This will ensure that
++	 * any allocations necessary to record that reservation occur outside
++	 * the spinlock.
++	 */
++	if (write_access && !(vma->vm_flags & VM_SHARED))
++		vma_needs_reservation(h, vma, address);
++
+ 	spin_lock(&mm->page_table_lock);
+ 	size = i_size_read(mapping->host) >> huge_page_shift(h);
+ 	if (idx >= size)
+@@ -1973,6 +1982,7 @@ int hugetlb_fault(struct mm_struct *mm, struct vm_area_struct *vma,
+ 	pte_t *ptep;
+ 	pte_t entry;
+ 	int ret;
++	struct page *pagecache_page = NULL;
+ 	static DEFINE_MUTEX(hugetlb_instantiation_mutex);
+ 	struct hstate *h = hstate_vma(vma);
+ 
+@@ -1995,19 +2005,35 @@ int hugetlb_fault(struct mm_struct *mm, struct vm_area_struct *vma,
+ 
+ 	ret = 0;
+ 
++	/*
++	 * If we are going to COW the mapping later, we examine the pending
++	 * reservations for this page now. This will ensure that any
++	 * allocations necessary to record that reservation occur outside the
++	 * spinlock. For private mappings, we also lookup the pagecache
++	 * page now as it is used to determine if a reservation has been
++	 * consumed.
++	 */
++	if (write_access && !pte_write(entry)) {
++		vma_needs_reservation(h, vma, address);
++
++		if (!(vma->vm_flags & VM_SHARED))
++			pagecache_page = hugetlbfs_pagecache_page(h,
++								vma, address);
++	}
++
+ 	spin_lock(&mm->page_table_lock);
+ 	/* Check for a racing update before calling hugetlb_cow */
+ 	if (likely(pte_same(entry, huge_ptep_get(ptep))))
+-		if (write_access && !pte_write(entry)) {
+-			struct page *page;
+-			page = hugetlbfs_pagecache_page(h, vma, address);
+-			ret = hugetlb_cow(mm, vma, address, ptep, entry, page);
+-			if (page) {
+-				unlock_page(page);
+-				put_page(page);
+-			}
+-		}
++		if (write_access && !pte_write(entry))
++			ret = hugetlb_cow(mm, vma, address, ptep, entry,
++							pagecache_page);
+ 	spin_unlock(&mm->page_table_lock);
++
++	if (pagecache_page) {
++		unlock_page(pagecache_page);
++		put_page(pagecache_page);
++	}
++
+ 	mutex_unlock(&hugetlb_instantiation_mutex);
+ 
+ 	return ret;
+-- 
+1.6.0.rc1.258.g80295
 
--Andi
