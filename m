@@ -1,82 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764471AbYHFL20@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760730AbYHFL2m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764471AbYHFL20 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Aug 2008 07:28:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756892AbYHFL2R
+	id S1760730AbYHFL2m (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Aug 2008 07:28:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764049AbYHFL2Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Aug 2008 07:28:17 -0400
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:37558 "EHLO smtp6.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758802AbYHFL2O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Aug 2008 07:28:14 -0400
-Date: Wed, 6 Aug 2008 14:26:46 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: tvrtko.ursulin@sophos.com
-Cc: Arjan van de Ven <arjan@infradead.org>, Greg KH <greg@kroah.com>,
-       "Press, Jonathan" <Jonathan.Press@ca.com>, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org, malware-list@lists.printk.net
-Subject: Re: [malware-list] [RFC 0/5] [TALPA] Intro to a
-	linuxinterfaceforon access scanning
-Message-ID: <20080806112646.GG6477@cs181140183.pp.htv.fi>
-References: <20080806105008.GF6477@cs181140183.pp.htv.fi> <20080806110851.C2DBC3764CE@pmx1.sophos.com>
+	Wed, 6 Aug 2008 07:28:24 -0400
+Received: from yw-out-2324.google.com ([74.125.46.28]:38870 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763293AbYHFL2X (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Aug 2008 07:28:23 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=RtPpbh2wIBf751pSO2ibwfnCwN/LjDcj0QFjZRewpCK7F0/SiN1dvmbo0XrPtkIfGW
+         TllPT5MiYASSK7jXBheQm8tc61D59/0nGQdCz6Br80ONyvK65fQ4iRjkGtIigc33W5B6
+         Y/jGNx/BfdnRcKlNU273zFblotwUHYkpHIPH4=
+Message-ID: <19f34abd0808060428m1c317531v4a58679c4051c0e9@mail.gmail.com>
+Date: Wed, 6 Aug 2008 13:28:22 +0200
+From: "Vegard Nossum" <vegard.nossum@gmail.com>
+To: "Mike Frysinger" <vapier.adi@gmail.com>
+Subject: Re: [PATCH] blackfin/sram: use 'unsigned long' for irqflags
+Cc: "Bryan Wu" <cooloney@kernel.org>, "Julia Lawall" <julia@diku.dk>,
+       "Alexey Dobriyan" <adobriyan@gmail.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <8bd0f97a0808060405qf70ead2t2f2604802875197e@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080806110851.C2DBC3764CE@pmx1.sophos.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+References: <20080806105836.GA2903@localhost.localdomain>
+	 <8bd0f97a0808060405qf70ead2t2f2604802875197e@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 06, 2008 at 12:07:57PM +0100, tvrtko.ursulin@sophos.com wrote:
-> Adrian Bunk <bunk@kernel.org> wrote on 06/08/2008 11:50:08:
-> > 
-> > As an observer of this thread:
-> > 
-> > - Some set of requirements suddenly appears out of the void on 
-> >   linux-kernel.
-> 
-> Because previously it was said to go away and come back with a clear list 
-> of requirements. And here you make it sound like a negative thing. See 
-> what I am talking about?
+Hi,
 
-Both of my points belong together.
+On Wed, Aug 6, 2008 at 1:05 PM, Mike Frysinger <vapier.adi@gmail.com> wrote:
+> On Wed, Aug 6, 2008 at 6:58 AM, Vegard Nossum wrote:
+>> From 3ef36948a88a968eec1b09859aa251dc6727df4e Mon Sep 17 00:00:00 2001
+>> From: Vegard Nossum <vegard.nossum@gmail.com>
+>> Date: Wed, 6 Aug 2008 12:00:23 +0200
+>> Subject: [PATCH] blackfin/sram: use 'unsigned long' for irqflags
+>>
+>> Using just 'unsigned' will make flags an unsigned int. While this is
+>> arguably not an error on blackfin where sizeof(int) == sizeof(long),
+>> the patch is still justified on the grounds of principle.
+>
+> indeed, thanks
+>
+>> The patch was generated using the Coccinelle semantic patch framework.
+>
+> spam ?
 
-> > - Noone is able and/or willing to exactly describe the problem(s) they 
-> >   are trying to solve.
-> 
-> Hopefully we will get there. Very little time has passed since the 
-> discussion has started, even less considering the time zone difference for 
-> some.
-> 
-> > With this status quo the discussion is going nowhere - Linux kernel 
-> > development does not work this way.
-> > 
-> > The aim is not to include this code, but to find the best technical 
-> > solution for your problem(s) - no matter whether this will have anything
-> > in common with the list of requirements and the code posted or not.
-> 
-> I completely agree with that. Here I was just pointing out that what Greg 
-> wrote was untrue and exaggerated so not helping the discussion at all.
+Hm? I'm sorry, I don't understand what you mean by that. Do you think
+the credit is undeserved?
 
-Until now the main discussion participant from the AV side is
-Jonathan Press.
+>
+>> Cc: Julia Lawall <julia@diku.dk>
+>> Cc: Alexey Dobriyan <adobriyan@gmail.com>
+>> Signed-off-by: Vegard Nossum <vegard.nossum@gmail.com>
+>
+> should be CC Bryan Wu as well ...
+> -mike
+>
 
-But the real discussion hasn't even started since the information 
-required is not available.
+Oh right. I believed that Bryan Wu is the maintainer who would
+eventually apply the patch, therefore I put him as a direct recipient
+of the e-mail (To-field) and that he would add his Signed-off-by line
+which would make the Cc-line redundant. I guess it makes some sense to
+also list the maintainer in the patch Ccs since the patch itself may
+be separate from the raw e-mail (e.g. in mail archives, which
+generally don't display To: or Cc: fields). I didn't realize this
+before.
 
-And as soon as the information for the real discussion is available all 
-these initial discussions become irrelevant.
+Thanks.
 
-> Tvrtko
 
-cu
-Adrian
+Vegard
 
 -- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+"The animistic metaphor of the bug that maliciously sneaked in while
+the programmer was not looking is intellectually dishonest as it
+disguises that the error is the programmer's own creation."
+	-- E. W. Dijkstra, EWD1036
