@@ -1,55 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762775AbYHFUR5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932105AbYHFUTz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762775AbYHFUR5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Aug 2008 16:17:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758331AbYHFURd
+	id S932105AbYHFUTz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Aug 2008 16:19:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754557AbYHFUTp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Aug 2008 16:17:33 -0400
-Received: from shadow.wildlava.net ([67.40.138.81]:38700 "EHLO
-	shadow.wildlava.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754979AbYHFURb (ORCPT
+	Wed, 6 Aug 2008 16:19:45 -0400
+Received: from wilson.telenet-ops.be ([195.130.132.42]:42493 "EHLO
+	wilson.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752231AbYHFUTo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Aug 2008 16:17:31 -0400
-Message-ID: <489A06D9.1080600@skyrush.com>
-Date: Wed, 06 Aug 2008 14:17:29 -0600
-From: Joe Peterson <joe@skyrush.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080727)
+	Wed, 6 Aug 2008 16:19:44 -0400
+Date: Wed, 6 Aug 2008 22:19:39 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+cc: Alan Cox <alan@redhat.com>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       Linux/m68k <linux-m68k@vger.kernel.org>
+Subject: [PATCH] m68k/amiserial: fix fallout of tty break handling rework
+Message-ID: <Pine.LNX.4.64.0808062218490.17614@anakin>
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: tty: ctrl-c not always echoed, especially under load
-References: <48977C96.2090005@skyrush.com> <20080805001129.72d06e60@lxorguk.ukuu.org.uk>
-In-Reply-To: <20080805001129.72d06e60@lxorguk.ukuu.org.uk>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
-> If the output buffer is full then echoed characters/^C etc will vanish the
-> way n_tty implements its buffering internally. It's always worked that
-> way.
+commit 9e98966c7bb94355689478bc84cc3e0c190f977e (tty: rework break handling)
+forgot to update one exit point of rs_break() in the Amiga serial driver.
 
-One more observation:
+Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+---
+ drivers/char/amiserial.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-In Linux, try this:
+--- a/drivers/char/amiserial.c
++++ b/drivers/char/amiserial.c
+@@ -1254,7 +1254,7 @@ static int rs_break(struct tty_struct *t
+ 	unsigned long flags;
+ 
+ 	if (serial_paranoia_check(info, tty->name, "rs_break"))
+-		return;
++		return -EINVAL;
+ 
+ 	local_irq_save(flags);
+ 	if (break_state == -1)
 
-# cat > foo
-hi^Sthere^Q
-^D
+Gr{oetje,eeting}s,
 
-(in other words, during the cat into "foo", type "hi", hit ^S, then type
-"there", then hit ^Q, then, on the next line, ^D to end the file)
+						Geert
 
-Note that the "there" does not appear after hitting ^Q, but it does
-appear in the file.  So the characters were accepted, but they were not
-echoed (not even saved for echo when the terminal is restarted).
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-This behavior differs from that of FreeBSD (just tried it for fun -
-haven't tried other Unix's yet).  I have noticed other times that the
-echo seems to get lost while the tty is stopped.  Not sure if all this
-is related, but something seems amiss.  Thoughts?
-
-					Thanks, Joe
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
