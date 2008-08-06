@@ -1,116 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761958AbYHFUEs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760918AbYHFUHZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761958AbYHFUEs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Aug 2008 16:04:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761248AbYHFUE0
+	id S1760918AbYHFUHZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Aug 2008 16:07:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753263AbYHFUHL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Aug 2008 16:04:26 -0400
-Received: from homer.mvista.com ([63.81.120.155]:49593 "EHLO
-	imap.sh.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1761078AbYHFUEY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Aug 2008 16:04:24 -0400
-Message-ID: <489A03C3.5070607@ru.mvista.com>
-Date: Thu, 07 Aug 2008 00:04:19 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
+	Wed, 6 Aug 2008 16:07:11 -0400
+Received: from proxima.lp0.eu ([85.158.45.36]:50498 "EHLO proxima.lp0.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752572AbYHFUHJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Aug 2008 16:07:09 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=exim; d=fire.lp0.eu;
+	h=Received:Message-ID:Date:From:User-Agent:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+	b=AL867Goa8uMV4oE3QsDMvZgq/n3FhUjtxFJEjXCoTZeXoOXTmgEKi6/6Vzbn0QT7O1eb6B5t0yD+8Abofs5CA0h8NWAm8fELis2FBxzI+Pj2o0Xul2wVlREyUQTiZfJk;
+Message-ID: <489A0467.1060607@simon.arlott.org.uk>
+Date: Wed, 06 Aug 2008 21:07:03 +0100
+From: Simon Arlott <simon@fire.lp0.eu>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080726)
 MIME-Version: 1.0
-To: petkovbb@gmail.com
-Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org
-Subject: Re: [PATCH 1/2] pata_legacy: export functionality to ide
-References: <20080803143837.GA26672@gollum.tnic> <20080803162214.394b13a1@lxorguk.ukuu.org.uk> <20080803165135.GA31977@gollum.tnic> <4898630C.7090403@ru.mvista.com> <9ea470500808050732s7be29360ge358790e955be06a@mail.gmail.com> <58cb370e0808050741v7ff3f20awb3d91a84486f8547@mail.gmail.com> <20080806061023.GA23773@gollum.tnic> <48998C58.20703@ru.mvista.com> <9ea470500808060703p4a94c868i25106e081aad75c4@mail.gmail.com> <4899C9F4.9040002@ru.mvista.com> <20080806194754.GC31312@gollum.tnic>
-In-Reply-To: <20080806194754.GC31312@gollum.tnic>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+To: Alan Stern <stern@rowland.harvard.edu>
+CC: Rene Herman <rene.herman@keyaccess.nl>,
+       Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, Daniel Walker <dwalker@mvista.com>,
+       USB list <linux-usb@vger.kernel.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: Re: [PATCH RFC] USB: Add HCD fastboot
+References: <Pine.LNX.4.44L0.0808061543340.2138-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0808061543340.2138-100000@iolanthe.rowland.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Borislav Petkov wrote:
+On 06/08/08 20:49, Alan Stern wrote:
+> On Wed, 6 Aug 2008, Simon Arlott wrote:
+> 
+>> > Wouldn't it be much simpler, and less objectionable, to do what I
+>> > suggested earlier?  That is, add a 5-second delay at the start of
+>> > hub_thread() in drivers/usb/core/hub.c.  No messing with Makefiles, no
+>> > changes to the initcall scheduling.
+>> 
+>> Aside from 5 seconds being too long, and anything less being a race between 
+>> hub_thread() and driver initcalls, it doesn't improve anything because it'll 
+>> still have to wait for the devices to finish initialising in userspace instead.
+> 
+> Why is 5 seconds too long?  Too long for what?
+> 
+> What you're doing is already a race between hub_thread() and driver 
+> initcalls.  My suggestion is no worse.
 
->>>>>From: Borislav Petkov <petkovbb@gmail.com>
->>>>>Date: Sun, 3 Aug 2008 18:46:35 +0200
->>>>>Subject: [PATCH] ide-generic: handle probing of legacy io-ports v4
+No, by adding a 5 second delay you're intending for the device driver initcalls 
+to complete within that 5 seconds. If they take too long then the last one 
+blocks everything (I realise that's ridiculous, these initcalls take <1ms when 
+there are no devices yet). The best way to do is to make the driver initcalls 
+before the host ones, like you suggested.
 
->>>>>Avoid probing the io-ports in case an IDE PCI controller is present and it uses
->>>>>the legacy iobases. If we still want to enforce the probing, we do
+> "it'll still have to wait..."  If by "it" you mean the initcall
+> thread, you're wrong.  If by "it" you mean the user, you still aren't
+> necessarily correct; the user can do plenty of other things while
+> waiting for USB devices to initialize.
 
->>>>>ide_generic.probe_mask=0x3f
+Assuming userspace doesn't wait for all devices to settle and appear in /dev etc. 
+before continuing.
 
->>>>>on the kernel command line. The iobase checking code is adapted from
->>>>>drivers/ata/pata_legacy.c after converting hex pci ids into their
->>>>>corresponding
->>>>>macros in <linux/pci_ids.h>.
+> I suppose you could make the hub_thread delay time a module parameter 
+> for usbcore, defaulting to 0.  Then it could be set by just the people 
+> who want to use it -- many (most?) people keep their drivers in 
+> modules, and it wouldn't do them any good.
 
->>>>>CC: Sergei Shtylyov <sshtylyov@ru.mvista.com>
->>>>>Signed-off-by: Borislav Petkov <petkovbb@gmail.com>
+It really needs to have hcd initcalls done very early so that device init 
+has the rest of the (kernel and userspace) boot process to complete in the 
+background. This is negated by having device drivers initialised immediately 
+afterwards. Re-ordering initcalls and doing more of the init process 
+asynchronously is likely to expose bugs and cause inconsistent device order 
+on some systems, so if the makefile mess could be reduced then it can be a 
+Kconfig option.
 
->>>>Acked-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+How many people have *all* their USB components (hcd, drivers) as modules?
+What do they do with their USB keyboards in the period between init and module 
+load? If even one device driver and the hcd is compiled in, they'd need to 
+wait for every USB device to finish init before the usbhid probe could complete.
 
->>>>>diff --git a/drivers/ide/ide-generic.c b/drivers/ide/ide-generic.c
->>>>>index 8fe8b5b..efce159 100644
->>>>>--- a/drivers/ide/ide-generic.c
->>>>>+++ b/drivers/ide/ide-generic.c
-
->>>>[...]
-
->>>>>@@ -100,19 +101,69 @@ static const u16 legacy_bases[] = { 0x1f0, 0x170,
->>>>>0x1e8, 0x168, 0x1e0, 0x160 };
->>>>>static const int legacy_irqs[]  = { 14, 15, 11, 10, 8, 12 };
->>>>>#endif
->>>>>+static void ide_generic_check_pci_legacy_iobases(int *primary, int
->>>>>*secondary)
->>>>>+{
->>>>>+       struct pci_dev *p = NULL;
->>>>>+       u16 val;
->>>>>+
->>>>>+       for_each_pci_dev(p) {
->>>>>+               int r;
->>>>>+
->>>>>+               for (r = 0; r < 6; r++) {
->>>>>+                       if (pci_resource_start(p, r) == 0x1f0)
->>>>>+                               *primary = 1;
->>>>>+                       if (pci_resource_start(p, r) == 0x170)
->>>>>+                               *secondary = 1;
->>>>>+               }
-
->>>>Would have been probably enough to test only BAR0/2, don't you think?
-
->>>I assume you're referring to the legacy ioports fixup in
->>>drivers/pci/probe.c:pci_setup_device().
-
->>   And to the fact that the value 0x1f0 should only be ever seen in BAR0 
->>and 0x170 in BAR2 even if they would have been read off the chips (some 
->>chips have these values reading back even in legacy mode, and even could 
->>malfunction if other values are written there), not fixed up there, and 
->>certainly not in BAR1 or BAR3, so it's quite pointless to look in these 
->>BARs too.
-
-> So the comment in there saying that in some cases BAR0-3 could contain junk is a
-> bogus?
-
-    Don't know. The PCI IDE spec. said that those should be 0 in compatibility 
-mode but I know that some controllers require the standard values of 0x1[f7]0 
-to be in BAR0/2 in compatibility mode. If my memory serves, NatSemi PC8741x 
-were ones of those...
-
-> In other words, can we assume that one will always read 0x1f0 from BAR0
-> and 0x170 from BAR2 in compatibility mode.
-
-    Certainly not. We can only rely on the workaround putting 0x1[f7]0 in the 
-resources 0/2.
-
-> If so, the check is even simpler:
-
-> 	if (pci_resource_start(p, 0) == 0x1f0)
-> 		*primary = 1;
-> 	if (pci_resource_start(p, 2) == 0x170)
-> 		*secondary = 1;
-
-    Yes, I think that should be enough...
-
-WBR, Sergei
+-- 
+Simon Arlott
