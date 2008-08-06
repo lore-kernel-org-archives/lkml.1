@@ -1,105 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755854AbYHFOYU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758655AbYHFOXx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755854AbYHFOYU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Aug 2008 10:24:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757601AbYHFOXi
+	id S1758655AbYHFOXx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Aug 2008 10:23:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754506AbYHFOX2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Aug 2008 10:23:38 -0400
-Received: from casper.infradead.org ([85.118.1.10]:44251 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757554AbYHFOXg (ORCPT
+	Wed, 6 Aug 2008 10:23:28 -0400
+Received: from outbound-wa4.frontbridge.com ([216.32.181.16]:1961 "EHLO
+	WA4EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753989AbYHFOX1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Aug 2008 10:23:36 -0400
-Date: Wed, 6 Aug 2008 07:23:26 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: tvrtko.ursulin@sophos.com
-Cc: "Press, Jonathan" <Jonathan.Press@ca.com>, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org, malware-list@lists.printk.net,
-       Rik van Riel <riel@redhat.com>
-Subject: Re: [malware-list] [RFC 0/5] [TALPA] Intro to a linuxinterfaceforon
- access scanning
-Message-ID: <20080806072326.64826bae@infradead.org>
-In-Reply-To: <20080806141656.8B44B2FE94A@pmx1.sophos.com>
-References: <20080806064418.6afa0672@infradead.org>
-	<20080806141656.8B44B2FE94A@pmx1.sophos.com>
-Organization: Intel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Wed, 6 Aug 2008 10:23:27 -0400
+X-BigFish: VPS-1(zz3117Kzz10d3izzz32i6bh)
+X-WSS-ID: 0K56NYK-01-TIK-01
+Date: Wed, 6 Aug 2008 16:23:08 +0200
+From: Andreas Herrmann <andreas.herrmann3@amd.com>
+To: "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>
+CC: linux-kernel@vger.kernel.org
+Subject: [PATCH] x86: compile pat debugfs interface only if CONFIG_X86_PAT
+	is set
+Message-ID: <20080806142308.GD6713@alberich.amd.com>
+References: <20080806133016.GH5427@alberich.amd.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <20080806133016.GH5427@alberich.amd.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-OriginalArrivalTime: 06 Aug 2008 14:23:12.0253 (UTC) FILETIME=[F51AE2D0:01C8F7CF]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 6 Aug 2008 15:16:02 +0100
-tvrtko.ursulin@sophos.com wrote:
 
-> Arjan van de Ven wrote on 06/08/2008 14:44:18:
-> 
-> > On Wed, 6 Aug 2008 08:10:53 -0400
-> > "Press, Jonathan" <Jonathan.Press@ca.com> wrote:
-> > 
-> > > However...  This question about arguing for a flawed security
-> > > technique is a good one, and in a way it gets to the heart of the
-> > > philosophy of security.  Scan-on-close is admittedly incomplete
-> > > as an anti-virus tool. But I don't agree that that make it
-> > > flawed.   It is part of a repertoire of techniques for preventing
-> > > malware from residing on a machine.
-> > 
-> > this indeed gets to the heart of the problem.
-> > several of us here are trying to argue that scan-on-close isn't very
-> > good, BUT that if you do scan-on-change (say with inotify) you do
-> > reach the same goal but with much better results.
-> > 
-> > notice the "but" in there. What I hope will happen is that one or
-> > more people from the AV side (eg you and tvrtko) will actually read
-> > the "but" part rather than just dismissing it outright because of
-> > not liking your solution in the first part of it. Part of the
-> > answer could be "nice however our goal is <THIS> so it won't work
-> > because of <THAT>". At least as long as <THIS> isn't "scan on
-> > close" because that's not a goal, that's a means.
-> > 
-> > this kind of thing seems to be indicative of the entire discussion.
-> > For lkml proposals, both sides need to be willing to accept
-> > alternative solutions for a problem (I know I am, just need to see
-> > why ;-).. and explain the WHY and the goal if it's not clear.
-> 
-> Problems with inotify as far as I know:
+Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
+---
+ arch/x86/mm/pat.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-finally some useful discussion ;-)
+Re-submission of the patch -- this time with a proper subject line ...
 
-> 
-> You can't do something like inotify("/") (made up API) but you have
-> to set up a watch for every directory you wan't to watch. That seems
-> like a waste of resources.
-> 
-> Then you get back a file name, if you wan't to report it or attempt*
-> to scan it you have to build a pathname yourself, which means you
-> have to maintain the whole tree of names in memory. Even bigger waste.
-> 
-> When I say attempt to scan it above I mean that we are back into the 
-> pathanme teritorry. It is not guaranteed we will be able to open and
-> scan using that pathname. I don't know what inotify reports with
-> chroots and private namespaces, but it can certainly fail with NFS
-> and root_squash. So it is less effective as well as being resource
-> intensive.
+Regards,
+Andreas
 
-one argument against the namespaces one is that of security; on the one
-hand I can see the argument of running the virus scanner in its own
-container, on the other hand I can see the argument of not liking
-cross-container access of data as a security issue by itself.
-
-> 
-> I think this is a good amount of flaws which shows inotify isn't
-> really ideal.
-
-that is a fair list of complaints.. the question is can inotify be
-fixed....
-
-
+diff --git a/arch/x86/mm/pat.c b/arch/x86/mm/pat.c
+index 2fe3091..647b1c4 100644
+--- a/arch/x86/mm/pat.c
++++ b/arch/x86/mm/pat.c
+@@ -492,7 +492,7 @@ void unmap_devmem(unsigned long pfn, unsigned long size, pgprot_t vma_prot)
+ 	free_memtype(addr, addr + size);
+ }
+ 
+-#if defined(CONFIG_DEBUG_FS)
++#if defined(CONFIG_DEBUG_FS) && defined(CONFIG_X86_PAT)
+ 
+ /* get Nth element of the linked list */
+ static struct memtype *memtype_get_idx(loff_t pos)
+@@ -576,4 +576,4 @@ static int __init pat_memtype_list_init(void)
+ 
+ late_initcall(pat_memtype_list_init);
+ 
+-#endif /* CONFIG_DEBUG_FS */
++#endif /* CONFIG_DEBUG_FS && CONFIG_X86_PAT */
 -- 
-If you want to reach me at my work email, use arjan@linux.intel.com
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+1.5.6.4
+
+
+
