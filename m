@@ -1,160 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756606AbYHFS1j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757346AbYHFS3Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756606AbYHFS1j (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Aug 2008 14:27:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754644AbYHFS11
+	id S1757346AbYHFS3Z (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Aug 2008 14:29:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754594AbYHFS3R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Aug 2008 14:27:27 -0400
-Received: from mail.atheros.com ([12.36.123.2]:24280 "EHLO mail.atheros.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753286AbYHFS10 convert rfc822-to-8bit (ORCPT
+	Wed, 6 Aug 2008 14:29:17 -0400
+Received: from an-out-0708.google.com ([209.85.132.244]:36010 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754510AbYHFS3Q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Aug 2008 14:27:26 -0400
-Date: Wed, 6 Aug 2008 11:27:24 -0700
-From: "Luis R. Rodriguez" <lrodriguez@atheros.com>
-To: Jochen =?iso-8859-1?B?Vm/f?= <jochen.voss@googlemail.com>
-CC: Luis Rodriguez <Luis.Rodriguez@atheros.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       "linville@tuxdriver.com" <linville@tuxdriver.com>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
-       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
-       "ath9k-devel@venema.h4ckr.net" <ath9k-devel@venema.h4ckr.net>
-Subject: Re: [PATCH 2/4] list.h: add list_cut_position()
-Message-ID: <20080806182724.GI5605@tesla>
-References: <1217890089-12100-1-git-send-email-lrodriguez@atheros.com> <20080804160011.ec964f1f.randy.dunlap@oracle.com> <20080804231320.GG6447@tesla> <ef1cd66f0808050152g1dd8b96cl2df820607d480f0f@mail.gmail.com>
+	Wed, 6 Aug 2008 14:29:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=flIod49n5ZnCICUjAhlbmSCa3jY3NVMnkymm+QPetIUBCoANDjeuMDGwcE4Umt+QCS
+         qog4MzgzIR82vK9wP8TMrcAGCJH4iz3gcnh5BsX5UMt+yBrKFgd8AQ88ZHNd5ohuF0ql
+         N3ScWEqge5FTYaDya/m4avTe+aJ3OMYginGmY=
+Message-ID: <86802c440808061129l2bbe1658w453a11b4f16ffc83@mail.gmail.com>
+Date: Wed, 6 Aug 2008 11:29:16 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [PATCH 00/33] dyn_array and nr_irqs support v4
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       "Dhaval Giani" <dhaval@linux.vnet.ibm.com>,
+       "Mike Travis" <travis@sgi.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <m1hc9yjb7x.fsf@frodo.ebiederm.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8BIT
-In-Reply-To: <ef1cd66f0808050152g1dd8b96cl2df820607d480f0f@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+References: <1218011937-10084-1-git-send-email-yhlu.kernel@gmail.com>
+	 <m1hc9yjb7x.fsf@frodo.ebiederm.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 05, 2008 at 01:52:22AM -0700, Jochen Voß wrote:
-> Hi,
-> 
-> 2008/8/5 Luis R. Rodriguez <lrodriguez@atheros.com>:
-> > +static inline void __list_cut_position(struct list_head *list,
-> > +               struct list_head *head, struct list_head *entry)
-> > +{
-> > +       struct list_head *new_first =
-> > +               (entry->next != head) ? entry->next : head;
-> 
-> Isn't this just an over-complicated way of writing "new_first = entry->next"?
+On Wed, Aug 6, 2008 at 10:37 AM, Eric W. Biederman
+<ebiederm@xmission.com> wrote:
+> Yinghai Lu <yhlu.kernel@gmail.com> writes:
+>
+>> Please check dyn_array support for x86
+>> v3: split changing to nr_irqs to small patches
+>>     fix checkpatch error
+>>     reorder the patch sequence to make dyn_array support go at first
+>>         so could use that with arrays other than NR_IRQS
+>> v4: add CONFIG_HAVE_SPARSE_IRQ with list to use condensed irq_desc array
+>>     so could use 32 init, and init more if needed.
+>>
+>> now: x86 32bit: have CONFIG_HAVE_DYN_ARRAY
+>>      x86 64bit: have CONFIG_HAVE_DYN_ARRAY and CONFIG_HAVE_SPARSE_IRQ
+>>
+>> left:
+>> a. hook irq_2_iommu to irq_desc ?
+>> b. expand /proc/interrupts to process > nr_irqs
+>> c. expand to use irq > nr_irqs for msi
+>>
+>> notes: may break some arch compling...
+>
+> It looks like you might possibly be iterating to something usable.
+> Breaking architectures is not acceptable however.
+>
+> My suggestion for a non-breaking path:
+> - Kill NR_IRQS in then generic code.
+>  With Alan's serial patch and my kstat patch it looks like we have
+>  the worst of that.
 
-Sorry, yes.
+will use Alan's patch.at first.
+already reused your patch about kstat. and move kstat_irqs to irq_desc.
 
-> > +       list->next = head->next;
-> > +       list->next->prev = list;
-> > +       list->prev = entry;
-> > +       entry->next = list;
-> > +       head->next = new_first;
-> > +       new_first->prev = head;
-> > +}
-> > +
-> > +/**
-> > + * list_cut_position - cut a list into two
-> > + * @list: a new list to add all removed entries
-> > + * @head: a list with entries
-> > + * @entry: an entry within head, could be the head itself
-> > + *     and if so we won't cut the list
-> > + */
-> 
-> I think it would be helpful if the comment explained what the function
-> actually does, i.e. that it moves the inital part of 'head' (up to and
-> including 'entry' from 'head' to 'list'.
+>
+> - Introduce get_irq_desc and the functions or function modifications
+>  that pass a struct irq_desc * into the genirq code.
+>
+>  Although I absolutely hate the name get_irq_desc as it implies we are
+>  reference counting something and need a corresponding put_irq_desc.
+>  Since the lifetime rules don't require that.  Please just call the
+>  function irq_desc().
 
-Will do.
+will check that.
 
-> > +static inline void list_cut_position(struct list_head *list,
-> > +               struct list_head *head, struct list_head *entry)
-> > +{
-> > +       BUG_ON(list_empty(head));
-> > +       if (list_is_singular(head))
-> > +               BUG_ON(head->next != entry && head != entry);
-> 
-> No other list function in "list.h" has BUG_ONs.  Why this one?
+>
+> - Update arch/x86 to do everything interesting with irq_desc pointers.
+>
+> - Start dynamically allocating irq_desc and irq_cfg.
 
-Alright, I'll just make some small note on the documentation and exit early
-on these.
+already done in last 10 patches.
 
-> > +       if (entry == head)
-> > +               INIT_LIST_HEAD(list);
-> 
-> If there was data in 'list' before the call, it will be lost now.  Is
-> this intended behaviour?
-
-Yes, the user of this call should not care if we wipe @list for them as
-it is just a reference. This lets you, for example, use @list on
-list_cut_position() it in a loop. I'll extend the documentation to
-clarify this.
-
-> > +       else
-> > +               __list_cut_position(list, head, entry);
-> > +}
-> > +
-> 
-> I hope this helps,
-
-It certainly has, thanks for reviewing. How's this:
-
-This adds list_cut_position() which lets you cut a list into
-two lists given a pivot in the list.
-
-Signed-off-by: Luis R. Rodriguez <lrodriguez@atheros.com>
-
-diff --git a/include/linux/list.h b/include/linux/list.h
-index 453916b..6c02a83 100644
---- a/include/linux/list.h
-+++ b/include/linux/list.h
-@@ -214,6 +214,46 @@ static inline int list_is_singular(const struct list_head *head)
- 	return !list_empty(head) && (head->next == head->prev);
- }
- 
-+static inline void __list_cut_position(struct list_head *list,
-+		struct list_head *head, struct list_head *entry)
-+{
-+	struct list_head *new_first = entry->next;
-+	list->next = head->next;
-+	list->next->prev = list;
-+	list->prev = entry;
-+	entry->next = list;
-+	head->next = new_first;
-+	new_first->prev = head;
-+}
-+
-+/**
-+ * list_cut_position - cut a list into two
-+ *
-+ * This helper moves the initial part of @head, up to and
-+ * including @entry, from @head to @list. You should
-+ * pass on @entry an element you know is on @head. @list
-+ * should be an empty list or a list you do not care about
-+ * losing its data.
-+ *
-+ * @list: a new list to add all removed entries
-+ * @head: a list with entries
-+ * @entry: an entry within head, could be the head itself
-+ *	and if so we won't cut the list
-+ */
-+static inline void list_cut_position(struct list_head *list,
-+		struct list_head *head, struct list_head *entry)
-+{
-+	if (list_empty(head))
-+		return;
-+	if (list_is_singular(head) &&
-+		(head->next != entry && head != entry))
-+		return;
-+	if (entry == head)
-+		INIT_LIST_HEAD(list);
-+	else
-+		__list_cut_position(list, head, entry);
-+}
-+
- static inline void __list_splice(const struct list_head *list,
- 				 struct list_head *head)
- {
+YH
