@@ -1,41 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754436AbYHFWH4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754783AbYHFWJU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754436AbYHFWH4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Aug 2008 18:07:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752508AbYHFWHs
+	id S1754783AbYHFWJU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Aug 2008 18:09:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752508AbYHFWJM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Aug 2008 18:07:48 -0400
-Received: from py-out-1112.google.com ([64.233.166.181]:6108 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752108AbYHFWHr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Aug 2008 18:07:47 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=kfZ0l1x3xJyGD76KDHahorDIIcPKeKGZ86jxT1UEh4JUCkgh1xT/FKuiB4bCV3zhpf
-         EpPxRGBzqDm15DpfW0Kcf/ayRvVu8IlCd2+meWLCm7XnWjkWxvOpxAT+jPqMBFrnbag6
-         Aqg+sbvF1MPeYJmdyU/+MezqgveyiN0QPOIlE=
-Message-ID: <d77765540808061507v47561931x23a23c30067bc57b@mail.gmail.com>
-Date: Wed, 6 Aug 2008 22:07:46 +0000
-From: "=?UTF-8?Q?Piotr_Jaroszy=C5=84ski?=" <p.jaroszynski@gmail.com>
-To: "Ray Lee" <ray-lk@madrabbit.org>
-Subject: Re: HZ from userspace
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <2c0942db0808061449s48ba235cy1b5672c0952b8fdf@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-References: <d77765540808061348u58cfe6a3pa437a9501bb9abff@mail.gmail.com>
-	 <2c0942db0808061449s48ba235cy1b5672c0952b8fdf@mail.gmail.com>
+	Wed, 6 Aug 2008 18:09:12 -0400
+Received: from gate.crashing.org ([63.228.1.57]:52178 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752229AbYHFWJL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Aug 2008 18:09:11 -0400
+Subject: Re: [PATCH]: radeonfb: Fix copyarea for R300 and later.
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: David Miller <davem@davemloft.net>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, stable@kernel.org
+In-Reply-To: <20080806.141920.30577822.davem@davemloft.net>
+References: <20080806.003536.204220123.davem@davemloft.net>
+	 <20080806084329.9d7e6d50.akpm@linux-foundation.org>
+	 <20080806.141920.30577822.davem@davemloft.net>
+Content-Type: text/plain
+Date: Thu, 07 Aug 2008 08:08:22 +1000
+Message-Id: <1218060502.24157.239.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id m76M80IG013851
 
->> I want to be able to convert starttime from /proc/#/stat to absolute>> time and it seems that I need HZ to do that as it is measured in>> jiffies. How can I get HZ? I have seen some discussion about this but>> haven't found a definite answer. procps is using some hacks do it and>> I would prefer to avoid them.>> I only need a solution for modern kernels, say 2.6.20+ if that matters.>> `man sysconf`, in particular you want sysconf(_SC_CLK_TCK).
-manpage says it's obsolete and i read in some discussion that it onlyreturns the default and not the real HZ used.
--- Best Regards,Piotr JaroszyÅ„skiÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éÝ¶¥Šwÿº{.nÇ+‰·¥Š{±þG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŽŠÝ¢j"ú¶m§ÿÿ¾«þG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
+On Wed, 2008-08-06 at 14:19 -0700, David Miller wrote:
+> From: Andrew Morton <akpm@linux-foundation.org>
+> Date: Wed, 6 Aug 2008 08:43:29 -0700
+> 
+> > On Wed, 06 Aug 2008 00:35:36 -0700 (PDT) David Miller <davem@davemloft.net> wrote:
+> > 
+> > > [ Andrew/Ben, this fixes the bootup hang we were talking about
+> > >   the other day. ]
+> > > 
+> > > radeonfb: Fix copyarea for R300 and later.
+> > > 
+> > > For current chips we need to make sure the DSTCACHE_CTLSTAT and
+> > > WAIT_UNTIL registers are properly setup.  If not, a sequence of
+> > > copyarea operations can result in the 2D raster processor
+> > > hanging.
+> > 
+> > Neato.  This can be backported to -stable without also backporting your
+> > recent radeon-misc-corrections.patch, I assume?
+> 
+> Yes, it can.
+> 
+> I discussed the patch with Ben earlier and he wants to add the
+> same register writes to the solidfill code as well.
+
+That and the flush code for when we're about to manually hit the fb.
+
+I'll send a patch later today.
+
+Ben.
+
+
