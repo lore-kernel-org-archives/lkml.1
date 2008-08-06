@@ -1,107 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758590AbYHFTJS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759698AbYHFTL0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758590AbYHFTJS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Aug 2008 15:09:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753626AbYHFTJB
+	id S1759698AbYHFTL0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Aug 2008 15:11:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756572AbYHFTLP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Aug 2008 15:09:01 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:40640 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753218AbYHFTJA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Aug 2008 15:09:00 -0400
-Date: Wed, 6 Aug 2008 15:08:19 -0400
-From: Josef Bacik <jbacik@redhat.com>
-To: linux-kernel@vger.kernel.org
-Cc: rwheeler@redhat.com, tglx@linutronix.de, linux-fsdevel@vger.kernel.org,
-       chris.mason@oracle.com, linux-ext4@vger.kernel.org
-Subject: [PATCH 1/2] add hrtimer_sleep_ns helper function
-Message-ID: <20080806190819.GH27394@unused.rdu.redhat.com>
+	Wed, 6 Aug 2008 15:11:15 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:36289 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1756686AbYHFTLM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Aug 2008 15:11:12 -0400
+Date: Wed, 6 Aug 2008 15:11:08 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Simon Arlott <simon@fire.lp0.eu>
+cc: Rene Herman <rene.herman@keyaccess.nl>,
+       Arjan van de Ven <arjan@infradead.org>, <linux-kernel@vger.kernel.org>,
+       <mingo@elte.hu>, Daniel Walker <dwalker@mvista.com>,
+       USB list <linux-usb@vger.kernel.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: Re: [PATCH RFC] USB: Add HCD fastboot
+In-Reply-To: <4899F035.9040003@simon.arlott.org.uk>
+Message-ID: <Pine.LNX.4.44L0.0808061508430.12900-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Wed, 6 Aug 2008, Simon Arlott wrote:
 
-This patch adds a function so that things within the kernel can sleep for
-nanoseconds.  This is needed for the next patch in the series.  Thank you,
+> On 31/07/08 20:16, Alan Stern wrote:
+> >> > It's not entirely clear why usblp is blocking at all.  Probably because
+> >> > it is waiting on the device semaphores for devices that are currently
+> >> > being probed -- the driver core won't allow two threads to probe the
+> >> > same device concurrently.
+> >> 
+> >> Ok - so there could be some big improvements to be had by making the hcd 
+> >> init happen as early as possible and the device initcalls later?
+> > 
+> > Maybe.  Perhaps a better approach would be to make the device driver 
+> > initcalls before there are any devices for their probe routines to 
+> > block on.
+> 
+> What about this?
+> 
+> The Makefiles become a bit messy, but by moving things around I get the 
+> desired effect without splitting their initcalls.
 
-Signed-off-by: Josef Bacik <jbacik@redhat.com>
+Wouldn't it be much simpler, and less objectionable, to do what I
+suggested earlier?  That is, add a 5-second delay at the start of
+hub_thread() in drivers/usb/core/hub.c.  No messing with Makefiles, no
+changes to the initcall scheduling.
 
-Index: linux-2.6/include/linux/hrtimer.h
-===================================================================
---- linux-2.6.orig/include/linux/hrtimer.h
-+++ linux-2.6/include/linux/hrtimer.h
-@@ -345,6 +345,7 @@ extern long hrtimer_nanosleep_restart(st
- 
- extern void hrtimer_init_sleeper(struct hrtimer_sleeper *sl,
- 				 struct task_struct *tsk);
-+extern int hrtimer_sleep_ns(u64 ns, int interruptible);
- 
- /* Soft interrupt function to run the hrtimer queues: */
- extern void hrtimer_run_queues(void);
-Index: linux-2.6/kernel/hrtimer.c
-===================================================================
---- linux-2.6.orig/kernel/hrtimer.c
-+++ linux-2.6/kernel/hrtimer.c
-@@ -1459,12 +1459,14 @@ void hrtimer_init_sleeper(struct hrtimer
- #endif
- }
- 
--static int __sched do_nanosleep(struct hrtimer_sleeper *t, enum hrtimer_mode mode)
-+static int __sched do_nanosleep(struct hrtimer_sleeper *t, enum hrtimer_mode mode,
-+				int interruptible)
- {
- 	hrtimer_init_sleeper(t, current);
- 
- 	do {
--		set_current_state(TASK_INTERRUPTIBLE);
-+		set_current_state(interruptible ? TASK_INTERRUPTIBLE :
-+				  TASK_UNINTERRUPTIBLE);
- 		hrtimer_start(&t->timer, t->timer.expires, mode);
- 		if (!hrtimer_active(&t->timer))
- 			t->task = NULL;
-@@ -1482,6 +1484,22 @@ static int __sched do_nanosleep(struct h
- 	return t->task == NULL;
- }
- 
-+int hrtimer_sleep_ns(u64 ns, int interruptible)
-+{
-+	struct hrtimer_sleeper t;
-+	int ret = 0;
-+
-+	hrtimer_init_on_stack(&t.timer, CLOCK_MONOTONIC, HRTIMER_MODE_ABS);
-+	t.timer.expires = ktime_add_ns(ktime_get(), ns);
-+
-+	ret = do_nanosleep(&t, HRTIMER_MODE_ABS, interruptible);
-+
-+	destroy_hrtimer_on_stack(&t.timer);
-+
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(hrtimer_sleep_ns);
-+
- static int update_rmtp(struct hrtimer *timer, struct timespec __user *rmtp)
- {
- 	struct timespec rmt;
-@@ -1508,7 +1526,7 @@ long __sched hrtimer_nanosleep_restart(s
- 				HRTIMER_MODE_ABS);
- 	t.timer.expires.tv64 = restart->nanosleep.expires;
- 
--	if (do_nanosleep(&t, HRTIMER_MODE_ABS))
-+	if (do_nanosleep(&t, HRTIMER_MODE_ABS, 1))
- 		goto out;
- 
- 	rmtp = restart->nanosleep.rmtp;
-@@ -1534,7 +1552,7 @@ long hrtimer_nanosleep(struct timespec *
- 
- 	hrtimer_init_on_stack(&t.timer, clockid, mode);
- 	t.timer.expires = timespec_to_ktime(*rqtp);
--	if (do_nanosleep(&t, mode))
-+	if (do_nanosleep(&t, mode, 1))
- 		goto out;
- 
- 	/* Absolute timers do not update the rmtp value and restart: */
+Alan Stern
+
