@@ -1,64 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761025AbYHFTWa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760829AbYHFTXl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761025AbYHFTWa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Aug 2008 15:22:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756215AbYHFTV6
+	id S1760829AbYHFTXl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Aug 2008 15:23:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754188AbYHFTXd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Aug 2008 15:21:58 -0400
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:53195 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756812AbYHFTV5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Aug 2008 15:21:57 -0400
-Date: Wed, 6 Aug 2008 20:21:26 +0100
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Sam Ravnborg <sam@ravnborg.org>, Rusty Russell <rusty@rustcorp.com.au>,
-       linux arch <linux-arch@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: kbuild now support arch/$ARCH/include - time for ARCHs to convert
-Message-ID: <20080806192126.GA29891@flint.arm.linux.org.uk>
-Mail-Followup-To: Sam Ravnborg <sam@ravnborg.org>,
-	Rusty Russell <rusty@rustcorp.com.au>,
-	linux arch <linux-arch@vger.kernel.org>,
-	LKML <linux-kernel@vger.kernel.org>
-References: <20080728200500.GA14284@uranus.ravnborg.org> <200808051418.05324.rusty@rustcorp.com.au> <20080805204548.GD5464@uranus.ravnborg.org> <20080805220615.GC18607@flint.arm.linux.org.uk>
-Mime-Version: 1.0
+	Wed, 6 Aug 2008 15:23:33 -0400
+Received: from aun.it.uu.se ([130.238.12.36]:53818 "EHLO aun.it.uu.se"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752963AbYHFTXc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Aug 2008 15:23:32 -0400
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080805220615.GC18607@flint.arm.linux.org.uk>
-User-Agent: Mutt/1.4.2.1i
+Content-Transfer-Encoding: 7bit
+Message-ID: <18585.64037.521673.362547@alkaid.it.uu.se>
+Date: Wed, 6 Aug 2008 21:23:17 +0200
+From: Mikael Pettersson <mikpe@it.uu.se>
+To: Arkadiusz Miskiewicz <arekm@maven.pl>
+Cc: "Wahlig, Elsie" <elsie.wahlig@amd.com>, mikpe@it.uu.se,
+       linux-kernel@vger.kernel.org
+Subject: Re: Opteron Rev E has a bug ... a locked instruction doesn't act as a read-acquire barrier (confirmed)
+In-Reply-To: <200808061913.34874.arekm@maven.pl>
+References: <CB2417C2B1152C41919D5B9DE58840FA72D828@sausexmb5.amd.com>
+	<200808061913.34874.arekm@maven.pl>
+X-Mailer: VM 7.17 under Emacs 20.7.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 05, 2008 at 11:06:15PM +0100, Russell King wrote:
-> Currently, I know Linus' tree builds fine for most ARM platforms (thanks
-> to the ARM kautobuild project.)  However, I'm seeing unexpected build
-> failures that don't make sense from the linux-next project.
+On Wed, 6 Aug 2008 19:13:34 +0200, Arkadiusz Miskiewicz wrote:
+>On Wednesday 06 August 2008, Wahlig, Elsie wrote:
+>> Your issue may be one that has been seen on 1st generation
+>> AMD Opteron processor's with cpuid family 0Fh, cpuid model's
+>> < 40h with the code sequence that performs a read-modify write
+>> operation after acquiring a semaphore.
+>
+>Matches my hardware
+>
+>cpu family      : 15
+>model           : 33
+>
+>>
+>> The memory read ordering between a semaphore operation and a
+>> subsequent read-modify-write instruction (an instruction which
+>> uses the same memory location as both a source and destination)
+>> may allow the read-modify-write instruction to operate on the
+>> memory location ahead of the completion of the semaphore
+>> operation and an erratum may occur.
 
-And the expression "oh bugger" comes to mind.  The breakage in linux-next
-is because of 2e57d051160dd61776461637f767df19036b1186 and
-ea35455e0dc17d732436a5b98bd511cab64eb10e.
+Thanks for the detailed erratum description.
 
-During the last fortnight, I'd moved the "easy to move" ARM headers
-from include/asm-arm to arch/arm/include/asm.  This means that, unknown
-to me, the symlink was no longer being created.  That didn't get picked
-up in my testing, because I always build using O= builds into already
-existing object trees, which of course all have the symlink in place.
+>I wonder why there was no official errata about this?
 
-This doesn't affect kautobuild because that always builds trees without
-using the O= facility.
+Indeed.
 
-The question is what to do about it.  Given the size of the task, I'm
-currently of the opinion that we're moving things around in the wrong
-order, and 4baa9922430662431231ac637adedddbb0cfb2d7 should be reverted
-until we've moved all the other ARM headers (in asm/arch and asm/plat-*)
-first.
+>> If you think your software is encountering this code sequence,
+>> a work-around should be implemented by adding an LFENCE
+>> instruction right after the semaphore, after a cpuid check.
+>> The workaround's applied to OpenSolaris at
+>> http://mail.opensolaris.org/pipermail/onnv-notify/2006-October/009080.ht
+>> ml
+>> and Google performance tools tool at
+>> http://google-perftools.googlecode.com/svn-history/r48/trunk/src/base/at
+>> omicops-internals-x86.cc
+>> are suitable examples.
+>> A list of the model numbers this issue may occur on is at
+>> http://products.amd.com/en-us/downloads/AMD_Opteron_First_Generation_Ref
+>> erence_101607.pdf.
+>
+>Would be better to fix the bug on kernel level if this is possible. Just=20
+>someone with the knowledge needs to do this. Anyone interested?
 
-Maybe even leaving this until the next merge window now that -rc2 is
-out would be a good idea.
+In principle it's easy. We append a 3-byte nop to the lock-taking
+instructions. We invent an AMD_MUTEX_BUG synthetic cpuid feature
+bit and add boot-time code to detect it. We use the alternatives()
+infrastructure to replace that nop with lfence at boot-time if
+AMD_MUTEX_BUG is present.
 
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+I think the hardest part is locating all lock-taking code sequences.
+
+Also I think I'll start by writing a user-space test program that
+does a stress-test of the plain lock;rmw;unlobk sequence to see if
+it can break it. (Locks/mutexes are also used in user-space.)
+
+/Mikael
