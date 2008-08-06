@@ -1,67 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422885AbYHFVCh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759812AbYHFVJu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422885AbYHFVCh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Aug 2008 17:02:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756649AbYHFVC3
+	id S1759812AbYHFVJu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Aug 2008 17:09:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754973AbYHFVJm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Aug 2008 17:02:29 -0400
-Received: from www.church-of-our-saviour.org ([69.25.196.31]:46768 "EHLO
-	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755706AbYHFVC2 (ORCPT
+	Wed, 6 Aug 2008 17:09:42 -0400
+Received: from zone0.gcu-squad.org ([212.85.147.21]:13094 "EHLO
+	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753415AbYHFVJl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Aug 2008 17:02:28 -0400
-Date: Wed, 6 Aug 2008 17:02:02 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Eric Paris <eparis@redhat.com>
-Cc: Greg KH <greg@kroah.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       malware-list@lists.printk.net, linux-kernel@vger.kernel.org
-Subject: Re: [malware-list] [RFC 0/5] [TALPA] Intro to a linux interface
-	for on access scanning
-Message-ID: <20080806210202.GA9413@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Eric Paris <eparis@redhat.com>, Greg KH <greg@kroah.com>,
-	Alan Cox <alan@lxorguk.ukuu.org.uk>, malware-list@lists.printk.net,
-	linux-kernel@vger.kernel.org
-References: <1217883616.27684.19.camel@localhost.localdomain> <20080804223249.GA10517@kroah.com> <1217896374.27684.53.camel@localhost.localdomain> <20080805005132.GA3661@kroah.com> <20080805122328.69a37c1d@lxorguk.ukuu.org.uk> <20080805170307.GB9639@kroah.com> <1217962602.27684.144.camel@localhost.localdomain> <20080805203007.GB27489@kroah.com> <1218048597.27684.276.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1218048597.27684.276.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+	Wed, 6 Aug 2008 17:09:41 -0400
+Date: Wed, 6 Aug 2008 23:09:32 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: mhoffman@lightlink.com, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org, lm-sensors@lm-sensors.org
+Subject: Re: [GIT PATCH] hwmon updates against v2.6.26
+Message-ID: <20080806230932.73d78593@hyperion.delvare>
+In-Reply-To: <20080806134314.5afaae69.akpm@linux-foundation.org>
+References: <20080801041026.GI3375@mars.solarsys.private>
+	<20080806103903.6b9eec76@hyperion.delvare>
+	<20080806085324.58d65849.akpm@linux-foundation.org>
+	<20080806200301.6597e42d@hyperion.delvare>
+	<20080806134314.5afaae69.akpm@linux-foundation.org>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 06, 2008 at 02:49:57PM -0400, Eric Paris wrote:
+On Wed, 6 Aug 2008 13:43:14 -0700, Andrew Morton wrote:
+> On Wed, 6 Aug 2008 20:03:01 +0200
+> Jean Delvare <khali@linux-fr.org> wrote:
 > 
-> This simple thread shows what I believe to be clear and compelling
-> evidence of the need for an in kernel solution.  Lets just consider that
-> we are a high input, high output, NFS file server with other OS's
-> mounting this NFS share RW.
+> > Hi Andrew,
+> > 
+> > On Wed, 6 Aug 2008 08:53:24 -0700, Andrew Morton wrote:
+> > > On Wed, 6 Aug 2008 10:39:03 +0200 Jean Delvare <khali@linux-fr.org> wrote:
+> > > > I have a number of hwmon patches in my local kernel tree which I wrote
+> > > > and that have been reviewed by a trusted developer, or that have been
+> > > > posted to the lm-sensors list and that I have reviewed. I consider
+> > > > these ready to go upstream. I plan to gather these into a public tree
+> > > > and push them to Linus today or tomorrow. In the future, I will
+> > > > probably have such a tree available to be included in linux-next.
+> > > > 
+> > > > Don't get me wrong, I am _not_ volunteering to become the new hwmon
+> > > > subsystem maintainer. Remember, I've been there before and you know how
+> > > > it ended. But in the absence of a subsystem maintainer, I don't want
+> > > > hwmon patches to be lost (and especially not mine) and I don't think
+> > > > that pushing everything to Andrew is a good solution either. So I'm
+> > > > just proposing to do my part of the work. But if Andrew really prefers
+> > > > to pick all the patches, I am not insisting either.
+> > > 
+> > > That would be great, thanks.
+> > > 
+> > > But it does mean that I'd prefer that any hwmon patches which I pick up
+> > > are merged via that tree if that's OK.  Which all does end up making
+> > > you look awfully like an hwmon maintainer..
+> > 
+> > No, that's not OK, sorry. This goes beyond what I can offer at this
+> > point in time.
+> > 
+> > I offered to push selected patches to Linus, with no other guarantee
+> > than the fact that said patches have been carefully reviewed and are
+> > believed to be correct. I do not have the time to do more than that.
+> > 
+> > If this isn't OK with you, then I will have to withdraw my proposal.
+> > It's up to you.
 > 
-> Our goal is to stop, or at least reduce the throughput (I clearly
-> document and accept the open to read race, and until we get a working
-> revoke I don't see that changing) of malware across the NFS server.
-> This data will not be attacking the NFS server.  We wish to slow and
-> hopefully halt the spread of this data with minimal impact to the NFS
-> server.
+> <rereads>
+> 
+> Ah, I see, this tree is only things-which-Jean-wrote.  No probs here.
 
-In this scenario, are you positing that you are worried about Windows
-malware, or Linux malware?  What OS are the clients running?  I will
-note that Windows has such a sucky NFS implementation that nearly all
-Widows clients will be running CIFS/SMB, not NFS --- so the right
-solution there is to integrate the virus checking with Samba ---
-especially since the one AV vendor has already admitted the actual
-virus signature checking has to be done in userspace.
+Things that I wrote or reviewed, yes. Put in short, things I am already
+involved in, so there is no extra cost for me to push them to Linus.
 
-For Linux clients, one question that immediately rises is the
-end-to-end argument.  Wouldn't be far better to run whatever security
-solution on the client?  After all, a Virus checking on an NFS server
-isn't going to help the user if they accidentally track in the virus
-on a USB stick.  (Especially if it is an infected Macro virus in an
-office document.)  
-
-							- Ted
+-- 
+Jean Delvare
