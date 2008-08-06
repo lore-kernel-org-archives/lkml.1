@@ -1,86 +1,160 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758019AbYHFSKN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756606AbYHFS1j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758019AbYHFSKN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Aug 2008 14:10:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753877AbYHFSKA
+	id S1756606AbYHFS1j (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Aug 2008 14:27:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754644AbYHFS11
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Aug 2008 14:10:00 -0400
-Received: from yx-out-2324.google.com ([74.125.44.29]:45518 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751904AbYHFSJ7 (ORCPT
+	Wed, 6 Aug 2008 14:27:27 -0400
+Received: from mail.atheros.com ([12.36.123.2]:24280 "EHLO mail.atheros.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753286AbYHFS10 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Aug 2008 14:09:59 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=iOb/QaiNGHU72AX0615q4qKj6QA2WNGRQI2VxQjmNbEyKFA2oAgAcVx/hAO7+RsIov
-         biCW96hxURBZh84oVrAuFrGpcdi7/+YJMaQ7Y1VYViD5rxmQ2cw6NyHE1SK4cKZJ8Xwi
-         IfNe8gcPmzQEz49ziP3A0tB2ujtoQMaPtcsZ0=
-Message-ID: <6a89f9d50808061109y3e68f0a0lc9b4bf289fd308cf@mail.gmail.com>
-Date: Wed, 6 Aug 2008 20:09:58 +0200
-From: "Stephane Marchesin" <marchesin@icps.u-strasbg.fr>
-To: "Keith Packard" <keithp@keithp.com>
-Subject: Re: [PATCH] Export shmem_file_setup and shmem_getpage for DRM-GEM
-Cc: "Arjan van de Ven" <arjan@infradead.org>,
-       "John Stoffel" <john@stoffel.org>, "Hugh Dickins" <hugh@veritas.com>,
-       "Nick Piggin" <nickpiggin@yahoo.com.au>,
-       "Christoph Hellwig" <hch@infradead.org>,
-       "Eric Anholt" <eric@anholt.net>, linux-kernel@vger.kernel.org
-In-Reply-To: <1218045409.24714.257.camel@koto.keithp.com>
+	Wed, 6 Aug 2008 14:27:26 -0400
+Date: Wed, 6 Aug 2008 11:27:24 -0700
+From: "Luis R. Rodriguez" <lrodriguez@atheros.com>
+To: Jochen =?iso-8859-1?B?Vm/f?= <jochen.voss@googlemail.com>
+CC: Luis Rodriguez <Luis.Rodriguez@atheros.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       "linville@tuxdriver.com" <linville@tuxdriver.com>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
+       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
+       "ath9k-devel@venema.h4ckr.net" <ath9k-devel@venema.h4ckr.net>
+Subject: Re: [PATCH 2/4] list.h: add list_cut_position()
+Message-ID: <20080806182724.GI5605@tesla>
+References: <1217890089-12100-1-git-send-email-lrodriguez@atheros.com> <20080804160011.ec964f1f.randy.dunlap@oracle.com> <20080804231320.GG6447@tesla> <ef1cd66f0808050152g1dd8b96cl2df820607d480f0f@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
 Content-Disposition: inline
-References: <1217573919-7496-1-git-send-email-eric@anholt.net>
-	 <Pine.LNX.4.64.0808041855050.5717@blonde.site>
-	 <1217877645.24714.87.camel@koto.keithp.com>
-	 <Pine.LNX.4.64.0808042055240.17041@blonde.site>
-	 <18583.47633.987143.236236@stoffel.org>
-	 <1217910505.24714.152.camel@koto.keithp.com>
-	 <6a89f9d50808060920t168d533g5d440b444e7c09fc@mail.gmail.com>
-	 <20080806102437.2d5e5d11@infradead.org>
-	 <6a89f9d50808061032k6c30887cg6bed0259f9620b1b@mail.gmail.com>
-	 <1218045409.24714.257.camel@koto.keithp.com>
-X-Google-Sender-Auth: 0cc0ffb40bef9298
+Content-Transfer-Encoding: 8BIT
+In-Reply-To: <ef1cd66f0808050152g1dd8b96cl2df820607d480f0f@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 8/6/08, Keith Packard <keithp@keithp.com> wrote:
-> On Wed, 2008-08-06 at 19:32 +0200, Stephane Marchesin wrote:
->
->  > Right, but the current code will basically force the discrete card
->  > drivers to implement backing store for all allocations.
->
->
-> Aside from not really forcing discrete card drivers to to anything
->  (they're welcome to use or not use this stuff as they prefer), I believe
->  discrete cards will need backing store to support paging objects to disk
->  and suspend-to-ram operations.
+On Tue, Aug 05, 2008 at 01:52:22AM -0700, Jochen Voß wrote:
+> Hi,
+> 
+> 2008/8/5 Luis R. Rodriguez <lrodriguez@atheros.com>:
+> > +static inline void __list_cut_position(struct list_head *list,
+> > +               struct list_head *head, struct list_head *entry)
+> > +{
+> > +       struct list_head *new_first =
+> > +               (entry->next != head) ? entry->next : head;
+> 
+> Isn't this just an over-complicated way of writing "new_first = entry->next"?
 
-Well there is no real other clean way than backing store...
+Sorry, yes.
 
->
->
->  >  Do we want
->  > this ? Also, for cards that can handle page-based memory allocations,
->  > there is no way to make use of this feature, do we want this too ?
->
->
-> I don't see how any of the current code directs how future drivers might
->  work; the user-level interface is reasonably abstract and should allow
->  all kinds of internal organizations.
->
->  Instead of complaining that the current code might not support some
->  abstract hardware, please build something that does work and we'll see
->  how to merge that with code for other drivers.
->
+> > +       list->next = head->next;
+> > +       list->next->prev = list;
+> > +       list->prev = entry;
+> > +       entry->next = list;
+> > +       head->next = new_first;
+> > +       new_first->prev = head;
+> > +}
+> > +
+> > +/**
+> > + * list_cut_position - cut a list into two
+> > + * @list: a new list to add all removed entries
+> > + * @head: a list with entries
+> > + * @entry: an entry within head, could be the head itself
+> > + *     and if so we won't cut the list
+> > + */
+> 
+> I think it would be helpful if the comment explained what the function
+> actually does, i.e. that it moves the inital part of 'head' (up to and
+> including 'entry' from 'head' to 'list'.
 
-Well, this "abstract hardware" is in stores, it's called G80 and R600.
-If intel can't do something on its hardware shouldn't prevent others
-from using it. And I seriously doubt even the current interfaces would
-be fit for this.
+Will do.
 
-Stephane
+> > +static inline void list_cut_position(struct list_head *list,
+> > +               struct list_head *head, struct list_head *entry)
+> > +{
+> > +       BUG_ON(list_empty(head));
+> > +       if (list_is_singular(head))
+> > +               BUG_ON(head->next != entry && head != entry);
+> 
+> No other list function in "list.h" has BUG_ONs.  Why this one?
+
+Alright, I'll just make some small note on the documentation and exit early
+on these.
+
+> > +       if (entry == head)
+> > +               INIT_LIST_HEAD(list);
+> 
+> If there was data in 'list' before the call, it will be lost now.  Is
+> this intended behaviour?
+
+Yes, the user of this call should not care if we wipe @list for them as
+it is just a reference. This lets you, for example, use @list on
+list_cut_position() it in a loop. I'll extend the documentation to
+clarify this.
+
+> > +       else
+> > +               __list_cut_position(list, head, entry);
+> > +}
+> > +
+> 
+> I hope this helps,
+
+It certainly has, thanks for reviewing. How's this:
+
+This adds list_cut_position() which lets you cut a list into
+two lists given a pivot in the list.
+
+Signed-off-by: Luis R. Rodriguez <lrodriguez@atheros.com>
+
+diff --git a/include/linux/list.h b/include/linux/list.h
+index 453916b..6c02a83 100644
+--- a/include/linux/list.h
++++ b/include/linux/list.h
+@@ -214,6 +214,46 @@ static inline int list_is_singular(const struct list_head *head)
+ 	return !list_empty(head) && (head->next == head->prev);
+ }
+ 
++static inline void __list_cut_position(struct list_head *list,
++		struct list_head *head, struct list_head *entry)
++{
++	struct list_head *new_first = entry->next;
++	list->next = head->next;
++	list->next->prev = list;
++	list->prev = entry;
++	entry->next = list;
++	head->next = new_first;
++	new_first->prev = head;
++}
++
++/**
++ * list_cut_position - cut a list into two
++ *
++ * This helper moves the initial part of @head, up to and
++ * including @entry, from @head to @list. You should
++ * pass on @entry an element you know is on @head. @list
++ * should be an empty list or a list you do not care about
++ * losing its data.
++ *
++ * @list: a new list to add all removed entries
++ * @head: a list with entries
++ * @entry: an entry within head, could be the head itself
++ *	and if so we won't cut the list
++ */
++static inline void list_cut_position(struct list_head *list,
++		struct list_head *head, struct list_head *entry)
++{
++	if (list_empty(head))
++		return;
++	if (list_is_singular(head) &&
++		(head->next != entry && head != entry))
++		return;
++	if (entry == head)
++		INIT_LIST_HEAD(list);
++	else
++		__list_cut_position(list, head, entry);
++}
++
+ static inline void __list_splice(const struct list_head *list,
+ 				 struct list_head *head)
+ {
