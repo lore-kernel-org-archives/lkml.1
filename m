@@ -1,123 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755521AbYHFNGT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754773AbYHFNJp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755521AbYHFNGT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Aug 2008 09:06:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753459AbYHFNGI
+	id S1754773AbYHFNJp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Aug 2008 09:09:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753318AbYHFNJi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Aug 2008 09:06:08 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:50926 "EHLO mx1.redhat.com"
+	Wed, 6 Aug 2008 09:09:38 -0400
+Received: from aun.it.uu.se ([130.238.12.36]:51206 "EHLO aun.it.uu.se"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753455AbYHFNGH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Aug 2008 09:06:07 -0400
-Date: Wed, 6 Aug 2008 09:00:34 -0400
-From: Vivek Goyal <vgoyal@redhat.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Linux Containers <containers@lists.osdl.org>,
-       libcg-devel <libcg-devel@lists.sourceforge.net>,
-       linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       balbir@linux.vnet.ibm.com
-Subject: Re: [Libcg-devel] Control groups and Resource Management notes
-	(part II)
-Message-ID: <20080806130034.GA22461@redhat.com>
-References: <489315B2.2080506@linux.vnet.ibm.com> <4893B415.9070906@linux.vnet.ibm.com> <20080805160709.A88B.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20080805133007.GC15193@redhat.com> <20080806100500.19f08444.kamezawa.hiroyu@jp.fujitsu.com>
+	id S1752837AbYHFNJh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Aug 2008 09:09:37 -0400
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080806100500.19f08444.kamezawa.hiroyu@jp.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Transfer-Encoding: 7bit
+Message-ID: <18585.41608.256730.530607@harpo.it.uu.se>
+Date: Wed, 6 Aug 2008 15:09:28 +0200
+From: Mikael Pettersson <mikpe@it.uu.se>
+To: Mikael Pettersson <mikpe@it.uu.se>
+Cc: Arkadiusz Miskiewicz <arekm@maven.pl>, linux-kernel@vger.kernel.org
+Subject: Re: Opteron Rev E has a bug ... a locked  instruction doesn't act as a read-acquire barrier
+In-Reply-To: <18583.6153.542598.838960@harpo.it.uu.se>
+References: <200808031106.12366.arekm@maven.pl>
+	<18583.883.70907.983634@harpo.it.uu.se>
+	<200808041556.05339.arekm@maven.pl>
+	<18583.6153.542598.838960@harpo.it.uu.se>
+X-Mailer: VM 7.17 under Emacs 20.7.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 06, 2008 at 10:05:00AM +0900, KAMEZAWA Hiroyuki wrote:
+Mikael Pettersson writes:
+ > On Mon, 4 Aug 2008 15:56:05 +0200, Arkadiusz Miskiewicz wrote:
+ > >On Monday 04 August 2008, Mikael Pettersson wrote:
+ > >> Arkadiusz Miskiewicz writes:
+ > >>  > Hello,
+ > >>  >
+ > >>  > http://google-perftools.googlecode.com/svn-history/r48/trunk/src/base/=
+ > >at
+ > >>  >omicops-internals-x86.cc says
+ > >>  >
+ > >>  > "  // Opteron Rev E has a bug in which on very rare occasions a locked
+ > >>  >   // instruction doesn't act as a read-acquire barrier if followed by a
+ > >>  >   // non-locked read-modify-write instruction.  Rev F has this bug in
+ > >>  >   // pre-release versions, but not in versions released to customers,
+ > >>  >   // so we test only for Rev E, which is family 15, model 32..63
+ > >>  > inclusive. if (strcmp(vendor, "AuthenticAMD") =3D=3D 0 &&       // AMD
+ > >>  >       family =3D=3D 15 &&
+ > >>  >       32 <=3D model && model <=3D 63) {
+ > >>  >     AtomicOps_Internalx86CPUFeatures.has_amd_lock_mb_bug =3D true;
+ > >>  >   } else {
+ > >>  >     AtomicOps_Internalx86CPUFeatures.has_amd_lock_mb_bug =3D false;
+ > >>  >   }
+ > >>  > "
+ > >>  >
+ > >>  > does kernel have quirk/workaround for this? I'm looking at
+ > >>  > arch/x86/kernel/cpu but I don't see workaround related to this (possib=
+ > >ly
+ > >>  > I'm overlooking).
+ > >>
+ > >> I can find no reference to this alleged RevE erratum in the
+ > >> Athlon64/Opteron revision guide (25759.pdf).
+ > >>
+ > >> But if this bug is real then we need to know about it. Could
+ > >> you ask the author of the code you quoted above to clarify?
+ > >
+ > >Got answer, opensolaris has some workarounds for this bug I still don't kno=
+ > >w=20
+ > >which errata # is that:
+ > >
+ > >http://groups.google.com/group/google-perftools/browse_thread/thread/3d1b78=
+ > >d4a9db8c6e
+ > >
+ > >btw. I got info about this bug after hiting this problem:=20
+ > >http://bugs.mysql.com/bug.php?id=3D26081
+ > 
+ > Thanks, found the Solaris code in question and the mysql discussion.
+ > I'll dig deeper tomorrow.
 
-[..]
-> > > > Vivek brought up using PAM plugins to do classifications, this suggestion was
-> > > > nicely received. The decision was to do classification in user space and then
-> > > > think of kernel space if it cannot be done in user space. Denis suggested that
-> > > > classification is useful. In OpenVZ they classify all apache children to a
-> > > > different group. Balbir asked Denis to post their classification infrastructure
-> > > > as RFC.
-> > > 
-> > > I'm not sure about this issue.
-> > > but I like PAM approach.
-> > > 
-> > 
-> > Thanks balbir for nice summary.
-> > 
-> Thanks, too.
-> 
-> > Well, it was Rik Van Riel's idea to use PAM plugins so that processes
-> > are put into right user cgroups upon login.
-> > 
-> > Is pam based classification alone is sufficient? I noticed couple of
-> > instances which will avoid pam. For example.
-> > 
-> > - If one starts apache "service httpd start", then httpd threads change
-> >   their uid/gid to "apache/apache". But these threads will continue to
-> >   run in the cgroup belonging to root and will not go into apache cgroup.
-> > 
-> > - apache also offers "suexec" tool which execs a CGI script under a 
-> >   different user than the user who has launched web server. I quickly
-> >   grepped for source code of suexec and it does not seem to be using
-> >   pam. That means CGI scripts running under some other user name will
-> >   continue to run in cgroup where apache is running.
-> > 
-> > I am not sure how many more such corner cases are there. These cases can
-> > either be covered by modification of application or using some kind of
-> > wrapper around application or by writing classification daemon.
-> > 
-> > Do we really need classification daemon to cover such cases or wrapper
-> > approach is sufficient? I remember somebody in minisummit was mentioning
-> > that it should work without any apache modifications.
-> > 
-> 
-> We can go ahead step by step. I think PAM support is the first step.
-> The daemon is the second.
-> 
-> 1. PAM
-> 2. A daemon for task placement (via netlink ?)
-> 
-> I think developping "a daemon for task placement" is important.
-> but cannot be perfect solution for any situations.
-> 
-> The third step is
-> 
-> 3. Modify applications (in newer version of them.)
-> 
-> "should work without any apache modifications" is (maybe) necessary. But for 
-> perfect control, it's not enough. We should support a method to modify
-> applications easily in library. 
-> 
-> I think develpment cost for "2" is bigger than "1" and "3". If "2" is hard,
-> starting from "1" and support funcs for "3" is a choice.
-> If support for "3" is ready, someone may start implementation of "2" in easier
-> way.
-> 
+I investigated the Solaris track, but I've found no detailed
+explanation of the alleged bug. I've asked the Sun engineer
+who committed the fix for an explanation, but so far there's
+been no reply.
 
-Phase wise approach makes sense. I already have working patches for
-following things.
+Anyway, here's what I've found out.
 
-1. PAM module for placement of tasks
-2. Modification of init scripts and a tool "cgclassify" so that at boot up
-   time "init" and other system services are moved to "admin"'s group.
-3. libcgroup API so that application can use these to place forked children
-   in right cgroup before doing exec.
-4. A command line tool "execcg" which helps a user launch application in
-   specific "cgroup".
+It's Solaris bug # 6323525.
 
-5. A classification daemon (based on netlink as of today. Should move to
-  cgroup fs based notification mechanism probably.)   
+They call it "Mutex primitives don't work as expected."
 
-I think in phase1, we can get first 4 items merged and stablized and then
-work on daemon in phase2 (if need be).
+if (number_of_cores() < 2) then don't have bug
+if (family == 0xf && Model < 0x40) then have bug
+if (rdmsr(MSR_BU_CFG/*0xC0011023*/) & 2) then bug is masked
 
-One issue with daemon was raised with respect to containers. It will
-interfere with placement of container threads also and this is not
-desired.
+lock:	// mutex_lock, spin_lock, etc
+	...
+	lock; cmpxchg ..
+	jnz fail
+	ret; nop; nop; nop	// patched to "lfence; ret" if bug
 
-This will have to be worked out.
+The workaround is to place a fencing instruction (lfence) between
+the mutex operation and the subsequent read-modify-write instruction.
+(This provides the necessary load memory barrier.)
 
-Thanks
-Vivek
+There's no change to the unlock code.
+
+Anyone know who to contact @ AMD about confirming or denying this?
+
+/Mikael
