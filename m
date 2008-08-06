@@ -1,71 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756301AbYHFNtU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757373AbYHFNt7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756301AbYHFNtU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Aug 2008 09:49:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754364AbYHFNtL
+	id S1757373AbYHFNt7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Aug 2008 09:49:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754531AbYHFNtu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Aug 2008 09:49:11 -0400
-Received: from mtagate6.de.ibm.com ([195.212.29.155]:21340 "EHLO
-	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754310AbYHFNtJ (ORCPT
+	Wed, 6 Aug 2008 09:49:50 -0400
+Received: from casper.infradead.org ([85.118.1.10]:41643 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754364AbYHFNtt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Aug 2008 09:49:09 -0400
-Subject: Re: [PATCH] hugetlb: call arch_prepare_hugepage() for surplus pages
-From: gerald_IMAP <gerald.schaefer@de.ibm.com>
-Reply-To: gerald.schaefer@de.ibm.com
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       linux-s390@vger.kernel.org, schwidefsky@de.ibm.com,
-       heiko.carstens@de.ibm.com, nacc@us.ibm.com, agl@us.ibm.com,
-       Nick Piggin <nickpiggin@yahoo.com.au>
-In-Reply-To: <20080805133216.cc5c14cf.akpm@linux-foundation.org>
-References: <1217950147.5032.15.camel@localhost.localdomain>
-	 <20080805133216.cc5c14cf.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Wed, 06 Aug 2008 15:48:50 +0200
-Message-Id: <1218030530.7764.18.camel@ubuntu>
+	Wed, 6 Aug 2008 09:49:49 -0400
+Date: Wed, 6 Aug 2008 06:49:44 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: "Press, Jonathan" <Jonathan.Press@ca.com>
+Cc: "Peter Dolding" <oiaohm@gmail.com>, "Rik van Riel" <riel@redhat.com>,
+       "Greg KH" <greg@kroah.com>, "Eric Paris" <eparis@redhat.com>,
+       <linux-kernel@vger.kernel.org>, <linux-security-module@vger.kernel.org>
+Subject: Re: [malware-list] [RFC 0/5] [TALPA] Intro to a linuxinterfaceforon
+ access scanning
+Message-ID: <20080806064944.441305eb@infradead.org>
+In-Reply-To: <2629CC4E1D22A64593B02C43E855530304AE4AE6@USILMS12.ca.com>
+References: <20080805103840.1aaa64a5@infradead.org>
+	<2629CC4E1D22A64593B02C43E85553030480743B@USILMS12.ca.com>
+	<20080805181141.GA10700@kroah.com>
+	<2629CC4E1D22A64593B02C43E85553030480743F@USILMS12.ca.com>
+	<20080805205129.37d873f0@bree.surriel.com>
+	<2629CC4E1D22A64593B02C43E855530304AE4AE3@USILMS12.ca.com>
+	<e7d8f83e0808060538m361eca9xa349fe08fdb20f12@mail.gmail.com>
+	<2629CC4E1D22A64593B02C43E855530304AE4AE6@USILMS12.ca.com>
+Organization: Intel
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-08-05 at 13:32 -0700, Andrew Morton wrote:
-> > ---
-> > 
-> >  mm/hugetlb.c |    7 ++++++-
-> >  1 file changed, 6 insertions(+), 1 deletion(-)
-> > 
-> > Index: linux/mm/hugetlb.c
-> > ===================================================================
-> > --- linux.orig/mm/hugetlb.c
-> > +++ linux/mm/hugetlb.c
-> > @@ -565,7 +565,7 @@ static struct page *alloc_fresh_huge_pag
-> >  		huge_page_order(h));
-> >  	if (page) {
-> >  		if (arch_prepare_hugepage(page)) {
-> > -			__free_pages(page, HUGETLB_PAGE_ORDER);
-> > +			__free_pages(page, huge_page_order(h));
-> 
-> As Nick pointed out, this is an unrelated bugfix.  I changelogged it. 
-> Really it should have been two patches.
+On Wed, 6 Aug 2008 09:11:14 -0400
+> There was probably an implicit assumption on everyone's part,
+> including Red Hat's, that what ought to be done was to replace the
+> existing syscall-based event trapping with some other interface that
+> more or less does the same thing in a cleaner way -- NOT to have all
+> of the AV and other product vendors go out and completely rethink
+> their models.  And that's not because we inherently object to
+> rethinking.  It's really an issue of what kind of time frame we have
+> before a new OS goes out that completely breaks our products.
 
-Ok, thanks. I didn't see it as a bugfix because it doesn't make any
-difference on s390, and nobody else is using arch_prepare_hugepage()
-so far. But of course this may change, so I should have made two
-patches.
+not writing to the syscall table hasn't been possible/allowed for..
+about 5 years now. (yes I know there were still bad hacks possible
+until 2 years ago). So I'm sorry, but the timeline argument doesn't
+hold, you've had 5+ years of warning.
 
-> afaict the second fix is needed in 2.6.26.x (but not 2.6.25.x), but
-> this patch is not applicable to 2.6.26.x.
-> 
-> So if you want this fix to be backported into 2.6.26.x, please send a
-> suitable version of it to stable@kernel.org.
-
-Right, this was missing from the beginning. It affects s390 only,
-so I'll check if we need a backport.
-
-Thanks,
-Gerald
+All existing RHEL products already don't allow this (I know it for the
+earlier ones since I was part of the design team)...  unless your
+software acts entirely like a rootkit (but even then)
 
 
+-- 
+If you want to reach me at my work email, use arjan@linux.intel.com
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
