@@ -1,73 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762199AbYHFPr2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030450AbYHFPsq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762199AbYHFPr2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Aug 2008 11:47:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760889AbYHFPqN
+	id S1030450AbYHFPsq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Aug 2008 11:48:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759664AbYHFPfB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Aug 2008 11:46:13 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:43801 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760835AbYHFPqL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Aug 2008 11:46:11 -0400
-Date: Wed, 6 Aug 2008 11:46:04 -0400
-From: Rik van Riel <riel@redhat.com>
-To: "Press, Jonathan" <Jonathan.Press@ca.com>
-Cc: "Theodore Tso" <tytso@MIT.EDU>, <linux-kernel@vger.kernel.org>,
-       <malware-list@lists.printk.net>,
-       <linux-security-module@vger.kernel.org>,
-       "Arjan van de Ven" <arjan@infradead.org>
-Subject: Re: [malware-list] [RFC 0/5] [TALPA] Intro to alinuxinterfaceforon
- access scanning
-Message-ID: <20080806114604.5a714d11@cuia.bos.redhat.com>
-In-Reply-To: <2629CC4E1D22A64593B02C43E855530304AE4AF8@USILMS12.ca.com>
-References: <20080805205129.37d873f0@bree.surriel.com>
-	<2629CC4E1D22A64593B02C43E855530304AE4AE3@USILMS12.ca.com>
-	<20080806150857.GD14109@mit.edu>
-	<2629CC4E1D22A64593B02C43E855530304AE4AF8@USILMS12.ca.com>
-Organization: Red Hat, Inc
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 6 Aug 2008 11:35:01 -0400
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:56378 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759622AbYHFPe7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Aug 2008 11:34:59 -0400
+Date: Wed, 6 Aug 2008 16:34:16 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.site
+To: "Martin K. Petersen" <martin.petersen@oracle.com>
+cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH][SCS] sd: Read Capacity if (16) fails
+In-Reply-To: <yq1d4kmi5hl.fsf@sermon.lab.mkp.net>
+Message-ID: <Pine.LNX.4.64.0808061629220.10184@blonde.site>
+References: <Pine.LNX.4.64.0808061500450.1109@blonde.site>
+ <yq1d4kmi5hl.fsf@sermon.lab.mkp.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 6 Aug 2008 11:33:23 -0400
-"Press, Jonathan" <Jonathan.Press@ca.com> wrote:
-
-> Even so, I don't think your extreme examples are really parallel to what
-> we do.  Personally, I think that scanning on open, exec and close is not
-> excessive.  
+On Wed, 6 Aug 2008, Martin K. Petersen wrote:
+> >>>>> "Hugh" == Hugh Dickins <hugh@veritas.com> writes:
 > 
-> And in fact, we do go out of our way to avoid scanning when it really
-> isn't necessary.  For example, that's the reason that we want a cache --
+> Hugh> Commit e0597d70012c82e16ee152270a55d89d8bf66693 (sd: Identify
+> Hugh> DIF protection type and application tag ownership) says that if
+> Hugh> a disk is formatted with Inquiry bit PROTECT=1, it is required
+> Hugh> to support Read Capacity(16).  But my SD cards, accessed by
+> Hugh> builtin cardreader and generic USB storage, disagree.
+> 
+> Argh.  That's really broken.  USB storage has no business setting
+> PROTECT.
+> 
+> Can you send me the sg_inq output so I can see what else they are
+> returning?
 
-Disks are slow and files are getting larger by the day.
+sg_inq?  I assume that's the same as the inquiry_len bytes at inquiry:
 
-We can do a lot better than scanning a whole file.  A mechanism
-that can notify programs about what file changed and what byte
-range in the file changed can reduce scanning overhead by only
-needing to scan the part of the file that changed.
+00000000: 00 8d 00 01 1f 01 00 00 47 65 6e 65 72 69 63 2d  ........Generic-
+00000010: 4d 75 6c 74 69 2d 43 61 72 64 20 20 20 20 20 20  Multi-Card      
+00000020: 31 2e 30 30                                      1.00
 
-More importantly, getting info on which bytes in a file changed
-will also help backup programs and disk indexing programs.
+Ah, sg_inq is a command which spells that out, here you go:
 
+standard INQUIRY:
+  PQual=0  Device_type=0  RMB=1  version=0x00  [no conformance claimed]
+  [AERC=0]  [TrmTsk=0]  NormACA=0  HiSUP=0  Resp_data_format=1
+  SCCS=0  ACC=0  TGPS=0  3PC=0  Protect=1  BQue=0
+  EncServ=0  MultiP=0  [MChngr=0]  [ACKREQQ=0]  Addr16=0
+  [RelAdr=0]  WBus16=0  Sync=0  Linked=0  [TranDis=0]  CmdQue=0
+    length=36 (0x24)   Peripheral device type: disk
+ Vendor identification: Generic-
+ Product identification: Multi-Card      
+ Product revision level: 1.00
 
-Blocking on open can be useful for more than just anti-virus
-scanning.  It can also be useful for hierarchical storage
-management or simply for using a filesystem while it is being 
-restored from backup - an important consideration because
-restoring a filesystem from backup can take days with modern
-data sizes.
-
-Blocking on exec is similar to blocking on open and useful
-in the same scenarios.
-
-
-What we need to work on is making sure that the interfaces
-that go into the kernel are useful not just for anti-virus
-programs, but also for other software.
-
--- 
-All Rights Reversed
+Hugh
