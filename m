@@ -1,51 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758343AbYHEX6e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762026AbYHFANT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758343AbYHEX6e (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 19:58:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756571AbYHEX6B
+	id S1762026AbYHFANT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 20:13:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757944AbYHFANH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 19:58:01 -0400
-Received: from www.church-of-our-saviour.org ([69.25.196.31]:43617 "EHLO
-	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756160AbYHEX57 (ORCPT
+	Tue, 5 Aug 2008 20:13:07 -0400
+Received: from cavan.codon.org.uk ([93.93.128.6]:59420 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755852AbYHFANF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 19:57:59 -0400
-Date: Tue, 5 Aug 2008 19:57:33 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Eric Paris <eparis@redhat.com>
-Cc: Al Viro <viro@ZenIV.linux.org.uk>, Greg KH <greg@kroah.com>,
-       "Press, Jonathan" <Jonathan.Press@ca.com>,
-       Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
-       malware-list@lists.printk.net, linux-security-module@vger.kernel.org
-Subject: Re: [malware-list] [RFC 0/5] [TALPA] Intro
-	toalinuxinterfaceforonaccess scanning
-Message-ID: <20080805235733.GD8224@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Eric Paris <eparis@redhat.com>, Al Viro <viro@ZenIV.linux.org.uk>,
-	Greg KH <greg@kroah.com>, "Press, Jonathan" <Jonathan.Press@ca.com>,
-	Arjan van de Ven <arjan@infradead.org>,
-	linux-kernel@vger.kernel.org, malware-list@lists.printk.net,
-	linux-security-module@vger.kernel.org
-References: <2629CC4E1D22A64593B02C43E85553030480743F@USILMS12.ca.com> <20080805185438.GA8453@mit.edu> <2629CC4E1D22A64593B02C43E855530304AE4ADB@USILMS12.ca.com> <20080805211445.GA28304@kroah.com> <2629CC4E1D22A64593B02C43E855530304AE4ADC@USILMS12.ca.com> <20080805214415.GA5830@kroah.com> <2629CC4E1D22A64593B02C43E855530303E21D47@USILMS12.ca.com> <20080805222638.GA6395@kroah.com> <20080805233743.GK28946@ZenIV.linux.org.uk> <1217980132.27684.203.camel@localhost.localdomain>
+	Tue, 5 Aug 2008 20:13:05 -0400
+Date: Wed, 6 Aug 2008 01:13:01 +0100
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Yves-Alexis Perez <corsac@debian.org>
+Cc: airlied@linux.ie, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
+Subject: Re: [PATCH] Add Intel ACPI IGD OpRegion support
+Message-ID: <20080806001301.GA10630@srcf.ucam.org>
+References: <20080805183725.GA4468@srcf.ucam.org> <1217965470.5449.4.camel@hidalgo> <1217972874.4540.3.camel@hidalgo>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1217980132.27684.203.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <1217972874.4540.3.camel@hidalgo>
+User-Agent: Mutt/1.5.12-2006-07-14
 X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 05, 2008 at 07:48:52PM -0400, Eric Paris wrote:
-> I do believe for a number of AV vendors the answer is yes.  I will try
-> to have some offline conversations with the right people at a number of
-> vendors and work to better define the threats that they wish to or
-> believe they are able to help mitigate.
+On Tue, Aug 05, 2008 at 11:47:54PM +0200, Yves-Alexis Perez wrote:
 
-OK, and if the malware is running on the machine, does the malware
-have root (superuser) access?
+> In booted into X (with hal, powersaved, dbus etc. running), and then,
+> tada, brightness keys work. There is a 750ms (I guess) delay, and I
+> don't know who is really responsible, I guess X is. (and thus I guess
+> the opregion is the one needed, and X manages the brightness. If the
+> kernel was, it would be working even in single user)
 
-						- Ted
+The 750ms delay is from thinkpad-acpi. I sent a patch to Henrique which 
+makes it go away, but I'm not entirely sure what the ACPI method 
+concerned is supposed to be doing. The opregion code won't currently run 
+until X is started because the drm layer requires X to be the foreground 
+vt before handling IRQs.
+
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
