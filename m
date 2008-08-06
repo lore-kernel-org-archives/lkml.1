@@ -1,67 +1,296 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757719AbYHFN6W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758595AbYHFN6h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757719AbYHFN6W (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Aug 2008 09:58:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751863AbYHFN5p
+	id S1758595AbYHFN6h (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Aug 2008 09:58:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756471AbYHFN56
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Aug 2008 09:57:45 -0400
-Received: from 166-70-238-42.ip.xmission.com ([166.70.238.42]:34505 "EHLO
-	ns1.wolfmountaingroup.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751709AbYHFN5o (ORCPT
+	Wed, 6 Aug 2008 09:57:58 -0400
+Received: from yx-out-2324.google.com ([74.125.44.28]:10623 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756202AbYHFN5y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Aug 2008 09:57:44 -0400
-Message-ID: <44718.166.70.238.45.1218029800.squirrel@webmail.wolfmountaingroup.com>
-In-Reply-To: <20080806084014.GA3777@in.ibm.com>
-References: <200808050626.m756QZ1g003755@wolfmountaingroup.com>
-    <20080806084014.GA3777@in.ibm.com>
-Date: Wed, 6 Aug 2008 07:36:40 -0600 (MDT)
-Subject: Re: [PATCH 2.6.27-rc1-git5 2/26] mdb: correct kprobes int3 trap
-From: jmerkey@wolfmountaingroup.com
-To: ananth@in.ibm.com
-Cc: jmerkey@wolfmountaingroup.com, linux-kernel@vger.kernel.org
-User-Agent: SquirrelMail/1.4.6
+	Wed, 6 Aug 2008 09:57:54 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=KDxf/1U5+nOzL+JnGGmlrPADVdVlPQR3FuYdMobJqP8Y+Od9Kp0qzO+lZvSDyL6Kpt
+         +O0XoXbziTietUFFSVtXHAh9C2rjr5r0qYdtVGkltJR3nnkGIL72OHajn5FFBM2tFOQ5
+         RiR8ubEJLUWn38V3wZNETQXLvGL4AgXdTdhNQ=
+Message-ID: <e7d8f83e0808060657v6723510fma8ca6defbdbb65aa@mail.gmail.com>
+Date: Wed, 6 Aug 2008 23:57:52 +1000
+From: "Peter Dolding" <oiaohm@gmail.com>
+To: "Press, Jonathan" <Jonathan.Press@ca.com>
+Subject: Re: [malware-list] [RFC 0/5] [TALPA] Intro to a linuxinterfaceforon access scanning
+Cc: "Rik van Riel" <riel@redhat.com>, "Greg KH" <greg@kroah.com>,
+       "Arjan van de Ven" <arjan@infradead.org>,
+       "Eric Paris" <eparis@redhat.com>, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org
+In-Reply-To: <2629CC4E1D22A64593B02C43E855530304AE4AE6@USILMS12.ca.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080805103840.1aaa64a5@infradead.org>
+	 <2629CC4E1D22A64593B02C43E85553030480743B@USILMS12.ca.com>
+	 <20080805181141.GA10700@kroah.com>
+	 <2629CC4E1D22A64593B02C43E85553030480743F@USILMS12.ca.com>
+	 <20080805205129.37d873f0@bree.surriel.com>
+	 <2629CC4E1D22A64593B02C43E855530304AE4AE3@USILMS12.ca.com>
+	 <e7d8f83e0808060538m361eca9xa349fe08fdb20f12@mail.gmail.com>
+	 <2629CC4E1D22A64593B02C43E855530304AE4AE6@USILMS12.ca.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Tue, Aug 05, 2008 at 12:26:35AM -0600, jmerkey@wolfmountaingroup.com
+On Wed, Aug 6, 2008 at 11:11 PM, Press, Jonathan <Jonathan.Press@ca.com> wrote:
+> -----Original Message-----
+> From: Peter Dolding [mailto:oiaohm@gmail.com]
+> Sent: Wednesday, August 06, 2008 8:39 AM
+> To: Press, Jonathan
+> Cc: Rik van Riel; Greg KH; Arjan van de Ven; Eric Paris;
+> linux-kernel@vger.kernel.org; linux-security-module@vger.kernel.org
+> Subject: Re: [malware-list] [RFC 0/5] [TALPA] Intro to a
+> linuxinterfaceforon access scanning
+>
+> On Wed, Aug 6, 2008 at 10:10 PM, Press, Jonathan <Jonathan.Press@ca.com>
 > wrote:
-> ...
->
->> @@ -850,6 +871,10 @@
->>  #ifdef CONFIG_KPROBES
->>  void __kprobes do_int3(struct pt_regs *regs, long error_code)
->>  {
->> +#ifdef	CONFIG_MDB
->> +        if (mdb(BREAKPOINT_EXCEPTION, error_code, regs))
->> +           return;
->> +#endif // CONFIG_MDB
->>  	trace_hardirqs_fixup();
+>> -----Original Message-----
+>> From: Rik van Riel [mailto:riel@redhat.com]
+>> Sent: Tuesday, August 05, 2008 8:51 PM
+>> To: Press, Jonathan
+>> Cc: Greg KH; Arjan van de Ven; Eric Paris;
+> linux-kernel@vger.kernel.org;
+>> malware-list@lists.printk.net; linux-security-module@vger.kernel.org
+>> Subject: Re: [malware-list] [RFC 0/5] [TALPA] Intro to a
+>> linuxinterfaceforon access scanning
 >>
->>  	if (notify_die(DIE_INT3, "int3", regs, error_code, 3, SIGTRAP)
+>> On Tue, 5 Aug 2008 14:38:23 -0400
+>> "Press, Jonathan" <Jonathan.Press@ca.com> wrote:
+>>
+>>> However, I will say that while preventing infections from arriving is
+>>> not foolproof, doing a scan-on-close with the option to delete or
+>>> quarantine an infected file goes a long way.
+>>
+>> How can you, as a security professional, argue for a security measure
+>> that you know is flawed, when there is a mailing list full of people
+>> willing to help figure out what a working security measure would look
+>> like?
+>>
+>> Yes, abandoning some of the old DOS anti-virus security model may
+> cause
+>> work, but surely that will be worth it if it leads to a more secure
+>> system?
+>>
+>>
+>> [JON PRESS]  I hesitate to join back in the discussion, because so far
+> I
+>> haven't been very successful.  I know that my level of technical depth
+>> is not at all the equal of just about everybody else in this
+>> conversation.  That's not my job and I don't claim to have the answers
+>> to all the questions that are being raised.
+>>
+>> However...  This question about arguing for a flawed security
+> technique
+>> is a good one, and in a way it gets to the heart of the philosophy of
+>> security.  Scan-on-close is admittedly incomplete as an anti-virus
+> tool.
+>> But I don't agree that that make it flawed.   It is part of a
+> repertoire
+>> of techniques for preventing malware from residing on a machine.
+>>
+>> Let's take a simplistic and unrealistic example.  Let's suppose that
+> you
+>> knew that there were 20 applications on your machine that had buffer
+>> overflow vulnerabilities that could be exploited, and you had a fix
+> for
+>> 18 of them.  Would you decide not to apply the fixes, because that
+> meant
+>> that there would still be 2 left -- and because theoretically there is
+> a
+>> way to prevent all buffer overflows from being exploited and there is
+> a
+>> mailing list full of people trying to figure out how to do it.
+>>
+> This buffer overflow risk and other equals are why LSM's exist.   It put
+> jails around applications so they cannot do any more than they are meant
+> to.   Its called risk reduction something that is most likely a new idea
+> to people coming from a windows background.   It also makes exploiting a
+> flawed applicaiton tricky.  Do something that application should not
+> normally do it will be blocked and trip the LSM alarm that
+> could be set to straight up terminate the offending application.   Yes a
+> true shot on sign of trouble system.  This is what you anti-virus guys
+> call behaviour monitoring same system some anti-virus software uses to
+> detect unknown viruses.
 >
-> Kprobes needs to be the first consumer of these exceptions (via
-> notify_die); if the exception was due to a kprobe, it does its thing
-> without requiring any user intervention. Here, for example, you can get
-> into mdb for a kprobe breakpoint hit.
+> So 2 left should never happen since we have at least a part fix for all
+> of them.   This is how it has to work.   Failure is not a option in our
+> eyes.   If you have a percent missed that is a failure of there is not
+> something else to prevent damage.  We are not Windows users with weak
+> setup systems.   We don't want weak distributions out there.  Nice if
+> some anti-virus products started demanding a min standard LSM to run
+> side by side with them.
 >
-> Please move the mdb hooks to after kprobes has been notified. Better
-> still, integrate mdb to use the notify_die infrastructure and use a
-> lower priority than what kprobes does for it.
+> LSM's are already embedded core system exploitation prevention.
 >
-> Ananth
+> LSM currently don't extend deep enough into users to really tighten
+> completely down on the Users account.
 >
+> So far I have not found a exact list of what is needed by AV or Malware
+> companies that say LSM stacking is needed.  That says stacked LSM's are
+> needed.
+>
+> So I will bring a few things to the table.  Number one LSB is working on
+> a common packaging API using DBUS based off policy kit.   So malware
+> application installers run in users own account and to install into the
+> system have to go threw a scan able interface.   So far I have not seen
+> AV companies there working in improving the design. Prevention beats
+> cure.
+>
+> This reduces a issue of malware to the Users own account without heavy
+> handed scanning.
+>
+> So scanning becomes reduced to user editable files.
+>
+> Linux firewall supports user mode modules so antivirus can scan network
+> traffic and use built in firewall to monitor for malware.
+>
+> File scanning look no deeper than fusefs.
+> http://clamfs.sourceforge.net/.   Alter the automount system to wrap
+> this over the top of user mounted file systems and locations of user
+> editable and your are done.
+>
+> Now credentials patch that has not got mainline yet also provides user
+> mode daemon support to override filesystem permissions.  Could also be
+> integrated into a Anti Virus Scanner.  credentials is not a LSM really
+> its centralisation of permission information so its no longer speed all
+> over the kernel.
+>
+> There are sections in containers as well that could cover bits..
+>
+> TPM segments appear in 2.6.27 as well that will also make a core system
+> breach harder.
+>
+> Now please layout what you need Anti-Virus Companies.  Don't use
+> clueless desktop users as a reason.   Linux could already provide the
+> needed interfaces just not LSM.
+>
+> Now please provide a detailed list of exactly what you need Anti-virus
+> companies.   Most likely everything you need already exists mainline or
+> in a development side line.  Extra coders to get some of those features
+> mainline would be good.
+>
+>
+> [JON PRESS]  First of all, my examples were just hypothetical examples
+> designed to set a context.  If they don't work, then don't take them too
+> literally.
+>
+> Second, I'll try to put another way.  The disease analogy for computer
+> viruses, though perhaps overused, actually goes a surprisingly long way.
+> The kernel guys are like medical researchers, and the AV guys (or at
+> least speaking for myself) are in Public Health.  You guys are looking
+> at the human body (the computer) and looking for its low-level
+> vulnerabilities and ways to protect against them.  We are working in the
+> context of imperfect human behavior that often causes people to get sick
+> in spite of the current state of medical knowledge, and occasionally
+> causes things to get out of control.  Neither point of view is incorrect
+> -- but each attacks a very different aspect of the problem.
 
-I have removed these hooks already and converted to debugger to use
-notify_die -- finished it last night as per Andi's suggestions.  This code
-section has already been removed from reboot.c and traps_XX.c.
+We are not just kernel.  http://hal.freedesktop.org/docs/PolicyKit/
+Is a good read.
 
-I'll post the new patch with the module based debugger later today.
+Long term Linux design is basically Nuke the root user and protect the
+core os providing restricted access.
 
-Jeff
+So anti system core damage integrates outside kernel space.   We are
+designing to limit how damaging that imperfect behavior is.
 
+> And this goes right to the heart of the statement "prevention beats
+> cure".  That's true in the long run, but it's not true if you're already
+> sick -- or your neighbor is, and prevention is still a few years away.
+>
+> Third, regarding stating what we need, we actually already had a
+> discussion about this several months ago, where we described this.  That
+> discussion was the basis for Eric's proposal.  To give it some
+> perspective, here is how I understand the flow of events.  As Eric
+> described in his original posting this week, in the past many products
+> (AV, along with others that have needed access to similar events --
+> representatives of which have been participating in this discussion)
+> have done their own tricks to get at i/o events that they need to
+> trigger some action.  Many do this by modifying the syscall table.  We
+> were told that this was going to become an invalid operation in a coming
+> release of Red Hat Linux, and Red Hat offered to have a discussion with
+> us on what could be done to offer us another way into the same
+> information.  This seemed like a very positive direction to go in, and
+> there was a discussion about what this alternative ought to look like.
+> On the basis of this discussion, Eric then went off and worked on the
+> design that he has presented.
+
+> There was probably an implicit assumption on everyone's part, including
+> Red Hat's, that what ought to be done was to replace the existing
+> syscall-based event trapping with some other interface that more or less
+> does the same thing in a cleaner way -- NOT to have all of the AV and
+> other product vendors go out and completely rethink their models.  And
+> that's not because we inherently object to rethinking.  It's really an
+> issue of what kind of time frame we have before a new OS goes out that
+> completely breaks our products.  Rethinking the entire model and
+> developing all new products along different paradigms is not a bad thing
+> to do, but it takes a lot of time.  Frankly we're always doing that in
+> some way.  However, there is a more pressing problem at hand, and that's
+> what Eric's spec is meant to solve.
+>
+You got to remember syscall trapping can be done for good and evil.
+
+You use it to monitor actions another use it to do harm like steal data.
+
+We need syscall trapping for debugging.  ptrace and the like.
+
+Something important you are forgetting and its critical.  Windows gets
+hell loads of overhead from Anti-Virus products.   Our LSM's already
+provide overhead.  Duplication is not a way forwards.
+
+Credentials  IBM patch provides a way to override filesystem
+permissions so monitor and scan can be done there.
+
+Tracing improvements lined 2.6.27 could be used to monitor
+applications a AV is suspect of.
+
+Capabilities restrict syscalls by blocks.
+
+Question exactly why needing to monitor at the syscall level.   Really
+why.   There are ways to monitor and restrict accesses without
+dropping to that level.
+
+Most likely the issue is that your models are broken.   Under windows
+most anti-viruses copy the methods you would use to root kit a OS to
+get there data.   Not working with the existing secuirty model.
+Learning to work side by side with the LSM and other systems already
+provided anti-virus companies are going to have to learn to do.   No
+more of this hooking into the OS to get what you want.
+
+Critical note on Linux.   Rootkits out number viruses and malware 20
+to 1.   This is way different to your windows numbers.   So any method
+that is Rootkit style will fail in time because that hole will have to
+be closed.
+
+My main issue is TALPA, dazuko and so on of Anti-Virus Filesystem
+monitoring are all going to break anyhow when
+http://lwn.net/Articles/251224/ Credentials get added and common
+filesystem caching gets added.
+
+You want to change a permissions on a file/object before its opened.
+So does the Credential user space daemon on file systems that cannot
+store secuirty information.  We only really need 1 location in the
+source base for this.  Expand Credentials slightly to allow anti
+viruses to operate by by problem.   Even better when FS-Cache can sit
+on top of Credentials correctly no need for anti virus software to
+have independent caching of blocked and allowed files.  FS-Cache picks
+a large amount of this up.
+
+Basically TALPA, dazuko and so on of Anti-Virus Filesystem monitoring
+don't fit in the future design of Linux.   All they will be is
+duplication of a existing interface.  A interface that complete avoids
+the stacking issue.
+
+Peter Dolding
