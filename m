@@ -1,50 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753877AbYHGUJQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755865AbYHGUKW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753877AbYHGUJQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Aug 2008 16:09:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752730AbYHGUJA
+	id S1755865AbYHGUKW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Aug 2008 16:10:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753102AbYHGUKI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Aug 2008 16:09:00 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:55028 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752580AbYHGUJA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Aug 2008 16:09:00 -0400
-Date: Thu, 7 Aug 2008 22:09:44 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Bernhard Walle <bwalle@suse.de>
-Cc: Andi Kleen <andi@firstfloor.org>, Jay Lan <jlan@sgi.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, jmerkey@wolfmountaingroup.com,
-       Geert Uytterhoeven <geert@linux-m68k.org>,
-       Josh Boyer <jwboyer@gmail.com>, linux-kernel@vger.kernel.org,
-       Takenori Nagano <t-nagano@ah.jp.nec.com>,
-       Vivek Goyal <vgoyal@redhat.com>, Keith Owens <kaos@ocs.com.au>
-Subject: Re: [ANNOUNCE] Merkey's Kernel Debugger
-Message-ID: <20080807200944.GK24801@one.firstfloor.org>
-References: <17494.166.70.238.46.1217784156.squirrel@webmail.wolfmountaingroup.com> <200808060133.10457.nickpiggin@yahoo.com.au> <87r6926dsr.fsf@basil.nowhere.org> <200808061550.22996.nickpiggin@yahoo.com.au> <489B34BA.4060300@linux-foundation.org> <489B3A0D.7060706@s5r6.in-berlin.de> <489B48BF.3060609@linux-foundation.org> <489B5149.4030600@sgi.com> <20080807200659.GJ24801@one.firstfloor.org> <20080807220737.23e29d46@kopernikus.site>
+	Thu, 7 Aug 2008 16:10:08 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:4070 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751708AbYHGUKH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Aug 2008 16:10:07 -0400
+Date: Wed, 6 Aug 2008 18:56:49 +0200
+From: Pavel Machek <pavel@suse.cz>
+To: Marcin Obara <marcin_obara@users.sourceforge.net>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Intel Management Engine Interface
+Message-ID: <20080806165648.GA9178@ucw.cz>
+References: <alpine.DEB.1.00.0807172021450.26825@ip-195-3-221-75.vnet.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080807220737.23e29d46@kopernikus.site>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <alpine.DEB.1.00.0807172021450.26825@ip-195-3-221-75.vnet.pl>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 07, 2008 at 10:07:37PM +0200, Bernhard Walle wrote:
-> * Andi Kleen <andi@firstfloor.org> [2008-08-07 22:06]:
-> >
-> > > To merge KDB or any other RAS tools, you need to deal with kdump. Kdump
-> > > hijack panic() before the die calling chain. For KDB or a RAS tool to
-> > 
-> > Imho kdump should just be fixed to use die chains.
+Hi!
+
+> Fixed more issues raised on lkml after previous submission.
 > 
-> Well, we had that discussion several times. I'm not against it
-> (instead, I would like it), but I don't think that repeating the
-> discussion over and over does help ...
+> 
+> The Intel Management Engine Interface (aka HECI: Host Embedded
+> Controller Interface ) enables communication between the host OS and
+> the Management Engine firmware. MEI is bi-directional, and either the
+> host or Intel AMT firmware can initiate transactions.
+> 
+> The core hardware architecture of Intel Active Management Technology
+> (Intel AMT) is resident in firmware. The micro-controller within the
+> chipset's graphics and memory controller (GMCH) hub houses the
+> Management Engine (ME) firmware, which implements various services
+> on behalf of management applications.
+> 
+> Some of the ME subsystems that can be access via MEI driver:
+> 
+> - Intel(R) Quiet System Technology (QST) is implemented as a firmware
+> subsystem  that  runs in the ME.  Programs that wish to expose the
+> health monitoring and fan speed control capabilities of Intel(R) QST
+> will need to use the MEI driver to communicate with the ME sub-system.
+> - ASF is the "Alert Standard Format" which is an DMTF manageability
+> standard. It is implemented in the PC's hardware and firmware, and is
+> managed from a remote console.
 
-Just needs some code? 
+Cool, so this should hook into sensors subsystem, right?
 
--Andi
+Also it uses __x32-style types when x32 would be enough.
+
+> +	heci_check_asf_mode(dev);
+> +	/*heci initialization wd */
+
+That is not exactly helpful comment... Decrypt? Space after /*?
+
+
+> +	DBG("call wait_event_interruptible_timeout for response message.\n");
+> +	/* wait for response */
+
+Home-brewn DBG is un-nice.
+
+> +static int host_enum_clients_message(struct iamt_heci_device *dev)
+> +{
+> +	long timeout = 5;	/*5 second */
+> +	struct heci_msg_hdr *heci_hdr;
+> +	struct hbm_host_enum_request *host_enum_req;
+> +	int err = 0;
+> +	__u8 i, j;
+
+int is probably better here.
+
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
