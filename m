@@ -1,93 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762776AbYHFFAk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759540AbYHFFEF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762776AbYHFFAk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Aug 2008 01:00:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753895AbYHFFAI
+	id S1759540AbYHFFEF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Aug 2008 01:04:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754053AbYHFFDz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Aug 2008 01:00:08 -0400
-Received: from mail142.messagelabs.com ([216.82.249.99]:59293 "HELO
-	mail142.messagelabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753108AbYHFFAG (ORCPT
+	Wed, 6 Aug 2008 01:03:55 -0400
+Received: from wolverine01.qualcomm.com ([199.106.114.254]:61156 "EHLO
+	wolverine01.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752918AbYHFFDy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Aug 2008 01:00:06 -0400
-X-VirusChecked: Checked
-X-Env-Sender: Pramod.Kumble@lntinfotech.com
-X-Msg-Ref: server-9.tower-142.messagelabs.com!1217998730!30831898!16
-X-StarScan-Version: 5.5.12.14.2; banners=lntinfotech.com,-,-
-X-Originating-IP: [125.17.191.34]
-To: linux-kernel@vger.kernel.org
-Subject: g_ether issues with linux host
+	Wed, 6 Aug 2008 01:03:54 -0400
+X-IronPort-AV: E=McAfee;i="5200,2160,5354"; a="5350575"
+Message-ID: <489930B5.9030906@qualcomm.com>
+Date: Tue, 05 Aug 2008 22:03:49 -0700
+From: Max Krasnyansky <maxk@qualcomm.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-X-Mailer: Lotus Notes Release 7.0.2 September 26, 2006
-Message-ID: <OF4699D03E.F85F3AC7-ON6525749D.001B5CE4-6525749D.001B853B@lntinfotech.com>
-From: Pramod Kumble <Pramod.Kumble@lntinfotech.com>
-Date: Wed, 6 Aug 2008 10:30:37 +0530
-X-MIMETrack: Serialize by Router on BANGALORE/LNTINFOTECH(Release 7.0.3|September 26, 2007) at
- 08/06/2008 10:30:52 AM,
-	Serialize complete at 08/06/2008 10:30:52 AM,
-	Itemize by SMTP Server on MAILRELAY2/LNTINFOTECH(Release 7.0.2FP2|May 14, 2007) at
- 08/06/2008 10:30:05 AM,
-	Serialize by Router on MAILRELAY2/LNTINFOTECH(Release 7.0.2FP2|May 14, 2007) at
- 08/06/2008 10:30:09 AM,
-	Serialize complete at 08/06/2008 10:30:09 AM
-Content-Type: text/plain; charset="US-ASCII"
+To: Paul Jackson <pj@sgi.com>
+CC: mingo@elte.hu, linux-kernel@vger.kernel.org, menage@google.com,
+       a.p.zijlstra@chello.nl, vegard.nossum@gmail.com, lizf@cn.fujitsu.com
+Subject: Re: [PATCH] cpuset: Rework sched domains and CPU hotplug handling
+ (2.6.27-rc1)
+References: <1217631552-22129-1-git-send-email-maxk@qualcomm.com>	<20080802063900.6615e5ca.pj@sgi.com>	<48948C3A.6050805@qualcomm.com>	<20080802225127.2b0d138b.pj@sgi.com>	<4895F3ED.4020805@qualcomm.com>	<20080804010033.0d1b0549.pj@sgi.com>	<48977E81.4040207@qualcomm.com>	<20080804225636.541527e8.pj@sgi.com>	<4898B873.6000308@qualcomm.com>	<20080805180521.be7010e1.pj@sgi.com>	<48991973.90109@qualcomm.com>	<20080805222927.6dd95f5f.pj@sgi.com>	<4899202B.6030303@qualcomm.com> <20080805232856.78dd50f7.pj@sgi.com>
+In-Reply-To: <20080805232856.78dd50f7.pj@sgi.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-hello,
- 
-I am trying to set up USB networking between the linux host and 
-developement board.I am using g_ether gadget along with the controller 
-driver.Currently the code is tested with the windows host (xp service pack 
-2). RNDIS option in g_ether is enabled and it works fine with windows 
-host.ftp,telnet and ping are working. With the linux host i am disabling 
-RNDIS and using the CDC option. Currently i am facing following problems.
- 
-1)With RedHat host (2.4.20) on connecting the cable i get the new network 
-interface "eth1". The dmesg output is given below.
- 
-hub.c: new USB device 00:1f.2-1, assigned address 4
-usb_control/bulk_msg: timeout
-usb_control/bulk_msg: timeout
-usb-uhci.c: interrupt, status 2, frame# 97
-usb.c: USB device not responding, giving up (error=-84)
-hub.c: new USB device 00:1f.2-1, assigned address 5
-CDCEther.c: Found Header descriptor, CDC version 110.
-CDCEther.c: Imperfect filtering support - need sw hashing
-CDCEther.c: Can't use SetEthernetMulticastFilters request
-CDCEther.c: detected BULK OUT packets of size 64
-CDCEther.c: interrupt address: 3
-CDCEther.c: interrupt interval: 32
-divert: allocating divert_blk for eth1
-CDCEther.c: eth1: Linux 2.6.10_mobilinux410-cl-jade-1.3.32/cl_udc Ethernet 
-Gadget
-CDCEther.c: eth1: 9E:3F:31:0E:40:24
- 
-But if i try to activate the network interface through "ifconfig eth1 up" 
-i get following error.
- 
-CDCEther.c: usb_set_interface() failed
-CDCEther.c: Attempted to set interfac 1
-CDCEther.c: To alternate setting 1
-CDCEther.c: CDCEther_open can't enable_net_traffic() - -1
- 
-2) With fedora linux host (2.6.21 kernel) i am getting following messages 
-in dmesg output.
- 
-usb 1-2: new high speed USB device using ehci_hcd and address 4
-usb 1-2: configuration #1 chosen from 1 choice
-cdc_ether: probe of 1-2:1.0 failed with error -32
-usbcore: registered new interface driver cdc_ether
- 
-The required modules usbnet and cdc_ether are loaded on host side, but on 
-output of "ifconfig -a" i am not getting "usb0" interface.
+Paul Jackson wrote:
+> Max wrote:
+>> ... the wrong part of my reply ...
+> 
+> Was the right part where you wrote:
+>> We'd actually be changing more things.
+> 
+> I also don't care that much how much code is changed;
+> if it must be changed, then change it to what is best,
+> which may not necessarily be the minimum change.
+Sure. What I'm saying is that I do not think it's the best
+to change all the paths to be async.
 
-Am i missing any configuratoin on host side.??  any help is greatly 
-appreciated.
+> If an asynchronous sched domain rebuild is needed in
+> some places, then consider just using it everywhere,
+> rather than providing two code paths to rebuild, one
+> sync and one async.
+I still do not see a good reason why. IMO exceptions are acceptable.
+Only domain rebuilds triggered by cpuset fs writes need to be async.
+I do not see a good technical reason why the rest needs to be converted
+and retested.
 
-Thanks and Regards
-Pramod
+> Ask not how we got here; ask where we should be.
+> 
+> In particular, and in this specific case, having the
+> dual code paths really did make it a little more difficult
+> for me to understand the code, as evidenced by the back
+> and forth discussion on how to name the confusingly
+> similar functions.  Such naming controversies are usually
+> a sign of code duplication or improper factoring.
+I'm not sure what you're referring to. There was no back an forth.
+You suggested reverting the rename and I pointed out that it was not
+a rename, I simply factored out the part that generates the
+masks. That was it.
 
+> That additional difficulty in understanding this code
+> was a key factor in delaying my review of your code.
+> I'd look at it, my mind was glaze over, and I'd put
+> it aside for a few days.  This happened repeatedly.
+> 
+> Fine code is like fine art ... spare, elegant, compelling
+> in its expression.
+To be fair the fact that you had trouble understanding my code does
+not automatically mean that it was not artistic ;-).
 
-______________________________________________________________________
+Max
