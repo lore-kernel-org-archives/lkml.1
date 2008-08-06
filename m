@@ -1,69 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758250AbYHFGa6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757356AbYHFGbo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758250AbYHFGa6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Aug 2008 02:30:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753627AbYHFGat
+	id S1757356AbYHFGbo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Aug 2008 02:31:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755177AbYHFGbe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Aug 2008 02:30:49 -0400
-Received: from ozlabs.org ([203.10.76.45]:45819 "EHLO ozlabs.org"
+	Wed, 6 Aug 2008 02:31:34 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:40699 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751042AbYHFGas convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Aug 2008 02:30:48 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Matthew Wilcox <matthew@wil.cx>
-Subject: Re: [PATCH] Make kthread_stop() not oops when passed a bad pointer
-Date: Wed, 6 Aug 2008 11:22:58 +1000
-User-Agent: KMail/1.9.9
-Cc: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>,
-       linux-kernel@vger.kernel.org
-References: <20080805135559.GQ26461@parisc-linux.org>
-In-Reply-To: <20080805135559.GQ26461@parisc-linux.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200808061122.59584.rusty@rustcorp.com.au>
+	id S1753627AbYHFGbd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Aug 2008 02:31:33 -0400
+Date: Wed, 6 Aug 2008 16:31:19 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, jeremy@xensource.com,
+       chrisw@sous-sol.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: linux-next: Tree for August 5 (XEN)
+Message-Id: <20080806163119.3adc4eb7.sfr@canb.auug.org.au>
+In-Reply-To: <4898FB2F.9060202@goop.org>
+References: <20080805175914.7649537f.sfr@canb.auug.org.au>
+	<20080805180316.b85d5547.randy.dunlap@oracle.com>
+	<4898FB2F.9060202@goop.org>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__6_Aug_2008_16_31_19_+1000_.5RclWQDohRZb8EX"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 05 August 2008 23:55:59 Matthew Wilcox wrote:
-> Make kthread_stop a little more robust against numbskulls
-> like me.
+--Signature=_Wed__6_Aug_2008_16_31_19_+1000_.5RclWQDohRZb8EX
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Tue, 05 Aug 2008 18:15:27 -0700 Jeremy Fitzhardinge <jeremy@goop.org> wr=
+ote:
 >
-> Signed-off-by: Matthew Wilcox <willy@linux.intel.com>
+> I posted this patch the other day.  It's in tip.git, but I guess it=20
+> hasn't made it to next.
+>=20
+>     J
+>=20
+> Subject: xen-balloon: fix up sysfs issues
 
-Hi Willy,
+I have applied this to linux-next today - assuming it will turn up via one
+of the tip trees soon.
 
-I really do sympathize with your problem; but the quest is to figure out how 
-to identify it before the code is run, not to put a non-orthogonal bandaid 
-here which can hurt other cases.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-How about a more ambitious "we've oopsed so break a mutex every 30 seconds of 
-waiting" patch?
+--Signature=_Wed__6_Aug_2008_16_31_19_+1000_.5RclWQDohRZb8EX
+Content-Type: application/pgp-signature
 
-> +     if (!k || IS_ERR(k))
-> +             return -EINVAL;
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-1) There's no reason that kthread_stop is uniquely difficult to use.  Why pick 
-on that one?
+iEYEARECAAYFAkiZRTcACgkQjjKRsyhoI8zvAwCfebPiyxolyPe/j4DZ4sS4++wr
+XlEAn1ANOIzT7e8RF/P+Wet1FshmI0Bq
+=Mcoe
+-----END PGP SIGNATURE-----
 
-2) I know that kfree() handles NULL, but kthread_create/kthread_run never 
-return NULL, unlike kmalloc().
-
-3) If we really want to pass a failed kthread_create() through kthread_stop(), 
-we should return PTR_ERR(k) here.  But that should only be done if it made it 
-harder for the callers to screw up, which I don't think it does.
-
-4) After a successful kthread_run(), kthread_stop() will always return the 
-value from the threadfn callback.  ie. kthread_stop() doesn't ever fail.  A 
-simple semantic, which this patch breaks.
-
-5) Covering up programmer errors is not good policy.  I dislike WARN_ON() 
-because an oops is much harder to miss.  Painful for you, but The System 
-Works.
-
-Sorry,
-Rusty.
+--Signature=_Wed__6_Aug_2008_16_31_19_+1000_.5RclWQDohRZb8EX--
