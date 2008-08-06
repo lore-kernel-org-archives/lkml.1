@@ -1,54 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762784AbYHFD3h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764053AbYHFDbd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762784AbYHFD3h (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 23:29:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752081AbYHFD3a
+	id S1764053AbYHFDbd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 23:31:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751867AbYHFDaQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 23:29:30 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:36883 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752037AbYHFD33 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 23:29:29 -0400
-Date: Tue, 5 Aug 2008 22:29:27 -0500
-From: Paul Jackson <pj@sgi.com>
-To: Max Krasnyansky <maxk@qualcomm.com>
-Cc: mingo@elte.hu, linux-kernel@vger.kernel.org, menage@google.com,
-       a.p.zijlstra@chello.nl, vegard.nossum@gmail.com, lizf@cn.fujitsu.com
-Subject: Re: [PATCH] cpuset: Rework sched domains and CPU hotplug handling
- (2.6.27-rc1)
-Message-Id: <20080805222927.6dd95f5f.pj@sgi.com>
-In-Reply-To: <48991973.90109@qualcomm.com>
-References: <1217631552-22129-1-git-send-email-maxk@qualcomm.com>
-	<20080802063900.6615e5ca.pj@sgi.com>
-	<48948C3A.6050805@qualcomm.com>
-	<20080802225127.2b0d138b.pj@sgi.com>
-	<4895F3ED.4020805@qualcomm.com>
-	<20080804010033.0d1b0549.pj@sgi.com>
-	<48977E81.4040207@qualcomm.com>
-	<20080804225636.541527e8.pj@sgi.com>
-	<4898B873.6000308@qualcomm.com>
-	<20080805180521.be7010e1.pj@sgi.com>
-	<48991973.90109@qualcomm.com>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 5 Aug 2008 23:30:16 -0400
+Received: from E23SMTP02.au.ibm.com ([202.81.18.163]:46220 "EHLO
+	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751197AbYHFDaO convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Aug 2008 23:30:14 -0400
+Message-ID: <48991ABF.906@linux.vnet.ibm.com>
+Date: Wed, 06 Aug 2008 09:00:07 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
+MIME-Version: 1.0
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+CC: Dave Hansen <dave@linux.vnet.ibm.com>, xen-devel@lists.xensource.com,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       virtualization@lists.linux-foundation.org, vtaras@openvz.org,
+       dm-devel@redhat.com, agk@sourceware.org, ngupta@google.com,
+       righi.andrea@gmail.com
+Subject: Re: Too many I/O controller patches
+References: <20080804.175126.193692178.ryov@valinux.co.jp> <1217870433.20260.101.camel@nimitz> <489748E6.5080106@gmail.com> <000901c8f6a5$fe64ba30$fb2e2e90$@jp.nec.com> <48981D3B.2020701@gmail.com> <1217953218.10907.25.camel@nimitz> <20080806114425.c0e9b24f.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20080806114425.c0e9b24f.kamezawa.hiroyu@jp.fujitsu.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Max wrote:
-> But it does seem like an overkill to schedule a workqueue ...
+KAMEZAWA Hiroyuki wrote:
+> On Tue, 05 Aug 2008 09:20:18 -0700
+> Dave Hansen <dave@linux.vnet.ibm.com> wrote:
+> 
+>> On Tue, 2008-08-05 at 11:28 +0200, Andrea Righi wrote:
+>>>> Buffered write I/O is also related with cache system.
+>>>> We must consider this problem as I/O control.
+>>> Agree. At least, maybe we should consider if an IO controller could be
+>>> a valid solution also for these problems.
+>> Isn't this one of the core points that we keep going back and forth
+>> over?  ﻿It seems like people are arguing in circles over this:
+>>
+>> Do we:
+>> 	1. control potential memory usage by throttling I/O
+>> or
+>> 	2. Throttle I/O when memory is full
+>>
+>> I might lean toward (1) if we didn't already have a memory controller.
+>> But, we have one, and it works.  Also, we *already* do (2) in the
+>> kernel, so it would seem to graft well onto existing mechanisms that we
+>> have.
+>>
+>> I/O controllers should not worry about memory.  
+> I agree here ;)
+> 
+>> They're going to have a hard enough time getting the I/O part right. :)
+>>
+> memcg have more problems now ;( 
+> 
+> Only a difficult thing to limit dirty-ratio in memcg is how-to-count dirty
+> pages. If I/O controller's hook helps, it's good.
+> 
+> My small concern is "What happens if we throttole I/O bandwidth too small
+> under some memcg." In such cgroup, we may see more OOMs because I/O will
+> not finish in time.
+> A system admin have to find some way to avoid this.
+> 
+> But please do I/O control first. Dirty-page control is related but different
+> layer's problem, I think.
 
-"overkill" -- by what metric?
-
-If something is overkill, it means something is excessive.
-Excess (and deficiency) occur along some scale, some metric.
-
-If not by CPU cycles, then by what metric is it overkill?
+Yes, please solve the I/O control problem first.
 
 -- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.940.382.4214
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
+
