@@ -1,163 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754650AbYHFNSZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755849AbYHFNTa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754650AbYHFNSZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Aug 2008 09:18:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753389AbYHFNSR
+	id S1755849AbYHFNTa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Aug 2008 09:19:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753414AbYHFNTX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Aug 2008 09:18:17 -0400
-Received: from wf-out-1314.google.com ([209.85.200.170]:22112 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753332AbYHFNSQ (ORCPT
+	Wed, 6 Aug 2008 09:19:23 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:43452 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753389AbYHFNTW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Aug 2008 09:18:16 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:in-reply-to:references:content-type:date:message-id
-         :mime-version:x-mailer:content-transfer-encoding;
-        b=XV9mm5qkfe/2cyMAzU7eD/Nxlt69bYVX3C8+KzywXRajjjf1ccg+UoVkhO5l2UAVfr
-         +dIxm4CRwq+O+s9ujtlkhRrWs4YzJXF0GKUWLcvGpFy7CnoBCQ8tFnFhQsHespEG/pfq
-         NbBZHhiTKg0Vxy2CBrc5Xgcqj5FSeYezwoa4E=
-Subject: Re: [ivtv-devel] [PATCH AVAIL.]ivtv:Crash 2.6.26 with KUROTOSIKOU
-	CX23416-STVLP
-From: Kyuma Ohta <whatisthis.sowhat@gmail.com>
-To: Hans Verkuil <hverkuil@xs4all.nl>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Video4Linux ML <video4linux-list@redhat.com>,
-       ivtv-devel ML <ivtv-devel@ivtvdriver.org>
-In-Reply-To: <200808032312.25222.hverkuil@xs4all.nl>
-References: <1216308014.1146.22.camel@melchior>
-	 <200807171758.19702.hverkuil@xs4all.nl> <1216336451.1146.41.camel@melchior>
-	 <200808032312.25222.hverkuil@xs4all.nl>
-Content-Type: text/plain
-Date: Wed, 06 Aug 2008 22:18:02 +0900
-Message-Id: <1218028683.31961.21.camel@melchior>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 6 Aug 2008 09:19:22 -0400
+Date: Wed, 6 Aug 2008 07:19:01 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Simon Horman <horms@verge.net.au>
+Cc: Sven Wegener <sven.wegener@stealer.net>,
+       Michael Ellerman <michael@ellerman.id.au>, linux-kernel@vger.kernel.org,
+       linux-pci@vger.kernel.org, Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: Re: [patch] PCI: check the return value of device_create_bin_file() in pci_create_bus()
+Message-ID: <20080806131900.GI2055@parisc-linux.org>
+References: <20080805101605.GA19382@verge.net.au> <1217932416.7758.4.camel@localhost> <20080805101605.GA19382@verge.net.au> <alpine.LNX.1.10.0808051224350.5671@titan.stealer.net> <20080805110006.GA13409@verge.net.au> <20080805111406.GA13899@verge.net.au> <20080805112814.GO26461@parisc-linux.org> <20080805121531.GA29763@verge.net.au> <20080805122639.GP26461@parisc-linux.org> <20080806005718.GE32143@verge.net.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080806005718.GE32143@verge.net.au>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dear Hans,
-Sorry for later  picked up this article cause of my lazyness(^^;
+On Wed, Aug 06, 2008 at 10:57:21AM +1000, Simon Horman wrote:
+> Check the return value of device_create_bin_file in pci_create_bus and
+> unwind if necessary. Don't propagate error to caller, as failure to create
+> these files shouldn't prevent PCI from being initialised.
 
-Thanx for check I2C bus on card you have...I've no physical probes 
-(such as oscillo-scope or cheapi2c!!) now...thanx... 
+Much better ... one nit though:
 
-I'll test attached patch until after morning (in JAPAN) firstly,
-and testing long-running if happend nothing above short test..
-If problem will be occured,'ll report .
+>  static void pci_create_legacy_files(struct pci_bus *b)
+>  {
+[...]
+> +
+> +	return 0;
 
-Best regards,
-Ohta.
+I'm sure the compiler warns about that.
 
-2008-08-03 (Sun) ,23:12 +0200  Hans Verkuil Wrote:
-> Hi Ohta,
-> 
-> Well, I picked up my card this weekend and tested it. It turns out to be 
-> an i2c-core.c bug: chips with i2c addresses in the 0x5x range are 
-> probed differently than other chips and the probe command contains an 
-> error. The upd64083 has an address in that range and so was hit by this 
-> bug. The attached patch for linux/drivers/i2c/i2c-core.c will fix it.
-> 
-> As you can see, this mail also goes to Jean Delvare so that he can move 
-> this upstream (should also go to the 2.6.26-stable series, Jean!).
-> 
-> For the ivtv driver this bug will only hit cards where ivtv has to probe 
-> for an upd64083.
-> 
-> SoB for this patch:
-> 
-> Signed-off-by: Hans Verkuil <hverkuil@xs4all.nl>
-> 
-> I've verified that this is only an issue with kernels 2.6.26 and up. 
-> Older kernels are not affected unless the ivtv driver from the v4l-dvb 
-> repository is used. To be more precise: this bug has been in i2c-core.c 
-> since 2.6.22, but the ivtv driver in 2.6.26 was the first driver that 
-> used i2c_new_probed_device() with an i2c address in a range that caused 
-> the broken probe to be used.
-> 
-> Thanks for the report Ohta!
-> 
-> Regards,
-> 
-> 	Hans
-> 
-> On Friday 18 July 2008 01:13:45 Kyuma Ohta wrote:
-> > Dear Hans,
-> > Thanx for reply.
-> >
-> > Hans Verkuil wrote:
-> > > On Thursday 17 July 2008 17:20:14 Kyuma Ohta wrote:
-> > > > Hi,
-> > > > I'm testing 2.6.26/amd64 with Athlon64 x2 Box with
-> > > > KUROTOSIKOU CX23416-STVLP,always crash ivtv driver
-> > > > when loading upd64083 driver.
-> > > > I checked crash dump,this issue cause of loading
-> > > > upd64083.ko with i2c_probed_new_device().
-> > > > So,I fixed ivtv-i2c.c of 2.6.26 vanilla,and
-> > > > fixed *pretty* differnce memory allocation,structure
-> > > > of upd64083.c.
-> > > > I'm running patched 2.6.26 vanilla with below attached
-> > > > patches over 24hrs,and over 10hrs recording from ivtv,
-> > > > not happend anything;-)
-> > > > Please apply below to 2.6.26.x..
-> > > >
-> > > > Best regards,
-> > > > Ohta.
-> > >
-> > > Hi Ohta,
-> > >
-> > > Thanks for the patches. If I'm not mistaken there are several
-> > > variants of this card: without upd* devices, only with upd64083 and
-> > > with both upd devices. Which one do you have?
-> > >
-> > > Can you also show the dmesg output when ivtv loads?
-> > >
-> > > Looking at the four patches, I would say that the only relevant
-> > > patch is the fix-probing patch. If you try it with only that one
-> > > applied, does it still work correct for you? Note that this patch
-> > > will not work with a KUROTOSIKOU card that has no upd* devices at
-> > > all.
-> > >
-> > > Can you also give me the kernel backtrace when you load ivtv with
-> > > the vanilla 2.6.26? I do not quite understand why it should crash.
-> > >
-> > > Regards,
-> > >
-> > > 	Hans
-> >
-> > I have a ivtv card with *both* upd64083 and upd64031a.
-> > I don't still try testing apply only one of patch,only
-> > apply all of...
-> >
-> > I attach compressed logs when loading ivtv at boottime,
-> > parallel probing saa7134 v4l2 device,
-> > both applied (successed) ,not applied (failed).
-> >
-> > Best regards,
-> > Ohta
-> >
-> >
-> >
-> > E-Mail: whatisthis.sowhat@gmail.com (Public)
-> > Home Page: http://d.hatena.ne.jp/artane/
-> >   (Sorry,not maintaining,and written in Japanese only...)
-> > Twitter: Artanejp (Mainly Japanese)
-> > ICQ: 366538955
-> > KEYID: 6B79F95F
-> > FINGERPRINT:
-> > 9AB3 8569 6033 FDBE 352B  CB6D DBFA B9E2 6B79 F95F
-> 
-> 
-E-Mail: whatisthis.sowhat@gmail.com (Public)
-Home Page: http://d.hatena.ne.jp/artane/ 
-  (Sorry,not maintaining,and written in Japanese only...)
-Twitter: Artanejp (Mainly Japanese)
-ICQ: 366538955
-KEYID: 6B79F95F
-FINGERPRINT:
-9AB3 8569 6033 FDBE 352B  CB6D DBFA B9E2 6B79 F95F
-
-
-
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
