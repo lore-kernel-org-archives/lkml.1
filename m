@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755417AbYHFKhF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764007AbYHFKhf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755417AbYHFKhF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Aug 2008 06:37:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761849AbYHFKgv
+	id S1764007AbYHFKhf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Aug 2008 06:37:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763520AbYHFKhK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Aug 2008 06:36:51 -0400
-Received: from mta23.gyao.ne.jp ([125.63.38.249]:48486 "EHLO mx.gate01.com"
+	Wed, 6 Aug 2008 06:37:10 -0400
+Received: from mta23.gyao.ne.jp ([125.63.38.249]:56114 "EHLO mx.gate01.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1761836AbYHFKgt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Aug 2008 06:36:49 -0400
-Date: Wed, 6 Aug 2008 19:36:00 +0900
+	id S1763474AbYHFKhI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Aug 2008 06:37:08 -0400
+Date: Wed, 6 Aug 2008 19:36:15 +0900
 From: Paul Mundt <lethal@linux-sh.org>
 To: David Howells <dhowells@redhat.com>,
        Andrew Morton <akpm@linux-foundation.org>, linux-sh@vger.kernel.org,
        linux-kernel@vger.kernel.org
-Subject: [PATCH 2/3] binfmt_elf_fdpic: Convert initial stack alignment to arch_align_stack()
-Message-ID: <20080806103600.GB5194@linux-sh.org>
+Subject: [PATCH 3/3] binfmt_elf_fdpic: Wire up AT_EXECFD, AT_EXECFN, AT_SECURE.
+Message-ID: <20080806103615.GC5194@linux-sh.org>
 Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
 	David Howells <dhowells@redhat.com>,
 	Andrew Morton <akpm@linux-foundation.org>, linux-sh@vger.kernel.org,
@@ -30,72 +30,65 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-binfmt_elf_fdpic seems to have grabbed a hard-coded hack from an ancient
-version of binfmt_elf in order to try and fix up initial stack alignment
-on multi-threaded x86, which while in addition to being unused, was also
-pushed down beyond the first set of operations on the stack pointer,
-negating the entire purpose.
-
-These days, we have an architecture independent arch_align_stack(), so we
-switch to using that instead. Move the initial alignment up before the
-initial stores while we're at it.
+These auxvec entries are the only ones left unhandled out of the current
+base implementation. This syncs up binfmt_elf_fdpic with linux/auxvec.h
+and current binfmt_elf.
 
 Signed-off-by: Paul Mundt <lethal@linux-sh.org>
-Signed-off-by: David Howells <dhowells@redhat.com>
+Acked-by: David Howells <dhowells@redhat.com>
+
 ---
 
- fs/binfmt_elf_fdpic.c |   25 ++++++++-----------------
- 1 files changed, 8 insertions(+), 17 deletions(-)
-
+ fs/binfmt_elf_fdpic.c |   14 +++++++++++++-
+ 1 files changed, 13 insertions(+), 1 deletions(-)
 
 diff --git a/fs/binfmt_elf_fdpic.c b/fs/binfmt_elf_fdpic.c
-index 7c83605..f9d6eaa 100644
+index bc64f5f..f0dd83c 100644
 --- a/fs/binfmt_elf_fdpic.c
 +++ b/fs/binfmt_elf_fdpic.c
-@@ -466,7 +466,8 @@ error_kill:
- #endif
- 
- /*
-- * present useful information to the program
-+ * present useful information to the program by shovelling it onto the new
-+ * process's stack
-  */
- static int create_elf_fdpic_tables(struct linux_binprm *bprm,
- 				   struct mm_struct *mm,
-@@ -482,9 +483,13 @@ static int create_elf_fdpic_tables(struct linux_binprm *bprm,
- 	int loop;
- 	int nr;	/* reset for each csp adjustment */
- 
--	/* we're going to shovel a whole load of stuff onto the stack */
- #ifdef CONFIG_MMU
--	sp = bprm->p;
-+	/* In some cases (e.g. Hyper-Threading), we want to avoid L1 evictions
-+	 * by the processes running on the same package. One thing we can do is
-+	 * to shuffle the initial stack for them, so we give the architecture
-+	 * an opportunity to do so here.
-+	 */
-+	sp = arch_align_stack(bprm->p);
- #else
- 	sp = mm->start_stack;
- 
-@@ -527,20 +532,6 @@ static int create_elf_fdpic_tables(struct linux_binprm *bprm,
- 			return -EFAULT;
+@@ -25,6 +25,7 @@
+ #include <linux/fcntl.h>
+ #include <linux/slab.h>
+ #include <linux/pagemap.h>
++#include <linux/security.h>
+ #include <linux/highmem.h>
+ #include <linux/highuid.h>
+ #include <linux/personality.h>
+@@ -562,11 +563,14 @@ static int create_elf_fdpic_tables(struct linux_binprm *bprm,
  	}
  
--#if defined(__i386__) && defined(CONFIG_SMP)
--	/* in some cases (e.g. Hyper-Threading), we want to avoid L1 evictions
--	 * by the processes running on the same package. One thing we can do is
--	 * to shuffle the initial stack for them.
--	 *
--	 * the conditionals here are unneeded, but kept in to make the code
--	 * behaviour the same as pre change unless we have hyperthreaded
--	 * processors. This keeps Mr Marcelo Person happier but should be
--	 * removed for 2.5
--	 */
--	if (smp_num_siblings > 1)
--		sp = sp - ((current->pid % 64) << 7);
--#endif
--
- 	sp &= ~7UL;
+ 	/* force 16 byte _final_ alignment here for generality */
+-#define DLINFO_ITEMS 13
++#define DLINFO_ITEMS 15
  
- 	/* stack the load map(s) */
+ 	nitems = 1 + DLINFO_ITEMS + (k_platform ? 1 : 0) + \
+ 		(k_base_platform ? 1 : 0) + AT_VECTOR_SIZE_ARCH;
+ 
++	if (bprm->interp_flags & BINPRM_FLAGS_EXECFD)
++		nitems++;
++
+ 	csp = sp;
+ 	sp -= nitems * 2 * sizeof(unsigned long);
+ 	sp -= (bprm->envc + 1) * sizeof(char *);	/* envv[] */
+@@ -604,6 +608,12 @@ static int create_elf_fdpic_tables(struct linux_binprm *bprm,
+ 			    (elf_addr_t) (unsigned long) u_base_platform);
+ 	}
+ 
++	if (bprm->interp_flags & BINPRM_FLAGS_EXECFD) {
++		nr = 0;
++		csp -= 2 * sizeof(unsigned long);
++		NEW_AUX_ENT(AT_EXECFD, bprm->interp_data);
++	}
++
+ 	nr = 0;
+ 	csp -= DLINFO_ITEMS * 2 * sizeof(unsigned long);
+ 	NEW_AUX_ENT(AT_HWCAP,	hwcap);
+@@ -619,6 +629,8 @@ static int create_elf_fdpic_tables(struct linux_binprm *bprm,
+ 	NEW_AUX_ENT(AT_EUID,	(elf_addr_t) current->euid);
+ 	NEW_AUX_ENT(AT_GID,	(elf_addr_t) current->gid);
+ 	NEW_AUX_ENT(AT_EGID,	(elf_addr_t) current->egid);
++	NEW_AUX_ENT(AT_SECURE,	security_bprm_secureexec(bprm));
++	NEW_AUX_ENT(AT_EXECFN,	bprm->exec);
+ 
+ #ifdef ARCH_DLINFO
+ 	nr = 0;
