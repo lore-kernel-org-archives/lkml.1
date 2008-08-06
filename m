@@ -1,62 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762554AbYHFGuk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757249AbYHFHPl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762554AbYHFGuk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Aug 2008 02:50:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753424AbYHFGua
+	id S1757249AbYHFHPl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Aug 2008 03:15:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753545AbYHFHKU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Aug 2008 02:50:30 -0400
-Received: from molly.corsac.net ([81.57.48.219]:57191 "EHLO molly.corsac.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753285AbYHFGua (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Aug 2008 02:50:30 -0400
-Subject: Re: [PATCH] Add Intel ACPI IGD OpRegion support
-From: Yves-Alexis Perez <corsac@debian.org>
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: Henrique de Moraes Holschuh <hmh@hmh.eng.br>, airlied@linux.ie,
-       linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
-In-Reply-To: <20080806063441.GA14455@srcf.ucam.org>
-References: <20080805183725.GA4468@srcf.ucam.org>
-	 <1217965470.5449.4.camel@hidalgo> <1217972874.4540.3.camel@hidalgo>
-	 <20080806001301.GA10630@srcf.ucam.org>
-	 <20080806023247.GA4665@khazad-dum.debian.net>
-	 <20080806063441.GA14455@srcf.ucam.org>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-VnCQ2UpxEX+ECEq25VHf"
-Date: Wed, 06 Aug 2008 08:50:31 +0200
-Message-Id: <1218005431.4540.26.camel@hidalgo>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Wed, 6 Aug 2008 03:10:20 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:58436 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1753169AbYHFHKR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Aug 2008 03:10:17 -0400
+Message-ID: <48994DDA.70205@cn.fujitsu.com>
+Date: Wed, 06 Aug 2008 15:08:10 +0800
+From: Lai Jiangshan <laijs@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
+MIME-Version: 1.0
+To: paulmck@linux.vnet.ibm.com
+CC: Ingo Molnar <mingo@elte.hu>, Dipankar Sarma <dipankar@in.ibm.com>,
+       Gautham Shenoy <ego@in.ibm.com>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC][PATCH 2/2] rcu classic: new algorithm for	callbacks-processing(v2)
+References: <48708F2F.2060406@cn.fujitsu.com> <20080718140930.GT6875@elte.hu> <20080721100433.GC8384@linux.vnet.ibm.com> <20080801211053.GZ14851@linux.vnet.ibm.com> <489565BC.3000408@cn.fujitsu.com> <20080804225438.GA18866@linux.vnet.ibm.com>
+In-Reply-To: <20080804225438.GA18866@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Paul E. McKenney wrote:
+[...]
+> 
+> Tell me more about percpu_ptr().
 
---=-VnCQ2UpxEX+ECEq25VHf
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Sorry about this. percpu_ptr is used for dynamic allocation percpu pointer.
 
-On mer, 2008-08-06 at 07:34 +0100, Matthew Garrett wrote:
-> It doesn't seem to, no. I should have been clearer - the delay is in
-> the=20
-> DSDT (not thinkpad-acpi itself), but there's a Thinkpad-specific ACPI=20
-> call that seems to be needed in order to delay it. Here's the patch=20
-> again.
+It seems that we cannot get a pointer from a static declare percpu data
+which can be used as a dynamic allocation percpu data's pointer. 
 
-Woah, it works perfectly fine here. Thanks :)
+> 
+[...]
+> 
+> I have a somewhat different goal here.  I want to simplify the memory
+> ordering design without giving up too much performance -- the current
+> state in mainline is much too fragile, in my opinion, especially given
+> that the grace-period code paths are not fastpaths.
+> 
+> Next step -- hierarchical grace-period detection to handle the 4096-CPU
+> machines that I was being buttonholed about at OLS...
+> 
+> Would you be interested in applying your multi-tailed list change to
+> preemptable RCU?
+> 
+It's not necessary. Actually I like one tail per list which is good for
+readability. 
 
-Cheers,
---=20
-Yves-Alexis
+But in my patch, the most work is combining lists, not
+moving a list to next list, so i use multi-tailed simplify this works
+and others(etc: "if (rdp->nxtlist)" will be changed to be a more
+complex and less readability statement if i use one-tail-per-list)
 
---=-VnCQ2UpxEX+ECEq25VHf
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
+These not means multi-tailed is good thing.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkiZSbIACgkQTUTAIMXAW64k8gCgoKHCCdzcQf5877CSzk2NUnrk
-TFgAn2Uey78rpwR795SBux2T72g+g4Kj
-=7e83
------END PGP SIGNATURE-----
-
---=-VnCQ2UpxEX+ECEq25VHf--
