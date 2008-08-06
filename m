@@ -1,96 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757284AbYHFGSd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754699AbYHFGSx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757284AbYHFGSd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Aug 2008 02:18:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753072AbYHFGS0
+	id S1754699AbYHFGSx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Aug 2008 02:18:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757995AbYHFGSi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Aug 2008 02:18:26 -0400
-Received: from fms-01.valinux.co.jp ([210.128.90.1]:34614 "EHLO
-	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751397AbYHFGSZ (ORCPT
+	Wed, 6 Aug 2008 02:18:38 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:57757 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757795AbYHFGSh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Aug 2008 02:18:25 -0400
-Date: Wed, 06 Aug 2008 15:18:24 +0900 (JST)
-Message-Id: <20080806.151824.104049463.ryov@valinux.co.jp>
-To: fernando@oss.ntt.co.jp
-Cc: dave@linux.vnet.ibm.com, yoshikawa.takuya@oss.ntt.co.jp,
-       taka@valinux.co.jp, uchida@ap.jp.nec.com, ngupta@google.com,
-       linux-kernel@vger.kernel.org, dm-devel@redhat.com,
-       containers@lists.linux-foundation.org,
-       virtualization@lists.linux-foundation.org,
-       xen-devel@lists.xensource.com, agk@sourceware.org,
-       righi.andrea@gmail.com
-Subject: Re: RFC: I/O bandwidth controller
-From: Ryo Tsuruta <ryov@valinux.co.jp>
-In-Reply-To: <1217985189.3154.57.camel@sebastian.kern.oss.ntt.co.jp>
-References: <20080804.175126.193692178.ryov@valinux.co.jp>
-	<1217870433.20260.101.camel@nimitz>
-	<1217985189.3154.57.camel@sebastian.kern.oss.ntt.co.jp>
-X-Mailer: Mew version 5.2.52 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Wed, 6 Aug 2008 02:18:37 -0400
+Date: Tue, 5 Aug 2008 23:18:00 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Marcel Holtmann <marcel@holtmann.org>
+cc: David Miller <davem@davemloft.net>,
+       Andrew Morton <akpm@linux-foundation.org>, netdev@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ivo van Doorn <IvDoorn@gmail.com>
+Subject: Re: [GIT]: Networking
+In-Reply-To: <A0AAD67C-1F54-4D85-A413-91BBBE044452@holtmann.org>
+Message-ID: <alpine.LFD.1.10.0808052308080.15995@nehalem.linux-foundation.org>
+References: <20080805.190020.244441681.davem@davemloft.net> <alpine.LFD.1.10.0808051937410.15995@nehalem.linux-foundation.org> <A0AAD67C-1F54-4D85-A413-91BBBE044452@holtmann.org>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Fernando,
 
-> This RFC ended up being a bit longer than I had originally intended, but
-> hopefully it will serve as the start of a fruitful discussion.
 
-Thanks a lot for posting the RFC.
-
-> *** Goals
->   1. Cgroups-aware I/O scheduling (being able to define arbitrary
-> groupings of processes and treat each group as a single scheduling
-> entity).
->   2. Being able to perform I/O bandwidth control independently on each
-> device.
->   3. I/O bandwidth shaping.
->   4. Scheduler-independent I/O bandwidth control.
->   5. Usable with stacking devices (md, dm and other devices of that
-> ilk).
->   6. I/O tracking (handle buffered and asynchronous I/O properly).
->
-> The list of goals above is not exhaustive and it is also likely to
-> contain some not-so-nice-to-have features so your feedback would be
-> appreciated.
-
-I'd like to add the following item to the goals.
-
-  7. Selectable from multiple bandwidth control policy (proportion,
-     maximum rate limiting, ...) like I/O scheduler.
-
-> *** How to move on
+On Wed, 6 Aug 2008, Marcel Holtmann wrote:
 > 
-> As discussed before, it probably makes sense to have both a block layer
-> I/O controller and a elevator-based one, and they could certainly
-> cohabitate. As discussed before, all of them need I/O tracking
-> capabilities so I would like to suggest the plan below to get things
-> started:
-> 
->   - Improve the I/O tracking patches (see (6) above) until they are in
-> mergeable shape.
->   - Fix CFQ and AS to use the new I/O tracking functionality to show its
-> benefits. If the performance impact is acceptable this should suffice to
-> convince the respective maintainer and get the I/O tracking patches
-> merged.
->   - Implement a block layer resource controller. dm-ioband is a working
-> solution and feature rich but its dependency on the dm infrastructure is
-> likely to find opposition (the dm layer does not handle barriers
-> properly and the maximum size of I/O requests can be limited in some
-> cases). In such a case, we could either try to build a standalone
-> resource controller based on dm-ioband (which would probably hook into
-> generic_make_request) or try to come up with something new.
->   - If the I/O tracking patches make it into the kernel we could move on
-> and try to get the Cgroup extensions to CFQ and AS mentioned before (see
-> (1), (2), and (3) above for details) merged.
->   - Delegate the task of controlling the rate at which a task can
-> generate dirty pages to the memory controller.
+> I looked at the driver and got it working. However my 901 seems to have an
+> issue with the antennas. I can do scans, but associating with an access point
+> or even thinking about transmit keeps failing. Even with external antennas
+> this still doesn't work. So either my EeePC is broken or it needs some ACPI
+> magic to enable it. Personally I think mine is broken since the PCIe hotplug
+> stuff works for the wireless card and that seems to be their way of doing the
+> rfkill.
 
-I agree with your plan.
-We keep bio-cgroup improving and porting to the latest kernel.
+Yeah, the rfkill literally makes the chip go away from the PCI lists, it 
+seems. But your problems can certainly be somehow driver-related, I 
+haven't actually _tested_ that thing at all, I got the machine just as the 
+merge window started, so I've had no time to even play with it.
 
-Thanks,
-Ryo Tsuruta
+> The driver itself is painful. It is full of ifdefs and some crazy build magic.
+> The integrated (to some degree optional) WPA code is pretty ugly. It has also
+> a full set of iwpriv commands to do all the settings etc. :(
+
+Well, it's also trying to support both 2.4.x and 2.6 etc. Yeah, that is 
+horrid. At the same time, I can't say that the "rewrite it entirely" 
+approach of the previous-gen cards has worked very well either, since that 
+seems to have just perpetuated the problems. It would be great to try to 
+educate them, but I'm not finding even an email address in the sources.
+
+Oh well. I can't really complain, since just the fact that they bothered 
+to even make sources available still makes them pretty responsible people, 
+even if the sources are pretty dang ugly.
+
+All the capitalization etc makes me think they are all old DOS and Windows 
+programmers. UCHAR and USHORT indeed, along with CamelCase functions. 
+
+I dunno. 
+
+			Linus
