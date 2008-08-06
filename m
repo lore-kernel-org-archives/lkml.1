@@ -1,72 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755898AbYHFNqV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754483AbYHFNql@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755898AbYHFNqV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Aug 2008 09:46:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754006AbYHFNqN
+	id S1754483AbYHFNql (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Aug 2008 09:46:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754838AbYHFNqa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Aug 2008 09:46:13 -0400
-Received: from nf-out-0910.google.com ([64.233.182.191]:25050 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753712AbYHFNqM (ORCPT
+	Wed, 6 Aug 2008 09:46:30 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:33057 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754006AbYHFNq3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Aug 2008 09:46:12 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:message-id;
-        b=LdJrPgxVi954xZoXmfAkj4BvY+EG7QP7W6lYT3tE6ag/YfPFKiz5K0Bm/NZGbYjhXc
-         atRXGupBfucex2hPzX3N/Cia+uQOX4ULHQw2c2Eu68/scImg7rwWxz+LgQkPQsn/SIVG
-         NF2rp4uw1sWtPvvrbvc6uBvjEuEhGQmse0fGM=
-From: Michael Brennan <brennan.brisad@gmail.com>
-To: Tejun Heo <htejun@gmail.com>
-Subject: Re: Waking up from suspend regression
-Date: Wed, 6 Aug 2008 15:44:59 +0200
-User-Agent: KMail/1.9.9
-Cc: Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
-       rjw@sisk.pl, matthew@wil.cx, jeff@garzik.org
-References: <200808060325.54537.brennan.brisad@gmail.com> <20080806083129.GC20055@kernel.dk> <489961B9.6010207@gmail.com>
-In-Reply-To: <489961B9.6010207@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Wed, 6 Aug 2008 09:46:29 -0400
+From: kamezawa.hiroyu@jp.fujitsu.com
+Message-ID: <16255819.1218030343593.kamezawa.hiroyu@jp.fujitsu.com>
+Date: Wed, 6 Aug 2008 22:45:43 +0900 (JST)
+To: Hirokazu Takahashi <taka@valinux.co.jp>
+Subject: Re: Re: [PATCH 4/7] bio-cgroup: Split the cgroup memory subsystem into two parts
+Cc: kamezawa.hiroyu@jp.fujitsu.com, ryov@valinux.co.jp,
+       xen-devel@lists.xensource.com, containers@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org, virtualization@lists.linux-foundation.org,
+       dm-devel@redhat.com, agk@sourceware.org
+In-Reply-To: <20080806.204339.76736223.taka@valinux.co.jp>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="iso-2022-jp"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200808061544.59462.brennan.brisad@gmail.com>
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Mailer: @nifty Webmail 2.0
+References: <20080806.204339.76736223.taka@valinux.co.jp>
+ <20080804.175707.104036289.ryov@valinux.co.jp>
+	<20080804.175748.189722512.ryov@valinux.co.jp>
+	<20080806165421.f76edd47.kamezawa.hiroyu@jp.fujitsu.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 06 August 2008 10.32.57 Tejun Heo wrote:
-> Jens Axboe wrote:
-> > On Wed, Aug 06 2008, Michael Brennan wrote:
-> >> Hi,
-> >>
-> >> I am having some major problems with the newest kernels on my Thinkpad
-> >> R61i and I'm doing my best trying to debug the problems.
-> >>
-> >> One problem is waking up from suspend to RAM. Earlier kernels worked
-> >> fine (e.g. 2.6.25), but with the latest the system is unusable after
-> >> waking up. When trying to wake the computer up it first is completely
-> >> unresponsive with a black screen. After about 40 seconds it comes back
-> >> alive and shows the locked screensaver. But whatever I do I just get
-> >> error messages, trying to unlock the screen, it says authentication
-> >> failed for some reason. If I try to log in from console I just get
-> >> kernel messages about I/O errors from the SATA HDD.
-> >>
-> >> I have bisected this and get this behavior after the patch:
-> >> [ce6fce4295ba727b36fdc73040e444bd1aae64cd] PCI MSI: Don't disable MSIs
-> >> if the mask bit isn't supported
-> >
-> > Same here, sata is dead after the resume. Thinkpad X60.
+----- Original Message -----
+>> > This patch splits the cgroup memory subsystem into two parts.
+>> > One is for tracking pages to find out the owners. The other is
+>> > for controlling how much amount of memory should be assigned to
+>> > each cgroup.
+>> > 
+>> > With this patch, you can use the page tracking mechanism even if
+>> > the memory subsystem is off.
+>> > 
+>> > Based on 2.6.27-rc1-mm1
+>> > Signed-off-by: Ryo Tsuruta <ryov@valinux.co.jp>
+>> > Signed-off-by: Hirokazu Takahashi <taka@valinux.co.jp>
+>> > 
+>> 
+>> Plese CC me or Balbir or Pavel (See Maintainer list) when you try this ;)
+>> 
+>> After this patch, the total structure is
+>> 
+>>  page <-> page_cgroup <-> bio_cgroup.
+>>  (multiple bio_cgroup can be attached to page_cgroup)
+>>
+>> Does this pointer chain will add
+>>   - significant performance regression or
+>>   - new race condtions 
+>> ?
 >
-> Known bug && patch available.
+>I don't think it will cause significant performance loss, because
+>the link between a page and a page_cgroup has already existed, which
+>the memory resource controller prepared. Bio_cgroup uses this as it is,
+>and does nothing about this.
 >
-> http://bugzilla.kernel.org/show_bug.cgi?id=11178
+>And the link between page_cgroup and bio_cgroup isn't protected
+>by any additional spin-locks, since the associated bio_cgroup is
+>guaranteed to exist as long as the bio_cgroup owns pages.
+>
+Hmm, I think page_cgroup's cost is visible when
+1. a page is changed to be in-use state. (fault or radixt-tree-insert)
+2. a page is changed to be out-of-use state (fault or radixt-tree-removal)
+3. memcg hit its limit or global LRU reclaim runs.
 
-Well, look at that.
-I'm sorry I missed that bugreport, could have saved me quite a few 
-recompilations. I'll try the patch, thanks.
+"1" and "2" can be catched as 5% loss of exec throuput. 
+"3" is not measured (because LRU walk itself is heavy.)
 
--- 
-Michael Brennan
+What new chances to access page_cgroup you'll add ?
+I'll have to take into account them.
+
+>I've just noticed that most of overhead comes from the spin-locks
+>when reclaiming the pages inside mem_cgroups and the spin-locks to
+>protect the links between pages and page_cgroups.
+Overhead between page <-> page_cgroup lock is cannot be catched by
+lock_stat now.Do you have numbers ?
+But ok, there are too many locks ;(
+
+>The latter overhead comes from the policy your team has chosen
+>that page_cgroup structures are allocated on demand. I still feel
+>this approach doesn't make any sense because linux kernel tries to
+>make use of most of the pages as far as it can, so most of them
+>have to be assigned its related page_cgroup. It would make us happy
+>if page_cgroups are allocated at the booting time.
+>
+Now, multi-sizer-page-cache is discussed for a long time. If it's our
+direction, on-demand page_cgroup make sense.
+
+
+>> For example, adding a simple function.
+>> ==
+>> int get_page_io_id(struct page *)
+>>  - returns a I/O cgroup ID for this page. If ID is not found, -1 is returne
+d.
+>>    ID is not guaranteed to be valid value. (ID can be obsolete)
+>> ==
+>> And just storing cgroup ID to page_cgroup at page allocation.
+>> Then, making bio_cgroup independent from page_cgroup and 
+>> get ID if avialble and avoid too much pointer walking.
+>
+>I don't think there are any diffrences between a poiter and ID.
+>I think this ID is just a encoded version of the pointer.
+>
+ID can be obsolete, pointer is not. memory cgroup has to take care of
+bio cgroup's race condition ? (About race conditions, it's already complicated
+enough)
+
+To be honest, I think adding a new (4 or 8 bytes) page struct and record infor
+mation of bio-control is more straightforward approach. Buy as you might
+think, "there is no room"
+
+Thanks,
+-Kame
+
