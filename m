@@ -1,73 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762995AbYHFB1R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763850AbYHFB1c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762995AbYHFB1R (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 21:27:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754197AbYHFBZ0
+	id S1763850AbYHFB1c (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 21:27:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753004AbYHFB1G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 21:25:26 -0400
-Received: from tundra.namei.org ([65.99.196.166]:33974 "EHLO tundra.namei.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762777AbYHFBZY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 21:25:24 -0400
-X-Greylist: delayed 1823 seconds by postgrey-1.27 at vger.kernel.org; Tue, 05 Aug 2008 21:25:13 EDT
-Date: Wed, 6 Aug 2008 10:53:06 +1000 (EST)
-From: jmorris@namei.org
-To: Rik van Riel <riel@redhat.com>
-cc: "Press, Jonathan" <Jonathan.Press@ca.com>,
-       Arjan van de Ven <arjan@infradead.org>, Eric Paris <eparis@redhat.com>,
-       Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
-       malware-list@lists.printk.net, linux-security-module@vger.kernel.org
-Subject: Re: [malware-list] [RFC 0/5] [TALPA] Intro to a linux interfaceforon
- access scanning
-In-Reply-To: <20080805202231.5e46ccab@bree.surriel.com>
-Message-ID: <alpine.LRH.1.10.0808061023230.7716@tundra.namei.org>
-References: <1217883616.27684.19.camel@localhost.localdomain> <20080804223249.GA10517@kroah.com> <1217896374.27684.53.camel@localhost.localdomain> <2629CC4E1D22A64593B02C43E855530304807431@USILMS12.ca.com> <1217948212.27684.120.camel@localhost.localdomain>
- <2629CC4E1D22A64593B02C43E855530304807436@USILMS12.ca.com> <1217956796.11547.12.camel@paris.rdu.redhat.com> <20080805103840.1aaa64a5@infradead.org> <2629CC4E1D22A64593B02C43E85553030480743B@USILMS12.ca.com> <20080805202231.5e46ccab@bree.surriel.com>
-User-Agent: Alpine 1.10 (LRH 962 2008-03-14)
+	Tue, 5 Aug 2008 21:27:06 -0400
+Received: from ug-out-1314.google.com ([66.249.92.171]:39632 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751852AbYHFB1F (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Aug 2008 21:27:05 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:date:user-agent:mime-version:content-disposition:subject
+         :content-type:content-transfer-encoding:message-id;
+        b=NMnWufEP82e44AT0R2nO7fdRyn1nK2eDae4tPX09PlsnZTMtZ6OwIMXdINYsMW7Fpj
+         eeXzCUY5+W/RzLQS4yYjRkV0FQGdgSC+kOKFI29kCvjNRHK2H+VeM1PdBziGFVReesHB
+         VopvoqmsZAzOIs9k9a5mu6B8PKV3+yfxHVjNY=
+From: Michael Brennan <brennan.brisad@gmail.com>
+To: linux-kernel@vger.kernel.org
+Date: Wed, 6 Aug 2008 03:25:54 +0200
+User-Agent: KMail/1.9.9
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Disposition: inline
+Subject: Waking up from suspend regression
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200808060325.54537.brennan.brisad@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 5 Aug 2008, Rik van Riel wrote:
+Hi,
 
-> What exactly are the threat models you want to protect against?
-> 
-> Once we have the answer to that question, we can figure out
-> whether the current patch set addresses the threat model or
-> whether alternate approaches are needed.
+I am having some major problems with the newest kernels on my Thinkpad R61i 
+and I'm doing my best trying to debug the problems.
 
-Alas, we've been here before.
+One problem is waking up from suspend to RAM. Earlier kernels worked fine 
+(e.g. 2.6.25), but with the latest the system is unusable after waking up.
+When trying to wake the computer up it first is completely unresponsive with a 
+black screen. After about 40 seconds it comes back alive and shows the locked 
+screensaver. But whatever I do I just get error messages, trying to unlock 
+the screen, it says authentication failed for some reason. If I try to log in 
+from console I just get kernel messages about I/O errors from the SATA HDD.
 
-http://article.gmane.org/gmane.linux.kernel/608634
+I have bisected this and get this behavior after the patch: 
+[ce6fce4295ba727b36fdc73040e444bd1aae64cd] PCI MSI: Don't disable MSIs if the 
+mask bit isn't supported
 
-  On Thu, 29 Nov 2007, Al Viro wrote:
+I hope this is of any help at all.
 
-  > Incidentally, I would really love to see the threat profile we are 
-  > talking about.  
+Thanks
 
-  Exactly.
-
-  Please come up with a set of requirements that can be reviewed by the 
-  core kernel folk, and perhaps then focus on how to meet those requirements
-  once they have been accepted.
-
-To be very clear, so we don't waste any _more_ time and effort on this: 
-
-The anti-malware folk need to first provide a clearly understandable and 
-complete description of the problem including a characterization of the 
-threat.
-
-The next step is to propose a design which addresses the problem, and to 
-clearly and completely demonstrate how it does so.
-
-Only then will it be possible to conduct an informed discussion on the 
-underlying case for malware scanning and its possible implementation.
-
-
-
-- James
 -- 
-James Morris
-<jmorris@namei.org>
+Michael Brennan
