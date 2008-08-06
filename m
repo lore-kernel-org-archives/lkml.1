@@ -1,59 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754767AbYHFMgk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752963AbYHFMg6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754767AbYHFMgk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Aug 2008 08:36:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752302AbYHFMfU
+	id S1752963AbYHFMg6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Aug 2008 08:36:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753077AbYHFMg3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Aug 2008 08:35:20 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:56911 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751561AbYHFMfT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Aug 2008 08:35:19 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-Subject: Re: 2.6.27-rc1-git4: Reported regressions from 2.6.26
-Date: Wed, 6 Aug 2008 14:38:22 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-References: <cbItfVMShGI.A.olC.UMLlIB@albercik> <4899710A.60804@tuffmail.co.uk>
-In-Reply-To: <4899710A.60804@tuffmail.co.uk>
+	Wed, 6 Aug 2008 08:36:29 -0400
+Received: from rv-out-0506.google.com ([209.85.198.230]:30898 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753191AbYHFMg1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Aug 2008 08:36:27 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=ODOgTQZTRiE0G4jAcCN37fQ0ueWCC3F3U2WJhAtqEQMva2GQzK1DL6rIB7mYcnjQov
+         cYT9BpZHlzUvpqGIO3uDyAXzeTGRXCvOKwvY3Uk91Nacr8ndToio7iBMhbtBOJNt5y7F
+         SlwPhFNddFaB7F1HWBuTDvKAJJ2PONzGIbMLU=
+Message-ID: <2f11576a0808060536o53cabb93m6387d35e3e5791be@mail.gmail.com>
+Date: Wed, 6 Aug 2008 21:36:27 +0900
+From: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>
+To: "Christoph Lameter" <cl@linux-foundation.org>
+Subject: Re: No, really, stop trying to delete slab until you've finished making slub perform as well
+Cc: "Matthew Wilcox" <matthew@wil.cx>, "Pekka Enberg" <penberg@cs.helsinki.fi>,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, "Mel Gorman" <mel@skynet.ie>,
+       andi@firstfloor.org, "Rik van Riel" <riel@redhat.com>
+In-Reply-To: <48986AC6.5030406@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200808061438.22833.rjw@sisk.pl>
+References: <2f11576a0808040947r69076eecv9ff92ecf583f7af2@mail.gmail.com>
+	 <489738CF.7090401@linux-foundation.org>
+	 <20080805210125.A897.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	 <48986AC6.5030406@linux-foundation.org>
+X-Google-Sender-Auth: 994d05e4617631c3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, 6 of August 2008, Alan Jenkins wrote:
-> Rafael J. Wysocki wrote:
-> > [Note that all of the suspend/resume regressions seem to result from the same
-> > couple of bugs, or even one bug, but since that has not been confirmed yet,
-> > they are listed separately.
-> > 
-> > Bug submitters also please note that if you CC your reports to
-> > kernel-testers-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, they will be _much_ easier to track for me
-> > and pretty much everybody else.]
-> 
-> Cool.  Will do so in future.
-> 
-> Sorry to be a pest, but can you explain why this address is better than
-> <kernel-testers@vger.kernel.org>?  It's easier for me to use the latter since I 
-> can remember it :-).
+>>> Can you quantify the difference?
+>>
+>> machine spec:
+>> CPU: IA64 x 8
+>> MEM: 8G (4G x2node)
+>
+> 16k or 64k page size?
 
-That was kernel-testers@vger.kernel.org in the original message.
+64k.
 
-> > This message contains a list of some regressions from 2.6.26, for which there
-> > are no fixes in the mainline I know of.  If any of them have been fixed already,
-> > please let me know.
-> 
-> Thanks, having this list helps build my confidence when testing if anything more
-> is broken in rc2 :-).
 
-You're welcome. :-)
+>> So, about 2.5G - 3G difference in 8G mem.
+>
+> Well not sure if that tells us much. Please show us the output of
+> /proc/meminfo after each run. The slab counters indicate how much memory is
+> used by the slabs.
+>
+> It would also be interesting to see the output of the slabinfo command after
+> the slub run?
 
-Thanks,
-Rafael
+ok.
+but i can't do that in this week.
+so, I'll do it in next week.
+
+honestly, I don't know how to use slabinfo command :-)
