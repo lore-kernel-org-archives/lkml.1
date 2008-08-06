@@ -1,59 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763586AbYHFDAx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763454AbYHFDIc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763586AbYHFDAx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 23:00:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761030AbYHFDAl
+	id S1763454AbYHFDIc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 23:08:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751018AbYHFDIY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 23:00:41 -0400
-Received: from smtp109.prem.mail.sp1.yahoo.com ([98.136.44.54]:46258 "HELO
-	smtp109.prem.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1760860AbYHFDAk (ORCPT
+	Tue, 5 Aug 2008 23:08:24 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:48182 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751173AbYHFDIX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 23:00:40 -0400
-X-YMail-OSG: LaEQC.MVM1moy2K42NwJvUAgrO7bVHFM62lC7R467Y0LdXMrTrP7Gf9uTmPYB1EwWaICPI_ObD5azv2fBvf9R6ghwMuwxZf1bhkHTssSBzkHZSa3tsTa.W.ByFFDy6l3k7c-
-X-Yahoo-Newman-Property: ymail-3
-Message-ID: <489913CF.1010708@schaufler-ca.com>
-Date: Tue, 05 Aug 2008 20:00:31 -0700
-From: Casey Schaufler <casey@schaufler-ca.com>
-User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
+	Tue, 5 Aug 2008 23:08:23 -0400
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: jmerkey@wolfmountaingroup.com, "Geert Uytterhoeven" <geert@linux-m68k.org>,
+       "Stefan Richter" <stefanr@s5r6.in-berlin.de>,
+       "Josh Boyer" <jwboyer@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: [ANNOUNCE] Merkey's Kernel Debugger
+From: Andi Kleen <andi@firstfloor.org>
+References: <17494.166.70.238.46.1217784156.squirrel@webmail.wolfmountaingroup.com>
+	<Pine.LNX.4.64.0808051140150.6309@anakin>
+	<33030.166.70.238.45.1217948565.squirrel@webmail.wolfmountaingroup.com>
+	<200808060133.10457.nickpiggin@yahoo.com.au>
+Date: Wed, 06 Aug 2008 05:08:20 +0200
+In-Reply-To: <200808060133.10457.nickpiggin@yahoo.com.au> (Nick Piggin's message of "Wed, 6 Aug 2008 01:33:10 +1000")
+Message-ID: <87r6926dsr.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
 MIME-Version: 1.0
-To: Paul Moore <paul.moore@hp.com>
-CC: Cliffe <cliffe@ii.net>, Eric Paris <eparis@redhat.com>,
-       malware-list@lists.printk.net, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org
-Subject: Re: [RFC 0/5] [TALPA] Intro to a linux interface for on access scanning
-References: <1217883616.27684.19.camel@localhost.localdomain> <4897C2A7.7020601@ii.net> <4897CC9C.2090906@schaufler-ca.com> <200808051656.28231.paul.moore@hp.com>
-In-Reply-To: <200808051656.28231.paul.moore@hp.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Moore wrote:
-> On Monday 04 August 2008 11:44:28 pm Casey Schaufler wrote:
->   
->> Cliffe wrote:
->>     
->>> Other security schemes such as intrusion detection,
->>> firewalls/netfilter, anti-malware, and application restrictions
->>> (sandboxes such as jails or finer grained restrictions such as
->>> AppArmor) could all register LSMs onto the stack.
->>>       
->> Stacking is easy for files. It's a real pain in the backside for UDP
->> packets.
->>     
+Nick Piggin <nickpiggin@yahoo.com.au> writes:
 >
-> How is it any better/worse for UDP packets than files?
->   
-On delivery you'd need to decide what security scheme is actually
-available on the packet and in what order to interpret any inbound
-security data. If you had an MLS scheme that uses CIPSO, an integrity
-mechanism using IPSEC and a DAC scheme that assigns user ids by
-host address getting the ordering right and every domain registered
-properly in the networking stack would be a trick. Plus, making sure
-that any state the security scheme requires is tricky. Maybe it's not
-actually worse if the schemes agree on what qualifies as a security
-element, but if one scheme does access control outbound while another
-does inbound it will get hairy.
+> Seriously? Because it doesn't seem to have had enough peer review,
+> it hasn't had widespread testing in somewhere like linux-next or
+> -mm, and we already have kgdb so you have to also explain why you
+> can't improve kgdb in the areas it trails mdb.
+>
+> But the ideal outcome would be if you could contribute patches to
+> kgdb to the point where it is as good as mdb. It is already in the
 
+I don't think kgdb and a simple assembler debugger 
+are directly comparable. kgdb always requires a remote machine,
+which has many advantages, but is also often very inconvenient
+or impossible to arrange. An low overhead assembler debugger
+can be always compiled in just in case.
+
+Also at least for the x86 port the debugger interfaces should
+be general enough now (see die hooks as a "debug vfs") that it would
+be quite possible to have a multitude of debuggers just using 
+them. In fact that's already the cases, kprobes and kgdb and 
+kdump are all kinds of debuggers using such hooks.
+
+As long as it doesn't impact the core code and the mdb 
+code itself is considered merge worthy and has clean interfaces 
+that would seem fine to me.It essentially would just live somewhere in 
+its own directory using the existing interfaces. My standard
+test for seeing if a debugger has clean interfaces is to see
+if it can be loaded as a module.
+
+There are enough different debugging styles around that offering
+developers different tools of which they can pick whatever suits
+them is not a bad idea. Also as everyone knows debugging
+is often a major time eater and if more tools are available that 
+can only help the kernel.
+
+That said I haven't read the mdb code, not judging on its general
+merge-worthiness or am really completely sure what are all the details
+of a "netware style debugger", just a general high level comment on
+debuggers. At least judging based on the patch sizes it at least
+doesn't seem particularly bloated.  But of course it would need full
+proper review first.
+
+-Andi
