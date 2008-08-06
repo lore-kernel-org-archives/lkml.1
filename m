@@ -1,65 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758952AbYHFGe6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758951AbYHFGln@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758952AbYHFGe6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Aug 2008 02:34:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753510AbYHFGes
+	id S1758951AbYHFGln (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Aug 2008 02:41:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753918AbYHFGlf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Aug 2008 02:34:48 -0400
-Received: from cavan.codon.org.uk ([93.93.128.6]:42739 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753369AbYHFGer (ORCPT
+	Wed, 6 Aug 2008 02:41:35 -0400
+Received: from serv2.oss.ntt.co.jp ([222.151.198.100]:56355 "EHLO
+	serv2.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753075AbYHFGle (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Aug 2008 02:34:47 -0400
-Date: Wed, 6 Aug 2008 07:34:41 +0100
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Cc: Yves-Alexis Perez <corsac@debian.org>, airlied@linux.ie,
-       linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
-Subject: Re: [PATCH] Add Intel ACPI IGD OpRegion support
-Message-ID: <20080806063441.GA14455@srcf.ucam.org>
-References: <20080805183725.GA4468@srcf.ucam.org> <1217965470.5449.4.camel@hidalgo> <1217972874.4540.3.camel@hidalgo> <20080806001301.GA10630@srcf.ucam.org> <20080806023247.GA4665@khazad-dum.debian.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080806023247.GA4665@khazad-dum.debian.net>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
+	Wed, 6 Aug 2008 02:41:34 -0400
+Subject: Re: RFC: I/O bandwidth controller
+From: Fernando Luis =?ISO-8859-1?Q?V=E1zquez?= Cao 
+	<fernando@oss.ntt.co.jp>
+To: Ryo Tsuruta <ryov@valinux.co.jp>
+Cc: dave@linux.vnet.ibm.com, yoshikawa.takuya@oss.ntt.co.jp,
+       taka@valinux.co.jp, uchida@ap.jp.nec.com, ngupta@google.com,
+       linux-kernel@vger.kernel.org, dm-devel@redhat.com,
+       containers@lists.linux-foundation.org,
+       virtualization@lists.linux-foundation.org,
+       xen-devel@lists.xensource.com, agk@sourceware.org,
+       righi.andrea@gmail.com
+In-Reply-To: <20080806.151824.104049463.ryov@valinux.co.jp>
+References: <20080804.175126.193692178.ryov@valinux.co.jp>
+	 <1217870433.20260.101.camel@nimitz>
+	 <1217985189.3154.57.camel@sebastian.kern.oss.ntt.co.jp>
+	 <20080806.151824.104049463.ryov@valinux.co.jp>
+Content-Type: text/plain
+Organization: NTT Open Source Software Center
+Date: Wed, 06 Aug 2008 15:41:32 +0900
+Message-Id: <1218004892.3950.12.camel@sebastian.kern.oss.ntt.co.jp>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 05, 2008 at 11:32:48PM -0300, Henrique de Moraes Holschuh wrote:
-> On Wed, 06 Aug 2008, Matthew Garrett wrote:
-> > The 750ms delay is from thinkpad-acpi. I sent a patch to Henrique which 
-> > makes it go away, but I'm not entirely sure what the ACPI method 
-> > concerned is supposed to be doing. The opregion code won't currently run 
-> > until X is started because the drm layer requires X to be the foreground 
-> > vt before handling IRQs.
+On Wed, 2008-08-06 at 15:18 +0900, Ryo Tsuruta wrote:
+> Hi Fernando,
 > 
-> Well, for what is it worth, thinkpad-acpi has a knob (brightness_mode) which
-> can be used.  Set it to CMOS mode (see docs).  From what I recall, it should
-> do what your patch does.
+> > This RFC ended up being a bit longer than I had originally intended, but
+> > hopefully it will serve as the start of a fruitful discussion.
+> 
+> Thanks a lot for posting the RFC.
+> 
+> > *** Goals
+> >   1. Cgroups-aware I/O scheduling (being able to define arbitrary
+> > groupings of processes and treat each group as a single scheduling
+> > entity).
+> >   2. Being able to perform I/O bandwidth control independently on each
+> > device.
+> >   3. I/O bandwidth shaping.
+> >   4. Scheduler-independent I/O bandwidth control.
+> >   5. Usable with stacking devices (md, dm and other devices of that
+> > ilk).
+> >   6. I/O tracking (handle buffered and asynchronous I/O properly).
+> >
+> > The list of goals above is not exhaustive and it is also likely to
+> > contain some not-so-nice-to-have features so your feedback would be
+> > appreciated.
+> 
+> I'd like to add the following item to the goals.
+> 
+>   7. Selectable from multiple bandwidth control policy (proportion,
+>      maximum rate limiting, ...) like I/O scheduler.
+Yep, makes sense.
 
-It doesn't seem to, no. I should have been clearer - the delay is in the 
-DSDT (not thinkpad-acpi itself), but there's a Thinkpad-specific ACPI 
-call that seems to be needed in order to delay it. Here's the patch 
-again.
+> > *** How to move on
+> > 
+> > As discussed before, it probably makes sense to have both a block layer
+> > I/O controller and a elevator-based one, and they could certainly
+> > cohabitate. As discussed before, all of them need I/O tracking
+> > capabilities so I would like to suggest the plan below to get things
+> > started:
+> > 
+> >   - Improve the I/O tracking patches (see (6) above) until they are in
+> > mergeable shape.
+> >   - Fix CFQ and AS to use the new I/O tracking functionality to show its
+> > benefits. If the performance impact is acceptable this should suffice to
+> > convince the respective maintainer and get the I/O tracking patches
+> > merged.
+> >   - Implement a block layer resource controller. dm-ioband is a working
+> > solution and feature rich but its dependency on the dm infrastructure is
+> > likely to find opposition (the dm layer does not handle barriers
+> > properly and the maximum size of I/O requests can be limited in some
+> > cases). In such a case, we could either try to build a standalone
+> > resource controller based on dm-ioband (which would probably hook into
+> > generic_make_request) or try to come up with something new.
+> >   - If the I/O tracking patches make it into the kernel we could move on
+> > and try to get the Cgroup extensions to CFQ and AS mentioned before (see
+> > (1), (2), and (3) above for details) merged.
+> >   - Delegate the task of controlling the rate at which a task can
+> > generate dirty pages to the memory controller.
+> 
+> I agree with your plan.
+> We keep bio-cgroup improving and porting to the latest kernel.
+Having more users of bio-cgroup would probably help to get it merged, so
+we'll certainly send patches as soon as we get our cfq prototype in
+shape.
 
-diff --git a/drivers/misc/thinkpad_acpi.c b/drivers/misc/thinkpad_acpi.c
-index b596929..bbc45c8 100644
---- a/drivers/misc/thinkpad_acpi.c
-+++ b/drivers/misc/thinkpad_acpi.c
-@@ -899,6 +899,9 @@ static int __init tpacpi_check_std_acpi_brightness_support(void)
- 
- 	if (ACPI_SUCCESS(status) && bcl_levels > 2) {
- 		tp_features.bright_acpimode = 1;
-+		/* Set ACPI mode */
-+		if (!acpi_evalf(hkey_handle, NULL, "PWMS", "vd", 0))
-+			printk(TPACPI_INFO "Failed to claim backlight\n");
- 		return (bcl_levels - 2);
- 	}
+Regards,
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+Fernando
+
