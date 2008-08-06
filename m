@@ -1,76 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757560AbYHFOXf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755854AbYHFOYU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757560AbYHFOXf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Aug 2008 10:23:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753042AbYHFOUr
+	id S1755854AbYHFOYU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Aug 2008 10:24:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757601AbYHFOXi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Aug 2008 10:20:47 -0400
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:35204 "EHLO e6.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752871AbYHFOUq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Aug 2008 10:20:46 -0400
-Date: Wed, 6 Aug 2008 09:20:25 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Peter Dolding <oiaohm@gmail.com>
-Cc: Eric Paris <eparis@redhat.com>, Arjan van de Ven <arjan@infradead.org>,
-       "Press, Jonathan" <Jonathan.Press@ca.com>,
-       Rik van Riel <riel@redhat.com>, Greg KH <greg@kroah.com>,
-       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org
-Subject: Re: [malware-list] [RFC 0/5] [TALPA] Intro to a
-	linuxinterfaceforon access scanning
-Message-ID: <20080806142025.GB10274@us.ibm.com>
-References: <2629CC4E1D22A64593B02C43E85553030480743B@USILMS12.ca.com> <20080805181141.GA10700@kroah.com> <2629CC4E1D22A64593B02C43E85553030480743F@USILMS12.ca.com> <20080805205129.37d873f0@bree.surriel.com> <2629CC4E1D22A64593B02C43E855530304AE4AE3@USILMS12.ca.com> <e7d8f83e0808060538m361eca9xa349fe08fdb20f12@mail.gmail.com> <2629CC4E1D22A64593B02C43E855530304AE4AE6@USILMS12.ca.com> <20080806064944.441305eb@infradead.org> <1218030956.27684.232.camel@localhost.localdomain> <e7d8f83e0808060711o43f1dc9frc859c2583e51b195@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <e7d8f83e0808060711o43f1dc9frc859c2583e51b195@mail.gmail.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Wed, 6 Aug 2008 10:23:38 -0400
+Received: from casper.infradead.org ([85.118.1.10]:44251 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757554AbYHFOXg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Aug 2008 10:23:36 -0400
+Date: Wed, 6 Aug 2008 07:23:26 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: tvrtko.ursulin@sophos.com
+Cc: "Press, Jonathan" <Jonathan.Press@ca.com>, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org, malware-list@lists.printk.net,
+       Rik van Riel <riel@redhat.com>
+Subject: Re: [malware-list] [RFC 0/5] [TALPA] Intro to a linuxinterfaceforon
+ access scanning
+Message-ID: <20080806072326.64826bae@infradead.org>
+In-Reply-To: <20080806141656.8B44B2FE94A@pmx1.sophos.com>
+References: <20080806064418.6afa0672@infradead.org>
+	<20080806141656.8B44B2FE94A@pmx1.sophos.com>
+Organization: Intel
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Peter Dolding (oiaohm@gmail.com):
-> On Wed, Aug 6, 2008 at 11:55 PM, Eric Paris <eparis@redhat.com> wrote:
-> > On Wed, 2008-08-06 at 06:49 -0700, Arjan van de Ven wrote:
-> >> On Wed, 6 Aug 2008 09:11:14 -0400
-> >> > There was probably an implicit assumption on everyone's part,
-> >> > including Red Hat's, that what ought to be done was to replace the
-> >> > existing syscall-based event trapping with some other interface that
-> >> > more or less does the same thing in a cleaner way -- NOT to have all
-> >> > of the AV and other product vendors go out and completely rethink
-> >> > their models.  And that's not because we inherently object to
-> >> > rethinking.  It's really an issue of what kind of time frame we have
-> >> > before a new OS goes out that completely breaks our products.
-> >>
-> >> not writing to the syscall table hasn't been possible/allowed for..
-> >> about 5 years now. (yes I know there were still bad hacks possible
-> >> until 2 years ago). So I'm sorry, but the timeline argument doesn't
-> >> hold, you've had 5+ years of warning.
-> >>
-> >> All existing RHEL products already don't allow this (I know it for the
-> >> earlier ones since I was part of the design team)...  unless your
-> >> software acts entirely like a rootkit (but even then)
-> >
-> > Other options involved overwriting LSM function pointers.  I was told
-> > that recently moving SELinux to be statically compiled in apparently
-> > messed them up on that method, at least for RH products.  The other
-> > method I've heard is hunting down all of the filesystem_operations
-> > structs and overwriting those functions.  I was also told that until
-> > recently pages marked RO could just be marked RW and then remarked RO,
-> > although it was recently fixed to RO pages stayed RO.  So yeah, I'd have
-> > to call them all ugly rootkit like hacks.
-> >
-> > they just keep finding uglier and uglier ways to infiltrate the kernel
-> > which is why I was ask to try to help get a clean solution.
-> >
-> Simplely they are following the windows way of doing things.  Rootkit
-> the OS no one will stop us.  Sorry that RootKitting is not going to
-> work here long term because we will fix Root Kit weaknesses.  TPM from
-> IBM will make it even harder.  Nice bits of that are in 2.6.27.
+On Wed, 6 Aug 2008 15:16:02 +0100
+tvrtko.ursulin@sophos.com wrote:
+
+> Arjan van de Ven wrote on 06/08/2008 14:44:18:
 > 
-> Allowing LSM stacking solves nothing.   IBM's developers credentials
+> > On Wed, 6 Aug 2008 08:10:53 -0400
+> > "Press, Jonathan" <Jonathan.Press@ca.com> wrote:
+> > 
+> > > However...  This question about arguing for a flawed security
+> > > technique is a good one, and in a way it gets to the heart of the
+> > > philosophy of security.  Scan-on-close is admittedly incomplete
+> > > as an anti-virus tool. But I don't agree that that make it
+> > > flawed.   It is part of a repertoire of techniques for preventing
+> > > malware from residing on a machine.
+> > 
+> > this indeed gets to the heart of the problem.
+> > several of us here are trying to argue that scan-on-close isn't very
+> > good, BUT that if you do scan-on-change (say with inotify) you do
+> > reach the same goal but with much better results.
+> > 
+> > notice the "but" in there. What I hope will happen is that one or
+> > more people from the AV side (eg you and tvrtko) will actually read
+> > the "but" part rather than just dismissing it outright because of
+> > not liking your solution in the first part of it. Part of the
+> > answer could be "nice however our goal is <THIS> so it won't work
+> > because of <THAT>". At least as long as <THIS> isn't "scan on
+> > close" because that's not a goal, that's a means.
+> > 
+> > this kind of thing seems to be indicative of the entire discussion.
+> > For lkml proposals, both sides need to be willing to accept
+> > alternative solutions for a problem (I know I am, just need to see
+> > why ;-).. and explain the WHY and the goal if it's not clear.
+> 
+> Problems with inotify as far as I know:
 
-Seriously, it's David Howells at Redhat who's doing that.  In your last
-email i figured it was a typo, but credit where it's due :)
+finally some useful discussion ;-)
 
--serge
+> 
+> You can't do something like inotify("/") (made up API) but you have
+> to set up a watch for every directory you wan't to watch. That seems
+> like a waste of resources.
+> 
+> Then you get back a file name, if you wan't to report it or attempt*
+> to scan it you have to build a pathname yourself, which means you
+> have to maintain the whole tree of names in memory. Even bigger waste.
+> 
+> When I say attempt to scan it above I mean that we are back into the 
+> pathanme teritorry. It is not guaranteed we will be able to open and
+> scan using that pathname. I don't know what inotify reports with
+> chroots and private namespaces, but it can certainly fail with NFS
+> and root_squash. So it is less effective as well as being resource
+> intensive.
+
+one argument against the namespaces one is that of security; on the one
+hand I can see the argument of running the virus scanner in its own
+container, on the other hand I can see the argument of not liking
+cross-container access of data as a security issue by itself.
+
+> 
+> I think this is a good amount of flaws which shows inotify isn't
+> really ideal.
+
+that is a fair list of complaints.. the question is can inotify be
+fixed....
+
+
+-- 
+If you want to reach me at my work email, use arjan@linux.intel.com
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
