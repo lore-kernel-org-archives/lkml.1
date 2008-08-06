@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758808AbYHFFLQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763303AbYHFFLg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758808AbYHFFLQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Aug 2008 01:11:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754467AbYHFFLA
+	id S1763303AbYHFFLg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Aug 2008 01:11:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757501AbYHFFLO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Aug 2008 01:11:00 -0400
-Received: from g1t0028.austin.hp.com ([15.216.28.35]:43602 "EHLO
-	g1t0028.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753895AbYHFFK7 (ORCPT
+	Wed, 6 Aug 2008 01:11:14 -0400
+Received: from g1t0026.austin.hp.com ([15.216.28.33]:11737 "EHLO
+	g1t0026.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756917AbYHFFLM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Aug 2008 01:10:59 -0400
-Date: Tue, 5 Aug 2008 23:10:57 -0600
+	Wed, 6 Aug 2008 01:11:12 -0400
+Date: Tue, 5 Aug 2008 23:11:11 -0600
 From: Alex Chiang <achiang@hp.com>
 To: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
        Matthew Wilcox <matthew@wil.cx>, Pierre Ossman <drzeus-list@drzeus.cx>,
        Jesse Barnes <jbarnes@virtuousgeek.org>,
        LKML <linux-kernel@vger.kernel.org>, linux-pci@vger.kernel.org
-Subject: [PATCH 1/7] acpiphp: convert to a kmalloc'ed slot name
-Message-ID: <20080806051057.GB31319@ldl.fc.hp.com>
+Subject: [PATCH 2/7] fakephp: convert to a kmalloc'ed slot name
+Message-ID: <20080806051111.GC31319@ldl.fc.hp.com>
 Mail-Followup-To: Alex Chiang <achiang@hp.com>,
 	Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
 	Matthew Wilcox <matthew@wil.cx>,
@@ -45,78 +45,70 @@ sysfs name of the slot in the event of a name collision.
 
 Signed-off-by: Alex Chiang <achiang@hp.com>
 ---
- drivers/pci/hotplug/acpiphp.h      |    2 +-
- drivers/pci/hotplug/acpiphp_core.c |   17 ++++++++++-------
- 2 files changed, 11 insertions(+), 8 deletions(-)
+ drivers/pci/hotplug/fakephp.c |   15 ++++++++++++---
+ 1 files changed, 12 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/pci/hotplug/acpiphp.h b/drivers/pci/hotplug/acpiphp.h
-index 5a58b07..2ac519d 100644
---- a/drivers/pci/hotplug/acpiphp.h
-+++ b/drivers/pci/hotplug/acpiphp.h
-@@ -63,7 +63,7 @@ struct slot {
- 	struct hotplug_slot	*hotplug_slot;
- 	struct acpiphp_slot	*acpi_slot;
- 	struct hotplug_slot_info info;
--	char name[SLOT_NAME_SIZE];
+diff --git a/drivers/pci/hotplug/fakephp.c b/drivers/pci/hotplug/fakephp.c
+index 40337a0..af8a1bf 100644
+--- a/drivers/pci/hotplug/fakephp.c
++++ b/drivers/pci/hotplug/fakephp.c
+@@ -60,13 +60,15 @@
+ #define DRIVER_AUTHOR	"Greg Kroah-Hartman <greg@kroah.com>"
+ #define DRIVER_DESC	"Fake PCI Hot Plug Controller Driver"
+ 
++#define SLOT_NAME_SIZE	8
++
+ struct dummy_slot {
+ 	struct list_head node;
+ 	struct hotplug_slot *slot;
+ 	struct pci_dev *dev;
+ 	struct work_struct remove_work;
+ 	unsigned long removed;
+-	char name[8];
 +	char *name;
  };
  
- /*
-diff --git a/drivers/pci/hotplug/acpiphp_core.c b/drivers/pci/hotplug/acpiphp_core.c
-index 0e496e8..ec164f4 100644
---- a/drivers/pci/hotplug/acpiphp_core.c
-+++ b/drivers/pci/hotplug/acpiphp_core.c
-@@ -301,6 +301,7 @@ static void release_slot(struct hotplug_slot *hotplug_slot)
+ static int debug;
+@@ -91,6 +93,7 @@ static void dummy_release(struct hotplug_slot *slot)
  
- 	dbg("%s - physical_slot = %s\n", __func__, hotplug_slot->name);
+ 	list_del(&dslot->node);
+ 	kfree(dslot->slot->info);
++	kfree(dslot->name);
+ 	kfree(dslot->slot);
+ 	pci_dev_put(dslot->dev);
+ 	kfree(dslot);
+@@ -119,8 +122,12 @@ static int add_slot(struct pci_dev *dev)
+ 	if (!dslot)
+ 		goto error_info;
  
-+	kfree(slot->name);
- 	kfree(slot->hotplug_slot);
- 	kfree(slot);
- }
-@@ -315,9 +316,13 @@ int acpiphp_register_hotplug_slot(struct acpiphp_slot *acpiphp_slot)
- 	if (!slot)
- 		goto error;
- 
-+	slot->name = kzalloc(SLOT_NAME_SIZE, GFP_KERNEL);
-+	if (!slot->name)
-+		goto error_slot;
++	dslot->name = kzalloc(SLOT_NAME_SIZE, GFP_KERNEL);
++	if (!dslot->name)
++		goto error_dslot;
 +
- 	slot->hotplug_slot = kzalloc(sizeof(*slot->hotplug_slot), GFP_KERNEL);
- 	if (!slot->hotplug_slot)
--		goto error_slot;
+ 	slot->name = dslot->name;
+-	snprintf(slot->name, sizeof(dslot->name), "fake%d", count++);
++	snprintf(slot->name, SLOT_NAME_SIZE, "fake%d", count++);
+ 	dbg("slot->name = %s\n", slot->name);
+ 	slot->ops = &dummy_hotplug_slot_ops;
+ 	slot->release = &dummy_release;
+@@ -129,7 +136,7 @@ static int add_slot(struct pci_dev *dev)
+ 	retval = pci_hp_register(slot, dev->bus, PCI_SLOT(dev->devfn));
+ 	if (retval) {
+ 		err("pci_hp_register failed with error %d\n", retval);
+-		goto error_dslot;
 +		goto error_name;
+ 	}
  
- 	slot->hotplug_slot->info = &slot->info;
+ 	dslot->slot = slot;
+@@ -137,6 +144,8 @@ static int add_slot(struct pci_dev *dev)
+ 	list_add (&dslot->node, &slot_list);
+ 	return retval;
  
-@@ -336,23 +341,21 @@ int acpiphp_register_hotplug_slot(struct acpiphp_slot *acpiphp_slot)
- 	slot->hotplug_slot->info->cur_bus_speed = PCI_SPEED_UNKNOWN;
- 
- 	acpiphp_slot->slot = slot;
--	snprintf(slot->name, sizeof(slot->name), "%u", slot->acpi_slot->sun);
-+	snprintf(slot->name, SLOT_NAME_SIZE, "%u", slot->acpi_slot->sun);
- 
- 	retval = pci_hp_register(slot->hotplug_slot,
- 					acpiphp_slot->bridge->pci_bus,
- 					acpiphp_slot->device);
--	if (retval == -EBUSY)
--		goto error_hpslot;
--	if (retval) {
--		err("pci_hp_register failed with error %d\n", retval);
-+	if (retval)
- 		goto error_hpslot;
-- 	}
- 
- 	info("Slot [%s] registered\n", slot->hotplug_slot->name);
- 
- 	return 0;
- error_hpslot:
- 	kfree(slot->hotplug_slot);
 +error_name:
-+	kfree(slot->name);
- error_slot:
- 	kfree(slot);
- error:
++	kfree(dslot->name);
+ error_dslot:
+ 	kfree(dslot);
+ error_info:
 -- 
 1.6.0.rc0.g95f8
 
