@@ -1,67 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753324AbYHFVoS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753838AbYHFVqq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753324AbYHFVoS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Aug 2008 17:44:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751220AbYHFVoJ
+	id S1753838AbYHFVqq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Aug 2008 17:46:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751969AbYHFVqj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Aug 2008 17:44:09 -0400
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:60595 "EHLO smtp4.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751090AbYHFVoI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Aug 2008 17:44:08 -0400
-Date: Thu, 7 Aug 2008 00:10:09 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: linux-kernel@vger.kernel.org
-Cc: "Robert P. J. Day" <rpjday@crashcourse.ca>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [2.6 patch] fs/partitions/acorn.c: remove dead code
-Message-ID: <20080806211008.GA1702@cs181140183.pp.htv.fi>
+	Wed, 6 Aug 2008 17:46:39 -0400
+Received: from ovro.ovro.caltech.edu ([192.100.16.2]:58873 "EHLO
+	ovro.ovro.caltech.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751956AbYHFVqi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Aug 2008 17:46:38 -0400
+Date: Wed, 6 Aug 2008 14:46:35 -0700
+From: Ira Snyder <iws@ovro.caltech.edu>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Simple UART driver help and TTY questions
+Message-ID: <20080806214635.GM6257@ovro.caltech.edu>
+References: <20080805163307.GJ6257@ovro.caltech.edu> <489A1364.4020809@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <489A1364.4020809@gmail.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (ovro.ovro.caltech.edu [192.100.16.2]); Wed, 06 Aug 2008 14:46:36 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I missed this when I did the arm26 removal.
+On Wed, Aug 06, 2008 at 11:11:00PM +0200, Jiri Slaby wrote:
+> conOn 08/05/2008 06:33 PM, Ira Snyder wrote:
+>> static void tiny_config_port(struct uart_port *port, int flags)
+>> {
+>> 	FUNC_ENTER();
+>
+>         if (flags & UART_CONFIG_TYPE)
+>                 port->type = PORT_16550A;
+>
+>> }
+>
+> According to the straces, you get -EIO from ioctl and read which most 
+> likely means TTY_IO_ERROR bit set due to tiny_port->type = PORT_UNKNOWN 
+> (i.e. 0). Try the above.
 
-Reported-by: Robert P. J. Day <rpjday@crashcourse.ca>
-Signed-off-by: Adrian Bunk <bunk@kernel.org>
+Not quite, but it got me on the right track. I needed to set port->type
+before calling uart_add_one_port().
 
----
+Now it gets into my code. Previously, it had never even called any of my
+code. None of it. Unfortunately, I ran it and it segfaulted. Turns out
+that Greg's tinyserial driver didn't implement ops->set_termios() and
+that was the cause. Implementing that got everything working.
 
-This patch has been sent on:
-- 23 Apr 2008
-- 14 Apr 2008
-- 31 Mar 2008
-- 1 Mar 2008
+Now I get in my dmesg:
+[   73.813893] ttytiny: Tiny serial driver
+[   83.714486] Enter: tiny_startup
+[   83.717676] Enter: tiny_set_termios
+[   83.721193] Enter: tiny_set_mctrl
+[   85.463793] Enter: tiny_stop_rx
+[   85.466987] Enter: tiny_set_mctrl
+[   85.470328] Enter: tiny_shutdown
 
- fs/partitions/acorn.c |   10 ----------
- 1 file changed, 10 deletions(-)
+And that looks very reasonable. (It was produced by cat /dev/ttytiny0,
+for your information).
 
-f7dc697bb2d04227b2f41a9d56f626fbd65c3d9d foobar
-diff --git a/fs/partitions/acorn.c b/fs/partitions/acorn.c
-index 3d3e166..a97b477 100644
---- a/fs/partitions/acorn.c
-+++ b/fs/partitions/acorn.c
-@@ -275,16 +275,6 @@ adfspart_check_ADFS(struct parsed_partitions *state, struct block_device *bdev)
- 	id = data[0x1fc] & 15;
- 	put_dev_sector(sect);
- 
--#ifdef CONFIG_BLK_DEV_MFM
--	if (MAJOR(bdev->bd_dev) == MFM_ACORN_MAJOR) {
--		extern void xd_set_geometry(struct block_device *,
--			unsigned char, unsigned char, unsigned int);
--		xd_set_geometry(bdev, dr->secspertrack, heads, 1);
--		invalidate_bh_lrus();
--		truncate_inode_pages(bdev->bd_inode->i_mapping, 0);
--	}
--#endif
--
- 	/*
- 	 * Work out start of non-adfs partition.
- 	 */
+Thanks a lot for your help! That problem had me completely stumped for a
+couple of days now :)
 
-
-
+Ira
