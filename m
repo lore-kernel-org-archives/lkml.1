@@ -1,82 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762474AbYHFLnz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764745AbYHFLoT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762474AbYHFLnz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Aug 2008 07:43:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755991AbYHFLe4
+	id S1764745AbYHFLoT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Aug 2008 07:44:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758641AbYHFLno
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Aug 2008 07:34:56 -0400
-Received: from h155.mvista.com ([63.81.120.155]:40212 "EHLO imap.sh.mvista.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755244AbYHFLez (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Aug 2008 07:34:55 -0400
-Message-ID: <48998C58.20703@ru.mvista.com>
-Date: Wed, 06 Aug 2008 15:34:48 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
-MIME-Version: 1.0
-To: petkovbb@gmail.com, Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Sergei Shtylyov <sshtylyov@ru.mvista.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org
-Subject: Re: [PATCH 1/2] pata_legacy: export functionality to ide
-References: <20080802183253.GA2239@gollum.tnic> <200808022046.16990.bzolnier@gmail.com> <20080803073756.GA8762@gollum.tnic> <20080803125907.67676948@lxorguk.ukuu.org.uk> <20080803143837.GA26672@gollum.tnic> <20080803162214.394b13a1@lxorguk.ukuu.org.uk> <20080803165135.GA31977@gollum.tnic> <4898630C.7090403@ru.mvista.com> <9ea470500808050732s7be29360ge358790e955be06a@mail.gmail.com> <58cb370e0808050741v7ff3f20awb3d91a84486f8547@mail.gmail.com> <20080806061023.GA23773@gollum.tnic>
-In-Reply-To: <20080806061023.GA23773@gollum.tnic>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 6 Aug 2008 07:43:44 -0400
+Received: from fms-01.valinux.co.jp ([210.128.90.1]:36994 "EHLO
+	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1758381AbYHFLnn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Aug 2008 07:43:43 -0400
+Date: Wed, 06 Aug 2008 20:43:39 +0900 (JST)
+Message-Id: <20080806.204339.76736223.taka@valinux.co.jp>
+To: kamezawa.hiroyu@jp.fujitsu.com
+Cc: ryov@valinux.co.jp, xen-devel@lists.xensource.com,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       virtualization@lists.linux-foundation.org, dm-devel@redhat.com,
+       agk@sourceware.org
+Subject: Re: [PATCH 4/7] bio-cgroup: Split the cgroup memory subsystem into
+ two parts
+From: Hirokazu Takahashi <taka@valinux.co.jp>
+In-Reply-To: <20080806165421.f76edd47.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20080804.175707.104036289.ryov@valinux.co.jp>
+	<20080804.175748.189722512.ryov@valinux.co.jp>
+	<20080806165421.f76edd47.kamezawa.hiroyu@jp.fujitsu.com>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+Hi,
 
-Borislav Petkov wrote:
-> From: Borislav Petkov <petkovbb@gmail.com>
-> Date: Sun, 3 Aug 2008 18:46:35 +0200
-> Subject: [PATCH] ide-generic: handle probing of legacy io-ports v4
+> > This patch splits the cgroup memory subsystem into two parts.
+> > One is for tracking pages to find out the owners. The other is
+> > for controlling how much amount of memory should be assigned to
+> > each cgroup.
+> > 
+> > With this patch, you can use the page tracking mechanism even if
+> > the memory subsystem is off.
+> > 
+> > Based on 2.6.27-rc1-mm1
+> > Signed-off-by: Ryo Tsuruta <ryov@valinux.co.jp>
+> > Signed-off-by: Hirokazu Takahashi <taka@valinux.co.jp>
+> > 
+> 
+> Plese CC me or Balbir or Pavel (See Maintainer list) when you try this ;)
+> 
+> After this patch, the total structure is
+> 
+>  page <-> page_cgroup <-> bio_cgroup.
+>  (multiple bio_cgroup can be attached to page_cgroup)
 >
-> Avoid probing the io-ports in case an IDE PCI controller is present and it uses
-> the legacy iobases. If we still want to enforce the probing, we do
->
-> ide_generic.probe_mask=0x3f
->
-> on the kernel command line. The iobase checking code is adapted from
-> drivers/ata/pata_legacy.c after converting hex pci ids into their corresponding
-> macros in <linux/pci_ids.h>.
->
-> CC: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-> Signed-off-by: Borislav Petkov <petkovbb@gmail.com>
->   
+> Does this pointer chain will add
+>   - significant performance regression or
+>   - new race condtions 
+> ?
 
-Acked-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+I don't think it will cause significant performance loss, because
+the link between a page and a page_cgroup has already existed, which
+the memory resource controller prepared. Bio_cgroup uses this as it is,
+and does nothing about this.
 
-> diff --git a/drivers/ide/ide-generic.c b/drivers/ide/ide-generic.c
-> index 8fe8b5b..efce159 100644
-> --- a/drivers/ide/ide-generic.c
-> +++ b/drivers/ide/ide-generic.c
->   
-[...]
-> @@ -100,19 +101,69 @@ static const u16 legacy_bases[] = { 0x1f0, 0x170, 0x1e8, 0x168, 0x1e0, 0x160 };
->  static const int legacy_irqs[]  = { 14, 15, 11, 10, 8, 12 };
->  #endif
->  
-> +static void ide_generic_check_pci_legacy_iobases(int *primary, int *secondary)
-> +{
-> +	struct pci_dev *p = NULL;
-> +	u16 val;
-> +
-> +	for_each_pci_dev(p) {
-> +		int r;
-> +
-> +		for (r = 0; r < 6; r++) {
-> +			if (pci_resource_start(p, r) == 0x1f0)
-> +				*primary = 1;
-> +			if (pci_resource_start(p, r) == 0x170)
-> +				*secondary = 1;
-> +		}
->   
+And the link between page_cgroup and bio_cgroup isn't protected
+by any additional spin-locks, since the associated bio_cgroup is
+guaranteed to exist as long as the bio_cgroup owns pages.
 
-   Would have been probably enough to test only BAR0/2, don't you think?
+I've just noticed that most of overhead comes from the spin-locks
+when reclaiming the pages inside mem_cgroups and the spin-locks to
+protect the links between pages and page_cgroups.
+The latter overhead comes from the policy your team has chosen
+that page_cgroup structures are allocated on demand. I still feel
+this approach doesn't make any sense because linux kernel tries to
+make use of most of the pages as far as it can, so most of them
+have to be assigned its related page_cgroup. It would make us happy
+if page_cgroups are allocated at the booting time.
 
-MBR, Sergei
+> For example, adding a simple function.
+> ==
+> int get_page_io_id(struct page *)
+>  - returns a I/O cgroup ID for this page. If ID is not found, -1 is returned.
+>    ID is not guaranteed to be valid value. (ID can be obsolete)
+> ==
+> And just storing cgroup ID to page_cgroup at page allocation.
+> Then, making bio_cgroup independent from page_cgroup and 
+> get ID if avialble and avoid too much pointer walking.
+
+I don't think there are any diffrences between a poiter and ID.
+I think this ID is just a encoded version of the pointer.
+
+> Thanks,
+> -Kame
 
 
