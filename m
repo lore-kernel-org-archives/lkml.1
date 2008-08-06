@@ -1,62 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759323AbYHFUJc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759914AbYHFULw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759323AbYHFUJc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Aug 2008 16:09:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753744AbYHFUJX
+	id S1759914AbYHFULw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Aug 2008 16:11:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757118AbYHFUKk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Aug 2008 16:09:23 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:45845 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1750987AbYHFUJW (ORCPT
+	Wed, 6 Aug 2008 16:10:40 -0400
+Received: from wolverine02.qualcomm.com ([199.106.114.251]:9558 "EHLO
+	wolverine02.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756467AbYHFUKd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Aug 2008 16:09:22 -0400
-Date: Wed, 6 Aug 2008 16:09:21 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Arjan van de Ven <arjan@infradead.org>
-cc: Simon Arlott <simon@fire.lp0.eu>, Rene Herman <rene.herman@keyaccess.nl>,
-       <linux-kernel@vger.kernel.org>, <mingo@elte.hu>,
-       Daniel Walker <dwalker@mvista.com>,
-       USB list <linux-usb@vger.kernel.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: Re: [PATCH RFC] USB: Add HCD fastboot
-In-Reply-To: <20080806125612.6bf9eb40@infradead.org>
-Message-ID: <Pine.LNX.4.44L0.0808061607160.2138-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 6 Aug 2008 16:10:33 -0400
+X-Greylist: delayed 575 seconds by postgrey-1.27 at vger.kernel.org; Wed, 06 Aug 2008 16:10:32 EDT
+X-IronPort-AV: E=McAfee;i="5200,2160,5355"; a="5202678"
+From: Max.Krasnyansky@qualcomm.com
+To: mingo@elte.hu, akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, Max Krasnyansky <maxk@qualcomm.com>,
+       lizf@cn.fujitsu.com, jeff.chua.linux@gmail.com
+Subject: [PATCH] Resurect proper handling of maxcpus= kernel option
+Date: Wed,  6 Aug 2008 13:00:54 -0700
+Message-Id: <1218052854-5020-1-git-send-email-Krasnyansky@qualcomm.com>
+X-Mailer: git-send-email 1.5.5.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 6 Aug 2008, Arjan van de Ven wrote:
+From: Max Krasnyansky <maxk@qualcomm.com>
 
-> On Wed, 6 Aug 2008 15:49:27 -0400 (EDT)
-> Alan Stern <stern@rowland.harvard.edu> wrote:
-> 
-> > On Wed, 6 Aug 2008, Simon Arlott wrote:
-> > 
-> > > > Wouldn't it be much simpler, and less objectionable, to do what I
-> > > > suggested earlier?  That is, add a 5-second delay at the start of
-> > > > hub_thread() in drivers/usb/core/hub.c.  No messing with
-> > > > Makefiles, no changes to the initcall scheduling.
-> > > 
-> > > Aside from 5 seconds being too long, and anything less being a race
-> > > between hub_thread() and driver initcalls, it doesn't improve
-> > > anything because it'll still have to wait for the devices to finish
-> > > initialising in userspace instead.
-> > 
-> > Why is 5 seconds too long?  Too long for what?
-> 
-> because I'm done booting to full UI in that time.
-> 
-> it's forever.
+For some reason we had redundant parsers registered for maxcpus=. 
+One in init/main.c and another in arch/x86/smpboot.c
+So I nuked the one in arch/x86.
 
-This doesn't answer my question.  Why does the fact that you're already 
-in the UI after 5 seconds mean that 5 seconds is too long to delay the 
-start of khubd?
+Also 64-bit kernels used to handle maxcpus= as documented in
+Documentation/cpu-hotplug.txt. CPUs with 'id > maxcpus' are initialized
+but not booted. 32-bit version for some reason ignored them even though
+all the infrastructure for booting them later is there.
 
-Besides, if your machine can boot to the UI in under 5 seconds then you 
-have no need to worry about improving boot-up speed anyway.
+In the current mainline both 64 and 32 bit versions are broken. I'm
+too lazy to look through git history but I'm guessing it happened as
+part of the i386 and x86_64 unification.
 
-Alan Stern
+This patch restores the correct behaviour. I've tested x86_64 version on
+4- and 8- way Core2 and 2-way Opteron based machines. Various config
+combinations SMP, !SMP, CPU_HOTPLUG, !CPU_HOTPLUG.
+Booted with maxcpus=1 and maxcpus=4, etc. Everything is working as expected.
+
+I cannot test 32-bit version (no 32-bit machines here).
+
+Signed-off-by: Max Krasnyansky <maxk@qualcomm.com>
+Cc: lizf@cn.fujitsu.com
+Cc: jeff.chua.linux@gmail.com
+---
+ arch/x86/kernel/apic_32.c |    8 --------
+ arch/x86/kernel/apic_64.c |    7 -------
+ arch/x86/kernel/smpboot.c |   14 --------------
+ 3 files changed, 0 insertions(+), 29 deletions(-)
+
+diff --git a/arch/x86/kernel/apic_32.c b/arch/x86/kernel/apic_32.c
+index d6c8983..71d49cc 100644
+--- a/arch/x86/kernel/apic_32.c
++++ b/arch/x86/kernel/apic_32.c
+@@ -1454,8 +1454,6 @@ void disconnect_bsp_APIC(int virt_wire_setup)
+ 	}
+ }
+ 
+-unsigned int __cpuinitdata maxcpus = NR_CPUS;
+-
+ void __cpuinit generic_processor_info(int apicid, int version)
+ {
+ 	int cpu;
+@@ -1482,12 +1480,6 @@ void __cpuinit generic_processor_info(int apicid, int version)
+ 		return;
+ 	}
+ 
+-	if (num_processors >= maxcpus) {
+-		printk(KERN_WARNING "WARNING: maxcpus limit of %i reached."
+-			" Processor ignored.\n", maxcpus);
+-		return;
+-	}
+-
+ 	num_processors++;
+ 	cpus_complement(tmp_map, cpu_present_map);
+ 	cpu = first_cpu(tmp_map);
+diff --git a/arch/x86/kernel/apic_64.c b/arch/x86/kernel/apic_64.c
+index 7f1f030..446c062 100644
+--- a/arch/x86/kernel/apic_64.c
++++ b/arch/x86/kernel/apic_64.c
+@@ -90,7 +90,6 @@ static unsigned long apic_phys;
+ 
+ unsigned long mp_lapic_addr;
+ 
+-unsigned int __cpuinitdata maxcpus = NR_CPUS;
+ /*
+  * Get the LAPIC version
+  */
+@@ -1062,12 +1061,6 @@ void __cpuinit generic_processor_info(int apicid, int version)
+ 		return;
+ 	}
+ 
+-	if (num_processors >= maxcpus) {
+-		printk(KERN_WARNING "WARNING: maxcpus limit of %i reached."
+-		       " Processor ignored.\n", maxcpus);
+-		return;
+-	}
+-
+ 	num_processors++;
+ 	cpus_complement(tmp_map, cpu_present_map);
+ 	cpu = first_cpu(tmp_map);
+diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
+index 3325127..4fcce79 100644
+--- a/arch/x86/kernel/smpboot.c
++++ b/arch/x86/kernel/smpboot.c
+@@ -1370,17 +1370,3 @@ void __cpu_die(unsigned int cpu)
+ 	BUG();
+ }
+ #endif
+-
+-/*
+- * If the BIOS enumerates physical processors before logical,
+- * maxcpus=N at enumeration-time can be used to disable HT.
+- */
+-static int __init parse_maxcpus(char *arg)
+-{
+-	extern unsigned int maxcpus;
+-
+-	if (arg)
+-		maxcpus = simple_strtoul(arg, NULL, 0);
+-	return 0;
+-}
+-early_param("maxcpus", parse_maxcpus);
+-- 
+1.5.5.1
 
