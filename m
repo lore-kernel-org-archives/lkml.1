@@ -1,78 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763124AbYHFCWH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762564AbYHFCXX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763124AbYHFCWH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 22:22:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755770AbYHFCVS
+	id S1762564AbYHFCXX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 22:23:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754345AbYHFCXN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 22:21:18 -0400
-Received: from astoria.ccjclearline.com ([64.235.106.9]:34535 "EHLO
-	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753950AbYHFCVP (ORCPT
+	Tue, 5 Aug 2008 22:23:13 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:47069 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753950AbYHFCXM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 22:21:15 -0400
-Date: Tue, 5 Aug 2008 22:19:32 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@crashcourse.ca>
-X-X-Sender: rpjday@localhost.localdomain
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH] Define a macro for subsys_initcall_sync() ->
- module_init().
-Message-ID: <alpine.LFD.1.10.0808052211290.20955@localhost.localdomain>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Tue, 5 Aug 2008 22:23:12 -0400
+Date: Tue, 5 Aug 2008 20:22:55 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org, jgarzik@pobox.com,
+       Matt_Domsch@dell.com, Matthew Wilcox <willy@linux.intel.com>
+Subject: Re: [PATCH] ata: Add support for Long Logical Sectors and Long Physical Sectors
+Message-ID: <20080806022255.GC2055@parisc-linux.org>
+References: <1217957207-23116-1-git-send-email-matthew@wil.cx> <1217957207-23116-3-git-send-email-matthew@wil.cx> <20080805214651.621263f5@lxorguk.ukuu.org.uk>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - crashcourse.ca
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080805214651.621263f5@lxorguk.ukuu.org.uk>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Aug 05, 2008 at 09:46:51PM +0100, Alan Cox wrote:
+> > + * Some commands are specified to transfer (a multiple of) 512 bytes of data
+> > + * while others transfer a multiple of the number of bytes in a sector.  This
+> > + * function knows which commands transfer how much data.
+> 
+> 	static u32 ata_sector_or_block[]={...};
+> 
+> 	if (test_bit(tf->cmd, &ata_sector_or_block))
+> 
+> looks so much more elegant than a giant switch statement and I suspect
+> produces far better code
 
-Define the macro subsys_initcall_sync() to map to module_init() so
-that module code can stop horrifically abusing fs_initcall().
+Probably ... I did consider it, but I think I was too influenced by the
+existing READ/WRITE LONG code.
 
-Signed-off-by: Robert P. J. Day <rpjday@crashcourse.ca>
+> > + * ATA supports sector sizes up to 2^33 - 1.  The reported sector size may
+> > + * not be a power of two.  The extra bytes are used for user-visible data
+> > + * integrity calculations.  Note this is not the same as the ECC which is
+> > + * accessed through the SCT Command Transport or READ / WRITE LONG.
+> > + */
+> > +static u64 ata_id_sect_size(const u16 *id)
+> 
+> word 106 is not defined in early ATA standards so it would be wise to
+> check that ATA8 is reported by the drive - and trust the relevant bits
+> for ATA7/8 as appropriate.
 
----
+I'm not sure that's necessary.  The spec says to check whether words are
+valid by doing the & 0xc000 == 0x4000 test.
 
-currently, a number of source files under drivers/ will use a call to
-fs_initcall() instead of module_init() to get precise control over
-when that code runs if it is compiled into the kernel -- that is, to
-*guarantee* that that code runs after all subsys initcalls but before
-any device initcalls.
+> The drivers also need to know when a command is being issued which is a
+> funny shape as some hardware cannot do it because the internal state
+> machine knows the sector size and other stuff seems to need the internal
+> FIFO turning off or other things whacked repeatedly on the head to make
+> it work.
 
-it's not clear that that level of fine-grained control is truly
-necessary in *all* of those cases but, if it is, then it makes more
-sense to use subsys_initcall_sync(), since it semantically makes more
-sense in showing when that happens.  using fs_initcall() is just an
-ugly hack.
+Yes, I would expect some driver work to be required.  It only gets worse
+once we implement the DIX-equivalent.  How do you suggest would be a
+good migration path?  We could have the driver set a flag, or call into
+the driver from the midlayer to check whether it can cope with a
+particular sector size.
 
-this seems like it wouldn't introduce any problems since there are no
-invocations of subsys_initcall_sync() anywhere in the source tree at
-the moment.
+> You also don't need to bother listing all the commands that don't have
+> data transfer phases as a sector size is meaningless there so we
+> shouldn't even bother doing a lookup for them. Indeed the more I look at
+> this the more it seems that keeping long complex ever out of date arrays
+> is the wrong way to do it.
 
-diff --git a/include/linux/init.h b/include/linux/init.h
-index 11b84e1..38e4550 100644
---- a/include/linux/init.h
-+++ b/include/linux/init.h
-@@ -276,6 +276,7 @@ void __init parse_early_param(void);
- #define postcore_initcall(fn)		module_init(fn)
- #define arch_initcall(fn)		module_init(fn)
- #define subsys_initcall(fn)		module_init(fn)
-+#define subsys_initcall_sync(fn)	module_init(fn)
- #define fs_initcall(fn)			module_init(fn)
- #define device_initcall(fn)		module_init(fn)
- #define late_initcall(fn)		module_init(fn)
+I didn't want to change behaviour.  We currently set sect_size to 512
+for all commands (except READ LONG), and I didn't want to change that
+for non-data commands.  I agree with you that it's not relevant.
 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry:
-    Have classroom, will lecture.
-
-http://crashcourse.ca                          Waterloo, Ontario, CANADA
-========================================================================
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
