@@ -1,96 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932171AbYHFU6c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422885AbYHFVCh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932171AbYHFU6c (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Aug 2008 16:58:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422708AbYHFU5t
+	id S1422885AbYHFVCh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Aug 2008 17:02:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756649AbYHFVC3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Aug 2008 16:57:49 -0400
-Received: from an-out-0708.google.com ([209.85.132.244]:56930 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1422859AbYHFU5q (ORCPT
+	Wed, 6 Aug 2008 17:02:29 -0400
+Received: from www.church-of-our-saviour.org ([69.25.196.31]:46768 "EHLO
+	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755706AbYHFVC2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Aug 2008 16:57:46 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=aVU1LkumMumkfRO4sMmxcswq7+tir23Sj9p0zgUDvV9s8G1F/56+fOnOBJZ2wrYHPQ
-         glrk0qGKthWT4nn0bw6ybSDSyv+nBPwwsmUeA76ftjMmcBhZQoixSqjMgORy9oYB8W6A
-         3dXGGBWwGwMDQNY947LDHIjN1ziPJjz/esiIw=
-Message-ID: <86802c440808061357j425da86bj94165c47c669eb61@mail.gmail.com>
-Date: Wed, 6 Aug 2008 13:57:45 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [PATCH 00/33] dyn_array and nr_irqs support v4
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "Dhaval Giani" <dhaval@linux.vnet.ibm.com>,
-       "Mike Travis" <travis@sgi.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <m1y739j2z8.fsf@frodo.ebiederm.org>
+	Wed, 6 Aug 2008 17:02:28 -0400
+Date: Wed, 6 Aug 2008 17:02:02 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Eric Paris <eparis@redhat.com>
+Cc: Greg KH <greg@kroah.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       malware-list@lists.printk.net, linux-kernel@vger.kernel.org
+Subject: Re: [malware-list] [RFC 0/5] [TALPA] Intro to a linux interface
+	for on access scanning
+Message-ID: <20080806210202.GA9413@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Eric Paris <eparis@redhat.com>, Greg KH <greg@kroah.com>,
+	Alan Cox <alan@lxorguk.ukuu.org.uk>, malware-list@lists.printk.net,
+	linux-kernel@vger.kernel.org
+References: <1217883616.27684.19.camel@localhost.localdomain> <20080804223249.GA10517@kroah.com> <1217896374.27684.53.camel@localhost.localdomain> <20080805005132.GA3661@kroah.com> <20080805122328.69a37c1d@lxorguk.ukuu.org.uk> <20080805170307.GB9639@kroah.com> <1217962602.27684.144.camel@localhost.localdomain> <20080805203007.GB27489@kroah.com> <1218048597.27684.276.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <1218011937-10084-1-git-send-email-yhlu.kernel@gmail.com>
-	 <m1hc9yjb7x.fsf@frodo.ebiederm.org>
-	 <86802c440808061129l2bbe1658w453a11b4f16ffc83@mail.gmail.com>
-	 <m1y739j2z8.fsf@frodo.ebiederm.org>
+In-Reply-To: <1218048597.27684.276.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 6, 2008 at 1:35 PM, Eric W. Biederman <ebiederm@xmission.com> wrote:
-> "Yinghai Lu" <yhlu.kernel@gmail.com> writes:
->
->>> My suggestion for a non-breaking path:
->>> - Kill NR_IRQS in then generic code.
->>>  With Alan's serial patch and my kstat patch it looks like we have
->>>  the worst of that.
->>
->> will use Alan's patch.at first.
->> already reused your patch about kstat. and move kstat_irqs to irq_desc.
->
-> Part of what I am thinking is that there should never be a patch
-> that does s/NR_IRQS/nr_irqs/ that is just pointless noise.
+On Wed, Aug 06, 2008 at 02:49:57PM -0400, Eric Paris wrote:
+> 
+> This simple thread shows what I believe to be clear and compelling
+> evidence of the need for an in kernel solution.  Lets just consider that
+> we are a high input, high output, NFS file server with other OS's
+> mounting this NFS share RW.
+> 
+> Our goal is to stop, or at least reduce the throughput (I clearly
+> document and accept the open to read race, and until we get a working
+> revoke I don't see that changing) of malware across the NFS server.
+> This data will not be attacking the NFS server.  We wish to slow and
+> hopefully halt the spread of this data with minimal impact to the NFS
+> server.
 
-for some platform like 32bit, may not like to mess up with
-CONFIG_HAVE_SPARSE_IRQ, to have dyn_array to take small nr_irqs with
-probing.
+In this scenario, are you positing that you are worried about Windows
+malware, or Linux malware?  What OS are the clients running?  I will
+note that Windows has such a sucky NFS implementation that nearly all
+Widows clients will be running CIFS/SMB, not NFS --- so the right
+solution there is to integrate the virus checking with Samba ---
+especially since the one AV vendor has already admitted the actual
+virus signature checking has to be done in userspace.
 
->
-> Either we need a new abstraction like for_each_irq or to update the
-> code to the current best practices.
+For Linux clients, one question that immediately rises is the
+end-to-end argument.  Wouldn't be far better to run whatever security
+solution on the client?  After all, a Virus checking on an NFS server
+isn't going to help the user if they accidentally track in the virus
+on a USB stick.  (Especially if it is an infected Macro virus in an
+office document.)  
 
-already add for_each_irq_desc(irq, desc)...
-
-| #ifndef CONFIG_HAVE_DYN_ARRAY
-| /* could be removed if we get rid of all irq_desc reference */
-| extern struct irq_desc irq_desc[NR_IRQS];
-| #else
-| extern struct irq_desc *irq_desc;
-| #endif
-|
-| #define for_each_irq_desc(irq, desc)            \
-|        for (irq = 0, desc = irq_desc; irq < nr_irqs; irq++, desc =
-&irq_desc[irq])
-|
-|#else
-|
-|extern struct irq_desc *irq_descX;
-|#define for_each_irq_desc(irqX, desc)           \
-|        for (desc = irq_descX, irqX = desc->irq; desc && irqX != -1U;
-desc = desc->next, irqX = desc ? desc->irq: -1U)
-|
-|#endif
-
-
->
-> Which means the patches should be uncontroversial and mergeble on their
-> own with no weird dependencies.
-
-sure.
-
-YH
+							- Ted
