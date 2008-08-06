@@ -1,44 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759527AbYHFUyc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422840AbYHFU5n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759527AbYHFUyc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Aug 2008 16:54:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757604AbYHFUyS
+	id S1422840AbYHFU5n (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Aug 2008 16:57:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754557AbYHFU4a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Aug 2008 16:54:18 -0400
-Received: from ns1.siteground211.com ([209.62.36.12]:40986 "EHLO
-	serv01.siteground211.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754812AbYHFUyQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Aug 2008 16:54:16 -0400
-Date: Wed, 6 Aug 2008 23:54:08 +0300
-From: Felipe Balbi <me@felipebalbi.com>
-To: Frans Pop <elendil@planet.nl>
-Cc: me@felipebalbi.com, linux-kernel@vger.kernel.org,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Alan Stern <stern@rowland.harvard.edu>, linux-usb@vger.kernel.org
-Subject: Re: [regression?] usb: new errors during device detection
-Message-ID: <20080806205407.GC9002@frodo>
-Reply-To: me@felipebalbi.com
-References: <200808032211.22483.elendil@planet.nl> <20080803203512.GA11185@frodo> <200808062229.48383.elendil@planet.nl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200808062229.48383.elendil@planet.nl>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - serv01.siteground211.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - felipebalbi.com
+	Wed, 6 Aug 2008 16:56:30 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:39604 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752538AbYHFU43 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Aug 2008 16:56:29 -0400
+Date: Wed, 6 Aug 2008 15:56:25 -0500
+From: Paul Jackson <pj@sgi.com>
+To: "Paul Menage" <menage@google.com>
+Cc: maxk@qualcomm.com, mingo@elte.hu, linux-kernel@vger.kernel.org,
+       a.p.zijlstra@chello.nl, vegard.nossum@gmail.com, lizf@cn.fujitsu.com
+Subject: Re: [PATCH] cpuset: Rework sched domains and CPU hotplug handling
+ (2.6.27-rc1)
+Message-Id: <20080806155625.a89071b4.pj@sgi.com>
+In-Reply-To: <6599ad830808061330j41f2141fva8395239726f5f7f@mail.gmail.com>
+References: <1217631552-22129-1-git-send-email-maxk@qualcomm.com>
+	<20080805180521.be7010e1.pj@sgi.com>
+	<48991973.90109@qualcomm.com>
+	<20080805222927.6dd95f5f.pj@sgi.com>
+	<4899202B.6030303@qualcomm.com>
+	<20080805232856.78dd50f7.pj@sgi.com>
+	<489930B5.9030906@qualcomm.com>
+	<20080806004629.d321f3b0.pj@sgi.com>
+	<489A079E.5040903@qualcomm.com>
+	<20080806152910.9e4f76a2.pj@sgi.com>
+	<6599ad830808061330j41f2141fva8395239726f5f7f@mail.gmail.com>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 06, 2008 at 10:29:47PM +0200, Frans Pop wrote:
-> Will include that in my reply to Alan's mail.
+Paul M wrote:
+> I'd vote in favour of Max's suggestion of just
+> rebuild_sched_domains(), to localize the changes better.
 
-I think Alan's reply is already good enough. It's basically port
-handover.
+I'm outvoted, two to one.
+
+Go for it, Max.
+
+Thank, Paul M.
 
 -- 
-balbi
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.940.382.4214
