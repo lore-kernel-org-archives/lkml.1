@@ -1,101 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763378AbYHFLKW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757224AbYHFLLT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763378AbYHFLKW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Aug 2008 07:10:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756657AbYHFLKJ
+	id S1757224AbYHFLLT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Aug 2008 07:11:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757442AbYHFLLJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Aug 2008 07:10:09 -0400
-Received: from wr-out-0506.google.com ([64.233.184.233]:54046 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755661AbYHFLKI (ORCPT
+	Wed, 6 Aug 2008 07:11:09 -0400
+Received: from smtp115.mail.mud.yahoo.com ([209.191.84.164]:21712 "HELO
+	smtp115.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1757167AbYHFLLI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Aug 2008 07:10:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:x-x-sender:to:cc:subject:message-id:mime-version
-         :content-type;
-        b=x5YLV5VHdLMEx5trA4HMcNcu6ip2li/KoOy6CX7CxZ8ipOkWzTGKpOd42C4K94AK9u
-         sgIgkvfFN6L92+vYjsHWRejr933yHiUNczTIiImh5/h5EZvC53fYphOtyA6kCkxZhiq5
-         7M75kn4Dv1MEfGlkYUx+CIApEilIZrjuq002o=
-Date: Wed, 6 Aug 2008 19:09:53 +0800 (SGT)
-From: Jeff Chua <jeff.chua.linux@gmail.com>
-X-X-Sender: root@boston.corp.fedex.com
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-cc: David Miller <davem@davemloft.net>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.27rc1 cannot boot more than 8CPUs
-Message-ID: <Pine.LNX.4.64.0808061908100.12476@boston.corp.fedex.com>
+	Wed, 6 Aug 2008 07:11:08 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Disposition:Message-Id:Content-Type:Content-Transfer-Encoding;
+  b=bBn9mewqQ5wE5MiEmF9JZP4JPyA9U9WATHuBy31IU9Pl0aZ3PB5jha8lwy30O/DPTqRY4yBcD1v9CaNKW35ufNYwAVYQojyzPlEJu7OqYsDasbhEtg/SPLkFpF/nJjrsx84QsBu6nsGtymhD+IR5S6GwNbwhvqQzO7jSbfdLo+4=  ;
+X-YMail-OSG: rHD5KaAVM1my12dpBQsdQLJd.Fksi4eQxsPZXauqNXbEKfKDH90TIKUAZSq5zD6JSGqBApCGoqDPvgHAe0ueF2KWYBzrTJmWbot4IO5faUT3fXPKk_w8RLpgn0JZvJ83KhI-
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: tvrtko.ursulin@sophos.com
+Subject: Re: [malware-list] [RFC 0/5] [TALPA] Intro to a linux interface =?iso-8859-1?q?for=09on_access?= scanning
+Date: Wed, 6 Aug 2008 21:10:58 +1000
+User-Agent: KMail/1.9.5
+Cc: Eric Paris <eparis@redhat.com>, linux-kernel@vger.kernel.org,
+       malware-list@lists.printk.net
+References: <20080806094515.A6524316920@pmx1.sophos.com>
+In-Reply-To: <20080806094515.A6524316920@pmx1.sophos.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Disposition: inline
+Message-Id: <200808062110.58764.nickpiggin@yahoo.com.au>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wednesday 06 August 2008 19:44, tvrtko.ursulin@sophos.com wrote:
+> Nick Piggin wrote on 05/08/2008 19:08:05:
+> > On Tuesday 05 August 2008 07:00, Eric Paris wrote:
+> > > 5. Define which filesystems are cacheable and which are not
+> >
+> > This is practically impossible to do completely without rewriting a lot
+> > of code (which will never be accepted). I don't see why it is needed
+>
+> though
+>
+> > as the filesystem cache is supposed to be kept coherent with disk.
+>
+> Problem is with network filesystems. So could it be a flag somewhere per
+> filesystem which would say something like "this filesystem guarantees
+> content of a file cannot change without get_write_access or
+> file_update_time being called locally"? That doesn't sound like a lot of
+> code so what am I missing?
 
-On Wed, Aug 6, 2008 at 5:42 PM, Jeff Chua <jeff.chua.linux@gmail.com> 
-wrote:
->>> CONFIG_X86_GENERICARCH=y
->>> CONFIG_X86_BIGSMP=y
->>> 8 more cpu need bigsmp mode.
+Maybe... but that's not the same as what requirement 5 calls for.
 
-> Just found it under " Subarchitecture Type (Generic architecture)",
-> and then it shows the CONFIG_X86_BIGSMP option.
-
-It works. Booted with 16CPUs. 32GB RAM.
-
-CPU0 L7345 1.86GHz  0C
-CPU1 L7345 1.86GHz  0C
-CPU2 L7345 1.86GHz  0C
-CPU3 L7345 1.86GHz  0C
-CPU4 L7345 1.86GHz  0C
-CPU5 L7345 1.86GHz  0C
-CPU6 L7345 1.86GHz  0C
-CPU7 L7345 1.86GHz  0C
-CPU8 L7345 1.86GHz  0C
-CPU9 L7345 1.86GHz  0C
-CPU10 L7345 1.86GHz  0C
-CPU11 L7345 1.86GHz  0C
-CPU12 L7345 1.86GHz  0C
-CPU13 L7345 1.86GHz  0C
-CPU14 L7345 1.86GHz  0C
-CPU15 L7345 1.86GHz  0C
-
-
-So, but setting the config not obvious. And should CONFIG_X86_PC be 
-considered as well as CONFIG_X86_GENERICARCH?
-
-With CONFIG_X86_PC, I can set CONFIG_SPARSEMEM=y.
-
-With CONFIG_X86_GENERICARCH, CONFIG_SPARSEMEM depends on CONFIG_NUMA.
-
-I'm using the patch below to enable sparsemem instead of flatmem, but 
-don't know what impact it has. System booted and running.
-
-It would be nice to automatically default CONFIG_X86_BIGSMP with CPUs > 8. 
-But I don't know to do that.
-
-
-Thanks,
-Jeff.
-
-
---- linux/arch/x86/Kconfig.org	2008-08-06 18:41:08 +0800
-+++ linux/arch/x86/Kconfig	2008-08-06 18:48:13 +0800
-@@ -1035,7 +1035,7 @@
-
-   config ARCH_FLATMEM_ENABLE
-   	def_bool y
--	depends on X86_32 && ARCH_SELECT_MEMORY_MODEL && X86_PC && !NUMA
-+	depends on X86_32 && ARCH_SELECT_MEMORY_MODEL && !NUMA
-
-   config ARCH_DISCONTIGMEM_ENABLE
-   	def_bool y
-@@ -1051,7 +1051,7 @@
-
-   config ARCH_SPARSEMEM_ENABLE
-   	def_bool y
--	depends on X86_64 || NUMA || (EXPERIMENTAL && X86_PC)
-+	depends on X86_64 || NUMA || (EXPERIMENTAL && X86_PC) || X86_GENERICARCH
-   	select SPARSEMEM_STATIC if X86_32
-   	select SPARSEMEM_VMEMMAP_ENABLE if X86_64
-
+But depending on exactly what semantics you really call for, it can get
+tricky to account for all of pagecache. Writes can happen through page
+tables or get_user_pages. True that a process has to at some point have
+write permission to the file, but the cache itself could be modified
+even after the file is closed and all mmaps disappear.
