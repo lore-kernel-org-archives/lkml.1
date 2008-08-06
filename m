@@ -1,85 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760829AbYHFTXl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030205AbYHFTYY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760829AbYHFTXl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Aug 2008 15:23:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754188AbYHFTXd
+	id S1030205AbYHFTYY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Aug 2008 15:24:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754188AbYHFTYK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Aug 2008 15:23:33 -0400
-Received: from aun.it.uu.se ([130.238.12.36]:53818 "EHLO aun.it.uu.se"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752963AbYHFTXc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Aug 2008 15:23:32 -0400
+	Wed, 6 Aug 2008 15:24:10 -0400
+Received: from 166-70-238-42.ip.xmission.com ([166.70.238.42]:33055 "EHLO
+	ns1.wolfmountaingroup.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753940AbYHFTYJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Aug 2008 15:24:09 -0400
+Message-ID: <2663.69.2.248.210.1218049381.squirrel@webmail.wolfmountaingroup.com>
+In-Reply-To: <4899D6AA.4000501@redhat.com>
+References: <200808050626.m756QZ1g003755@wolfmountaingroup.com>   
+    <489872C5.2040508@redhat.com>
+    <39379.166.70.238.45.1217950104.squirrel@webmail.wolfmountaingroup.com>
+    <4899D6AA.4000501@redhat.com>
+Date: Wed, 6 Aug 2008 13:03:01 -0600 (MDT)
+Subject: Re: [PATCH 2.6.27-rc1-git5 2/26] mdb: correct kprobes int3 trap
+From: jmerkey@wolfmountaingroup.com
+To: "Masami Hiramatsu" <mhiramat@redhat.com>
+Cc: jmerkey@wolfmountaingroup.com, linux-kernel@vger.kernel.org
+User-Agent: SquirrelMail/1.4.6
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18585.64037.521673.362547@alkaid.it.uu.se>
-Date: Wed, 6 Aug 2008 21:23:17 +0200
-From: Mikael Pettersson <mikpe@it.uu.se>
-To: Arkadiusz Miskiewicz <arekm@maven.pl>
-Cc: "Wahlig, Elsie" <elsie.wahlig@amd.com>, mikpe@it.uu.se,
-       linux-kernel@vger.kernel.org
-Subject: Re: Opteron Rev E has a bug ... a locked instruction doesn't act as a read-acquire barrier (confirmed)
-In-Reply-To: <200808061913.34874.arekm@maven.pl>
-References: <CB2417C2B1152C41919D5B9DE58840FA72D828@sausexmb5.amd.com>
-	<200808061913.34874.arekm@maven.pl>
-X-Mailer: VM 7.17 under Emacs 20.7.1
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 6 Aug 2008 19:13:34 +0200, Arkadiusz Miskiewicz wrote:
->On Wednesday 06 August 2008, Wahlig, Elsie wrote:
->> Your issue may be one that has been seen on 1st generation
->> AMD Opteron processor's with cpuid family 0Fh, cpuid model's
->> < 40h with the code sequence that performs a read-modify write
->> operation after acquiring a semaphore.
->
->Matches my hardware
->
->cpu family      : 15
->model           : 33
->
+> jmerkey@wolfmountaingroup.com wrote:
+>>> Hi Jeffery,
+>>>
+>>> Could you explain what is MDB and how it works?
 >>
->> The memory read ordering between a semaphore operation and a
->> subsequent read-modify-write instruction (an instruction which
->> uses the same memory location as both a source and destination)
->> may allow the read-modify-write instruction to operate on the
->> memory location ahead of the completion of the semaphore
->> operation and an erratum may occur.
-
-Thanks for the detailed erratum description.
-
->I wonder why there was no official errata about this?
-
-Indeed.
-
->> If you think your software is encountering this code sequence,
->> a work-around should be implemented by adding an LFENCE
->> instruction right after the semaphore, after a cpuid check.
->> The workaround's applied to OpenSolaris at
->> http://mail.opensolaris.org/pipermail/onnv-notify/2006-October/009080.ht
->> ml
->> and Google performance tools tool at
->> http://google-perftools.googlecode.com/svn-history/r48/trunk/src/base/at
->> omicops-internals-x86.cc
->> are suitable examples.
->> A list of the model numbers this issue may occur on is at
->> http://products.amd.com/en-us/downloads/AMD_Opteron_First_Generation_Ref
->> erence_101607.pdf.
+>>
+>> MDB is a kernel debugger that uses the same general architecture
+>> as the kernel debugger in Netware.  Unlike the variants of GNU
+>> debuggers, MDB is geared towards folks from the intel/microsoft worlds
+>> who are more accustomed to the old school Intel assembler model and
+>> not the GNU variant that looks like an angry typewriter cursing at
+>> the screen (%#*&!, etc.).
 >
->Would be better to fix the bug on kernel level if this is possible. Just=20
->someone with the knowledge needs to do this. Anyone interested?
+> Would you have any document about MDB, or project-site url?
+> I think it is hard for anyone to understand what you like to
+> do only from these big patchset.
 
-In principle it's easy. We append a 3-byte nop to the lock-taking
-instructions. We invent an AMD_MUTEX_BUG synthetic cpuid feature
-bit and add boot-time code to detect it. We use the alternatives()
-infrastructure to replace that nop with lfence at boot-time if
-AMD_MUTEX_BUG is present.
+If you install the patch and enter the debugger, you will find quite
+excellent documentation **inside** the debugger.  start with "help help"
+at the debugger console.
 
-I think the hardest part is locating all lock-taking code sequences.
+>
+>> MDB has some features not yet in this first patch, but I will be adding
+>> to
+>> subsequent patches like the ability to create time based traces of
+>> execution of code just like an ice does so you can set trigger
+>> breakpoints
+>> (kdb does not, nor kgdb), then go back ad look what happened in windows
+>> of
+>> time, as well as a much easier interface, smaller size, more flexible
+>> and
+>> pluggable command architecture -- a best of all -- it works and does not
+>> crash every other release or on every third vendors PC architecture like
+>> kdb does all the time.
+>
+> Would you have talked with kdb/kgdb people?
+> Since linux kernel already have kgdb, I think you might better talk
+> about merging your functionality (and stability) to kgdb, or at least
+> talk about what part both debugger can share.
+>
+>> It has been in use by me since 1997, when I wrote it after I left
+>> Novell.
+>> It is mature, hardened, and very stable -- and follows an architecture
+>> prove in the industry for over 20 years on Netware.
+>
+> Out of curiously, is there anyone except for you using MDB?
+>
+> Thank you,
 
-Also I think I'll start by writing a user-space test program that
-does a stress-test of the plain lock;rmw;unlobk sequence to see if
-it can break it. (Locks/mutexes are also used in user-space.)
 
-/Mikael
+Network General (now NetScout)
+Several Others I do not have authority to name because of NDA agreements.
+
+Jeff
+
+
+
+
+>
+>>> And please check your patch style by using scripts/checkpatch.pl.
+>>> Your cording style seem to be different from linux coding style...
+>>>
+>>> Thank you,
+>>
+>
+>
+> --
+> Masami Hiramatsu
+>
+> Software Engineer
+> Hitachi Computer Products (America) Inc.
+> Software Solutions Division
+>
+> e-mail: mhiramat@redhat.com
+>
+>
+
+
