@@ -1,54 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764333AbYHFDxd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764218AbYHFDy4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764333AbYHFDxd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 23:53:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753056AbYHFDxX
+	id S1764218AbYHFDy4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 23:54:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752676AbYHFDyr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 23:53:23 -0400
-Received: from wolverine01.qualcomm.com ([199.106.114.254]:2584 "EHLO
-	wolverine01.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751314AbYHFDxW (ORCPT
+	Tue, 5 Aug 2008 23:54:47 -0400
+Received: from wolverine02.qualcomm.com ([199.106.114.251]:22093 "EHLO
+	wolverine02.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751510AbYHFDyr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 23:53:22 -0400
-X-IronPort-AV: E=McAfee;i="5200,2160,5354"; a="5349355"
-Message-ID: <4899202B.6030303@qualcomm.com>
-Date: Tue, 05 Aug 2008 20:53:15 -0700
+	Tue, 5 Aug 2008 23:54:47 -0400
+X-IronPort-AV: E=McAfee;i="5200,2160,5354"; a="5180698"
+Message-ID: <48992085.3050203@qualcomm.com>
+Date: Tue, 05 Aug 2008 20:54:45 -0700
 From: Max Krasnyansky <maxk@qualcomm.com>
 User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-To: Paul Jackson <pj@sgi.com>
-CC: mingo@elte.hu, linux-kernel@vger.kernel.org, menage@google.com,
-       a.p.zijlstra@chello.nl, vegard.nossum@gmail.com, lizf@cn.fujitsu.com
-Subject: Re: [PATCH] cpuset: Rework sched domains and CPU hotplug handling
- (2.6.27-rc1)
-References: <1217631552-22129-1-git-send-email-maxk@qualcomm.com>	<20080802063900.6615e5ca.pj@sgi.com>	<48948C3A.6050805@qualcomm.com>	<20080802225127.2b0d138b.pj@sgi.com>	<4895F3ED.4020805@qualcomm.com>	<20080804010033.0d1b0549.pj@sgi.com>	<48977E81.4040207@qualcomm.com>	<20080804225636.541527e8.pj@sgi.com>	<4898B873.6000308@qualcomm.com>	<20080805180521.be7010e1.pj@sgi.com>	<48991973.90109@qualcomm.com> <20080805222927.6dd95f5f.pj@sgi.com>
-In-Reply-To: <20080805222927.6dd95f5f.pj@sgi.com>
+To: Jeff Chua <jeff.chua.linux@gmail.com>
+CC: lkml <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.27rc1 cannot boot more than 8CPUs
+References: <b6a2187b0808052015g698430fah95b5dc2c25dc396a@mail.gmail.com>	 <48991B07.3050500@qualcomm.com> <b6a2187b0808052050h35e2786fwfbf1e1dd5c37d8cf@mail.gmail.com>
+In-Reply-To: <b6a2187b0808052050h35e2786fwfbf1e1dd5c37d8cf@mail.gmail.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Jackson wrote:
-> Max wrote:
->> But it does seem like an overkill to schedule a workqueue ...
+Jeff Chua wrote:
+> On Wed, Aug 6, 2008 at 11:31 AM, Max Krasnyansky <maxk@qualcomm.com> wrote:
+>> You could try booting CONFIG_NR_CPUS=16 with maxcpus=8 (kernel command line option).
+>> If it boots you can then try bringing the rest of the cpus online manually
 > 
-> "overkill" -- by what metric?
+> Ok,  booted with CONFIG_NR_CPUS=16 with maxcpus=8, but can't find the
+> rest of the CPUs.
 > 
-> If something is overkill, it means something is excessive.
-> Excess (and deficiency) occur along some scale, some metric.
+> I can only find cpu0 to cpu7 ...
 > 
-> If not by CPU cycles, then by what metric is it overkill?
 > 
+> drwxr-xr-x  4 root root    0 Aug  6 19:38 cpu0
+> drwxr-xr-x  4 root root    0 Aug  6 19:38 cpu1
+> drwxr-xr-x  4 root root    0 Aug  6 19:38 cpu2
+> drwxr-xr-x  4 root root    0 Aug  6 19:38 cpu3
+> drwxr-xr-x  4 root root    0 Aug  6 19:38 cpu4
+> drwxr-xr-x  4 root root    0 Aug  6 19:38 cpu5
+> drwxr-xr-x  4 root root    0 Aug  6 19:38 cpu6
+> drwxr-xr-x  4 root root    0 Aug  6 19:38 cpu7
+> -r--r--r--  1 root root 4096 Aug  6 19:41 online
+> -r--r--r--  1 root root 4096 Aug  6 19:39 possible
+> -r--r--r--  1 root root 4096 Aug  6 19:38 present
+> -rw-r--r--  1 root root 4096 Aug  6 19:38 sched_mc_power_savings
+> 
+> # cat online
+> 0-7
+> # cat possible
+> 0-23
+> # cat present
+> 0-7
 
-Paul, I think you're focusing on the wrong part of my reply ;-).
-You are, of course, correct about the overkill metric. I was saying
-that saving cycles in that path was not my goal when I wrote
-the patch. I just added necessary functions to make existing paths
-work they way they currently do and only changed one path because
-it had to change due to lock nesting issues.
-Along the way simply pointed it out that scheduling work unnecessarily
-does seem less efficient. That was not the important part though :)
+Are you running 32-bit kernel ?
 
 Max
+
 
