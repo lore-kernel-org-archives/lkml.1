@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764026AbYHFVUm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755693AbYHFVVH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764026AbYHFVUm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Aug 2008 17:20:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758961AbYHFVMt
+	id S1755693AbYHFVVH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Aug 2008 17:21:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932091AbYHFVMw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Aug 2008 17:12:49 -0400
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:59640 "EHLO smtp4.pp.htv.fi"
+	Wed, 6 Aug 2008 17:12:52 -0400
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:47641 "EHLO smtp6.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758326AbYHFVMq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Aug 2008 17:12:46 -0400
-Date: Thu, 7 Aug 2008 00:11:18 +0300
+	id S1754238AbYHFVMu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Aug 2008 17:12:50 -0400
+Date: Thu, 7 Aug 2008 00:11:22 +0300
 From: Adrian Bunk <bunk@kernel.org>
-To: James.Bottomley@HansenPartnership.com
-Cc: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+To: takata@linux-m32r.org
+Cc: linux-m32r@ml.linux-m32r.org, linux-kernel@vger.kernel.org,
        Andrew Morton <akpm@linux-foundation.org>
-Subject: [2.6 patch] drivers/scsi/a3000.c: make 2 functions static
-Message-ID: <20080806211118.GR1702@cs181140183.pp.htv.fi>
+Subject: [2.6 patch] m32r: export empty_zero_page
+Message-ID: <20080806211122.GS1702@cs181140183.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -24,62 +24,48 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-a3000_{detect,release}() can become static.
+This patch fixes the following build error:
 
+<--  snip  -->
+
+...
+  Building modules, stage 2.
+  MODPOST 1083 modules
+ERROR: "empty_zero_page" [fs/ext4/ext4dev.ko] undefined!
+...
+make[2]: *** [__modpost] Error 1
+
+<--  snip  -->
+
+Reported-by: Adrian Bunk <bunk@kernel.org>
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
 
 This patch has been sent on:
-- 10 Jun 2008
+- 11 Jun 2008
 
- drivers/scsi/a3000.c |    6 ++++--
- drivers/scsi/a3000.h |    3 ---
- 2 files changed, 4 insertions(+), 5 deletions(-)
+ arch/m32r/kernel/m32r_ksyms.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
-85a02587af2fff4f03fcecf3bb0f61fbe1cfadc3 diff --git a/drivers/scsi/a3000.c b/drivers/scsi/a3000.c
-index 8b449d8..6970ce8 100644
---- a/drivers/scsi/a3000.c
-+++ b/drivers/scsi/a3000.c
-@@ -25,6 +25,8 @@
+ae7a1cecb2071e861cbcd6ee362ed93dd43793d5 diff --git a/arch/m32r/kernel/m32r_ksyms.c b/arch/m32r/kernel/m32r_ksyms.c
+index e6709fe..94b1893 100644
+--- a/arch/m32r/kernel/m32r_ksyms.c
++++ b/arch/m32r/kernel/m32r_ksyms.c
+@@ -14,6 +14,7 @@
+ #include <asm/delay.h>
+ #include <asm/irq.h>
+ #include <asm/tlbflush.h>
++#include <asm/pgtable.h>
  
- static struct Scsi_Host *a3000_host = NULL;
+ /* platform dependent support */
+ EXPORT_SYMBOL(boot_cpu_data);
+@@ -68,6 +69,7 @@ EXPORT_SYMBOL(memset);
+ EXPORT_SYMBOL(copy_page);
+ EXPORT_SYMBOL(clear_page);
+ EXPORT_SYMBOL(strlen);
++EXPORT_SYMBOL(empty_zero_page);
  
-+static int a3000_release(struct Scsi_Host *instance);
-+
- static irqreturn_t a3000_intr (int irq, void *dummy)
- {
- 	unsigned long flags;
-@@ -157,7 +159,7 @@ static void dma_stop(struct Scsi_Host *instance, struct scsi_cmnd *SCpnt,
-     }
- }
- 
--int __init a3000_detect(struct scsi_host_template *tpnt)
-+static int __init a3000_detect(struct scsi_host_template *tpnt)
- {
-     wd33c93_regs regs;
- 
-@@ -232,7 +234,7 @@ static struct scsi_host_template driver_template = {
- 
- #include "scsi_module.c"
- 
--int a3000_release(struct Scsi_Host *instance)
-+static int a3000_release(struct Scsi_Host *instance)
- {
-     wd33c93_release();
-     DMA(instance)->CNTR = 0;
-diff --git a/drivers/scsi/a3000.h b/drivers/scsi/a3000.h
-index 44a4ec7..c7afe16 100644
---- a/drivers/scsi/a3000.h
-+++ b/drivers/scsi/a3000.h
-@@ -11,9 +11,6 @@
- 
- #include <linux/types.h>
- 
--int a3000_detect(struct scsi_host_template *);
--int a3000_release(struct Scsi_Host *);
--
- #ifndef CMD_PER_LUN
- #define CMD_PER_LUN 2
- #endif
+ EXPORT_SYMBOL(_inb);
+ EXPORT_SYMBOL(_inw);
 
