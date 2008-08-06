@@ -1,51 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757717AbYHFWsj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757254AbYHFWu4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757717AbYHFWsj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Aug 2008 18:48:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753271AbYHFWsB
+	id S1757254AbYHFWu4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Aug 2008 18:50:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753819AbYHFWur
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Aug 2008 18:48:01 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:57338 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753113AbYHFWsA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Aug 2008 18:48:00 -0400
-Message-ID: <489A2A24.6010400@zytor.com>
-Date: Wed, 06 Aug 2008 15:48:04 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Tim Bird <tim.bird@am.sony.com>
-CC: Robert Schwebel <r.schwebel@pengutronix.de>,
-       linux kernel <linux-kernel@vger.kernel.org>,
-       linux-embedded <linux-embedded@vger.kernel.org>,
-       Matt Mackall <mpm@selenic.com>, Thomas Gleixner <tglx@linutronix.de>
+	Wed, 6 Aug 2008 18:50:47 -0400
+Received: from waste.org ([66.93.16.53]:42072 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753379AbYHFWuq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Aug 2008 18:50:46 -0400
 Subject: Re: [PATCH] bootup: Add built-in kernel command line for x86
-References: <489A1844.3090502@am.sony.com> <20080806220445.GB10168@pengutronix.de> <489A2419.2030900@am.sony.com>
-In-Reply-To: <489A2419.2030900@am.sony.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+From: Matt Mackall <mpm@selenic.com>
+To: Tim Bird <tim.bird@am.sony.com>
+Cc: linux kernel <linux-kernel@vger.kernel.org>,
+       linux-embedded <linux-embedded@vger.kernel.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
+In-Reply-To: <489A2627.40908@am.sony.com>
+References: <489A1844.3090502@am.sony.com> <1218060873.7576.2.camel@calx>
+	 <489A2627.40908@am.sony.com>
+Content-Type: text/plain
+Date: Wed, 06 Aug 2008 17:48:51 -0500
+Message-Id: <1218062931.7576.12.camel@calx>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tim Bird wrote:
-> 
-> One difficulty is that the other arches' command lines
-> are not currently "broken", so there's no real incentive
-> to change them.
-> 
-> The only thing novel thing I'm adding here is the addition of
-> the leading '!' to allow for an override.  This is needed
-> in some x86 cases I'm familiar with, but I've haven't seen
-> any cases where it would be useful for other arches.
-> (not to say they don't exist - I just haven't seen them.)
-> 
 
-Note that it could just as easily be done with a CONFIG_CMDLINE_OVERRIDE 
-option, since the initial reason for a magic character was to be able to 
-provide both prefix and suffix splicing.
+On Wed, 2008-08-06 at 15:31 -0700, Tim Bird wrote:
+> Matt Mackall wrote:
+> > On Wed, 2008-08-06 at 14:31 -0700, Tim Bird wrote:
+> >> The default behavior is to append the boot loader string
+> >> to this one.  However, there is a mechanism (leading '!')
+> >> to force the built-in string to override the boot loader
+> >> string.
+> > 
+> > Nice solution.
+> > 
+> > Where is this relative to early boot option checking?
+> 
+> parse_early_param() is right AFTER this in the x86 setup_arch()
+> function (in arch/x86/kernel/setup.c).  All the other command-line
+> handling I could find is after this in init/main.c:start_kernel().
 
-CONFIG_CMDLINE_OVERRIDE is probably more palatable to other architectures.
+Ok, there are a couple weird outliers outside of that still, but that
+should make most people satisfied.
 
-	-hpa
+-- 
+Mathematics is the supreme nostalgia of our time.
+
