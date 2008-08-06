@@ -1,107 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763011AbYHFBvm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763769AbYHFBv7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763011AbYHFBvm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 21:51:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756492AbYHFBox
+	id S1763769AbYHFBv7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 21:51:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759424AbYHFBpV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 21:44:53 -0400
-Received: from www.church-of-our-saviour.org ([69.25.196.31]:41504 "EHLO
-	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755198AbYHFBov (ORCPT
+	Tue, 5 Aug 2008 21:45:21 -0400
+Received: from 166-70-238-42.ip.xmission.com ([166.70.238.42]:45685 "EHLO
+	ns1.wolfmountaingroup.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762892AbYHFBpR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 21:44:51 -0400
-Date: Tue, 5 Aug 2008 21:44:36 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Rik van Riel <riel@redhat.com>
-Cc: Eric Paris <eparis@redhat.com>, Greg KH <greg@kroah.com>,
-       Al Viro <viro@ZenIV.linux.org.uk>,
-       "Press, Jonathan" <Jonathan.Press@ca.com>,
-       Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
-       malware-list@lists.printk.net, linux-security-module@vger.kernel.org
-Subject: Re: [malware-list] [RFC 0/5] [TALPA] Intro
-	toalinuxinterfaceforonaccess scanning
-Message-ID: <20080806014435.GF8224@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Rik van Riel <riel@redhat.com>, Eric Paris <eparis@redhat.com>,
-	Greg KH <greg@kroah.com>, Al Viro <viro@ZenIV.linux.org.uk>,
-	"Press, Jonathan" <Jonathan.Press@ca.com>,
-	Arjan van de Ven <arjan@infradead.org>,
-	linux-kernel@vger.kernel.org, malware-list@lists.printk.net,
-	linux-security-module@vger.kernel.org
-References: <20080805211445.GA28304@kroah.com> <2629CC4E1D22A64593B02C43E855530304AE4ADC@USILMS12.ca.com> <20080805214415.GA5830@kroah.com> <2629CC4E1D22A64593B02C43E855530303E21D47@USILMS12.ca.com> <20080805222638.GA6395@kroah.com> <20080805233743.GK28946@ZenIV.linux.org.uk> <1217980132.27684.203.camel@localhost.localdomain> <20080806001124.GA9079@kroah.com> <1217982329.27684.214.camel@localhost.localdomain> <20080805204600.03ceca31@bree.surriel.com>
+	Tue, 5 Aug 2008 21:45:17 -0400
+Message-ID: <44644.166.70.238.45.1217985860.squirrel@webmail.wolfmountaingroup.com>
+In-Reply-To: <878wvb6i2o.fsf@basil.nowhere.org>
+References: <51549.166.70.238.45.1217815820.squirrel@webmail.wolfmountaingroup.com>
+    <878wvb6i2o.fsf@basil.nowhere.org>
+Date: Tue, 5 Aug 2008 19:24:20 -0600 (MDT)
+Subject: Re: [PATCH 2.6.26 2/25] mdb: Merkey's Kernel Debugger
+From: jmerkey@wolfmountaingroup.com
+To: "Andi Kleen" <andi@firstfloor.org>
+Cc: jmerkey@wolfmountaingroup.com, linux-kernel@vger.kernel.org
+User-Agent: SquirrelMail/1.4.6
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080805204600.03ceca31@bree.surriel.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 05, 2008 at 08:46:00PM -0400, Rik van Riel wrote:
-> My real worry is that the anti-virus companies have been working
-> with an enforcement policy that has been evolving slowly from the
-> DOS days, while today's threat model has changed considerably.
 
-... and which also doesn't into account some of the facilities which
-Linux has, that DOS/Windows does not have.
+I'll post some patches with these changes and submit it as a module.  I
+will of course need to patch the kernel to introduce the die notifiers
+where
+they are not and there's the issue of cross call NMI to stop other
+processors on SMP.
 
-Part of the problem I suspect is that the AV folks have managed to get
-CIO's believe that all computer systems need to have anti-virus
-software, of the same design that is needed for DOS/Windows systems.
-This state of delusion is so bad that apparently some AV engineers
-aren't even willing to reason from first principles what is necessary
-or not to maintain a secure system.
+That's the real issues, Andi, is the xcall stuff for IPC to control all
+the processors.
 
-And arguably, if the goal is security theater, much like the security
-lines in airports, perhaps it doesn't matter.  If there are silly
-CIO's that are willing to pay for such a thing, regardless of whether
-or not it is actually *necessary* to maintain security, one school of
-capitalism would say it doesn't matter if it actually provides any
-functional value or not.
+Jeff
 
-On the other hand, it seems pretty clear there are plenty of LKML
-developers who aren't buying it.  :-)
 
-It may be helpful to separate the threat model into at least three
-different scenarios:
+> jmerkey@wolfmountaingroup.com writes:
+>> regs->ip)
+>> -#ifndef CONFIG_KPROBES
+>> +#if !defined(CONFIG_KPROBES) && !defined(CONFIG_MDB)
+>>  DO_VM86_ERROR(3, SIGTRAP, "int3", int3)
+>>  #endif
+>>  DO_VM86_ERROR(4, SIGSEGV, "overflow", overflow)
+>> @@ -733,6 +747,9 @@
+>>  {
+>>  	if (notify_die(DIE_NMIUNKNOWN, "nmi", regs, reason, 2, SIGINT) ==
+>> NOTIFY_STOP)
+>>  		return;
+>> +#ifdef	CONFIG_MDB
+>> +        mdb(NMI_EXCEPTION, reason, regs); // nmi is code 2
+>> +#endif
+>
+> This should be all using die notifiers (register_die etc.) like the
+> other kernel debuggers, not own hooks. As you can see there is already
+> a notify_die call around basically all the places you put in a mdb()
+> call, and you can just hook in there. If your other interfaces to the core
+> kernel are clean enough this would even allow to use your debugger as a
+> module.
+>
+> -Andi
+>
 
-	The Linux Desktop (where clueless users may be tricked into
-		running malware).
 
-	The Linux File Server (where it is *highly* unlikely to have
-		active running malware, since there are no clueless
-		users running on said file server), but where malware
-		may be stored and read over CIFS, NFS, etc.
-
-	The Linux Mail server is really a restricted case of the Linux
-		Fileserver; where the only way in is SMTP, and the
-		only protocol out is IMAP/POP.  
-
-Clamav arguably does a very nice job for the third case.  And the
-number of ways in and out for a Linux fileserver is sufficiently small
-(and there are no clueless users to start the malware program
-running), that it's relatively easy to reason about.
-
-In the Linux Desktop case, you do have to worry about clueless users,
-but in general you don't have to worry about serving CIFS or NFS on
-such boxes.
-
-It seems that the AV folks are trying to argue for a worst case
-scenario --- one where you have a clueless user, *and* you have a root
-comproise, *and* it is also simultaneously serving as a high output
-fileserver.  #1, I think it is questionable whether this is a
-reasonable model, and #2, if root is compromised, no amount of
-scanning software will helpyou, since the malware can simply directly
-attach and disable the scanning software.
-
-But it is specifically this sort of threat analysis and explicit
-detailing of the assumptions of what capabilities the attacker has
-which is critical for proceeding.  The fact at least one AV engineer
-thinks it's pointless to do this sort of low-level design is
-disappointing.
-
-						- Ted
