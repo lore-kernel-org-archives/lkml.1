@@ -1,71 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755053AbYHFNFU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755521AbYHFNGT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755053AbYHFNFU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Aug 2008 09:05:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753425AbYHFNFH
+	id S1755521AbYHFNGT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Aug 2008 09:06:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753459AbYHFNGI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Aug 2008 09:05:07 -0400
-Received: from ti-out-0910.google.com ([209.85.142.186]:14134 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753121AbYHFNFE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Aug 2008 09:05:04 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=e+sczc9AvkHsgX2vMzm0SSQMbIsB7kauWQ/N3IT8SkFln0igU05nn1VGHpeoesL3/I
-         u4a8IqhJ1Fd4yoSawI0Tj19On1rVAT5q03rfEnlf1En+E2/b2vdbG1YpuDsZ7SgjmYky
-         LaqYQFLY20nkVJQi+zp5JXZTQFRCArWAdepNg=
-Message-ID: <4899A15B.8000800@gmail.com>
-Date: Wed, 06 Aug 2008 22:04:27 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
+	Wed, 6 Aug 2008 09:06:08 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:50926 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753455AbYHFNGH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Aug 2008 09:06:07 -0400
+Date: Wed, 6 Aug 2008 09:00:34 -0400
+From: Vivek Goyal <vgoyal@redhat.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Linux Containers <containers@lists.osdl.org>,
+       libcg-devel <libcg-devel@lists.sourceforge.net>,
+       linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       balbir@linux.vnet.ibm.com
+Subject: Re: [Libcg-devel] Control groups and Resource Management notes
+	(part II)
+Message-ID: <20080806130034.GA22461@redhat.com>
+References: <489315B2.2080506@linux.vnet.ibm.com> <4893B415.9070906@linux.vnet.ibm.com> <20080805160709.A88B.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20080805133007.GC15193@redhat.com> <20080806100500.19f08444.kamezawa.hiroyu@jp.fujitsu.com>
 MIME-Version: 1.0
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-CC: Robert Hancock <hancockr@shaw.ca>, Jeff Garzik <jeff@garzik.org>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       ksummit-2008-discuss@lists.linux-foundation.org,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       James Bottomley <James.Bottomley@hansenpartnership.com>,
-       linux-ide <linux-ide@vger.kernel.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [Ksummit-2008-discuss] Kernel Summit request for Discussion of
- future of ATA (libata) and IDE
-References: <fa.OGeO7gZvBG4obEzRbVltjSebgTQ@ifi.uio.no>	<fa.KtvYE2B2yrJqUleolhtMPN9ljAQ@ifi.uio.no>	<fa.AqEKTvguYFAzDFHy/We/8MpOqmo@ifi.uio.no>	<48976168.3020804@shaw.ca>	<20080804205508.20a3f917@lxorguk.ukuu.org.uk>	<48977200.3050307@shaw.ca>	<20080804220619.76b94ceb@lxorguk.ukuu.org.uk>	<4898EE70.1030604@shaw.ca> <4898F3EA.7000507@gmail.com> <48998A8B.9040109@ru.mvista.com>
-In-Reply-To: <48998A8B.9040109@ru.mvista.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080806100500.19f08444.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sergei Shtylyov wrote:
-> Hello.
+On Wed, Aug 06, 2008 at 10:05:00AM +0900, KAMEZAWA Hiroyuki wrote:
+
+[..]
+> > > > Vivek brought up using PAM plugins to do classifications, this suggestion was
+> > > > nicely received. The decision was to do classification in user space and then
+> > > > think of kernel space if it cannot be done in user space. Denis suggested that
+> > > > classification is useful. In OpenVZ they classify all apache children to a
+> > > > different group. Balbir asked Denis to post their classification infrastructure
+> > > > as RFC.
+> > > 
+> > > I'm not sure about this issue.
+> > > but I like PAM approach.
+> > > 
+> > 
+> > Thanks balbir for nice summary.
+> > 
+> Thanks, too.
 > 
-> Tejun Heo wrote:
->>> +unsigned int ata_sff_data_xfer(struct ata_device *dev, unsigned char *buf,
->>> +			       unsigned int buflen, int rw)
->>> +{
->>> +	struct ata_port *ap = dev->link->ap;
->>> +	void __iomem *data_addr = ap->ioaddr.data_addr;
->>> +	unsigned int words = buflen >> 2;
->>>     
->> dwords maybe?
->>   
+> > Well, it was Rik Van Riel's idea to use PAM plugins so that processes
+> > are put into right user cgroups upon login.
+> > 
+> > Is pam based classification alone is sufficient? I noticed couple of
+> > instances which will avoid pam. For example.
+> > 
+> > - If one starts apache "service httpd start", then httpd threads change
+> >   their uid/gid to "apache/apache". But these threads will continue to
+> >   run in the cgroup belonging to root and will not go into apache cgroup.
+> > 
+> > - apache also offers "suexec" tool which execs a CGI script under a 
+> >   different user than the user who has launched web server. I quickly
+> >   grepped for source code of suexec and it does not seem to be using
+> >   pam. That means CGI scripts running under some other user name will
+> >   continue to run in cgroup where apache is running.
+> > 
+> > I am not sure how many more such corner cases are there. These cases can
+> > either be covered by modification of application or using some kind of
+> > wrapper around application or by writing classification daemon.
+> > 
+> > Do we really need classification daemon to cover such cases or wrapper
+> > approach is sufficient? I remember somebody in minisummit was mentioning
+> > that it should work without any apache modifications.
+> > 
 > 
->    Isn't word 32-bit in the 32-bit systems? We're not on 80[12]86 
-> (despite Intel/MS preference of calling 32-bit memory cells DWORDS)...
+> We can go ahead step by step. I think PAM support is the first step.
+> The daemon is the second.
+> 
+> 1. PAM
+> 2. A daemon for task placement (via netlink ?)
+> 
+> I think developping "a daemon for task placement" is important.
+> but cannot be perfect solution for any situations.
+> 
+> The third step is
+> 
+> 3. Modify applications (in newer version of them.)
+> 
+> "should work without any apache modifications" is (maybe) necessary. But for 
+> perfect control, it's not enough. We should support a method to modify
+> applications easily in library. 
+> 
+> I think develpment cost for "2" is bigger than "1" and "3". If "2" is hard,
+> starting from "1" and support funcs for "3" is a choice.
+> If support for "3" is ready, someone may start implementation of "2" in easier
+> way.
+> 
 
-Well, as most of machines are 64-bit these days, discussing whether a
-word means 16 or 32 bits is kind of moot.  I usually just think byte,
-word, dword, qword and and libata and pci assume that too -
-ata_id_has_dword_io() and PCI configuration accessors.  It's ultimately
-a peripheral issue either way tho.
+Phase wise approach makes sense. I already have working patches for
+following things.
 
-Thanks.
+1. PAM module for placement of tasks
+2. Modification of init scripts and a tool "cgclassify" so that at boot up
+   time "init" and other system services are moved to "admin"'s group.
+3. libcgroup API so that application can use these to place forked children
+   in right cgroup before doing exec.
+4. A command line tool "execcg" which helps a user launch application in
+   specific "cgroup".
 
--- 
-tejun
+5. A classification daemon (based on netlink as of today. Should move to
+  cgroup fs based notification mechanism probably.)   
+
+I think in phase1, we can get first 4 items merged and stablized and then
+work on daemon in phase2 (if need be).
+
+One issue with daemon was raised with respect to containers. It will
+interfere with placement of container threads also and this is not
+desired.
+
+This will have to be worked out.
+
+Thanks
+Vivek
