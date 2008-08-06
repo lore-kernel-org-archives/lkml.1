@@ -1,135 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756090AbYHFXny@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755834AbYHFXod@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756090AbYHFXny (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Aug 2008 19:43:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754042AbYHFXaZ
+	id S1755834AbYHFXod (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Aug 2008 19:44:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753226AbYHFXnS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Aug 2008 19:30:25 -0400
-Received: from kirsty.vergenet.net ([202.4.237.240]:47505 "EHLO
-	kirsty.vergenet.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753544AbYHFXaV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Aug 2008 19:30:21 -0400
-Date: Thu, 7 Aug 2008 09:30:20 +1000
-From: Simon Horman <horms@verge.net.au>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: Sven Wegener <sven.wegener@stealer.net>,
-       Michael Ellerman <michael@ellerman.id.au>, linux-kernel@vger.kernel.org,
-       linux-pci@vger.kernel.org, Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: [patch] PCI: check the return value of
-	device_create_bin_file() in pci_create_bus()
-Message-ID: <20080806233018.GG10636@verge.net.au>
-References: <20080805101605.GA19382@verge.net.au> <alpine.LNX.1.10.0808051224350.5671@titan.stealer.net> <20080805110006.GA13409@verge.net.au> <20080805111406.GA13899@verge.net.au> <20080805112814.GO26461@parisc-linux.org> <20080805121531.GA29763@verge.net.au> <20080805122639.GP26461@parisc-linux.org> <20080806005718.GE32143@verge.net.au> <20080806131900.GI2055@parisc-linux.org> <20080806232523.GF10636@verge.net.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080806232523.GF10636@verge.net.au>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 6 Aug 2008 19:43:18 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:56537 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753206AbYHFXnR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Aug 2008 19:43:17 -0400
+Date: Thu, 7 Aug 2008 09:43:05 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, mike.miller@hp.com,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+Subject: Re: [PATCH 6/6] cciss: fix bug if scsi tape support is disabled
+Message-Id: <20080807094305.8d315d06.sfr@canb.auug.org.au>
+In-Reply-To: <20080806103308.GM20055@kernel.dk>
+References: <20080730211842.GF1758@roadking.ldev.net>
+	<20080804095633.GA20055@kernel.dk>
+	<20080805153012.0076396e.akpm@linux-foundation.org>
+	<20080806130825.1567d882.sfr@canb.auug.org.au>
+	<20080806103308.GM20055@kernel.dk>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Thu__7_Aug_2008_09_43_05_+1000_0lucu8eP4BtesStq"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Check the return value of device_create_bin_file in pci_create_bus and
-unwind if necessary. Don't propagate error to caller, as failure to create
-these files shouldn't prevent PCI from being initialised.
+--Signature=_Thu__7_Aug_2008_09_43_05_+1000_0lucu8eP4BtesStq
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Cc: Sven Wegener <sven.wegener@stealer.net>
-Cc: Michael Ellerman <michael@ellerman.id.au>
-Cc: Matthew Wilcox <matthew@wil.cx>
-Signed-off-by: Simon Horman <horms@verge.net.au>
+Hi Jens,
 
---- 
+On Wed, 6 Aug 2008 12:33:08 +0200 Jens Axboe <jens.axboe@oracle.com> wrote:
+>
+> Thanks, but just keep pulling linux-next and I'll try and get them
+> uptodate more frequently :-)
 
-Tue, 5 Aug 2008 21:14:07 +1000
-* Revised the patch to free and NULLify b->legacy_io in
-  pci_create_legacy_files() on error. Thanks to
-  Sven Wegener and Michael Ellerman for pointing out this omission.
+OK, will do.
 
-Wed, 06 Aug 2008 10:49:30 +1000
-* Don't propagate error to caller, as failure to create these files
-  shouldn't prevent PCI from being initialised.
-  Thanks to Matthew Wilcox
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-Thu, 07 Aug 2008 09:28:56 +1000
-* Remove spurious return value.
-  Amusingly this patch was introducing warnings :-)
+--Signature=_Thu__7_Aug_2008_09_43_05_+1000_0lucu8eP4BtesStq
+Content-Type: application/pgp-signature
 
-This patch resolves the following warnings:
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-drivers/pci/probe.c: In function `pci_create_bus':
-drivers/pci/probe.c:66: warning: ignoring return value of `device_create_bin_file', declared with attribute warn_unused_result
-drivers/pci/probe.c:74: warning: ignoring return value of `device_create_bin_file', declared with attribute warn_unused_result
+iEYEARECAAYFAkiaNwkACgkQjjKRsyhoI8y6cACcD7F+ShVnfRXbn/+vv9iaFtnj
+DlUAoK7Y+1qhQNyru2wQ1fBHJ20JtF1I
+=wDJQ
+-----END PGP SIGNATURE-----
 
-# ia64-unknown-linux-gnu-gcc --version
-ia64-unknown-linux-gnu-gcc (GCC) 3.4.5
-Copyright (C) 2004 Free Software Foundation, Inc.
-This is free software; see the source for copying conditions.  There is NO
-warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
-Index: linux-2.6/drivers/pci/probe.c
-===================================================================
---- linux-2.6.orig/drivers/pci/probe.c	2008-08-07 09:08:32.000000000 +1000
-+++ linux-2.6/drivers/pci/probe.c	2008-08-07 09:14:53.000000000 +1000
-@@ -52,27 +52,46 @@ EXPORT_SYMBOL(no_pci_devices);
-  * Some platforms allow access to legacy I/O port and ISA memory space on
-  * a per-bus basis.  This routine creates the files and ties them into
-  * their associated read, write and mmap files from pci-sysfs.c
-+ *
-+ * On error unwind, but don't propogate the error to the caller
-+ * as it is ok to set up the PCI bus without these files.
-  */
- static void pci_create_legacy_files(struct pci_bus *b)
- {
-+	int error;
-+
- 	b->legacy_io = kzalloc(sizeof(struct bin_attribute) * 2,
- 			       GFP_ATOMIC);
--	if (b->legacy_io) {
--		b->legacy_io->attr.name = "legacy_io";
--		b->legacy_io->size = 0xffff;
--		b->legacy_io->attr.mode = S_IRUSR | S_IWUSR;
--		b->legacy_io->read = pci_read_legacy_io;
--		b->legacy_io->write = pci_write_legacy_io;
--		device_create_bin_file(&b->dev, b->legacy_io);
--
--		/* Allocated above after the legacy_io struct */
--		b->legacy_mem = b->legacy_io + 1;
--		b->legacy_mem->attr.name = "legacy_mem";
--		b->legacy_mem->size = 1024*1024;
--		b->legacy_mem->attr.mode = S_IRUSR | S_IWUSR;
--		b->legacy_mem->mmap = pci_mmap_legacy_mem;
--		device_create_bin_file(&b->dev, b->legacy_mem);
--	}
-+	if (!b->legacy_io)
-+		return;
-+
-+	b->legacy_io->attr.name = "legacy_io";
-+	b->legacy_io->size = 0xffff;
-+	b->legacy_io->attr.mode = S_IRUSR | S_IWUSR;
-+	b->legacy_io->read = pci_read_legacy_io;
-+	b->legacy_io->write = pci_write_legacy_io;
-+	error = device_create_bin_file(&b->dev, b->legacy_io);
-+	if (error)
-+		goto legacy_io_err;
-+
-+	/* Allocated above after the legacy_io struct */
-+	b->legacy_mem = b->legacy_io + 1;
-+	b->legacy_mem->attr.name = "legacy_mem";
-+	b->legacy_mem->size = 1024*1024;
-+	b->legacy_mem->attr.mode = S_IRUSR | S_IWUSR;
-+	b->legacy_mem->mmap = pci_mmap_legacy_mem;
-+	error = device_create_bin_file(&b->dev, b->legacy_mem);
-+	if (error)
-+		goto legacy_mem_err;
-+
-+	return;
-+
-+legacy_mem_err:
-+	device_remove_bin_file(&b->dev, b->legacy_io);
-+legacy_io_err:
-+	kfree(b->legacy_io);
-+	b->legacy_io = NULL;
-+	return;
- }
- 
- void pci_remove_legacy_files(struct pci_bus *b)
+--Signature=_Thu__7_Aug_2008_09_43_05_+1000_0lucu8eP4BtesStq--
