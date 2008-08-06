@@ -1,107 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756935AbYHFROJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759472AbYHFRRm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756935AbYHFROJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Aug 2008 13:14:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755567AbYHFRNj
+	id S1759472AbYHFRRm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Aug 2008 13:17:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756681AbYHFRRa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Aug 2008 13:13:39 -0400
-Received: from mailmxout.mailmx.agnat.pl ([193.239.44.238]:51786 "EHLO
-	mailmxout.mailmx.agnat.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755146AbYHFRNi convert rfc822-to-8bit (ORCPT
+	Wed, 6 Aug 2008 13:17:30 -0400
+Received: from fg-out-1718.google.com ([72.14.220.157]:25370 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756261AbYHFRR2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Aug 2008 13:13:38 -0400
-From: Arkadiusz Miskiewicz <arekm@maven.pl>
-To: "Wahlig, Elsie" <elsie.wahlig@amd.com>
-Subject: Re: Opteron Rev E has a bug ... a locked instruction doesn't act as a read-acquire barrier (confirmed)
-Date: Wed, 6 Aug 2008 19:13:34 +0200
-User-Agent: PLD Linux KMail/1.9.9
-Cc: mikpe@it.uu.se, linux-kernel@vger.kernel.org
-References: <CB2417C2B1152C41919D5B9DE58840FA72D828@sausexmb5.amd.com>
-In-Reply-To: <CB2417C2B1152C41919D5B9DE58840FA72D828@sausexmb5.amd.com>
+	Wed, 6 Aug 2008 13:17:28 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:mime-version:content-type
+         :content-transfer-encoding:content-disposition:message-id;
+        b=spU0hx/gEF2tLbdLxvwMsIv1zyQl6hvsSuySjE2Ha4EyoIVZZMZSbKge6jVoIrkMnp
+         zlMEDvadXZPksvgGvsp/9r2vSy5zYqoH7ad5d88XVSSv5WazDJ5DyRHiDUHCyB/Cw5Xz
+         psS7lHkC1/UZqQIKhJhnATHSTCKV+oTl8UcpY=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: linux-ide@vger.kernel.org
+Subject: [PATCH 3/2] ide-tape: remove idetape_init_rq()
+Date: Wed, 6 Aug 2008 19:13:20 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, Borislav Petkov <petkovbb@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200808061913.34874.arekm@maven.pl>
-X-Authenticated-Id: arekm
+Message-Id: <200808061913.21467.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 06 August 2008, Wahlig, Elsie wrote:
-> Your issue may be one that has been seen on 1st generation
-> AMD Opteron processor's with cpuid family 0Fh, cpuid model's
-> < 40h with the code sequence that performs a read-modify write
-> operation after acquiring a semaphore.
+idetape_init_rq() is only used in idetape_queue_pc_head()
+so inline it there.
 
-Matches my hardware
+Cc: Borislav Petkov <petkovbb@gmail.com>
+Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+---
+ drivers/ide/ide-tape.c |   11 +++--------
+ 1 file changed, 3 insertions(+), 8 deletions(-)
 
-cpu family      : 15
-model           : 33
-
->
-> The memory read ordering between a semaphore operation and a
-> subsequent read-modify-write instruction (an instruction which
-> uses the same memory location as both a source and destination)
-> may allow the read-modify-write instruction to operate on the
-> memory location ahead of the completion of the semaphore
-> operation and an erratum may occur.
-
-I wonder why there was no official errata about this?
-
-
-> If you think your software is encountering this code sequence,
-> a work-around should be implemented by adding an LFENCE
-> instruction right after the semaphore, after a cpuid check.
-> The workaround's applied to OpenSolaris at
-> http://mail.opensolaris.org/pipermail/onnv-notify/2006-October/009080.ht
-> ml
-> and Google performance tools tool at
-> http://google-perftools.googlecode.com/svn-history/r48/trunk/src/base/at
-> omicops-internals-x86.cc
-> are suitable examples.
-> A list of the model numbers this issue may occur on is at
-> http://products.amd.com/en-us/downloads/AMD_Opteron_First_Generation_Ref
-> erence_101607.pdf.
-
-Would be better to fix the bug on kernel level if this is possible. Just 
-someone with the knowledge needs to do this. Anyone interested?
-
-> Mikael Pettersson writes:
-> ... snip ...
->
-> > I investigated the Solaris track, but I've found no detailed
-> > explanation of the alleged bug. I've asked the Sun engineer
-> > who committed the fix for an explanation, but so far there's
-> > been no reply.
-> >
-> > Anyway, here's what I've found out.
-> >
-> > It's Solaris bug # 6323525.
-> >
-> > They call it "Mutex primitives don't work as expected."
-> >
-> > if (number_of_cores() < 2) then don't have bug if (family ==
-> > 0xf && Model < 0x40) then have bug if
-> > (rdmsr(MSR_BU_CFG/*0xC0011023*/) & 2) then bug is masked
-> > lock: // mutex_lock, spin_lock, etc
-> > ...
-> > lock; cmpxchg ..
-> > jnz fail
-> > ret; nop; nop; nop // patched to "lfence; ret" if bug The
-> > workaround is to place a fencing instruction (lfence) between
-> > the mutex operation and the subsequent read-modify-write instruction.
-> > (This provides the necessary load memory barrier.)
-> >
-> > There's no change to the unlock code.
-> >
-> > Anyone know who to contact @ AMD about confirming or denying this?
-> >
-> > /Mikael
-
-
-
--- 
-Arkadiusz Miśkiewicz        PLD/Linux Team
-arekm / maven.pl            http://ftp.pld-linux.org/
+Index: b/drivers/ide/ide-tape.c
+===================================================================
+--- a/drivers/ide/ide-tape.c
++++ b/drivers/ide/ide-tape.c
+@@ -689,13 +689,6 @@ static void idetape_create_request_sense
+ 	pc->req_xfer = 20;
+ }
+ 
+-static void idetape_init_rq(struct request *rq, u8 cmd)
+-{
+-	blk_rq_init(NULL, rq);
+-	rq->cmd_type = REQ_TYPE_SPECIAL;
+-	rq->cmd[13] = cmd;
+-}
+-
+ /*
+  * Generate a new packet command request in front of the request queue, before
+  * the current request, so that it will be processed immediately, on the next
+@@ -716,11 +709,13 @@ static void idetape_queue_pc_head(ide_dr
+ {
+ 	struct ide_tape_obj *tape = drive->driver_data;
+ 
+-	idetape_init_rq(rq, REQ_IDETAPE_PC1);
++	blk_rq_init(NULL, rq);
++	rq->cmd_type = REQ_TYPE_SPECIAL;
+ 	rq->cmd_flags |= REQ_PREEMPT;
+ 	rq->buffer = (char *) pc;
+ 	rq->rq_disk = tape->disk;
+ 	memcpy(rq->cmd, pc->c, 12);
++	rq->cmd[13] = REQ_IDETAPE_PC1;
+ 	ide_do_drive_cmd(drive, rq);
+ }
+ 
