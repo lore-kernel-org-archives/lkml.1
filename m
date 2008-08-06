@@ -1,52 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757987AbYHFTsW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964824AbYHFTti@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757987AbYHFTsW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Aug 2008 15:48:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757482AbYHFTru
+	id S964824AbYHFTti (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Aug 2008 15:49:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754096AbYHFTt3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Aug 2008 15:47:50 -0400
-Received: from smtpq2.groni1.gr.home.nl ([213.51.130.201]:44213 "EHLO
-	smtpq2.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756903AbYHFTrt (ORCPT
+	Wed, 6 Aug 2008 15:49:29 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:60913 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751235AbYHFTt2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Aug 2008 15:47:49 -0400
-Message-ID: <4899FFDF.8010806@keyaccess.nl>
-Date: Wed, 06 Aug 2008 21:47:43 +0200
-From: Rene Herman <rene.herman@keyaccess.nl>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080707)
+	Wed, 6 Aug 2008 15:49:28 -0400
+Date: Wed, 6 Aug 2008 15:49:27 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Simon Arlott <simon@fire.lp0.eu>
+cc: Rene Herman <rene.herman@keyaccess.nl>,
+       Arjan van de Ven <arjan@infradead.org>, <linux-kernel@vger.kernel.org>,
+       <mingo@elte.hu>, Daniel Walker <dwalker@mvista.com>,
+       USB list <linux-usb@vger.kernel.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: Re: [PATCH RFC] USB: Add HCD fastboot
+In-Reply-To: <4899F96D.9060809@simon.arlott.org.uk>
+Message-ID: <Pine.LNX.4.44L0.0808061543340.2138-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-CC: jmerkey@wolfmountaingroup.com, Geert Uytterhoeven <geert@linux-m68k.org>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Josh Boyer <jwboyer@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: [ANNOUNCE] Merkey's Kernel Debugger
-References: <17494.166.70.238.46.1217784156.squirrel@webmail.wolfmountaingroup.com> <200808060145.22321.nickpiggin@yahoo.com.au> <56575.166.70.238.45.1217950327.squirrel@webmail.wolfmountaingroup.com> <200808060238.56113.nickpiggin@yahoo.com.au>
-In-Reply-To: <200808060238.56113.nickpiggin@yahoo.com.au>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -1.0 (-)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 05-08-08 18:38, Nick Piggin wrote:
+On Wed, 6 Aug 2008, Simon Arlott wrote:
 
-> That's all well and good :). But it didn't exactly answer my
-> question. My question was not what is the point of you writing these
-> patches, but what is the point of merging it into the kernel (over
-> the alternatives). It may seem like a trivial question, but it is one
-> that must be answered in order to be considered to get merged.
+> > Wouldn't it be much simpler, and less objectionable, to do what I
+> > suggested earlier?  That is, add a 5-second delay at the start of
+> > hub_thread() in drivers/usb/core/hub.c.  No messing with Makefiles, no
+> > changes to the initcall scheduling.
+> 
+> Aside from 5 seconds being too long, and anything less being a race between 
+> hub_thread() and driver initcalls, it doesn't improve anything because it'll 
+> still have to wait for the devices to finish initialising in userspace instead.
 
-Nick, please note there is/was some mis-communication between the two of 
-you with respect to kgdb, the currently merged GNU debugger interface, 
-and kdb, the SGI kernel debugger.
+Why is 5 seconds too long?  Too long for what?
 
-Merkey responded to you as if you asked about differences with KDB while 
-what you did was ask about differences with KGDB. Both KDB and MDB are 
-significantly different from KGDB at least in sofar that the latter is a 
-remote debugger; it requires two machines. KDB and MDB are local.
+What you're doing is already a race between hub_thread() and driver 
+initcalls.  My suggestion is no worse.
 
-This makes KDB and MDB more accesible for small time use at least. The 
-other most profound advantage is ofcourse that it's not GDB.
+"it'll still have to wait..."  If by "it" you mean the initcall
+thread, you're wrong.  If by "it" you mean the user, you still aren't
+necessarily correct; the user can do plenty of other things while
+waiting for USB devices to initialize.
 
-Rene.
+I suppose you could make the hub_thread delay time a module parameter 
+for usbcore, defaulting to 0.  Then it could be set by just the people 
+who want to use it -- many (most?) people keep their drivers in 
+modules, and it wouldn't do them any good.
+
+Alan Stern
+
