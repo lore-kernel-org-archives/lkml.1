@@ -1,47 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758051AbYHFDwr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764333AbYHFDxd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758051AbYHFDwr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 23:52:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753225AbYHFDwU
+	id S1764333AbYHFDxd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 23:53:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753056AbYHFDxX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 23:52:20 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:43044 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752587AbYHFDwU (ORCPT
+	Tue, 5 Aug 2008 23:53:23 -0400
+Received: from wolverine01.qualcomm.com ([199.106.114.254]:2584 "EHLO
+	wolverine01.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751314AbYHFDxW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 23:52:20 -0400
-Date: Wed, 6 Aug 2008 05:52:55 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Eric Paris <eparis@redhat.com>
-Cc: Andi Kleen <andi@firstfloor.org>, malware-list@lists.printk.net,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC 0/5] [TALPA] Intro to a linux interface for on access scanning
-Message-ID: <20080806035255.GC24801@one.firstfloor.org>
-References: <1217883616.27684.19.camel@localhost.localdomain> <874p5y7tw0.fsf@basil.nowhere.org> <1217994234.27684.227.camel@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1217994234.27684.227.camel@localhost.localdomain>
-User-Agent: Mutt/1.4.2.1i
+	Tue, 5 Aug 2008 23:53:22 -0400
+X-IronPort-AV: E=McAfee;i="5200,2160,5354"; a="5349355"
+Message-ID: <4899202B.6030303@qualcomm.com>
+Date: Tue, 05 Aug 2008 20:53:15 -0700
+From: Max Krasnyansky <maxk@qualcomm.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Paul Jackson <pj@sgi.com>
+CC: mingo@elte.hu, linux-kernel@vger.kernel.org, menage@google.com,
+       a.p.zijlstra@chello.nl, vegard.nossum@gmail.com, lizf@cn.fujitsu.com
+Subject: Re: [PATCH] cpuset: Rework sched domains and CPU hotplug handling
+ (2.6.27-rc1)
+References: <1217631552-22129-1-git-send-email-maxk@qualcomm.com>	<20080802063900.6615e5ca.pj@sgi.com>	<48948C3A.6050805@qualcomm.com>	<20080802225127.2b0d138b.pj@sgi.com>	<4895F3ED.4020805@qualcomm.com>	<20080804010033.0d1b0549.pj@sgi.com>	<48977E81.4040207@qualcomm.com>	<20080804225636.541527e8.pj@sgi.com>	<4898B873.6000308@qualcomm.com>	<20080805180521.be7010e1.pj@sgi.com>	<48991973.90109@qualcomm.com> <20080805222927.6dd95f5f.pj@sgi.com>
+In-Reply-To: <20080805222927.6dd95f5f.pj@sgi.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I didn't consider it.  Most likely at the end of the day the finding
-> will be, "if you can write directly to the block device you already won
-> since there as so many other things you can do to subvert the system."
+Paul Jackson wrote:
+> Max wrote:
+>> But it does seem like an overkill to schedule a workqueue ...
+> 
+> "overkill" -- by what metric?
+> 
+> If something is overkill, it means something is excessive.
+> Excess (and deficiency) occur along some scale, some metric.
+> 
+> If not by CPU cycles, then by what metric is it overkill?
+> 
 
-This means your scheme is not generally supposed to protect against root? 
+Paul, I think you're focusing on the wrong part of my reply ;-).
+You are, of course, correct about the overkill metric. I was saying
+that saving cycles in that path was not my goal when I wrote
+the patch. I just added necessary functions to make existing paths
+work they way they currently do and only changed one path because
+it had to change due to lock nesting issues.
+Along the way simply pointed it out that scheduling work unnecessarily
+does seem less efficient. That was not the important part though :)
 
-I assume yes (since I can think of lots of other holes for 
-root), but you should state that explicitely in the spec since it
-is a major limitation.
-
-On the other hand it will also allow you to optimize significantly:
-
-In particularly it also means that you can trust the permissions
-and don't need to check any files which cannot be written by users 
-you don't control.
-
--Andi
+Max
 
