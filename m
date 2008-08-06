@@ -1,83 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761346AbYHFQy0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759648AbYHFRBV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761346AbYHFQy0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Aug 2008 12:54:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757433AbYHFQxr
+	id S1759648AbYHFRBV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Aug 2008 13:01:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754742AbYHFQ5k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Aug 2008 12:53:47 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:45996 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757034AbYHFQxp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Aug 2008 12:53:45 -0400
-Message-ID: <4899D6AA.4000501@redhat.com>
-Date: Wed, 06 Aug 2008 12:51:54 -0400
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Wed, 6 Aug 2008 12:57:40 -0400
+Received: from smtp101.mail.mud.yahoo.com ([209.191.85.211]:28573 "HELO
+	smtp101.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753852AbYHFQ5j (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Aug 2008 12:57:39 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=zxKlsqfDuTOsENJBoVtKrHuFTauFaAeytXUikAPDrUZMZwt/661nZ6K7is6OZXqGahIMDxIfjWCUbiPff46u8JJxdRxrd1OZyf6rbD3w7T+tC0e4SjPSgZscVGbw8pPdbxQWlxmhEoEtiuWrXkd1h/C/Y6tx/by1Kk6fBhaKxoY=  ;
+X-YMail-OSG: _jtUWIUVM1n7l96vjJMZVZT8ZBeH0FlvgJ6fnXp3AvcmGwAlV6Bh0wLIv6mK2.gn9LVnGIavkEu_Vraqal7YDdl.5aAWOwFt9qhuWZQiNCs5jwpHNrZ_u_Raz5sRopKemUY-
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: tvrtko.ursulin@sophos.com
+Subject: Re: [malware-list] [RFC 0/5] [TALPA] Intro to a linux interface =?iso-8859-1?q?for=09on_access?= scanning
+Date: Thu, 7 Aug 2008 02:57:30 +1000
+User-Agent: KMail/1.9.5
+Cc: Eric Paris <eparis@redhat.com>, linux-kernel@vger.kernel.org,
+       malware-list@lists.printk.net
+References: <20080806113028.35CD831682F@pmx1.sophos.com>
+In-Reply-To: <20080806113028.35CD831682F@pmx1.sophos.com>
 MIME-Version: 1.0
-To: jmerkey@wolfmountaingroup.com
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2.6.27-rc1-git5 2/26] mdb: correct kprobes int3 trap
-References: <200808050626.m756QZ1g003755@wolfmountaingroup.com>    <489872C5.2040508@redhat.com> <39379.166.70.238.45.1217950104.squirrel@webmail.wolfmountaingroup.com>
-In-Reply-To: <39379.166.70.238.45.1217950104.squirrel@webmail.wolfmountaingroup.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200808070257.31097.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-jmerkey@wolfmountaingroup.com wrote:
->> Hi Jeffery,
->>
->> Could you explain what is MDB and how it works?
-> 
-> 
-> MDB is a kernel debugger that uses the same general architecture
-> as the kernel debugger in Netware.  Unlike the variants of GNU
-> debuggers, MDB is geared towards folks from the intel/microsoft worlds
-> who are more accustomed to the old school Intel assembler model and
-> not the GNU variant that looks like an angry typewriter cursing at
-> the screen (%#*&!, etc.).
+On Wednesday 06 August 2008 21:29, tvrtko.ursulin@sophos.com wrote:
+> Nick Piggin <nickpiggin@yahoo.com.au> wrote on 06/08/2008 12:10:58:
 
-Would you have any document about MDB, or project-site url?
-I think it is hard for anyone to understand what you like to
-do only from these big patchset.
+> > > code so what am I missing?
+> >
+> > Maybe... but that's not the same as what requirement 5 calls for.
+>
+> I see what you mean, it should have been worded better. Nevertheless that
+> is what was intended by it - to enable caching only on filesystems where
+> it is safe to do so.
 
-> MDB has some features not yet in this first patch, but I will be adding to
-> subsequent patches like the ability to create time based traces of
-> execution of code just like an ice does so you can set trigger breakpoints
-> (kdb does not, nor kgdb), then go back ad look what happened in windows of
-> time, as well as a much easier interface, smaller size, more flexible and
-> pluggable command architecture -- a best of all -- it works and does not
-> crash every other release or on every third vendors PC architecture like
-> kdb does all the time.
+That is exactly what you cannot do. Otherwise you have to rewrite
+filesystems not to use the pagecache, and probably have to do disallow
+or do some horrible hacks to support mmap.
 
-Would you have talked with kdb/kgdb people?
-Since linux kernel already have kgdb, I think you might better talk
-about merging your functionality (and stability) to kgdb, or at least
-talk about what part both debugger can share.
-
-> It has been in use by me since 1997, when I wrote it after I left Novell.
-> It is mature, hardened, and very stable -- and follows an architecture
-> prove in the industry for over 20 years on Netware.
-
-Out of curiously, is there anyone except for you using MDB?
-
-Thank you,
-
->> And please check your patch style by using scripts/checkpatch.pl.
->> Your cording style seem to be different from linux coding style...
->>
->> Thank you,
-> 
+The requirement you actually intend is more like what you said before,
+along the lines of "file can't be changed in given set of circumstances".
 
 
--- 
-Masami Hiramatsu
+> > But depending on exactly what semantics you really call for, it can get
+> > tricky to account for all of pagecache. Writes can happen through page
+> > tables or get_user_pages. True that a process has to at some point have
+> > write permission to the file, but the cache itself could be modified
+> > even after the file is closed and all mmaps disappear.
+>
+> I don't have a very good understanding of the VM subsystem I must admit.
+> So in other words with the current kernel file modification time is not
+> necessarily correct - it represents when the file was last opened for
+> modification, not when it was actually modified? (While those two points
+> in time can be arbitrarily separated)
 
-Software Engineer
-Hitachi Computer Products (America) Inc.
-Software Solutions Division
+It is a best effort thing. When you start mmapping, that allows
+get_user_pages, which in turn may be able to take pages and modify
+them at fairly arbitrary points in time.
 
-e-mail: mhiramat@redhat.com
+
+> How would I use those methods for file modification? I am curious to make
+> a test case..
+
+Even just with mmap (we do a much better job of it now, but) you
+can probably write to a file after mtime if you write to already
+dirty pages.
 
