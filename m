@@ -1,74 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762300AbYHFURn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762775AbYHFUR5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762300AbYHFURn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Aug 2008 16:17:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756047AbYHFURc
+	id S1762775AbYHFUR5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Aug 2008 16:17:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758331AbYHFURd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Aug 2008 16:17:32 -0400
-Received: from casper.infradead.org ([85.118.1.10]:56180 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754795AbYHFURa (ORCPT
+	Wed, 6 Aug 2008 16:17:33 -0400
+Received: from shadow.wildlava.net ([67.40.138.81]:38700 "EHLO
+	shadow.wildlava.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754979AbYHFURb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Aug 2008 16:17:30 -0400
-Date: Wed, 6 Aug 2008 13:17:29 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Simon Arlott <simon@fire.lp0.eu>, Rene Herman <rene.herman@keyaccess.nl>,
-       <linux-kernel@vger.kernel.org>, <mingo@elte.hu>,
-       Daniel Walker <dwalker@mvista.com>,
-       USB list <linux-usb@vger.kernel.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: Re: [PATCH RFC] USB: Add HCD fastboot
-Message-ID: <20080806131729.6384550c@infradead.org>
-In-Reply-To: <Pine.LNX.4.44L0.0808061607160.2138-100000@iolanthe.rowland.org>
-References: <20080806125612.6bf9eb40@infradead.org>
-	<Pine.LNX.4.44L0.0808061607160.2138-100000@iolanthe.rowland.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 6 Aug 2008 16:17:31 -0400
+Message-ID: <489A06D9.1080600@skyrush.com>
+Date: Wed, 06 Aug 2008 14:17:29 -0600
+From: Joe Peterson <joe@skyrush.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080727)
+MIME-Version: 1.0
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: tty: ctrl-c not always echoed, especially under load
+References: <48977C96.2090005@skyrush.com> <20080805001129.72d06e60@lxorguk.ukuu.org.uk>
+In-Reply-To: <20080805001129.72d06e60@lxorguk.ukuu.org.uk>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 6 Aug 2008 16:09:21 -0400 (EDT)
-Alan Stern <stern@rowland.harvard.edu> wrote:
+Alan Cox wrote:
+> If the output buffer is full then echoed characters/^C etc will vanish the
+> way n_tty implements its buffering internally. It's always worked that
+> way.
 
-> On Wed, 6 Aug 2008, Arjan van de Ven wrote:
-> 
-> > On Wed, 6 Aug 2008 15:49:27 -0400 (EDT)
-> > Alan Stern <stern@rowland.harvard.edu> wrote:
-> > 
-> > > On Wed, 6 Aug 2008, Simon Arlott wrote:
-> > > 
-> > > > > Wouldn't it be much simpler, and less objectionable, to do
-> > > > > what I suggested earlier?  That is, add a 5-second delay at
-> > > > > the start of hub_thread() in drivers/usb/core/hub.c.  No
-> > > > > messing with Makefiles, no changes to the initcall scheduling.
-> > > > 
-> > > > Aside from 5 seconds being too long, and anything less being a
-> > > > race between hub_thread() and driver initcalls, it doesn't
-> > > > improve anything because it'll still have to wait for the
-> > > > devices to finish initialising in userspace instead.
-> > > 
-> > > Why is 5 seconds too long?  Too long for what?
-> > 
-> > because I'm done booting to full UI in that time.
-> > 
-> > it's forever.
-> 
-> This doesn't answer my question.  Why does the fact that you're
-> already in the UI after 5 seconds mean that 5 seconds is too long to
-> delay the start of khubd?
+One more observation:
 
+In Linux, try this:
 
-because it means that while the rest of boot is done and the system
-idle, the mouse and keyboard aren't going to work.
+# cat > foo
+hi^Sthere^Q
+^D
 
--- 
-If you want to reach me at my work email, use arjan@linux.intel.com
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+(in other words, during the cat into "foo", type "hi", hit ^S, then type
+"there", then hit ^Q, then, on the next line, ^D to end the file)
+
+Note that the "there" does not appear after hitting ^Q, but it does
+appear in the file.  So the characters were accepted, but they were not
+echoed (not even saved for echo when the terminal is restarted).
+
+This behavior differs from that of FreeBSD (just tried it for fun -
+haven't tried other Unix's yet).  I have noticed other times that the
+echo seems to get lost while the tty is stopped.  Not sure if all this
+is related, but something seems amiss.  Thoughts?
+
+					Thanks, Joe
