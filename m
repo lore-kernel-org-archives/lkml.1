@@ -1,153 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758245AbYHaVtO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758947AbYHFKSR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758245AbYHaVtO (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 Aug 2008 17:49:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753989AbYHaVs6
+	id S1758947AbYHFKSR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Aug 2008 06:18:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752815AbYHFKSD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 31 Aug 2008 17:48:58 -0400
-Received: from master.nsys.by ([194.158.194.5]:41705 "EHLO master.nsys.by"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753769AbYHaVs6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 Aug 2008 17:48:58 -0400
-X-Greylist: delayed 1093 seconds by postgrey-1.27 at vger.kernel.org; Sun, 31 Aug 2008 17:48:56 EDT
-Message-ID: <48BB0D62.7070407@nsys.by>
-Date: Mon, 01 Sep 2008 00:30:10 +0300
-From: Vladislav Bogdanov <slava_reg@nsys.by>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080707)
-MIME-Version: 1.0
-To: Adrian Bunk <bunk@kernel.org>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Douglas Thompson <dougthompson@xmission.com>,
-       Tim Small <tim@buttersideup.com>, Greg KH <greg@kroah.com>,
-       bluesmoke-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: [RFC: 2.6 patch] remove the broken i82443bxgx_edac driver
-References: <20080831161011.GD3695@cs181140183.pp.htv.fi>
-In-Reply-To: <20080831161011.GD3695@cs181140183.pp.htv.fi>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 6 Aug 2008 06:18:03 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:53910 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751090AbYHFKSB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Aug 2008 06:18:01 -0400
+Subject: Re: [PATCH] firmware: avoiding multiple replication for same
+	firmware file
+From: Jaswinder Singh <jaswinder@infradead.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, dwmw2@infradead.org
+In-Reply-To: <1218015313.3044.6.camel@jaswinder.satnam>
+References: <1217570459.2902.1.camel@jaswinder.satnam>
+	 <20080805140327.16494fb0.akpm@linux-foundation.org>
+	 <1218015313.3044.6.camel@jaswinder.satnam>
+Content-Type: text/plain
+Date: Wed, 06 Aug 2008 15:46:24 +0530
+Message-Id: <1218017784.3044.14.camel@jaswinder.satnam>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.1.1 (master.nsys.by [194.158.194.186]); Mon, 01 Sep 2008 00:30:12 +0300 (EEST)
-X-DCC-CollegeOfNewCaledonia-Metrics: master.nsys.by 1189; Body=7 Fuz1=7
-	Fuz2=7
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk wrote:
- > The i82443bxgx_edac driver was added more than one year ago, but after
- > only 3 seconds in Linus' tree it got a dependency on BROKEN with Andrew
- > stating:
- >
- >     It will claim the PCI devices from under intel_agp.ko's feet.
- >     Greg is brewing some fix for that.
- >
- > Since noone seems to care enough about this driver to get it working we
- > can as well remove it.
- >
+On Wed, 2008-08-06 at 15:05 +0530, Jaswinder Singh wrote:
+> @@ -445,12 +484,22 @@ _request_firmware(const struct firmware **firmware_p, const char *name,
+>  		retval = -ENOENT;
+>  		release_firmware(fw_priv->fw);
+>  		*firmware_p = NULL;
+> +		list_del(&tmp->list);
+> +		kfree(tmp->name);
+> +		kfree(tmp);
+>  	}
+>  	fw_priv->fw = NULL;
+>  	mutex_unlock(&fw_lock);
 
-Why not just make the same hack as in i3000_edac.c, i82860_edac.c, 
-i82875p_edac.c and i82975x_edac.c?
-I mean code around all occuriencies of 'mci_pdev'.
-This hack still needs some polishing (at least for i82875p and i82975x), but it 
-works for me (I have AGP stuff compiled into kernel).
-I attach 10-minutes copy-paste patch (completely untested, sorry, idea only).
-I have 443gx just upgraded to 2.6 so I'll try to test it in next few days.
+This is also not required as we are doing this in release_firmware().
+So :
 
-Best,
-Vladislav
+diff --git a/drivers/base/firmware_class.c b/drivers/base/firmware_class.c
+index c886113..7b268d1 100644
+--- a/drivers/base/firmware_class.c
++++ b/drivers/base/firmware_class.c
+@@ -484,9 +484,6 @@ _request_firmware(const struct firmware **firmware_p, const char *name,
+ 		retval = -ENOENT;
+ 		release_firmware(fw_priv->fw);
+ 		*firmware_p = NULL;
+-		list_del(&tmp->list);
+-		kfree(tmp->name);
+-		kfree(tmp);
+ 	}
+ 	fw_priv->fw = NULL;
+ 	mutex_unlock(&fw_lock);
 
-Signed-off-by: Vladislav Bogdanov <slava@nsys.by>
----
 
---- a/drivers/edac/i82443bxgx_edac.c    2008-02-18 15:04:39.000000000 +0200
-+++ a/drivers/edac/i82443bxgx_edac.c    2008-09-01 00:14:45.000000000 +0300
-@@ -114,6 +114,12 @@ struct i82443bxgx_edacmc_error_info {
-
-  static struct edac_pci_ctl_info *i82443bxgx_pci;
-
-+static struct pci_dev *mci_pdev;       /* init dev: in case that AGP code has
-+                                        * already registered driver
-+                                        */
-+
-+static int 82443bxgx_registered = 1;
-+
-  static void i82443bxgx_edacmc_get_error_info(struct mem_ctl_info *mci,
-                                 struct i82443bxgx_edacmc_error_info
-                                 *info)
-@@ -345,10 +351,17 @@ EXPORT_SYMBOL_GPL(i82443bxgx_edacmc_prob
-  static int __devinit i82443bxgx_edacmc_init_one(struct pci_dev *pdev,
-                                                 const struct pci_device_id *ent)
-  {
-+       int rc;
-+
-         debugf0("MC: " __FILE__ ": %s()\n", __func__);
-
-         /* don't need to call pci_device_enable() */
--       return i82443bxgx_edacmc_probe1(pdev, ent->driver_data);
-+       rc = i82443bxgx_edacmc_probe1(pdev, ent->driver_data);
-+
-+       if (!mci_pdev)
-+               mci_pdev = pci_dev_get(pdev);
-+
-+       return rc;
-  }
-
-  static void __devexit i82443bxgx_edacmc_remove_one(struct pci_dev *pdev)
-@@ -390,12 +403,57 @@ static int __init i82443bxgx_edacmc_init
-         /* Ensure that the OPSTATE is set correctly for POLL or NMI */
-         opstate_init();
-
--       return pci_register_driver(&i82443bxgx_edacmc_driver);
-+       pci_rc = pci_register_driver(&i82443bxgx_edacmc_driver);
-+       if (pci_rc < 0)
-+               goto fail0;
-+
-+       if (!mci_pdev) {
-+               const struct pci_device_id *id = &i82443bxgx_pci_tbl[0];
-+               int i = 0;
-+               82443bxgx_registered = 0;
-+
-+               while (mci_pdev == NULL && id->vendor != 0) {
-+                       mci_pdev = pci_get_device(id->vendor,
-+                                       id->device, NULL);
-+                       i++;
-+                       id = &i82443bxgx_pci_tbl[i];
-+               }
-+               if (!mci_pdev) {
-+                       debugf0("i82443bxgx pci_get_device fail\n");
-+                       pci_rc = -ENODEV;
-+                       goto fail1;
-+               }
-+
-+               pci_rc = i82443bxgx_init_one(mci_pdev, i82443bxgx_pci_tbl);
-+
-+               if (pci_rc < 0) {
-+                       debugf0("i82443bxgx init fail\n");
-+                       pci_rc = -ENODEV;
-+                       goto fail1;
-+               }
-+       }
-+
-+       return 0;
-+
-+fail1:
-+       pci_unregister_driver(&i82975x_driver);
-+
-+fail0:
-+       if (mci_pdev)
-+               pci_dev_put(mci_pdev);
-+
-+       return pci_rc;
-  }
-
-  static void __exit i82443bxgx_edacmc_exit(void)
-  {
-         pci_unregister_driver(&i82443bxgx_edacmc_driver);
-+
-+       if (!i82443bxgx_registered)
-+               i82443bxgx_remove_one(mci_pdev);
-+
-+       if (mci_pdev)
-+               pci_dev_put(mci_pdev);
-  }
-
-  module_init(i82443bxgx_edacmc_init);
