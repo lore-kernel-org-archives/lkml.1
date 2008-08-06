@@ -1,52 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764726AbYHFLXU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762535AbYHFL1a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764726AbYHFLXU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Aug 2008 07:23:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758440AbYHFLXF
+	id S1762535AbYHFL1a (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Aug 2008 07:27:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758600AbYHFL1R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Aug 2008 07:23:05 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:60776 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758426AbYHFLXE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Aug 2008 07:23:04 -0400
-Date: Wed, 6 Aug 2008 19:22:49 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Austin Zhang <austin_zhang@linux.intel.com>
-Cc: Pavel Machek <pavel@suse.cz>, bunk@kernel.org, dwmw2@infradead.org,
-       davem@davemloft.net, randy.dunlap@oracle.com,
-       linux-kernel@vger.kernel.org, linux-crypto@vger.kernel.org
-Subject: Re: [PATCH] Using Intel CRC32 instruction to accelerate CRC32c algorithm by new crypto API -V3.
-Message-ID: <20080806112249.GA32234@gondor.apana.org.au>
-References: <1218000211.4231.23.camel@localhost.localdomain> <20080806094226.GA23685@atrey.karlin.mff.cuni.cz> <1218020727.29030.16.camel@localhost.localdomain> <20080806111724.GA32129@gondor.apana.org.au>
+	Wed, 6 Aug 2008 07:27:17 -0400
+Received: from h155.mvista.com ([63.81.120.155]:40034 "EHLO imap.sh.mvista.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1758440AbYHFL1Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Aug 2008 07:27:16 -0400
+Message-ID: <48998A8B.9040109@ru.mvista.com>
+Date: Wed, 06 Aug 2008 15:27:07 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080806111724.GA32129@gondor.apana.org.au>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Tejun Heo <htejun@gmail.com>
+Cc: Robert Hancock <hancockr@shaw.ca>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       James Bottomley <James.Bottomley@hansenpartnership.com>,
+       ksummit-2008-discuss@lists.linux-foundation.org,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-ide <linux-ide@vger.kernel.org>, Jeff Garzik <jeff@garzik.org>
+Subject: Re: Kernel Summit request for Discussion of future of ATA (libata)
+ and IDE
+References: <fa.OGeO7gZvBG4obEzRbVltjSebgTQ@ifi.uio.no> <fa.KtvYE2B2yrJqUleolhtMPN9ljAQ@ifi.uio.no> <fa.AqEKTvguYFAzDFHy/We/8MpOqmo@ifi.uio.no> <48976168.3020804@shaw.ca> <20080804205508.20a3f917@lxorguk.ukuu.org.uk> <48977200.3050307@shaw.ca> <20080804220619.76b94ceb@lxorguk.ukuu.org.uk> <4898EE70.1030604@shaw.ca> <4898F3EA.7000507@gmail.com>
+In-Reply-To: <4898F3EA.7000507@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 06, 2008 at 07:17:24PM +0800, Herbert Xu wrote:
-> On Wed, Aug 06, 2008 at 07:05:27AM -0400, Austin Zhang wrote:
-> >
-> > > > +		return -1;
-> > > 
-> > > That's supposed to be errno, right?
-> > Are you suggest "ENODEV"? It's a feature from the device but the device is exact here. 
-> 
-> Yes I think this should be ENODEV to be consistent with the
-> existing drivers such as padlock-aes.c.
-> 
-> I'll make that change in cryptodev.
+Hello.
 
-In fact I'm going to kill that printk altogether since the fact
-that this feature doesn't exist isn't an error.
+Tejun Heo wrote:
+>> +unsigned int ata_sff_data_xfer(struct ata_device *dev, unsigned char *buf,
+>> +			       unsigned int buflen, int rw)
+>> +{
+>> +	struct ata_port *ap = dev->link->ap;
+>> +	void __iomem *data_addr = ap->ioaddr.data_addr;
+>> +	unsigned int words = buflen >> 2;
+>>     
+>
+> dwords maybe?
+>   
 
-Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+   Isn't word 32-bit in the 32-bit systems? We're not on 80[12]86 
+(despite Intel/MS preference of calling 32-bit memory cells DWORDS)...
+
+MBR, Sergei
+
+
