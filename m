@@ -1,72 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757124AbYHFOHP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756842AbYHFOLV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757124AbYHFOHP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Aug 2008 10:07:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754896AbYHFOGr
+	id S1756842AbYHFOLV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Aug 2008 10:11:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753597AbYHFOLH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Aug 2008 10:06:47 -0400
-Received: from 166-70-238-42.ip.xmission.com ([166.70.238.42]:38923 "EHLO
-	ns1.wolfmountaingroup.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754754AbYHFOGq (ORCPT
+	Wed, 6 Aug 2008 10:11:07 -0400
+Received: from nf-out-0910.google.com ([64.233.182.188]:25459 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750866AbYHFOLG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Aug 2008 10:06:46 -0400
-Message-ID: <44898.166.70.238.45.1218030342.squirrel@webmail.wolfmountaingroup.com>
-In-Reply-To: <20080806135410.GA39185@dspnet.fr.eu.org>
-References: <17494.166.70.238.46.1217784156.squirrel@webmail.wolfmountaingroup.com>
-    <Pine.LNX.4.64.0808051140150.6309@anakin>
-    <33030.166.70.238.45.1217948565.squirrel@webmail.wolfmountaingroup.com>
-    <200808060133.10457.nickpiggin@yahoo.com.au>
-    <87r6926dsr.fsf@basil.nowhere.org> <4899A313.7020708@tmr.com>
-    <20080806135410.GA39185@dspnet.fr.eu.org>
-Date: Wed, 6 Aug 2008 07:45:42 -0600 (MDT)
-Subject: Re: [ANNOUNCE] Merkey's Kernel Debugger
-From: jmerkey@wolfmountaingroup.com
-To: "Olivier Galibert" <galibert@pobox.com>,
-       "Bill Davidsen" <davidsen@tmr.com>, linux-kernel@vger.kernel.org,
-       "Nick Piggin" <nickpiggin@yahoo.com.au>, jmerkey@wolfmountaingroup.com,
-       "Geert Uytterhoeven" <geert@linux-m68k.org>,
-       "Stefan Richter" <stefanr@s5r6.in-berlin.de>,
-       "Josh Boyer" <jwboyer@gmail.com>
-User-Agent: SquirrelMail/1.4.6
+	Wed, 6 Aug 2008 10:11:06 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=to:subject:date:user-agent:cc:references:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :message-id:from;
+        b=kcl90t5t4PLEkEMmDHOngGCLkqbvQx/dhe9JS7WhVwGkDwKNn5Q2R2tExw6+BH7jb5
+         J7RIojZ1gjRKIvfWu3tSVWLvITvqCtQlEsd5LWEGTP9EcarYYMBLlU98m/rVsCG9/9F5
+         /ywvjnb251Q3Zd4Inonr9SrcO3Cszu92dI1wc=
+To: "John W. Linville" <linville@tuxdriver.com>
+Subject: Re: [GIT]: Networking
+Date: Wed, 6 Aug 2008 16:35:04 +0200
+User-Agent: KMail/1.9.9
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Marcel Holtmann <marcel@holtmann.org>,
+       David Miller <davem@davemloft.net>,
+       Andrew Morton <akpm@linux-foundation.org>, netdev@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <20080805.190020.244441681.davem@davemloft.net> <200808061022.02432.IvDoorn@gmail.com> <20080806131503.GD7036@tuxdriver.com>
+In-Reply-To: <20080806131503.GD7036@tuxdriver.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200808061635.05292.IvDoorn@gmail.com>
+From: Ivo van Doorn <ivdoorn@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Wed, Aug 06, 2008 at 09:11:47AM -0400, Bill Davidsen wrote:
->> I would suggest that if it meets coding standards and doesn't break
->> anything else it could be included in -mm (assume there's no objection
->> there) and let people beat on it there, with the assumption that unless
->> problems are found it will be promoted.
->
-> It's a little too early for that.  Right now it's at the phase "how to
-> make it better integrate with the kernel", with the use of existing
-> hooks, adding the needed hooks to be more complete, working as a
-> module, etc.  When that is done then the philosophical aspects can
-> come into play, but it's not there yet.
->
->   OG.
->
+On Wednesday 06 August 2008, John W. Linville wrote:
+> On Wed, Aug 06, 2008 at 10:22:02AM +0200, Ivo van Doorn wrote:
+> > On Wednesday 06 August 2008, Linus Torvalds wrote:
+> 
+> > > Well, it's also trying to support both 2.4.x and 2.6 etc. Yeah, that is 
+> > > horrid. At the same time, I can't say that the "rewrite it entirely" 
+> > > approach of the previous-gen cards has worked very well either, since that 
+> > > seems to have just perpetuated the problems. It would be great to try to 
+> > > educate them, but I'm not finding even an email address in the sources.
+> > 
+> > I've send a mail to Ralink with a request if they could step away from the
+> > "port the windows driver to linux" idea and get the Linux driver "kernel-ready"
+> > early on.
+> > That won't solve the problem now, but hopefully it does mean the drivers for
+> > the next generation can go into the kernel sooner.
+> 
+> The Ralink guys are being educated and AFAICT they are interested in
+> better participation.  Time will tell, of course.
+> 
+> In the meantime as Ivo indicated he is "on the case" -- I think we
+> will see something before too long.
 
-I have removed the hooks into the /arch/x86 sections and converted the
-debugger to use kprobes and notify_die as Andi suggested.  It also builds
-and loads as a module.
+For the interested, the rt2800pci and rt2800usb code which I am working on can
+be found in the experimental branch of my repository:
+http://git.kernel.org/?p=linux/kernel/git/ivd/rt2x00.git;a=shortlog;h=experimental
+Because the code is incomplete it cannot be tested, but it gives at least an idea
+on what is already done. ;)
 
-One serious point has to do with NMI handling on SMP since the notify_die
-handlers use this priorty calling mechanism.  I am still testing on SMP
-but it seems to work -- I just am a little uncomfortable with trusting an
-interface (notify_die) that can let someone come in and hook the NMI
-handlers when I MUST BE ABLE TO NMI AND HALT non-focus processors first.
-
-I am adding a special NMI state to the chain notifier to handle this case
-where IT MUST BE CALLED FIRST and IT MUST BE THE ONLY EVENT CALLED.  I
-used the DIE_KERNELDEBUG to hook the keyboard handler in
-drivers/char/keyboard.c so we have the general hook into kprobes to handle
-enter debugger events.
-
-Jeff
-
+Ivo
