@@ -1,53 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765058AbYHFJJ4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760743AbYHFJXR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765058AbYHFJJ4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Aug 2008 05:09:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756404AbYHFJJa
+	id S1760743AbYHFJXR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Aug 2008 05:23:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758463AbYHFJKI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Aug 2008 05:09:30 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:51005 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754519AbYHFJJ3 (ORCPT
+	Wed, 6 Aug 2008 05:10:08 -0400
+Received: from fms-01.valinux.co.jp ([210.128.90.1]:55081 "EHLO
+	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756404AbYHFJKG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Aug 2008 05:09:29 -0400
-Date: Wed, 6 Aug 2008 09:51:18 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Robert Hancock <hancockr@shaw.ca>
-Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       James Bottomley <James.Bottomley@hansenpartnership.com>,
-       ksummit-2008-discuss@lists.linux-foundation.org,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-ide <linux-ide@vger.kernel.org>, Jeff Garzik <jeff@garzik.org>
-Subject: Re: Kernel Summit request for Discussion of future of ATA (libata)
- and IDE
-Message-ID: <20080806095118.39035512@lxorguk.ukuu.org.uk>
-In-Reply-To: <4898EE70.1030604@shaw.ca>
-References: <fa.OGeO7gZvBG4obEzRbVltjSebgTQ@ifi.uio.no>
-	<fa.KtvYE2B2yrJqUleolhtMPN9ljAQ@ifi.uio.no>
-	<fa.AqEKTvguYFAzDFHy/We/8MpOqmo@ifi.uio.no>
-	<48976168.3020804@shaw.ca>
-	<20080804205508.20a3f917@lxorguk.ukuu.org.uk>
-	<48977200.3050307@shaw.ca>
-	<20080804220619.76b94ceb@lxorguk.ukuu.org.uk>
-	<4898EE70.1030604@shaw.ca>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Wed, 6 Aug 2008 05:10:06 -0400
+To: kamezawa.hiroyu@jp.fujitsu.com
+Cc: linux-mm@kvack.org, menage@google.com,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       a.p.zijlstra@chello.nl
+Subject: Re: [PATCH][RFC] dirty balancing for cgroups
+In-Reply-To: Your message of "Wed, 6 Aug 2008 17:53:52 +0900"
+	<20080806175352.6330c00a.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20080806175352.6330c00a.kamezawa.hiroyu@jp.fujitsu.com>
+X-Mailer: Cue version 0.8 (080625-0732/takashi)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: Text/Plain; charset=us-ascii
+Message-Id: <20080806091005.B883A5A7B@siro.lan>
+Date: Wed,  6 Aug 2008 18:10:05 +0900 (JST)
+From: yamamoto@valinux.co.jp (YAMAMOTO Takashi)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Here's my first cut at it. Compile tested only. This sets most controllers
-> to use 32-bit PIO except for those which could potentially be on a real ISA
-> or other 16-bit bus. It's a bit non-obvious what to do with some of the
-> drivers, so input is welcome.
+hi,
 
-Only thing I would do differently and definitely want to do differently
-is the assumption that we just turn on 32bit and see what occurs. We need
-to read/test/change controller by controller over to 32bit not just hope.
+> On Wed,  6 Aug 2008 17:20:46 +0900 (JST)
+> yamamoto@valinux.co.jp (YAMAMOTO Takashi) wrote:
+> 
+> > hi,
+> > 
+> > > On Fri, 11 Jul 2008 17:34:46 +0900 (JST)
+> > > yamamoto@valinux.co.jp (YAMAMOTO Takashi) wrote:
+> > > 
+> > > > hi,
+> > > > 
+> > > > > > my patch penalizes heavy-writer cgroups as task_dirty_limit does
+> > > > > > for heavy-writer tasks.  i don't think that it's necessary to be
+> > > > > > tied to the memory subsystem because i merely want to group writers.
+> > > > > > 
+> > > > > Hmm, maybe what I need is different from this ;)
+> > > > > Does not seem to be a help for memory reclaim under memcg.
+> > > > 
+> > > > to implement what you need, i think that we need to keep track of
+> > > > the numbers of dirty-pages in each memory cgroups as a first step.
+> > > > do you agree?
+> > > > 
+> > > yes, I think so, now.
+> > > 
+> > > may be not difficult but will add extra overhead ;( Sigh..
+> > 
+> > the following is a patch to add the overhead. :)
+> > any comments?
+> > 
+> Do you have some numbers ? ;) 
 
-Alan
+not yet.
+
+> I like this because this seems very straightforward. thank you.
+
+good to hear.
+
+> How about changing these to be
+> 
+> ==
+> void mem_cgroup_test_set_page_dirty()
+> {
+> 	if (try_lock_page_cgroup(pg)) {
+> 		pc = page_get_page_cgroup(pg);
+> 		if (pc ......) {
+> 		}
+> 		unlock_page_cgroup(pg)
+> 	}
+> }
+> ==
+
+i'm not sure how many opportunities to update statistics
+we would lose for the trylock failure.
+although the statistics don't need to be too precise,
+its error should have a reasonable upper-limit to be useful.
+
+> Off-topic: I wonder we can delete this "lock" in future.
+> 
+> Because page->page_cgroup is
+>  1. attached at first use.(Obiously no race with set_dirty)
+>  2. deleted at removal. (force_empty is problematic here..)
+
+i hope it's possible. :)
+
+YAMAMOTO Takashi
+
+> 
+> But, now, we need this lock.
+> 
+> Thanks,
+> -Kame
+> 
+> --
+> To unsubscribe, send a message with 'unsubscribe linux-mm' in
+> the body to majordomo@kvack.org.  For more info on Linux MM,
+> see: http://www.linux-mm.org/ .
+> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
