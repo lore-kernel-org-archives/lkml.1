@@ -1,46 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759010AbYHFMXg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765048AbYHFMXz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759010AbYHFMXg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Aug 2008 08:23:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756490AbYHFMVW
+	id S1765048AbYHFMXz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Aug 2008 08:23:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755706AbYHFMXG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Aug 2008 08:21:22 -0400
-Received: from mgw1.diku.dk ([130.225.96.91]:54365 "EHLO mgw1.diku.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756441AbYHFMVU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Aug 2008 08:21:20 -0400
-Date: Wed, 6 Aug 2008 14:21:17 +0200 (CEST)
-From: Julia Lawall <julia@diku.dk>
-To: Mike Frysinger <vapier.adi@gmail.com>
-Cc: Vegard Nossum <vegard.nossum@gmail.com>, Bryan Wu <cooloney@kernel.org>,
-       Alexey Dobriyan <adobriyan@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] blackfin/sram: use 'unsigned long' for irqflags
-In-Reply-To: <8bd0f97a0808060514x5c9ed37exbf8f9852b5a0b55d@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0808061417540.20424@pc-004.diku.dk>
-References: <20080806105836.GA2903@localhost.localdomain> 
- <8bd0f97a0808060405qf70ead2t2f2604802875197e@mail.gmail.com> 
- <19f34abd0808060428m1c317531v4a58679c4051c0e9@mail.gmail.com>
- <8bd0f97a0808060514x5c9ed37exbf8f9852b5a0b55d@mail.gmail.com>
+	Wed, 6 Aug 2008 08:23:06 -0400
+Received: from mail-out.m-online.net ([212.18.0.9]:38069 "EHLO
+	mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753717AbYHFMXF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Aug 2008 08:23:05 -0400
+Date: Wed, 6 Aug 2008 14:23:01 +0200
+From: Olaf Hering <olaf@aepfle.de>
+To: sam@ravnborg.org, linux-kernel@vger.kernel.org
+Cc: linuxppc-dev@ozlabs.org
+Subject: unconditional link object arch/powerpc/lib/crtsavres.o breaks
+	module build
+Message-ID: <20080806122301.GA27495@aepfle.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> *shrug* ... i dont see other patches with things like:
-> The patch was generated with git.
-> The patch was generated with eclipse.
-> The patch was generated with emacs.
-> etc...
-> 
-> we dont generally list all of the tools in the log message that was
-> used in *creating* a patch since it doesnt really add any value when
-> looking back historically at changes.
 
-But with git, emacs, eclipse etc, the person is still making the change by 
-hand.  The comment is more like "this patch was generated with perl" or 
-"this patch was generated with sed", indicating that the change is 
-uniform enough to be automated.  This does have some interest, 
-although perhaps not for everyone.
+Sam,
 
-julia
+please have a look at bug 11143.
+http://bugzilla.kernel.org/show_bug.cgi?id=11143
+
+
+arch/powerpc/lib/crtsavres.o is added inconditionally to the linker
+flags, but there is no rule to actually create the object file.
+This breaks building external modules on 32bit powerpc since 2.6.26.
+
+Thanks,
+Olaf
