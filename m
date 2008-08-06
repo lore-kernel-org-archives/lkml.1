@@ -1,80 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760997AbYHFTbA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761528AbYHFTcI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760997AbYHFTbA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Aug 2008 15:31:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756845AbYHFTat
+	id S1761528AbYHFTcI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Aug 2008 15:32:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756845AbYHFTby
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Aug 2008 15:30:49 -0400
-Received: from fg-out-1718.google.com ([72.14.220.152]:2296 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755180AbYHFTas (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Aug 2008 15:30:48 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=date:to:cc:subject:message-id:reply-to:mail-followup-to:references
-         :mime-version:content-type:content-disposition:in-reply-to
-         :user-agent:from;
-        b=tUFasQ1XUKTtQtvby3nyrq89+hKzrDkpW/iAb6ofVWPhuesXehKrWzgxOz2aQ94jnS
-         Xi8KYppzfHPqlMgabwh2Edbez6e8LM31CEh0I/farq+bfFfWCbETpTUuMZd34enInquT
-         wUEY+jE++GtF+C+erZZLrqupSylABuWHBVlxI=
-Date: Wed, 6 Aug 2008 21:30:56 +0200
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] ide-floppy: use scatterlists for pio transfers
-Message-ID: <20080806193056.GA31312@gollum.tnic>
-Reply-To: petkovbb@gmail.com
-Mail-Followup-To: petkovbb@gmail.com,
-	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-	linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20080805051113.GA15834@gollum.tnic> <200808061805.01126.bzolnier@gmail.com>
+	Wed, 6 Aug 2008 15:31:54 -0400
+Received: from mail.suse.de ([195.135.220.2]:40726 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756215AbYHFTbx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Aug 2008 15:31:53 -0400
+Date: Wed, 6 Aug 2008 12:29:13 -0700
+From: Greg KH <gregkh@suse.de>
+To: Simon Arlott <simon@fire.lp0.eu>
+Cc: Alan Stern <stern@rowland.harvard.edu>,
+       Rene Herman <rene.herman@keyaccess.nl>,
+       Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, Daniel Walker <dwalker@mvista.com>,
+       USB list <linux-usb@vger.kernel.org>
+Subject: Re: [PATCH RFC] USB: Add HCD fastboot
+Message-ID: <20080806192913.GA29239@suse.de>
+References: <Pine.LNX.4.44L0.0808061508430.12900-100000@iolanthe.rowland.org> <4899F96D.9060809@simon.arlott.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200808061805.01126.bzolnier@gmail.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-From: Borislav Petkov <petkovbb@googlemail.com>
+In-Reply-To: <4899F96D.9060809@simon.arlott.org.uk>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 06, 2008 at 06:05:00PM +0200, Bartlomiej Zolnierkiewicz wrote:
-> 
-> Hi,
-> 
-> On Tuesday 05 August 2008, Borislav Petkov wrote:
-> > Hi Bart,
-> > 
-> > here's my first stab at using scatterlists in ide-floppy. I've adapted your
-> > ide-scsi version to fit in here. The change here is that i use pc->b_count as
-> > a sort-of completion counter to know when i'm at the end of the sg element and
-> > be able to switch to the next/finish transfer. I've tested the patch with the
-> > Iomega ZIP drive i have here - it works. We should do some more testing first
-> > though, before sending it upstream.
-> 
-> [...]
-> 
-> > @@ -569,7 +577,7 @@ static void idefloppy_create_rw_cmd(idefloppy_floppy_t *floppy,
-> >  	memcpy(rq->cmd, pc->c, 12);
-> >  
-> >  	pc->rq = rq;
-> > -	pc->b_count = cmd == READ ? 0 : rq->bio->bi_size;
-> > +	pc->b_count = 0;
-> >  	if (rq->cmd_flags & REQ_RW)
-> >  		pc->flags |= PC_FLAG_WRITING;
-> >  	pc->buf = NULL;
-> 
-> Don't we also need to zero pc->b_count in idefloppy_blockpc_cmd()?
-> 
-> [ idefloppy_init_pc() clears whole pc so ->b_count assignment
->   to zero is not strictly necessary ]
+On Wed, Aug 06, 2008 at 08:20:13PM +0100, Simon Arlott wrote:
+> On 06/08/08 20:11, Alan Stern wrote:
+>> On Wed, 6 Aug 2008, Simon Arlott wrote:
+>>> On 31/07/08 20:16, Alan Stern wrote:
+>>> >> > It's not entirely clear why usblp is blocking at all.  Probably 
+>>> because
+>>> >> > it is waiting on the device semaphores for devices that are 
+>>> currently
+>>> >> > being probed -- the driver core won't allow two threads to probe the
+>>> >> > same device concurrently.
+>>> >> >> Ok - so there could be some big improvements to be had by making 
+>>> the hcd >> init happen as early as possible and the device initcalls 
+>>> later?
+>>> > > Maybe.  Perhaps a better approach would be to make the device driver 
+>>> > initcalls before there are any devices for their probe routines to > 
+>>> block on.
+>>> What about this?
+>>> The Makefiles become a bit messy, but by moving things around I get the 
+>>> desired effect without splitting their initcalls.
+>> Wouldn't it be much simpler, and less objectionable, to do what I
+>> suggested earlier?  That is, add a 5-second delay at the start of
+>> hub_thread() in drivers/usb/core/hub.c.  No messing with Makefiles, no
+>> changes to the initcall scheduling.
+>
+> Aside from 5 seconds being too long, and anything less being a race between 
+> hub_thread() and driver initcalls, it doesn't improve anything because 
+> it'll still have to wait for the devices to finish initialising in 
+> userspace instead.
 
-We probably should and i should've probably hit that during testing and maybe
-hit an OOPS along that path but we don't do REQ_TYPE_BLOCK_PC in ide-floppy
-yet, as it appears, and since idefloppy_blockpc_cmd() is only called when
-blk_pc_request(rq) that's why this one doesn't matter here. We should consider
-it though when we convert to using BLOCK_PC type rq's.
+And what is your boot time if the usb drivers are modules?
 
--- 
-Regards/Gruss,
-    Boris.
+I'd much prefer that requirement to get a faster boot than to go around
+mucking with the link-time ordering...
+
+thanks,
+
+greg k-h
