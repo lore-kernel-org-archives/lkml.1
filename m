@@ -1,52 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762557AbYHFCxb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763090AbYHFC5V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762557AbYHFCxb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 22:53:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758540AbYHFCqM
+	id S1763090AbYHFC5V (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 22:57:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757880AbYHFC5I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 22:46:12 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:49396 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758015AbYHFCqH (ORCPT
+	Tue, 5 Aug 2008 22:57:08 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:45232 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752844AbYHFC5H (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 22:46:07 -0400
-To: "Press, Jonathan" <Jonathan.Press@ca.com>
-Cc: "Eric Paris" <eparis@redhat.com>, "Greg KH" <greg@kroah.com>,
-       <linux-kernel@vger.kernel.org>, <malware-list@lists.printk.net>
-Subject: Re: [malware-list] [RFC 0/5] [TALPA] Intro to a linux interface foron access scanning
-From: Andi Kleen <andi@firstfloor.org>
-References: <1217883616.27684.19.camel@localhost.localdomain>
-	<20080804223249.GA10517@kroah.com>
-	<1217896374.27684.53.camel@localhost.localdomain>
-	<2629CC4E1D22A64593B02C43E855530304807431@USILMS12.ca.com>
-Date: Wed, 06 Aug 2008 04:46:05 +0200
-In-Reply-To: <2629CC4E1D22A64593B02C43E855530304807431@USILMS12.ca.com> (Jonathan Press's message of "Tue, 5 Aug 2008 10:41:44 -0400")
-Message-ID: <87vdye6etu.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
+	Tue, 5 Aug 2008 22:57:07 -0400
+Date: Tue, 5 Aug 2008 19:57:03 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: David Miller <davem@davemloft.net>
+cc: Andrew Morton <akpm@linux-foundation.org>, netdev@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ivo van Doorn <IvDoorn@gmail.com>
+Subject: Re: [GIT]: Networking
+In-Reply-To: <20080805.190020.244441681.davem@davemloft.net>
+Message-ID: <alpine.LFD.1.10.0808051937410.15995@nehalem.linux-foundation.org>
+References: <20080805.190020.244441681.davem@davemloft.net>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Press, Jonathan" <Jonathan.Press@ca.com> writes:
->
-> Also...  I was one of the people who brought up the idea of a process
-> exclusion when the requirements list was being developed.  I intended it
-> as a way that an AV application could exclude specific OTHER processes
-> by name (as selected by the AV user)
 
-There's no fixed process name in Linux that cannot be easily faked: 
 
-Use process name -- every process can change that by writing to its own
-environment.
-Use comm name -- there's a prctl to change that and there can be collisions
-Use path name of binary -- breaks with chroot and name spaces. Also existing
-binaries can be subverted.
-Use inode of binary -- can be faked with fuse and breaks when the binaries
-is copied ...
-Use dev, inode -- breaks when copying binary and when running on network
-file systems without a device node
+On Tue, 5 Aug 2008, David Miller wrote:
+> 
+> There was going to be the addition of the ath9k wireless driver but
+> there was some fallout that is being worked on right now (linux/list.h
+> changes needed lkml review, ath9k driver triggered some gcc aborts,
+> all kinds of fun stuff :-) so hopefully it will make it in the next
+> pass.  I tried to wait an extra day for it to be resolved, but that
+> was optimistic.
 
--Andi
+Talking about wireless driver updates - has anybody looked at the RaLink 
+wireless driver?  It's in the newer EeePC's (901 and 1000), and it 
+actually has a driver from the company which the comments make clear is 
+GPLv2 too, no apparent oddness or anything:
 
+	http://www.ralinktech.com.tw/data/drivers/2008_0708_RT2860_Linux_STA_v1.7.0.0.tar.bz2
+
+which admittedly apparently has some trivial problems (with a trivial 
+patch as seen at
+
+	http://fedoraforum.org/forum/showthread.php?t=195429
+
+I'd love to have that one working, since I have the hardware, and it's 
+actually reasonable (much more so than the original EeePC, in fact). What 
+channels should I go through? Is anybody working on integrating it 
+already?
+
+(Ivo van Doorn added to Cc, since he seems the go-to guy for the rt2x00 
+driver in the tree, and may have some input).
+
+		Linus
