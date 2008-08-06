@@ -1,74 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762273AbYHFCVs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763124AbYHFCWH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762273AbYHFCVs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Aug 2008 22:21:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750809AbYHFCQ4
+	id S1763124AbYHFCWH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Aug 2008 22:22:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755770AbYHFCVS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Aug 2008 22:16:56 -0400
-Received: from kirsty.vergenet.net ([202.4.237.240]:33510 "EHLO
-	kirsty.vergenet.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751147AbYHFCQz (ORCPT
+	Tue, 5 Aug 2008 22:21:18 -0400
+Received: from astoria.ccjclearline.com ([64.235.106.9]:34535 "EHLO
+	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753950AbYHFCVP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Aug 2008 22:16:55 -0400
-Date: Wed, 6 Aug 2008 12:16:53 +1000
-From: Simon Horman <horms@verge.net.au>
-To: Alexander Beregalov <a.beregalov@gmail.com>
-Cc: dhananjay@netxen.com, netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] netxen_nic_hw.c: fix warnings
-Message-ID: <20080806021653.GA19137@verge.net.au>
-References: <20080805200516.GB17320@orion>
+	Tue, 5 Aug 2008 22:21:15 -0400
+Date: Tue, 5 Aug 2008 22:19:32 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@crashcourse.ca>
+X-X-Sender: rpjday@localhost.localdomain
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH] Define a macro for subsys_initcall_sync() ->
+ module_init().
+Message-ID: <alpine.LFD.1.10.0808052211290.20955@localhost.localdomain>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080805200516.GB17320@orion>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - crashcourse.ca
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 06, 2008 at 12:05:16AM +0400, Alexander Beregalov wrote:
-> From: Alexander Beregalov <a.beregalov@gmail.com>
-> 
-> netxen_nic_hw.c: fix warnings
-> 
-> drivers/net/netxen/netxen_nic_hw.c:1414: warning: format '%llx' expects	type 'long long unsigned int', but argument 3 has type 'u64'
-> drivers/net/netxen/netxen_nic_hw.c:1487: warning: format '%llx' expects type 'long long unsigned int', but argument 3 has type 'u64'
 
-This seems to be the agreed work-around for this.
+Define the macro subsys_initcall_sync() to map to module_init() so
+that module code can stop horrifically abusing fs_initcall().
 
-Acked-by: Simon Horman <horms@verge.net.au>
+Signed-off-by: Robert P. J. Day <rpjday@crashcourse.ca>
 
-> Signed-off-by: Alexander Beregalov <a.beregalov@gmail.com>
-> ---
-> 
->  drivers/net/netxen/netxen_nic_hw.c |    6 ++++--
->  1 files changed, 4 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/net/netxen/netxen_nic_hw.c b/drivers/net/netxen/netxen_nic_hw.c
-> index 96a3bc6..06a517b 100644
-> --- a/drivers/net/netxen/netxen_nic_hw.c
-> +++ b/drivers/net/netxen/netxen_nic_hw.c
-> @@ -1411,7 +1411,8 @@ static int netxen_nic_pci_mem_read_direct(struct netxen_adapter *adapter,
->  		(netxen_nic_pci_is_same_window(adapter, off+size-1) == 0)) {
->  		write_unlock_irqrestore(&adapter->adapter_lock, flags);
->  		printk(KERN_ERR "%s out of bound pci memory access. "
-> -			"offset is 0x%llx\n", netxen_nic_driver_name, off);
-> +			"offset is 0x%llx\n", netxen_nic_driver_name,
-> +			(unsigned long long)off);
->  		return -1;
->  	}
->  
-> @@ -1484,7 +1485,8 @@ netxen_nic_pci_mem_write_direct(struct netxen_adapter *adapter, u64 off,
->  		(netxen_nic_pci_is_same_window(adapter, off+size-1) == 0)) {
->  		write_unlock_irqrestore(&adapter->adapter_lock, flags);
->  		printk(KERN_ERR "%s out of bound pci memory access. "
-> -			"offset is 0x%llx\n", netxen_nic_driver_name, off);
-> +			"offset is 0x%llx\n", netxen_nic_driver_name,
-> +			(unsigned long long)off);
->  		return -1;
->  	}
->  
-> --
-> To unsubscribe from this list: send the line "unsubscribe netdev" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+---
+
+currently, a number of source files under drivers/ will use a call to
+fs_initcall() instead of module_init() to get precise control over
+when that code runs if it is compiled into the kernel -- that is, to
+*guarantee* that that code runs after all subsys initcalls but before
+any device initcalls.
+
+it's not clear that that level of fine-grained control is truly
+necessary in *all* of those cases but, if it is, then it makes more
+sense to use subsys_initcall_sync(), since it semantically makes more
+sense in showing when that happens.  using fs_initcall() is just an
+ugly hack.
+
+this seems like it wouldn't introduce any problems since there are no
+invocations of subsys_initcall_sync() anywhere in the source tree at
+the moment.
+
+diff --git a/include/linux/init.h b/include/linux/init.h
+index 11b84e1..38e4550 100644
+--- a/include/linux/init.h
++++ b/include/linux/init.h
+@@ -276,6 +276,7 @@ void __init parse_early_param(void);
+ #define postcore_initcall(fn)		module_init(fn)
+ #define arch_initcall(fn)		module_init(fn)
+ #define subsys_initcall(fn)		module_init(fn)
++#define subsys_initcall_sync(fn)	module_init(fn)
+ #define fs_initcall(fn)			module_init(fn)
+ #define device_initcall(fn)		module_init(fn)
+ #define late_initcall(fn)		module_init(fn)
+
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry:
+    Have classroom, will lecture.
+
+http://crashcourse.ca                          Waterloo, Ontario, CANADA
+========================================================================
