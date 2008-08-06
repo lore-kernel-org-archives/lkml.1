@@ -1,42 +1,1401 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759498AbYHFR7j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760636AbYHFR77@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759498AbYHFR7j (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Aug 2008 13:59:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758236AbYHFR7I
+	id S1760636AbYHFR77 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Aug 2008 13:59:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758363AbYHFR7P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Aug 2008 13:59:08 -0400
-Received: from casper.infradead.org ([85.118.1.10]:37503 "EHLO
+	Wed, 6 Aug 2008 13:59:15 -0400
+Received: from casper.infradead.org ([85.118.1.10]:37505 "EHLO
 	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756852AbYHFR6y (ORCPT
+	with ESMTP id S1757994AbYHFR7C (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Aug 2008 13:58:54 -0400
-Date: Wed, 6 Aug 2008 10:55:56 -0700
+	Wed, 6 Aug 2008 13:59:02 -0400
+Date: Wed, 6 Aug 2008 10:56:23 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
        torvalds@linux-foundation.org, stable@kernel.org
-Subject: Re: Linux 2.6.25.15
-Message-ID: <20080806175556.GC27119@kroah.com>
-References: <20080806175457.GA27119@kroah.com>
+Subject: Re: Linux 2.6.26.2
+Message-ID: <20080806175623.GD27119@kroah.com>
+References: <20080806175529.GB27119@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080806175457.GA27119@kroah.com>
+In-Reply-To: <20080806175529.GB27119@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+diff --git a/Documentation/ftrace.txt b/Documentation/ftrace.txt
+deleted file mode 100644
+index 13e4bf0..0000000
+--- a/Documentation/ftrace.txt
++++ /dev/null
+@@ -1,1353 +0,0 @@
+-		ftrace - Function Tracer
+-		========================
+-
+-Copyright 2008 Red Hat Inc.
+-Author: Steven Rostedt <srostedt@redhat.com>
+-
+-
+-Introduction
+-------------
+-
+-Ftrace is an internal tracer designed to help out developers and
+-designers of systems to find what is going on inside the kernel.
+-It can be used for debugging or analyzing latencies and performance
+-issues that take place outside of user-space.
+-
+-Although ftrace is the function tracer, it also includes an
+-infrastructure that allows for other types of tracing. Some of the
+-tracers that are currently in ftrace is a tracer to trace
+-context switches, the time it takes for a high priority task to
+-run after it was woken up, the time interrupts are disabled, and
+-more.
+-
+-
+-The File System
+----------------
+-
+-Ftrace uses the debugfs file system to hold the control files as well
+-as the files to display output.
+-
+-To mount the debugfs system:
+-
+-  # mkdir /debug
+-  # mount -t debugfs nodev /debug
+-
+-
+-That's it! (assuming that you have ftrace configured into your kernel)
+-
+-After mounting the debugfs, you can see a directory called
+-"tracing".  This directory contains the control and output files
+-of ftrace. Here is a list of some of the key files:
+-
+-
+- Note: all time values are in microseconds.
+-
+-  current_tracer : This is used to set or display the current tracer
+-		that is configured.
+-
+-  available_tracers : This holds the different types of tracers that
+-		has been compiled into the kernel. The tracers
+-		listed here can be configured by echoing in their
+-		name into current_tracer.
+-
+-  tracing_enabled : This sets or displays whether the current_tracer
+-		is activated and tracing or not. Echo 0 into this
+-		file to disable the tracer or 1 (or non-zero) to
+-		enable it.
+-
+-  trace : This file holds the output of the trace in a human readable
+-		format.
+-
+-  latency_trace : This file shows the same trace but the information
+-		is organized more to display possible latencies
+-		in the system.
+-
+-  trace_pipe : The output is the same as the "trace" file but this
+-		file is meant to be streamed with live tracing.
+-		Reads from this file will block until new data
+-		is retrieved. Unlike the "trace" and "latency_trace"
+-		files, this file is a consumer. This means reading
+-		from this file causes sequential reads to display
+-		more current data. Once data is read from this
+-		file, it is consumed, and will not be read
+-		again with a sequential read. The "trace" and
+-		"latency_trace" files are static, and if the
+-		tracer isn't adding more data, they will display
+-		the same information every time they are read.
+-
+-  iter_ctrl : This file lets the user control the amount of data
+-		that is displayed in one of the above output
+-		files.
+-
+-  trace_max_latency : Some of the tracers record the max latency.
+-		For example, the time interrupts are disabled.
+-		This time is saved in this file. The max trace
+-		will also be stored, and displayed by either
+-		"trace" or "latency_trace".  A new max trace will
+-		only be recorded if the latency is greater than
+-		the value in this file. (in microseconds)
+-
+-  trace_entries : This sets or displays the number of trace
+-		entries each CPU buffer can hold. The tracer buffers
+-		are the same size for each CPU, so care must be
+-		taken when modifying the trace_entries. The number
+-		of actually entries will be the number given
+-		times the number of possible CPUS. The buffers
+-		are saved as individual pages, and the actual entries
+-		will always be rounded up to entries per page.
+-
+-		This can only be updated when the current_tracer
+-		is set to "none".
+-
+-		NOTE: It is planned on changing the allocated buffers
+-		      from being the number of possible CPUS to
+-		      the number of online CPUS.
+-
+-  tracing_cpumask : This is a mask that lets the user only trace
+-		on specified CPUS. The format is a hex string
+-		representing the CPUS.
+-
+-  set_ftrace_filter : When dynamic ftrace is configured in, the
+-		code is dynamically modified to disable calling
+-		of the function profiler (mcount). This lets
+-		tracing be configured in with practically no overhead
+-		in performance.  This also has a side effect of
+-		enabling or disabling specific functions to be
+-		traced.  Echoing in names of functions into this
+-		file will limit the trace to only those files.
+-
+-  set_ftrace_notrace: This has the opposite effect that
+-		set_ftrace_filter has. Any function that is added
+-		here will not be traced. If a function exists
+-		in both set_ftrace_filter and set_ftrace_notrace
+-		the function will _not_ bet traced.
+-
+-  available_filter_functions : When a function is encountered the first
+-		time by the dynamic tracer, it is recorded and
+-		later the call is converted into a nop. This file
+-		lists the functions that have been recorded
+-		by the dynamic tracer and these functions can
+-		be used to set the ftrace filter by the above
+-		"set_ftrace_filter" file.
+-
+-
+-The Tracers
+------------
+-
+-Here are the list of current tracers that can be configured.
+-
+-  ftrace - function tracer that uses mcount to trace all functions.
+-		It is possible to filter out which functions that are
+-		traced when dynamic ftrace is configured in.
+-
+-  sched_switch - traces the context switches between tasks.
+-
+-  irqsoff - traces the areas that disable interrupts and saves off
+-  		the trace with the longest max latency.
+-		See tracing_max_latency.  When a new max is recorded,
+-		it replaces the old trace. It is best to view this
+-		trace with the latency_trace file.
+-
+-  preemptoff - Similar to irqsoff but traces and records the time
+-		preemption is disabled.
+-
+-  preemptirqsoff - Similar to irqsoff and preemptoff, but traces and
+-		 records the largest time irqs and/or preemption is
+-		 disabled.
+-
+-  wakeup - Traces and records the max latency that it takes for
+-		the highest priority task to get scheduled after
+-		it has been woken up.
+-
+-  none - This is not a tracer. To remove all tracers from tracing
+-		simply echo "none" into current_tracer.
+-
+-
+-Examples of using the tracer
+-----------------------------
+-
+-Here are typical examples of using the tracers with only controlling
+-them with the debugfs interface (without using any user-land utilities).
+-
+-Output format:
+---------------
+-
+-Here's an example of the output format of the file "trace"
+-
+-                             --------
+-# tracer: ftrace
+-#
+-#           TASK-PID   CPU#    TIMESTAMP  FUNCTION
+-#              | |      |          |         |
+-            bash-4251  [01] 10152.583854: path_put <-path_walk
+-            bash-4251  [01] 10152.583855: dput <-path_put
+-            bash-4251  [01] 10152.583855: _atomic_dec_and_lock <-dput
+-                             --------
+-
+-A header is printed with the trace that is represented. In this case
+-the tracer is "ftrace". Then a header showing the format. Task name
+-"bash", the task PID "4251", the CPU that it was running on
+-"01", the timestamp in <secs>.<usecs> format, the function name that was
+-traced "path_put" and the parent function that called this function
+-"path_walk".
+-
+-The sched_switch tracer also includes tracing of task wake ups and
+-context switches.
+-
+-     ksoftirqd/1-7     [01]  1453.070013:      7:115:R   +  2916:115:S
+-     ksoftirqd/1-7     [01]  1453.070013:      7:115:R   +    10:115:S
+-     ksoftirqd/1-7     [01]  1453.070013:      7:115:R ==>    10:115:R
+-        events/1-10    [01]  1453.070013:     10:115:S ==>  2916:115:R
+-     kondemand/1-2916  [01]  1453.070013:   2916:115:S ==>     7:115:R
+-     ksoftirqd/1-7     [01]  1453.070013:      7:115:S ==>     0:140:R
+-
+-Wake ups are represented by a "+" and the context switches show
+-"==>".  The format is:
+-
+- Context switches:
+-
+-       Previous task              Next Task
+-
+-  <pid>:<prio>:<state>  ==>  <pid>:<prio>:<state>
+-
+- Wake ups:
+-
+-       Current task               Task waking up
+-
+-  <pid>:<prio>:<state>    +  <pid>:<prio>:<state>
+-
+-The prio is the internal kernel priority, which is inverse to the
+-priority that is usually displayed by user-space tools. Zero represents
+-the highest priority (99). Prio 100 starts the "nice" priorities with
+-100 being equal to nice -20 and 139 being nice 19. The prio "140" is
+-reserved for the idle task which is the lowest priority thread (pid 0).
+-
+-
+-Latency trace format
+---------------------
+-
+-For traces that display latency times, the latency_trace file gives
+-a bit more information to see why a latency happened. Here's a typical
+-trace.
+-
+-# tracer: irqsoff
+-#
+-irqsoff latency trace v1.1.5 on 2.6.26-rc8
+---------------------------------------------------------------------
+- latency: 97 us, #3/3, CPU#0 | (M:preempt VP:0, KP:0, SP:0 HP:0 #P:2)
+-    -----------------
+-    | task: swapper-0 (uid:0 nice:0 policy:0 rt_prio:0)
+-    -----------------
+- => started at: apic_timer_interrupt
+- => ended at:   do_softirq
+-
+-#                _------=> CPU#
+-#               / _-----=> irqs-off
+-#              | / _----=> need-resched
+-#              || / _---=> hardirq/softirq
+-#              ||| / _--=> preempt-depth
+-#              |||| /
+-#              |||||     delay
+-#  cmd     pid ||||| time  |   caller
+-#     \   /    |||||   \   |   /
+-  <idle>-0     0d..1    0us+: trace_hardirqs_off_thunk (apic_timer_interrupt)
+-  <idle>-0     0d.s.   97us : __do_softirq (do_softirq)
+-  <idle>-0     0d.s1   98us : trace_hardirqs_on (do_softirq)
+-
+-
+-vim:ft=help
+-
+-
+-This shows that the current tracer is "irqsoff" tracing the time
+-interrupts are disabled. It gives the trace version and the kernel
+-this was executed on (2.6.26-rc8). Then it displays the max latency
+-in microsecs (97 us). The number of trace entries displayed
+-by the total number recorded (both are three: #3/3). The type of
+-preemption that was used (PREEMPT). VP, KP, SP, and HP are always zero
+-and reserved for later use. #P is the number of online CPUS (#P:2).
+-
+-The task is the process that was running when the latency happened.
+-(swapper pid: 0).
+-
+-The start and stop that caused the latencies:
+-
+-  apic_timer_interrupt is where the interrupts were disabled.
+-  do_softirq is where they were enabled again.
+-
+-The next lines after the header are the trace itself. The header
+-explains which is which.
+-
+-  cmd: The name of the process in the trace.
+-
+-  pid: The PID of that process.
+-
+-  CPU#: The CPU that the process was running on.
+-
+-  irqs-off: 'd' interrupts are disabled. '.' otherwise.
+-
+-  need-resched: 'N' task need_resched is set, '.' otherwise.
+-
+-  hardirq/softirq:
+-	'H' - hard irq happened inside a softirq.
+-	'h' - hard irq is running
+-	's' - soft irq is running
+-	'.' - normal context.
+-
+-  preempt-depth: The level of preempt_disabled
+-
+-The above is mostly meaningful for kernel developers.
+-
+-  time: This differs from the trace output where as the trace output
+-	contained a absolute timestamp. This timestamp is relative
+-	to the start of the first entry in the the trace.
+-
+-  delay: This is just to help catch your eye a bit better. And
+-	needs to be fixed to be only relative to the same CPU.
+-	The marks is determined by the difference between this
+-	current trace and the next trace.
+-	 '!' - greater than preempt_mark_thresh (default 100)
+-	 '+' - greater than 1 microsecond
+-	 ' ' - less than or equal to 1 microsecond.
+-
+-  The rest is the same as the 'trace' file.
+-
+-
+-iter_ctrl
+----------
+-
+-The iter_ctrl file is used to control what gets printed in the trace
+-output. To see what is available, simply cat the file:
+-
+-  cat /debug/tracing/iter_ctrl
+-  print-parent nosym-offset nosym-addr noverbose noraw nohex nobin \
+- noblock nostacktrace nosched-tree
+-
+-To disable one of the options, echo in the option appended with "no".
+-
+-  echo noprint-parent > /debug/tracing/iter_ctrl
+-
+-To enable an option, leave off the "no".
+-
+-  echo sym-offest > /debug/tracing/iter_ctrl
+-
+-Here are the available options:
+-
+-  print-parent - On function traces, display the calling function
+-		as well as the function being traced.
+-
+-  print-parent:
+-   bash-4000  [01]  1477.606694: simple_strtoul <-strict_strtoul
+-
+-  noprint-parent:
+-   bash-4000  [01]  1477.606694: simple_strtoul
+-
+-
+-  sym-offset - Display not only the function name, but also the offset
+-		in the function. For example, instead of seeing just
+-		"ktime_get" you will see "ktime_get+0xb/0x20"
+-
+-  sym-offset:
+-   bash-4000  [01]  1477.606694: simple_strtoul+0x6/0xa0
+-
+-  sym-addr - this will also display the function address as well as
+-		the function name.
+-
+-  sym-addr:
+-   bash-4000  [01]  1477.606694: simple_strtoul <c0339346>
+-
+-  verbose - This deals with the latency_trace file.
+-
+-    bash  4000 1 0 00000000 00010a95 [58127d26] 1720.415ms \
+-    (+0.000ms): simple_strtoul (strict_strtoul)
+-
+-  raw - This will display raw numbers. This option is best for use with
+-	user applications that can translate the raw numbers better than
+-	having it done in the kernel.
+-
+-  hex - similar to raw, but the numbers will be in a hexadecimal format.
+-
+-  bin - This will print out the formats in raw binary.
+-
+-  block - TBD (needs update)
+-
+-  stacktrace - This is one of the options that changes the trace itself.
+-		When a trace is recorded, so is the stack of functions.
+-		This allows for back traces of trace sites.
+-
+-  sched-tree - TBD (any users??)
+-
+-
+-sched_switch
+-------------
+-
+-This tracer simply records schedule switches. Here's an example
+-on how to implement it.
+-
+- # echo sched_switch > /debug/tracing/current_tracer
+- # echo 1 > /debug/tracing/tracing_enabled
+- # sleep 1
+- # echo 0 > /debug/tracing/tracing_enabled
+- # cat /debug/tracing/trace
+-
+-# tracer: sched_switch
+-#
+-#           TASK-PID   CPU#    TIMESTAMP  FUNCTION
+-#              | |      |          |         |
+-            bash-3997  [01]   240.132281:   3997:120:R   +  4055:120:R
+-            bash-3997  [01]   240.132284:   3997:120:R ==>  4055:120:R
+-           sleep-4055  [01]   240.132371:   4055:120:S ==>  3997:120:R
+-            bash-3997  [01]   240.132454:   3997:120:R   +  4055:120:S
+-            bash-3997  [01]   240.132457:   3997:120:R ==>  4055:120:R
+-           sleep-4055  [01]   240.132460:   4055:120:D ==>  3997:120:R
+-            bash-3997  [01]   240.132463:   3997:120:R   +  4055:120:D
+-            bash-3997  [01]   240.132465:   3997:120:R ==>  4055:120:R
+-          <idle>-0     [00]   240.132589:      0:140:R   +     4:115:S
+-          <idle>-0     [00]   240.132591:      0:140:R ==>     4:115:R
+-     ksoftirqd/0-4     [00]   240.132595:      4:115:S ==>     0:140:R
+-          <idle>-0     [00]   240.132598:      0:140:R   +     4:115:S
+-          <idle>-0     [00]   240.132599:      0:140:R ==>     4:115:R
+-     ksoftirqd/0-4     [00]   240.132603:      4:115:S ==>     0:140:R
+-           sleep-4055  [01]   240.133058:   4055:120:S ==>  3997:120:R
+- [...]
+-
+-
+-As we have discussed previously about this format, the header shows
+-the name of the trace and points to the options. The "FUNCTION"
+-is a misnomer since here it represents the wake ups and context
+-switches.
+-
+-The sched_switch only lists the wake ups (represented with '+')
+-and context switches ('==>') with the previous task or current
+-first followed by the next task or task waking up. The format for both
+-of these is PID:KERNEL-PRIO:TASK-STATE. Remember that the KERNEL-PRIO
+-is the inverse of the actual priority with zero (0) being the highest
+-priority and the nice values starting at 100 (nice -20). Below is
+-a quick chart to map the kernel priority to user land priorities.
+-
+-  Kernel priority: 0 to 99    ==> user RT priority 99 to 0
+-  Kernel priority: 100 to 139 ==> user nice -20 to 19
+-  Kernel priority: 140        ==> idle task priority
+-
+-The task states are:
+-
+- R - running : wants to run, may not actually be running
+- S - sleep   : process is waiting to be woken up (handles signals)
+- D - deep sleep : process must be woken up (ignores signals)
+- T - stopped : process suspended
+- t - traced  : process is being traced (with something like gdb)
+- Z - zombie  : process waiting to be cleaned up
+- X - unknown
+-
+-
+-ftrace_enabled
+---------------
+-
+-The following tracers give different output depending on whether
+-or not the sysctl ftrace_enabled is set. To set ftrace_enabled,
+-one can either use the sysctl function or set it via the proc
+-file system interface.
+-
+-  sysctl kernel.ftrace_enabled=1
+-
+- or
+-
+-  echo 1 > /proc/sys/kernel/ftrace_enabled
+-
+-To disable ftrace_enabled simply replace the '1' with '0' in
+-the above commands.
+-
+-When ftrace_enabled is set the tracers will also record the functions
+-that are within the trace. The descriptions of the tracers
+-will also show an example with ftrace enabled.
+-
+-
+-irqsoff
+--------
+-
+-When interrupts are disabled, the CPU can not react to any other
+-external event (besides NMIs and SMIs). This prevents the timer
+-interrupt from triggering or the mouse interrupt from letting the
+-kernel know of a new mouse event. The result is a latency with the
+-reaction time.
+-
+-The irqsoff tracer tracks the time interrupts are disabled and when
+-they are re-enabled. When a new maximum latency is hit, it saves off
+-the trace so that it may be retrieved at a later time. Every time a
+-new maximum in reached, the old saved trace is discarded and the new
+-trace is saved.
+-
+-To reset the maximum, echo 0 into tracing_max_latency. Here's an
+-example:
+-
+- # echo irqsoff > /debug/tracing/current_tracer
+- # echo 0 > /debug/tracing/tracing_max_latency
+- # echo 1 > /debug/tracing/tracing_enabled
+- # ls -ltr
+- [...]
+- # echo 0 > /debug/tracing/tracing_enabled
+- # cat /debug/tracing/latency_trace
+-# tracer: irqsoff
+-#
+-irqsoff latency trace v1.1.5 on 2.6.26-rc8
+---------------------------------------------------------------------
+- latency: 6 us, #3/3, CPU#1 | (M:preempt VP:0, KP:0, SP:0 HP:0 #P:2)
+-    -----------------
+-    | task: bash-4269 (uid:0 nice:0 policy:0 rt_prio:0)
+-    -----------------
+- => started at: copy_page_range
+- => ended at:   copy_page_range
+-
+-#                _------=> CPU#
+-#               / _-----=> irqs-off
+-#              | / _----=> need-resched
+-#              || / _---=> hardirq/softirq
+-#              ||| / _--=> preempt-depth
+-#              |||| /
+-#              |||||     delay
+-#  cmd     pid ||||| time  |   caller
+-#     \   /    |||||   \   |   /
+-    bash-4269  1...1    0us+: _spin_lock (copy_page_range)
+-    bash-4269  1...1    7us : _spin_unlock (copy_page_range)
+-    bash-4269  1...2    7us : trace_preempt_on (copy_page_range)
+-
+-
+-vim:ft=help
+-
+-Here we see that that we had a latency of 6 microsecs (which is
+-very good). The spin_lock in copy_page_range disabled interrupts.
+-The difference between the 6 and the displayed timestamp 7us is
+-because the clock must have incremented between the time of recording
+-the max latency and recording the function that had that latency.
+-
+-Note the above had ftrace_enabled not set. If we set the ftrace_enabled
+-we get a much larger output:
+-
+-# tracer: irqsoff
+-#
+-irqsoff latency trace v1.1.5 on 2.6.26-rc8
+---------------------------------------------------------------------
+- latency: 50 us, #101/101, CPU#0 | (M:preempt VP:0, KP:0, SP:0 HP:0 #P:2)
+-    -----------------
+-    | task: ls-4339 (uid:0 nice:0 policy:0 rt_prio:0)
+-    -----------------
+- => started at: __alloc_pages_internal
+- => ended at:   __alloc_pages_internal
+-
+-#                _------=> CPU#
+-#               / _-----=> irqs-off
+-#              | / _----=> need-resched
+-#              || / _---=> hardirq/softirq
+-#              ||| / _--=> preempt-depth
+-#              |||| /
+-#              |||||     delay
+-#  cmd     pid ||||| time  |   caller
+-#     \   /    |||||   \   |   /
+-      ls-4339  0...1    0us+: get_page_from_freelist (__alloc_pages_internal)
+-      ls-4339  0d..1    3us : rmqueue_bulk (get_page_from_freelist)
+-      ls-4339  0d..1    3us : _spin_lock (rmqueue_bulk)
+-      ls-4339  0d..1    4us : add_preempt_count (_spin_lock)
+-      ls-4339  0d..2    4us : __rmqueue (rmqueue_bulk)
+-      ls-4339  0d..2    5us : __rmqueue_smallest (__rmqueue)
+-      ls-4339  0d..2    5us : __mod_zone_page_state (__rmqueue_smallest)
+-      ls-4339  0d..2    6us : __rmqueue (rmqueue_bulk)
+-      ls-4339  0d..2    6us : __rmqueue_smallest (__rmqueue)
+-      ls-4339  0d..2    7us : __mod_zone_page_state (__rmqueue_smallest)
+-      ls-4339  0d..2    7us : __rmqueue (rmqueue_bulk)
+-      ls-4339  0d..2    8us : __rmqueue_smallest (__rmqueue)
+-[...]
+-      ls-4339  0d..2   46us : __rmqueue_smallest (__rmqueue)
+-      ls-4339  0d..2   47us : __mod_zone_page_state (__rmqueue_smallest)
+-      ls-4339  0d..2   47us : __rmqueue (rmqueue_bulk)
+-      ls-4339  0d..2   48us : __rmqueue_smallest (__rmqueue)
+-      ls-4339  0d..2   48us : __mod_zone_page_state (__rmqueue_smallest)
+-      ls-4339  0d..2   49us : _spin_unlock (rmqueue_bulk)
+-      ls-4339  0d..2   49us : sub_preempt_count (_spin_unlock)
+-      ls-4339  0d..1   50us : get_page_from_freelist (__alloc_pages_internal)
+-      ls-4339  0d..2   51us : trace_hardirqs_on (__alloc_pages_internal)
+-
+-
+-vim:ft=help
+-
+-
+-Here we traced a 50 microsecond latency. But we also see all the
+-functions that were called during that time. Note that enabling
+-function tracing we endure an added overhead. This overhead may
+-extend the latency times. But never the less, this trace has provided
+-some very helpful debugging.
+-
+-
+-preemptoff
+-----------
+-
+-When preemption is disabled we may be able to receive interrupts but
+-the task can not be preempted and a higher priority task must wait
+-for preemption to be enabled again before it can preempt a lower
+-priority task.
+-
+-The preemptoff tracer traces the places that disables preemption.
+-Like the irqsoff, it records the maximum latency that preemption
+-was disabled. The control of preemptoff is much like the irqsoff.
+-
+- # echo preemptoff > /debug/tracing/current_tracer
+- # echo 0 > /debug/tracing/tracing_max_latency
+- # echo 1 > /debug/tracing/tracing_enabled
+- # ls -ltr
+- [...]
+- # echo 0 > /debug/tracing/tracing_enabled
+- # cat /debug/tracing/latency_trace
+-# tracer: preemptoff
+-#
+-preemptoff latency trace v1.1.5 on 2.6.26-rc8
+---------------------------------------------------------------------
+- latency: 29 us, #3/3, CPU#0 | (M:preempt VP:0, KP:0, SP:0 HP:0 #P:2)
+-    -----------------
+-    | task: sshd-4261 (uid:0 nice:0 policy:0 rt_prio:0)
+-    -----------------
+- => started at: do_IRQ
+- => ended at:   __do_softirq
+-
+-#                _------=> CPU#
+-#               / _-----=> irqs-off
+-#              | / _----=> need-resched
+-#              || / _---=> hardirq/softirq
+-#              ||| / _--=> preempt-depth
+-#              |||| /
+-#              |||||     delay
+-#  cmd     pid ||||| time  |   caller
+-#     \   /    |||||   \   |   /
+-    sshd-4261  0d.h.    0us+: irq_enter (do_IRQ)
+-    sshd-4261  0d.s.   29us : _local_bh_enable (__do_softirq)
+-    sshd-4261  0d.s1   30us : trace_preempt_on (__do_softirq)
+-
+-
+-vim:ft=help
+-
+-This has some more changes. Preemption was disabled when an interrupt
+-came in (notice the 'h'), and was enabled while doing a softirq.
+-(notice the 's'). But we also see that interrupts have been disabled
+-when entering the preempt off section and leaving it (the 'd').
+-We do not know if interrupts were enabled in the mean time.
+-
+-# tracer: preemptoff
+-#
+-preemptoff latency trace v1.1.5 on 2.6.26-rc8
+---------------------------------------------------------------------
+- latency: 63 us, #87/87, CPU#0 | (M:preempt VP:0, KP:0, SP:0 HP:0 #P:2)
+-    -----------------
+-    | task: sshd-4261 (uid:0 nice:0 policy:0 rt_prio:0)
+-    -----------------
+- => started at: remove_wait_queue
+- => ended at:   __do_softirq
+-
+-#                _------=> CPU#
+-#               / _-----=> irqs-off
+-#              | / _----=> need-resched
+-#              || / _---=> hardirq/softirq
+-#              ||| / _--=> preempt-depth
+-#              |||| /
+-#              |||||     delay
+-#  cmd     pid ||||| time  |   caller
+-#     \   /    |||||   \   |   /
+-    sshd-4261  0d..1    0us : _spin_lock_irqsave (remove_wait_queue)
+-    sshd-4261  0d..1    1us : _spin_unlock_irqrestore (remove_wait_queue)
+-    sshd-4261  0d..1    2us : do_IRQ (common_interrupt)
+-    sshd-4261  0d..1    2us : irq_enter (do_IRQ)
+-    sshd-4261  0d..1    2us : idle_cpu (irq_enter)
+-    sshd-4261  0d..1    3us : add_preempt_count (irq_enter)
+-    sshd-4261  0d.h1    3us : idle_cpu (irq_enter)
+-    sshd-4261  0d.h.    4us : handle_fasteoi_irq (do_IRQ)
+-[...]
+-    sshd-4261  0d.h.   12us : add_preempt_count (_spin_lock)
+-    sshd-4261  0d.h1   12us : ack_ioapic_quirk_irq (handle_fasteoi_irq)
+-    sshd-4261  0d.h1   13us : move_native_irq (ack_ioapic_quirk_irq)
+-    sshd-4261  0d.h1   13us : _spin_unlock (handle_fasteoi_irq)
+-    sshd-4261  0d.h1   14us : sub_preempt_count (_spin_unlock)
+-    sshd-4261  0d.h1   14us : irq_exit (do_IRQ)
+-    sshd-4261  0d.h1   15us : sub_preempt_count (irq_exit)
+-    sshd-4261  0d..2   15us : do_softirq (irq_exit)
+-    sshd-4261  0d...   15us : __do_softirq (do_softirq)
+-    sshd-4261  0d...   16us : __local_bh_disable (__do_softirq)
+-    sshd-4261  0d...   16us+: add_preempt_count (__local_bh_disable)
+-    sshd-4261  0d.s4   20us : add_preempt_count (__local_bh_disable)
+-    sshd-4261  0d.s4   21us : sub_preempt_count (local_bh_enable)
+-    sshd-4261  0d.s5   21us : sub_preempt_count (local_bh_enable)
+-[...]
+-    sshd-4261  0d.s6   41us : add_preempt_count (__local_bh_disable)
+-    sshd-4261  0d.s6   42us : sub_preempt_count (local_bh_enable)
+-    sshd-4261  0d.s7   42us : sub_preempt_count (local_bh_enable)
+-    sshd-4261  0d.s5   43us : add_preempt_count (__local_bh_disable)
+-    sshd-4261  0d.s5   43us : sub_preempt_count (local_bh_enable_ip)
+-    sshd-4261  0d.s6   44us : sub_preempt_count (local_bh_enable_ip)
+-    sshd-4261  0d.s5   44us : add_preempt_count (__local_bh_disable)
+-    sshd-4261  0d.s5   45us : sub_preempt_count (local_bh_enable)
+-[...]
+-    sshd-4261  0d.s.   63us : _local_bh_enable (__do_softirq)
+-    sshd-4261  0d.s1   64us : trace_preempt_on (__do_softirq)
+-
+-
+-The above is an example of the preemptoff trace with ftrace_enabled
+-set. Here we see that interrupts were disabled the entire time.
+-The irq_enter code lets us know that we entered an interrupt 'h'.
+-Before that, the functions being traced still show that it is not
+-in an interrupt, but we can see by the functions themselves that
+-this is not the case.
+-
+-Notice that the __do_softirq when called doesn't have a preempt_count.
+-It may seem that we missed a preempt enabled. What really happened
+-is that the preempt count is held on the threads stack and we
+-switched to the softirq stack (4K stacks in effect). The code
+-does not copy the preempt count, but because interrupts are disabled
+-we don't need to worry about it. Having a tracer like this is good
+-to let people know what really happens inside the kernel.
+-
+-
+-preemptirqsoff
+---------------
+-
+-Knowing the locations that have interrupts disabled or preemption
+-disabled for the longest times is helpful. But sometimes we would
+-like to know when either preemption and/or interrupts are disabled.
+-
+-The following code:
+-
+-    local_irq_disable();
+-    call_function_with_irqs_off();
+-    preempt_disable();
+-    call_function_with_irqs_and_preemption_off();
+-    local_irq_enable();
+-    call_function_with_preemption_off();
+-    preempt_enable();
+-
+-The irqsoff tracer will record the total length of
+-call_function_with_irqs_off() and
+-call_function_with_irqs_and_preemption_off().
+-
+-The preemptoff tracer will record the total length of
+-call_function_with_irqs_and_preemption_off() and
+-call_function_with_preemption_off().
+-
+-But neither will trace the time that interrupts and/or preemption
+-is disabled. This total time is the time that we can not schedule.
+-To record this time, use the preemptirqsoff tracer.
+-
+-Again, using this trace is much like the irqsoff and preemptoff tracers.
+-
+- # echo preemptoff > /debug/tracing/current_tracer
+- # echo 0 > /debug/tracing/tracing_max_latency
+- # echo 1 > /debug/tracing/tracing_enabled
+- # ls -ltr
+- [...]
+- # echo 0 > /debug/tracing/tracing_enabled
+- # cat /debug/tracing/latency_trace
+-# tracer: preemptirqsoff
+-#
+-preemptirqsoff latency trace v1.1.5 on 2.6.26-rc8
+---------------------------------------------------------------------
+- latency: 293 us, #3/3, CPU#0 | (M:preempt VP:0, KP:0, SP:0 HP:0 #P:2)
+-    -----------------
+-    | task: ls-4860 (uid:0 nice:0 policy:0 rt_prio:0)
+-    -----------------
+- => started at: apic_timer_interrupt
+- => ended at:   __do_softirq
+-
+-#                _------=> CPU#
+-#               / _-----=> irqs-off
+-#              | / _----=> need-resched
+-#              || / _---=> hardirq/softirq
+-#              ||| / _--=> preempt-depth
+-#              |||| /
+-#              |||||     delay
+-#  cmd     pid ||||| time  |   caller
+-#     \   /    |||||   \   |   /
+-      ls-4860  0d...    0us!: trace_hardirqs_off_thunk (apic_timer_interrupt)
+-      ls-4860  0d.s.  294us : _local_bh_enable (__do_softirq)
+-      ls-4860  0d.s1  294us : trace_preempt_on (__do_softirq)
+-
+-
+-vim:ft=help
+-
+-
+-The trace_hardirqs_off_thunk is called from assembly on x86 when
+-interrupts are disabled in the assembly code. Without the function
+-tracing, we don't know if interrupts were enabled within the preemption
+-points. We do see that it started with preemption enabled.
+-
+-Here is a trace with ftrace_enabled set:
+-
+-
+-# tracer: preemptirqsoff
+-#
+-preemptirqsoff latency trace v1.1.5 on 2.6.26-rc8
+---------------------------------------------------------------------
+- latency: 105 us, #183/183, CPU#0 | (M:preempt VP:0, KP:0, SP:0 HP:0 #P:2)
+-    -----------------
+-    | task: sshd-4261 (uid:0 nice:0 policy:0 rt_prio:0)
+-    -----------------
+- => started at: write_chan
+- => ended at:   __do_softirq
+-
+-#                _------=> CPU#
+-#               / _-----=> irqs-off
+-#              | / _----=> need-resched
+-#              || / _---=> hardirq/softirq
+-#              ||| / _--=> preempt-depth
+-#              |||| /
+-#              |||||     delay
+-#  cmd     pid ||||| time  |   caller
+-#     \   /    |||||   \   |   /
+-      ls-4473  0.N..    0us : preempt_schedule (write_chan)
+-      ls-4473  0dN.1    1us : _spin_lock (schedule)
+-      ls-4473  0dN.1    2us : add_preempt_count (_spin_lock)
+-      ls-4473  0d..2    2us : put_prev_task_fair (schedule)
+-[...]
+-      ls-4473  0d..2   13us : set_normalized_timespec (ktime_get_ts)
+-      ls-4473  0d..2   13us : __switch_to (schedule)
+-    sshd-4261  0d..2   14us : finish_task_switch (schedule)
+-    sshd-4261  0d..2   14us : _spin_unlock_irq (finish_task_switch)
+-    sshd-4261  0d..1   15us : add_preempt_count (_spin_lock_irqsave)
+-    sshd-4261  0d..2   16us : _spin_unlock_irqrestore (hrtick_set)
+-    sshd-4261  0d..2   16us : do_IRQ (common_interrupt)
+-    sshd-4261  0d..2   17us : irq_enter (do_IRQ)
+-    sshd-4261  0d..2   17us : idle_cpu (irq_enter)
+-    sshd-4261  0d..2   18us : add_preempt_count (irq_enter)
+-    sshd-4261  0d.h2   18us : idle_cpu (irq_enter)
+-    sshd-4261  0d.h.   18us : handle_fasteoi_irq (do_IRQ)
+-    sshd-4261  0d.h.   19us : _spin_lock (handle_fasteoi_irq)
+-    sshd-4261  0d.h.   19us : add_preempt_count (_spin_lock)
+-    sshd-4261  0d.h1   20us : _spin_unlock (handle_fasteoi_irq)
+-    sshd-4261  0d.h1   20us : sub_preempt_count (_spin_unlock)
+-[...]
+-    sshd-4261  0d.h1   28us : _spin_unlock (handle_fasteoi_irq)
+-    sshd-4261  0d.h1   29us : sub_preempt_count (_spin_unlock)
+-    sshd-4261  0d.h2   29us : irq_exit (do_IRQ)
+-    sshd-4261  0d.h2   29us : sub_preempt_count (irq_exit)
+-    sshd-4261  0d..3   30us : do_softirq (irq_exit)
+-    sshd-4261  0d...   30us : __do_softirq (do_softirq)
+-    sshd-4261  0d...   31us : __local_bh_disable (__do_softirq)
+-    sshd-4261  0d...   31us+: add_preempt_count (__local_bh_disable)
+-    sshd-4261  0d.s4   34us : add_preempt_count (__local_bh_disable)
+-[...]
+-    sshd-4261  0d.s3   43us : sub_preempt_count (local_bh_enable_ip)
+-    sshd-4261  0d.s4   44us : sub_preempt_count (local_bh_enable_ip)
+-    sshd-4261  0d.s3   44us : smp_apic_timer_interrupt (apic_timer_interrupt)
+-    sshd-4261  0d.s3   45us : irq_enter (smp_apic_timer_interrupt)
+-    sshd-4261  0d.s3   45us : idle_cpu (irq_enter)
+-    sshd-4261  0d.s3   46us : add_preempt_count (irq_enter)
+-    sshd-4261  0d.H3   46us : idle_cpu (irq_enter)
+-    sshd-4261  0d.H3   47us : hrtimer_interrupt (smp_apic_timer_interrupt)
+-    sshd-4261  0d.H3   47us : ktime_get (hrtimer_interrupt)
+-[...]
+-    sshd-4261  0d.H3   81us : tick_program_event (hrtimer_interrupt)
+-    sshd-4261  0d.H3   82us : ktime_get (tick_program_event)
+-    sshd-4261  0d.H3   82us : ktime_get_ts (ktime_get)
+-    sshd-4261  0d.H3   83us : getnstimeofday (ktime_get_ts)
+-    sshd-4261  0d.H3   83us : set_normalized_timespec (ktime_get_ts)
+-    sshd-4261  0d.H3   84us : clockevents_program_event (tick_program_event)
+-    sshd-4261  0d.H3   84us : lapic_next_event (clockevents_program_event)
+-    sshd-4261  0d.H3   85us : irq_exit (smp_apic_timer_interrupt)
+-    sshd-4261  0d.H3   85us : sub_preempt_count (irq_exit)
+-    sshd-4261  0d.s4   86us : sub_preempt_count (irq_exit)
+-    sshd-4261  0d.s3   86us : add_preempt_count (__local_bh_disable)
+-[...]
+-    sshd-4261  0d.s1   98us : sub_preempt_count (net_rx_action)
+-    sshd-4261  0d.s.   99us : add_preempt_count (_spin_lock_irq)
+-    sshd-4261  0d.s1   99us+: _spin_unlock_irq (run_timer_softirq)
+-    sshd-4261  0d.s.  104us : _local_bh_enable (__do_softirq)
+-    sshd-4261  0d.s.  104us : sub_preempt_count (_local_bh_enable)
+-    sshd-4261  0d.s.  105us : _local_bh_enable (__do_softirq)
+-    sshd-4261  0d.s1  105us : trace_preempt_on (__do_softirq)
+-
+-
+-This is a very interesting trace. It started with the preemption of
+-the ls task. We see that the task had the "need_resched" bit set
+-with the 'N' in the trace.  Interrupts are disabled in the spin_lock
+-and the trace started. We see that a schedule took place to run
+-sshd.  When the interrupts were enabled we took an interrupt.
+-On return of the interrupt the softirq ran. We took another interrupt
+-while running the softirq as we see with the capital 'H'.
+-
+-
+-wakeup
+-------
+-
+-In Real-Time environment it is very important to know the wakeup
+-time it takes for the highest priority task that wakes up to the
+-time it executes. This is also known as "schedule latency".
+-I stress the point that this is about RT tasks. It is also important
+-to know the scheduling latency of non-RT tasks, but the average
+-schedule latency is better for non-RT tasks. Tools like
+-LatencyTop is more appropriate for such measurements.
+-
+-Real-Time environments is interested in the worst case latency.
+-That is the longest latency it takes for something to happen, and
+-not the average. We can have a very fast scheduler that may only
+-have a large latency once in a while, but that would not work well
+-with Real-Time tasks.  The wakeup tracer was designed to record
+-the worst case wakeups of RT tasks. Non-RT tasks are not recorded
+-because the tracer only records one worst case and tracing non-RT
+-tasks that are unpredictable will overwrite the worst case latency
+-of RT tasks.
+-
+-Since this tracer only deals with RT tasks, we will run this slightly
+-different than we did with the previous tracers. Instead of performing
+-an 'ls' we will run 'sleep 1' under 'chrt' which changes the
+-priority of the task.
+-
+- # echo wakeup > /debug/tracing/current_tracer
+- # echo 0 > /debug/tracing/tracing_max_latency
+- # echo 1 > /debug/tracing/tracing_enabled
+- # chrt -f 5 sleep 1
+- # echo 0 > /debug/tracing/tracing_enabled
+- # cat /debug/tracing/latency_trace
+-# tracer: wakeup
+-#
+-wakeup latency trace v1.1.5 on 2.6.26-rc8
+---------------------------------------------------------------------
+- latency: 4 us, #2/2, CPU#1 | (M:preempt VP:0, KP:0, SP:0 HP:0 #P:2)
+-    -----------------
+-    | task: sleep-4901 (uid:0 nice:0 policy:1 rt_prio:5)
+-    -----------------
+-
+-#                _------=> CPU#
+-#               / _-----=> irqs-off
+-#              | / _----=> need-resched
+-#              || / _---=> hardirq/softirq
+-#              ||| / _--=> preempt-depth
+-#              |||| /
+-#              |||||     delay
+-#  cmd     pid ||||| time  |   caller
+-#     \   /    |||||   \   |   /
+-  <idle>-0     1d.h4    0us+: try_to_wake_up (wake_up_process)
+-  <idle>-0     1d..4    4us : schedule (cpu_idle)
+-
+-
+-vim:ft=help
+-
+-
+-Running this on an idle system we see that it only took 4 microseconds
+-to perform the task switch.  Note, since the trace marker in the
+-schedule is before the actual "switch" we stop the tracing when
+-the recorded task is about to schedule in. This may change if
+-we add a new marker at the end of the scheduler.
+-
+-Notice that the recorded task is 'sleep' with the PID of 4901 and it
+-has an rt_prio of 5. This priority is user-space priority and not
+-the internal kernel priority. The policy is 1 for SCHED_FIFO and 2
+-for SCHED_RR.
+-
+-Doing the same with chrt -r 5 and ftrace_enabled set.
+-
+-# tracer: wakeup
+-#
+-wakeup latency trace v1.1.5 on 2.6.26-rc8
+---------------------------------------------------------------------
+- latency: 50 us, #60/60, CPU#1 | (M:preempt VP:0, KP:0, SP:0 HP:0 #P:2)
+-    -----------------
+-    | task: sleep-4068 (uid:0 nice:0 policy:2 rt_prio:5)
+-    -----------------
+-
+-#                _------=> CPU#
+-#               / _-----=> irqs-off
+-#              | / _----=> need-resched
+-#              || / _---=> hardirq/softirq
+-#              ||| / _--=> preempt-depth
+-#              |||| /
+-#              |||||     delay
+-#  cmd     pid ||||| time  |   caller
+-#     \   /    |||||   \   |   /
+-ksoftirq-7     1d.H3    0us : try_to_wake_up (wake_up_process)
+-ksoftirq-7     1d.H4    1us : sub_preempt_count (marker_probe_cb)
+-ksoftirq-7     1d.H3    2us : check_preempt_wakeup (try_to_wake_up)
+-ksoftirq-7     1d.H3    3us : update_curr (check_preempt_wakeup)
+-ksoftirq-7     1d.H3    4us : calc_delta_mine (update_curr)
+-ksoftirq-7     1d.H3    5us : __resched_task (check_preempt_wakeup)
+-ksoftirq-7     1d.H3    6us : task_wake_up_rt (try_to_wake_up)
+-ksoftirq-7     1d.H3    7us : _spin_unlock_irqrestore (try_to_wake_up)
+-[...]
+-ksoftirq-7     1d.H2   17us : irq_exit (smp_apic_timer_interrupt)
+-ksoftirq-7     1d.H2   18us : sub_preempt_count (irq_exit)
+-ksoftirq-7     1d.s3   19us : sub_preempt_count (irq_exit)
+-ksoftirq-7     1..s2   20us : rcu_process_callbacks (__do_softirq)
+-[...]
+-ksoftirq-7     1..s2   26us : __rcu_process_callbacks (rcu_process_callbacks)
+-ksoftirq-7     1d.s2   27us : _local_bh_enable (__do_softirq)
+-ksoftirq-7     1d.s2   28us : sub_preempt_count (_local_bh_enable)
+-ksoftirq-7     1.N.3   29us : sub_preempt_count (ksoftirqd)
+-ksoftirq-7     1.N.2   30us : _cond_resched (ksoftirqd)
+-ksoftirq-7     1.N.2   31us : __cond_resched (_cond_resched)
+-ksoftirq-7     1.N.2   32us : add_preempt_count (__cond_resched)
+-ksoftirq-7     1.N.2   33us : schedule (__cond_resched)
+-ksoftirq-7     1.N.2   33us : add_preempt_count (schedule)
+-ksoftirq-7     1.N.3   34us : hrtick_clear (schedule)
+-ksoftirq-7     1dN.3   35us : _spin_lock (schedule)
+-ksoftirq-7     1dN.3   36us : add_preempt_count (_spin_lock)
+-ksoftirq-7     1d..4   37us : put_prev_task_fair (schedule)
+-ksoftirq-7     1d..4   38us : update_curr (put_prev_task_fair)
+-[...]
+-ksoftirq-7     1d..5   47us : _spin_trylock (tracing_record_cmdline)
+-ksoftirq-7     1d..5   48us : add_preempt_count (_spin_trylock)
+-ksoftirq-7     1d..6   49us : _spin_unlock (tracing_record_cmdline)
+-ksoftirq-7     1d..6   49us : sub_preempt_count (_spin_unlock)
+-ksoftirq-7     1d..4   50us : schedule (__cond_resched)
+-
+-The interrupt went off while running ksoftirqd. This task runs at
+-SCHED_OTHER. Why didn't we see the 'N' set early? This may be
+-a harmless bug with x86_32 and 4K stacks. The need_reched() function
+-that tests if we need to reschedule looks on the actual stack.
+-Where as the setting of the NEED_RESCHED bit happens on the
+-task's stack. But because we are in a hard interrupt, the test
+-is with the interrupts stack which has that to be false. We don't
+-see the 'N' until we switch back to the task's stack.
+-
+-ftrace
+-------
+-
+-ftrace is not only the name of the tracing infrastructure, but it
+-is also a name of one of the tracers. The tracer is the function
+-tracer. Enabling the function tracer can be done from the
+-debug file system. Make sure the ftrace_enabled is set otherwise
+-this tracer is a nop.
+-
+- # sysctl kernel.ftrace_enabled=1
+- # echo ftrace > /debug/tracing/current_tracer
+- # echo 1 > /debug/tracing/tracing_enabled
+- # usleep 1
+- # echo 0 > /debug/tracing/tracing_enabled
+- # cat /debug/tracing/trace
+-# tracer: ftrace
+-#
+-#           TASK-PID   CPU#    TIMESTAMP  FUNCTION
+-#              | |      |          |         |
+-            bash-4003  [00]   123.638713: finish_task_switch <-schedule
+-            bash-4003  [00]   123.638714: _spin_unlock_irq <-finish_task_switch
+-            bash-4003  [00]   123.638714: sub_preempt_count <-_spin_unlock_irq
+-            bash-4003  [00]   123.638715: hrtick_set <-schedule
+-            bash-4003  [00]   123.638715: _spin_lock_irqsave <-hrtick_set
+-            bash-4003  [00]   123.638716: add_preempt_count <-_spin_lock_irqsave
+-            bash-4003  [00]   123.638716: _spin_unlock_irqrestore <-hrtick_set
+-            bash-4003  [00]   123.638717: sub_preempt_count <-_spin_unlock_irqrestore
+-            bash-4003  [00]   123.638717: hrtick_clear <-hrtick_set
+-            bash-4003  [00]   123.638718: sub_preempt_count <-schedule
+-            bash-4003  [00]   123.638718: sub_preempt_count <-preempt_schedule
+-            bash-4003  [00]   123.638719: wait_for_completion <-__stop_machine_run
+-            bash-4003  [00]   123.638719: wait_for_common <-wait_for_completion
+-            bash-4003  [00]   123.638720: _spin_lock_irq <-wait_for_common
+-            bash-4003  [00]   123.638720: add_preempt_count <-_spin_lock_irq
+-[...]
+-
+-
+-Note: It is sometimes better to enable or disable tracing directly from
+-a program, because the buffer may be overflowed by the echo commands
+-before you get to the point you want to trace. It is also easier to
+-stop the tracing at the point that you hit the part that you are
+-interested in. Since the ftrace buffer is a ring buffer with the
+-oldest data being overwritten, usually it is sufficient to start the
+-tracer with an echo command but have you code stop it. Something
+-like the following is usually appropriate for this.
+-
+-int trace_fd;
+-[...]
+-int main(int argc, char *argv[]) {
+-	[...]
+-	trace_fd = open("/debug/tracing/tracing_enabled", O_WRONLY);
+-	[...]
+-	if (condition_hit()) {
+-	write(trace_fd, "0", 1);
+-	}
+-	[...]
+-}
+-
+-
+-dynamic ftrace
+---------------
+-
+-If CONFIG_DYNAMIC_FTRACE is set, then the system will run with
+-virtually no overhead when function tracing is disabled. The way
+-this works is the mcount function call (placed at the start of
+-every kernel function, produced by the -pg switch in gcc), starts
+-of pointing to a simple return.
+-
+-When dynamic ftrace is initialized, it calls kstop_machine to make it
+-act like a uniprocessor so that it can freely modify code without
+-worrying about other processors executing that same code.  At
+-initialization, the mcount calls are change to call a "record_ip"
+-function.  After this, the first time a kernel function is called,
+-it has the calling address saved in a hash table.
+-
+-Later on the ftraced kernel thread is awoken and will again call
+-kstop_machine if new functions have been recorded. The ftraced thread
+-will change all calls to mcount to "nop".  Just calling mcount
+-and having mcount return has shown a 10% overhead. By converting
+-it to a nop, there is no recordable overhead to the system.
+-
+-One special side-effect to the recording of the functions being
+-traced, is that we can now selectively choose which functions we
+-want to trace and which ones we want the mcount calls to remain as
+-nops.
+-
+-Two files that contain to the enabling and disabling of recorded
+-functions are:
+-
+-  set_ftrace_filter
+-
+-and
+-
+-  set_ftrace_notrace
+-
+-A list of available functions that you can add to this files is listed
+-in:
+-
+-   available_filter_functions
+-
+- # cat /debug/tracing/available_filter_functions
+-put_prev_task_idle
+-kmem_cache_create
+-pick_next_task_rt
+-get_online_cpus
+-pick_next_task_fair
+-mutex_lock
+-[...]
+-
+-If I'm only interested in sys_nanosleep and hrtimer_interrupt:
+-
+- # echo sys_nanosleep hrtimer_interrupt \
+-		> /debug/tracing/set_ftrace_filter
+- # echo ftrace > /debug/tracing/current_tracer
+- # echo 1 > /debug/tracing/tracing_enabled
+- # usleep 1
+- # echo 0 > /debug/tracing/tracing_enabled
+- # cat /debug/tracing/trace
+-# tracer: ftrace
+-#
+-#           TASK-PID   CPU#    TIMESTAMP  FUNCTION
+-#              | |      |          |         |
+-          usleep-4134  [00]  1317.070017: hrtimer_interrupt <-smp_apic_timer_interrupt
+-          usleep-4134  [00]  1317.070111: sys_nanosleep <-syscall_call
+-          <idle>-0     [00]  1317.070115: hrtimer_interrupt <-smp_apic_timer_interrupt
+-
+-To see what functions are being traced, you can cat the file:
+-
+- # cat /debug/tracing/set_ftrace_filter
+-hrtimer_interrupt
+-sys_nanosleep
+-
+-
+-Perhaps this isn't enough. The filters also allow simple wild cards.
+-Only the following is currently available
+-
+-  <match>*  - will match functions that begins with <match>
+-  *<match>  - will match functions that end with <match>
+-  *<match>* - will match functions that have <match> in it
+-
+-Thats all the wild cards that are allowed.
+-
+-  <match>*<match> will not work.
+-
+- # echo hrtimer_* > /debug/tracing/set_ftrace_filter
+-
+-Produces:
+-
+-# tracer: ftrace
+-#
+-#           TASK-PID   CPU#    TIMESTAMP  FUNCTION
+-#              | |      |          |         |
+-            bash-4003  [00]  1480.611794: hrtimer_init <-copy_process
+-            bash-4003  [00]  1480.611941: hrtimer_start <-hrtick_set
+-            bash-4003  [00]  1480.611956: hrtimer_cancel <-hrtick_clear
+-            bash-4003  [00]  1480.611956: hrtimer_try_to_cancel <-hrtimer_cancel
+-          <idle>-0     [00]  1480.612019: hrtimer_get_next_event <-get_next_timer_interrupt
+-          <idle>-0     [00]  1480.612025: hrtimer_get_next_event <-get_next_timer_interrupt
+-          <idle>-0     [00]  1480.612032: hrtimer_get_next_event <-get_next_timer_interrupt
+-          <idle>-0     [00]  1480.612037: hrtimer_get_next_event <-get_next_timer_interrupt
+-          <idle>-0     [00]  1480.612382: hrtimer_get_next_event <-get_next_timer_interrupt
+-
+-
+-Notice that we lost the sys_nanosleep.
+-
+- # cat /debug/tracing/set_ftrace_filter
+-hrtimer_run_queues
+-hrtimer_run_pending
+-hrtimer_init
+-hrtimer_cancel
+-hrtimer_try_to_cancel
+-hrtimer_forward
+-hrtimer_start
+-hrtimer_reprogram
+-hrtimer_force_reprogram
+-hrtimer_get_next_event
+-hrtimer_interrupt
+-hrtimer_nanosleep
+-hrtimer_wakeup
+-hrtimer_get_remaining
+-hrtimer_get_res
+-hrtimer_init_sleeper
+-
+-
+-This is because the '>' and '>>' act just like they do in bash.
+-To rewrite the filters, use '>'
+-To append to the filters, use '>>'
+-
+-To clear out a filter so that all functions will be recorded again.
+-
+- # echo > /debug/tracing/set_ftrace_filter
+- # cat /debug/tracing/set_ftrace_filter
+- #
+-
+-Again, now we want to append.
+-
+- # echo sys_nanosleep > /debug/tracing/set_ftrace_filter
+- # cat /debug/tracing/set_ftrace_filter
+-sys_nanosleep
+- # echo hrtimer_* >> /debug/tracing/set_ftrace_filter
+- # cat /debug/tracing/set_ftrace_filter
+-hrtimer_run_queues
+-hrtimer_run_pending
+-hrtimer_init
+-hrtimer_cancel
+-hrtimer_try_to_cancel
+-hrtimer_forward
+-hrtimer_start
+-hrtimer_reprogram
+-hrtimer_force_reprogram
+-hrtimer_get_next_event
+-hrtimer_interrupt
+-sys_nanosleep
+-hrtimer_nanosleep
+-hrtimer_wakeup
+-hrtimer_get_remaining
+-hrtimer_get_res
+-hrtimer_init_sleeper
+-
+-
+-The set_ftrace_notrace prevents those functions from being traced.
+-
+- # echo '*preempt*' '*lock*' > /debug/tracing/set_ftrace_notrace
+-
+-Produces:
+-
+-# tracer: ftrace
+-#
+-#           TASK-PID   CPU#    TIMESTAMP  FUNCTION
+-#              | |      |          |         |
+-            bash-4043  [01]   115.281644: finish_task_switch <-schedule
+-            bash-4043  [01]   115.281645: hrtick_set <-schedule
+-            bash-4043  [01]   115.281645: hrtick_clear <-hrtick_set
+-            bash-4043  [01]   115.281646: wait_for_completion <-__stop_machine_run
+-            bash-4043  [01]   115.281647: wait_for_common <-wait_for_completion
+-            bash-4043  [01]   115.281647: kthread_stop <-stop_machine_run
+-            bash-4043  [01]   115.281648: init_waitqueue_head <-kthread_stop
+-            bash-4043  [01]   115.281648: wake_up_process <-kthread_stop
+-            bash-4043  [01]   115.281649: try_to_wake_up <-wake_up_process
+-
+-We can see that there's no more lock or preempt tracing.
+-
+-ftraced
+--------
+-
+-As mentioned above, when dynamic ftrace is configured in, a kernel
+-thread wakes up once a second and checks to see if there are mcount
+-calls that need to be converted into nops. If there is not, then
+-it simply goes back to sleep. But if there is, it will call
+-kstop_machine to convert the calls to nops.
+-
+-There may be a case that you do not want this added latency.
+-Perhaps you are doing some audio recording and this activity might
+-cause skips in the playback. There is an interface to disable
+-and enable the ftraced kernel thread.
+-
+- # echo 0 > /debug/tracing/ftraced_enabled
+-
+-This will disable the calling of the kstop_machine to update the
+-mcount calls to nops. Remember that there's a large overhead
+-to calling mcount. Without this kernel thread, that overhead will
+-exist.
+-
+-Any write to the ftraced_enabled file will cause the kstop_machine
+-to run if there are recorded calls to mcount. This means that a
+-user can manually perform the updates when they want to by simply
+-echoing a '0' into the ftraced_enabled file.
+-
+-The updates are also done at the beginning of enabling a tracer
+-that uses ftrace function recording.
+-
+-
+-trace_pipe
+-----------
+-
+-The trace_pipe outputs the same as trace, but the effect on the
+-tracing is different. Every read from trace_pipe is consumed.
+-This means that subsequent reads will be different. The trace
+-is live.
+-
+- # echo ftrace > /debug/tracing/current_tracer
+- # cat /debug/tracing/trace_pipe > /tmp/trace.out &
+-[1] 4153
+- # echo 1 > /debug/tracing/tracing_enabled
+- # usleep 1
+- # echo 0 > /debug/tracing/tracing_enabled
+- # cat /debug/tracing/trace
+-# tracer: ftrace
+-#
+-#           TASK-PID   CPU#    TIMESTAMP  FUNCTION
+-#              | |      |          |         |
+-
+- #
+- # cat /tmp/trace.out
+-            bash-4043  [00] 41.267106: finish_task_switch <-schedule
+-            bash-4043  [00] 41.267106: hrtick_set <-schedule
+-            bash-4043  [00] 41.267107: hrtick_clear <-hrtick_set
+-            bash-4043  [00] 41.267108: wait_for_completion <-__stop_machine_run
+-            bash-4043  [00] 41.267108: wait_for_common <-wait_for_completion
+-            bash-4043  [00] 41.267109: kthread_stop <-stop_machine_run
+-            bash-4043  [00] 41.267109: init_waitqueue_head <-kthread_stop
+-            bash-4043  [00] 41.267110: wake_up_process <-kthread_stop
+-            bash-4043  [00] 41.267110: try_to_wake_up <-wake_up_process
+-            bash-4043  [00] 41.267111: select_task_rq_rt <-try_to_wake_up
+-
+-
+-Note, reading the trace_pipe will block until more input is added.
+-By changing the tracer, trace_pipe will issue an EOF. We needed
+-to set the ftrace tracer _before_ cating the trace_pipe file.
+-
+-
+-trace entries
+--------------
+-
+-Having too much or not enough data can be troublesome in diagnosing
+-some issue in the kernel. The file trace_entries is used to modify
+-the size of the internal trace buffers. The numbers listed
+-is the number of entries that can be recorded per CPU. To know
+-the full size, multiply the number of possible CPUS with the
+-number of entries.
+-
+- # cat /debug/tracing/trace_entries
+-65620
+-
+-Note, to modify this you must have tracing fulling disabled. To do that,
+-echo "none" into the current_tracer.
+-
+- # echo none > /debug/tracing/current_tracer
+- # echo 100000 > /debug/tracing/trace_entries
+- # cat /debug/tracing/trace_entries
+-100045
+-
+-
+-Notice that we echoed in 100,000 but the size is 100,045. The entries
+-are held by individual pages. It allocates the number of pages it takes
+-to fulfill the request. If more entries may fit on the last page
+-it will add them.
+-
+- # echo 1 > /debug/tracing/trace_entries
+- # cat /debug/tracing/trace_entries
+-85
+-
+-This shows us that 85 entries can fit on a single page.
+-
+-The number of pages that will be allocated is a percentage of available
+-memory. Allocating too much will produces an error.
+-
+- # echo 1000000000000 > /debug/tracing/trace_entries
+--bash: echo: write error: Cannot allocate memory
+- # cat /debug/tracing/trace_entries
+-85
+-
 diff --git a/Makefile b/Makefile
-index 4c589b6..ea0ca7c 100644
+index c536d7b..5599044 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -1,7 +1,7 @@
  VERSION = 2
  PATCHLEVEL = 6
- SUBLEVEL = 25
--EXTRAVERSION = .14
-+EXTRAVERSION = .15
- NAME = Funky Weasel is Jiggy wit it
+ SUBLEVEL = 26
+-EXTRAVERSION = .1
++EXTRAVERSION = .2
+ NAME = Rotary Wombat
  
  # *DOCUMENTATION*
 diff --git a/arch/powerpc/kernel/ppc32.h b/arch/powerpc/kernel/ppc32.h
@@ -108,196 +1467,78 @@ index 4c1de6a..9d30e10 100644
  	case PTRACE_GETFPREGS:
  	case PTRACE_SETFPREGS:
  	case PTRACE_GETVRREGS:
-diff --git a/arch/x86/mm/ioremap.c b/arch/x86/mm/ioremap.c
-index 794895c..f96b2e4 100644
---- a/arch/x86/mm/ioremap.c
-+++ b/arch/x86/mm/ioremap.c
-@@ -39,7 +39,7 @@ EXPORT_SYMBOL(__phys_addr);
+diff --git a/arch/x86/kernel/io_delay.c b/arch/x86/kernel/io_delay.c
+index 5921e5f..1c3a66a 100644
+--- a/arch/x86/kernel/io_delay.c
++++ b/arch/x86/kernel/io_delay.c
+@@ -103,6 +103,9 @@ void __init io_delay_init(void)
  
- int page_is_ram(unsigned long pagenr)
+ static int __init io_delay_param(char *s)
  {
--	unsigned long addr, end;
-+	resource_size_t addr, end;
- 	int i;
++	if (!s)
++		return -EINVAL;
++
+ 	if (!strcmp(s, "0x80"))
+ 		io_delay_type = CONFIG_IO_DELAY_TYPE_0X80;
+ 	else if (!strcmp(s, "0xed"))
+diff --git a/arch/x86/kernel/kprobes.c b/arch/x86/kernel/kprobes.c
+index b8c6743..43c019f 100644
+--- a/arch/x86/kernel/kprobes.c
++++ b/arch/x86/kernel/kprobes.c
+@@ -860,7 +860,6 @@ static int __kprobes post_kprobe_handler(struct pt_regs *regs)
  
- 	/*
-@@ -109,7 +109,8 @@ static int ioremap_change_attr(unsigned long vaddr, unsigned long size,
- static void __iomem *__ioremap(resource_size_t phys_addr, unsigned long size,
- 			       enum ioremap_mode mode)
+ 	resume_execution(cur, regs, kcb);
+ 	regs->flags |= kcb->kprobe_saved_flags;
+-	trace_hardirqs_fixup_flags(regs->flags);
+ 
+ 	if ((kcb->kprobe_status != KPROBE_REENTER) && cur->post_handler) {
+ 		kcb->kprobe_status = KPROBE_HIT_SSDONE;
+diff --git a/arch/x86/kernel/process.c b/arch/x86/kernel/process.c
+index ba370dc..58325a6 100644
+--- a/arch/x86/kernel/process.c
++++ b/arch/x86/kernel/process.c
+@@ -164,6 +164,9 @@ void __cpuinit select_idle_routine(const struct cpuinfo_x86 *c)
+ 
+ static int __init idle_setup(char *str)
  {
--	unsigned long pfn, offset, last_addr, vaddr;
-+	unsigned long pfn, offset, vaddr;
-+	resource_size_t last_addr;
- 	struct vm_struct *area;
- 	pgprot_t prot;
++	if (!str)
++		return -EINVAL;
++
+ 	if (!strcmp(str, "poll")) {
+ 		printk("using polling idle threads.\n");
+ 		pm_idle = poll_idle;
+diff --git a/block/bsg.c b/block/bsg.c
+index 54d617f..0526471 100644
+--- a/block/bsg.c
++++ b/block/bsg.c
+@@ -725,8 +725,13 @@ static int bsg_put_device(struct bsg_device *bd)
+ 	mutex_lock(&bsg_mutex);
  
-diff --git a/drivers/acpi/bay.c b/drivers/acpi/bay.c
-index 1fa8681..a845062 100644
---- a/drivers/acpi/bay.c
-+++ b/drivers/acpi/bay.c
-@@ -299,16 +299,20 @@ static int bay_add(acpi_handle handle, int id)
+ 	do_free = atomic_dec_and_test(&bd->ref_count);
+-	if (!do_free)
++	if (!do_free) {
++		mutex_unlock(&bsg_mutex);
+ 		goto out;
++	}
++
++	hlist_del(&bd->dev_list);
++	mutex_unlock(&bsg_mutex);
+ 
+ 	dprintk("%s: tearing down\n", bd->name);
+ 
+@@ -742,10 +747,8 @@ static int bsg_put_device(struct bsg_device *bd)
  	 */
- 	pdev->dev.uevent_suppress = 0;
+ 	ret = bsg_complete_all_commands(bd);
  
--	if (acpi_bay_add_fs(new_bay)) {
--		platform_device_unregister(new_bay->pdev);
--		goto bay_add_err;
--	}
--
- 	/* register for events on this device */
- 	status = acpi_install_notify_handler(handle, ACPI_SYSTEM_NOTIFY,
- 			bay_notify, new_bay);
- 	if (ACPI_FAILURE(status)) {
--		printk(KERN_ERR PREFIX "Error installing bay notify handler\n");
-+		printk(KERN_INFO PREFIX "Error installing bay notify handler\n");
-+		platform_device_unregister(new_bay->pdev);
-+		goto bay_add_err;
-+	}
-+
-+	if (acpi_bay_add_fs(new_bay)) {
-+		acpi_remove_notify_handler(handle, ACPI_SYSTEM_NOTIFY,
-+					   bay_notify);
-+		platform_device_unregister(new_bay->pdev);
-+		goto bay_add_err;
- 	}
- 
- 	/* if we are on a dock station, we should register for dock
-diff --git a/drivers/acpi/thermal.c b/drivers/acpi/thermal.c
-index 1bcecc7..a32aed9 100644
---- a/drivers/acpi/thermal.c
-+++ b/drivers/acpi/thermal.c
-@@ -359,10 +359,17 @@ static int acpi_thermal_trips_update(struct acpi_thermal *tz, int flag)
- 	if (flag & ACPI_TRIPS_CRITICAL) {
- 		status = acpi_evaluate_integer(tz->device->handle,
- 				"_CRT", NULL, &tz->trips.critical.temperature);
--		if (ACPI_FAILURE(status)) {
-+		/*
-+		 * Treat freezing temperatures as invalid as well; some
-+		 * BIOSes return really low values and cause reboots at startup.
-+		 * Below zero (Celcius) values clearly aren't right for sure..
-+		 * ... so lets discard those as invalid.
-+		 */
-+		if (ACPI_FAILURE(status) ||
-+				tz->trips.critical.temperature <= 2732) {
- 			tz->trips.critical.flags.valid = 0;
- 			ACPI_EXCEPTION((AE_INFO, status,
--					"No critical threshold"));
-+					"No or invalid critical threshold"));
- 			return -ENODEV;
- 		} else {
- 			tz->trips.critical.flags.valid = 1;
-@@ -884,10 +891,15 @@ static void acpi_thermal_check(void *data)
- static int thermal_get_temp(struct thermal_zone_device *thermal, char *buf)
- {
- 	struct acpi_thermal *tz = thermal->devdata;
-+	int result;
- 
- 	if (!tz)
- 		return -EINVAL;
- 
-+	result = acpi_thermal_get_temperature(tz);
-+	if (result)
-+		return result;
-+
- 	return sprintf(buf, "%ld\n", KELVIN_TO_MILLICELSIUS(tz->temperature));
- }
- 
-diff --git a/drivers/input/mouse/appletouch.c b/drivers/input/mouse/appletouch.c
-index 8dd3942..ce6fdec 100644
---- a/drivers/input/mouse/appletouch.c
-+++ b/drivers/input/mouse/appletouch.c
-@@ -589,6 +589,21 @@ static void atp_close(struct input_dev *input)
- 	dev->open = 0;
- }
- 
-+static int atp_handle_geyser(struct atp *dev)
-+{
-+	struct usb_device *udev = dev->udev;
-+
-+	if (!atp_is_fountain(dev)) {
-+		/* switch to raw sensor mode */
-+		if (atp_geyser_init(udev))
-+			return -EIO;
-+
-+		printk(KERN_INFO "appletouch: Geyser mode initialized.\n");
-+	}
-+
-+	return 0;
-+}
-+
- static int atp_probe(struct usb_interface *iface, const struct usb_device_id *id)
- {
- 	struct atp *dev;
-@@ -633,14 +648,6 @@ static int atp_probe(struct usb_interface *iface, const struct usb_device_id *id
- 	else
- 		dev->datalen = 81;
- 
--	if (!atp_is_fountain(dev)) {
--		/* switch to raw sensor mode */
--		if (atp_geyser_init(udev))
--			goto err_free_devs;
--
--		printk(KERN_INFO "appletouch: Geyser mode initialized.\n");
--	}
--
- 	dev->urb = usb_alloc_urb(0, GFP_KERNEL);
- 	if (!dev->urb)
- 		goto err_free_devs;
-@@ -654,6 +661,10 @@ static int atp_probe(struct usb_interface *iface, const struct usb_device_id *id
- 			 usb_rcvintpipe(udev, int_in_endpointAddr),
- 			 dev->data, dev->datalen, atp_complete, dev, 1);
- 
-+	error = atp_handle_geyser(dev);
-+	if (error)
-+		goto err_free_buffer;
-+
- 	usb_make_path(udev, dev->phys, sizeof(dev->phys));
- 	strlcat(dev->phys, "/input0", sizeof(dev->phys));
- 
-@@ -744,6 +755,20 @@ static void atp_disconnect(struct usb_interface *iface)
- 	printk(KERN_INFO "input: appletouch disconnected\n");
- }
- 
-+static int atp_recover(struct atp *dev)
-+{
-+	int error;
-+
-+	error = atp_handle_geyser(dev);
-+	if (error)
-+		return error;
-+
-+	if (dev->open && usb_submit_urb(dev->urb, GFP_ATOMIC))
-+		return -EIO;
-+
-+	return 0;
-+}
-+
- static int atp_suspend(struct usb_interface *iface, pm_message_t message)
- {
- 	struct atp *dev = usb_get_intfdata(iface);
-@@ -764,12 +789,20 @@ static int atp_resume(struct usb_interface *iface)
- 	return 0;
- }
- 
-+static int atp_reset_resume(struct usb_interface *iface)
-+{
-+	struct atp *dev = usb_get_intfdata(iface);
-+
-+	return atp_recover(dev);
-+}
-+
- static struct usb_driver atp_driver = {
- 	.name		= "appletouch",
- 	.probe		= atp_probe,
- 	.disconnect	= atp_disconnect,
- 	.suspend	= atp_suspend,
- 	.resume		= atp_resume,
-+	.reset_resume	= atp_reset_resume,
- 	.id_table	= atp_table,
- };
- 
+-	hlist_del(&bd->dev_list);
+ 	kfree(bd);
+ out:
+-	mutex_unlock(&bsg_mutex);
+ 	kref_put(&q->bsg_dev.ref, bsg_kref_release_function);
+ 	if (do_free)
+ 		blk_put_queue(q);
 diff --git a/drivers/input/serio/i8042-x86ia64io.h b/drivers/input/serio/i8042-x86ia64io.h
-index 60931ac..17a3568 100644
+index 78eb784..7828ef2 100644
 --- a/drivers/input/serio/i8042-x86ia64io.h
 +++ b/drivers/input/serio/i8042-x86ia64io.h
 @@ -63,7 +63,7 @@ static inline void i8042_write_command(int val)
@@ -309,28 +1550,7 @@ index 60931ac..17a3568 100644
  
  #include <linux/dmi.h>
  
-@@ -193,6 +193,20 @@ static struct dmi_system_id __initdata i8042_dmi_nomux_table[] = {
- 		},
- 	},
- 	{
-+		.ident = "Fujitsu-Siemens Amilo Pro 2030",
-+		.matches = {
-+			DMI_MATCH(DMI_SYS_VENDOR, "FUJITSU SIEMENS"),
-+			DMI_MATCH(DMI_PRODUCT_NAME, "AMILO PRO V2030"),
-+		},
-+	},
-+	{
-+		.ident = "Fujitsu-Siemens Amilo Pro 2010",
-+		.matches = {
-+			DMI_MATCH(DMI_SYS_VENDOR, "FUJITSU SIEMENS"),
-+			DMI_MATCH(DMI_PRODUCT_NAME, "AMILO Pro V2010"),
-+		},
-+	},
-+	{
- 		/*
- 		 * No data is coming from the touchscreen unless KBC
- 		 * is in legacy mode.
-@@ -284,17 +298,36 @@ static struct dmi_system_id __initdata i8042_dmi_nomux_table[] = {
+@@ -291,17 +291,36 @@ static struct dmi_system_id __initdata i8042_dmi_nomux_table[] = {
  			DMI_MATCH(DMI_PRODUCT_VERSION, "3000 N100"),
  		},
  	},
@@ -373,7 +1593,7 @@ index 60931ac..17a3568 100644
  /*
   * Some Wistron based laptops need us to explicitly enable the 'Dritek
   * keyboard extension' to make their extra keys start generating scancodes.
-@@ -342,7 +375,6 @@ static struct dmi_system_id __initdata i8042_dmi_dritek_table[] = {
+@@ -356,7 +375,6 @@ static struct dmi_system_id __initdata i8042_dmi_dritek_table[] = {
  
  #endif /* CONFIG_X86 */
  
@@ -381,7 +1601,7 @@ index 60931ac..17a3568 100644
  #ifdef CONFIG_PNP
  #include <linux/pnp.h>
  
-@@ -452,6 +484,11 @@ static int __init i8042_pnp_init(void)
+@@ -466,6 +484,11 @@ static int __init i8042_pnp_init(void)
  	int pnp_data_busted = 0;
  	int err;
  
@@ -393,7 +1613,7 @@ index 60931ac..17a3568 100644
  	if (i8042_nopnp) {
  		printk(KERN_INFO "i8042: PNP detection disabled\n");
  		return 0;
-@@ -577,15 +614,13 @@ static int __init i8042_platform_init(void)
+@@ -591,15 +614,13 @@ static int __init i8042_platform_init(void)
          i8042_reset = 1;
  #endif
  
@@ -410,294 +1630,140 @@ index 60931ac..17a3568 100644
  	if (dmi_check_system(i8042_dmi_dritek_table))
  		i8042_dritek = 1;
  #endif /* CONFIG_X86 */
-diff --git a/drivers/input/serio/i8042.c b/drivers/input/serio/i8042.c
-index 65a74cf..f3228ae 100644
---- a/drivers/input/serio/i8042.c
-+++ b/drivers/input/serio/i8042.c
-@@ -938,8 +938,12 @@ static int i8042_resume(struct platform_device *dev)
- 	i8042_ctr |= I8042_CTR_AUXDIS | I8042_CTR_KBDDIS;
- 	i8042_ctr &= ~(I8042_CTR_AUXINT | I8042_CTR_KBDINT);
- 	if (i8042_command(&i8042_ctr, I8042_CMD_CTL_WCTR)) {
--		printk(KERN_ERR "i8042: Can't write CTR to resume\n");
--		return -EIO;
-+		printk(KERN_WARNING "i8042: Can't write CTR to resume, retrying...\n");
-+		msleep(50);
-+		if (i8042_command(&i8042_ctr, I8042_CMD_CTL_WCTR)) {
-+			printk(KERN_ERR "i8042: CTR write retry failed\n");
-+			return -EIO;
-+		}
- 	}
+diff --git a/drivers/md/linear.c b/drivers/md/linear.c
+index 1074824..ec921f5 100644
+--- a/drivers/md/linear.c
++++ b/drivers/md/linear.c
+@@ -126,7 +126,7 @@ static linear_conf_t *linear_conf(mddev_t *mddev, int raid_disks)
+ 		int j = rdev->raid_disk;
+ 		dev_info_t *disk = conf->disks + j;
  
- 	if (i8042_mux_present) {
+-		if (j < 0 || j > raid_disks || disk->rdev) {
++		if (j < 0 || j >= raid_disks || disk->rdev) {
+ 			printk("linear: disk numbering problem. Aborting!\n");
+ 			goto out;
+ 		}
+diff --git a/drivers/md/md.c b/drivers/md/md.c
+index 2580ac1..9664511 100644
+--- a/drivers/md/md.c
++++ b/drivers/md/md.c
+@@ -3326,9 +3326,9 @@ static struct kobject *md_probe(dev_t dev, int *part, void *data)
+ 	disk->queue = mddev->queue;
+ 	add_disk(disk);
+ 	mddev->gendisk = disk;
+-	mutex_unlock(&disks_mutex);
+ 	error = kobject_init_and_add(&mddev->kobj, &md_ktype, &disk->dev.kobj,
+ 				     "%s", "md");
++	mutex_unlock(&disks_mutex);
+ 	if (error)
+ 		printk(KERN_WARNING "md: cannot register %s/md - name in use\n",
+ 		       disk->disk_name);
 diff --git a/drivers/net/wireless/ath5k/base.c b/drivers/net/wireless/ath5k/base.c
-index c3ded21..28b52c8 100644
+index e57905c..bc3ea09 100644
 --- a/drivers/net/wireless/ath5k/base.c
 +++ b/drivers/net/wireless/ath5k/base.c
-@@ -2864,7 +2864,9 @@ ath5k_set_key(struct ieee80211_hw *hw, enum set_key_cmd cmd,
+@@ -1774,20 +1774,21 @@ ath5k_tasklet_rx(unsigned long data)
+ 	struct ath5k_rx_status rs = {};
+ 	struct sk_buff *skb;
+ 	struct ath5k_softc *sc = (void *)data;
+-	struct ath5k_buf *bf;
++	struct ath5k_buf *bf, *bf_last;
+ 	struct ath5k_desc *ds;
+ 	int ret;
+ 	int hdrlen;
+ 	int pad;
  
- 	switch(key->alg) {
- 	case ALG_WEP:
--		break;
-+	/* XXX: fix hardware encryption, its not working. For now
-+	 * allow software encryption */
-+		/* break; */
- 	case ALG_TKIP:
- 	case ALG_CCMP:
- 		return -EOPNOTSUPP;
-diff --git a/drivers/pci/quirks.c b/drivers/pci/quirks.c
-index e887aa4..8d55044 100644
---- a/drivers/pci/quirks.c
-+++ b/drivers/pci/quirks.c
-@@ -1675,6 +1675,7 @@ static void __init quirk_disable_all_msi(struct pci_dev *dev)
- DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_SERVERWORKS, PCI_DEVICE_ID_SERVERWORKS_GCNB_LE, quirk_disable_all_msi);
- DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_ATI, PCI_DEVICE_ID_ATI_RS400_200, quirk_disable_all_msi);
- DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_ATI, PCI_DEVICE_ID_ATI_RS480, quirk_disable_all_msi);
-+DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_VIA, PCI_DEVICE_ID_VIA_VT3336, quirk_disable_all_msi);
- DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_VIA, PCI_DEVICE_ID_VIA_VT3351, quirk_disable_all_msi);
- 
- /* Disable MSI on chipsets that are known to not support it */
-diff --git a/drivers/ps3/ps3-lpm.c b/drivers/ps3/ps3-lpm.c
-index 6c9592c..85edf94 100644
---- a/drivers/ps3/ps3-lpm.c
-+++ b/drivers/ps3/ps3-lpm.c
-@@ -22,6 +22,7 @@
- #include <linux/module.h>
- #include <linux/interrupt.h>
- #include <linux/uaccess.h>
-+#include <asm/time.h>
- #include <asm/ps3.h>
- #include <asm/lv1call.h>
- #include <asm/cell-pmu.h>
-diff --git a/drivers/scsi/megaraid/megaraid_mbox.c b/drivers/scsi/megaraid/megaraid_mbox.c
-index 9f04192..2d0ee60 100644
---- a/drivers/scsi/megaraid/megaraid_mbox.c
-+++ b/drivers/scsi/megaraid/megaraid_mbox.c
-@@ -3168,6 +3168,23 @@ megaraid_mbox_support_random_del(adapter_t *adapter)
- 	uint8_t		raw_mbox[sizeof(mbox_t)];
- 	int		rval;
- 
-+	/*
-+	 * Newer firmware on Dell CERC expect a different
-+	 * random deletion handling, so disable it.
-+	 */
-+	if (adapter->pdev->vendor == PCI_VENDOR_ID_AMI &&
-+	    adapter->pdev->device == PCI_DEVICE_ID_AMI_MEGARAID3 &&
-+	    adapter->pdev->subsystem_vendor == PCI_VENDOR_ID_DELL &&
-+	    adapter->pdev->subsystem_device == PCI_SUBSYS_ID_CERC_ATA100_4CH &&
-+	    (adapter->fw_version[0] > '6' ||
-+	     (adapter->fw_version[0] == '6' &&
-+	      adapter->fw_version[2] > '6') ||
-+	     (adapter->fw_version[0] == '6'
-+	      && adapter->fw_version[2] == '6'
-+	      && adapter->fw_version[3] > '1'))) {
-+		con_log(CL_DLEVEL1, ("megaraid: disable random deletion\n"));
-+		return 0;
+ 	spin_lock(&sc->rxbuflock);
++	if (list_empty(&sc->rxbuf)) {
++		ATH5K_WARN(sc, "empty rx buf pool\n");
++		goto unlock;
 +	}
++	bf_last = list_entry(sc->rxbuf.prev, struct ath5k_buf, list);
+ 	do {
+ 		rxs.flag = 0;
  
- 	mbox = (mbox_t *)raw_mbox;
+-		if (unlikely(list_empty(&sc->rxbuf))) {
+-			ATH5K_WARN(sc, "empty rx buf pool\n");
+-			break;
+-		}
+ 		bf = list_first_entry(&sc->rxbuf, struct ath5k_buf, list);
+ 		BUG_ON(bf->skb == NULL);
+ 		skb = bf->skb;
+@@ -1797,8 +1798,24 @@ ath5k_tasklet_rx(unsigned long data)
+ 		pci_dma_sync_single_for_cpu(sc->pdev, sc->desc_daddr,
+ 				sc->desc_len, PCI_DMA_FROMDEVICE);
  
-diff --git a/drivers/scsi/megaraid/megaraid_mbox.h b/drivers/scsi/megaraid/megaraid_mbox.h
-index 626459d..c1d86d9 100644
---- a/drivers/scsi/megaraid/megaraid_mbox.h
-+++ b/drivers/scsi/megaraid/megaraid_mbox.h
-@@ -88,6 +88,7 @@
- #define PCI_SUBSYS_ID_PERC3_QC				0x0471
- #define PCI_SUBSYS_ID_PERC3_DC				0x0493
- #define PCI_SUBSYS_ID_PERC3_SC				0x0475
-+#define PCI_SUBSYS_ID_CERC_ATA100_4CH			0x0511
+-		if (unlikely(ds->ds_link == bf->daddr)) /* this is the end */
+-			break;
++		/*
++		 * last buffer must not be freed to ensure proper hardware
++		 * function. When the hardware finishes also a packet next to
++		 * it, we are sure, it doesn't use it anymore and we can go on.
++		 */
++		if (bf_last == bf)
++			bf->flags |= 1;
++		if (bf->flags) {
++			struct ath5k_buf *bf_next = list_entry(bf->list.next,
++					struct ath5k_buf, list);
++			ret = sc->ah->ah_proc_rx_desc(sc->ah, bf_next->desc,
++					&rs);
++			if (ret)
++				break;
++			bf->flags &= ~1;
++			/* skip the overwritten one (even status is martian) */
++			goto next;
++		}
  
+ 		ret = sc->ah->ah_proc_rx_desc(sc->ah, ds, &rs);
+ 		if (unlikely(ret == -EINPROGRESS))
+@@ -1921,6 +1938,7 @@ accept:
+ next:
+ 		list_move_tail(&bf->list, &sc->rxbuf);
+ 	} while (ath5k_rxbuf_setup(sc, bf) == 0);
++unlock:
+ 	spin_unlock(&sc->rxbuflock);
+ }
  
- #define MBOX_MAX_SCSI_CMDS	128	// number of cmds reserved for kernel
-diff --git a/drivers/usb/core/quirks.c b/drivers/usb/core/quirks.c
-index dfc5418..c06d0ea 100644
---- a/drivers/usb/core/quirks.c
-+++ b/drivers/usb/core/quirks.c
-@@ -47,6 +47,9 @@ static const struct usb_device_id usb_quirk_list[] = {
- 	/* Edirol SD-20 */
- 	{ USB_DEVICE(0x0582, 0x0027), .driver_info = USB_QUIRK_RESET_RESUME },
+@@ -2435,6 +2453,9 @@ ath5k_stop_hw(struct ath5k_softc *sc)
+ 	mutex_unlock(&sc->lock);
  
-+	/* appletouch */
-+	{ USB_DEVICE(0x05ac, 0x021a), .driver_info = USB_QUIRK_RESET_RESUME },
-+
- 	/* M-Systems Flash Disk Pioneers */
- 	{ USB_DEVICE(0x08ec, 0x1000), .driver_info = USB_QUIRK_RESET_RESUME },
+ 	del_timer_sync(&sc->calib_tim);
++	tasklet_kill(&sc->rxtq);
++	tasklet_kill(&sc->txtq);
++	tasklet_kill(&sc->restq);
  
-diff --git a/drivers/usb/host/ehci-hub.c b/drivers/usb/host/ehci-hub.c
-index 4e065e5..fe930d5 100644
---- a/drivers/usb/host/ehci-hub.c
-+++ b/drivers/usb/host/ehci-hub.c
-@@ -621,7 +621,7 @@ static int ehci_hub_control (
- 			}
- 			break;
- 		case USB_PORT_FEAT_C_SUSPEND:
--			/* we auto-clear this feature */
-+			clear_bit(wIndex, &ehci->port_c_suspend);
- 			break;
- 		case USB_PORT_FEAT_POWER:
- 			if (HCS_PPC (ehci->hcs_params))
-@@ -700,7 +700,7 @@ static int ehci_hub_control (
- 			/* resume completed? */
- 			else if (time_after_eq(jiffies,
- 					ehci->reset_done[wIndex])) {
--				status |= 1 << USB_PORT_FEAT_C_SUSPEND;
-+				set_bit(wIndex, &ehci->port_c_suspend);
- 				ehci->reset_done[wIndex] = 0;
+ 	return ret;
+ }
+diff --git a/drivers/net/wireless/ath5k/base.h b/drivers/net/wireless/ath5k/base.h
+index 3a97558..4badca7 100644
+--- a/drivers/net/wireless/ath5k/base.h
++++ b/drivers/net/wireless/ath5k/base.h
+@@ -55,7 +55,7 @@
  
- 				/* stop resume signaling */
-@@ -777,6 +777,8 @@ static int ehci_hub_control (
- 			status |= 1 << USB_PORT_FEAT_RESET;
- 		if (temp & PORT_POWER)
- 			status |= 1 << USB_PORT_FEAT_POWER;
-+		if (test_bit(wIndex, &ehci->port_c_suspend))
-+			status |= 1 << USB_PORT_FEAT_C_SUSPEND;
+ struct ath5k_buf {
+ 	struct list_head	list;
+-	unsigned int		flags;	/* tx descriptor flags */
++	unsigned int		flags;	/* rx descriptor flags */
+ 	struct ath5k_desc	*desc;	/* virtual addr of desc */
+ 	dma_addr_t		daddr;	/* physical addr of desc */
+ 	struct sk_buff		*skb;	/* skbuff for buf */
+diff --git a/drivers/scsi/ch.c b/drivers/scsi/ch.c
+index c4b938b..2be2da6 100644
+--- a/drivers/scsi/ch.c
++++ b/drivers/scsi/ch.c
+@@ -926,6 +926,7 @@ static int ch_probe(struct device *dev)
+ 	if (init)
+ 		ch_init_elem(ch);
  
- #ifndef	EHCI_VERBOSE_DEBUG
- 	if (status & ~0xffff)	/* only if wPortChange is interesting */
-diff --git a/drivers/usb/host/ehci.h b/drivers/usb/host/ehci.h
-index 888e81e..4769ba2 100644
---- a/drivers/usb/host/ehci.h
-+++ b/drivers/usb/host/ehci.h
-@@ -97,6 +97,8 @@ struct ehci_hcd {			/* one per controller */
- 			dedicated to the companion controller */
- 	unsigned long		owned_ports;		/* which ports are
- 			owned by the companion during a bus suspend */
-+	unsigned long		port_c_suspend;		/* which ports have
-+			the change-suspend feature turned on */
++	dev_set_drvdata(dev, ch);
+ 	sdev_printk(KERN_INFO, sd, "Attached scsi changer %s\n", ch->name);
  
- 	/* per-HC memory pools (could be per-bus, but ...) */
- 	struct dma_pool		*qh_pool;	/* qh per active urb */
-diff --git a/fs/fat/inode.c b/fs/fat/inode.c
-index 53f3cf6..98f0e87 100644
---- a/fs/fat/inode.c
-+++ b/fs/fat/inode.c
-@@ -1208,7 +1208,7 @@ int fat_fill_super(struct super_block *sb, void *data, int silent,
- 	 */
- 
- 	media = b->media;
--	if (!FAT_VALID_MEDIA(media)) {
-+	if (!fat_valid_media(media)) {
- 		if (!silent)
- 			printk(KERN_ERR "FAT: invalid media value (0x%02x)\n",
- 			       media);
-diff --git a/fs/jbd/commit.c b/fs/jbd/commit.c
-index a38c718..cd931ef 100644
---- a/fs/jbd/commit.c
-+++ b/fs/jbd/commit.c
-@@ -407,22 +407,6 @@ void journal_commit_transaction(journal_t *journal)
- 	jbd_debug (3, "JBD: commit phase 2\n");
- 
- 	/*
--	 * First, drop modified flag: all accesses to the buffers
--	 * will be tracked for a new trasaction only -bzzz
--	 */
--	spin_lock(&journal->j_list_lock);
--	if (commit_transaction->t_buffers) {
--		new_jh = jh = commit_transaction->t_buffers->b_tnext;
--		do {
--			J_ASSERT_JH(new_jh, new_jh->b_modified == 1 ||
--					new_jh->b_modified == 0);
--			new_jh->b_modified = 0;
--			new_jh = new_jh->b_tnext;
--		} while (new_jh != jh);
--	}
--	spin_unlock(&journal->j_list_lock);
--
--	/*
- 	 * Now start flushing things to disk, in the order they appear
- 	 * on the transaction lists.  Data blocks go first.
- 	 */
-@@ -488,6 +472,9 @@ void journal_commit_transaction(journal_t *journal)
- 	 */
- 	commit_transaction->t_state = T_COMMIT;
- 
-+	J_ASSERT(commit_transaction->t_nr_buffers <=
-+		 commit_transaction->t_outstanding_credits);
-+
- 	descriptor = NULL;
- 	bufs = 0;
- 	while (commit_transaction->t_buffers) {
+ 	return 0;
 diff --git a/fs/jbd/transaction.c b/fs/jbd/transaction.c
-index 2c9e8f5..7665e01 100644
+index 67ff202..8dee320 100644
 --- a/fs/jbd/transaction.c
 +++ b/fs/jbd/transaction.c
-@@ -609,6 +609,12 @@ repeat:
- 		goto done;
- 
- 	/*
-+	 * this is the first time this transaction is touching this buffer,
-+	 * reset the modified flag
-+	 */
-+	jh->b_modified = 0;
-+
-+	/*
- 	 * If there is already a copy-out version of this buffer, then we don't
- 	 * need to make another one
- 	 */
-@@ -820,9 +826,16 @@ int journal_get_create_access(handle_t *handle, struct buffer_head *bh)
- 
- 	if (jh->b_transaction == NULL) {
- 		jh->b_transaction = transaction;
-+
-+		/* first access by this transaction */
-+		jh->b_modified = 0;
-+
- 		JBUFFER_TRACE(jh, "file as BJ_Reserved");
- 		__journal_file_buffer(jh, transaction, BJ_Reserved);
- 	} else if (jh->b_transaction == journal->j_committing_transaction) {
-+		/* first access by this transaction */
-+		jh->b_modified = 0;
-+
- 		JBUFFER_TRACE(jh, "set next transaction");
- 		jh->b_next_transaction = transaction;
- 	}
-@@ -1222,6 +1235,7 @@ int journal_forget (handle_t *handle, struct buffer_head *bh)
- 	struct journal_head *jh;
- 	int drop_reserve = 0;
- 	int err = 0;
-+	int was_modified = 0;
- 
- 	BUFFER_TRACE(bh, "entry");
- 
-@@ -1240,6 +1254,9 @@ int journal_forget (handle_t *handle, struct buffer_head *bh)
- 		goto not_jbd;
- 	}
- 
-+	/* keep track of wether or not this transaction modified us */
-+	was_modified = jh->b_modified;
-+
- 	/*
- 	 * The buffer's going from the transaction, we must drop
- 	 * all references -bzzz
-@@ -1257,7 +1274,12 @@ int journal_forget (handle_t *handle, struct buffer_head *bh)
- 
- 		JBUFFER_TRACE(jh, "belongs to current transaction: unfile");
- 
--		drop_reserve = 1;
-+		/*
-+		 * we only want to drop a reference if this transaction
-+		 * modified the buffer
-+		 */
-+		if (was_modified)
-+			drop_reserve = 1;
- 
- 		/*
- 		 * We are no longer going to journal this buffer.
-@@ -1297,7 +1319,13 @@ int journal_forget (handle_t *handle, struct buffer_head *bh)
- 		if (jh->b_next_transaction) {
- 			J_ASSERT(jh->b_next_transaction == transaction);
- 			jh->b_next_transaction = NULL;
--			drop_reserve = 1;
-+
-+			/*
-+			 * only drop a reference if this transaction modified
-+			 * the buffer
-+			 */
-+			if (was_modified)
-+				drop_reserve = 1;
- 		}
- 	}
- 
-@@ -1620,12 +1648,42 @@ out:
+@@ -1648,12 +1648,42 @@ out:
  	return;
  }
  
@@ -741,7 +1807,7 @@ index 2c9e8f5..7665e01 100644
   *
   *
   * For all the buffers on this page,
-@@ -1654,9 +1712,11 @@ out:
+@@ -1682,9 +1712,11 @@ out:
   * journal_try_to_free_buffer() is changing its state.  But that
   * cannot happen because we never reallocate freed data as metadata
   * while the data is part of a transaction.  Yes?
@@ -754,7 +1820,7 @@ index 2c9e8f5..7665e01 100644
  {
  	struct buffer_head *head;
  	struct buffer_head *bh;
-@@ -1685,7 +1745,28 @@ int journal_try_to_free_buffers(journal_t *journal,
+@@ -1713,7 +1745,28 @@ int journal_try_to_free_buffers(journal_t *journal,
  		if (buffer_jbd(bh))
  			goto busy;
  	} while ((bh = bh->b_this_page) != head);
@@ -783,20 +1849,11 @@ index 2c9e8f5..7665e01 100644
  busy:
  	return ret;
  }
-@@ -2069,7 +2150,7 @@ void __journal_refile_buffer(struct journal_head *jh)
- 	jh->b_transaction = jh->b_next_transaction;
- 	jh->b_next_transaction = NULL;
- 	__journal_file_buffer(jh, jh->b_transaction,
--				was_dirty ? BJ_Metadata : BJ_Reserved);
-+				jh->b_modified ? BJ_Metadata : BJ_Reserved);
- 	J_ASSERT_JH(jh, jh->b_transaction->t_state == T_RUNNING);
- 
- 	if (was_dirty)
 diff --git a/fs/namei.c b/fs/namei.c
-index 8cf9bb9..a6fdd95 100644
+index 01e67dd..3b26a24 100644
 --- a/fs/namei.c
 +++ b/fs/namei.c
-@@ -514,7 +514,14 @@ static struct dentry * real_lookup(struct dentry * parent, struct qstr * name, s
+@@ -519,7 +519,14 @@ static struct dentry * real_lookup(struct dentry * parent, struct qstr * name, s
  	 */
  	result = d_lookup(parent, name);
  	if (!result) {
@@ -812,7 +1869,7 @@ index 8cf9bb9..a6fdd95 100644
  		result = ERR_PTR(-ENOMEM);
  		if (dentry) {
  			result = dir->i_op->lookup(dir, dentry, nd);
-@@ -523,6 +530,7 @@ static struct dentry * real_lookup(struct dentry * parent, struct qstr * name, s
+@@ -528,6 +535,7 @@ static struct dentry * real_lookup(struct dentry * parent, struct qstr * name, s
  			else
  				result = dentry;
  		}
@@ -820,7 +1877,7 @@ index 8cf9bb9..a6fdd95 100644
  		mutex_unlock(&dir->i_mutex);
  		return result;
  	}
-@@ -1313,7 +1321,14 @@ static struct dentry *__lookup_hash(struct qstr *name,
+@@ -1317,7 +1325,14 @@ static struct dentry *__lookup_hash(struct qstr *name,
  
  	dentry = cached_lookup(base, name, nd);
  	if (!dentry) {
@@ -836,35 +1893,8 @@ index 8cf9bb9..a6fdd95 100644
  		dentry = ERR_PTR(-ENOMEM);
  		if (!new)
  			goto out;
-@@ -1904,18 +1919,22 @@ struct dentry *lookup_create(struct nameidata *nd, int is_dir)
- 	if (IS_ERR(dentry))
- 		goto fail;
- 
-+	if (dentry->d_inode)
-+		goto eexist;
- 	/*
- 	 * Special case - lookup gave negative, but... we had foo/bar/
- 	 * From the vfs_mknod() POV we just have a negative dentry -
- 	 * all is fine. Let's be bastards - you had / on the end, you've
- 	 * been asking for (non-existent) directory. -ENOENT for you.
- 	 */
--	if (!is_dir && nd->last.name[nd->last.len] && !dentry->d_inode)
--		goto enoent;
-+	if (unlikely(!is_dir && nd->last.name[nd->last.len])) {
-+		dput(dentry);
-+		dentry = ERR_PTR(-ENOENT);
-+	}
- 	return dentry;
--enoent:
-+eexist:
- 	dput(dentry);
--	dentry = ERR_PTR(-ENOENT);
-+	dentry = ERR_PTR(-EEXIST);
- fail:
- 	return dentry;
- }
 diff --git a/fs/nfs/inode.c b/fs/nfs/inode.c
-index 6f88d7c..f83fb73 100644
+index 596c5d8..1d7ac64 100644
 --- a/fs/nfs/inode.c
 +++ b/fs/nfs/inode.c
 @@ -57,8 +57,6 @@ static int enable_ino64 = NFS_64_BIT_INODE_NUMBERS_ENABLED;
@@ -886,10 +1916,10 @@ index 6f88d7c..f83fb73 100644
  	void (*clear_acl_cache)(struct inode *);
  
 diff --git a/fs/nfs/internal.h b/fs/nfs/internal.h
-index 9319927..4c62be1 100644
+index 04ae867..24241fc 100644
 --- a/fs/nfs/internal.h
 +++ b/fs/nfs/internal.h
-@@ -153,6 +153,7 @@ extern void nfs_clear_inode(struct inode *);
+@@ -150,6 +150,7 @@ extern void nfs_clear_inode(struct inode *);
  #ifdef CONFIG_NFS_V4
  extern void nfs4_clear_inode(struct inode *);
  #endif
@@ -932,18 +1962,10 @@ index 9b73625..423842f 100644
  
  	/* pages may have been allocated at the xdr layer. */
 diff --git a/fs/nfs/nfs4proc.c b/fs/nfs/nfs4proc.c
-index 7ce0786..3a2ff77 100644
+index 1293e0a..806d17f 100644
 --- a/fs/nfs/nfs4proc.c
 +++ b/fs/nfs/nfs4proc.c
-@@ -52,6 +52,7 @@
- #include "nfs4_fs.h"
- #include "delegation.h"
- #include "iostat.h"
-+#include "internal.h"
- 
- #define NFSDBG_FACILITY		NFSDBG_PROC
- 
-@@ -2707,6 +2708,8 @@ static ssize_t nfs4_proc_get_acl(struct inode *inode, void *buf, size_t buflen)
+@@ -2706,6 +2706,8 @@ static ssize_t nfs4_proc_get_acl(struct inode *inode, void *buf, size_t buflen)
  	ret = nfs_revalidate_inode(server, inode);
  	if (ret < 0)
  		return ret;
@@ -952,7 +1974,7 @@ index 7ce0786..3a2ff77 100644
  	ret = nfs4_read_cached_acl(inode, buf, buflen);
  	if (ret != -ENOENT)
  		return ret;
-@@ -2734,7 +2737,8 @@ static int __nfs4_proc_set_acl(struct inode *inode, const void *buf, size_t bufl
+@@ -2733,7 +2735,8 @@ static int __nfs4_proc_set_acl(struct inode *inode, const void *buf, size_t bufl
  	nfs_inode_return_delegation(inode);
  	buf_to_pages(buf, buflen, arg.acl_pages, &arg.acl_pgbase);
  	ret = rpc_call_sync(NFS_CLIENT(inode), &msg, 0);
@@ -961,51 +1983,6 @@ index 7ce0786..3a2ff77 100644
 +	nfs_zap_acl_cache(inode);
  	return ret;
  }
- 
-diff --git a/fs/partitions/msdos.c b/fs/partitions/msdos.c
-index 5567ec0..7965118 100644
---- a/fs/partitions/msdos.c
-+++ b/fs/partitions/msdos.c
-@@ -18,7 +18,7 @@
-  *
-  *  Re-organised Feb 1998 Russell King
-  */
--
-+#include <linux/msdos_fs.h>
- 
- #include "check.h"
- #include "msdos.h"
-@@ -419,6 +419,7 @@ int msdos_partition(struct parsed_partitions *state, struct block_device *bdev)
- 	Sector sect;
- 	unsigned char *data;
- 	struct partition *p;
-+	struct fat_boot_sector *fb;
- 	int slot;
- 
- 	data = read_dev_sector(bdev, 0, &sect);
-@@ -444,8 +445,21 @@ int msdos_partition(struct parsed_partitions *state, struct block_device *bdev)
- 	p = (struct partition *) (data + 0x1be);
- 	for (slot = 1; slot <= 4; slot++, p++) {
- 		if (p->boot_ind != 0 && p->boot_ind != 0x80) {
--			put_dev_sector(sect);
--			return 0;
-+			/*
-+			 * Even without a valid boot inidicator value
-+			 * its still possible this is valid FAT filesystem
-+			 * without a partition table.
-+			 */
-+			fb = (struct fat_boot_sector *) data;
-+			if (slot == 1 && fb->reserved && fb->fats
-+				&& fat_valid_media(fb->media)) {
-+				printk("\n");
-+				put_dev_sector(sect);
-+				return 1;
-+			} else {
-+				put_dev_sector(sect);
-+				return 0;
-+			}
- 		}
- 	}
  
 diff --git a/fs/romfs/inode.c b/fs/romfs/inode.c
 index 3f13d49..35e5c6e 100644
@@ -1064,35 +2041,6 @@ index 3f13d49..35e5c6e 100644
  	flush_dcache_page(page);
  
  	unlock_page(page);
-diff --git a/include/linux/msdos_fs.h b/include/linux/msdos_fs.h
-index f950921..20277ad 100644
---- a/include/linux/msdos_fs.h
-+++ b/include/linux/msdos_fs.h
-@@ -58,7 +58,11 @@
- #define MSDOS_DOTDOT	"..         "	/* "..", padded to MSDOS_NAME chars */
- 
- /* media of boot sector */
--#define FAT_VALID_MEDIA(x)	((0xF8 <= (x) && (x) <= 0xFF) || (x) == 0xF0)
-+static inline int fat_valid_media(u8 media)
-+{
-+	return 0xf8 <= media || media == 0xf0;
-+}
-+
- #define FAT_FIRST_ENT(s, x)	((MSDOS_SB(s)->fat_bits == 32 ? 0x0FFFFF00 : \
- 	MSDOS_SB(s)->fat_bits == 16 ? 0xFF00 : 0xF00) | (x))
- 
-diff --git a/include/sound/ac97_codec.h b/include/sound/ac97_codec.h
-index 0148058..771e4b3 100644
---- a/include/sound/ac97_codec.h
-+++ b/include/sound/ac97_codec.h
-@@ -504,6 +504,7 @@ struct snd_ac97 {
- 			unsigned short pcmreg[3];	// PCM registers
- 			unsigned short codec_cfg[3];	// CODEC_CFG bits
- 			unsigned char swap_mic_linein;	// AD1986/AD1986A only
-+			unsigned char lo_as_master;	/* LO as master */
- 		} ad18xx;
- 		unsigned int dev_flags;		/* device specific */
- 	} spec;
 diff --git a/include/sound/emu10k1.h b/include/sound/emu10k1.h
 index 7b7b9b1..10ee28e 100644
 --- a/include/sound/emu10k1.h
@@ -1106,10 +2054,10 @@ index 7b7b9b1..10ee28e 100644
  	const char *name;
  	const char *id;		/* for backward compatibility - can be NULL if not needed */
 diff --git a/mm/filemap.c b/mm/filemap.c
-index 703f2c8..d721ad5 100644
+index 4f32423..afb991a 100644
 --- a/mm/filemap.c
 +++ b/mm/filemap.c
-@@ -2574,9 +2574,8 @@ out:
+@@ -2581,9 +2581,8 @@ out:
   * Otherwise return zero.
   *
   * The @gfp_mask argument specifies whether I/O may be performed to release
@@ -1121,7 +2069,7 @@ index 703f2c8..d721ad5 100644
  int try_to_release_page(struct page *page, gfp_t gfp_mask)
  {
 diff --git a/net/bluetooth/bnep/core.c b/net/bluetooth/bnep/core.c
-index 347e935..2f0ffc3 100644
+index f85d946..24e91eb 100644
 --- a/net/bluetooth/bnep/core.c
 +++ b/net/bluetooth/bnep/core.c
 @@ -507,6 +507,11 @@ static int bnep_session(void *arg)
@@ -1164,106 +2112,100 @@ index 519cdb9..96434d7 100644
  			/* Kill session thread */
  			atomic_inc(&session->terminate);
  			hidp_schedule(session);
-diff --git a/sound/core/init.c b/sound/core/init.c
-index e3338d6..6200f42 100644
---- a/sound/core/init.c
-+++ b/sound/core/init.c
-@@ -311,6 +311,9 @@ int snd_card_disconnect(struct snd_card *card)
- 	struct file *file;
- 	int err;
+diff --git a/net/ipv4/netfilter/nf_nat_sip.c b/net/ipv4/netfilter/nf_nat_sip.c
+index 4334d5c..1454432 100644
+--- a/net/ipv4/netfilter/nf_nat_sip.c
++++ b/net/ipv4/netfilter/nf_nat_sip.c
+@@ -318,11 +318,11 @@ static int mangle_content_len(struct sk_buff *skb,
+ 			     buffer, buflen);
+ }
  
-+	if (!card)
-+		return -EINVAL;
-+
- 	spin_lock(&card->files_lock);
- 	if (card->shutdown) {
- 		spin_unlock(&card->files_lock);
-@@ -322,6 +325,7 @@ int snd_card_disconnect(struct snd_card *card)
- 	/* phase 1: disable fops (user space) operations for ALSA API */
- 	mutex_lock(&snd_card_mutex);
- 	snd_cards[card->number] = NULL;
-+	snd_cards_lock &= ~(1 << card->number);
- 	mutex_unlock(&snd_card_mutex);
- 	
- 	/* phase 2: replace file->f_op with special dummy operations */
-@@ -360,6 +364,15 @@ int snd_card_disconnect(struct snd_card *card)
- 		snd_printk(KERN_ERR "not all devices for card %i can be disconnected\n", card->number);
+-static unsigned mangle_sdp_packet(struct sk_buff *skb, const char **dptr,
+-				  unsigned int dataoff, unsigned int *datalen,
+-				  enum sdp_header_types type,
+-				  enum sdp_header_types term,
+-				  char *buffer, int buflen)
++static int mangle_sdp_packet(struct sk_buff *skb, const char **dptr,
++			     unsigned int dataoff, unsigned int *datalen,
++			     enum sdp_header_types type,
++			     enum sdp_header_types term,
++			     char *buffer, int buflen)
+ {
+ 	enum ip_conntrack_info ctinfo;
+ 	struct nf_conn *ct = nf_ct_get(skb, &ctinfo);
+@@ -330,9 +330,9 @@ static unsigned mangle_sdp_packet(struct sk_buff *skb, const char **dptr,
  
- 	snd_info_card_disconnect(card);
-+#ifndef CONFIG_SYSFS_DEPRECATED
-+	if (card->card_dev) {
-+		device_unregister(card->card_dev);
-+		card->card_dev = NULL;
+ 	if (ct_sip_get_sdp_header(ct, *dptr, dataoff, *datalen, type, term,
+ 				  &matchoff, &matchlen) <= 0)
+-		return 0;
++		return -ENOENT;
+ 	return mangle_packet(skb, dptr, datalen, matchoff, matchlen,
+-			     buffer, buflen);
++			     buffer, buflen) ? 0 : -EINVAL;
+ }
+ 
+ static unsigned int ip_nat_sdp_addr(struct sk_buff *skb, const char **dptr,
+@@ -346,8 +346,8 @@ static unsigned int ip_nat_sdp_addr(struct sk_buff *skb, const char **dptr,
+ 	unsigned int buflen;
+ 
+ 	buflen = sprintf(buffer, NIPQUAD_FMT, NIPQUAD(addr->ip));
+-	if (!mangle_sdp_packet(skb, dptr, dataoff, datalen, type, term,
+-			       buffer, buflen))
++	if (mangle_sdp_packet(skb, dptr, dataoff, datalen, type, term,
++			      buffer, buflen))
+ 		return 0;
+ 
+ 	return mangle_content_len(skb, dptr, datalen);
+@@ -381,15 +381,27 @@ static unsigned int ip_nat_sdp_session(struct sk_buff *skb, const char **dptr,
+ 
+ 	/* Mangle session description owner and contact addresses */
+ 	buflen = sprintf(buffer, "%u.%u.%u.%u", NIPQUAD(addr->ip));
+-	if (!mangle_sdp_packet(skb, dptr, dataoff, datalen,
++	if (mangle_sdp_packet(skb, dptr, dataoff, datalen,
+ 			       SDP_HDR_OWNER_IP4, SDP_HDR_MEDIA,
+ 			       buffer, buflen))
+ 		return 0;
+ 
+-	if (!mangle_sdp_packet(skb, dptr, dataoff, datalen,
+-			       SDP_HDR_CONNECTION_IP4, SDP_HDR_MEDIA,
+-			       buffer, buflen))
++	switch (mangle_sdp_packet(skb, dptr, dataoff, datalen,
++				  SDP_HDR_CONNECTION_IP4, SDP_HDR_MEDIA,
++				  buffer, buflen)) {
++	case 0:
++	/*
++	 * RFC 2327:
++	 *
++	 * Session description
++	 *
++	 * c=* (connection information - not required if included in all media)
++	 */
++	case -ENOENT:
++		break;
++	default:
+ 		return 0;
 +	}
-+#endif
-+#ifdef CONFIG_PM
-+	wake_up(&card->power_sleep);
-+#endif
- 	return 0;	
+ 
+ 	return mangle_content_len(skb, dptr, datalen);
  }
+diff --git a/net/netfilter/xt_time.c b/net/netfilter/xt_time.c
+index ed76baa..9f32859 100644
+--- a/net/netfilter/xt_time.c
++++ b/net/netfilter/xt_time.c
+@@ -173,7 +173,7 @@ time_mt(const struct sk_buff *skb, const struct net_device *in,
+ 		__net_timestamp((struct sk_buff *)skb);
  
-@@ -401,33 +414,14 @@ static int snd_card_do_free(struct snd_card *card)
- 		snd_printk(KERN_WARNING "unable to free card info\n");
- 		/* Not fatal error */
- 	}
--#ifndef CONFIG_SYSFS_DEPRECATED
--	if (card->card_dev)
--		device_unregister(card->card_dev);
--#endif
- 	kfree(card);
- 	return 0;
- }
+ 	stamp = ktime_to_ns(skb->tstamp);
+-	do_div(stamp, NSEC_PER_SEC);
++	stamp = div_s64(stamp, NSEC_PER_SEC);
  
--static int snd_card_free_prepare(struct snd_card *card)
--{
--	if (card == NULL)
--		return -EINVAL;
--	(void) snd_card_disconnect(card);
--	mutex_lock(&snd_card_mutex);
--	snd_cards[card->number] = NULL;
--	snd_cards_lock &= ~(1 << card->number);
--	mutex_unlock(&snd_card_mutex);
--#ifdef CONFIG_PM
--	wake_up(&card->power_sleep);
--#endif
--	return 0;
--}
--
- int snd_card_free_when_closed(struct snd_card *card)
- {
- 	int free_now = 0;
--	int ret = snd_card_free_prepare(card);
-+	int ret = snd_card_disconnect(card);
- 	if (ret)
- 		return ret;
- 
-@@ -447,7 +441,7 @@ EXPORT_SYMBOL(snd_card_free_when_closed);
- 
- int snd_card_free(struct snd_card *card)
- {
--	int ret = snd_card_free_prepare(card);
-+	int ret = snd_card_disconnect(card);
- 	if (ret)
- 		return ret;
- 
-diff --git a/sound/core/oss/mixer_oss.c b/sound/core/oss/mixer_oss.c
-index 75daed2..581aa2c 100644
---- a/sound/core/oss/mixer_oss.c
-+++ b/sound/core/oss/mixer_oss.c
-@@ -1257,6 +1257,8 @@ static void snd_mixer_oss_build(struct snd_mixer_oss *mixer)
- 		{ SOUND_MIXER_DIGITAL3,	"Digital",		2 },
- 		{ SOUND_MIXER_PHONEIN,	"Phone",		0 },
- 		{ SOUND_MIXER_PHONEOUT,	"Master Mono",		0 },
-+		{ SOUND_MIXER_PHONEOUT,	"Speaker",		0 }, /*fallback*/
-+		{ SOUND_MIXER_PHONEOUT,	"Mono",			0 }, /*fallback*/
- 		{ SOUND_MIXER_PHONEOUT,	"Phone",		0 }, /* fallback */
- 		{ SOUND_MIXER_VIDEO,	"Video",		0 },
- 		{ SOUND_MIXER_RADIO,	"Radio",		0 },
+ 	if (info->flags & XT_TIME_LOCAL_TZ)
+ 		/* Adjust for local timezone */
 diff --git a/sound/core/seq/oss/seq_oss_synth.c b/sound/core/seq/oss/seq_oss_synth.c
-index ab570a0..2490259 100644
+index 558dadb..e024e45 100644
 --- a/sound/core/seq/oss/seq_oss_synth.c
 +++ b/sound/core/seq/oss/seq_oss_synth.c
-@@ -599,6 +599,9 @@ snd_seq_oss_synth_make_info(struct seq_oss_devinfo *dp, int dev, struct synth_in
+@@ -604,6 +604,9 @@ snd_seq_oss_synth_make_info(struct seq_oss_devinfo *dp, int dev, struct synth_in
  {
  	struct seq_oss_synth *rec;
  
@@ -1273,100 +2215,11 @@ index ab570a0..2490259 100644
  	if (dp->synths[dev].is_midi) {
  		struct midi_info minf;
  		snd_seq_oss_midi_make_info(dp, dp->synths[dev].midi_mapped, &minf);
-diff --git a/sound/pci/ac97/ac97_patch.c b/sound/pci/ac97/ac97_patch.c
-index 50c637e..3d70241 100644
---- a/sound/pci/ac97/ac97_patch.c
-+++ b/sound/pci/ac97/ac97_patch.c
-@@ -1960,6 +1960,9 @@ static int snd_ac97_ad1888_lohpsel_get(struct snd_kcontrol *kcontrol, struct snd
- 
- 	val = ac97->regs[AC97_AD_MISC];
- 	ucontrol->value.integer.value[0] = !(val & AC97_AD198X_LOSEL);
-+	if (ac97->spec.ad18xx.lo_as_master)
-+		ucontrol->value.integer.value[0] =
-+			!ucontrol->value.integer.value[0];
- 	return 0;
- }
- 
-@@ -1968,8 +1971,10 @@ static int snd_ac97_ad1888_lohpsel_put(struct snd_kcontrol *kcontrol, struct snd
- 	struct snd_ac97 *ac97 = snd_kcontrol_chip(kcontrol);
- 	unsigned short val;
- 
--	val = !ucontrol->value.integer.value[0]
--		? (AC97_AD198X_LOSEL | AC97_AD198X_HPSEL) : 0;
-+	val = !ucontrol->value.integer.value[0];
-+	if (ac97->spec.ad18xx.lo_as_master)
-+		val = !val;
-+	val = val ? (AC97_AD198X_LOSEL | AC97_AD198X_HPSEL) : 0;
- 	return snd_ac97_update_bits(ac97, AC97_AD_MISC,
- 				    AC97_AD198X_LOSEL | AC97_AD198X_HPSEL, val);
- }
-@@ -2020,7 +2025,7 @@ static void ad1888_update_jacks(struct snd_ac97 *ac97)
- {
- 	unsigned short val = 0;
- 	/* clear LODIS if shared jack is to be used for Surround out */
--	if (is_shared_linein(ac97))
-+	if (!ac97->spec.ad18xx.lo_as_master && is_shared_linein(ac97))
- 		val |= (1 << 12);
- 	/* clear CLDIS if shared jack is to be used for C/LFE out */
- 	if (is_shared_micin(ac97))
-@@ -2056,9 +2061,13 @@ static const struct snd_kcontrol_new snd_ac97_ad1888_controls[] = {
- 
- static int patch_ad1888_specific(struct snd_ac97 *ac97)
- {
--	/* rename 0x04 as "Master" and 0x02 as "Master Surround" */
--	snd_ac97_rename_vol_ctl(ac97, "Master Playback", "Master Surround Playback");
--	snd_ac97_rename_vol_ctl(ac97, "Headphone Playback", "Master Playback");
-+	if (!ac97->spec.ad18xx.lo_as_master) {
-+		/* rename 0x04 as "Master" and 0x02 as "Master Surround" */
-+		snd_ac97_rename_vol_ctl(ac97, "Master Playback",
-+					"Master Surround Playback");
-+		snd_ac97_rename_vol_ctl(ac97, "Headphone Playback",
-+					"Master Playback");
-+	}
- 	return patch_build_controls(ac97, snd_ac97_ad1888_controls, ARRAY_SIZE(snd_ac97_ad1888_controls));
- }
- 
-@@ -2077,16 +2086,27 @@ static int patch_ad1888(struct snd_ac97 * ac97)
- 	
- 	patch_ad1881(ac97);
- 	ac97->build_ops = &patch_ad1888_build_ops;
--	/* Switch FRONT/SURROUND LINE-OUT/HP-OUT default connection */
--	/* it seems that most vendors connect line-out connector to headphone out of AC'97 */
-+
-+	/*
-+	 * LO can be used as a real line-out on some devices,
-+	 * and we need to revert the front/surround mixer switches
-+	 */
-+	if (ac97->subsystem_vendor == 0x1043 &&
-+	    ac97->subsystem_device == 0x1193) /* ASUS A9T laptop */
-+		ac97->spec.ad18xx.lo_as_master = 1;
-+
-+	misc = snd_ac97_read(ac97, AC97_AD_MISC);
- 	/* AD-compatible mode */
- 	/* Stereo mutes enabled */
--	misc = snd_ac97_read(ac97, AC97_AD_MISC);
--	snd_ac97_write_cache(ac97, AC97_AD_MISC, misc |
--			     AC97_AD198X_LOSEL |
--			     AC97_AD198X_HPSEL |
--			     AC97_AD198X_MSPLT |
--			     AC97_AD198X_AC97NC);
-+	misc |= AC97_AD198X_MSPLT | AC97_AD198X_AC97NC;
-+	if (!ac97->spec.ad18xx.lo_as_master)
-+		/* Switch FRONT/SURROUND LINE-OUT/HP-OUT default connection */
-+		/* it seems that most vendors connect line-out connector to
-+		 * headphone out of AC'97
-+		 */
-+		misc |= AC97_AD198X_LOSEL | AC97_AD198X_HPSEL;
-+
-+	snd_ac97_write_cache(ac97, AC97_AD_MISC, misc);
- 	ac97->flags |= AC97_STEREO_MUTES;
- 	return 0;
- }
 diff --git a/sound/pci/emu10k1/emu10k1_main.c b/sound/pci/emu10k1/emu10k1_main.c
-index d0330d8..df278ba 100644
+index 548c9cc..2f283ea 100644
 --- a/sound/pci/emu10k1/emu10k1_main.c
 +++ b/sound/pci/emu10k1/emu10k1_main.c
-@@ -1527,6 +1527,7 @@ static struct snd_emu_chip_details emu_chip_details[] = {
+@@ -1528,6 +1528,7 @@ static struct snd_emu_chip_details emu_chip_details[] = {
  	 .ca0151_chip = 1,
  	 .spk71 = 1,
  	 .spdif_bug = 1,
@@ -1419,11 +2272,230 @@ index fd22120..9f77692 100644
  	change |= (reg & HCFG_GPOUT0) != val;
  	if (change) {
  		reg &= ~HCFG_GPOUT0;
+diff --git a/sound/pci/hda/hda_intel.c b/sound/pci/hda/hda_intel.c
+index b3a618e..6ba7ac0 100644
+--- a/sound/pci/hda/hda_intel.c
++++ b/sound/pci/hda/hda_intel.c
+@@ -285,6 +285,7 @@ struct azx_dev {
+ 	u32 *posbuf;		/* position buffer pointer */
+ 
+ 	unsigned int bufsize;	/* size of the play buffer in bytes */
++	unsigned int period_bytes; /* size of the period in bytes */
+ 	unsigned int frags;	/* number for period in the play buffer */
+ 	unsigned int fifo_size;	/* FIFO size */
+ 
+@@ -301,11 +302,10 @@ struct azx_dev {
+ 					 */
+ 	unsigned char stream_tag;	/* assigned stream */
+ 	unsigned char index;		/* stream index */
+-	/* for sanity check of position buffer */
+-	unsigned int period_intr;
+ 
+ 	unsigned int opened :1;
+ 	unsigned int running :1;
++	unsigned int irq_pending: 1;
+ };
+ 
+ /* CORB/RIRB */
+@@ -369,6 +369,9 @@ struct azx {
+ 
+ 	/* for debugging */
+ 	unsigned int last_cmd;	/* last issued command (to sync) */
++
++	/* for pending irqs */
++	struct work_struct irq_pending_work;
+ };
+ 
+ /* driver types */
+@@ -908,6 +911,8 @@ static void azx_init_pci(struct azx *chip)
+ }
+ 
+ 
++static int azx_position_ok(struct azx *chip, struct azx_dev *azx_dev);
++
+ /*
+  * interrupt handler
+  */
+@@ -930,11 +935,18 @@ static irqreturn_t azx_interrupt(int irq, void *dev_id)
+ 		azx_dev = &chip->azx_dev[i];
+ 		if (status & azx_dev->sd_int_sta_mask) {
+ 			azx_sd_writeb(azx_dev, SD_STS, SD_INT_MASK);
+-			if (azx_dev->substream && azx_dev->running) {
+-				azx_dev->period_intr++;
++			if (!azx_dev->substream || !azx_dev->running)
++				continue;
++			/* check whether this IRQ is really acceptable */
++			if (azx_position_ok(chip, azx_dev)) {
++				azx_dev->irq_pending = 0;
+ 				spin_unlock(&chip->reg_lock);
+ 				snd_pcm_period_elapsed(azx_dev->substream);
+ 				spin_lock(&chip->reg_lock);
++			} else {
++				/* bogus IRQ, process it later */
++				azx_dev->irq_pending = 1;
++				schedule_work(&chip->irq_pending_work);
+ 			}
+ 		}
+ 	}
+@@ -973,6 +985,7 @@ static int azx_setup_periods(struct snd_pcm_substream *substream,
+ 	azx_sd_writel(azx_dev, SD_BDLPU, 0);
+ 
+ 	period_bytes = snd_pcm_lib_period_bytes(substream);
++	azx_dev->period_bytes = period_bytes;
+ 	periods = azx_dev->bufsize / period_bytes;
+ 
+ 	/* program the initial BDL entries */
+@@ -1421,27 +1434,16 @@ static int azx_pcm_trigger(struct snd_pcm_substream *substream, int cmd)
+ 	return 0;
+ }
+ 
+-static snd_pcm_uframes_t azx_pcm_pointer(struct snd_pcm_substream *substream)
++static unsigned int azx_get_position(struct azx *chip,
++				     struct azx_dev *azx_dev)
+ {
+-	struct azx_pcm *apcm = snd_pcm_substream_chip(substream);
+-	struct azx *chip = apcm->chip;
+-	struct azx_dev *azx_dev = get_azx_dev(substream);
+ 	unsigned int pos;
+ 
+ 	if (chip->position_fix == POS_FIX_POSBUF ||
+ 	    chip->position_fix == POS_FIX_AUTO) {
+ 		/* use the position buffer */
+ 		pos = le32_to_cpu(*azx_dev->posbuf);
+-		if (chip->position_fix == POS_FIX_AUTO &&
+-		    azx_dev->period_intr == 1 && !pos) {
+-			printk(KERN_WARNING
+-			       "hda-intel: Invalid position buffer, "
+-			       "using LPIB read method instead.\n");
+-			chip->position_fix = POS_FIX_NONE;
+-			goto read_lpib;
+-		}
+ 	} else {
+-	read_lpib:
+ 		/* read LPIB */
+ 		pos = azx_sd_readl(azx_dev, SD_LPIB);
+ 		if (chip->position_fix == POS_FIX_FIFO)
+@@ -1449,7 +1451,90 @@ static snd_pcm_uframes_t azx_pcm_pointer(struct snd_pcm_substream *substream)
+ 	}
+ 	if (pos >= azx_dev->bufsize)
+ 		pos = 0;
+-	return bytes_to_frames(substream->runtime, pos);
++	return pos;
++}
++
++static snd_pcm_uframes_t azx_pcm_pointer(struct snd_pcm_substream *substream)
++{
++	struct azx_pcm *apcm = snd_pcm_substream_chip(substream);
++	struct azx *chip = apcm->chip;
++	struct azx_dev *azx_dev = get_azx_dev(substream);
++	return bytes_to_frames(substream->runtime,
++			       azx_get_position(chip, azx_dev));
++}
++
++/*
++ * Check whether the current DMA position is acceptable for updating
++ * periods.  Returns non-zero if it's OK.
++ *
++ * Many HD-audio controllers appear pretty inaccurate about
++ * the update-IRQ timing.  The IRQ is issued before actually the
++ * data is processed.  So, we need to process it afterwords in a
++ * workqueue.
++ */
++static int azx_position_ok(struct azx *chip, struct azx_dev *azx_dev)
++{
++	unsigned int pos;
++
++	pos = azx_get_position(chip, azx_dev);
++	if (chip->position_fix == POS_FIX_AUTO) {
++		if (!pos) {
++			printk(KERN_WARNING
++			       "hda-intel: Invalid position buffer, "
++			       "using LPIB read method instead.\n");
++			chip->position_fix = POS_FIX_NONE;
++			pos = azx_get_position(chip, azx_dev);
++		} else
++			chip->position_fix = POS_FIX_POSBUF;
++	}
++
++	if (pos % azx_dev->period_bytes > azx_dev->period_bytes / 2)
++		return 0; /* NG - it's below the period boundary */
++	return 1; /* OK, it's fine */
++}
++
++/*
++ * The work for pending PCM period updates.
++ */
++static void azx_irq_pending_work(struct work_struct *work)
++{
++	struct azx *chip = container_of(work, struct azx, irq_pending_work);
++	int i, pending;
++
++	for (;;) {
++		pending = 0;
++		spin_lock_irq(&chip->reg_lock);
++		for (i = 0; i < chip->num_streams; i++) {
++			struct azx_dev *azx_dev = &chip->azx_dev[i];
++			if (!azx_dev->irq_pending ||
++			    !azx_dev->substream ||
++			    !azx_dev->running)
++				continue;
++			if (azx_position_ok(chip, azx_dev)) {
++				azx_dev->irq_pending = 0;
++				spin_unlock(&chip->reg_lock);
++				snd_pcm_period_elapsed(azx_dev->substream);
++				spin_lock(&chip->reg_lock);
++			} else
++				pending++;
++		}
++		spin_unlock_irq(&chip->reg_lock);
++		if (!pending)
++			return;
++		cond_resched();
++	}
++}
++
++/* clear irq_pending flags and assure no on-going workq */
++static void azx_clear_irq_pending(struct azx *chip)
++{
++	int i;
++
++	spin_lock_irq(&chip->reg_lock);
++	for (i = 0; i < chip->num_streams; i++)
++		chip->azx_dev[i].irq_pending = 0;
++	spin_unlock_irq(&chip->reg_lock);
++	flush_scheduled_work();
+ }
+ 
+ static struct snd_pcm_ops azx_pcm_ops = {
+@@ -1676,6 +1761,7 @@ static int azx_suspend(struct pci_dev *pci, pm_message_t state)
+ 	int i;
+ 
+ 	snd_power_change_state(card, SNDRV_CTL_POWER_D3hot);
++	azx_clear_irq_pending(chip);
+ 	for (i = 0; i < AZX_MAX_PCMS; i++)
+ 		snd_pcm_suspend_all(chip->pcm[i]);
+ 	if (chip->initialized)
+@@ -1732,6 +1818,7 @@ static int azx_free(struct azx *chip)
+ 	int i;
+ 
+ 	if (chip->initialized) {
++		azx_clear_irq_pending(chip);
+ 		for (i = 0; i < chip->num_streams; i++)
+ 			azx_stream_stop(chip, &chip->azx_dev[i]);
+ 		azx_stop_chip(chip);
+@@ -1857,6 +1944,7 @@ static int __devinit azx_create(struct snd_card *card, struct pci_dev *pci,
+ 	chip->irq = -1;
+ 	chip->driver_type = driver_type;
+ 	chip->msi = enable_msi;
++	INIT_WORK(&chip->irq_pending_work, azx_irq_pending_work);
+ 
+ 	chip->position_fix = check_position_fix(chip, position_fix[dev]);
+ 	check_probe_mask(chip, dev);
 diff --git a/sound/pci/hda/patch_analog.c b/sound/pci/hda/patch_analog.c
-index c864928..d7cba53 100644
+index a99e86d..b5f655d 100644
 --- a/sound/pci/hda/patch_analog.c
 +++ b/sound/pci/hda/patch_analog.c
-@@ -1563,6 +1563,7 @@ static const char *ad1981_models[AD1981_MODELS] = {
+@@ -1618,6 +1618,7 @@ static const char *ad1981_models[AD1981_MODELS] = {
  
  static struct snd_pci_quirk ad1981_cfg_tbl[] = {
  	SND_PCI_QUIRK(0x1014, 0x0597, "Lenovo Z60", AD1981_THINKPAD),
@@ -1431,7 +2503,7 @@ index c864928..d7cba53 100644
  	/* All HP models */
  	SND_PCI_QUIRK(0x103c, 0, "HP nx", AD1981_HP),
  	SND_PCI_QUIRK(0x1179, 0x0001, "Toshiba U205", AD1981_TOSHIBA),
-@@ -2557,7 +2558,7 @@ static int ad1988_auto_create_extra_out(struct hda_codec *codec, hda_nid_t pin,
+@@ -2623,7 +2624,7 @@ static int ad1988_auto_create_extra_out(struct hda_codec *codec, hda_nid_t pin,
  {
  	struct ad198x_spec *spec = codec->spec;
  	hda_nid_t nid;
@@ -1440,7 +2512,7 @@ index c864928..d7cba53 100644
  	char name[32];
  
  	if (! pin)
-@@ -2565,16 +2566,26 @@ static int ad1988_auto_create_extra_out(struct hda_codec *codec, hda_nid_t pin,
+@@ -2631,16 +2632,26 @@ static int ad1988_auto_create_extra_out(struct hda_codec *codec, hda_nid_t pin,
  
  	idx = ad1988_pin_idx(pin);
  	nid = ad1988_idx_to_dac(codec, idx);
@@ -1477,213 +2549,3 @@ index c864928..d7cba53 100644
  	nid = ad1988_mixer_nids[idx];
  	sprintf(name, "%s Playback Switch", pfx);
  	if ((err = add_control(spec, AD_CTL_BIND_MUTE, name,
-diff --git a/sound/usb/usbaudio.c b/sound/usb/usbaudio.c
-index f48838a..d0bc988 100644
---- a/sound/usb/usbaudio.c
-+++ b/sound/usb/usbaudio.c
-@@ -1762,8 +1762,10 @@ static int check_hw_params_convention(struct snd_usb_substream *subs)
- 
- 	channels = kcalloc(MAX_MASK, sizeof(u32), GFP_KERNEL);
- 	rates = kcalloc(MAX_MASK, sizeof(u32), GFP_KERNEL);
--	if (!channels || !rates)
-+	if (!channels || !rates) {
-+		err = -ENOMEM;
- 		goto __out;
-+	}
- 
- 	list_for_each(p, &subs->fmt_list) {
- 		struct audioformat *f;
-@@ -1916,7 +1918,10 @@ static int setup_hw_info(struct snd_pcm_runtime *runtime, struct snd_usb_substre
- 				     1000 * MIN_PACKS_URB,
- 				     /*(nrpacks * MAX_URBS) * 1000*/ UINT_MAX);
- 
--	if (check_hw_params_convention(subs)) {
-+	err = check_hw_params_convention(subs);
-+	if (err < 0)
-+		return err;
-+	else if (err) {
- 		hwc_debug("setting extra hw constraints...\n");
- 		if ((err = snd_pcm_hw_rule_add(runtime, 0, SNDRV_PCM_HW_PARAM_RATE,
- 					       hw_rule_rate, subs,
-@@ -2463,11 +2468,12 @@ static int parse_audio_format_i_type(struct snd_usb_audio *chip, struct audiofor
- 		}
- 		break;
- 	case USB_AUDIO_FORMAT_PCM8:
--		/* Dallas DS4201 workaround */
-+		pcm_format = SNDRV_PCM_FORMAT_U8;
-+
-+		/* Dallas DS4201 workaround: it advertises U8 format, but really
-+		   supports S8. */
- 		if (chip->usb_id == USB_ID(0x04fa, 0x4201))
- 			pcm_format = SNDRV_PCM_FORMAT_S8;
--		else
--			pcm_format = SNDRV_PCM_FORMAT_U8;
- 		break;
- 	case USB_AUDIO_FORMAT_IEEE_FLOAT:
- 		pcm_format = SNDRV_PCM_FORMAT_FLOAT_LE;
-@@ -2671,12 +2677,23 @@ static int parse_audio_endpoints(struct snd_usb_audio *chip, int iface_no)
- 	int format;
- 	struct audioformat *fp;
- 	unsigned char *fmt, *csep;
-+	int num;
- 
- 	dev = chip->dev;
- 
- 	/* parse the interface's altsettings */
- 	iface = usb_ifnum_to_if(dev, iface_no);
--	for (i = 0; i < iface->num_altsetting; i++) {
-+
-+	num = iface->num_altsetting;
-+
-+	/*
-+	 * Dallas DS4201 workaround: It presents 5 altsettings, but the last
-+	 * one misses syncpipe, and does not produce any sound.
-+	 */
-+	if (chip->usb_id == USB_ID(0x04fa, 0x4201))
-+		num = 4;
-+
-+	for (i = 0; i < num; i++) {
- 		alts = &iface->altsetting[i];
- 		altsd = get_iface_desc(alts);
- 		/* skip invalid one */
-@@ -3406,7 +3423,6 @@ static void snd_usb_audio_create_proc(struct snd_usb_audio *chip)
- 
- static int snd_usb_audio_free(struct snd_usb_audio *chip)
- {
--	usb_chip[chip->index] = NULL;
- 	kfree(chip);
- 	return 0;
- }
-@@ -3600,8 +3616,8 @@ static void *snd_usb_audio_probe(struct usb_device *dev,
- 				snd_card_set_dev(chip->card, &intf->dev);
- 				break;
- 			}
--		if (! chip) {
--			snd_printk(KERN_ERR "no available usb audio device\n");
-+		if (!chip) {
-+			printk(KERN_ERR "no available usb audio device\n");
- 			goto __error;
- 		}
- 	}
-@@ -3671,6 +3687,7 @@ static void snd_usb_audio_disconnect(struct usb_device *dev, void *ptr)
- 		list_for_each(p, &chip->mixer_list) {
- 			snd_usb_mixer_disconnect(p);
- 		}
-+		usb_chip[chip->index] = NULL;
- 		mutex_unlock(&register_mutex);
- 		snd_card_free_when_closed(card);
- 	} else {
-diff --git a/sound/usb/usbquirks.h b/sound/usb/usbquirks.h
-index 938dff5..82a8d14 100644
---- a/sound/usb/usbquirks.h
-+++ b/sound/usb/usbquirks.h
-@@ -39,6 +39,30 @@
- 	.idProduct = prod, \
- 	.bInterfaceClass = USB_CLASS_VENDOR_SPEC
- 
-+/* Creative/E-Mu devices */
-+{
-+	USB_DEVICE(0x041e, 0x3010),
-+	.driver_info = (unsigned long) & (const struct snd_usb_audio_quirk) {
-+		.vendor_name = "Creative Labs",
-+		.product_name = "Sound Blaster MP3+",
-+		.ifnum = QUIRK_NO_INTERFACE
-+	}
-+},
-+{
-+	/* E-Mu 0202 USB */
-+	.match_flags = USB_DEVICE_ID_MATCH_DEVICE,
-+	.idVendor = 0x041e,
-+	.idProduct = 0x3f02,
-+	.bInterfaceClass = USB_CLASS_AUDIO,
-+},
-+{
-+	/* E-Mu 0404 USB */
-+	.match_flags = USB_DEVICE_ID_MATCH_DEVICE,
-+	.idVendor = 0x041e,
-+	.idProduct = 0x3f04,
-+	.bInterfaceClass = USB_CLASS_AUDIO,
-+},
-+
- /*
-  * Logitech QuickCam: bDeviceClass is vendor-specific, so generic interface
-  * class matches do not take effect without an explicit ID match.
-@@ -97,19 +121,7 @@
- 	.bInterfaceClass = USB_CLASS_AUDIO,
- 	.bInterfaceSubClass = USB_SUBCLASS_AUDIO_CONTROL
- },
--/* E-Mu devices */
--{
--	.match_flags = USB_DEVICE_ID_MATCH_DEVICE,
--	.idVendor = 0x041e,
--	.idProduct = 0x3f02,
--	.bInterfaceClass = USB_CLASS_AUDIO,
--},
--{
--	.match_flags = USB_DEVICE_ID_MATCH_DEVICE,
--	.idVendor = 0x041e,
--	.idProduct = 0x3f04,
--	.bInterfaceClass = USB_CLASS_AUDIO,
--},
-+
- /*
-  * Yamaha devices
-  */
-@@ -1165,19 +1177,6 @@ YAMAHA_DEVICE(0x7010, "UB99"),
- 		}
- 	}
- },
--{
--	USB_DEVICE(0x582, 0x00a6),
--	.driver_info = (unsigned long) & (const struct snd_usb_audio_quirk) {
--		.vendor_name = "Roland",
--		.product_name = "Juno-G",
--		.ifnum = 0,
--		.type = QUIRK_MIDI_FIXED_ENDPOINT,
--		.data = & (const struct snd_usb_midi_endpoint_info) {
--			.out_cables = 0x0001,
--			.in_cables  = 0x0001
--		}
--	}
--},
- {	/*
- 	 * This quirk is for the "Advanced" modes of the Edirol UA-25.
- 	 * If the switch is not in an advanced setting, the UA-25 has
-@@ -1336,6 +1335,19 @@ YAMAHA_DEVICE(0x7010, "UB99"),
- },
- 	/* TODO: add Edirol MD-P1 support */
- {
-+	USB_DEVICE(0x582, 0x00a6),
-+	.driver_info = (unsigned long) & (const struct snd_usb_audio_quirk) {
-+		.vendor_name = "Roland",
-+		.product_name = "Juno-G",
-+		.ifnum = 0,
-+		.type = QUIRK_MIDI_FIXED_ENDPOINT,
-+		.data = & (const struct snd_usb_midi_endpoint_info) {
-+			.out_cables = 0x0001,
-+			.in_cables  = 0x0001
-+		}
-+	}
-+},
-+{
- 	/* Roland SH-201 */
- 	USB_DEVICE(0x0582, 0x00ad),
- 	.driver_info = (unsigned long) & (const struct snd_usb_audio_quirk) {
-@@ -1719,17 +1731,6 @@ YAMAHA_DEVICE(0x7010, "UB99"),
- 	}
- },
- 
--{
--	/* Creative Sound Blaster MP3+ */
--	USB_DEVICE(0x041e, 0x3010),
--	.driver_info = (unsigned long) & (const struct snd_usb_audio_quirk) {
--		.vendor_name = "Creative Labs",
--		.product_name = "Sound Blaster MP3+",
--		.ifnum = QUIRK_NO_INTERFACE
--	}
--	
--},
--
- /* Emagic devices */
- {
- 	USB_DEVICE(0x086a, 0x0001),
