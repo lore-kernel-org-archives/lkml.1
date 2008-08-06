@@ -1,60 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757411AbYHFW2h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755471AbYHFW3U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757411AbYHFW2h (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Aug 2008 18:28:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753324AbYHFW2Y
+	id S1755471AbYHFW3U (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Aug 2008 18:29:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753369AbYHFW3E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Aug 2008 18:28:24 -0400
-Received: from outbound-sin.frontbridge.com ([207.46.51.80]:62284 "EHLO
-	SG2EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751220AbYHFW2W (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Aug 2008 18:28:22 -0400
-X-BigFish: VPS-33(zz1432R98dR936eQ1805Mzz10d3izzz2fh6bh61h)
-X-Spam-TCS-SCL: 0:0
-Message-ID: <489A2627.40908@am.sony.com>
-Date: Wed, 6 Aug 2008 15:31:03 -0700
-From: Tim Bird <tim.bird@am.sony.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Matt Mackall <mpm@selenic.com>
-CC: linux kernel <linux-kernel@vger.kernel.org>,
-       linux-embedded <linux-embedded@vger.kernel.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH] bootup: Add built-in kernel command line for x86
-References: <489A1844.3090502@am.sony.com> <1218060873.7576.2.camel@calx>
-In-Reply-To: <1218060873.7576.2.camel@calx>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 06 Aug 2008 22:28:07.0794 (UTC) FILETIME=[B3661D20:01C8F813]
+	Wed, 6 Aug 2008 18:29:04 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:60748 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751933AbYHFW3C (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Aug 2008 18:29:02 -0400
+Date: Wed, 6 Aug 2008 18:28:21 -0400
+From: Alan Cox <alan@redhat.com>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Alan Cox <alan@redhat.com>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       Linux/m68k <linux-m68k@vger.kernel.org>
+Subject: Re: [PATCH] m68k/amiserial: fix fallout of tty break handling rework
+Message-ID: <20080806222821.GB30535@devserv.devel.redhat.com>
+References: <Pine.LNX.4.64.0808062218490.17614@anakin>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0808062218490.17614@anakin>
+User-Agent: Mutt/1.4.1i
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street, Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a Lloegr o'r rhif cofrestru 3798903
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matt Mackall wrote:
-> On Wed, 2008-08-06 at 14:31 -0700, Tim Bird wrote:
->> The default behavior is to append the boot loader string
->> to this one.  However, there is a mechanism (leading '!')
->> to force the built-in string to override the boot loader
->> string.
+On Wed, Aug 06, 2008 at 10:19:39PM +0200, Geert Uytterhoeven wrote:
+> commit 9e98966c7bb94355689478bc84cc3e0c190f977e (tty: rework break handling)
+> forgot to update one exit point of rs_break() in the Amiga serial driver.
 > 
-> Nice solution.
-> 
-> Where is this relative to early boot option checking?
+> Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
 
-parse_early_param() is right AFTER this in the x86 setup_arch()
-function (in arch/x86/kernel/setup.c).  All the other command-line
-handling I could find is after this in init/main.c:start_kernel().
-
-There is some stuff earlier in the setup_arch() routine about
-boot_params, but that looks like it's related to the old(?)
-binary data points you can jam into the kernel image.  (That is,
-it doesn't look like it's related to the command line handling).
- -- Tim
-
-=============================
-Tim Bird
-Architecture Group Chair, CE Linux Forum
-Senior Staff Engineer, Sony Corporation of America
-=============================
-
+Acked-by: Alan Cox <alan@redhat.com>
