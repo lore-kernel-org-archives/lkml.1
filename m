@@ -1,66 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762822AbYHFUgU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761654AbYHFUgr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762822AbYHFUgU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Aug 2008 16:36:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758697AbYHFUf6
+	id S1761654AbYHFUgr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Aug 2008 16:36:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756056AbYHFUgf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Aug 2008 16:35:58 -0400
-Received: from yw-out-2324.google.com ([74.125.46.30]:58500 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755771AbYHFUf5 (ORCPT
+	Wed, 6 Aug 2008 16:36:35 -0400
+Received: from wolverine02.qualcomm.com ([199.106.114.251]:59070 "EHLO
+	wolverine02.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755971AbYHFUge (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Aug 2008 16:35:57 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject
-         :content-type:content-transfer-encoding;
-        b=QOlGY+brazHup4rN9g6/HN22O7ladVIHITH0am89gquyUs4GkgGBaS67kVus0R6AdK
-         cnfUyz5T+p9bgwQr+Bu0hYnE1lvJqdYdWUzhk4IdZzY1C9DGZ5SC0OahxLxVcIRj5TQJ
-         tQjO0ET5Dpb5avCE3iHiq26cpxqwFL1967WGk=
-Message-ID: <489A0B27.80604@gmail.com>
-Date: Wed, 06 Aug 2008 17:35:51 -0300
-From: "Rafael C. de Almeida" <almeidaraf@gmail.com>
-User-Agent: Icedove 1.5.0.14eol (X11/20080724)
+	Wed, 6 Aug 2008 16:36:34 -0400
+X-IronPort-AV: E=McAfee;i="5200,2160,5355"; a="5204177"
+Message-ID: <489A0B4F.2020803@qualcomm.com>
+Date: Wed, 06 Aug 2008 13:36:31 -0700
+From: Max Krasnyansky <maxk@qualcomm.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Weird behaviour on /proc/stat
-Content-Type: text/plain; charset=ISO-8859-1
+To: Paul Jackson <pj@sgi.com>
+CC: mingo@elte.hu, linux-kernel@vger.kernel.org, menage@google.com,
+       a.p.zijlstra@chello.nl, vegard.nossum@gmail.com, lizf@cn.fujitsu.com
+Subject: Re: [PATCH] cpuset: Rework sched domains and CPU hotplug handling
+ (2.6.27-rc1)
+References: <1217631552-22129-1-git-send-email-maxk@qualcomm.com>	<20080802063900.6615e5ca.pj@sgi.com>	<48948C3A.6050805@qualcomm.com>	<20080802225127.2b0d138b.pj@sgi.com>	<4895F3ED.4020805@qualcomm.com>	<20080804010033.0d1b0549.pj@sgi.com>	<48977E81.4040207@qualcomm.com>	<20080804225636.541527e8.pj@sgi.com>	<4898B873.6000308@qualcomm.com>	<20080805180521.be7010e1.pj@sgi.com>	<48991973.90109@qualcomm.com>	<20080805222927.6dd95f5f.pj@sgi.com>	<4899202B.6030303@qualcomm.com>	<20080805232856.78dd50f7.pj@sgi.com>	<489930B5.9030906@qualcomm.com>	<20080806004629.d321f3b0.pj@sgi.com>	<489A079E.5040903@qualcomm.com> <20080806152910.9e4f76a2.pj@sgi.com>
+In-Reply-To: <20080806152910.9e4f76a2.pj@sgi.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I've executed the following code on a intel core 2 quad (linux 2.6.21.5):
+Paul Jackson wrote:
+> Max K wrote:
+>> Sure. That looks fine. Although inline_ will probably be a bit confusing 
+>> since one may think that it has something to do with the C 'inline'.
+>> I'd suggest either sync_rebuild_sched_domains() or simply 
+>> rebuild_sched_domains().
+> 
+> Good point about "inline" confusions.
+> 
+> I am willing to agree to "sync_rebuild_sched_domains()".
 
-for (( x=0; x < 1800; x = x+1 )); do
-        head -n5 /proc/stat |
-        awk '{ print $2+$3+$4+$5+$6+$7+$8+$9 }' |
-        awk 'BEGIN { x=0 } { if (NR == 1) y=$0; else x=x+$1; } END {
-print y, x }' |
-        awk '{ print $0, $1-$2 }' >> values
-        sleep 1;
-done
+Thank you. I'll go ahead and respin the patch.
 
-My expectation was that the values file would have only 0s on the second
-field. It didn't happen. Actually, it was always a value greater than 0.
-So I went to the kernel code. The utilization is summed up here:
-
-	http://lxr.linux.no/linux+v2.6.21.5/fs/proc/proc_misc.c#L463
-
-Reading that file, if anything the sum of all the cpuX fields should be
-greater than the cpu line. After all, it happens later and, if
-information regarding the utilization is updated during the generation
-of the output, then the cpuX lines should have a greater value.
-
-I also noted that on
-	http://lxr.linux.no/linux+v2.6.21.5/fs/proc/proc_misc.c#L463
-for_each_possible_cpu is used. While on
-	http://lxr.linux.no/linux+v2.6.21.5/fs/proc/proc_misc.c#L487
-for_each_online_cpu is used. All the cores on the system are online, so
-where could be the extra utilization that's being added to the first
-line result?
-
-I wish I had a machine with 4 cores which I could test changes on that
-code, so I could investigate things a little further. But the only
-machine I can change the kernel is my home computer which has only one
-core  :(.
+Max
