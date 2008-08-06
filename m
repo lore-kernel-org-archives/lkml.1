@@ -1,54 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422840AbYHFU5n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759266AbYHFU6L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422840AbYHFU5n (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Aug 2008 16:57:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754557AbYHFU4a
+	id S1759266AbYHFU6L (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Aug 2008 16:58:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758580AbYHFU5d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Aug 2008 16:56:30 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:39604 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752538AbYHFU43 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Aug 2008 16:56:29 -0400
-Date: Wed, 6 Aug 2008 15:56:25 -0500
-From: Paul Jackson <pj@sgi.com>
-To: "Paul Menage" <menage@google.com>
-Cc: maxk@qualcomm.com, mingo@elte.hu, linux-kernel@vger.kernel.org,
-       a.p.zijlstra@chello.nl, vegard.nossum@gmail.com, lizf@cn.fujitsu.com
-Subject: Re: [PATCH] cpuset: Rework sched domains and CPU hotplug handling
- (2.6.27-rc1)
-Message-Id: <20080806155625.a89071b4.pj@sgi.com>
-In-Reply-To: <6599ad830808061330j41f2141fva8395239726f5f7f@mail.gmail.com>
-References: <1217631552-22129-1-git-send-email-maxk@qualcomm.com>
-	<20080805180521.be7010e1.pj@sgi.com>
-	<48991973.90109@qualcomm.com>
-	<20080805222927.6dd95f5f.pj@sgi.com>
-	<4899202B.6030303@qualcomm.com>
-	<20080805232856.78dd50f7.pj@sgi.com>
-	<489930B5.9030906@qualcomm.com>
-	<20080806004629.d321f3b0.pj@sgi.com>
-	<489A079E.5040903@qualcomm.com>
-	<20080806152910.9e4f76a2.pj@sgi.com>
-	<6599ad830808061330j41f2141fva8395239726f5f7f@mail.gmail.com>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 6 Aug 2008 16:57:33 -0400
+Received: from smtpq1.groni1.gr.home.nl ([213.51.130.200]:49349 "EHLO
+	smtpq1.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758315AbYHFU5b (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Aug 2008 16:57:31 -0400
+Message-ID: <489A1032.9030708@keyaccess.nl>
+Date: Wed, 06 Aug 2008 22:57:22 +0200
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080707)
+MIME-Version: 1.0
+To: Andreas Herrmann <andreas.herrmann3@amd.com>
+CC: Dave Airlie <airlied@gmail.com>, Shaohua Li <shaohua.li@intel.com>,
+       Yinghai Lu <yhlu.kernel@gmail.com>,
+       Arjan van de Ven <arjan@infradead.org>, dri-users@lists.sourceforge.net,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: AGP and PAT (induced?) problem (on AMD family 6)
+References: <48972EA8.8040001@keyaccess.nl> <20080806135114.GB6713@alberich.amd.com>
+In-Reply-To: <20080806135114.GB6713@alberich.amd.com>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -1.0 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul M wrote:
-> I'd vote in favour of Max's suggestion of just
-> rebuild_sched_domains(), to localize the changes better.
+On 06-08-08 15:51, Andreas Herrmann wrote:
 
-I'm outvoted, two to one.
+> On Mon, Aug 04, 2008 at 06:30:32PM +0200, Rene Herman wrote:
+>> What _does_ solve this though is booting with the "nopat" command line 
+>> parameter. I'm on 2.6.26.1 and have enabled PAT for my AMD Duron myself. 
+>> With "nopat", there's no problem to be seen anymore -- exiting X 
+>> specifically is instantaneous.
+>>
+>> With or without PAT, my /proc/mtrr is always:
+>>
+>> reg00: base=0x00000000 (   0MB), size= 512MB: write-back, count=1
+>> reg01: base=0x20000000 ( 512MB), size= 256MB: write-back, count=1
+>> reg02: base=0xe8000000 (3712MB), size=  64MB: write-combining, count=1
+>>
+>> under X joined by:
+>>
+>> reg03: base=0xe4000000 (3648MB), size=  32MB: write-combining, count=2
+> 
+> To get some more debug data, can you please retest with latest kernel
+> (2.6.27-rc2)
 
-Go for it, Max.
+Problem present on vanilla -rc2.
 
-Thank, Paul M.
+> using "debugpat" kernel option and provide dmesg output
 
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.940.382.4214
+No... my kernel message buffer isn't large enough for that :-(
+
+Right, I guess I now know where the delay is coming from. I suppose this 
+is not expected. dmesg as captured after starting X and without 
+"debugpat" at:
+
+http://members.home.nl/rene.herman/pat/dmesg.x
+
+Truncated dmesg with "debugpat":
+
+http://members.home.nl/rene.herman/pat/dmesg.x.debugpat
+
+> plus contents of <debugfs>/x86/pat_memtype_list?
+
+Before starting X (1K):
+
+http://members.home.nl/rene.herman/pat/pat_memtype_list.console.debugpat
+
+After starting X (625K):
+
+http://members.home.nl/rene.herman/pat/pat_memtype_list.x.debugpat
+
+(This is with 64MB AGP memory)
+
+More data:
+
+http://members.home.nl/rene.herman/pat/config-2.6.27-rc2-current
+http://members.home.nl/rene.herman/pat/xorg.conf
+http://members.home.nl/rene.herman/pat/Xorg.0.log
+
+Thanks,
+Rene
