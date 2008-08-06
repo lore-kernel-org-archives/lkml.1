@@ -1,27 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964910AbYHFPoa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030360AbYHFPoE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964910AbYHFPoa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Aug 2008 11:44:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964819AbYHFPkB
+	id S1030360AbYHFPoE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Aug 2008 11:44:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758301AbYHFPju
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Aug 2008 11:40:01 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:38668 "EHLO mx1.redhat.com"
+	Wed, 6 Aug 2008 11:39:50 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:38298 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964805AbYHFPj6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Aug 2008 11:39:58 -0400
+	id S1759676AbYHFPjX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Aug 2008 11:39:23 -0400
 Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
 	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
 	Kingdom.
 	Registered in England and Wales under Company Registration No. 3798903
 From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 24/24] CRED: Allow kernel services to override LSM settings
-	for task actions [ver #7]
+Subject: [PATCH 21/24] CRED: Documentation [ver #7]
 To: jmorris@namei.org, akpm@linux-foundation.org, morgan@kernel.org
 Cc: sfr@canb.auug.org.au, dhowells@redhat.com, viro@ftp.linux.org.uk,
        casey@schaufler-ca.com, linux-security-module@vger.kernel.org,
        linux-kernel@vger.kernel.org
-Date: Wed, 06 Aug 2008 16:39:18 +0100
-Message-ID: <20080806153917.14351.80732.stgit@warthog.procyon.org.uk>
+Date: Wed, 06 Aug 2008 16:39:02 +0100
+Message-ID: <20080806153902.14351.22192.stgit@warthog.procyon.org.uk>
 In-Reply-To: <20080806153713.14351.91448.stgit@warthog.procyon.org.uk>
 References: <20080806153713.14351.91448.stgit@warthog.procyon.org.uk>
 User-Agent: StGIT/0.14.1
@@ -32,434 +31,583 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Allow kernel services to override LSM settings appropriate to the actions
-performed by a task by duplicating a set of credentials, modifying it and then
-using task_struct::cred to point to it when performing operations on behalf of
-a task.
+Document credentials and the new credentials API.
 
-This is used, for example, by CacheFiles which has to transparently access the
-cache on behalf of a process that thinks it is doing, say, NFS accesses with a
-potentially inappropriate (with respect to accessing the cache) set of
-credentials.
-
-This patch provides two LSM hooks for modifying a task security record:
-
- (*) security_kernel_act_as() which allows modification of the security datum
-     with which a task acts on other objects (most notably files).
-
- (*) security_kernel_create_files_as() which allows modification of the
-     security datum that is used to initialise the security data on a file that
-     a task creates.
-
-The patch also provides four new credentials handling functions, which wrap the
-LSM functions:
-
- (1) prepare_kernel_cred()
-
-     Prepare a set of credentials for a kernel service to use, based either on
-     a daemon's credentials or on init_cred.  All the keyrings are cleared.
-
- (2) set_security_override()
-
-     Set the LSM security ID in a set of credentials to a specific security
-     context, assuming permission from the LSM policy.
-
- (3) set_security_override_from_ctx()
-
-     As (2), but takes the security context as a string.
-
- (4) set_create_files_as()
-
-     Set the file creation LSM security ID in a set of credentials to be the
-     same as that on a particular inode.
-
-Signed-off-by: Casey Schaufler <casey@schaufler-ca.com> [Smack changes]
 Signed-off-by: David Howells <dhowells@redhat.com>
 ---
 
- include/linux/cred.h       |    6 ++
- include/linux/security.h   |   28 +++++++++++
- kernel/cred.c              |  113 ++++++++++++++++++++++++++++++++++++++++++++
- security/capability.c      |   12 +++++
- security/security.c        |   10 ++++
- security/selinux/hooks.c   |   46 ++++++++++++++++++
- security/smack/smack_lsm.c |   37 ++++++++++++++
- 7 files changed, 252 insertions(+), 0 deletions(-)
+ Documentation/credentials.txt |  563 +++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 563 insertions(+), 0 deletions(-)
+ create mode 100644 Documentation/credentials.txt
 
 
-diff --git a/include/linux/cred.h b/include/linux/cred.h
-index 7efcecb..b156ed4 100644
---- a/include/linux/cred.h
-+++ b/include/linux/cred.h
-@@ -18,6 +18,7 @@
- 
- struct user_struct;
- struct cred;
-+struct inode;
- 
- /*
-  * COW Supplementary groups list
-@@ -148,6 +149,11 @@ extern int commit_creds(struct cred *);
- extern void abort_creds(struct cred *);
- extern const struct cred *override_creds(const struct cred *);
- extern void revert_creds(const struct cred *);
-+extern struct cred *prepare_kernel_cred(struct task_struct *);
-+extern int change_create_files_as(struct cred *, struct inode *);
-+extern int set_security_override(struct cred *, u32);
-+extern int set_security_override_from_ctx(struct cred *, const char *);
-+extern int set_create_files_as(struct cred *, struct inode *);
- extern void __init cred_init(void);
- 
- /**
-diff --git a/include/linux/security.h b/include/linux/security.h
-index 29a6a32..8317683 100644
---- a/include/linux/security.h
-+++ b/include/linux/security.h
-@@ -583,6 +583,19 @@ static inline void security_free_mnt_opts(struct security_mnt_opts *opts)
-  *	@new points to the new credentials.
-  *	@old points to the original credentials.
-  *	Install a new set of credentials.
-+ * @kernel_act_as:
-+ *	Set the credentials for a kernel service to act as (subjective context).
-+ *	@new points to the credentials to be modified.
-+ *	@secid specifies the security ID to be set
-+ *	The current task must be the one that nominated @secid.
-+ *	Return 0 if successful.
-+ * @kernel_create_files_as:
-+ *	Set the file creation context in a set of credentials to be the same as
-+ *	the objective context of the specified inode.
-+ *	@new points to the credentials to be modified.
-+ *	@inode points to the inode to use as a reference.
-+ *	The current task must be the one that nominated @inode.
-+ *	Return 0 if successful.
-  * @task_setuid:
-  *	Check permission before setting one or more of the user identity
-  *	attributes of the current process.  The @flags parameter indicates
-@@ -1377,6 +1390,8 @@ struct security_operations {
- 	int (*cred_prepare)(struct cred *new, const struct cred *old,
- 			    gfp_t gfp);
- 	void (*cred_commit)(struct cred *new, const struct cred *old);
-+	int (*kernel_act_as)(struct cred *new, u32 secid);
-+	int (*kernel_create_files_as)(struct cred *new, struct inode *inode);
- 	int (*task_setuid) (uid_t id0, uid_t id1, uid_t id2, int flags);
- 	int (*task_fix_setuid) (struct cred *new, const struct cred *old,
- 				int flags);
-@@ -1631,6 +1646,8 @@ int security_task_create(unsigned long clone_flags);
- void security_cred_free(struct cred *cred);
- int security_prepare_creds(struct cred *new, const struct cred *old, gfp_t gfp);
- void security_commit_creds(struct cred *new, const struct cred *old);
-+int security_kernel_act_as(struct cred *new, u32 secid);
-+int security_kernel_create_files_as(struct cred *new, struct inode *inode);
- int security_task_setuid(uid_t id0, uid_t id1, uid_t id2, int flags);
- int security_task_fix_setuid(struct cred *new, const struct cred *old,
- 			     int flags);
-@@ -2140,6 +2157,17 @@ static inline void security_commit_creds(struct cred *new,
- {
- }
- 
-+static inline int security_kernel_act_as(struct cred *cred, u32 secid)
-+{
-+	return 0;
-+}
+diff --git a/Documentation/credentials.txt b/Documentation/credentials.txt
+new file mode 100644
+index 0000000..3caf1ea
+--- /dev/null
++++ b/Documentation/credentials.txt
+@@ -0,0 +1,563 @@
++			     ====================
++			     CREDENTIALS IN LINUX
++			     ====================
 +
-+static inline int security_kernel_create_files_as(struct cred *cred,
-+						  struct inode *inode)
-+{
-+	return 0;
-+}
++By: David Howells <dhowells@redhat.com>
 +
- static inline int security_task_setuid(uid_t id0, uid_t id1, uid_t id2,
- 				       int flags)
- {
-diff --git a/kernel/cred.c b/kernel/cred.c
-index eff48a4..6e9cfbf 100644
---- a/kernel/cred.c
-+++ b/kernel/cred.c
-@@ -467,3 +467,116 @@ void __init cred_init(void)
- 	cred_jar = kmem_cache_create("cred_jar", sizeof(struct cred),
- 				     0, SLAB_HWCACHE_ALIGN|SLAB_PANIC, NULL);
- }
++Contents:
 +
-+/**
-+ * prepare_kernel_cred - Prepare a set of credentials for a kernel service
-+ * @daemon: A userspace daemon to be used as a reference
-+ *
-+ * Prepare a set of credentials for a kernel service.  This can then be used to
-+ * override a task's own credentials so that work can be done on behalf of that
-+ * task that requires a different subjective context.
-+ *
-+ * @daemon is used to provide a base for the security record, but can be NULL.
-+ * If @daemon is supplied, then the security data will be derived from that;
-+ * otherwise they'll be set to 0 and no groups, full capabilities and no keys.
-+ *
-+ * The caller may change these controls afterwards if desired.
-+ *
-+ * Returns the new credentials or NULL if out of memory.
-+ *
-+ * Does not take, and does not return holding current->cred_replace_mutex.
-+ */
-+struct cred *prepare_kernel_cred(struct task_struct *daemon)
-+{
-+	const struct cred *old;
-+	struct cred *new;
++ (*) Overview.
 +
-+	new = kmem_cache_alloc(cred_jar, GFP_KERNEL);
-+	if (!new)
-+		return NULL;
++ (*) Types of credentials.
 +
-+	if (daemon)
-+		old = get_task_cred(daemon);
-+	else
-+		old = get_cred(&init_cred);
++ (*) File markings.
 +
-+	get_uid(new->user);
-+	get_group_info(new->group_info);
++ (*) Task credentials.
 +
-+#ifdef CONFIG_KEYS
-+	atomic_inc(&init_tgcred.usage);
-+	new->tgcred = &init_tgcred;
-+	new->request_key_auth = NULL;
-+	new->thread_keyring = NULL;
-+	new->jit_keyring = KEY_REQKEY_DEFL_THREAD_KEYRING;
-+#endif
++     - Accessing task credentials.
++     - Accessing another task's credentials.
++     - Altering credentials.
++     - Managing credentials.
 +
-+#ifdef CONFIG_SECURITY
-+	new->security = NULL;
-+#endif
-+	if (security_prepare_creds(new, old, GFP_KERNEL) < 0)
-+		goto error;
++ (*) Open file credentials.
 +
-+	atomic_set(&new->usage, 1);
-+	put_cred(old);
-+	return new;
++ (*) Overriding the VFS's use of credentials.
 +
-+error:
-+	put_cred(new);
-+	return NULL;
-+}
-+EXPORT_SYMBOL(prepare_kernel_cred);
 +
-+/**
-+ * set_security_override - Set the security ID in a set of credentials
-+ * @new: The credentials to alter
-+ * @secid: The LSM security ID to set
-+ *
-+ * Set the LSM security ID in a set of credentials so that the subjective
-+ * security is overridden when an alternative set of credentials is used.
-+ */
-+int set_security_override(struct cred *new, u32 secid)
-+{
-+	return security_kernel_act_as(new, secid);
-+}
-+EXPORT_SYMBOL(set_security_override);
++========
++OVERVIEW
++========
 +
-+/**
-+ * set_security_override_from_ctx - Set the security ID in a set of credentials
-+ * @new: The credentials to alter
-+ * @secctx: The LSM security context to generate the security ID from.
-+ *
-+ * Set the LSM security ID in a set of credentials so that the subjective
-+ * security is overridden when an alternative set of credentials is used.  The
-+ * security ID is specified in string form as a security context to be
-+ * interpreted by the LSM.
-+ */
-+int set_security_override_from_ctx(struct cred *new, const char *secctx)
-+{
-+	u32 secid;
-+	int ret;
++There are several parts to the security check performed by Linux when one
++object acts upon another:
 +
-+	ret = security_secctx_to_secid(secctx, strlen(secctx), &secid);
-+	if (ret < 0)
-+		return ret;
++ (1) Objects.
 +
-+	return set_security_override(new, secid);
-+}
-+EXPORT_SYMBOL(set_security_override_from_ctx);
++     Objects are things in the system that may be acted upon directly by
++     userspace programs.  Linux has a variety of actionable objects, including:
 +
-+/**
-+ * set_create_files_as - Set the LSM file create context in a set of credentials
-+ * @new: The credentials to alter
-+ * @inode: The inode to take the context from
-+ *
-+ * Change the LSM file creation context in a set of credentials to be the same
-+ * as the object context of the specified inode, so that the new inodes have
-+ * the same MAC context as that inode.
-+ */
-+int set_create_files_as(struct cred *new, struct inode *inode)
-+{
-+	new->fsuid = inode->i_uid;
-+	new->fsgid = inode->i_gid;
-+	return security_kernel_create_files_as(new, inode);
-+}
-+EXPORT_SYMBOL(set_create_files_as);
-diff --git a/security/capability.c b/security/capability.c
-index 185804f..b9e3914 100644
---- a/security/capability.c
-+++ b/security/capability.c
-@@ -348,6 +348,16 @@ static void cap_cred_commit(struct cred *new, const struct cred *old)
- {
- }
- 
-+static int cap_kernel_act_as(struct cred *new, u32 secid)
-+{
-+	return 0;
-+}
++	- Tasks
++	- Files/inodes
++	- Sockets
++	- Message queues
++	- Shared memory segments
++	- Semaphores
++	- Keys
 +
-+static int cap_kernel_create_files_as(struct cred *new, struct inode *inode)
-+{
-+	return 0;
-+}
++     As a part of the description of all these objects there is a set of
++     credentials.  What's in the set depends on the type of object.
 +
- static int cap_task_setuid(uid_t id0, uid_t id1, uid_t id2, int flags)
- {
- 	return 0;
-@@ -889,6 +899,8 @@ void security_fixup_ops(struct security_operations *ops)
- 	set_to_cap_if_null(ops, cred_free);
- 	set_to_cap_if_null(ops, cred_prepare);
- 	set_to_cap_if_null(ops, cred_commit);
-+	set_to_cap_if_null(ops, kernel_act_as);
-+	set_to_cap_if_null(ops, kernel_create_files_as);
- 	set_to_cap_if_null(ops, task_setuid);
- 	set_to_cap_if_null(ops, task_fix_setuid);
- 	set_to_cap_if_null(ops, task_setgid);
-diff --git a/security/security.c b/security/security.c
-index 3da7856..4a4f753 100644
---- a/security/security.c
-+++ b/security/security.c
-@@ -602,6 +602,16 @@ void security_commit_creds(struct cred *new, const struct cred *old)
- 	return security_ops->cred_commit(new, old);
- }
- 
-+int security_kernel_act_as(struct cred *new, u32 secid)
-+{
-+	return security_ops->kernel_act_as(new, secid);
-+}
++ (2) Object ownership.
 +
-+int security_kernel_create_files_as(struct cred *new, struct inode *inode)
-+{
-+	return security_ops->kernel_create_files_as(new, inode);
-+}
++     Amongst the credentials of most objects, there will be a subset that
++     indicates the ownership of that object.  This is used for resource
++     accounting and limitation (disk quotas and task rlimits for example).
 +
- int security_task_setuid(uid_t id0, uid_t id1, uid_t id2, int flags)
- {
- 	return security_ops->task_setuid(id0, id1, id2, flags);
-diff --git a/security/selinux/hooks.c b/security/selinux/hooks.c
-index 14067df..1d2272b 100644
---- a/security/selinux/hooks.c
-+++ b/security/selinux/hooks.c
-@@ -3282,6 +3282,50 @@ static void selinux_cred_commit(struct cred *new, const struct cred *old)
- 	secondary_ops->cred_commit(new, old);
- }
- 
-+/*
-+ * set the security data for a kernel service
-+ * - all the creation contexts are set to unlabelled
-+ */
-+static int selinux_kernel_act_as(struct cred *new, u32 secid)
-+{
-+	struct task_security_struct *tsec = new->security;
-+	u32 sid = current_sid();
-+	int ret;
++     In a standard UNIX filesystem, for instance, this will be defined by the
++     UID marked on the inode.
 +
-+ 	ret = avc_has_perm(sid, secid,
-+			   SECCLASS_KERNEL_SERVICE,
-+			   KERNEL_SERVICE__USE_AS_OVERRIDE,
-+			   NULL);
-+	if (ret == 0) {
-+		tsec->sid = secid;
-+		tsec->create_sid = 0;
-+		tsec->keycreate_sid = 0;
-+		tsec->sockcreate_sid = 0;
++ (3) The objective context.     
++
++     Also amongst the credentials of those objects, there will be a subset that
++     indicates the 'objective context' of that object.  This may or may not be
++     the same set as in (2) - in standard UNIX files, for instance, this is the
++     defined by the UID and the GID marked on the inode.
++
++     The objective context is used as part of the security calculation that is
++     carried out when an object is acted upon.
++
++ (4) Subjects.
++
++     A subject is an object that is acting upon another object.
++
++     Most of the objects in the system are inactive: they don't act on other
++     objects within the system.  Processes/tasks are the obvious exception:
++     they do stuff; they access and manipulate things.
++
++     Objects other than tasks may under some circumstances also be subjects.
++     For instance an open file may send SIGIO to a task using the UID and EUID
++     given to it by a task that called fcntl(F_SETOWN) upon it.  In this case,
++     the file struct will have a subjective context too.
++
++ (5) The subjective context.
++
++     A subject has an additional interpretation of its credentials.  A subset
++     of its credentials forms the 'subjective context'.  The subjective context
++     is used as part of the security calculation that is carried out when a
++     subject acts.
++
++     A Linux task, for example, has the FSUID, FSGID and the supplementary
++     group list for when it is acting upon a file - which are quite separate
++     from the real UID and GID that normally form the objective context of the
++     task.
++
++ (6) Actions.
++
++     Linux has a number of actions available that a subject may perform upon an
++     object.  The set of actions available depends on the nature of the subject
++     and the object.
++
++     Actions include reading, writing, creating and deleting files; forking or
++     signalling and tracing tasks.
++
++ (7) Rules, access control lists and security calculations.
++
++     When a subject acts upon an object, a security calculation is made.  This
++     involves taking the subjective context, the objective context and the
++     action, and searching one or more sets of rules to see whether the subject
++     is granted or denied permission to act in the desired manner on the
++     object, given those contexts.
++
++     There are two main sources of rules:
++
++     (a) Discretionary access control (DAC):
++
++     	 Sometimes the object will include sets of rules as part of its
++     	 description.  This is an 'Access Control List' or 'ACL'.  A Linux file
++     	 may supply more than one ACL.
++
++     	 A traditional UNIX file, for example, includes a permissions mask that
++     	 is an abbreviated ACL with three fixed classes of subject ('user',
++     	 'group' and 'other'), each of which may be granted certain privileges
++     	 ('read', 'write' and 'execute' - whatever those map to for the object
++     	 in question).  UNIX file permissions do not allow the arbitrary
++     	 specification of subjects, however, and so are of limited use.
++
++     	 A Linux file might also sport a POSIX ACL.  This is a list of rules
++     	 that grants various permissions to arbitrary subjects.
++
++     (b) Mandatory access control (MAC):
++
++     	 The system as a whole may have one or more sets of rules that get
++     	 applied to all subjects and objects, regardless of their source.
++     	 SELinux and Smack are examples of this.
++
++	 In the case of SELinux and Smack, each object is given a label as part
++	 of its credentials.  When an action is requested, they take the
++	 subject label, the object label and the action and look for a rule
++	 that says that this action is either granted or denied.
++
++
++====================
++TYPES OF CREDENTIALS
++====================
++
++The Linux kernel supports the following types of credentials:
++
++ (1) Traditional UNIX credentials.
++
++	Real User ID
++	Real Group ID
++
++     The UID and GID are carried by most, if not all, Linux objects, even if in
++     some cases it has to be invented (FAT or CIFS files for example, which are
++     derived from Windows).  These (mostly) define the objective context of
++     that object, with tasks being slightly different in some cases.
++
++	Effective, Saved and FS User ID
++	Effective, Saved and FS Group ID
++	Supplementary groups
++
++     These are additional credentials used by tasks only.  Usually, an
++     EUID/EGID/GROUPS will be used as the subjective context, and real UID/GID
++     will be used as the objective.  For tasks, it should be noted that this is
++     not always true.
++
++ (2) Capabilities.
++
++	Set of permitted capabilities
++	Set of inheritable capabilities
++	Set of effective capabilities
++	Capability bounding set
++
++     These are only carried by tasks.  They indicate superior capabilities
++     granted piecemeal to a task that an ordinary task wouldn't otherwise have.
++     These are manipulated implicitly by changes to the traditional UNIX
++     credentials, but can also be manipulated directly by the capset() system
++     call.
++
++     The permitted capabilities are those caps that the process might grant
++     itself to its effective or permitted sets through capset().  This
++     inheritable set might also be so constrained.
++
++     The effective capabilities are the ones that a task is actually allowed to
++     make use of itself.
++
++     The inheritable capabilities are the ones that may get passed across
++     execve().
++
++     The bounding set limits the capabilities that may be inherited across
++     execve(), especially when a binary is executed that will execute as UID 0.
++
++ (3) Secure management flags (securebits).
++
++     These are only carried by tasks.  These govern the way the above
++     credentials are manipulated and inherited over certain operations such as
++     execve().  They aren't used directly as objective or subjective
++     credentials.
++
++ (4) Keys and keyrings.
++
++     These are only carried by tasks.  They carry and cache security tokens
++     that don't fit into the other standard UNIX credentials.  They are for
++     making such things as network filesystem keys available to the file
++     accesses performed by processes, without the necessity of ordinary
++     programs having to know about security details involved.
++
++     Keyrings are a special type of key.  They carry sets of other keys and can
++     be searched for the desired key.  Each process may subscribe to a number
++     of keyrings:
++
++	Per-thread keying
++	Per-process keyring
++	Per-session keyring
++
++     When a process accesses a key, if not already present, it will normally be
++     cached on one of these keyrings for future accesses to find.
++
++     For more information on using keys, see Documentation/keys.txt.
++
++ (5) LSM
++
++     The Linux Security Module allows extra controls to be placed over the
++     operations that a task may do.  Currently Linux supports two main
++     alternate LSM options: SELinux and Smack.
++
++     Both work by labelling the objects in a system and then applying sets of
++     rules (policies) that say what operations a task with one label may do to
++     an object with another label.
++
++ (6) AF_KEY
++
++     This is a socket-based approach to credential management for networking
++     stacks [RFC 2367].  It isn't discussed by this document as it doesn't
++     interact directly with task and file credentials; rather it keeps system
++     level credentials.
++
++
++When a file is opened, part of the opening task's subjective context is
++recorded in the file struct created.  This allows operations using that file
++struct to use those credentials instead of the subjective context of the task
++that issued the operation.  An example of this would be a file opened on a
++network filesystem where the credentials of the opened file should be presented
++to the server, regardless of who is actually doing a read or a write upon it.
++
++
++=============
++FILE MARKINGS
++=============
++
++Files on disk or obtained over the network may have annotations that form the
++objective security context of that file.  Depending on the type of filesystem,
++this may include one or more of the following:
++
++ (*) UNIX UID, GID, mode;
++
++ (*) Windows user ID;
++
++ (*) Access control list;
++
++ (*) LSM security label;
++
++ (*) UNIX exec privilege escalation bits (SUID/SGID);
++
++ (*) File capabilities exec privilege escalation bits.
++
++These are compared to the task's subjective security context, and certain
++operations allowed or disallowed as a result.  In the case of execve(), the
++privilege escalation bits come into play, and may allow the resulting process
++extra privileges, based on the annotations on the executable file.
++
++
++================
++TASK CREDENTIALS
++================
++
++In Linux, all of a task's credentials are held in (uid, gid) or through
++(groups, keys, LSM security) a refcounted structure of type 'struct cred'.
++Each task points to its credentials by a pointer called 'cred' in its
++task_struct.
++
++Once a set of credentials has been prepared and committed, it may not be
++changed, barring the following exceptions:
++
++ (1) its reference count may be changed;
++
++ (2) the reference count on the group_info struct it points to may be changed;
++
++ (3) the reference count on the security data it points to may be changed;
++
++ (4) the reference count on any keyrings it points to may be changed;
++
++ (5) any keyrings it points to may be revoked, expired or have their security
++     attributes changed; and
++
++ (6) the contents of any keyrings to which it points may be changed (the whole
++     point of keyrings being a shared set of credentials, modifiable by anyone
++     with appropriate access).
++
++To alter anything in the cred struct, the copy-and-replace principle must be
++adhered to.  First take a copy, then alter the copy and then use RCU to change
++the task pointer to make it point to the new copy.  There are wrappers to aid
++with this (see below).
++
++A task may only alter its _own_ credentials; it is no longer permitted for a
++task to alter another's credentials.  This means the capset() system call is no
++longer permitted to take any PID other than the one of the current process.
++Also keyctl_instantiate() and keyctl_negate() functions no longer permit
++attachment to process-specific keyrings in the requesting process as the
++instantiating process may need to create them.
++
++
++ACCESSING TASK CREDENTIALS
++--------------------------
++
++A task being able to alter only its own credentials permits the current process
++to read or replace its own credentials without the need for any form of locking
++- which simplifies things greatly.  It can just call:
++
++	const struct cred *current_cred()
++
++to get a pointer to its credentials structure, and it doesn't have to release
++it afterwards.
++
++There are convenience wrappers for retrieving specific aspects of a task's
++credentials (the value is simply returned in each case):
++
++	uid_t current_uid(void)		Current's real UID
++	gid_t current_gid(void)		Current's real GID
++	uid_t current_euid(void)	Current's effective UID
++	gid_t current_egid(void)	Current's effective GID
++	uid_t current_fsuid(void)	Current's file access UID
++	gid_t current_fsgid(void)	Current's file access GID
++	kernel_cap_t current_cap(void)	Current's effective capabilities
++	void *current_security(void)	Current's LSM security pointer
++	struct user_struct *current_user(void)  Current's user account
++
++There are also convenience wrappers for retrieving specific associated pairs of
++a task's credentials:
++
++	void current_uid_gid(uid_t *, gid_t *);
++	void current_euid_egid(uid_t *, gid_t *);
++	void current_fsuid_fsgid(uid_t *, gid_t *);
++
++which return these pairs of values through their arguments after retrieving
++them from the current task's credentials.
++
++
++In addition, there is a function for obtaining a reference on the current
++process's current set of credentials:
++
++	const struct cred *get_current_cred(void);
++
++and functions for getting references to one of the credentials that don't
++actually live in struct cred:
++
++	struct user_struct *get_current_user(void);
++	struct group_info *get_current_groups(void);
++
++which get references to the current process's user accounting structure and
++supplementary groups list respectively.
++
++Once a reference has been obtained, it must be released with put_cred(),
++free_uid() or put_group_info() as appropriate.
++
++
++ACCESSING ANOTHER TASK'S CREDENTIALS
++------------------------------------
++
++Whilst a task may access its own credentials without the need for locking, the
++same is not true of a task wanting to access another task's credentials.  It
++must use the RCU read lock and rcu_dereference().
++
++The rcu_dereference() is wrapped by:
++
++	const struct cred *__task_cred(struct task_struct *task);
++
++This should be used inside the RCU read lock, as in the following example:
++
++	void foo(struct task_struct *t, struct foo_data *f)
++	{
++		const struct cred *tcred;
++		...
++		rcu_read_lock();
++		tcred = __task_cred(t);
++		f->uid = tcred->uid;
++		f->gid = tcred->gid;
++		f->groups = get_group_info(tcred->groups);
++		rcu_read_unlock();
++		...
 +	}
-+	return ret;
-+}
 +
-+/*
-+ * set the file creation context in a security record to the same as the
-+ * objective context of the specified inode
-+ */
-+static int selinux_kernel_create_files_as(struct cred *new, struct inode *inode)
-+{
-+	struct inode_security_struct *isec = inode->i_security;
-+	struct task_security_struct *tsec = new->security;
-+	u32 sid = current_sid();
-+	int ret;
++A function need not get RCU read lock to use __task_cred() if it is holding a
++spinlock at the time as this implicitly holds the RCU read lock.
 +
-+ 	ret = avc_has_perm(sid, isec->sid,
-+			   SECCLASS_KERNEL_SERVICE,
-+			   KERNEL_SERVICE__CREATE_FILES_AS,
-+			   NULL);
++Should it be necessary to hold another task's credentials for a long period of
++time, and possibly to sleep whilst doing so, then the caller should get a
++reference on them using:
 +
-+	if (ret == 0)
-+		tsec->create_sid = isec->sid;
-+	return 0;
-+}
++	const struct cred *get_task_cred(struct task_struct *task);
 +
- static int selinux_task_setuid(uid_t id0, uid_t id1, uid_t id2, int flags)
- {
- 	/* Since setuid only affects the current process, and
-@@ -5494,6 +5538,8 @@ static struct security_operations selinux_ops = {
- 	.cred_free =			selinux_cred_free,
- 	.cred_prepare =			selinux_cred_prepare,
- 	.cred_commit =			selinux_cred_commit,
-+	.kernel_act_as =		selinux_kernel_act_as,
-+	.kernel_create_files_as =	selinux_kernel_create_files_as,
- 	.task_setuid =			selinux_task_setuid,
- 	.task_fix_setuid =		selinux_task_fix_setuid,
- 	.task_setgid =			selinux_task_setgid,
-diff --git a/security/smack/smack_lsm.c b/security/smack/smack_lsm.c
-index 3cf91f5..808208e 100644
---- a/security/smack/smack_lsm.c
-+++ b/security/smack/smack_lsm.c
-@@ -1012,6 +1012,41 @@ static void smack_cred_commit(struct cred *new, const struct cred *old)
- }
- 
- /**
-+ * smack_kernel_act_as - Set the subjective context in a set of credentials
-+ * @new points to the set of credentials to be modified.
-+ * @secid specifies the security ID to be set
-+ *
-+ * Set the security data for a kernel service.
-+ */
-+static int smack_kernel_act_as(struct cred *new, u32 secid)
-+{
-+	char *smack = smack_from_secid(secid);
++This does all the RCU magic inside of it.  The caller must call put_cred() on
++the credentials so obtained when they're finished with.
 +
-+	if (smack == NULL)
-+		return -EINVAL;
++There are a couple of convenience functions to access bits of another task's
++credentials, hiding the RCU magic from the caller:
 +
-+	new->security = smack;
-+	return 0;
-+}
++	uid_t task_uid(task)		Task's real UID
++	uid_t task_euid(task)		Task's effective UID
 +
-+/**
-+ * smack_kernel_create_files_as - Set the file creation label in a set of creds
-+ * @new points to the set of credentials to be modified
-+ * @inode points to the inode to use as a reference
-+ *
-+ * Set the file creation context in a set of credentials to the same
-+ * as the objective context of the specified inode
-+ */
-+static int smack_kernel_create_files_as(struct cred *new,
-+					struct inode *inode)
-+{
-+	struct inode_smack *isp = inode->i_security;
++If the caller is holding a spinlock or the RCU read lock at the time anyway,
++then:
 +
-+	new->security = isp->smk_inode;
-+	return 0;
-+}
++	__task_cred(task)->uid
++	__task_cred(task)->euid
 +
-+/**
-  * smack_task_setpgid - Smack check on setting pgid
-  * @p: the task object
-  * @pgid: unused
-@@ -2638,6 +2673,8 @@ struct security_operations smack_ops = {
- 	.cred_free =			smack_cred_free,
- 	.cred_prepare =			smack_cred_prepare,
- 	.cred_commit =			smack_cred_commit,
-+	.kernel_act_as =		smack_kernel_act_as,
-+	.kernel_create_files_as =	smack_kernel_create_files_as,
- 	.task_fix_setuid =		cap_task_fix_setuid,
- 	.task_setpgid = 		smack_task_setpgid,
- 	.task_getpgid = 		smack_task_getpgid,
++should be used instead.  Similarly, if multiple aspects of a task's credentials
++need to be accessed, RCU read lock or a spinlock should be used, __task_cred()
++called, the result stored in a temporary pointer and then the credential
++aspects called from that before dropping the lock.  This prevents the
++potentially expensive RCU magic from being invoked multiple times.
++
++Should some other single aspect of another task's credentials need to be
++accessed, then this can be used:
++
++	task_cred_xxx(task, member)
++
++where 'member' is a non-pointer member of the cred struct.  For instance:
++
++	uid_t task_cred_xxx(task, suid);
++
++will retrieve 'struct cred::suid' from the task, doing the appropriate RCU
++magic.  This may not be used for pointer members as what they point to may
++disappear the moment the RCU read lock is dropped.
++
++
++ALTERING CREDENTIALS
++--------------------
++
++As previously mentioned, a task may only alter its own credentials, and may not
++alter those of another task.  This means that it doesn't need to use any
++locking to alter its own credentials.
++
++To alter the current process's credentials, a function should first prepare a
++new set of credentials by calling:
++
++	struct cred *prepare_creds(void);
++
++this locks current->cred_replace_mutex and then allocates and constructs a
++duplicate of the current process's credentials, returning with the mutex still
++held if successful.  It returns NULL if not successful (out of memory).
++
++The mutex prevents ptrace() from altering the ptrace state of a process whilst
++security checks on credentials construction and changing is taking place as
++the ptrace state may alter the outcome, particularly in the case of execve().
++
++The new credentials set should be altered appropriately, and any security
++checks and hooks done.  Both the current and the proposed sets of credentials
++are available for this purpose as current_cred() will return the current set
++still at this point.
++
++
++When the credential set is ready, it should be committed to the current process
++by calling:
++
++	int commit_creds(struct cred *new);
++
++This will alter various aspects of the credentials and the process, giving the
++LSM a chance to do likewise, then it will use rcu_assign_pointer() to actually
++commit the new credentials to current->cred, it will release
++current->cred_replace_mutex to allow ptrace() to take place, and it will notify
++the scheduler and others of the changes.
++
++This function is guaranteed to return 0, so that it can be tail-called at the
++end of such functions as sys_setresuid().
++
++Note that this function consumes the caller's reference to the new credentials.
++The caller should _not_ call put_cred() on the new credentials afterwards.
++
++Furthermore, once this function has been called on a new set of credentials,
++those credentials may _not_ be changed further.
++
++
++Should the security checks fail or some other error occur after prepare_creds()
++has been called, then the following function should be invoked:
++
++	void abort_creds(struct cred *new);
++
++This releases the lock on current->cred_replace_mutex that prepare_creds() got
++and then releases the new credentials.
++
++
++A typical credentials alteration function would look something like this:
++
++	int alter_suid(uid_t suid)
++	{
++		struct cred *new;
++		int ret;
++
++		new = prepare_creds();
++		if (!new)
++			return -ENOMEM;
++
++		new->suid = suid;
++		ret = security_alter_suid(new);
++		if (ret < 0) {
++			abort_creds(new);
++			return ret;
++		}
++
++		return commit_creds(new);
++	}
++
++
++MANAGING CREDENTIALS
++--------------------
++
++There are some functions to help manage credentials:
++
++ (*) void put_cred(const struct cred *cred);
++
++     This releases a reference to the given set of credentials.  If the
++     reference count reaches zero, the credentials will be scheduled for
++     destruction by the RCU system.
++
++ (*) const struct cred *get_cred(const struct cred *cred);
++
++     This gets a reference on a live set of credentials, returning a pointer to
++     that set of credentials.
++
++ (*) struct cred *get_new_cred(struct cred *cred);
++
++     This gets a reference on a set of credentials that is under construction
++     and is thus still mutable, returning a pointer to that set of credentials.
++
++
++=====================
++OPEN FILE CREDENTIALS
++=====================
++
++When a new file is opened, a reference is obtained on the opening task's
++credentials and this is attached to the file struct as 'f_cred' in place of
++'f_uid' and 'f_gid'.  Code that used to access file->f_uid and file->f_gid
++should now access file->f_cred->fsuid and file->f_cred->fsgid.
++
++It is safe to access f_cred without the use of RCU or locking because the
++pointer will not change over the lifetime of the file struct, and nor will the
++contents of the cred struct pointed to, barring the exceptions listed above
++(see the Task Credentials section).
++
++
++=======================================
++OVERRIDING THE VFS'S USE OF CREDENTIALS
++=======================================
++
++Under some circumstances it is desirable to override the credentials used by
++the VFS, and that can be done by calling into such as vfs_mkdir() with a
++different set of credentials.  This is done in the following places:
++
++ (*) sys_faccessat().
++
++ (*) do_coredump().
++
++ (*) nfs4recover.c.
 
