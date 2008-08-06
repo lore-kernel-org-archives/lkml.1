@@ -1,75 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756301AbYHFPOU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757294AbYHFPOk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756301AbYHFPOU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Aug 2008 11:14:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754210AbYHFPOH
+	id S1757294AbYHFPOk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Aug 2008 11:14:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755214AbYHFPON
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Aug 2008 11:14:07 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:56304 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752754AbYHFPOG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Aug 2008 11:14:06 -0400
-Date: Wed, 6 Aug 2008 09:13:30 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org, jgarzik@pobox.com,
-       Matt_Domsch@dell.com, Matthew Wilcox <willy@linux.intel.com>
-Subject: Re: [PATCH] ata: Add support for Long Logical Sectors and Long Physical Sectors
-Message-ID: <20080806151330.GM2055@parisc-linux.org>
-References: <1217957207-23116-1-git-send-email-matthew@wil.cx> <1217957207-23116-3-git-send-email-matthew@wil.cx> <20080805214651.621263f5@lxorguk.ukuu.org.uk> <20080806022255.GC2055@parisc-linux.org> <20080806100647.21529284@lxorguk.ukuu.org.uk> <20080806131109.GH2055@parisc-linux.org> <20080806151302.1d282747@lxorguk.ukuu.org.uk>
+	Wed, 6 Aug 2008 11:14:13 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:49153 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754770AbYHFPOL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Aug 2008 11:14:11 -0400
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: prasad@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
+       dwilder@us.ibm.com, hch@infradead.org,
+       Steven Rostedt <rostedt@goodmis.org>, mathieu.desnoyers@polymtl.ca
+Subject: Re: [Patch 0/2] Renaming 'trace' to 'relay' and enhancements to 'relay'
+References: <20080804040439.GA6415@in.ibm.com>
+	<20080804152532.9367abff.akpm@linux-foundation.org>
+From: fche@redhat.com (Frank Ch. Eigler)
+Date: Wed, 06 Aug 2008 11:08:10 -0400
+In-Reply-To: <20080804152532.9367abff.akpm@linux-foundation.org> (Andrew Morton's message of "Mon, 4 Aug 2008 15:25:32 -0700")
+Message-ID: <y0mmyjqji5h.fsf@ton.toronto.redhat.com>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080806151302.1d282747@lxorguk.ukuu.org.uk>
-User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 06, 2008 at 03:13:02PM +0100, Alan Cox wrote:
-> > Obviously it is going to change per command -- because different
-> > commands have different sizes.  I was thinking that we could call the
-> > driver to see if it can handle a particular sector size right after we
-> > get the IDENTIFY data.  
-> 
-> The drivers need to know if you are going to be using odd sizes regularly
-> so they can pick between
+Andrew Morton <akpm@linux-foundation.org> writes:
 
-It's up to the drive to report the number of sectors it uses.  After
-that all regular read/write commands will be doing that size.  Unless
-we're in some very bizarre situation, that will be the majority of
-accesses to the device.
+> [...]
+>> 	Please find the patches that enhance the 'trace' infrastructure
+>> (available in the -mm tree) and which introduce two new APIs
+>> relay_dump() and relay_printk().
+>> [...]
 
-> 	-	I do this fine who cares (most chips)
+> I'm a bit perplexed by these trace patches
+> (http://userweb.kernel.org/~akpm/mmotm/broken-out/trace-code [...]
+> Is it useful?  Will it be useful?  [...]  I haven't heard much noise
+> about it and I'm struggling to justify merging it.
 
-Fine, returns 1.
+Right.
 
-> 	-	Er uh wtf its not 512 byts (some chip state machines)
+> Also, it's starting to look somewhat similar to ftrace, which also
+> provides sort of high-bandwidth per-cpu channels into userspace for
+> tracing purposes.
 
-Fine, returns 0.
+Perhaps ftrace ought to use this facility for its debugfs-facing bulk
+data interface rather than an internal one that cannot be used by
+anyone else.  Perhaps lttng could use it.  Systemtap could.  I believe
+a grand unification at this level was the idea.
 
-> 	-	FIFO off (performance hit) for this disk
-
-Might want to print a message explaining why performance is going to
-suck and return 1.
-
-> 	-	FIFO managed for the odd command thats a funny size
-
-... but it's not the odd command, it's going to be the vast majority of
-them.
-
-> 	-	Various other levels of software managed controller
-> 		thumping
-> 
-> It's not a passive thing and we'd want to do it post identify on the
-> drive pair as it'll often need per channel decisions (eg on FIFO)
-
-Why can't you just disable the (controller) FIFO whenever any drive
-reports != 512 byte sectors?
-
--- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+- FChE
