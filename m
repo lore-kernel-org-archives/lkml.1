@@ -1,51 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758417AbYHFXDs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756882AbYHFXO3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758417AbYHFXDs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Aug 2008 19:03:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751201AbYHFXDg
+	id S1756882AbYHFXO3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Aug 2008 19:14:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753680AbYHFXOV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Aug 2008 19:03:36 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:45400 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751006AbYHFXDf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Aug 2008 19:03:35 -0400
-Message-ID: <489A2DCD.8020804@zytor.com>
-Date: Wed, 06 Aug 2008 16:03:41 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Tim Bird <tim.bird@am.sony.com>
-CC: Robert Schwebel <r.schwebel@pengutronix.de>,
-       linux kernel <linux-kernel@vger.kernel.org>,
-       linux-embedded <linux-embedded@vger.kernel.org>,
-       Matt Mackall <mpm@selenic.com>, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH] bootup: Add built-in kernel command line for x86
-References: <489A1844.3090502@am.sony.com> <20080806220445.GB10168@pengutronix.de> <489A2419.2030900@am.sony.com> <489A2A24.6010400@zytor.com> <489A2D0F.2070102@am.sony.com>
-In-Reply-To: <489A2D0F.2070102@am.sony.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	Wed, 6 Aug 2008 19:14:21 -0400
+Received: from mx2.suse.de ([195.135.220.15]:35343 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752698AbYHFXOU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Aug 2008 19:14:20 -0400
+Subject: patch usb-cxacru-fix-printk-format-flag-in-error-message.patch added to gregkh-2.6 tree
+To: simon@fire.lp0.eu, gregkh@suse.de, linux-kernel@vger.kernel.org
+From: <gregkh@suse.de>
+Date: Wed, 06 Aug 2008 16:10:29 -0700
+In-Reply-To: <48791FF4.2080503@simon.arlott.org.uk>
+Message-ID: <1218064229447@kroah.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tim Bird wrote:
-> 
->> CONFIG_CMDLINE_OVERRIDE is probably more palatable to other architectures.
-> 
-> I'd be OK implementing it with an option, rather than a magic char.
-> I was trying to avoid adding too many options, since many kernel
-> developers prefer fewer options where possible.  But the magic
-> char makes the code less straightforward.
-> 
-> If we ever move towards supporting both prefix and suffice splicing (or
-> even complicated in-the-middle splicing), then the magic char is
-> easier to develop into that.  But so far, I can only come up with
-> reasonable cases for append and override, and I don't want to add
-> superfluous handling for non-existent use cases.
 
-I think I agree, and the override option would make it easier to make 
-generic.
+This is a note to let you know that I've just added the patch titled
 
-	-hpa
+    Subject: USB: cxacru: Fix printk format flag in error message
 
+to my gregkh-2.6 tree.  Its filename is
+
+    usb-cxacru-fix-printk-format-flag-in-error-message.patch
+
+This tree can be found at 
+    http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/patches/
+
+
+>From simon@fire.lp0.eu  Wed Aug  6 15:50:52 2008
+From: Simon Arlott <simon@fire.lp0.eu>
+Date: Sat, 12 Jul 2008 22:19:48 +0100
+Subject: USB: cxacru: Fix printk format flag in error message
+To: Greg Kroah-Hartman <gregkh@suse.de>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Message-ID: <48791FF4.2080503@simon.arlott.org.uk>
+
+
+"#%x" should have been "%#x"
+
+Signed-off-by: Simon Arlott <simon@fire.lp0.eu>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
+---
+ drivers/usb/atm/cxacru.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- a/drivers/usb/atm/cxacru.c
++++ b/drivers/usb/atm/cxacru.c
+@@ -602,7 +602,7 @@ static int cxacru_cm_get_array(struct cx
+ 			offd = le32_to_cpu(buf[offb++]);
+ 			if (offd >= size) {
+ 				if (printk_ratelimit())
+-					usb_err(instance->usbatm, "wrong index #%x in response to cm #%x\n",
++					usb_err(instance->usbatm, "wrong index %#x in response to cm %#x\n",
+ 						offd, cm);
+ 				ret = -EIO;
+ 				goto cleanup;
+
+
+Patches currently in gregkh-2.6 which might be from simon@fire.lp0.eu are
+
+usb.current/usb-move-usb-mon-up-to-misc-options-in-kconfig.patch
+usb.current/usb-cxacru-fix-printk-format-flag-in-error-message.patch
