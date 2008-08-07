@@ -1,54 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753927AbYHGSkv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752990AbYHGSqV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753927AbYHGSkv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Aug 2008 14:40:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752467AbYHGSko
+	id S1752990AbYHGSqV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Aug 2008 14:46:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752706AbYHGSqE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Aug 2008 14:40:44 -0400
-Received: from smtpout3.tre.se ([80.251.192.228]:41371 "EHLO smtpout3.tre.se"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751245AbYHGSkn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Aug 2008 14:40:43 -0400
-Date: Thu, 7 Aug 2008 20:39:44 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Jean Delvare <khali@linux-fr.org>
-Cc: "D. Kelly" <user.kernel@gmail.com>,
-       "mailing list: linux-kernel" <linux-kernel@vger.kernel.org>,
-       Linux I2C <i2c@lm-sensors.org>
-Subject: Re: Problem with restricted I2C algorithms in kernel 2.6.26!
-Message-ID: <20080807183944.GA29207@uranus.ravnborg.org>
-References: <5ab239b10807161233i6c1c4d0we01ea1b8e6ccaa5b@mail.gmail.com> <20080807131357.59399ddf@hyperion.delvare>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080807131357.59399ddf@hyperion.delvare>
-User-Agent: Mutt/1.4.2.1i
+	Thu, 7 Aug 2008 14:46:04 -0400
+Received: from an-out-0708.google.com ([209.85.132.248]:39094 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752246AbYHGSqC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Aug 2008 14:46:02 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:subject:references
+         :in-reply-to:content-type:content-transfer-encoding;
+        b=Ignc+q/pEP4NX5SJsIb0IYay7FpLTrMTlKYUTRXKcIcI4v4AZeIZxs3Ur+HEzo5LD3
+         3lvAlH9D4RJ+oiRGepOPUHde5CH5kPg+xuU170REgFR3LNGTslZ/zov+SuQN8zI0IYPh
+         goN484aZAob0gamDwWgzNIDcg/pHMSrSLlEZo=
+Message-ID: <489B42DC.9060009@gmail.com>
+Date: Thu, 07 Aug 2008 14:45:48 -0400
+From: Ryan Hope <rmh3093@gmail.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080805)
+MIME-Version: 1.0
+To: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [patch][reiser4] compile warning cleanups
+References: <48f7fe350808010633v3bfbb602x9995b74db323703f@mail.gmail.com>
+In-Reply-To: <48f7fe350808010633v3bfbb602x9995b74db323703f@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> 
-> Alternatively, I am curious if our build system couldn't allow 3rd
-> party drivers to select in-tree modules. Obviously this would require
-> the complete kernel source tree to be available, instead of just the
-> header and config files as is usually the case. Sam, is this possible
-> to do that at this time? If not, is this something that could be
-> implemented, or is this too much work for the thin benefit?
+Hopefully this is not wordwrapped this time...
 
-In general I recommnd to have the full kernel source available
-simply because we have no in-kernel solution to create the required
-set of files to build external modules.
+From: Ryan Hope <rmh3093@gmail.com>
+Date: Fri, 1 Aug 2008 13:25:28 +0000 (-0400)
+Subject: cleanup reiser4 warnings
+X-Git-Url: 
+http://zen-sources.org/cgi-bin/gitweb.cgi?p=kernel.git;a=commitdiff_plain;h=675342fe83269780f2699f47972d0059e13db0cc
 
-And today there is no way to hook into the kernel configuration
-for an external module. First of we cannot allow changes in
-the build kernel module as this would destroy module versioning
-for instance.
+cleanup reiser4 warnings
+---
 
-And in this case you ask because you would change the kernel
-configuration.
+diff --git a/fs/reiser4/plugin/file/cryptcompress.c 
+b/fs/reiser4/plugin/file/cryptcompress.c
+index 2e64374..7d3061d 100644
+--- a/fs/reiser4/plugin/file/cryptcompress.c
++++ b/fs/reiser4/plugin/file/cryptcompress.c
+@@ -821,7 +821,7 @@ static int need_cut_or_align(struct inode * inode,
+  static void align_or_cut_overhead(struct inode * inode,
+  				  struct cluster_handle * ch, rw_op rw)
+  {
+-	int oh;
++	unsigned int oh;
+  	cipher_plugin * cplug = inode_cipher_plugin(inode);
 
-And I fail to see why this stuff cannot be done inside the
-kernel source tree. Merging new kernel updates should be absolutely
-trivial and then the drivers are better prepared for upstream anyway.
-
-	Sam
+  	assert("edward-1402", need_cipher(inode));
+diff --git a/fs/reiser4/plugin/inode_ops.c b/fs/reiser4/plugin/inode_ops.c
+index 6ac4d13..945a740 100644
+--- a/fs/reiser4/plugin/inode_ops.c
++++ b/fs/reiser4/plugin/inode_ops.c
+@@ -418,8 +418,7 @@ void *reiser4_follow_link_common(struct dentry 
+*dentry, struct nameidata *nd)
+   *
+   * Uses generic function to check for rwx permissions.
+   */
+-int reiser4_permission_common(struct inode *inode, int mask,
+-			      struct nameidata *nameidata)
++int reiser4_permission_common(struct inode *inode, int mask)
+  {
+  	return generic_permission(inode, mask, NULL);
+  }
+diff --git a/fs/reiser4/plugin/object.h b/fs/reiser4/plugin/object.h
+index 63abb07..88a53a5 100644
+--- a/fs/reiser4/plugin/object.h
++++ b/fs/reiser4/plugin/object.h
+@@ -25,8 +25,7 @@ int reiser4_mknod_common(struct inode *parent, struct 
+dentry *dentry,
+  int reiser4_rename_common(struct inode *old_dir, struct dentry *old_name,
+  			  struct inode *new_dir, struct dentry *new_name);
+  void *reiser4_follow_link_common(struct dentry *, struct nameidata *data);
+-int reiser4_permission_common(struct inode *, int mask,
+-			      struct nameidata *nameidata);
++int reiser4_permission_common(struct inode *, int mask);
+  int reiser4_setattr_common(struct dentry *, struct iattr *);
+  int reiser4_getattr_common(struct vfsmount *mnt, struct dentry *,
+  			   struct kstat *);
