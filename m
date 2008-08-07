@@ -1,58 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754867AbYHGSLZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755246AbYHGSNv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754867AbYHGSLZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Aug 2008 14:11:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752833AbYHGSLQ
+	id S1755246AbYHGSNv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Aug 2008 14:13:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752538AbYHGSNn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Aug 2008 14:11:16 -0400
-Received: from wr-out-0506.google.com ([64.233.184.234]:45245 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751981AbYHGSLP (ORCPT
+	Thu, 7 Aug 2008 14:13:43 -0400
+Received: from 166-70-238-42.ip.xmission.com ([166.70.238.42]:59335 "EHLO
+	ns1.wolfmountaingroup.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752237AbYHGSNm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Aug 2008 14:11:15 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=lNUbpqzyUrKJLqMTwCkQuKFEkTUrvxn9xev/Bxt0Gsz5IBYYhy5Iw7xinAUY8btNGb
-         P9NputAl4SLDZfEhOFRk3di+kAFY30284vs7K0QTfHEPVZN+RrwBZwbKsm0xarmIQR+B
-         65cjaB4xdAj+iX35p8o+yWo690V6BByHP18GA=
-Date: Thu, 7 Aug 2008 14:11:09 -0400
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: torvalds@linux-foundation.org, rjw@sisk.pl, bzolnier@gmail.com,
-       sfr@canb.auug.org.au, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-input@vger.kernel.org
-Subject: Re: linux-next: Tree for July 30
-Message-ID: <20080807140357.ZZRA012@mailhub.coreip.homeip.net>
-References: <20080730170635.f737ffe9.sfr@canb.auug.org.au> <20080731104437.5e5669bc.akpm@linux-foundation.org> <20080731141302.ZZRA012@mailhub.coreip.homeip.net> <200807312048.57575.rjw@sisk.pl> <20080731145023.ZZRA012@mailhub.coreip.homeip.net> <alpine.LFD.1.10.0807311207000.3277@nehalem.linux-foundation.org> <20080731151625.ZZRA012@mailhub.coreip.homeip.net> <20080731194207.GA12233@anvil.corenet.prv> <20080731131056.eecc4826.akpm@linux-foundation.org>
+	Thu, 7 Aug 2008 14:13:42 -0400
+Message-ID: <17159.166.70.238.44.1218131541.squirrel@webmail.wolfmountaingroup.com>
+In-Reply-To: <489B2EAE.8040901@s5r6.in-berlin.de>
+References: <1300.69.2.248.210.1218119365.squirrel@webmail.wolfmountaingroup.com>  
+        <489B199B.40305@s5r6.in-berlin.de>      
+    <489B1BDC.1010504@s5r6.in-berlin.de>   
+    <1923.69.2.248.210.1218124570.squirrel@webmail.wolfmountaingroup.com>  
+     <489B26F0.3030603@s5r6.in-berlin.de>
+    <1905.69.2.248.210.1218126817.squirrel@webmail.wolfmountaingroup.com>
+    <489B2EAE.8040901@s5r6.in-berlin.de>
+Date: Thu, 7 Aug 2008 11:52:21 -0600 (MDT)
+Subject: Re: [ANNOUNCE] mdb-2.6.27-rc2-ia32-08-07-08.patch
+From: jmerkey@wolfmountaingroup.com
+To: "Stefan Richter" <stefanr@s5r6.in-berlin.de>
+Cc: jmerkey@wolfmountaingroup.com, linux-kernel@vger.kernel.org
+User-Agent: SquirrelMail/1.4.6
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080731131056.eecc4826.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 31, 2008 at 01:10:56PM -0700, Andrew Morton wrote:
-> 
-> If that works then great.  But I think the printk could be improved. 
-> Please provide sufficient information so that users (not programmers)
-> can go off and fix things up without needing to email kernel developers.
-> 
-> One suitable approach would be
-> 
-> 	printk("see http://userweb.kernel.org/~dtor/read-this.txt")
-> 
+> jmerkey@wolfmountaingroup.com wrote:
+>>> jmerkey@wolfmountaingroup.com wrote:
+>>>> rspin locks are for these types of cases -- so if I fault on the same
+>>>> processor I took the lock on it just bumps a counter -- yes, it is
+>>>> atomic
+>>>> and SMP safe to do it this way.
+>>> Only if all contexts which take rlocks are not preemptible.
+> [...]
+>> check mdb-main.c -- I disable preemption before rspin_lock is attempted.
+>> Since the only processor which sets the proc number does do inside the
+>> spin lock, and the other processors only read it, unless memory is
+>> corrupted or the machine is severely broken, its SMP safe to this.
+>
+> Then it is recommendable that you document the call context requirements
+> at the functions.  And you can and IMO should drop the _irq_save and
+> _irq_restore from the spinlock accessors in the rlock accessors.  And
+> drop the volatile qualifier of the rlock accessor argument while you are
+> at it.
+>
+> I see that you are calling save_flags/ restore_flags in
+> mdb-main.c::mdb().  These are marked as deprecated.  Would
+> local_irq_save/ local_irq_restore be correct at these places?
 
-Ok, I made a small page here:
 
-	http://userweb.kernel.org/~dtor/eviocgbit-bug.html
+You have sharp eyes.  Yes, you are correct.  added to the list of
+corrections.
 
-If you think this is sufficient I'd like to put the patch with the
-warning in 2.6.27 so people and distributions could start updarting
-affected programs.
+Jeff
 
--- 
-Dmitry
+> --
+> Stefan Richter
+> -=====-==--- =--- --===
+> http://arcgraph.de/sr/
+>
+
+
