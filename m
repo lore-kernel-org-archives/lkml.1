@@ -1,63 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758053AbYHGV2t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758068AbYHGV3x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758053AbYHGV2t (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Aug 2008 17:28:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752857AbYHGV2k
+	id S1758068AbYHGV3x (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Aug 2008 17:29:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751284AbYHGV3p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Aug 2008 17:28:40 -0400
-Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:36260 "EHLO
-	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750901AbYHGV2k (ORCPT
+	Thu, 7 Aug 2008 17:29:45 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:46384 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751193AbYHGV3o (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Aug 2008 17:28:40 -0400
-Subject: Re: [PATCH]Fix broken VMI in 2.6.27-rc..
-From: Zachary Amsden <zach@vmware.com>
-To: "H. Peter Anvin" <hpa@kernel.org>
-Cc: Alok Kataria <akataria@vmware.com>,
-       "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, the arch/x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <489B6710.9000604@kernel.org>
-References: <1218136365.23770.52.camel@alok-dev1>
-	 <489B6710.9000604@kernel.org>
-Content-Type: text/plain
-Date: Thu, 07 Aug 2008 14:27:18 -0700
-Message-Id: <1218144438.20178.336.camel@bodhitayantram.eng.vmware.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
-Content-Transfer-Encoding: 7bit
+	Thu, 7 Aug 2008 17:29:44 -0400
+Date: Thu, 7 Aug 2008 17:29:41 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       David Miller <davem@davemloft.net>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Roland McGrath <roland@redhat.com>, Ulrich Drepper <drepper@redhat.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Gregory Haskins <ghaskins@novell.com>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       "Luis Claudio R. Goncalves" <lclaudio@uudg.org>,
+       Clark Williams <williams@redhat.com>, Sam Ravnborg <sam@ravnborg.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [PATCH 0/5] ftrace: to kill a daemon
+In-Reply-To: <489B6511.7000208@goop.org>
+Message-ID: <alpine.DEB.1.10.0808071721200.10092@gandalf.stny.rr.com>
+References: <20080807182013.984175558@goodmis.org> <489B6511.7000208@goop.org>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-08-07 at 14:20 -0700, H. Peter Anvin wrote:
-> Alok Kataria wrote:
-> >
-> > VMI relies on relocating the fixmap area to make room for the
-> > hypervisor. These 2 commits started accessing the fixmap area's and
-> > using them before VMI got a chance to check if it wants to relocate the
-> > fixmap area. Once VMI got to the point of relocating the fixmap area's
-> > it resulted in BUG's.
-> >
+
+On Thu, 7 Aug 2008, Jeremy Fitzhardinge wrote:
+
+> Steven Rostedt wrote:
+> > Now, this was no easy task. We needed to add a section to every object
+> > file with a list of pointers to the call sites to mcount. The idea I came
+> > up with was to make a tmp.s file for every object just after it is compiled.
+> > This tmp.s would then be compiled and relinked into the original object.
+> > The tmp.s file would have something like:
+> > 
+> >   .section __mcount_loc,"a",@progbits
+> >   .quad location_of_mcount1
+> >   .quad location_of_mcount2
+> >   (etc)
+> >   
 > 
-> Could you describe this in more detail?  I am not super-happy about this
-> solution if there is a better one, like simply locating the fixmap area
-> out of the way to start with.
+> I have  a few concerns about this scheme:
+> 
+> One is that you assume that all text is in a .text section, and that the
+> offsets you compute on a per-section basis are going to be valid in the final
+> kernel image.  At the very least you should make each offset relative to its
+> own function rather than inter-function.
 
-That can't be done until we know the size of the hole to relocate, which
-isn't known until we probe in the first meg of memory to find the
-associated ROM.  It used to be the case that other things that poked
-around with platform specific memory and checking ROM areas lived around
-here in setup.c, so it was a nice place to put it.  With all the
-abstraction and combination and overifdeffing going on here, that might
-no longer be the case.
+I assume neither ;-)
 
-We could move it earlier, but then we'd need another hook to call in
-after max_low_pfn is known.
+This works with .text.sched .text.init .text.cpu etc. I use the first 
+function in each section as my reference point.  This is the key.
 
-Or we could remove the dependency on max_low_pfn and just create a
-liberal linear to physical mapping for lomem which spans all possible
-low memory; then it doesn't matter so much where it is called.
+> 
+> But it seems pretty fragile overall.  Things like -ffunction-sections and
+> section gc will invalidate the table you build up.
 
-Zach
+I don't see how. I'm referencing a function as my pointer. If this was
+true, then I wouldn't be able to do
+
+  static void my_func(void) { [...] }
+  struct func_struct {
+     void (*func)(void);
+  } f = { my_func; };
+
+My references end up exactly the same as the "f->func" reference does.
+If my references are broken, so is this f->func. Which would be bad to
+say the least.
+
+> 
+> It seems to me that you can acheive the same effect by:
+> 
+>   1. link vmlinux with "ld -q", which will leave the relocation
+>      information intact in the final object
+>   2. use "readelf -r" to extract the relocation info, find the
+>      references to mcount and build a table
+>   3. link that table into the kernel image
+>   4. repeat to get a stable result
+
+This doesn't seem any less complex than what I did. With this, I would 
+have to come up with another way to handle modules. This will make
+things a lot more complex.
+
+> 
+> Note that steps 2-4 are identical to kallsyms, both in intent and detail.  The
+> only difference is the precise table you build and the command you use to
+> extract the info from the kernel.  From a quick peek at the way Makefile
+> implements kallsyms, it looks to me like it would be fairly easy to generalize
+> so that you can do the mcount reloc processing in the same relink passes as
+> kallsyms with minimal overhead on the kernel build time.
+
+I could work on this. But again, this will put more work into module.c 
+that I would like to avoid.
+
+> 
+> It just seems incredibly fiddly to be doing all this per-object.
+
+Actually, this isn't that much fiddling. What I did was simply make a list
+of pointers to the call sites to mcount. The pointers used the first 
+function of each section to offset against. I relinked in the list making 
+it just like a list done within C.  All relocations and magic after this
+will be handled just fine.
+
+-- Steve
 
