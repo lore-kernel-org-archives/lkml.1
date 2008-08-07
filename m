@@ -1,54 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757353AbYHGVfb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757953AbYHGVfq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757353AbYHGVfb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Aug 2008 17:35:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751739AbYHGVfM
+	id S1757953AbYHGVfq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Aug 2008 17:35:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756213AbYHGVfQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Aug 2008 17:35:12 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:33561 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751193AbYHGVfL (ORCPT
+	Thu, 7 Aug 2008 17:35:16 -0400
+Received: from mail.hauppauge.com ([167.206.143.4]:4360 "EHLO
+	mail.hauppauge.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755881AbYHGVfO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Aug 2008 17:35:11 -0400
-Message-ID: <489B6A5C.8030400@kernel.org>
-Date: Thu, 07 Aug 2008 14:34:20 -0700
-From: "H. Peter Anvin" <hpa@kernel.org>
-Organization: Linux Kernel Organization, Inc.
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Thu, 7 Aug 2008 17:35:14 -0400
+Message-ID: <489B6A66.40605@linuxtv.org>
+From: mkrufky@linuxtv.org
+To: khali@linux-fr.org
+Cc: sam@ravnborg.org, user.kernel@gmail.com, linux-kernel@vger.kernel.org,
+       i2c@lm-sensors.org
+Subject: Re: Problem with restricted I2C algorithms in kernel 2.6.26!
+Date: Thu, 7 Aug 2008 17:34:30 -0400 
 MIME-Version: 1.0
-To: Zachary Amsden <zach@vmware.com>
-CC: Alok Kataria <akataria@vmware.com>,
-       "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, the arch/x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH]Fix broken VMI in 2.6.27-rc..
-References: <1218136365.23770.52.camel@alok-dev1>	 <489B6710.9000604@kernel.org> <1218144438.20178.336.camel@bodhitayantram.eng.vmware.com>
-In-Reply-To: <1218144438.20178.336.camel@bodhitayantram.eng.vmware.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+X-Mailer: Internet Mail Service (5.5.2657.72)
+x-originalarrivaltime: 07 Aug 2008 21:32:37.0513 (UTC) FILETIME=[1CCF4F90:01C8F8D5]
+user-agent: Thunderbird 2.0.0.16 (Windows/20080708)
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Zachary Amsden wrote:
-> 
-> That can't be done until we know the size of the hole to relocate, which
-> isn't known until we probe in the first meg of memory to find the
-> associated ROM.  It used to be the case that other things that poked
-> around with platform specific memory and checking ROM areas lived around
-> here in setup.c, so it was a nice place to put it.  With all the
-> abstraction and combination and overifdeffing going on here, that might
-> no longer be the case.
-> 
-> We could move it earlier, but then we'd need another hook to call in
-> after max_low_pfn is known.
-> 
-> Or we could remove the dependency on max_low_pfn and just create a
-> liberal linear to physical mapping for lomem which spans all possible
-> low memory; then it doesn't matter so much where it is called.
-> 
+Jean Delvare wrote:
+> Hi Michael,
+>
+> On Thu, 7 Aug 2008 15:03:36 -0400, Michael Krufky wrote:
+>   
+>> I agree with Trent and D.Kelly
+>>
+>> These options should be made available to the user -- We should go
+>> with the patch that Jean posted, "Subject: i2c: Let users select
+>> algorithm drivers manually again" -- this is a fair compromise for
+>> both sides -- users that dont know should leave the automatic
+>> selection enabled.  Users that know better can disable the automatic
+>> selection and enable what they need.
+>>
+>> The statement, "just have the external driver merged into the kernel"
+>> is not a solution.
+>>     
+>
+> Why not, please? A vast majority of drivers work fine that way today. I
+> am still waiting for someone to give me a good reason why some other
+> drivers supposedly can't be merged upstream (something better than
+> "believe me, it's impossible".)
+>
+>   
 
-Okay, you lost me about halfway through that... could you perhaps 
-describe the problem from the beginning, exactly what you're trying to do?
+Nobody said that a driver "...can't be merged upstream" ...  but 
+REQUIRING a driver to be merged upstream to allow development and / or 
+testing is a problem, IMHO.
 
-	-hpa
+If you required that all of my development happens within a git 
+development repository, preventing me from working against distro-kernel 
+xyz, then I would simply spend more time on Windows driver development 
+and my Linux contributions would cease.
+
+External subsystem development repositories allow us to work against 
+stable kernels at our own pace.  When driver X is ready to be merged, it 
+gets merged.
+
+With the model that you propose, "use linux-next for development" ... 
+well then what about testing?  Who is going to test my driver if it 
+requires a full kernel compile?
+
+Khali, you know me, and you know that I am always in favor of merging 
+drivers into the kernel.  The ability to choose a kernel's features is 
+an option that should not be removed.
+
+>> Removing the option to build those additional algos is a regression, IMHO
+>>     
+>
+> Will be addressed soon, do not worry.
+Regards,
+
+Mike
