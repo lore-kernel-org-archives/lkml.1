@@ -1,27 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754001AbYHGVXP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756839AbYHGVXe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754001AbYHGVXP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Aug 2008 17:23:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753128AbYHGVWb
+	id S1756839AbYHGVXe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Aug 2008 17:23:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753424AbYHGVWc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Aug 2008 17:22:31 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:47389 "EHLO
+	Thu, 7 Aug 2008 17:22:32 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:47388 "EHLO
 	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752092AbYHGVW3 (ORCPT
+	with ESMTP id S1752120AbYHGVWa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Aug 2008 17:22:29 -0400
-Date: Thu, 7 Aug 2008 10:57:33 +0200
+	Thu, 7 Aug 2008 17:22:30 -0400
+Date: Thu, 7 Aug 2008 10:12:46 +0200
 From: Pavel Machek <pavel@suse.cz>
-To: kernel list <linux-kernel@vger.kernel.org>
-Cc: stefano.stabellini@eu.citrix.com, krzysztof.h1@poczta.fm, adaplas@pol.net,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org
-Subject: Re: 2.6.27-rc1: softcursor behaviour changed
-Message-ID: <20080807085733.GA1560@elf.ucw.cz>
-References: <20080805212004.GA1592@elf.ucw.cz>
+To: Marcin Slusarz <marcin.slusarz@gmail.com>
+Cc: Sven Wegener <sven.wegener@stealer.net>,
+       LKML <linux-kernel@vger.kernel.org>, Glauber Costa <gcosta@redhat.com>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] x86, acpi: temp_stack is used only when CONFIG_SMP is
+	set
+Message-ID: <20080807081245.GA1647@elf.ucw.cz>
+References: <20080803165210.GC5414@joi> <alpine.LNX.1.10.0808031901120.7765@titan.stealer.net> <20080803172535.GE5414@joi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080805212004.GA1592@elf.ucw.cz>
+In-Reply-To: <20080803172535.GE5414@joi>
 X-Warning: Reading this can be dangerous to your mental health.
 User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -30,43 +32,51 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Hi!
 
-> In 2.6.26, this 
+> > > arch/x86/kernel/acpi/sleep.c:24: warning: 'temp_stack' defined but not used
+> > > 
+> > > Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
+> > > Cc: Glauber Costa <gcosta@redhat.com>
+> > > Cc: Pavel Machek <pavel@suse.cz>
+> > > Cc: Ingo Molnar <mingo@elte.hu>
+> > > ---
+> > >  arch/x86/kernel/acpi/sleep.c |    2 +-
+> > >  1 files changed, 1 insertions(+), 1 deletions(-)
+> > > 
+> > > diff --git a/arch/x86/kernel/acpi/sleep.c b/arch/x86/kernel/acpi/sleep.c
+> > > index fa2161d..9103cb6 100644
+> > > --- a/arch/x86/kernel/acpi/sleep.c
+> > > +++ b/arch/x86/kernel/acpi/sleep.c
+> > > @@ -20,7 +20,7 @@ unsigned long acpi_realmode_flags;
+> > >  /* address in low memory of the wakeup routine. */
+> > >  static unsigned long acpi_realmode;
+> > >  
+> > > -#ifdef CONFIG_64BIT
+> > > +#ifdef CONFIG_SMP
+> > >  static char temp_stack[10240];
+> > >  #endif
+> > >  
+> > 
+> > Now it still generates the warning, but on i386 with CONFIG_SMP set, 
+> > instead of x86_64 without CONFIG_SMP. We only need temp_stack, when both 
+> > CONFIG_64BIT and CONFIG_SMP are activated.
 > 
->     echo -e "\33[10;5000]\33[11;50]\33[?18;0;136c\33[?102m"
+> Yes. Thanks for looking at the patch!
 > 
-> produces some variation on cursor. on 2.6.27-rc1, I have no cursor at
-> all :-(.
+> ---
+> From c6e673acf02e8bf04866cadf17c1cb1fa4d852ea Mon Sep 17 00:00:00 2001
+> From: Marcin Slusarz <marcin.slusarz@gmail.com>
+> Subject: [PATCH] x86, acpi: temp_stack is used only when CONFIG_64BIT && CONFIG_SMP is set
+> 
+> arch/x86/kernel/acpi/sleep.c:24: warning: 'temp_stack' defined but not used
+> 
+> Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
+> Cc: Glauber Costa <gcosta@redhat.com>
 
-The patch that changed it is below... and I must say I liked the old
-behaviour better. Unlike blinking, high-brightness background is
-actually useful. Can we get that one reverted?
+Acked-by: Pavel Machek <pavel@suse.cz>
+
+Ingo, can you merge this one?
 
 									Pavel
-
-commit 2d04a4a72d7e1519b4838f24bdd4b5d0f3f426dc
-tree 2e6278cbc64a338824511c19ad38c7e289fa7112
-parent 4a25e41831ee851c1365d8b41decc22493b18e6d
-author Stefano Stabellini <stefano.stabellini@eu.citrix.com> Wed, 23
-Jul 2008 21:31:48 -0700
-committer Linus Torvalds <torvalds@linux-foundation.org> Thu, 24 Jul
-2008 10:47:41 -0700
-
-    fbcon: bgcolor fix
-
-    The fourth bit of the background color is the blink property bit,
-not the
-    intensity bit, as for the foreground color.  Therefore it
-shouldn't be
-    included in the background color.
-
-    Signed-off-by: Stefano Stabellini
-<stefano.stabellini@eu.citrix.com>
-    Cc: Krzysztof Helt <krzysztof.h1@poczta.fm>
-    Cc: "Antonino A. Daplas" <adaplas@pol.net>
-    Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-    Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
-
-
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
