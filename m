@@ -1,163 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753115AbYHGN7t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751693AbYHGOAI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753115AbYHGN7t (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Aug 2008 09:59:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751210AbYHGN7l
+	id S1751693AbYHGOAI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Aug 2008 10:00:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753267AbYHGN7v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Aug 2008 09:59:41 -0400
-Received: from serv2.oss.ntt.co.jp ([222.151.198.100]:56302 "EHLO
-	serv2.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750987AbYHGN7k (ORCPT
+	Thu, 7 Aug 2008 09:59:51 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:41557 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753125AbYHGN7t (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Aug 2008 09:59:40 -0400
-Subject: Re: RFC: I/O bandwidth controller (was Re: Too many I/O controller
-	patches)
-From: Fernando Luis =?ISO-8859-1?Q?V=E1zquez?= Cao 
-	<fernando@oss.ntt.co.jp>
-To: righi.andrea@gmail.com
-Cc: Dave Hansen <dave@linux.vnet.ibm.com>, Ryo Tsuruta <ryov@valinux.co.jp>,
-       yoshikawa.takuya@oss.ntt.co.jp, taka@valinux.co.jp,
-       uchida@ap.jp.nec.com, ngupta@google.com, linux-kernel@vger.kernel.org,
-       dm-devel@redhat.com, containers@lists.linux-foundation.org,
-       virtualization@lists.linux-foundation.org,
-       xen-devel@lists.xensource.com, agk@sourceware.org
-In-Reply-To: <489AA83F.1040306@gmail.com>
-References: <20080804.175126.193692178.ryov@valinux.co.jp>
-	 <1217870433.20260.101.camel@nimitz>
-	 <1217985189.3154.57.camel@sebastian.kern.oss.ntt.co.jp>
-	 <489AA83F.1040306@gmail.com>
-Content-Type: text/plain; charset=utf-8
-Organization: NTT Open Source Software Center
-Date: Thu, 07 Aug 2008 22:59:38 +0900
-Message-Id: <1218117578.11703.81.camel@sebastian.kern.oss.ntt.co.jp>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 8bit
+	Thu, 7 Aug 2008 09:59:49 -0400
+Date: Thu, 7 Aug 2008 09:59:48 -0400 (EDT)
+From: Jan Engelhardt <jengelh@medozas.de>
+To: Steven Rostedt <rostedt@goodmis.org>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: New bug with 2.6.25-rt7
+Message-ID: <alpine.LNX.1.10.0808061916000.6682@fbirervta.pbzchgretzou.qr>
+User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andrea!
+Hi,
 
-On Thu, 2008-08-07 at 09:46 +0200, Andrea Righi wrote: 
-> Fernando Luis Vázquez Cao wrote:
-> > This RFC ended up being a bit longer than I had originally intended, but
-> > hopefully it will serve as the start of a fruitful discussion.
-> 
-> Thanks for posting this detailed RFC! A few comments below.
-> 
-> > As you pointed out, it seems that there is not much consensus building
-> > going on, but that does not mean there is a lack of interest. To get the
-> > ball rolling it is probably a good idea to clarify the state of things
-> > and try to establish what we are trying to accomplish.
-> > 
-> > *** State of things in the mainstream kernel<BR>
-> > The kernel has had somewhat adavanced I/O control capabilities for quite
-> > some time now: CFQ. But the current CFQ has some problems:
-> >   - I/O priority can be set by PID, PGRP, or UID, but...
-> >   - ...all the processes that fall within the same class/priority are
-> > scheduled together and arbitrary grouping are not possible.
-> >   - Buffered I/O is not handled properly.
-> >   - CFQ's IO priority is an attribute of a process that affects all
-> > devices it sends I/O requests to. In other words, with the current
-> > implementation it is not possible to assign per-device IO priorities to
-> > a task.
-> > 
-> > *** Goals
-> >   1. Cgroups-aware I/O scheduling (being able to define arbitrary
-> > groupings of processes and treat each group as a single scheduling
-> > entity).
-> >   2. Being able to perform I/O bandwidth control independently on each
-> > device.
-> >   3. I/O bandwidth shaping.
-> >   4. Scheduler-independent I/O bandwidth control.
-> >   5. Usable with stacking devices (md, dm and other devices of that
-> > ilk).
-> >   6. I/O tracking (handle buffered and asynchronous I/O properly).
-> 
-> The same above also for IO operations/sec (bandwidth intended not only
-> in terms of bytes/sec), plus:
-> 
-> 7. Optimal bandwidth usage: allow to exceed the IO limits to take
-> advantage of free/unused IO resources (i.e. allow "bursts" when the
-> whole physical bandwidth for a block device is not fully used and then
-> "throttle" again when IO from unlimited cgroups comes into place)
-> 
-> 8. "fair throttling": avoid to throttle always the same task within a
-> cgroup, but try to distribute the throttling among all the tasks
-> belonging to the throttle cgroup
 
-Thank you for the ideas!
+I get the following traces time and again from 2.6.25-rt7. This did not 
+happen with -rt6.
 
-By the way, point "3." above (I/O bandwidth shaping) refers to IO
-scheduling algorithms in general. When I wrote the RFC I thought that
-once we have the IO tracking and accounting mechanisms in place choosing
-and implementing an algorithm (fair throttling, proportional bandwidth
-scheduling, etc) would be easy in comparison, and that is the reason a
-list was not included.
+BUG: scheduling with irqs disabled: IRQ-21/0x00000000/261
+caller is rt_spin_lock_slowlock+0x1c7/0x2a0
 
-Once I get more feedback from all of you I will resend a more detailed
-RFC that will include your suggestions.
+[Frame pointers and stack unwinding enabled in .config]
+Pid: 261, comm: IRQ-21 Tainted: G        N 2.6.25.14-jen67-rt #1
+Call Trace:
+ [<ffffffff8020e26c>] dump_trace+0x5ec/0x620
+ [<ffffffff8020e2f5>] show_trace+0x55/0x80
+ [<ffffffff804b69f8>] dump_stack+0x72/0x7b
+ [<ffffffff804b7d92>] schedule+0x102/0x110
+ [<ffffffff804b9047>] rt_spin_lock_slowlock+0x1c7/0x2a0
+ [<ffffffff804ba32d>] __rt_spin_lock+0x5d/0x60
+ [<ffffffff804ba339>] rt_spin_lock+0x9/0x10
+ [<ffffffff802c6ff2>] kmem_cache_free+0x42/0x80
+ [<ffffffff88165a89>] :uhci_hcd:uhci_free_urb_priv+0x79/0xd0
+ [<ffffffff88165b67>] :uhci_hcd:uhci_giveback_urb+0x87/0x240
+ [<ffffffff881661c5>] :uhci_hcd:uhci_scan_schedule+0x355/0xab0
+ [<ffffffff8816896a>] :uhci_hcd:uhci_irq+0x8a/0x190
+ [<ffffffff88136cda>] :usbcore:usb_hcd_irq+0x4a/0xa0
+ [<ffffffff8028db9d>] handle_IRQ_event+0x6d/0x130
+ [<ffffffff8028dfea>] thread_simple_irq+0x6a/0xd0
+ [<ffffffff8028e268>] do_irqd+0x218/0x380
+ [<ffffffff80258089>] kthread+0x49/0x90
+ [<ffffffff8020d698>] child_rip+0xa/0x12
 
-> > 1. & 2.- Cgroups-aware I/O scheduling (being able to define arbitrary
-> > groupings of processes and treat each group as a single scheduling
-> > identity)
-> > 
-> > We obviously need this because our final goal is to be able to control
-> > the IO generated by a Linux container. The good news is that we already
-> > have the cgroups infrastructure so, regarding this problem, we would
-> > just have to transform our I/O bandwidth controller into a cgroup
-> > subsystem.
-> > 
-> > This seems to be the easiest part, but the current cgroups
-> > infrastructure has some limitations when it comes to dealing with block
-> > devices: impossibility of creating/removing certain control structures
-> > dynamically and hardcoding of subsystems (i.e. resource controllers).
-> > This makes it difficult to handle block devices that can be hotplugged
-> > and go away at any time (this applies not only to usb storage but also
-> > to some SATA and SCSI devices). To cope with this situation properly we
-> > would need hotplug support in cgroups, but, as suggested before and
-> > discussed in the past (see (0) below), there are some limitations.
-> > 
-> > Even in the non-hotplug case it would be nice if we could treat each
-> > block I/O device as an independent resource, which means we could do
-> > things like allocating I/O bandwidth on a per-device basis. As long as
-> > performance is not compromised too much, adding some kind of basic
-> > hotplug support to cgroups is probably worth it.
-> >
-> > (0) http://lkml.org/lkml/2008/5/21/12
-> 
-> What about using major,minor numbers to identify each device and account
-> IO statistics? If a device is unplugged we could reset IO statistics
-> and/or remove IO limitations for that device from userspace (i.e. by a
-> deamon), but pluggin/unplugging the device would not be blocked/affected
-> in any case. Or am I oversimplifying the problem?
-If a resource we want to control (a block device in this case) is
-hot-plugged/unplugged the corresponding cgroup-related structures inside
-the kernel need to be allocated/freed dynamically, respectively. The
-problem is that this is not always possible. For example, with the
-current implementation of cgroups it is not possible to treat each block
-device as a different cgroup subsytem/resource controlled, because
-subsystems are created at compile time.
 
-> > 3. & 4. & 5. - I/O bandwidth shaping & General design aspects
-> > 
-> > The implementation of an I/O scheduling algorithm is to a certain extent
-> > influenced by what we are trying to achieve in terms of I/O bandwidth
-> > shaping, but, as discussed below, the required accuracy can determine
-> > the layer where the I/O controller has to reside. Off the top of my
-> > head, there are three basic operations we may want perform:
-> >   - I/O nice prioritization: ionice-like approach.
-> >   - Proportional bandwidth scheduling: each process/group of processes
-> > has a weight that determines the share of bandwidth they receive.
-> >   - I/O limiting: set an upper limit to the bandwidth a group of tasks
-> > can use.
-> 
-> Use a deadline-based IO scheduling could be an interesting path to be
-> explored as well, IMHO, to try to guarantee per-cgroup minimum bandwidth
-> requirements.
-Please note that the only thing we can do is to guarantee minimum
-bandwidth requirement when there is contention for an IO resource, which
-is precisely what a proportional bandwidth scheduler does. An I missing
-something?
+           CPU0       CPU1       
+  0:        362          0   IO-APIC-edge      timer
+  1:          2          0   IO-APIC-edge      i8042
+  4:          5          0   IO-APIC-edge    
+  6:         30          0   IO-APIC-edge      floppy
+  7:          0          0   IO-APIC-edge      parport0
+  8:   15570502          0   IO-APIC-edge      rtc0
+  9:          0          0   IO-APIC-fasteoi   acpi
+ 12:          4          0   IO-APIC-edge      i8042
+ 14:     228042          0   IO-APIC-edge      ata_piix
+ 15:          0          0   IO-APIC-edge      ata_piix
+ 16:     940164          0   IO-APIC-fasteoi   HDA Intel
+ 18:          3          0   IO-APIC-fasteoi   uhci_hcd:usb4, ohci1394
+ 21:     297215          0   IO-APIC-fasteoi   uhci_hcd:usb1, ehci_hcd:usb2
+ 22:          0          0   IO-APIC-fasteoi   uhci_hcd:usb3
+ 23:          0          0   IO-APIC-fasteoi   uhci_hcd:usb5
+4346:     950261          0   PCI-MSI-edge      eth0
+4347:     229217          0   PCI-MSI-edge      ahci
+NMI:          0          0   Non-maskable interrupts
+LOC:   11474137   11575655   Local timer interrupts
+RES:     371031    1059205   Rescheduling interrupts
+CAL:    1070281    1087689   function call interrupts
+TLB:      29799      22201   TLB shootdowns
+TRM:          0          0   Thermal event interrupts
+THR:          0          0   Threshold APIC interrupts
+SPU:          0          0   Spurious interrupts
+ERR:          0
 
+# lsusb -t
+/:  Bus 05.Port 1: Dev 1, Class=root_hub, Driver=uhci_hcd/2p, 12M
+/:  Bus 04.Port 1: Dev 1, Class=root_hub, Driver=uhci_hcd/2p, 12M
+/:  Bus 03.Port 1: Dev 1, Class=root_hub, Driver=uhci_hcd/2p, 12M
+/:  Bus 02.Port 1: Dev 1, Class=root_hub, Driver=ehci_hcd/8p, 480M
+/:  Bus 01.Port 1: Dev 1, Class=root_hub, Driver=uhci_hcd/2p, 12M
+    |__ Port 1: Dev 2, If 0, Class=HID, Driver=usbhid, 1.5M
+    |__ Port 2: Dev 3, If 0, Class=HID, Driver=usbhid, 1.5M
