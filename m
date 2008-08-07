@@ -1,142 +1,295 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758149AbYHGWQR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754143AbYHGWQv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758149AbYHGWQR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Aug 2008 18:16:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753893AbYHGWQA
+	id S1754143AbYHGWQv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Aug 2008 18:16:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753125AbYHGWQn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Aug 2008 18:16:00 -0400
-Received: from e33.co.us.ibm.com ([32.97.110.151]:45209 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753881AbYHGWP7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Aug 2008 18:15:59 -0400
-Date: Thu, 7 Aug 2008 17:15:58 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Ian Kent <raven@themaw.net>, autofs@linux.kernel.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       containers@lists.osdl.org
-Subject: Re: [PATCH 2/4] autofs4 - track uid and gid of last mount requester
-Message-ID: <20080807221558.GA27863@us.ibm.com>
-References: <20080807114002.4142.30417.stgit@web.messagingengine.com> <20080807114012.4142.83607.stgit@web.messagingengine.com> <20080807134650.a6a51f7d.akpm@linux-foundation.org>
+	Thu, 7 Aug 2008 18:16:43 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:37045 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753893AbYHGWQm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Aug 2008 18:16:42 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: pm list <linux-pm@lists.linux-foundation.org>
+Subject: [RFC][PATCH] PM: Rework disabling of user mode helpers during suspend/hibernation
+Date: Fri, 8 Aug 2008 00:19:36 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Alan Stern <stern@rowland.harvard.edu>,
+       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@suse.cz>,
+       Andrew Morton <akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-2"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080807134650.a6a51f7d.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Message-Id: <200808080019.37057.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Andrew Morton (akpm@linux-foundation.org):
-> On Thu, 07 Aug 2008 19:40:14 +0800
-> Ian Kent <raven@themaw.net> wrote:
-> 
-> > Patch to track the uid and gid of the last process to request a mount
-> > for on an autofs dentry.
-> 
-> pet peeve: changelog should not tell the reader that this is a "patch".
-> Because when someone is reading the changelog in the git repository,
-> they hopefully already know that.
-> 
-> > Signed-off-by: Ian Kent <raven@themaw.net>
-> > 
-> > ---
-> > 
-> >  fs/autofs4/autofs_i.h |    3 +++
-> >  fs/autofs4/inode.c    |    2 ++
-> >  fs/autofs4/waitq.c    |   34 ++++++++++++++++++++++++++++++++++
-> >  3 files changed, 39 insertions(+), 0 deletions(-)
-> > 
-> > 
-> > diff --git a/fs/autofs4/autofs_i.h b/fs/autofs4/autofs_i.h
-> > index ea024d8..fa76d18 100644
-> > --- a/fs/autofs4/autofs_i.h
-> > +++ b/fs/autofs4/autofs_i.h
-> > @@ -63,6 +63,9 @@ struct autofs_info {
-> >  	unsigned long last_used;
-> >  	atomic_t count;
-> >  
-> > +	uid_t uid;
-> > +	gid_t gid;
-> > +
-> >  	mode_t	mode;
-> >  	size_t	size;
-> >  
-> > diff --git a/fs/autofs4/inode.c b/fs/autofs4/inode.c
-> > index 9ca2d07..9408507 100644
-> > --- a/fs/autofs4/inode.c
-> > +++ b/fs/autofs4/inode.c
-> > @@ -53,6 +53,8 @@ struct autofs_info *autofs4_init_ino(struct autofs_info *ino,
-> >  		atomic_set(&ino->count, 0);
-> >  	}
-> >  
-> > +	ino->uid = 0;
-> > +	ino->gid = 0;
-> >  	ino->mode = mode;
-> >  	ino->last_used = jiffies;
-> >  
-> > diff --git a/fs/autofs4/waitq.c b/fs/autofs4/waitq.c
-> > index 6d87bb1..7c60c0b 100644
-> > --- a/fs/autofs4/waitq.c
-> > +++ b/fs/autofs4/waitq.c
-> > @@ -457,6 +457,40 @@ int autofs4_wait(struct autofs_sb_info *sbi, struct dentry *dentry,
-> >  
-> >  	status = wq->status;
-> >  
-> > +	/*
-> > +	 * For direct and offset mounts we need to track the requestrer
-> 
-> typo which I'll fix.
-> 
-> > +	 * uid and gid in the dentry info struct. This is so it can be
-> > +	 * supplied, on request, by the misc device ioctl interface.
-> > +	 * This is needed during daemon resatart when reconnecting
-> > +	 * to existing, active, autofs mounts. The uid and gid (and
-> > +	 * related string values) may be used for macro substitution
-> > +	 * in autofs mount maps.
+PM: Rework disabling of user mode helpers during suspend/hibernation
 
-Hi Ian,
+We currently use a PM notifier to disable user mode helpers before
+suspend and hibernation and to re-enable them during the resume.
+However, this is not an ideal solution, because if any drivers want
+to upolad firmware into memory before suspend, they have to use a
+PM notifier for this purpose and there is not guarantee that the
+ordering of PM notifiers will be as expected (ie. the notifier that
+disables user mode helpers has to be run after the driver's notifier
+used for uploading the firmware).
 
-could you say just a few more words on these macro substitution?
+For this reason, it seems better to move the disabling and enabling
+of user mode helpers to separate functions that will be called by the
+PM core as necessary.
 
-I think your use of uids can completely ignore user namespaces, but it
-depends on who does the macro substitutions and how...
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ include/linux/kmod.h |    5 +++
+ kernel/kmod.c        |   65 +++++++++++++++++++++------------------------------
+ kernel/power/disk.c  |   11 ++++++++
+ kernel/power/main.c  |    7 +++++
+ kernel/power/user.c  |   10 +++++++
+ 5 files changed, 60 insertions(+), 38 deletions(-)
 
-thanks,
--serge
-
-> > +	 */
-> > +	if (!status) {
-> > +		struct autofs_info *ino;
-> > +		struct dentry *de = NULL;
-> > +
-> > +		/* direct mount or browsable map */
-> > +		ino = autofs4_dentry_ino(dentry);
-> > +		if (!ino) {
-> > +			/* If not lookup actual dentry used */
-> > +			de = d_lookup(dentry->d_parent, &dentry->d_name);
-> > +			if (de)
-> > +				ino = autofs4_dentry_ino(de);
-> > +		}
-> > +
-> > +		/* Set mount requester */
-> > +		if (ino) {
-> > +			spin_lock(&sbi->fs_lock);
-> > +			ino->uid = wq->uid;
-> > +			ino->gid = wq->gid;
-> > +			spin_unlock(&sbi->fs_lock);
-> > +		}
-> > +
-> > +		if (de)
-> > +			dput(de);
-> > +	}
-> > +
-> 
-> Please remind me again why autofs's use of current->uid and
-> current->gid is not busted in the presence of PID namespaces, where
-> these things are no longer system-wide unique?
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-fsdevel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Index: linux-2.6/kernel/kmod.c
+===================================================================
+--- linux-2.6.orig/kernel/kmod.c
++++ linux-2.6/kernel/kmod.c
+@@ -265,7 +265,7 @@ static void __call_usermodehelper(struct
+ 	}
+ }
+ 
+-#ifdef CONFIG_PM
++#ifdef CONFIG_PM_SLEEP
+ /*
+  * If set, call_usermodehelper_exec() will exit immediately returning -EBUSY
+  * (used for preventing user land processes from being created after the user
+@@ -288,39 +288,37 @@ static DECLARE_WAIT_QUEUE_HEAD(running_h
+  */
+ #define RUNNING_HELPERS_TIMEOUT	(5 * HZ)
+ 
+-static int usermodehelper_pm_callback(struct notifier_block *nfb,
+-					unsigned long action,
+-					void *ignored)
++/**
++ * usermodehelper_disable - prevent new helpers from being started
++ */
++int usermodehelper_disable(void)
+ {
+ 	long retval;
+ 
+-	switch (action) {
+-	case PM_HIBERNATION_PREPARE:
+-	case PM_SUSPEND_PREPARE:
+-		usermodehelper_disabled = 1;
+-		smp_mb();
+-		/*
+-		 * From now on call_usermodehelper_exec() won't start any new
+-		 * helpers, so it is sufficient if running_helpers turns out to
+-		 * be zero at one point (it may be increased later, but that
+-		 * doesn't matter).
+-		 */
+-		retval = wait_event_timeout(running_helpers_waitq,
++	usermodehelper_disabled = 1;
++	smp_mb();
++	/*
++	 * From now on call_usermodehelper_exec() won't start any new
++	 * helpers, so it is sufficient if running_helpers turns out to
++	 * be zero at one point (it may be increased later, but that
++	 * doesn't matter).
++	 */
++	retval = wait_event_timeout(running_helpers_waitq,
+ 					atomic_read(&running_helpers) == 0,
+ 					RUNNING_HELPERS_TIMEOUT);
+-		if (retval) {
+-			return NOTIFY_OK;
+-		} else {
+-			usermodehelper_disabled = 0;
+-			return NOTIFY_BAD;
+-		}
+-	case PM_POST_HIBERNATION:
+-	case PM_POST_SUSPEND:
+-		usermodehelper_disabled = 0;
+-		return NOTIFY_OK;
+-	}
++	if (retval)
++		return 0;
+ 
+-	return NOTIFY_DONE;
++	usermodehelper_disabled = 0;
++	return -EAGAIN;
++}
++
++/**
++ * usermodehelper_enable - allow new helpers to be started again
++ */
++void usermodehelper_enable(void)
++{
++	usermodehelper_disabled = 0;
+ }
+ 
+ static void helper_lock(void)
+@@ -334,18 +332,12 @@ static void helper_unlock(void)
+ 	if (atomic_dec_and_test(&running_helpers))
+ 		wake_up(&running_helpers_waitq);
+ }
+-
+-static void register_pm_notifier_callback(void)
+-{
+-	pm_notifier(usermodehelper_pm_callback, 0);
+-}
+-#else /* CONFIG_PM */
++#else /* CONFIG_PM_SLEEP */
+ #define usermodehelper_disabled	0
+ 
+ static inline void helper_lock(void) {}
+ static inline void helper_unlock(void) {}
+-static inline void register_pm_notifier_callback(void) {}
+-#endif /* CONFIG_PM */
++#endif /* CONFIG_PM_SLEEP */
+ 
+ /**
+  * call_usermodehelper_setup - prepare to call a usermode helper
+@@ -515,5 +507,4 @@ void __init usermodehelper_init(void)
+ {
+ 	khelper_wq = create_singlethread_workqueue("khelper");
+ 	BUG_ON(!khelper_wq);
+-	register_pm_notifier_callback();
+ }
+Index: linux-2.6/include/linux/kmod.h
+===================================================================
+--- linux-2.6.orig/include/linux/kmod.h
++++ linux-2.6/include/linux/kmod.h
+@@ -99,4 +99,9 @@ struct file;
+ extern int call_usermodehelper_pipe(char *path, char *argv[], char *envp[],
+ 				    struct file **filp);
+ 
++#ifdef CONFIG_PM_SLEEP
++extern int usermodehelper_disable(void);
++extern void usermodehelper_enable(void);
++#endif
++
+ #endif /* __LINUX_KMOD_H__ */
+Index: linux-2.6/kernel/power/main.c
+===================================================================
+--- linux-2.6.orig/kernel/power/main.c
++++ linux-2.6/kernel/power/main.c
+@@ -21,6 +21,7 @@
+ #include <linux/freezer.h>
+ #include <linux/vmstat.h>
+ #include <linux/syscalls.h>
++#include <linux/kmod.h>
+ 
+ #include "power.h"
+ 
+@@ -236,6 +237,10 @@ static int suspend_prepare(void)
+ 	if (error)
+ 		goto Finish;
+ 
++	error = usermodehelper_disable();
++	if (error)
++		goto Finish;
++
+ 	if (suspend_freeze_processes()) {
+ 		error = -EAGAIN;
+ 		goto Thaw;
+@@ -255,6 +260,7 @@ static int suspend_prepare(void)
+ 
+  Thaw:
+ 	suspend_thaw_processes();
++	usermodehelper_enable();
+  Finish:
+ 	pm_notifier_call_chain(PM_POST_SUSPEND);
+ 	pm_restore_console();
+@@ -373,6 +379,7 @@ int suspend_devices_and_enter(suspend_st
+ static void suspend_finish(void)
+ {
+ 	suspend_thaw_processes();
++	usermodehelper_enable();
+ 	pm_notifier_call_chain(PM_POST_SUSPEND);
+ 	pm_restore_console();
+ }
+Index: linux-2.6/kernel/power/disk.c
+===================================================================
+--- linux-2.6.orig/kernel/power/disk.c
++++ linux-2.6/kernel/power/disk.c
+@@ -21,6 +21,7 @@
+ #include <linux/console.h>
+ #include <linux/cpu.h>
+ #include <linux/freezer.h>
++#include <linux/kmod.h>
+ 
+ #include "power.h"
+ 
+@@ -513,6 +514,10 @@ int hibernate(void)
+ 	if (error)
+ 		goto Exit;
+ 
++	error = usermodehelper_disable();
++	if (error)
++		goto Exit;
++
+ 	/* Allocate memory management structures */
+ 	error = create_basic_memory_bitmaps();
+ 	if (error)
+@@ -551,6 +556,7 @@ int hibernate(void)
+ 	thaw_processes();
+  Finish:
+ 	free_basic_memory_bitmaps();
++	usermodehelper_enable();
+  Exit:
+ 	pm_notifier_call_chain(PM_POST_HIBERNATION);
+ 	pm_restore_console();
+@@ -627,6 +633,10 @@ static int software_resume(void)
+ 	if (error)
+ 		goto Finish;
+ 
++	error = usermodehelper_disable();
++	if (error)
++		goto Finish;
++
+ 	error = create_basic_memory_bitmaps();
+ 	if (error)
+ 		goto Finish;
+@@ -649,6 +659,7 @@ static int software_resume(void)
+ 	thaw_processes();
+  Done:
+ 	free_basic_memory_bitmaps();
++	usermodehelper_enable();
+  Finish:
+ 	pm_notifier_call_chain(PM_POST_RESTORE);
+ 	pm_restore_console();
+Index: linux-2.6/kernel/power/user.c
+===================================================================
+--- linux-2.6.orig/kernel/power/user.c
++++ linux-2.6/kernel/power/user.c
+@@ -212,13 +212,20 @@ static long snapshot_ioctl(struct file *
+ 	case SNAPSHOT_FREEZE:
+ 		if (data->frozen)
+ 			break;
++
+ 		printk("Syncing filesystems ... ");
+ 		sys_sync();
+ 		printk("done.\n");
+ 
+-		error = freeze_processes();
++		error = usermodehelper_disable();
+ 		if (error)
++			break;
++
++		error = freeze_processes();
++		if (error) {
+ 			thaw_processes();
++			usermodehelper_enable();
++		}
+ 		if (!error)
+ 			data->frozen = 1;
+ 		break;
+@@ -227,6 +234,7 @@ static long snapshot_ioctl(struct file *
+ 		if (!data->frozen || data->ready)
+ 			break;
+ 		thaw_processes();
++		usermodehelper_enable();
+ 		data->frozen = 0;
+ 		break;
+ 
