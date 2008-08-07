@@ -1,77 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752567AbYHGLu2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752082AbYHGMVH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752567AbYHGLu2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Aug 2008 07:50:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752237AbYHGJmt
+	id S1752082AbYHGMVH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Aug 2008 08:21:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750777AbYHGMU5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Aug 2008 05:42:49 -0400
-Received: from mga09.intel.com ([134.134.136.24]:49704 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751022AbYHGJmq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Aug 2008 05:42:46 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.31,319,1215414000"; 
-   d="scan'208";a="426904643"
-Subject: Re: [PATCH 4/6] kexec jump: in sync with hibernation implementation
-From: Huang Ying <ying.huang@intel.com>
-To: Pavel Machek <pavel@suse.cz>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>, nigel@nigel.suspend2.net,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Vivek Goyal <vgoyal@redhat.com>, mingo@elte.hu,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org,
-       Kexec Mailing List <kexec@lists.infradead.org>
-In-Reply-To: <20080807092241.GE372@atrey.karlin.mff.cuni.cz>
-References: <1218099932.5164.35.camel@caritas-dev.intel.com>
-	 <20080807092241.GE372@atrey.karlin.mff.cuni.cz>
-Content-Type: text/plain
-Date: Thu, 07 Aug 2008 17:33:12 +0800
-Message-Id: <1218101592.5164.43.camel@caritas-dev.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 7 Aug 2008 08:20:57 -0400
+Received: from vervifontaine.sonytel.be ([80.88.33.193]:57810 "EHLO
+	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1750734AbYHGMUz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Aug 2008 08:20:55 -0400
+Date: Thu, 7 Aug 2008 10:54:36 +0200 (CEST)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+To: Amol Lad <amol.lad@gmail.com>
+cc: linux-embedded <linux-embedded@vger.kernel.org>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>
+Subject: Re: kernel command line from u-boot
+In-Reply-To: <8c675e9b0808062141s74f1a7bfob5cab6b23b0268d3@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0808071050280.9798@vixen.sonytel.be>
+References: <8c675e9b0808062141s74f1a7bfob5cab6b23b0268d3@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: MULTIPART/MIXED; BOUNDARY="-584349381-272805442-1218099039=:9798"
+Content-ID: <Pine.LNX.4.64.0808071050420.9798@vixen.sonytel.be>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-08-07 at 11:22 +0200, Pavel Machek wrote:
-> > Add device_pm_lock() and device_pm_unlock() in kernel_kexec() to be
-> > in sync with current hibernation implementation.
-> > 
-> > Signed-off-by: Huang Ying <ying.huang@intel.com>
-> > 
-> > ---
-> >  kernel/kexec.c |    2 ++
-> >  1 file changed, 2 insertions(+)
-> > 
-> > --- a/kernel/kexec.c
-> > +++ b/kernel/kexec.c
-> > @@ -1457,6 +1457,7 @@ int kernel_kexec(void)
-> >  		error = disable_nonboot_cpus();
-> >  		if (error)
-> >  			goto Resume_devices;
-> > +		device_pm_lock();
-> >  		local_irq_disable();
-> >  		/* At this point, device_suspend() has been called,
-> >  		 * but *not* device_power_down(). We *must*
-> > @@ -1485,6 +1486,7 @@ int kernel_kexec(void)
-> >  		device_power_up(PMSG_RESTORE);
-> >   Enable_irqs:
-> >  		local_irq_enable();
-> > +		device_pm_unlock();
-> >  		enable_nonboot_cpus();
-> >   Resume_devices:
-> >  		device_resume(PMSG_RESTORE);
-> > 
-> 
-> Would it be possible to create common function for hibernation and
-> kexec? Keeping complex stuff like this in sync is ugly.
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-Yes, it is ugly. But it is a little difficult to do that. Hibernation
-one is more complex than this one.
+---584349381-272805442-1218099039=:9798
+Content-Type: TEXT/PLAIN; CHARSET=UTF-8
+Content-Transfer-Encoding: 8BIT
+Content-ID: <Pine.LNX.4.64.0808071050421.9798@vixen.sonytel.be>
 
-Best Regards,
-Huang Ying
+On Thu, 7 Aug 2008, Amol Lad wrote:
+> It seems that there is a small problem when kernel parses the command
+> line passed by u-boot.
 
+It doesn't seem to be specific to u-boot...
 
+> For example, when I add "board=myboard boardid=1" in the command line
+> and register handler in kernel as __setup("board", board_setup), then
+> the board_setup function is called twice : once with argument
+> "myboard" and second time with argument "d=1". So kernel is calling
+                                           ^^^
+Wow, when init/main.c:obsolete_checksetup() matches the `board' part,
+it ignores the next character (`i'), assuming this is `=', and passes
+the remainder (`d=1').
+
+> handler registered for param "board" for "boardid" also. Is this ok ?
+
+I don't think this is OK.
+
+Probably nobody noticed as this part of the code takes care of the
+`obsolete-style' parameters. `module_param' is the new way.
+
+With kind regards,
+
+Geert Uytterhoeven
+Software Architect
+
+Sony Techsoft Centre Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+
+Phone:    +32 (0)2 700 8453
+Fax:      +32 (0)2 700 8622
+E-mail:   Geert.Uytterhoeven@sonycom.com
+Internet: http://www.sony-europe.com/
+
+A division of Sony Europe (Belgium) N.V.
+VAT BE 0413.825.160 · RPR Brussels
+Fortis 293-0376800-10 GEBA-BE-BB
+---584349381-272805442-1218099039=:9798--
