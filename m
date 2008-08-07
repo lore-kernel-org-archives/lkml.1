@@ -1,82 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754458AbYHGUm2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753440AbYHGUms@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754458AbYHGUm2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Aug 2008 16:42:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753235AbYHGUmU
+	id S1753440AbYHGUms (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Aug 2008 16:42:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755728AbYHGUmi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Aug 2008 16:42:20 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:40204 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753188AbYHGUmT (ORCPT
+	Thu, 7 Aug 2008 16:42:38 -0400
+Received: from mtagate4.uk.ibm.com ([195.212.29.137]:61695 "EHLO
+	mtagate4.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755708AbYHGUmh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Aug 2008 16:42:19 -0400
-Date: Thu, 7 Aug 2008 16:42:16 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, Roland McGrath <roland@redhat.com>,
-       Ulrich Drepper <drepper@redhat.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Gregory Haskins <ghaskins@novell.com>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       "Luis Claudio R. Goncalves" <lclaudio@uudg.org>,
-       Clark Williams <williams@redhat.com>
-Subject: Re: [PATCH 0/5] ftrace: to kill a daemon
-In-Reply-To: <20080807184741.GB18164@Krystal>
-Message-ID: <alpine.DEB.1.10.0808071639420.9449@gandalf.stny.rr.com>
-References: <20080807182013.984175558@goodmis.org> <20080807184741.GB18164@Krystal>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Thu, 7 Aug 2008 16:42:37 -0400
+From: Christian Borntraeger <borntraeger@de.ibm.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH] Fix race/oops in tty layer after BKL pushdown
+Date: Thu, 7 Aug 2008 22:42:20 +0200
+User-Agent: KMail/1.9.9
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Olaf Schnapper <os@de.ibm.com>
+References: <200808071433.06885.borntraeger@de.ibm.com> <20080807204439.1f8de826@lxorguk.ukuu.org.uk>
+In-Reply-To: <20080807204439.1f8de826@lxorguk.ukuu.org.uk>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200808072242.20422.borntraeger@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Am Donnerstag, 7. August 2008 schrieb Alan Cox:
+> > It seems that tty was already free in disassocate_ctty when it tries
+> > to dereference tty->driver.
+> > 
+> > After moving the lock_kernel before the mutex_unlock, I can no longer
+> > reproduce the problem.
+> > 
+> > Please review and consider to apply:
+> 
+> This doesn't help as the BKL doesn't protect tty here - we don't have
+> refcounting on the ttys yet so this bug (which goes back forever) simply
+> becomes a different sized race if you swap the lock ordering.
+> 
+> Given tty_vhangup just fires off a wait queue which is killed on the tty
+> destruction you should be able for now at least to move the mutex_unlock
+> to after the call to tty_vhangup().
+> 
+> Does that also fix the problem ?
 
-On Thu, 7 Aug 2008, Mathieu Desnoyers wrote:
+You mean something like the below patch? Yes, that works as well.
 
-> 
-> Hi Steven,
-> 
-> If you really want to stop using stop_machine, I think you should have a
-> look at my immediate values infrastructure :
-> 
-> see:
-> http://git.kernel.org/?p=linux/kernel/git/compudj/linux-2.6-lttng.git;a=blob;f=arch/x86/kernel/immediate.c;h=0958c02b49eed3bbc00bdc5aceeee17a6d0c7ab4;hb=HEAD
-> 
-> particularly replace_instruction_safe(), which uses a temporary
-> breakpoint to safely replace an instruction on a live SMP system without
-> using stop_machine. Feel free to try it in ftrace. :)
-> 
-> You may need to tweak the imv_notifier(), which is responsible for
-> executing the breakpoint. The only special thing this handler has to
-> know is the non-relocatable instructions you might want to insert (it
-> only cares about the new instructions, not the old ones being replaced).
-> The current code deals with 5-bytes jumps. Note that the instruction is
-> executed in the breakpoint handler with preemption disabled, which might
-> not be well suited for a call instruction.
-> 
-> I would recommend to patch in a 5-bytes jmp with 0 offset
-> (e9 00 00 00 00) when disabled (this makes a single 5-bytes instruction
-> and thus makes sure no instruction pointer can iret in the middle).
-> 
-> When enabling the site, you could patch-in the original call, but you
-> should tweak the imv_notifier() so that it uses the jmp offset 0 in the
-> bypass instead of the function call, because preemption would otherwise
-> be disabled around the call when executed in the breakpoint bypass.
-> 
-> Therefore, simply statically forcing the bypass code to e9 00 00 00 00
-> in all the cases (a nop) would do the job for your needs.
+Signed-off-by: Christian Borntraeger <borntraeger@de.ibm.com>
 
-I originally used jumps instead of nops, but unfortunately, they actually 
-hurt performance more than adding nops. Ingo told me it was probably due
-to using up the jump predictions of the CPU.
+---
+ drivers/char/tty_io.c |    3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
--- Steve
-
+Index: kvm/drivers/char/tty_io.c
+===================================================================
+--- kvm.orig/drivers/char/tty_io.c
++++ kvm/drivers/char/tty_io.c
+@@ -1161,12 +1161,11 @@ void disassociate_ctty(int on_exit)
+ 	tty = get_current_tty();
+ 	if (tty) {
+ 		tty_pgrp = get_pid(tty->pgrp);
+-		mutex_unlock(&tty_mutex);
+ 		lock_kernel();
+-		/* XXX: here we race, there is nothing protecting tty */
+ 		if (on_exit && tty->driver->type != TTY_DRIVER_TYPE_PTY)
+ 			tty_vhangup(tty);
+ 		unlock_kernel();
++		mutex_unlock(&tty_mutex);
+ 	} else if (on_exit) {
+ 		struct pid *old_pgrp;
+ 		spin_lock_irq(&current->sighand->siglock);
