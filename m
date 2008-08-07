@@ -1,89 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754532AbYHGIQB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754532AbYHGI1G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754532AbYHGIQB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Aug 2008 04:16:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751282AbYHGIPl
+	id S1754532AbYHGI1G (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Aug 2008 04:27:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751622AbYHGI0q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Aug 2008 04:15:41 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:44831 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751196AbYHGIPi (ORCPT
+	Thu, 7 Aug 2008 04:26:46 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:47398 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751196AbYHGI0o (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Aug 2008 04:15:38 -0400
-Date: Thu, 7 Aug 2008 17:21:13 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Hirokazu Takahashi <taka@valinux.co.jp>
-Cc: Balbir Singh <balbir@linux.vnet.ibm.com>, ryov@valinux.co.jp,
-       xen-devel@lists.xensource.com, containers@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org, virtualization@lists.linux-foundation.org,
-       dm-devel@redhat.com, agk@sourceware.org
-Subject: Re: [PATCH 4/7] bio-cgroup: Split the cgroup memory subsystem into
- two parts
-Message-Id: <20080807172113.0788f800.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20080807.162512.22162413.taka@valinux.co.jp>
-References: <20080804.175748.189722512.ryov@valinux.co.jp>
-	<20080806165421.f76edd47.kamezawa.hiroyu@jp.fujitsu.com>
-	<16255819.1218030343593.kamezawa.hiroyu@jp.fujitsu.com>
-	<20080807.162512.22162413.taka@valinux.co.jp>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
+	Thu, 7 Aug 2008 04:26:44 -0400
+Subject: Re: linux-next: Tree for August 5 (MTD build error)
+From: David Woodhouse <dwmw2@infradead.org>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: David Brownell <david-b@pacbell.net>,
+       Randy Dunlap <randy.dunlap@oracle.com>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080807144027.f805c7b1.sfr@canb.auug.org.au>
+References: <20080805175914.7649537f.sfr@canb.auug.org.au>
+	 <20080805175518.9fc09b92.randy.dunlap@oracle.com>
+	 <200808060320.20064.david-b@pacbell.net>
+	 <200808060413.08723.david-b@pacbell.net>
+	 <20080807144027.f805c7b1.sfr@canb.auug.org.au>
+Content-Type: text/plain
+Date: Thu, 07 Aug 2008 09:26:35 +0100
+Message-Id: <1218097595.12232.5.camel@pmac.infradead.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 07 Aug 2008 16:25:12 +0900 (JST)
-Hirokazu Takahashi <taka@valinux.co.jp> wrote:
-> > >I've just noticed that most of overhead comes from the spin-locks
-> > >when reclaiming the pages inside mem_cgroups and the spin-locks to
-> > >protect the links between pages and page_cgroups.
-> > Overhead between page <-> page_cgroup lock is cannot be catched by
-> > lock_stat now.Do you have numbers ?
-> > But ok, there are too many locks ;(
+On Thu, 2008-08-07 at 14:40 +1000, Stephen Rothwell wrote:
 > 
-> The problem is that every time the lock is held, the associated
-> cache line is flushed.
-I think "page" and "page_cgroup" is not so heavly shared object in fast path.
-foot-print is also important here.
-(anyway, I'd like to remove lock_page_cgroup() when I find a chance)
+> I will add this patch to linux-next today in the hope it will be
+> integrated somewhere soon (hint, hint :-)).
 
-> 
-> > >The latter overhead comes from the policy your team has chosen
-> > >that page_cgroup structures are allocated on demand. I still feel
-> > >this approach doesn't make any sense because linux kernel tries to
-> > >make use of most of the pages as far as it can, so most of them
-> > >have to be assigned its related page_cgroup. It would make us happy
-> > >if page_cgroups are allocated at the booting time.
-> > >
-> > Now, multi-sizer-page-cache is discussed for a long time. If it's our
-> > direction, on-demand page_cgroup make sense.
-> 
-> I don't think I can agree to this.
-> When multi-sized-page-cache is introduced, some data structures will be
-> allocated to manage multi-sized-pages. 
-maybe no. it will be encoded into struct page.
-> I think page_cgroups should be allocated at the same time.
-> This approach will make things simple.
-yes, of course.
+Yeah, I was waiting for a version with a signed-off-by, which I have now
+so I'll merge it.
 
-> 
-> It seems like the on-demand allocation approach leads not only
-> overhead but complexity and a lot of race conditions.
-> If you allocate page_cgroups when allocating page structures,
-> You can get rid of most of the locks and you don't have to care about
-> allocation error of page_cgroups anymore.
-> 
-> And it will also give us flexibility that memcg related data can be
-> referred/updated inside critical sections.
-> 
-But it's not good for the systems with small "NORMAL" pages.
-This discussion should be done again when more users of page_group appears and
-it's overhead is obvious.
-
-Thanks,
--Kame
-
-
+-- 
+dwmw2
 
