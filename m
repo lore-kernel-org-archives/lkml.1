@@ -1,76 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756160AbYHGFFa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756671AbYHGFIS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756160AbYHGFFa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Aug 2008 01:05:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751808AbYHGFFT
+	id S1756671AbYHGFIS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Aug 2008 01:08:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752941AbYHGFIB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Aug 2008 01:05:19 -0400
-Received: from usul.saidi.cx ([204.11.33.34]:49002 "EHLO usul.overt.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751456AbYHGFFS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Aug 2008 01:05:18 -0400
-Message-ID: <489A7CCF.1090407@overt.org>
-Date: Wed, 06 Aug 2008 21:40:47 -0700
-From: Philip Langdale <philipl@overt.org>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080707)
+	Thu, 7 Aug 2008 01:08:01 -0400
+Received: from idcmail-mo2no.shaw.ca ([64.59.134.9]:30077 "EHLO
+	pd5mo1no-dmz.prod.shaw.ca" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752646AbYHGFIA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Aug 2008 01:08:00 -0400
+X-Cloudmark-SP-Filtered: true
+X-Cloudmark-SP-Result: v=1.0 c=0 a=Gz8L7unvIutdFyFd6bMA:9 a=ZAcv7MU9QR_zh4Sb4v4A:7 a=rAAcByYapMJKhTPqPKV9pWuxotgA:4 a=8k_t9Up_kE9YEAHiZboA:9 a=aVolUW-vRWh3Paz2IowA:7 a=fApWQy82LZ_0jw3PGrgg-Gvua1MA:4 a=Hw8qc9ORRP27l3yYD78A:9 a=CFh3nylG6GAtve5rWF8A:7 a=K4-Hqo-fu5l36J01hTPf5-EW_skA:4 a=l9iCJtgIvv4A:10 a=GFZTb6icBPAA:10
+Message-ID: <489A82D5.6020903@sieb.net>
+Date: Wed, 06 Aug 2008 22:06:29 -0700
+From: Samuel Sieb <samuel@sieb.net>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.16) Gecko/20080716 Fedora/1.1.11-1.fc9 SeaMonkey/1.1.11
 MIME-Version: 1.0
-To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-CC: LKML <linux-kernel@vger.kernel.org>, Matthew Garrett <mjg59@srcf.ucam.org>,
-       toshiba_acpi@memebeam.org, Ivo van Doorn <ivdoorn@gmail.com>,
-       linux-wireless@vger.kernel.org
-Subject: Re: [PATCH 1/1] toshiba_acpi: Add support for bluetooth toggling
- through rfkill (v2)
-References: <4894B1B4.6050003@overt.org> <20080803042613.GC6053@khazad-dum.debian.net> <48965716.6020508@overt.org> <20080805212416.GB21738@khazad-dum.debian.net>
-In-Reply-To: <20080805212416.GB21738@khazad-dum.debian.net>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-SA-Do-Not-RunX1: Yes
+To: Ingo Molnar <mingo@elte.hu>
+CC: Juergen Beisert <jbe@pengutronix.de>, linux-kernel@vger.kernel.org,
+       "Rafael C. de Almeida" <almeidaraf@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Magnus Damm <magnus@valinux.co.jp>, takada <takada@mbf.nifty.com>
+Subject: Re: kernel won't boot on a Cyrix MediaGXm (Geode )
+References: <48841A92.4020301@sieb.net> <48856BC6.7030308@sieb.net> <20080722102457.GA773@elte.hu> <200807221251.10843.jbe@pengutronix.de> <4886DB31.8070306@sieb.net> <20080728153224.GA28495@elte.hu>
+In-Reply-To: <20080728153224.GA28495@elte.hu>
+Content-Type: multipart/mixed;
+ boundary="------------050208010007080908000405"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Henrique de Moraes Holschuh wrote:
-> 
-> Well, the textbook way to connect that to rfkill is something like this,
-> please check if it makes sense:
-> 
-> Export (1) as a input device (you have events to hook to when it changes
-> state) or polled input device (you don't have said events).  Do NOT register
-> (1) with a struct rfkill at all.  It is purely an input device.
-> 
-> DO NOT expose (2) as an input device at all.  Instead, register it to a
-> rfkill struct, of type bluetooth.
-> 
-> On the event handler for (1), you issue the EV_SW SW_RFKILL_ALL input event.
-> Since you *do* know events from (1) are likely to also have messed with the
-> state of (2), you also check (2)'s state at this time and update it through
-> rfkill_force_state().
-> 
-> Due to the interaction of 1 and 2, you need to implement and deal with
-> RFKILL_STATE_HARD_BLOCKED.  Since you do know the firmware will be
-> hard-blocking (2) when (1) is active, you return RFKILL_STATE_HARD_BLOCKED
-> for (2)'s state every time (1) is active.  Otherwise, you return
-> RFKILL_STATE_SOFT_BLOCKED when (2) is blocked, and RFKILL_STATE_UNBLOCKED
-> otherwise.
-> 
-> This will cause the state of (2) to go to either RFKILL_STATE_HARD_BLOCKED
-> or RFKILL_STATE_SOFT_BLOCKED when (1) changes state.
-> 
-> [Note: the above does assume (1) blocks (2) in some way you cannot override,
-> and that trying to unblock (2) while (1) is blocking it is futile].
-> 
-> rfkill-input (now) or userspace (someday) will take care of kicking the
-> radio to RFKILL_STATE_UNBLOCKED when (1) issues an event that signals that
-> radios don't have to remain blocked.  Maybe this is why you see the WLAN
-> going on when you deactivate the radio kill switch?
-> 
-> And rfkill-input will soon be enhanced to let the user configure it to do
-> something different if he wants.  Your driver doesn't (and shouldn't)
-> hardcode policy about it.
+This is a multi-part message in MIME format.
+--------------050208010007080908000405
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Hmm. So, I've updated the diff to do this, but rfkill-input is not kicking
-the bluetooth device back on after I release the kill switch. it just returns
-to SOFT_UNBLOCKED and stays there.
+Ingo Molnar wrote:
+> any patch we should pick up to make your box boot?
+> 
+I've looked through various datasheets and found that the GXm and GXLV 
+Geode processors don't have an incrementor.  I attached two patches. 
+One only calls the incrementor setup for GX1 or better.  The other one 
+removes the incrementor setup entirely.  As the incrementor value 
+differs according to clock speed and we would hope that the BIOS 
+configures it correctly, it is probably the better one to choose.  But I 
+will leave that choice up to you.  Either one works for me. :-)
 
---phil
+--------------050208010007080908000405
+Content-Type: text/x-patch;
+ name="cyrix.diff"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="cyrix.diff"
+
+diff --git a/arch/x86/kernel/cpu/cyrix.c b/arch/x86/kernel/cpu/cyrix.c
+index db5868c..d3323d1 100644
+--- a/arch/x86/kernel/cpu/cyrix.c
++++ b/arch/x86/kernel/cpu/cyrix.c
+@@ -155,7 +155,7 @@ static void __cpuinit set_cx86_inc(void)
+  *	Configure later MediaGX and/or Geode processor.
+  */
+ 
+-static void __cpuinit geode_configure(void)
++static void __cpuinit geode_configure(unsigned char dir1)
+ {
+ 	unsigned long flags;
+ 	u8 ccr3;
+@@ -174,7 +174,9 @@ static void __cpuinit geode_configure(void)
+ 
+ 	set_cx86_memwb();
+ 	set_cx86_reorder();
+-	set_cx86_inc();
++	/* GXm and GXLV don't have incrementors */
++	if (dir1 >= 0x80)
++		set_cx86_inc();
+ 
+ 	local_irq_restore(flags);
+ }
+@@ -295,7 +297,7 @@ static void __cpuinit init_cyrix(struct cpuinfo_x86 *c)
+ 			 * GX1 : 0x8x          GX1  datasheet 56
+ 			 */
+ 			if ((0x30 <= dir1 && dir1 <= 0x6f) || (0x80 <= dir1 && dir1 <= 0x8f))
+-				geode_configure();
++				geode_configure(dir1);
+ 			get_model_name(c);  /* get CPU marketing name */
+ 			return;
+ 		} else { /* MediaGX */
+
+--------------050208010007080908000405
+Content-Type: text/x-patch;
+ name="cyrix2.diff"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="cyrix2.diff"
+
+diff --git a/arch/x86/kernel/cpu/cyrix.c b/arch/x86/kernel/cpu/cyrix.c
+index db5868c..ada5050 100644
+--- a/arch/x86/kernel/cpu/cyrix.c
++++ b/arch/x86/kernel/cpu/cyrix.c
+@@ -134,23 +134,6 @@ static void __cpuinit set_cx86_memwb(void)
+ 	setCx86_old(CX86_CCR2, getCx86_old(CX86_CCR2) | 0x14);
+ }
+ 
+-static void __cpuinit set_cx86_inc(void)
+-{
+-	unsigned char ccr3;
+-
+-	printk(KERN_INFO "Enable Incrementor on Cyrix/NSC processor.\n");
+-
+-	ccr3 = getCx86(CX86_CCR3);
+-	setCx86(CX86_CCR3, (ccr3 & 0x0f) | 0x10); /* enable MAPEN */
+-	/* PCR1 -- Performance Control */
+-	/* Incrementor on, whatever that is */
+-	setCx86_old(CX86_PCR1, getCx86_old(CX86_PCR1) | 0x02);
+-	/* PCR0 -- Performance Control */
+-	/* Incrementor Margin 10 */
+-	setCx86_old(CX86_PCR0, getCx86_old(CX86_PCR0) | 0x04);
+-	setCx86(CX86_CCR3, ccr3);	/* disable MAPEN */
+-}
+-
+ /*
+  *	Configure later MediaGX and/or Geode processor.
+  */
+@@ -174,7 +157,6 @@ static void __cpuinit geode_configure(void)
+ 
+ 	set_cx86_memwb();
+ 	set_cx86_reorder();
+-	set_cx86_inc();
+ 
+ 	local_irq_restore(flags);
+ }
+
+--------------050208010007080908000405--
