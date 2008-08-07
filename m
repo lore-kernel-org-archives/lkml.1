@@ -1,129 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757950AbYHGMmi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755468AbYHGMlv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757950AbYHGMmi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Aug 2008 08:42:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757158AbYHGMmW
+	id S1755468AbYHGMlv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Aug 2008 08:41:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752202AbYHGMlk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Aug 2008 08:42:22 -0400
-Received: from e28smtp07.in.ibm.com ([59.145.155.7]:38669 "EHLO
-	e28esmtp07.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756951AbYHGMmS (ORCPT
+	Thu, 7 Aug 2008 08:41:40 -0400
+Received: from viefep18-int.chello.at ([213.46.255.22]:10695 "EHLO
+	viefep18-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752192AbYHGMlj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Aug 2008 08:42:18 -0400
-Message-ID: <489AEDA6.5040802@linux.vnet.ibm.com>
-Date: Thu, 07 Aug 2008 18:12:14 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
-MIME-Version: 1.0
-To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       MinChan Kim <minchan.kim@gmail.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       linux-mm <linux-mm@kvack.org>, Rik van Riel <riel@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Race condition between putback_lru_page and mem_cgroup_move_list
-References: <28c262360808040736u7f364fc0p28d7ceea7303a626@mail.gmail.com> <1217863870.7065.62.camel@lts-notebook> <2f11576a0808040937y70f274e0j32f6b9c98b0f992d@mail.gmail.com> <489741F8.2080104@linux.vnet.ibm.com> <1218041585.6173.45.camel@lts-notebook>
-In-Reply-To: <1218041585.6173.45.camel@lts-notebook>
-Content-Type: text/plain; charset=UTF-8
+	Thu, 7 Aug 2008 08:41:39 -0400
+X-SourceIP: 80.57.229.25
+Subject: Re: [RFC][PATCH 9/7] mm: fix mm_take_all_locks() locking order
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Hugh Dickins <hugh@veritas.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, jeremy@goop.org, mingo@elte.hu,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       davej@redhat.com
+In-Reply-To: <Pine.LNX.4.64.0808071257200.4594@blonde.site>
+References: <20080804130317.994042639@chello.nl>
+	 <1218108349.8625.25.camel@twins>
+	 <Pine.LNX.4.64.0808071257200.4594@blonde.site>
+Content-Type: text/plain
+Date: Thu, 07 Aug 2008 14:41:21 +0200
+Message-Id: <1218112881.8625.33.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Lee Schermerhorn wrote:
-> On Mon, 2008-08-04 at 23:22 +0530, Balbir Singh wrote:
->> KOSAKI Motohiro wrote:
->>> Hi
->>>
->>>>> I think this is a race condition if mem_cgroup_move_lists's comment isn't right.
->>>>> I am not sure that it was already known problem.
->>>>>
->>>>> mem_cgroup_move_lists assume the appropriate zone's lru lock is already held.
->>>>> but putback_lru_page calls mem_cgroup_move_lists without holding lru_lock.
->>>> Hmmm, the comment on mem_cgroup_move_lists() does say this.  Although,
->>>> reading thru' the code, I can't see why it requires this.  But then it's
->>>> Monday, here...
->>> I also think zone's lru lock is unnecessary.
->>> So, I guess below "it" indicate lock_page_cgroup, not zone lru lock.
->>>
->> We need zone LRU lock, since the reclaim paths hold them. Not sure if I
->> understand why you call zone's LRU lock unnecessary, could you elaborate please?
+On Thu, 2008-08-07 at 13:14 +0100, Hugh Dickins wrote:
+> On Thu, 7 Aug 2008, Peter Zijlstra wrote:
+> > 
+> > Which the locking hierarchy in mm/rmap.c confirms as 'valid'.
+> > 
+> > Although I don't think there are any users of these two locks that don't
+> > hold the mmap_sem, therefore the nesting is strictly ok, but since we
+> > already have an established order, we might as well respect it.
 > 
-> Hi, Balbir:
+> Yes, I agree.
 > 
-> Sorry for the delay in responding.  Distracted...
+> > Fix this by first taking all the mapping->i_mmap_lock instances and then
+> > take all anon_vma->lock instances.
 > 
+> Okay.  I'd have preferred taking anon_vma lock after i_mmap_lock
+> each time around the loop, but imagine that's just as problematic
+> for lockdep as the original.
 
-No problem at all.
+I'm a little confused as to what you mean here, are you suggesting:
 
-> I think that perhaps the zone's LRU lock is unnecessary because I didn't
-> see anything in mem_cgroup_move_lists() or it's callees that needed
-> protection by the zone lru_lock.  
-> 
-> Looking at the call sites in the reclaim paths [in
-> shrink_[in]active_page()] and activate_page(), they are holding the zone
-> lru_lock because they are manipulating the lru lists and/or zone
-> statistics. 
+  for_each_vma() {
+    if (file)
+      vm_lock_mapping();
+    if (anon)
+      vm_lock_anon();
+  }
 
-Precisely, my point below about updating statistics for zones and you mention
-below that the zone LRU excludes the race I mentioned in (1). I am a bit
-confused with that statement, do you agree that zone lru_lock excludes the race
-and is therefore required?
+?
 
- The places where pages are moved to a new lru list is where
-> you want to insert calls to mem_cgroup_move_lists(), so I think they
-> just happen to fall under the zone lru lock.  
-> 
-> Now, in a subsequent message in this thread, you ask:
-> 
-> "1. What happens if a global reclaim is in progress at the same time as
-> memory cgroup reclaim and they are both looking at the same page?"
-> 
-> This should not happen, I think.  Racing global and memory cgroup calls
-> to __isolate_lru_page() are mutually excluded by the zone lru_lock taken
-> in shrink_[in]active_page().
-
-Yes, I was referring to needing the zone lru_lock
-
-  In putback_lru_page(), where we call
-> mem_cgroup_move_lists() without holding the zone lru_lock, we've either
-> queued up the page for adding to one of the [in]active lists via the
-> pagevecs, or we've already moved it to the unevictable list.  If
-> mem_cgroup_isolate_pages() finds a page on one of the mz lists before it
-> has been drained to the LRU, it will [rightly] skip the page because
-> it's "!PageLRU(page)".
-> 
-> 
-> In same message, you state:
-> 
-> "2. In the shared reclaim infrastructure, we move pages and update
-> statistics for pages belonging to a particular zone in a particular
-> cgroup."
-> 
-> Sorry, I don't understand your point.  Are you concerned that the stats
-> can get out of sync?  I suppose that, in general, if we called
-> mem_cgroup_move_lists() from just anywhere without zone lru_lock
-> protection, we could have problems.  In the case of putback_lru_page(),
-> again, we've already put the page back on the global unevictable list
-> and updated the global stats, or it's on it's way to an [in]active list
-> via the pagevecs.  The stats will be updated when the pagevecs are
-> drained.
-> 
-> I think we're OK without explicit zone lru locking around the call to
-> mem_cgroup_move_lists() and the global lru list additions in
-> putback_lru_page().   
-> 
-
-I think I understand what you are stating clearly
-
-We don't need the zone lru_lock in putback_lru_page(). Am I missing something or
-do I have it right? (It's Thursday and one of my legs is already in the weekend).
+That can still create the inverse lock order due to each vma being only
+of a single type, and therefore the lock order is set by the vma order,
+which can be anything.
 
 
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
