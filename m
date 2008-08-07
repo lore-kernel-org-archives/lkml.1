@@ -1,38 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756180AbYHGEru@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756693AbYHGE4q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756180AbYHGEru (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Aug 2008 00:47:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752879AbYHGEri
+	id S1756693AbYHGE4q (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Aug 2008 00:56:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752960AbYHGE4i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Aug 2008 00:47:38 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:56660 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752765AbYHGEri (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Aug 2008 00:47:38 -0400
-Message-ID: <489A7D7D.1090004@cn.fujitsu.com>
-Date: Thu, 07 Aug 2008 12:43:41 +0800
-From: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.5 (Windows/20070716)
+	Thu, 7 Aug 2008 00:56:38 -0400
+Received: from kirsty.vergenet.net ([202.4.237.240]:47051 "EHLO
+	kirsty.vergenet.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752568AbYHGE4h (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Aug 2008 00:56:37 -0400
+Date: Thu, 7 Aug 2008 14:56:34 +1000
+From: Simon Horman <horms@verge.net.au>
+To: Michael Ellerman <michael@ellerman.id.au>
+Cc: Matthew Wilcox <matthew@wil.cx>, Sven Wegener <sven.wegener@stealer.net>,
+       linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: Re: [patch] PCI: check the return value of
+	device_create_bin_file() in pci_create_bus()
+Message-ID: <20080807045632.GA2018@verge.net.au>
+References: <20080805111406.GA13899@verge.net.au> <20080805112814.GO26461@parisc-linux.org> <20080805121531.GA29763@verge.net.au> <20080805122639.GP26461@parisc-linux.org> <20080806005718.GE32143@verge.net.au> <20080806131900.GI2055@parisc-linux.org> <20080806232523.GF10636@verge.net.au> <20080806233018.GG10636@verge.net.au> <1218069026.7900.0.camel@localhost> <20080807010615.GB24761@verge.net.au>
 MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/3] Add (struct sock*) sk parameter for send_ack()
-References: <48981BDE.70201@cn.fujitsu.com> <20080806.202038.93643856.davem@davemloft.net>
-In-Reply-To: <20080806.202038.93643856.davem@davemloft.net>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080807010615.GB24761@verge.net.au>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller wrote:
-> Considering all of this, I'd say you should fix this as
-> one big patch with a really nice commit log message.
-> 
+Check the return value of device_create_bin_file in pci_create_bus and
+unwind if necessary. Don't propagate error to caller, as failure to create
+these files shouldn't prevent PCI from being initialised. Instead, just
+log a warning.
 
-  OK, I'll repost it later.
+Cc: Sven Wegener <sven.wegener@stealer.net>
+Cc: Michael Ellerman <michael@ellerman.id.au>
+Cc: Matthew Wilcox <matthew@wil.cx>
+Signed-off-by: Simon Horman <horms@verge.net.au>
 
--- 
-Regards
-Gui Jianfeng
+--- 
 
+Tue, 5 Aug 2008 21:14:07 +1000
+* Revised the patch to free and NULLify b->legacy_io in
+  pci_create_legacy_files() on error.
+
+Wed, 06 Aug 2008 10:49:30 +1000
+* Don't propagate error to caller, as failure to create these files
+  shouldn't prevent PCI from being initialised.
+
+Thu, 07 Aug 2008 09:28:56 +1000
+* Remove spurious return value.
+  Amusingly this patch was introducing warnings :-)
+
+Thu, 07 Aug 2008 11:15:32 +1000
+* Print a warning if legacy file initialisation fails.
+
+This patch resolves the following warnings:
+
+drivers/pci/probe.c: In function `pci_create_bus':
+drivers/pci/probe.c:66: warning: ignoring return value of `device_create_bin_file', declared with attribute warn_unused_result
+drivers/pci/probe.c:74: warning: ignoring return value of `device_create_bin_file', declared with attribute warn_unused_result
+
+# ia64-unknown-linux-gnu-gcc --version
+ia64-unknown-linux-gnu-gcc (GCC) 3.4.5
+Copyright (C) 2004 Free Software Foundation, Inc.
+This is free software; see the source for copying conditions.  There is NO
+warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+Index: linux-2.6/drivers/pci/probe.c
+===================================================================
+--- linux-2.6.orig/drivers/pci/probe.c	2008-08-07 09:08:32.000000000 +1000
++++ linux-2.6/drivers/pci/probe.c	2008-08-07 11:21:31.000000000 +1000
+@@ -52,27 +52,49 @@ EXPORT_SYMBOL(no_pci_devices);
+  * Some platforms allow access to legacy I/O port and ISA memory space on
+  * a per-bus basis.  This routine creates the files and ties them into
+  * their associated read, write and mmap files from pci-sysfs.c
++ *
++ * On error unwind, but don't propogate the error to the caller
++ * as it is ok to set up the PCI bus without these files.
+  */
+ static void pci_create_legacy_files(struct pci_bus *b)
+ {
++	int error;
++
+ 	b->legacy_io = kzalloc(sizeof(struct bin_attribute) * 2,
+ 			       GFP_ATOMIC);
+-	if (b->legacy_io) {
+-		b->legacy_io->attr.name = "legacy_io";
+-		b->legacy_io->size = 0xffff;
+-		b->legacy_io->attr.mode = S_IRUSR | S_IWUSR;
+-		b->legacy_io->read = pci_read_legacy_io;
+-		b->legacy_io->write = pci_write_legacy_io;
+-		device_create_bin_file(&b->dev, b->legacy_io);
+-
+-		/* Allocated above after the legacy_io struct */
+-		b->legacy_mem = b->legacy_io + 1;
+-		b->legacy_mem->attr.name = "legacy_mem";
+-		b->legacy_mem->size = 1024*1024;
+-		b->legacy_mem->attr.mode = S_IRUSR | S_IWUSR;
+-		b->legacy_mem->mmap = pci_mmap_legacy_mem;
+-		device_create_bin_file(&b->dev, b->legacy_mem);
+-	}
++	if (!b->legacy_io)
++		goto kzalloc_err;
++
++	b->legacy_io->attr.name = "legacy_io";
++	b->legacy_io->size = 0xffff;
++	b->legacy_io->attr.mode = S_IRUSR | S_IWUSR;
++	b->legacy_io->read = pci_read_legacy_io;
++	b->legacy_io->write = pci_write_legacy_io;
++	error = device_create_bin_file(&b->dev, b->legacy_io);
++	if (error)
++		goto legacy_io_err;
++
++	/* Allocated above after the legacy_io struct */
++	b->legacy_mem = b->legacy_io + 1;
++	b->legacy_mem->attr.name = "legacy_mem";
++	b->legacy_mem->size = 1024*1024;
++	b->legacy_mem->attr.mode = S_IRUSR | S_IWUSR;
++	b->legacy_mem->mmap = pci_mmap_legacy_mem;
++	error = device_create_bin_file(&b->dev, b->legacy_mem);
++	if (error)
++		goto legacy_mem_err;
++
++	return;
++
++legacy_mem_err:
++	device_remove_bin_file(&b->dev, b->legacy_io);
++legacy_io_err:
++	kfree(b->legacy_io);
++	b->legacy_io = NULL;
++kzalloc_err:
++	printk(KERN_WARNING "pci: warning: could not create legacy I/O port "
++	       "and ISA memory resources to sysfs\n");
++	return;
+ }
+ 
+ void pci_remove_legacy_files(struct pci_bus *b)
