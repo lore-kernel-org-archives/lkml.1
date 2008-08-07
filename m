@@ -1,98 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754142AbYHGU0k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755606AbYHGU2f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754142AbYHGU0k (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Aug 2008 16:26:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752741AbYHGU0c
+	id S1755606AbYHGU2f (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Aug 2008 16:28:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751820AbYHGU22
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Aug 2008 16:26:32 -0400
-Received: from an-out-0708.google.com ([209.85.132.248]:53492 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752629AbYHGU0b (ORCPT
+	Thu, 7 Aug 2008 16:28:28 -0400
+Received: from bigben2.bytemark.co.uk ([80.68.81.132]:49741 "EHLO
+	bigben2.bytemark.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752564AbYHGU21 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Aug 2008 16:26:31 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=PvkbEopzzJv3Z9nuGyTI8KRgmF59yJgDqAryrCJdsucmP0zdeAWp5LrexkdqACQVqO
-         LWBDUZwOAQiDrmRbZ4SpV8fkiXj/+EpiTIvn0W2KGqxl1e3TO+Ia/XpZ/LdR9O4yQQXT
-         p4PrOttLLrRrxktlyhOHfRESfJ1atBfsYnCyE=
-Message-ID: <86802c440808071326m21cff146s3fb5e6118a58a2ca@mail.gmail.com>
-Date: Thu, 7 Aug 2008 13:26:30 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Subject: Re: 2.6.27-rc1 mtrr fixes do not work
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "Alexander Huemer" <alexander.huemer@sbg.ac.at>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Andi Kleen" <andi@firstfloor.org>
-In-Reply-To: <86802c440808071323o3021a90rae51223187bfd47b@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <4899AF8E.20105@sbg.ac.at> <200808072214.28922.rjw@sisk.pl>
-	 <7E82351C108FA840AB1866AC776AEC46092119D3@orsmsx505.amr.corp.intel.com>
-	 <86802c440808071323o3021a90rae51223187bfd47b@mail.gmail.com>
+	Thu, 7 Aug 2008 16:28:27 -0400
+From: Andy Whitcroft <apw@shadowen.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Gerald Schaefer <gerald.schaefer@de.ibm.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com,
+       Mel Gorman <mel@csn.ul.ie>, Andy Whitcroft <apw@shadowen.org>
+Subject: [PATCH 1/1] allocate structures for reservation tracking in hugetlbfs outside of spinlocks
+Date: Thu,  7 Aug 2008 21:28:23 +0100
+Message-Id: <1218140903-9757-1-git-send-email-apw@shadowen.org>
+X-Mailer: git-send-email 1.6.0.rc1.258.g80295
+In-Reply-To: <1218033802.7764.31.camel@ubuntu>
+References: <1218033802.7764.31.camel@ubuntu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 7, 2008 at 1:23 PM, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
-> On Thu, Aug 7, 2008 at 1:15 PM, Pallipadi, Venkatesh
-> <venkatesh.pallipadi@intel.com> wrote:
->>
->> Adding Yinghai.
->>
->>>-----Original Message-----
->>>From: Rafael J. Wysocki [mailto:rjw@sisk.pl]
->>>Sent: Thursday, August 07, 2008 1:14 PM
->>>To: Alexander Huemer
->>>Cc: linux-kernel@vger.kernel.org; Andi Kleen; Pallipadi, Venkatesh
->>>Subject: Re: 2.6.27-rc1 mtrr fixes do not work
->>>
->>>[Adding CCs.]
->>>
->>>On Wednesday, 6 of August 2008, Alexander Huemer wrote:
->>>> hi,
->>>>
->>>> mtrr is wrong on my machine. the fixes of 2.6.27-rc1 do not
->>>seem to work.
->>>> bios is the newest version, mainboard vendor says it's not
->>>their fault.
->>>> mainboard is tyan i5000pw.
->>>> please tell me how i can help and cc me on answers, i am not
->>>subscribed.
->>>>
->>>> seaburg ~ # cat /proc/mtrr
->>>> reg00: base=0x00000000 (   0MB), size=198656MB: write-back, count=1
->>>> reg01: base=0x80000000 (2048MB), size=197632MB: write-back, count=1
->>>> reg02: base=0x100000000 (4096MB), size=197632MB: write-back, count=1
->
->>>>
->>>> seaburg ~ # zcat /proc/config.gz | grep MTRR
->>>> CONFIG_MTRR=y
->>>> CONFIG_MTRR_SANITIZER=y
->>>> CONFIG_MTRR_SANITIZER_ENABLE_DEFAULT=1
->>>> CONFIG_MTRR_SANITIZER_SPARE_REG_NR_DEFAULT=1
->>>> seaburg ~ # uname -a
->>>> Linux seaburg 2.6.27-rc1-blackbit #3 SMP Wed Aug 6 00:34:51 CEST 2008
->>>> x86_64 Intel(R) Xeon(R) CPU E5420 @ 2.50GHz GenuineIntel GNU/Linux
->>>> seaburg ~ #
->
-> alexander,
->
-> please send out
-> dmesg -s 262144 > dmesg.txt
-> or
-> dmesg -s 524288 > dmesg.txt
->
-> you may need to set
-> CONFIG_LOG_BUF_SHIFT=19
+[Andrew, this fixes a problem in the private reservations stack, shown up
+by some testing done by Gerald on s390 with PREEMPT.  It fixes an attempt
+at allocation while holding locks.  This should be merged up to mainline
+as a bug fix to those patches.]
 
-without mtrr_gran_size=64m mtrr_chunk_size=1024m on command line
+In the normal case, hugetlbfs reserves hugepages at map time so that the
+pages exist for future faults.  A struct file_region is used to track
+when reservations have been consumed and where.  These file_regions
+are allocated as necessary with kmalloc() which can sleep with the
+mm->page_table_lock held.  This is wrong and triggers may-sleep warning
+when PREEMPT is enabled.
 
-guess mtrr_chunk_size=512m could work
+Updates to the underlying file_region are done in two phases.  The first
+phase prepares the region for the change, allocating any necessary memory,
+without actually making the change.  The second phase actually commits
+the change.  This patch makes use of this by checking the reservations
+before the page_table_lock is taken; triggering any necessary allocations.
+This may then be safely repeated within the locks without any allocations
+being required.
 
-YH
+Credit to Mel Gorman for diagnosing this failure and initial versions of
+the patch.
+
+Signed-off-by: Andy Whitcroft <apw@shadowen.org>
+Tested-by: Gerald Schaefer <gerald.schaefer@de.ibm.com>
+---
+ mm/hugetlb.c |   44 +++++++++++++++++++++++++++++++++++---------
+ 1 files changed, 35 insertions(+), 9 deletions(-)
+
+diff --git a/mm/hugetlb.c b/mm/hugetlb.c
+index 28a2980..c4413ae 100644
+--- a/mm/hugetlb.c
++++ b/mm/hugetlb.c
+@@ -1937,6 +1937,15 @@ retry:
+ 			lock_page(page);
+ 	}
+ 
++	/*
++	 * If we are going to COW a private mapping later, we examine the
++	 * pending reservations for this page now. This will ensure that
++	 * any allocations necessary to record that reservation occur outside
++	 * the spinlock.
++	 */
++	if (write_access && !(vma->vm_flags & VM_SHARED))
++		vma_needs_reservation(h, vma, address);
++
+ 	spin_lock(&mm->page_table_lock);
+ 	size = i_size_read(mapping->host) >> huge_page_shift(h);
+ 	if (idx >= size)
+@@ -1973,6 +1982,7 @@ int hugetlb_fault(struct mm_struct *mm, struct vm_area_struct *vma,
+ 	pte_t *ptep;
+ 	pte_t entry;
+ 	int ret;
++	struct page *pagecache_page = NULL;
+ 	static DEFINE_MUTEX(hugetlb_instantiation_mutex);
+ 	struct hstate *h = hstate_vma(vma);
+ 
+@@ -1995,19 +2005,35 @@ int hugetlb_fault(struct mm_struct *mm, struct vm_area_struct *vma,
+ 
+ 	ret = 0;
+ 
++	/*
++	 * If we are going to COW the mapping later, we examine the pending
++	 * reservations for this page now. This will ensure that any
++	 * allocations necessary to record that reservation occur outside the
++	 * spinlock. For private mappings, we also lookup the pagecache
++	 * page now as it is used to determine if a reservation has been
++	 * consumed.
++	 */
++	if (write_access && !pte_write(entry)) {
++		vma_needs_reservation(h, vma, address);
++
++		if (!(vma->vm_flags & VM_SHARED))
++			pagecache_page = hugetlbfs_pagecache_page(h,
++								vma, address);
++	}
++
+ 	spin_lock(&mm->page_table_lock);
+ 	/* Check for a racing update before calling hugetlb_cow */
+ 	if (likely(pte_same(entry, huge_ptep_get(ptep))))
+-		if (write_access && !pte_write(entry)) {
+-			struct page *page;
+-			page = hugetlbfs_pagecache_page(h, vma, address);
+-			ret = hugetlb_cow(mm, vma, address, ptep, entry, page);
+-			if (page) {
+-				unlock_page(page);
+-				put_page(page);
+-			}
+-		}
++		if (write_access && !pte_write(entry))
++			ret = hugetlb_cow(mm, vma, address, ptep, entry,
++							pagecache_page);
+ 	spin_unlock(&mm->page_table_lock);
++
++	if (pagecache_page) {
++		unlock_page(pagecache_page);
++		put_page(pagecache_page);
++	}
++
+ 	mutex_unlock(&hugetlb_instantiation_mutex);
+ 
+ 	return ret;
+-- 
+1.6.0.rc1.258.g80295
+
