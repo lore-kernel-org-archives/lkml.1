@@ -1,139 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755303AbYHGA2u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757298AbYHGAcW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755303AbYHGA2u (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Aug 2008 20:28:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753226AbYHGA2R
+	id S1757298AbYHGAcW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Aug 2008 20:32:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753226AbYHGAa3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Aug 2008 20:28:17 -0400
-Received: from a-sasl-fastnet.sasl.smtp.pobox.com ([207.106.133.19]:52970 "EHLO
-	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750965AbYHGA2P convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Aug 2008 20:28:15 -0400
-From: Junio C Hamano <junio@pobox.com>
-To: git@vger.kernel.org
-Subject: [ANNOUNCE] GIT 1.5.6.5
-cc: linux-kernel@vger.kernel.org
-Date: Wed, 06 Aug 2008 17:28:05 -0700
-Message-ID: <7v1w11mzxm.fsf@gitster.siamese.dyndns.org>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
-X-Pobox-Relay-ID: B80B7ED6-6417-11DD-B4C9-CE28B26B55AE-77302942!a-sasl-fastnet.pobox.com
+	Wed, 6 Aug 2008 20:30:29 -0400
+Received: from ozlabs.org ([203.10.76.45]:49813 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753224AbYHGAa2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Aug 2008 20:30:28 -0400
+Subject: Re: [patch] PCI: check the return value of
+	device_create_bin_file() in pci_create_bus()
+From: Michael Ellerman <michael@ellerman.id.au>
+Reply-To: michael@ellerman.id.au
+To: Simon Horman <horms@verge.net.au>
+Cc: Matthew Wilcox <matthew@wil.cx>, Sven Wegener <sven.wegener@stealer.net>,
+       linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
+In-Reply-To: <20080806233018.GG10636@verge.net.au>
+References: <20080805101605.GA19382@verge.net.au>
+	 <alpine.LNX.1.10.0808051224350.5671@titan.stealer.net>
+	 <20080805110006.GA13409@verge.net.au> <20080805111406.GA13899@verge.net.au>
+	 <20080805112814.GO26461@parisc-linux.org>
+	 <20080805121531.GA29763@verge.net.au>
+	 <20080805122639.GP26461@parisc-linux.org>
+	 <20080806005718.GE32143@verge.net.au>
+	 <20080806131900.GI2055@parisc-linux.org>
+	 <20080806232523.GF10636@verge.net.au> <20080806233018.GG10636@verge.net.au>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-7351w0AKCF6Ueqh90zEe"
+Date: Thu, 07 Aug 2008 10:30:26 +1000
+Message-Id: <1218069026.7900.0.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The latest maintenance release GIT 1.5.6.5 is available at the
-usual places:
 
-  http://www.kernel.org/pub/software/scm/git/
+--=-7351w0AKCF6Ueqh90zEe
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-  git-1.5.6.5.tar.{gz,bz2}			(source tarball)
-  git-htmldocs-1.5.6.5.tar.{gz,bz2}		(preformatted docs)
-  git-manpages-1.5.6.5.tar.{gz,bz2}		(preformatted docs)
+On Thu, 2008-08-07 at 09:30 +1000, Simon Horman wrote:
+> Check the return value of device_create_bin_file in pci_create_bus and
+> unwind if necessary. Don't propagate error to caller, as failure to creat=
+e
+> these files shouldn't prevent PCI from being initialised.
+>=20
+> Cc: Sven Wegener <sven.wegener@stealer.net>
+> Cc: Michael Ellerman <michael@ellerman.id.au>
+> Cc: Matthew Wilcox <matthew@wil.cx>
+> Signed-off-by: Simon Horman <horms@verge.net.au>
 
-The RPM binary packages for a few architectures are also provided
-as courtesy.
+I hate to prolong the pain, but wasn't the plan to print a big fat
+warning so that it's clear the system is not 100% happy.
 
-  RPMS/$arch/git-*-1.5.6.5-1.fc9.$arch.rpm	(RPM)
+cheers
 
-GIT v1.5.6.5 Release Notes
-==========================
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
 
-Fixes since v1.5.6.4
---------------------
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
 
-* "git cvsimport" used to spit out "UNKNOWN LINE..." diagnostics to stdout.
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
 
-* "git commit -F filename" and "git tag -F filename" run from subdirectories
-  did not read the right file.
+--=-7351w0AKCF6Ueqh90zEe
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
 
-* "git init --template=" with blank "template" parameter linked files
-  under root directories to .git, which was a total nonsense.  Instead, it
-  means "I do not want to use anything from the template directory".
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
 
-* "git diff-tree" and other diff plumbing ignored diff.renamelimit configuration
-  variable when the user explicitly asked for rename detection.
+iD8DBQBImkIidSjSd0sB4dIRAoyUAJ9wX9G9VHPqcRF5bIlKCFb6pcpcOQCeOIOs
+UIHAqSECkXRs9FvTXIGa2S0=
+=dsme
+-----END PGP SIGNATURE-----
 
-* "git name-rev --name-only" did not work when "--stdin" option was in effect.
-
-* "git show-branch" mishandled its 8th branch.
-
-* Addition of "git update-index --ignore-submodules" that happened during
-  1.5.6 cycle broke "git update-index --ignore-missing".
-
-* "git send-email" did not parse charset from an existing Content-type:
-  header properly.
-
-Contains other various documentation fixes.
-
-----------------------------------------------------------------
-
-Changes since v1.5.6.4 are as follows:
-
-Anders Melchiorsen (1):
-      Documentation: fix diff.external example
-
-Björn Steinbrink (1):
-      index-pack.c: correctly initialize appended objects
-
-Brandon Casey (1):
-      t/t4202-log.sh: add newline at end of file
-
-Ciaran McCreesh (1):
-      Make git-add -i accept ranges like 7-
-
-Jeff King (1):
-      init: handle empty "template" parameter
-
-Jim Meyering (1):
-      git-cvsimport.perl: Print "UNKNOWN LINE..." on stderr, not stdout.
-
-Johannes Schindelin (1):
-      sort_in_topological_order(): avoid setting a commit flag
-
-Jonathan Nieder (2):
-      fix usage string for git grep
-      git-diff(1): "--c" -> "--cc" typo fix
-
-Junio C Hamano (12):
-      refresh-index: fix bitmask assignment
-      tests: propagate $(TAR) down from the toplevel Makefile
-      Makefile: fix shell quoting
-      make sure parsed wildcard refspec ends with slash
-      Documentation: clarify diff --cc
-      Update my e-mail address
-      Start 1.5.6.5 RelNotes to describe accumulated fixes
-      builtin-name-rev.c: split deeply nested part from the main function
-      RelNotes 1.5.6.5 updates
-      fix diff-tree --stdin documentation
-      Files given on the command line are relative to $cwd
-      GIT 1.5.6.5
-
-Linus Torvalds (1):
-      diff.renamelimit is a basic diff configuration
-
-Mike Ralphson (1):
-      Documentation: typos / spelling fixes in older RelNotes
-
-Peter Valdemar Mørch (1):
-      send-email: find body-encoding correctly
-
-Pierre Habouzit (2):
-      git-checkout: fix command line parsing.
-      git-submodule: move ill placed shift.
-
-Pieter de Bie (1):
-      git-name-rev: allow --name-only in combination with --stdin
-
-René Scharfe (1):
-      git-name-rev: don't use printf without format
-
-Stephan Beyer (1):
-      builtin-revert.c: typofix
-
-Steve Haslam (1):
-      Propagate -u/--upload-pack option of "git clone" to transport.
+--=-7351w0AKCF6Ueqh90zEe--
 
