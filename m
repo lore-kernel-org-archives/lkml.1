@@ -1,64 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755210AbYHGRhV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756895AbYHGRht@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755210AbYHGRhV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Aug 2008 13:37:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756385AbYHGRg4
+	id S1756895AbYHGRht (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Aug 2008 13:37:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753033AbYHGRhj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Aug 2008 13:36:56 -0400
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:53553 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756201AbYHGRgy (ORCPT
+	Thu, 7 Aug 2008 13:37:39 -0400
+Received: from astoria.ccjclearline.com ([64.235.106.9]:40224 "EHLO
+	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751499AbYHGRhi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Aug 2008 13:36:54 -0400
-Subject: Re: [PATCH 1/2] pci: add misrouted interrupt error handling
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Greg KH <greg@kroah.com>
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>, linux-pci@vger.kernel.org
-In-Reply-To: <20080807172001.GA9773@kroah.com>
-References: <1217786532.4179.24.camel@localhost.localdomain>
-	 <200808051415.59993.jbarnes@virtuousgeek.org>
-	 <1217973297.9923.80.camel@localhost.localdomain>
-	 <200808070903.23787.jbarnes@virtuousgeek.org>
-	 <20080807172001.GA9773@kroah.com>
-Content-Type: text/plain
-Date: Thu, 07 Aug 2008 10:36:47 -0700
-Message-Id: <1218130607.3749.32.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
+	Thu, 7 Aug 2008 13:37:38 -0400
+Date: Thu, 7 Aug 2008 13:35:53 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@crashcourse.ca>
+X-X-Sender: rpjday@localhost.localdomain
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+cc: Andrew Morton <akpm@osdl.org>
+Subject: [PATCH] Remove long-dead __setup_null_param() from init.h.
+Message-ID: <alpine.LFD.1.10.0808071334410.2019@localhost.localdomain>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - crashcourse.ca
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-08-07 at 10:20 -0700, Greg KH wrote:
-> On Thu, Aug 07, 2008 at 09:03:22AM -0700, Jesse Barnes wrote:
-> > On Tuesday, August 5, 2008 2:54 pm James Bottomley wrote:
-> > > > or somesuch.  That seems just as simple for driver writers as your
-> > > > initial patch, and the function is named in accordance with what it
-> > > > actually does, rather than what it's used for...
-> > >
-> > > It could, but if the bridge is the culprit (as it usually is for MSI
-> > > problems), this print won't help identify it.
-> > >
-> > > Therefore, rather than give driver writers a recipe for "print this and
-> > > this and go to the bridge and print this", I'd rather have a single PCI
-> > > callback that prints all the (hopefully) relevant information that will
-> > > allow either fixing or blacklisting.
-> > 
-> > So in addition to the IRQ type check we need to dump some device topology 
-> > information... yeah that makes sense.  I wonder if the driver core should 
-> > provide something like this.  Greg?
-> 
-> What kind of topology do you need that is not already provided?
 
-We really need to print how the device interrupt is routed.  But,
-unfortunately, we need to identify the devices in the layout (bridges
-and the like by say device/vendor numbers) so we know what they are ...
-this is the bit that the generic device model can't do because it's
-embedded in the bus specific part.
+This macro appears to have been unused for ages, and there are no
+invocations of it anywhere in the source tree.
 
-James
+Signed-off-by: Robert P. J. Day <rpjday@crashcourse.ca>
+
+---
+
+diff --git a/include/linux/init.h b/include/linux/init.h
+index 11b84e1..40e5a0d 100644
+--- a/include/linux/init.h
++++ b/include/linux/init.h
+@@ -232,9 +232,6 @@ struct obs_kernel_param {
+ 		__attribute__((aligned((sizeof(long)))))	\
+ 		= { __setup_str_##unique_id, fn, early }
+
+-#define __setup_null_param(str, unique_id)			\
+-	__setup_param(str, unique_id, NULL, 0)
+-
+ #define __setup(str, fn)					\
+ 	__setup_param(str, fn, fn, 0)
+
+@@ -295,7 +292,6 @@ void __init parse_early_param(void);
+ 	void cleanup_module(void) __attribute__((alias(#exitfn)));
+
+ #define __setup_param(str, unique_id, fn)	/* nothing */
+-#define __setup_null_param(str, unique_id) 	/* nothing */
+ #define __setup(str, func) 			/* nothing */
+ #endif
 
 
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry:
+    Have classroom, will lecture.
+
+http://crashcourse.ca                          Waterloo, Ontario, CANADA
+========================================================================
