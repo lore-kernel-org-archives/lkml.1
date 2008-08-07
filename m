@@ -1,149 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757884AbYHGWMz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757359AbYHGWOc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757884AbYHGWMz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Aug 2008 18:12:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753318AbYHGWMp
+	id S1757359AbYHGWOc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Aug 2008 18:14:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753318AbYHGWOY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Aug 2008 18:12:45 -0400
-Received: from e31.co.us.ibm.com ([32.97.110.149]:44439 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753277AbYHGWMo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Aug 2008 18:12:44 -0400
-Date: Thu, 7 Aug 2008 17:12:42 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Ian Kent <raven@themaw.net>, autofs@linux.kernel.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       containers@lists.osdl.org
-Subject: Re: [PATCH 2/4] autofs4 - track uid and gid of last mount requester
-Message-ID: <20080807221242.GA27032@us.ibm.com>
-References: <20080807114002.4142.30417.stgit@web.messagingengine.com> <20080807114012.4142.83607.stgit@web.messagingengine.com> <20080807134650.a6a51f7d.akpm@linux-foundation.org>
+	Thu, 7 Aug 2008 18:14:24 -0400
+Received: from mx01.lb01.inode.at ([62.99.145.1]:63881 "EHLO mx.inode.at"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752912AbYHGWOX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Aug 2008 18:14:23 -0400
+X-Greylist: delayed 115716 seconds by postgrey-1.27 at vger.kernel.org; Thu, 07 Aug 2008 18:14:23 EDT
+Message-ID: <489B73B7.4090705@sbg.ac.at>
+Date: Fri, 08 Aug 2008 00:14:15 +0200
+From: Alexander Huemer <alexander.huemer@sbg.ac.at>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080729)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080807134650.a6a51f7d.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+CC: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Andi Kleen <andi@firstfloor.org>
+Subject: Re: 2.6.27-rc1 mtrr fixes do not work
+References: <4899AF8E.20105@sbg.ac.at> <200808072214.28922.rjw@sisk.pl>	 <7E82351C108FA840AB1866AC776AEC46092119D3@orsmsx505.amr.corp.intel.com>	 <86802c440808071323o3021a90rae51223187bfd47b@mail.gmail.com> <86802c440808071326m21cff146s3fb5e6118a58a2ca@mail.gmail.com>
+In-Reply-To: <86802c440808071326m21cff146s3fb5e6118a58a2ca@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Andrew Morton (akpm@linux-foundation.org):
-> On Thu, 07 Aug 2008 19:40:14 +0800
-> Ian Kent <raven@themaw.net> wrote:
-> 
-> > Patch to track the uid and gid of the last process to request a mount
-> > for on an autofs dentry.
-> 
-> pet peeve: changelog should not tell the reader that this is a "patch".
-> Because when someone is reading the changelog in the git repository,
-> they hopefully already know that.
-> 
-> > Signed-off-by: Ian Kent <raven@themaw.net>
-> > 
-> > ---
-> > 
-> >  fs/autofs4/autofs_i.h |    3 +++
-> >  fs/autofs4/inode.c    |    2 ++
-> >  fs/autofs4/waitq.c    |   34 ++++++++++++++++++++++++++++++++++
-> >  3 files changed, 39 insertions(+), 0 deletions(-)
-> > 
-> > 
-> > diff --git a/fs/autofs4/autofs_i.h b/fs/autofs4/autofs_i.h
-> > index ea024d8..fa76d18 100644
-> > --- a/fs/autofs4/autofs_i.h
-> > +++ b/fs/autofs4/autofs_i.h
-> > @@ -63,6 +63,9 @@ struct autofs_info {
-> >  	unsigned long last_used;
-> >  	atomic_t count;
-> >  
-> > +	uid_t uid;
-> > +	gid_t gid;
-> > +
-> >  	mode_t	mode;
-> >  	size_t	size;
-> >  
-> > diff --git a/fs/autofs4/inode.c b/fs/autofs4/inode.c
-> > index 9ca2d07..9408507 100644
-> > --- a/fs/autofs4/inode.c
-> > +++ b/fs/autofs4/inode.c
-> > @@ -53,6 +53,8 @@ struct autofs_info *autofs4_init_ino(struct autofs_info *ino,
-> >  		atomic_set(&ino->count, 0);
-> >  	}
-> >  
-> > +	ino->uid = 0;
-> > +	ino->gid = 0;
-> >  	ino->mode = mode;
-> >  	ino->last_used = jiffies;
-> >  
-> > diff --git a/fs/autofs4/waitq.c b/fs/autofs4/waitq.c
-> > index 6d87bb1..7c60c0b 100644
-> > --- a/fs/autofs4/waitq.c
-> > +++ b/fs/autofs4/waitq.c
-> > @@ -457,6 +457,40 @@ int autofs4_wait(struct autofs_sb_info *sbi, struct dentry *dentry,
-> >  
-> >  	status = wq->status;
-> >  
-> > +	/*
-> > +	 * For direct and offset mounts we need to track the requestrer
-> 
-> typo which I'll fix.
-> 
-> > +	 * uid and gid in the dentry info struct. This is so it can be
-> > +	 * supplied, on request, by the misc device ioctl interface.
-> > +	 * This is needed during daemon resatart when reconnecting
-> > +	 * to existing, active, autofs mounts. The uid and gid (and
-> > +	 * related string values) may be used for macro substitution
-> > +	 * in autofs mount maps.
-> > +	 */
-> > +	if (!status) {
-> > +		struct autofs_info *ino;
-> > +		struct dentry *de = NULL;
-> > +
-> > +		/* direct mount or browsable map */
-> > +		ino = autofs4_dentry_ino(dentry);
-> > +		if (!ino) {
-> > +			/* If not lookup actual dentry used */
-> > +			de = d_lookup(dentry->d_parent, &dentry->d_name);
-> > +			if (de)
-> > +				ino = autofs4_dentry_ino(de);
-> > +		}
-> > +
-> > +		/* Set mount requester */
-> > +		if (ino) {
-> > +			spin_lock(&sbi->fs_lock);
-> > +			ino->uid = wq->uid;
-> > +			ino->gid = wq->gid;
-> > +			spin_unlock(&sbi->fs_lock);
-> > +		}
-> > +
-> > +		if (de)
-> > +			dput(de);
-> > +	}
-> > +
-> 
-> Please remind me again why autofs's use of current->uid and
-> current->gid is not busted in the presence of PID namespaces, where
-> these things are no longer system-wide unique?
+Yinghai Lu wrote:
+> On Thu, Aug 7, 2008 at 1:23 PM, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+>   
+>> On Thu, Aug 7, 2008 at 1:15 PM, Pallipadi, Venkatesh
+>> <venkatesh.pallipadi@intel.com> wrote:
+>>     
+>>> Adding Yinghai.
+>>>
+>>>       
+>>>> -----Original Message-----
+>>>> From: Rafael J. Wysocki [mailto:rjw@sisk.pl]
+>>>> Sent: Thursday, August 07, 2008 1:14 PM
+>>>> To: Alexander Huemer
+>>>> Cc: linux-kernel@vger.kernel.org; Andi Kleen; Pallipadi, Venkatesh
+>>>> Subject: Re: 2.6.27-rc1 mtrr fixes do not work
+>>>>
+>>>> [Adding CCs.]
+>>>>
+>>>> On Wednesday, 6 of August 2008, Alexander Huemer wrote:
+>>>>         
+>>>>> hi,
+>>>>>
+>>>>> mtrr is wrong on my machine. the fixes of 2.6.27-rc1 do not
+>>>>>           
+>>>> seem to work.
+>>>>         
+>>>>> bios is the newest version, mainboard vendor says it's not
+>>>>>           
+>>>> their fault.
+>>>>         
+>>>>> mainboard is tyan i5000pw.
+>>>>> please tell me how i can help and cc me on answers, i am not
+>>>>>           
+>>>> subscribed.
+>>>>         
+>>>>> seaburg ~ # cat /proc/mtrr
+>>>>> reg00: base=0x00000000 (   0MB), size=198656MB: write-back, count=1
+>>>>> reg01: base=0x80000000 (2048MB), size=197632MB: write-back, count=1
+>>>>> reg02: base=0x100000000 (4096MB), size=197632MB: write-back, count=1
+>>>>>           
+>>>>> seaburg ~ # zcat /proc/config.gz | grep MTRR
+>>>>> CONFIG_MTRR=y
+>>>>> CONFIG_MTRR_SANITIZER=y
+>>>>> CONFIG_MTRR_SANITIZER_ENABLE_DEFAULT=1
+>>>>> CONFIG_MTRR_SANITIZER_SPARE_REG_NR_DEFAULT=1
+>>>>> seaburg ~ # uname -a
+>>>>> Linux seaburg 2.6.27-rc1-blackbit #3 SMP Wed Aug 6 00:34:51 CEST 2008
+>>>>> x86_64 Intel(R) Xeon(R) CPU E5420 @ 2.50GHz GenuineIntel GNU/Linux
+>>>>> seaburg ~ #
+>>>>>           
+>> alexander,
+>>
+>> please send out
+>> dmesg -s 262144 > dmesg.txt
+>> or
+>> dmesg -s 524288 > dmesg.txt
+>>
+>> you may need to set
+>> CONFIG_LOG_BUF_SHIFT=19
+>>     
+>
+> without mtrr_gran_size=64m mtrr_chunk_size=1024m on command line
+>
+> guess mtrr_chunk_size=512m could work
+>
+> YH
+>   
+yinghai,
 
-I actually don't see what the autofs4_waitq->pid is used for.  It's
-copied from current into wq->pid at autofs4_wait, and into a packet to
-send to userspace (I assume) at autofs4_notify_daemon.
-
-So as long as a daemon can serve multiple pid namespaces (which
-doubtless it can), the pid could be confusing (or erroneous) for the
-daemon.
-
-If I'm remotely right about how the pid is being used, then the thing to
-do would be to 
-	1. store the daemon's pid namespace  (would that belong in
-	the autofs_sb_info?)
-	2. store the task_pid(current) in the waitqueue
-	3. retrieve the pid_t for the waiting task in the daemon's
-	pid namespace, and put that into the packet at
-	autofs4_notify_daemon.
-
-I realize this patch was about the *uids*, but the pids seem more
-urgent.
-
--serge
+thanks for the response.
+i booted with
+mtrr_gransize_64m mtrr_chunk_size_512m
+mtrr_chunk_size_512m
+here are the 2 dmesg outputs:
+http://xx.vu/~ahuemer/dmesg_1.txt
+http://xx.vu/~ahuemer/dmesg_2.txt
