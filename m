@@ -1,50 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753960AbYHGMtn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752262AbYHGMuG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753960AbYHGMtn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Aug 2008 08:49:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752321AbYHGMtd
+	id S1752262AbYHGMuG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Aug 2008 08:50:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753838AbYHGMtm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Aug 2008 08:49:33 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:55163 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752298AbYHGMtc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Aug 2008 08:49:32 -0400
-Date: Thu, 7 Aug 2008 13:34:00 +0200
-From: Karel Zak <kzak@redhat.com>
-To: Pavel Machek <pavel@suse.cz>
-Cc: kernel list <linux-kernel@vger.kernel.org>,
-       ACPI mailing list <linux-acpi@vger.kernel.org>
-Subject: Re: 2.6.27-rc1: critical thermal shutdown on thinkpad x60
-Message-ID: <20080807113400.GA18297@nb.net.home>
-References: <20080806090246.GA1572@elf.ucw.cz>
+	Thu, 7 Aug 2008 08:49:42 -0400
+Received: from extu-mxob-1.symantec.com ([216.10.194.28]:47483 "EHLO
+	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753746AbYHGMtl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Aug 2008 08:49:41 -0400
+Date: Thu, 7 Aug 2008 13:14:05 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.site
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, jeremy@goop.org, mingo@elte.hu,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       davej@redhat.com
+Subject: Re: [RFC][PATCH 9/7] mm: fix mm_take_all_locks() locking order
+In-Reply-To: <1218108349.8625.25.camel@twins>
+Message-ID: <Pine.LNX.4.64.0808071257200.4594@blonde.site>
+References: <20080804130317.994042639@chello.nl> <1218108349.8625.25.camel@twins>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080806090246.GA1572@elf.ucw.cz>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 06, 2008 at 11:02:47AM +0200, Pavel Machek wrote:
-> Hi!
+On Thu, 7 Aug 2008, Peter Zijlstra wrote:
 > 
-> Aug  6 11:00:10 amd kernel: ACPI: Critical trip point
-> Aug  6 11:00:10 amd kernel: Critical temperature reached (128 C),
-> shutting down.
-> Aug  6 11:00:10 amd shutdown[24414]: shutting down for system halt
+> Which the locking hierarchy in mm/rmap.c confirms as 'valid'.
 > 
-> ...and machine went down at that point :-(.
+> Although I don't think there are any users of these two locks that don't
+> hold the mmap_sem, therefore the nesting is strictly ok, but since we
+> already have an established order, we might as well respect it.
 
- It seems it like a bad day for ThinkPads:
+Yes, I agree.
 
-Aug  6 20:05:36 nb kernel: ACPI: Critical trip point
-Aug  6 20:05:36 nb kernel: Critical temperature reached (128 C),
-shutting down.
+> Fix this by first taking all the mapping->i_mmap_lock instances and then
+> take all anon_vma->lock instances.
 
- Kernel 2.6.26-136.fc10.x86_64 on x61.
+Okay.  I'd have preferred taking anon_vma lock after i_mmap_lock
+each time around the loop, but imagine that's just as problematic
+for lockdep as the original.
 
-    Karel
+> 
+> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 
--- 
- Karel Zak  <kzak@redhat.com>
+Acked-by: Hugh Dickins <hugh@veritas.com>
+
+> ---
+>  mm/mmap.c |   10 ++++++++--
+>  1 file changed, 8 insertions(+), 2 deletions(-)
+> 
+> Index: linux-2.6/mm/mmap.c
+> ===================================================================
+> --- linux-2.6.orig/mm/mmap.c
+> +++ linux-2.6/mm/mmap.c
+> @@ -2358,11 +2358,17 @@ int mm_take_all_locks(struct mm_struct *
+>  	for (vma = mm->mmap; vma; vma = vma->vm_next) {
+>  		if (signal_pending(current))
+>  			goto out_unlock;
+> -		if (vma->anon_vma)
+> -			vm_lock_anon_vma(mm, vma->anon_vma);
+>  		if (vma->vm_file && vma->vm_file->f_mapping)
+>  			vm_lock_mapping(mm, vma->vm_file->f_mapping);
+>  	}
+> +
+> +	for (vma = mm->mmap; vma; vma = vma->vm_next) {
+> +		if (signal_pending(current))
+> +			goto out_unlock;
+> +		if (vma->anon_vma)
+> +			vm_lock_anon_vma(mm, vma->anon_vma);
+> +	}
+> +
+>  	ret = 0;
+>  
+>  out_unlock:
