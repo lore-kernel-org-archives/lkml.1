@@ -1,105 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756743AbYHGRQ6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752744AbYHGRTz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756743AbYHGRQ6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Aug 2008 13:16:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752931AbYHGRP3
+	id S1752744AbYHGRTz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Aug 2008 13:19:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752030AbYHGRTq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Aug 2008 13:15:29 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:36059 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753086AbYHGRP0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Aug 2008 13:15:26 -0400
-Date: Thu, 7 Aug 2008 10:03:10 -0700
-From: Greg KH <gregkh@suse.de>
-To: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Cc: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
-       lf_kernel_messages@lists.linux-foundation.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Michael Holzheu <holzheu@de.ibm.com>, Gerrit Huizenga <gh@us.ibm.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>, Jan Kara <jack@suse.cz>,
-       Pavel Machek <pavel@ucw.cz>, Sam Ravnborg <sam@ravnborg.org>,
-       Joe Perches <joe@perches.com>,
-       Jochen =?iso-8859-1?B?Vm/f?= <jochen.voss@googlemail.com>,
-       Kunai Takashi <kunai@linux-foundation.jp>,
-       Tim Bird <tim.bird@am.sony.com>
-Subject: Re: [patch 3/3] kmsg: convert xpram messages to kmsg api.
-Message-ID: <20080807170310.GC9214@suse.de>
-References: <20080730165656.118280544@de.ibm.com> <20080730171157.550296160@de.ibm.com> <20080730194308.GB22441@suse.de> <1217493222.8555.8.camel@localhost> <20080805223429.GB6552@suse.de> <1218012373.20769.22.camel@localhost> <20080806201118.GB30086@suse.de> <1218098353.1033.19.camel@localhost>
+	Thu, 7 Aug 2008 13:19:46 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:34641 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751549AbYHGRTp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Aug 2008 13:19:45 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <489B2EAE.8040901@s5r6.in-berlin.de>
+Date: Thu, 07 Aug 2008 19:19:42 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.16) Gecko/20080722 SeaMonkey/1.1.11
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1218098353.1033.19.camel@localhost>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: jmerkey@wolfmountaingroup.com
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [ANNOUNCE] mdb-2.6.27-rc2-ia32-08-07-08.patch
+References: <1300.69.2.248.210.1218119365.squirrel@webmail.wolfmountaingroup.com>       <489B199B.40305@s5r6.in-berlin.de>       <489B1BDC.1010504@s5r6.in-berlin.de>    <1923.69.2.248.210.1218124570.squirrel@webmail.wolfmountaingroup.com>    <489B26F0.3030603@s5r6.in-berlin.de> <1905.69.2.248.210.1218126817.squirrel@webmail.wolfmountaingroup.com>
+In-Reply-To: <1905.69.2.248.210.1218126817.squirrel@webmail.wolfmountaingroup.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 07, 2008 at 10:39:13AM +0200, Martin Schwidefsky wrote:
-> On Wed, 2008-08-06 at 13:11 -0700, Greg KH wrote:
-> > > > > > > +#define KMSG_COMPONENT "xpram"
-> > > > > > 
-> > > > > > Can't you just use KBUILD_MODULE_NAME instead?  That makes it one less
-> > > > > > thing you have to define in the code (and forget about when moving files
-> > > > > > around or cut-and-pasting).
-> > > > > 
-> > > > > Two reason why we don't want to use KBUILD_MODULE_NAME:
-> > > > > 1) the message tag (message component + message id) should never change,
-> > > > > if you change the code structure the module name might change as well.
-> > > > 
-> > > > Um, isn't that the point?  If the code structure changes, then perhaps
-> > > > the message also should change?  If not, it's trival to adjust.
-> > > 
-> > > NO! The message nor the message tag should change if the message
-> > > semantically still reports the same thing. If the meaning of the message
-> > > changes then change the message AND the message tag.
-> > 
-> > Why can't the message reporting change?  What's the reluctance for
-> > change here for something that did happen to move to a different file?
-> > It shouldn't matter _at all_ as you are only looking at the
-> > tags/messages for a specific kernel version to ensure they match up.
-> > Any future kernel version might have different ones.
-> >
-> > It's not like once you write a message/tag it will stay that way fixed
-> > for all time, that's just not going to fly with the way the Linux kernel
-> > is developed.
-> 
-> The message tag should uniquely identify the message so that the
-> translation projects have something to work with. If we keep changing
-> the message tag with each kernel release that will create a huge effort
-> to keep track of the messages.
+jmerkey@wolfmountaingroup.com wrote:
+>> jmerkey@wolfmountaingroup.com wrote:
+>>> rspin locks are for these types of cases -- so if I fault on the same
+>>> processor I took the lock on it just bumps a counter -- yes, it is
+>>> atomic
+>>> and SMP safe to do it this way.
+>> Only if all contexts which take rlocks are not preemptible.
+[...]
+> check mdb-main.c -- I disable preemption before rspin_lock is attempted. 
+> Since the only processor which sets the proc number does do inside the
+> spin lock, and the other processors only read it, unless memory is
+> corrupted or the machine is severely broken, its SMP safe to this.
 
-But that's the point here.  The kernel does change a lot with each
-release (you have seen the numbers, right?)  And if a change happens,
-then the message also needs to change as something changed!  Why would
-you think that these messages could be static till the end of time?
-That's not how the kernel works.
+Then it is recommendable that you document the call context requirements 
+at the functions.  And you can and IMO should drop the _irq_save and 
+_irq_restore from the spinlock accessors in the rlock accessors.  And 
+drop the volatile qualifier of the rlock accessor argument while you are 
+at it.
 
-> > > > > 2) we want to be able to use the same kmsg component in multiple .c
-> > > > > files. 
-> > > > 
-> > > > Why would this matter?  It's just a "tag", who cares about the actual
-> > > > name?
-> > > 
-> > > The actual name is not really important, but if the name is choosen
-> > > wisely it does convey information. Guess what "dasd.17" tells you
-> > > something about the dasd driver, "zfcp.42" about the zfcp driver and so
-> > > on. The code structure should not dictate how the message tag is
-> > > created.
-> > 
-> > The message tag should not dictate anything except how to look it up
-> > somehow.  So it doesn't matter if the name changes, as long as the
-> > ability to get the real information is still there.
-> > 
-> > So the kernel could change the tags every other release and there would
-> > be no problem.
-> 
-> I think the unique message ids are very important. If we change them all
-> the time this would severly limit the value of the kernel message
-> catalog.
-
-Again, they will be unique, but again, they will change as the kernel
-changes, they will have to.
-
-thanks,
-
-greg k-h
+I see that you are calling save_flags/ restore_flags in 
+mdb-main.c::mdb().  These are marked as deprecated.  Would 
+local_irq_save/ local_irq_restore be correct at these places?
+-- 
+Stefan Richter
+-=====-==--- =--- --===
+http://arcgraph.de/sr/
