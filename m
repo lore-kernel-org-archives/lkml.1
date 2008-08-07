@@ -1,68 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757754AbYHGSXX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757118AbYHGSYh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757754AbYHGSXX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Aug 2008 14:23:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757349AbYHGSWi
+	id S1757118AbYHGSYh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Aug 2008 14:24:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752560AbYHGSY3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Aug 2008 14:22:38 -0400
-Received: from lap75545.ornl.gov ([160.91.210.54]:36112 "EHLO
-	lap75545.ornl.gov" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757333AbYHGSWh convert rfc822-to-8bit (ORCPT
+	Thu, 7 Aug 2008 14:24:29 -0400
+Received: from tomts10-srv.bellnexxia.net ([209.226.175.54]:35837 "EHLO
+	tomts10-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752257AbYHGSY2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Aug 2008 14:22:37 -0400
-Subject: Re: [GIT PULL]: firmware patches for building firmware into kernel
-From: David Dillow <dave@thedillows.org>
-To: Jaswinder Singh <jaswinder@infradead.org>
-Cc: David Woodhouse <dwmw2@infradead.org>, LKML <linux-kernel@vger.kernel.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-In-Reply-To: <1218130475.14483.16.camel@jaswinder.satnam>
-References: <1218128219.14483.7.camel@jaswinder.satnam>
-	 <1218130222.18118.7.camel@lap75545.ornl.gov>
-	 <1218130475.14483.16.camel@jaswinder.satnam>
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
-Date: Thu, 07 Aug 2008 14:21:28 -0400
-Message-Id: <1218133288.18118.20.camel@lap75545.ornl.gov>
+	Thu, 7 Aug 2008 14:24:28 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ArMEABHYmkhMRKxB/2dsb2JhbACBWKs8
+Date: Thu, 7 Aug 2008 14:24:24 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: "Frank Ch. Eigler" <fche@redhat.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       akpm@linux-foundation.org, Peter Zijlstra <peterz@infradead.org>,
+       linux-kernel@vger.kernel.org, ltt-dev@lists.casi.polymtl.ca
+Subject: Re: LTTng finds abnormally long APIC interrupt handler : 58.2 ms
+Message-ID: <20080807182424.GA18164@Krystal>
+References: <20080805182007.GA4631@Krystal> <alpine.DEB.1.10.0808051523370.28170@gandalf.stny.rr.com> <20080807160907.GA11255@Krystal> <alpine.DEB.1.10.0808071314320.20931@gandalf.stny.rr.com> <y0mwsisitcy.fsf@ton.toronto.redhat.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-5.fc8) 
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <y0mwsisitcy.fsf@ton.toronto.redhat.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 14:22:51 up 63 days, 23:03,  7 users,  load average: 0.48, 0.94,
+	1.17
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Thu, 2008-08-07 at 23:04 +0530, Jaswinder Singh wrote:
-> Hello David Dillow,
+* Frank Ch. Eigler (fche@redhat.com) wrote:
 > 
-> On Thu, 2008-08-07 at 13:30 -0400, David Dillow wrote:
-> > On Thu, 2008-08-07 at 22:26 +0530, Jaswinder Singh wrote:
-> > >       firmware: avoiding multiple replication for same firmware file
-> > 
-> > If this is the last patch you sent to the list, I think there are still
-> > locking bugs in it. I was short on time, so I didn't give it a full
-> > review, but I remember seeing problems. I'll try to give it some time
-> > tonight, if Andrew doesn't beat me to it.
+> Steven Rostedt <rostedt@goodmis.org> writes:
 > 
-> This is updated and revised patch.
+> > [...]
+> >> It all holds in a small module. Having the ability to connect any marker
+> >> on any generic probe from the lttng marker interface has been very
+> >> useful to do all this. Actually, this module has to be built into the
+> >> kernel because ftrace does not permit breeing the trace_ops data
+> >> structure. :/
+> >
+> > I did this purposely. The reason is that there is no safe way to release
+> > the trace_ops, because you never know if something is in the function
+> > you pointed to. If you remove the module after that, it crashes.
+> >
+> > I've been thinking of exporting it, and make it so that once you 
+> > register something to the trace_ops, I'll up the module count, and never 
+> > let that module unload.
+> 
+> This issue will need some sort of resolution if systemtap is to be
+> able to hook up to ftrace.  Perhaps we could have a second/nested API
+> that suffers the costs of explicit reference counting, but does permit
+> dynamic attach and robust detach.
+> 
 
-I just looked at the tree; it still has locking issues, and needs
-further review. You must protect the list from modification while you
-iterate it looking for an match on the requested firmware. Also, was it
-legal to call release_firmware() from an atomic context? It can now
-sleep, which may be an issue...
+Creating a wrapper which would disable preemption before calling the
+callback would make teardown possible.
+Unregistration/synchronize_sched() and then module free would be ok.
+That's what I do with markers and tracepoints.
 
-Also, should any two drivers share the same firmware,
-release_firmware_all() could leave one of them without its firmware, but
-I'm not sure if that is an issue either.
+The wrapper itself can never be unloaded, but the connected probes can.
 
-> > >       typhoon: use request_firmware
-> > 
-> > This is untested -- again, no time over the weekend -- and I'd rather
-> > not have it go upstream until has been verified.
->
-> ﻿This is also updated and revised patch.
+Mathieu
 
-Please drop that patch from the series for now; I'm not happy with it,
-as it reintroduces things I've asked be changed. If you get the core
-firmware_class issues fixed up, I'll respin what I had.
+> 
+> - FChE
 
-Dave
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
