@@ -1,101 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754362AbYHGECN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755322AbYHGEcU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754362AbYHGECN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Aug 2008 00:02:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750702AbYHGEB5
+	id S1755322AbYHGEcU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Aug 2008 00:32:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751346AbYHGEcK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Aug 2008 00:01:57 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:53441 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1750695AbYHGEB4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Aug 2008 00:01:56 -0400
-Message-ID: <489A7359.8090607@cn.fujitsu.com>
-Date: Thu, 07 Aug 2008 12:00:25 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Thu, 7 Aug 2008 00:32:10 -0400
+Received: from an-out-0708.google.com ([209.85.132.243]:50134 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750702AbYHGEcI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Aug 2008 00:32:08 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:references;
+        b=klU60Jz2vXQpoqlqapWV/ubKOIYy8h11ealoOSJrP8Ok+2WvqYO8hZ56tju3ACVLai
+         FAnZVPYIwmm+ti5KD8IXpRAlDT56v0HNIOeGxSGuJy6enCiDOD2k+fZq34qBx7DMMod1
+         oEUN6msdgZox8L8j/rG9PDfSfGdWE2ofaOSug=
+Message-ID: <3ae3aa420808062132x52860092p9dee56705ba99a3@mail.gmail.com>
+Date: Wed, 6 Aug 2008 23:32:06 -0500
+From: "Linas Vepstas" <linasvepstas@gmail.com>
+Reply-To: linasvepstas@gmail.com
+To: "Martin K. Petersen" <martin.petersen@oracle.com>
+Subject: Re: amd64 sata_nv (massive) memory corruption
+Cc: "Alan Cox" <alan@lxorguk.ukuu.org.uk>, "John Stoffel" <john@stoffel.org>,
+       "Alistair John Strachan" <alistair@devzero.co.uk>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <yq1fxphfs2y.fsf@sermon.lab.mkp.net>
 MIME-Version: 1.0
-To: Max.Krasnyansky@qualcomm.com
-CC: mingo@elte.hu, akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       Max Krasnyansky <maxk@qualcomm.com>, jeff.chua.linux@gmail.com
-Subject: Re: [PATCH] Resurect proper handling of maxcpus= kernel option
-References: <1218052854-5020-1-git-send-email-Krasnyansky@qualcomm.com>
-In-Reply-To: <1218052854-5020-1-git-send-email-Krasnyansky@qualcomm.com>
-Content-Type: text/plain; charset=GB2312
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <3ae3aa420808011030weadc61fvf6f850f0a4cfcb3e@mail.gmail.com>
+	 <18580.48861.657366.629904@stoffel.org>
+	 <3ae3aa420808021501k2e871dc0y344dd7f9a7b80614@mail.gmail.com>
+	 <18581.6873.353028.695909@stoffel.org>
+	 <3ae3aa420808031523i1d9559d9i19dd5fcc9d5719c7@mail.gmail.com>
+	 <20080803231628.1361b75f@lxorguk.ukuu.org.uk>
+	 <3ae3aa420808051002n2438c0f6g82fb783b5102d149@mail.gmail.com>
+	 <20080805182119.75913fa3@lxorguk.ukuu.org.uk>
+	 <3ae3aa420808061433i3d90c3dcgfb40d953da2941c8@mail.gmail.com>
+	 <yq1fxphfs2y.fsf@sermon.lab.mkp.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Max.Krasnyansky@qualcomm.com wrote:
-> From: Max Krasnyansky <maxk@qualcomm.com>
-> 
-> For some reason we had redundant parsers registered for maxcpus=. 
-> One in init/main.c and another in arch/x86/smpboot.c
-> So I nuked the one in arch/x86.
-> 
-> Also 64-bit kernels used to handle maxcpus= as documented in
-> Documentation/cpu-hotplug.txt. CPUs with 'id > maxcpus' are initialized
-> but not booted. 32-bit version for some reason ignored them even though
-> all the infrastructure for booting them later is there.
-> 
-> In the current mainline both 64 and 32 bit versions are broken. I'm
-> too lazy to look through git history but I'm guessing it happened as
-> part of the i386 and x86_64 unification.
-> 
-> This patch restores the correct behaviour. I've tested x86_64 version on
-> 4- and 8- way Core2 and 2-way Opteron based machines. Various config
-> combinations SMP, !SMP, CPU_HOTPLUG, !CPU_HOTPLUG.
-> Booted with maxcpus=1 and maxcpus=4, etc. Everything is working as expected.
-> 
-> I cannot test 32-bit version (no 32-bit machines here).
-> 
+2008/8/6 Martin K. Petersen <martin.petersen@oracle.com>:
+>>>>>> "Linas" == Linas Vepstas <linasvepstas@gmail.com> writes:
+>
+> [I got added to the CC: late in the game so I don't have the
+> background this discussion]
 
-I booted my 2-core x86_32 box with maxcpus=1, and saw cpu1 was offline,
-and then I got softlockup BUG immediately when I onlined cpu1:
+You haven't missed anything, other than I've had my
+umpteenth instance of data corruption in some years,
+and am up to my eyeballs in consumer-grade hardware
+from which I would like to get enterprise-grade reliability.
+Of course, being a cheapskate is what gets me into this
+mess.
 
-SMP alternatives: switching to SMP code
-CPU 1 irqstacks, hard=c078c000 soft=c076c000
-Booting processor 1/1 ip 6000
-Initializing CPU#1
-Calibrating delay using timer specific routine.. 5600.37 BogoMIPS (lpj=2800188)
-CPU: Trace cache: 12K uops, L1 D cache: 16K
-CPU: L2 cache: 1024K
-CPU: Physical Processor ID: 0
-CPU: Processor Core ID: 1
-Intel machine check architecture supported.
-Intel machine check reporting enabled on CPU#1.
-CPU1: Intel P4/Xeon Extended MCE MSRs (24) available
-CPU1: Thermal monitoring enabled
-CPU1: Intel(R) Pentium(R) D CPU 2.80GHz stepping 04
-checking TSC synchronization [CPU#0 -> CPU#1]: passed.
-Switched to high resolution mode on CPU 1
-BUG: soft lockup - CPU#1 stuck for 216s! [events/0:0]
-Modules linked in: bridge stp llc autofs4 dm_mirror dm_log dm_mod snd_intel8x0 snd_ac97_codec ac97_bus snd_seq_dummy snd_seq_oss snd_seq_midi_event snd_seq snd_seq_device snd_pcm_oss snd_pcm snd_timer snd soundcore r8169 snd_page_alloc sg button sata_sis pata_sis ata_generic libata sd_mod scsi_mod ext3 jbd mbcache uhci_hcd ohci_hcd ehci_hcd [last unloaded: scsi_wait_scan]
-irq event stamp: 156
-hardirqs last  enabled at (155): [<c044407f>] trace_hardirqs_on+0xb/0xd
-hardirqs last disabled at (156): [<c04eee88>] trace_hardirqs_off_thunk+0xc/0x10
-softirqs last  enabled at (152): [<c042c2f3>] __do_softirq+0xe3/0xe9
-softirqs last disabled at (95): [<c04058eb>] do_softirq+0x65/0xb4
+> ZFS and btrfs both support redundancy within the filesystem.  They can
+> fetch the good copy and fix the bad one.  And they have much more
+> context available for recovery than a RAID would.
 
-Pid: 0, comm: events/0 Not tainted (2.6.27-rc1 #224)
-EIP: 0060:[<c04088ba>] EFLAGS: 00000246 CPU: 1
-EIP is at mwait_idle+0x3c/0x4a
-EAX: 00000000 EBX: e3e48008 ECX: 00000000 EDX: 00000000
-ESI: 00000000 EDI: 00000000 EBP: e3e48f9c ESP: e3e48f98
- DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
-CR0: 8005003b CR2: 00000000 CR3: 00768000 CR4: 000006d0
-DR0: 00000000 DR1: 00000000 DR2: 00000000 DR3: 00000000
-DR6: ffff0ff0 DR7: 00000400
- [<c0402591>] cpu_idle+0xbf/0xdf
- [<c05fb737>] start_secondary+0x16b/0x170
- =======================
+My problem is that the corruption I see is "silent": so
+redundancy is useless, as I cannot distinguish good blocks
+from bad.   I'm running RAID, one of the two disks returns
+bad data.  Without checksums, I can't tell which version of
+a block is the good one.
 
+> Linas> I assume that a device mapper can alter the number of blocks-in
+> Linas> to the number of blocks-out; that it doesn't have to be
+> Linas> 1-1. Then for every 10 sectors of data, it would use 11 sectors
+> Linas> of storage, one holding the checksum.  I'm very naive about how
+> Linas> the block layer works, so I don't know what snags there might
+> Linas> be.
+>
+> I did a proof of concept of this a couple of years ago ago.  And
+> performance was pretty poor.
 
-216s should be the time since the machine booted up.
+Yes, I'm not surprised. For a home-use system, though,
+I think I'm ready to sacrifice performance in exchange for
+reliability.  Much of what I do does not hit the disk hard.
 
+There is also in interesting possibility that offers a middle
+ground between raw performance and safety: instead of
+verifying  checksums on *every* read access, it could be
+enough to verify only every so often -- say, only one out
+of every 10 reads, or maybe triggered by a cron job in
+the middle of the night: turn on verification, touch a bunch
+of files for an hour or two, turn off verification before 6AM.
+This would be enough to trigger timely ill-health warnings,
+without impacting daytime use.  (Much as I dislike the
+corruption I suffered, I dislike even more that I had no
+warning of it)
 
-(maybe off-topic)
-I never succeed to offline cpu1, it caused the kernel to hang
-whenver I offlined cpu1
+> The elegant part about filesystem checksums is that they are stored in
+> the metadata blocks which are read anyway.
 
+Yes.
 
+> So there are no additional
+> seeks, nor read-modify-write on a 10 sector + 1 blob of data.
+
+I guess that, instead of writing 10+1 sectors, with the seek
+penalty, it might be faster to copy data in the kernel, so as
+to be able to store the checksum in the same sector as the
+data.
+
+> So, yes.  You need special hardware.  Controller and disk need to
+> support DIX and DIF respectively.  This has been in the works for a
+> while and hardware is starting to materialize.  Expect this to become
+> standard fare in the SCSI/SAS/FC market segment.
+
+Yes, well, my HBA is soldered onto my MB, and I'm buying
+$80 hard drives one at a time at Frye's electronics, so it could
+be 5-10 years before DIX/DIF trickles down to consumer-grade
+electronics.  And I don't want to wait 5-10 years ...
+
+Thus, a "tactical" solution seems to be pure-software
+check-summing in a kernel device-mapper module,
+performance be damned.
+
+--linas
