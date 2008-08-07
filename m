@@ -1,76 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753440AbYHGUms@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756209AbYHGUng@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753440AbYHGUms (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Aug 2008 16:42:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755728AbYHGUmi
+	id S1756209AbYHGUng (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Aug 2008 16:43:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753288AbYHGUn2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Aug 2008 16:42:38 -0400
-Received: from mtagate4.uk.ibm.com ([195.212.29.137]:61695 "EHLO
-	mtagate4.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755708AbYHGUmh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Aug 2008 16:42:37 -0400
-From: Christian Borntraeger <borntraeger@de.ibm.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH] Fix race/oops in tty layer after BKL pushdown
-Date: Thu, 7 Aug 2008 22:42:20 +0200
-User-Agent: KMail/1.9.9
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Olaf Schnapper <os@de.ibm.com>
-References: <200808071433.06885.borntraeger@de.ibm.com> <20080807204439.1f8de826@lxorguk.ukuu.org.uk>
-In-Reply-To: <20080807204439.1f8de826@lxorguk.ukuu.org.uk>
+	Thu, 7 Aug 2008 16:43:28 -0400
+Received: from iabervon.org ([66.92.72.58]:37342 "EHLO iabervon.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753069AbYHGUn1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Aug 2008 16:43:27 -0400
+Date: Thu, 7 Aug 2008 16:43:26 -0400 (EDT)
+From: Daniel Barkalow <barkalow@iabervon.org>
+To: jmerkey@wolfmountaingroup.com
+cc: Chris Friesen <cfriesen@nortel.com>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Geert Uytterhoeven <geert@linux-m68k.org>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Josh Boyer <jwboyer@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: [ANNOUNCE] Merkey's Kernel Debugger
+In-Reply-To: <2364.69.2.248.210.1217954354.squirrel@webmail.wolfmountaingroup.com>
+Message-ID: <alpine.LNX.1.00.0808071626500.19665@iabervon.org>
+References: <17494.166.70.238.46.1217784156.squirrel@webmail.wolfmountaingroup.com>    <Pine.LNX.4.64.0808051140150.6309@anakin>    <33030.166.70.238.45.1217948565.squirrel@webmail.wolfmountaingroup.com>    <200808060133.10457.nickpiggin@yahoo.com.au>   
+ <44919.166.70.238.45.1217949560.squirrel@webmail.wolfmountaingroup.com>    <48987A24.3060000@nortel.com> <2364.69.2.248.210.1217954354.squirrel@webmail.wolfmountaingroup.com>
+User-Agent: Alpine 1.00 (LNX 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200808072242.20422.borntraeger@de.ibm.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Donnerstag, 7. August 2008 schrieb Alan Cox:
-> > It seems that tty was already free in disassocate_ctty when it tries
-> > to dereference tty->driver.
-> > 
-> > After moving the lock_kernel before the mutex_unlock, I can no longer
-> > reproduce the problem.
-> > 
-> > Please review and consider to apply:
-> 
-> This doesn't help as the BKL doesn't protect tty here - we don't have
-> refcounting on the ttys yet so this bug (which goes back forever) simply
-> becomes a different sized race if you swap the lock ordering.
-> 
-> Given tty_vhangup just fires off a wait queue which is killed on the tty
-> destruction you should be able for now at least to move the mutex_unlock
-> to after the call to tty_vhangup().
-> 
-> Does that also fix the problem ?
+On Tue, 5 Aug 2008, jmerkey@wolfmountaingroup.com wrote:
 
-You mean something like the below patch? Yes, that works as well.
+> Read it already.  Quite a few large companies are using it at present and
+> have been since 2000, BTW.
 
-Signed-off-by: Christian Borntraeger <borntraeger@de.ibm.com>
+The criterion for kernel inclusion isn't really whether it works, however. 
+It's whether other people would be able to understand it well enough to 
+support it if you disappear (or if somebody else has changes that require 
+changes to it). If it works well but isn't nice code, nobody really 
+benefits from having it in the kernel distribution rather than external 
+(like it's been for the past 8 years). If it is nice code (somewhat 
+regardless of whether it happens to work right now), people can work on it 
+and keep it in sync with the kernel as they change things.
 
----
- drivers/char/tty_io.c |    3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
-
-Index: kvm/drivers/char/tty_io.c
-===================================================================
---- kvm.orig/drivers/char/tty_io.c
-+++ kvm/drivers/char/tty_io.c
-@@ -1161,12 +1161,11 @@ void disassociate_ctty(int on_exit)
- 	tty = get_current_tty();
- 	if (tty) {
- 		tty_pgrp = get_pid(tty->pgrp);
--		mutex_unlock(&tty_mutex);
- 		lock_kernel();
--		/* XXX: here we race, there is nothing protecting tty */
- 		if (on_exit && tty->driver->type != TTY_DRIVER_TYPE_PTY)
- 			tty_vhangup(tty);
- 		unlock_kernel();
-+		mutex_unlock(&tty_mutex);
- 	} else if (on_exit) {
- 		struct pid *old_pgrp;
- 		spin_lock_irq(&current->sighand->siglock);
+	-Daniel
+*This .sig left intentionally blank*
