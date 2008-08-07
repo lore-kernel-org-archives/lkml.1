@@ -1,66 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754031AbYHGPCU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752331AbYHGPCo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754031AbYHGPCU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Aug 2008 11:02:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751586AbYHGPCJ
+	id S1752331AbYHGPCo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Aug 2008 11:02:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754175AbYHGPCa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Aug 2008 11:02:09 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:60994 "EHLO mx1.redhat.com"
+	Thu, 7 Aug 2008 11:02:30 -0400
+Received: from ra.tuxdriver.com ([70.61.120.52]:3883 "EHLO ra.tuxdriver.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751090AbYHGPCI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Aug 2008 11:02:08 -0400
-Subject: Re: [PATCH] jbd: abort instead of waiting for nonexistent
-	transactions
-From: "Stephen C. Tweedie" <sct@redhat.com>
-To: Duane Griffin <duaneg@dghda.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-ext4@vger.kernel.org,
-       Sami Liedes <sliedes@cc.hut.fi>, Stephen Tweedie <sct@redhat.com>
-In-Reply-To: <e9e943910808061747x57dc2ed0s614785d9d0a087a8@mail.gmail.com>
-References: <1217893895-29165-1-git-send-email-duaneg@dghda.com>
-	 <1217951437.3886.36.camel@sisko.scot.localnet>
-	 <e9e943910808061747x57dc2ed0s614785d9d0a087a8@mail.gmail.com>
-Content-Type: text/plain
-Date: Thu, 07 Aug 2008 16:01:08 +0100
-Message-Id: <1218121268.14209.13.camel@sisko.scot.localnet>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.0.2 (2.0.2-41.el4) 
-Content-Transfer-Encoding: 7bit
+	id S1751586AbYHGPC3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Aug 2008 11:02:29 -0400
+Date: Thu, 7 Aug 2008 10:38:34 -0400
+From: "John W. Linville" <linville@tuxdriver.com>
+To: davem@davemloft.net
+Cc: linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: pull request: wireless-2.6#ath9k 2008-08-07
+Message-ID: <20080807143834.GB27762@tuxdriver.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Dave,
 
-On Thu, 2008-08-07 at 01:47 +0100, Duane Griffin wrote:
+I know we all want to see ath9k merged ASAP.  Since I'll be unavailable
+this weekend, I have created a branch that includes Luis's revamped
+list.h patches, the original ath9k patches, Adrian's ath9k gcc bug
+work-around patch, and another cleanup series from Sujith on top.
 
-> > Surely we'd be better off detecting this in the first place at mount
-> > time, not later on during checkpoint?
-> 
-> Sounds sensible. In fact I've got another patch, waiting for feedback
-> from the reporter, that adds some very basic validation there (i.e.
-> first > 0 && last >= first). Not enough, I suspect. I guess we could
-> do much better?
+Hopefully no further problems will reveal themselves with the list.h
+stuff.  Please pull at your leisure, or if a problem arises I'll work to
+resolve it on Monday.
 
-Right: in journal.c we initialise the maximum size of a transaction to
+Thanks!
 
-	journal->j_max_transaction_buffers = journal->j_maxlen / 4;
+John
 
-(the logic being that we need the journal to be able to hold an absolute
-minimum of one full transaction being checkpointed, one being committed,
-and one being live concurrently for the transaction engine to work
-correctly, which gives three outstanding transactions; we up that to
-four to protect against rounding errors and to ensure space for the
-sequence and commit blocks that take up log space in addition to the
-journaled buffers themselves.)
+---
 
-If, during journal load, that's not enough for a minimum-sized single
-update, we'll never be able to start some transactions, so that would be
-a good place to check that we're starting off with a large enough
-journal.
+Individual patches are available here:
 
---Stephen
+	http://www.kernel.org/pub/linux/kernel/people/linville/wireless-2.6/ath9k/
 
+---
 
+The following changes since commit e6fce5b916cd7f7f79b2b3e53ba74bbfc1d7cf8b:
+  Robert Olsson (1):
+        pktgen: multiqueue etc.
 
+are available in the git repository at:
 
+  git://git.kernel.org/pub/scm/linux/kernel/git/linville/wireless-2.6.git ath9k
+
+Adrian Bunk (1):
+      ath9k: work around gcc ICEs
+
+Luis R. Rodriguez (4):
+      list.h: Add list_splice_tail() and list_splice_tail_init()
+      list.h: add list_cut_position()
+      ath5k: remove Atheros 11n devices from supported list
+      ath9k: Add new Atheros IEEE 802.11n driver
+
+Sujith (6):
+      ath9k: Cleanup data structures related to HW capabilities
+      ath9k: Remove redundant data structure ath9k_txq_info
+      ath9k: Use mac80211's band macros and remove enum hal_freq_band
+      ath9k: Remove a few unused macros and fix indentation
+      ath9k: More unused macros
+      ath9k: Revamp wireless mode usage
+
+ MAINTAINERS                              |    9 +
+ drivers/dma/ioat_dma.c                   |    2 +-
+ drivers/net/wireless/Kconfig             |    1 +
+ drivers/net/wireless/Makefile            |    1 +
+ drivers/net/wireless/ath5k/base.c        |    2 -
+ drivers/net/wireless/ath9k/Kconfig       |    8 +
+ drivers/net/wireless/ath9k/Makefile      |   11 +
+ drivers/net/wireless/ath9k/ath9k.h       | 1021 ++++
+ drivers/net/wireless/ath9k/beacon.c      |  979 ++++
+ drivers/net/wireless/ath9k/core.c        | 1923 +++++++
+ drivers/net/wireless/ath9k/core.h        | 1072 ++++
+ drivers/net/wireless/ath9k/hw.c          | 8571 ++++++++++++++++++++++++++++++
+ drivers/net/wireless/ath9k/hw.h          |  969 ++++
+ drivers/net/wireless/ath9k/initvals.h    | 3146 +++++++++++
+ drivers/net/wireless/ath9k/main.c        | 1470 +++++
+ drivers/net/wireless/ath9k/phy.c         |  436 ++
+ drivers/net/wireless/ath9k/phy.h         |  543 ++
+ drivers/net/wireless/ath9k/rc.c          | 2126 ++++++++
+ drivers/net/wireless/ath9k/rc.h          |  316 ++
+ drivers/net/wireless/ath9k/recv.c        | 1318 +++++
+ drivers/net/wireless/ath9k/reg.h         | 1385 +++++
+ drivers/net/wireless/ath9k/regd.c        | 1026 ++++
+ drivers/net/wireless/ath9k/regd.h        |  412 ++
+ drivers/net/wireless/ath9k/regd_common.h | 1915 +++++++
+ drivers/net/wireless/ath9k/xmit.c        | 2871 ++++++++++
+ drivers/usb/host/ehci-q.c                |    2 +-
+ include/linux/list.h                     |   87 +-
+ 27 files changed, 31609 insertions(+), 13 deletions(-)
+ create mode 100644 drivers/net/wireless/ath9k/Kconfig
+ create mode 100644 drivers/net/wireless/ath9k/Makefile
+ create mode 100644 drivers/net/wireless/ath9k/ath9k.h
+ create mode 100644 drivers/net/wireless/ath9k/beacon.c
+ create mode 100644 drivers/net/wireless/ath9k/core.c
+ create mode 100644 drivers/net/wireless/ath9k/core.h
+ create mode 100644 drivers/net/wireless/ath9k/hw.c
+ create mode 100644 drivers/net/wireless/ath9k/hw.h
+ create mode 100644 drivers/net/wireless/ath9k/initvals.h
+ create mode 100644 drivers/net/wireless/ath9k/main.c
+ create mode 100644 drivers/net/wireless/ath9k/phy.c
+ create mode 100644 drivers/net/wireless/ath9k/phy.h
+ create mode 100644 drivers/net/wireless/ath9k/rc.c
+ create mode 100644 drivers/net/wireless/ath9k/rc.h
+ create mode 100644 drivers/net/wireless/ath9k/recv.c
+ create mode 100644 drivers/net/wireless/ath9k/reg.h
+ create mode 100644 drivers/net/wireless/ath9k/regd.c
+ create mode 100644 drivers/net/wireless/ath9k/regd.h
+ create mode 100644 drivers/net/wireless/ath9k/regd_common.h
+ create mode 100644 drivers/net/wireless/ath9k/xmit.c
+
+Omnibus patch available here:
+
+	http://www.kernel.org/pub/linux/kernel/people/linville/wireless-2.6-ath9k-2008-08-07.patch.bz2
+
+-- 
+John W. Linville
+linville@tuxdriver.com
