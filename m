@@ -1,169 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754944AbYHGMgf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759191AbYHGMgx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754944AbYHGMgf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Aug 2008 08:36:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757595AbYHGMfj
+	id S1759191AbYHGMgx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Aug 2008 08:36:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757702AbYHGMgb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Aug 2008 08:35:39 -0400
-Received: from smtp2.Stanford.EDU ([171.67.20.25]:45383 "EHLO
-	smtp2.stanford.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753018AbYHGMfg (ORCPT
+	Thu, 7 Aug 2008 08:36:31 -0400
+Received: from E23SMTP01.au.ibm.com ([202.81.18.162]:52689 "EHLO
+	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757861AbYHGMg3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Aug 2008 08:35:36 -0400
-X-Greylist: delayed 387 seconds by postgrey-1.27 at vger.kernel.org; Thu, 07 Aug 2008 08:35:36 EDT
-Message-ID: <20080807052905.f3ijvmuxsgkowwww@webmail.stanford.edu>
-Date: Thu, 07 Aug 2008 05:29:05 -0700
-From: Philip Guo <pg@cs.stanford.edu>
-To: linux-kernel@vger.kernel.org
-Subject: research questionnaire about kernel development
+	Thu, 7 Aug 2008 08:36:29 -0400
+Date: Thu, 7 Aug 2008 18:05:58 +0530
+From: Chirag Jog <chirag@linux.vnet.ibm.com>
+To: Steven Rostedt <rostedt@goodmis.org>, LKML <linux-kernel@vger.kernel.org>,
+       linux-rt-users <linux-rt-users@vger.kernel.org>
+Cc: "Timothy R. Chavez" <tim.chavez@linux.vnet.ibm.com>,
+       Josh Triplett <josht@linux.vnet.ibm.com>,
+       Sebastien Dugue <sebastien.dugue@bull.net>
+Subject: [PATCH][PPC64][RT] Fix a previously reverted fix again
+Message-ID: <20080807123558.GA10684@linux.vnet.ibm.com>
+Reply-To: Chirag Jog <chirag@linux.vnet.ibm.com>
+Mail-Followup-To: Steven Rostedt <rostedt@goodmis.org>,
+	LKML <linux-kernel@vger.kernel.org>,
+	linux-rt-users <linux-rt-users@vger.kernel.org>,
+	"Timothy R. Chavez" <tim.chavez@linux.vnet.ibm.com>,
+	Josh Triplett <josht@linux.vnet.ibm.com>,
+	Sebastien Dugue <sebastien.dugue@bull.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset=ISO-8859-1;
-	DelSp="Yes";
-	format="flowed"
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
-User-Agent: Internet Messaging Program (IMP) H3 (4.1.5)
-Authenticated-User: pgbovine
-X-Originating-IP: 128.30.84.45
+Organization: IBM LTC
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-SUMMARY:
 
-This is a request for comments on 14 assertions about kernel
-development to give a grad student qualitative insight into the
-quantitative data he has gathered on kernel development.  Make
-comments by email replying directly to me.
+Hi Steven,
+   Ironically in the 2.6.26-rt1,the patch fix-a-previously-reverted-fix.patch
+   again got reverted ;).
+   
+   Here the patch that should replace the above patch.
+
+This patch reintroduces a "fix" that got reverted.
+Here was the original patch http://lkml.org/lkml/2007/5/22/133
+
+Here is the new patch
+This patch also fixes OOPS reported here: http://lkml.org/lkml/2008/6/19/146
+
+>From tsutomu.owa@toshiba.co.jp
+Signed-Off-By: Chirag <chirag@linux.vnet.ibm.com>
+
+
 
 ---
-INTRODUCTION:
+ arch/powerpc/kernel/entry_64.S |   19 +++++++++----------
+ 1 file changed, 9 insertions(+), 10 deletions(-)
 
-I am a CS graduate student at Stanford University working in the
-research group that developed the Stanford Checker, a static code
-analysis tool that has found numerous kernel bugs and posted reports
-to LKML in the past few years.
-
-In the past year, I've been doing an empirical study of how Linux
-kernel development occurs and how developers respond to bug reports.
-I'm planning to submit my findings for review as a research paper, but
-before I do so, I would like to receive some feedback from kernel
-developers.  I don't feel qualified to craft qualitative explanations
-out of my purely quantitative results (e.g., 'these X numbers show
-that developers are behaving in Y way'); to do so would be to unjustly
-speculate, since I have never been active in kernel development.
-
-I would really appreciate it if you could assist my research by
-filling out this questionnaire (as much of it as you have time for)
-and sending it as an email reply to me.  For brevity, I will simply
-make assertions (derived from my data analysis) and then ask for your
-insights about their veracity.  Please let me know if you have any
-questions or want to view the raw data before making your responses.
-
-Thanks in advance,
-Philip Guo
-pg@cs.stanford.edu
-
----
-ASSERTIONS:
-
-For each, please state whether you agree, and if so, why you think it
-is true based upon your own experiences, intuitions, and anecdotes.
-Likewise, if you disagree, state why you think it sounds erroneous.
-
-
-   Assertion 1: Files are less actively modified as they age (i.e.,
-   older files are subject to fewer and smaller-sized patches than
-   younger files)
-
-
-   Assertion 2: Files with lots of patches (dozens to hundreds) remain
-   actively-patched throughout their lifetimes, but files with few
-   patches get most of their patches at the beginning of their lives
-   and then aren't patched much afterwards.
-
-
-   Assertion 3: Patches cluster in time --- if a file is patched during
-   a particular week, then it is more likely than average to be patched
-   in the near future
-
-
-   Assertion 4: Files with more non-bugfix patches usually have more
-   bugs reported (and fixed) than files with fewer patches.
-
-
-
-Since 2006, the Coverity Scan project (scan.coverity.com) has found
-and reported a few thousand potential bugs in Linux using an automated
-static analysis tool.  Developers can log into the website and triage
-the bug reports, marking each one as either a true bug or a false
-positive and whether/when it is fixed.  In my dataset, 60% of the
-~2,000 reports are triaged (and the rest are ignored).
-
-
-   Assertion 5: Files/directories where automated code analysis tools
-   (e.g., Sparse, Coverity Scan) flag more potential bugs actually
-   contain more user-reported bugs.
-
-
-   Assertion 6: Coverity Scan reports in younger files are more likely
-   to be triaged and fixed.
-
-
-   Assertion 7: Coverity Scan reports in smaller files (i.e., those
-   with fewer num. lines) are more likely to be triaged and fixed.
-
-
-   Assertion 8: The longer it takes for developers to triage a Coverity
-   Scan bug report, the lower chance that it has of being marked as a
-   true bug and eventually fixed.
-
-
-   Assertion 9: If developers triage bug reports in a certain file and
-   mark them as true bugs, then they are more likely to triage future
-   reports in the same file.
-
-
-   Assertion 10: If developers triage bug reports in a certain file and
-   mark them as false positives, then they are more likely to IGNORE
-   future reports for that same file.
-
-
-
-A 'prolific kernel developer' is someone who has written a substantial
-number of kernel patches (in the dozens or hundreds).  A 'regular
-kernel developer' is someone who has written around a dozen or fewer
-kernel patches.  The top 1% most prolific kernel developers have
-written ~50% of all patches since 2002, and the top 20% have written
-93% of all patches.
-
-
-   Assertion 11: As compared to prolific developers, regular kernel
-   developers write more patches that add new files to the repository
-   or insert new lines to existing files.
-
-
-   Assertion 12: As compared to regular devs., prolific devs. write
-   more patches that do code cleanup, refactoring, and predominantly
-   delete lines of code.
-
-
-   Assertion 13: Files with larger percentages of their patches written
-   by prolific developers have fewer Coverity Scan-reported bugs and
-   also fewer bugfix patches committed.
-
-
-
-A '.com developer' is someone with a .com email address (excluding
-free email services like gmail.com or hotmail.com).  .com developers
-have written 66% of all patches since 2002.  Many prolific developers
-are also .com devs.: 66% of the top 1% most prolific devs.  are also
-.com devs.
-
-
-   Assertion 14: Files with larger percentages of their patches written
-   by .com developers have fewer Coverity Scan-reported bugs and also
-   fewer bugfix patches committed.
+Index: linux-2.6.26-rt1/arch/powerpc/kernel/entry_64.S
+===================================================================
+--- linux-2.6.26-rt1.orig/arch/powerpc/kernel/entry_64.S	2008-08-07 10:35:18.000000000 +0000
++++ linux-2.6.26-rt1/arch/powerpc/kernel/entry_64.S	2008-08-07 11:33:55.000000000 +0000
+@@ -595,30 +595,31 @@
+ 	bne	restore
+ 	/* here we are preempting the current task */
+ 1:
++	/*
++	 * preempt_schedule_irq() expects interrupts disabled and returns
++	 * with interrupts disabled. No need to check preemption again,
++	 * preempt_schedule_irq just did that for us.
++	 */
++	bl	.preempt_schedule_irq
+ #ifdef CONFIG_TRACE_IRQFLAGS
+ 	bl	.trace_hardirqs_on
++#endif /* CONFIG_TRACE_IRQFLAGS */
++
+ 	/* Note: we just clobbered r10 which used to contain the previous
+ 	 * MSR before the hard-disabling done by the caller of do_work.
+ 	 * We don't have that value anymore, but it doesn't matter as
+ 	 * we will hard-enable unconditionally, we can just reload the
+ 	 * current MSR into r10
+ 	 */
+-	mfmsr	r10
+-#endif /* CONFIG_TRACE_IRQFLAGS */
+-	li	r0,1
+-	stb	r0,PACASOFTIRQEN(r13)
+-	stb	r0,PACAHARDIRQEN(r13)
+-	ori	r10,r10,MSR_EE
+-	mtmsrd	r10,1		/* reenable interrupts */
+-	bl	.preempt_schedule
+-	mfmsr	r10
+-	clrrdi	r9,r1,THREAD_SHIFT
+-	rldicl	r10,r10,48,1	/* disable interrupts again */
+-	rotldi	r10,r10,16
+-	mtmsrd	r10,1
+-	ld	r4,TI_FLAGS(r9)
+-	andi.	r0,r4,_TIF_NEED_RESCHED
+-	bne	1b
++	bl	.preempt_schedule_irq
++	mfmsr   r10
++	clrrdi  r9,r1,THREAD_SHIFT
++	rldicl  r10,r10,48,1    /* disable interrupts again */
++	rotldi  r10,r10,16
++	mtmsrd  r10,1
++	ld      r4,TI_FLAGS(r9)
++	andi.   r0,r4,(_TIF_NEED_RESCHED)
++	bne     1b
+ 	b	restore
+ 
+ user_work:
 
 
