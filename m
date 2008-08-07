@@ -1,121 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754989AbYHGAjV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755736AbYHGAps@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754989AbYHGAjV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Aug 2008 20:39:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753414AbYHGAjE
+	id S1755736AbYHGAps (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Aug 2008 20:45:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751892AbYHGApj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Aug 2008 20:39:04 -0400
-Received: from dresden.studentenwerk.mhn.de ([141.84.225.229]:44618 "EHLO
-	email.studentenwerk.mhn.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753389AbYHGAjB (ORCPT
+	Wed, 6 Aug 2008 20:45:39 -0400
+Received: from outbound-mail-18.bluehost.com ([69.89.20.233]:56584 "HELO
+	outbound-mail-18.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751598AbYHGApi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Aug 2008 20:39:01 -0400
-From: Wolfgang Walter <wolfgang.walter@stwm.de>
-Organization: Studentenwerk =?iso-8859-1?q?M=FCnchen?=
-To: Suresh Siddha <suresh.b.siddha@intel.com>
-Subject: Re: Kernel oops with 2.6.26, padlock and ipsec: probably problem with fpu state changes
-Date: Thu, 7 Aug 2008 02:38:58 +0200
+	Wed, 6 Aug 2008 20:45:38 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
+	b=s3BfiVyf7o4PZarbZwuWakKN8VowrjzWMZHJN4MnQtOPTAmMtKQiqfxfSjveCMSQ77RGQE390mWUhOuD8OSkPrOpntJN7MZjPpMYu19jgzW2xUYT/uMHVm1+9h463hrQ;
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Subject: Re: [PATCH] Export shmem_file_setup and shmem_getpage for DRM-GEM
+Date: Wed, 6 Aug 2008 17:45:31 -0700
 User-Agent: KMail/1.9.9
-Cc: Herbert Xu <herbert@gondor.apana.org.au>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, vegard.nossum@gmail.com
-References: <200807171653.59177.wolfgang.walter@stwm.de> <20080806201401.GA607@linux-os.sc.intel.com> <20080806212152.GB607@linux-os.sc.intel.com>
-In-Reply-To: <20080806212152.GB607@linux-os.sc.intel.com>
+Cc: Keith Packard <keithp@keithp.com>, Christoph Hellwig <hch@infradead.org>,
+       Eric Anholt <eric@anholt.net>, linux-kernel@vger.kernel.org
+References: <1217573919-7496-1-git-send-email-eric@anholt.net> <1217887116.24714.118.camel@koto.keithp.com> <200808051443.11858.nickpiggin@yahoo.com.au>
+In-Reply-To: <200808051443.11858.nickpiggin@yahoo.com.au>
 MIME-Version: 1.0
-Content-Disposition: inline
-X-Length: 4020
 Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
-Message-Id: <200808070238.58959.wolfgang.walter@stwm.de>
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200808061745.31594.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thanks for your answer.
-
-On Wednesday 06 August 2008, Suresh Siddha wrote:
-> On Wed, Aug 06, 2008 at 01:14:02PM -0700, Siddha, Suresh B wrote:
-> > On Wed, Aug 06, 2008 at 10:33:25AM -0700, Wolfgang Walter wrote:
-> > > Hello Herbert,
+On Monday, August 4, 2008 9:43 pm Nick Piggin wrote:
+> On Tuesday 05 August 2008 07:58, Keith Packard wrote:
+> > On Mon, 2008-08-04 at 19:02 +1000, Nick Piggin wrote:
+> > > > I suppose we could have user space allocate the shmem file (either
+> > > > via tmpfs or sysv ipc). tmpfs suffers from the maxfd issue, while
+> > > > sysv ipc runs up against the SHMMAX value.
 > > >
-> > > I think I finally found the problem.
-> > >
-> > > Here a short description again: all our routers with a via C3 using 
-> > > padlock for AES-encryption are
-> > > crashing with 2.6.26 while they work fine with 2.6.25. Not using padlock
-> > > (i.e. using the i386 assembler version of AES) they just work fine.
-> > 
-> > Both the padlock version or asm version don't use FP/math registers, 
-> > right?
-> > It is interesting that you don't see the problem with asm version
-> > but see the problem with padlock version.
+> > > This is how I'd suggested it work as well. I think a little bit
+> > > more effort should be spent looking at making this work.
+> >
+> > Well, I've spent a day thinking about using existing user-space APIs to
+> > get at shmem files. While it's nice that we've discovered a
+> > filesystem-independent mechanism to pin file pages, we haven't found
+> > anything similar for creating the files. In particular, what I want is:
+> >
+> >  1) Anonymous files backed by swap
+> >  2) Freed when the last process using them exits
+> >  3) That never appear in the file system
+> >  4) Do not consume a low FD (yeah, I know, rewrite the desktop)
+> >
+> > So, what I could do is
+> >
+> > 	char	template[] = "/dev/shm/drm-XXXXXX";
+> > 	int	fd;
+> > 	fd = mkstemp (template);
+> > 	unlink (template);
+> > 	ftruncate (fd, size)
+> > 	object = drm_create_an_object_for_a_file (fd);
+> > 	close (fd);
+> >
+> > While I haven't written any code yet, this should work and will even be
+> > compatible with my current user-space API. I have to create a DRM object
+> > for the file in any case, and so I don't need to hold onto the fd.
+> > Releasing the fd also eliminates any ulimit issues.
+> >
+> > The drm_create_an_object_for_a_file call could return another fd. But,
+> > note that the original shmem fd has no real value to the application in
+> > this case.
+> >
+> > I can imagine other cases where mapping non-shmem files would make sense
+> > though, in particular it's fairly easy to envision mapping an image file
+> > to the GTT and having the graphics process decode and display it without
+> > any additional copies. I think this demonstrates the potential utility
+> > of the general file mapping operation.
+> >
+> > But, I'd like to have you reconsider whether it makes sense for user
+> > space to go through the above dance to create anonymous shared objects
+> > when the kernel already supports precisely the desired semantics and
+> > even exposes them to the ipc/shm implementation.
+>
+> In my opinion, doing this little song and dance (which is a few lines
+> of quite well defined APIs, btw) in userspace is preferable to adding
+> a single line or exporting a single function in kernel space. Unless
+> there is a better reason than eliminating a few lines of userspace code.
+>
+> I'm absolutely not against exporting a nice API for a swappable, object
+> based memory allocator using ipc or shm to the wider kernel (with a nice
+> API rather than just using shmem functions directly of course). But the
+> fact that most or all of this seems to be able to be done in userspace
+> just tells me that's where it should be prototyped first. It adds
+> nothing to maintainence costs of the kernel code, and might actually be
+> helpful to show some shortcomings of our user API definition or
+> implementation.
 
-I don't know how padlock exactly works and I don't know anything of i386's 
-architecture on hardware and assembler level. So I can only speculate:
+Yeah, I like this approach too, but to echo what Keith & Dave already 
+mentioned, it would make the in-kernel aspect of things much more difficult 
+(without abusing VFS calls from within the kernel anyway).
 
-Maybe padlock aes does influence FP/math.
+It's not just the low level gfx libraries that need to create, map, operate 
+on, and wait for objects.  The kernel also needs to create objects and map 
+them at the very least (hopefully we can avoid most of the other stuff inside 
+the kernel).
 
-http://linux.via.com.tw/support/beginDownload.action?eleid=181&fid=261
+It seems like that's hard to do without duplicating big chunks of shmem.c.  
+Any suggestions, Nick or Christoph?
 
-states:
+I'm trying to think of analogues in other kernel subsystems, but the best I 
+can come up with is shmem. :)  Some of the cluster fabric cards have similar 
+issues (wanting to pin/map/unmap memory, and manage on-board IOMMUs) but I 
+think gfx may be different in that it tends to use large chunks of memory for 
+long periods of time; and even when a given GPU program is done with a piece 
+of memory, the very next program run is likely to need it again.  And I think 
+the in-kernel requirements in this case are fairly unique.
 
-3. SSE instructions must be enabled via the standard x86 method of enabling
-the FXSAVE/FXRSTOR instructions using CR4[9] This enables the full set of SSE
-instructions. If CR4[9] is not set, PadLock behaves as if it were disabled via
-the MSR, regardless of the setting of the enable bits MSRs.
-
-
-> > 
-> > Does disabling CONFIG_PREEMPT in 2.6.26 change anything? And also,
-> > can you provide the complete kernel log till the point of failure(oops
-> > that you sent doesn't have the call trace info)
-> 
-> BTW, in one of your oops, I see:
-> 
-> note: cron[1207] exited with preempt_count 268435459
-> 
-> I smell some kind of stack corruption here which is corrupting
-> thread_info (in the above case preempt_count in the thread_info).
-> 
-> Similarly, if the status field(in thread_info) gets corrupted(setting
-> TS_USEDFPU) without proper math state allocated(present in thread_struct),
-> we can end up oops in __switch_to.
-> 
-> But you seem to say, reverting recent fpu patches make the problem go away.
-> hmm, just wondering if your test kernel (with fpu patches reverted) is 
-stable
-> enough and don't see other oops/issues?
-
-No oops yet.
-
-2.6.26 crashes here within 1 or 2 minutes if (and only) if there is ipsec 
-traffic using padlock aes and there are actually processes running (i.e. 
-ssh).
-
-The modified 2.6.26 did not crash yet (now running hours).
-
-Unmodified 2.6.26 where we use i386 assembler aes instead of padlock runs 
-since 2 weeks.
-
-We further use almost same kernels (only compiled for K7 or Intel Core Duo, 
-respectively) on K7 and an Intel Quad Core without problems.
-
-> 
-> Recently Vegard also noticed some stack corruptions (in network stack) 
-leading
-> to similar problems. Not sure if Vegard has root caused his issue. copying 
-him
-> for his comments.
-> 
-> thanks,
-> suresh
-> 
-> 
-
-Regards,
--- 
-Wolfgang Walter
-Studentenwerk München
-Anstalt des öffentlichen Rechts
+Jesse
