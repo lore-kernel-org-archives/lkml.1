@@ -1,127 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754939AbYHGPvD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754161AbYHGPyD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754939AbYHGPvD (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Aug 2008 11:51:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752492AbYHGPuv
+	id S1754161AbYHGPyD (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Aug 2008 11:54:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751788AbYHGPxy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Aug 2008 11:50:51 -0400
-Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:59527 "EHLO
-	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754490AbYHGPuu (ORCPT
+	Thu, 7 Aug 2008 11:53:54 -0400
+Received: from outbound-mail-35.bluehost.com ([69.89.18.155]:60424 "HELO
+	outbound-mail-35.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752508AbYHGPxy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Aug 2008 11:50:50 -0400
-Message-ID: <489B199B.40305@s5r6.in-berlin.de>
-Date: Thu, 07 Aug 2008 17:49:47 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.16) Gecko/20080702 SeaMonkey/1.1.11
+	Thu, 7 Aug 2008 11:53:54 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
+	b=BNQNHEEwdPa+OlGGPMh0Qe8Lgh1GLrvibriqALlOQyc2ILIFrvX27Qtwx85jbVSYd9gcY5iYZJ6OCwf3HPQIa073BoaOidqlfRIWQus+0x04+a01VlbuGJ8S20QkRd55;
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+Subject: Re: [Bug #11178] Secondary hard drive fails during both hibernation and resume.
+Date: Thu, 7 Aug 2008 08:53:41 -0700
+User-Agent: KMail/1.9.9
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Matthew Wilcox <matthew@wil.cx>, Matthew Wilcox <willy@linux.intel.com>
+References: <cbItfVMShGI.A.olC.UMLlIB@albercik> <5ZeQ4vXWqRC.A.q2E.4NLlIB@albercik> <48956E15.6070409@tuffmail.co.uk>
+In-Reply-To: <48956E15.6070409@tuffmail.co.uk>
 MIME-Version: 1.0
-To: jmerkey@wolfmountaingroup.com
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [ANNOUNCE] mdb-2.6.27-rc2-ia32-08-07-08.patch
-References: <1300.69.2.248.210.1218119365.squirrel@webmail.wolfmountaingroup.com>
-In-Reply-To: <1300.69.2.248.210.1218119365.squirrel@webmail.wolfmountaingroup.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200808070853.42957.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-jmerkey@wolfmountaingroup.com wrote:
-> The mdb-rc2 patch was posted this morning with the changes for a modular
-> kernel debugger using kprobes.
-> 
-> ftp://ftp.wolfmountaingroup.org/pub/mdb/mdb-2.6.27-rc2-ia32-08-07-08.patch
-> 
-> Jeffrey Vernon Merkey
+On Sunday, August 3, 2008 1:36 am Alan Jenkins wrote:
+> Rafael J. Wysocki wrote:
+> > This message has been generated automatically as a part of a report
+> > of recent regressions.
+> >
+> > The following bug entry is on the current list of known regressions
+> > from 2.6.26.  Please verify if it still should be listed
+> > and let me know (either way).
+> >
+> >
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11178
+> > Subject		: Secondary hard drive fails during both hibernation and resume.
+> > Submitter	: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+> > Date		: 2008-07-30 04:53 (4 days old)
+> > Handled-By	: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+> > Patch		: http://bugzilla.kernel.org/attachment.cgi?id=17043&action=view
+>
+> Please keep listed.
+>
+> The problem and patch are recently confirmed by Hugh Dickins (on LKML)
+> and Dionisus Torimens (bugzilla duplicate).
 
+I took a look at this yesterday.  I don't think this is the only thing wrong 
+with the MSI code at this point (there are a couple of other improvements and 
+potential problems there), but your fix looks good.  I just applied it to my 
+for-linus tree.  I'll ask Linus to pull after it's had a little time in 
+linux-next.
 
-Quoting from this patch:
-
-> +typedef struct _RLOCK 
-> +{
-> +#if defined(CONFIG_SMP)
-> +    spinlock_t lock;
-> +#endif
-> +    unsigned long flags;
-> +    unsigned long processor;
-> +    unsigned long count;    
-> +} rlock_t;
-
-Is this something along the lines of a counting semaphore?  As far as I
-understand its accessor functions, an rlock
-  - can be taken by one CPU multiple times,
-  - will block the other CPUs as long as the first CPU hasn't unlocked
-    the rlock as many times as it locked it.
-
-The accessors rspin_lock() and rspin_try_lock() peek into spinlock_t and
-may therefore not be fully portable.  Also, they and rspin_unlock()
-don't look SMP safe:
-
-> +//
-> +//   returns   0 - atomic lock occurred, processor assigned
-> +//             1 - recusive count increased
-> +//
-> +
-> +unsigned long rspin_lock(volatile rlock_t *rlock)
-> +{
-> +#if defined(CONFIG_SMP)
-> +   register unsigned long proc = get_processor_id();
-> +   register unsigned long retCode;
-> +
-> +   if (rlock->lock.raw_lock.slock && rlock->processor == proc)
-> +   {
-> +      rlock->count++;
-> +      retCode = 1;
-> +   }
-> +   else
-> +   {
-> +      spin_lock_irqsave((spinlock_t *)&rlock->lock, rlock->flags);
-> +      rlock->processor = proc;
-> +      retCode = 0;
-> +   }
-> +   return retCode;
-> +#else
-> +   return 0;
-> +#endif
-> +}
-
-In general, a lot can happen between the access to
-rlock->lock.raw_lock.slock and the access to rlock->processor.
-
-Even rlock->count++ in itself can go wrong.
-
-The usage of "volatile" here looks a lot like DWIM to me.
-
-
-> +volatile unsigned long debuggerActive;
-> +volatile unsigned long ProcessorHold[MAX_PROCESSORS]; 
-> +volatile unsigned long ProcessorState[MAX_PROCESSORS]; 
-> +volatile unsigned long ProcessorMode[MAX_PROCESSORS]; 
-
-Are these datasets shared between CPUs and do you access them without
-lock protection?  (It looks like that from a quick glance.)  If yes,
-instead of the volatile qualifier, can't you use memory barriers in
-order to define the access semantics more clearly (and more effective)
-than volatile can?
-
-If there are interdependencies in these datasets, with which mechanisms
-if not locks do you serialize critical sections?
-
-
-> +void MDBInitializeDebugger(void)
-> +{
-...
-> +   for (i=0; i < MAX_PROCESSORS; i++)
-> +   {
-> +      BreakMask[i] = 0;
-> +      ProcessorHold[i] = 0; 
-> +      ProcessorState[i] = 0; 
-> +      ProcessorMode[i] = 0; 
-> +   }
-
-Not necessary, because static (and extern) variables are already
-implicitly initialized to zero.
--- 
-Stefan Richter
--=====-==--- =--- --===
-http://arcgraph.de/sr/
+Thanks,
+Jesse
