@@ -1,43 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755268AbYHGS75@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755024AbYHGTCA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755268AbYHGS75 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Aug 2008 14:59:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750936AbYHGS7u
+	id S1755024AbYHGTCA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Aug 2008 15:02:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751815AbYHGTBx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Aug 2008 14:59:50 -0400
-Received: from main.gmane.org ([80.91.229.2]:50638 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751351AbYHGS7t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Aug 2008 14:59:49 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Parag Warudkar <parag.warudkar@gmail.com>
-Subject: Re: [ANNOUNCE] ACM Operating Systems Review issue on the Linux Kernel available
-Date: Thu, 7 Aug 2008 18:59:31 +0000 (UTC)
-Message-ID: <loom.20080807T185457-659@post.gmane.org>
-References: <a4e6962a0808071134h7caa42feoa2cfea2c71a2be8@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 7 Aug 2008 15:01:53 -0400
+Received: from rv-out-0506.google.com ([209.85.198.231]:56169 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751351AbYHGTBw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Aug 2008 15:01:52 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=xh04bIqqAdiBDHRqxkdRDh6vjSLeb66gb14WKArYgdhLq+8agwfSBJquconhHIqbAS
+         beEXG4Qv4d1/c2/0kvDIpO97DQOPWyOnZn3iPLHDoJv+ArSK+ehRjEAiLzcgv5PRKXpq
+         DAo6bU+J4eASAbE2DlFdcUZxH+0dW14lUqzc4=
+Message-ID: <dd18b0c30808071201l5a13509alede392fe5c17baf@mail.gmail.com>
+Date: Thu, 7 Aug 2008 12:01:50 -0700
+From: "Justin Mattock" <justinmattock@gmail.com>
+To: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+Subject: cat /sys/devices/system/cpu/cpuidle/current_driver
+Cc: "Rabin Vincent" <rabin@rab.in>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: main.gmane.org
-User-Agent: Loom/3.14 (http://gmane.org/)
-X-Loom-IP: 15.195.201.91 (Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.0.1) Gecko/2008070208 Firefox/3.0.1)
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric Van Hensbergen <ericvh <at> gmail.com> writes:
+O.k. appologize for the delay,
+(been dealing with the DMV, and
+admiring how nice 2.6.27-rc1 is);
+anyways applied the patch you gave me,
+and yes:
+cat /sys/devices/system/cpu/cpuidle/current_driver
+gives me the right response.
 
-> 
-> We are pleased to announce the availability of the ACM Operating
-> Systems Review special topics Issue on Research and developments in
-> the Linux Kernel.  It is available, for free, from the ACM Archives
-> site:
-> 
-> http://portal.acm.org/toc.cfm?id=1400097
+regards;
 
-Does not seem to be free - requires ACM membership/subscriptions of some sort.
-
-Parag
-
+-- 
+Justin P. Mattock
