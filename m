@@ -1,46 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756075AbYHGVVT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756607AbYHGVWh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756075AbYHGVVT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Aug 2008 17:21:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751633AbYHGVVG
+	id S1756607AbYHGVWh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Aug 2008 17:22:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752528AbYHGVW1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Aug 2008 17:21:06 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:43800 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751193AbYHGVVF (ORCPT
+	Thu, 7 Aug 2008 17:22:27 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:47390 "EHLO
+	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751284AbYHGVW1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Aug 2008 17:21:05 -0400
-Message-ID: <489B6710.9000604@kernel.org>
-Date: Thu, 07 Aug 2008 14:20:16 -0700
-From: "H. Peter Anvin" <hpa@kernel.org>
-Organization: Linux Kernel Organization, Inc.
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Thu, 7 Aug 2008 17:22:27 -0400
+Date: Thu, 7 Aug 2008 10:17:47 +0200
+From: Pavel Machek <pavel@suse.cz>
+To: Patrick <ragamuffin@datacomm.ch>
+Cc: Andi Kleen <andi@firstfloor.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       pm list <linux-pm@lists.linux-foundation.org>
+Subject: Re: >3G => iommu => suspend problems -- was Re: SB600 AHCI: Hard
+	Disk Corruption
+Message-ID: <20080807081747.GC1647@elf.ucw.cz>
+References: <1211717435.6038.53.camel@localhost.localdomain> <200806090036.32267.rjw@sisk.pl> <1213184587.6376.37.camel@localhost.localdomain> <200806111638.50933.rjw@sisk.pl> <484FE97D.4040805@firstfloor.org> <1215106548.5194.22.camel@localhost.localdomain>
 MIME-Version: 1.0
-To: akataria@vmware.com
-CC: torvalds@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
-       Zachary Amsden <zach@vmware.com>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH]Fix broken VMI in 2.6.27-rc..
-References: <1218136365.23770.52.camel@alok-dev1>
-In-Reply-To: <1218136365.23770.52.camel@alok-dev1>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1215106548.5194.22.camel@localhost.localdomain>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alok Kataria wrote:
-> 
-> VMI relies on relocating the fixmap area to make room for the
-> hypervisor. These 2 commits started accessing the fixmap area's and
-> using them before VMI got a chance to check if it wants to relocate the
-> fixmap area. Once VMI got to the point of relocating the fixmap area's
-> it resulted in BUG's.
-> 
+Hi!
 
-Could you describe this in more detail?  I am not super-happy about this 
-solution if there is a better one, like simply locating the fixmap area 
-out of the way to start with.
+> *bump*
+> 
+> Why "too late" ??? It (2.6.26) is still not out! Please (;-) oh please!)
+> reconsider / push it a bit! It's tested and working perfectly here ever
+> since. But I'd like for example vmware to work again as will and it
+> doesn't yet even with 2.6.25... Please let this patch go into 2.6.26 so
+> there's a chance of having a stock kernel with working vmware, fglrx,
+> and such again soon!
 
-	-hpa
+Can you test 2.6.27-rc2? It should be all there...
+								Pavel
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
