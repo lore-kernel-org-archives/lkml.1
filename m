@@ -1,110 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757613AbYHGNIY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756583AbYHGNI5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757613AbYHGNIY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Aug 2008 09:08:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753139AbYHGNHZ
+	id S1756583AbYHGNI5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Aug 2008 09:08:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757374AbYHGNII
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Aug 2008 09:07:25 -0400
-Received: from ie1ehsobe006.messaging.microsoft.com ([213.199.154.16]:50252
-	"EHLO IE1EHSOBE003.bigfish.com" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752684AbYHGNHT (ORCPT
+	Thu, 7 Aug 2008 09:08:08 -0400
+Received: from zone0.gcu-squad.org ([212.85.147.21]:16491 "EHLO
+	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757385AbYHGNIF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Aug 2008 09:07:19 -0400
-X-BigFish: VPS4(zzzz10d3izzz32i43j66h)
-X-Spam-TCS-SCL: 5:0
-X-WSS-ID: 0K58F3H-03-RY8-01
-From: Joerg Roedel <joerg.roedel@amd.com>
-To: akpm@linux-foundation.org
-CC: mingo@redhat.com, tglx@linutronix.de, hpa@zytor.com, tony.luck@intel.com,
-       linux-kernel@vger.kernel.org, Joerg Roedel <joerg.roedel@amd.com>
-Subject: [PATCH 3/3] ia64: use common header for software IO/TLB
-Date: Thu, 7 Aug 2008 15:06:49 +0200
-Message-ID: <1218114409-20806-4-git-send-email-joerg.roedel@amd.com>
-X-Mailer: git-send-email 1.5.3.7
-In-Reply-To: <1218114409-20806-1-git-send-email-joerg.roedel@amd.com>
-References: <1218114409-20806-1-git-send-email-joerg.roedel@amd.com>
-X-OriginalArrivalTime: 07 Aug 2008 13:06:50.0412 (UTC) FILETIME=[74872EC0:01C8F88E]
-MIME-Version: 1.0
-Content-Type: text/plain
+	Thu, 7 Aug 2008 09:08:05 -0400
+Date: Thu, 7 Aug 2008 15:07:38 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: Hans Verkuil <hverkuil@xs4all.nl>
+Cc: Kyuma Ohta <whatisthis.sowhat@gmail.com>,
+       ivtv-devel ML <ivtv-devel@ivtvdriver.org>,
+       Video4Linux ML <video4linux-list@redhat.com>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH AVAIL.]ivtv:Crash 2.6.26 with KUROTOSIKOU CX23416-STVLP
+Message-ID: <20080807150738.5b1dde60@hyperion.delvare>
+In-Reply-To: <200808032312.25222.hverkuil@xs4all.nl>
+References: <1216308014.1146.22.camel@melchior>
+	<200807171758.19702.hverkuil@xs4all.nl>
+	<1216336451.1146.41.camel@melchior>
+	<200808032312.25222.hverkuil@xs4all.nl>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch removes the swiotlb prototypes from the architecture code and uses
-the common header file instead.
+Hi Hans,
 
-Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
----
- arch/ia64/hp/common/hwsw_iommu.c |    9 +--------
- arch/ia64/include/asm/machvec.h  |   22 +---------------------
- 2 files changed, 2 insertions(+), 29 deletions(-)
+On Sun, 3 Aug 2008 23:12:25 +0200, Hans Verkuil wrote:
+> Hi Ohta,
+> 
+> Well, I picked up my card this weekend and tested it. It turns out to be 
+> an i2c-core.c bug: chips with i2c addresses in the 0x5x range are 
+> probed differently than other chips and the probe command contains an 
+> error. The upd64083 has an address in that range and so was hit by this 
+> bug. The attached patch for linux/drivers/i2c/i2c-core.c will fix it.
+> 
+> As you can see, this mail also goes to Jean Delvare so that he can move 
+> this upstream (should also go to the 2.6.26-stable series, Jean!).
+> 
+> For the ivtv driver this bug will only hit cards where ivtv has to probe 
+> for an upd64083.
+> 
+> SoB for this patch:
+> 
+> Signed-off-by: Hans Verkuil <hverkuil@xs4all.nl>
+> 
+> I've verified that this is only an issue with kernels 2.6.26 and up. 
+> Older kernels are not affected unless the ivtv driver from the v4l-dvb 
+> repository is used. To be more precise: this bug has been in i2c-core.c 
+> since 2.6.22, but the ivtv driver in 2.6.26 was the first driver that 
+> used i2c_new_probed_device() with an i2c address in a range that caused 
+> the broken probe to be used.
 
-diff --git a/arch/ia64/hp/common/hwsw_iommu.c b/arch/ia64/hp/common/hwsw_iommu.c
-index 88b6e6f..2769dbf 100644
---- a/arch/ia64/hp/common/hwsw_iommu.c
-+++ b/arch/ia64/hp/common/hwsw_iommu.c
-@@ -13,19 +13,12 @@
-  */
- 
- #include <linux/device.h>
-+#include <linux/swiotlb.h>
- 
- #include <asm/machvec.h>
- 
- /* swiotlb declarations & definitions: */
- extern int swiotlb_late_init_with_default_size (size_t size);
--extern ia64_mv_dma_alloc_coherent	swiotlb_alloc_coherent;
--extern ia64_mv_dma_free_coherent	swiotlb_free_coherent;
--extern ia64_mv_dma_map_single_attrs	swiotlb_map_single_attrs;
--extern ia64_mv_dma_unmap_single_attrs	swiotlb_unmap_single_attrs;
--extern ia64_mv_dma_map_sg_attrs		swiotlb_map_sg_attrs;
--extern ia64_mv_dma_unmap_sg_attrs	swiotlb_unmap_sg_attrs;
--extern ia64_mv_dma_supported		swiotlb_dma_supported;
--extern ia64_mv_dma_mapping_error	swiotlb_dma_mapping_error;
- 
- /* hwiommu declarations & definitions: */
- 
-diff --git a/arch/ia64/include/asm/machvec.h b/arch/ia64/include/asm/machvec.h
-index 2b850cc..43af7ce 100644
---- a/arch/ia64/include/asm/machvec.h
-+++ b/arch/ia64/include/asm/machvec.h
-@@ -11,6 +11,7 @@
- #define _ASM_IA64_MACHVEC_H
- 
- #include <linux/types.h>
-+#include <linux/swiotlb.h>
- 
- /* forward declarations: */
- struct device;
-@@ -294,27 +295,6 @@ extern void machvec_init_from_cmdline(const char *cmdline);
- # endif /* CONFIG_IA64_GENERIC */
- 
- /*
-- * Declare default routines which aren't declared anywhere else:
-- */
--extern ia64_mv_dma_init			swiotlb_init;
--extern ia64_mv_dma_alloc_coherent	swiotlb_alloc_coherent;
--extern ia64_mv_dma_free_coherent	swiotlb_free_coherent;
--extern ia64_mv_dma_map_single		swiotlb_map_single;
--extern ia64_mv_dma_map_single_attrs	swiotlb_map_single_attrs;
--extern ia64_mv_dma_unmap_single		swiotlb_unmap_single;
--extern ia64_mv_dma_unmap_single_attrs	swiotlb_unmap_single_attrs;
--extern ia64_mv_dma_map_sg		swiotlb_map_sg;
--extern ia64_mv_dma_map_sg_attrs		swiotlb_map_sg_attrs;
--extern ia64_mv_dma_unmap_sg		swiotlb_unmap_sg;
--extern ia64_mv_dma_unmap_sg_attrs	swiotlb_unmap_sg_attrs;
--extern ia64_mv_dma_sync_single_for_cpu	swiotlb_sync_single_for_cpu;
--extern ia64_mv_dma_sync_sg_for_cpu	swiotlb_sync_sg_for_cpu;
--extern ia64_mv_dma_sync_single_for_device swiotlb_sync_single_for_device;
--extern ia64_mv_dma_sync_sg_for_device	swiotlb_sync_sg_for_device;
--extern ia64_mv_dma_mapping_error	swiotlb_dma_mapping_error;
--extern ia64_mv_dma_supported		swiotlb_dma_supported;
--
--/*
-  * Define default versions so we can extend machvec for new platforms without having
-  * to update the machvec files for all existing platforms.
-  */
+Good catch, thanks for the patch. I'll push it to Linus by the end of
+the week.
+
 -- 
-1.5.3.7
-
-
+Jean Delvare
