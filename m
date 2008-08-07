@@ -1,76 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756157AbYHGMoX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758699AbYHGMnf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756157AbYHGMoX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Aug 2008 08:44:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751561AbYHGMoG
+	id S1758699AbYHGMnf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Aug 2008 08:43:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754891AbYHGMnX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Aug 2008 08:44:06 -0400
-Received: from rgminet02.oracle.com ([148.87.113.119]:56730 "EHLO
-	rgminet02.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751360AbYHGMoF (ORCPT
+	Thu, 7 Aug 2008 08:43:23 -0400
+Received: from extu-mxob-1.symantec.com ([216.10.194.28]:47156 "EHLO
+	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753379AbYHGMnW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Aug 2008 08:44:05 -0400
-Subject: Re: Btrfs v0.16 released
-From: Chris Mason <chris.mason@oracle.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: linux-btrfs <linux-btrfs@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>
-In-Reply-To: <1218100464.8625.9.camel@twins>
-References: <1217962876.15342.33.camel@think.oraclecorp.com>
-	 <1218100464.8625.9.camel@twins>
-Content-Type: text/plain
-Date: Thu, 07 Aug 2008 06:39:57 -0400
-Message-Id: <1218105597.15342.189.camel@think.oraclecorp.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Thu, 7 Aug 2008 08:43:22 -0400
+Date: Thu, 7 Aug 2008 13:42:24 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.site
+To: Adrian Bunk <bunk@kernel.org>
+cc: Rik van Riel <riel@redhat.com>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [2.6 patch] make mm/rmap.c:anon_vma_cachep static
+In-Reply-To: <20080806211013.GB1702@cs181140183.pp.htv.fi>
+Message-ID: <Pine.LNX.4.64.0808071338260.10229@blonde.site>
+References: <20080806211013.GB1702@cs181140183.pp.htv.fi>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-08-07 at 11:14 +0200, Peter Zijlstra wrote:
-> On Tue, 2008-08-05 at 15:01 -0400, Chris Mason wrote:
+On Thu, 7 Aug 2008, Adrian Bunk wrote:
+> This patch makes the needlessly global anon_vma_cachep static.
 > 
-> > There are still more disk format changes planned, but we're making every
-> > effort to get them out of the way as quickly as we can.  You can see the
-> > major features we have planned on the development timeline:
-> > 
-> > http://btrfs.wiki.kernel.org/index.php/Development_timeline
-> 
-> Just took a peek, seems to be slightly out of date as it still lists the
-> single mutex thingy.
+> Signed-off-by: Adrian Bunk <bunk@kernel.org>
+> Acked-by: Rik van Riel <riel@redhat.com>
 
-Thanks, I thought I had removed all the references to it on that page,
-but there was one left.
+Yes, it's much better your way, thanks Adrian: I guess there must have
+been some reason during development why those went in rmap.h instead of
+rmap.c, but I can't see any good reason since it hit the tree in 2.6.7.
+
+Acked-by: Hugh Dickins <hugh@veritas.com>
 
 > 
-> Also, how true is the IO-error and disk-full claim?
+> ---
 > 
-
-We still don't handle disk full.  The IO errors are handled most of the
-time.  If a checksum doesn't match or the lower layers report an IO
-error, btrfs will use an alternate mirror of the block.  If there is no
-alternate mirror, the caller gets EIO and in the case of a failed csum,
-the page is zero filled (actually filled with ones so I can find bogus
-pages in an oops).
-
-Metadata is duplicated by default even on single spindle drives, so this
-means that metadata IO errors are handled as long as the other mirror is
-happy.
-
-If mirroring is off or both mirrors are bad, we currently get into
-trouble.
-
-data pages work better, those errors bubble up to userland just like in
-other filesystems.
-
--chris
-
-
+> This patch has been sent on:
+> - 5 May 2008
+> - 22 Apr 2008
+> - 14 Apr 2008
+> - 31 Mar 2008
+> - 25 Feb 2008
+> 
+>  include/linux/rmap.h |   12 ------------
+>  mm/rmap.c            |   12 +++++++++++-
+>  2 files changed, 11 insertions(+), 13 deletions(-)
+> 
+> 8d2d63d71ecbf2db78f31025acb136c9dd4db6a2 diff --git a/include/linux/rmap.h b/include/linux/rmap.h
+> index 1383692..8a8dbb9 100644
+> --- a/include/linux/rmap.h
+> +++ b/include/linux/rmap.h
+> @@ -31,18 +31,6 @@ struct anon_vma {
+>  
+>  #ifdef CONFIG_MMU
+>  
+> -extern struct kmem_cache *anon_vma_cachep;
+> -
+> -static inline struct anon_vma *anon_vma_alloc(void)
+> -{
+> -	return kmem_cache_alloc(anon_vma_cachep, GFP_KERNEL);
+> -}
+> -
+> -static inline void anon_vma_free(struct anon_vma *anon_vma)
+> -{
+> -	kmem_cache_free(anon_vma_cachep, anon_vma);
+> -}
+> -
+>  static inline void anon_vma_lock(struct vm_area_struct *vma)
+>  {
+>  	struct anon_vma *anon_vma = vma->anon_vma;
+> diff --git a/mm/rmap.c b/mm/rmap.c
+> index 8fd527c..ef6bb36 100644
+> --- a/mm/rmap.c
+> +++ b/mm/rmap.c
+> @@ -52,7 +52,17 @@
+>  
+>  #include <asm/tlbflush.h>
+>  
+> -struct kmem_cache *anon_vma_cachep;
+> +static struct kmem_cache *anon_vma_cachep;
+> +
+> +static inline struct anon_vma *anon_vma_alloc(void)
+> +{
+> +	return kmem_cache_alloc(anon_vma_cachep, GFP_KERNEL);
+> +}
+> +
+> +static inline void anon_vma_free(struct anon_vma *anon_vma)
+> +{
+> +	kmem_cache_free(anon_vma_cachep, anon_vma);
+> +}
+>  
+>  /* This must be called under the mmap_sem. */
+>  int anon_vma_prepare(struct vm_area_struct *vma)
