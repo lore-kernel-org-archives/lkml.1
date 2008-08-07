@@ -1,65 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757266AbYHGVhN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756738AbYHGVj4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757266AbYHGVhN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Aug 2008 17:37:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752534AbYHGVg7
+	id S1756738AbYHGVj4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Aug 2008 17:39:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752580AbYHGVjs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Aug 2008 17:36:59 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:36850 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750890AbYHGVg7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Aug 2008 17:36:59 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: resume problem with i915/drm
-Date: Thu, 7 Aug 2008 23:39:39 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Charles@schwieters.org, Matthew Garrett <mjg59@srcf.ucam.org>,
-       linux-kernel@vger.kernel.org
-References: <E1KQYiX-0002Nl-Ud@oaf.wireless> <200808071427.32457.jbarnes@virtuousgeek.org>
-In-Reply-To: <200808071427.32457.jbarnes@virtuousgeek.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+	Thu, 7 Aug 2008 17:39:48 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:45981 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752534AbYHGVjr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Aug 2008 17:39:47 -0400
+Date: Thu, 7 Aug 2008 14:38:24 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Andy Whitcroft <apw@shadowen.org>
+Cc: gerald.schaefer@de.ibm.com, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com,
+       mel@csn.ul.ie, apw@shadowen.org
+Subject: Re: [PATCH 1/1] allocate structures for reservation tracking in
+ hugetlbfs outside of spinlocks
+Message-Id: <20080807143824.8e0803da.akpm@linux-foundation.org>
+In-Reply-To: <1218140903-9757-1-git-send-email-apw@shadowen.org>
+References: <1218033802.7764.31.camel@ubuntu>
+	<1218140903-9757-1-git-send-email-apw@shadowen.org>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200808072339.40143.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, 7 of August 2008, Jesse Barnes wrote:
-> On Tuesday, August 5, 2008 7:25 pm Charles@schwieters.org wrote:
-> > -----BEGIN PGP SIGNED MESSAGE-----
-> > Hash: SHA1
-> >
-> >
-> > Hi--
-> >
-> >   I'm having a problem resuming (from RAM) if the i915 and drm modules
-> > are loaded (these are needed for running X on my machine). Vanilla
-> > kernel versions 2.6.25.x and 2.6.26.x. I get the same behavior with
-> > Debian linux-image-2.6.25-2-686 kernel. I can't believe I'm the first to
-> > encounter this.
-> >
-> > suspend-to-ram and resuming works fine with earlier kernels
-> > (e.g. 2.6.17), but I haven't tested exhaustively.
-> >
-> > Possibly related is a failure in modprobe -r i915 after it is
-> > loaded. The message printed is
-> 
-> [snip backtrace]
-> 
-> Well the backtrace makes it look like i915 didn't take care to remove some of 
-> its /proc files, which is weird.
-> 
-> Your "screen blank on resume" problem might be a duplicate of a bug that got 
-> reported awhile back (can't find it now, Matthew?).  If so, then you're not 
-> the first one to see it; unfortunately we don't have a fix yet...
+On Thu,  7 Aug 2008 21:28:23 +0100
+Andy Whitcroft <apw@shadowen.org> wrote:
 
-I think it may be related to this report:
+> [Andrew, this fixes a problem in the private reservations stack, shown up
+> by some testing done by Gerald on s390 with PREEMPT.  It fixes an attempt
+> at allocation while holding locks.  This should be merged up to mainline
+> as a bug fix to those patches.]
+> 
+> In the normal case, hugetlbfs reserves hugepages at map time so that the
+> pages exist for future faults.  A struct file_region is used to track
+> when reservations have been consumed and where.  These file_regions
+> are allocated as necessary with kmalloc() which can sleep with the
+> mm->page_table_lock held.  This is wrong and triggers may-sleep warning
+> when PREEMPT is enabled.
+> 
+> Updates to the underlying file_region are done in two phases.  The first
+> phase prepares the region for the change, allocating any necessary memory,
+> without actually making the change.  The second phase actually commits
+> the change.  This patch makes use of this by checking the reservations
+> before the page_table_lock is taken; triggering any necessary allocations.
+> This may then be safely repeated within the locks without any allocations
+> being required.
+> 
+> Credit to Mel Gorman for diagnosing this failure and initial versions of
+> the patch.
+> 
 
-http://marc.info/?l=linux-kernel&m=121789312607006&w=4
+After applying the patch:
 
-Thanks,
-Rafael
+: int hugetlb_fault(struct mm_struct *mm, struct vm_area_struct *vma,
+: 			unsigned long address, int write_access)
+: {
+: 	pte_t *ptep;
+: 	pte_t entry;
+: 	int ret;
+: 	struct page *pagecache_page = NULL;
+: 	static DEFINE_MUTEX(hugetlb_instantiation_mutex);
+: 	struct hstate *h = hstate_vma(vma);
+: 
+: 	ptep = huge_pte_alloc(mm, address, huge_page_size(h));
+: 	if (!ptep)
+: 		return VM_FAULT_OOM;
+: 
+: 	/*
+: 	 * Serialize hugepage allocation and instantiation, so that we don't
+: 	 * get spurious allocation failures if two CPUs race to instantiate
+: 	 * the same page in the page cache.
+: 	 */
+: 	mutex_lock(&hugetlb_instantiation_mutex);
+: 	entry = huge_ptep_get(ptep);
+: 	if (huge_pte_none(entry)) {
+: 		ret = hugetlb_no_page(mm, vma, address, ptep, write_access);
+: 		mutex_unlock(&hugetlb_instantiation_mutex);
+: 		return ret;
+: 	}
+: 
+: 	ret = 0;
+: 
+: 	/*
+: 	 * If we are going to COW the mapping later, we examine the pending
+: 	 * reservations for this page now. This will ensure that any
+: 	 * allocations necessary to record that reservation occur outside the
+: 	 * spinlock. For private mappings, we also lookup the pagecache
+: 	 * page now as it is used to determine if a reservation has been
+: 	 * consumed.
+: 	 */
+: 	if (write_access && !pte_write(entry)) {
+: 		vma_needs_reservation(h, vma, address);
+: 
+: 		if (!(vma->vm_flags & VM_SHARED))
+: 			pagecache_page = hugetlbfs_pagecache_page(h,
+: 								vma, address);
+: 	}
+
+There's a seeming race window here, where a new page can get
+instantiated.  But down-read(mmap_sem) plus hugetlb_instantiation_mutex
+prevents that, yes?
+
+
+: 	spin_lock(&mm->page_table_lock);
+: 	/* Check for a racing update before calling hugetlb_cow */
+: 	if (likely(pte_same(entry, huge_ptep_get(ptep))))
+: 		if (write_access && !pte_write(entry))
+: 			ret = hugetlb_cow(mm, vma, address, ptep, entry,
+: 							pagecache_page);
+: 	spin_unlock(&mm->page_table_lock);
+: 
+: 	if (pagecache_page) {
+: 		unlock_page(pagecache_page);
+: 		put_page(pagecache_page);
+: 	}
+: 
+: 	mutex_unlock(&hugetlb_instantiation_mutex);
+: 
+: 	return ret;
+: }
+: 
+: 
