@@ -1,73 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754069AbYHGIHa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754532AbYHGIQB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754069AbYHGIHa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Aug 2008 04:07:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752778AbYHGIG7
+	id S1754532AbYHGIQB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Aug 2008 04:16:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751282AbYHGIPl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Aug 2008 04:06:59 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:41137 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752815AbYHGIG4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Aug 2008 04:06:56 -0400
-Message-ID: <489AAD1B.10901@garzik.org>
-Date: Thu, 07 Aug 2008 04:06:51 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Krzysztof Halasa <khc@pm.waw.pl>
-CC: David Miller <davem@davemloft.net>, netdev@vger.kernel.org,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCHes] pull request: WAN
-References: <m3ljzyc9e7.fsf@maximus.localdomain> <488653A9.50001@garzik.org> <m3hcags2xq.fsf@maximus.localdomain>
-In-Reply-To: <m3hcags2xq.fsf@maximus.localdomain>
-Content-Type: text/plain; charset=ISO-8859-2; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+	Thu, 7 Aug 2008 04:15:41 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:44831 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751196AbYHGIPi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Aug 2008 04:15:38 -0400
+Date: Thu, 7 Aug 2008 17:21:13 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Hirokazu Takahashi <taka@valinux.co.jp>
+Cc: Balbir Singh <balbir@linux.vnet.ibm.com>, ryov@valinux.co.jp,
+       xen-devel@lists.xensource.com, containers@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org, virtualization@lists.linux-foundation.org,
+       dm-devel@redhat.com, agk@sourceware.org
+Subject: Re: [PATCH 4/7] bio-cgroup: Split the cgroup memory subsystem into
+ two parts
+Message-Id: <20080807172113.0788f800.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20080807.162512.22162413.taka@valinux.co.jp>
+References: <20080804.175748.189722512.ryov@valinux.co.jp>
+	<20080806165421.f76edd47.kamezawa.hiroyu@jp.fujitsu.com>
+	<16255819.1218030343593.kamezawa.hiroyu@jp.fujitsu.com>
+	<20080807.162512.22162413.taka@valinux.co.jp>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Krzysztof Halasa wrote:
-> Jeff Garzik <jeff@garzik.org> writes:
+On Thu, 07 Aug 2008 16:25:12 +0900 (JST)
+Hirokazu Takahashi <taka@valinux.co.jp> wrote:
+> > >I've just noticed that most of overhead comes from the spin-locks
+> > >when reclaiming the pages inside mem_cgroups and the spin-locks to
+> > >protect the links between pages and page_cgroups.
+> > Overhead between page <-> page_cgroup lock is cannot be catched by
+> > lock_stat now.Do you have numbers ?
+> > But ok, there are too many locks ;(
 > 
->> Anything in upstream-next went upstream, and so we need to apply this
->> on top of the current Linus upstream (torvalds/linux-2.6.git) at the
->> very least.
->>
->> Would you mind doing that, please?
-> 
-> No problem, though I guess David would hate us both if I do that,
-> so I actually rebased on top of your "upstream" instead, is it ok?
-> 
-> It's now at:
-> 
-> git://git.kernel.org/pub/scm/linux/kernel/git/chris/linux-2.6.git for-jeff
-> 
->> Also, git pulls are great, but it would be helpful if you supply a
->> git-shortlog summary of the changes, and the patch (>400k will only go
->> to me, list will ignore).
-> 
-> Sure,
-> 
-> Krzysztof Ha³asa (15):
->       WAN: cosmetic changes to generic HDLC
->       Remove bogus dosyncppp variable from synclink drivers.
->       Remove bogus variables from syncppp.[ch]
->       Remove dead code from wanmain.c, CONFIG_WANPIPE_MULTPPP doesn't exist
->       wanmain.c doesn't need syncppp.h
->       WAN: Remove unneeded "#include <net/syncppp.h>"
->       WAN: Remove dead code from PC300 driver, part #1
->       WAN: Remove dead code from PC300 driver, part #2
->       WAN: Convert PC300 driver to use normal u8/u16/u32 types
->       WAN: farsync driver no longer uses syncppp.c directly
->       WAN: Port COSA driver to generic HDLC.
->       WAN: Convert Zilog-based drivers to generic HDLC
->       WAN: Port LMC driver to generic HDLC
->       WAN: don't mention syncppp in z8530 DocBook.
->       WAN: Use u32 type instead of u_int32_t in LMC driver.
+> The problem is that every time the lock is held, the associated
+> cache line is flushed.
+I think "page" and "page_cgroup" is not so heavly shared object in fast path.
+foot-print is also important here.
+(anyway, I'd like to remove lock_page_cgroup() when I find a chance)
 
-pulled
+> 
+> > >The latter overhead comes from the policy your team has chosen
+> > >that page_cgroup structures are allocated on demand. I still feel
+> > >this approach doesn't make any sense because linux kernel tries to
+> > >make use of most of the pages as far as it can, so most of them
+> > >have to be assigned its related page_cgroup. It would make us happy
+> > >if page_cgroups are allocated at the booting time.
+> > >
+> > Now, multi-sizer-page-cache is discussed for a long time. If it's our
+> > direction, on-demand page_cgroup make sense.
+> 
+> I don't think I can agree to this.
+> When multi-sized-page-cache is introduced, some data structures will be
+> allocated to manage multi-sized-pages. 
+maybe no. it will be encoded into struct page.
+> I think page_cgroups should be allocated at the same time.
+> This approach will make things simple.
+yes, of course.
+
+> 
+> It seems like the on-demand allocation approach leads not only
+> overhead but complexity and a lot of race conditions.
+> If you allocate page_cgroups when allocating page structures,
+> You can get rid of most of the locks and you don't have to care about
+> allocation error of page_cgroups anymore.
+> 
+> And it will also give us flexibility that memcg related data can be
+> referred/updated inside critical sections.
+> 
+But it's not good for the systems with small "NORMAL" pages.
+This discussion should be done again when more users of page_group appears and
+it's overhead is obvious.
+
+Thanks,
+-Kame
+
 
 
