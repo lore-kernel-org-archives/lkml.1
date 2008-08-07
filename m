@@ -1,77 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754127AbYHGRPH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755671AbYHGRPn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754127AbYHGRPH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Aug 2008 13:15:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752737AbYHGRO4
+	id S1755671AbYHGRPn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Aug 2008 13:15:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755203AbYHGRPQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Aug 2008 13:14:56 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:35992 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752216AbYHGROz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Aug 2008 13:14:55 -0400
-Date: Thu, 7 Aug 2008 10:01:44 -0700
-From: Greg KH <gregkh@suse.de>
-To: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Cc: Kay Sievers <kay.sievers@vrfy.org>, linux-kernel@vger.kernel.org,
-       linux-s390@vger.kernel.org,
-       lf_kernel_messages@lists.linux-foundation.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Michael Holzheu <holzheu@de.ibm.com>, Gerrit Huizenga <gh@us.ibm.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>, Jan Kara <jack@suse.cz>,
-       Pavel Machek <pavel@ucw.cz>, Sam Ravnborg <sam@ravnborg.org>,
-       Joe Perches <joe@perches.com>,
-       Jochen =?iso-8859-1?B?Vm/f?= <jochen.voss@googlemail.com>,
-       Kunai Takashi <kunai@linux-foundation.jp>,
-       Tim Bird <tim.bird@am.sony.com>
-Subject: Re: [patch 1/3] kmsg: Kernel message catalog macros.
-Message-ID: <20080807170144.GB9214@suse.de>
-References: <20080730165656.118280544@de.ibm.com> <20080730171156.824640459@de.ibm.com> <3ae72650807301502h3e54e80yb405af7192048b89@mail.gmail.com> <20080730220432.GA24800@suse.de> <1217495404.8555.20.camel@localhost> <20080805223117.GA6552@suse.de> <1218011716.20769.12.camel@localhost> <20080806200721.GA30086@suse.de> <1218097901.1033.10.camel@localhost>
+	Thu, 7 Aug 2008 13:15:16 -0400
+Received: from fg-out-1718.google.com ([72.14.220.156]:24876 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755115AbYHGRPO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Aug 2008 13:15:14 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-disposition:message-id:content-type
+         :content-transfer-encoding;
+        b=XTFFMbfOrbcp0mXEdFtex1JoYiCHDx2HPkC5Xumbuan/f578PCMlF3JveZe06Pw7y0
+         OnkNY4SAcq0knpEaiUF/wPnbiTJ8ZESe3jFCV/q2cNgBvlvl6tKweIgdzQH0TZFcRV6u
+         1gNDZYTS91hCL8Qcd8Wb/OENQPvesIr2Ql0xU=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: petkovbb@gmail.com
+Subject: Re: [PATCH] ide-floppy: use scatterlists for pio transfers
+Date: Thu, 7 Aug 2008 18:57:09 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20080805051113.GA15834@gollum.tnic> <200808061805.01126.bzolnier@gmail.com> <20080806193056.GA31312@gollum.tnic>
+In-Reply-To: <20080806193056.GA31312@gollum.tnic>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1218097901.1033.10.camel@localhost>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Message-Id: <200808071857.09609.bzolnier@gmail.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 07, 2008 at 10:31:41AM +0200, Martin Schwidefsky wrote:
-> On Wed, 2008-08-06 at 13:07 -0700, Greg KH wrote:
-> > > > > Using dev_printk won't work because of the order of the elements of the
-> > > > > printk. The kmsg tag should not have a "random" position in the printk
-> > > > > but should be the first element. If we use dev_printk the kmsg tag will
-> > > > > be the third element, for other kmsg printks it will be the first. In
-> > > > > addition the kmsg message tag for the device drivers already includes
-> > > > > the driver name ..
-> > > > 
-> > > > But the structure of dev_printk() is well definied and should be pretty
-> > > > trival to parse even with missing fields.
-> > > 
-> > > The missing field is the message tag. Which is the key for the message
-> > > lookup. As far as the kmsg catalog is concerned this is a pretty
-> > > important field that may not be missing from the printk itself.
+On Wednesday 06 August 2008, Borislav Petkov wrote:
+> On Wed, Aug 06, 2008 at 06:05:00PM +0200, Bartlomiej Zolnierkiewicz wrote:
 > > 
-> > No, I mean use dev_printk() as the base for your logging macro.  Add
-> > your message tag as the first field after the dev_printk() information.
+> > Hi,
+> > 
+> > On Tuesday 05 August 2008, Borislav Petkov wrote:
+> > > Hi Bart,
+> > > 
+> > > here's my first stab at using scatterlists in ide-floppy. I've adapted your
+> > > ide-scsi version to fit in here. The change here is that i use pc->b_count as
+> > > a sort-of completion counter to know when i'm at the end of the sg element and
+> > > be able to switch to the next/finish transfer. I've tested the patch with the
+> > > Iomega ZIP drive i have here - it works. We should do some more testing first
+> > > though, before sending it upstream.
+> > 
+> > [...]
+> > 
+> > > @@ -569,7 +577,7 @@ static void idefloppy_create_rw_cmd(idefloppy_floppy_t *floppy,
+> > >  	memcpy(rq->cmd, pc->c, 12);
+> > >  
+> > >  	pc->rq = rq;
+> > > -	pc->b_count = cmd == READ ? 0 : rq->bio->bi_size;
+> > > +	pc->b_count = 0;
+> > >  	if (rq->cmd_flags & REQ_RW)
+> > >  		pc->flags |= PC_FLAG_WRITING;
+> > >  	pc->buf = NULL;
+> > 
+> > Don't we also need to zero pc->b_count in idefloppy_blockpc_cmd()?
+> > 
+> > [ idefloppy_init_pc() clears whole pc so ->b_count assignment
+> >   to zero is not strictly necessary ]
 > 
-> Hmm, you are proposing to introduce a second format for the kmsg
-> messages to avoid the need for some more printk wrapper macros. To me it
-> seems that this has two problems:
+> We probably should and i should've probably hit that during testing and maybe
+> hit an OOPS along that path but we don't do REQ_TYPE_BLOCK_PC in ide-floppy
+> yet, as it appears, and since idefloppy_blockpc_cmd() is only called when
+> blk_pc_request(rq) that's why this one doesn't matter here. We should consider
+> it though when we convert to using BLOCK_PC type rq's.
 
-No, only 1 format, use dev_printk() instead of printk() in your macro.
+Unless somebody tries to use SG_IO ioctl (however I don't know if anybody has
+actually ever tried so it as well may be that it hasn't worked before...).
 
-> 1) The message tag is for the user of the system. If it does not have a
-> fixed position it gets confusing.
-
-How would it not be in a fixed position with dev_printk()?
-
-> 2) The message tag for a driver message usually already includes the
-> driver name, the dev_printk will print it again. This is ugly and
-> reduces the quality of the message.
-
-Then the message needs to change and remove that "driver name", as it is
-redundant, saving a tiny ammount of space :)
-
-thanks,
-
-greg k-h
+Anyway I applied the patch and fixed pc->b_count while at it (just-in-case).
