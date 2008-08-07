@@ -1,48 +1,163 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755985AbYHGNuV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753115AbYHGN7t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755985AbYHGNuV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Aug 2008 09:50:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752231AbYHGNuI
+	id S1753115AbYHGN7t (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Aug 2008 09:59:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751210AbYHGN7l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Aug 2008 09:50:08 -0400
-Received: from mtagate6.de.ibm.com ([195.212.29.155]:56237 "EHLO
-	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751365AbYHGNuG (ORCPT
+	Thu, 7 Aug 2008 09:59:41 -0400
+Received: from serv2.oss.ntt.co.jp ([222.151.198.100]:56302 "EHLO
+	serv2.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750987AbYHGN7k (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Aug 2008 09:50:06 -0400
-Subject: Re: [PATCH] drivers/s390: Use an IS_ERR test rather than a NULL
-	test
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Reply-To: schwidefsky@de.ibm.com
-To: Julien Brunel <brunel@diku.dk>
-Cc: heiko.carstens@de.ibm.com, linux390@de.ibm.com, linux-s390@vger.kernel.org,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-In-Reply-To: <200808071542.22880.brunel@diku.dk>
-References: <200808071542.22880.brunel@diku.dk>
-Content-Type: text/plain
-Organization: IBM Corporation
-Date: Thu, 07 Aug 2008 15:49:12 +0200
-Message-Id: <1218116952.1033.37.camel@localhost>
+	Thu, 7 Aug 2008 09:59:40 -0400
+Subject: Re: RFC: I/O bandwidth controller (was Re: Too many I/O controller
+	patches)
+From: Fernando Luis =?ISO-8859-1?Q?V=E1zquez?= Cao 
+	<fernando@oss.ntt.co.jp>
+To: righi.andrea@gmail.com
+Cc: Dave Hansen <dave@linux.vnet.ibm.com>, Ryo Tsuruta <ryov@valinux.co.jp>,
+       yoshikawa.takuya@oss.ntt.co.jp, taka@valinux.co.jp,
+       uchida@ap.jp.nec.com, ngupta@google.com, linux-kernel@vger.kernel.org,
+       dm-devel@redhat.com, containers@lists.linux-foundation.org,
+       virtualization@lists.linux-foundation.org,
+       xen-devel@lists.xensource.com, agk@sourceware.org
+In-Reply-To: <489AA83F.1040306@gmail.com>
+References: <20080804.175126.193692178.ryov@valinux.co.jp>
+	 <1217870433.20260.101.camel@nimitz>
+	 <1217985189.3154.57.camel@sebastian.kern.oss.ntt.co.jp>
+	 <489AA83F.1040306@gmail.com>
+Content-Type: text/plain; charset=utf-8
+Organization: NTT Open Source Software Center
+Date: Thu, 07 Aug 2008 22:59:38 +0900
+Message-Id: <1218117578.11703.81.camel@sebastian.kern.oss.ntt.co.jp>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-08-07 at 15:42 +0200, Julien Brunel wrote:
-> In case of error, functions dasd_kmalloc_request and idal_buffer_alloc
-> return an ERR pointer, but never return the NULL pointer. So after a
-> call to one of these functions, a NULL test should be replaced by an
-> IS_ERR test.
+Hi Andrea!
 
-Good findings, many thanks! I'll add it to git390 for the next please
-pull.
+On Thu, 2008-08-07 at 09:46 +0200, Andrea Righi wrote: 
+> Fernando Luis Vázquez Cao wrote:
+> > This RFC ended up being a bit longer than I had originally intended, but
+> > hopefully it will serve as the start of a fruitful discussion.
+> 
+> Thanks for posting this detailed RFC! A few comments below.
+> 
+> > As you pointed out, it seems that there is not much consensus building
+> > going on, but that does not mean there is a lack of interest. To get the
+> > ball rolling it is probably a good idea to clarify the state of things
+> > and try to establish what we are trying to accomplish.
+> > 
+> > *** State of things in the mainstream kernel<BR>
+> > The kernel has had somewhat adavanced I/O control capabilities for quite
+> > some time now: CFQ. But the current CFQ has some problems:
+> >   - I/O priority can be set by PID, PGRP, or UID, but...
+> >   - ...all the processes that fall within the same class/priority are
+> > scheduled together and arbitrary grouping are not possible.
+> >   - Buffered I/O is not handled properly.
+> >   - CFQ's IO priority is an attribute of a process that affects all
+> > devices it sends I/O requests to. In other words, with the current
+> > implementation it is not possible to assign per-device IO priorities to
+> > a task.
+> > 
+> > *** Goals
+> >   1. Cgroups-aware I/O scheduling (being able to define arbitrary
+> > groupings of processes and treat each group as a single scheduling
+> > entity).
+> >   2. Being able to perform I/O bandwidth control independently on each
+> > device.
+> >   3. I/O bandwidth shaping.
+> >   4. Scheduler-independent I/O bandwidth control.
+> >   5. Usable with stacking devices (md, dm and other devices of that
+> > ilk).
+> >   6. I/O tracking (handle buffered and asynchronous I/O properly).
+> 
+> The same above also for IO operations/sec (bandwidth intended not only
+> in terms of bytes/sec), plus:
+> 
+> 7. Optimal bandwidth usage: allow to exceed the IO limits to take
+> advantage of free/unused IO resources (i.e. allow "bursts" when the
+> whole physical bandwidth for a block device is not fully used and then
+> "throttle" again when IO from unlimited cgroups comes into place)
+> 
+> 8. "fair throttling": avoid to throttle always the same task within a
+> cgroup, but try to distribute the throttling among all the tasks
+> belonging to the throttle cgroup
 
--- 
-blue skies,
-  Martin.
+Thank you for the ideas!
 
-"Reality continues to ruin my life." - Calvin.
+By the way, point "3." above (I/O bandwidth shaping) refers to IO
+scheduling algorithms in general. When I wrote the RFC I thought that
+once we have the IO tracking and accounting mechanisms in place choosing
+and implementing an algorithm (fair throttling, proportional bandwidth
+scheduling, etc) would be easy in comparison, and that is the reason a
+list was not included.
 
+Once I get more feedback from all of you I will resend a more detailed
+RFC that will include your suggestions.
+
+> > 1. & 2.- Cgroups-aware I/O scheduling (being able to define arbitrary
+> > groupings of processes and treat each group as a single scheduling
+> > identity)
+> > 
+> > We obviously need this because our final goal is to be able to control
+> > the IO generated by a Linux container. The good news is that we already
+> > have the cgroups infrastructure so, regarding this problem, we would
+> > just have to transform our I/O bandwidth controller into a cgroup
+> > subsystem.
+> > 
+> > This seems to be the easiest part, but the current cgroups
+> > infrastructure has some limitations when it comes to dealing with block
+> > devices: impossibility of creating/removing certain control structures
+> > dynamically and hardcoding of subsystems (i.e. resource controllers).
+> > This makes it difficult to handle block devices that can be hotplugged
+> > and go away at any time (this applies not only to usb storage but also
+> > to some SATA and SCSI devices). To cope with this situation properly we
+> > would need hotplug support in cgroups, but, as suggested before and
+> > discussed in the past (see (0) below), there are some limitations.
+> > 
+> > Even in the non-hotplug case it would be nice if we could treat each
+> > block I/O device as an independent resource, which means we could do
+> > things like allocating I/O bandwidth on a per-device basis. As long as
+> > performance is not compromised too much, adding some kind of basic
+> > hotplug support to cgroups is probably worth it.
+> >
+> > (0) http://lkml.org/lkml/2008/5/21/12
+> 
+> What about using major,minor numbers to identify each device and account
+> IO statistics? If a device is unplugged we could reset IO statistics
+> and/or remove IO limitations for that device from userspace (i.e. by a
+> deamon), but pluggin/unplugging the device would not be blocked/affected
+> in any case. Or am I oversimplifying the problem?
+If a resource we want to control (a block device in this case) is
+hot-plugged/unplugged the corresponding cgroup-related structures inside
+the kernel need to be allocated/freed dynamically, respectively. The
+problem is that this is not always possible. For example, with the
+current implementation of cgroups it is not possible to treat each block
+device as a different cgroup subsytem/resource controlled, because
+subsystems are created at compile time.
+
+> > 3. & 4. & 5. - I/O bandwidth shaping & General design aspects
+> > 
+> > The implementation of an I/O scheduling algorithm is to a certain extent
+> > influenced by what we are trying to achieve in terms of I/O bandwidth
+> > shaping, but, as discussed below, the required accuracy can determine
+> > the layer where the I/O controller has to reside. Off the top of my
+> > head, there are three basic operations we may want perform:
+> >   - I/O nice prioritization: ionice-like approach.
+> >   - Proportional bandwidth scheduling: each process/group of processes
+> > has a weight that determines the share of bandwidth they receive.
+> >   - I/O limiting: set an upper limit to the bandwidth a group of tasks
+> > can use.
+> 
+> Use a deadline-based IO scheduling could be an interesting path to be
+> explored as well, IMHO, to try to guarantee per-cgroup minimum bandwidth
+> requirements.
+Please note that the only thing we can do is to guarantee minimum
+bandwidth requirement when there is contention for an IO resource, which
+is precisely what a proportional bandwidth scheduler does. An I missing
+something?
 
