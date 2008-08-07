@@ -1,89 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754256AbYHGPdT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754483AbYHGPgR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754256AbYHGPdT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Aug 2008 11:33:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751643AbYHGPdL
+	id S1754483AbYHGPgR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Aug 2008 11:36:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752321AbYHGPgF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Aug 2008 11:33:11 -0400
-Received: from extu-mxob-1.symantec.com ([216.10.194.28]:59814 "EHLO
-	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751388AbYHGPdK (ORCPT
+	Thu, 7 Aug 2008 11:36:05 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:17528 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752229AbYHGPgE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Aug 2008 11:33:10 -0400
-Date: Thu, 7 Aug 2008 16:31:49 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.site
-To: Romano Giannetti <romanol@upcomillas.es>
-cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       bugme-daemon@bugzilla.kernel.org, drzeus-mmc@drzeus.cx,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [Bug 11267] SD cards stopped working on my machine
-In-Reply-To: <489B1066.1020909@upcomillas.es>
-Message-ID: <Pine.LNX.4.64.0808071623210.559@blonde.site>
-References: <489B1066.1020909@upcomillas.es>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 7 Aug 2008 11:36:04 -0400
+Date: Thu, 7 Aug 2008 08:32:28 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: lkml <linux-kernel@vger.kernel.org>
+Cc: airlied@linux.ie, akpm <akpm@linux-foundation.org>
+Subject: [PATCH -next] drm: sis depends on FB_SIS
+Message-Id: <20080807083228.0fc40405.randy.dunlap@oracle.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 7 Aug 2008, Romano Giannetti wrote:
-> I just posted a regression bug on bugzilla:
-> 
-> 	http://bugzilla.kernel.org/show_bug.cgi?id=11267
-> 
-> the new kernel stopped to notice the fact that I introduce an SD card into the
-> slot of the machine. It used to work perfectly in 2.6.26 (came back and
-> tested, so it's not hardware).
-> 
-> In 2.6.26 I had on the dmesg:
-> 
-> [  131.145237] mmc0: new high speed SD card at address b368
-> [  131.145295] PM: Adding info for mmc:mmc0:b368
-> [  131.176370] mmcblk0: mmc0:b368 SD    2009600KiB (ro)
-> [  131.176370] PM: Adding info for No Bus:mmcblk0
-> [  131.176370]  mmcblk0: p1
-> [  131.176434] PM: Adding info for No Bus:mmcblk0p1
-> [  131.176434] PM: Adding info for No Bus:179:0
-> 
-> In 2.6.27-rc2 nothing happens. I have not a lot of time in my hands, so if
-> it's possible at all I'd like to avoid a bisect (It's more than one hour per
-> compile here...)
+From: Randy Dunlap <randy.dunlap@oracle.com>
+cc: airlied@linux.ie
 
-Please try yesterday's patch from the scsi-rc-fixes tree,
-commit d211f052fa58a053639bc51501cb64421157d362
-which fixed SD cards over USB storage for me:
+drm/sis calls mm functions in fb/sis, so make the former depend
+on the latter.
 
-[SCSI] sd: fix USB devices incorrectly reporting DIF support
+This one happened with FB_SIS=m, AGP_SIS=y, DRM_SYS=y.
 
-Some USB devices set the protect bit in the INQUIRY data which
-currently causes the DIF code in sd to assume (incorrectly) that they
-support READ_CAPACITY(16).  Fix this (only for the time being) by
-making sure we only believe the protect bit in the inquiry data if the
-device claims conformance to SCSI-3 or above.
+sis1.out:sis_mm.c:(.text+0x70014): undefined reference to `sis_free'
+sis1.out:sis_mm.c:(.text+0x7002a): undefined reference to `sis_malloc'
 
-Acked-by: Martin K. Petersen <martin.petersen@oracle.com>
-Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
 ---
+ drivers/gpu/drm/Kconfig |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/include/scsi/scsi_device.h b/include/scsi/scsi_device.h
-index 291d56a..80b2e93 100644
---- a/include/scsi/scsi_device.h
-+++ b/include/scsi/scsi_device.h
-@@ -6,6 +6,7 @@
- #include <linux/spinlock.h>
- #include <linux/workqueue.h>
- #include <linux/blkdev.h>
-+#include <scsi/scsi.h>
- #include <asm/atomic.h>
+--- linux-next-20080806.orig/drivers/gpu/drm/Kconfig
++++ linux-next-20080806/drivers/gpu/drm/Kconfig
+@@ -86,7 +86,7 @@ config DRM_MGA
  
- struct request_queue;
-@@ -426,7 +427,7 @@ static inline int scsi_device_enclosure(struct scsi_device *sdev)
- 
- static inline int scsi_device_protection(struct scsi_device *sdev)
- {
--	return sdev->inquiry[5] & (1<<0);
-+	return sdev->scsi_level > SCSI_2 && sdev->inquiry[5] & (1<<0);
- }
- 
- #define MODULE_ALIAS_SCSI_DEVICE(type) \
+ config DRM_SIS
+ 	tristate "SiS video cards"
+-	depends on DRM && AGP
++	depends on DRM && AGP && FB_SIS
+ 	help
+ 	  Choose this option if you have a SiS 630 or compatible video
+           chipset. If M is selected the module will be called sis. AGP
+
+
+---
+~Randy
+Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
+http://linuxplumbersconf.org/
