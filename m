@@ -1,183 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754380AbYHHH2T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754897AbYHHHaW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754380AbYHHH2T (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 03:28:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752123AbYHHH2K
+	id S1754897AbYHHHaW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 03:30:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752779AbYHHHaG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 03:28:10 -0400
-Received: from smtp1.stealer.net ([88.198.224.204]:49414 "EHLO
-	smtp1.stealer.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752049AbYHHH2J (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 03:28:09 -0400
-Date: Fri, 8 Aug 2008 09:27:58 +0200 (CEST)
-From: Sven Wegener <sven.wegener@stealer.net>
-To: Nate Case <ncase@xes-inc.com>
-cc: rpurdie@rpsys.net, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: [PATCHv3] leds-pca955x: Add proper error handling and fix bogus
- memory handling
-In-Reply-To: <alpine.LNX.1.10.0808080852000.16201@titan.stealer.net>
-Message-ID: <alpine.LNX.1.10.0808080924560.16201@titan.stealer.net>
-References: <1210972198.13845.540.camel@localhost.localdomain> <alpine.LNX.1.10.0808080041460.16201@titan.stealer.net> <alpine.LNX.1.10.0808080852000.16201@titan.stealer.net>
-User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
-Organization: STEALER.net
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Score: -2.5
-X-Spam-Bar: --
-X-Spam-Report: Scanned by SpamAssassin 3.2.1-gr1 2007-05-02 on smtp1.stealer.net at Fri, 08 Aug 2008 07:28:08 +0000
-	Bayes: 0.0001 Tokens: new, 269; hammy, 7; neutral, 5; spammy, 0.
-	AutoLearn: no
-	*  0.1 RDNS_NONE Delivered to trusted network by a host with no rDNS
-	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
-	*      [score: 0.0001]
-X-Spam-Signature: be7af03d4093294e3c88c0b25dcee97de753d889
-X-DomainKey-Status: no signature
+	Fri, 8 Aug 2008 03:30:06 -0400
+Received: from main.gmane.org ([80.91.229.2]:52202 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752123AbYHHHaF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Aug 2008 03:30:05 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+Subject: Re: cpufreq doesn't seem to work in Intel Q9300
+Date: Thu, 07 Aug 2008 20:24:19 +0100
+Message-ID: <g7fi53$oqg$1@ger.gmane.org>
+References: <514e099a0808030300u140a0ae7m92a2e7294f39f7b7@mail.gmail.com>	 <48958901.06a0100a.35d6.2df9@mx.google.com>	 <514e099a0808032206n192fc973u24b31def6555dbec@mail.gmail.com> <514e099a0808070235qd36628cta191018763875422@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: 86.53.68.233
+User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
+In-Reply-To: <514e099a0808070235qd36628cta191018763875422@mail.gmail.com>
+Cc: linux-acpi@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Check the return value of led_classdev_register and unregister all registered
-devices, if registering one device fails. Also the dynamic memory handling is
-totally bogus. You can't allocate multiple chunks via kzalloc() and expect them
-to be in order later.
+S K wrote:
+> 2008/8/3 S K <nospamnoham@gmail.com>:
+>> On Sun, Aug 3, 2008 at 3:31 AM, none <aj504@student.cs.york.ac.uk> wrote:
+>>> S K wrote:
+>>>> Hi,
+>>>>
+>>>>   I have an Intel Core 2 Quad and running kernel
+>>>> 2.6.25.11-97.fc9.i686. cpufreq doesn't seem to work. The cpufreq
+>>>> scaling monitor in Gnome says CPU Freq scaling is not supported in my
+>>>> CPU. The CPU can run at 2.0 and 2.5 GHz but mine always runs at 2.5
+>>>> GHz in Linux.
+>>>>
+>>>> So I checked  /sys and there is no cpufreq dir in /sys/...
+>>>>
+>>>> # ls /sys/devices/system/cpu/
+>>>> cpu0  cpu1  cpu2  cpu3  cpuidle  sched_mc_power_savings
+>>>> # ls /sys/devices/system/cpu/cpuidle/
+>>>> current_driver  current_governor_ro
+>>>>
+>>>> I have no clue what cpuidle directory is for.
+>>>>
+>>>> I added cpufreq.debug=7 in kernel boot params and saw the following in
+>>>> the dmesg:
+>>>>
+>>>> speedstep-smi: No supported Intel CPU detected.
+>>>> cpufreq-core: CPU 0: _PPC is 0 - frequency not limited
+>>>> cpufreq-core: CPU 3: _PPC is 0 - frequency not limited
+>>>> cpufreq-core: CPU 1: _PPC is 0 - frequency not limited
+>>>> cpufreq-core: CPU 2: _PPC is 0 - frequency not limited
+>>>> cpuidle: using governor ladder
+>>>> cpuidle: using governor menu
+>>>>
+>>>> I looked at arch/x86/kernel/cpu/cpufreq/speedstep-smi.c and it seems
+>>>> to detect only Pentium IIIs.
+>>>>
+>>>> Anyone know what files have the cpufreq code for Intel Core 2?
+>>>> Does cpufreq support Intel Core 2 Quads? Especially the Q9300? If not,
+>>>> anything I can do to help?
+>>> I have an Intel Core 2 Duo and it uses the ACPI cpufreq driver; your
+>>> Quad should do the same.  So this is likely an ACPI/BIOS issue.
+>>>
+>>> If you ask ACPI people they will ask you to post the output of acpidump.
+>>> Also you should probably check if you have a BIOS option that needs to be
+>>> enabled for this to work.
+>>>
+>>> BTW, cpuidle is something quite different, it is about how to save power
+>>> when CPU is doing nothing (i.e. idle :-).  Cpu frequency scaling is how to
+>>> save power when CPU is working (but doesn't need to run flat out).
+>>>
+>>> Alan
+>>>
+>> Hi,
+>>
+>>  I'm attaching the acpidump output. Can someone (ACPI guys??) please
+>> me help figure this out?
+>> Is there any other info that's needed to debug this?
+>>
+>> I can be a tester for this and even do some development within the
+>> limits of my understanding.
+>>
+>> Thanks,
+>> SK
+>>
+> Anyone care to help?
+> 
+> -SK
 
-Signed-off-by: Sven Wegener <sven.wegener@stealer.net>
----
- drivers/leds/leds-pca955x.c |   71 +++++++++++++++++++++++-------------------
- 1 files changed, 39 insertions(+), 32 deletions(-)
+Please don't top-post!
 
-Here's a slightly updated patch, with some changes I had forgotten.
-Shouldn't change the logic at all.
+According to the online ACPI spec, the BIOS should expose _PCT, _PSS and PPC objects if it supports multiple CPU performance states (aka P-states, cpufreq).  I ran your acpidump.txt through acpixtract to generate the DSDT, and decompiled it using iasl.  It did not contain any of _PCT, _PSS and _PPC.
 
-- Another 32 -> sizeof() conversion
-- Move the unregister code to where we also free the memory on failure
+Again, it is possible this is an option in your BIOS which is currently disabled.  You need to go into your BIOS setup screen and see if you can find any relevant options.
 
-And one more
+If possible, find out whether cpu frequency scaling works in windows.  If it doesn't work in windows, it's very unlikely to work on linux.  Linux ACPI aims for bug-for-bug compatibility with Windows, which is what manufacturers test their product against.
 
-- cancel_work_sync() when unregistering on failure
+There may be other possibilities.  Your acpidump output did not appear to include a SSDT, which is another place these objects might be found.  My computer suffered from a bug where linux could not find the SSDT (<http://bugzilla.kernel.org/show_bug.cgi?id=8630>).  This bug was relatively simple and was fixed.  However there might be something similar going on.  IIRC from last time, SSDTs or similar can also be loaded dynamically by the AML code in the DSDT, so maybe something goes wrong there.
 
-diff --git a/drivers/leds/leds-pca955x.c b/drivers/leds/leds-pca955x.c
-index 146c069..8c45acc 100644
---- a/drivers/leds/leds-pca955x.c
-+++ b/drivers/leds/leds-pca955x.c
-@@ -248,11 +248,10 @@ static int __devinit pca955x_probe(struct i2c_client *client,
- 					const struct i2c_device_id *id)
- {
- 	struct pca955x_led *pca955x;
--	int i;
--	int err = -ENODEV;
- 	struct pca955x_chipdef *chip;
- 	struct i2c_adapter *adapter;
- 	struct led_platform_data *pdata;
-+	int i, err;
- 
- 	chip = &pca955x_chipdefs[id->driver_data];
- 	adapter = to_i2c_adapter(client->dev.parent);
-@@ -282,43 +281,41 @@ static int __devinit pca955x_probe(struct i2c_client *client,
- 		}
- 	}
- 
-+	pca955x = kzalloc(sizeof(*pca955x) * chip->bits, GFP_KERNEL);
-+	if (!pca955x)
-+		return -ENOMEM;
-+
-+	i2c_set_clientdata(client, pca955x);
-+
- 	for (i = 0; i < chip->bits; i++) {
--		pca955x = kzalloc(sizeof(struct pca955x_led), GFP_KERNEL);
--		if (!pca955x) {
--			err = -ENOMEM;
--			goto exit;
--		}
-+		pca955x[i].chipdef = chip;
-+		pca955x[i].client = client;
-+		pca955x[i].led_num = i;
- 
--		pca955x->chipdef = chip;
--		pca955x->client = client;
--		pca955x->led_num = i;
- 		/* Platform data can specify LED names and default triggers */
- 		if (pdata) {
- 			if (pdata->leds[i].name)
--				snprintf(pca955x->name, 32, "pca955x:%s",
--							pdata->leds[i].name);
-+				snprintf(pca955x[i].name,
-+					 sizeof(pca955x[i].name), "pca955x:%s",
-+					 pdata->leds[i].name);
- 			if (pdata->leds[i].default_trigger)
--				pca955x->led_cdev.default_trigger =
-+				pca955x[i].led_cdev.default_trigger =
- 					pdata->leds[i].default_trigger;
- 		} else {
--			snprintf(pca955x->name, 32, "pca955x:%d", i);
-+			snprintf(pca955x[i].name, sizeof(pca955x[i].name),
-+				 "pca955x:%d", i);
- 		}
--		spin_lock_init(&pca955x->lock);
- 
--		pca955x->led_cdev.name = pca955x->name;
--		pca955x->led_cdev.brightness_set =
--				pca955x_led_set;
-+		spin_lock_init(&pca955x[i].lock);
- 
--		/*
--		 * Client data is a pointer to the _first_ pca955x_led
--		 * struct
--		 */
--		if (i == 0)
--			i2c_set_clientdata(client, pca955x);
-+		pca955x[i].led_cdev.name = pca955x[i].name;
-+		pca955x[i].led_cdev.brightness_set = pca955x_led_set;
- 
--		INIT_WORK(&(pca955x->work), pca955x_led_work);
-+		INIT_WORK(&pca955x[i].work, pca955x_led_work);
- 
--		led_classdev_register(&client->dev, &(pca955x->led_cdev));
-+		err = led_classdev_register(&client->dev, &pca955x[i].led_cdev);
-+		if (err < 0)
-+			goto exit;
- 	}
- 
- 	/* Turn off LEDs */
-@@ -336,23 +333,33 @@ static int __devinit pca955x_probe(struct i2c_client *client,
- 	pca955x_write_psc(client, 1, 0);
- 
- 	return 0;
-+
- exit:
-+	while (i > 0) {
-+		i--;
-+		led_classdev_unregister(&pca955x[i].led_cdev);
-+		cancel_work_sync(&pca955x[i].work);
-+	}
-+
-+	kfree(pca955x);
-+	i2c_set_clientdata(client, NULL);
-+
- 	return err;
- }
- 
- static int __devexit pca955x_remove(struct i2c_client *client)
- {
- 	struct pca955x_led *pca955x = i2c_get_clientdata(client);
--	int leds = pca955x->chipdef->bits;
- 	int i;
- 
--	for (i = 0; i < leds; i++) {
--		led_classdev_unregister(&(pca955x->led_cdev));
--		cancel_work_sync(&(pca955x->work));
--		kfree(pca955x);
--		pca955x = pca955x + 1;
-+	for (i = 0; i < pca955x->chipdef->bits; i++) {
-+		led_classdev_unregister(&pca955x[i].led_cdev);
-+		cancel_work_sync(&pca955x[i].work);
- 	}
- 
-+	kfree(pca955x);
-+	i2c_set_clientdata(client, NULL);
-+
- 	return 0;
- }
- 
+Regards
+Alan
+
