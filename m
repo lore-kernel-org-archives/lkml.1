@@ -1,177 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754669AbYHGNkq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755293AbYHGNlY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754669AbYHGNkq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Aug 2008 09:40:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752427AbYHGNkh
+	id S1755293AbYHGNlY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Aug 2008 09:41:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751429AbYHGNlP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Aug 2008 09:40:37 -0400
-Received: from saeurebad.de ([85.214.36.134]:50197 "EHLO saeurebad.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752243AbYHGNkf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Aug 2008 09:40:35 -0400
-From: Johannes Weiner <hannes@saeurebad.de>
-To: linux-kernel@vger.kernel.org
-Cc: mm-commits@vger.kernel.org
-Subject: [PATCH] ftrace: printk formatting infrastructure fix 2
-References: <200808062133.m76LXpGk016460@imap1.linux-foundation.org>
-Date: Thu, 07 Aug 2008 15:40:06 +0200
-In-Reply-To: <200808062133.m76LXpGk016460@imap1.linux-foundation.org>
-	(akpm@linux-foundation.org's message of "Wed, 06 Aug 2008 14:20:54
-	-0700")
-Message-ID: <87zlnpueo9.fsf@skyscraper.fehenstaub.lan>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	Thu, 7 Aug 2008 09:41:15 -0400
+Received: from mxintlb03fl.versatel.de ([89.246.255.240]:51538 "EHLO
+	mxintlb03fl.versatel.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751003AbYHGNlN convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Aug 2008 09:41:13 -0400
+X-Greylist: delayed 3600 seconds by postgrey-1.27 at vger.kernel.org; Thu, 07 Aug 2008 09:41:13 EDT
+X-PMWin-Version: 2.6.1, Antispam-Engine: 2.6.0, Antivirus-Engine: 2.75.4
+Importance: normal
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.3790.3959
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Subject: AW: [PATCH 3/4] Fix remaining big endian issue of hfcmulti
+Date: Thu, 7 Aug 2008 13:01:38 +0200
+Message-ID: <85496C0905BB194FBDA1572571DBE95D0949FC36@FLBVEXCH01.versatel.local>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH 3/4] Fix remaining big endian issue of hfcmulti
+thread-index: Acj3XB3Hc15asXEtRd2lWwcZC5m8WwBE9ytQ
+From: "Andreas.Eversberg" <Andreas.Eversberg@versatel.de>
+To: <benh@kernel.crashing.org>, "Karsten Keil" <kkeil@suse.de>
+Cc: "Sean MacLennan" <smaclennan@pikatech.com>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       <isdn4linux@listserv.isdn4linux.de>, <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 07 Aug 2008 11:01:40.0358 (UTC) FILETIME=[F82FE260:01C8F87C]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+please note that some cards require MEMIO. disabling it means disabling card types. if there are other future access modes and bridges, they can be implemented and then be selected by the vendor and device ids. read, write and fifo read, write are functions,  assigned to pointers at runtime. also wrapping (slightly) different hardware access is possible in the future. i think we should leave it like it is.
 
-akpm@linux-foundation.org writes:
+also note:  reading or writing fifos via PIO is optimized and almost as fast as MEMIO, since io-address byte never changes during fifo access. (auto-incemented after access).
 
-> The mm-of-the-moment snapshot 2008-08-06-14-20 has been uploaded to
->
->    http://userweb.kernel.org/~akpm/mmotm/
->
-> It contains the following patches against 2.6.27-rc2:
->
-> feature-removal-scheduletxt-remove-the-ncr53c9x-entry.patch
-> hugetlb-call-arch_prepare_hugepage-for-surplus-pages.patch
-> quota-documentation-for-sending-below-quota-messages-via-netlink-and-tiny-doc-update.patch
-> page-allocator-use-no-panic-variant-of-alloc_bootmem-in-alloc_large_system_hash.patch
-> cpu-hotplug-s390-doesnt-support-additional_cpus-anymore.patch
-> radeonfb-fix-copyarea-for-r300-and-later.patch
-> memcg-fix-oops-in-mem_cgroup_shrink_usage.patch
-> sm501-update-debugging-low-information-messages.patch
-> seq_file-fix-bug-when-seq_read-reads-nothing.patch
-> repeatable-slab-corruption-with-ltp-msgctl08.patch
-> linux-next.patch
-> next-remove-localversion.patch
-> acpi-add-checking-for-null-early-param.patch
-> mm-only-enforce-acpi-resource-conflict-checks.patch
-> calgary-fix-a-comparison-warning-the-pci-calgary-64-driver.patch
-> x86-remove-init_mm-export-as-planned-for-2626.patch
-> use-warn-in-arch-x86-mm-ioremapc.patch
-> use-warn-in-arch-x86-mm-pageattrc.patch
-> use-warn-in-arch-x86-kernel.patch
-> arch-x86-pci-irqc-attempt-to-clean-up-code-layout.patch
-> i386-vmalloc-size-fix.patch
-> zero-based-percpu-use-vmlinux_symbol-in-include-asm-generic-vmlinuxldsh.patch
-> x86-64-fix-overlap-of-modules-and-fixmap-areas.patch
-> x86_64-remove-empty-lines-from-stack-traces-oopses.patch
-> x86-tracehook_signal_handler.patch
-> x86-tracehook-syscall.patch
-> x86-tracehook-asm-syscallh.patch
-> x86-signals-use-asm-syscallh.patch
-> x86-tracehook-tif_notify_resume.patch
-> x86-tracehook-config_have_arch_tracehook.patch
-> hda_intel-enable-snoop-for-nvidia-hda-controller.patch
-> cifs-remove-global_extern-macro.patch
-> cifs-fix-range-check.patch
-> pcmcia-pccard-deadlock-fix.patch
-> ppc-use-the-common-ascii-hex-helpers.patch
-> powerpc-replace-__function__-with-__func__.patch
-> v4l-link-tuner-before-saa7134.patch
-> v4l-drx397xdc-sparse-annotations.patch
-> i2c-renesas-highlander-fpga-smbus-support.patch
-> i2c-renesas-highlander-fpga-smbus-support-update.patch
-> i2c-renesas-highlander-fpga-smbus-support-update-fix.patch
-> hid-wellspring-device-quirks.patch
-> add-time_is_after_jiffies-and-others-which-compare-with-jiffies.patch
-> ntp-let-update_persistent_clock-sleep.patch
-> migrate_timers-add-comment-use-spinlock_irq.patch
-> tick-schedc-suppress-needless-timer-reprogramming.patch
-> timekeeping-fix-rounding-problem-during-clock-update.patch
-> git-ia64.patch
-> drivers-input-serio-xilinx_ps2c-fix-warning.patch
-> wistron_btns-add-support-for-fujitsu-siemens-amilo-pro-edition-v3505.patch
-> elantech-touchpad-driver.patch
-> input-touchscreen-driver-add-support-ad7877-touchscreen-driver.patch
-> input-bcm5974-055-smoother-motion-irq-simplification.patch
-> input-ads7846c-sparse-lock-annotation.patch
-> git-jg-misc.patch
-> git-kbuild-fixes.patch
-> genksyms-track-symbol-checksum-changes.patch
-> genksyms-allow-to-ignore-symbol-checksum-changes.patch
-> lkdtm-fix-for-config_scsi=n.patch
-> git-lblnet.patch
-> git-libata-all.patch
-> libata-scsi-dont-start-hotplug-work-queue-if-hotplug-is-disabled.patch
-> sata_viac-add-support-for-vt8251-fix-the-internal-chips-issue-and.patch
-> m32r-remove-the-unused-nohighmem-option.patch
-> m32r-dont-offer-config_isa.patch
-> mmc-fix-clock-off-in-pxa255-270.patch
-> git-ubi.patch
-> git-ubi-git-rejects.patch
-> configure-out-igmp-support.patch
-> acpi-compal-laptop-use-rfkill-switch-subsystem.patch
-> forcedeth-power-down-phy-when-interface-is-down.patch
-> forcedeth-fix-mac-address-detection-on-network-card-regression-in-2623.patch
-> sundance-set-carrier-status-on-link-change-events.patch
-> via-velocity-give-a-structure-to-the-rx-tx-fields.patch
-> via-velocity-fix-sleep-with-spinlock-bug-during-mtu-change.patch
-> hamradio-add-missing-sanity-check-to-tty-operation.patch
-> skge-adapt-skge-to-use-reworked-pci-pm.patch
-> cassini-use-request_firmware.patch
-> pegasus-add-blacklist-support-to-fix-belkin-bluetooth-dongle.patch
-> drivers-net-replace-__function__-with-__func__.patch
-> e1000e-convert-ndev_-printks-to-something-smaller.patch
-> e1000e-perform-basic-82573-eeprom-checks-for-known-issues.patch
-> e1000e-fix-drv-load-issues.patch
-> e1000e-remove-inapplicable-test-for-ioport.patch
-> e1000e-remove-inapplicable-test-for-ioport-checkpatch-fixes.patch
-> sky2-adapt-to-use-reworked-pci-pm-code.patch
-> e1000e-make-e1000e-default-to-the-same-kconfig-setting-as-e1000.patch
-> 3x59x-fix-pci-resource-management.patch
-> smc-ultra-get-rid-of-eth%d-message.patch
-> nfs-err_ptr-is-expected-on-failure-from-nfs_do_clone_mount.patch
-> sunrpc-do-not-pin-sunrpc-module-in-the-memory.patch
-> git-parisc.patch
-> pciidsh-remove-a-duplicated-symbol.patch
-> use-warn-in-kernel-lockdepc.patch
-> sched-do_wait_for_common-use-signal_pending_state.patch
-> wait_task_inactive-dont-consider-task-nivcsw.patch
-> wait_task_inactive-improve-the-returned-value-for-nvcsw-==-0.patch
-> wait_task_inactive-fix-the-config_smp-version.patch
-> sched-type-fix.patch
-> lockdep-fix-combinatorial-explosion-in-lock-subgraph-traversal.patch
-> lockdep-fix-combinatorial-explosion-in-lock-subgraph-traversal-fix.patch
-> lockdep-lock_set_subclass-reset-a-held-locks-subclass.patch
-> lockdep-re-annotate-scheduler-runqueues.patch
-> lockdep-shrink-held_lock-structure.patch
-> lockdep-shrink-held_lock-structure-fix.patch
-> lockdep-shrink-held_lock-structure-fix-2.patch
-> lockdep-map_acquire.patch
-> lockdep-lock-protection-locks.patch
-> lockdep-spin_lock_nest_lock.patch
-> netfilter-conntrack_helper-needs-to-include-rculisth.patch
-> rcu-just-rename-call_rcu_bh-instead-of-making-it-a-macro.patch
-> rcu-trace-fix-possible-mem-leak.patch
-> ftrace-new-continue-entry-separate-out-from-trace_entry.patch
-> ftrace-printk-formatting-infrastructure.patch
+-----Ursprüngliche Nachricht-----
+Von: Benjamin Herrenschmidt [mailto:benh@kernel.crashing.org] 
+Gesendet: Mittwoch, 6. August 2008 02:34
+An: Karsten Keil
+Cc: Sean MacLennan; Linus Torvalds; Andreas.Eversberg; isdn4linux@listserv.isdn4linux.de; linux-kernel@vger.kernel.org
+Betreff: Re: [PATCH 3/4] Fix remaining big endian issue of hfcmulti
 
----
-The attribute on the function definition breaks compilation.  Instead of
-removing it, we could use a declaration and add the attribute there, but
-then, when someone adds new ftrace_printk()s, she will probably compile
-with CONFIG_TRACING and the callsite is garuanteed to be verified during
-development.
+On Wed, 2008-08-06 at 02:18 +0200, Karsten Keil wrote:
+> 
+> For the xhfc this may be a differnt choice, to select the access method on
+> compile time, because the chip is mainly used for embedded systems, so it
+> do not need to have a generic driver, the kerne is usually configured
+> exactly for the hardware. On the other side, if you look into the xhfc
+> chip and documentation, it is not so different from the HFC 4/8S, so maybe
+> it would be possible to integrate it in hfcmulti as well.
+> 
+> And maybe here is a third way, to have a tristate CONFIG MEMIO,PIO,BOTH,
+> which could be imlemented in the none indirect call version without
+> overhead. I think I like this idea.
 
-Signed-off-by: Johannes Weiner <hannes@saeurebad.de>
----
- include/linux/ftrace.h |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+That's probably the best way. On powerpc, we have done a lot of work
+to make it possible to have kernels support multiple platforms
+even in the embedded space. You don't have to do it, but we found it
+important to allow for it.
 
---- a/include/linux/ftrace.h
-+++ b/include/linux/ftrace.h
-@@ -165,7 +165,7 @@ __ftrace_printk(unsigned long ip, const 
- static inline void
- ftrace_special(unsigned long arg1, unsigned long arg2, unsigned long arg3) { }
- static inline int
--ftrace_printk(const char *fmt, ...) __attribute__ ((format (printf, 1, 0)))
-+ftrace_printk(const char *fmt, ...)
- {
- 	return 0;
- }
+It forces to keep the code cleaner, but also makes it possible for
+somebody release a range of products based on different designs to
+support/release single binary images for the entire product range
+(at least provided it's the same CPU core "family", we don't currently
+support single binaries mixing for example 44x and 8xx processor
+support). What to actually do at runtime being decided based on the
+content of a "device-tree" passed to the kernel by the firmware or the
+boot wrapper.
+
+Thus, I find it a good idea to allow the option even for embedded
+drivers to be built with runtime detection of access method.
+
+Cheers,
+Ben.
+
+
