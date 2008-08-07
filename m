@@ -1,59 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757290AbYHGW0x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754189AbYHGW1P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757290AbYHGW0x (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Aug 2008 18:26:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753128AbYHGW0p
+	id S1754189AbYHGW1P (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Aug 2008 18:27:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757357AbYHGW0y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Aug 2008 18:26:45 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:20505 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752912AbYHGW0o (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Aug 2008 18:26:44 -0400
-Date: Thu, 7 Aug 2008 15:12:39 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: akpm <akpm@linux-foundation.org>, x86@kernel.org
-Subject: [PATCH] EFI: fix function prototype
-Message-Id: <20080807151239.2fb2b75d.randy.dunlap@oracle.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 7 Aug 2008 18:26:54 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:46747 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757183AbYHGW0w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Aug 2008 18:26:52 -0400
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+From: Roland McGrath <roland@redhat.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+X-Fcc: ~/Mail/linus
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       David Miller <davem@davemloft.net>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Ulrich Drepper <drepper@redhat.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Gregory Haskins <ghaskins@novell.com>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       "Luis Claudio R. Goncalves" <lclaudio@uudg.org>,
+       Clark Williams <williams@redhat.com>, Sam Ravnborg <sam@ravnborg.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [PATCH 0/5] ftrace: to kill a daemon
+In-Reply-To: Steven Rostedt's message of  Thursday, 7 August 2008 17:29:41 -0400 <alpine.DEB.1.10.0808071721200.10092@gandalf.stny.rr.com>
+References: <20080807182013.984175558@goodmis.org>
+	<489B6511.7000208@goop.org>
+	<alpine.DEB.1.10.0808071721200.10092@gandalf.stny.rr.com>
+X-Antipastobozoticataclysm: When George Bush projectile vomits antipasto on the Japanese.
+Message-Id: <20080807222642.761AF15429D@magilla.localdomain>
+Date: Thu,  7 Aug 2008 15:26:42 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+> This doesn't seem any less complex than what I did. With this, I would 
+> have to come up with another way to handle modules. This will make
+> things a lot more complex.
 
-Fix function prototype in header file to match source code:
+The scheme you've implemented can apply fine to a .ko file after it's made.
+They are just .o's really.  It is presumably faster to do one step per
+final .ko rather than many tiny ones (per source file).  
 
-linux-next-20080807/arch/x86/kernel/efi_64.c:100:14: error: symbol 'efi_ioremap' redeclared with different type (originally declared at include2/asm/efi.h:89) - different address spaces
-
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- include/asm-x86/efi.h |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
---- linux-next-20080807.orig/include/asm-x86/efi.h
-+++ linux-next-20080807/include/asm-x86/efi.h
-@@ -86,7 +86,7 @@ extern u64 efi_call6(void *fp, u64 arg1,
- 	efi_call6((void *)(efi.systab->runtime->f), (u64)(a1), (u64)(a2), \
- 		  (u64)(a3), (u64)(a4), (u64)(a5), (u64)(a6))
- 
--extern void *efi_ioremap(unsigned long addr, unsigned long size);
-+extern void __iomem *efi_ioremap(unsigned long addr, unsigned long size);
- 
- #endif /* CONFIG_X86_32 */
- 
+That might be a benefit to doing it all at the end for vmlinux too.  I
+think the best way would be to have a vmlinux.o that we actually use in the
+link, rather than just analyzing and discarding.  Then you can just do your
+existing hack on vmlinux.o before it's linked into vmlinux.
 
 
----
-~Randy
-Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
-http://linuxplumbersconf.org/
+Thanks,
+Roland
