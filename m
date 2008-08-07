@@ -1,77 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758595AbYHGV0b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758742AbYHGV0q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758595AbYHGV0b (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Aug 2008 17:26:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755816AbYHGV0S
+	id S1758742AbYHGV0q (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Aug 2008 17:26:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758567AbYHGV00
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Aug 2008 17:26:18 -0400
-Received: from 166-70-238-42.ip.xmission.com ([166.70.238.42]:43917 "EHLO
-	ns1.wolfmountaingroup.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753072AbYHGV0S (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Aug 2008 17:26:18 -0400
-Message-ID: <1166.69.2.248.210.1218143094.squirrel@webmail.wolfmountaingroup.com>
-In-Reply-To: <2832.69.2.248.210.1218142926.squirrel@webmail.wolfmountaingroup.com>
-References: <17494.166.70.238.46.1217784156.squirrel@webmail.wolfmountaingroup.com>
-          <Pine.LNX.4.64.0808051140150.6309@anakin>      
-    <33030.166.70.238.45.1217948565.squirrel@webmail.wolfmountaingroup.com>
-          <200808060133.10457.nickpiggin@yahoo.com.au>      
-    <44919.166.70.238.45.1217949560.squirrel@webmail.wolfmountaingroup.com>
-          <48987A24.3060000@nortel.com>   
-    <2364.69.2.248.210.1217954354.squirrel@webmail.wolfmountaingroup.com>  
-     <alpine.LNX.1.00.0808071626500.19665@iabervon.org>
-    <2832.69.2.248.210.1218142926.squirrel@webmail.wolfmountaingroup.com>
-Date: Thu, 7 Aug 2008 15:04:54 -0600 (MDT)
-Subject: Re: [ANNOUNCE] Merkey's Kernel Debugger
-From: jmerkey@wolfmountaingroup.com
-To: jmerkey@wolfmountaingroup.com
-Cc: "Daniel Barkalow" <barkalow@iabervon.org>, jmerkey@wolfmountaingroup.com,
-       "Chris Friesen" <cfriesen@nortel.com>,
-       "Nick Piggin" <nickpiggin@yahoo.com.au>,
-       "Geert Uytterhoeven" <geert@linux-m68k.org>,
-       "Stefan Richter" <stefanr@s5r6.in-berlin.de>,
-       "Josh Boyer" <jwboyer@gmail.com>, linux-kernel@vger.kernel.org
-User-Agent: SquirrelMail/1.4.6
+	Thu, 7 Aug 2008 17:26:26 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:36761 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758555AbYHGV0Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Aug 2008 17:26:25 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: BUG kmalloc-64: Object already free
+Date: Thu, 7 Aug 2008 23:28:35 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: "Justin Mattock" <justinmattock@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-usb@vger.kernel.org, Matthew Garrett <mjg59@srcf.ucam.org>,
+       Greg KH <greg@kroah.com>
+References: <dd18b0c30808061421q20becfd3lad86158f05cea36f@mail.gmail.com> <20080807141953.5760f255.akpm@linux-foundation.org>
+In-Reply-To: <20080807141953.5760f255.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200808072328.36162.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> On Tue, 5 Aug 2008, jmerkey@wolfmountaingroup.com wrote:
->>
->>> Read it already.  Quite a few large companies are using it at present
->>> and
->>> have been since 2000, BTW.
->>
->> The criterion for kernel inclusion isn't really whether it works,
->> however.
->> It's whether other people would be able to understand it well enough to
->> support it if you disappear (or if somebody else has changes that
->> require
->> changes to it). If it works well but isn't nice code, nobody really
->> benefits from having it in the kernel distribution rather than external
->> (like it's been for the past 8 years). If it is nice code (somewhat
->> regardless of whether it happens to work right now), people can work on
->> it
->> and keep it in sync with the kernel as they change things.
->>
->> 	-Daniel
->> *This .sig left intentionally blank*
->>
->
-> It both works and is nice code.   But I may not be impartial.
->
-> Jeff
->
->
+On Thursday, 7 of August 2008, Andrew Morton wrote:
+> On Wed, 6 Aug 2008 14:21:08 -0700
+> "Justin Mattock" <justinmattock@gmail.com> wrote:
+> 
+> > I must be honest, 2.6.27-rc1-00156-g94ad374
+> > has made me entirely lazy with wanting to add any patches
+> > or taking anything out... but I guess I'll have to pull
+> > and add a patch that was sent to me yesterday.
+> > upon booting I saw this for the first time with isight: <dmesg below>
+> > 
+> 
+> hrmpf.  Rafael went and assigned this to me.
 
-You activate it from the keyboard the same way as kdb -- pause/break or
-int X or exceptions.
-
-Jeff
-
-
+In fact, you are automatically assigned every "memory management" bug.
