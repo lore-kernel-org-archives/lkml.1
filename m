@@ -1,48 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753949AbYHGMWe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753793AbYHGMYM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753949AbYHGMWe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Aug 2008 08:22:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752859AbYHGMWC
+	id S1753793AbYHGMYM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Aug 2008 08:24:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754128AbYHGMWz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Aug 2008 08:22:02 -0400
-Received: from fgwmail8.fujitsu.co.jp ([192.51.44.38]:34498 "EHLO
-	fgwmail8.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753439AbYHGMV6 (ORCPT
+	Thu, 7 Aug 2008 08:22:55 -0400
+Received: from a-sasl-quonix.sasl.smtp.pobox.com ([208.72.237.25]:42992 "EHLO
+	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754096AbYHGMWx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Aug 2008 08:21:58 -0400
-Date: Thu, 07 Aug 2008 20:00:37 +0900
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-Subject: Re: Race condition between putback_lru_page and mem_cgroup_move_list
-Cc: kosaki.motohiro@jp.fujitsu.com, balbir@linux.vnet.ibm.com,
-       MinChan Kim <minchan.kim@gmail.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       linux-mm <linux-mm@kvack.org>, Rik van Riel <riel@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <1218041585.6173.45.camel@lts-notebook>
-References: <489741F8.2080104@linux.vnet.ibm.com> <1218041585.6173.45.camel@lts-notebook>
-Message-Id: <20080807185203.A8C2.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	Thu, 7 Aug 2008 08:22:53 -0400
+From: Junio C Hamano <gitster@pobox.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: git@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [ANNOUNCE] GIT 1.6.0-rc2
+In-Reply-To: <1218099517.8625.3.camel@twins> (Peter Zijlstra's message of
+ "Thu, 07 Aug 2008 10:58:37 +0200")
+References: <7vskthll6t.fsf@gitster.siamese.dyndns.org>
+ <1218099517.8625.3.camel@twins>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+Date: Thu, 07 Aug 2008 03:00:25 -0700
+Message-ID: <7v3alhjgau.fsf@gitster.siamese.dyndns.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
+Content-Type: text/plain; charset=us-ascii
+X-Pobox-Relay-ID: ABE79D88-6467-11DD-A0B8-3113EBD4C077-77302942!a-sasl-quonix.pobox.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
+Peter Zijlstra <peterz@infradead.org> writes:
 
-> If you mean the "active/inactive list transition" in
-> shrink_[in]active_list(), these are already batched under zone lru_lock
-> with batch size determined by the 'release pages' pvec.  So, I think
-> we're OK here.
+> Quick question - where does one go to find out the cool new features
+> that make it 1.6 and should convince me to upgrade and try this whicked
+> new release?
 
-No.
+Draft release notes for 1.6.0 was posted to the list some time ago
+already, but as always:
 
-AFAIK shrink_inactive_list batched zone->lru_lock, 
-but it doesn't batched mz->lru_lock.
-
-then, spin_lock_irqsave is freqently called.
-
+    http://www.kernel.org/pub/software/scm/git/docs/RelNotes-1.6.0.txt
 
 
