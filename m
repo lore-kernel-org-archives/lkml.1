@@ -1,37 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752653AbYHGNDC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754516AbYHGNEV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752653AbYHGNDC (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Aug 2008 09:03:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751428AbYHGNCu
+	id S1754516AbYHGNEV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Aug 2008 09:04:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751734AbYHGNED
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Aug 2008 09:02:50 -0400
-Received: from yx-out-2324.google.com ([74.125.44.28]:49862 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751239AbYHGNCt (ORCPT
+	Thu, 7 Aug 2008 09:04:03 -0400
+Received: from mtagate2.uk.ibm.com ([195.212.29.135]:53582 "EHLO
+	mtagate2.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751658AbYHGNEB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Aug 2008 09:02:49 -0400
-Message-ID: <f17812d70808070212r56a74c03va31869ff7f9ebc1@mail.gmail.com>
-Date: Thu, 7 Aug 2008 17:12:09 +0800
-From: "Eric Miao" <eric.y.miao@gmail.com>
-To: "Marc Zyngier" <maz@misterjones.org>
-Subject: Re: [PATCH 1/5] Basic support for the Arcom/Eurotech Viper SBC.
-Cc: linux-kernel@vger.kernel.org,
-       "Amit Walambe" <amit.walambe@eurotech-ltd.co.uk>
-In-Reply-To: <20080807110720.1efe0608@not-of-this-earth.wild-wind.fr.eu.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+	Thu, 7 Aug 2008 09:04:01 -0400
+Subject: Re: [PATCH 1/1] allocate structures for reservation tracking in
+	hugetlbfs outside of spinlocks
+From: Gerald Schaefer <gerald.schaefer@de.ibm.com>
+To: Andy Whitcroft <apw@shadowen.org>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, schwidefsky@de.ibm.com,
+       heiko.carstens@de.ibm.com, Mel Gorman <mel@csn.ul.ie>
+In-Reply-To: <1218049425-19416-1-git-send-email-apw@shadowen.org>
+References: <1218033802.7764.31.camel@ubuntu>
+	 <1218049425-19416-1-git-send-email-apw@shadowen.org>
+Content-Type: text/plain
+Date: Thu, 07 Aug 2008 13:35:54 +0200
+Message-Id: <1218108954.4662.3.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-8.el5_2.2) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1218028794-850-1-git-send-email-maz@misterjones.org>
-	 <37f79c8da83c915c5ecc1d81cad9f4f5ae3c2b4a.1218018636.git.marc.zyngier@altran.com>
-	 <f17812d70808062050r2a346b26ie31479b8d008417f@mail.gmail.com>
-	 <20080807110720.1efe0608@not-of-this-earth.wild-wind.fr.eu.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> - People using their old user-space with a new kernel will see their
-> serial port names shuffled (going from an all-ttyS? world to a mix of
-> ttySA? and ttyS?). Is there a way to avoid the confusion?
+On Wed, 2008-08-06 at 20:03 +0100, Andy Whitcroft wrote:
+> [Gerald, could you see if this works for you it seems to for us on
+> an x86 build.  If it does we can push it up to Andrew.]
 
-This can be solved in user-space, "udev" is probably what you want.
+Yes, it works fine with your patch.
+
+Thanks,
+Gerald
+
+
