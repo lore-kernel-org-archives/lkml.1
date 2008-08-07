@@ -1,113 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759191AbYHGMgx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754460AbYHGMhX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759191AbYHGMgx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Aug 2008 08:36:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757702AbYHGMgb
+	id S1754460AbYHGMhX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Aug 2008 08:37:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754497AbYHGMgy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Aug 2008 08:36:31 -0400
-Received: from E23SMTP01.au.ibm.com ([202.81.18.162]:52689 "EHLO
-	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757861AbYHGMg3 (ORCPT
+	Thu, 7 Aug 2008 08:36:54 -0400
+Received: from an-out-0708.google.com ([209.85.132.250]:52043 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759178AbYHGMgx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Aug 2008 08:36:29 -0400
-Date: Thu, 7 Aug 2008 18:05:58 +0530
-From: Chirag Jog <chirag@linux.vnet.ibm.com>
-To: Steven Rostedt <rostedt@goodmis.org>, LKML <linux-kernel@vger.kernel.org>,
-       linux-rt-users <linux-rt-users@vger.kernel.org>
-Cc: "Timothy R. Chavez" <tim.chavez@linux.vnet.ibm.com>,
-       Josh Triplett <josht@linux.vnet.ibm.com>,
-       Sebastien Dugue <sebastien.dugue@bull.net>
-Subject: [PATCH][PPC64][RT] Fix a previously reverted fix again
-Message-ID: <20080807123558.GA10684@linux.vnet.ibm.com>
-Reply-To: Chirag Jog <chirag@linux.vnet.ibm.com>
-Mail-Followup-To: Steven Rostedt <rostedt@goodmis.org>,
-	LKML <linux-kernel@vger.kernel.org>,
-	linux-rt-users <linux-rt-users@vger.kernel.org>,
-	"Timothy R. Chavez" <tim.chavez@linux.vnet.ibm.com>,
-	Josh Triplett <josht@linux.vnet.ibm.com>,
-	Sebastien Dugue <sebastien.dugue@bull.net>
+	Thu, 7 Aug 2008 08:36:53 -0400
+Message-ID: <86802c440808070351m6400b290jb826d10407c7de77@mail.gmail.com>
+Date: Thu, 7 Aug 2008 03:51:48 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH 00/33] dyn_array and nr_irqs support v4
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>, "Ingo Molnar" <mingo@elte.hu>,
+       "Thomas Gleixner" <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       "Dhaval Giani" <dhaval@linux.vnet.ibm.com>,
+       "Mike Travis" <travis@sgi.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20080807111216.6cfdbeea@lxorguk.ukuu.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Organization: IBM LTC
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+References: <1218011937-10084-1-git-send-email-yhlu.kernel@gmail.com>
+	 <m1hc9yjb7x.fsf@frodo.ebiederm.org>
+	 <86802c440808061129l2bbe1658w453a11b4f16ffc83@mail.gmail.com>
+	 <m1y739j2z8.fsf@frodo.ebiederm.org>
+	 <20080807002638.04699eac@lxorguk.ukuu.org.uk>
+	 <m18wv9iqn9.fsf@frodo.ebiederm.org>
+	 <20080807111216.6cfdbeea@lxorguk.ukuu.org.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Aug 7, 2008 at 3:12 AM, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+> On Wed, 06 Aug 2008 18:02:18 -0700
+> ebiederm@xmission.com (Eric W. Biederman) wrote:
+>
+>> Alan Cox <alan@lxorguk.ukuu.org.uk> writes:
+>>
+>> > A lot of these are range checks so could be replaced by a single
+>> > valid_irq(irq) test.
+>>
+>> Yes.  My first impression was that with NR_IRQS dead valid_irq could
+>> easily become. #define valid_irq(irq) ((irq) != 0)
+>
+> Not really - there are lots of cases where we sanity check an IRQ passed
+> from user space or module parameter configuration. So we do actually need
+>
+>        valid_irq(irq)          ((irq) > 0 && (irq) < nr_irqs)
+>
+> [or relevant per arch alternatives]
 
-Hi Steven,
-   Ironically in the 2.6.26-rt1,the patch fix-a-previously-reverted-fix.patch
-   again got reverted ;).
-   
-   Here the patch that should replace the above patch.
+#ifndef CONFIG_HAVE_SPARSE_IRQ
+#define   valid_irq(irq)          ((irq) > 0 && (irq) < nr_irqs)
+#else
+#define   valid_irq(irq)          ((irq) > 0)
 
-This patch reintroduces a "fix" that got reverted.
-Here was the original patch http://lkml.org/lkml/2007/5/22/133
+anyway why 0 is invalid instead of -1U...?
 
-Here is the new patch
-This patch also fixes OOPS reported here: http://lkml.org/lkml/2008/6/19/146
-
->From tsutomu.owa@toshiba.co.jp
-Signed-Off-By: Chirag <chirag@linux.vnet.ibm.com>
-
-
-
----
- arch/powerpc/kernel/entry_64.S |   19 +++++++++----------
- 1 file changed, 9 insertions(+), 10 deletions(-)
-
-Index: linux-2.6.26-rt1/arch/powerpc/kernel/entry_64.S
-===================================================================
---- linux-2.6.26-rt1.orig/arch/powerpc/kernel/entry_64.S	2008-08-07 10:35:18.000000000 +0000
-+++ linux-2.6.26-rt1/arch/powerpc/kernel/entry_64.S	2008-08-07 11:33:55.000000000 +0000
-@@ -595,30 +595,31 @@
- 	bne	restore
- 	/* here we are preempting the current task */
- 1:
-+	/*
-+	 * preempt_schedule_irq() expects interrupts disabled and returns
-+	 * with interrupts disabled. No need to check preemption again,
-+	 * preempt_schedule_irq just did that for us.
-+	 */
-+	bl	.preempt_schedule_irq
- #ifdef CONFIG_TRACE_IRQFLAGS
- 	bl	.trace_hardirqs_on
-+#endif /* CONFIG_TRACE_IRQFLAGS */
-+
- 	/* Note: we just clobbered r10 which used to contain the previous
- 	 * MSR before the hard-disabling done by the caller of do_work.
- 	 * We don't have that value anymore, but it doesn't matter as
- 	 * we will hard-enable unconditionally, we can just reload the
- 	 * current MSR into r10
- 	 */
--	mfmsr	r10
--#endif /* CONFIG_TRACE_IRQFLAGS */
--	li	r0,1
--	stb	r0,PACASOFTIRQEN(r13)
--	stb	r0,PACAHARDIRQEN(r13)
--	ori	r10,r10,MSR_EE
--	mtmsrd	r10,1		/* reenable interrupts */
--	bl	.preempt_schedule
--	mfmsr	r10
--	clrrdi	r9,r1,THREAD_SHIFT
--	rldicl	r10,r10,48,1	/* disable interrupts again */
--	rotldi	r10,r10,16
--	mtmsrd	r10,1
--	ld	r4,TI_FLAGS(r9)
--	andi.	r0,r4,_TIF_NEED_RESCHED
--	bne	1b
-+	bl	.preempt_schedule_irq
-+	mfmsr   r10
-+	clrrdi  r9,r1,THREAD_SHIFT
-+	rldicl  r10,r10,48,1    /* disable interrupts again */
-+	rotldi  r10,r10,16
-+	mtmsrd  r10,1
-+	ld      r4,TI_FLAGS(r9)
-+	andi.   r0,r4,(_TIF_NEED_RESCHED)
-+	bne     1b
- 	b	restore
- 
- user_work:
+YH
 
 
+#endif
