@@ -1,115 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755423AbYHGDwq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756923AbYHGEj0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755423AbYHGDwq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Aug 2008 23:52:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753654AbYHGDwQ
+	id S1756923AbYHGEj0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Aug 2008 00:39:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752515AbYHGEjP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Aug 2008 23:52:16 -0400
-Received: from yw-out-2324.google.com ([74.125.46.31]:35772 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753389AbYHGDwP (ORCPT
+	Thu, 7 Aug 2008 00:39:15 -0400
+Received: from casper.infradead.org ([85.118.1.10]:45514 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751995AbYHGEjO convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Aug 2008 23:52:15 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=O9gb/OoR0Xn/U3Q0VDtcgoSpOTOXLDvMsgkct8Se6huqEA38kYbj/wgi+3uXARQtUB
-         UGkB+jCTFPh+bkPhzyxG7RNGI8IxMnnVHRTbT/ryBr4sKHrNHqejzrDSjxdXLKBPitRj
-         VhuMi5aeU59ZBcLj0mX9DIAQzxnHcS59it0LA=
-Message-ID: <f17812d70808062052p7943441ax5a70aea0a9d3447f@mail.gmail.com>
-Date: Thu, 7 Aug 2008 11:52:13 +0800
-From: "Eric Miao" <eric.y.miao@gmail.com>
-To: "Marc Zyngier" <maz@misterjones.org>
-Subject: Re: [PATCH 2/5] Add support for the Arcom/Eurotech Viper SBC onboard ethernet.
-Cc: linux-kernel@vger.kernel.org,
-       "Amit Walambe" <amit.walambe@eurotech-ltd.co.uk>,
-       "Dominik Brodowski" <linux@dominikbrodowski.net>,
-       "Marc Zyngier" <marc.zyngier@altran.com>
-In-Reply-To: <15b4632ba095731c7c6c384de0698e2ef84fa775.1218018637.git.marc.zyngier@altran.com>
-MIME-Version: 1.0
+	Thu, 7 Aug 2008 00:39:14 -0400
+Date: Wed, 6 Aug 2008 21:39:04 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Mihai =?UTF-8?B?RG9uyJt1?= <mdontu@bitdefender.com>
+Cc: Adrian Bunk <bunk@kernel.org>, tvrtko.ursulin@sophos.com,
+       Greg KH <greg@kroah.com>, "Press, Jonathan" <Jonathan.Press@ca.com>,
+       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       malware-list@lists.printk.net
+Subject: Re: [malware-list] [RFC 0/5] [TALPA] Intro to a linuxinterfaceforon
+ access scanning
+Message-ID: <20080806213904.37a33a58@infradead.org>
+In-Reply-To: <200808070349.55882.mdontu@bitdefender.com>
+References: <20080806105008.GF6477@cs181140183.pp.htv.fi>
+	<20080806110851.C2DBC3764CE@pmx1.sophos.com>
+	<20080806112646.GG6477@cs181140183.pp.htv.fi>
+	<200808070349.55882.mdontu@bitdefender.com>
+Organization: Intel
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
+Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <37f79c8da83c915c5ecc1d81cad9f4f5ae3c2b4a.1218018636.git.marc.zyngier@altran.com>
-	 <15b4632ba095731c7c6c384de0698e2ef84fa775.1218018637.git.marc.zyngier@altran.com>
+Content-Transfer-Encoding: 8BIT
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Consider merging this to the following code in the front of smc91x.h
+On Thu, 7 Aug 2008 03:49:55 +0300
+Mihai Donțu <mdontu@bitdefender.com> wrote:
 
-#if defined(CONFIG_ARCH_LUBBOCK) ||\
-    defined(CONFIG_MACH_MAINSTONE) ||\
-    defined(CONFIG_MACH_ZYLONITE) ||\
-    defined(CONFIG_MACH_LITTLETON)
+> Well, here is one attempt.
+> 
+> A good percentage of an AV product's job is to prevent exploitation
+> of a security hole in a product before the vendor (assuming the
+> vendor admits it's bug and not a misuse of the product's features).
 
-#include <asm/mach-types.h>
+just to get things clear;
+you're not talking about preventing the actual exploitation per se
+(that would be the job of the various protection technologies) or the
+containment (that would be SELinux), but more about detecting the
+presence and preventing to (accidental) use of pre-canned, widely used
+exploit binaries/files ?
 
-/* Now the bus width is specified in the platform data
- * pretend here to support all I/O access types
- */
-#define SMC_CAN_USE_8BIT        1
-#define SMC_CAN_USE_16BIT       1
-#define SMC_CAN_USE_32BIT       1
-#define SMC_NOWAIT              1
-
-#define SMC_IO_SHIFT            (lp->io_shift)
-
-....
-#else
-
-On Wed, Aug 6, 2008 at 9:19 PM, Marc Zyngier <maz@misterjones.org> wrote:
-> Signed-off-by: Marc Zyngier <marc.zyngier@altran.com>
-> ---
->  drivers/net/smc91x.h |   21 +++++++++++++++++++++
->  1 files changed, 21 insertions(+), 0 deletions(-)
->
-> diff --git a/drivers/net/smc91x.h b/drivers/net/smc91x.h
-> index 22209b6..9481412 100644
-> --- a/drivers/net/smc91x.h
-> +++ b/drivers/net/smc91x.h
-> @@ -185,6 +185,27 @@ static inline void SMC_outw(u16 val, void __iomem *ioaddr, int reg)
->
->  #define SMC_IRQ_FLAGS          (-1)
->
-> +#elif defined(CONFIG_ARCH_VIPER)
-> +
-> +/* We can only do 16-bit reads and writes in the static memory space. */
-> +#define SMC_CAN_USE_8BIT       0
-> +#define SMC_CAN_USE_16BIT      1
-> +#define SMC_CAN_USE_32BIT      0
-> +#define SMC_CAN_USE_DATACS     1
-> +#define SMC_NOWAIT             1
-> +
-> +#define SMC_IO_SHIFT           0
-> +
-> +#define SMC_inw(a, r)          readw((a) + (r))
-> +#define SMC_outw(v, a, r)      writew(v, (a) + (r))
-> +#define SMC_insw(a, r, p, l)   insw((a) + (r), p, l)
-> +#define SMC_outsw(a, r, p, l)  outsw((a) + (r), p, l)
-> +
-> +#define RPC_LSA_DEFAULT                RPC_LED_100_10
-> +#define RPC_LSB_DEFAULT                RPC_LED_TX_RX
-> +
-> +#define SMC_IRQ_FLAGS          (-1)    /* from resource */
-> +
->  #elif defined(CONFIG_SA1100_ASSABET)
->
->  #include <asm/arch/neponset.h>
-> --
-> 1.5.4.3
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
-
-
-
--- 
-Cheers
-- eric
