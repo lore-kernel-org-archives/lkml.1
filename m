@@ -1,59 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754460AbYHGOes@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753222AbYHGOm2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754460AbYHGOes (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Aug 2008 10:34:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752204AbYHGOei
+	id S1753222AbYHGOm2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Aug 2008 10:42:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751573AbYHGOmU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Aug 2008 10:34:38 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:48095 "EHLO smtp5.pp.htv.fi"
+	Thu, 7 Aug 2008 10:42:20 -0400
+Received: from smtp1-g19.free.fr ([212.27.42.27]:41044 "EHLO smtp1-g19.free.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752172AbYHGOeh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Aug 2008 10:34:37 -0400
-Date: Thu, 7 Aug 2008 17:33:04 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Joerg Roedel <joro@8bytes.org>
-Cc: Tony Luck <tony.luck@intel.com>, linux-ia64@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [IA64] defconfig build failure in current linus.git
-Message-ID: <20080807143303.GA9692@cs181140183.pp.htv.fi>
-References: <20080807101015.GB4342@8bytes.org>
+	id S1751071AbYHGOmT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Aug 2008 10:42:19 -0400
+Date: Thu, 7 Aug 2008 16:41:14 +0200
+From: Yves-Alexis Perez <corsac@debian.org>
+To: Fabio Comolli <fabio.comolli@gmail.com>
+Cc: Karel Zak <kzak@redhat.com>, Pavel Machek <pavel@suse.cz>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       ACPI mailing list <linux-acpi@vger.kernel.org>
+Subject: Re: 2.6.27-rc1: critical thermal shutdown on thinkpad x60
+Message-ID: <20080807144113.GD21840@corsac.net>
+References: <20080806090246.GA1572@elf.ucw.cz> <20080807113400.GA18297@nb.net.home> <b637ec0b0808070605o38ac0b73q14753a6b7e3e061f@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080807101015.GB4342@8bytes.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <b637ec0b0808070605o38ac0b73q14753a6b7e3e061f@mail.gmail.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 07, 2008 at 12:10:15PM +0200, Joerg Roedel wrote:
-> Hi,
-> 
-> I just tried to build the current linus.git kernel for IA64 and got the
-> following build errors:
-> 
->   CC      drivers/acpi/utils.o
-> In file included from /data2/repos/tip/linux.trees.git/include/acpi/acpi.h:54,
->                  from /data2/repos/tip/linux.trees.git/include/acpi/acpi_bus.h:31,
->                  from /data2/repos/tip/linux.trees.git/drivers/acpi/utils.c:30:
-> /data2/repos/tip/linux.trees.git/include/acpi/platform/acenv.h:175:1: warning: "COMPILER_DEPENDENT_INT64" redefined
->...
+On Thu, Aug 07, 2008 at 03:05:10PM +0200, Fabio Comolli wrote:
+> Seems not only limited to ThinkPads as my HP laptop started to shut
+> down for thermal events with 27-rc1 too. It happened twice (one with
+> -rc1 and another with -rc2). Never happened before.
 
-If you get this error your compiler does not define __linux__ .
-
-What compiler are you using?
-
-> Regards,
-> 
-> Joerg
-
-cu
-Adrian
-
+Global warming.
 -- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+Yves-Alexis
