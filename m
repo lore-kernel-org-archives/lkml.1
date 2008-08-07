@@ -1,59 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756108AbYHGRe2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755280AbYHGRg0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756108AbYHGRe2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Aug 2008 13:34:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753265AbYHGReQ
+	id S1755280AbYHGRg0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Aug 2008 13:36:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750901AbYHGRgS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Aug 2008 13:34:16 -0400
-Received: from an-out-0708.google.com ([209.85.132.241]:28750 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751158AbYHGReP (ORCPT
+	Thu, 7 Aug 2008 13:36:18 -0400
+Received: from casper.infradead.org ([85.118.1.10]:58325 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751196AbYHGRgR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Aug 2008 13:34:15 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=GSvlBId1mYyt0df+SegJ6XAaJa89eIgUKIbhfKoUMMUkNZNpzcjer5EMqyBTV0TkP6
-         UJ9bpURSgU6Zuh3N+aMZPKd4PbB5zRhxAd+GkFIAIw+Wpx9tIGwy1zsQeCpqs3VW7U6w
-         CFZJKSUzL4P4DCfr5bC9F9H3/EswW2XuaNGK8=
-Message-ID: <82e4877d0808071034o3ec31f75k95308ed585563b2e@mail.gmail.com>
-Date: Thu, 7 Aug 2008 13:34:14 -0400
-From: "Parag Warudkar" <parag.warudkar@gmail.com>
-To: justinmattock@gmail.com
-Subject: [PATCH] isight_firmware : Fix a leak and double kfree()
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "akpm@osdl.org" <akpm@linux-foundation.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+	Thu, 7 Aug 2008 13:36:17 -0400
+Subject: Re: [GIT PULL]: firmware patches for building firmware into kernel
+From: Jaswinder Singh <jaswinder@infradead.org>
+To: David Dillow <dave@thedillows.org>
+Cc: David Woodhouse <dwmw2@infradead.org>, LKML <linux-kernel@vger.kernel.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+In-Reply-To: <1218130222.18118.7.camel@lap75545.ornl.gov>
+References: <1218128219.14483.7.camel@jaswinder.satnam>
+	 <1218130222.18118.7.camel@lap75545.ornl.gov>
+Content-Type: text/plain; charset=utf8
+Date: Thu, 07 Aug 2008 23:04:35 +0530
+Message-Id: <1218130475.14483.16.camel@jaswinder.satnam>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Parag Warudkar <parag.warudkar@gmail.com>
+Hello David Dillow,
 
---- linux-2.6/drivers/usb/misc/isight_firmware.c	2008-07-29
-23:26:24.000000000 -0400
-+++ linux-2.6-wk/drivers/usb/misc/isight_firmware.c	2008-08-07
-13:23:01.000000000 -0400
-@@ -48,7 +48,8 @@
+On Thu, 2008-08-07 at 13:30 -0400, David Dillow wrote:
+> On Thu, 2008-08-07 at 22:26 +0530, Jaswinder Singh wrote:
+> >       firmware: avoiding multiple replication for same firmware file
+> 
+> If this is the last patch you sent to the list, I think there are still
+> locking bugs in it. I was short on time, so I didn't give it a full
+> review, but I remember seeing problems. I'll try to give it some time
+> tonight, if Andrew doesn't beat me to it.
+> 
 
- 	if (request_firmware(&firmware, "isight.fw", &dev->dev) != 0) {
- 		printk(KERN_ERR "Unable to load isight firmware\n");
--		return -ENODEV;
-+		ret = -ENODEV;
-+		goto out;
- 	}
+This is updated and revised patch.
 
- 	ptr = firmware->data;
-@@ -91,7 +92,6 @@
- 			     buf, llen, 300) != llen) {
- 				printk(KERN_ERR
- 				       "Failed to load isight firmware\n");
--				kfree(buf);
- 				ret = -ENODEV;
- 				goto out;
- 			}
+> >       typhoon: use request_firmware
+> 
+> This is untested -- again, no time over the weekend -- and I'd rather
+> not have it go upstream until has been verified.
+> 
+> 
+
+﻿This is also updated and revised patch.
+
+You can check from :
+http://git.infradead.org/users/jaswinder/firm-jsr-2.6.git?a=shortlog
+
+Thank you,
+
+Jaswinder Singh.
+
+
