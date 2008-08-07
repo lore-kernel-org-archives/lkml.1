@@ -1,110 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758077AbYHGAgG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754989AbYHGAjV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758077AbYHGAgG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Aug 2008 20:36:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754981AbYHGAfx
+	id S1754989AbYHGAjV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Aug 2008 20:39:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753414AbYHGAjE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Aug 2008 20:35:53 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:39896 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754530AbYHGAfw (ORCPT
+	Wed, 6 Aug 2008 20:39:04 -0400
+Received: from dresden.studentenwerk.mhn.de ([141.84.225.229]:44618 "EHLO
+	email.studentenwerk.mhn.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753389AbYHGAjB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Aug 2008 20:35:52 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=to:subject:cc:message-id:date:from;
-	b=Waq6QygBiFzfusDX6A/B4mCte1mSKxqt3XElFfYb7CMJ40szcwoJCVpyw3Nwv+1IA
-	VAWEWKClj9jnT+ntyVVTA==
-To: mingo@redhat.com, tglx@linutronix.de
-Subject: [PATCH] x86: prevent binaries from making system calls using the wrong syscall interface
-Cc: linux-kernel@vger.kernel.org
-Message-Id: <20080807003459.37CC629624@localhost>
-Date: Wed,  6 Aug 2008 17:34:59 -0700 (PDT)
-From: md@google.com (Michael Davidson)
+	Wed, 6 Aug 2008 20:39:01 -0400
+From: Wolfgang Walter <wolfgang.walter@stwm.de>
+Organization: Studentenwerk =?iso-8859-1?q?M=FCnchen?=
+To: Suresh Siddha <suresh.b.siddha@intel.com>
+Subject: Re: Kernel oops with 2.6.26, padlock and ipsec: probably problem with fpu state changes
+Date: Thu, 7 Aug 2008 02:38:58 +0200
+User-Agent: KMail/1.9.9
+Cc: Herbert Xu <herbert@gondor.apana.org.au>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, vegard.nossum@gmail.com
+References: <200807171653.59177.wolfgang.walter@stwm.de> <20080806201401.GA607@linux-os.sc.intel.com> <20080806212152.GB607@linux-os.sc.intel.com>
+In-Reply-To: <20080806212152.GB607@linux-os.sc.intel.com>
+MIME-Version: 1.0
+Content-Disposition: inline
+X-Length: 4020
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
+Message-Id: <200808070238.58959.wolfgang.walter@stwm.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Prevent binaries from making system calls using other than one
-of the "normal" system call interfaces for that binary type.
+Thanks for your answer.
 
-Currently there is nothing to prevent 64 bit binaries from
-attempting to make system calls using the 32 bit system call
-interfaces and vice versa.
+On Wednesday 06 August 2008, Suresh Siddha wrote:
+> On Wed, Aug 06, 2008 at 01:14:02PM -0700, Siddha, Suresh B wrote:
+> > On Wed, Aug 06, 2008 at 10:33:25AM -0700, Wolfgang Walter wrote:
+> > > Hello Herbert,
+> > >
+> > > I think I finally found the problem.
+> > >
+> > > Here a short description again: all our routers with a via C3 using 
+> > > padlock for AES-encryption are
+> > > crashing with 2.6.26 while they work fine with 2.6.25. Not using padlock
+> > > (i.e. using the i386 assembler version of AES) they just work fine.
+> > 
+> > Both the padlock version or asm version don't use FP/math registers, 
+> > right?
+> > It is interesting that you don't see the problem with asm version
+> > but see the problem with padlock version.
 
-Since the 32 bit and 64 bit system call numbers are different
-this means that a binary could attempt to obfuscate which system
-calls it was actually making by using the "wrong" system call
-interface. In particular, the call to audit_syscall_entry()
-relies on checking the TIF_IA32 flag to determine whether it is
-dealing with a 32 or 64 bit system call without regard to the
-actual type of system call that was made.While this specific issue
-could be addressed by checking the TS_COMPAT flag in threadinfo_status
-it seems preferable to simply disallow this situation altogether.
+I don't know how padlock exactly works and I don't know anything of i386's 
+architecture on hardware and assembler level. So I can only speculate:
+
+Maybe padlock aes does influence FP/math.
+
+http://linux.via.com.tw/support/beginDownload.action?eleid=181&fid=261
+
+states:
+
+3. SSE instructions must be enabled via the standard x86 method of enabling
+the FXSAVE/FXRSTOR instructions using CR4[9] This enables the full set of SSE
+instructions. If CR4[9] is not set, PadLock behaves as if it were disabled via
+the MSR, regardless of the setting of the enable bits MSRs.
 
 
-Signed-off-by: Michael Davidson <md@google.com>
+> > 
+> > Does disabling CONFIG_PREEMPT in 2.6.26 change anything? And also,
+> > can you provide the complete kernel log till the point of failure(oops
+> > that you sent doesn't have the call trace info)
+> 
+> BTW, in one of your oops, I see:
+> 
+> note: cron[1207] exited with preempt_count 268435459
+> 
+> I smell some kind of stack corruption here which is corrupting
+> thread_info (in the above case preempt_count in the thread_info).
+> 
+> Similarly, if the status field(in thread_info) gets corrupted(setting
+> TS_USEDFPU) without proper math state allocated(present in thread_struct),
+> we can end up oops in __switch_to.
+> 
+> But you seem to say, reverting recent fpu patches make the problem go away.
+> hmm, just wondering if your test kernel (with fpu patches reverted) is 
+stable
+> enough and don't see other oops/issues?
 
----
+No oops yet.
 
-Index: linux-2.6.26.2/arch/x86/ia32/ia32entry.S
-===================================================================
---- linux-2.6.26.2.orig/arch/x86/ia32/ia32entry.S	2008-08-06 09:19:01.000000000 -0700
-+++ linux-2.6.26.2/arch/x86/ia32/ia32entry.S	2008-08-06 13:34:54.566992000 -0700
-@@ -123,6 +123,8 @@
-  	.quad 1b,ia32_badarg
-  	.previous	
- 	GET_THREAD_INFO(%r10)
-+	testl  $_TIF_IA32,threadinfo_flags(%r10)
-+	jz     ia32_bad_abi
- 	orl    $TS_COMPAT,threadinfo_status(%r10)
- 	testl  $(_TIF_SYSCALL_TRACE|_TIF_SYSCALL_AUDIT|_TIF_SECCOMP),threadinfo_flags(%r10)
- 	CFI_REMEMBER_STATE
-@@ -230,6 +232,8 @@
- 	.quad 1b,ia32_badarg
- 	.previous	
- 	GET_THREAD_INFO(%r10)
-+	testl $_TIF_IA32,threadinfo_flags(%r10)
-+	jz    ia32_bad_abi
- 	orl   $TS_COMPAT,threadinfo_status(%r10)
- 	testl $(_TIF_SYSCALL_TRACE|_TIF_SYSCALL_AUDIT|_TIF_SECCOMP),threadinfo_flags(%r10)
- 	CFI_REMEMBER_STATE
-@@ -324,6 +328,8 @@
- 	   this could be a problem. */
- 	SAVE_ARGS 0,0,1
- 	GET_THREAD_INFO(%r10)
-+	testl $_TIF_IA32,threadinfo_flags(%r10)
-+	jz    ia32_bad_abi
- 	orl   $TS_COMPAT,threadinfo_status(%r10)
- 	testl $(_TIF_SYSCALL_TRACE|_TIF_SYSCALL_AUDIT|_TIF_SECCOMP),threadinfo_flags(%r10)
- 	jnz ia32_tracesys
-@@ -347,6 +353,8 @@
- 	jmp ia32_do_syscall
- END(ia32_syscall)
- 
-+ia32_bad_abi:
-+	CFI_REMEMBER_STATE
- ia32_badsys:
- 	movq $0,ORIG_RAX-ARGOFFSET(%rsp)
- 	movq $-ENOSYS,RAX-ARGOFFSET(%rsp)
-Index: linux-2.6.26.2/arch/x86/kernel/entry_64.S
-===================================================================
---- linux-2.6.26.2.orig/arch/x86/kernel/entry_64.S	2008-08-06 09:19:01.000000000 -0700
-+++ linux-2.6.26.2/arch/x86/kernel/entry_64.S	2008-08-06 13:26:28.771994000 -0700
-@@ -244,7 +244,7 @@
- 	movq  %rcx,RIP-ARGOFFSET(%rsp)
- 	CFI_REL_OFFSET rip,RIP-ARGOFFSET
- 	GET_THREAD_INFO(%rcx)
--	testl $(_TIF_SYSCALL_TRACE|_TIF_SYSCALL_AUDIT|_TIF_SECCOMP),threadinfo_flags(%rcx)
-+	testl $(_TIF_SYSCALL_TRACE|_TIF_SYSCALL_AUDIT|_TIF_SECCOMP|_TIF_IA32),threadinfo_flags(%rcx)
- 	jnz tracesys
- 	cmpq $__NR_syscall_max,%rax
- 	ja badsys
-@@ -318,6 +318,8 @@
- 
- 	/* Do syscall tracing */
- tracesys:			 
-+	testl $_TIF_IA32,threadinfo_flags(%rcx)
-+	jnz badsys
- 	SAVE_REST
- 	movq $-ENOSYS,RAX(%rsp) /* ptrace can change this for a bad syscall */
- 	FIXUP_TOP_OF_STACK %rdi
+2.6.26 crashes here within 1 or 2 minutes if (and only) if there is ipsec 
+traffic using padlock aes and there are actually processes running (i.e. 
+ssh).
+
+The modified 2.6.26 did not crash yet (now running hours).
+
+Unmodified 2.6.26 where we use i386 assembler aes instead of padlock runs 
+since 2 weeks.
+
+We further use almost same kernels (only compiled for K7 or Intel Core Duo, 
+respectively) on K7 and an Intel Quad Core without problems.
+
+> 
+> Recently Vegard also noticed some stack corruptions (in network stack) 
+leading
+> to similar problems. Not sure if Vegard has root caused his issue. copying 
+him
+> for his comments.
+> 
+> thanks,
+> suresh
+> 
+> 
+
+Regards,
+-- 
+Wolfgang Walter
+Studentenwerk München
+Anstalt des öffentlichen Rechts
