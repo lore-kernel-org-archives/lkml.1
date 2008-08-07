@@ -1,103 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753555AbYHGMvt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757453AbYHGMwe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753555AbYHGMvt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Aug 2008 08:51:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754404AbYHGMtz
+	id S1757453AbYHGMwe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Aug 2008 08:52:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756604AbYHGMvs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Aug 2008 08:49:55 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:37452 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754277AbYHGMtv (ORCPT
+	Thu, 7 Aug 2008 08:51:48 -0400
+Received: from agminet02.oracle.com ([141.146.126.229]:61976 "EHLO
+	agminet02.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756524AbYHGMvq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Aug 2008 08:49:51 -0400
-Date: Thu, 7 Aug 2008 11:24:05 +0200
-From: Pavel Machek <pavel@suse.cz>
-To: Huang Ying <ying.huang@intel.com>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>, nigel@nigel.suspend2.net,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Vivek Goyal <vgoyal@redhat.com>, mingo@elte.hu,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org,
-       Kexec Mailing List <kexec@lists.infradead.org>
-Subject: Re: [PATCH 6/6] kexec jump: fix for ftrace
-Message-ID: <20080807092405.GF372@atrey.karlin.mff.cuni.cz>
-References: <1218099937.5164.37.camel@caritas-dev.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1218099937.5164.37.camel@caritas-dev.intel.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Thu, 7 Aug 2008 08:51:46 -0400
+Subject: Re: Btrfs v0.16 released
+From: Chris Mason <chris.mason@oracle.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: linux-btrfs <linux-btrfs@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>
+In-Reply-To: <1218100139.8625.7.camel@twins>
+References: <1217962876.15342.33.camel@think.oraclecorp.com>
+	 <1218100139.8625.7.camel@twins>
+Content-Type: text/plain
+Date: Thu, 07 Aug 2008 06:34:02 -0400
+Message-Id: <1218105242.15342.184.camel@think.oraclecorp.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Restore ftrace after jumping back from kexeced kernel.
+On Thu, 2008-08-07 at 11:08 +0200, Peter Zijlstra wrote:
+> On Tue, 2008-08-05 at 15:01 -0400, Chris Mason wrote:
 > 
-> Signed-off-by: Huang Ying <ying.huang@intel.com>
+> > * Fine grained btree locking.  The large fs_mutex is finally gone.
+> > There is still some work to do on the locking during extent allocation,
+> > but the code is much more scalable than it was.
 > 
-> ---
->  arch/x86/kernel/machine_kexec_32.c |   19 +++++++++++++++++++
->  kernel/kexec.c                     |    2 --
->  2 files changed, 19 insertions(+), 2 deletions(-)
-> 
-> @@ -124,7 +126,15 @@ void machine_kexec(struct kimage *image)
->  				       unsigned int has_pae,
->  				       unsigned int preserve_context);
->  
-> +#ifdef CONFIG_KEXEC_JUMP
-> +	if (kexec_image->preserve_context)
-> +		save_processor_state();
-> +#endif
-> +
-> +#ifdef CONFIG_FTRACE
-> +	save_ftrace_enabled = ftrace_enabled;
->  	tracer_disable();
-> +#endif
->  
->  	/* Interrupts aren't acceptable while we reboot */
->  	raw_local_irq_disable();
-
-The patch does way more than its changelog says...
-									Pavel
-
-
-> @@ -182,6 +192,15 @@ void machine_kexec(struct kimage *image)
->  					   (unsigned long)page_list,
->  					   image->start, cpu_has_pae,
->  					   image->preserve_context);
-> +
-> +#ifdef CONFIG_KEXEC_JUMP
-> +	if (kexec_image->preserve_context)
-> +		restore_processor_state();
-> +#endif
-> +
-> +#ifdef CONFIG_FTRACE
-> +	ftrace_enabled = save_ftrace_enabled;
-> +#endif
->  }
->  
->  void arch_crash_save_vmcoreinfo(void)
-> --- a/kernel/kexec.c
-> +++ b/kernel/kexec.c
-> @@ -1469,7 +1469,6 @@ int kernel_kexec(void)
->  		error = device_power_down(PMSG_FREEZE);
->  		if (error)
->  			goto Enable_irqs;
-> -		save_processor_state();
->  	} else
->  #endif
->  	{
-> @@ -1482,7 +1481,6 @@ int kernel_kexec(void)
->  
->  #ifdef CONFIG_KEXEC_JUMP
->  	if (kexec_image->preserve_context) {
-> -		restore_processor_state();
->  		device_power_up(PMSG_RESTORE);
->   Enable_irqs:
->  		local_irq_enable();
+> Cool - will try to find a cycle to stare at the code ;-)
 > 
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+I was able to get it mostly lockdep complaint by using mutex_lock_nested
+based on the level of the btree I was locking.  My allocation mutex is a
+little of a problem for lockdep though.
+
+> > * Helper threads for checksumming and other background tasks.  Most CPU
+> > intensive operations have been pushed off to helper threads to take
+> > advantage of SMP machines.  Streaming read and write throughput now
+> > scale to disk speed even with checksumming on.
+> 
+> Can this lead to the same Priority Inversion issues as seen with
+> kjournald?
+> 
+
+Yes, although in general only the helper threads end up actually doing
+the IO for writes.  Unfortunately, they are almost but not quite an
+elevator.  It is tempting to try sorting the bios on the helper queues
+etc.  But I haven't done that because it gets into starvation and other
+fun.
+
+I haven't done any real single cpu testing, it may make sense in those
+workloads to checksum and submit directly in the calling context.  But
+real single cpu boxes are harder to come by these days.
+
+-chris
+
+
