@@ -1,83 +1,229 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757298AbYHGAcW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758139AbYHGAck@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757298AbYHGAcW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Aug 2008 20:32:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753226AbYHGAa3
+	id S1758139AbYHGAck (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Aug 2008 20:32:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753279AbYHGAcH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Aug 2008 20:30:29 -0400
-Received: from ozlabs.org ([203.10.76.45]:49813 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753224AbYHGAa2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Aug 2008 20:30:28 -0400
-Subject: Re: [patch] PCI: check the return value of
-	device_create_bin_file() in pci_create_bus()
-From: Michael Ellerman <michael@ellerman.id.au>
-Reply-To: michael@ellerman.id.au
-To: Simon Horman <horms@verge.net.au>
-Cc: Matthew Wilcox <matthew@wil.cx>, Sven Wegener <sven.wegener@stealer.net>,
-       linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-In-Reply-To: <20080806233018.GG10636@verge.net.au>
-References: <20080805101605.GA19382@verge.net.au>
-	 <alpine.LNX.1.10.0808051224350.5671@titan.stealer.net>
-	 <20080805110006.GA13409@verge.net.au> <20080805111406.GA13899@verge.net.au>
-	 <20080805112814.GO26461@parisc-linux.org>
-	 <20080805121531.GA29763@verge.net.au>
-	 <20080805122639.GP26461@parisc-linux.org>
-	 <20080806005718.GE32143@verge.net.au>
-	 <20080806131900.GI2055@parisc-linux.org>
-	 <20080806232523.GF10636@verge.net.au> <20080806233018.GG10636@verge.net.au>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-7351w0AKCF6Ueqh90zEe"
-Date: Thu, 07 Aug 2008 10:30:26 +1000
-Message-Id: <1218069026.7900.0.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Wed, 6 Aug 2008 20:32:07 -0400
+Received: from a-sasl-quonix.sasl.smtp.pobox.com ([208.72.237.25]:62315 "EHLO
+	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752698AbYHGAcE convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Aug 2008 20:32:04 -0400
+From: Junio C Hamano <gitster@pobox.com>
+To: git@vger.kernel.org
+Subject: [ANNOUNCE] GIT 1.6.0-rc2
+cc: linux-kernel@vger.kernel.org
+Date: Wed, 06 Aug 2008 17:31:54 -0700
+Message-ID: <7vskthll6t.fsf@gitster.siamese.dyndns.org>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
+X-Pobox-Relay-ID: 40C72D9C-6418-11DD-A233-3113EBD4C077-77302942!a-sasl-quonix.pobox.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+GIT 1.6.0-rc2 is the second (or should we call it the third?) preview of
+the upcoming release.  It is available at the usual places:
 
---=-7351w0AKCF6Ueqh90zEe
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+  http://www.kernel.org/pub/software/scm/git/
 
-On Thu, 2008-08-07 at 09:30 +1000, Simon Horman wrote:
-> Check the return value of device_create_bin_file in pci_create_bus and
-> unwind if necessary. Don't propagate error to caller, as failure to creat=
-e
-> these files shouldn't prevent PCI from being initialised.
->=20
-> Cc: Sven Wegener <sven.wegener@stealer.net>
-> Cc: Michael Ellerman <michael@ellerman.id.au>
-> Cc: Matthew Wilcox <matthew@wil.cx>
-> Signed-off-by: Simon Horman <horms@verge.net.au>
+  git-1.6.0-rc2.tar.{gz,bz2}			(source tarball)
+  git-htmldocs-1.6.0-rc2.tar.{gz,bz2}		(preformatted docs)
+  git-manpages-1.6.0-rc2.tar.{gz,bz2}		(preformatted docs)
 
-I hate to prolong the pain, but wasn't the plan to print a big fat
-warning so that it's clear the system is not 100% happy.
+The RPM binary packages for a few architectures are also provided
+as courtesy.
 
-cheers
+  testing/RPMS/$arch/*-1.6.0.rc2-1.fc9.$arch.rpm	(RPM)
 
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
+----------------------------------------------------------------
 
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
+Changes since v1.6.0-rc1 are as follows:
 
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
+Abhijit Menon-Sen (7):
+      `git submodule add` now requires a <path>
+      Make it clear that push can take multiple refspecs
+      Make the DESCRIPTION match <x>... items in the SYNOPSIS
+      Git.pm: localise $? in command_close_bidi_pipe()
+      Fix hash slice syntax error
+      Fix typo in perl/Git.pm
+      Fix typos in INSTALL
 
---=-7351w0AKCF6Ueqh90zEe
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
+Alex Riesen (1):
+      Make use of stat.ctime configurable
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+Alexander Gavrilov (9):
+      git-gui: Fix the Remote menu separator.
+      git-gui: Preserve scroll position on reshow_diff.
+      Support copy and rename detection in fast-export.
+      gitk: Kill back-end processes on window close
+      gitk: Arrange to kill diff-files & diff-index on quit
+      gitk: On Windows, use a Cygwin-specific flag for kill
+      gitk: Fixed broken exception handling in diff
+      gitk: Fixed automatic row selection during load
+      gitk: Fallback to selecting the head commit upon load
 
-iD8DBQBImkIidSjSd0sB4dIRAoyUAJ9wX9G9VHPqcRF5bIlKCFb6pcpcOQCeOIOs
-UIHAqSECkXRs9FvTXIGa2S0=
-=dsme
------END PGP SIGNATURE-----
+Anders Melchiorsen (4):
+      Advertise the ability to abort a commit
+      Documentation: fix diff.external example
+      Flush output in start_async
+      Add output flushing before fork()
 
---=-7351w0AKCF6Ueqh90zEe--
+Avery Pennarun (2):
+      Teach "git diff -p" Pascal/Delphi funcname pattern
+      git-svn: Abort with an error if 'fetch' parameter is invalid.
+
+Brandon Casey (3):
+      t/t4202-log.sh: add newline at end of file
+      Teach fsck and prune that tmp_obj_ file names may not be 14 bytes long
+      perl/Makefile: handle paths with spaces in the NO_PERL_MAKEMAKER section
+
+Brian Gernhardt (1):
+      Documentation: Remove mentions of git-svnimport.
+
+Cesar Eduardo Barros (1):
+      Documentation/git-rev-parse.txt: update for new git-describe output format
+
+Christian Couder (2):
+      merge-base: die with an error message if not passed a commit ref
+      documentation: user-manual: update "using-bisect" section
+
+Christian Stimming (2):
+      git-gui: Update German translation
+      gitk: Updated German translation
+
+Ciaran McCreesh (1):
+      Make git-add -i accept ranges like 7-
+
+David D. Kilzer (1):
+      Fix race condition in t9119-git-svn-info.sh
+
+Dmitry Potapov (1):
+      correct access right for git-svn-dcommit test
+
+Eric Wong (2):
+      git-svn: properly set path for "info" command
+      t9119: conditionally re-enable test depending on svn(1) version
+
+Giuseppe Bilotta (2):
+      diff: add ruby funcname pattern
+      diff: chapter and part in funcname for tex
+
+Jeff King (3):
+      init: handle empty "template" parameter
+      Compact commit template message
+      init: handle empty "template" parameter
+
+Jim Meyering (1):
+      git-cvsimport.perl: Print "UNKNOWN LINE..." on stderr, not stdout.
+
+Johannes Schindelin (3):
+      sort_in_topological_order(): avoid setting a commit flag
+      clone: Add an option to set up a mirror
+      clone --bare: Add ".git" suffix to the directory name to clone into
+
+Johannes Sixt (1):
+      git-gui: Adapt discovery of oguilib to execdir 'libexec/git-core'
+
+Jon Jensen (1):
+      Fix reference to Everyday Git, which is an HTML document and not a man page.
+
+Jonathan Nieder (1):
+      git-diff(1): "--c" -> "--cc" typo fix
+
+Junio C Hamano (19):
+      Allow building without any git installed
+      Allow installing in the traditional way
+      ls-tree documentation: enhance notes on subdirectory and pathspec behaviour
+      Documentation: clarify what is shown in "git-ls-files -s" output
+      t7001: fix "git mv" test
+      Teach gitlinks to ie_modified() and ce_modified_check_fs()
+      Fix merge name generation in "merge in C"
+      Fix test-parse-options "integer" test
+      Teach --find-copies-harder to "git blame"
+      make sure parsed wildcard refspec ends with slash
+      Documentation: clarify diff --cc
+      Update my e-mail address
+      Start 1.5.6.5 RelNotes to describe accumulated fixes
+      builtin-name-rev.c: split deeply nested part from the main function
+      RelNotes 1.5.6.5 updates
+      fix diff-tree --stdin documentation
+      Files given on the command line are relative to $cwd
+      GIT 1.5.6.5
+      GIT 1.6.0-rc2
+
+Kevin Ballard (1):
+      format-patch: Produce better output with --inline or --attach
+
+Lee Marlow (11):
+      bash completion: remove unused function _git_diff_tree
+      bash completion: Add more long options for 'git log'
+      bash completion: Add completion for 'git grep'
+      bash completion: Add completion for 'git clone'
+      bash completion: Add completion for 'git clean'
+      bash completion: Add completion for 'git init'
+      bash completion: Add completion for 'git revert'
+      bash completion: More completions for 'git stash'
+      bash completion: Add completion for 'git archive'
+      bash completion: Add completion for 'git ls-files'
+      bash completion: Add completion for 'git mv'
+
+Linus Torvalds (1):
+      diff.renamelimit is a basic diff configuration
+
+Michele Ballabio (2):
+      git-gui: update po/it.po
+      git-gui: add a part about format strings in po/README
+
+Mikael Magnusson (2):
+      git-gui: Update swedish translation.
+      gitk: Update swedish translation.
+
+Mike Ralphson (2):
+      Documentation: typos / spelling fixes in older RelNotes
+      Documentation: typos / spelling fixes
+
+Nanako Shiraishi (1):
+      git-gui: update Japanese translation
+
+Olivier Marin (1):
+      builtin-verify-tag: fix -v option parsing
+
+Pierre Habouzit (2):
+      Allow "non-option" revision options in parse_option-enabled commands
+      git-submodule: move ill placed shift.
+
+Pieter de Bie (1):
+      git-name-rev: allow --name-only in combination with --stdin
+
+René Scharfe (2):
+      archive: allow --exec and --remote without equal sign
+      git-name-rev: don't use printf without format
+
+Shawn O. Pearce (2):
+      git-gui: Fix gitk search in $PATH to work on Windows
+      git-gui: Update git-gui.pot for 0.11 nearing release
+
+Steffen Prohaska (6):
+      Refactor, adding prepare_git_cmd(const char **argv)
+      run-command (Windows): Run dashless "git <cmd>"
+      git-gui: Correct installation of library to be $prefix/share
+      git-gui (Windows): Switch to relative discovery of oguilib
+      git-gui (Windows): Change wrapper to execdir 'libexec/git-core'
+      Modify mingw_main() workaround to avoid link errors
+
+Stephan Beyer (1):
+      builtin-revert.c: typofix
+
+Steve Haslam (1):
+      Propagate -u/--upload-pack option of "git clone" to transport.
+
+Steven Grimm (1):
+      Optimize sha1_object_info for loose objects, not concurrent repacks
+
+Todd Zullinger (1):
+      Replace uses of "git-var" with "git var"
 
