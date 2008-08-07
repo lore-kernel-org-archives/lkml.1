@@ -1,42 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753793AbYHGMYM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754340AbYHGMXU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753793AbYHGMYM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Aug 2008 08:24:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754128AbYHGMWz
+	id S1754340AbYHGMXU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Aug 2008 08:23:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753830AbYHGMW2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Aug 2008 08:22:55 -0400
-Received: from a-sasl-quonix.sasl.smtp.pobox.com ([208.72.237.25]:42992 "EHLO
-	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754096AbYHGMWx (ORCPT
+	Thu, 7 Aug 2008 08:22:28 -0400
+Received: from outbound.icp-qv1-irony-out4.iinet.net.au ([203.59.1.150]:33780
+	"EHLO outbound.icp-qv1-irony-out4.iinet.net.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753793AbYHGMWZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Aug 2008 08:22:53 -0400
-From: Junio C Hamano <gitster@pobox.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: git@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [ANNOUNCE] GIT 1.6.0-rc2
-In-Reply-To: <1218099517.8625.3.camel@twins> (Peter Zijlstra's message of
- "Thu, 07 Aug 2008 10:58:37 +0200")
-References: <7vskthll6t.fsf@gitster.siamese.dyndns.org>
- <1218099517.8625.3.camel@twins>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-Date: Thu, 07 Aug 2008 03:00:25 -0700
-Message-ID: <7v3alhjgau.fsf@gitster.siamese.dyndns.org>
+	Thu, 7 Aug 2008 08:22:25 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApoEAOB8mkh8qVRH/2dsb2JhbACseA
+X-IronPort-AV: E=Sophos;i="4.31,319,1215360000"; 
+   d="scan'208";a="256523321"
+From: Ian Kent <raven@themaw.net>
+Subject: [PATCH 2/4] autofs4 - track uid and gid of last mount requester
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: autofs mailing list <autofs@linux.kernel.org>,
+       Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>
+Date: Thu, 07 Aug 2008 19:40:14 +0800
+Message-ID: <20080807114012.4142.83607.stgit@web.messagingengine.com>
+In-Reply-To: <20080807114002.4142.30417.stgit@web.messagingengine.com>
+References: <20080807114002.4142.30417.stgit@web.messagingengine.com>
+User-Agent: StGIT/0.14.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Pobox-Relay-ID: ABE79D88-6467-11DD-A0B8-3113EBD4C077-77302942!a-sasl-quonix.pobox.com
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra <peterz@infradead.org> writes:
+Patch to track the uid and gid of the last process to request a mount
+for on an autofs dentry.
 
-> Quick question - where does one go to find out the cool new features
-> that make it 1.6 and should convince me to upgrade and try this whicked
-> new release?
+Signed-off-by: Ian Kent <raven@themaw.net>
 
-Draft release notes for 1.6.0 was posted to the list some time ago
-already, but as always:
+---
 
-    http://www.kernel.org/pub/software/scm/git/docs/RelNotes-1.6.0.txt
+ fs/autofs4/autofs_i.h |    3 +++
+ fs/autofs4/inode.c    |    2 ++
+ fs/autofs4/waitq.c    |   34 ++++++++++++++++++++++++++++++++++
+ 3 files changed, 39 insertions(+), 0 deletions(-)
 
 
+diff --git a/fs/autofs4/autofs_i.h b/fs/autofs4/autofs_i.h
+index ea024d8..fa76d18 100644
+--- a/fs/autofs4/autofs_i.h
++++ b/fs/autofs4/autofs_i.h
+@@ -63,6 +63,9 @@ struct autofs_info {
+ 	unsigned long last_used;
+ 	atomic_t count;
+ 
++	uid_t uid;
++	gid_t gid;
++
+ 	mode_t	mode;
+ 	size_t	size;
+ 
+diff --git a/fs/autofs4/inode.c b/fs/autofs4/inode.c
+index 9ca2d07..9408507 100644
+--- a/fs/autofs4/inode.c
++++ b/fs/autofs4/inode.c
+@@ -53,6 +53,8 @@ struct autofs_info *autofs4_init_ino(struct autofs_info *ino,
+ 		atomic_set(&ino->count, 0);
+ 	}
+ 
++	ino->uid = 0;
++	ino->gid = 0;
+ 	ino->mode = mode;
+ 	ino->last_used = jiffies;
+ 
+diff --git a/fs/autofs4/waitq.c b/fs/autofs4/waitq.c
+index 6d87bb1..7c60c0b 100644
+--- a/fs/autofs4/waitq.c
++++ b/fs/autofs4/waitq.c
+@@ -457,6 +457,40 @@ int autofs4_wait(struct autofs_sb_info *sbi, struct dentry *dentry,
+ 
+ 	status = wq->status;
+ 
++	/*
++	 * For direct and offset mounts we need to track the requestrer
++	 * uid and gid in the dentry info struct. This is so it can be
++	 * supplied, on request, by the misc device ioctl interface.
++	 * This is needed during daemon resatart when reconnecting
++	 * to existing, active, autofs mounts. The uid and gid (and
++	 * related string values) may be used for macro substitution
++	 * in autofs mount maps.
++	 */
++	if (!status) {
++		struct autofs_info *ino;
++		struct dentry *de = NULL;
++
++		/* direct mount or browsable map */
++		ino = autofs4_dentry_ino(dentry);
++		if (!ino) {
++			/* If not lookup actual dentry used */
++			de = d_lookup(dentry->d_parent, &dentry->d_name);
++			if (de)
++				ino = autofs4_dentry_ino(de);
++		}
++
++		/* Set mount requester */
++		if (ino) {
++			spin_lock(&sbi->fs_lock);
++			ino->uid = wq->uid;
++			ino->gid = wq->gid;
++			spin_unlock(&sbi->fs_lock);
++		}
++
++		if (de)
++			dput(de);
++	}
++
+ 	/* Are we the last process to need status? */
+ 	mutex_lock(&sbi->wq_mutex);
+ 	if (!--wq->wait_ctr)
