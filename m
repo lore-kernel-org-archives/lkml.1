@@ -1,77 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754604AbYHGUiJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754458AbYHGUm2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754604AbYHGUiJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Aug 2008 16:38:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753069AbYHGUhy
+	id S1754458AbYHGUm2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Aug 2008 16:42:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753235AbYHGUmU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Aug 2008 16:37:54 -0400
-Received: from fk-out-0910.google.com ([209.85.128.187]:47973 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752629AbYHGUhx (ORCPT
+	Thu, 7 Aug 2008 16:42:20 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:40204 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753188AbYHGUmT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Aug 2008 16:37:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=gOo+iZqbAMHPNe0kSuPFNGiO73dEx2552NlZj81ZVnAobamAcY//Sckt/QLX9mwP8+
-         VujO41K9slsbn5dILLaKN8JHUHLT4ZeuGHoKEgscnoevgup+4O6oY3Bc1FA7CtQG4Ydr
-         XHacos9yig72FcZ+oIbLXC16PRACh41r19WnI=
-Date: Fri, 8 Aug 2008 00:37:48 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: John Gumb <john.gumb@tandberg.com>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: OOPS, ip -f inet6 route get fec0::1, linux-2.6.26,
-	ip6_route_output, rt6_fill_node+0x175
-Message-ID: <20080807203748.GA5196@martell.zuzino.mipt.ru>
-References: <9F6ACAE02B6DD040A1E259977622CFDB033590C3@oslexcp1.eu.tandberg.int>
+	Thu, 7 Aug 2008 16:42:19 -0400
+Date: Thu, 7 Aug 2008 16:42:16 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, Roland McGrath <roland@redhat.com>,
+       Ulrich Drepper <drepper@redhat.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Gregory Haskins <ghaskins@novell.com>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       "Luis Claudio R. Goncalves" <lclaudio@uudg.org>,
+       Clark Williams <williams@redhat.com>
+Subject: Re: [PATCH 0/5] ftrace: to kill a daemon
+In-Reply-To: <20080807184741.GB18164@Krystal>
+Message-ID: <alpine.DEB.1.10.0808071639420.9449@gandalf.stny.rr.com>
+References: <20080807182013.984175558@goodmis.org> <20080807184741.GB18164@Krystal>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <9F6ACAE02B6DD040A1E259977622CFDB033590C3@oslexcp1.eu.tandberg.int>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 07, 2008 at 07:00:56PM +0200, John Gumb wrote:
-> Scenario: no ipv6 default route set.
 
-> # ip -f inet6 route get fec0::1
+On Thu, 7 Aug 2008, Mathieu Desnoyers wrote:
+
 > 
-> BUG: unable to handle kernel NULL pointer dereference at 00000000
-> IP: [<c0369b85>] rt6_fill_node+0x175/0x3b0
-> EIP is at rt6_fill_node+0x175/0x3b0
->  ip6_route_output+0x50/0xa0
->  ip6_pol_route_output+0x0/0x20
->  inet6_rtm_getroute+0x16e/0x200
->  inet6_rtm_getroute+0x0/0x200
->  rtnetlink_rcv_msg+0x1b9/0x1f0
->  rtnetlink_rcv_msg+0x0/0x1f0
->  netlink_rcv_skb+0x8d/0xb0
->  rtnetlink_rcv+0x17/0x20
->  netlink_unicast+0x23d/0x270
->  memcpy_fromiovec+0x4a/0x70
->  netlink_sendmsg+0x1c1/0x290
->  sock_sendmsg+0xc5/0xf0
->  autoremove_wake_function+0x0/0x50
->  autoremove_wake_function+0x0/0x50
->  sock_sendmsg+0xc5/0xf0
->  copy_from_user+0x37/0x70
->  verify_iovec+0x2c/0x90
->  sys_sendmsg+0x10a/0x220
+> Hi Steven,
+> 
+> If you really want to stop using stop_machine, I think you should have a
+> look at my immediate values infrastructure :
+> 
+> see:
+> http://git.kernel.org/?p=linux/kernel/git/compudj/linux-2.6-lttng.git;a=blob;f=arch/x86/kernel/immediate.c;h=0958c02b49eed3bbc00bdc5aceeee17a6d0c7ab4;hb=HEAD
+> 
+> particularly replace_instruction_safe(), which uses a temporary
+> breakpoint to safely replace an instruction on a live SMP system without
+> using stop_machine. Feel free to try it in ftrace. :)
+> 
+> You may need to tweak the imv_notifier(), which is responsible for
+> executing the breakpoint. The only special thing this handler has to
+> know is the non-relocatable instructions you might want to insert (it
+> only cares about the new instructions, not the old ones being replaced).
+> The current code deals with 5-bytes jumps. Note that the instruction is
+> executed in the breakpoint handler with preemption disabled, which might
+> not be well suited for a call instruction.
+> 
+> I would recommend to patch in a 5-bytes jmp with 0 offset
+> (e9 00 00 00 00) when disabled (this makes a single 5-bytes instruction
+> and thus makes sure no instruction pointer can iret in the middle).
+> 
+> When enabling the site, you could patch-in the original call, but you
+> should tweak the imv_notifier() so that it uses the jmp offset 0 in the
+> bypass instead of the function call, because preemption would otherwise
+> be disabled around the call when executed in the breakpoint bypass.
+> 
+> Therefore, simply statically forcing the bypass code to e9 00 00 00 00
+> in all the cases (a nop) would do the job for your needs.
 
-0xffffffff80424dd3 is in rt6_fill_node (net/ipv6/route.c:2191).
-2186                    } else
-2187    #endif
-2188                            NLA_PUT_U32(skb, RTA_IIF, iif);
-2189            } else if (dst) {
-2190                    struct in6_addr saddr_buf;
-2191      ====>         if (ipv6_dev_get_saddr(ip6_dst_idev(&rt->u.dst)->dev,
-					       ^^^^^^^^^^^^^^^^^^^^^^^^
-					       		NULL
+I originally used jumps instead of nops, but unfortunately, they actually 
+hurt performance more than adding nops. Ingo told me it was probably due
+to using up the jump predictions of the CPU.
 
-2192                                           dst, 0, &saddr_buf) == 0)
-2193                            NLA_PUT(skb, RTA_PREFSRC, 16, &saddr_buf);
-2194            }
+-- Steve
 
