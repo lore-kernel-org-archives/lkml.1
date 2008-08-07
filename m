@@ -1,27 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758898AbYHGMgG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751003AbYHGMdN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758898AbYHGMgG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Aug 2008 08:36:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757139AbYHGMej
+	id S1751003AbYHGMdN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Aug 2008 08:33:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756313AbYHGMbR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Aug 2008 08:34:39 -0400
-Received: from viefep18-int.chello.at ([213.46.255.22]:26464 "EHLO
-	viefep13-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758633AbYHGMeh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Aug 2008 08:34:37 -0400
-Subject: [RFC][PATCH 8/7] lockdep: annotate mm_take_all_locks()
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: David Miller <davem@davemloft.net>, jeremy@goop.org, hugh@veritas.com,
-       mingo@elte.hu, akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       davej@redhat.com, Andrea Arcangeli <andrea@qumranet.com>,
-       Roland Dreier <rdreier@cisco.com>
-In-Reply-To: <20080804130317.994042639@chello.nl>
-References: <20080804130317.994042639@chello.nl>
+	Thu, 7 Aug 2008 08:31:17 -0400
+Received: from mga11.intel.com ([192.55.52.93]:62231 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753381AbYHGMbQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Aug 2008 08:31:16 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.31,319,1215414000"; 
+   d="scan'208";a="368540991"
+Subject: [PATCH 2/6] kexec jump: check code size in control page
+From: Huang Ying <ying.huang@intel.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>, Pavel Machek <pavel@ucw.cz>,
+       nigel@nigel.suspend2.net, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Vivek Goyal <vgoyal@redhat.com>, mingo@elte.hu,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org,
+       Kexec Mailing List <kexec@lists.infradead.org>
 Content-Type: text/plain
-Date: Thu, 07 Aug 2008 13:25:48 +0200
-Message-Id: <1218108348.8625.24.camel@twins>
+Date: Thu, 07 Aug 2008 17:05:26 +0800
+Message-Id: <1218099926.5164.33.camel@caritas-dev.intel.com>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
@@ -29,69 +31,48 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Subject: lockdep: annotate mm_take_all_locks()
+Kexec/Kexec-jump requires code size in control page is less than
+PAGE_SIZE/2. This patch adds runtime checking for this.
 
-The nesting is correct due to holding mmap_sem, use the new annotation
-to annotate this.
+Signed-off-by: Huang Ying <ying.huang@intel.com>
 
-This doesn't solve the MAX_LOCK_DEPTH issue, but 48 seems enough for
-the current kvm usage, which does this early on in the life of an mm.
-
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 ---
- mm/mmap.c |   12 ++++++------
- 1 file changed, 6 insertions(+), 6 deletions(-)
+ arch/x86/kernel/machine_kexec_32.c   |    4 ++++
+ arch/x86/kernel/relocate_kernel_32.S |    3 +++
+ include/asm-x86/kexec.h              |    1 +
+ 3 files changed, 8 insertions(+)
 
-Index: linux-2.6/mm/mmap.c
-===================================================================
---- linux-2.6.orig/mm/mmap.c
-+++ linux-2.6/mm/mmap.c
-@@ -2273,14 +2273,14 @@ int install_special_mapping(struct mm_st
- 
- static DEFINE_MUTEX(mm_all_locks_mutex);
- 
--static void vm_lock_anon_vma(struct anon_vma *anon_vma)
-+static void vm_lock_anon_vma(struct mm_struct *mm, struct anon_vma *anon_vma)
+--- a/arch/x86/kernel/machine_kexec_32.c
++++ b/arch/x86/kernel/machine_kexec_32.c
+@@ -92,6 +92,10 @@ int machine_kexec_prepare(struct kimage 
  {
- 	if (!test_bit(0, (unsigned long *) &anon_vma->head.next)) {
- 		/*
- 		 * The LSB of head.next can't change from under us
- 		 * because we hold the mm_all_locks_mutex.
- 		 */
--		spin_lock(&anon_vma->lock);
-+		spin_lock_nest_lock(&anon_vma->lock, &mm->mmap_sem);
- 		/*
- 		 * We can safely modify head.next after taking the
- 		 * anon_vma->lock. If some other vma in this mm shares
-@@ -2296,7 +2296,7 @@ static void vm_lock_anon_vma(struct anon
- 	}
+ 	if (nx_enabled)
+ 		set_pages_x(image->control_code_page, 1);
++
++	BUG_ON((unsigned long)kexec_control_page_code_end - \
++	       (unsigned long)relocate_kernel >= PAGE_SIZE/2);
++
+ 	return 0;
  }
  
--static void vm_lock_mapping(struct address_space *mapping)
-+static void vm_lock_mapping(struct mm_struct *mm, struct address_space *mapping)
- {
- 	if (!test_bit(AS_MM_ALL_LOCKS, &mapping->flags)) {
- 		/*
-@@ -2310,7 +2310,7 @@ static void vm_lock_mapping(struct addre
- 		 */
- 		if (test_and_set_bit(AS_MM_ALL_LOCKS, &mapping->flags))
- 			BUG();
--		spin_lock(&mapping->i_mmap_lock);
-+		spin_lock_nest_lock(&mapping->i_mmap_lock, &mm->mmap_sem);
- 	}
- }
- 
-@@ -2359,9 +2359,9 @@ int mm_take_all_locks(struct mm_struct *
- 		if (signal_pending(current))
- 			goto out_unlock;
- 		if (vma->anon_vma)
--			vm_lock_anon_vma(vma->anon_vma);
-+			vm_lock_anon_vma(mm, vma->anon_vma);
- 		if (vma->vm_file && vma->vm_file->f_mapping)
--			vm_lock_mapping(vma->vm_file->f_mapping);
-+			vm_lock_mapping(mm, vma->vm_file->f_mapping);
- 	}
- 	ret = 0;
- 
+--- a/arch/x86/kernel/relocate_kernel_32.S
++++ b/arch/x86/kernel/relocate_kernel_32.S
+@@ -376,3 +376,6 @@ swap_pages:
+ 	popl	%ebx
+ 	popl	%ebp
+ 	ret
++
++	.globl kexec_control_page_code_end
++kexec_control_page_code_end:
+--- a/include/asm-x86/kexec.h
++++ b/include/asm-x86/kexec.h
+@@ -159,6 +159,7 @@ relocate_kernel(unsigned long indirectio
+ 		unsigned long start_address,
+ 		unsigned int has_pae,
+ 		unsigned int preserve_context);
++void kexec_control_page_code_end(void);
+ #else
+ NORET_TYPE void
+ relocate_kernel(unsigned long indirection_page,
 
 
