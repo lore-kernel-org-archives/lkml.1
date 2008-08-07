@@ -1,64 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754995AbYHGN3W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753285AbYHGNgZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754995AbYHGN3W (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Aug 2008 09:29:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752489AbYHGN3M
+	id S1753285AbYHGNgZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Aug 2008 09:36:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751181AbYHGNgR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Aug 2008 09:29:12 -0400
-Received: from vms173005pub.verizon.net ([206.46.173.5]:50156 "EHLO
-	vms173005pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751441AbYHGN3M (ORCPT
+	Thu, 7 Aug 2008 09:36:17 -0400
+Received: from viefep18-int.chello.at ([213.46.255.22]:28693 "EHLO
+	viefep17-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751091AbYHGNgQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Aug 2008 09:29:12 -0400
-Date: Thu, 07 Aug 2008 06:24:11 -0400
-From: Gene Heskett <gene.heskett@gmail.com>
-Subject: Re: [PATCH] radeon_cp: use request_firmware
-In-reply-to: <1218095497.4016.3.camel@jaswinder.satnam>
-To: Jaswinder Singh <jaswinder@infradead.org>
-Cc: martin@valinux.com, gareth@valinux.com, airlied@linux.ie,
-       dri-devel@lists.sourceforge.net, LKML <linux-kernel@vger.kernel.org>,
-       David Woodhouse <dwmw2@infradead.org>
-Message-id: <200808070624.12214.gene.heskett@gmail.com>
-Organization: Organization? very little
-MIME-version: 1.0
-Content-type: text/plain; charset=utf-8
-Content-transfer-encoding: 7bit
-Content-disposition: inline
-References: <1218095497.4016.3.camel@jaswinder.satnam>
-User-Agent: KMail/1.9.9
+	Thu, 7 Aug 2008 09:36:16 -0400
+X-SourceIP: 80.57.229.25
+Subject: Re: [PATCH][RFC] dirty balancing for cgroups
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: YAMAMOTO Takashi <yamamoto@valinux.co.jp>
+Cc: kamezawa.hiroyu@jp.fujitsu.com, linux-mm@kvack.org, menage@google.com,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20080806082046.349BE5A5F@siro.lan>
+References: <20080711175213.dc69f068.kamezawa.hiroyu@jp.fujitsu.com>
+	 <20080806082046.349BE5A5F@siro.lan>
+Content-Type: text/plain
+Date: Thu, 07 Aug 2008 15:36:08 +0200
+Message-Id: <1218116168.8625.38.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 07 August 2008, Jaswinder Singh wrote:
->Moved datah before datal because datah is required before datal.
->
->Firmware blob looks like this...
->	__be32 datah
->	__be32 datal
->
->Signed-off-by: Jaswinder Singh <jaswinder@infradead.org>
+On Wed, 2008-08-06 at 17:20 +0900, YAMAMOTO Takashi wrote:
+> hi,
+> 
+> > On Fri, 11 Jul 2008 17:34:46 +0900 (JST)
+> > yamamoto@valinux.co.jp (YAMAMOTO Takashi) wrote:
+> > 
+> > > hi,
+> > > 
+> > > > > my patch penalizes heavy-writer cgroups as task_dirty_limit does
+> > > > > for heavy-writer tasks.  i don't think that it's necessary to be
+> > > > > tied to the memory subsystem because i merely want to group writers.
+> > > > > 
+> > > > Hmm, maybe what I need is different from this ;)
+> > > > Does not seem to be a help for memory reclaim under memcg.
+> > > 
+> > > to implement what you need, i think that we need to keep track of
+> > > the numbers of dirty-pages in each memory cgroups as a first step.
+> > > do you agree?
+> > > 
+> > yes, I think so, now.
+> > 
+> > may be not difficult but will add extra overhead ;( Sigh..
+> 
+> the following is a patch to add the overhead. :)
+> any comments?
+> 
+> YAMAMOTO Takashi
 
-When applied to 2.6.27-rc2, firmware/Makefile was rejected, so I manually added 
-the blob list to that Makefile in what looked to be the correct place.  And added a
-"make firmware_install" to my kernel builder script.
+It _might_ (depends on the uglyness of the result) make sense to try and
+stick the mem_cgroup_*_page_dirty() stuff into the *PageDirty() macros.
 
-Unforch:
-  MK_FW   firmware/R100_cp.bin.ihex.gen.S
-make[1]: *** No rule to make target `firmware/R100_cp.bin.ihex', needed by `firmware/R100_cp.bin.ihex.gen.o'.  Stop.
-make[1]: *** Waiting for unfinished jobs....
-make: *** [firmware] Error 2
 
-I suspect I need to go back and hand edit the .config to add the "radeon/"
-in front of each of those, so its looking for
- "firmware/radeon/R100_cp.bin.ihex" in each of those cases.  Correct?  Or can
-I use "radeon/*" ?
+> @@ -485,7 +502,10 @@ unsigned long mem_cgroup_isolate_pages(unsigned long nr_to_scan,
+>  		if (PageUnevictable(page) ||
+>  		    (PageActive(page) && !active) ||
+>  		    (!PageActive(page) && active)) {
+> -			__mem_cgroup_move_lists(pc, page_lru(page));
+> +			if (try_lock_page_cgroup(page)) {
+> +				__mem_cgroup_move_lists(pc, page_lru(page));
+> +				unlock_page_cgroup(page);
+> +			}
+>  			continue;
+>  		}
 
-[...]
+This chunk seems unrelated and lost....
 
--- 
-Cheers, Gene
-"There are four boxes to be used in defense of liberty:
- soap, ballot, jury, and ammo. Please use in that order."
--Ed Howdershelt (Author)
-Fiber optics caused gas main leak
+
+> @@ -772,6 +792,38 @@ void mem_cgroup_end_migration(struct page *newpage)
+>  		mem_cgroup_uncharge_page(newpage);
+>  }
+>  
+> +void mem_cgroup_set_page_dirty(struct page *pg)
+> +{
+> +	struct page_cgroup *pc;
+> +
+> +	lock_page_cgroup(pg);
+> +	pc = page_get_page_cgroup(pg);
+> +	if (pc != NULL && (pc->flags & PAGE_CGROUP_FLAG_DIRTY) == 0) {
+> +		struct mem_cgroup *mem = pc->mem_cgroup;
+> +		struct mem_cgroup_stat *stat = &mem->stat;
+> +
+> +		pc->flags |= PAGE_CGROUP_FLAG_DIRTY;
+> +		__mem_cgroup_stat_add(stat, MEM_CGROUP_STAT_DIRTY, 1);
+> +	}
+> +	unlock_page_cgroup(pg);
+> +}
+> +
+> +void mem_cgroup_clear_page_dirty(struct page *pg)
+> +{
+> +	struct page_cgroup *pc;
+> +
+> +	lock_page_cgroup(pg);
+> +	pc = page_get_page_cgroup(pg);
+> +	if (pc != NULL && (pc->flags & PAGE_CGROUP_FLAG_DIRTY) != 0) {
+> +		struct mem_cgroup *mem = pc->mem_cgroup;
+> +		struct mem_cgroup_stat *stat = &mem->stat;
+> +
+> +		pc->flags &= ~PAGE_CGROUP_FLAG_DIRTY;
+> +		__mem_cgroup_stat_add(stat, MEM_CGROUP_STAT_DIRTY, -1);
+> +	}
+> +	unlock_page_cgroup(pg);
+> +}
+> +
+>  /*
+>   * A call to try to shrink memory usage under specified resource controller.
+>   * This is typically used for page reclaiming for shmem for reducing side
+
+
+I presonally dislike the != 0, == 0 comparisons for bitmask operations,
+they seem to make it harder to read somewhow. I prefer to write !(flags
+& mask) and (flags & mask), instead.
+
+I guess taste differs,...
+
