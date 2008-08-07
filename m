@@ -1,28 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755949AbYHGStX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756472AbYHGSu6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755949AbYHGStX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Aug 2008 14:49:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753042AbYHGStM
+	id S1756472AbYHGSu6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Aug 2008 14:50:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753254AbYHGSut
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Aug 2008 14:49:12 -0400
-Received: from zone0.gcu-squad.org ([212.85.147.21]:22629 "EHLO
-	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752898AbYHGStL (ORCPT
+	Thu, 7 Aug 2008 14:50:49 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:54433 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753072AbYHGSus (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Aug 2008 14:49:11 -0400
-Date: Thu, 7 Aug 2008 20:49:00 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: "D. Kelly" <user.kernel@gmail.com>,
-       "mailing list: linux-kernel" <linux-kernel@vger.kernel.org>,
-       Linux I2C <i2c@lm-sensors.org>
-Subject: Re: Problem with restricted I2C algorithms in kernel 2.6.26!
-Message-ID: <20080807204900.1c077376@hyperion.delvare>
-In-Reply-To: <20080807183944.GA29207@uranus.ravnborg.org>
-References: <5ab239b10807161233i6c1c4d0we01ea1b8e6ccaa5b@mail.gmail.com>
-	<20080807131357.59399ddf@hyperion.delvare>
-	<20080807183944.GA29207@uranus.ravnborg.org>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
+	Thu, 7 Aug 2008 14:50:48 -0400
+Date: Thu, 7 Aug 2008 11:50:31 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: torvalds@linux-foundation.org, rjw@sisk.pl, bzolnier@gmail.com,
+       sfr@canb.auug.org.au, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-input@vger.kernel.org,
+       stable@kernel.org
+Subject: Re: linux-next: Tree for July 30
+Message-Id: <20080807115031.6e136ecf.akpm@linux-foundation.org>
+In-Reply-To: <20080807140357.ZZRA012@mailhub.coreip.homeip.net>
+References: <20080730170635.f737ffe9.sfr@canb.auug.org.au>
+	<20080731104437.5e5669bc.akpm@linux-foundation.org>
+	<20080731141302.ZZRA012@mailhub.coreip.homeip.net>
+	<200807312048.57575.rjw@sisk.pl>
+	<20080731145023.ZZRA012@mailhub.coreip.homeip.net>
+	<alpine.LFD.1.10.0807311207000.3277@nehalem.linux-foundation.org>
+	<20080731151625.ZZRA012@mailhub.coreip.homeip.net>
+	<20080731194207.GA12233@anvil.corenet.prv>
+	<20080731131056.eecc4826.akpm@linux-foundation.org>
+	<20080807140357.ZZRA012@mailhub.coreip.homeip.net>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -30,44 +38,53 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 7 Aug 2008 20:39:44 +0200, Sam Ravnborg wrote:
+On Thu, 7 Aug 2008 14:11:09 -0400
+Dmitry Torokhov <dmitry.torokhov@gmail.com> wrote:
+
+> On Thu, Jul 31, 2008 at 01:10:56PM -0700, Andrew Morton wrote:
 > > 
-> > Alternatively, I am curious if our build system couldn't allow 3rd
-> > party drivers to select in-tree modules. Obviously this would require
-> > the complete kernel source tree to be available, instead of just the
-> > header and config files as is usually the case. Sam, is this possible
-> > to do that at this time? If not, is this something that could be
-> > implemented, or is this too much work for the thin benefit?
+> > If that works then great.  But I think the printk could be improved. 
+> > Please provide sufficient information so that users (not programmers)
+> > can go off and fix things up without needing to email kernel developers.
+> > 
+> > One suitable approach would be
+> > 
+> > 	printk("see http://userweb.kernel.org/~dtor/read-this.txt")
+> > 
 > 
-> In general I recommnd to have the full kernel source available
-> simply because we have no in-kernel solution to create the required
-> set of files to build external modules.
+> Ok, I made a small page here:
 > 
-> And today there is no way to hook into the kernel configuration
-> for an external module. First of we cannot allow changes in
-> the build kernel module as this would destroy module versioning
-> for instance.
-> 
-> And in this case you ask because you would change the kernel
-> configuration.
-> 
-> And I fail to see why this stuff cannot be done inside the
-> kernel source tree. Merging new kernel updates should be absolutely
-> trivial and then the drivers are better prepared for upstream anyway.
+> 	http://userweb.kernel.org/~dtor/eviocgbit-bug.html
 
-OK, thanks for the clarification.
+You need to mv that file.  It's actually at
+http://userweb.kernel.org/~dtor/eviogcbit-bug.html
 
-Maybe one way would be for the external module build system to copy (or
-link to) the missing driver source from the kernel tree and build it
-locally with the rest of the external drivers, if it wasn't enabled in
-the original kernel configuration and they need it. That's probably
-just a couple lines of shell script, should be pretty easy. Obviously
-this only works for kernel options which only select a given driver and
-have no side effect on the rest of the kernel. And this is more
-user-friendly than having the user check its kernel configuration and
-rebuild his/her kernel.
+And
 
-Just a thought anyway...
+     evdev.c(EVIOCGBIT): Suspicious buffer size 511, limiting output to 64
+     bytes. See http://userweb.kernel.org/~dtor/eviocgbit-bug.html 
 
--- 
-Jean Delvare
+will get a 404.
+
+typo: s/distribbution/distribution/
+
+The text looks good.  A user would come away wondering which packages
+need to be updated.  Do we have a suitable text pattern whcih will help
+them?
+
+On a fedora system I have
+
+y:/home/akpm> rpm -qa|grep -i syna
+synaptics-0.14.6-2.fc8
+
+So "the synaptics package" would be a suitably distro-neutral description.
+
+`rpm -qa|grep -i tslib' comes up blank so I don't know about that one.
+
+> If you think this is sufficient I'd like to put the patch with the
+> warning in 2.6.27 so people and distributions could start updarting
+> affected programs.
+
+Sure.  It'd make sense to get that warning into 2.6.25.x and 2.6.26.x
+as well, to accelerate the process a bit.
+
