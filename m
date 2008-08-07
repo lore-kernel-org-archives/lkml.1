@@ -1,56 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755202AbYHGScy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756411AbYHGSeZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755202AbYHGScy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Aug 2008 14:32:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751024AbYHGScq
+	id S1756411AbYHGSeZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Aug 2008 14:34:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752230AbYHGSeR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Aug 2008 14:32:46 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:45114 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750813AbYHGScq (ORCPT
+	Thu, 7 Aug 2008 14:34:17 -0400
+Received: from ug-out-1314.google.com ([66.249.92.172]:53614 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751700AbYHGSeQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Aug 2008 14:32:46 -0400
-Date: Thu, 7 Aug 2008 14:32:44 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: "Frank Ch. Eigler" <fche@redhat.com>
-cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       akpm@linux-foundation.org, Peter Zijlstra <peterz@infradead.org>,
-       linux-kernel@vger.kernel.org, ltt-dev@lists.casi.polymtl.ca
-Subject: Re: LTTng finds abnormally long APIC interrupt handler : 58.2 ms
-In-Reply-To: <y0mwsisitcy.fsf@ton.toronto.redhat.com>
-Message-ID: <alpine.DEB.1.10.0808071429380.7625@gandalf.stny.rr.com>
-References: <20080805182007.GA4631@Krystal> <alpine.DEB.1.10.0808051523370.28170@gandalf.stny.rr.com> <20080807160907.GA11255@Krystal> <alpine.DEB.1.10.0808071314320.20931@gandalf.stny.rr.com> <y0mwsisitcy.fsf@ton.toronto.redhat.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Thu, 7 Aug 2008 14:34:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=R+vyBh4PW2zXtER0glFScCvXx4LXEgyT3M63z2F1yYiqIKyHBfkH7dXELEp9yz+zs4
+         a6xdoN39T78G7u2Uhah9eLj8w6NLw3boQmTVG3J5yM8pz8NcORhRfiCsFSPdtbP4jI23
+         8xb7/Tmcy5dc3eoSyaeBy4Zj+GDO4/clfUygQ=
+Message-ID: <a4e6962a0808071134h7caa42feoa2cfea2c71a2be8@mail.gmail.com>
+Date: Thu, 7 Aug 2008 13:34:13 -0500
+From: "Eric Van Hensbergen" <ericvh@gmail.com>
+To: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+Subject: [ANNOUNCE] ACM Operating Systems Review issue on the Linux Kernel available
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha id m77IYTdq010156
 
-
-On Thu, 7 Aug 2008, Frank Ch. Eigler wrote:
-> Steven Rostedt <rostedt@goodmis.org> writes:
-> >
-> > I've been thinking of exporting it, and make it so that once you 
-> > register something to the trace_ops, I'll up the module count, and never 
-> > let that module unload.
-> 
-> This issue will need some sort of resolution if systemtap is to be
-> able to hook up to ftrace.  Perhaps we could have a second/nested API
-> that suffers the costs of explicit reference counting, but does permit
-> dynamic attach and robust detach.
-
-I've also thought about having a second registration method that would 
-hook the mcount function to an internal one, one that is always there. 
-Here we could add logic to know that a driver has registered a function. 
-It will just have the added overhead of that logic.
-
-It's not hard to do. I just didn't want to clutter ftrace too much before 
-it made it into a major release. This means any patches to do this will 
-happen after 27.
-
--- Steve
-
+We are pleased to announce the availability of the ACM OperatingSystems Review special topics Issue on Research and developments inthe Linux Kernel.  It is available, for free, from the ACM Archivessite:
+http://portal.acm.org/toc.cfm?id=1400097
+Included are 12 papers about the advances that have been merged or arecandidates to be merged into the Linux kernel, as well as new ideapapers discussing promising experimental work.
+* Minding the gap: R&D in the Linux kernel        by Muli Ben-Yehuda, Eric Van Hensbergen, Marc Fiuczynski* Introducing technology into the Linux kernel: a case study        by Paul E. McKenney, Jonathan Walpole* Extending futex for kernel to user notification        by Helge Bahmann, Konrad Froitzheim* Plan 9 authentication in Linux        by Ashwin Ganti* Towards achieving fairness in the Linux scheduler        by Chee Siang Wong, Ian Tan, Rosalind Deena Kumari, Fun Wey* I/O resource management through system call scheduling        by Silviu S. Craciunas, Christoph M. Kirsch, Harald R√∂ck* PipesFS: fast Linux I/O in the unix tradition        by Willem de Bruijn, Herbert Bos* CUBIC: a new TCP-friendly high-speed TCP variant        by Sangtae Ha, Injong Rhee, Lisong Xu* On the design of a new Linux readahead framework        by WU Fengguang, XI Hongsheng, XU Chenfeng* Practical techniques for purging deleted data using liveness information        by David Boutcher, Abhishek Chandra* virtio: towards a de-facto standard for virtual I/O devices        by Rusty Russell* Virtual servers and checkpoint/restart in mainstream Linux        by Sukadev Bhattiprolu, Eric W. Biederman, Serge Hallyn, Daniel Lezcano
+On behalf of my co-editors, I would like to extend our thanks to themany authors who submitted papers, including the ones we were unableto include in this issue, for the time and eÔ¨Äort they put into theirsubmissions.  We would also like to thank the members of our EditorialCommittee who did a very thorough job of evaluating the submissionsand who also shared shepherding responsibilities for the acceptedpapers. Listed in alphabetical order, the Editorial Committee is:
+* Patrick Bridges (University of New Mexico)* Angela Demke Brown (University of Toronto)* Hubertus Franke (IBM Research)* Oren Laadan (Columbia University)* Paul McKenney (IBM Linux Technology Center)* Chris Mason (Oracle)* Ron Minnich (Sandia National Laboratory)* Stephen C. Tweedie (Red Hat)* Chris Wright (Red Hat)* Pete WyckoÔ¨Ä (Ohio Supercomputer Center)
+The editorial committee was ably assisted by the following external reviewers:* Sapan Bhatia (Princeton University)* Eli Brosh (Columbia University)* Fernando Laudares Camargos (Universite de Sherbrooke)* Steven Muir (Vanu)* Ram Pai (IBM Linux Technology Center)* David Pressoto (Google)* Edi Shmueli (IBM Haifa Research Lab)* Ben-Ami Yassour (IBM Haifa Research Lab)
+We would also like to thank the Operating Systems Review editor,Jeanna Matthews, and ACM SIGOPS for supporting a special topics issueon the Linux Kernel -- and ACM for making the issue freely available.
+Best regards,
+Eric Van Hensbergen, Muli Ben-Yehuda, and Marc Fiuczynskico-editors of this special topic OSR issueˇÙË∫{.n«+â∑üÆâ≠Ü+%äÀˇ±È›∂•äwˇ∫{.n«+â∑•ä{±˛G´ùÈˇä{ay∫ á⁄ôÎ,j≠¢f£¢∑höèÔÅÍˇëÍÁz_ËÆ(≠Èöéä›¢j"ù˙∂mßˇˇæ´˛G´ùÈˇ¢∏?ô®Ë≠⁄&£¯ß~è·∂iOïÊ¨z∑övÿ^∂mßˇˇ√ˇ∂Ïˇ¢∏?ñI•
