@@ -1,101 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754409AbYHGRaV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754379AbYHGReE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754409AbYHGRaV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Aug 2008 13:30:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751558AbYHGRaI
+	id S1754379AbYHGReE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Aug 2008 13:34:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751158AbYHGRdy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Aug 2008 13:30:08 -0400
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:53449 "EHLO e1.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751018AbYHGRaH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Aug 2008 13:30:07 -0400
-Subject: Re: [RFC] [PATCH 0/5 V2] Huge page backed user-space stacks
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: Andrew Morton <akpm@linux-foundation.org>, ebmunson@us.ibm.com,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, libhugetlbfs-devel@lists.sourceforge.net,
-       abh@cray.com
-In-Reply-To: <20080807160605.GA9200@csn.ul.ie>
-References: <20080730193010.GB14138@csn.ul.ie>
-	 <20080730130709.eb541475.akpm@linux-foundation.org>
-	 <20080731103137.GD1704@csn.ul.ie> <1217884211.20260.144.camel@nimitz>
-	 <20080805111147.GD20243@csn.ul.ie> <1217952748.10907.18.camel@nimitz>
-	 <20080805162800.GJ20243@csn.ul.ie> <1217958805.10907.45.camel@nimitz>
-	 <20080806090222.GD21190@csn.ul.ie> <1218052249.10907.125.camel@nimitz>
-	 <20080807160605.GA9200@csn.ul.ie>
-Content-Type: text/plain; charset=UTF-8
-Date: Thu, 07 Aug 2008 10:29:50 -0700
-Message-Id: <1218130190.10907.188.camel@nimitz>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
-Content-Transfer-Encoding: 8bit
+	Thu, 7 Aug 2008 13:33:54 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:34811 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751147AbYHGRdx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Aug 2008 13:33:53 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <489B31FE.5050302@s5r6.in-berlin.de>
+Date: Thu, 07 Aug 2008 19:33:50 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.16) Gecko/20080722 SeaMonkey/1.1.11
+MIME-Version: 1.0
+To: jmerkey@wolfmountaingroup.com
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [ANNOUNCE] mdb-2.6.27-rc2-ia32-08-07-08.patch
+References: <1300.69.2.248.210.1218119365.squirrel@webmail.wolfmountaingroup.com>       <489B199B.40305@s5r6.in-berlin.de>       <489B1BDC.1010504@s5r6.in-berlin.de>    <1923.69.2.248.210.1218124570.squirrel@webmail.wolfmountaingroup.com>    <489B26F0.3030603@s5r6.in-berlin.de> <1905.69.2.248.210.1218126817.squirrel@webmail.wolfmountaingroup.com> <489B2EAE.8040901@s5r6.in-berlin.de>
+In-Reply-To: <489B2EAE.8040901@s5r6.in-berlin.de>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-08-07 at 17:06 +0100, Mel Gorman wrote:
-> On (06/08/08 12:50), Dave Hansen didst pronounce:
-> > The main thing this set of patches does that I care about is take an
-> > anonymous VMA and replace it with a hugetlb VMA.  It does this on a
-> > special cue, but does it nonetheless.
-> 
-> This is not actually a new thing. For a long time now, it has been possible to
-> back  malloc() with hugepages at a userspace level using the morecore glibc
-> hook. That is replacing anonymous memory with a file-backed VMA. It happens
-> in a different place but it's just as deliberate as backing stack and the
-> end result is very similar. As the file is ram-based, it doesn't have the
-> same types of consequences like dirty page syncing that you'd ordinarily
-> watch for when moving from anonymous to file-backed memory.
+I wrote:
+> jmerkey@wolfmountaingroup.com wrote:
+>> check mdb-main.c -- I disable preemption before rspin_lock is 
+>> attempted.
+...
+> Then it is recommendable that you document the call context requirements 
+> at the functions.
 
-Yes, it has already been done in userspace.  That's fine.  It isn't
-adding any complexity to the kernel.  This is adding behavior that the
-kernel has to support as well as complexity.
-
-> > This patch has crossed a line in that it is really the first
-> > *replacement* of a normal VMA with a hugetlb VMA instead of the creation
-> > of the VMAs at the user's request. 
-> 
-> We crossed that line with morecore, it's back there somewhere. We're just
-> doing in kernel this time because backing stacks with hugepages in userspace
-> turned out to be a hairy endevour.
-> 
-> Properly supporting anonymous hugepages would either require larger
-> changes to the core or reimplementing yet more of mm/ in mm/hugetlb.c.
-> Neither is a particularly appealing approach, nor is it likely to be a
-> very popular one.
-
-I agree.  It is always much harder to write code that can work
-generically﻿ (and get it accepted) than just write the smallest possible
-hack and stick it in fs/exec.c.
-
-Could this patch at least get fixed up to look like it could be used
-more generically?  Some code to look up and replace anonymous VMAs with
-hugetlb-backed ones.
-﻿
-> > Because of the limitations like its inability to grow the VMA, I can't
-> > imagine that this would be a generic mechanism that we can use
-> > elsewhere.
-> 
-> What other than a stack even cares about VM_GROWSDOWN working? Besides,
-> VM_GROWSDOWN could be supported in a hugetlbfs file by mapping the end of
-> the file and moving the offset backwards (yeah ok, it ain't the prettiest
-> but it's less churn than introducing significantly different codepaths). It's
-> just not something that needs to be supported at first cut.
-> 
-> brk() if you wanted to back hugepages with it conceivably needs a resizing
-> VMA but in that case it's growing up in which case just extend the end of
-> the VMA and increase the size of the file.
-
-I'm more worried about a small huge page size (say 64k) and not being
-able to merge the VMAs.  I guess it could start in the *middle* of a
-file and map both directions.
-
-I guess you could always just have a single (very sparse) hugetlb file
-per mm to do all of this 'anonymous' hugetlb memory memory stuff, and
-just map its offsets 1:1 on to the process's virtual address space.
-That would make sure you could always merge VMAs, no matter how they
-grew together.
-
--- Dave
-
+An alternative would of course be to establish the non-preemptible 
+context from inside the lock accessors, either redundantly to what the 
+call site is doing, or instead of doing it at the call site if that can 
+be arranged.
+-- 
+Stefan Richter
+-=====-==--- =--- --===
+http://arcgraph.de/sr/
