@@ -1,52 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755364AbYHGQMd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755227AbYHGQOW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755364AbYHGQMd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Aug 2008 12:12:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752646AbYHGQMZ
+	id S1755227AbYHGQOW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Aug 2008 12:14:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752636AbYHGQOO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Aug 2008 12:12:25 -0400
-Received: from 8bytes.org ([88.198.83.132]:33648 "EHLO 8bytes.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751693AbYHGQMY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Aug 2008 12:12:24 -0400
-Date: Thu, 7 Aug 2008 18:12:22 +0200
-From: Joerg Roedel <joro@8bytes.org>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Tony Luck <tony.luck@intel.com>, linux-ia64@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [IA64] defconfig build failure in current linus.git
-Message-ID: <20080807161222.GT31439@8bytes.org>
-References: <20080807101015.GB4342@8bytes.org> <20080807143303.GA9692@cs181140183.pp.htv.fi>
+	Thu, 7 Aug 2008 12:14:14 -0400
+Received: from 166-70-238-42.ip.xmission.com ([166.70.238.42]:50020 "EHLO
+	ns1.wolfmountaingroup.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752601AbYHGQOO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Aug 2008 12:14:14 -0400
+Message-ID: <1913.69.2.248.210.1218124373.squirrel@webmail.wolfmountaingroup.com>
+In-Reply-To: <20080807160702.GF24801@one.firstfloor.org>
+References: <17494.166.70.238.46.1217784156.squirrel@webmail.wolfmountaingroup.com>
+    <Pine.LNX.4.64.0808051140150.6309@anakin>
+    <33030.166.70.238.45.1217948565.squirrel@webmail.wolfmountaingroup.com>
+    <200808060133.10457.nickpiggin@yahoo.com.au>
+    <87r6926dsr.fsf@basil.nowhere.org> <4899DD9F.6020007@windriver.com>
+    <20080806185719.GE24801@one.firstfloor.org>
+    <37747.166.70.238.45.1218113134.squirrel@webmail.wolfmountaingroup.com>
+    <20080807160702.GF24801@one.firstfloor.org>
+Date: Thu, 7 Aug 2008 09:52:53 -0600 (MDT)
+Subject: Re: [ANNOUNCE] Merkey's Kernel Debugger
+From: jmerkey@wolfmountaingroup.com
+To: "Andi Kleen" <andi@firstfloor.org>
+Cc: jmerkey@wolfmountaingroup.com, "Andi Kleen" <andi@firstfloor.org>,
+       "Jason Wessel" <jason.wessel@windriver.com>,
+       "Nick Piggin" <nickpiggin@yahoo.com.au>,
+       "Geert Uytterhoeven" <geert@linux-m68k.org>,
+       "Stefan Richter" <stefanr@s5r6.in-berlin.de>,
+       "Josh Boyer" <jwboyer@gmail.com>, linux-kernel@vger.kernel.org
+User-Agent: SquirrelMail/1.4.6
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080807143303.GA9692@cs181140183.pp.htv.fi>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 07, 2008 at 05:33:04PM +0300, Adrian Bunk wrote:
-> On Thu, Aug 07, 2008 at 12:10:15PM +0200, Joerg Roedel wrote:
-> > Hi,
-> > 
-> > I just tried to build the current linus.git kernel for IA64 and got the
-> > following build errors:
-> > 
-> >   CC      drivers/acpi/utils.o
-> > In file included from /data2/repos/tip/linux.trees.git/include/acpi/acpi.h:54,
-> >                  from /data2/repos/tip/linux.trees.git/include/acpi/acpi_bus.h:31,
-> >                  from /data2/repos/tip/linux.trees.git/drivers/acpi/utils.c:30:
-> > /data2/repos/tip/linux.trees.git/include/acpi/platform/acenv.h:175:1: warning: "COMPILER_DEPENDENT_INT64" redefined
-> >...
-> 
-> If you get this error your compiler does not define __linux__ .
-> 
-> What compiler are you using?
+>> Also, whoever wrote "/Documentation/volatiles_are_evil" must not have
+>> worked with the busted-ass GNU compiler that optimizes away global
+>> variables and busts SMP dependent code.  I am not going to remove the
+>
+> The Linux way to handle this is to use gcc memory barriers.
+> mb()/barrier()/wmb()/rmb()/smp_rmb()/smp_wmb() etc.
+> Normally everything that volatile can do can be expressed by them.
+>
+> On x86 such a memory barrier tells gcc that memory might
+> have been clobbered and needs to be flushed and also prevents the compiler
+> from reordering memory accesses. On other architectures it also forces
+> ordering
+> on the CPU level, although that's not needed on x86 (except
+> in some special situations like using write-combining)
+>
+> See Documentation/memory-barriers.txt
+>
+> -Andi
+>
+>
 
-Its a self-build gcc-4.3.1 cross compiler on amd64. In the meantime it
-worked with a gcc 3.4.5. I will check if my self-build compiler is
-messed up.
+Andi,
 
-Joerg
+I'll instrument this as described in the documentation you referenced and
+remove the volatile declarations.  If this passes testing, I will repost
+with these corections.
+
+Jeff
+
+
+
 
