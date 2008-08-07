@@ -1,87 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754569AbYHGX1k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755280AbYHGX2r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754569AbYHGX1k (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Aug 2008 19:27:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751450AbYHGX1c
+	id S1755280AbYHGX2r (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Aug 2008 19:28:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752900AbYHGX2g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Aug 2008 19:27:32 -0400
-Received: from smtp-outbound-2.vmware.com ([65.115.85.73]:34450 "EHLO
-	smtp-outbound-2.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750746AbYHGX1b (ORCPT
+	Thu, 7 Aug 2008 19:28:36 -0400
+Received: from mu-out-0910.google.com ([209.85.134.185]:35833 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752336AbYHGX2e (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Aug 2008 19:27:31 -0400
-Subject: Re: [PATCH]Fix broken VMI in 2.6.27-rc..
-From: Zachary Amsden <zach@vmware.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: "H. Peter Anvin" <hpa@kernel.org>, Alok Kataria <akataria@vmware.com>,
-       Ingo Molnar <mingo@elte.hu>, the arch/x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <alpine.LFD.1.10.0808071603330.3462@nehalem.linux-foundation.org>
-References: <1218136365.23770.52.camel@alok-dev1>
-	 <489B6710.9000604@kernel.org>
-	 <1218144438.20178.336.camel@bodhitayantram.eng.vmware.com>
-	 <489B6A5C.8030400@kernel.org>
-	 <1218145344.20178.347.camel@bodhitayantram.eng.vmware.com>
-	 <489B6E83.7000202@kernel.org>
-	 <1218146154.20178.352.camel@bodhitayantram.eng.vmware.com>
-	 <489B7470.5030408@kernel.org>
-	 <alpine.LFD.1.10.0808071533100.3462@nehalem.linux-foundation.org>
-	 <489B7DFE.5010402@kernel.org>
-	 <alpine.LFD.1.10.0808071603330.3462@nehalem.linux-foundation.org>
-Content-Type: text/plain
-Date: Thu, 07 Aug 2008 16:26:11 -0700
-Message-Id: <1218151571.20178.384.camel@bodhitayantram.eng.vmware.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
-Content-Transfer-Encoding: 7bit
+	Thu, 7 Aug 2008 19:28:34 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=jPui+Jswz5GD8ZrQ1yKwAeZIpHNh/E56PCp+W1nIFHhz4vWazlsiUBvBuoIwuorj/r
+         3DSgq2mVG5DxvkzD4YD+kDiVmzSIy2HLtnQatLC7QZQ4PNhyVVqADF80YXOF4tH0Bfax
+         sB0gLkemhgu78r+OXXmjfaeFsRSXdbrrfEuKY=
+Date: Fri, 8 Aug 2008 02:28:20 +0300
+From: "Michael S. Tsirkin" <m.s.tsirkin@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
+       linux-pci@vger.kernel.org, matthew@wil.cx, jbarnes@virtuousgeek.org
+Subject: T60p not coming out of suspend to RAM since 2.6.27-rc1
+Message-ID: <20080807232819.GA7984@google.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-08-07 at 16:08 -0700, Linus Torvalds wrote:
-> 
-> On Thu, 7 Aug 2008, H. Peter Anvin wrote:
-> >
-> > Just moving it down by 4 MB doesn't help, since the VMI guys want as much as
-> > 64 MB, which is half the standard vmalloc area and hence too much address
-> > space lost.  We can't put it at the bottom of the vmalloc area, since that
-> > boundary is not fixed, either.
-> 
-> Yeah, ok. Since this is a 32-bit only issue, 64MB is actually a fair chunk
-> of our already limited virtual space.
-> 
-> > The one remaining fixed boundary in the machine is the kernel-userspace
-> > boundary.  Hence moving the 1:1 area up by one PDE unit and sticking the
-> > fixmap area in that region.
-> 
-> Yeah, ok, but I'd be more nervous about the validation issues there. There
-> might be a lot of code that assumes that TASK_SIZE is the start of the 1:1
-> area. It does sound like a good approach, it just makes me worry about the
-> test coverage.
+In both 2.6.27-rc1 and 2.6.27-rc2, my laptop won't come out of
+suspend to ram: it blinks the crescent one or twice,
+and hangs. It does resume fine under 2.6.26.
 
-Well, here's an idea from outer space.  The fixmap can't possibly be
-used until it's got a backing page table and initial mappings installed.
-One can imagine a world where references to the fixmap are left as
-unresolved, and then those unresolved symbols are linked to the fixmap
-area when it gets set up in the kernel page table.  Voilla!
+I bisected the problem and got the following commit:
 
-The requisite foodling required to massage various gcci and lds into
-compliance with this scheme, not to mention the required module loading
-changes might be a bit of headache, and even then, I'm not sure that gcc
-will be smart enough to allow all the required relocations to generate
-optimal code.
+commit ce6fce4295ba727b36fdc73040e444bd1aae64cd
+Author: Matthew Wilcox <matthew@wil.cx>
+Date:   Fri Jul 25 15:42:58 2008 -0600
 
-But the upshot would be the potential for dynamic registration of fixmap
-areas, yet still keeping direct pointers into the thing, and also
-removing all the ifdefs from the fixmap definitions for the various
-platform specific fixmap pages.  Just leave dangling references to some
-fixed bad address (fixmap_hole) for things unused.  And even allow
-kernel modules to register new fixmap types!
+    PCI MSI: Don't disable MSIs if the mask bit isn't supported
 
-All it requires is a well thought out strategy for naming fixmap pages
-and then two sprinkles of linker magic.  You could even randomize the
-non-randomized VDSO location at boot-time.  Whee!
+    David Vrabel has a device which generates an interrupt storm on the INTx
+    pin if we disable MSI interrupts altogether.  Masking interrupts is only
+    a performance optimisation, so we can ignore the request to mask the
+    interrupt.
 
-Zach
+    Signed-off-by: Matthew Wilcox <willy@linux.intel.com>
+    Signed-off-by: Jesse Barnes <jbarnes@virtuousgeek.org>
 
+Reverting ce6fce4295ba727b36fdc73040e444bd1aae64cd
+fixes resume from suspend to RAM for me.
+
+Steps to reproduce:
+
+Press Fn-F4 to suspend, press Fn to resume.
+This works on 2.6.26, hangs on vanilla 2.6.27-rc1
+and 2.6.27-rc2, works on 2.6.27-rc2 with reverted ce6fce..
+
+Bug added to bugzilla: http://bugzilla.kernel.org/show_bug.cgi?id=11283
+
+-- 
+MST
