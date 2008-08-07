@@ -1,114 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755052AbYHGIo1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755572AbYHGIpb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755052AbYHGIo1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Aug 2008 04:44:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752455AbYHGIoR
+	id S1755572AbYHGIpb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Aug 2008 04:45:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752204AbYHGIpP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Aug 2008 04:44:17 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:37417 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751196AbYHGIoM (ORCPT
+	Thu, 7 Aug 2008 04:45:15 -0400
+Received: from fms-01.valinux.co.jp ([210.128.90.1]:47490 "EHLO
+	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751383AbYHGIpM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Aug 2008 04:44:12 -0400
-Message-ID: <489AB595.7000006@jp.fujitsu.com>
-Date: Thu, 07 Aug 2008 17:43:01 +0900
-From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
-MIME-Version: 1.0
-To: Alex Chiang <achiang@hp.com>,
-       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
-       Matthew Wilcox <matthew@wil.cx>, Pierre Ossman <drzeus-list@drzeus.cx>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       LKML <linux-kernel@vger.kernel.org>, linux-pci@vger.kernel.org
-Subject: Re: [PATCH 0/7] Fixups for duplicate slot names
-References: <20080806050745.GA31319@ldl.fc.hp.com>
-In-Reply-To: <20080806050745.GA31319@ldl.fc.hp.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 7 Aug 2008 04:45:12 -0400
+Date: Thu, 07 Aug 2008 17:45:10 +0900 (JST)
+Message-Id: <20080807.174510.103839374.taka@valinux.co.jp>
+To: kamezawa.hiroyu@jp.fujitsu.com
+Cc: balbir@linux.vnet.ibm.com, ryov@valinux.co.jp,
+       xen-devel@lists.xensource.com, containers@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org, virtualization@lists.linux-foundation.org,
+       dm-devel@redhat.com, agk@sourceware.org
+Subject: Re: [PATCH 4/7] bio-cgroup: Split the cgroup memory subsystem into
+ two parts
+From: Hirokazu Takahashi <taka@valinux.co.jp>
+In-Reply-To: <20080807172113.0788f800.kamezawa.hiroyu@jp.fujitsu.com>
+References: <16255819.1218030343593.kamezawa.hiroyu@jp.fujitsu.com>
+	<20080807.162512.22162413.taka@valinux.co.jp>
+	<20080807172113.0788f800.kamezawa.hiroyu@jp.fujitsu.com>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Alex-san,
+Hi,
 
-Thank you for patches!
+> > > >I've just noticed that most of overhead comes from the spin-locks
+> > > >when reclaiming the pages inside mem_cgroups and the spin-locks to
+> > > >protect the links between pages and page_cgroups.
+> > > Overhead between page <-> page_cgroup lock is cannot be catched by
+> > > lock_stat now.Do you have numbers ?
+> > > But ok, there are too many locks ;(
+> > 
+> > The problem is that every time the lock is held, the associated
+> > cache line is flushed.
+> I think "page" and "page_cgroup" is not so heavly shared object in fast path.
+> foot-print is also important here.
+> (anyway, I'd like to remove lock_page_cgroup() when I find a chance)
 
-I looked at your patches and it looks good. But I have only one
-concern about how to allocate/free memory for slot name.
+OK.
 
-With your change, memory region for slot name will be allocated
-by hotplug *controller* driver and it can be freed using kfree()
-by hotplug *core* driver (not hotplug controller driver). So all
-hotplug controller drivers including drivers implemented in the
-future need to take it into account.
+> > > >The latter overhead comes from the policy your team has chosen
+> > > >that page_cgroup structures are allocated on demand. I still feel
+> > > >this approach doesn't make any sense because linux kernel tries to
+> > > >make use of most of the pages as far as it can, so most of them
+> > > >have to be assigned its related page_cgroup. It would make us happy
+> > > >if page_cgroups are allocated at the booting time.
+> > > >
+> > > Now, multi-sizer-page-cache is discussed for a long time. If it's our
+> > > direction, on-demand page_cgroup make sense.
+> > 
+> > I don't think I can agree to this.
+> > When multi-sized-page-cache is introduced, some data structures will be
+> > allocated to manage multi-sized-pages. 
+> maybe no. it will be encoded into struct page.
 
-I think it will be more robust if we can allocate and free memory
-in the same component (maybe hotplug core driver in this case).
+It will nice and simple if it will be.
+
+> > I think page_cgroups should be allocated at the same time.
+> > This approach will make things simple.
+> yes, of course.
+> 
+> > 
+> > It seems like the on-demand allocation approach leads not only
+> > overhead but complexity and a lot of race conditions.
+> > If you allocate page_cgroups when allocating page structures,
+> > You can get rid of most of the locks and you don't have to care about
+> > allocation error of page_cgroups anymore.
+> > 
+> > And it will also give us flexibility that memcg related data can be
+> > referred/updated inside critical sections.
+> > 
+> But it's not good for the systems with small "NORMAL" pages.
+
+Even when it happens to be a system with small "NORMAL" pages, if you
+want to use memcg feature, you have to allocate page_groups for most of
+the pages in the system. It's impossible to avoid the allocation as far
+as you use memcg.
+
+> This discussion should be done again when more users of page_group appears and
+> it's overhead is obvious.
 
 Thanks,
-Kenji Kaneshige
-
-
-Alex Chiang wrote:
-> * Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>:
->> With this change, kobject_init_and_add() called in
->> pci_create_slot() will show stack trace if a hotplug driver
->> attempts to register multiple slot with the same name. That is,
->> stack trace will be shown on the platform that wrongly assing
->> the physical slot number to multiple slots. I'm very sorry, but
->> I don't have enough time to consider how to fix it today.
-> 
-> Hello Kenji-san,
-> 
-> You are obviously correct about my prior bad patch that simply
-> removed the check in pci_hp_register() for duplicate names.
-> 
-> I also talked with Willy, and he thought that the proper way to
-> fix all these issues was not in the individual drivers, but in
-> the PCI core, which I agree with.
-> 
-> Here is a patch series that attempts to implement Willy's
-> suggestion.
-> 
-> Patches 1--6 convert the callers of pci_hp_register/pci_create_slot
-> from a static char name[] to a dynamically kmalloc'ed char *name.
-> 
-> There are also cleanups in the individual drivers to remove the
-> _slot_with_bus parameters.
-> 
-> Patch 7/7 implements the collision rename logic. It's not the
-> prettiest thing in the world, so your comments are welcome. :)
-> 
-> It's getting late here and I haven't had time to really test it,
-> other than a quick compile test, but I wanted to try and send it
-> so that you could take a look and possibly try it. ;)
-> 
-> These patches apply on top of Linus's latest tree.
-> 
-> Thanks!
-> 
-> /ac
-> 
->  drivers/acpi/pci_slot.c                |   15 ++++++-
->  drivers/pci/hotplug/acpiphp.h          |    2 -
->  drivers/pci/hotplug/acpiphp_core.c     |   18 +++++----
->  drivers/pci/hotplug/fakephp.c          |   16 ++++++--
->  drivers/pci/hotplug/pci_hotplug_core.c |    4 --
->  drivers/pci/hotplug/pciehp.h           |    6 +--
->  drivers/pci/hotplug/pciehp_core.c      |    7 ---
->  drivers/pci/hotplug/pciehp_hpc.c       |   19 ++++-----
->  drivers/pci/hotplug/pcihp_skeleton.c   |   12 ++++--
->  drivers/pci/hotplug/shpchp.h           |    5 +-
->  drivers/pci/hotplug/shpchp_core.c      |   29 ++++----------
->  drivers/pci/slot.c                     |   65 +++++++++++++++++++++++++++++----
->  include/linux/pci.h                    |    3 -
->  13 files changed, 124 insertions(+), 77 deletions(-)
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pci" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
-> 
-
-
+Hirokazu Takahashi.
