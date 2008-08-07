@@ -1,67 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758497AbYHGWRX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758361AbYHGWRt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758497AbYHGWRX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Aug 2008 18:17:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753125AbYHGWRE
+	id S1758361AbYHGWRt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Aug 2008 18:17:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753838AbYHGWRj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Aug 2008 18:17:04 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:25665 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753355AbYHGWRD (ORCPT
+	Thu, 7 Aug 2008 18:17:39 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:58142 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753125AbYHGWRi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Aug 2008 18:17:03 -0400
-Date: Thu, 7 Aug 2008 15:13:44 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: akpm <akpm@linux-foundation.org>, steiner@sgi.com
-Subject: [PATCH] GRU: fix preprocessor symbol for sparse
-Message-Id: <20080807151344.c3808969.randy.dunlap@oracle.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 7 Aug 2008 18:17:38 -0400
+Message-ID: <489B7470.5030408@kernel.org>
+Date: Thu, 07 Aug 2008 15:17:20 -0700
+From: "H. Peter Anvin" <hpa@kernel.org>
+Organization: Linux Kernel Organization, Inc.
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Zachary Amsden <zach@vmware.com>
+CC: Alok Kataria <akataria@vmware.com>,
+       "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, the arch/x86 maintainers <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH]Fix broken VMI in 2.6.27-rc..
+References: <1218136365.23770.52.camel@alok-dev1>	 <489B6710.9000604@kernel.org>	 <1218144438.20178.336.camel@bodhitayantram.eng.vmware.com>	 <489B6A5C.8030400@kernel.org>	 <1218145344.20178.347.camel@bodhitayantram.eng.vmware.com>	 <489B6E83.7000202@kernel.org> <1218146154.20178.352.camel@bodhitayantram.eng.vmware.com>
+In-Reply-To: <1218146154.20178.352.camel@bodhitayantram.eng.vmware.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
-cc: steiner@sgi.com
+Zachary Amsden wrote:
+> 
+>> Realistically speaking, any (virtual) machine which does *not* have a
+>> full complement of lowmem (i.e. less than 896 MB in the common case)
+>> will not suffer significatly from losing a few megabytes of address space.
+> 
+> Yes, the reason to make the fixmap moveable is to allow as much address
+> space as possible for big memory (physical) machines.
+> 
 
-Fix preprocessor symbol so that sparse sees it and does not
-generate errors:
+That being said, the fixmap area being movable more than kind of defeats 
+a major point of the fixmap area; the addresses in it are no longer fixed.
 
-linux-next-20080807/drivers/misc/sgi-gru/grutables.h:286:2: error: "Unsupported architecture"
-linux-next-20080807/drivers/misc/sgi-gru/grutables.h:286:2: error: "Unsupported architecture"
-linux-next-20080807/drivers/misc/sgi-gru/grutables.h:286:2: error: "Unsupported architecture"
-linux-next-20080807/drivers/misc/sgi-gru/grutables.h:286:2: error: "Unsupported architecture"
-linux-next-20080807/drivers/misc/sgi-gru/grutlbpurge.c:185:11: error: undefined identifier 'GRUREGION'
-linux-next-20080807/drivers/misc/sgi-gru/grutables.h:286:2: error: "Unsupported architecture"
-linux-next-20080807/drivers/misc/sgi-gru/grutables.h:286:2: error: "Unsupported architecture"
+The only way I can see around that, though, is to move the 1:1 mapping 
+base up by 2/4 MB (for PAE/no PAE, respectively) and put the fixmap area 
+there.  Kind of sucks, but would be doable.
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- drivers/misc/sgi-gru/grutables.h |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
---- linux-next-20080807.orig/drivers/misc/sgi-gru/grutables.h
-+++ linux-next-20080807/drivers/misc/sgi-gru/grutables.h
-@@ -279,7 +279,7 @@ struct gru_stats_s {
- #if defined CONFIG_IA64
- #define VADDR_HI_BIT		64
- #define GRUREGION(addr)		((addr) >> (VADDR_HI_BIT - 3) & 3)
--#elif defined __x86_64
-+#elif defined CONFIG_X86_64
- #define VADDR_HI_BIT		48
- #define GRUREGION(addr)		(0)		/* ZZZ could do better */
- #else
-
-
----
-~Randy
-Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
-http://linuxplumbersconf.org/
+	-hpa
