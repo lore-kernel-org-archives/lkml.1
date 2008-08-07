@@ -1,104 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754717AbYHGQGU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753677AbYHGQGe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754717AbYHGQGU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Aug 2008 12:06:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752579AbYHGQGL
+	id S1753677AbYHGQGe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Aug 2008 12:06:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754352AbYHGQGT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Aug 2008 12:06:11 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:40011 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752559AbYHGQGJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Aug 2008 12:06:09 -0400
-Date: Thu, 7 Aug 2008 17:06:06 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, ebmunson@us.ibm.com,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, libhugetlbfs-devel@lists.sourceforge.net,
-       abh@cray.com
-Subject: Re: [RFC] [PATCH 0/5 V2] Huge page backed user-space stacks
-Message-ID: <20080807160605.GA9200@csn.ul.ie>
-References: <20080730193010.GB14138@csn.ul.ie> <20080730130709.eb541475.akpm@linux-foundation.org> <20080731103137.GD1704@csn.ul.ie> <1217884211.20260.144.camel@nimitz> <20080805111147.GD20243@csn.ul.ie> <1217952748.10907.18.camel@nimitz> <20080805162800.GJ20243@csn.ul.ie> <1217958805.10907.45.camel@nimitz> <20080806090222.GD21190@csn.ul.ie> <1218052249.10907.125.camel@nimitz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+	Thu, 7 Aug 2008 12:06:19 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:49834 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754175AbYHGQGT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Aug 2008 12:06:19 -0400
+Date: Thu, 7 Aug 2008 18:07:02 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: jmerkey@wolfmountaingroup.com
+Cc: Andi Kleen <andi@firstfloor.org>,
+       Jason Wessel <jason.wessel@windriver.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Geert Uytterhoeven <geert@linux-m68k.org>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Josh Boyer <jwboyer@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: [ANNOUNCE] Merkey's Kernel Debugger
+Message-ID: <20080807160702.GF24801@one.firstfloor.org>
+References: <17494.166.70.238.46.1217784156.squirrel@webmail.wolfmountaingroup.com> <Pine.LNX.4.64.0808051140150.6309@anakin> <33030.166.70.238.45.1217948565.squirrel@webmail.wolfmountaingroup.com> <200808060133.10457.nickpiggin@yahoo.com.au> <87r6926dsr.fsf@basil.nowhere.org> <4899DD9F.6020007@windriver.com> <20080806185719.GE24801@one.firstfloor.org> <37747.166.70.238.45.1218113134.squirrel@webmail.wolfmountaingroup.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1218052249.10907.125.camel@nimitz>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <37747.166.70.238.45.1218113134.squirrel@webmail.wolfmountaingroup.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (06/08/08 12:50), Dave Hansen didst pronounce:
-> On Wed, 2008-08-06 at 10:02 +0100, Mel Gorman wrote:
-> > > That said, this particular patch doesn't appear *too* bound to hugetlb
-> > > itself.  But, some of its limitations *do* come from the filesystem,
-> > > like its inability to handle VM_GROWS...  
-> > 
-> > The lack of VM_GROWSX is an issue, but on its own it does not justify
-> > the amount of churn necessary to support direct pagetable insertions for
-> > MAP_ANONYMOUS|MAP_PRIVATE. I think we'd need another case or two that would
-> > really benefit from direct insertions to pagetables instead of hugetlbfs so
-> > that the path would get adequately tested.
-> 
-> I'm jumping around here a bit, but I'm trying to get to the core of what
-> my problem with these patches is.  I'll see if I can close the loop
-> here.
-> 
-> The main thing this set of patches does that I care about is take an
-> anonymous VMA and replace it with a hugetlb VMA.  It does this on a
-> special cue, but does it nonetheless.
-> 
+> Also, whoever wrote "/Documentation/volatiles_are_evil" must not have
+> worked with the busted-ass GNU compiler that optimizes away global
+> variables and busts SMP dependent code.  I am not going to remove the
 
-This is not actually a new thing. For a long time now, it has been possible to
-back  malloc() with hugepages at a userspace level using the morecore glibc
-hook. That is replacing anonymous memory with a file-backed VMA. It happens
-in a different place but it's just as deliberate as backing stack and the
-end result is very similar. As the file is ram-based, it doesn't have the
-same types of consequences like dirty page syncing that you'd ordinarily
-watch for when moving from anonymous to file-backed memory.
+The Linux way to handle this is to use gcc memory barriers.
+mb()/barrier()/wmb()/rmb()/smp_rmb()/smp_wmb() etc.
+Normally everything that volatile can do can be expressed by them.
 
-> This patch has crossed a line in that it is really the first
-> *replacement* of a normal VMA with a hugetlb VMA instead of the creation
-> of the VMAs at the user's request. 
+On x86 such a memory barrier tells gcc that memory might
+have been clobbered and needs to be flushed and also prevents the compiler 
+from reordering memory accesses. On other architectures it also forces ordering
+on the CPU level, although that's not needed on x86 (except
+in some special situations like using write-combining)
 
-We crossed that line with morecore, it's back there somewhere. We're just
-doing in kernel this time because backing stacks with hugepages in userspace
-turned out to be a hairy endevour.
+See Documentation/memory-barriers.txt
 
-Properly supporting anonymous hugepages would either require larger
-changes to the core or reimplementing yet more of mm/ in mm/hugetlb.c.
-Neither is a particularly appealing approach, nor is it likely to be a
-very popular one.
+-Andi
 
-> I'm really curious what the plan is
-> to follow up on this.  Will this stack stuff turn out to be one-off
-> code, or is this *the* route for getting transparent large pages in the
-> future?
-> 
-
-Conceivably, we could also implement MAP_LARGEPAGE for MAP_ANONYMOUS
-which would use the same hugetlb_file_setup() as for shmem and stacks
-with this patch. It would be a reliavely straight-forward patch if reusing
-hugetlb_file_setup() as the flags can be passed through almost verbatim. In
-that case, hugetlbfs still makes a good fit without making direct pagetable
-insertions necessary.
-
-> Because of the limitations like its inability to grow the VMA, I can't
-> imagine that this would be a generic mechanism that we can use
-> elsewhere.
-> 
-
-What other than a stack even cares about VM_GROWSDOWN working? Besides,
-VM_GROWSDOWN could be supported in a hugetlbfs file by mapping the end of
-the file and moving the offset backwards (yeah ok, it ain't the prettiest
-but it's less churn than introducing significantly different codepaths). It's
-just not something that needs to be supported at first cut.
-
-brk() if you wanted to back hugepages with it conceivably needs a resizing
-VMA but in that case it's growing up in which case just extend the end of
-the VMA and increase the size of the file.
-
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
