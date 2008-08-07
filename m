@@ -1,56 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753303AbYHGREx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755588AbYHGRGL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753303AbYHGREx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Aug 2008 13:04:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752854AbYHGREm
+	id S1755588AbYHGRGL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Aug 2008 13:06:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752350AbYHGRF5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Aug 2008 13:04:42 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:34511 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752837AbYHGREl (ORCPT
+	Thu, 7 Aug 2008 13:05:57 -0400
+Received: from casper.infradead.org ([85.118.1.10]:38476 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751175AbYHGRF5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Aug 2008 13:04:41 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <489B2B20.2040205@s5r6.in-berlin.de>
-Date: Thu, 07 Aug 2008 19:04:32 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.16) Gecko/20080722 SeaMonkey/1.1.11
-MIME-Version: 1.0
-To: jmerkey@wolfmountaingroup.com
-CC: Andi Kleen <andi@firstfloor.org>,
-       Jason Wessel <jason.wessel@windriver.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Geert Uytterhoeven <geert@linux-m68k.org>,
-       Josh Boyer <jwboyer@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: [ANNOUNCE] Merkey's Kernel Debugger
-References: <17494.166.70.238.46.1217784156.squirrel@webmail.wolfmountaingroup.com>    <Pine.LNX.4.64.0808051140150.6309@anakin>    <33030.166.70.238.45.1217948565.squirrel@webmail.wolfmountaingroup.com>    <200808060133.10457.nickpiggin@yahoo.com.au>    <87r6926dsr.fsf@basil.nowhere.org> <4899DD9F.6020007@windriver.com>    <20080806185719.GE24801@one.firstfloor.org>    <37747.166.70.238.45.1218113134.squirrel@webmail.wolfmountaingroup.com>    <20080807160702.GF24801@one.firstfloor.org> <1913.69.2.248.210.1218124373.squirrel@webmail.wolfmountaingroup.com>
-In-Reply-To: <1913.69.2.248.210.1218124373.squirrel@webmail.wolfmountaingroup.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 7 Aug 2008 13:05:57 -0400
+Subject: Re: [PATCH] radeon_cp: use request_firmware
+From: Jaswinder Singh <jaswinder@infradead.org>
+To: Gene Heskett <gene.heskett@gmail.com>
+Cc: martin@valinux.com, gareth@valinux.com, airlied@linux.ie,
+       dri-devel@lists.sourceforge.net, LKML <linux-kernel@vger.kernel.org>,
+       David Woodhouse <dwmw2@infradead.org>
+In-Reply-To: <200808070624.12214.gene.heskett@gmail.com>
+References: <1218095497.4016.3.camel@jaswinder.satnam>
+	 <200808070624.12214.gene.heskett@gmail.com>
+Content-Type: text/plain
+Date: Thu, 07 Aug 2008 22:34:08 +0530
+Message-Id: <1218128648.14483.13.camel@jaswinder.satnam>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-jmerkey@wolfmountaingroup.com wrote:
->>> Also, whoever wrote "/Documentation/volatiles_are_evil" must not have
->>> worked with the busted-ass GNU compiler that optimizes away global
->>> variables and busts SMP dependent code.  I am not going to remove the
->> The Linux way to handle this is to use gcc memory barriers.
->> mb()/barrier()/wmb()/rmb()/smp_rmb()/smp_wmb() etc.
->> Normally everything that volatile can do can be expressed by them.
-[...]
->> See Documentation/memory-barriers.txt
-[...]
-> I'll instrument this as described in the documentation you referenced and
-> remove the volatile declarations.  If this passes testing, I will repost
-> with these corections.
+Hello Gene,
 
-Take care though that neither memory barriers nor volatile are what you 
-want if accesses need to be atomic on whatever given data structure. 
-(E.g. bitfield manipulations, counter increments, accesses to virtually 
-anything that is bigger than an integer or a pointer...)
--- 
-Stefan Richter
--=====-==--- =--- --===
-http://arcgraph.de/sr/
+On Thu, 2008-08-07 at 06:24 -0400, Gene Heskett wrote:
+
+> When applied to 2.6.27-rc2, firmware/Makefile was rejected, so I manually added 
+> the blob list to that Makefile in what looked to be the correct place.  And added a
+> "make firmware_install" to my kernel builder script.
+> 
+> Unforch:
+>   MK_FW   firmware/R100_cp.bin.ihex.gen.S
+> make[1]: *** No rule to make target `firmware/R100_cp.bin.ihex', needed by `firmware/R100_cp.bin.ihex.gen.o'.  Stop.
+> make[1]: *** Waiting for unfinished jobs....
+> make: *** [firmware] Error 2
+> 
+
+It seems your firmware/Makefile is not good.
+
+it should look like this :-
+
+fw-shipped-$(CONFIG_DRM_RADEON) += radeon/R100_cp.bin radeon/R200_cp.bin \
+                                   radeon/R300_cp.bin radeon/R420_cp.bin \
+                                   radeon/RS600_cp.bin radeon/RS690_cp.bin \
+                                   radeon/R520_cp.bin
+
+
+I think you forget to write radeon before R100_cp.bin
+
+And you can collect my updated patch from :
+http://git.infradead.org/users/jaswinder/firm-jsr-2.6.git
+
+Thank you,
+
+Jaswinder Singh.
+
