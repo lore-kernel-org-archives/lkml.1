@@ -1,235 +1,152 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754773AbYHGHVA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755864AbYHGHaj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754773AbYHGHVA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Aug 2008 03:21:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756256AbYHGHUm
+	id S1755864AbYHGHaj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Aug 2008 03:30:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752364AbYHGHZS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Aug 2008 03:20:42 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:34879 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756134AbYHGHUi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Aug 2008 03:20:38 -0400
-Date: Thu, 7 Aug 2008 17:20:27 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: linux-next@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: linux-next: Tree for August 7
-Message-Id: <20080807172027.8180312c.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+	Thu, 7 Aug 2008 03:25:18 -0400
+Received: from fms-01.valinux.co.jp ([210.128.90.1]:60721 "EHLO
+	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753334AbYHGHZQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Aug 2008 03:25:16 -0400
+Date: Thu, 07 Aug 2008 16:25:12 +0900 (JST)
+Message-Id: <20080807.162512.22162413.taka@valinux.co.jp>
+To: kamezawa.hiroyu@jp.fujitsu.com
+Cc: Balbir Singh <balbir@linux.vnet.ibm.com>, ryov@valinux.co.jp,
+       xen-devel@lists.xensource.com, containers@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org, virtualization@lists.linux-foundation.org,
+       dm-devel@redhat.com, agk@sourceware.org
+Subject: Re: [PATCH 4/7] bio-cgroup: Split the cgroup memory subsystem into
+ two parts
+From: Hirokazu Takahashi <taka@valinux.co.jp>
+In-Reply-To: <16255819.1218030343593.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20080804.175748.189722512.ryov@valinux.co.jp>
+	<20080806165421.f76edd47.kamezawa.hiroyu@jp.fujitsu.com>
+	<16255819.1218030343593.kamezawa.hiroyu@jp.fujitsu.com>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Thu__7_Aug_2008_17_20_27_+1000_6nKE3aUBW4sKNbMK"
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Thu__7_Aug_2008_17_20_27_+1000_6nKE3aUBW4sKNbMK
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Hi,
 
-Hi all,
+> >> > This patch splits the cgroup memory subsystem into two parts.
+> >> > One is for tracking pages to find out the owners. The other is
+> >> > for controlling how much amount of memory should be assigned to
+> >> > each cgroup.
+> >> > 
+> >> > With this patch, you can use the page tracking mechanism even if
+> >> > the memory subsystem is off.
+> >> > 
+> >> > Based on 2.6.27-rc1-mm1
+> >> > Signed-off-by: Ryo Tsuruta <ryov@valinux.co.jp>
+> >> > Signed-off-by: Hirokazu Takahashi <taka@valinux.co.jp>
+> >> > 
+> >> 
+> >> Plese CC me or Balbir or Pavel (See Maintainer list) when you try this ;)
+> >> 
+> >> After this patch, the total structure is
+> >> 
+> >>  page <-> page_cgroup <-> bio_cgroup.
+> >>  (multiple bio_cgroup can be attached to page_cgroup)
+> >>
+> >> Does this pointer chain will add
+> >>   - significant performance regression or
+> >>   - new race condtions 
+> >> ?
+> >
+> >I don't think it will cause significant performance loss, because
+> >the link between a page and a page_cgroup has already existed, which
+> >the memory resource controller prepared. Bio_cgroup uses this as it is,
+> >and does nothing about this.
+> >
+> >And the link between page_cgroup and bio_cgroup isn't protected
+> >by any additional spin-locks, since the associated bio_cgroup is
+> >guaranteed to exist as long as the bio_cgroup owns pages.
+> >
+> Hmm, I think page_cgroup's cost is visible when
+> 1. a page is changed to be in-use state. (fault or radixt-tree-insert)
+> 2. a page is changed to be out-of-use state (fault or radixt-tree-removal)
+> 3. memcg hit its limit or global LRU reclaim runs.
+> "1" and "2" can be catched as 5% loss of exec throuput. 
+> "3" is not measured (because LRU walk itself is heavy.)
+> 
+> What new chances to access page_cgroup you'll add ?
+> I'll have to take into account them.
 
-Changes since next-20080806:
+I haven't add any at this moment, but I thinks some people may want
+to move some pages in page-cache from one cgroup to another cgroup.
+When that time comes, I'll try to make the cost minimized that
+I will probably only update the link between a page_cgroup and
+a bio_cgroup and leave the others untouched.
 
-New tree: jdelvare-hwmon
+> >I've just noticed that most of overhead comes from the spin-locks
+> >when reclaiming the pages inside mem_cgroups and the spin-locks to
+> >protect the links between pages and page_cgroups.
+> Overhead between page <-> page_cgroup lock is cannot be catched by
+> lock_stat now.Do you have numbers ?
+> But ok, there are too many locks ;(
 
-Changed tree: v4l-dvb (back to the proper tree).
+The problem is that every time the lock is held, the associated
+cache line is flushed.
 
-The usb.current gained a build fix patch.
+> >The latter overhead comes from the policy your team has chosen
+> >that page_cgroup structures are allocated on demand. I still feel
+> >this approach doesn't make any sense because linux kernel tries to
+> >make use of most of the pages as far as it can, so most of them
+> >have to be assigned its related page_cgroup. It would make us happy
+> >if page_cgroups are allocated at the booting time.
+> >
+> Now, multi-sizer-page-cache is discussed for a long time. If it's our
+> direction, on-demand page_cgroup make sense.
 
-The ide tree lost its conflicts.
+I don't think I can agree to this.
+When multi-sized-page-cache is introduced, some data structures will be
+allocated to manage multi-sized-pages. I think page_cgroups should be
+allocated at the same time. This approach will make things simple.
 
-The mtd tree gained a build fix patch.
+It seems like the on-demand allocation approach leads not only
+overhead but complexity and a lot of race conditions.
+If you allocate page_cgroups when allocating page structures,
+You can get rid of most of the locks and you don't have to care about
+allocation error of page_cgroups anymore.
 
-The crypto tree gained a trivial conflict against the x86 tree.
+And it will also give us flexibility that memcg related data can be
+referred/updated inside critical sections.
 
-I have also applied the following patches for known problems:
+> >> For example, adding a simple function.
+> >> ==
+> >> int get_page_io_id(struct page *)
+> >>  - returns a I/O cgroup ID for this page. If ID is not found, -1 is returne
+> d.
+> >>    ID is not guaranteed to be valid value. (ID can be obsolete)
+> >> ==
+> >> And just storing cgroup ID to page_cgroup at page allocation.
+> >> Then, making bio_cgroup independent from page_cgroup and 
+> >> get ID if avialble and avoid too much pointer walking.
+> >
+> >I don't think there are any diffrences between a poiter and ID.
+> >I think this ID is just a encoded version of the pointer.
+> >
+> ID can be obsolete, pointer is not. memory cgroup has to take care of
+> bio cgroup's race condition ? (About race conditions, it's already complicated
+> enough)
 
-	Add cuImage.mpc866ads to the bootwrapper as a cuboot-8xx target
-	Revert "Input: expand keycode space"
-	xen-balloon: fix up sysfs issues
-	mtd_dataflash build fix
+Bio-cgroup just expects that the call-backs bio-cgroup prepares are called
+when the status of a page_cgroup get changed.
 
-----------------------------------------------------------------------------
+> To be honest, I think adding a new (4 or 8 bytes) page struct and record infor
+> mation of bio-control is more straightforward approach. Buy as you might
+> think, "there is no room"
 
-I have created today's linux-next tree at
-git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
-(patches at
-http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/).  If you
-are tracking the linux-next tree using git, you should not use "git pull"
-to do so as that will try to merge the new linux-next release with the
-old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
-(see below).
+But only if everyone allows me to add some new members into "struct page."
+I think the same thing goes with memcg you're working on.
 
-You can see which trees have been included by looking in the Next/Trees
-file in the source.  There are also quilt-import.log and merge.log files
-in the Next directory.  Between each merge, the tree was built with
-a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
-final fixups, it is also built with powerpc allnoconfig,
-44x_defconfig and allyesconfig and i386, sparc and sparc64 defconfig.
 
-Below is a summary of the state of the merge.
+Thank you,
+Hirokazu Takahashi.
 
-We are up to 108 trees (counting Linus' and 14 trees of patches pending for
-Linus' tree), more are welcome (even if they are currently empty).
-Thanks to those who have contributed, and to those who haven't, please do.
-
-Status of my local build tests will be at
-http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
-advice about cross compilers/configs that work, we are always open to add
-more builds.
-
-Thanks to Jan Dittmer for adding the linux-next tree to his build tests
-at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
-Dunlap for doing many randconfig builds.
-
-There is a wiki covering stuff to do with linux-next at
-http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
-$ git checkout master
-$ git reset --hard stable
-Merging origin/master
-Merging powerpc-merge/merge
-Merging scsi-rc-fixes/master
-Merging net-current/master
-Merging sparc-current/master
-Merging sound-current/for-linus
-Merging arm-current/master
-Merging pci-current/for-linus
-Merging wireless-current/master
-Merging kbuild-current/master
-Merging quilt/driver-core.current
-Merging quilt/usb.current
-Applying usb: build fix for sierra_ms unusual device
-Applying usb: two more functions are needed when CONFIG_PM is not set
-Merging cpufreq-current/fixes
-Merging input-current/for-linus
-Merging md-current/for-2.6.26
-Merging dwmw2/master
-Merging quilt/driver-core
-Applying driver-core: kobject verification fixup
-Merging quilt/usb
-Merging tip-core/auto-core-next
-CONFLICT (content): Merge conflict in include/asm-generic/vmlinux.lds.h
-Merging cpus4096/auto-cpus4096-next
-CONFLICT (content): Merge conflict in net/sunrpc/svc.c
-Merging ftrace/auto-ftrace-next
-Merging genirq/auto-genirq-next
-Merging safe-poison-pointers/auto-safe-poison-pointers-next
-Merging sched/auto-sched-next
-Merging stackprotector/auto-stackprotector-next
-Merging timers/auto-timers-next
-Merging x86/auto-x86-next
-CONFLICT (content): Merge conflict in arch/x86/kernel/genapic_64.c
-CONFLICT (content): Merge conflict in drivers/pci/dmar.c
-Applying x86: export is_uv_system
-Merging pci/linux-next
-Merging quilt/device-mapper
-Merging hid/mm
-Merging quilt/i2c
-Merging quilt/jdelvare-hwmon
-Merging quilt/kernel-doc
-Merging avr32/avr32-arch
-Merging v4l-dvb/stable
-Merging s390/features
-Merging sh/master
-Merging jfs/next
-Merging kbuild/master
-Merging quilt/ide
-Merging libata/NEXT
-Merging nfs/linux-next
-Merging xfs/master
-Merging infiniband/for-next
-Merging acpi/test
-Merging blackfin/for-linus
-Merging nfsd/nfsd-next
-Merging ieee1394/for-next
-Merging hwmon/testing
-Merging ubi/linux-next
-Merging kvm/master
-CONFLICT (content): Merge conflict in include/linux/kvm.h
-Merging dlm/next
-Merging scsi/master
-Merging ia64/test
-Merging tests/master
-Merging ocfs2/linux-next
-Merging quilt/m68k
-Merging powerpc/powerpc-next
-Merging ext4/next
-Merging 4xx/next
-Merging async_tx/next
-Merging udf/for_next
-Merging net/master
-Merging sparc/master
-Merging galak/powerpc-next
-Merging mtd/master
-Merging wireless/master
-Merging crypto/master
-CONFLICT (content): Merge conflict in include/asm-x86/cpufeature.h
-Merging vfs/for-next
-Merging sound/for-next
-Merging arm/devel
-Merging cpufreq/next
-Merging v9fs/for-next
-Merging quilt/rr
-Merging cifs/master
-Merging mmc/next
-Merging gfs2/master
-Merging input/next
-Merging semaphore/semaphore
-Merging semaphore-removal/semaphore-removal
-Merging bkl-removal/bkl-removal
-Merging trivial/next
-CONFLICT (content): Merge conflict in Documentation/edac.txt
-CONFLICT (content): Merge conflict in include/linux/securebits.h
-Merging ubifs/linux-next
-Merging lsm/for-next
-Merging block/for-next
-Merging embedded/master
-Merging firmware/master
-CONFLICT (content): Merge conflict in drivers/media/dvb/ttpci/Kconfig
-CONFLICT (content): Merge conflict in drivers/media/dvb/ttpci/Makefile
-Merging pcmcia/master
-Merging battery/master
-Merging leds/for-mm
-Merging backlight/for-mm
-Merging kgdb/kgdb-next
-Merging slab/for-next
-Merging m68knommu/for-next
-Merging uclinux/for-next
-Merging md/for-next
-Merging cris/for-next
-Merging kmemcheck/auto-kmemcheck-next
-Merging generic-ipi/auto-generic-ipi-next
-Merging mips/mips-for-linux-next
-Merging mfd/for-next
-Merging hdlc/hdlc-next
-Merging drm/drm-next
-Merging voltage/reg-for-linus
-Merging security-testing/next
-Merging lblnet/master
-Merging quilt/ttydev
-Merging agp/agp-next
-Applying Add cuImage.mpc866ads to the bootwrapper as a cuboot-8xx target
-Created commit 5b98566: Revert "Input: expand keycode space"
-Applying xen-balloon: fix up sysfs issues
-Applying mtd_dataflash build fix
-
---Signature=_Thu__7_Aug_2008_17_20_27_+1000_6nKE3aUBW4sKNbMK
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkiaojsACgkQjjKRsyhoI8yHkgCglEoeyEJ6jFjTmLo3oMLcZ5Ob
-4VkAniZ7+cx2rWhgJuY/Xo83UEGavn+r
-=hajX
------END PGP SIGNATURE-----
-
---Signature=_Thu__7_Aug_2008_17_20_27_+1000_6nKE3aUBW4sKNbMK--
