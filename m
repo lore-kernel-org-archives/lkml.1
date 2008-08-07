@@ -1,76 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756329AbYHGUKi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755865AbYHGUL0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756329AbYHGUKi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Aug 2008 16:10:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753814AbYHGUKP
+	id S1755865AbYHGUL0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Aug 2008 16:11:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753006AbYHGULQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Aug 2008 16:10:15 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:4072 "EHLO spitz.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752631AbYHGUKN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Aug 2008 16:10:13 -0400
-Date: Tue, 5 Aug 2008 20:26:11 +0200
-From: Pavel Machek <pavel@suse.cz>
-To: Sage Weil <sage@newdream.net>
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       ceph-devel@lists.sourceforge.net
-Subject: Re: Recursive directory accounting for size, ctime, etc.
-Message-ID: <20080805182610.GD8380@ucw.cz>
-References: <Pine.LNX.4.64.0806192313530.7379@cobra.newdream.net>
+	Thu, 7 Aug 2008 16:11:16 -0400
+Received: from ns2.suse.de ([195.135.220.15]:50150 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752911AbYHGULP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Aug 2008 16:11:15 -0400
+Date: Thu, 7 Aug 2008 22:11:06 +0200
+From: Bernhard Walle <bwalle@suse.de>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Jay Lan <jlan@sgi.com>, Christoph Lameter <cl@linux-foundation.org>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, jmerkey@wolfmountaingroup.com,
+       Geert Uytterhoeven <geert@linux-m68k.org>,
+       Josh Boyer <jwboyer@gmail.com>, linux-kernel@vger.kernel.org,
+       Takenori Nagano <t-nagano@ah.jp.nec.com>,
+       Vivek Goyal <vgoyal@redhat.com>, Keith Owens <kaos@ocs.com.au>
+Subject: Re: [ANNOUNCE] Merkey's Kernel Debugger
+Message-ID: <20080807221106.734a8da3@kopernikus.site>
+In-Reply-To: <20080807200944.GK24801@one.firstfloor.org>
+References: <17494.166.70.238.46.1217784156.squirrel@webmail.wolfmountaingroup.com>
+	<200808060133.10457.nickpiggin@yahoo.com.au>
+	<87r6926dsr.fsf@basil.nowhere.org>
+	<200808061550.22996.nickpiggin@yahoo.com.au>
+	<489B34BA.4060300@linux-foundation.org>
+	<489B3A0D.7060706@s5r6.in-berlin.de>
+	<489B48BF.3060609@linux-foundation.org>
+	<489B5149.4030600@sgi.com>
+	<20080807200659.GJ24801@one.firstfloor.org>
+	<20080807220737.23e29d46@kopernikus.site>
+	<20080807200944.GK24801@one.firstfloor.org>
+Organization: SUSE LINUX Products GmbH
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i686-pc-linux-gnu)
+X-Face: ,G!z)dEOMkc[Cu+sF64,T9^5r3b>/}#HBRL%D^j@\SZbr'Itl7q@1<*dgB?A7(_leO1Tc4^
+ D*WfvfwKcz;,@E^y+pNP%86n8o<&g-vToCXW:r>Y$jxY,`KT?{H!07=2|Jdt?0ba^C-Tnx50vIV8It
+ vi&Sicl:sj`k2`y)E;ECFi;i7W-?t3%\kD*));q)+%-pQd^.r'W}oBBx=+.~Gu}&F;lS7.a-m>Rv"w
+ pe`D'OV^?HJd$-)7<2T[naDPl6+bAj'+UYd]u]B^'.LYK$2jS
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0806192313530.7379@cobra.newdream.net>
-User-Agent: Mutt/1.5.9i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue 2008-07-15 11:28:22, Sage Weil wrote:
-> All-
+* Andi Kleen <andi@firstfloor.org> [2008-08-07 22:09]:
+>
+> On Thu, Aug 07, 2008 at 10:07:37PM +0200, Bernhard Walle wrote:
+> > * Andi Kleen <andi@firstfloor.org> [2008-08-07 22:06]:
+> > >
+> > > > To merge KDB or any other RAS tools, you need to deal with kdump. Kdump
+> > > > hijack panic() before the die calling chain. For KDB or a RAS tool to
+> > > 
+> > > Imho kdump should just be fixed to use die chains.
+> > 
+> > Well, we had that discussion several times. I'm not against it
+> > (instead, I would like it), but I don't think that repeating the
+> > discussion over and over does help ...
 > 
-> Ceph is a new distributed file system for Linux designed for scalability 
-> (terabytes to exabytes, tens to thousands of storage nodes), reliability, 
-> and performance.  The latest release (v0.3), aside from xattr support and 
-> the usual slew of bugfixes, includes a unique (?) recursive accounting 
-> infrastructure that allows statistics about all metadata nested beneath a 
-> point in the directory hierarchy to be efficiently propagated up the tree.  
-> Currently this includes a file and directory count, total bytes (summation 
-> over file sizes), and most recent inode ctime.  For example, for a 
-> directory like /home, Ceph can efficiently report the total number of 
-> files, directories, and bytes contained by that entire subtree of the 
-> directory hierarchy.
-> 
-> The file size summation is the most interesting, as it effectively gives 
-> you directory-based quota space accounting with fine granularity.  In many 
-> deployments, the quota _accounting_ is more important than actual 
-> enforcement.  Anybody who has had to figure out what has filled/is filling 
-> up a large volume will appreciate how cumbersome and inefficient 'du' can 
-> be for that purpose--especially when you're in a hurry.
-> 
-> There are currently two ways to access the recursive stats via a standard 
-> shell.  The first simply sets the directory st_size value to the 
-> _recursive_ bytes ('rbytes') value (when the client is mounted with -o 
-> rbytes).  For example (watch the directory sizes),
-...
+> Just needs some code? 
 
-> Naturally, there are a few caveats:
-> 
->  - There is some built-in delay before statistics fully propagate up 
-> toward the root of the hierarchy.  Changes are propagated 
-> opportunistically when lock/lease state allows, with an upper bound of (by 
-> default) ~30 seconds for each level of directory nesting.
+No, it was rejected with the argument that in panic case, as less code
+as possible should be executed before kexec'ing the panic kernel.
 
-Having instant rctime would be very nice -- for stuff like locate and
-speeding up kde startup.
+See also: http://kerneltrap.org/node/14050 (for example)
 
-> I'm extremely interested in what people think of overloading the file 
-> system interface in this way.  Handy?  Crufty?  Dangerous?  Does anybody 
 
-Too ugly to live.
 
-What about new rstat() syscall?
-
+Bernhard
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Bernhard Walle, SUSE LINUX Products GmbH, Architecture Development
