@@ -1,46 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754871AbYHGVXv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757282AbYHGVYR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754871AbYHGVXv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Aug 2008 17:23:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753438AbYHGVWc
+	id S1757282AbYHGVYR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Aug 2008 17:24:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757452AbYHGVX3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Aug 2008 17:22:32 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:47391 "EHLO
-	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752336AbYHGVWb (ORCPT
+	Thu, 7 Aug 2008 17:23:29 -0400
+Received: from mail-in-14.arcor-online.net ([151.189.21.54]:47100 "EHLO
+	mail-in-14.arcor-online.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757446AbYHGVX2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Aug 2008 17:22:31 -0400
-Date: Thu, 7 Aug 2008 10:18:49 +0200
-From: Pavel Machek <pavel@suse.cz>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: kernel list <linux-kernel@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, jikos@suse.cz
-Subject: Re: 2.6.27-rc1: keyboard/mouse gone after s2ram
-Message-ID: <20080807081849.GA1688@elf.ucw.cz>
-References: <20080805211911.GA1574@elf.ucw.cz> <200808051911.45873.dmitry.torokhov@gmail.com>
+	Thu, 7 Aug 2008 17:23:28 -0400
+From: Bodo Eggert <7eggert@gmx.de>
+Subject: Re: [PATCH 0/5] ftrace: to kill a daemon
+To: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       David Miller <davem@davemloft.net>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Roland McGrath <roland@redhat.com>, Ulrich Drepper <drepper@redhat.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Gregory Haskins <ghaskins@novell.com>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       "Luis Claudio R. Goncalves" <lclaudio@uudg.org>,
+       Clark Williams <williams@redhat.com>
+Reply-To: 7eggert@gmx.de
+Date: Thu, 07 Aug 2008 23:28:12 +0200
+References: <aYipy-5FM-9@gated-at.bofh.it>
+User-Agent: KNode/0.10.4
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200808051911.45873.dmitry.torokhov@gmail.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Transfer-Encoding: 7Bit
+Message-Id: <E1KRD1p-0001SX-0p@be1.7eggert.dyndns.org>
+X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
+X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
+X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+Steven Rostedt <rostedt@goodmis.org> wrote:
 
-> > ...on thinkpad x60. I can still use power button to shut the machine
-> > down.
-> > 
-> > s2disk works okay.
-> > 
-> 
-> Does it help if you revert 6aabcdffd1a5f8f5b906696e58069c4f8fced542?
-> Can I get a log with i8042.debug please?
+> The idea I came
+> up with was to make a tmp.s file for every object just after it is compiled.
 
-It disappeared after 2.6.27-rc2 update. Sorry for noise.
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+make -j would cause these files to overwrite each other, wouldn't it?
+
+
