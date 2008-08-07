@@ -1,49 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751876AbYHGLt7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752567AbYHGLu2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751876AbYHGLt7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Aug 2008 07:49:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751441AbYHGJ0W
+	id S1752567AbYHGLu2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Aug 2008 07:50:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752237AbYHGJmt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Aug 2008 05:26:22 -0400
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:38767 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751365AbYHGJ0U (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Aug 2008 05:26:20 -0400
-Date: Thu, 7 Aug 2008 10:18:10 +0100
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kbuild <linux-kbuild@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>, Denis ChengRq <crquan@gmail.com>,
-       "Robert P. J. Day" <rpjday@crashcourse.ca>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [GIT PULL] kbuild fixes
-Message-ID: <20080807091810.GB14078@flint.arm.linux.org.uk>
-References: <20080806202738.GA20066@uranus.ravnborg.org>
+	Thu, 7 Aug 2008 05:42:49 -0400
+Received: from mga09.intel.com ([134.134.136.24]:49704 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751022AbYHGJmq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Aug 2008 05:42:46 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.31,319,1215414000"; 
+   d="scan'208";a="426904643"
+Subject: Re: [PATCH 4/6] kexec jump: in sync with hibernation implementation
+From: Huang Ying <ying.huang@intel.com>
+To: Pavel Machek <pavel@suse.cz>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>, nigel@nigel.suspend2.net,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Vivek Goyal <vgoyal@redhat.com>, mingo@elte.hu,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org,
+       Kexec Mailing List <kexec@lists.infradead.org>
+In-Reply-To: <20080807092241.GE372@atrey.karlin.mff.cuni.cz>
+References: <1218099932.5164.35.camel@caritas-dev.intel.com>
+	 <20080807092241.GE372@atrey.karlin.mff.cuni.cz>
+Content-Type: text/plain
+Date: Thu, 07 Aug 2008 17:33:12 +0800
+Message-Id: <1218101592.5164.43.camel@caritas-dev.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080806202738.GA20066@uranus.ravnborg.org>
-User-Agent: Mutt/1.4.2.1i
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 06, 2008 at 10:27:38PM +0200, Sam Ravnborg wrote:
-> Please pull following kbuild related fixes.
+On Thu, 2008-08-07 at 11:22 +0200, Pavel Machek wrote:
+> > Add device_pm_lock() and device_pm_unlock() in kernel_kexec() to be
+> > in sync with current hibernation implementation.
+> > 
+> > Signed-off-by: Huang Ying <ying.huang@intel.com>
+> > 
+> > ---
+> >  kernel/kexec.c |    2 ++
+> >  1 file changed, 2 insertions(+)
+> > 
+> > --- a/kernel/kexec.c
+> > +++ b/kernel/kexec.c
+> > @@ -1457,6 +1457,7 @@ int kernel_kexec(void)
+> >  		error = disable_nonboot_cpus();
+> >  		if (error)
+> >  			goto Resume_devices;
+> > +		device_pm_lock();
+> >  		local_irq_disable();
+> >  		/* At this point, device_suspend() has been called,
+> >  		 * but *not* device_power_down(). We *must*
+> > @@ -1485,6 +1486,7 @@ int kernel_kexec(void)
+> >  		device_power_up(PMSG_RESTORE);
+> >   Enable_irqs:
+> >  		local_irq_enable();
+> > +		device_pm_unlock();
+> >  		enable_nonboot_cpus();
+> >   Resume_devices:
+> >  		device_resume(PMSG_RESTORE);
+> > 
 > 
-> o Fix "make O=..." builds for arm
-> o update to for newer cscope
-> o patch-kernel fix (but I doubt it has many uses)
-> o small Kconfig clean-up
+> Would it be possible to create common function for hibernation and
+> kexec? Keeping complex stuff like this in sync is ugly.
 
-Note that I've also merged your tree into mine, so I can test my
-further asm-arm renames with something that works.  So far, it's
-looking good, thanks.
+Yes, it is ugly. But it is a little difficult to do that. Hibernation
+one is more complex than this one.
 
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+Best Regards,
+Huang Ying
+
+
