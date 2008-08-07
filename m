@@ -1,51 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753403AbYHGTZe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753814AbYHGTb7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753403AbYHGTZe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Aug 2008 15:25:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751476AbYHGTZ0
+	id S1753814AbYHGTb7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Aug 2008 15:31:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751547AbYHGTbv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Aug 2008 15:25:26 -0400
-Received: from rv-out-0506.google.com ([209.85.198.227]:60461 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751053AbYHGTZZ (ORCPT
+	Thu, 7 Aug 2008 15:31:51 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:34711 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751476AbYHGTbu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Aug 2008 15:25:25 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=ZoE/28jCy4v30kcqGrNBU1c+RuFd10CXqt0cyoPxsiLZi9tiXobWPL2bH3LJfPFTd8
-         Ozl3VlvI1Y8IMmYbFRY2fxO4LDDM5/YYHkkZrYmdgLs3ueUTbY8KPpMvursHD7Fe8zGm
-         4wlNzuq4k6sRI9z/wrbz6NU7lVi7nob2Kf2n8=
-Message-ID: <a4e6962a0808071225p218d5b8fs884eeccad020508d@mail.gmail.com>
-Date: Thu, 7 Aug 2008 14:25:25 -0500
-From: "Eric Van Hensbergen" <ericvh@gmail.com>
-To: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-Subject: Re: [ANNOUNCE] ACM Operating Systems Review issue on the Linux Kernel available
-In-Reply-To: <a4e6962a0808071134h7caa42feoa2cfea2c71a2be8@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 7 Aug 2008 15:31:50 -0400
+Date: Thu, 7 Aug 2008 12:31:48 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Ryan Hope <rmh3093@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [patch][reiser4] compile warning cleanups
+Message-Id: <20080807123148.e4fcb4ca.akpm@linux-foundation.org>
+In-Reply-To: <489B42DC.9060009@gmail.com>
+References: <48f7fe350808010633v3bfbb602x9995b74db323703f@mail.gmail.com>
+	<489B42DC.9060009@gmail.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <a4e6962a0808071134h7caa42feoa2cfea2c71a2be8@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 7, 2008 at 1:34 PM, Eric Van Hensbergen <ericvh@gmail.com> wrote:
-> We are pleased to announce the availability of the ACM Operating
-> Systems Review special topics Issue on Research and developments in
-> the Linux Kernel.  It is available, for free, from the ACM Archives
-> site:
->
-> http://portal.acm.org/toc.cfm?id=1400097
->
+On Thu, 07 Aug 2008 14:45:48 -0400
+Ryan Hope <rmh3093@gmail.com> wrote:
 
-There appears to be a problem with the permissions in the Archive such
-that the articles are not freely available yet.  This is being looked
-into.  We tested it, but from sites which already had negotiated
-access to the ACM Library -- I'll post an update when the situation is
-corrected.
+> Hopefully this is not wordwrapped this time...
 
-            -eric
+It is.
+
+> From: Ryan Hope <rmh3093@gmail.com>
+> Date: Fri, 1 Aug 2008 13:25:28 +0000 (-0400)
+> Subject: cleanup reiser4 warnings
+> X-Git-Url: 
+> http://zen-sources.org/cgi-bin/gitweb.cgi?p=kernel.git;a=commitdiff_plain;h=675342fe83269780f2699f47972d0059e13db0cc
+> 
+> cleanup reiser4 warnings
+> ---
+> 
+> diff --git a/fs/reiser4/plugin/file/cryptcompress.c 
+> b/fs/reiser4/plugin/file/cryptcompress.c
+> index 2e64374..7d3061d 100644
+> --- a/fs/reiser4/plugin/file/cryptcompress.c
+> +++ b/fs/reiser4/plugin/file/cryptcompress.c
+> @@ -821,7 +821,7 @@ static int need_cut_or_align(struct inode * inode,
+>   static void align_or_cut_overhead(struct inode * inode,
+>   				  struct cluster_handle * ch, rw_op rw)
+>   {
+> -	int oh;
+> +	unsigned int oh;
+>   	cipher_plugin * cplug = inode_cipher_plugin(inode);
+> 
+>   	assert("edward-1402", need_cipher(inode));
+> diff --git a/fs/reiser4/plugin/inode_ops.c b/fs/reiser4/plugin/inode_ops.c
+> index 6ac4d13..945a740 100644
+> --- a/fs/reiser4/plugin/inode_ops.c
+> +++ b/fs/reiser4/plugin/inode_ops.c
+> @@ -418,8 +418,7 @@ void *reiser4_follow_link_common(struct dentry 
+> *dentry, struct nameidata *nd)
+>    *
+>    * Uses generic function to check for rwx permissions.
+>    */
+> -int reiser4_permission_common(struct inode *inode, int mask,
+> -			      struct nameidata *nameidata)
+> +int reiser4_permission_common(struct inode *inode, int mask)
+>   {
+>   	return generic_permission(inode, mask, NULL);
+>   }
+> diff --git a/fs/reiser4/plugin/object.h b/fs/reiser4/plugin/object.h
+> index 63abb07..88a53a5 100644
+> --- a/fs/reiser4/plugin/object.h
+> +++ b/fs/reiser4/plugin/object.h
+> @@ -25,8 +25,7 @@ int reiser4_mknod_common(struct inode *parent, struct 
+> dentry *dentry,
+
+here.
+
+>   int reiser4_rename_common(struct inode *old_dir, struct dentry *old_name,
+>   			  struct inode *new_dir, struct dentry *new_name);
+>   void *reiser4_follow_link_common(struct dentry *, struct nameidata *data);
+> -int reiser4_permission_common(struct inode *, int mask,
+> -			      struct nameidata *nameidata);
+> +int reiser4_permission_common(struct inode *, int mask);
+
+And it is space-stuffed.
+
+Documentation/email-clients.txt has some thunderbird help.
+
+>   int reiser4_setattr_common(struct dentry *, struct iattr *);
+>   int reiser4_getattr_common(struct vfsmount *mnt, struct dentry *,
+>   			   struct kstat *);
+
+I already fixed up and applied this, didn't I?
