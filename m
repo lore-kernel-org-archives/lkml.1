@@ -1,73 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757453AbYHGMwe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756155AbYHGMwK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757453AbYHGMwe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Aug 2008 08:52:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756604AbYHGMvs
+	id S1756155AbYHGMwK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Aug 2008 08:52:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754598AbYHGMtz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Aug 2008 08:51:48 -0400
-Received: from agminet02.oracle.com ([141.146.126.229]:61976 "EHLO
-	agminet02.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756524AbYHGMvq (ORCPT
+	Thu, 7 Aug 2008 08:49:55 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:37394 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754166AbYHGMtv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Aug 2008 08:51:46 -0400
-Subject: Re: Btrfs v0.16 released
-From: Chris Mason <chris.mason@oracle.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: linux-btrfs <linux-btrfs@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>
-In-Reply-To: <1218100139.8625.7.camel@twins>
-References: <1217962876.15342.33.camel@think.oraclecorp.com>
-	 <1218100139.8625.7.camel@twins>
-Content-Type: text/plain
-Date: Thu, 07 Aug 2008 06:34:02 -0400
-Message-Id: <1218105242.15342.184.camel@think.oraclecorp.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Thu, 7 Aug 2008 08:49:51 -0400
+Date: Thu, 7 Aug 2008 11:28:00 +0200
+From: Pavel Machek <pavel@suse.cz>
+To: tvrtko.ursulin@sophos.com
+Cc: Arjan van de Ven <arjan@infradead.org>,
+       "Press, Jonathan" <Jonathan.Press@ca.com>, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org, malware-list@lists.printk.net,
+       Rik van Riel <riel@redhat.com>
+Subject: Re: [malware-list] [RFC 0/5] [TALPA] Intro to a linuxinterfaceforon access scanning
+Message-ID: <20080807092800.GA22222@atrey.karlin.mff.cuni.cz>
+References: <20080806064418.6afa0672@infradead.org> <20080806141656.8B44B2FE94A@pmx1.sophos.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080806141656.8B44B2FE94A@pmx1.sophos.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-08-07 at 11:08 +0200, Peter Zijlstra wrote:
-> On Tue, 2008-08-05 at 15:01 -0400, Chris Mason wrote:
+Hi!
+
+> Problems with inotify as far as I know:
 > 
-> > * Fine grained btree locking.  The large fs_mutex is finally gone.
-> > There is still some work to do on the locking during extent allocation,
-> > but the code is much more scalable than it was.
+> You can't do something like inotify("/") (made up API) but you have to set 
+> up a watch for every directory you wan't to watch. That seems like a waste 
+> of resources.
 > 
-> Cool - will try to find a cycle to stare at the code ;-)
+> Then you get back a file name, if you wan't to report it or attempt* to 
+> scan it you have to build a pathname yourself, which means you have to 
+> maintain the whole tree of names in memory. Even bigger waste.
 > 
-
-I was able to get it mostly lockdep complaint by using mutex_lock_nested
-based on the level of the btree I was locking.  My allocation mutex is a
-little of a problem for lockdep though.
-
-> > * Helper threads for checksumming and other background tasks.  Most CPU
-> > intensive operations have been pushed off to helper threads to take
-> > advantage of SMP machines.  Streaming read and write throughput now
-> > scale to disk speed even with checksumming on.
+> When I say attempt to scan it above I mean that we are back into the 
+> pathanme teritorry. It is not guaranteed we will be able to open and scan 
+> using that pathname. I don't know what inotify reports with chroots and 
+> private namespaces, but it can certainly fail with NFS and root_squash. So 
+> it is less effective as well as being resource intensive.
 > 
-> Can this lead to the same Priority Inversion issues as seen with
-> kjournald?
-> 
+> I think this is a good amount of flaws which shows inotify isn't really 
+> ideal.
 
-Yes, although in general only the helper threads end up actually doing
-the IO for writes.  Unfortunately, they are almost but not quite an
-elevator.  It is tempting to try sorting the bios on the helper queues
-etc.  But I haven't done that because it gets into starvation and other
-fun.
+Not ideal, but looks like good enough, and could certainly be
+improved. If it is secure-enough for you (I think it is), that looks
+like a way to go.
 
-I haven't done any real single cpu testing, it may make sense in those
-workloads to checksum and submit directly in the calling context.  But
-real single cpu boxes are harder to come by these days.
+(Plus, such improvements would actually be very welcome).
+									Pavel
 
--chris
-
-
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
