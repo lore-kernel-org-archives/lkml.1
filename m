@@ -1,142 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755572AbYHGUQT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754637AbYHGUVX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755572AbYHGUQT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Aug 2008 16:16:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753033AbYHGUQK
+	id S1754637AbYHGUVX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Aug 2008 16:21:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753128AbYHGUVN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Aug 2008 16:16:10 -0400
-Received: from mga09.intel.com ([134.134.136.24]:25476 "EHLO mga09.intel.com"
+	Thu, 7 Aug 2008 16:21:13 -0400
+Received: from sabe.cs.wisc.edu ([128.105.6.20]:39940 "EHLO sabe.cs.wisc.edu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753022AbYHGUQJ convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Aug 2008 16:16:09 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.31,322,1215414000"; 
-   d="scan'208";a="324155914"
-From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Alexander Huemer <alexander.huemer@sbg.ac.at>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Andi Kleen <andi@firstfloor.org>, Yinghai Lu <yhlu.kernel@gmail.com>
-Date: Thu, 7 Aug 2008 13:15:16 -0700
-Subject: RE: 2.6.27-rc1 mtrr fixes do not work
-Thread-Topic: 2.6.27-rc1 mtrr fixes do not work
-Thread-Index: Acj4yeoXuI2mWXXJR36Y1rirjU2uagAAEfIg
-Message-ID: <7E82351C108FA840AB1866AC776AEC46092119D3@orsmsx505.amr.corp.intel.com>
-References: <4899AF8E.20105@sbg.ac.at> <200808072214.28922.rjw@sisk.pl>
-In-Reply-To: <200808072214.28922.rjw@sisk.pl>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	id S1752629AbYHGUVM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Aug 2008 16:21:12 -0400
+X-Greylist: delayed 554 seconds by postgrey-1.27 at vger.kernel.org; Thu, 07 Aug 2008 16:21:12 EDT
+Message-ID: <489B5615.7090902@cs.wisc.edu>
+Date: Thu, 07 Aug 2008 15:07:49 -0500
+From: Mike Christie <michaelc@cs.wisc.edu>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
+To: Divy Le Ray <divy@chelsio.com>
+CC: Roland Dreier <rdreier@cisco.com>, Jeff Garzik <jgarzik@pobox.com>,
+       Karen Xie <kxie@chelsio.com>, netdev@vger.kernel.org,
+       open-iscsi@googlegroups.com, davem@davemloft.net,
+       Steve Wise <swise@opengridcomputing.com>, daisyc@us.ibm.com,
+       wenxiong@us.ibm.com, bhua@us.ibm.com,
+       Dimitrios Michailidis <dm@chelsio.com>,
+       Casey Leedom <leedom@chelsio.com>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC][PATCH 1/1] cxgb3i: cxgb3 iSCSI initiator
+References: <200807300019.m6U0JkdY012558@localhost.localdomain> <aday73jxdfs.fsf@cisco.com> <200807311752.00911.divy@chelsio.com> <200808071145.03848.divy@chelsio.com>
+In-Reply-To: <200808071145.03848.divy@chelsio.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Divy Le Ray wrote:
+> On Thursday 31 July 2008 05:51:59 pm Divy Le Ray wrote:
+>> On Wednesday 30 July 2008 02:35:51 pm Roland Dreier wrote:
+>>>  > * From a networking standpoint, our main concern becomes how this
+>>>  > interacts with the networking stack.  In particular, I'm concerned
+>>>  > based on reading the source that this driver uses "TCP port stealing"
+>>>  > rather than using a totally separate MAC address (and IP).
+>>>  >
+>>>  > Stealing a TCP port on an IP/interface already assigned is a common
+>>>  > solution in this space, but also a flawed one.  Precisely because the
+>>>  > kernel and applications are unaware of this "special, magic TCP port"
+>>>  > you open the potential for application problems that are very
+>>>  > difficult for an admin to diagnose based on observed behavior.
+>>>
+>>> That's true, but using a separate MAC and IP opens up a bunch of other
+>>> operational problems.  I don't think the right answer for iSCSI offload
+>>> is clear yet.
+>>>
+>>>  - R.
+>> Hi Jeff,
+>>
+>> We've considered the approach of having a separate IP/MAC addresses to
+>> manage iSCSI connections. In such a context, the stack would have to be
+>> unaware of this iSCSI specific IP address. The iSCSI driver would then have
+>> to implement at least its own ARP reply mechanism. DHCP too would have to
+>> be managed separately. Most network setting/monitoring tools would also be
+>> unavailable.
+>>
+>> The open-iscsi initiator is not a huge consumer of TCP connections,
+>> allocating a TCP port from the stack would be reasonable in terms of
+>> resources in this context. It is however unclear if it is an acceptable
+>> approach.
+>>
+>> Our current implementation was designed to be the most tolerable one
+>> within the constraints - real or expected - aforementioned.
+>>
+> 
+> Hi Jeff,
+> 
+> Mike Christie will not merge this code until he has an explicit 
+> acknowledgement from netdev.
+> 
+> As you mentioned, the port stealing approach we've taken has its issues.
+> We consequently analyzed your suggestion to use a different IP/MAC address for 
+> iSCSI and it raises other tough issues (separate ARP and DHCP management, 
+> unavailability of common networking tools).
 
-Adding Yinghai.
+If the iscsi tools could not have to deal with networking issues that 
+are already handled by other networking tools it would great for the 
+iscsi users so they do not have to learn new tools. Maybe we could 
+somehow hook into the existing network tools so they support these iscsi 
+hbas as well as normal NICs. Would it be possible to have the iscsi hbas 
+export the necessary network interfaces so that existing network tools 
+can manage them?
 
->-----Original Message-----
->From: Rafael J. Wysocki [mailto:rjw@sisk.pl]
->Sent: Thursday, August 07, 2008 1:14 PM
->To: Alexander Huemer
->Cc: linux-kernel@vger.kernel.org; Andi Kleen; Pallipadi, Venkatesh
->Subject: Re: 2.6.27-rc1 mtrr fixes do not work
->
->[Adding CCs.]
->
->On Wednesday, 6 of August 2008, Alexander Huemer wrote:
->> hi,
->>
->> mtrr is wrong on my machine. the fixes of 2.6.27-rc1 do not
->seem to work.
->> bios is the newest version, mainboard vendor says it's not
->their fault.
->> mainboard is tyan i5000pw.
->> please tell me how i can help and cc me on answers, i am not
->subscribed.
->>
->> here is some data:
->>
->> seaburg ~ # grep -E "(^\(WW\)|^\(EE\)|^\(NI\)|^\(??\))"
->/var/log/Xorg.0.log
->> (WW) VESA(0): Failed to set up write-combining range
->(0xd8000000,0x2000000)
->> seaburg ~ # dmesg|grep mtrr
->> Command line: root=/dev/sda1
->video=uvesafb:1280x1024-24@97,mtrr:3,ywrap
->> mtrr_gran_size=64m mtrr_chunk_size=1024m
->> Kernel command line: root=/dev/sda1
->> video=uvesafb:1280x1024-24@97,mtrr:3,ywrap mtrr_gran_size=64m
->> mtrr_chunk_size=1024m
->> mtrr: type mismatch for d8000000,800000 old: write-back new:
->write-combining
->> mtrr: type mismatch for d8000000,400000 old: write-back new:
->write-combining
->> mtrr: type mismatch for d8000000,200000 old: write-back new:
->write-combining
->> mtrr: type mismatch for d8000000,100000 old: write-back new:
->write-combining
->> mtrr: type mismatch for d8000000,80000 old: write-back new:
->write-combining
->> mtrr: type mismatch for d8000000,40000 old: write-back new:
->write-combining
->> mtrr: type mismatch for d8000000,20000 old: write-back new:
->write-combining
->> mtrr: type mismatch for d8000000,10000 old: write-back new:
->write-combining
->> mtrr: type mismatch for d8000000,8000 old: write-back new:
->write-combining
->> mtrr: type mismatch for d8000000,4000 old: write-back new:
->write-combining
->> mtrr: type mismatch for d8000000,2000 old: write-back new:
->write-combining
->> mtrr: type mismatch for d8000000,1000 old: write-back new:
->write-combining
->> mtrr: type mismatch for d8000000,2000000 old: write-back new:
->> write-combining
->> seaburg ~ # cat /proc/mtrr
->> reg00: base=0x00000000 (   0MB), size=198656MB: write-back, count=1
->> reg01: base=0x80000000 (2048MB), size=197632MB: write-back, count=1
->> reg02: base=0x100000000 (4096MB), size=197632MB: write-back, count=1
->> seaburg ~ # grep MemTotal /proc/meminfo
->> MemTotal:      4041308 kB
->> seaburg ~ # lspci -v | grep -A10 VGA
->> 20:05.0 VGA compatible controller: XGI Technology Inc.
->(eXtreme Graphics
->> Innovation) Volari Z7 (prog-if 00 [VGA controller])
->>         Subsystem: XGI Technology Inc. (eXtreme Graphics Innovation)
->> Volari Z7
->>         Flags: 66MHz, medium devsel
->>         BIST result: 00
->>         Memory at d8000000 (32-bit, prefetchable) [size=64M]
->>         Memory at dc300000 (32-bit, non-prefetchable) [size=256K]
->>         I/O ports at 3000 [size=128]
->>         Capabilities: [40] Power Management version 2
->>
->> seaburg ~ # zcat /proc/config.gz | grep MTRR
->> CONFIG_MTRR=y
->> CONFIG_MTRR_SANITIZER=y
->> CONFIG_MTRR_SANITIZER_ENABLE_DEFAULT=1
->> CONFIG_MTRR_SANITIZER_SPARE_REG_NR_DEFAULT=1
->> seaburg ~ # uname -a
->> Linux seaburg 2.6.27-rc1-blackbit #3 SMP Wed Aug 6 00:34:51 CEST 2008
->> x86_64 Intel(R) Xeon(R) CPU E5420 @ 2.50GHz GenuineIntel GNU/Linux
->> seaburg ~ #
->>
->>
->> --
->> To unsubscribe from this list: send the line "unsubscribe
->linux-kernel" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->> Please read the FAQ at  http://www.tux.org/lkml/
->>
->>
->
->
->
+If it comes down to it and your port stealing implementation is not 
+acceptable like how broadcom's was not, I will be ok with doing some 
+special iscsi network tools. Or instead of special iscsi tools, is there 
+something that the RDMA/iWarp guys are using that we can share?
