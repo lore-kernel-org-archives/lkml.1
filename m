@@ -1,68 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754792AbYHGQLb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755364AbYHGQMd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754792AbYHGQLb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Aug 2008 12:11:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752700AbYHGQLX
+	id S1755364AbYHGQMd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Aug 2008 12:12:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752646AbYHGQMZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Aug 2008 12:11:23 -0400
-Received: from 136-022.dsl.labridge.com ([206.117.136.22]:4569 "EHLO
-	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752668AbYHGQLW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Aug 2008 12:11:22 -0400
-Subject: Re: [patch 1/3] kmsg: Kernel message catalog macros.
-From: Joe Perches <joe@perches.com>
-To: schwidefsky@de.ibm.com
-Cc: Greg KH <gregkh@suse.de>, Kay Sievers <kay.sievers@vrfy.org>,
-       linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
-       lf_kernel_messages@lists.linux-foundation.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Michael Holzheu <holzheu@de.ibm.com>, Gerrit Huizenga <gh@us.ibm.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>, Jan Kara <jack@suse.cz>,
-       Pavel Machek <pavel@ucw.cz>, Sam Ravnborg <sam@ravnborg.org>,
-       Jochen =?ISO-8859-1?Q?Vo=DF?= <jochen.voss@googlemail.com>,
-       Kunai Takashi <kunai@linux-foundation.jp>,
-       Tim Bird <tim.bird@am.sony.com>
-In-Reply-To: <1218097901.1033.10.camel@localhost>
-References: <20080730165656.118280544@de.ibm.com>
-	 <20080730171156.824640459@de.ibm.com>
-	 <3ae72650807301502h3e54e80yb405af7192048b89@mail.gmail.com>
-	 <20080730220432.GA24800@suse.de> <1217495404.8555.20.camel@localhost>
-	 <20080805223117.GA6552@suse.de> <1218011716.20769.12.camel@localhost>
-	 <20080806200721.GA30086@suse.de>  <1218097901.1033.10.camel@localhost>
-Content-Type: text/plain
-Date: Thu, 07 Aug 2008 08:59:30 -0700
-Message-Id: <1218124771.5882.37.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3-1.3mdv2008.0 
-Content-Transfer-Encoding: 7bit
+	Thu, 7 Aug 2008 12:12:25 -0400
+Received: from 8bytes.org ([88.198.83.132]:33648 "EHLO 8bytes.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751693AbYHGQMY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Aug 2008 12:12:24 -0400
+Date: Thu, 7 Aug 2008 18:12:22 +0200
+From: Joerg Roedel <joro@8bytes.org>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Tony Luck <tony.luck@intel.com>, linux-ia64@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [IA64] defconfig build failure in current linus.git
+Message-ID: <20080807161222.GT31439@8bytes.org>
+References: <20080807101015.GB4342@8bytes.org> <20080807143303.GA9692@cs181140183.pp.htv.fi>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080807143303.GA9692@cs181140183.pp.htv.fi>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-08-07 at 10:31 +0200, Martin Schwidefsky wrote:
-> On Wed, 2008-08-06 at 13:07 -0700, Greg KH wrote:
-> > No, I mean use dev_printk() as the base for your logging macro.  Add
-> > your message tag as the first field after the dev_printk() information.
-> Hmm, you are proposing to introduce a second format for the kmsg
-> messages to avoid the need for some more printk wrapper macros. To me it
-> seems that this has two problems:
-> 1) The message tag is for the user of the system. If it does not have a
-> fixed position it gets confusing.
+On Thu, Aug 07, 2008 at 05:33:04PM +0300, Adrian Bunk wrote:
+> On Thu, Aug 07, 2008 at 12:10:15PM +0200, Joerg Roedel wrote:
+> > Hi,
+> > 
+> > I just tried to build the current linus.git kernel for IA64 and got the
+> > following build errors:
+> > 
+> >   CC      drivers/acpi/utils.o
+> > In file included from /data2/repos/tip/linux.trees.git/include/acpi/acpi.h:54,
+> >                  from /data2/repos/tip/linux.trees.git/include/acpi/acpi_bus.h:31,
+> >                  from /data2/repos/tip/linux.trees.git/drivers/acpi/utils.c:30:
+> > /data2/repos/tip/linux.trees.git/include/acpi/platform/acenv.h:175:1: warning: "COMPILER_DEPENDENT_INT64" redefined
+> >...
+> 
+> If you get this error your compiler does not define __linux__ .
+> 
+> What compiler are you using?
 
-I think the message tag today is not useful for a user.
+Its a self-build gcc-4.3.1 cross compiler on amd64. In the meantime it
+worked with a gcc 3.4.5. I will check if my self-build compiler is
+messed up.
 
-It seems a barely useful maintainer value.
-
-Perhaps the message tag allows for run-time language
-translation and maybe a bit better selective logging.
-
-> 2) The message tag for a driver message usually already includes the
-> driver name, the dev_printk will print it again. This is ugly and
-> reduces the quality of the message.
-
-Ugly is a beholder problem.
-
-Either printk or dev_printk could reorder the output.
-
+Joerg
 
