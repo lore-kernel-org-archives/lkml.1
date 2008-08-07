@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756357AbYHGMb2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756783AbYHGMcx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756357AbYHGMb2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Aug 2008 08:31:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757125AbYHGMah
+	id S1756783AbYHGMcx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Aug 2008 08:32:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756299AbYHGMax
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Aug 2008 08:30:37 -0400
-Received: from mga09.intel.com ([134.134.136.24]:58819 "EHLO mga09.intel.com"
+	Thu, 7 Aug 2008 08:30:53 -0400
+Received: from mga02.intel.com ([134.134.136.20]:31238 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757119AbYHGMaf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Aug 2008 08:30:35 -0400
+	id S1757265AbYHGMaw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Aug 2008 08:30:52 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.31,319,1215414000"; 
-   d="scan'208";a="426898511"
-Subject: [PATCH 1/6] kexec jump: clean up #ifdef and comments
+   d="scan'208";a="426898574"
+Subject: [PATCH 6/6] kexec jump: fix for ftrace
 From: Huang Ying <ying.huang@intel.com>
 To: "Eric W. Biederman" <ebiederm@xmission.com>, Pavel Machek <pavel@ucw.cz>,
        nigel@nigel.suspend2.net, "Rafael J. Wysocki" <rjw@sisk.pl>,
@@ -22,8 +22,8 @@ To: "Eric W. Biederman" <ebiederm@xmission.com>, Pavel Machek <pavel@ucw.cz>,
 Cc: linux-kernel@vger.kernel.org,
        Kexec Mailing List <kexec@lists.infradead.org>
 Content-Type: text/plain
-Date: Thu, 07 Aug 2008 17:05:23 +0800
-Message-Id: <1218099923.5164.32.camel@caritas-dev.intel.com>
+Date: Thu, 07 Aug 2008 17:05:37 +0800
+Message-Id: <1218099937.5164.37.camel@caritas-dev.intel.com>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
@@ -31,68 +31,82 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Move if (kexec_image->preserve_context) { ... } into #ifdef
-CONFIG_KEXEC_JUMP to make code looks cleaner.
-
-Fix no longer correct comments of kernel_kexec().
+Restore ftrace after jumping back from kexeced kernel.
 
 Signed-off-by: Huang Ying <ying.huang@intel.com>
 
 ---
- kernel/kexec.c |   11 +++++------
- 1 file changed, 5 insertions(+), 6 deletions(-)
+ arch/x86/kernel/machine_kexec_32.c |   19 +++++++++++++++++++
+ kernel/kexec.c                     |    2 --
+ 2 files changed, 19 insertions(+), 2 deletions(-)
 
---- a/kernel/kexec.c
-+++ b/kernel/kexec.c
-@@ -1427,8 +1427,6 @@ static int __init crash_save_vmcoreinfo_
- module_init(crash_save_vmcoreinfo_init)
+--- a/arch/x86/kernel/machine_kexec_32.c
++++ b/arch/x86/kernel/machine_kexec_32.c
+@@ -12,6 +12,7 @@
+ #include <linux/init.h>
+ #include <linux/numa.h>
+ #include <linux/ftrace.h>
++#include <linux/suspend.h>
  
- /**
-- *	kernel_kexec - reboot the system
-- *
-  *	Move into place and start executing a preloaded standalone
-  *	executable.  If nothing was preloaded return an error.
-  */
-@@ -1443,8 +1441,8 @@ int kernel_kexec(void)
- 		goto Unlock;
- 	}
+ #include <asm/pgtable.h>
+ #include <asm/pgalloc.h>
+@@ -117,6 +118,7 @@ void machine_kexec(struct kimage *image)
+ {
+ 	unsigned long page_list[PAGES_NR];
+ 	void *control_page;
++	int save_ftrace_enabled;
+ 	asmlinkage unsigned long
+ 		(*relocate_kernel_ptr)(unsigned long indirection_page,
+ 				       unsigned long control_page,
+@@ -124,7 +126,15 @@ void machine_kexec(struct kimage *image)
+ 				       unsigned int has_pae,
+ 				       unsigned int preserve_context);
  
--	if (kexec_image->preserve_context) {
- #ifdef CONFIG_KEXEC_JUMP
-+	if (kexec_image->preserve_context) {
- 		mutex_lock(&pm_mutex);
- 		pm_prepare_console();
- 		error = freeze_processes();
-@@ -1471,8 +1469,9 @@ int kernel_kexec(void)
- 		if (error)
- 			goto Enable_irqs;
- 		save_processor_state();
-+	} else
- #endif
--	} else {
-+	{
- 		blocking_notifier_call_chain(&reboot_notifier_list,
- 					     SYS_RESTART, NULL);
- 		system_state = SYSTEM_RESTART;
-@@ -1484,8 +1483,8 @@ int kernel_kexec(void)
- 
- 	machine_kexec(kexec_image);
- 
--	if (kexec_image->preserve_context) {
- #ifdef CONFIG_KEXEC_JUMP
-+	if (kexec_image->preserve_context) {
- 		restore_processor_state();
- 		device_power_up(PMSG_RESTORE);
-  Enable_irqs:
-@@ -1499,8 +1498,8 @@ int kernel_kexec(void)
-  Restore_console:
- 		pm_restore_console();
- 		mutex_unlock(&pm_mutex);
--#endif
- 	}
++#ifdef CONFIG_KEXEC_JUMP
++	if (kexec_image->preserve_context)
++		save_processor_state();
++#endif
++
++#ifdef CONFIG_FTRACE
++	save_ftrace_enabled = ftrace_enabled;
+ 	tracer_disable();
 +#endif
  
-  Unlock:
- 	xchg(&kexec_lock, 0);
+ 	/* Interrupts aren't acceptable while we reboot */
+ 	raw_local_irq_disable();
+@@ -182,6 +192,15 @@ void machine_kexec(struct kimage *image)
+ 					   (unsigned long)page_list,
+ 					   image->start, cpu_has_pae,
+ 					   image->preserve_context);
++
++#ifdef CONFIG_KEXEC_JUMP
++	if (kexec_image->preserve_context)
++		restore_processor_state();
++#endif
++
++#ifdef CONFIG_FTRACE
++	ftrace_enabled = save_ftrace_enabled;
++#endif
+ }
+ 
+ void arch_crash_save_vmcoreinfo(void)
+--- a/kernel/kexec.c
++++ b/kernel/kexec.c
+@@ -1469,7 +1469,6 @@ int kernel_kexec(void)
+ 		error = device_power_down(PMSG_FREEZE);
+ 		if (error)
+ 			goto Enable_irqs;
+-		save_processor_state();
+ 	} else
+ #endif
+ 	{
+@@ -1482,7 +1481,6 @@ int kernel_kexec(void)
+ 
+ #ifdef CONFIG_KEXEC_JUMP
+ 	if (kexec_image->preserve_context) {
+-		restore_processor_state();
+ 		device_power_up(PMSG_RESTORE);
+  Enable_irqs:
+ 		local_irq_enable();
 
 
