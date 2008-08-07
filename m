@@ -1,68 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755468AbYHGMlv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758377AbYHGMnL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755468AbYHGMlv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Aug 2008 08:41:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752202AbYHGMlk
+	id S1758377AbYHGMnL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Aug 2008 08:43:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753108AbYHGMm4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Aug 2008 08:41:40 -0400
-Received: from viefep18-int.chello.at ([213.46.255.22]:10695 "EHLO
-	viefep18-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752192AbYHGMlj (ORCPT
+	Thu, 7 Aug 2008 08:42:56 -0400
+Received: from Chamillionaire.breakpoint.cc ([85.10.199.196]:43815 "EHLO
+	Chamillionaire.breakpoint.cc" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751159AbYHGMmz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Aug 2008 08:41:39 -0400
-X-SourceIP: 80.57.229.25
-Subject: Re: [RFC][PATCH 9/7] mm: fix mm_take_all_locks() locking order
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Hugh Dickins <hugh@veritas.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, jeremy@goop.org, mingo@elte.hu,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       davej@redhat.com
-In-Reply-To: <Pine.LNX.4.64.0808071257200.4594@blonde.site>
-References: <20080804130317.994042639@chello.nl>
-	 <1218108349.8625.25.camel@twins>
-	 <Pine.LNX.4.64.0808071257200.4594@blonde.site>
-Content-Type: text/plain
-Date: Thu, 07 Aug 2008 14:41:21 +0200
-Message-Id: <1218112881.8625.33.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 7 Aug 2008 08:42:55 -0400
+Date: Thu, 7 Aug 2008 14:42:43 +0200
+From: Sebastian Siewior <sebastian@breakpoint.cc>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Adrian Bunk <bunk@kernel.org>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>, gerg@uclinux.org
+Subject: Re: [2.6.28 parch] the scheduled SERIAL_COLDFIRE removal
+Message-ID: <20080807124243.GA3037@Chamillionaire.breakpoint.cc>
+References: <20080806211929.GB1702@cs181140183.pp.htv.fi> <20080807123446.26ed37c3@lxorguk.ukuu.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <20080807123446.26ed37c3@lxorguk.ukuu.org.uk>
+X-Key-Id: FE3F4706
+X-Key-Fingerprint: FFDA BBBB 3563 1B27 75C9  925B 98D5 5C1C FE3F 4706
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-08-07 at 13:14 +0100, Hugh Dickins wrote:
-> On Thu, 7 Aug 2008, Peter Zijlstra wrote:
-> > 
-> > Which the locking hierarchy in mm/rmap.c confirms as 'valid'.
-> > 
-> > Although I don't think there are any users of these two locks that don't
-> > hold the mmap_sem, therefore the nesting is strictly ok, but since we
-> > already have an established order, we might as well respect it.
-> 
-> Yes, I agree.
-> 
-> > Fix this by first taking all the mapping->i_mmap_lock instances and then
-> > take all anon_vma->lock instances.
-> 
-> Okay.  I'd have preferred taking anon_vma lock after i_mmap_lock
-> each time around the loop, but imagine that's just as problematic
-> for lockdep as the original.
+* Alan Cox | 2008-08-07 12:34:46 [+0100]:
 
-I'm a little confused as to what you mean here, are you suggesting:
+>On Thu, 7 Aug 2008 00:19:29 +0300
+>Adrian Bunk <bunk@kernel.org> wrote:
+>
+>> This patch contains the scheduled removal of the obsolete 
+>> SERIAL_COLDFIRE driver.
+>
+>Added to the ttydev tree
 
-  for_each_vma() {
-    if (file)
-      vm_lock_mapping();
-    if (anon)
-      vm_lock_anon();
-  }
+I CCed Greg, the m68knommu maintainer, so he knows what is going on :)
 
-?
-
-That can still create the inverse lock order due to each vma being only
-of a single type, and therefore the lock order is set by the vma order,
-which can be anything.
-
-
+Sebastian
