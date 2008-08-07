@@ -1,62 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756687AbYHGDe5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756735AbYHGDoY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756687AbYHGDe5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Aug 2008 23:34:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753474AbYHGDer
+	id S1756735AbYHGDoY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Aug 2008 23:44:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753799AbYHGDoN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Aug 2008 23:34:47 -0400
-Received: from smtp119.sbc.mail.sp1.yahoo.com ([69.147.64.92]:27256 "HELO
-	smtp119.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753310AbYHGDeq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Aug 2008 23:34:46 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=HslJbfwLUa5wTAzKYo7zMT2CEbdtA+qJsO+K0XtIcA0Cn/Hy0RoNj8IyV8t/5jglQozcLRV+Av7FmkxAEFLGzMxT/sVRetF9xRQoFEODtnBK9qlPO/nhvyf2EyfiNEq4qUN3sySDzYD97eF+Spg0tdVtVLmkje+PqzEtP0vGA/A=  ;
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Simon Arlott <simon@fire.lp0.eu>
-Subject: Re: [PATCH RFC] USB: Add HCD fastboot
-Date: Wed, 6 Aug 2008 20:34:43 -0700
-User-Agent: KMail/1.9.9
-Cc: Alan Stern <stern@rowland.harvard.edu>,
-       Rene Herman <rene.herman@keyaccess.nl>,
-       Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
-       mingo@elte.hu, Daniel Walker <dwalker@mvista.com>,
-       USB list <linux-usb@vger.kernel.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-References: <Pine.LNX.4.44L0.0807311510220.5019-100000@iolanthe.rowland.org> <4899F035.9040003@simon.arlott.org.uk>
-In-Reply-To: <4899F035.9040003@simon.arlott.org.uk>
+	Wed, 6 Aug 2008 23:44:13 -0400
+Received: from ns2.suse.de ([195.135.220.15]:53518 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753686AbYHGDoN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Aug 2008 23:44:13 -0400
+Date: Wed, 6 Aug 2008 20:40:49 -0700
+From: Greg KH <gregkh@suse.de>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, bwalle@suse.de,
+       greg@kroah.com, hugh@veritas.com, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org, haveblue@us.ibm.com
+Subject: Re: linux-next: Tree for July 29
+Message-ID: <20080807034049.GC3495@suse.de>
+References: <20080729172337.b3d74100.sfr@canb.auug.org.au> <20080730090650.79a5a749@kopernikus.site> <20080730021947.def99edc.akpm@linux-foundation.org> <200807302127.42148.bzolnier@gmail.com> <20080730130419.49986a25.akpm@linux-foundation.org> <20080731094105.f6bec082.sfr@canb.auug.org.au> <20080730234419.GA12070@suse.de> <20080807110844.a912483a.sfr@canb.auug.org.au>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200808062034.43899.david-b@pacbell.net>
+In-Reply-To: <20080807110844.a912483a.sfr@canb.auug.org.au>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 06 August 2008, Simon Arlott wrote:
-> +ifndef CONFIG_USB_FASTBOOT
-> +  obj-y                                += $(tmp-y)
-> +endif
->  
->  obj-$(CONFIG_USB_ACM)          += class/
->  obj-$(CONFIG_USB_PRINTER)      += class/
-> @@ -34,3 +40,7 @@ obj-$(CONFIG_USB)             += misc/
->  
->  obj-$(CONFIG_USB_ATM)          += atm/
->  obj-$(CONFIG_USB_SPEEDTOUCH)   += atm/
-> +
-> +ifdef CONFIG_USB_FASTBOOT
-> +  obj-y                                += $(tmp-y)
-> +endif
+On Thu, Aug 07, 2008 at 11:08:44AM +1000, Stephen Rothwell wrote:
+> HI Greg,
+> 
+> On Wed, 30 Jul 2008 16:44:19 -0700 Greg KH <gregkh@suse.de> wrote:
+> >
+> > On Thu, Jul 31, 2008 at 09:41:05AM +1000, Stephen Rothwell wrote:
+> > > Hi Andrew,
+> > > 
+> > > On Wed, 30 Jul 2008 13:04:19 -0700 Andrew Morton <akpm@linux-foundation.org> wrote:
+> > > >
+> > > > The offending patch has just got itself turfed from linux-next so my
+> > > > fix now has nothing to fix.
+> > > > 
+> > > > We'll see what happens!
+> > > 
+> > > I will put Dave's patch back with yours on top of it (hoping that Greg
+> > > will take your patch).
+> > 
+> > Greg will, it's in my queue.
+> 
+> This is still not in your patch series ...  summary email with patch
+> repeated below.
 
-If you want to do such stuff, don't be conditional.
-Just change it so USB is *always* earlier.
+Just went in about 3 hours ago :)
 
-We really don't need to make boot sequences become
-even harder to understand/predict.
+I merged it with the original, that's the best way to do it.
 
+thanks,
+
+greg k-h
