@@ -1,64 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756878AbYHGV5V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757563AbYHGV5w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756878AbYHGV5V (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Aug 2008 17:57:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751885AbYHGV5N
+	id S1757563AbYHGV5w (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Aug 2008 17:57:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753502AbYHGV5j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Aug 2008 17:57:13 -0400
-Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:37269 "EHLO
-	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751344AbYHGV5N (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Aug 2008 17:57:13 -0400
-Subject: Re: [PATCH]Fix broken VMI in 2.6.27-rc..
-From: Zachary Amsden <zach@vmware.com>
-To: "H. Peter Anvin" <hpa@kernel.org>
-Cc: Alok Kataria <akataria@vmware.com>,
-       "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, the arch/x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <489B6E83.7000202@kernel.org>
-References: <1218136365.23770.52.camel@alok-dev1>
-	 <489B6710.9000604@kernel.org>
-	 <1218144438.20178.336.camel@bodhitayantram.eng.vmware.com>
-	 <489B6A5C.8030400@kernel.org>
-	 <1218145344.20178.347.camel@bodhitayantram.eng.vmware.com>
-	 <489B6E83.7000202@kernel.org>
-Content-Type: text/plain
-Date: Thu, 07 Aug 2008 14:55:54 -0700
-Message-Id: <1218146154.20178.352.camel@bodhitayantram.eng.vmware.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
+	Thu, 7 Aug 2008 17:57:39 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:36944 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751885AbYHGV5i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Aug 2008 17:57:38 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: Re: "e100_probe: Error clearing wake event" when booting 2.6.27-rc1
+Date: Fri, 8 Aug 2008 00:00:06 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Alessandro Guido <alessandro.guido@gmail.com>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       pm list <linux-pm@lists.linux-foundation.org>
+References: <200808051730.27599.alessandro.guido@gmail.com> <200808052203.07815.rjw@sisk.pl> <200808070947.37534.jbarnes@virtuousgeek.org>
+In-Reply-To: <200808070947.37534.jbarnes@virtuousgeek.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200808080000.07156.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-08-07 at 14:52 -0700, H. Peter Anvin wrote:
-> Zachary Amsden wrote:
-> >>>
-> >> Okay, you lost me about halfway through that... could you perhaps
-> >> describe the problem from the beginning, exactly what you're trying to do?
+On Thursday, 7 of August 2008, Jesse Barnes wrote:
+> On Tuesday, August 5, 2008 1:03 pm Rafael J. Wysocki wrote:
+> > On Tuesday, 5 of August 2008, Alessandro Guido wrote:
+> > > [please cc me on replies]
+> > >
+> > > I'm getting this error message when booting my laptop.
+> > >
+> > > The commit that causes this is:
+> > >
+> > > commit eb9d0fe40e313c0a74115ef456a2e43a6c8da72f
+> > > Author: Rafael J. Wysocki <rjw@sisk.pl>
+> > > Date:   Mon Jul 7 03:34:48 2008 +0200
+> > >
+> > >     PCI ACPI: Rework PCI handling of wake-up
+> > >
+> > > [very long commit message snipped]
+> > >
+> > > Should I ignore that?
 > >
-> > A kernel compiled with VMI enabled may run on a non-VMI platform.  If
-> > that is the case, the fixmap should not be relocated.  If however, a VMI
-> > ROM is found, we need to hijack up to 64-MB of linear address space from
-> > the top of memory down.  This means moving the fixmap down by the same
-> > amount.
+> > The message is harmless, but it exposes the problem that e100_probe()
+> > should not use pci_enable_wake() for this purpose.
 > >
+> > The appended patch makes it use pci_pme_active() instead.
 > 
-> I take it there are no alternatives other than putting this at the end
-> of memory?
+> I can take the pci_pme_active bits, but the e100 stuff should go in through 
+> Jeff probably.  Care to respin?
 
-Nope, it must be in an area allowing for segmentation protection, while
-keeping the kernel on zero-based segments; that means only the end of
-linear address space is sufficient.
+Sure, in replies to this message.
 
-
-> Realistically speaking, any (virtual) machine which does *not* have a
-> full complement of lowmem (i.e. less than 896 MB in the common case)
-> will not suffer significatly from losing a few megabytes of address space.
-
-Yes, the reason to make the fixmap moveable is to allow as much address
-space as possible for big memory (physical) machines.
-
+Thanks,
+Rafael
