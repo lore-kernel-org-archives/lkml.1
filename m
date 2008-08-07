@@ -1,51 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757282AbYHGVYR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757953AbYHGVYk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757282AbYHGVYR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Aug 2008 17:24:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757452AbYHGVX3
+	id S1757953AbYHGVYk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Aug 2008 17:24:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753565AbYHGVXb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Aug 2008 17:23:29 -0400
-Received: from mail-in-14.arcor-online.net ([151.189.21.54]:47100 "EHLO
-	mail-in-14.arcor-online.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757446AbYHGVX2 (ORCPT
+	Thu, 7 Aug 2008 17:23:31 -0400
+Received: from 166-70-238-42.ip.xmission.com ([166.70.238.42]:43884 "EHLO
+	ns1.wolfmountaingroup.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757446AbYHGVX3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Aug 2008 17:23:28 -0400
-From: Bodo Eggert <7eggert@gmx.de>
-Subject: Re: [PATCH 0/5] ftrace: to kill a daemon
-To: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       David Miller <davem@davemloft.net>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Roland McGrath <roland@redhat.com>, Ulrich Drepper <drepper@redhat.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Gregory Haskins <ghaskins@novell.com>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       "Luis Claudio R. Goncalves" <lclaudio@uudg.org>,
-       Clark Williams <williams@redhat.com>
-Reply-To: 7eggert@gmx.de
-Date: Thu, 07 Aug 2008 23:28:12 +0200
-References: <aYipy-5FM-9@gated-at.bofh.it>
-User-Agent: KNode/0.10.4
+	Thu, 7 Aug 2008 17:23:29 -0400
+Message-ID: <2832.69.2.248.210.1218142926.squirrel@webmail.wolfmountaingroup.com>
+In-Reply-To: <alpine.LNX.1.00.0808071626500.19665@iabervon.org>
+References: <17494.166.70.238.46.1217784156.squirrel@webmail.wolfmountaingroup.com>
+       <Pine.LNX.4.64.0808051140150.6309@anakin>   
+    <33030.166.70.238.45.1217948565.squirrel@webmail.wolfmountaingroup.com>
+       <200808060133.10457.nickpiggin@yahoo.com.au>   
+    <44919.166.70.238.45.1217949560.squirrel@webmail.wolfmountaingroup.com>
+       <48987A24.3060000@nortel.com>
+    <2364.69.2.248.210.1217954354.squirrel@webmail.wolfmountaingroup.com>
+    <alpine.LNX.1.00.0808071626500.19665@iabervon.org>
+Date: Thu, 7 Aug 2008 15:02:06 -0600 (MDT)
+Subject: Re: [ANNOUNCE] Merkey's Kernel Debugger
+From: jmerkey@wolfmountaingroup.com
+To: "Daniel Barkalow" <barkalow@iabervon.org>
+Cc: jmerkey@wolfmountaingroup.com, "Chris Friesen" <cfriesen@nortel.com>,
+       "Nick Piggin" <nickpiggin@yahoo.com.au>,
+       "Geert Uytterhoeven" <geert@linux-m68k.org>,
+       "Stefan Richter" <stefanr@s5r6.in-berlin.de>,
+       "Josh Boyer" <jwboyer@gmail.com>, linux-kernel@vger.kernel.org
+User-Agent: SquirrelMail/1.4.6
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7Bit
-Message-Id: <E1KRD1p-0001SX-0p@be1.7eggert.dyndns.org>
-X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
-X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
-X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Steven Rostedt <rostedt@goodmis.org> wrote:
+> On Tue, 5 Aug 2008, jmerkey@wolfmountaingroup.com wrote:
+>
+>> Read it already.  Quite a few large companies are using it at present
+>> and
+>> have been since 2000, BTW.
+>
+> The criterion for kernel inclusion isn't really whether it works, however.
+> It's whether other people would be able to understand it well enough to
+> support it if you disappear (or if somebody else has changes that require
+> changes to it). If it works well but isn't nice code, nobody really
+> benefits from having it in the kernel distribution rather than external
+> (like it's been for the past 8 years). If it is nice code (somewhat
+> regardless of whether it happens to work right now), people can work on it
+> and keep it in sync with the kernel as they change things.
+>
+> 	-Daniel
+> *This .sig left intentionally blank*
+>
 
-> The idea I came
-> up with was to make a tmp.s file for every object just after it is compiled.
+It both works and is nice code.   But I may not be impartial.
 
-make -j would cause these files to overwrite each other, wouldn't it?
-
+Jeff
 
