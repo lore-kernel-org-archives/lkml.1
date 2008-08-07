@@ -1,88 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752845AbYHGMV1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752105AbYHGMVq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752845AbYHGMV1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Aug 2008 08:21:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751524AbYHGMVE
+	id S1752105AbYHGMVq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Aug 2008 08:21:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752839AbYHGMV1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Aug 2008 08:21:04 -0400
-Received: from va3ehsobe006.messaging.microsoft.com ([216.32.180.16]:18137
-	"EHLO VA3EHSOBE001.bigfish.com" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751245AbYHGMU6 (ORCPT
+	Thu, 7 Aug 2008 08:21:27 -0400
+Received: from g4t0015.houston.hp.com ([15.201.24.18]:11890 "EHLO
+	g4t0015.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752749AbYHGMVX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Aug 2008 08:20:58 -0400
-X-BigFish: VPS-16(zz1432R98dR936eQ62a3L1805Mzz10d3izzz32i6bh87il62h)
-X-Spam-TCS-SCL: 1:0
-X-FB-DOMAIN-IP-MATCH: fail
-X-WSS-ID: 0K585WC-01-9A0-01
-Date: Thu, 7 Aug 2008 11:47:58 +0200
-From: Robert Richter <robert.richter@amd.com>
-To: "Gustavo F. Padovan" <gustavo@las.ic.unicamp.br>
-CC: linux-kernel@vger.kernel.org, mingo@elte.hu
-Subject: Re: [PATCH 02/24] x86: kernel/apm_32.c cleanup
-Message-ID: <20080807094754.GA32164@erda.amd.com>
-References: <gustavo@las.ic.unicamp.br> <1217279371-4410-1-git-send-email-gustavo@las.ic.unicamp.br> <1217279371-4410-2-git-send-email-gustavo@las.ic.unicamp.br> <1217279371-4410-3-git-send-email-gustavo@las.ic.unicamp.br>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-In-Reply-To: <1217279371-4410-3-git-send-email-gustavo@las.ic.unicamp.br>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-OriginalArrivalTime: 07 Aug 2008 09:48:13.0744 (UTC) FILETIME=[B5A3F300:01C8F872]
+	Thu, 7 Aug 2008 08:21:23 -0400
+Subject: Re: Race condition between putback_lru_page and
+	mem_cgroup_move_list
+From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: balbir@linux.vnet.ibm.com, MinChan Kim <minchan.kim@gmail.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       linux-mm <linux-mm@kvack.org>, Rik van Riel <riel@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080807185203.A8C2.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+References: <489741F8.2080104@linux.vnet.ibm.com>
+	 <1218041585.6173.45.camel@lts-notebook>
+	 <20080807185203.A8C2.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+Content-Type: text/plain
+Date: Thu, 07 Aug 2008 07:27:14 -0400
+Message-Id: <1218108434.6086.29.camel@lts-notebook>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 28.07.08 18:09:09, Gustavo F. Padovan wrote:
-> Remove additional whitespaces and tabs.
+On Thu, 2008-08-07 at 20:00 +0900, KOSAKI Motohiro wrote:
+> Hi
 > 
-> Signed-off-by: Gustavo F. Padovan <gustavo@las.ic.unicamp.br>
-> ---
->  arch/x86/kernel/apm_32.c |    6 +++---
->  1 files changed, 3 insertions(+), 3 deletions(-)
+> > If you mean the "active/inactive list transition" in
+> > shrink_[in]active_list(), these are already batched under zone lru_lock
+> > with batch size determined by the 'release pages' pvec.  So, I think
+> > we're OK here.
 > 
-> diff --git a/arch/x86/kernel/apm_32.c b/arch/x86/kernel/apm_32.c
-> index 9ee24e6..b0c049c 100644
-> --- a/arch/x86/kernel/apm_32.c
-> +++ b/arch/x86/kernel/apm_32.c
-> @@ -435,7 +435,7 @@ static const char * const apm_event_name[] = {
->  
->  typedef struct lookup_t {
->  	int	key;
-> -	char 	*msg;
-> +	char *msg;
-
-Shouldn't this be a tab?
-
->  } lookup_t;
->  
->  /*
-> @@ -1679,8 +1679,8 @@ static int apm(void *unused)
->  	unsigned short	cx;
->  	unsigned short	dx;
->  	int		error;
-> -	char 		*power_stat;
-> -	char 		*bat_stat;
-> +	char	*power_stat;
-> +	char	*bat_stat;
-
-Why not using same indention as for error?
-
--Robert
-
->  
->  #ifdef CONFIG_SMP
->  	/* 2002/08/01 - WT
-> -- 
-> 1.5.4.5
+> No.
 > 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> AFAIK shrink_inactive_list batched zone->lru_lock, 
+> but it doesn't batched mz->lru_lock.
 > 
+> then, spin_lock_irqsave is freqently called.
 
--- 
-Advanced Micro Devices, Inc.
-Operating System Research Center
-email: robert.richter@amd.com
+Ah, I see what you mean.  Yes, the mem cgroup zone lru_lock will be
+cycled frequently as each back of pages is put back during reclaim.  So,
+you'd like to eliminate the mz lru_lock, move the mem cgroup zone info
+under the corresponding zone lru_lock and move the page between memcg
+lists atomically with adding to global lru lists?  
+
+Lee
 
