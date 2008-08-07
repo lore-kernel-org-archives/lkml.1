@@ -1,82 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757953AbYHGVfq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753072AbYHGVgF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757953AbYHGVfq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Aug 2008 17:35:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756213AbYHGVfQ
+	id S1753072AbYHGVgF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Aug 2008 17:36:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752646AbYHGVfU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Aug 2008 17:35:16 -0400
-Received: from mail.hauppauge.com ([167.206.143.4]:4360 "EHLO
-	mail.hauppauge.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755881AbYHGVfO (ORCPT
+	Thu, 7 Aug 2008 17:35:20 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:34225 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756662AbYHGVfS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Aug 2008 17:35:14 -0400
-Message-ID: <489B6A66.40605@linuxtv.org>
-From: mkrufky@linuxtv.org
-To: khali@linux-fr.org
-Cc: sam@ravnborg.org, user.kernel@gmail.com, linux-kernel@vger.kernel.org,
-       i2c@lm-sensors.org
-Subject: Re: Problem with restricted I2C algorithms in kernel 2.6.26!
-Date: Thu, 7 Aug 2008 17:34:30 -0400 
+	Thu, 7 Aug 2008 17:35:18 -0400
+Date: Thu, 7 Aug 2008 17:35:16 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Bodo Eggert <7eggert@gmx.de>
+cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       David Miller <davem@davemloft.net>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Roland McGrath <roland@redhat.com>, Ulrich Drepper <drepper@redhat.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Gregory Haskins <ghaskins@novell.com>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       "Luis Claudio R. Goncalves" <lclaudio@uudg.org>,
+       Clark Williams <williams@redhat.com>
+Subject: Re: [PATCH 0/5] ftrace: to kill a daemon
+In-Reply-To: <E1KRD1p-0001SX-0p@be1.7eggert.dyndns.org>
+Message-ID: <alpine.DEB.1.10.0808071730470.10092@gandalf.stny.rr.com>
+References: <aYipy-5FM-9@gated-at.bofh.it> <E1KRD1p-0001SX-0p@be1.7eggert.dyndns.org>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-X-Mailer: Internet Mail Service (5.5.2657.72)
-x-originalarrivaltime: 07 Aug 2008 21:32:37.0513 (UTC) FILETIME=[1CCF4F90:01C8F8D5]
-user-agent: Thunderbird 2.0.0.16 (Windows/20080708)
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jean Delvare wrote:
-> Hi Michael,
->
-> On Thu, 7 Aug 2008 15:03:36 -0400, Michael Krufky wrote:
->   
->> I agree with Trent and D.Kelly
->>
->> These options should be made available to the user -- We should go
->> with the patch that Jean posted, "Subject: i2c: Let users select
->> algorithm drivers manually again" -- this is a fair compromise for
->> both sides -- users that dont know should leave the automatic
->> selection enabled.  Users that know better can disable the automatic
->> selection and enable what they need.
->>
->> The statement, "just have the external driver merged into the kernel"
->> is not a solution.
->>     
->
-> Why not, please? A vast majority of drivers work fine that way today. I
-> am still waiting for someone to give me a good reason why some other
-> drivers supposedly can't be merged upstream (something better than
-> "believe me, it's impossible".)
->
->   
 
-Nobody said that a driver "...can't be merged upstream" ...  but 
-REQUIRING a driver to be merged upstream to allow development and / or 
-testing is a problem, IMHO.
+On Thu, 7 Aug 2008, Bodo Eggert wrote:
 
-If you required that all of my development happens within a git 
-development repository, preventing me from working against distro-kernel 
-xyz, then I would simply spend more time on Windows driver development 
-and my Linux contributions would cease.
+> Steven Rostedt <rostedt@goodmis.org> wrote:
+> 
+> > The idea I came
+> > up with was to make a tmp.s file for every object just after it is compiled.
+> 
+> make -j would cause these files to overwrite each other, wouldn't it?
 
-External subsystem development repositories allow us to work against 
-stable kernels at our own pace.  When driver X is ready to be merged, it 
-gets merged.
+I simplified my explanation. I really used something like this:
 
-With the model that you propose, "use linux-next for development" ... 
-well then what about testing?  Who is going to test my driver if it 
-requires a full kernel compile?
+for init/main.o:
 
-Khali, you know me, and you know that I am always in favor of merging 
-drivers into the kernel.  The ability to choose a kernel's features is 
-an option that should not be removed.
+init/.tmp_mc_main.s  : for the list file
+init/.tmp_mc_main.o  : for the list compiled object.
+init/.tmp_gl_main.o  : for the object converted static to global.
+init/.tmp_mx_main.o  : for the merged list and global object.
 
->> Removing the option to build those additional algos is a regression, IMHO
->>     
->
-> Will be addressed soon, do not worry.
-Regards,
 
-Mike
+The tmp.s was to keep the focus on the concept. But the actual 
+implementation handles multi-threaded builds.
+
+I use distcc and build with -j40. I had no issues.
+
+Thanks,
+
+-- Steve
+
