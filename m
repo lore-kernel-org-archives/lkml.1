@@ -1,135 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756671AbYHGFIS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757530AbYHGFJl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756671AbYHGFIS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Aug 2008 01:08:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752941AbYHGFIB
+	id S1757530AbYHGFJl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Aug 2008 01:09:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753735AbYHGFJd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Aug 2008 01:08:01 -0400
-Received: from idcmail-mo2no.shaw.ca ([64.59.134.9]:30077 "EHLO
-	pd5mo1no-dmz.prod.shaw.ca" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752646AbYHGFIA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Aug 2008 01:08:00 -0400
-X-Cloudmark-SP-Filtered: true
-X-Cloudmark-SP-Result: v=1.0 c=0 a=Gz8L7unvIutdFyFd6bMA:9 a=ZAcv7MU9QR_zh4Sb4v4A:7 a=rAAcByYapMJKhTPqPKV9pWuxotgA:4 a=8k_t9Up_kE9YEAHiZboA:9 a=aVolUW-vRWh3Paz2IowA:7 a=fApWQy82LZ_0jw3PGrgg-Gvua1MA:4 a=Hw8qc9ORRP27l3yYD78A:9 a=CFh3nylG6GAtve5rWF8A:7 a=K4-Hqo-fu5l36J01hTPf5-EW_skA:4 a=l9iCJtgIvv4A:10 a=GFZTb6icBPAA:10
-Message-ID: <489A82D5.6020903@sieb.net>
-Date: Wed, 06 Aug 2008 22:06:29 -0700
-From: Samuel Sieb <samuel@sieb.net>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.16) Gecko/20080716 Fedora/1.1.11-1.fc9 SeaMonkey/1.1.11
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Juergen Beisert <jbe@pengutronix.de>, linux-kernel@vger.kernel.org,
-       "Rafael C. de Almeida" <almeidaraf@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Magnus Damm <magnus@valinux.co.jp>, takada <takada@mbf.nifty.com>
-Subject: Re: kernel won't boot on a Cyrix MediaGXm (Geode )
-References: <48841A92.4020301@sieb.net> <48856BC6.7030308@sieb.net> <20080722102457.GA773@elte.hu> <200807221251.10843.jbe@pengutronix.de> <4886DB31.8070306@sieb.net> <20080728153224.GA28495@elte.hu>
-In-Reply-To: <20080728153224.GA28495@elte.hu>
-Content-Type: multipart/mixed;
- boundary="------------050208010007080908000405"
+	Thu, 7 Aug 2008 01:09:33 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:43606 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753272AbYHGFJc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Aug 2008 01:09:32 -0400
+Date: Thu, 7 Aug 2008 14:40:27 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: David Brownell <david-b@pacbell.net>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>, dwmw2@infradead.org,
+       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: Tree for August 5 (MTD build error)
+Message-Id: <20080807144027.f805c7b1.sfr@canb.auug.org.au>
+In-Reply-To: <200808060413.08723.david-b@pacbell.net>
+References: <20080805175914.7649537f.sfr@canb.auug.org.au>
+	<20080805175518.9fc09b92.randy.dunlap@oracle.com>
+	<200808060320.20064.david-b@pacbell.net>
+	<200808060413.08723.david-b@pacbell.net>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Thu__7_Aug_2008_14_40_27_+1000_hHhkR6MQhuzFyJap"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------050208010007080908000405
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+--Signature=_Thu__7_Aug_2008_14_40_27_+1000_hHhkR6MQhuzFyJap
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Ingo Molnar wrote:
-> any patch we should pick up to make your box boot?
-> 
-I've looked through various datasheets and found that the GXm and GXLV 
-Geode processors don't have an incrementor.  I attached two patches. 
-One only calls the incrementor setup for GX1 or better.  The other one 
-removes the incrementor setup entirely.  As the incrementor value 
-differs according to clock speed and we would hope that the BIOS 
-configures it correctly, it is probably the better one to choose.  But I 
-will leave that choice up to you.  Either one works for me. :-)
+Hi David,
 
---------------050208010007080908000405
-Content-Type: text/x-patch;
- name="cyrix.diff"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="cyrix.diff"
+On Wed, 6 Aug 2008 04:13:08 -0700 David Brownell <david-b@pacbell.net> wrot=
+e:
+>
+> On Wednesday 06 August 2008, David Brownell wrote:
+> > On Tuesday 05 August 2008, Randy Dunlap wrote:
+> > >=20
+> > > linux-next-20080805/drivers/mtd/devices/mtd_dataflash.c: In function =
+'add_dataflash_otp':
+> > > linux-next-20080805/drivers/mtd/devices/mtd_dataflash.c:670: error: t=
+oo many arguments to function 'otp_setup'
+>=20
+> Whoops, sorry ... I see what was going on.  My bad.
+>=20
+> --- g26.orig/drivers/mtd/devices/mtd_dataflash.c	2008-08-06 04:12:45.0000=
+00000 -0700
+> +++ g26/drivers/mtd/devices/mtd_dataflash.c	2008-08-06 04:11:55.000000000=
+ -0700
+> @@ -616,7 +616,7 @@ static char *otp_setup(struct mtd_info *
+> =20
+>  #else
+> =20
+> -static char *otp_setup(struct mtd_info *device)
+> +static char *otp_setup(struct mtd_info *device, char revision)
+>  {
+>  	return " (OTP)";
+>  }
+>=20
 
-diff --git a/arch/x86/kernel/cpu/cyrix.c b/arch/x86/kernel/cpu/cyrix.c
-index db5868c..d3323d1 100644
---- a/arch/x86/kernel/cpu/cyrix.c
-+++ b/arch/x86/kernel/cpu/cyrix.c
-@@ -155,7 +155,7 @@ static void __cpuinit set_cx86_inc(void)
-  *	Configure later MediaGX and/or Geode processor.
-  */
- 
--static void __cpuinit geode_configure(void)
-+static void __cpuinit geode_configure(unsigned char dir1)
- {
- 	unsigned long flags;
- 	u8 ccr3;
-@@ -174,7 +174,9 @@ static void __cpuinit geode_configure(void)
- 
- 	set_cx86_memwb();
- 	set_cx86_reorder();
--	set_cx86_inc();
-+	/* GXm and GXLV don't have incrementors */
-+	if (dir1 >= 0x80)
-+		set_cx86_inc();
- 
- 	local_irq_restore(flags);
- }
-@@ -295,7 +297,7 @@ static void __cpuinit init_cyrix(struct cpuinfo_x86 *c)
- 			 * GX1 : 0x8x          GX1  datasheet 56
- 			 */
- 			if ((0x30 <= dir1 && dir1 <= 0x6f) || (0x80 <= dir1 && dir1 <= 0x8f))
--				geode_configure();
-+				geode_configure(dir1);
- 			get_model_name(c);  /* get CPU marketing name */
- 			return;
- 		} else { /* MediaGX */
+I will add this patch to linux-next today in the hope it will be
+integrated somewhere soon (hint, hint :-)).
 
---------------050208010007080908000405
-Content-Type: text/x-patch;
- name="cyrix2.diff"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="cyrix2.diff"
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-diff --git a/arch/x86/kernel/cpu/cyrix.c b/arch/x86/kernel/cpu/cyrix.c
-index db5868c..ada5050 100644
---- a/arch/x86/kernel/cpu/cyrix.c
-+++ b/arch/x86/kernel/cpu/cyrix.c
-@@ -134,23 +134,6 @@ static void __cpuinit set_cx86_memwb(void)
- 	setCx86_old(CX86_CCR2, getCx86_old(CX86_CCR2) | 0x14);
- }
- 
--static void __cpuinit set_cx86_inc(void)
--{
--	unsigned char ccr3;
--
--	printk(KERN_INFO "Enable Incrementor on Cyrix/NSC processor.\n");
--
--	ccr3 = getCx86(CX86_CCR3);
--	setCx86(CX86_CCR3, (ccr3 & 0x0f) | 0x10); /* enable MAPEN */
--	/* PCR1 -- Performance Control */
--	/* Incrementor on, whatever that is */
--	setCx86_old(CX86_PCR1, getCx86_old(CX86_PCR1) | 0x02);
--	/* PCR0 -- Performance Control */
--	/* Incrementor Margin 10 */
--	setCx86_old(CX86_PCR0, getCx86_old(CX86_PCR0) | 0x04);
--	setCx86(CX86_CCR3, ccr3);	/* disable MAPEN */
--}
--
- /*
-  *	Configure later MediaGX and/or Geode processor.
-  */
-@@ -174,7 +157,6 @@ static void __cpuinit geode_configure(void)
- 
- 	set_cx86_memwb();
- 	set_cx86_reorder();
--	set_cx86_inc();
- 
- 	local_irq_restore(flags);
- }
+--Signature=_Thu__7_Aug_2008_14_40_27_+1000_hHhkR6MQhuzFyJap
+Content-Type: application/pgp-signature
 
---------------050208010007080908000405--
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkiafLsACgkQjjKRsyhoI8xjCwCfYHSNDPrvgO6X5Egfc5gbu2nR
+oioAn0S+vzgDMXb305h24GKf4Ew1F4YW
+=oU/m
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__7_Aug_2008_14_40_27_+1000_hHhkR6MQhuzFyJap--
