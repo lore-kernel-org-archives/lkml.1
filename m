@@ -1,187 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754024AbYHGNg7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753475AbYHGNjE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754024AbYHGNg7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Aug 2008 09:36:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751429AbYHGNgr
+	id S1753475AbYHGNjE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Aug 2008 09:39:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751561AbYHGNix
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Aug 2008 09:36:47 -0400
-Received: from web53212.mail.re2.yahoo.com ([206.190.49.82]:47311 "HELO
-	web53212.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751525AbYHGNgp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Aug 2008 09:36:45 -0400
-X-Greylist: delayed 4481 seconds by postgrey-1.27 at vger.kernel.org; Thu, 07 Aug 2008 09:36:45 EDT
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=Received:X-Mailer:Date:From:Reply-To:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Message-ID;
-  b=uRb07dcCWcfM/IPdj58QHCOs8szMLcC6y1dUi1TElsxPFv8uSbg1e8cbgjkacXgYnGwu01Vw3w0OAvUfXCdmqGIqPBgubjn5A6LAOZxdcrLl4CTLsFtfrzOfWHR3K6CBrwmosNwLDWzAv9BYAK8FkIPWL7wSUESTOVPK4y5CeGY=;
-X-Mailer: YahooMailWebService/0.7.218
-Date: Thu, 7 Aug 2008 02:28:39 -0700 (PDT)
-From: Emanoil Kotsev <deloptes@yahoo.com>
-Reply-To: deloptes@yahoo.com
-Subject: Re: [PATCH RFC] USB: Add HCD fastboot
-To: Alan Stern <stern@rowland.harvard.edu>, Simon Arlott <simon@fire.lp0.eu>
-Cc: Rene Herman <rene.herman@keyaccess.nl>,
-       Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
-       mingo@elte.hu, Daniel Walker <dwalker@mvista.com>,
-       USB list <linux-usb@vger.kernel.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-In-Reply-To: <489A1C68.3000905@simon.arlott.org.uk>
+	Thu, 7 Aug 2008 09:38:53 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:47869 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751018AbYHGNiw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Aug 2008 09:38:52 -0400
+Date: Thu, 7 Aug 2008 09:38:05 -0400
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Huang Ying <ying.huang@intel.com>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>, Pavel Machek <pavel@ucw.cz>,
+       nigel@nigel.suspend2.net, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org,
+       Kexec Mailing List <kexec@lists.infradead.org>
+Subject: Re: [PATCH 6/6] kexec jump: fix for ftrace
+Message-ID: <20080807133805.GD27783@redhat.com>
+References: <1218099937.5164.37.camel@caritas-dev.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <467461.53792.qm@web53212.mail.re2.yahoo.com>
+Content-Disposition: inline
+In-Reply-To: <1218099937.5164.37.camel@caritas-dev.intel.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Thu, Aug 07, 2008 at 05:05:37PM +0800, Huang Ying wrote:
+> Restore ftrace after jumping back from kexeced kernel.
+> 
+> Signed-off-by: Huang Ying <ying.huang@intel.com>
+> 
+> ---
+>  arch/x86/kernel/machine_kexec_32.c |   19 +++++++++++++++++++
+>  kernel/kexec.c                     |    2 --
+>  2 files changed, 19 insertions(+), 2 deletions(-)
+> 
+> --- a/arch/x86/kernel/machine_kexec_32.c
+> +++ b/arch/x86/kernel/machine_kexec_32.c
+> @@ -12,6 +12,7 @@
+>  #include <linux/init.h>
+>  #include <linux/numa.h>
+>  #include <linux/ftrace.h>
+> +#include <linux/suspend.h>
+>  
+>  #include <asm/pgtable.h>
+>  #include <asm/pgalloc.h>
+> @@ -117,6 +118,7 @@ void machine_kexec(struct kimage *image)
+>  {
+>  	unsigned long page_list[PAGES_NR];
+>  	void *control_page;
+> +	int save_ftrace_enabled;
+>  	asmlinkage unsigned long
+>  		(*relocate_kernel_ptr)(unsigned long indirection_page,
+>  				       unsigned long control_page,
+> @@ -124,7 +126,15 @@ void machine_kexec(struct kimage *image)
+>  				       unsigned int has_pae,
+>  				       unsigned int preserve_context);
+>  
+> +#ifdef CONFIG_KEXEC_JUMP
+> +	if (kexec_image->preserve_context)
+> +		save_processor_state();
+> +#endif
+> +
+> +#ifdef CONFIG_FTRACE
+> +	save_ftrace_enabled = ftrace_enabled;
+>  	tracer_disable();
+> +#endif
+>  
+>  	/* Interrupts aren't acceptable while we reboot */
+>  	raw_local_irq_disable();
+> @@ -182,6 +192,15 @@ void machine_kexec(struct kimage *image)
+>  					   (unsigned long)page_list,
+>  					   image->start, cpu_has_pae,
+>  					   image->preserve_context);
+> +
+> +#ifdef CONFIG_KEXEC_JUMP
+> +	if (kexec_image->preserve_context)
+> +		restore_processor_state();
+> +#endif
+> +
+> +#ifdef CONFIG_FTRACE
+> +	ftrace_enabled = save_ftrace_enabled;
+> +#endif
+>  }
+>  
 
-I'm using usb drive to boot from. I also use USB mouse and USB keyboard.
+Hi Huang,
 
-Indeed I have to put a delay in the init script in the initrd to delay and   give time for the initialization. I found out by testing that this delay should be >5sec.
+What kind of problem we run into if we don't disable the ftracer?
 
-I have tried compiling all the usb modules into the kernel, but this doesn't help much, now after following this discussion it might be related.
+I think there are too many #ifdefs now and probably we can at least
+get rid if #ifdef CONFIG_FTRACE thing.
 
-With 2.6.20 I can use the keyboard. With the same init script in 2.6.24 and 2.6.26 it is not working, but I really coudn't find time to investigate, because as Alan sais there is really not too much to do with keyboard and mouse during the bootprocess unless as I do I unlock crypted partitions.
+I think ftracer needs to export the function to enable the tracer
+back (tracer_enable()) so that we don't directly play with ftrace_enabled
+variable. tracer_enable() can be do {} while{0} in case of CONFIG_FTRACE=n
+so that we can get rid of #ifdefs here.
 
-Don't know if this information is somehow useful for you, but hope so.
-
-I could also look at why the keyboard is not working in boot. Let me know
-
-regards
-
-
---- On Wed, 8/6/08, Simon Arlott <simon@fire.lp0.eu> wrote:
-
-> From: Simon Arlott <simon@fire.lp0.eu>
-> Subject: Re: [PATCH RFC] USB: Add HCD fastboot
-> To: "Alan Stern" <stern@rowland.harvard.edu>
-> Cc: "Rene Herman" <rene.herman@keyaccess.nl>, "Arjan van de Ven" <arjan@infradead.org>, linux-kernel@vger.kernel.org, mingo@elte.hu, "Daniel Walker" <dwalker@mvista.com>, "USB list" <linux-usb@vger.kernel.org>, "Greg Kroah-Hartman" <gregkh@suse.de>
-> Date: Wednesday, August 6, 2008, 11:49 PM
-> On 06/08/08 21:26, Alan Stern wrote:
-> > On Wed, 6 Aug 2008, Simon Arlott wrote:
-> > 
-> >> No, by adding a 5 second delay you're
-> intending for the device driver initcalls 
-> >> to complete within that 5 seconds. If they take
-> too long then the last one 
-> >> blocks everything (I realise that's
-> ridiculous, these initcalls take <1ms when 
-> >> there are no devices yet). The best way to do is
-> to make the driver initcalls 
-> >> before the host ones, like you suggested.
-> > 
-> > Doing the HCD initcalls last certainly ought to work.
-> 
-> Right - so then all that's needed is to move usb/
-> before most other things that 
-> take a while to init, and it has some time to initialise
-> usb devices in the 
-> background.
-> 
-> >> > "it'll still have to wait..." 
-> If by "it" you mean the initcall
-> >> > thread, you're wrong.  If by
-> "it" you mean the user, you still aren't
-> >> > necessarily correct; the user can do plenty
-> of other things while
-> >> > waiting for USB devices to initialize.
-> >> 
-> >> Assuming userspace doesn't wait for all
-> devices to settle and appear in /dev etc. 
-> >> before continuing.
-> > 
-> > Whatever that involves...  /dev never truly settles;
-> it's always 
-> > possible to plug in a new device or remove an old one.
-> 
-> Yes... I'm not sure how that part would work.
-> 
-> >> > I suppose you could make the hub_thread delay
-> time a module parameter 
-> >> > for usbcore, defaulting to 0.  Then it could
-> be set by just the people 
-> >> > who want to use it -- many (most?) people
-> keep their drivers in 
-> >> > modules, and it wouldn't do them any
-> good.
-> >> 
-> >> It really needs to have hcd initcalls done very
-> early so that device init 
-> > 
-> > Please stop using the word "it" with no
-> antecedent!  Do you mean "we"?
-> 
-> Yes. I'll try to avoid doing that.
-> 
-> >> has the rest of the (kernel and userspace) boot
-> process to complete in the 
-> >> background. This is negated by having device
-> drivers initialised immediately 
-> >> afterwards. Re-ordering initcalls and doing more
-> of the init process 
-> >> asynchronously is likely to expose bugs and cause
-> inconsistent device order 
-> >> on some systems, so if the makefile mess could be
-> reduced then it can be a 
-> >> Kconfig option.
-> > 
-> > So what exactly do you recommend?
-> 
-> I'm not an expert on what can be done with the Makefile
-> process, perhaps there's 
-> an easier way to move things around based on a config
-> option. If host init is 
-> moved before device init for everyone, wouldn't there
-> be too many side effects?
-> 
-> I've not tried to use usb-storage as root but
-> presumably that works. If that 
-> already uses a hack of making the kernel wait X seconds
-> before trying to mount 
-> root then it'll still work.
-> 
-> >> How many people have *all* their USB components
-> (hcd, drivers) as modules?
-> > 
-> > All the major distributions do, as far as I know.  (I
-> haven't actually 
-> > checked them all to be certain.)
-> > 
-> >> What do they do with their USB keyboards in the
-> period between init and module 
-> >> load?
-> > 
-> > Probably nothing.  What do you do on your keyboard
-> while waiting for
-> > system initialization to complete?
-> 
-> Lack of a keyboard makes it impossible to do anything if
-> the module fails to 
-> load... as I understand it when the HCD init runs, any BIOS
-> emulation stops?
-> Although if HCD is a module too...
-> 
-> >> If even one device driver and the hcd is compiled
-> in, they'd need to 
-> >> wait for every USB device to finish init before
-> the usbhid probe could complete.
-> > 
-> > What if usbhid is the one device driver that is
-> compiled in?  :-)
-> 
-> That was the situation I was thinking of - surely that
-> would be compiled in 
-> if the HCDs were?
-> 
-> -- 
-> Simon Arlott
-> --
-> To unsubscribe from this list: send the line
-> "unsubscribe linux-usb" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at 
-> http://vger.kernel.org/majordomo-info.html
-
-
-      
+Thanks
+Vivek
