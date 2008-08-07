@@ -1,68 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754555AbYHGPKs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754010AbYHGPQS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754555AbYHGPKs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Aug 2008 11:10:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752082AbYHGPKk
+	id S1754010AbYHGPQS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Aug 2008 11:16:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752385AbYHGPQE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Aug 2008 11:10:40 -0400
-Received: from ic0245.upco.es ([130.206.70.245]:34187 "EHLO
-	antispam.upcomillas.es" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751919AbYHGPKj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Aug 2008 11:10:39 -0400
-Message-ID: <489B1066.1020909@upcomillas.es>
-Date: Thu, 07 Aug 2008 17:10:30 +0200
-From: Romano Giannetti <romanol@upcomillas.es>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
+	Thu, 7 Aug 2008 11:16:04 -0400
+Received: from mgw2.diku.dk ([130.225.96.92]:56541 "EHLO mgw2.diku.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752307AbYHGPQD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Aug 2008 11:16:03 -0400
+From: Julien Brunel <brunel@diku.dk>
+To: rolandd@cisco.com, sean.hefty@intel.com, hal.rosenstock@gmail.com,
+       general@lists.openfabrics.org, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: [PATCH] drivers/infiniband/core: Use an IS_ERR test rather than a NULL test
+Date: Thu, 7 Aug 2008 17:15:53 +0200
+User-Agent: KMail/1.9.9
 MIME-Version: 1.0
-To: linux-kernel <linux-kernel@vger.kernel.org>, drzeus-mmc@drzeus.cx,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: SD cards stopped working on my machine
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200808071715.54004.brunel@diku.dk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Julien Brunel <brunel@diku.dk>
 
-Hi,
+In case of error, the function ib_create_send_mad returns an ERR pointer,
+but never returns a NULL pointer. So after a call to this function,
+a NULL test should be replaced by an IS_ERR test.
 
-I just posted a regression bug on bugzilla:
+A simplified version of the semantic patch that makes this change is
+as follows:
+(http://www.emn.fr/x-info/coccinelle/)
 
-	http://bugzilla.kernel.org/show_bug.cgi?id=11267
+// <smpl>
+@correct_null_test@
+expression x,E;
+statement S1, S2;
+@@
+x = ib_create_send_mad(...)
+<... when != x = E
+if (
+(
+- x@p2 != NULL
++ ! IS_ERR ( x )
+|
+- x@p2 == NULL
++ IS_ERR( x )
+)
+ )
+S1
+else S2
+...>
+? x = E;
+// </smpl>
 
-the new kernel stopped to notice the fact that I introduce an SD card into the 
-slot of the machine. It used to work perfectly in 2.6.26 (came back and tested, 
-so it's not hardware).
+Signed-off-by:  Julien Brunel <brunel@diku.dk>
+Signed-off-by:  Julia Lawall <julia@diku.dk>
 
-In 2.6.26 I had on the dmesg:
+---
+ drivers/infiniband/core/mad_rmpp.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-[  131.145237] mmc0: new high speed SD card at address b368
-[  131.145295] PM: Adding info for mmc:mmc0:b368
-[  131.176370] mmcblk0: mmc0:b368 SD    2009600KiB (ro)
-[  131.176370] PM: Adding info for No Bus:mmcblk0
-[  131.176370]  mmcblk0: p1
-[  131.176434] PM: Adding info for No Bus:mmcblk0p1
-[  131.176434] PM: Adding info for No Bus:179:0
-
-In 2.6.27-rc2 nothing happens. I have not a lot of time in my hands, so if it's 
-possible at all I'd like to avoid a bisect (It's more than one hour per compile 
-here...)
-
-Thanks,
-	Romano
-
-PD this time at least it didn't eat my photos :-)))))
-
-
-
-
-
--- 
-Sorry for the disclaimer --- ¡I cannot stop it!
-
-
---
-La presente comunicación tiene carácter confidencial y es para el exclusivo uso del destinatario indicado en la misma. Si Ud. no es el destinatario indicado, le informamos que cualquier forma de distribución, reproducción o uso de esta comunicación y/o de la información contenida en la misma están estrictamente prohibidos por la ley. Si Ud. ha recibido esta comunicación por error, por favor, notifíquelo inmediatamente al remitente contestando a este mensaje y proceda a continuación a destruirlo. Gracias por su colaboración.
-
-This communication contains confidential information. It is for the exclusive use of the intended addressee. If you are not the intended addressee, please note that any form of distribution, copying or use of this communication or the information in it is strictly prohibited by law. If you have received this communication in error, please immediately notify the sender by reply e-mail and destroy this message. Thank you for your cooperation. 
+diff -u -p a/drivers/infiniband/core/mad_rmpp.c 
+b/drivers/infiniband/core/mad_rmpp.c
+--- a/drivers/infiniband/core/mad_rmpp.c
++++ b/drivers/infiniband/core/mad_rmpp.c
+@@ -133,7 +133,7 @@ static void ack_recv(struct mad_rmpp_rec
+ 	msg = ib_create_send_mad(&rmpp_recv->agent->agent, recv_wc->wc->src_qp,
+ 				 recv_wc->wc->pkey_index, 1, hdr_len,
+ 				 0, GFP_KERNEL);
+-	if (!msg)
++	if (IS_ERR(msg))
+ 		return;
+ 
+ 	format_ack(msg, (struct ib_rmpp_mad *) recv_wc->recv_buf.mad, rmpp_recv);
