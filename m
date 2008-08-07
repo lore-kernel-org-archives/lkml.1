@@ -1,121 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756716AbYHGUo0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755962AbYHGUrS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756716AbYHGUo0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Aug 2008 16:44:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753288AbYHGUoS
+	id S1755962AbYHGUrS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Aug 2008 16:47:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753291AbYHGUrB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Aug 2008 16:44:18 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:36547 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752741AbYHGUoR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Aug 2008 16:44:17 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Andi Kleen <andi@firstfloor.org>
-Subject: Re: Please fix x86 defconfig regression
-Date: Thu, 7 Aug 2008 22:46:41 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: linux-kernel@vger.kernel.org, x86@kernel.org, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>
-References: <20080806173829.GA8702@gargoyle>
-In-Reply-To: <20080806173829.GA8702@gargoyle>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Thu, 7 Aug 2008 16:47:01 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:45234 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752075AbYHGUrA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Aug 2008 16:47:00 -0400
+Date: Thu, 7 Aug 2008 13:46:50 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Ian Kent <raven@themaw.net>
+Cc: autofs@linux.kernel.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, containers@lists.osdl.org
+Subject: Re: [PATCH 2/4] autofs4 - track uid and gid of last mount requester
+Message-Id: <20080807134650.a6a51f7d.akpm@linux-foundation.org>
+In-Reply-To: <20080807114012.4142.83607.stgit@web.messagingengine.com>
+References: <20080807114002.4142.30417.stgit@web.messagingengine.com>
+	<20080807114012.4142.83607.stgit@web.messagingengine.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200808072246.42301.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, 6 of August 2008, Andi Kleen wrote:
-> 
-> commit 5cb04df8d3f03e37a19f2502591a84156be71772
-> Author: Ingo Molnar <mingo@elte.hu>
-> Date:   Sun May 4 19:49:04 2008 +0200
-> 
->     x86: defconfig updates
->     
->     refresh 32-bit defconfig too, and update the 64-bit configs as well,
->     the defconfig should be much more useful by default, so most of the
->     updates are the enabling of various options.
-> 
-> updates the x86 defconfigs. Unfortunately contrary to its description
-> it disables lots of important options:
-> 
-> including NFS and NFS root support
-> 
-> -CONFIG_IP_PNP=y
-> -CONFIG_IP_PNP_DHCP=y
-> -# CONFIG_IP_PNP_BOOTP is not set
-> -# CONFIG_IP_PNP_RARP is not set
-> 
-> and disabling even common ethernet drivers like
-> 
-> -CONFIG_8139CP=y
-> +# CONFIG_8139CP is not set
-> -CONFIG_B44=y
-> -CONFIG_TULIP=y
-> -CONFIG_E1000E=y
-> -CONFIG_E1000E_ENABLED=y
-> -CONFIG_BNX2=y
-> 
-> and worst completely disabling NFS
-> 
-> +# CONFIG_NFS_FS is not set
-> +# CONFIG_NFSD is not set
-> 
-> These changes broke my test setup completely.
-> 
-> Also it has a few other questionable changes like:
-> 
-> -CONFIG_X86_GENERICARCH=y
-> +# CONFIG_X86_GENERICARCH is not set
-> -CONFIG_X86_GENERIC=y
-> 
-> which means it won't run on old CPUs anymore.
-> Where should GENERICARCH/X86_GENERIC not be set but in a defconfig?
-> 
-> And the IDE change will likely break lots of boot setups:
-> 
-> -CONFIG_IDE=y
-> -CONFIG_BLK_DEV_IDE=y
-> 
-> because the root device name will change suddenly and many distros
-> or initrd less setups cannot deal with that.
-> 
-> Also undoubtedly that will also break people's system (reiserfs
-> is still widely used):
-> 
-> -CONFIG_REISERFS_FS=y
-> -# CONFIG_REISERFS_CHECK is not set
-> -# CONFIG_REISERFS_PROC_INFO is not set
-> 
-> This breaks reading a lot of joliet and vfat file systems:
-> 
-> -CONFIG_NLS_ISO8859_15=y
-> +# CONFIG_NLS_ISO8859_15 is not set
-> 
-> This breaks older glibc userland (shipped in at least one SUSE 
-> distribution release):
-> 
-> +# CONFIG_COMPAT_VDSO is not set
-> 
-> This will break a lot of older server systems:
-> 
-> -CONFIG_SCSI_AIC7XXX=y
-> 
-> Various other issues.
-> 
-> Rafael, can you please add all that to the regression list? Thanks.
+On Thu, 07 Aug 2008 19:40:14 +0800
+Ian Kent <raven@themaw.net> wrote:
 
-I would, but it didn't make it to any list archives I know of, so there's no
-link to put in there.  I'll link it to my reply if that's available somewhere.
+> Patch to track the uid and gid of the last process to request a mount
+> for on an autofs dentry.
 
-> In general defconfig should only add things, but very rarely
-> remove any. The best would be probably to revert that commit and
-> redo whatever options it wanted to add on top of the previous
-> defconfigs.
+pet peeve: changelog should not tell the reader that this is a "patch".
+Because when someone is reading the changelog in the git repository,
+they hopefully already know that.
 
-Thanks,
-Rafael
+> Signed-off-by: Ian Kent <raven@themaw.net>
+> 
+> ---
+> 
+>  fs/autofs4/autofs_i.h |    3 +++
+>  fs/autofs4/inode.c    |    2 ++
+>  fs/autofs4/waitq.c    |   34 ++++++++++++++++++++++++++++++++++
+>  3 files changed, 39 insertions(+), 0 deletions(-)
+> 
+> 
+> diff --git a/fs/autofs4/autofs_i.h b/fs/autofs4/autofs_i.h
+> index ea024d8..fa76d18 100644
+> --- a/fs/autofs4/autofs_i.h
+> +++ b/fs/autofs4/autofs_i.h
+> @@ -63,6 +63,9 @@ struct autofs_info {
+>  	unsigned long last_used;
+>  	atomic_t count;
+>  
+> +	uid_t uid;
+> +	gid_t gid;
+> +
+>  	mode_t	mode;
+>  	size_t	size;
+>  
+> diff --git a/fs/autofs4/inode.c b/fs/autofs4/inode.c
+> index 9ca2d07..9408507 100644
+> --- a/fs/autofs4/inode.c
+> +++ b/fs/autofs4/inode.c
+> @@ -53,6 +53,8 @@ struct autofs_info *autofs4_init_ino(struct autofs_info *ino,
+>  		atomic_set(&ino->count, 0);
+>  	}
+>  
+> +	ino->uid = 0;
+> +	ino->gid = 0;
+>  	ino->mode = mode;
+>  	ino->last_used = jiffies;
+>  
+> diff --git a/fs/autofs4/waitq.c b/fs/autofs4/waitq.c
+> index 6d87bb1..7c60c0b 100644
+> --- a/fs/autofs4/waitq.c
+> +++ b/fs/autofs4/waitq.c
+> @@ -457,6 +457,40 @@ int autofs4_wait(struct autofs_sb_info *sbi, struct dentry *dentry,
+>  
+>  	status = wq->status;
+>  
+> +	/*
+> +	 * For direct and offset mounts we need to track the requestrer
+
+typo which I'll fix.
+
+> +	 * uid and gid in the dentry info struct. This is so it can be
+> +	 * supplied, on request, by the misc device ioctl interface.
+> +	 * This is needed during daemon resatart when reconnecting
+> +	 * to existing, active, autofs mounts. The uid and gid (and
+> +	 * related string values) may be used for macro substitution
+> +	 * in autofs mount maps.
+> +	 */
+> +	if (!status) {
+> +		struct autofs_info *ino;
+> +		struct dentry *de = NULL;
+> +
+> +		/* direct mount or browsable map */
+> +		ino = autofs4_dentry_ino(dentry);
+> +		if (!ino) {
+> +			/* If not lookup actual dentry used */
+> +			de = d_lookup(dentry->d_parent, &dentry->d_name);
+> +			if (de)
+> +				ino = autofs4_dentry_ino(de);
+> +		}
+> +
+> +		/* Set mount requester */
+> +		if (ino) {
+> +			spin_lock(&sbi->fs_lock);
+> +			ino->uid = wq->uid;
+> +			ino->gid = wq->gid;
+> +			spin_unlock(&sbi->fs_lock);
+> +		}
+> +
+> +		if (de)
+> +			dput(de);
+> +	}
+> +
+
+Please remind me again why autofs's use of current->uid and
+current->gid is not busted in the presence of PID namespaces, where
+these things are no longer system-wide unique?
