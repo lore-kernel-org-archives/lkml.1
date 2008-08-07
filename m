@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755998AbYHGEzv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755324AbYHGEUe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755998AbYHGEzv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Aug 2008 00:55:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752541AbYHGEzm
+	id S1755324AbYHGEUe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Aug 2008 00:20:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751809AbYHGEPQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Aug 2008 00:55:42 -0400
-Received: from cdptpa-omtalb.mail.rr.com ([75.180.132.123]:37595 "EHLO
+	Thu, 7 Aug 2008 00:15:16 -0400
+Received: from cdptpa-omtalb.mail.rr.com ([75.180.132.122]:36057 "EHLO
 	cdptpa-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752104AbYHGEzl (ORCPT
+	with ESMTP id S1751147AbYHGEPP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Aug 2008 00:55:41 -0400
-Date: Thu, 07 Aug 2008 00:55:58 -0400
-Message-ID: <87fxphzan5.wl%ysato@users.sourceforge.jp>
+	Thu, 7 Aug 2008 00:15:15 -0400
+Date: Thu, 07 Aug 2008 00:15:30 -0400
+Message-ID: <87hc9xzcil.wl%ysato@users.sourceforge.jp>
 From: Yoshinori Sato <ysato@users.sourceforge.jp>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: lkml <linux-kernel@vger.kernel.org>
-Subject: [PATCH] kallsyms exclude local symbols
+Subject: [PATCH] h8300 fix section mismatch
 User-Agent: Wanderlust/2.15.6 (Almost Unreal) SEMI/1.14.6 (Maruoka)
  FLIM/1.14.9 (=?ISO-8859-4?Q?Goj=F2?=) APEL/10.7 Emacs/22.2
  (x86_64-pc-linux-gnu) MULE/5.0 (SAKAKI)
@@ -25,55 +25,83 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-h8300's nm output include '.Lfoo' local symbols.
+WARNING: vmlinux.o(.text+0x2fdf): Section mismatch in reference from the variable .LM3 to the variable .init.text:___alloc_bootmem
+The function .LM3() references
+the variable __init ___alloc_bootmem.
+This is often because .LM3 lacks a __init
+annotation or the annotation of ___alloc_bootmem is wrong.
 
-This is head of System.map
-00000000 T __vector
-00000100 T _interrupt_redirect_table
-00000100 T _text
-00000200 T __start
-00000200 T __stext
-0000024c t _exit
-00000252 T __platform_gpio_table
-0000025a t gpio_table
-00000270 t .LFB1596
-00000270 t .LM1
-00000270 t .LM2
-00000270 t .Ltext0
-00000270 t _run_init_process
-0000027a t .LM3
-00000286 t .LFB1597
-00000286 t .LFE1596
-00000286 t .LM4
-00000286 t .LM5
-00000286 t _init_post
-0000028a t .LM6
-00000296 t .LM7
-000002aa t .LM8
-000002ba t .L199
-000002ba t .LM9
-000002c0 t .LM10
+WARNING: vmlinux.o(.text+0x2ff5): Section mismatch in reference from the variable .LM4 to the variable .init.text:___alloc_bootmem
+The function .LM4() references
+the variable __init ___alloc_bootmem.
+This is often because .LM4 lacks a __init
+annotation or the annotation of ___alloc_bootmem is wrong.
 
-exclude local symbol patch.
+WARNING: vmlinux.o(.text+0x300b): Section mismatch in reference from the variable .LM5 to the variable .init.text:___alloc_bootmem
+The function .LM5() references
+the variable __init ___alloc_bootmem.
+This is often because .LM5 lacks a __init
+annotation or the annotation of ___alloc_bootmem is wrong.
+
+WARNING: vmlinux.o(.text+0x304b): Section mismatch in reference from the variable .LM10 to the variable .init.text:_free_area_init
+The function .LM10() references
+the variable __init _free_area_init.
+This is often because .LM10 lacks a __init
+annotation or the annotation of _free_area_init is wrong.
+
+WARNING: vmlinux.o(.text+0x30a3): Section mismatch in reference from the variable .LM17 to the variable .init.text:_free_all_bootmem
+The function .LM17() references
+the variable __init _free_all_bootmem.
+This is often because .LM17 lacks a __init
+annotation or the annotation of _free_all_bootmem is wrong.
 
 Signed-off-by: Yoshinori Sato <ysato@users.sourceforge.jp>
----
- scripts/kallsyms.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/scripts/kallsyms.c b/scripts/kallsyms.c
-index ad2434b..a1652da 100644
---- a/scripts/kallsyms.c
-+++ b/scripts/kallsyms.c
-@@ -106,7 +106,7 @@ static int read_symbol(FILE *in, struct sym_entry *s)
- 		 is_arm_mapping_symbol(sym))
- 		return -1;
- 	/* exclude also MIPS ELF local symbols ($L123 instead of .L123) */
--	else if (str[0] == '$')
-+	else if (str[0] == '$' || str[0] == '.')
- 		return -1;
- 	/* exclude debugging symbols */
- 	else if (stype == 'N')
+---
+ arch/h8300/mm/init.c |    9 +++------
+ 1 files changed, 3 insertions(+), 6 deletions(-)
+
+diff --git a/arch/h8300/mm/init.c b/arch/h8300/mm/init.c
+index a1d228f..9942f24 100644
+--- a/arch/h8300/mm/init.c
++++ b/arch/h8300/mm/init.c
+@@ -40,9 +40,6 @@
+ 
+ #undef DEBUG
+ 
+-extern void die_if_kernel(char *,struct pt_regs *,long);
+-extern void free_initmem(void);
+-
+ /*
+  * BAD_PAGE is the page that is used for page faults when linux
+  * is out-of-memory. Older versions of linux just did a
+@@ -73,7 +70,7 @@ extern unsigned long memory_end;
+  * The parameters are pointers to where to stick the starting and ending
+  * addresses of available kernel virtual memory.
+  */
+-void paging_init(void)
++void __init paging_init(void)
+ {
+ 	/*
+ 	 * Make sure start_mem is page aligned,  otherwise bootmem and
+@@ -122,7 +119,7 @@ void paging_init(void)
+ 	}
+ }
+ 
+-void mem_init(void)
++void __init mem_init(void)
+ {
+ 	int codek = 0, datak = 0, initk = 0;
+ 	/* DAVIDM look at setup memory map generically with reserved area */
+@@ -178,7 +175,7 @@ void free_initrd_mem(unsigned long start, unsigned long end)
+ #endif
+ 
+ void
+-free_initmem()
++free_initmem(void)
+ {
+ #ifdef CONFIG_RAMKERNEL
+ 	unsigned long addr;
 -- 
 1.5.6.3
 
