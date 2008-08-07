@@ -1,110 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755422AbYHGR2M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754409AbYHGRaV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755422AbYHGR2M (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Aug 2008 13:28:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751018AbYHGR16
+	id S1754409AbYHGRaV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Aug 2008 13:30:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751558AbYHGRaI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Aug 2008 13:27:58 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:45808 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750901AbYHGR15 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Aug 2008 13:27:57 -0400
-Message-ID: <489B30B3.8050709@zytor.com>
-Date: Thu, 07 Aug 2008 10:28:19 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Frans Meulenbroeks <fransmeulenbroeks@gmail.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: initramfs optimization suggestions
-References: <ac9c93b10808050042u496bfa10nad7962eb0e9ec015@mail.gmail.com>	 <489A40FF.1000508@zytor.com> <ac9c93b10808070011x7a84adb5v98d2ed2405835fcc@mail.gmail.com>
-In-Reply-To: <ac9c93b10808070011x7a84adb5v98d2ed2405835fcc@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Thu, 7 Aug 2008 13:30:08 -0400
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:53449 "EHLO e1.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751018AbYHGRaH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Aug 2008 13:30:07 -0400
+Subject: Re: [RFC] [PATCH 0/5 V2] Huge page backed user-space stacks
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: Andrew Morton <akpm@linux-foundation.org>, ebmunson@us.ibm.com,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, libhugetlbfs-devel@lists.sourceforge.net,
+       abh@cray.com
+In-Reply-To: <20080807160605.GA9200@csn.ul.ie>
+References: <20080730193010.GB14138@csn.ul.ie>
+	 <20080730130709.eb541475.akpm@linux-foundation.org>
+	 <20080731103137.GD1704@csn.ul.ie> <1217884211.20260.144.camel@nimitz>
+	 <20080805111147.GD20243@csn.ul.ie> <1217952748.10907.18.camel@nimitz>
+	 <20080805162800.GJ20243@csn.ul.ie> <1217958805.10907.45.camel@nimitz>
+	 <20080806090222.GD21190@csn.ul.ie> <1218052249.10907.125.camel@nimitz>
+	 <20080807160605.GA9200@csn.ul.ie>
+Content-Type: text/plain; charset=UTF-8
+Date: Thu, 07 Aug 2008 10:29:50 -0700
+Message-Id: <1218130190.10907.188.camel@nimitz>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Frans Meulenbroeks wrote:
+On Thu, 2008-08-07 at 17:06 +0100, Mel Gorman wrote:
+> On (06/08/08 12:50), Dave Hansen didst pronounce:
+> > The main thing this set of patches does that I care about is take an
+> > anonymous VMA and replace it with a hugetlb VMA.  It does this on a
+> > special cue, but does it nonetheless.
 > 
-> The initramfs loader (initramfs.c) indeed can deal with uncompressed
-> cpio files. I saw that in the code and I just did a quick test to
-> verify that it does. Actually I was unaware that it could until very
-> recently. The doc & code are not *that* clear (see below)
-> 
->> Perhaps what you are referring to is the initramfs that is optionally built
->> out of the kernel tree?
-> 
-> Yes.
-> I am building my initramfs with the kernel and there the possibility
-> to have an uncompressed ramfs does not exist.
-> Kconfig INITRAMFS_SOURCE can point to a pre-cooked .cpio file, but
-> that one will always be compressed by the gen_initramfs_list.sh
-> script.
-> It might be desirable to have a option to specify whether compression
-> is needed or not. Guess this would also imply renaming the output file
-> of the script to something like initramfs_data.dat or so instead of
-> initramfs_data.cpio.gz (as it would be confusing to have a file with
-> .gz extension that is not compressed). The alternative of course could
-> be to generate the complete initramfs_data.S file (where the .incbin
-> "usr/initramfs_data.cpio.gz" is, which hardcodes the name of the
-> file).
-> 
+> This is not actually a new thing. For a long time now, it has been possible to
+> back  malloc() with hugepages at a userspace level using the morecore glibc
+> hook. That is replacing anonymous memory with a file-backed VMA. It happens
+> in a different place but it's just as deliberate as backing stack and the
+> end result is very similar. As the file is ram-based, it doesn't have the
+> same types of consequences like dirty page syncing that you'd ordinarily
+> watch for when moving from anonymous to file-backed memory.
 
-Having a CONFIG option to make this image uncompressed would be a good idea.
+Yes, it has already been done in userspace.  That's fine.  It isn't
+adding any complexity to the kernel.  This is adding behavior that the
+kernel has to support as well as complexity.
 
-> (BTW: please don't say that having the initramfs in the kernel image
-> is less desirable/builds slower/is less flexible and therefore less
-> desirable. I work on embedded systems and for me having a kernel with
-> embedded initramfs is highly convenient. I can just take my image,
-> load it over jtag in my hardware and boot it, without having to worry
-> about having a proper initramfs image somewhere on my target)
->> You are (correctly) pointing out that if the image is already compressed, it
->> doesn't gain from additional compression, but that would increase the
->> operational memory footprint during expansion.
+> > This patch has crossed a line in that it is really the first
+> > *replacement* of a normal VMA with a hugetlb VMA instead of the creation
+> > of the VMAs at the user's request. 
 > 
-> Agree about the footprint but as this is only during booting the
-> memory is on most systems available anyway (and I assume the memory
-> occupied by init.ramfs is reclaimed later on).
-
-It is, however, due to lowmem restrictions on a lot of systems this can 
-still hurt.
-
-> Actually I was only considering the initramfs that is included in the kernel.
-> Instead of doing things the way they are done now, we could have
-> initialised data structures in fs and mm.
-> Of course if the initramfs is loaded from an external file (with
-> initrd= ) it becomes a different story.
+> We crossed that line with morecore, it's back there somewhere. We're just
+> doing in kernel this time because backing stacks with hugepages in userspace
+> turned out to be a hairy endevour.
 > 
-> One other possibility I thought of is to keep things roughly as they
-> are now, but have a way to say (either in sys_write or through a new
-> system call) that the data is not to be copied but keep the data at
-> the same location (and use the memory provided by the caller)
-> This would of course require a few things:
-> - the memory contained by init.ramfs cannot be recovered (as mm will
-> have pointers to it)
-> - mm must allow that the memory for some pages is provided by the
-> caller (not sure if it can handle this).
+> Properly supporting anonymous hugepages would either require larger
+> changes to the core or reimplementing yet more of mm/ in mm/hugetlb.c.
+> Neither is a particularly appealing approach, nor is it likely to be a
+> very popular one.
+
+I agree.  It is always much harder to write code that can work
+generically﻿ (and get it accepted) than just write the smallest possible
+hack and stick it in fs/exec.c.
+
+Could this patch at least get fixed up to look like it could be used
+more generically?  Some code to look up and replace anonymous VMAs with
+hugetlb-backed ones.
+﻿
+> > Because of the limitations like its inability to grow the VMA, I can't
+> > imagine that this would be a generic mechanism that we can use
+> > elsewhere.
 > 
-> At first it might seem that there is again a footprint penalty as the
-> init.ramfs section cannot be recovered. However the amount of memory
-> that mm needs in this scenario is less (as the memory for the ramfs
-> need not be provided by mm).
+> What other than a stack even cares about VM_GROWSDOWN working? Besides,
+> VM_GROWSDOWN could be supported in a hugetlbfs file by mapping the end of
+> the file and moving the offset backwards (yeah ok, it ain't the prettiest
+> but it's less churn than introducing significantly different codepaths). It's
+> just not something that needs to be supported at first cut.
 > 
-> Not fully sure yet about the impact and best way forward (if any).
-> Note that the rationale for this is to improve boot time, especially
-> for embedded systems with slow processors.
-> As usual all feedback/suggestions/comments/whatever is appreciated.
+> brk() if you wanted to back hugepages with it conceivably needs a resizing
+> VMA but in that case it's growing up in which case just extend the end of
+> the VMA and increase the size of the file.
 
-I think the complexity penalty would be prohibitive; plus, on 
-HIGHMEM-afflicted system, this would move the initramfs from highmem to 
-lowmem, which would be highly undesirable.
+I'm more worried about a small huge page size (say 64k) and not being
+able to merge the VMAs.  I guess it could start in the *middle* of a
+file and map both directions.
 
-Overall, part of the attractiveness of the current code is that it is 
-extremely simple.  There are reasons it could use to be cleaned up (I 
-found its producer/consumer model to be a little to implicit to make it 
-easy to support loading from highmem proper) but I don't believe in the 
-model of going in and mucking with ramfs internals.
+I guess you could always just have a single (very sparse) hugetlb file
+per mm to do all of this 'anonymous' hugetlb memory memory stuff, and
+just map its offsets 1:1 on to the process's virtual address space.
+That would make sure you could always merge VMAs, no matter how they
+grew together.
 
-	-hpa
+-- Dave
+
