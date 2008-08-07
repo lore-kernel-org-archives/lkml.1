@@ -1,37 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754556AbYHGPXU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754220AbYHGP17@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754556AbYHGPXU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Aug 2008 11:23:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752307AbYHGPXM
+	id S1754220AbYHGP17 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Aug 2008 11:27:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752508AbYHGP1v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Aug 2008 11:23:12 -0400
-Received: from sj-iport-1.cisco.com ([171.71.176.70]:62945 "EHLO
-	sj-iport-1.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751981AbYHGPXL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Aug 2008 11:23:11 -0400
-X-IronPort-AV: E=Sophos;i="4.31,320,1215388800"; 
-   d="scan'208";a="62782885"
-From: Roland Dreier <rdreier@cisco.com>
-To: Julien Brunel <brunel@diku.dk>
-Cc: rolandd@cisco.com, sean.hefty@intel.com, hal.rosenstock@gmail.com,
-       general@lists.openfabrics.org, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH] drivers/infiniband/core: Use an IS_ERR test rather than a NULL test
-References: <200808071715.54004.brunel@diku.dk>
-X-Message-Flag: Warning: May contain useful information
-Date: Thu, 07 Aug 2008 08:23:09 -0700
-In-Reply-To: <200808071715.54004.brunel@diku.dk> (Julien Brunel's message of
-	"Thu, 7 Aug 2008 17:15:53 +0200")
-Message-ID: <ada3algrgrm.fsf@cisco.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 07 Aug 2008 15:23:10.0098 (UTC) FILETIME=[80003720:01C8F8A1]
-Authentication-Results: sj-dkim-2; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim2002 verified; ); 
+	Thu, 7 Aug 2008 11:27:51 -0400
+Received: from mba.ocn.ne.jp ([122.1.235.107]:55209 "EHLO smtp.mba.ocn.ne.jp"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752467AbYHGP1u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Aug 2008 11:27:50 -0400
+Date: Fri, 08 Aug 2008 00:27:49 +0900 (JST)
+Message-Id: <20080808.002749.25478519.anemo@mba.ocn.ne.jp>
+To: gregkh@suse.de
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       torvalds@linux-foundation.org, stable@kernel.org
+Subject: Re: Linux 2.6.26.2
+From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+In-Reply-To: <20080806175529.GB27119@kroah.com>
+References: <20080806175529.GB27119@kroah.com>
+X-Fingerprint: 6ACA 1623 39BD 9A94 9B1A  B746 CA77 FE94 2874 D52F
+X-Pgp-Public-Key: http://wwwkeys.pgp.net/pks/lookup?op=get&search=0x2874D52F
+X-Mailer: Mew version 5.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-good stuff, applied.  thanks.
+On Wed, 6 Aug 2008 10:55:29 -0700, Greg KH <gregkh@suse.de> wrote:
+> The updated 2.6.26.y git tree can be found at:
+>         git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.26.y.git
+> and can be browsed at the normal kernel.org git web browser:
+>         http://git.kernel.org/?p=linux/kernel/git/stable/linux-2.6.26.y.git;a=summary
+
+I cannot clone the tree via http protocol.
+
+$ git-clone --reference linux-2.6 http://www.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.26.y.git
+Initialized empty Git repository in /home/git/linux-2.6.26.y/.git/
+Cannot get remote repository information.
+Perhaps git-update-server-info needs to be run there?
+
+I can clone 2.6.25.y tree vit http.
+
+---
+Atsushi Nemoto
