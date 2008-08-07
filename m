@@ -1,50 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755552AbYHGS3K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755202AbYHGScy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755552AbYHGS3K (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Aug 2008 14:29:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752737AbYHGS2z
+	id S1755202AbYHGScy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Aug 2008 14:32:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751024AbYHGScq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Aug 2008 14:28:55 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:21916 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752560AbYHGS2y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Aug 2008 14:28:54 -0400
-Date: Thu, 7 Aug 2008 20:28:50 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: "Miller, Mike (OS Dev)" <Mike.Miller@hp.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
-       "scameron@beardog.cca.cpqcorp.net" <scameron@beardog.cca.cpqcorp.net>
-Subject: Re: [PATCH 6/6] cciss: fix bug if scsi tape support is disabled
-Message-ID: <20080807182849.GC20055@kernel.dk>
-References: <20080730211842.GF1758@roadking.ldev.net> <20080804095633.GA20055@kernel.dk> <20080805153012.0076396e.akpm@linux-foundation.org> <20080806130825.1567d882.sfr@canb.auug.org.au> <20080806103308.GM20055@kernel.dk> <20080807094305.8d315d06.sfr@canb.auug.org.au> <0F5B06BAB751E047AB5C87D1F77A778826B3F16682@GVW0547EXC.americas.hpqcorp.net> <20080807172028.GX20055@kernel.dk> <0F5B06BAB751E047AB5C87D1F77A778826B3F6BEF4@GVW0547EXC.americas.hpqcorp.net>
+	Thu, 7 Aug 2008 14:32:46 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:45114 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750813AbYHGScq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Aug 2008 14:32:46 -0400
+Date: Thu, 7 Aug 2008 14:32:44 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: "Frank Ch. Eigler" <fche@redhat.com>
+cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       akpm@linux-foundation.org, Peter Zijlstra <peterz@infradead.org>,
+       linux-kernel@vger.kernel.org, ltt-dev@lists.casi.polymtl.ca
+Subject: Re: LTTng finds abnormally long APIC interrupt handler : 58.2 ms
+In-Reply-To: <y0mwsisitcy.fsf@ton.toronto.redhat.com>
+Message-ID: <alpine.DEB.1.10.0808071429380.7625@gandalf.stny.rr.com>
+References: <20080805182007.GA4631@Krystal> <alpine.DEB.1.10.0808051523370.28170@gandalf.stny.rr.com> <20080807160907.GA11255@Krystal> <alpine.DEB.1.10.0808071314320.20931@gandalf.stny.rr.com> <y0mwsisitcy.fsf@ton.toronto.redhat.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <0F5B06BAB751E047AB5C87D1F77A778826B3F6BEF4@GVW0547EXC.americas.hpqcorp.net>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 07 2008, Miller, Mike (OS Dev) wrote:
-> Jens wrote:
-> 
-> > > > > uptodate more frequently :-)
-> > > >
-> > >
-> > > I still can't find my latest patches in any tree. Jens?
+
+On Thu, 7 Aug 2008, Frank Ch. Eigler wrote:
+> Steven Rostedt <rostedt@goodmis.org> writes:
 > >
-> > It's in for-next, for-akpm, and for-linus. It'll be going
-> > upstream for this release, 2.6.27.
+> > I've been thinking of exporting it, and make it so that once you 
+> > register something to the trace_ops, I'll up the module count, and never 
+> > let that module unload.
 > 
-> Thanks, I'm just a bit impatient I guess. When a patch makes into
-> for-* how long would it take to get to Linus' git tree?
+> This issue will need some sort of resolution if systemtap is to be
+> able to hook up to ftrace.  Perhaps we could have a second/nested API
+> that suffers the costs of explicit reference counting, but does permit
+> dynamic attach and robust detach.
 
-Oh that depends entirely on what else it's queued with, but for
-something going into the current branch, usually 2 weeks at the most.
+I've also thought about having a second registration method that would 
+hook the mcount function to an internal one, one that is always there. 
+Here we could add logic to know that a driver has registered a function. 
+It will just have the added overhead of that logic.
 
--- 
-Jens Axboe
+It's not hard to do. I just didn't want to clutter ftrace too much before 
+it made it into a major release. This means any patches to do this will 
+happen after 27.
+
+-- Steve
 
