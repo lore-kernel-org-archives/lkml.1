@@ -1,90 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752990AbYHGSqV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756099AbYHGSqg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752990AbYHGSqV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Aug 2008 14:46:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752706AbYHGSqE
+	id S1756099AbYHGSqg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Aug 2008 14:46:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753274AbYHGSqJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Aug 2008 14:46:04 -0400
-Received: from an-out-0708.google.com ([209.85.132.248]:39094 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752246AbYHGSqC (ORCPT
+	Thu, 7 Aug 2008 14:46:09 -0400
+Received: from stargate.chelsio.com ([12.22.49.110]:19101 "EHLO
+	stargate.asicdesigners.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753153AbYHGSqH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Aug 2008 14:46:02 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject:references
-         :in-reply-to:content-type:content-transfer-encoding;
-        b=Ignc+q/pEP4NX5SJsIb0IYay7FpLTrMTlKYUTRXKcIcI4v4AZeIZxs3Ur+HEzo5LD3
-         3lvAlH9D4RJ+oiRGepOPUHde5CH5kPg+xuU170REgFR3LNGTslZ/zov+SuQN8zI0IYPh
-         goN484aZAob0gamDwWgzNIDcg/pHMSrSLlEZo=
-Message-ID: <489B42DC.9060009@gmail.com>
-Date: Thu, 07 Aug 2008 14:45:48 -0400
-From: Ryan Hope <rmh3093@gmail.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080805)
+	Thu, 7 Aug 2008 14:46:07 -0400
+From: Divy Le Ray <divy@chelsio.com>
+Organization: Chelsio Communications
+To: "Roland Dreier" <rdreier@cisco.com>
+Subject: Re: [RFC][PATCH 1/1] cxgb3i: cxgb3 iSCSI initiator
+Date: Thu, 7 Aug 2008 11:45:01 -0700
+User-Agent: KMail/1.9.9
+Cc: "Jeff Garzik" <jgarzik@pobox.com>, "Karen Xie" <kxie@chelsio.com>,
+       netdev@vger.kernel.org, open-iscsi@googlegroups.com,
+       davem@davemloft.net, michaelc@cs.wisc.edu,
+       "Steve Wise" <swise@opengridcomputing.com>, daisyc@us.ibm.com,
+       wenxiong@us.ibm.com, bhua@us.ibm.com,
+       "Dimitrios Michailidis" <dm@chelsio.com>,
+       "Casey Leedom" <leedom@chelsio.com>,
+       "linux-scsi" <linux-scsi@vger.kernel.org>,
+       "LKML" <linux-kernel@vger.kernel.org>
+References: <200807300019.m6U0JkdY012558@localhost.localdomain> <aday73jxdfs.fsf@cisco.com> <200807311752.00911.divy@chelsio.com>
+In-Reply-To: <200807311752.00911.divy@chelsio.com>
 MIME-Version: 1.0
-To: LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [patch][reiser4] compile warning cleanups
-References: <48f7fe350808010633v3bfbb602x9995b74db323703f@mail.gmail.com>
-In-Reply-To: <48f7fe350808010633v3bfbb602x9995b74db323703f@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200808071145.03848.divy@chelsio.com>
+X-OriginalArrivalTime: 07 Aug 2008 18:44:39.0531 (UTC) FILETIME=[A5DD4BB0:01C8F8BD]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hopefully this is not wordwrapped this time...
+On Thursday 31 July 2008 05:51:59 pm Divy Le Ray wrote:
+> On Wednesday 30 July 2008 02:35:51 pm Roland Dreier wrote:
+> >  > * From a networking standpoint, our main concern becomes how this
+> >  > interacts with the networking stack.  In particular, I'm concerned
+> >  > based on reading the source that this driver uses "TCP port stealing"
+> >  > rather than using a totally separate MAC address (and IP).
+> >  >
+> >  > Stealing a TCP port on an IP/interface already assigned is a common
+> >  > solution in this space, but also a flawed one.  Precisely because the
+> >  > kernel and applications are unaware of this "special, magic TCP port"
+> >  > you open the potential for application problems that are very
+> >  > difficult for an admin to diagnose based on observed behavior.
+> >
+> > That's true, but using a separate MAC and IP opens up a bunch of other
+> > operational problems.  I don't think the right answer for iSCSI offload
+> > is clear yet.
+> >
+> >  - R.
+>
+> Hi Jeff,
+>
+> We've considered the approach of having a separate IP/MAC addresses to
+> manage iSCSI connections. In such a context, the stack would have to be
+> unaware of this iSCSI specific IP address. The iSCSI driver would then have
+> to implement at least its own ARP reply mechanism. DHCP too would have to
+> be managed separately. Most network setting/monitoring tools would also be
+> unavailable.
+>
+> The open-iscsi initiator is not a huge consumer of TCP connections,
+> allocating a TCP port from the stack would be reasonable in terms of
+> resources in this context. It is however unclear if it is an acceptable
+> approach.
+>
+> Our current implementation was designed to be the most tolerable one
+> within the constraints - real or expected - aforementioned.
+>
 
-From: Ryan Hope <rmh3093@gmail.com>
-Date: Fri, 1 Aug 2008 13:25:28 +0000 (-0400)
-Subject: cleanup reiser4 warnings
-X-Git-Url: 
-http://zen-sources.org/cgi-bin/gitweb.cgi?p=kernel.git;a=commitdiff_plain;h=675342fe83269780f2699f47972d0059e13db0cc
+Hi Jeff,
 
-cleanup reiser4 warnings
----
+Mike Christie will not merge this code until he has an explicit 
+acknowledgement from netdev.
 
-diff --git a/fs/reiser4/plugin/file/cryptcompress.c 
-b/fs/reiser4/plugin/file/cryptcompress.c
-index 2e64374..7d3061d 100644
---- a/fs/reiser4/plugin/file/cryptcompress.c
-+++ b/fs/reiser4/plugin/file/cryptcompress.c
-@@ -821,7 +821,7 @@ static int need_cut_or_align(struct inode * inode,
-  static void align_or_cut_overhead(struct inode * inode,
-  				  struct cluster_handle * ch, rw_op rw)
-  {
--	int oh;
-+	unsigned int oh;
-  	cipher_plugin * cplug = inode_cipher_plugin(inode);
+As you mentioned, the port stealing approach we've taken has its issues.
+We consequently analyzed your suggestion to use a different IP/MAC address for 
+iSCSI and it raises other tough issues (separate ARP and DHCP management, 
+unavailability of common networking tools).
+On these grounds, we believe our current approach is the most tolerable.
+Would the stack provide a TCP port allocation service, we'd be glad to use it 
+to solve the current concerns.
+The cxgb3i driver is up and running here, its merge is pending our decision.
 
-  	assert("edward-1402", need_cipher(inode));
-diff --git a/fs/reiser4/plugin/inode_ops.c b/fs/reiser4/plugin/inode_ops.c
-index 6ac4d13..945a740 100644
---- a/fs/reiser4/plugin/inode_ops.c
-+++ b/fs/reiser4/plugin/inode_ops.c
-@@ -418,8 +418,7 @@ void *reiser4_follow_link_common(struct dentry 
-*dentry, struct nameidata *nd)
-   *
-   * Uses generic function to check for rwx permissions.
-   */
--int reiser4_permission_common(struct inode *inode, int mask,
--			      struct nameidata *nameidata)
-+int reiser4_permission_common(struct inode *inode, int mask)
-  {
-  	return generic_permission(inode, mask, NULL);
-  }
-diff --git a/fs/reiser4/plugin/object.h b/fs/reiser4/plugin/object.h
-index 63abb07..88a53a5 100644
---- a/fs/reiser4/plugin/object.h
-+++ b/fs/reiser4/plugin/object.h
-@@ -25,8 +25,7 @@ int reiser4_mknod_common(struct inode *parent, struct 
-dentry *dentry,
-  int reiser4_rename_common(struct inode *old_dir, struct dentry *old_name,
-  			  struct inode *new_dir, struct dentry *new_name);
-  void *reiser4_follow_link_common(struct dentry *, struct nameidata *data);
--int reiser4_permission_common(struct inode *, int mask,
--			      struct nameidata *nameidata);
-+int reiser4_permission_common(struct inode *, int mask);
-  int reiser4_setattr_common(struct dentry *, struct iattr *);
-  int reiser4_getattr_common(struct vfsmount *mnt, struct dentry *,
-  			   struct kstat *);
+Cheers,
+Divy
