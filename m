@@ -1,53 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756521AbYHGM1q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755629AbYHGM0O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756521AbYHGM1q (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Aug 2008 08:27:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755474AbYHGMZw
+	id S1755629AbYHGM0O (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Aug 2008 08:26:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755059AbYHGMYr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Aug 2008 08:25:52 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:56011
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1754031AbYHGMZE (ORCPT
+	Thu, 7 Aug 2008 08:24:47 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:53405 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754189AbYHGMYo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Aug 2008 08:25:04 -0400
-Date: Thu, 07 Aug 2008 02:19:01 -0700 (PDT)
-Message-Id: <20080807.021901.172722402.davem@davemloft.net>
-To: jeff@garzik.org
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [git patches] net driver updates
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20080807085009.GA31681@havoc.gtf.org>
-References: <20080807085009.GA31681@havoc.gtf.org>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Thu, 7 Aug 2008 08:24:44 -0400
+Date: Thu, 7 Aug 2008 11:12:16 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: ebiederm@xmission.com (Eric W. Biederman)
+Cc: "Yinghai Lu" <yhlu.kernel@gmail.com>, "Ingo Molnar" <mingo@elte.hu>,
+       "Thomas Gleixner" <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       "Dhaval Giani" <dhaval@linux.vnet.ibm.com>,
+       "Mike Travis" <travis@sgi.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 00/33] dyn_array and nr_irqs support v4
+Message-ID: <20080807111216.6cfdbeea@lxorguk.ukuu.org.uk>
+In-Reply-To: <m18wv9iqn9.fsf@frodo.ebiederm.org>
+References: <1218011937-10084-1-git-send-email-yhlu.kernel@gmail.com>
+	<m1hc9yjb7x.fsf@frodo.ebiederm.org>
+	<86802c440808061129l2bbe1658w453a11b4f16ffc83@mail.gmail.com>
+	<m1y739j2z8.fsf@frodo.ebiederm.org>
+	<20080807002638.04699eac@lxorguk.ukuu.org.uk>
+	<m18wv9iqn9.fsf@frodo.ebiederm.org>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jeff Garzik <jeff@garzik.org>
-Date: Thu, 7 Aug 2008 04:50:09 -0400
+On Wed, 06 Aug 2008 18:02:18 -0700
+ebiederm@xmission.com (Eric W. Biederman) wrote:
 
-> Rough summary:
+> Alan Cox <alan@lxorguk.ukuu.org.uk> writes:
 > 
-> * fixes
+> > A lot of these are range checks so could be replaced by a single
+> > valid_irq(irq) test.
 > 
-> * additions of the variety where only a few lines are added, to support
->   new hardware (forcedeth, netxen)
-> 
-> * a WAN update that got missed, and IMO should go in for 2.6.27.  This
->   is addressing the complaint about too much stuff still using syncppp,
->   so things get switched more to generic HDLC.  MUCH more typesafe, and
->   links directly with struct net_device, rather than through opaque void
->   pointers and syncppp-specific structs.
-> 
-> * bonding update with core bits previously ack'd by you
-> 
-> * that ethtool.h change increasing speed to 32 bits
-> 
-> Please pull from 'upstream-davem' branch of
-> master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/netdev-2.6.git upstream-davem
+> Yes.  My first impression was that with NR_IRQS dead valid_irq could
+> easily become. #define valid_irq(irq) ((irq) != 0) 
 
-I've pulled, but the WAN bits were borderline.  If you couldn't pull
-that WAN stuff in on time, that's just the way it goes sometimes.
+Not really - there are lots of cases where we sanity check an IRQ passed
+from user space or module parameter configuration. So we do actually need
+
+	valid_irq(irq)		((irq) > 0 && (irq) < nr_irqs)
+
+[or relevant per arch alternatives]
+
+Alan
