@@ -1,46 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753867AbYHGM1G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756521AbYHGM1q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753867AbYHGM1G (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Aug 2008 08:27:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752527AbYHGMZM
+	id S1756521AbYHGM1q (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Aug 2008 08:27:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755474AbYHGMZw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Aug 2008 08:25:12 -0400
-Received: from tundra.namei.org ([65.99.196.166]:37900 "EHLO tundra.namei.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755246AbYHGMZK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Aug 2008 08:25:10 -0400
-Date: Thu, 7 Aug 2008 22:03:57 +1000 (EST)
-From: James Morris <jmorris@namei.org>
-To: David Howells <dhowells@redhat.com>
-cc: akpm@linux-foundation.org, morgan@kernel.org, sfr@canb.auug.org.au,
-       viro@ftp.linux.org.uk, casey@schaufler-ca.com,
-       linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 00/24] Introduce credentials [ver #7]
-In-Reply-To: <20080806153713.14351.91448.stgit@warthog.procyon.org.uk>
-Message-ID: <alpine.LRH.1.10.0808072156240.18676@tundra.namei.org>
-References: <20080806153713.14351.91448.stgit@warthog.procyon.org.uk>
-User-Agent: Alpine 1.10 (LRH 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 7 Aug 2008 08:25:52 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:56011
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1754031AbYHGMZE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Aug 2008 08:25:04 -0400
+Date: Thu, 07 Aug 2008 02:19:01 -0700 (PDT)
+Message-Id: <20080807.021901.172722402.davem@davemloft.net>
+To: jeff@garzik.org
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [git patches] net driver updates
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20080807085009.GA31681@havoc.gtf.org>
+References: <20080807085009.GA31681@havoc.gtf.org>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 6 Aug 2008, David Howells wrote:
+From: Jeff Garzik <jeff@garzik.org>
+Date: Thu, 7 Aug 2008 04:50:09 -0400
 
-> I've brought my patchset up to date with regards the recent merge melee and
-> built the patches on top of the next branch of James's security testing tree as
-> per his request.
+> Rough summary:
+> 
+> * fixes
+> 
+> * additions of the variety where only a few lines are added, to support
+>   new hardware (forcedeth, netxen)
+> 
+> * a WAN update that got missed, and IMO should go in for 2.6.27.  This
+>   is addressing the complaint about too much stuff still using syncppp,
+>   so things get switched more to generic HDLC.  MUCH more typesafe, and
+>   links directly with struct net_device, rather than through opaque void
+>   pointers and syncppp-specific structs.
+> 
+> * bonding update with core bits previously ack'd by you
+> 
+> * that ethtool.h change increasing speed to 32 bits
+> 
+> Please pull from 'upstream-davem' branch of
+> master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/netdev-2.6.git upstream-davem
 
-These patches are now in 
-git://git.kernel.org/pub/scm/linux/kernel/git/jmorris/security-testing-2.6#next-creds
-
-This is the 'next' branch + the credentials patches.
-
-Stephen, could you add 'next-creds' to linux-next?
-
-
-- James
--- 
-James Morris
-<jmorris@namei.org>
+I've pulled, but the WAN bits were borderline.  If you couldn't pull
+that WAN stuff in on time, that's just the way it goes sometimes.
