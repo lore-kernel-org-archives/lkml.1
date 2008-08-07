@@ -1,70 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753072AbYHGVgF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757266AbYHGVhN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753072AbYHGVgF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Aug 2008 17:36:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752646AbYHGVfU
+	id S1757266AbYHGVhN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Aug 2008 17:37:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752534AbYHGVg7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Aug 2008 17:35:20 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:34225 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756662AbYHGVfS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Aug 2008 17:35:18 -0400
-Date: Thu, 7 Aug 2008 17:35:16 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Bodo Eggert <7eggert@gmx.de>
-cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       David Miller <davem@davemloft.net>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Roland McGrath <roland@redhat.com>, Ulrich Drepper <drepper@redhat.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Gregory Haskins <ghaskins@novell.com>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       "Luis Claudio R. Goncalves" <lclaudio@uudg.org>,
-       Clark Williams <williams@redhat.com>
-Subject: Re: [PATCH 0/5] ftrace: to kill a daemon
-In-Reply-To: <E1KRD1p-0001SX-0p@be1.7eggert.dyndns.org>
-Message-ID: <alpine.DEB.1.10.0808071730470.10092@gandalf.stny.rr.com>
-References: <aYipy-5FM-9@gated-at.bofh.it> <E1KRD1p-0001SX-0p@be1.7eggert.dyndns.org>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Thu, 7 Aug 2008 17:36:59 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:36850 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750890AbYHGVg7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Aug 2008 17:36:59 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: Re: resume problem with i915/drm
+Date: Thu, 7 Aug 2008 23:39:39 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Charles@schwieters.org, Matthew Garrett <mjg59@srcf.ucam.org>,
+       linux-kernel@vger.kernel.org
+References: <E1KQYiX-0002Nl-Ud@oaf.wireless> <200808071427.32457.jbarnes@virtuousgeek.org>
+In-Reply-To: <200808071427.32457.jbarnes@virtuousgeek.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200808072339.40143.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Thu, 7 Aug 2008, Bodo Eggert wrote:
-
-> Steven Rostedt <rostedt@goodmis.org> wrote:
+On Thursday, 7 of August 2008, Jesse Barnes wrote:
+> On Tuesday, August 5, 2008 7:25 pm Charles@schwieters.org wrote:
+> > -----BEGIN PGP SIGNED MESSAGE-----
+> > Hash: SHA1
+> >
+> >
+> > Hi--
+> >
+> >   I'm having a problem resuming (from RAM) if the i915 and drm modules
+> > are loaded (these are needed for running X on my machine). Vanilla
+> > kernel versions 2.6.25.x and 2.6.26.x. I get the same behavior with
+> > Debian linux-image-2.6.25-2-686 kernel. I can't believe I'm the first to
+> > encounter this.
+> >
+> > suspend-to-ram and resuming works fine with earlier kernels
+> > (e.g. 2.6.17), but I haven't tested exhaustively.
+> >
+> > Possibly related is a failure in modprobe -r i915 after it is
+> > loaded. The message printed is
 > 
-> > The idea I came
-> > up with was to make a tmp.s file for every object just after it is compiled.
+> [snip backtrace]
 > 
-> make -j would cause these files to overwrite each other, wouldn't it?
+> Well the backtrace makes it look like i915 didn't take care to remove some of 
+> its /proc files, which is weird.
+> 
+> Your "screen blank on resume" problem might be a duplicate of a bug that got 
+> reported awhile back (can't find it now, Matthew?).  If so, then you're not 
+> the first one to see it; unfortunately we don't have a fix yet...
 
-I simplified my explanation. I really used something like this:
+I think it may be related to this report:
 
-for init/main.o:
-
-init/.tmp_mc_main.s  : for the list file
-init/.tmp_mc_main.o  : for the list compiled object.
-init/.tmp_gl_main.o  : for the object converted static to global.
-init/.tmp_mx_main.o  : for the merged list and global object.
-
-
-The tmp.s was to keep the focus on the concept. But the actual 
-implementation handles multi-threaded builds.
-
-I use distcc and build with -j40. I had no issues.
+http://marc.info/?l=linux-kernel&m=121789312607006&w=4
 
 Thanks,
-
--- Steve
-
+Rafael
