@@ -1,208 +1,167 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754193AbYHGRLU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755893AbYHGRLf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754193AbYHGRLU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Aug 2008 13:11:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752703AbYHGRLI
+	id S1755893AbYHGRLf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Aug 2008 13:11:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753086AbYHGRLO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Aug 2008 13:11:08 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:56655 "EHLO smtp5.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752682AbYHGRLF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Aug 2008 13:11:05 -0400
-Date: Thu, 7 Aug 2008 20:09:32 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Russell King <rmk+lkml@arm.linux.org.uk>, bzolnier@gmail.com
-Cc: Linux Kernel List <linux-kernel@vger.kernel.org>,
-       linux-ide@vger.kernel.org
-Subject: [2.6 patch] drivers/ide/pci/: use __devexit_p()
-Message-ID: <20080807170932.GC9692@cs181140183.pp.htv.fi>
-References: <20080807164539.GA26947@flint.arm.linux.org.uk>
+	Thu, 7 Aug 2008 13:11:14 -0400
+Received: from oslproxyp1.tandberg.com ([194.0.215.2]:34932 "EHLO
+	oslproxyp1.tandberg.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752778AbYHGRLL convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Aug 2008 13:11:11 -0400
+X-Greylist: delayed 611 seconds by postgrey-1.27 at vger.kernel.org; Thu, 07 Aug 2008 13:11:11 EDT
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20080807164539.GA26947@flint.arm.linux.org.uk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain;
+	charset="US-ASCII"
+Content-Transfer-Encoding: 8BIT
+Subject: OOPS, ip -f inet6 route get fec0::1, linux-2.6.26, ip6_route_output, rt6_fill_node+0x175
+Date: Thu, 7 Aug 2008 19:00:56 +0200
+Message-ID: <9F6ACAE02B6DD040A1E259977622CFDB033590C3@oslexcp1.eu.tandberg.int>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: OOPS, ip -f inet6 route get fec0::1, linux-2.6.26, ip6_route_output, rt6_fill_node+0x175
+Thread-Index: Acj4ryivieZHj4/eSxyA1rTV+RDuiQ==
+From: "John Gumb" <john.gumb@tandberg.com>
+To: <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 07 Aug 2008 17:00:57.0612 (UTC) FILETIME=[294FCCC0:01C8F8AF]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 07, 2008 at 05:45:39PM +0100, Russell King wrote:
->...
-> --- a/drivers/ide/pci/hpt366.c
-> +++ b/drivers/ide/pci/hpt366.c
-> @@ -1594,7 +1594,7 @@ static int __devinit hpt366_init_one(struct pci_dev *dev, const struct pci_devic
->  	return ret;
->  }
->  
-> -static void __devexit hpt366_remove(struct pci_dev *dev)
-> +static void hpt366_remove(struct pci_dev *dev)
->...
+Folks
 
-Thanks for your report.
+Looks like we have an issue with linux-2.6.26 & ipv6
 
-The code is buggy, but:
-- that's not the correct fix and
-- there are far more such bugs under drivers/ide/pci/
+Scenario: no ipv6 default route set.
 
-Patch below.
+Repro: Enter command 
 
-> Russell King
+# ip -f inet6 route get fec0::1
 
-cu
-Adrian
+And we get BUG: unable to handle kernel NULL pointer deref....
 
+This has been an issue since linux-2.6.26-rc4. It's taken a while to
+nail it. We are currently testing linux-2.6.26.2.
 
-<--  snip  -->
+This appears to have been an issue in the past. This is where I got the
+magic ip route command from.
 
+http://www.ussg.iu.edu/hypermail/linux/kernel/0510.2/0522.html
 
-This patch adds missing __devexit_p's.
+http://www.ussg.iu.edu/hypermail/linux/kernel/0510.2/0535.html
 
-Reported-by: Russell King <rmk+lkml@arm.linux.org.uk>
-Signed-off-by: Adrian Bunk <bunk@kernel.org>
+http://www.ussg.iu.edu/hypermail/linux/kernel/0510.2/1522.html
 
----
+~ # ip -f inet6 route get fec0::1
 
- drivers/ide/pci/aec62xx.c      |    2 +-
- drivers/ide/pci/cy82c693.c     |    2 +-
- drivers/ide/pci/hpt366.c       |    2 +-
- drivers/ide/pci/it821x.c       |    2 +-
- drivers/ide/pci/pdc202xx_new.c |    2 +-
- drivers/ide/pci/scc_pata.c     |    2 +-
- drivers/ide/pci/siimage.c      |    2 +-
- drivers/ide/pci/sis5513.c      |    2 +-
- drivers/ide/pci/tc86c001.c     |    2 +-
- drivers/ide/pci/via82cxxx.c    |    2 +-
- 10 files changed, 10 insertions(+), 10 deletions(-)
+Produces, with linux-2.6.26.2,
 
-2c3b97b99c1b2985e74bf60d46b105b8eacc4fba 
-diff --git a/drivers/ide/pci/aec62xx.c b/drivers/ide/pci/aec62xx.c
-index 40644b6..3187215 100644
---- a/drivers/ide/pci/aec62xx.c
-+++ b/drivers/ide/pci/aec62xx.c
-@@ -307,7 +307,7 @@ static struct pci_driver driver = {
- 	.name		= "AEC62xx_IDE",
- 	.id_table	= aec62xx_pci_tbl,
- 	.probe		= aec62xx_init_one,
--	.remove		= aec62xx_remove,
-+	.remove		= __devexit_p(aec62xx_remove),
- };
+BUG: unable to handle kernel NULL pointer dereference at 00000000
+
+IP: [<c0369b85>] rt6_fill_node+0x175/0x3b0
+
+*pdpt = 0000000036466001 *pde = 0000000000000000
+
+Oops: 0000 [#1] SMP
+
+Modules linked in: pcnet32 smsc47m192 i2c_i801 i2c_dev i2c_core r8169
+coretemp i
+t87 hwmon_vid lcm e1000e
+
  
- static int __init aec62xx_ide_init(void)
-diff --git a/drivers/ide/pci/cy82c693.c b/drivers/ide/pci/cy82c693.c
-index bfae2f8..e6d8ee8 100644
---- a/drivers/ide/pci/cy82c693.c
-+++ b/drivers/ide/pci/cy82c693.c
-@@ -447,7 +447,7 @@ static struct pci_driver driver = {
- 	.name		= "Cypress_IDE",
- 	.id_table	= cy82c693_pci_tbl,
- 	.probe		= cy82c693_init_one,
--	.remove		= cy82c693_remove,
-+	.remove		= __devexit_p(cy82c693_remove),
- };
- 
- static int __init cy82c693_ide_init(void)
-diff --git a/drivers/ide/pci/hpt366.c b/drivers/ide/pci/hpt366.c
-index 748793a..eb107ee 100644
---- a/drivers/ide/pci/hpt366.c
-+++ b/drivers/ide/pci/hpt366.c
-@@ -1620,7 +1620,7 @@ static struct pci_driver driver = {
- 	.name		= "HPT366_IDE",
- 	.id_table	= hpt366_pci_tbl,
- 	.probe		= hpt366_init_one,
--	.remove		= hpt366_remove,
-+	.remove		= __devexit_p(hpt366_remove),
- };
- 
- static int __init hpt366_ide_init(void)
-diff --git a/drivers/ide/pci/it821x.c b/drivers/ide/pci/it821x.c
-index b6dc723..4a1508a 100644
---- a/drivers/ide/pci/it821x.c
-+++ b/drivers/ide/pci/it821x.c
-@@ -686,7 +686,7 @@ static struct pci_driver driver = {
- 	.name		= "ITE821x IDE",
- 	.id_table	= it821x_pci_tbl,
- 	.probe		= it821x_init_one,
--	.remove		= it821x_remove,
-+	.remove		= __devexit_p(it821x_remove),
- };
- 
- static int __init it821x_ide_init(void)
-diff --git a/drivers/ide/pci/pdc202xx_new.c b/drivers/ide/pci/pdc202xx_new.c
-index 0f609b7..d477da6 100644
---- a/drivers/ide/pci/pdc202xx_new.c
-+++ b/drivers/ide/pci/pdc202xx_new.c
-@@ -566,7 +566,7 @@ static struct pci_driver driver = {
- 	.name		= "Promise_IDE",
- 	.id_table	= pdc202new_pci_tbl,
- 	.probe		= pdc202new_init_one,
--	.remove		= pdc202new_remove,
-+	.remove		= __devexit_p(pdc202new_remove),
- };
- 
- static int __init pdc202new_ide_init(void)
-diff --git a/drivers/ide/pci/scc_pata.c b/drivers/ide/pci/scc_pata.c
-index 6cde48b..44cccd1 100644
---- a/drivers/ide/pci/scc_pata.c
-+++ b/drivers/ide/pci/scc_pata.c
-@@ -954,7 +954,7 @@ static struct pci_driver driver = {
- 	.name = "SCC IDE",
- 	.id_table = scc_pci_tbl,
- 	.probe = scc_init_one,
--	.remove = scc_remove,
-+	.remove = __devexit_p(scc_remove),
- };
- 
- static int scc_ide_init(void)
-diff --git a/drivers/ide/pci/siimage.c b/drivers/ide/pci/siimage.c
-index 445ce6f..db2b88a 100644
---- a/drivers/ide/pci/siimage.c
-+++ b/drivers/ide/pci/siimage.c
-@@ -832,7 +832,7 @@ static struct pci_driver driver = {
- 	.name		= "SiI_IDE",
- 	.id_table	= siimage_pci_tbl,
- 	.probe		= siimage_init_one,
--	.remove		= siimage_remove,
-+	.remove		= __devexit_p(siimage_remove),
- };
- 
- static int __init siimage_ide_init(void)
-diff --git a/drivers/ide/pci/sis5513.c b/drivers/ide/pci/sis5513.c
-index e5a4b42..5efe21d 100644
---- a/drivers/ide/pci/sis5513.c
-+++ b/drivers/ide/pci/sis5513.c
-@@ -610,7 +610,7 @@ static struct pci_driver driver = {
- 	.name		= "SIS_IDE",
- 	.id_table	= sis5513_pci_tbl,
- 	.probe		= sis5513_init_one,
--	.remove		= sis5513_remove,
-+	.remove		= __devexit_p(sis5513_remove),
- };
- 
- static int __init sis5513_ide_init(void)
-diff --git a/drivers/ide/pci/tc86c001.c b/drivers/ide/pci/tc86c001.c
-index 7fc88c3..927277c 100644
---- a/drivers/ide/pci/tc86c001.c
-+++ b/drivers/ide/pci/tc86c001.c
-@@ -249,7 +249,7 @@ static struct pci_driver driver = {
- 	.name		= "TC86C001",
- 	.id_table	= tc86c001_pci_tbl,
- 	.probe		= tc86c001_init_one,
--	.remove		= tc86c001_remove,
-+	.remove		= __devexit_p(tc86c001_remove),
- };
- 
- static int __init tc86c001_ide_init(void)
-diff --git a/drivers/ide/pci/via82cxxx.c b/drivers/ide/pci/via82cxxx.c
-index a6b2cc8..94fb9ab 100644
---- a/drivers/ide/pci/via82cxxx.c
-+++ b/drivers/ide/pci/via82cxxx.c
-@@ -491,7 +491,7 @@ static struct pci_driver driver = {
- 	.name 		= "VIA_IDE",
- 	.id_table 	= via_pci_tbl,
- 	.probe 		= via_init_one,
--	.remove		= via_remove,
-+	.remove		= __devexit_p(via_remove),
- };
- 
- static int __init via_ide_init(void)
 
+Pid: 3033, comm: ip Not tainted (2.6.26.2 #1)
+
+EIP: 0060:[<c0369b85>] EFLAGS: 00010246 CPU: 1
+
+EIP is at rt6_fill_node+0x175/0x3b0
+
+EAX: 00000000 EBX: f7115bbc ECX: 00000000 EDX: f7115c60
+
+ESI: f7c1f100 EDI: f7548f00 EBP: f7115bdc ESP: f7115ba4
+
+ DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
+
+Process ip (pid: 3033, ti=f7114000 task=f64cbc50 task.ti=f7114000)
+
+Stack: f7115bbc 00000000 f7115c54 f7115bc0 f7115c60 f6d75078 00000000
+f7115bdc  
+       c036a5f0 c036b360 00000000 f75487a0 00000000 f7548f00 f7115c9c
+c036c30e  
+       f7115c70 00000000 00000018 00000bd9 489b2024 00000000 00000000
+00000000  
+Call Trace:
+
+ [<c036a5f0>] ? ip6_route_output+0x50/0xa0
+
+ [<c036b360>] ? ip6_pol_route_output+0x0/0x20
+
+ [<c036c30e>] ? inet6_rtm_getroute+0x16e/0x200
+
+ [<c036c1a0>] ? inet6_rtm_getroute+0x0/0x200
+
+ [<c030ef19>] ? rtnetlink_rcv_msg+0x1b9/0x1f0
+
+ [<c030ed60>] ? rtnetlink_rcv_msg+0x0/0x1f0
+
+ [<c031426d>] ? netlink_rcv_skb+0x8d/0xb0
+
+ [<c030ed57>] ? rtnetlink_rcv+0x17/0x20
+
+ [<c031402d>] ? netlink_unicast+0x23d/0x270
+
+ [<c030162a>] ? memcpy_fromiovec+0x4a/0x70
+
+ [<c0314811>] ? netlink_sendmsg+0x1c1/0x290
+
+ [<c02fa165>] ? sock_sendmsg+0xc5/0xf0
+
+ [<c01363a0>] ? autoremove_wake_function+0x0/0x50
+
+ [<c01363a0>] ? autoremove_wake_function+0x0/0x50
+
+ [<c02fa165>] ? sock_sendmsg+0xc5/0xf0
+
+ [<c0217f37>] ? copy_from_user+0x37/0x70
+
+ [<c03018ec>] ? verify_iovec+0x2c/0x90
+
+ [<c02fa29a>] ? sys_sendmsg+0x10a/0x220
+
+ [<c015ab08>] ? __inc_zone_page_state+0x18/0x20
+
+ [<c01642ed>] ? __page_set_anon_rmap+0x2d/0x40
+
+ [<c0164325>] ? page_add_new_anon_rmap+0x25/0x30
+
+ [<c015eda6>] ? handle_mm_fault+0x606/0x750
+
+ [<c0160f5e>] ? vma_adjust+0xfe/0x410
+
+ [<c0113156>] ? do_page_fault+0x126/0x830
+
+ [<c02fb343>] ? sys_socketcall+0x233/0x260
+
+ [<c0102f39>] ? sysenter_past_esp+0x6a/0x91
+
+ =======================
+
+Code: 62 01 00 00 c6 43 01 80 8b 45 0c 85 c0 0f 85 13 02 00 00 8b 45 d8
+85 c0 74
+ 3c 8b 86 88 00 00 00 8d 5d e0 31 c9 89 1c 24 8b 55 d8 <8b> 00 e8 d4 e3
+ff ff 85
+ c0 75 20 b9 10 00 00 00 ba 07 00 00 00
+
+EIP: [<c0369b85>] rt6_fill_node+0x175/0x3b0 SS:ESP 0068:f7115ba4
+
+---[ end trace e9f2563374550ae8 ]---
+
+
+I will look into producing a patch.
+
+Best regards
+
+John Gumb 
