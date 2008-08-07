@@ -1,56 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752744AbYHGRTz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756179AbYHGRUP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752744AbYHGRTz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Aug 2008 13:19:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752030AbYHGRTq
+	id S1756179AbYHGRUP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Aug 2008 13:20:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755468AbYHGRT7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Aug 2008 13:19:46 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:34641 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751549AbYHGRTp (ORCPT
+	Thu, 7 Aug 2008 13:19:59 -0400
+Received: from zone0.gcu-squad.org ([212.85.147.21]:36257 "EHLO
+	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755198AbYHGRT4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Aug 2008 13:19:45 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <489B2EAE.8040901@s5r6.in-berlin.de>
-Date: Thu, 07 Aug 2008 19:19:42 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.16) Gecko/20080722 SeaMonkey/1.1.11
-MIME-Version: 1.0
-To: jmerkey@wolfmountaingroup.com
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [ANNOUNCE] mdb-2.6.27-rc2-ia32-08-07-08.patch
-References: <1300.69.2.248.210.1218119365.squirrel@webmail.wolfmountaingroup.com>       <489B199B.40305@s5r6.in-berlin.de>       <489B1BDC.1010504@s5r6.in-berlin.de>    <1923.69.2.248.210.1218124570.squirrel@webmail.wolfmountaingroup.com>    <489B26F0.3030603@s5r6.in-berlin.de> <1905.69.2.248.210.1218126817.squirrel@webmail.wolfmountaingroup.com>
-In-Reply-To: <1905.69.2.248.210.1218126817.squirrel@webmail.wolfmountaingroup.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 7 Aug 2008 13:19:56 -0400
+Date: Thu, 7 Aug 2008 19:19:43 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: Trent Piepho <xyzzy@speakeasy.org>
+Cc: Sam Ravnborg <sam@ravnborg.org>, "D. Kelly" <user.kernel@gmail.com>,
+       "mailing list: linux-kernel" <linux-kernel@vger.kernel.org>,
+       Linux I2C <i2c@lm-sensors.org>
+Subject: Re: Problem with restricted I2C algorithms in kernel 2.6.26!
+Message-ID: <20080807191943.72d1802d@hyperion.delvare>
+In-Reply-To: <20080807181416.5de4ce6d@hyperion.delvare>
+References: <5ab239b10807161233i6c1c4d0we01ea1b8e6ccaa5b@mail.gmail.com>
+	<20080807131357.59399ddf@hyperion.delvare>
+	<Pine.LNX.4.58.0808070851310.10341@shell4.speakeasy.net>
+	<20080807181416.5de4ce6d@hyperion.delvare>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-jmerkey@wolfmountaingroup.com wrote:
->> jmerkey@wolfmountaingroup.com wrote:
->>> rspin locks are for these types of cases -- so if I fault on the same
->>> processor I took the lock on it just bumps a counter -- yes, it is
->>> atomic
->>> and SMP safe to do it this way.
->> Only if all contexts which take rlocks are not preemptible.
-[...]
-> check mdb-main.c -- I disable preemption before rspin_lock is attempted. 
-> Since the only processor which sets the proc number does do inside the
-> spin lock, and the other processors only read it, unless memory is
-> corrupted or the machine is severely broken, its SMP safe to this.
+On Thu, 7 Aug 2008 18:14:16 +0200, Jean Delvare wrote:
+> Hi Trent,
+> 
+> On Thu, 7 Aug 2008 09:01:35 -0700 (PDT), Trent Piepho wrote:
+> > Maybe an option to turn i2c algorithms on could do into the Library
+> > Routines menu.  There are already options for things like the crc routines
+> > here so they can be turned on if an out of tree driver needs them but
+> > nothing in the kernel does.
+> 
+> Having I2C-specific options selectable under the Library menu would
+> probably be even more confusing. However, it would be possible to do
+> something similar under the I2C menu. Much like
+> CONFIG_VIDEO_HELPER_CHIPS_AUTO does for the V4L subsystem:
+> CONFIG_I2C_ALGOS_AUTO would default to Y and would hide I2C algo driver
+> selection (as is the case in 2.6.26), changing it to N would present
+> the old menu for users to select the aldo drivers manually (as was the
+> case in 2.6.25.)
 
-Then it is recommendable that you document the call context requirements 
-at the functions.  And you can and IMO should drop the _irq_save and 
-_irq_restore from the spinlock accessors in the rlock accessors.  And 
-drop the volatile qualifier of the rlock accessor argument while you are 
-at it.
+Something like this...
 
-I see that you are calling save_flags/ restore_flags in 
-mdb-main.c::mdb().  These are marked as deprecated.  Would 
-local_irq_save/ local_irq_restore be correct at these places?
+Subject: i2c: Let users select algorithm drivers manually again
+
+Signed-off-by: Jean Delvare <khali@linux-fr.org>
+---
+ drivers/i2c/Kconfig       |   14 ++++++++++++++
+ drivers/i2c/algos/Kconfig |   11 ++++++++---
+ 2 files changed, 22 insertions(+), 3 deletions(-)
+
+--- linux-2.6.27-rc2.orig/drivers/i2c/Kconfig	2008-04-17 04:49:44.000000000 +0200
++++ linux-2.6.27-rc2/drivers/i2c/Kconfig	2008-08-07 19:14:37.000000000 +0200
+@@ -38,6 +38,20 @@ config I2C_CHARDEV
+ 	  This support is also available as a module.  If so, the module 
+ 	  will be called i2c-dev.
+ 
++config I2C_HELPER_AUTO
++	bool "Autoselect pertinent helper modules"
++	default y
++	help
++	  Some I2C bus drivers require so-called "I2C algorithm" modules
++	  to work. These are basically software-only abstractions of generic
++	  I2C interfaces. This option will autoselect them so that you don't
++	  have to care.
++
++	  Unselect this only if you need to enable additional helper
++	  modules, for example for use with external I2C bus drivers.
++
++	  In doubt, say Y.
++
+ source drivers/i2c/algos/Kconfig
+ source drivers/i2c/busses/Kconfig
+ source drivers/i2c/chips/Kconfig
+--- linux-2.6.27-rc2.orig/drivers/i2c/algos/Kconfig	2008-07-14 11:14:59.000000000 +0200
++++ linux-2.6.27-rc2/drivers/i2c/algos/Kconfig	2008-08-07 18:50:43.000000000 +0200
+@@ -2,15 +2,20 @@
+ # I2C algorithm drivers configuration
+ #
+ 
++menu "I2C Algorithms"
++	depends on !I2C_HELPER_AUTO
++
+ config I2C_ALGOBIT
+-	tristate
++	tristate "I2C bit-banging interfaces"
+ 
+ config I2C_ALGOPCF
+-	tristate
++	tristate "I2C PCF 8584 interfaces"
+ 
+ config I2C_ALGOPCA
+-	tristate
++	tristate "I2C PCA 9564 interfaces"
+ 
+ config I2C_ALGO_SGI
+ 	tristate
+ 	depends on SGI_IP22 || SGI_IP32 || X86_VISWS
++
++endmenu
+
+Comment anyone?
+
 -- 
-Stefan Richter
--=====-==--- =--- --===
-http://arcgraph.de/sr/
+Jean Delvare
