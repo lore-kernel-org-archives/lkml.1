@@ -1,44 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758377AbYHGMnL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756157AbYHGMoX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758377AbYHGMnL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Aug 2008 08:43:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753108AbYHGMm4
+	id S1756157AbYHGMoX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Aug 2008 08:44:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751561AbYHGMoG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Aug 2008 08:42:56 -0400
-Received: from Chamillionaire.breakpoint.cc ([85.10.199.196]:43815 "EHLO
-	Chamillionaire.breakpoint.cc" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751159AbYHGMmz (ORCPT
+	Thu, 7 Aug 2008 08:44:06 -0400
+Received: from rgminet02.oracle.com ([148.87.113.119]:56730 "EHLO
+	rgminet02.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751360AbYHGMoF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Aug 2008 08:42:55 -0400
-Date: Thu, 7 Aug 2008 14:42:43 +0200
-From: Sebastian Siewior <sebastian@breakpoint.cc>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Adrian Bunk <bunk@kernel.org>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>, gerg@uclinux.org
-Subject: Re: [2.6.28 parch] the scheduled SERIAL_COLDFIRE removal
-Message-ID: <20080807124243.GA3037@Chamillionaire.breakpoint.cc>
-References: <20080806211929.GB1702@cs181140183.pp.htv.fi> <20080807123446.26ed37c3@lxorguk.ukuu.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <20080807123446.26ed37c3@lxorguk.ukuu.org.uk>
-X-Key-Id: FE3F4706
-X-Key-Fingerprint: FFDA BBBB 3563 1B27 75C9  925B 98D5 5C1C FE3F 4706
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Thu, 7 Aug 2008 08:44:05 -0400
+Subject: Re: Btrfs v0.16 released
+From: Chris Mason <chris.mason@oracle.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: linux-btrfs <linux-btrfs@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>
+In-Reply-To: <1218100464.8625.9.camel@twins>
+References: <1217962876.15342.33.camel@think.oraclecorp.com>
+	 <1218100464.8625.9.camel@twins>
+Content-Type: text/plain
+Date: Thu, 07 Aug 2008 06:39:57 -0400
+Message-Id: <1218105597.15342.189.camel@think.oraclecorp.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Alan Cox | 2008-08-07 12:34:46 [+0100]:
+On Thu, 2008-08-07 at 11:14 +0200, Peter Zijlstra wrote:
+> On Tue, 2008-08-05 at 15:01 -0400, Chris Mason wrote:
+> 
+> > There are still more disk format changes planned, but we're making every
+> > effort to get them out of the way as quickly as we can.  You can see the
+> > major features we have planned on the development timeline:
+> > 
+> > http://btrfs.wiki.kernel.org/index.php/Development_timeline
+> 
+> Just took a peek, seems to be slightly out of date as it still lists the
+> single mutex thingy.
 
->On Thu, 7 Aug 2008 00:19:29 +0300
->Adrian Bunk <bunk@kernel.org> wrote:
->
->> This patch contains the scheduled removal of the obsolete 
->> SERIAL_COLDFIRE driver.
->
->Added to the ttydev tree
+Thanks, I thought I had removed all the references to it on that page,
+but there was one left.
 
-I CCed Greg, the m68knommu maintainer, so he knows what is going on :)
+> 
+> Also, how true is the IO-error and disk-full claim?
+> 
 
-Sebastian
+We still don't handle disk full.  The IO errors are handled most of the
+time.  If a checksum doesn't match or the lower layers report an IO
+error, btrfs will use an alternate mirror of the block.  If there is no
+alternate mirror, the caller gets EIO and in the case of a failed csum,
+the page is zero filled (actually filled with ones so I can find bogus
+pages in an oops).
+
+Metadata is duplicated by default even on single spindle drives, so this
+means that metadata IO errors are handled as long as the other mirror is
+happy.
+
+If mirroring is off or both mirrors are bad, we currently get into
+trouble.
+
+data pages work better, those errors bubble up to userland just like in
+other filesystems.
+
+-chris
+
+
