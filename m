@@ -1,53 +1,235 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756247AbYHGHUl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754773AbYHGHVA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756247AbYHGHUl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Aug 2008 03:20:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754490AbYHGHUS
+	id S1754773AbYHGHVA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Aug 2008 03:21:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756256AbYHGHUm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Aug 2008 03:20:18 -0400
-Received: from edna.telenet-ops.be ([195.130.132.58]:38553 "EHLO
-	edna.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754468AbYHGHUL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Aug 2008 03:20:11 -0400
-Date: Thu, 7 Aug 2008 09:20:07 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, netdev <netdev@vger.kernel.org>
-Subject: Re: linux-next: Tree for August 6 (8390 et al)
-In-Reply-To: <20080806172148.7fac5999.randy.dunlap@oracle.com>
-Message-ID: <Pine.LNX.4.64.0808070918510.17614@anakin>
-References: <20080806182828.6bfe0a16.sfr@canb.auug.org.au>
- <20080806172148.7fac5999.randy.dunlap@oracle.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 7 Aug 2008 03:20:42 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:34879 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756134AbYHGHUi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Aug 2008 03:20:38 -0400
+Date: Thu, 7 Aug 2008 17:20:27 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: linux-next@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: linux-next: Tree for August 7
+Message-Id: <20080807172027.8180312c.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Thu__7_Aug_2008_17_20_27_+1000_6nKE3aUBW4sKNbMK"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 6 Aug 2008, Randy Dunlap wrote:
-> One randconfig ends with:
-> 
-> drivers/built-in.o: In function `wd_probe1':
-> wd.c:(.init.text+0x6179): undefined reference to `NS8390p_init'
-> make[1]: *** [.tmp_vmlinux1] Error 1
+--Signature=_Thu__7_Aug_2008_17_20_27_+1000_6nKE3aUBW4sKNbMK
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-drivers/net/Makefile has:
+Hi all,
 
-obj-$(CONFIG_WD80x3) += wd.o 8390.o
+Changes since next-20080806:
 
-So either wd_probe1() should call NS8390_init(), or obj-$(CONFIG_WD80x3)
-should link with 8390p.o. Don't know which is the appropriate change
-here (my gut feeling says the latter).
+New tree: jdelvare-hwmon
 
-Gr{oetje,eeting}s,
+Changed tree: v4l-dvb (back to the proper tree).
 
-						Geert
+The usb.current gained a build fix patch.
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+The ide tree lost its conflicts.
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+The mtd tree gained a build fix patch.
+
+The crypto tree gained a trivial conflict against the x86 tree.
+
+I have also applied the following patches for known problems:
+
+	Add cuImage.mpc866ads to the bootwrapper as a cuboot-8xx target
+	Revert "Input: expand keycode space"
+	xen-balloon: fix up sysfs issues
+	mtd_dataflash build fix
+
+----------------------------------------------------------------------------
+
+I have created today's linux-next tree at
+git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
+(patches at
+http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/).  If you
+are tracking the linux-next tree using git, you should not use "git pull"
+to do so as that will try to merge the new linux-next release with the
+old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
+(see below).
+
+You can see which trees have been included by looking in the Next/Trees
+file in the source.  There are also quilt-import.log and merge.log files
+in the Next directory.  Between each merge, the tree was built with
+a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
+final fixups, it is also built with powerpc allnoconfig,
+44x_defconfig and allyesconfig and i386, sparc and sparc64 defconfig.
+
+Below is a summary of the state of the merge.
+
+We are up to 108 trees (counting Linus' and 14 trees of patches pending for
+Linus' tree), more are welcome (even if they are currently empty).
+Thanks to those who have contributed, and to those who haven't, please do.
+
+Status of my local build tests will be at
+http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
+advice about cross compilers/configs that work, we are always open to add
+more builds.
+
+Thanks to Jan Dittmer for adding the linux-next tree to his build tests
+at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
+Dunlap for doing many randconfig builds.
+
+There is a wiki covering stuff to do with linux-next at
+http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+$ git checkout master
+$ git reset --hard stable
+Merging origin/master
+Merging powerpc-merge/merge
+Merging scsi-rc-fixes/master
+Merging net-current/master
+Merging sparc-current/master
+Merging sound-current/for-linus
+Merging arm-current/master
+Merging pci-current/for-linus
+Merging wireless-current/master
+Merging kbuild-current/master
+Merging quilt/driver-core.current
+Merging quilt/usb.current
+Applying usb: build fix for sierra_ms unusual device
+Applying usb: two more functions are needed when CONFIG_PM is not set
+Merging cpufreq-current/fixes
+Merging input-current/for-linus
+Merging md-current/for-2.6.26
+Merging dwmw2/master
+Merging quilt/driver-core
+Applying driver-core: kobject verification fixup
+Merging quilt/usb
+Merging tip-core/auto-core-next
+CONFLICT (content): Merge conflict in include/asm-generic/vmlinux.lds.h
+Merging cpus4096/auto-cpus4096-next
+CONFLICT (content): Merge conflict in net/sunrpc/svc.c
+Merging ftrace/auto-ftrace-next
+Merging genirq/auto-genirq-next
+Merging safe-poison-pointers/auto-safe-poison-pointers-next
+Merging sched/auto-sched-next
+Merging stackprotector/auto-stackprotector-next
+Merging timers/auto-timers-next
+Merging x86/auto-x86-next
+CONFLICT (content): Merge conflict in arch/x86/kernel/genapic_64.c
+CONFLICT (content): Merge conflict in drivers/pci/dmar.c
+Applying x86: export is_uv_system
+Merging pci/linux-next
+Merging quilt/device-mapper
+Merging hid/mm
+Merging quilt/i2c
+Merging quilt/jdelvare-hwmon
+Merging quilt/kernel-doc
+Merging avr32/avr32-arch
+Merging v4l-dvb/stable
+Merging s390/features
+Merging sh/master
+Merging jfs/next
+Merging kbuild/master
+Merging quilt/ide
+Merging libata/NEXT
+Merging nfs/linux-next
+Merging xfs/master
+Merging infiniband/for-next
+Merging acpi/test
+Merging blackfin/for-linus
+Merging nfsd/nfsd-next
+Merging ieee1394/for-next
+Merging hwmon/testing
+Merging ubi/linux-next
+Merging kvm/master
+CONFLICT (content): Merge conflict in include/linux/kvm.h
+Merging dlm/next
+Merging scsi/master
+Merging ia64/test
+Merging tests/master
+Merging ocfs2/linux-next
+Merging quilt/m68k
+Merging powerpc/powerpc-next
+Merging ext4/next
+Merging 4xx/next
+Merging async_tx/next
+Merging udf/for_next
+Merging net/master
+Merging sparc/master
+Merging galak/powerpc-next
+Merging mtd/master
+Merging wireless/master
+Merging crypto/master
+CONFLICT (content): Merge conflict in include/asm-x86/cpufeature.h
+Merging vfs/for-next
+Merging sound/for-next
+Merging arm/devel
+Merging cpufreq/next
+Merging v9fs/for-next
+Merging quilt/rr
+Merging cifs/master
+Merging mmc/next
+Merging gfs2/master
+Merging input/next
+Merging semaphore/semaphore
+Merging semaphore-removal/semaphore-removal
+Merging bkl-removal/bkl-removal
+Merging trivial/next
+CONFLICT (content): Merge conflict in Documentation/edac.txt
+CONFLICT (content): Merge conflict in include/linux/securebits.h
+Merging ubifs/linux-next
+Merging lsm/for-next
+Merging block/for-next
+Merging embedded/master
+Merging firmware/master
+CONFLICT (content): Merge conflict in drivers/media/dvb/ttpci/Kconfig
+CONFLICT (content): Merge conflict in drivers/media/dvb/ttpci/Makefile
+Merging pcmcia/master
+Merging battery/master
+Merging leds/for-mm
+Merging backlight/for-mm
+Merging kgdb/kgdb-next
+Merging slab/for-next
+Merging m68knommu/for-next
+Merging uclinux/for-next
+Merging md/for-next
+Merging cris/for-next
+Merging kmemcheck/auto-kmemcheck-next
+Merging generic-ipi/auto-generic-ipi-next
+Merging mips/mips-for-linux-next
+Merging mfd/for-next
+Merging hdlc/hdlc-next
+Merging drm/drm-next
+Merging voltage/reg-for-linus
+Merging security-testing/next
+Merging lblnet/master
+Merging quilt/ttydev
+Merging agp/agp-next
+Applying Add cuImage.mpc866ads to the bootwrapper as a cuboot-8xx target
+Created commit 5b98566: Revert "Input: expand keycode space"
+Applying xen-balloon: fix up sysfs issues
+Applying mtd_dataflash build fix
+
+--Signature=_Thu__7_Aug_2008_17_20_27_+1000_6nKE3aUBW4sKNbMK
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkiaojsACgkQjjKRsyhoI8yHkgCglEoeyEJ6jFjTmLo3oMLcZ5Ob
+4VkAniZ7+cx2rWhgJuY/Xo83UEGavn+r
+=hajX
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__7_Aug_2008_17_20_27_+1000_6nKE3aUBW4sKNbMK--
