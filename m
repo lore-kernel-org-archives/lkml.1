@@ -1,76 +1,149 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757301AbYHGWLy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757884AbYHGWMz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757301AbYHGWLy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Aug 2008 18:11:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753514AbYHGWLo
+	id S1757884AbYHGWMz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Aug 2008 18:12:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753318AbYHGWMp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Aug 2008 18:11:44 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:37006 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753488AbYHGWLm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Aug 2008 18:11:42 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: [PATCH] PCI PM: Export pci_pme_active to drivers
-Date: Fri, 8 Aug 2008 00:14:24 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Alessandro Guido <alessandro.guido@gmail.com>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       pm list <linux-pm@lists.linux-foundation.org>
-References: <200808051730.27599.alessandro.guido@gmail.com> <200808070947.37534.jbarnes@virtuousgeek.org> <200808080000.07156.rjw@sisk.pl>
-In-Reply-To: <200808080000.07156.rjw@sisk.pl>
+	Thu, 7 Aug 2008 18:12:45 -0400
+Received: from e31.co.us.ibm.com ([32.97.110.149]:44439 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753277AbYHGWMo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Aug 2008 18:12:44 -0400
+Date: Thu, 7 Aug 2008 17:12:42 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Ian Kent <raven@themaw.net>, autofs@linux.kernel.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       containers@lists.osdl.org
+Subject: Re: [PATCH 2/4] autofs4 - track uid and gid of last mount requester
+Message-ID: <20080807221242.GA27032@us.ibm.com>
+References: <20080807114002.4142.30417.stgit@web.messagingengine.com> <20080807114012.4142.83607.stgit@web.messagingengine.com> <20080807134650.a6a51f7d.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200808080014.25493.rjw@sisk.pl>
+In-Reply-To: <20080807134650.a6a51f7d.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-PCI PM: Export pci_pme_active to drivers
+Quoting Andrew Morton (akpm@linux-foundation.org):
+> On Thu, 07 Aug 2008 19:40:14 +0800
+> Ian Kent <raven@themaw.net> wrote:
+> 
+> > Patch to track the uid and gid of the last process to request a mount
+> > for on an autofs dentry.
+> 
+> pet peeve: changelog should not tell the reader that this is a "patch".
+> Because when someone is reading the changelog in the git repository,
+> they hopefully already know that.
+> 
+> > Signed-off-by: Ian Kent <raven@themaw.net>
+> > 
+> > ---
+> > 
+> >  fs/autofs4/autofs_i.h |    3 +++
+> >  fs/autofs4/inode.c    |    2 ++
+> >  fs/autofs4/waitq.c    |   34 ++++++++++++++++++++++++++++++++++
+> >  3 files changed, 39 insertions(+), 0 deletions(-)
+> > 
+> > 
+> > diff --git a/fs/autofs4/autofs_i.h b/fs/autofs4/autofs_i.h
+> > index ea024d8..fa76d18 100644
+> > --- a/fs/autofs4/autofs_i.h
+> > +++ b/fs/autofs4/autofs_i.h
+> > @@ -63,6 +63,9 @@ struct autofs_info {
+> >  	unsigned long last_used;
+> >  	atomic_t count;
+> >  
+> > +	uid_t uid;
+> > +	gid_t gid;
+> > +
+> >  	mode_t	mode;
+> >  	size_t	size;
+> >  
+> > diff --git a/fs/autofs4/inode.c b/fs/autofs4/inode.c
+> > index 9ca2d07..9408507 100644
+> > --- a/fs/autofs4/inode.c
+> > +++ b/fs/autofs4/inode.c
+> > @@ -53,6 +53,8 @@ struct autofs_info *autofs4_init_ino(struct autofs_info *ino,
+> >  		atomic_set(&ino->count, 0);
+> >  	}
+> >  
+> > +	ino->uid = 0;
+> > +	ino->gid = 0;
+> >  	ino->mode = mode;
+> >  	ino->last_used = jiffies;
+> >  
+> > diff --git a/fs/autofs4/waitq.c b/fs/autofs4/waitq.c
+> > index 6d87bb1..7c60c0b 100644
+> > --- a/fs/autofs4/waitq.c
+> > +++ b/fs/autofs4/waitq.c
+> > @@ -457,6 +457,40 @@ int autofs4_wait(struct autofs_sb_info *sbi, struct dentry *dentry,
+> >  
+> >  	status = wq->status;
+> >  
+> > +	/*
+> > +	 * For direct and offset mounts we need to track the requestrer
+> 
+> typo which I'll fix.
+> 
+> > +	 * uid and gid in the dentry info struct. This is so it can be
+> > +	 * supplied, on request, by the misc device ioctl interface.
+> > +	 * This is needed during daemon resatart when reconnecting
+> > +	 * to existing, active, autofs mounts. The uid and gid (and
+> > +	 * related string values) may be used for macro substitution
+> > +	 * in autofs mount maps.
+> > +	 */
+> > +	if (!status) {
+> > +		struct autofs_info *ino;
+> > +		struct dentry *de = NULL;
+> > +
+> > +		/* direct mount or browsable map */
+> > +		ino = autofs4_dentry_ino(dentry);
+> > +		if (!ino) {
+> > +			/* If not lookup actual dentry used */
+> > +			de = d_lookup(dentry->d_parent, &dentry->d_name);
+> > +			if (de)
+> > +				ino = autofs4_dentry_ino(de);
+> > +		}
+> > +
+> > +		/* Set mount requester */
+> > +		if (ino) {
+> > +			spin_lock(&sbi->fs_lock);
+> > +			ino->uid = wq->uid;
+> > +			ino->gid = wq->gid;
+> > +			spin_unlock(&sbi->fs_lock);
+> > +		}
+> > +
+> > +		if (de)
+> > +			dput(de);
+> > +	}
+> > +
+> 
+> Please remind me again why autofs's use of current->uid and
+> current->gid is not busted in the presence of PID namespaces, where
+> these things are no longer system-wide unique?
 
-Export pci_pme_active() to drivers, so that they can clear the
-PME_status bit and disable PME# for their devices without involving
-ACPI.
+I actually don't see what the autofs4_waitq->pid is used for.  It's
+copied from current into wq->pid at autofs4_wait, and into a packet to
+send to userspace (I assume) at autofs4_notify_daemon.
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- drivers/pci/pci.c   |    3 ++-
- include/linux/pci.h |    1 +
- 2 files changed, 3 insertions(+), 1 deletion(-)
+So as long as a daemon can serve multiple pid namespaces (which
+doubtless it can), the pid could be confusing (or erroneous) for the
+daemon.
 
-Index: linux-2.6/drivers/pci/pci.c
-===================================================================
---- linux-2.6.orig/drivers/pci/pci.c
-+++ linux-2.6/drivers/pci/pci.c
-@@ -1060,7 +1060,7 @@ bool pci_pme_capable(struct pci_dev *dev
-  * The caller must verify that the device is capable of generating PME# before
-  * calling this function with @enable equal to 'true'.
-  */
--static void pci_pme_active(struct pci_dev *dev, bool enable)
-+void pci_pme_active(struct pci_dev *dev, bool enable)
- {
- 	u16 pmcsr;
- 
-@@ -1941,6 +1941,7 @@ EXPORT_SYMBOL(pci_set_power_state);
- EXPORT_SYMBOL(pci_save_state);
- EXPORT_SYMBOL(pci_restore_state);
- EXPORT_SYMBOL(pci_pme_capable);
-+EXPORT_SYMBOL(pci_pme_active);
- EXPORT_SYMBOL(pci_enable_wake);
- EXPORT_SYMBOL(pci_target_state);
- EXPORT_SYMBOL(pci_prepare_to_sleep);
-Index: linux-2.6/include/linux/pci.h
-===================================================================
---- linux-2.6.orig/include/linux/pci.h
-+++ linux-2.6/include/linux/pci.h
-@@ -641,6 +641,7 @@ int pci_restore_state(struct pci_dev *de
- int pci_set_power_state(struct pci_dev *dev, pci_power_t state);
- pci_power_t pci_choose_state(struct pci_dev *dev, pm_message_t state);
- bool pci_pme_capable(struct pci_dev *dev, pci_power_t state);
-+void pci_pme_active(struct pci_dev *dev, bool enable);
- int pci_enable_wake(struct pci_dev *dev, pci_power_t state, int enable);
- pci_power_t pci_target_state(struct pci_dev *dev);
- int pci_prepare_to_sleep(struct pci_dev *dev);
+If I'm remotely right about how the pid is being used, then the thing to
+do would be to 
+	1. store the daemon's pid namespace  (would that belong in
+	the autofs_sb_info?)
+	2. store the task_pid(current) in the waitqueue
+	3. retrieve the pid_t for the waiting task in the daemon's
+	pid namespace, and put that into the packet at
+	autofs4_notify_daemon.
+
+I realize this patch was about the *uids*, but the pids seem more
+urgent.
+
+-serge
