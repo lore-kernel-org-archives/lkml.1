@@ -1,51 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754942AbYHGQvR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754290AbYHGQzJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754942AbYHGQvR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Aug 2008 12:51:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752437AbYHGQvB
+	id S1754290AbYHGQzJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Aug 2008 12:55:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752002AbYHGQy6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Aug 2008 12:51:01 -0400
-Received: from outbound-mail-06.bluehost.com ([69.89.17.206]:43156 "HELO
-	outbound-mail-06.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751861AbYHGQvA (ORCPT
+	Thu, 7 Aug 2008 12:54:58 -0400
+Received: from 166-70-238-42.ip.xmission.com ([166.70.238.42]:58011 "EHLO
+	ns1.wolfmountaingroup.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751147AbYHGQy6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Aug 2008 12:51:00 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
-	b=M/8EOstkQaX9HtnNrpa7R6gpqCjXliOZqIcDIe8LdyVG9N5Y1bUU71Qd2/qYltSsUVRILgTG556wDoRB5sYXJhPRKwxr3rj3ysrEQfQR1T5cVt7A//rLwLeDDQebYAis;
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Simon Horman <horms@verge.net.au>
-Subject: Re: [patch] PCI: check the return value of device_create_bin_file() in pci_create_bus()
-Date: Thu, 7 Aug 2008 09:50:50 -0700
-User-Agent: KMail/1.9.9
-Cc: Michael Ellerman <michael@ellerman.id.au>, Matthew Wilcox <matthew@wil.cx>,
-       Sven Wegener <sven.wegener@stealer.net>, linux-kernel@vger.kernel.org,
-       linux-pci@vger.kernel.org
-References: <20080805111406.GA13899@verge.net.au> <20080807010615.GB24761@verge.net.au> <20080807045632.GA2018@verge.net.au>
-In-Reply-To: <20080807045632.GA2018@verge.net.au>
+	Thu, 7 Aug 2008 12:54:58 -0400
+Message-ID: <1905.69.2.248.210.1218126817.squirrel@webmail.wolfmountaingroup.com>
+In-Reply-To: <489B26F0.3030603@s5r6.in-berlin.de>
+References: <1300.69.2.248.210.1218119365.squirrel@webmail.wolfmountaingroup.com>  
+     <489B199B.40305@s5r6.in-berlin.de>   
+    <489B1BDC.1010504@s5r6.in-berlin.de>
+    <1923.69.2.248.210.1218124570.squirrel@webmail.wolfmountaingroup.com>
+    <489B26F0.3030603@s5r6.in-berlin.de>
+Date: Thu, 7 Aug 2008 10:33:37 -0600 (MDT)
+Subject: Re: [ANNOUNCE] mdb-2.6.27-rc2-ia32-08-07-08.patch
+From: jmerkey@wolfmountaingroup.com
+To: "Stefan Richter" <stefanr@s5r6.in-berlin.de>
+Cc: jmerkey@wolfmountaingroup.com, linux-kernel@vger.kernel.org
+User-Agent: SquirrelMail/1.4.6
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200808070950.51400.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, August 6, 2008 9:56 pm Simon Horman wrote:
-> Check the return value of device_create_bin_file in pci_create_bus and
-> unwind if necessary. Don't propagate error to caller, as failure to create
-> these files shouldn't prevent PCI from being initialised. Instead, just
-> log a warning.
+> jmerkey@wolfmountaingroup.com wrote:
+>> rspin locks are for these types of cases -- so if I fault on the same
+>> processor I took the lock on it just bumps a counter -- yes, it is
+>> atomic
+>> and SMP safe to do it this way.
 >
-> Cc: Sven Wegener <sven.wegener@stealer.net>
-> Cc: Michael Ellerman <michael@ellerman.id.au>
-> Cc: Matthew Wilcox <matthew@wil.cx>
-> Signed-off-by: Simon Horman <horms@verge.net.au>
+> Only if all contexts which take rlocks are not preemptible.  Which I
+> don't know whether they are; I'm just a driver guy.  You use
+> spin_lock_irqsave() rather than plain spin_lock() though, which
+> indicates that you want to be able to take the locks from preemptible
+> contexts too.  In that case, your accessors are subtly buggy.
+> --
+> Stefan Richter
+> -=====-==--- =--- --===
+> http://arcgraph.de/sr/
+>
 
-Applied, thanks for your persistence, Simon! :)
+check mdb-main.c -- I disable preemption before rspin_lock is attempted. 
+Since the only processor which sets the proc number does do inside the
+spin lock, and the other processors only read it, unless memory is
+corrupted or the machine is severely broken, its SMP safe to this.
 
-Thanks,
-Jesse
+I use the debug_lock rspin_lock to prevent the other processors from
+entering the debugger command console when one of them has the console...
+
+Jeff
+
