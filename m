@@ -1,125 +1,427 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755322AbYHGEcU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757263AbYHGEkH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755322AbYHGEcU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Aug 2008 00:32:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751346AbYHGEcK
+	id S1757263AbYHGEkH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Aug 2008 00:40:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753638AbYHGEjx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Aug 2008 00:32:10 -0400
-Received: from an-out-0708.google.com ([209.85.132.243]:50134 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750702AbYHGEcI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Aug 2008 00:32:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:references;
-        b=klU60Jz2vXQpoqlqapWV/ubKOIYy8h11ealoOSJrP8Ok+2WvqYO8hZ56tju3ACVLai
-         FAnZVPYIwmm+ti5KD8IXpRAlDT56v0HNIOeGxSGuJy6enCiDOD2k+fZq34qBx7DMMod1
-         oEUN6msdgZox8L8j/rG9PDfSfGdWE2ofaOSug=
-Message-ID: <3ae3aa420808062132x52860092p9dee56705ba99a3@mail.gmail.com>
-Date: Wed, 6 Aug 2008 23:32:06 -0500
-From: "Linas Vepstas" <linasvepstas@gmail.com>
-Reply-To: linasvepstas@gmail.com
-To: "Martin K. Petersen" <martin.petersen@oracle.com>
-Subject: Re: amd64 sata_nv (massive) memory corruption
-Cc: "Alan Cox" <alan@lxorguk.ukuu.org.uk>, "John Stoffel" <john@stoffel.org>,
-       "Alistair John Strachan" <alistair@devzero.co.uk>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <yq1fxphfs2y.fsf@sermon.lab.mkp.net>
+	Thu, 7 Aug 2008 00:39:53 -0400
+Received: from usul.saidi.cx ([204.11.33.34]:38150 "EHLO usul.overt.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752809AbYHGEju (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Aug 2008 00:39:50 -0400
+Message-ID: <489A7C67.9070400@overt.org>
+Date: Wed, 06 Aug 2008 21:39:03 -0700
+From: Philip Langdale <philipl@overt.org>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080707)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+To: LKML <linux-kernel@vger.kernel.org>,
+       Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+CC: Matthew Garrett <mjg59@srcf.ucam.org>, toshiba_acpi@memebeam.org,
+       Ivo van Doorn <ivdoorn@gmail.com>, linux-wireless@vger.kernel.org
+Subject: [PATCH 1/1] toshiba_acpi: Add support for bluetooth toggling through
+ rfkill (v4)
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <3ae3aa420808011030weadc61fvf6f850f0a4cfcb3e@mail.gmail.com>
-	 <18580.48861.657366.629904@stoffel.org>
-	 <3ae3aa420808021501k2e871dc0y344dd7f9a7b80614@mail.gmail.com>
-	 <18581.6873.353028.695909@stoffel.org>
-	 <3ae3aa420808031523i1d9559d9i19dd5fcc9d5719c7@mail.gmail.com>
-	 <20080803231628.1361b75f@lxorguk.ukuu.org.uk>
-	 <3ae3aa420808051002n2438c0f6g82fb783b5102d149@mail.gmail.com>
-	 <20080805182119.75913fa3@lxorguk.ukuu.org.uk>
-	 <3ae3aa420808061433i3d90c3dcgfb40d953da2941c8@mail.gmail.com>
-	 <yq1fxphfs2y.fsf@sermon.lab.mkp.net>
+X-SA-Do-Not-RunX1: Yes
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/8/6 Martin K. Petersen <martin.petersen@oracle.com>:
->>>>>> "Linas" == Linas Vepstas <linasvepstas@gmail.com> writes:
->
-> [I got added to the CC: late in the game so I don't have the
-> background this discussion]
+There's been a patch floating around for toshiba_acpi that exports an ad-hoc
+/proc interface to toggle the bluetooth adapter in a large number of Toshiba
+laptops. I'm not sure if it's still relevant for the latest models, but it is
+still required for older models such as my Tecra M3.
 
-You haven't missed anything, other than I've had my
-umpteenth instance of data corruption in some years,
-and am up to my eyeballs in consumer-grade hardware
-from which I would like to get enterprise-grade reliability.
-Of course, being a cheapskate is what gets me into this
-mess.
+This change pulls in the low level Toshiba-specific code from the old patch and
+sets up an rfkill device and a polled input device to track the state of the
+hardware kill-switch.
 
-> ZFS and btrfs both support redundancy within the filesystem.  They can
-> fetch the good copy and fix the bad one.  And they have much more
-> context available for recovery than a RAID would.
+Signed-off-by: Philip Langdale <philipl@overt.org>
+---
+  Kconfig        |    1
+  toshiba_acpi.c |  264 +++++++++++++++++++++++++++++++++++++++++++++++++++++++--
+  2 files changed, 257 insertions(+), 8 deletions(-)
 
-My problem is that the corruption I see is "silent": so
-redundancy is useless, as I cannot distinguish good blocks
-from bad.   I'm running RAID, one of the two disks returns
-bad data.  Without checksums, I can't tell which version of
-a block is the good one.
+diff --git a/drivers/acpi/Kconfig b/drivers/acpi/Kconfig
+index 735f5ea..047829c 100644
+--- a/drivers/acpi/Kconfig
++++ b/drivers/acpi/Kconfig
+@@ -260,6 +260,7 @@ config ACPI_ASUS
+  config ACPI_TOSHIBA
+  	tristate "Toshiba Laptop Extras"
+  	depends on X86
++	select INPUT_POLLDEV
+  	select BACKLIGHT_CLASS_DEVICE
+  	---help---
+  	  This driver adds support for access to certain system settings
+diff --git a/drivers/acpi/toshiba_acpi.c b/drivers/acpi/toshiba_acpi.c
+index 0a43c8e..400d7ff 100644
+--- a/drivers/acpi/toshiba_acpi.c
++++ b/drivers/acpi/toshiba_acpi.c
+@@ -3,6 +3,7 @@
+   *
+   *
+   *  Copyright (C) 2002-2004 John Belmonte
++ *  Copyright (C) 2008 Philip Langdale
+   *
+   *  This program is free software; you can redistribute it and/or modify
+   *  it under the terms of the GNU General Public License as published by
+@@ -33,7 +34,7 @@
+   *
+   */
 
-> Linas> I assume that a device mapper can alter the number of blocks-in
-> Linas> to the number of blocks-out; that it doesn't have to be
-> Linas> 1-1. Then for every 10 sectors of data, it would use 11 sectors
-> Linas> of storage, one holding the checksum.  I'm very naive about how
-> Linas> the block layer works, so I don't know what snags there might
-> Linas> be.
->
-> I did a proof of concept of this a couple of years ago ago.  And
-> performance was pretty poor.
+-#define TOSHIBA_ACPI_VERSION	"0.18"
++#define TOSHIBA_ACPI_VERSION	"0.19"
+  #define PROC_INTERFACE_VERSION	1
 
-Yes, I'm not surprised. For a home-use system, though,
-I think I'm ready to sacrifice performance in exchange for
-reliability.  Much of what I do does not hit the disk hard.
+  #include <linux/kernel.h>
+@@ -42,6 +43,9 @@
+  #include <linux/types.h>
+  #include <linux/proc_fs.h>
+  #include <linux/backlight.h>
++#include <linux/platform_device.h>
++#include <linux/rfkill.h>
++#include <linux/input-polldev.h>
 
-There is also in interesting possibility that offers a middle
-ground between raw performance and safety: instead of
-verifying  checksums on *every* read access, it could be
-enough to verify only every so often -- say, only one out
-of every 10 reads, or maybe triggered by a cron job in
-the middle of the night: turn on verification, touch a bunch
-of files for an hour or two, turn off verification before 6AM.
-This would be enough to trigger timely ill-health warnings,
-without impacting daytime use.  (Much as I dislike the
-corruption I suffered, I dislike even more that I had no
-warning of it)
+  #include <asm/uaccess.h>
 
-> The elegant part about filesystem checksums is that they are stored in
-> the metadata blocks which are read anyway.
+@@ -90,6 +94,7 @@ MODULE_LICENSE("GPL");
+  #define HCI_VIDEO_OUT			0x001c
+  #define HCI_HOTKEY_EVENT		0x001e
+  #define HCI_LCD_BRIGHTNESS		0x002a
++#define HCI_WIRELESS			0x0056
 
-Yes.
+  /* field definitions */
+  #define HCI_LCD_BRIGHTNESS_BITS		3
+@@ -98,9 +103,14 @@ MODULE_LICENSE("GPL");
+  #define HCI_VIDEO_OUT_LCD		0x1
+  #define HCI_VIDEO_OUT_CRT		0x2
+  #define HCI_VIDEO_OUT_TV		0x4
++#define HCI_WIRELESS_KILL_SWITCH	0x01
++#define HCI_WIRELESS_BT_PRESENT		0x0f
++#define HCI_WIRELESS_BT_ATTACH		0x40
++#define HCI_WIRELESS_BT_POWER		0x80
 
-> So there are no additional
-> seeks, nor read-modify-write on a 10 sector + 1 blob of data.
+  static const struct acpi_device_id toshiba_device_ids[] = {
+  	{"TOS6200", 0},
++	{"TOS6208", 0},
+  	{"TOS1900", 0},
+  	{"", 0},
+  };
+@@ -193,7 +203,7 @@ static acpi_status hci_raw(const u32 in[HCI_WORDS], u32 out[HCI_WORDS])
+  	return status;
+  }
 
-I guess that, instead of writing 10+1 sectors, with the seek
-penalty, it might be faster to copy data in the kernel, so as
-to be able to store the checksum in the same sector as the
-data.
+-/* common hci tasks (get or set one value)
++/* common hci tasks (get or set one or two value)
+   *
+   * In addition to the ACPI status, the HCI system returns a result which
+   * may be useful (such as "not supported").
+@@ -218,6 +228,155 @@ static acpi_status hci_read1(u32 reg, u32 * out1, u32 * result)
+  	return status;
+  }
 
-> So, yes.  You need special hardware.  Controller and disk need to
-> support DIX and DIF respectively.  This has been in the works for a
-> while and hardware is starting to materialize.  Expect this to become
-> standard fare in the SCSI/SAS/FC market segment.
++static acpi_status hci_write2(u32 reg, u32 in1, u32 in2, u32* result)
++{
++        u32 in[HCI_WORDS] = { HCI_SET, reg, in1, in2, 0, 0 };
++        u32 out[HCI_WORDS];
++        acpi_status status = hci_raw(in, out);
++        *result = (status == AE_OK) ? out[0] : HCI_FAILURE;
++        return status;
++}
++
++static acpi_status hci_read2(u32 reg, u32* out1, u32* out2, u32* result)
++{
++        u32 in[HCI_WORDS] = { HCI_GET, reg, *out1, *out2, 0, 0 };
++        u32 out[HCI_WORDS];
++        acpi_status status = hci_raw(in, out);
++        *out1 = out[2];
++        *out2 = out[3];
++        *result = (status == AE_OK) ? out[0] : HCI_FAILURE;
++        return status;
++}
++
++struct toshiba_acpi_dev {
++	struct platform_device *p_dev;
++	struct rfkill *rfk_dev;
++	struct input_polled_dev *poll_dev;
++
++	const char *bt_name;
++	const char *rfk_name;
++
++	bool last_rfk_state;
++
++	struct mutex mutex;
++};
++
++static struct toshiba_acpi_dev toshiba_acpi = {
++	.bt_name = "Toshiba Bluetooth",
++	.rfk_name = "Toshiba RFKill Switch",
++	.last_rfk_state = FALSE,
++};
++
++/* Bluetooth rfkill handlers */
++
++static u32 hci_get_bt_present(bool *present)
++{
++	u32 hci_result;
++	u32 value, value2;
++	value = 0;
++	value2 = 0;
++	hci_read2(HCI_WIRELESS, &value, &value2, &hci_result);
++	if (hci_result == HCI_SUCCESS) {
++		*present = (value & HCI_WIRELESS_BT_PRESENT) ? TRUE : FALSE;
++	}
++	return hci_result;
++}
++
++static u32 hci_get_bt_on(bool *on)
++{
++	u32 hci_result;
++	u32 value, value2;
++	value = 0;
++	value2 = 0x0001;
++	hci_read2(HCI_WIRELESS, &value, &value2, &hci_result);
++	if (hci_result == HCI_SUCCESS) {
++		*on = (value & HCI_WIRELESS_BT_POWER) &&
++		      (value & HCI_WIRELESS_BT_ATTACH);
++	}
++	return hci_result;
++}
++
++static u32 hci_get_radio_state(bool *radio_state)
++{
++	u32 hci_result;
++	u32 value, value2;
++
++	value = 0;
++	value2 = 0x0001;
++	hci_read2(HCI_WIRELESS, &value, &value2, &hci_result);
++
++	*radio_state = value & HCI_WIRELESS_KILL_SWITCH;
++	return hci_result;
++}
++
++static int bt_rfkill_toggle_radio(void *data, enum rfkill_state state)
++{
++	u32 result1, result2;
++	u32 value;
++	bool radio_state;
++
++	struct toshiba_acpi_dev *dev = data;
++
++	value = (state == RFKILL_STATE_UNBLOCKED);
++
++	if (hci_get_radio_state(&radio_state) != HCI_SUCCESS) {
++		return -EFAULT;
++	}
++
++	switch (state) {
++	case RFKILL_STATE_UNBLOCKED:
++		if (!radio_state) {
++		    return -EPERM;
++		}
++		break;
++	case RFKILL_STATE_SOFT_BLOCKED:
++		break;
++	default:
++		return -EINVAL;
++	}
++
++	mutex_lock(&dev->mutex);
++	hci_write2(HCI_WIRELESS, value, HCI_WIRELESS_BT_POWER, &result1);
++	hci_write2(HCI_WIRELESS, value, HCI_WIRELESS_BT_ATTACH, &result2);
++	mutex_unlock(&dev->mutex);
++
++	if (result1 != HCI_SUCCESS || result2 != HCI_SUCCESS) {
++		return -EFAULT;
++	}
++
++	return 0;
++}
++
++static void bt_poll_rfkill(struct input_polled_dev *poll_dev)
++{
++	bool state_changed;
++	bool new_rfk_state;
++	bool value;
++	u32 hci_result;
++
++	struct toshiba_acpi_dev *dev = poll_dev->private;
++
++	hci_result = hci_get_radio_state(&value);
++	if (hci_result != HCI_SUCCESS) {
++		return; /* Can't do anything useful */
++	}
++	new_rfk_state = !value;
++
++	mutex_lock(&dev->mutex);
++	state_changed = new_rfk_state != dev->last_rfk_state;
++	dev->last_rfk_state = new_rfk_state;
++	mutex_unlock(&dev->mutex);
++
++	if (unlikely(state_changed)) {
++		rfkill_force_state(dev->rfk_dev,
++				   new_rfk_state ?
++				   RFKILL_STATE_HARD_BLOCKED :
++				   RFKILL_STATE_SOFT_BLOCKED);
++		input_report_switch(poll_dev->input, SW_RFKILL_ALL, new_rfk_state);
++		input_sync(poll_dev->input);
++	}
++}
++
+  static struct proc_dir_entry *toshiba_proc_dir /*= 0*/ ;
+  static struct backlight_device *toshiba_backlight_device;
+  static int force_fan;
+@@ -547,6 +706,15 @@ static struct backlight_ops toshiba_backlight_data = {
 
-Yes, well, my HBA is soldered onto my MB, and I'm buying
-$80 hard drives one at a time at Frye's electronics, so it could
-be 5-10 years before DIX/DIF trickles down to consumer-grade
-electronics.  And I don't want to wait 5-10 years ...
+  static void toshiba_acpi_exit(void)
+  {
++	if (toshiba_acpi.poll_dev) {
++		input_unregister_polled_device(toshiba_acpi.poll_dev);
++		input_free_polled_device(toshiba_acpi.poll_dev);
++	}
++
++	if (toshiba_acpi.rfk_dev) {
++		rfkill_unregister(toshiba_acpi.rfk_dev);
++	}
++
+  	if (toshiba_backlight_device)
+  		backlight_device_unregister(toshiba_backlight_device);
 
-Thus, a "tactical" solution seems to be pure-software
-check-summing in a kernel device-mapper module,
-performance be damned.
+@@ -555,6 +723,8 @@ static void toshiba_acpi_exit(void)
+  	if (toshiba_proc_dir)
+  		remove_proc_entry(PROC_TOSHIBA, acpi_root_dir);
 
---linas
++	platform_device_unregister(toshiba_acpi.p_dev);
++
+  	return;
+  }
+
+@@ -562,6 +732,10 @@ static int __init toshiba_acpi_init(void)
+  {
+  	acpi_status status = AE_OK;
+  	u32 hci_result;
++	bool bt_present;
++	bool bt_on;
++	bool radio_on;
++	int ret = 0;
+
+  	if (acpi_disabled)
+  		return -ENODEV;
+@@ -578,6 +752,18 @@ static int __init toshiba_acpi_init(void)
+  	       TOSHIBA_ACPI_VERSION);
+  	printk(MY_INFO "    HCI method: %s\n", method_hci);
+
++	mutex_init(&toshiba_acpi.mutex);
++
++	toshiba_acpi.p_dev = platform_device_register_simple("toshiba_acpi",
++							      -1, NULL, 0);
++	if (IS_ERR(toshiba_acpi.p_dev)) {
++		ret = PTR_ERR(toshiba_acpi.p_dev);
++		printk(MY_ERR "unable to register platform device\n");
++		toshiba_acpi.p_dev= NULL;
++		toshiba_acpi_exit();
++		return ret;
++	}
++
+  	force_fan = 0;
+  	key_event_valid = 0;
+
+@@ -586,19 +772,23 @@ static int __init toshiba_acpi_init(void)
+
+  	toshiba_proc_dir = proc_mkdir(PROC_TOSHIBA, acpi_root_dir);
+  	if (!toshiba_proc_dir) {
+-		status = AE_ERROR;
++		toshiba_acpi_exit();
++		return -ENODEV;
+  	} else {
+  		toshiba_proc_dir->owner = THIS_MODULE;
+  		status = add_device();
+-		if (ACPI_FAILURE(status))
+-			remove_proc_entry(PROC_TOSHIBA, acpi_root_dir);
++		if (ACPI_FAILURE(status)) {
++			toshiba_acpi_exit();
++			return -ENODEV;
++		}
+  	}
+
+-	toshiba_backlight_device = backlight_device_register("toshiba",NULL,
++	toshiba_backlight_device = backlight_device_register("toshiba",
++						&toshiba_acpi.p_dev->dev,
+  						NULL,
+  						&toshiba_backlight_data);
+          if (IS_ERR(toshiba_backlight_device)) {
+-		int ret = PTR_ERR(toshiba_backlight_device);
++		ret = PTR_ERR(toshiba_backlight_device);
+
+  		printk(KERN_ERR "Could not register toshiba backlight device\n");
+  		toshiba_backlight_device = NULL;
+@@ -607,7 +797,65 @@ static int __init toshiba_acpi_init(void)
+  	}
+          toshiba_backlight_device->props.max_brightness = HCI_LCD_BRIGHTNESS_LEVELS - 1;
+
+-	return (ACPI_SUCCESS(status)) ? 0 : -ENODEV;
++	/* Register rfkill switch for Bluetooth */
++	if (hci_get_bt_present(&bt_present) == HCI_SUCCESS && bt_present) {
++		toshiba_acpi.rfk_dev = rfkill_allocate(&toshiba_acpi.p_dev->dev,
++							RFKILL_TYPE_BLUETOOTH);
++		if (!toshiba_acpi.rfk_dev) {
++			printk(MY_ERR "unable to allocate rfkill device\n");
++			toshiba_acpi_exit();
++			return -ENOMEM;
++		}
++
++		toshiba_acpi.rfk_dev->name = toshiba_acpi.bt_name;
++		toshiba_acpi.rfk_dev->state = RFKILL_STATE_OFF;
++		toshiba_acpi.rfk_dev->toggle_radio = bt_rfkill_toggle_radio;
++		toshiba_acpi.rfk_dev->user_claim_unsupported = 1;
++		toshiba_acpi.rfk_dev->data = &toshiba_acpi;
++
++		if (hci_get_bt_on(&bt_on) == HCI_SUCCESS && bt_on) {
++			toshiba_acpi.rfk_dev->state = RFKILL_STATE_UNBLOCKED;
++		} else if (hci_get_radio_state(&radio_on) == HCI_SUCCESS && radio_on) {
++			toshiba_acpi.rfk_dev->state = RFKILL_STATE_SOFT_BLOCKED;
++		} else {
++			toshiba_acpi.rfk_dev->state = RFKILL_STATE_HARD_BLOCKED;
++		}
++
++		ret = rfkill_register(toshiba_acpi.rfk_dev);
++		if (ret) {
++			printk(MY_ERR "unable to register rfkill device\n");
++			toshiba_acpi_exit();
++			return -ENOMEM;
++		}
++	}
++
++	/* Register input device for kill switch */
++	toshiba_acpi.poll_dev = input_allocate_polled_device();
++	if (!toshiba_acpi.poll_dev) {
++		printk(MY_ERR "unable to allocate kill-switch input device\n");
++		toshiba_acpi_exit();
++		return -ENOMEM;
++	}
++	toshiba_acpi.poll_dev->private = &toshiba_acpi;
++	toshiba_acpi.poll_dev->poll = bt_poll_rfkill;
++	toshiba_acpi.poll_dev->poll_interval = 1000; /* msecs */
++
++	toshiba_acpi.poll_dev->input->name = toshiba_acpi.rfk_name;
++	toshiba_acpi.poll_dev->input->id.bustype = BUS_HOST;
++	toshiba_acpi.poll_dev->input->id.vendor = 0x0930; /* Toshiba USB Vendor ID */
++	set_bit(EV_SW, toshiba_acpi.poll_dev->input->evbit);
++	set_bit(SW_RFKILL_ALL, toshiba_acpi.poll_dev->input->keybit);
++
++	ret = input_register_polled_device(toshiba_acpi.poll_dev);
++	if (ret) {
++		printk(MY_ERR "unable to register kill-switch input device\n");
++		rfkill_free(toshiba_acpi.rfk_dev);
++		toshiba_acpi.rfk_dev = NULL;
++		toshiba_acpi_exit();
++		return ret;
++	}
++
++	return 0;
+  }
+
+  module_init(toshiba_acpi_init);
