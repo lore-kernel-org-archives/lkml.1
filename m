@@ -1,70 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755455AbYHGM4T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753358AbYHGM6p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755455AbYHGM4T (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Aug 2008 08:56:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752839AbYHGM4G
+	id S1753358AbYHGM6p (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Aug 2008 08:58:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751547AbYHGM6f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Aug 2008 08:56:06 -0400
-Received: from mga11.intel.com ([192.55.52.93]:32102 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753344AbYHGM4F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Aug 2008 08:56:05 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.31,319,1215414000"; 
-   d="scan'208";a="368546814"
-Subject: Re: [PATCH 1/6] kexec jump: clean up #ifdef and comments
-From: Huang Ying <ying.huang@intel.com>
-To: Pavel Machek <pavel@suse.cz>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>, nigel@nigel.suspend2.net,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Vivek Goyal <vgoyal@redhat.com>, mingo@elte.hu,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org,
-       Kexec Mailing List <kexec@lists.infradead.org>
-In-Reply-To: <20080807092058.GB372@atrey.karlin.mff.cuni.cz>
-References: <1218099923.5164.32.camel@caritas-dev.intel.com>
-	 <20080807092058.GB372@atrey.karlin.mff.cuni.cz>
-Content-Type: text/plain
-Date: Thu, 07 Aug 2008 17:29:04 +0800
-Message-Id: <1218101344.5164.38.camel@caritas-dev.intel.com>
+	Thu, 7 Aug 2008 08:58:35 -0400
+Received: from mailrelay005.isp.belgacom.be ([195.238.6.171]:49255 "EHLO
+	mailrelay005.isp.belgacom.be" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751360AbYHGM6e (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Aug 2008 08:58:34 -0400
+X-Belgacom-Dynamic: yes
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AvgEAEVomkjZiDIu/2dsb2JhbACBWKsX
+Date: Thu, 7 Aug 2008 12:18:57 +0200
+From: Wim Van Sebroeck <wim@iguana.be>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [2.6 patch] MAINTAINERS: remove ZF MACHZ WATCHDOG entry
+Message-ID: <20080807101857.GB29386@infomag.infomag.iguana.be>
+References: <20080806211052.GM1702@cs181140183.pp.htv.fi>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080806211052.GM1702@cs181140183.pp.htv.fi>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-08-07 at 11:20 +0200, Pavel Machek wrote:
-> Hi!
+Hi Adrian,
+
+I'll add this patch also to the watchdog tree.
+
+Kind regards,
+Wim.
+
+> - maintainer has not been active for years
+> - maintainer email bounces
+> - URL no longer exists
+> - covered by the WATCHDOG DEVICE DRIVERS entry
 > 
-> > CONFIG_KEXEC_JUMP to make code looks cleaner.
-> > 
-> > Fix no longer correct comments of kernel_kexec().
-> > 
-> > Signed-off-by: Huang Ying <ying.huang@intel.com>
-> > 
-> > ---
-> >  kernel/kexec.c |   11 +++++------
-> >  1 file changed, 5 insertions(+), 6 deletions(-)
-> > 
-> > --- a/kernel/kexec.c
-> > +++ b/kernel/kexec.c
-> > @@ -1427,8 +1427,6 @@ static int __init crash_save_vmcoreinfo_
-> >  module_init(crash_save_vmcoreinfo_init)
-> >  
-> >  /**
-> > - *	kernel_kexec - reboot the system
-> > - *
-> >   *	Move into place and start executing a preloaded standalone
-> >   *	executable.  If nothing was preloaded return an error.
-> >   */
+> Signed-off-by: Adrian Bunk <bunk@kernel.org>
 > 
-> If it is not kerneldoc, it should not be /** .
-
-OK. I will fix it.
-
-Best Regards,
-Huang Ying
-
-
+> ---
+> 
+> This patch has been sent on:
+> - 20 May 2008
+> 
+> 3f02b057b07dee95e02f58a0f9109a8c8815ae2c diff --git a/MAINTAINERS b/MAINTAINERS
+> index 52b7035..2f74092 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -4521,12 +4521,6 @@ L:	linux-wireless@vger.kernel.org
+>  L:	zd1211-devs@lists.sourceforge.net (subscribers-only)
+>  S:	Maintained
+>  
+> -ZF MACHZ WATCHDOG
+> -P:	Fernando Fuganti
+> -M:	fuganti@netbank.com.br
+> -W:	http://cvs.conectiva.com.br/drivers/ZFL-watchdog/
+> -S:	Maintained
+> -
+>  ZR36067 VIDEO FOR LINUX DRIVER
+>  P:	Ronald Bultje
+>  M:	rbultje@ronald.bitfreak.net
+> 
