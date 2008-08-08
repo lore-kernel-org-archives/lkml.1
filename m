@@ -1,50 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758338AbYHHQnT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760256AbYHHQny@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758338AbYHHQnT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 12:43:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758858AbYHHQkY
+	id S1760256AbYHHQny (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 12:43:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754006AbYHHQnm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 12:40:24 -0400
-Received: from mx0.towertech.it ([213.215.222.73]:49605 "HELO mx0.towertech.it"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1758835AbYHHQkW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 12:40:22 -0400
-Date: Fri, 8 Aug 2008 18:40:19 +0200
-From: Alessandro Zummo <alessandro.zummo@towertech.it>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: a.zummo@towertech.it, rtc-linux@googlegroups.com,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       David Brownell <david-b@pacbell.net>
-Subject: Re: [6/17] rtc: use bcd2bin/bin2bcd
-Message-ID: <20080808184019.3c9528e4@i1501.lan.towertech.it>
-In-Reply-To: <20080808163443.GM14495@cs181140183.pp.htv.fi>
-References: <20080808163443.GM14495@cs181140183.pp.htv.fi>
-Organization: Tower Technologies
-X-Mailer: Sylpheed
-X-This-Is-A-Real-Message: Yes
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 8 Aug 2008 12:43:42 -0400
+Received: from smtpq2.groni1.gr.home.nl ([213.51.130.201]:50546 "EHLO
+	smtpq2.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759497AbYHHQnk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Aug 2008 12:43:40 -0400
+Message-ID: <489C77C6.7040408@keyaccess.nl>
+Date: Fri, 08 Aug 2008 18:43:50 +0200
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080707)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@osdl.org>
+CC: Yinghai Lu <yhlu.kernel@gmail.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: [PATCH] x86: kill arch/x86/kernel/mpparse.c debugging printk.
+Content-Type: multipart/mixed;
+ boundary="------------000805010409050308080704"
+X-Spam-Score: -1.0 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 8 Aug 2008 19:34:43 +0300
-Adrian Bunk <bunk@kernel.org> wrote:
+This is a multi-part message in MIME format.
+--------------000805010409050308080704
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 
-> This patch changes various rtc related code to use the
-> new bcd2bin/bin2bcd functions instead of the obsolete 
-> BCD_TO_BIN/BIN_TO_BCD/BCD2BIN/BIN2BCD macros.
-> 
-> Signed-off-by: Adrian Bunk <bunk@kernel.org>
+Hi Andrew.
 
- Acked-by: Alessandro Zummo <a.zummo@towertech.it>
+<repeat below changelog>
+
+Rene.
+
+--------------000805010409050308080704
+Content-Type: text/plain;
+ name="0001-x86-kill-arch-x86-kernel-mpparse.c-debugging-printk.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename*0="0001-x86-kill-arch-x86-kernel-mpparse.c-debugging-printk.pat";
+ filename*1="ch"
+
+>From 00acea21e579ea0853baba25420f373ea83533a3 Mon Sep 17 00:00:00 2001
+From: Rene Herman <rene.herman@keyaccess.nl>
+Date: Thu, 7 Aug 2008 01:50:35 +0200
+Subject: [PATCH] x86: kill arch/x86/kernel/mpparse.c debugging printk.
+
+commit 11a62a056093a7f25f1595fbd8bd5f93559572b6 turns some formerly
+nopped debugging printks in arch/x86/kernel/mppparse.c into regular
+ones. The one at the top of smp_scan_config() in particular also
+prints on !CONFIG_SMP/CONFIG_X86_LOCAL_APIC kernels and UP machines
+without anything resembling MP tables which makes their lowly UP
+owners wonder...
+
+given that it was up to this point also not considered valuable
+user-level information, let's just kill that one.
+
+Signed-off-by: Rene Herman <rene.herman@gmail.com>
+---
+ arch/x86/kernel/mpparse.c |    1 -
+ 1 files changed, 0 insertions(+), 1 deletions(-)
+
+diff --git a/arch/x86/kernel/mpparse.c b/arch/x86/kernel/mpparse.c
+index 6ae005c..519a6a9 100644
+--- a/arch/x86/kernel/mpparse.c
++++ b/arch/x86/kernel/mpparse.c
+@@ -695,7 +695,6 @@ static int __init smp_scan_config(unsigned long base, unsigned long length,
+ 	unsigned int *bp = phys_to_virt(base);
+ 	struct intel_mp_floating *mpf;
+ 
+-	printk(KERN_DEBUG "Scan SMP from %p for %ld bytes.\n", bp, length);
+ 	BUILD_BUG_ON(sizeof(*mpf) != 16);
+ 
+ 	while (length > 0) {
 -- 
+1.5.5
 
- Best regards,
 
- Alessandro Zummo,
-  Tower Technologies - Torino, Italy
-
-  http://www.towertech.it
-
+--------------000805010409050308080704--
