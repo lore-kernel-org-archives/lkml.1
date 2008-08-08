@@ -1,52 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757613AbYHHMRa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757819AbYHHMUU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757613AbYHHMRa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 08:17:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755594AbYHHMRW
+	id S1757819AbYHHMUU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 08:20:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755105AbYHHMUJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 08:17:22 -0400
-Received: from moutng.kundenserver.de ([212.227.126.177]:53512 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755105AbYHHMRV (ORCPT
+	Fri, 8 Aug 2008 08:20:09 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:44257 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753636AbYHHMUI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 08:17:21 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-Subject: Re: [RFC][PATCH 4/4] introduce sys_checkpoint and sys_restore
-Date: Fri, 8 Aug 2008 14:15:18 +0200
-User-Agent: KMail/1.9.9
-Cc: Oren Laadan <orenl@cs.columbia.edu>, containers@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org, Theodore Tso <tytso@mit.edu>,
-       "Serge E. Hallyn" <serue@us.ibm.com>
-References: <20080807224033.FFB3A2C1@kernel> <20080807224038.0B03CEEF@kernel>
-In-Reply-To: <20080807224038.0B03CEEF@kernel>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+	Fri, 8 Aug 2008 08:20:08 -0400
+Date: Fri, 8 Aug 2008 14:20:52 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Cliff Wickman <cpw@sgi.com>
+Cc: Andi Kleen <andi@firstfloor.org>, Vivek Goyal <vgoyal@redhat.com>,
+       Keith Owens <kaos@ocs.com.au>, Jay Lan <jlan@sgi.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, jmerkey@wolfmountaingroup.com,
+       Geert Uytterhoeven <geert@linux-m68k.org>,
+       Josh Boyer <jwboyer@gmail.com>, linux-kernel@vger.kernel.org,
+       Takenori Nagano <t-nagano@ah.jp.nec.com>,
+       Bernhard Walle <bwalle@suse.de>
+Subject: Re: [ANNOUNCE] Merkey's Kernel Debugger
+Message-ID: <20080808122052.GA9038@one.firstfloor.org>
+References: <20080807200659.GJ24801@one.firstfloor.org> <23175.1218148134@ocs10w> <20080808011500.GA531@redhat.com> <20080808022916.GM24801@one.firstfloor.org> <20080808120813.GA17364@sgi.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200808081415.19179.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1/cz8QX88uDl6jaOpQdiqxpXGSN+e0YId7issg
- PhwP9hpIhDO+OLs4vzPpzAmsBHUDHJVfAASqkqgxdMmdvLbxiJ
- JYgmGVQuBSFI9DHPmjGZg==
+In-Reply-To: <20080808120813.GA17364@sgi.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 08 August 2008, Dave Hansen wrote:
->
->  linux-2.6.git-dave/arch/x86/kernel/syscall_table_32.S |    2 ++
->  linux-2.6.git-dave/include/asm-x86/unistd_32.h        |    2 ++
->  2 files changed, 4 insertions(+)
+> In a partitioned system [I work for SGI, so I'm talking about an Altix],
+> there is memory sharing among multiple single-system images. And if
+> one of those partitions were to panic the other partitions need to
+> be informed that they cannot address the panic'd partition's memory.
+> (Once that partition is rebooted any such access will cause an MCA
+> in the accessor.)
 
-System calls should also be declared in include/linux/syscalls.h.
+There are already existing shutdown hooks. Aren't they good enough
+for that?
 
-I guess you are aware that this implementation is not enough to
-support 32 bit tasks on x86_64. In addition to the native 64-bit
-code, you would also need the 32-bit compat code here.
+I would feel uneasy about having arbitary drivers hook into panic().
+While I'm sure your code is great there is unfortunately a lot 
+of crappy driver code around.
 
-	Arnd <><
+-Andi
