@@ -1,129 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756730AbYHHOKq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754064AbYHHOPo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756730AbYHHOKq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 10:10:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753483AbYHHOKh
+	id S1754064AbYHHOPo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 10:15:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751408AbYHHOPh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 10:10:37 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:46276 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751720AbYHHOKh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 10:10:37 -0400
-Date: Fri, 8 Aug 2008 10:09:38 -0400
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Huang Ying <ying.huang@intel.com>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>, Pavel Machek <pavel@ucw.cz>,
-       nigel@nigel.suspend2.net, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org,
-       Kexec Mailing List <kexec@lists.infradead.org>
-Subject: Re: [PATCH -v2 3/8] kexec jump: check code size in control page
-Message-ID: <20080808140938.GE3840@redhat.com>
-References: <1218178356.22039.76.camel@caritas-dev.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1218178356.22039.76.camel@caritas-dev.intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 8 Aug 2008 10:15:37 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:47693 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751299AbYHHOPg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Aug 2008 10:15:36 -0400
+Subject: Re: [PATCH][RESEND] scalable rw_mutex
+From: Peter Zijlstra <peterz@infradead.org>
+To: Ryan Hope <rmh3093@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <48f7fe350808080704j4162451bk19b9987258c0d060@mail.gmail.com>
+References: <489B7DAD.3080104@gmail.com> <1218190862.8625.77.camel@twins>
+	 <48f7fe350808080704j4162451bk19b9987258c0d060@mail.gmail.com>
+Content-Type: text/plain
+Date: Fri, 08 Aug 2008 16:15:23 +0200
+Message-Id: <1218204923.8625.118.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 08, 2008 at 02:52:36PM +0800, Huang Ying wrote:
-> Kexec/Kexec-jump require code size in control page is less than
-> PAGE_SIZE/2. This patch add link-time checking for this.
-> 
-> ASSERT() of ld link script is used as the link-time checking
-> mechanism.
-> 
-> Signed-off-by: Huang Ying <ying.huang@intel.com>
-> 
-> ---
->  arch/x86/kernel/machine_kexec_32.c     |    2 +-
->  arch/x86/kernel/relocate_kernel_32.S   |   10 +++++++---
->  arch/x86/kernel/vmlinux_32.lds.S       |    2 ++
->  arch/x86/kernel/vmlinux_check_32.lds.S |    7 +++++++
->  include/asm-x86/kexec.h                |    4 ++++
->  5 files changed, 21 insertions(+), 4 deletions(-)
-> 
-> --- a/arch/x86/kernel/machine_kexec_32.c
-> +++ b/arch/x86/kernel/machine_kexec_32.c
-> @@ -138,7 +138,7 @@ void machine_kexec(struct kimage *image)
->  	}
->  
->  	control_page = page_address(image->control_code_page);
-> -	memcpy(control_page, relocate_kernel, PAGE_SIZE/2);
-> +	memcpy(control_page, relocate_kernel, KEXEC_CONTROL_CODE_MAX_SIZE);
->  
->  	relocate_kernel_ptr = control_page;
->  	page_list[PA_CONTROL_PAGE] = __pa(control_page);
-> --- a/arch/x86/kernel/relocate_kernel_32.S
-> +++ b/arch/x86/kernel/relocate_kernel_32.S
-> @@ -20,10 +20,11 @@
->  #define PAGE_ATTR (_PAGE_PRESENT | _PAGE_RW | _PAGE_ACCESSED | _PAGE_DIRTY)
->  #define PAE_PGD_ATTR (_PAGE_PRESENT)
->  
-> -/* control_page + PAGE_SIZE/2 ~ control_page + PAGE_SIZE * 3/4 are
-> - * used to save some data for jumping back
-> +/* control_page + KEXEC_CONTROL_CODE_MAX_SIZE
-> + * ~ control_page + PAGE_SIZE * 3/4 are used to save some data for
-> + * jumping back
->   */
+A: http://en.wikipedia.org/wiki/Top_post
+Q: Were do I find info about this thing called top-posting?
+A: Because it messes up the order in which people normally read text.
+Q: Why is top-posting such a bad thing?
 
-Hi Huang,
+On Fri, 2008-08-08 at 10:04 -0400, Ryan Hope wrote:
+> Sorry for not CCing you, I had intended to CC you and others but I
+> clicked send too quick. One of the reiser4 todo's was remove all
+> semaphore's, I didnt realize rw_semaphores were not real semaphores
 
-Above comment is not very clear. Can you please elaborate it. I thought
-that PAGE_SIZE/2 is used for control code and rest half is shared between
-kjump data and stack. What is PAGE_SIZE *3/4?
+Yeah, more people make that mistake. They're basically a sleeping rw
+lock and already conform to the semantics that are required for lockdep
+and are thus also already covered by lockdep.
 
+> On Fri, Aug 8, 2008 at 6:21 AM, Peter Zijlstra <peterz@infradead.org> wrote:
+> > On Thu, 2008-08-07 at 18:56 -0400, Ryan Hope wrote:
+> >> This was posted sometime last year I think and it never got merged. Can this get
+> >> a go around in -mm, it would help in converting the semaphore's in reiser4 to
+> >> mutexes.
+> >
+> > Thanks for CC'ing me :-/
+> >
+> > I dropped it because its only more scalable up to around 4 cpus.
+> >
+> > Also, how would it help reiser4? using rwsems is perfectly fine - as
+> > they aren't actual semaphores.
 
-> -#define DATA(offset)		(PAGE_SIZE/2+(offset))
-> +#define DATA(offset)		(KEXEC_CONTROL_CODE_MAX_SIZE+(offset))
->  
->  /* Minimal CPU state */
->  #define ESP			DATA(0x0)
-> @@ -376,3 +377,6 @@ swap_pages:
->  	popl	%ebx
->  	popl	%ebp
->  	ret
-> +
-> +	.globl kexec_control_code_size
-> +.set kexec_control_code_size, . - relocate_kernel
-> --- a/include/asm-x86/kexec.h
-> +++ b/include/asm-x86/kexec.h
-> @@ -41,6 +41,10 @@
->  # define PAGES_NR		17
->  #endif
->  
-> +#ifdef CONFIG_X86_32
-> +# define KEXEC_CONTROL_CODE_MAX_SIZE	2048
-> +#endif
-> +
->  #ifndef __ASSEMBLY__
->  
->  #include <linux/string.h>
-> --- a/arch/x86/kernel/vmlinux_32.lds.S
-> +++ b/arch/x86/kernel/vmlinux_32.lds.S
-> @@ -209,3 +209,5 @@ SECTIONS
->  
->    DWARF_DEBUG
->  }
-> +
-> +#include "vmlinux_check_32.lds.S"
-> --- /dev/null
-> +++ b/arch/x86/kernel/vmlinux_check_32.lds.S
-> @@ -0,0 +1,7 @@
-> +/*
-> + * Link time checks
-> + */
-> +
-> +#include <asm/kexec.h>
-> +
-> +ASSERT(kexec_control_code_size <= KEXEC_CONTROL_CODE_MAX_SIZE, "kexec control code size is too big")
+<snip code>
 
-Will it make sense to move it into vmlinux_32.lds.S itself? Creating a separate
-file for a single check seems superfluous.
-
-Thanks
-Vivek
