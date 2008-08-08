@@ -1,43 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758697AbYHHSTR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756386AbYHHST4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758697AbYHHSTR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 14:19:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752834AbYHHSTD
+	id S1756386AbYHHST4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 14:19:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753255AbYHHSTr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 14:19:03 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:34926 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752564AbYHHSTB (ORCPT
+	Fri, 8 Aug 2008 14:19:47 -0400
+Received: from moutng.kundenserver.de ([212.227.126.177]:64980 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752985AbYHHSTr convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 14:19:01 -0400
-Date: Fri, 8 Aug 2008 11:17:50 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Stefano Stabellini <stefano.stabellini@eu.citrix.com>
-cc: Pavel Machek <pavel@suse.cz>, kernel list <linux-kernel@vger.kernel.org>,
-       krzysztof.h1@poczta.fm, adaplas@pol.net, akpm@linux-foundation.org
-Subject: Re: 2.6.27-rc1: softcursor behaviour changed
-In-Reply-To: <489C169F.9030907@eu.citrix.com>
-Message-ID: <alpine.LFD.1.10.0808081116220.3462@nehalem.linux-foundation.org>
-References: <20080805212004.GA1592@elf.ucw.cz> <20080807085733.GA1560@elf.ucw.cz> <489AD9C1.8020405@eu.citrix.com> <20080807220755.GA11460@elf.ucw.cz> <489C169F.9030907@eu.citrix.com>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Fri, 8 Aug 2008 14:19:47 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+Subject: Re: [RFC][PATCH 0/4] kernel-based checkpoint restart
+Date: Fri, 8 Aug 2008 20:18:45 +0200
+User-Agent: KMail/1.9.9
+Cc: containers@lists.linux-foundation.org, Theodore Tso <tytso@mit.edu>,
+       linux-kernel@vger.kernel.org, Oren Laadan <orenl@cs.columbia.edu>
+References: <20080807224033.FFB3A2C1@kernel> <200808081125.12706.arnd@arndb.de> <1218218784.19082.10.camel@nimitz>
+In-Reply-To: <1218218784.19082.10.camel@nimitz>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200808082018.45715.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX18VAJcUisosvgyB3hKlghHFT215YKX12HRP5eh
+ zA61DToDMyVnq8u+pAlpH1xX7f4bKFzNwbw76m/JUPtbe/GRbd
+ Rft6FwWwceTqkw+SC3b4Q==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Friday 08 August 2008, Dave Hansen wrote:
+> I don't think it is the common case.  Probably now when we're screwing
+> around with it, but not in the future.  Do you think it is worth adding
+> the pid=0 handling?
 
+If it's the exception, probably not. Otherwise it would be a nice shortcut
+to avoid having to do two system calls every time you write code using it.
+Then again, there are probably not many programs calling it anyway, if it
+get encapsulated in some user space tool.
 
-On Fri, 8 Aug 2008, Stefano Stabellini wrote:
-> 
-> - an application wants to do X
-> - I don't like X and X is not even implemented here
-> - let's do Y instead!
-
-Well, at the same time:
- - Y is the closest we can get in practice
- - Y is what we've done before (but I don't know how long)
-
-So yeah, I think we should probably revert it.
-
-		Linus
+	Arnd <><
