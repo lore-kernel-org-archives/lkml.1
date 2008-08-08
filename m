@@ -1,54 +1,153 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757219AbYHHLBb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755614AbYHHLLQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757219AbYHHLBb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 07:01:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754212AbYHHLBX
+	id S1755614AbYHHLLQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 07:11:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754146AbYHHLLA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 07:01:23 -0400
-Received: from saeurebad.de ([85.214.36.134]:57979 "EHLO saeurebad.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754143AbYHHLBW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 07:01:22 -0400
-From: Johannes Weiner <hannes@saeurebad.de>
-To: Markku Savela <msa@moth.iki.fi>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Radical idea? Remove all automatic privilege escalation base on executable file attributes!
-References: <87abfn94rs.fsf@burp.tkv.asdf.org>
-Date: Fri, 08 Aug 2008 13:00:55 +0200
-In-Reply-To: <87abfn94rs.fsf@burp.tkv.asdf.org> (Markku Savela's message of
-	"Fri, 08 Aug 2008 13:31:51 +0300")
-Message-ID: <877iar4vq0.fsf@skyscraper.fehenstaub.lan>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
+	Fri, 8 Aug 2008 07:11:00 -0400
+Received: from tallyho.bytemark.co.uk ([80.68.81.166]:34980 "EHLO
+	tallyho.bytemark.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753559AbYHHLLA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Aug 2008 07:11:00 -0400
+From: Andy Whitcroft <apw@shadowen.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Gerald Schaefer <gerald.schaefer@de.ibm.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com,
+       Mel Gorman <mel@csn.ul.ie>, Andy Whitcroft <apw@shadowen.org>
+Subject: [PATCH 1/1] allocate structures for reservation tracking in hugetlbfs outside of spinlocks v2
+Date: Fri,  8 Aug 2008 12:10:55 +0100
+Message-Id: <1218193855-25832-1-git-send-email-apw@shadowen.org>
+X-Mailer: git-send-email 1.6.0.rc1.258.g80295
+In-Reply-To: <20080807143824.8e0803da.akpm@linux-foundation.org>
+References: <20080807143824.8e0803da.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+[Bah, while reviewing the locking based on your previous email I spotted
+that we need to check the return from the vma_needs_reservation call for
+allocation errors.  Here is an updated patch to correct this.  This passes
+testing here.  Gerald could you test thing one too.]
 
-Markku Savela <msa@moth.iki.fi> writes:
+In the normal case, hugetlbfs reserves hugepages at map time so that the
+pages exist for future faults.  A struct file_region is used to track
+when reservations have been consumed and where.  These file_regions
+are allocated as necessary with kmalloc() which can sleep with the
+mm->page_table_lock held.  This is wrong and triggers may-sleep warning
+when PREEMPT is enabled.
 
-> That is, remove
->
->  - setuid/setgid feature from Linux
->
->  - cancel the capability attributes in files (or only only allow
->    downgrading of capabilities)
->
-> (e.g. mount everything as nosuid or something, but eventually, the
-> code could be removed from the kernel)
->
-> The only way to escalate privileges would be to request starting of
-> the executable by some daemon (like upstart), which would grant or
-> deny the request based totally on some user space policies.
+Updates to the underlying file_region are done in two phases.  The first
+phase prepares the region for the change, allocating any necessary memory,
+without actually making the change.  The second phase actually commits
+the change.  This patch makes use of this by checking the reservations
+before the page_table_lock is taken; triggering any necessary allocations.
+This may then be safely repeated within the locks without any allocations
+being required.
 
-Let's just hope then that this central facility is not buggy itself.
-Because if that would be the only way to acquire privileges as
-non-priviledged user, it is likely that every machine runs it.
+Credit to Mel Gorman for diagnosing this failure and initial versions of
+the patch.
 
-Opposed to a bug in one setuid program that not everyone is even
-garuanteed to have installed.
+Signed-off-by: Andy Whitcroft <apw@shadowen.org>
+---
+ mm/hugetlb.c |   55 ++++++++++++++++++++++++++++++++++++++++++++-----------
+ 1 files changed, 44 insertions(+), 11 deletions(-)
 
-	Hannes
+diff --git a/mm/hugetlb.c b/mm/hugetlb.c
+index 28a2980..393ea8b 100644
+--- a/mm/hugetlb.c
++++ b/mm/hugetlb.c
+@@ -1937,6 +1937,18 @@ retry:
+ 			lock_page(page);
+ 	}
+ 
++	/*
++	 * If we are going to COW a private mapping later, we examine the
++	 * pending reservations for this page now. This will ensure that
++	 * any allocations necessary to record that reservation occur outside
++	 * the spinlock.
++	 */
++	if (write_access && !(vma->vm_flags & VM_SHARED))
++		if (vma_needs_reservation(h, vma, address) < 0) {
++			ret = VM_FAULT_OOM;
++			goto backout_unlocked;
++		}
++
+ 	spin_lock(&mm->page_table_lock);
+ 	size = i_size_read(mapping->host) >> huge_page_shift(h);
+ 	if (idx >= size)
+@@ -1962,6 +1974,7 @@ out:
+ 
+ backout:
+ 	spin_unlock(&mm->page_table_lock);
++backout_unlocked:
+ 	unlock_page(page);
+ 	put_page(page);
+ 	goto out;
+@@ -1973,6 +1986,7 @@ int hugetlb_fault(struct mm_struct *mm, struct vm_area_struct *vma,
+ 	pte_t *ptep;
+ 	pte_t entry;
+ 	int ret;
++	struct page *pagecache_page = NULL;
+ 	static DEFINE_MUTEX(hugetlb_instantiation_mutex);
+ 	struct hstate *h = hstate_vma(vma);
+ 
+@@ -1989,25 +2003,44 @@ int hugetlb_fault(struct mm_struct *mm, struct vm_area_struct *vma,
+ 	entry = huge_ptep_get(ptep);
+ 	if (huge_pte_none(entry)) {
+ 		ret = hugetlb_no_page(mm, vma, address, ptep, write_access);
+-		mutex_unlock(&hugetlb_instantiation_mutex);
+-		return ret;
++		goto out_unlock;
+ 	}
+ 
+ 	ret = 0;
+ 
++	/*
++	 * If we are going to COW the mapping later, we examine the pending
++	 * reservations for this page now. This will ensure that any
++	 * allocations necessary to record that reservation occur outside the
++	 * spinlock. For private mappings, we also lookup the pagecache
++	 * page now as it is used to determine if a reservation has been
++	 * consumed.
++	 */
++	if (write_access && !pte_write(entry)) {
++		if (vma_needs_reservation(h, vma, address) < 0) {
++			ret = VM_FAULT_OOM;
++			goto out_unlock;
++		}
++
++		if (!(vma->vm_flags & VM_SHARED))
++			pagecache_page = hugetlbfs_pagecache_page(h,
++								vma, address);
++	}
++
+ 	spin_lock(&mm->page_table_lock);
+ 	/* Check for a racing update before calling hugetlb_cow */
+ 	if (likely(pte_same(entry, huge_ptep_get(ptep))))
+-		if (write_access && !pte_write(entry)) {
+-			struct page *page;
+-			page = hugetlbfs_pagecache_page(h, vma, address);
+-			ret = hugetlb_cow(mm, vma, address, ptep, entry, page);
+-			if (page) {
+-				unlock_page(page);
+-				put_page(page);
+-			}
+-		}
++		if (write_access && !pte_write(entry))
++			ret = hugetlb_cow(mm, vma, address, ptep, entry,
++							pagecache_page);
+ 	spin_unlock(&mm->page_table_lock);
++
++	if (pagecache_page) {
++		unlock_page(pagecache_page);
++		put_page(pagecache_page);
++	}
++
++out_unlock:
+ 	mutex_unlock(&hugetlb_instantiation_mutex);
+ 
+ 	return ret;
+-- 
+1.6.0.rc1.258.g80295
+
