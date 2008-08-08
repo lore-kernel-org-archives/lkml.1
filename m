@@ -1,45 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754655AbYHHPq4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753934AbYHHP72@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754655AbYHHPq4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 11:46:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752514AbYHHPqs
+	id S1753934AbYHHP72 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 11:59:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752216AbYHHP7U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 11:46:48 -0400
-Received: from khc.piap.pl ([195.187.100.11]:44745 "EHLO khc.piap.pl"
+	Fri, 8 Aug 2008 11:59:20 -0400
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:46165 "EHLO smtp6.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751720AbYHHPqr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 11:46:47 -0400
-To: "Chris Friesen" <cfriesen@nortel.com>
-Cc: Frans Meulenbroeks <fransmeulenbroeks@gmail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: including .c files ?
-References: <ac9c93b10808080425p321fac13y72a5b2b4e67ee6a9@mail.gmail.com>
-	<m3abfnk296.fsf@maximus.localdomain> <489C60D3.2040201@nortel.com>
-From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Fri, 08 Aug 2008 17:46:44 +0200
-In-Reply-To: <489C60D3.2040201@nortel.com> (Chris Friesen's message of "Fri\, 08 Aug 2008 09\:05\:55 -0600")
-Message-ID: <m33alfjyqj.fsf@maximus.localdomain>
+	id S1751695AbYHHP7U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Aug 2008 11:59:20 -0400
+Date: Fri, 8 Aug 2008 18:57:45 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Alan Cox <alan@redhat.com>, Wim Van Sebroeck <wim@iguana.be>
+Cc: rmk@arm.linux.org.uk, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [2.6 patch] fix watchdog/at91rm9200_wdt.c compilation
+Message-ID: <20080808155744.GD14495@cs181140183.pp.htv.fi>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Chris Friesen" <cfriesen@nortel.com> writes:
+This patch fixes the following compile error:
 
->> Doesn't work when you need conditional compilation.
->
-> Sure it does...look at all the kernel Makefiles that compile code
-> based on whether a config option is set.
+<--  snip  -->
 
-Nope, I meant compilation depending on preprocessor variables defined
-(or not) by the including file. CONFIG_* and things like make
-variables are completely different things.
+...
+  CC      drivers/watchdog/at91rm9200_wdt.o
+at91rm9200_wdt.c:188: error: 'at91_wdt_ioctl' undeclared here (not in a 
+make[3]: *** [drivers/watchdog/at91rm9200_wdt.o] Error 1
 
-Imagine a chip driver (library) doing I/O using either MMIO or
-inp/outp. The real card driver uses the library and provides
-necessary glue code. You can either a) make I/O real function calls,
-call using pointers etc. (slow, should be inline), or b) define the
-I/O as inline functions or macros and then #include the library.
--- 
-Krzysztof Halasa
+<--  snip  -->
+
+Reported-by: Adrian Bunk <bunk@kernel.org>
+Signed-off-by: Adrian Bunk <bunk@kernel.org>
+
+---
+0cbc8aa3114bc48a868de8cc9a1706b6c81dd3f4 
+diff --git a/drivers/watchdog/at91rm9200_wdt.c b/drivers/watchdog/at91rm9200_wdt.c
+index 2313f44..09363f1 100644
+--- a/drivers/watchdog/at91rm9200_wdt.c
++++ b/drivers/watchdog/at91rm9200_wdt.c
+@@ -129,7 +129,7 @@ static struct watchdog_info at91_wdt_info = {
+ /*
+  * Handle commands from user-space.
+  */
+-static long at91_wdt_ioct(struct file *file,
++static long at91_wdt_ioctl(struct file *file,
+ 					unsigned int cmd, unsigned long arg)
+ {
+ 	void __user *argp = (void __user *)arg;
+
