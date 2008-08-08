@@ -1,119 +1,709 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754873AbYHHPcp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755881AbYHHPfI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754873AbYHHPcp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 11:32:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752237AbYHHPcg
+	id S1755881AbYHHPfI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 11:35:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752524AbYHHPe4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 11:32:36 -0400
-Received: from g5t0008.atlanta.hp.com ([15.192.0.45]:8026 "EHLO
-	g5t0008.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752180AbYHHPcf convert rfc822-to-8bit (ORCPT
+	Fri, 8 Aug 2008 11:34:56 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:33679 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752180AbYHHPez (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 11:32:35 -0400
-From: "Miller, Mike (OS Dev)" <Mike.Miller@hp.com>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-CC: "scameron@beardog.cca.cpqcorp.net" <scameron@beardog.cca.cpqcorp.net>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>
-Date: Fri, 8 Aug 2008 15:32:02 +0000
-Subject: RE: HP (Compaq) Smart Array 5xxx controller SCSI driver
-Thread-Topic: HP (Compaq) Smart Array 5xxx controller SCSI driver
-Thread-Index: Acj48/M9DeAHCT4RTcikDdQNDepA5wAd9Iyw
-Message-ID: <0F5B06BAB751E047AB5C87D1F77A778826B3F6C3CA@GVW0547EXC.americas.hpqcorp.net>
-References: <0F5B06BAB751E047AB5C87D1F77A778826B3DD7474@GVW0547EXC.americas.hpqcorp.net>
-	<20080725000638Q.fujita.tomonori@lab.ntt.co.jp>
-	<0F5B06BAB751E047AB5C87D1F77A778826B3F6BF4C@GVW0547EXC.americas.hpqcorp.net>
- <20080808100748M.fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20080808100748M.fujita.tomonori@lab.ntt.co.jp>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Fri, 8 Aug 2008 11:34:55 -0400
+Message-ID: <489C6844.9050902@sgi.com>
+Date: Fri, 08 Aug 2008 10:37:40 -0500
+From: Alan Mayer <ajm@sgi.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
 MIME-Version: 1.0
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
+To: "Eric W. Biederman" <ebiederm@xmission.com>, jeremy@goop.org,
+       rusty@rustcorp.com.au, suresh.b.siddha@intel.com, mingo@elte.hu,
+       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       Dean Nelson <dcn@sgi.com>, Cliff Wickman <cpw@sgi.com>
+Subject: [Fwd: [PATCH] x86_64:  (NEW) Dynamically allocate arch specific system
+ vectors]
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+Subject: [PATCH] x86_64:  (NEW) Dynamically allocate arch specific 
+system vectors
 
-> -----Original Message-----
-> From: FUJITA Tomonori [mailto:fujita.tomonori@lab.ntt.co.jp]
-> Sent: Thursday, August 07, 2008 8:08 PM
-> To: Miller, Mike (OS Dev)
-> Cc: fujita.tomonori@lab.ntt.co.jp;
-> scameron@beardog.cca.cpqcorp.net;
-> linux-kernel@vger.kernel.org; linux-scsi@vger.kernel.org
-> Subject: RE: HP (Compaq) Smart Array 5xxx controller SCSI driver
->
-> On Thu, 7 Aug 2008 19:04:54 +0000
-> "Miller, Mike (OS Dev)" <Mike.Miller@hp.com> wrote:
->
-> >
-> >
-> > > -----Original Message-----
-> > > From: FUJITA Tomonori [mailto:fujita.tomonori@lab.ntt.co.jp]
-> > > Sent: Thursday, July 24, 2008 10:07 AM
-> > > To: Miller, Mike (OS Dev)
-> > > Cc: fujita.tomonori@lab.ntt.co.jp;
-> > > scameron@beardog.cca.cpqcorp.net;
-> > > linux-kernel@vger.kernel.org; linux-scsi@vger.kernel.org
-> > > Subject: RE: HP (Compaq) Smart Array 5xxx controller SCSI driver
-> > >
-> > > On Thu, 24 Jul 2008 15:00:00 +0000
-> > > "Miller, Mike (OS Dev)" <Mike.Miller@hp.com> wrote:
-> > >
-> > > >
-> > > > > > As for the patches I mentioned which were previously
-> > > ignored for
-> > > > > > improving how the current cciss SCSI code handled hot
-> > > plogging, if
-> > > > > > you're curious about that, check here:
-> > > > > >
-> > > > > > http://marc.info/?l=linux-scsi&m=120213565000426&w=4
-> > > > > >
-> > > > > > A change like that becomes more important if logical drives
-> > > > > > are exposed through the scsi layer.
-> > > > >
-> > > > > We need to think about the best way to map (expose)
-> logical and
-> > > > > physical drivers to SCSI luns. As I wrote before, I'm
-> > > interested in
-> > > > > how HP SCSI driver does.
-> > > >
-> > > > We don't neccesarily want or need to expose the physical
-> > > disks. The only exception is disks that are not part of a logical
-> > > volume. If the disks are part of a logical volume but exposed the
-> > > user may shoot themselves in the foot by destroying the firmware
-> > > metadata.
-> > >
-> > > Oops, sorry, I meant physical tape drives.
-> > >
-> >
-> > Tomo,
-> > I patched your driver into the 2.6.27-rc1 kernel. After
-> compiling the driver I get:
-> >
-> > [root@testmonkey linux-2.6]# insmod drivers/scsi/ciss.ko
-> > insmod: error inserting 'drivers/scsi/ciss.ko': -1 Invalid module
-> > format
->
-> You can get an error message here from `dmseg`, I think.
->
->
-> > [root@testmonkey linux-2.6]# gcc --version gcc (GCC) 4.1.2 20071124
-> > (Red Hat 4.1.2-42)
-> >
-> > [root@testmonkey linux-2.6]# uname -r
-> > 2.6.26
-> >
-> > I built inside the tree. Any thoughts?
->
-> Seems that you try to do insmod a module built for 2.6.27-rc1
-> into 2.6.26?
+From: Alan Mayer <ajm@sgi.com>
 
-Duh. Well that was pretty stupid.
+On some systems (e. g., UV) it is necessary to use an interrupt vector
+as a "system" vector, that is, it is generated by system hardware, not an
+IO device.  This patch dynamically allocates them from the pool of interrupt
+vectors below the fixed system vectors.  This may include stealing some from
+the device interrupt vector pool, so they are allocated dynamically so that
+other archs don't have to pay the price.  In UV, examples of these hardware
+and software systems that need dynamically allocated vectors are the GRU,
+the BAU, and XPM/XPC.
+
+Signed-off-by: Alan Mayer <ajm@sgi.com>
+
+Reviewed by:  Robin Holt <holt@sgi.com> Dean Nelson <dcn@sgi.com> Cliff 
+Wickman <cpw@sgi.com>
+
+---
+Index: linuxnext.latest/arch/x86/kernel/io_apic_64.c
+===================================================================
+--- linuxnext.latest.orig/arch/x86/kernel/io_apic_64.c	2008-08-07 
+09:46:37.000000000 -0500
++++ linuxnext.latest/arch/x86/kernel/io_apic_64.c	2008-08-07 
+13:26:18.000000000 -0500
+@@ -85,10 +85,6 @@
+
+  static int assign_irq_vector(int irq, cpumask_t mask);
+
+-int first_system_vector = 0xfe;
+-
+-char system_vectors[NR_VECTORS] = { [0 ... NR_VECTORS-1] = 
+SYS_VECTOR_FREE};
+-
+  #define __apicdebuginit  __init
+
+  int sis_apic_bug; /* not actually supported, dummy for compile */
+@@ -770,7 +766,7 @@
+  	return irq;
+  }
+
+-static int __assign_irq_vector(int irq, cpumask_t mask)
++static int __assign_irq_vector(int irq, int priority, cpumask_t *mask)
+  {
+  	/*
+  	 * NOTE! The local APIC isn't very good at handling
+@@ -783,63 +779,99 @@
+  	 * Also, we've got to be careful not to trash gate
+  	 * 0x80, because int 0x80 is hm, kind of importantish. ;)
+  	 */
+-	static int current_vector = FIRST_DEVICE_VECTOR, current_offset = 0;
++	static int current_device_vector = FIRST_DYNAMIC_VECTOR;
++	static int current_device_offset;	/* initially 0 */
++	int current_vector;
++	int current_offset;
+  	unsigned int old_vector;
+-	int cpu;
++	cpumask_t target_cpu_mask;
++	int target_cpu;
++	cpumask_t domain_cpu_mask;
+  	struct irq_cfg *cfg;
+
+  	BUG_ON((unsigned)irq >= NR_IRQS);
+  	cfg = &irq_cfg[irq];
+
+-	/* Only try and allocate irqs on cpus that are present */
+-	cpus_and(mask, mask, cpu_online_map);
+-
+  	if ((cfg->move_in_progress) || cfg->move_cleanup_count)
+  		return -EBUSY;
+
++	if (priority == IRQ_PRIORITY_NONE) {
++		/* Only try and allocate irqs on cpus that are present */
++		cpus_and(target_cpu_mask, *mask, cpu_online_map);
++
++		current_vector = current_device_vector;
++		current_offset = current_device_offset;
++	} else {
++		cpus_and(target_cpu_mask, *mask, cpu_possible_map);
++		domain_cpu_mask = target_cpu_mask;
++
++		if (priority == IRQ_PRIORITY_HIGH)
++			current_vector = first_fixed_system_vector;
++		else if (priority == IRQ_PRIORITY_LOW)
++			current_vector = FIRST_DYNAMIC_VECTOR - 1;
++		else
++			BUG();
++		current_offset = 0;
++	}
++
+  	old_vector = cfg->vector;
+  	if (old_vector) {
+  		cpumask_t tmp;
+-		cpus_and(tmp, cfg->domain, mask);
++		cpus_and(tmp, cfg->domain, target_cpu_mask);
+  		if (!cpus_empty(tmp))
+  			return 0;
+  	}
+
+-	for_each_cpu_mask_nr(cpu, mask) {
+-		cpumask_t domain, new_mask;
+-		int new_cpu;
++	for_each_cpu_mask_nr(target_cpu, target_cpu_mask) {
++		int domain_cpu;
+  		int vector, offset;
+
+-		domain = vector_allocation_domain(cpu);
+-		cpus_and(new_mask, domain, cpu_online_map);
++		if (priority == IRQ_PRIORITY_NONE) {
++			domain_cpu_mask = vector_allocation_domain(target_cpu);
++			cpus_and(domain_cpu_mask, domain_cpu_mask,
++				 cpu_online_map);
++		}
+
+  		vector = current_vector;
+  		offset = current_offset;
+  next:
+-		vector += 8;
+-		if (vector >= first_system_vector) {
+-			/* If we run out of vectors on large boxen, must share them. */
+-			offset = (offset + 1) % 8;
+-			vector = FIRST_DEVICE_VECTOR + offset;
++		if (priority == IRQ_PRIORITY_HIGH) {
++			if (--vector < FIRST_DYNAMIC_VECTOR)
++				break;
++		} else if (priority == IRQ_PRIORITY_LOW) {
++			if (++vector == first_fixed_system_vector)
++				break;
++		} else {
++			vector += 8;
++			if (vector > last_dynamic_device_vector) {
++				/*
++				 * If we run out of vectors on large boxes,
++				 * must share them.
++				 */
++				offset = (offset + 1) % 8;
++				vector = FIRST_DYNAMIC_VECTOR + offset;
++			}
++			if (unlikely(current_vector == vector))
++				continue;
+  		}
+-		if (unlikely(current_vector == vector))
+-			continue;
+  		if (vector == IA32_SYSCALL_VECTOR)
+  			goto next;
+-		for_each_cpu_mask_nr(new_cpu, new_mask)
+-			if (per_cpu(vector_irq, new_cpu)[vector] != -1)
++		for_each_cpu_mask_nr(domain_cpu, domain_cpu_mask)
++			if (per_cpu(vector_irq, domain_cpu)[vector] != -1)
+  				goto next;
+  		/* Found one! */
+-		current_vector = vector;
+-		current_offset = offset;
++		if (priority == IRQ_PRIORITY_NONE) {
++			current_device_vector = vector;
++			current_device_offset = offset;
++		}
+  		if (old_vector) {
+  			cfg->move_in_progress = 1;
+  			cfg->old_domain = cfg->domain;
+  		}
+-		for_each_cpu_mask_nr(new_cpu, new_mask)
+-			per_cpu(vector_irq, new_cpu)[vector] = irq;
++		for_each_cpu_mask_nr(domain_cpu, domain_cpu_mask)
++			per_cpu(vector_irq, domain_cpu)[vector] = irq;
+  		cfg->vector = vector;
+-		cfg->domain = domain;
++		cfg->domain = domain_cpu_mask;
+  		return 0;
+  	}
+  	return -ENOSPC;
+@@ -851,7 +883,7 @@
+  	unsigned long flags;
+
+  	spin_lock_irqsave(&vector_lock, flags);
+-	err = __assign_irq_vector(irq, mask);
++	err = __assign_irq_vector(irq, IRQ_PRIORITY_NONE, &mask);
+  	spin_unlock_irqrestore(&vector_lock, flags);
+  	return err;
+  }
+@@ -2256,23 +2288,30 @@
+  device_initcall(ioapic_init_sysfs);
+
+  /*
+- * Dynamic irq allocate and deallocation
++ * Dynamically allocate an irq vector mapping.
+   */
+-int create_irq(void)
++static int do_create_irq(int priority, cpumask_t *mask)
+  {
+  	/* Allocate an unused irq */
+  	int irq;
+  	int new;
+  	unsigned long flags;
++	cpumask_t target_cpu_mask;
+
+  	irq = -ENOSPC;
+  	spin_lock_irqsave(&vector_lock, flags);
++
++	if (mask)
++		target_cpu_mask = *mask;
++	else
++		target_cpu_mask = TARGET_CPUS;
++
+  	for (new = (NR_IRQS - 1); new >= 0; new--) {
+  		if (platform_legacy_irq(new))
+  			continue;
+  		if (irq_cfg[new].vector != 0)
+  			continue;
+-		if (__assign_irq_vector(new, TARGET_CPUS) == 0)
++		if (__assign_irq_vector(new, priority, &target_cpu_mask) == 0)
+  			irq = new;
+  		break;
+  	}
+@@ -2284,6 +2323,17 @@
+  	return irq;
+  }
+
++/*
++ * Dynamically allocate an irq device vector mapping.
++ */
++int create_irq(void)
++{
++	return do_create_irq(IRQ_PRIORITY_NONE, NULL);
++}
++
++/*
++ * Free a dynamically allocated irq device vector mapping.
++ */
+  void destroy_irq(unsigned int irq)
+  {
+  	unsigned long flags;
+@@ -2299,6 +2349,106 @@
+  }
+
+  /*
++ * NOP functions
++ */
++static void noop(unsigned int irq)
++{
++}
++
++static unsigned int noop_ret(unsigned int irq)
++{
++	return 0;
++}
++
++static void ack_apic(unsigned int irq)
++{
++	ack_APIC_irq();
++}
++
++/*
++ * For dynamic allocation of system vectors where
++ * an ack_APIC_irq() is needed after handling the IRQ
++ */
++static struct irq_chip ack_apic_chip = {
++	.name		= "ack_apic",
++	.startup	= noop_ret,
++	.shutdown	= noop,
++	.enable		= noop,
++	.disable	= noop,
++	.ack		= noop,
++	.mask		= noop,
++	.unmask		= noop,
++	.eoi		= ack_apic,
++	.end		= noop,
++};
++
++/*
++ * Dynamically allocate an irq system vector mapping.
++ * (The irq is not to be shared.)
++ *
++ * After calling this function, the caller is responsible for any needed
++ * calls to:
++ *   set_irq_data(&any_driver_data);
++ *   set_irq_type(irq, IRQ_TYPE...);
++ * Then make the call to request_irq() to create the irqaction:
++ *   request_irq(irq, interrupt_handler, irqflags, "devname", NULL);
++ *   You might consider the flag IRQF_NOBALANCING.
++ */
++int create_irq_system_vector(int priority, cpumask_t *mask, char *irq_name,
++			     int *assigned_vector)
++{
++	unsigned long flags;
++	int irq;
++
++	/* locate an available irq */
++	irq = do_create_irq(priority, mask);
++	if (irq < 0)
++		return irq;
++
++	spin_lock_irqsave(&vector_lock, flags);
++	set_irq_chip_and_handler_name(irq, &ack_apic_chip, handle_percpu_irq,
++				      irq_name);
++
++	spin_unlock_irqrestore(&vector_lock, flags);
++
++	*assigned_vector = irq_cfg[irq].vector;
++	return irq;
++}
++EXPORT_SYMBOL(create_irq_system_vector);
++
++/*
++ * Free a dynamically allocated irq system vector mapping.
++ *
++ * Before calling this function, the caller is responsible for calling
++ * free_irq(irq, dev_id);  to free the irqaction.
++ */
++void destroy_irq_system_vector(int irq)
++{
++	unsigned long flags;
++	int cpu;
++
++	if ((unsigned)irq >= NR_IRQS || irq_cfg[irq].vector == 0)
++		return;
++
++#ifdef CONFIG_SMP
++	synchronize_irq(irq);
++#endif
++	dynamic_irq_cleanup(irq);
++	disable_irq(irq);
++
++	spin_lock_irqsave(&vector_lock, flags);
++
++	for_each_cpu_mask_nr(cpu, irq_cfg[irq].domain)
++		per_cpu(vector_irq, cpu)[irq_cfg[irq].vector] = -1;
++
++	irq_cfg[irq].vector = 0;
++	cpus_clear(irq_cfg[irq].domain);
++
++	spin_unlock_irqrestore(&vector_lock, flags);
++}
++EXPORT_SYMBOL(destroy_irq_system_vector);
++
++/*
+   * MSI message composition
+   */
+  #ifdef CONFIG_PCI_MSI
+@@ -2533,7 +2683,7 @@
+  {
+  	int irq, ret;
+
+-	irq = create_irq();
++	irq = do_create_irq(IRQ_PRIORITY_NONE, NULL);
+  	if (irq < 0)
+  		return irq;
+
+@@ -2571,7 +2721,7 @@
+
+  	sub_handle = 0;
+  	list_for_each_entry(desc, &dev->msi_list, list) {
+-		irq = create_irq();
++		irq = do_create_irq(IRQ_PRIORITY_NONE, NULL);
+  		if (irq < 0)
+  			return irq;
+  #ifdef CONFIG_INTR_REMAP
+Index: linuxnext.latest/include/linux/irq.h
+===================================================================
+--- linuxnext.latest.orig/include/linux/irq.h	2008-08-07 
+09:46:37.000000000 -0500
++++ linuxnext.latest/include/linux/irq.h	2008-08-07 09:46:42.000000000 -0500
+@@ -352,10 +352,14 @@
+  extern void set_irq_noprobe(unsigned int irq);
+  extern void set_irq_probe(unsigned int irq);
+
+-/* Handle dynamic irq creation and destruction */
++/* Handle dynamic irq device vector mapping and unmapping */
+  extern int create_irq(void);
+  extern void destroy_irq(unsigned int irq);
+
++/* Handle dynamic irq system vector mapping and unmapping */
++extern int create_irq_system_vector(int, cpumask_t *, char *, int *);
++extern void destroy_irq_system_vector(int);
++
+  /* Test to see if a driver has successfully requested an irq */
+  static inline int irq_has_action(unsigned int irq)
+  {
+Index: linuxnext.latest/include/asm-x86/irq_vectors.h
+===================================================================
+--- linuxnext.latest.orig/include/asm-x86/irq_vectors.h	2008-08-07 
+09:46:37.000000000 -0500
++++ linuxnext.latest/include/asm-x86/irq_vectors.h	2008-08-07 
+09:46:42.000000000 -0500
+@@ -91,14 +91,40 @@
+  #define LOCAL_TIMER_VECTOR	0xef
+
+  /*
++ * The first device or system vector (lowest numbered) available for 
+dynamic
++ * allocation is defined by FIRST_DYNAMIC_VECTOR.
++ *
++ * The last device vector available for dynamic allocation is defined by
++ * last_dynamic_device_vector, which is initially set to
++ * LAST_DYNAMIC_DEVICE_VECTOR.
++ *
++ * The last system vector available for dynamic allocation is defined by
++ * first_fixed_system_vector - 1. The variable first_fixed_system_vector
++ * is initially set to FIRST_FIXED_SYSTEM_VECTOR.
++ *
++ * SGI-UV uses LAST_UV_DYNAMIC_DEVICE_VECTOR to reserve a range of
++ * vectors that falls between the first_fixed_system_vector and
++ * last_dynamic_device_vector for dynamic system vector allocations.
++ */
++#define FIRST_FIXED_SYSTEM_VECTOR		0xfe
++#define LAST_DYNAMIC_DEVICE_VECTOR		FIRST_FIXED_SYSTEM_VECTOR
++#define LAST_UV_DYNAMIC_DEVICE_VECTOR		0xe0
++#define IRQ_PRIORITY_NONE			1
++#define IRQ_PRIORITY_LOW			2
++#define IRQ_PRIORITY_HIGH			3
++
++/*
+   * First APIC vector available to drivers: (vectors 0x30-0xee) we
+   * start at 0x31(0x41) to spread out vectors evenly between priority
+   * levels. (0x80 is the syscall vector)
++ *
++ * Device vectors are dynamically allocated as numbers in the range of
++ * FIRST_DYNAMIC_VECTOR to last_dynamic_device_vector (inclusive).
+   */
+  #ifdef CONFIG_X86_32
+-# define FIRST_DEVICE_VECTOR	0x31
++# define FIRST_DYNAMIC_VECTOR	0x31
+  #else
+-# define FIRST_DEVICE_VECTOR	(IRQ15_VECTOR + 2)
++# define FIRST_DYNAMIC_VECTOR	(IRQ15_VECTOR + 2)
+  #endif
+
+  #define NR_VECTORS		256
+Index: linuxnext.latest/arch/x86/kernel/io_apic_32.c
+===================================================================
+--- linuxnext.latest.orig/arch/x86/kernel/io_apic_32.c	2008-08-07 
+09:46:37.000000000 -0500
++++ linuxnext.latest/arch/x86/kernel/io_apic_32.c	2008-08-07 
+13:32:37.000000000 -0500
+@@ -1165,11 +1165,15 @@
+  }
+
+  /* irq_vectors is indexed by the sum of all RTEs in all I/O APICs. */
+-static u8 irq_vector[NR_IRQ_VECTORS] __read_mostly = { 
+FIRST_DEVICE_VECTOR , 0 };
++static u8 irq_vector[NR_IRQ_VECTORS] __read_mostly = {
++	FIRST_DYNAMIC_VECTOR,
++	0
++};
+
+  static int __assign_irq_vector(int irq)
+  {
+-	static int current_vector = FIRST_DEVICE_VECTOR, current_offset;
++	static int current_vector = FIRST_DYNAMIC_VECTOR;
++	static int current_offset;
+  	int vector, offset;
+
+  	BUG_ON((unsigned)irq >= NR_IRQ_VECTORS);
+@@ -1181,9 +1185,9 @@
+  	offset = current_offset;
+  next:
+  	vector += 8;
+-	if (vector >= first_system_vector) {
++	if (vector > last_dynamic_device_vector) {
+  		offset = (offset + 1) % 8;
+-		vector = FIRST_DEVICE_VECTOR + offset;
++		vector = FIRST_DYNAMIC_VECTOR + offset;
+  	}
+  	if (vector == current_vector)
+  		return -ENOSPC;
+@@ -2314,7 +2318,7 @@
+  	int i;
+
+  	/* Reserve all the system vectors. */
+-	for (i = first_system_vector; i < NR_VECTORS; i++)
++	for (i = last_dynamic_device_vector + 1; i < NR_VECTORS; i++)
+  		set_bit(i, used_vectors);
+
+  	enable_IO_APIC();
+@@ -2435,9 +2439,9 @@
+  device_initcall(ioapic_init_sysfs);
+
+  /*
+- * Dynamic irq allocate and deallocation
++ * Dynamically allocate an irq vector mapping.
+   */
+-int create_irq(void)
++static int do_create_irq(int priority, cpumask_t *mask)
+  {
+  	/* Allocate an unused irq */
+  	int irq, new, vector = 0;
+@@ -2464,6 +2468,17 @@
+  	return irq;
+  }
+
++/*
++ * Dynamically allocate an irq device vector mapping.
++ */
++int create_irq(void)
++{
++	return do_create_irq(IRQ_PRIORITY_NONE, NULL);
++}
++
++/*
++ * Free a dynamically allocated irq device vector mapping.
++ */
+  void destroy_irq(unsigned int irq)
+  {
+  	unsigned long flags;
+@@ -2560,7 +2575,7 @@
+  {
+  	struct msi_msg msg;
+  	int irq, ret;
+-	irq = create_irq();
++	irq = do_create_irq(IRQ_PRIORITY_NONE, NULL);
+  	if (irq < 0)
+  		return irq;
+
+Index: linuxnext.latest/include/asm-x86/desc.h
+===================================================================
+--- linuxnext.latest.orig/include/asm-x86/desc.h	2008-08-07 
+09:46:37.000000000 -0500
++++ linuxnext.latest/include/asm-x86/desc.h	2008-08-07 
+09:46:42.000000000 -0500
+@@ -310,22 +310,25 @@
+  #define SYS_VECTOR_FREE		0
+  #define SYS_VECTOR_ALLOCED	1
+
+-extern int first_system_vector;
+-extern char system_vectors[];
+-
+-static inline void alloc_system_vector(int vector)
+-{
+-	if (system_vectors[vector] == SYS_VECTOR_FREE) {
+-		system_vectors[vector] = SYS_VECTOR_ALLOCED;
+-		if (first_system_vector > vector)
+-			first_system_vector = vector;
++extern int last_dynamic_device_vector;
++extern int first_fixed_system_vector;
++extern char fixed_system_vectors[];
++
++static inline void alloc_fixed_system_vector(int vector)
++{
++	if (fixed_system_vectors[vector] == SYS_VECTOR_FREE) {
++		fixed_system_vectors[vector] = SYS_VECTOR_ALLOCED;
++		if (first_fixed_system_vector > vector)
++			first_fixed_system_vector = vector;
++		if (last_dynamic_device_vector >= vector)
++			last_dynamic_device_vector = vector - 1;
+  	} else
+  		BUG();
+  }
+
+  static inline void alloc_intr_gate(unsigned int n, void *addr)
+  {
+-	alloc_system_vector(n);
++	alloc_fixed_system_vector(n);
+  	set_intr_gate(n, addr);
+  }
+
+Index: linuxnext.latest/arch/x86/kernel/apic_32.c
+===================================================================
+--- linuxnext.latest.orig/arch/x86/kernel/apic_32.c	2008-08-07 
+09:46:37.000000000 -0500
++++ linuxnext.latest/arch/x86/kernel/apic_32.c	2008-08-07 
+09:46:42.000000000 -0500
+@@ -68,9 +68,11 @@
+  int local_apic_timer_c2_ok;
+  EXPORT_SYMBOL_GPL(local_apic_timer_c2_ok);
+
+-int first_system_vector = 0xfe;
+-
+-char system_vectors[NR_VECTORS] = { [0 ... NR_VECTORS-1] = 
+SYS_VECTOR_FREE};
++int last_dynamic_device_vector = LAST_DYNAMIC_DEVICE_VECTOR;
++int first_fixed_system_vector = FIRST_FIXED_SYSTEM_VECTOR;
++char fixed_system_vectors[NR_VECTORS] = {
++	[0 ... NR_VECTORS-1] = SYS_VECTOR_FREE
++};
+
+  /*
+   * Debug level, exported for io_apic.c
+@@ -1361,7 +1363,7 @@
+  	 * IRQ0 must be given a fixed assignment and initialized,
+  	 * because it's used before the IO-APIC is set up.
+  	 */
+-	set_intr_gate(FIRST_DEVICE_VECTOR, interrupt[0]);
++	set_intr_gate(FIRST_DYNAMIC_VECTOR, interrupt[0]);
+
+  	/*
+  	 * The reschedule interrupt is a CPU-to-CPU reschedule-helper
+Index: linuxnext.latest/arch/x86/kernel/irqinit_64.c
+===================================================================
+--- linuxnext.latest.orig/arch/x86/kernel/irqinit_64.c	2008-08-07 
+09:46:37.000000000 -0500
++++ linuxnext.latest/arch/x86/kernel/irqinit_64.c	2008-08-07 
+09:46:42.000000000 -0500
+@@ -22,6 +22,7 @@
+  #include <asm/desc.h>
+  #include <asm/apic.h>
+  #include <asm/i8259.h>
++#include <asm/genapic.h>
+
+  /*
+   * Common place to define all x86 IRQ vectors
+@@ -217,6 +218,11 @@
+  	alloc_intr_gate(SPURIOUS_APIC_VECTOR, spurious_interrupt);
+  	alloc_intr_gate(ERROR_APIC_VECTOR, error_interrupt);
+
++	if (is_uv_system() &&
++	    LAST_UV_DYNAMIC_DEVICE_VECTOR < last_dynamic_device_vector) {
++		last_dynamic_device_vector = LAST_UV_DYNAMIC_DEVICE_VECTOR;
++	}
++
+  	if (!acpi_ioapic)
+  		setup_irq(2, &irq2);
+  }
+Index: linuxnext.latest/arch/x86/kernel/vmiclock_32.c
+===================================================================
+--- linuxnext.latest.orig/arch/x86/kernel/vmiclock_32.c	2008-08-07 
+09:46:37.000000000 -0500
++++ linuxnext.latest/arch/x86/kernel/vmiclock_32.c	2008-08-07 
+09:46:42.000000000 -0500
+@@ -81,7 +81,7 @@
+  static inline unsigned int vmi_get_timer_vector(void)
+  {
+  #ifdef CONFIG_X86_IO_APIC
+-	return FIRST_DEVICE_VECTOR;
++	return FIRST_DYNAMIC_VECTOR;
+  #else
+  	return FIRST_EXTERNAL_VECTOR;
+  #endif
+Index: linuxnext.latest/arch/x86/kernel/apic_64.c
+===================================================================
+--- linuxnext.latest.orig/arch/x86/kernel/apic_64.c	2008-08-07 
+09:46:37.000000000 -0500
++++ linuxnext.latest/arch/x86/kernel/apic_64.c	2008-08-07 
+09:46:42.000000000 -0500
+@@ -33,6 +33,7 @@
+  #include <asm/smp.h>
+  #include <asm/mtrr.h>
+  #include <asm/mpspec.h>
++#include <asm/desc.h>
+  #include <asm/hpet.h>
+  #include <asm/pgalloc.h>
+  #include <asm/nmi.h>
+@@ -58,6 +59,13 @@
+  int local_apic_timer_c2_ok;
+  EXPORT_SYMBOL_GPL(local_apic_timer_c2_ok);
+
++int last_dynamic_device_vector = LAST_DYNAMIC_DEVICE_VECTOR;
++int first_fixed_system_vector = FIRST_FIXED_SYSTEM_VECTOR;
++char fixed_system_vectors[NR_VECTORS] = {
++	[0 ... NR_VECTORS-1] = SYS_VECTOR_FREE
++};
++
++
+  /*
+   * Debug level, exported for io_apic.c
+   */
+Index: linuxnext.latest/kernel/irq/chip.c
+===================================================================
+--- linuxnext.latest.orig/kernel/irq/chip.c	2008-08-07 
+09:46:37.000000000 -0500
++++ linuxnext.latest/kernel/irq/chip.c	2008-08-07 09:46:42.000000000 -0500
+@@ -78,6 +78,7 @@
+  	desc->chip_data = NULL;
+  	desc->handle_irq = handle_bad_irq;
+  	desc->chip = &no_irq_chip;
++	desc->name = "none";
+  	spin_unlock_irqrestore(&desc->lock, flags);
+  }
+
+
+-- 
+Somebody just stopped callin' you "Angel."
+--
+Alan J. Mayer
+SGI
+ajm@sgi.com
+WORK: 651-683-3131
+HOME: 651-407-0134
+--
