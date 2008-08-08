@@ -1,90 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753851AbYHHOcA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753191AbYHHOiA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753851AbYHHOcA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 10:32:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751885AbYHHObv
+	id S1753191AbYHHOiA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 10:38:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751568AbYHHOht
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 10:31:51 -0400
-Received: from fms-01.valinux.co.jp ([210.128.90.1]:44302 "EHLO
-	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751918AbYHHObv (ORCPT
+	Fri, 8 Aug 2008 10:37:49 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:43164 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751540AbYHHOhs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 10:31:51 -0400
-Date: Fri, 08 Aug 2008 23:31:50 +0900 (JST)
-Message-Id: <20080808.233150.02266833.taka@valinux.co.jp>
-To: fernando@oss.ntt.co.jp
-Cc: dave@linux.vnet.ibm.com, ryov@valinux.co.jp,
-       yoshikawa.takuya@oss.ntt.co.jp, uchida@ap.jp.nec.com, ngupta@google.com,
-       linux-kernel@vger.kernel.org, dm-devel@redhat.com,
-       containers@lists.linux-foundation.org,
-       virtualization@lists.linux-foundation.org,
-       xen-devel@lists.xensource.com, agk@sourceware.org,
-       righi.andrea@gmail.com
-Subject: Re: RFC: I/O bandwidth controller
-From: Hirokazu Takahashi <taka@valinux.co.jp>
-In-Reply-To: <20080808.152119.43521725.taka@valinux.co.jp>
-References: <1217870433.20260.101.camel@nimitz>
-	<1217985189.3154.57.camel@sebastian.kern.oss.ntt.co.jp>
-	<20080808.152119.43521725.taka@valinux.co.jp>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Fri, 8 Aug 2008 10:37:48 -0400
+Date: Fri, 8 Aug 2008 22:37:42 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: "Michael S. Tsirkin" <m.s.tsirkin@gmail.com>
+Cc: linux-kernel@vger.kernel.org, davem@davemloft.net, yoshfuji@linux-ipv6.org,
+       netdev@vger.kernel.org, haoki@redhat.com
+Subject: Re: possible recursive locking in udp4_lib_rcv
+Message-ID: <20080808143741.GA20777@gondor.apana.org.au>
+References: <20080807234613.GA9598@google.com> <E1KRSxN-0005Ng-00@gondolin.me.apana.org.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <E1KRSxN-0005Ng-00@gondolin.me.apana.org.au>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, Fernando,
-
-> >   - Implement a block layer resource controller. dm-ioband is a working
-> > solution and feature rich but its dependency on the dm infrastructure is
-> > likely to find opposition (the dm layer does not handle barriers
-> > properly and the maximum size of I/O requests can be limited in some
-> > cases). In such a case, we could either try to build a standalone
-> > resource controller based on dm-ioband (which would probably hook into
-> > generic_make_request) or try to come up with something new.
+On Fri, Aug 08, 2008 at 10:28:41PM +0800, Herbert Xu wrote:
+>
+> @@ -1165,7 +1189,13 @@ int __udp4_lib_rcv(struct sk_buff *skb, struct hlist_head udptable[],
+>                                inet_iif(skb), udptable);
 > 
-> I doubt about the maximum size of I/O requests problem. You can't avoid
-> this problem as far as you use device mapper modules with such a bad
-> manner, even if the controller is implemented as a stand-alone controller.
-> There is no limitation if you only use dm-ioband without any other device
-> mapper modules.
-
-Ryo told me this isn't true anymore. The dm infrastructure introduced
-a new feature to support multiple page-sized I/O requests, that was
-just merged to the current linux tree. So you and me don't need to
-worry about this stuff anymore.
-
-Ryo said he was going to make dm-ioband support this new feature and
-post the patches soon.
-
-> And I think the device mapper team just started designing barriers support.
-> I guess it won't take long. Right, Alasdair?
-> We should know it is logically impossible to support barriers on some
-> types of device mapper modules such as LVM. You can't avoid the barrier
-> problem when you use this kind of multiple devices even if you implement
-> the controller in the block layer.
+>         if (sk != NULL) {
+> -               int ret = udp_queue_rcv_skb(sk, skb);
+> +               int ret = 0;
+> +               bh_lock_sock_nested(sk);
+> +               if (!sock_owned_by_user(sk))
+> +                       ret = udp_queue_rcv_skb(sk, skb);
+> +               else
+> +                       sk_add_backlog(sk, skb);
+> +               bh_unlock_sock(sk);
 > 
-> But I think a stand-alone implementation will have a merit that it
-> makes it easier to setup the configuration rather than dm-ioband.
-> From this point of view, it would be good that you move the algorithm
-> of dm-ioband into the block layer.
-> On the other hand, we should know it will make it impossible to use
-> the dm infrastructure from the controller, though it isn't so rich.
-> 
-> >   - If the I/O tracking patches make it into the kernel we could move on
-> > and try to get the Cgroup extensions to CFQ and AS mentioned before (see
-> > (1), (2), and (3) above for details) merged.
-> >   - Delegate the task of controlling the rate at which a task can
-> > generate dirty pages to the memory controller.
-> > 
-> > This RFC is somewhat vague but my feeling is that we build some
-> > consensus on the goals and basic design aspects before delving into
-> > implementation details.
-> > 
-> > I would appreciate your comments and feedback.
-> > 
-> > - Fernando
+> Hmm, what was the reason for that lock?
 
-Thanks,
-Hirokazu Takahashi.
+Never mind, I see the reason why it's there.  What we should do
+is drop the lock when we hit an encapsulated socket since they
+don't need it at all.
+
+Cheers,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
