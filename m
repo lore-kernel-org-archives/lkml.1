@@ -1,55 +1,31 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754200AbYHHJJY (ORCPT <rfc822;ralf@linux-mips.org>);
-	Fri, 8 Aug 2008 05:09:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752223AbYHHJJO
+	id S1759310AbYHHUTb (ORCPT <rfc822;ralf@linux-mips.org>);
+	Fri, 8 Aug 2008 16:19:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753756AbYHHUTU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 05:09:14 -0400
-Received: from mail1.triplemind.com ([195.140.232.143]:42999 "EHLO 
-	mail1.triplemind.com" rhost-flags-OK-OK-FAIL-FAIL) by vger.kernel.org
-	with ESMTP id S1752241AbYHHJJO (ORCPT
+	Fri, 8 Aug 2008 16:19:20 -0400
+Received: from tomts35.bellnexxia.net ([209.226.175.109]:35466 "EHLO
+	tomts35-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753729AbYHHUTU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 05:09:14 -0400
-X-Greylist: delayed 379 seconds by postgrey-1.27 at vger.kernel.org; Fri, 08 Aug 2008 05:09:14 EDT
-Date: Fri, 8 Aug 2008 09:01:10 GMT
-Message-Id: <200808080901.m7891Ac4011712@lugh.triplemind.com>
-From: "Vacation-Homes.info" <info@vacation-homes.info>
-Subject: Vacation-Homes.info, list your accommodation
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Fri, 8 Aug 2008 16:19:20 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Am+LACUZnEjR4q+G/2dsb2JhbACJV4EthUqZRw
+X-Mailer: Openwave WebEngine, version 2.8.11 (webedge20-101-194-20030622)
+X-Originating-IP: [222.124.29.251]
+From: <regward@bellnet.ca>
+Reply-To: contactrichardsmith02@gmail.com
+To: <info@winners.co.uk>
+Subject: Congratulation
+Date: Fri, 8 Aug 2008 13:10:35 -0400
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-To: unlisted-recipients:; (no To-header on input)
+Message-Id: <20080808171052.CDPY1721.tomts29-srv.bellnexxia.net@toip37-bus.srvr.bell.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1754200AbYHHJJY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1759310AbYHHUTb@vger.kernel.org>
 
-
-Dear Sirs,
-
-Today Vacation-Homes.info is proud to announce you our new service:
-Vacation-Homes.info is a platform for accommodation owners to present
-their accommodations, bookable without any fee or commission.
-
-During the beta stage our service is open only for invited lodging
-partner businesses (private and corporate).  Please take the
-chance to list your hotel, apartment, cottage, room...
-
-http://www.vacation-homes.info/beta.html
-
-Our service features:
-* An online presentation of your accommodation
-* Booking requests are sent to you directly via email
-* Each object presentation includes 10 pictures
-* Online modification of your presentation via simple web-interface 24/7
-* Calendar and price sheets for online bookings
-* Detailed statistics about access to your presentation
-* Good ranking in most search engines
-* Backlink to your personal web page
-
-We invite you to add your lodging property for free.
-If you find any problems with our beta version, please let us
-know. We hope your business will benefit from this new website.
-For any questions, please feel free to contact us.
-
-Your Vacation-Homes.info Team
-info@vacation-homes.info.
+Attn: We are please to inform You that you just won the sum of $2,000,000.00, form our FREELOTTO PROMOTION PROGRAM. Fill the details:Full Name,Country,Tel,Occupation: Email: contactrichardsmith02@gmail.com
 
