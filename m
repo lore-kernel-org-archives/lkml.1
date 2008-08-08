@@ -1,43 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758224AbYHHR4T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757903AbYHHSCK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758224AbYHHR4T (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 13:56:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752075AbYHHR4I
+	id S1757903AbYHHSCK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 14:02:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753121AbYHHSB5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 13:56:08 -0400
-Received: from mailrelay002.isp.belgacom.be ([195.238.6.175]:1594 "EHLO
-	mailrelay002.isp.belgacom.be" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752002AbYHHR4G (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 13:56:06 -0400
-X-Belgacom-Dynamic: yes
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AnkFAJ8lnEhR8DtG/2dsb2JhbACBXKs6
-Date: Fri, 8 Aug 2008 19:56:05 +0200
-From: Wim Van Sebroeck <wim@iguana.be>
+	Fri, 8 Aug 2008 14:01:57 -0400
+Received: from gw.goop.org ([64.81.55.164]:45766 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752993AbYHHSB4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Aug 2008 14:01:56 -0400
+Message-ID: <489C89FA.5000301@goop.org>
+Date: Fri, 08 Aug 2008 11:01:30 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+MIME-Version: 1.0
 To: Adrian Bunk <bunk@kernel.org>
-Cc: Alan Cox <alan@redhat.com>, linux-mips@linux-mips.org,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [2.6 patch] fix watchdog/txx9wdt.c compilation
-Message-ID: <20080808175605.GE2773@infomag.infomag.iguana.be>
-References: <20080808151846.GA14495@cs181140183.pp.htv.fi>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080808151846.GA14495@cs181140183.pp.htv.fi>
-User-Agent: Mutt/1.4.2.1i
+CC: Mark McLoughlin <markmc@redhat.com>, xen-devel@lists.xensource.com,
+       Eduardo Habkost <ehabkost@redhat.com>, Stephen Tweedie <sct@redhat.com>,
+       linux-kernel@vger.kernel.org, Simon Horman <horms@verge.net.au>,
+       "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>
+Subject: Re: [Xen-devel] Re: Allow compile with CONFIG_DEBUG_INFO=y,	X86_PAE
+ not set on gcc 3.4.5
+References: <20080808050429.GA8473@verge.net.au> <489BE9C3.2010006@goop.org>	<20080808080155.GA1992@cs181140183.pp.htv.fi>	<489C6485.7050009@goop.org> <20080808161331.GF14495@cs181140183.pp.htv.fi>
+In-Reply-To: <20080808161331.GF14495@cs181140183.pp.htv.fi>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Adrian,
+Adrian Bunk wrote:
+> On Fri, Aug 08, 2008 at 08:21:41AM -0700, Jeremy Fitzhardinge wrote:
+>   
+>> Adrian Bunk wrote:
+>>     
+>>> CONFIG_DEBUG_INFO=y is why I never hit it before.
+>>>
+>>> It does not seem to be just one dodgy Redhat compiler (as I assumed in  
+>>> the Bugzilla entry) but the whole 3.4 series of gcc which makes our  
+>>> resolution of saying that this specific compiler is broken invalid.
+>>>
+>>> Considering that we officially support all compilers >= 3.2 this is 
+>>> just one more case where we have to add to the kernel a workaround for 
+>>> a broken compiler.
+>>>   
+>>>       
+>> Yes.  I'm happy to write off a specific rpm package, but a whole series  
+>> is a different matter.
+>>
+>> Adding
+>>
+>> 	if (PREALLOCATED_PMDS == 0)
+>> 		return;
+>>
+>> in the appropriate places with a small comment seems like the right answer.
+>>     
+>
+> The patch below you suggested fixes it for me with gcc 3.4.6.
+>
+>   
+>>    J
+>>     
+>
+> cu
+> Adrian
+>   
 
-> This patch fixes the following compile error caused by
-> commit 8dc244f7deac4c0e95ce0ffd26f494bb6e1534c0
-> ([WATCHDOG 48/57] txx9: Fix locking, switch to unlocked_ioctl):
+OK.  Want to submit this as a proper patch?
 
-Will also be added.
+Acked-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 
-Kind regards,
-Wim.
+Thanks,
+    J
+
+
+>
+> --- a/arch/x86/mm/pgtable.c
+> +++ b/arch/x86/mm/pgtable.c
+> @@ -209,6 +209,9 @@ static void pgd_prepopulate_pmd(struct mm_struct *mm, pgd_t *pgd, pmd_t *pmds[])
+>  
+>  	pud = pud_offset(pgd, 0);
+>  
+> +	if (PREALLOCATED_PMDS == 0)
+> +		return;
+> +
+>   	for (addr = i = 0; i < PREALLOCATED_PMDS;
+>  	     i++, pud++, addr += PUD_SIZE) {
+>  		pmd_t *pmd = pmds[i];
+>
+> _______________________________________________
+> Xen-devel mailing list
+> Xen-devel@lists.xensource.com
+> http://lists.xensource.com/xen-devel
+>   
 
