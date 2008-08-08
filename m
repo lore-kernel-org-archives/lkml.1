@@ -1,60 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753048AbYHHEz0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753073AbYHHE54@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753048AbYHHEz0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 00:55:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751466AbYHHEzR
+	id S1753073AbYHHE54 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 00:57:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751499AbYHHE5o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 00:55:17 -0400
-Received: from smtpout3.tre.se ([80.251.192.228]:20624 "EHLO smtpout3.tre.se"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751180AbYHHEzQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 00:55:16 -0400
-Date: Fri, 8 Aug 2008 06:54:19 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Roland McGrath <roland@redhat.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       David Miller <davem@davemloft.net>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Ulrich Drepper <drepper@redhat.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Gregory Haskins <ghaskins@novell.com>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       "Luis Claudio R. Goncalves" <lclaudio@uudg.org>,
-       Clark Williams <williams@redhat.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [PATCH 0/5] ftrace: to kill a daemon
-Message-ID: <20080808045419.GA2820@uranus.ravnborg.org>
-References: <20080807182013.984175558@goodmis.org> <489B6511.7000208@goop.org> <alpine.DEB.1.10.0808071721200.10092@gandalf.stny.rr.com> <20080807222642.761AF15429D@magilla.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080807222642.761AF15429D@magilla.localdomain>
-User-Agent: Mutt/1.4.2.1i
+	Fri, 8 Aug 2008 00:57:44 -0400
+Received: from g4t0017.houston.hp.com ([15.201.24.20]:36559 "EHLO
+	g4t0017.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751365AbYHHE5n (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Aug 2008 00:57:43 -0400
+Message-ID: <489BD227.6000209@hp.com>
+Date: Fri, 08 Aug 2008 00:57:11 -0400
+From: Brian Haley <brian.haley@hp.com>
+Organization: Open Source and Linux Organization
+User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
+MIME-Version: 1.0
+To: Alexey Dobriyan <adobriyan@gmail.com>
+CC: John Gumb <john.gumb@tandberg.com>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: OOPS, ip -f inet6 route get fec0::1, linux-2.6.26,	ip6_route_output,
+ rt6_fill_node+0x175
+References: <9F6ACAE02B6DD040A1E259977622CFDB033590C3@oslexcp1.eu.tandberg.int> <20080807203748.GA5196@martell.zuzino.mipt.ru>
+In-Reply-To: <20080807203748.GA5196@martell.zuzino.mipt.ru>
+Content-Type: multipart/mixed;
+ boundary="------------030209010905020208020707"
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 07, 2008 at 03:26:42PM -0700, Roland McGrath wrote:
-> > This doesn't seem any less complex than what I did. With this, I would 
-> > have to come up with another way to handle modules. This will make
-> > things a lot more complex.
-> 
-> The scheme you've implemented can apply fine to a .ko file after it's made.
-> They are just .o's really.  It is presumably faster to do one step per
-> final .ko rather than many tiny ones (per source file).  
-> 
-> That might be a benefit to doing it all at the end for vmlinux too.  I
-> think the best way would be to have a vmlinux.o that we actually use in the
-> link, rather than just analyzing and discarding.  Then you can just do your
-> existing hack on vmlinux.o before it's linked into vmlinux.
-I have patches to actually use vmlinux.o as part of the link process,
-but as I hit some subtle issues with um and sparc they are not
-yet ready. I plan to dust them off again and fix up the sparc and
-um issues but that is not this month.
+This is a multi-part message in MIME format.
+--------------030209010905020208020707
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-	Sam
+Alexey Dobriyan wrote:
+> On Thu, Aug 07, 2008 at 07:00:56PM +0200, John Gumb wrote:
+>> Scenario: no ipv6 default route set.
+> 
+>> # ip -f inet6 route get fec0::1
+>>
+>> BUG: unable to handle kernel NULL pointer dereference at 00000000
+>> IP: [<c0369b85>] rt6_fill_node+0x175/0x3b0
+>> EIP is at rt6_fill_node+0x175/0x3b0
+> 
+> 0xffffffff80424dd3 is in rt6_fill_node (net/ipv6/route.c:2191).
+> 2186                    } else
+> 2187    #endif
+> 2188                            NLA_PUT_U32(skb, RTA_IIF, iif);
+> 2189            } else if (dst) {
+> 2190                    struct in6_addr saddr_buf;
+> 2191      ====>         if (ipv6_dev_get_saddr(ip6_dst_idev(&rt->u.dst)->dev,
+> 					       ^^^^^^^^^^^^^^^^^^^^^^^^
+> 					       		NULL
+> 
+> 2192                                           dst, 0, &saddr_buf) == 0)
+> 2193                            NLA_PUT(skb, RTA_PREFSRC, 16, &saddr_buf);
+> 2194            }
+
+The commit that changed this can't be reverted easily, but the patch 
+below works for me.
+
+Fix NULL de-reference in rt6_fill_node() when there's no IPv6 input 
+device present in the dst entry.
+
+Signed-off-by: Brian Haley <brian.haley@hp.com>
+
+
+
+--------------030209010905020208020707
+Content-Type: text/x-patch;
+ name="idev.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="idev.patch"
+
+diff --git a/net/ipv6/route.c b/net/ipv6/route.c
+index 5a3e87e..303a245 100644
+--- a/net/ipv6/route.c
++++ b/net/ipv6/route.c
+@@ -2188,7 +2188,8 @@ static int rt6_fill_node(struct sk_buff *skb, struct rt6_info *rt,
+ 			NLA_PUT_U32(skb, RTA_IIF, iif);
+ 	} else if (dst) {
+ 		struct in6_addr saddr_buf;
+-		if (ipv6_dev_get_saddr(ip6_dst_idev(&rt->u.dst)->dev,
++		struct inet6_dev *idev = ip6_dst_idev(&rt->u.dst);
++		if (ipv6_dev_get_saddr(idev ? idev->dev : NULL,
+ 				       dst, 0, &saddr_buf) == 0)
+ 			NLA_PUT(skb, RTA_PREFSRC, 16, &saddr_buf);
+ 	}
+
+--------------030209010905020208020707--
