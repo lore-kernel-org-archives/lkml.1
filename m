@@ -1,54 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755849AbYHHBnA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755818AbYHHBpe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755849AbYHHBnA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Aug 2008 21:43:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752022AbYHHBmw
+	id S1755818AbYHHBpe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Aug 2008 21:45:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752778AbYHHBpZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Aug 2008 21:42:52 -0400
-Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:56871
-	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751833AbYHHBmv (ORCPT
+	Thu, 7 Aug 2008 21:45:25 -0400
+Received: from a-sasl-quonix.sasl.smtp.pobox.com ([208.72.237.25]:43279 "EHLO
+	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752190AbYHHBpY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Aug 2008 21:42:51 -0400
-From: Rob Landley <rob@landley.net>
-Organization: Boundaries Unlimited
-To: user-mode-linux-devel@lists.sourceforge.net
-Subject: Re: [uml-devel] [PATCH] fix extern inline errors with gcc 4.3.0
-Date: Thu, 7 Aug 2008 20:42:47 -0500
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: Jeff Dike <jdike@addtoit.com>, Benny Halevy <bhalevy@panasas.com>,
-       linux-kernel@vger.kernel.org
-References: <1214488251-20927-1-git-send-email-bhalevy@panasas.com> <48673A9B.8050907@panasas.com> <20080630162201.GC6643@c2.user-mode-linux.org>
-In-Reply-To: <20080630162201.GC6643@c2.user-mode-linux.org>
+	Thu, 7 Aug 2008 21:45:24 -0400
+From: Junio C Hamano <gitster@pobox.com>
+To: Paul Mackerras <paulus@samba.org>
+Cc: linux-kernel@vger.kernel.org, Stephen Rothwell <sfr@canb.auug.org.au>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Petr Baudis <pasky@suse.cz>, "Shawn O. Pearce" <spearce@spearce.org>,
+       Johannes Schindelin <Johannes.Schindelin@gmx.de>
+Subject: [PATCH] powerpc: Do not ignore arch/powerpc/include
+References: <20080721002354.GK10151@machine.or.cz>
+ <20080721002508.26773.92277.stgit@localhost>
+ <7v8wvpm9cl.fsf@gitster.siamese.dyndns.org>
+ <7vej5543v5.fsf_-_@gitster.siamese.dyndns.org>
+ <alpine.LFD.1.10.0808041719380.3299@nehalem.linux-foundation.org>
+ <7vk5etjozt.fsf@gitster.siamese.dyndns.org>
+Date: Thu, 07 Aug 2008 18:45:08 -0700
+In-Reply-To: <7vk5etjozt.fsf@gitster.siamese.dyndns.org> (Junio C. Hamano's
+ message of "Wed, 06 Aug 2008 23:52:38 -0700")
+Message-ID: <7vzlnogtzv.fsf_-_@gitster.siamese.dyndns.org>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200808072042.48182.rob@landley.net>
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+X-Pobox-Relay-ID: A85504BA-64EB-11DD-B63F-3113EBD4C077-77302942!a-sasl-quonix.pobox.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Monday 30 June 2008 11:22:01 Jeff Dike wrote:
-> > 	Uli reported a crash on x86_64 with gcc 4.1.2 with unit-at-a-time
->
-> ...
->
-> > If that crash does come back, I'd say we should just debug it.  It's
-> > likely UML implicitly relying on some gcc behavior anyway.
->
-> Well, I'm seeing the crash in stock 2.6.26.  For the moment I'm reverting
->
-> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdi
->ff;h=4f81c5350b44bcc501ab6f8a089b16d064b4d2f6
->
-> And then it runs fine.  (With gcc 4.1.2, on x86-64.)
+Back when .gitignore file was added to arch/powerpc/ in 06f2138 ([POWERPC]
+Add files build to .gitignore, 2006-11-26), there indeed was nothing
+tracked in the ignored hierarchy and ignoring everything made sense.  But
+we have very many tracked files there these days, and having a higher
+level .gitignore that ignores everything is asking for future troubles..
 
-Nevermind, fixed in 2.6.26.2 already.  Sorry for the noise...
+This should have been part of b8b572e (powerpc: Move include files to
+arch/powerpc/include/asm, 2008-08-01).
 
-Rob
--- 
-"One of my most productive days was throwing away 1000 lines of code."
-  - Ken Thompson.
+Signed-off-by: Junio C Hamano <gitster@pobox.com>
+---
+  Junio C Hamano <gitster@pobox.com> writes:
+
+  > By the way, if anybody wants to reproduce this, be careful with the
+  > tests that run "rm -f .git/index" before adding everything with
+  > "git add ."  from the toplevel directory.  After doing so, if you check
+  > the result with "git diff --stat HEAD", you will notice many missing files;
+  > I almost got a heart attack before inspecting this file:
+  >
+  > 	$ cat arch/powerpc/.gitignore
+  >         include
+  >
+  > Yes, it excludes 261 already tracked files.  Is it intended?  I dunno.
+
+  I looked at this a bit more and now I know this was not intended.
+
+ arch/powerpc/.gitignore |    1 -
+ 1 files changed, 0 insertions(+), 1 deletions(-)
+
+diff --git a/arch/powerpc/.gitignore b/arch/powerpc/.gitignore
+deleted file mode 100644
+index a1a869c..0000000
+--- a/arch/powerpc/.gitignore
++++ /dev/null
+@@ -1 +0,0 @@
+-include
 
