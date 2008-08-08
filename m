@@ -1,51 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760681AbYHHUiX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760161AbYHHUlB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760681AbYHHUiX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 16:38:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751852AbYHHUiM
+	id S1760161AbYHHUlB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 16:41:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753139AbYHHUkw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 16:38:12 -0400
-Received: from casper.infradead.org ([85.118.1.10]:49388 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752550AbYHHUiL (ORCPT
+	Fri, 8 Aug 2008 16:40:52 -0400
+Received: from e31.co.us.ibm.com ([32.97.110.149]:49707 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752941AbYHHUkw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 16:38:11 -0400
-Subject: Re: [PATCH] printk: robustify printk
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: paulmck@linux.vnet.ibm.com
-Cc: Andrew Morton <akpm@linux-foundation.org>, torvalds@linux-foundation.org,
-       mingo@elte.hu, tglx@linutronix.de, marcin.slusarz@gmail.com,
-       linux-kernel@vger.kernel.org, davem@davemloft.net, rostedt@goodmis.org
-In-Reply-To: <20080808203241.GH6760@linux.vnet.ibm.com>
-References: <1218202249.8625.106.camel@twins>
-	 <alpine.LFD.1.10.0808080931550.3462@nehalem.linux-foundation.org>
-	 <1218215454.8625.133.camel@twins>
-	 <alpine.LFD.1.10.0808081014240.3462@nehalem.linux-foundation.org>
-	 <1218217257.29098.2.camel@lappy.programming.kicks-ass.net>
-	 <alpine.LFD.1.10.0808081043160.3462@nehalem.linux-foundation.org>
-	 <1218219269.29098.5.camel@lappy.programming.kicks-ass.net>
-	 <20080808121428.646a8b3c.akpm@linux-foundation.org>
-	 <1218223269.29098.12.camel@lappy.programming.kicks-ass.net>
-	 <20080808123747.0db1c5dd.akpm@linux-foundation.org>
-	 <20080808203241.GH6760@linux.vnet.ibm.com>
-Content-Type: text/plain
-Date: Fri, 08 Aug 2008 22:37:39 +0200
-Message-Id: <1218227859.29098.24.camel@lappy.programming.kicks-ass.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 8 Aug 2008 16:40:52 -0400
+Date: Fri, 8 Aug 2008 13:40:50 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Vegard Nossum <vegard.nossum@gmail.com>
+Cc: Suresh Siddha <suresh.b.siddha@intel.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       the arch/x86 maintainers <x86@kernel.org>
+Subject: Re: recent -git: BUG in free_thread_xstate
+Message-ID: <20080808204050.GJ6760@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <19f34abd0807231307y191c0ad7tfab4cda57ee88eb@mail.gmail.com> <20080723203109.GH14380@linux-os.sc.intel.com> <20080801211036.GU14851@linux.vnet.ibm.com> <19f34abd0808081146w22a3e5casd0d1fa15f2384000@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <19f34abd0808081146w22a3e5casd0d1fa15f2384000@mail.gmail.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-08-08 at 13:32 -0700, Paul E. McKenney wrote:
+On Fri, Aug 08, 2008 at 08:46:21PM +0200, Vegard Nossum wrote:
+> On Fri, Aug 1, 2008 at 11:10 PM, Paul E. McKenney
+> <paulmck@linux.vnet.ibm.com> wrote:
+> > On Wed, Jul 23, 2008 at 01:31:09PM -0700, Suresh Siddha wrote:
+> >> On Wed, Jul 23, 2008 at 01:07:04PM -0700, Vegard Nossum wrote:
+> >> > Hi,
+> >> >
+> >> > I just got this on c010b2f76c3032e48097a6eef291d8593d5d79a6 (-git from
+> >> > yesterday):
+> >>
+> >> Do you see this in 2.6.26 aswell? I suspect it is coming from post 2.6.26
+> >> changes.
+> >>
+> >> >
+> >> > BUG: unable to handle kernel paging request at 00664381
+> >> > IP: [<c010b274>] free_thread_xstate+0x4/0x30
+> >> ...
+> >>
+> >> > EIP is at arch/x86/kernel/process.c:36:
+> >> >
+> >> >         if (tsk->thread.xstate) {
+> >> >
+> >>
+> >> It looks like the kernel stack of that process got corrupted, corrupting the
+> >> task pointer in thread_info. Can you send us your config file?
+> >
+> > I would also like to see the config file.
+> 
+> Hi,
+> 
+> I'm sorry for the late reply.
+> 
+> I copied you because I saw some RCU entry in the stack trace, but it
+> is almost definitely not a problem with (core or "leaf") RCU code.
+> Sometimes it also happens that people will say "oh, I recognize this
+> problem, the patch has been posted here and here", etc.
+> 
+> It seems to be a problem with either netpoll, netconsole, or the
+> 8139too driver. I find a UDP packet in the task_struct slab, and the
+> stacktrace with RCU entries come from unrelated, unfortunate callbacks
+> that stumbled upon the corruption.
+> 
+> My config, if you are still interested, can be found here:
+> http://userweb.kernel.org/~vegard/bugs/20080724-fork/config
+> 
+> I don't know if the problem persists with the latest -git, it is now a
+> while since I last tested, but I've checked kernels back to 2.6.20, so
+> the problem has existed for a long time.
 
-> How about if I instead add comments warning people not to put printk()
-> in the relevant RCU-implementation code?  That way I can be not only lazy,
-> but cowardly as well!  ;-)
+Well, the config shows preemptable RCU, which was my concern at the time,
+but there was certainly no preemptable RCU in mainline in 2.6.20, so...
 
-Well, it does spoil the party a little, we are now trading one deadlock
-for another :-/
+There -was- a bug in 2.6.26 release candidates that would cause RCU
+to fail badly on !HOTPLUG_CPU builds due to a failure to initialize,
+but that is fixed in 2.6.26 (thank you, Nick!!!).
 
-
-
+							Thanx, Paul
