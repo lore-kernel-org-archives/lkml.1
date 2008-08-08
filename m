@@ -1,62 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755867AbYHHHwo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756212AbYHHHw7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755867AbYHHHwo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 03:52:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753907AbYHHHw1
+	id S1756212AbYHHHw7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 03:52:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753933AbYHHHw2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 03:52:27 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:2608 "EHLO spitz.ucw.cz"
+	Fri, 8 Aug 2008 03:52:28 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:2609 "EHLO spitz.ucw.cz"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753027AbYHHHw0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1753197AbYHHHw0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 8 Aug 2008 03:52:26 -0400
-Date: Fri, 8 Aug 2008 09:49:17 +0200
+Date: Fri, 8 Aug 2008 09:14:30 +0200
 From: Pavel Machek <pavel@suse.cz>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>,
-       Ben Collins <bcollins@swissdisk.com>,
-       Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] VT: Restore VT fonts on switch
-Message-ID: <20080808074916.GB10657@ucw.cz>
-References: <E1KL0tq-0001Wk-Ny@critter.phunnypharm.org> <20080721134327.3ffab96f@infradead.org> <1216673584.7585.189.camel@cunning> <20080721221204.1f3be45d@lxorguk.ukuu.org.uk> <20080721213735.GA11648@srcf.ucam.org> <20080721222428.20395240@lxorguk.ukuu.org.uk>
+To: Simon Arlott <simon@fire.lp0.eu>
+Cc: linux-pm@lists.linux-foundation.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [linux-pm] Tyan S2923-E suspend to ram fails to resume
+Message-ID: <20080808071430.GA10370@ucw.cz>
+References: <48977AF7.2070300@simon.arlott.org.uk>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080721222428.20395240@lxorguk.ukuu.org.uk>
+In-Reply-To: <48977AF7.2070300@simon.arlott.org.uk>
 User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
-
-> > > > > do you have a list of which ones don't ?
-> > > > 
-> > > > I don't, but perhaps Matthew does.
-> > > 
-> > > Perhaps Matthew would care to file X bugs against those that get it wrong
-> > > then.
-> > 
-> > It's hardly limited to X. Fonts are set through the kernel - why 
-> > shouldn't it be the kernel's responsibility to ensure that they're 
-> > restored?
+On Mon 2008-08-04 22:56:07, Simon Arlott wrote:
+> My system (Tyan S2923-E, dmesg attached) suspends ok in 
+> all pm_test modes, but it won't resume with pm_test 
+> "none".
 > 
-> Why should it be the kernels problem to clean up after buggy X drivers ?
+> [    6.423515] mem full: hash matches
 > 
-> There are cases the kernel probably should handle font restore: the
-> obvious one being suspend/resume. X is not one of those cases and wasting
-> memory on fonts on embedded boxes that will never be seen anyway seems
-> silly.
+> When I press the power button, the port 80 display shows:
+> FF D0 23 01 D0 ... DE
+> (and again each time I press it)
 > 
-> For suspend/resume it might be far better to do it in user space,
-> although I'm not sure what the interface would look like.
+> If I force it to turn off, then on again:
+> FF D0 23 01 D0 ... FF D0 23 01 D0 ... (D2?) D3 00 01 D5 
+> D6 <normal boot>
+> 
+> Any ideas? (onboard SAS is disabled, watchdog is 
+> disabled, everything else is enabled, PCI-E graphics 
+> card)
 
-This does not parse. 'kernel should handle font restore' .... 'but it
-might be better to do that in userspace'.
+Try verifying if it reaches assembly code under realmode/ ...
 
-Actually I'd prefer to do this in kernel, so it works in cases like
-suspend self-test (done from kernel), from single user mode, etc...
 
-							Pavel
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
