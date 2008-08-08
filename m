@@ -1,49 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756003AbYHHKeu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756455AbYHHKhN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756003AbYHHKeu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 06:34:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754146AbYHHKen
+	id S1756455AbYHHKhN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 06:37:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753984AbYHHKg6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 06:34:43 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:40938 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754105AbYHHKem (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 06:34:42 -0400
-To: Jonathan Corbet <corbet@lwn.net>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Amanda McPherson <amanda@amcpherson.com>, Jiri Kosina <jkosina@suse.cz>,
-       Roland Dreier <rdreier@cisco.com>, Alex Chiang <achiang@hp.com>,
-       =?utf-8?Q?Jochen_Vo=C3=9F?= <jochen.voss@googlemail.com>
-Subject: Re: [PATCH] A development process document, V2
-From: Andi Kleen <andi@firstfloor.org>
-References: <20080731111443.2179bf4c@bike.lwn.net>
-Date: Fri, 08 Aug 2008 12:34:37 +0200
-In-Reply-To: <20080731111443.2179bf4c@bike.lwn.net> (Jonathan Corbet's message of "Thu, 31 Jul 2008 11:14:43 -0600")
-Message-ID: <87y7374wxu.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
+	Fri, 8 Aug 2008 06:36:58 -0400
+Received: from mailin.studentenwerk.mhn.de ([141.84.225.229]:38738 "EHLO
+	email.studentenwerk.mhn.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753113AbYHHKg5 convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Aug 2008 06:36:57 -0400
+From: Wolfgang Walter <wolfgang.walter@stwm.de>
+Organization: Studentenwerk =?iso-8859-1?q?M=FCnchen?=
+To: Suresh Siddha <suresh.b.siddha@intel.com>
+Subject: Re: Kernel oops with 2.6.26, padlock and ipsec: probably problem with fpu state changes
+Date: Fri, 8 Aug 2008 12:36:54 +0200
+User-Agent: KMail/1.9.5
+Cc: Herbert Xu <herbert@gondor.apana.org.au>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>
+References: <200807171653.59177.wolfgang.walter@stwm.de> <20080806201401.GA607@linux-os.sc.intel.com> <200808071823.02364.wolfgang.walter@stwm.de>
+In-Reply-To: <200808071823.02364.wolfgang.walter@stwm.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200808081236.55172.wolfgang.walter@stwm.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jonathan Corbet <corbet@lwn.net> writes:
+Am Donnerstag, 7. August 2008 18:23 schrieb Wolfgang Walter:
+> Am Mittwoch, 6. August 2008 22:14 schrieb Suresh Siddha:
+> > On Wed, Aug 06, 2008 at 10:33:25AM -0700, Wolfgang Walter wrote:
+> > > Hello Herbert,
+> > >
+> > > I think I finally found the problem.
+> > >
+> > > Here a short description again: all our routers with a via C3 using
+> > > padlock for AES-encryption are crashing with 2.6.26 while they work
+> > > fine with 2.6.25. Not using padlock (i.e. using the i386 assembler
+> > > version of AES) they just work fine.
+> >
+> > Both the padlock version or asm version don't use FP/math registers,
+> > right? It is interesting that you don't see the problem with asm version
+> > but see the problem with padlock version.
+> >
+> > Does disabling CONFIG_PREEMPT in 2.6.26 change anything? And also,
+>
+> Didn't check that yet as I'm still running my modified 2.6.26. It now runs
+> almost one day flawlessly.
+>
+> But yesterday I tried the following patch on top of a vanilla 2.6.26:
+>
+> =======================================================
+> diff -ur ../linux-2.6.26/drivers/crypto/padlock-aes.c
+> ./drivers/crypto/padlock-aes.c ---
+> ../linux-2.6.26/drivers/crypto/padlock-aes.c	2008-07-15 11:29:32.000000000
+> +0200 +++ ./drivers/crypto/padlock-aes.c	2008-08-07 17:46:55.000000000
+> +0200 @@ -16,6 +16,7 @@
+>  #include <linux/interrupt.h>
+>  #include <linux/kernel.h>
+>  #include <asm/byteorder.h>
+> +#include <asm/i387.h>
+>  #include "padlock.h"
+>
+>  /* Control word. */
+> @@ -144,9 +145,11 @@
+>  static inline void padlock_xcrypt(const u8 *input, u8 *output, void *key,
+>  				  void *control_word)
+>  {
+> +	kernel_fpu_begin();
+>  	asm volatile (".byte 0xf3,0x0f,0xa7,0xc8"	/* rep xcryptecb */
+>
+>  		      : "+S"(input), "+D"(output)
+>  		      : "d"(control_word), "b"(key), "c"(1));
+>
+> +	kernel_fpu_end();
+>  }
+>
+>  static void aes_crypt_copy(const u8 *in, u8 *out, u32 *key, struct cword
+> *cword) @@ -179,6 +182,7 @@
+>  		return;
+>  	}
+>
+> +	kernel_fpu_begin();
+>  	asm volatile ("test $1, %%cl;"
+>  		      "je 1f;"
+>  		      "lea -1(%%ecx), %%eax;"
+> @@ -190,15 +194,18 @@
+>
+>  		      : "+S"(input), "+D"(output)
+>  		      : "d"(control_word), "b"(key), "c"(count)
+>  		      : "ax");
+>
+> +	kernel_fpu_end();
+>  }
+>
+>  static inline u8 *padlock_xcrypt_cbc(const u8 *input, u8 *output, void
+> *key, u8 *iv, void *control_word, u32 count)
+>  {
+>  	/* rep xcryptcbc */
+> +	kernel_fpu_begin();
+>  	asm volatile (".byte 0xf3,0x0f,0xa7,0xd0"
+>
+>  		      : "+S" (input), "+D" (output), "+a" (iv)
+>  		      : "d" (control_word), "b" (key), "c" (count));
+>
+> +	kernel_fpu_end();
+>  	return iv;
+>  }
+>
+> =============================================================
+>
+> I found that kernel_fpu_begin(); kernel_fpu_begin(); is used with
+> MMX and/or SSE:
+>
+> include/asm/xor_32.h
+> drivers/md/raid6mmx.c
+> drivers/md/raid6sse1.c
+> drivers/md/raid6sse2.c
+>
+>
+> With this change I its a little bit more stable, I needed more then 5
+> minutes to crash the kernel (repeated it several times). If I read
+> the code correctly this disables preemption for the time the padlock cmd
+> is executing.
 
-> Here is an updated version of the development process document;
-> hopefully I've done a reasonable job of addressing everybody's
-> comments.  Please let me know if you find anything else in need of
-> attention.
+Forget that - I booted the wrong kernel.
 
-FWIW I wrote a paper/presentation for this years OLS with many 
-similar recommendations. The main focus was on strategies for
-getting difficult patches in, but it also covered many basics.
+I now really test this modification and it seems to be stable. The router now 
+runs for 45 minutes without oops.
 
-http://halobates.de/on-submitting-patches.pdf
-http://halobates.de/on-submitting-patches-pres.pdf
-
-If there's interest material from the paper could be reused
-or put into Documentation.
-
--Andi
+Regards,
+-- 
+Wolfgang Walter
+Studentenwerk München
+Anstalt des öffentlichen Rechts
+Leiter EDV
+Leopoldstraße 15
+80802 München
+Tel: +49 89 38196 276
+Fax: +49 89 38196 150
+Email: wolfgang.walter@stwm.de
+http://www.studentenwerk-muenchen.de/
