@@ -1,56 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753999AbYHHPFc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752788AbYHHPFy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753999AbYHHPFc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 11:05:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752601AbYHHPFY
+	id S1752788AbYHHPFy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 11:05:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753841AbYHHPFn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 11:05:24 -0400
-Received: from smtp-out3.blueyonder.co.uk ([195.188.213.6]:45093 "EHLO
-	smtp-out3.blueyonder.co.uk" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752432AbYHHPFY (ORCPT
+	Fri, 8 Aug 2008 11:05:43 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:60953 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752305AbYHHPFm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 11:05:24 -0400
-Message-ID: <489C60B1.2080909@blueyonder.co.uk>
-Date: Fri, 08 Aug 2008 16:05:21 +0100
-From: Sid Boyce <g3vbv@blueyonder.co.uk>
-Reply-To: g3vbv@blueyonder.co.uk
-Organization: blueyonder.co.uk
-User-Agent: Thunderbird 3.0a1 (X11/2008050714)
+	Fri, 8 Aug 2008 11:05:42 -0400
+Date: Fri, 8 Aug 2008 10:06:02 -0500
+From: Cliff Wickman <cpw@sgi.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Vivek Goyal <vgoyal@redhat.com>, Keith Owens <kaos@ocs.com.au>,
+       Jay Lan <jlan@sgi.com>, Christoph Lameter <cl@linux-foundation.org>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, jmerkey@wolfmountaingroup.com,
+       Geert Uytterhoeven <geert@linux-m68k.org>,
+       Josh Boyer <jwboyer@gmail.com>, linux-kernel@vger.kernel.org,
+       Takenori Nagano <t-nagano@ah.jp.nec.com>,
+       Bernhard Walle <bwalle@suse.de>
+Subject: Re: [ANNOUNCE] Merkey's Kernel Debugger
+Message-ID: <20080808150602.GB20352@sgi.com>
+References: <20080807200659.GJ24801@one.firstfloor.org> <23175.1218148134@ocs10w> <20080808011500.GA531@redhat.com> <20080808022916.GM24801@one.firstfloor.org> <20080808120813.GA17364@sgi.com> <20080808122052.GA9038@one.firstfloor.org>
 MIME-Version: 1.0
-To: Valdis.Kletnieks@vt.edu
-CC: linux-kernel@vger.kernel.org
-Subject: Re: A question regarding init_mm
-References: <489BA629.4030008@blueyonder.co.uk> <71281.1218166772@turing-police.cc.vt.edu>
-In-Reply-To: <71281.1218166772@turing-police.cc.vt.edu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080808122052.GA9038@one.firstfloor.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Valdis.Kletnieks@vt.edu wrote:
-> On Fri, 08 Aug 2008 02:49:29 BST, Sid Boyce said:
->
->> EXPORT_UNUSED_SYMBOL(init_mm); /* will be removed in 2.6.26 */
->
->> Any thoughts on why it's not seen? No one on the nvidia list has a clue
->> either.
->
-> Run a kernel built with 'CONFIG_UNUSED_SYMBOLS=y', that should help matters
-> somewhat.
->
-> The *real* problem is that the NVidia driver uses the deprecated pgd_offset_k()
-> function (see NV_PGD_OFFSET in lv-linux.h).  That's what needs fixing.
+On Fri, Aug 08, 2008 at 02:20:52PM +0200, Andi Kleen wrote:
+> > In a partitioned system [I work for SGI, so I'm talking about an Altix],
+> > there is memory sharing among multiple single-system images. And if
+> > one of those partitions were to panic the other partitions need to
+> > be informed that they cannot address the panic'd partition's memory.
+> > (Once that partition is rebooted any such access will cause an MCA
+> > in the accessor.)
+> 
+> There are already existing shutdown hooks. Aren't they good enough
+> for that?
 
-Thanks, that solved the problem. There is a patch for NVidia 177.13 
-which works, but I haven't yet been able to read it through to see 
-exactly what files were altered.
-Regards
-Sid.
+For shutdown, yes.  But on a panic crash_kexec() gets called
+before the panic_notifier_list is run.
+ 
+> I would feel uneasy about having arbitary drivers hook into panic().
+> While I'm sure your code is great there is unfortunately a lot 
+> of crappy driver code around.
+
+That is Eric Biederman's concern as well.  But it seems we should
+have a way for a user/customer to customize those events and their order,
+as I noted in a previous post.
 
 -- 
-Sid Boyce ... Hamradio License G3VBV, Licensed Private Pilot
-Emeritus IBM/Amdahl Mainframes and Sun/Fujitsu Servers Tech Support 
-Specialist, Cricket Coach
-Microsoft Windows Free Zone - Linux used for all Computing Tasks
-
+Cliff Wickman
+Silicon Graphics, Inc.
+cpw@sgi.com
+(651) 683-3824
