@@ -1,70 +1,180 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758709AbYHHTJV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760201AbYHHTKF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758709AbYHHTJV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 15:09:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758730AbYHHTJL
+	id S1760201AbYHHTKF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 15:10:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757893AbYHHTJv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 15:09:11 -0400
-Received: from gw.goop.org ([64.81.55.164]:48408 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754410AbYHHTJK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 15:09:10 -0400
-Message-ID: <489C99C2.1020805@goop.org>
-Date: Fri, 08 Aug 2008 12:08:50 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	Fri, 8 Aug 2008 15:09:51 -0400
+Received: from dresden.studentenwerk.mhn.de ([141.84.225.229]:38538 "EHLO
+	email.studentenwerk.mhn.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758057AbYHHTJt convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Aug 2008 15:09:49 -0400
+From: Wolfgang Walter <wolfgang.walter@stwm.de>
+Organization: Studentenwerk =?iso-8859-1?q?M=FCnchen?=
+To: Suresh Siddha <suresh.b.siddha@intel.com>
+Subject: Re: Kernel oops with 2.6.26, padlock and ipsec: probably problem with fpu state changes
+Date: Fri, 8 Aug 2008 21:09:46 +0200
+User-Agent: KMail/1.9.5
+Cc: Herbert Xu <herbert@gondor.apana.org.au>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>
+References: <200807171653.59177.wolfgang.walter@stwm.de> <200808071823.02364.wolfgang.walter@stwm.de> <200808081236.55172.wolfgang.walter@stwm.de>
+In-Reply-To: <200808081236.55172.wolfgang.walter@stwm.de>
 MIME-Version: 1.0
-To: Steven Rostedt <rostedt@goodmis.org>
-CC: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, Roland McGrath <roland@redhat.com>,
-       Ulrich Drepper <drepper@redhat.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Gregory Haskins <ghaskins@novell.com>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       "Luis Claudio R. Goncalves" <lclaudio@uudg.org>,
-       Clark Williams <williams@redhat.com>
-Subject: Re: [PATCH 0/5] ftrace: to kill a daemon
-References: <20080807182013.984175558@goodmis.org> <20080807184741.GB18164@Krystal> <alpine.DEB.1.10.0808071639420.9449@gandalf.stny.rr.com> <20080808172259.GB8244@Krystal> <alpine.DEB.1.10.0808081334010.4436@gandalf.stny.rr.com> <20080808174607.GG8244@Krystal> <alpine.DEB.1.10.0808081410380.6116@gandalf.stny.rr.com> <20080808182104.GA11376@Krystal> <alpine.DEB.1.10.0808081432400.8922@gandalf.stny.rr.com>
-In-Reply-To: <alpine.DEB.1.10.0808081432400.8922@gandalf.stny.rr.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200808082109.47284.wolfgang.walter@stwm.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Steven Rostedt wrote:
-> Hmm, good point. Unless...
+Am Freitag, 8. August 2008 12:36 schrieb Wolfgang Walter:
+> Am Donnerstag, 7. August 2008 18:23 schrieb Wolfgang Walter:
+> > =======================================================
+> > diff -ur ../linux-2.6.26/drivers/crypto/padlock-aes.c
+> > ./drivers/crypto/padlock-aes.c ---
+> > ../linux-2.6.26/drivers/crypto/padlock-aes.c	2008-07-15
+> > 11:29:32.000000000 +0200 +++ ./drivers/crypto/padlock-aes.c	2008-08-07
+> > 17:46:55.000000000 +0200 @@ -16,6 +16,7 @@
+> >  #include <linux/interrupt.h>
+> >  #include <linux/kernel.h>
+> >  #include <asm/byteorder.h>
+> > +#include <asm/i387.h>
+> >  #include "padlock.h"
+> >
+> >  /* Control word. */
+> > @@ -144,9 +145,11 @@
+> >  static inline void padlock_xcrypt(const u8 *input, u8 *output, void
+> > *key, void *control_word)
+> >  {
+> > +	kernel_fpu_begin();
+> >  	asm volatile (".byte 0xf3,0x0f,0xa7,0xc8"	/* rep xcryptecb */
+> >
+> >  		      : "+S"(input), "+D"(output)
+> >  		      : "d"(control_word), "b"(key), "c"(1));
+> >
+> > +	kernel_fpu_end();
+> >  }
+> >
+> >  static void aes_crypt_copy(const u8 *in, u8 *out, u32 *key, struct cword
+> > *cword) @@ -179,6 +182,7 @@
+> >  		return;
+> >  	}
+> >
+> > +	kernel_fpu_begin();
+> >  	asm volatile ("test $1, %%cl;"
+> >  		      "je 1f;"
+> >  		      "lea -1(%%ecx), %%eax;"
+> > @@ -190,15 +194,18 @@
+> >
+> >  		      : "+S"(input), "+D"(output)
+> >  		      : "d"(control_word), "b"(key), "c"(count)
+> >  		      : "ax");
+> >
+> > +	kernel_fpu_end();
+> >  }
+> >
+> >  static inline u8 *padlock_xcrypt_cbc(const u8 *input, u8 *output, void
+> > *key, u8 *iv, void *control_word, u32 count)
+> >  {
+> >  	/* rep xcryptcbc */
+> > +	kernel_fpu_begin();
+> >  	asm volatile (".byte 0xf3,0x0f,0xa7,0xd0"
+> >
+> >  		      : "+S" (input), "+D" (output), "+a" (iv)
+> >  		      : "d" (control_word), "b" (key), "c" (count));
+> >
+> > +	kernel_fpu_end();
+> >  	return iv;
+> >  }
+> >
+> > =============================================================
+> >
+> > I found that kernel_fpu_begin(); kernel_fpu_begin(); is used with
+> > MMX and/or SSE:
+> >
+> > include/asm/xor_32.h
+> > drivers/md/raid6mmx.c
+> > drivers/md/raid6sse1.c
+> > drivers/md/raid6sse2.c
+> >
+> >
+> > With this change I its a little bit more stable, I needed more then 5
+> > minutes to crash the kernel (repeated it several times). If I read
+> > the code correctly this disables preemption for the time the padlock cmd
+> > is executing.
 >
-> Can a processor be preempted in a middle of nops?  What do nops do for a 
-> processor? Can it skip them nicely in one shot?
->   
+> Forget that - I booted the wrong kernel.
+>
+> I now really test this modification and it seems to be stable. The router
+> now runs for 45 minutes without oops.
 
-The CPU can be interrupted between any two instructions, with a couple 
-of exceptions (it must, otherwise an unbounded run of nops could cause 
-an unbounded interrupt latency).  If you don't want eip to be in the 
-middle of your instruction site, you need to make sure it's nopped out 
-with a single instruction.
+It now runs for 8 hours.
 
-Unfortunately, aside from P6_NOP5, none of the standard asm/nops.h nops 
-are suitable.  Something like "0x66, 0x66, 0x66, 0x66, 0x90" would work 
-everywhere, but its possible putting more than 3 prefixes on the 
-instruction will kick the decoder into a slow path, which may have a 
-noticable effect.
+So how to proceed?
 
-> This means I'll have to do the benchmarks again, and see what the 
-> performance difference of a jmp and a nop is significant. I'm thinking 
-> that if the processor can safely skip nops without any type of processing, 
-> this may be the reason that nops are better than a jmp. A jmp causes the 
-> processor to do a little more work.
->   
+Here a summary:
 
-A no-op jmp could be easily converted to a nop early in the pipeline.  
-But I don't know whether anyone bothers to do that.
+1) 2.6.25.x works
 
-    J
+2) 2.6.26 without padlock works
+
+3a) 2.6.26 using padlock and ipsec chrashes. 
+
+Always the same reason:
+
+	__switch_to() wants to fxsave but there is no memory allocated
+
+which means that TS_USEDFPU has been set.
+
+3b) 2.6.26 with padlock code from 2.6.25: using padlock and ipsec chrashes.
+
+4) Reverting the fpu patches (from 2.6.25 to 2.6.26) fixes the problem.
+
+5) Protecting the padlock cmds with kernel_fpu_begin(); kernel_fpu_begin(); 
+fixes the problem.
+
+
+Some thoughts:
+
+4) probably fixes the problem because memory for fxsave is always allocated.
+
+Maybe this is also the reason why 2.6.25 and earlier work.
+
+5) is interesting:
+
+kernel_fpu_begin() will save the fpu state if TS_USEDFPU is set - exactly as 
+__unlazy_fpu in __switch_to would do. So when the crypto code calls padlock 
+the world is ok: if TS_USEDFPU is set then memory has been allocated.
+
+This makes me rather sure that there is no memory corruption by the network 
+code and/or crypto code itself overwriting the task_info stucture and setting 
+TS_USEDFPU.
+
+I don't know though why kernel_fpu_begin exactly fixes the problem:
+
+Maybe preemption must be disabled when padlocks RNG, ACE, Hash-engine etc. is 
+used. Maybe just some barrier is needed which preempt_disable provides.
+
+The padlock programming guide states that padlock's RNG, ACE, ... internally 
+use SSE. Especially "it temporary enables SSE until no further SSE 
+instruction or XSTORE, ... is seen". Further it may overlap with execution of 
+non-SSE instructions.
+
+
+Probably it is the best to treat the padlock opcodes as SSE instructions.
+
+
+
+What should I do now?
+
+
+Regards,
+-- 
+Wolfgang Walter
+Studentenwerk München
+Anstalt des öffentlichen Rechts
