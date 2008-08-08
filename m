@@ -1,71 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757228AbYHHDAQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757595AbYHHDAl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757228AbYHHDAQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Aug 2008 23:00:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754569AbYHHC7t
+	id S1757595AbYHHDAl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Aug 2008 23:00:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755795AbYHHC7z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Aug 2008 22:59:49 -0400
-Received: from mga03.intel.com ([143.182.124.21]:53156 "EHLO mga03.intel.com"
+	Thu, 7 Aug 2008 22:59:55 -0400
+Received: from smtp.knology.net ([24.214.63.101]:37784 "EHLO smtp.knology.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754525AbYHHC7s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Aug 2008 22:59:48 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.31,324,1215414000"; 
-   d="scan'208";a="31249510"
-Subject: Re: [PATCH 6/6] kexec jump: fix for ftrace
-From: Huang Ying <ying.huang@intel.com>
-To: Vivek Goyal <vgoyal@redhat.com>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>, Pavel Machek <pavel@ucw.cz>,
-       nigel@nigel.suspend2.net, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org,
-       Kexec Mailing List <kexec@lists.infradead.org>
-In-Reply-To: <20080807133805.GD27783@redhat.com>
-References: <1218099937.5164.37.camel@caritas-dev.intel.com>
-	 <20080807133805.GD27783@redhat.com>
-Content-Type: text/plain
-Date: Fri, 08 Aug 2008 10:59:31 +0800
-Message-Id: <1218164371.22039.20.camel@caritas-dev.intel.com>
+	id S1755526AbYHHC7y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Aug 2008 22:59:54 -0400
+Subject: Re: [GIT PULL]: firmware patches for building firmware into kernel
+From: David Dillow <dave@thedillows.org>
+To: Jaswinder Singh <jaswinder@infradead.org>
+Cc: David Woodhouse <dwmw2@infradead.org>, LKML <linux-kernel@vger.kernel.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+In-Reply-To: <1218159490.2553.13.camel@jaswinder.satnam>
+References: <1218128219.14483.7.camel@jaswinder.satnam>
+	 <1218130222.18118.7.camel@lap75545.ornl.gov>
+	 <1218130475.14483.16.camel@jaswinder.satnam>
+	 <1218133288.18118.20.camel@lap75545.ornl.gov>
+	 <1218159490.2553.13.camel@jaswinder.satnam>
+Content-Type: text/plain; charset=utf-8
+Date: Thu, 07 Aug 2008 22:59:51 -0400
+Message-Id: <1218164391.17642.14.camel@obelisk.thedillows.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-08-07 at 09:38 -0400, Vivek Goyal wrote:
-[...]
-> What kind of problem we run into if we don't disable the ftracer?
+On Fri, 2008-08-08 at 07:08 +0530, Jaswinder Singh wrote:
+> On Thu, 2008-08-07 at 14:21 -0400, David Dillow wrote:
+> > Please drop that patch from the series for now; I'm not happy with it,
+> > as it reintroduces things I've asked be changed. 
 > 
-> I think there are too many #ifdefs now and probably we can at least
-> get rid if #ifdef CONFIG_FTRACE thing.
+> You mean this :
 > 
-> I think ftracer needs to export the function to enable the tracer
-> back (tracer_enable()) so that we don't directly play with ftrace_enabled
-> variable. tracer_enable() can be do {} while{0} in case of CONFIG_FTRACE=n
-> so that we can get rid of #ifdefs here.
+> ﻿+       /*
+> +        * Need to check request_firmware should be called only once
+> +        * so you don't leak memory if there is more than one NIC.
+> +        * Need to check if PCI probing gets multi-threaded as
+> +        * mutex is used while loading the firmware.
+> +        */
+> +       if (typhoon_fw != NULL) {
+> +               err = typhoon_init_firmware(tp);
+> 
+> This is not required now, As I already fixed request_firmware.
+> 
+> ﻿So it is replaced by :
+> 
+> ﻿+       err = typhoon_init_firmware(tp);
+> 
+> Do you think we still need above comments ?
 
-The ftracer issue for kexec is reported by Dhaval Giani and fixed by
-Ingo as in following thread:
+No, the comments will be unneeded, but you don't need an extra function
+to handle this, and I'm not real keen about the release_firmware_all()
+interface -- it doesn't match up with the get/put semantics of the
+reference count.
 
-http://lkml.org/lkml/2008/2/19/175
+I don't like releasing the firmware before the pci_unregister_driver()
+call. I worry about ordering issues during cleanup, though I'll admit I
+have not yet researched if it will be a problem. In any event, if you're
+going to request it once per adapter in typhoon_init_one(), then it
+should be in the per-device struct, and released in
+typhoon_remove_one().
 
-After some testing, I found that if we enable ftrace before
-restore_processor_state(), system will hang. I think maybe ftracer
-depends on some processor state that we destroyed during kexec and
-restored by restore_processor_state(). So I move save_processor_state()
-and restore_processor_state() into machine_kexec() and enable ftrace
-after restore_processor_state().
+Drop the typhoon patches, and once you fix the problems in the core,
+I'll respin the patch in a style I'm comfortable with. It will also need
+to be tested before it goes upstream.
 
-The #ifdef CONFIG_FTRACE should be removed. I think an interface like
-irq_save/restore is good for this.
+Feel free to cc me on the core patches, I will try to review them.
 
-saved_ftrace_enabled = ftrace_save_enabled()
-<...>
-ftrace_restore_enabled(saved_ftrace_enabled)
-
-Best Regards,
-Huang Ying
-
+Dave
 
