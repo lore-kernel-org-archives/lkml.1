@@ -1,145 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757928AbYHHRlg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755746AbYHHRqT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757928AbYHHRlg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 13:41:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752463AbYHHRl1
+	id S1755746AbYHHRqT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 13:46:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752002AbYHHRqL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 13:41:27 -0400
-Received: from casper.infradead.org ([85.118.1.10]:53221 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751659AbYHHRl1 (ORCPT
+	Fri, 8 Aug 2008 13:46:11 -0400
+Received: from tomts5-srv.bellnexxia.net ([209.226.175.25]:47222 "EHLO
+	tomts5-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751591AbYHHRqK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 13:41:27 -0400
-Subject: Re: [PATCH 0/2] printk vs rq->lock and xtime lock
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu,
-       tglx@linutronix.de, marcin.slusarz@gmail.com,
-       linux-kernel@vger.kernel.org, David Miller <davem@davemloft.net>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Paul E McKenney <paulmck@linux.vnet.ibm.com>
-In-Reply-To: <alpine.LFD.1.10.0808081014240.3462@nehalem.linux-foundation.org>
-References: <20080324122424.671168000@chello.nl>
-	 <alpine.LFD.1.00.0803241021350.17905@woody.linux-foundation.org>
-	 <1206382547.6437.131.camel@lappy>
-	 <20080324115738.85c72bb5.akpm@linux-foundation.org>
-	 <1218202249.8625.106.camel@twins>
-	 <alpine.LFD.1.10.0808080931550.3462@nehalem.linux-foundation.org>
-	 <1218215454.8625.133.camel@twins>
-	 <alpine.LFD.1.10.0808081014240.3462@nehalem.linux-foundation.org>
-Content-Type: text/plain
-Date: Fri, 08 Aug 2008 19:40:57 +0200
-Message-Id: <1218217257.29098.2.camel@lappy.programming.kicks-ass.net>
+	Fri, 8 Aug 2008 13:46:10 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AnkFAHcgnEhMRKxB/2dsb2JhbACBXKsE
+Date: Fri, 8 Aug 2008 13:46:07 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, Roland McGrath <roland@redhat.com>,
+       Ulrich Drepper <drepper@redhat.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Gregory Haskins <ghaskins@novell.com>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       "Luis Claudio R. Goncalves" <lclaudio@uudg.org>,
+       Clark Williams <williams@redhat.com>
+Subject: Re: [PATCH 0/5] ftrace: to kill a daemon
+Message-ID: <20080808174607.GG8244@Krystal>
+References: <20080807182013.984175558@goodmis.org> <20080807184741.GB18164@Krystal> <alpine.DEB.1.10.0808071639420.9449@gandalf.stny.rr.com> <20080808172259.GB8244@Krystal> <alpine.DEB.1.10.0808081334010.4436@gandalf.stny.rr.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.1.10.0808081334010.4436@gandalf.stny.rr.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 13:42:52 up 64 days, 22:23,  6 users,  load average: 1.04, 0.61,
+	0.66
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-08-08 at 10:25 -0700, Linus Torvalds wrote:
+* Steven Rostedt (rostedt@goodmis.org) wrote:
 > 
-> On Fri, 8 Aug 2008, Peter Zijlstra wrote:
+> On Fri, 8 Aug 2008, Mathieu Desnoyers wrote:
+> > * Steven Rostedt (rostedt@goodmis.org) wrote:
+> > > 
+> > > I originally used jumps instead of nops, but unfortunately, they actually 
+> > > hurt performance more than adding nops. Ingo told me it was probably due
+> > > to using up the jump predictions of the CPU.
+> > > 
 > > 
-> > Sure, but the RCU callback period is at least 3 jiffies and much longer
-> > when busy - I'm not sure how long before we force a grace period, we do
-> > that to avoid DoS, right Paul?
+> > Hrm, are you sure you use a single 5-bytes nop instruction then, or do
+> > you use a mix of various nop sizes (add_nops) on some architectures ?
 > 
-> I really don't think it matters. klogd is going to write the thing to 
-> _disk_ (or network), and three jiffies really don't matter. If we can fill 
-> the buffer in that kind of time, we're screwed for other reasons anyway.
+> I use (for x86) what is in include/asm-x86/nops.h depending on what the
+> cpuid gives us.
 > 
-> > So this version would have a much higher risk of overflowing the console
-> > buffer and making klogd miss bits. Then again, I really don't care about
-> > klogd at _all_, I've been running with the wakeup patched out for ages.
-> 
-> Well, I'd care a _bit_ about klogd, but not enough to worry about a couple 
-> of jiffies. We want to wake it up at some point, but...
-> 
-> > Gah, the below doesn't boot - because I guess we start using rcu before
-> > its properly set up.. should I poke at it more?
-> 
-> I'd certainly prefer this kind of approach. However, may I suggest:
-> 
->  - doing the "waitqueue_active(&log_wait)" before even bothering to do the 
->    RCU call. That, btw, will automatically mean that we wouldn't ever call 
->    the RCU code before anything is initialized.
-> 
->  - get rid of the "oops_in_progress" thing, since I think the whole point 
->    of that was to avoid getting the lock recursively in the first place.
-> 
->  - I'd worry about the "spin_lock_irqsave(&klogd_wakeup_state.lock)". What 
->    if the printk happens from call_rcu()? This is exactly what we're 
->    trying to get away from - having some parts of the kernel not able to 
->    printk() because of subtle locking issues.
-> 
-> For that last thing, maybe we can just make it a percpu thing and just 
-> disable irq's?
 
-You're _so_ right! :-)
+That's bad :
 
-This is much prettier and boots to boot.
+#define GENERIC_NOP5 GENERIC_NOP1 GENERIC_NOP4
+
+#define K8_NOP5 K8_NOP3 K8_NOP2
+
+#define K7_NOP5 K7_NOP4 ASM_NOP1
+
+So, when you try, later, to replace these instructions with a single
+5-bytes instruction, a preempted thread could iret in the middle of your
+5-bytes insn and cause an illegal instruction ?
 
 
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
----
-diff --git a/kernel/printk.c b/kernel/printk.c
-index b51b156..10830d8 100644
---- a/kernel/printk.c
-+++ b/kernel/printk.c
-@@ -32,6 +32,7 @@
- #include <linux/security.h>
- #include <linux/bootmem.h>
- #include <linux/syscalls.h>
-+#include <linux/rcupdate.h>
- 
- #include <asm/uaccess.h>
- 
-@@ -982,10 +983,43 @@ int is_console_locked(void)
- 	return console_locked;
- }
- 
-+void __wake_up_klogd(struct rcu_head *head);
-+
-+struct klogd_wakeup_state {
-+	struct rcu_head head;
-+	int		pending;
-+};
-+
-+DEFINE_PER_CPU(struct klogd_wakeup_state, kws);
-+
-+void __wake_up_klogd(struct rcu_head *head)
-+{
-+	unsigned long flags;
-+	struct klogd_wakeup_state *kws = 
-+		container_of(head, struct klogd_wakeup_state, head);
-+
-+	local_irq_save(flags);
-+	BUG_ON(!kws->pending);
-+	wake_up_interruptible(&log_wait);
-+	kws->pending = 0;
-+	local_irq_restore(flags);
-+}
-+
- void wake_up_klogd(void)
- {
--	if (!oops_in_progress && waitqueue_active(&log_wait))
--		wake_up_interruptible(&log_wait);
-+	unsigned long flags;
-+	struct klogd_wakeup_state *kws;
-+
-+	if (!waitqueue_active(&log_wait))
-+		return;
-+
-+	local_irq_save(flags);
-+	kws = &__get_cpu_var(kws);
-+	if (!kws->pending) {
-+		call_rcu(&kws->head, __wake_up_klogd);
-+		kws->pending = 1;
-+	}
-+	local_irq_restore(flags);
- }
- 
- /**
+> > 
+> > You can consume the branch prediction buffers for conditional branches,
+> > but I doubt static jumps have this impact ? I don't see what "jump
+> > predictions" you are referring to here exactly.
+> 
+> I don't know the details, but we definitely saw a drop in preformance 
+> between using nops and static jumps.
+> 
+
+Generated by replacing all the call by 5-bytes jumps e9 00 00 00 00
+instead of the 5-bytes add_nops ? On which architectures ?
+
+Mathieu
 
 
+> -- Steve
+> 
+
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
