@@ -1,65 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752606AbYHHO2j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751659AbYHHO3E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752606AbYHHO2j (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 10:28:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751299AbYHHO23
+	id S1751659AbYHHO3E (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 10:29:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752858AbYHHO2t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 10:28:29 -0400
-Received: from an-out-0708.google.com ([209.85.132.251]:63615 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750904AbYHHO21 (ORCPT
+	Fri, 8 Aug 2008 10:28:49 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:50733 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751299AbYHHO2s (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 10:28:27 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=LADOWCjQTVVFv6RTMdxW8gKiuc8tjJ1puIUHeC6RrdmUUJkQVqUyzdVebQSgmjE0vb
-         yblYnSYZ+TplydKbQvibEeB8k8rqrOx5ZBysXFnEYaXho24oEz2q+yRi7v9U6NRRhnEb
-         0cB7aOBb5NCS90gmcXtKjLKj1oHApj4TZ/0GE=
-Message-ID: <a4423d670808080728s68d351a6l869152f5908eb6d8@mail.gmail.com>
-Date: Fri, 8 Aug 2008 18:28:26 +0400
-From: "Alexander Beregalov" <a.beregalov@gmail.com>
-To: "David Miller" <davem@davemloft.net>
-Subject: Re: 2.6.26-rc: SPARC: Sun Ultra 10 can not boot
-Cc: kernel-testers@vger.kernel.org, sparclinux@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20080808.041814.41687650.davem@davemloft.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <a4423d670808080314weed9178o9f9ef52803a68501@mail.gmail.com>
-	 <20080808.033811.129671951.davem@davemloft.net>
-	 <a4423d670808080356r6573102am8a1eb9dcc83910c8@mail.gmail.com>
-	 <20080808.041814.41687650.davem@davemloft.net>
+	Fri, 8 Aug 2008 10:28:48 -0400
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: m.s.tsirkin@gmail.com (Michael S. Tsirkin)
+Subject: Re: possible recursive locking in udp4_lib_rcv
+Cc: linux-kernel@vger.kernel.org, davem@davemloft.net, yoshfuji@linux-ipv6.org,
+       netdev@vger.kernel.org, haoki@redhat.com
+Organization: Core
+In-Reply-To: <20080807234613.GA9598@google.com>
+X-Newsgroups: apana.lists.os.linux.kernel,apana.lists.os.linux.netdev
+User-Agent: tin/1.7.4-20040225 ("Benbecula") (UNIX) (Linux/2.6.17-rc4 (i686))
+Message-Id: <E1KRSxN-0005Ng-00@gondolin.me.apana.org.au>
+Date: Fri, 08 Aug 2008 22:28:41 +0800
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/8/8 David Miller <davem@davemloft.net>:
-> Please also double check that you patched the kernel with my
-> fix correctly.  I used your exact config, on the exact same
-> kind of system, reproducing the exact same hang, and it goes
-> away with my fix.
->
-It can be a different compiler version,
-but I tried 4.3.1 and 4.1.2 with the same result.
+Michael S. Tsirkin <m.s.tsirkin@gmail.com> wrote:
+> I noticed the following warnings when running on 2.6.27-rc2
+> with lockdep checker enabled:
+> 
+> [ 2912.004106] Initializing XFRM netlink socket
 
-After I removed CON_BOOT warnings apear after
-Locking API testsuite:
-<..>
-Good, all 218 testcases passed!
-Dentry cache hash table entries: 131072 (order: 7, 1048576 bytes)
-Inode-cache hash table entries: 65536 (order: 6, 524288 bytes)
-=== here ===
-Memory: 1019600k available (2672k kernel code, 1264k data, 128k init)
-[fffff80000000000,000000003ff46000]
-SLUB: Genslabs=13, HWalign=32, Order=0-2, MinObjects=8, CPUs=1, Nodes=1
-Calibrating delay using timer specific routine.. 884.33 BogoMIPS (lpj=4421694)
+Argh, this was added by
 
-Is it possible that lockdep messages did not appear when CON_BOOT was
-in the flags?
+commit 95766fff6b9a78d11fc2d3812dd035381690b55d
+Author: Hideo Aoki <haoki@redhat.com>
+Date:   Mon Dec 31 00:29:24 2007 -0800
 
-Hope it will help.
+    [UDP]: Add memory accounting.
+
+@@ -1165,7 +1189,13 @@ int __udp4_lib_rcv(struct sk_buff *skb, struct hlist_head udptable[],
+                               inet_iif(skb), udptable);
+
+        if (sk != NULL) {
+-               int ret = udp_queue_rcv_skb(sk, skb);
++               int ret = 0;
++               bh_lock_sock_nested(sk);
++               if (!sock_owned_by_user(sk))
++                       ret = udp_queue_rcv_skb(sk, skb);
++               else
++                       sk_add_backlog(sk, skb);
++               bh_unlock_sock(sk);
+
+Hmm, what was the reason for that lock?
+
+Cheers,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
