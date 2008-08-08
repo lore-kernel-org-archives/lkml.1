@@ -1,45 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757808AbYHHLcc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757062AbYHHLjs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757808AbYHHLcc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 07:32:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754817AbYHHLcY
+	id S1757062AbYHHLjs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 07:39:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754936AbYHHLjj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 07:32:24 -0400
-Received: from edna.telenet-ops.be ([195.130.132.58]:41359 "EHLO
-	edna.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754666AbYHHLcY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 07:32:24 -0400
-Date: Fri, 8 Aug 2008 13:32:21 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: JosephChan@via.com.tw
-cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: Re: [PATCH 1/13 v2] viafb: viafb.modes, viafb.txt
-In-Reply-To: <C80EF34A3D2E494DBAF9AC29C7AE4EB8078B698D@exchtp03.taipei.via.com.tw>
-Message-ID: <Pine.LNX.4.64.0808081331130.420@anakin>
-References: <C80EF34A3D2E494DBAF9AC29C7AE4EB8078B698D@exchtp03.taipei.via.com.tw>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 8 Aug 2008 07:39:39 -0400
+Received: from mail.tut.by ([195.137.160.40]:42666 "EHLO speedy.tutby.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754317AbYHHLjj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Aug 2008 07:39:39 -0400
+Subject: [PATCH] sound/pci/cs46xx/cs46xx_lib.c: remove unused variable
+	warning
+From: Michael Borisov <niro@tut.by>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       abramo@alsa-project.org, kernel-janitors@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Date: Fri, 08 Aug 2008 14:39:22 +0300
+Message-Id: <1218195562.4609.7.camel@niro-laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 8 Aug 2008, JosephChan@via.com.tw wrote:
-> +    4. VX800 2D accelerator hasn't been supported in this driver yet. When
-> +       using driver on VX800, one should add parameter "viafb_accel=0" to
-> +       disable 2D accelerator.
+This patch fixes the following compile warning:
+sound/pci/cs46xx/cs46xx_lib.c: In function ‘snd_cs46xx_resume’:
+sound/pci/cs46xx/cs46xx_lib.c:3614: warning: unused variable ‘i’
 
-Can't the driver detect this automatically, and disable the 2D
-accelerator when running on a VX800?
+ cs46xx_lib.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-Gr{oetje,eeting}s,
+Signed-off-by: Michael Borisov <niro@tut.by>
+---
+diff --git a/sound/pci/cs46xx/cs46xx_lib.c
+b/sound/pci/cs46xx/cs46xx_lib.c
+index e214e56..07bb7e0 100644
+--- a/sound/pci/cs46xx/cs46xx_lib.c
++++ b/sound/pci/cs46xx/cs46xx_lib.c
+@@ -3611,7 +3611,7 @@ int snd_cs46xx_resume(struct pci_dev *pci)
+ {
+ 	struct snd_card *card = pci_get_drvdata(pci);
+ 	struct snd_cs46xx *chip = card->private_data;
+-	int i, amp_saved;
++	int amp_saved;
+ 
+ 	pci_set_power_state(pci, PCI_D0);
+ 	pci_restore_state(pci);
+@@ -3633,6 +3633,7 @@ int snd_cs46xx_resume(struct pci_dev *pci)
+ #ifdef CONFIG_SND_CS46XX_NEW_DSP
+ 	cs46xx_dsp_resume(chip);
+ 	/* restore some registers */
++	int i;
+ 	for (i = 0; i < ARRAY_SIZE(saved_regs); i++)
+ 		snd_cs46xx_pokeBA0(chip, saved_regs[i], chip->saved_regs[i]);
+ #else
 
-						Geert
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
