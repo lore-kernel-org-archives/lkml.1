@@ -1,120 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753850AbYHHPB2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754353AbYHHPC1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753850AbYHHPB2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 11:01:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752032AbYHHPBR
+	id S1754353AbYHHPC1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 11:02:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752120AbYHHPCQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 11:01:17 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:34523 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751694AbYHHPBQ (ORCPT
+	Fri, 8 Aug 2008 11:02:16 -0400
+Received: from zone0.gcu-squad.org ([212.85.147.21]:21129 "EHLO
+	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752032AbYHHPCQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 11:01:16 -0400
-Date: Fri, 8 Aug 2008 23:01:08 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: "Michael S. Tsirkin" <m.s.tsirkin@gmail.com>
-Cc: linux-kernel@vger.kernel.org, davem@davemloft.net, yoshfuji@linux-ipv6.org,
-       netdev@vger.kernel.org, haoki@redhat.com
-Subject: Re: possible recursive locking in udp4_lib_rcv
-Message-ID: <20080808150108.GA21048@gondor.apana.org.au>
-References: <20080807234613.GA9598@google.com> <E1KRSxN-0005Ng-00@gondolin.me.apana.org.au> <20080808143741.GA20777@gondor.apana.org.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080808143741.GA20777@gondor.apana.org.au>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Fri, 8 Aug 2008 11:02:16 -0400
+Date: Fri, 8 Aug 2008 17:02:08 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: linux-fbdev-devel@lists.sourceforge.net,
+       Antonino Daplas <adaplas@gmail.com>
+Cc: Petr Vandrovec <vandrove@vc.cvut.cz>, LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH 2/3] matroxfb: i2c structure templates clean-up
+Message-ID: <20080808170208.6c76ff46@hyperion.delvare>
+In-Reply-To: <20080808164937.141a95e0@hyperion.delvare>
+References: <20080808164937.141a95e0@hyperion.delvare>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 08, 2008 at 10:37:41PM +0800, Herbert Xu wrote:
->
-> Never mind, I see the reason why it's there.  What we should do
-> is drop the lock when we hit an encapsulated socket since they
-> don't need it at all.
+Clean up the use of structure templates in i2c-matroxfb. In this case
+it's more efficient to initialize the few fields we need individually.
+This makes i2c-matroxfb.ko 16% smaller on my system.
 
-Here is the patch:
+Signed-off-by: Jean Delvare <khali@linux-fr.org>
+---
+ drivers/video/matrox/i2c-matroxfb.c |   11 +++--------
+ 1 file changed, 3 insertions(+), 8 deletions(-)
 
-udp: Drop socket lock for encapsulated packets
-
-The socket lock is there to protect the normal UDP receive path.
-Encapsulation UDP sockets don't need that protection.  In fact
-the locking is deadly for them as they may contain another UDP
-packet within, possibly with the same addresses.
-
-Also the nested bit was copied from TCP.  TCP needs it because
-of accept(2) spawning sockets.  This simply doesn't apply to UDP
-so I've removed it.
-
-Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
-
-diff --git a/net/ipv4/udp.c b/net/ipv4/udp.c
-index 383d173..8e42fbb 100644
---- a/net/ipv4/udp.c
-+++ b/net/ipv4/udp.c
-@@ -989,7 +989,9 @@ int udp_queue_rcv_skb(struct sock * sk, struct sk_buff *skb)
- 		    up->encap_rcv != NULL) {
- 			int ret;
+--- linux-2.6.26-rc6.orig/drivers/video/matrox/i2c-matroxfb.c	2008-06-17 20:23:41.000000000 +0200
++++ linux-2.6.26-rc6/drivers/video/matrox/i2c-matroxfb.c	2008-06-17 20:27:36.000000000 +0200
+@@ -87,13 +87,7 @@ static int matroxfb_gpio_getscl(void* da
+ 	return (matroxfb_read_gpio(b->minfo) & b->mask.clock) ? 1 : 0;
+ }
  
-+			bh_unlock_sock(sk);
- 			ret = (*up->encap_rcv)(sk, skb);
-+			bh_lock_sock(sk);
- 			if (ret <= 0) {
- 				UDP_INC_STATS_BH(sock_net(sk),
- 						 UDP_MIB_INDATAGRAMS,
-@@ -1092,7 +1094,7 @@ static int __udp4_lib_mcast_deliver(struct net *net, struct sk_buff *skb,
- 			if (skb1) {
- 				int ret = 0;
- 
--				bh_lock_sock_nested(sk);
-+				bh_lock_sock(sk);
- 				if (!sock_owned_by_user(sk))
- 					ret = udp_queue_rcv_skb(sk, skb1);
- 				else
-@@ -1194,7 +1196,7 @@ int __udp4_lib_rcv(struct sk_buff *skb, struct hlist_head udptable[],
- 
- 	if (sk != NULL) {
- 		int ret = 0;
--		bh_lock_sock_nested(sk);
-+		bh_lock_sock(sk);
- 		if (!sock_owned_by_user(sk))
- 			ret = udp_queue_rcv_skb(sk, skb);
- 		else
-diff --git a/net/ipv6/udp.c b/net/ipv6/udp.c
-index d1477b3..a6aecf7 100644
---- a/net/ipv6/udp.c
-+++ b/net/ipv6/udp.c
-@@ -379,7 +379,7 @@ static int __udp6_lib_mcast_deliver(struct net *net, struct sk_buff *skb,
- 					uh->source, saddr, dif))) {
- 		struct sk_buff *buff = skb_clone(skb, GFP_ATOMIC);
- 		if (buff) {
--			bh_lock_sock_nested(sk2);
-+			bh_lock_sock(sk2);
- 			if (!sock_owned_by_user(sk2))
- 				udpv6_queue_rcv_skb(sk2, buff);
- 			else
-@@ -387,7 +387,7 @@ static int __udp6_lib_mcast_deliver(struct net *net, struct sk_buff *skb,
- 			bh_unlock_sock(sk2);
- 		}
- 	}
--	bh_lock_sock_nested(sk);
-+	bh_lock_sock(sk);
- 	if (!sock_owned_by_user(sk))
- 		udpv6_queue_rcv_skb(sk, skb);
- 	else
-@@ -508,7 +508,7 @@ int __udp6_lib_rcv(struct sk_buff *skb, struct hlist_head udptable[],
- 
- 	/* deliver */
- 
--	bh_lock_sock_nested(sk);
-+	bh_lock_sock(sk);
- 	if (!sock_owned_by_user(sk))
- 		udpv6_queue_rcv_skb(sk, skb);
- 	else
+-static struct i2c_adapter matrox_i2c_adapter_template =
+-{
+-	.owner =	THIS_MODULE,
+-	.id =		I2C_HW_B_G400,
+-};
+-
+-static struct i2c_algo_bit_data matrox_i2c_algo_template =
++static const struct i2c_algo_bit_data matrox_i2c_algo_template =
+ {
+ 	.setsda		= matroxfb_gpio_setsda,
+ 	.setscl		= matroxfb_gpio_setscl,
+@@ -112,7 +106,8 @@ static int i2c_bus_reg(struct i2c_bit_ad
+ 	b->minfo = minfo;
+ 	b->mask.data = data;
+ 	b->mask.clock = clock;
+-	b->adapter = matrox_i2c_adapter_template;
++	b->adapter.owner = THIS_MODULE;
++	b->adapter.id = I2C_HW_B_G400;
+ 	snprintf(b->adapter.name, sizeof(b->adapter.name), name,
+ 		minfo->fbcon.node);
+ 	i2c_set_adapdata(&b->adapter, b);
 
-Cheers,
 -- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+Jean Delvare
