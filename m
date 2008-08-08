@@ -1,41 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762814AbYHHWjS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764834AbYHHWjn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762814AbYHHWjS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 18:39:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751421AbYHHWjG
+	id S1764834AbYHHWjn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 18:39:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752036AbYHHWjc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 18:39:06 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:56956 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750849AbYHHWjF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 18:39:05 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <20080808172141.GY14495@cs181140183.pp.htv.fi>
-References: <20080808172141.GY14495@cs181140183.pp.htv.fi> <1218214935.3146.5.camel@dhcppc0>
-To: Thomas Meyer <thomas@m3y3r.de>, Adrian Bunk <bunk@kernel.org>
-Cc: dhowells@redhat.com, Linux-Kernel <linux-kernel@vger.kernel.org>,
-       Linux-Next <linux-next@vger.kernel.org>
-Subject: Re: next-20080808: bash: fork: Resource temporarily unavailable
-X-Mailer: MH-E 8.0.3+cvs; nmh 1.3; GNU Emacs 23.0.50
-Date: Fri, 08 Aug 2008 23:32:15 +0100
-Message-ID: <17923.1218234735@redhat.com>
+	Fri, 8 Aug 2008 18:39:32 -0400
+Received: from moutng.kundenserver.de ([212.227.126.186]:50404 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756043AbYHHWjb convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Aug 2008 18:39:31 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+Subject: Re: [RFC][PATCH 1/4] checkpoint-restart: general infrastructure
+Date: Sat, 9 Aug 2008 00:39:19 +0200
+User-Agent: KMail/1.9.9
+Cc: containers@lists.linux-foundation.org, Theodore Tso <tytso@mit.edu>,
+       linux-kernel@vger.kernel.org, Oren Laadan <orenl@cs.columbia.edu>
+References: <20080807224033.FFB3A2C1@kernel> <200808090013.41999.arnd@arndb.de> <1218234411.19082.58.camel@nimitz>
+In-Reply-To: <1218234411.19082.58.camel@nimitz>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200808090039.20289.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1/GsBV7kPivT1hmxkOmRpNXeQW8qgiWhz/Ky6d
+ YdQULA892biHlccMS05jlog99RekVnZ1CDnzqq5T4rgtoGRHM8
+ hD9MEYSdwHZVBZD5KEX1g==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Saturday 09 August 2008, Dave Hansen wrote:
+> On Sat, 2008-08-09 at 00:13 +0200, Arnd Bergmann wrote:
 
-Adrian Bunk <bunk@kernel.org> wrote:
-
-> The only commits that touched kernel/fork.c between next-20080807 and 
-> next-20080808 are David's CRED patches.
+> > Maybe you can invert the logic and let the new syscalls create a file
+> > descriptor, and then have user space read or splice the checkpoint
+> > data from it, and restore it by writing to the file descriptor.
+> > It's probably easy to do using anon_inode_getfd() and would solve this
+> > problem, but at the same time make checkpointing the current thread
+> > hard if not impossible.
 > 
-> David, can you look at this?
+> Yeah, it does seem kinda backwards.  But, instead of even having to
+> worry about the anon_inode stuff, why don't we just put it in a fs like
+> everything else?  checkpointfs!
 
-I can, but I'll need a config file as it boots fine for me and passes the LTP
-testsuites I've run on it.
+Well, anon_inodes are really easy to use and have replaced some of the
+simple non-mountable file systems in the kernel.
 
-David
+checkpointfs sounds interesting and I guess in a plan9 world of fairies
+and fantasy, you should be able to create a checkpoint of your system using
+'tar czf - /proc/', but I'm not sure it helps here.
+
+The main problem I see with that would be atomicity: If you want multiple
+processes to keep interacting with each other, you need to save them at
+the same point in time, which gets harder as you split your interface into
+more than a single file descriptor.
+
+	Arnd <><
