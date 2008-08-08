@@ -1,29 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753991AbYHHEK6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753665AbYHHEZs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753991AbYHHEK6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 00:10:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750760AbYHHEKu
+	id S1753665AbYHHEZs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 00:25:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750815AbYHHEZk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 00:10:50 -0400
-Received: from smtp.knology.net ([24.214.63.101]:53260 "EHLO smtp.knology.net"
+	Fri, 8 Aug 2008 00:25:40 -0400
+Received: from smtp.knology.net ([24.214.63.101]:42790 "EHLO smtp.knology.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750755AbYHHEKt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 00:10:49 -0400
+	id S1750785AbYHHEZk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Aug 2008 00:25:40 -0400
 Subject: Re: [GIT PULL]: firmware patches for building firmware into kernel
 From: David Dillow <dave@thedillows.org>
 To: Jaswinder Singh <jaswinder@infradead.org>
 Cc: David Woodhouse <dwmw2@infradead.org>, LKML <linux-kernel@vger.kernel.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <1218166270.2540.9.camel@jaswinder.satnam>
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+In-Reply-To: <1218166760.2540.18.camel@jaswinder.satnam>
 References: <1218128219.14483.7.camel@jaswinder.satnam>
 	 <1218130222.18118.7.camel@lap75545.ornl.gov>
 	 <1218130475.14483.16.camel@jaswinder.satnam>
 	 <1218133288.18118.20.camel@lap75545.ornl.gov>
-	 <1218166270.2540.9.camel@jaswinder.satnam>
+	 <1218159490.2553.13.camel@jaswinder.satnam>
+	 <1218164391.17642.14.camel@obelisk.thedillows.org>
+	 <1218166760.2540.18.camel@jaswinder.satnam>
 Content-Type: text/plain
-Date: Fri, 08 Aug 2008 00:10:46 -0400
-Message-Id: <1218168646.17642.27.camel@obelisk.thedillows.org>
+Date: Fri, 08 Aug 2008 00:25:37 -0400
+Message-Id: <1218169537.17642.40.camel@obelisk.thedillows.org>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
 Content-Transfer-Encoding: 7bit
@@ -31,83 +32,45 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-08-08 at 09:01 +0530, Jaswinder Singh wrote:
-> On Thu, 2008-08-07 at 14:21 -0400, David Dillow wrote:
-> > I just looked at the tree; it still has locking issues, and needs
-> > further review. You must protect the list from modification while you
-> > iterate it looking for an match on the requested firmware. 
-> 
-> So here is updated patch:
-
-I'll take a closer look when I'm awake, but there are some nitpicky
-style issues remaining:
-
-> diff --git a/drivers/base/firmware_class.c b/drivers/base/firmware_class.c
-> index 6074321..71ec20d 100644
-> --- a/drivers/base/firmware_class.c
-> +++ b/drivers/base/firmware_class.c
-
-> @@ -568,19 +569,22 @@ void release_firmware(const struct firmware *fw)
->  {
->  	struct firmware_list *flst;
->  
-> +	mutex_lock(&fw_lock);
->  	if (fw)
->  		list_for_each_entry(flst, &firmwarelist, list)
->  			if (fw == flst->fw) {
->  				printk(KERN_INFO
->  				       "firmware: releasing %s count %d\n",
->  				       flst->name, flst->count);
-> -				mutex_lock(&fw_lock);
->  				flst->count--;
-> -				mutex_unlock(&fw_lock);
-> -				if (flst->count == 0)
-> -					__release_firmware(fw, flst);
-> -				return;
-> +				if (flst->count == 0) {
-> +					mutex_unlock(&fw_lock);
-> +					return __release_firmware(fw, flst);
-> +				}
-> +				goto out;
->  			}
-> +out:
-> +	mutex_unlock(&fw_lock);
->  }
-
-You don't need the 'goto out', a break will work fine. And you'll not be
-pressed up against the right side of the screen if you just do
-	if (!fw)
-		return;
-at the top of the function.
- 
-> @@ -598,6 +602,7 @@ void release_firmware_all(const struct firmware *fw)
-
-I still don't like this exception to the get/put ref-counting. Is this
-used anywhere else in your series, or was typhoon the only one?
-
-> > Also, was it legal to call release_firmware() from an atomic context? It can now
-> > sleep, which may be an issue...
+On Fri, 2008-08-08 at 09:09 +0530, Jaswinder Singh wrote:
+> On Thu, 2008-08-07 at 22:59 -0400, David Dillow wrote:
+> > I don't like releasing the firmware before the pci_unregister_driver()
+> > call. I worry about ordering issues during cleanup, though I'll admit I
+> > have not yet researched if it will be a problem. In any event, if you're
+> > going to request it once per adapter in typhoon_init_one(), then it
+> > should be in the per-device struct, and released in
+> > typhoon_remove_one().
 >
-> yes, release_firmware can sleep. 
-> So now release_firmware also joined the family of request_firmware.
+> Here is updated patch :
 
-The question wasn't if it can sleep now, it was if it could sleep before
-you started changing it. I now know that it has always called vfree(),
-so it has always needed to be able to sleep.
+You've fixed one part of the issues I described, but I think you've left
+open the possibility of dangling pointers when one card in a multi NIC
+system fails to come up. Again, I need to track down the code to see if
+I'm all wet or not.
 
-> Any how release_firmware will be called below request_firmware or during
-> exit, I do not think this will make any issue.
+> > Drop the typhoon patches, and once you fix the problems in the core,
+> > I'll respin the patch in a style I'm comfortable with. It will also need
+> > to be tested before it goes upstream.
+> 
+> I can understand you are very worried about typhoon.
+> But this is only first version of patches. This will goto David
+> WoodHouse tree and he will again revise it.
+> 
+> And driver is yours you can change it as per your comfort, No one can
+> stop you or typhoon ;)
 
-I need to run down code to see if my thoughts are realistic, but say
-eth0 was a typhoon:
+I'd rather not have to undo the breakage when I fix it to my comfort --
+best to get it right the first time if it is possible, and it is in this
+instance. I'm not just worried about typhoon, I'm worried about the core
+code and the other drivers you've converted. A brief skim over your tg3
+and acenic patches suggests you took to heart the need to keep the
+firmware around while the device is up, but the basic locking issues in
+the core code suggest there are more lessons to be absorbed.
 
-modprobe typhoon
-ip link set eth0 up
-rmmod typhoon
-<firmware unloaded>
-<sleep in typhoon_remove_one() waiting for 'ip link set eth0 down'>
-<Tx timeout, needing to reset and reload firmware>
-Boom.
+There's no way to get experience except by doing, and I applaud your
+efforts to learn the code, but please drop the typhoon part and
+concentrate on getting the core right. I've already committed to fixing
+typhoon once you do.
 
 Dave
 
