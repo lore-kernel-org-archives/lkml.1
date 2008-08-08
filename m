@@ -1,78 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755175AbYHHAXn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754366AbYHHAYO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755175AbYHHAXn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Aug 2008 20:23:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753481AbYHHAXf
+	id S1754366AbYHHAYO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Aug 2008 20:24:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754182AbYHHAX4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Aug 2008 20:23:35 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:37450 "EHLO smtps.tip.net.au"
+	Thu, 7 Aug 2008 20:23:56 -0400
+Received: from gw.goop.org ([64.81.55.164]:52336 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753330AbYHHAXf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Aug 2008 20:23:35 -0400
-Date: Fri, 8 Aug 2008 10:23:17 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: James Morris <jmorris@namei.org>
-Cc: David Howells <dhowells@redhat.com>, akpm@linux-foundation.org,
-       morgan@kernel.org, viro@ftp.linux.org.uk, casey@schaufler-ca.com,
-       linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 00/24] Introduce credentials [ver #7]
-Message-Id: <20080808102317.4d2a37f0.sfr@canb.auug.org.au>
-In-Reply-To: <alpine.LRH.1.10.0808072156240.18676@tundra.namei.org>
-References: <20080806153713.14351.91448.stgit@warthog.procyon.org.uk>
-	<alpine.LRH.1.10.0808072156240.18676@tundra.namei.org>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Fri__8_Aug_2008_10_23_17_+1000_L/oFL=eva8r.Lmz7"
+	id S1754069AbYHHAXz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Aug 2008 20:23:55 -0400
+Message-ID: <489B9208.2050802@goop.org>
+Date: Thu, 07 Aug 2008 17:23:36 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: "H. Peter Anvin" <hpa@kernel.org>
+CC: Zachary Amsden <zach@vmware.com>, Alok Kataria <akataria@vmware.com>,
+       "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, the arch/x86 maintainers <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH]Fix broken VMI in 2.6.27-rc..
+References: <1218136365.23770.52.camel@alok-dev1>	 <489B6710.9000604@kernel.org> <1218144438.20178.336.camel@bodhitayantram.eng.vmware.com> <489B836A.3050209@goop.org> <489B84EF.6050009@kernel.org> <489B8948.6060003@goop.org> <489B8A68.10900@kernel.org> <489B8EF4.1030105@goop.org> <489B8FAD.4090904@kernel.org>
+In-Reply-To: <489B8FAD.4090904@kernel.org>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Fri__8_Aug_2008_10_23_17_+1000_L/oFL=eva8r.Lmz7
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-Hi James,
-
-On Thu, 7 Aug 2008 22:03:57 +1000 (EST) James Morris <jmorris@namei.org> wr=
-ote:
+H. Peter Anvin wrote:
+>> Having fixmaps at link-time fixed addresses would be nice, I suppose, 
+>> but hardly worth going to vast effort over.
+>>
 >
-> On Wed, 6 Aug 2008, David Howells wrote:
->=20
-> > I've brought my patchset up to date with regards the recent merge melee=
- and
-> > built the patches on top of the next branch of James's security testing=
- tree as
-> > per his request.
->=20
-> These patches are now in=20
-> git://git.kernel.org/pub/scm/linux/kernel/git/jmorris/security-testing-2.=
-6#next-creds
->=20
-> This is the 'next' branch + the credentials patches.
->=20
-> Stephen, could you add 'next-creds' to linux-next?
+> No, but it's hardly vast effort, either.
 
-OK, I have added it from today with you and David as contacts.  It is
-right at the end of the merge, so it will go away if it is too painful (I
-don't expect it to be, just letting you know).
+Well, off you go.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+> Yes, and we should add a symbol for the bottom of the 1:1 area as well 
+> (to disambiguate it from TASK_SIZE).
+>
 
---Signature=_Fri__8_Aug_2008_10_23_17_+1000_L/oFL=eva8r.Lmz7
-Content-Type: application/pgp-signature
+Well, that's already called "PAGE_OFFSET".  64-bit needs to be careful 
+about the distinction anyway, because there's the sign extension hole 
+between user and kernel space.  Xen squeezes itself in just above the 
+hole, so I moved PAGE_OFFSET up accordingly.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkibkfUACgkQjjKRsyhoI8zZ1QCfWOgCIFGbkmPLNpVVsMzaqcs5
-5tMAnRbfxYnQpsQIBThh5lLR6nu5kLr1
-=afc1
------END PGP SIGNATURE-----
-
---Signature=_Fri__8_Aug_2008_10_23_17_+1000_L/oFL=eva8r.Lmz7--
+    J
