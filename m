@@ -1,138 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755232AbYHHD37@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755364AbYHHDdE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755232AbYHHD37 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Aug 2008 23:29:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753344AbYHHD3t
+	id S1755364AbYHHDdE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Aug 2008 23:33:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753378AbYHHDcy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Aug 2008 23:29:49 -0400
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:52432 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753228AbYHHD3t (ORCPT
+	Thu, 7 Aug 2008 23:32:54 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:42021 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753141AbYHHDcy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Aug 2008 23:29:49 -0400
-X-Sasl-enc: c2FDMSNaKGvb+LgFzwin7Ig14/nU+vKetJxgh5SBpU6K 1218166187
-Subject: Re: [PATCH 2/4] autofs4 - track uid and gid of last mount requester
-From: Ian Kent <raven@themaw.net>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: autofs@linux.kernel.org, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, containers@lists.osdl.org
-In-Reply-To: <20080807134650.a6a51f7d.akpm@linux-foundation.org>
-References: <20080807114002.4142.30417.stgit@web.messagingengine.com>
-	 <20080807114012.4142.83607.stgit@web.messagingengine.com>
-	 <20080807134650.a6a51f7d.akpm@linux-foundation.org>
+	Thu, 7 Aug 2008 23:32:54 -0400
+Subject: Re: [GIT PULL]: firmware patches for building firmware into kernel
+From: Jaswinder Singh <jaswinder@infradead.org>
+To: David Dillow <dave@thedillows.org>
+Cc: David Woodhouse <dwmw2@infradead.org>, LKML <linux-kernel@vger.kernel.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <1218133288.18118.20.camel@lap75545.ornl.gov>
+References: <1218128219.14483.7.camel@jaswinder.satnam>
+	 <1218130222.18118.7.camel@lap75545.ornl.gov>
+	 <1218130475.14483.16.camel@jaswinder.satnam>
+	 <1218133288.18118.20.camel@lap75545.ornl.gov>
 Content-Type: text/plain
-Date: Fri, 08 Aug 2008 11:25:30 +0800
-Message-Id: <1218165931.17093.58.camel@raven.themaw.net>
+Date: Fri, 08 Aug 2008 09:01:10 +0530
+Message-Id: <1218166270.2540.9.camel@jaswinder.satnam>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-5.fc8) 
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello Dave,
 
-On Thu, 2008-08-07 at 13:46 -0700, Andrew Morton wrote:
-> On Thu, 07 Aug 2008 19:40:14 +0800
-> Ian Kent <raven@themaw.net> wrote:
-> 
-> > Patch to track the uid and gid of the last process to request a mount
-> > for on an autofs dentry.
-> 
-> pet peeve: changelog should not tell the reader that this is a "patch".
-> Because when someone is reading the changelog in the git repository,
-> they hopefully already know that.
-> 
-> > Signed-off-by: Ian Kent <raven@themaw.net>
-> > 
-> > ---
-> > 
-> >  fs/autofs4/autofs_i.h |    3 +++
-> >  fs/autofs4/inode.c    |    2 ++
-> >  fs/autofs4/waitq.c    |   34 ++++++++++++++++++++++++++++++++++
-> >  3 files changed, 39 insertions(+), 0 deletions(-)
-> > 
-> > 
-> > diff --git a/fs/autofs4/autofs_i.h b/fs/autofs4/autofs_i.h
-> > index ea024d8..fa76d18 100644
-> > --- a/fs/autofs4/autofs_i.h
-> > +++ b/fs/autofs4/autofs_i.h
-> > @@ -63,6 +63,9 @@ struct autofs_info {
-> >  	unsigned long last_used;
-> >  	atomic_t count;
-> >  
-> > +	uid_t uid;
-> > +	gid_t gid;
-> > +
-> >  	mode_t	mode;
-> >  	size_t	size;
-> >  
-> > diff --git a/fs/autofs4/inode.c b/fs/autofs4/inode.c
-> > index 9ca2d07..9408507 100644
-> > --- a/fs/autofs4/inode.c
-> > +++ b/fs/autofs4/inode.c
-> > @@ -53,6 +53,8 @@ struct autofs_info *autofs4_init_ino(struct autofs_info *ino,
-> >  		atomic_set(&ino->count, 0);
-> >  	}
-> >  
-> > +	ino->uid = 0;
-> > +	ino->gid = 0;
-> >  	ino->mode = mode;
-> >  	ino->last_used = jiffies;
-> >  
-> > diff --git a/fs/autofs4/waitq.c b/fs/autofs4/waitq.c
-> > index 6d87bb1..7c60c0b 100644
-> > --- a/fs/autofs4/waitq.c
-> > +++ b/fs/autofs4/waitq.c
-> > @@ -457,6 +457,40 @@ int autofs4_wait(struct autofs_sb_info *sbi, struct dentry *dentry,
-> >  
-> >  	status = wq->status;
-> >  
-> > +	/*
-> > +	 * For direct and offset mounts we need to track the requestrer
-> 
-> typo which I'll fix.
-> 
-> > +	 * uid and gid in the dentry info struct. This is so it can be
-> > +	 * supplied, on request, by the misc device ioctl interface.
-> > +	 * This is needed during daemon resatart when reconnecting
-> > +	 * to existing, active, autofs mounts. The uid and gid (and
-> > +	 * related string values) may be used for macro substitution
-> > +	 * in autofs mount maps.
-> > +	 */
-> > +	if (!status) {
-> > +		struct autofs_info *ino;
-> > +		struct dentry *de = NULL;
-> > +
-> > +		/* direct mount or browsable map */
-> > +		ino = autofs4_dentry_ino(dentry);
-> > +		if (!ino) {
-> > +			/* If not lookup actual dentry used */
-> > +			de = d_lookup(dentry->d_parent, &dentry->d_name);
-> > +			if (de)
-> > +				ino = autofs4_dentry_ino(de);
-> > +		}
-> > +
-> > +		/* Set mount requester */
-> > +		if (ino) {
-> > +			spin_lock(&sbi->fs_lock);
-> > +			ino->uid = wq->uid;
-> > +			ino->gid = wq->gid;
-> > +			spin_unlock(&sbi->fs_lock);
-> > +		}
-> > +
-> > +		if (de)
-> > +			dput(de);
-> > +	}
-> > +
-> 
-> Please remind me again why autofs's use of current->uid and
-> current->gid is not busted in the presence of PID namespaces, where
-> these things are no longer system-wide unique?
+On Thu, 2008-08-07 at 14:21 -0400, David Dillow wrote:
 
-We didn't really get to the bottom of that last time I posted this but
-hopefully Serge will get right on this and we can sort out what, idf
-anything I need to do.
+> I just looked at the tree; it still has locking issues, and needs
+> further review. You must protect the list from modification while you
+> iterate it looking for an match on the requested firmware. 
 
-Ian
+So here is updated patch:
+
+diff --git a/drivers/base/firmware_class.c b/drivers/base/firmware_class.c
+index 6074321..71ec20d 100644
+--- a/drivers/base/firmware_class.c
++++ b/drivers/base/firmware_class.c
+@@ -419,9 +419,9 @@ _request_firmware(const struct firmware **firmware_p, const char *name,
+ 		return -EINVAL;
+ 
+ 	/* Return firmware pointer from firmware list if already allocated */
++	mutex_lock(&fw_lock);
+ 	list_for_each_entry(flst, &firmwarelist, list)
+ 		if (strcmp(name, flst->name) == 0) {
+-			mutex_lock(&fw_lock);
+ 			flst->count++;
+ 			*firmware_p = flst->fw;
+ 			mutex_unlock(&fw_lock);
+@@ -429,6 +429,7 @@ _request_firmware(const struct firmware **firmware_p, const char *name,
+ 			       name, flst->count);
+ 			return 0;
+ 		}
++	mutex_unlock(&fw_lock);
+ 
+ 	*firmware_p = firmware = kzalloc(sizeof(*firmware), GFP_KERNEL);
+ 	if (!firmware)
+@@ -568,19 +569,22 @@ void release_firmware(const struct firmware *fw)
+ {
+ 	struct firmware_list *flst;
+ 
++	mutex_lock(&fw_lock);
+ 	if (fw)
+ 		list_for_each_entry(flst, &firmwarelist, list)
+ 			if (fw == flst->fw) {
+ 				printk(KERN_INFO
+ 				       "firmware: releasing %s count %d\n",
+ 				       flst->name, flst->count);
+-				mutex_lock(&fw_lock);
+ 				flst->count--;
+-				mutex_unlock(&fw_lock);
+-				if (flst->count == 0)
+-					__release_firmware(fw, flst);
+-				return;
++				if (flst->count == 0) {
++					mutex_unlock(&fw_lock);
++					return __release_firmware(fw, flst);
++				}
++				goto out;
+ 			}
++out:
++	mutex_unlock(&fw_lock);
+ }
+ 
+ /*
+@@ -598,6 +602,7 @@ void release_firmware_all(const struct firmware *fw)
+ {
+ 	struct firmware_list *flst;
+ 
++	mutex_lock(&fw_lock);
+ 	if (fw)
+ 		list_for_each_entry(flst, &firmwarelist, list)
+ 			if (fw == flst->fw) {
+@@ -605,13 +610,14 @@ void release_firmware_all(const struct firmware *fw)
+ 				       "firmware: release_all %s count %d\n",
+ 				       flst->name, flst->count);
+ 				if (flst->count) {
+-					mutex_lock(&fw_lock);
+ 					flst->count = 0;
+ 					mutex_unlock(&fw_lock);
+-					__release_firmware(fw, flst);
++					return __release_firmware(fw, flst);
+ 				}
+-				return;
++				goto out;
+ 			}
++out:
++	mutex_unlock(&fw_lock);
+ }
+ 
+ /* Async support */
+
+
+> Also, was it legal to call release_firmware() from an atomic context? It can now
+> sleep, which may be an issue...
+> 
+
+yes, release_firmware can sleep. 
+So now release_firmware also joined the family of request_firmware.
+
+If you can do request_firmware you can also do release_firmware.
+
+Any how release_firmware will be called below request_firmware or during
+exit, I do not think this will make any issue.
+
+Thank you,
+
+Jaswinder Singh.
 
 
