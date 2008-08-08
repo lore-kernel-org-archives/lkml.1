@@ -1,79 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755819AbYHHB4n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757299AbYHHCG4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755819AbYHHB4n (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Aug 2008 21:56:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752211AbYHHB4f
+	id S1757299AbYHHCG4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Aug 2008 22:06:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754202AbYHHCGs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Aug 2008 21:56:35 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:43358 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751287AbYHHB4e (ORCPT
+	Thu, 7 Aug 2008 22:06:48 -0400
+Received: from smtpq1.tilbu1.nb.home.nl ([213.51.146.200]:44556 "EHLO
+	smtpq1.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753781AbYHHCGs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Aug 2008 21:56:34 -0400
-Date: Thu, 7 Aug 2008 21:56:32 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Roland McGrath <roland@redhat.com>
-cc: Jeremy Fitzhardinge <jeremy@goop.org>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       David Miller <davem@davemloft.net>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Ulrich Drepper <drepper@redhat.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Gregory Haskins <ghaskins@novell.com>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       "Luis Claudio R. Goncalves" <lclaudio@uudg.org>,
-       Clark Williams <williams@redhat.com>, Sam Ravnborg <sam@ravnborg.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [PATCH 0/5] ftrace: to kill a daemon
-In-Reply-To: <alpine.DEB.1.10.0808072113290.18565@gandalf.stny.rr.com>
-Message-ID: <alpine.DEB.1.10.0808072154040.18565@gandalf.stny.rr.com>
-References: <20080807182013.984175558@goodmis.org> <489B6511.7000208@goop.org> <alpine.DEB.1.10.0808071721200.10092@gandalf.stny.rr.com> <20080807222642.761AF15429D@magilla.localdomain> <alpine.DEB.1.10.0808072113290.18565@gandalf.stny.rr.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Thu, 7 Aug 2008 22:06:48 -0400
+Message-ID: <489BAA25.3030004@keyaccess.nl>
+Date: Fri, 08 Aug 2008 04:06:29 +0200
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080707)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Eric Paris <eparis@redhat.com>
+CC: Theodore Tso <tytso@mit.edu>, Greg KH <greg@kroah.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, malware-list@lists.printk.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: [malware-list] [RFC 0/5] [TALPA] Intro to a linux interface	for
+ on access scanning
+References: <20080804223249.GA10517@kroah.com>	 <1217896374.27684.53.camel@localhost.localdomain>	 <20080805005132.GA3661@kroah.com>	 <20080805122328.69a37c1d@lxorguk.ukuu.org.uk>	 <20080805170307.GB9639@kroah.com>	 <1217962602.27684.144.camel@localhost.localdomain>	 <20080805203007.GB27489@kroah.com>	 <1218048597.27684.276.camel@localhost.localdomain>	 <20080806210202.GA9413@mit.edu>	 <1218058081.5837.49.camel@localhost.localdomain>	 <20080806215244.GA21462@mit.edu> <1218118603.5837.101.camel@localhost.localdomain>
+In-Reply-To: <1218118603.5837.101.camel@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: 1.0 (+)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 07-08-08 16:16, Eric Paris wrote:
 
+> Absolutely, I think that our solution needs worry much less about an 
+> actively attacking root process than Windows.
 
-On Thu, 7 Aug 2008, Steven Rostedt wrote:
+Note by the way that this assumption is being actively undermined by all 
+those companies releasing software released as big executable blobs that 
+you just have to chmod +x and run; as root if you want them in /opt, or 
+/usr/local/bin, or ...
 
-> 
-> On Thu, 7 Aug 2008, Roland McGrath wrote:
-> 
-> > > This doesn't seem any less complex than what I did. With this, I would 
-> > > have to come up with another way to handle modules. This will make
-> > > things a lot more complex.
-> > 
-> > The scheme you've implemented can apply fine to a .ko file after it's made.
-> > They are just .o's really.  It is presumably faster to do one step per
-> > final .ko rather than many tiny ones (per source file).  
-> > 
-> > That might be a benefit to doing it all at the end for vmlinux too.  I
-> > think the best way would be to have a vmlinux.o that we actually use in the
-> > link, rather than just analyzing and discarding.  Then you can just do your
-> > existing hack on vmlinux.o before it's linked into vmlinux.
-> 
-> OK, I am playing with this. And you are right, it does work with vmlinux.o 
-> file.  It adds almost another minute to the build anytime something is 
-> changed. Where the per-object way may take longer doing a full build, but 
-> does not add that extra minute ever build.
+Even when OpenOffice.org, IBM Lotus Symphony, RealPlayer, Flash, what 
+have you, might generally by themselves not be considered virusses both 
+the precedent they set and the opportunity for infecting systems by 
+offering those for re-download from elsewhere is worrying.
 
-I spoke to soon. I was only looking at the result of the vmlinux.o. But it 
-seems that kallsyms skips using this file and relinks everything itself.
-Thus the __mcount_loc I added never made it into the vmlinux. The more I 
-try to get this method to work, the more complex it becomes. And I still 
-did not change the recordmcount.pl at all. Which means, by trying to do it 
-against the vmlinux.o, I'm actually making it more complex than it already 
-is.
+One of the more useful things the security crowd could do to keep the 
+above assumption valid would be working on a general "external software 
+installer" and getting all distributions to settle on it (which probably 
+needs a common divisor package and distro backends to feed it to the 
+native package manager).
 
-Right now, doing it to every object seems to be the safest approach.
-
--- Steve
-
-
+Rene.
