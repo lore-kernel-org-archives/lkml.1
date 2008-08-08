@@ -1,82 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761393AbYHHVcW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760944AbYHHVfe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761393AbYHHVcW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 17:32:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755419AbYHHVcG
+	id S1760944AbYHHVfe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 17:35:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756358AbYHHVf1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 17:32:06 -0400
-Received: from sh.osrg.net ([192.16.179.4]:33601 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754661AbYHHVcD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 17:32:03 -0400
-Date: Sat, 9 Aug 2008 06:31:45 +0900
-To: stefanr@s5r6.in-berlin.de
-Cc: grundler@google.com, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: Scatter-gather segment merges by IOMMU?
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <489CB8D8.60908@s5r6.in-berlin.de>
-References: <489CA21F.1030604@s5r6.in-berlin.de>
-	<da824cf30808081325n416ec436y94eebe494d789207@mail.gmail.com>
-	<489CB8D8.60908@s5r6.in-berlin.de>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20080809063159F.fujita.tomonori@lab.ntt.co.jp>
+	Fri, 8 Aug 2008 17:35:27 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:53942 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756076AbYHHVf0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Aug 2008 17:35:26 -0400
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu,
+       tglx@linutronix.de, marcin.slusarz@gmail.com,
+       linux-kernel@vger.kernel.org, David Miller <davem@davemloft.net>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Paul E McKenney <paulmck@linux.vnet.ibm.com>
+Subject: Re: [PATCH] printk: robustify printk
+From: Andi Kleen <andi@firstfloor.org>
+References: <20080324122424.671168000@chello.nl>
+	<alpine.LFD.1.00.0803241021350.17905@woody.linux-foundation.org>
+	<1206382547.6437.131.camel@lappy>
+	<20080324115738.85c72bb5.akpm@linux-foundation.org>
+	<1218202249.8625.106.camel@twins>
+	<alpine.LFD.1.10.0808080931550.3462@nehalem.linux-foundation.org>
+	<1218215454.8625.133.camel@twins>
+	<alpine.LFD.1.10.0808081014240.3462@nehalem.linux-foundation.org>
+	<1218217257.29098.2.camel@lappy.programming.kicks-ass.net>
+	<alpine.LFD.1.10.0808081043160.3462@nehalem.linux-foundation.org>
+	<1218219269.29098.5.camel@lappy.programming.kicks-ass.net>
+Date: Fri, 08 Aug 2008 23:35:20 +0200
+In-Reply-To: <1218219269.29098.5.camel@lappy.programming.kicks-ass.net> (Peter Zijlstra's message of "Fri, 08 Aug 2008 20:14:28 +0200")
+Message-ID: <8763qb42cn.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 08 Aug 2008 23:21:28 +0200
-Stefan Richter <stefanr@s5r6.in-berlin.de> wrote:
+Peter Zijlstra <a.p.zijlstra@chello.nl> writes:
 
-> Grant Grundler wrote:
-> > On Fri, Aug 8, 2008 at 12:44 PM, Stefan Richter
-> > <stefanr@s5r6.in-berlin.de> wrote:
-> >> Hi all,
-> >>
-> >> the block layer usually tries to merge s/g segments if consecutive segments
-> >> combined fit into the queue's max_segment_size.  When such a scatter gather
-> >> list is DMA-mapped, can it happen that an IOMMU collapses the elements even
-> >> further, so that sg_dma_len() of a DMA-mapped s/g segment exceeds
-> >> max_segment_size?
-> > 
-> > I don't see how. The IOMMU code only collapses the "physical" mappings and
-> > does not add new elements to the SG list. ergo sg_dma_len() shouldn't change.
-> > 
-> > grant
-> > 
-> >> As I understood some discussions in the past, this could indeed happen,
-> >> which is a nuisance.  But I may have misunderstood something, or something
-> >> may have changed in the meantime...
-> 
-> Well, I'm just doing my homework and am tracking down the various 
-> dma_map_sg implementations.
-> 
-> Here is what PPC does:
-> http://lxr.linux.no/linux+v2.6.26/arch/powerpc/kernel/iommu.c#L270
-> 
-> It looks at dma_get_max_seg_size(dev); and then merges according to it.
+Hopefully nobody puts a printk into call_rcu now...
+Also I'm not sure if there wouldn't be livelocks if someone puts
+printk into some other parts of RCU (e.g. each RCU adding more
+RCU events -- haven't checked that in detail so I might be wrong)
 
-Yes, IOMMUs were not able to handle this issue but they should now.
+So you just trade one "hands off" part to another.
 
 
-> That's all nice and well, but in my case (FireWire storage protocol 
-> a.k.a. SBP-2, which is basically remote DMA), the max_segment_size of 
-> the PCI device is different from the size limit of the protocol.  We 
-> currently have to deconstruct such merges in the sbp2 drivers again:
-> http://lxr.linux.no/linux+v2.6.26/drivers/firewire/fw-sbp2.c#L1384
-> 
-> Either I keep it that way, or I let the protocol driver manipulate the 
-> FireWire controller's dev->dma_parms->max_segment_size (via 
-> dma_set_max_seg_size() of course), which is not entirely correct.
-
-Why is it not correct? Device drivers can set
-dma_set_max_seg_size(). SCSI does that (see __scsi_alloc_queue).
+> +	kws = &__get_cpu_var(kws);
+> +	if (!kws->pending) {
+> +		kws->pending = 1;
+> +		call_rcu(&kws->head, __wake_up_klogd);
 
 
-> I first wanted to use blk_queue_max_segment_size(), but that falls short 
-> with dma_map_sg implementations like the above are at work.
+How about a big comment describing why you do this?
+And you should add comments to all the new hands-off parts
+where printk is not allowed now.
 
-Yeah, we store the same value at two places (request_queue and device)
-though it's not nice.
+-Andi
