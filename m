@@ -1,148 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761178AbYHHVGf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761479AbYHHVHk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761178AbYHHVGf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 17:06:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754503AbYHHVG0
+	id S1761479AbYHHVHk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 17:07:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756312AbYHHVHa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 17:06:26 -0400
-Received: from mail.gmx.net ([213.165.64.20]:40380 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1753934AbYHHVG0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 17:06:26 -0400
-X-Authenticated: #3093567
-X-Provags-ID: V01U2FsdGVkX18HU3ddbxkHm+xydevuHyVr3weDaTb5pGaHYdiMiU
-	QgG27Pvz5WCdyz
-Subject: [PATCH] Make atkbd.c use unsigned short instead of unsigned int
-From: Thomas Ilnseher <illth@gmx.de>
-To: linux-kernel@vger.kernel.org
-Content-Type: multipart/mixed; boundary="=-HP2bMxw2VgcqLCzbzfK9"
-Date: Fri, 08 Aug 2008 23:06:23 +0200
-Message-Id: <1218229583.6152.14.camel@note.localnet>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.67
+	Fri, 8 Aug 2008 17:07:30 -0400
+Received: from web83203.mail.mud.yahoo.com ([216.252.101.47]:44171 "HELO
+	web83203.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754117AbYHHVH3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Aug 2008 17:07:29 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=sbcglobal.net;
+  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=uQiLK8C6Z9SqLkNqfiHRuX8rVe0NgjpW3C9bjp85Nz4+cKTCtHhqUGn9dN1ojg74WDybKft84X7aazyUhO0n1eAV6kAjMVUlP25yINpxv6gzQW5b+J1U4NPTT3AvfM8hzmXoANEnpkgbADWL9X3DtXFW6QKnLRC/ZFdcnzFP9jA=;
+X-YMail-OSG: 60__XyMVM1l9s7v7iixR3o98HUT2FTu95lliI92wzsPcIM8QdrMK8.TINGOIVDXe2swXYERJE3hhyEVYFEku6dXeBqEkIXEd1ALkfHq1USw5W3Ftu8PwB_8ksZH1ft0-
+Date: Fri, 8 Aug 2008 14:07:28 -0700 (PDT)
+From: Matthew Frost <artusemrys@sbcglobal.net>
+Subject: Re: [usb-storage] BUG: SCSI: usb storage SDHC card doesn't work in 2.6.27-rc1
+To: linux-kernel@vger.kernel.org, Alan Stern <stern@rowland.harvard.edu>,
+       Douglas Gilbert <dougg@torque.net>
+Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Matthew Dharm <mdharm-kernel@one-eyed-alien.net>,
+       Matthew Frost <artusemrys@yahoo.com>,
+       USB Storage list <usb-storage@lists.one-eyed-alien.net>,
+       linux-scsi <linux-scsi@vger.kernel.org>
+In-Reply-To: <656254.26203.qm@web83208.mail.mud.yahoo.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <779703.44181.qm@web83203.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---=-HP2bMxw2VgcqLCzbzfK9
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+--- Matthew Frost <artusemrys@yahoo.com> wrote:
 
-Hi list,
+> --- Matthew Frost <artusemrys@sbcglobal.net> wrote:
+> 
+> > Alan Stern wrote:
+> > > > The patches to fix this that I have tried do not apply
+> > > > cleanly to lk 2.6.26 (and break during compile if forced:
+> > > > "us->fflags" is not defined).
+> > > > 
+> > > > Is there a lk 2.6.26 patch available?
+> > > 
+> > > Sorry about that; my patches are against the USB development tree and
+> > > I tend to forget to redo them against the vanilla kernel.  Below is a
+> > > patch against 2.6.26.  Or you can just edit the original patch and
+> > > change the occurrences of "fflags" to "flags".
+> > > 
+> > > Alan Stern
+> > > 
+> > > 
+> > > Index: 2.6.26/drivers/usb/storage/transport.c
+> > > ===================================================================
+> > > --- 2.6.26.orig/drivers/usb/storage/transport.c
+> > > +++ 2.6.26/drivers/usb/storage/transport.c
+> > > @@ -1034,8 +1034,21 @@ int usb_stor_Bulk_transport(struct scsi_
+> > >  
+> > >  	/* try to compute the actual residue, based on how much data
+> > >  	 * was really transferred and what the device tells us */
+> > > -	if (residue) {
+> > > -		if (!(us->flags & US_FL_IGNORE_RESIDUE)) {
+> > > +	if (residue && !(us->flags & US_FL_IGNORE_RESIDUE)) {
+> > > +
+> > > +		/* Heuristically detect devices that generate bogus residues
+> > > +		 * by seeing what happens with INQUIRY and READ CAPACITY
+> > > +		 * commands.
+> > > +		 */
+> > > +		if (bcs->Status == US_BULK_STAT_OK &&
+> > > +				scsi_get_resid(srb) == 0 &&
+> > > +					((srb->cmnd[0] == INQUIRY &&
+> > > +						transfer_length == 36) ||
+> > > +					(srb->cmnd[0] == READ_CAPACITY &&
+> > > +						transfer_length == 8))) {
+> > > +			us->flags |= US_FL_IGNORE_RESIDUE;
+> > > +
+> > > +		} else {
+> > >  			residue = min(residue, transfer_length);
+> > >  			scsi_set_resid(srb, max(scsi_get_resid(srb),
+> > >  			                                       (int) residue));
+> > > 
+> > > 
+> > 
+> > Thanks!  I've been trying to fix it manually, and it wouldn't work. 
+> Trying
+> > this version now.  Let's see if this fixes my problem.
+> > 
+> > Matt Frost
+> > 
+> 
+> Tested under two distributions, this patch restores correct functionality
+> to my hardware.  Thank you very much!
+> 
+> Matt
+> 
+Update/sqeaking-of-the-wheel:
 
-I've got an Acer Extensa 5220 with some extra "Euro" and "Dollar" keys.
-I wanted to make these keys known to the kernel, so I wrote an .fdi file
-for hal. 
+The same problem still happens under 2.6.27-rc2, and I haven't seen this
+bumped to -stable, either.  It continues to solve the problem here.
 
-Unfortunately the configuration of the "Euro" and "Dollar" (and some
-other key) failed, because:
-a) the atkbd driver uses unsigned char to store the keymap
-b) the KEY_DOLLAR is 0x1b2 (which doesn't fit in 8 bits).
-
-I created a small patch which changes the keymap to use 
-unsigned short.
-
-PS: I'm not subscribed to the LKML, please email me directly.
-
-
-
-
--- 
-Thomas Ilnseher <illth@gmx.de>
-
---=-HP2bMxw2VgcqLCzbzfK9
-Content-Disposition: attachment; filename=atkbd_short.path
-Content-Type: text/x-patch; name=atkbd_short.path; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-
---- linux/drivers/input/keyboard/atkbd.c	2008-07-13 23:51:29.000000000 +0200
-+++ linux/drivers/input/keyboard/atkbd.c.new	2008-08-08 22:22:15.483300222 +0200
-@@ -64,10 +64,21 @@
- MODULE_PARM_DESC(extra, "Enable extra LEDs and keys on IBM RapidAcces, EzKey and similar keyboards");
- 
- /*
-+ * Keycode table type. This used to be unsigned char (= 8bit).
-+ * Too small for dollar / euro (found on acer atkbd)
-+ */
-+typedef unsigned short keycode_table_t;
-+
-+/*
-  * Scancode to keycode tables. These are just the default setting, and
-  * are loadable via an userland utility.
-  */
- 
-+/*
-+ * This is left unsigned char to conserve some memory.
-+ * the memcopy is replaces by a loop.
-+ */
-+
- static unsigned char atkbd_set2_keycode[512] = {
- 
- #ifdef CONFIG_KEYBOARD_ATKBD_HP_KEYCODES
-@@ -200,7 +211,7 @@
- 	char phys[32];
- 
- 	unsigned short id;
--	unsigned char keycode[512];
-+	keycode_table_t keycode[512];
- 	DECLARE_BITMAP(force_release_mask, 512);
- 	unsigned char set;
- 	unsigned char translated;
-@@ -357,7 +368,7 @@
- 	unsigned int code = data;
- 	int scroll = 0, hscroll = 0, click = -1;
- 	int value;
--	unsigned char keycode;
-+	keycode_table_t keycode;
- 
- #ifdef ATKBD_DEBUG
- 	printk(KERN_DEBUG "atkbd.c: Received %02x flags %02x\n", data, flags);
-@@ -807,8 +818,6 @@
- static void atkbd_cleanup(struct serio *serio)
- {
- 	struct atkbd *atkbd = serio_get_drvdata(serio);
--
--	atkbd_disable(atkbd);
- 	ps2_command(&atkbd->ps2dev, NULL, ATKBD_CMD_RESET_BAT);
- }
- 
-@@ -874,14 +883,20 @@
- 						atkbd->keycode[i | 0x80] = atkbd_scroll_keys[j].keycode;
- 		}
- 	} else if (atkbd->set == 3) {
--		memcpy(atkbd->keycode, atkbd_set3_keycode, sizeof(atkbd->keycode));
--	} else {
--		memcpy(atkbd->keycode, atkbd_set2_keycode, sizeof(atkbd->keycode));
-+		/* at_kbd->keycode is keycode_table_t, but atkbd_set* is unsigned char.
-+		 * therefore we can't use memcpy
-+		memcpy(atkbd->keycode, atkbd_set3_keycode, sizeof(atkbd->keycode)); */
-+		for (i = 0; i < (sizeof(atkbd->keycode) / sizeof(keycode_table_t)); i++)
-+			atkbd->keycode[i] = (keycode_table_t) atkbd_set3_keycode[i];
-+	} else { /* see above 
-+		memcpy(atkbd->keycode, atkbd_set2_keycode, sizeof(atkbd->keycode)); */
-+		for (i = 0; i < (sizeof(atkbd->keycode) / sizeof(keycode_table_t)); i++)
-+			atkbd->keycode[i] = (keycode_table_t) atkbd_set2_keycode[i];
- 
- 		if (atkbd->scroll)
- 			for (i = 0; i < ARRAY_SIZE(atkbd_scroll_keys); i++) {
- 				scancode = atkbd_scroll_keys[i].set2;
--				atkbd->keycode[scancode] = atkbd_scroll_keys[i].keycode;
-+				atkbd->keycode[scancode] = (keycode_table_t)(atkbd_scroll_keys[i].keycode);
- 		}
- 	}
- 
-@@ -965,7 +980,7 @@
- 	}
- 
- 	input_dev->keycode = atkbd->keycode;
--	input_dev->keycodesize = sizeof(unsigned char);
-+	input_dev->keycodesize = sizeof(keycode_table_t);
- 	input_dev->keycodemax = ARRAY_SIZE(atkbd_set2_keycode);
- 
- 	for (i = 0; i < 512; i++)
-
---=-HP2bMxw2VgcqLCzbzfK9--
-
+Matt
