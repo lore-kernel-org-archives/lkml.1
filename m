@@ -1,99 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757903AbYHHSCK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758641AbYHHSC1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757903AbYHHSCK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 14:02:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753121AbYHHSB5
+	id S1758641AbYHHSC1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 14:02:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756988AbYHHSCS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 14:01:57 -0400
-Received: from gw.goop.org ([64.81.55.164]:45766 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752993AbYHHSB4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 14:01:56 -0400
-Message-ID: <489C89FA.5000301@goop.org>
-Date: Fri, 08 Aug 2008 11:01:30 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
-MIME-Version: 1.0
-To: Adrian Bunk <bunk@kernel.org>
-CC: Mark McLoughlin <markmc@redhat.com>, xen-devel@lists.xensource.com,
-       Eduardo Habkost <ehabkost@redhat.com>, Stephen Tweedie <sct@redhat.com>,
-       linux-kernel@vger.kernel.org, Simon Horman <horms@verge.net.au>,
-       "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>
-Subject: Re: [Xen-devel] Re: Allow compile with CONFIG_DEBUG_INFO=y,	X86_PAE
- not set on gcc 3.4.5
-References: <20080808050429.GA8473@verge.net.au> <489BE9C3.2010006@goop.org>	<20080808080155.GA1992@cs181140183.pp.htv.fi>	<489C6485.7050009@goop.org> <20080808161331.GF14495@cs181140183.pp.htv.fi>
-In-Reply-To: <20080808161331.GF14495@cs181140183.pp.htv.fi>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	Fri, 8 Aug 2008 14:02:18 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:60522 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753121AbYHHSCR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Aug 2008 14:02:17 -0400
+Date: Fri, 8 Aug 2008 20:03:03 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Vivek Goyal <vgoyal@redhat.com>
+Cc: Andi Kleen <andi@firstfloor.org>, Keith Owens <kaos@ocs.com.au>,
+       Jay Lan <jlan@sgi.com>, Christoph Lameter <cl@linux-foundation.org>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, jmerkey@wolfmountaingroup.com,
+       Geert Uytterhoeven <geert@linux-m68k.org>,
+       Josh Boyer <jwboyer@gmail.com>, linux-kernel@vger.kernel.org,
+       Takenori Nagano <t-nagano@ah.jp.nec.com>,
+       Bernhard Walle <bwalle@suse.de>
+Subject: Re: [ANNOUNCE] Merkey's Kernel Debugger
+Message-ID: <20080808180303.GB9038@one.firstfloor.org>
+References: <20080807200659.GJ24801@one.firstfloor.org> <23175.1218148134@ocs10w> <20080808011500.GA531@redhat.com> <20080808022916.GM24801@one.firstfloor.org> <20080808132953.GB3840@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080808132953.GB3840@redhat.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk wrote:
-> On Fri, Aug 08, 2008 at 08:21:41AM -0700, Jeremy Fitzhardinge wrote:
->   
->> Adrian Bunk wrote:
->>     
->>> CONFIG_DEBUG_INFO=y is why I never hit it before.
->>>
->>> It does not seem to be just one dodgy Redhat compiler (as I assumed in  
->>> the Bugzilla entry) but the whole 3.4 series of gcc which makes our  
->>> resolution of saying that this specific compiler is broken invalid.
->>>
->>> Considering that we officially support all compilers >= 3.2 this is 
->>> just one more case where we have to add to the kernel a workaround for 
->>> a broken compiler.
->>>   
->>>       
->> Yes.  I'm happy to write off a specific rpm package, but a whole series  
->> is a different matter.
->>
->> Adding
->>
->> 	if (PREALLOCATED_PMDS == 0)
->> 		return;
->>
->> in the appropriate places with a small comment seems like the right answer.
->>     
->
-> The patch below you suggested fixes it for me with gcc 3.4.6.
->
->   
->>    J
->>     
->
-> cu
-> Adrian
->   
+> Are you suggesting that kdump should be put onto panic_notifier_list, in
+> such a way so that it runs last?
 
-OK.  Want to submit this as a proper patch?
+The point was that kernel debuggers have an at least as legitimate
+need as kdump to run early on panic as kdump. In particularly they
+should run before kdump because kdump can be triggered from
+the debugger.
 
-Acked-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+But for modular kernel debuggers the hook would need to be exported,
+so in theory everyone could use it. In theory code review should
+catch that. Another alternative would be to readd the old namespaces
+patches I posted some time ago, this allowed to export symbols only
+to specific modules (but that would be also unfortunate for out of tree
+debuggers) 
 
-Thanks,
-    J
+Since we have nearly all other needed hooks for kernel debuggers
+anyways it doesn't really make sense to stop at panic. So this
+earlier requirements should be relaxed.
 
+Perhaps code review can solve the problem?
 
->
-> --- a/arch/x86/mm/pgtable.c
-> +++ b/arch/x86/mm/pgtable.c
-> @@ -209,6 +209,9 @@ static void pgd_prepopulate_pmd(struct mm_struct *mm, pgd_t *pgd, pmd_t *pmds[])
->  
->  	pud = pud_offset(pgd, 0);
->  
-> +	if (PREALLOCATED_PMDS == 0)
-> +		return;
-> +
->   	for (addr = i = 0; i < PREALLOCATED_PMDS;
->  	     i++, pud++, addr += PUD_SIZE) {
->  		pmd_t *pmd = pmds[i];
->
-> _______________________________________________
-> Xen-devel mailing list
-> Xen-devel@lists.xensource.com
-> http://lists.xensource.com/xen-devel
->   
-
+-Andi
