@@ -1,87 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757277AbYHHWbl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764286AbYHHWcs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757277AbYHHWbl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 18:31:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758390AbYHHWba
+	id S1764286AbYHHWcs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 18:32:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758385AbYHHWcj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 18:31:30 -0400
-Received: from tundra.namei.org ([65.99.196.166]:47520 "EHLO tundra.namei.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755401AbYHHWb3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 18:31:29 -0400
-Date: Sat, 9 Aug 2008 08:31:06 +1000 (EST)
-From: James Morris <jmorris@namei.org>
-To: Eduardo Habkost <ehabkost@redhat.com>
-cc: Stephen Rothwell <sfr@canb.auug.org.au>,
-       David Howells <dhowells@redhat.com>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: next-20080808 fs/nfsctl.c build error
-In-Reply-To: <20080808172527.GB4742@blackpad>
-Message-ID: <alpine.LRH.1.10.0808090825060.29741@tundra.namei.org>
-References: <20080808171624.24ae1e10.sfr@canb.auug.org.au> <20080808172527.GB4742@blackpad>
-User-Agent: Alpine 1.10 (LRH 962 2008-03-14)
+	Fri, 8 Aug 2008 18:32:39 -0400
+Received: from fk-out-0910.google.com ([209.85.128.191]:63045 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753291AbYHHWci (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Aug 2008 18:32:38 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=JNYmljl9qcQyNUdTCHdzale/nNRn2i2mjGI/Xfquq7MrbdhqoPTIuz/QAjOXQ77Rcw
+         JAzFzhqyS+JEpDUw2dh8BPxvowH+/+1JswHs1yGrPiH5gXdJGgzaSLHnNN9rSNhbbl7M
+         jAtSccvhLG6GadJ5kWNvhzWE0P1uTTiOEvrUk=
+Date: Sat, 9 Aug 2008 02:32:28 +0400
+From: Alexander Beregalov <a.beregalov@gmail.com>
+To: akpm@linux-foundation.org, thomas.petazzoni@free-electrons.com,
+       linux-kernel@vger.kernel.org, swhiteho@redhat.com,
+       cluster-devel@redhat.com
+Subject: [PATCH -mm] fs.h: fix build error with !CONFIG_FILE_LOCKING
+Message-ID: <20080808223228.GC5093@orion>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 8 Aug 2008, Eduardo Habkost wrote:
+I am not sure it is a right way to fix it, please review.
+Commit 4a70917f881a38ae688c98be9396f0a38f559094
+(configure-out-file-locking-features) changed behaviour.
 
-> 
-> I got the following build error on next-20080808:
-> 
-> fs/nfsctl.c: In function ?do_open?:
-> fs/nfsctl.c:45: error: implicit declaration of function ?current_cred?
-> fs/nfsctl.c:45: warning: passing argument 4 of ?dentry_open? makes pointer from integer without a cast
-> make[1]: *** [fs/nfsctl.o] Error 1
-> make: *** [fs/nfsctl.o] Error 2
+From: Alexander Beregalov <a.beregalov@gmail.com>
 
-Something I noticed in the configs posted with build breakages is 
-CONFIG_SMP=n, although I'm not sure how/if that's related.
+fs.h: fix build error with !CONFIG_FILE_LOCKING
 
-In any case, it seems that linux/cred.h should include linux/sched.h to 
-provide a full definition of 'struct task_struct', so that 'current' can 
-be dereferenced (e.g. in current_cred()).
+fs/gfs2/ops_file.c:585: error: implicit declaration of function 'generic_setlease'
+fs/gfs2/ops_file.c:637: error: implicit declaration of function '__mandatory_lock'
 
-Does this patch work for you and look correct ?
 
----- 
-
-diff --git a/fs/nfsctl.c b/fs/nfsctl.c
-index cc4ef26..f6967b6 100644
---- a/fs/nfsctl.c
-+++ b/fs/nfsctl.c
-@@ -14,6 +14,7 @@
- #include <linux/namei.h>
- #include <linux/mount.h>
- #include <linux/syscalls.h>
-+#include <linux/cred.h>
- #include <asm/uaccess.h>
- 
- /*
-diff --git a/include/linux/cred.h b/include/linux/cred.h
-index b156ed4..431f1ab 100644
---- a/include/linux/cred.h
-+++ b/include/linux/cred.h
-@@ -14,9 +14,9 @@
- 
- #include <linux/capability.h>
- #include <linux/key.h>
-+#include <linux/sched.h>
- #include <asm/atomic.h>
- 
--struct user_struct;
- struct cred;
- struct inode;
- 
-
+Signed-off-by: Alexander Beregalov <a.beregalov@gmail.com>
 ---
 
-Signed-off-by: James Morris <jmorris@namei.org>
+ include/linux/fs.h |    3 +++
+ 1 files changed, 3 insertions(+), 0 deletions(-)
 
-
-
--- 
-James Morris
-<jmorris@namei.org>
+diff --git a/include/linux/fs.h b/include/linux/fs.h
+index e9a7a7d..42d9ff9 100644
+--- a/include/linux/fs.h
++++ b/include/linux/fs.h
+@@ -1051,6 +1051,8 @@ extern struct seq_operations locks_seq_operations;
+ #define flock_lock_file_wait(a, b) (-ENOLCK)
+ #define __break_lease(a, b) (0)
+ #define lease_get_mtime(a, b)
++#define generic_setlease(a, b, c) (0)
++#define vfs_setlease(a, b, c) (0)
+ #define lock_may_read(a, b, c) (1)
+ #define lock_may_write(a, b, c) (1)
+ #endif /* !CONFIG_FILE_LOCKING */
+@@ -1647,6 +1649,7 @@ static inline int break_lease(struct inode *inode, unsigned int mode)
+ #else /* !CONFIG_FILE_LOCKING */
+ #define locks_mandatory_locked(a) (0)
+ #define locks_mandatory_area(a, b, c, d, e) (0)
++#define __mandatory_lock(a) (0)
+ #define mandatory_lock(a) (0)
+ #define locks_verify_locked(a) (0)
+ #define locks_verify_truncate(a, b, c) (0)
