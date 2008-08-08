@@ -1,64 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754604AbYHHGKg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755282AbYHHGKx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754604AbYHHGKg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 02:10:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752567AbYHHGK2
+	id S1755282AbYHHGKx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 02:10:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754410AbYHHGKm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 02:10:28 -0400
-Received: from casper.infradead.org ([85.118.1.10]:48278 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752491AbYHHGK2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 02:10:28 -0400
-Subject: Re: [GIT PULL]: firmware patches for building firmware into kernel
-From: Jaswinder Singh <jaswinder@infradead.org>
-To: David Dillow <dave@thedillows.org>
-Cc: David Woodhouse <dwmw2@infradead.org>, LKML <linux-kernel@vger.kernel.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-In-Reply-To: <1218169537.17642.40.camel@obelisk.thedillows.org>
-References: <1218128219.14483.7.camel@jaswinder.satnam>
-	 <1218130222.18118.7.camel@lap75545.ornl.gov>
-	 <1218130475.14483.16.camel@jaswinder.satnam>
-	 <1218133288.18118.20.camel@lap75545.ornl.gov>
-	 <1218159490.2553.13.camel@jaswinder.satnam>
-	 <1218164391.17642.14.camel@obelisk.thedillows.org>
-	 <1218166760.2540.18.camel@jaswinder.satnam>
-	 <1218169537.17642.40.camel@obelisk.thedillows.org>
-Content-Type: text/plain; charset=utf8
-Date: Fri, 08 Aug 2008 11:38:46 +0530
-Message-Id: <1218175726.13359.3.camel@jaswinder.satnam>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
-Content-Transfer-Encoding: 8bit
+	Fri, 8 Aug 2008 02:10:42 -0400
+Received: from gw.goop.org ([64.81.55.164]:53181 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752567AbYHHGKl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Aug 2008 02:10:41 -0400
+Message-ID: <489BE351.5030206@goop.org>
+Date: Thu, 07 Aug 2008 23:10:25 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: "H. Peter Anvin" <hpa@kernel.org>
+CC: Zachary Amsden <zach@vmware.com>, Alok Kataria <akataria@vmware.com>,
+       "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, the arch/x86 maintainers <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH]Fix broken VMI in 2.6.27-rc..
+References: <1218136365.23770.52.camel@alok-dev1>	 <489B6710.9000604@kernel.org> <1218144438.20178.336.camel@bodhitayantram.eng.vmware.com> <489B836A.3050209@goop.org> <489B84EF.6050009@kernel.org> <489B8948.6060003@goop.org> <489B8A68.10900@kernel.org> <489B8EF4.1030105@goop.org> <489B8FAD.4090904@kernel.org>
+In-Reply-To: <489B8FAD.4090904@kernel.org>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Dave,
+H. Peter Anvin wrote:
+> Jeremy Fitzhardinge wrote:
+>>>
+>>> The Linux kernel was never a paragon of perfection - it was never 
+>>> meant to be.  Just because a bit of cruft went unnoticed into the 
+>>> kernel doesn't mean we shouldn't fix it.
+>>
+>> I don't really see what the issue is.
+>>
+>> Fixmaps are primarily used for things that need to be mapped early 
+>> before we can allocate address space dynamically.  They're 
+>> predominantly used for boot-time init, and rarely on any 
+>> performance-critical path.  The only vaguely regular use a fixmap 
+>> gets during runtime is poking at apics, and that's dominated by IO 
+>> time, and kmap_atomic.  Statically, there's only 100 references in 
+>> the kernel.  And it only affects 32-bit.
+>>
+>> Having fixmaps at link-time fixed addresses would be nice, I suppose, 
+>> but hardly worth going to vast effort over.
+>>
+>
+> No, but it's hardly vast effort, either.
 
-On Fri, 2008-08-08 at 00:25 -0400, David Dillow wrote:
-> On Fri, 2008-08-08 at 09:09 +0530, Jaswinder Singh wrote:
-> > On Thu, 2008-08-07 at 22:59 -0400, David Dillow wrote:
-> > > I don't like releasing the firmware before the pci_unregister_driver()
-> > > call. I worry about ordering issues during cleanup, though I'll admit I
-> > > have not yet researched if it will be a problem. In any event, if you're
-> > > going to request it once per adapter in typhoon_init_one(), then it
-> > > should be in the per-device struct, and released in
-> > > typhoon_remove_one().
-> >
-> > Here is updated patch :
-> 
-> You've fixed one part of the issues I described, but I think you've left
-> open the possibility of dangling pointers when one card in a multi NIC
-> system fails to come up. Again, I need to track down the code to see if
-> I'm all wet or not.
-> 
+Thinking about it, the fixmap really has to be as high as possible.  If 
+it were any lower, then it would either truncate the 1:1 mapping, or 
+shadow some physical memory.
 
-That's why I introduced firmware_release_all() for buggy drivers.
-
-I think ﻿firmware_release_all() is best for you case.
-
-Thank you,
-
-Jaswinder Singh.
-
+    J
