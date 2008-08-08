@@ -1,69 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757471AbYHHC2l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756393AbYHHCmN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757471AbYHHC2l (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Aug 2008 22:28:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753746AbYHHC2e
+	id S1756393AbYHHCmN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Aug 2008 22:42:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753225AbYHHClz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Aug 2008 22:28:34 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:60176 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752350AbYHHC2d (ORCPT
+	Thu, 7 Aug 2008 22:41:55 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:48030
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752478AbYHHCly (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Aug 2008 22:28:33 -0400
-Date: Fri, 8 Aug 2008 04:29:16 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Vivek Goyal <vgoyal@redhat.com>
-Cc: Keith Owens <kaos@ocs.com.au>, Andi Kleen <andi@firstfloor.org>,
-       Jay Lan <jlan@sgi.com>, Christoph Lameter <cl@linux-foundation.org>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, jmerkey@wolfmountaingroup.com,
-       Geert Uytterhoeven <geert@linux-m68k.org>,
-       Josh Boyer <jwboyer@gmail.com>, linux-kernel@vger.kernel.org,
-       Takenori Nagano <t-nagano@ah.jp.nec.com>,
-       Bernhard Walle <bwalle@suse.de>
-Subject: Re: [ANNOUNCE] Merkey's Kernel Debugger
-Message-ID: <20080808022916.GM24801@one.firstfloor.org>
-References: <20080807200659.GJ24801@one.firstfloor.org> <23175.1218148134@ocs10w> <20080808011500.GA531@redhat.com>
+	Thu, 7 Aug 2008 22:41:54 -0400
+Date: Thu, 07 Aug 2008 19:41:55 -0700 (PDT)
+Message-Id: <20080807.194155.136073681.davem@davemloft.net>
+To: linville@tuxdriver.com
+Cc: linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: pull request: wireless-2.6#ath9k 2008-08-07
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20080807143834.GB27762@tuxdriver.com>
+References: <20080807143834.GB27762@tuxdriver.com>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080808011500.GA531@redhat.com>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> panic() is the only place where kdump gets a chance to run first and
-> panic notifiers are not executed.
+From: "John W. Linville" <linville@tuxdriver.com>
+Date: Thu, 7 Aug 2008 10:38:34 -0400
 
-To be fully clear panic() that is called outside oops/exception context
-
-s/panic/die notifiers/
-
+> I know we all want to see ath9k merged ASAP.  Since I'll be unavailable
+> this weekend, I have created a branch that includes Luis's revamped
+> list.h patches, the original ath9k patches, Adrian's ath9k gcc bug
+> work-around patch, and another cleanup series from Sujith on top.
 > 
-> To me so far only in kernel debugger seems to be a reasonable candiate
+> Hopefully no further problems will reveal themselves with the list.h
+> stuff.  Please pull at your leisure, or if a problem arises I'll work to
+> resolve it on Monday.
 
-Yes a kernel debugger should be able to hook into panic()
-
-In fact it can do that already by just setting a break point,
-but clearly having a real notifier is preferable.
-
-The use case would be then that the kernel debugger would
-have some command to trigger a dump.
-
-> which needs to run before kdump after a panic event. If a debugger
-> is really getting merged into the kernel, then I think debugger can
-
-kgdb is already merged. Also the x86 notifiers are general
-enough that there are a couple of debuggers floating around
-that are just using existing interfaces (as in need very little in terms
-of core patching) 
-
-> put a hook in the panic() before kdump. Wouldn't this solve the problem?
-
-Yes it would, but right now there is no such hook. Also if there 
-was such a hook kdump could use it like everyone else.  
-
-There's a priority scheme in notifiers so you can still run usually last.
-
--Andi
+Looks good, pulled and pushed out to kernel.org, thanks!
