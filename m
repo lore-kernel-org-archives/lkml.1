@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758800AbYHHQj0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758738AbYHHQjp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758800AbYHHQj0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 12:39:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756737AbYHHQgZ
+	id S1758738AbYHHQjp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 12:39:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757716AbYHHQg1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 12:36:25 -0400
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:48018 "EHLO smtp6.pp.htv.fi"
+	Fri, 8 Aug 2008 12:36:27 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:49915 "EHLO smtp4.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755281AbYHHQgX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 12:36:23 -0400
-Date: Fri, 8 Aug 2008 19:34:48 +0300
+	id S1756694AbYHHQgZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Aug 2008 12:36:25 -0400
+Date: Fri, 8 Aug 2008 19:34:50 +0300
 From: Adrian Bunk <bunk@kernel.org>
-To: geert@linux-m68k.org, zippel@linux-m68k.org
-Cc: linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org,
+To: ralf@linux-mips.org
+Cc: linux-mips@linux-mips.org, linux-kernel@vger.kernel.org,
        Andrew Morton <akpm@linux-foundation.org>,
        David Brownell <david-b@pacbell.net>
-Subject: [9/17] m68k: use bcd2bin/bin2bcd
-Message-ID: <20080808163448.GP14495@cs181140183.pp.htv.fi>
+Subject: [10/17] mips: use bcd2bin/bin2bcd
+Message-ID: <20080808163450.GQ14495@cs181140183.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -25,299 +25,378 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch changes m68k to use the new bcd2bin/bin2bcd functions instead 
-of the obsolete BCD_TO_BIN/BIN_TO_BCD/BCD2BIN/BIN2BCD macros.
-
-It also remove local bcd2bin/bin2bcd implementations
-in favor of the global ones.
+This patch changes  to use the new bcd2bin/bin2bcd functions instead of 
+the obsolete BCD_TO_BIN/BIN_TO_BCD/BCD2BIN/BIN2BCD macros.
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
 
- arch/m68k/atari/time.c      |   35 ++++++++++++++++++-----------------
- arch/m68k/bvme6000/config.c |   15 +--------------
- arch/m68k/bvme6000/rtc.c    |   30 +++++++++++++++---------------
- arch/m68k/mvme16x/rtc.c     |   26 +++++++++++++-------------
- arch/m68k/q40/config.c      |   12 +-----------
- arch/m68k/sun3x/time.c      |   28 ++++++++++++++--------------
- 6 files changed, 62 insertions(+), 84 deletions(-)
+ arch/mips/dec/time.c                   |   18 +++++++--------
+ arch/mips/pmc-sierra/yosemite/setup.c  |   30 ++++++++++++-------------
+ arch/mips/sgi-ip22/ip22-time.c         |   24 ++++++++++----------
+ arch/mips/sgi-ip27/ip27-timer.c        |   18 +++++++--------
+ arch/mips/sibyte/swarm/rtc_m41t81.c    |   26 ++++++++++-----------
+ arch/mips/sibyte/swarm/rtc_xicor1241.c |   26 ++++++++++-----------
+ include/asm-mips/mc146818-time.h       |   18 +++++++--------
+ 7 files changed, 80 insertions(+), 80 deletions(-)
 
-7967e50519a24d3c87e55e7a5af8b71dd2dd618d 
-diff --git a/arch/m68k/atari/time.c b/arch/m68k/atari/time.c
-index e0d3c8b..54afa51 100644
---- a/arch/m68k/atari/time.c
-+++ b/arch/m68k/atari/time.c
-@@ -191,13 +191,14 @@ int atari_tt_hwclk( int op, struct rtc_time *t )
-         }
+ed015dd05f562b841288c18297f579191d652da9 
+diff --git a/arch/mips/dec/time.c b/arch/mips/dec/time.c
+index 3965fda..1359c03 100644
+--- a/arch/mips/dec/time.c
++++ b/arch/mips/dec/time.c
+@@ -45,12 +45,12 @@ unsigned long read_persistent_clock(void)
+ 	spin_unlock_irqrestore(&rtc_lock, flags);
  
-         if (!(ctrl & RTC_DM_BINARY)) {
--            BIN_TO_BCD(sec);
--            BIN_TO_BCD(min);
--            BIN_TO_BCD(hour);
--            BIN_TO_BCD(day);
--            BIN_TO_BCD(mon);
--            BIN_TO_BCD(year);
--            if (wday >= 0) BIN_TO_BCD(wday);
-+            sec = bin2bcd(sec);
-+            min = bin2bcd(min);
-+            hour = bin2bcd(hour);
-+            day = bin2bcd(day);
-+            mon = bin2bcd(mon);
-+            year = bin2bcd(year);
-+            if (wday >= 0)
-+	        wday = bin2bcd(wday);
-         }
-     }
- 
-@@ -252,13 +253,13 @@ int atari_tt_hwclk( int op, struct rtc_time *t )
+ 	if (!(CMOS_READ(RTC_CONTROL) & RTC_DM_BINARY) || RTC_ALWAYS_BCD) {
+-		sec = BCD2BIN(sec);
+-		min = BCD2BIN(min);
+-		hour = BCD2BIN(hour);
+-		day = BCD2BIN(day);
+-		mon = BCD2BIN(mon);
+-		year = BCD2BIN(year);
++		sec = bcd2bin(sec);
++		min = bcd2bin(min);
++		hour = bcd2bin(hour);
++		day = bcd2bin(day);
++		mon = bcd2bin(mon);
++		year = bcd2bin(year);
  	}
  
- 	if (!(ctrl & RTC_DM_BINARY)) {
--            BCD_TO_BIN(sec);
--            BCD_TO_BIN(min);
--            BCD_TO_BIN(hour);
--            BCD_TO_BIN(day);
--            BCD_TO_BIN(mon);
--            BCD_TO_BIN(year);
--            BCD_TO_BIN(wday);
-+            sec = bcd2bin(sec);
-+            min = bcd2bin(min);
-+            hour = bcd2bin(hour);
-+            day = bcd2bin(day);
-+            mon = bcd2bin(mon);
-+            year = bcd2bin(year);
-+            wday = bcd2bin(wday);
-         }
+ 	year += real_year - 72 + 2000;
+@@ -83,7 +83,7 @@ int rtc_mips_set_mmss(unsigned long nowtime)
  
-         if (!(ctrl & RTC_24H)) {
-@@ -318,7 +319,7 @@ int atari_tt_set_clock_mmss (unsigned long nowtime)
+ 	cmos_minutes = CMOS_READ(RTC_MINUTES);
+ 	if (!(save_control & RTC_DM_BINARY) || RTC_ALWAYS_BCD)
+-		cmos_minutes = BCD2BIN(cmos_minutes);
++		cmos_minutes = bcd2bin(cmos_minutes);
  
-     rtc_minutes = RTC_READ (RTC_MINUTES);
-     if (!(save_control & RTC_DM_BINARY))
--        BCD_TO_BIN (rtc_minutes);
-+        rtc_minutes = bcd2bin(rtc_minutes);
+ 	/*
+ 	 * since we're only adjusting minutes and seconds,
+@@ -99,8 +99,8 @@ int rtc_mips_set_mmss(unsigned long nowtime)
  
-     /* Since we're only adjusting minutes and seconds, don't interfere
-        with hour overflow.  This avoids messing with unknown time zones
-@@ -329,8 +330,8 @@ int atari_tt_set_clock_mmss (unsigned long nowtime)
-         {
-             if (!(save_control & RTC_DM_BINARY))
-                 {
--                    BIN_TO_BCD (real_seconds);
--                    BIN_TO_BCD (real_minutes);
-+                    real_seconds = bin2bcd(real_seconds);
-+                    real_minutes = bin2bcd(real_minutes);
-                 }
-             RTC_WRITE (RTC_SECONDS, real_seconds);
-             RTC_WRITE (RTC_MINUTES, real_minutes);
-diff --git a/arch/m68k/bvme6000/config.c b/arch/m68k/bvme6000/config.c
-index 9433a88..65c9204 100644
---- a/arch/m68k/bvme6000/config.c
-+++ b/arch/m68k/bvme6000/config.c
-@@ -25,6 +25,7 @@
- #include <linux/genhd.h>
- #include <linux/rtc.h>
- #include <linux/interrupt.h>
-+#include <linux/bcd.h>
+ 	if (abs(real_minutes - cmos_minutes) < 30) {
+ 		if (!(save_control & RTC_DM_BINARY) || RTC_ALWAYS_BCD) {
+-			real_seconds = BIN2BCD(real_seconds);
+-			real_minutes = BIN2BCD(real_minutes);
++			real_seconds = bin2bcd(real_seconds);
++			real_minutes = bin2bcd(real_minutes);
+ 		}
+ 		CMOS_WRITE(real_seconds, RTC_SECONDS);
+ 		CMOS_WRITE(real_minutes, RTC_MINUTES);
+diff --git a/arch/mips/pmc-sierra/yosemite/setup.c b/arch/mips/pmc-sierra/yosemite/setup.c
+index 6537d90..2d3c0dc 100644
+--- a/arch/mips/pmc-sierra/yosemite/setup.c
++++ b/arch/mips/pmc-sierra/yosemite/setup.c
+@@ -79,14 +79,14 @@ unsigned long read_persistent_clock(void)
+ 	/* Stop the update to the time */
+ 	m48t37_base->control = 0x40;
  
- #include <asm/bootinfo.h>
- #include <asm/system.h>
-@@ -46,9 +47,6 @@ extern void bvme6000_reset (void);
- extern void bvme6000_waitbut(void);
- void bvme6000_set_vectors (void);
+-	year = BCD2BIN(m48t37_base->year);
+-	year += BCD2BIN(m48t37_base->century) * 100;
++	year = bcd2bin(m48t37_base->year);
++	year += bcd2bin(m48t37_base->century) * 100;
  
--static unsigned char bcd2bin (unsigned char b);
--static unsigned char bin2bcd (unsigned char b);
--
- /* Save tick handler routine pointer, will point to do_timer() in
-  * kernel/sched.c, called via bvme6000_process_int() */
+-	month = BCD2BIN(m48t37_base->month);
+-	day = BCD2BIN(m48t37_base->date);
+-	hour = BCD2BIN(m48t37_base->hour);
+-	min = BCD2BIN(m48t37_base->min);
+-	sec = BCD2BIN(m48t37_base->sec);
++	month = bcd2bin(m48t37_base->month);
++	day = bcd2bin(m48t37_base->date);
++	hour = bcd2bin(m48t37_base->hour);
++	min = bcd2bin(m48t37_base->min);
++	sec = bcd2bin(m48t37_base->sec);
  
-@@ -264,17 +262,6 @@ unsigned long bvme6000_gettimeoffset (void)
-     return v;
- }
+ 	/* Start the update to the time again */
+ 	m48t37_base->control = 0x00;
+@@ -113,22 +113,22 @@ int rtc_mips_set_time(unsigned long tim)
+ 	m48t37_base->control = 0x80;
  
--static unsigned char bcd2bin (unsigned char b)
--{
--	return ((b>>4)*10 + (b&15));
--}
--
--static unsigned char bin2bcd (unsigned char b)
--{
--	return (((b/10)*16) + (b%10));
--}
--
--
- /*
-  * Looks like op is non-zero for setting the clock, and zero for
-  * reading the clock.
-diff --git a/arch/m68k/bvme6000/rtc.c b/arch/m68k/bvme6000/rtc.c
-index e8ac3f7..808c901 100644
---- a/arch/m68k/bvme6000/rtc.c
-+++ b/arch/m68k/bvme6000/rtc.c
-@@ -57,16 +57,16 @@ static int rtc_ioctl(struct inode *inode, struct file *file, unsigned int cmd,
- 		rtc->msr = 0x40;
- 		memset(&wtime, 0, sizeof(struct rtc_time));
- 		do {
--			wtime.tm_sec =  BCD2BIN(rtc->bcd_sec);
--			wtime.tm_min =  BCD2BIN(rtc->bcd_min);
--			wtime.tm_hour = BCD2BIN(rtc->bcd_hr);
--			wtime.tm_mday =  BCD2BIN(rtc->bcd_dom);
--			wtime.tm_mon =  BCD2BIN(rtc->bcd_mth)-1;
--			wtime.tm_year = BCD2BIN(rtc->bcd_year);
-+			wtime.tm_sec =  bcd2bin(rtc->bcd_sec);
-+			wtime.tm_min =  bcd2bin(rtc->bcd_min);
-+			wtime.tm_hour = bcd2bin(rtc->bcd_hr);
-+			wtime.tm_mday =  bcd2bin(rtc->bcd_dom);
-+			wtime.tm_mon =  bcd2bin(rtc->bcd_mth)-1;
-+			wtime.tm_year = bcd2bin(rtc->bcd_year);
- 			if (wtime.tm_year < 70)
- 				wtime.tm_year += 100;
--			wtime.tm_wday = BCD2BIN(rtc->bcd_dow)-1;
--		} while (wtime.tm_sec != BCD2BIN(rtc->bcd_sec));
-+			wtime.tm_wday = bcd2bin(rtc->bcd_dow)-1;
-+		} while (wtime.tm_sec != bcd2bin(rtc->bcd_sec));
- 		rtc->msr = msr;
- 		local_irq_restore(flags);
- 		return copy_to_user(argp, &wtime, sizeof wtime) ?
-@@ -114,14 +114,14 @@ static int rtc_ioctl(struct inode *inode, struct file *file, unsigned int cmd,
+ 	/* year */
+-	m48t37_base->year = BIN2BCD(tm.tm_year % 100);
+-	m48t37_base->century = BIN2BCD(tm.tm_year / 100);
++	m48t37_base->year = bin2bcd(tm.tm_year % 100);
++	m48t37_base->century = bin2bcd(tm.tm_year / 100);
  
- 		rtc->t0cr_rtmr = yrs%4;
- 		rtc->bcd_tenms = 0;
--		rtc->bcd_sec   = BIN2BCD(sec);
--		rtc->bcd_min   = BIN2BCD(min);
--		rtc->bcd_hr    = BIN2BCD(hrs);
--		rtc->bcd_dom   = BIN2BCD(day);
--		rtc->bcd_mth   = BIN2BCD(mon);
--		rtc->bcd_year  = BIN2BCD(yrs%100);
-+		rtc->bcd_sec   = bin2bcd(sec);
-+		rtc->bcd_min   = bin2bcd(min);
-+		rtc->bcd_hr    = bin2bcd(hrs);
-+		rtc->bcd_dom   = bin2bcd(day);
-+		rtc->bcd_mth   = bin2bcd(mon);
-+		rtc->bcd_year  = bin2bcd(yrs%100);
- 		if (rtc_tm.tm_wday >= 0)
--			rtc->bcd_dow = BIN2BCD(rtc_tm.tm_wday+1);
-+			rtc->bcd_dow = bin2bcd(rtc_tm.tm_wday+1);
- 		rtc->t0cr_rtmr = yrs%4 | 0x08;
+ 	/* month */
+-	m48t37_base->month = BIN2BCD(tm.tm_mon);
++	m48t37_base->month = bin2bcd(tm.tm_mon);
  
- 		rtc->msr = msr;
-diff --git a/arch/m68k/mvme16x/rtc.c b/arch/m68k/mvme16x/rtc.c
-index 432a9f1..cea5e3e 100644
---- a/arch/m68k/mvme16x/rtc.c
-+++ b/arch/m68k/mvme16x/rtc.c
-@@ -52,15 +52,15 @@ static int rtc_ioctl(struct inode *inode, struct file *file, unsigned int cmd,
- 		/* Ensure clock and real-time-mode-register are accessible */
- 		rtc->ctrl = RTC_READ;
- 		memset(&wtime, 0, sizeof(struct rtc_time));
--		wtime.tm_sec =  BCD2BIN(rtc->bcd_sec);
--		wtime.tm_min =  BCD2BIN(rtc->bcd_min);
--		wtime.tm_hour = BCD2BIN(rtc->bcd_hr);
--		wtime.tm_mday =  BCD2BIN(rtc->bcd_dom);
--		wtime.tm_mon =  BCD2BIN(rtc->bcd_mth)-1;
--		wtime.tm_year = BCD2BIN(rtc->bcd_year);
-+		wtime.tm_sec =  bcd2bin(rtc->bcd_sec);
-+		wtime.tm_min =  bcd2bin(rtc->bcd_min);
-+		wtime.tm_hour = bcd2bin(rtc->bcd_hr);
-+		wtime.tm_mday =  bcd2bin(rtc->bcd_dom);
-+		wtime.tm_mon =  bcd2bin(rtc->bcd_mth)-1;
-+		wtime.tm_year = bcd2bin(rtc->bcd_year);
- 		if (wtime.tm_year < 70)
- 			wtime.tm_year += 100;
--		wtime.tm_wday = BCD2BIN(rtc->bcd_dow)-1;
-+		wtime.tm_wday = bcd2bin(rtc->bcd_dow)-1;
- 		rtc->ctrl = 0;
- 		local_irq_restore(flags);
- 		return copy_to_user(argp, &wtime, sizeof wtime) ?
-@@ -104,12 +104,12 @@ static int rtc_ioctl(struct inode *inode, struct file *file, unsigned int cmd,
- 		local_irq_save(flags);
- 		rtc->ctrl     = RTC_WRITE;
+ 	/* day */
+-	m48t37_base->date = BIN2BCD(tm.tm_mday);
++	m48t37_base->date = bin2bcd(tm.tm_mday);
  
--		rtc->bcd_sec  = BIN2BCD(sec);
--		rtc->bcd_min  = BIN2BCD(min);
--		rtc->bcd_hr   = BIN2BCD(hrs);
--		rtc->bcd_dom  = BIN2BCD(day);
--		rtc->bcd_mth  = BIN2BCD(mon);
--		rtc->bcd_year = BIN2BCD(yrs%100);
-+		rtc->bcd_sec  = bin2bcd(sec);
-+		rtc->bcd_min  = bin2bcd(min);
-+		rtc->bcd_hr   = bin2bcd(hrs);
-+		rtc->bcd_dom  = bin2bcd(day);
-+		rtc->bcd_mth  = bin2bcd(mon);
-+		rtc->bcd_year = bin2bcd(yrs%100);
+ 	/* hour/min/sec */
+-	m48t37_base->hour = BIN2BCD(tm.tm_hour);
+-	m48t37_base->min = BIN2BCD(tm.tm_min);
+-	m48t37_base->sec = BIN2BCD(tm.tm_sec);
++	m48t37_base->hour = bin2bcd(tm.tm_hour);
++	m48t37_base->min = bin2bcd(tm.tm_min);
++	m48t37_base->sec = bin2bcd(tm.tm_sec);
  
- 		rtc->ctrl     = 0;
- 		local_irq_restore(flags);
-diff --git a/arch/m68k/q40/config.c b/arch/m68k/q40/config.c
-index be9de2f..9c7eefa 100644
---- a/arch/m68k/q40/config.c
-+++ b/arch/m68k/q40/config.c
-@@ -23,6 +23,7 @@
- #include <linux/serial_reg.h>
- #include <linux/rtc.h>
- #include <linux/vt_kern.h>
-+#include <linux/bcd.h>
+ 	/* day of week -- not really used, but let's keep it up-to-date */
+-	m48t37_base->day = BIN2BCD(tm.tm_wday + 1);
++	m48t37_base->day = bin2bcd(tm.tm_wday + 1);
  
- #include <asm/io.h>
- #include <asm/rtc.h>
-@@ -216,17 +217,6 @@ int q40_parse_bootinfo(const struct bi_record *rec)
- }
+ 	/* disable writing */
+ 	m48t37_base->control = 0x00;
+diff --git a/arch/mips/sgi-ip22/ip22-time.c b/arch/mips/sgi-ip22/ip22-time.c
+index 10e5054..90de2bc 100644
+--- a/arch/mips/sgi-ip22/ip22-time.c
++++ b/arch/mips/sgi-ip22/ip22-time.c
+@@ -43,12 +43,12 @@ unsigned long read_persistent_clock(void)
+ 	save_control = hpc3c0->rtcregs[RTC_CMD] & 0xff;
+ 	hpc3c0->rtcregs[RTC_CMD] = save_control | RTC_TE;
  
+-	sec = BCD2BIN(hpc3c0->rtcregs[RTC_SECONDS] & 0xff);
+-	min = BCD2BIN(hpc3c0->rtcregs[RTC_MINUTES] & 0xff);
+-	hrs = BCD2BIN(hpc3c0->rtcregs[RTC_HOURS] & 0x3f);
+-	day = BCD2BIN(hpc3c0->rtcregs[RTC_DATE] & 0xff);
+-	mon = BCD2BIN(hpc3c0->rtcregs[RTC_MONTH] & 0x1f);
+-	yrs = BCD2BIN(hpc3c0->rtcregs[RTC_YEAR] & 0xff);
++	sec = bcd2bin(hpc3c0->rtcregs[RTC_SECONDS] & 0xff);
++	min = bcd2bin(hpc3c0->rtcregs[RTC_MINUTES] & 0xff);
++	hrs = bcd2bin(hpc3c0->rtcregs[RTC_HOURS] & 0x3f);
++	day = bcd2bin(hpc3c0->rtcregs[RTC_DATE] & 0xff);
++	mon = bcd2bin(hpc3c0->rtcregs[RTC_MONTH] & 0x1f);
++	yrs = bcd2bin(hpc3c0->rtcregs[RTC_YEAR] & 0xff);
  
--static inline unsigned char bcd2bin(unsigned char b)
--{
--	return (b >> 4) * 10 + (b & 15);
--}
--
--static inline unsigned char bin2bcd(unsigned char b)
--{
--	return (b / 10) * 16 + (b % 10);
--}
--
--
- static unsigned long q40_gettimeoffset(void)
- {
- 	return 5000 * (ql_ticks != 0);
-diff --git a/arch/m68k/sun3x/time.c b/arch/m68k/sun3x/time.c
-index f5eaafb..536a04a 100644
---- a/arch/m68k/sun3x/time.c
-+++ b/arch/m68k/sun3x/time.c
-@@ -47,23 +47,23 @@ int sun3x_hwclk(int set, struct rtc_time *t)
+ 	hpc3c0->rtcregs[RTC_CMD] = save_control;
+ 	spin_unlock_irqrestore(&rtc_lock, flags);
+@@ -78,12 +78,12 @@ int rtc_mips_set_time(unsigned long tim)
+ 	save_control = hpc3c0->rtcregs[RTC_CMD] & 0xff;
+ 	hpc3c0->rtcregs[RTC_CMD] = save_control | RTC_TE;
  
- 	if(set) {
- 		h->csr |= C_WRITE;
--		h->sec = BIN2BCD(t->tm_sec);
--		h->min = BIN2BCD(t->tm_min);
--		h->hour = BIN2BCD(t->tm_hour);
--		h->wday = BIN2BCD(t->tm_wday);
--		h->mday = BIN2BCD(t->tm_mday);
--		h->month = BIN2BCD(t->tm_mon);
--		h->year = BIN2BCD(t->tm_year);
-+		h->sec = bin2bcd(t->tm_sec);
-+		h->min = bin2bcd(t->tm_min);
-+		h->hour = bin2bcd(t->tm_hour);
-+		h->wday = bin2bcd(t->tm_wday);
-+		h->mday = bin2bcd(t->tm_mday);
-+		h->month = bin2bcd(t->tm_mon);
-+		h->year = bin2bcd(t->tm_year);
- 		h->csr &= ~C_WRITE;
+-	hpc3c0->rtcregs[RTC_YEAR] = BIN2BCD(tm.tm_year);
+-	hpc3c0->rtcregs[RTC_MONTH] = BIN2BCD(tm.tm_mon);
+-	hpc3c0->rtcregs[RTC_DATE] = BIN2BCD(tm.tm_mday);
+-	hpc3c0->rtcregs[RTC_HOURS] = BIN2BCD(tm.tm_hour);
+-	hpc3c0->rtcregs[RTC_MINUTES] = BIN2BCD(tm.tm_min);
+-	hpc3c0->rtcregs[RTC_SECONDS] = BIN2BCD(tm.tm_sec);
++	hpc3c0->rtcregs[RTC_YEAR] = bin2bcd(tm.tm_year);
++	hpc3c0->rtcregs[RTC_MONTH] = bin2bcd(tm.tm_mon);
++	hpc3c0->rtcregs[RTC_DATE] = bin2bcd(tm.tm_mday);
++	hpc3c0->rtcregs[RTC_HOURS] = bin2bcd(tm.tm_hour);
++	hpc3c0->rtcregs[RTC_MINUTES] = bin2bcd(tm.tm_min);
++	hpc3c0->rtcregs[RTC_SECONDS] = bin2bcd(tm.tm_sec);
+ 	hpc3c0->rtcregs[RTC_HUNDREDTH_SECOND] = 0;
+ 
+ 	hpc3c0->rtcregs[RTC_CMD] = save_control;
+diff --git a/arch/mips/sgi-ip27/ip27-timer.c b/arch/mips/sgi-ip27/ip27-timer.c
+index 8b4e854..d162812 100644
+--- a/arch/mips/sgi-ip27/ip27-timer.c
++++ b/arch/mips/sgi-ip27/ip27-timer.c
+@@ -41,7 +41,7 @@ static int set_rtc_mmss(unsigned long nowtime)
+ 							IOC3_BYTEBUS_DEV0);
+ 
+ 	rtc->control |= M48T35_RTC_READ;
+-	cmos_minutes = BCD2BIN(rtc->min);
++	cmos_minutes = bcd2bin(rtc->min);
+ 	rtc->control &= ~M48T35_RTC_READ;
+ 
+ 	/*
+@@ -56,8 +56,8 @@ static int set_rtc_mmss(unsigned long nowtime)
+ 	real_minutes %= 60;
+ 
+ 	if (abs(real_minutes - cmos_minutes) < 30) {
+-		real_seconds = BIN2BCD(real_seconds);
+-		real_minutes = BIN2BCD(real_minutes);
++		real_seconds = bin2bcd(real_seconds);
++		real_minutes = bin2bcd(real_minutes);
+ 		rtc->control |= M48T35_RTC_SET;
+ 		rtc->sec = real_seconds;
+ 		rtc->min = real_minutes;
+@@ -99,12 +99,12 @@ unsigned long read_persistent_clock(void)
+ 	year = rtc->year;
+ 	rtc->control &= ~M48T35_RTC_READ;
+ 
+-        sec = BCD2BIN(sec);
+-        min = BCD2BIN(min);
+-        hour = BCD2BIN(hour);
+-        date = BCD2BIN(date);
+-        month = BCD2BIN(month);
+-        year = BCD2BIN(year);
++        sec = bcd2bin(sec);
++        min = bcd2bin(min);
++        hour = bcd2bin(hour);
++        date = bcd2bin(date);
++        month = bcd2bin(month);
++        year = bcd2bin(year);
+ 
+         year += 1970;
+ 
+diff --git a/arch/mips/sibyte/swarm/rtc_m41t81.c b/arch/mips/sibyte/swarm/rtc_m41t81.c
+index 26fbff4..b732600 100644
+--- a/arch/mips/sibyte/swarm/rtc_m41t81.c
++++ b/arch/mips/sibyte/swarm/rtc_m41t81.c
+@@ -156,32 +156,32 @@ int m41t81_set_time(unsigned long t)
+ 	 */
+ 
+ 	spin_lock_irqsave(&rtc_lock, flags);
+-	tm.tm_sec = BIN2BCD(tm.tm_sec);
++	tm.tm_sec = bin2bcd(tm.tm_sec);
+ 	m41t81_write(M41T81REG_SC, tm.tm_sec);
+ 
+-	tm.tm_min = BIN2BCD(tm.tm_min);
++	tm.tm_min = bin2bcd(tm.tm_min);
+ 	m41t81_write(M41T81REG_MN, tm.tm_min);
+ 
+-	tm.tm_hour = BIN2BCD(tm.tm_hour);
++	tm.tm_hour = bin2bcd(tm.tm_hour);
+ 	tm.tm_hour = (tm.tm_hour & 0x3f) | (m41t81_read(M41T81REG_HR) & 0xc0);
+ 	m41t81_write(M41T81REG_HR, tm.tm_hour);
+ 
+ 	/* tm_wday starts from 0 to 6 */
+ 	if (tm.tm_wday == 0) tm.tm_wday = 7;
+-	tm.tm_wday = BIN2BCD(tm.tm_wday);
++	tm.tm_wday = bin2bcd(tm.tm_wday);
+ 	m41t81_write(M41T81REG_DY, tm.tm_wday);
+ 
+-	tm.tm_mday = BIN2BCD(tm.tm_mday);
++	tm.tm_mday = bin2bcd(tm.tm_mday);
+ 	m41t81_write(M41T81REG_DT, tm.tm_mday);
+ 
+ 	/* tm_mon starts from 0, *ick* */
+ 	tm.tm_mon ++;
+-	tm.tm_mon = BIN2BCD(tm.tm_mon);
++	tm.tm_mon = bin2bcd(tm.tm_mon);
+ 	m41t81_write(M41T81REG_MO, tm.tm_mon);
+ 
+ 	/* we don't do century, everything is beyond 2000 */
+ 	tm.tm_year %= 100;
+-	tm.tm_year = BIN2BCD(tm.tm_year);
++	tm.tm_year = bin2bcd(tm.tm_year);
+ 	m41t81_write(M41T81REG_YR, tm.tm_year);
+ 	spin_unlock_irqrestore(&rtc_lock, flags);
+ 
+@@ -209,12 +209,12 @@ unsigned long m41t81_get_time(void)
+ 	year = m41t81_read(M41T81REG_YR);
+ 	spin_unlock_irqrestore(&rtc_lock, flags);
+ 
+-	sec = BCD2BIN(sec);
+-	min = BCD2BIN(min);
+-	hour = BCD2BIN(hour);
+-	day = BCD2BIN(day);
+-	mon = BCD2BIN(mon);
+-	year = BCD2BIN(year);
++	sec = bcd2bin(sec);
++	min = bcd2bin(min);
++	hour = bcd2bin(hour);
++	day = bcd2bin(day);
++	mon = bcd2bin(mon);
++	year = bcd2bin(year);
+ 
+ 	year += 2000;
+ 
+diff --git a/arch/mips/sibyte/swarm/rtc_xicor1241.c b/arch/mips/sibyte/swarm/rtc_xicor1241.c
+index ff3e5da..4438b21 100644
+--- a/arch/mips/sibyte/swarm/rtc_xicor1241.c
++++ b/arch/mips/sibyte/swarm/rtc_xicor1241.c
+@@ -124,18 +124,18 @@ int xicor_set_time(unsigned long t)
+ 	xicor_write(X1241REG_SR, X1241REG_SR_WEL | X1241REG_SR_RWEL);
+ 
+ 	/* trivial ones */
+-	tm.tm_sec = BIN2BCD(tm.tm_sec);
++	tm.tm_sec = bin2bcd(tm.tm_sec);
+ 	xicor_write(X1241REG_SC, tm.tm_sec);
+ 
+-	tm.tm_min = BIN2BCD(tm.tm_min);
++	tm.tm_min = bin2bcd(tm.tm_min);
+ 	xicor_write(X1241REG_MN, tm.tm_min);
+ 
+-	tm.tm_mday = BIN2BCD(tm.tm_mday);
++	tm.tm_mday = bin2bcd(tm.tm_mday);
+ 	xicor_write(X1241REG_DT, tm.tm_mday);
+ 
+ 	/* tm_mon starts from 0, *ick* */
+ 	tm.tm_mon ++;
+-	tm.tm_mon = BIN2BCD(tm.tm_mon);
++	tm.tm_mon = bin2bcd(tm.tm_mon);
+ 	xicor_write(X1241REG_MO, tm.tm_mon);
+ 
+ 	/* year is split */
+@@ -148,7 +148,7 @@ int xicor_set_time(unsigned long t)
+ 	tmp = xicor_read(X1241REG_HR);
+ 	if (tmp & X1241REG_HR_MIL) {
+ 		/* 24 hour format */
+-		tm.tm_hour = BIN2BCD(tm.tm_hour);
++		tm.tm_hour = bin2bcd(tm.tm_hour);
+ 		tmp = (tmp & ~0x3f) | (tm.tm_hour & 0x3f);
  	} else {
- 		h->csr |= C_READ;
--		t->tm_sec = BCD2BIN(h->sec);
--		t->tm_min = BCD2BIN(h->min);
--		t->tm_hour = BCD2BIN(h->hour);
--		t->tm_wday = BCD2BIN(h->wday);
--		t->tm_mday = BCD2BIN(h->mday);
--		t->tm_mon = BCD2BIN(h->month);
--		t->tm_year = BCD2BIN(h->year);
-+		t->tm_sec = bcd2bin(h->sec);
-+		t->tm_min = bcd2bin(h->min);
-+		t->tm_hour = bcd2bin(h->hour);
-+		t->tm_wday = bcd2bin(h->wday);
-+		t->tm_mday = bcd2bin(h->mday);
-+		t->tm_mon = bcd2bin(h->month);
-+		t->tm_year = bcd2bin(h->year);
- 		h->csr &= ~C_READ;
+ 		/* 12 hour format, with 0x2 for pm */
+@@ -157,7 +157,7 @@ int xicor_set_time(unsigned long t)
+ 			tmp |= 0x20;
+ 			tm.tm_hour -= 12;
+ 		}
+-		tm.tm_hour = BIN2BCD(tm.tm_hour);
++		tm.tm_hour = bin2bcd(tm.tm_hour);
+ 		tmp |= tm.tm_hour;
  	}
+ 	xicor_write(X1241REG_HR, tmp);
+@@ -191,13 +191,13 @@ unsigned long xicor_get_time(void)
+ 	y2k = xicor_read(X1241REG_Y2K);
+ 	spin_unlock_irqrestore(&rtc_lock, flags);
  
+-	sec = BCD2BIN(sec);
+-	min = BCD2BIN(min);
+-	hour = BCD2BIN(hour);
+-	day = BCD2BIN(day);
+-	mon = BCD2BIN(mon);
+-	year = BCD2BIN(year);
+-	y2k = BCD2BIN(y2k);
++	sec = bcd2bin(sec);
++	min = bcd2bin(min);
++	hour = bcd2bin(hour);
++	day = bcd2bin(day);
++	mon = bcd2bin(mon);
++	year = bcd2bin(year);
++	y2k = bcd2bin(y2k);
+ 
+ 	year += (y2k * 100);
+ 
+diff --git a/include/asm-mips/mc146818-time.h b/include/asm-mips/mc146818-time.h
+index cdc379a..199b457 100644
+--- a/include/asm-mips/mc146818-time.h
++++ b/include/asm-mips/mc146818-time.h
+@@ -44,7 +44,7 @@ static inline int mc146818_set_rtc_mmss(unsigned long nowtime)
+ 
+ 	cmos_minutes = CMOS_READ(RTC_MINUTES);
+ 	if (!(save_control & RTC_DM_BINARY) || RTC_ALWAYS_BCD)
+-		BCD_TO_BIN(cmos_minutes);
++		cmos_minutes = bcd2bin(cmos_minutes);
+ 
+ 	/*
+ 	 * since we're only adjusting minutes and seconds,
+@@ -60,8 +60,8 @@ static inline int mc146818_set_rtc_mmss(unsigned long nowtime)
+ 
+ 	if (abs(real_minutes - cmos_minutes) < 30) {
+ 		if (!(save_control & RTC_DM_BINARY) || RTC_ALWAYS_BCD) {
+-			BIN_TO_BCD(real_seconds);
+-			BIN_TO_BCD(real_minutes);
++			real_seconds = bin2bcd(real_seconds);
++			real_minutes = bin2bcd(real_minutes);
+ 		}
+ 		CMOS_WRITE(real_seconds, RTC_SECONDS);
+ 		CMOS_WRITE(real_minutes, RTC_MINUTES);
+@@ -103,12 +103,12 @@ static inline unsigned long mc146818_get_cmos_time(void)
+ 	} while (sec != CMOS_READ(RTC_SECONDS));
+ 
+ 	if (!(CMOS_READ(RTC_CONTROL) & RTC_DM_BINARY) || RTC_ALWAYS_BCD) {
+-		BCD_TO_BIN(sec);
+-		BCD_TO_BIN(min);
+-		BCD_TO_BIN(hour);
+-		BCD_TO_BIN(day);
+-		BCD_TO_BIN(mon);
+-		BCD_TO_BIN(year);
++		sec = bcd2bin(sec);
++		min = bcd2bin(min);
++		hour = bcd2bin(hour);
++		day = bcd2bin(day);
++		mon = bcd2bin(mon);
++		year = bcd2bin(year);
+ 	}
+ 	spin_unlock_irqrestore(&rtc_lock, flags);
+ 	year = mc146818_decode_year(year);
 
