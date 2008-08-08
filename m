@@ -1,85 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754782AbYHHPVz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756822AbYHHPWS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754782AbYHHPVz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 11:21:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752601AbYHHPVr
+	id S1756822AbYHHPWS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 11:22:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752601AbYHHPV6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 11:21:47 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:56217 "EHLO mx1.redhat.com"
+	Fri, 8 Aug 2008 11:21:58 -0400
+Received: from gw.goop.org ([64.81.55.164]:54968 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752120AbYHHPVq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 11:21:46 -0400
-Message-ID: <489C63D1.1000407@redhat.com>
-Date: Fri, 08 Aug 2008 11:18:41 -0400
-From: Prarit Bhargava <prarit@redhat.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080707)
+	id S1755193AbYHHPV5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Aug 2008 11:21:57 -0400
+Message-ID: <489C6485.7050009@goop.org>
+Date: Fri, 08 Aug 2008 08:21:41 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-To: Muli Ben-Yehuda <muli@il.ibm.com>
-CC: Jesse Barnes <jbarnes@virtuousgeek.org>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, joro@8bytes.org,
-       linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
-       jakub@redhat.com
-Subject: Re: [PATCH]: PCI: GART iommu alignment fixes [v2]
-References: <200807281523.35469.jbarnes@virtuousgeek.org> <20080806223550K.tomof@acm.org> <4899B611.4070408@redhat.com> <200808071003.47326.jbarnes@virtuousgeek.org> <489B33D4.1080107@redhat.com> <20080808071244.GB6931@il.ibm.com>
-In-Reply-To: <20080808071244.GB6931@il.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Adrian Bunk <bunk@kernel.org>
+CC: Mark McLoughlin <markmc@redhat.com>, xen-devel@lists.xensource.com,
+       Eduardo Habkost <ehabkost@redhat.com>, Stephen Tweedie <sct@redhat.com>,
+       linux-kernel@vger.kernel.org, Simon Horman <horms@verge.net.au>,
+       "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>
+Subject: Re: [Xen-devel] Re: Allow compile with CONFIG_DEBUG_INFO=y,	X86_PAE
+ not set on gcc 3.4.5
+References: <20080808050429.GA8473@verge.net.au> <489BE9C3.2010006@goop.org> <20080808080155.GA1992@cs181140183.pp.htv.fi>
+In-Reply-To: <20080808080155.GA1992@cs181140183.pp.htv.fi>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-Muli Ben-Yehuda wrote:
-> On Thu, Aug 07, 2008 at 01:41:40PM -0400, Prarit Bhargava wrote:
+Adrian Bunk wrote:
+> CONFIG_DEBUG_INFO=y is why I never hit it before.
 >
->   
->> As for Calgary, I'm looking into it ATM.  I think I can get my hands
->> on one.
->>     
+> It does not seem to be just one dodgy Redhat compiler (as I assumed in 
+> the Bugzilla entry) but the whole 3.4 series of gcc which makes our 
+> resolution of saying that this specific compiler is broken invalid.
 >
-> Feel free to ping me if Calgary testing is needed.
+> Considering that we officially support all compilers >= 3.2 this is just 
+> one more case where we have to add to the kernel a workaround for a 
+> broken compiler.
 >   
 
-Muli -- I just ran tests on an IBM system with a Calgary iommu that Ed 
-Pollard pointed me at.
+Yes.  I'm happy to write off a specific rpm package, but a whole series 
+is a different matter.
 
-dma_ops_alloc_addresses() does not have the option to return 
-size-aligned values.  This means that 
-pci_alloc_consistent()/dma_alloc_coherent() will return unaligned values 
-to callers when the lower 4G of memory not available.
+Adding
 
-Additionally, a quick test shows that in dma_ops_alloc_addresses()
+	if (PREALLOCATED_PMDS == 0)
+		return;
 
-        boundary_size = ALIGN(dma_get_seg_boundary(dev) + 1,
-                        PAGE_SIZE) >> PAGE_SHIFT;
+in the appropriate places with a small comment seems like the right answer.
 
-may return 0 in the same manner I've been pointing out -- if 
-dma_get_seg_boundary(dev) returns 0xffffffff and 1 is added to that 
-result, boundary_size = 0.  Then you BUG() in the iommu-helper code.
-
-Jesse pointed out to me that my fix on that line is incorrect.  _If_ 
-this is not a compiler issue (I've emailed jakub privately and cc'd him 
-on this email) then a better fix would be to do (sorry for the 
-cut-and-paste):
-
---- a/include/linux/dma-mapping.h
-+++ b/include/linux/dma-mapping.h
-@@ -78,7 +78,7 @@ static inline unsigned int dma_set_max_seg_size(struct 
-device
- static inline unsigned long dma_get_seg_boundary(struct device *dev)
- {
-        return dev->dma_parms ?
--               dev->dma_parms->segment_boundary_mask : 0xffffffff;
-+               dev->dma_parms->segment_boundary_mask : 0xffffffffUL;
- }
- 
-However, I'm still waiting for clarification from jakub before 
-submitting again with that chunk.
-
-P.
-
-
-> Cheers,
-> Muli
->   
+    J
