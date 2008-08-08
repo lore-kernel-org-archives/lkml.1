@@ -1,59 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755993AbYHHBdT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757211AbYHHBeX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755993AbYHHBdT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Aug 2008 21:33:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752001AbYHHBdK
+	id S1757211AbYHHBeX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Aug 2008 21:34:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752211AbYHHBeP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Aug 2008 21:33:10 -0400
-Received: from fg-out-1718.google.com ([72.14.220.153]:51864 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751284AbYHHBdJ (ORCPT
+	Thu, 7 Aug 2008 21:34:15 -0400
+Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:37026
+	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752120AbYHHBeO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Aug 2008 21:33:09 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=V3STwb4GCt37iXyjJlk98GMKoy93D4mP1KrZ0V4RMqWnv2TyN6H6o0e/dt4kPPxWAD
-         HR9RN6AqHMNmtdimamGKmP1PQWdBz17UhqTPRtUXvG2hvRVxSvgHFmERKx1thzOQ+g1D
-         k53cnXU4PIF0EoIXgPVy4lMCfWynRu0VCBqd0=
-Date: Fri, 8 Aug 2008 05:33:04 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: david@lang.hm
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: why are namespaces required?
-Message-ID: <20080808013304.GA27778@martell.zuzino.mipt.ru>
-References: <alpine.DEB.1.10.0808071752210.892@asgard.lang.hm>
+	Thu, 7 Aug 2008 21:34:14 -0400
+Date: Fri, 8 Aug 2008 03:34:12 +0200
+From: Andrea Arcangeli <andrea@qumranet.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, jeremy@goop.org, hugh@veritas.com,
+       mingo@elte.hu, akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       davej@redhat.com
+Subject: Re: [RFC][PATCH 9/7] mm: fix mm_take_all_locks() locking order
+Message-ID: <20080808013412.GT31535@duo.random>
+References: <20080804130317.994042639@chello.nl> <1218108349.8625.25.camel@twins> <20080807214642.GQ31535@duo.random>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0808071752210.892@asgard.lang.hm>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <20080807214642.GQ31535@duo.random>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 07, 2008 at 05:54:11PM -0700, david@lang.hm wrote:
-> I am taking the time to create a minimal config for some new hardware with 
-> 2.6.25.15 and noticed that CONFIG_NAMESPACES is forced to Yes unless 
-> embeded is selected (at which time it becomes configurable)
+On Thu, Aug 07, 2008 at 11:46:42PM +0200, Andrea Arcangeli wrote:
+> furthermore I doubt it works because with regular kvm I get 57 vmas
+> filebacked alone, did you test 8/7, I didn't yet but I can test if you
 
-For one thing, it doesn't directly control any code, CONFIG_PID_NS et al do.
+Correction: 57 are the vmas but counting with something less coarse
+than grep lib |wc -l, there are less inodes backing those vmas than
+the nesting limit, so 8/7 is ok for now (as long as check_deadlock
+exists at least).
 
-> why are namespaces required?
-
-They aren't required, just one more stupid config option.
-
-And while we're at it, data from my usual config adding _NS options
-one-by-one.
-
-	$ size vmlinux-000 vmlinux-uts-ns vmlinux-ipc-ns vmlinux-user-ns vmlinux-pid-ns 
-	   text    data     bss     dec     hex filename
-	2560804  217296  225280 3003380  2dd3f4 vmlinux-000
-	2560948  217296  225280 3003524  2dd484 vmlinux-uts-ns	(+144)
-	2561452  217296  225280 3004028  2dd67c vmlinux-ipc-ns	(+504)
-	2561805  217296  225280 3004381  2dd7dd vmlinux-user-ns	(+353)
-	2562819  217300  225280 3005399  2ddbd7 vmlinux-pid-ns	(+1018)
-
-What amazing .text savings we have here.
-
+Thanks again!
