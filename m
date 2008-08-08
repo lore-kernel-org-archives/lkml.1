@@ -1,128 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758835AbYHHSVV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758696AbYHHSW4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758835AbYHHSVV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 14:21:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752980AbYHHSVH
+	id S1758696AbYHHSW4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 14:22:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752834AbYHHSWr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 14:21:07 -0400
-Received: from tomts16-srv.bellnexxia.net ([209.226.175.4]:43880 "EHLO
-	tomts16-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751704AbYHHSVG (ORCPT
+	Fri, 8 Aug 2008 14:22:47 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:47987 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752757AbYHHSWr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 14:21:06 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AnkFAHEnnEhMRKxB/2dsb2JhbACBXKs4
-Date: Fri, 8 Aug 2008 14:21:04 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, Roland McGrath <roland@redhat.com>,
-       Ulrich Drepper <drepper@redhat.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Gregory Haskins <ghaskins@novell.com>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       "Luis Claudio R. Goncalves" <lclaudio@uudg.org>,
-       Clark Williams <williams@redhat.com>
-Subject: Re: [PATCH 0/5] ftrace: to kill a daemon
-Message-ID: <20080808182104.GA11376@Krystal>
-References: <20080807182013.984175558@goodmis.org> <20080807184741.GB18164@Krystal> <alpine.DEB.1.10.0808071639420.9449@gandalf.stny.rr.com> <20080808172259.GB8244@Krystal> <alpine.DEB.1.10.0808081334010.4436@gandalf.stny.rr.com> <20080808174607.GG8244@Krystal> <alpine.DEB.1.10.0808081410380.6116@gandalf.stny.rr.com>
-Mime-Version: 1.0
+	Fri, 8 Aug 2008 14:22:47 -0400
+To: "john maclean" <jayeola@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Thinkpad ACPI woes
+From: Andi Kleen <andi@firstfloor.org>
+References: <4170c1720808080448qb94d5beua26a67c89f14a5ce@mail.gmail.com>
+Date: Fri, 08 Aug 2008 20:22:43 +0200
+In-Reply-To: <4170c1720808080448qb94d5beua26a67c89f14a5ce@mail.gmail.com> (john maclean's message of "Fri, 8 Aug 2008 12:48:00 +0100")
+Message-ID: <87abfn4b9o.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0808081410380.6116@gandalf.stny.rr.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 14:18:08 up 64 days, 22:59,  7 users,  load average: 0.32, 0.60,
-	0.67
-User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Steven Rostedt (rostedt@goodmis.org) wrote:
-> 
-> On Fri, 8 Aug 2008, Mathieu Desnoyers wrote:
-> > * Steven Rostedt (rostedt@goodmis.org) wrote:
-> > > 
-> > > On Fri, 8 Aug 2008, Mathieu Desnoyers wrote:
-> > > > * Steven Rostedt (rostedt@goodmis.org) wrote:
-> > > > > 
-> > > > > I originally used jumps instead of nops, but unfortunately, they actually 
-> > > > > hurt performance more than adding nops. Ingo told me it was probably due
-> > > > > to using up the jump predictions of the CPU.
-> > > > > 
-> > > > 
-> > > > Hrm, are you sure you use a single 5-bytes nop instruction then, or do
-> > > > you use a mix of various nop sizes (add_nops) on some architectures ?
-> > > 
-> > > I use (for x86) what is in include/asm-x86/nops.h depending on what the
-> > > cpuid gives us.
-> > > 
-> > 
-> > That's bad :
-> > 
-> > #define GENERIC_NOP5 GENERIC_NOP1 GENERIC_NOP4
-> > 
-> > #define K8_NOP5 K8_NOP3 K8_NOP2
-> > 
-> > #define K7_NOP5 K7_NOP4 ASM_NOP1
-> > 
-> > So, when you try, later, to replace these instructions with a single
-> > 5-bytes instruction, a preempted thread could iret in the middle of your
-> > 5-bytes insn and cause an illegal instruction ?
-> 
-> That's why I use kstop_machine.
-> 
+"john maclean" <jayeola@gmail.com> writes:
 
-kstop_machine does not guarantee that you won't have _any_ thread
-preempted with IP pointing exactly in the middle of your instructions
-_before_ the modification scheduled back in _after_ the modification and
-thus causing an illegal instruction.
+> I'm a user and lurking on this list to keep abreast of what you chaps
+> are upto. Great work and keep it up. However ACPI used to just work on
+> my IBM Thinkpad x30. I close the lid, open it after some time and I
+> get X back. Right now it's unpredictable as I never can tell when I'll
+> get it out of sleep as the screen remains black no matter what keys i
+> hit. This is with no boot parameters and default "everything" from
+> distribution maintainers. This is the case ever since the 2.6.25.+
+> kernel.
+>
+> Right now uname -r 2.6.25.10-libre.86.fc9.1.i686.
 
-Still buggy. :/
+The usual formal procedure for handling hard "i have no clue what causes it"
+regression problem is:
 
-> > 
-> > 
-> > > > 
-> > > > You can consume the branch prediction buffers for conditional branches,
-> > > > but I doubt static jumps have this impact ? I don't see what "jump
-> > > > predictions" you are referring to here exactly.
-> > > 
-> > > I don't know the details, but we definitely saw a drop in preformance 
-> > > between using nops and static jumps.
-> > > 
-> > 
-> > Generated by replacing all the call by 5-bytes jumps e9 00 00 00 00
-> > instead of the 5-bytes add_nops ? On which architectures ?
-> > 
-> 
-> I ran this on my Dell (intel Xeon), which IIRC did show the performance 
-> degration. I unfortunately don't have the time to redo those tests, but 
-> you are welcome to.
-> 
-> Just look at arch/x86/kernel/ftrace.c and replace the nop with the jump.
-> In fact, the comments in that file still say it is a jmp. Remember, my 
-> first go was to use the jmp.
-> 
+- You make sure you can reproduce the problem reliably
+- You verify the variable is really only the kernel and not some
+user space update. You can do that by only changing kernels
+and verifying the bug was not there with the old kernel, is there again 
+with the new kernel (2 reboots)  
+- You check it also happens with mainline kernels, not only fedora
+- Then you do a git bisect between these two kernel versions. You'll
+need to be able to fetch git versions of the kernel and compile
+them yourself. Then do man git-bisect and do the bisecting.
+[There are various better tutorials on that available if you google for it]
+- Then you identify some commit that causes the problem.
+- You report that to the author (all people in From/Signed-off-by) and
+to linux-kernel.
 
-I'll try to find time to compare :
+It's not totally trivial, but also not that difficult, and while
+it takes some time it really gives results.
 
-multi-instructions 5-bytes nops (although this approach is just buggy)
-5-bytes jump to the next address
-2-bytes jump to offset +3.
-
-Mathieu
-
-> -- Steve
-> 
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+-Andi
