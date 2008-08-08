@@ -1,116 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757012AbYHHA64@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754917AbYHHBCn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757012AbYHHA64 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Aug 2008 20:58:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756472AbYHHA5G
+	id S1754917AbYHHBCn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Aug 2008 21:02:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751351AbYHHBCg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Aug 2008 20:57:06 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:50650 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756567AbYHHA5F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Aug 2008 20:57:05 -0400
-Message-Id: <20080808005702.704046000@polaris-admin.engr.sgi.com>
-References: <20080808005639.505189000@polaris-admin.engr.sgi.com>
-User-Agent: quilt/0.46-1
-Date: Thu, 07 Aug 2008 17:56:45 -0700
-From: Mike Travis <travis@sgi.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Jack Steiner <steiner@sgi.com>,
-       linux-kernel@vger.kernel.org, Tony Luck <tony.luck@intel.com>
-Subject: [PATCH 6/6] ia64 UV: Use blinking LED for heartbeat display
-Content-Disposition: inline; filename=uv_led_display_hb_ia64
+	Thu, 7 Aug 2008 21:02:36 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:14908 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751287AbYHHBCf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Aug 2008 21:02:35 -0400
+Date: Thu, 7 Aug 2008 17:55:52 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Dave Airlie <airlied@linux.ie>
+Cc: lkml <linux-kernel@vger.kernel.org>, akpm <akpm@linux-foundation.org>
+Subject: Re: [PATCH -next] drm: sis depends on FB_SIS
+Message-Id: <20080807175552.67d5385d.randy.dunlap@oracle.com>
+In-Reply-To: <alpine.DEB.0.82.0808080008050.13875@skynet.skynet.ie>
+References: <20080807083228.0fc40405.randy.dunlap@oracle.com>
+	<alpine.DEB.0.82.0808080008050.13875@skynet.skynet.ie>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  * Add a function to blink the "heartbeat" LED indicating
-    that the CPU is responding to timer interrupts.
+On Fri, 8 Aug 2008 00:09:42 +0100 (IST) Dave Airlie wrote:
 
-  * Introduces a callback for "heartbeat" display in the
-    clocksource_watchdog function, which in turn requires
-    CONFIG_CLOCKSOURCE_WATCHDOG to be set.
+> 
+> > From: Randy Dunlap <randy.dunlap@oracle.com>
+> > cc: airlied@linux.ie
+> > 
+> > drm/sis calls mm functions in fb/sis, so make the former depend
+> > on the latter.
+> > 
+> > This one happened with FB_SIS=m, AGP_SIS=y, DRM_SYS=y.
+> > 
+> > sis1.out:sis_mm.c:(.text+0x70014): undefined reference to `sis_free'
+> > sis1.out:sis_mm.c:(.text+0x7002a): undefined reference to `sis_malloc'
+> > 
+> > Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+> 
+> NAK but I've no idea what the right answer is.
 
-Note that this is a RAS feature that allows external monitoring of
-various cpu state indicators, not just providing "pretty blinking
-lights", as the LED state is readable by the system controller.
+I sort of expected a NAK.  Is OK.
 
-Based on linux-2.6.tip/master.
 
-Signed-off-by: Mike Travis <travis@sgi.com>
-Cc: Tony Luck <tony.luck@intel.com>
+> If someone asks for sisfb then sis drm uses code from it, if they don't 
+> ask for it it doesn't. So I want sisfb to be built in if its selected and 
+> sis drm is built-in.
+
+config DRM_SIS
+	select FB_SIS
+
+might do it.
+
+> Maybe I should just rip the dependency out completely, but this patch will 
+> break stuff badly, if someone was using the SIS DRM without sisfb.
+> 
+> Dave.
+> 
+>  > ---
+> >  drivers/gpu/drm/Kconfig |    2 +-
+> >  1 file changed, 1 insertion(+), 1 deletion(-)
+> > 
+> > --- linux-next-20080806.orig/drivers/gpu/drm/Kconfig
+> > +++ linux-next-20080806/drivers/gpu/drm/Kconfig
+> > @@ -86,7 +86,7 @@ config DRM_MGA
+> >  
+> >  config DRM_SIS
+> >  	tristate "SiS video cards"
+> > -	depends on DRM && AGP
+> > +	depends on DRM && AGP && FB_SIS
+> >  	help
+> >  	  Choose this option if you have a SiS 630 or compatible video
+> >            chipset. If M is selected the module will be called sis. AGP
+
 ---
- arch/ia64/uv/kernel/setup.c  |   28 ++++++++++++++++++++++++++++
- include/asm-ia64/uv/uv_hub.h |    4 ++++
- 2 files changed, 32 insertions(+)
-
---- linux-2.6.tip.orig/arch/ia64/uv/kernel/setup.c
-+++ linux-2.6.tip/arch/ia64/uv/kernel/setup.c
-@@ -8,6 +8,7 @@
-  * Copyright (C) 2008 Silicon Graphics, Inc. All rights reserved.
-  */
- 
-+#include <linux/clocksource.h>
- #include <linux/module.h>
- #include <linux/percpu.h>
- #include <asm/sn/simulator.h>
-@@ -65,6 +66,25 @@ static void uv_idle(int state)
- 		uv_set_led_bits(LED_CPU_ACTIVITY, LED_CPU_ACTIVITY);
- }
- 
-+#ifdef CONFIG_CLOCKSOURCE_WATCHDOG
-+static void uv_display_heartbeat(void)
-+{
-+	int cpu;
-+
-+	uv_hub_info->uv_heartbeat = nr_cpu_ids;
-+
-+	for_each_online_cpu(cpu) {
-+		struct uv_hub_info_s *hub = uv_cpu_hub_info(cpu);
-+
-+		if (hub->led_heartbeat_count > 0) {
-+			uv_set_led_bits_on(cpu, LED_CPU_BLINK,
-+						LED_CPU_HEARTBEAT);
-+			--hub->led_heartbeat_count;
-+		}
-+	}
-+}
-+#endif
-+
- void __init uv_setup(char **cmdline_p)
- {
- 	union uvh_si_addr_map_config_u m_n_config;
-@@ -124,4 +144,12 @@ void __init uv_setup(char **cmdline_p)
- 
- 	/* enable idle callback */
- 	ia64_mark_idle = &uv_idle;
-+
-+#ifdef CONFIG_CLOCKSOURCE_WATCHDOG
-+	/* enable heartbeat display callback */
-+	display_heartbeat = uv_display_heartbeat;
-+#else
-+	printk(KERN_NOTICE "UV: CLOCKSOURCE_WATCHDOG not configured, "
-+			   "LED Heartbeat NOT enabled\n");
-+#endif
- }
---- linux-2.6.tip.orig/include/asm-ia64/uv/uv_hub.h
-+++ linux-2.6.tip/include/asm-ia64/uv/uv_hub.h
-@@ -100,6 +100,7 @@ struct uv_hub_info_s {
- 	unsigned long	lowmem_remap_top;
- 	unsigned long	lowmem_remap_base;
- 	unsigned long	led_offset;
-+	unsigned int	led_heartbeat_count;
- 	unsigned short	pnode;
- 	unsigned short	pnode_mask;
- 	unsigned short	coherency_domain_number;
-@@ -153,6 +154,9 @@ DECLARE_PER_CPU(struct uv_hub_info_s, __
- /* idle callback */
- extern void (*ia64_mark_idle) (int);
- 
-+/* idle callback */
-+extern void (*ia64_mark_idle) (int);
-+
- /*
-  * Macros for converting between kernel virtual addresses, socket local physical
-  * addresses, and UV global physical addresses.
-
--- 
+~Randy
+Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
+http://linuxplumbersconf.org/
