@@ -1,51 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756230AbYHHLAq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757219AbYHHLBb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756230AbYHHLAq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 07:00:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754082AbYHHLAi
+	id S1757219AbYHHLBb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 07:01:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754212AbYHHLBX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 07:00:38 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:43417 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753098AbYHHLAi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 07:00:38 -0400
-To: "David Wilson" <mcs6502@gmail.com>
+	Fri, 8 Aug 2008 07:01:23 -0400
+Received: from saeurebad.de ([85.214.36.134]:57979 "EHLO saeurebad.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754143AbYHHLBW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Aug 2008 07:01:22 -0400
+From: Johannes Weiner <hannes@saeurebad.de>
+To: Markku Savela <msa@moth.iki.fi>
 Cc: linux-kernel@vger.kernel.org
-Subject: Re: What is the best way to identify a new x86 processor that does not implement the CPUID instruction?
-From: Andi Kleen <andi@firstfloor.org>
-References: <3666888f0808050008h38e11737k8e6cb9c4c85aa457@mail.gmail.com>
-Date: Fri, 08 Aug 2008 13:00:35 +0200
-In-Reply-To: <3666888f0808050008h38e11737k8e6cb9c4c85aa457@mail.gmail.com> (David Wilson's message of "Tue, 5 Aug 2008 17:08:35 +1000")
-Message-ID: <87tzdv4vqk.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
+Subject: Re: Radical idea? Remove all automatic privilege escalation base on executable file attributes!
+References: <87abfn94rs.fsf@burp.tkv.asdf.org>
+Date: Fri, 08 Aug 2008 13:00:55 +0200
+In-Reply-To: <87abfn94rs.fsf@burp.tkv.asdf.org> (Markku Savela's message of
+	"Fri, 08 Aug 2008 13:31:51 +0300")
+Message-ID: <877iar4vq0.fsf@skyscraper.fehenstaub.lan>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"David Wilson" <mcs6502@gmail.com> writes:
+Hi,
 
-> I recently bought a Norhtec MicroClient JrSX which uses the Vortex86sx
-> System on Chip processor (see http://vortex86sx.com/ for more
-> details). This is identified as a Cyrix 486SLC by the Linux kernel due
-> to the lack of a CPUID instruction. While this may be seen as a
-> cosmetic defect, if the kernel can identify the processor correctly it
-> could, for example, use the clock divisor code provided by the
-> manufacturer to slow down and speed up the CPU when required.
->
-> The question is: how to differentiate this chip from the Cyrix part?
-> The freely available "brief data sheet" does not provide much detail.
->
-> I have thought of a couple of schemes but am not really keen on either:
->
-> 1) Clock speed - the SoC runs at 300+ MHz while the Cyrix part is < 100 MHz
-> 2) Look at the PCI VID/PID for the north bridge as this is part of the CPU die.
->
-> Does anyone have any suggestions? Thanks.
+Markku Savela <msa@moth.iki.fi> writes:
 
-I would suggest asking the CPU vendor. Surely they have some method.
-Then submit a patch to detect that CPU based on that method.
+> That is, remove
+>
+>  - setuid/setgid feature from Linux
+>
+>  - cancel the capability attributes in files (or only only allow
+>    downgrading of capabilities)
+>
+> (e.g. mount everything as nosuid or something, but eventually, the
+> code could be removed from the kernel)
+>
+> The only way to escalate privileges would be to request starting of
+> the executable by some daemon (like upstart), which would grant or
+> deny the request based totally on some user space policies.
 
--Andi
+Let's just hope then that this central facility is not buggy itself.
+Because if that would be the only way to acquire privileges as
+non-priviledged user, it is likely that every machine runs it.
+
+Opposed to a bug in one setuid program that not everyone is even
+garuanteed to have installed.
+
+	Hannes
