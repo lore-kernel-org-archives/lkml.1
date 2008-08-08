@@ -1,20 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759598AbYHHQlw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753965AbYHHQlf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759598AbYHHQlw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 12:41:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753872AbYHHQgi
+	id S1753965AbYHHQlf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 12:41:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753356AbYHHQgh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 12:36:38 -0400
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:48042 "EHLO smtp6.pp.htv.fi"
+	Fri, 8 Aug 2008 12:36:37 -0400
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:48033 "EHLO smtp6.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758116AbYHHQgg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 12:36:36 -0400
-Date: Fri, 8 Aug 2008 19:35:01 +0300
+	id S1757984AbYHHQgb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Aug 2008 12:36:31 -0400
+Date: Fri, 8 Aug 2008 19:34:57 +0300
 From: Adrian Bunk <bunk@kernel.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, David Brownell <david-b@pacbell.net>
-Subject: [16/17] remove the obsolete BCD*BIN/BIN*BCD macros
-Message-ID: <20080808163501.GW14495@cs181140183.pp.htv.fi>
+To: James.Bottomley@HansenPartnership.com
+Cc: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Brownell <david-b@pacbell.net>
+Subject: [14/17] drivers/scsi/sr_vendor.c: use bcd2bin
+Message-ID: <20080808163457.GU14495@cs181140183.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -23,33 +25,45 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch removes the following obsolete macros:
-- BCD2BIN
-- BIN2BCD
-- BCD_TO_BIN
-- BIN_TO_BCD
+This patch changes sr_vendor.c to use the new bcd2bin function instead 
+of the obsolete BCD2BIN macro.
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
 
-This patch depends on patches 1-15.
+ drivers/scsi/sr_vendor.c |   12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
-8ac374c88cce55a8aa9dec3e6595d5032a1ace03 
-diff --git a/include/linux/bcd.h b/include/linux/bcd.h
-index 7ac518e..75f6d6e 100644
---- a/include/linux/bcd.h
-+++ b/include/linux/bcd.h
-@@ -15,11 +15,4 @@
- unsigned bcd2bin(unsigned char val) __attribute_const__;
- unsigned char bin2bcd(unsigned val) __attribute_const__;
- 
--#define BCD2BIN(val)	bcd2bin(val)
--#define BIN2BCD(val)	bin2bcd(val)
--
--/* backwards compat */
--#define BCD_TO_BIN(val) ((val)=BCD2BIN(val))
--#define BIN_TO_BCD(val) ((val)=BIN2BCD(val))
--
- #endif /* _BCD_H */
+95517eee3647bbde1864a6a2ce7e6cab2770e202 
+diff --git a/drivers/scsi/sr_vendor.c b/drivers/scsi/sr_vendor.c
+index 4eb3da9..4ad3e01 100644
+--- a/drivers/scsi/sr_vendor.c
++++ b/drivers/scsi/sr_vendor.c
+@@ -223,9 +223,9 @@ int sr_cd_check(struct cdrom_device_info *cdi)
+ 				no_multi = 1;
+ 				break;
+ 			}
+-			min = BCD2BIN(buffer[15]);
+-			sec = BCD2BIN(buffer[16]);
+-			frame = BCD2BIN(buffer[17]);
++			min = bcd2bin(buffer[15]);
++			sec = bcd2bin(buffer[16]);
++			frame = bcd2bin(buffer[17]);
+ 			sector = min * CD_SECS * CD_FRAMES + sec * CD_FRAMES + frame;
+ 			break;
+ 		}
+@@ -252,9 +252,9 @@ int sr_cd_check(struct cdrom_device_info *cdi)
+ 			}
+ 			if (rc != 0)
+ 				break;
+-			min = BCD2BIN(buffer[1]);
+-			sec = BCD2BIN(buffer[2]);
+-			frame = BCD2BIN(buffer[3]);
++			min = bcd2bin(buffer[1]);
++			sec = bcd2bin(buffer[2]);
++			frame = bcd2bin(buffer[3]);
+ 			sector = min * CD_SECS * CD_FRAMES + sec * CD_FRAMES + frame;
+ 			if (sector)
+ 				sector -= CD_MSF_OFFSET;
 
