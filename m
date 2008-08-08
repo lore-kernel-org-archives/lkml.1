@@ -1,103 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754945AbYHHIDn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754600AbYHHILN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754945AbYHHIDn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 04:03:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753197AbYHHIDa
+	id S1754600AbYHHILN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 04:11:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752783AbYHHILA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 04:03:30 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:34719 "EHLO smtp5.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752890AbYHHID3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 04:03:29 -0400
-Date: Fri, 8 Aug 2008 11:01:55 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Simon Horman <horms@verge.net.au>, linux-kernel@vger.kernel.org,
-       xen-devel@lists.xensource.com, Stephen Tweedie <sct@redhat.com>,
-       Eduardo Habkost <ehabkost@redhat.com>,
-       Mark McLoughlin <markmc@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Jan Beulich <jbeulich@novell.com>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: Allow compile with CONFIG_DEBUG_INFO=y, X86_PAE not set on gcc
-	3.4.5
-Message-ID: <20080808080155.GA1992@cs181140183.pp.htv.fi>
-References: <20080808050429.GA8473@verge.net.au> <489BE9C3.2010006@goop.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <489BE9C3.2010006@goop.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 8 Aug 2008 04:11:00 -0400
+Received: from serv2.oss.ntt.co.jp ([222.151.198.100]:33145 "EHLO
+	serv2.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751091AbYHHIK7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Aug 2008 04:10:59 -0400
+Subject: Re: RFC: I/O bandwidth controller
+From: Fernando Luis =?ISO-8859-1?Q?V=E1zquez?= Cao 
+	<fernando@oss.ntt.co.jp>
+To: Ryo Tsuruta <ryov@valinux.co.jp>
+Cc: taka@valinux.co.jp, dave@linux.vnet.ibm.com,
+       yoshikawa.takuya@oss.ntt.co.jp, uchida@ap.jp.nec.com, ngupta@google.com,
+       linux-kernel@vger.kernel.org, dm-devel@redhat.com,
+       containers@lists.linux-foundation.org,
+       virtualization@lists.linux-foundation.org,
+       xen-devel@lists.xensource.com, agk@sourceware.org,
+       righi.andrea@gmail.com
+In-Reply-To: <20080808.162024.189720323.ryov@valinux.co.jp>
+References: <1217870433.20260.101.camel@nimitz>
+	 <1217985189.3154.57.camel@sebastian.kern.oss.ntt.co.jp>
+	 <20080808.152119.43521725.taka@valinux.co.jp>
+	 <20080808.162024.189720323.ryov@valinux.co.jp>
+Content-Type: text/plain
+Organization: NTT Open Source Software Center
+Date: Fri, 08 Aug 2008 17:10:56 +0900
+Message-Id: <1218183056.17648.6.camel@sebastian.kern.oss.ntt.co.jp>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 07, 2008 at 11:37:55PM -0700, Jeremy Fitzhardinge wrote:
-> Simon Horman wrote:
->> Hi,
->>
->> It appears that "x86: preallocate and prepopulate separately"
->> (d8d5900ef8afc562088f8470feeaf17c4747790f) introduced a minor regression.
->> The build fails on gcc 3.4.5 if CONFIG_DEBUG_INFO=y (that is gcc is
->> called with -g) and X86_PAE not set.
->> 
->> There was previously some discussion of this without resolution.
->> http://lkml.org/lkml/2008/7/18/250
->>
->> 	arch/x86/mm/pgtable.c: In function `pgd_prepopulate_pmd':
->> 	arch/x86/mm/pgtable.c:222: internal compiler error: in remove_insn, at emit-rtl.c:3746
->> 	Please submit a full bug report,
->> 	with preprocessed source if appropriate.
->> 	See <URL:http://gcc.gnu.org/bugs.html> for instructions.
->>
->> 	# i686-unknown-linux-gnu-gcc --version
->> 	i686-unknown-linux-gnu-gcc (GCC) 3.4.5
->>
->> My investigations seem to show that gcc 3.4.5 can't cope with the following
->> construct:
->>
->> 	for (i = 0; i < 0; i++)
->> 		...
->>
->> or more specifically:
->>
->> 	for (i = 0; i < PREALLOCTED_PMDS; i++)
->> 		...
->>
->> when PREALLOCTED_PMDS is 0. That is, when X86_PAE is not set.
->>
->> This patch resolves this problem by moving the relevant code inside
->> #define X86_PAE and providing dummy functions outside !X86_PAE.
->>
->> Signed-off-by: Simon Horman <horms@verge.net.au>
->>   
->
-> We resolved the other report by saying that gcc 3.4.4 is broken. It  
-> seems 3.4.5 is as well.  Could you just update the compiler?  I'd rather  
-> not have to clutter the code with more ifdefs if we can possibly avoid 
-> it.
->...
+On Fri, 2008-08-08 at 16:20 +0900, Ryo Tsuruta wrote:
+> > >   - Implement a block layer resource controller. dm-ioband is a working
+> > > solution and feature rich but its dependency on the dm infrastructure is
+> > > likely to find opposition (the dm layer does not handle barriers
+> > > properly and the maximum size of I/O requests can be limited in some
+> > > cases). In such a case, we could either try to build a standalone
+> > > resource controller based on dm-ioband (which would probably hook into
+> > > generic_make_request) or try to come up with something new.
+> > 
+> > I doubt about the maximum size of I/O requests problem. You can't avoid
+> > this problem as far as you use device mapper modules with such a bad
+> > manner, even if the controller is implemented as a stand-alone controller.
+> > There is no limitation if you only use dm-ioband without any other device
+> > mapper modules.
+> 
+> The following is a part of source code where the limitation comes from.
+> 
+> dm-table.c: dm_set_device_limits()
+>         /*
+>          * Check if merge fn is supported.
+>          * If not we'll force DM to use PAGE_SIZE or
+>          * smaller I/O, just to be safe.
+>          */
+> 
+>         if (q->merge_bvec_fn && !ti->type->merge)
+>                 rs->max_sectors =
+>                         min_not_zero(rs->max_sectors,
+>                                      (unsigned int) (PAGE_SIZE >> 9));
+> 
+> As far as I can find, In 2.6.27-rc1-mm1, Only some software RAID
+> drivers and pktcdvd driver define merge_bvec_fn().
 
-CONFIG_DEBUG_INFO=y is why I never hit it before.
-
-It does not seem to be just one dodgy Redhat compiler (as I assumed in 
-the Bugzilla entry) but the whole 3.4 series of gcc which makes our 
-resolution of saying that this specific compiler is broken invalid.
-
-Considering that we officially support all compilers >= 3.2 this is just 
-one more case where we have to add to the kernel a workaround for a 
-broken compiler.
-
-After all, we already have 2 or 3 workarounds for new 2.6.27-rc 
-breakages with gcc 3.2 included or at least submitted.
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+Yup, exactly. The implication of this is that we may see a drop in
+performance in some RAID configurations.
 
