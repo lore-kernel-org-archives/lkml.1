@@ -1,110 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754897AbYHHHaW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755627AbYHHHah@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754897AbYHHHaW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 03:30:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752779AbYHHHaG
+	id S1755627AbYHHHah (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 03:30:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753790AbYHHHaO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 03:30:06 -0400
-Received: from main.gmane.org ([80.91.229.2]:52202 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752123AbYHHHaF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 03:30:05 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-Subject: Re: cpufreq doesn't seem to work in Intel Q9300
-Date: Thu, 07 Aug 2008 20:24:19 +0100
-Message-ID: <g7fi53$oqg$1@ger.gmane.org>
-References: <514e099a0808030300u140a0ae7m92a2e7294f39f7b7@mail.gmail.com>	 <48958901.06a0100a.35d6.2df9@mx.google.com>	 <514e099a0808032206n192fc973u24b31def6555dbec@mail.gmail.com> <514e099a0808070235qd36628cta191018763875422@mail.gmail.com>
+	Fri, 8 Aug 2008 03:30:14 -0400
+Received: from viefep18-int.chello.at ([213.46.255.22]:60796 "EHLO
+	viefep19-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753510AbYHHHaL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Aug 2008 03:30:11 -0400
+X-SourceIP: 80.57.229.25
+Subject: Re: VolanoMark regression with 2.6.27-rc1
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+Cc: Dhaval Giani <dhaval@linux.vnet.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+       Aneesh Kumar KV <aneesh.kumar@linux.vnet.ibm.com>,
+       Balbir Singh <balbir@in.ibm.com>
+In-Reply-To: <1912217169.25608.228.camel@ymzhang>
+References: <1217489463.25608.157.camel@ymzhang>
+	 <1217489949.8157.78.camel@twins> <1217490560.25608.168.camel@ymzhang>
+	 <1217551154.25608.169.camel@ymzhang>
+	 <20080801051407.GA5232@linux.vnet.ibm.com>
+	 <1217826278.25608.198.camel@ymzhang>
+	 <20080804052228.GA5444@linux.vnet.ibm.com>
+	 <1217828278.25608.206.camel@ymzhang>
+	 <20080804055339.GB5444@linux.vnet.ibm.com> <1217831171.9016.42.camel@twins>
+	 <20080804070508.GA4028@linux.vnet.ibm.com> <1217833939.9016.47.camel@twins>
+	 <1912217169.25608.228.camel@ymzhang>
+Content-Type: text/plain
+Date: Fri, 08 Aug 2008 09:30:05 +0200
+Message-Id: <1218180605.8625.64.camel@twins>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: 86.53.68.233
-User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
-In-Reply-To: <514e099a0808070235qd36628cta191018763875422@mail.gmail.com>
-Cc: linux-acpi@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-S K wrote:
-> 2008/8/3 S K <nospamnoham@gmail.com>:
->> On Sun, Aug 3, 2008 at 3:31 AM, none <aj504@student.cs.york.ac.uk> wrote:
->>> S K wrote:
->>>> Hi,
->>>>
->>>>   I have an Intel Core 2 Quad and running kernel
->>>> 2.6.25.11-97.fc9.i686. cpufreq doesn't seem to work. The cpufreq
->>>> scaling monitor in Gnome says CPU Freq scaling is not supported in my
->>>> CPU. The CPU can run at 2.0 and 2.5 GHz but mine always runs at 2.5
->>>> GHz in Linux.
->>>>
->>>> So I checked  /sys and there is no cpufreq dir in /sys/...
->>>>
->>>> # ls /sys/devices/system/cpu/
->>>> cpu0  cpu1  cpu2  cpu3  cpuidle  sched_mc_power_savings
->>>> # ls /sys/devices/system/cpu/cpuidle/
->>>> current_driver  current_governor_ro
->>>>
->>>> I have no clue what cpuidle directory is for.
->>>>
->>>> I added cpufreq.debug=7 in kernel boot params and saw the following in
->>>> the dmesg:
->>>>
->>>> speedstep-smi: No supported Intel CPU detected.
->>>> cpufreq-core: CPU 0: _PPC is 0 - frequency not limited
->>>> cpufreq-core: CPU 3: _PPC is 0 - frequency not limited
->>>> cpufreq-core: CPU 1: _PPC is 0 - frequency not limited
->>>> cpufreq-core: CPU 2: _PPC is 0 - frequency not limited
->>>> cpuidle: using governor ladder
->>>> cpuidle: using governor menu
->>>>
->>>> I looked at arch/x86/kernel/cpu/cpufreq/speedstep-smi.c and it seems
->>>> to detect only Pentium IIIs.
->>>>
->>>> Anyone know what files have the cpufreq code for Intel Core 2?
->>>> Does cpufreq support Intel Core 2 Quads? Especially the Q9300? If not,
->>>> anything I can do to help?
->>> I have an Intel Core 2 Duo and it uses the ACPI cpufreq driver; your
->>> Quad should do the same.  So this is likely an ACPI/BIOS issue.
->>>
->>> If you ask ACPI people they will ask you to post the output of acpidump.
->>> Also you should probably check if you have a BIOS option that needs to be
->>> enabled for this to work.
->>>
->>> BTW, cpuidle is something quite different, it is about how to save power
->>> when CPU is doing nothing (i.e. idle :-).  Cpu frequency scaling is how to
->>> save power when CPU is working (but doesn't need to run flat out).
->>>
->>> Alan
->>>
->> Hi,
->>
->>  I'm attaching the acpidump output. Can someone (ACPI guys??) please
->> me help figure this out?
->> Is there any other info that's needed to debug this?
->>
->> I can be a tester for this and even do some development within the
->> limits of my understanding.
->>
->> Thanks,
->> SK
->>
-> Anyone care to help?
+On Tue, 2030-08-06 at 11:26 +0800, Zhang, Yanmin wrote:
+> On Mon, 2008-08-04 at 09:12 +0200, Peter Zijlstra wrote:
+> > On Mon, 2008-08-04 at 12:35 +0530, Dhaval Giani wrote:
+> > > On Mon, Aug 04, 2008 at 08:26:11AM +0200, Peter Zijlstra wrote:
+> > > > On Mon, 2008-08-04 at 11:23 +0530, Dhaval Giani wrote:
+> > > > 
+> > > > > Peter, vatsa, any ideas?
+> > > > 
+> > > > ---
+> > > > 
+> > > > Revert:
+> > > >   a7be37ac8e1565e00880531f4e2aff421a21c803  sched: revert the revert of: weight calculations
+> > > >   c9c294a630e28eec5f2865f028ecfc58d45c0a5a  sched: fix calc_delta_asym()
+> > > >   ced8aa16e1db55c33c507174c1b1f9e107445865  sched: fix calc_delta_asym, #2
+> > > > 
+> > > 
+> > > Did we not fix those? :) 
+> > 
+> > Works for me,.. just guessing here.
+> I did more investigation on 16-core tigerton.
 > 
-> -SK
+> Firstly, let's focus on CONFIG_GROUP_SCHED=n. With 2.6.26, the result
+> has little difference
+> between with and without CONFIG_GROUP_SCHED.
+> 
+> 1) I tried different sched_features and found AFFINE_WAKEUPS has big
+> impact on volanoMark. Other
+> features have little impact.
+> 
+> 2) With kernel 2.6.26, if disabling AFFINE_WAKEUPS, the result is
+> 260000; if enabling AFFINE_WAKEUPS,
+> the result is 515000, so the improvement caused by AFFINE_WAKEUPS is
+> about 100%. With kernel 2.6.27-rc1,
+> the improvement is only about 25%.
+> 
+> 3) I turned on CONFIG_SCHETSTATS in kernel and collect
+> ttwu_move_affine. Mostly, collect ttwu_move_affine,
+> then recollect it after 30 seconds and calculate the difference. With
+> 2.6.26, I got below data:
 
-Please don't top-post!
+<snip data>
 
-According to the online ACPI spec, the BIOS should expose _PCT, _PSS and PPC objects if it supports multiple CPU performance states (aka P-states, cpufreq).  I ran your acpidump.txt through acpixtract to generate the DSDT, and decompiled it using iasl.  It did not contain any of _PCT, _PSS and _PPC.
+> So with kernel 2.6.27-rc1, the successful wakeup_affine is about
+> double of the one of 2.6.27-rc1
+> on domain 0, but about 10 times on domain 1. That means more tasks are
+> woken up on waker cpus.
+> 
+> Does that mean it doesn't follow cache-hot checking?
 
-Again, it is possible this is an option in your BIOS which is currently disabled.  You need to go into your BIOS setup screen and see if you can find any relevant options.
+I'm a bit puzzled, but you're right - I too noticed that volanomark is
+_very_ sensitive to affine wakeups.
 
-If possible, find out whether cpu frequency scaling works in windows.  If it doesn't work in windows, it's very unlikely to work on linux.  Linux ACPI aims for bug-for-bug compatibility with Windows, which is what manufacturers test their product against.
-
-There may be other possibilities.  Your acpidump output did not appear to include a SSDT, which is another place these objects might be found.  My computer suffered from a bug where linux could not find the SSDT (<http://bugzilla.kernel.org/show_bug.cgi?id=8630>).  This bug was relatively simple and was fixed.  However there might be something similar going on.  IIRC from last time, SSDTs or similar can also be loaded dynamically by the AML code in the DSDT, so maybe something goes wrong there.
-
-Regards
-Alan
+I'll try and find what changed in that code for GROUP=n.
 
