@@ -1,48 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758073AbYHHKSg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757973AbYHHKTa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758073AbYHHKSg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 06:18:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754241AbYHHKSY
+	id S1757973AbYHHKTa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 06:19:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752241AbYHHKTV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 06:18:24 -0400
-Received: from mailtp.via.com.tw ([61.66.243.2]:16084 "EHLO mailtp.via.com.tw"
+	Fri, 8 Aug 2008 06:19:21 -0400
+Received: from mailtp.via.com.tw ([61.66.243.2]:16185 "EHLO mailtp.via.com.tw"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754227AbYHHKSV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 06:18:21 -0400
+	id S1752139AbYHHKTT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Aug 2008 06:19:19 -0400
 X-MimeOLE: Produced By Microsoft Exchange V6.5
 Content-class: urn:content-classes:message
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="utf-8"
-Subject: [PATCH 11/13 v2] viafb: viafbdev.c, viafbdev.h
-Date: Fri, 8 Aug 2008 18:18:17 +0800
-Message-ID: <C80EF34A3D2E494DBAF9AC29C7AE4EB8078B69AA@exchtp03.taipei.via.com.tw>
-In-Reply-To: <C80EF34A3D2E494DBAF9AC29C7AE4EB8074E7895@exchtp03.taipei.via.com.tw>
+Subject: [PATCH 12/13 v2] viafb: via_i2c.c, via_i2c.h, viamode.c, viamode.h
+Date: Fri, 8 Aug 2008 18:19:15 +0800
+Message-ID: <C80EF34A3D2E494DBAF9AC29C7AE4EB8078B69AE@exchtp03.taipei.via.com.tw>
+In-Reply-To: <C80EF34A3D2E494DBAF9AC29C7AE4EB8074E78AA@exchtp03.taipei.via.com.tw>
 X-MS-Has-Attach: 
 X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH 11/13 v2] viafb: viafbdev.c, viafbdev.h
-Thread-Index: AcjahXiQytzNW+1XQn2+xkEqhdVKkQeshKiw
+Thread-Topic: [PATCH 12/13 v2] viafb: via_i2c.c, via_i2c.h, viamode.c, viamode.h
+Thread-Index: AcjahhTrwjAKi+lTSaSKiZRXcD/FVQesbr9Q
 From: <JosephChan@via.com.tw>
 To: <JosephChan@via.com.tw>, <linux-fbdev-devel@lists.sourceforge.net>,
        <linux-kernel@vger.kernel.org>
 Cc: <akpm@linux-foundation.org>, <geert@linux-m68k.org>
-X-OriginalArrivalTime: 08 Aug 2008 10:18:18.0513 (UTC) FILETIME=[13C79810:01C8F940]
+X-OriginalArrivalTime: 08 Aug 2008 10:19:17.0026 (UTC) FILETIME=[36A7F820:01C8F940]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha id m78AIjdq019739
+X-MIME-Autoconverted: from base64 to 8bit by alpha id m78AJcdq019749
 
-Correct by following Jiri Slaby's suggestions.
+via_i2c.c, via_i2c.h: Implement i2c specification.
+viamode.c, viamode.c: all support modes information.
 
-Initialization, remove and some other important functions of viafb.
 
 Signed-off-by: Joseph Chan <josephchan@via.com.tw>
 
-diff -Nurp a/drivers/video/via/viafbdev.c b/drivers/video/via/viafbdev.c
---- a/drivers/video/via/viafbdev.c	1970-01-01 08:00:00.000000000 +0800
-+++ b/drivers/video/via/viafbdev.c	2008-07-22 02:07:29.000000000 +0800
-@@ -0,0 +1,2563 @@
+diff -Nurp a/drivers/video/via/via_i2c.c b/drivers/video/via/via_i2c.c
+--- a/drivers/video/via/via_i2c.c	1970-01-01 08:00:00.000000000 +0800
++++ b/drivers/video/via/via_i2c.c	2008-07-22 02:07:29.000000000 +0800
+@@ -0,0 +1,177 @@
 +/*
 + * Copyright 1998-2008 VIA Technologies, Inc. All Rights Reserved.
 + * Copyright 2001-2008 S3 Graphics, Inc. All Rights Reserved.
@@ -63,2553 +63,217 @@ diff -Nurp a/drivers/video/via/viafbdev.c b/drivers/video/via/viafbdev.c
 + * Foundation, Inc.,
 + * 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 + */
-+
-+#include <linux/module.h>
-+#define _MASTER_FILE
 +
 +#include "global.h"
 +
-+static int MAX_CURS = 32;
-+static struct fb_var_screeninfo default_var;
-+static char *viafb_name = "Via";
-+static u32 pseudo_pal[17];
-+
-+/* video mode */
-+static char *viafb_mode = "640x480";
-+static char *viafb_mode1 = "640x480";
-+static int viafb_resMode = VIA_RES_640X480;
-+
-+/* Added for specifying active devices.*/
-+char *viafb_active_dev = "";
-+
-+/* Added for specifying video on devices.*/
-+char *viafb_video_dev = "";
-+
-+/*Added for specify lcd output port*/
-+char *viafb_lcd_port = "";
-+char *viafb_dvi_port = "";
-+
-+static void viafb_set_device(struct device_t active_dev);
-+static int apply_device_setting(struct viafb_ioctl_setting setting_info,
-+			 struct fb_info *info);
-+static void apply_second_mode_setting(struct fb_var_screeninfo
-+	*sec_var);
-+static void retrieve_device_setting(struct viafb_ioctl_setting
-+	*setting_info);
-+static void viafb_set_video_device(u32 video_dev_info);
-+static void viafb_get_video_device(u32 *video_dev_info);
-+
-+/* Mode information */
-+static const struct viafb_modeinfo viafb_modentry[] = {
-+	{480, 640, VIA_RES_480X640, "480x640"},
-+	{640, 480, VIA_RES_640X480, "640x480"},
-+	{800, 480, VIA_RES_800X480, "800x480"},
-+	{800, 600, VIA_RES_800X600, "800x600"},
-+	{1024, 768, VIA_RES_1024X768, "1024x768"},
-+	{1152, 864, VIA_RES_1152X864, "1152x864"},
-+	{1280, 1024, VIA_RES_1280X1024, "1280x1024"},
-+	{1600, 1200, VIA_RES_1600X1200, "1600x1200"},
-+	{1440, 1050, VIA_RES_1440X1050, "1440x1050"},
-+	{1280, 768, VIA_RES_1280X768, "1280x768"},
-+	{1280, 800, VIA_RES_1280X800, "1280x800"},
-+	{1280, 960, VIA_RES_1280X960, "1280x960"},
-+	{1920, 1440, VIA_RES_1920X1440, "1920x1440"},
-+	{848, 480, VIA_RES_848X480, "848x480"},
-+	{1400, 1050, VIA_RES_1400X1050, "1400x1050"},
-+	{720, 480, VIA_RES_720X480, "720x480"},
-+	{720, 576, VIA_RES_720X576, "720x576"},
-+	{1024, 512, VIA_RES_1024X512, "1024x512"},
-+	{1024, 576, VIA_RES_1024X576, "1024x576"},
-+	{1024, 600, VIA_RES_1024X600, "1024x600"},
-+	{1280, 720, VIA_RES_1280X720, "1280x720"},
-+	{1920, 1080, VIA_RES_1920X1080, "1920x1080"},
-+	{1366, 768, VIA_RES_1368X768, "1368x768"},
-+	{1680, 1050, VIA_RES_1680X1050, "1680x1050"},
-+	{960, 600, VIA_RES_960X600, "960x600"},
-+	{1000, 600, VIA_RES_1000X600, "1000x600"},
-+	{1024, 576, VIA_RES_1024X576, "1024x576"},
-+	{1024, 600, VIA_RES_1024X600, "1024x600"},
-+	{1088, 612, VIA_RES_1088X612, "1088x612"},
-+	{1152, 720, VIA_RES_1152X720, "1152x720"},
-+	{1200, 720, VIA_RES_1200X720, "1200x720"},
-+	{1280, 600, VIA_RES_1280X600, "1280x600"},
-+	{1360, 768, VIA_RES_1360X768, "1360x768"},
-+	{1440, 900, VIA_RES_1440X900, "1440x900"},
-+	{1600, 900, VIA_RES_1600X900, "1600x900"},
-+	{1600, 1024, VIA_RES_1600X1024, "1600x1024"},
-+	{1792, 1344, VIA_RES_1792X1344, "1792x1344"},
-+	{1856, 1392, VIA_RES_1856X1392, "1856x1392"},
-+	{1920, 1200, VIA_RES_1920X1200, "1920x1200"},
-+	{2048, 1536, VIA_RES_2048X1536, "2048x1536"},
-+	{0, 0, VIA_RES_INVALID, "640x480"}
-+};
-+
-+static struct fb_ops viafb_ops;
-+
-+static int viafb_update_fix(struct fb_fix_screeninfo *fix, struct fb_info *info)
++static void via_i2c_setscl(void *data, int state)
 +{
-+	struct viafb_par *ppar;
-+	ppar = info->par;
++	u8 val;
++	struct via_i2c_stuff *via_i2c_chan = (struct via_i2c_stuff *)data;
 +
-+	DEBUG_MSG(KERN_INFO "viafb_update_fix!\n");
-+
-+	fix->visual =
-+	    ppar->bpp == 8 ? FB_VISUAL_PSEUDOCOLOR : FB_VISUAL_TRUECOLOR;
-+	fix->line_length = ppar->linelength;
-+
-+	return 0;
-+}
-+
-+
-+static void viafb_setup_fixinfo(struct fb_fix_screeninfo *fix,
-+	struct viafb_par *viaparinfo)
-+{
-+	memset(fix, 0, sizeof(struct fb_fix_screeninfo));
-+	strcpy(fix->id, viafb_name);
-+
-+	fix->smem_start = viaparinfo->fbmem;
-+	fix->smem_len = viaparinfo->fbmem_free;
-+	fix->mmio_start = viaparinfo->mmio_base;
-+	fix->mmio_len = viaparinfo->mmio_len;
-+
-+	fix->type = FB_TYPE_PACKED_PIXELS;
-+	fix->type_aux = 0;
-+
-+	fix->xpanstep = fix->ywrapstep = 0;
-+	fix->ypanstep = 1;
-+
-+	/* Just tell the accel name */
-+	viafbinfo->fix.accel = FB_ACCEL_VIA_UNICHROME;
-+}
-+static int viafb_open(struct fb_info *info, int user)
-+{
-+	DEBUG_MSG(KERN_INFO "viafb_open!\n");
-+	return 0;
-+}
-+
-+static int viafb_release(struct fb_info *info, int user)
-+{
-+	DEBUG_MSG(KERN_INFO "viafb_release!\n");
-+	return 0;
-+}
-+
-+static void viafb_update_viafb_par(struct fb_info *info)
-+{
-+	struct viafb_par *ppar;
-+
-+	ppar = info->par;
-+	ppar->bpp = info->var.bits_per_pixel;
-+	ppar->linelength = ((info->var.xres_virtual + 7) & ~7) * ppar->bpp / 8;
-+	ppar->hres = info->var.xres;
-+	ppar->vres = info->var.yres;
-+	ppar->xoffset = info->var.xoffset;
-+	ppar->yoffset = info->var.yoffset;
-+}
-+
-+static int viafb_check_var(struct fb_var_screeninfo *var,
-+	struct fb_info *info)
-+{
-+	int vmode_index, htotal, vtotal;
-+	struct viafb_par *ppar;
-+	u32 long_refresh;
-+	struct viafb_par *p_viafb_par;
-+	ppar = info->par;
-+
-+
-+	DEBUG_MSG(KERN_INFO "viafb_check_var!\n");
-+	/* Sanity check */
-+	/* HW neither support interlacte nor double-scaned mode */
-+	if (var->vmode & FB_VMODE_INTERLACED || var->vmode & FB_VMODE_DOUBLE)
-+		return -EINVAL;
-+
-+	vmode_index = viafb_get_mode_index(var->xres, var->yres, 0);
-+	if (vmode_index == VIA_RES_INVALID) {
-+		DEBUG_MSG(KERN_INFO
-+			  "viafb: Mode %dx%dx%d not supported!!\n",
-+			  var->xres, var->yres, var->bits_per_pixel);
-+		return -EINVAL;
-+	}
-+
-+	if (24 == var->bits_per_pixel)
-+		var->bits_per_pixel = 32;
-+
-+	if (var->bits_per_pixel != 8 && var->bits_per_pixel != 16 &&
-+		var->bits_per_pixel != 32)
-+		return -EINVAL;
-+
-+	if ((var->xres_virtual * (var->bits_per_pixel >> 3)) & 0x1F)
-+		/*32 pixel alignment */
-+		var->xres_virtual = (var->xres_virtual + 31) & ~31;
-+	if (var->xres_virtual * var->yres_virtual * var->bits_per_pixel / 8 >
-+		ppar->memsize)
-+		return -EINVAL;
-+
-+	/* Based on var passed in to calculate the refresh,
-+	 * because our driver use some modes special.
-+	 */
-+	htotal = var->xres + var->left_margin +
-+	var->right_margin + var->hsync_len;
-+	vtotal = var->yres + var->upper_margin +
-+		var->lower_margin + var->vsync_len;
-+	long_refresh = 1000000000UL / var->pixclock * 1000;
-+	long_refresh /= (htotal * vtotal);
-+
-+	viafb_refresh = viafb_get_refresh(var->xres, var->yres, long_refresh);
-+
-+	/* Adjust var according to our driver's own table */
-+	viafb_fill_var_timing_info(var, viafb_refresh, vmode_index);
-+
-+	/* This is indeed a patch for VT3353 */
-+	if (!info->par)
-+		return -1;
-+	p_viafb_par = (struct viafb_par *)info->par;
-+	if (p_viafb_par->chip_info->gfx_chip_name == UNICHROME_VX800)
-+		var->accel_flags = 0;
-+
-+	return 0;
-+}
-+
-+static int viafb_set_par(struct fb_info *info)
-+{
-+	int vmode_index;
-+	int vmode_index1 = 0;
-+	DEBUG_MSG(KERN_INFO "viafb_set_par!\n");
-+
-+	viafb_update_device_setting(info->var.xres, info->var.yres,
-+			      info->var.bits_per_pixel, viafb_refresh, 0);
-+
-+	vmode_index = viafb_get_mode_index(info->var.xres, info->var.yres, 0);
-+
-+	if (viafb_SAMM_ON == 1) {
-+		DEBUG_MSG(KERN_INFO
-+		"viafb_second_xres = %d, viafb_second_yres = %d, bpp = %d\n",
-+			  viafb_second_xres, viafb_second_yres, viafb_bpp1);
-+		vmode_index1 = viafb_get_mode_index(viafb_second_xres,
-+			viafb_second_yres, 1);
-+		DEBUG_MSG(KERN_INFO "->viafb_SAMM_ON: index=%d\n",
-+			vmode_index1);
-+
-+		viafb_update_device_setting(viafb_second_xres,
-+			viafb_second_yres, viafb_bpp1, viafb_refresh1, 1);
-+	}
-+
-+	if (vmode_index != VIA_RES_INVALID) {
-+		viafb_setmode(vmode_index, info->var.xres, info->var.yres,
-+			info->var.bits_per_pixel, vmode_index1,
-+			viafb_second_xres, viafb_second_yres, viafb_bpp1);
-+
-+		/*We should set memory offset according virtual_x */
-+		/*Fix me:put this function into viafb_setmode */
-+		viafb_memory_pitch_patch(info);
-+
-+		/* Update ***fb_par information */
-+		viafb_update_viafb_par(info);
-+
-+		/* Update other fixed information */
-+		viafb_update_fix(&info->fix, info);
-+		viafb_bpp = info->var.bits_per_pixel;
-+		/* Update viafb_accel, it is necessary to our 2D accelerate */
-+		viafb_accel = info->var.accel_flags;
-+
-+		if (viafb_accel)
-+			viafb_set_2d_color_depth(info->var.bits_per_pixel);
-+	}
-+
-+	return 0;
-+}
-+
-+/* Set one color register */
-+static int viafb_setcolreg(unsigned regno, unsigned red, unsigned green,
-+unsigned blue, unsigned transp, struct fb_info *info)
-+{
-+	u8 sr1a, sr1b, cr67, cr6a, rev = 0, shift = 10;
-+	unsigned cmap_entries = (info->var.bits_per_pixel == 8) ? 256 : 16;
-+	DEBUG_MSG(KERN_INFO "viafb_setcolreg!\n");
-+	if (regno >= cmap_entries)
-+		return 1;
-+	if (UNICHROME_CLE266 == viaparinfo->chip_info->gfx_chip_name) {
-+	/* Read PCI bus 0,dev 0,function 0,index 0xF6 to get chip rev. */
-+		outl(0x80000000 | (0xf6 & ~3), (unsigned long)0xCF8);
-+		rev = (inl((unsigned long)0xCFC) >> ((0xf6 & 3) * 8)) & 0xff;
-+	}
-+	switch (info->var.bits_per_pixel) {
-+	case 8:
-+		outb(0x1A, 0x3C4);
-+		sr1a = inb(0x3C5);
-+		outb(0x1B, 0x3C4);
-+		sr1b = inb(0x3C5);
-+		outb(0x67, 0x3D4);
-+		cr67 = inb(0x3D5);
-+		outb(0x6A, 0x3D4);
-+		cr6a = inb(0x3D5);
-+
-+		/* Map the 3C6/7/8/9 to the IGA2 */
-+		outb(0x1A, 0x3C4);
-+		outb(sr1a | 0x01, 0x3C5);
-+		/* Second Display Engine colck always on */
-+		outb(0x1B, 0x3C4);
-+		outb(sr1b | 0x80, 0x3C5);
-+		/* Second Display Color Depth 8 */
-+		outb(0x67, 0x3D4);
-+		outb(cr67 & 0x3F, 0x3D5);
-+		outb(0x6A, 0x3D4);
-+		/* Second Display Channel Reset CR6A[6]) */
-+		outb(cr6a & 0xBF, 0x3D5);
-+		/* Second Display Channel Enable CR6A[7] */
-+		outb(cr6a | 0x80, 0x3D5);
-+		/* Second Display Channel stop reset) */
-+		outb(cr6a | 0x40, 0x3D5);
-+
-+		/* Bit mask of palette */
-+		outb(0xFF, 0x3c6);
-+		/* Write one register of IGA2 */
-+		outb(regno, 0x3C8);
-+		if (UNICHROME_CLE266 == viaparinfo->chip_info->gfx_chip_name &&
-+			rev >= 15) {
-+			shift = 8;
-+			viafb_write_reg_mask(CR6A, VIACR, BIT5, BIT5);
-+			viafb_write_reg_mask(SR15, VIASR, BIT7, BIT7);
-+		} else {
-+			shift = 10;
-+			viafb_write_reg_mask(CR6A, VIACR, 0, BIT5);
-+			viafb_write_reg_mask(SR15, VIASR, 0, BIT7);
-+		}
-+		outb(red >> shift, 0x3C9);
-+		outb(green >> shift, 0x3C9);
-+		outb(blue >> shift, 0x3C9);
-+
-+		/* Map the 3C6/7/8/9 to the IGA1 */
-+		outb(0x1A, 0x3C4);
-+		outb(sr1a & 0xFE, 0x3C5);
-+		/* Bit mask of palette */
-+		outb(0xFF, 0x3c6);
-+		/* Write one register of IGA1 */
-+		outb(regno, 0x3C8);
-+		outb(red >> shift, 0x3C9);
-+		outb(green >> shift, 0x3C9);
-+		outb(blue >> shift, 0x3C9);
-+
-+		outb(0x1A, 0x3C4);
-+		outb(sr1a, 0x3C5);
-+		outb(0x1B, 0x3C4);
-+		outb(sr1b, 0x3C5);
-+		outb(0x67, 0x3D4);
-+		outb(cr67, 0x3D5);
-+		outb(0x6A, 0x3D4);
-+		outb(cr6a, 0x3D5);
++	val = viafb_read_reg(VIASR, via_i2c_chan->i2c_port) & 0xF0;
++	if (state)
++		val |= 0x20;
++	else
++		val &= ~0x20;
++	switch (via_i2c_chan->i2c_port) {
++	case I2CPORTINDEX:
++		val |= 0x01;
 +		break;
-+	case 16:
-+		((u32 *) info->pseudo_palette)[regno] = (red & 0xF800) |
-+		    ((green & 0xFC00) >> 5) | ((blue & 0xF800) >> 11);
++	case GPIOPORTINDEX:
++		val |= 0x80;
 +		break;
-+	case 32:
-+		((u32 *) info->pseudo_palette)[regno] =
-+		    ((transp & 0xFF00) << 16) |
-+		    ((red & 0xFF00) << 8) |
-+		    ((green & 0xFF00)) | ((blue & 0xFF00) >> 8);
-+		break;
-+	}
-+
-+	return 0;
-+
-+}
-+
-+/*CALLED BY: fb_set_cmap */
-+/*           fb_set_var, pass 256 colors */
-+/*CALLED BY: fb_set_cmap */
-+/*           fbcon_set_palette, pass 16 colors */
-+static int viafb_setcmap(struct fb_cmap *cmap, struct fb_info *info)
-+{
-+	u32 len = cmap->len;
-+	u32 i;
-+	u16 *pred = cmap->red;
-+	u16 *pgreen = cmap->green;
-+	u16 *pblue = cmap->blue;
-+	u16 *ptransp = cmap->transp;
-+	u8 sr1a, sr1b, cr67, cr6a, rev = 0, shift = 10;
-+	if (len > 256)
-+		return 1;
-+	if (UNICHROME_CLE266 == viaparinfo->chip_info->gfx_chip_name) {
-+	/* Read PCI bus 0, dev 0, function 0, index 0xF6 to get chip rev. */
-+		outl(0x80000000 | (0xf6 & ~3), (unsigned long)0xCF8);
-+		rev = (inl((unsigned long)0xCFC) >> ((0xf6 & 3) * 8)) & 0xff;
-+	}
-+	switch (info->var.bits_per_pixel) {
-+	case 8:
-+		outb(0x1A, 0x3C4);
-+		sr1a = inb(0x3C5);
-+		outb(0x1B, 0x3C4);
-+		sr1b = inb(0x3C5);
-+		outb(0x67, 0x3D4);
-+		cr67 = inb(0x3D5);
-+		outb(0x6A, 0x3D4);
-+		cr6a = inb(0x3D5);
-+		/* Map the 3C6/7/8/9 to the IGA2 */
-+		outb(0x1A, 0x3C4);
-+		outb(sr1a | 0x01, 0x3C5);
-+		outb(0x1B, 0x3C4);
-+		/* Second Display Engine colck always on */
-+		outb(sr1b | 0x80, 0x3C5);
-+		outb(0x67, 0x3D4);
-+		/* Second Display Color Depth 8 */
-+		outb(cr67 & 0x3F, 0x3D5);
-+		outb(0x6A, 0x3D4);
-+		/* Second Display Channel Reset CR6A[6]) */
-+		outb(cr6a & 0xBF, 0x3D5);
-+		/* Second Display Channel Enable CR6A[7] */
-+		outb(cr6a | 0x80, 0x3D5);
-+		/* Second Display Channel stop reset) */
-+		outb(cr6a | 0xC0, 0x3D5);
-+
-+		/* Bit mask of palette */
-+		outb(0xFF, 0x3c6);
-+		outb(0x00, 0x3C8);
-+		if (UNICHROME_CLE266 == viaparinfo->chip_info->gfx_chip_name &&
-+			rev >= 15) {
-+			shift = 8;
-+			viafb_write_reg_mask(CR6A, VIACR, BIT5, BIT5);
-+			viafb_write_reg_mask(SR15, VIASR, BIT7, BIT7);
-+		} else {
-+			shift = 10;
-+			viafb_write_reg_mask(CR6A, VIACR, 0, BIT5);
-+			viafb_write_reg_mask(SR15, VIASR, 0, BIT7);
-+		}
-+		for (i = 0; i < len; i++) {
-+			outb((*(pred + i)) >> shift, 0x3C9);
-+			outb((*(pgreen + i)) >> shift, 0x3C9);
-+			outb((*(pblue + i)) >> shift, 0x3C9);
-+		}
-+
-+		outb(0x1A, 0x3C4);
-+		/* Map the 3C6/7/8/9 to the IGA1 */
-+		outb(sr1a & 0xFE, 0x3C5);
-+		/* Bit mask of palette */
-+		outb(0xFF, 0x3c6);
-+		outb(0x00, 0x3C8);
-+		for (i = 0; i < len; i++) {
-+			outb((*(pred + i)) >> shift, 0x3C9);
-+			outb((*(pgreen + i)) >> shift, 0x3C9);
-+			outb((*(pblue + i)) >> shift, 0x3C9);
-+		}
-+
-+		outb(0x1A, 0x3C4);
-+		outb(sr1a, 0x3C5);
-+		outb(0x1B, 0x3C4);
-+		outb(sr1b, 0x3C5);
-+		outb(0x67, 0x3D4);
-+		outb(cr67, 0x3D5);
-+		outb(0x6A, 0x3D4);
-+		outb(cr6a, 0x3D5);
-+		break;
-+	case 16:
-+		if (len > 17)
-+			return 0;	/* Because static u32 pseudo_pal[17]; */
-+		for (i = 0; i < len; i++)
-+			((u32 *) info->pseudo_palette)[i] =
-+			    (*(pred + i) & 0xF800) |
-+			    ((*(pgreen + i) & 0xFC00) >> 5) |
-+			    ((*(pblue + i) & 0xF800) >> 11);
-+		break;
-+	case 32:
-+		if (len > 17)
-+			return 0;
-+		if (ptransp) {
-+			for (i = 0; i < len; i++)
-+				((u32 *) info->pseudo_palette)[i] =
-+				    ((*(ptransp + i) & 0xFF00) << 16) |
-+				    ((*(pred + i) & 0xFF00) << 8) |
-+				    ((*(pgreen + i) & 0xFF00)) |
-+				    ((*(pblue + i) & 0xFF00) >> 8);
-+		} else {
-+			for (i = 0; i < len; i++)
-+				((u32 *) info->pseudo_palette)[i] =
-+				    0x00000000 |
-+				    ((*(pred + i) & 0xFF00) << 8) |
-+				    ((*(pgreen + i) & 0xFF00)) |
-+				    ((*(pblue + i) & 0xFF00) >> 8);
-+		}
-+		break;
-+	}
-+	return 0;
-+}
-+
-+static int viafb_pan_display(struct fb_var_screeninfo *var,
-+	struct fb_info *info)
-+{
-+	unsigned int offset;
-+
-+	DEBUG_MSG(KERN_INFO "viafb_pan_display!\n");
-+
-+	offset = (var->xoffset + (var->yoffset * var->xres_virtual)) *
-+	    var->bits_per_pixel / 16;
-+
-+	DEBUG_MSG(KERN_INFO "\nviafb_pan_display,offset =%d ", offset);
-+
-+	viafb_write_reg_mask(0x48, 0x3d4, ((offset >> 24) & 0x3), 0x3);
-+	viafb_write_reg_mask(0x34, 0x3d4, ((offset >> 16) & 0xff), 0xff);
-+	viafb_write_reg_mask(0x0c, 0x3d4, ((offset >> 8) & 0xff), 0xff);
-+	viafb_write_reg_mask(0x0d, 0x3d4, (offset & 0xff), 0xff);
-+
-+	return 0;
-+}
-+
-+static int viafb_blank(int blank_mode, struct fb_info *info)
-+{
-+	DEBUG_MSG(KERN_INFO "viafb_blank!\n");
-+	/* clear DPMS setting */
-+
-+	switch (blank_mode) {
-+	case FB_BLANK_UNBLANK:
-+		/* Screen: On, HSync: On, VSync: On */
-+		/* control CRT monitor power management */
-+		viafb_write_reg_mask(CR36, VIACR, 0x00, BIT4 + BIT5);
-+		break;
-+	case FB_BLANK_HSYNC_SUSPEND:
-+		/* Screen: Off, HSync: Off, VSync: On */
-+		/* control CRT monitor power management */
-+		viafb_write_reg_mask(CR36, VIACR, 0x10, BIT4 + BIT5);
-+		break;
-+	case FB_BLANK_VSYNC_SUSPEND:
-+		/* Screen: Off, HSync: On, VSync: Off */
-+		/* control CRT monitor power management */
-+		viafb_write_reg_mask(CR36, VIACR, 0x20, BIT4 + BIT5);
-+		break;
-+	case FB_BLANK_POWERDOWN:
-+		/* Screen: Off, HSync: Off, VSync: Off */
-+		/* control CRT monitor power management */
-+		viafb_write_reg_mask(CR36, VIACR, 0x30, BIT4 + BIT5);
-+		break;
-+	}
-+
-+	return 0;
-+}
-+
-+static int viafb_ioctl(struct fb_info *info, u_int cmd, u_long arg)
-+{
-+	struct viafb_ioctl_mode viamode;
-+	struct viafb_ioctl_samm viasamm;
-+	struct viafb_driver_version driver_version;
-+	struct fb_var_screeninfo sec_var;
-+	struct _panel_size_pos_info panel_pos_size_para;
-+	u32 state_info = 0;
-+	u32 viainfo_size = sizeof(struct viafb_ioctl_info);
-+	u32 *viafb_gamma_table;
-+	char driver_name[] = "viafb";
-+
-+	u32 __user *argp = (u32 __user *) arg;
-+	u32 gpu32;
-+	u32 video_dev_info = 0;
-+	struct viafb_ioctl_setting viafb_setting = {};
-+	struct device_t active_dev = {};
-+
-+	DEBUG_MSG(KERN_INFO "viafb_ioctl: 0x%X !!\n", cmd);
-+
-+	switch (cmd) {
-+	case VIAFB_GET_CHIP_INFO:
-+		if (copy_to_user(argp, viaparinfo->chip_info,
-+		sizeof(struct chip_information)))
-+		return -EFAULT;
-+		break;
-+	case VIAFB_GET_INFO_SIZE:
-+		return put_user(viainfo_size, argp);
-+	case VIAFB_GET_INFO:
-+		return viafb_ioctl_get_viafb_info(arg);
-+	case VIAFB_HOTPLUG:
-+		return put_user(viafb_ioctl_hotplug(info->var.xres,
-+					      info->var.yres,
-+					      info->var.bits_per_pixel), argp);
-+	case VIAFB_SET_HOTPLUG_FLAG:
-+		if (copy_from_user(&gpu32, argp, sizeof(gpu32)))
-+			return -EFAULT;
-+		viafb_hotplug = (gpu32) ? 1 : 0;
-+		break;
-+	case VIAFB_GET_RESOLUTION:
-+		viamode.xres = (u32) viafb_hotplug_Xres;
-+		viamode.yres = (u32) viafb_hotplug_Yres;
-+		viamode.refresh = (u32) viafb_hotplug_refresh;
-+		viamode.bpp = (u32) viafb_hotplug_bpp;
-+		if (viafb_SAMM_ON == 1) {
-+			viamode.xres_sec = viafb_second_xres;
-+			viamode.yres_sec = viafb_second_yres;
-+			viamode.virtual_xres_sec = viafb_second_virtual_xres;
-+			viamode.virtual_yres_sec = viafb_second_virtual_yres;
-+			viamode.refresh_sec = viafb_refresh1;
-+			viamode.bpp_sec = viafb_bpp1;
-+		} else {
-+			viamode.xres_sec = 0;
-+			viamode.yres_sec = 0;
-+			viamode.virtual_xres_sec = 0;
-+			viamode.virtual_yres_sec = 0;
-+			viamode.refresh_sec = 0;
-+			viamode.bpp_sec = 0;
-+		}
-+		if (copy_to_user(argp, &viamode, sizeof(viamode)))
-+			return -EFAULT;
-+		break;
-+	case VIAFB_GET_SAMM_INFO:
-+		viasamm.samm_status = viafb_SAMM_ON;
-+
-+		if (viafb_SAMM_ON == 1) {
-+			if (viafb_dual_fb) {
-+				viasamm.size_prim = viaparinfo->fbmem_free;
-+				viasamm.size_sec = viaparinfo1->fbmem_free;
-+			} else {
-+				if (viafb_second_size) {
-+					viasamm.size_prim =
-+					    viaparinfo->fbmem_free -
-+					    viafb_second_size * 1024 * 1024;
-+					viasamm.size_sec =
-+					    viafb_second_size * 1024 * 1024;
-+				} else {
-+					viasamm.size_prim =
-+					    viaparinfo->fbmem_free >> 1;
-+					viasamm.size_sec =
-+					    (viaparinfo->fbmem_free >> 1);
-+				}
-+			}
-+			viasamm.mem_base = viaparinfo->fbmem;
-+			viasamm.offset_sec = viafb_second_offset;
-+		} else {
-+			viasamm.size_prim =
-+			    viaparinfo->memsize - viaparinfo->fbmem_used;
-+			viasamm.size_sec = 0;
-+			viasamm.mem_base = viaparinfo->fbmem;
-+			viasamm.offset_sec = 0;
-+		}
-+
-+		if (copy_to_user(argp, &viasamm, sizeof(viasamm)))
-+			return -EFAULT;
-+
-+		break;
-+	case VIAFB_TURN_ON_OUTPUT_DEVICE:
-+		if (copy_from_user(&gpu32, argp, sizeof(gpu32)))
-+			return -EFAULT;
-+		if (gpu32 & CRT_Device)
-+			viafb_crt_enable();
-+		if (gpu32 & DVI_Device)
-+			viafb_dvi_enable();
-+		if (gpu32 & LCD_Device)
-+			viafb_lcd_enable();
-+		break;
-+	case VIAFB_TURN_OFF_OUTPUT_DEVICE:
-+		if (copy_from_user(&gpu32, argp, sizeof(gpu32)))
-+			return -EFAULT;
-+		if (gpu32 & CRT_Device)
-+			viafb_crt_disable();
-+		if (gpu32 & DVI_Device)
-+			viafb_dvi_disable();
-+		if (gpu32 & LCD_Device)
-+			viafb_lcd_disable();
-+		break;
-+	case VIAFB_SET_DEVICE:
-+		if (copy_from_user(&active_dev, (void *)argp,
-+			sizeof(active_dev)))
-+			return -EFAULT;
-+		viafb_set_device(active_dev);
-+		viafb_set_par(info);
-+		break;
-+	case VIAFB_GET_DEVICE:
-+		active_dev.crt = viafb_CRT_ON;
-+		active_dev.dvi = viafb_DVI_ON;
-+		active_dev.lcd = viafb_LCD_ON;
-+		active_dev.samm = viafb_SAMM_ON;
-+		active_dev.primary_dev = viafb_primary_dev;
-+
-+		active_dev.lcd_dsp_cent = viafb_lcd_dsp_method;
-+		active_dev.lcd_panel_id = viafb_lcd_panel_id;
-+		active_dev.lcd_mode = viafb_lcd_mode;
-+
-+		active_dev.xres = viafb_hotplug_Xres;
-+		active_dev.yres = viafb_hotplug_Yres;
-+
-+		active_dev.xres1 = viafb_second_xres;
-+		active_dev.yres1 = viafb_second_yres;
-+
-+		active_dev.bpp = viafb_bpp;
-+		active_dev.bpp1 = viafb_bpp1;
-+		active_dev.refresh = viafb_refresh;
-+		active_dev.refresh1 = viafb_refresh1;
-+
-+		active_dev.epia_dvi = viafb_platform_epia_dvi;
-+		active_dev.lcd_dual_edge = viafb_device_lcd_dualedge;
-+		active_dev.bus_width = viafb_bus_width;
-+
-+		if (copy_to_user(argp, &active_dev, sizeof(active_dev)))
-+			return -EFAULT;
-+		break;
-+
-+	case VIAFB_GET_DRIVER_VERSION:
-+		driver_version.iMajorNum = VERSION_MAJOR;
-+		driver_version.iKernelNum = VERSION_KERNEL;
-+		driver_version.iOSNum = VERSION_OS;
-+		driver_version.iMinorNum = VERSION_MINOR;
-+
-+		if (copy_to_user(argp, &driver_version,
-+			sizeof(driver_version)))
-+			return -EFAULT;
-+
-+		break;
-+
-+	case VIAFB_SET_DEVICE_INFO:
-+		if (copy_from_user(&viafb_setting,
-+			argp, sizeof(viafb_setting)))
-+			return -EFAULT;
-+		if (apply_device_setting(viafb_setting, info) < 0)
-+			return -EINVAL;
-+
-+		break;
-+
-+	case VIAFB_SET_SECOND_MODE:
-+		if (copy_from_user(&sec_var, argp, sizeof(sec_var)))
-+			return -EFAULT;
-+		apply_second_mode_setting(&sec_var);
-+		break;
-+
-+	case VIAFB_GET_DEVICE_INFO:
-+
-+		retrieve_device_setting(&viafb_setting);
-+
-+		if (copy_to_user(argp, &viafb_setting, sizeof(viafb_setting)))
-+			return -EFAULT;
-+
-+		break;
-+
-+	case VIAFB_GET_DEVICE_SUPPORT:
-+		viafb_get_device_support_state(&state_info);
-+		if (put_user(state_info, argp))
-+			return -EFAULT;
-+		break;
-+
-+	case VIAFB_GET_DEVICE_CONNECT:
-+		viafb_get_device_connect_state(&state_info);
-+		if (put_user(state_info, argp))
-+			return -EFAULT;
-+		break;
-+
-+	case VIAFB_GET_PANEL_SUPPORT_EXPAND:
-+		state_info =
-+		    viafb_lcd_get_support_expand_state(info->var.xres,
-+						 info->var.yres);
-+		if (put_user(state_info, argp))
-+			return -EFAULT;
-+		break;
-+
-+	case VIAFB_GET_DRIVER_NAME:
-+		if (copy_to_user(argp, driver_name, sizeof(driver_name)))
-+			return -EFAULT;
-+		break;
-+
-+	case VIAFB_SET_GAMMA_LUT:
-+		viafb_gamma_table = kmalloc(256 * sizeof(u32), GFP_KERNEL);
-+		if (!viafb_gamma_table)
-+			return -ENOMEM;
-+		if (copy_from_user
-+		    (viafb_gamma_table, argp, sizeof(viafb_gamma_table))) {
-+		    kfree(viafb_gamma_table);
-+		    return -EFAULT;
-+		}
-+		viafb_set_gamma_table(viafb_bpp, viafb_gamma_table);
-+		kfree(viafb_gamma_table);
-+		break;
-+
-+	case VIAFB_GET_GAMMA_LUT:
-+		viafb_gamma_table = kmalloc(256 * sizeof(u32), GFP_KERNEL);
-+		if (!viafb_gamma_table)
-+			return -ENOMEM;
-+		viafb_get_gamma_table(viafb_gamma_table);
-+		if (copy_to_user(argp, viafb_gamma_table,
-+			sizeof(viafb_gamma_table))) {
-+			kfree(viafb_gamma_table);
-+			return -EFAULT;
-+		}
-+		kfree(viafb_gamma_table);
-+		break;
-+
-+	case VIAFB_GET_GAMMA_SUPPORT_STATE:
-+		viafb_get_gamma_support_state(viafb_bpp, &state_info);
-+		if (put_user(state_info, argp))
-+			return -EFAULT;
-+		break;
-+	case VIAFB_SET_VIDEO_DEVICE:
-+		get_user(video_dev_info, argp);
-+		viafb_set_video_device(video_dev_info);
-+		break;
-+	case VIAFB_GET_VIDEO_DEVICE:
-+		viafb_get_video_device(&video_dev_info);
-+		if (put_user(video_dev_info, argp))
-+			return -EFAULT;
-+		break;
-+	case VIAFB_SYNC_SURFACE:
-+		DEBUG_MSG(KERN_INFO "lobo VIAFB_SYNC_SURFACE\n");
-+		break;
-+	case VIAFB_GET_DRIVER_CAPS:
-+		break;
-+
-+	case VIAFB_GET_PANEL_MAX_SIZE:
-+		if (copy_from_user
-+		    (&panel_pos_size_para, argp, sizeof(panel_pos_size_para)))
-+			return -EFAULT;
-+		panel_pos_size_para.x = panel_pos_size_para.y = 0;
-+		if (copy_to_user(argp, &panel_pos_size_para,
-+		     sizeof(panel_pos_size_para)))
-+			return -EFAULT;
-+		break;
-+	case VIAFB_GET_PANEL_MAX_POSITION:
-+		if (copy_from_user
-+		    (&panel_pos_size_para, argp, sizeof(panel_pos_size_para)))
-+			return -EFAULT;
-+		panel_pos_size_para.x = panel_pos_size_para.y = 0;
-+		if (copy_to_user(argp, &panel_pos_size_para,
-+		     sizeof(panel_pos_size_para)))
-+			return -EFAULT;
-+		break;
-+
-+	case VIAFB_GET_PANEL_POSITION:
-+		if (copy_from_user
-+		    (&panel_pos_size_para, argp, sizeof(panel_pos_size_para)))
-+			return -EFAULT;
-+		panel_pos_size_para.x = panel_pos_size_para.y = 0;
-+		if (copy_to_user(argp, &panel_pos_size_para,
-+		     sizeof(panel_pos_size_para)))
-+			return -EFAULT;
-+		break;
-+	case VIAFB_GET_PANEL_SIZE:
-+		if (copy_from_user
-+		    (&panel_pos_size_para, argp, sizeof(panel_pos_size_para)))
-+			return -EFAULT;
-+		panel_pos_size_para.x = panel_pos_size_para.y = 0;
-+		if (copy_to_user(argp, &panel_pos_size_para,
-+		     sizeof(panel_pos_size_para)))
-+			return -EFAULT;
-+		break;
-+
-+	case VIAFB_SET_PANEL_POSITION:
-+		if (copy_from_user
-+		    (&panel_pos_size_para, argp, sizeof(panel_pos_size_para)))
-+			return -EFAULT;
-+		break;
-+	case VIAFB_SET_PANEL_SIZE:
-+		if (copy_from_user
-+		    (&panel_pos_size_para, argp, sizeof(panel_pos_size_para)))
-+			return -EFAULT;
-+		break;
-+
 +	default:
-+		return -EINVAL;
++		DEBUG_MSG("via_i2c: specify wrong i2c port.\n");
 +	}
++	viafb_write_reg(via_i2c_chan->i2c_port, VIASR, val);
++}
 +
++static int via_i2c_getscl(void *data)
++{
++	struct via_i2c_stuff *via_i2c_chan = (struct via_i2c_stuff *)data;
++
++	if (viafb_read_reg(VIASR, via_i2c_chan->i2c_port) & 0x08)
++		return 1;
 +	return 0;
 +}
 +
-+static void viafb_fillrect(struct fb_info *info,
-+	const struct fb_fillrect *rect)
++static int via_i2c_getsda(void *data)
 +{
-+	u32 col = 0, rop = 0;
-+	int pitch;
++	struct via_i2c_stuff *via_i2c_chan = (struct via_i2c_stuff *)data;
 +
-+	if (!viafb_accel)
-+		return cfb_fillrect(info, rect);
++	if (viafb_read_reg(VIASR, via_i2c_chan->i2c_port) & 0x04)
++		return 1;
++	return 0;
++}
 +
-+	if (!rect->width || !rect->height)
-+		return;
++static void via_i2c_setsda(void *data, int state)
++{
++	u8 val;
++	struct via_i2c_stuff *via_i2c_chan = (struct via_i2c_stuff *)data;
 +
-+	switch (rect->rop) {
-+	case ROP_XOR:
-+		rop = 0x5A;
++	val = viafb_read_reg(VIASR, via_i2c_chan->i2c_port) & 0xF0;
++	if (state)
++		val |= 0x10;
++	else
++		val &= ~0x10;
++	switch (via_i2c_chan->i2c_port) {
++	case I2CPORTINDEX:
++		val |= 0x01;
 +		break;
-+	case ROP_COPY:
++	case GPIOPORTINDEX:
++		val |= 0x40;
++		break;
 +	default:
-+		rop = 0xF0;
-+		break;
++		DEBUG_MSG("via_i2c: specify wrong i2c port.\n");
 +	}
-+
-+	switch (info->var.bits_per_pixel) {
-+	case 8:
-+		col = rect->color;
-+		break;
-+	case 16:
-+		col = ((u32 *) (info->pseudo_palette))[rect->color];
-+		break;
-+	case 32:
-+		col = ((u32 *) (info->pseudo_palette))[rect->color];
-+		break;
-+	}
-+
-+	/* BitBlt Source Address */
-+	MMIO_OUT32(VIA_REG_SRCPOS, 0x0);
-+	/* Source Base Address */
-+	MMIO_OUT32(VIA_REG_SRCBASE, 0x0);
-+	/* Destination Base Address */
-+	/*MMIO_OUT32(VIA_REG_DSTBASE, 0x0); */
-+	MMIO_OUT32(VIA_REG_DSTBASE,
-+		   ((u32) (info->screen_base) - (u32) viafb_FB_MM) >> 3);
-+	/* Pitch */
-+	pitch = (info->var.xres_virtual + 7) & ~7;
-+	MMIO_OUT32(VIA_REG_PITCH,
-+		   VIA_PITCH_ENABLE |
-+		   (((pitch *
-+		      info->var.bits_per_pixel >> 3) >> 3) |
-+		      (((pitch * info->
-+		      var.bits_per_pixel >> 3) >> 3) << 16)));
-+	/* BitBlt Destination Address */
-+	MMIO_OUT32(VIA_REG_DSTPOS, ((rect->dy << 16) | rect->dx));
-+	/* Dimension: width & height */
-+	MMIO_OUT32(VIA_REG_DIMENSION,
-+		   (((rect->height - 1) << 16) | (rect->width - 1)));
-+	/* Forground color or Destination color */
-+	MMIO_OUT32(VIA_REG_FGCOLOR, col);
-+	/* GE Command */
-+	MMIO_OUT32(VIA_REG_GECMD, (0x01 | 0x2000 | (rop << 24)));
-+
++	viafb_write_reg(via_i2c_chan->i2c_port, VIASR, val);
 +}
 +
-+static void viafb_copyarea(struct fb_info *info,
-+	const struct fb_copyarea *area)
++int viafb_i2c_readbyte(u8 slave_addr, u8 index, u8 *pdata)
 +{
-+	u32 dy = area->dy, sy = area->sy, direction = 0x0;
-+	u32 sx = area->sx, dx = area->dx, width = area->width;
-+	int pitch;
++	u8 mm1[] = {0x00};
++	struct i2c_msg msgs[2];
 +
-+	DEBUG_MSG(KERN_INFO "viafb_copyarea!!\n");
-+
-+	if (!viafb_accel)
-+		return cfb_copyarea(info, area);
-+
-+	if (!area->width || !area->height)
-+		return;
-+
-+	if (sy < dy) {
-+		dy += area->height - 1;
-+		sy += area->height - 1;
-+		direction |= 0x4000;
-+	}
-+
-+	if (sx < dx) {
-+		dx += width - 1;
-+		sx += width - 1;
-+		direction |= 0x8000;
-+	}
-+
-+	/* Source Base Address */
-+	/*MMIO_OUT32(VIA_REG_SRCBASE, 0x0); */
-+	MMIO_OUT32(VIA_REG_SRCBASE,
-+		   ((u32) (info->screen_base) - (u32) viafb_FB_MM) >> 3);
-+	/* Destination Base Address */
-+	/*MMIO_OUT32(VIA_REG_DSTBASE, 0x0); */
-+	MMIO_OUT32(VIA_REG_DSTBASE,
-+		   ((u32) (info->screen_base) - (u32) viafb_FB_MM) >> 3);
-+	/* Pitch */
-+	pitch = (info->var.xres_virtual + 7) & ~7;
-+	/* VIA_PITCH_ENABLE can be omitted now. */
-+	MMIO_OUT32(VIA_REG_PITCH,
-+		   VIA_PITCH_ENABLE |
-+		   (((pitch *
-+		      info->var.bits_per_pixel >> 3) >> 3) | (((pitch *
-+								info->var.
-+								bits_per_pixel
-+								>> 3) >> 3)
-+							      << 16)));
-+	/* BitBlt Source Address */
-+	MMIO_OUT32(VIA_REG_SRCPOS, ((sy << 16) | sx));
-+	/* BitBlt Destination Address */
-+	MMIO_OUT32(VIA_REG_DSTPOS, ((dy << 16) | dx));
-+	/* Dimension: width & height */
-+	MMIO_OUT32(VIA_REG_DIMENSION,
-+		   (((area->height - 1) << 16) | (area->width - 1)));
-+	/* GE Command */
-+	MMIO_OUT32(VIA_REG_GECMD, (0x01 | direction | (0xCC << 24)));
-+
-+}
-+
-+static void viafb_imageblit(struct fb_info *info,
-+	const struct fb_image *image)
-+{
-+	u32 size, bg_col = 0, fg_col = 0, *udata;
-+	int i;
-+	int pitch;
-+
-+	if (!viafb_accel)
-+		return cfb_imageblit(info, image);
-+
-+	udata = (u32 *) image->data;
-+
-+	switch (info->var.bits_per_pixel) {
-+	case 8:
-+		bg_col = image->bg_color;
-+		fg_col = image->fg_color;
-+		break;
-+	case 16:
-+		bg_col = ((u32 *) (info->pseudo_palette))[image->bg_color];
-+		fg_col = ((u32 *) (info->pseudo_palette))[image->fg_color];
-+		break;
-+	case 32:
-+		bg_col = ((u32 *) (info->pseudo_palette))[image->bg_color];
-+		fg_col = ((u32 *) (info->pseudo_palette))[image->fg_color];
-+		break;
-+	}
-+	size = image->width * image->height;
-+
-+	/* Source Base Address */
-+	MMIO_OUT32(VIA_REG_SRCBASE, 0x0);
-+	/* Destination Base Address */
-+	/*MMIO_OUT32(VIA_REG_DSTBASE, 0x0); */
-+	MMIO_OUT32(VIA_REG_DSTBASE,
-+		   ((u32) (info->screen_base) - (u32) viafb_FB_MM) >> 3);
-+	/* Pitch */
-+	pitch = (info->var.xres_virtual + 7) & ~7;
-+	MMIO_OUT32(VIA_REG_PITCH,
-+		   VIA_PITCH_ENABLE |
-+		   (((pitch *
-+		      info->var.bits_per_pixel >> 3) >> 3) | (((pitch *
-+								info->var.
-+								bits_per_pixel
-+								>> 3) >> 3)
-+							      << 16)));
-+	/* BitBlt Source Address */
-+	MMIO_OUT32(VIA_REG_SRCPOS, 0x0);
-+	/* BitBlt Destination Address */
-+	MMIO_OUT32(VIA_REG_DSTPOS, ((image->dy << 16) | image->dx));
-+	/* Dimension: width & height */
-+	MMIO_OUT32(VIA_REG_DIMENSION,
-+		   (((image->height - 1) << 16) | (image->width - 1)));
-+	/* fb color */
-+	MMIO_OUT32(VIA_REG_FGCOLOR, fg_col);
-+	/* bg color */
-+	MMIO_OUT32(VIA_REG_BGCOLOR, bg_col);
-+	/* GE Command */
-+	MMIO_OUT32(VIA_REG_GECMD, 0xCC020142);
-+
-+	for (i = 0; i < size / 4; i++) {
-+		MMIO_OUT32(VIA_MMIO_BLTBASE, *udata);
-+		udata++;
-+	}
-+
-+}
-+
-+static int viafb_cursor(struct fb_info *info, struct fb_cursor *cursor)
-+{
-+	u8 data[CURSOR_SIZE / 8];
-+	u32 data_bak[CURSOR_SIZE / 32];
-+	u32 temp, xx, yy, bg_col = 0, fg_col = 0;
-+	int size, i, j = 0;
-+	static int hw_cursor;
-+	struct viafb_par *p_viafb_par;
-+
-+	if (viafb_accel)
-+		hw_cursor = 1;
-+
-+	if (!viafb_accel) {
-+		if (hw_cursor) {
-+			viafb_show_hw_cursor(info, HW_Cursor_OFF);
-+			hw_cursor = 0;
-+		}
-+		return -ENODEV;
-+	}
-+
-+	if ((((struct viafb_par *)(info->par))->iga_path == IGA2)
-+	    && (viaparinfo->chip_info->gfx_chip_name == UNICHROME_CLE266))
-+		return -ENODEV;
-+
-+	/* When duoview and using lcd , use soft cursor */
-+	if (viafb_LCD_ON || ((struct viafb_par *)(info->par))->duoview)
-+		return -ENODEV;
-+
-+	viafb_show_hw_cursor(info, HW_Cursor_OFF);
-+	viacursor = *cursor;
-+
-+	if (cursor->set & FB_CUR_SETHOT) {
-+		viacursor.hot = cursor->hot;
-+		temp = ((viacursor.hot.x) << 16) + viacursor.hot.y;
-+		MMIO_OUT32(VIA_REG_CURSOR_ORG, temp);
-+	}
-+
-+	if (cursor->set & FB_CUR_SETPOS) {
-+		viacursor.image.dx = cursor->image.dx;
-+		viacursor.image.dy = cursor->image.dy;
-+		yy = cursor->image.dy - info->var.yoffset;
-+		xx = cursor->image.dx - info->var.xoffset;
-+		temp = yy & 0xFFFF;
-+		temp |= (xx << 16);
-+		MMIO_OUT32(VIA_REG_CURSOR_POS, temp);
-+	}
-+
-+	if (cursor->set & FB_CUR_SETSIZE) {
-+		temp = MMIO_IN32(VIA_REG_CURSOR_MODE);
-+
-+		if ((cursor->image.width <= 32)
-+		    && (cursor->image.height <= 32)) {
-+			MAX_CURS = 32;
-+			temp |= 0x2;
-+		} else if ((cursor->image.width <= 64)
-+			   && (cursor->image.height <= 64)) {
-+			MAX_CURS = 64;
-+			temp &= 0xFFFFFFFD;
-+		} else {
-+			DEBUG_MSG(KERN_INFO
-+			"The cursor image is biger than 64x64 bits...\n");
-+			return -ENXIO;
-+		}
-+		MMIO_OUT32(VIA_REG_CURSOR_MODE, temp);
-+
-+		viacursor.image.height = cursor->image.height;
-+		viacursor.image.width = cursor->image.width;
-+	}
-+
-+	if (cursor->set & FB_CUR_SETCMAP) {
-+		viacursor.image.fg_color = cursor->image.fg_color;
-+		viacursor.image.bg_color = cursor->image.bg_color;
-+
-+		switch (info->var.bits_per_pixel) {
-+		case 8:
-+		case 16:
-+		case 32:
-+			bg_col =
-+			    (0xFF << 24) |
-+			    (((info->cmap.red)[viacursor.image.bg_color] &
-+			    0xFF00) << 8) |
-+			    ((info->cmap.green)[viacursor.image.bg_color] &
-+			    0xFF00) |
-+			    (((info->cmap.blue)[viacursor.image.bg_color] &
-+			    0xFF00) >> 8);
-+			fg_col =
-+			    (0xFF << 24) |
-+			    (((info->cmap.red)[viacursor.image.fg_color] &
-+			    0xFF00) << 8) |
-+			    ((info->cmap.green)[viacursor.image.fg_color] &
-+			    0xFF00) |
-+			    (((info->cmap.blue)[viacursor.image.fg_color] &
-+			    0xFF00) >> 8);
-+			break;
-+		default:
-+			return 0;
-+		}
-+
-+		/* This is indeed a patch for VT3324/VT3353 */
-+		if (!info->par)
-+			return 0;
-+		p_viafb_par = (struct viafb_par *)info->par;
-+
-+		if ((p_viafb_par->chip_info->gfx_chip_name ==
-+			UNICHROME_CX700) ||
-+			((p_viafb_par->chip_info->gfx_chip_name ==
-+			UNICHROME_VX800))) {
-+			bg_col =
-+			    (((info->cmap.red)[viacursor.image.bg_color] &
-+			    0xFFC0) << 14) |
-+			    (((info->cmap.green)[viacursor.image.bg_color] &
-+			    0xFFC0) << 4) |
-+			    (((info->cmap.blue)[viacursor.image.bg_color] &
-+			    0xFFC0) >> 6);
-+			fg_col =
-+			    (((info->cmap.red)[viacursor.image.fg_color] &
-+			    0xFFC0) << 14) |
-+			    (((info->cmap.green)[viacursor.image.fg_color] &
-+			    0xFFC0) << 4) |
-+			    (((info->cmap.blue)[viacursor.image.fg_color] &
-+			    0xFFC0) >> 6);
-+		}
-+
-+		MMIO_OUT32(VIA_REG_CURSOR_BG, bg_col);
-+		MMIO_OUT32(VIA_REG_CURSOR_FG, fg_col);
-+	}
-+
-+	if (cursor->set & FB_CUR_SETSHAPE) {
-+		size =
-+		    ((viacursor.image.width + 7) >> 3) *
-+		    viacursor.image.height;
-+
-+		if (MAX_CURS == 32) {
-+			for (i = 0; i < (CURSOR_SIZE / 32); i++) {
-+				data_bak[i] = 0x0;
-+				data_bak[i + 1] = 0xFFFFFFFF;
-+				i += 1;
-+			}
-+		} else if (MAX_CURS == 64) {
-+			for (i = 0; i < (CURSOR_SIZE / 32); i++) {
-+				data_bak[i] = 0x0;
-+				data_bak[i + 1] = 0x0;
-+				data_bak[i + 2] = 0xFFFFFFFF;
-+				data_bak[i + 3] = 0xFFFFFFFF;
-+				i += 3;
-+			}
-+		}
-+
-+		switch (viacursor.rop) {
-+		case ROP_XOR:
-+			for (i = 0; i < size; i++)
-+				data[i] = viacursor.mask[i];
-+			break;
-+		case ROP_COPY:
-+
-+			for (i = 0; i < size; i++)
-+				data[i] = viacursor.mask[i];
-+			break;
-+		default:
-+			break;
-+		}
-+
-+		if (MAX_CURS == 32) {
-+			for (i = 0; i < size; i++) {
-+				data_bak[j] = (u32) data[i];
-+				data_bak[j + 1] = ~data_bak[j];
-+				j += 2;
-+			}
-+		} else if (MAX_CURS == 64) {
-+			for (i = 0; i < size; i++) {
-+				data_bak[j] = (u32) data[i];
-+				data_bak[j + 1] = 0x0;
-+				data_bak[j + 2] = ~data_bak[j];
-+				data_bak[j + 3] = ~data_bak[j + 1];
-+				j += 4;
-+			}
-+		}
-+
-+		memcpy(((struct viafb_par *)(info->par))->fbmem_virt +
-+		       ((struct viafb_par *)(info->par))->cursor_start,
-+		       data_bak, CURSOR_SIZE);
-+	}
-+
-+	if (viacursor.enable)
-+		viafb_show_hw_cursor(info, HW_Cursor_ON);
++	*pdata = 0;
++	msgs[0].flags = 0;
++	msgs[1].flags = I2C_M_RD;
++	msgs[0].addr = msgs[1].addr = slave_addr / 2;
++	mm1[0] = index;
++	msgs[0].len = 1; msgs[1].len = 1;
++	msgs[0].buf = mm1; msgs[1].buf = pdata;
++	i2c_transfer(&viaparinfo->i2c_stuff.adapter, msgs, 2);
 +
 +	return 0;
 +}
 +
-+static int viafb_sync(struct fb_info *info)
++int viafb_i2c_writebyte(u8 slave_addr, u8 index, u8 data)
 +{
-+	if (viafb_accel)
-+		viafb_wait_engine_idle();
++	u8 msg[2] = { index, data };
++	struct i2c_msg msgs;
++
++	msgs.flags = 0;
++	msgs.addr = slave_addr / 2;
++	msgs.len = 2;
++	msgs.buf = msg;
++	return i2c_transfer(&viaparinfo->i2c_stuff.adapter, &msgs, 1);
++}
++
++int viafb_i2c_readbytes(u8 slave_addr, u8 index, u8 *buff, int buff_len)
++{
++	u8 mm1[] = {0x00};
++	struct i2c_msg msgs[2];
++
++	msgs[0].flags = 0;
++	msgs[1].flags = I2C_M_RD;
++	msgs[0].addr = msgs[1].addr = slave_addr / 2;
++	mm1[0] = index;
++	msgs[0].len = 1; msgs[1].len = buff_len;
++	msgs[0].buf = mm1; msgs[1].buf = buff;
++	i2c_transfer(&viaparinfo->i2c_stuff.adapter, msgs, 2);
 +	return 0;
 +}
 +
-+int viafb_get_mode_index(int hres, int vres, int flag)
++int viafb_create_i2c_bus(void *viapar)
 +{
-+	u32 i;
-+	DEBUG_MSG(KERN_INFO "viafb_get_mode_index!\n");
++	int ret;
++	struct viafb_par *par = (struct viafb_par *)viapar;
 +
-+	for (i = 0; viafb_modentry[i].mode_index != VIA_RES_INVALID; i++)
-+		if (viafb_modentry[i].xres == hres &&
-+			viafb_modentry[i].yres == vres)
-+			break;
++	strcpy(par->i2c_stuff.adapter.name, "via_i2c");
++	par->i2c_stuff.i2c_port = 0x0;
++	par->i2c_stuff.adapter.owner = THIS_MODULE;
++	par->i2c_stuff.adapter.id = 0x01FFFF;
++	par->i2c_stuff.adapter.class = 0;
++	par->i2c_stuff.adapter.algo_data = &par->i2c_stuff.algo;
++	par->i2c_stuff.adapter.dev.parent = NULL;
++	par->i2c_stuff.algo.setsda = via_i2c_setsda;
++	par->i2c_stuff.algo.setscl = via_i2c_setscl;
++	par->i2c_stuff.algo.getsda = via_i2c_getsda;
++	par->i2c_stuff.algo.getscl = via_i2c_getscl;
++	par->i2c_stuff.algo.udelay = 40;
++	par->i2c_stuff.algo.timeout = 20;
++	par->i2c_stuff.algo.data = &par->i2c_stuff;
 +
-+	viafb_resMode = viafb_modentry[i].mode_index;
-+	if (flag)
-+		viafb_mode1 = viafb_modentry[i].mode_res;
++	i2c_set_adapdata(&par->i2c_stuff.adapter, &par->i2c_stuff);
++
++	/* Raise SCL and SDA */
++	par->i2c_stuff.i2c_port = I2CPORTINDEX;
++	via_i2c_setsda(&par->i2c_stuff, 1);
++	via_i2c_setscl(&par->i2c_stuff, 1);
++
++	par->i2c_stuff.i2c_port = GPIOPORTINDEX;
++	via_i2c_setsda(&par->i2c_stuff, 1);
++	via_i2c_setscl(&par->i2c_stuff, 1);
++	udelay(20);
++
++	ret = i2c_bit_add_bus(&par->i2c_stuff.adapter);
++	if (ret == 0)
++		DEBUG_MSG("I2C bus %s registered.\n",
++		par->i2c_stuff.adapter.name);
 +	else
-+		viafb_mode = viafb_modentry[i].mode_res;
-+
-+	return viafb_resMode;
++		DEBUG_MSG("Failed to register I2C bus %s.\n",
++			par->i2c_stuff.adapter.name);
++	return ret;
 +}
 +
-+static void check_available_device_to_enable(int device_id)
++void viafb_delete_i2c_buss(void *par)
 +{
-+	int device_num = 0;
-+
-+	/* Initialize: */
-+	viafb_CRT_ON = STATE_OFF;
-+	viafb_DVI_ON = STATE_OFF;
-+	viafb_LCD_ON = STATE_OFF;
-+	viafb_LCD2_ON = STATE_OFF;
-+	viafb_DeviceStatus = None_Device;
-+
-+	if ((device_id & CRT_Device) && (device_num < MAX_ACTIVE_DEV_NUM)) {
-+		viafb_CRT_ON = STATE_ON;
-+		device_num++;
-+		viafb_DeviceStatus |= CRT_Device;
-+	}
-+
-+	if ((device_id & DVI_Device) && (device_num < MAX_ACTIVE_DEV_NUM)) {
-+		viafb_DVI_ON = STATE_ON;
-+		device_num++;
-+		viafb_DeviceStatus |= DVI_Device;
-+	}
-+
-+	if ((device_id & LCD_Device) && (device_num < MAX_ACTIVE_DEV_NUM)) {
-+		viafb_LCD_ON = STATE_ON;
-+		device_num++;
-+		viafb_DeviceStatus |= LCD_Device;
-+	}
-+
-+	if ((device_id & LCD2_Device) && (device_num < MAX_ACTIVE_DEV_NUM)) {
-+		viafb_LCD2_ON = STATE_ON;
-+		device_num++;
-+		viafb_DeviceStatus |= LCD2_Device;
-+	}
-+
-+	if (viafb_DeviceStatus == None_Device) {
-+		/* Use CRT as default active device: */
-+		viafb_CRT_ON = STATE_ON;
-+		viafb_DeviceStatus = CRT_Device;
-+	}
-+	DEBUG_MSG(KERN_INFO "Device Status:%x", viafb_DeviceStatus);
++	i2c_del_adapter(&((struct viafb_par *)par)->i2c_stuff.adapter);
 +}
-+
-+static void viafb_set_device(struct device_t active_dev)
-+{
-+	/* Check available device to enable: */
-+	int device_id = None_Device;
-+	if (active_dev.crt)
-+		device_id |= CRT_Device;
-+	if (active_dev.dvi)
-+		device_id |= DVI_Device;
-+	if (active_dev.lcd)
-+		device_id |= LCD_Device;
-+
-+	check_available_device_to_enable(device_id);
-+
-+	/* Check property of LCD: */
-+	if (viafb_LCD_ON) {
-+		if (active_dev.lcd_dsp_cent) {
-+			viaparinfo->lvds_setting_info->display_method =
-+				viafb_lcd_dsp_method = LCD_CENTERING;
-+		} else {
-+			viaparinfo->lvds_setting_info->display_method =
-+				viafb_lcd_dsp_method = LCD_EXPANDSION;
-+		}
-+
-+		if (active_dev.lcd_mode == LCD_SPWG) {
-+			viaparinfo->lvds_setting_info->lcd_mode =
-+				viafb_lcd_mode = LCD_SPWG;
-+		} else {
-+			viaparinfo->lvds_setting_info->lcd_mode =
-+				viafb_lcd_mode = LCD_OPENLDI;
-+		}
-+
-+		if (active_dev.lcd_panel_id <= LCD_PANEL_ID_MAXIMUM) {
-+			viafb_lcd_panel_id = active_dev.lcd_panel_id;
-+			viafb_init_lcd_size();
-+		}
-+	}
-+
-+	/* Check property of mode: */
-+	if (!active_dev.xres1)
-+		viafb_second_xres = 640;
-+	else
-+		viafb_second_xres = active_dev.xres1;
-+	if (!active_dev.yres1)
-+		viafb_second_yres = 480;
-+	else
-+		viafb_second_yres = active_dev.yres1;
-+	if (active_dev.bpp != 0)
-+		viafb_bpp = active_dev.bpp;
-+	if (active_dev.bpp1 != 0)
-+		viafb_bpp1 = active_dev.bpp1;
-+	if (active_dev.refresh != 0)
-+		viafb_refresh = active_dev.refresh;
-+	if (active_dev.refresh1 != 0)
-+		viafb_refresh1 = active_dev.refresh1;
-+	if ((active_dev.samm == STATE_OFF)
-+	    || (active_dev.samm == STATE_ON))
-+	    viafb_SAMM_ON = active_dev.samm;
-+	viafb_primary_dev = active_dev.primary_dev;
-+
-+	viafb_set_start_addr();
-+	viafb_set_iga_path();
-+}
-+
-+static void viafb_set_video_device(u32 video_dev_info)
-+{
-+	viaparinfo->video_on_crt = STATE_OFF;
-+	viaparinfo->video_on_dvi = STATE_OFF;
-+	viaparinfo->video_on_lcd = STATE_OFF;
-+
-+	/* Check available device to enable: */
-+	if ((video_dev_info & CRT_Device) == CRT_Device)
-+		viaparinfo->video_on_crt = STATE_ON;
-+	else if ((video_dev_info & DVI_Device) == DVI_Device)
-+		viaparinfo->video_on_dvi = STATE_ON;
-+	else if ((video_dev_info & LCD_Device) == LCD_Device)
-+		viaparinfo->video_on_lcd = STATE_ON;
-+}
-+
-+static void viafb_get_video_device(u32 *video_dev_info)
-+{
-+	*video_dev_info = None_Device;
-+	if (viaparinfo->video_on_crt == STATE_ON)
-+		*video_dev_info |= CRT_Device;
-+	else if (viaparinfo->video_on_dvi == STATE_ON)
-+		*video_dev_info |= DVI_Device;
-+	else if (viaparinfo->video_on_lcd == STATE_ON)
-+		*video_dev_info |= LCD_Device;
-+}
-+
-+static int get_primary_device(void)
-+{
-+	int primary_device = 0;
-+	/* Rule: device on iga1 path are the primary device. */
-+	if (viafb_SAMM_ON) {
-+		if (viafb_CRT_ON) {
-+			if (viaparinfo->crt_setting_info->iga_path == IGA1) {
-+				DEBUG_MSG(KERN_INFO "CRT IGA Path:%d\n",
-+					viaparinfo->
-+					crt_setting_info->iga_path);
-+				primary_device = CRT_Device;
-+			}
-+		}
-+		if (viafb_DVI_ON) {
-+			if (viaparinfo->tmds_setting_info->iga_path == IGA1) {
-+				DEBUG_MSG(KERN_INFO "DVI IGA Path:%d\n",
-+					viaparinfo->
-+					tmds_setting_info->iga_path);
-+				primary_device = DVI_Device;
-+			}
-+		}
-+		if (viafb_LCD_ON) {
-+			if (viaparinfo->lvds_setting_info->iga_path == IGA1) {
-+				DEBUG_MSG(KERN_INFO "LCD IGA Path:%d\n",
-+					viaparinfo->
-+					lvds_setting_info->iga_path);
-+				primary_device = LCD_Device;
-+			}
-+		}
-+		if (viafb_LCD2_ON) {
-+			if (viaparinfo->lvds_setting_info2->iga_path == IGA1) {
-+				DEBUG_MSG(KERN_INFO "LCD2 IGA Path:%d\n",
-+					viaparinfo->
-+					lvds_setting_info2->iga_path);
-+				primary_device = LCD2_Device;
-+			}
-+		}
-+	}
-+	return primary_device;
-+}
-+
-+static u8 is_duoview(void)
-+{
-+	if (0 == viafb_SAMM_ON) {
-+		if (viafb_LCD_ON + viafb_LCD2_ON +
-+			viafb_DVI_ON + viafb_CRT_ON == 2)
-+			return true;
-+		return false;
-+	} else {
-+		return false;
-+	}
-+}
-+
-+static void apply_second_mode_setting(struct fb_var_screeninfo
-+	*sec_var)
-+{
-+	u32 htotal, vtotal, long_refresh;
-+
-+	htotal = sec_var->xres + sec_var->left_margin +
-+		sec_var->right_margin + sec_var->hsync_len;
-+	vtotal = sec_var->yres + sec_var->upper_margin +
-+		sec_var->lower_margin + sec_var->vsync_len;
-+	if ((sec_var->xres_virtual * (sec_var->bits_per_pixel >> 3)) & 0x1F) {
-+		/*Is 32 bytes alignment? */
-+		/*32 pixel alignment */
-+		sec_var->xres_virtual = (sec_var->xres_virtual + 31) & ~31;
-+	}
-+
-+	htotal = sec_var->xres + sec_var->left_margin +
-+		sec_var->right_margin + sec_var->hsync_len;
-+	vtotal = sec_var->yres + sec_var->upper_margin +
-+		sec_var->lower_margin + sec_var->vsync_len;
-+	long_refresh = 1000000000UL / sec_var->pixclock * 1000;
-+	long_refresh /= (htotal * vtotal);
-+
-+	viafb_second_xres = sec_var->xres;
-+	viafb_second_yres = sec_var->yres;
-+	viafb_second_virtual_xres = sec_var->xres_virtual;
-+	viafb_second_virtual_yres = sec_var->yres_virtual;
-+	viafb_bpp1 = sec_var->bits_per_pixel;
-+	viafb_refresh1 = viafb_get_refresh(sec_var->xres, sec_var->yres,
-+		long_refresh);
-+}
-+
-+static int apply_device_setting(struct viafb_ioctl_setting setting_info,
-+	struct fb_info *info)
-+{
-+	int need_set_mode = 0;
-+	DEBUG_MSG(KERN_INFO "apply_device_setting\n");
-+
-+	if (setting_info.device_flag) {
-+		need_set_mode = 1;
-+		check_available_device_to_enable(setting_info.device_status);
-+	}
-+
-+	/* Unlock LCD's operation according to LCD flag
-+	   and check if the setting value is valid. */
-+	/* If the value is valid, apply the new setting value to the device. */
-+	if (viafb_LCD_ON) {
-+		if (setting_info.lcd_operation_flag & OP_LCD_CENTERING) {
-+			need_set_mode = 1;
-+			if (setting_info.lcd_attributes.display_center) {
-+				/* Centering */
-+				viaparinfo->lvds_setting_info->display_method =
-+				    LCD_CENTERING;
-+				viafb_lcd_dsp_method = LCD_CENTERING;
-+				viaparinfo->lvds_setting_info2->display_method =
-+				    viafb_lcd_dsp_method = LCD_CENTERING;
-+			} else {
-+				/* expandsion */
-+				viaparinfo->lvds_setting_info->display_method =
-+				    LCD_EXPANDSION;
-+				viafb_lcd_dsp_method = LCD_EXPANDSION;
-+				viaparinfo->lvds_setting_info2->display_method =
-+				    LCD_EXPANDSION;
-+				viafb_lcd_dsp_method = LCD_EXPANDSION;
-+			}
-+		}
-+
-+		if (setting_info.lcd_operation_flag & OP_LCD_MODE) {
-+			need_set_mode = 1;
-+			if (setting_info.lcd_attributes.lcd_mode ==
-+				LCD_SPWG) {
-+				viaparinfo->lvds_setting_info->lcd_mode =
-+					viafb_lcd_mode = LCD_SPWG;
-+			} else {
-+				viaparinfo->lvds_setting_info->lcd_mode =
-+					viafb_lcd_mode = LCD_OPENLDI;
-+			}
-+			viaparinfo->lvds_setting_info2->lcd_mode =
-+			    viaparinfo->lvds_setting_info->lcd_mode;
-+		}
-+
-+		if (setting_info.lcd_operation_flag & OP_LCD_PANEL_ID) {
-+			need_set_mode = 1;
-+			if (setting_info.lcd_attributes.panel_id <=
-+			    LCD_PANEL_ID_MAXIMUM) {
-+				viafb_lcd_panel_id =
-+				    setting_info.lcd_attributes.panel_id;
-+				viafb_init_lcd_size();
-+			}
-+		}
-+	}
-+
-+	if (0 != (setting_info.samm_status & OP_SAMM)) {
-+		setting_info.samm_status =
-+		    setting_info.samm_status & (~OP_SAMM);
-+		if (setting_info.samm_status == 0
-+		    || setting_info.samm_status == 1) {
-+			viafb_SAMM_ON = setting_info.samm_status;
-+
-+			if (viafb_SAMM_ON)
-+				viafb_primary_dev = setting_info.primary_device;
-+
-+			viafb_set_start_addr();
-+			viafb_set_iga_path();
-+		}
-+		need_set_mode = 1;
-+	}
-+
-+	viaparinfo->duoview = is_duoview();
-+
-+	if (!need_set_mode) {
-+		;
-+	} else {
-+		viafb_set_iga_path();
-+		viafb_set_par(info);
-+	}
-+	return true;
-+}
-+
-+static void retrieve_device_setting(struct viafb_ioctl_setting
-+	*setting_info)
-+{
-+
-+	/* get device status */
-+	if (viafb_CRT_ON == 1)
-+		setting_info->device_status = CRT_Device;
-+	if (viafb_DVI_ON == 1)
-+		setting_info->device_status |= DVI_Device;
-+	if (viafb_LCD_ON == 1)
-+		setting_info->device_status |= LCD_Device;
-+	if (viafb_LCD2_ON == 1)
-+		setting_info->device_status |= LCD2_Device;
-+	if ((viaparinfo->video_on_crt == 1) && (viafb_CRT_ON == 1)) {
-+		setting_info->video_device_status =
-+			viaparinfo->crt_setting_info->iga_path;
-+	} else if ((viaparinfo->video_on_dvi == 1) && (viafb_DVI_ON == 1)) {
-+		setting_info->video_device_status =
-+			viaparinfo->tmds_setting_info->iga_path;
-+	} else if ((viaparinfo->video_on_lcd == 1) && (viafb_LCD_ON == 1)) {
-+		setting_info->video_device_status =
-+			viaparinfo->lvds_setting_info->iga_path;
-+	} else {
-+		setting_info->video_device_status = 0;
-+	}
-+
-+	setting_info->samm_status = viafb_SAMM_ON;
-+	setting_info->primary_device = get_primary_device();
-+
-+	setting_info->first_dev_bpp = viafb_bpp;
-+	setting_info->second_dev_bpp = viafb_bpp1;
-+
-+	setting_info->first_dev_refresh = viafb_refresh;
-+	setting_info->second_dev_refresh = viafb_refresh1;
-+
-+	setting_info->first_dev_hor_res = viafb_hotplug_Xres;
-+	setting_info->first_dev_ver_res = viafb_hotplug_Yres;
-+	setting_info->second_dev_hor_res = viafb_second_xres;
-+	setting_info->second_dev_ver_res = viafb_second_yres;
-+
-+	/* Get lcd attributes */
-+	setting_info->lcd_attributes.display_center = viafb_lcd_dsp_method;
-+	setting_info->lcd_attributes.panel_id = viafb_lcd_panel_id;
-+	setting_info->lcd_attributes.lcd_mode = viafb_lcd_mode;
-+}
-+
-+static void parse_active_dev(void)
-+{
-+	viafb_CRT_ON = STATE_OFF;
-+	viafb_DVI_ON = STATE_OFF;
-+	viafb_LCD_ON = STATE_OFF;
-+	viafb_LCD2_ON = STATE_OFF;
-+	/* 1. Modify the active status of devices. */
-+	/* 2. Keep the order of devices, so we can set corresponding
-+	   IGA path to devices in SAMM case. */
-+	/*    Note: The previous of active_dev is primary device,
-+	   and the following is secondary device. */
-+	if (!strncmp(viafb_active_dev, "CRT+DVI", 7)) {
-+		/* CRT+DVI */
-+		viafb_CRT_ON = STATE_ON;
-+		viafb_DVI_ON = STATE_ON;
-+		viafb_primary_dev = CRT_Device;
-+	} else if (!strncmp(viafb_active_dev, "DVI+CRT", 7)) {
-+		/* DVI+CRT */
-+		viafb_CRT_ON = STATE_ON;
-+		viafb_DVI_ON = STATE_ON;
-+		viafb_primary_dev = DVI_Device;
-+	} else if (!strncmp(viafb_active_dev, "CRT+LCD", 7)) {
-+		/* CRT+LCD */
-+		viafb_CRT_ON = STATE_ON;
-+		viafb_LCD_ON = STATE_ON;
-+		viafb_primary_dev = CRT_Device;
-+	} else if (!strncmp(viafb_active_dev, "LCD+CRT", 7)) {
-+		/* LCD+CRT */
-+		viafb_CRT_ON = STATE_ON;
-+		viafb_LCD_ON = STATE_ON;
-+		viafb_primary_dev = LCD_Device;
-+	} else if (!strncmp(viafb_active_dev, "DVI+LCD", 7)) {
-+		/* DVI+LCD */
-+		viafb_DVI_ON = STATE_ON;
-+		viafb_LCD_ON = STATE_ON;
-+		viafb_primary_dev = DVI_Device;
-+	} else if (!strncmp(viafb_active_dev, "LCD+DVI", 7)) {
-+		/* LCD+DVI */
-+		viafb_DVI_ON = STATE_ON;
-+		viafb_LCD_ON = STATE_ON;
-+		viafb_primary_dev = LCD_Device;
-+	} else if (!strncmp(viafb_active_dev, "LCD+LCD2", 8)) {
-+		viafb_LCD_ON = STATE_ON;
-+		viafb_LCD2_ON = STATE_ON;
-+		viafb_primary_dev = LCD_Device;
-+	} else if (!strncmp(viafb_active_dev, "LCD2+LCD", 8)) {
-+		viafb_LCD_ON = STATE_ON;
-+		viafb_LCD2_ON = STATE_ON;
-+		viafb_primary_dev = LCD2_Device;
-+	} else if (!strncmp(viafb_active_dev, "CRT", 3)) {
-+		/* CRT only */
-+		viafb_CRT_ON = STATE_ON;
-+		viafb_SAMM_ON = STATE_OFF;
-+	} else if (!strncmp(viafb_active_dev, "DVI", 3)) {
-+		/* DVI only */
-+		viafb_DVI_ON = STATE_ON;
-+		viafb_SAMM_ON = STATE_OFF;
-+	} else if (!strncmp(viafb_active_dev, "LCD", 3)) {
-+		/* LCD only */
-+		viafb_LCD_ON = STATE_ON;
-+		viafb_SAMM_ON = STATE_OFF;
-+	} else {
-+		viafb_CRT_ON = STATE_ON;
-+		viafb_SAMM_ON = STATE_OFF;
-+	}
-+	viaparinfo->duoview = is_duoview();
-+}
-+
-+static void parse_video_dev(void)
-+{
-+	viaparinfo->video_on_crt = STATE_OFF;
-+	viaparinfo->video_on_dvi = STATE_OFF;
-+	viaparinfo->video_on_lcd = STATE_OFF;
-+
-+	if (!strncmp(viafb_video_dev, "CRT", 3)) {
-+		/* Video on CRT */
-+		viaparinfo->video_on_crt = STATE_ON;
-+	} else if (!strncmp(viafb_video_dev, "DVI", 3)) {
-+		/* Video on DVI */
-+		viaparinfo->video_on_dvi = STATE_ON;
-+	} else if (!strncmp(viafb_video_dev, "LCD", 3)) {
-+		/* Video on LCD */
-+		viaparinfo->video_on_lcd = STATE_ON;
-+	}
-+}
-+
-+static int parse_port(char *opt_str, int *output_interface)
-+{
-+	if (!strncmp(opt_str, "DVP0", 4))
-+		*output_interface = INTERFACE_DVP0;
-+	else if (!strncmp(opt_str, "DVP1", 4))
-+		*output_interface = INTERFACE_DVP1;
-+	else if (!strncmp(opt_str, "DFP_HIGHLOW", 11))
-+		*output_interface = INTERFACE_DFP;
-+	else if (!strncmp(opt_str, "DFP_HIGH", 8))
-+		*output_interface = INTERFACE_DFP_HIGH;
-+	else if (!strncmp(opt_str, "DFP_LOW", 7))
-+		*output_interface = INTERFACE_DFP_LOW;
-+	else
-+		*output_interface = INTERFACE_NONE;
-+	return 0;
-+}
-+
-+static void parse_lcd_port(void)
-+{
-+	parse_port(viafb_lcd_port, &viaparinfo->chip_info->lvds_chip_info.
-+		output_interface);
-+	/*Initialize to avoid unexpected behavior */
-+	viaparinfo->chip_info->lvds_chip_info2.output_interface =
-+	INTERFACE_NONE;
-+
-+	DEBUG_MSG(KERN_INFO "parse_lcd_port: viafb_lcd_port:%s,interface:%d\n",
-+		  viafb_lcd_port, viaparinfo->chip_info->lvds_chip_info.
-+		  output_interface);
-+}
-+
-+static void parse_dvi_port(void)
-+{
-+	parse_port(viafb_dvi_port, &viaparinfo->chip_info->tmds_chip_info.
-+		output_interface);
-+
-+	DEBUG_MSG(KERN_INFO "parse_dvi_port: viafb_dvi_port:%s,interface:%d\n",
-+		  viafb_dvi_port, viaparinfo->chip_info->tmds_chip_info.
-+		  output_interface);
-+}
-+
+diff -Nurp a/drivers/video/via/via_i2c.h b/drivers/video/via/via_i2c.h
+--- a/drivers/video/via/via_i2c.h	1970-01-01 08:00:00.000000000 +0800
++++ b/drivers/video/via/via_i2c.h	2008-07-22 02:07:29.000000000 +0800
+@@ -0,0 +1,46 @@
 +/*
-+ * The proc filesystem read/write function, a simple proc implement to
-+ * get/set the value of DPA  DVP0,   DVP0DataDriving,  DVP0ClockDriving, DVP1,
-+ * DVP1Driving, DFPHigh, DFPLow CR96,   SR2A[5], SR1B[1], SR2A[4], SR1E[2],
-+ * CR9B,    SR65,    CR97,    CR99
++ * Copyright 1998-2008 VIA Technologies, Inc. All Rights Reserved.
++ * Copyright 2001-2008 S3 Graphics, Inc. All Rights Reserved.
++
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public
++ * License as published by the Free Software Foundation;
++ * either version 2, or (at your option) any later version.
++
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTIES OR REPRESENTATIONS; without even
++ * the implied warranty of MERCHANTABILITY or FITNESS FOR
++ * A PARTICULAR PURPOSE.See the GNU General Public License
++ * for more details.
++
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc.,
++ * 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 + */
-+static int viafb_dvp0_proc_read(char *buf, char **start, off_t offset,
-+int count, int *eof, void *data)
-+{
-+	int len = 0;
-+	u8 dvp0_data_dri = 0, dvp0_clk_dri = 0, dvp0 = 0;
-+	dvp0_data_dri =
-+	    (viafb_read_reg(VIASR, SR2A) & BIT5) >> 4 |
-+	    (viafb_read_reg(VIASR, SR1B) & BIT1) >> 1;
-+	dvp0_clk_dri =
-+	    (viafb_read_reg(VIASR, SR2A) & BIT4) >> 3 |
-+	    (viafb_read_reg(VIASR, SR1E) & BIT2) >> 2;
-+	dvp0 = viafb_read_reg(VIACR, CR96) & 0x0f;
-+	len +=
-+	    sprintf(buf + len, "%x %x %x\n", dvp0, dvp0_data_dri, dvp0_clk_dri);
-+	*eof = 1;		/*Inform kernel end of data */
-+	return len;
-+}
-+static int viafb_dvp0_proc_write(struct file *file,
-+	const char __user *buffer, unsigned long count, void *data)
-+{
-+	char buf[20], *value, *pbuf;
-+	u8 reg_val = 0;
-+	unsigned long length, i;
-+	if (count < 1)
-+		return -EINVAL;
-+	length = count > 20 ? 20 : count;
-+	if (copy_from_user(&buf[0], buffer, length))
-+		return -EFAULT;
-+	buf[length - 1] = '\0';	/*Ensure end string */
-+	pbuf = &buf[0];
-+	for (i = 0; i < 3; i++) {
-+		value = strsep(&pbuf, " ");
-+		if (value != NULL) {
-+			strict_strtoul(value, 0, (unsigned long *)&reg_val);
-+			DEBUG_MSG(KERN_INFO "DVP0:reg_val[%l]=:%x\n", i,
-+				  reg_val);
-+			switch (i) {
-+			case 0:
-+				viafb_write_reg_mask(CR96, VIACR,
-+					reg_val, 0x0f);
-+				break;
-+			case 1:
-+				viafb_write_reg_mask(SR2A, VIASR,
-+					reg_val << 4, BIT5);
-+				viafb_write_reg_mask(SR1B, VIASR,
-+					reg_val << 1, BIT1);
-+				break;
-+			case 2:
-+				viafb_write_reg_mask(SR2A, VIASR,
-+					reg_val << 3, BIT4);
-+				viafb_write_reg_mask(SR1E, VIASR,
-+					reg_val << 2, BIT2);
-+				break;
-+			default:
-+				break;
-+			}
-+		} else {
-+			break;
-+		}
-+	}
-+	return count;
-+}
-+static int viafb_dvp1_proc_read(char *buf, char **start, off_t offset,
-+	int count, int *eof, void *data)
-+{
-+	int len = 0;
-+	u8 dvp1 = 0, dvp1_data_dri = 0, dvp1_clk_dri = 0;
-+	dvp1 = viafb_read_reg(VIACR, CR9B) & 0x0f;
-+	dvp1_data_dri = (viafb_read_reg(VIASR, SR65) & 0x0c) >> 2;
-+	dvp1_clk_dri = viafb_read_reg(VIASR, SR65) & 0x03;
-+	len +=
-+	    sprintf(buf + len, "%x %x %x\n", dvp1, dvp1_data_dri, dvp1_clk_dri);
-+	*eof = 1;		/*Inform kernel end of data */
-+	return len;
-+}
-+static int viafb_dvp1_proc_write(struct file *file,
-+	const char __user *buffer, unsigned long count, void *data)
-+{
-+	char buf[20], *value, *pbuf;
-+	u8 reg_val = 0;
-+	unsigned long length, i;
-+	if (count < 1)
-+		return -EINVAL;
-+	length = count > 20 ? 20 : count;
-+	if (copy_from_user(&buf[0], buffer, length))
-+		return -EFAULT;
-+	buf[length - 1] = '\0';	/*Ensure end string */
-+	pbuf = &buf[0];
-+	for (i = 0; i < 3; i++) {
-+		value = strsep(&pbuf, " ");
-+		if (value != NULL) {
-+			strict_strtoul(value, 0, (unsigned long *)&reg_val);
-+			switch (i) {
-+			case 0:
-+				viafb_write_reg_mask(CR9B, VIACR,
-+					reg_val, 0x0f);
-+				break;
-+			case 1:
-+				viafb_write_reg_mask(SR65, VIASR,
-+					reg_val << 2, 0x0c);
-+				break;
-+			case 2:
-+				viafb_write_reg_mask(SR65, VIASR,
-+					reg_val, 0x03);
-+				break;
-+			default:
-+				break;
-+			}
-+		} else {
-+			break;
-+		}
-+	}
-+	return count;
-+}
++#ifndef __VIA_I2C_H__
++#define __VIA_I2C_H__
 +
-+static int viafb_dfph_proc_read(char *buf, char **start, off_t offset,
-+	int count, int *eof, void *data)
-+{
-+	int len = 0;
-+	u8 dfp_high = 0;
-+	dfp_high = viafb_read_reg(VIACR, CR97) & 0x0f;
-+	len += sprintf(buf + len, "%x\n", dfp_high);
-+	*eof = 1;		/*Inform kernel end of data */
-+	return len;
-+}
-+static int viafb_dfph_proc_write(struct file *file,
-+	const char __user *buffer, unsigned long count, void *data)
-+{
-+	char buf[20];
-+	u8 reg_val = 0;
-+	unsigned long length;
-+	if (count < 1)
-+		return -EINVAL;
-+	length = count > 20 ? 20 : count;
-+	if (copy_from_user(&buf[0], buffer, length))
-+		return -EFAULT;
-+	buf[length - 1] = '\0';	/*Ensure end string */
-+	strict_strtoul(&buf[0], 0, (unsigned long *)&reg_val);
-+	viafb_write_reg_mask(CR97, VIACR, reg_val, 0x0f);
-+	return count;
-+}
-+static int viafb_dfpl_proc_read(char *buf, char **start, off_t offset,
-+	int count, int *eof, void *data)
-+{
-+	int len = 0;
-+	u8 dfp_low = 0;
-+	dfp_low = viafb_read_reg(VIACR, CR99) & 0x0f;
-+	len += sprintf(buf + len, "%x\n", dfp_low);
-+	*eof = 1;		/*Inform kernel end of data */
-+	return len;
-+}
-+static int viafb_dfpl_proc_write(struct file *file,
-+	const char __user *buffer, unsigned long count, void *data)
-+{
-+	char buf[20];
-+	u8 reg_val = 0;
-+	unsigned long length;
-+	if (count < 1)
-+		return -EINVAL;
-+	length = count > 20 ? 20 : count;
-+	if (copy_from_user(&buf[0], buffer, length))
-+		return -EFAULT;
-+	buf[length - 1] = '\0';	/*Ensure end string */
-+	strict_strtoul(&buf[0], 0, (unsigned long *)&reg_val);
-+	viafb_write_reg_mask(CR99, VIACR, reg_val, 0x0f);
-+	return count;
-+}
-+static int viafb_vt1636_proc_read(char *buf, char **start,
-+	off_t offset, int count, int *eof, void *data)
-+{
-+	int len = 0;
-+	u8 vt1636_08 = 0, vt1636_09 = 0;
-+	switch (viaparinfo->chip_info->lvds_chip_info.lvds_chip_name) {
-+	case VT1636_LVDS:
-+		vt1636_08 =
-+		    viafb_gpio_i2c_read_lvds(viaparinfo->lvds_setting_info,
-+		    &viaparinfo->chip_info->lvds_chip_info, 0x08) & 0x0f;
-+		vt1636_09 =
-+		    viafb_gpio_i2c_read_lvds(viaparinfo->lvds_setting_info,
-+		    &viaparinfo->chip_info->lvds_chip_info, 0x09) & 0x1f;
-+		len += sprintf(buf + len, "%x %x\n", vt1636_08, vt1636_09);
-+		break;
-+	default:
-+		break;
-+	}
-+	switch (viaparinfo->chip_info->lvds_chip_info2.lvds_chip_name) {
-+	case VT1636_LVDS:
-+		vt1636_08 =
-+		    viafb_gpio_i2c_read_lvds(viaparinfo->lvds_setting_info2,
-+			&viaparinfo->chip_info->lvds_chip_info2, 0x08) & 0x0f;
-+		vt1636_09 =
-+		    viafb_gpio_i2c_read_lvds(viaparinfo->lvds_setting_info2,
-+			&viaparinfo->chip_info->lvds_chip_info2, 0x09) & 0x1f;
-+		len += sprintf(buf + len, " %x %x\n", vt1636_08, vt1636_09);
-+		break;
-+	default:
-+		break;
-+	}
-+	*eof = 1;		/*Inform kernel end of data */
-+	return len;
-+}
-+static int viafb_vt1636_proc_write(struct file *file,
-+	const char __user *buffer, unsigned long count, void *data)
-+{
-+	char buf[30], *value, *pbuf;
-+	struct IODATA reg_val;
-+	unsigned long length, i;
-+	if (count < 1)
-+		return -EINVAL;
-+	length = count > 30 ? 30 : count;
-+	if (copy_from_user(&buf[0], buffer, length))
-+		return -EFAULT;
-+	buf[length - 1] = '\0';	/*Ensure end string */
-+	pbuf = &buf[0];
-+	switch (viaparinfo->chip_info->lvds_chip_info.lvds_chip_name) {
-+	case VT1636_LVDS:
-+		for (i = 0; i < 2; i++) {
-+			value = strsep(&pbuf, " ");
-+			if (value != NULL) {
-+				strict_strtoul(value, 0,
-+					(unsigned long *)&reg_val.Data);
-+				switch (i) {
-+				case 0:
-+					reg_val.Index = 0x08;
-+					reg_val.Mask = 0x0f;
-+					viafb_gpio_i2c_write_mask_lvds
-+					    (viaparinfo->lvds_setting_info,
-+					    &viaparinfo->
-+					    chip_info->lvds_chip_info,
-+					     reg_val);
-+					break;
-+				case 1:
-+					reg_val.Index = 0x09;
-+					reg_val.Mask = 0x1f;
-+					viafb_gpio_i2c_write_mask_lvds
-+					    (viaparinfo->lvds_setting_info,
-+					    &viaparinfo->
-+					    chip_info->lvds_chip_info,
-+					     reg_val);
-+					break;
-+				default:
-+					break;
-+				}
-+			} else {
-+				break;
-+			}
-+		}
-+		break;
-+	default:
-+		break;
-+	}
-+	switch (viaparinfo->chip_info->lvds_chip_info2.lvds_chip_name) {
-+	case VT1636_LVDS:
-+		for (i = 0; i < 2; i++) {
-+			value = strsep(&pbuf, " ");
-+			if (value != NULL) {
-+				strict_strtoul(value, 0,
-+					(unsigned long *)&reg_val.Data);
-+				switch (i) {
-+				case 0:
-+					reg_val.Index = 0x08;
-+					reg_val.Mask = 0x0f;
-+					viafb_gpio_i2c_write_mask_lvds
-+					    (viaparinfo->lvds_setting_info2,
-+					    &viaparinfo->
-+					    chip_info->lvds_chip_info2,
-+					     reg_val);
-+					break;
-+				case 1:
-+					reg_val.Index = 0x09;
-+					reg_val.Mask = 0x1f;
-+					viafb_gpio_i2c_write_mask_lvds
-+					    (viaparinfo->lvds_setting_info2,
-+					    &viaparinfo->
-+					    chip_info->lvds_chip_info2,
-+					     reg_val);
-+					break;
-+				default:
-+					break;
-+				}
-+			} else {
-+				break;
-+			}
-+		}
-+		break;
-+	default:
-+		break;
-+	}
-+	return count;
-+}
++#include <linux/i2c.h>
++#include <linux/i2c-algo-bit.h>
 +
-+static void viafb_init_proc(struct proc_dir_entry *viafb_entry)
-+{
-+	struct proc_dir_entry *entry;
-+	viafb_entry = proc_mkdir("viafb", NULL);
-+	if (viafb_entry) {
-+		entry = create_proc_entry("dvp0", 0, viafb_entry);
-+		if (entry) {
-+			entry->owner = THIS_MODULE;
-+			entry->read_proc = viafb_dvp0_proc_read;
-+			entry->write_proc = viafb_dvp0_proc_write;
-+		}
-+		entry = create_proc_entry("dvp1", 0, viafb_entry);
-+		if (entry) {
-+			entry->owner = THIS_MODULE;
-+			entry->read_proc = viafb_dvp1_proc_read;
-+			entry->write_proc = viafb_dvp1_proc_write;
-+		}
-+		entry = create_proc_entry("dfph", 0, viafb_entry);
-+		if (entry) {
-+			entry->owner = THIS_MODULE;
-+			entry->read_proc = viafb_dfph_proc_read;
-+			entry->write_proc = viafb_dfph_proc_write;
-+		}
-+		entry = create_proc_entry("dfpl", 0, viafb_entry);
-+		if (entry) {
-+			entry->owner = THIS_MODULE;
-+			entry->read_proc = viafb_dfpl_proc_read;
-+			entry->write_proc = viafb_dfpl_proc_write;
-+		}
-+		if (VT1636_LVDS == viaparinfo->chip_info->lvds_chip_info.
-+			lvds_chip_name || VT1636_LVDS ==
-+		    viaparinfo->chip_info->lvds_chip_info2.lvds_chip_name) {
-+			entry = create_proc_entry("vt1636", 0, viafb_entry);
-+			if (entry) {
-+				entry->owner = THIS_MODULE;
-+				entry->read_proc = viafb_vt1636_proc_read;
-+				entry->write_proc = viafb_vt1636_proc_write;
-+			}
-+		}
-+
-+	}
-+}
-+static void viafb_remove_proc(struct proc_dir_entry *viafb_entry)
-+{
-+	/* no problem if it was not registered */
-+	remove_proc_entry("dvp0", viafb_entry);/* parent dir */
-+	remove_proc_entry("dvp1", viafb_entry);
-+	remove_proc_entry("dfph", viafb_entry);
-+	remove_proc_entry("dfpl", viafb_entry);
-+	remove_proc_entry("vt1636", viafb_entry);
-+	remove_proc_entry("vt1625", viafb_entry);
-+}
-+
-+static int __devinit via_pci_probe(void)
-+{
-+	unsigned int default_xres, default_yres;
-+	char *tmpc, *tmpm;
-+	char *tmpc_sec, *tmpm_sec;
-+	int vmode_index;
-+	u32 tmds_length, lvds_length, crt_length, chip_length, viafb_par_length;
-+
-+	DEBUG_MSG(KERN_INFO "VIAFB PCI Probe!!\n");
-+
-+	viafb_par_length = ALIGN(sizeof(struct viafb_par), BITS_PER_LONG/8);
-+	tmds_length = ALIGN(sizeof(struct tmds_setting_information),
-+		BITS_PER_LONG/8);
-+	lvds_length = ALIGN(sizeof(struct lvds_setting_information),
-+		BITS_PER_LONG/8);
-+	crt_length = ALIGN(sizeof(struct lvds_setting_information),
-+		BITS_PER_LONG/8);
-+	chip_length = ALIGN(sizeof(struct chip_information), BITS_PER_LONG/8);
-+
-+	/* Allocate fb_info and ***_par here, also including some other needed
-+	 * variables
-+	*/
-+	viafbinfo = framebuffer_alloc(viafb_par_length + 2 * lvds_length +
-+	tmds_length + crt_length + chip_length, NULL);
-+	if (!viafbinfo) {
-+		printk(KERN_ERR"Could not allocate memory for viafb_info.\n");
-+		return -ENODEV;
-+	}
-+
-+	viaparinfo = (struct viafb_par *)viafbinfo->par;
-+	viaparinfo->tmds_setting_info = (struct tmds_setting_information *)
-+		((u32)viaparinfo + viafb_par_length);
-+	viaparinfo->lvds_setting_info = (struct lvds_setting_information *)
-+		((u32)viaparinfo->tmds_setting_info + tmds_length);
-+	viaparinfo->lvds_setting_info2 = (struct lvds_setting_information *)
-+		((u32)viaparinfo->lvds_setting_info + lvds_length);
-+	viaparinfo->crt_setting_info = (struct crt_setting_information *)
-+		((u32)viaparinfo->lvds_setting_info2 + lvds_length);
-+	viaparinfo->chip_info = (struct chip_information *)
-+		((u32)viaparinfo->crt_setting_info + crt_length);
-+
-+	if (viafb_dual_fb)
-+		viafb_SAMM_ON = 1;
-+	parse_active_dev();
-+	parse_video_dev();
-+	parse_lcd_port();
-+	parse_dvi_port();
-+
-+	/* for dual-fb must viafb_SAMM_ON=1 and viafb_dual_fb=1 */
-+	if (!viafb_SAMM_ON)
-+		viafb_dual_fb = 0;
-+
-+	/* Set up I2C bus stuff */
-+	viafb_create_i2c_bus(viaparinfo);
-+
-+	viafb_init_chip_info();
-+	viafb_get_fb_info(&viaparinfo->fbmem, &viaparinfo->memsize);
-+	viaparinfo->fbmem_free = viaparinfo->memsize;
-+	viaparinfo->fbmem_used = 0;
-+	viaparinfo->fbmem_virt = ioremap_nocache(viaparinfo->fbmem,
-+		viaparinfo->memsize);
-+	viafbinfo->screen_base = (char *)viaparinfo->fbmem_virt;
-+
-+	if (!viaparinfo->fbmem_virt) {
-+		printk(KERN_INFO "ioremap failed\n");
-+		return -1;
-+	}
-+
-+	viafb_get_mmio_info(&viaparinfo->mmio_base, &viaparinfo->mmio_len);
-+	viaparinfo->io_virt = ioremap_nocache(viaparinfo->mmio_base,
-+		viaparinfo->mmio_len);
-+
-+	viafbinfo->node = 0;
-+	viafbinfo->fbops = &viafb_ops;
-+	viafbinfo->flags = FBINFO_DEFAULT | FBINFO_HWACCEL_YPAN;
-+
-+	viafbinfo->pseudo_palette = pseudo_pal;
-+	if (viafb_accel) {
-+		viafb_init_accel();
-+		viafb_init_2d_engine();
-+		viafb_hw_cursor_init();
-+	}
-+
-+	if (viafb_second_size && (viafb_second_size < 8)) {
-+		viafb_second_offset = viaparinfo->fbmem_free -
-+			viafb_second_size * 1024 * 1024;
-+	} else {
-+		viafb_second_size = 8;
-+		viafb_second_offset = viaparinfo->fbmem_free -
-+			viafb_second_size * 1024 * 1024;
-+	}
-+
-+	viafb_FB_MM = viaparinfo->fbmem_virt;
-+	tmpm = viafb_mode;
-+	tmpc = strsep(&tmpm, "x");
-+	strict_strtoul(tmpc, 0, (unsigned long *)&default_xres);
-+	strict_strtoul(tmpm, 0, (unsigned long *)&default_yres);
-+
-+	vmode_index = viafb_get_mode_index(default_xres, default_yres, 0);
-+	DEBUG_MSG(KERN_INFO "0->index=%d\n", vmode_index);
-+
-+	if (viafb_SAMM_ON == 1) {
-+		if (strcmp(viafb_mode, viafb_mode1)) {
-+			tmpm_sec = viafb_mode1;
-+			tmpc_sec = strsep(&tmpm_sec, "x");
-+			strict_strtoul(tmpc_sec, 0,
-+				(unsigned long *)&viafb_second_xres);
-+			strict_strtoul(tmpm_sec, 0,
-+				(unsigned long *)&viafb_second_yres);
-+		} else {
-+			viafb_second_xres = default_xres;
-+			viafb_second_yres = default_yres;
-+		}
-+		if (0 == viafb_second_virtual_xres) {
-+			switch (viafb_second_xres) {
-+			case 1400:
-+				viafb_second_virtual_xres = 1408;
-+				break;
-+			default:
-+				viafb_second_virtual_xres = viafb_second_xres;
-+				break;
-+			}
-+		}
-+		if (0 == viafb_second_virtual_yres)
-+			viafb_second_virtual_yres = viafb_second_yres;
-+	}
-+
-+	switch (viafb_bpp) {
-+	case 0 ... 8:
-+		viafb_bpp = 8;
-+		break;
-+	case 9 ... 16:
-+		viafb_bpp = 16;
-+		break;
-+	case 17 ... 32:
-+		viafb_bpp = 32;
-+		break;
-+	default:
-+		viafb_bpp = 8;
-+	}
-+	default_var.xres = default_xres;
-+	default_var.yres = default_yres;
-+	switch (default_xres) {
-+	case 1400:
-+		default_var.xres_virtual = 1408;
-+		break;
-+	default:
-+		default_var.xres_virtual = default_xres;
-+		break;
-+	}
-+	default_var.yres_virtual = default_yres;
-+	default_var.bits_per_pixel = viafb_bpp;
-+	if (default_var.bits_per_pixel == 15)
-+		default_var.bits_per_pixel = 16;
-+	default_var.pixclock =
-+	    viafb_get_pixclock(default_xres, default_yres, viafb_refresh);
-+	default_var.left_margin = (default_xres >> 3) & 0xf8;
-+	default_var.right_margin = 32;
-+	default_var.upper_margin = 16;
-+	default_var.lower_margin = 4;
-+	default_var.hsync_len = default_var.left_margin;
-+	default_var.vsync_len = 4;
-+	default_var.accel_flags = 0;
-+
-+	if (viafb_accel) {
-+		viafbinfo->flags |=
-+		    (FBINFO_HWACCEL_COPYAREA | FBINFO_HWACCEL_FILLRECT |
-+		     FBINFO_HWACCEL_IMAGEBLIT);
-+		default_var.accel_flags |= FB_ACCELF_TEXT;
-+	} else
-+		viafbinfo->flags |= FBINFO_HWACCEL_DISABLED;
-+
-+	if (viafb_dual_fb) {
-+		viafbinfo1 = framebuffer_alloc(viafb_par_length, NULL);
-+		if (!viafbinfo1) {
-+			printk(KERN_ERR
-+			"allocate the second framebuffer struct error\n");
-+			framebuffer_release(viafbinfo);
-+			return -ENOMEM;
-+		}
-+		viaparinfo1 = viafbinfo1->par;
-+		memcpy(viaparinfo1, viaparinfo, viafb_par_length);
-+		viaparinfo1->memsize = viaparinfo->memsize -
-+			viafb_second_offset;
-+		viaparinfo->memsize = viafb_second_offset;
-+		viaparinfo1->fbmem_virt = viaparinfo->fbmem_virt +
-+			viafb_second_offset;
-+		viaparinfo1->fbmem = viaparinfo->fbmem + viafb_second_offset;
-+
-+		viaparinfo1->fbmem_used = viaparinfo->fbmem_used;
-+		viaparinfo1->fbmem_free = viaparinfo1->memsize -
-+			viaparinfo1->fbmem_used;
-+		viaparinfo->fbmem_free = viaparinfo->memsize;
-+		viaparinfo->fbmem_used = 0;
-+		if (viafb_accel) {
-+			viaparinfo1->cursor_start =
-+			    viaparinfo->cursor_start - viafb_second_offset;
-+			viaparinfo1->VQ_start = viaparinfo->VQ_start -
-+				viafb_second_offset;
-+			viaparinfo1->VQ_end = viaparinfo->VQ_end -
-+				viafb_second_offset;
-+		}
-+
-+		memcpy(viafbinfo1, viafbinfo, sizeof(struct fb_info));
-+		viafbinfo1->screen_base = viafbinfo->screen_base +
-+			viafb_second_offset;
-+		viafbinfo1->fix.smem_start = viaparinfo1->fbmem;
-+		viafbinfo1->fix.smem_len = viaparinfo1->fbmem_free;
-+
-+		default_var.xres = viafb_second_xres;
-+		default_var.yres = viafb_second_yres;
-+		default_var.xres_virtual = viafb_second_virtual_xres;
-+		default_var.yres_virtual = viafb_second_virtual_yres;
-+		if (viafb_bpp1 != viafb_bpp)
-+			viafb_bpp1 = viafb_bpp;
-+		default_var.bits_per_pixel = viafb_bpp1;
-+		default_var.pixclock =
-+		    viafb_get_pixclock(viafb_second_xres, viafb_second_yres,
-+		    viafb_refresh);
-+		default_var.left_margin = (viafb_second_xres >> 3) & 0xf8;
-+		default_var.right_margin = 32;
-+		default_var.upper_margin = 16;
-+		default_var.lower_margin = 4;
-+		default_var.hsync_len = default_var.left_margin;
-+		default_var.vsync_len = 4;
-+
-+		viafb_setup_fixinfo(&viafbinfo1->fix, viaparinfo1);
-+		viafb_check_var(&default_var, viafbinfo1);
-+		viafbinfo1->var = default_var;
-+		viafb_update_viafb_par(viafbinfo);
-+		viafb_update_fix(&viafbinfo1->fix, viafbinfo1);
-+	}
-+
-+	viafb_setup_fixinfo(&viafbinfo->fix, viaparinfo);
-+	viafb_check_var(&default_var, viafbinfo);
-+	viafbinfo->var = default_var;
-+	viafb_update_viafb_par(viafbinfo);
-+	viafb_update_fix(&viafbinfo->fix, viafbinfo);
-+	default_var.activate = FB_ACTIVATE_NOW;
-+	fb_alloc_cmap(&viafbinfo->cmap, 256, 0);
-+
-+	if (viafb_dual_fb && (viafb_primary_dev == LCD_Device)
-+	    && (viaparinfo->chip_info->gfx_chip_name == UNICHROME_CLE266)) {
-+		if (register_framebuffer(viafbinfo1) < 0)
-+			return -EINVAL;
-+	}
-+	if (register_framebuffer(viafbinfo) < 0)
-+		return -EINVAL;
-+
-+	if (viafb_dual_fb && ((viafb_primary_dev != LCD_Device)
-+			|| (viaparinfo->chip_info->gfx_chip_name !=
-+			UNICHROME_CLE266))) {
-+		if (register_framebuffer(viafbinfo1) < 0)
-+			return -EINVAL;
-+	}
-+	DEBUG_MSG(KERN_INFO "fb%d: %s frame buffer device %dx%d-%dbpp\n",
-+		  viafbinfo->node, viafbinfo->fix.id, default_var.xres,
-+		  default_var.yres, default_var.bits_per_pixel);
-+
-+	viafb_init_proc(viaparinfo->proc_entry);
-+	viafb_init_dac(IGA2);
-+	return 0;
-+}
-+
-+static void __devexit via_pci_remove(void)
-+{
-+	DEBUG_MSG(KERN_INFO "via_pci_remove!\n");
-+	fb_dealloc_cmap(&viafbinfo->cmap);
-+	unregister_framebuffer(viafbinfo);
-+	if (viafb_dual_fb)
-+		unregister_framebuffer(viafbinfo1);
-+	iounmap((void *)viaparinfo->fbmem_virt);
-+	iounmap(viaparinfo->io_virt);
-+
-+	viafb_delete_i2c_buss(viaparinfo);
-+
-+	framebuffer_release(viafbinfo);
-+	if (viafb_dual_fb)
-+		framebuffer_release(viafbinfo1);
-+
-+	viafb_remove_proc(viaparinfo->proc_entry);
-+}
-+
-+#ifndef MODULE
-+static int __init viafb_setup(char *options)
-+{
-+	char *this_opt;
-+	DEBUG_MSG(KERN_INFO "viafb_setup!\n");
-+
-+	if (!options || !*options)
-+		return 0;
-+
-+	while ((this_opt = strsep(&options, ",")) != NULL) {
-+		if (!*this_opt)
-+			continue;
-+
-+		if (!strncmp(this_opt, "viafb_mode1=", 12))
-+			viafb_mode1 = kstrdup(this_opt + 12, GFP_KERNEL);
-+		else if (!strncmp(this_opt, "viafb_mode=", 11))
-+			viafb_mode = kstrdup(this_opt + 11, GFP_KERNEL);
-+		else if (!strncmp(this_opt, "viafb_bpp1=", 11))
-+			strict_strtoul(this_opt + 11, 0,
-+				(unsigned long *)&viafb_bpp1);
-+		else if (!strncmp(this_opt, "viafb_bpp=", 10))
-+			strict_strtoul(this_opt + 10, 0,
-+				(unsigned long *)&viafb_bpp);
-+		else if (!strncmp(this_opt, "viafb_refresh1=", 15))
-+			strict_strtoul(this_opt + 15, 0,
-+				(unsigned long *)&viafb_refresh1);
-+		else if (!strncmp(this_opt, "viafb_refresh=", 14))
-+			strict_strtoul(this_opt + 14, 0,
-+				(unsigned long *)&viafb_refresh);
-+		else if (!strncmp(this_opt, "viafb_lcd_dsp_method=", 21))
-+			strict_strtoul(this_opt + 21, 0,
-+				(unsigned long *)&viafb_lcd_dsp_method);
-+		else if (!strncmp(this_opt, "viafb_lcd_panel_id=", 19))
-+			strict_strtoul(this_opt + 19, 0,
-+				(unsigned long *)&viafb_lcd_panel_id);
-+		else if (!strncmp(this_opt, "viafb_accel=", 12))
-+			strict_strtoul(this_opt + 12, 0,
-+				(unsigned long *)&viafb_accel);
-+		else if (!strncmp(this_opt, "viafb_SAMM_ON=", 14))
-+			strict_strtoul(this_opt + 14, 0,
-+				(unsigned long *)&viafb_SAMM_ON);
-+		else if (!strncmp(this_opt, "viafb_active_dev=", 17))
-+			viafb_active_dev = kstrdup(this_opt + 17, GFP_KERNEL);
-+		else if (!strncmp(this_opt,
-+			"viafb_display_hardware_layout=", 30))
-+			strict_strtoul(this_opt + 30, 0,
-+			(unsigned long *)&viafb_display_hardware_layout);
-+		else if (!strncmp(this_opt, "viafb_second_size=", 18))
-+			strict_strtoul(this_opt + 18, 0,
-+				(unsigned long *)&viafb_second_size);
-+		else if (!strncmp(this_opt,
-+			"viafb_platform_epia_dvi=", 24))
-+			strict_strtoul(this_opt + 24, 0,
-+				(unsigned long *)&viafb_platform_epia_dvi);
-+		else if (!strncmp(this_opt,
-+			"viafb_device_lcd_dualedge=", 26))
-+			strict_strtoul(this_opt + 26, 0,
-+				(unsigned long *)&viafb_device_lcd_dualedge);
-+		else if (!strncmp(this_opt, "viafb_bus_width=", 16))
-+			strict_strtoul(this_opt + 16, 0,
-+				(unsigned long *)&viafb_bus_width);
-+		else if (!strncmp(this_opt, "viafb_lcd_mode=", 15))
-+			strict_strtoul(this_opt + 15, 0,
-+				(unsigned long *)&viafb_lcd_mode);
-+		else if (!strncmp(this_opt, "viafb_video_dev=", 16))
-+			viafb_video_dev = kstrdup(this_opt + 16, GFP_KERNEL);
-+		else if (!strncmp(this_opt, "viafb_lcd_port=", 15))
-+			viafb_lcd_port = kstrdup(this_opt + 15, GFP_KERNEL);
-+		else if (!strncmp(this_opt, "viafb_dvi_port=", 15))
-+			viafb_dvi_port = kstrdup(this_opt + 15, GFP_KERNEL);
-+	}
-+	return 0;
-+}
-+#endif
-+
-+static int __init viafb_init(void)
-+{
-+#ifndef MODULE
-+	char *option = NULL;
-+	if (fb_get_options("viafb", &option))
-+		return -ENODEV;
-+	viafb_setup(option);
-+#endif
-+	printk(KERN_INFO
-+       "VIA Graphics Intergration Chipset framebuffer %d.%d initializing\n",
-+	       VERSION_MAJOR, VERSION_MINOR);
-+	return via_pci_probe();
-+}
-+
-+static void __exit viafb_exit(void)
-+{
-+	DEBUG_MSG(KERN_INFO "viafb_exit!\n");
-+	via_pci_remove();
-+}
-+
-+static struct fb_ops viafb_ops = {
-+	.owner = THIS_MODULE,
-+	.fb_open = viafb_open,
-+	.fb_release = viafb_release,
-+	.fb_check_var = viafb_check_var,
-+	.fb_set_par = viafb_set_par,
-+	.fb_setcolreg = viafb_setcolreg,
-+	.fb_pan_display = viafb_pan_display,
-+	.fb_blank = viafb_blank,
-+	.fb_fillrect = viafb_fillrect,
-+	.fb_copyarea = viafb_copyarea,
-+	.fb_imageblit = viafb_imageblit,
-+	.fb_cursor = viafb_cursor,
-+	.fb_ioctl = viafb_ioctl,
-+	.fb_sync = viafb_sync,
-+	.fb_setcmap = viafb_setcmap,
++struct via_i2c_stuff {
++	u16 i2c_port;			/* GPIO or I2C port */
++	struct i2c_adapter adapter;
++	struct i2c_algo_bit_data algo;
 +};
 +
-+module_init(viafb_init);
-+module_exit(viafb_exit);
++#define I2CPORT           0x3c4
++#define I2CPORTINDEX      0x31
++#define GPIOPORT          0x3C4
++#define GPIOPORTINDEX     0x2C
++#define I2C_BUS             1
++#define GPIO_BUS            2
++#define DELAYPORT           0x3C3
 +
-+#ifdef MODULE
-+module_param(viafb_memsize, int, 0);
-+
-+module_param(viafb_mode, charp, 0);
-+MODULE_PARM_DESC(viafb_mode, "Set resolution (default=640x480)");
-+
-+module_param(viafb_mode1, charp, 0);
-+MODULE_PARM_DESC(viafb_mode1, "Set resolution (default=640x480)");
-+
-+module_param(viafb_bpp, int, 0);
-+MODULE_PARM_DESC(viafb_bpp, "Set color depth (default=32bpp)");
-+
-+module_param(viafb_bpp1, int, 0);
-+MODULE_PARM_DESC(viafb_bpp1, "Set color depth (default=32bpp)");
-+
-+module_param(viafb_refresh, int, 0);
-+MODULE_PARM_DESC(viafb_refresh,
-+	"Set CRT viafb_refresh rate (default = 60)");
-+
-+module_param(viafb_refresh1, int, 0);
-+MODULE_PARM_DESC(viafb_refresh1,
-+	"Set CRT refresh rate (default = 60)");
-+
-+module_param(viafb_lcd_panel_id, int, 0);
-+MODULE_PARM_DESC(viafb_lcd_panel_id,
-+	"Set Flat Panel type(Default=1024x768)");
-+
-+module_param(viafb_lcd_dsp_method, int, 0);
-+MODULE_PARM_DESC(viafb_lcd_dsp_method,
-+	"Set Flat Panel display scaling method.(Default=Expandsion)");
-+
-+module_param(viafb_SAMM_ON, int, 0);
-+MODULE_PARM_DESC(viafb_SAMM_ON,
-+	"Turn on/off flag of SAMM(Default=OFF)");
-+
-+module_param(viafb_accel, int, 0);
-+MODULE_PARM_DESC(viafb_accel,
-+	"Set 2D Hardware Acceleration.(Default = OFF)");
-+
-+module_param(viafb_active_dev, charp, 0);
-+MODULE_PARM_DESC(viafb_active_dev, "Specify active devices.");
-+
-+module_param(viafb_display_hardware_layout, int, 0);
-+MODULE_PARM_DESC(viafb_display_hardware_layout,
-+	"Display Hardware Layout (LCD Only, DVI Only...,etc)");
-+
-+module_param(viafb_second_size, int, 0);
-+MODULE_PARM_DESC(viafb_second_size,
-+	"Set secondary device memory size");
-+
-+module_param(viafb_dual_fb, int, 0);
-+MODULE_PARM_DESC(viafb_dual_fb,
-+	"Turn on/off flag of dual framebuffer devices.(Default = OFF)");
-+
-+module_param(viafb_platform_epia_dvi, int, 0);
-+MODULE_PARM_DESC(viafb_platform_epia_dvi,
-+	"Turn on/off flag of DVI devices on EPIA board.(Default = OFF)");
-+
-+module_param(viafb_device_lcd_dualedge, int, 0);
-+MODULE_PARM_DESC(viafb_device_lcd_dualedge,
-+	"Turn on/off flag of dual edge panel.(Default = OFF)");
-+
-+module_param(viafb_bus_width, int, 0);
-+MODULE_PARM_DESC(viafb_bus_width,
-+	"Set bus width of panel.(Default = 12)");
-+
-+module_param(viafb_lcd_mode, int, 0);
-+MODULE_PARM_DESC(viafb_lcd_mode,
-+	"Set Flat Panel mode(Default=OPENLDI)");
-+
-+module_param(viafb_video_dev, charp, 0);
-+MODULE_PARM_DESC(viafb_video_dev, "Specify video devices.");
-+
-+module_param(viafb_lcd_port, charp, 0);
-+MODULE_PARM_DESC(viafb_lcd_port, "Specify LCD output port.");
-+
-+module_param(viafb_dvi_port, charp, 0);
-+MODULE_PARM_DESC(viafb_dvi_port, "Specify DVI output port.");
-+
-+MODULE_LICENSE("GPL");
-+#endif
-diff -Nurp a/drivers/video/via/viafbdev.h b/drivers/video/via/viafbdev.h
---- a/drivers/video/via/viafbdev.h	1970-01-01 08:00:00.000000000 +0800
-+++ b/drivers/video/via/viafbdev.h	2008-07-22 02:07:29.000000000 +0800
-@@ -0,0 +1,112 @@
++int viafb_i2c_readbyte(u8 slave_addr, u8 index, u8 *pdata);
++int viafb_i2c_writebyte(u8 slave_addr, u8 index, u8 data);
++int viafb_i2c_readbytes(u8 slave_addr, u8 index, u8 *buff, int buff_len);
++int viafb_create_i2c_bus(void *par);
++void viafb_delete_i2c_buss(void *par);
++#endif /* __VIA_I2C_H__ */
+diff -Nurp a/drivers/video/via/viamode.c b/drivers/video/via/viamode.c
+--- a/drivers/video/via/viamode.c	1970-01-01 08:00:00.000000000 +0800
++++ b/drivers/video/via/viamode.c	2008-07-22 02:07:29.000000000 +0800
+@@ -0,0 +1,1086 @@
 +/*
 + * Copyright 1998-2008 VIA Technologies, Inc. All Rights Reserved.
 + * Copyright 2001-2008 S3 Graphics, Inc. All Rights Reserved.
@@ -2631,95 +295,1250 @@ diff -Nurp a/drivers/video/via/viafbdev.h b/drivers/video/via/viafbdev.h
 + * 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 + */
 +
-+#ifndef __VIAFBDEV_H__
-+#define __VIAFBDEV_H__
++#include "global.h"
++struct res_map_refresh res_map_refresh_tbl[] = {
++/*hres, vres, vclock, vmode_refresh*/
++	{480, 640, RES_480X640_60HZ_PIXCLOCK, 60},
++	{640, 480, RES_640X480_60HZ_PIXCLOCK, 60},
++	{640, 480, RES_640X480_75HZ_PIXCLOCK, 75},
++	{640, 480, RES_640X480_85HZ_PIXCLOCK, 85},
++	{640, 480, RES_640X480_100HZ_PIXCLOCK, 100},
++	{640, 480, RES_640X480_120HZ_PIXCLOCK, 120},
++	{720, 480, RES_720X480_60HZ_PIXCLOCK, 60},
++	{720, 576, RES_720X576_60HZ_PIXCLOCK, 60},
++	{800, 480, RES_800X480_60HZ_PIXCLOCK, 60},
++	{800, 600, RES_800X600_60HZ_PIXCLOCK, 60},
++	{800, 600, RES_800X600_75HZ_PIXCLOCK, 75},
++	{800, 600, RES_800X600_85HZ_PIXCLOCK, 85},
++	{800, 600, RES_800X600_100HZ_PIXCLOCK, 100},
++	{800, 600, RES_800X600_120HZ_PIXCLOCK, 120},
++	{848, 480, RES_848X480_60HZ_PIXCLOCK, 60},
++	{856, 480, RES_856X480_60HZ_PIXCLOCK, 60},
++	{1024, 512, RES_1024X512_60HZ_PIXCLOCK, 60},
++	{1024, 600, RES_1024X600_60HZ_PIXCLOCK, 60},
++	{1024, 768, RES_1024X768_60HZ_PIXCLOCK, 60},
++	{1024, 768, RES_1024X768_75HZ_PIXCLOCK, 75},
++	{1024, 768, RES_1024X768_85HZ_PIXCLOCK, 85},
++	{1024, 768, RES_1024X768_100HZ_PIXCLOCK, 100},
++/*  {1152,864, RES_1152X864_70HZ_PIXCLOCK,  70},*/
++	{1152, 864, RES_1152X864_75HZ_PIXCLOCK, 75},
++	{1280, 768, RES_1280X768_60HZ_PIXCLOCK, 60},
++	{1280, 800, RES_1280X800_60HZ_PIXCLOCK, 60},
++	{1280, 960, RES_1280X960_60HZ_PIXCLOCK, 60},
++	{1280, 1024, RES_1280X1024_60HZ_PIXCLOCK, 60},
++	{1280, 1024, RES_1280X1024_75HZ_PIXCLOCK, 75},
++	{1280, 1024, RES_1280X768_85HZ_PIXCLOCK, 85},
++	{1440, 1050, RES_1440X1050_60HZ_PIXCLOCK, 60},
++	{1600, 1200, RES_1600X1200_60HZ_PIXCLOCK, 60},
++	{1600, 1200, RES_1600X1200_75HZ_PIXCLOCK, 75},
++	{1280, 720, RES_1280X720_60HZ_PIXCLOCK, 60},
++	{1920, 1080, RES_1920X1080_60HZ_PIXCLOCK, 60},
++	{1400, 1050, RES_1400X1050_60HZ_PIXCLOCK, 60},
++	{1400, 1050, RES_1400X1050_75HZ_PIXCLOCK, 75},
++	{1368, 768, RES_1368X768_60HZ_PIXCLOCK, 60},
++	{960, 600, RES_960X600_60HZ_PIXCLOCK, 60},
++	{1000, 600, RES_1000X600_60HZ_PIXCLOCK, 60},
++	{1024, 576, RES_1024X576_60HZ_PIXCLOCK, 60},
++	{1088, 612, RES_1088X612_60HZ_PIXCLOCK, 60},
++	{1152, 720, RES_1152X720_60HZ_PIXCLOCK, 60},
++	{1200, 720, RES_1200X720_60HZ_PIXCLOCK, 60},
++	{1280, 600, RES_1280X600_60HZ_PIXCLOCK, 60},
++	{1280, 720, RES_1280X720_50HZ_PIXCLOCK, 50},
++	{1280, 768, RES_1280X768_50HZ_PIXCLOCK, 50},
++	{1360, 768, RES_1360X768_60HZ_PIXCLOCK, 60},
++	{1366, 768, RES_1366X768_50HZ_PIXCLOCK, 50},
++	{1366, 768, RES_1366X768_60HZ_PIXCLOCK, 60},
++	{1440, 900, RES_1440X900_60HZ_PIXCLOCK, 60},
++	{1440, 900, RES_1440X900_75HZ_PIXCLOCK, 75},
++	{1600, 900, RES_1600X900_60HZ_PIXCLOCK, 60},
++	{1600, 1024, RES_1600X1024_60HZ_PIXCLOCK, 60},
++	{1680, 1050, RES_1680X1050_60HZ_PIXCLOCK, 60},
++	{1680, 1050, RES_1680X1050_75HZ_PIXCLOCK, 75},
++	{1792, 1344, RES_1792X1344_60HZ_PIXCLOCK, 60},
++	{1856, 1392, RES_1856X1392_60HZ_PIXCLOCK, 60},
++	{1920, 1200, RES_1920X1200_60HZ_PIXCLOCK, 60},
++	{1920, 1440, RES_1920X1440_60HZ_PIXCLOCK, 60},
++	{1920, 1440, RES_1920X1440_75HZ_PIXCLOCK, 75},
++	{2048, 1536, RES_2048X1536_60HZ_PIXCLOCK, 60}
++};
 +
-+#include <linux/proc_fs.h>
-+#include <linux/fb.h>
++struct io_reg CN400_ModeXregs[] = { {VIASR, SR10, 0xFF, 0x01},
++{VIASR, SR15, 0x02, 0x02},
++{VIASR, SR16, 0xBF, 0x08},
++{VIASR, SR17, 0xFF, 0x1F},
++{VIASR, SR18, 0xFF, 0x4E},
++{VIASR, SR1A, 0xFB, 0x08},
++{VIASR, SR1E, 0x0F, 0x01},
++{VIASR, SR2A, 0xFF, 0x00},
++{VIACR, CR0A, 0xFF, 0x1E},	/* Cursor Start                        */
++{VIACR, CR0B, 0xFF, 0x00},	/* Cursor End                          */
++{VIACR, CR0E, 0xFF, 0x00},	/* Cursor Location High                */
++{VIACR, CR0F, 0xFF, 0x00},	/* Cursor Localtion Low                */
++{VIACR, CR32, 0xFF, 0x00},
++{VIACR, CR33, 0xFF, 0x00},
++{VIACR, CR34, 0xFF, 0x00},
++{VIACR, CR35, 0xFF, 0x00},
++{VIACR, CR36, 0x08, 0x00},
++{VIACR, CR62, 0xFF, 0x00},	/* Secondary Display Starting Address  */
++{VIACR, CR63, 0xFF, 0x00},	/* Secondary Display Starting Address  */
++{VIACR, CR64, 0xFF, 0x00},	/* Secondary Display Starting Address  */
++{VIACR, CR69, 0xFF, 0x00},
++{VIACR, CR6A, 0xFF, 0x40},
++{VIACR, CR6B, 0xFF, 0x00},
++{VIACR, CR6C, 0xFF, 0x00},
++{VIACR, CR7A, 0xFF, 0x01},	/* LCD Scaling Parameter 1             */
++{VIACR, CR7B, 0xFF, 0x02},	/* LCD Scaling Parameter 2             */
++{VIACR, CR7C, 0xFF, 0x03},	/* LCD Scaling Parameter 3             */
++{VIACR, CR7D, 0xFF, 0x04},	/* LCD Scaling Parameter 4             */
++{VIACR, CR7E, 0xFF, 0x07},	/* LCD Scaling Parameter 5             */
++{VIACR, CR7F, 0xFF, 0x0A},	/* LCD Scaling Parameter 6             */
++{VIACR, CR80, 0xFF, 0x0D},	/* LCD Scaling Parameter 7             */
++{VIACR, CR81, 0xFF, 0x13},	/* LCD Scaling Parameter 8             */
++{VIACR, CR82, 0xFF, 0x16},	/* LCD Scaling Parameter 9             */
++{VIACR, CR83, 0xFF, 0x19},	/* LCD Scaling Parameter 10            */
++{VIACR, CR84, 0xFF, 0x1C},	/* LCD Scaling Parameter 11            */
++{VIACR, CR85, 0xFF, 0x1D},	/* LCD Scaling Parameter 12            */
++{VIACR, CR86, 0xFF, 0x1E},	/* LCD Scaling Parameter 13            */
++{VIACR, CR87, 0xFF, 0x1F},	/* LCD Scaling Parameter 14            */
++{VIACR, CR88, 0xFF, 0x40},	/* LCD Panel Type                      */
++{VIACR, CR89, 0xFF, 0x00},	/* LCD Timing Control 0                */
++{VIACR, CR8A, 0xFF, 0x88},	/* LCD Timing Control 1                */
++{VIACR, CR8B, 0xFF, 0x69},	/* LCD Power Sequence Control 0        */
++{VIACR, CR8C, 0xFF, 0x57},	/* LCD Power Sequence Control 1        */
++{VIACR, CR8D, 0xFF, 0x00},	/* LCD Power Sequence Control 2        */
++{VIACR, CR8E, 0xFF, 0x7B},	/* LCD Power Sequence Control 3        */
++{VIACR, CR8F, 0xFF, 0x03},	/* LCD Power Sequence Control 4        */
++{VIACR, CR90, 0xFF, 0x30},	/* LCD Power Sequence Control 5        */
++{VIACR, CR91, 0xFF, 0xA0},	/* 24/12 bit LVDS Data off             */
++{VIACR, CR96, 0xFF, 0x00},
++{VIACR, CR97, 0xFF, 0x00},
++{VIACR, CR99, 0xFF, 0x00},
++{VIACR, CR9B, 0xFF, 0x00}
++};
 +
-+#include "ioctl.h"
-+#include "share.h"
-+#include "chip.h"
-+#include "hw.h"
-+#include "via_i2c.h"
++/* Video Mode Table for VT3314 chipset*/
++/* Common Setting for Video Mode */
++struct io_reg CN700_ModeXregs[] = { {VIASR, SR10, 0xFF, 0x01},
++{VIASR, SR15, 0x02, 0x02},
++{VIASR, SR16, 0xBF, 0x08},
++{VIASR, SR17, 0xFF, 0x1F},
++{VIASR, SR18, 0xFF, 0x4E},
++{VIASR, SR1A, 0xFB, 0x82},
++{VIASR, SR1B, 0xFF, 0xF0},
++{VIASR, SR1F, 0xFF, 0x00},
++{VIASR, SR1E, 0xFF, 0x01},
++{VIASR, SR22, 0xFF, 0x1F},
++{VIASR, SR2A, 0x0F, 0x00},
++{VIASR, SR2E, 0xFF, 0xFF},
++{VIASR, SR3F, 0xFF, 0xFF},
++{VIASR, SR40, 0xF7, 0x00},
++{VIASR, CR30, 0xFF, 0x04},
++{VIACR, CR32, 0xFF, 0x00},
++{VIACR, CR33, 0x7F, 0x00},
++{VIACR, CR34, 0xFF, 0x00},
++{VIACR, CR35, 0xFF, 0x00},
++{VIACR, CR36, 0xFF, 0x31},
++{VIACR, CR41, 0xFF, 0x80},
++{VIACR, CR42, 0xFF, 0x00},
++{VIACR, CR55, 0x80, 0x00},
++{VIACR, CR5D, 0x80, 0x00},	/*Horizontal Retrace Start bit[11] should be 0*/
++{VIACR, CR62, 0xFF, 0x00},	/* Secondary Display Starting Address */
++{VIACR, CR63, 0xFF, 0x00},	/* Secondary Display Starting Address */
++{VIACR, CR64, 0xFF, 0x00},	/* Secondary Display Starting Address */
++{VIACR, CR68, 0xFF, 0x67},	/* Default FIFO For IGA2 */
++{VIACR, CR69, 0xFF, 0x00},
++{VIACR, CR6A, 0xFD, 0x40},
++{VIACR, CR6B, 0xFF, 0x00},
++{VIACR, CR6C, 0xFF, 0x00},
++{VIACR, CR77, 0xFF, 0x00},	/* LCD scaling Factor */
++{VIACR, CR78, 0xFF, 0x00},	/* LCD scaling Factor */
++{VIACR, CR79, 0xFF, 0x00},	/* LCD scaling Factor */
++{VIACR, CR9F, 0x03, 0x00},	/* LCD scaling Factor */
++{VIACR, CR7A, 0xFF, 0x01},	/* LCD Scaling Parameter 1 */
++{VIACR, CR7B, 0xFF, 0x02},	/* LCD Scaling Parameter 2 */
++{VIACR, CR7C, 0xFF, 0x03},	/* LCD Scaling Parameter 3 */
++{VIACR, CR7D, 0xFF, 0x04},	/* LCD Scaling Parameter 4 */
++{VIACR, CR7E, 0xFF, 0x07},	/* LCD Scaling Parameter 5 */
++{VIACR, CR7F, 0xFF, 0x0A},	/* LCD Scaling Parameter 6 */
++{VIACR, CR80, 0xFF, 0x0D},	/* LCD Scaling Parameter 7 */
++{VIACR, CR81, 0xFF, 0x13},	/* LCD Scaling Parameter 8 */
++{VIACR, CR82, 0xFF, 0x16},	/* LCD Scaling Parameter 9 */
++{VIACR, CR83, 0xFF, 0x19},	/* LCD Scaling Parameter 10 */
++{VIACR, CR84, 0xFF, 0x1C},	/* LCD Scaling Parameter 11 */
++{VIACR, CR85, 0xFF, 0x1D},	/* LCD Scaling Parameter 12 */
++{VIACR, CR86, 0xFF, 0x1E},	/* LCD Scaling Parameter 13 */
++{VIACR, CR87, 0xFF, 0x1F},	/* LCD Scaling Parameter 14 */
++{VIACR, CR88, 0xFF, 0x40},	/* LCD Panel Type */
++{VIACR, CR89, 0xFF, 0x00},	/* LCD Timing Control 0 */
++{VIACR, CR8A, 0xFF, 0x88},	/* LCD Timing Control 1 */
++{VIACR, CR8B, 0xFF, 0x5D},	/* LCD Power Sequence Control 0 */
++{VIACR, CR8C, 0xFF, 0x2B},	/* LCD Power Sequence Control 1 */
++{VIACR, CR8D, 0xFF, 0x6F},	/* LCD Power Sequence Control 2 */
++{VIACR, CR8E, 0xFF, 0x2B},	/* LCD Power Sequence Control 3 */
++{VIACR, CR8F, 0xFF, 0x01},	/* LCD Power Sequence Control 4 */
++{VIACR, CR90, 0xFF, 0x01},	/* LCD Power Sequence Control 5 */
++{VIACR, CR91, 0xFF, 0xA0},	/* 24/12 bit LVDS Data off */
++{VIACR, CR96, 0xFF, 0x00},
++{VIACR, CR97, 0xFF, 0x00},
++{VIACR, CR99, 0xFF, 0x00},
++{VIACR, CR9B, 0xFF, 0x00},
++{VIACR, CR9D, 0xFF, 0x80},
++{VIACR, CR9E, 0xFF, 0x80}
++};
 +
-+#define VERSION_MAJOR       2
-+#define VERSION_KERNEL      6	/* For kernel 2.6 */
++struct io_reg KM400_ModeXregs[] = {
++	{VIASR, SR10, 0xFF, 0x01},	/* Unlock Register                 */
++	{VIASR, SR16, 0xFF, 0x08},	/* Display FIFO threshold Control  */
++	{VIASR, SR17, 0xFF, 0x1F},	/* Display FIFO Control            */
++	{VIASR, SR18, 0xFF, 0x4E},	/* GFX PREQ threshold              */
++	{VIASR, SR1A, 0xFF, 0x0a},	/* GFX PREQ threshold              */
++	{VIASR, SR1F, 0xFF, 0x00},	/* Memory Control 0                */
++	{VIASR, SR1B, 0xFF, 0xF0},	/* Power Management Control 0      */
++	{VIASR, SR1E, 0xFF, 0x01},	/* Power Management Control        */
++	{VIASR, SR20, 0xFF, 0x00},	/* Sequencer Arbiter Control 0     */
++	{VIASR, SR21, 0xFF, 0x00},	/* Sequencer Arbiter Control 1     */
++	{VIASR, SR22, 0xFF, 0x1F},	/* Display Arbiter Control 1       */
++	{VIASR, SR2A, 0xFF, 0x00},	/* Power Management Control 5      */
++	{VIASR, SR2D, 0xFF, 0xFF},	/* Power Management Control 1      */
++	{VIASR, SR2E, 0xFF, 0xFF},	/* Power Management Control 2      */
++	{VIACR, CR0A, 0xFF, 0x1E},	/* Cursor Start                    */
++	{VIACR, CR0B, 0xFF, 0x00},	/* Cursor End                      */
++	{VIACR, CR0E, 0xFF, 0x00},	/* Cursor Location High            */
++	{VIACR, CR0F, 0xFF, 0x00},	/* Cursor Localtion Low            */
++	{VIACR, CR33, 0xFF, 0x00},
++	{VIACR, CR55, 0x80, 0x00},
++	{VIACR, CR5D, 0x80, 0x00},
++	{VIACR, CR36, 0xFF, 0x01},	/* Power Mangement 3                  */
++	{VIACR, CR62, 0xFF, 0x00},	/* Secondary Display Starting Address */
++	{VIACR, CR63, 0xFF, 0x00},	/* Secondary Display Starting Address */
++	{VIACR, CR64, 0xFF, 0x00},	/* Secondary Display Starting Address */
++	{VIACR, CR68, 0xFF, 0x67},	/* Default FIFO For IGA2              */
++	{VIACR, CR6A, 0x20, 0x20},	/* Extended FIFO On                   */
++	{VIACR, CR7A, 0xFF, 0x01},	/* LCD Scaling Parameter 1            */
++	{VIACR, CR7B, 0xFF, 0x02},	/* LCD Scaling Parameter 2            */
++	{VIACR, CR7C, 0xFF, 0x03},	/* LCD Scaling Parameter 3            */
++	{VIACR, CR7D, 0xFF, 0x04},	/* LCD Scaling Parameter 4            */
++	{VIACR, CR7E, 0xFF, 0x07},	/* LCD Scaling Parameter 5            */
++	{VIACR, CR7F, 0xFF, 0x0A},	/* LCD Scaling Parameter 6            */
++	{VIACR, CR80, 0xFF, 0x0D},	/* LCD Scaling Parameter 7            */
++	{VIACR, CR81, 0xFF, 0x13},	/* LCD Scaling Parameter 8            */
++	{VIACR, CR82, 0xFF, 0x16},	/* LCD Scaling Parameter 9            */
++	{VIACR, CR83, 0xFF, 0x19},	/* LCD Scaling Parameter 10           */
++	{VIACR, CR84, 0xFF, 0x1C},	/* LCD Scaling Parameter 11           */
++	{VIACR, CR85, 0xFF, 0x1D},	/* LCD Scaling Parameter 12           */
++	{VIACR, CR86, 0xFF, 0x1E},	/* LCD Scaling Parameter 13           */
++	{VIACR, CR87, 0xFF, 0x1F},	/* LCD Scaling Parameter 14           */
++	{VIACR, CR88, 0xFF, 0x40},	/* LCD Panel Type                     */
++	{VIACR, CR89, 0xFF, 0x00},	/* LCD Timing Control 0               */
++	{VIACR, CR8A, 0xFF, 0x88},	/* LCD Timing Control 1               */
++	{VIACR, CR8B, 0xFF, 0x2D},	/* LCD Power Sequence Control 0       */
++	{VIACR, CR8C, 0xFF, 0x2D},	/* LCD Power Sequence Control 1       */
++	{VIACR, CR8D, 0xFF, 0xC8},	/* LCD Power Sequence Control 2       */
++	{VIACR, CR8E, 0xFF, 0x36},	/* LCD Power Sequence Control 3       */
++	{VIACR, CR8F, 0xFF, 0x00},	/* LCD Power Sequence Control 4       */
++	{VIACR, CR90, 0xFF, 0x10},	/* LCD Power Sequence Control 5       */
++	{VIACR, CR91, 0xFF, 0xA0},	/* 24/12 bit LVDS Data off            */
++	{VIACR, CR96, 0xFF, 0x03},	/* DVP0        ; DVP0 Clock Skew */
++	{VIACR, CR97, 0xFF, 0x03},	/* DFP high    ; DFPH Clock Skew */
++	{VIACR, CR99, 0xFF, 0x03},	/* DFP low           ; DFPL Clock Skew*/
++	{VIACR, CR9B, 0xFF, 0x07}	/* DVI on DVP1       ; DVP1 Clock Skew*/
++};
 +
-+#define VERSION_OS          0	/* 0: for 32 bits OS, 1: for 64 bits OS */
-+#define VERSION_MINOR       4
++/* For VT3324: Common Setting for Video Mode */
++struct io_reg CX700_ModeXregs[] = { {VIASR, SR10, 0xFF, 0x01},
++{VIASR, SR15, 0x02, 0x02},
++{VIASR, SR16, 0xBF, 0x08},
++{VIASR, SR17, 0xFF, 0x1F},
++{VIASR, SR18, 0xFF, 0x4E},
++{VIASR, SR1A, 0xFB, 0x08},
++{VIASR, SR1B, 0xFF, 0xF0},
++{VIASR, SR1E, 0xFF, 0x01},
++{VIASR, SR2A, 0xFF, 0x00},
++{VIASR, SR2D, 0xFF, 0xFF},	/* VCK and LCK PLL power on.           */
++{VIACR, CR0A, 0xFF, 0x1E},	/* Cursor Start                        */
++{VIACR, CR0B, 0xFF, 0x00},	/* Cursor End                          */
++{VIACR, CR0E, 0xFF, 0x00},	/* Cursor Location High                */
++{VIACR, CR0F, 0xFF, 0x00},	/* Cursor Localtion Low                */
++{VIACR, CR32, 0xFF, 0x00},
++{VIACR, CR33, 0xFF, 0x00},
++{VIACR, CR34, 0xFF, 0x00},
++{VIACR, CR35, 0xFF, 0x00},
++{VIACR, CR36, 0x08, 0x00},
++{VIACR, CR47, 0xC8, 0x00},	/* Clear VCK Plus. */
++{VIACR, CR62, 0xFF, 0x00},	/* Secondary Display Starting Address  */
++{VIACR, CR63, 0xFF, 0x00},	/* Secondary Display Starting Address  */
++{VIACR, CR64, 0xFF, 0x00},	/* Secondary Display Starting Address  */
++{VIACR, CRA3, 0xFF, 0x00},	/* Secondary Display Starting Address  */
++{VIACR, CR69, 0xFF, 0x00},
++{VIACR, CR6A, 0xFF, 0x40},
++{VIACR, CR6B, 0xFF, 0x00},
++{VIACR, CR6C, 0xFF, 0x00},
++{VIACR, CR7A, 0xFF, 0x01},	/* LCD Scaling Parameter 1             */
++{VIACR, CR7B, 0xFF, 0x02},	/* LCD Scaling Parameter 2             */
++{VIACR, CR7C, 0xFF, 0x03},	/* LCD Scaling Parameter 3             */
++{VIACR, CR7D, 0xFF, 0x04},	/* LCD Scaling Parameter 4             */
++{VIACR, CR7E, 0xFF, 0x07},	/* LCD Scaling Parameter 5             */
++{VIACR, CR7F, 0xFF, 0x0A},	/* LCD Scaling Parameter 6             */
++{VIACR, CR80, 0xFF, 0x0D},	/* LCD Scaling Parameter 7             */
++{VIACR, CR81, 0xFF, 0x13},	/* LCD Scaling Parameter 8             */
++{VIACR, CR82, 0xFF, 0x16},	/* LCD Scaling Parameter 9             */
++{VIACR, CR83, 0xFF, 0x19},	/* LCD Scaling Parameter 10            */
++{VIACR, CR84, 0xFF, 0x1C},	/* LCD Scaling Parameter 11            */
++{VIACR, CR85, 0xFF, 0x1D},	/* LCD Scaling Parameter 12            */
++{VIACR, CR86, 0xFF, 0x1E},	/* LCD Scaling Parameter 13            */
++{VIACR, CR87, 0xFF, 0x1F},	/* LCD Scaling Parameter 14            */
++{VIACR, CR88, 0xFF, 0x40},	/* LCD Panel Type                      */
++{VIACR, CR89, 0xFF, 0x00},	/* LCD Timing Control 0                */
++{VIACR, CR8A, 0xFF, 0x88},	/* LCD Timing Control 1                */
++{VIACR, CRD4, 0xFF, 0x81},	/* Second power sequence control       */
++{VIACR, CR8B, 0xFF, 0x5D},	/* LCD Power Sequence Control 0        */
++{VIACR, CR8C, 0xFF, 0x2B},	/* LCD Power Sequence Control 1        */
++{VIACR, CR8D, 0xFF, 0x6F},	/* LCD Power Sequence Control 2        */
++{VIACR, CR8E, 0xFF, 0x2B},	/* LCD Power Sequence Control 3        */
++{VIACR, CR8F, 0xFF, 0x01},	/* LCD Power Sequence Control 4        */
++{VIACR, CR90, 0xFF, 0x01},	/* LCD Power Sequence Control 5        */
++{VIACR, CR91, 0xFF, 0x80},	/* 24/12 bit LVDS Data off             */
++{VIACR, CR96, 0xFF, 0x00},
++{VIACR, CR97, 0xFF, 0x00},
++{VIACR, CR99, 0xFF, 0x00},
++{VIACR, CR9B, 0xFF, 0x00},
++{VIACR, CRD2, 0xFF, 0xFF}	/* TMDS/LVDS control register.         */
++};
 +
-+struct viafb_par {
-+	int bpp;
++/* For VT3353: Common Setting for Video Mode */
++struct io_reg VX800_ModeXregs[] = { {VIASR, SR10, 0xFF, 0x01},
++{VIASR, SR15, 0x02, 0x02},
++{VIASR, SR16, 0xBF, 0x08},
++{VIASR, SR17, 0xFF, 0x1F},
++{VIASR, SR18, 0xFF, 0x4E},
++{VIASR, SR1A, 0xFB, 0x08},
++{VIASR, SR1B, 0xFF, 0xF0},
++{VIASR, SR1E, 0xFF, 0x01},
++{VIASR, SR2A, 0xFF, 0x00},
++{VIASR, SR2D, 0xFF, 0xFF},	/* VCK and LCK PLL power on.           */
++{VIACR, CR0A, 0xFF, 0x1E},	/* Cursor Start                        */
++{VIACR, CR0B, 0xFF, 0x00},	/* Cursor End                          */
++{VIACR, CR0E, 0xFF, 0x00},	/* Cursor Location High                */
++{VIACR, CR0F, 0xFF, 0x00},	/* Cursor Localtion Low                */
++{VIACR, CR32, 0xFF, 0x00},
++{VIACR, CR33, 0xFF, 0x00},
++{VIACR, CR34, 0xFF, 0x00},
++{VIACR, CR35, 0xFF, 0x00},
++{VIACR, CR36, 0x08, 0x00},
++{VIACR, CR47, 0xC8, 0x00},	/* Clear VCK Plus. */
++{VIACR, CR62, 0xFF, 0x00},	/* Secondary Display Starting Address  */
++{VIACR, CR63, 0xFF, 0x00},	/* Secondary Display Starting Address  */
++{VIACR, CR64, 0xFF, 0x00},	/* Secondary Display Starting Address  */
++{VIACR, CRA3, 0xFF, 0x00},	/* Secondary Display Starting Address  */
++{VIACR, CR69, 0xFF, 0x00},
++{VIACR, CR6A, 0xFF, 0x40},
++{VIACR, CR6B, 0xFF, 0x00},
++{VIACR, CR6C, 0xFF, 0x00},
++{VIACR, CR7A, 0xFF, 0x01},	/* LCD Scaling Parameter 1             */
++{VIACR, CR7B, 0xFF, 0x02},	/* LCD Scaling Parameter 2             */
++{VIACR, CR7C, 0xFF, 0x03},	/* LCD Scaling Parameter 3             */
++{VIACR, CR7D, 0xFF, 0x04},	/* LCD Scaling Parameter 4             */
++{VIACR, CR7E, 0xFF, 0x07},	/* LCD Scaling Parameter 5             */
++{VIACR, CR7F, 0xFF, 0x0A},	/* LCD Scaling Parameter 6             */
++{VIACR, CR80, 0xFF, 0x0D},	/* LCD Scaling Parameter 7             */
++{VIACR, CR81, 0xFF, 0x13},	/* LCD Scaling Parameter 8             */
++{VIACR, CR82, 0xFF, 0x16},	/* LCD Scaling Parameter 9             */
++{VIACR, CR83, 0xFF, 0x19},	/* LCD Scaling Parameter 10            */
++{VIACR, CR84, 0xFF, 0x1C},	/* LCD Scaling Parameter 11            */
++{VIACR, CR85, 0xFF, 0x1D},	/* LCD Scaling Parameter 12            */
++{VIACR, CR86, 0xFF, 0x1E},	/* LCD Scaling Parameter 13            */
++{VIACR, CR87, 0xFF, 0x1F},	/* LCD Scaling Parameter 14            */
++{VIACR, CR88, 0xFF, 0x40},	/* LCD Panel Type                      */
++{VIACR, CR89, 0xFF, 0x00},	/* LCD Timing Control 0                */
++{VIACR, CR8A, 0xFF, 0x88},	/* LCD Timing Control 1                */
++{VIACR, CRD4, 0xFF, 0x81},	/* Second power sequence control       */
++{VIACR, CR8B, 0xFF, 0x5D},	/* LCD Power Sequence Control 0        */
++{VIACR, CR8C, 0xFF, 0x2B},	/* LCD Power Sequence Control 1        */
++{VIACR, CR8D, 0xFF, 0x6F},	/* LCD Power Sequence Control 2        */
++{VIACR, CR8E, 0xFF, 0x2B},	/* LCD Power Sequence Control 3        */
++{VIACR, CR8F, 0xFF, 0x01},	/* LCD Power Sequence Control 4        */
++{VIACR, CR90, 0xFF, 0x01},	/* LCD Power Sequence Control 5        */
++{VIACR, CR91, 0xFF, 0x80},	/* 24/12 bit LVDS Data off             */
++{VIACR, CR96, 0xFF, 0x00},
++{VIACR, CR97, 0xFF, 0x00},
++{VIACR, CR99, 0xFF, 0x00},
++{VIACR, CR9B, 0xFF, 0x00},
++{VIACR, CRD2, 0xFF, 0xFF}	/* TMDS/LVDS control register.         */
++};
++
++/* Video Mode Table */
++/* Common Setting for Video Mode */
++struct io_reg CLE266_ModeXregs[] = { {VIASR, SR1E, 0xF0, 0x00},
++{VIASR, SR2A, 0x0F, 0x00},
++{VIASR, SR15, 0x02, 0x02},
++{VIASR, SR16, 0xBF, 0x08},
++{VIASR, SR17, 0xFF, 0x1F},
++{VIASR, SR18, 0xFF, 0x4E},
++{VIASR, SR1A, 0xFB, 0x08},
++
++{VIACR, CR32, 0xFF, 0x00},
++{VIACR, CR34, 0xFF, 0x00},
++{VIACR, CR35, 0xFF, 0x00},
++{VIACR, CR36, 0x08, 0x00},
++{VIACR, CR6A, 0xFF, 0x80},
++{VIACR, CR6A, 0xFF, 0xC0},
++
++{VIACR, CR55, 0x80, 0x00},
++{VIACR, CR5D, 0x80, 0x00},
++
++{VIAGR, GR20, 0xFF, 0x00},
++{VIAGR, GR21, 0xFF, 0x00},
++{VIAGR, GR22, 0xFF, 0x00},
++	/* LCD Parameters */
++{VIACR, CR7A, 0xFF, 0x01},	/* LCD Parameter 1 */
++{VIACR, CR7B, 0xFF, 0x02},	/* LCD Parameter 2 */
++{VIACR, CR7C, 0xFF, 0x03},	/* LCD Parameter 3 */
++{VIACR, CR7D, 0xFF, 0x04},	/* LCD Parameter 4 */
++{VIACR, CR7E, 0xFF, 0x07},	/* LCD Parameter 5 */
++{VIACR, CR7F, 0xFF, 0x0A},	/* LCD Parameter 6 */
++{VIACR, CR80, 0xFF, 0x0D},	/* LCD Parameter 7 */
++{VIACR, CR81, 0xFF, 0x13},	/* LCD Parameter 8 */
++{VIACR, CR82, 0xFF, 0x16},	/* LCD Parameter 9 */
++{VIACR, CR83, 0xFF, 0x19},	/* LCD Parameter 10 */
++{VIACR, CR84, 0xFF, 0x1C},	/* LCD Parameter 11 */
++{VIACR, CR85, 0xFF, 0x1D},	/* LCD Parameter 12 */
++{VIACR, CR86, 0xFF, 0x1E},	/* LCD Parameter 13 */
++{VIACR, CR87, 0xFF, 0x1F},	/* LCD Parameter 14 */
++
++};
++
++/* Mode:1024X768 */
++struct io_reg PM1024x768[] = { {VIASR, 0x16, 0xBF, 0x0C},
++{VIASR, 0x18, 0xFF, 0x4C}
++};
++
++struct patch_table res_patch_table[] = {
++	{VIA_RES_1024X768, ARRAY_SIZE(PM1024x768), PM1024x768}
++};
++
++/* struct VPITTable {
++	unsigned char  Misc;
++	unsigned char  SR[StdSR];
++	unsigned char  CR[StdCR];
++	unsigned char  GR[StdGR];
++	unsigned char  AR[StdAR];
++ };*/
++
++struct VPITTable VPIT = {
++	/* Msic */
++	0xC7,
++	/* Sequencer */
++	{0x01, 0x0F, 0x00, 0x0E},
++	/* Graphic Controller */
++	{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x05, 0x0F, 0xFF},
++	/* Attribute Controller */
++	{0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
++	 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F,
++	 0x01, 0x00, 0x0F, 0x00}
++};
++
++/********************/
++/* Mode Table       */
++/********************/
++
++/* 480x640 */
++struct crt_mode_table CRTM480x640[] = {
++	/* r_rate,          vclk,              hsp,             vsp   */
++	/* HT,  HA,  HBS, HBE, HSS, HSE, VT,  VA,  VBS, VBE, VSS, VSE */
++	{REFRESH_60, CLK_25_175M, M480X640_R60_HSP, M480X640_R60_VSP,
++	 {624, 480, 480, 144, 504, 48, 663, 640, 640, 23, 641, 3} }	/* GTF*/
++};
++
++/* 640x480*/
++struct crt_mode_table CRTM640x480[] = {
++	/*r_rate,vclk,hsp,vsp */
++	/*HT,  HA,  HBS, HBE, HSS, HSE, VT,  VA,  VBS, VBE, VSS, VSE */
++	{REFRESH_60, CLK_25_175M, M640X480_R60_HSP, M640X480_R60_VSP,
++	 {800, 640, 648, 144, 656, 96, 525, 480, 480, 45, 490, 2} },
++	{REFRESH_75, CLK_31_500M, M640X480_R75_HSP, M640X480_R75_VSP,
++	 {840, 640, 640, 200, 656, 64, 500, 480, 480, 20, 481, 3} },
++	{REFRESH_85, CLK_36_000M, M640X480_R85_HSP, M640X480_R85_VSP,
++	 {832, 640, 640, 192, 696, 56, 509, 480, 480, 29, 481, 3} },
++	{REFRESH_100, CLK_43_163M, M640X480_R100_HSP, M640X480_R100_VSP,
++	 {848, 640, 640, 208, 680, 64, 509, 480, 480, 29, 481, 3} }, /*GTF*/
++	    {REFRESH_120, CLK_52_406M, M640X480_R120_HSP,
++	     M640X480_R120_VSP,
++	     {848, 640, 640, 208, 680, 64, 515, 480, 480, 35, 481,
++	      3} } /*GTF*/
++};
++
++/*720x480 (GTF)*/
++struct crt_mode_table CRTM720x480[] = {
++	/*r_rate,vclk,hsp,vsp      */
++	/*HT, HA,  HBS, HBE, HSS, HSE, VT,  VA,  VBS, VBE, VSS, VSE */
++	{REFRESH_60, CLK_26_880M, M720X480_R60_HSP, M720X480_R60_VSP,
++	 {896, 720, 720, 176, 736, 72, 497, 480, 480, 17, 481, 3} }
++
++};
++
++/*720x576 (GTF)*/
++struct crt_mode_table CRTM720x576[] = {
++	/*r_rate,vclk,hsp,vsp */
++	/*HT,  HA,  HBS, HBE, HSS, HSE, VT,  VA,  VBS, VBE, VSS, VSE */
++	{REFRESH_60, CLK_32_668M, M720X576_R60_HSP, M720X576_R60_VSP,
++	 {912, 720, 720, 192, 744, 72, 597, 576, 576, 21, 577, 3} }
++};
++
++/* 800x480 (CVT) */
++struct crt_mode_table CRTM800x480[] = {
++	/* r_rate,          vclk,              hsp,             vsp   */
++	/* HT,  HA,  HBS, HBE, HSS, HSE, VT,  VA,  VBS, VBE, VSS, VSE */
++	{REFRESH_60, CLK_29_581M, M800X480_R60_HSP, M800X480_R60_VSP,
++	 {992, 800, 800, 192, 824, 72, 500, 480, 480, 20, 483, 7} }
++};
++
++/* 800x600*/
++struct crt_mode_table CRTM800x600[] = {
++	/*r_rate,vclk,hsp,vsp     */
++	/*HT,   HA,  HBS, HBE, HSS, HSE, VT,  VA,  VBS, VBE, VSS, VSE */
++	{REFRESH_60, CLK_40_000M, M800X600_R60_HSP, M800X600_R60_VSP,
++	 {1056, 800, 800, 256, 840, 128, 628, 600, 600, 28, 601, 4} },
++	{REFRESH_75, CLK_49_500M, M800X600_R75_HSP, M800X600_R75_VSP,
++	 {1056, 800, 800, 256, 816, 80, 625, 600, 600, 25, 601, 3} },
++	{REFRESH_85, CLK_56_250M, M800X600_R85_HSP, M800X600_R85_VSP,
++	 {1048, 800, 800, 248, 832, 64, 631, 600, 600, 31, 601, 3} },
++	{REFRESH_100, CLK_68_179M, M800X600_R100_HSP, M800X600_R100_VSP,
++	 {1072, 800, 800, 272, 848, 88, 636, 600, 600, 36, 601, 3} },
++	{REFRESH_120, CLK_83_950M, M800X600_R120_HSP,
++		  M800X600_R120_VSP,
++		  {1088, 800, 800, 288, 856, 88, 643, 600, 600, 43, 601,
++		   3} }
++};
++
++/* 848x480 (CVT) */
++struct crt_mode_table CRTM848x480[] = {
++	/* r_rate,          vclk,              hsp,             vsp   */
++	/* HT,  HA,  HBS, HBE, HSS, HSE, VT,  VA,  VBS, VBE, VSS, VSE */
++	{REFRESH_60, CLK_31_500M, M848X480_R60_HSP, M848X480_R60_VSP,
++	 {1056, 848, 848, 208, 872, 80, 500, 480, 480, 20, 483, 5} }
++};
++
++/*856x480 (GTF) convert to 852x480*/
++struct crt_mode_table CRTM852x480[] = {
++	/*r_rate,vclk,hsp,vsp     */
++	/*HT,   HA,  HBS, HBE, HSS, HSE, VT,  VA,  VBS, VBE, VSS, VSE */
++	{REFRESH_60, CLK_31_728M, M852X480_R60_HSP, M852X480_R60_VSP,
++	{1064, 856, 856, 208, 872, 88, 497, 480, 480, 17, 481, 3} }
++};
++
++/*1024x512 (GTF)*/
++struct crt_mode_table CRTM1024x512[] = {
++	/*r_rate,vclk,hsp,vsp     */
++	/*HT,   HA,  HBS, HBE, HSS, HSE, VT,  VA,  VBS, VBE, VSS, VSE */
++	{REFRESH_60, CLK_41_291M, M1024X512_R60_HSP, M1024X512_R60_VSP,
++	 {1296, 1024, 1024, 272, 1056, 104, 531, 512, 512, 19, 513, 3} }
++
++};
++
++/* 1024x600*/
++struct crt_mode_table CRTM1024x600[] = {
++	/*r_rate,vclk,hsp,vsp */
++	/*HT,  HA,   HBS,  HBE, HSS,  HSE, VT,  VA,  VBS, VBE, VSS, VSE */
++	{REFRESH_60, CLK_48_875M, M1024X600_R60_HSP, M1024X600_R60_VSP,
++	 {1312, 1024, 1024, 288, 1064, 104, 622, 600, 600, 22, 601, 3} },
++};
++
++/* 1024x768*/
++struct crt_mode_table CRTM1024x768[] = {
++	/*r_rate,vclk,hsp,vsp */
++	/*HT,  HA,   HBS,  HBE, HSS,  HSE, VT,  VA,  VBS, VBE, VSS, VSE */
++	{REFRESH_60, CLK_65_000M, M1024X768_R60_HSP, M1024X768_R60_VSP,
++	{1344, 1024, 1024, 320, 1048, 136, 806, 768, 768, 38, 771, 6} },
++	{REFRESH_75, CLK_78_750M, M1024X768_R75_HSP, M1024X768_R75_VSP,
++	{1312, 1024, 1024, 288, 1040, 96, 800, 768, 768, 32, 769, 3} },
++	{REFRESH_85, CLK_94_500M, M1024X768_R85_HSP, M1024X768_R85_VSP,
++	{1376, 1024, 1024, 352, 1072, 96, 808, 768, 768, 40, 769, 3} },
++	{REFRESH_100, CLK_113_309M, M1024X768_R100_HSP, M1024X768_R100_VSP,
++	{1392, 1024, 1024, 368, 1096, 112, 814, 768, 768, 46, 769, 3} }
++};
++
++/* 1152x864*/
++struct crt_mode_table CRTM1152x864[] = {
++	/*r_rate,vclk,hsp,vsp      */
++	/*HT,  HA,   HBS,  HBE, HSS,  HSE, VT,  VA,  VBS, VBE, VSS, VSE */
++	{REFRESH_75, CLK_108_000M, M1152X864_R75_HSP, M1152X864_R75_VSP,
++	 {1600, 1152, 1152, 448, 1216, 128, 900, 864, 864, 36, 865, 3} }
++
++};
++
++/* 1280x720 (HDMI 720P)*/
++struct crt_mode_table CRTM1280x720[] = {
++	/*r_rate,vclk,hsp,vsp */
++	/*HT,  HA,   HBS,  HBE, HSS,  HSE, VT,  VA,  VBS, VBE, VSS, VSE      */
++	{REFRESH_60, CLK_74_481M, M1280X720_R60_HSP, M1280X720_R60_VSP,
++	 {1648, 1280, 1280, 368, 1392, 40, 750, 720, 720, 30, 725, 5} },
++	{REFRESH_50, CLK_60_466M, M1280X720_R50_HSP, M1280X720_R50_VSP,
++	 {1632, 1280, 1280, 352, 1328, 128, 741, 720, 720, 21, 721, 3} }
++};
++
++/*1280x768 (GTF)*/
++struct crt_mode_table CRTM1280x768[] = {
++	/*r_rate,vclk,hsp,vsp     */
++	/*HT,  HA,   HBS,  HBE, HSS,  HSE, VT,  VA,  VBS, VBE, VSS, VSE */
++	{REFRESH_60, CLK_80_136M, M1280X768_R60_HSP, M1280X768_R60_VSP,
++	 {1680, 1280, 1280, 400, 1344, 136, 795, 768, 768, 27, 769, 3} },
++	{REFRESH_50, CLK_65_178M, M1280X768_R50_HSP, M1280X768_R50_VSP,
++	 {1648, 1280, 1280, 368, 1336, 128, 791, 768, 768, 23, 769, 3} }
++};
++
++/* 1280x800 (CVT) */
++struct crt_mode_table CRTM1280x800[] = {
++	/* r_rate,          vclk,              hsp,             vsp   */
++	/* HT,  HA,  HBS, HBE, HSS, HSE, VT,  VA,  VBS, VBE, VSS, VSE */
++	{REFRESH_60, CLK_83_375M, M1280X800_R60_HSP, M1280X800_R60_VSP,
++	 {1680, 1280, 1280, 400, 1352, 128, 831, 800, 800, 31, 803, 6} }
++};
++
++/*1280x960*/
++struct crt_mode_table CRTM1280x960[] = {
++	/*r_rate,vclk,hsp,vsp */
++	/*HT,  HA,   HBS,  HBE, HSS,  HSE, VT,  VA,  VBS, VBE, VSS, VSE */
++	{REFRESH_60, CLK_108_000M, M1280X960_R60_HSP, M1280X960_R60_VSP,
++	 {1800, 1280, 1280, 520, 1376, 112, 1000, 960, 960, 40, 961, 3} }
++};
++
++/* 1280x1024*/
++struct crt_mode_table CRTM1280x1024[] = {
++	/*r_rate,vclk,,hsp,vsp */
++	/*HT,  HA,   HBS,  HBE, HSS,  HSE, VT,  VA,  VBS, VBE, VSS, VSE */
++	{REFRESH_60, CLK_108_000M, M1280X1024_R60_HSP, M1280X1024_R60_VSP,
++	 {1688, 1280, 1280, 408, 1328, 112, 1066, 1024, 1024, 42, 1025,
++	  3} },
++	{REFRESH_75, CLK_135_000M, M1280X1024_R75_HSP, M1280X1024_R75_VSP,
++	 {1688, 1280, 1280, 408, 1296, 144, 1066, 1024, 1024, 42, 1025,
++	  3} },
++	{REFRESH_85, CLK_157_500M, M1280X1024_R85_HSP, M1280X1024_R85_VSP,
++	 {1728, 1280, 1280, 448, 1344, 160, 1072, 1024, 1024, 48, 1025, 3} }
++};
++
++/* 1368x768 (GTF) */
++struct crt_mode_table CRTM1368x768[] = {
++	/* r_rate,  vclk, hsp, vsp */
++	/* HT,  HA,  HBS, HBE, HSS, HSE, VT,  VA,  VBS, VBE, VSS, VSE */
++	{REFRESH_60, CLK_85_860M, M1368X768_R60_HSP, M1368X768_R60_VSP,
++	 {1800, 1368, 1368, 432, 1440, 144, 795, 768, 768, 27, 769, 3} }
++};
++
++/*1440x1050 (GTF)*/
++struct crt_mode_table CRTM1440x1050[] = {
++	/*r_rate,vclk,hsp,vsp      */
++	/*HT,  HA,   HBS,  HBE, HSS,  HSE, VT,  VA,  VBS, VBE, VSS, VSE */
++	{REFRESH_60, CLK_125_104M, M1440X1050_R60_HSP, M1440X1050_R60_VSP,
++	 {1936, 1440, 1440, 496, 1536, 152, 1077, 1040, 1040, 37, 1041, 3} }
++};
++
++/* 1600x1200*/
++struct crt_mode_table CRTM1600x1200[] = {
++	/*r_rate,vclk,hsp,vsp */
++	/*HT,  HA,   HBS,  HBE, HSS,  HSE, VT,  VA,  VBS, VBE, VSS, VSE */
++	{REFRESH_60, CLK_162_000M, M1600X1200_R60_HSP, M1600X1200_R60_VSP,
++	 {2160, 1600, 1600, 560, 1664, 192, 1250, 1200, 1200, 50, 1201,
++	  3} },
++	{REFRESH_75, CLK_202_500M, M1600X1200_R75_HSP, M1600X1200_R75_VSP,
++	 {2160, 1600, 1600, 560, 1664, 192, 1250, 1200, 1200, 50, 1201, 3} }
++
++};
++
++/* 1680x1050 (CVT) */
++struct crt_mode_table CRTM1680x1050[] = {
++	/* r_rate,          vclk,              hsp,             vsp  */
++	/* HT,  HA,  HBS, HBE, HSS, HSE,    VT,  VA,  VBS, VBE,  VSS, VSE */
++	{REFRESH_60, CLK_146_760M, M1680x1050_R60_HSP, M1680x1050_R60_VSP,
++	 {2240, 1680, 1680, 560, 1784, 176, 1089, 1050, 1050, 39, 1053,
++	  6} },
++	{REFRESH_75, CLK_187_000M, M1680x1050_R75_HSP, M1680x1050_R75_VSP,
++	 {2272, 1680, 1680, 592, 1800, 176, 1099, 1050, 1050, 49, 1053, 6} }
++};
++
++/* 1680x1050 (CVT Reduce Blanking) */
++struct crt_mode_table CRTM1680x1050_RB[] = {
++	/* r_rate,          vclk,              hsp,             vsp   */
++	/* HT,  HA,  HBS, HBE, HSS, HSE,    VT,  VA,  VBS, VBE,  VSS, VSE */
++	{REFRESH_60, CLK_119_000M, M1680x1050_RB_R60_HSP,
++	 M1680x1050_RB_R60_VSP,
++	 {1840, 1680, 1680, 160, 1728, 32, 1080, 1050, 1050, 30, 1053, 6} }
++};
++
++/* 1920x1080 (CVT)*/
++struct crt_mode_table CRTM1920x1080[] = {
++	/*r_rate,vclk,hsp,vsp */
++	/*HT,  HA,   HBS,  HBE, HSS,  HSE, VT,  VA,  VBS, VBE, VSS, VSE */
++	{REFRESH_60, CLK_172_798M, M1920X1080_R60_HSP, M1920X1080_R60_VSP,
++	 {2576, 1920, 1920, 656, 2048, 200, 1120, 1080, 1080, 40, 1083, 5} }
++};
++
++/* 1920x1080 (CVT with Reduce Blanking) */
++struct crt_mode_table CRTM1920x1080_RB[] = {
++	/* r_rate,          vclk,              hsp,             vsp   */
++	/* HT,  HA,  HBS, HBE, HSS, HSE, VT,  VA,  VBS, VBE, VSS, VSE */
++	{REFRESH_60, CLK_138_400M, M1920X1080_RB_R60_HSP,
++	 M1920X1080_RB_R60_VSP,
++	 {2080, 1920, 1920, 160, 1968, 32, 1111, 1080, 1080, 31, 1083, 5} }
++};
++
++/* 1920x1440*/
++struct crt_mode_table CRTM1920x1440[] = {
++	/*r_rate,vclk,hsp,vsp */
++	/*HT,  HA,   HBS,  HBE, HSS,  HSE, VT,  VA,  VBS, VBE, VSS, VSE */
++	{REFRESH_60, CLK_234_000M, M1920X1440_R60_HSP, M1920X1440_R60_VSP,
++	 {2600, 1920, 1920, 680, 2048, 208, 1500, 1440, 1440, 60, 1441,
++	  3} },
++	{REFRESH_75, CLK_297_500M, M1920X1440_R75_HSP, M1920X1440_R75_VSP,
++	 {2640, 1920, 1920, 720, 2064, 224, 1500, 1440, 1440, 60, 1441, 3} }
++};
++
++/* 1400x1050 (CVT) */
++struct crt_mode_table CRTM1400x1050[] = {
++	/* r_rate,          vclk,              hsp,             vsp   */
++	/* HT,  HA,  HBS, HBE,  HSS, HSE,   VT,  VA,  VBS, VBE,  VSS, VSE */
++	{REFRESH_60, CLK_121_750M, M1400X1050_R60_HSP, M1400X1050_R60_VSP,
++	 {1864, 1400, 1400, 464, 1488, 144, 1089, 1050, 1050, 39, 1053,
++	  4} },
++	{REFRESH_75, CLK_156_000M, M1400X1050_R75_HSP, M1400X1050_R75_VSP,
++	 {1896, 1400, 1400, 496, 1504, 144, 1099, 1050, 1050, 49, 1053, 4} }
++};
++
++/* 1400x1050 (CVT Reduce Blanking) */
++struct crt_mode_table CRTM1400x1050_RB[] = {
++	/* r_rate,          vclk,              hsp,             vsp   */
++	/* HT,  HA,  HBS, HBE,  HSS, HSE,   VT,  VA,  VBS, VBE,  VSS, VSE */
++	{REFRESH_60, CLK_101_000M, M1400X1050_RB_R60_HSP,
++	 M1400X1050_RB_R60_VSP,
++	 {1560, 1400, 1400, 160, 1448, 32, 1080, 1050, 1050, 30, 1053, 4} }
++};
++
++/* 960x600 (CVT) */
++struct crt_mode_table CRTM960x600[] = {
++	/* r_rate,          vclk,              hsp,             vsp   */
++	/* HT,  HA,  HBS, HBE, HSS, HSE, VT,  VA,  VBS, VBE, VSS, VSE */
++	{REFRESH_60, CLK_45_250M, M960X600_R60_HSP, M960X600_R60_VSP,
++	 {1216, 960, 960, 256, 992, 96, 624, 600, 600, 24, 603, 6} }
++};
++
++/* 1000x600 (GTF) */
++struct crt_mode_table CRTM1000x600[] = {
++	/* r_rate,          vclk,              hsp,             vsp   */
++	/* HT,  HA,  HBS, HBE, HSS, HSE, VT,  VA,  VBS, VBE, VSS, VSE */
++	{REFRESH_60, CLK_48_000M, M1000X600_R60_HSP, M1000X600_R60_VSP,
++	 {1288, 1000, 1000, 288, 1040, 104, 622, 600, 600, 22, 601, 3} }
++};
++
++/* 1024x576 (GTF) */
++struct crt_mode_table CRTM1024x576[] = {
++	/* r_rate,          vclk,              hsp,             vsp   */
++	/* HT,  HA,  HBS, HBE, HSS, HSE, VT,  VA,  VBS, VBE, VSS, VSE */
++	{REFRESH_60, CLK_46_996M, M1024X576_R60_HSP, M1024X576_R60_VSP,
++	 {1312, 1024, 1024, 288, 1064, 104, 597, 576, 576, 21, 577, 3} }
++};
++
++/* 1088x612 (CVT) */
++struct crt_mode_table CRTM1088x612[] = {
++	/* r_rate,          vclk,              hsp,             vsp   */
++	/* HT,  HA,  HBS, HBE, HSS, HSE, VT,  VA,  VBS, VBE, VSS, VSE */
++	{REFRESH_60, CLK_52_977M, M1088X612_R60_HSP, M1088X612_R60_VSP,
++	 {1392, 1088, 1088, 304, 1136, 104, 636, 612, 612, 24, 615, 5} }
++};
++
++/* 1152x720 (CVT) */
++struct crt_mode_table CRTM1152x720[] = {
++	/* r_rate,          vclk,              hsp,             vsp   */
++	/* HT,  HA,  HBS, HBE, HSS, HSE, VT,  VA,  VBS, VBE, VSS, VSE */
++	{REFRESH_60, CLK_66_750M, M1152X720_R60_HSP, M1152X720_R60_VSP,
++	 {1488, 1152, 1152, 336, 1208, 112, 748, 720, 720, 28, 723, 6} }
++};
++
++/* 1200x720 (GTF) */
++struct crt_mode_table CRTM1200x720[] = {
++	/* r_rate,          vclk,              hsp,             vsp   */
++	/* HT,  HA,  HBS, HBE, HSS, HSE, VT,  VA,  VBS, VBE, VSS, VSE */
++	{REFRESH_60, CLK_70_159M, M1200X720_R60_HSP, M1200X720_R60_VSP,
++	 {1568, 1200, 1200, 368, 1256, 128, 746, 720, 720, 26, 721, 3} }
++};
++
++/* 1280x600 (GTF) */
++struct crt_mode_table CRTM1280x600[] = {
++	/* r_rate,          vclk,              hsp,             vsp   */
++	/* HT,  HA,  HBS, HBE,  HSS, HSE, VT,  VA,  VBS, VBE,  VSS, VSE */
++	{REFRESH_60, CLK_61_500M, M1280x600_R60_HSP, M1280x600_R60_VSP,
++	 {1648, 1280, 1280, 368, 1336, 128, 622, 600, 600, 22, 601, 3} }
++};
++
++/* 1360x768 (CVT) */
++struct crt_mode_table CRTM1360x768[] = {
++	/* r_rate,          vclk,              hsp,             vsp   */
++	/* HT,  HA,  HBS, HBE, HSS, HSE, VT,  VA,  VBS, VBE, VSS, VSE */
++	{REFRESH_60, CLK_84_750M, M1360X768_R60_HSP, M1360X768_R60_VSP,
++	 {1776, 1360, 1360, 416, 1432, 136, 798, 768, 768, 30, 771, 5} }
++};
++
++/* 1360x768 (CVT Reduce Blanking) */
++struct crt_mode_table CRTM1360x768_RB[] = {
++	/* r_rate,          vclk,              hsp,             vsp   */
++	/* HT,  HA,  HBS, HBE, HSS, HSE, VT,  VA,  VBS, VBE, VSS, VSE */
++	{REFRESH_60, CLK_72_000M, M1360X768_RB_R60_HSP,
++	 M1360X768_RB_R60_VSP,
++	 {1520, 1360, 1360, 160, 1408, 32, 790, 768, 768, 22, 771, 5} }
++};
++
++/* 1366x768 (GTF) */
++struct crt_mode_table CRTM1366x768[] = {
++	/* r_rate,          vclk,              hsp,             vsp   */
++	/* HT,  HA,  HBS, HBE, HSS, HSE, VT,  VA,  VBS, VBE, VSS, VSE */
++	{REFRESH_60, CLK_85_860M, M1368X768_R60_HSP, M1368X768_R60_VSP,
++	 {1800, 1368, 1368, 432, 1440, 144, 795, 768, 768, 27, 769, 3} },
++	{REFRESH_50, CLK_69_924M, M1368X768_R50_HSP, M1368X768_R50_VSP,
++	 {1768, 1368, 1368, 400, 1424, 144, 791, 768, 768, 23, 769, 3} }
++};
++
++/* 1440x900 (CVT) */
++struct crt_mode_table CRTM1440x900[] = {
++	/* r_rate,          vclk,              hsp,             vsp   */
++	/* HT,  HA,  HBS, HBE, HSS, HSE, VT,  VA,  VBS, VBE, VSS, VSE */
++	{REFRESH_60, CLK_106_500M, M1440X900_R60_HSP, M1440X900_R60_VSP,
++	 {1904, 1440, 1440, 464, 1520, 152, 934, 900, 900, 34, 903, 6} },
++	{REFRESH_75, CLK_136_700M, M1440X900_R75_HSP, M1440X900_R75_VSP,
++	 {1936, 1440, 1440, 496, 1536, 152, 942, 900, 900, 42, 903, 6} }
++};
++
++/* 1440x900 (CVT Reduce Blanking) */
++struct crt_mode_table CRTM1440x900_RB[] = {
++	/* r_rate,          vclk,              hsp,             vsp   */
++	/* HT,  HA,  HBS, HBE, HSS, HSE, VT,  VA,  VBS, VBE, VSS, VSE */
++	{REFRESH_60, CLK_88_750M, M1440X900_RB_R60_HSP,
++	 M1440X900_RB_R60_VSP,
++	 {1600, 1440, 1440, 160, 1488, 32, 926, 900, 900, 26, 903, 6} }
++};
++
++/* 1600x900 (CVT) */
++struct crt_mode_table CRTM1600x900[] = {
++	/* r_rate,          vclk,              hsp,             vsp   */
++	/* HT,  HA,  HBS, HBE, HSS, HSE, VT,  VA,  VBS, VBE, VSS, VSE */
++	{REFRESH_60, CLK_118_840M, M1600X900_R60_HSP, M1600X900_R60_VSP,
++	 {2112, 1600, 1600, 512, 1688, 168, 934, 900, 900, 34, 903, 5} }
++};
++
++/* 1600x900 (CVT Reduce Blanking) */
++struct crt_mode_table CRTM1600x900_RB[] = {
++	/* r_rate,        vclk,           hsp,        vsp   */
++	/* HT,  HA,  HBS, HBE, HSS, HSE, VT,  VA,  VBS, VBE, VSS, VSE */
++	{REFRESH_60, CLK_97_750M, M1600X900_RB_R60_HSP,
++	 M1600X900_RB_R60_VSP,
++	 {1760, 1600, 1600, 160, 1648, 32, 926, 900, 900, 26, 903, 5} }
++};
++
++/* 1600x1024 (GTF) */
++struct crt_mode_table CRTM1600x1024[] = {
++	/* r_rate,          vclk,              hsp,             vsp   */
++	/* HT,  HA,  HBS, HBE,  HSS, HSE,   VT,  VA,  VBS, VBE,  VSS, VSE */
++	{REFRESH_60, CLK_136_700M, M1600X1024_R60_HSP, M1600X1024_R60_VSP,
++	 {2144, 1600, 1600, 544, 1704, 168, 1060, 1024, 1024, 36, 1025, 3} }
++};
++
++/* 1792x1344 (DMT) */
++struct crt_mode_table CRTM1792x1344[] = {
++	/* r_rate,          vclk,              hsp,             vsp   */
++	/* HT,  HA,  HBS, HBE,  HSS, HSE,   VT,  VA,  VBS, VBE,  VSS, VSE */
++	{REFRESH_60, CLK_204_000M, M1792x1344_R60_HSP, M1792x1344_R60_VSP,
++	 {2448, 1792, 1792, 656, 1920, 200, 1394, 1344, 1344, 50, 1345, 3} }
++};
++
++/* 1856x1392 (DMT) */
++struct crt_mode_table CRTM1856x1392[] = {
++	/* r_rate,          vclk,              hsp,             vsp   */
++	/* HT,  HA,  HBS, HBE,  HSS, HSE,   VT,  VA,  VBS, VBE,  VSS, VSE */
++	{REFRESH_60, CLK_218_500M, M1856x1392_R60_HSP, M1856x1392_R60_VSP,
++	 {2528, 1856, 1856, 672, 1952, 224, 1439, 1392, 1392, 47, 1393, 3} }
++};
++
++/* 1920x1200 (CVT) */
++struct crt_mode_table CRTM1920x1200[] = {
++	/* r_rate,          vclk,              hsp,             vsp   */
++	/* HT,  HA,  HBS, HBE, HSS, HSE, VT,  VA,  VBS, VBE, VSS, VSE */
++	{REFRESH_60, CLK_193_295M, M1920X1200_R60_HSP, M1920X1200_R60_VSP,
++	 {2592, 1920, 1920, 672, 2056, 200, 1245, 1200, 1200, 45, 1203, 6} }
++};
++
++/* 1920x1200 (CVT with Reduce Blanking) */
++struct crt_mode_table CRTM1920x1200_RB[] = {
++	/* r_rate,          vclk,              hsp,             vsp   */
++	/* HT,  HA,  HBS, HBE, HSS, HSE, VT,  VA,  VBS, VBE, VSS, VSE */
++	{REFRESH_60, CLK_153_920M, M1920X1200_RB_R60_HSP,
++	 M1920X1200_RB_R60_VSP,
++	 {2080, 1920, 1920, 160, 1968, 32, 1235, 1200, 1200, 35, 1203, 6} }
++};
++
++/* 2048x1536 (CVT) */
++struct crt_mode_table CRTM2048x1536[] = {
++	/* r_rate,          vclk,              hsp,             vsp   */
++	/* HT,  HA,  HBS, HBE,  HSS, HSE,   VT,  VA,  VBS, VBE,  VSS, VSE */
++	{REFRESH_60, CLK_267_250M, M2048x1536_R60_HSP, M2048x1536_R60_VSP,
++	 {2800, 2048, 2048, 752, 2200, 224, 1592, 1536, 1536, 56, 1539, 4} }
++};
++
++/* Video Mode Table */
++/* struct VideoModeTable {*/
++/*  int                               ModeIndex;*/
++/*  struct crt_mode_table             *crtc;*/
++/*  int                               mode_array;*/
++/* };*/
++struct VideoModeTable CLE266Modes[] = {
++	/* Display : 480x640 (GTF) */
++	{VIA_RES_480X640, CRTM480x640, ARRAY_SIZE(CRTM480x640)},
++
++	/* Display : 640x480 */
++	{VIA_RES_640X480, CRTM640x480, ARRAY_SIZE(CRTM640x480)},
++
++	/* Display : 720x480 (GTF) */
++	{VIA_RES_720X480, CRTM720x480, ARRAY_SIZE(CRTM720x480)},
++
++	/* Display : 720x576 (GTF) */
++	{VIA_RES_720X576, CRTM720x576, ARRAY_SIZE(CRTM720x576)},
++
++	/* Display : 800x600 */
++	{VIA_RES_800X600, CRTM800x600, ARRAY_SIZE(CRTM800x600)},
++
++	/* Display : 800x480 (CVT) */
++	{VIA_RES_800X480, CRTM800x480, ARRAY_SIZE(CRTM800x480)},
++
++	/* Display : 848x480 (CVT) */
++	{VIA_RES_848X480, CRTM848x480, ARRAY_SIZE(CRTM848x480)},
++
++	/* Display : 852x480 (GTF) */
++	{VIA_RES_856X480, CRTM852x480, ARRAY_SIZE(CRTM852x480)},
++
++	/* Display : 1024x512 (GTF) */
++	{VIA_RES_1024X512, CRTM1024x512, ARRAY_SIZE(CRTM1024x512)},
++
++	/* Display : 1024x600 */
++	{VIA_RES_1024X600, CRTM1024x600, ARRAY_SIZE(CRTM1024x600)},
++
++	/* Display : 1024x576 (GTF) */
++	/*{ VIA_RES_1024X576, CRTM1024x576, ARRAY_SIZE(CRTM1024x576)}, */
++
++	/* Display : 1024x768 */
++	{VIA_RES_1024X768, CRTM1024x768, ARRAY_SIZE(CRTM1024x768)},
++
++	/* Display : 1152x864 */
++	{VIA_RES_1152X864, CRTM1152x864, ARRAY_SIZE(CRTM1152x864)},
++
++	/* Display : 1280x768 (GTF) */
++	{VIA_RES_1280X768, CRTM1280x768, ARRAY_SIZE(CRTM1280x768)},
++
++	/* Display : 960x600 (CVT) */
++	{VIA_RES_960X600, CRTM960x600, ARRAY_SIZE(CRTM960x600)},
++
++	/* Display : 1000x600 (GTF) */
++	{VIA_RES_1000X600, CRTM1000x600, ARRAY_SIZE(CRTM1000x600)},
++
++	/* Display : 1024x576 (GTF) */
++	{VIA_RES_1024X576, CRTM1024x576, ARRAY_SIZE(CRTM1024x576)},
++
++	/* Display : 1088x612 (GTF) */
++	{VIA_RES_1088X612, CRTM1088x612, ARRAY_SIZE(CRTM1088x612)},
++
++	/* Display : 1152x720 (CVT) */
++	{VIA_RES_1152X720, CRTM1152x720, ARRAY_SIZE(CRTM1152x720)},
++
++	/* Display : 1200x720 (GTF) */
++	{VIA_RES_1200X720, CRTM1200x720, ARRAY_SIZE(CRTM1200x720)},
++
++	/* Display : 1280x600 (GTF) */
++	{VIA_RES_1280X600, CRTM1280x600, ARRAY_SIZE(CRTM1280x600)},
++
++	/* Display : 1280x800 (CVT) */
++	{VIA_RES_1280X800, CRTM1280x800, ARRAY_SIZE(CRTM1280x800)},
++
++	/* Display : 1280x800 (GTF) */
++	/*{ M1280x800, CRTM1280x800, ARRAY_SIZE(CRTM1280x800)}, */
++
++	/* Display : 1280x960 */
++	{VIA_RES_1280X960, CRTM1280x960, ARRAY_SIZE(CRTM1280x960)},
++
++	/* Display : 1280x1024 */
++	{VIA_RES_1280X1024, CRTM1280x1024, ARRAY_SIZE(CRTM1280x1024)},
++
++	/* Display : 1360x768 (CVT) */
++	{VIA_RES_1360X768, CRTM1360x768, ARRAY_SIZE(CRTM1360x768)},
++
++	/* Display : 1360x768 (CVT Reduce Blanking) */
++	{VIA_RES_1360X768_RB, CRTM1360x768_RB,
++	 ARRAY_SIZE(CRTM1360x768_RB)},
++
++	/* Display : 1366x768 */
++	{VIA_RES_1366X768, CRTM1366x768, ARRAY_SIZE(CRTM1366x768)},
++
++	/* Display : 1368x768 (GTF) */
++	/*{ M1368x768,CRTM1368x768,ARRAY_SIZE(CRTM1368x768)}, */
++	/* Display : 1368x768 (GTF) */
++	{VIA_RES_1368X768, CRTM1368x768, ARRAY_SIZE(CRTM1368x768)},
++
++	/* Display : 1440x900 (CVT) */
++	{VIA_RES_1440X900, CRTM1440x900, ARRAY_SIZE(CRTM1440x900)},
++
++	/* Display : 1440x900 (CVT Reduce Blanking) */
++	{VIA_RES_1440X900_RB, CRTM1440x900_RB,
++	 ARRAY_SIZE(CRTM1440x900_RB)},
++
++	/* Display : 1440x1050 (GTF) */
++	{VIA_RES_1440X1050, CRTM1440x1050, ARRAY_SIZE(CRTM1440x1050)},
++
++	/* Display : 1400x1050 (CVT Reduce Blanking) */
++	{VIA_RES_1400X1050_RB, CRTM1400x1050_RB,
++	 ARRAY_SIZE(CRTM1400x1050_RB)},
++
++	/* Display : 1600x900 (CVT) */
++	{VIA_RES_1600X900, CRTM1600x900, ARRAY_SIZE(CRTM1600x900)},
++
++	/* Display : 1600x900 (CVT Reduce Blanking) */
++	{VIA_RES_1600X900_RB, CRTM1600x900_RB,
++	 ARRAY_SIZE(CRTM1600x900_RB)},
++
++	/* Display : 1600x1024 (GTF) */
++	{VIA_RES_1600X1024, CRTM1600x1024, ARRAY_SIZE(CRTM1600x1024)},
++
++	/* Display : 1600x1200 */
++	{VIA_RES_1600X1200, CRTM1600x1200, ARRAY_SIZE(CRTM1600x1200)},
++
++	/* Display : 1680x1050 (CVT) */
++	{VIA_RES_1680X1050, CRTM1680x1050, ARRAY_SIZE(CRTM1680x1050)},
++
++	/* Display : 1680x1050 (CVT Reduce Blanking) */
++	{VIA_RES_1680X1050_RB, CRTM1680x1050_RB,
++	 ARRAY_SIZE(CRTM1680x1050_RB)},
++
++	/* Display : 1792x1344 (DMT) */
++	{VIA_RES_1792X1344, CRTM1792x1344, ARRAY_SIZE(CRTM1792x1344)},
++
++	/* Display : 1856x1392 (DMT) */
++	{VIA_RES_1856X1392, CRTM1856x1392, ARRAY_SIZE(CRTM1856x1392)},
++
++	/* Display : 1920x1440 */
++	{VIA_RES_1920X1440, CRTM1920x1440, ARRAY_SIZE(CRTM1920x1440)},
++
++	/* Display : 2048x1536 */
++	{VIA_RES_2048X1536, CRTM2048x1536, ARRAY_SIZE(CRTM2048x1536)},
++
++	/* Display : 1280x720 */
++	{VIA_RES_1280X720, CRTM1280x720, ARRAY_SIZE(CRTM1280x720)},
++
++	/* Display : 1920x1080 (CVT) */
++	{VIA_RES_1920X1080, CRTM1920x1080, ARRAY_SIZE(CRTM1920x1080)},
++
++	/* Display : 1920x1080 (CVT Reduce Blanking) */
++	{VIA_RES_1920X1080_RB, CRTM1920x1080_RB,
++	 ARRAY_SIZE(CRTM1920x1080_RB)},
++
++	/* Display : 1920x1200 (CVT) */
++	{VIA_RES_1920X1200, CRTM1920x1200, ARRAY_SIZE(CRTM1920x1200)},
++
++	/* Display : 1920x1200 (CVT Reduce Blanking) */
++	{VIA_RES_1920X1200_RB, CRTM1920x1200_RB,
++	 ARRAY_SIZE(CRTM1920x1200_RB)},
++
++	/* Display : 1400x1050 (CVT) */
++	{VIA_RES_1400X1050, CRTM1400x1050, ARRAY_SIZE(CRTM1400x1050)}
++};
++struct crt_mode_table CEAM1280x720[] = {
++	{REFRESH_60, CLK_74_270M, M1280X720_CEA_R60_HSP,
++	 M1280X720_CEA_R60_VSP,
++	 /* HT,    HA,   HBS,  HBE,  HSS, HSE,  VT,   VA,  VBS, VBE, VSS, VSE */
++	 {1650, 1280, 1280, 370, 1390, 40, 750, 720, 720, 30, 725, 5} }
++};
++struct crt_mode_table CEAM1920x1080[] = {
++	{REFRESH_60, CLK_148_500M, M1920X1080_CEA_R60_HSP,
++	 M1920X1080_CEA_R60_VSP,
++	 /* HT,    HA,   HBS,  HBE,  HSS, HSE,  VT,  VA, VBS, VBE,  VSS, VSE */
++	 {2200, 1920, 1920, 300, 2008, 44, 1125, 1080, 1080, 45, 1084, 5} }
++};
++struct VideoModeTable CEA_HDMI_Modes[] = {
++	/* Display : 1280x720 */
++	{VIA_RES_1280X720, CEAM1280x720, ARRAY_SIZE(CEAM1280x720)},
++	{VIA_RES_1920X1080, CEAM1920x1080, ARRAY_SIZE(CEAM1920x1080)}
++};
+diff -Nurp a/drivers/video/via/viamode.h b/drivers/video/via/viamode.h
+--- a/drivers/video/via/viamode.h	1970-01-01 08:00:00.000000000 +0800
++++ b/drivers/video/via/viamode.h	2008-07-22 02:07:29.000000000 +0800
+@@ -0,0 +1,177 @@
++/*
++ * Copyright 1998-2008 VIA Technologies, Inc. All Rights Reserved.
++ * Copyright 2001-2008 S3 Graphics, Inc. All Rights Reserved.
++
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public
++ * License as published by the Free Software Foundation;
++ * either version 2, or (at your option) any later version.
++
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTIES OR REPRESENTATIONS; without even
++ * the implied warranty of MERCHANTABILITY or FITNESS FOR
++ * A PARTICULAR PURPOSE.See the GNU General Public License
++ * for more details.
++
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc.,
++ * 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
++ */
++
++#ifndef __VIAMODE_H__
++#define __VIAMODE_H__
++
++#include "global.h"
++
++struct VPITTable {
++	unsigned char Misc;
++	unsigned char SR[StdSR];
++	unsigned char GR[StdGR];
++	unsigned char AR[StdAR];
++};
++
++struct VideoModeTable {
++	int ModeIndex;
++	struct crt_mode_table *crtc;
++	int mode_array;
++};
++
++struct patch_table {
++	int mode_index;
++	int table_length;
++	struct io_reg *io_reg_table;
++};
++
++struct res_map_refresh {
 +	int hres;
 +	int vres;
-+	int linelength;
-+	u32 xoffset;
-+	u32 yoffset;
-+
-+	void __iomem *fbmem_virt;	/*framebuffer virtual memory address */
-+	void __iomem *io_virt;	/*iospace virtual memory address */
-+	unsigned int fbmem;	/*framebuffer physical memory address */
-+	unsigned int memsize;	/*size of fbmem */
-+	unsigned int io;	/*io space address */
-+	unsigned long mmio_base;	/*mmio base address */
-+	unsigned long mmio_len;	/*mmio base length */
-+	u32 fbmem_free;		/* Free FB memory */
-+	u32 fbmem_used;		/* Use FB memory size */
-+	u32 cursor_start;	/* Cursor Start Address */
-+	u32 VQ_start;		/* Virtual Queue Start Address */
-+	u32 VQ_end;		/* Virtual Queue End Address */
-+	u32 iga_path;
-+	struct proc_dir_entry *proc_entry;	/*viafb proc entry */
-+	u8 duoview;		/*Is working in duoview mode? */
-+
-+	/* I2C stuff */
-+	struct via_i2c_stuff i2c_stuff;
-+
-+	/* All the information will be needed to set engine */
-+	struct tmds_setting_information *tmds_setting_info;
-+	struct crt_setting_information *crt_setting_info;
-+	struct lvds_setting_information *lvds_setting_info;
-+	struct lvds_setting_information *lvds_setting_info2;
-+	struct chip_information *chip_info;
-+
-+	/* some information related to video playing */
-+	int video_on_crt;
-+	int video_on_dvi;
-+	int video_on_lcd;
-+
++	int pixclock;
++	int vmode_refresh;
 +};
-+struct viafb_modeinfo {
-+	u32 xres;
-+	u32 yres;
-+	int mode_index;
-+	char *mode_res;
-+};
-+extern unsigned int viafb_second_virtual_yres;
-+extern unsigned int viafb_second_virtual_xres;
-+extern unsigned int viafb_second_offset;
-+extern int viafb_second_size;
-+extern int viafb_SAMM_ON;
-+extern int viafb_dual_fb;
-+extern int viafb_LCD2_ON;
-+extern int viafb_LCD_ON;
-+extern int viafb_DVI_ON;
-+extern int viafb_accel;
-+extern int viafb_hotplug;
-+extern int viafb_memsize;
 +
-+extern int strict_strtoul(const char *cp, unsigned int base,
-+	unsigned long *res);
++#define NUM_TOTAL_RES_MAP_REFRESH ARRAY_SIZE(res_map_refresh_tbl)
++#define NUM_TOTAL_CEA_MODES  ARRAY_SIZE(CEA_HDMI_Modes)
++#define NUM_TOTAL_CN400_ModeXregs ARRAY_SIZE(CN400_ModeXregs)
++#define NUM_TOTAL_CN700_ModeXregs ARRAY_SIZE(CN700_ModeXregs)
++#define NUM_TOTAL_KM400_ModeXregs ARRAY_SIZE(KM400_ModeXregs)
++#define NUM_TOTAL_CX700_ModeXregs ARRAY_SIZE(CX700_ModeXregs)
++#define NUM_TOTAL_VX800_ModeXregs ARRAY_SIZE(VX800_ModeXregs)
++#define NUM_TOTAL_CLE266_ModeXregs ARRAY_SIZE(CLE266_ModeXregs)
++#define NUM_TOTAL_PATCH_MODE ARRAY_SIZE(res_patch_table)
++#define NUM_TOTAL_MODETABLE ARRAY_SIZE(CLE266Modes)
 +
-+void viafb_memory_pitch_patch(struct fb_info *info);
-+void viafb_fill_var_timing_info(struct fb_var_screeninfo *var, int refresh,
-+			  int mode_index);
-+int viafb_get_mode_index(int hres, int vres, int flag);
-+u8 viafb_gpio_i2c_read_lvds(struct lvds_setting_information
-+	*plvds_setting_info, struct lvds_chip_information
-+	*plvds_chip_info, u8 index);
-+void viafb_gpio_i2c_write_mask_lvds(struct lvds_setting_information
-+			      *plvds_setting_info, struct lvds_chip_information
-+			      *plvds_chip_info, struct IODATA io_data);
-+#endif /* __VIAFBDEV_H__ */
++/********************/
++/* Mode Table       */
++/********************/
++
++/* 480x640 */
++extern struct crt_mode_table CRTM480x640[1];
++/* 640x480*/
++extern struct crt_mode_table CRTM640x480[5];
++/*720x480 (GTF)*/
++extern struct crt_mode_table CRTM720x480[1];
++/*720x576 (GTF)*/
++extern struct crt_mode_table CRTM720x576[1];
++/* 800x480 (CVT) */
++extern struct crt_mode_table CRTM800x480[1];
++/* 800x600*/
++extern struct crt_mode_table CRTM800x600[5];
++/* 848x480 (CVT) */
++extern struct crt_mode_table CRTM848x480[1];
++/*856x480 (GTF) convert to 852x480*/
++extern struct crt_mode_table CRTM852x480[1];
++/*1024x512 (GTF)*/
++extern struct crt_mode_table CRTM1024x512[1];
++/* 1024x600*/
++extern struct crt_mode_table CRTM1024x600[1];
++/* 1024x768*/
++extern struct crt_mode_table CRTM1024x768[4];
++/* 1152x864*/
++extern struct crt_mode_table CRTM1152x864[1];
++/* 1280x720 (HDMI 720P)*/
++extern struct crt_mode_table CRTM1280x720[2];
++/*1280x768 (GTF)*/
++extern struct crt_mode_table CRTM1280x768[2];
++/* 1280x800 (CVT) */
++extern struct crt_mode_table CRTM1280x800[1];
++/*1280x960*/
++extern struct crt_mode_table CRTM1280x960[1];
++/* 1280x1024*/
++extern struct crt_mode_table CRTM1280x1024[3];
++/* 1368x768 (GTF) */
++extern struct crt_mode_table CRTM1368x768[1];
++/*1440x1050 (GTF)*/
++extern struct crt_mode_table CRTM1440x1050[1];
++/* 1600x1200*/
++extern struct crt_mode_table CRTM1600x1200[2];
++/* 1680x1050 (CVT) */
++extern struct crt_mode_table CRTM1680x1050[2];
++/* 1680x1050 (CVT Reduce Blanking) */
++extern struct crt_mode_table CRTM1680x1050_RB[1];
++/* 1920x1080 (CVT)*/
++extern struct crt_mode_table CRTM1920x1080[1];
++/* 1920x1080 (CVT with Reduce Blanking) */
++extern struct crt_mode_table CRTM1920x1080_RB[1];
++/* 1920x1440*/
++extern struct crt_mode_table CRTM1920x1440[2];
++/* 1400x1050 (CVT) */
++extern struct crt_mode_table CRTM1400x1050[2];
++/* 1400x1050 (CVT Reduce Blanking) */
++extern struct crt_mode_table CRTM1400x1050_RB[1];
++/* 960x600 (CVT) */
++extern struct crt_mode_table CRTM960x600[1];
++/* 1000x600 (GTF) */
++extern struct crt_mode_table CRTM1000x600[1];
++/* 1024x576 (GTF) */
++extern struct crt_mode_table CRTM1024x576[1];
++/* 1088x612 (CVT) */
++extern struct crt_mode_table CRTM1088x612[1];
++/* 1152x720 (CVT) */
++extern struct crt_mode_table CRTM1152x720[1];
++/* 1200x720 (GTF) */
++extern struct crt_mode_table CRTM1200x720[1];
++/* 1280x600 (GTF) */
++extern struct crt_mode_table CRTM1280x600[1];
++/* 1360x768 (CVT) */
++extern struct crt_mode_table CRTM1360x768[1];
++/* 1360x768 (CVT Reduce Blanking) */
++extern struct crt_mode_table CRTM1360x768_RB[1];
++/* 1366x768 (GTF) */
++extern struct crt_mode_table CRTM1366x768[2];
++/* 1440x900 (CVT) */
++extern struct crt_mode_table CRTM1440x900[2];
++/* 1440x900 (CVT Reduce Blanking) */
++extern struct crt_mode_table CRTM1440x900_RB[1];
++/* 1600x900 (CVT) */
++extern struct crt_mode_table CRTM1600x900[1];
++/* 1600x900 (CVT Reduce Blanking) */
++extern struct crt_mode_table CRTM1600x900_RB[1];
++/* 1600x1024 (GTF) */
++extern struct crt_mode_table CRTM1600x1024[1];
++/* 1792x1344 (DMT) */
++extern struct crt_mode_table CRTM1792x1344[1];
++/* 1856x1392 (DMT) */
++extern struct crt_mode_table CRTM1856x1392[1];
++/* 1920x1200 (CVT) */
++extern struct crt_mode_table CRTM1920x1200[1];
++/* 1920x1200 (CVT with Reduce Blanking) */
++extern struct crt_mode_table CRTM1920x1200_RB[1];
++/* 2048x1536 (CVT) */
++extern struct crt_mode_table CRTM2048x1536[1];
++extern struct VideoModeTable CLE266Modes[47];
++extern struct crt_mode_table CEAM1280x720[1];
++extern struct crt_mode_table CEAM1920x1080[1];
++extern struct VideoModeTable CEA_HDMI_Modes[2];
++
++extern struct res_map_refresh res_map_refresh_tbl[61];
++extern struct io_reg CN400_ModeXregs[52];
++extern struct io_reg CN700_ModeXregs[66];
++extern struct io_reg KM400_ModeXregs[55];
++extern struct io_reg CX700_ModeXregs[58];
++extern struct io_reg VX800_ModeXregs[58];
++extern struct io_reg CLE266_ModeXregs[32];
++extern struct io_reg PM1024x768[2];
++extern struct patch_table res_patch_table[1];
++extern struct VPITTable VPIT;
++#endif /* __VIAMODE_H__ */
 ˇÙË∫{.n«+â∑üÆâ≠Ü+%äÀˇ±È›∂•äwˇ∫{.n«+â∑•ä{±˛G´ùÈˇä{ay∫ á⁄ôÎ,j≠¢f£¢∑höèÔÅÍˇëÍÁz_ËÆ(≠Èöéä›¢j"ù˙∂mßˇˇæ´˛G´ùÈˇ¢∏?ô®Ë≠⁄&£¯ß~è·∂iOïÊ¨z∑övÿ^∂mßˇˇ√ˇ∂Ïˇ¢∏?ñI•
