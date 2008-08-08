@@ -1,50 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754065AbYHHIvz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754227AbYHHJRi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754065AbYHHIvz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 04:51:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751659AbYHHIvq
+	id S1754227AbYHHJRi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 05:17:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752100AbYHHJRa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 04:51:46 -0400
-Received: from extu-mxob-2.symantec.com ([216.10.194.135]:56980 "EHLO
-	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751308AbYHHIvp (ORCPT
+	Fri, 8 Aug 2008 05:17:30 -0400
+Received: from mtagate6.uk.ibm.com ([195.212.29.139]:54701 "EHLO
+	mtagate6.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751874AbYHHJR3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 04:51:45 -0400
-Date: Fri, 8 Aug 2008 09:51:36 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.site
-To: Francis Moreau <francis.moro@gmail.com>
-cc: Rik van Riel <riel@redhat.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: question about do_anonymous_page()
-In-Reply-To: <38b2ab8a0808080123t5083dc17qa250bd02c753f80d@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0808080938001.15941@blonde.site>
-References: <38b2ab8a0808080101v795327f0n9da5adb33a3c1a9@mail.gmail.com>
- <38b2ab8a0808080123t5083dc17qa250bd02c753f80d@mail.gmail.com>
+	Fri, 8 Aug 2008 05:17:29 -0400
+From: Christian Borntraeger <borntraeger@de.ibm.com>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Subject: export virtio_rng.h
+Date: Fri, 8 Aug 2008 11:15:07 +0200
+User-Agent: KMail/1.9.9
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       virtualization@lists.linux-foundation.org
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200808081115.07411.borntraeger@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 8 Aug 2008, Francis Moreau wrote:
-> On Fri, Aug 8, 2008 at 10:01 AM, Francis Moreau <francis.moro@gmail.com> wrote:
-> >
-> > I'm wondering why do_anonymous_page() calls lru_cache_add_active(page)
-> > where page does not belong to the page cache ?
-> >
-> > Is it simply because lru_add_active() doesn't exist ?
+Hello Rusty,
 
-Yes.
+The entropy device was added after we exported all virtio headers. This
+patch adds virtio_rng.h to the exportable userspace headers.
 
-It just happens that whoever (Rik?) originally named that function was
-primarily thinking of the page cache at the time; or perhaps wasn't
-thinking of the file page cache at all, just regarding all the pages
-we put on that list as cached in some sense.
+Signed-off-by: Christian Borntraeger <borntraeger@de.ibm.com>
 
-You're right that it's a little anomalous, but nothing to worry about.
-I get more bothered by page_cache_get(), which is and always(?) has
-been the same thing as get_page(): sometimes we use one, sometimes
-the other, and often we use page_cache_get() on anonymous pages.
+---
+ include/linux/Kbuild |    1 +
+ 1 file changed, 1 insertion(+)
 
-Hugh
+Index: linux-2.6/include/linux/Kbuild
+===================================================================
+--- linux-2.6.orig/include/linux/Kbuild
++++ linux-2.6/include/linux/Kbuild
+@@ -356,6 +356,7 @@ unifdef-y += virtio_balloon.h
+ unifdef-y += virtio_console.h
+ unifdef-y += virtio_pci.h
+ unifdef-y += virtio_ring.h
++unifdef-y += virtio_rng.h
+ unifdef-y += vt.h
+ unifdef-y += wait.h
+ unifdef-y += wanrouter.h
