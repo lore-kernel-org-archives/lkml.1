@@ -1,36 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756956AbYHHA5w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753821AbYHHA6O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756956AbYHHA5w (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Aug 2008 20:57:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756119AbYHHA46
+	id S1753821AbYHHA6O (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Aug 2008 20:58:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756353AbYHHA5B
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Aug 2008 20:56:58 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:46779 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755881AbYHHA45 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Aug 2008 20:56:57 -0400
-Message-Id: <20080808005652.543469000@polaris-admin.engr.sgi.com>
+	Thu, 7 Aug 2008 20:57:01 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:42035 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1756215AbYHHA47 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Aug 2008 20:56:59 -0400
+Message-Id: <20080808005658.554514000@polaris-admin.engr.sgi.com>
 References: <20080808005639.505189000@polaris-admin.engr.sgi.com>
 User-Agent: quilt/0.46-1
-Date: Thu, 07 Aug 2008 17:56:42 -0700
+Date: Thu, 07 Aug 2008 17:56:43 -0700
 From: Mike Travis <travis@sgi.com>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: Andrew Morton <akpm@linux-foundation.org>, Jack Steiner <steiner@sgi.com>,
-       linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: [PATCH 3/6] x86_64 UV: Use blinking LED for heartbeat display
-Content-Disposition: inline; filename=uv_led_display_hb_x86
+       linux-kernel@vger.kernel.org, Tony Luck <tony.luck@intel.com>
+Subject: [PATCH 4/6] ia64 UV: Provide a LED driver for UV Systems
+Content-Disposition: inline; filename=uv_led_driver_ia64
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  * Add a function to blink the "heartbeat" LED indicating
-    that the CPU is responding to timer interrupts.
-
-  * Introduces a callback for "heartbeat" display in the
-    clocksource_watchdog function, which in turn requires
-    CONFIG_CLOCKSOURCE_WATCHDOG to be set.
+  * Add base functionality for writing to the LED's on
+    the ia64 UV architecture.
 
 Note that this is a RAS feature that allows external monitoring of
 various cpu state indicators, not just providing "pretty blinking
@@ -39,126 +33,118 @@ lights", as the LED state is readable by the system controller.
 Based on linux-2.6.tip/master.
 
 Signed-off-by: Mike Travis <travis@sgi.com>
-Cc: H. Peter Anvin <hpa@zytor.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Tony Luck <tony.luck@intel.com>
 ---
- arch/x86/kernel/genx2apic_uv_x.c |   29 +++++++++++++++++++++++++++++
- include/asm-x86/uv/uv_hub.h      |    1 +
- include/linux/clocksource.h      |    5 +++++
- kernel/time/clocksource.c        |   10 +++++++++-
- 4 files changed, 44 insertions(+), 1 deletion(-)
+ arch/ia64/uv/kernel/setup.c  |    2 +
+ include/asm-ia64/uv/uv_hub.h |   61 ++++++++++++++++++++++++++++++++++++++++++-
+ 2 files changed, 62 insertions(+), 1 deletion(-)
 
---- linux-2.6.tip.orig/arch/x86/kernel/genx2apic_uv_x.c
-+++ linux-2.6.tip/arch/x86/kernel/genx2apic_uv_x.c
-@@ -10,6 +10,7 @@
- 
- #include <linux/kernel.h>
- #include <linux/threads.h>
-+#include <linux/clocksource.h>
- #include <linux/cpumask.h>
- #include <linux/string.h>
- #include <linux/ctype.h>
-@@ -360,6 +361,25 @@ static __init void uv_rtc_init(void)
- 		sn_rtc_cycles_per_second = ticks_per_sec;
- }
- 
-+#ifdef CONFIG_CLOCKSOURCE_WATCHDOG
-+static void uv_display_heartbeat(void)
-+{
-+	int cpu;
-+
-+	uv_hub_info->led_heartbeat_count = nr_cpu_ids;
-+
-+	for_each_online_cpu(cpu) {
-+		struct uv_hub_info_s *hub = uv_cpu_hub_info(cpu);
-+
-+		if (hub->led_heartbeat_count > 0) {
-+			uv_set_led_bits_on(cpu, LED_CPU_BLINK,
-+						LED_CPU_HEARTBEAT);
-+			--hub->led_heartbeat_count;
-+		}
-+	}
-+}
-+#endif
-+
- static __init void uv_system_init(void)
- {
- 	union uvh_si_addr_map_config_u m_n_config;
-@@ -438,6 +458,7 @@ static __init void uv_system_init(void)
+--- linux-2.6.tip.orig/arch/ia64/uv/kernel/setup.c
++++ linux-2.6.tip/arch/ia64/uv/kernel/setup.c
+@@ -104,6 +104,8 @@ void __init uv_setup(char **cmdline_p)
+ 		uv_cpu_hub_info(cpu)->gnode_upper = gnode_upper;
+ 		uv_cpu_hub_info(cpu)->global_mmr_base = mmr_base;
  		uv_cpu_hub_info(cpu)->coherency_domain_number = 0;/* ZZZ */
- 		uv_cpu_hub_info(cpu)->led_offset = LED_LOCAL_MMR_BASE + lcpu;
- 		uv_cpu_hub_info(cpu)->led_state = 0;
-+		uv_cpu_hub_info(cpu)->led_heartbeat_count = nr_cpu_ids;
- 		uv_node_to_blade[nid] = blade;
- 		uv_cpu_to_blade[cpu] = blade;
- 		max_pnode = max(pnode, max_pnode);
-@@ -455,6 +476,14 @@ static __init void uv_system_init(void)
- 
- 	/* enable post-smp_cpus_done processing */
- 	smp_cpus_done_system = uv_start_system;
-+
-+#ifdef CONFIG_CLOCKSOURCE_WATCHDOG
-+	/* enable heartbeat display callback */
-+	display_heartbeat = uv_display_heartbeat;
-+#else
-+	printk(KERN_NOTICE "UV: CLOCKSOURCE_WATCHDOG not configured, "
-+			   "LED Heartbeat NOT enabled\n");
-+#endif
++		uv_cpu_hub_info(cpu)->led_offset = LED_LOCAL_MMR_BASE + lcpu;
++		uv_cpu_hub_info(cpu)->led_state = 0;
+ 		printk(KERN_DEBUG "UV cpu %d, nid %d\n", cpu, nid);
+ 	}
  }
- 
- /*
---- linux-2.6.tip.orig/include/asm-x86/uv/uv_hub.h
-+++ linux-2.6.tip/include/asm-x86/uv/uv_hub.h
-@@ -124,6 +124,7 @@ struct uv_hub_info_s {
+--- linux-2.6.tip.orig/include/asm-ia64/uv/uv_hub.h
++++ linux-2.6.tip/include/asm-ia64/uv/uv_hub.h
+@@ -99,6 +99,7 @@ struct uv_hub_info_s {
+ 	unsigned long	gnode_upper;
  	unsigned long	lowmem_remap_top;
  	unsigned long	lowmem_remap_base;
- 	unsigned long	led_offset;
-+	unsigned int	led_heartbeat_count;
++	unsigned long	led_offset;
  	unsigned short	pnode;
  	unsigned short	pnode_mask;
  	unsigned short	coherency_domain_number;
---- linux-2.6.tip.orig/include/linux/clocksource.h
-+++ linux-2.6.tip/include/linux/clocksource.h
-@@ -236,4 +236,9 @@ static inline void update_vsyscall_tz(vo
- }
- #endif
+@@ -106,6 +107,7 @@ struct uv_hub_info_s {
+ 	unsigned char	blade_processor_id;
+ 	unsigned char	m_val;
+ 	unsigned char	n_val;
++	unsigned char	led_state;
+ };
+ DECLARE_PER_CPU(struct uv_hub_info_s, __uv_hub_info);
+ #define uv_hub_info 		(&__get_cpu_var(__uv_hub_info))
+@@ -134,6 +136,20 @@ DECLARE_PER_CPU(struct uv_hub_info_s, __
+ #define UV_GLOBAL_MMR64_PNODE_BITS(p)					\
+ 	((unsigned long)(p) << UV_GLOBAL_MMR64_PNODE_SHIFT)
  
-+#ifdef CONFIG_CLOCKSOURCE_WATCHDOG
-+/* typically blinks "heartbeat" LED */
-+extern void (*display_heartbeat)(void);
-+#endif
++/* Local Bus from cpu's perspective */
++#define LOCAL_BUS_BASE		0x1c00000
++#define LOCAL_BUS_SIZE		(4 * 1024 * 1024)
 +
- #endif /* _LINUX_CLOCKSOURCE_H */
---- linux-2.6.tip.orig/kernel/time/clocksource.c
-+++ linux-2.6.tip/kernel/time/clocksource.c
-@@ -76,6 +76,9 @@ static DEFINE_SPINLOCK(watchdog_lock);
- static cycle_t watchdog_last;
- static unsigned long watchdog_resumed;
- 
-+/* arch specific heartbeat display */
-+void (*display_heartbeat)(void);
++/* LED windows - located at top of ACPI MMR space */
++#define LED_WINDOW_COUNT	64
++#define LED_LOCAL_MMR_BASE	(LOCAL_BUS_BASE + LOCAL_BUS_SIZE - \
++							LED_WINDOW_COUNT)
++
++#define LED_CPU_HEARTBEAT	0x01	/* timer interrupt */
++#define LED_CPU_ACTIVITY	0x02	/* not idle */
++#define LED_CPU_BLINK		0xffff	/* blink led */
++#define LED_CPU_HB_INTERVAL	(HZ/2)	/* blink once per second */
 +
  /*
-  * Interval: 0.5sec Threshold: 0.0625s
-  */
-@@ -140,12 +143,17 @@ static void clocksource_watchdog(unsigne
- 		}
- 	}
+  * Macros for converting between kernel virtual addresses, socket local physical
+  * addresses, and UV global physical addresses.
+@@ -240,6 +256,16 @@ static inline void uv_write_local_mmr(un
+ 	*uv_local_mmr_address(offset) = val;
+ }
  
-+	/* If arch has a heartbeat display, then poke it */
-+	if (display_heartbeat)
-+		display_heartbeat();
++static inline unsigned char uv_read_local_mmr8(unsigned long offset)
++{
++	return *((unsigned char *)uv_local_mmr_address(offset));
++}
 +
- 	if (!list_empty(&watchdog_list)) {
- 		/*
- 		 * Cycle through CPUs to check if the CPUs stay
- 		 * synchronized to each other.
- 		 */
--		int next_cpu = next_cpu_nr(raw_smp_processor_id(), cpu_online_map);
-+		int next_cpu = next_cpu_nr(raw_smp_processor_id(),
-+					   cpu_online_map);
++static inline void uv_write_local_mmr8(unsigned long offset, unsigned char val)
++{
++	*((unsigned char *)uv_local_mmr_address(offset)) = val;
++}
++
+ /*
+  * Structures and definitions for converting between cpu, node, pnode, and blade
+  * numbers.
+@@ -305,5 +331,38 @@ static inline int uv_num_possible_blades
+ 	return 1;
+ }
  
- 		if (next_cpu >= nr_cpu_ids)
- 			next_cpu = first_cpu(cpu_online_map);
+-#endif /* __ASM_IA64_UV_HUB__ */
++/* Light up the leds */
++static inline void uv_set_led_bits(unsigned short value, unsigned char mask)
++{
++	unsigned char state = uv_hub_info->led_state;
++
++	if (value == LED_CPU_BLINK)
++		state ^= mask;
++	else
++		state = (state & ~mask) | (value & mask);
+ 
++	if (uv_hub_info->led_state != state) {
++		uv_hub_info->led_state = state;
++		uv_write_local_mmr8(uv_hub_info->led_offset, state);
++	}
++}
++
++/* Light up the leds */
++static inline void uv_set_led_bits_on(int cpu, unsigned short value,
++					       unsigned char mask)
++
++{
++	unsigned char state = uv_cpu_hub_info(cpu)->led_state;
++
++	if (value == LED_CPU_BLINK)
++		state ^= mask;
++	else
++		state = (state & ~mask) | (value & mask);
++
++	if (uv_cpu_hub_info(cpu)->led_state != state) {
++		uv_cpu_hub_info(cpu)->led_state = state;
++		uv_write_local_mmr8(uv_cpu_hub_info(cpu)->led_offset, state);
++	}
++}
++
++#endif /* __ASM_IA64_UV_HUB__ */
 
 -- 
