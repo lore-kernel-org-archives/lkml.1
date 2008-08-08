@@ -1,320 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756453AbYHHKRm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758108AbYHHKRY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756453AbYHHKRm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 06:17:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757554AbYHHKRa
+	id S1758108AbYHHKRY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 06:17:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757578AbYHHKQ5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 06:17:30 -0400
-Received: from mailtp.via.com.tw ([61.66.243.2]:16004 "EHLO mailtp.via.com.tw"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757621AbYHHKR3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 06:17:29 -0400
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Fri, 8 Aug 2008 06:16:57 -0400
+Received: from bigben2.bytemark.co.uk ([80.68.81.132]:60472 "EHLO
+	bigben2.bytemark.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757409AbYHHKQ4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Aug 2008 06:16:56 -0400
+Date: Fri, 8 Aug 2008 11:16:46 +0100
+From: Andy Whitcroft <apw@shadowen.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: gerald.schaefer@de.ibm.com, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com,
+       mel@csn.ul.ie
+Subject: Re: [PATCH 1/1] allocate structures for reservation tracking in
+	hugetlbfs outside of spinlocks
+Message-ID: <20080808101646.GJ14829@brain>
+References: <1218033802.7764.31.camel@ubuntu> <1218140903-9757-1-git-send-email-apw@shadowen.org> <20080807143824.8e0803da.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="utf-8"
-Subject: [PATCH 10/13 v2] viafb: tbl1636.c, tbl1636.h, tblDPASetting.c, tblDPASetting.h
-Date: Fri, 8 Aug 2008 18:17:26 +0800
-Message-ID: <C80EF34A3D2E494DBAF9AC29C7AE4EB8078B69A8@exchtp03.taipei.via.com.tw>
-In-Reply-To: <C80EF34A3D2E494DBAF9AC29C7AE4EB8074E7890@exchtp03.taipei.via.com.tw>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH 10/13 v2] viafb: tbl1636.c, tbl1636.h, tblDPASetting.c, tblDPASetting.h
-Thread-Index: AcjahRv6Ap5XUA8RRaK4sMdyVGAZ9wesQxxQ
-From: <JosephChan@via.com.tw>
-To: <JosephChan@via.com.tw>, <linux-fbdev-devel@lists.sourceforge.net>,
-       <linux-kernel@vger.kernel.org>
-Cc: <akpm@linux-foundation.org>, <geert@linux-m68k.org>
-X-OriginalArrivalTime: 08 Aug 2008 10:17:27.0983 (UTC) FILETIME=[F5A953F0:01C8F93F]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080807143824.8e0803da.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha id m78AHmdq019721
 
- 
-tbl1636.c, tbl1636.h: patch setting for VT1636.
-tblDPASetting.c, tblDPASetting.h: patch for graphic clock skew.
+On Thu, Aug 07, 2008 at 02:38:24PM -0700, Andrew Morton wrote:
+> On Thu,  7 Aug 2008 21:28:23 +0100
+> Andy Whitcroft <apw@shadowen.org> wrote:
+> 
+> > [Andrew, this fixes a problem in the private reservations stack, shown up
+> > by some testing done by Gerald on s390 with PREEMPT.  It fixes an attempt
+> > at allocation while holding locks.  This should be merged up to mainline
+> > as a bug fix to those patches.]
+> > 
+> > In the normal case, hugetlbfs reserves hugepages at map time so that the
+> > pages exist for future faults.  A struct file_region is used to track
+> > when reservations have been consumed and where.  These file_regions
+> > are allocated as necessary with kmalloc() which can sleep with the
+> > mm->page_table_lock held.  This is wrong and triggers may-sleep warning
+> > when PREEMPT is enabled.
+> > 
+> > Updates to the underlying file_region are done in two phases.  The first
+> > phase prepares the region for the change, allocating any necessary memory,
+> > without actually making the change.  The second phase actually commits
+> > the change.  This patch makes use of this by checking the reservations
+> > before the page_table_lock is taken; triggering any necessary allocations.
+> > This may then be safely repeated within the locks without any allocations
+> > being required.
+> > 
+> > Credit to Mel Gorman for diagnosing this failure and initial versions of
+> > the patch.
+> > 
+> 
+> After applying the patch:
+> 
+> : int hugetlb_fault(struct mm_struct *mm, struct vm_area_struct *vma,
+> : 			unsigned long address, int write_access)
+> : {
+> : 	pte_t *ptep;
+> : 	pte_t entry;
+> : 	int ret;
+> : 	struct page *pagecache_page = NULL;
+> : 	static DEFINE_MUTEX(hugetlb_instantiation_mutex);
+> : 	struct hstate *h = hstate_vma(vma);
+> : 
+> : 	ptep = huge_pte_alloc(mm, address, huge_page_size(h));
+> : 	if (!ptep)
+> : 		return VM_FAULT_OOM;
+> : 
+> : 	/*
+> : 	 * Serialize hugepage allocation and instantiation, so that we don't
+> : 	 * get spurious allocation failures if two CPUs race to instantiate
+> : 	 * the same page in the page cache.
+> : 	 */
+> : 	mutex_lock(&hugetlb_instantiation_mutex);
+> : 	entry = huge_ptep_get(ptep);
+> : 	if (huge_pte_none(entry)) {
+> : 		ret = hugetlb_no_page(mm, vma, address, ptep, write_access);
+> : 		mutex_unlock(&hugetlb_instantiation_mutex);
+> : 		return ret;
+> : 	}
+> : 
+> : 	ret = 0;
+> : 
+> : 	/*
+> : 	 * If we are going to COW the mapping later, we examine the pending
+> : 	 * reservations for this page now. This will ensure that any
+> : 	 * allocations necessary to record that reservation occur outside the
+> : 	 * spinlock. For private mappings, we also lookup the pagecache
+> : 	 * page now as it is used to determine if a reservation has been
+> : 	 * consumed.
+> : 	 */
+> : 	if (write_access && !pte_write(entry)) {
+> : 		vma_needs_reservation(h, vma, address);
+> : 
+> : 		if (!(vma->vm_flags & VM_SHARED))
+> : 			pagecache_page = hugetlbfs_pagecache_page(h,
+> : 								vma, address);
+> : 	}
+> 
+> There's a seeming race window here, where a new page can get
+> instantiated.  But down-read(mmap_sem) plus hugetlb_instantiation_mutex
+> prevents that, yes?
 
+Although that is true, I would prefer to not think of the
+instantiation_mutex as protection for this, its primary concern is
+serialisation.  I believe that the combination of down_read(mmap_sem),
+the page lock, and perversely the page_table_lock protect this.
 
-Signed-off-by: Joseph Chan <josephchan@via.com.tw>
+At this point we know that the PTE was not pte_none else we would
+have branched to no_page.  No mapping operations can be occuring as
+we have down_read(mmap_sem).  Any truncates racing with us first clear
+the PTEs and then the pagecache references.  Should we pick up a stale
+pagecache reference, we will detect it when we recheck the PTE under
+the page_table_lock; this will also detect any racing instantiations.
 
-diff -Nurp a/drivers/video/via/tbl1636.c b/drivers/video/via/tbl1636.c
---- a/drivers/video/via/tbl1636.c	1970-01-01 08:00:00.000000000 +0800
-+++ b/drivers/video/via/tbl1636.c	2008-07-22 02:07:29.000000000 +0800
-@@ -0,0 +1,71 @@
-+/*
-+ * Copyright 1998-2008 VIA Technologies, Inc. All Rights Reserved.
-+ * Copyright 2001-2008 S3 Graphics, Inc. All Rights Reserved.
-+
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public
-+ * License as published by the Free Software Foundation;
-+ * either version 2, or (at your option) any later version.
-+
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTIES OR REPRESENTATIONS; without even
-+ * the implied warranty of MERCHANTABILITY or FITNESS FOR
-+ * A PARTICULAR PURPOSE.See the GNU General Public License
-+ * for more details.
-+
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc.,
-+ * 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-+ */
-+
-+#include "global.h"
-+struct IODATA COMMON_INIT_TBL_VT1636[] = {
-+/*  Index, Mask, Value */
-+	/* Set panel power sequence timing */
-+	{0x10, 0xC0, 0x00},
-+	/* T1: VDD on - Data on. Each increment is 1 ms. (50ms = 031h) */
-+	{0x0B, 0xFF, 0x40},
-+	/* T2: Data on - Backlight on. Each increment is 2 ms. (210ms = 068h) */
-+	{0x0C, 0xFF, 0x31},
-+	/* T3: Backlight off -Data off. Each increment is 2 ms. (210ms = 068h)*/
-+	{0x0D, 0xFF, 0x31},
-+	/* T4: Data off - VDD off. Each increment is 1 ms. (50ms = 031h) */
-+	{0x0E, 0xFF, 0x68},
-+	/* T5: VDD off - VDD on. Each increment is 100 ms. (500ms = 04h) */
-+	{0x0F, 0xFF, 0x68},
-+	/* LVDS output power up */
-+	{0x09, 0xA0, 0xA0},
-+	/* turn on back light */
-+	{0x10, 0x33, 0x13}
-+};
-+
-+struct IODATA DUAL_CHANNEL_ENABLE_TBL_VT1636[] = {
-+/*  Index, Mask, Value */
-+	{0x08, 0xF0, 0xE0}	/* Input Data Mode Select */
-+};
-+
-+struct IODATA SINGLE_CHANNEL_ENABLE_TBL_VT1636[] = {
-+/*  Index, Mask, Value */
-+	{0x08, 0xF0, 0x00}	/* Input Data Mode Select */
-+};
-+
-+struct IODATA DITHERING_ENABLE_TBL_VT1636[] = {
-+/*  Index, Mask, Value */
-+	{0x0A, 0x70, 0x50}
-+};
-+
-+struct IODATA DITHERING_DISABLE_TBL_VT1636[] = {
-+/*  Index, Mask, Value */
-+	{0x0A, 0x70, 0x00}
-+};
-+
-+struct IODATA VDD_ON_TBL_VT1636[] = {
-+/*  Index, Mask, Value */
-+	{0x10, 0x20, 0x20}
-+};
-+
-+struct IODATA VDD_OFF_TBL_VT1636[] = {
-+/*  Index, Mask, Value */
-+	{0x10, 0x20, 0x00}
-+};
-diff -Nurp a/drivers/video/via/tbl1636.h b/drivers/video/via/tbl1636.h
---- a/drivers/video/via/tbl1636.h	1970-01-01 08:00:00.000000000 +0800
-+++ b/drivers/video/via/tbl1636.h	2008-07-22 02:07:29.000000000 +0800
-@@ -0,0 +1,34 @@
-+/*
-+ * Copyright 1998-2008 VIA Technologies, Inc. All Rights Reserved.
-+ * Copyright 2001-2008 S3 Graphics, Inc. All Rights Reserved.
-+
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public
-+ * License as published by the Free Software Foundation;
-+ * either version 2, or (at your option) any later version.
-+
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTIES OR REPRESENTATIONS; without even
-+ * the implied warranty of MERCHANTABILITY or FITNESS FOR
-+ * A PARTICULAR PURPOSE.See the GNU General Public License
-+ * for more details.
-+
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc.,
-+ * 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-+ */
-+
-+#ifndef _TBL1636_H_
-+#define _TBL1636_H_
-+#include "hw.h"
-+
-+extern struct IODATA COMMON_INIT_TBL_VT1636[8];
-+extern struct IODATA DUAL_CHANNEL_ENABLE_TBL_VT1636[1];
-+extern struct IODATA SINGLE_CHANNEL_ENABLE_TBL_VT1636[1];
-+extern struct IODATA DITHERING_ENABLE_TBL_VT1636[1];
-+extern struct IODATA DITHERING_DISABLE_TBL_VT1636[1];
-+extern struct IODATA VDD_ON_TBL_VT1636[1];
-+extern struct IODATA VDD_OFF_TBL_VT1636[1];
-+
-+#endif /* _VIA_TBL1636_H_ */
-diff -Nurp a/drivers/video/via/tblDPASetting.c b/drivers/video/via/tblDPASetting.c
---- a/drivers/video/via/tblDPASetting.c	1970-01-01 08:00:00.000000000 +0800
-+++ b/drivers/video/via/tblDPASetting.c	2008-07-22 02:07:29.000000000 +0800
-@@ -0,0 +1,109 @@
-+/*
-+ * Copyright 1998-2008 VIA Technologies, Inc. All Rights Reserved.
-+ * Copyright 2001-2008 S3 Graphics, Inc. All Rights Reserved.
-+
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public
-+ * License as published by the Free Software Foundation;
-+ * either version 2, or (at your option) any later version.
-+
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTIES OR REPRESENTATIONS; without even
-+ * the implied warranty of MERCHANTABILITY or FITNESS FOR
-+ * A PARTICULAR PURPOSE.See the GNU General Public License
-+ * for more details.
-+
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc.,
-+ * 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-+ */
-+
-+#include "global.h"
-+/* For VT3324: */
-+struct VT1636_DPA_SETTING VT1636_DPA_SETTING_TBL_VT3324[] = {
-+	/* Panel ID,       CLK_SEL_ST1[09],    CLK_SEL_ST2[08] */
-+	{LCD_PANEL_ID0_640X480, 0x00, 0x00},	/* For 640x480   */
-+	{LCD_PANEL_ID1_800X600, 0x00, 0x00},	/* For 800x600   */
-+	{LCD_PANEL_ID2_1024X768, 0x00, 0x00},	/* For 1024x768  */
-+	{LCD_PANEL_ID3_1280X768, 0x00, 0x00},	/* For 1280x768  */
-+	{LCD_PANEL_ID4_1280X1024, 0x00, 0x00},	/* For 1280x1024 */
-+	{LCD_PANEL_ID5_1400X1050, 0x00, 0x00},	/* For 1400x1050 */
-+	{LCD_PANEL_ID6_1600X1200, 0x0B, 0x03}	/* For 1600x1200 */
-+};
-+
-+struct GFX_DPA_SETTING GFX_DPA_SETTING_TBL_VT3324[] = {
-+/*  ClkRange, DVP0, DVP0DataDriving,  DVP0ClockDriving, DVP1,
-+					DVP1Driving, DFPHigh, DFPLow */
-+/*  CR96, SR2A[5], SR1B[1], SR2A[4], SR1E[2], CR9B,
-+					SR65,        CR97,    CR99   */
-+	/* LCK/VCK < 30000000 will use this value */
-+	{DPA_CLK_RANGE_30M, 0x00, 0x00, 0x00, 0x00, 0x00, 0x03, 0x00, 0x00,
-+	 0x00},
-+	/* 30000000 < LCK/VCK < 50000000 will use this value */
-+	{DPA_CLK_RANGE_30_50M, 0x00, 0x00, 0x00, 0x00, 0x00, 0x03, 0x00, 0x00,
-+	 0x00},
-+	/* 50000000 < LCK/VCK < 70000000 will use this value */
-+	{DPA_CLK_RANGE_50_70M, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x00, 0x00,
-+	 0x00},
-+	/* 70000000 < LCK/VCK < 100000000 will use this value */
-+	{DPA_CLK_RANGE_70_100M, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x00, 0x00,
-+	 0x00},
-+	/* 100000000 < LCK/VCK < 15000000 will use this value */
-+	{DPA_CLK_RANGE_100_150M, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x00, 0x00,
-+	 0x00},
-+	/* 15000000 < LCK/VCK will use this value */
-+	{DPA_CLK_RANGE_150M, 0x00, 0x00, 0x00, 0x00, 0x00, 0x08, 0x0E, 0x00,
-+	 0x00},
-+};
-+
-+/* For VT3327: */
-+struct VT1636_DPA_SETTING VT1636_DPA_SETTING_TBL_VT3327[] = {
-+	/* Panel ID,       CLK_SEL_ST1[09],    CLK_SEL_ST2[08] */
-+	{LCD_PANEL_ID0_640X480, 0x00, 0x00},	/* For 640x480   */
-+	{LCD_PANEL_ID1_800X600, 0x00, 0x00},	/* For 800x600   */
-+	{LCD_PANEL_ID2_1024X768, 0x00, 0x00},	/* For 1024x768  */
-+	{LCD_PANEL_ID3_1280X768, 0x00, 0x00},	/* For 1280x768  */
-+	{LCD_PANEL_ID4_1280X1024, 0x00, 0x00},	/* For 1280x1024 */
-+	{LCD_PANEL_ID5_1400X1050, 0x00, 0x00},	/* For 1400x1050 */
-+	{LCD_PANEL_ID6_1600X1200, 0x00, 0x00}	/* For 1600x1200 */
-+};
-+
-+struct GFX_DPA_SETTING GFX_DPA_SETTING_TBL_VT3327[] = {
-+/*  ClkRange,DVP0, DVP0DataDriving,  DVP0ClockDriving, DVP1,
-+					DVP1Driving, DFPHigh,   DFPLow */
-+/*   CR96, SR2A[5], SR1B[1], SR2A[4], SR1E[2], CR9B,
-+					SR65,        CR97,      CR99   */
-+/* LCK/VCK < 30000000 will use this value */
-+{DPA_CLK_RANGE_30M, 0x07, 0x00, 0x00, 0x00, 0x00, 0x03, 0x00, 0x08, 0x01},
-+/* 30000000 < LCK/VCK < 50000000 will use this value */
-+{DPA_CLK_RANGE_30_50M, 0x07, 0x00, 0x00, 0x00, 0x00, 0x03, 0x00, 0x08, 0x01},
-+/* 50000000 < LCK/VCK < 70000000 will use this value */
-+{DPA_CLK_RANGE_50_70M, 0x06, 0x00, 0x00, 0x00, 0x00, 0x03, 0x00, 0x08, 0x01},
-+/* 70000000 < LCK/VCK < 100000000 will use this value */
-+{DPA_CLK_RANGE_70_100M, 0x03, 0x00, 0x00, 0x00, 0x00, 0x03, 0x00, 0x08, 0x03},
-+/* 100000000 < LCK/VCK < 15000000 will use this value */
-+{DPA_CLK_RANGE_100_150M, 0x03, 0x00, 0x00, 0x00, 0x00, 0x03, 0x00, 0x01, 0x02},
-+/* 15000000 < LCK/VCK will use this value */
-+{DPA_CLK_RANGE_150M, 0x00, 0x20, 0x00, 0x10, 0x00, 0x03, 0x00, 0x0D, 0x03},
-+};
-+
-+/* For VT3364: */
-+struct GFX_DPA_SETTING GFX_DPA_SETTING_TBL_VT3364[] = {
-+/*  ClkRange,DVP0, DVP0DataDriving,  DVP0ClockDriving, DVP1,
-+					DVP1Driving, DFPHigh,   DFPLow */
-+/*   CR96, SR2A[5], SR1B[1], SR2A[4], SR1E[2], CR9B,
-+					SR65,        CR97,      CR99   */
-+/* LCK/VCK < 30000000 will use this value */
-+{DPA_CLK_RANGE_30M, 0x07, 0x00, 0x00, 0x00, 0x00, 0x03, 0x00, 0x00, 0x08},
-+/* 30000000 < LCK/VCK < 50000000 will use this value */
-+{DPA_CLK_RANGE_30_50M, 0x07, 0x00, 0x00, 0x00, 0x00, 0x03, 0x00, 0x00, 0x08},
-+/* 50000000 < LCK/VCK < 70000000 will use this value */
-+{DPA_CLK_RANGE_50_70M, 0x07, 0x00, 0x00, 0x00, 0x00, 0x03, 0x00, 0x00, 0x08},
-+/* 70000000 < LCK/VCK < 100000000 will use this value */
-+{DPA_CLK_RANGE_70_100M, 0x07, 0x00, 0x00, 0x00, 0x00, 0x03, 0x00, 0x00, 0x08},
-+/* 100000000 < LCK/VCK < 15000000 will use this value */
-+{DPA_CLK_RANGE_100_150M, 0x03, 0x00, 0x02, 0x00, 0x00, 0x03, 0x00, 0x00, 0x08},
-+/* 15000000 < LCK/VCK will use this value */
-+{DPA_CLK_RANGE_150M, 0x01, 0x00, 0x02, 0x10, 0x00, 0x03, 0x00, 0x00, 0x08},
-+};
-diff -Nurp a/drivers/video/via/tblDPASetting.h b/drivers/video/via/tblDPASetting.h
---- a/drivers/video/via/tblDPASetting.h	1970-01-01 08:00:00.000000000 +0800
-+++ b/drivers/video/via/tblDPASetting.h	2008-07-22 02:07:29.000000000 +0800
-@@ -0,0 +1,47 @@
-+/*
-+ * Copyright 1998-2008 VIA Technologies, Inc. All Rights Reserved.
-+ * Copyright 2001-2008 S3 Graphics, Inc. All Rights Reserved.
-+
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public
-+ * License as published by the Free Software Foundation;
-+ * either version 2, or (at your option) any later version.
-+
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTIES OR REPRESENTATIONS; without even
-+ * the implied warranty of MERCHANTABILITY or FITNESS FOR
-+ * A PARTICULAR PURPOSE.See the GNU General Public License
-+ * for more details.
-+
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc.,
-+ * 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-+ */
-+
-+#ifndef _TBLDPASETTING_H_
-+#define _TBLDPASETTING_H_
-+#include "global.h"
-+
-+#define DPA_CLK_30M       30000000
-+#define DPA_CLK_50M       50000000
-+#define DPA_CLK_70M       70000000
-+#define DPA_CLK_100M      100000000
-+#define DPA_CLK_150M      150000000
-+
-+enum DPA_RANGE {
-+	DPA_CLK_RANGE_30M,
-+	DPA_CLK_RANGE_30_50M,
-+	DPA_CLK_RANGE_50_70M,
-+	DPA_CLK_RANGE_70_100M,
-+	DPA_CLK_RANGE_100_150M,
-+	DPA_CLK_RANGE_150M
-+};
-+
-+extern struct VT1636_DPA_SETTING VT1636_DPA_SETTING_TBL_VT3324[7];
-+extern struct GFX_DPA_SETTING GFX_DPA_SETTING_TBL_VT3324[6];
-+extern struct VT1636_DPA_SETTING VT1636_DPA_SETTING_TBL_VT3327[7];
-+extern struct GFX_DPA_SETTING GFX_DPA_SETTING_TBL_VT3327[];
-+extern struct GFX_DPA_SETTING GFX_DPA_SETTING_TBL_VT3364[6];
-+
-+#endif
-ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éÝ¶¥Šwÿº{.nÇ+‰·¥Š{±þG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŽŠÝ¢j"ú¶m§ÿÿ¾«þG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
+Obviously we have the instantiation_mutex, and the locking rules for
+the regions need it.  But I believe we are safe against this race even
+without the instantiation_mutex.
+
+> : 	spin_lock(&mm->page_table_lock);
+> : 	/* Check for a racing update before calling hugetlb_cow */
+> : 	if (likely(pte_same(entry, huge_ptep_get(ptep))))
+> : 		if (write_access && !pte_write(entry))
+> : 			ret = hugetlb_cow(mm, vma, address, ptep, entry,
+> : 							pagecache_page);
+> : 	spin_unlock(&mm->page_table_lock);
+> : 
+> : 	if (pagecache_page) {
+> : 		unlock_page(pagecache_page);
+> : 		put_page(pagecache_page);
+> : 	}
+> : 
+> : 	mutex_unlock(&hugetlb_instantiation_mutex);
+> : 
+> : 	return ret;
+> : }
+> : 
+> : 
+
+-apw
