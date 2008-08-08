@@ -1,90 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758841AbYHHSlT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757921AbYHHSqc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758841AbYHHSlT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 14:41:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753206AbYHHSlK
+	id S1757921AbYHHSqc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 14:46:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751185AbYHHSqX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 14:41:10 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:42594 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752834AbYHHSlK (ORCPT
+	Fri, 8 Aug 2008 14:46:23 -0400
+Received: from yx-out-2324.google.com ([74.125.44.29]:55882 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751008AbYHHSqW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 14:41:10 -0400
-Date: Fri, 8 Aug 2008 14:41:06 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, Roland McGrath <roland@redhat.com>,
-       Ulrich Drepper <drepper@redhat.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Gregory Haskins <ghaskins@novell.com>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       "Luis Claudio R. Goncalves" <lclaudio@uudg.org>,
-       Clark Williams <williams@redhat.com>
-Subject: Re: [PATCH 0/5] ftrace: to kill a daemon
-In-Reply-To: <20080808182104.GA11376@Krystal>
-Message-ID: <alpine.DEB.1.10.0808081432400.8922@gandalf.stny.rr.com>
-References: <20080807182013.984175558@goodmis.org> <20080807184741.GB18164@Krystal> <alpine.DEB.1.10.0808071639420.9449@gandalf.stny.rr.com> <20080808172259.GB8244@Krystal> <alpine.DEB.1.10.0808081334010.4436@gandalf.stny.rr.com> <20080808174607.GG8244@Krystal>
- <alpine.DEB.1.10.0808081410380.6116@gandalf.stny.rr.com> <20080808182104.GA11376@Krystal>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Fri, 8 Aug 2008 14:46:22 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=tlAvp09Jk4wF05ZYqeCmEWG4zYB6SYVMHGHwkBfRAn/k/mCd1b70h+6FOeR76qpRjx
+         f6EkqnWEEUjUENvY5Dl532YNt6P7sOZ0YHC0chLnCvQJ58+DyKrQ+t5hmfTtSMXZPduG
+         kdZvSjeaWgLUUK/tHAJVCuaFV23UKxRwCz9GI=
+Message-ID: <19f34abd0808081146w22a3e5casd0d1fa15f2384000@mail.gmail.com>
+Date: Fri, 8 Aug 2008 20:46:21 +0200
+From: "Vegard Nossum" <vegard.nossum@gmail.com>
+To: paulmck@linux.vnet.ibm.com
+Subject: Re: recent -git: BUG in free_thread_xstate
+Cc: "Suresh Siddha" <suresh.b.siddha@intel.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "the arch/x86 maintainers" <x86@kernel.org>
+In-Reply-To: <20080801211036.GU14851@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <19f34abd0807231307y191c0ad7tfab4cda57ee88eb@mail.gmail.com>
+	 <20080723203109.GH14380@linux-os.sc.intel.com>
+	 <20080801211036.GU14851@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Aug 1, 2008 at 11:10 PM, Paul E. McKenney
+<paulmck@linux.vnet.ibm.com> wrote:
+> On Wed, Jul 23, 2008 at 01:31:09PM -0700, Suresh Siddha wrote:
+>> On Wed, Jul 23, 2008 at 01:07:04PM -0700, Vegard Nossum wrote:
+>> > Hi,
+>> >
+>> > I just got this on c010b2f76c3032e48097a6eef291d8593d5d79a6 (-git from
+>> > yesterday):
+>>
+>> Do you see this in 2.6.26 aswell? I suspect it is coming from post 2.6.26
+>> changes.
+>>
+>> >
+>> > BUG: unable to handle kernel paging request at 00664381
+>> > IP: [<c010b274>] free_thread_xstate+0x4/0x30
+>> ...
+>>
+>> > EIP is at arch/x86/kernel/process.c:36:
+>> >
+>> >         if (tsk->thread.xstate) {
+>> >
+>>
+>> It looks like the kernel stack of that process got corrupted, corrupting the
+>> task pointer in thread_info. Can you send us your config file?
+>
+> I would also like to see the config file.
 
-On Fri, 8 Aug 2008, Mathieu Desnoyers wrote:
+Hi,
 
-> * Steven Rostedt (rostedt@goodmis.org) wrote:
-> > > > 
-> > > 
-> > > That's bad :
-> > > 
-> > > #define GENERIC_NOP5 GENERIC_NOP1 GENERIC_NOP4
-> > > 
-> > > #define K8_NOP5 K8_NOP3 K8_NOP2
-> > > 
-> > > #define K7_NOP5 K7_NOP4 ASM_NOP1
-> > > 
-> > > So, when you try, later, to replace these instructions with a single
-> > > 5-bytes instruction, a preempted thread could iret in the middle of your
-> > > 5-bytes insn and cause an illegal instruction ?
-> > 
-> > That's why I use kstop_machine.
-> > 
-> 
-> kstop_machine does not guarantee that you won't have _any_ thread
-> preempted with IP pointing exactly in the middle of your instructions
-> _before_ the modification scheduled back in _after_ the modification and
-> thus causing an illegal instruction.
-> 
-> Still buggy. :/
+I'm sorry for the late reply.
 
-Hmm, good point. Unless...
+I copied you because I saw some RCU entry in the stack trace, but it
+is almost definitely not a problem with (core or "leaf") RCU code.
+Sometimes it also happens that people will say "oh, I recognize this
+problem, the patch has been posted here and here", etc.
 
-Can a processor be preempted in a middle of nops?  What do nops do for a 
-processor? Can it skip them nicely in one shot?
+It seems to be a problem with either netpoll, netconsole, or the
+8139too driver. I find a UDP packet in the task_struct slab, and the
+stacktrace with RCU entries come from unrelated, unfortunate callbacks
+that stumbled upon the corruption.
 
-This means I'll have to do the benchmarks again, and see what the 
-performance difference of a jmp and a nop is significant. I'm thinking 
-that if the processor can safely skip nops without any type of processing, 
-this may be the reason that nops are better than a jmp. A jmp causes the 
-processor to do a little more work.
+My config, if you are still interested, can be found here:
+http://userweb.kernel.org/~vegard/bugs/20080724-fork/config
 
-I might even run a test to see if I can force a processor that uses the 
-three-two nops to preempt between them.
+I don't know if the problem persists with the latest -git, it is now a
+while since I last tested, but I've checked kernels back to 2.6.20, so
+the problem has existed for a long time.
 
-I can add a test in x86 ftrace.c to check to see which nop was used, and 
-use the jmp if the arch does not have a 5 byte nop.
 
-I'm assuming that jmp is more expensive than the nops because otherwise
-a jmp 0 would have been used as a 5 byte nop.
+Vegard
 
--- Steve
+-- 
+"The animistic metaphor of the bug that maliciously sneaked in while
+the programmer was not looking is intellectually dishonest as it
+disguises that the error is the programmer's own creation."
+	-- E. W. Dijkstra, EWD1036
