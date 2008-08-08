@@ -1,78 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754239AbYHHKF1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756061AbYHHKGw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754239AbYHHKF1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 06:05:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753719AbYHHKFP
+	id S1756061AbYHHKGw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 06:06:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753419AbYHHKGn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 06:05:15 -0400
-Received: from fms-01.valinux.co.jp ([210.128.90.1]:49873 "EHLO
-	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752970AbYHHKFN (ORCPT
+	Fri, 8 Aug 2008 06:06:43 -0400
+Received: from nf-out-0910.google.com ([64.233.182.191]:37003 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752139AbYHHKGm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 06:05:13 -0400
-Date: Fri, 08 Aug 2008 19:05:12 +0900 (JST)
-Message-Id: <20080808.190512.183028839.ryov@valinux.co.jp>
-To: fernando@oss.ntt.co.jp
-Cc: taka@valinux.co.jp, dave@linux.vnet.ibm.com,
-       yoshikawa.takuya@oss.ntt.co.jp, uchida@ap.jp.nec.com, ngupta@google.com,
-       linux-kernel@vger.kernel.org, dm-devel@redhat.com,
-       containers@lists.linux-foundation.org,
-       virtualization@lists.linux-foundation.org,
-       xen-devel@lists.xensource.com, agk@sourceware.org,
-       righi.andrea@gmail.com
-Subject: Re: RFC: I/O bandwidth controller
-From: Ryo Tsuruta <ryov@valinux.co.jp>
-In-Reply-To: <1218183056.17648.6.camel@sebastian.kern.oss.ntt.co.jp>
-References: <20080808.152119.43521725.taka@valinux.co.jp>
-	<20080808.162024.189720323.ryov@valinux.co.jp>
-	<1218183056.17648.6.camel@sebastian.kern.oss.ntt.co.jp>
-X-Mailer: Mew version 5.2.52 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Fri, 8 Aug 2008 06:06:42 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=aACYWWy12sNO5rKinLppvUWx4vaJursxhkioiKin/ES7OyLKyeLOJUB+AnH5czrws3
+         mTKpiF8eNYdzwFlNWQgeWvEj8kXk7wPBuKRf8wuBsj8cRzjc1UfCeAo93xI0dYa2WAjb
+         8Fxw3b4bE+S2u5q2WQerwZhy4K24CB8bRx32s=
+Message-ID: <ac9c93b10808080306l49eec3ayf4787c385b8c22a6@mail.gmail.com>
+Date: Fri, 8 Aug 2008 12:06:40 +0200
+From: "Frans Meulenbroeks" <fransmeulenbroeks@gmail.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: initramfs optimization suggestions
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <ac9c93b10808072353g550f0f71pca977f9f6eb6d794@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <ac9c93b10808050042u496bfa10nad7962eb0e9ec015@mail.gmail.com>
+	 <489A40FF.1000508@zytor.com>
+	 <ac9c93b10808070011x7a84adb5v98d2ed2405835fcc@mail.gmail.com>
+	 <489B30B3.8050709@zytor.com>
+	 <ac9c93b10808072353g550f0f71pca977f9f6eb6d794@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Fernando,
+Afterthought on my previous mail:
 
-> > > >   - Implement a block layer resource controller. dm-ioband is a working
-> > > > solution and feature rich but its dependency on the dm infrastructure is
-> > > > likely to find opposition (the dm layer does not handle barriers
-> > > > properly and the maximum size of I/O requests can be limited in some
-> > > > cases). In such a case, we could either try to build a standalone
-> > > > resource controller based on dm-ioband (which would probably hook into
-> > > > generic_make_request) or try to come up with something new.
-> > > 
-> > > I doubt about the maximum size of I/O requests problem. You can't avoid
-> > > this problem as far as you use device mapper modules with such a bad
-> > > manner, even if the controller is implemented as a stand-alone controller.
-> > > There is no limitation if you only use dm-ioband without any other device
-> > > mapper modules.
-> > 
-> > The following is a part of source code where the limitation comes from.
-> > 
-> > dm-table.c: dm_set_device_limits()
-> >         /*
-> >          * Check if merge fn is supported.
-> >          * If not we'll force DM to use PAGE_SIZE or
-> >          * smaller I/O, just to be safe.
-> >          */
-> > 
-> >         if (q->merge_bvec_fn && !ti->type->merge)
-> >                 rs->max_sectors =
-> >                         min_not_zero(rs->max_sectors,
-> >                                      (unsigned int) (PAGE_SIZE >> 9));
-> > 
-> > As far as I can find, In 2.6.27-rc1-mm1, Only some software RAID
-> > drivers and pktcdvd driver define merge_bvec_fn().
-> 
-> Yup, exactly. The implication of this is that we may see a drop in
-> performance in some RAID configurations.
+By creating something like initialised buffers the total memory usage
+while booting could even go down.
+In the current scenario during boot time the (compressed) cpio file is
+there, but the buffer memory is also allocated.
+If there is a possibility to have initialised caches the amount of
+memory used by the (compressed) cpio file is not needed.
+This could be beneficial for embedded systems that are low on memory.
+(and yes, I know the memory used by the cpio file is reclaimed later).
 
-The current device-mapper introduces a bvec merge function for device
-mapper devices. IMHO, the limitation goes away once we implement this
-in dm-ioband. Am I right, Alasdair?
-
-Thanks,
-Ryo Tsuruta
+Frans.
