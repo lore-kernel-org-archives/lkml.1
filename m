@@ -1,71 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760138AbYHHTTv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760117AbYHHTVk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760138AbYHHTTv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 15:19:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754410AbYHHTTk
+	id S1760117AbYHHTVk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 15:21:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753098AbYHHTVa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 15:19:40 -0400
-Received: from dresden.studentenwerk.mhn.de ([141.84.225.229]:39682 "EHLO
-	email.studentenwerk.mhn.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750695AbYHHTTj convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 15:19:39 -0400
-From: Wolfgang Walter <wolfgang.walter@stwm.de>
-Organization: Studentenwerk =?iso-8859-1?q?M=FCnchen?=
-To: "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: Kernel oops with 2.6.26, padlock and ipsec: probably problem with fpu state changes
-Date: Fri, 8 Aug 2008 21:19:37 +0200
-User-Agent: KMail/1.9.5
-Cc: Suresh Siddha <suresh.b.siddha@intel.com>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, viro@zeniv.linux.org.uk,
-       vegard.nossum@gmail.com
-References: <200807171653.59177.wolfgang.walter@stwm.de> <20080808185356.GC607@linux-os.sc.intel.com> <489C97FB.2030408@zytor.com>
-In-Reply-To: <489C97FB.2030408@zytor.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200808082119.37778.wolfgang.walter@stwm.de>
+	Fri, 8 Aug 2008 15:21:30 -0400
+Received: from casper.infradead.org ([85.118.1.10]:58021 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753027AbYHHTV3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Aug 2008 15:21:29 -0400
+Subject: Re: [PATCH] printk: robustify printk
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: torvalds@linux-foundation.org, mingo@elte.hu, tglx@linutronix.de,
+       marcin.slusarz@gmail.com, linux-kernel@vger.kernel.org,
+       davem@davemloft.net, rostedt@goodmis.org, paulmck@linux.vnet.ibm.com
+In-Reply-To: <20080808121428.646a8b3c.akpm@linux-foundation.org>
+References: <20080324122424.671168000@chello.nl>
+	 <alpine.LFD.1.00.0803241021350.17905@woody.linux-foundation.org>
+	 <1206382547.6437.131.camel@lappy>
+	 <20080324115738.85c72bb5.akpm@linux-foundation.org>
+	 <1218202249.8625.106.camel@twins>
+	 <alpine.LFD.1.10.0808080931550.3462@nehalem.linux-foundation.org>
+	 <1218215454.8625.133.camel@twins>
+	 <alpine.LFD.1.10.0808081014240.3462@nehalem.linux-foundation.org>
+	 <1218217257.29098.2.camel@lappy.programming.kicks-ass.net>
+	 <alpine.LFD.1.10.0808081043160.3462@nehalem.linux-foundation.org>
+	 <1218219269.29098.5.camel@lappy.programming.kicks-ass.net>
+	 <20080808121428.646a8b3c.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Fri, 08 Aug 2008 21:21:08 +0200
+Message-Id: <1218223269.29098.12.camel@lappy.programming.kicks-ass.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Freitag, 8. August 2008 21:01 schrieb H. Peter Anvin:
-> Suresh Siddha wrote:
-> > I propose to go with wolf's patch which add's kernel_fpu_begin() and
-> > kernel_fpu_end() around these instructions. This is the correct fix
-> > (unless there is something wrong in my above understanding).
->
-> It's technically overkill, if (and only if!) these instructions don't
-> actually touch the SSE state (most likely they're using the SSE
-> pipeline, and need this stuff to deal with power management issues.)
->
-> However, overkill is a good way to make sure something is dead.
-> Applying the patch will make sure we fix the regression, and we can
-> worry about optimizing this further post-2.6.27.
->
-> 	-hpa
+On Fri, 2008-08-08 at 12:14 -0700, Andrew Morton wrote:
+> On Fri, 08 Aug 2008 20:14:28 +0200
+> Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+> 
+> >  void wake_up_klogd(void)
+> >  {
+> > -	if (!oops_in_progress && waitqueue_active(&log_wait))
+> > -		wake_up_interruptible(&log_wait);
+> > +	unsigned long flags;
+> > +	struct klogd_wakeup_state *kws;
+> > +
+> > +	if (!waitqueue_active(&log_wait))
+> > +		return;
+> > +
+> > +	local_irq_save(flags);
+> > +	kws = &__get_cpu_var(kws);
+> > +	if (!kws->pending) {
+> > +		kws->pending = 1;
+> > +		call_rcu(&kws->head, __wake_up_klogd);
+> > +	}
+> > +	local_irq_restore(flags);
+> >  }
+> 
+> Note that kernel/rcupreempt.c's flavour of call_rcu() takes
+> RCU_DATA_ME().lock, so there are still code sites from which a printk
+> can deadlock.  Only now, it is config-dependent.
+> 
+> From a quick look it appears that large amounts of kernel/rcupreempt.c
+> are now a printk-free zone.
 
-Probably
+Drad, missed that bit, I did look at the calling end, but forgot the
+call_rcu() end :-/
 
-drivers/crypto/padlock-sha.c
-drivers/char/hw_random/via-rng.c
+The initial printk_tick() based implementation didn't suffer this
+problem, should we revert to that scheme?
 
-needs a fix, too.
-
-Regards,
--- 
-Wolfgang Walter
-Studentenwerk München
-Anstalt des öffentlichen Rechts
-Leiter EDV
-Leopoldstraße 15
-80802 München
-Tel: +49 89 38196 276
-Fax: +49 89 38196 150
-Email: wolfgang.walter@stwm.de
-http://www.studentenwerk-muenchen.de/
