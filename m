@@ -1,71 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755300AbYHHDiq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755861AbYHHDjl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755300AbYHHDiq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Aug 2008 23:38:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753377AbYHHDih
+	id S1755861AbYHHDjl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Aug 2008 23:39:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754047AbYHHDje
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Aug 2008 23:38:37 -0400
-Received: from po-out-1718.google.com ([72.14.252.153]:22504 "EHLO
-	po-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753141AbYHHDig (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Aug 2008 23:38:36 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=i2jvDdShS2TxySdYdX4G0pazVICI+eas/3dvhrLAESlYdNSCae/K4jC+Hnbytx4oiK
-         4/Wf/6Ebp7hxv/ShRe6d2bF3nCRY0vFB9V+yP+zS+o4im+isTLTtvH+PR1OUNs3quB4o
-         LmnGKu/I9EHxAM29wvSvd5bGoQqkYnkVvokHE=
-Message-ID: <a36005b50808072038w3e88658p6769e1e3779b6cab@mail.gmail.com>
-Date: Thu, 7 Aug 2008 20:38:35 -0700
-From: "Ulrich Drepper" <drepper@gmail.com>
-To: "Austin Zhang" <austin_zhang@linux.intel.com>
-Subject: Re: [PATCH] Using Intel CRC32 instruction to accelerate CRC32c algorithm by new crypto API -V3.
-Cc: herbert@gondor.apana.org.au, bunk@kernel.org, dwmw2@infradead.org,
-       davem@davemloft.net, randy.dunlap@oracle.com,
-       linux-kernel@vger.kernel.org, linux-crypto@vger.kernel.org
-In-Reply-To: <1218000211.4231.23.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+	Thu, 7 Aug 2008 23:39:34 -0400
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:55414 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753748AbYHHDjd (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Aug 2008 23:39:33 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: g3vbv@blueyonder.co.uk
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: A question regarding init_mm
+In-Reply-To: Your message of "Fri, 08 Aug 2008 02:49:29 BST."
+             <489BA629.4030008@blueyonder.co.uk>
+From: Valdis.Kletnieks@vt.edu
+References: <489BA629.4030008@blueyonder.co.uk>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1218166771_9292P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1218000211.4231.23.camel@localhost.localdomain>
+Date: Thu, 07 Aug 2008 23:39:32 -0400
+Message-ID: <71281.1218166772@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 5, 2008 at 10:23 PM, Austin Zhang
-<austin_zhang@linux.intel.com> wrote:
-> +#ifdef CONFIG_X86_64
-> +#define REX_PRE "0x48, "
-> +#define SCALE_F 8
-> +#else
-> +#define REX_PRE
-> +#define SCALE_F 4
-> +#endif
-[...]
-> +static u32 __pure crc32c_intel_le_hw(u32 crc, unsigned char const *p, size_t len)
-> +{
-> +       unsigned int iquotient = len / SCALE_F;
-> +       unsigned int iremainder = len % SCALE_F;
-> +       unsigned long *ptmp = (unsigned long *)p;
-> +
-> +       while (iquotient--) {
-> +               __asm__ __volatile__(
-> +                       ".byte 0xf2, " REX_PRE "0xf, 0x38, 0xf1, 0xf1;"
-> +                       :"=S"(crc)
-> +                       :"0"(crc), "c"(*ptmp)
-> +               );
-> +               ptmp++;
+--==_Exmh_1218166771_9292P
+Content-Type: text/plain; charset=us-ascii
 
-I think you want to use
+On Fri, 08 Aug 2008 02:49:29 BST, Sid Boyce said:
 
-  #define SCALE_F sizeof(unsigned long)
+> EXPORT_UNUSED_SYMBOL(init_mm); /* will be removed in 2.6.26 */
+ 
+> Any thoughts on why it's not seen? No one on the nvidia list has a clue 
+> either.
 
-Since the loop iteration count etc depends on
+Run a kernel built with 'CONFIG_UNUSED_SYMBOLS=y', that should help matters
+somewhat.
 
-   ptmp++
+The *real* problem is that the NVidia driver uses the deprecated pgd_offset_k()
+function (see NV_PGD_OFFSET in lv-linux.h).  That's what needs fixing.
 
-which depends on the type being unsigned long.
+--==_Exmh_1218166771_9292P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFIm7/zcC3lWbTT17ARAnm1AKCfnSy4YKBpnkMx7tuAYM5bnyEuwwCglc77
+Dyxmx9fMODt2FydRzXZj1X8=
+=ZOKG
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1218166771_9292P--
