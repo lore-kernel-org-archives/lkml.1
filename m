@@ -1,52 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756136AbYHHN0l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756419AbYHHNan@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756136AbYHHN0l (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 09:26:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753259AbYHHN0e
+	id S1756419AbYHHNan (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 09:30:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752969AbYHHNaf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 09:26:34 -0400
-Received: from moutng.kundenserver.de ([212.227.126.186]:56169 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753065AbYHHN0d convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 09:26:33 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: Carl Love <cel@us.ibm.com>
-Subject: Re: [PATCH 2/2] Cell OProfile: SPU mutex lock fix, version 4
-Date: Fri, 8 Aug 2008 15:26:20 +0200
-User-Agent: KMail/1.9.9
-Cc: linuxppc-dev@ozlabs.org, cel <cel@linux.vnet.ibm.com>,
-       cbe-oss-dev@ozlabs.org, linux-kernel <linux-kernel@vger.kernel.org>
-References: <1217620879.15667.145.camel@carll-linux-desktop>
-In-Reply-To: <1217620879.15667.145.camel@carll-linux-desktop>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Fri, 8 Aug 2008 09:30:35 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:53398 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752771AbYHHNaf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Aug 2008 09:30:35 -0400
+Date: Fri, 8 Aug 2008 09:29:53 -0400
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Keith Owens <kaos@ocs.com.au>, Jay Lan <jlan@sgi.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, jmerkey@wolfmountaingroup.com,
+       Geert Uytterhoeven <geert@linux-m68k.org>,
+       Josh Boyer <jwboyer@gmail.com>, linux-kernel@vger.kernel.org,
+       Takenori Nagano <t-nagano@ah.jp.nec.com>,
+       Bernhard Walle <bwalle@suse.de>
+Subject: Re: [ANNOUNCE] Merkey's Kernel Debugger
+Message-ID: <20080808132953.GB3840@redhat.com>
+References: <20080807200659.GJ24801@one.firstfloor.org> <23175.1218148134@ocs10w> <20080808011500.GA531@redhat.com> <20080808022916.GM24801@one.firstfloor.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200808081526.21405.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX19Sd8p1eDyVWJRlDqDFoBC/Oxw1txa16tBNPyX
- PZR59EczQRxPiqnQu6rbE/5r0v6F9YGIkTjovtxECnMpOKKmVf
- nuEjLKwH1HvO0a1NWsKBg==
+In-Reply-To: <20080808022916.GM24801@one.firstfloor.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 01 August 2008, Carl Love wrote:
-> If an error occurs on opcontrol start, the event and per cpu buffers 
-> are released.  If later opcontrol shutdown is called then the free
-> function will be called again to free buffers that no longer 
-> exist.  This results in a kernel oops.  The following changes
-> prevent the call to delete buffers that don't exist.
+On Fri, Aug 08, 2008 at 04:29:16AM +0200, Andi Kleen wrote:
+> > panic() is the only place where kdump gets a chance to run first and
+> > panic notifiers are not executed.
 > 
-> Signed-off-by: Carl Love <carll@us.ibm.com>
+> To be fully clear panic() that is called outside oops/exception context
 > 
+> s/panic/die notifiers/
+> 
+> > 
+> > To me so far only in kernel debugger seems to be a reasonable candiate
+> 
+> Yes a kernel debugger should be able to hook into panic()
+> 
+> In fact it can do that already by just setting a break point,
+> but clearly having a real notifier is preferable.
+> 
+> The use case would be then that the kernel debugger would
+> have some command to trigger a dump.
+> 
+> > which needs to run before kdump after a panic event. If a debugger
+> > is really getting merged into the kernel, then I think debugger can
+> 
+> kgdb is already merged. Also the x86 notifiers are general
+> enough that there are a couple of debuggers floating around
+> that are just using existing interfaces (as in need very little in terms
+> of core patching) 
+> 
+> > put a hook in the panic() before kdump. Wouldn't this solve the problem?
+> 
+> Yes it would, but right now there is no such hook. Also if there 
+> was such a hook kdump could use it like everyone else.  
+> 
+> There's a priority scheme in notifiers so you can still run usually last.
 
-vfree(NULL) is defined to be legal, so you don't need to check the
-argument for being non-NULL, just set it to NULL after the free.
+Hi Andi,
 
-	Arnd <><
+IIUC, there are two lists for exception and panic notifications. All the
+exceptios, NMI related notifications go through "die_chain" and
+all the panic notifications are done through "panic_notifier_list".
+
+Are you suggesting that kdump should be put onto panic_notifier_list, in
+such a way so that it runs last?
+
+Just few points to ponder.
+
+- panic_notifier_list is exported and any module can register and make use
+  of it. As you mentioned in your other mail, there are lot of drivers out
+  there with crappy code and if we do it, all the drivers get a chance
+  to do stuff after panic() and there is no gurantee that kdump code will
+  ever get a chance to run.
+
+- Kdump is built on the philosophy that after a panic(), one should do as
+  as little as possible in the kernel and all the actions should be
+  deferred to new kernel. That's why we recommend that all the panic
+  notifier actions (except debugger), should be done in second kernel. It
+  does introduce a little delay in notification but it also makes it more
+  reliable.
+
+- Neil Horman, has already provided infrastructure so that one can put
+  it user space code in second kernel's initrd and it will be executed. 
+  This can be easily done for modules also. 
+
+But somehow nobody seems to be interested in doing things in second kernel
+and everybody wants to run its post panic code in the first kernel. So
+far, except debugger, we have not run into any strong case which needs to
+run post panic code in first kernel and things will not work out if post
+panic actions are taken in second kernel.
+
+That's why there is always resistance from our side to move kdump to panic
+notifier list so that we can make modules do the right thing and that
+is, run in second kernel. The moment kdump is put onto panic_notifier_list,
+nobody will think of doing anything in second kernel (because it takes extra
+effort). Everybody will register a panic notifier handler in first kernel
+and be happy..
+
+If everybody thinks that they can do something meaningful in a crashed
+kernel after panic() and that's the way to go, then so be it. In that
+case we should export all the panic_notifier_list registered users to 
+userspace (throug /sysfs or something) and then let user change the 
+priority of various tools on the list based on his needs.
+
+Adding all the infrastructure for changing priority of handlers from user
+space becomes little messy and Eric had NAKed such patches. But it at least
+allows a user to decide in what order he wants to run the various tools upon
+panic().
+
+But given an option, I would think that debugger should put a break point
+in panic() and rest of the handlers should run in second kernel.
+
+Thanks
+Vivek
