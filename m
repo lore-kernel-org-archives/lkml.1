@@ -1,96 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755627AbYHHHah@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755412AbYHHHbp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755627AbYHHHah (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 03:30:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753790AbYHHHaO
+	id S1755412AbYHHHbp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 03:31:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753290AbYHHHbh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 03:30:14 -0400
-Received: from viefep18-int.chello.at ([213.46.255.22]:60796 "EHLO
-	viefep19-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753510AbYHHHaL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 03:30:11 -0400
-X-SourceIP: 80.57.229.25
-Subject: Re: VolanoMark regression with 2.6.27-rc1
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-Cc: Dhaval Giani <dhaval@linux.vnet.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       Aneesh Kumar KV <aneesh.kumar@linux.vnet.ibm.com>,
-       Balbir Singh <balbir@in.ibm.com>
-In-Reply-To: <1912217169.25608.228.camel@ymzhang>
-References: <1217489463.25608.157.camel@ymzhang>
-	 <1217489949.8157.78.camel@twins> <1217490560.25608.168.camel@ymzhang>
-	 <1217551154.25608.169.camel@ymzhang>
-	 <20080801051407.GA5232@linux.vnet.ibm.com>
-	 <1217826278.25608.198.camel@ymzhang>
-	 <20080804052228.GA5444@linux.vnet.ibm.com>
-	 <1217828278.25608.206.camel@ymzhang>
-	 <20080804055339.GB5444@linux.vnet.ibm.com> <1217831171.9016.42.camel@twins>
-	 <20080804070508.GA4028@linux.vnet.ibm.com> <1217833939.9016.47.camel@twins>
-	 <1912217169.25608.228.camel@ymzhang>
-Content-Type: text/plain
-Date: Fri, 08 Aug 2008 09:30:05 +0200
-Message-Id: <1218180605.8625.64.camel@twins>
+	Fri, 8 Aug 2008 03:31:37 -0400
+Received: from main.gmane.org ([80.91.229.2]:52220 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753269AbYHHHbg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Aug 2008 03:31:36 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Walter Franzini <walter.franzini@gmail.com>
+Subject: BUG: unable to handle kernel NULL pointer dereference at 00000010
+Date: Fri, 08 Aug 2008 09:31:19 +0200
+Message-ID: <86wsis0xq0.fsf@acer.nord-com.it>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; boundary="=-=-=";
+	micalg=pgp-sha1; protocol="application/pgp-signature"
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: 217.141.18.130
+X-Archive: encrypt
+Mail-Copy-To: never
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
+Cancel-Lock: sha1:UVKweSDaqtQgpv7EH+GjBPewF7g=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2030-08-06 at 11:26 +0800, Zhang, Yanmin wrote:
-> On Mon, 2008-08-04 at 09:12 +0200, Peter Zijlstra wrote:
-> > On Mon, 2008-08-04 at 12:35 +0530, Dhaval Giani wrote:
-> > > On Mon, Aug 04, 2008 at 08:26:11AM +0200, Peter Zijlstra wrote:
-> > > > On Mon, 2008-08-04 at 11:23 +0530, Dhaval Giani wrote:
-> > > > 
-> > > > > Peter, vatsa, any ideas?
-> > > > 
-> > > > ---
-> > > > 
-> > > > Revert:
-> > > >   a7be37ac8e1565e00880531f4e2aff421a21c803  sched: revert the revert of: weight calculations
-> > > >   c9c294a630e28eec5f2865f028ecfc58d45c0a5a  sched: fix calc_delta_asym()
-> > > >   ced8aa16e1db55c33c507174c1b1f9e107445865  sched: fix calc_delta_asym, #2
-> > > > 
-> > > 
-> > > Did we not fix those? :) 
-> > 
-> > Works for me,.. just guessing here.
-> I did more investigation on 16-core tigerton.
-> 
-> Firstly, let's focus on CONFIG_GROUP_SCHED=n. With 2.6.26, the result
-> has little difference
-> between with and without CONFIG_GROUP_SCHED.
-> 
-> 1) I tried different sched_features and found AFFINE_WAKEUPS has big
-> impact on volanoMark. Other
-> features have little impact.
-> 
-> 2) With kernel 2.6.26, if disabling AFFINE_WAKEUPS, the result is
-> 260000; if enabling AFFINE_WAKEUPS,
-> the result is 515000, so the improvement caused by AFFINE_WAKEUPS is
-> about 100%. With kernel 2.6.27-rc1,
-> the improvement is only about 25%.
-> 
-> 3) I turned on CONFIG_SCHETSTATS in kernel and collect
-> ttwu_move_affine. Mostly, collect ttwu_move_affine,
-> then recollect it after 30 seconds and calculate the difference. With
-> 2.6.26, I got below data:
+--=-=-=
 
-<snip data>
+Hi,
 
-> So with kernel 2.6.27-rc1, the successful wakeup_affine is about
-> double of the one of 2.6.27-rc1
-> on domain 0, but about 10 times on domain 1. That means more tasks are
-> woken up on waker cpus.
-> 
-> Does that mean it doesn't follow cache-hot checking?
+I have the following trace with 2.6.26.1, it seems to be related to a
+wireless usb adapter that works with 2.6.25.x
 
-I'm a bit puzzled, but you're right - I too noticed that volanomark is
-_very_ sensitive to affine wakeups.
+My "feeling" is that such usb adapter works well with 2.6.25.x and
+does not work with 2.6.26.x.
 
-I'll try and find what changed in that code for GROUP=n.
+------------------------------------------------------------------------
+phy1 -> rt2500usb_init_eeprom: Error - Invalid RT chipset detected.
+phy1 -> rt2x00lib_probe_dev: Error - Failed to allocate device.
+
+BUG: unable to handle kernel NULL pointer dereference at 00000010
+IP: [<c012c550>] flush_workqueue+0xa/0x3f
+*pde = 00000000
+Oops: 0000 [#1] PREEMPT SMP
+Modules linked in: rt2500usb(+) rt2x00usb rt2x00lib usbhid hid xt_tcpudp nf_conntrack_ipv4 xt_state nf_conntrack iptable_filter ip_tables x_tables ppdev lp fuse sbp2 acpi_cpufreq freq_table arc4 ecb crypto_blkcipher pcmcia joydev snd_hda_intel snd_pcm_oss snd_mixer_oss snd_pcm iwl3945 snd_timer iTCO_wdt intel_agp firmware_class snd yenta_socket rsrc_nonstatic sg i2c_i801 agpgart mac80211 container soundcore wmi serio_raw parport_pc pcspkr pcmcia_core irda ac evdev battery button parport psmouse i2c_core cfg80211 snd_page_alloc crc_ccitt sr_mod cdrom ext3 jbd mbcache dm_mirror dm_log dm_snapshot dm_mod sd_mod ata_piix ata_generic ohci1394 libata scsi_mod ieee1394 ehci_hcd uhci_hcd usbcore e1000 dock thermal processor fan
+
+Pid: 4312, comm: modprobe Not tainted (2.6.26.1-1 #1)
+EIP: 0060:[<c012c550>] EFLAGS: 00010246 CPU: 0
+EIP is at flush_workqueue+0xa/0x3f
+EAX: 00000000 EBX: f7ea1020 ECX: f7d4c000 EDX: 00000000
+ESI: c035e7ec EDI: 00000000 EBP: f7e0a200 ESP: f7d4dea8
+ DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
+Process modprobe (pid: 4312, ti=f7d4c000 task=f7e86730 task.ti=f7d4c000)
+Stack: f7ea1020 f7ea1020 f7ea01a0 f8cb81ee ffffffed f8cb8b65 f7ea1020 00000282
+       f8c93091 000080d0 f7ea1020 f8cc92e0 f7ea1020 00000000 f7ea01a0 f7e0a200
+       f8c9389c f79e2400 f7e0a200 f8ccaa2c 00000000 f8cca7e0 f8860880 f79e2400
+Call Trace:
+ [<f8cb81ee>] rt2x00lib_remove_dev+0x1f/0x40 [rt2x00lib]
+ [<f8cb8b65>] rt2x00lib_probe_dev+0x2f5/0x311 [rt2x00lib]
+ [<f8c93091>] rt2x00usb_alloc_reg+0x46/0x7e [rt2x00usb]
+ [<f8c9389c>] rt2x00usb_probe+0xc6/0x101 [rt2x00usb]
+ [<f8860880>] usb_probe_interface+0xac/0xdd [usbcore]
+ [<c022b308>] __driver_attach+0x0/0x55
+ [<c022b291>] driver_probe_device+0xb5/0x12c
+ [<c022b33f>] __driver_attach+0x37/0x55
+ [<c022ab49>] bus_for_each_dev+0x34/0x56
+ [<c022b12c>] driver_attach+0x11/0x13
+ [<c022b308>] __driver_attach+0x0/0x55
+ [<c022ae9f>] bus_add_driver+0x8a/0x1a7
+ [<c01ccd56>] kset_find_obj+0x4f/0x56
+ [<c022b495>] driver_register+0x6d/0xc1
+ [<f88604e0>] usb_register_driver+0x5d/0xb4 [usbcore]
+ [<c013caa9>] sys_init_module+0x84/0x173
+ [<c010386d>] sysenter_past_esp+0x6a/0x91
+ [<c02a0000>] quirk_e100_interrupt+0x33/0x154
+ =======================
+Code: 00 74 14 e8 90 ff ff ff 8b 43 20 e8 6e 24 00 00 c7 43 20 00 00 00 00 5b c3 83 c0 10 e9 0d ac fe ff 57 89 c7 56 be ec e7 35 c0 53 <83> 78 10 00 b8 f0 e7 35 c0 0f 44 f0 89 f0 e8 ca f8 09 00 eb 15
+EIP: [<c012c550>] flush_workqueue+0xa/0x3f SS:ESP 0068:f7d4dea8
+---[ end trace 009005218430c5d0 ]---
+------------------------------------------------------------------------
+
+Thanks.
+--
+Walter Franzini
+http://aegis.stepbuild.org/
+
+PGP Public key ID: 1024D/CB3FEB43
+Key fingerprint  : FA26 C33B CAFF 7848 EFEB  7327 96AA 2D57 CB3F EB43
+Key server       : http://www.keyserver.net
+
+--=-=-=
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFIm/ZLlqotV8s/60MRAtu3AKCRrB3HC9Z28PYf0TGQi3r/QJh9/gCg2Gms
+qU3f4KMHaLgQCr3rgqobqT4=
+=rkkV
+-----END PGP SIGNATURE-----
+--=-=-=--
 
