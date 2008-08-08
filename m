@@ -1,65 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753111AbYHHQzs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751704AbYHHQ4e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753111AbYHHQzs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 12:55:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750965AbYHHQzk
+	id S1751704AbYHHQ4e (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 12:56:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751458AbYHHQ4Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 12:55:40 -0400
-Received: from astoria.ccjclearline.com ([64.235.106.9]:58147 "EHLO
-	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750733AbYHHQzk (ORCPT
+	Fri, 8 Aug 2008 12:56:24 -0400
+Received: from yx-out-2324.google.com ([74.125.44.28]:15810 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751450AbYHHQ4Y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 12:55:40 -0400
-Date: Fri, 8 Aug 2008 12:53:57 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@crashcourse.ca>
-X-X-Sender: rpjday@localhost.localdomain
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: worth separating serial from parallel ATA kernel options?
-In-Reply-To: <20080808172629.232bed01@lxorguk.ukuu.org.uk>
-Message-ID: <alpine.LFD.1.10.0808081251590.11996@localhost.localdomain>
-References: <alpine.LFD.1.10.0808081228450.11491@localhost.localdomain> <20080808172629.232bed01@lxorguk.ukuu.org.uk>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Fri, 8 Aug 2008 12:56:24 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:references;
+        b=pQhNx0mGfwNkvtB9ZTixxoXjZNlRcihBcOkxfbMdEwehfMHxMYzFCeMDzV5juTOQk4
+         qvHi/P9cijUKYyQNR7HvuKRaO60uxFByyivX5jCF0esAoFYh96etGWKOw+obrQpHlIev
+         3sjhseyPoi0awGTLnFvp9rLdfVDOcD82VotAQ=
+Message-ID: <9ea470500808080956m23f59966nb9b1955e174d157d@mail.gmail.com>
+Date: Fri, 8 Aug 2008 18:56:22 +0200
+From: "Boris Petkov" <petkovbb@googlemail.com>
+Reply-To: petkovbb@gmail.com
+To: "Adrian Bunk" <bunk@kernel.org>
+Subject: Re: [8/17] ide-cd: use bcd2bin/bin2bcd
+Cc: bzolnier@gmail.com, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "David Brownell" <david-b@pacbell.net>
+In-Reply-To: <20080808163446.GO14495@cs181140183.pp.htv.fi>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - crashcourse.ca
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080808163446.GO14495@cs181140183.pp.htv.fi>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 8 Aug 2008, Alan Cox wrote:
-
-> On Fri, 8 Aug 2008 12:32:23 -0400 (EDT)
-> "Robert P. J. Day" <rpjday@crashcourse.ca> wrote:
+On Fri, Aug 8, 2008 at 6:34 PM, Adrian Bunk <bunk@kernel.org> wrote:
+> This patch changes ide-cd to use the new bcd2bin/bin2bcd functions
+> instead of the obsolete BCD2BIN/BIN2BCD macros.
 >
-> >
-> >   asked from a position of appalling ignorance, but would it be more
-> > organized to be able to select serial ATA functionality separately
-> > from parallel ATA?
->
-> The correct fix is to remove the (experimental) from the Parallel
-> ATA drivers Kconfig
->
-> For the rest of the menu the list is SATA first, then PATA (and PATA
-> is roughly alphabetic but both want a tidy)
+> Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
-  that definitely sounds like a job for the real ATA people.  i'll
-leave it to them.
+Acked-by: Borislav Petkov <petkovbb@gmail.com>
 
-rday
---
+[.. ]
 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry:
-    Have classroom, will lecture.
-
-http://crashcourse.ca                          Waterloo, Ontario, CANADA
-========================================================================
+-- 
+Regards/Gruss,
+Boris.
