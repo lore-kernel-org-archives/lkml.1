@@ -1,96 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757325AbYHHPl7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757946AbYHHPmX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757325AbYHHPl7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 11:41:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752588AbYHHPlv
+	id S1757946AbYHHPmX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 11:42:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757521AbYHHPmH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 11:41:51 -0400
-Received: from lopsy-lu.misterjones.org ([62.4.18.26]:49490 "EHLO
-	young-lust.wild-wind.fr.eu.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752258AbYHHPlu (ORCPT
+	Fri, 8 Aug 2008 11:42:07 -0400
+Received: from smtpq1.groni1.gr.home.nl ([213.51.130.200]:51361 "EHLO
+	smtpq1.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752588AbYHHPmF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 11:41:50 -0400
-Date: Fri, 8 Aug 2008 17:41:44 +0200
-From: Marc Zyngier <maz@misterjones.org>
-To: Olav Kongas <ok@artecdesign.ee>
-Cc: lkml <linux-kernel@vger.kernel.org>
-Subject: [PATCH] Let isp116x-hcd get IRQ flags from resource
-Message-ID: <20080808174144.535e1612@not-of-this-earth.wild-wind.fr.eu.org>
-Organization: Metropolis -- Nowhere
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SA-Exim-Connect-IP: 81.255.32.141
-X-SA-Exim-Rcpt-To: linux-kernel@vger.kernel.org, ok@artecdesign.ee
-X-SA-Exim-Mail-From: maz@misterjones.org
-X-SA-Exim-Scanned: No (on young-lust.wild-wind.fr.eu.org); SAEximRunCond expanded to false
+	Fri, 8 Aug 2008 11:42:05 -0400
+Message-ID: <489C6957.3040803@keyaccess.nl>
+Date: Fri, 08 Aug 2008 17:42:15 +0200
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080707)
+MIME-Version: 1.0
+To: Michael Borisov <niro@tut.by>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       abramo@alsa-project.org, kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH] sound/pci/cs46xx/cs46xx_lib.c: remove unused variable
+ warning
+References: <1218195562.4609.7.camel@niro-laptop>
+In-Reply-To: <1218195562.4609.7.camel@niro-laptop>
+Content-Type: text/plain; charset=US-ASCII;
+	format=flowed
+Content-Transfer-Encoding: 7BIT
+X-Spam-Score: -1.0 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 08-08-08 13:39, Michael Borisov wrote:
 
-Olav,
+> This patch fixes the following compile warning:
+> sound/pci/cs46xx/cs46xx_lib.c: In function 'snd_cs46xx_resume':
+> sound/pci/cs46xx/cs46xx_lib.c:3614: warning: unused variable 'i'
+> 
+>  cs46xx_lib.c |    3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
+> 
+> Signed-off-by: Michael Borisov <niro@tut.by>
+> ---
+> diff --git a/sound/pci/cs46xx/cs46xx_lib.c
+> b/sound/pci/cs46xx/cs46xx_lib.c
+> index e214e56..07bb7e0 100644
+> --- a/sound/pci/cs46xx/cs46xx_lib.c
+> +++ b/sound/pci/cs46xx/cs46xx_lib.c
+> @@ -3611,7 +3611,7 @@ int snd_cs46xx_resume(struct pci_dev *pci)
+>  {
+>  	struct snd_card *card = pci_get_drvdata(pci);
+>  	struct snd_cs46xx *chip = card->private_data;
+> -	int i, amp_saved;
+> +	int amp_saved;
+>  
+>  	pci_set_power_state(pci, PCI_D0);
+>  	pci_restore_state(pci);
+> @@ -3633,6 +3633,7 @@ int snd_cs46xx_resume(struct pci_dev *pci)
+>  #ifdef CONFIG_SND_CS46XX_NEW_DSP
+>  	cs46xx_dsp_resume(chip);
+>  	/* restore some registers */
+> +	int i;
+>  	for (i = 0; i < ARRAY_SIZE(saved_regs); i++)
+>  		snd_cs46xx_pokeBA0(chip, saved_regs[i], chip->saved_regs[i]);
+>  #else
 
-This patch let the isp116x-hcd driver obtain IRQ flags from its
-IORESOURCE_IRQ resource if configured as such, much like it's been
-done for the smc91x driver.
+Mixing code and declarations is C99 and I'm afraid kernel developers 
+haven't gotten around to upgrading themselves for the last 9 years yet 
+so this is unfortunately not accepted style.
 
-It spares people writing support for specific boards the burden to
-configure the interrupt controller independantly, and keeps all IRQ
-related information in a single resource.
+I'm afraid you need a { } code block so that the declaration can go at 
+the top of that to stay C89 compatible.
 
-Regards,
-
-	M.
-
-Signed-off-by: Marc Zyngier <marc.zyngier@altran.com>
-
-diff --git a/drivers/usb/host/isp116x-hcd.c b/drivers/usb/host/isp116x-hcd.c
-index ce1ca0b..6eda6f9 100644
---- a/drivers/usb/host/isp116x-hcd.c
-+++ b/drivers/usb/host/isp116x-hcd.c
-@@ -1562,10 +1562,10 @@ static int __devinit isp116x_probe(struct platform_device *pdev)
- {
- 	struct usb_hcd *hcd;
- 	struct isp116x *isp116x;
--	struct resource *addr, *data;
-+	struct resource *addr, *data, *ires;
- 	void __iomem *addr_reg;
- 	void __iomem *data_reg;
--	int irq;
-+	int irq, irq_flags;
- 	int ret = 0;
- 
- 	if (pdev->num_resources < 3) {
-@@ -1575,12 +1575,16 @@ static int __devinit isp116x_probe(struct platform_device *pdev)
- 
- 	data = platform_get_resource(pdev, IORESOURCE_MEM, 0);
- 	addr = platform_get_resource(pdev, IORESOURCE_MEM, 1);
--	irq = platform_get_irq(pdev, 0);
--	if (!addr || !data || irq < 0) {
-+	ires = platform_get_resource(pdev, IORESOURCE_IRQ, 0);
-+
-+	if (!addr || !data || !ires) {
- 		ret = -ENODEV;
- 		goto err1;
- 	}
- 
-+	irq = ires->start;
-+	irq_flags = ires->flags & IRQF_TRIGGER_MASK;
-+
- 	if (pdev->dev.dma_mask) {
- 		DBG("DMA not supported\n");
- 		ret = -EINVAL;
-@@ -1634,7 +1638,7 @@ static int __devinit isp116x_probe(struct platform_device *pdev)
- 		goto err6;
- 	}
- 
--	ret = usb_add_hcd(hcd, irq, IRQF_DISABLED);
-+	ret = usb_add_hcd(hcd, irq, irq_flags | IRQF_DISABLED);
- 	if (ret)
- 		goto err6;
- 
-
--- 
-A rat a day keeps the plague away.
+Rene.
