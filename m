@@ -1,62 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758114AbYHHQVr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756213AbYHHQ20@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758114AbYHHQVr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 12:21:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752681AbYHHQVj
+	id S1756213AbYHHQ20 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 12:28:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752211AbYHHQ2S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 12:21:39 -0400
-Received: from smtp239.poczta.interia.pl ([217.74.64.239]:42635 "EHLO
-	smtp239.poczta.interia.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752564AbYHHQVj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 12:21:39 -0400
-Date: Fri, 8 Aug 2008 18:27:04 +0200
-From: Krzysztof Helt <krzysztof.h1@poczta.fm>
-To: <JosephChan@via.com.tw>
-Cc: <linux-fbdev-devel@lists.sourceforge.net>, <linux-kernel@vger.kernel.org>,
-       akpm@linux-foundation.org, geert@linux-m68k.org
-Subject: Re: [Linux-fbdev-devel] [PATCH 0/13 v2] viafb: VIA Frame Buffer
- Device Driver
-Message-Id: <20080808182704.28bd9fb3.krzysztof.h1@poczta.fm>
-In-Reply-To: <C80EF34A3D2E494DBAF9AC29C7AE4EB8078B698C@exchtp03.taipei.via.com.tw>
-References: <C80EF34A3D2E494DBAF9AC29C7AE4EB8078B698C@exchtp03.taipei.via.com.tw>
-X-Mailer: Sylpheed 2.4.3 (GTK+ 2.11.0; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-EMID: 5ae2b138
+	Fri, 8 Aug 2008 12:28:18 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:49490 "EHLO smtp4.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751505AbYHHQ2R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Aug 2008 12:28:17 -0400
+Date: Fri, 8 Aug 2008 19:26:42 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Benny Halevy <bhalevy@panasas.com>,
+       "J. Bruce Fields" <bfields@citi.umich.edu>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Cc: neilb@suse.de, linux-nfs@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [2.6 patch] uninline nfsd4_op_name()
+Message-ID: <20080808162642.GG14495@cs181140183.pp.htv.fi>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 8 Aug 2008 18:09:21 +0800
-<JosephChan@via.com.tw> wrote:
+There doesn't seem to be a compelling reason why nfsd4_op_name() is 
+marked as "inline":
 
-> Hi all,
-> 
-> Here comes the 13 updated patchs for VIA Frame Buffer Device Driver.
-> This driver could be used on VIA UniChrome (Pro) and Chrome9 family chips.
-> All the patches are based on linux kernel 2.6.27-rc2 and they're modified by adopting community's feedback.
-> I would like to thank all who provided their suggestions for VIAFB by mail.
-> Any question, please contact me. Thanks.
-> 
+It's only used in a dprintk(), and as long as it has only one caller 
+non-ancient gcc versions anyway inline it automatically.
 
-Please resend the 3rd patch as it is damaged (missing 3 lines of each file).
+This patch fixes the following compile error with gcc 3.4:
 
-I am for merging these patches as they are sent now. It allows sending 
-fixes to them as incremental patches.
+<--  snip  -->
 
-This set builds at least for my configuration (Pentium3 SMP). 
-Unfortunately, I do not have hardware to test. I though about
-buying one of these sexy VIA ITX boards but it is outside my
-budget now. Anyway, I have too many computers according
-to my spouse.
+...
+  CC      fs/nfsd/nfs4proc.o
+nfs4proc.c: In function `nfsd4_proc_compound':
+nfs4proc.c:854: sorry, unimplemented: inlining failed in call to 
+nfs4proc.c:897: sorry, unimplemented: called from here
+make[3]: *** [fs/nfsd/nfs4proc.o] Error 1
 
-Kind regards,
-Krzysztof
+<--  snip  -->
 
+Reported-by: Adrian Bunk <bunk@kernel.org>
+Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
-----------------------------------------------------------------------
-Tylko dla detektywow! Konkurs na Smaker.pl
-Kliknij >>> http://link.interia.pl/f1eb1
+---
+--- a/fs/nfsd/nfs4proc.c
++++ b/fs/nfsd/nfs4proc.c
+@@ -851,7 +851,7 @@ struct nfsd4_operation {
+ 
+ static struct nfsd4_operation nfsd4_ops[];
+ 
+-static inline char *nfsd4_op_name(unsigned opnum);
++static char *nfsd4_op_name(unsigned opnum);
+ 
+ /*
+  * COMPOUND call.
+@@ -1116,8 +1116,7 @@ static struct nfsd4_operation nfsd4_ops[OP_RELEASE_LOCKOWNER+1] = {
+ 	},
+ };
+ 
+-static inline char *
+-nfsd4_op_name(unsigned opnum)
++static char *nfsd4_op_name(unsigned opnum)
+ {
+ 	if (opnum < ARRAY_SIZE(nfsd4_ops))
+ 		return nfsd4_ops[opnum].op_name;
 
