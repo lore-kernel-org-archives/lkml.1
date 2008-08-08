@@ -1,72 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756044AbYHHIoT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755351AbYHHIpw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756044AbYHHIoT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 04:44:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753606AbYHHIoG
+	id S1755351AbYHHIpw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 04:45:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752100AbYHHIpp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 04:44:06 -0400
-Received: from mailin.studentenwerk.mhn.de ([141.84.225.229]:59458 "EHLO
-	email.studentenwerk.mhn.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753363AbYHHIoF (ORCPT
+	Fri, 8 Aug 2008 04:45:45 -0400
+Received: from burp.tkv.asdf.org ([212.16.99.49]:50558 "EHLO
+	cs181073102.pp.htv.fi" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752022AbYHHIpo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 04:44:05 -0400
-From: Wolfgang Walter <wolfgang.walter@stwm.de>
-Organization: Studentenwerk =?utf-8?q?M=C3=BCnchen?=
-To: Suresh Siddha <suresh.b.siddha@intel.com>
-Subject: Re: Kernel oops with 2.6.26, padlock and ipsec: probably problem with fpu state changes
-Date: Fri, 8 Aug 2008 10:44:01 +0200
-User-Agent: KMail/1.9.9
-Cc: Herbert Xu <herbert@gondor.apana.org.au>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, vegard.nossum@gmail.com
-References: <200807171653.59177.wolfgang.walter@stwm.de> <20080806201401.GA607@linux-os.sc.intel.com> <20080806212152.GB607@linux-os.sc.intel.com>
-In-Reply-To: <20080806212152.GB607@linux-os.sc.intel.com>
+	Fri, 8 Aug 2008 04:45:44 -0400
+X-Greylist: delayed 824 seconds by postgrey-1.27 at vger.kernel.org; Fri, 08 Aug 2008 04:45:44 EDT
+To: linux-kernel@vger.kernel.org
+Subject: Access to credentials of a process from another?
+References: <aAZcn-22h-21@gated-at.bofh.it> <aAZcn-22h-19@gated-at.bofh.it>
+From: Markku Savela <msa@moth.iki.fi>
+Date: Fri, 08 Aug 2008 11:31:56 +0300
+In-Reply-To: <aAZcn-22h-19@gated-at.bofh.it> (Markku Savela's message of "Wed\, 04 Jun 2008 13\:20\:19 +0200")
+Message-ID: <87bq03vrer.fsf_-_@burp.tkv.asdf.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
-Content-Disposition: inline
-Message-Id: <200808081044.01470.wolfgang.walter@stwm.de>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 06 August 2008, Suresh Siddha wrote:
-> On Wed, Aug 06, 2008 at 01:14:02PM -0700, Siddha, Suresh B wrote:
-> > On Wed, Aug 06, 2008 at 10:33:25AM -0700, Wolfgang Walter wrote:
-> > > Hello Herbert,
-> > >
-> > > I think I finally found the problem.
-> > >
-> > > Here a short description again: all our routers with a via C3 using 
-padlock for AES-encryption are
-> > > crashing with 2.6.26 while they work fine with 2.6.25. Not using padlock
-> > > (i.e. using the i386 assembler version of AES) they just work fine.
-> > 
-> > Both the padlock version or asm version don't use FP/math registers, 
-right?
-> > It is interesting that you don't see the problem with asm version
-> > but see the problem with padlock version.
-> > 
-> > Does disabling CONFIG_PREEMPT in 2.6.26 change anything? And also,
-> > can you provide the complete kernel log till the point of failure(oops
-> > that you sent doesn't have the call trace info)
-> 
-> BTW, in one of your oops, I see:
-> 
-> note: cron[1207] exited with preempt_count 268435459
-> 
-> I smell some kind of stack corruption here which is corrupting
-> thread_info (in the above case preempt_count in the thread_info).
-> 
+I looked with some interest the big credentials patch.
 
-I don't think 268435459 is a strong indication of stack corruption:
+I have a desire to do following in user space
 
-268435459 == 0x10000003 == PREEMPT_ACTIVE|0x03
+  - have PID of another process
 
-Regards,
--- 
-Wolfgang Walter
-Studentenwerk München
-Anstalt des öffentlichen Rechts
+  - want to check some aspect of credentials of this process from
+    another process (for example, currently whether the other process
+    has a specific group in its context).
+
+In current Ubuntu release, to achieve this, I had to patch kernel
+sys.c and write own kernel module which offered the API for this
+function.
+
+I notice that credentials (http://lwn.net/Articles/287091/) document
+has some wording about accessing credentials from another
+process. What is not clear yet (in document),
+
+ - is this possible from loadable module (e.g. are the required
+   symbols exported)?
+
+ - are there any plans to define some API for a user space application
+   to access this information?
+
+I assume that in some cases, like Unix socket, the peers should
+have same direct vay of reading each others credentials blobs from the
+socket?
+
+However, for example, in case of DBus this is murky, as the server and
+client do not have direct connection to each other, and DBus would
+need to pass some information. Currently, with some work, it is
+possible for DBus server to get the clients PID. Thus, a function in
+user space to get the credentials by PID would be sufficient.
+
+Also, it is not acceptable to say that DBus should use it's "root"
+powers and fake clients credentials on forwarded messages.
+
+ - First, not all DBus are root,
+
+ - second, server might want to see both credentials (DBus servers and
+   the originating client).
+
+Finally, I don't like any text based /proc file solutions, for example
+parsing output of "/proc/<pid>/status" is horrible (especially was not
+option for me, because it does not give all groups anyway).
