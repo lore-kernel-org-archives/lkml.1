@@ -1,68 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756171AbYHHIlt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756044AbYHHIoT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756171AbYHHIlt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 04:41:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753884AbYHHIlk
+	id S1756044AbYHHIoT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 04:44:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753606AbYHHIoG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 04:41:40 -0400
-Received: from ik-out-1112.google.com ([66.249.90.182]:61139 "EHLO
-	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753832AbYHHIlj (ORCPT
+	Fri, 8 Aug 2008 04:44:06 -0400
+Received: from mailin.studentenwerk.mhn.de ([141.84.225.229]:59458 "EHLO
+	email.studentenwerk.mhn.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753363AbYHHIoF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 04:41:39 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding
-         :sender;
-        b=jRiAErD9siKe1lP99qTvbIphxKZ1ohM2zDn50p4mWsKqv8n9/h/75uZ5RWo8AsI77b
-         5VYN9+bEgQhxs7tGdTvohD9/p21jJ+mIP3E70M/xhQMzvUSbku7MyovifSL3gwuA6W3l
-         nNbDBYLFG1NychpZnGFJF9LkgRnaT/8f6CnY4=
-Message-ID: <489C06BE.2020309@tuffmail.co.uk>
-Date: Fri, 08 Aug 2008 09:41:34 +0100
-From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
+	Fri, 8 Aug 2008 04:44:05 -0400
+From: Wolfgang Walter <wolfgang.walter@stwm.de>
+Organization: Studentenwerk =?utf-8?q?M=C3=BCnchen?=
+To: Suresh Siddha <suresh.b.siddha@intel.com>
+Subject: Re: Kernel oops with 2.6.26, padlock and ipsec: probably problem with fpu state changes
+Date: Fri, 8 Aug 2008 10:44:01 +0200
+User-Agent: KMail/1.9.9
+Cc: Herbert Xu <herbert@gondor.apana.org.au>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, vegard.nossum@gmail.com
+References: <200807171653.59177.wolfgang.walter@stwm.de> <20080806201401.GA607@linux-os.sc.intel.com> <20080806212152.GB607@linux-os.sc.intel.com>
+In-Reply-To: <20080806212152.GB607@linux-os.sc.intel.com>
 MIME-Version: 1.0
-To: S K <nospamnoham@gmail.com>
-CC: Zhao Yakui <yakui.zhao@intel.com>, linux-kernel@vger.kernel.org,
-       linux-acpi@vger.kernel.org
-Subject: Re: cpufreq doesn't seem to work in Intel Q9300
-References: <514e099a0808030300u140a0ae7m92a2e7294f39f7b7@mail.gmail.com>	 <48958901.06a0100a.35d6.2df9@mx.google.com>	 <514e099a0808032206n192fc973u24b31def6555dbec@mail.gmail.com>	 <514e099a0808070235qd36628cta191018763875422@mail.gmail.com>	 <1218159124.6671.32.camel@yakui_zhao.sh.intel.com> <514e099a0808072153w2e944037gbfbdf8e9156d7df0@mail.gmail.com>
-In-Reply-To: <514e099a0808072153w2e944037gbfbdf8e9156d7df0@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
+Content-Disposition: inline
+Message-Id: <200808081044.01470.wolfgang.walter@stwm.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-S K wrote:
-> Hi,
->
-> I already did the cpufreq.debug thing and it was using the
-> smi_speedstep driver instread of the acpi_speedstep (or whatever is
-> the right name).
->
-> Alan already told me this is likely an ACPI issue. So, I already sent
-> the acpidump in a prev email (Aug 3rd 08). I'm don't have access to my
-> home machine right now. Will send it again later if you can't get my
-> prev email from the archives.
->   
+On Wednesday 06 August 2008, Suresh Siddha wrote:
+> On Wed, Aug 06, 2008 at 01:14:02PM -0700, Siddha, Suresh B wrote:
+> > On Wed, Aug 06, 2008 at 10:33:25AM -0700, Wolfgang Walter wrote:
+> > > Hello Herbert,
+> > >
+> > > I think I finally found the problem.
+> > >
+> > > Here a short description again: all our routers with a via C3 using 
+padlock for AES-encryption are
+> > > crashing with 2.6.26 while they work fine with 2.6.25. Not using padlock
+> > > (i.e. using the i386 assembler version of AES) they just work fine.
+> > 
+> > Both the padlock version or asm version don't use FP/math registers, 
+right?
+> > It is interesting that you don't see the problem with asm version
+> > but see the problem with padlock version.
+> > 
+> > Does disabling CONFIG_PREEMPT in 2.6.26 change anything? And also,
+> > can you provide the complete kernel log till the point of failure(oops
+> > that you sent doesn't have the call trace info)
+> 
+> BTW, in one of your oops, I see:
+> 
+> note: cron[1207] exited with preempt_count 268435459
+> 
+> I smell some kind of stack corruption here which is corrupting
+> thread_info (in the above case preempt_count in the thread_info).
+> 
 
-I could be completely wrong though!
+I don't think 268435459 is a strong indication of stack corruption:
 
-I'd not heard of speedstep_smi before (now I look, it doesn't seem to be
-an option in the cpu frequency scaling Kconfig menu?).
+268435459 == 0x10000003 == PREEMPT_ACTIVE|0x03
 
-I assumed the error messages you had about SMI were just flack.  I
-thought  acpi-cpufreq was the only option on recent machines - and that
-a quad core  probably counts as recent.  The error messages could be due
-to Fedora scripts unconditionally loading several different modules, to
-find one that works.
-
-I'm not sure how you can answer Zhao's question if you don't already
-know.  I expect Fedora C7 does try loading acpi_cpufreq (as well as
-speedstep_smi).  Whether your machine actually supports acpi_cpufreq is
-the question we're trying to answer.  (This is where looking at Windows,
-or BIOS settings, would help).
-
-Alan
+Regards,
+-- 
+Wolfgang Walter
+Studentenwerk München
+Anstalt des öffentlichen Rechts
