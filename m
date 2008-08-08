@@ -1,73 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756703AbYHHGkA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754666AbYHHGoR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756703AbYHHGkA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 02:40:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753077AbYHHGjt
+	id S1754666AbYHHGoR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 02:44:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751677AbYHHGoD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 02:39:49 -0400
-Received: from smtpq2.tilbu1.nb.home.nl ([213.51.146.201]:52929 "EHLO
-	smtpq2.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753665AbYHHGjs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 02:39:48 -0400
-Message-ID: <489BEA3B.8030901@keyaccess.nl>
-Date: Fri, 08 Aug 2008 08:39:55 +0200
-From: Rene Herman <rene.herman@keyaccess.nl>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080707)
+	Fri, 8 Aug 2008 02:44:03 -0400
+Received: from ozlabs.org ([203.10.76.45]:58096 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751091AbYHHGoB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Aug 2008 02:44:01 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [PATCH 3/5] ftrace: enable mcount recording for modules
+Date: Fri, 8 Aug 2008 16:43:51 +1000
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       David Miller <davem@davemloft.net>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Roland McGrath <roland@redhat.com>, Ulrich Drepper <drepper@redhat.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Gregory Haskins <ghaskins@novell.com>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       "Luis Claudio R. Goncalves" <lclaudio@uudg.org>,
+       Clark Williams <williams@redhat.com>,
+       Steven Rostedt <srostedt@redhat.com>
+References: <20080807182013.984175558@goodmis.org> <20080807182117.136812885@goodmis.org>
+In-Reply-To: <20080807182117.136812885@goodmis.org>
 MIME-Version: 1.0
-To: Bjorn Helgaas <bjorn.helgaas@hp.com>
-CC: Linux Kernel <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>
-Subject: [PATCH] PNP: resource type is now an unsigned long
-Content-Type: multipart/mixed;
- boundary="------------020200050907020900090303"
-X-Spam-Score: -1.0 (-)
+Content-Disposition: inline
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200808081643.51942.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------020200050907020900090303
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+On Friday 08 August 2008 04:20:16 Steven Rostedt wrote:
+> This patch enables the loading of the __mcount_section of modules and
+> changing all the callers of mcount into nops.
+>
+> The modification is done before the init_module function is called, so
+> again, we do not need to use kstop_machine to make these changes.
 
-Hi Bjorn.
+Importantly, before parameter parsing too (which can use module functions 
+before the module's init()).
 
-Andrew earlier commented Part 2.
-
-Rene.
-
---------------020200050907020900090303
-Content-Type: text/plain;
- name="0002-PNP-resource-type-is-now-an-unsigned-long.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename*0="0002-PNP-resource-type-is-now-an-unsigned-long.patch"
-
->From 6ce13e62efbe1670b204a32a2c2c3064ade2bb3f Mon Sep 17 00:00:00 2001
-From: Rene Herman <rene.herman@gmail.com>
-Date: Sun, 20 Jul 2008 23:02:04 +0200
-Subject: [PATCH] PNP: resource type is now an unsigned long
-
-Signed-off-by: Rene Herman <rene.herman@gmail.com>
----
- drivers/pnp/quirks.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/pnp/quirks.c b/drivers/pnp/quirks.c
-index 0bdf9b8..d15e2b7 100644
---- a/drivers/pnp/quirks.c
-+++ b/drivers/pnp/quirks.c
-@@ -245,7 +245,7 @@ static void quirk_system_pci_resources(struct pnp_dev *dev)
- 	 */
- 	for_each_pci_dev(pdev) {
- 		for (i = 0; i < DEVICE_COUNT_RESOURCE; i++) {
--			unsigned int type;
-+			unsigned long type;
- 
- 			type = pci_resource_flags(pdev, i) &
- 					(IORESOURCE_IO | IORESOURCE_MEM);
--- 
-1.5.5
-
-
---------------020200050907020900090303--
+Cheers,
+Rusty.
