@@ -1,99 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758123AbYHHRvf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758454AbYHHRwT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758123AbYHHRvf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 13:51:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751591AbYHHRv2
+	id S1758454AbYHHRwT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 13:52:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751591AbYHHRwJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 13:51:28 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:54220 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751091AbYHHRv1 (ORCPT
+	Fri, 8 Aug 2008 13:52:09 -0400
+Received: from mail5.sea5.speakeasy.net ([69.17.117.7]:52510 "EHLO
+	mail5.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751877AbYHHRwI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 13:51:27 -0400
-Date: Fri, 8 Aug 2008 10:50:40 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Dave Jones <davej@codemonkey.org.uk>
-Cc: mark.langsdorf@amd.com, lkml <linux-kernel@vger.kernel.org>,
-       akpm <akpm@linux-foundation.org>
-Subject: Re: [PATCH -next] powernow-k8: fix build errors
-Message-Id: <20080808105040.291097a2.randy.dunlap@oracle.com>
-In-Reply-To: <20080808173822.GP26295@codemonkey.org.uk>
-References: <20080808101950.7a942fa6.randy.dunlap@oracle.com>
-	<20080808173822.GP26295@codemonkey.org.uk>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Fri, 8 Aug 2008 13:52:08 -0400
+Date: Fri, 8 Aug 2008 10:52:05 -0700 (PDT)
+From: Trent Piepho <xyzzy@speakeasy.org>
+X-X-Sender: xyzzy@shell2.speakeasy.net
+To: Jean Delvare <khali@linux-fr.org>
+cc: "D. Kelly" <user.kernel@gmail.com>, Sam Ravnborg <sam@ravnborg.org>,
+       "mailing list: linux-kernel" <linux-kernel@vger.kernel.org>,
+       Linux I2C <i2c@lm-sensors.org>
+Subject: Re: Problem with restricted I2C algorithms in kernel 2.6.26!
+In-Reply-To: <20080808113753.03f49efe@hyperion.delvare>
+Message-ID: <Pine.LNX.4.58.0808081037080.3151@shell2.speakeasy.net>
+References: <5ab239b10807161233i6c1c4d0we01ea1b8e6ccaa5b@mail.gmail.com>
+ <20080807131357.59399ddf@hyperion.delvare> <Pine.LNX.4.58.0808070851310.10341@shell4.speakeasy.net>
+ <20080807181416.5de4ce6d@hyperion.delvare> <Pine.LNX.4.58.0808071621060.22108@shell2.speakeasy.net>
+ <20080808113753.03f49efe@hyperion.delvare>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 8 Aug 2008 13:38:22 -0400 Dave Jones wrote:
+On Fri, 8 Aug 2008, Jean Delvare wrote:
+> On Thu, 7 Aug 2008 16:41:10 -0700 (PDT), Trent Piepho wrote:
+> > Expecting every developer to keep abreast of linux-next and the tens of
+> > thousands of patches it gets just isn't realisitic.
+> >
+> > The embedded platforms I develop on won't run linux-next.  Continuously
+> > porting them to linux-next is simply impossible.  The man hours required to
+> > do that would be staggering.
+>
+> Once again a "believe me it's impossible" without any good reason
+> given. I fail to see why embedded platforms would be any different from
+> other platforms or subsystem trees. Please enlighten me.
 
-> I think something like below may be better..
-> Same thing, but with one less ifdef ?
+Because they usually require lots of additional patches that aren't in the
+kernel.  Sometimes embedded developers try to get these patches into the
+mainline kernel, but some maintainers aren't interested in accepting
+patches that don't appear to be useful to desktop users.
 
-Close, but no cigar.
+> > The pool of testers available to a driver that requires running linux-next
+> > is going to be orders of magnitude less that a driver that can be compiled
+> > out of tree against 2.6.19 to 2.6.27.
+>
+> Except that distributions start packaging linux-next, while in general
+> they don't package out-of-tree versions of packages that are also
+> available in the kernel tree. If the v4l-dvb tip was in linux-next (it
 
-> diff --git a/arch/x86/kernel/cpu/cpufreq/powernow-k8.c b/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
-> index 7a09ba4..3ba6fd2 100644
-> --- a/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
-> +++ b/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
-> @@ -951,6 +951,7 @@ static void powernow_k8_cpu_exit_acpi(struct powernow_k8_data *data)
->  }
->  
->  #else
-> +static int powernow_k8_cpu_preinit_acpi(struct powernow_k8_data *data) { return -ENODEV; }
+Sure they do.  There are packages of the latest v4l-dvb, nvidia and ATI
+drivers, and more.  There is even a system, DKMS, used to allow kernel
+module source packages to be installed and automatically rebuilt for new
+kernels.
 
-(void) // parameters
+You can install and run a new module without even rebooting.  Installing
+linux next is quite a bit more complex.  Users won't test your driver if
+they have to install a new kernel for every revision.
 
->  static int powernow_k8_cpu_init_acpi(struct powernow_k8_data *data) { return -ENODEV; }
->  static void powernow_k8_cpu_exit_acpi(struct powernow_k8_data *data) { return; }
->  static void powernow_k8_acpi_pst_values(struct powernow_k8_data *data, unsigned int index) { return; }
-> @@ -1349,7 +1351,9 @@ static void __exit powernowk8_exit(void)
->  	dprintk("exit\n");
->  
->  	cpufreq_unregister_driver(&cpufreq_amd64_driver);
-> 
-> +#ifdef CONFIG_X86_POWERNOW_K8_ACPI
->  	free_percpu(acpi_perf_data);
-> +#ifdef
-
-#endif
-
->  }
->  
->  MODULE_AUTHOR("Paul Devriendt <paul.devriendt@amd.com> and Mark Langsdorf <mark.langsdorf@amd.com>");
-
-
----
-(your) new patch:
----
- arch/x86/kernel/cpu/cpufreq/powernow-k8.c |    3 +++
- 1 file changed, 3 insertions(+)
-
---- linux-next-20080808.orig/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
-+++ linux-next-20080808/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
-@@ -951,6 +951,7 @@ static void powernow_k8_cpu_exit_acpi(st
- }
- 
- #else
-+static int powernow_k8_cpu_preinit_acpi(void) { return -ENODEV; }
- static int powernow_k8_cpu_init_acpi(struct powernow_k8_data *data) { return -ENODEV; }
- static void powernow_k8_cpu_exit_acpi(struct powernow_k8_data *data) { return; }
- static void powernow_k8_acpi_pst_values(struct powernow_k8_data *data, unsigned int index) { return; }
-@@ -1349,7 +1350,9 @@ static void __exit powernowk8_exit(void)
- 
- 	cpufreq_unregister_driver(&cpufreq_amd64_driver);
- 
-+#ifdef CONFIG_X86_POWERNOW_K8_ACPI
- 	free_percpu(acpi_perf_data);
-+#endif
- }
- 
- MODULE_AUTHOR("Paul Devriendt <paul.devriendt@amd.com> and Mark Langsdorf <mark.langsdorf@amd.com>");
+It's a nightmare for development too.  I can't develop the entire kernel,
+it's too big and there are too many changes.  If my driver has become
+unstable, is it something I did or one of the 20,000 patches that have
+appeared in linux-next?  Like Mike said, one needs a stable platform to
+develop on.
