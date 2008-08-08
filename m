@@ -1,52 +1,142 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753428AbYHHO6n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754357AbYHHO66@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753428AbYHHO6n (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 10:58:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752120AbYHHO6c
+	id S1754357AbYHHO66 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 10:58:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752606AbYHHO6f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Fri, 8 Aug 2008 10:58:35 -0400
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:45033 "EHLO e5.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752032AbYHHO6c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 8 Aug 2008 10:58:32 -0400
-Received: from zone0.gcu-squad.org ([212.85.147.21]:23750 "EHLO
-	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752032AbYHHO6b (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 10:58:31 -0400
-Date: Fri, 8 Aug 2008 16:58:23 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: linux-fbdev-devel@lists.sourceforge.net,
-       Antonino Daplas <adaplas@gmail.com>
-Cc: Petr Vandrovec <vandrove@vc.cvut.cz>, LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 1/3] matrox maven: Fix a broken error path
-Message-ID: <20080808165823.71d9bea3@hyperion.delvare>
-In-Reply-To: <20080808164937.141a95e0@hyperion.delvare>
-References: <20080808164937.141a95e0@hyperion.delvare>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Date: Fri, 8 Aug 2008 09:58:24 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Ian Kent <raven@themaw.net>
+Cc: Andrew Morton <akpm@linux-foundation.org>, autofs@linux.kernel.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       containers@lists.osdl.org
+Subject: Re: [PATCH 2/4] autofs4 - track uid and gid of last mount requester
+Message-ID: <20080808145824.GB10179@us.ibm.com>
+References: <20080807114002.4142.30417.stgit@web.messagingengine.com> <20080807114012.4142.83607.stgit@web.messagingengine.com> <20080807134650.a6a51f7d.akpm@linux-foundation.org> <20080807221242.GA27032@us.ibm.com> <1218167314.17093.79.camel@raven.themaw.net> <1218170643.17093.88.camel@raven.themaw.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1218170643.17093.88.camel@raven.themaw.net>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I broke an error path with d03c21ec0be7787ff6b75dcf56c0e96209ccbfbd,
-sorry about that.
+Quoting Ian Kent (raven@themaw.net):
+> 
+> On Fri, 2008-08-08 at 11:48 +0800, Ian Kent wrote:
+> > > > 
+> > > > Please remind me again why autofs's use of current->uid and
+> > > > current->gid is not busted in the presence of PID namespaces, where
+> > > > these things are no longer system-wide unique?
+> > > 
+> > > I actually don't see what the autofs4_waitq->pid is used for.  It's
+> > > copied from current into wq->pid at autofs4_wait, and into a packet to
+> > > send to userspace (I assume) at autofs4_notify_daemon.
+> > > 
+> > > So as long as a daemon can serve multiple pid namespaces (which
+> > > doubtless it can), the pid could be confusing (or erroneous) for the
+> > > daemon.
+> > 
+> > Your point is well taken.
+> > 
+> > The pid is used purely for logging purposes to aid in debugging in user
+> > space. I'm not sure it is worth worrying about it too much as the daemon
+> > has no business interfering with user space processes it is not the
+> > owner of.
+> > 
+> > > 
+> > > If I'm remotely right about how the pid is being used, then the thing to
+> > > do would be to 
+> > > 	1. store the daemon's pid namespace  (would that belong in
+> > > 	the autofs_sb_info?)
+> >  
+> > Yep.
+> > 
+> > > 	2. store the task_pid(current) in the waitqueue
+> > > 	3. retrieve the pid_t for the waiting task in the daemon's
+> > > 	pid namespace, and put that into the packet at
+> > > 	autofs4_notify_daemon.
+> > > 
+> > > I realize this patch was about the *uids*, but the pids seem more
+> > > urgent.
+> > 
+> > OK, I get it.
+> > I'll have a go at doing this for completeness.
+> 
+> On second thoughts I'm not sure about this.
+> 
+> The pid that is logged needs to relate to a process in the name space of
+> the one that caused the mount to be done.
+> 
+> For example, suppose a GUI user finds mounts never expiring, then we get
+> a debug log to try and identify the culprit. So the pid should
+> correspond to a process that the user sees (So I guess in the namespace
+> of that user).
+> 
+> This is the only reason I added the pid to the request packet in the
+> first place.
+> 
+> Please correct me if my understanding of this is not right.
 
-Signed-off-by: Jean Delvare <khali@linux-fr.org>
----
- drivers/video/matrox/matroxfb_maven.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+It's not wrong, but we just have to think through which value is the
+most useful.
 
---- linux-2.6.26-rc6.orig/drivers/video/matrox/matroxfb_maven.c	2008-06-17 17:22:42.000000000 +0200
-+++ linux-2.6.26-rc6/drivers/video/matrox/matroxfb_maven.c	2008-06-17 17:23:18.000000000 +0200
-@@ -1266,7 +1266,7 @@ static int maven_detect_client(struct i2
- ERROR4:;
- 	i2c_detach_client(new_client);
- ERROR3:;
--	kfree(new_client);
-+	kfree(data);
- ERROR0:;
- 	return err;
- }
+Any process executing clone(CLONE_NEWPID) (with CAP_SYS_ADMIN) can start
+an application in a new pid namespace.  So imagine the user at the
+desktop clicking some button which runs an application in a new pid
+namespace.  Now if the user starts an xterm and runs ps -ef, the pid
+values he'll see for the tasks in that new namespace will not be the
+same as those which the application sees for itself, and not the same as
+those which, right now, autofs would report.
 
+For instance, if I start a shell in a new pid namespace, then within the
+new pid namespace ps -ef gives me:
 
--- 
-Jean Delvare
+sh-3.2# ps -ef
+UID        PID  PPID  C STIME TTY          TIME CMD
+root         1     0  0 10:54 pts/1    00:00:00 /bin/sh
+root         5     1  0 10:54 pts/1    00:00:00 /bin/sleep 100
+root         6     1  0 10:54 pts/1    00:00:00 ps -ef
+
+but from another shell as the same user, partial output of ps -ef
+gives me:
+
+root      2877  2876  0 10:54 pts/1    00:00:00 /bin/sh
+root      2881  2877  0 10:54 pts/1    00:00:00 /bin/sleep 100
+
+And so what we're trying to decide is whether autofs should send
+pid 5 or pid 2881 for a message about the "/bin/sleep 100" task.
+
+In fact, if the user clicks that button twice, chances are both
+instances of the application will have the same pid values for each
+process in the application.  So now if autofs sends a message to the
+user about the application, the user cannot tell which process is at
+fault.
+
+Autofs will be sending the user some message about 'process 5'.  The
+user won't know whether it means "the real" pid 5, [watchdog/0],
+pid 5 in the first instance of the application, or pid 5 in the
+second instance.
+
+Now it's true that the user's xterm may still be in a different
+(descendent) pidns of the autofs daemon.  But we can't expect
+the autofs daemon to do pid_t translation for the user, so I
+think what we have to aim for is making sure that the values
+reported are unique within the pidns of the autofs daemon.  And
+that means sending back either the pid values in the autofs
+daemon's pid namespace, or using the top-level pid_ts, that is,
+the pid values in the init namespace, which will be unique
+on the whole system.
+
+Sorry this turned out long-winded, I hope it makes sense.
+And if I'm just showing a misunderstanding of what you're doing,
+please do correct me :)
+
+thanks,
+-serge
