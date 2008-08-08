@@ -1,61 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758530AbYHHRtv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758123AbYHHRvf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758530AbYHHRtv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 13:49:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758131AbYHHRt3
+	id S1758123AbYHHRvf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 13:51:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751591AbYHHRv2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 13:49:29 -0400
-Received: from mailrelay002.isp.belgacom.be ([195.238.6.175]:8964 "EHLO
-	mailrelay002.isp.belgacom.be" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758097AbYHHRt1 (ORCPT
+	Fri, 8 Aug 2008 13:51:28 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:54220 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751091AbYHHRv1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 13:49:27 -0400
-X-Belgacom-Dynamic: yes
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AnkFAEkjnEhR8DtG/2dsb2JhbACBXKsx
-Date: Fri, 8 Aug 2008 19:49:25 +0200
-From: Wim Van Sebroeck <wim@iguana.be>
-To: Jean Delvare <khali@linux-fr.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] watchdog: Fix build with CONFIG_ITCO_VENDOR_SUPPORT=n
-Message-ID: <20080808174925.GC2773@infomag.infomag.iguana.be>
-References: <20080808102921.3ec92c4f@hyperion.delvare>
+	Fri, 8 Aug 2008 13:51:27 -0400
+Date: Fri, 8 Aug 2008 10:50:40 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Dave Jones <davej@codemonkey.org.uk>
+Cc: mark.langsdorf@amd.com, lkml <linux-kernel@vger.kernel.org>,
+       akpm <akpm@linux-foundation.org>
+Subject: Re: [PATCH -next] powernow-k8: fix build errors
+Message-Id: <20080808105040.291097a2.randy.dunlap@oracle.com>
+In-Reply-To: <20080808173822.GP26295@codemonkey.org.uk>
+References: <20080808101950.7a942fa6.randy.dunlap@oracle.com>
+	<20080808173822.GP26295@codemonkey.org.uk>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080808102921.3ec92c4f@hyperion.delvare>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jean,
+On Fri, 8 Aug 2008 13:38:22 -0400 Dave Jones wrote:
 
-> The problem is that iTCO_vendor_support.ko is still being built while
-> iTCO_vendor.h claims that its functions do not exist. The following
-> Makefile update fixes that. It causes iTCO_vendor_support.ko to no
-> longer be built if CONFIG_ITCO_VENDOR_SUPPORT=n.
+> I think something like below may be better..
+> Same thing, but with one less ifdef ?
+
+Close, but no cigar.
+
+> diff --git a/arch/x86/kernel/cpu/cpufreq/powernow-k8.c b/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
+> index 7a09ba4..3ba6fd2 100644
+> --- a/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
+> +++ b/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
+> @@ -951,6 +951,7 @@ static void powernow_k8_cpu_exit_acpi(struct powernow_k8_data *data)
+>  }
+>  
+>  #else
+> +static int powernow_k8_cpu_preinit_acpi(struct powernow_k8_data *data) { return -ENODEV; }
+
+(void) // parameters
+
+>  static int powernow_k8_cpu_init_acpi(struct powernow_k8_data *data) { return -ENODEV; }
+>  static void powernow_k8_cpu_exit_acpi(struct powernow_k8_data *data) { return; }
+>  static void powernow_k8_acpi_pst_values(struct powernow_k8_data *data, unsigned int index) { return; }
+> @@ -1349,7 +1351,9 @@ static void __exit powernowk8_exit(void)
+>  	dprintk("exit\n");
+>  
+>  	cpufreq_unregister_driver(&cpufreq_amd64_driver);
 > 
-> Signed-off-by: Jean Delvare <khali@linux-fr.org>
-> Cc: Wim Van Sebroeck <wim@iguana.be>
+> +#ifdef CONFIG_X86_POWERNOW_K8_ACPI
+>  	free_percpu(acpi_perf_data);
+> +#ifdef
 
-Will be added for the next release to Linus.
+#endif
 
-For all other developers, this is what is still in the queue:
-* Fix iTCO_vendor_support
-* MAINTAINERS: remove ZF MACHZ WATCHDOG entry
-* watchdog: delete unused driver mpc8xx_wdt.c
-* ALi M7101 PMU also available on Sun Netra's too
-* Add AT91SAM9/CAP9 watchdog driver
-* the s3c2410 watchdog fixes that have not been merged yet (if still any).
-* Add kdebug support for for hpwdt
-* Add watchdog driver IT8716 IT8726 IT8712J/K
-* Add Orion hardware watchdog support
-* Add PNX833x WDT Support
-* Add RC32434 watchdog
-* Add support for the built-in RDC R-321x SoC watchdog
-* Add driver for winbond w83697ug/uf watchdog feature
+>  }
+>  
+>  MODULE_AUTHOR("Paul Devriendt <paul.devriendt@amd.com> and Mark Langsdorf <mark.langsdorf@amd.com>");
 
-Kind regards,
-Wim.
 
+---
+(your) new patch:
+---
+ arch/x86/kernel/cpu/cpufreq/powernow-k8.c |    3 +++
+ 1 file changed, 3 insertions(+)
+
+--- linux-next-20080808.orig/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
++++ linux-next-20080808/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
+@@ -951,6 +951,7 @@ static void powernow_k8_cpu_exit_acpi(st
+ }
+ 
+ #else
++static int powernow_k8_cpu_preinit_acpi(void) { return -ENODEV; }
+ static int powernow_k8_cpu_init_acpi(struct powernow_k8_data *data) { return -ENODEV; }
+ static void powernow_k8_cpu_exit_acpi(struct powernow_k8_data *data) { return; }
+ static void powernow_k8_acpi_pst_values(struct powernow_k8_data *data, unsigned int index) { return; }
+@@ -1349,7 +1350,9 @@ static void __exit powernowk8_exit(void)
+ 
+ 	cpufreq_unregister_driver(&cpufreq_amd64_driver);
+ 
++#ifdef CONFIG_X86_POWERNOW_K8_ACPI
+ 	free_percpu(acpi_perf_data);
++#endif
+ }
+ 
+ MODULE_AUTHOR("Paul Devriendt <paul.devriendt@amd.com> and Mark Langsdorf <mark.langsdorf@amd.com>");
