@@ -1,49 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756386AbYHHST4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758835AbYHHSVV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756386AbYHHST4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 14:19:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753255AbYHHSTr
+	id S1758835AbYHHSVV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 14:21:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752980AbYHHSVH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 14:19:47 -0400
-Received: from moutng.kundenserver.de ([212.227.126.177]:64980 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752985AbYHHSTr convert rfc822-to-8bit (ORCPT
+	Fri, 8 Aug 2008 14:21:07 -0400
+Received: from tomts16-srv.bellnexxia.net ([209.226.175.4]:43880 "EHLO
+	tomts16-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751704AbYHHSVG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 14:19:47 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-Subject: Re: [RFC][PATCH 0/4] kernel-based checkpoint restart
-Date: Fri, 8 Aug 2008 20:18:45 +0200
-User-Agent: KMail/1.9.9
-Cc: containers@lists.linux-foundation.org, Theodore Tso <tytso@mit.edu>,
-       linux-kernel@vger.kernel.org, Oren Laadan <orenl@cs.columbia.edu>
-References: <20080807224033.FFB3A2C1@kernel> <200808081125.12706.arnd@arndb.de> <1218218784.19082.10.camel@nimitz>
-In-Reply-To: <1218218784.19082.10.camel@nimitz>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 8BIT
+	Fri, 8 Aug 2008 14:21:06 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AnkFAHEnnEhMRKxB/2dsb2JhbACBXKs4
+Date: Fri, 8 Aug 2008 14:21:04 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, Roland McGrath <roland@redhat.com>,
+       Ulrich Drepper <drepper@redhat.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Gregory Haskins <ghaskins@novell.com>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       "Luis Claudio R. Goncalves" <lclaudio@uudg.org>,
+       Clark Williams <williams@redhat.com>
+Subject: Re: [PATCH 0/5] ftrace: to kill a daemon
+Message-ID: <20080808182104.GA11376@Krystal>
+References: <20080807182013.984175558@goodmis.org> <20080807184741.GB18164@Krystal> <alpine.DEB.1.10.0808071639420.9449@gandalf.stny.rr.com> <20080808172259.GB8244@Krystal> <alpine.DEB.1.10.0808081334010.4436@gandalf.stny.rr.com> <20080808174607.GG8244@Krystal> <alpine.DEB.1.10.0808081410380.6116@gandalf.stny.rr.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200808082018.45715.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX18VAJcUisosvgyB3hKlghHFT215YKX12HRP5eh
- zA61DToDMyVnq8u+pAlpH1xX7f4bKFzNwbw76m/JUPtbe/GRbd
- Rft6FwWwceTqkw+SC3b4Q==
+In-Reply-To: <alpine.DEB.1.10.0808081410380.6116@gandalf.stny.rr.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 14:18:08 up 64 days, 22:59,  7 users,  load average: 0.32, 0.60,
+	0.67
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 08 August 2008, Dave Hansen wrote:
-> I don't think it is the common case.  Probably now when we're screwing
-> around with it, but not in the future.  Do you think it is worth adding
-> the pid=0 handling?
+* Steven Rostedt (rostedt@goodmis.org) wrote:
+> 
+> On Fri, 8 Aug 2008, Mathieu Desnoyers wrote:
+> > * Steven Rostedt (rostedt@goodmis.org) wrote:
+> > > 
+> > > On Fri, 8 Aug 2008, Mathieu Desnoyers wrote:
+> > > > * Steven Rostedt (rostedt@goodmis.org) wrote:
+> > > > > 
+> > > > > I originally used jumps instead of nops, but unfortunately, they actually 
+> > > > > hurt performance more than adding nops. Ingo told me it was probably due
+> > > > > to using up the jump predictions of the CPU.
+> > > > > 
+> > > > 
+> > > > Hrm, are you sure you use a single 5-bytes nop instruction then, or do
+> > > > you use a mix of various nop sizes (add_nops) on some architectures ?
+> > > 
+> > > I use (for x86) what is in include/asm-x86/nops.h depending on what the
+> > > cpuid gives us.
+> > > 
+> > 
+> > That's bad :
+> > 
+> > #define GENERIC_NOP5 GENERIC_NOP1 GENERIC_NOP4
+> > 
+> > #define K8_NOP5 K8_NOP3 K8_NOP2
+> > 
+> > #define K7_NOP5 K7_NOP4 ASM_NOP1
+> > 
+> > So, when you try, later, to replace these instructions with a single
+> > 5-bytes instruction, a preempted thread could iret in the middle of your
+> > 5-bytes insn and cause an illegal instruction ?
+> 
+> That's why I use kstop_machine.
+> 
 
-If it's the exception, probably not. Otherwise it would be a nice shortcut
-to avoid having to do two system calls every time you write code using it.
-Then again, there are probably not many programs calling it anyway, if it
-get encapsulated in some user space tool.
+kstop_machine does not guarantee that you won't have _any_ thread
+preempted with IP pointing exactly in the middle of your instructions
+_before_ the modification scheduled back in _after_ the modification and
+thus causing an illegal instruction.
 
-	Arnd <><
+Still buggy. :/
+
+> > 
+> > 
+> > > > 
+> > > > You can consume the branch prediction buffers for conditional branches,
+> > > > but I doubt static jumps have this impact ? I don't see what "jump
+> > > > predictions" you are referring to here exactly.
+> > > 
+> > > I don't know the details, but we definitely saw a drop in preformance 
+> > > between using nops and static jumps.
+> > > 
+> > 
+> > Generated by replacing all the call by 5-bytes jumps e9 00 00 00 00
+> > instead of the 5-bytes add_nops ? On which architectures ?
+> > 
+> 
+> I ran this on my Dell (intel Xeon), which IIRC did show the performance 
+> degration. I unfortunately don't have the time to redo those tests, but 
+> you are welcome to.
+> 
+> Just look at arch/x86/kernel/ftrace.c and replace the nop with the jump.
+> In fact, the comments in that file still say it is a jmp. Remember, my 
+> first go was to use the jmp.
+> 
+
+I'll try to find time to compare :
+
+multi-instructions 5-bytes nops (although this approach is just buggy)
+5-bytes jump to the next address
+2-bytes jump to offset +3.
+
+Mathieu
+
+> -- Steve
+> 
+
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
