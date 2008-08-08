@@ -1,45 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756528AbYHHKLZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756858AbYHHKMb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756528AbYHHKLZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 06:11:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753999AbYHHKLL
+	id S1756858AbYHHKMb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 06:12:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752955AbYHHKMX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 06:11:11 -0400
-Received: from mailtp.via.com.tw ([61.66.243.2]:15198 "EHLO mailtp.via.com.tw"
+	Fri, 8 Aug 2008 06:12:23 -0400
+Received: from mailtp.via.com.tw ([61.66.243.2]:15310 "EHLO mailtp.via.com.tw"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754025AbYHHKLJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 06:11:09 -0400
+	id S1752139AbYHHKMW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Aug 2008 06:12:22 -0400
 X-MimeOLE: Produced By Microsoft Exchange V6.5
 Content-class: urn:content-classes:message
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="utf-8"
-Subject: [PATCH 3/13 v2] viafb: accel.c, accel.h
-Date: Fri, 8 Aug 2008 18:11:05 +0800
-Message-ID: <C80EF34A3D2E494DBAF9AC29C7AE4EB8078B698F@exchtp03.taipei.via.com.tw>
+Subject: [PATCH 4/13 v2] viafb: chip.h, debug.h
+Date: Fri, 8 Aug 2008 18:12:16 +0800
+Message-ID: <C80EF34A3D2E494DBAF9AC29C7AE4EB8078B6994@exchtp03.taipei.via.com.tw>
+In-Reply-To: <C80EF34A3D2E494DBAF9AC29C7AE4EB8074E776C@exchtp03.taipei.via.com.tw>
 X-MS-Has-Attach: 
 X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH 3/13 v2] viafb: accel.c, accel.h
-Thread-Index: Acjae9Qvxc85c25vTdiBO8JmW/i7lAetlE+wAALtsFAAAADW8AAAACkgAAAAH2A=
+Thread-Topic: [PATCH 4/13 v2] viafb: chip.h, debug.h
+Thread-Index: AcjafY7PTIqsuiePRLGeOMQCTD8h4wetMgjA
 From: <JosephChan@via.com.tw>
 To: <JosephChan@via.com.tw>, <linux-fbdev-devel@lists.sourceforge.net>,
        <linux-kernel@vger.kernel.org>
 Cc: <akpm@linux-foundation.org>, <geert@linux-m68k.org>
-X-OriginalArrivalTime: 08 Aug 2008 10:11:06.0276 (UTC) FILETIME=[12257640:01C8F93F]
+X-OriginalArrivalTime: 08 Aug 2008 10:12:17.0805 (UTC) FILETIME=[3CC7EBD0:01C8F93F]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha id m78AC0dq019435
+X-MIME-Autoconverted: from base64 to 8bit by alpha id m78ACadq019451
 
-2D and HW cursor stuff of viafb driver.
+ 
+Header file of information about via chipsets and debug function.
 
 Signed-off-by: Joseph Chan <josephchan@via.com.tw>
 
-diff -Nurp a/drivers/video/via/accel.c b/drivers/video/via/accel.c
---- a/drivers/video/via/accel.c	1970-01-01 08:00:00.000000000 +0800
-+++ b/drivers/video/via/accel.c	2008-07-22 02:07:29.000000000 +0800
-@@ -0,0 +1,244 @@
+diff -Nurp a/drivers/video/via/chip.h b/drivers/video/via/chip.h
+--- a/drivers/video/via/chip.h	1970-01-01 08:00:00.000000000 +0800
++++ b/drivers/video/via/chip.h	2008-07-22 02:07:29.000000000 +0800
+@@ -0,0 +1,190 @@
 +/*
 + * Copyright 1998-2008 VIA Technologies, Inc. All Rights Reserved.
 + * Copyright 2001-2008 S3 Graphics, Inc. All Rights Reserved.
@@ -60,231 +62,180 @@ diff -Nurp a/drivers/video/via/accel.c b/drivers/video/via/accel.c
 + * Foundation, Inc.,
 + * 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 + */
++#ifndef __CHIP_H__
++#define __CHIP_H__
++
 +#include "global.h"
 +
-+void viafb_init_accel(void)
-+{
-+	viaparinfo->fbmem_free -= CURSOR_SIZE;
-+	viaparinfo->cursor_start = viaparinfo->fbmem_free;
-+	viaparinfo->fbmem_used += CURSOR_SIZE;
++/***************************************/
++/* Definition Graphic Chip Information */
++/***************************************/
 +
-+	/* Reverse 8*1024 memory space for cursor image */
-+	viaparinfo->fbmem_free -= (CURSOR_SIZE + VQ_SIZE);
-+	viaparinfo->VQ_start = viaparinfo->fbmem_free;
-+	viaparinfo->VQ_end = viaparinfo->VQ_start + VQ_SIZE - 1;
-+	viaparinfo->fbmem_used += (CURSOR_SIZE + VQ_SIZE); }
++#define     PCI_VIA_VENDOR_ID       0x1106
 +
-+void viafb_init_2d_engine(void)
-+{
-+	u32 dwVQStartAddr, dwVQEndAddr;
-+	u32 dwVQLen, dwVQStartL, dwVQEndL, dwVQStartEndH;
++/* Define VIA Graphic Chip Name */
++#define     UNICHROME_CLE266        1
++#define     UNICHROME_CLE266_DID    0x3122
++#define     CLE266_REVISION_AX      0x0A
++#define     CLE266_REVISION_CX      0x0C
 +
-+	/* init 2D engine regs to reset 2D engine */
-+	MMIO_OUT32(VIA_REG_GEMODE, 0x0);
-+	MMIO_OUT32(VIA_REG_SRCPOS, 0x0);
-+	MMIO_OUT32(VIA_REG_DSTPOS, 0x0);
-+	MMIO_OUT32(VIA_REG_DIMENSION, 0x0);
-+	MMIO_OUT32(VIA_REG_PATADDR, 0x0);
-+	MMIO_OUT32(VIA_REG_FGCOLOR, 0x0);
-+	MMIO_OUT32(VIA_REG_BGCOLOR, 0x0);
-+	MMIO_OUT32(VIA_REG_CLIPTL, 0x0);
-+	MMIO_OUT32(VIA_REG_CLIPBR, 0x0);
-+	MMIO_OUT32(VIA_REG_OFFSET, 0x0);
-+	MMIO_OUT32(VIA_REG_KEYCONTROL, 0x0);
-+	MMIO_OUT32(VIA_REG_SRCBASE, 0x0);
-+	MMIO_OUT32(VIA_REG_DSTBASE, 0x0);
-+	MMIO_OUT32(VIA_REG_PITCH, 0x0);
-+	MMIO_OUT32(VIA_REG_MONOPAT1, 0x0);
++#define     UNICHROME_K400          2
++#define     UNICHROME_K400_DID      0x7205
 +
-+	/* Init AGP and VQ regs */
-+	switch (viaparinfo->chip_info->gfx_chip_name) {
-+	case UNICHROME_K8M890:
-+	case UNICHROME_P4M900:
-+		MMIO_OUT32(VIA_REG_CR_TRANSET, 0x00100000);
-+		MMIO_OUT32(VIA_REG_CR_TRANSPACE, 0x680A0000);
-+		MMIO_OUT32(VIA_REG_CR_TRANSPACE, 0x02000000);
-+		break;
++#define     UNICHROME_K800          3
++#define     UNICHROME_K800_DID      0x3108
 +
-+	default:
-+		MMIO_OUT32(VIA_REG_TRANSET, 0x00100000);
-+		MMIO_OUT32(VIA_REG_TRANSPACE, 0x00000000);
-+		MMIO_OUT32(VIA_REG_TRANSPACE, 0x00333004);
-+		MMIO_OUT32(VIA_REG_TRANSPACE, 0x60000000);
-+		MMIO_OUT32(VIA_REG_TRANSPACE, 0x61000000);
-+		MMIO_OUT32(VIA_REG_TRANSPACE, 0x62000000);
-+		MMIO_OUT32(VIA_REG_TRANSPACE, 0x63000000);
-+		MMIO_OUT32(VIA_REG_TRANSPACE, 0x64000000);
-+		MMIO_OUT32(VIA_REG_TRANSPACE, 0x7D000000);
++#define     UNICHROME_PM800         4
++#define     UNICHROME_PM800_DID     0x3118
 +
-+		MMIO_OUT32(VIA_REG_TRANSET, 0xFE020000);
-+		MMIO_OUT32(VIA_REG_TRANSPACE, 0x00000000);
-+		break;
-+	}
-+	if (viaparinfo->VQ_start != 0) {
-+		/* Enable VQ */
-+		dwVQStartAddr = viaparinfo->VQ_start;
-+		dwVQEndAddr = viaparinfo->VQ_end;
++#define     UNICHROME_CN700         5
++#define     UNICHROME_CN700_DID     0x3344
 +
-+		dwVQStartL = 0x50000000 | (dwVQStartAddr & 0xFFFFFF);
-+		dwVQEndL = 0x51000000 | (dwVQEndAddr & 0xFFFFFF);
-+		dwVQStartEndH = 0x52000000 |
-+			((dwVQStartAddr & 0xFF000000) >> 24) |
-+			((dwVQEndAddr & 0xFF000000) >> 16);
-+		dwVQLen = 0x53000000 | (VQ_SIZE >> 3);
-+		switch (viaparinfo->chip_info->gfx_chip_name) {
-+		case UNICHROME_K8M890:
-+		case UNICHROME_P4M900:
-+			dwVQStartL |= 0x20000000;
-+			dwVQEndL |= 0x20000000;
-+			dwVQStartEndH |= 0x20000000;
-+			dwVQLen |= 0x20000000;
-+			break;
-+		default:
-+			break;
-+		}
++#define     UNICHROME_CX700         6
++#define     UNICHROME_CX700_DID     0x3157
++#define     CX700_REVISION_700      0x0
++#define     CX700_REVISION_700M     0x1
++#define     CX700_REVISION_700M2    0x2
 +
-+		switch (viaparinfo->chip_info->gfx_chip_name) {
-+		case UNICHROME_K8M890:
-+		case UNICHROME_P4M900:
-+			MMIO_OUT32(VIA_REG_CR_TRANSET, 0x00100000);
-+			MMIO_OUT32(VIA_REG_CR_TRANSPACE, dwVQStartEndH);
-+			MMIO_OUT32(VIA_REG_CR_TRANSPACE, dwVQStartL);
-+			MMIO_OUT32(VIA_REG_CR_TRANSPACE, dwVQEndL);
-+			MMIO_OUT32(VIA_REG_CR_TRANSPACE, dwVQLen);
-+			MMIO_OUT32(VIA_REG_CR_TRANSPACE, 0x74301001);
-+			MMIO_OUT32(VIA_REG_CR_TRANSPACE, 0x00000000);
-+			break;
-+		default:
-+			MMIO_OUT32(VIA_REG_TRANSET, 0x00FE0000);
-+			MMIO_OUT32(VIA_REG_TRANSPACE, 0x080003FE);
-+			MMIO_OUT32(VIA_REG_TRANSPACE, 0x0A00027C);
-+			MMIO_OUT32(VIA_REG_TRANSPACE, 0x0B000260);
-+			MMIO_OUT32(VIA_REG_TRANSPACE, 0x0C000274);
-+			MMIO_OUT32(VIA_REG_TRANSPACE, 0x0D000264);
-+			MMIO_OUT32(VIA_REG_TRANSPACE, 0x0E000000);
-+			MMIO_OUT32(VIA_REG_TRANSPACE, 0x0F000020);
-+			MMIO_OUT32(VIA_REG_TRANSPACE, 0x1000027E);
-+			MMIO_OUT32(VIA_REG_TRANSPACE, 0x110002FE);
-+			MMIO_OUT32(VIA_REG_TRANSPACE, 0x200F0060);
++#define     UNICHROME_CN750         7
++#define     UNICHROME_CN750_DID     0x3225
 +
-+			MMIO_OUT32(VIA_REG_TRANSPACE, 0x00000006);
-+			MMIO_OUT32(VIA_REG_TRANSPACE, 0x40008C0F);
-+			MMIO_OUT32(VIA_REG_TRANSPACE, 0x44000000);
-+			MMIO_OUT32(VIA_REG_TRANSPACE, 0x45080C04);
-+			MMIO_OUT32(VIA_REG_TRANSPACE, 0x46800408);
++#define     UNICHROME_K8M890        8
++#define     UNICHROME_K8M890_DID    0x3230
 +
-+			MMIO_OUT32(VIA_REG_TRANSPACE, dwVQStartEndH);
-+			MMIO_OUT32(VIA_REG_TRANSPACE, dwVQStartL);
-+			MMIO_OUT32(VIA_REG_TRANSPACE, dwVQEndL);
-+			MMIO_OUT32(VIA_REG_TRANSPACE, dwVQLen);
-+			break;
-+		}
-+	} else {
-+		/* Disable VQ */
-+		switch (viaparinfo->chip_info->gfx_chip_name) {
-+		case UNICHROME_K8M890:
-+		case UNICHROME_P4M900:
-+			MMIO_OUT32(VIA_REG_CR_TRANSET, 0x00100000);
-+			MMIO_OUT32(VIA_REG_CR_TRANSPACE, 0x74301000);
-+			break;
-+		default:
-+			MMIO_OUT32(VIA_REG_TRANSET, 0x00FE0000);
-+			MMIO_OUT32(VIA_REG_TRANSPACE, 0x00000004);
-+			MMIO_OUT32(VIA_REG_TRANSPACE, 0x40008C0F);
-+			MMIO_OUT32(VIA_REG_TRANSPACE, 0x44000000);
-+			MMIO_OUT32(VIA_REG_TRANSPACE, 0x45080C04);
-+			MMIO_OUT32(VIA_REG_TRANSPACE, 0x46800408);
-+			break;
-+		}
-+	}
++#define     UNICHROME_P4M890        9
++#define     UNICHROME_P4M890_DID    0x3343
 +
-+	viafb_set_2d_color_depth(viaparinfo->bpp);
++#define     UNICHROME_P4M900        10
++#define     UNICHROME_P4M900_DID    0x3371
 +
-+	MMIO_OUT32(VIA_REG_SRCBASE, 0x0);
-+	MMIO_OUT32(VIA_REG_DSTBASE, 0x0);
++#define     UNICHROME_VX800         11
++#define     UNICHROME_VX800_DID     0x1122
 +
-+	MMIO_OUT32(VIA_REG_PITCH,
-+		   VIA_PITCH_ENABLE |
-+		   (((viaparinfo->hres *
-+		      viaparinfo->bpp >> 3) >> 3) | (((viaparinfo->hres *
-+						   viaparinfo->
-+						   bpp >> 3) >> 3) << 16)));
-+}
++/**************************************************/
++/* Definition TMDS Trasmitter Information         */
++/**************************************************/
 +
-+void viafb_set_2d_color_depth(int bpp)
-+{
-+	u32 dwGEMode;
++/* Definition TMDS Trasmitter Index */
++#define     NON_TMDS_TRANSMITTER    0x00
++#define     VT1632_TMDS             0x01
++#define     INTEGRATED_TMDS         0x42
 +
-+	dwGEMode = MMIO_IN32(0x04) & 0xFFFFFCFF;
++/* Definition TMDS Trasmitter I2C Slave Address */
++#define     VT1632_TMDS_I2C_ADDR    0x10
 +
-+	switch (bpp) {
-+	case 16:
-+		dwGEMode |= VIA_GEM_16bpp;
-+		break;
-+	case 32:
-+		dwGEMode |= VIA_GEM_32bpp;
-+		break;
-+	default:
-+		dwGEMode |= VIA_GEM_8bpp;
-+		break;
-+	}
++/**************************************************/
++/* Definition LVDS Trasmitter Information         */
++/**************************************************/
 +
-+	/* Set BPP and Pitch */
-+	MMIO_OUT32(VIA_REG_GEMODE, dwGEMode);
-+}
++/* Definition LVDS Trasmitter Index */
++#define     NON_LVDS_TRANSMITTER    0x00
++#define     VT1631_LVDS             0x01
++#define     VT1636_LVDS             0x0E
++#define     INTEGRATED_LVDS         0x41
 +
-+void viafb_hw_cursor_init(void)
-+{
-+	/* Set Cursor Image Base Address */
-+	MMIO_OUT32(VIA_REG_CURSOR_MODE, viaparinfo->cursor_start);
-+	MMIO_OUT32(VIA_REG_CURSOR_POS, 0x0);
-+	MMIO_OUT32(VIA_REG_CURSOR_ORG, 0x0);
-+	MMIO_OUT32(VIA_REG_CURSOR_BG, 0x0);
-+	MMIO_OUT32(VIA_REG_CURSOR_FG, 0x0);
-+}
++/* Definition Digital Transmitter Mode */
++#define     TX_DATA_12_BITS         0x01
++#define     TX_DATA_24_BITS         0x02
++#define     TX_DATA_DDR_MODE        0x04
++#define     TX_DATA_SDR_MODE        0x08
 +
-+void viafb_show_hw_cursor(struct fb_info *info, int Status) {
-+	u32 temp;
-+	u32 iga_path = ((struct viafb_par *)(info->par))->iga_path;
++/* Definition LVDS Trasmitter I2C Slave Address */
++#define     VT1631_LVDS_I2C_ADDR    0x70
++#define     VT3271_LVDS_I2C_ADDR    0x80
++#define     VT1636_LVDS_I2C_ADDR    0x80
 +
-+	temp = MMIO_IN32(VIA_REG_CURSOR_MODE);
-+	switch (Status) {
-+	case HW_Cursor_ON:
-+		temp |= 0x1;
-+		break;
-+	case HW_Cursor_OFF:
-+		temp &= 0xFFFFFFFE;
-+		break;
-+	}
-+	switch (iga_path) {
-+	case IGA2:
-+		temp |= 0x80000000;
-+		break;
-+	case IGA1:
-+	default:
-+		temp &= 0x7FFFFFFF;
-+	}
-+	MMIO_OUT32(VIA_REG_CURSOR_MODE, temp); }
++struct tmds_chip_information {
++	int tmds_chip_name;
++	int tmds_chip_slave_addr;
++	int dvi_panel_id;
++	int data_mode;
++	int output_interface;
++	int i2c_port;
++	int device_type;
++};
 +
-+int viafb_wait_engine_idle(void)
-+{
-+	int loop = 0;
++struct lvds_chip_information {
++	int lvds_chip_name;
++	int lvds_chip_slave_addr;
++	int data_mode;
++	int output_interface;
++	int i2c_port;
++};
 +
-+	while (!(MMIO_IN32(VIA_REG_STATUS) & VIA_VR_QUEUE_BUSY)
-+	       && (loop++ < MAXLOOP))
-+	       cpu_relax();
++struct chip_information {
++	int gfx_chip_name;
++	int gfx_chip_revision;
++	int chip_on_slot;
++	struct tmds_chip_information tmds_chip_info;
++	struct lvds_chip_information lvds_chip_info;
++	struct lvds_chip_information lvds_chip_info2;
++};
 +
-+	while ((MMIO_IN32(VIA_REG_STATUS) &
-+		(VIA_CMD_RGTR_BUSY | VIA_2D_ENG_BUSY | VIA_3D_ENG_BUSY)) &&
-+	       (loop++ < MAXLOOP))
-+	       cpu_relax();
++struct crt_setting_information {
++	int iga_path;
++	int h_active;
++	int v_active;
++	int bpp;
++	int refresh_rate;
++};
 +
-+	return loop >= MAXLOOP;
-+}
-diff -Nurp a/drivers/video/via/accel.h b/drivers/video/via/accel.h
---- a/drivers/video/via/accel.h	1970-01-01 08:00:00.000000000 +0800
-+++ b/drivers/video/via/accel.h	2008-07-22 02:07:29.000000000 +0800
-@@ -0,0 +1,181 @@
++struct tmds_setting_information {
++	int iga_path;
++	int h_active;
++	int v_active;
++	int bpp;
++	int refresh_rate;
++	int get_dvi_size_method;
++	int max_pixel_clock;
++	int dvi_panel_size;
++	int dvi_panel_hres;
++	int dvi_panel_vres;
++	int native_size;
++};
++
++struct lvds_setting_information {
++	int iga_path;
++	int h_active;
++	int v_active;
++	int bpp;
++	int refresh_rate;
++	int get_lcd_size_method;
++	int lcd_panel_id;
++	int lcd_panel_size;
++	int lcd_panel_hres;
++	int lcd_panel_vres;
++	int display_method;
++	int device_lcd_dualedge;
++	int LCDDithering;
++	int lcd_mode;
++	u32 vclk;		/*panel mode clock value */
++};
++
++struct GFX_DPA_SETTING {
++	int ClkRangeIndex;
++	u8 DVP0;		/* CR96[3:0] */
++	u8 DVP0DataDri_S1;	/* SR2A[5]   */
++	u8 DVP0DataDri_S;	/* SR1B[1]   */
++	u8 DVP0ClockDri_S1;	/* SR2A[4]   */
++	u8 DVP0ClockDri_S;	/* SR1E[2]   */
++	u8 DVP1;		/* CR9B[3:0] */
++	u8 DVP1Driving;		/* SR65[3:0], Data and Clock driving */
++	u8 DFPHigh;		/* CR97[3:0] */
++	u8 DFPLow;		/* CR99[3:0] */
++
++};
++
++struct VT1636_DPA_SETTING {
++	int PanelSizeID;
++	u8 CLK_SEL_ST1;
++	u8 CLK_SEL_ST2;
++};
++#endif /* __CHIP_H__ */
+diff -Nurp a/drivers/video/via/debug.h b/drivers/video/via/debug.h
+--- a/drivers/video/via/debug.h	1970-01-01 08:00:00.000000000 +0800
++++ b/drivers/video/via/debug.h	2008-07-22 02:07:29.000000000 +0800
+@@ -0,0 +1,41 @@
 +/*
 + * Copyright 1998-2008 VIA Technologies, Inc. All Rights Reserved.
 + * Copyright 2001-2008 S3 Graphics, Inc. All Rights Reserved.
@@ -305,164 +256,25 @@ diff -Nurp a/drivers/video/via/accel.h b/drivers/video/via/accel.h
 + * Foundation, Inc.,
 + * 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 + */
++#ifndef __DEBUG_H__
++#define __DEBUG_H__
 +
-+#ifndef __ACCEL_H__
-+#define __ACCEL_H__
-+
-+#define FB_ACCEL_VIA_UNICHROME  50
-+
-+/* MMIO Base Address Definition */
-+#define MMIO_VGABASE                0x8000
-+#define MMIO_CR_READ                (MMIO_VGABASE + 0x3D4)
-+#define MMIO_CR_WRITE               (MMIO_VGABASE + 0x3D5)
-+#define MMIO_SR_READ                (MMIO_VGABASE + 0x3C4)
-+#define MMIO_SR_WRITE               (MMIO_VGABASE + 0x3C5)
-+
-+#define VIA_MMIO 1
-+
-+#if VIA_MMIO
-+#define MMIO_OUT32(reg, val) writel(val, viaparinfo->io_virt + reg)
-+#define MMIO_IN32(reg)      readl(viaparinfo->io_virt + reg)
-+
-+#else
-+#define MMIO_OUT32(reg, val) outl(val, reg)
-+#define MMIO_IN32(reg)      inl(reg)
++#ifndef VIAFB_DEBUG
++#define VIAFB_DEBUG 0
 +#endif
 +
-+/* HW Cursor Status Define */
-+#define HW_Cursor_ON    0
-+#define HW_Cursor_OFF   1
++#if VIAFB_DEBUG
++#define DEBUG_MSG(f, a...)   printk(f, ## a)
++#else
++#define DEBUG_MSG(f, a...)
++#endif
 +
-+#define CURSOR_SIZE     (8 * 1024)
-+#define VQ_SIZE         (256 * 1024)
++#define VIAFB_WARN 0
++#if VIAFB_WARN
++#define WARN_MSG(f, a...)   printk(f, ## a)
++#else
++#define WARN_MSG(f, a...)
++#endif
 +
-+#define VIA_MMIO_BLTBASE        0x200000
-+#define VIA_MMIO_BLTSIZE        0x200000
-+
-+/* Defines for 2D registers */
-+#define VIA_REG_GECMD           0x000
-+#define VIA_REG_GEMODE          0x004
-+#define VIA_REG_SRCPOS          0x008
-+#define VIA_REG_DSTPOS          0x00C
-+/* width and height */
-+#define VIA_REG_DIMENSION       0x010
-+#define VIA_REG_PATADDR         0x014
-+#define VIA_REG_FGCOLOR         0x018
-+#define VIA_REG_BGCOLOR         0x01C
-+/* top and left of clipping */
-+#define VIA_REG_CLIPTL          0x020
-+/* bottom and right of clipping */
-+#define VIA_REG_CLIPBR          0x024
-+#define VIA_REG_OFFSET          0x028
-+/* color key control */
-+#define VIA_REG_KEYCONTROL      0x02C
-+#define VIA_REG_SRCBASE         0x030
-+#define VIA_REG_DSTBASE         0x034
-+/* pitch of src and dst */
-+#define VIA_REG_PITCH           0x038
-+#define VIA_REG_MONOPAT0        0x03C
-+#define VIA_REG_MONOPAT1        0x040
-+/* from 0x100 to 0x1ff */
-+#define VIA_REG_COLORPAT        0x100
-+
-+/* VIA_REG_PITCH(0x38): Pitch Setting */
-+#define VIA_PITCH_ENABLE        0x80000000
-+
-+/* defines for VIA HW cursor registers */
-+#define VIA_REG_CURSOR_MODE     0x2D0
-+#define VIA_REG_CURSOR_POS      0x2D4
-+#define VIA_REG_CURSOR_ORG      0x2D8
-+#define VIA_REG_CURSOR_BG       0x2DC
-+#define VIA_REG_CURSOR_FG       0x2E0
-+
-+/* VIA_REG_GEMODE(0x04): GE mode */
-+#define VIA_GEM_8bpp            0x00000000
-+#define VIA_GEM_16bpp           0x00000100
-+#define VIA_GEM_32bpp           0x00000300
-+
-+/* VIA_REG_GECMD(0x00): 2D Engine Command  */
-+#define VIA_GEC_NOOP            0x00000000
-+#define VIA_GEC_BLT             0x00000001
-+#define VIA_GEC_LINE            0x00000005
-+
-+/* Rotate Command */
-+#define VIA_GEC_ROT             0x00000008
-+
-+#define VIA_GEC_SRC_XY          0x00000000
-+#define VIA_GEC_SRC_LINEAR      0x00000010
-+#define VIA_GEC_DST_XY          0x00000000
-+#define VIA_GEC_DST_LINRAT      0x00000020
-+
-+#define VIA_GEC_SRC_FB          0x00000000
-+#define VIA_GEC_SRC_SYS         0x00000040
-+#define VIA_GEC_DST_FB          0x00000000
-+#define VIA_GEC_DST_SYS         0x00000080
-+
-+/* source is mono */
-+#define VIA_GEC_SRC_MONO        0x00000100
-+/* pattern is mono */
-+#define VIA_GEC_PAT_MONO        0x00000200
-+/* mono src is opaque */
-+#define VIA_GEC_MSRC_OPAQUE     0x00000000
-+/* mono src is transparent */
-+#define VIA_GEC_MSRC_TRANS      0x00000400
-+/* pattern is in frame buffer */
-+#define VIA_GEC_PAT_FB          0x00000000
-+/* pattern is from reg setting */
-+#define VIA_GEC_PAT_REG         0x00000800
-+
-+#define VIA_GEC_CLIP_DISABLE    0x00000000
-+#define VIA_GEC_CLIP_ENABLE     0x00001000
-+
-+#define VIA_GEC_FIXCOLOR_PAT    0x00002000
-+
-+#define VIA_GEC_INCX            0x00000000
-+#define VIA_GEC_DECY            0x00004000
-+#define VIA_GEC_INCY            0x00000000
-+#define VIA_GEC_DECX            0x00008000
-+/* mono pattern is opaque */
-+#define VIA_GEC_MPAT_OPAQUE     0x00000000
-+/* mono pattern is transparent */
-+#define VIA_GEC_MPAT_TRANS      0x00010000
-+
-+#define VIA_GEC_MONO_UNPACK     0x00000000
-+#define VIA_GEC_MONO_PACK       0x00020000
-+#define VIA_GEC_MONO_DWORD      0x00000000
-+#define VIA_GEC_MONO_WORD       0x00040000
-+#define VIA_GEC_MONO_BYTE       0x00080000
-+
-+#define VIA_GEC_LASTPIXEL_ON    0x00000000
-+#define VIA_GEC_LASTPIXEL_OFF   0x00100000
-+#define VIA_GEC_X_MAJOR         0x00000000
-+#define VIA_GEC_Y_MAJOR         0x00200000
-+#define VIA_GEC_QUICK_START     0x00800000
-+
-+/* defines for VIA 3D registers */
-+#define VIA_REG_STATUS          0x400
-+#define VIA_REG_CR_TRANSET      0x41C
-+#define VIA_REG_CR_TRANSPACE	0x420
-+#define VIA_REG_TRANSET         0x43C
-+#define VIA_REG_TRANSPACE       0x440
-+
-+/* VIA_REG_STATUS(0x400): Engine Status */
-+
-+/* Command Regulator is busy */
-+#define VIA_CMD_RGTR_BUSY       0x00000080
-+/* 2D Engine is busy */
-+#define VIA_2D_ENG_BUSY         0x00000002
-+/* 3D Engine is busy */
-+#define VIA_3D_ENG_BUSY         0x00000001
-+/* Virtual Queue is busy */
-+#define VIA_VR_QUEUE_BUSY       0x00020000
-+
-+#define MAXLOOP                 0xFFFFFF
-+
-+void viafb_init_accel(void);
-+void viafb_init_2d_engine(void);
-+void set_2d_color_depth(int);
-+void viafb_hw_cursor_init(void);
-+void viafb_show_hw_cursor(struct fb_info *info, int Status); int 
-+viafb_wait_engine_idle(void); void viafb_set_2d_color_depth(int bpp);
-+
-+#endif /* __ACCEL_H__ */
++#endif /* __DEBUG_H__ */
 ˇÙË∫{.n«+â∑üÆâ≠Ü+%äÀˇ±È›∂•äwˇ∫{.n«+â∑•ä{±˛G´ùÈˇä{ay∫ á⁄ôÎ,j≠¢f£¢∑höèÔÅÍˇëÍÁz_ËÆ(≠Èöéä›¢j"ù˙∂mßˇˇæ´˛G´ùÈˇ¢∏?ô®Ë≠⁄&£¯ß~è·∂iOïÊ¨z∑övÿ^∂mßˇˇ√ˇ∂Ïˇ¢∏?ñI•
