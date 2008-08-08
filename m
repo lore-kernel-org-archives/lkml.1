@@ -1,111 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759057AbYHHVbS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761393AbYHHVcW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759057AbYHHVbS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 17:31:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755066AbYHHVbI
+	id S1761393AbYHHVcW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 17:32:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755419AbYHHVcG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 17:31:08 -0400
-Received: from wf-out-1314.google.com ([209.85.200.169]:39890 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755488AbYHHVbG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 17:31:06 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=wT1x3Z2sbqtKoeDGzyqvss8cJgKy3I+UksUXyM91u88GrEk+1VxuDUmSo2xyvxbbVe
-         zTL9UstmAPyzJR35omJMaGNWIYip3IMhekTIJlSwOCOSNt7UQ+1mSZjGhMYh4IIx8V35
-         GwFDOkQhaNGP/LM+qiANbZ0qj+aluPyM9PdKY=
-Message-ID: <b647ffbd0808081431q27a48113q5beee1bae7c24b0a@mail.gmail.com>
-Date: Fri, 8 Aug 2008 23:31:05 +0200
-From: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Regression in 2.6.27-rc1 for set_cpus_allowed_ptr
-Cc: "Langsdorf, Mark" <mark.langsdorf@amd.com>,
-       lkml <linux-kernel@vger.kernel.org>,
-       "Gautham R Shenoy" <ego@in.ibm.com>,
-       "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
-       "Ingo Molnar" <mingo@elte.hu>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>
-In-Reply-To: <200808082303.41068.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 8 Aug 2008 17:32:06 -0400
+Received: from sh.osrg.net ([192.16.179.4]:33601 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754661AbYHHVcD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Aug 2008 17:32:03 -0400
+Date: Sat, 9 Aug 2008 06:31:45 +0900
+To: stefanr@s5r6.in-berlin.de
+Cc: grundler@google.com, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: Scatter-gather segment merges by IOMMU?
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <489CB8D8.60908@s5r6.in-berlin.de>
+References: <489CA21F.1030604@s5r6.in-berlin.de>
+	<da824cf30808081325n416ec436y94eebe494d789207@mail.gmail.com>
+	<489CB8D8.60908@s5r6.in-berlin.de>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <6453C3CB8E2B3646B0D020C112613273C5AC5A@sausexmb4.amd.com>
-	 <200808082303.41068.rjw@sisk.pl>
+Message-Id: <20080809063159F.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/8/8 Rafael J. Wysocki <rjw@sisk.pl>:
-> [Adding CCs]
->
-> On Friday, 8 of August 2008, Langsdorf, Mark wrote:
->> One of my co-workers noticed that the powernow-k8
->> driver no longer restarts when a CPU core is
->> hot-disabled and then hot-enabled on AMD quad-core
->> systems.
->>
->> The following comands work fine on 2.6.26 and fail
->> on 2.6.27-rc1:
->>
->> echo 0 > /sys/devices/system/cpu/cpu3/online
->> echo 1 > /sys/devices/system/cpu/cpu3/online
->> find /sys -name cpufreq
->>
->> For 2.6.26, the find will return a cpufreq
->> directory for each processor.  In 2.6.27-rc1,
->> the cpu3 directory is missing.
->>
->> After digging through the code, the following
->> logic is failing when the core is hot-enabled
->> at runtime.  The code works during the boot
->> sequence.
->>
->>       cpumask_t = current->cpus_allowed;
->>       set_cpus_allowed_ptr(current, &cpumask_of_cpu(cpu));
->>       if (smp_processor_id() != cpu)
->>               return -ENODEV;
->>
+On Fri, 08 Aug 2008 23:21:28 +0200
+Stefan Richter <stefanr@s5r6.in-berlin.de> wrote:
+
+> Grant Grundler wrote:
+> > On Fri, Aug 8, 2008 at 12:44 PM, Stefan Richter
+> > <stefanr@s5r6.in-berlin.de> wrote:
+> >> Hi all,
+> >>
+> >> the block layer usually tries to merge s/g segments if consecutive segments
+> >> combined fit into the queue's max_segment_size.  When such a scatter gather
+> >> list is DMA-mapped, can it happen that an IOMMU collapses the elements even
+> >> further, so that sg_dma_len() of a DMA-mapped s/g segment exceeds
+> >> max_segment_size?
+> > 
+> > I don't see how. The IOMMU code only collapses the "physical" mappings and
+> > does not add new elements to the SG list. ergo sg_dma_len() shouldn't change.
+> > 
+> > grant
+> > 
+> >> As I understood some discussions in the past, this could indeed happen,
+> >> which is a nuisance.  But I may have misunderstood something, or something
+> >> may have changed in the meantime...
+> 
+> Well, I'm just doing my homework and am tracking down the various 
+> dma_map_sg implementations.
+> 
+> Here is what PPC does:
+> http://lxr.linux.no/linux+v2.6.26/arch/powerpc/kernel/iommu.c#L270
+> 
+> It looks at dma_get_max_seg_size(dev); and then merges according to it.
+
+Yes, IOMMUs were not able to handle this issue but they should now.
 
 
-if it gets called from any of the cpu-hotplug handlers, it won't work
-now (x86-microcode is another victim).
+> That's all nice and well, but in my case (FireWire storage protocol 
+> a.k.a. SBP-2, which is basically remote DMA), the max_segment_size of 
+> the PCI device is different from the size limit of the protocol.  We 
+> currently have to deconstruct such merges in the sbp2 drivers again:
+> http://lxr.linux.no/linux+v2.6.26/drivers/firewire/fw-sbp2.c#L1384
+> 
+> Either I keep it that way, or I let the protocol driver manipulate the 
+> FireWire controller's dev->dma_parms->max_segment_size (via 
+> dma_set_max_seg_size() of course), which is not entirely correct.
 
-Please give a try to the following patch: http://lkml.org/lkml/2008/7/30/171
-
-does it help?
-
-(the explanation is also available in this thread).
-
-well, provided we may guarantee that load-balancing has been
-initialized (it's ok in our case) by the moment CPU_ONLINE gets
-called, this approach is not that bad perhaps... (and it looks like
-there is plenty of code that relies on set_cpus_allowed_ptr() being
-workable in cpu-hotplug-handlers).
-
-Although, I personally don't like that much this particular use-case
-of set_cpus_allowed_ptr() (I posted patches for x86-microcode). btw.,
-last time I briefly looked at various places, there seemed to be a few
-where
-
-old_mask = p->cpus_allowed;
-set_cpus_allowed_ptr(p, target_cpu);
-// do something
-set_cpus_allowed_ptr(p, old_mask);
-
-is used just wrongly. e.g. it may race with sched_setaffinity() and
-negate its effect.
+Why is it not correct? Device drivers can set
+dma_set_max_seg_size(). SCSI does that (see __scsi_alloc_queue).
 
 
->> -Mark Langdsorf
->> Operating System Research Center
->> AMD
+> I first wanted to use blk_queue_max_segment_size(), but that falls short 
+> with dma_map_sg implementations like the above are at work.
 
--- 
-Best regards,
-Dmitry Adamushko
+Yeah, we store the same value at two places (request_queue and device)
+though it's not nice.
