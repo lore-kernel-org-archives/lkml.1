@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762149AbYHHV5F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932111AbYHHV5e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762149AbYHHV5F (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 17:57:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756295AbYHHVxy
+	id S932111AbYHHV5e (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 17:57:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756860AbYHHVx6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 17:53:54 -0400
+	Fri, 8 Aug 2008 17:53:58 -0400
 Received: from rv-out-0506.google.com ([209.85.198.232]:59965 "EHLO
 	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759865AbYHHVxx (ORCPT
+	with ESMTP id S1757172AbYHHVxz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 17:53:53 -0400
+	Fri, 8 Aug 2008 17:53:55 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=YwFNYAGMYOf4Fn5obqg685glGodrd/fC3nIem+UumgrdqYBlSxpMvDN3kcGJrSSNZj
-         Ao9/g759/543MoRSB3/PqOd6S0994IMWQ/JSuK7N48iJCx36yEbdu4Rd108mO5eQKMCM
-         9OEvkS3R4WaQxOBp6sQrt0X/psqzFP92LppWs=
+        b=OrqFYTAdzcWby3GMa8P7bsPZ1oMy9ht8s49YvRYHgt65alUPmFItnSiJWJ4l/oM7U7
+         U2cnYbJW0MoRyHOXDfBscrhYJP2/EGTkd+Zog3pf/QssVX1w2J32e0Yar/3XUm7eYOJV
+         LUC/nl3O/fTxQ59+J85Fpo9BV5SIqO8Y9u44Y=
 From: Yinghai Lu <yhlu.kernel@gmail.com>
 To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
        "H. Peter Anvin" <hpa@zytor.com>,
@@ -23,11 +23,11 @@ To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
        Dhaval Giani <dhaval@linux.vnet.ibm.com>, Mike Travis <travis@sgi.com>,
        Andrew Morton <akpm@linux-foundation.org>
 Cc: linux-kernel@vger.kernel.org, Yinghai Lu <yhlu.kernel@gmail.com>
-Subject: [PATCH 08/42] introduce nr_irqs
-Date: Fri,  8 Aug 2008 14:52:14 -0700
-Message-Id: <1218232368-31228-9-git-send-email-yhlu.kernel@gmail.com>
+Subject: [PATCH 09/42] x86: using nr_irqs
+Date: Fri,  8 Aug 2008 14:52:15 -0700
+Message-Id: <1218232368-31228-10-git-send-email-yhlu.kernel@gmail.com>
 X-Mailer: git-send-email 1.5.4.5
-In-Reply-To: <1218232368-31228-8-git-send-email-yhlu.kernel@gmail.com>
+In-Reply-To: <1218232368-31228-9-git-send-email-yhlu.kernel@gmail.com>
 References: <1218232368-31228-1-git-send-email-yhlu.kernel@gmail.com>
  <1218232368-31228-2-git-send-email-yhlu.kernel@gmail.com>
  <1218232368-31228-3-git-send-email-yhlu.kernel@gmail.com>
@@ -36,327 +36,417 @@ References: <1218232368-31228-1-git-send-email-yhlu.kernel@gmail.com>
  <1218232368-31228-6-git-send-email-yhlu.kernel@gmail.com>
  <1218232368-31228-7-git-send-email-yhlu.kernel@gmail.com>
  <1218232368-31228-8-git-send-email-yhlu.kernel@gmail.com>
+ <1218232368-31228-9-git-send-email-yhlu.kernel@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-and at this point it is equal NR_IRQS
+also add first_free_entry and pin_map_size
 
 Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
 ---
- include/linux/irq.h    |    2 ++
- kernel/irq/autoprobe.c |   10 +++++-----
- kernel/irq/chip.c      |   20 ++++++++++----------
- kernel/irq/handle.c    |    3 ++-
- kernel/irq/manage.c    |   16 ++++++++--------
- kernel/irq/proc.c      |    2 +-
- kernel/irq/resend.c    |    4 ++--
- kernel/irq/spurious.c  |    4 ++--
- 8 files changed, 32 insertions(+), 29 deletions(-)
+ arch/x86/kernel/io_apic_32.c |   26 ++++++++++++++------------
+ arch/x86/kernel/io_apic_64.c |   33 +++++++++++++++++----------------
+ arch/x86/kernel/irq_32.c     |    8 ++++----
+ arch/x86/kernel/irq_64.c     |    8 ++++----
+ arch/x86/kernel/irqinit_32.c |    2 +-
+ arch/x86/kernel/irqinit_64.c |    2 +-
+ include/asm-x86/irq.h        |    3 +++
+ 7 files changed, 44 insertions(+), 38 deletions(-)
 
-diff --git a/include/linux/irq.h b/include/linux/irq.h
-index 1d73d1a..bd69d90 100644
---- a/include/linux/irq.h
-+++ b/include/linux/irq.h
-@@ -24,6 +24,8 @@
- #include <asm/ptrace.h>
- #include <asm/irq_regs.h>
- 
-+extern int nr_irqs;
-+
- struct irq_desc;
- typedef	void (*irq_flow_handler_t)(unsigned int irq,
- 					    struct irq_desc *desc);
-diff --git a/kernel/irq/autoprobe.c b/kernel/irq/autoprobe.c
-index 533068c..c689e98 100644
---- a/kernel/irq/autoprobe.c
-+++ b/kernel/irq/autoprobe.c
-@@ -38,7 +38,7 @@ unsigned long probe_irq_on(void)
- 	 * something may have generated an irq long ago and we want to
- 	 * flush such a longstanding irq before considering it as spurious.
- 	 */
--	for (i = NR_IRQS-1; i > 0; i--) {
-+	for (i = nr_irqs-1; i > 0; i--) {
- 		desc = irq_desc + i;
- 
- 		spin_lock_irq(&desc->lock);
-@@ -68,7 +68,7 @@ unsigned long probe_irq_on(void)
- 	 * (we must startup again here because if a longstanding irq
- 	 * happened in the previous stage, it may have masked itself)
- 	 */
--	for (i = NR_IRQS-1; i > 0; i--) {
-+	for (i = nr_irqs-1; i > 0; i--) {
- 		desc = irq_desc + i;
- 
- 		spin_lock_irq(&desc->lock);
-@@ -89,7 +89,7 @@ unsigned long probe_irq_on(void)
- 	 * Now filter out any obviously spurious interrupts
- 	 */
- 	mask = 0;
--	for (i = 0; i < NR_IRQS; i++) {
-+	for (i = 0; i < nr_irqs; i++) {
- 		unsigned int status;
- 
- 		desc = irq_desc + i;
-@@ -130,7 +130,7 @@ unsigned int probe_irq_mask(unsigned long val)
- 	int i;
- 
- 	mask = 0;
--	for (i = 0; i < NR_IRQS; i++) {
-+	for (i = 0; i < nr_irqs; i++) {
- 		struct irq_desc *desc = irq_desc + i;
- 		unsigned int status;
- 
-@@ -173,7 +173,7 @@ int probe_irq_off(unsigned long val)
- {
- 	int i, irq_found = 0, nr_irqs = 0;
- 
--	for (i = 0; i < NR_IRQS; i++) {
-+	for (i = 0; i < nr_irqs; i++) {
- 		struct irq_desc *desc = irq_desc + i;
- 		unsigned int status;
- 
-diff --git a/kernel/irq/chip.c b/kernel/irq/chip.c
-index 3cd441e..20a9307 100644
---- a/kernel/irq/chip.c
-+++ b/kernel/irq/chip.c
-@@ -27,7 +27,7 @@ void dynamic_irq_init(unsigned int irq)
- 	struct irq_desc *desc;
- 	unsigned long flags;
- 
--	if (irq >= NR_IRQS) {
-+	if (irq >= nr_irqs) {
- 		WARN(1, KERN_ERR "Trying to initialize invalid IRQ%d\n", irq);
- 		return;
- 	}
-@@ -60,7 +60,7 @@ void dynamic_irq_cleanup(unsigned int irq)
- 	struct irq_desc *desc;
- 	unsigned long flags;
- 
--	if (irq >= NR_IRQS) {
-+	if (irq >= nr_irqs) {
- 		WARN(1, KERN_ERR "Trying to cleanup invalid IRQ%d\n", irq);
- 		return;
- 	}
-@@ -92,7 +92,7 @@ int set_irq_chip(unsigned int irq, struct irq_chip *chip)
- 	struct irq_desc *desc;
- 	unsigned long flags;
- 
--	if (irq >= NR_IRQS) {
-+	if (irq >= nr_irqs) {
- 		WARN(1, KERN_ERR "Trying to install chip for IRQ%d\n", irq);
- 		return -EINVAL;
- 	}
-@@ -121,7 +121,7 @@ int set_irq_type(unsigned int irq, unsigned int type)
- 	unsigned long flags;
- 	int ret = -ENXIO;
- 
--	if (irq >= NR_IRQS) {
-+	if (irq >= nr_irqs) {
- 		printk(KERN_ERR "Trying to set irq type for IRQ%d\n", irq);
- 		return -ENODEV;
- 	}
-@@ -148,7 +148,7 @@ int set_irq_data(unsigned int irq, void *data)
- 	struct irq_desc *desc;
- 	unsigned long flags;
- 
--	if (irq >= NR_IRQS) {
-+	if (irq >= nr_irqs) {
- 		printk(KERN_ERR
- 		       "Trying to install controller data for IRQ%d\n", irq);
- 		return -EINVAL;
-@@ -174,7 +174,7 @@ int set_irq_msi(unsigned int irq, struct msi_desc *entry)
- 	struct irq_desc *desc;
- 	unsigned long flags;
- 
--	if (irq >= NR_IRQS) {
-+	if (irq >= nr_irqs) {
- 		printk(KERN_ERR
- 		       "Trying to install msi data for IRQ%d\n", irq);
- 		return -EINVAL;
-@@ -200,7 +200,7 @@ int set_irq_chip_data(unsigned int irq, void *data)
- 	struct irq_desc *desc = irq_desc + irq;
- 	unsigned long flags;
- 
--	if (irq >= NR_IRQS || !desc->chip) {
-+	if (irq >= nr_irqs || !desc->chip) {
- 		printk(KERN_ERR "BUG: bad set_irq_chip_data(IRQ#%d)\n", irq);
- 		return -EINVAL;
- 	}
-@@ -544,7 +544,7 @@ __set_irq_handler(unsigned int irq, irq_flow_handler_t handle, int is_chained,
- 	struct irq_desc *desc;
- 	unsigned long flags;
- 
--	if (irq >= NR_IRQS) {
-+	if (irq >= nr_irqs) {
- 		printk(KERN_ERR
- 		       "Trying to install type control for IRQ%d\n", irq);
- 		return;
-@@ -609,7 +609,7 @@ void __init set_irq_noprobe(unsigned int irq)
- 	struct irq_desc *desc;
- 	unsigned long flags;
- 
--	if (irq >= NR_IRQS) {
-+	if (irq >= nr_irqs) {
- 		printk(KERN_ERR "Trying to mark IRQ%d non-probeable\n", irq);
- 
- 		return;
-@@ -627,7 +627,7 @@ void __init set_irq_probe(unsigned int irq)
- 	struct irq_desc *desc;
- 	unsigned long flags;
- 
--	if (irq >= NR_IRQS) {
-+	if (irq >= nr_irqs) {
- 		printk(KERN_ERR "Trying to mark IRQ%d probeable\n", irq);
- 
- 		return;
-diff --git a/kernel/irq/handle.c b/kernel/irq/handle.c
-index f4c8a03..e9d022c 100644
---- a/kernel/irq/handle.c
-+++ b/kernel/irq/handle.c
-@@ -47,6 +47,7 @@ handle_bad_irq(unsigned int irq, struct irq_desc *desc)
-  *
-  * Controller mappings for all interrupt sources:
+diff --git a/arch/x86/kernel/io_apic_32.c b/arch/x86/kernel/io_apic_32.c
+index 7f0d88c..d5953ff 100644
+--- a/arch/x86/kernel/io_apic_32.c
++++ b/arch/x86/kernel/io_apic_32.c
+@@ -70,6 +70,7 @@ int timer_through_8259 __initdata;
   */
-+int nr_irqs = NR_IRQS;
- struct irq_desc irq_desc[NR_IRQS] __cacheline_aligned_in_smp = {
- 	[0 ... NR_IRQS-1] = {
- 		.status = IRQ_DISABLED,
-@@ -265,7 +266,7 @@ void early_init_irq_lock_class(void)
- {
- 	int i;
+ int sis_apic_bug = -1;
  
--	for (i = 0; i < NR_IRQS; i++)
-+	for (i = 0; i < nr_irqs; i++)
- 		lockdep_set_class(&irq_desc[i].lock, &irq_desc_lock_class);
++int first_free_entry = NR_IRQS;
+ /*
+  * # of IRQ routing registers
+  */
+@@ -100,6 +101,8 @@ static int disable_timer_pin_1 __initdata;
+ #define MAX_PLUS_SHARED_IRQS NR_IRQS
+ #define PIN_MAP_SIZE (MAX_PLUS_SHARED_IRQS + NR_IRQS)
+ 
++int pin_map_size = PIN_MAP_SIZE;
++
+ /*
+  * This is performance-critical, we want to do it O(1)
+  *
+@@ -213,7 +216,6 @@ static void ioapic_mask_entry(int apic, int pin)
+  */
+ static void add_pin_to_irq(unsigned int irq, int apic, int pin)
+ {
+-	static int first_free_entry = NR_IRQS;
+ 	struct irq_pin_list *entry = irq_2_pin + irq;
+ 
+ 	while (entry->next)
+@@ -222,7 +224,7 @@ static void add_pin_to_irq(unsigned int irq, int apic, int pin)
+ 	if (entry->pin != -1) {
+ 		entry->next = first_free_entry;
+ 		entry = irq_2_pin + entry->next;
+-		if (++first_free_entry >= PIN_MAP_SIZE)
++		if (++first_free_entry >= pin_map_size)
+ 			panic("io_apic.c: whoops");
+ 	}
+ 	entry->apic = apic;
+@@ -457,7 +459,7 @@ static inline void rotate_irqs_among_cpus(unsigned long useful_load_threshold)
+ 	int i, j;
+ 
+ 	for_each_online_cpu(i) {
+-		for (j = 0; j < NR_IRQS; j++) {
++		for (j = 0; j < nr_irqs; j++) {
+ 			if (!irq_desc[j].action)
+ 				continue;
+ 			/* Is it a significant load ?  */
+@@ -492,7 +494,7 @@ static void do_irq_balance(void)
+ 		if (!cpu_online(i))
+ 			continue;
+ 		package_index = CPU_TO_PACKAGEINDEX(i);
+-		for (j = 0; j < NR_IRQS; j++) {
++		for (j = 0; j < nr_irqs; j++) {
+ 			unsigned long value_now, delta;
+ 			/* Is this an active IRQ or balancing disabled ? */
+ 			if (!irq_desc[j].action || irq_balancing_disabled(j))
+@@ -587,7 +589,7 @@ tryanotherirq:
+ 	 */
+ 	move_this_load = 0;
+ 	selected_irq = -1;
+-	for (j = 0; j < NR_IRQS; j++) {
++	for (j = 0; j < nr_irqs; j++) {
+ 		/* Is this an active IRQ? */
+ 		if (!irq_desc[j].action)
+ 			continue;
+@@ -664,7 +666,7 @@ static int balanced_irq(void *unused)
+ 	long time_remaining = balanced_irq_interval;
+ 
+ 	/* push everything to CPU 0 to give us a starting point.  */
+-	for (i = 0 ; i < NR_IRQS ; i++) {
++	for (i = 0 ; i < nr_irqs ; i++) {
+ 		irq_desc[i].pending_mask = cpumask_of_cpu(0);
+ 		set_pending_irq(i, cpumask_of_cpu(0));
+ 	}
+@@ -712,8 +714,8 @@ static int __init balanced_irq_init(void)
+ 		physical_balance = 1;
+ 
+ 	for_each_online_cpu(i) {
+-		irq_cpu_data[i].irq_delta = kzalloc(sizeof(unsigned long) * NR_IRQS, GFP_KERNEL);
+-		irq_cpu_data[i].last_irq = kzalloc(sizeof(unsigned long) * NR_IRQS, GFP_KERNEL);
++		irq_cpu_data[i].irq_delta = kzalloc(sizeof(unsigned long) * nr_irqs, GFP_KERNEL);
++		irq_cpu_data[i].last_irq = kzalloc(sizeof(unsigned long) * nr_irqs, GFP_KERNEL);
+ 		if (irq_cpu_data[i].irq_delta == NULL || irq_cpu_data[i].last_irq == NULL) {
+ 			printk(KERN_ERR "balanced_irq_init: out of memory");
+ 			goto failed;
+@@ -1445,7 +1447,7 @@ __apicdebuginit(void) print_IO_APIC(void)
+ 	}
+ 	}
+ 	printk(KERN_DEBUG "IRQ to pin mappings:\n");
+-	for (i = 0; i < NR_IRQS; i++) {
++	for (i = 0; i < nr_irqs; i++) {
+ 		struct irq_pin_list *entry = irq_2_pin + i;
+ 		if (entry->pin < 0)
+ 			continue;
+@@ -1625,7 +1627,7 @@ static void __init enable_IO_APIC(void)
+ 	int i, apic;
+ 	unsigned long flags;
+ 
+-	for (i = 0; i < PIN_MAP_SIZE; i++) {
++	for (i = 0; i < pin_map_size; i++) {
+ 		irq_2_pin[i].pin = -1;
+ 		irq_2_pin[i].next = 0;
+ 	}
+@@ -2009,7 +2011,7 @@ static inline void init_IO_APIC_traps(void)
+ 	 * Also, we've got to be careful not to trash gate
+ 	 * 0x80, because int 0x80 is hm, kind of importantish. ;)
+ 	 */
+-	for (irq = 0; irq < NR_IRQS ; irq++) {
++	for (irq = 0; irq < nr_irqs ; irq++) {
+ 		if (IO_APIC_IRQ(irq) && !irq_vector[irq]) {
+ 			/*
+ 			 * Hmm.. We don't have an entry for this,
+@@ -2453,7 +2455,7 @@ int create_irq(void)
+ 
+ 	irq = -ENOSPC;
+ 	spin_lock_irqsave(&vector_lock, flags);
+-	for (new = (NR_IRQS - 1); new >= 0; new--) {
++	for (new = (nr_irqs - 1); new >= 0; new--) {
+ 		if (platform_legacy_irq(new))
+ 			continue;
+ 		if (irq_vector[new] != 0)
+diff --git a/arch/x86/kernel/io_apic_64.c b/arch/x86/kernel/io_apic_64.c
+index 8800743..456f2e7 100644
+--- a/arch/x86/kernel/io_apic_64.c
++++ b/arch/x86/kernel/io_apic_64.c
+@@ -132,6 +132,7 @@ DECLARE_BITMAP(mp_bus_not_pci, MAX_MP_BUSSES);
+ #define MAX_PLUS_SHARED_IRQS NR_IRQS
+ #define PIN_MAP_SIZE (MAX_PLUS_SHARED_IRQS + NR_IRQS)
+ 
++int pin_map_size = PIN_MAP_SIZE;
+ /*
+  * This is performance-critical, we want to do it O(1)
+  *
+@@ -224,7 +225,7 @@ static inline void io_apic_sync(unsigned int apic)
+ 	int pin;							\
+ 	struct irq_pin_list *entry = irq_2_pin + irq;			\
+ 									\
+-	BUG_ON(irq >= NR_IRQS);						\
++	BUG_ON(irq >= nr_irqs);						\
+ 	for (;;) {							\
+ 		unsigned int reg;					\
+ 		pin = entry->pin;					\
+@@ -301,7 +302,7 @@ static void __target_IO_APIC_irq(unsigned int irq, unsigned int dest, u8 vector)
+ 	int apic, pin;
+ 	struct irq_pin_list *entry = irq_2_pin + irq;
+ 
+-	BUG_ON(irq >= NR_IRQS);
++	BUG_ON(irq >= nr_irqs);
+ 	for (;;) {
+ 		unsigned int reg;
+ 		apic = entry->apic;
+@@ -358,19 +359,19 @@ static void set_ioapic_affinity_irq(unsigned int irq, cpumask_t mask)
+  * shared ISA-space IRQs, so we have to support them. We are super
+  * fast in the common case, and fast for shared ISA-space IRQs.
+  */
++int first_free_entry = NR_IRQS;
+ static void add_pin_to_irq(unsigned int irq, int apic, int pin)
+ {
+-	static int first_free_entry = NR_IRQS;
+ 	struct irq_pin_list *entry = irq_2_pin + irq;
+ 
+-	BUG_ON(irq >= NR_IRQS);
++	BUG_ON(irq >= nr_irqs);
+ 	while (entry->next)
+ 		entry = irq_2_pin + entry->next;
+ 
+ 	if (entry->pin != -1) {
+ 		entry->next = first_free_entry;
+ 		entry = irq_2_pin + entry->next;
+-		if (++first_free_entry >= PIN_MAP_SIZE)
++		if (++first_free_entry >= pin_map_size)
+ 			panic("io_apic.c: ran out of irq_2_pin entries!");
+ 	}
+ 	entry->apic = apic;
+@@ -634,7 +635,7 @@ int IO_APIC_get_PCI_irq_vector(int bus, int slot, int pin)
+ 				best_guess = irq;
+ 		}
+ 	}
+-	BUG_ON(best_guess >= NR_IRQS);
++	BUG_ON(best_guess >= nr_irqs);
+ 	return best_guess;
  }
  
-diff --git a/kernel/irq/manage.c b/kernel/irq/manage.c
-index 22d10d3..3bd67c8 100644
---- a/kernel/irq/manage.c
-+++ b/kernel/irq/manage.c
-@@ -34,7 +34,7 @@ void synchronize_irq(unsigned int irq)
- 	struct irq_desc *desc = irq_desc + irq;
- 	unsigned int status;
- 
--	if (irq >= NR_IRQS)
-+	if (irq >= nr_irqs)
- 		return;
- 
- 	do {
-@@ -143,7 +143,7 @@ void disable_irq_nosync(unsigned int irq)
- 	struct irq_desc *desc = irq_desc + irq;
- 	unsigned long flags;
- 
--	if (irq >= NR_IRQS)
-+	if (irq >= nr_irqs)
- 		return;
- 
- 	spin_lock_irqsave(&desc->lock, flags);
-@@ -171,7 +171,7 @@ void disable_irq(unsigned int irq)
- {
- 	struct irq_desc *desc = irq_desc + irq;
- 
--	if (irq >= NR_IRQS)
-+	if (irq >= nr_irqs)
- 		return;
- 
- 	disable_irq_nosync(irq);
-@@ -214,7 +214,7 @@ void enable_irq(unsigned int irq)
- 	struct irq_desc *desc = irq_desc + irq;
- 	unsigned long flags;
- 
--	if (irq >= NR_IRQS)
-+	if (irq >= nr_irqs)
- 		return;
- 
- 	spin_lock_irqsave(&desc->lock, flags);
-@@ -290,7 +290,7 @@ int can_request_irq(unsigned int irq, unsigned long irqflags)
- {
- 	struct irqaction *action;
- 
--	if (irq >= NR_IRQS || irq_desc[irq].status & IRQ_NOREQUEST)
-+	if (irq >= nr_irqs || irq_desc[irq].status & IRQ_NOREQUEST)
- 		return 0;
- 
- 	action = irq_desc[irq].action;
-@@ -349,7 +349,7 @@ int setup_irq(unsigned int irq, struct irqaction *new)
- 	int shared = 0;
- 	int ret;
- 
--	if (irq >= NR_IRQS)
-+	if (irq >= nr_irqs)
- 		return -EINVAL;
- 
- 	if (desc->chip == &no_irq_chip)
-@@ -503,7 +503,7 @@ void free_irq(unsigned int irq, void *dev_id)
- 	unsigned long flags;
- 
- 	WARN_ON(in_interrupt());
--	if (irq >= NR_IRQS)
-+	if (irq >= nr_irqs)
- 		return;
- 
- 	desc = irq_desc + irq;
-@@ -617,7 +617,7 @@ int request_irq(unsigned int irq, irq_handler_t handler,
- 	 */
- 	if ((irqflags & IRQF_SHARED) && !dev_id)
- 		return -EINVAL;
--	if (irq >= NR_IRQS)
-+	if (irq >= nr_irqs)
- 		return -EINVAL;
- 	if (irq_desc[irq].status & IRQ_NOREQUEST)
- 		return -EINVAL;
-diff --git a/kernel/irq/proc.c b/kernel/irq/proc.c
-index 6c6d35d..74d7922 100644
---- a/kernel/irq/proc.c
-+++ b/kernel/irq/proc.c
-@@ -234,7 +234,7 @@ void init_irq_proc(void)
- 	/*
- 	 * Create entries for all existing IRQs.
- 	 */
--	for (i = 0; i < NR_IRQS; i++)
-+	for (i = 0; i < nr_irqs; i++)
- 		register_irq_proc(i);
+@@ -766,7 +767,7 @@ static int pin_2_irq(int idx, int apic, int pin)
+ 			irq += nr_ioapic_registers[i++];
+ 		irq += pin;
+ 	}
+-	BUG_ON(irq >= NR_IRQS);
++	BUG_ON(irq >= nr_irqs);
+ 	return irq;
  }
  
-diff --git a/kernel/irq/resend.c b/kernel/irq/resend.c
-index a804679..cba8aa5 100644
---- a/kernel/irq/resend.c
-+++ b/kernel/irq/resend.c
-@@ -33,8 +33,8 @@ static void resend_irqs(unsigned long arg)
- 	struct irq_desc *desc;
+@@ -788,7 +789,7 @@ static int __assign_irq_vector(int irq, cpumask_t mask)
+ 	int cpu;
+ 	struct irq_cfg *cfg;
+ 
+-	BUG_ON((unsigned)irq >= NR_IRQS);
++	BUG_ON((unsigned)irq >= nr_irqs);
+ 	cfg = &irq_cfg[irq];
+ 
+ 	/* Only try and allocate irqs on cpus that are present */
+@@ -862,7 +863,7 @@ static void __clear_irq_vector(int irq)
+ 	cpumask_t mask;
+ 	int cpu, vector;
+ 
+-	BUG_ON((unsigned)irq >= NR_IRQS);
++	BUG_ON((unsigned)irq >= nr_irqs);
+ 	cfg = &irq_cfg[irq];
+ 	BUG_ON(!cfg->vector);
+ 
+@@ -882,7 +883,7 @@ static void __setup_vector_irq(int cpu)
+ 	int irq, vector;
+ 
+ 	/* Mark the inuse vectors */
+-	for (irq = 0; irq < NR_IRQS; ++irq) {
++	for (irq = 0; irq < nr_irqs; ++irq) {
+ 		if (!cpu_isset(cpu, irq_cfg[irq].domain))
+ 			continue;
+ 		vector = irq_cfg[irq].vector;
+@@ -1188,7 +1189,7 @@ __apicdebuginit(void) print_IO_APIC(void)
+ 	}
+ 	}
+ 	printk(KERN_DEBUG "IRQ to pin mappings:\n");
+-	for (i = 0; i < NR_IRQS; i++) {
++	for (i = 0; i < nr_irqs; i++) {
+ 		struct irq_pin_list *entry = irq_2_pin + i;
+ 		if (entry->pin < 0)
+ 			continue;
+@@ -1361,7 +1362,7 @@ void __init enable_IO_APIC(void)
+ 	int i, apic;
+ 	unsigned long flags;
+ 
+-	for (i = 0; i < PIN_MAP_SIZE; i++) {
++	for (i = 0; i < pin_map_size; i++) {
+ 		irq_2_pin[i].pin = -1;
+ 		irq_2_pin[i].next = 0;
+ 	}
+@@ -1655,7 +1656,7 @@ static void ir_irq_migration(struct work_struct *work)
+ {
  	int irq;
  
--	while (!bitmap_empty(irqs_resend, NR_IRQS)) {
--		irq = find_first_bit(irqs_resend, NR_IRQS);
-+	while (!bitmap_empty(irqs_resend, nr_irqs)) {
-+		irq = find_first_bit(irqs_resend, nr_irqs);
- 		clear_bit(irq, irqs_resend);
+-	for (irq = 0; irq < NR_IRQS; irq++) {
++	for (irq = 0; irq < nr_irqs; irq++) {
+ 		struct irq_desc *desc = irq_desc + irq;
+ 		if (desc->status & IRQ_MOVE_PENDING) {
+ 			unsigned long flags;
+@@ -1704,7 +1705,7 @@ asmlinkage void smp_irq_move_cleanup_interrupt(void)
+ 		struct irq_desc *desc;
+ 		struct irq_cfg *cfg;
+ 		irq = __get_cpu_var(vector_irq)[vector];
+-		if (irq >= NR_IRQS)
++		if (irq >= nr_irqs)
+ 			continue;
+ 
  		desc = irq_desc + irq;
- 		local_irq_disable();
-diff --git a/kernel/irq/spurious.c b/kernel/irq/spurious.c
-index 19fe9d6..e26ca1e 100644
---- a/kernel/irq/spurious.c
-+++ b/kernel/irq/spurious.c
-@@ -91,7 +91,7 @@ static int misrouted_irq(int irq)
- 	int i;
- 	int ok = 0;
+@@ -1862,7 +1863,7 @@ static inline void init_IO_APIC_traps(void)
+ 	 * Also, we've got to be careful not to trash gate
+ 	 * 0x80, because int 0x80 is hm, kind of importantish. ;)
+ 	 */
+-	for (irq = 0; irq < NR_IRQS ; irq++) {
++	for (irq = 0; irq < nr_irqs ; irq++) {
+ 		if (IO_APIC_IRQ(irq) && !irq_cfg[irq].vector) {
+ 			/*
+ 			 * Hmm.. We don't have an entry for this,
+@@ -2276,7 +2277,7 @@ int create_irq(void)
  
--	for (i = 1; i < NR_IRQS; i++) {
-+	for (i = 1; i < nr_irqs; i++) {
- 		struct irq_desc *desc = irq_desc + i;
+ 	irq = -ENOSPC;
+ 	spin_lock_irqsave(&vector_lock, flags);
+-	for (new = (NR_IRQS - 1); new >= 0; new--) {
++	for (new = (nr_irqs - 1); new >= 0; new--) {
+ 		if (platform_legacy_irq(new))
+ 			continue;
+ 		if (irq_cfg[new].vector != 0)
+diff --git a/arch/x86/kernel/irq_32.c b/arch/x86/kernel/irq_32.c
+index 1cf8c1f..0cff2f4 100644
+--- a/arch/x86/kernel/irq_32.c
++++ b/arch/x86/kernel/irq_32.c
+@@ -226,7 +226,7 @@ unsigned int do_IRQ(struct pt_regs *regs)
+ 	int overflow, irq = ~regs->orig_ax;
+ 	struct irq_desc *desc = irq_desc + irq;
  
- 		if (i == irq)	/* Already tried */
-@@ -107,7 +107,7 @@ static int misrouted_irq(int irq)
- static void poll_spurious_irqs(unsigned long dummy)
+-	if (unlikely((unsigned)irq >= NR_IRQS)) {
++	if (unlikely((unsigned)irq >= nr_irqs)) {
+ 		printk(KERN_EMERG "%s: cannot handle IRQ %d\n",
+ 					__func__, irq);
+ 		BUG();
+@@ -271,7 +271,7 @@ int show_interrupts(struct seq_file *p, void *v)
+ 		seq_putc(p, '\n');
+ 	}
+ 
+-	if (i < NR_IRQS) {
++	if (i < nr_irqs) {
+ 		unsigned any_count = 0;
+ 
+ 		spin_lock_irqsave(&irq_desc[i].lock, flags);
+@@ -303,7 +303,7 @@ int show_interrupts(struct seq_file *p, void *v)
+ 		seq_putc(p, '\n');
+ skip:
+ 		spin_unlock_irqrestore(&irq_desc[i].lock, flags);
+-	} else if (i == NR_IRQS) {
++	} else if (i == nr_irqs) {
+ 		seq_printf(p, "NMI: ");
+ 		for_each_online_cpu(j)
+ 			seq_printf(p, "%10u ", nmi_count(j));
+@@ -396,7 +396,7 @@ void fixup_irqs(cpumask_t map)
+ 	unsigned int irq;
+ 	static int warned;
+ 
+-	for (irq = 0; irq < NR_IRQS; irq++) {
++	for (irq = 0; irq < nr_irqs; irq++) {
+ 		cpumask_t mask;
+ 		if (irq == 2)
+ 			continue;
+diff --git a/arch/x86/kernel/irq_64.c b/arch/x86/kernel/irq_64.c
+index 1f78b23..de94c60 100644
+--- a/arch/x86/kernel/irq_64.c
++++ b/arch/x86/kernel/irq_64.c
+@@ -81,7 +81,7 @@ int show_interrupts(struct seq_file *p, void *v)
+ 		seq_putc(p, '\n');
+ 	}
+ 
+-	if (i < NR_IRQS) {
++	if (i < nr_irqs) {
+ 		unsigned any_count = 0;
+ 
+ 		spin_lock_irqsave(&irq_desc[i].lock, flags);
+@@ -112,7 +112,7 @@ int show_interrupts(struct seq_file *p, void *v)
+ 		seq_putc(p, '\n');
+ skip:
+ 		spin_unlock_irqrestore(&irq_desc[i].lock, flags);
+-	} else if (i == NR_IRQS) {
++	} else if (i == nr_irqs) {
+ 		seq_printf(p, "NMI: ");
+ 		for_each_online_cpu(j)
+ 			seq_printf(p, "%10u ", cpu_pda(j)->__nmi_count);
+@@ -201,7 +201,7 @@ asmlinkage unsigned int do_IRQ(struct pt_regs *regs)
+ 	stack_overflow_check(regs);
+ #endif
+ 
+-	if (likely(irq < NR_IRQS))
++	if (likely(irq < nr_irqs))
+ 		generic_handle_irq(irq);
+ 	else {
+ 		if (!disable_apic)
+@@ -224,7 +224,7 @@ void fixup_irqs(cpumask_t map)
+ 	unsigned int irq;
+ 	static int warned;
+ 
+-	for (irq = 0; irq < NR_IRQS; irq++) {
++	for (irq = 0; irq < nr_irqs; irq++) {
+ 		cpumask_t mask;
+ 		int break_affinity = 0;
+ 		int set_affinity = 1;
+diff --git a/arch/x86/kernel/irqinit_32.c b/arch/x86/kernel/irqinit_32.c
+index d669142..b13d932 100644
+--- a/arch/x86/kernel/irqinit_32.c
++++ b/arch/x86/kernel/irqinit_32.c
+@@ -91,7 +91,7 @@ void __init native_init_IRQ(void)
+ 	 */
+ 	for (i = 0; i < (NR_VECTORS - FIRST_EXTERNAL_VECTOR); i++) {
+ 		int vector = FIRST_EXTERNAL_VECTOR + i;
+-		if (i >= NR_IRQS)
++		if (i >= nr_irqs)
+ 			break;
+ 		/* SYSCALL_VECTOR was reserved in trap_init. */
+ 		if (!test_bit(vector, used_vectors))
+diff --git a/arch/x86/kernel/irqinit_64.c b/arch/x86/kernel/irqinit_64.c
+index 1f26fd9..48674e6 100644
+--- a/arch/x86/kernel/irqinit_64.c
++++ b/arch/x86/kernel/irqinit_64.c
+@@ -142,7 +142,7 @@ static void __init init_ISA_irqs (void)
+ 	init_bsp_APIC();
+ 	init_8259A(0);
+ 
+-	for (i = 0; i < NR_IRQS; i++) {
++	for (i = 0; i < nr_irqs; i++) {
+ 		irq_desc[i].status = IRQ_DISABLED;
+ 		irq_desc[i].action = NULL;
+ 		irq_desc[i].depth = 1;
+diff --git a/include/asm-x86/irq.h b/include/asm-x86/irq.h
+index 1e5f290..2a130c4 100644
+--- a/include/asm-x86/irq.h
++++ b/include/asm-x86/irq.h
+@@ -10,6 +10,9 @@
+ #include <asm/apicdef.h>
+ #include <asm/irq_vectors.h>
+ 
++extern int pin_map_size;
++extern int first_free_entry;
++
+ static inline int irq_canonicalize(int irq)
  {
- 	int i;
--	for (i = 1; i < NR_IRQS; i++) {
-+	for (i = 1; i < nr_irqs; i++) {
- 		struct irq_desc *desc = irq_desc + i;
- 		unsigned int status;
- 
+ 	return ((irq == 2) ? 9 : irq);
 -- 
 1.5.4.5
 
