@@ -1,65 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753872AbYHHRg6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756309AbYHHRhu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753872AbYHHRg6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 13:36:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751780AbYHHRgu
+	id S1756309AbYHHRhu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 13:37:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752191AbYHHRhm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 13:36:50 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:52443 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751659AbYHHRgt (ORCPT
+	Fri, 8 Aug 2008 13:37:42 -0400
+Received: from testure.choralone.org ([194.9.77.134]:35892 "EHLO
+	testure.choralone.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751780AbYHHRhl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 13:36:49 -0400
-Date: Fri, 8 Aug 2008 13:36:46 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, Roland McGrath <roland@redhat.com>,
-       Ulrich Drepper <drepper@redhat.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Gregory Haskins <ghaskins@novell.com>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       "Luis Claudio R. Goncalves" <lclaudio@uudg.org>,
-       Clark Williams <williams@redhat.com>
-Subject: Re: [PATCH 0/5] ftrace: to kill a daemon
-In-Reply-To: <20080808172259.GB8244@Krystal>
-Message-ID: <alpine.DEB.1.10.0808081334010.4436@gandalf.stny.rr.com>
-References: <20080807182013.984175558@goodmis.org> <20080807184741.GB18164@Krystal> <alpine.DEB.1.10.0808071639420.9449@gandalf.stny.rr.com> <20080808172259.GB8244@Krystal>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Fri, 8 Aug 2008 13:37:41 -0400
+Date: Fri, 8 Aug 2008 13:38:22 -0400
+From: Dave Jones <davej@codemonkey.org.uk>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: mark.langsdorf@amd.com, lkml <linux-kernel@vger.kernel.org>,
+       akpm <akpm@linux-foundation.org>
+Subject: Re: [PATCH -next] powernow-k8: fix build errors
+Message-ID: <20080808173822.GP26295@codemonkey.org.uk>
+Mail-Followup-To: Dave Jones <davej@codemonkey.org.uk>,
+	Randy Dunlap <randy.dunlap@oracle.com>, mark.langsdorf@amd.com,
+	lkml <linux-kernel@vger.kernel.org>,
+	akpm <akpm@linux-foundation.org>
+References: <20080808101950.7a942fa6.randy.dunlap@oracle.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080808101950.7a942fa6.randy.dunlap@oracle.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Aug 08, 2008 at 10:19:50AM -0700, Randy Dunlap wrote:
+ > From: Randy Dunlap <randy.dunlap@oracle.com>
+ > 
+ > Fix build when CONFIG_X86_POWERNOW_K8_ACPI=n:
+ > (seems that someone forgot to test this build combo)
+ > (fix 25 of 50 randconfig build errors)
 
-On Fri, 8 Aug 2008, Mathieu Desnoyers wrote:
-> * Steven Rostedt (rostedt@goodmis.org) wrote:
-> > 
-> > I originally used jumps instead of nops, but unfortunately, they actually 
-> > hurt performance more than adding nops. Ingo told me it was probably due
-> > to using up the jump predictions of the CPU.
-> > 
-> 
-> Hrm, are you sure you use a single 5-bytes nop instruction then, or do
-> you use a mix of various nop sizes (add_nops) on some architectures ?
+Yikes. I'll add that to my pre-push test script.
+(I currently only test allmodconfig/allyes/allno for all
+ the changed files within each patch)
 
-I use (for x86) what is in include/asm-x86/nops.h depending on what the
-cpuid gives us.
+ > linux-next-20080808/arch/x86/kernel/cpu/cpufreq/powernow-k8.c:1334: error: implicit declaration of function 'powernow_k8_cpu_preinit_acpi'
+ > linux-next-20080808/arch/x86/kernel/cpu/cpufreq/powernow-k8.c:1352: error: 'acpi_perf_data' undeclared (first use in this function)
+ > 
+ > Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+ > ---
+ >  arch/x86/kernel/cpu/cpufreq/powernow-k8.c |    4 ++++
+ >  1 file changed, 4 insertions(+)
+ > 
+ > --- linux-next-20080808.orig/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
+ > +++ linux-next-20080808/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
+ > @@ -1331,7 +1331,9 @@ static int __cpuinit powernowk8_init(voi
+ >  	}
+ >  
+ >  	if (supported_cpus == num_online_cpus()) {
+ > +#ifdef CONFIG_X86_POWERNOW_K8_ACPI
+ >  		powernow_k8_cpu_preinit_acpi();
+ > +#endif
 
-> 
-> You can consume the branch prediction buffers for conditional branches,
-> but I doubt static jumps have this impact ? I don't see what "jump
-> predictions" you are referring to here exactly.
+I think something like below may be better..
+Same thing, but with one less ifdef ?
 
-I don't know the details, but we definitely saw a drop in preformance 
-between using nops and static jumps.
+	Dave
 
--- Steve
+diff --git a/arch/x86/kernel/cpu/cpufreq/powernow-k8.c b/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
+index 7a09ba4..3ba6fd2 100644
+--- a/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
++++ b/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
+@@ -951,6 +951,7 @@ static void powernow_k8_cpu_exit_acpi(struct powernow_k8_data *data)
+ }
+ 
+ #else
++static int powernow_k8_cpu_preinit_acpi(struct powernow_k8_data *data) { return -ENODEV; }
+ static int powernow_k8_cpu_init_acpi(struct powernow_k8_data *data) { return -ENODEV; }
+ static void powernow_k8_cpu_exit_acpi(struct powernow_k8_data *data) { return; }
+ static void powernow_k8_acpi_pst_values(struct powernow_k8_data *data, unsigned int index) { return; }
+@@ -1349,7 +1351,9 @@ static void __exit powernowk8_exit(void)
+ 	dprintk("exit\n");
+ 
+ 	cpufreq_unregister_driver(&cpufreq_amd64_driver);
 
++#ifdef CONFIG_X86_POWERNOW_K8_ACPI
+ 	free_percpu(acpi_perf_data);
++#ifdef
+ }
+ 
+ MODULE_AUTHOR("Paul Devriendt <paul.devriendt@amd.com> and Mark Langsdorf <mark.langsdorf@amd.com>");
+-- 
+http://www.codemonkey.org.uk
