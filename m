@@ -1,117 +1,176 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757576AbYHHGzy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757788AbYHHG4T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757576AbYHHGzy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 02:55:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755981AbYHHGxc
+	id S1757788AbYHHG4T (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 02:56:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755986AbYHHGzb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 02:53:32 -0400
-Received: from ik-out-1112.google.com ([66.249.90.178]:48592 "EHLO
-	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754448AbYHHGxb (ORCPT
+	Fri, 8 Aug 2008 02:55:31 -0400
+Received: from smtp1.stealer.net ([88.198.224.204]:59974 "EHLO
+	smtp1.stealer.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754036AbYHHGz2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 02:53:31 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=HBKRZBNAlJS8LEIw00rM6QWjKWxoE1+dJb85iZK2M9CnTi+0HApC9qRyPTMfCO++gg
-         KqUvDHExaNosTAHZDYGwzvb3iXued6tjMGU83kDhyxsvyC/3KnSE1Gc/OppAAojRcAVT
-         kvW135LW4opYvPv1QclI/GJSnK2L+0IP8FMac=
-Message-ID: <ac9c93b10808072353g550f0f71pca977f9f6eb6d794@mail.gmail.com>
-Date: Fri, 8 Aug 2008 08:53:23 +0200
-From: "Frans Meulenbroeks" <fransmeulenbroeks@gmail.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: initramfs optimization suggestions
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <489B30B3.8050709@zytor.com>
+	Fri, 8 Aug 2008 02:55:28 -0400
+Date: Fri, 8 Aug 2008 08:55:13 +0200 (CEST)
+From: Sven Wegener <sven.wegener@stealer.net>
+To: Nate Case <ncase@xes-inc.com>
+cc: rpurdie@rpsys.net, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: [PATCHv2] leds-pca955x: Add proper error handling and fix bogus
+ memory handling
+In-Reply-To: <alpine.LNX.1.10.0808080041460.16201@titan.stealer.net>
+Message-ID: <alpine.LNX.1.10.0808080852000.16201@titan.stealer.net>
+References: <1210972198.13845.540.camel@localhost.localdomain> <alpine.LNX.1.10.0808080041460.16201@titan.stealer.net>
+User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
+Organization: STEALER.net
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <ac9c93b10808050042u496bfa10nad7962eb0e9ec015@mail.gmail.com>
-	 <489A40FF.1000508@zytor.com>
-	 <ac9c93b10808070011x7a84adb5v98d2ed2405835fcc@mail.gmail.com>
-	 <489B30B3.8050709@zytor.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Score: -2.5
+X-Spam-Bar: --
+X-Spam-Report: Scanned by SpamAssassin 3.2.1-gr1 2007-05-02 on smtp1.stealer.net at Fri, 08 Aug 2008 06:55:27 +0000
+	Bayes: 0.0004 Tokens: new, 269; hammy, 6; neutral, 5; spammy, 0.
+	AutoLearn: no
+	*  0.1 RDNS_NONE Delivered to trusted network by a host with no rDNS
+	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
+	*      [score: 0.0004]
+X-Spam-Signature: b4b98a8cd19b7d4dcc52923759e30519a29a4d30
+X-DomainKey-Status: no signature
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[trimmed quoted text heavily; please refer to earlier msg if you need
-the full text]
+Check the return value of led_classdev_register and unregister all registered
+devices, if registering one device fails. Also the dynamic memory handling is
+totally bogus. You can't allocate multiple chunks via kzalloc() and expect them
+to be in order later.
 
-2008/8/7 H. Peter Anvin <hpa@zytor.com>:
-> Frans Meulenbroeks wrote:
+Signed-off-by: Sven Wegener <sven.wegener@stealer.net>
+---
+ drivers/leds/leds-pca955x.c |   68 ++++++++++++++++++++++--------------------
+ 1 files changed, 36 insertions(+), 32 deletions(-)
 
-[...]
+Here's a slightly updated patch, with some changes I had forgotten. 
+Shouldn't change the logic at all.
 
-> Having a CONFIG option to make this image uncompressed would be a good idea.
+- Another 32 -> sizeof() conversion
+- Move the unregister code to where we also free the memory
 
-Ok. Doesn't look too difficult. I'll put it on my TODO list (but don't
-expect anything this weekend, fully booked already :-) )
-
-
->> Agree about the footprint but as this is only during booting the
->> memory is on most systems available anyway (and I assume the memory
->> occupied by init.ramfs is reclaimed later on).
->
-> It is, however, due to lowmem restrictions on a lot of systems this can
-> still hurt.
-
-Sorry, I miss what lowmem restrictions you mean.
-You're not talking 8088 or so, are you ?
-
-Besides that: my proposed changes still could be an option. If you
-have restrictions, then don't use it.
-
-As I wrote before: for embedded systems this could make a lot of difference.
-Instead of storing the application in a squashfs, you could directly
-store it into the buffer cache (where it also ends up through ramfs).
-
-Note also that I am not saying the proposal is a replacement for
-initramfs. I can imagine they can live besides each other.
-But for systems where fast boot is important it would help if the
-gunzip/parse cpio/copy data steps can be skipped.
-An initialised buffer cache (together with some associated data
-structures of course) could be a nice alternative.
-
-[...]
-
->
-> I think the complexity penalty would be prohibitive; plus, on
-> HIGHMEM-afflicted system, this would move the initramfs from highmem to
-> lowmem, which would be highly undesirable.
-
-As said before, I'm not sure what you mean with HIGHMEM. For me this
-is something from the 8088/80286 era.
-(and wikipedia tells me the same). Please educate me by providing a
-pointer to some info.
-
-Having said that I do not understand why this would move at all.
-If I have the initramfs build into my kernel it occupies memory when
-loaded. If the same data moves from the init.ramfs section to fs or mm
-in order to have some initialised data structures, it just moved to a
-different place in the image that is loaded.
-The key difference is that the initramfs can be compressed, but if we
-decide to implement an option to do things uncompressed (which you
-agreed to be a good plan), then at least with an uncompressed
-initramfs there does not seem too much of a difference.
-
->
-> Overall, part of the attractiveness of the current code is that it is
-> extremely simple.  There are reasons it could use to be cleaned up (I found
-> its producer/consumer model to be a little to implicit to make it easy to
-> support loading from highmem proper) but I don't believe in the model of
-> going in and mucking with ramfs internals.
-
-The current code is indeed very simple.
-
-The amount of complication added by another solution remains to be
-investigated. Definitely it will not simplify the code, but there is
-also a gain associated with it. A gain which might not be too
-interesting if you run a fast PC which only boots rarely, but which is
-very interesting if you have a low performance embedded system that
-needs to boot up quickly (I'm thinking here about systems like set-top
-boxes, digital camera's, tv's etc).
-
-Best regards, Frans.
+diff --git a/drivers/leds/leds-pca955x.c b/drivers/leds/leds-pca955x.c
+index 146c069..b7e9504 100644
+--- a/drivers/leds/leds-pca955x.c
++++ b/drivers/leds/leds-pca955x.c
+@@ -248,11 +248,10 @@ static int __devinit pca955x_probe(struct i2c_client *client,
+ 					const struct i2c_device_id *id)
+ {
+ 	struct pca955x_led *pca955x;
+-	int i;
+-	int err = -ENODEV;
+ 	struct pca955x_chipdef *chip;
+ 	struct i2c_adapter *adapter;
+ 	struct led_platform_data *pdata;
++	int i, err;
+ 
+ 	chip = &pca955x_chipdefs[id->driver_data];
+ 	adapter = to_i2c_adapter(client->dev.parent);
+@@ -282,43 +281,41 @@ static int __devinit pca955x_probe(struct i2c_client *client,
+ 		}
+ 	}
+ 
++	pca955x = kzalloc(sizeof(*pca955x) * chip->bits, GFP_KERNEL);
++	if (!pca955x)
++		return -ENOMEM;
++
++	i2c_set_clientdata(client, pca955x);
++
+ 	for (i = 0; i < chip->bits; i++) {
+-		pca955x = kzalloc(sizeof(struct pca955x_led), GFP_KERNEL);
+-		if (!pca955x) {
+-			err = -ENOMEM;
+-			goto exit;
+-		}
++		pca955x[i].chipdef = chip;
++		pca955x[i].client = client;
++		pca955x[i].led_num = i;
+ 
+-		pca955x->chipdef = chip;
+-		pca955x->client = client;
+-		pca955x->led_num = i;
+ 		/* Platform data can specify LED names and default triggers */
+ 		if (pdata) {
+ 			if (pdata->leds[i].name)
+-				snprintf(pca955x->name, 32, "pca955x:%s",
+-							pdata->leds[i].name);
++				snprintf(pca955x[i].name,
++					 sizeof(pca955x[i].name), "pca955x:%s",
++					 pdata->leds[i].name);
+ 			if (pdata->leds[i].default_trigger)
+-				pca955x->led_cdev.default_trigger =
++				pca955x[i].led_cdev.default_trigger =
+ 					pdata->leds[i].default_trigger;
+ 		} else {
+-			snprintf(pca955x->name, 32, "pca955x:%d", i);
++			snprintf(pca955x[i].name, sizeof(pca955x[i].name),
++				 "pca955x:%d", i);
+ 		}
+-		spin_lock_init(&pca955x->lock);
+ 
+-		pca955x->led_cdev.name = pca955x->name;
+-		pca955x->led_cdev.brightness_set =
+-				pca955x_led_set;
++		spin_lock_init(&pca955x[i].lock);
+ 
+-		/*
+-		 * Client data is a pointer to the _first_ pca955x_led
+-		 * struct
+-		 */
+-		if (i == 0)
+-			i2c_set_clientdata(client, pca955x);
++		pca955x[i].led_cdev.name = pca955x[i].name;
++		pca955x[i].led_cdev.brightness_set = pca955x_led_set;
+ 
+-		INIT_WORK(&(pca955x->work), pca955x_led_work);
++		INIT_WORK(&pca955x[i].work, pca955x_led_work);
+ 
+-		led_classdev_register(&client->dev, &(pca955x->led_cdev));
++		err = led_classdev_register(&client->dev, &pca955x[i].led_cdev);
++		if (err < 0)
++			goto exit;
+ 	}
+ 
+ 	/* Turn off LEDs */
+@@ -336,23 +333,30 @@ static int __devinit pca955x_probe(struct i2c_client *client,
+ 	pca955x_write_psc(client, 1, 0);
+ 
+ 	return 0;
++
+ exit:
++	while (i > 0)
++		led_classdev_unregister(&pca955x[--i].led_cdev);
++
++	kfree(pca955x);
++	i2c_set_clientdata(client, NULL);
++
+ 	return err;
+ }
+ 
+ static int __devexit pca955x_remove(struct i2c_client *client)
+ {
+ 	struct pca955x_led *pca955x = i2c_get_clientdata(client);
+-	int leds = pca955x->chipdef->bits;
+ 	int i;
+ 
+-	for (i = 0; i < leds; i++) {
+-		led_classdev_unregister(&(pca955x->led_cdev));
+-		cancel_work_sync(&(pca955x->work));
+-		kfree(pca955x);
+-		pca955x = pca955x + 1;
++	for (i = 0; i < pca955x->chipdef->bits; i++) {
++		led_classdev_unregister(&pca955x[i].led_cdev);
++		cancel_work_sync(&pca955x[i].work);
+ 	}
+ 
++	kfree(pca955x);
++	i2c_set_clientdata(client, NULL);
++
+ 	return 0;
+ }
+ 
