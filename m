@@ -1,64 +1,186 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755416AbYHHJ3R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755782AbYHHJbx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755416AbYHHJ3R (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 05:29:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752372AbYHHJ3E
+	id S1755782AbYHHJbx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 05:31:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752890AbYHHJbn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 05:29:04 -0400
-Received: from zone0.gcu-squad.org ([212.85.147.21]:29913 "EHLO
-	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751327AbYHHJ3D (ORCPT
+	Fri, 8 Aug 2008 05:31:43 -0400
+Received: from an-out-0708.google.com ([209.85.132.247]:23595 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752769AbYHHJbl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 05:29:03 -0400
-Date: Fri, 8 Aug 2008 11:28:53 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: mkrufky@linuxtv.org
-Cc: sam@ravnborg.org, user.kernel@gmail.com, linux-kernel@vger.kernel.org,
-       i2c@lm-sensors.org
-Subject: Re: Problem with restricted I2C algorithms in kernel 2.6.26!
-Message-ID: <20080808112853.22adbfae@hyperion.delvare>
-In-Reply-To: <489B6A66.40605@linuxtv.org>
-References: <489B6A66.40605@linuxtv.org>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 8 Aug 2008 05:31:41 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:references;
+        b=KS+vWHAFs+IgwO0tIBQTIItbMU4o4f4M+ooxk5ZT67+t5wBaVGPmDSWa2LnJB6q/VL
+         Phz/YERbh5MpTnDK/18kbZHYhMpjY2RmZi/7zNDMmk9xChIFln946pKFCHc3KBNByQD+
+         S/wikSNin6XOVB1kw8yeaoLf26kh7c/wzDDqU=
+Message-ID: <a4423d670808080231nc4d5e25q6636fe8ff090b84@mail.gmail.com>
+Date: Fri, 8 Aug 2008 13:31:40 +0400
+From: "Alexander Beregalov" <a.beregalov@gmail.com>
+To: "David Miller" <davem@davemloft.net>
+Subject: Re: 2.6.26-rc: SPARC: Sun Ultra 10 can not boot
+Cc: mikpe@it.uu.se, kernel-testers@vger.kernel.org, sparclinux@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20080807.230139.220174417.davem@davemloft.net>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; 
+	boundary="----=_Part_48722_18892188.1218187900229"
+References: <20080707.040126.178187777.davem@davemloft.net>
+	 <18546.5247.797478.66373@harpo.it.uu.se>
+	 <a4423d670807070859y74f529b5i60f04e0a37a01cd3@mail.gmail.com>
+	 <20080807.230139.220174417.davem@davemloft.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Michael,
+------=_Part_48722_18892188.1218187900229
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-On Thu, 7 Aug 2008 17:34:30 -0400 , mkrufky@linuxtv.org wrote:
-> Jean Delvare wrote:
-> > Why not, please? A vast majority of drivers work fine that way today. I
-> > am still waiting for someone to give me a good reason why some other
-> > drivers supposedly can't be merged upstream (something better than
-> > "believe me, it's impossible".)
-> 
-> Nobody said that a driver "...can't be merged upstream" ...  but 
-> REQUIRING a driver to be merged upstream to allow development and / or 
-> testing is a problem, IMHO.
-> 
-> If you required that all of my development happens within a git 
-> development repository, preventing me from working against distro-kernel 
-> xyz, then I would simply spend more time on Windows driver development 
-> and my Linux contributions would cease.
-
-Not my goal, obviously.
-
-> External subsystem development repositories allow us to work against 
-> stable kernels at our own pace.  When driver X is ready to be merged, it 
-> gets merged.
+2008/8/8 David Miller <davem@davemloft.net>:
+> From: "Alexander Beregalov" <a.beregalov@gmail.com>
+> Date: Mon, 7 Jul 2008 19:59:04 +0400
 >
-> With the model that you propose, "use linux-next for development" ... 
-> well then what about testing?  Who is going to test my driver if it 
-> requires a full kernel compile?
+>> I have turned off LOCKDEP and it boots properly.
+>> 2.6.26-rc9-00005-g1b40a89
+>>
+>> Mikael's config also does not contain LOCKDEP.
+>
+> I have finally reproduced the problem locally and figured out the
+> bug.
+>
+> Please try this patch:
+>
+Thanks David,  but 2.6.27-rc2-00166-gaeee90d hangs in the same way.
 
-Some distributions do package linux-next. And this seems to be a very
-easy way to get end users to test bleeding edge code. You just tell the
-user to install the linux-next package and he/she's done. No need to
-build anything.
+Config is in attachment.
 
--- 
-Jean Delvare
+------=_Part_48722_18892188.1218187900229
+Content-Type: application/x-gzip; name=config-27-lockdep.gz
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_fjmliqn10
+Content-Disposition: attachment; filename=config-27-lockdep.gz
+
+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
+qkXeXiPIDGzGNkNRaQP8D6Ly6Vo/ZAAA
+------=_Part_48722_18892188.1218187900229--
