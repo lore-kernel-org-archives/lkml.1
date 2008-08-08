@@ -1,177 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759268AbYHHSvM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759263AbYHHSxU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759268AbYHHSvM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 14:51:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752985AbYHHSu5
+	id S1759263AbYHHSxU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 14:53:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753231AbYHHSxM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 14:50:57 -0400
-Received: from e36.co.us.ibm.com ([32.97.110.154]:41666 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752654AbYHHSu5 (ORCPT
+	Fri, 8 Aug 2008 14:53:12 -0400
+Received: from debpc-vmf.vmfacility.fr ([81.252.8.2]:41383 "EHLO
+	debpc-vmf.local.vmfacility.fr" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751008AbYHHSxL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 14:50:57 -0400
-Subject: Re: [RFC][PATCH 1/4] checkpoint-restart: general infrastructure
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: containers@lists.linux-foundation.org, Theodore Tso <tytso@mit.edu>,
-       linux-kernel@vger.kernel.org, Oren Laadan <orenl@cs.columbia.edu>
-In-Reply-To: <200808081146.54834.arnd@arndb.de>
-References: <20080807224033.FFB3A2C1@kernel>
-	 <20080807224034.735B1F84@kernel>  <200808081146.54834.arnd@arndb.de>
-Content-Type: text/plain
-Date: Fri, 08 Aug 2008 11:50:51 -0700
-Message-Id: <1218221451.19082.36.camel@nimitz>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
+	Fri, 8 Aug 2008 14:53:11 -0400
+X-Greylist: delayed 385 seconds by postgrey-1.27 at vger.kernel.org; Fri, 08 Aug 2008 14:53:11 EDT
+Message-ID: <489C9494.9070504@vmfacility.fr>
+Date: Fri, 08 Aug 2008 20:46:44 +0200
+From: Ivan Warren <ivan@vmfacility.fr>
+User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+Subject: [Patch 2.6] s390 - Allow ECKD devices to be used with older controllers
+ and emulation
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-08-08 at 11:46 +0200, Arnd Bergmann wrote:
-> On Friday 08 August 2008, Dave Hansen wrote:
-> > +	hh->magic = 0x00a2d200;
-> > +	hh->major = (LINUX_VERSION_CODE >> 16) & 0xff;
-> > +	hh->minor = (LINUX_VERSION_CODE >> 8) & 0xff;
-> > +	hh->patch = (LINUX_VERSION_CODE) & 0xff;
-...
-> > +}
-> 
-> Do you rely on the kernel version in order to determine the format
-> of the binary data, or is it just informational?
-> 
-> If you think the format can change in incompatible ways, you
-> probably need something more specific than the version number
-> these days, because there are just so many different trees with
-> the same numbers.
+Crowd,
 
-Yeah, this is very true.  My guess is that we'll need something like
-what we do with modversions. 
+Apologies if this is not formatted correctly, but I'm fairly new to this 
+(submitting patches that is)..
 
-> > +/* debugging */
-> > +#if 0
-> > +#define CR_PRINTK(str, args...)  \
-> > +	printk(KERN_ERR "cr@%s#%d: " str, __func__, __LINE__, ##args)
-> > +#else
-> > +#define CR_PRINTK(...)		do {} while (0)
-> > +#endif
-> > +
-> 
-> Please use the existing pr_debug and dev_debug here, instead of creating
-> yet another version.
+**************
+    s390 dasd ECKD drivers issues a Perform Subsystem Function / Prepare 
+for Read SubSystem Data with a length of 16.
+    However, older hardware and documentation specifies a length of 12 
+leading to a possible Incorrect Length indication.
+    This patch activates the SLI CCW flag in order to avoid reporting 
+the Incorrect Length indication since it is possible that the DASD 
+control unit may be expecting a length of 12, not 16.
+        -- Ivan Warren (ivan@vmfacility.fr)
 
-Sure thing.  Will do.
+diff --git a/drivers/s390/block/dasd_eckd.c b/drivers/s390/block/dasd_eckd.c
+index 773b3fe..c4e3935 100644
+--- a/drivers/s390/block/dasd_eckd.c
++++ b/drivers/s390/block/dasd_eckd.c
+@@ -810,6 +810,7 @@ static int dasd_eckd_read_features(struct 
+dasd_device *device)
+        ccw->cmd_code = DASD_ECKD_CCW_PSF;
+        ccw->count = sizeof(struct dasd_psf_prssd_data);
+        ccw->flags |= CCW_FLAG_CC;
++       ccw->flags |= CCW_FLAG_SLI;
+        ccw->cda = (__u32)(addr_t) prssdp;
 
-> > +struct cr_hdr_tail {
-> > +	__u32 magic;
-> > +	__u32 cksum[2];
-> > +};
-> 
-> This structure has an odd multiple of 32-bit members, which means
-> that if you put it into a larger structure that also contains
-> 64-bit members, the larger structure may get different alignment
-> on x86-32 and x86-64, which you might want to avoid.
-> I can't tell if this is an actual problem here.
+        /* Read Subsystem Data - feature codes */
+**************
 
-Can't we just declare all these things __packed__ and stop worrying
-about aligning them all manually?
-
-> > +
-> > +/*
-> > + * During restart the code reads in data from the chekcpoint image into a
-> > + * temporary buffer (ctx->hbuf). Because operations can be nested, one
-> > + * should call cr_hbuf_get() to reserve space in the buffer, and then
-> > + * cr_hbuf_put() when it no longer needs that space
-> > + */
-> > +
-> > +#include <linux/version.h>
-> > +#include <linux/sched.h>
-> > +#include <linux/file.h>
-> > +
-> > +#include "ckpt.h"
-> > +#include "ckpt_hdr.h"
-> > +
-> > +/**
-> > + * cr_hbuf_get - reserve space on the hbuf
-> > + * @ctx: checkpoint context
-> > + * @n: number of bytes to reserve
-> > + */
-> > +void *cr_hbuf_get(struct cr_ctx *ctx, int n)
-> > +{
-> > +	void *ptr;
-> > +
-> > +	BUG_ON(ctx->hpos + n > CR_HBUF_TOTAL);
-> > +	ptr = (void *) (((char *) ctx->hbuf) + ctx->hpos);
-> > +	ctx->hpos += n;
-> > +	return ptr;
-> > +}
-> 
-> Can (ctx->hpos + n > CR_HBUF_TOTAL) be controlled by the input
-> data? If so, this is a denial-of-service attack.
-
-Ugh, this is crappy code anyway.  It needs to return an error and have
-someone else handle it.
-
-> > +int cr_kwrite(struct cr_ctx *ctx, void *buf, int count)
-> > +{
-> > +	mm_segment_t oldfs;
-> > +	int ret;
-> > +
-> > +	oldfs = get_fs();
-> > +	set_fs(KERNEL_DS);
-> > +	ret = cr_uwrite(ctx, buf, count);
-> > +	set_fs(oldfs);
-> > +
-> > +	return ret;
-> > +}
-> 
-> get_fs()/set_fs() always feels a bit ouch, and this way you have
-> to use __force to avoid the warnings about __user pointer casts
-> in sparse.
-> I wonder if you can use splice_read/splice_write to get around
-> this problem.
-
-I have to wonder if this is just a symptom of us trying to do this the
-wrong way.  We're trying to talk the kernel into writing internal gunk
-into a FD.  You're right, it is like a splice where one end of the pipe
-is in the kernel.
-
-Any thoughts on a better way to do this?  
-
-> > +	struct cr_ctx *ctx;
-> > +	struct file *file;
-> > +	int fput_needed;
-> > +	int ret;
-> > +
-> > +	if (!capable(CAP_SYS_ADMIN))
-> > +		return -EPERM;
-> > +
-> 
-> Why do you need CAP_SYS_ADMIN for this? Can't regular users
-> be allowed to checkpoint/restart their own tasks?
-
-Yes, eventually.  I think one good point is that we should probably
-remove this now so that we *have* to think about security implications
-as we add each individual patch.  For instance, what kind of checking do
-we do when we restore an mlock()'d VMA?
-
-I'll pull this check out so it causes pain. (the good kind)
-
-> > --- linux-2.6.git/Makefile~handle_a_single_task_with_private_memory_maps	2008-08-05 09:04:27.000000000 -0700
-> > +++ linux-2.6.git-dave/Makefile	2008-08-05 09:07:53.000000000 -0700
-> > @@ -611,7 +611,7 @@ export mod_strip_cmd
-> >  
-> >  
-> >  ifeq ($(KBUILD_EXTMOD),)
-> > -core-y		+= kernel/ mm/ fs/ ipc/ security/ crypto/ block/
-> > +core-y		+= kernel/ mm/ fs/ ipc/ security/ crypto/ block/ ckpt/
-> >  
-> 
-> The name 'ckpt' is a bit unobvious, how about naming it 'checkpoint' instead?
-
-Fine with me.  Renamed in new patches, hopefully.
-
-I'll send new patches out later today.
-
--- Dave
-
+--Ivan
