@@ -1,44 +1,159 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755402AbYHHM6R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755913AbYHHNLU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755402AbYHHM6R (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 08:58:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751931AbYHHM6F
+	id S1755913AbYHHNLU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 09:11:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752642AbYHHNLL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 08:58:05 -0400
-Received: from mtagate2.de.ibm.com ([195.212.29.151]:33597 "EHLO
-	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751591AbYHHM6E (ORCPT
+	Fri, 8 Aug 2008 09:11:11 -0400
+Received: from mail12.ca.com ([141.202.248.38]:54254 "EHLO mail12.ca.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752634AbYHHNLK convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 08:58:04 -0400
-Subject: Re: [PATCH 1/1] allocate structures for reservation tracking in
-	hugetlbfs outside of spinlocks v2
-From: Gerald Schaefer <gerald.schaefer@de.ibm.com>
-To: Andy Whitcroft <apw@shadowen.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com,
-       Mel Gorman <mel@csn.ul.ie>
-In-Reply-To: <1218193855-25832-1-git-send-email-apw@shadowen.org>
-References: <20080807143824.8e0803da.akpm@linux-foundation.org>
-	 <1218193855-25832-1-git-send-email-apw@shadowen.org>
-Content-Type: text/plain
-Date: Fri, 08 Aug 2008 14:57:55 +0200
-Message-Id: <1218200276.10315.2.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-8.el5_2.2) 
-Content-Transfer-Encoding: 7bit
+	Fri, 8 Aug 2008 09:11:10 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [malware-list] [RFC 0/5] [TALPA] Intro to a linux	interface	for on access scanning
+Date: Fri, 8 Aug 2008 09:11:08 -0400
+Message-ID: <2629CC4E1D22A64593B02C43E855530304AE4B39@USILMS12.ca.com>
+In-Reply-To: <489C3D67.2070207@keyaccess.nl>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [malware-list] [RFC 0/5] [TALPA] Intro to a linux	interface	for on access scanning
+Thread-Index: Acj5UyZXK9AxBE+ITveoA4O6WIKi4wAANITA
+References: <20080804223249.GA10517@kroah.com>	<1217896374.27684.53.camel@localhost.localdomain>	<20080805005132.GA3661@kroah.com>	<20080805122328.69a37c1d@lxorguk.ukuu.org.uk>	<20080805170307.GB9639@kroah.com>	<1217962602.27684.144.camel@localhost.localdomain>	<20080805203007.GB27489@kroah.com>	<1218048597.27684.276.camel@localhost.localdomain>	<20080806210202.GA9413@mit.edu>	<1218058081.5837.49.camel@localhost.localdomain>	<20080806215244.GA21462@mit.edu>	<1218118603.5837.101.camel@localhost.localdomain>	<489BAA25.3030004@keyaccess.nl><1218161738.5837.218.camel@localhost.localdomain> <489BB5BE.20602@keyaccess.nl> <2629CC4E1D22A64593B02C43E855530304AE4B37@USILMS12.ca.com> <489C3D67.2070207@keyaccess.nl>
+From: "Press, Jonathan" <Jonathan.Press@ca.com>
+To: "Rene Herman" <rene.herman@keyaccess.nl>
+Cc: "Eric Paris" <eparis@redhat.com>, <linux-kernel@vger.kernel.org>,
+       "Alan Cox" <alan@lxorguk.ukuu.org.uk>, <malware-list@lists.printk.net>
+X-OriginalArrivalTime: 08 Aug 2008 13:11:08.0828 (UTC) FILETIME=[38F815C0:01C8F958]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-08-08 at 12:10 +0100, Andy Whitcroft wrote:
-> [Bah, while reviewing the locking based on your previous email I spotted
-> that we need to check the return from the vma_needs_reservation call for
-> allocation errors.  Here is an updated patch to correct this.  This passes
-> testing here.  Gerald could you test thing one too.]
+> -----Original Message-----
+> From: Rene Herman [mailto:rene.herman@keyaccess.nl]
+> Sent: Friday, August 08, 2008 8:35 AM
+> To: Press, Jonathan
+> Cc: Eric Paris; linux-kernel@vger.kernel.org; Alan Cox; malware-
+> list@lists.printk.net
+> Subject: Re: [malware-list] [RFC 0/5] [TALPA] Intro to a linux
+interface for on
+> access scanning
 
-Ok, it works here too.
+> > Since I earn my living on the basis of users, clueless or not, I've
+> > gotten into the habit of just taking them as they come and trying to
+go
+> > out of my way to not refer to them as clueless -- except in a few
+> > specific and particularly annoying cases.
+> 
+> You say that as though you feel that calling someone clueless were a
+bad
+> thing. There are tons of subjects I'm completely and utterly clueless
+> about and very happily so.
 
-Thanks,
-Gerald
+Well, in all honesty, sometimes when I think of someone as clueless,
+there is a certain negative emotion that goes along with it.  However,
+the point is more that THEY don't like to be called clueless -- both
+because, for some reason they take it as an insult, and also because
+there are many out there who "know enough to be dangerous" and think
+they know more than they really do.  So I have to be careful not to say
+anything to them that sounds like I think that, and to make sure that
+people in my group have the same discipline.
 
+ 
+> > But that's not my point.  My point is that Linux has become a
+> > commercially viable environment with a lot of enterprise users, with
+a
+> > significant number of enterprises are standardizing on it, or at
+least
+> > officially supporting/allowing/encouraging its use.  Because of
+that,
+> > for example, we have a significant number of user issues coming in
+that
+> > indicate that there are actually plenty of clueless Linux users,
+whether
+> > the OS was intended for them or not.
+> 
+> But not users with root access, which is the context in which my own
+> remark was. Enterprise users in corporations are not what I call the
+> desktop; I'd generally call those workstations, with the desktop being
+> your average home PC with the enormous amounts of cheap and buggy
+> hardware and the definite lack of central IT management.
+
+You would be surprised how many users with root access are also
+clueless.  I used the word "enterprise" very broadly.  It applies to
+large companies/institutions with sophisticated IT departments, but it
+also applies to small to medium organizations who said to themselves,
+"Gee what's this Linux thing I keep hearing about -- maybe we ought to
+get one of those."  And they end up with administrators who also don't
+really know all the ins and outs they need to in order to create a
+secure environment.
+
+In a way, it's a price that Linux has paid for its growing acceptance.
+The user community is not what it used to be.
+
+
+> It's also dependent on country. Over here in the Netherlands,
+corporate
+> adoption "on the workstation" is very low (and seemingly dropping
+again
+> after some initial attempts in local government) and adoption on the
+> desktop is for all intents and purposes 0. It's different especially
+in
+> eastern-europe.
+
+I can't speak about every different country, but I would say that you
+are right about Eastern Europe.  But also in the US and Canada we have
+plenty of adoption on the workstation.
+
+
+> > The fact that they are there is the main reason that Red Hat and
+Novell,
+> > for example (at least by my observation from the outside -- I can't
+> > speak at all about how they see if from the inside) seem to be
+putting
+> > the bulk of their efforts into their enterprise editions, as opposed
+to
+> > their traditional technologist editions.
+> >
+> > The bottom line, then, is that there ARE way more clueless Linux
+users
+> > out there than there used to be, which makes them a) vulnerable to
+> > losses by virtue of their own mistakes, and b) vectors for the
+spread of
+> > malware.  Which is kind of why we're here.
+> 
+> Right, so that, then, is a threat model. I myself believe you are here
+> mostly to guard against 11-year old girls installing infected
+> screensavers of horses which given the fairly low adoption of Linux by
+> 11-year old girls says something about my view of things.
+> 
+> But, yes, as I myself said as well, it might be sensible to discuss
+this
+> issue simply _as if_ lots of users were brushing their My Little
+Pony's
+> while waiting for their kernels to finish compiling if you're
+designing
+> something that _should_ protect them if they were.
+
+There are many gradations of users between the kernel pro and the
+11-year-old girl.  
+
+One is the guy right out of college who really likes computers and he
+gets a job at a place where they use Linux, and he does a web search and
+finds this really cool application that might help him do his job
+better, so he installs it on the spot.  Uh-oh.
+
+One is the guy who's been working there for a while and the head of IT,
+tired of spending so much on Windows, tells him to install Linux on a
+few machines, so he follows the instructions and he's now the
+administrator.
+
+The fact is that there are MILLIONS out there, and when you have
+millions of anything, you are going to have lots of different kinds of
+behavior that are hard to predict ahead of time.
 
