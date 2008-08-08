@@ -1,64 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756822AbYHHPZH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754228AbYHHP33@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756822AbYHHPZH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 11:25:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752962AbYHHPY4
+	id S1754228AbYHHP33 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 11:29:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752120AbYHHP3V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 11:24:56 -0400
-Received: from edna.telenet-ops.be ([195.130.132.58]:59058 "EHLO
-	edna.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752601AbYHHPYz (ORCPT
+	Fri, 8 Aug 2008 11:29:21 -0400
+Received: from qb-out-0506.google.com ([72.14.204.226]:35753 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752105AbYHHP3U (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 11:24:55 -0400
-Date: Fri, 8 Aug 2008 17:24:53 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: JosephChan@via.com.tw
-cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: RE: [PATCH 1/13 v2] viafb: viafb.modes, viafb.txt
-In-Reply-To: <C80EF34A3D2E494DBAF9AC29C7AE4EB8285FD7@exchtp03.taipei.via.com.tw>
-Message-ID: <Pine.LNX.4.64.0808081724210.420@anakin>
-References: <C80EF34A3D2E494DBAF9AC29C7AE4EB8078B698D@exchtp03.taipei.via.com.tw>
- <Pine.LNX.4.64.0808081331130.420@anakin>
- <C80EF34A3D2E494DBAF9AC29C7AE4EB8285FD7@exchtp03.taipei.via.com.tw>
+	Fri, 8 Aug 2008 11:29:20 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=bZUHTUNAjoNCpO8qe6Ajux5J17j0G8mQy4RMPle8/KMfAN/56QVRE03J+kdaeqeOoX
+         bNg7BF8oElRg6M3sbl+YGh2xM2Sv5qvA0520HZXbpKjHJ7W2cw3p4o9rL/E6wHtLnlp0
+         qFMCTJYtbTirphlHQf3p8zGHYJRQpIGwwWTU0=
+Message-ID: <b9df5fa10808080829l6275a208u65b3c48dafe6c8e1@mail.gmail.com>
+Date: Fri, 8 Aug 2008 21:29:19 +0600
+From: "Rakib Mullick" <rakib.mullick@gmail.com>
+To: "Paul Menage" <menage@google.com>, "Paul Jackson" <pj@sgi.com>
+Subject: [PATCH] cgroup.c: Some 'hlist_head' function fixes.
+Cc: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 8 Aug 2008, JosephChan@via.com.tw wrote:
-> It should be my carelessness. The check has been added in viafbdev.c already. 
+Hello guys, the following patch emphasizes on two things:
+	1. We can carry out the following function with one variable.
+	2. As hash_long returns with unsigned long we need a unsigned long to
+handle this.
+If anything else, please notice.
+Thanks.
 
-OK.
+Signed-off-by: Md.Rakib H. Mullick (rakib.mullick@gmail.com)
 
-> Do I need to re-send the patch for the documentation? Thanks for your reminding.
+--- linux-2.6.27-rc2.orig/kernel/cgroup.c	2008-08-06 16:23:26.000000000 +0600
++++ linux-2.6.27-rc2/kernel/cgroup.c	2008-08-08 19:06:53.000000000 +0600
+@@ -200,17 +200,16 @@ static struct hlist_head css_set_table[C
 
-Please send an incremental patch. Andrew is good in folding ;-)
+ static struct hlist_head *css_set_hash(struct cgroup_subsys_state *css[])
+ {
+-	int i;
+-	int index;
+-	unsigned long tmp = 0UL;
++	unsigned long tmp = 0UL , i;
 
-> From: Geert Uytterhoeven [mailto:geert@linux-m68k.org]
-> Sent: Fri 8/8/2008 7:32 PM
-> To: Joseph Chan
-> Cc: linux-fbdev-devel@lists.sourceforge.net; linux-kernel@vger.kernel.org; akpm@linux-foundation.org
-> Subject: Re: [PATCH 1/13 v2] viafb: viafb.modes, viafb.txt
-> 
-> 
-> 
-> On Fri, 8 Aug 2008, JosephChan@via.com.tw wrote:
-> > +    4. VX800 2D accelerator hasn't been supported in this driver yet. When
-> > +       using driver on VX800, one should add parameter "viafb_accel=0" to
-> > +       disable 2D accelerator.
-> 
-> Can't the driver detect this automatically, and disable the 2D
-> accelerator when running on a VX800?
+ 	for (i = 0; i < CGROUP_SUBSYS_COUNT; i++)
+ 		tmp += (unsigned long)css[i];
+ 	tmp = (tmp >> 16) ^ tmp;
 
-Gr{oetje,eeting}s,
+-	index = hash_long(tmp, CSS_SET_HASH_BITS);
++	i = 0;
++	i = hash_long(tmp, CSS_SET_HASH_BITS);
 
-						Geert
+-	return &css_set_table[index];
++	return &css_set_table[i];
+ }
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+ /* We don't maintain the lists running through each css_set to its
