@@ -1,66 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754228AbYHHP33@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754873AbYHHPcp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754228AbYHHP33 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 11:29:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752120AbYHHP3V
+	id S1754873AbYHHPcp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 11:32:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752237AbYHHPcg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 11:29:21 -0400
-Received: from qb-out-0506.google.com ([72.14.204.226]:35753 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752105AbYHHP3U (ORCPT
+	Fri, 8 Aug 2008 11:32:36 -0400
+Received: from g5t0008.atlanta.hp.com ([15.192.0.45]:8026 "EHLO
+	g5t0008.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752180AbYHHPcf convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 11:29:20 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=bZUHTUNAjoNCpO8qe6Ajux5J17j0G8mQy4RMPle8/KMfAN/56QVRE03J+kdaeqeOoX
-         bNg7BF8oElRg6M3sbl+YGh2xM2Sv5qvA0520HZXbpKjHJ7W2cw3p4o9rL/E6wHtLnlp0
-         qFMCTJYtbTirphlHQf3p8zGHYJRQpIGwwWTU0=
-Message-ID: <b9df5fa10808080829l6275a208u65b3c48dafe6c8e1@mail.gmail.com>
-Date: Fri, 8 Aug 2008 21:29:19 +0600
-From: "Rakib Mullick" <rakib.mullick@gmail.com>
-To: "Paul Menage" <menage@google.com>, "Paul Jackson" <pj@sgi.com>
-Subject: [PATCH] cgroup.c: Some 'hlist_head' function fixes.
-Cc: linux-kernel@vger.kernel.org
+	Fri, 8 Aug 2008 11:32:35 -0400
+From: "Miller, Mike (OS Dev)" <Mike.Miller@hp.com>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+CC: "scameron@beardog.cca.cpqcorp.net" <scameron@beardog.cca.cpqcorp.net>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>
+Date: Fri, 8 Aug 2008 15:32:02 +0000
+Subject: RE: HP (Compaq) Smart Array 5xxx controller SCSI driver
+Thread-Topic: HP (Compaq) Smart Array 5xxx controller SCSI driver
+Thread-Index: Acj48/M9DeAHCT4RTcikDdQNDepA5wAd9Iyw
+Message-ID: <0F5B06BAB751E047AB5C87D1F77A778826B3F6C3CA@GVW0547EXC.americas.hpqcorp.net>
+References: <0F5B06BAB751E047AB5C87D1F77A778826B3DD7474@GVW0547EXC.americas.hpqcorp.net>
+	<20080725000638Q.fujita.tomonori@lab.ntt.co.jp>
+	<0F5B06BAB751E047AB5C87D1F77A778826B3F6BF4C@GVW0547EXC.americas.hpqcorp.net>
+ <20080808100748M.fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20080808100748M.fujita.tomonori@lab.ntt.co.jp>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello guys, the following patch emphasizes on two things:
-	1. We can carry out the following function with one variable.
-	2. As hash_long returns with unsigned long we need a unsigned long to
-handle this.
-If anything else, please notice.
-Thanks.
 
-Signed-off-by: Md.Rakib H. Mullick (rakib.mullick@gmail.com)
 
---- linux-2.6.27-rc2.orig/kernel/cgroup.c	2008-08-06 16:23:26.000000000 +0600
-+++ linux-2.6.27-rc2/kernel/cgroup.c	2008-08-08 19:06:53.000000000 +0600
-@@ -200,17 +200,16 @@ static struct hlist_head css_set_table[C
+> -----Original Message-----
+> From: FUJITA Tomonori [mailto:fujita.tomonori@lab.ntt.co.jp]
+> Sent: Thursday, August 07, 2008 8:08 PM
+> To: Miller, Mike (OS Dev)
+> Cc: fujita.tomonori@lab.ntt.co.jp;
+> scameron@beardog.cca.cpqcorp.net;
+> linux-kernel@vger.kernel.org; linux-scsi@vger.kernel.org
+> Subject: RE: HP (Compaq) Smart Array 5xxx controller SCSI driver
+>
+> On Thu, 7 Aug 2008 19:04:54 +0000
+> "Miller, Mike (OS Dev)" <Mike.Miller@hp.com> wrote:
+>
+> >
+> >
+> > > -----Original Message-----
+> > > From: FUJITA Tomonori [mailto:fujita.tomonori@lab.ntt.co.jp]
+> > > Sent: Thursday, July 24, 2008 10:07 AM
+> > > To: Miller, Mike (OS Dev)
+> > > Cc: fujita.tomonori@lab.ntt.co.jp;
+> > > scameron@beardog.cca.cpqcorp.net;
+> > > linux-kernel@vger.kernel.org; linux-scsi@vger.kernel.org
+> > > Subject: RE: HP (Compaq) Smart Array 5xxx controller SCSI driver
+> > >
+> > > On Thu, 24 Jul 2008 15:00:00 +0000
+> > > "Miller, Mike (OS Dev)" <Mike.Miller@hp.com> wrote:
+> > >
+> > > >
+> > > > > > As for the patches I mentioned which were previously
+> > > ignored for
+> > > > > > improving how the current cciss SCSI code handled hot
+> > > plogging, if
+> > > > > > you're curious about that, check here:
+> > > > > >
+> > > > > > http://marc.info/?l=linux-scsi&m=120213565000426&w=4
+> > > > > >
+> > > > > > A change like that becomes more important if logical drives
+> > > > > > are exposed through the scsi layer.
+> > > > >
+> > > > > We need to think about the best way to map (expose)
+> logical and
+> > > > > physical drivers to SCSI luns. As I wrote before, I'm
+> > > interested in
+> > > > > how HP SCSI driver does.
+> > > >
+> > > > We don't neccesarily want or need to expose the physical
+> > > disks. The only exception is disks that are not part of a logical
+> > > volume. If the disks are part of a logical volume but exposed the
+> > > user may shoot themselves in the foot by destroying the firmware
+> > > metadata.
+> > >
+> > > Oops, sorry, I meant physical tape drives.
+> > >
+> >
+> > Tomo,
+> > I patched your driver into the 2.6.27-rc1 kernel. After
+> compiling the driver I get:
+> >
+> > [root@testmonkey linux-2.6]# insmod drivers/scsi/ciss.ko
+> > insmod: error inserting 'drivers/scsi/ciss.ko': -1 Invalid module
+> > format
+>
+> You can get an error message here from `dmseg`, I think.
+>
+>
+> > [root@testmonkey linux-2.6]# gcc --version gcc (GCC) 4.1.2 20071124
+> > (Red Hat 4.1.2-42)
+> >
+> > [root@testmonkey linux-2.6]# uname -r
+> > 2.6.26
+> >
+> > I built inside the tree. Any thoughts?
+>
+> Seems that you try to do insmod a module built for 2.6.27-rc1
+> into 2.6.26?
 
- static struct hlist_head *css_set_hash(struct cgroup_subsys_state *css[])
- {
--	int i;
--	int index;
--	unsigned long tmp = 0UL;
-+	unsigned long tmp = 0UL , i;
-
- 	for (i = 0; i < CGROUP_SUBSYS_COUNT; i++)
- 		tmp += (unsigned long)css[i];
- 	tmp = (tmp >> 16) ^ tmp;
-
--	index = hash_long(tmp, CSS_SET_HASH_BITS);
-+	i = 0;
-+	i = hash_long(tmp, CSS_SET_HASH_BITS);
-
--	return &css_set_table[index];
-+	return &css_set_table[i];
- }
-
- /* We don't maintain the lists running through each css_set to its
+Duh. Well that was pretty stupid.
