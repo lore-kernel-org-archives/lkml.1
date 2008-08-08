@@ -1,63 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762025AbYHHWUa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763606AbYHHWUq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762025AbYHHWUa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 18:20:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754451AbYHHWUL
+	id S1763606AbYHHWUq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 18:20:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761393AbYHHWUY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 18:20:11 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:49879 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750890AbYHHWUJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 18:20:09 -0400
-Message-ID: <489CC691.6090905@garzik.org>
-Date: Fri, 08 Aug 2008 18:20:01 -0400
-From: Jeff Garzik <jeff@garzik.org>
+	Fri, 8 Aug 2008 18:20:24 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:53008 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760807AbYHHWUX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Aug 2008 18:20:23 -0400
+Message-ID: <489CC684.8060607@zytor.com>
+Date: Fri, 08 Aug 2008 15:19:48 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
 User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-To: Steve Wise <swise@opengridcomputing.com>, davem@davemloft.net
-CC: Divy Le Ray <divy@chelsio.com>, Roland Dreier <rdreier@cisco.com>,
-       Karen Xie <kxie@chelsio.com>, netdev@vger.kernel.org,
-       open-iscsi@googlegroups.com, michaelc@cs.wisc.edu, daisyc@us.ibm.com,
-       wenxiong@us.ibm.com, bhua@us.ibm.com,
-       Dimitrios Michailidis <dm@chelsio.com>,
-       Casey Leedom <leedom@chelsio.com>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC][PATCH 1/1] cxgb3i: cxgb3 iSCSI initiator
-References: <200807300019.m6U0JkdY012558@localhost.localdomain> <aday73jxdfs.fsf@cisco.com> <200807311752.00911.divy@chelsio.com> <200808071145.03848.divy@chelsio.com> <489C8BEB.8060001@opengridcomputing.com> <489CC58D.4010606@pobox.com>
-In-Reply-To: <489CC58D.4010606@pobox.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>, Mike Travis <travis@sgi.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 00/42] dyn_array/nr_irqs/sparse_irq support v5
+References: <1218232368-31228-1-git-send-email-yhlu.kernel@gmail.com>
+In-Reply-To: <1218232368-31228-1-git-send-email-yhlu.kernel@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Garzik wrote:
-> * however, giving the user the ability to co-manage IP addresses means 
-> hacking up the kernel TCP code and userland tools for this new concept, 
-> something that I think DaveM would rightly be a bit reluctant to do? You 
-> are essentially adding a bunch of special case code whenever TCP ports 
-> are used:
+Yinghai Lu wrote:
 > 
->     if (port in list of "magic" TCP ports with special,
->         hardware-specific behavior)
->         ...
->     else
->         do what we've been doing for decades
+> based on tip/master
 > 
-> ISTR Roland(?) pointing out code that already does a bit of this in the 
-> IB space...  but the point is
+> to do:
+>    so dyn irq_desc is done, and ready to:
+>    make create_irq to get irq according to bus/dev/func/vector
+> 
 
-grrr.   but the point is that the solution is not at all complete, with 
-feature disconnects and security audit differences still outsanding, and 
-non-hw-specific management apps still unwritten.
+Hm... I tried to check this in as a separate topic branch, but it 
+conflicts against both linus and against tip:x86/core, which are the 
+branches we usually base topic branches on.
 
-(I'm not calling for their existence, merely saying trying to strike the 
-justification that current capability to limp along exists)
+I really am not convinced about the whole dyn_array concept, and 
+*especially* not having divergences between 32 and 64 bits with regards 
+to sparse IRQs.  Furthermore, there are a number of checkpatch errors 
+for this patch series, most of which appear legit.
 
-	Jeff
+So again... any reason to not just have sparse IRQs and be done with it?
 
+	-hpa
 
