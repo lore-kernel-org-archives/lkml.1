@@ -1,73 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754751AbYHHJ1f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755416AbYHHJ3R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754751AbYHHJ1f (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 05:27:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752372AbYHHJ12
+	id S1755416AbYHHJ3R (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 05:29:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752372AbYHHJ3E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 05:27:28 -0400
-Received: from moutng.kundenserver.de ([212.227.126.183]:56063 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752352AbYHHJ11 (ORCPT
+	Fri, 8 Aug 2008 05:29:04 -0400
+Received: from zone0.gcu-squad.org ([212.85.147.21]:29913 "EHLO
+	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751327AbYHHJ3D (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 05:27:27 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-Subject: Re: [RFC][PATCH 0/4] kernel-based checkpoint restart
-Date: Fri, 8 Aug 2008 11:25:12 +0200
-User-Agent: KMail/1.9.9
-Cc: Oren Laadan <orenl@cs.columbia.edu>, containers@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org, Theodore Tso <tytso@mit.edu>,
-       "Serge E. Hallyn" <serue@us.ibm.com>
-References: <20080807224033.FFB3A2C1@kernel>
-In-Reply-To: <20080807224033.FFB3A2C1@kernel>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+	Fri, 8 Aug 2008 05:29:03 -0400
+Date: Fri, 8 Aug 2008 11:28:53 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: mkrufky@linuxtv.org
+Cc: sam@ravnborg.org, user.kernel@gmail.com, linux-kernel@vger.kernel.org,
+       i2c@lm-sensors.org
+Subject: Re: Problem with restricted I2C algorithms in kernel 2.6.26!
+Message-ID: <20080808112853.22adbfae@hyperion.delvare>
+In-Reply-To: <489B6A66.40605@linuxtv.org>
+References: <489B6A66.40605@linuxtv.org>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200808081125.12706.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1+bRsNBLXY6Mnp6GMzXR8bDFvP6tDv4DwY/XIp
- WpCQo1hixepWV6NmjBaPfMr03QKjF4AeXAgAA+RDZ4G9qUmAAC
- ixhb/0jw0IzFIk44ZtXMA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 08 August 2008, Dave Hansen wrote:
-> These patches are from Oren Laaden.  I've refactored them
-> a bit to make them a wee bit more reviewable.  I think this
-> separates out the per-arch bits pretty well.  It should also
-> be at least build-bisetable.
+Hi Michael,
 
-Cool stuff
-
-> ============================== ckpt.c ================================
+On Thu, 7 Aug 2008 17:34:30 -0400 , mkrufky@linuxtv.org wrote:
+> Jean Delvare wrote:
+> > Why not, please? A vast majority of drivers work fine that way today. I
+> > am still waiting for someone to give me a good reason why some other
+> > drivers supposedly can't be merged upstream (something better than
+> > "believe me, it's impossible".)
 > 
-> #define _GNU_SOURCE        /* or _BSD_SOURCE or _SVID_SOURCE */
+> Nobody said that a driver "...can't be merged upstream" ...  but 
+> REQUIRING a driver to be merged upstream to allow development and / or 
+> testing is a problem, IMHO.
 > 
-> #include <stdio.h>
-> #include <stdlib.h>
-> #include <errno.h>
-> #include <fcntl.h>
-> #include <unistd.h>
-> #include <asm/unistd_32.h>
-> #include <sys/syscall.h>
+> If you required that all of my development happens within a git 
+> development repository, preventing me from working against distro-kernel 
+> xyz, then I would simply spend more time on Windows driver development 
+> and my Linux contributions would cease.
 
-Note that asm/unistd_32.h is not portable, you should use asm/unistd.h
-in the example.
+Not my goal, obviously.
 
->         pid_t pid = getpid();
->         int ret;
+> External subsystem development repositories allow us to work against 
+> stable kernels at our own pace.  When driver X is ready to be merged, it 
+> gets merged.
 >
->         ret = syscall(__NR_checkpoint, pid, STDOUT_FILENO, 0);
+> With the model that you propose, "use linux-next for development" ... 
+> well then what about testing?  Who is going to test my driver if it 
+> requires a full kernel compile?
 
-Interface-wise, I would consider checkpointing yourself signficantly
-different from checkpointing some other thread. If checkpointing
-yourself is the common case, it probably makes sense to allow passing
-of pid=0 for this.
+Some distributions do package linux-next. And this seems to be a very
+easy way to get end users to test bleeding edge code. You just tell the
+user to install the linux-next package and he/she's done. No need to
+build anything.
 
-	Arnd <><
+-- 
+Jean Delvare
