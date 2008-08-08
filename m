@@ -1,81 +1,170 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757042AbYHHPg6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754897AbYHHPk4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757042AbYHHPg6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 11:36:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752625AbYHHPgu
+	id S1754897AbYHHPk4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 11:40:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752625AbYHHPks
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 11:36:50 -0400
-Received: from smtpq1.groni1.gr.home.nl ([213.51.130.200]:55087 "EHLO
-	smtpq1.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752491AbYHHPgt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 11:36:49 -0400
-Message-ID: <489C681B.1020805@keyaccess.nl>
-Date: Fri, 08 Aug 2008 17:36:59 +0200
-From: Rene Herman <rene.herman@keyaccess.nl>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080707)
+	Fri, 8 Aug 2008 11:40:48 -0400
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:33394 "EHLO smtp5.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750904AbYHHPkr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Aug 2008 11:40:47 -0400
+Date: Fri, 8 Aug 2008 18:39:11 +0300
+From: Adrian Bunk <bunk@stusta.de>
+To: Alan Cox <alan@redhat.com>, Wim Van Sebroeck <wim@iguana.be>
+Cc: linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [2.6 patch] fix watchdog/shwdt.c compilation
+Message-ID: <20080808153911.GC14495@cs181140183.pp.htv.fi>
 MIME-Version: 1.0
-To: Frans Meulenbroeks <fransmeulenbroeks@gmail.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: including .c files ?
-References: <ac9c93b10808080425p321fac13y72a5b2b4e67ee6a9@mail.gmail.com>
-In-Reply-To: <ac9c93b10808080425p321fac13y72a5b2b4e67ee6a9@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -1.0 (-)
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08-08-08 13:25, Frans Meulenbroeks wrote:
+This patch fixes the following compile errors caused by
+commit 70b814ec1a484279a51bf9f7193551b996627247
+([WATCHDOG 45/57] shwdt: coding style, cleanup, switch to unlocked_io):
 
-> I was wondering how people feel about including .c files in other .c
-> files.
-> 
-> I saw a few occasions of this. Triggered by that observation I
-> decided to do a grep for this (on 2.6.25.7 as that was the one I had
-> handy at that moment). Some 268 .c files are included. Seems an awful
-> lot for me.
-> 
-> Do people feel this is good practice? I understand that sometimes it
-> is useful (and then you might need to decide on whether to include a
-> .c file or to have a .h file with code), but in other places it is
-> probably less relevant.
-> 
-> Generally I would expect that if the .c file contains some standalone
->  functionality then it should probably be a .c file on its own with a
->  well defined interface.
-> 
-> Curious what others think about this. As attachement I've added the
-> output of the grep (slightly edited to remove some false positives,
-> like those from the Documentation and scripts directories and those
-> who are obviously comments).
+<--  snip  -->
 
-As you posted, many of these are in sound/ and many of those #define a 
-model and then including the "real source file". Can't say I've been 
-very keen on that either and in those cases using a -D commandline 
-#define might be better especially since I believe that's actually very 
-easy these days.
+...
+  CC      drivers/watchdog/shwdt.o
+shwdt.c:64: error: 'WTCSR_CKS_4096' undeclared here (not in a function)
+shwdt.c: In function 'sh_wdt_start':
+shwdt.c:92: error: 'wdt_lock' undeclared (first use in this function)
+shwdt.c:92: error: (Each undeclared identifier is reported only once
+shwdt.c:92: error: for each function it appears in.)
+shwdt.c:97: error: implicit declaration of function 'sh_wdt_read_csr'
+shwdt.c:98: error: 'WTCSR_WT' undeclared (first use in this function)
+shwdt.c:99: error: implicit declaration of function 'sh_wdt_write_csr'
+shwdt.c:101: error: implicit declaration of function 'sh_wdt_write_cnt'
+shwdt.c:112: error: 'WTCSR_TME' undeclared (first use in this function)
+shwdt.c:113: error: 'WTCSR_RSTS' undeclared (first use in this function)
+shwdt.c: In function 'sh_wdt_stop':
+shwdt.c:142: error: 'wdt_lock' undeclared (first use in this function)
+shwdt.c:147: error: 'WTCSR_TME' undeclared (first use in this function)
+shwdt.c: In function 'sh_wdt_keepalive':
+shwdt.c:160: error: 'wdt_lock' undeclared (first use in this function)
+shwdt.c: In function 'sh_wdt_set_heartbeat':
+shwdt.c:176: error: 'wdt_lock' undeclared (first use in this function)
+shwdt.c: In function 'sh_wdt_ping':
+shwdt.c:192: error: 'wdt_lock' undeclared (first use in this function)
+shwdt.c:197: error: 'WTCSR_IOVF' undeclared (first use in this function)
+shwdt.c: At top level:
+shwdt.c:417: error: conflicting type qualifiers for 'sh_wdt_info'
+shwdt.c:71: error: previous declaration of 'sh_wdt_info' was here
+make[3]: *** [drivers/watchdog/shwdt.o] Error 1
 
-I also keep a local driver here though that #defines some 50 items and 
-then includes the source so that the driver for another version of the 
-card can just redefine those and keep the code itself the same (as a 
-coincidence, I was just porting that one forward in fact).
+<--  snip  -->
 
-This general problem more or less is "library code". Say I have some 
-code that I want to use in two different drivers -- I can't just link it 
-into both due to symbol clashes if I'd try to then _load_ both drivers. 
-So I then have to structure the library code as a completely seperate 
-module that both drivers depend on and for small stuff that's sometimes 
-just really silly. You still definitely don't want two copies of the 
-code to avoid all the usual problems of stuff getting out of sync so a 
-solution is to just #include the library code in both after which its 
-identifiers can be static.
+Reported-by: Adrian Bunk <bunk@kernel.org>
+Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
-If you think about it -- in C, #include really at least conceptually 
-means "cut & paste this in here, please" meaning headers are not 
-anything special and .h and .c seperation is a mere convention.
+---
 
-As we all know, conventions exist _only_ to be violated...
+ drivers/watchdog/shwdt.c |   23 ++++++++++++-----------
+ 1 file changed, 12 insertions(+), 11 deletions(-)
 
-Rene.
+ea098979faf0b600824510a18675e47cdab23aca 
+diff --git a/drivers/watchdog/shwdt.c b/drivers/watchdog/shwdt.c
+index 824125a..9c81aff 100644
+--- a/drivers/watchdog/shwdt.c
++++ b/drivers/watchdog/shwdt.c
+@@ -31,6 +31,7 @@
+ #include <linux/io.h>
+ #include <linux/uaccess.h>
+ #include <linux/watchdog.h>
++#include <asm/watchdog.h>
+ 
+ #define PFX "shwdt: "
+ 
+@@ -68,7 +69,7 @@ static int clock_division_ratio = WTCSR_CKS_4096;
+ static void sh_wdt_ping(unsigned long data);
+ 
+ static unsigned long shwdt_is_open;
+-static struct watchdog_info sh_wdt_info;
++static const struct watchdog_info sh_wdt_info;
+ static char shwdt_expect_close;
+ static DEFINE_TIMER(timer, sh_wdt_ping, 0, 0);
+ static unsigned long next_heartbeat;
+@@ -89,7 +90,7 @@ static void sh_wdt_start(void)
+ 	__u8 csr;
+ 	unsigned long flags;
+ 
+-	spin_lock_irqsave(&wdt_lock, flags);
++	spin_lock_irqsave(&shwdt_lock, flags);
+ 
+ 	next_heartbeat = jiffies + (heartbeat * HZ);
+ 	mod_timer(&timer, next_ping_period(clock_division_ratio));
+@@ -127,7 +128,7 @@ static void sh_wdt_start(void)
+ 	csr &= ~RSTCSR_RSTS;
+ 	sh_wdt_write_rstcsr(csr);
+ #endif
+-	spin_unlock_irqrestore(&wdt_lock, flags);
++	spin_unlock_irqrestore(&shwdt_lock, flags);
+ }
+ 
+ /**
+@@ -139,14 +140,14 @@ static void sh_wdt_stop(void)
+ 	__u8 csr;
+ 	unsigned long flags;
+ 
+-	spin_lock_irqsave(&wdt_lock, flags);
++	spin_lock_irqsave(&shwdt_lock, flags);
+ 
+ 	del_timer(&timer);
+ 
+ 	csr = sh_wdt_read_csr();
+ 	csr &= ~WTCSR_TME;
+ 	sh_wdt_write_csr(csr);
+-	spin_unlock_irqrestore(&wdt_lock, flags);
++	spin_unlock_irqrestore(&shwdt_lock, flags);
+ }
+ 
+ /**
+@@ -157,9 +158,9 @@ static inline void sh_wdt_keepalive(void)
+ {
+ 	unsigned long flags;
+ 
+-	spin_lock_irqsave(&wdt_lock, flags);
++	spin_lock_irqsave(&shwdt_lock, flags);
+ 	next_heartbeat = jiffies + (heartbeat * HZ);
+-	spin_unlock_irqrestore(&wdt_lock, flags);
++	spin_unlock_irqrestore(&shwdt_lock, flags);
+ }
+ 
+ /**
+@@ -173,9 +174,9 @@ static int sh_wdt_set_heartbeat(int t)
+ 	if (unlikely(t < 1 || t > 3600)) /* arbitrary upper limit */
+ 		return -EINVAL;
+ 
+-	spin_lock_irqsave(&wdt_lock, flags);
++	spin_lock_irqsave(&shwdt_lock, flags);
+ 	heartbeat = t;
+-	spin_unlock_irqrestore(&wdt_lock, flags);
++	spin_unlock_irqrestore(&shwdt_lock, flags);
+ 	return 0;
+ }
+ 
+@@ -189,7 +190,7 @@ static void sh_wdt_ping(unsigned long data)
+ {
+ 	unsigned long flags;
+ 
+-	spin_lock_irqsave(&wdt_lock, flags);
++	spin_lock_irqsave(&shwdt_lock, flags);
+ 	if (time_before(jiffies, next_heartbeat)) {
+ 		__u8 csr;
+ 
+@@ -203,7 +204,7 @@ static void sh_wdt_ping(unsigned long data)
+ 	} else
+ 		printk(KERN_WARNING PFX "Heartbeat lost! Will not ping "
+ 		       "the watchdog\n");
+-	spin_unlock_irqrestore(&wdt_lock, flags);
++	spin_unlock_irqrestore(&shwdt_lock, flags);
+ }
+ 
+ /**
+
