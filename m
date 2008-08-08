@@ -1,53 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757967AbYHHQSI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758120AbYHHQS2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757967AbYHHQSI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 12:18:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752890AbYHHQR4
+	id S1758120AbYHHQS2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 12:18:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752890AbYHHQSP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 12:17:56 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:38125 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752883AbYHHQRz (ORCPT
+	Fri, 8 Aug 2008 12:18:15 -0400
+Received: from rtsoft3.corbina.net ([85.21.88.6]:48089 "EHLO
+	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1758002AbYHHQSO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 12:17:55 -0400
-Message-ID: <489C70C2.1070708@kernel.org>
-Date: Fri, 08 Aug 2008 09:13:54 -0700
-From: "H. Peter Anvin" <hpa@kernel.org>
-Organization: Linux Kernel Organization, Inc.
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Fri, 8 Aug 2008 12:18:14 -0400
+Date: Fri, 8 Aug 2008 20:18:13 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Greg Kroah-Hartman <greg@kroah.com>, linux-usb@vger.kernel.org
+Cc: David Brownell <dbrownell@users.sourceforge.net>,
+       Li Yang <leoli@freescale.com>, Timur Tabi <timur@freescale.com>,
+       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: [PATCH 1/3] gpiolib: make gpio_to_chip() public
+Message-ID: <20080808161813.GA31258@polina.dev.rtsoft.ru>
+References: <20080808161717.GA19095@polina.dev.rtsoft.ru>
 MIME-Version: 1.0
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: Zachary Amsden <zach@vmware.com>, Alok Kataria <akataria@vmware.com>,
-       "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, the arch/x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH]Fix broken VMI in 2.6.27-rc..
-References: <1218136365.23770.52.camel@alok-dev1>	 <489B6710.9000604@kernel.org> <1218144438.20178.336.camel@bodhitayantram.eng.vmware.com> <489B836A.3050209@goop.org> <489B84EF.6050009@kernel.org> <489B8948.6060003@goop.org> <489B8A68.10900@kernel.org> <489B8EF4.1030105@goop.org> <489B8FAD.4090904@kernel.org> <489BE351.5030206@goop.org>
-In-Reply-To: <489BE351.5030206@goop.org>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=windows-1251
+Content-Disposition: inline
+In-Reply-To: <20080808161717.GA19095@polina.dev.rtsoft.ru>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge wrote:
->>
->> No, but it's hardly vast effort, either.
-> 
-> Thinking about it, the fixmap really has to be as high as possible.  If 
-> it were any lower, then it would either truncate the 1:1 mapping, or 
-> shadow some physical memory.
-> 
+We'll need this function to write platform-specific hooks to deal
+with pin's dedicated functions. Quite obviously this will work only
+for the platforms with 1-to-1 GPIO to PIN mapping.
 
-The proposal was to put it *before* the 1:1 mapping:
+This is stopgap solution till we think out and implement a proper
+api (pinlib?).
 
-FIX_HOLE would start at TASK_SIZE
-PAGE_OFFSET would shift to TASK_SIZE + PMD_PAGE_SIZE
+Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+---
+ drivers/gpio/gpiolib.c     |    3 ++-
+ include/asm-generic/gpio.h |    1 +
+ 2 files changed, 3 insertions(+), 1 deletions(-)
 
-All the remaining offsets remain as-is.
+diff --git a/drivers/gpio/gpiolib.c b/drivers/gpio/gpiolib.c
+index 8d29405..9536fa8 100644
+--- a/drivers/gpio/gpiolib.c
++++ b/drivers/gpio/gpiolib.c
+@@ -81,10 +81,11 @@ static void gpio_ensure_requested(struct gpio_desc *desc)
+ }
+ 
+ /* caller holds gpio_lock *OR* gpio is marked as requested */
+-static inline struct gpio_chip *gpio_to_chip(unsigned gpio)
++struct gpio_chip *gpio_to_chip(unsigned gpio)
+ {
+ 	return gpio_desc[gpio].chip;
+ }
++EXPORT_SYMBOL_GPL(gpio_to_chip);
+ 
+ /* dynamic allocation of GPIOs, e.g. on a hotplugged device */
+ static int gpiochip_find_base(int ngpio)
+diff --git a/include/asm-generic/gpio.h b/include/asm-generic/gpio.h
+index 0f99ad3..d70ee45 100644
+--- a/include/asm-generic/gpio.h
++++ b/include/asm-generic/gpio.h
+@@ -81,6 +81,7 @@ struct gpio_chip {
+ 	unsigned		exported:1;
+ };
+ 
++extern struct gpio_chip *gpio_to_chip(unsigned gpio);
+ extern const char *gpiochip_is_requested(struct gpio_chip *chip,
+ 			unsigned offset);
+ extern int __must_check gpiochip_reserve(int start, int ngpio);
+-- 
+1.5.5.4
 
-It's slightly less efficient than the current version, since we can't 
-share the PDE page for the fixmap with the final vmalloc map, but not 
-terribly so.
-
-	-hpa
