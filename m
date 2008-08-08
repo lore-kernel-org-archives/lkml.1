@@ -1,142 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754357AbYHHO66@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753850AbYHHPB2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754357AbYHHO66 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 10:58:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752606AbYHHO6f
+	id S1753850AbYHHPB2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 11:01:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752032AbYHHPBR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 10:58:35 -0400
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:45033 "EHLO e5.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752032AbYHHO6c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 10:58:32 -0400
-Date: Fri, 8 Aug 2008 09:58:24 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Ian Kent <raven@themaw.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>, autofs@linux.kernel.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       containers@lists.osdl.org
-Subject: Re: [PATCH 2/4] autofs4 - track uid and gid of last mount requester
-Message-ID: <20080808145824.GB10179@us.ibm.com>
-References: <20080807114002.4142.30417.stgit@web.messagingengine.com> <20080807114012.4142.83607.stgit@web.messagingengine.com> <20080807134650.a6a51f7d.akpm@linux-foundation.org> <20080807221242.GA27032@us.ibm.com> <1218167314.17093.79.camel@raven.themaw.net> <1218170643.17093.88.camel@raven.themaw.net>
+	Fri, 8 Aug 2008 11:01:17 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:34523 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751694AbYHHPBQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Aug 2008 11:01:16 -0400
+Date: Fri, 8 Aug 2008 23:01:08 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: "Michael S. Tsirkin" <m.s.tsirkin@gmail.com>
+Cc: linux-kernel@vger.kernel.org, davem@davemloft.net, yoshfuji@linux-ipv6.org,
+       netdev@vger.kernel.org, haoki@redhat.com
+Subject: Re: possible recursive locking in udp4_lib_rcv
+Message-ID: <20080808150108.GA21048@gondor.apana.org.au>
+References: <20080807234613.GA9598@google.com> <E1KRSxN-0005Ng-00@gondolin.me.apana.org.au> <20080808143741.GA20777@gondor.apana.org.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1218170643.17093.88.camel@raven.themaw.net>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <20080808143741.GA20777@gondor.apana.org.au>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Ian Kent (raven@themaw.net):
-> 
-> On Fri, 2008-08-08 at 11:48 +0800, Ian Kent wrote:
-> > > > 
-> > > > Please remind me again why autofs's use of current->uid and
-> > > > current->gid is not busted in the presence of PID namespaces, where
-> > > > these things are no longer system-wide unique?
-> > > 
-> > > I actually don't see what the autofs4_waitq->pid is used for.  It's
-> > > copied from current into wq->pid at autofs4_wait, and into a packet to
-> > > send to userspace (I assume) at autofs4_notify_daemon.
-> > > 
-> > > So as long as a daemon can serve multiple pid namespaces (which
-> > > doubtless it can), the pid could be confusing (or erroneous) for the
-> > > daemon.
-> > 
-> > Your point is well taken.
-> > 
-> > The pid is used purely for logging purposes to aid in debugging in user
-> > space. I'm not sure it is worth worrying about it too much as the daemon
-> > has no business interfering with user space processes it is not the
-> > owner of.
-> > 
-> > > 
-> > > If I'm remotely right about how the pid is being used, then the thing to
-> > > do would be to 
-> > > 	1. store the daemon's pid namespace  (would that belong in
-> > > 	the autofs_sb_info?)
-> >  
-> > Yep.
-> > 
-> > > 	2. store the task_pid(current) in the waitqueue
-> > > 	3. retrieve the pid_t for the waiting task in the daemon's
-> > > 	pid namespace, and put that into the packet at
-> > > 	autofs4_notify_daemon.
-> > > 
-> > > I realize this patch was about the *uids*, but the pids seem more
-> > > urgent.
-> > 
-> > OK, I get it.
-> > I'll have a go at doing this for completeness.
-> 
-> On second thoughts I'm not sure about this.
-> 
-> The pid that is logged needs to relate to a process in the name space of
-> the one that caused the mount to be done.
-> 
-> For example, suppose a GUI user finds mounts never expiring, then we get
-> a debug log to try and identify the culprit. So the pid should
-> correspond to a process that the user sees (So I guess in the namespace
-> of that user).
-> 
-> This is the only reason I added the pid to the request packet in the
-> first place.
-> 
-> Please correct me if my understanding of this is not right.
+On Fri, Aug 08, 2008 at 10:37:41PM +0800, Herbert Xu wrote:
+>
+> Never mind, I see the reason why it's there.  What we should do
+> is drop the lock when we hit an encapsulated socket since they
+> don't need it at all.
 
-It's not wrong, but we just have to think through which value is the
-most useful.
+Here is the patch:
 
-Any process executing clone(CLONE_NEWPID) (with CAP_SYS_ADMIN) can start
-an application in a new pid namespace.  So imagine the user at the
-desktop clicking some button which runs an application in a new pid
-namespace.  Now if the user starts an xterm and runs ps -ef, the pid
-values he'll see for the tasks in that new namespace will not be the
-same as those which the application sees for itself, and not the same as
-those which, right now, autofs would report.
+udp: Drop socket lock for encapsulated packets
 
-For instance, if I start a shell in a new pid namespace, then within the
-new pid namespace ps -ef gives me:
+The socket lock is there to protect the normal UDP receive path.
+Encapsulation UDP sockets don't need that protection.  In fact
+the locking is deadly for them as they may contain another UDP
+packet within, possibly with the same addresses.
 
-sh-3.2# ps -ef
-UID        PID  PPID  C STIME TTY          TIME CMD
-root         1     0  0 10:54 pts/1    00:00:00 /bin/sh
-root         5     1  0 10:54 pts/1    00:00:00 /bin/sleep 100
-root         6     1  0 10:54 pts/1    00:00:00 ps -ef
+Also the nested bit was copied from TCP.  TCP needs it because
+of accept(2) spawning sockets.  This simply doesn't apply to UDP
+so I've removed it.
 
-but from another shell as the same user, partial output of ps -ef
-gives me:
+Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
 
-root      2877  2876  0 10:54 pts/1    00:00:00 /bin/sh
-root      2881  2877  0 10:54 pts/1    00:00:00 /bin/sleep 100
+diff --git a/net/ipv4/udp.c b/net/ipv4/udp.c
+index 383d173..8e42fbb 100644
+--- a/net/ipv4/udp.c
++++ b/net/ipv4/udp.c
+@@ -989,7 +989,9 @@ int udp_queue_rcv_skb(struct sock * sk, struct sk_buff *skb)
+ 		    up->encap_rcv != NULL) {
+ 			int ret;
+ 
++			bh_unlock_sock(sk);
+ 			ret = (*up->encap_rcv)(sk, skb);
++			bh_lock_sock(sk);
+ 			if (ret <= 0) {
+ 				UDP_INC_STATS_BH(sock_net(sk),
+ 						 UDP_MIB_INDATAGRAMS,
+@@ -1092,7 +1094,7 @@ static int __udp4_lib_mcast_deliver(struct net *net, struct sk_buff *skb,
+ 			if (skb1) {
+ 				int ret = 0;
+ 
+-				bh_lock_sock_nested(sk);
++				bh_lock_sock(sk);
+ 				if (!sock_owned_by_user(sk))
+ 					ret = udp_queue_rcv_skb(sk, skb1);
+ 				else
+@@ -1194,7 +1196,7 @@ int __udp4_lib_rcv(struct sk_buff *skb, struct hlist_head udptable[],
+ 
+ 	if (sk != NULL) {
+ 		int ret = 0;
+-		bh_lock_sock_nested(sk);
++		bh_lock_sock(sk);
+ 		if (!sock_owned_by_user(sk))
+ 			ret = udp_queue_rcv_skb(sk, skb);
+ 		else
+diff --git a/net/ipv6/udp.c b/net/ipv6/udp.c
+index d1477b3..a6aecf7 100644
+--- a/net/ipv6/udp.c
++++ b/net/ipv6/udp.c
+@@ -379,7 +379,7 @@ static int __udp6_lib_mcast_deliver(struct net *net, struct sk_buff *skb,
+ 					uh->source, saddr, dif))) {
+ 		struct sk_buff *buff = skb_clone(skb, GFP_ATOMIC);
+ 		if (buff) {
+-			bh_lock_sock_nested(sk2);
++			bh_lock_sock(sk2);
+ 			if (!sock_owned_by_user(sk2))
+ 				udpv6_queue_rcv_skb(sk2, buff);
+ 			else
+@@ -387,7 +387,7 @@ static int __udp6_lib_mcast_deliver(struct net *net, struct sk_buff *skb,
+ 			bh_unlock_sock(sk2);
+ 		}
+ 	}
+-	bh_lock_sock_nested(sk);
++	bh_lock_sock(sk);
+ 	if (!sock_owned_by_user(sk))
+ 		udpv6_queue_rcv_skb(sk, skb);
+ 	else
+@@ -508,7 +508,7 @@ int __udp6_lib_rcv(struct sk_buff *skb, struct hlist_head udptable[],
+ 
+ 	/* deliver */
+ 
+-	bh_lock_sock_nested(sk);
++	bh_lock_sock(sk);
+ 	if (!sock_owned_by_user(sk))
+ 		udpv6_queue_rcv_skb(sk, skb);
+ 	else
 
-And so what we're trying to decide is whether autofs should send
-pid 5 or pid 2881 for a message about the "/bin/sleep 100" task.
-
-In fact, if the user clicks that button twice, chances are both
-instances of the application will have the same pid values for each
-process in the application.  So now if autofs sends a message to the
-user about the application, the user cannot tell which process is at
-fault.
-
-Autofs will be sending the user some message about 'process 5'.  The
-user won't know whether it means "the real" pid 5, [watchdog/0],
-pid 5 in the first instance of the application, or pid 5 in the
-second instance.
-
-Now it's true that the user's xterm may still be in a different
-(descendent) pidns of the autofs daemon.  But we can't expect
-the autofs daemon to do pid_t translation for the user, so I
-think what we have to aim for is making sure that the values
-reported are unique within the pidns of the autofs daemon.  And
-that means sending back either the pid values in the autofs
-daemon's pid namespace, or using the top-level pid_ts, that is,
-the pid values in the init namespace, which will be unique
-on the whole system.
-
-Sorry this turned out long-winded, I hope it makes sense.
-And if I'm just showing a misunderstanding of what you're doing,
-please do correct me :)
-
-thanks,
--serge
+Cheers,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
