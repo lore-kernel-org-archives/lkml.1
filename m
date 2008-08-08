@@ -1,87 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757615AbYHHNLf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756136AbYHHN0l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757615AbYHHNLf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 09:11:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752771AbYHHNLM
+	id S1756136AbYHHN0l (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 09:26:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753259AbYHHN0e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 09:11:12 -0400
-Received: from Mycroft.westnet.com ([216.187.52.7]:37845 "EHLO
-	Mycroft.westnet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751651AbYHHNLL (ORCPT
+	Fri, 8 Aug 2008 09:26:34 -0400
+Received: from moutng.kundenserver.de ([212.227.126.186]:56169 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753065AbYHHN0d convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 09:11:11 -0400
+	Fri, 8 Aug 2008 09:26:33 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: Carl Love <cel@us.ibm.com>
+Subject: Re: [PATCH 2/2] Cell OProfile: SPU mutex lock fix, version 4
+Date: Fri, 8 Aug 2008 15:26:20 +0200
+User-Agent: KMail/1.9.9
+Cc: linuxppc-dev@ozlabs.org, cel <cel@linux.vnet.ibm.com>,
+       cbe-oss-dev@ozlabs.org, linux-kernel <linux-kernel@vger.kernel.org>
+References: <1217620879.15667.145.camel@carll-linux-desktop>
+In-Reply-To: <1217620879.15667.145.camel@carll-linux-desktop>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18588.17892.1819.479800@stoffel.org>
-Date: Fri, 8 Aug 2008 09:11:00 -0400
-From: "John Stoffel" <john@stoffel.org>
-To: Pavel Machek <pavel@suse.cz>
-Cc: Sage Weil <sage@newdream.net>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, ceph-devel@lists.sourceforge.net
-Subject: Re: Recursive directory accounting for size, ctime, etc.
-In-Reply-To: <20080805182610.GD8380@ucw.cz>
-References: <Pine.LNX.4.64.0806192313530.7379@cobra.newdream.net>
-	<20080805182610.GD8380@ucw.cz>
-X-Mailer: VM 8.0.9 under Emacs 22.2.1 (i486-pc-linux-gnu)
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200808081526.21405.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX19Sd8p1eDyVWJRlDqDFoBC/Oxw1txa16tBNPyX
+ PZR59EczQRxPiqnQu6rbE/5r0v6F9YGIkTjovtxECnMpOKKmVf
+ nuEjLKwH1HvO0a1NWsKBg==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>>>> "Pavel" == Pavel Machek <pavel@suse.cz> writes:
+On Friday 01 August 2008, Carl Love wrote:
+> If an error occurs on opcontrol start, the event and per cpu buffers 
+> are released.  If later opcontrol shutdown is called then the free
+> function will be called again to free buffers that no longer 
+> exist.  This results in a kernel oops.  The following changes
+> prevent the call to delete buffers that don't exist.
+> 
+> Signed-off-by: Carl Love <carll@us.ibm.com>
+> 
 
-Pavel> On Tue 2008-07-15 11:28:22, Sage Weil wrote:
->> All-
->> 
->> Ceph is a new distributed file system for Linux designed for scalability 
->> (terabytes to exabytes, tens to thousands of storage nodes), reliability, 
->> and performance.  The latest release (v0.3), aside from xattr support and 
->> the usual slew of bugfixes, includes a unique (?) recursive accounting 
->> infrastructure that allows statistics about all metadata nested beneath a 
->> point in the directory hierarchy to be efficiently propagated up the tree.  
->> Currently this includes a file and directory count, total bytes (summation 
->> over file sizes), and most recent inode ctime.  For example, for a 
->> directory like /home, Ceph can efficiently report the total number of 
->> files, directories, and bytes contained by that entire subtree of the 
->> directory hierarchy.
->> 
->> The file size summation is the most interesting, as it effectively gives 
->> you directory-based quota space accounting with fine granularity.  In many 
->> deployments, the quota _accounting_ is more important than actual 
->> enforcement.  Anybody who has had to figure out what has filled/is filling 
->> up a large volume will appreciate how cumbersome and inefficient 'du' can 
->> be for that purpose--especially when you're in a hurry.
->> 
->> There are currently two ways to access the recursive stats via a standard 
->> shell.  The first simply sets the directory st_size value to the 
->> _recursive_ bytes ('rbytes') value (when the client is mounted with -o 
->> rbytes).  For example (watch the directory sizes),
-Pavel> ...
+vfree(NULL) is defined to be legal, so you don't need to check the
+argument for being non-NULL, just set it to NULL after the free.
 
->> Naturally, there are a few caveats:
->> 
->> - There is some built-in delay before statistics fully propagate up 
->> toward the root of the hierarchy.  Changes are propagated 
->> opportunistically when lock/lease state allows, with an upper bound of (by 
->> default) ~30 seconds for each level of directory nesting.
-
-Pavel> Having instant rctime would be very nice -- for stuff like locate and
-Pavel> speeding up kde startup.
-
->> I'm extremely interested in what people think of overloading the file 
->> system interface in this way.  Handy?  Crufty?  Dangerous?  Does anybody 
-
-Pavel> Too ugly to live.
-
-Pavel> What about new rstat() syscall?
-
-Or how about tying this into the quotactl() syscall and extending it a
-bit?  Say quotactl2(cmd,device,id,addr,path) which is probably just as
-ugly, but seems to make better sense.
-
-Me, I'd love to have this type of reporting on my filesystems, esp
-since it would help me in my day job.
-
-How exports over NFS would look is an issue too.
-
-John
+	Arnd <><
