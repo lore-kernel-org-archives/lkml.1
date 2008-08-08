@@ -1,60 +1,183 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754450AbYHHHXw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754380AbYHHH2T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754450AbYHHHXw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 03:23:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752123AbYHHHXo
+	id S1754380AbYHHH2T (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 03:28:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752123AbYHHH2K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 03:23:44 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:37318 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752049AbYHHHXn (ORCPT
+	Fri, 8 Aug 2008 03:28:10 -0400
+Received: from smtp1.stealer.net ([88.198.224.204]:49414 "EHLO
+	smtp1.stealer.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752049AbYHHH2J (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 03:23:43 -0400
-Subject: Re: [PATCH 0/5] ftrace: to kill a daemon
-From: Peter Zijlstra <peterz@infradead.org>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Roland McGrath <roland@redhat.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       David Miller <davem@davemloft.net>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Ulrich Drepper <drepper@redhat.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Gregory Haskins <ghaskins@novell.com>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       "Luis Claudio R. Goncalves" <lclaudio@uudg.org>,
-       Clark Williams <williams@redhat.com>, Sam Ravnborg <sam@ravnborg.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-In-Reply-To: <alpine.DEB.1.10.0808072113290.18565@gandalf.stny.rr.com>
-References: <20080807182013.984175558@goodmis.org>
-	 <489B6511.7000208@goop.org>
-	 <alpine.DEB.1.10.0808071721200.10092@gandalf.stny.rr.com>
-	 <20080807222642.761AF15429D@magilla.localdomain>
-	 <alpine.DEB.1.10.0808072113290.18565@gandalf.stny.rr.com>
-Content-Type: text/plain
-Date: Fri, 08 Aug 2008 09:22:50 +0200
-Message-Id: <1218180170.8625.62.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 8 Aug 2008 03:28:09 -0400
+Date: Fri, 8 Aug 2008 09:27:58 +0200 (CEST)
+From: Sven Wegener <sven.wegener@stealer.net>
+To: Nate Case <ncase@xes-inc.com>
+cc: rpurdie@rpsys.net, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: [PATCHv3] leds-pca955x: Add proper error handling and fix bogus
+ memory handling
+In-Reply-To: <alpine.LNX.1.10.0808080852000.16201@titan.stealer.net>
+Message-ID: <alpine.LNX.1.10.0808080924560.16201@titan.stealer.net>
+References: <1210972198.13845.540.camel@localhost.localdomain> <alpine.LNX.1.10.0808080041460.16201@titan.stealer.net> <alpine.LNX.1.10.0808080852000.16201@titan.stealer.net>
+User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
+Organization: STEALER.net
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Score: -2.5
+X-Spam-Bar: --
+X-Spam-Report: Scanned by SpamAssassin 3.2.1-gr1 2007-05-02 on smtp1.stealer.net at Fri, 08 Aug 2008 07:28:08 +0000
+	Bayes: 0.0001 Tokens: new, 269; hammy, 7; neutral, 5; spammy, 0.
+	AutoLearn: no
+	*  0.1 RDNS_NONE Delivered to trusted network by a host with no rDNS
+	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
+	*      [score: 0.0001]
+X-Spam-Signature: be7af03d4093294e3c88c0b25dcee97de753d889
+X-DomainKey-Status: no signature
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-08-07 at 21:21 -0400, Steven Rostedt wrote:
+Check the return value of led_classdev_register and unregister all registered
+devices, if registering one device fails. Also the dynamic memory handling is
+totally bogus. You can't allocate multiple chunks via kzalloc() and expect them
+to be in order later.
 
-> Which would people prefer?  I little longer full build and do the 
-> modification on every object, or have a shorter full build, but every 
-> build will take that extra minute to do?
+Signed-off-by: Sven Wegener <sven.wegener@stealer.net>
+---
+ drivers/leds/leds-pca955x.c |   71 +++++++++++++++++++++++-------------------
+ 1 files changed, 39 insertions(+), 32 deletions(-)
 
-I have a very strong preference to do it per obj rather than at the end,
-that way it can be distributed and make these fancy smp boxen useful.
+Here's a slightly updated patch, with some changes I had forgotten.
+Shouldn't change the logic at all.
 
-Bonus points if you can make distcc dig it.
+- Another 32 -> sizeof() conversion
+- Move the unregister code to where we also free the memory on failure
 
-The vmlinux link path is the thing that is killing build performance,
-anything to shorten that is golden, anything increasing it needs _very_
-good justification.
+And one more
 
+- cancel_work_sync() when unregistering on failure
+
+diff --git a/drivers/leds/leds-pca955x.c b/drivers/leds/leds-pca955x.c
+index 146c069..8c45acc 100644
+--- a/drivers/leds/leds-pca955x.c
++++ b/drivers/leds/leds-pca955x.c
+@@ -248,11 +248,10 @@ static int __devinit pca955x_probe(struct i2c_client *client,
+ 					const struct i2c_device_id *id)
+ {
+ 	struct pca955x_led *pca955x;
+-	int i;
+-	int err = -ENODEV;
+ 	struct pca955x_chipdef *chip;
+ 	struct i2c_adapter *adapter;
+ 	struct led_platform_data *pdata;
++	int i, err;
+ 
+ 	chip = &pca955x_chipdefs[id->driver_data];
+ 	adapter = to_i2c_adapter(client->dev.parent);
+@@ -282,43 +281,41 @@ static int __devinit pca955x_probe(struct i2c_client *client,
+ 		}
+ 	}
+ 
++	pca955x = kzalloc(sizeof(*pca955x) * chip->bits, GFP_KERNEL);
++	if (!pca955x)
++		return -ENOMEM;
++
++	i2c_set_clientdata(client, pca955x);
++
+ 	for (i = 0; i < chip->bits; i++) {
+-		pca955x = kzalloc(sizeof(struct pca955x_led), GFP_KERNEL);
+-		if (!pca955x) {
+-			err = -ENOMEM;
+-			goto exit;
+-		}
++		pca955x[i].chipdef = chip;
++		pca955x[i].client = client;
++		pca955x[i].led_num = i;
+ 
+-		pca955x->chipdef = chip;
+-		pca955x->client = client;
+-		pca955x->led_num = i;
+ 		/* Platform data can specify LED names and default triggers */
+ 		if (pdata) {
+ 			if (pdata->leds[i].name)
+-				snprintf(pca955x->name, 32, "pca955x:%s",
+-							pdata->leds[i].name);
++				snprintf(pca955x[i].name,
++					 sizeof(pca955x[i].name), "pca955x:%s",
++					 pdata->leds[i].name);
+ 			if (pdata->leds[i].default_trigger)
+-				pca955x->led_cdev.default_trigger =
++				pca955x[i].led_cdev.default_trigger =
+ 					pdata->leds[i].default_trigger;
+ 		} else {
+-			snprintf(pca955x->name, 32, "pca955x:%d", i);
++			snprintf(pca955x[i].name, sizeof(pca955x[i].name),
++				 "pca955x:%d", i);
+ 		}
+-		spin_lock_init(&pca955x->lock);
+ 
+-		pca955x->led_cdev.name = pca955x->name;
+-		pca955x->led_cdev.brightness_set =
+-				pca955x_led_set;
++		spin_lock_init(&pca955x[i].lock);
+ 
+-		/*
+-		 * Client data is a pointer to the _first_ pca955x_led
+-		 * struct
+-		 */
+-		if (i == 0)
+-			i2c_set_clientdata(client, pca955x);
++		pca955x[i].led_cdev.name = pca955x[i].name;
++		pca955x[i].led_cdev.brightness_set = pca955x_led_set;
+ 
+-		INIT_WORK(&(pca955x->work), pca955x_led_work);
++		INIT_WORK(&pca955x[i].work, pca955x_led_work);
+ 
+-		led_classdev_register(&client->dev, &(pca955x->led_cdev));
++		err = led_classdev_register(&client->dev, &pca955x[i].led_cdev);
++		if (err < 0)
++			goto exit;
+ 	}
+ 
+ 	/* Turn off LEDs */
+@@ -336,23 +333,33 @@ static int __devinit pca955x_probe(struct i2c_client *client,
+ 	pca955x_write_psc(client, 1, 0);
+ 
+ 	return 0;
++
+ exit:
++	while (i > 0) {
++		i--;
++		led_classdev_unregister(&pca955x[i].led_cdev);
++		cancel_work_sync(&pca955x[i].work);
++	}
++
++	kfree(pca955x);
++	i2c_set_clientdata(client, NULL);
++
+ 	return err;
+ }
+ 
+ static int __devexit pca955x_remove(struct i2c_client *client)
+ {
+ 	struct pca955x_led *pca955x = i2c_get_clientdata(client);
+-	int leds = pca955x->chipdef->bits;
+ 	int i;
+ 
+-	for (i = 0; i < leds; i++) {
+-		led_classdev_unregister(&(pca955x->led_cdev));
+-		cancel_work_sync(&(pca955x->work));
+-		kfree(pca955x);
+-		pca955x = pca955x + 1;
++	for (i = 0; i < pca955x->chipdef->bits; i++) {
++		led_classdev_unregister(&pca955x[i].led_cdev);
++		cancel_work_sync(&pca955x[i].work);
+ 	}
+ 
++	kfree(pca955x);
++	i2c_set_clientdata(client, NULL);
++
+ 	return 0;
+ }
+ 
