@@ -1,180 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760201AbYHHTKF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759570AbYHHTNb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760201AbYHHTKF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 15:10:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757893AbYHHTJv
+	id S1759570AbYHHTNb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 15:13:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756589AbYHHTNW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 15:09:51 -0400
-Received: from dresden.studentenwerk.mhn.de ([141.84.225.229]:38538 "EHLO
-	email.studentenwerk.mhn.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758057AbYHHTJt convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 15:09:49 -0400
-From: Wolfgang Walter <wolfgang.walter@stwm.de>
-Organization: Studentenwerk =?iso-8859-1?q?M=FCnchen?=
-To: Suresh Siddha <suresh.b.siddha@intel.com>
-Subject: Re: Kernel oops with 2.6.26, padlock and ipsec: probably problem with fpu state changes
-Date: Fri, 8 Aug 2008 21:09:46 +0200
-User-Agent: KMail/1.9.5
-Cc: Herbert Xu <herbert@gondor.apana.org.au>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>
-References: <200807171653.59177.wolfgang.walter@stwm.de> <200808071823.02364.wolfgang.walter@stwm.de> <200808081236.55172.wolfgang.walter@stwm.de>
-In-Reply-To: <200808081236.55172.wolfgang.walter@stwm.de>
+	Fri, 8 Aug 2008 15:13:22 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:48793 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754727AbYHHTNW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Aug 2008 15:13:22 -0400
+Message-ID: <489C9ACA.5060501@zytor.com>
+Date: Fri, 08 Aug 2008 12:13:14 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200808082109.47284.wolfgang.walter@stwm.de>
+To: Rene Herman <rene.herman@keyaccess.nl>
+CC: Frans Meulenbroeks <fransmeulenbroeks@gmail.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: including .c files ?
+References: <ac9c93b10808080425p321fac13y72a5b2b4e67ee6a9@mail.gmail.com> <489C681B.1020805@keyaccess.nl>
+In-Reply-To: <489C681B.1020805@keyaccess.nl>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Freitag, 8. August 2008 12:36 schrieb Wolfgang Walter:
-> Am Donnerstag, 7. August 2008 18:23 schrieb Wolfgang Walter:
-> > =======================================================
-> > diff -ur ../linux-2.6.26/drivers/crypto/padlock-aes.c
-> > ./drivers/crypto/padlock-aes.c ---
-> > ../linux-2.6.26/drivers/crypto/padlock-aes.c	2008-07-15
-> > 11:29:32.000000000 +0200 +++ ./drivers/crypto/padlock-aes.c	2008-08-07
-> > 17:46:55.000000000 +0200 @@ -16,6 +16,7 @@
-> >  #include <linux/interrupt.h>
-> >  #include <linux/kernel.h>
-> >  #include <asm/byteorder.h>
-> > +#include <asm/i387.h>
-> >  #include "padlock.h"
-> >
-> >  /* Control word. */
-> > @@ -144,9 +145,11 @@
-> >  static inline void padlock_xcrypt(const u8 *input, u8 *output, void
-> > *key, void *control_word)
-> >  {
-> > +	kernel_fpu_begin();
-> >  	asm volatile (".byte 0xf3,0x0f,0xa7,0xc8"	/* rep xcryptecb */
-> >
-> >  		      : "+S"(input), "+D"(output)
-> >  		      : "d"(control_word), "b"(key), "c"(1));
-> >
-> > +	kernel_fpu_end();
-> >  }
-> >
-> >  static void aes_crypt_copy(const u8 *in, u8 *out, u32 *key, struct cword
-> > *cword) @@ -179,6 +182,7 @@
-> >  		return;
-> >  	}
-> >
-> > +	kernel_fpu_begin();
-> >  	asm volatile ("test $1, %%cl;"
-> >  		      "je 1f;"
-> >  		      "lea -1(%%ecx), %%eax;"
-> > @@ -190,15 +194,18 @@
-> >
-> >  		      : "+S"(input), "+D"(output)
-> >  		      : "d"(control_word), "b"(key), "c"(count)
-> >  		      : "ax");
-> >
-> > +	kernel_fpu_end();
-> >  }
-> >
-> >  static inline u8 *padlock_xcrypt_cbc(const u8 *input, u8 *output, void
-> > *key, u8 *iv, void *control_word, u32 count)
-> >  {
-> >  	/* rep xcryptcbc */
-> > +	kernel_fpu_begin();
-> >  	asm volatile (".byte 0xf3,0x0f,0xa7,0xd0"
-> >
-> >  		      : "+S" (input), "+D" (output), "+a" (iv)
-> >  		      : "d" (control_word), "b" (key), "c" (count));
-> >
-> > +	kernel_fpu_end();
-> >  	return iv;
-> >  }
-> >
-> > =============================================================
-> >
-> > I found that kernel_fpu_begin(); kernel_fpu_begin(); is used with
-> > MMX and/or SSE:
-> >
-> > include/asm/xor_32.h
-> > drivers/md/raid6mmx.c
-> > drivers/md/raid6sse1.c
-> > drivers/md/raid6sse2.c
-> >
-> >
-> > With this change I its a little bit more stable, I needed more then 5
-> > minutes to crash the kernel (repeated it several times). If I read
-> > the code correctly this disables preemption for the time the padlock cmd
-> > is executing.
->
-> Forget that - I booted the wrong kernel.
->
-> I now really test this modification and it seems to be stable. The router
-> now runs for 45 minutes without oops.
+Rene Herman wrote:
+> 
+> If you think about it -- in C, #include really at least conceptually 
+> means "cut & paste this in here, please" meaning headers are not 
+> anything special and .h and .c seperation is a mere convention.
+> 
+> As we all know, conventions exist _only_ to be violated...
+> 
 
-It now runs for 8 hours.
+The real issue is that the convention -- .c versus .h -- recognize *two* 
+kinds of files, but there really are *three* kinds of files:
 
-So how to proceed?
+- Files meant to be included that generate no code (.h)
+- Files meant to be included that generate code (???)
+- Files not meant to be included (.c)
 
-Here a summary:
+Some projects -- including the Linux kernel -- have adopted the 
+convention that the middle type should be .c, others .h, others probably 
+other variants.  You typically want them treated as .h files for 
+purposes of generating dependencies, but like .c files for purposes of, 
+say, header file include guard checking.
 
-1) 2.6.25.x works
-
-2) 2.6.26 without padlock works
-
-3a) 2.6.26 using padlock and ipsec chrashes. 
-
-Always the same reason:
-
-	__switch_to() wants to fxsave but there is no memory allocated
-
-which means that TS_USEDFPU has been set.
-
-3b) 2.6.26 with padlock code from 2.6.25: using padlock and ipsec chrashes.
-
-4) Reverting the fpu patches (from 2.6.25 to 2.6.26) fixes the problem.
-
-5) Protecting the padlock cmds with kernel_fpu_begin(); kernel_fpu_begin(); 
-fixes the problem.
-
-
-Some thoughts:
-
-4) probably fixes the problem because memory for fxsave is always allocated.
-
-Maybe this is also the reason why 2.6.25 and earlier work.
-
-5) is interesting:
-
-kernel_fpu_begin() will save the fpu state if TS_USEDFPU is set - exactly as 
-__unlazy_fpu in __switch_to would do. So when the crypto code calls padlock 
-the world is ok: if TS_USEDFPU is set then memory has been allocated.
-
-This makes me rather sure that there is no memory corruption by the network 
-code and/or crypto code itself overwriting the task_info stucture and setting 
-TS_USEDFPU.
-
-I don't know though why kernel_fpu_begin exactly fixes the problem:
-
-Maybe preemption must be disabled when padlocks RNG, ACE, Hash-engine etc. is 
-used. Maybe just some barrier is needed which preempt_disable provides.
-
-The padlock programming guide states that padlock's RNG, ACE, ... internally 
-use SSE. Especially "it temporary enables SSE until no further SSE 
-instruction or XSTORE, ... is seen". Further it may overlap with execution of 
-non-SSE instructions.
-
-
-Probably it is the best to treat the padlock opcodes as SSE instructions.
-
-
-
-What should I do now?
-
-
-Regards,
--- 
-Wolfgang Walter
-Studentenwerk München
-Anstalt des öffentlichen Rechts
+	-hpa
