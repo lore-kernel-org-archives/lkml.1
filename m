@@ -1,148 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756455AbYHHKhN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756687AbYHHKiV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756455AbYHHKhN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 06:37:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753984AbYHHKg6
+	id S1756687AbYHHKiV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 06:38:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754215AbYHHKiM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 06:36:58 -0400
-Received: from mailin.studentenwerk.mhn.de ([141.84.225.229]:38738 "EHLO
-	email.studentenwerk.mhn.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753113AbYHHKg5 convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 06:36:57 -0400
-From: Wolfgang Walter <wolfgang.walter@stwm.de>
-Organization: Studentenwerk =?iso-8859-1?q?M=FCnchen?=
-To: Suresh Siddha <suresh.b.siddha@intel.com>
-Subject: Re: Kernel oops with 2.6.26, padlock and ipsec: probably problem with fpu state changes
-Date: Fri, 8 Aug 2008 12:36:54 +0200
-User-Agent: KMail/1.9.5
-Cc: Herbert Xu <herbert@gondor.apana.org.au>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>
-References: <200807171653.59177.wolfgang.walter@stwm.de> <20080806201401.GA607@linux-os.sc.intel.com> <200808071823.02364.wolfgang.walter@stwm.de>
-In-Reply-To: <200808071823.02364.wolfgang.walter@stwm.de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200808081236.55172.wolfgang.walter@stwm.de>
+	Fri, 8 Aug 2008 06:38:12 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:54917
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1753984AbYHHKiK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Aug 2008 06:38:10 -0400
+Date: Fri, 08 Aug 2008 03:38:11 -0700 (PDT)
+Message-Id: <20080808.033811.129671951.davem@davemloft.net>
+To: a.beregalov@gmail.com
+Cc: mikpe@it.uu.se, kernel-testers@vger.kernel.org, sparclinux@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: 2.6.26-rc: SPARC: Sun Ultra 10 can not boot
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <a4423d670808080314weed9178o9f9ef52803a68501@mail.gmail.com>
+References: <a4423d670808080231nc4d5e25q6636fe8ff090b84@mail.gmail.com>
+	<20080808.024024.205614839.davem@davemloft.net>
+	<a4423d670808080314weed9178o9f9ef52803a68501@mail.gmail.com>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Donnerstag, 7. August 2008 18:23 schrieb Wolfgang Walter:
-> Am Mittwoch, 6. August 2008 22:14 schrieb Suresh Siddha:
-> > On Wed, Aug 06, 2008 at 10:33:25AM -0700, Wolfgang Walter wrote:
-> > > Hello Herbert,
-> > >
-> > > I think I finally found the problem.
-> > >
-> > > Here a short description again: all our routers with a via C3 using
-> > > padlock for AES-encryption are crashing with 2.6.26 while they work
-> > > fine with 2.6.25. Not using padlock (i.e. using the i386 assembler
-> > > version of AES) they just work fine.
+From: "Alexander Beregalov" <a.beregalov@gmail.com>
+Date: Fri, 8 Aug 2008 14:14:00 +0400
+
+> 2008/8/8 David Miller <davem@davemloft.net>:
+> > From: "Alexander Beregalov" <a.beregalov@gmail.com>
+> > Date: Fri, 8 Aug 2008 13:31:40 +0400
 > >
-> > Both the padlock version or asm version don't use FP/math registers,
-> > right? It is interesting that you don't see the problem with asm version
-> > but see the problem with padlock version.
+> >> 2008/8/8 David Miller <davem@davemloft.net>:
+> >> > From: "Alexander Beregalov" <a.beregalov@gmail.com>
+> >> > Date: Mon, 7 Jul 2008 19:59:04 +0400
+> >> >
+> >> >> I have turned off LOCKDEP and it boots properly.
+> >> >> 2.6.26-rc9-00005-g1b40a89
+> >> >>
+> >> >> Mikael's config also does not contain LOCKDEP.
+> >> >
+> >> > I have finally reproduced the problem locally and figured out the
+> >> > bug.
+> >> >
+> >> > Please try this patch:
+> >> >
+> >> Thanks David,  but 2.6.27-rc2-00166-gaeee90d hangs in the same way.
 > >
-> > Does disabling CONFIG_PREEMPT in 2.6.26 change anything? And also,
->
-> Didn't check that yet as I'm still running my modified 2.6.26. It now runs
-> almost one day flawlessly.
->
-> But yesterday I tried the following patch on top of a vanilla 2.6.26:
->
-> =======================================================
-> diff -ur ../linux-2.6.26/drivers/crypto/padlock-aes.c
-> ./drivers/crypto/padlock-aes.c ---
-> ../linux-2.6.26/drivers/crypto/padlock-aes.c	2008-07-15 11:29:32.000000000
-> +0200 +++ ./drivers/crypto/padlock-aes.c	2008-08-07 17:46:55.000000000
-> +0200 @@ -16,6 +16,7 @@
->  #include <linux/interrupt.h>
->  #include <linux/kernel.h>
->  #include <asm/byteorder.h>
-> +#include <asm/i387.h>
->  #include "padlock.h"
->
->  /* Control word. */
-> @@ -144,9 +145,11 @@
->  static inline void padlock_xcrypt(const u8 *input, u8 *output, void *key,
->  				  void *control_word)
->  {
-> +	kernel_fpu_begin();
->  	asm volatile (".byte 0xf3,0x0f,0xa7,0xc8"	/* rep xcryptecb */
->
->  		      : "+S"(input), "+D"(output)
->  		      : "d"(control_word), "b"(key), "c"(1));
->
-> +	kernel_fpu_end();
->  }
->
->  static void aes_crypt_copy(const u8 *in, u8 *out, u32 *key, struct cword
-> *cword) @@ -179,6 +182,7 @@
->  		return;
->  	}
->
-> +	kernel_fpu_begin();
->  	asm volatile ("test $1, %%cl;"
->  		      "je 1f;"
->  		      "lea -1(%%ecx), %%eax;"
-> @@ -190,15 +194,18 @@
->
->  		      : "+S"(input), "+D"(output)
->  		      : "d"(control_word), "b"(key), "c"(count)
->  		      : "ax");
->
-> +	kernel_fpu_end();
->  }
->
->  static inline u8 *padlock_xcrypt_cbc(const u8 *input, u8 *output, void
-> *key, u8 *iv, void *control_word, u32 count)
->  {
->  	/* rep xcryptcbc */
-> +	kernel_fpu_begin();
->  	asm volatile (".byte 0xf3,0x0f,0xa7,0xd0"
->
->  		      : "+S" (input), "+D" (output), "+a" (iv)
->  		      : "d" (control_word), "b" (key), "c" (count));
->
-> +	kernel_fpu_end();
->  	return iv;
->  }
->
-> =============================================================
->
-> I found that kernel_fpu_begin(); kernel_fpu_begin(); is used with
-> MMX and/or SSE:
->
-> include/asm/xor_32.h
-> drivers/md/raid6mmx.c
-> drivers/md/raid6sse1.c
-> drivers/md/raid6sse2.c
->
->
-> With this change I its a little bit more stable, I needed more then 5
-> minutes to crash the kernel (repeated it several times). If I read
-> the code correctly this disables preemption for the time the padlock cmd
-> is executing.
+> > That patch was for you to add on top of whatever tree you
+> > have handy.  Did you apply the patch?
+> >
+> > That patch will fix all trees.
+> >
+> Yes, I applied it manually on top of 2.6.27-rc2-0166
 
-Forget that - I booted the wrong kernel.
-
-I now really test this modification and it seems to be stable. The router now 
-runs for 45 minutes without oops.
-
-Regards,
--- 
-Wolfgang Walter
-Studentenwerk München
-Anstalt des öffentlichen Rechts
-Leiter EDV
-Leopoldstraße 15
-80802 München
-Tel: +49 89 38196 276
-Fax: +49 89 38196 150
-Email: wolfgang.walter@stwm.de
-http://www.studentenwerk-muenchen.de/
+And then the problem goes away right?
