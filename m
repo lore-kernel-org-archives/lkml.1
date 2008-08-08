@@ -1,66 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757441AbYHHNnc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757783AbYHHNpG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757441AbYHHNnc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 09:43:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753440AbYHHNnX
+	id S1757783AbYHHNpG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 09:45:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753780AbYHHNot
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 09:43:23 -0400
-Received: from smtpq2.groni1.gr.home.nl ([213.51.130.201]:37033 "EHLO
-	smtpq2.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752352AbYHHNnW (ORCPT
+	Fri, 8 Aug 2008 09:44:49 -0400
+Received: from 166-70-238-42.ip.xmission.com ([166.70.238.42]:54773 "EHLO
+	ns1.wolfmountaingroup.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753051AbYHHNot (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 09:43:22 -0400
-Message-ID: <489C4D7B.3090902@keyaccess.nl>
-Date: Fri, 08 Aug 2008 15:43:23 +0200
-From: Rene Herman <rene.herman@keyaccess.nl>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080707)
+	Fri, 8 Aug 2008 09:44:49 -0400
+Message-ID: <36420.166.70.238.45.1218201795.squirrel@webmail.wolfmountaingroup.com>
+In-Reply-To: <37357.166.70.238.45.1218201115.squirrel@webmail.wolfmountaingroup.com
+     >
+References: <82e4877d0808072133q58150665r355c9bf140d0b42c@mail.gmail.com>
+    <37357.166.70.238.45.1218201115.squirrel@webmail.wolfmountaingroup.com>
+Date: Fri, 8 Aug 2008 07:23:15 -0600 (MDT)
+Subject: Re: [ANNOUNCE] mdb-2.6.27-rc2-ia32-08-07-08.patch
+From: jmerkey@wolfmountaingroup.com
+To: jmerkey@wolfmountaingroup.com
+Cc: "Parag Warudkar" <parag.warudkar@gmail.com>, jmerkey@wolfmountaingroup.com,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+User-Agent: SquirrelMail/1.4.6
 MIME-Version: 1.0
-To: "Press, Jonathan" <Jonathan.Press@ca.com>
-CC: Eric Paris <eparis@redhat.com>, linux-kernel@vger.kernel.org,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, malware-list@lists.printk.net
-Subject: Re: [malware-list] [RFC 0/5] [TALPA] Intro to a linux	interface	for
- on access scanning
-References: <20080804223249.GA10517@kroah.com>	<1217896374.27684.53.camel@localhost.localdomain>	<20080805005132.GA3661@kroah.com>	<20080805122328.69a37c1d@lxorguk.ukuu.org.uk>	<20080805170307.GB9639@kroah.com>	<1217962602.27684.144.camel@localhost.localdomain>	<20080805203007.GB27489@kroah.com>	<1218048597.27684.276.camel@localhost.localdomain>	<20080806210202.GA9413@mit.edu>	<1218058081.5837.49.camel@localhost.localdomain>	<20080806215244.GA21462@mit.edu>	<1218118603.5837.101.camel@localhost.localdomain>	<489BAA25.3030004@keyaccess.nl><1218161738.5837.218.camel@localhost.localdomain> <489BB5BE.20602@keyaccess.nl> <2629CC4E1D22A64593B02C43E855530304AE4B37@USILMS12.ca.com> <489C3D67.2070207@keyaccess.nl> <2629CC4E1D22A64593B02C43E855530304AE4B39@USILMS12.ca.com>
-In-Reply-To: <2629CC4E1D22A64593B02C43E855530304AE4B39@USILMS12.ca.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -1.0 (-)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08-08-08 15:11, Press, Jonathan wrote:
+>> Jeff,
+>>
+>> This definitely looks interesting and it even worked for me - breaking
+>> in couple of times, trying various commands and resuming back to X all
+>> works. Never tried a kernel debugger before but most things were
+>> obvious after I figured out that I need to be on the VT to be able to
+>> press break and be dropped into the debugger.
+>>
+>> That said, it triggers soft lockups on all the suspended CPUs - not a
+>> big deal and probably expected, but I guess that can be cured by
+>> touching the soft lockup watch dog or something?
+>
+> Yep.
+>
+> It does with this kprobes interface, I noticed it last night.  I will run
+> this down.  I am touching the watchdog in the keyboard handler.
+>
+> Jeff
 
-> One is the guy right out of college who really likes computers and he
-> gets a job at a place where they use Linux, and he does a web search
-> and finds this really cool application that might help him do his job
-> better, so he installs it on the spot.  Uh-oh.
 
-See, that never happens here. Our guys use Linux while _in_ college (in 
-between the periods where they need to run Windows to get their college 
-work done ofcourse) and after graduation take a job collecting microsoft 
-certifications that their boss pays them to collect.
+Reproduced it.   It just spits out the noisy message but the system
+continues and the processors resume running.  This is is an esoteric
+issue, but I will run it down.  It does not happen on kernel versions
+prior to 2.6.26.
 
-Then I come along a couple of years later and buy the old soundcards 
-that they put up for sale on our national auction site, mentioning I 
-want that stuff for Linux testing and they get all teary-eyed and 
-melancholic about the good old days when they had the time to play 
-around with linux. Those fun childhood days.
+Jeff
 
-Not making it up.
+>
+>>
+>> Thanks
+>>
+>> Parag
+>>
+>
+>
+>
 
-> One is the guy who's been working there for a while and the head of
-> IT, tired of spending so much on Windows, tells him to install Linux
-> on a few machines, so he follows the instructions and he's now the 
-> administrator.
 
-I saw that happening a few years ago here. By now, the small time shops 
-that I'm aware of have all gone back to Windows. Linux simply cost them 
-too much time which, if IT is not their business, they had no intention 
-whatsoever of spending on IT.
-
-Do let me assure you though that I'm definitely aware that my personal 
-frame of refence might not be all that gobally applicable and bow out of 
-the discussion.
-
-Rene.
