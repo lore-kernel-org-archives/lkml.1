@@ -1,63 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756155AbYHHDHU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756513AbYHHDMg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756155AbYHHDHU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Aug 2008 23:07:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753285AbYHHDHI
+	id S1756513AbYHHDMg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Aug 2008 23:12:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753285AbYHHDMZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Aug 2008 23:07:08 -0400
-Received: from vapor.arctrix.com ([66.220.1.99]:49714 "HELO vapor.arctrix.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751239AbYHHDHH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Aug 2008 23:07:07 -0400
-X-Greylist: delayed 402 seconds by postgrey-1.27 at vger.kernel.org; Thu, 07 Aug 2008 23:07:07 EDT
-Date: Thu, 7 Aug 2008 21:00:25 -0600
-From: Neil Schemenauer <nas@arctrix.com>
-To: linux-kernel@vger.kernel.org
-Subject: Hung task while reading USB mass storage device (2.6.26)
-Message-ID: <20080808030025.GA18962@arctrix.com>
+	Thu, 7 Aug 2008 23:12:25 -0400
+Received: from 175.212.DSNET ([203.110.175.212]:12379 "EHLO mail.atheros.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751239AbYHHDMY convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Aug 2008 23:12:24 -0400
+From: Jie Yang <Jie.Yang@Atheros.com>
+To: roel kluin <roel.kluin@gmail.com>,
+       "jgarzik@redhat.com" <jgarzik@redhat.com>
+CC: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "jeff@garzik.org" <jeff@garzik.org>,
+       "jacliburn@bellsouth.net" <jacliburn@bellsouth.net>
+Date: Fri, 8 Aug 2008 11:12:20 +0800
+Subject: RE: [PATCH?] atl1e: WAKE_MCAST 2x. 1st WAKE_UCAST?
+Thread-Topic: [PATCH?] atl1e: WAKE_MCAST 2x. 1st WAKE_UCAST?
+Thread-Index: Acj4eP9gvbaPqdPGQCmW1E/15SYX/QAio+SA
+Message-ID: <72981EBCFD196144B7C6999B9FC34A9A3EE61F99BC@SHEXMB-01.global.atheros.com>
+References: <489B21CA.7010508@gmail.com>
+In-Reply-To: <489B21CA.7010508@gmail.com>
+Accept-Language: zh-CN, en-US
+Content-Language: zh-CN
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: zh-CN, en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Friday, August 08, 2008 12:25 AM
+roel kluin <roel.kluin@gmail.com> wrote
 
-This happened with 2.6.26 on an AMD64 machine.  I was attempting to
-read an entire partition on a SD card attached to a USB reader.
-sysreq-W gives:
+>
+> untested, is it right?
+> ---
+> WAKE_MCAST bit tested twice, test WAKE_UCAST first.
+>
+> Signed-off-by: Roel Kluin <roel.kluin@gmail.com> diff --git
+> a/drivers/net/atl1e/atl1e_ethtool.c
+> b/drivers/net/atl1e/atl1e_ethtool.c
+> index cdc3b85..619c658 100644
+> --- a/drivers/net/atl1e/atl1e_ethtool.c
+> +++ b/drivers/net/atl1e/atl1e_ethtool.c
+> @@ -355,7 +355,7 @@ static int atl1e_set_wol(struct
+> net_device *netdev, struct ethtool_wolinfo *wol)
+>         struct atl1e_adapter *adapter = netdev_priv(netdev);
+>
+>         if (wol->wolopts & (WAKE_ARP | WAKE_MAGICSECURE |
+> -                           WAKE_MCAST | WAKE_BCAST | WAKE_MCAST))
+> +                           WAKE_UCAST | WAKE_MCAST | WAKE_BCAST))
+>                 return -EOPNOTSUPP;
+>         /* these settings will always override what we
+> currently have */
+>         adapter->wol = 0;
+>
 
-dd            D ffff8100010018b8     0  3887   3876
- ffff810062a9dac8 0000000000000046 ffff81002f9ee420 ffff810054f80c28
- ffffffff8047f8c0 ffff810062a9da78 ffff810062a9db58 ffffffff805d4f00
- ffffffff805d4f00 ffffffff805d2270 ffffffff805d4f00 ffff81006e2106d0
-Call Trace:
- [<ffffffff8025403b>] find_get_pages_tag+0x34/0x7e
- [<ffffffff80254200>] sync_page+0x0/0x41
- [<ffffffff8045aaab>] io_schedule+0x28/0x33
- [<ffffffff8025423c>] sync_page+0x3c/0x41
- [<ffffffff8045abf0>] __wait_on_bit_lock+0x3f/0x72
- [<ffffffff802541ec>] __lock_page+0x5e/0x64
- [<ffffffff8023ef3e>] wake_bit_function+0x0/0x23
- [<ffffffff8025b884>] pagevec_lookup+0x17/0x1e
- [<ffffffff8025bfae>] truncate_inode_pages_range+0x251/0x2d9
- [<ffffffff80296c79>] __blkdev_put+0x4f/0x11c
- [<ffffffff80274a77>] __fput+0xb1/0x176
- [<ffffffff802723cb>] filp_close+0x5d/0x65
- [<ffffffff8022ff6c>] put_files_struct+0x66/0xc4
- [<ffffffff802311f7>] do_exit+0x23a/0x639
- [<ffffffff8023745e>] __dequeue_signal+0x19/0x15a
- [<ffffffff8023165c>] do_group_exit+0x66/0x93
- [<ffffffff802392d8>] get_signal_to_deliver+0x2d5/0x2f2
- [<ffffffff8020b1a7>] do_notify_resume+0xac/0x7d3
- [<ffffffff8023ef10>] autoremove_wake_function+0x0/0x2e
- [<ffffffff802743f4>] vfs_read+0x11e/0x132
- [<ffffffff80274e18>] fget_light+0x19/0x8a
- [<ffffffff8020be54>] sysret_signal+0x1c/0x27
- [<ffffffff8020c0d7>] ptregscall_common+0x67/0xb0
+Yes, it should be this, thanks!
 
-I hope this information is useful.
+Acked-by: Jie Yang <jie.yang@atheros.com>
 
-  Neil
+BTW: resend on the comments from Jay Cliburn <jacliburn@bellsouth.net>
+
+Thanks Jay
