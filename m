@@ -1,77 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754878AbYHHJYd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754751AbYHHJ1f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754878AbYHHJYd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 05:24:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752520AbYHHJYY
+	id S1754751AbYHHJ1f (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 05:27:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752372AbYHHJ12
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 05:24:24 -0400
-Received: from smtpq2.groni1.gr.home.nl ([213.51.130.201]:58419 "EHLO
-	smtpq2.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751327AbYHHJYX (ORCPT
+	Fri, 8 Aug 2008 05:27:28 -0400
+Received: from moutng.kundenserver.de ([212.227.126.183]:56063 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752352AbYHHJ11 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 05:24:23 -0400
-Message-ID: <489C10C5.9060208@keyaccess.nl>
-Date: Fri, 08 Aug 2008 11:24:21 +0200
-From: Rene Herman <rene.herman@keyaccess.nl>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080707)
+	Fri, 8 Aug 2008 05:27:27 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+Subject: Re: [RFC][PATCH 0/4] kernel-based checkpoint restart
+Date: Fri, 8 Aug 2008 11:25:12 +0200
+User-Agent: KMail/1.9.9
+Cc: Oren Laadan <orenl@cs.columbia.edu>, containers@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org, Theodore Tso <tytso@mit.edu>,
+       "Serge E. Hallyn" <serue@us.ibm.com>
+References: <20080807224033.FFB3A2C1@kernel>
+In-Reply-To: <20080807224033.FFB3A2C1@kernel>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
-To: Simon Arlott <simon@fire.lp0.eu>
-CC: Alan Stern <stern@rowland.harvard.edu>,
-       Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
-       mingo@elte.hu, Daniel Walker <dwalker@mvista.com>,
-       USB list <linux-usb@vger.kernel.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: Re: [PATCH RFC] USB: Add HCD fastboot
-References: <Pine.LNX.4.44L0.0807311510220.5019-100000@iolanthe.rowland.org> <4899F035.9040003@simon.arlott.org.uk>
-In-Reply-To: <4899F035.9040003@simon.arlott.org.uk>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -1.0 (-)
+Content-Disposition: inline
+Message-Id: <200808081125.12706.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1+bRsNBLXY6Mnp6GMzXR8bDFvP6tDv4DwY/XIp
+ WpCQo1hixepWV6NmjBaPfMr03QKjF4AeXAgAA+RDZ4G9qUmAAC
+ ixhb/0jw0IzFIk44ZtXMA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 06-08-08 20:40, Simon Arlott wrote:
+On Friday 08 August 2008, Dave Hansen wrote:
+> These patches are from Oren Laaden.  I've refactored them
+> a bit to make them a wee bit more reviewable.  I think this
+> separates out the per-arch bits pretty well.  It should also
+> be at least build-bisetable.
 
->>> Ok - so there could be some big improvements to be had by making the 
->>> hcd init happen as early as possible and the device initcalls later?
->>
->> Maybe.  Perhaps a better approach would be to make the device driver 
->> initcalls before there are any devices for their probe routines to 
->> block on.
+Cool stuff
+
+> ============================== ckpt.c ================================
 > 
-> What about this?
+> #define _GNU_SOURCE        /* or _BSD_SOURCE or _SVID_SOURCE */
 > 
-> The Makefiles become a bit messy, but by moving things around I get the 
-> desired effect without splitting their initcalls.
-> 
-> [    7.941890] Write protecting the kernel read-only data: 5656k
-> [    5.437709] Write protecting the kernel read-only data: 5656k
-> 
-> 2.5s faster, which is almost half the boot time.
-> 
-> Signed-off-by: Simon Arlott <simon@fire.lp0.eu>
+> #include <stdio.h>
+> #include <stdlib.h>
+> #include <errno.h>
+> #include <fcntl.h>
+> #include <unistd.h>
+> #include <asm/unistd_32.h>
+> #include <sys/syscall.h>
 
-Interesting... I haven't been able to get stable improvements, with all 
-USB kernel modules built-in, just a USB mouse on OHCI and otherwise a 
-switched of USB HD on EHCI and usb-storage, but I do get the idea that 
-with your parch, I "get lucky" more often.
+Note that asm/unistd_32.h is not portable, you should use asm/unistd.h
+in the example.
 
-I have knfsd as a module and it loads through the exportfs trigger 
-during bootup and outputs the last message to my dmesg:
+>         pid_t pid = getpid();
+>         int ret;
+>
+>         ret = syscall(__NR_checkpoint, pid, STDOUT_FILENO, 0);
 
-4 boots without your patch: 6.12, 6.41, 6.38, 6.34 seconds
-4 boots with              : 5.39, 6.33, 5.37, 6.34
+Interface-wise, I would consider checkpointing yourself signficantly
+different from checkpointing some other thread. If checkpointing
+yourself is the common case, it probably makes sense to allow passing
+of pid=0 for this.
 
-Booting with the external HD switched on adds a tiny bit to the actual 
-kernel startup time -- completely repeatable 2.62 seconds until freeing 
-init code with the HD off versus 2.73 with it on -- but doesn't seem to 
-change the picture otherwise...
-
-Would those results make sense you feel? I'm not looking forward to 
-putting an actual statistical analysis on it ;-)
-
-Arjan: your fastboot repo by the way doesn't pull cleanly into current 
-upstream anymore.
-
-Rene.
+	Arnd <><
