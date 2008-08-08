@@ -1,139 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755364AbYHHDdE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755300AbYHHDiq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755364AbYHHDdE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Aug 2008 23:33:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753378AbYHHDcy
+	id S1755300AbYHHDiq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Aug 2008 23:38:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753377AbYHHDih
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Aug 2008 23:32:54 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:42021 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753141AbYHHDcy (ORCPT
+	Thu, 7 Aug 2008 23:38:37 -0400
+Received: from po-out-1718.google.com ([72.14.252.153]:22504 "EHLO
+	po-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753141AbYHHDig (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Aug 2008 23:32:54 -0400
-Subject: Re: [GIT PULL]: firmware patches for building firmware into kernel
-From: Jaswinder Singh <jaswinder@infradead.org>
-To: David Dillow <dave@thedillows.org>
-Cc: David Woodhouse <dwmw2@infradead.org>, LKML <linux-kernel@vger.kernel.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <1218133288.18118.20.camel@lap75545.ornl.gov>
-References: <1218128219.14483.7.camel@jaswinder.satnam>
-	 <1218130222.18118.7.camel@lap75545.ornl.gov>
-	 <1218130475.14483.16.camel@jaswinder.satnam>
-	 <1218133288.18118.20.camel@lap75545.ornl.gov>
-Content-Type: text/plain
-Date: Fri, 08 Aug 2008 09:01:10 +0530
-Message-Id: <1218166270.2540.9.camel@jaswinder.satnam>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+	Thu, 7 Aug 2008 23:38:36 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=i2jvDdShS2TxySdYdX4G0pazVICI+eas/3dvhrLAESlYdNSCae/K4jC+Hnbytx4oiK
+         4/Wf/6Ebp7hxv/ShRe6d2bF3nCRY0vFB9V+yP+zS+o4im+isTLTtvH+PR1OUNs3quB4o
+         LmnGKu/I9EHxAM29wvSvd5bGoQqkYnkVvokHE=
+Message-ID: <a36005b50808072038w3e88658p6769e1e3779b6cab@mail.gmail.com>
+Date: Thu, 7 Aug 2008 20:38:35 -0700
+From: "Ulrich Drepper" <drepper@gmail.com>
+To: "Austin Zhang" <austin_zhang@linux.intel.com>
+Subject: Re: [PATCH] Using Intel CRC32 instruction to accelerate CRC32c algorithm by new crypto API -V3.
+Cc: herbert@gondor.apana.org.au, bunk@kernel.org, dwmw2@infradead.org,
+       davem@davemloft.net, randy.dunlap@oracle.com,
+       linux-kernel@vger.kernel.org, linux-crypto@vger.kernel.org
+In-Reply-To: <1218000211.4231.23.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1218000211.4231.23.camel@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Dave,
+On Tue, Aug 5, 2008 at 10:23 PM, Austin Zhang
+<austin_zhang@linux.intel.com> wrote:
+> +#ifdef CONFIG_X86_64
+> +#define REX_PRE "0x48, "
+> +#define SCALE_F 8
+> +#else
+> +#define REX_PRE
+> +#define SCALE_F 4
+> +#endif
+[...]
+> +static u32 __pure crc32c_intel_le_hw(u32 crc, unsigned char const *p, size_t len)
+> +{
+> +       unsigned int iquotient = len / SCALE_F;
+> +       unsigned int iremainder = len % SCALE_F;
+> +       unsigned long *ptmp = (unsigned long *)p;
+> +
+> +       while (iquotient--) {
+> +               __asm__ __volatile__(
+> +                       ".byte 0xf2, " REX_PRE "0xf, 0x38, 0xf1, 0xf1;"
+> +                       :"=S"(crc)
+> +                       :"0"(crc), "c"(*ptmp)
+> +               );
+> +               ptmp++;
 
-On Thu, 2008-08-07 at 14:21 -0400, David Dillow wrote:
+I think you want to use
 
-> I just looked at the tree; it still has locking issues, and needs
-> further review. You must protect the list from modification while you
-> iterate it looking for an match on the requested firmware. 
+  #define SCALE_F sizeof(unsigned long)
 
-So here is updated patch:
+Since the loop iteration count etc depends on
 
-diff --git a/drivers/base/firmware_class.c b/drivers/base/firmware_class.c
-index 6074321..71ec20d 100644
---- a/drivers/base/firmware_class.c
-+++ b/drivers/base/firmware_class.c
-@@ -419,9 +419,9 @@ _request_firmware(const struct firmware **firmware_p, const char *name,
- 		return -EINVAL;
- 
- 	/* Return firmware pointer from firmware list if already allocated */
-+	mutex_lock(&fw_lock);
- 	list_for_each_entry(flst, &firmwarelist, list)
- 		if (strcmp(name, flst->name) == 0) {
--			mutex_lock(&fw_lock);
- 			flst->count++;
- 			*firmware_p = flst->fw;
- 			mutex_unlock(&fw_lock);
-@@ -429,6 +429,7 @@ _request_firmware(const struct firmware **firmware_p, const char *name,
- 			       name, flst->count);
- 			return 0;
- 		}
-+	mutex_unlock(&fw_lock);
- 
- 	*firmware_p = firmware = kzalloc(sizeof(*firmware), GFP_KERNEL);
- 	if (!firmware)
-@@ -568,19 +569,22 @@ void release_firmware(const struct firmware *fw)
- {
- 	struct firmware_list *flst;
- 
-+	mutex_lock(&fw_lock);
- 	if (fw)
- 		list_for_each_entry(flst, &firmwarelist, list)
- 			if (fw == flst->fw) {
- 				printk(KERN_INFO
- 				       "firmware: releasing %s count %d\n",
- 				       flst->name, flst->count);
--				mutex_lock(&fw_lock);
- 				flst->count--;
--				mutex_unlock(&fw_lock);
--				if (flst->count == 0)
--					__release_firmware(fw, flst);
--				return;
-+				if (flst->count == 0) {
-+					mutex_unlock(&fw_lock);
-+					return __release_firmware(fw, flst);
-+				}
-+				goto out;
- 			}
-+out:
-+	mutex_unlock(&fw_lock);
- }
- 
- /*
-@@ -598,6 +602,7 @@ void release_firmware_all(const struct firmware *fw)
- {
- 	struct firmware_list *flst;
- 
-+	mutex_lock(&fw_lock);
- 	if (fw)
- 		list_for_each_entry(flst, &firmwarelist, list)
- 			if (fw == flst->fw) {
-@@ -605,13 +610,14 @@ void release_firmware_all(const struct firmware *fw)
- 				       "firmware: release_all %s count %d\n",
- 				       flst->name, flst->count);
- 				if (flst->count) {
--					mutex_lock(&fw_lock);
- 					flst->count = 0;
- 					mutex_unlock(&fw_lock);
--					__release_firmware(fw, flst);
-+					return __release_firmware(fw, flst);
- 				}
--				return;
-+				goto out;
- 			}
-+out:
-+	mutex_unlock(&fw_lock);
- }
- 
- /* Async support */
+   ptmp++
 
-
-> Also, was it legal to call release_firmware() from an atomic context? It can now
-> sleep, which may be an issue...
-> 
-
-yes, release_firmware can sleep. 
-So now release_firmware also joined the family of request_firmware.
-
-If you can do request_firmware you can also do release_firmware.
-
-Any how release_firmware will be called below request_firmware or during
-exit, I do not think this will make any issue.
-
-Thank you,
-
-Jaswinder Singh.
-
-
+which depends on the type being unsigned long.
