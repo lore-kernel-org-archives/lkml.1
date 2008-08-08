@@ -1,78 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754553AbYHHJWj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754878AbYHHJYd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754553AbYHHJWj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 05:22:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752458AbYHHJWa
+	id S1754878AbYHHJYd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 05:24:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752520AbYHHJYY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 05:22:30 -0400
-Received: from rv-out-0506.google.com ([209.85.198.234]:59844 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752467AbYHHJW3 (ORCPT
+	Fri, 8 Aug 2008 05:24:24 -0400
+Received: from smtpq2.groni1.gr.home.nl ([213.51.130.201]:58419 "EHLO
+	smtpq2.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751327AbYHHJYX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 05:22:29 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=AY8A5atnnU9q6CdjUma7tq7x7oXlrWWGX/9guOgV9QkVDmOkGvDO15IzxUWFiYHZLu
-         C0SSD7nLIY7SsUSCJbCZyEjgklDPi7TkEVahCu8JsqoZVUIFLmrbzfmd04yWLSn+WkJE
-         Eb74oKHlm8CDJAYhNwpq7zk5HMNBq0ZpVM73g=
-Message-ID: <38b2ab8a0808080222h6d810b7fheefaf3633e65ea8a@mail.gmail.com>
-Date: Fri, 8 Aug 2008 11:22:29 +0200
-From: "Francis Moreau" <francis.moro@gmail.com>
-To: "Hugh Dickins" <hugh@veritas.com>
-Subject: Re: question about do_anonymous_page()
-Cc: "Rik van Riel" <riel@redhat.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-In-Reply-To: <Pine.LNX.4.64.0808080938001.15941@blonde.site>
+	Fri, 8 Aug 2008 05:24:23 -0400
+Message-ID: <489C10C5.9060208@keyaccess.nl>
+Date: Fri, 08 Aug 2008 11:24:21 +0200
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080707)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Simon Arlott <simon@fire.lp0.eu>
+CC: Alan Stern <stern@rowland.harvard.edu>,
+       Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, Daniel Walker <dwalker@mvista.com>,
+       USB list <linux-usb@vger.kernel.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: Re: [PATCH RFC] USB: Add HCD fastboot
+References: <Pine.LNX.4.44L0.0807311510220.5019-100000@iolanthe.rowland.org> <4899F035.9040003@simon.arlott.org.uk>
+In-Reply-To: <4899F035.9040003@simon.arlott.org.uk>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <38b2ab8a0808080101v795327f0n9da5adb33a3c1a9@mail.gmail.com>
-	 <38b2ab8a0808080123t5083dc17qa250bd02c753f80d@mail.gmail.com>
-	 <Pine.LNX.4.64.0808080938001.15941@blonde.site>
+X-Spam-Score: -1.0 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 8, 2008 at 10:51 AM, Hugh Dickins <hugh@veritas.com> wrote:
->> Is it simply because lru_add_active() doesn't exist ?
->
-> Yes.
->
+On 06-08-08 20:40, Simon Arlott wrote:
 
-great at least one thing I understood from the kernel mm internals ;)
+>>> Ok - so there could be some big improvements to be had by making the 
+>>> hcd init happen as early as possible and the device initcalls later?
+>>
+>> Maybe.  Perhaps a better approach would be to make the device driver 
+>> initcalls before there are any devices for their probe routines to 
+>> block on.
+> 
+> What about this?
+> 
+> The Makefiles become a bit messy, but by moving things around I get the 
+> desired effect without splitting their initcalls.
+> 
+> [    7.941890] Write protecting the kernel read-only data: 5656k
+> [    5.437709] Write protecting the kernel read-only data: 5656k
+> 
+> 2.5s faster, which is almost half the boot time.
+> 
+> Signed-off-by: Simon Arlott <simon@fire.lp0.eu>
 
-> It just happens that whoever (Rik?) originally named that function was
-> primarily thinking of the page cache at the time; or perhaps wasn't
-> thinking of the file page cache at all, just regarding all the pages
-> we put on that list as cached in some sense.
->
+Interesting... I haven't been able to get stable improvements, with all 
+USB kernel modules built-in, just a USB mouse on OHCI and otherwise a 
+switched of USB HD on EHCI and usb-storage, but I do get the idea that 
+with your parch, I "get lucky" more often.
 
-I think it might be the second reason since the page is not directly
-added to the LRU
-but to a pagevec structure since the term 'cache'. But IMHO if so,
-it's just confusing and
-lru_cache_add_active() shouldn't contain implemantation details in its name.
+I have knfsd as a module and it loads through the exportfs trigger 
+during bootup and outputs the last message to my dmesg:
 
-> You're right that it's a little anomalous, but nothing to worry about.
+4 boots without your patch: 6.12, 6.41, 6.38, 6.34 seconds
+4 boots with              : 5.39, 6.33, 5.37, 6.34
 
-well, it's just that I got confusing when reading the code for the
-first time. I really have hard
-time to understand it...
+Booting with the external HD switched on adds a tiny bit to the actual 
+kernel startup time -- completely repeatable 2.62 seconds until freeing 
+init code with the HD off versus 2.73 with it on -- but doesn't seem to 
+change the picture otherwise...
 
-> I get more bothered by page_cache_get(), which is and always(?) has
-> been the same thing as get_page(): sometimes we use one, sometimes
-> the other, and often we use page_cache_get() on anonymous pages.
->
+Would those results make sense you feel? I'm not looking forward to 
+putting an actual statistical analysis on it ;-)
 
-Yes and this is what confused me: lru_cache_add_active() does call
-page_cache_get()
-for anymous pages, hence my question.
+Arjan: your fastboot repo by the way doesn't pull cleanly into current 
+upstream anymore.
 
-
-Thanks !
--- 
-Francis
+Rene.
