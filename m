@@ -1,74 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755818AbYHHBpe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755537AbYHHBtk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755818AbYHHBpe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Aug 2008 21:45:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752778AbYHHBpZ
+	id S1755537AbYHHBtk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Aug 2008 21:49:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752778AbYHHBtb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Aug 2008 21:45:25 -0400
-Received: from a-sasl-quonix.sasl.smtp.pobox.com ([208.72.237.25]:43279 "EHLO
-	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752190AbYHHBpY (ORCPT
+	Thu, 7 Aug 2008 21:49:31 -0400
+Received: from smtp-out2.blueyonder.co.uk ([195.188.213.5]:40664 "EHLO
+	smtp-out2.blueyonder.co.uk" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751287AbYHHBtb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Aug 2008 21:45:24 -0400
-From: Junio C Hamano <gitster@pobox.com>
-To: Paul Mackerras <paulus@samba.org>
-Cc: linux-kernel@vger.kernel.org, Stephen Rothwell <sfr@canb.auug.org.au>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Petr Baudis <pasky@suse.cz>, "Shawn O. Pearce" <spearce@spearce.org>,
-       Johannes Schindelin <Johannes.Schindelin@gmx.de>
-Subject: [PATCH] powerpc: Do not ignore arch/powerpc/include
-References: <20080721002354.GK10151@machine.or.cz>
- <20080721002508.26773.92277.stgit@localhost>
- <7v8wvpm9cl.fsf@gitster.siamese.dyndns.org>
- <7vej5543v5.fsf_-_@gitster.siamese.dyndns.org>
- <alpine.LFD.1.10.0808041719380.3299@nehalem.linux-foundation.org>
- <7vk5etjozt.fsf@gitster.siamese.dyndns.org>
-Date: Thu, 07 Aug 2008 18:45:08 -0700
-In-Reply-To: <7vk5etjozt.fsf@gitster.siamese.dyndns.org> (Junio C. Hamano's
- message of "Wed, 06 Aug 2008 23:52:38 -0700")
-Message-ID: <7vzlnogtzv.fsf_-_@gitster.siamese.dyndns.org>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Thu, 7 Aug 2008 21:49:31 -0400
+Message-ID: <489BA629.4030008@blueyonder.co.uk>
+Date: Fri, 08 Aug 2008 02:49:29 +0100
+From: Sid Boyce <g3vbv@blueyonder.co.uk>
+Reply-To: g3vbv@blueyonder.co.uk
+Organization: blueyonder.co.uk
+User-Agent: Thunderbird 3.0a1 (X11/2008050714)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Pobox-Relay-ID: A85504BA-64EB-11DD-B63F-3113EBD4C077-77302942!a-sasl-quonix.pobox.com
+To: linux-kernel@vger.kernel.org
+Subject: A question regarding init_mm
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Back when .gitignore file was added to arch/powerpc/ in 06f2138 ([POWERPC]
-Add files build to .gitignore, 2006-11-26), there indeed was nothing
-tracked in the ignored hierarchy and ignoring everything made sense.  But
-we have very many tracked files there these days, and having a higher
-level .gitignore that ignores everything is asking for future troubles..
+Trying to build the nvidia video module for 2.6.26-git through 
+2.6.27-rc2, I get "Unknown symbol init_mm", openSUSE 11.1 Alpha1.
+Checking a few places I can see init_mm.
+# cat /proc/kallsyms |grep init_mm
+ffffffff80630020 D init_mm
 
-This should have been part of b8b572e (powerpc: Move include files to
-arch/powerpc/include/asm, 2008-08-01).
+# grep init_mm System.map-2.6.27-rc2-smp
+ffffffff80630020 D init_mm
+/usr/src/linux-2.6.27-rc2/arch/x86/kernel # grep init_mm init_task.c
+struct mm_struct init_mm = INIT_MM(init_mm);
+EXPORT_UNUSED_SYMBOL(init_mm); /* will be removed in 2.6.26 */
 
-Signed-off-by: Junio C Hamano <gitster@pobox.com>
----
-  Junio C Hamano <gitster@pobox.com> writes:
-
-  > By the way, if anybody wants to reproduce this, be careful with the
-  > tests that run "rm -f .git/index" before adding everything with
-  > "git add ."  from the toplevel directory.  After doing so, if you check
-  > the result with "git diff --stat HEAD", you will notice many missing files;
-  > I almost got a heart attack before inspecting this file:
-  >
-  > 	$ cat arch/powerpc/.gitignore
-  >         include
-  >
-  > Yes, it excludes 261 already tracked files.  Is it intended?  I dunno.
-
-  I looked at this a bit more and now I know this was not intended.
-
- arch/powerpc/.gitignore |    1 -
- 1 files changed, 0 insertions(+), 1 deletions(-)
-
-diff --git a/arch/powerpc/.gitignore b/arch/powerpc/.gitignore
-deleted file mode 100644
-index a1a869c..0000000
---- a/arch/powerpc/.gitignore
-+++ /dev/null
-@@ -1 +0,0 @@
--include
+Any thoughts on why it's not seen? No one on the nvidia list has a clue 
+either.
+Regards
+Sid.
+-- 
+Sid Boyce ... Hamradio License G3VBV, Licensed Private Pilot
+Emeritus IBM/Amdahl Mainframes and Sun/Fujitsu Servers Tech Support 
+Specialist, Cricket Coach
+Microsoft Windows Free Zone - Linux used for all Computing Tasks
 
