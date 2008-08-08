@@ -1,69 +1,170 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762620AbYHHWPQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761627AbYHHWQP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762620AbYHHWPQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 18:15:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752105AbYHHWPA
+	id S1761627AbYHHWQP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 18:16:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752105AbYHHWPx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 18:15:00 -0400
-Received: from an-out-0708.google.com ([209.85.132.247]:3607 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751498AbYHHWO7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 18:14:59 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=ixHb/xDdYZ0GOzIo6QJy9oBeL60SBGh55VvGZPhaHgwi9P6HmIDRmitkDC92GfCmC6
-         vHIK9lvFFG+QuKNt+AYxP0VQgHx89xPt7fpTrKHUchBm8BP8d3oYi9pfQTMclZ5s4FC7
-         NW2lX9RQbJZvKUP3rtjIG+BGBOiNNbTpkG5HM=
-Message-ID: <86802c440808081514w3a7ea1d6hda2442e7bf6729a4@mail.gmail.com>
-Date: Fri, 8 Aug 2008 15:14:55 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH 00/42] dyn_array/nr_irqs/sparse_irq support v5
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Dhaval Giani" <dhaval@linux.vnet.ibm.com>,
-       "Mike Travis" <travis@sgi.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <489CC246.5000202@zytor.com>
+	Fri, 8 Aug 2008 18:15:53 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:53017 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750771AbYHHWPv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Aug 2008 18:15:51 -0400
+Message-ID: <489CC58D.4010606@pobox.com>
+Date: Fri, 08 Aug 2008 18:15:41 -0400
+From: Jeff Garzik <jgarzik@pobox.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Steve Wise <swise@opengridcomputing.com>, davem@davemloft.net
+CC: Divy Le Ray <divy@chelsio.com>, Roland Dreier <rdreier@cisco.com>,
+       Karen Xie <kxie@chelsio.com>, netdev@vger.kernel.org,
+       open-iscsi@googlegroups.com, michaelc@cs.wisc.edu, daisyc@us.ibm.com,
+       wenxiong@us.ibm.com, bhua@us.ibm.com,
+       Dimitrios Michailidis <dm@chelsio.com>,
+       Casey Leedom <leedom@chelsio.com>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Mike Christie <michaelc@cs.wisc.edu>
+Subject: Re: [RFC][PATCH 1/1] cxgb3i: cxgb3 iSCSI initiator
+References: <200807300019.m6U0JkdY012558@localhost.localdomain> <aday73jxdfs.fsf@cisco.com> <200807311752.00911.divy@chelsio.com> <200808071145.03848.divy@chelsio.com> <489C8BEB.8060001@opengridcomputing.com>
+In-Reply-To: <489C8BEB.8060001@opengridcomputing.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1218232368-31228-1-git-send-email-yhlu.kernel@gmail.com>
-	 <489CC246.5000202@zytor.com>
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 8, 2008 at 3:01 PM, H. Peter Anvin <hpa@zytor.com> wrote:
-> Yinghai Lu wrote:
+Steve Wise wrote:
+> 
+>> Hi Jeff,
 >>
->> Please check dyn_array support for x86
->> v3: split changing to nr_irqs to small patches
->>   fix checkpatch error
->>   reorder the patch sequence to make dyn_array support go at first
->>       so could use that with arrays other than NR_IRQS
->> v4: add CONFIG_HAVE_SPARSE_IRQ with list to use condensed irq_desc array
->>   so could use 32 init, and init more if needed.
->>   x86 32bit: have CONFIG_HAVE_DYN_ARRAY
->>   x86 64bit: have CONFIG_HAVE_DYN_ARRAY and CONFIG_HAVE_SPARSE_IRQ
+>> Mike Christie will not merge this code until he has an explicit 
+>> acknowledgement from netdev.
 >>
->
-> So I'm still clearly missing something about this... if we need sparse IRQs
-> in the first place (which we do), what's the point of the dyn_array?
+>> As you mentioned, the port stealing approach we've taken has its issues.
+>> We consequently analyzed your suggestion to use a different IP/MAC 
+>> address for iSCSI and it raises other tough issues (separate ARP and 
+>> DHCP management, unavailability of common networking tools).
+>> On these grounds, we believe our current approach is the most tolerable.
+>> Would the stack provide a TCP port allocation service, we'd be glad to 
+>> use it to solve the current concerns.
+>> The cxgb3i driver is up and running here, its merge is pending our 
+>> decision.
+>>
+>> Cheers,
+>> Divy
+>>   
+> Hey Dave/Jeff,
+> 
+> I think we need some guidance here on how to proceed.   Is the approach 
+> currently being reviewed ACKable?  Or is it DOA? If its DOA, then what 
+> approach do you recommend?  I believe Jeff's opinion is a separate 
+> ipaddr.  But Dave, what do you think?  Lets get some agreement on a high 
+> level design here.
+> Possible solutions seen to date include:
+> 
+> 1) reserving a socket to allocate the port.  This has been NAK'd in the 
+> past and I assume is still a no go.
+> 
+> 2) creating a 4-tuple allocation service so the host stack, the rdma 
+> stack, and the iscsi stack can share the same TCP 4-tuple space.  This 
+> also has been NAK'd in the past and I assume is still a no go.
+> 
+> 3) the iscsi device allocates its own local ephemeral posts (port 
+> stealing) and use the host's ip address for the iscsi offload device.  
+> This is the current proposal and you can review the thread for the pros 
+> and cons.  IMO it is the least objectionable (and I think we really 
+> should be doing #2).
+> 
+> 4) the iscsi device will manage its own ip address thus ensuring 4-tuple 
+> uniqueness.
 
-x86_64: support CONFIG_HAVE_SPARSE_IRQ and CONFIG_DYN_ARRAY
-x86_32: support CONFIG_DYN_ARRAY
+Conceptually, it is a nasty business for the OS kernel to be forced to 
+co-manage an IP address in conjunction with a remote, independent entity.
 
-some arches could use dyn_array with probing nr_irqs and it could be
-32 and much less than 224.
-some could have that like 512. and those arch may not need to mess up
-with sparse_irq at first point.
-but still could get some flexibilty about that array size.
+Hardware designers make the mistake of assuming that firmware management 
+of a TCP port ("port stealing") successfully provides the illusion to 
+the OS that that port is simply inactive, and the OS happily continues 
+internetworking its merry way through life.
 
-YH
+This is certainly not true, because of current netfilter and userland 
+application behavior, which often depends on being able to allocate 
+(bind) to random TCP ports.  Allocating a TCP port successfully within 
+the OS, that then behaves different from all other TCP ports (because it 
+is the magic iSCSI port) creates a cascading functional disconnect.  On 
+that magic iSCSI port, strange errors will be returned instead of proper 
+behavior.  Which, in turn, cascades through new (and inevitably 
+under-utilized) error handling paths in the app.
+
+So, of course, one must work around problems like this, which leads to 
+one of two broad choices:
+
+1) implement co-management (sharing) of IP address/port space, between 
+the OS kernel and a remote entity.
+
+2) come up with a solution in hardware that does not require the OS to 
+co-manage the data it has so far been managing exclusively in software.
+
+It should be obvious that we prefer path #2.
+
+For, trudging down path #1 means
+
+* one must give the user the ability to manage shared IP addresses IN A 
+NON-HARDWARE-SPECIFIC manner.  Currently most vendors of "TCP port 
+stealing" solutions seem to expect each user to learn a vendor-specific 
+method of identifying and managing the "magic port".
+
+Excuse my language, but, what a fucking security and management 
+nightmare in a cross-vendor environment.  It is already a pain, with 
+some [unnamed system/chipset vendors] management stealing TCP ports -- 
+and admins only discover this fact when applications behave strangely on 
+new hardware.
+
+But...  its tough to notice because stumbling upon the magic TCP port 
+won't happen often unless the server is heavily loaded.  Thus you have a 
+security/application problem once in a blue moon, due to this magic TCP 
+port mentioned in some obscure online documentation nobody has read.
+
+
+* however, giving the user the ability to co-manage IP addresses means 
+hacking up the kernel TCP code and userland tools for this new concept, 
+something that I think DaveM would rightly be a bit reluctant to do? 
+You are essentially adding a bunch of special case code whenever TCP 
+ports are used:
+
+	if (port in list of "magic" TCP ports with special,
+	    hardware-specific behavior)
+		...
+	else
+		do what we've been doing for decades
+
+ISTR Roland(?) pointing out code that already does a bit of this in the 
+IB space...  but the point is
+
+
+Finally, this shared IP address/port co-management thing has several 
+problems listed on the TOE page: http://www.linuxfoundation.org/en/Net:TOE
+
+such as,
+
+* security updates for TCP problems mean that a single IP address can be 
+PARTIALLY SECURE, because security updates for kernel TCP stack and 
+h/w's firmware are inevitably updated separately (even if distributed 
+and compiled together).  Yay, we are introducing a wonderful new 
+security problem here.
+
+* from a security, network scanner and packet classifier point of view, 
+a single IP address no longer behaves like Linux.  It behaves like 
+Linux... sometime.  Depending on whether it is a magic TCP port or not.
+
+Talk about security audit hell.
+
+This should be plenty, so I'm stopping now.  But looking down the TOE 
+wiki page I could easily come up with more reasons why "IP address 
+remote co-management" is more complicated and costly than you think.
+
+	Jeff
+
+
