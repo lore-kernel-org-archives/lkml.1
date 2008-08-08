@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753512AbYHHQkf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759362AbYHHQkx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753512AbYHHQkf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 12:40:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758039AbYHHQga
+	id S1759362AbYHHQkx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 12:40:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753345AbYHHQgc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 12:36:30 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:36107 "EHLO smtp5.pp.htv.fi"
+	Fri, 8 Aug 2008 12:36:32 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:49924 "EHLO smtp4.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757884AbYHHQg2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 12:36:28 -0400
-Date: Fri, 8 Aug 2008 19:34:53 +0300
+	id S1757467AbYHHQga (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Aug 2008 12:36:30 -0400
+Date: Fri, 8 Aug 2008 19:34:55 +0300
 From: Adrian Bunk <bunk@kernel.org>
-To: paulus@samba.org, benh@kernel.crashing.org
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+To: khali@linux-fr.org, ben-linux@fluff.org
+Cc: i2c@lm-sensors.org, linux-kernel@vger.kernel.org,
        Andrew Morton <akpm@linux-foundation.org>,
        David Brownell <david-b@pacbell.net>
-Subject: [12/17] powerpc: use bcd2bin/bin2bcd
-Message-ID: <20080808163453.GS14495@cs181140183.pp.htv.fi>
+Subject: [13/17] i2c: use bcd2bin/bin2bcd
+Message-ID: <20080808163455.GT14495@cs181140183.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -25,145 +25,105 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch changes powerpc to use the new bcd2bin/bin2bcd functions 
-instead of the obsolete BCD_TO_BIN/BIN_TO_BCD macros.
+This patch changes i2c to use the new bcd2bin/bin2bcd functions instead 
+of the obsolete BCD2BIN/BIN2BCD macros.
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
 
- arch/powerpc/platforms/chrp/time.c  |   24 ++++++++++++------------
- arch/powerpc/platforms/iseries/mf.c |   26 +++++++++++++-------------
- arch/powerpc/platforms/maple/time.c |   24 ++++++++++++------------
- 3 files changed, 37 insertions(+), 37 deletions(-)
+ drivers/i2c/chips/menelaus.c |   34 +++++++++++++++++-----------------
+ 1 file changed, 17 insertions(+), 17 deletions(-)
 
-e6d9f2f91ed9e6b761aba2754ec5339b4c76beed 
-diff --git a/arch/powerpc/platforms/chrp/time.c b/arch/powerpc/platforms/chrp/time.c
-index 96d1e4b..054dfe5 100644
---- a/arch/powerpc/platforms/chrp/time.c
-+++ b/arch/powerpc/platforms/chrp/time.c
-@@ -94,12 +94,12 @@ int chrp_set_rtc_time(struct rtc_time *tmarg)
- 	chrp_cmos_clock_write((save_freq_select|RTC_DIV_RESET2), RTC_FREQ_SELECT);
+09bb671f208260e5a191d57101169860680fc163 
+diff --git a/drivers/i2c/chips/menelaus.c b/drivers/i2c/chips/menelaus.c
+index b36db17..4deb4c7 100644
+--- a/drivers/i2c/chips/menelaus.c
++++ b/drivers/i2c/chips/menelaus.c
+@@ -833,52 +833,52 @@ static irqreturn_t menelaus_irq(int irq, void *_menelaus)
  
- 	if (!(save_control & RTC_DM_BINARY) || RTC_ALWAYS_BCD) {
--		BIN_TO_BCD(tm.tm_sec);
--		BIN_TO_BCD(tm.tm_min);
--		BIN_TO_BCD(tm.tm_hour);
--		BIN_TO_BCD(tm.tm_mon);
--		BIN_TO_BCD(tm.tm_mday);
--		BIN_TO_BCD(tm.tm_year);
-+		tm.tm_sec = bin2bcd(tm.tm_sec);
-+		tm.tm_min = bin2bcd(tm.tm_min);
-+		tm.tm_hour = bin2bcd(tm.tm_hour);
-+		tm.tm_mon = bin2bcd(tm.tm_mon);
-+		tm.tm_mday = bin2bcd(tm.tm_mday);
-+		tm.tm_year = bin2bcd(tm.tm_year);
+ static void menelaus_to_time(char *regs, struct rtc_time *t)
+ {
+-	t->tm_sec = BCD2BIN(regs[0]);
+-	t->tm_min = BCD2BIN(regs[1]);
++	t->tm_sec = bcd2bin(regs[0]);
++	t->tm_min = bcd2bin(regs[1]);
+ 	if (the_menelaus->rtc_control & RTC_CTRL_MODE12) {
+-		t->tm_hour = BCD2BIN(regs[2] & 0x1f) - 1;
++		t->tm_hour = bcd2bin(regs[2] & 0x1f) - 1;
+ 		if (regs[2] & RTC_HR_PM)
+ 			t->tm_hour += 12;
+ 	} else
+-		t->tm_hour = BCD2BIN(regs[2] & 0x3f);
+-	t->tm_mday = BCD2BIN(regs[3]);
+-	t->tm_mon = BCD2BIN(regs[4]) - 1;
+-	t->tm_year = BCD2BIN(regs[5]) + 100;
++		t->tm_hour = bcd2bin(regs[2] & 0x3f);
++	t->tm_mday = bcd2bin(regs[3]);
++	t->tm_mon = bcd2bin(regs[4]) - 1;
++	t->tm_year = bcd2bin(regs[5]) + 100;
+ }
+ 
+ static int time_to_menelaus(struct rtc_time *t, int regnum)
+ {
+ 	int	hour, status;
+ 
+-	status = menelaus_write_reg(regnum++, BIN2BCD(t->tm_sec));
++	status = menelaus_write_reg(regnum++, bin2bcd(t->tm_sec));
+ 	if (status < 0)
+ 		goto fail;
+ 
+-	status = menelaus_write_reg(regnum++, BIN2BCD(t->tm_min));
++	status = menelaus_write_reg(regnum++, bin2bcd(t->tm_min));
+ 	if (status < 0)
+ 		goto fail;
+ 
+ 	if (the_menelaus->rtc_control & RTC_CTRL_MODE12) {
+ 		hour = t->tm_hour + 1;
+ 		if (hour > 12)
+-			hour = RTC_HR_PM | BIN2BCD(hour - 12);
++			hour = RTC_HR_PM | bin2bcd(hour - 12);
+ 		else
+-			hour = BIN2BCD(hour);
++			hour = bin2bcd(hour);
+ 	} else
+-		hour = BIN2BCD(t->tm_hour);
++		hour = bin2bcd(t->tm_hour);
+ 	status = menelaus_write_reg(regnum++, hour);
+ 	if (status < 0)
+ 		goto fail;
+ 
+-	status = menelaus_write_reg(regnum++, BIN2BCD(t->tm_mday));
++	status = menelaus_write_reg(regnum++, bin2bcd(t->tm_mday));
+ 	if (status < 0)
+ 		goto fail;
+ 
+-	status = menelaus_write_reg(regnum++, BIN2BCD(t->tm_mon + 1));
++	status = menelaus_write_reg(regnum++, bin2bcd(t->tm_mon + 1));
+ 	if (status < 0)
+ 		goto fail;
+ 
+-	status = menelaus_write_reg(regnum++, BIN2BCD(t->tm_year - 100));
++	status = menelaus_write_reg(regnum++, bin2bcd(t->tm_year - 100));
+ 	if (status < 0)
+ 		goto fail;
+ 
+@@ -915,7 +915,7 @@ static int menelaus_read_time(struct device *dev, struct rtc_time *t)
  	}
- 	chrp_cmos_clock_write(tm.tm_sec,RTC_SECONDS);
- 	chrp_cmos_clock_write(tm.tm_min,RTC_MINUTES);
-@@ -136,12 +136,12 @@ void chrp_get_rtc_time(struct rtc_time *tm)
- 	} while (sec != chrp_cmos_clock_read(RTC_SECONDS));
  
- 	if (!(chrp_cmos_clock_read(RTC_CONTROL) & RTC_DM_BINARY) || RTC_ALWAYS_BCD) {
--		BCD_TO_BIN(sec);
--		BCD_TO_BIN(min);
--		BCD_TO_BIN(hour);
--		BCD_TO_BIN(day);
--		BCD_TO_BIN(mon);
--		BCD_TO_BIN(year);
-+		sec = bcd2bin(sec);
-+		min = bcd2bin(min);
-+		hour = bcd2bin(hour);
-+		day = bcd2bin(day);
-+		mon = bcd2bin(mon);
-+		year = bcd2bin(year);
- 	}
- 	if (year < 70)
- 		year += 100;
-diff --git a/arch/powerpc/platforms/iseries/mf.c b/arch/powerpc/platforms/iseries/mf.c
-index 1dc7295..8dfc78e 100644
---- a/arch/powerpc/platforms/iseries/mf.c
-+++ b/arch/powerpc/platforms/iseries/mf.c
-@@ -722,13 +722,13 @@ static int mf_set_rtc(struct rtc_time *tm)
- 	day = tm->tm_mday;
- 	mon = tm->tm_mon + 1;
+ 	menelaus_to_time(regs, t);
+-	t->tm_wday = BCD2BIN(regs[6]);
++	t->tm_wday = bcd2bin(regs[6]);
  
--	BIN_TO_BCD(sec);
--	BIN_TO_BCD(min);
--	BIN_TO_BCD(hour);
--	BIN_TO_BCD(mon);
--	BIN_TO_BCD(day);
--	BIN_TO_BCD(y1);
--	BIN_TO_BCD(y2);
-+	sec = bin2bcd(sec);
-+	min = bin2bcd(min);
-+	hour = bin2bcd(hour);
-+	mon = bin2bcd(mon);
-+	day = bin2bcd(day);
-+	y1 = bin2bcd(y1);
-+	y2 = bin2bcd(y2);
- 
- 	memset(ce_time, 0, sizeof(ce_time));
- 	ce_time[3] = 0x41;
-@@ -777,12 +777,12 @@ static int rtc_set_tm(int rc, u8 *ce_msg, struct rtc_time *tm)
- 		u8 day = ce_msg[10];
- 		u8 mon = ce_msg[11];
- 
--		BCD_TO_BIN(sec);
--		BCD_TO_BIN(min);
--		BCD_TO_BIN(hour);
--		BCD_TO_BIN(day);
--		BCD_TO_BIN(mon);
--		BCD_TO_BIN(year);
-+		sec = bcd2bin(sec);
-+		min = bcd2bin(min);
-+		hour = bcd2bin(hour);
-+		day = bcd2bin(day);
-+		mon = bcd2bin(mon);
-+		year = bcd2bin(year);
- 
- 		if (year <= 69)
- 			year += 100;
-diff --git a/arch/powerpc/platforms/maple/time.c b/arch/powerpc/platforms/maple/time.c
-index 53bca13..eac569d 100644
---- a/arch/powerpc/platforms/maple/time.c
-+++ b/arch/powerpc/platforms/maple/time.c
-@@ -68,12 +68,12 @@ void maple_get_rtc_time(struct rtc_time *tm)
- 
- 	if (!(maple_clock_read(RTC_CONTROL) & RTC_DM_BINARY)
- 	    || RTC_ALWAYS_BCD) {
--		BCD_TO_BIN(tm->tm_sec);
--		BCD_TO_BIN(tm->tm_min);
--		BCD_TO_BIN(tm->tm_hour);
--		BCD_TO_BIN(tm->tm_mday);
--		BCD_TO_BIN(tm->tm_mon);
--		BCD_TO_BIN(tm->tm_year);
-+		tm->tm_sec = bcd2bin(tm->tm_sec);
-+		tm->tm_min = bcd2bin(tm->tm_min);
-+		tm->tm_hour = bcd2bin(tm->tm_hour);
-+		tm->tm_mday = bcd2bin(tm->tm_mday);
-+		tm->tm_mon = bcd2bin(tm->tm_mon);
-+		tm->tm_year = bcd2bin(tm->tm_year);
- 	  }
- 	if ((tm->tm_year + 1900) < 1970)
- 		tm->tm_year += 100;
-@@ -104,12 +104,12 @@ int maple_set_rtc_time(struct rtc_time *tm)
- 	year = tm->tm_year;
- 
- 	if (!(save_control & RTC_DM_BINARY) || RTC_ALWAYS_BCD) {
--		BIN_TO_BCD(sec);
--		BIN_TO_BCD(min);
--		BIN_TO_BCD(hour);
--		BIN_TO_BCD(mon);
--		BIN_TO_BCD(mday);
--		BIN_TO_BCD(year);
-+		sec = bin2bcd(sec);
-+		min = bin2bcd(min);
-+		hour = bin2bcd(hour);
-+		mon = bin2bcd(mon);
-+		mday = bin2bcd(mday);
-+		year = bin2bcd(year);
- 	}
- 	maple_clock_write(sec, RTC_SECONDS);
- 	maple_clock_write(min, RTC_MINUTES);
+ 	return 0;
+ }
+@@ -928,7 +928,7 @@ static int menelaus_set_time(struct device *dev, struct rtc_time *t)
+ 	status = time_to_menelaus(t, MENELAUS_RTC_SEC);
+ 	if (status < 0)
+ 		return status;
+-	status = menelaus_write_reg(MENELAUS_RTC_WKDAY, BIN2BCD(t->tm_wday));
++	status = menelaus_write_reg(MENELAUS_RTC_WKDAY, bin2bcd(t->tm_wday));
+ 	if (status < 0) {
+ 		dev_err(&the_menelaus->client->dev, "rtc write reg %02x "
+ 				"err %d\n", MENELAUS_RTC_WKDAY, status);
 
