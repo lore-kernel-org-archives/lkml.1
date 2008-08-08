@@ -1,52 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753047AbYHHRwd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758224AbYHHR4T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753047AbYHHRwd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 13:52:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754743AbYHHRwO
+	id S1758224AbYHHR4T (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 13:56:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752075AbYHHR4I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 13:52:14 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:36587 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753318AbYHHRwN (ORCPT
+	Fri, 8 Aug 2008 13:56:08 -0400
+Received: from mailrelay002.isp.belgacom.be ([195.238.6.175]:1594 "EHLO
+	mailrelay002.isp.belgacom.be" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752002AbYHHR4G (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 13:52:13 -0400
-Date: Fri, 8 Aug 2008 13:52:11 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu,
-       tglx@linutronix.de, marcin.slusarz@gmail.com,
-       linux-kernel@vger.kernel.org, David Miller <davem@davemloft.net>,
-       Paul E McKenney <paulmck@linux.vnet.ibm.com>
-Subject: Re: [PATCH 0/2] printk vs rq->lock and xtime lock
-In-Reply-To: <1218217257.29098.2.camel@lappy.programming.kicks-ass.net>
-Message-ID: <alpine.DEB.1.10.0808081351400.6116@gandalf.stny.rr.com>
-References: <20080324122424.671168000@chello.nl>  <alpine.LFD.1.00.0803241021350.17905@woody.linux-foundation.org>  <1206382547.6437.131.camel@lappy>  <20080324115738.85c72bb5.akpm@linux-foundation.org>  <1218202249.8625.106.camel@twins> 
- <alpine.LFD.1.10.0808080931550.3462@nehalem.linux-foundation.org>  <1218215454.8625.133.camel@twins>  <alpine.LFD.1.10.0808081014240.3462@nehalem.linux-foundation.org> <1218217257.29098.2.camel@lappy.programming.kicks-ass.net>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 8 Aug 2008 13:56:06 -0400
+X-Belgacom-Dynamic: yes
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AnkFAJ8lnEhR8DtG/2dsb2JhbACBXKs6
+Date: Fri, 8 Aug 2008 19:56:05 +0200
+From: Wim Van Sebroeck <wim@iguana.be>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Alan Cox <alan@redhat.com>, linux-mips@linux-mips.org,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [2.6 patch] fix watchdog/txx9wdt.c compilation
+Message-ID: <20080808175605.GE2773@infomag.infomag.iguana.be>
+References: <20080808151846.GA14495@cs181140183.pp.htv.fi>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080808151846.GA14495@cs181140183.pp.htv.fi>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Adrian,
 
+> This patch fixes the following compile error caused by
+> commit 8dc244f7deac4c0e95ce0ffd26f494bb6e1534c0
+> ([WATCHDOG 48/57] txx9: Fix locking, switch to unlocked_ioctl):
 
-On Fri, 8 Aug 2008, Peter Zijlstra wrote:
-> > 
-> > For that last thing, maybe we can just make it a percpu thing and just 
-> > disable irq's?
-> 
-> You're _so_ right! :-)
-> 
-> This is much prettier and boots to boot.
-> 
-> 
-> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Will also be added.
 
-If this makes any difference:
+Kind regards,
+Wim.
 
-Acked-by: Steven Rostedt <srostedt@redhat.com>
-
--- Steve
