@@ -1,92 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754954AbYHHBkK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755849AbYHHBnA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754954AbYHHBkK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Aug 2008 21:40:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751287AbYHHBj6
+	id S1755849AbYHHBnA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Aug 2008 21:43:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752022AbYHHBmw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Aug 2008 21:39:58 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:60495 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751284AbYHHBj6 (ORCPT
+	Thu, 7 Aug 2008 21:42:52 -0400
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:56871
+	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751833AbYHHBmv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Aug 2008 21:39:58 -0400
-Subject: Re: [GIT PULL]: firmware patches for building firmware into kernel
-From: Jaswinder Singh <jaswinder@infradead.org>
-To: David Dillow <dave@thedillows.org>
-Cc: David Woodhouse <dwmw2@infradead.org>, LKML <linux-kernel@vger.kernel.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-In-Reply-To: <1218133288.18118.20.camel@lap75545.ornl.gov>
-References: <1218128219.14483.7.camel@jaswinder.satnam>
-	 <1218130222.18118.7.camel@lap75545.ornl.gov>
-	 <1218130475.14483.16.camel@jaswinder.satnam>
-	 <1218133288.18118.20.camel@lap75545.ornl.gov>
-Content-Type: text/plain; charset=utf8
-Date: Fri, 08 Aug 2008 07:08:10 +0530
-Message-Id: <1218159490.2553.13.camel@jaswinder.satnam>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
-Content-Transfer-Encoding: 8bit
+	Thu, 7 Aug 2008 21:42:51 -0400
+From: Rob Landley <rob@landley.net>
+Organization: Boundaries Unlimited
+To: user-mode-linux-devel@lists.sourceforge.net
+Subject: Re: [uml-devel] [PATCH] fix extern inline errors with gcc 4.3.0
+Date: Thu, 7 Aug 2008 20:42:47 -0500
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: Jeff Dike <jdike@addtoit.com>, Benny Halevy <bhalevy@panasas.com>,
+       linux-kernel@vger.kernel.org
+References: <1214488251-20927-1-git-send-email-bhalevy@panasas.com> <48673A9B.8050907@panasas.com> <20080630162201.GC6643@c2.user-mode-linux.org>
+In-Reply-To: <20080630162201.GC6643@c2.user-mode-linux.org>
+MIME-Version: 1.0
+Content-Disposition: inline
+Message-Id: <200808072042.48182.rob@landley.net>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Dave,
+> On Monday 30 June 2008 11:22:01 Jeff Dike wrote:
+> > 	Uli reported a crash on x86_64 with gcc 4.1.2 with unit-at-a-time
+>
+> ...
+>
+> > If that crash does come back, I'd say we should just debug it.  It's
+> > likely UML implicitly relying on some gcc behavior anyway.
+>
+> Well, I'm seeing the crash in stock 2.6.26.  For the moment I'm reverting
+>
+> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdi
+>ff;h=4f81c5350b44bcc501ab6f8a089b16d064b4d2f6
+>
+> And then it runs fine.  (With gcc 4.1.2, on x86-64.)
 
-On Thu, 2008-08-07 at 14:21 -0400, David Dillow wrote:
-> On Thu, 2008-08-07 at 23:04 +0530, Jaswinder Singh wrote:
-> > Hello David Dillow,
-> > 
-> > On Thu, 2008-08-07 at 13:30 -0400, David Dillow wrote:
-> > > On Thu, 2008-08-07 at 22:26 +0530, Jaswinder Singh wrote:
-> > > >       firmware: avoiding multiple replication for same firmware file
-> > > 
-> > > If this is the last patch you sent to the list, I think there are still
-> > > locking bugs in it. I was short on time, so I didn't give it a full
-> > > review, but I remember seeing problems. I'll try to give it some time
-> > > tonight, if Andrew doesn't beat me to it.
-> > 
-> > This is updated and revised patch.
-> 
-> I just looked at the tree; it still has locking issues, and needs
-> further review. You must protect the list from modification while you
-> iterate it looking for an match on the requested firmware. Also, was it
-> legal to call release_firmware() from an atomic context? It can now
-> sleep, which may be an issue...
-> 
+Nevermind, fixed in 2.6.26.2 already.  Sorry for the noise...
 
-Ok, I will revise it thanks.
-
-
-> > > >       typhoon: use request_firmware
-> > > 
-> > > This is untested -- again, no time over the weekend -- and I'd rather
-> > > not have it go upstream until has been verified.
-> >
-> > ﻿This is also updated and revised patch.
-> 
-> Please drop that patch from the series for now; I'm not happy with it,
-> as it reintroduces things I've asked be changed. 
-
-You mean this :
-
-﻿+       /*
-+        * Need to check request_firmware should be called only once
-+        * so you don't leak memory if there is more than one NIC.
-+        * Need to check if PCI probing gets multi-threaded as
-+        * mutex is used while loading the firmware.
-+        */
-+       if (typhoon_fw != NULL) {
-+               err = typhoon_init_firmware(tp);
-
-This is not required now, As I already fixed request_firmware.
-
-﻿So it is replaced by :
-
-﻿+       err = typhoon_init_firmware(tp);
-
-Do you think we still need above comments ?
-
-Thanks you,
-
-Jaswinder Singh.
+Rob
+-- 
+"One of my most productive days was throwing away 1000 lines of code."
+  - Ken Thompson.
 
