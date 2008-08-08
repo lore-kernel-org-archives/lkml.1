@@ -1,92 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758120AbYHHUdT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756753AbYHHUfM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758120AbYHHUdT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 16:33:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753667AbYHHUdL
+	id S1756753AbYHHUfM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 16:35:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752190AbYHHUfA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 16:33:11 -0400
-Received: from e35.co.us.ibm.com ([32.97.110.153]:57071 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753623AbYHHUdK (ORCPT
+	Fri, 8 Aug 2008 16:35:00 -0400
+Received: from brinza.cc.columbia.edu ([128.59.29.8]:50505 "EHLO
+	brinza.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751011AbYHHUe7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 16:33:10 -0400
-Date: Fri, 8 Aug 2008 13:32:41 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, torvalds@linux-foundation.org,
-       mingo@elte.hu, tglx@linutronix.de, marcin.slusarz@gmail.com,
-       linux-kernel@vger.kernel.org, davem@davemloft.net, rostedt@goodmis.org
-Subject: Re: [PATCH] printk: robustify printk
-Message-ID: <20080808203241.GH6760@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <1218202249.8625.106.camel@twins> <alpine.LFD.1.10.0808080931550.3462@nehalem.linux-foundation.org> <1218215454.8625.133.camel@twins> <alpine.LFD.1.10.0808081014240.3462@nehalem.linux-foundation.org> <1218217257.29098.2.camel@lappy.programming.kicks-ass.net> <alpine.LFD.1.10.0808081043160.3462@nehalem.linux-foundation.org> <1218219269.29098.5.camel@lappy.programming.kicks-ass.net> <20080808121428.646a8b3c.akpm@linux-foundation.org> <1218223269.29098.12.camel@lappy.programming.kicks-ass.net> <20080808123747.0db1c5dd.akpm@linux-foundation.org>
+	Fri, 8 Aug 2008 16:34:59 -0400
+Message-ID: <489CAD8D.7090902@cs.columbia.edu>
+Date: Fri, 08 Aug 2008 16:33:17 -0400
+From: Oren Laadan <orenl@cs.columbia.edu>
+Organization: Columbia University
+User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080808123747.0db1c5dd.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+To: Arnd Bergmann <arnd@arndb.de>
+CC: Dave Hansen <dave@linux.vnet.ibm.com>,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       Theodore Tso <tytso@mit.edu>, "Serge E. Hallyn" <serue@us.ibm.com>
+Subject: Re: [RFC][PATCH 4/4] introduce sys_checkpoint and sys_restore
+References: <20080807224033.FFB3A2C1@kernel> <20080807224038.0B03CEEF@kernel> <200808081415.19179.arnd@arndb.de>
+In-Reply-To: <200808081415.19179.arnd@arndb.de>
+Content-Type: text/plain; charset=iso-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
+X-No-Spam-Score: Local
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 08, 2008 at 12:37:47PM -0700, Andrew Morton wrote:
-> On Fri, 08 Aug 2008 21:21:08 +0200
-> Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
-> 
-> > On Fri, 2008-08-08 at 12:14 -0700, Andrew Morton wrote:
-> > > On Fri, 08 Aug 2008 20:14:28 +0200
-> > > Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
-> > > 
-> > > >  void wake_up_klogd(void)
-> > > >  {
-> > > > -	if (!oops_in_progress && waitqueue_active(&log_wait))
-> > > > -		wake_up_interruptible(&log_wait);
-> > > > +	unsigned long flags;
-> > > > +	struct klogd_wakeup_state *kws;
-> > > > +
-> > > > +	if (!waitqueue_active(&log_wait))
-> > > > +		return;
-> > > > +
-> > > > +	local_irq_save(flags);
-> > > > +	kws = &__get_cpu_var(kws);
-> > > > +	if (!kws->pending) {
-> > > > +		kws->pending = 1;
-> > > > +		call_rcu(&kws->head, __wake_up_klogd);
-> > > > +	}
-> > > > +	local_irq_restore(flags);
-> > > >  }
-> > > 
-> > > Note that kernel/rcupreempt.c's flavour of call_rcu() takes
-> > > RCU_DATA_ME().lock, so there are still code sites from which a printk
-> > > can deadlock.  Only now, it is config-dependent.
-> > > 
-> > > From a quick look it appears that large amounts of kernel/rcupreempt.c
-> > > are now a printk-free zone.
-> > 
-> > Drad, missed that bit, I did look at the calling end, but forgot the
-> > call_rcu() end :-/
-> > 
-> > The initial printk_tick() based implementation didn't suffer this
-> > problem, should we revert to that scheme?
-> 
-> Dunno.  Perhaps we could convert RCU_DATA_ME's spinlock_t into an
-> rwlock and do read_lock() in call_rcu()?  Then we can should be able to
-> call printk from inside that read_lock(), but not inside write_lock(),
-> which, with suitable warning comments might be acceptable.
-> 
-> afacit everything in call_rcu()'s *rdp is cpu-local and is protected by
-> local_irq_save().  rcu_ctrlblk.completed and rcu_flipped need some
-> protection, but a) rdp->lock isn't sufficient anyway and b)
-> read_lock protection would suffice.  Maybe other CPUs can alter *rdp
-> while __rcu_advance_callbacks() is running.
-> 
-> Anyway, that's all handwaving.  My point is that making rcupreempt.c
-> more robust and more concurrent might be an alternative fix, and might
-> be beneficial in its own right.  Working out the details is what we
-> have Pauls for ;)
 
-How about if I instead add comments warning people not to put printk()
-in the relevant RCU-implementation code?  That way I can be not only lazy,
-but cowardly as well!  ;-)
 
-							Thanx, Paul
+Arnd Bergmann wrote:
+> On Friday 08 August 2008, Dave Hansen wrote:
+>>  linux-2.6.git-dave/arch/x86/kernel/syscall_table_32.S |    2 ++
+>>  linux-2.6.git-dave/include/asm-x86/unistd_32.h        |    2 ++
+>>  2 files changed, 4 insertions(+)
+> 
+> System calls should also be declared in include/linux/syscalls.h.
+> 
+> I guess you are aware that this implementation is not enough to
+> support 32 bit tasks on x86_64. In addition to the native 64-bit
+> code, you would also need the 32-bit compat code here.
+
+Yes, of course. The current code does not attempt to do that yet.
+
+Oren.
