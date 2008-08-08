@@ -1,41 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764697AbYHHWLj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765343AbYHHWM3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764697AbYHHWLj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 18:11:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762130AbYHHVzg
+	id S1765343AbYHHWM3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 18:12:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763045AbYHHV6p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 17:55:36 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:33747 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762367AbYHHVze (ORCPT
+	Fri, 8 Aug 2008 17:58:45 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:51500 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763012AbYHHV6o (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 17:55:34 -0400
-Date: Fri, 8 Aug 2008 23:56:25 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Chris Mason <chris.mason@oracle.com>
-Cc: Andi Kleen <andi@firstfloor.org>, Peter Zijlstra <peterz@infradead.org>,
-       linux-btrfs <linux-btrfs@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>
-Subject: Re: Btrfs v0.16 released
-Message-ID: <20080808215625.GC9038@one.firstfloor.org>
-References: <1217962876.15342.33.camel@think.oraclecorp.com> <1218100464.8625.9.camel@twins> <1218105597.15342.189.camel@think.oraclecorp.com> <877ias66v4.fsf@basil.nowhere.org> <1218221293.15342.263.camel@think.oraclecorp.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1218221293.15342.263.camel@think.oraclecorp.com>
-User-Agent: Mutt/1.4.2.1i
+	Fri, 8 Aug 2008 17:58:44 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <489CC17F.7000208@s5r6.in-berlin.de>
+Date: Fri, 08 Aug 2008 23:58:23 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.16) Gecko/20080722 SeaMonkey/1.1.11
+MIME-Version: 1.0
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+CC: grundler@google.com, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: Scatter-gather segment merges by IOMMU?
+References: <489CA21F.1030604@s5r6.in-berlin.de>	<da824cf30808081325n416ec436y94eebe494d789207@mail.gmail.com>	<489CB8D8.60908@s5r6.in-berlin.de> <20080809063159F.fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20080809063159F.fujita.tomonori@lab.ntt.co.jp>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> So, the mirroring turns a single large write into two large writes.
-> Definitely not free, but always a fixed cost.
+FUJITA Tomonori wrote:
+> On Fri, 08 Aug 2008 23:21:28 +0200
+> Stefan Richter <stefanr@s5r6.in-berlin.de> wrote:
+>> Here is what PPC does:
+>> http://lxr.linux.no/linux+v2.6.26/arch/powerpc/kernel/iommu.c#L270
+>>
+>> It looks at dma_get_max_seg_size(dev); and then merges according to it.
+> 
+> Yes, IOMMUs were not able to handle this issue but they should now.
+> 
+> 
+>> That's all nice and well, but in my case (FireWire storage protocol 
+>> a.k.a. SBP-2, which is basically remote DMA), the max_segment_size of 
+>> the PCI device is different from the size limit of the protocol.  We 
+>> currently have to deconstruct such merges in the sbp2 drivers again:
+>> http://lxr.linux.no/linux+v2.6.26/drivers/firewire/fw-sbp2.c#L1384
+>>
+>> Either I keep it that way, or I let the protocol driver manipulate the 
+>> FireWire controller's dev->dma_parms->max_segment_size (via 
+>> dma_set_max_seg_size() of course), which is not entirely correct.
+> 
+> Why is it not correct? Device drivers can set
+> dma_set_max_seg_size(). SCSI does that (see __scsi_alloc_queue).
 
-Thanks for the explanation and the numbers. I see that's the advantage of 
-copy-on-write that you can actually always cluster the metadata together and 
-get always batched IO this way and then afford to do more of it. 
+FireWire is a multi-protocol bus.  SBP-2 is just one of many quite 
+different protocols.  SBP-2 targets read or write the initiators memory 
+buffers via remote DMA.  These buffer may be exposed as s/g lists to the 
+target.  The protocol limits these s/g lists to up to 65535 elements of 
+up to 65535 bytes size each.
 
-Still wondering what that will do to read seekiness.
+FireWire controllers on the other hand get their maximum segment size 
+set to 65536 by the PCI subsystem.  (All FireWire controllers supported 
+by mainline Linux are PCI or PCIe devices.)
 
--Andi
+In case of the drivers/firewire/ stack, the SBP-2 driver is currently 
+the only one which uses dma_map_sg.  In case of the drivers/ieee1394/ 
+stack, also the drivers for isochronous protocols, including userspace 
+drivers via raw1394, use dma_map_sg.
+
+So if the SBP-2 driver manipulated the controller device's 
+max_segment_size, it would influence the DMA mappings of the other 
+protocols.  It wouldn't be a big deal; the isochronous mappings could 
+only be collapsed to chunks of at most 15 pages instead of 16 pages. 
+However, the mapping deconstructing code in the SBP-2 drivers is not a 
+big deal either.
+-- 
+Stefan Richter
+-=====-==--- =--- -=---
+http://arcgraph.de/sr/
