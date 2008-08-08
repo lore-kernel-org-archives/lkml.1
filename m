@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753486AbYHHQjD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758800AbYHHQj0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753486AbYHHQjD (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 12:39:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756116AbYHHQgX
+	id S1758800AbYHHQj0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 12:39:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756737AbYHHQgZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 12:36:23 -0400
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:49907 "EHLO smtp4.pp.htv.fi"
+	Fri, 8 Aug 2008 12:36:25 -0400
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:48018 "EHLO smtp6.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754595AbYHHQgV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 12:36:21 -0400
-Date: Fri, 8 Aug 2008 19:34:46 +0300
+	id S1755281AbYHHQgX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Aug 2008 12:36:23 -0400
+Date: Fri, 8 Aug 2008 19:34:48 +0300
 From: Adrian Bunk <bunk@kernel.org>
-To: bzolnier@gmail.com, petkovbb@gmail.com
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+To: geert@linux-m68k.org, zippel@linux-m68k.org
+Cc: linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org,
        Andrew Morton <akpm@linux-foundation.org>,
        David Brownell <david-b@pacbell.net>
-Subject: [8/17] ide-cd: use bcd2bin/bin2bcd
-Message-ID: <20080808163446.GO14495@cs181140183.pp.htv.fi>
+Subject: [9/17] m68k: use bcd2bin/bin2bcd
+Message-ID: <20080808163448.GP14495@cs181140183.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -25,71 +25,299 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch changes ide-cd to use the new bcd2bin/bin2bcd functions 
-instead of the obsolete BCD2BIN/BIN2BCD macros.
+This patch changes m68k to use the new bcd2bin/bin2bcd functions instead 
+of the obsolete BCD_TO_BIN/BIN_TO_BCD/BCD2BIN/BIN2BCD macros.
+
+It also remove local bcd2bin/bin2bcd implementations
+in favor of the global ones.
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
 
- drivers/ide/ide-cd.c |   20 ++++++++++----------
- 1 file changed, 10 insertions(+), 10 deletions(-)
+ arch/m68k/atari/time.c      |   35 ++++++++++++++++++-----------------
+ arch/m68k/bvme6000/config.c |   15 +--------------
+ arch/m68k/bvme6000/rtc.c    |   30 +++++++++++++++---------------
+ arch/m68k/mvme16x/rtc.c     |   26 +++++++++++++-------------
+ arch/m68k/q40/config.c      |   12 +-----------
+ arch/m68k/sun3x/time.c      |   28 ++++++++++++++--------------
+ 6 files changed, 62 insertions(+), 84 deletions(-)
 
-71c0e7b9b6349129f4f810314598b6e76f1448d7 
-diff --git a/drivers/ide/ide-cd.c b/drivers/ide/ide-cd.c
-index e617cf0..a8e3ad2 100644
---- a/drivers/ide/ide-cd.c
-+++ b/drivers/ide/ide-cd.c
-@@ -1270,9 +1270,9 @@ static ide_startstop_t ide_cd_do_request(ide_drive_t *drive, struct request *rq,
-  */
- static void msf_from_bcd(struct atapi_msf *msf)
- {
--	msf->minute = BCD2BIN(msf->minute);
--	msf->second = BCD2BIN(msf->second);
--	msf->frame  = BCD2BIN(msf->frame);
-+	msf->minute = bcd2bin(msf->minute);
-+	msf->second = bcd2bin(msf->second);
-+	msf->frame  = bcd2bin(msf->frame);
+7967e50519a24d3c87e55e7a5af8b71dd2dd618d 
+diff --git a/arch/m68k/atari/time.c b/arch/m68k/atari/time.c
+index e0d3c8b..54afa51 100644
+--- a/arch/m68k/atari/time.c
++++ b/arch/m68k/atari/time.c
+@@ -191,13 +191,14 @@ int atari_tt_hwclk( int op, struct rtc_time *t )
+         }
+ 
+         if (!(ctrl & RTC_DM_BINARY)) {
+-            BIN_TO_BCD(sec);
+-            BIN_TO_BCD(min);
+-            BIN_TO_BCD(hour);
+-            BIN_TO_BCD(day);
+-            BIN_TO_BCD(mon);
+-            BIN_TO_BCD(year);
+-            if (wday >= 0) BIN_TO_BCD(wday);
++            sec = bin2bcd(sec);
++            min = bin2bcd(min);
++            hour = bin2bcd(hour);
++            day = bin2bcd(day);
++            mon = bin2bcd(mon);
++            year = bin2bcd(year);
++            if (wday >= 0)
++	        wday = bin2bcd(wday);
+         }
+     }
+ 
+@@ -252,13 +253,13 @@ int atari_tt_hwclk( int op, struct rtc_time *t )
+ 	}
+ 
+ 	if (!(ctrl & RTC_DM_BINARY)) {
+-            BCD_TO_BIN(sec);
+-            BCD_TO_BIN(min);
+-            BCD_TO_BIN(hour);
+-            BCD_TO_BIN(day);
+-            BCD_TO_BIN(mon);
+-            BCD_TO_BIN(year);
+-            BCD_TO_BIN(wday);
++            sec = bcd2bin(sec);
++            min = bcd2bin(min);
++            hour = bcd2bin(hour);
++            day = bcd2bin(day);
++            mon = bcd2bin(mon);
++            year = bcd2bin(year);
++            wday = bcd2bin(wday);
+         }
+ 
+         if (!(ctrl & RTC_24H)) {
+@@ -318,7 +319,7 @@ int atari_tt_set_clock_mmss (unsigned long nowtime)
+ 
+     rtc_minutes = RTC_READ (RTC_MINUTES);
+     if (!(save_control & RTC_DM_BINARY))
+-        BCD_TO_BIN (rtc_minutes);
++        rtc_minutes = bcd2bin(rtc_minutes);
+ 
+     /* Since we're only adjusting minutes and seconds, don't interfere
+        with hour overflow.  This avoids messing with unknown time zones
+@@ -329,8 +330,8 @@ int atari_tt_set_clock_mmss (unsigned long nowtime)
+         {
+             if (!(save_control & RTC_DM_BINARY))
+                 {
+-                    BIN_TO_BCD (real_seconds);
+-                    BIN_TO_BCD (real_minutes);
++                    real_seconds = bin2bcd(real_seconds);
++                    real_minutes = bin2bcd(real_minutes);
+                 }
+             RTC_WRITE (RTC_SECONDS, real_seconds);
+             RTC_WRITE (RTC_MINUTES, real_minutes);
+diff --git a/arch/m68k/bvme6000/config.c b/arch/m68k/bvme6000/config.c
+index 9433a88..65c9204 100644
+--- a/arch/m68k/bvme6000/config.c
++++ b/arch/m68k/bvme6000/config.c
+@@ -25,6 +25,7 @@
+ #include <linux/genhd.h>
+ #include <linux/rtc.h>
+ #include <linux/interrupt.h>
++#include <linux/bcd.h>
+ 
+ #include <asm/bootinfo.h>
+ #include <asm/system.h>
+@@ -46,9 +47,6 @@ extern void bvme6000_reset (void);
+ extern void bvme6000_waitbut(void);
+ void bvme6000_set_vectors (void);
+ 
+-static unsigned char bcd2bin (unsigned char b);
+-static unsigned char bin2bcd (unsigned char b);
+-
+ /* Save tick handler routine pointer, will point to do_timer() in
+  * kernel/sched.c, called via bvme6000_process_int() */
+ 
+@@ -264,17 +262,6 @@ unsigned long bvme6000_gettimeoffset (void)
+     return v;
  }
  
- int cdrom_check_status(ide_drive_t *drive, struct request_sense *sense)
-@@ -1411,8 +1411,8 @@ int ide_cd_read_toc(ide_drive_t *drive, struct request_sense *sense)
- 		return stat;
+-static unsigned char bcd2bin (unsigned char b)
+-{
+-	return ((b>>4)*10 + (b&15));
+-}
+-
+-static unsigned char bin2bcd (unsigned char b)
+-{
+-	return (((b/10)*16) + (b%10));
+-}
+-
+-
+ /*
+  * Looks like op is non-zero for setting the clock, and zero for
+  * reading the clock.
+diff --git a/arch/m68k/bvme6000/rtc.c b/arch/m68k/bvme6000/rtc.c
+index e8ac3f7..808c901 100644
+--- a/arch/m68k/bvme6000/rtc.c
++++ b/arch/m68k/bvme6000/rtc.c
+@@ -57,16 +57,16 @@ static int rtc_ioctl(struct inode *inode, struct file *file, unsigned int cmd,
+ 		rtc->msr = 0x40;
+ 		memset(&wtime, 0, sizeof(struct rtc_time));
+ 		do {
+-			wtime.tm_sec =  BCD2BIN(rtc->bcd_sec);
+-			wtime.tm_min =  BCD2BIN(rtc->bcd_min);
+-			wtime.tm_hour = BCD2BIN(rtc->bcd_hr);
+-			wtime.tm_mday =  BCD2BIN(rtc->bcd_dom);
+-			wtime.tm_mon =  BCD2BIN(rtc->bcd_mth)-1;
+-			wtime.tm_year = BCD2BIN(rtc->bcd_year);
++			wtime.tm_sec =  bcd2bin(rtc->bcd_sec);
++			wtime.tm_min =  bcd2bin(rtc->bcd_min);
++			wtime.tm_hour = bcd2bin(rtc->bcd_hr);
++			wtime.tm_mday =  bcd2bin(rtc->bcd_dom);
++			wtime.tm_mon =  bcd2bin(rtc->bcd_mth)-1;
++			wtime.tm_year = bcd2bin(rtc->bcd_year);
+ 			if (wtime.tm_year < 70)
+ 				wtime.tm_year += 100;
+-			wtime.tm_wday = BCD2BIN(rtc->bcd_dow)-1;
+-		} while (wtime.tm_sec != BCD2BIN(rtc->bcd_sec));
++			wtime.tm_wday = bcd2bin(rtc->bcd_dow)-1;
++		} while (wtime.tm_sec != bcd2bin(rtc->bcd_sec));
+ 		rtc->msr = msr;
+ 		local_irq_restore(flags);
+ 		return copy_to_user(argp, &wtime, sizeof wtime) ?
+@@ -114,14 +114,14 @@ static int rtc_ioctl(struct inode *inode, struct file *file, unsigned int cmd,
  
- 	if (drive->atapi_flags & IDE_AFLAG_TOCTRACKS_AS_BCD) {
--		toc->hdr.first_track = BCD2BIN(toc->hdr.first_track);
--		toc->hdr.last_track  = BCD2BIN(toc->hdr.last_track);
-+		toc->hdr.first_track = bcd2bin(toc->hdr.first_track);
-+		toc->hdr.last_track  = bcd2bin(toc->hdr.last_track);
+ 		rtc->t0cr_rtmr = yrs%4;
+ 		rtc->bcd_tenms = 0;
+-		rtc->bcd_sec   = BIN2BCD(sec);
+-		rtc->bcd_min   = BIN2BCD(min);
+-		rtc->bcd_hr    = BIN2BCD(hrs);
+-		rtc->bcd_dom   = BIN2BCD(day);
+-		rtc->bcd_mth   = BIN2BCD(mon);
+-		rtc->bcd_year  = BIN2BCD(yrs%100);
++		rtc->bcd_sec   = bin2bcd(sec);
++		rtc->bcd_min   = bin2bcd(min);
++		rtc->bcd_hr    = bin2bcd(hrs);
++		rtc->bcd_dom   = bin2bcd(day);
++		rtc->bcd_mth   = bin2bcd(mon);
++		rtc->bcd_year  = bin2bcd(yrs%100);
+ 		if (rtc_tm.tm_wday >= 0)
+-			rtc->bcd_dow = BIN2BCD(rtc_tm.tm_wday+1);
++			rtc->bcd_dow = bin2bcd(rtc_tm.tm_wday+1);
+ 		rtc->t0cr_rtmr = yrs%4 | 0x08;
+ 
+ 		rtc->msr = msr;
+diff --git a/arch/m68k/mvme16x/rtc.c b/arch/m68k/mvme16x/rtc.c
+index 432a9f1..cea5e3e 100644
+--- a/arch/m68k/mvme16x/rtc.c
++++ b/arch/m68k/mvme16x/rtc.c
+@@ -52,15 +52,15 @@ static int rtc_ioctl(struct inode *inode, struct file *file, unsigned int cmd,
+ 		/* Ensure clock and real-time-mode-register are accessible */
+ 		rtc->ctrl = RTC_READ;
+ 		memset(&wtime, 0, sizeof(struct rtc_time));
+-		wtime.tm_sec =  BCD2BIN(rtc->bcd_sec);
+-		wtime.tm_min =  BCD2BIN(rtc->bcd_min);
+-		wtime.tm_hour = BCD2BIN(rtc->bcd_hr);
+-		wtime.tm_mday =  BCD2BIN(rtc->bcd_dom);
+-		wtime.tm_mon =  BCD2BIN(rtc->bcd_mth)-1;
+-		wtime.tm_year = BCD2BIN(rtc->bcd_year);
++		wtime.tm_sec =  bcd2bin(rtc->bcd_sec);
++		wtime.tm_min =  bcd2bin(rtc->bcd_min);
++		wtime.tm_hour = bcd2bin(rtc->bcd_hr);
++		wtime.tm_mday =  bcd2bin(rtc->bcd_dom);
++		wtime.tm_mon =  bcd2bin(rtc->bcd_mth)-1;
++		wtime.tm_year = bcd2bin(rtc->bcd_year);
+ 		if (wtime.tm_year < 70)
+ 			wtime.tm_year += 100;
+-		wtime.tm_wday = BCD2BIN(rtc->bcd_dow)-1;
++		wtime.tm_wday = bcd2bin(rtc->bcd_dow)-1;
+ 		rtc->ctrl = 0;
+ 		local_irq_restore(flags);
+ 		return copy_to_user(argp, &wtime, sizeof wtime) ?
+@@ -104,12 +104,12 @@ static int rtc_ioctl(struct inode *inode, struct file *file, unsigned int cmd,
+ 		local_irq_save(flags);
+ 		rtc->ctrl     = RTC_WRITE;
+ 
+-		rtc->bcd_sec  = BIN2BCD(sec);
+-		rtc->bcd_min  = BIN2BCD(min);
+-		rtc->bcd_hr   = BIN2BCD(hrs);
+-		rtc->bcd_dom  = BIN2BCD(day);
+-		rtc->bcd_mth  = BIN2BCD(mon);
+-		rtc->bcd_year = BIN2BCD(yrs%100);
++		rtc->bcd_sec  = bin2bcd(sec);
++		rtc->bcd_min  = bin2bcd(min);
++		rtc->bcd_hr   = bin2bcd(hrs);
++		rtc->bcd_dom  = bin2bcd(day);
++		rtc->bcd_mth  = bin2bcd(mon);
++		rtc->bcd_year = bin2bcd(yrs%100);
+ 
+ 		rtc->ctrl     = 0;
+ 		local_irq_restore(flags);
+diff --git a/arch/m68k/q40/config.c b/arch/m68k/q40/config.c
+index be9de2f..9c7eefa 100644
+--- a/arch/m68k/q40/config.c
++++ b/arch/m68k/q40/config.c
+@@ -23,6 +23,7 @@
+ #include <linux/serial_reg.h>
+ #include <linux/rtc.h>
+ #include <linux/vt_kern.h>
++#include <linux/bcd.h>
+ 
+ #include <asm/io.h>
+ #include <asm/rtc.h>
+@@ -216,17 +217,6 @@ int q40_parse_bootinfo(const struct bi_record *rec)
+ }
+ 
+ 
+-static inline unsigned char bcd2bin(unsigned char b)
+-{
+-	return (b >> 4) * 10 + (b & 15);
+-}
+-
+-static inline unsigned char bin2bcd(unsigned char b)
+-{
+-	return (b / 10) * 16 + (b % 10);
+-}
+-
+-
+ static unsigned long q40_gettimeoffset(void)
+ {
+ 	return 5000 * (ql_ticks != 0);
+diff --git a/arch/m68k/sun3x/time.c b/arch/m68k/sun3x/time.c
+index f5eaafb..536a04a 100644
+--- a/arch/m68k/sun3x/time.c
++++ b/arch/m68k/sun3x/time.c
+@@ -47,23 +47,23 @@ int sun3x_hwclk(int set, struct rtc_time *t)
+ 
+ 	if(set) {
+ 		h->csr |= C_WRITE;
+-		h->sec = BIN2BCD(t->tm_sec);
+-		h->min = BIN2BCD(t->tm_min);
+-		h->hour = BIN2BCD(t->tm_hour);
+-		h->wday = BIN2BCD(t->tm_wday);
+-		h->mday = BIN2BCD(t->tm_mday);
+-		h->month = BIN2BCD(t->tm_mon);
+-		h->year = BIN2BCD(t->tm_year);
++		h->sec = bin2bcd(t->tm_sec);
++		h->min = bin2bcd(t->tm_min);
++		h->hour = bin2bcd(t->tm_hour);
++		h->wday = bin2bcd(t->tm_wday);
++		h->mday = bin2bcd(t->tm_mday);
++		h->month = bin2bcd(t->tm_mon);
++		h->year = bin2bcd(t->tm_year);
+ 		h->csr &= ~C_WRITE;
+ 	} else {
+ 		h->csr |= C_READ;
+-		t->tm_sec = BCD2BIN(h->sec);
+-		t->tm_min = BCD2BIN(h->min);
+-		t->tm_hour = BCD2BIN(h->hour);
+-		t->tm_wday = BCD2BIN(h->wday);
+-		t->tm_mday = BCD2BIN(h->mday);
+-		t->tm_mon = BCD2BIN(h->month);
+-		t->tm_year = BCD2BIN(h->year);
++		t->tm_sec = bcd2bin(h->sec);
++		t->tm_min = bcd2bin(h->min);
++		t->tm_hour = bcd2bin(h->hour);
++		t->tm_wday = bcd2bin(h->wday);
++		t->tm_mday = bcd2bin(h->mday);
++		t->tm_mon = bcd2bin(h->month);
++		t->tm_year = bcd2bin(h->year);
+ 		h->csr &= ~C_READ;
  	}
  
- 	ntracks = toc->hdr.last_track - toc->hdr.first_track + 1;
-@@ -1452,8 +1452,8 @@ int ide_cd_read_toc(ide_drive_t *drive, struct request_sense *sense)
- 			return stat;
- 
- 		if (drive->atapi_flags & IDE_AFLAG_TOCTRACKS_AS_BCD) {
--			toc->hdr.first_track = (u8)BIN2BCD(CDROM_LEADOUT);
--			toc->hdr.last_track = (u8)BIN2BCD(CDROM_LEADOUT);
-+			toc->hdr.first_track = (u8)bin2bcd(CDROM_LEADOUT);
-+			toc->hdr.last_track = (u8)bin2bcd(CDROM_LEADOUT);
- 		} else {
- 			toc->hdr.first_track = CDROM_LEADOUT;
- 			toc->hdr.last_track = CDROM_LEADOUT;
-@@ -1466,14 +1466,14 @@ int ide_cd_read_toc(ide_drive_t *drive, struct request_sense *sense)
- 	toc->hdr.toc_length = be16_to_cpu(toc->hdr.toc_length);
- 
- 	if (drive->atapi_flags & IDE_AFLAG_TOCTRACKS_AS_BCD) {
--		toc->hdr.first_track = BCD2BIN(toc->hdr.first_track);
--		toc->hdr.last_track  = BCD2BIN(toc->hdr.last_track);
-+		toc->hdr.first_track = bcd2bin(toc->hdr.first_track);
-+		toc->hdr.last_track  = bcd2bin(toc->hdr.last_track);
- 	}
- 
- 	for (i = 0; i <= ntracks; i++) {
- 		if (drive->atapi_flags & IDE_AFLAG_TOCADDR_AS_BCD) {
- 			if (drive->atapi_flags & IDE_AFLAG_TOCTRACKS_AS_BCD)
--				toc->ent[i].track = BCD2BIN(toc->ent[i].track);
-+				toc->ent[i].track = bcd2bin(toc->ent[i].track);
- 			msf_from_bcd(&toc->ent[i].addr.msf);
- 		}
- 		toc->ent[i].addr.lba = msf_to_lba(toc->ent[i].addr.msf.minute,
+
