@@ -1,100 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764451AbYHHXPm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765305AbYHHXQA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764451AbYHHXPm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 19:15:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760440AbYHHXPV
+	id S1765305AbYHHXQA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 19:16:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764591AbYHHXPh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 19:15:21 -0400
-Received: from astoria.ccjclearline.com ([64.235.106.9]:34784 "EHLO
-	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759870AbYHHXPT (ORCPT
+	Fri, 8 Aug 2008 19:15:37 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:59578 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757742AbYHHXPf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 19:15:19 -0400
-Date: Fri, 8 Aug 2008 19:13:21 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@crashcourse.ca>
-X-X-Sender: rpjday@localhost.localdomain
-To: Krzysztof Halasa <khc@pm.waw.pl>
-cc: Grant Coady <gcoady.lk@gmail.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC PATCH] cleanup Serial ATA and Parallel ATA Kconfig
-In-Reply-To: <m3sktfw1v5.fsf@maximus.localdomain>
-Message-ID: <alpine.LFD.1.10.0808081911080.3254@localhost.localdomain>
-References: <alpine.LFD.1.10.0808081228450.11491@localhost.localdomain> <20080808172629.232bed01@lxorguk.ukuu.org.uk> <njhp94pr4ha1nfgmj11n662enalpd9663h@4ax.com> <m3sktfw1v5.fsf@maximus.localdomain>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Fri, 8 Aug 2008 19:15:35 -0400
+Date: Fri, 8 Aug 2008 16:07:43 -0700
+From: Greg KH <greg@kroah.com>
+To: Mimi Zohar <zohar@us.ibm.com>
+Cc: James Morris <jmorris@namei.org>, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org,
+       Randy Dunlap <randy.dunlap@oracle.com>, safford@watson.ibm.com,
+       sailer@watson.ibm.com, Stephen Smalley <sds@tycho.nsa.gov>,
+       serue@linux.vnet.ibm.com, Al Viro <viro@ZenIV.linux.org.uk>,
+       Mimi Zohar <zohar@linux.vnet.ibm.com>
+Subject: Re: [PATCH 2/4] integrity: special fs magic
+Message-ID: <20080808230743.GB5222@kroah.com>
+References: <20080808184349.999902616@linux.vnet.ibm.com> <1218221742.4444.12.camel@localhost.localdomain> <20080808190448.GA3356@kroah.com> <20080808191519.GA3704@kroah.com> <OFC0E5DFDC.21CEA1BD-ON8525749F.006C2CBE-8525749F.006CEE93@us.ibm.com>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="8323328-856349815-1218237211=:3254"
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - crashcourse.ca
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <OFC0E5DFDC.21CEA1BD-ON8525749F.006C2CBE-8525749F.006CEE93@us.ibm.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On Fri, Aug 08, 2008 at 03:50:02PM -0400, Mimi Zohar wrote:
+> Greg KH <greg@kroah.com> wrote on 08/08/2008 03:15:19 PM:
+> 
+> > On Fri, Aug 08, 2008 at 12:04:48PM -0700, Greg KH wrote:
+> > > On Fri, Aug 08, 2008 at 02:55:42PM -0400, Mimi Zohar wrote:
+> > > >     - Move special fs magic number definitions to magic.h
+> > > >     - Add magic.h include
+> > > > 
+> > > >     Signed-off-by: Mimi Zohar <zohar@us.ibm.com>
+> > > 
+> > > Why?  What is this patch for?  Are you going to do something with 
+> these
+> > > magic values later?
+> > 
+> > Ok, I now see the follow-up patch that does something with them.
+> > 
+> > You should say so in this patch.
+> > 
+> > And is it really ok to be doing things from userspace based on a
+> > filesystem "magic" key?  Those are numbers we have never exported to
+> > userspace before, what happens if they are changed?
+> > 
+> > thanks,
+> > 
+> > greg k-h
+> 
+> Userspace only loads the measurement policy (via securityfs), and if
+> a magic number changes, and the policy is not updated to match, then
+> we would end up measuring some filesystems we didn't need to.  Before 
+> the magic numbers were hard coded in IMA, now at least, it's extensible. 
 
---8323328-856349815-1218237211=:3254
-Content-Type: TEXT/PLAIN; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Why not just use a name then instead?  That way if the number changes
+within the kernel, then it will always be right.
 
-On Sat, 9 Aug 2008, Krzysztof Halasa wrote:
+thanks,
 
-> Grant Coady <grant_lkml@dodo.com.au> writes:
->
-> >   =C2=A6 =C2=A6    --- Serial ATA (SATA) and Parallel ATA (PATA) driver=
-s            =C2=A6 =C2=A6
-> >   =C2=A6 =C2=A6    <*>   AHCI SATA support                             =
-             =C2=A6 =C2=A6
-> >   =C2=A6 =C2=A6    [*]   ATA ACPI Support                              =
-             =C2=A6 =C2=A6
-> >   =C2=A6 =C2=A6    [ ]   SATA Port Multiplier support                  =
-             =C2=A6 =C2=A6
-> >   =C2=A6 =C2=A6    < >   Silicon Image 3124/3132 SATA support          =
-             =C2=A6 =C2=A6
-> >   =C2=A6 =C2=A6    [*]   ATA SFF support                               =
-             =C2=A6 =C2=A6
-> >   =C2=A6 =C2=A6            *** Serial ATA drivers ***                  =
-             =C2=A6 =C2=A6
-> >   =C2=A6 =C2=A6    < >     Initio 162x SATA support                    =
-             =C2=A6 =C2=A6
-> >   =C2=A6 =C2=A6    < >     Intel ESB, ICH, PIIX3, PIIX4 PATA/SATA suppo=
-rt           =C2=A6 =C2=A6
->
-> As noted, it's both PATA and SATA. People searching for PATA-only
-> PIIX support may have trouble locating it under SATA.
->
-> Why not remove ATA SFF support visual option (or leave it for
-> optional off-tree drivers only, if it makes sense) and SELECT it
-> when any driver using it is selected? I'm not sure that users know
-> they need SFF, or what's that.
->
-> I think I would also ask for PATA and for SATA first:
->
-> [*] PATA support
-> [*] SATA support
-
-  that was sort my original thought, but i don't know enough about ATA
-fundamentals to know if it makes sense for these to be independently
-selectable.  that's why i nobly bailed and left it for someone else to
-do the actual work.  :-)
-
-rday
---
-
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry:
-    Have classroom, will lecture.
-
-http://crashcourse.ca                          Waterloo, Ontario, CANADA
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
---8323328-856349815-1218237211=:3254--
+greg k-h
