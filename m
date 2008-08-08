@@ -1,49 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932228AbYHHWLz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764697AbYHHWLj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932228AbYHHWLz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 18:11:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762468AbYHHV4r
+	id S1764697AbYHHWLj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 18:11:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762130AbYHHVzg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 17:56:47 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:40024 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762771AbYHHV4q (ORCPT
+	Fri, 8 Aug 2008 17:55:36 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:33747 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762367AbYHHVze (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 17:56:46 -0400
-Message-ID: <489CC0DD.5010402@zytor.com>
-Date: Fri, 08 Aug 2008 14:55:41 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Rene Herman <rene.herman@keyaccess.nl>
-CC: Bjorn Helgaas <bjorn.helgaas@hp.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>
-Subject: Re: [PATCH] PNP: make the resource type an unsigned long
-References: <489BEA31.3040101@keyaccess.nl>
-In-Reply-To: <489BEA31.3040101@keyaccess.nl>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+	Fri, 8 Aug 2008 17:55:34 -0400
+Date: Fri, 8 Aug 2008 23:56:25 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Chris Mason <chris.mason@oracle.com>
+Cc: Andi Kleen <andi@firstfloor.org>, Peter Zijlstra <peterz@infradead.org>,
+       linux-btrfs <linux-btrfs@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>
+Subject: Re: Btrfs v0.16 released
+Message-ID: <20080808215625.GC9038@one.firstfloor.org>
+References: <1217962876.15342.33.camel@think.oraclecorp.com> <1218100464.8625.9.camel@twins> <1218105597.15342.189.camel@think.oraclecorp.com> <877ias66v4.fsf@basil.nowhere.org> <1218221293.15342.263.camel@think.oraclecorp.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1218221293.15342.263.camel@think.oraclecorp.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rene Herman wrote:
-> Hi Bjorn.
-> 
-> Andrew earlier commented that pci_resourec_flags() returns an unsigned 
-> long. Had this hanging around a local branch. Useful?
-> 
+> So, the mirroring turns a single large write into two large writes.
+> Definitely not free, but always a fixed cost.
 
--int pnp_resource_type(struct resource *res)
-+unsigned long pnp_resource_type(struct resource *res)
-  {
-  	return res->flags & (IORESOURCE_IO  | IORESOURCE_MEM |
-  			     IORESOURCE_IRQ | IORESOURCE_DMA);
-  }
+Thanks for the explanation and the numbers. I see that's the advantage of 
+copy-on-write that you can actually always cluster the metadata together and 
+get always batched IO this way and then afford to do more of it. 
 
-Seems a bit pointless ... either one of those flags is >= 32 bits, in 
-which case we need u64, or it's not, in which case there is no reason to 
-burden the output with bits we don't need.
+Still wondering what that will do to read seekiness.
 
-	-hpa
+-Andi
