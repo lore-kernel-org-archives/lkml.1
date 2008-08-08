@@ -1,72 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764645AbYHHWk4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764633AbYHHWmy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764645AbYHHWk4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 18:40:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752166AbYHHWkt
+	id S1764633AbYHHWmy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 18:42:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757518AbYHHWmp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 18:40:49 -0400
-Received: from e36.co.us.ibm.com ([32.97.110.154]:41729 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751943AbYHHWks (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 18:40:48 -0400
-Subject: Re: [PATCH 2/2] Repost  Cell OProfile: SPU mutex lock fix, version
-	4
-From: Carl Love <cel@us.ibm.com>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: linuxppc-dev@ozlabs.org, cel <cel@linux.vnet.ibm.com>,
-       cbe-oss-dev@ozlabs.org, linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <200808081526.21405.arnd@arndb.de>
-References: <1217620879.15667.145.camel@carll-linux-desktop>
-	 <200808081526.21405.arnd@arndb.de>
-Content-Type: text/plain
-Date: Fri, 08 Aug 2008 15:39:44 -0700
-Message-Id: <1218235184.6637.111.camel@carll-linux-desktop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+	Fri, 8 Aug 2008 18:42:45 -0400
+Received: from mga02.intel.com ([134.134.136.20]:47590 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756185AbYHHWmo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Aug 2008 18:42:44 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.31,329,1215414000"; 
+   d="scan'208";a="427520986"
+From: Seth Heasley <seth.heasley@intel.com>
+To: jgarzik@pobox.com, linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+       htejun@gmail.com
+Subject: [PATCH 2.6.26.2] ata_piix: IDE mode SATA patch for Intel Ibex Peak DeviceIDs
+Date: Fri, 8 Aug 2008 15:47:50 -0700
+User-Agent: KMail/1.9.1
+Cc: seth.heasley@intel.com
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200808081547.50790.seth.heasley@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Updated to address Arnd's comments.
+This patch adds the Intel Ibex Peak (PCH) IDE mode SATA Controller DeviceIDs.
 
-If an error occurs on opcontrol start, the event and per cpu buffers 
-are released.  If later opcontrol shutdown is called then the free
-function will be called again to free buffers that no longer 
-exist.  This results in a kernel oops.  The following changes
-prevent the call to delete buffers that don't exist.
+Signed-off by: Seth Heasley <seth.heasley@intel.com>
 
-Signed-off-by: Carl Love <carll@us.ibm.com>
+--- linux-2.6.26.2/drivers/ata/ata_piix.c.orig  2008-08-08 11:34:56.000000000 -0700
++++ linux-2.6.26.2/drivers/ata/ata_piix.c       2008-08-08 14:30:02.000000000 -0700
+@@ -274,6 +274,14 @@
+        { 0x8086, 0x3a20, PCI_ANY_ID, PCI_ANY_ID, 0, 0, ich8_sata },
+        /* SATA Controller IDE (ICH10) */
+        { 0x8086, 0x3a26, PCI_ANY_ID, PCI_ANY_ID, 0, 0, ich8_2port_sata },
++       /* SATA Controller IDE (PCH) */
++       { 0x8086, 0x3b20, PCI_ANY_ID, PCI_ANY_ID, 0, 0, ich8_sata },
++       /* SATA Controller IDE (PCH) */
++       { 0x8086, 0x3b26, PCI_ANY_ID, PCI_ANY_ID, 0, 0, ich8_2port_sata },
++       /* SATA Controller IDE (PCH) */
++       { 0x8086, 0x3b2d, PCI_ANY_ID, PCI_ANY_ID, 0, 0, ich8_2port_sata },
++       /* SATA Controller IDE (PCH) */
++       { 0x8086, 0x3b2e, PCI_ANY_ID, PCI_ANY_ID, 0, 0, ich8_sata },
 
-Index: Cell_kernel_6_26_2008/drivers/oprofile/cpu_buffer.c
-===================================================================
---- Cell_kernel_6_26_2008.orig/drivers/oprofile/cpu_buffer.c
-+++ Cell_kernel_6_26_2008/drivers/oprofile/cpu_buffer.c
-@@ -38,8 +38,10 @@ void free_cpu_buffers(void)
- {
- 	int i;
- 
--	for_each_online_cpu(i)
-+	for_each_online_cpu(i) {
- 		vfree(per_cpu(cpu_buffer, i).buffer);
-+		per_cpu(cpu_buffer, i).buffer = NULL;
-+	}
- }
- 
- unsigned long oprofile_get_cpu_buffer_size(void)
-Index: Cell_kernel_6_26_2008/drivers/oprofile/event_buffer.c
-===================================================================
---- Cell_kernel_6_26_2008.orig/drivers/oprofile/event_buffer.c
-+++ Cell_kernel_6_26_2008/drivers/oprofile/event_buffer.c
-@@ -93,6 +93,8 @@ out:
- void free_event_buffer(void)
- {
- 	vfree(event_buffer);
-+
-+	event_buffer = NULL;
- }
- 
-  
-
-
+        { }     /* terminate list */
+ };
