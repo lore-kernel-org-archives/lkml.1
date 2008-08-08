@@ -1,138 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753222AbYHHFcA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753514AbYHHFhs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753222AbYHHFcA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 01:32:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751741AbYHHFbu
+	id S1753514AbYHHFhs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 01:37:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751741AbYHHFhk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 01:31:50 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:51936 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750896AbYHHFbt (ORCPT
+	Fri, 8 Aug 2008 01:37:40 -0400
+Received: from fg-out-1718.google.com ([72.14.220.155]:65447 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751327AbYHHFhj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 01:31:49 -0400
-Date: Thu, 7 Aug 2008 22:31:09 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Ian Kent <raven@themaw.net>
-Cc: autofs@linux.kernel.org, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH 4/4] autofs4 - add miscelaneous device for ioctls
-Message-Id: <20080807223109.e67f46e4.akpm@linux-foundation.org>
-In-Reply-To: <1218166760.17093.69.camel@raven.themaw.net>
-References: <20080807114002.4142.30417.stgit@web.messagingengine.com>
-	<20080807114030.4142.76568.stgit@web.messagingengine.com>
-	<20080807141041.e0d5cccc.akpm@linux-foundation.org>
-	<1218166760.17093.69.camel@raven.themaw.net>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 8 Aug 2008 01:37:39 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=eLzk3z5Fi/CIrEYe9CFJTmXilI6zurRU7mcbq/5WxPpnLYBxwlQrVaHLZZr8nUJIRu
+         +q4brp+Lz8V2EAICsr5gMB3QhXugGhuAqFG3QyGRBLOsUveacR6H6ljJCH4tyYMm847C
+         4K7wo4ekoS4xkstl+Bni4QIqmMt1QmryzokGM=
+Date: Fri, 8 Aug 2008 09:37:35 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Nix <nix@esperi.org.uk>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: writable packet CD mounting in 2.6.26.x?
+Message-ID: <20080808053735.GA5274@martell.zuzino.mipt.ru>
+References: <87ej52vtxq.fsf@hades.wkstn.nix> <20080808031437.GA14249@martell.zuzino.mipt.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080808031437.GA14249@martell.zuzino.mipt.ru>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 08 Aug 2008 11:39:19 +0800 Ian Kent <raven@themaw.net> wrote:
-
-> 
-> On Thu, 2008-08-07 at 14:10 -0700, Andrew Morton wrote:
-> > On Thu, 07 Aug 2008 19:40:31 +0800
-> > Ian Kent <raven@themaw.net> wrote:
-> > >
-> > > Subject: [PATCH 4/4] autofs4 - add miscelaneous device for ioctls
+On Fri, Aug 08, 2008 at 07:14:37AM +0400, Alexey Dobriyan wrote:
+> On Wed, Aug 06, 2008 at 08:12:49PM +0100, Nix wrote:
+> > It seems to be impossible to mount packet-written CD-RWs writably in
+> > 2.6.26.x, even as root. Things worked in 2.6.25.x.
 > > 
-> > I fixed that spello
+> > hades:/tmp# ls -l /dev/pktcdvd
+> > total 0
+> > brw-rw-rw- 1 root root  254,  0 2008-08-05 00:45 cdrw
+> > crw-r--r-- 1 root root   10, 63 2008-08-05 00:44 control
+> > brw-rw-rw- 1 root cdrom 254,  0 2008-08-05 00:45 pktcdvd0
 > > 
-> > > Patch to add a miscellaneous device to the autofs4 module for routing
-> > > ioctls. This provides the ability to obtain an ioctl file handle for
-> > > an autofs mount point that is possibly covered by another mount.
-> > > 
-> > > The actual problem with autofs is that it can't reconnect to existing
-> > > mounts. Immediately one things of just adding the ability to remount
-> > > autofs file systems would solve it, but alas, that can't work. This is
-> > > because autofs direct mounts and the implementation of "on demand mount
-> > > and expire" of nested mount trees have the file system mounted on top of
-> > > the mount trigger dentry.
-> > > 
-> > > To resolve this a miscellaneous device node for routing ioctl commands
-> > > to these mount points has been implemented in the autofs4 kernel module
-> > > and a library added to autofs. This provides the ability to open a file
-> > > descriptor for these over mounted autofs mount points.
-> > > 
-> > > Please refer to Documentation/filesystems/autofs4-mount-control.txt for
-> > > a discussion of the problem, implementation alternatives considered and
-> > > a description of the interface.
-> > > 
-> > >
-> > > ...
-> > >
-> > > +
-> > > +#define AUTOFS_DEV_IOCTL_SIZE	sizeof(struct autofs_dev_ioctl)
-> > > +
-> > > +typedef int (*ioctl_fn)(struct file *,
-> > > +struct autofs_sb_info *, struct autofs_dev_ioctl *);
 > > 
-> > Weird layout, which I fixed.
-> 
-> Auuuhh .. didn't want to do this. I personally like declarations like
-> this to be on a single line but checkpatch.pl complained about it.
-
-Well, that's why it's a checkpatch warning, not an error.  The way I
-look at checkpatch is that it is for detecting possible mistakes.  Did
-you _really_ mean to do that?  Usually the answer is "nope, and I
-wouldn't have noticed unless you told me".  But sometimes the answer is
-"yes, I really did mean that".
-
-I routinely ignore checkpatch 80-col warnings, unless they are flagging
-something which is just egregiously revolting.
-
-Anyway, that's an aside.  Given that you decided to fit that typedef
-into 80 cols, the way you did it was weird ;)
-
-> > > +static void autofs_dev_ioctl_fd_install(unsigned int fd, struct file *file)
-> > > +{
-> > > +	struct files_struct *files = current->files;
-> > > +	struct fdtable *fdt;
-> > > +
-> > > +	spin_lock(&files->file_lock);
-> > > +	fdt = files_fdtable(files);
-> > > +	rcu_assign_pointer(fdt->fd[fd], file);
-> > > +	FD_SET(fd, fdt->close_on_exec);
-> > > +	spin_unlock(&files->file_lock);
-> > > +}
+> > hades:/tmp# mount -o rw /dev/pktcdvd/cdrw /mnt/pcdrw
+> > mount: block device /dev/pktcdvd/cdrw is write-protected, mounting read-only
 > > 
-> > urgh, it's bad to have done a copy-n-paste on fd_install() here.  It
-> > means that if we go and change the locking in core kernel (quite
-> > possible) then people won't udpate this code.
+> > hades:/tmp# mount -o rw /dev/pktcdvd/pktcdvd0 /mnt/pcdrw
+> > mount: block device /dev/pktcdvd/pktcdvd0 is write-protected, mounting read-only
 > > 
-> > Do we have alternative here?  Can we set close_on_exec outside the lock
-> > and just call fd_install()?  Probably not.
+> > The strace says that we get -EROFS always, now:
 > > 
-> > Can we export set_close_on_exec() then call that after having called
-> > fd_install()?  I think so.
+> > mount("/dev/pktcdvd/cdrw", "/mnt/pcdrw", "udf"..., MS_NOSUID|MS_NODEV|MS_NOEXEC|0x200000, NULL) = -1 EROFS (Read-only file system)
 > > 
-> > But not this, please.
-> 
-> No problem.
-> You mentioned this last time as well.
-> 
-> Since there are a couple of possible approaches and I wasn't sure which
-> way to go I thought I'd post it as is and get feedback then make it a
-> followup patch.
-> 
-> Could the pthreads user space daemon exec something between fd_install()
-> and set_close_on_exec()? 
+> > 
+> > Anyone got any ideas? There are no suspicious-looking changes in
+> > pktcdvd.c itself, so maybe this lies deeper in the block layer. Or
+> > perhaps I'm mounting it wrong in some obscure way.
 
-Gee, I don't know, it would depend on the context.
+Ho-hum, I get ->mmc3_profile = 9 here in both .25 anf .26 kernel, so I
+can't meaningfully debug it here. :-(
 
-Is that a private file*?  Was it just created, and is there no
-possibility that any other thread can be sharing it anyway?  If so,
-there's no problem.
+Does it -EROFS because of pkt_writable_disc()? If yes, apply this patch
+too.
 
-> Perhaps there are some other alternative approaches to this.
-> 
-> Suggestions?
-
-I don't know enough about autofs nor about what problem you're
-attacking here to be able to say, sorry.  I don't even know why
-close_on_exec is being set?
-
+--- a/drivers/block/pktcdvd.c
++++ b/drivers/block/pktcdvd.c
+@@ -1934,6 +1934,7 @@ static int pkt_writable_track(struct pktcdvd_device *pd, track_information *ti)
+  */
+ static int pkt_writable_disc(struct pktcdvd_device *pd, disc_information *di)
+ {
++	printk("%s: pd = %p, ->mmc3_profile = %u\n", __func__, pd, pd->mmc3_profile);
+ 	switch (pd->mmc3_profile) {
+ 		case 0x0a: /* CD-RW */
+ 		case 0xffff: /* MMC3 not supported */
+@@ -1986,7 +1987,16 @@ static noinline_for_stack int pkt_probe_settings(struct pktcdvd_device *pd)
+ 	cgc.cmd[0] = GPCMD_GET_CONFIGURATION;
+ 	cgc.cmd[8] = 8;
+ 	ret = pkt_generic_packet(pd, &cgc);
++	{
++		int i;
++
++		printk("%s:", __func__);
++		for (i = 0; i < 12; i++)
++			printk(" %02x", buf[i]);
++		printk("\n");
++	}
+ 	pd->mmc3_profile = ret ? 0xffff : buf[6] << 8 | buf[7];
++	printk("%s: pd = %p, ->mmc3_profile = %u\n", __func__, pd, pd->mmc3_profile);
+ 
+ 	memset(&di, 0, sizeof(disc_information));
+ 	memset(&ti, 0, sizeof(track_information));
 
