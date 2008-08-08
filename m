@@ -1,54 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763134AbYHHWhg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762814AbYHHWjS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763134AbYHHWhg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 18:37:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753306AbYHHWhX
+	id S1762814AbYHHWjS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 18:39:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751421AbYHHWjG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 18:37:23 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:41680 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756160AbYHHWhU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 18:37:20 -0400
-Message-ID: <489CC7E2.7040209@zytor.com>
-Date: Fri, 08 Aug 2008 15:25:38 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>, Mike Travis <travis@sgi.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 00/42] dyn_array/nr_irqs/sparse_irq support v5
-References: <1218232368-31228-1-git-send-email-yhlu.kernel@gmail.com>	 <489CC246.5000202@zytor.com> <86802c440808081514w3a7ea1d6hda2442e7bf6729a4@mail.gmail.com>
-In-Reply-To: <86802c440808081514w3a7ea1d6hda2442e7bf6729a4@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Fri, 8 Aug 2008 18:39:06 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:56956 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750849AbYHHWjF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Aug 2008 18:39:05 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <20080808172141.GY14495@cs181140183.pp.htv.fi>
+References: <20080808172141.GY14495@cs181140183.pp.htv.fi> <1218214935.3146.5.camel@dhcppc0>
+To: Thomas Meyer <thomas@m3y3r.de>, Adrian Bunk <bunk@kernel.org>
+Cc: dhowells@redhat.com, Linux-Kernel <linux-kernel@vger.kernel.org>,
+       Linux-Next <linux-next@vger.kernel.org>
+Subject: Re: next-20080808: bash: fork: Resource temporarily unavailable
+X-Mailer: MH-E 8.0.3+cvs; nmh 1.3; GNU Emacs 23.0.50
+Date: Fri, 08 Aug 2008 23:32:15 +0100
+Message-ID: <17923.1218234735@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yinghai Lu wrote:
->>>
->> So I'm still clearly missing something about this... if we need sparse IRQs
->> in the first place (which we do), what's the point of the dyn_array?
+
+Adrian Bunk <bunk@kernel.org> wrote:
+
+> The only commits that touched kernel/fork.c between next-20080807 and 
+> next-20080808 are David's CRED patches.
 > 
-> x86_64: support CONFIG_HAVE_SPARSE_IRQ and CONFIG_DYN_ARRAY
-> x86_32: support CONFIG_DYN_ARRAY
-> 
-> some arches could use dyn_array with probing nr_irqs and it could be
-> 32 and much less than 224.
-> some could have that like 512. and those arch may not need to mess up
-> with sparse_irq at first point.
-> but still could get some flexibilty about that array size.
-> 
+> David, can you look at this?
 
-As an x86 maintainer, I definitely do not want x86-64 and x86-32 to 
-diverge unless there is an extremely strong reason to.
+I can, but I'll need a config file as it boots fine for me and passes the LTP
+testsuites I've run on it.
 
-Other architectures may speak for themselves, but why not just support 
-sparse IRQs on x86-32 *and* -64 and skip the dyn_array variant?
-
-	-=hpa
-
+David
