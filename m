@@ -1,123 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755769AbYHHBSg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756042AbYHHBVa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755769AbYHHBSg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Aug 2008 21:18:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752120AbYHHBS1
+	id S1756042AbYHHBVa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Aug 2008 21:21:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752120AbYHHBVW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Aug 2008 21:18:27 -0400
-Received: from mga11.intel.com ([192.55.52.93]:58913 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752022AbYHHBS0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Aug 2008 21:18:26 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.31,323,1215414000"; 
-   d="scan'208";a="604964417"
-Subject: Re: cpufreq doesn't seem to work in Intel Q9300
-From: Zhao Yakui <yakui.zhao@intel.com>
-To: S K <nospamnoham@gmail.com>
-Cc: none <aj504@student.cs.york.ac.uk>, linux-kernel@vger.kernel.org,
-       linux-acpi@vger.kernel.org
-In-Reply-To: <514e099a0808070235qd36628cta191018763875422@mail.gmail.com>
-References: <514e099a0808030300u140a0ae7m92a2e7294f39f7b7@mail.gmail.com>
-	 <48958901.06a0100a.35d6.2df9@mx.google.com>
-	 <514e099a0808032206n192fc973u24b31def6555dbec@mail.gmail.com>
-	 <514e099a0808070235qd36628cta191018763875422@mail.gmail.com>
-Content-Type: text/plain
-Date: Fri, 08 Aug 2008 09:32:04 +0800
-Message-Id: <1218159124.6671.32.camel@yakui_zhao.sh.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.0 (2.8.0-7.fc6) 
-Content-Transfer-Encoding: 7bit
+	Thu, 7 Aug 2008 21:21:22 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:55831 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752106AbYHHBVV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Aug 2008 21:21:21 -0400
+Date: Thu, 7 Aug 2008 21:21:18 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Roland McGrath <roland@redhat.com>
+cc: Jeremy Fitzhardinge <jeremy@goop.org>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       David Miller <davem@davemloft.net>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Ulrich Drepper <drepper@redhat.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Gregory Haskins <ghaskins@novell.com>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       "Luis Claudio R. Goncalves" <lclaudio@uudg.org>,
+       Clark Williams <williams@redhat.com>, Sam Ravnborg <sam@ravnborg.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [PATCH 0/5] ftrace: to kill a daemon
+In-Reply-To: <20080807222642.761AF15429D@magilla.localdomain>
+Message-ID: <alpine.DEB.1.10.0808072113290.18565@gandalf.stny.rr.com>
+References: <20080807182013.984175558@goodmis.org> <489B6511.7000208@goop.org> <alpine.DEB.1.10.0808071721200.10092@gandalf.stny.rr.com> <20080807222642.761AF15429D@magilla.localdomain>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-08-07 at 02:35 -0700, S K wrote:
-> Anyone care to help?
+
+On Thu, 7 Aug 2008, Roland McGrath wrote:
+
+> > This doesn't seem any less complex than what I did. With this, I would 
+> > have to come up with another way to handle modules. This will make
+> > things a lot more complex.
 > 
-Will you please confirm whether the acpi_cpufreq driver is used on your
-machine?
-Please enable CONFIG_CPUFREQ_DEBUG in kernel configuration and boot the
-system with "cpufreq.debug=7".
-After the system is booted, please attach the output of dmesg.
-
-please attach the output of acpidump using the latest pmtools at
-  http://www.lesswatts.org/patches/linux_acpi/ 
-
-Of course you can open a new bug in bugzilla and attach the output of
-dmesg, acpidump, lspci -vxxx.
-
-http://bugzilla.kernel.org/enter_bug.cgi?product=ACPI
-
-Thanks.
-> -SK
+> The scheme you've implemented can apply fine to a .ko file after it's made.
+> They are just .o's really.  It is presumably faster to do one step per
+> final .ko rather than many tiny ones (per source file).  
 > 
-> 2008/8/3 S K <nospamnoham@gmail.com>:
-> > Hi,
-> >
-> >  I'm attaching the acpidump output. Can someone (ACPI guys??) please
-> > me help figure this out?
-> > Is there any other info that's needed to debug this?
-> >
-> > I can be a tester for this and even do some development within the
-> > limits of my understanding.
-> >
-> > Thanks,
-> > SK
-> >
-> > On Sun, Aug 3, 2008 at 3:31 AM, none <aj504@student.cs.york.ac.uk> wrote:
-> >> S K wrote:
-> >>> Hi,
-> >>>
-> >>>   I have an Intel Core 2 Quad and running kernel
-> >>> 2.6.25.11-97.fc9.i686. cpufreq doesn't seem to work. The cpufreq
-> >>> scaling monitor in Gnome says CPU Freq scaling is not supported in my
-> >>> CPU. The CPU can run at 2.0 and 2.5 GHz but mine always runs at 2.5
-> >>> GHz in Linux.
-> >>>
-> >>> So I checked  /sys and there is no cpufreq dir in /sys/...
-> >>>
-> >>> # ls /sys/devices/system/cpu/
-> >>> cpu0  cpu1  cpu2  cpu3  cpuidle  sched_mc_power_savings
-> >>> # ls /sys/devices/system/cpu/cpuidle/
-> >>> current_driver  current_governor_ro
-> >>>
-> >>> I have no clue what cpuidle directory is for.
-> >>>
-> >>> I added cpufreq.debug=7 in kernel boot params and saw the following in
-> >>> the dmesg:
-> >>>
-> >>> speedstep-smi: No supported Intel CPU detected.
-> >>> cpufreq-core: CPU 0: _PPC is 0 - frequency not limited
-> >>> cpufreq-core: CPU 3: _PPC is 0 - frequency not limited
-> >>> cpufreq-core: CPU 1: _PPC is 0 - frequency not limited
-> >>> cpufreq-core: CPU 2: _PPC is 0 - frequency not limited
-> >>> cpuidle: using governor ladder
-> >>> cpuidle: using governor menu
-> >>>
-> >>> I looked at arch/x86/kernel/cpu/cpufreq/speedstep-smi.c and it seems
-> >>> to detect only Pentium IIIs.
-> >>>
-> >>> Anyone know what files have the cpufreq code for Intel Core 2?
-> >>> Does cpufreq support Intel Core 2 Quads? Especially the Q9300? If not,
-> >>> anything I can do to help?
-> >>
-> >> I have an Intel Core 2 Duo and it uses the ACPI cpufreq driver; your
-> >> Quad should do the same.  So this is likely an ACPI/BIOS issue.
-> >>
-> >> If you ask ACPI people they will ask you to post the output of acpidump.
-> >> Also you should probably check if you have a BIOS option that needs to be
-> >> enabled for this to work.
-> >>
-> >> BTW, cpuidle is something quite different, it is about how to save power
-> >> when CPU is doing nothing (i.e. idle :-).  Cpu frequency scaling is how to
-> >> save power when CPU is working (but doesn't need to run flat out).
-> >>
-> >> Alan
-> >>
-> >
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> That might be a benefit to doing it all at the end for vmlinux too.  I
+> think the best way would be to have a vmlinux.o that we actually use in the
+> link, rather than just analyzing and discarding.  Then you can just do your
+> existing hack on vmlinux.o before it's linked into vmlinux.
+
+OK, I am playing with this. And you are right, it does work with vmlinux.o 
+file.  It adds almost another minute to the build anytime something is 
+changed. Where the per-object way may take longer doing a full build, but 
+does not add that extra minute ever build.
+
+Which would people prefer?  I little longer full build and do the 
+modification on every object, or have a shorter full build, but every 
+build will take that extra minute to do?
+
+Note, if you have DYNMAIC_FTRACE disabled, this is a nop, and will _not_ 
+affect you.
+
+-- Steve
 
