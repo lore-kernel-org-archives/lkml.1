@@ -1,53 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759365AbYHHTdO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759365AbYHHTgT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759365AbYHHTdO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 15:33:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751677AbYHHTcz
+	id S1759365AbYHHTgT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 15:36:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752410AbYHHTgI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 15:32:55 -0400
-Received: from mga02.intel.com ([134.134.136.20]:16401 "EHLO mga02.intel.com"
+	Fri, 8 Aug 2008 15:36:08 -0400
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:48931 "EHLO e2.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751450AbYHHTcy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 15:32:54 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.31,329,1215414000"; 
-   d="scan'208";a="324501187"
-Date: Fri, 8 Aug 2008 12:32:53 -0700
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-To: Wolfgang Walter <wolfgang.walter@stwm.de>
-Cc: "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: Kernel oops with 2.6.26, padlock and ipsec: probably problem with fpu state changes
-Message-ID: <20080808193252.GD607@linux-os.sc.intel.com>
-References: <200807171653.59177.wolfgang.walter@stwm.de> <200808071823.02364.wolfgang.walter@stwm.de> <200808081236.55172.wolfgang.walter@stwm.de> <200808082109.47284.wolfgang.walter@stwm.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200808082109.47284.wolfgang.walter@stwm.de>
-User-Agent: Mutt/1.4.1i
+	id S1752235AbYHHTgH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Aug 2008 15:36:07 -0400
+In-Reply-To: <20080808190448.GA3356@kroah.com>
+References: <20080808184349.999902616@linux.vnet.ibm.com> <1218221742.4444.12.camel@localhost.localdomain> <20080808190448.GA3356@kroah.com>
+To: Greg KH <greg@kroah.com>
+Cc: James Morris <jmorris@namei.org>, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org,
+       linux-security-module-owner@vger.kernel.org,
+       Randy Dunlap <randy.dunlap@oracle.com>, safford@watson.ibm.com,
+       sailer@watson.ibm.com, Stephen Smalley <sds@tycho.nsa.gov>,
+       serue@linux.vnet.ibm.com, Al Viro <viro@ZenIV.linux.org.uk>,
+       Mimi Zohar <zohar@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Subject: Re: [PATCH 2/4] integrity: special fs magic
+X-KeepSent: FAAF261A:9C9A337A-8525749F:0069FF16;
+ type=4; name=$KeepSent
+X-Mailer: Lotus Notes Release 8.0.1 February 07, 2008
+Message-ID: <OFFAAF261A.9C9A337A-ON8525749F.0069FF16-8525749F.006BAB9C@us.ibm.com>
+From: Mimi Zohar <zohar@us.ibm.com>
+Date: Fri, 8 Aug 2008 15:36:15 -0400
+X-MIMETrack: Serialize by Router on D01ML604/01/M/IBM(Build V85_M1_05262008|May 26, 2008) at
+ 08/08/2008 15:36:03,
+	Serialize complete at 08/08/2008 15:36:03
+Content-Type: text/plain; charset="US-ASCII"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 08, 2008 at 12:09:46PM -0700, Wolfgang Walter wrote:
-> I don't know though why kernel_fpu_begin exactly fixes the problem:
+linux-security-module-owner@vger.kernel.org wrote on 08/08/2008 03:04:48 
+PM:
 
-because it prevents taking a DNA fault inside the kernel (resulting
-in TS_USEDFPU not set).
 
+> Re: [PATCH 2/4] integrity: special fs magic
 > 
-> Maybe preemption must be disabled when padlocks RNG, ACE, Hash-engine etc. is
-> used. Maybe just some barrier is needed which preempt_disable provides.
+> On Fri, Aug 08, 2008 at 02:55:42PM -0400, Mimi Zohar wrote:
+> >     - Move special fs magic number definitions to magic.h
+> >     - Add magic.h include
+> > 
+> >     Signed-off-by: Mimi Zohar <zohar@us.ibm.com>
+> 
+> Why?  What is this patch for?  Are you going to do something with these
+> magic values later?
+> 
+> thanks,
+> 
 
-problem can happen even when preemption is disabled.
+yes, [PATCH 4/4] integrity: IMA as an integrity service provider,
+uses these definition in defining the default IMA measurement policy.
+The default policy can be replaced with an LSM specific one.  More
+details on the IMA measurement policy are available in 
+Documentation/ABI/testing/ima_policy.
 
-> What should I do now?
+Mimi
 
-I will post your fix(including the other usages) with the appropriate changelog
-shortly.
 
-thanks,
-suresh
+
