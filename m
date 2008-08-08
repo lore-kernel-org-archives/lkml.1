@@ -1,73 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756213AbYHHQ20@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756611AbYHHQaR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756213AbYHHQ20 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 12:28:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752211AbYHHQ2S
+	id S1756611AbYHHQaR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 12:30:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751720AbYHHQaF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 12:28:18 -0400
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:49490 "EHLO smtp4.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751505AbYHHQ2R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 12:28:17 -0400
-Date: Fri, 8 Aug 2008 19:26:42 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Benny Halevy <bhalevy@panasas.com>,
-       "J. Bruce Fields" <bfields@citi.umich.edu>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Cc: neilb@suse.de, linux-nfs@vger.kernel.org, linux-kernel@vger.kernel.org,
+	Fri, 8 Aug 2008 12:30:05 -0400
+Received: from smtp239.poczta.interia.pl ([217.74.64.239]:36917 "EHLO
+	smtp239.poczta.interia.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751505AbYHHQaC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Aug 2008 12:30:02 -0400
+Date: Fri, 8 Aug 2008 18:35:31 +0200
+From: Krzysztof Helt <krzysztof.h1@poczta.fm>
+To: Jean Delvare <khali@linux-fr.org>,
        Andrew Morton <akpm@linux-foundation.org>
-Subject: [2.6 patch] uninline nfsd4_op_name()
-Message-ID: <20080808162642.GG14495@cs181140183.pp.htv.fi>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Cc: linux-fbdev-devel@lists.sourceforge.net,
+       Antonino Daplas <adaplas@gmail.com>,
+       Petr Vandrovec <vandrove@vc.cvut.cz>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [Linux-fbdev-devel] [PATCH 1/3] matrox maven: Fix a broken
+ error path
+Message-Id: <20080808183531.08a8509e.krzysztof.h1@poczta.fm>
+In-Reply-To: <20080808165823.71d9bea3@hyperion.delvare>
+References: <20080808164937.141a95e0@hyperion.delvare>
+	<20080808165823.71d9bea3@hyperion.delvare>
+X-Mailer: Sylpheed 2.4.3 (GTK+ 2.11.0; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-EMID: aae2b138
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There doesn't seem to be a compelling reason why nfsd4_op_name() is 
-marked as "inline":
+On Fri, 8 Aug 2008 16:58:23 +0200
+Jean Delvare <khali@linux-fr.org> wrote:
 
-It's only used in a dprintk(), and as long as it has only one caller 
-non-ancient gcc versions anyway inline it automatically.
+> I broke an error path with d03c21ec0be7787ff6b75dcf56c0e96209ccbfbd,
+> sorry about that.
+> 
+> Signed-off-by: Jean Delvare <khali@linux-fr.org>
+> ---
 
-This patch fixes the following compile error with gcc 3.4:
+Acked-by: Krzysztof Helt <krzysztof.h1@wp.pl>
 
-<--  snip  -->
 
-...
-  CC      fs/nfsd/nfs4proc.o
-nfs4proc.c: In function `nfsd4_proc_compound':
-nfs4proc.c:854: sorry, unimplemented: inlining failed in call to 
-nfs4proc.c:897: sorry, unimplemented: called from here
-make[3]: *** [fs/nfsd/nfs4proc.o] Error 1
+>  drivers/video/matrox/matroxfb_maven.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> --- linux-2.6.26-rc6.orig/drivers/video/matrox/matroxfb_maven.c	2008-06-17 17:22:42.000000000 +0200
+> +++ linux-2.6.26-rc6/drivers/video/matrox/matroxfb_maven.c	2008-06-17 17:23:18.000000000 +0200
+> @@ -1266,7 +1266,7 @@ static int maven_detect_client(struct i2
+>  ERROR4:;
+>  	i2c_detach_client(new_client);
+>  ERROR3:;
+> -	kfree(new_client);
+> +	kfree(data);
+>  ERROR0:;
+>  	return err;
+>  }
+> 
+> 
+> -- 
+> Jean Delvare
+> 
+> -------------------------------------------------------------------------
+> This SF.Net email is sponsored by the Moblin Your Move Developer's challenge
+> Build the coolest Linux based applications with Moblin SDK & win great prizes
+> Grand prize is a trip for two to an Open Source event anywhere in the world
+> http://moblin-contest.org/redirect.php?banner_id=100&url=/
+> _______________________________________________
+> Linux-fbdev-devel mailing list
+> Linux-fbdev-devel@lists.sourceforge.net
+> https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
+> 
 
-<--  snip  -->
 
-Reported-by: Adrian Bunk <bunk@kernel.org>
-Signed-off-by: Adrian Bunk <bunk@kernel.org>
-
----
---- a/fs/nfsd/nfs4proc.c
-+++ b/fs/nfsd/nfs4proc.c
-@@ -851,7 +851,7 @@ struct nfsd4_operation {
- 
- static struct nfsd4_operation nfsd4_ops[];
- 
--static inline char *nfsd4_op_name(unsigned opnum);
-+static char *nfsd4_op_name(unsigned opnum);
- 
- /*
-  * COMPOUND call.
-@@ -1116,8 +1116,7 @@ static struct nfsd4_operation nfsd4_ops[OP_RELEASE_LOCKOWNER+1] = {
- 	},
- };
- 
--static inline char *
--nfsd4_op_name(unsigned opnum)
-+static char *nfsd4_op_name(unsigned opnum)
- {
- 	if (opnum < ARRAY_SIZE(nfsd4_ops))
- 		return nfsd4_ops[opnum].op_name;
+----------------------------------------------------------------------
+Tylko dla detektywow! Konkurs na Smaker.pl
+Kliknij >>> http://link.interia.pl/f1eb1
 
