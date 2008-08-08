@@ -1,49 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762010AbYHHVow@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761580AbYHHVsy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762010AbYHHVow (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 17:44:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761634AbYHHVo1
+	id S1761580AbYHHVsy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 17:48:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753606AbYHHVsq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 17:44:27 -0400
-Received: from smtpout3.tre.se ([80.251.192.228]:18538 "EHLO smtpout3.tre.se"
+	Fri, 8 Aug 2008 17:48:46 -0400
+Received: from tundra.namei.org ([65.99.196.166]:42268 "EHLO tundra.namei.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761600AbYHHVo0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 17:44:26 -0400
-Date: Fri, 8 Aug 2008 23:45:04 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Bastian Blank <bastian@waldi.eu.org>, linux-doc@vger.kernel.org,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: [PATCH] DocBook: don't compress mandocs
-Message-ID: <20080808214504.GA8001@uranus.ravnborg.org>
-References: <20080808074724.GA28249@wavehammer.waldi.eu.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080808074724.GA28249@wavehammer.waldi.eu.org>
-User-Agent: Mutt/1.4.2.1i
+	id S1753282AbYHHVsp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Aug 2008 17:48:45 -0400
+Date: Sat, 9 Aug 2008 07:48:05 +1000 (EST)
+From: James Morris <jmorris@namei.org>
+To: Thomas Meyer <thomas@m3y3r.de>
+cc: Linux-Kernel <linux-kernel@vger.kernel.org>,
+       Linux-Next <linux-next@vger.kernel.org>,
+       David Howells <dhowells@redhat.com>
+Subject: Re: next-20080808: bash: fork: Resource temporarily unavailable
+In-Reply-To: <1218214935.3146.5.camel@dhcppc0>
+Message-ID: <alpine.LRH.1.10.0808090747150.29079@tundra.namei.org>
+References: <1218214935.3146.5.camel@dhcppc0>
+User-Agent: Alpine 1.10 (LRH 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 08, 2008 at 09:47:24AM +0200, Bastian Blank wrote:
-> The mandocs target uses gzip to compress the resulting manpages. If this
-> target runs more than once (using make -jX) at the same time, gzip may
-> run more then once with the same set of files. It just bails out if it
-> is not able to find a file because a concurrent run already removed it.
+On Fri, 8 Aug 2008, Thomas Meyer wrote:
+
+> Hi.
 > 
-> Fix this by removing the gzip call and only work with uncompressed
-> manpages.
+> Beginning with next-20080808 after letting the system run for 5 minutes
+> or so, I get an error from the fork call, e.g.:
+> 
+> "bash: fork: Resource temporarily unavailable"
+> 
+> Doing an "echo c > /proc/sysrq-trigger" I was able to get an vmcore dump
+> of the running kernel using the kdump mechanism.
+> 
+> what should i do next?
 
-If it failded with gzip being run more than once before this
-patch does not solve the bug - it simply makes it harder to trigger.
+Which distro and version are you using?  Please post your .config file.
 
-Anything that does not work with a make -j100 build is broken.
-And please understand that we have people that uses "make -j100" when building
-the kernel.
 
-These people most likely does not do "make mandocs" but we should still fix
-the bug and not try to paper it over in this way.
-
-So try to analyse why we in the first place will run gzip in parallele and solve that.
-
-	Sam
+-- 
+James Morris
+<jmorris@namei.org>
