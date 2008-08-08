@@ -1,76 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756161AbYHHBPe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753934AbYHHBQS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756161AbYHHBPe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Aug 2008 21:15:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752211AbYHHBP0
+	id S1753934AbYHHBQS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Aug 2008 21:16:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752432AbYHHBQF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Aug 2008 21:15:26 -0400
-Received: from smtp-outbound-2.vmware.com ([65.115.85.73]:55620 "EHLO
-	smtp-outbound-2.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752170AbYHHBPZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Aug 2008 21:15:25 -0400
-Subject: Re: [PATCH]Fix broken VMI in 2.6.27-rc..
-From: Zachary Amsden <zach@vmware.com>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: "H. Peter Anvin" <hpa@kernel.org>, Alok Kataria <akataria@vmware.com>,
-       "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, the arch/x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <489B8EF4.1030105@goop.org>
-References: <1218136365.23770.52.camel@alok-dev1>
-	 <489B6710.9000604@kernel.org>
-	 <1218144438.20178.336.camel@bodhitayantram.eng.vmware.com>
-	 <489B836A.3050209@goop.org> <489B84EF.6050009@kernel.org>
-	 <489B8948.6060003@goop.org> <489B8A68.10900@kernel.org>
-	 <489B8EF4.1030105@goop.org>
-Content-Type: text/plain
-Date: Thu, 07 Aug 2008 18:14:05 -0700
-Message-Id: <1218158045.20178.394.camel@bodhitayantram.eng.vmware.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
-Content-Transfer-Encoding: 7bit
+	Thu, 7 Aug 2008 21:16:05 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:57950 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752211AbYHHBQE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Aug 2008 21:16:04 -0400
+Date: Thu, 7 Aug 2008 21:15:00 -0400
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Keith Owens <kaos@ocs.com.au>
+Cc: Andi Kleen <andi@firstfloor.org>, Jay Lan <jlan@sgi.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, jmerkey@wolfmountaingroup.com,
+       Geert Uytterhoeven <geert@linux-m68k.org>,
+       Josh Boyer <jwboyer@gmail.com>, linux-kernel@vger.kernel.org,
+       Takenori Nagano <t-nagano@ah.jp.nec.com>,
+       Bernhard Walle <bwalle@suse.de>
+Subject: Re: [ANNOUNCE] Merkey's Kernel Debugger
+Message-ID: <20080808011500.GA531@redhat.com>
+References: <20080807200659.GJ24801@one.firstfloor.org> <23175.1218148134@ocs10w>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <23175.1218148134@ocs10w>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-08-07 at 17:10 -0700, Jeremy Fitzhardinge wrote:
-> H. Peter Anvin wrote:
-> > Jeremy Fitzhardinge wrote:
-> >> H. Peter Anvin wrote:
-> >>> The fixmap area should never have been made movable.  It's utter
-> >>> braindamage.
-> >>
-> >> Shrug.  It's been like that for a couple of years now.  It was one of
-> >> the very first paravirt-ops patches.  It wasn't controversial then,
-> >> and nobody seems to have noticed since.
+On Fri, Aug 08, 2008 at 08:28:54AM +1000, Keith Owens wrote:
+> Andi Kleen (on Thu, 7 Aug 2008 22:06:59 +0200) wrote:
+> >> To merge KDB or any other RAS tools, you need to deal with kdump. Kdump
+> >> hijack panic() before the die calling chain. For KDB or a RAS tool to
 > >
-> > The Linux kernel was never a paragon of perfection - it was never
-> > meant to be.  Just because a bit of cruft went unnoticed into the
-> > kernel doesn't mean we shouldn't fix it.
+> >Imho kdump should just be fixed to use die chains.
 > 
-> I don't really see what the issue is.
+> Violently agree, especially since the IA64 handling of NMI type
+> events is significantly different from x86 and requires at least two
+> callbacks via the die chain.
 > 
-> Fixmaps are primarily used for things that need to be mapped early
-> before we can allocate address space dynamically.  They're predominantly
-> used for boot-time init, and rarely on any performance-critical path.
-> The only vaguely regular use a fixmap gets during runtime is poking at
-> apics, and that's dominated by IO time, and kmap_atomic.  Statically,
-> there's only 100 references in the kernel.  And it only affects 32-bit.
+> Alas the kdump authors are adamant that they will not use die chains,
+> which makes it almost impossible for any other RAS code to coexist with
+> kdump.  This intransigence on the part of kdump is one of the reasons
+> that I gave up on getting _any_ RAS code (not just KDB) into the Linux
+> kernel.
 > 
-> Having fixmaps at link-time fixed addresses would be nice, I suppose,
-> but hardly worth going to vast effort over.
 
-Using my interplanetary ideas, linking the fixmap at runtime would allow
-optimal placement of the fixmap, any hypervisor areas, vmalloc, and
-pkmap space.  That might allow one to increase the amount of lowmem
-available for direct mapping depending on some platform variables such
-as hypervisor reserved space, physical memory size, APIC present.. those
-aren't known until boot time.  Actually, NCPUs is a good one, since we
-require atomic kmap space dependent on NCPUs, which could be given back
-to linear memory map.
+I am doing a quick source code grep and in all the cases except panic,
+kdump gets a chance to run in the end. We are running die notifications
+first. For example, in the case of nmi, in the case of traps,
+in the case of mce, notifier list is being executed first. So a debugger
+or any other RAS tool on the notifier chain will get a chance to
+run first.
+ 
+panic() is the only place where kdump gets a chance to run first and
+panic notifiers are not executed.
 
-That might actually be more worthwhile than link time fixed addresses.
+To me so far only in kernel debugger seems to be a reasonable candiate
+which needs to run before kdump after a panic event. If a debugger
+is really getting merged into the kernel, then I think debugger can
+put a hook in the panic() before kdump. Wouldn't this solve the problem?
 
-Zach
-
+Thanks
+Vivek
