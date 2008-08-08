@@ -1,96 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757921AbYHHSqc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758941AbYHHSt4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757921AbYHHSqc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 14:46:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751185AbYHHSqX
+	id S1758941AbYHHSt4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 14:49:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753231AbYHHSto
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 14:46:23 -0400
-Received: from yx-out-2324.google.com ([74.125.44.29]:55882 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751008AbYHHSqW (ORCPT
+	Fri, 8 Aug 2008 14:49:44 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:50153 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751658AbYHHStn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 14:46:22 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=tlAvp09Jk4wF05ZYqeCmEWG4zYB6SYVMHGHwkBfRAn/k/mCd1b70h+6FOeR76qpRjx
-         f6EkqnWEEUjUENvY5Dl532YNt6P7sOZ0YHC0chLnCvQJ58+DyKrQ+t5hmfTtSMXZPduG
-         kdZvSjeaWgLUUK/tHAJVCuaFV23UKxRwCz9GI=
-Message-ID: <19f34abd0808081146w22a3e5casd0d1fa15f2384000@mail.gmail.com>
-Date: Fri, 8 Aug 2008 20:46:21 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: paulmck@linux.vnet.ibm.com
-Subject: Re: recent -git: BUG in free_thread_xstate
-Cc: "Suresh Siddha" <suresh.b.siddha@intel.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "the arch/x86 maintainers" <x86@kernel.org>
-In-Reply-To: <20080801211036.GU14851@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+	Fri, 8 Aug 2008 14:49:43 -0400
+Subject: Re: Btrfs v0.16 released
+From: Chris Mason <chris.mason@oracle.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+       linux-btrfs <linux-btrfs@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>
+In-Reply-To: <877ias66v4.fsf@basil.nowhere.org>
+References: <1217962876.15342.33.camel@think.oraclecorp.com>
+	 <1218100464.8625.9.camel@twins>
+	 <1218105597.15342.189.camel@think.oraclecorp.com>
+	 <877ias66v4.fsf@basil.nowhere.org>
+Content-Type: text/plain
+Date: Fri, 08 Aug 2008 14:48:13 -0400
+Message-Id: <1218221293.15342.263.camel@think.oraclecorp.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <19f34abd0807231307y191c0ad7tfab4cda57ee88eb@mail.gmail.com>
-	 <20080723203109.GH14380@linux-os.sc.intel.com>
-	 <20080801211036.GU14851@linux.vnet.ibm.com>
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 1, 2008 at 11:10 PM, Paul E. McKenney
-<paulmck@linux.vnet.ibm.com> wrote:
-> On Wed, Jul 23, 2008 at 01:31:09PM -0700, Suresh Siddha wrote:
->> On Wed, Jul 23, 2008 at 01:07:04PM -0700, Vegard Nossum wrote:
->> > Hi,
->> >
->> > I just got this on c010b2f76c3032e48097a6eef291d8593d5d79a6 (-git from
->> > yesterday):
->>
->> Do you see this in 2.6.26 aswell? I suspect it is coming from post 2.6.26
->> changes.
->>
->> >
->> > BUG: unable to handle kernel paging request at 00664381
->> > IP: [<c010b274>] free_thread_xstate+0x4/0x30
->> ...
->>
->> > EIP is at arch/x86/kernel/process.c:36:
->> >
->> >         if (tsk->thread.xstate) {
->> >
->>
->> It looks like the kernel stack of that process got corrupted, corrupting the
->> task pointer in thread_info. Can you send us your config file?
->
-> I would also like to see the config file.
+On Thu, 2008-08-07 at 20:02 +0200, Andi Kleen wrote:
+> Chris Mason <chris.mason@oracle.com> writes:
+> >
+> > Metadata is duplicated by default even on single spindle drives, 
+> 
+> Can you please say a bit how much that impacts performance? That sounds 
+> costly.
 
-Hi,
+Most metadata is allocated in groups of 128k or 256k, and so most of the
+writes are nicely sized.  The mirroring code has areas of the disk
+dedicated to mirror other areas.  So we end up with something like this:
 
-I'm sorry for the late reply.
+metadata chunk A (~1GB in size)
+[ ......................... ]
 
-I copied you because I saw some RCU entry in the stack trace, but it
-is almost definitely not a problem with (core or "leaf") RCU code.
-Sometimes it also happens that people will say "oh, I recognize this
-problem, the patch has been posted here and here", etc.
+mirror of chunk A (~1GB in size)
+[ ......................... ]
 
-It seems to be a problem with either netpoll, netconsole, or the
-8139too driver. I find a UDP packet in the task_struct slab, and the
-stacktrace with RCU entries come from unrelated, unfortunate callbacks
-that stumbled upon the corruption.
+So, the mirroring turns a single large write into two large writes.
+Definitely not free, but always a fixed cost.
 
-My config, if you are still interested, can be found here:
-http://userweb.kernel.org/~vegard/bugs/20080724-fork/config
+I started to make some numbers of this yesterday on single spindles and
+discovered that my worker threads are not doing as good a job as they
+should be of maintaining IO ordering.  I've been using an array with a
+writeback cache for benchmarking lately and hadn't noticed.
 
-I don't know if the problem persists with the latest -git, it is now a
-while since I last tested, but I've checked kernels back to 2.6.20, so
-the problem has existed for a long time.
+I need to fix that, but here are some numbers on a single sata drive.
+The drive can do about 100MB/s streaming reads/writes.  Btrfs
+checksumming and inline data (tail packing) are both turned on.
+
+Single process creating 30 kernel trees (2.6.27-rc2)
+
+Btrfs defaults	36MB/s
+Btrfs no mirror 50MB/s
+Ext4 defaults   59.2MB/s (much better than ext3 here)
+
+With /sys/block/sdb/queue/nr_requests at 8192 to hide my IO ordering
+submission problems:
+
+Btrfs defaults: 57MB/s
+Btrfs no mirror: 61.51MB/s
+
+-chris
 
 
-Vegard
-
--- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
