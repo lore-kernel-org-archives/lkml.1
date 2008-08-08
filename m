@@ -1,42 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758793AbYHHSLs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758578AbYHHSNe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758793AbYHHSLs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 14:11:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754559AbYHHSL3
+	id S1758578AbYHHSNe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 14:13:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752002AbYHHSNZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 14:11:29 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:38019 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754136AbYHHSL2 (ORCPT
+	Fri, 8 Aug 2008 14:13:25 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:41131 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751591AbYHHSNZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 14:11:28 -0400
-Date: Fri, 8 Aug 2008 18:54:19 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Kumar Gala <galak@kernel.crashing.org>
-Cc: linux-ide <linux-ide@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: issues with sata hotplug?
-Message-ID: <20080808185419.69d762bc@lxorguk.ukuu.org.uk>
-In-Reply-To: <5D4D272F-5546-4C02-852A-80849A42EC1F@kernel.crashing.org>
-References: <5D4D272F-5546-4C02-852A-80849A42EC1F@kernel.crashing.org>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 8 Aug 2008 14:13:25 -0400
+Date: Fri, 8 Aug 2008 14:13:23 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, Roland McGrath <roland@redhat.com>,
+       Ulrich Drepper <drepper@redhat.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Gregory Haskins <ghaskins@novell.com>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       "Luis Claudio R. Goncalves" <lclaudio@uudg.org>,
+       Clark Williams <williams@redhat.com>
+Subject: Re: [PATCH 0/5] ftrace: to kill a daemon
+In-Reply-To: <20080808174607.GG8244@Krystal>
+Message-ID: <alpine.DEB.1.10.0808081410380.6116@gandalf.stny.rr.com>
+References: <20080807182013.984175558@goodmis.org> <20080807184741.GB18164@Krystal> <alpine.DEB.1.10.0808071639420.9449@gandalf.stny.rr.com> <20080808172259.GB8244@Krystal> <alpine.DEB.1.10.0808081334010.4436@gandalf.stny.rr.com>
+ <20080808174607.GG8244@Krystal>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> When I "eject" the drive I see no dmesg output related to hotplug.  I  
-> also don't see anything when I plug a drive in.
 
-sata_nv does support hot plug and hot plug events.
+On Fri, 8 Aug 2008, Mathieu Desnoyers wrote:
+> * Steven Rostedt (rostedt@goodmis.org) wrote:
+> > 
+> > On Fri, 8 Aug 2008, Mathieu Desnoyers wrote:
+> > > * Steven Rostedt (rostedt@goodmis.org) wrote:
+> > > > 
+> > > > I originally used jumps instead of nops, but unfortunately, they actually 
+> > > > hurt performance more than adding nops. Ingo told me it was probably due
+> > > > to using up the jump predictions of the CPU.
+> > > > 
+> > > 
+> > > Hrm, are you sure you use a single 5-bytes nop instruction then, or do
+> > > you use a mix of various nop sizes (add_nops) on some architectures ?
+> > 
+> > I use (for x86) what is in include/asm-x86/nops.h depending on what the
+> > cpuid gives us.
+> > 
+> 
+> That's bad :
+> 
+> #define GENERIC_NOP5 GENERIC_NOP1 GENERIC_NOP4
+> 
+> #define K8_NOP5 K8_NOP3 K8_NOP2
+> 
+> #define K7_NOP5 K7_NOP4 ASM_NOP1
+> 
+> So, when you try, later, to replace these instructions with a single
+> 5-bytes instruction, a preempted thread could iret in the middle of your
+> 5-bytes insn and cause an illegal instruction ?
 
-> Is there something I'm doing wrong w/regards to SATA hotplug support?
+That's why I use kstop_machine.
 
-Not that I can see - you can warm plug drives by telling the kernel
-yourself about plug/unplug events.
+> 
+> 
+> > > 
+> > > You can consume the branch prediction buffers for conditional branches,
+> > > but I doubt static jumps have this impact ? I don't see what "jump
+> > > predictions" you are referring to here exactly.
+> > 
+> > I don't know the details, but we definitely saw a drop in preformance 
+> > between using nops and static jumps.
+> > 
+> 
+> Generated by replacing all the call by 5-bytes jumps e9 00 00 00 00
+> instead of the 5-bytes add_nops ? On which architectures ?
+> 
+
+I ran this on my Dell (intel Xeon), which IIRC did show the performance 
+degration. I unfortunately don't have the time to redo those tests, but 
+you are welcome to.
+
+Just look at arch/x86/kernel/ftrace.c and replace the nop with the jump.
+In fact, the comments in that file still say it is a jmp. Remember, my 
+first go was to use the jmp.
+
+-- Steve
 
