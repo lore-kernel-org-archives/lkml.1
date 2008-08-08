@@ -1,59 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755861AbYHHDjl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755632AbYHHDlR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755861AbYHHDjl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Aug 2008 23:39:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754047AbYHHDje
+	id S1755632AbYHHDlR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Aug 2008 23:41:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753312AbYHHDlE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Aug 2008 23:39:34 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:55414 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753748AbYHHDjd (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Aug 2008 23:39:33 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: g3vbv@blueyonder.co.uk
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: A question regarding init_mm
-In-Reply-To: Your message of "Fri, 08 Aug 2008 02:49:29 BST."
-             <489BA629.4030008@blueyonder.co.uk>
-From: Valdis.Kletnieks@vt.edu
-References: <489BA629.4030008@blueyonder.co.uk>
+	Thu, 7 Aug 2008 23:41:04 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:50494 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753141AbYHHDlC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Aug 2008 23:41:02 -0400
+Subject: Re: [GIT PULL]: firmware patches for building firmware into kernel
+From: Jaswinder Singh <jaswinder@infradead.org>
+To: David Dillow <dave@thedillows.org>
+Cc: David Woodhouse <dwmw2@infradead.org>, LKML <linux-kernel@vger.kernel.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+In-Reply-To: <1218164391.17642.14.camel@obelisk.thedillows.org>
+References: <1218128219.14483.7.camel@jaswinder.satnam>
+	 <1218130222.18118.7.camel@lap75545.ornl.gov>
+	 <1218130475.14483.16.camel@jaswinder.satnam>
+	 <1218133288.18118.20.camel@lap75545.ornl.gov>
+	 <1218159490.2553.13.camel@jaswinder.satnam>
+	 <1218164391.17642.14.camel@obelisk.thedillows.org>
+Content-Type: text/plain
+Date: Fri, 08 Aug 2008 09:09:20 +0530
+Message-Id: <1218166760.2540.18.camel@jaswinder.satnam>
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1218166771_9292P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
 Content-Transfer-Encoding: 7bit
-Date: Thu, 07 Aug 2008 23:39:32 -0400
-Message-ID: <71281.1218166772@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1218166771_9292P
-Content-Type: text/plain; charset=us-ascii
+Hello Dave,
 
-On Fri, 08 Aug 2008 02:49:29 BST, Sid Boyce said:
+On Thu, 2008-08-07 at 22:59 -0400, David Dillow wrote:
+> > 
+> > Do you think we still need above comments ?
+> 
+> No, the comments will be unneeded, but you don't need an extra function
+> to handle this, and I'm not real keen about the release_firmware_all()
+> interface -- it doesn't match up with the get/put semantics of the
+> reference count.
+> 
+> I don't like releasing the firmware before the pci_unregister_driver()
+> call. I worry about ordering issues during cleanup, though I'll admit I
+> have not yet researched if it will be a problem. In any event, if you're
+> going to request it once per adapter in typhoon_init_one(), then it
+> should be in the per-device struct, and released in
+> typhoon_remove_one().
+> 
 
-> EXPORT_UNUSED_SYMBOL(init_mm); /* will be removed in 2.6.26 */
+Here is updated patch :
+
+diff --git a/drivers/net/typhoon.c b/drivers/net/typhoon.c
+index 2a26ba5..1638e87 100644
+--- a/drivers/net/typhoon.c
++++ b/drivers/net/typhoon.c
+@@ -2615,6 +2615,9 @@ typhoon_remove_one(struct pci_dev *pdev)
+ 	pci_set_power_state(pdev, PCI_D0);
+ 	pci_restore_state(pdev);
+ 	typhoon_reset(tp->ioaddr, NoWait);
++
++	release_firmware(typhoon_fw);
++
+ 	pci_iounmap(pdev, tp->ioaddr);
+ 	pci_free_consistent(pdev, sizeof(struct typhoon_shared),
+ 			    tp->shared, tp->shared_dma);
+@@ -2645,8 +2648,6 @@ typhoon_init(void)
+ static void __exit
+ typhoon_cleanup(void)
+ {
+-	release_firmware_all(typhoon_fw);
+-
+ 	pci_unregister_driver(&typhoon_driver);
+ }
  
-> Any thoughts on why it's not seen? No one on the nvidia list has a clue 
-> either.
 
-Run a kernel built with 'CONFIG_UNUSED_SYMBOLS=y', that should help matters
-somewhat.
 
-The *real* problem is that the NVidia driver uses the deprecated pgd_offset_k()
-function (see NV_PGD_OFFSET in lv-linux.h).  That's what needs fixing.
+> Drop the typhoon patches, and once you fix the problems in the core,
+> I'll respin the patch in a style I'm comfortable with. It will also need
+> to be tested before it goes upstream.
+> 
 
---==_Exmh_1218166771_9292P
-Content-Type: application/pgp-signature
+I can understand you are very worried about typhoon.
+But this is only first version of patches. This will goto David
+WoodHouse tree and he will again revise it.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
+And driver is yours you can change it as per your comfort, No one can
+stop you or typhoon ;)
 
-iD8DBQFIm7/zcC3lWbTT17ARAnm1AKCfnSy4YKBpnkMx7tuAYM5bnyEuwwCglc77
-Dyxmx9fMODt2FydRzXZj1X8=
-=ZOKG
------END PGP SIGNATURE-----
+Thank you,
 
---==_Exmh_1218166771_9292P--
+Jaswinder Singh.
+
