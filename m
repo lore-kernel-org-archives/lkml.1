@@ -1,102 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756548AbYHHMox@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756199AbYHHMvq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756548AbYHHMox (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 08:44:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752191AbYHHMoo
+	id S1756199AbYHHMvq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 08:51:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751931AbYHHMvi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 08:44:44 -0400
-Received: from py-out-1112.google.com ([64.233.166.182]:10166 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752031AbYHHMon (ORCPT
+	Fri, 8 Aug 2008 08:51:38 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:65002 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751284AbYHHMvh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 08:44:43 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=Ki7rTIcB6Vj0zqLyZis5ut9OjGusLxlaJvZ5/q07djz5Xy61yn8dDFMemFyMbor3Ia
-         7L7RxUXyMuS3fKn9jGm0vFBUEOCCMY1CAIpKvyDvvcnYmFN2LrJEYZQx4R29ynIONv9l
-         thZ2GO9EmEYVc03pQUkjYAl2jUFsLUJAia8g0=
-Date: Fri, 8 Aug 2008 08:44:33 -0400
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Zdenek Kabelac <zdenek.kabelac@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-input@vger.kernel.org, Jiri Kosina <jkosina@suse.cz>,
-       Rabin Vincent <rabin@rab.in>
-Subject: Re: INFO: possible recursive locking detected ps2_command
-Message-ID: <20080808082930.ZZRA012@mailhub.coreip.homeip.net>
-References: <c4e36d110807310241n512b01e4v898e883d740de879@mail.gmail.com> <20080731145739.fe8923be.akpm@linux-foundation.org> <20080801030444.GB18953@anvil.corenet.prv> <1218192589.8625.88.camel@twins>
+	Fri, 8 Aug 2008 08:51:37 -0400
+Date: Fri, 8 Aug 2008 08:51:34 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Rusty Russell <rusty@rustcorp.com.au>
+cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       David Miller <davem@davemloft.net>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Roland McGrath <roland@redhat.com>, Ulrich Drepper <drepper@redhat.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Gregory Haskins <ghaskins@novell.com>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       "Luis Claudio R. Goncalves" <lclaudio@uudg.org>,
+       Clark Williams <williams@redhat.com>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [PATCH 3/5] ftrace: enable mcount recording for modules
+In-Reply-To: <200808081643.51942.rusty@rustcorp.com.au>
+Message-ID: <alpine.DEB.1.10.0808080849020.19865@gandalf.stny.rr.com>
+References: <20080807182013.984175558@goodmis.org> <20080807182117.136812885@goodmis.org> <200808081643.51942.rusty@rustcorp.com.au>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1218192589.8625.88.camel@twins>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 08, 2008 at 12:49:49PM +0200, Peter Zijlstra wrote:
-> On Thu, 2008-07-31 at 23:04 -0400, Dmitry Torokhov wrote:
-> > On Thu, Jul 31, 2008 at 02:57:39PM -0700, Andrew Morton wrote:
-> > > 
-> > > (cc linux-input)
-> > > 
-> > > On Thu, 31 Jul 2008 11:41:25 +0200
-> > > "Zdenek Kabelac" <zdenek.kabelac@gmail.com> wrote:
-> > > 
-> > > > Hi
-> > > > 
-> > > > During mouse unplugging from psaux connector from the laptops' docking
-> > > > station I've got attached INFO trace.
-> > > > (laptops still has synaptics device)
-> > > > 
-> > 
-> > Dell?
-> > 
-> > > > Also for unknown reason to me  psaux mouse & synaptic device do not
-> > > > work somehow together - is it hw limitation
-> > > > of /dev/input/mice  interface?
-> > > > (USB mouse and synaptics do work quite well together)
-> > > > 
-> > > > [ INFO: possible recursive locking detected ]
-> > > > 2.6.27-rc1 #48
-> > > 
-> > > (it's 2.6.27-rc1)
-> > > 
-> > 
-> > Peter, here is the trace we talked about long time ago. For some reason
-> > lockdep annotation only works once. If reconnect is forced or psmouse
-> > module is reloaded lockdep starts complaining about passthrough port.
+
+On Fri, 8 Aug 2008, Rusty Russell wrote:
+
+> On Friday 08 August 2008 04:20:16 Steven Rostedt wrote:
+> > This patch enables the loading of the __mcount_section of modules and
+> > changing all the callers of mcount into nops.
+> >
+> > The modification is done before the init_module function is called, so
+> > again, we do not need to use kstop_machine to make these changes.
 > 
-> Bit puzzling - and I don't have any ps2 hardware around to test with
-> (nor do I normally use modules - but that is fixable of course).
-> 
-> Does Rabin's patch help?
-> 
->   http://lkml.org/lkml/2008/8/7/329
-> 
+> Importantly, before parameter parsing too (which can use module functions 
+> before the module's init()).
 
-I doubt it resolves problem fully because it only takes care of module
-unload. I can easily trip lockdep by reconnecting the device. Just to
-give some more details about the problem:
+It happens before "module_finalize", so I'm guessing it is also before 
+parameter passing.
 
- - synaptics touchpads have a pass-through port that allows to connect
-   either external mouse or maybe a trackpoint device. Both devices
-   are represented by 'serio' structures and are handled by the same
-   driver (psmouse).
+Even if we did it after parameter passing, as long as the code does not 
+run on another CPU we are fine. Unless the module is setting up interrupt 
+handlers or kicking off kernel threads, doing the change after parameter 
+passing would not hurt.
 
- - as far as I know we have proper locking there and lockdep
-   annotatinos were added to lockdep to reflect the nesting of the
-   serio ports.
+But it looks like we are doing it before that anyway, so it is not an 
+issue.
 
- - if child port (pass-through port) is destroyed and recreated (due
-   to module unload, or because user requested reconnect through sysfs
-   or system-initiated reconnect) lockdep starts complaining although
-   the new child port should still have the same "depth" as the old
-   one.
+Thanks,
 
-Thanks!
+-- Steve
 
--- 
-Dmitry
