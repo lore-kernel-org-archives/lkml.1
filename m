@@ -1,70 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760762AbYHHW5o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762213AbYHHW6d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760762AbYHHW5o (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 18:57:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753533AbYHHW5h
+	id S1762213AbYHHW6d (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 18:58:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754954AbYHHW60
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 18:57:37 -0400
-Received: from mga02.intel.com ([134.134.136.20]:58689 "EHLO mga02.intel.com"
+	Fri, 8 Aug 2008 18:58:26 -0400
+Received: from khc.piap.pl ([195.187.100.11]:45579 "EHLO khc.piap.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753440AbYHHW5g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 18:57:36 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.31,329,1215414000"; 
-   d="scan'208";a="324552748"
-From: Seth Heasley <seth.heasley@intel.com>
-To: khali@linux-fr.org, linux-kernel@vger.kernel.org, i2c@lm-sensors.org
-Subject: [PATCH 2.6.26.2] i2c-i801: SMBus patch for Intel Ibex Peak DeviceIDs
-Date: Fri, 8 Aug 2008 16:02:28 -0700
-User-Agent: KMail/1.9.1
-Cc: seth.heasley@intel.com
+	id S1753533AbYHHW6Z convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Aug 2008 18:58:25 -0400
+To: Grant Coady <gcoady.lk@gmail.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       "Robert P. J. Day" <rpjday@crashcourse.ca>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC PATCH] cleanup Serial ATA and Parallel ATA Kconfig
+References: <alpine.LFD.1.10.0808081228450.11491@localhost.localdomain>
+	<20080808172629.232bed01@lxorguk.ukuu.org.uk>
+	<njhp94pr4ha1nfgmj11n662enalpd9663h@4ax.com>
+From: Krzysztof Halasa <khc@pm.waw.pl>
+Date: Sat, 09 Aug 2008 00:58:22 +0200
+In-Reply-To: <njhp94pr4ha1nfgmj11n662enalpd9663h@4ax.com> (Grant Coady's message of "Sat\, 09 Aug 2008 08\:34\:40 +1000")
+Message-ID: <m3sktfw1v5.fsf@maximus.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200808081602.28479.seth.heasley@intel.com>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds the Intel Ibex Peak (PCH) SMBus Controller DeviceIDs.
+Grant Coady <grant_lkml@dodo.com.au> writes:
 
-Signed-off by: Seth Heasley <seth.heasley@intel.com>
+>   ¦ ¦    --- Serial ATA (SATA) and Parallel ATA (PATA) drivers            ¦ ¦
+>   ¦ ¦    <*>   AHCI SATA support                                          ¦ ¦
+>   ¦ ¦    [*]   ATA ACPI Support                                           ¦ ¦
+>   ¦ ¦    [ ]   SATA Port Multiplier support                               ¦ ¦
+>   ¦ ¦    < >   Silicon Image 3124/3132 SATA support                       ¦ ¦
+>   ¦ ¦    [*]   ATA SFF support                                            ¦ ¦
+>   ¦ ¦            *** Serial ATA drivers ***                               ¦ ¦
+>   ¦ ¦    < >     Initio 162x SATA support                                 ¦ ¦
+>   ¦ ¦    < >     Intel ESB, ICH, PIIX3, PIIX4 PATA/SATA support           ¦ ¦
 
---- linux-2.6.26.2/drivers/i2c/busses/i2c-i801.c.orig   2008-08-08 11:28:08.000000000 -0700
-+++ linux-2.6.26.2/drivers/i2c/busses/i2c-i801.c        2008-08-08 11:32:18.000000000 -0700
-@@ -43,6 +43,7 @@
-   Tolapai               0x5032     32     hard     yes     yes     yes
-   ICH10                 0x3a30     32     hard     yes     yes     yes
-   ICH10                 0x3a60     32     hard     yes     yes     yes
-+  PCH                   0x3b30     32     hard     yes     yes     yes
+As noted, it's both PATA and SATA. People searching for PATA-only PIIX
+support may have trouble locating it under SATA.
 
-   Features supported by this driver:
-   Software PEC                     no
-@@ -592,6 +593,7 @@
-        { PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_TOLAPAI_1) },
-        { PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_ICH10_4) },
-        { PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_ICH10_5) },
-+       { PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_PCH_2) },
-        { 0, }
- };
+Why not remove ATA SFF support visual option (or leave it for optional
+off-tree drivers only, if it makes sense) and SELECT it when any
+driver using it is selected? I'm not sure that users know they need
+SFF, or what's that.
 
-@@ -615,6 +617,7 @@
-        case PCI_DEVICE_ID_INTEL_TOLAPAI_1:
-        case PCI_DEVICE_ID_INTEL_ICH10_4:
-        case PCI_DEVICE_ID_INTEL_ICH10_5:
-+       case PCI_DEVICE_ID_INTEL_PCH_2:
-                i801_features |= FEATURE_I2C_BLOCK_READ;
-                /* fall through */
-        case PCI_DEVICE_ID_INTEL_82801DB_3:
---- linux-2.6.26.2/drivers/i2c/busses/Kconfig.orig      2008-08-08 11:27:52.000000000 -0700
-+++ linux-2.6.26.2/drivers/i2c/busses/Kconfig   2008-08-08 11:30:42.000000000 -0700
-@@ -182,6 +182,7 @@
-            ICH9
-            Tolapai
-            ICH10
-+           PCH
+I think I would also ask for PATA and for SATA first:
 
-          This driver can also be built as a module.  If so, the module
-          will be called i2c-i801.
+[*] PATA support
+[*] SATA support
+... PATA drivers if "PATA support" is selected
+... SATA drivers if "SATA support" is selected
+... PIIX is PATA and/or SATA support is selected
+
+I guess all PATA and/or SATA drivers in a single sorted list (so PIIX
+doesn't break ordering).
+-- 
+Krzysztof Halasa
