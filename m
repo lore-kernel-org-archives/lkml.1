@@ -1,97 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756575AbYHHAie@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754118AbYHHAit@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756575AbYHHAie (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Aug 2008 20:38:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751857AbYHHAi0
+	id S1754118AbYHHAit (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Aug 2008 20:38:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754942AbYHHAig
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Aug 2008 20:38:26 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:55985 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751540AbYHHAiZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Aug 2008 20:38:25 -0400
+	Thu, 7 Aug 2008 20:38:36 -0400
+Received: from zen.handcraftedcomputers.com.au ([203.122.247.90]:4587 "EHLO
+	zen.handcraftedcomputers.com.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756294AbYHHAie (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Aug 2008 20:38:34 -0400
+Message-ID: <489B957D.9080206@handcraftedcomputers.com.au>
+Date: Fri, 08 Aug 2008 10:08:21 +0930
+From: Daryl Tester <dt-lkml@handcraftedcomputers.com.au>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Sven Wegener <sven.wegener@stealer.net>
+CC: lkml <linux-kernel@vger.kernel.org>
+Subject: Re: PROBLEM?: "permission denied" when accessing /proc/self/fd/*
+ after setuid
+References: <489A9357.50105@handcraftedcomputers.com.au> <alpine.LNX.1.10.0808071311300.16201@titan.stealer.net>
+In-Reply-To: <alpine.LNX.1.10.0808071311300.16201@titan.stealer.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-X-Fcc: ~/Mail/linus
-Cc: "Eduardo Habkost <ehabkost@redhat.com>Ingo Molnar" <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] tracehook: fix CLONE_PTRACE
-In-Reply-To: Eduardo Habkost's message of  Thursday, 7 August 2008 19:24:34 -0300 <20080807222434.GC7957@blackpad>
-References: <20080807222434.GC7957@blackpad>
-X-Antipastobozoticataclysm: Bariumenemanilow
-Message-Id: <20080808003749.6864C15429D@magilla.localdomain>
-Date: Thu,  7 Aug 2008 17:37:49 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The following changes since commit 685d87f7ccc649ab92b55e18e507a65d0e694eb9:
-  Linus Torvalds (1):
-        Revert "pcm_native.c: remove unused label"
+Sven Wegener wrote:
 
-are available in the git repository at:
+> If a program wants to fiddle with an existing _file_descriptor_, it should 
+> use the dup syscalls or access the descriptor directly.
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/frob/linux-2.6-utrace.git tracehook
+If you have the source to the program, and can (and are allow to) modify
+it, then yes I agree, but that isn't always an option.  And I guess why
+have the interface in the first place if we have dup() and friends?.
 
-Roland McGrath (1):
-      tracehook: fix CLONE_PTRACE
+> Don't know if the behaviour of /dev/std* and /proc/self/fd/* is 
+> standardized in some way. But I guess it's implementation-specific.
 
- include/linux/ptrace.h    |    2 +-
- include/linux/tracehook.h |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+I guess that's something I was after - if this behavior was defined.
+My *belief* (which is questionable) is that it was to emulate dup()
+behavior, which it obviously isn't in this case.
 
-Thanks,
-Roland
+>> The above environment isn't necessary to replicate the problem, although
+>> what stdout and stderr are attached to has some effect.  The attached C
+>> code replicates the issue, but appears to not fail (that is, succeed) if
+>> /proc/self/fd/2 is a terminal (e.g. /dev/pts/X) *and* that terminal is
+>> owned by the same uid that the code uses (in this case, 500). In the
+>> case of an anonymous pipe it appears to fail consistently as the pipe is
+>> owned by root.
 
----
-[PATCH] tracehook: fix CLONE_PTRACE
+> Why should it fail for the terminal? You're the owner of it.
 
-In the change in commit 09a05394fe2448a4139b014936330af23fa7ec83, I
-overlooked two nits in the logic and this broke using CLONE_PTRACE
-when PTRACE_O_TRACE* are not being used.
+I didn't expect it to fail, but then I didn't expect it to fail under any
+condition.  That it's failing for the other conditions is my beef.  :-)
 
-A parent that is itself traced at all but not using PTRACE_O_TRACE*,
-using CLONE_PTRACE would have its new child fail to be traced.
+> Don't have a FreeBSD installation at my fingers, so can't verify. Maybe 
+> they just don't use symlinks to represent the open files, so they do not 
+> end up opening the original file.
 
-A parent that is not itself traced at all that uses CLONE_PTRACE
-(which should be a no-op in this case) would confuse the bookkeeping
-and lead to a crash at exit time.
+According to the man page on my crufty 4.11 box:
 
-This restores the missing checks and fixes both failure modes.
+    If the file descriptor is open and the mode the file is being opened
+    with is a subset of the mode of the existing descriptor, the call:
 
-Reported-by: Eduardo Habkost <ehabkost@redhat.com>
-Signed-off-by: Roland McGrath <roland@redhat.com>
----
- include/linux/ptrace.h    |    2 +-
- include/linux/tracehook.h |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+           fd = open("/dev/fd/0", mode);
 
-diff --git a/include/linux/ptrace.h b/include/linux/ptrace.h
-index fd31756..ea7416c 100644
---- a/include/linux/ptrace.h
-+++ b/include/linux/ptrace.h
-@@ -172,7 +172,7 @@ static inline void ptrace_init_task(struct task_struct *child, bool ptrace)
- 	child->ptrace = 0;
- 	if (unlikely(ptrace)) {
- 		child->ptrace = current->ptrace;
--		__ptrace_link(child, current->parent);
-+		ptrace_link(child, current->parent);
- 	}
- }
- 
-diff --git a/include/linux/tracehook.h b/include/linux/tracehook.h
-index ab3ef7a..b48d819 100644
---- a/include/linux/tracehook.h
-+++ b/include/linux/tracehook.h
-@@ -280,7 +280,7 @@ static inline void tracehook_report_clone(int trace, struct pt_regs *regs,
- 					  unsigned long clone_flags,
- 					  pid_t pid, struct task_struct *child)
- {
--	if (unlikely(trace)) {
-+	if (unlikely(trace) || unlikely(clone_flags & CLONE_PTRACE)) {
- 		/*
- 		 * The child starts up with an immediate SIGSTOP.
- 		 */
+    and the call:
+
+           fd = fcntl(0, F_DUPFD, 0);
+
+    are equivalent.
+
+I don't have a more recent box handy, but the man page at
+<http://www.freebsd.org/cgi/man.cgi?query=stderr&apropos=0&sektion=0&manpath=FreeBSD+7.0-RELEASE&format=html>
+infers that this is still the case.
+
+> As said above, don't know if the behaviour is standardized.
+
+Anybody?  Bueller?
+
+Thanks for the response; they warned me this was a high traffic list.  :-)
+
+
+Cheers,
+  --dt
