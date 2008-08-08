@@ -1,40 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760683AbYHHUh5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760681AbYHHUiX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760683AbYHHUh5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 16:37:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753277AbYHHUhr
+	id S1760681AbYHHUiX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 16:38:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751852AbYHHUiM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 16:37:47 -0400
-Received: from www85.your-server.de ([213.133.104.85]:52491 "EHLO
-	www85.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752155AbYHHUhr (ORCPT
+	Fri, 8 Aug 2008 16:38:12 -0400
+Received: from casper.infradead.org ([85.118.1.10]:49388 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752550AbYHHUiL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 16:37:47 -0400
-X-Greylist: delayed 1325 seconds by postgrey-1.27 at vger.kernel.org; Fri, 08 Aug 2008 16:37:46 EDT
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] 2.6.26: access permission filesystem 0.21
-From: Olaf Dietsche <olaf+list.linux-kernel@olafdietsche.de>
-Date: Fri, 08 Aug 2008 22:15:31 +0200
-Message-ID: <87wsir2rh8.fsf@rat.lan>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Authenticated-Sender: webmaster@olafdietsche.de
+	Fri, 8 Aug 2008 16:38:11 -0400
+Subject: Re: [PATCH] printk: robustify printk
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: paulmck@linux.vnet.ibm.com
+Cc: Andrew Morton <akpm@linux-foundation.org>, torvalds@linux-foundation.org,
+       mingo@elte.hu, tglx@linutronix.de, marcin.slusarz@gmail.com,
+       linux-kernel@vger.kernel.org, davem@davemloft.net, rostedt@goodmis.org
+In-Reply-To: <20080808203241.GH6760@linux.vnet.ibm.com>
+References: <1218202249.8625.106.camel@twins>
+	 <alpine.LFD.1.10.0808080931550.3462@nehalem.linux-foundation.org>
+	 <1218215454.8625.133.camel@twins>
+	 <alpine.LFD.1.10.0808081014240.3462@nehalem.linux-foundation.org>
+	 <1218217257.29098.2.camel@lappy.programming.kicks-ass.net>
+	 <alpine.LFD.1.10.0808081043160.3462@nehalem.linux-foundation.org>
+	 <1218219269.29098.5.camel@lappy.programming.kicks-ass.net>
+	 <20080808121428.646a8b3c.akpm@linux-foundation.org>
+	 <1218223269.29098.12.camel@lappy.programming.kicks-ass.net>
+	 <20080808123747.0db1c5dd.akpm@linux-foundation.org>
+	 <20080808203241.GH6760@linux.vnet.ibm.com>
+Content-Type: text/plain
+Date: Fri, 08 Aug 2008 22:37:39 +0200
+Message-Id: <1218227859.29098.24.camel@lappy.programming.kicks-ass.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds a new permission managing file system.
-Furthermore, it adds two modules, which make use of this file system.
+On Fri, 2008-08-08 at 13:32 -0700, Paul E. McKenney wrote:
 
-One module allows granting capabilities based on user-/groupid. The
-second module allows to grant access to lower numbered ports based on
-user-/groupid, too.
+> How about if I instead add comments warning people not to put printk()
+> in the relevant RCU-implementation code?  That way I can be not only lazy,
+> but cowardly as well!  ;-)
 
-Changes:
-- updated to 2.6.26
+Well, it does spoil the party a little, we are now trading one deadlock
+for another :-/
 
-This patch is available at:
-<http://www.olafdietsche.de/linux/accessfs/>
 
-Regards, Olaf.
+
