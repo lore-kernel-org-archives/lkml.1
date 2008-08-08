@@ -1,57 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757172AbYHHCZ3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757471AbYHHC2l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757172AbYHHCZ3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Aug 2008 22:25:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754458AbYHHCZU
+	id S1757471AbYHHC2l (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Aug 2008 22:28:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753746AbYHHC2e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Aug 2008 22:25:20 -0400
-Received: from zen.handcraftedcomputers.com.au ([203.122.247.90]:2345 "EHLO
-	zen.handcraftedcomputers.com.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753651AbYHHCZT (ORCPT
+	Thu, 7 Aug 2008 22:28:34 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:60176 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752350AbYHHC2d (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Aug 2008 22:25:19 -0400
-Message-ID: <489BAE70.5080909@handcraftedcomputers.com.au>
-Date: Fri, 08 Aug 2008 11:54:48 +0930
-From: Daryl Tester <dt-lkml@handcraftedcomputers.com.au>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
-MIME-Version: 1.0
-To: Alexey Dobriyan <adobriyan@gmail.com>
-CC: Sven Wegener <sven.wegener@stealer.net>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: PROBLEM?: "permission denied" when accessing /proc/self/fd/*
- after setuid
-References: <489A9357.50105@handcraftedcomputers.com.au> <alpine.LNX.1.10.0808071311300.16201@titan.stealer.net> <489B957D.9080206@handcraftedcomputers.com.au> <20080808005049.GA20707@martell.zuzino.mipt.ru>
-In-Reply-To: <20080808005049.GA20707@martell.zuzino.mipt.ru>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Thu, 7 Aug 2008 22:28:33 -0400
+Date: Fri, 8 Aug 2008 04:29:16 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Vivek Goyal <vgoyal@redhat.com>
+Cc: Keith Owens <kaos@ocs.com.au>, Andi Kleen <andi@firstfloor.org>,
+       Jay Lan <jlan@sgi.com>, Christoph Lameter <cl@linux-foundation.org>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, jmerkey@wolfmountaingroup.com,
+       Geert Uytterhoeven <geert@linux-m68k.org>,
+       Josh Boyer <jwboyer@gmail.com>, linux-kernel@vger.kernel.org,
+       Takenori Nagano <t-nagano@ah.jp.nec.com>,
+       Bernhard Walle <bwalle@suse.de>
+Subject: Re: [ANNOUNCE] Merkey's Kernel Debugger
+Message-ID: <20080808022916.GM24801@one.firstfloor.org>
+References: <20080807200659.GJ24801@one.firstfloor.org> <23175.1218148134@ocs10w> <20080808011500.GA531@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080808011500.GA531@redhat.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alexey Dobriyan wrote:
+> panic() is the only place where kdump gets a chance to run first and
+> panic notifiers are not executed.
 
-> Something similar was fixed in 2.6.22, but let me check.
+To be fully clear panic() that is called outside oops/exception context
 
-You're right - from <http://www.kernel.org/pub/linux/kernel/v2.6/ChangeLog-2.6.22>:
+s/panic/die notifiers/
 
-commit 8948e11f450e6189a79e47d6051c3d5a0b98e3f3
-Author: Alexey Dobriyan <adobriyan@openvz.org>
-Date:   Tue May 8 00:23:35 2007 -0700
+> 
+> To me so far only in kernel debugger seems to be a reasonable candiate
 
-    Allow access to /proc/$PID/fd after setuid()
+Yes a kernel debugger should be able to hook into panic()
 
-    /proc/$PID/fd has r-x------ permissions, so if process does setuid(), it
-    will not be able to access /proc/*/fd/. This breaks fstatat() emulation
-    in glibc.
+In fact it can do that already by just setting a break point,
+but clearly having a real notifier is preferable.
 
-    open("foo", O_RDONLY|O_DIRECTORY)       = 4
-    setuid32(65534)                         = 0
-    stat64("/proc/self/fd/4/bar", 0xbfafb298) = -1 EACCES (Permission denied)
+The use case would be then that the kernel debugger would
+have some command to trigger a dump.
 
+> which needs to run before kdump after a panic event. If a debugger
+> is really getting merged into the kernel, then I think debugger can
 
-However, one of the kernels I tried this on (and failed) was a 2.6.24-19 -
-is it possible this patch was backed out?
+kgdb is already merged. Also the x86 notifiers are general
+enough that there are a couple of debuggers floating around
+that are just using existing interfaces (as in need very little in terms
+of core patching) 
 
-Cheers,
-  --dt
+> put a hook in the panic() before kdump. Wouldn't this solve the problem?
 
+Yes it would, but right now there is no such hook. Also if there 
+was such a hook kdump could use it like everyone else.  
+
+There's a priority scheme in notifiers so you can still run usually last.
+
+-Andi
