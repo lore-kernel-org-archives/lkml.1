@@ -1,87 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755752AbYHHMnR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756548AbYHHMox@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755752AbYHHMnR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 08:43:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751344AbYHHMnB
+	id S1756548AbYHHMox (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 08:44:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752191AbYHHMoo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 08:43:01 -0400
-Received: from smtp1.stealer.net ([88.198.224.204]:53905 "EHLO
-	smtp1.stealer.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751011AbYHHMnB (ORCPT
+	Fri, 8 Aug 2008 08:44:44 -0400
+Received: from py-out-1112.google.com ([64.233.166.182]:10166 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752031AbYHHMon (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 08:43:01 -0400
-Date: Fri, 8 Aug 2008 14:42:48 +0200 (CEST)
-From: Sven Wegener <sven.wegener@stealer.net>
-To: paul.clements@steeleye.com
-cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] nbd: Fix memory leak of nbd_dev array
-Message-ID: <alpine.LNX.1.10.0808081434550.16201@titan.stealer.net>
-User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
-Organization: STEALER.net
+	Fri, 8 Aug 2008 08:44:43 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=Ki7rTIcB6Vj0zqLyZis5ut9OjGusLxlaJvZ5/q07djz5Xy61yn8dDFMemFyMbor3Ia
+         7L7RxUXyMuS3fKn9jGm0vFBUEOCCMY1CAIpKvyDvvcnYmFN2LrJEYZQx4R29ynIONv9l
+         thZ2GO9EmEYVc03pQUkjYAl2jUFsLUJAia8g0=
+Date: Fri, 8 Aug 2008 08:44:33 -0400
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Zdenek Kabelac <zdenek.kabelac@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-input@vger.kernel.org, Jiri Kosina <jkosina@suse.cz>,
+       Rabin Vincent <rabin@rab.in>
+Subject: Re: INFO: possible recursive locking detected ps2_command
+Message-ID: <20080808082930.ZZRA012@mailhub.coreip.homeip.net>
+References: <c4e36d110807310241n512b01e4v898e883d740de879@mail.gmail.com> <20080731145739.fe8923be.akpm@linux-foundation.org> <20080801030444.GB18953@anvil.corenet.prv> <1218192589.8625.88.camel@twins>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Score: -2.5
-X-Spam-Bar: --
-X-Spam-Report: Scanned by SpamAssassin 3.2.1-gr1 2007-05-02 on smtp1.stealer.net at Fri, 08 Aug 2008 12:42:58 +0000
-	Bayes: 0.0028 Tokens: new, 181; hammy, 5; neutral, 2; spammy, 0.
-	AutoLearn: no
-	*  0.1 RDNS_NONE Delivered to trusted network by a host with no rDNS
-	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
-	*      [score: 0.0028]
-X-Spam-Signature: 9f85697f942f34f4294a388ea32067a20ed278a9
-X-DomainKey-Status: no signature
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1218192589.8625.88.camel@twins>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We leak the memory allocated for the nbd_dev array at multiple places. Fix them
-by either adding a kfree() or by rearranging code to return before we allocate
-the memory.
+On Fri, Aug 08, 2008 at 12:49:49PM +0200, Peter Zijlstra wrote:
+> On Thu, 2008-07-31 at 23:04 -0400, Dmitry Torokhov wrote:
+> > On Thu, Jul 31, 2008 at 02:57:39PM -0700, Andrew Morton wrote:
+> > > 
+> > > (cc linux-input)
+> > > 
+> > > On Thu, 31 Jul 2008 11:41:25 +0200
+> > > "Zdenek Kabelac" <zdenek.kabelac@gmail.com> wrote:
+> > > 
+> > > > Hi
+> > > > 
+> > > > During mouse unplugging from psaux connector from the laptops' docking
+> > > > station I've got attached INFO trace.
+> > > > (laptops still has synaptics device)
+> > > > 
+> > 
+> > Dell?
+> > 
+> > > > Also for unknown reason to me  psaux mouse & synaptic device do not
+> > > > work somehow together - is it hw limitation
+> > > > of /dev/input/mice  interface?
+> > > > (USB mouse and synaptics do work quite well together)
+> > > > 
+> > > > [ INFO: possible recursive locking detected ]
+> > > > 2.6.27-rc1 #48
+> > > 
+> > > (it's 2.6.27-rc1)
+> > > 
+> > 
+> > Peter, here is the trace we talked about long time ago. For some reason
+> > lockdep annotation only works once. If reconnect is forced or psmouse
+> > module is reloaded lockdep starts complaining about passthrough port.
+> 
+> Bit puzzling - and I don't have any ps2 hardware around to test with
+> (nor do I normally use modules - but that is fixable of course).
+> 
+> Does Rabin's patch help?
+> 
+>   http://lkml.org/lkml/2008/8/7/329
+> 
 
-Signed-off-by: Sven Wegener <sven.wegener@stealer.net>
----
- drivers/block/nbd.c |   10 ++++++----
- 1 files changed, 6 insertions(+), 4 deletions(-)
+I doubt it resolves problem fully because it only takes care of module
+unload. I can easily trip lockdep by reconnecting the device. Just to
+give some more details about the problem:
 
-Only compile-tested.
+ - synaptics touchpads have a pass-through port that allows to connect
+   either external mouse or maybe a trackpoint device. Both devices
+   are represented by 'serio' structures and are handled by the same
+   driver (psmouse).
 
-diff --git a/drivers/block/nbd.c b/drivers/block/nbd.c
-index ad98dda..1778e4a 100644
---- a/drivers/block/nbd.c
-+++ b/drivers/block/nbd.c
-@@ -707,15 +707,15 @@ static int __init nbd_init(void)
- 
- 	BUILD_BUG_ON(sizeof(struct nbd_request) != 28);
- 
--	nbd_dev = kcalloc(nbds_max, sizeof(*nbd_dev), GFP_KERNEL);
--	if (!nbd_dev)
--		return -ENOMEM;
--
- 	if (max_part < 0) {
- 		printk(KERN_CRIT "nbd: max_part must be >= 0\n");
- 		return -EINVAL;
- 	}
- 
-+	nbd_dev = kcalloc(nbds_max, sizeof(*nbd_dev), GFP_KERNEL);
-+	if (!nbd_dev)
-+		return -ENOMEM;
-+
- 	part_shift = 0;
- 	if (max_part > 0)
- 		part_shift = fls(max_part);
-@@ -779,6 +779,7 @@ out:
- 		blk_cleanup_queue(nbd_dev[i].disk->queue);
- 		put_disk(nbd_dev[i].disk);
- 	}
-+	kfree(nbd_dev);
- 	return err;
- }
- 
-@@ -795,6 +796,7 @@ static void __exit nbd_cleanup(void)
- 		}
- 	}
- 	unregister_blkdev(NBD_MAJOR, "nbd");
-+	kfree(nbd_dev);
- 	printk(KERN_INFO "nbd: unregistered device at major %d\n", NBD_MAJOR);
- }
- 
+ - as far as I know we have proper locking there and lockdep
+   annotatinos were added to lockdep to reflect the nesting of the
+   serio ports.
+
+ - if child port (pass-through port) is destroyed and recreated (due
+   to module unload, or because user requested reconnect through sysfs
+   or system-initiated reconnect) lockdep starts complaining although
+   the new child port should still have the same "depth" as the old
+   one.
+
+Thanks!
+
+-- 
+Dmitry
