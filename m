@@ -1,74 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754600AbYHHILN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754751AbYHHIP0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754600AbYHHILN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 04:11:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752783AbYHHILA
+	id S1754751AbYHHIP0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 04:15:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752890AbYHHIPM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 04:11:00 -0400
-Received: from serv2.oss.ntt.co.jp ([222.151.198.100]:33145 "EHLO
-	serv2.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751091AbYHHIK7 (ORCPT
+	Fri, 8 Aug 2008 04:15:12 -0400
+Received: from mtagate3.uk.ibm.com ([195.212.29.136]:47504 "EHLO
+	mtagate3.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751091AbYHHIPK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 04:10:59 -0400
-Subject: Re: RFC: I/O bandwidth controller
-From: Fernando Luis =?ISO-8859-1?Q?V=E1zquez?= Cao 
-	<fernando@oss.ntt.co.jp>
-To: Ryo Tsuruta <ryov@valinux.co.jp>
-Cc: taka@valinux.co.jp, dave@linux.vnet.ibm.com,
-       yoshikawa.takuya@oss.ntt.co.jp, uchida@ap.jp.nec.com, ngupta@google.com,
-       linux-kernel@vger.kernel.org, dm-devel@redhat.com,
-       containers@lists.linux-foundation.org,
-       virtualization@lists.linux-foundation.org,
-       xen-devel@lists.xensource.com, agk@sourceware.org,
-       righi.andrea@gmail.com
-In-Reply-To: <20080808.162024.189720323.ryov@valinux.co.jp>
-References: <1217870433.20260.101.camel@nimitz>
-	 <1217985189.3154.57.camel@sebastian.kern.oss.ntt.co.jp>
-	 <20080808.152119.43521725.taka@valinux.co.jp>
-	 <20080808.162024.189720323.ryov@valinux.co.jp>
-Content-Type: text/plain
-Organization: NTT Open Source Software Center
-Date: Fri, 08 Aug 2008 17:10:56 +0900
-Message-Id: <1218183056.17648.6.camel@sebastian.kern.oss.ntt.co.jp>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 8 Aug 2008 04:15:10 -0400
+Date: Fri, 8 Aug 2008 11:14:27 +0300
+From: Muli Ben-Yehuda <muli@il.ibm.com>
+To: Linux-Kernel <linux-kernel@vger.kernel.org>
+Subject: CFP: Workshop on I/O Virtualization
+Message-ID: <20080808081427.GL6931@il.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-08-08 at 16:20 +0900, Ryo Tsuruta wrote:
-> > >   - Implement a block layer resource controller. dm-ioband is a working
-> > > solution and feature rich but its dependency on the dm infrastructure is
-> > > likely to find opposition (the dm layer does not handle barriers
-> > > properly and the maximum size of I/O requests can be limited in some
-> > > cases). In such a case, we could either try to build a standalone
-> > > resource controller based on dm-ioband (which would probably hook into
-> > > generic_make_request) or try to come up with something new.
-> > 
-> > I doubt about the maximum size of I/O requests problem. You can't avoid
-> > this problem as far as you use device mapper modules with such a bad
-> > manner, even if the controller is implemented as a stand-alone controller.
-> > There is no limitation if you only use dm-ioband without any other device
-> > mapper modules.
-> 
-> The following is a part of source code where the limitation comes from.
-> 
-> dm-table.c: dm_set_device_limits()
->         /*
->          * Check if merge fn is supported.
->          * If not we'll force DM to use PAGE_SIZE or
->          * smaller I/O, just to be safe.
->          */
-> 
->         if (q->merge_bvec_fn && !ti->type->merge)
->                 rs->max_sectors =
->                         min_not_zero(rs->max_sectors,
->                                      (unsigned int) (PAGE_SIZE >> 9));
-> 
-> As far as I can find, In 2.6.27-rc1-mm1, Only some software RAID
-> drivers and pktcdvd driver define merge_bvec_fn().
+[please accept our apologies if you receive multiple copies of this
+announcement]
 
-Yup, exactly. The implication of this is that we may see a drop in
-performance in some RAID configurations.
+First Workshop on I/O Virtualization (WIOV '08)
+December 10–11, 2008, San Diego, CA, USA
+http://www.usenix.org/wiov08
 
+WIOV '08 will be held in conjunction with the 8th USENIX Symposium on
+Operating Systems Design and Implementation (OSDI '08), December 8–10,
+2008.
+
+Overview
+
+Over the past decade, the use of virtualization technology has grown
+rapidly. Moreover, it is being used in a variety of places, ranging
+from the data center to the desktop. Although this has spurred great
+advances in processor and memory virtualization in commodity hardware
+and virtualization software, I/O virtualization has received far less
+attention. However, both personal computers and servers may perform
+significant amounts of I/O. For example, efficient virtualization of
+graphics hardware has presented significant challenges on the desktop
+and efficient virtualization of network interfaces has limited server
+consolidation in the data center.
+
+This workshop is meant to provide a forum to discuss challenges of I/O
+virtualization that span the virtual machine monitor, guest operating
+system, processor, memory subsystem, and I/O subsystem. In that
+spirit, we welcome papers that describe new challenges in I/O
+virtualization and papers that describe novel approaches to solving
+known problems in I/O virtualization. The final program will consist
+of both reviewed submissions and invited talks. The invited talks will
+focus on open problems in I/O virtualization and will be accessible to
+a broad audience.
+
+Topics of interest include but are not limited to:
+
+    * Hardware support for I/O virtualization
+    * Novel I/O device architectures for virtualization
+    * Novel software approaches to I/O virtualization
+    * Software methods for I/O device emulation
+    * Para-virtualized I/O device driver design for virtualization
+    * Virtual machine monitors I/O subsystems
+
+Important Dates
+
+Submissions due: September 15, 2008
+Notification to authors: October 3, 2008
+Final files due: November 3, 2008
+
+Workshop Organizers
+
+Program Co-Chairs
+
+Muli Ben-Yehuda, IBM Haifa Research Lab
+Alan L. Cox, Rice University
+Scott Rixner, Rice University
+
+Program Committee
+
+Eyal de Lara, University of Toronto
+Jun Nakajima, Intel
+Renato Santos, HP Labs
+Karsten Schwan, Georgia Institute of Technology
+Pratap Subrahmanyam, VMware
+Leendert van Doorn, AMD
+Andrew Warfield, University of British Columbia
+
+Submission Guidelines
+
+Please submit an extended abstract in PDF format through the workshop
+submission web form, which will be available at
+http://www.usenix.org/wiov08 soon. The extended abstract should be no
+more than 4 double-column pages using 10-point type on 12-point
+leading ("single-spaced"). Figures and references are not included in
+this 4-page limit.
+
+-- 
+Workshop on I/O Virtualization (WIOV '08)
+Co-located with OSDI '08, Dec 2008, San Diego, CA
+http://www.usenix.org/wiov08
