@@ -1,42 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763352AbYHHWLI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932228AbYHHWLz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763352AbYHHWLI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 18:11:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756480AbYHHVzc
+	id S932228AbYHHWLz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 18:11:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762468AbYHHV4r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 17:55:32 -0400
-Received: from netrider.rowland.org ([192.131.102.5]:3229 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1760334AbYHHVzV (ORCPT
+	Fri, 8 Aug 2008 17:56:47 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:40024 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762771AbYHHV4q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 17:55:21 -0400
-Date: Fri, 8 Aug 2008 17:55:20 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: Jeff Garzik <jeff@garzik.org>
-cc: linux-usb@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [2.6.27-rc] USB storage:  hangs and massive dmesg spews
-In-Reply-To: <489CBC49.6050602@garzik.org>
-Message-ID: <Pine.LNX.4.44L0.0808081753500.24293-100000@netrider.rowland.org>
+	Fri, 8 Aug 2008 17:56:46 -0400
+Message-ID: <489CC0DD.5010402@zytor.com>
+Date: Fri, 08 Aug 2008 14:55:41 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Rene Herman <rene.herman@keyaccess.nl>
+CC: Bjorn Helgaas <bjorn.helgaas@hp.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>
+Subject: Re: [PATCH] PNP: make the resource type an unsigned long
+References: <489BEA31.3040101@keyaccess.nl>
+In-Reply-To: <489BEA31.3040101@keyaccess.nl>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 8 Aug 2008, Jeff Garzik wrote:
+Rene Herman wrote:
+> Hi Bjorn.
+> 
+> Andrew earlier commented that pci_resourec_flags() returns an unsigned 
+> long. Had this hanging around a local branch. Useful?
+> 
 
-> 4) a huge amount of dmesg spew followed.  at the time of this writing, 
-> the following spew has been passed to dmesg over TWO HUNDRED times:
+-int pnp_resource_type(struct resource *res)
++unsigned long pnp_resource_type(struct resource *res)
+  {
+  	return res->flags & (IORESOURCE_IO  | IORESOURCE_MEM |
+  			     IORESOURCE_IRQ | IORESOURCE_DMA);
+  }
 
-> It is completely silly to fill my dmesg buffer many times over, with the 
-> same basic information.  /proc/sys/kernel/hung_task_timeout_secs is 
-> completely irrelevant here, you need spew limiting in addition to fixing 
-> the USB storage hang problem.
+Seems a bit pointless ... either one of those flags is >= 32 bits, in 
+which case we need u64, or it's not, in which case there is no reason to 
+burden the output with bits we don't need.
 
-Sorry, I meant to say earlier that the usb-storage problem is fixed in 
--rc2.  I can't speak for the "spew" issue; that's somebody else's 
-department.  :-)
-
-Alan Stern
-
+	-hpa
