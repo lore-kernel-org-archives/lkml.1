@@ -1,53 +1,256 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756212AbYHHHw7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755234AbYHHH5Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756212AbYHHHw7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 03:52:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753933AbYHHHw2
+	id S1755234AbYHHH5Y (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 03:57:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753197AbYHHH5P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 03:52:28 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:2609 "EHLO spitz.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753197AbYHHHw0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 03:52:26 -0400
-Date: Fri, 8 Aug 2008 09:14:30 +0200
-From: Pavel Machek <pavel@suse.cz>
-To: Simon Arlott <simon@fire.lp0.eu>
-Cc: linux-pm@lists.linux-foundation.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [linux-pm] Tyan S2923-E suspend to ram fails to resume
-Message-ID: <20080808071430.GA10370@ucw.cz>
-References: <48977AF7.2070300@simon.arlott.org.uk>
+	Fri, 8 Aug 2008 03:57:15 -0400
+Received: from casper.infradead.org ([85.118.1.10]:40834 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752890AbYHHH5P (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Aug 2008 03:57:15 -0400
+Subject: Re: [PATCH] lockdep: handle chains involving classes defined in
+	modules
+From: Peter Zijlstra <peterz@infradead.org>
+To: Rabin Vincent <rabin@rab.in>
+Cc: Eric Sesterhenn <snakebyte@gmx.de>, linux-kernel@vger.kernel.org,
+       mingo@redhat.com, ying.huang@intel.com,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20080807205729.GB1747@debian>
+References: <20080806121650.GA3119@alice> <20080806124134.GA3615@alice>
+	 <20080807205340.GA1747@debian>  <20080807205729.GB1747@debian>
+Content-Type: text/plain
+Date: Fri, 08 Aug 2008 09:57:11 +0200
+Message-Id: <1218182231.8625.69.camel@twins>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <48977AF7.2070300@simon.arlott.org.uk>
-User-Agent: Mutt/1.5.9i
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon 2008-08-04 22:56:07, Simon Arlott wrote:
-> My system (Tyan S2923-E, dmesg attached) suspends ok in 
-> all pm_test modes, but it won't resume with pm_test 
-> "none".
+On Fri, 2008-08-08 at 02:27 +0530, Rabin Vincent wrote:
+> /proc/lockdep_chains currently oopses after any module which creates and
+> uses a lock is unloaded.  This is because one of the chains involves a
+> class which was defined in the module just unloaded.
 > 
-> [    6.423515] mem full: hash matches
+> The classes are already correctly taken care of using the
+> all_lock_classes which keeps track of all active lock classses.  Add a
+> similar all_lock_chains list and use it for keeping track of chains.
 > 
-> When I press the power button, the port 80 display shows:
-> FF D0 23 01 D0 ... DE
-> (and again each time I press it)
-> 
-> If I force it to turn off, then on again:
-> FF D0 23 01 D0 ... FF D0 23 01 D0 ... (D2?) D3 00 01 D5 
-> D6 <normal boot>
-> 
-> Any ideas? (onboard SAS is disabled, watchdog is 
-> disabled, everything else is enabled, PCI-E graphics 
-> card)
+> Reported-by: Eric Sesterhenn <snakebyte@gmx.de>
+> Signed-off-by: Rabin Vincent <rabin@rab.in>
 
-Try verifying if it reaches assembly code under realmode/ ...
+Looks good - I was about to start poking at this and then I found your
+patch in my mailbox, most appreciated!
 
+Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+> ---
+>  include/linux/lockdep.h    |    3 +-
+>  kernel/lockdep.c           |   53 ++++++++++++++++++++++++++++++++++++++-----
+>  kernel/lockdep_internals.h |    2 +-
+>  kernel/lockdep_proc.c      |   17 ++++++++++----
+>  4 files changed, 61 insertions(+), 14 deletions(-)
+> 
+> diff --git a/include/linux/lockdep.h b/include/linux/lockdep.h
+> index 2486eb4..735d06b 100644
+> --- a/include/linux/lockdep.h
+> +++ b/include/linux/lockdep.h
+> @@ -185,7 +185,8 @@ struct lock_chain {
+>  	u8				irq_context;
+>  	u8				depth;
+>  	u16				base;
+> -	struct list_head		entry;
+> +	struct list_head		hash_entry;
+> +	struct list_head		lock_entry;
+>  	u64				chain_key;
+>  };
+>  
+> diff --git a/kernel/lockdep.c b/kernel/lockdep.c
+> index d38a643..1b3537b 100644
+> --- a/kernel/lockdep.c
+> +++ b/kernel/lockdep.c
+> @@ -253,6 +253,11 @@ LIST_HEAD(all_lock_classes);
+>  static struct list_head classhash_table[CLASSHASH_SIZE];
+>  
+>  /*
+> + * We also keep a global list of all lock chains.
+> + */
+> +LIST_HEAD(all_lock_chains);
+> +
+> +/*
+>   * We put the lock dependency chains into a hash-table as well, to cache
+>   * their existence:
+>   */
+> @@ -1462,7 +1467,7 @@ out_bug:
+>  }
+>  
+>  unsigned long nr_lock_chains;
+> -struct lock_chain lock_chains[MAX_LOCKDEP_CHAINS];
+> +static struct lock_chain lock_chains[MAX_LOCKDEP_CHAINS];
+>  int nr_chain_hlocks;
+>  static u16 chain_hlocks[MAX_LOCKDEP_CHAIN_HLOCKS];
+>  
+> @@ -1493,7 +1498,7 @@ static inline int lookup_chain_cache(struct task_struct *curr,
+>  	 * We can walk it lock-free, because entries only get added
+>  	 * to the hash:
+>  	 */
+> -	list_for_each_entry(chain, hash_head, entry) {
+> +	list_for_each_entry(chain, hash_head, hash_entry) {
+>  		if (chain->chain_key == chain_key) {
+>  cache_hit:
+>  			debug_atomic_inc(&chain_lookup_hits);
+> @@ -1517,7 +1522,7 @@ cache_hit:
+>  	/*
+>  	 * We have to walk the chain again locked - to avoid duplicates:
+>  	 */
+> -	list_for_each_entry(chain, hash_head, entry) {
+> +	list_for_each_entry(chain, hash_head, hash_entry) {
+>  		if (chain->chain_key == chain_key) {
+>  			graph_unlock();
+>  			goto cache_hit;
+> @@ -1559,7 +1564,8 @@ cache_hit:
+>  		}
+>  		chain_hlocks[chain->base + j] = class - lock_classes;
+>  	}
+> -	list_add_tail_rcu(&chain->entry, hash_head);
+> +	list_add_tail_rcu(&chain->hash_entry, hash_head);
+> +	list_add_tail_rcu(&chain->lock_entry, &all_lock_chains);
+>  	debug_atomic_inc(&chain_lookup_misses);
+>  	inc_chains();
+>  
+> @@ -2967,6 +2973,8 @@ void lockdep_reset(void)
+>  	debug_locks = 1;
+>  	for (i = 0; i < CHAINHASH_SIZE; i++)
+>  		INIT_LIST_HEAD(chainhash_table + i);
+> +	for (i = 0; i < CLASSHASH_SIZE; i++)
+> +		INIT_LIST_HEAD(classhash_table + i);
+>  	raw_local_irq_restore(flags);
+>  }
+>  
+> @@ -2990,6 +2998,15 @@ static void zap_class(struct lock_class *class)
+>  
+>  }
+>  
+> +static void zap_chain(struct lock_chain *chain)
+> +{
+> +	/*
+> +	 * Unhash the chain and remove it from the all_lock_chains list:
+> +	 */
+> +	list_del_rcu(&chain->hash_entry);
+> +	list_del_rcu(&chain->lock_entry);
+> +}
+> +
+>  static inline int within(const void *addr, void *start, unsigned long size)
+>  {
+>  	return addr >= start && addr < start + size;
+> @@ -2997,23 +3014,45 @@ static inline int within(const void *addr, void *start, unsigned long size)
+>  
+>  void lockdep_free_key_range(void *start, unsigned long size)
+>  {
+> -	struct lock_class *class, *next;
+> +	struct lock_class *class, *nextclass;
+> +	struct lock_chain *chain, *nextchain;
+>  	struct list_head *head;
+>  	unsigned long flags;
+> -	int i;
+> +	int i, j;
+>  	int locked;
+>  
+>  	raw_local_irq_save(flags);
+>  	locked = graph_lock();
+>  
+>  	/*
+> +	 * Unhash all chains that involve classes created by this module:
+> +	 */
+> +	for (i = 0; i < CHAINHASH_SIZE; i++) {
+> +		head = chainhash_table + i;
+> +		if (list_empty(head))
+> +			continue;
+> +		list_for_each_entry_safe(chain, nextchain, head, hash_entry) {
+> +			for (j = 0; j < chain->depth; j++) {
+> +				class = lock_classes +
+> +					chain_hlocks[chain->base + j];
+> +
+> +				if (within(class->key, start, size) ||
+> +					within(class->name, start, size)) {
+> +					zap_chain(chain);
+> +					break;
+> +				}
+> +			}
+> +		}
+> +	}
+> +
+> +	/*
+>  	 * Unhash all classes that were created by this module:
+>  	 */
+>  	for (i = 0; i < CLASSHASH_SIZE; i++) {
+>  		head = classhash_table + i;
+>  		if (list_empty(head))
+>  			continue;
+> -		list_for_each_entry_safe(class, next, head, hash_entry) {
+> +		list_for_each_entry_safe(class, nextclass, head, hash_entry) {
+>  			if (within(class->key, start, size))
+>  				zap_class(class);
+>  			else if (within(class->name, start, size))
+> diff --git a/kernel/lockdep_internals.h b/kernel/lockdep_internals.h
+> index c3600a0..ebf2ecb 100644
+> --- a/kernel/lockdep_internals.h
+> +++ b/kernel/lockdep_internals.h
+> @@ -32,7 +32,7 @@
+>  #define MAX_STACK_TRACE_ENTRIES	262144UL
+>  
+>  extern struct list_head all_lock_classes;
+> -extern struct lock_chain lock_chains[];
+> +extern struct list_head all_lock_chains;
+>  
+>  extern void
+>  get_usage_chars(struct lock_class *class, char *c1, char *c2, char *c3, char *c4);
+> diff --git a/kernel/lockdep_proc.c b/kernel/lockdep_proc.c
+> index 9b0e940..4f447fd 100644
+> --- a/kernel/lockdep_proc.c
+> +++ b/kernel/lockdep_proc.c
+> @@ -190,8 +190,9 @@ static void *lc_next(struct seq_file *m, void *v, loff_t *pos)
+>  	else {
+>  		chain = v;
+>  
+> -		if (*pos < nr_lock_chains)
+> -			chain = lock_chains + *pos;
+> +		if (chain->lock_entry.next != &all_lock_chains)
+> +			chain = list_entry(chain->lock_entry.next,
+> +					   struct lock_chain, lock_entry);
+>  		else
+>  			chain = NULL;
+>  	}
+> @@ -201,11 +202,16 @@ static void *lc_next(struct seq_file *m, void *v, loff_t *pos)
+>  
+>  static void *lc_start(struct seq_file *m, loff_t *pos)
+>  {
+> +	struct lock_chain *chain;
+> +	loff_t i = 0;
+> +
+>  	if (*pos == 0)
+>  		return SEQ_START_TOKEN;
+>  
+> -	if (*pos < nr_lock_chains)
+> -		return lock_chains + *pos;
+> +	list_for_each_entry(chain, &all_lock_chains, lock_entry) {
+> +		if (++i == *pos)
+> +			return chain;
+> +	}
+>  
+>  	return NULL;
+>  }
+> @@ -252,7 +258,8 @@ static int lockdep_chains_open(struct inode *inode, struct file *file)
+>  		struct seq_file *m = file->private_data;
+>  
+>  		if (nr_lock_chains)
+> -			m->private = lock_chains;
+> +			m->private = list_entry(all_lock_chains.next,
+> +					struct lock_chain, lock_entry);
+>  		else
+>  			m->private = NULL;
+>  	}
+
