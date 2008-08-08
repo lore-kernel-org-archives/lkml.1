@@ -1,46 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757631AbYHHXDI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762469AbYHHXCr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757631AbYHHXDI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 19:03:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759445AbYHHXCy
+	id S1762469AbYHHXCr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 19:02:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752654AbYHHXCj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 19:02:54 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:38701
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752654AbYHHXCx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 19:02:53 -0400
-Date: Fri, 08 Aug 2008 16:02:54 -0700 (PDT)
-Message-Id: <20080808.160254.223161300.davem@davemloft.net>
-To: a.p.zijlstra@chello.nl
-Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org, mingo@elte.hu,
-       tglx@linutronix.de, marcin.slusarz@gmail.com,
-       linux-kernel@vger.kernel.org, rostedt@goodmis.org,
-       paulmck@linux.vnet.ibm.com
-Subject: Re: [PATCH] printk: robustify printk
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1218219269.29098.5.camel@lappy.programming.kicks-ass.net>
-References: <1218217257.29098.2.camel@lappy.programming.kicks-ass.net>
-	<alpine.LFD.1.10.0808081043160.3462@nehalem.linux-foundation.org>
-	<1218219269.29098.5.camel@lappy.programming.kicks-ass.net>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Fri, 8 Aug 2008 19:02:39 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:43239 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752603AbYHHXCi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Aug 2008 19:02:38 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Greg KH <greg@kroah.com>
+Subject: [PATCH] PM: Remove WARN_ON from device_pm_add
+Date: Sat, 9 Aug 2008 01:05:13 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Adrian Bunk <bunk@kernel.org>, Alan Stern <stern@rowland.harvard.edu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-2"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200808090105.14770.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Date: Fri, 08 Aug 2008 20:14:28 +0200
+PM: Remove WARN_ON from device_pm_add
 
-> +struct klogd_wakeup_state {
-> +	struct rcu_head head;
-> +	int pending;
-> +};
-> +
-> +DEFINE_PER_CPU(struct klogd_wakeup_state, kws);
+Fix message in device_pm_add() saying that the device will not be
+added to dpm_list, although in fact the device is going to be added
+to the list regardless of the ordering violation.
 
-Since there is not RCU_HEAD_INIT() made on these per-cpu objects, this code
-is depending upon the fact that currently the RCU head is just initialized
-to all zeros.
+Remove the WARN_ON(true) triggered in that situation, because it is
+hit by USB very often and spams the users' logs.
+
+This patch fixes bug #11263
+
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ drivers/base/power/main.c |    6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
+
+Index: linux-2.6/drivers/base/power/main.c
+===================================================================
+--- linux-2.6.orig/drivers/base/power/main.c
++++ linux-2.6/drivers/base/power/main.c
+@@ -74,11 +74,9 @@ void device_pm_add(struct device *dev)
+ 		 kobject_name(&dev->kobj));
+ 	mutex_lock(&dpm_list_mtx);
+ 	if (dev->parent) {
+-		if (dev->parent->power.status >= DPM_SUSPENDING) {
+-			dev_warn(dev, "parent %s is sleeping, will not add\n",
++		if (dev->parent->power.status >= DPM_SUSPENDING)
++			dev_warn(dev, "parent %s should not be sleeping\n",
+ 				dev->parent->bus_id);
+-			WARN_ON(true);
+-		}
+ 	} else if (transition_started) {
+ 		/*
+ 		 * We refuse to register parentless devices while a PM
