@@ -1,76 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756592AbYHHA13@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756616AbYHHA2u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756592AbYHHA13 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Aug 2008 20:27:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753838AbYHHA1V
+	id S1756616AbYHHA2u (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Aug 2008 20:28:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753846AbYHHA2m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Aug 2008 20:27:21 -0400
-Received: from outbound-mail-156.bluehost.com ([67.222.39.36]:53558 "HELO
-	outbound-mail-156.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753481AbYHHA1U (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Aug 2008 20:27:20 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
-	b=uIOF9x0T8sb4popzF6wH7TysGpEmwnLJy+QnnLetrkNlb9HRd+h2TRSzTKqg3Fcz0NxBpGlLkwN5sZE8QU7oC69NvJtTPsEcxPnQ3CgU1ufbup1MZMgL9hpCFGDC0D2A;
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: "Michael S. Tsirkin" <m.s.tsirkin@gmail.com>
-Subject: Re: T60p not coming out of suspend to RAM since 2.6.27-rc1
-Date: Thu, 7 Aug 2008 17:27:12 -0700
-User-Agent: KMail/1.9.9
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
-       linux-pci@vger.kernel.org, matthew@wil.cx
-References: <20080807232819.GA7984@google.com>
-In-Reply-To: <20080807232819.GA7984@google.com>
+	Thu, 7 Aug 2008 20:28:42 -0400
+Received: from mx10.lb01.inode.at ([62.99.145.10]:4311 "EHLO mx.inode.at"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753838AbYHHA2m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Aug 2008 20:28:42 -0400
+Message-ID: <489B9337.1070601@sbg.ac.at>
+Date: Fri, 08 Aug 2008 02:28:39 +0200
+From: Alexander Huemer <alexander.huemer@sbg.ac.at>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080729)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+CC: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Andi Kleen <andi@firstfloor.org>
+Subject: Re: 2.6.27-rc1 mtrr fixes do not work
+References: <4899AF8E.20105@sbg.ac.at> <200808072214.28922.rjw@sisk.pl>	 <7E82351C108FA840AB1866AC776AEC46092119D3@orsmsx505.amr.corp.intel.com>	 <86802c440808071323o3021a90rae51223187bfd47b@mail.gmail.com>	 <86802c440808071326m21cff146s3fb5e6118a58a2ca@mail.gmail.com>	 <489B73B7.4090705@sbg.ac.at>	 <86802c440808071616o23dde07atd694b45375f9d6ac@mail.gmail.com>	 <86802c440808071617i1344e595wb9cc7c2bf75a5b3f@mail.gmail.com>	 <489B85A3.7030500@sbg.ac.at> <86802c440808071658yd120d04y370859dcf5a7b759@mail.gmail.com>
+In-Reply-To: <86802c440808071658yd120d04y370859dcf5a7b759@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200808071727.13317.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, August 7, 2008 4:28 pm Michael S. Tsirkin wrote:
-> In both 2.6.27-rc1 and 2.6.27-rc2, my laptop won't come out of
-> suspend to ram: it blinks the crescent one or twice,
-> and hangs. It does resume fine under 2.6.26.
+Yinghai Lu wrote:
+> On Thu, Aug 7, 2008 at 4:30 PM, Alexander Huemer
+> <alexander.huemer@sbg.ac.at> wrote:
+>   
+>> Yinghai Lu wrote:
+>>     
 >
-> I bisected the problem and got the following commit:
+>   
+>>>> can you put "debug" in command line too?
+>>>>
+>>>>         
+>>> without mtrr_chunk_size etc in command line...please
+>>>
+>>>       
+>> http://xx.vu/~ahuemer/dmesg_3.txt
+>>
+>>     
 >
-> commit ce6fce4295ba727b36fdc73040e444bd1aae64cd
-> Author: Matthew Wilcox <matthew@wil.cx>
-> Date:   Fri Jul 25 15:42:58 2008 -0600
+> do you have
+> CONFIG_MTRR=y
+> CONFIG_MTRR_SANITIZER=y
+> CONFIG_MTRR_SANITIZER_ENABLE_DEFAULT=1
+> CONFIG_MTRR_SANITIZER_SPARE_REG_NR_DEFAULT=1
 >
->     PCI MSI: Don't disable MSIs if the mask bit isn't supported
+> in your .config?
 >
->     David Vrabel has a device which generates an interrupt storm on the
-> INTx pin if we disable MSI interrupts altogether.  Masking interrupts is
-> only a performance optimisation, so we can ignore the request to mask the
-> interrupt.
->
->     Signed-off-by: Matthew Wilcox <willy@linux.intel.com>
->     Signed-off-by: Jesse Barnes <jbarnes@virtuousgeek.org>
->
-> Reverting ce6fce4295ba727b36fdc73040e444bd1aae64cd
-> fixes resume from suspend to RAM for me.
->
-> Steps to reproduce:
->
-> Press Fn-F4 to suspend, press Fn to resume.
-> This works on 2.6.26, hangs on vanilla 2.6.27-rc1
-> and 2.6.27-rc2, works on 2.6.27-rc2 with reverted ce6fce..
->
-> Bug added to bugzilla: http://bugzilla.kernel.org/show_bug.cgi?id=11283
-
-I noted in the bug that I think this is a duplicate.  Can you try pulling my
-for-linus branch into your tree to see if it fixes things for you?
-
-git pull git://git.kernel.org/pub/scm/linux/kernel/git/jbarnes/pci-2.6.git for-linus
-
-from inside your kernel tree should do it.
-
-Thanks,
-Jesse
+> YH
+>   
+definitely yes, in my initial post i grepped that out of my kernel config.
