@@ -1,104 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757899AbYHHSSU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758697AbYHHSTR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757899AbYHHSSU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 14:18:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752564AbYHHSSI
+	id S1758697AbYHHSTR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 14:19:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752834AbYHHSTD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 14:18:08 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:39861 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752424AbYHHSSH (ORCPT
+	Fri, 8 Aug 2008 14:19:03 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:34926 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752564AbYHHSTB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 14:18:07 -0400
-Subject: Re: [PATCH 0/5] ftrace: to kill a daemon
-From: Peter Zijlstra <peterz@infradead.org>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, Roland McGrath <roland@redhat.com>,
-       Ulrich Drepper <drepper@redhat.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Gregory Haskins <ghaskins@novell.com>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       "Luis Claudio R. Goncalves" <lclaudio@uudg.org>,
-       Clark Williams <williams@redhat.com>
-In-Reply-To: <alpine.DEB.1.10.0808081410380.6116@gandalf.stny.rr.com>
-References: <20080807182013.984175558@goodmis.org>
-	 <20080807184741.GB18164@Krystal>
-	 <alpine.DEB.1.10.0808071639420.9449@gandalf.stny.rr.com>
-	 <20080808172259.GB8244@Krystal>
-	 <alpine.DEB.1.10.0808081334010.4436@gandalf.stny.rr.com>
-	 <20080808174607.GG8244@Krystal>
-	 <alpine.DEB.1.10.0808081410380.6116@gandalf.stny.rr.com>
-Content-Type: text/plain
-Date: Fri, 08 Aug 2008 20:15:41 +0200
-Message-Id: <1218219341.29098.6.camel@lappy.programming.kicks-ass.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 8 Aug 2008 14:19:01 -0400
+Date: Fri, 8 Aug 2008 11:17:50 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Stefano Stabellini <stefano.stabellini@eu.citrix.com>
+cc: Pavel Machek <pavel@suse.cz>, kernel list <linux-kernel@vger.kernel.org>,
+       krzysztof.h1@poczta.fm, adaplas@pol.net, akpm@linux-foundation.org
+Subject: Re: 2.6.27-rc1: softcursor behaviour changed
+In-Reply-To: <489C169F.9030907@eu.citrix.com>
+Message-ID: <alpine.LFD.1.10.0808081116220.3462@nehalem.linux-foundation.org>
+References: <20080805212004.GA1592@elf.ucw.cz> <20080807085733.GA1560@elf.ucw.cz> <489AD9C1.8020405@eu.citrix.com> <20080807220755.GA11460@elf.ucw.cz> <489C169F.9030907@eu.citrix.com>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-08-08 at 14:13 -0400, Steven Rostedt wrote:
-> On Fri, 8 Aug 2008, Mathieu Desnoyers wrote:
-> > * Steven Rostedt (rostedt@goodmis.org) wrote:
-> > > 
-> > > On Fri, 8 Aug 2008, Mathieu Desnoyers wrote:
-> > > > * Steven Rostedt (rostedt@goodmis.org) wrote:
-> > > > > 
-> > > > > I originally used jumps instead of nops, but unfortunately, they actually 
-> > > > > hurt performance more than adding nops. Ingo told me it was probably due
-> > > > > to using up the jump predictions of the CPU.
-> > > > > 
-> > > > 
-> > > > Hrm, are you sure you use a single 5-bytes nop instruction then, or do
-> > > > you use a mix of various nop sizes (add_nops) on some architectures ?
-> > > 
-> > > I use (for x86) what is in include/asm-x86/nops.h depending on what the
-> > > cpuid gives us.
-> > > 
-> > 
-> > That's bad :
-> > 
-> > #define GENERIC_NOP5 GENERIC_NOP1 GENERIC_NOP4
-> > 
-> > #define K8_NOP5 K8_NOP3 K8_NOP2
-> > 
-> > #define K7_NOP5 K7_NOP4 ASM_NOP1
-> > 
-> > So, when you try, later, to replace these instructions with a single
-> > 5-bytes instruction, a preempted thread could iret in the middle of your
-> > 5-bytes insn and cause an illegal instruction ?
-> 
-> That's why I use kstop_machine.
-> 
-> > 
-> > 
-> > > > 
-> > > > You can consume the branch prediction buffers for conditional branches,
-> > > > but I doubt static jumps have this impact ? I don't see what "jump
-> > > > predictions" you are referring to here exactly.
-> > > 
-> > > I don't know the details, but we definitely saw a drop in preformance 
-> > > between using nops and static jumps.
-> > > 
-> > 
-> > Generated by replacing all the call by 5-bytes jumps e9 00 00 00 00
-> > instead of the 5-bytes add_nops ? On which architectures ?
-> > 
-> 
-> I ran this on my Dell (intel Xeon), which IIRC did show the performance 
-> degration. I unfortunately don't have the time to redo those tests, but 
-> you are welcome to.
-> 
-> Just look at arch/x86/kernel/ftrace.c and replace the nop with the jump.
-> In fact, the comments in that file still say it is a jmp. Remember, my 
-> first go was to use the jmp.
 
-5 single byte nops?
 
+On Fri, 8 Aug 2008, Stefano Stabellini wrote:
+> 
+> - an application wants to do X
+> - I don't like X and X is not even implemented here
+> - let's do Y instead!
+
+Well, at the same time:
+ - Y is the closest we can get in practice
+ - Y is what we've done before (but I don't know how long)
+
+So yeah, I think we should probably revert it.
+
+		Linus
