@@ -1,65 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759365AbYHHTgT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760085AbYHHTgx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759365AbYHHTgT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 15:36:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752410AbYHHTgI
+	id S1760085AbYHHTgx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 15:36:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754833AbYHHTgo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 15:36:08 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:48931 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752235AbYHHTgH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 15:36:07 -0400
-In-Reply-To: <20080808190448.GA3356@kroah.com>
-References: <20080808184349.999902616@linux.vnet.ibm.com> <1218221742.4444.12.camel@localhost.localdomain> <20080808190448.GA3356@kroah.com>
-To: Greg KH <greg@kroah.com>
-Cc: James Morris <jmorris@namei.org>, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org,
-       linux-security-module-owner@vger.kernel.org,
-       Randy Dunlap <randy.dunlap@oracle.com>, safford@watson.ibm.com,
-       sailer@watson.ibm.com, Stephen Smalley <sds@tycho.nsa.gov>,
-       serue@linux.vnet.ibm.com, Al Viro <viro@ZenIV.linux.org.uk>,
-       Mimi Zohar <zohar@linux.vnet.ibm.com>
+	Fri, 8 Aug 2008 15:36:44 -0400
+Received: from outbound-va3.frontbridge.com ([216.32.180.16]:28575 "EHLO
+	VA3EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752410AbYHHTgo convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Aug 2008 15:36:44 -0400
+X-BigFish: VPS-7(z21eWzzzzzz32i6bh68o)
+X-Spam-TCS-SCL: 7:0
+X-WSS-ID: 0K5ARSM-02-05R-01
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-Class: urn:content-classes:message
 MIME-Version: 1.0
-Subject: Re: [PATCH 2/4] integrity: special fs magic
-X-KeepSent: FAAF261A:9C9A337A-8525749F:0069FF16;
- type=4; name=$KeepSent
-X-Mailer: Lotus Notes Release 8.0.1 February 07, 2008
-Message-ID: <OFFAAF261A.9C9A337A-ON8525749F.0069FF16-8525749F.006BAB9C@us.ibm.com>
-From: Mimi Zohar <zohar@us.ibm.com>
-Date: Fri, 8 Aug 2008 15:36:15 -0400
-X-MIMETrack: Serialize by Router on D01ML604/01/M/IBM(Build V85_M1_05262008|May 26, 2008) at
- 08/08/2008 15:36:03,
-	Serialize complete at 08/08/2008 15:36:03
-Content-Type: text/plain; charset="US-ASCII"
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: Regression in 2.6.27-rc2 in acpi_processor_init()
+Date: Fri, 8 Aug 2008 14:36:33 -0500
+Message-ID: <6453C3CB8E2B3646B0D020C112613273C5AC59@sausexmb4.amd.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: Regression in 2.6.27-rc2 in acpi_processor_init()
+Thread-Index: Acj5jhBiu+z6Tw1pTmuxXXaa+utFEA==
+From: "Langsdorf, Mark" <mark.langsdorf@amd.com>
+To: "lkml" <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 08 Aug 2008 19:36:34.0118 (UTC) FILETIME=[10B74E60:01C8F98E]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-linux-security-module-owner@vger.kernel.org wrote on 08/08/2008 03:04:48 
-PM:
+I got a regression when updated from 2.6.27-rc1 ro
+2.6.27-rc2.  The noticeable symptom is the powernow-k8
+driver stopped working because the call to 
+acpi_processor_register_performance() is returning
+-EINVAL.
 
+Digging into the code a bit more, that's occurring
+because acpi_processor_ppc_status is not set.
+That should be set in acpi_processor_init(), but
+that function is failing to register the ACPI
+processor driver.
 
-> Re: [PATCH 2/4] integrity: special fs magic
-> 
-> On Fri, Aug 08, 2008 at 02:55:42PM -0400, Mimi Zohar wrote:
-> >     - Move special fs magic number definitions to magic.h
-> >     - Add magic.h include
-> > 
-> >     Signed-off-by: Mimi Zohar <zohar@us.ibm.com>
-> 
-> Why?  What is this patch for?  Are you going to do something with these
-> magic values later?
-> 
-> thanks,
-> 
+I've dug through the code and can't see why 
+that call would fail.  It doesn't look like there
+were any changes between 2.6.27-rc1 and 2.6.27-rc2,
+but I may have missed something.
 
-yes, [PATCH 4/4] integrity: IMA as an integrity service provider,
-uses these definition in defining the default IMA measurement policy.
-The default policy can be replaced with an LSM specific one.  More
-details on the IMA measurement policy are available in 
-Documentation/ABI/testing/ima_policy.
+Any advice or suggestions in debugging this 
+appreciated.
 
-Mimi
-
-
+-Mark Langsdorf
+Operating System Research Center
+AMD
 
