@@ -1,50 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765013AbYHHW1n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763965AbYHHW3w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765013AbYHHW1n (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 18:27:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761627AbYHHW1B
+	id S1763965AbYHHW3w (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 18:29:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752895AbYHHW3l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 18:27:01 -0400
-Received: from nf-out-0910.google.com ([64.233.182.189]:1486 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764718AbYHHW07 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 18:26:59 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject
-         :content-type:content-transfer-encoding;
-        b=P2o/zklXNDEYBGbw2Wfzh0d44L6yktyZqcTu1CxJ2qOTwgqROD/71bYWJLCj0XSUMv
-         RwCHjivvLqTeoyfT+2h1jUiLwmaGSYAdF14MZHHF6o8xE7Kyox6euCMqnoVg4/V2dpEE
-         IwSJngA0j7sDf0jgzIa/y5f0mllz0AmVONNEk=
-Message-ID: <489D1CA3.80504@gmail.com>
-Date: Sat, 09 Aug 2008 00:27:15 -0400
-From: roel kluin <roel.kluin@gmail.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.9 (X11/20080110)
+	Fri, 8 Aug 2008 18:29:41 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:44996 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751498AbYHHW3l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Aug 2008 18:29:41 -0400
+Message-ID: <489CC8D2.2010006@garzik.org>
+Date: Fri, 08 Aug 2008 18:29:38 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-To: yanivr@broadcom.com, eilong@broadcom.com, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] bnx2x: precedence confusion !x & y
-Content-Type: text/plain; charset=ISO-8859-1
+To: Alan Stern <stern@rowland.harvard.edu>
+CC: linux-usb@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [2.6.27-rc] USB storage:  hangs and massive dmesg spews
+References: <Pine.LNX.4.44L0.0808081752270.24293-100000@netrider.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0808081752270.24293-100000@netrider.rowland.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-! has a higher precedence than &
+Alan Stern wrote:
+> On Fri, 8 Aug 2008, Jeff Garzik wrote:
+>> 3) judging from ls(1), the entire storage device's contents was 
+>> successfully dumped to my hard drive.  HOWEVER, dd(1) sat in disk wait, 
+>> failing to end execution once the end of the USB storage device was reached.
 
-Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
----
-diff --git a/drivers/net/bnx2x_main.c b/drivers/net/bnx2x_main.c
-index af251a5..272a4bd 100644
---- a/drivers/net/bnx2x_main.c
-+++ b/drivers/net/bnx2x_main.c
-@@ -7202,7 +7202,7 @@ static void __devinit bnx2x_link_settings_requested(struct bnx2x *bp)
- 	bp->link_params.req_flow_ctrl = (bp->port.link_config &
- 					 PORT_FEATURE_FLOW_CONTROL_MASK);
- 	if ((bp->link_params.req_flow_ctrl == FLOW_CTRL_AUTO) &&
--	    (!bp->port.supported & SUPPORTED_Autoneg))
-+	    !(bp->port.supported & SUPPORTED_Autoneg))
- 		bp->link_params.req_flow_ctrl = FLOW_CTRL_NONE;
- 
- 	BNX2X_DEV_INFO("req_line_speed %d  req_duplex %d  req_flow_ctrl 0x%x"
+> This has been fixed in 2.6.27-rc2.
+
+Awesome, thanks!
+
+	Jeff
+
+
