@@ -1,95 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753073AbYHHE54@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753029AbYHHFEo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753073AbYHHE54 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 00:57:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751499AbYHHE5o
+	id S1753029AbYHHFEo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 01:04:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751499AbYHHFEh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 00:57:44 -0400
-Received: from g4t0017.houston.hp.com ([15.201.24.20]:36559 "EHLO
-	g4t0017.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751365AbYHHE5n (ORCPT
+	Fri, 8 Aug 2008 01:04:37 -0400
+Received: from kirsty.vergenet.net ([202.4.237.240]:54781 "EHLO
+	kirsty.vergenet.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750896AbYHHFEg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 00:57:43 -0400
-Message-ID: <489BD227.6000209@hp.com>
-Date: Fri, 08 Aug 2008 00:57:11 -0400
-From: Brian Haley <brian.haley@hp.com>
-Organization: Open Source and Linux Organization
-User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
+	Fri, 8 Aug 2008 01:04:36 -0400
+Date: Fri, 8 Aug 2008 15:04:33 +1000
+From: Simon Horman <horms@verge.net.au>
+To: linux-kernel@vger.kernel.org, xen-devel@lists.xensource.com
+Cc: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
+       Stephen Tweedie <sct@redhat.com>, Eduardo Habkost <ehabkost@redhat.com>,
+       Mark McLoughlin <markmc@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       Jan Beulich <jbeulich@novell.com>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Allow compile with CONFIG_DEBUG_INFO=y, X86_PAE not set on gcc
+	3.4.5
+Message-ID: <20080808050429.GA8473@verge.net.au>
 MIME-Version: 1.0
-To: Alexey Dobriyan <adobriyan@gmail.com>
-CC: John Gumb <john.gumb@tandberg.com>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: OOPS, ip -f inet6 route get fec0::1, linux-2.6.26,	ip6_route_output,
- rt6_fill_node+0x175
-References: <9F6ACAE02B6DD040A1E259977622CFDB033590C3@oslexcp1.eu.tandberg.int> <20080807203748.GA5196@martell.zuzino.mipt.ru>
-In-Reply-To: <20080807203748.GA5196@martell.zuzino.mipt.ru>
-Content-Type: multipart/mixed;
- boundary="------------030209010905020208020707"
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------030209010905020208020707
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Hi,
 
-Alexey Dobriyan wrote:
-> On Thu, Aug 07, 2008 at 07:00:56PM +0200, John Gumb wrote:
->> Scenario: no ipv6 default route set.
-> 
->> # ip -f inet6 route get fec0::1
->>
->> BUG: unable to handle kernel NULL pointer dereference at 00000000
->> IP: [<c0369b85>] rt6_fill_node+0x175/0x3b0
->> EIP is at rt6_fill_node+0x175/0x3b0
-> 
-> 0xffffffff80424dd3 is in rt6_fill_node (net/ipv6/route.c:2191).
-> 2186                    } else
-> 2187    #endif
-> 2188                            NLA_PUT_U32(skb, RTA_IIF, iif);
-> 2189            } else if (dst) {
-> 2190                    struct in6_addr saddr_buf;
-> 2191      ====>         if (ipv6_dev_get_saddr(ip6_dst_idev(&rt->u.dst)->dev,
-> 					       ^^^^^^^^^^^^^^^^^^^^^^^^
-> 					       		NULL
-> 
-> 2192                                           dst, 0, &saddr_buf) == 0)
-> 2193                            NLA_PUT(skb, RTA_PREFSRC, 16, &saddr_buf);
-> 2194            }
+It appears that "x86: preallocate and prepopulate separately"
+(d8d5900ef8afc562088f8470feeaf17c4747790f) introduced a minor regression.
+The build fails on gcc 3.4.5 if CONFIG_DEBUG_INFO=y (that is gcc is
+called with -g) and X86_PAE not set.
 
-The commit that changed this can't be reverted easily, but the patch 
-below works for me.
+There was previously some discussion of this without resolution.
+http://lkml.org/lkml/2008/7/18/250
 
-Fix NULL de-reference in rt6_fill_node() when there's no IPv6 input 
-device present in the dst entry.
+	arch/x86/mm/pgtable.c: In function `pgd_prepopulate_pmd':
+	arch/x86/mm/pgtable.c:222: internal compiler error: in remove_insn, at emit-rtl.c:3746
+	Please submit a full bug report,
+	with preprocessed source if appropriate.
+	See <URL:http://gcc.gnu.org/bugs.html> for instructions.
 
-Signed-off-by: Brian Haley <brian.haley@hp.com>
+	# i686-unknown-linux-gnu-gcc --version
+	i686-unknown-linux-gnu-gcc (GCC) 3.4.5
 
+My investigations seem to show that gcc 3.4.5 can't cope with the following
+construct:
 
+	for (i = 0; i < 0; i++)
+		...
 
---------------030209010905020208020707
-Content-Type: text/x-patch;
- name="idev.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="idev.patch"
+or more specifically:
 
-diff --git a/net/ipv6/route.c b/net/ipv6/route.c
-index 5a3e87e..303a245 100644
---- a/net/ipv6/route.c
-+++ b/net/ipv6/route.c
-@@ -2188,7 +2188,8 @@ static int rt6_fill_node(struct sk_buff *skb, struct rt6_info *rt,
- 			NLA_PUT_U32(skb, RTA_IIF, iif);
- 	} else if (dst) {
- 		struct in6_addr saddr_buf;
--		if (ipv6_dev_get_saddr(ip6_dst_idev(&rt->u.dst)->dev,
-+		struct inet6_dev *idev = ip6_dst_idev(&rt->u.dst);
-+		if (ipv6_dev_get_saddr(idev ? idev->dev : NULL,
- 				       dst, 0, &saddr_buf) == 0)
- 			NLA_PUT(skb, RTA_PREFSRC, 16, &saddr_buf);
+	for (i = 0; i < PREALLOCTED_PMDS; i++)
+		...
+
+when PREALLOCTED_PMDS is 0. That is, when X86_PAE is not set.
+
+This patch resolves this problem by moving the relevant code inside
+#define X86_PAE and providing dummy functions outside !X86_PAE.
+
+Signed-off-by: Simon Horman <horms@verge.net.au>
+
+Index: linux-2.6/arch/x86/mm/pgtable.c
+===================================================================
+--- linux-2.6.orig/arch/x86/mm/pgtable.c	2008-08-08 14:35:29.000000000 +1000
++++ linux-2.6/arch/x86/mm/pgtable.c	2008-08-08 15:00:07.000000000 +1000
+@@ -141,12 +141,6 @@ void pud_populate(struct mm_struct *mm, 
+ 	if (mm == current->active_mm)
+ 		write_cr3(read_cr3());
+ }
+-#else  /* !CONFIG_X86_PAE */
+-
+-/* No need to prepopulate any pagetable entries in non-PAE modes. */
+-#define PREALLOCATED_PMDS	0
+-
+-#endif	/* CONFIG_X86_PAE */
+ 
+ static void free_pmds(pmd_t *pmds[])
+ {
+@@ -221,6 +215,19 @@ static void pgd_prepopulate_pmd(struct m
  	}
-
---------------030209010905020208020707--
+ }
+ 
++#else  /* !CONFIG_X86_PAE */
++
++/* No need to prepopulate any pagetable entries in non-PAE modes. */
++#define PREALLOCATED_PMDS	0
++
++static int preallocate_pmds(pmd_t *pmds[]) { return 0; }
++static void pgd_prepopulate_pmd(struct mm_struct *mm, pgd_t *pgd, pmd_t *pmds[])
++{ }
++static void free_pmds(pmd_t *pmds[]) { }
++static void pgd_mop_up_pmds(struct mm_struct *mm, pgd_t *pgdp) { }
++
++#endif	/* CONFIG_X86_PAE */
++
+ pgd_t *pgd_alloc(struct mm_struct *mm)
+ {
+ 	pgd_t *pgd;
