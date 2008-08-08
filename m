@@ -1,112 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753296AbYHHRLK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753147AbYHHRXT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753296AbYHHRLK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 13:11:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751654AbYHHRK5
+	id S1753147AbYHHRXT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 13:23:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751008AbYHHRXE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 13:10:57 -0400
-Received: from viefep11-int.chello.at ([62.179.121.31]:57540 "EHLO
-	viefep11-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751505AbYHHRK4 (ORCPT
+	Fri, 8 Aug 2008 13:23:04 -0400
+Received: from tomts16-srv.bellnexxia.net ([209.226.175.4]:39808 "EHLO
+	tomts16-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750733AbYHHRXD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 13:10:56 -0400
-Subject: Re: [PATCH 0/2] printk vs rq->lock and xtime lock
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu,
-       tglx@linutronix.de, marcin.slusarz@gmail.com,
-       linux-kernel@vger.kernel.org, David Miller <davem@davemloft.net>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Paul E McKenney <paulmck@linux.vnet.ibm.com>
-In-Reply-To: <alpine.LFD.1.10.0808080931550.3462@nehalem.linux-foundation.org>
-References: <20080324122424.671168000@chello.nl>
-	 <alpine.LFD.1.00.0803241021350.17905@woody.linux-foundation.org>
-	 <1206382547.6437.131.camel@lappy>
-	 <20080324115738.85c72bb5.akpm@linux-foundation.org>
-	 <1218202249.8625.106.camel@twins>
-	 <alpine.LFD.1.10.0808080931550.3462@nehalem.linux-foundation.org>
-Content-Type: text/plain
-Date: Fri, 08 Aug 2008 19:10:54 +0200
-Message-Id: <1218215454.8625.133.camel@twins>
+	Fri, 8 Aug 2008 13:23:03 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AnkFAGAZnEhMRKxB/2dsb2JhbACBWap5
+Date: Fri, 8 Aug 2008 13:22:59 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, Roland McGrath <roland@redhat.com>,
+       Ulrich Drepper <drepper@redhat.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Gregory Haskins <ghaskins@novell.com>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       "Luis Claudio R. Goncalves" <lclaudio@uudg.org>,
+       Clark Williams <williams@redhat.com>
+Subject: Re: [PATCH 0/5] ftrace: to kill a daemon
+Message-ID: <20080808172259.GB8244@Krystal>
+References: <20080807182013.984175558@goodmis.org> <20080807184741.GB18164@Krystal> <alpine.DEB.1.10.0808071639420.9449@gandalf.stny.rr.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.1.10.0808071639420.9449@gandalf.stny.rr.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 13:20:07 up 64 days, 22:01,  6 users,  load average: 0.30, 0.47,
+	1.03
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-08-08 at 09:41 -0700, Linus Torvalds wrote:
+* Steven Rostedt (rostedt@goodmis.org) wrote:
 > 
-> On Fri, 8 Aug 2008, Peter Zijlstra wrote:
+> On Thu, 7 Aug 2008, Mathieu Desnoyers wrote:
+> 
 > > 
-> > Something along the lines of the below patch?
+> > Hi Steven,
+> > 
+> > If you really want to stop using stop_machine, I think you should have a
+> > look at my immediate values infrastructure :
+> > 
+> > see:
+> > http://git.kernel.org/?p=linux/kernel/git/compudj/linux-2.6-lttng.git;a=blob;f=arch/x86/kernel/immediate.c;h=0958c02b49eed3bbc00bdc5aceeee17a6d0c7ab4;hb=HEAD
+> > 
+> > particularly replace_instruction_safe(), which uses a temporary
+> > breakpoint to safely replace an instruction on a live SMP system without
+> > using stop_machine. Feel free to try it in ftrace. :)
+> > 
+> > You may need to tweak the imv_notifier(), which is responsible for
+> > executing the breakpoint. The only special thing this handler has to
+> > know is the non-relocatable instructions you might want to insert (it
+> > only cares about the new instructions, not the old ones being replaced).
+> > The current code deals with 5-bytes jumps. Note that the instruction is
+> > executed in the breakpoint handler with preemption disabled, which might
+> > not be well suited for a call instruction.
+> > 
+> > I would recommend to patch in a 5-bytes jmp with 0 offset
+> > (e9 00 00 00 00) when disabled (this makes a single 5-bytes instruction
+> > and thus makes sure no instruction pointer can iret in the middle).
+> > 
+> > When enabling the site, you could patch-in the original call, but you
+> > should tweak the imv_notifier() so that it uses the jmp offset 0 in the
+> > bypass instead of the function call, because preemption would otherwise
+> > be disabled around the call when executed in the breakpoint bypass.
+> > 
+> > Therefore, simply statically forcing the bypass code to e9 00 00 00 00
+> > in all the cases (a nop) would do the job for your needs.
 > 
-> Could we not literally just make this a RCU event? Unconditionally too?
+> I originally used jumps instead of nops, but unfortunately, they actually 
+> hurt performance more than adding nops. Ingo told me it was probably due
+> to using up the jump predictions of the CPU.
+> 
 
-Sure, but the RCU callback period is at least 3 jiffies and much longer
-when busy - I'm not sure how long before we force a grace period, we do
-that to avoid DoS, right Paul?
+Hrm, are you sure you use a single 5-bytes nop instruction then, or do
+you use a mix of various nop sizes (add_nops) on some architectures ?
 
-So this version would have a much higher risk of overflowing the console
-buffer and making klogd miss bits. Then again, I really don't care about
-klogd at _all_, I've been running with the wakeup patched out for ages.
+You can consume the branch prediction buffers for conditional branches,
+but I doubt static jumps have this impact ? I don't see what "jump
+predictions" you are referring to here exactly.
 
+Mathieu
 
-Gah, the below doesn't boot - because I guess we start using rcu before
-its properly set up.. should I poke at it more?
+> -- Steve
+> 
 
----
-diff --git a/kernel/printk.c b/kernel/printk.c
-index b51b156..3d80e30 100644
---- a/kernel/printk.c
-+++ b/kernel/printk.c
-@@ -32,6 +32,7 @@
- #include <linux/security.h>
- #include <linux/bootmem.h>
- #include <linux/syscalls.h>
-+#include <linux/rcupdate.h>
- 
- #include <asm/uaccess.h>
- 
-@@ -982,10 +983,38 @@ int is_console_locked(void)
- 	return console_locked;
- }
- 
--void wake_up_klogd(void)
-+void __wake_up_klogd(struct rcu_head *head);
-+
-+static struct {
-+	struct rcu_head head;
-+	spinlock_t	lock;
-+	int		pending;
-+} klogd_wakeup_state = {
-+	.lock = __SPIN_LOCK_UNLOCKED(klogd_wakeup_state.lock),
-+};
-+
-+void __wake_up_klogd(struct rcu_head *head)
- {
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&klogd_wakeup_state.lock, flags);
-+	BUG_ON(!klogd_wakeup_state.pending);
- 	if (!oops_in_progress && waitqueue_active(&log_wait))
- 		wake_up_interruptible(&log_wait);
-+	klogd_wakeup_state.pending = 0;
-+	spin_unlock_irqrestore(&klogd_wakeup_state.lock, flags);
-+}
-+
-+void wake_up_klogd(void)
-+{
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&klogd_wakeup_state.lock, flags);
-+	if (!klogd_wakeup_state.pending) {
-+		call_rcu(&klogd_wakeup_state.head, __wake_up_klogd);
-+		klogd_wakeup_state.pending = 1;
-+	}
-+	spin_unlock_irqrestore(&klogd_wakeup_state.lock, flags);
- }
- 
- /**
-
-
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
