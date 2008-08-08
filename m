@@ -1,111 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752589AbYHHGze@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757576AbYHHGzy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752589AbYHHGze (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 02:55:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753027AbYHHGxE
+	id S1757576AbYHHGzy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 02:55:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755981AbYHHGxc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 02:53:04 -0400
-Received: from mga02.intel.com ([134.134.136.20]:59870 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755050AbYHHGxB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 02:53:01 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.31,325,1215414000"; 
-   d="scan'208";a="324325045"
-Subject: [PATCH -v2 8/8] kexec jump: fix for ftrace
-From: Huang Ying <ying.huang@intel.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>, Pavel Machek <pavel@ucw.cz>,
-       nigel@nigel.suspend2.net, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Vivek Goyal <vgoyal@redhat.com>, mingo@elte.hu,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org,
-       Kexec Mailing List <kexec@lists.infradead.org>
-Content-Type: text/plain
-Date: Fri, 08 Aug 2008 14:52:49 +0800
-Message-Id: <1218178369.22039.81.camel@caritas-dev.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Fri, 8 Aug 2008 02:53:32 -0400
+Received: from ik-out-1112.google.com ([66.249.90.178]:48592 "EHLO
+	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754448AbYHHGxb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Aug 2008 02:53:31 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=HBKRZBNAlJS8LEIw00rM6QWjKWxoE1+dJb85iZK2M9CnTi+0HApC9qRyPTMfCO++gg
+         KqUvDHExaNosTAHZDYGwzvb3iXued6tjMGU83kDhyxsvyC/3KnSE1Gc/OppAAojRcAVT
+         kvW135LW4opYvPv1QclI/GJSnK2L+0IP8FMac=
+Message-ID: <ac9c93b10808072353g550f0f71pca977f9f6eb6d794@mail.gmail.com>
+Date: Fri, 8 Aug 2008 08:53:23 +0200
+From: "Frans Meulenbroeks" <fransmeulenbroeks@gmail.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: initramfs optimization suggestions
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <489B30B3.8050709@zytor.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <ac9c93b10808050042u496bfa10nad7962eb0e9ec015@mail.gmail.com>
+	 <489A40FF.1000508@zytor.com>
+	 <ac9c93b10808070011x7a84adb5v98d2ed2405835fcc@mail.gmail.com>
+	 <489B30B3.8050709@zytor.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ftrace depends on some processor state that we destroyed during kexec
-and restored by restore_processor_state(). So save_processor_state()
-and restore_processor_state() are moved into machine_kexec() and
-ftrace is restored after restore_processor_state().
+[trimmed quoted text heavily; please refer to earlier msg if you need
+the full text]
 
-Signed-off-by: Huang Ying <ying.huang@intel.com>
+2008/8/7 H. Peter Anvin <hpa@zytor.com>:
+> Frans Meulenbroeks wrote:
 
----
- arch/x86/kernel/machine_kexec_32.c |   16 +++++++++++++++-
- kernel/kexec.c                     |    2 --
- 2 files changed, 15 insertions(+), 3 deletions(-)
+[...]
 
---- a/arch/x86/kernel/machine_kexec_32.c
-+++ b/arch/x86/kernel/machine_kexec_32.c
-@@ -12,6 +12,7 @@
- #include <linux/init.h>
- #include <linux/numa.h>
- #include <linux/ftrace.h>
-+#include <linux/suspend.h>
- 
- #include <asm/pgtable.h>
- #include <asm/pgalloc.h>
-@@ -113,6 +114,7 @@ void machine_kexec(struct kimage *image)
- {
- 	unsigned long page_list[PAGES_NR];
- 	void *control_page;
-+	int save_ftrace_enabled;
- 	asmlinkage unsigned long
- 		(*relocate_kernel_ptr)(unsigned long indirection_page,
- 				       unsigned long control_page,
-@@ -120,7 +122,12 @@ void machine_kexec(struct kimage *image)
- 				       unsigned int has_pae,
- 				       unsigned int preserve_context);
- 
--	tracer_disable();
-+#ifdef CONFIG_KEXEC_JUMP
-+	if (kexec_image->preserve_context)
-+		save_processor_state();
-+#endif
-+
-+	save_ftrace_enabled = ftrace_enabled_save();
- 
- 	/* Interrupts aren't acceptable while we reboot */
- 	raw_local_irq_disable();
-@@ -178,6 +185,13 @@ void machine_kexec(struct kimage *image)
- 					   (unsigned long)page_list,
- 					   image->start, cpu_has_pae,
- 					   image->preserve_context);
-+
-+#ifdef CONFIG_KEXEC_JUMP
-+	if (kexec_image->preserve_context)
-+		restore_processor_state();
-+#endif
-+
-+	ftrace_enabled_restore(save_ftrace_enabled);
- }
- 
- void arch_crash_save_vmcoreinfo(void)
---- a/kernel/kexec.c
-+++ b/kernel/kexec.c
-@@ -1469,7 +1469,6 @@ int kernel_kexec(void)
- 		error = device_power_down(PMSG_FREEZE);
- 		if (error)
- 			goto Enable_irqs;
--		save_processor_state();
- 	} else
- #endif
- 	{
-@@ -1482,7 +1481,6 @@ int kernel_kexec(void)
- 
- #ifdef CONFIG_KEXEC_JUMP
- 	if (kexec_image->preserve_context) {
--		restore_processor_state();
- 		device_power_up(PMSG_RESTORE);
-  Enable_irqs:
- 		local_irq_enable();
+> Having a CONFIG option to make this image uncompressed would be a good idea.
+
+Ok. Doesn't look too difficult. I'll put it on my TODO list (but don't
+expect anything this weekend, fully booked already :-) )
 
 
+>> Agree about the footprint but as this is only during booting the
+>> memory is on most systems available anyway (and I assume the memory
+>> occupied by init.ramfs is reclaimed later on).
+>
+> It is, however, due to lowmem restrictions on a lot of systems this can
+> still hurt.
+
+Sorry, I miss what lowmem restrictions you mean.
+You're not talking 8088 or so, are you ?
+
+Besides that: my proposed changes still could be an option. If you
+have restrictions, then don't use it.
+
+As I wrote before: for embedded systems this could make a lot of difference.
+Instead of storing the application in a squashfs, you could directly
+store it into the buffer cache (where it also ends up through ramfs).
+
+Note also that I am not saying the proposal is a replacement for
+initramfs. I can imagine they can live besides each other.
+But for systems where fast boot is important it would help if the
+gunzip/parse cpio/copy data steps can be skipped.
+An initialised buffer cache (together with some associated data
+structures of course) could be a nice alternative.
+
+[...]
+
+>
+> I think the complexity penalty would be prohibitive; plus, on
+> HIGHMEM-afflicted system, this would move the initramfs from highmem to
+> lowmem, which would be highly undesirable.
+
+As said before, I'm not sure what you mean with HIGHMEM. For me this
+is something from the 8088/80286 era.
+(and wikipedia tells me the same). Please educate me by providing a
+pointer to some info.
+
+Having said that I do not understand why this would move at all.
+If I have the initramfs build into my kernel it occupies memory when
+loaded. If the same data moves from the init.ramfs section to fs or mm
+in order to have some initialised data structures, it just moved to a
+different place in the image that is loaded.
+The key difference is that the initramfs can be compressed, but if we
+decide to implement an option to do things uncompressed (which you
+agreed to be a good plan), then at least with an uncompressed
+initramfs there does not seem too much of a difference.
+
+>
+> Overall, part of the attractiveness of the current code is that it is
+> extremely simple.  There are reasons it could use to be cleaned up (I found
+> its producer/consumer model to be a little to implicit to make it easy to
+> support loading from highmem proper) but I don't believe in the model of
+> going in and mucking with ramfs internals.
+
+The current code is indeed very simple.
+
+The amount of complication added by another solution remains to be
+investigated. Definitely it will not simplify the code, but there is
+also a gain associated with it. A gain which might not be too
+interesting if you run a fast PC which only boots rarely, but which is
+very interesting if you have a low performance embedded system that
+needs to boot up quickly (I'm thinking here about systems like set-top
+boxes, digital camera's, tv's etc).
+
+Best regards, Frans.
