@@ -1,113 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752730AbYHHGVh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755317AbYHHG3t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752730AbYHHGVh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 02:21:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752771AbYHHGVZ
+	id S1755317AbYHHG3t (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 02:29:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752667AbYHHG3l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 02:21:25 -0400
-Received: from fms-01.valinux.co.jp ([210.128.90.1]:43128 "EHLO
-	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755160AbYHHGVY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 02:21:24 -0400
-Date: Fri, 08 Aug 2008 15:21:19 +0900 (JST)
-Message-Id: <20080808.152119.43521725.taka@valinux.co.jp>
-To: fernando@oss.ntt.co.jp
-Cc: dave@linux.vnet.ibm.com, ryov@valinux.co.jp,
-       yoshikawa.takuya@oss.ntt.co.jp, uchida@ap.jp.nec.com, ngupta@google.com,
-       linux-kernel@vger.kernel.org, dm-devel@redhat.com,
-       containers@lists.linux-foundation.org,
-       virtualization@lists.linux-foundation.org,
-       xen-devel@lists.xensource.com, agk@sourceware.org,
-       righi.andrea@gmail.com
-Subject: Re: RFC: I/O bandwidth controller
-From: Hirokazu Takahashi <taka@valinux.co.jp>
-In-Reply-To: <1217985189.3154.57.camel@sebastian.kern.oss.ntt.co.jp>
-References: <20080804.175126.193692178.ryov@valinux.co.jp>
-	<1217870433.20260.101.camel@nimitz>
-	<1217985189.3154.57.camel@sebastian.kern.oss.ntt.co.jp>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Fri, 8 Aug 2008 02:29:41 -0400
+Received: from gw.goop.org ([64.81.55.164]:48836 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752089AbYHHG3k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Aug 2008 02:29:40 -0400
+Message-ID: <489BE7C5.6000806@goop.org>
+Date: Thu, 07 Aug 2008 23:29:25 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Michael Davidson <md@google.com>
+CC: mingo@redhat.com, tglx@linutronix.de, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86: prevent binaries from making system calls using
+ the wrong syscall interface
+References: <20080807003459.37CC629624@localhost>
+In-Reply-To: <20080807003459.37CC629624@localhost>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, Fernando,
+Michael Davidson wrote:
+> Prevent binaries from making system calls using other than one
+> of the "normal" system call interfaces for that binary type.
+>
+> Currently there is nothing to prevent 64 bit binaries from
+> attempting to make system calls using the 32 bit system call
+> interfaces and vice versa.
+>   
 
-It's a good work!
+No.  While I'm not sure it's been used, it would definitely be useful to 
+be able to invoke 32-bit int 0x80 syscalls in 64-bit bit process for 
+something like Valgrind.
 
-> *** How to move on
-> 
-> As discussed before, it probably makes sense to have both a block layer
-> I/O controller and a elevator-based one, and they could certainly
-> cohabitate. As discussed before, all of them need I/O tracking
-> capabilities so I would like to suggest the plan below to get things
-> started:
-> 
->   - Improve the I/O tracking patches (see (6) above) until they are in
-> mergeable shape.
+Issuing 64-bit syscalls from a 32-bit process would be... interesting.
 
-The current implementation of bio-cgroup is quite basic that a certain
-page is owned by the cgroup that allocated the page, that is the same
-way as the memory controller does. In most of cases this is enough and
-it helps minimize the overhead. 
+> Since the 32 bit and 64 bit system call numbers are different
+> this means that a binary could attempt to obfuscate which system
+> calls it was actually making by using the "wrong" system call
+> interface. In particular, the call to audit_syscall_entry()
+> relies on checking the TIF_IA32 flag to determine whether it is
+> dealing with a 32 or 64 bit system call without regard to the
+> actual type of system call that was made.
 
-I think you many want to add some feature to change the owner of a page.
-It will be ok we implement it step by step. I know there will be some
-tradeoff between the overhead and the accuracy to track pages.
+Or just have separate 32-compat vs 64 bit audit paths which can clearly 
+make the distinction.
 
-We also try to reduce the overhead of the tracking, whose code comes
-from the memory controller though. We all should help the memory
-controller team do this.
-
->   - Fix CFQ and AS to use the new I/O tracking functionality to show its
-> benefits. If the performance impact is acceptable this should suffice to
-> convince the respective maintainer and get the I/O tracking patches
-> merged.
-
-Yes.
-
->   - Implement a block layer resource controller. dm-ioband is a working
-> solution and feature rich but its dependency on the dm infrastructure is
-> likely to find opposition (the dm layer does not handle barriers
-> properly and the maximum size of I/O requests can be limited in some
-> cases). In such a case, we could either try to build a standalone
-> resource controller based on dm-ioband (which would probably hook into
-> generic_make_request) or try to come up with something new.
-
-I doubt about the maximum size of I/O requests problem. You can't avoid
-this problem as far as you use device mapper modules with such a bad
-manner, even if the controller is implemented as a stand-alone controller.
-There is no limitation if you only use dm-ioband without any other device
-mapper modules.
-
-And I think the device mapper team just started designing barriers support.
-I guess it won't take long. Right, Alasdair?
-We should know it is logically impossible to support barriers on some
-types of device mapper modules such as LVM. You can't avoid the barrier
-problem when you use this kind of multiple devices even if you implement
-the controller in the block layer.
-
-But I think a stand-alone implementation will have a merit that it
-makes it easier to setup the configuration rather than dm-ioband.
->From this point of view, it would be good that you move the algorithm
-of dm-ioband into the block layer.
-On the other hand, we should know it will make it impossible to use
-the dm infrastructure from the controller, though it isn't so rich.
-
->   - If the I/O tracking patches make it into the kernel we could move on
-> and try to get the Cgroup extensions to CFQ and AS mentioned before (see
-> (1), (2), and (3) above for details) merged.
->   - Delegate the task of controlling the rate at which a task can
-> generate dirty pages to the memory controller.
-> 
-> This RFC is somewhat vague but my feeling is that we build some
-> consensus on the goals and basic design aspects before delving into
-> implementation details.
-> 
-> I would appreciate your comments and feedback.
-> 
-> - Fernando
-> 
+    J
