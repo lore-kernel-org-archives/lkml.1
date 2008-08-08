@@ -1,76 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757595AbYHHDAl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756155AbYHHDHU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757595AbYHHDAl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Aug 2008 23:00:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755795AbYHHC7z
+	id S1756155AbYHHDHU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Aug 2008 23:07:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753285AbYHHDHI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Aug 2008 22:59:55 -0400
-Received: from smtp.knology.net ([24.214.63.101]:37784 "EHLO smtp.knology.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755526AbYHHC7y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Aug 2008 22:59:54 -0400
-Subject: Re: [GIT PULL]: firmware patches for building firmware into kernel
-From: David Dillow <dave@thedillows.org>
-To: Jaswinder Singh <jaswinder@infradead.org>
-Cc: David Woodhouse <dwmw2@infradead.org>, LKML <linux-kernel@vger.kernel.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-In-Reply-To: <1218159490.2553.13.camel@jaswinder.satnam>
-References: <1218128219.14483.7.camel@jaswinder.satnam>
-	 <1218130222.18118.7.camel@lap75545.ornl.gov>
-	 <1218130475.14483.16.camel@jaswinder.satnam>
-	 <1218133288.18118.20.camel@lap75545.ornl.gov>
-	 <1218159490.2553.13.camel@jaswinder.satnam>
-Content-Type: text/plain; charset=utf-8
-Date: Thu, 07 Aug 2008 22:59:51 -0400
-Message-Id: <1218164391.17642.14.camel@obelisk.thedillows.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 8bit
+	Thu, 7 Aug 2008 23:07:08 -0400
+Received: from vapor.arctrix.com ([66.220.1.99]:49714 "HELO vapor.arctrix.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751239AbYHHDHH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Aug 2008 23:07:07 -0400
+X-Greylist: delayed 402 seconds by postgrey-1.27 at vger.kernel.org; Thu, 07 Aug 2008 23:07:07 EDT
+Date: Thu, 7 Aug 2008 21:00:25 -0600
+From: Neil Schemenauer <nas@arctrix.com>
+To: linux-kernel@vger.kernel.org
+Subject: Hung task while reading USB mass storage device (2.6.26)
+Message-ID: <20080808030025.GA18962@arctrix.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-08-08 at 07:08 +0530, Jaswinder Singh wrote:
-> On Thu, 2008-08-07 at 14:21 -0400, David Dillow wrote:
-> > Please drop that patch from the series for now; I'm not happy with it,
-> > as it reintroduces things I've asked be changed. 
-> 
-> You mean this :
-> 
-> ﻿+       /*
-> +        * Need to check request_firmware should be called only once
-> +        * so you don't leak memory if there is more than one NIC.
-> +        * Need to check if PCI probing gets multi-threaded as
-> +        * mutex is used while loading the firmware.
-> +        */
-> +       if (typhoon_fw != NULL) {
-> +               err = typhoon_init_firmware(tp);
-> 
-> This is not required now, As I already fixed request_firmware.
-> 
-> ﻿So it is replaced by :
-> 
-> ﻿+       err = typhoon_init_firmware(tp);
-> 
-> Do you think we still need above comments ?
+Hi,
 
-No, the comments will be unneeded, but you don't need an extra function
-to handle this, and I'm not real keen about the release_firmware_all()
-interface -- it doesn't match up with the get/put semantics of the
-reference count.
+This happened with 2.6.26 on an AMD64 machine.  I was attempting to
+read an entire partition on a SD card attached to a USB reader.
+sysreq-W gives:
 
-I don't like releasing the firmware before the pci_unregister_driver()
-call. I worry about ordering issues during cleanup, though I'll admit I
-have not yet researched if it will be a problem. In any event, if you're
-going to request it once per adapter in typhoon_init_one(), then it
-should be in the per-device struct, and released in
-typhoon_remove_one().
+dd            D ffff8100010018b8     0  3887   3876
+ ffff810062a9dac8 0000000000000046 ffff81002f9ee420 ffff810054f80c28
+ ffffffff8047f8c0 ffff810062a9da78 ffff810062a9db58 ffffffff805d4f00
+ ffffffff805d4f00 ffffffff805d2270 ffffffff805d4f00 ffff81006e2106d0
+Call Trace:
+ [<ffffffff8025403b>] find_get_pages_tag+0x34/0x7e
+ [<ffffffff80254200>] sync_page+0x0/0x41
+ [<ffffffff8045aaab>] io_schedule+0x28/0x33
+ [<ffffffff8025423c>] sync_page+0x3c/0x41
+ [<ffffffff8045abf0>] __wait_on_bit_lock+0x3f/0x72
+ [<ffffffff802541ec>] __lock_page+0x5e/0x64
+ [<ffffffff8023ef3e>] wake_bit_function+0x0/0x23
+ [<ffffffff8025b884>] pagevec_lookup+0x17/0x1e
+ [<ffffffff8025bfae>] truncate_inode_pages_range+0x251/0x2d9
+ [<ffffffff80296c79>] __blkdev_put+0x4f/0x11c
+ [<ffffffff80274a77>] __fput+0xb1/0x176
+ [<ffffffff802723cb>] filp_close+0x5d/0x65
+ [<ffffffff8022ff6c>] put_files_struct+0x66/0xc4
+ [<ffffffff802311f7>] do_exit+0x23a/0x639
+ [<ffffffff8023745e>] __dequeue_signal+0x19/0x15a
+ [<ffffffff8023165c>] do_group_exit+0x66/0x93
+ [<ffffffff802392d8>] get_signal_to_deliver+0x2d5/0x2f2
+ [<ffffffff8020b1a7>] do_notify_resume+0xac/0x7d3
+ [<ffffffff8023ef10>] autoremove_wake_function+0x0/0x2e
+ [<ffffffff802743f4>] vfs_read+0x11e/0x132
+ [<ffffffff80274e18>] fget_light+0x19/0x8a
+ [<ffffffff8020be54>] sysret_signal+0x1c/0x27
+ [<ffffffff8020c0d7>] ptregscall_common+0x67/0xb0
 
-Drop the typhoon patches, and once you fix the problems in the core,
-I'll respin the patch in a style I'm comfortable with. It will also need
-to be tested before it goes upstream.
+I hope this information is useful.
 
-Feel free to cc me on the core patches, I will try to review them.
-
-Dave
-
+  Neil
