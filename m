@@ -1,47 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755461AbYHHHRa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754553AbYHHHUe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755461AbYHHHRa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 03:17:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752681AbYHHHRT
+	id S1754553AbYHHHUe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 03:20:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753183AbYHHHU0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 03:17:19 -0400
-Received: from mtagate6.uk.ibm.com ([195.212.29.139]:49161 "EHLO
-	mtagate6.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752696AbYHHHRS (ORCPT
+	Fri, 8 Aug 2008 03:20:26 -0400
+Received: from fms-01.valinux.co.jp ([210.128.90.1]:40311 "EHLO
+	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753135AbYHHHUZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 03:17:18 -0400
-Date: Fri, 8 Aug 2008 10:00:40 +0300
-From: Muli Ben-Yehuda <muli@il.ibm.com>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: lkml <linux-kernel@vger.kernel.org>, x86@kernel.org,
-       akpm <akpm@linux-foundation.org>, jdmason@kudzu.us
-Subject: Re: [PATCH] pci-calgary: fix function declaration
-Message-ID: <20080808070040.GA6931@il.ibm.com>
-References: <20080807151455.12b53aa5.randy.dunlap@oracle.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080807151455.12b53aa5.randy.dunlap@oracle.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+	Fri, 8 Aug 2008 03:20:25 -0400
+Date: Fri, 08 Aug 2008 16:20:24 +0900 (JST)
+Message-Id: <20080808.162024.189720323.ryov@valinux.co.jp>
+To: taka@valinux.co.jp
+Cc: fernando@oss.ntt.co.jp, dave@linux.vnet.ibm.com,
+       yoshikawa.takuya@oss.ntt.co.jp, uchida@ap.jp.nec.com, ngupta@google.com,
+       linux-kernel@vger.kernel.org, dm-devel@redhat.com,
+       containers@lists.linux-foundation.org,
+       virtualization@lists.linux-foundation.org,
+       xen-devel@lists.xensource.com, agk@sourceware.org,
+       righi.andrea@gmail.com
+Subject: Re: RFC: I/O bandwidth controller
+From: Ryo Tsuruta <ryov@valinux.co.jp>
+In-Reply-To: <20080808.152119.43521725.taka@valinux.co.jp>
+References: <1217870433.20260.101.camel@nimitz>
+	<1217985189.3154.57.camel@sebastian.kern.oss.ntt.co.jp>
+	<20080808.152119.43521725.taka@valinux.co.jp>
+X-Mailer: Mew version 5.2.52 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 07, 2008 at 03:14:55PM -0700, Randy Dunlap wrote:
-> From: Randy Dunlap <randy.dunlap@oracle.com>
-> cc: muli@il.ibm.com, jdmason@kudzu.us
-> 
-> Fix function declaration:
-> 
-> linux-next-20080807/arch/x86/kernel/pci-calgary_64.c:1353:36: warning: non-ANSI function declaration of function 'get_tce_space_from_tar'
-> 
-> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+Hi,
 
-Acked-by: Muli Ben-Yehuda <muli@il.ibm.com>
+> >   - Implement a block layer resource controller. dm-ioband is a working
+> > solution and feature rich but its dependency on the dm infrastructure is
+> > likely to find opposition (the dm layer does not handle barriers
+> > properly and the maximum size of I/O requests can be limited in some
+> > cases). In such a case, we could either try to build a standalone
+> > resource controller based on dm-ioband (which would probably hook into
+> > generic_make_request) or try to come up with something new.
+> 
+> I doubt about the maximum size of I/O requests problem. You can't avoid
+> this problem as far as you use device mapper modules with such a bad
+> manner, even if the controller is implemented as a stand-alone controller.
+> There is no limitation if you only use dm-ioband without any other device
+> mapper modules.
 
-Cheers,
-Muli
--- 
-Workshop on I/O Virtualization (WIOV '08)
-Co-located with OSDI '08, Dec 2008, San Diego, CA
-http://www.usenix.org/wiov08
+The following is a part of source code where the limitation comes from.
+
+dm-table.c: dm_set_device_limits()
+        /*
+         * Check if merge fn is supported.
+         * If not we'll force DM to use PAGE_SIZE or
+         * smaller I/O, just to be safe.
+         */
+
+        if (q->merge_bvec_fn && !ti->type->merge)
+                rs->max_sectors =
+                        min_not_zero(rs->max_sectors,
+                                     (unsigned int) (PAGE_SIZE >> 9));
+
+As far as I can find, In 2.6.27-rc1-mm1, Only some software RAID
+drivers and pktcdvd driver define merge_bvec_fn().
+
+Thanks,
+Ryo Tsuruta
