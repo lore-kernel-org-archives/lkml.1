@@ -1,56 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755317AbYHHG3t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755093AbYHHGeU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755317AbYHHG3t (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 02:29:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752667AbYHHG3l
+	id S1755093AbYHHGeU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 02:34:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752839AbYHHGeH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 02:29:41 -0400
-Received: from gw.goop.org ([64.81.55.164]:48836 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752089AbYHHG3k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 02:29:40 -0400
-Message-ID: <489BE7C5.6000806@goop.org>
-Date: Thu, 07 Aug 2008 23:29:25 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Michael Davidson <md@google.com>
-CC: mingo@redhat.com, tglx@linutronix.de, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86: prevent binaries from making system calls using
- the wrong syscall interface
-References: <20080807003459.37CC629624@localhost>
-In-Reply-To: <20080807003459.37CC629624@localhost>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+	Fri, 8 Aug 2008 02:34:07 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:55982 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752781AbYHHGeF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Aug 2008 02:34:05 -0400
+Date: Thu, 7 Aug 2008 23:33:25 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Ian Kent <raven@themaw.net>
+Cc: autofs@linux.kernel.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH 4/4] autofs4 - add miscelaneous device for ioctls
+Message-Id: <20080807233325.8fb76c8b.akpm@linux-foundation.org>
+In-Reply-To: <1218175943.17093.107.camel@raven.themaw.net>
+References: <20080807114002.4142.30417.stgit@web.messagingengine.com>
+	<20080807114030.4142.76568.stgit@web.messagingengine.com>
+	<20080807141041.e0d5cccc.akpm@linux-foundation.org>
+	<1218166760.17093.69.camel@raven.themaw.net>
+	<20080807223109.e67f46e4.akpm@linux-foundation.org>
+	<1218175943.17093.107.camel@raven.themaw.net>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michael Davidson wrote:
-> Prevent binaries from making system calls using other than one
-> of the "normal" system call interfaces for that binary type.
->
-> Currently there is nothing to prevent 64 bit binaries from
-> attempting to make system calls using the 32 bit system call
-> interfaces and vice versa.
->   
+On Fri, 08 Aug 2008 14:12:21 +0800 Ian Kent <raven@themaw.net> wrote:
 
-No.  While I'm not sure it's been used, it would definitely be useful to 
-be able to invoke 32-bit int 0x80 syscalls in 64-bit bit process for 
-something like Valgrind.
+> > > No problem.
+> > > You mentioned this last time as well.
+> > > 
+> > > Since there are a couple of possible approaches and I wasn't sure which
+> > > way to go I thought I'd post it as is and get feedback then make it a
+> > > followup patch.
+> > > 
+> > > Could the pthreads user space daemon exec something between fd_install()
+> > > and set_close_on_exec()? 
+> > 
+> > Gee, I don't know, it would depend on the context.
+> > 
+> > Is that a private file*?  Was it just created, and is there no
+> > possibility that any other thread can be sharing it anyway?  If so,
+> > there's no problem.
+> 
+> The problem is that autofs threads can exec mount or umount at any time
+> and we see annoying selinux file descriptor leak security violation
+> messages. So the point of this is to set the bit at the same time as the
+> file is inserted into the table.
+> 
+> > 
+> > > Perhaps there are some other alternative approaches to this.
+> > > 
+> > > Suggestions?
+> > 
+> > I don't know enough about autofs nor about what problem you're
+> > attacking here to be able to say, sorry.  I don't even know why
+> > close_on_exec is being set?
+> 
+> OK, sorry.
+> 
+> What I'm really after is:
+> Should I do this at all, given the above?
 
-Issuing 64-bit syscalls from a 32-bit process would be... interesting.
+I don't reliably know, sorry.  <does viro summoning dance>
 
-> Since the 32 bit and 64 bit system call numbers are different
-> this means that a binary could attempt to obfuscate which system
-> calls it was actually making by using the "wrong" system call
-> interface. In particular, the call to audit_syscall_entry()
-> relies on checking the TIF_IA32 flag to determine whether it is
-> dealing with a 32 or 64 bit system call without regard to the
-> actual type of system call that was made.
+> If this is sensible, should a parameter be added to fd_insall() to allow
+> it to be requested at descriptor install or should a new function, say,
+> fd_install_close_on_exec() be added?
 
-Or just have separate 32-compat vs 64 bit audit paths which can clearly 
-make the distinction.
+If we decide to do it this way, then we can add an extra arg to
+fd_install(), I guess.
 
-    J
+void fd_install(unsigned int fd, struct file *file,
+		void (*callback)(struct file *));
+
