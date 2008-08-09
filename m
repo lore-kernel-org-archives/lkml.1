@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758172AbYHJAWg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757501AbYHJAWS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758172AbYHJAWg (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Aug 2008 20:22:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754440AbYHJAJ4
+	id S1757501AbYHJAWS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Aug 2008 20:22:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755285AbYHJAKt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Aug 2008 20:09:56 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:47361 "EHLO ogre.sisk.pl"
+	Sat, 9 Aug 2008 20:10:49 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:47355 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754273AbYHJAJx convert rfc822-to-8bit (ORCPT
+	id S1755242AbYHJAKL convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Aug 2008 20:09:53 -0400
+	Sat, 9 Aug 2008 20:10:11 -0400
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Mikael Pettersson" <mikpe@it.uu.se>
+       =?utf-8?q?Bruno=20Pr=C3=A9mont?= <bonbons@linux-vserver.org>
 References: <VYYCiQF4qDI.A.BPH.KCjnIB@albercik>
 In-Reply-To: <VYYCiQF4qDI.A.BPH.KCjnIB@albercik>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -19,10 +19,10 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <cX_-nNkxKaF.A.13C.ZEjnIB@albercik>
-Subject: [Bug #11205] x86: 2.6.27-rc1 does not build with gcc-3.2.3 any more
+Message-ID: <cX_-nNkxKaF.A.9WH.QCjnIB@albercik>
+Subject: [Bug #11295] Kernel panic on VIA Ester+VIA CX700
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Date: Sun, 10 Aug 2008 00:43:51 +0200 (CEST)
+Date: Sun, 10 Aug 2008 00:43:52 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -35,12 +35,10 @@ from 2.6.26.  Please verify if it still should be listed and let me know
 (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11205
-Subject		: x86: 2.6.27-rc1 does not build with gcc-3.2.3 any more
-Submitter	: Mikael Pettersson <mikpe@it.uu.se>
-Date		: 2008-07-30 11:02 (11 days old)
-References	: http://marc.info/?l=linux-kernel&m=121741584608240&w=4
-Handled-By	: Mikael Pettersson <mikpe@it.uu.se>
-Patch		: http://marc.info/?l=linux-kernel&m=121742199419686&w=2
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11295
+Subject		: Kernel panic on VIA Ester+VIA CX700
+Submitter	: Bruno Prémont <bonbons@linux-vserver.org>
+Date		: 2008-08-09 20:51 (1 days old)
+References	: http://marc.info/?l=linux-kernel&m=121831582810674&w=4
 
 
