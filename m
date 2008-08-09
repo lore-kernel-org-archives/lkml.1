@@ -1,20 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758929AbYHJA01@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758375AbYHJA0o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758929AbYHJA01 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Aug 2008 20:26:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755434AbYHJALJ
+	id S1758375AbYHJA0o (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Aug 2008 20:26:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755442AbYHJALL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Aug 2008 20:11:09 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:47352 "EHLO ogre.sisk.pl"
+	Sat, 9 Aug 2008 20:11:11 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:47347 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754266AbYHJAJx convert rfc822-to-8bit (ORCPT
+	id S1754126AbYHJAJw convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Aug 2008 20:09:53 -0400
+	Sat, 9 Aug 2008 20:09:52 -0400
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
        "Dhaval Giani" <dhaval@linux.vnet.ibm.com>,
-       "Miao Xie" <miaox@cn.fujitsu.com>,
-       "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Yinghai Lu" <yhlu.kernel@gmail.com>
 References: <VYYCiQF4qDI.A.BPH.KCjnIB@albercik>
 In-Reply-To: <VYYCiQF4qDI.A.BPH.KCjnIB@albercik>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -22,10 +21,10 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <cX_-nNkxKaF.A.xxC.VEjnIB@albercik>
-Subject: [Bug #11207] VolanoMark regression with 2.6.27-rc1
+Message-ID: <cX_-nNkxKaF.A.AGD.iEjnIB@albercik>
+Subject: [Bug #11201] kernel BUG at arch/x86/kernel/io_apic_64.c:357!
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Date: Sun, 10 Aug 2008 00:43:51 +0200 (CEST)
+Date: Sun, 10 Aug 2008 00:43:50 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -38,14 +37,13 @@ from 2.6.26.  Please verify if it still should be listed and let me know
 (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11207
-Subject		: VolanoMark regression with 2.6.27-rc1
-Submitter	: Zhang, Yanmin <yanmin_zhang@linux.intel.com>
-Date		: 2008-07-31 3:20 (10 days old)
-References	: http://marc.info/?l=linux-kernel&m=121747464114335&w=4
-Handled-By	: Zhang, Yanmin <yanmin_zhang@linux.intel.com>
-		  Peter Zijlstra <a.p.zijlstra@chello.nl>
-		  Dhaval Giani <dhaval@linux.vnet.ibm.com>
-		  Miao Xie <miaox@cn.fujitsu.com>
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11201
+Subject		: kernel BUG at arch/x86/kernel/io_apic_64.c:357!
+Submitter	: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+Date		: 2008-07-29 16:21 (12 days old)
+References	: http://marc.info/?l=linux-kernel&m=121734804508255&w=4
+Handled-By	: Yinghai Lu <yhlu.kernel@gmail.com>
+		  Eric W. Biederman <ebiederm@xmission.com>
+Patch		: http://marc.info/?l=linux-kernel&m=121735924628623&w=4
 
 
