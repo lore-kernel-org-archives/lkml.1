@@ -1,49 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752001AbYHIJvO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751948AbYHIKDI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752001AbYHIJvO (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Aug 2008 05:51:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750965AbYHIJu6
+	id S1751948AbYHIKDI (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Aug 2008 06:03:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751012AbYHIKC4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Aug 2008 05:50:58 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:47593 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750931AbYHIJu5 (ORCPT
+	Sat, 9 Aug 2008 06:02:56 -0400
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:51683 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750965AbYHIKCz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Aug 2008 05:50:57 -0400
-Date: Sat, 9 Aug 2008 10:33:31 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "Robert P. J. Day" <rpjday@crashcourse.ca>
-Cc: Krzysztof Halasa <khc@pm.waw.pl>, Grant Coady <gcoady.lk@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC PATCH] cleanup Serial ATA and Parallel ATA Kconfig
-Message-ID: <20080809103331.1d475d5c@lxorguk.ukuu.org.uk>
-In-Reply-To: <alpine.LFD.1.10.0808081911080.3254@localhost.localdomain>
-References: <alpine.LFD.1.10.0808081228450.11491@localhost.localdomain>
-	<20080808172629.232bed01@lxorguk.ukuu.org.uk>
-	<njhp94pr4ha1nfgmj11n662enalpd9663h@4ax.com>
-	<m3sktfw1v5.fsf@maximus.localdomain>
-	<alpine.LFD.1.10.0808081911080.3254@localhost.localdomain>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Sat, 9 Aug 2008 06:02:55 -0400
+Date: Sat, 9 Aug 2008 11:01:44 +0100
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Alan Cox <alan@redhat.com>, Wim Van Sebroeck <wim@iguana.be>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [2.6 patch] fix watchdog/at91rm9200_wdt.c compilation
+Message-ID: <20080809100144.GA18510@flint.arm.linux.org.uk>
+References: <20080808155744.GD14495@cs181140183.pp.htv.fi>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080808155744.GD14495@cs181140183.pp.htv.fi>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I would also ask for PATA and for SATA first:
-> >
-> > [*] PATA support
-> > [*] SATA support
+On Fri, Aug 08, 2008 at 06:57:45PM +0300, Adrian Bunk wrote:
+> This patch fixes the following compile error:
 > 
->   that was sort my original thought, but i don't know enough about ATA
-> fundamentals to know if it makes sense for these to be independently
-> selectable. 
+> <--  snip  -->
+> 
+> ...
+>   CC      drivers/watchdog/at91rm9200_wdt.o
+> at91rm9200_wdt.c:188: error: 'at91_wdt_ioctl' undeclared here (not in a 
+> make[3]: *** [drivers/watchdog/at91rm9200_wdt.o] Error 1
 
-Alas it does not or we would have done so. A lot of the chips have things
-like 'two SATA one PATA' and some of them have SATA and PATA variants of
-the same chip. Then we have generic drivers like ata_generic which really
-don't care if its SATA or PATA ..
+Can we please get these fixes to Linus ASAP - this kind and quantity
+of breakage should have never made it to Linus' kernel.  (s3c2410_wdt,
+at91rm9200_wdt, and wdt285 all broken with trivial compile errors).
+
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
