@@ -1,57 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753660AbYHIVaV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753955AbYHIVcU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753660AbYHIVaV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Aug 2008 17:30:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751780AbYHIVaF
+	id S1753955AbYHIVcU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Aug 2008 17:32:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751772AbYHIVcN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Aug 2008 17:30:05 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:46917 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751659AbYHIVaE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Aug 2008 17:30:04 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: netdev@vger.kernel.org
-Subject: [PATCH] sky2: Fix suspend/hibernation/shutdown regression with WOL enabled
-Date: Sat, 9 Aug 2008 23:32:28 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Jeff Garzik <jeff@garzik.org>, Stephen Hemminger <shemminger@vyatta.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
+	Sat, 9 Aug 2008 17:32:13 -0400
+Received: from ppp-111-251.adsl.restena.lu ([158.64.111.251]:42094 "EHLO
+	bonbons.gotdns.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751694AbYHIVcM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 9 Aug 2008 17:32:12 -0400
+Date: Sat, 9 Aug 2008 23:32:09 +0200
+From: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons@linux-vserver.org>
+To: <JosephChan@via.com.tw>
+Cc: akpm@linux-foundation.org, <linux-fbdev-devel@lists.sourceforge.net>,
+       <linux-kernel@vger.kernel.org>, geert@linux-m68k.org
+Subject: Re: [Linux-fbdev-devel] [PATCH 0/13 v2] viafb: VIA Frame Buffer
+ Device Driver
+Message-ID: <20080809233209.543756ba@neptune.home>
+In-Reply-To: <C80EF34A3D2E494DBAF9AC29C7AE4EB8078B698C@exchtp03.taipei.via.com.tw>
+References: <C80EF34A3D2E494DBAF9AC29C7AE4EB8078B698C@exchtp03.taipei.via.com.tw>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.9; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200808092332.29596.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-sky2: Fix suspend/hibernation/shutdown regression with WOL enabled
+On Fri, 08 August 2008 <JosephChan@via.com.tw> wrote:
+> Here comes the 13 updated patchs for VIA Frame Buffer Device Driver.
+> This driver could be used on VIA UniChrome (Pro) and Chrome9 family
+> chips. All the patches are based on linux kernel 2.6.27-rc2
 
-On my test box with the Asus M3A32-MVP main board there is a
-regression from 2.6.26 related to suspend, hibernation and
-shutdown.  Namely, if Wake-on-LAN is enabled with
-'ethtool -s eth0 wol g', the box hangs solid during all of these
-operations, while executing either sky2_suspend(), or
-sky2_shutdown().  This patch fixes it for me.
+Seems to work for me when compiled into kernel on Commell LE365D (Via
+CX700) though I get two unwanted effects:
+- boot logo does not show up, where it should appear I just get a
+  square of colored pixels (2 colors: background and foreground grid)
+- when blanking console colored text remains visible (e.g. green '*'
+  characters emitted during Gentoo boot)
+  Ideally the output/monitor should got into standby when console is
+  blanking
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- drivers/net/sky2.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
 
-Index: linux-2.6/drivers/net/sky2.c
-===================================================================
---- linux-2.6.orig/drivers/net/sky2.c
-+++ linux-2.6/drivers/net/sky2.c
-@@ -665,7 +665,8 @@ static void sky2_phy_power_down(struct s
- 		    GM_GPCR_FL_PASS | GM_GPCR_SPEED_100 | GM_GPCR_AU_ALL_DIS);
- 
- 	if (hw->chip_id != CHIP_ID_YUKON_EC) {
--		if (hw->chip_id == CHIP_ID_YUKON_EC_U) {
-+		if (hw->chip_id == CHIP_ID_YUKON_EC_U
-+		    && hw->chip_rev != CHIP_REV_YU_EC_U_B0) {
- 			ctrl = gm_phy_read(hw, port, PHY_MARV_PHY_CTRL);
- 
- 			/* enable Power Down */
+The boot logo issue exists when patch is applied to 2.6.26.2 and
+2.6.27-rc2-git4, for the console blanking it's only tested on 2.6.26.2
+as 2.6.27-rc2-git4 panics while probing hard drives.
+
+Framebuffer related kernel commandline options:
+  video=viafb:viafb_mode=1280x1024,viafb_bpp=32,viafb_refresh=60
+
+
+Suspend to RAM (S3) works with BIOS configured to reinitialize the
+graphics at resume time, I have not yet checked without this option
+being enabled in BIOS (though it probably won't work as there is no
+suspend/resume callback in the patch-set).
+Have not checked yet if DRI has support for CX700 and can do the
+suspend/resume handling as the intel DRI can do.
+
+
+As Krzysztof Helt I'm in favor of merging and ironing out remaining
+issues with incremental patches
+
+Bruno
