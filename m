@@ -1,53 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752150AbYHIRDz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752323AbYHIRIC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752150AbYHIRDz (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Aug 2008 13:03:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750763AbYHIRDr
+	id S1752323AbYHIRIC (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Aug 2008 13:08:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750749AbYHIRHx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Aug 2008 13:03:47 -0400
-Received: from zone0.gcu-squad.org ([212.85.147.21]:18641 "EHLO
-	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750749AbYHIRDr (ORCPT
+	Sat, 9 Aug 2008 13:07:53 -0400
+Received: from n45.bullet.mail.ukl.yahoo.com ([87.248.110.178]:45192 "HELO
+	n45.bullet.mail.ukl.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750725AbYHIRHw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Aug 2008 13:03:47 -0400
-Date: Sat, 9 Aug 2008 19:03:36 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: "Fabio Comolli" <fabio.comolli@gmail.com>
-Cc: "Bjorn Helgaas" <bjorn.helgaas@hp.com>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Rene Herman" <rene.herman@keyaccess.nl>,
-       "Andrew Morton" <akpm@osdl.org>, "Thomas Renninger" <trenn@suse.de>
-Subject: Re: New conflict message in latest GIT
-Message-ID: <20080809190336.05e84068@hyperion.delvare>
-In-Reply-To: <b637ec0b0808090932l4d21d973we160c145f007da7c@mail.gmail.com>
-References: <b637ec0b0807221156x46d550a1h4180d6d624daeeb@mail.gmail.com>
-	<200807231256.42743.bjorn.helgaas@hp.com>
-	<b637ec0b0807231250g3e5b29eak8fbba41b69816351@mail.gmail.com>
-	<20080809181358.5c9da790@hyperion.delvare>
-	<b637ec0b0808090932l4d21d973we160c145f007da7c@mail.gmail.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sat, 9 Aug 2008 13:07:52 -0400
+X-Yahoo-Newman-Id: 549201.49910.bm@omp214.mail.ukl.yahoo.com
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.it;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-Id;
+  b=DG6NOO7EzZpdy0gmouHFRHHVNPFZeoGdDE+CYP+2E/C8/8Iobu0UlT9KBbFYCAbZDgGqq44DvQC0qtLxgujhFi+iCzKjXrT9imK9WlgrYVeB9Y5BT2RPRrXSF5hLPbTlxEtxS+lVCedigYyuXKRoivgyb3iRrOxNPN5HI4zMqd0=  ;
+X-YMail-OSG: r9YQbk0VM1mac_Ntyp7zZGAzOfGHNn4Vxg_cmsJEUMUNF9dCsiqTP5kfuBfMrx0LrkSG7Sa0eS6gck7CblMtl5H4s1ANm2VZutSJ2rcnTQ4N7QIGlGwCo3kI1iL57To-
+X-Yahoo-Newman-Property: ymail-3
+From: Blaisorblade <blaisorblade@yahoo.it>
+To: Tomas Carnecky <tom@dbservice.com>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: check kconfig
+Date: Sat, 9 Aug 2008 19:07:38 +0200
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+References: <488B935A.4080805@dbservice.com>
+In-Reply-To: <488B935A.4080805@dbservice.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed;
+  boundary="nextPart1636208.b6hUXWTrm8";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
+Message-Id: <200808091907.43733.blaisorblade@yahoo.it>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 9 Aug 2008 18:32:31 +0200, Fabio Comolli wrote:
-> Anyway, as usual linux is not supported at all on this laptop, it came
-> with XP. One thing that puzzles me is why bothering adding a
-> monitoring chip for which drivers do not exist for any OS?
+--nextPart1636208.b6hUXWTrm8
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-If you refer to the PC87591: that's a Super-I/O chip, including many
-different functions. Hardware monitoring is only one of these
-functions. Manufacturers might be interested in some of the other
-features and chose this chip because of them. Windows doesn't support
-hardware monitoring at all without 3rd party tools anyway, so that's
-hardly a decision factor for vendors.
+On sabato 26 luglio 2008, Tomas Carnecky wrote:
+> I ran your script, it still shows heaps of unused CONFIG_ defines in the
+> kernel sources. Is anyone actually cleaning those up?
+>
+> tom
+Sorry for late answer. I'm not working on this (and I've not time to work o=
+n=20
+any kernel stuff, currently), as you might have guessed (even from the lack=
+=20
+of an answer).
 
-Additionally, on laptops, thermal management is most often done by ACPI
-rather than native OS drivers. Maybe the ACPI implementation in your
-laptop actually gets the temperature from the PC87591.
+You could maybe help yourself, and you could also suggest this task to=20
+kernel-janitors (look for it on Google, it's a collection of simple tasks f=
+or=20
+wannabe kernel hackers).
 
--- 
-Jean Delvare
+The problem is that cleaning up such stuff isn't always trivial, one must f=
+ind=20
+out why there is a mention of an unknown symbol, and fix the original=20
+problem. If one discover that some source is never built, maybe the symbol=
+=20
+should be reintroduced. And so on.
+
+Good bye and good luck
+=2D-=20
+"Doh!" (cit.), I've made another mistake!
+Paolo Giarrusso, aka Blaisorblade
+Linux registered user n. 292729
+http://www.user-mode-linux.org/~blaisorblade
+
+--nextPart1636208.b6hUXWTrm8
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBInc7fqH9OHC+5NscRAhCxAJwJVsqwB/ZJgbSP1GOctePfZs7VGACfZEwQ
+5aMQyQbgnq/n9i4mZzKJSnM=
+=HrTN
+-----END PGP SIGNATURE-----
+
+--nextPart1636208.b6hUXWTrm8--
+
