@@ -1,41 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761618AbYHIBWp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761450AbYHIBYD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761618AbYHIBWp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 21:22:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752897AbYHIBWc
+	id S1761450AbYHIBYD (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 21:24:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752860AbYHIBXx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 21:22:32 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:37712 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752590AbYHIBWb (ORCPT
+	Fri, 8 Aug 2008 21:23:53 -0400
+Received: from web82107.mail.mud.yahoo.com ([209.191.84.220]:21798 "HELO
+	web82107.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752842AbYHIBXx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 21:22:31 -0400
-Date: Sat, 9 Aug 2008 03:23:22 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Theodore Tso <tytso@mit.edu>, Andi Kleen <andi@firstfloor.org>,
-       Chris Mason <chris.mason@oracle.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       linux-btrfs <linux-btrfs@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>
-Subject: Re: Btrfs v0.16 released
-Message-ID: <20080809012322.GF9038@one.firstfloor.org>
-References: <1217962876.15342.33.camel@think.oraclecorp.com> <1218100464.8625.9.camel@twins> <1218105597.15342.189.camel@think.oraclecorp.com> <877ias66v4.fsf@basil.nowhere.org> <1218221293.15342.263.camel@think.oraclecorp.com> <20080808215625.GC9038@one.firstfloor.org> <20080809011905.GB9967@mit.edu>
-Mime-Version: 1.0
+	Fri, 8 Aug 2008 21:23:53 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=sbcglobal.net;
+  h=Received:X-Mailer:Date:From:Subject:To:Cc:MIME-Version:Content-Type:Message-ID;
+  b=BKDGUc8OxED3CS2iVchVA049NHlufPfeu19Ih78yA8PUVkfvczNFYHVhos/J5DM6Z0xziPuKcP5OcXDCZ9hLJu7H8z2IWkpwgmkFd9ZsQlK+8RuPW+gLV4JLFqIYKlnFrSPGhthi7CAZ2h8IHpNGml9Yzi+/YvIlRQUs8eis7H4=;
+X-Mailer: YahooMailRC/1042.40 YahooMailWebService/0.7.218
+Date: Fri, 8 Aug 2008 18:23:52 -0700 (PDT)
+From: David Witbrodt <dawitbro@sbcglobal.net>
+Subject: Re: HPET regression in 2.6.26 versus 2.6.25 -- RCU problem
+To: linux-kernel@vger.kernel.org
+Cc: Yinghai Lu <yhlu.kernel@gmail.com>, Peter Zijlstra <peterz@infradead.org>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080809011905.GB9967@mit.edu>
-User-Agent: Mutt/1.4.2.1i
+Message-ID: <506429.22669.qm@web82107.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> In theory, if the elevator was smart enough, it could actually help
-> read seekiness; there are two copies of the metadata, and it shouldn't
+I have tracked the regression down to an RCU problem.
 
-That assumes the elevator actually knows what is nearby? I thought
-that wasn't that easy with modern disks with multiple spindles
-and invisible remapping, not even talking about RAID
-arrays looking like disks.
+I added some printk()'s to the function inet_register_protosw() in
+net/ipv4/af_inet.c, as seen in this diff:
 
--Andi
+===== BEGIN DIFF ==========
+      * non-permanent entry.  This means that when we remove this entry, the
+      * system automatically returns to the old behavior.
+      */
++    printk ("     Adding new protocol\n");
+     list_add_rcu(&p->list, last_perm);
++
+ out:
++    printk ("     Unlocking spinlock\n");
+     spin_unlock_bh(&inetsw_lock);
+ 
++    printk ("     Calling synchronize_net()\n");
+     synchronize_net();
+ 
+     return;
+===== END DIFF ==========
+
+A kernel built with these changes freezes with "Calling synchronize_net()"
+as the last printed line.
+
+I located the function synchronize_net() in net/core/dev.c, and it was easy
+to add some printk()'s there:
+
+===== BEGIN DIFF ==========
+ 
+void synchronize_net(void)
+ {
++    printk ("   synchronize_net(): calling might_sleep()\n");
+     might_sleep();
++
++    printk ("   synchronize_net(): calling synchronize_rcu()\n");
+     synchronize_rcu();
+ }
+===== END DIFF ==========
+
+The kernel built with these changes froze with "synchronize_net(): 
+calling synchronize_rcu()" as the last line on the screen.
+
+After reading some documentation in Documentation/RCU/, it looks like 
+something is misusing RCU -- and, according to the Documentation, those kinds 
+of mistakes are easy to make.  Maybe necessary calls to
+ 
+    rcu_read_lock()
+    rcu_read_unlock()
+
+are missing, and something about my hardware is triggering a freeze that 
+doesn't occur on most hardware.
+
+
+For some reason, turning off the HPET by booting with "hpet=disabled" keeps
+the freeze from happening.  Just reading a couple of those docs about RCU
+made me dizzy, so I hope someone familiar with RCU issues will take a look
+at the code in the files I've listed.  Surely you guys can take it from here
+now?!
+
+If not, just give me some experimental code changes to make to get my 2.6.26
+and 2.6.27 kernels working again without disabling HPET!!!
+
+
+Thanks,
+Dave Witbrodt
