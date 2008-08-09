@@ -1,91 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753963AbYHIVVz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753660AbYHIVaV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753963AbYHIVVz (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Aug 2008 17:21:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751780AbYHIVVr
+	id S1753660AbYHIVaV (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Aug 2008 17:30:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751780AbYHIVaF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Aug 2008 17:21:47 -0400
-Received: from an-out-0708.google.com ([209.85.132.241]:26569 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751700AbYHIVVq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Aug 2008 17:21:46 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=D1shSHZ+Hl09jJv05GaSA5MghJz3WX0wsRIYsNxJgZBngn6ewA5qHWIPAGeQTK0co/
-         juLDAWIyO2eFR7vMZqBQKsI1JFComqkwRGuY6NXgj9oxURDYWn1RIByilBmgSmwCF0pJ
-         6g5+vCAXPHLqEYlzcFQHKGkow1N9kxURy2or8=
-Message-ID: <86802c440808091421n50fd4b25i73e1bd00d7a8a67e@mail.gmail.com>
-Date: Sat, 9 Aug 2008 14:21:45 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [PATCH 08/42] introduce nr_irqs
-Cc: "H. Peter Anvin" <hpa@zytor.com>, "Ingo Molnar" <mingo@elte.hu>,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       "Dhaval Giani" <dhaval@linux.vnet.ibm.com>,
-       "Mike Travis" <travis@sgi.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <m14p5uuqh3.fsf@frodo.ebiederm.org>
+	Sat, 9 Aug 2008 17:30:05 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:46917 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751659AbYHIVaE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 9 Aug 2008 17:30:04 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: netdev@vger.kernel.org
+Subject: [PATCH] sky2: Fix suspend/hibernation/shutdown regression with WOL enabled
+Date: Sat, 9 Aug 2008 23:32:28 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Jeff Garzik <jeff@garzik.org>, Stephen Hemminger <shemminger@vyatta.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-2"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <1218232368-31228-1-git-send-email-yhlu.kernel@gmail.com>
-	 <1218232368-31228-6-git-send-email-yhlu.kernel@gmail.com>
-	 <1218232368-31228-7-git-send-email-yhlu.kernel@gmail.com>
-	 <1218232368-31228-8-git-send-email-yhlu.kernel@gmail.com>
-	 <1218232368-31228-9-git-send-email-yhlu.kernel@gmail.com>
-	 <m1ej4zvw6s.fsf@frodo.ebiederm.org>
-	 <86802c440808081838r66cc8162t5c2e157908457048@mail.gmail.com>
-	 <489CFA0A.5030609@zytor.com>
-	 <86802c440808090030k7269590ftf233a13a21a2e37e@mail.gmail.com>
-	 <m14p5uuqh3.fsf@frodo.ebiederm.org>
+Message-Id: <200808092332.29596.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Aug 9, 2008 at 9:02 AM, Eric W. Biederman <ebiederm@xmission.com> wrote:
-> "Yinghai Lu" <yhlu.kernel@gmail.com> writes:
->
->>> Also, what's the point, if it's just a renaming?
->>
->> that is the start point.
->> nr_irqs is variable, and will be probed later. and use that number to
->> init dyn_alloc.
->
-> YH.
->
-> In my conception the code in kernel/irq.c that today does:
->
-> struct irq_desc *desc;
-> if (irq >= NR_IRQS)
->   return -EINVAL;
-> desc = irq_desc + irq;
->
-> Should become:
->
-> struct irq_desc *desc;
-> desc = irq_desc(irq);
-> if (!desc)
->   return -EINVAL;
->
+sky2: Fix suspend/hibernation/shutdown regression with WOL enabled
 
-OK.
+On my test box with the Asus M3A32-MVP main board there is a
+regression from 2.6.26 related to suspend, hibernation and
+shutdown.  Namely, if Wake-on-LAN is enabled with
+'ethtool -s eth0 wol g', the box hangs solid during all of these
+operations, while executing either sky2_suspend(), or
+sky2_shutdown().  This patch fixes it for me.
 
-also want to introduce dummy
-struct irq_desc
-{
-   unsigned int irq;
-};
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ drivers/net/sky2.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-in linux/interrupt.h if GENERIC_HARDIRQS is not defined.
-so could have same interface
-irq_desc()
-and
-for_each_irq_desc(irq, desc)
-
-YH
+Index: linux-2.6/drivers/net/sky2.c
+===================================================================
+--- linux-2.6.orig/drivers/net/sky2.c
++++ linux-2.6/drivers/net/sky2.c
+@@ -665,7 +665,8 @@ static void sky2_phy_power_down(struct s
+ 		    GM_GPCR_FL_PASS | GM_GPCR_SPEED_100 | GM_GPCR_AU_ALL_DIS);
+ 
+ 	if (hw->chip_id != CHIP_ID_YUKON_EC) {
+-		if (hw->chip_id == CHIP_ID_YUKON_EC_U) {
++		if (hw->chip_id == CHIP_ID_YUKON_EC_U
++		    && hw->chip_rev != CHIP_REV_YU_EC_U_B0) {
+ 			ctrl = gm_phy_read(hw, port, PHY_MARV_PHY_CTRL);
+ 
+ 			/* enable Power Down */
