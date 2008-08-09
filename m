@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756800AbYHJASV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757313AbYHJASh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756800AbYHJASV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Aug 2008 20:18:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755335AbYHJAKb
+	id S1757313AbYHJASh (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Aug 2008 20:18:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755165AbYHJAKC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Aug 2008 20:10:31 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:47401 "EHLO ogre.sisk.pl"
+	Sat, 9 Aug 2008 20:10:02 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:47359 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755198AbYHJAKG convert rfc822-to-8bit (ORCPT
+	id S1754709AbYHJAJ4 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Aug 2008 20:10:06 -0400
+	Sat, 9 Aug 2008 20:09:56 -0400
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Matt Parnell" <mparnell@gmail.com>
+       "Dave Jones" <davej@redhat.com>
 References: <VYYCiQF4qDI.A.BPH.KCjnIB@albercik>
 In-Reply-To: <VYYCiQF4qDI.A.BPH.KCjnIB@albercik>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -19,10 +19,10 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <cX_-nNkxKaF.A.aN.vCjnIB@albercik>
-Subject: [Bug #11279] 2.6.27-rc0 Power Bugs with HP/Compaq Laptops
+Message-ID: <cX_-nNkxKaF.A.UGC.0DjnIB@albercik>
+Subject: [Bug #11224] Only three cores found on quad-core machine.
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Date: Sun, 10 Aug 2008 00:43:52 +0200 (CEST)
+Date: Sun, 10 Aug 2008 00:43:51 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -35,10 +35,10 @@ from 2.6.26.  Please verify if it still should be listed and let me know
 (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11279
-Subject		: 2.6.27-rc0 Power Bugs with HP/Compaq Laptops
-Submitter	: Matt Parnell <mparnell@gmail.com>
-Date		: 2008-08-07 14:57 (3 days old)
-References	: http://marc.info/?l=linux-kernel&m=121812108031685&w=4
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11224
+Subject		: Only three cores found on quad-core machine.
+Submitter	: Dave Jones <davej@redhat.com>
+Date		: 2008-08-01 18:15 (9 days old)
+References	: http://marc.info/?l=linux-kernel&m=121761475224719&w=4
 
 
