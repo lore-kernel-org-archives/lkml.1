@@ -1,74 +1,158 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752837AbYHIR0M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752655AbYHIRju@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752837AbYHIR0M (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Aug 2008 13:26:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751201AbYHIRZ5
+	id S1752655AbYHIRju (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Aug 2008 13:39:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750725AbYHIRjm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Aug 2008 13:25:57 -0400
-Received: from [78.153.208.64] ([78.153.208.64]:39886 "EHLO
-	vps-1000455-184.cp.blacknight.com" rhost-flags-FAIL-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1750908AbYHIRZ5 (ORCPT
+	Sat, 9 Aug 2008 13:39:42 -0400
+Received: from smtpq1.tilbu1.nb.home.nl ([213.51.146.200]:51338 "EHLO
+	smtpq1.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750707AbYHIRjl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Aug 2008 13:25:57 -0400
-X-Greylist: delayed 1721 seconds by postgrey-1.27 at vger.kernel.org; Sat, 09 Aug 2008 13:25:57 EDT
-Date: Sat, 9 Aug 2008 17:54:02 +0100
-From: Robert Fitzsimons <robfitz@273k.net>
-To: Stephen Hemminger <shemminger@vyatta.com>
-Cc: Jeff Garzik <jgarzik@redhat.com>, David Miller <davem@davemloft.net>,
-       Samuel Chessman <chessman@tux.org>, linux-kernel@vger.kernel.org
-Subject: [PATCH] tlan: Fix two regressions introduced by 64bit conversion.
-Message-ID: <20080809165402.GA3726@localhost>
+	Sat, 9 Aug 2008 13:39:41 -0400
+Message-ID: <489DD669.2090207@keyaccess.nl>
+Date: Sat, 09 Aug 2008 19:39:53 +0200
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080707)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Andrew Morton <akpm@osdl.org>
+CC: Fritz Elfert <fritz@isdn4linux.de>, Karsten Keil <kkeil@suse.de>,
+       isdn4linux@listserv.isdn4linux.de,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: [PATCH] ISDN: make ICN not auto-grab port 0x320
+Content-Type: multipart/mixed;
+ boundary="------------010707000301090404070404"
+X-Spam-Score: -1.0 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Two regressions were introduced by the recent tlan: 64bit conversion
-commit (93e16847c9db0093065c98063cfc639cdfccf19a).  The first in
-TLan_GetSKB caused a NULL pointer dereference.  With the second causing
-the link to fail to come up.
+This is a multi-part message in MIME format.
+--------------010707000301090404070404
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Signed-off-by: Robert Fitzsimons <robfitz@273k.net>
+Hi Andrew.
+
+Stop Breaking Ingo's Randconfig Testing, Part II.
+
+Rene.
+
+--------------010707000301090404070404
+Content-Type: text/plain;
+ name="0001-ISDN-make-ICN-not-auto-grab-port-0x320.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="0001-ISDN-make-ICN-not-auto-grab-port-0x320.patch"
+
+>From 6f6a39c8dbc42d69d6dd654821cae8214ec382d5 Mon Sep 17 00:00:00 2001
+From: Rene Herman <rene.herman@gmail.com>
+Date: Sat, 9 Aug 2008 18:12:12 +0200
+Subject: [PATCH] ISDN: make ICN not auto-grab port 0x320
+
+Grabbing ISA bus resources without anything or anyone telling us we
+should can break boot on randconfig/allyesconfig builds by keeping
+resources that are in fact owned by different hardware busy and does
+as reported by Ingo Molnar.
+
+Generally it's also dangerous to just poke at random I/O ports and
+especially those in the range where other old easily confused ISA
+hardware might live.
+
+For this old I4L ISA ISDN driver, insist that the user specify the
+port before grabbing it.
+
+Users of this driver are nonexistent or howling mad and a one time
+
+echo "options icn baseport=0x320" >> /etc/modprobe.conf
+
+away from the old behaviour.
+
+This is a deprecated driver (stack, even) but as long as it's in the
+tree, might as well fix it I guess.
+
+Signed-off-by: Rene Herman <rene.herman@gmail.com>
 ---
- drivers/net/tlan.c |    8 ++++----
- 1 files changed, 4 insertions(+), 4 deletions(-)
+ drivers/isdn/icn/icn.c |   41 ++++++++++++++++++++++++++++++++++++++---
+ 1 files changed, 38 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/net/tlan.c b/drivers/net/tlan.c
-index 85246ed..ec871f6 100644
---- a/drivers/net/tlan.c
-+++ b/drivers/net/tlan.c
-@@ -360,8 +360,8 @@ TLan_GetSKB( const struct tlan_list_tag *tag)
- {
- 	unsigned long addr;
+diff --git a/drivers/isdn/icn/icn.c b/drivers/isdn/icn/icn.c
+index bf7997a..56fc1bd 100644
+--- a/drivers/isdn/icn/icn.c
++++ b/drivers/isdn/icn/icn.c
+@@ -13,8 +13,9 @@
+ #include <linux/module.h>
+ #include <linux/init.h>
+ #include <linux/sched.h>
++#include <linux/isa.h>
  
--	addr = tag->buffer[8].address;
--	addr |= (tag->buffer[9].address << 16) << 16;
-+	addr = tag->buffer[9].address;
-+	addr |= (tag->buffer[8].address << 16) << 16;
- 	return (struct sk_buff *) addr;
+-static int portbase = ICN_BASEADDR;
++static int portbase;
+ static unsigned long membase = ICN_MEMADDR;
+ static char *icn_id = "\0";
+ static char *icn_id2 = "\0";
+@@ -1623,7 +1624,20 @@ icn_setup(char *line)
+ __setup("icn=", icn_setup);
+ #endif /* MODULE */
+ 
+-static int __init icn_init(void)
++static int __devinit icn_isa_match(struct device *isa_dev, unsigned int id)
++{
++	int match = portbase != 0;
++
++	if (match)
++		dev_info(isa_dev, "portbase = %#x, membase = %#lx\n",
++			 portbase, membase);
++	else
++		dev_err(isa_dev, "please specify portbase\n");
++
++	return match;
++}
++
++static int __devinit icn_isa_probe(struct device *isa_dev, unsigned int id)
+ {
+ 	char *p;
+ 	char rev[10];
+@@ -1646,7 +1660,7 @@ static int __init icn_init(void)
+ 	return (icn_addcard(portbase, icn_id, icn_id2));
  }
  
-@@ -1984,7 +1984,6 @@ static void TLan_ResetLists( struct net_device *dev )
- 	TLanList	*list;
- 	dma_addr_t	list_phys;
- 	struct sk_buff	*skb;
--	void		*t = NULL;
+-static void __exit icn_exit(void)
++static int __devexit icn_isa_remove(struct device *isa_dev, unsigned int id)
+ {
+ 	isdn_ctrl cmd;
+ 	icn_card *card = cards;
+@@ -1685,6 +1699,27 @@ static void __exit icn_exit(void)
+ 		iounmap(dev.shmem);
+ 		release_mem_region(dev.memaddr, 0x4000);
+ 	}
++	return 0;
++}
++
++static struct isa_driver icn_isa_driver = {
++	.match		= icn_isa_match,
++	.probe		= icn_isa_probe,
++	.remove		= __devexit_p(icn_isa_remove),
++
++	.driver	= {
++		.name	= "icn"
++	}
++};
++
++static int __init icn_init(void)
++{
++	return isa_register_driver(&icn_isa_driver, 1);
++}
++
++static void __exit icn_exit(void)
++{
++	isa_unregister_driver(&icn_isa_driver);
+ 	printk(KERN_NOTICE "ICN-ISDN-driver unloaded\n");
+ }
  
- 	priv->txHead = 0;
- 	priv->txTail = 0;
-@@ -2022,7 +2021,8 @@ static void TLan_ResetLists( struct net_device *dev )
- 			}
- 
- 			skb_reserve( skb, NET_IP_ALIGN );
--			list->buffer[0].address = pci_map_single(priv->pciDev, t,
-+			list->buffer[0].address = pci_map_single(priv->pciDev,
-+								 skb->data,
- 								 TLAN_MAX_FRAME_SIZE,
- 								 PCI_DMA_FROMDEVICE);
- 			TLan_StoreSKB(list, skb);
 -- 
-1.5.6.3
+1.5.5
 
+
+--------------010707000301090404070404--
