@@ -1,54 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758890AbYHIAjE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758296AbYHIAnu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758890AbYHIAjE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 20:39:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751861AbYHIAiv
+	id S1758296AbYHIAnu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 20:43:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751874AbYHIAnl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 20:38:51 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:56484 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751821AbYHIAiu (ORCPT
+	Fri, 8 Aug 2008 20:43:41 -0400
+Received: from e34.co.us.ibm.com ([32.97.110.152]:39401 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751861AbYHIAnl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 20:38:50 -0400
-Date: Sat, 9 Aug 2008 08:38:30 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Suresh Siddha <suresh.b.siddha@intel.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>,
-       Wolfgang Walter <wolfgang.walter@stwm.de>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       "viro@ZenIV.linux.org.uk" <viro@ZenIV.linux.org.uk>,
-       "vegard.nossum@gmail.com" <vegard.nossum@gmail.com>
-Subject: Re: Kernel oops with 2.6.26, padlock and ipsec: probably problem with fpu state changes
-Message-ID: <20080809003829.GA25926@gondor.apana.org.au>
-References: <200807171653.59177.wolfgang.walter@stwm.de> <20080806201401.GA607@linux-os.sc.intel.com> <200808071823.02364.wolfgang.walter@stwm.de> <200808081236.55172.wolfgang.walter@stwm.de> <20080808185356.GC607@linux-os.sc.intel.com> <489C97FB.2030408@zytor.com> <20080808231121.GA13158@linux-os.sc.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080808231121.GA13158@linux-os.sc.intel.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Fri, 8 Aug 2008 20:43:41 -0400
+Subject: Re: [RFC][PATCH 1/4] checkpoint-restart: general infrastructure
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: containers@lists.linux-foundation.org, Theodore Tso <tytso@mit.edu>,
+       linux-kernel@vger.kernel.org, Oren Laadan <orenl@cs.columbia.edu>
+In-Reply-To: <200808090039.20289.arnd@arndb.de>
+References: <20080807224033.FFB3A2C1@kernel>
+	 <200808090013.41999.arnd@arndb.de> <1218234411.19082.58.camel@nimitz>
+	 <200808090039.20289.arnd@arndb.de>
+Content-Type: text/plain
+Date: Fri, 08 Aug 2008 17:43:34 -0700
+Message-Id: <1218242614.19082.65.camel@nimitz>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 08, 2008 at 04:11:21PM -0700, Suresh Siddha wrote:
-> 
-> As I can't test, can you please test this and Ack.
+On Sat, 2008-08-09 at 00:39 +0200, Arnd Bergmann wrote:
+> The main problem I see with that would be atomicity: If you want multiple
+> processes to keep interacting with each other, you need to save them at
+> the same point in time, which gets harder as you split your interface into
+> more than a single file descriptor.
 
-Someone please test this with tcrypt mode=200 with and without
-the patch.
+It could take ages to write out a checkpoint even to a single fd, so I
+suspect we'd have the exact same kinds of issues either way.
 
-If there is a significant degradation I suggest that we back out
-the FPU changes.  Making your competitor's processor go slow is
-not a nice thing to do, especially when you've just released a
-processor in the same space.
+-- Dave
 
-If the degradation is small then I'll push it to Linus.
-
-Thanks,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
