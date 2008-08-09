@@ -1,61 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758343AbYHICE2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761249AbYHICLk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758343AbYHICE2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 22:04:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754216AbYHICEQ
+	id S1761249AbYHICLk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 22:11:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753841AbYHICL3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 22:04:16 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:59488 "EHLO
+	Fri, 8 Aug 2008 22:11:29 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:47887 "EHLO
 	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754192AbYHICEP (ORCPT
+	with ESMTP id S1753043AbYHICL2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 22:04:15 -0400
-Message-ID: <489CF9EC.5050109@zytor.com>
-Date: Fri, 08 Aug 2008 18:59:08 -0700
+	Fri, 8 Aug 2008 22:11:28 -0400
+Message-ID: <489CFA0A.5030609@zytor.com>
+Date: Fri, 08 Aug 2008 18:59:38 -0700
 From: "H. Peter Anvin" <hpa@zytor.com>
 User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-To: Herbert Xu <herbert@gondor.apana.org.au>
-CC: Suresh Siddha <suresh.b.siddha@intel.com>,
-       Wolfgang Walter <wolfgang.walter@stwm.de>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, viro@ZenIV.linux.org.uk,
-       vegard.nossum@gmail.com
-Subject: Re: Kernel oops with 2.6.26, padlock and ipsec: probably problem
- with fpu state changes
-References: <200807171653.59177.wolfgang.walter@stwm.de> <20080806201401.GA607@linux-os.sc.intel.com> <200808071823.02364.wolfgang.walter@stwm.de> <200808081236.55172.wolfgang.walter@stwm.de> <20080808185356.GC607@linux-os.sc.intel.com> <489C97FB.2030408@zytor.com> <20080809014925.GA26529@gondor.apana.org.au>
-In-Reply-To: <20080809014925.GA26529@gondor.apana.org.au>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+CC: "Eric W. Biederman" <ebiederm@xmission.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>, Mike Travis <travis@sgi.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 08/42] introduce nr_irqs
+References: <1218232368-31228-1-git-send-email-yhlu.kernel@gmail.com>	 <1218232368-31228-2-git-send-email-yhlu.kernel@gmail.com>	 <1218232368-31228-3-git-send-email-yhlu.kernel@gmail.com>	 <1218232368-31228-4-git-send-email-yhlu.kernel@gmail.com>	 <1218232368-31228-5-git-send-email-yhlu.kernel@gmail.com>	 <1218232368-31228-6-git-send-email-yhlu.kernel@gmail.com>	 <1218232368-31228-7-git-send-email-yhlu.kernel@gmail.com>	 <1218232368-31228-8-git-send-email-yhlu.kernel@gmail.com>	 <1218232368-31228-9-git-send-email-yhlu.kernel@gmail.com>	 <m1ej4zvw6s.fsf@frodo.ebiederm.org> <86802c440808081838r66cc8162t5c2e157908457048@mail.gmail.com>
+In-Reply-To: <86802c440808081838r66cc8162t5c2e157908457048@mail.gmail.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Herbert Xu wrote:
-> On Fri, Aug 08, 2008 at 12:01:15PM -0700, H. Peter Anvin wrote:
->> It's technically overkill, if (and only if!) these instructions don't 
->> actually touch the SSE state (most likely they're using the SSE 
->> pipeline, and need this stuff to deal with power management issues.)
+Yinghai Lu wrote:
+> On Fri, Aug 8, 2008 at 6:00 PM, Eric W. Biederman <ebiederm@xmission.com> wrote:
+>> Yinghai Lu <yhlu.kernel@gmail.com> writes:
+>>
+>>> and at this point it is equal NR_IRQS
+>> This patch is ok, but this approach is fundamentally broken.
+>> Only 19 architectures use GENERIC_HARDIRQS
+>>
+>> The only required interface is interrupt.h not irq.h
+>>
+>> So you may not replace NR_IRQS with nr_irqs in anything other
+>> then genirq code and some architecture code.
+>>
+>> Doing so will break the build on several architectures.
 > 
-> Yes the PadLock uses the SSE pipeline, but doesn't touch any
-> of the state.
-
-And yet it requires all the settings that goes along with holding the 
-SSE state.  Really crap design, unfortunately.
-
->> However, overkill is a good way to make sure something is dead. 
->> Applying the patch will make sure we fix the regression, and we can 
->> worry about optimizing this further post-2.6.27.
+> some platforms will not use include/linux/irq.h and kernel/irq/handle.c ?
 > 
-> Do we really need the FPU changes right now? I'd prefer for that
-> to be backed out until a proper solution is found.  Disabling
-> preemption around crypto is really bad for scheduling latency.
 
-I hate to say it, but given the relative marketshare, we should disable 
-Padlock instead.
-
-This is part of the pain of being a minority architecture.
+Also, what's the point, if it's just a renaming?
 
 	-hpa
-
