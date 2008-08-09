@@ -1,62 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755787AbYHIG3T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758885AbYHIG3u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755787AbYHIG3T (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Aug 2008 02:29:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751751AbYHIG3I
+	id S1758885AbYHIG3u (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Aug 2008 02:29:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751501AbYHIG3l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Aug 2008 02:29:08 -0400
-Received: from esbens.latnet.lv ([92.240.66.74]:59209 "EHLO esbens.latnet.lv"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751495AbYHIG3H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Aug 2008 02:29:07 -0400
-X-Greylist: delayed 1589 seconds by postgrey-1.27 at vger.kernel.org; Sat, 09 Aug 2008 02:29:07 EDT
-From: Aivils Stoss <aivils@latnet.lv>
-To: linux-input@vger.kernel.org, jkosina@suse.cz, linux-kernel@vger.kernel.org,
-       linuxconsole-dev@lists.sourceforge.net
-Subject: PROBLEM: USB keyboards works only 4 per PC host port
-Date: Fri, 8 Aug 2008 07:02:24 +0100
-User-Agent: KMail/1.9.7
+	Sat, 9 Aug 2008 02:29:41 -0400
+Received: from kirsty.vergenet.net ([202.4.237.240]:41884 "EHLO
+	kirsty.vergenet.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752067AbYHIG3k (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 9 Aug 2008 02:29:40 -0400
+Date: Sat, 9 Aug 2008 16:29:38 +1000
+From: Simon Horman <horms@verge.net.au>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Adrian Bunk <bunk@kernel.org>, Mark McLoughlin <markmc@redhat.com>,
+       xen-devel@lists.xensource.com, Eduardo Habkost <ehabkost@redhat.com>,
+       Stephen Tweedie <sct@redhat.com>, linux-kernel@vger.kernel.org,
+       "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>
+Subject: Re: [PATCH] x86: work around gcc 3.4.x bug
+Message-ID: <20080809062937.GA5424@verge.net.au>
+References: <20080808050429.GA8473@verge.net.au> <489BE9C3.2010006@goop.org> <20080808080155.GA1992@cs181140183.pp.htv.fi> <489C6485.7050009@goop.org> <20080808161331.GF14495@cs181140183.pp.htv.fi> <489C89FA.5000301@goop.org> <20080808183711.GA14495@cs181140183.pp.htv.fi> <489CB08F.9030902@goop.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200808080702.24969.aivils@latnet.lv>
+In-Reply-To: <489CB08F.9030902@goop.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello All!
+On Fri, Aug 08, 2008 at 01:46:07PM -0700, Jeremy Fitzhardinge wrote:
+> gcc-3.4.x crashes when compiling pgd_prepopulate_pmd() when
+> PREALLOCATED_PMDS == 0 and CONFIG_DEBUG_INFO is enabled.  This seems
+> to avoid the problem.
+>
+> Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+> Cc: Adrian Bunk <bunk@kernel.org>
+> Cc: Simon Horman <horms@verge.net.au>
+> Cc: Dhaval Giani <dhaval@linux.vnet.ibm.com>
 
-PROBLEM: USB keyboards works only 4 per PC host port.
+Hi Jeremy,
 
-I work for project which will use 15 - 25 keyboards for children teaching.
-I discover current Linux 2.6.22 , 2.6.24, 2.6.26 dot not support more
-than 4 keyboards per single PC host port. All plugged in keyboards
-are listed as USB devices, listed as input devices, but capable to
-send input events are only 4 keyboards, no matter where keyboards
-are plugged in to HUB cascade. All plugged in keyboards switch LED's,
-when i press NumLock.
+This does solve the problem I was seeing on on 3.4.5.
 
-I tested various usb-hub units and various host PC hardware, i even
-replace hub power supplay units from 5V1A to 5V3A. All tested cases
-give best results - 4 keyboards per PC host port and worstest - some PC
-cannot do more than 8 keyboards at all.
-I suppose this is Linux kernel bug because i test keyboards under
-Windows, which support any schema of cascading of usb hubs.
+Acked-by: Simon Horman <horms@verge.net.au>
 
-I will send any log file if that is necessary, but trouble will pop up
-in a row of kernels. 2.6.22 didn't have error messages. 2.6.24, 2.6.26
-tend to total slow down with eternal reset messages:
-Jul 25 07:16:00 awork kernel: input,hiddev97: USB HID v1.10 Mouse 
-[USB-compliant keyboard] on usb-0000:00:1d.0-1.1.2
-Jul 25 07:16:01 awork kernel: usb 2-1.1.1: reset low speed USB device using 
-uhci_hcd and address 17
-Jul 25 07:16:01 awork kernel: usb 2-1.1.2: reset low speed USB device using 
-uhci_hcd and address 18
-Jul 25 07:16:02 awork kernel: usb 2-1.1.1: reset low speed USB device using 
-uhci_hcd and address 17
-
-
-Best regards,
-Aivils Stoss
+> ---
+> arch/x86/mm/pgtable.c |    3 +++
+> 1 file changed, 3 insertions(+)
+>
+> ===================================================================
+> --- a/arch/x86/mm/pgtable.c
+> +++ b/arch/x86/mm/pgtable.c
+> @@ -207,6 +207,9 @@
+> 	unsigned long addr;
+> 	int i;
+>
+> +	if (PREALLOCATED_PMDS == 0) /* Work around gcc-3.4.x bug */
+> +		return;
+> +
+> 	pud = pud_offset(pgd, 0);
+>
+>  	for (addr = i = 0; i < PREALLOCATED_PMDS;
+>
