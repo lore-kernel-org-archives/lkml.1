@@ -1,53 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758620AbYHIASb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758891AbYHIAXd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758620AbYHIASb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 20:18:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753318AbYHIASW
+	id S1758891AbYHIAXd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 20:23:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754917AbYHIAXZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 20:18:22 -0400
-Received: from e32.co.us.ibm.com ([32.97.110.150]:55007 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752105AbYHIASW (ORCPT
+	Fri, 8 Aug 2008 20:23:25 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:45891 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754810AbYHIAXZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 20:18:22 -0400
-Date: Fri, 8 Aug 2008 17:18:21 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: David Miller <davem@davemloft.net>
-Cc: a.p.zijlstra@chello.nl, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, mingo@elte.hu, tglx@linutronix.de,
-       marcin.slusarz@gmail.com, linux-kernel@vger.kernel.org,
-       rostedt@goodmis.org
-Subject: Re: [PATCH] printk: robustify printk
-Message-ID: <20080809001820.GS6760@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <1218217257.29098.2.camel@lappy.programming.kicks-ass.net> <alpine.LFD.1.10.0808081043160.3462@nehalem.linux-foundation.org> <1218219269.29098.5.camel@lappy.programming.kicks-ass.net> <20080808.160254.223161300.davem@davemloft.net>
+	Fri, 8 Aug 2008 20:23:25 -0400
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, Roland McGrath <roland@redhat.com>,
+       Ulrich Drepper <drepper@redhat.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Gregory Haskins <ghaskins@novell.com>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       "Luis Claudio R. Goncalves" <lclaudio@uudg.org>,
+       Clark Williams <williams@redhat.com>
+Subject: Re: [PATCH 0/5] ftrace: to kill a daemon
+From: Andi Kleen <andi@firstfloor.org>
+References: <20080807182013.984175558@goodmis.org>
+	<20080807184741.GB18164@Krystal>
+	<alpine.DEB.1.10.0808071639420.9449@gandalf.stny.rr.com>
+	<20080808172259.GB8244@Krystal>
+	<alpine.DEB.1.10.0808081334010.4436@gandalf.stny.rr.com>
+	<20080808174607.GG8244@Krystal>
+	<alpine.DEB.1.10.0808081410380.6116@gandalf.stny.rr.com>
+	<20080808182104.GA11376@Krystal>
+	<alpine.DEB.1.10.0808081432400.8922@gandalf.stny.rr.com>
+	<20080808190506.GD11376@Krystal>
+	<alpine.DEB.1.10.0808081750590.16691@gandalf.stny.rr.com>
+Date: Sat, 09 Aug 2008 02:23:22 +0200
+In-Reply-To: <alpine.DEB.1.10.0808081750590.16691@gandalf.stny.rr.com> (Steven Rostedt's message of "Fri, 8 Aug 2008 19:38:01 -0400 (EDT)")
+Message-ID: <87tzdv2g05.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080808.160254.223161300.davem@davemloft.net>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 08, 2008 at 04:02:54PM -0700, David Miller wrote:
-> From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> Date: Fri, 08 Aug 2008 20:14:28 +0200
-> 
-> > +struct klogd_wakeup_state {
-> > +	struct rcu_head head;
-> > +	int pending;
-> > +};
-> > +
-> > +DEFINE_PER_CPU(struct klogd_wakeup_state, kws);
-> 
-> Since there is not RCU_HEAD_INIT() made on these per-cpu objects, this code
-> is depending upon the fact that currently the RCU head is just initialized
-> to all zeros.
+Steven Rostedt <rostedt@goodmis.org> writes:
 
-RCU_HEAD_INIT() is only needed for debugging purposes, when you want
-to be sure that any garbage in the rcu_head is due to corruption or
-some such.  The call_rcu() function always completely initializes the
-rcu_head structure.
+> I'm stubborn, I want to get it right _and_ keep it fast.
 
-							Thanx, Paul
+For me it would seem better to just not use two part 5 byte nops
+instead of adding such hacks.  I doubt there are that many of them
+anyways. I bet you won't be able to measure any difference between the
+different nop types in any macro benchmark.
+
+-Andi
