@@ -1,167 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762069AbYHIDva@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753385AbYHIEMu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762069AbYHIDva (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 23:51:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756423AbYHIDvU
+	id S1753385AbYHIEMu (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Aug 2008 00:12:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750703AbYHIEMm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 23:51:20 -0400
-Received: from sh.osrg.net ([192.16.179.4]:53035 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756185AbYHIDvT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 23:51:19 -0400
-Date: Sat, 9 Aug 2008 12:50:59 +0900
-To: prarit@redhat.com
-Cc: jbarnes@virtuousgeek.org, fujita.tomonori@lab.ntt.co.jp, joro@8bytes.org,
-       linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org
-Subject: Re: [PATCH]: PCI: GART iommu alignment fixes [v2]
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <489B33D4.1080107@redhat.com>
-References: <4899B611.4070408@redhat.com>
-	<200808071003.47326.jbarnes@virtuousgeek.org>
-	<489B33D4.1080107@redhat.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20080809125116H.fujita.tomonori@lab.ntt.co.jp>
+	Sat, 9 Aug 2008 00:12:42 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:53688 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750699AbYHIEMl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 9 Aug 2008 00:12:41 -0400
+Date: Sat, 9 Aug 2008 00:12:38 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Andi Kleen <andi@firstfloor.org>
+cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, Roland McGrath <roland@redhat.com>,
+       Ulrich Drepper <drepper@redhat.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Gregory Haskins <ghaskins@novell.com>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       "Luis Claudio R. Goncalves" <lclaudio@uudg.org>,
+       Clark Williams <williams@redhat.com>
+Subject: Re: [PATCH 0/5] ftrace: to kill a daemon
+In-Reply-To: <20080809011955.GE9038@one.firstfloor.org>
+Message-ID: <alpine.DEB.1.10.0808082359220.10556@gandalf.stny.rr.com>
+References: <20080808172259.GB8244@Krystal> <alpine.DEB.1.10.0808081334010.4436@gandalf.stny.rr.com> <20080808174607.GG8244@Krystal> <alpine.DEB.1.10.0808081410380.6116@gandalf.stny.rr.com> <20080808182104.GA11376@Krystal> <alpine.DEB.1.10.0808081432400.8922@gandalf.stny.rr.com>
+ <20080808190506.GD11376@Krystal> <alpine.DEB.1.10.0808081750590.16691@gandalf.stny.rr.com> <87tzdv2g05.fsf@basil.nowhere.org> <alpine.DEB.1.10.0808082030500.1396@gandalf.stny.rr.com> <20080809011955.GE9038@one.firstfloor.org>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 07 Aug 2008 13:41:40 -0400
-Prarit Bhargava <prarit@redhat.com> wrote:
 
-> In that case, I hit the BUG() check warning in iommu_is_span_boundary() 
-> because boundary_size was calculated as (unsigned long) 0xffffffff + 1 = 0.
+On Sat, 9 Aug 2008, Andi Kleen wrote:
+
+> > I wish we had a true 5 byte nop. The alternative is a jmp 0, which is 
+> > measurable.  This is replacing mcount from a kernel compile with the -pg 
 > 
-> That's why we must cast to "unsigned long long".
+> Scary usage.  How much is the difference? 
 > 
-> ie) it is possible to hit this BUG() right now.
+> BTW a good way to get most of that back would be to not use frame 
+> pointers if you have them enabled ;-) Unfortunately recently
+> the "select FRAME_POINTER"s keep creeping all over so far too many kernels
+> suffer from this slow mode now :-/
 
-Wrong, it doesn't happen, as I said again and again.
+
+I checked out the latest git tree from Linus, and set up a basic config 
+for it. I built it once. Then I rebooted into various versions of the 
+kernel and timed the makes. This is what I did for each kernel.
+
+# cd /work/git/linux-compile.git
+# make distclean
+# cp config-use .config
+# make oldconfig
+# time make
+
+Here are the results. Just for curiosity sake.
+
+Using the two part nop:
+ real    3m26.751s
+ user    1m36.064s
+ sys     0m39.450s
+
+Using the 5 byte nop with the four 0x66:
+ real    3m31.543s
+ user    1m36.197s
+ sys     0m39.309s
+
+Using jmp 0 as a nop:
+ real    3m30.025s
+ user    1m35.948s
+ sys     0m39.540s
 
 
-> >>>> Maybe I'm missing something -- what implies  size has to be a power of
-> >>>> two?
-> >>>>         
-> >>> Yes, see iommu_area_alloc().
-> >>>       
-> >> /me looks and still doesn't see where the size passed into
-> >> gart_map_simple() must be a power of two.  ... and if that was the case,
-> >> shouldn't we be failing all the time?  I mean, I've seen values passed
-> >> into pci_alloc_consistent like 0x3820 -- clearly not a multiple of 2.
-> >>
-> >> iommu_area_alloc() deals with pages, not actual sizes as
-> >> gart_map_simple() does.
-> >>     
-> 
-> Tomonori-san, I think I understand where your confusion may lie.  The 
-> size argument in the iommu-helper.c code is NOT the same size in 
-> dma_alloc_coherent() and gart_map_simple().  In iommu-helper.c the size 
-> is the # of pages, and the in the exported function calls it is an 
-> actual size.  Is that what is confusing you?
+Then I realized that I had the irqsoff, and preemptoff tracers configured.
+These do add an overhead when configured in, even when they are disabled.
+I disabled them and ran the code with the two part nop again:
 
-I understand it. FYI, I wrote iommu-helper.c.
+Using two part nop without other tracers:
+ real    3m26.851s
+ user    1m36.425s
+ sys     0m35.437s
 
-Again, you don't understand the code. Here's a patch to fix the GART
-to allocate a size-aligned address for alloc_coherent.
+I then disabled ftrace completely:
 
-But as I told you again and again, I doubt that this fixes something.
+no ftrace times:
+ real    3m25.807s
+ user    1m36.992s
+ sys     0m35.715s
 
-=
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Subject: [PATCH] x86 gart: allocate size-aligned address for alloc_coherent
+Then I disabled frame pointers as well:
+ real    3m25.104s
+ user    1m35.726s
+ sys     0m34.797s
 
-This fixes GART to return a properly aligned address as
-DMA-mapping.txt defines.
+The important numbers here is the sys time. The user and real should not
+be that much affected by these changes. Well, the real would, but not the 
+user.
 
-Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
----
- arch/x86/kernel/pci-gart_64.c |   25 ++++++++++++++++---------
- 1 files changed, 16 insertions(+), 9 deletions(-)
+I have an old toshiba that I want to run this on too. That might give more 
+interesting results. But it's getting late, and I'll do that another time.
 
-diff --git a/arch/x86/kernel/pci-gart_64.c b/arch/x86/kernel/pci-gart_64.c
-index 49285f8..8e64b49 100644
---- a/arch/x86/kernel/pci-gart_64.c
-+++ b/arch/x86/kernel/pci-gart_64.c
-@@ -82,7 +82,8 @@ AGPEXTERN __u32 *agp_gatt_table;
- static unsigned long next_bit;  /* protected by iommu_bitmap_lock */
- static int need_flush;		/* global flush state. set for each gart wrap */
- 
--static unsigned long alloc_iommu(struct device *dev, int size)
-+static unsigned long alloc_iommu(struct device *dev, int size,
-+				 unsigned long align_mask)
- {
- 	unsigned long offset, flags;
- 	unsigned long boundary_size;
-@@ -95,11 +96,12 @@ static unsigned long alloc_iommu(struct device *dev, int size)
- 
- 	spin_lock_irqsave(&iommu_bitmap_lock, flags);
- 	offset = iommu_area_alloc(iommu_gart_bitmap, iommu_pages, next_bit,
--				  size, base_index, boundary_size, 0);
-+				  size, base_index, boundary_size, align_mask);
- 	if (offset == -1) {
- 		need_flush = 1;
- 		offset = iommu_area_alloc(iommu_gart_bitmap, iommu_pages, 0,
--					  size, base_index, boundary_size, 0);
-+					  size, base_index, boundary_size,
-+					  align_mask);
- 	}
- 	if (offset != -1) {
- 		next_bit = offset+size;
-@@ -236,10 +238,10 @@ nonforced_iommu(struct device *dev, unsigned long addr, size_t size)
-  * Caller needs to check if the iommu is needed and flush.
-  */
- static dma_addr_t dma_map_area(struct device *dev, dma_addr_t phys_mem,
--				size_t size, int dir)
-+				size_t size, int dir, unsigned long align_mask)
- {
- 	unsigned long npages = iommu_num_pages(phys_mem, size);
--	unsigned long iommu_page = alloc_iommu(dev, npages);
-+	unsigned long iommu_page = alloc_iommu(dev, npages, align_mask);
- 	int i;
- 
- 	if (iommu_page == -1) {
-@@ -262,7 +264,11 @@ static dma_addr_t dma_map_area(struct device *dev, dma_addr_t phys_mem,
- static dma_addr_t
- gart_map_simple(struct device *dev, phys_addr_t paddr, size_t size, int dir)
- {
--	dma_addr_t map = dma_map_area(dev, paddr, size, dir);
-+	dma_addr_t map;
-+	unsigned long align_mask;
-+
-+	align_mask = (roundup_pow_of_two(size) >> PAGE_SHIFT) - 1;
-+	map = dma_map_area(dev, paddr, size, dir, align_mask);
- 
- 	flush_gart();
- 
-@@ -281,7 +287,8 @@ gart_map_single(struct device *dev, phys_addr_t paddr, size_t size, int dir)
- 	if (!need_iommu(dev, paddr, size))
- 		return paddr;
- 
--	bus = gart_map_simple(dev, paddr, size, dir);
-+	bus = dma_map_area(dev, paddr, size, dir, 0);
-+	flush_gart();
- 
- 	return bus;
- }
-@@ -340,7 +347,7 @@ static int dma_map_sg_nonforce(struct device *dev, struct scatterlist *sg,
- 		unsigned long addr = sg_phys(s);
- 
- 		if (nonforced_iommu(dev, addr, s->length)) {
--			addr = dma_map_area(dev, addr, s->length, dir);
-+			addr = dma_map_area(dev, addr, s->length, dir, 0);
- 			if (addr == bad_dma_address) {
- 				if (i > 0)
- 					gart_unmap_sg(dev, sg, i, dir);
-@@ -362,7 +369,7 @@ static int __dma_map_cont(struct device *dev, struct scatterlist *start,
- 			  int nelems, struct scatterlist *sout,
- 			  unsigned long pages)
- {
--	unsigned long iommu_start = alloc_iommu(dev, pages);
-+	unsigned long iommu_start = alloc_iommu(dev, pages, 0);
- 	unsigned long iommu_page = iommu_start;
- 	struct scatterlist *s;
- 	int i;
--- 
-1.5.5.GIT
+Looking at the results, and yes I should run this more than once, but I 
+just wanted an idea, this box did not show much difference between the two 
+part nop, the jmp and the 5 byte nop.
+
+Running with or without ftrace enabled did not make a difference. Heck, 
+the ftrace disabled was actually slower.
+
+But it does seem that Andi is correct about the frame pointers. It did 
+slow the compile down by almost a second.
+
+Just some food for thought.
+
+-- Steve
 
