@@ -1,101 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762715AbYHICwU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758976AbYHIDKJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762715AbYHICwU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 22:52:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753685AbYHICwL
+	id S1758976AbYHIDKJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 23:10:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752894AbYHIDJ4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 22:52:11 -0400
-Received: from smtpout3.tre.se ([80.251.192.228]:28582 "EHLO smtpout3.tre.se"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753496AbYHICwJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 22:52:09 -0400
-Date: Sat, 9 Aug 2008 04:52:44 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Ralf Baechle <ralf@linux-mips.org>
-Cc: linux arch <linux-arch@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: kbuild now support arch/$ARCH/include - time for ARCHs to convert
-Message-ID: <20080809025244.GB9794@uranus.ravnborg.org>
-References: <20080728200500.GA14284@uranus.ravnborg.org> <20080731182315.GA18060@linux-mips.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 8 Aug 2008 23:09:56 -0400
+Received: from dresden.studentenwerk.mhn.de ([141.84.225.229]:57674 "EHLO
+	email.studentenwerk.mhn.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752647AbYHIDJz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Aug 2008 23:09:55 -0400
+From: Wolfgang Walter <wolfgang.walter@stwm.de>
+Organization: Studentenwerk =?utf-8?q?M=C3=BCnchen?=
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Subject: Re: Kernel oops with 2.6.26, padlock and ipsec: probably problem with fpu state changes
+Date: Sat, 9 Aug 2008 05:09:53 +0200
+User-Agent: KMail/1.9.9
+Cc: Suresh Siddha <suresh.b.siddha@intel.com>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       "viro@ZenIV.linux.org.uk" <viro@zeniv.linux.org.uk>,
+       "vegard.nossum@gmail.com" <vegard.nossum@gmail.com>
+References: <200807171653.59177.wolfgang.walter@stwm.de> <200808090354.03568.wolfgang.walter@stwm.de> <20080809021649.GA26784@gondor.apana.org.au>
+In-Reply-To: <20080809021649.GA26784@gondor.apana.org.au>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
 Content-Disposition: inline
-In-Reply-To: <20080731182315.GA18060@linux-mips.org>
-User-Agent: Mutt/1.4.2.1i
+Message-Id: <200808090509.53679.wolfgang.walter@stwm.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 31, 2008 at 07:23:15PM +0100, Ralf Baechle wrote:
-> On Mon, Jul 28, 2008 at 10:05:00PM +0200, Sam Ravnborg wrote:
+On Saturday 09 August 2008, Herbert Xu wrote:
+> On Sat, Aug 09, 2008 at 03:54:03AM +0200, Wolfgang Walter wrote:
+> > On Saturday 09 August 2008, Herbert Xu wrote:
+> > > 
+> > > Someone please test this with tcrypt mode=200 with and without
+> > > the patch.
+> > 
+> > I'll do that. Where do I find tcrypt?
 > 
-> > The traditional location of the arch specific Makefiles
-> > has been at:
-> > 
-> > 	include/asm-$ARCH
-> > 
-> > But as suggested by several people over time and lately
-> > by Linus in the following post:
-> > http://kerneltrap.org/mailarchive/linux-kernel/2008/5/21/1903924
-> > 
-> > is is suggested to move the arch specific files under arch/
-> > and for the header files this is arch/$ARCH/include.
-> > 
-> > So I have hacked up support for this in kbuild so
-> > for the simpler cases a simple move of header files as
-> > in:
-> > 	git mv include/asm-$ARCH arch/$ARCH/include/asm
-> > 
-> > is enough.
-> > 
-> > If Linus will accept it then I think -rc1 is a perfect
-> > time to do it as people has less stuff pending touching
-> > the header files that are moved.
-> > Validation is easy - does the usual configs build?
-> > 
-> > For the archs that plays games with symlinks this is a
-> > splendid opportunity to get rid af these.
-> > The receipe is simple:
-> > Use 
-> > 	KBUILD_CFLAGS += -Iarch/$ARCH/include/$CPU
-> > 
-> > to select the CPU and then do a copy of the header files
-> > like this:
-> > 
-> > 	git mv include/asm-$ARCH/$CPU arch/$ARCH/include/$CPU/cpu
-> > 
-> > Then the code can continue to use:
-> > 
-> > 	#include <cpu/foo.h>
-> > 
-> > I already converted sparc to use arch/sparc/include -
-> > while I merged the header files for sparc and sparc64.
-> > This change is already upstream.
-> > 
-> > And for SH I posted a receipe which you can read here:
-> > http://lkml.org/lkml/2008/7/28/83
-> > 
-> > It is SH specific but anyway pretty generic.
-> > 
-> > I am limited in time and resources at the moment but I
-> > would be glad to help out as time permits should there
-> > be any questions.
+> It's part of the kernel.  Just make sure you've got CRYPTO_TEST
+> enabled as a module.
 > 
-> I just did the necessary changes for MIPS and the first testbuild is running
-> successfully so far.
-> 
-> One of the ugly things in the MIPS makefiles is the use of platform-
-> specific headers in include/asm-mips/mach-* which contain platform specific
-> headers.  Ideally those should be included through something like
-> <mach/somefile.h> or <plat/something.h> and I think a directory like
-> arch/$ARCH/$PLATFORM/include/plat/foobar.h could be a good place in the
-> new scheme?  I assume other platforms have similar issues with subplatforms,
-> processor sub-architectures etc.?
 
-Hi Ralf.
+Ok, that is easy :-). I'll make that test tomorrow. Bed time now :-).
 
-Did you follow what arm have planned?
-It looks like MIPS should do things in the same way so
-we get some consistency.
+I'll run that test on a unpatched 2.6.25 instead a unpatched 2.6.26 as latter 
+will crash. If you want I can use my 2.6.26 where I reverted the FPU state 
+changes (see one of my earlier mails for the patch), of course.
 
-	Sam
+Regards,
+-- 
+Wolfgang Walter
+Studentenwerk München
+Anstalt des öffentlichen Rechts
+Leiter EDV
+Leopoldstraße 15
+80802 München
+Tel: +49 89 38196-276
+Fax: +49 89 38196-144
+wolfgang.walter@stwm.de
+http://www.studentenwerk-muenchen.de/
