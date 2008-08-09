@@ -1,77 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760461AbYHIHa5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762190AbYHIHe5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760461AbYHIHa5 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Aug 2008 03:30:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762116AbYHIHab
+	id S1762190AbYHIHe5 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Aug 2008 03:34:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753058AbYHIHeq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Aug 2008 03:30:31 -0400
-Received: from an-out-0708.google.com ([209.85.132.241]:63914 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762054AbYHIHa3 (ORCPT
+	Sat, 9 Aug 2008 03:34:46 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:59987 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752804AbYHIHeq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Aug 2008 03:30:29 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=tH+SKqaHKi8xFuKZliFd0wxgj7HFAuPGPVDWNI17WhpdEbKpvhpzhKNYtNa6/L2ey1
-         kcfIk1LX1xDb5t/dK4Fj5U0VnhGWkacZIrPVGSQrlfUlJX+BjZBB9XKkOtgFPO1EUo4c
-         rfaZuP54uYcmXl0IdB8lpDORw9JxGyWdqkq0w=
-Message-ID: <86802c440808090030t16e0efa3ne5adad6c8096c8a0@mail.gmail.com>
-Date: Sat, 9 Aug 2008 00:30:28 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [PATCH 08/42] introduce nr_irqs
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
+	Sat, 9 Aug 2008 03:34:46 -0400
+Subject: Re: HPET regression in 2.6.26 versus 2.6.25 -- RCU problem
+From: Peter Zijlstra <peterz@infradead.org>
+To: David Witbrodt <dawitbro@sbcglobal.net>
+Cc: linux-kernel@vger.kernel.org, Yinghai Lu <yhlu.kernel@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
        "H. Peter Anvin" <hpa@zytor.com>,
-       "Dhaval Giani" <dhaval@linux.vnet.ibm.com>,
-       "Mike Travis" <travis@sgi.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <m1zlnmvhzi.fsf@frodo.ebiederm.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       netdev <netdev@vger.kernel.org>
+In-Reply-To: <506429.22669.qm@web82107.mail.mud.yahoo.com>
+References: <506429.22669.qm@web82107.mail.mud.yahoo.com>
+Content-Type: text/plain
+Date: Sat, 09 Aug 2008 09:34:25 +0200
+Message-Id: <1218267265.29098.48.camel@lappy.programming.kicks-ass.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1218232368-31228-1-git-send-email-yhlu.kernel@gmail.com>
-	 <1218232368-31228-4-git-send-email-yhlu.kernel@gmail.com>
-	 <1218232368-31228-5-git-send-email-yhlu.kernel@gmail.com>
-	 <1218232368-31228-6-git-send-email-yhlu.kernel@gmail.com>
-	 <1218232368-31228-7-git-send-email-yhlu.kernel@gmail.com>
-	 <1218232368-31228-8-git-send-email-yhlu.kernel@gmail.com>
-	 <1218232368-31228-9-git-send-email-yhlu.kernel@gmail.com>
-	 <m1ej4zvw6s.fsf@frodo.ebiederm.org>
-	 <86802c440808081838r66cc8162t5c2e157908457048@mail.gmail.com>
-	 <m1zlnmvhzi.fsf@frodo.ebiederm.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 8, 2008 at 11:07 PM, Eric W. Biederman
-<ebiederm@xmission.com> wrote:
-> "Yinghai Lu" <yhlu.kernel@gmail.com> writes:
->
->> On Fri, Aug 8, 2008 at 6:00 PM, Eric W. Biederman <ebiederm@xmission.com> wrote:
->>> Yinghai Lu <yhlu.kernel@gmail.com> writes:
->>>
->>>> and at this point it is equal NR_IRQS
->>>
->>> This patch is ok, but this approach is fundamentally broken.
->>> Only 19 architectures use GENERIC_HARDIRQS
->>>
->>> The only required interface is interrupt.h not irq.h
->>>
->>> So you may not replace NR_IRQS with nr_irqs in anything other
->>> then genirq code and some architecture code.
->>>
->>> Doing so will break the build on several architectures.
->>
->> some platforms will not use include/linux/irq.h and kernel/irq/handle.c ?
->
-> Yes. interrupt.h is the common infrastructure.
->
+On Fri, 2008-08-08 at 18:23 -0700, David Witbrodt wrote:
+> I have tracked the regression down to an RCU problem.
+> 
+> I added some printk()'s to the function inet_register_protosw() in
+> net/ipv4/af_inet.c, as seen in this diff:
+> 
+> ===== BEGIN DIFF ==========
+>       * non-permanent entry.  This means that when we remove this entry, the
+>       * system automatically returns to the old behavior.
+>       */
+> +    printk ("     Adding new protocol\n");
+>      list_add_rcu(&p->list, last_perm);
+> +
+>  out:
+> +    printk ("     Unlocking spinlock\n");
+>      spin_unlock_bh(&inetsw_lock);
+>  
+> +    printk ("     Calling synchronize_net()\n");
+>      synchronize_net();
+>  
+>      return;
+> ===== END DIFF ==========
+> 
+> A kernel built with these changes freezes with "Calling synchronize_net()"
+> as the last printed line.
+> 
+> I located the function synchronize_net() in net/core/dev.c, and it was easy
+> to add some printk()'s there:
+> 
+> ===== BEGIN DIFF ==========
+>  
+> void synchronize_net(void)
+>  {
+> +    printk ("   synchronize_net(): calling might_sleep()\n");
+>      might_sleep();
+> +
+> +    printk ("   synchronize_net(): calling synchronize_rcu()\n");
+>      synchronize_rcu();
+>  }
+> ===== END DIFF ==========
+> 
+> The kernel built with these changes froze with "synchronize_net(): 
+> calling synchronize_rcu()" as the last line on the screen.
+> 
+> After reading some documentation in Documentation/RCU/, it looks like 
+> something is misusing RCU -- and, according to the Documentation, those kinds 
+> of mistakes are easy to make.  Maybe necessary calls to
+>  
+>     rcu_read_lock()
+>     rcu_read_unlock()
+> 
+> are missing, and something about my hardware is triggering a freeze that 
+> doesn't occur on most hardware.
+> 
+> 
+> For some reason, turning off the HPET by booting with "hpet=disabled" keeps
+> the freeze from happening.  Just reading a couple of those docs about RCU
+> made me dizzy, so I hope someone familiar with RCU issues will take a look
+> at the code in the files I've listed.  Surely you guys can take it from here
+> now?!
+> 
+> If not, just give me some experimental code changes to make to get my 2.6.26
+> and 2.6.27 kernels working again without disabling HPET!!!
 
-ok, will move to that file.
 
-YH
+The typical way to deadlock like this is do something like:
+
+ rcu_read_lock();
+
+   synchronize_rcu();
+
+ rcu_read_unlock();
+
+While I cannot immediately see any such usage in the function you
+quoted, it could be on of the callers.. let me browse some code..
+
+Can't seem to find anything like that.
+
+What's weird though - is that HPET makes any difference on these network
+code paths.
+
+Could we end up calling rcu too soon? I doubt we bring up ipv4 before
+rcu..
+
+
