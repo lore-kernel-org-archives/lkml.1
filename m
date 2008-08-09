@@ -1,97 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761450AbYHIBYD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762053AbYHIBY2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761450AbYHIBYD (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 21:24:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752860AbYHIBXx
+	id S1762053AbYHIBY2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 21:24:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761804AbYHIBYJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 21:23:53 -0400
-Received: from web82107.mail.mud.yahoo.com ([209.191.84.220]:21798 "HELO
-	web82107.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752842AbYHIBXx (ORCPT
+	Fri, 8 Aug 2008 21:24:09 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:37783 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1761673AbYHIBYI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 21:23:53 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=sbcglobal.net;
-  h=Received:X-Mailer:Date:From:Subject:To:Cc:MIME-Version:Content-Type:Message-ID;
-  b=BKDGUc8OxED3CS2iVchVA049NHlufPfeu19Ih78yA8PUVkfvczNFYHVhos/J5DM6Z0xziPuKcP5OcXDCZ9hLJu7H8z2IWkpwgmkFd9ZsQlK+8RuPW+gLV4JLFqIYKlnFrSPGhthi7CAZ2h8IHpNGml9Yzi+/YvIlRQUs8eis7H4=;
-X-Mailer: YahooMailRC/1042.40 YahooMailWebService/0.7.218
-Date: Fri, 8 Aug 2008 18:23:52 -0700 (PDT)
-From: David Witbrodt <dawitbro@sbcglobal.net>
-Subject: Re: HPET regression in 2.6.26 versus 2.6.25 -- RCU problem
-To: linux-kernel@vger.kernel.org
-Cc: Yinghai Lu <yhlu.kernel@gmail.com>, Peter Zijlstra <peterz@infradead.org>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>
+	Fri, 8 Aug 2008 21:24:08 -0400
+Date: Sat, 9 Aug 2008 09:23:56 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Suresh Siddha <suresh.b.siddha@intel.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>,
+       Wolfgang Walter <wolfgang.walter@stwm.de>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       "viro@ZenIV.linux.org.uk" <viro@ZenIV.linux.org.uk>,
+       "vegard.nossum@gmail.com" <vegard.nossum@gmail.com>
+Subject: Re: Kernel oops with 2.6.26, padlock and ipsec: probably problem with fpu state changes
+Message-ID: <20080809012356.GA26340@gondor.apana.org.au>
+References: <200807171653.59177.wolfgang.walter@stwm.de> <20080806201401.GA607@linux-os.sc.intel.com> <200808071823.02364.wolfgang.walter@stwm.de> <200808081236.55172.wolfgang.walter@stwm.de> <20080808185356.GC607@linux-os.sc.intel.com> <489C97FB.2030408@zytor.com> <20080808231121.GA13158@linux-os.sc.intel.com> <20080809003829.GA25926@gondor.apana.org.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <506429.22669.qm@web82107.mail.mud.yahoo.com>
+Content-Disposition: inline
+In-Reply-To: <20080809003829.GA25926@gondor.apana.org.au>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I have tracked the regression down to an RCU problem.
+On Sat, Aug 09, 2008 at 08:38:30AM +0800, Herbert Xu wrote:
+> 
+> If there is a significant degradation I suggest that we back out
+> the FPU changes.  Making your competitor's processor go slow is
+> not a nice thing to do, especially when you've just released a
+> processor in the same space.
+> 
+> If the degradation is small then I'll push it to Linus.
 
-I added some printk()'s to the function inet_register_protosw() in
-net/ipv4/af_inet.c, as seen in this diff:
+Actually the patch is totally unacceptable as it is.  Disabling
+preemption around padlock crypto operations is going to make the
+latency for RT go through the roof.  Please find a solution that
+doesn't involve that or just back out the FPU changes.
 
-===== BEGIN DIFF ==========
-      * non-permanent entry.  This means that when we remove this entry, the
-      * system automatically returns to the old behavior.
-      */
-+    printk ("     Adding new protocol\n");
-     list_add_rcu(&p->list, last_perm);
-+
- out:
-+    printk ("     Unlocking spinlock\n");
-     spin_unlock_bh(&inetsw_lock);
- 
-+    printk ("     Calling synchronize_net()\n");
-     synchronize_net();
- 
-     return;
-===== END DIFF ==========
-
-A kernel built with these changes freezes with "Calling synchronize_net()"
-as the last printed line.
-
-I located the function synchronize_net() in net/core/dev.c, and it was easy
-to add some printk()'s there:
-
-===== BEGIN DIFF ==========
- 
-void synchronize_net(void)
- {
-+    printk ("   synchronize_net(): calling might_sleep()\n");
-     might_sleep();
-+
-+    printk ("   synchronize_net(): calling synchronize_rcu()\n");
-     synchronize_rcu();
- }
-===== END DIFF ==========
-
-The kernel built with these changes froze with "synchronize_net(): 
-calling synchronize_rcu()" as the last line on the screen.
-
-After reading some documentation in Documentation/RCU/, it looks like 
-something is misusing RCU -- and, according to the Documentation, those kinds 
-of mistakes are easy to make.  Maybe necessary calls to
- 
-    rcu_read_lock()
-    rcu_read_unlock()
-
-are missing, and something about my hardware is triggering a freeze that 
-doesn't occur on most hardware.
-
-
-For some reason, turning off the HPET by booting with "hpet=disabled" keeps
-the freeze from happening.  Just reading a couple of those docs about RCU
-made me dizzy, so I hope someone familiar with RCU issues will take a look
-at the code in the files I've listed.  Surely you guys can take it from here
-now?!
-
-If not, just give me some experimental code changes to make to get my 2.6.26
-and 2.6.27 kernels working again without disabling HPET!!!
-
-
-Thanks,
-Dave Witbrodt
+Cheers,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
