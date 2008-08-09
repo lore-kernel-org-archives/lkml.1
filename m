@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758819AbYHJAZn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758910AbYHJAZ7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758819AbYHJAZn (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Aug 2008 20:25:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755277AbYHJALH
+	id S1758910AbYHJAZ7 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Aug 2008 20:25:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755429AbYHJALI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Aug 2008 20:11:07 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:47361 "EHLO ogre.sisk.pl"
+	Sat, 9 Aug 2008 20:11:08 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:47355 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754430AbYHJAJz convert rfc822-to-8bit (ORCPT
+	id S1754350AbYHJAJy convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Aug 2008 20:09:55 -0400
+	Sat, 9 Aug 2008 20:09:54 -0400
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
-       "Zdenek Kabelac" <zdenek.kabelac@gmail.com>
+       "Ben Dooks" <ben-linux@fluff.org>,
+       "Kumar Gala" <galak@kernel.crashing.org>
 References: <VYYCiQF4qDI.A.BPH.KCjnIB@albercik>
 In-Reply-To: <VYYCiQF4qDI.A.BPH.KCjnIB@albercik>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -20,8 +20,8 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <cX_-nNkxKaF.A.kaC.GEjnIB@albercik>
-Subject: [Bug #11215] INFO: possible recursive locking detected ps2_command
+Message-ID: <cX_-nNkxKaF.A.pkC.NEjnIB@albercik>
+Subject: [Bug #11210] libata badness
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Date: Sun, 10 Aug 2008 00:43:51 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -36,11 +36,11 @@ from 2.6.26.  Please verify if it still should be listed and let me know
 (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11215
-Subject		: INFO: possible recursive locking detected ps2_command
-Submitter	: Zdenek Kabelac <zdenek.kabelac@gmail.com>
-Date		: 2008-07-31 9:41 (10 days old)
-References	: http://marc.info/?l=linux-kernel&m=121749737011637&w=4
-Handled-By	: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11210
+Subject		: libata badness
+Submitter	: Kumar Gala <galak@kernel.crashing.org>
+Date		: 2008-07-31 18:53 (10 days old)
+References	: http://marc.info/?l=linux-ide&m=121753059307310&w=4
+Handled-By	: Ben Dooks <ben-linux@fluff.org>
 
 
