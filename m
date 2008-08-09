@@ -1,59 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753910AbYHIOZe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754018AbYHIO3n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753910AbYHIOZe (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Aug 2008 10:25:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751946AbYHIOZ0
+	id S1754018AbYHIO3n (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Aug 2008 10:29:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752533AbYHIO3c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Aug 2008 10:25:26 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:41473 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751421AbYHIOZZ (ORCPT
+	Sat, 9 Aug 2008 10:29:32 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:49882 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751946AbYHIO3b (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Aug 2008 10:25:25 -0400
-Date: Sat, 9 Aug 2008 10:25:22 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Bodo Eggert <7eggert@gmx.de>
-cc: Andi Kleen <andi@firstfloor.org>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, Roland McGrath <roland@redhat.com>,
-       Ulrich Drepper <drepper@redhat.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Gregory Haskins <ghaskins@novell.com>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       "Luis Claudio R. Goncalves" <lclaudio@uudg.org>,
-       Clark Williams <williams@redhat.com>
-Subject: Re: [PATCH 0/5] ftrace: to kill a daemon
-In-Reply-To: <alpine.DEB.1.10.0808090902100.24140@gandalf.stny.rr.com>
-Message-ID: <alpine.DEB.1.10.0808091024110.25265@gandalf.stny.rr.com>
-References: <aYipy-5FM-9@gated-at.bofh.it> <aYiIP-6bN-11@gated-at.bofh.it> <aYkAT-15Q-1@gated-at.bofh.it> <aYDX5-fa-31@gated-at.bofh.it> <aYE6H-tg-21@gated-at.bofh.it> <aYEgj-Fc-17@gated-at.bofh.it> <aYEJq-1xB-23@gated-at.bofh.it> <aYET8-1L7-17@gated-at.bofh.it>
- <aYFcq-2f2-11@gated-at.bofh.it> <aYFvP-2Vc-25@gated-at.bofh.it> <aYJIZ-15G-7@gated-at.bofh.it> <aYKvs-2gQ-7@gated-at.bofh.it> <aYKF1-2qs-7@gated-at.bofh.it> <E1KRmxa-0001S5-E0@be1.7eggert.dyndns.org>
- <alpine.DEB.1.10.0808090902100.24140@gandalf.stny.rr.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Sat, 9 Aug 2008 10:29:31 -0400
+Date: Sat, 9 Aug 2008 22:29:18 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Suresh Siddha <suresh.b.siddha@intel.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>,
+       Wolfgang Walter <wolfgang.walter@stwm.de>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       "viro@ZenIV.linux.org.uk" <viro@ZenIV.linux.org.uk>,
+       "vegard.nossum@gmail.com" <vegard.nossum@gmail.com>,
+       austin zhang <austin_zhang@linux.intel.com>
+Subject: Re: Kernel oops with 2.6.26, padlock and ipsec: probably problem with fpu state changes
+Message-ID: <20080809142918.GA30387@gondor.apana.org.au>
+References: <200807171653.59177.wolfgang.walter@stwm.de> <20080806201401.GA607@linux-os.sc.intel.com> <200808071823.02364.wolfgang.walter@stwm.de> <200808081236.55172.wolfgang.walter@stwm.de> <20080808185356.GC607@linux-os.sc.intel.com> <489C97FB.2030408@zytor.com> <20080808231121.GA13158@linux-os.sc.intel.com> <20080809003829.GA25926@gondor.apana.org.au>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080809003829.GA25926@gondor.apana.org.au>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, Aug 09, 2008 at 08:38:30AM +0800, Herbert Xu wrote:
+>
+> If there is a significant degradation I suggest that we back out
+> the FPU changes.  Making your competitor's processor go slow is
+> not a nice thing to do, especially when you've just released a
+> processor in the same space.
 
+OK I take that back, Intel (and AMD) processors are equally affected
+by this.  For a start, the newly added Intel crc32c driver suffers
+from exactly the same problem since the instruction used is also
+SSE.
 
-On Sat, 9 Aug 2008, Steven Rostedt wrote:
-> > 
-> > Did you try short jumps? (0xeb 0x03 0x?? 0x?? 0x??)
-> 
-> What would those last three bytes be?
+According to
 
-Ah, I see, you jump 3 bytes forward.
+	http://softwarecommunity.intel.com/articles/eng/3788.htm
 
-I'm pretty sure that it is still more expensive than a nop, on some archs.
-But I'm not 100% sure on that.
+the Intel AES instructions are also SSE so they too will suffer
+from this.
 
--- Steve
-
+Cheers,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
