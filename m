@@ -1,55 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753664AbYHINji@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753506AbYHINsS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753664AbYHINji (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Aug 2008 09:39:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751919AbYHINj3
+	id S1753506AbYHINsS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Aug 2008 09:48:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751919AbYHINsD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Aug 2008 09:39:29 -0400
-Received: from e33.co.us.ibm.com ([32.97.110.151]:60787 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751800AbYHINj2 (ORCPT
+	Sat, 9 Aug 2008 09:48:03 -0400
+Received: from otello.alma.unibo.it ([137.204.24.163]:42935 "EHLO
+	otello.alma.unibo.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751800AbYHINsA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Aug 2008 09:39:28 -0400
-Subject: Re: [RFC][PATCH 1/4] checkpoint-restart: general infrastructure
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: containers@lists.linux-foundation.org, Theodore Tso <tytso@mit.edu>,
-       linux-kernel@vger.kernel.org, Oren Laadan <orenl@cs.columbia.edu>
-In-Reply-To: <200808090837.07417.arnd@arndb.de>
-References: <20080807224033.FFB3A2C1@kernel>
-	 <200808090039.20289.arnd@arndb.de> <1218242614.19082.65.camel@nimitz>
-	 <200808090837.07417.arnd@arndb.de>
-Content-Type: text/plain
-Date: Sat, 09 Aug 2008 06:39:25 -0700
-Message-Id: <1218289165.19082.74.camel@nimitz>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
+	Sat, 9 Aug 2008 09:48:00 -0400
+X-Greylist: delayed 1229 seconds by postgrey-1.27 at vger.kernel.org; Sat, 09 Aug 2008 09:48:00 EDT
+Message-ID: <489D9B46.60001@otello.alma.unibo.it>
+Date: Sat, 09 Aug 2008 15:27:34 +0200
+From: Diego Zuccato <diego@otello.alma.unibo.it>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080725)
+MIME-Version: 1.0
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Frans Pop <elendil@planet.nl>, linux-kernel@vger.kernel.org,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       linux-usb@vger.kernel.org
+Subject: Re: [regression?] usb: new errors during device detection
+References: <Pine.LNX.4.44L0.0808061814250.2145-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0808061814250.2145-100000@iolanthe.rowland.org>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2008-08-09 at 08:37 +0200, Arnd Bergmann wrote:
-> On Saturday 09 August 2008, Dave Hansen wrote:
-> > On Sat, 2008-08-09 at 00:39 +0200, Arnd Bergmann wrote:
-> > > The main problem I see with that would be atomicity: If you want multiple
-> > > processes to keep interacting with each other, you need to save them at
-> > > the same point in time, which gets harder as you split your interface into
-> > > more than a single file descriptor.
-> > 
-> > It could take ages to write out a checkpoint even to a single fd, so I
-> > suspect we'd have the exact same kinds of issues either way.
-> 
-> I guess either way, you have to SIGSTOP (or similar) all the tasks you want
-> to checkpoint atomically before you start saving the contents.
-> If you use a single fd, you can do that under the covers, when using a 
-> more complex file system, it seems more logical to require an explicit
-> interface for this.
+Alan Stern ha scritto:
 
-Oh, we're already working on patches to the freezer code to do this for
-us.  There's a branch in here from Matt H. that's doing just that:
+> As each device is enumerated, ehci-hcd determines whether it can run at 
+> high speed.  If not, the corresponding switch is set so the device 
+> connects back to the UHCI controller and it runs at full/low speed.
+Urgh... What happens if it contains a mounted filesystem?
+Seems quite dangerous...
 
-http://git.kernel.org/?p=linux/kernel/git/daveh/linux-2.6-next-lxc.git;a=shortlog
-
--- Dave
-
+BYtE,
+  Diego.
