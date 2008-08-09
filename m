@@ -1,81 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759966AbYHIAzJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758780AbYHIBDc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759966AbYHIAzJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 20:55:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752541AbYHIAy6
+	id S1758780AbYHIBDc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 21:03:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752432AbYHIBDY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 20:54:58 -0400
-Received: from n28.bullet.mail.mud.yahoo.com ([68.142.206.223]:39758 "HELO
-	n28.bullet.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751874AbYHIAy5 (ORCPT
+	Fri, 8 Aug 2008 21:03:24 -0400
+Received: from out02.mta.xmission.com ([166.70.13.232]:52744 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752427AbYHIBDX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 20:54:57 -0400
-X-Yahoo-Newman-Id: 834847.73401.bm@omp418.mail.mud.yahoo.com
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.de;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:Message-ID:Date:From:User-Agent:MIME-Version:To:Subject:X-Enigmail-Version:Content-Type:Content-Transfer-Encoding;
-  b=vOGyOxAuwddECl0LJi46OPEpQWUZsNcNnrc5i/iALPfPgW75TReiDOdj0IdhIwtCmTCV/rLX+tah6t+E91QVSqkT5yXYVjU/WbO5BspuPIBRagaw/kGdDw1n2oqa30BOrMvH96UkmNopxVMurNNZ2kJeSUYoAWXuOH5U21urYBQ=  ;
-X-YMail-OSG: RHaH6JcVM1ldZ6smeP3HyK7MWvYIMNmX.kseI7.xZZUQf1r7Vc5xMeWSzcH4v.QqjpLiSIN8lAKHDocBe97rGNXw_XHjxgZQFfgV5DpFeTjIZDn4xR3Hj.hfxGZWauGJMSI-
-X-Yahoo-Newman-Property: ymail-3
-Message-ID: <489CEADE.4030905@yahoo.de>
-Date: Sat, 09 Aug 2008 02:54:54 +0200
-From: Christian Franke <cfchris6@yahoo.de>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080730)
+	Fri, 8 Aug 2008 21:03:23 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>, Mike Travis <travis@sgi.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+References: <1218232368-31228-1-git-send-email-yhlu.kernel@gmail.com>
+	<1218232368-31228-2-git-send-email-yhlu.kernel@gmail.com>
+	<1218232368-31228-3-git-send-email-yhlu.kernel@gmail.com>
+	<1218232368-31228-4-git-send-email-yhlu.kernel@gmail.com>
+	<1218232368-31228-5-git-send-email-yhlu.kernel@gmail.com>
+	<1218232368-31228-6-git-send-email-yhlu.kernel@gmail.com>
+	<1218232368-31228-7-git-send-email-yhlu.kernel@gmail.com>
+	<1218232368-31228-8-git-send-email-yhlu.kernel@gmail.com>
+	<1218232368-31228-9-git-send-email-yhlu.kernel@gmail.com>
+Date: Fri, 08 Aug 2008 18:00:59 -0700
+In-Reply-To: <1218232368-31228-9-git-send-email-yhlu.kernel@gmail.com>
+	(Yinghai Lu's message of "Fri, 8 Aug 2008 14:52:14 -0700")
+Message-ID: <m1ej4zvw6s.fsf@frodo.ebiederm.org>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH 2.6.27-rc2] block: loop device partition support
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+X-SA-Exim-Connect-IP: 24.130.11.59
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa01 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Combo: ;Yinghai Lu <yhlu.kernel@gmail.com>
+X-Spam-Relay-Country: 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	* -1.1 BAYES_05 BODY: Bayesian spam probability is 1 to 5%
+	*      [score: 0.0155]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa01 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+Subject: Re: [PATCH 08/42] introduce nr_irqs
+X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
+X-SA-Exim-Scanned: Yes (on mgr1.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Christian Franke <cfchris6@yahoo.de>
+Yinghai Lu <yhlu.kernel@gmail.com> writes:
 
-By default, partition support of loop devices is disabled and there seems to be 
-no way to turn it on without changing code, if loop is not compiled as module.
-This patch introduces CONFIG_BLK_DEV_LOOP_MAXPART to make partition support 
-configurable via Kconfig. It keeps that feature disabled by default for not 
-breaking backward compatibility.
+> and at this point it is equal NR_IRQS
 
-Signed-off-by: Christian Franke <cfchris6@yahoo.de>
----
---- linux-2.6/drivers/block/Kconfig
-+++ linux-2.6-loop/drivers/block/Kconfig
-@@ -248,6 +248,23 @@ config BLK_DEV_LOOP
+This patch is ok, but this approach is fundamentally broken. 
+Only 19 architectures use GENERIC_HARDIRQS
 
-  	  Most users will answer N here.
+The only required interface is interrupt.h not irq.h
 
-+config BLK_DEV_LOOP_MAXPART
-+	int "Maximum number of partitions per loop device"
-+	default "0"
-+	depends on BLK_DEV_LOOP
-+	---help---
-+	  Loop device partition support is disabled by default. If max_part
-+	  is non-zero, partition support for loop devices is enabled for up to
-+	  max_part partitions.
-+
-+	  Note: If you compile loop as module, you can also pass max_part as
-+	        parameter when loading it.
-+
-+	  Warning: non-zero values break compatibility with applications which
-+	           access the loop devices via major and minor number.
-+
-+	  Most users will answer 0 here.
-+
-  config BLK_DEV_CRYPTOLOOP
-  	tristate "Cryptoloop Support"
-  	select CRYPTO
---- linux-2.6/drivers/block/loop.c
-+++ linux-2.6-loop/drivers/block/loop.c
-@@ -82,7 +82,7 @@
-  static LIST_HEAD(loop_devices);
-  static DEFINE_MUTEX(loop_devices_mutex);
+So you may not replace NR_IRQS with nr_irqs in anything other
+then genirq code and some architecture code.
 
--static int max_part;
-+static int max_part = CONFIG_BLK_DEV_LOOP_MAXPART;
-  static int part_shift;
+Doing so will break the build on several architectures.
 
-  /*
-
+Eric
