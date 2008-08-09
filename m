@@ -1,51 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752607AbYHISqf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753420AbYHISqw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752607AbYHISqf (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Aug 2008 14:46:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751257AbYHISqZ
+	id S1753420AbYHISqw (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Aug 2008 14:46:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751516AbYHISqZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Sat, 9 Aug 2008 14:46:25 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:59167 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750984AbYHISqX (ORCPT
+Received: from yx-out-2324.google.com ([74.125.44.30]:15693 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751196AbYHISqY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Aug 2008 14:46:23 -0400
-Date: Sat, 9 Aug 2008 14:46:22 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Mimi Zohar <zohar@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       Al Viro <viro@ZenIV.linux.org.uk>, Stephen Smalley <sds@tycho.nsa.gov>,
-       James Morris <jmorris@namei.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>, safford@watson.ibm.com,
-       serue@linux.vnet.ibm.com, sailer@watson.ibm.com, zohar@us.ibm.com
-Subject: Re: [PATCH 1/4] integrity: TPM internel kernel interface
-Message-ID: <20080809184622.GA22905@infradead.org>
-References: <20080808184349.999902616@linux.vnet.ibm.com> <1218221718.4444.11.camel@localhost.localdomain>
+	Sat, 9 Aug 2008 14:46:24 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=QKKobUkPgk1cvZTst073WIPtYBVpQoURpPQ7A4rr6PKZ87KcerJI2PMJh8v9DB6xz2
+         Vrhl6BLvtebwaicBvwycZiwZVCZDHkI5y/iljLvLIkQUVroWJmbrrBOM75jgUfDgRYXL
+         0ptYiZTU4KLWaB9cLKuDglxAvUaDMGgQKddEg=
+Message-ID: <b637ec0b0808091146o7ce25033m13b544ae7d8b5352@mail.gmail.com>
+Date: Sat, 9 Aug 2008 20:46:21 +0200
+From: "Fabio Comolli" <fabio.comolli@gmail.com>
+To: "Jean Delvare" <khali@linux-fr.org>
+Subject: Re: New conflict message in latest GIT
+Cc: "Bjorn Helgaas" <bjorn.helgaas@hp.com>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Rene Herman" <rene.herman@keyaccess.nl>,
+       "Andrew Morton" <akpm@osdl.org>, "Thomas Renninger" <trenn@suse.de>
+In-Reply-To: <20080809190336.05e84068@hyperion.delvare>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1218221718.4444.11.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+References: <b637ec0b0807221156x46d550a1h4180d6d624daeeb@mail.gmail.com>
+	 <200807231256.42743.bjorn.helgaas@hp.com>
+	 <b637ec0b0807231250g3e5b29eak8fbba41b69816351@mail.gmail.com>
+	 <20080809181358.5c9da790@hyperion.delvare>
+	 <b637ec0b0808090932l4d21d973we160c145f007da7c@mail.gmail.com>
+	 <20080809190336.05e84068@hyperion.delvare>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> +{
-> +	struct tpm_chip *pos;
-> +
-> +	spin_lock(&driver_lock);
-> +	list_for_each_entry(pos, &tpm_chip_list, list) {
-> +		if ((chip_num == TPM_ANY_NUM || pos->dev_num == chip_num)
-> +		    && (chip_typ == TPM_ANY_TYPE)) {
-> +			spin_unlock(&driver_lock);
-> +			return pos;
-> +		}
-> +	}
-> +
-> +	spin_unlock(&driver_lock);
+Hi.
 
-besides the usual coding style issues, what protects the chip from going
-away afer you dropped the lock?
+On Sat, Aug 9, 2008 at 7:03 PM, Jean Delvare <khali@linux-fr.org> wrote:
+> On Sat, 9 Aug 2008 18:32:31 +0200, Fabio Comolli wrote:
+>> Anyway, as usual linux is not supported at all on this laptop, it came
+>> with XP. One thing that puzzles me is why bothering adding a
+>> monitoring chip for which drivers do not exist for any OS?
+>
+> If you refer to the PC87591: that's a Super-I/O chip, including many
+> different functions. Hardware monitoring is only one of these
+> functions. Manufacturers might be interested in some of the other
+> features and chose this chip because of them. Windows doesn't support
+> hardware monitoring at all without 3rd party tools anyway, so that's
+> hardly a decision factor for vendors.
+>
+> Additionally, on laptops, thermal management is most often done by ACPI
+> rather than native OS drivers. Maybe the ACPI implementation in your
+> laptop actually gets the temperature from the PC87591.
+>
 
+Oh, I see. Thanks for the explanation.
+
+> --
+> Jean Delvare
+
+Regards,
+Fabio
+
+
+>
