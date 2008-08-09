@@ -1,70 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754611AbYHIPxf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754779AbYHIP5q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754611AbYHIPxf (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Aug 2008 11:53:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753440AbYHIPx0
+	id S1754779AbYHIP5q (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Aug 2008 11:57:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753440AbYHIP5g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Aug 2008 11:53:26 -0400
-Received: from out02.mta.xmission.com ([166.70.13.232]:49350 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753437AbYHIPxZ (ORCPT
+	Sat, 9 Aug 2008 11:57:36 -0400
+Received: from dresden.studentenwerk.mhn.de ([141.84.225.229]:57257 "EHLO
+	email.studentenwerk.mhn.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753389AbYHIP5f (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Aug 2008 11:53:25 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: "Yinghai Lu" <yhlu.kernel@gmail.com>
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
+	Sat, 9 Aug 2008 11:57:35 -0400
+From: Wolfgang Walter <wolfgang.walter@stwm.de>
+Organization: Studentenwerk =?utf-8?q?M=C3=BCnchen?=
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Subject: Re: Kernel oops with 2.6.26, padlock and ipsec: probably problem with fpu state changes
+Date: Sat, 9 Aug 2008 17:57:32 +0200
+User-Agent: KMail/1.9.9
+Cc: Suresh Siddha <suresh.b.siddha@intel.com>,
        "H. Peter Anvin" <hpa@zytor.com>,
-       "Dhaval Giani" <dhaval@linux.vnet.ibm.com>,
-       "Mike Travis" <travis@sgi.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-References: <1218232368-31228-1-git-send-email-yhlu.kernel@gmail.com>
-	<1218232368-31228-4-git-send-email-yhlu.kernel@gmail.com>
-	<1218232368-31228-5-git-send-email-yhlu.kernel@gmail.com>
-	<1218232368-31228-6-git-send-email-yhlu.kernel@gmail.com>
-	<1218232368-31228-7-git-send-email-yhlu.kernel@gmail.com>
-	<1218232368-31228-8-git-send-email-yhlu.kernel@gmail.com>
-	<1218232368-31228-9-git-send-email-yhlu.kernel@gmail.com>
-	<m1ej4zvw6s.fsf@frodo.ebiederm.org>
-	<86802c440808081838r66cc8162t5c2e157908457048@mail.gmail.com>
-	<m1zlnmvhzi.fsf@frodo.ebiederm.org>
-	<86802c440808090030t16e0efa3ne5adad6c8096c8a0@mail.gmail.com>
-Date: Sat, 09 Aug 2008 08:46:33 -0700
-In-Reply-To: <86802c440808090030t16e0efa3ne5adad6c8096c8a0@mail.gmail.com>
-	(Yinghai Lu's message of "Sat, 9 Aug 2008 00:30:28 -0700")
-Message-ID: <m1fxpeur6u.fsf@frodo.ebiederm.org>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       "viro@ZenIV.linux.org.uk" <viro@zeniv.linux.org.uk>,
+       "vegard.nossum@gmail.com" <vegard.nossum@gmail.com>
+References: <200807171653.59177.wolfgang.walter@stwm.de> <20080808231121.GA13158@linux-os.sc.intel.com> <20080809143727.GA30499@gondor.apana.org.au>
+In-Reply-To: <20080809143727.GA30499@gondor.apana.org.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-SA-Exim-Connect-IP: 24.130.11.59
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa03 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;"Yinghai Lu" <yhlu.kernel@gmail.com>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
-	*      [score: 0.0004]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa03 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-Subject: Re: [PATCH 08/42] introduce nr_irqs
-X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
-X-SA-Exim-Scanned: Yes (on mgr1.xmission.com)
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
+Content-Disposition: inline
+Message-Id: <200808091757.32999.wolfgang.walter@stwm.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Yinghai Lu" <yhlu.kernel@gmail.com> writes:
+On Saturday 09 August 2008, Herbert Xu wrote:
+> On Fri, Aug 08, 2008 at 04:11:21PM -0700, Suresh Siddha wrote:
+> >
+> > With out the recent dynamic fpu allocation changes, while we don't see 
+oops,
+> > there is a possible race still present in older kernels(for example,
+> > while kernel is using kernel_fpu_begin() in some optimized clear/copy
+> > page and an interrupt/softirq happens which uses these padlock
+> > instructions generating DNA fault).
+> 
+> No this wasn't a problem because kernel_fpu_begin clears TS and
+> therefore we don't get faults on SSE instructions.
+> 
+> However, with your patch it will become a problem due to the
+> fact that it wasn't designed to be nested.
+> 
 
 
-> ok, will move to that file.
+I don't exactly understand this. You think that
 
-????   If you introduce a new concept like valid_irq that is fine.
-interrupt.h is the interface to drivers!
+kernel_fpu_begin();
+XCRYPT....
+kernel_fpu_end();
 
-Let me say this clearly.
+is a problem and wasn't before?
 
-DO NOT CHANGE THE INTERFACE TO DEVICE DRIVERS!
+Say we have a software crypt-alg which uses optimized memcpy implemented with 
+SSE instructions. These are protected with kernel_fpu_begin(); 
+kernel_fpu_end();
 
-Eric
+So we have also code
+
+kernel_fpu_begin();
+SSE....
+kernel_fpu_end();
+
+in crypto called under same circumstances.
+
+If XCRYPT may be interrupted and the interrupt code again uses this optimized 
+memcpy implementation and so nesting kernel_fpu_begin then why should this 
+not happen with the other alg.
+
+How could any kernel code use MMX/SSE/FPU when the interrupt case isn't 
+handled?
+
+
+Or is your argument that its lazy allocation itself is the problem: this 
+nesting could always happen and was a bug but only with lazy allocation it is 
+dangerous (as it may cause a spurious math fault in the race window).
+
+If this were right than any kernel code executing SSE may trigger now a oops 
+in __switch_to() under some special circumstances.
+
+
+Regards,
+-- 
+Wolfgang Walter
+Studentenwerk München
+Anstalt des öffentlichen Rechts
+Leiter EDV
+Leopoldstraße 15
+80802 München
+Tel: +49 89 38196-276
+Fax: +49 89 38196-144
+wolfgang.walter@stwm.de
+http://www.studentenwerk-muenchen.de/
