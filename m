@@ -1,46 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762232AbYHICVR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762692AbYHICWU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762232AbYHICVR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 22:21:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755066AbYHICVE
+	id S1762692AbYHICWU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 22:22:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752968AbYHICWM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 22:21:04 -0400
-Received: from e36.co.us.ibm.com ([32.97.110.154]:57731 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752904AbYHICVC (ORCPT
+	Fri, 8 Aug 2008 22:22:12 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:59487 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750890AbYHICWM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 22:21:02 -0400
-Subject: Re: [RFC][PATCH 2/4] checkpoint/restart: x86 support
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-To: Oren Laadan <orenl@cs.columbia.edu>
-Cc: containers@lists.linux-foundation.org, Theodore Tso <tytso@mit.edu>,
-       linux-kernel@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>
-In-Reply-To: <489CF0CE.1000603@cs.columbia.edu>
-References: <20080807224033.FFB3A2C1@kernel>
-	 <200808081409.30591.arnd@arndb.de> <489CAC70.7090809@cs.columbia.edu>
-	 <200808090029.28286.arnd@arndb.de> <489CD0F9.9060603@cs.columbia.edu>
-	 <1218242286.19082.62.camel@nimitz>  <489CF0CE.1000603@cs.columbia.edu>
-Content-Type: text/plain
-Date: Fri, 08 Aug 2008 19:20:58 -0700
-Message-Id: <1218248458.19082.68.camel@nimitz>
+	Fri, 8 Aug 2008 22:22:12 -0400
+Date: Sat, 9 Aug 2008 04:23:02 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, Roland McGrath <roland@redhat.com>,
+       Ulrich Drepper <drepper@redhat.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Gregory Haskins <ghaskins@novell.com>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       "Luis Claudio R. Goncalves" <lclaudio@uudg.org>,
+       Clark Williams <williams@redhat.com>
+Subject: Re: [PATCH 0/5] ftrace: to kill a daemon
+Message-ID: <20080809022302.GH9038@one.firstfloor.org>
+References: <20080808182104.GA11376@Krystal> <alpine.DEB.1.10.0808081432400.8922@gandalf.stny.rr.com> <20080808190506.GD11376@Krystal> <alpine.DEB.1.10.0808081750590.16691@gandalf.stny.rr.com> <87tzdv2g05.fsf@basil.nowhere.org> <alpine.DEB.1.10.0808082030500.1396@gandalf.stny.rr.com> <20080809011955.GE9038@one.firstfloor.org> <alpine.DEB.1.10.0808082126500.3707@gandalf.stny.rr.com> <20080809015539.GG9038@one.firstfloor.org> <alpine.DEB.1.10.0808082202030.4894@gandalf.stny.rr.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.1.10.0808082202030.4894@gandalf.stny.rr.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-08-08 at 21:20 -0400, Oren Laadan wrote:
-> hehehe .. both; I meant that while it doesn't change per architecture, it
-> varies between architectures. So "struct pt_regs" compiled for x86-32 is
-> different than that compiled for x86-64. Therefore we can't just dump the
-> structure as is and expect that 64 bit would be able to parse the 32 bit.
-> In other words, we need an intermediate representation.
+On Fri, Aug 08, 2008 at 10:03:42PM -0400, Steven Rostedt wrote:
+> 
+> On Sat, 9 Aug 2008, Andi Kleen wrote:
+> 
+> > > Funny, CONFIG_FTRACE happens to select that. Now the question is, would 
+> > > mcount work without it?
+> > 
+> > Not without fixing gcc first. It would work if gcc always called
+> > mcount the first thing before setting up the stack frame. Not 
+> > sure why it doesn't do that.
+> 
+> I could take out the frame pointer option and pass in zero for the parent 
+> in such that case. But the parent is quite useful. But if it helps
+> with performance, it may be worth doing this.
 
-Surely we already handle this, though.  Don't we allow a 32-bit app
-running on a 64-bit kernel to PTRACE_GETREGS and get the 32-bit version?
-A 64-bit app will get the 64-bit version making the same syscall.  It's
-all handled in the syscall compatibility code.
+Right now gcc errors out unfortunately. Would need to ask gcc developers
+to fix this first. But when they move mcount to be always first
+you can still get at the parent, it will always be at 4(%esp) or 8(%rsp).
 
--- Dave
+An alternative would be also run an assembler post processor that
+inserts mcount calls without compiler help.
 
+-Andi
