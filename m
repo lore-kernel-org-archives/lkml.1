@@ -1,64 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760687AbYHICth@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758385AbYHICuN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760687AbYHICth (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 22:49:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753108AbYHICt3
+	id S1758385AbYHICuN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 22:50:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754850AbYHICt7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 22:49:29 -0400
-Received: from fg-out-1718.google.com ([72.14.220.154]:24262 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753094AbYHICt2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 22:49:28 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
-         :mime-version:content-type:content-transfer-encoding:sender;
-        b=AOF+cgYVgZ6YPdZMuOVKXZx7nGXlUu2RInxJ2xex7zdkNLmVzbrhG0cBW+QEMRAM8d
-         hpRoQvpnuSzDkEHBnsRhCWaggDGCf2vjv2rU8iD5s8EX+dCpRv1yBTRX5WW3PUJvIxnt
-         iyjWv9wzql0KgwyfdxQD5ua0AinI+WYo7LqwM=
-Date: Sat, 9 Aug 2008 04:49:26 +0200
-From: Oliver Martin <oliver.martin@student.tuwien.ac.at>
-To: Oliver Martin <oliver.martin@student.tuwien.ac.at>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] Add vendor/product id of ZTE MF628 to option
-Message-ID: <20080809044926.46c494d9@ors.home>
-In-Reply-To: <20080809044530.193a077a@ors.home>
-References: <20080809044530.193a077a@ors.home>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.10; i486-pc-linux-gnu)
+	Fri, 8 Aug 2008 22:49:59 -0400
+Received: from smtpout3.tre.se ([80.251.192.228]:28560 "EHLO smtpout3.tre.se"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754194AbYHICt6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Aug 2008 22:49:58 -0400
+Date: Sat, 9 Aug 2008 04:50:44 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Kyle McMartin <kyle@mcmartin.ca>
+Cc: linux arch <linux-arch@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: kbuild now support arch/$ARCH/include - time for ARCHs to convert
+Message-ID: <20080809025044.GA9794@uranus.ravnborg.org>
+References: <20080728200500.GA14284@uranus.ravnborg.org> <20080729030647.GA11425@phobos.i.cabal.ca> <20080729032726.GA27460@uranus.ravnborg.org> <20080729142145.GC11425@phobos.i.cabal.ca>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080729142145.GC11425@phobos.i.cabal.ca>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This adds the vendor and product id (19d2:0015) of the ZTE MF628 HSDPA
-modem to the option driver. It still needs a mode switch command issued
-beforehand, this is currently handled by a userspace tool.
+On Tue, Jul 29, 2008 at 10:21:45AM -0400, Kyle McMartin wrote:
+> On Tue, Jul 29, 2008 at 05:27:26AM +0200, Sam Ravnborg wrote:
+> > On Mon, Jul 28, 2008 at 11:06:47PM -0400, Kyle McMartin wrote:
+> > > On Mon, Jul 28, 2008 at 10:05:00PM +0200, Sam Ravnborg wrote:
+> > > > I am limited in time and resources at the moment but I
+> > > > would be glad to help out as time permits should there
+> > > > be any questions.
+> > > > 
+> > > 
+> > > Just a quick one... I moved the files on parisc, but found we're still
+> > > using include/asm-$foo/asm-offsets.h. A quick glance at Kbuild seems to
+> > > indicate so. Is this expected?
+> > Yes.
+> > 
+> > asm-offsets.h is a generated file and I wanted to avoid adding
+> > generated files to arch/$ARCH/include.
+> > 
+> > It was also a less intrusive patch to keep it at the old location.
+> > But I recall that it troubles me a bit before I got it
+> > correct but the kbuild changes all take care of this.
+> > 
+> 
+> Thanks for clarifying, Sam.
 
-Signed-off-by: Oliver Martin <oliver.martin@student.tuwien.ac.at>
+Any chance we can have this pushed towards Linus?
 
-Index: linux-2.6.27-rc2/drivers/usb/serial/option.c
-===================================================================
---- linux-2.6.27-rc2.orig/drivers/usb/serial/option.c	2008-08-08 23:10:09.000000000 +0200
-+++ linux-2.6.27-rc2/drivers/usb/serial/option.c	2008-08-08 23:10:33.000000000 +0200
-@@ -197,6 +197,10 @@
- #define TELIT_VENDOR_ID				0x1bc7
- #define TELIT_PRODUCT_UC864E			0x1003
- 
-+/* ZTE PRODUCTS */
-+#define ZTE_VENDOR_ID				0x19d2
-+#define ZTE_PRODUCT_MF628			0x0015
-+
- static struct usb_device_id option_ids[] = {
- 	{ USB_DEVICE(OPTION_VENDOR_ID, OPTION_PRODUCT_COLT) },
- 	{ USB_DEVICE(OPTION_VENDOR_ID, OPTION_PRODUCT_RICOLA) },
-@@ -308,6 +312,7 @@
- 	{ USB_DEVICE(QUALCOMM_VENDOR_ID, 0x6613)}, /* Onda H600/ZTE MF330 */
- 	{ USB_DEVICE(MAXON_VENDOR_ID, 0x6280) }, /* BP3-USB & BP3-EXT HSDPA */
- 	{ USB_DEVICE(TELIT_VENDOR_ID, TELIT_PRODUCT_UC864E) },
-+	{ USB_DEVICE(ZTE_VENDOR_ID, ZTE_PRODUCT_MF628) },
- 	{ } /* Terminating entry */
- };
- MODULE_DEVICE_TABLE(usb, option_ids);
+It would be nice to gat as many arch converted in this cycle as possible.
+
+	Sam
