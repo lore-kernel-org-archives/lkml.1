@@ -1,42 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754561AbYHIFGz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757948AbYHIFHj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754561AbYHIFGz (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Aug 2008 01:06:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750781AbYHIFGr
+	id S1757948AbYHIFHj (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Aug 2008 01:07:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750855AbYHIFHb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Aug 2008 01:06:47 -0400
-Received: from casper.infradead.org ([85.118.1.10]:60772 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750703AbYHIFGr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Aug 2008 01:06:47 -0400
-Date: Fri, 8 Aug 2008 21:53:53 -0700
-From: Greg KH <greg@kroah.com>
-To: Oliver Martin <oliver.martin@student.tuwien.ac.at>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Add vendor/product id of ZTE MF628 to option
-Message-ID: <20080809045353.GA342@kroah.com>
-References: <20080809044530.193a077a@ors.home> <20080809044926.46c494d9@ors.home>
+	Sat, 9 Aug 2008 01:07:31 -0400
+Received: from gw.goop.org ([64.81.55.164]:34812 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750781AbYHIFHa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 9 Aug 2008 01:07:30 -0400
+Message-ID: <489D2600.7020400@goop.org>
+Date: Fri, 08 Aug 2008 22:07:12 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080809044926.46c494d9@ors.home>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+CC: jmerkey@wolfmountaingroup.com, linux-kernel@vger.kernel.org
+Subject: Re: [ANNOUNCE] mdb-2.6.27-rc2-ia32-08-07-08.patch
+References: <1300.69.2.248.210.1218119365.squirrel@webmail.wolfmountaingroup.com> <489B199B.40305@s5r6.in-berlin.de>
+In-Reply-To: <489B199B.40305@s5r6.in-berlin.de>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Aug 09, 2008 at 04:49:26AM +0200, Oliver Martin wrote:
-> This adds the vendor and product id (19d2:0015) of the ZTE MF628 HSDPA
-> modem to the option driver. It still needs a mode switch command issued
-> beforehand, this is currently handled by a userspace tool.
-> 
-> Signed-off-by: Oliver Martin <oliver.martin@student.tuwien.ac.at>
+Stefan Richter wrote:
+> jmerkey@wolfmountaingroup.com wrote:
+>   
+>> The mdb-rc2 patch was posted this morning with the changes for a modular
+>> kernel debugger using kprobes.
+>>
+>> ftp://ftp.wolfmountaingroup.org/pub/mdb/mdb-2.6.27-rc2-ia32-08-07-08.patch
+>>
+>> Jeffrey Vernon Merkey
+>>     
+>
+>
+> Quoting from this patch:
+>
+>   
+>> +typedef struct _RLOCK 
+>> +{
+>> +#if defined(CONFIG_SMP)
+>> +    spinlock_t lock;
+>> +#endif
+>> +    unsigned long flags;
+>> +    unsigned long processor;
+>> +    unsigned long count;    
+>> +} rlock_t;
+>>     
+>
+> Is this something along the lines of a counting semaphore?  As far as I
+> understand its accessor functions, an rlock
+>   - can be taken by one CPU multiple times,
+>   - will block the other CPUs as long as the first CPU hasn't unlocked
+>     the rlock as many times as it locked it.
+>
+> The accessors rspin_lock() and rspin_try_lock() peek into spinlock_t and
+> may therefore not be fully portable.  Also, they and rspin_unlock()
+> don't look SMP safe:
+>
+>   
+>> +//
+>> +//   returns   0 - atomic lock occurred, processor assigned
+>> +//             1 - recusive count increased
+>> +//
+>> +
+>> +unsigned long rspin_lock(volatile rlock_t *rlock)
+>> +{
+>> +#if defined(CONFIG_SMP)
+>> +   register unsigned long proc = get_processor_id();
+>> +   register unsigned long retCode;
+>> +
+>> +   if (rlock->lock.raw_lock.slock && rlock->processor == proc)
+>>     
 
-In the future, please CC: any usb patch to the linux-usb mailing list,
-and the USB maintainer to make sure it gets picked up properly.
-Otherwise, odds are I'll miss it :(
+Ticket locks will almost always have a non-zero slock.  It doesn't 
+indicate anything about the locked/unlocked state.  But this looks like 
+it's effectively doing a trylock:
 
-thanks,
+	if (!spin_trylock(rlock) && rlock->processor == proc) {
+		rlock->count++;
+		...
+	} else {
+		rlock->processor = proc;
+		...
+	}
 
-greg k-h
+
+    J
+
+
