@@ -1,76 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751809AbYHIJsY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752001AbYHIJvO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751809AbYHIJsY (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Aug 2008 05:48:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750802AbYHIJsQ
+	id S1752001AbYHIJvO (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Aug 2008 05:51:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750965AbYHIJu6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Aug 2008 05:48:16 -0400
-Received: from rv-out-0506.google.com ([209.85.198.235]:46135 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750733AbYHIJsP (ORCPT
+	Sat, 9 Aug 2008 05:50:58 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:47593 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750931AbYHIJu5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Aug 2008 05:48:15 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=f5SCpYyuP29TK0Z3o2LdXjI33poBfgLisxM/zOdSy/cSIEUxKXJQN22am6XMw2eR4n
-         qN40CF7wieBvd9P+kqN/QOboi5b9IT9WEnBBo8NVjXHyEFm+W4sURLDqcKVp5YU9RifH
-         VdiHgAEe3pdBiIsC2rE++TUo9hvcuAUqeEXK4=
-Message-ID: <863e9df20808090248h3adc2ac3mdb3217fe2876ab3b@mail.gmail.com>
-Date: Sat, 9 Aug 2008 15:18:14 +0530
-From: "Abhishek Sagar" <sagar.abhishek@gmail.com>
-To: "Steven Rostedt" <rostedt@goodmis.org>
-Subject: Re: [PATCH 0/5] ftrace: to kill a daemon
-Cc: linux-kernel@vger.kernel.org, "Ingo Molnar" <mingo@elte.hu>,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       "Peter Zijlstra" <peterz@infradead.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "David Miller" <davem@davemloft.net>,
-       "Mathieu Desnoyers" <mathieu.desnoyers@polymtl.ca>,
-       "Roland McGrath" <roland@redhat.com>,
-       "Ulrich Drepper" <drepper@redhat.com>,
-       "Rusty Russell" <rusty@rustcorp.com.au>,
-       "Jeremy Fitzhardinge" <jeremy@goop.org>,
-       "Gregory Haskins" <ghaskins@novell.com>,
-       "Arnaldo Carvalho de Melo" <acme@redhat.com>,
-       "Luis Claudio R. Goncalves" <lclaudio@uudg.org>,
-       "Clark Williams" <williams@redhat.com>
-In-Reply-To: <20080807182013.984175558@goodmis.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Sat, 9 Aug 2008 05:50:57 -0400
+Date: Sat, 9 Aug 2008 10:33:31 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "Robert P. J. Day" <rpjday@crashcourse.ca>
+Cc: Krzysztof Halasa <khc@pm.waw.pl>, Grant Coady <gcoady.lk@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC PATCH] cleanup Serial ATA and Parallel ATA Kconfig
+Message-ID: <20080809103331.1d475d5c@lxorguk.ukuu.org.uk>
+In-Reply-To: <alpine.LFD.1.10.0808081911080.3254@localhost.localdomain>
+References: <alpine.LFD.1.10.0808081228450.11491@localhost.localdomain>
+	<20080808172629.232bed01@lxorguk.ukuu.org.uk>
+	<njhp94pr4ha1nfgmj11n662enalpd9663h@4ax.com>
+	<m3sktfw1v5.fsf@maximus.localdomain>
+	<alpine.LFD.1.10.0808081911080.3254@localhost.localdomain>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080807182013.984175558@goodmis.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 7, 2008 at 11:50 PM, Steven Rostedt <rostedt@goodmis.org> wrote:
-> You see, the reason for this is that for ftrace to maintain performance
-> when configured in but disabled, it would need to change all the
-> locations that called "mcount" (enabled with the gcc -pg option) into
-> nops.  The "-pg" option in gcc sets up a function profiler to call this
-> function called "mcount". If you simply have "mcount" return, it will
-> still add 15 to 18% overhead in performance. Changing all the calls to
-> nops moved the overhead into noise.
->
-> To get rid of this, I had the mcount code record the location that called
-> it. Later, the "ftraced" daemon would wake up and look to see if
-> any new functions were recorded. If so, it would call kstop_machine
-> and convert the calls to "nops". We needed kstop_machine because bad
-> things happen on SMP if you modify code that happens to be in the
-> instruction cache of another CPU.
+> I would also ask for PATA and for SATA first:
+> >
+> > [*] PATA support
+> > [*] SATA support
+> 
+>   that was sort my original thought, but i don't know enough about ATA
+> fundamentals to know if it makes sense for these to be independently
+> selectable. 
 
-Is this new framework needed for x86 specific reasons only? From what
-I gathered here, ftraced defers mcount patching simply because there's
-no way to update a 5-byte nop atomically. If so, why can't mcount site
-patching be left to arch specific ftrace code? For !SMP or archs which
-generate word sized mcount branch calls (e.g, ARM) is there really no
-way to patch  mcount sites synchronously from inside ftrace_record_ip
-by disabling interrupts?
-
-Regards,
-Abhishek Sagar
+Alas it does not or we would have done so. A lot of the chips have things
+like 'two SATA one PATA' and some of them have SATA and PATA variants of
+the same chip. Then we have generic drivers like ata_generic which really
+don't care if its SATA or PATA ..
