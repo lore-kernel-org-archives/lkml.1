@@ -1,64 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752671AbYHIRSb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752837AbYHIR0M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752671AbYHIRSb (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Aug 2008 13:18:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750763AbYHIRSU
+	id S1752837AbYHIR0M (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Aug 2008 13:26:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751201AbYHIRZ5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Aug 2008 13:18:20 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:60782 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750756AbYHIRST (ORCPT
+	Sat, 9 Aug 2008 13:25:57 -0400
+Received: from [78.153.208.64] ([78.153.208.64]:39886 "EHLO
+	vps-1000455-184.cp.blacknight.com" rhost-flags-FAIL-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1750908AbYHIRZ5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Aug 2008 13:18:19 -0400
-Date: Sat, 9 Aug 2008 13:18:16 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Ian Kent <raven@themaw.net>
-Cc: Christoph Hellwig <hch@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       autofs mailing list <autofs@linux.kernel.org>,
-       Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>
-Subject: Re: [PATCH 4/4] autofs4 - add miscelaneous device for ioctls
-Message-ID: <20080809171816.GA2039@infradead.org>
-References: <20080807114002.4142.30417.stgit@web.messagingengine.com> <20080807114030.4142.76568.stgit@web.messagingengine.com> <20080809125953.GB16308@infradead.org> <1218295750.2994.61.camel@raven.themaw.net>
+	Sat, 9 Aug 2008 13:25:57 -0400
+X-Greylist: delayed 1721 seconds by postgrey-1.27 at vger.kernel.org; Sat, 09 Aug 2008 13:25:57 EDT
+Date: Sat, 9 Aug 2008 17:54:02 +0100
+From: Robert Fitzsimons <robfitz@273k.net>
+To: Stephen Hemminger <shemminger@vyatta.com>
+Cc: Jeff Garzik <jgarzik@redhat.com>, David Miller <davem@davemloft.net>,
+       Samuel Chessman <chessman@tux.org>, linux-kernel@vger.kernel.org
+Subject: [PATCH] tlan: Fix two regressions introduced by 64bit conversion.
+Message-ID: <20080809165402.GA3726@localhost>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1218295750.2994.61.camel@raven.themaw.net>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Aug 09, 2008 at 11:29:09PM +0800, Ian Kent wrote:
-> 
-> On Sat, 2008-08-09 at 08:59 -0400, Christoph Hellwig wrote:
-> > On Thu, Aug 07, 2008 at 07:40:31PM +0800, Ian Kent wrote:
-> > > The actual problem with autofs is that it can't reconnect to existing
-> > > mounts. Immediately one things of just adding the ability to remount
-> > > autofs file systems would solve it, but alas, that can't work. This is
-> > > because autofs direct mounts and the implementation of "on demand mount
-> > > and expire" of nested mount trees have the file system mounted on top of
-> > > the mount trigger dentry.
-> > 
-> > So what you really need instead of all the ioctl cruft is to get access
-> > to the sb of the hidden autofs4 mount.  One way to do that that I can
-> > think of right now is to change from using get_sb_nodev as ->get_sb
-> > to a variant that can find an existing superblock using some mount
-> > options.
-> 
-> I wished I'd spoken to you about this a long time ago since you seem to
-> know how I can do this using a remount option but this isn't enough of
-> an explanation of how it can be done.
-> 
-> AFAICT, mount(8) will never be able to get a "struct path" or "struct
-> nameidata" to a mount point that is covered using the path lookup in
-> fs/namespace.c:do_*_mount() so we'll never be called back via any VFS
-> methods. So tell me more about how this could work please!
+Two regressions were introduced by the recent tlan: 64bit conversion
+commit (93e16847c9db0093065c98063cfc639cdfccf19a).  The first in
+TLan_GetSKB caused a NULL pointer dereference.  With the second causing
+the link to fail to come up.
 
-Your introduction tells what you want to do is a remount, for which
-finding the superblock is enough.  If that's not the actual requirement
-please explain the requirement.  And don't point me to the gazillion
-ioctls you added, that seems to mostly not have much to do with that..
+Signed-off-by: Robert Fitzsimons <robfitz@273k.net>
+---
+ drivers/net/tlan.c |    8 ++++----
+ 1 files changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/net/tlan.c b/drivers/net/tlan.c
+index 85246ed..ec871f6 100644
+--- a/drivers/net/tlan.c
++++ b/drivers/net/tlan.c
+@@ -360,8 +360,8 @@ TLan_GetSKB( const struct tlan_list_tag *tag)
+ {
+ 	unsigned long addr;
+ 
+-	addr = tag->buffer[8].address;
+-	addr |= (tag->buffer[9].address << 16) << 16;
++	addr = tag->buffer[9].address;
++	addr |= (tag->buffer[8].address << 16) << 16;
+ 	return (struct sk_buff *) addr;
+ }
+ 
+@@ -1984,7 +1984,6 @@ static void TLan_ResetLists( struct net_device *dev )
+ 	TLanList	*list;
+ 	dma_addr_t	list_phys;
+ 	struct sk_buff	*skb;
+-	void		*t = NULL;
+ 
+ 	priv->txHead = 0;
+ 	priv->txTail = 0;
+@@ -2022,7 +2021,8 @@ static void TLan_ResetLists( struct net_device *dev )
+ 			}
+ 
+ 			skb_reserve( skb, NET_IP_ALIGN );
+-			list->buffer[0].address = pci_map_single(priv->pciDev, t,
++			list->buffer[0].address = pci_map_single(priv->pciDev,
++								 skb->data,
+ 								 TLAN_MAX_FRAME_SIZE,
+ 								 PCI_DMA_FROMDEVICE);
+ 			TLan_StoreSKB(list, skb);
+-- 
+1.5.6.3
+
