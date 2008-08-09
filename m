@@ -1,64 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758304AbYHIAyS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759966AbYHIAzJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758304AbYHIAyS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 20:54:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751874AbYHIAyG
+	id S1759966AbYHIAzJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 20:55:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752541AbYHIAy6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 20:54:06 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:36126 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751861AbYHIAyF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 20:54:05 -0400
+	Fri, 8 Aug 2008 20:54:58 -0400
+Received: from n28.bullet.mail.mud.yahoo.com ([68.142.206.223]:39758 "HELO
+	n28.bullet.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751874AbYHIAy5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Aug 2008 20:54:57 -0400
+X-Yahoo-Newman-Id: 834847.73401.bm@omp418.mail.mud.yahoo.com
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.de;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:Message-ID:Date:From:User-Agent:MIME-Version:To:Subject:X-Enigmail-Version:Content-Type:Content-Transfer-Encoding;
+  b=vOGyOxAuwddECl0LJi46OPEpQWUZsNcNnrc5i/iALPfPgW75TReiDOdj0IdhIwtCmTCV/rLX+tah6t+E91QVSqkT5yXYVjU/WbO5BspuPIBRagaw/kGdDw1n2oqa30BOrMvH96UkmNopxVMurNNZ2kJeSUYoAWXuOH5U21urYBQ=  ;
+X-YMail-OSG: RHaH6JcVM1ldZ6smeP3HyK7MWvYIMNmX.kseI7.xZZUQf1r7Vc5xMeWSzcH4v.QqjpLiSIN8lAKHDocBe97rGNXw_XHjxgZQFfgV5DpFeTjIZDn4xR3Hj.hfxGZWauGJMSI-
+X-Yahoo-Newman-Property: ymail-3
+Message-ID: <489CEADE.4030905@yahoo.de>
+Date: Sat, 09 Aug 2008 02:54:54 +0200
+From: Christian Franke <cfchris6@yahoo.de>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080730)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH 2.6.27-rc2] block: loop device partition support
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-X-Fcc: ~/Mail/linus
-Cc: Andi Kleen <andi@firstfloor.org>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, Ulrich Drepper <drepper@redhat.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Gregory Haskins <ghaskins@novell.com>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       "Luis Claudio R. Goncalves" <lclaudio@uudg.org>,
-       Clark Williams <williams@redhat.com>
-Subject: Re: [PATCH 0/5] ftrace: to kill a daemon
-In-Reply-To: Steven Rostedt's message of  Friday, 8 August 2008 20:36:02 -0400 <alpine.DEB.1.10.0808082030500.1396@gandalf.stny.rr.com>
-References: <20080807182013.984175558@goodmis.org>
-	<20080807184741.GB18164@Krystal>
-	<alpine.DEB.1.10.0808071639420.9449@gandalf.stny.rr.com>
-	<20080808172259.GB8244@Krystal>
-	<alpine.DEB.1.10.0808081334010.4436@gandalf.stny.rr.com>
-	<20080808174607.GG8244@Krystal>
-	<alpine.DEB.1.10.0808081410380.6116@gandalf.stny.rr.com>
-	<20080808182104.GA11376@Krystal>
-	<alpine.DEB.1.10.0808081432400.8922@gandalf.stny.rr.com>
-	<20080808190506.GD11376@Krystal>
-	<alpine.DEB.1.10.0808081750590.16691@gandalf.stny.rr.com>
-	<87tzdv2g05.fsf@basil.nowhere.org>
-	<alpine.DEB.1.10.0808082030500.1396@gandalf.stny.rr.com>
-X-Zippy-Says: I am KING BOMBA of Sicily!..I will marry LUCILLE BALL next Friday!
-Message-Id: <20080809005326.E799F154208@magilla.localdomain>
-Date: Fri,  8 Aug 2008 17:53:26 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Are we sure there aren't some good available 5-byte nops?
+From: Christian Franke <cfchris6@yahoo.de>
 
-e.g. for 64-bit maybe 3e 48 8d 76 00
-     for 32-bit maybe 3e 8d 74 26 00
+By default, partition support of loop devices is disabled and there seems to be 
+no way to turn it on without changing code, if loop is not compiled as module.
+This patch introduces CONFIG_BLK_DEV_LOOP_MAXPART to make partition support 
+configurable via Kconfig. It keeps that feature disabled by default for not 
+breaking backward compatibility.
 
-Have the chip folks confirmed that exactly the set we have in
-asm-x86/nops.h are the only optimal ones?
+Signed-off-by: Christian Franke <cfchris6@yahoo.de>
+---
+--- linux-2.6/drivers/block/Kconfig
++++ linux-2.6-loop/drivers/block/Kconfig
+@@ -248,6 +248,23 @@ config BLK_DEV_LOOP
 
+  	  Most users will answer N here.
 
-Thanks,
-Roland
++config BLK_DEV_LOOP_MAXPART
++	int "Maximum number of partitions per loop device"
++	default "0"
++	depends on BLK_DEV_LOOP
++	---help---
++	  Loop device partition support is disabled by default. If max_part
++	  is non-zero, partition support for loop devices is enabled for up to
++	  max_part partitions.
++
++	  Note: If you compile loop as module, you can also pass max_part as
++	        parameter when loading it.
++
++	  Warning: non-zero values break compatibility with applications which
++	           access the loop devices via major and minor number.
++
++	  Most users will answer 0 here.
++
+  config BLK_DEV_CRYPTOLOOP
+  	tristate "Cryptoloop Support"
+  	select CRYPTO
+--- linux-2.6/drivers/block/loop.c
++++ linux-2.6-loop/drivers/block/loop.c
+@@ -82,7 +82,7 @@
+  static LIST_HEAD(loop_devices);
+  static DEFINE_MUTEX(loop_devices_mutex);
+
+-static int max_part;
++static int max_part = CONFIG_BLK_DEV_LOOP_MAXPART;
+  static int part_shift;
+
+  /*
+
