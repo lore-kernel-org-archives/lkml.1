@@ -1,74 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753420AbYHISqw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753215AbYHISsQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753420AbYHISqw (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Aug 2008 14:46:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751516AbYHISqZ
+	id S1753215AbYHISsQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Aug 2008 14:48:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751695AbYHISsE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Aug 2008 14:46:25 -0400
-Received: from yx-out-2324.google.com ([74.125.44.30]:15693 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751196AbYHISqY (ORCPT
+	Sat, 9 Aug 2008 14:48:04 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:56608 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751516AbYHISsC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Aug 2008 14:46:24 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=QKKobUkPgk1cvZTst073WIPtYBVpQoURpPQ7A4rr6PKZ87KcerJI2PMJh8v9DB6xz2
-         Vrhl6BLvtebwaicBvwycZiwZVCZDHkI5y/iljLvLIkQUVroWJmbrrBOM75jgUfDgRYXL
-         0ptYiZTU4KLWaB9cLKuDglxAvUaDMGgQKddEg=
-Message-ID: <b637ec0b0808091146o7ce25033m13b544ae7d8b5352@mail.gmail.com>
-Date: Sat, 9 Aug 2008 20:46:21 +0200
-From: "Fabio Comolli" <fabio.comolli@gmail.com>
-To: "Jean Delvare" <khali@linux-fr.org>
-Subject: Re: New conflict message in latest GIT
-Cc: "Bjorn Helgaas" <bjorn.helgaas@hp.com>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Rene Herman" <rene.herman@keyaccess.nl>,
-       "Andrew Morton" <akpm@osdl.org>, "Thomas Renninger" <trenn@suse.de>
-In-Reply-To: <20080809190336.05e84068@hyperion.delvare>
+	Sat, 9 Aug 2008 14:48:02 -0400
+Date: Sat, 9 Aug 2008 14:47:59 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Greg KH <greg@kroah.com>
+Cc: Mimi Zohar <zohar@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org,
+       Al Viro <viro@ZenIV.linux.org.uk>, Stephen Smalley <sds@tycho.nsa.gov>,
+       James Morris <jmorris@namei.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>, safford@watson.ibm.com,
+       serue@linux.vnet.ibm.com, sailer@watson.ibm.com, zohar@us.ibm.com
+Subject: Re: [PATCH 2/4] integrity: special fs magic
+Message-ID: <20080809184759.GB22905@infradead.org>
+References: <20080808184349.999902616@linux.vnet.ibm.com> <1218221742.4444.12.camel@localhost.localdomain> <20080808190448.GA3356@kroah.com> <20080808191519.GA3704@kroah.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <b637ec0b0807221156x46d550a1h4180d6d624daeeb@mail.gmail.com>
-	 <200807231256.42743.bjorn.helgaas@hp.com>
-	 <b637ec0b0807231250g3e5b29eak8fbba41b69816351@mail.gmail.com>
-	 <20080809181358.5c9da790@hyperion.delvare>
-	 <b637ec0b0808090932l4d21d973we160c145f007da7c@mail.gmail.com>
-	 <20080809190336.05e84068@hyperion.delvare>
+In-Reply-To: <20080808191519.GA3704@kroah.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
+On Fri, Aug 08, 2008 at 12:15:19PM -0700, Greg KH wrote:
+> On Fri, Aug 08, 2008 at 12:04:48PM -0700, Greg KH wrote:
+> > On Fri, Aug 08, 2008 at 02:55:42PM -0400, Mimi Zohar wrote:
+> > >     - Move special fs magic number definitions to magic.h
+> > >     - Add magic.h include
+> > >     
+> > >     Signed-off-by: Mimi Zohar <zohar@us.ibm.com>
+> > 
+> > Why?  What is this patch for?  Are you going to do something with these
+> > magic values later?
+> 
+> Ok, I now see the follow-up patch that does something with them.
+> 
+> You should say so in this patch.
+> 
+> And is it really ok to be doing things from userspace based on a
+> filesystem "magic" key?  Those are numbers we have never exported to
+> userspace before, what happens if they are changed?
 
-On Sat, Aug 9, 2008 at 7:03 PM, Jean Delvare <khali@linux-fr.org> wrote:
-> On Sat, 9 Aug 2008 18:32:31 +0200, Fabio Comolli wrote:
->> Anyway, as usual linux is not supported at all on this laptop, it came
->> with XP. One thing that puzzles me is why bothering adding a
->> monitoring chip for which drivers do not exist for any OS?
->
-> If you refer to the PC87591: that's a Super-I/O chip, including many
-> different functions. Hardware monitoring is only one of these
-> functions. Manufacturers might be interested in some of the other
-> features and chose this chip because of them. Windows doesn't support
-> hardware monitoring at all without 3rd party tools anyway, so that's
-> hardly a decision factor for vendors.
->
-> Additionally, on laptops, thermal management is most often done by ACPI
-> rather than native OS drivers. Maybe the ACPI implementation in your
-> laptop actually gets the temperature from the PC87591.
->
-
-Oh, I see. Thanks for the explanation.
-
-> --
-> Jean Delvare
-
-Regards,
-Fabio
-
-
->
+These constants re exported to userspace in struct statfs .type and
+better don't change.  Providing the symbolic names for them sounds
+like a good idea to me.  What userspace does with that or not is
+their business, and if it's utterly stupid it'll be their fault if
+it doesn't work as expected..
