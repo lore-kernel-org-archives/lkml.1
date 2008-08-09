@@ -1,46 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753105AbYHITMZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753437AbYHITOK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753105AbYHITMZ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Aug 2008 15:12:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751257AbYHITMS
+	id S1753437AbYHITOK (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Aug 2008 15:14:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751677AbYHITN4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Aug 2008 15:12:18 -0400
-Received: from khc.piap.pl ([195.187.100.11]:58948 "EHLO khc.piap.pl"
+	Sat, 9 Aug 2008 15:13:56 -0400
+Received: from cantor.suse.de ([195.135.220.2]:44171 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751495AbYHITMS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Aug 2008 15:12:18 -0400
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: "Robert P. J. Day" <rpjday@crashcourse.ca>,
-       Grant Coady <gcoady.lk@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC PATCH] cleanup Serial ATA and Parallel ATA Kconfig
-References: <alpine.LFD.1.10.0808081228450.11491@localhost.localdomain>
-	<20080808172629.232bed01@lxorguk.ukuu.org.uk>
-	<njhp94pr4ha1nfgmj11n662enalpd9663h@4ax.com>
-	<m3sktfw1v5.fsf@maximus.localdomain>
-	<alpine.LFD.1.10.0808081911080.3254@localhost.localdomain>
-	<20080809103331.1d475d5c@lxorguk.ukuu.org.uk>
-	<m3zlnm75u1.fsf@maximus.localdomain>
-	<20080809141028.14db9bc7@lxorguk.ukuu.org.uk>
-From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Sat, 09 Aug 2008 21:12:02 +0200
-In-Reply-To: <20080809141028.14db9bc7@lxorguk.ukuu.org.uk> (Alan Cox's message of "Sat\, 9 Aug 2008 14\:10\:28 +0100")
-Message-ID: <m3skteuhod.fsf@maximus.localdomain>
+	id S1751257AbYHITNz convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 9 Aug 2008 15:13:55 -0400
+From: Thomas Renninger <trenn@suse.de>
+To: "S K" <nospamnoham@gmail.com>
+Subject: Re: cpufreq doesn't seem to work in Intel Q9300
+Date: Sat, 9 Aug 2008 21:30:14 +0200
+User-Agent: KMail/1.9.9
+Cc: "Alan Jenkins" <alan-jenkins@tuffmail.co.uk>,
+       "Zhao Yakui" <yakui.zhao@intel.com>, linux-kernel@vger.kernel.org,
+       linux-acpi@vger.kernel.org
+References: <514e099a0808030300u140a0ae7m92a2e7294f39f7b7@mail.gmail.com> <aff5deaf0808081123s1fbe6a5cn7847e9cb053c1f5a@mail.gmail.com> <200808092059.47863.trenn@suse.de>
+In-Reply-To: <200808092059.47863.trenn@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200808092130.14719.trenn@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox <alan@lxorguk.ukuu.org.uk> writes:
+Hi,
 
-> CF can hang off any interface. Also in theory any PATA interface is also
-> SATA as it may be combined with a bridge chip
+just that in case you try out kernels...
 
-But we don't drop PATA/SATA from the names and help texts, do we? :-)
+On Saturday 09 August 2008 08:59:47 pm Thomas Renninger wrote:
+> On Friday 08 August 2008 08:23:25 pm S K wrote:
 
-Even if we do, we can still sort the single driver list
-alphabetically, and we can still "select ATA_SFF" instead of the other
-way around.
--- 
-Krzysztof Halasa
+> Mark Langsdorf reported some acpi breakage in .27-rc1, this could also be
+> the reason.
+---------
+> I got a regression when updated from 2.6.27-rc1 ro
+> 2.6.27-rc2.  The noticeable symptom is the powernow-k8
+> driver stopped working because the call to 
+> acpi_processor_register_performance() is returning
+> -EINVAL.
+----------
+
+So it's rc2 not rc1, but AFAIK your report should be older than rc2.
+
+There also was a similar report from Laurence Darby <ldarby@tuffmail.com>.
+He still posted on the old cpufreq list.
+Subject: Core 2 Duo E8400 stepping 6 not recognised
+
+A BIOS update helped.
+You may be able to google this out and compare his CPU_FREQ_DEBUG logs.
+
+      Thomas
