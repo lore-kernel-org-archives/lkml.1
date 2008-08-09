@@ -1,217 +1,304 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754212AbYHIWgD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754640AbYHIWgY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754212AbYHIWgD (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Aug 2008 18:36:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752671AbYHIWft
+	id S1754640AbYHIWgY (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Aug 2008 18:36:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752809AbYHIWfv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Aug 2008 18:35:49 -0400
-Received: from an-out-0708.google.com ([209.85.132.250]:35478 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752618AbYHIWfs (ORCPT
+	Sat, 9 Aug 2008 18:35:51 -0400
+Received: from web82105.mail.mud.yahoo.com ([209.191.84.218]:42470 "HELO
+	web82105.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752619AbYHIWft (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Aug 2008 18:35:48 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=C+wuuQZhi+C80iO/ZdB1keYH0EypDz0QoRG2A954GtCICeZR3mctEirzA/MJwhGTjW
-         VqjURec/ucdTOc22jMRdBWH6YAK4so++0MyDFjusPgtD5Kb7V3JPN13KtziNcAqEAS+h
-         fpr4SY4rfDdRhU/gEmW42BFU+K2M0X5F4NLXA=
-Message-ID: <86802c440808091535g394f0567x675dbb93d1a8f91@mail.gmail.com>
-Date: Sat, 9 Aug 2008 15:35:46 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [PATCH 08/42] introduce nr_irqs
-Cc: "H. Peter Anvin" <hpa@zytor.com>, "Ingo Molnar" <mingo@elte.hu>,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       "Dhaval Giani" <dhaval@linux.vnet.ibm.com>,
-       "Mike Travis" <travis@sgi.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <m1bq01uavp.fsf@frodo.ebiederm.org>
+	Sat, 9 Aug 2008 18:35:49 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=sbcglobal.net;
+  h=Received:X-Mailer:Date:From:Subject:To:Cc:MIME-Version:Content-Type:Message-ID;
+  b=utDZ4a3vfz5z49IMpJ3eMOKEsaBqyx7Hg8zC7q7rH67GFykn/6qz7U5UP9MT0UQhHnKoYwuuIcaSKqLgSIio3wwn8nzE8sOZHEOlOcnN74qq47akf+agstGpl5o3Tx7d41rmKWxkv/5gTJMDWifdWxmJErszhTOZDkwIhJsMBqc=;
+X-Mailer: YahooMailRC/1042.40 YahooMailWebService/0.7.218
+Date: Sat, 9 Aug 2008 15:35:48 -0700 (PDT)
+From: David Witbrodt <dawitbro@sbcglobal.net>
+Subject: Re: HPET regression in 2.6.26 versus 2.6.25 -- RCU problem
+To: paulmck@linux.vnet.ibm.com
+Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+       Yinghai Lu <yhlu.kernel@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       netdev <netdev@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1218232368-31228-1-git-send-email-yhlu.kernel@gmail.com>
-	 <1218232368-31228-8-git-send-email-yhlu.kernel@gmail.com>
-	 <1218232368-31228-9-git-send-email-yhlu.kernel@gmail.com>
-	 <m1ej4zvw6s.fsf@frodo.ebiederm.org>
-	 <86802c440808081838r66cc8162t5c2e157908457048@mail.gmail.com>
-	 <489CFA0A.5030609@zytor.com>
-	 <86802c440808090030k7269590ftf233a13a21a2e37e@mail.gmail.com>
-	 <m14p5uuqh3.fsf@frodo.ebiederm.org>
-	 <86802c440808091421n50fd4b25i73e1bd00d7a8a67e@mail.gmail.com>
-	 <m1bq01uavp.fsf@frodo.ebiederm.org>
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <630464.55583.qm@web82105.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Aug 9, 2008 at 2:38 PM, Eric W. Biederman <ebiederm@xmission.com> wrote:
-> "Yinghai Lu" <yhlu.kernel@gmail.com> writes:
->
->> On Sat, Aug 9, 2008 at 9:02 AM, Eric W. Biederman <ebiederm@xmission.com> wrote:
->>> "Yinghai Lu" <yhlu.kernel@gmail.com> writes:
->>>
->>>>> Also, what's the point, if it's just a renaming?
->>>>
->>>> that is the start point.
->>>> nr_irqs is variable, and will be probed later. and use that number to
->>>> init dyn_alloc.
->>>
->>> YH.
->>>
->>> In my conception the code in kernel/irq.c that today does:
->>>
->>> struct irq_desc *desc;
->>> if (irq >= NR_IRQS)
->>>   return -EINVAL;
->>> desc = irq_desc + irq;
->>>
->>> Should become:
->>>
->>> struct irq_desc *desc;
->>> desc = irq_desc(irq);
->>> if (!desc)
->>>   return -EINVAL;
->>>
->>
->> OK.
->>
->> also want to introduce dummy
->> struct irq_desc
->> {
->>    unsigned int irq;
->> };
->>
->> in linux/interrupt.h if GENERIC_HARDIRQS is not defined.
->> so could have same interface
->> irq_desc()
->> and
->> for_each_irq_desc(irq, desc)
->
-> What would use it?  irq_desc doesn't even exist if GENERIC_HARDIRQS are
-> not defined.
->
-> Far far in the future we may want to introduce an opaque type
-> struct irq.  For use with linux/interrupt.h  Allowing things
-> like irq_request(struct irq *irq, ...);  For now those kinds
-> of interfaces should be internal to the genirq code.
+OK, sorry for several hours of delay, but I had to work this
+morning and just got home.
 
-From: Yinghai Lu <yhlu.kernel@gmail.com>
-Date: Fri, 8 Aug 2008 13:56:15 -0700
-Subject: [PATCH 31/42] replace loop with nr_irqs for proc/stat
 
-so don't all irq_desc at begining to allocate all.
-and only call that when needed
 
-v2: make sure arch without GENERIC_HARDIRQS works too
 
-Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
----
- fs/proc/proc_misc.c |   50 ++++++++++++++++++++++++++++++++++++--------------
- 1 file changed, 36 insertions(+), 14 deletions(-)
+> > I am completely ignorant about how the kernel works, so any guesses I have
+> > are probably worthless... but I'll throw some out anyway:
+> > 
+> > 1.  Maybe HPET is used (if present) for timing by RCU, so disabling it
+> > forces RCU to work differently.  (Pure guess here:  I know nothing about
+> > RCU, and haven't even tried looking at its code.)
+> 
+> RCU doesn't use HPET directly.  Most of its time-dependent behavior
+> comes from its being invoked from the scheduling-clock interrupt.
 
-Index: linux-2.6/fs/proc/proc_misc.c
-===================================================================
---- linux-2.6.orig/fs/proc/proc_misc.c
-+++ linux-2.6/fs/proc/proc_misc.c
-@@ -495,17 +495,16 @@ static const struct file_operations proc
+  OK.  It was just a guess, anyway, but in my weak attempts to apply logic
+to the problem I thought:  a locking issue would not go away merely by
+disabling HPET, but if HPET touches the inner workings of RCU (or something
+on which RCU depends) then it would make sense that disabling HPET causes
+RCU to behave differently.
+  I was just brainstorming, though....
 
- static int show_stat(struct seq_file *p, void *v)
- {
--       int i;
-+       int i, j;
-        unsigned long jif;
-        cputime64_t user, nice, system, idle, iowait, irq, softirq, steal;
-        cputime64_t guest;
-        u64 sum = 0;
-        struct timespec boottime;
--       unsigned int *per_irq_sum;
--
--       per_irq_sum = kzalloc(sizeof(unsigned int)*nr_irqs, GFP_KERNEL);
--       if (!per_irq_sum)
--               return -ENOMEM;
-+       unsigned int per_irq_sum;
-+#ifdef CONFIG_GENERIC_HARDIRQS
-+       struct irq_desc *desc;
-+#endif
 
-        user = nice = system = idle = iowait =
-                irq = softirq = steal = cputime64_zero;
-@@ -514,8 +513,6 @@ static int show_stat(struct seq_file *p,
-        jif = boottime.tv_sec;
+> > 2.  Maybe my hardware is broken.  We need see one initcall return that
+> > report over 280,000 msecs... when the entire boot->freeze time was about
+> > 3 secs.  On the other hand, 2.6.25 (and before) work just fine with HPET
+> > enabled.
+> 
+> For CONFIG_CLASSIC_RCU and !CONFIG_PREEMPT, in-kernel infinite spin loops
+> will cause synchronize_rcu() to hang.  For other RCU configurations,
+> spinning with interrupts disabled will result in similar hangs.  Invoking
+> synchronize_rcu() very early in boot (before rcu_init() has been called)
+> will of course also hang.
+> 
+> Could you please let me know whether your config has CONFIG_CLASSIC_RCU
+> or CONFIG_PREEMPT_RCU?
 
-        for_each_possible_cpu(i) {
--               int j;
--
-                user = cputime64_add(user, kstat_cpu(i).cpustat.user);
-                nice = cputime64_add(nice, kstat_cpu(i).cpustat.nice);
-                system = cputime64_add(system, kstat_cpu(i).cpustat.system);
-@@ -525,10 +522,12 @@ static int show_stat(struct seq_file *p,
-                softirq = cputime64_add(softirq, kstat_cpu(i).cpustat.softirq);
-                steal = cputime64_add(steal, kstat_cpu(i).cpustat.steal);
-                guest = cputime64_add(guest, kstat_cpu(i).cpustat.guest);
--               for (j = 0; j < nr_irqs; j++) {
--                       unsigned int temp = kstat_irqs_cpu(j, i);
-+               for_each_irq_desc(j, desc)
-+               {
-+                       unsigned int temp;
-+
-+                       temp = kstat_irqs_cpu(j, i);
-                        sum += temp;
--                       per_irq_sum[j] += temp;
-                }
-                sum += arch_irq_stat_cpu(i);
-        }
-@@ -571,8 +570,23 @@ static int show_stat(struct seq_file *p,
-        }
-        seq_printf(p, "intr %llu", (unsigned long long)sum);
+[My apologies for the poor writing above.  The sentence "We need see one 
+initcall return that report over 280,000 msecs..." was supposed to say
+"We *DID* see one initcall return that *reported* over 280,000 msecs..."
+In other words, something funky is going on with this machine's timers
+in the crashing kernels.]
 
--       for (i = 0; i < nr_irqs; i++)
--               seq_printf(p, " %u", per_irq_sum[i]);
-+       /* sum again ? it could be updated? */
-+       for_each_irq_desc(j, desc)
-+       {
-+               per_irq_sum = 0;
-+               for_each_possible_cpu(i) {
-+                       unsigned int temp;
-+
-+                       temp = kstat_irqs_cpu(j, i);
-+                       per_irq_sum += temp;
-+               }
-+
-+#ifdef CONFIG_HAVE_SPARSE_IRQ
-+               seq_printf(p, " %u:%u", j, per_irq_sum);
-+#else
-+               seq_printf(p, " %u", per_irq_sum);
-+#endif
-+       }
+OK, I don't believe Paul was here for the beginning of this thread on
+Monday, so before supplying the info requested I need to provide some
+context on my situation.  I have one machine ("desktop") which works fine
+with 2.6.2[67] kernels, with mboard = "Gigabyte GA-M59SLI-S5"; and I have
+two machines ("fileserver", "webserver") on which 2.6.2[67] kernels freeze,
+both with mboard = "ECS AMD690GM-M2".  I also am interested in getting the
+Debian stock kernel working for their upcoming stable release, as well as
+getting my own custom kernels working again.
 
-        seq_printf(p,
-                "\nctxt %llu\n"
-@@ -586,7 +600,6 @@ static int show_stat(struct seq_file *p,
-                nr_running(),
-                nr_iowait());
+First, here is the .config info for the Debian stock kernel called
+"linux-image-2.6.26-1-amd64":
+====================
+$ egrep 'HPET|RCU|PREEMPT' config-2.6.26-1-amd64
+CONFIG_PREEMPT_NOTIFIERS=y
+CONFIG_CLASSIC_RCU=y
+CONFIG_HPET_TIMER=y
+CONFIG_HPET_EMULATE_RTC=y
+CONFIG_PREEMPT_NONE=y
+# CONFIG_PREEMPT_VOLUNTARY is not set
+# CONFIG_PREEMPT is not set
+CONFIG_HPET=y
+CONFIG_HPET_MMAP=y
+# CONFIG_RCU_TORTURE_TEST is not set
+====================
+This kernel freezes on webserver/fileserver, but runs fine on desktop.  (The
+binary is identical, having moved it from desktop to the others via NFS instead
+of downloading a separate instance from the Debian repositories.)
 
--       kfree(per_irq_sum);
-        return 0;
- }
+Here is info from the custom .config for my FREEZING fileserver machine, which
+is not the same as the desktop, and not the same as Debian stock:
+====================
+$ egrep 'HPET|RCU|PREEMPT' config-2.6.26-2s11950.080804.fileserver.uvesafb
+CONFIG_CLASSIC_RCU=y
+CONFIG_HPET_TIMER=y
+CONFIG_HPET_EMULATE_RTC=y
+CONFIG_PREEMPT_NONE=y
+# CONFIG_PREEMPT_VOLUNTARY is not set
+# CONFIG_PREEMPT is not set
+CONFIG_HPET=y
+CONFIG_HPET_RTC_IRQ=y
+CONFIG_HPET_MMAP=y
+====================
+This was derived from the working .config for 2.6.25 on fileserver:
+====================
+$ egrep 'HPET|RCU|PREEMPT' config-2.6.25-7.080720.fileserver.uvesafb
+CONFIG_CLASSIC_RCU=y
+CONFIG_HPET_TIMER=y
+CONFIG_HPET_EMULATE_RTC=y
+CONFIG_PREEMPT_NONE=y
+# CONFIG_PREEMPT_VOLUNTARY is not set
+# CONFIG_PREEMPT is not set
+CONFIG_HPET=y
+# CONFIG_HPET_RTC_IRQ is not set
+CONFIG_HPET_MMAP=y
+====================
 
-Index: linux-2.6/include/linux/interrupt.h
-===================================================================
---- linux-2.6.orig/include/linux/interrupt.h
-+++ linux-2.6/include/linux/interrupt.h
-@@ -17,6 +17,11 @@
+After reading Paul's email, but before replying, I applied the changes
+to PREEMPT and PREEMPT_RCU and built 2.6.27-rc2 from my git tree on
+fileserver.  This kernel FREEZES on fileserver, like the custom and
+Debian stock 2.6.26 kernels mentioned above:
+====================
+$ egrep 'HPET|RCU|PREEMPT' config-2.6.27-rc2.080809.preempt+rcu
+# CONFIG_CLASSIC_RCU is not set
+CONFIG_HPET_TIMER=y
+CONFIG_HPET_EMULATE_RTC=y
+# CONFIG_PREEMPT_NONE is not set
+# CONFIG_PREEMPT_VOLUNTARY is not set
+CONFIG_PREEMPT=y
+CONFIG_PREEMPT_RCU=y
+CONFIG_RCU_TRACE=y
+CONFIG_HPET=y
+CONFIG_HPET_RTC_IRQ=y
+CONFIG_HPET_MMAP=y
+# CONFIG_PREEMPT_TRACER is not set
+====================
 
- extern int nr_irqs;
+Here is info from the custom .config for my WORKING desktop machine, which
+is not the same as fileserver/webserver, and not the same as Debian stock:
+====================
+$ egrep 'HPET|RCU|PREEMPT' config-2.6.26-1.080801.desktop.uvesafb
+CONFIG_CLASSIC_RCU=y
+CONFIG_HPET_TIMER=y
+CONFIG_HPET_EMULATE_RTC=y
+# CONFIG_PREEMPT_NONE is not set
+# CONFIG_PREEMPT_VOLUNTARY is not set
+CONFIG_PREEMPT=y
+# CONFIG_PREEMPT_RCU is not set
+CONFIG_HPET=y
+CONFIG_HPET_RTC_IRQ=y
+CONFIG_HPET_MMAP=y
+====================
 
-+#ifndef CONFIG_GENERIC_HARDIRQS
-+#define for_each_irq_desc(irq, desc)           \
-+       for (irq = 0; irq < nr_irqs; irq++])
-+#endif
-+
- /*
-  * These correspond to the IORESOURCE_IRQ_* defines in
-  * linux/ioport.h to select the interrupt line behaviour.  When
+(My custom configurations originated with the Debian stock config, but I
+disabled drivers and features irrelevant for my hardware, then tweaked
+each .config according to each machine's specific hardware and usage.
+All machines work fine using my custom configs for 2.6.25 kernels and
+earlier.)
+
+
+> > 3. I was able to find the commit that introduced the freeze
+> > (3def3d6ddf43dbe20c00c3cbc38dfacc8586998f), so there has to be a connection
+> > between that commit and the RCU problem.  Is it possible that a prexisting
+> > error or oversight in the code was merely exposed by that commit?  (And 
+> > only on certain hardware?)  Or does that code itself contain the error?
+> 
+> Thank you for finding the commit -- should be quite helpful!!!
+> 
+> A quick look reveals what appears to be reader-writer locking rather
+> than RCU.  It does run in early boot before rcu_init(), so if it managed
+> to call synchronize_rcu() somehow you indeed would see a hang.  I do
+> not see such a call, but then again, I don't know this code much at all.
+> 
+> This is the second time in as many days that motivated RCU's working
+> correctly before rcu_init()...  Hmmm...
+
+Again, I think Paul was not here for the previous messages in this thread.  A
+bit of recap may be in order:
+
+The commit that first causes the freeze (and I assume that no commits since
+would also cause a freeze, but that is unknown at this point) touches 3
+files:
+
+arch/x86/kernel/e820_64.c:  Here, the algorithm was altered to remove
+several calls to a function called request_resource(<args>), replacing them
+with a single call to insert_resource(<args>).  I have no idea whether this
+change is problematic, by I observe that "request" sounds read-only, while
+"insert" implies read-write behavior.  (NB: this file no longer exists, and
+its contents have been merged into 'e820.c'.)
+
+arch/x86/kernel/setup_64.c:  Here, several calls of insert_resource(<args>)
+are added in 2 functions.
+
+include/asm-x86/e820_64.h:  Here, a function prototype is modified to reflect
+changes made in 'e820_64.c'.
+
+
+Booting the 2.6.26 kernels on fileserver with "debug initcall_debug" reveals
+that the last function called before the freeze is called "inet_init()".
+(The inet_init() function itself is not important here; one desperate 
+experiment I tried, disabling most of the kernel... including CONFIG_NET...
+caused the freeze to occur in pci_init() instead.)  The inet_init() function
+is located in net/ipv4/af_inet.c, and freezes in a loop which calls
+inet_register_protosw(<arg>):
+
+===== BEGIN CODE EXCERPT ========
+    /* Register the socket-side information for inet_create. */
+    for (r = &inetsw[0]; r < &inetsw[SOCK_MAX]; ++r)
+        INIT_LIST_HEAD(r);
+
+    for (q = inetsw_array; q < &inetsw_array[INETSW_ARRAY_LEN]; ++q)
+        inet_register_protosw(q);
+===== END EXCERPT ========
+
+The inet_register_protosw(<arg>) function calls list_add_rcu(<args>) in a
+block of code enclosed between spin_lock_bh(<arg>) and spin_unlock_bh(<arg>).
+Again, I don't know what I'm doing, but it looks like this is where
+inet_init() touchs RCU features.  Just before inet_register_protosw() hits
+"return;" it calls, synchronize_net(); this is a tiny function, which calls
+might_sleep() and synchronize_rcu().
+
+At synchronize_rcu(), the freeze occurs.  It occurs on the first iteration
+of inet_register_protosw(<arg>) as well.
+
+To quote Daffy Duck:  "Something's amiss here...."  I lack the knowledge
+and skills to know whether commit 3def3d... is really to blame, or whether
+the changes it made simply revealed breakage in the other code which was
+already present.  Indeed, none of you seem to be having any problem at all;
+nor am I, on my "desktop" machine!
+
+
+> > If any has any test code I can run to detect massive HPET breakage on
+> > these motherboards, I'll be glad to do so.  Or any other experimental
+> > code changes, for that matter.
+> 
+> If you can answer my CONFIG_CLASSIC_RCU vs. CONFIG_PREEMPT_RCU question
+> above, I should be able to provide you a diagnostic patch that would say
+> which CPU RCU was waiting on.  At least assuming that at least one CPU
+> was still taking the scheduling-clock interrupt, that is.  ;-)
+
+[More poor grammar apologies:  "If any has any test code..." ==> 
+"If *anyone has any test code..."]
+
+Thank you for the help.  This problem is frustrating, but incredibly
+interesting to me.  I have never had this sort of problem with any previous
+kernel, so I have never had an opportunity to play bug-catcher before.  By
+pursuing the matter this far, I have learned elementary usage of 'git', I
+have had a chance to peek at the kernel source code itself, and have even
+successfully inserted code (only harmless printk()'s, though) and built the
+modified kernel without errors afterward!  Without this regression, I would
+have had none of this fun!
+
+A few closing comments, then:
+
+1.  I don't think the PREEMPT options in .config are to blame.  The Debian
+stock 2.6.26 kernel runs on "desktop", but freezes on "fileserver".  That
+makes it look like a hardware issue, but 2.6.25 ran fine.  [init_headache()]
+
+2.  Commit 3def3d... draws the line between 2.6.25 working on "fileserver"
+and pre-2.6.26 not working on "fileserver".  The changes in e820.c seem to
+modify a function called e820_reserve_resources() from requesting resources
+to inserting resources.  (The changes in setup.c don't affect me, since the
+additional call of insert_resource() is in a block depending on CONFIG_KEXEC,
+which is disable in my custom kernels.)  Something about this commit causes
+inet_init() -- which calls inet_register_protosw(), which calls 
+synchronize_net(), which calls synchronize_rcu() -- to freeze.
+[init_migraine()]
+
+3.  Whatever the cause -- whether the commit is doing something wrong, or
+whether it just exposed something else that wasn't right to begin with --
+the problem can just be made to go away by using "hpet=disabled" as a boot
+parameter.  [init_apoplexy()]
+
+4.  The problem seems to only manifest itself on an ECS AMD690GM-M2
+motherboard, since of the thousands of users of Debian Sid I am the only
+one reporting a problem on the Debian BTS, and no one else on the LKML is
+experiencing it either.  [init_fatal_aneurism()]
+
+However, even though I am the only one plagued by this problem, it is clear
+that this hardware ran 2.6.25 just fine.  Maybe the full extent of the
+problem is yet to be seen, since the vast majority of Linux users run
+distributions with older kernels.  So, I'm viewing this as a chance for
+me to finally be able to contribute, until one of 3 things is discovered:
+the problem is my fault, the problem is my hardware's fault, or the problem
+is a bug in the kernel.
+
+
+Thanks Paul (and Peter and Yinghai),
+Dave W.
