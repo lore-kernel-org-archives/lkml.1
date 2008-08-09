@@ -1,65 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762692AbYHICWU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758972AbYHICgd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762692AbYHICWU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 22:22:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752968AbYHICWM
+	id S1758972AbYHICgd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 22:36:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753480AbYHICgZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 22:22:12 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:59487 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750890AbYHICWM (ORCPT
+	Fri, 8 Aug 2008 22:36:25 -0400
+Received: from jalapeno.cc.columbia.edu ([128.59.29.5]:59127 "EHLO
+	jalapeno.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753440AbYHICgZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 22:22:12 -0400
-Date: Sat, 9 Aug 2008 04:23:02 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, Roland McGrath <roland@redhat.com>,
-       Ulrich Drepper <drepper@redhat.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Gregory Haskins <ghaskins@novell.com>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       "Luis Claudio R. Goncalves" <lclaudio@uudg.org>,
-       Clark Williams <williams@redhat.com>
-Subject: Re: [PATCH 0/5] ftrace: to kill a daemon
-Message-ID: <20080809022302.GH9038@one.firstfloor.org>
-References: <20080808182104.GA11376@Krystal> <alpine.DEB.1.10.0808081432400.8922@gandalf.stny.rr.com> <20080808190506.GD11376@Krystal> <alpine.DEB.1.10.0808081750590.16691@gandalf.stny.rr.com> <87tzdv2g05.fsf@basil.nowhere.org> <alpine.DEB.1.10.0808082030500.1396@gandalf.stny.rr.com> <20080809011955.GE9038@one.firstfloor.org> <alpine.DEB.1.10.0808082126500.3707@gandalf.stny.rr.com> <20080809015539.GG9038@one.firstfloor.org> <alpine.DEB.1.10.0808082202030.4894@gandalf.stny.rr.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0808082202030.4894@gandalf.stny.rr.com>
-User-Agent: Mutt/1.4.2.1i
+	Fri, 8 Aug 2008 22:36:25 -0400
+Message-ID: <489D025E.3030901@cs.columbia.edu>
+Date: Fri, 08 Aug 2008 22:35:10 -0400
+From: Oren Laadan <orenl@cs.columbia.edu>
+Organization: Columbia University
+User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
+MIME-Version: 1.0
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+CC: containers@lists.linux-foundation.org, Theodore Tso <tytso@mit.edu>,
+       linux-kernel@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [RFC][PATCH 2/4] checkpoint/restart: x86 support
+References: <20080807224033.FFB3A2C1@kernel>	 <200808081409.30591.arnd@arndb.de> <489CAC70.7090809@cs.columbia.edu>	 <200808090029.28286.arnd@arndb.de> <489CD0F9.9060603@cs.columbia.edu>	 <1218242286.19082.62.camel@nimitz>  <489CF0CE.1000603@cs.columbia.edu> <1218248458.19082.68.camel@nimitz>
+In-Reply-To: <1218248458.19082.68.camel@nimitz>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-No-Spam-Score: Local
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 08, 2008 at 10:03:42PM -0400, Steven Rostedt wrote:
-> 
-> On Sat, 9 Aug 2008, Andi Kleen wrote:
-> 
-> > > Funny, CONFIG_FTRACE happens to select that. Now the question is, would 
-> > > mcount work without it?
-> > 
-> > Not without fixing gcc first. It would work if gcc always called
-> > mcount the first thing before setting up the stack frame. Not 
-> > sure why it doesn't do that.
-> 
-> I could take out the frame pointer option and pass in zero for the parent 
-> in such that case. But the parent is quite useful. But if it helps
-> with performance, it may be worth doing this.
 
-Right now gcc errors out unfortunately. Would need to ask gcc developers
-to fix this first. But when they move mcount to be always first
-you can still get at the parent, it will always be at 4(%esp) or 8(%rsp).
+Dave Hansen wrote:
+> On Fri, 2008-08-08 at 21:20 -0400, Oren Laadan wrote:
+>> hehehe .. both; I meant that while it doesn't change per architecture, it
+>> varies between architectures. So "struct pt_regs" compiled for x86-32 is
+>> different than that compiled for x86-64. Therefore we can't just dump the
+>> structure as is and expect that 64 bit would be able to parse the 32 bit.
+>> In other words, we need an intermediate representation.
+> 
+> Surely we already handle this, though.  Don't we allow a 32-bit app
+> running on a 64-bit kernel to PTRACE_GETREGS and get the 32-bit version?
+> A 64-bit app will get the 64-bit version making the same syscall.  It's
+> all handled in the syscall compatibility code.
 
-An alternative would be also run an assembler post processor that
-inserts mcount calls without compiler help.
+Sure, that's a compatibility layer around ptrace() in the 64-bit kernel.
 
--Andi
+Recall that Arnd suggested "keeping the format identical between the
+variations of each architecture", and I fully agree. If we want to keep
+the format identical, we can't simply define:
+	struct cr_hdr_cpu {
+		struct pt_regs regs;
+		...
+	};
+because that will compile differently on x86-32 and x86-64. So either we
+add r8..r15 to the structure as it appears in the patch now (and keep the
+format identical), or allow the format to vary, and explicitly test for
+this case and add a compatibility layer. Personally I prefer the former.
+
+Oren.
+
