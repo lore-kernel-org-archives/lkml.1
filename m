@@ -1,86 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753070AbYHISMt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753739AbYHISOV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753070AbYHISMt (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Aug 2008 14:12:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751327AbYHISMi
+	id S1753739AbYHISOV (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Aug 2008 14:14:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751633AbYHISOJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Aug 2008 14:12:38 -0400
-Received: from mga09.intel.com ([134.134.136.24]:62132 "EHLO mga09.intel.com"
+	Sat, 9 Aug 2008 14:14:09 -0400
+Received: from tihlde.org ([158.38.48.10]:37432 "EHLO tihlde.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751147AbYHISMh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Aug 2008 14:12:37 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.31,334,1215414000"; 
-   d="scan'208";a="324749981"
-Date: Sat, 9 Aug 2008 11:12:19 -0700
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-To: Wolfgang Walter <wolfgang.walter@stwm.de>
-Cc: Herbert Xu <herbert@gondor.apana.org.au>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       "viro@ZenIV.linux.org.uk" <viro@zeniv.linux.org.uk>,
-       "vegard.nossum@gmail.com" <vegard.nossum@gmail.com>
-Subject: Re: Kernel oops with 2.6.26, padlock and ipsec: probably problem with fpu state changes
-Message-ID: <20080809181219.GF13158@linux-os.sc.intel.com>
-References: <200807171653.59177.wolfgang.walter@stwm.de> <20080808231121.GA13158@linux-os.sc.intel.com> <20080809143727.GA30499@gondor.apana.org.au> <200808091757.32999.wolfgang.walter@stwm.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200808091757.32999.wolfgang.walter@stwm.de>
-User-Agent: Mutt/1.4.1i
+	id S1751505AbYHISOI convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 9 Aug 2008 14:14:08 -0400
+X-Greylist: delayed 1971 seconds by postgrey-1.27 at vger.kernel.org; Sat, 09 Aug 2008 14:14:08 EDT
+Message-ID: <489DD6BF.5030403@mrfjo.org>
+Date: Sat, 09 Aug 2008 19:41:19 +0200
+From: =?ISO-8859-1?Q?Espen_Fjellv=E6r_Olsen?= <espen@mrfjo.org>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+MIME-Version: 1.0
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8BIT
+X-SA-Exim-Connect-IP: 158.38.48.18
+X-SA-Exim-Mail-From: espen@mrfjo.org
+Subject: megaraid_mm not showing up in 2.6.25.2
+X-SA-Exim-Version: 4.2.1 (built Fri, 20 Jun 2008 19:33:36 +0200)
+X-SA-Exim-Scanned: Yes (on tihlde.org)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Aug 09, 2008 at 08:57:32AM -0700, Wolfgang Walter wrote:
-> On Saturday 09 August 2008, Herbert Xu wrote:
-> > On Fri, Aug 08, 2008 at 04:11:21PM -0700, Suresh Siddha wrote:
-> > >
-> > > With out the recent dynamic fpu allocation changes, while we don't see
-> oops,
-> > > there is a possible race still present in older kernels(for example,
-> > > while kernel is using kernel_fpu_begin() in some optimized clear/copy
-> > > page and an interrupt/softirq happens which uses these padlock
-> > > instructions generating DNA fault).
-> >
-> > No this wasn't a problem because kernel_fpu_begin clears TS and
-> > therefore we don't get faults on SSE instructions.
-> >
-> > However, with your patch it will become a problem due to the
-> > fact that it wasn't designed to be nested.
-> >
-> I don't exactly understand this. You think that
-> 
-> kernel_fpu_begin();
-> XCRYPT....
-> kernel_fpu_end();
-> 
-> is a problem and wasn't before?
+Hi!
+We are experiencing that megaraid_mm wont register on a 2.6.25.2 on our 
+production server.
+The module are compiled into the kernel, but /dev/megamon0 is not 
+created, and we dont find any signs in eg. /proc/devices so a manual 
+mknod would seem not to work.
 
-Wolf, kernel_fpu_begin() and kernel_fpu_end() only saves the user
-state from getting corrupted with the kernel state. But it doesn't
-help if kernel has nesting fpu usage.
+We didnt experience this problem on 2.6.24.2 which were our previous kernel.
 
-In this padlock case with the patch, we may encounter a nested
-kernel_fpu_begin() and end()
-but this is ok, as the padlock is not actually touching fpu/sse registers.
+02:03.0 RAID bus controller: LSI Logic / Symbios Logic MegaRAID (rev 01)
+    Subsystem: Dell MegaRAID 518 DELL PERC 4/DC RAID Controller
+    Flags: bus master, 66MHz, slow devsel, latency 64, IRQ 27
+    Memory at ff5f0000 (32-bit, prefetchable) [size=64K]
+    Expansion ROM at fc8f0000 [disabled] [size=64K]
+    Capabilities: [80] Power Management version 2
 
-Yes, we do have a problem when the interrupt handlers also use SSE
-registers and if there is a nesting inside the kernel. Today we don't
-have any such usage.
+ From kernel log:
+megaraid cmm: 2.20.2.7 (Release Date: Sun Jul 16 00:01:03 EST 2006)
+megaraid: 2.20.5.1 (Release Date: Thu Nov 16 15:32:35 EST 2006)
+megaraid: probe new device 0x1000:0x1960:0x1028:0x0518: bus 2:slot 3:func 0
+megaraid: fw version:[352B] bios version:[1.10]
 
-> If XCRYPT may be interrupted and the interrupt code again uses this optimized
-> memcpy implementation and so nesting kernel_fpu_begin then why should this
-> not happen with the other alg.
-> 
-> How could any kernel code use MMX/SSE/FPU when the interrupt case isn't
-> handled?
-
-Today we don't have any nesting, for example, fast memcpy, if in interrupt
-will use the slow version and doesnt use the optimized version.
-
-thanks,
-suresh
+--
+Best Regards
+Espen Fjellvær Olsen
+Drift@tihlde
