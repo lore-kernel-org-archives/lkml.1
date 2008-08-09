@@ -1,117 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762190AbYHIHe5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762069AbYHIHhA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762190AbYHIHe5 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Aug 2008 03:34:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753058AbYHIHeq
+	id S1762069AbYHIHhA (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Aug 2008 03:37:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753692AbYHIHgu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Aug 2008 03:34:46 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:59987 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752804AbYHIHeq (ORCPT
+	Sat, 9 Aug 2008 03:36:50 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:45897
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1753576AbYHIHgt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Aug 2008 03:34:46 -0400
-Subject: Re: HPET regression in 2.6.26 versus 2.6.25 -- RCU problem
-From: Peter Zijlstra <peterz@infradead.org>
-To: David Witbrodt <dawitbro@sbcglobal.net>
-Cc: linux-kernel@vger.kernel.org, Yinghai Lu <yhlu.kernel@gmail.com>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       netdev <netdev@vger.kernel.org>
-In-Reply-To: <506429.22669.qm@web82107.mail.mud.yahoo.com>
-References: <506429.22669.qm@web82107.mail.mud.yahoo.com>
-Content-Type: text/plain
-Date: Sat, 09 Aug 2008 09:34:25 +0200
-Message-Id: <1218267265.29098.48.camel@lappy.programming.kicks-ass.net>
+	Sat, 9 Aug 2008 03:36:49 -0400
+Date: Sat, 09 Aug 2008 00:36:50 -0700 (PDT)
+Message-Id: <20080809.003650.78513833.davem@davemloft.net>
+To: haoki@redhat.com
+Cc: herbert@gondor.apana.org.au, m.s.tsirkin@gmail.com,
+       linux-kernel@vger.kernel.org, yoshfuji@linux-ipv6.org,
+       netdev@vger.kernel.org
+Subject: Re: possible recursive locking in udp4_lib_rcv
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <489D13F9.4000805@redhat.com>
+References: <20080808143741.GA20777@gondor.apana.org.au>
+	<20080808150108.GA21048@gondor.apana.org.au>
+	<489D13F9.4000805@redhat.com>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-08-08 at 18:23 -0700, David Witbrodt wrote:
-> I have tracked the regression down to an RCU problem.
-> 
-> I added some printk()'s to the function inet_register_protosw() in
-> net/ipv4/af_inet.c, as seen in this diff:
-> 
-> ===== BEGIN DIFF ==========
->       * non-permanent entry.  This means that when we remove this entry, the
->       * system automatically returns to the old behavior.
->       */
-> +    printk ("     Adding new protocol\n");
->      list_add_rcu(&p->list, last_perm);
-> +
->  out:
-> +    printk ("     Unlocking spinlock\n");
->      spin_unlock_bh(&inetsw_lock);
->  
-> +    printk ("     Calling synchronize_net()\n");
->      synchronize_net();
->  
->      return;
-> ===== END DIFF ==========
-> 
-> A kernel built with these changes freezes with "Calling synchronize_net()"
-> as the last printed line.
-> 
-> I located the function synchronize_net() in net/core/dev.c, and it was easy
-> to add some printk()'s there:
-> 
-> ===== BEGIN DIFF ==========
->  
-> void synchronize_net(void)
->  {
-> +    printk ("   synchronize_net(): calling might_sleep()\n");
->      might_sleep();
-> +
-> +    printk ("   synchronize_net(): calling synchronize_rcu()\n");
->      synchronize_rcu();
->  }
-> ===== END DIFF ==========
-> 
-> The kernel built with these changes froze with "synchronize_net(): 
-> calling synchronize_rcu()" as the last line on the screen.
-> 
-> After reading some documentation in Documentation/RCU/, it looks like 
-> something is misusing RCU -- and, according to the Documentation, those kinds 
-> of mistakes are easy to make.  Maybe necessary calls to
->  
->     rcu_read_lock()
->     rcu_read_unlock()
-> 
-> are missing, and something about my hardware is triggering a freeze that 
-> doesn't occur on most hardware.
-> 
-> 
-> For some reason, turning off the HPET by booting with "hpet=disabled" keeps
-> the freeze from happening.  Just reading a couple of those docs about RCU
-> made me dizzy, so I hope someone familiar with RCU issues will take a look
-> at the code in the files I've listed.  Surely you guys can take it from here
-> now?!
-> 
-> If not, just give me some experimental code changes to make to get my 2.6.26
-> and 2.6.27 kernels working again without disabling HPET!!!
+From: Hideo AOKI <haoki@redhat.com>
+Date: Fri, 08 Aug 2008 23:50:17 -0400
 
+> Hello Herbert,
+> 
+> Herbert Xu wrote:
+> > On Fri, Aug 08, 2008 at 10:37:41PM +0800, Herbert Xu wrote:
+> >> Never mind, I see the reason why it's there.  What we should do
+> >> is drop the lock when we hit an encapsulated socket since they
+> >> don't need it at all.
+> > 
+> > Here is the patch:
+> > 
+> > udp: Drop socket lock for encapsulated packets
+> 
+> Thank very much for fixing the bug.
 
-The typical way to deadlock like this is do something like:
+Indeed, thanks Herbert.
 
- rcu_read_lock();
-
-   synchronize_rcu();
-
- rcu_read_unlock();
-
-While I cannot immediately see any such usage in the function you
-quoted, it could be on of the callers.. let me browse some code..
-
-Can't seem to find anything like that.
-
-What's weird though - is that HPET makes any difference on these network
-code paths.
-
-Could we end up calling rcu too soon? I doubt we bring up ipv4 before
-rcu..
-
-
+Applied to net-2.6, and queued up for -stable.
