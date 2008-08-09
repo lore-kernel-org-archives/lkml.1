@@ -1,49 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753836AbYHIVSi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753963AbYHIVUI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753836AbYHIVSi (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Aug 2008 17:18:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751655AbYHIVSa
+	id S1753963AbYHIVUI (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Aug 2008 17:20:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751890AbYHIVT5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Aug 2008 17:18:30 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:46883 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751314AbYHIVS3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Aug 2008 17:18:29 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Mark Langsdorf <mark.langsdorf@amd.com>
-Subject: [Regression] 2.6.27-rc2-git4: suspend and power off fails on Asus M3A32-MVP
-Date: Sat, 9 Aug 2008 23:21:15 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Andrew Morton <akpm@linux-foundation.org>, Dave Jones <davej@redhat.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, kernel-testers@vger.kernel.org,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Frank Arnold <frank.arnold@amd.com>
+	Sat, 9 Aug 2008 17:19:57 -0400
+Received: from hpsmtp-eml20.kpnxchange.com ([213.75.38.85]:43384 "EHLO
+	hpsmtp-eml20.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751812AbYHIVT5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 9 Aug 2008 17:19:57 -0400
+From: Frans Pop <elendil@planet.nl>
+To: Rene Herman <rene.herman@keyaccess.nl>
+Subject: Re: Framebuffer drivers that break the boot on systemswithout the hardware
+Date: Sat, 9 Aug 2008 23:19:42 +0200
+User-Agent: KMail/1.9.9
+Cc: adaplas@gmail.com, mingo@elte.hu, akpm@osdl.org,
+       linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+References: <489DFACC.6030009@keyaccess.nl>
+In-reply-To: <489DFACC.6030009@keyaccess.nl>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-2"
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200808092321.16711.rjw@sisk.pl>
+Message-Id: <200808092319.43139.elendil@planet.nl>
+X-OriginalArrivalTime: 09 Aug 2008 21:19:54.0315 (UTC) FILETIME=[AABC09B0:01C8FA65]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Mark,
+Rene Herman wrote:
+> Ingo Molnar posted a list of drivers he found to break the boot during
+> testing of randconfig kernels and among them are a number of FB drivers:
+> 
+> FB_VESA
 
-Unfortunately, your commit 34ae7f35a21694aa5cb8829dc5142c39d73d6ba0
-("[CPUFREQ][2/2] preregister support for powernow-k8") causes a power off/
-suspend/ hibernation regression on my test box with the Asus M3A32-MVP
-mainboard (AMD 790 chipset) and the Phenom 9850 CPU.
+This one is set to "y" in the kernel configs for the generic Debian 
+kernels for i386 and x86_64 and is used by default for the graphical 
+version of the Debian Installer, so I'd be very surprised if it broke 
+very many systems...
+AFAIK it is only actually enabled if the 'vga=' boot parameter is passed.
 
-Apparently, the patch causes a crash in a CPU hotplug notifier to happen, but
-I'm not really sure of that, since there are a lot of stack traces resulting
-from it and I'm unable to capture them over a serial console.
+Ingo's mail also lists FRAMEBUFFER_CONSOLE which again is set to "y" in 
+Debian's standard kernel configs for x86 (and probably most other 
+arches).
 
-It is sufficient to revert commit 34ae7f35a21694aa5cb8829dc5142c39d73d6ba0 to
-make things work again.
+> (and FB_VIRTUAL)
 
-Please advise.
+This one should be fixed with 2.6.27-rc1. The commit that fixes it is:
+  commit b604838ac6d233fd6bffc0e758a818133a01ff22
+  Author: Frans Pop <elendil@planet.nl>
+  Date:   Wed Jul 23 21:31:26 2008 -0700
+    vfb: only enable if explicitly requested when compiled in
 
-Thanks,
-Rafael
+Cheers,
+FJP
