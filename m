@@ -1,96 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753564AbYHIQOX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753804AbYHIQQz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753564AbYHIQOX (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Aug 2008 12:14:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750806AbYHIQOO
+	id S1753804AbYHIQQz (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Aug 2008 12:16:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750987AbYHIQQo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Aug 2008 12:14:14 -0400
-Received: from zone0.gcu-squad.org ([212.85.147.21]:29771 "EHLO
-	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750770AbYHIQON (ORCPT
+	Sat, 9 Aug 2008 12:16:44 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:37712 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750809AbYHIQQn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Aug 2008 12:14:13 -0400
-Date: Sat, 9 Aug 2008 18:13:58 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: "Fabio Comolli" <fabio.comolli@gmail.com>
-Cc: "Bjorn Helgaas" <bjorn.helgaas@hp.com>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Rene Herman" <rene.herman@keyaccess.nl>,
-       "Andrew Morton" <akpm@osdl.org>, "Thomas Renninger" <trenn@suse.de>
-Subject: Re: New conflict message in latest GIT
-Message-ID: <20080809181358.5c9da790@hyperion.delvare>
-In-Reply-To: <b637ec0b0807231250g3e5b29eak8fbba41b69816351@mail.gmail.com>
-References: <b637ec0b0807221156x46d550a1h4180d6d624daeeb@mail.gmail.com>
-	<200807231256.42743.bjorn.helgaas@hp.com>
-	<b637ec0b0807231250g3e5b29eak8fbba41b69816351@mail.gmail.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sat, 9 Aug 2008 12:16:43 -0400
+Message-ID: <489DC15D.9070308@zytor.com>
+Date: Sat, 09 Aug 2008 09:10:05 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Wolfgang Walter <wolfgang.walter@stwm.de>
+CC: Herbert Xu <herbert@gondor.apana.org.au>,
+       Suresh Siddha <suresh.b.siddha@intel.com>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       "viro@ZenIV.linux.org.uk" <viro@zeniv.linux.org.uk>,
+       "vegard.nossum@gmail.com" <vegard.nossum@gmail.com>
+Subject: Re: Kernel oops with 2.6.26, padlock and ipsec: probably problem
+ with fpu state changes
+References: <200807171653.59177.wolfgang.walter@stwm.de> <20080808231121.GA13158@linux-os.sc.intel.com> <20080809143727.GA30499@gondor.apana.org.au> <200808091757.32999.wolfgang.walter@stwm.de>
+In-Reply-To: <200808091757.32999.wolfgang.walter@stwm.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Fabio,
+Wolfgang Walter wrote:
+> How could any kernel code use MMX/SSE/FPU when the interrupt case isn't 
+> handled?
 
-On Wed, 23 Jul 2008 21:50:24 +0200, Fabio Comolli wrote:
-> Hi.
+I don't think we have ever allowed MMX/SSE/FPU code in interrupt 
+handlers.  kernel_fpu_begin()..end() lock out preemption, and so could 
+only be interrupted, not preempted.
+
+> Or is your argument that its lazy allocation itself is the problem: this 
+> nesting could always happen and was a bug but only with lazy allocation it is 
+> dangerous (as it may cause a spurious math fault in the race window).
 > 
-> On Wed, Jul 23, 2008 at 8:56 PM, Bjorn Helgaas <bjorn.helgaas@hp.com> wrote:
-> > On Tuesday 22 July 2008 12:56:36 pm Fabio Comolli wrote:
-> >> Linus' GIT tree 2.6.26-05752-g93ded9b shows this message:
-> >>
-> >> i801_smbus 0000:00:1f.3: PCI INT B -> GSI 19 (level, low) -> IRQ 19
-> >> ACPI: I/O resource 0000:00:1f.3 [0x18e0-0x18ff] conflicts with ACPI
-> >> region SMBI [0x18e0-0x18ef]
-> >> ACPI: Device needs an ACPI driver
-> >>
-> >> There is no equivalent in 2.6.26 or previous kernels.
-> >
-> > The "ACPI: I/O resource ... conflicts with ..." message was added by
-> > Thomas:
-> >  http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=df92e695998e1bc6e426a840eb86d6d1ee87e2a5
-> >
-> > That conflict checking infrastructure was in 2.6.26, but Jean's
-> > change to make the i801_smbus driver use it didn't happen until
-> > about a week ago:
-> >  http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=54fb4a05af0a4b814e6716cfdf3fa97fc6be7a32
-> >
-> > The message is telling us that the i801_smbus driver thinks it owns
-> > the 0x18e0-0x18ff region, but there's also an ACPI opregion that
-> > references that region.  There's no coordination between ACPI and
-> > the i801_smbus driver, so there may be issues where nearly
-> > simultaneous accesses cause incorrect behavior, e.g,. one may
-> > read the wrong value from a temperature sensor.  That, of course,
-> > can lead to more serious things like unintended machine shutdowns.
-> >
-> > I don't have any ideas about how to address this.  I think Thomas's
-> > intent was to collect better information for unreproducible bugs.
-> > (Maybe this sort of conflict should even set a taint flag?)
+> If this were right than any kernel code executing SSE may trigger now a oops 
+> in __switch_to() under some special circumstances.
 
-Yes, at this point these messages are informative only and displayed as
-a hint when investigating bug reports. In the long run, we might
-decide to grant exclusive access to the shared region to either ACPI or
-the native driver, or to setup a safe concurrent access mechanism.
-That's a long way to go though, due to the diversity of BIOSes out
-there and the fact that many of them declare opregions in bogus ways.
+If lazy allocation can cause the RAID code, for example (which executes 
+SSE instructions in the kernel, but not at interrupt time) to start 
+randomly oopsing, then lazy allocations have to be pulled.
 
-> OK, I actually didn't even know what i801_smbus (i2c_801 I suppose)
-> was. It seems that my laptop has a super-IO chip which is detected by
-> lm-sensors as `Nat. Semi. PC87591 Super IO' which doesn't have a
-> driver and never will.
-> 
-> So, if I'm correct, this modules is totally useless for me and I
-> better compile it out. Am I correct?
+	-hpa
 
-Yes you are. If you don't need i2c-i801 on this machine, best is to not
-build it or to prevent it from loading. Or you can boot with
-acpi_enforce_resources=strict to prevent the i2c-i801 driver from
-attaching to the device.
-
-I am a bit curious though, why ACPI would declare an opregion for a
-device that isn't used. Might be yet another case of BIOS copied from
-another machine and not cleaned up appropriately.
-
--- 
-Jean Delvare
