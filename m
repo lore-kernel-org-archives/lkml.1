@@ -1,66 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759731AbYHICDz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758343AbYHICE2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759731AbYHICDz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 22:03:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753330AbYHICDq
+	id S1758343AbYHICE2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 22:04:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754216AbYHICEQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 22:03:46 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:53019 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753032AbYHICDp (ORCPT
+	Fri, 8 Aug 2008 22:04:16 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:59488 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754192AbYHICEP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 22:03:45 -0400
-Date: Fri, 8 Aug 2008 22:03:42 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Andi Kleen <andi@firstfloor.org>
-cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, Roland McGrath <roland@redhat.com>,
-       Ulrich Drepper <drepper@redhat.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Gregory Haskins <ghaskins@novell.com>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       "Luis Claudio R. Goncalves" <lclaudio@uudg.org>,
-       Clark Williams <williams@redhat.com>
-Subject: Re: [PATCH 0/5] ftrace: to kill a daemon
-In-Reply-To: <20080809015539.GG9038@one.firstfloor.org>
-Message-ID: <alpine.DEB.1.10.0808082202030.4894@gandalf.stny.rr.com>
-References: <20080808174607.GG8244@Krystal> <alpine.DEB.1.10.0808081410380.6116@gandalf.stny.rr.com> <20080808182104.GA11376@Krystal> <alpine.DEB.1.10.0808081432400.8922@gandalf.stny.rr.com> <20080808190506.GD11376@Krystal> <alpine.DEB.1.10.0808081750590.16691@gandalf.stny.rr.com>
- <87tzdv2g05.fsf@basil.nowhere.org> <alpine.DEB.1.10.0808082030500.1396@gandalf.stny.rr.com> <20080809011955.GE9038@one.firstfloor.org> <alpine.DEB.1.10.0808082126500.3707@gandalf.stny.rr.com> <20080809015539.GG9038@one.firstfloor.org>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Fri, 8 Aug 2008 22:04:15 -0400
+Message-ID: <489CF9EC.5050109@zytor.com>
+Date: Fri, 08 Aug 2008 18:59:08 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Herbert Xu <herbert@gondor.apana.org.au>
+CC: Suresh Siddha <suresh.b.siddha@intel.com>,
+       Wolfgang Walter <wolfgang.walter@stwm.de>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, viro@ZenIV.linux.org.uk,
+       vegard.nossum@gmail.com
+Subject: Re: Kernel oops with 2.6.26, padlock and ipsec: probably problem
+ with fpu state changes
+References: <200807171653.59177.wolfgang.walter@stwm.de> <20080806201401.GA607@linux-os.sc.intel.com> <200808071823.02364.wolfgang.walter@stwm.de> <200808081236.55172.wolfgang.walter@stwm.de> <20080808185356.GC607@linux-os.sc.intel.com> <489C97FB.2030408@zytor.com> <20080809014925.GA26529@gondor.apana.org.au>
+In-Reply-To: <20080809014925.GA26529@gondor.apana.org.au>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Sat, 9 Aug 2008, Andi Kleen wrote:
-
-> > Funny, CONFIG_FTRACE happens to select that. Now the question is, would 
-> > mcount work without it?
+Herbert Xu wrote:
+> On Fri, Aug 08, 2008 at 12:01:15PM -0700, H. Peter Anvin wrote:
+>> It's technically overkill, if (and only if!) these instructions don't 
+>> actually touch the SSE state (most likely they're using the SSE 
+>> pipeline, and need this stuff to deal with power management issues.)
 > 
-> Not without fixing gcc first. It would work if gcc always called
-> mcount the first thing before setting up the stack frame. Not 
-> sure why it doesn't do that.
+> Yes the PadLock uses the SSE pipeline, but doesn't touch any
+> of the state.
 
-I could take out the frame pointer option and pass in zero for the parent 
-in such that case. But the parent is quite useful. But if it helps
-with performance, it may be worth doing this.
+And yet it requires all the settings that goes along with holding the 
+SSE state.  Really crap design, unfortunately.
 
--- Steve
-
+>> However, overkill is a good way to make sure something is dead. 
+>> Applying the patch will make sure we fix the regression, and we can 
+>> worry about optimizing this further post-2.6.27.
 > 
-> Still do a benchmark of frame pointer vs no frame pointer kernel
-> and you'll see, especially on a older CPUs without special hardware
-> to avoid stack stalls (e.g. not Core2)
+> Do we really need the FPU changes right now? I'd prefer for that
+> to be backed out until a proper solution is found.  Disabling
+> preemption around crypto is really bad for scheduling latency.
 
-I'll see what it does with just a kernel build.
+I hate to say it, but given the relative marketshare, we should disable 
+Padlock instead.
 
--- Steve
+This is part of the pain of being a minority architecture.
+
+	-hpa
+
