@@ -1,130 +1,214 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753677AbYHIViH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753884AbYHIVmy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753677AbYHIViH (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Aug 2008 17:38:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751809AbYHIVhz
+	id S1753884AbYHIVmy (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Aug 2008 17:42:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751812AbYHIVmq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Aug 2008 17:37:55 -0400
-Received: from an-out-0708.google.com ([209.85.132.245]:27535 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751812AbYHIVhy (ORCPT
+	Sat, 9 Aug 2008 17:42:46 -0400
+Received: from smtpq1.tilbu1.nb.home.nl ([213.51.146.200]:48162 "EHLO
+	smtpq1.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751694AbYHIVmp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Aug 2008 17:37:54 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=at8a9RGNabdtqMOmThywYezuuKnVJZQGkvc1nCI/q4OxMuOyYln23wiV+VhwqpNjEP
-         ukagF4r8x6+pqHdbSZYZpJuy++1CuYKVBotEG9+7iVX2Rm80/3c2x+i8DMIhhcfBm8K2
-         mIp+Ax1uQOobKPp240RnJF3QLeScRA3WG0vAA=
-Message-ID: <86802c440808091437j3d3b9fcexa4e2da2b981868e8@mail.gmail.com>
-Date: Sat, 9 Aug 2008 14:37:53 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [PATCH 08/42] introduce nr_irqs
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "Dhaval Giani" <dhaval@linux.vnet.ibm.com>,
-       "Mike Travis" <travis@sgi.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <m1fxpeur6u.fsf@frodo.ebiederm.org>
+	Sat, 9 Aug 2008 17:42:45 -0400
+Message-ID: <489E0F5A.8010404@keyaccess.nl>
+Date: Sat, 09 Aug 2008 23:42:50 +0200
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080707)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1218232368-31228-1-git-send-email-yhlu.kernel@gmail.com>
-	 <1218232368-31228-6-git-send-email-yhlu.kernel@gmail.com>
-	 <1218232368-31228-7-git-send-email-yhlu.kernel@gmail.com>
-	 <1218232368-31228-8-git-send-email-yhlu.kernel@gmail.com>
-	 <1218232368-31228-9-git-send-email-yhlu.kernel@gmail.com>
-	 <m1ej4zvw6s.fsf@frodo.ebiederm.org>
-	 <86802c440808081838r66cc8162t5c2e157908457048@mail.gmail.com>
-	 <m1zlnmvhzi.fsf@frodo.ebiederm.org>
-	 <86802c440808090030t16e0efa3ne5adad6c8096c8a0@mail.gmail.com>
-	 <m1fxpeur6u.fsf@frodo.ebiederm.org>
+To: Wim Van Sebroeck <wim@iguana.be>
+CC: Ingo Molnar <mingo@redhat.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Andrew Morton <akpm@osdl.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: [PATCH] WATCHDOG: don't auto-grab eurotechwdt.
+Content-Type: multipart/mixed;
+ boundary="------------080402090802000107010702"
+X-Spam-Score: -1.0 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Aug 9, 2008 at 8:46 AM, Eric W. Biederman <ebiederm@xmission.com> wrote:
-> "Yinghai Lu" <yhlu.kernel@gmail.com> writes:
->
->
->> ok, will move to that file.
->
-> ????   If you introduce a new concept like valid_irq that is fine.
-> interrupt.h is the interface to drivers!
->
-> Let me say this clearly.
->
-> DO NOT CHANGE THE INTERFACE TO DEVICE DRIVERS!
->
-please check
+This is a multi-part message in MIME format.
+--------------080402090802000107010702
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Index: linux-2.6/include/linux/interrupt.h
-===================================================================
---- linux-2.6.orig/include/linux/interrupt.h
-+++ linux-2.6/include/linux/interrupt.h
-@@ -15,6 +15,8 @@
- #include <asm/ptrace.h>
- #include <asm/system.h>
+[ Andrew: not submitted ]
 
-+extern int nr_irqs;
-+
- /*
-  * These correspond to the IORESOURCE_IRQ_* defines in
-  * linux/ioport.h to select the interrupt line behaviour.  When
-Index: linux-2.6/arch/m68k/kernel/ints.c
-===================================================================
---- linux-2.6.orig/arch/m68k/kernel/ints.c
-+++ linux-2.6/arch/m68k/kernel/ints.c
-@@ -46,6 +46,8 @@
- #include <asm/q40ints.h>
- #endif
+Hi Wim.
 
-+int nr_irqs = NR_IRQS;
-+
- extern u32 auto_irqhandler_fixup[];
- extern u32 user_irqhandler_fixup[];
- extern u16 user_irqvec_fixup[];
-Index: linux-2.6/arch/s390/kernel/irq.c
-===================================================================
---- linux-2.6.orig/arch/s390/kernel/irq.c
-+++ linux-2.6/arch/s390/kernel/irq.c
-@@ -17,6 +17,8 @@
- #include <linux/proc_fs.h>
- #include <linux/profile.h>
+I'm going over a list of drivers that break the boot of randconfig 
+kernels by keeping resources busy:
 
-+int nr_irqs = NR_IRQS;
-+
- /*
-  * show_interrupts is needed by /proc/interrupts.
+http://lkml.org/lkml/2008/8/1/96
+
+and eurotechwdt and plain wdt are in that list. Below is an eurotechwdt 
+that makes passing in io and irq values mandatory as to keep that from 
+happening.
+
+I saw pcwd was already isafied and followed that -- due to the comment 
+in eurwdt_release() though, I'm not sure about a .shutdown() method.
+
+Do you want this in the first place? The randconfig testing does find 
+actual bugs so it is useful.
+
+I'll do wdt and the other applicable ones in there as well if yes.
+
+Rene.
+
+--------------080402090802000107010702
+Content-Type: text/plain;
+ name="0001-WATCHDOG-don-t-auto-grab-eurotechwdt.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="0001-WATCHDOG-don-t-auto-grab-eurotechwdt.patch"
+
+>From b31c25c371dd33e6316c327f3f143a2e260d866b Mon Sep 17 00:00:00 2001
+From: Rene Herman <rene.herman@gmail.com>
+Date: Sat, 9 Aug 2008 23:24:34 +0200
+Subject: [PATCH] WATCHDOG: don't auto-grab eurotechwdt.
+
+---
+ drivers/watchdog/eurotechwdt.c |   82 +++++++++++++++++++++++++++-------------
+ 1 files changed, 55 insertions(+), 27 deletions(-)
+
+diff --git a/drivers/watchdog/eurotechwdt.c b/drivers/watchdog/eurotechwdt.c
+index b14e9d1..c4eb06c 100644
+--- a/drivers/watchdog/eurotechwdt.c
++++ b/drivers/watchdog/eurotechwdt.c
+@@ -56,6 +56,7 @@
+ #include <linux/notifier.h>
+ #include <linux/reboot.h>
+ #include <linux/init.h>
++#include <linux/isa.h>
+ 
+ #include <asm/io.h>
+ #include <asm/uaccess.h>
+@@ -70,8 +71,8 @@ static char eur_expect_close;
+  * You can use eurwdt=x,y to set these now.
   */
-Index: linux-2.6/arch/sparc/kernel/irq.c
-===================================================================
---- linux-2.6.orig/arch/sparc/kernel/irq.c
-+++ linux-2.6/arch/sparc/kernel/irq.c
-@@ -55,6 +55,9 @@
- #define SMP_NOP2
- #define SMP_NOP3
- #endif /* SMP */
-+
-+int nr_irqs = NR_IRQS;
-+
- unsigned long __raw_local_irq_save(void)
+ 
+-static int io = 0x3f0;
+-static int irq = 10;
++static int io;			/* 0x3f0 */
++static int irq = -1;		/* 10    */
+ static char *ev = "int";
+ 
+ #define WDT_TIMEOUT		60                /* 1 minute */
+@@ -95,9 +96,9 @@ MODULE_PARM_DESC(nowayout, "Watchdog cannot be stopped once started (default=" _
+ 
+ 
+ module_param(io, int, 0);
+-MODULE_PARM_DESC(io, "Eurotech WDT io port (default=0x3f0)");
++MODULE_PARM_DESC(io, "Eurotech WDT io port (mandatory)");
+ module_param(irq, int, 0);
+-MODULE_PARM_DESC(irq, "Eurotech WDT irq (default=10)");
++MODULE_PARM_DESC(irq, "Eurotech WDT irq (mandatory)");
+ module_param(ev, charp, 0);
+ MODULE_PARM_DESC(ev, "Eurotech WDT event type (default is `int')");
+ 
+@@ -385,41 +386,28 @@ static struct notifier_block eurwdt_notifier = {
+ 	.notifier_call = eurwdt_notify_sys,
+ };
+ 
+-/**
+- * cleanup_module:
+- *
+- * Unload the watchdog. You cannot do this with any file handles open.
+- * If your watchdog is set to continue ticking on close and you unload
+- * it, well it keeps ticking. We won't get the interrupt but the board
+- * will not touch PC memory so all is fine. You just have to load a new
+- * module in 60 seconds or reboot.
+- */
+-
+-static void __exit eurwdt_exit(void)
++static int __devinit eurwdt_isa_match(struct device *dev, unsigned int id)
  {
-        unsigned long retval;
-Index: linux-2.6/kernel/irq/handle.c
-===================================================================
---- linux-2.6.orig/kernel/irq/handle.c
-+++ linux-2.6/kernel/irq/handle.c
-@@ -47,6 +47,7 @@ handle_bad_irq(unsigned int irq, struct
-  *
-  * Controller mappings for all interrupt sources:
+-	eurwdt_lock_chip();
++	int match = io != 0 && irq != -1;
+ 
+-	misc_deregister(&eurwdt_miscdev);
++	if (!match)
++		dev_err(dev, "please specify io and irq\n");
+ 
+-	unregister_reboot_notifier(&eurwdt_notifier);
+-	release_region(io, 2);
+-	free_irq(irq, NULL);
++	return match;
+ }
+ 
+-/**
+- * eurwdt_init:
+- *
++/*
+  * Set up the WDT watchdog board. After grabbing the resources
+  * we require we need also to unlock the device.
+  * The open() function will actually kick the board off.
   */
-+int nr_irqs = NR_IRQS;
- struct irq_desc irq_desc[NR_IRQS] __cacheline_aligned_in_smp = {
-        [0 ... NR_IRQS-1] = {
-                .status = IRQ_DISABLED,
+ 
+-static int __init eurwdt_init(void)
++static int __devinit eurwdt_isa_probe(struct device *dev, unsigned int id)
+ {
+ 	int ret;
+ 
+ 	ret = request_irq(irq, eurwdt_interrupt, IRQF_DISABLED, "eurwdt", NULL);
+-	if(ret) {
++	if (ret) {
+ 		printk(KERN_ERR "eurwdt: IRQ %d is not free.\n", irq);
+ 		goto out;
+ 	}
+@@ -464,8 +452,48 @@ outirq:
+ 	goto out;
+ }
+ 
+-module_init(eurwdt_init);
+-module_exit(eurwdt_exit);
++/*
++ * Unload the watchdog. You cannot do this with any file handles open.
++ * If your watchdog is set to continue ticking on close and you unload
++ * it, well it keeps ticking. We won't get the interrupt but the board
++ * will not touch PC memory so all is fine. You just have to load a new
++ * module in 60 seconds or reboot.
++ */
++
++static int __devexit eurwdt_isa_remove(struct device *dev, unsigned int id)
++{
++	eurwdt_lock_chip();
++
++	misc_deregister(&eurwdt_miscdev);
++
++	unregister_reboot_notifier(&eurwdt_notifier);
++	release_region(io, 2);
++	free_irq(irq, NULL);
++	return 0;
++}
++
++static struct isa_driver eurwdt_isa_driver = {
++	.match		= eurwdt_isa_match,
++	.probe		= eurwdt_isa_probe,
++	.remove		= __devexit_p(eurwdt_isa_remove),
++	.driver		= {
++		.owner	= THIS_MODULE,
++		.name	= "eurwdt",
++	},
++};
++
++static int __init eurwdt_init_module(void)
++{
++	return isa_register_driver(&eurwdt_isa_driver, 1);
++}
++
++static void __exit eurwdt_exit_module(void)
++{
++	isa_unregister_driver(&eurwdt_isa_driver);
++}
++
++module_init(eurwdt_init_module);
++module_exit(eurwdt_exit_module);
+ 
+ MODULE_AUTHOR("Rodolfo Giometti");
+ MODULE_DESCRIPTION("Driver for Eurotech CPU-1220/1410 on board watchdog");
+-- 
+1.5.5
+
+
+--------------080402090802000107010702--
