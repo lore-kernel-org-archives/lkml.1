@@ -1,49 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752634AbYHIMhT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753007AbYHIMjg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752634AbYHIMhT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Aug 2008 08:37:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750919AbYHIMhH
+	id S1753007AbYHIMjg (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Aug 2008 08:39:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751397AbYHIMj2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Aug 2008 08:37:07 -0400
-Received: from aun.it.uu.se ([130.238.12.36]:47967 "EHLO aun.it.uu.se"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750811AbYHIMhG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Aug 2008 08:37:06 -0400
+	Sat, 9 Aug 2008 08:39:28 -0400
+Received: from web82105.mail.mud.yahoo.com ([209.191.84.218]:33580 "HELO
+	web82105.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750946AbYHIMj1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 9 Aug 2008 08:39:27 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=sbcglobal.net;
+  h=Received:X-Mailer:Date:From:Subject:To:Cc:MIME-Version:Content-Type:Message-ID;
+  b=Qpm7bM9wk1dEchyB1KYeghvxn4bvXJyeCy+d5zJk0snMN3ZYP4c6lBk/Z+3JdkdwBTVcPHf8Mmkvh6r6Isov184D8E7LkvTVdFYgGZahJ2C9ozHUzDLiQ/HmnJDowJJT0Uv4YyC873ZUhvsT68iNi82eYU+wWb7GKr9Pcyl0hvU=;
+X-Mailer: YahooMailRC/1042.40 YahooMailWebService/0.7.218
+Date: Sat, 9 Aug 2008 05:39:26 -0700 (PDT)
+From: David Witbrodt <dawitbro@sbcglobal.net>
+Subject: Re: HPET regression in 2.6.26 versus 2.6.25 -- RCU problem
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: linux-kernel@vger.kernel.org, Yinghai Lu <yhlu.kernel@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       netdev <netdev@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18589.36691.692149.811991@harpo.it.uu.se>
-Date: Sat, 9 Aug 2008 14:36:35 +0200
-From: Mikael Pettersson <mikpe@it.uu.se>
-To: Krzysztof Halasa <khc@pm.waw.pl>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       "Robert P. J. Day" <rpjday@crashcourse.ca>,
-       Grant Coady <gcoady.lk@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC PATCH] cleanup Serial ATA and Parallel ATA Kconfig
-In-Reply-To: <m3zlnm75u1.fsf@maximus.localdomain>
-References: <alpine.LFD.1.10.0808081228450.11491@localhost.localdomain>
-	<20080808172629.232bed01@lxorguk.ukuu.org.uk>
-	<njhp94pr4ha1nfgmj11n662enalpd9663h@4ax.com>
-	<m3sktfw1v5.fsf@maximus.localdomain>
-	<alpine.LFD.1.10.0808081911080.3254@localhost.localdomain>
-	<20080809103331.1d475d5c@lxorguk.ukuu.org.uk>
-	<m3zlnm75u1.fsf@maximus.localdomain>
-X-Mailer: VM 7.17 under Emacs 20.7.1
+Message-ID: <859858.77737.qm@web82105.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Krzysztof Halasa writes:
- > @@ -147,7 +167,8 @@ config SATA_QSTOR
- >  
- >  config SATA_PROMISE
- >  	tristate "Promise SATA TX2/TX4 support"
- > -	depends on PCI
- > +	depends on PCI && ATA_SATA
- > +	select ATA_SFF
- >  	help
- >  	  This option enables support for Promise Serial ATA TX2/TX4.
- >  
 
-NAK, sata_promise drives both sata and pata ports.
+
+> On Fri, 2008-08-08 at 18:23 -0700, David Witbrodt wrote:
+> > I have tracked the regression down to an RCU problem.
+> > [...]
+> > After reading some documentation in Documentation/RCU/, it looks like 
+> > something is misusing RCU -- and, according to the Documentation, those kinds 
+> > of mistakes are easy to make.  Maybe necessary calls to
+> >  
+> >     rcu_read_lock()
+> >     rcu_read_unlock()
+> > 
+> > are missing, and something about my hardware is triggering a freeze that 
+> > doesn't occur on most hardware.
+> > 
+> > 
+> > For some reason, turning off the HPET by booting with "hpet=disabled" keeps
+> > the freeze from happening.  Just reading a couple of those docs about RCU
+> > made me dizzy, so I hope someone familiar with RCU issues will take a look
+> > at the code in the files I've listed.  Surely you guys can take it from here
+> > now?!
+> > 
+> > If not, just give me some experimental code changes to make to get my 2.6.26
+> > and 2.6.27 kernels working again without disabling HPET!!!
+> 
+> 
+> The typical way to deadlock like this is do something like:
+> 
+> rcu_read_lock();
+> 
+>    synchronize_rcu();
+> 
+> rcu_read_unlock();
+> 
+> While I cannot immediately see any such usage in the function you
+> quoted, it could be on of the callers.. let me browse some code..
+> 
+> Can't seem to find anything like that.
+> 
+> What's weird though - is that HPET makes any difference on these network
+> code paths.
+> 
+> Could we end up calling rcu too soon? I doubt we bring up ipv4 before
+> rcu..
+
+I'm _way_ over my head in this discussion, but here's some more food
+for thought.  Last weekend, when I first tried 2.6.26 and discovered the
+freeze, I thought an error of my own in .config was causing it.  Before
+I ever sought help, I made about a dozen experiments with different
+.config files.
+
+One series of those experiments involved turning off most of the kernel...
+including CONFIG_INET.  The kernel still froze, but when entering 
+pci_init().  (This info can be read in my original post to the Debian BTS,
+which I have provided links for a couple of times in this LKML thread.  I
+even went further and removed enough that the freeze was avoided, but so
+much of the kernel was missing that my init scripts couldn't mount a hard
+disk any more.  Trying to restore enough to allow HD mounting just brought
+back the freeze.)
+
+I am completely ignorant about how the kernel works, so any guesses I have
+are probably worthless... but I'll throw some out anyway:
+
+1.  Maybe HPET is used (if present) for timing by RCU, so disabling it
+forces RCU to work differently.  (Pure guess here:  I know nothing about
+RCU, and haven't even tried looking at its code.)
+
+2.  Maybe my hardware is broken.  We need see one initcall return that
+report over 280,000 msecs... when the entire boot->freeze time was about
+3 secs.  On the other hand, 2.6.25 (and before) work just fine with HPET
+enabled.
+
+3. I was able to find the commit that introduced the freeze
+(3def3d6ddf43dbe20c00c3cbc38dfacc8586998f), so there has to be a connection
+between that commit and the RCU problem.  Is it possible that a prexisting
+error or oversight in the code was merely exposed by that commit?  (And 
+only on certain hardware?)  Or does that code itself contain the error?
+
+4. Another bug has been posted on the Debian BTS, which is worked around
+by disabling HPET.  The user provided some links to bugzilla.kernel.org
+where David Brownell is fighting with some HPET/RTC issues (but no mention
+of RCU):
+http://bugzilla.kernel.org/show_bug.cgi?id=11111
+http://bugzilla.kernel.org/show_bug.cgi?id=11153
+
+I honestly don't know whether this is related to my problem or not.  :-(
+
+If any has any test code I can run to detect massive HPET breakage on
+these motherboards, I'll be glad to do so.  Or any other experimental
+code changes, for that matter.
+
+
+Thanks again,
+Dave W.
+
