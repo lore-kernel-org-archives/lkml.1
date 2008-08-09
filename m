@@ -1,77 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754332AbYHIOhe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754627AbYHIOhx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754332AbYHIOhe (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Aug 2008 10:37:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752831AbYHIOh0
+	id S1754627AbYHIOhx (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Aug 2008 10:37:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754450AbYHIOhi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Aug 2008 10:37:26 -0400
-Received: from mail-in-08.arcor-online.net ([151.189.21.48]:59384 "EHLO
-	mail-in-08.arcor-online.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752349AbYHIOhZ (ORCPT
+	Sat, 9 Aug 2008 10:37:38 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:54381 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754447AbYHIOhh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Aug 2008 10:37:25 -0400
-Date: Sat, 9 Aug 2008 16:42:11 +0200 (CEST)
-From: Bodo Eggert <7eggert@gmx.de>
-To: Steven Rostedt <rostedt@goodmis.org>
-cc: Bodo Eggert <7eggert@gmx.de>, Andi Kleen <andi@firstfloor.org>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, Roland McGrath <roland@redhat.com>,
-       Ulrich Drepper <drepper@redhat.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Gregory Haskins <ghaskins@novell.com>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       "Luis Claudio R. Goncalves" <lclaudio@uudg.org>,
-       Clark Williams <williams@redhat.com>
-Subject: Re: [PATCH 0/5] ftrace: to kill a daemon
-In-Reply-To: <alpine.DEB.1.10.0808090902100.24140@gandalf.stny.rr.com>
-Message-ID: <alpine.LSU.0.999.0808091635190.5731@be1.lrz>
-References: <aYipy-5FM-9@gated-at.bofh.it> <aYiIP-6bN-11@gated-at.bofh.it>
- <aYkAT-15Q-1@gated-at.bofh.it> <aYDX5-fa-31@gated-at.bofh.it>
- <aYE6H-tg-21@gated-at.bofh.it> <aYEgj-Fc-17@gated-at.bofh.it>
- <aYEJq-1xB-23@gated-at.bofh.it> <aYET8-1L7-17@gated-at.bofh.it>
- <aYFcq-2f2-11@gated-at.bofh.it> <aYFvP-2Vc-25@gated-at.bofh.it>
- <aYJIZ-15G-7@gated-at.bofh.it> <aYKvs-2gQ-7@gated-at.bofh.it>
- <aYKF1-2qs-7@gated-at.bofh.it> <E1KRmxa-0001S5-E0@be1.7eggert.dyndns.org>
- <alpine.DEB.1.10.0808090902100.24140@gandalf.stny.rr.com>
+	Sat, 9 Aug 2008 10:37:37 -0400
+Date: Sat, 9 Aug 2008 22:37:27 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Suresh Siddha <suresh.b.siddha@intel.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>,
+       Wolfgang Walter <wolfgang.walter@stwm.de>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       "viro@ZenIV.linux.org.uk" <viro@ZenIV.linux.org.uk>,
+       "vegard.nossum@gmail.com" <vegard.nossum@gmail.com>
+Subject: Re: Kernel oops with 2.6.26, padlock and ipsec: probably problem with fpu state changes
+Message-ID: <20080809143727.GA30499@gondor.apana.org.au>
+References: <200807171653.59177.wolfgang.walter@stwm.de> <20080806201401.GA607@linux-os.sc.intel.com> <200808071823.02364.wolfgang.walter@stwm.de> <200808081236.55172.wolfgang.walter@stwm.de> <20080808185356.GC607@linux-os.sc.intel.com> <489C97FB.2030408@zytor.com> <20080808231121.GA13158@linux-os.sc.intel.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
-X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
-X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
-X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080808231121.GA13158@linux-os.sc.intel.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 9 Aug 2008, Steven Rostedt wrote:
-> On Sat, 9 Aug 2008, Bodo Eggert wrote:
-> > Steven Rostedt <rostedt@goodmis.org> wrote:
-> > > On Sat, 9 Aug 2008, Andi Kleen wrote:
-> > >> Steven Rostedt <rostedt@goodmis.org> writes:
+On Fri, Aug 08, 2008 at 04:11:21PM -0700, Suresh Siddha wrote:
+>
+> With out the recent dynamic fpu allocation changes, while we don't see oops,
+> there is a possible race still present in older kernels(for example,
+> while kernel is using kernel_fpu_begin() in some optimized clear/copy
+> page and an interrupt/softirq happens which uses these padlock
+> instructions generating DNA fault).
 
-> > >> > I'm stubborn, I want to get it right _and_ keep it fast.
-> > >> 
-> > >> For me it would seem better to just not use two part 5 byte nops
-> > >> instead of adding such hacks.  I doubt there are that many of them
-> > >> anyways. I bet you won't be able to measure any difference between the
-> > >> different nop types in any macro benchmark.
-> > > 
-> > > I wish we had a true 5 byte nop. The alternative is a jmp 0, which is
-> > > measurable.
-> > 
-> > Did you try short jumps? (0xeb 0x03 0x?? 0x?? 0x??)
-> 
-> What would those last three bytes be?
+No this wasn't a problem because kernel_fpu_begin clears TS and
+therefore we don't get faults on SSE instructions.
 
-Anything, since the CPU will ignore them.
+However, with your patch it will become a problem due to the
+fact that it wasn't designed to be nested.
 
-My hope is that different kinds of jump will behaver differently,
-but I fear the side effect of the jmp (reread memory in case of 
-self-modifying code) will cause the CPU to slow down anyway.
+Cheers,
 -- 
-Is reading in the bathroom considered Multitasking?
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
