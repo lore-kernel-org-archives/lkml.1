@@ -1,421 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754805AbYHIXYU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754705AbYHIXgV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754805AbYHIXYU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Aug 2008 19:24:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753685AbYHIXYJ
+	id S1754705AbYHIXgV (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Aug 2008 19:36:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753675AbYHIXgM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Aug 2008 19:24:09 -0400
-Received: from wf-out-1314.google.com ([209.85.200.173]:55858 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752847AbYHIXYH (ORCPT
+	Sat, 9 Aug 2008 19:36:12 -0400
+Received: from ns1.siteground211.com ([209.62.36.12]:60327 "EHLO
+	serv01.siteground211.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752809AbYHIXgK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Aug 2008 19:24:07 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version
-         :x-mailer:content-transfer-encoding;
-        b=ZRKefxUNui1b0ixDw3BCKcJb8VU8NqvW3LrE5CSUK95LIYipIWL98yOnL02S9C1VTr
-         V4nJdn4W28KrSfxvgxE6dl3vgHCASP2yzaZ/sM6Gv5nBmrBJL8ClnpQjN0TmmDnR5kjA
-         4HTgHcXzN9a+w/6J/Exw8KSSUw3jptcbapnHY=
-Subject: [PATCH 2/2] byteorder: add include/linux/byteorder.h to define
-	endian helpers
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Sat, 09 Aug 2008 16:24:07 -0700
-Message-Id: <1218324247.24441.22.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Sat, 9 Aug 2008 19:36:10 -0400
+Date: Sun, 10 Aug 2008 02:36:01 +0300
+From: Felipe Balbi <me@felipebalbi.com>
+To: Frans Pop <elendil@planet.nl>
+Cc: Greg KH <greg@kroah.com>, linux-usb@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [00/03] [RFC] USB debugging rework
+Message-ID: <20080809233600.GC7574@frodo>
+Reply-To: me@felipebalbi.com
+References: <20080809013820.GA10910@kroah.com> <200808100057.58863.elendil@planet.nl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200808100057.58863.elendil@planet.nl>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - serv01.siteground211.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - felipebalbi.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
----
- include/linux/byteorder.h |  372 +++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 372 insertions(+), 0 deletions(-)
+On Sun, Aug 10, 2008 at 12:57:58AM +0200, Frans Pop wrote:
+> Greg KH wrote:
+> > I've been annoyed for a long time that we make users go off and rebuild
+> > their kernels just to enable usb debug messages.  So finally, here's the
+> > start of fixing that issue.
+> 
+> Will your patches also allow to turn off the usb debugging at some point, 
+> for example after system boot has been completed if the debugging was 
+> only needed to analyze a boot issue?
+> 
+> I noticed earlier this week that USB debugging will really flood the 
+> syslog and had to rebuild my -rc2 kernel without debugging and reboot to 
+> get rid of it. AFAICT with your patches only rebooting would be needed, 
+> but it would be even nicer if it also could be turned off (and on?) using 
+> a sysfs parameter.
 
-diff --git a/include/linux/byteorder.h b/include/linux/byteorder.h
-new file mode 100644
-index 0000000..29f002d
---- /dev/null
-+++ b/include/linux/byteorder.h
-@@ -0,0 +1,372 @@
-+#ifndef _LINUX_BYTEORDER_H
-+#define _LINUX_BYTEORDER_H
-+
-+#include <linux/types.h>
-+#include <linux/swab.h>
-+
-+#if defined(__LITTLE_ENDIAN) && defined(__BIG_ENDIAN)
-+# error Fix asm/byteorder.h to define one endianness
-+#endif
-+
-+#if !defined(__LITTLE_ENDIAN) && !defined(__BIG_ENDIAN)
-+# error Fix asm/byteorder.h to define arch endianness
-+#endif
-+
-+#ifdef __LITTLE_ENDIAN
-+# undef __LITTLE_ENDIAN
-+# define __LITTLE_ENDIAN 1234
-+#endif
-+
-+#ifdef __BIG_ENDIAN
-+# undef __BIG_ENDIAN
-+# define __BIG_ENDIAN 4321
-+#endif
-+
-+#if defined(__LITTLE_ENDIAN) && !defined(__LITTLE_ENDIAN_BITFIELD)
-+# define __LITTLE_ENDIAN_BITFIELD
-+#endif
-+
-+#if defined(__BIG_ENDIAN) && !defined(__BIG_ENDIAN_BITFIELD)
-+# define __BIG_ENDIAN_BITFIELD
-+#endif
-+
-+#ifdef __LITTLE_ENDIAN
-+# define __le16_to_cpu(x) ((__force __u16)(__le16)(x))
-+# define __le32_to_cpu(x) ((__force __u32)(__le32)(x))
-+# define __le64_to_cpu(x) ((__force __u64)(__le64)(x))
-+# define __cpu_to_le16(x) ((__force __le16)(__u16)(x))
-+# define __cpu_to_le32(x) ((__force __le32)(__u32)(x))
-+# define __cpu_to_le64(x) ((__force __le64)(__u64)(x))
-+
-+# define __be16_to_cpu(x) __swab16((__force __u16)(__be16)(x))
-+# define __be32_to_cpu(x) __swab32((__force __u32)(__be32)(x))
-+# define __be64_to_cpu(x) __swab64((__force __u64)(__be64)(x))
-+# define __cpu_to_be16(x) ((__force __be16)__swab16(x))
-+# define __cpu_to_be32(x) ((__force __be32)__swab32(x))
-+# define __cpu_to_be64(x) ((__force __be64)__swab64(x))
-+#endif
-+
-+#ifdef __BIG_ENDIAN
-+# define __be16_to_cpu(x) ((__force __u16)(__be16)(x))
-+# define __be32_to_cpu(x) ((__force __u32)(__be32)(x))
-+# define __be64_to_cpu(x) ((__force __u64)(__be64)(x))
-+# define __cpu_to_be16(x) ((__force __be16)(__u16)(x))
-+# define __cpu_to_be32(x) ((__force __be32)(__u32)(x))
-+# define __cpu_to_be64(x) ((__force __be64)(__u64)(x))
-+
-+# define __le16_to_cpu(x) __swab16((__force __u16)(__le16)(x))
-+# define __le32_to_cpu(x) __swab32((__force __u32)(__le32)(x))
-+# define __le64_to_cpu(x) __swab64((__force __u64)(__le64)(x))
-+# define __cpu_to_le16(x) ((__force __le16)__swab16(x))
-+# define __cpu_to_le32(x) ((__force __le32)__swab32(x))
-+# define __cpu_to_le64(x) ((__force __le64)__swab64(x))
-+#endif
-+
-+/*
-+ * These helpers could be phased out over time as the base version
-+ * handles constant folding.
-+ */
-+#define __constant_htonl(x) __cpu_to_be32(x)
-+#define __constant_ntohl(x) __be32_to_cpu(x)
-+#define __constant_htons(x) __cpu_to_be16(x)
-+#define __constant_ntohs(x) __be16_to_cpu(x)
-+
-+#define __constant_le16_to_cpu(x) __le16_to_cpu(x)
-+#define __constant_le32_to_cpu(x) __le32_to_cpu(x)
-+#define __constant_le64_to_cpu(x) __le64_to_cpu(x)
-+#define __constant_be16_to_cpu(x) __be16_to_cpu(x)
-+#define __constant_be32_to_cpu(x) __be32_to_cpu(x)
-+#define __constant_be64_to_cpu(x) __be64_to_cpu(x)
-+
-+#define __constant_cpu_to_le16(x) __cpu_to_le16(x)
-+#define __constant_cpu_to_le32(x) __cpu_to_le32(x)
-+#define __constant_cpu_to_le64(x) __cpu_to_le64(x)
-+#define __constant_cpu_to_be16(x) __cpu_to_be16(x)
-+#define __constant_cpu_to_be32(x) __cpu_to_be32(x)
-+#define __constant_cpu_to_be64(x) __cpu_to_be64(x)
-+
-+static inline void __le16_to_cpus(__u16 *p)
-+{
-+#ifdef __BIG_ENDIAN
-+	__swab16s(p);
-+#endif
-+}
-+
-+static inline void __cpu_to_le16s(__u16 *p)
-+{
-+#ifdef __BIG_ENDIAN
-+	__swab16s(p);
-+#endif
-+}
-+
-+static inline void __le32_to_cpus(__u32 *p)
-+{
-+#ifdef __BIG_ENDIAN
-+	__swab32s(p);
-+#endif
-+}
-+
-+static inline void __cpu_to_le32s(__u32 *p)
-+{
-+#ifdef __BIG_ENDIAN
-+	__swab32s(p);
-+#endif
-+}
-+
-+static inline void __le64_to_cpus(__u64 *p)
-+{
-+#ifdef __BIG_ENDIAN
-+	__swab64s(p);
-+#endif
-+}
-+
-+static inline void __cpu_to_le64s(__u64 *p)
-+{
-+#ifdef __BIG_ENDIAN
-+	__swab64s(p);
-+#endif
-+}
-+
-+static inline void __be16_to_cpus(__u16 *p)
-+{
-+#ifdef __LITTLE_ENDIAN
-+	__swab16s(p);
-+#endif
-+}
-+
-+static inline void __cpu_to_be16s(__u16 *p)
-+{
-+#ifdef __LITTLE_ENDIAN
-+	__swab16s(p);
-+#endif
-+}
-+
-+static inline void __be32_to_cpus(__u32 *p)
-+{
-+#ifdef __LITTLE_ENDIAN
-+	__swab32s(p);
-+#endif
-+}
-+
-+static inline void __cpu_to_be32s(__u32 *p)
-+{
-+#ifdef __LITTLE_ENDIAN
-+	__swab32s(p);
-+#endif
-+}
-+
-+static inline void __be64_to_cpus(__u64 *p)
-+{
-+#ifdef __LITTLE_ENDIAN
-+	__swab64s(p);
-+#endif
-+}
-+
-+static inline void __cpu_to_be64s(__u64 *p)
-+{
-+#ifdef __LITTLE_ENDIAN
-+	__swab64s(p);
-+#endif
-+}
-+
-+static inline __u16 __le16_to_cpup(const __le16 *p)
-+{
-+#ifdef __LITTLE_ENDIAN
-+	return (__force __u16)*p;
-+#else
-+	return __swab16p((__force __u16 *)p);
-+#endif
-+}
-+
-+static inline __u32 __le32_to_cpup(const __le32 *p)
-+{
-+#ifdef __LITTLE_ENDIAN
-+	return (__force __u32)*p;
-+#else
-+	return __swab32p((__force __u32 *)p);
-+#endif
-+}
-+
-+static inline __u64 __le64_to_cpup(const __le64 *p)
-+{
-+#ifdef __LITTLE_ENDIAN
-+	return (__force __u64)*p;
-+#else
-+	return __swab64p((__force __u64 *)p);
-+#endif
-+}
-+
-+static inline __le16 __cpu_to_le16p(const __u16 *p)
-+{
-+#ifdef __LITTLE_ENDIAN
-+	return (__force __le16)*p;
-+#else
-+	return (__force __le16)__swab16p(p);
-+#endif
-+}
-+
-+static inline __le32 __cpu_to_le32p(const __u32 *p)
-+{
-+#ifdef __LITTLE_ENDIAN
-+	return (__force __le32)*p;
-+#else
-+	return (__force __le32)__swab32p(p);
-+#endif
-+}
-+
-+static inline __le64 __cpu_to_le64p(const __u64 *p)
-+{
-+#ifdef __LITTLE_ENDIAN
-+	return (__force __le64)*p;
-+#else
-+	return (__force __le64)__swab64p(p);
-+#endif
-+}
-+
-+static inline __u16 __be16_to_cpup(const __be16 *p)
-+{
-+#ifdef __BIG_ENDIAN
-+	return (__force __u16)*p;
-+#else
-+	return __swab16p((__force __u16 *)p);
-+#endif
-+}
-+
-+static inline __u32 __be32_to_cpup(const __be32 *p)
-+{
-+#ifdef __BIG_ENDIAN
-+	return (__force __u32)*p;
-+#else
-+	return __swab32p((__force __u32 *)p);
-+#endif
-+}
-+
-+static inline __u64 __be64_to_cpup(const __be64 *p)
-+{
-+#ifdef __BIG_ENDIAN
-+	return (__force __u64)*p;
-+#else
-+	return __swab64p((__force __u64 *)p);
-+#endif
-+}
-+
-+static inline __be16 __cpu_to_be16p(const __u16 *p)
-+{
-+#ifdef __BIG_ENDIAN
-+	return (__force __be16)*p;
-+#else
-+	return (__force __be16)__swab16p(p);
-+#endif
-+}
-+
-+static inline __be32 __cpu_to_be32p(const __u32 *p)
-+{
-+#ifdef __BIG_ENDIAN
-+	return (__force __be32)*p;
-+#else
-+	return (__force __be32)__swab32p(p);
-+#endif
-+}
-+
-+static inline __be64 __cpu_to_be64p(const __u64 *p)
-+{
-+#ifdef __BIG_ENDIAN
-+	return (__force __be64)*p;
-+#else
-+	return (__force __be64)__swab64p(p);
-+#endif
-+}
-+
-+#ifdef __KERNEL__
-+
-+# define le16_to_cpu __le16_to_cpu
-+# define le32_to_cpu __le32_to_cpu
-+# define le64_to_cpu __le64_to_cpu
-+# define be16_to_cpu __be16_to_cpu
-+# define be32_to_cpu __be32_to_cpu
-+# define be64_to_cpu __be64_to_cpu
-+# define cpu_to_le16 __cpu_to_le16
-+# define cpu_to_le32 __cpu_to_le32
-+# define cpu_to_le64 __cpu_to_le64
-+# define cpu_to_be16 __cpu_to_be16
-+# define cpu_to_be32 __cpu_to_be32
-+# define cpu_to_be64 __cpu_to_be64
-+
-+# define le16_to_cpup __le16_to_cpup
-+# define le32_to_cpup __le32_to_cpup
-+# define le64_to_cpup __le64_to_cpup
-+# define be16_to_cpup __be16_to_cpup
-+# define be32_to_cpup __be32_to_cpup
-+# define be64_to_cpup __be64_to_cpup
-+# define cpu_to_le16p __cpu_to_le16p
-+# define cpu_to_le32p __cpu_to_le32p
-+# define cpu_to_le64p __cpu_to_le64p
-+# define cpu_to_be16p __cpu_to_be16p
-+# define cpu_to_be32p __cpu_to_be32p
-+# define cpu_to_be64p __cpu_to_be64p
-+
-+# define le16_to_cpus __le16_to_cpus
-+# define le32_to_cpus __le32_to_cpus
-+# define le64_to_cpus __le64_to_cpus
-+# define be16_to_cpus __be16_to_cpus
-+# define be32_to_cpus __be32_to_cpus
-+# define be64_to_cpus __be64_to_cpus
-+# define cpu_to_le16s __cpu_to_le16s
-+# define cpu_to_le32s __cpu_to_le32s
-+# define cpu_to_le64s __cpu_to_le64s
-+# define cpu_to_be16s __cpu_to_be16s
-+# define cpu_to_be32s __cpu_to_be32s
-+# define cpu_to_be64s __cpu_to_be64s
-+
-+/*
-+ * They have to be macros in order to do the constant folding
-+ * correctly - if the argument passed into a inline function
-+ * it is no longer constant according to gcc..
-+ */
-+# undef ntohl
-+# undef ntohs
-+# undef htonl
-+# undef htons
-+
-+# define ___htonl(x) __cpu_to_be32(x)
-+# define ___htons(x) __cpu_to_be16(x)
-+# define ___ntohl(x) __be32_to_cpu(x)
-+# define ___ntohs(x) __be16_to_cpu(x)
-+
-+# define htonl(x) ___htonl(x)
-+# define ntohl(x) ___ntohl(x)
-+# define htons(x) ___htons(x)
-+# define ntohs(x) ___ntohs(x)
-+
-+static inline void le16_add_cpu(__le16 *var, u16 val)
-+{
-+	*var = cpu_to_le16(le16_to_cpup(var) + val);
-+}
-+
-+static inline void le32_add_cpu(__le32 *var, u32 val)
-+{
-+	*var = cpu_to_le32(le32_to_cpup(var) + val);
-+}
-+
-+static inline void le64_add_cpu(__le64 *var, u64 val)
-+{
-+	*var = cpu_to_le64(le64_to_cpup(var) + val);
-+}
-+
-+static inline void be16_add_cpu(__be16 *var, u16 val)
-+{
-+	*var = cpu_to_be16(be16_to_cpup(var) + val);
-+}
-+
-+static inline void be32_add_cpu(__be32 *var, u32 val)
-+{
-+	*var = cpu_to_be32(be32_to_cpup(var) + val);
-+}
-+
-+static inline void be64_add_cpu(__be64 *var, u64 val)
-+{
-+	*var = cpu_to_be64(be64_to_cpup(var) + val);
-+}
-+
-+#endif /* __KERNEL__ */
-+#endif /* _LINUX_BYTEORDER_H */
+no rebooting. Just rmmod and modprobe again with the parameter set to 0,
+although a sysfs file would be nice, or maybe allowing the
+/sys/module/*/parameters/* to be writable :-)
+
+I think that should be done in driver core.
+
 -- 
-1.6.0.rc1.278.g9c632
-
+balbi
