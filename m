@@ -1,79 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759493AbYHIH1y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761240AbYHIH2x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759493AbYHIH1y (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Aug 2008 03:27:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752665AbYHIH1o
+	id S1761240AbYHIH2x (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Aug 2008 03:28:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752850AbYHIH2k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Aug 2008 03:27:44 -0400
-Received: from smtpout3.tre.se ([80.251.192.228]:34694 "EHLO smtpout3.tre.se"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752209AbYHIH1n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Aug 2008 03:27:43 -0400
-Date: Sat, 9 Aug 2008 09:28:22 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: linux arch <linux-arch@vger.kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: kbuild now support arch/$ARCH/include - time for ARCHs to convert
-Message-ID: <20080809072822.GB11302@uranus.ravnborg.org>
-References: <20080728200500.GA14284@uranus.ravnborg.org>
+	Sat, 9 Aug 2008 03:28:40 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:36903
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752489AbYHIH2j (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 9 Aug 2008 03:28:39 -0400
+Date: Sat, 09 Aug 2008 00:28:40 -0700 (PDT)
+Message-Id: <20080809.002840.167363463.davem@davemloft.net>
+To: jgarzik@pobox.com
+Cc: swise@opengridcomputing.com, divy@chelsio.com, rdreier@cisco.com,
+       kxie@chelsio.com, netdev@vger.kernel.org, open-iscsi@googlegroups.com,
+       michaelc@cs.wisc.edu, daisyc@us.ibm.com, wenxiong@us.ibm.com,
+       bhua@us.ibm.com, dm@chelsio.com, leedom@chelsio.com,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCH 1/1] cxgb3i: cxgb3 iSCSI initiator
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <489CC58D.4010606@pobox.com>
+References: <200808071145.03848.divy@chelsio.com>
+	<489C8BEB.8060001@opengridcomputing.com>
+	<489CC58D.4010606@pobox.com>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080728200500.GA14284@uranus.ravnborg.org>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 28, 2008 at 10:05:00PM +0200, Sam Ravnborg wrote:
-> The traditional location of the arch specific Makefiles
-> has been at:
+From: Jeff Garzik <jgarzik@pobox.com>
+Date: Fri, 08 Aug 2008 18:15:41 -0400
+
+> * security updates for TCP problems mean that a single IP address can be 
+> PARTIALLY SECURE, because security updates for kernel TCP stack and 
+> h/w's firmware are inevitably updated separately (even if distributed 
+> and compiled together).  Yay, we are introducing a wonderful new 
+> security problem here.
 > 
-> 	include/asm-$ARCH
-> 
-> But as suggested by several people over time and lately
-> by Linus in the following post:
-> http://kerneltrap.org/mailarchive/linux-kernel/2008/5/21/1903924
-> 
-> is is suggested to move the arch specific files under arch/
-> and for the header files this is arch/$ARCH/include.
+> * from a security, network scanner and packet classifier point of view, 
+> a single IP address no longer behaves like Linux.  It behaves like 
+> Linux... sometime.  Depending on whether it is a magic TCP port or not.
 
-So where are we now?
-alpha        Not done - but trivial (I have tested it)
-blackfin     Not done - uses symlinks
-h8300        Not done - but looks trivial
-m32r         Not done - looks trivial
-mips         Not done - but I think it is prepared
-powerpc      Done
-sparc        Done
-x86          Not done - assume planned at end of next merge window
-arm          Almost done - three plat-* directories needs to be moved
-cris         Not done - uses symlinks
-ia64         Done
-m68k         Not done - may be combined with merging headers for m68knommu
-mn10300      Not done - uses symlinks
-s390         Done
-sparc64      Done
-xtensa       Not done - uses symlinks
-avr32        Done
-frv          Not done - looks trivial
-m68knommu    Done
-parisc       Not done - but patches are prepared
-sh           Done
-um           Not done - uses symlinks
+I agree with everything Jeff has stated.
 
-So 8 out of 22 so far.
+Also, I find it ironic that the port abduction is being asked for in
+order to be "compatible with existing tools" yet in fact this stuff
+breaks everything.  You can't netfilter this traffic, you can't apply
+qdiscs to it, you can't execut TC actions on them, you can't do
+segmentation offload on them, you can't look for the usual TCP MIB
+statistics on the connection, etc. etc. etc.
 
-That is pretty good as we only started this at the end of the
-merge window.
-And of these sh, arm, avr have restructured to avoid symlinks so
-it was not that simple.
-
-And we have at six architectures where a simple:
-mkdir -p arch/$ARCH/include/asm
-git mv include/asm-$ARCH/* arch/$ARCH/include/asm
-
-looks like the only effort needed {alpha, h8300, m32r, mips frv, parisc}.
-
-	Sam
+It is broken from every possible angle.
