@@ -1,134 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758814AbYHIJY4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760605AbYHIJ3Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758814AbYHIJY4 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Aug 2008 05:24:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752830AbYHIJYs
+	id S1760605AbYHIJ3Q (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Aug 2008 05:29:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753430AbYHIJ3D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Aug 2008 05:24:48 -0400
-Received: from fk-out-0910.google.com ([209.85.128.190]:22650 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751979AbYHIJYq (ORCPT
+	Sat, 9 Aug 2008 05:29:03 -0400
+Received: from cadalboia.ferrara.linux.it ([195.110.122.101]:47547 "EHLO
+	cadalboia.ferrara.linux.it" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752499AbYHIJ3A (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Aug 2008 05:24:46 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=AKTv5F4WbDNdlNYGZTv9yVEwnrnJCd359D25YOOYWx/b/f3ZrGzwsNTNFjEBGLjx2R
-         WtSdNy36Q1Kvp4DJXPN48BvSf/6NPUZIhqkqRGH3exAbQhIE5zjHuqr3MEQyBuv5d2Vv
-         xzpB/gJRHXR6IjqKDFJdoNZZmpaxsFwxfbAak=
-Date: Sat, 9 Aug 2008 13:24:41 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Nix <nix@esperi.org.uk>
-Cc: linux-kernel@vger.kernel.org, alan@lxorguk.ukuu.org.uk, petero2@telia.com,
-       jens.axboe@oracle.com
-Subject: pktcdvd: BKL pushdown fallout (was Re: writable packet CD mounting
-	in 2.6.26.x?)
-Message-ID: <20080809092441.GA5111@martell.zuzino.mipt.ru>
-References: <87ej52vtxq.fsf@hades.wkstn.nix> <20080808031437.GA14249@martell.zuzino.mipt.ru>
+	Sat, 9 Aug 2008 05:29:00 -0400
+X-Greylist: delayed 630 seconds by postgrey-1.27 at vger.kernel.org; Sat, 09 Aug 2008 05:29:00 EDT
+From: Fabio Coatti <cova@ferrara.linux.it>
+Organization: FerraraLUG
+To: linux-kernel@vger.kernel.org
+Subject: SATA problems and fs corruption on recent kernels
+Date: Sat, 9 Aug 2008 09:18:29 +0000
+User-Agent: KMail/1.9.9
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080808031437.GA14249@martell.zuzino.mipt.ru>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Message-Id: <200808090918.29645.cova@ferrara.linux.it>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 08, 2008 at 07:14:37AM +0400, Alexey Dobriyan wrote:
-> On Wed, Aug 06, 2008 at 08:12:49PM +0100, Nix wrote:
-> > It seems to be impossible to mount packet-written CD-RWs writably in
-> > 2.6.26.x, even as root. Things worked in 2.6.25.x.
-> > 
-> > hades:/tmp# ls -l /dev/pktcdvd
-> > total 0
-> > brw-rw-rw- 1 root root  254,  0 2008-08-05 00:45 cdrw
-> > crw-r--r-- 1 root root   10, 63 2008-08-05 00:44 control
-> > brw-rw-rw- 1 root cdrom 254,  0 2008-08-05 00:45 pktcdvd0
-> > 
-> > 
-> > hades:/tmp# mount -o rw /dev/pktcdvd/cdrw /mnt/pcdrw
-> > mount: block device /dev/pktcdvd/cdrw is write-protected, mounting read-only
-> > 
-> > hades:/tmp# mount -o rw /dev/pktcdvd/pktcdvd0 /mnt/pcdrw
-> > mount: block device /dev/pktcdvd/pktcdvd0 is write-protected, mounting read-only
-> > 
-> > The strace says that we get -EROFS always, now:
-> > 
-> > mount("/dev/pktcdvd/cdrw", "/mnt/pcdrw", "udf"..., MS_NOSUID|MS_NODEV|MS_NOEXEC|0x200000, NULL) = -1 EROFS (Read-only file system)
-> > 
-> > 
-> > Anyone got any ideas? There are no suspicious-looking changes in
-> > pktcdvd.c itself, so maybe this lies deeper in the block layer. Or
-> > perhaps I'm mounting it wrong in some obscure way.
-> 
-> Reproduced. There must be some kick-ass code in pktcdvd driver. :^)
-> 
-> 
-> # mount -t udf -o rw /dev/pktcdvd/0  tmp/
-> mount: block device /dev/pktcdvd/0 is write-protected, mounting read-only
-> 								^^^^^^^^^
-> Segmentation fault
-> 
-> 
-> Linux version 2.6.27-rc2 (ad@x200) (gcc version 4.1.2 20061115 (prerelease) (Debian 4.1.1-21)) #1 SMP PREEMPT Wed Aug 6 14:43:05 MSD 2008
-> pktcdvd: writer pktcdvd0 mapped to sr0
+Hi all,
+I'm facing a quite annoying problem with sata disks. Googling a bit I've seen 
+several references to similar issues, but without any hint on how to solve.
+Short description, details below and on request ;) : on a quite old Pentium 
+IV /IC7G abit mobo, I've started to see sata lockups when moving files of 
+4~15Mb size. I do this quite often (photo, actually) and prior the 
+2.6.25.something I can't recall any single problem. On that machine I've 3 
+sata disks, both maxtor and seagate. The lockup caused XFS corruption, and a 
+simple reset is not enough: I've to turn off the power to have the hd drive 
+responding again, otherwise the machine will stop at POST.
+It doesn't matter which HD are involved in file transfer, it can happen moving 
+files on different partition of the same disk, between different disks and 
+between sata and usb disks as well.
+the same configuration worked without a glitch for years, using drivers  
+sata_sil and ata_piix (that mobo has two controllers)
 
-
-> BUG: unable to handle kernel NULL pointer dereference at 0000000c
-
-	file = NULL
-
-> IP: [<f8b6d639>] :pktcdvd:pkt_ioctl+0x19/0xd0
-> *pde = 00000000 
-> Oops: 0000 [#1] PREEMPT SMP 
-> Modules linked in: udf crc_itu_t isofs zlib_inflate pktcdvd usbhid fan sbp2 loop uvcvideo compat_ioctl32 videodev v4l1_compat pcmcia sr_mod cdrom snd_hda_intel snd_pcm tifm_7xx1 yenta_socket snd_timer tifm_core i2c_i801 psmouse ehci_hcd rsrc_nonstatic pcmcia_core snd ohci1394 uhci_hcd ata_piix soundcore serio_raw usbcore i2c_core ieee1394 r8169 snd_page_alloc battery ac thermal button evdev [last unloaded: pktcdvd]
-> 
-> Pid: 22816, comm: mount Tainted: G        W (2.6.27-rc2 #1)
-> EIP: 0060:[<f8b6d639>] EFLAGS: 00210282 CPU: 0
-> EIP is at pkt_ioctl+0x19/0xd0 [pktcdvd]
-> EAX: 00000000 EBX: f8b6d620 ECX: c32dfda0 EDX: 00005310
-> ESI: 00005310 EDI: 00000000 EBP: c32dfda0 ESP: c32dfc54
->  DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
-> Process mount (pid: 22816, ti=c32df000 task=f70d6520 task.ti=c32df000)
-> Stack: 0000ffff f8b6d620 f73cf400 00000000 f7420aec c01d147f 00000001 f7420a80 
->        fffffdfd 00005310 f7420aec c01d17cf 00005310 c32dfda0 c32dfcb4 010e2000 
->        00010101 00000000 00000000 f73cf400 ffffffff ffff00bb 0000ffff 00000000 
-> Call Trace:
->  [<f8b6d620>] pkt_ioctl+0x0/0xd0 [pktcdvd]
->  [<c01d147f>] blkdev_driver_ioctl+0x2f/0x80
->  [<c01d17cf>] blkdev_ioctl+0x2ff/0x830
->  [<c0196f05>] set_blocksize+0x85/0x90
->  [<f8b70979>] pkt_open+0x59/0x4e0 [pktcdvd]
->  [<c01d2267>] exact_lock+0x7/0x10
->  [<c022edb8>] kobj_lookup+0x158/0x170
->  [<c01dc563>] string+0x23/0xa0
->  [<c01dca3b>] vsnprintf+0x45b/0x5e0
->  [<c01db519>] strsep+0x19/0x30
->  [<f8bb551c>] udf_parse_options+0x6c/0x2f0 [udf]
->  [<c0197d3e>] ioctl_by_bdev+0x2e/0x50
->  [<f8bb1dea>] udf_get_last_session+0x1a/0x40 [udf]
->  [<f8bb7c19>] udf_fill_super+0x849/0x910 [udf]
->  [<c01a97fe>] disk_name+0x3e/0xc0
->  [<c0173511>] get_sb_bdev+0x101/0x130
->  [<c0157dac>] kstrdup+0x3c/0x70
->  [<f8bb5441>] udf_get_sb+0x21/0x30 [udf]
->  [<f8bb73d0>] udf_fill_super+0x0/0x910 [udf]
->  [<c0173063>] vfs_kern_mount+0x43/0x90
->  [<c017310d>] do_kern_mount+0x3d/0xe0
->  [<c0188de1>] do_new_mount+0x81/0xc0
->  [<c0188f97>] do_mount+0x177/0x1d0
->  [<c0186c33>] copy_mount_options+0x43/0x150
->  [<c0179933>] getname+0xb3/0xe0
->  [<c0189067>] sys_mount+0x77/0xc0
-
-Not suprisingly, indeed.
-
-	udf_get_last_session
-	ioctl_by_bdev(bdev, CDROMMULTISESSION,
-	ioctl with file = NULL
-
-pkt_ioctl is ->unlocked_ioctl, so can't tolerate NULL file.
-
-Introduced in 5b6155ee70e9c4d2ad7e6f514c8eee06e2711c3a aka BKL pushdown.
+Since then, I've changed hardware: new mobo (M3N-HT asus), new processor, 
+kernel and even some disks (I've added a new one). Of course new cables and 
+power supply. So I think that a hw culprit can be excluded.
+The driver has changed as well, now I use  ahci mode for sata disks. Tried 
+with 2.6.26.2
+The behaviour is exactly the same: moving files (more or less of the same size 
+as before) causes a HD lockup so bad that it needs a power cycle to recover, 
+otherwise the post will fail ahci detection of the drive (for those used to 
+that controller, it waits  for some seconds with "Port:00" message, then the 
+POST process locks)
+now even a mount of the damaged xfs partition can trigger the freeze: I can 
+only see a that xfs starts the recovery, then the hd stops blinking (always 
+on) and after that even a "ls" on the drive remains stuck. This happens on a 
+brand new 500Mb sata disk.
+so it seems that nor the hardware, nor the 64 or 32 bit of cpu/kernel nor the 
+low level drivers can explain this. I've tried only with xfs, but sounds 
+strange that a fs can lockup a drive.
+the hardware that I'm using is a 9850AMD phenom, m3n-ht mobo, 2.6.26.2 kernel, 
+gentoo 2008.0, sata hd from seagate and maxtor, different sizes and models. 
+AHCI sata drivers.
+working on small size files seems to be fine, as I can compile kernels and 
+I've installed the system without problems.
+Now I will try several things to get more clues, I can donwngrade kernels to 
+see if the situation changes (dunno if the new mobo is compatible with too 
+old kernels...), but if someone can give me some hints about which tests has 
+to be made and wich information I must provide, it will be most welcome
+Thanks for any help.
 
