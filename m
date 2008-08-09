@@ -1,61 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758972AbYHICgd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759675AbYHICnU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758972AbYHICgd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 22:36:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753480AbYHICgZ
+	id S1759675AbYHICnU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 22:43:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753108AbYHICnF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 22:36:25 -0400
-Received: from jalapeno.cc.columbia.edu ([128.59.29.5]:59127 "EHLO
-	jalapeno.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753440AbYHICgZ (ORCPT
+	Fri, 8 Aug 2008 22:43:05 -0400
+Received: from dresden.studentenwerk.mhn.de ([141.84.225.229]:54610 "EHLO
+	email.studentenwerk.mhn.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750890AbYHICnE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 22:36:25 -0400
-Message-ID: <489D025E.3030901@cs.columbia.edu>
-Date: Fri, 08 Aug 2008 22:35:10 -0400
-From: Oren Laadan <orenl@cs.columbia.edu>
-Organization: Columbia University
-User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
+	Fri, 8 Aug 2008 22:43:04 -0400
+From: Wolfgang Walter <wolfgang.walter@stwm.de>
+Organization: Studentenwerk =?utf-8?q?M=C3=BCnchen?=
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Subject: Re: Kernel oops with 2.6.26, padlock and ipsec: probably problem with fpu state changes
+Date: Sat, 9 Aug 2008 04:43:00 +0200
+User-Agent: KMail/1.9.9
+Cc: "H. Peter Anvin" <hpa@zytor.com>,
+       Suresh Siddha <suresh.b.siddha@intel.com>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, viro@zeniv.linux.org.uk,
+       vegard.nossum@gmail.com
+References: <200807171653.59177.wolfgang.walter@stwm.de> <489C97FB.2030408@zytor.com> <20080809014925.GA26529@gondor.apana.org.au>
+In-Reply-To: <20080809014925.GA26529@gondor.apana.org.au>
 MIME-Version: 1.0
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-CC: containers@lists.linux-foundation.org, Theodore Tso <tytso@mit.edu>,
-       linux-kernel@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [RFC][PATCH 2/4] checkpoint/restart: x86 support
-References: <20080807224033.FFB3A2C1@kernel>	 <200808081409.30591.arnd@arndb.de> <489CAC70.7090809@cs.columbia.edu>	 <200808090029.28286.arnd@arndb.de> <489CD0F9.9060603@cs.columbia.edu>	 <1218242286.19082.62.camel@nimitz>  <489CF0CE.1000603@cs.columbia.edu> <1218248458.19082.68.camel@nimitz>
-In-Reply-To: <1218248458.19082.68.camel@nimitz>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-No-Spam-Score: Local
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
+Content-Disposition: inline
+Message-Id: <200808090443.00597.wolfgang.walter@stwm.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-Dave Hansen wrote:
-> On Fri, 2008-08-08 at 21:20 -0400, Oren Laadan wrote:
->> hehehe .. both; I meant that while it doesn't change per architecture, it
->> varies between architectures. So "struct pt_regs" compiled for x86-32 is
->> different than that compiled for x86-64. Therefore we can't just dump the
->> structure as is and expect that 64 bit would be able to parse the 32 bit.
->> In other words, we need an intermediate representation.
+On Saturday 09 August 2008, Herbert Xu wrote:
+> On Fri, Aug 08, 2008 at 12:01:15PM -0700, H. Peter Anvin wrote:
+> >
+> > It's technically overkill, if (and only if!) these instructions don't 
+> > actually touch the SSE state (most likely they're using the SSE 
+> > pipeline, and need this stuff to deal with power management issues.)
 > 
-> Surely we already handle this, though.  Don't we allow a 32-bit app
-> running on a 64-bit kernel to PTRACE_GETREGS and get the 32-bit version?
-> A 64-bit app will get the 64-bit version making the same syscall.  It's
-> all handled in the syscall compatibility code.
+> Yes the PadLock uses the SSE pipeline, but doesn't touch any
+> of the state.
+> 
+> > However, overkill is a good way to make sure something is dead. 
+> > Applying the patch will make sure we fix the regression, and we can 
+> > worry about optimizing this further post-2.6.27.
+> 
+> Do we really need the FPU changes right now? I'd prefer for that
+> to be backed out until a proper solution is found.  Disabling
+> preemption around crypto is really bad for scheduling latency.
+> 
 
-Sure, that's a compatibility layer around ptrace() in the 64-bit kernel.
+These FPU changes are already in 2.6.26. Undoing them, would that be accepted 
+for 2.6.26 stable?
 
-Recall that Arnd suggested "keeping the format identical between the
-variations of each architecture", and I fully agree. If we want to keep
-the format identical, we can't simply define:
-	struct cr_hdr_cpu {
-		struct pt_regs regs;
-		...
-	};
-because that will compile differently on x86-32 and x86-64. So either we
-add r8..r15 to the structure as it appears in the patch now (and keep the
-format identical), or allow the format to vary, and explicitly test for
-this case and add a compatibility layer. Personally I prefer the former.
+Maybe the following solution would be possible: if a processor with padlock is 
+detected the memory for xstate is always allocated when the thread is created 
+instead "lazy"?
 
-Oren.
+Or would it be possible to change __switch_to(): bevor calling __unlazy_fpu() 
+check if xstate is NULL, if yes, clear TS_USEDFPU and math-state?
 
+
+As I wrote in my other mail: 2.6.26 with the patch seems to perform rather 
+well with ipsec. Network latency and bandwidth seem completely unchanged 
+compared to 2.6.15.13 as far as I can see yet.
+
+But this is of course not a good test for kernel latency itself. As we don't 
+have any destops based on VIA C3 (and these using padlock) I can't really 
+test this (even if I set one up I don't know how it used to feel with 
+2.6.25 :-) ). 
+
+But I doubt that a lot of people use it as a desktop together with a VIA C3 
+and ipsec. If they would they must see this crash.
+
+
+Regards,
+-- 
+Wolfgang Walter
+Studentenwerk München
+Anstalt des öffentlichen Rechts
+Leiter EDV
+Leopoldstraße 15
+80802 München
+Tel: +49 89 38196-276
+Fax: +49 89 38196-144
+wolfgang.walter@stwm.de
+http://www.studentenwerk-muenchen.de/
