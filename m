@@ -1,72 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754894AbYHIW52@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754848AbYHIW6V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754894AbYHIW52 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Aug 2008 18:57:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753642AbYHIW5B
+	id S1754848AbYHIW6V (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Aug 2008 18:58:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753108AbYHIW6N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Aug 2008 18:57:01 -0400
-Received: from wf-out-1314.google.com ([209.85.200.169]:55948 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753270AbYHIW5A (ORCPT
+	Sat, 9 Aug 2008 18:58:13 -0400
+Received: from cpsmtpo-eml03.kpnxchange.com ([213.75.38.152]:30991 "EHLO
+	cpsmtpo-eml03.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753010AbYHIW6M (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Aug 2008 18:57:00 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version
-         :x-mailer:content-transfer-encoding;
-        b=g+FsAXSL1ehAeD4o9bx4crYufG5vCcn467zplSACoHWx5ln2dLU3kFVrp4fg06HzHI
-         I+MrhtF1mv3BzVeInga2JB9YI9/H+b0F66bN5TF0aD4mfi2avUcq9aMiZxJlGv8RQeDk
-         zQk2oOLaF2+AW7B8Rx2m6lLnYTdVQIu3Z5k9U=
-Subject: [PATCH] x86: fix shadowed variable warning
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Sat, 09 Aug 2008 15:57:00 -0700
-Message-Id: <1218322620.24441.8.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Sat, 9 Aug 2008 18:58:12 -0400
+From: Frans Pop <elendil@planet.nl>
+To: Greg KH <greg@kroah.com>
+Subject: Re: [00/03] [RFC] USB debugging rework
+Date: Sun, 10 Aug 2008 00:57:58 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20080809013820.GA10910@kroah.com>
+In-reply-To: <20080809013820.GA10910@kroah.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200808100057.58863.elendil@planet.nl>
+X-OriginalArrivalTime: 09 Aug 2008 22:58:10.0737 (UTC) FILETIME=[6546A210:01C8FA73]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-arch/x86/kernel/pvclock.c:102:6: warning: symbol 'tsc_khz' shadows an earlier one
-include/asm/tsc.h:18:21: originally declared here
+Greg KH wrote:
+> I've been annoyed for a long time that we make users go off and rebuild
+> their kernels just to enable usb debug messages.  So finally, here's the
+> start of fixing that issue.
 
-Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
----
-Introduced between next-20080729 and next-20080808
+Will your patches also allow to turn off the usb debugging at some point, 
+for example after system boot has been completed if the debugging was 
+only needed to analyze a boot issue?
 
- arch/x86/kernel/pvclock.c |   10 +++++-----
- 1 files changed, 5 insertions(+), 5 deletions(-)
+I noticed earlier this week that USB debugging will really flood the 
+syslog and had to rebuild my -rc2 kernel without debugging and reboot to 
+get rid of it. AFAICT with your patches only rebooting would be needed, 
+but it would be even nicer if it also could be turned off (and on?) using 
+a sysfs parameter.
 
-diff --git a/arch/x86/kernel/pvclock.c b/arch/x86/kernel/pvclock.c
-index 1c54b5f..4f9c55f 100644
---- a/arch/x86/kernel/pvclock.c
-+++ b/arch/x86/kernel/pvclock.c
-@@ -99,14 +99,14 @@ static unsigned pvclock_get_time_values(struct pvclock_shadow_time *dst,
- 
- unsigned long pvclock_tsc_khz(struct pvclock_vcpu_time_info *src)
- {
--	u64 tsc_khz = 1000000ULL << 32;
-+	u64 pv_tsc_khz = 1000000ULL << 32;
- 
--	do_div(tsc_khz, src->tsc_to_system_mul);
-+	do_div(pv_tsc_khz, src->tsc_to_system_mul);
- 	if (src->tsc_shift < 0)
--		tsc_khz <<= -src->tsc_shift;
-+		pv_tsc_khz <<= -src->tsc_shift;
- 	else
--		tsc_khz >>= src->tsc_shift;
--	return tsc_khz;
-+		pv_tsc_khz >>= src->tsc_shift;
-+	return pv_tsc_khz;
- }
- 
- cycle_t pvclock_clocksource_read(struct pvclock_vcpu_time_info *src)
--- 
-1.6.0.rc1.278.g9c632
-
-
+Cheers,
+FJP
