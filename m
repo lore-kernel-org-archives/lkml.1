@@ -1,51 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754492AbYHIWCV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754262AbYHIWFA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754492AbYHIWCV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Aug 2008 18:02:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754146AbYHIWB7
+	id S1754262AbYHIWFA (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Aug 2008 18:05:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752335AbYHIWEv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Aug 2008 18:01:59 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:34132 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754031AbYHIWB5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Aug 2008 18:01:57 -0400
-Date: Sat, 9 Aug 2008 23:01:54 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Bruno Pr?mont <bonbons@linux-vserver.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, linux-scsi@vger.kernel.org,
-       linux-ide@vger.kernel.org
-Subject: Re: [2.6.27-rc2-git4] Kernel panic on VIA Ester+VIA CX700
-Message-ID: <20080809220154.GO28946@ZenIV.linux.org.uk>
-References: <20080809225153.2fdb23a8@neptune.home> <200808100000.25402.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200808100000.25402.rjw@sisk.pl>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Sat, 9 Aug 2008 18:04:51 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:57486 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752323AbYHIWEu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 9 Aug 2008 18:04:50 -0400
+Date: Sat, 9 Aug 2008 16:04:22 -0600
+From: Pete Zaitcev <zaitcev@redhat.com>
+To: Greg KH <greg@kroah.com>
+Cc: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [00/03] [RFC] USB debugging rework
+Message-Id: <20080809160422.48eae96b.zaitcev@redhat.com>
+In-Reply-To: <20080809013820.GA10910@kroah.com>
+References: <20080809013820.GA10910@kroah.com>
+Organization: Red Hat, Inc.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.13.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Aug 10, 2008 at 12:00:24AM +0200, Rafael J. Wysocki wrote:
-> On Saturday, 9 of August 2008, Bruno Pr?mont wrote:
-> > Hi,
-> 
-> Hi,
-> 
-> > Trying out 2.6.27-rc2-git4 on a VIA Ester + CX700 based system I
-> > experience the following panic using a config obtained with make
-> > oldconfig from working 2.6.26 config.
-> > 
-> > Looking at the traces and when it happens it looks like it could be
-> > libATA or SCSI related...
-> > 
-> > 
-> > Note: the kernel is patched with viafb patches sent yesterday ([y]) and
-> > squashfs (<m>)
-> 
-> Could you retest without these two, please?
+On Fri, 8 Aug 2008 18:38:21 -0700, Greg KH <greg@kroah.com> wrote:
 
-There'a another fun candidate: lazy allocation of fpu state.  Do you have
-padlock-aes/padlock-sha/via-rng in use?
+> I've been annoyed for a long time that we make users go off and rebuild
+> their kernels just to enable usb debug messages.  So finally, here's the
+> start of fixing that issue.
+
+In many cases usbmon does the job, and it's intended to be "always-on",
+as to allow building it even on embedded kernels. Sure, it will not print
+nice values of quirks and such, but that's a trade-off. I sort of hoped
+that the switcheable explicit messages would generally die off. Look
+at ub, it only has messages which indicate error conditions.
+
+I'm not against your patch as such, it's a net improvement.
+
+-- Pete
