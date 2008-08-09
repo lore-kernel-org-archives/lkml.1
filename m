@@ -1,95 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757948AbYHIFHj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755014AbYHIFP2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757948AbYHIFHj (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Aug 2008 01:07:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750855AbYHIFHb
+	id S1755014AbYHIFP2 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Aug 2008 01:15:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750839AbYHIFPU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Aug 2008 01:07:31 -0400
-Received: from gw.goop.org ([64.81.55.164]:34812 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750781AbYHIFHa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Aug 2008 01:07:30 -0400
-Message-ID: <489D2600.7020400@goop.org>
-Date: Fri, 08 Aug 2008 22:07:12 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	Sat, 9 Aug 2008 01:15:20 -0400
+Received: from smtpq1.tilbu1.nb.home.nl ([213.51.146.200]:47325 "EHLO
+	smtpq1.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750703AbYHIFPT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 9 Aug 2008 01:15:19 -0400
+Message-ID: <489D27F0.90609@keyaccess.nl>
+Date: Sat, 09 Aug 2008 07:15:28 +0200
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080707)
 MIME-Version: 1.0
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-CC: jmerkey@wolfmountaingroup.com, linux-kernel@vger.kernel.org
-Subject: Re: [ANNOUNCE] mdb-2.6.27-rc2-ia32-08-07-08.patch
-References: <1300.69.2.248.210.1218119365.squirrel@webmail.wolfmountaingroup.com> <489B199B.40305@s5r6.in-berlin.de>
-In-Reply-To: <489B199B.40305@s5r6.in-berlin.de>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       mm-commits@vger.kernel.org, rene.herman@gmail.com
+Subject: Re: + x86-kill-arch-x86-kernel-mpparsec-debugging-printk.patch added
+ to -mm tree
+References: <200808082051.m78KpZGC027833@imap1.linux-foundation.org>	 <86802c440808081413u2249fff1g1940ff472cdf10e7@mail.gmail.com>	 <20080808142847.9e4f33b2.akpm@linux-foundation.org> <86802c440808081444q45353d92xd2483f9bdfdf29c3@mail.gmail.com>
+In-Reply-To: <86802c440808081444q45353d92xd2483f9bdfdf29c3@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -1.0 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stefan Richter wrote:
-> jmerkey@wolfmountaingroup.com wrote:
->   
->> The mdb-rc2 patch was posted this morning with the changes for a modular
->> kernel debugger using kprobes.
+On 08-08-08 23:44, Yinghai Lu wrote:
+
+> On Fri, Aug 8, 2008 at 2:28 PM, Andrew Morton <akpm@linux-foundation.org> wrote:
+>> On Fri, 8 Aug 2008 14:13:29 -0700
+>> "Yinghai Lu" <yhlu.kernel@gmail.com> wrote:
 >>
->> ftp://ftp.wolfmountaingroup.org/pub/mdb/mdb-2.6.27-rc2-ia32-08-07-08.patch
->>
->> Jeffrey Vernon Merkey
->>     
->
->
-> Quoting from this patch:
->
->   
->> +typedef struct _RLOCK 
->> +{
->> +#if defined(CONFIG_SMP)
->> +    spinlock_t lock;
->> +#endif
->> +    unsigned long flags;
->> +    unsigned long processor;
->> +    unsigned long count;    
->> +} rlock_t;
->>     
->
-> Is this something along the lines of a counting semaphore?  As far as I
-> understand its accessor functions, an rlock
->   - can be taken by one CPU multiple times,
->   - will block the other CPUs as long as the first CPU hasn't unlocked
->     the rlock as many times as it locked it.
->
-> The accessors rspin_lock() and rspin_try_lock() peek into spinlock_t and
-> may therefore not be fully portable.  Also, they and rspin_unlock()
-> don't look SMP safe:
->
->   
->> +//
->> +//   returns   0 - atomic lock occurred, processor assigned
->> +//             1 - recusive count increased
->> +//
->> +
->> +unsigned long rspin_lock(volatile rlock_t *rlock)
->> +{
->> +#if defined(CONFIG_SMP)
->> +   register unsigned long proc = get_processor_id();
->> +   register unsigned long retCode;
->> +
->> +   if (rlock->lock.raw_lock.slock && rlock->processor == proc)
->>     
+>>>> commit 11a62a056093a7f25f1595fbd8bd5f93559572b6 turns some formerly nopped
+>>>> debugging printks in arch/x86/kernel/mppparse.c into regular ones.  The
+>>>> one at the top of smp_scan_config() in particular also prints on
+>>>> !CONFIG_SMP/CONFIG_X86_LOCAL_APIC kernels and UP machines without anything
+>>>> resembling MP tables which makes their lowly UP owners wonder...
+>>>>
+>>>> Given that it was up to this point also not considered valuable user-level
+>>>> information, let's just kill that one.
+>>>>
+>>> why?  that just three lines debug debug info.
+>> For the reasons described in the changelog text.  They look quite valid
+>> to me.
+> 
+> then how about system do have mptable ?
 
-Ticket locks will almost always have a non-zero slock.  It doesn't 
-indicate anything about the locked/unlocked state.  But this looks like 
-it's effectively doing a trylock:
+Those print:
 
-	if (!spin_trylock(rlock) && rlock->processor == proc) {
-		rlock->count++;
-		...
-	} else {
-		rlock->processor = proc;
-		...
-	}
+   printk(KERN_INFO "found SMP MP-table at [%p] %08lx\n",
+                                  mpf, virt_to_phys(mpf));
 
+a few lines down. Note moreover that is used to be a "Dprintk()" which 
+was defined to <nop> before -- ie, no change.
 
-    J
-
-
+Rene.
