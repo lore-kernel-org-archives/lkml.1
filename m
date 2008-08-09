@@ -1,87 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752323AbYHIRIC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752616AbYHIROS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752323AbYHIRIC (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Aug 2008 13:08:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750749AbYHIRHx
+	id S1752616AbYHIROS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Aug 2008 13:14:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750874AbYHIROE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Aug 2008 13:07:53 -0400
-Received: from n45.bullet.mail.ukl.yahoo.com ([87.248.110.178]:45192 "HELO
-	n45.bullet.mail.ukl.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750725AbYHIRHw (ORCPT
+	Sat, 9 Aug 2008 13:14:04 -0400
+Received: from rv-out-0506.google.com ([209.85.198.236]:12717 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750707AbYHIROB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Aug 2008 13:07:52 -0400
-X-Yahoo-Newman-Id: 549201.49910.bm@omp214.mail.ukl.yahoo.com
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.it;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-Id;
-  b=DG6NOO7EzZpdy0gmouHFRHHVNPFZeoGdDE+CYP+2E/C8/8Iobu0UlT9KBbFYCAbZDgGqq44DvQC0qtLxgujhFi+iCzKjXrT9imK9WlgrYVeB9Y5BT2RPRrXSF5hLPbTlxEtxS+lVCedigYyuXKRoivgyb3iRrOxNPN5HI4zMqd0=  ;
-X-YMail-OSG: r9YQbk0VM1mac_Ntyp7zZGAzOfGHNn4Vxg_cmsJEUMUNF9dCsiqTP5kfuBfMrx0LrkSG7Sa0eS6gck7CblMtl5H4s1ANm2VZutSJ2rcnTQ4N7QIGlGwCo3kI1iL57To-
-X-Yahoo-Newman-Property: ymail-3
-From: Blaisorblade <blaisorblade@yahoo.it>
-To: Tomas Carnecky <tom@dbservice.com>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: check kconfig
-Date: Sat, 9 Aug 2008 19:07:38 +0200
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-References: <488B935A.4080805@dbservice.com>
-In-Reply-To: <488B935A.4080805@dbservice.com>
+	Sat, 9 Aug 2008 13:14:01 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=LmKw36Cd1+VK6B1Y/z8X8A03zyS+9lGaTthl5IS4FfIkwRJQRCWXr6ypRzZwBrEof4
+         5YEbwJapV2t/mEmupIGZkaYSZdy8kHMsHNW+946BP+J0pWfUD324Pb3F318rP44AZTx1
+         VYIJhWFKdeu/ENEmB2tGIGc6+4yOxYfrszUA0=
+Message-ID: <863e9df20808091014w11896139q77850bc6eb7609b3@mail.gmail.com>
+Date: Sat, 9 Aug 2008 22:44:01 +0530
+From: "Abhishek Sagar" <sagar.abhishek@gmail.com>
+To: "Steven Rostedt" <rostedt@goodmis.org>
+Subject: Re: [PATCH 0/5] ftrace: to kill a daemon
+Cc: linux-kernel@vger.kernel.org, "Ingo Molnar" <mingo@elte.hu>,
+       "Thomas Gleixner" <tglx@linutronix.de>,
+       "Peter Zijlstra" <peterz@infradead.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "David Miller" <davem@davemloft.net>,
+       "Mathieu Desnoyers" <mathieu.desnoyers@polymtl.ca>,
+       "Roland McGrath" <roland@redhat.com>,
+       "Ulrich Drepper" <drepper@redhat.com>,
+       "Rusty Russell" <rusty@rustcorp.com.au>,
+       "Jeremy Fitzhardinge" <jeremy@goop.org>,
+       "Gregory Haskins" <ghaskins@novell.com>,
+       "Arnaldo Carvalho de Melo" <acme@redhat.com>,
+       "Luis Claudio R. Goncalves" <lclaudio@uudg.org>,
+       "Clark Williams" <williams@redhat.com>
+In-Reply-To: <alpine.DEB.1.10.0808091129460.25265@gandalf.stny.rr.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart1636208.b6hUXWTrm8";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-Id: <200808091907.43733.blaisorblade@yahoo.it>
+Content-Disposition: inline
+References: <20080807182013.984175558@goodmis.org>
+	 <863e9df20808090248h3adc2ac3mdb3217fe2876ab3b@mail.gmail.com>
+	 <alpine.DEB.1.10.0808090854170.24140@gandalf.stny.rr.com>
+	 <863e9df20808090801p7f9e11bar84d0e661440d591e@mail.gmail.com>
+	 <alpine.DEB.1.10.0808091129460.25265@gandalf.stny.rr.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart1636208.b6hUXWTrm8
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+On Sat, Aug 9, 2008 at 9:07 PM, Steven Rostedt <rostedt@goodmis.org> wrote:
+> One of the things I tried to do was to make ftrace port easily to all
+> archs. David Miller ported it to Sparc64 in 20 minutes and that was mostly
+> compiling.  Doing a kprobe fix would require much more knowledge to each
+> arch and more prone to errors.
 
-On sabato 26 luglio 2008, Tomas Carnecky wrote:
-> I ran your script, it still shows heaps of unused CONFIG_ defines in the
-> kernel sources. Is anyone actually cleaning those up?
+I agree with the point about porting. My kprobe reference was simply
+to point out that
+an existing module seems to be overwriting code on the fly and doesn't
+take care of much
+on non-x86 archs. Ftrace has a unique 5-byte call replacement issue
+specific to x86 which kprobes doesn't have to deal with.
+
+>> This solution indeed would fit all archs well but for some it may be
+>> an overkill (or is it?...I'd like to know that :-\ ).
 >
-> tom
-Sorry for late answer. I'm not working on this (and I've not time to work o=
-n=20
-any kernel stuff, currently), as you might have guessed (even from the lack=
-=20
-of an answer).
+> It is not an issue at all. The mcount list is discarded with the init
+> section, and the change to nops is relatively fast. We do make a list of
+> all entries anyway, so that we can pick and choose which functions we want
+> to enable tracing on.
 
-You could maybe help yourself, and you could also suggest this task to=20
-kernel-janitors (look for it on Google, it's a collection of simple tasks f=
-or=20
-wannabe kernel hackers).
+Ok.
 
-The problem is that cleaning up such stuff isn't always trivial, one must f=
-ind=20
-out why there is a mention of an unknown symbol, and fix the original=20
-problem. If one discover that some source is never built, maybe the symbol=
-=20
-should be reintroduced. And so on.
+> I want ftrace_record_ip to be as fast as possible, and also having it call
+> the registered function means we need to test if it was set in the filter
+> too. This is too much for what record_ip does. And as I said, doing it all
+> on boot up would be best.
 
-Good bye and good luck
-=2D-=20
-"Doh!" (cit.), I've made another mistake!
-Paolo Giarrusso, aka Blaisorblade
-Linux registered user n. 292729
-http://www.user-mode-linux.org/~blaisorblade
+Alrighty.
 
---nextPart1636208.b6hUXWTrm8
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBInc7fqH9OHC+5NscRAhCxAJwJVsqwB/ZJgbSP1GOctePfZs7VGACfZEwQ
-5aMQyQbgnq/n9i4mZzKJSnM=
-=HrTN
------END PGP SIGNATURE-----
-
---nextPart1636208.b6hUXWTrm8--
-
+Thanks,
+Abhishek Sagar
