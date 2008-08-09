@@ -1,42 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760473AbYHIDn3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759628AbYHIDun@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760473AbYHIDn3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Aug 2008 23:43:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753766AbYHIDnV
+	id S1759628AbYHIDun (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Aug 2008 23:50:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753917AbYHIDuc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Aug 2008 23:43:21 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:60508 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753108AbYHIDnU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Aug 2008 23:43:20 -0400
-Message-ID: <489D1257.1040204@zytor.com>
-Date: Fri, 08 Aug 2008 20:43:19 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Fri, 8 Aug 2008 23:50:32 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:55790 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753037AbYHIDuc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Aug 2008 23:50:32 -0400
+Message-ID: <489D13F9.4000805@redhat.com>
+Date: Fri, 08 Aug 2008 23:50:17 -0400
+From: Hideo AOKI <haoki@redhat.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-To: Christian Franke <cfchris6@yahoo.de>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2.6.27-rc2] block: loop device partition support
-References: <489CEADE.4030905@yahoo.de>
-In-Reply-To: <489CEADE.4030905@yahoo.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Herbert Xu <herbert@gondor.apana.org.au>
+CC: "Michael S. Tsirkin" <m.s.tsirkin@gmail.com>, linux-kernel@vger.kernel.org,
+       davem@davemloft.net, yoshfuji@linux-ipv6.org, netdev@vger.kernel.org
+Subject: Re: possible recursive locking in udp4_lib_rcv
+References: <20080807234613.GA9598@google.com> <E1KRSxN-0005Ng-00@gondolin.me.apana.org.au> <20080808143741.GA20777@gondor.apana.org.au> <20080808150108.GA21048@gondor.apana.org.au>
+In-Reply-To: <20080808150108.GA21048@gondor.apana.org.au>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christian Franke wrote:
-> From: Christian Franke <cfchris6@yahoo.de>
+Hello Herbert,
+
+Herbert Xu wrote:
+> On Fri, Aug 08, 2008 at 10:37:41PM +0800, Herbert Xu wrote:
+>> Never mind, I see the reason why it's there.  What we should do
+>> is drop the lock when we hit an encapsulated socket since they
+>> don't need it at all.
 > 
-> By default, partition support of loop devices is disabled and there 
-> seems to be no way to turn it on without changing code, if loop is not 
-> compiled as module.
-> This patch introduces CONFIG_BLK_DEV_LOOP_MAXPART to make partition 
-> support configurable via Kconfig. It keeps that feature disabled by 
-> default for not breaking backward compatibility.
+> Here is the patch:
+> 
+> udp: Drop socket lock for encapsulated packets
 
-The right thing would be to have a backwards compatiblity major and a 
-new major; similar to how the md device handles it.
+Thank very much for fixing the bug.
 
-	-hpa
+Best regards,
+Hideo
+
+-- 
+Hitachi Computer Products (America) Inc.
