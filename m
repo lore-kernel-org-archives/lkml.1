@@ -1,65 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754326AbYHJLFa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754868AbYHJLIx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754326AbYHJLFa (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Aug 2008 07:05:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752847AbYHJLFW
+	id S1754868AbYHJLIx (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Aug 2008 07:08:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753228AbYHJLIp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Aug 2008 07:05:22 -0400
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:40649 "EHLO smtp4.pp.htv.fi"
+	Sun, 10 Aug 2008 07:08:45 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:40786 "EHLO smtp4.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752742AbYHJLFV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Aug 2008 07:05:21 -0400
-Date: Sun, 10 Aug 2008 14:03:41 +0300
+	id S1753056AbYHJLIo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 Aug 2008 07:08:44 -0400
+Date: Sun, 10 Aug 2008 14:07:05 +0300
 From: Adrian Bunk <bunk@kernel.org>
-To: Alan Cox <alan@redhat.com>, Wim Van Sebroeck <wim@iguana.be>
-Cc: rmk@arm.linux.org.uk, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [2.6 patch] fix watchdog/ixp4xx_wdt.c compilation
-Message-ID: <20080810110341.GC16146@cs181140183.pp.htv.fi>
+To: Trent Piepho <xyzzy@speakeasy.org>
+Cc: Jean Delvare <khali@linux-fr.org>, "D. Kelly" <user.kernel@gmail.com>,
+       Sam Ravnborg <sam@ravnborg.org>,
+       "mailing list: linux-kernel" <linux-kernel@vger.kernel.org>,
+       Linux I2C <i2c@lm-sensors.org>
+Subject: Re: Problem with restricted I2C algorithms in kernel 2.6.26!
+Message-ID: <20080810110705.GD16146@cs181140183.pp.htv.fi>
+References: <5ab239b10807161233i6c1c4d0we01ea1b8e6ccaa5b@mail.gmail.com> <20080807131357.59399ddf@hyperion.delvare> <Pine.LNX.4.58.0808070851310.10341@shell4.speakeasy.net> <20080807181416.5de4ce6d@hyperion.delvare> <Pine.LNX.4.58.0808071621060.22108@shell2.speakeasy.net> <20080808113753.03f49efe@hyperion.delvare> <Pine.LNX.4.58.0808081037080.3151@shell2.speakeasy.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.58.0808081037080.3151@shell2.speakeasy.net>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch fixes the following compile error caused by
-commit 20d35f3e50ea7e573f9568b9fce4e98523aaee5d
-([WATCHDOG 22/57] ixp4xx_wdt: unlocked_ioctl):
+On Fri, Aug 08, 2008 at 10:52:05AM -0700, Trent Piepho wrote:
+> On Fri, 8 Aug 2008, Jean Delvare wrote:
+> > On Thu, 7 Aug 2008 16:41:10 -0700 (PDT), Trent Piepho wrote:
+> > > Expecting every developer to keep abreast of linux-next and the tens of
+> > > thousands of patches it gets just isn't realisitic.
+> > >
+> > > The embedded platforms I develop on won't run linux-next.  Continuously
+> > > porting them to linux-next is simply impossible.  The man hours required to
+> > > do that would be staggering.
+> >
+> > Once again a "believe me it's impossible" without any good reason
+> > given. I fail to see why embedded platforms would be any different from
+> > other platforms or subsystem trees. Please enlighten me.
+> 
+> Because they usually require lots of additional patches that aren't in the
+> kernel.  Sometimes embedded developers try to get these patches into the
+> mainline kernel, but some maintainers aren't interested in accepting
+> patches that don't appear to be useful to desktop users.
+>...
 
-<--  snip  -->
+The last thing mustn't happen.
 
-...
-  CC      drivers/watchdog/ixp4xx_wdt.o
-ixp4xx_wdt.c:32: error: expected '=', ',', ';', 'asm' or '__attribute__' 
-ixp4xx_wdt.c: In function 'wdt_enable':
-ixp4xx_wdt.c:41: error: 'wdt_lock' undeclared (first use in this 
-ixp4xx_wdt.c:41: error: (Each undeclared identifier is reported only 
-ixp4xx_wdt.c:41: error: for each function it appears in.)
-ixp4xx_wdt.c: In function 'wdt_disable':
-ixp4xx_wdt.c:52: error: 'wdt_lock' undeclared (first use in this 
-ixp4xx_wdt.c: In function 'ixp4xx_wdt_init':
-ixp4xx_wdt.c:186: error: 'wdt_lock' undeclared (first use in this 
-make[3]: *** [drivers/watchdog/ixp4xx_wdt.o] Error 1
+Can you give examples?
 
-<--  snip  -->
+cu
+Adrian
 
-Reported-by: Adrian Bunk <bunk@kernel.org>
-Signed-off-by: Adrian Bunk <bunk@kernel.org>
+-- 
 
----
-9ff35bbffb5fb755104fc90825523b9ffa2b14cf 
-diff --git a/drivers/watchdog/ixp4xx_wdt.c b/drivers/watchdog/ixp4xx_wdt.c
-index 41264a5..8302ef0 100644
---- a/drivers/watchdog/ixp4xx_wdt.c
-+++ b/drivers/watchdog/ixp4xx_wdt.c
-@@ -29,7 +29,7 @@ static int nowayout = WATCHDOG_NOWAYOUT;
- static int heartbeat = 60;	/* (secs) Default is 1 minute */
- static unsigned long wdt_status;
- static unsigned long boot_status;
--static spin_lock_t wdt_lock;
-+static DEFINE_SPINLOCK(wdt_lock);
- 
- #define WDT_TICK_RATE (IXP4XX_PERIPHERAL_BUS_CLOCK * 1000000UL)
- 
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
