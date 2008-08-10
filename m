@@ -1,60 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754931AbYHJAsR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754745AbYHJAzc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754931AbYHJAsR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Aug 2008 20:48:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752802AbYHJAsF
+	id S1754745AbYHJAzc (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Aug 2008 20:55:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752181AbYHJAzX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Aug 2008 20:48:05 -0400
-Received: from colo.lackof.org ([198.49.126.79]:38583 "EHLO colo.lackof.org"
+	Sat, 9 Aug 2008 20:55:23 -0400
+Received: from colo.lackof.org ([198.49.126.79]:38657 "EHLO colo.lackof.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752544AbYHJAsE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Aug 2008 20:48:04 -0400
-Date: Sat, 9 Aug 2008 18:47:50 -0600
+	id S1752009AbYHJAzX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 9 Aug 2008 20:55:23 -0400
+Date: Sat, 9 Aug 2008 18:55:11 -0600
 From: Grant Grundler <grundler@parisc-linux.org>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: Grant Grundler <grundler@parisc-linux.org>, jbarnes@virtuousgeek.org,
-       linux-kernel@vger.kernel.org, eric@anholt.net,
-       Matthew Wilcox <willy@linux.intel.com>
-Subject: Re: [PATCH 3/3] PCI: Add pci_read_base() API
-Message-ID: <20080810004750.GA2617@colo.lackof.org>
-References: <1217266741-26519-1-git-send-email-matthew@wil.cx> <1217266741-26519-4-git-send-email-matthew@wil.cx> <20080804063833.GA21354@colo.lackof.org> <20080806143844.GL2055@parisc-linux.org>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: kyle@mcmartin.ca, matthew@wil.cx, grundler@parisc-linux.org,
+       linux-parisc@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>, bdale@hp.com
+Subject: Re: [2.6 patch] binfmt_som.c: add MODULE_LICENSE
+Message-ID: <20080810005511.GB2617@colo.lackof.org>
+References: <20080806211155.GV1702@cs181140183.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080806143844.GL2055@parisc-linux.org>
+In-Reply-To: <20080806211155.GV1702@cs181140183.pp.htv.fi>
 X-Home-Page: http://www.parisc-linux.org/
 User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 06, 2008 at 08:38:45AM -0600, Matthew Wilcox wrote:
-> On Mon, Aug 04, 2008 at 12:38:33AM -0600, Grant Grundler wrote:
-> > On Mon, Jul 28, 2008 at 01:39:01PM -0400, Matthew Wilcox wrote:
-> > > Some devices have a BAR at a non-standard address.  The pci_read_base()
-> > > API allows us to probe these BARs and fill in a resource for it as if
-> > > they were standard BARs.
-> > 
-> > Willy,
-> > Can you add a comment to the code listing the offending device?
-> > That way we know how to test next time this code changes.
++bdale@hp.com
+
+On Thu, Aug 07, 2008 at 12:11:55AM +0300, Adrian Bunk wrote:
+> This patch adds the missing MODULE_LICENSE("GPL").
 > 
-> It's not an offending device -- devices are allowed to put whatever they
-> want anywhere outside the first 0x40 bytes of config space.
+> Reported-by: Adrian Bunk <bunk@kernel.org>
+> Signed-off-by: Adrian Bunk <bunk@kernel.org>
+> 
+> ---
+> 
+> This patch has been sent on:
+> - 15 Jun 2008
+> 
+> 4cec562181f818f16f072b9a14ca7a0ce6c66417 diff --git a/fs/binfmt_som.c b/fs/binfmt_som.c
+> index fdc36bf..6d3bebb 100644
+> --- a/fs/binfmt_som.c
+> +++ b/fs/binfmt_som.c
+> @@ -308,3 +308,5 @@ static void __exit exit_som_binfmt(void)
+>  
+>  core_initcall(init_som_binfmt);
+>  module_exit(exit_som_binfmt);
+> +
+> +MODULE_LICENSE("GPL");
 
-Sorry - bad phrasing on my part.
-
-> Eric Anholt's patches add a user for this interface.
-
-ok - people will find the "user" in the email archives now.
-
-> If you want to see an
-> example, download the Intel 3 Series Express Chipset Family Datashee
-> (the filename is 316966.pdf) and see section 5.1.13 about the MCHBAR.
-
-This would be a suitable comment in the code.
-My point still stands: The next person modifying the code will
-need to know how/what to test and where to look it up.
+Someone from HP needs to ACK this patch since I believe HP funded the code
+changes made during the parisc-linux port. This should be a no-brainer
+and I expect Bdale Garbee can quickly take care of this.
 
 thanks,
 grant
