@@ -1,53 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755517AbYHJPSN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755403AbYHJPhv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755517AbYHJPSN (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Aug 2008 11:18:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753584AbYHJPR7
+	id S1755403AbYHJPhv (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Aug 2008 11:37:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753584AbYHJPhl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Aug 2008 11:17:59 -0400
-Received: from pruts.nl ([82.94.235.106]:51375 "EHLO iron.pruts.nl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752357AbYHJPR6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Aug 2008 11:17:58 -0400
-X-Greylist: delayed 527 seconds by postgrey-1.27 at vger.kernel.org; Sun, 10 Aug 2008 11:17:58 EDT
-Date: Sun, 10 Aug 2008 17:08:59 +0200
-From: Ico Doornekamp <lkml@zevv.nl>
-To: linux-kernel@vger.kernel.org
-Subject: TIOCGWINSZ retuns old pty size after receiving SIGWINCH
-Message-ID: <20080810150859.GO3653@pruts.nl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-X-Prutser: true
-X-PGP-key: 4202FA2F
-X-PGP-KeyServer: subkeys.pgp.net
-X-PGP-Fingerprint: F042 F5CD B0A6 EC6A CB80  A829 CACD A4B5 4202 FA2F
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Sun, 10 Aug 2008 11:37:41 -0400
+Received: from mu-out-0910.google.com ([209.85.134.187]:3925 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752798AbYHJPhk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 Aug 2008 11:37:40 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:date:message-id:subject;
+        b=ZFvxa9/niVeIgTnbVmmP1fNPReipssvJpGLu01f24Iv/HASVJYAxHU7pFVOtTXmdOs
+         7L0RaIz8kqmi2tvQOBFUUzj1PdA/smHq1dOTweRS4rWJt9GxEkOsFzabIi/T17WPsRd1
+         ysSKA4S5oLCutXmK/30RWJkcfA1U42/ecFuwc=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: linux-ide@vger.kernel.org
+Cc: Borislav Petkov <petkovbb@gmail.com>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       linux-kernel@vger.kernel.org
+Date: Sun, 10 Aug 2008 17:35:27 +0200
+Message-Id: <20080810153527.16255.2504.sendpatchset@localhost.localdomain>
+Subject: [PATCH 00/22] ide: more work on generic ATAPI support
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Hello,
+Just some more work on generic ATAPI layer...
 
-Recently my X terminals showed annoying behaviour where the application
-in the terminal was not resized properly to the actual size of the X
-terminal emulator window, resulting in a lot of misaligned text on the
-screen. Hunting the issue down from the windowmanager and the terminal
-emulator program, I suspect the problem might lie in the kernel. I'm
-running 2.6.26 on a dual core i386.
+- code unifications here and there
 
-What I see is this: the userspace application receives a SIGWINCH signal
-and acquires the terminal size usign the TIOCGWINSZ ioctl. It seems that
-in some cases the old instead of the new terminal size is returned.
-A small delay before the ioctl seems to 'fix' this behaviour.
+- move IDEFLOPPY_IOCTL_FORMAT_* support to a separate file
 
-I noticed some changes involving locking in the the pty code in the last
-kernel verions, could one of these changes cause the above behaviour ? If
-so, wouldn't this affect much more users ?
+- ide_pc_intr() no longer requires zillion of arguments
 
-Ico
+Applies on top of current pata tree, tested with ide-scsi.
 
--- 
-:wq
-^X^Cy^K^X^C^C^C^C
+diffstat:
+ drivers/ide/Makefile           |    3 
+ drivers/ide/ide-atapi.c        |  323 +++++++++++++++--
+ drivers/ide/ide-floppy.c       |  739 ++++++-----------------------------------
+ drivers/ide/ide-floppy.h       |   72 +++
+ drivers/ide/ide-floppy_ioctl.c |  245 +++++++++++++
+ drivers/ide/ide-tape.c         |  396 ++++++---------------
+ drivers/scsi/ide-scsi.c        |  178 ++-------
+ include/linux/ide.h            |  266 +++++++++-----
+ 8 files changed, 1035 insertions(+), 1187 deletions(-)
