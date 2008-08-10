@@ -1,284 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754750AbYHJRSo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753509AbYHJRZn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754750AbYHJRSo (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Aug 2008 13:18:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753798AbYHJRRX
+	id S1753509AbYHJRZn (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Aug 2008 13:25:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751967AbYHJRZf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Aug 2008 13:17:23 -0400
-Received: from qb-out-0506.google.com ([72.14.204.228]:38536 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753673AbYHJRRW (ORCPT
+	Sun, 10 Aug 2008 13:25:35 -0400
+Received: from wmproxy2-g27.free.fr ([212.27.42.92]:8545 "EHLO
+	wmproxy2-g27.free.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751737AbYHJRZe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Aug 2008 13:17:22 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references
-         :sender;
-        b=ShgO3hrAjbFCzKZ6D2/g1QrUZ0T2YBYCis9FzE+uVGeE0SauQ7OLAjd4Xi4VMhHiNq
-         X1iSP+LJNBCdpR8o9vf41ZNjG4dpK4EoN9VcjLCVXdSMQfqocgQPAgz9+Tn8lxY2XfRJ
-         lQ281i5ALBYvGvbAOqCa+PTDwHvM4J5KbpNyA=
-From: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-To: penberg@cs.helsinki.fi
-Cc: mathieu.desnoyers@polymtl.ca, cl@linux-foundation.org, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, rdunlap@xenotime.net, mpm@selenic.com,
-       rostedt@goodmis.org, tglx@linutronix.de
-Subject: [PATCH 4/5] kmemtrace: SLUB hooks.
-Date: Sun, 10 Aug 2008 20:14:06 +0300
-Message-Id: <1218388447-5578-5-git-send-email-eduard.munteanu@linux360.ro>
-X-Mailer: git-send-email 1.5.6.1
-In-Reply-To: <1218388447-5578-4-git-send-email-eduard.munteanu@linux360.ro>
-References: <1218388447-5578-1-git-send-email-eduard.munteanu@linux360.ro>
- <1218388447-5578-2-git-send-email-eduard.munteanu@linux360.ro>
- <1218388447-5578-3-git-send-email-eduard.munteanu@linux360.ro>
- <1218388447-5578-4-git-send-email-eduard.munteanu@linux360.ro>
+	Sun, 10 Aug 2008 13:25:34 -0400
+Date: Sun, 10 Aug 2008 19:25:33 +0200 (CEST)
+From: mengualjeanphi@free.fr
+To: linux-kernel@vger.kernel.org
+Message-ID: <133482356.7113251218389133818.JavaMail.root@spooler9-g27.priv.proxad.net>
+Subject: Boot problem
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+X-Mailer: Zimbra 5.0.5_GA_2166.UBUNTU6_64 (zclient/5.0.5_GA_2166.UBUNTU6_64)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This adds hooks for the SLUB allocator, to allow tracing with kmemtrace.
+Hi,
 
-Signed-off-by: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
----
- include/linux/slub_def.h |   53 ++++++++++++++++++++++++++++++++++--
- mm/slub.c                |   66 +++++++++++++++++++++++++++++++++++++++++----
- 2 files changed, 110 insertions(+), 9 deletions(-)
+I try building an LFS system for 64 bits. But now I've a problem, linked to the kernel.
 
-diff --git a/include/linux/slub_def.h b/include/linux/slub_def.h
-index d117ea2..d77012a 100644
---- a/include/linux/slub_def.h
-+++ b/include/linux/slub_def.h
-@@ -10,6 +10,7 @@
- #include <linux/gfp.h>
- #include <linux/workqueue.h>
- #include <linux/kobject.h>
-+#include <linux/kmemtrace.h>
- 
- enum stat_item {
- 	ALLOC_FASTPATH,		/* Allocation from cpu slab */
-@@ -203,13 +204,31 @@ static __always_inline struct kmem_cache *kmalloc_slab(size_t size)
- void *kmem_cache_alloc(struct kmem_cache *, gfp_t);
- void *__kmalloc(size_t size, gfp_t flags);
- 
-+#ifdef CONFIG_KMEMTRACE
-+extern void *kmem_cache_alloc_notrace(struct kmem_cache *s, gfp_t gfpflags);
-+#else
-+static __always_inline void *
-+kmem_cache_alloc_notrace(struct kmem_cache *s, gfp_t gfpflags)
-+{
-+	return kmem_cache_alloc(s, gfpflags);
-+}
-+#endif
-+
- static __always_inline void *kmalloc_large(size_t size, gfp_t flags)
- {
--	return (void *)__get_free_pages(flags | __GFP_COMP, get_order(size));
-+	unsigned int order = get_order(size);
-+	void *ret = (void *) __get_free_pages(flags, order);
-+
-+	kmemtrace_mark_alloc(KMEMTRACE_TYPE_KMALLOC, _THIS_IP_, ret,
-+			     size, PAGE_SIZE << order, flags);
-+
-+	return ret;
- }
- 
- static __always_inline void *kmalloc(size_t size, gfp_t flags)
- {
-+	void *ret;
-+
- 	if (__builtin_constant_p(size)) {
- 		if (size > PAGE_SIZE)
- 			return kmalloc_large(size, flags);
-@@ -220,7 +239,13 @@ static __always_inline void *kmalloc(size_t size, gfp_t flags)
- 			if (!s)
- 				return ZERO_SIZE_PTR;
- 
--			return kmem_cache_alloc(s, flags);
-+			ret = kmem_cache_alloc_notrace(s, flags);
-+
-+			kmemtrace_mark_alloc(KMEMTRACE_TYPE_KMALLOC,
-+					     _THIS_IP_, ret,
-+					     size, s->size, flags);
-+
-+			return ret;
- 		}
- 	}
- 	return __kmalloc(size, flags);
-@@ -230,8 +255,24 @@ static __always_inline void *kmalloc(size_t size, gfp_t flags)
- void *__kmalloc_node(size_t size, gfp_t flags, int node);
- void *kmem_cache_alloc_node(struct kmem_cache *, gfp_t flags, int node);
- 
-+#ifdef CONFIG_KMEMTRACE
-+extern void *kmem_cache_alloc_node_notrace(struct kmem_cache *s,
-+					   gfp_t gfpflags,
-+					   int node);
-+#else
-+static __always_inline void *
-+kmem_cache_alloc_node_notrace(struct kmem_cache *s,
-+			      gfp_t gfpflags,
-+			      int node)
-+{
-+	return kmem_cache_alloc_node(s, gfpflags, node);
-+}
-+#endif
-+
- static __always_inline void *kmalloc_node(size_t size, gfp_t flags, int node)
- {
-+	void *ret;
-+
- 	if (__builtin_constant_p(size) &&
- 		size <= PAGE_SIZE && !(flags & SLUB_DMA)) {
- 			struct kmem_cache *s = kmalloc_slab(size);
-@@ -239,7 +280,13 @@ static __always_inline void *kmalloc_node(size_t size, gfp_t flags, int node)
- 		if (!s)
- 			return ZERO_SIZE_PTR;
- 
--		return kmem_cache_alloc_node(s, flags, node);
-+		ret = kmem_cache_alloc_node_notrace(s, flags, node);
-+
-+		kmemtrace_mark_alloc_node(KMEMTRACE_TYPE_KMALLOC,
-+					  _THIS_IP_, ret,
-+					  size, s->size, flags, node);
-+
-+		return ret;
- 	}
- 	return __kmalloc_node(size, flags, node);
- }
-diff --git a/mm/slub.c b/mm/slub.c
-index 315c392..940145f 100644
---- a/mm/slub.c
-+++ b/mm/slub.c
-@@ -23,6 +23,7 @@
- #include <linux/kallsyms.h>
- #include <linux/memory.h>
- #include <linux/math64.h>
-+#include <linux/kmemtrace.h>
- 
- /*
-  * Lock order:
-@@ -1652,18 +1653,47 @@ static __always_inline void *slab_alloc(struct kmem_cache *s,
- 
- void *kmem_cache_alloc(struct kmem_cache *s, gfp_t gfpflags)
- {
--	return slab_alloc(s, gfpflags, -1, __builtin_return_address(0));
-+	void *ret = slab_alloc(s, gfpflags, -1, __builtin_return_address(0));
-+
-+	kmemtrace_mark_alloc(KMEMTRACE_TYPE_CACHE, _RET_IP_, ret,
-+			     s->objsize, s->size, gfpflags);
-+
-+	return ret;
- }
- EXPORT_SYMBOL(kmem_cache_alloc);
- 
-+#ifdef CONFIG_KMEMTRACE
-+void *kmem_cache_alloc_notrace(struct kmem_cache *s, gfp_t gfpflags)
-+{
-+	return slab_alloc(s, gfpflags, -1, __builtin_return_address(0));
-+}
-+EXPORT_SYMBOL(kmem_cache_alloc_notrace);
-+#endif
-+
- #ifdef CONFIG_NUMA
- void *kmem_cache_alloc_node(struct kmem_cache *s, gfp_t gfpflags, int node)
- {
--	return slab_alloc(s, gfpflags, node, __builtin_return_address(0));
-+	void *ret = slab_alloc(s, gfpflags, node,
-+			       __builtin_return_address(0));
-+
-+	kmemtrace_mark_alloc_node(KMEMTRACE_TYPE_CACHE, _RET_IP_, ret,
-+				  s->objsize, s->size, gfpflags, node);
-+
-+	return ret;
- }
- EXPORT_SYMBOL(kmem_cache_alloc_node);
- #endif
- 
-+#ifdef CONFIG_KMEMTRACE
-+void *kmem_cache_alloc_node_notrace(struct kmem_cache *s,
-+				    gfp_t gfpflags,
-+				    int node)
-+{
-+	return slab_alloc(s, gfpflags, node, __builtin_return_address(0));
-+}
-+EXPORT_SYMBOL(kmem_cache_alloc_node_notrace);
-+#endif
-+
- /*
-  * Slow patch handling. This may still be called frequently since objects
-  * have a longer lifetime than the cpu slabs in most processing loads.
-@@ -1771,6 +1801,8 @@ void kmem_cache_free(struct kmem_cache *s, void *x)
- 	page = virt_to_head_page(x);
- 
- 	slab_free(s, page, x, __builtin_return_address(0));
-+
-+	kmemtrace_mark_free(KMEMTRACE_TYPE_CACHE, _RET_IP_, x);
- }
- EXPORT_SYMBOL(kmem_cache_free);
- 
-@@ -2676,6 +2708,7 @@ static struct kmem_cache *get_slab(size_t size, gfp_t flags)
- void *__kmalloc(size_t size, gfp_t flags)
- {
- 	struct kmem_cache *s;
-+	void *ret;
- 
- 	if (unlikely(size > PAGE_SIZE))
- 		return kmalloc_large(size, flags);
-@@ -2685,7 +2718,12 @@ void *__kmalloc(size_t size, gfp_t flags)
- 	if (unlikely(ZERO_OR_NULL_PTR(s)))
- 		return s;
- 
--	return slab_alloc(s, flags, -1, __builtin_return_address(0));
-+	ret = slab_alloc(s, flags, -1, __builtin_return_address(0));
-+
-+	kmemtrace_mark_alloc(KMEMTRACE_TYPE_KMALLOC, _RET_IP_, ret,
-+			     size, s->size, flags);
-+
-+	return ret;
- }
- EXPORT_SYMBOL(__kmalloc);
- 
-@@ -2704,16 +2742,30 @@ static void *kmalloc_large_node(size_t size, gfp_t flags, int node)
- void *__kmalloc_node(size_t size, gfp_t flags, int node)
- {
- 	struct kmem_cache *s;
-+	void *ret;
- 
--	if (unlikely(size > PAGE_SIZE))
--		return kmalloc_large_node(size, flags, node);
-+	if (unlikely(size > PAGE_SIZE)) {
-+		ret = kmalloc_large_node(size, flags, node);
-+
-+		kmemtrace_mark_alloc_node(KMEMTRACE_TYPE_KMALLOC,
-+					  _RET_IP_, ret,
-+					  size, PAGE_SIZE << get_order(size),
-+					  flags, node);
-+
-+		return ret;
-+	}
- 
- 	s = get_slab(size, flags);
- 
- 	if (unlikely(ZERO_OR_NULL_PTR(s)))
- 		return s;
- 
--	return slab_alloc(s, flags, node, __builtin_return_address(0));
-+	ret = slab_alloc(s, flags, node, __builtin_return_address(0));
-+
-+	kmemtrace_mark_alloc_node(KMEMTRACE_TYPE_KMALLOC, _RET_IP_, ret,
-+				  size, s->size, flags, node);
-+
-+	return ret;
- }
- EXPORT_SYMBOL(__kmalloc_node);
- #endif
-@@ -2771,6 +2823,8 @@ void kfree(const void *x)
- 		return;
- 	}
- 	slab_free(page->slab, page, object, __builtin_return_address(0));
-+
-+	kmemtrace_mark_free(KMEMTRACE_TYPE_KMALLOC, _RET_IP_, x);
- }
- EXPORT_SYMBOL(kfree);
- 
--- 
-1.5.6.1
+I've a motherboard ASRock ALiveNF6P-VSTA. Instead of its port IDE, I use a PCI controller where are connected my disks.
 
+On the livecd lfs, sometimes disks are named hda, hdb... sometimes hdc, hdd... Strange.
+
+When I boot on my system, I get: "root fs not found on "hdc1"" (or hda1, according what I said in fstab and menu.lst of grub). Grub is built in static release I found on a cvs repository of clfs or lfs.
+
+Other details:
+
+-I tried kernel 2.6.22.5 and 26.2, in both menuconfig, when I choose Bus support then PCI support, I don't have PCI access (I should have it if I follow results of my searches).
+
+-I prefer configuring the kernel instead of modifying bios, where access is hard for physical reasons.
+
+-I believed unstability in naming drives could be problemajic for the kernel. So in fstab I put UUID=b1039c23-7359-4763-8213-38a862509bfe  /      ext3   defaults  1 2
+
+in menu.lst, kernel /boot/lfskernel-2.6.22.5 root=UUID=b1039c23-7359-4763-8213-38a862509bfe
+
+I disabled mmconfig.
+
+An idea please? I guess it's linked to kernel and hardware issues, but I'd like to determine what.
+
+Thanks very much for your answer. I'm really lost in this situation and you're the last who can help me. Or tell me who can. If you can't I'll try installing another distro linux, but I'd rather find a solution.
+
+Best regards, JP
