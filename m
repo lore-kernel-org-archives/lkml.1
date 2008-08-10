@@ -1,80 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754144AbYHJTxh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754208AbYHJUCo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754144AbYHJTxh (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Aug 2008 15:53:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753369AbYHJTx2
+	id S1754208AbYHJUCo (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Aug 2008 16:02:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753409AbYHJUCg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Aug 2008 15:53:28 -0400
-Received: from out01.mta.xmission.com ([166.70.13.231]:56011 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751448AbYHJTx1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Aug 2008 15:53:27 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Yinghai Lu <yhlu.kernel@gmail.com>
-References: <VYYCiQF4qDI.A.BPH.KCjnIB@albercik>
-	<cX_-nNkxKaF.A.AGD.iEjnIB@albercik>
-	<m1sktdsmyy.fsf@frodo.ebiederm.org> <489F31FC.9040104@zytor.com>
-Date: Sun, 10 Aug 2008 12:51:51 -0700
-In-Reply-To: <489F31FC.9040104@zytor.com> (H. Peter Anvin's message of "Sun,
-	10 Aug 2008 11:22:52 -0700")
-Message-ID: <m1wsior6lk.fsf@frodo.ebiederm.org>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Sun, 10 Aug 2008 16:02:36 -0400
+Received: from isilmar.linta.de ([213.133.102.198]:41721 "EHLO linta.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753329AbYHJUCf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 Aug 2008 16:02:35 -0400
+Date: Sun, 10 Aug 2008 22:02:24 +0200
+From: Dominik Brodowski <linux@dominikbrodowski.net>
+To: Andreas Mohr <andi@lisas.de>
+Cc: LKML <linux-kernel@vger.kernel.org>, john stultz <johnstul@us.ibm.com>,
+       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-acpi@vger.kernel.org,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: ACPI PM-Timer on K6-3 SiS5591: Houston...
+Message-ID: <20080810200224.GA6551@comet.dominikbrodowski.net>
+Mail-Followup-To: Dominik Brodowski <linux@dominikbrodowski.net>,
+	Andreas Mohr <andi@lisas.de>, LKML <linux-kernel@vger.kernel.org>,
+	john stultz <johnstul@us.ibm.com>,
+	OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
+	Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-acpi@vger.kernel.org,
+	Arjan van de Ven <arjan@infradead.org>
+References: <20080810101730.GA10024@rhlx01.hs-esslingen.de> <20080810162920.GA9860@comet.dominikbrodowski.net> <20080810190759.GA1879@rhlx01.hs-esslingen.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-SA-Exim-Connect-IP: 24.130.11.59
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa03 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;"H. Peter Anvin" <hpa@zytor.com>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	*  0.0 BAYES_50 BODY: Bayesian spam probability is 40 to 60%
-	*      [score: 0.4980]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa03 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.4 FVGT_m_MULTI_ODD Contains multiple odd letter combinations
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-Subject: Re: [Bug #11201] kernel BUG at arch/x86/kernel/io_apic_64.c:357!
-X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
-X-SA-Exim-Scanned: Yes (on mgr1.xmission.com)
+Content-Disposition: inline
+In-Reply-To: <20080810190759.GA1879@rhlx01.hs-esslingen.de>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"H. Peter Anvin" <hpa@zytor.com> writes:
+Hi Andreas,
 
-> Eric W. Biederman wrote:
->> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
->>
->>> This message has been generated automatically as a part of a report
->>> of recent regressions.
->>>
->>> The following bug entry is on the current list of known regressions
->>> from 2.6.26.  Please verify if it still should be listed and let me know
->>> (either way).
->>
->> Yep.  There is a patch in -mm.  It seems the process is to wait for Thomas &
->> Ingo to get back before we send this to Linus.
->>
->
-> Yes, unfortunately I still don't have enough testing resources to want to push
-> this upstream.  I'm queuing it up for submission, though.
+On Sun, Aug 10, 2008 at 09:08:02PM +0200, Andreas Mohr wrote:
+> And it's in fact not this triple-read which has any weakness here but rather
+> the init check.
 
-No problem.  I don't expect any problems as it is a simple reversion of the
-definition of NR_IRQS on x86_64 to what we had before everything was merged
-into irq_vectors.h and the x86_64 bits got lost.
+right.
 
-With the result that NR_IRQS varies in practice between 244 and 4096
-depending on how many cpus you have.  We have had NR_IRQS that large on
-x86_64 for a year or better now so I don't expect any practical problems.
+> IMHO the current init check is too weak, it will catch the very simplest
+> types of problems only, and that's not a good thing.
 
-The long term fix will obviously be kill NR_IRQS.  But that is not a 2.6.27
-term project.
+what about this?
 
-Eric
+Best,
+	Dominik
+
+
+acpi_pm.c: check for monotonicity
+
+Expand the check for monotonicity by doing ten tests instead of one. 
+
+Applies on top of "acpi_pm.c: use proper read function also in errata mode."
+
+Signed-off-by: Dominik Brodowski <linux@dominikbrodowski.de>
+
+diff --git a/drivers/clocksource/acpi_pm.c b/drivers/clocksource/acpi_pm.c
+index 2c00edd..f05c4fb 100644
+--- a/drivers/clocksource/acpi_pm.c
++++ b/drivers/clocksource/acpi_pm.c
+@@ -178,7 +178,7 @@ static int verify_pmtmr_rate(void)
+ static int __init init_acpi_pm_clocksource(void)
+ {
+ 	cycle_t value1, value2;
+-	unsigned int i;
++	unsigned int i, j, good = 0;
+ 
+ 	if (!pmtmr_ioport)
+ 		return -ENODEV;
+@@ -187,24 +187,32 @@ static int __init init_acpi_pm_clocksource(void)
+ 						clocksource_acpi_pm.shift);
+ 
+ 	/* "verify" this timing source: */
+-	value1 = clocksource_acpi_pm.read();
+-	for (i = 0; i < 10000; i++) {
+-		value2 = clocksource_acpi_pm.read();
+-		if (value2 == value1)
+-			continue;
+-		if (value2 > value1)
+-			goto pm_good;
+-		if ((value2 < value1) && ((value2) < 0xFFF))
+-			goto pm_good;
+-		printk(KERN_INFO "PM-Timer had inconsistent results:"
+-			" 0x%#llx, 0x%#llx - aborting.\n", value1, value2);
+-		return -EINVAL;
++	for (j = 0; j < 10; j++) {
++		value1 = clocksource_acpi_pm.read();
++		for (i = 0; i < 10000; i++) {
++			value2 = clocksource_acpi_pm.read();
++			if (value2 == value1)
++				continue;
++			if (value2 > value1)
++				good++;
++				break;
++			if ((value2 < value1) && ((value2) < 0xFFF))
++				good++;
++				break;
++			printk(KERN_INFO "PM-Timer had inconsistent results:"
++			       " 0x%#llx, 0x%#llx - aborting.\n",
++			       value1, value2);
++			return -EINVAL;
++		}
++		udelay(300 * i);
++	}
++
++	if (good != 10) {
++		printk(KERN_INFO "PM-Timer had no reasonable result:"
++		       " 0x%#llx - aborting.\n", value1);
++		return -ENODEV;
+ 	}
+-	printk(KERN_INFO "PM-Timer had no reasonable result:"
+-			" 0x%#llx - aborting.\n", value1);
+-	return -ENODEV;
+ 
+-pm_good:
+ 	if (verify_pmtmr_rate() != 0)
+ 		return -ENODEV;
+ 
