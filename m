@@ -1,56 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753541AbYHJRsl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753723AbYHJR5l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753541AbYHJRsl (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Aug 2008 13:48:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752001AbYHJRse
+	id S1753723AbYHJR5l (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Aug 2008 13:57:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752598AbYHJR50
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Aug 2008 13:48:34 -0400
-Received: from rv-out-0506.google.com ([209.85.198.232]:44382 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751737AbYHJRsd (ORCPT
+	Sun, 10 Aug 2008 13:57:26 -0400
+Received: from smtp.opengridcomputing.com ([209.198.142.2]:46084 "EHLO
+	smtp.opengridcomputing.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752526AbYHJR5Z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Aug 2008 13:48:33 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=radXw7VaK3L6uAVwYXNmzZ5rPkGlieDJa8IQBEg7OntSCtV8B4ubUzZhXWQG7umb5X
-         TjxmYFc9bLJRuBPmU4BNzTvy+SoEtgYLVb4FFhuKhVRjm84k2DaqbBfoLVrPGvcZcA+1
-         sejmy+jllOXbM2rfXgyZ+7ERItLNanJ53s/10=
-Message-ID: <84144f020808101048l7d62c133paf320c48748fe514@mail.gmail.com>
-Date: Sun, 10 Aug 2008 20:48:33 +0300
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Eduard - Gabriel Munteanu" <eduard.munteanu@linux360.ro>
-Subject: Re: [PATCH 5/5] kmemtrace: SLOB hooks.
-Cc: mathieu.desnoyers@polymtl.ca, cl@linux-foundation.org, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, rdunlap@xenotime.net, mpm@selenic.com,
-       rostedt@goodmis.org, tglx@linutronix.de
-In-Reply-To: <1218388447-5578-6-git-send-email-eduard.munteanu@linux360.ro>
+	Sun, 10 Aug 2008 13:57:25 -0400
+Message-ID: <489F2C00.3080608@opengridcomputing.com>
+Date: Sun, 10 Aug 2008 12:57:20 -0500
+From: Steve Wise <swise@opengridcomputing.com>
+User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: David Miller <davem@davemloft.net>
+CC: rdreier@cisco.com, jgarzik@pobox.com, divy@chelsio.com, kxie@chelsio.com,
+       netdev@vger.kernel.org, open-iscsi@googlegroups.com,
+       michaelc@cs.wisc.edu, daisyc@us.ibm.com, wenxiong@us.ibm.com,
+       bhua@us.ibm.com, dm@chelsio.com, leedom@chelsio.com,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCH 1/1] cxgb3i: cxgb3 iSCSI initiator
+References: <489CC58D.4010606@pobox.com>	<20080809.002840.167363463.davem@davemloft.net>	<adavdy9zc2k.fsf@cisco.com> <20080809.224725.130946315.davem@davemloft.net>
+In-Reply-To: <20080809.224725.130946315.davem@davemloft.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1218388447-5578-1-git-send-email-eduard.munteanu@linux360.ro>
-	 <1218388447-5578-2-git-send-email-eduard.munteanu@linux360.ro>
-	 <1218388447-5578-3-git-send-email-eduard.munteanu@linux360.ro>
-	 <1218388447-5578-4-git-send-email-eduard.munteanu@linux360.ro>
-	 <1218388447-5578-5-git-send-email-eduard.munteanu@linux360.ro>
-	 <1218388447-5578-6-git-send-email-eduard.munteanu@linux360.ro>
-X-Google-Sender-Auth: 8b25f57b272ca63a
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Aug 10, 2008 at 8:14 PM, Eduard - Gabriel Munteanu
-<eduard.munteanu@linux360.ro> wrote:
-> This adds hooks for the SLOB allocator, to allow tracing with kmemtrace.
+David Miller wrote:
+> From: Roland Dreier <rdreier@cisco.com>
+> Date: Sat, 09 Aug 2008 22:14:11 -0700
 >
-> We also convert some inline functions to __always_inline to make sure
-> _RET_IP_, which expands to __builtin_return_address(0), always works
-> as expected.
+>   
+>>  > Also, I find it ironic that the port abduction is being asked for in
+>>  > order to be "compatible with existing tools" yet in fact this stuff
+>>  > breaks everything.  You can't netfilter this traffic, you can't apply
+>>  > qdiscs to it, you can't execut TC actions on them, you can't do
+>>  > segmentation offload on them, you can't look for the usual TCP MIB
+>>  > statistics on the connection, etc. etc. etc.
+>>
+>> We already support offloads that break other features, eg large receive
+>> offload breaks forwarding.  We deal with it.
+>>     
 >
-> Signed-off-by: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+> We turn it off.  If I want to shape or filter one of these iSCSI
+> connections can we turn it off?
+>
+>   
+Sure.
 
-I think Matt acked this already but as you dropped the tags, I'll ask
-once more before I merge this.
+Seems to me we _could_ architect this all so that these devices would 
+have to support a method for the management/admin tools to tweak, and if 
+nothing else kill, offload connections if policy rules change and the 
+existing connections aren't implementing the policy.  IE: if the offload 
+connection doesn't support whatever security or other facilities that 
+the admin requires, then the admin should have the ability to disable 
+that device.  And of course, some devices will allow doing things like 
+netfilter, qos, tweaking vlan tags, etc even on active connection,  if 
+the OS infrastructure is there to hook it all up.
+
+BTW:  I think all these offload devices provide MIBs and could be pulled 
+in to the normal management tools.
+
+
+Steve.
