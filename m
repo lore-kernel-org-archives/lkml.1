@@ -1,49 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754238AbYHJFb3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754273AbYHJFqt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754238AbYHJFb3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Aug 2008 01:31:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750850AbYHJFbS
+	id S1754273AbYHJFqt (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Aug 2008 01:46:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750915AbYHJFqh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Aug 2008 01:31:18 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:48373 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750831AbYHJFbR (ORCPT
+	Sun, 10 Aug 2008 01:46:37 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:59021
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1750893AbYHJFqg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Aug 2008 01:31:17 -0400
-Date: Sun, 10 Aug 2008 13:30:48 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Suresh Siddha <suresh.b.siddha@intel.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>,
-       Wolfgang Walter <wolfgang.walter@stwm.de>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       "viro@ZenIV.linux.org.uk" <viro@ZenIV.linux.org.uk>,
-       "vegard.nossum@gmail.com" <vegard.nossum@gmail.com>,
-       austin zhang <austin_zhang@linux.intel.com>
-Subject: Re: Kernel oops with 2.6.26, padlock and ipsec: probably problem with fpu state changes
-Message-ID: <20080810053048.GA3171@gondor.apana.org.au>
-References: <20080806201401.GA607@linux-os.sc.intel.com> <200808071823.02364.wolfgang.walter@stwm.de> <200808081236.55172.wolfgang.walter@stwm.de> <20080808185356.GC607@linux-os.sc.intel.com> <489C97FB.2030408@zytor.com> <20080808231121.GA13158@linux-os.sc.intel.com> <20080809003829.GA25926@gondor.apana.org.au> <20080809142918.GA30387@gondor.apana.org.au> <20080809143259.GA30451@gondor.apana.org.au> <20080809175247.GD13158@linux-os.sc.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080809175247.GD13158@linux-os.sc.intel.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Sun, 10 Aug 2008 01:46:36 -0400
+Date: Sat, 09 Aug 2008 22:46:37 -0700 (PDT)
+Message-Id: <20080809.224637.69833549.davem@davemloft.net>
+To: rdreier@cisco.com
+Cc: jgarzik@pobox.com, swise@opengridcomputing.com, divy@chelsio.com,
+       kxie@chelsio.com, netdev@vger.kernel.org, open-iscsi@googlegroups.com,
+       michaelc@cs.wisc.edu, daisyc@us.ibm.com, wenxiong@us.ibm.com,
+       bhua@us.ibm.com, dm@chelsio.com, leedom@chelsio.com,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCH 1/1] cxgb3i: cxgb3 iSCSI initiator
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <adazlnlzc60.fsf@cisco.com>
+References: <489C8BEB.8060001@opengridcomputing.com>
+	<489CC58D.4010606@pobox.com>
+	<adazlnlzc60.fsf@cisco.com>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Aug 09, 2008 at 10:52:48AM -0700, Suresh Siddha wrote:
->
-> > Actually I was mistaken, Intel has done the right thing by not
-> > generating a fault on crc32c with TS set.
-> 
-> Yes, the documentation seems to says so. But I am double checking
-> with experts inside, to make sure we got the SDM right.
+From: Roland Dreier <rdreier@cisco.com>
+Date: Sat, 09 Aug 2008 22:12:07 -0700
 
-Thanks for checking this!
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+> What I'm sure Chelsio and probably other iSCSI offload vendors
+> would like is a way to make iSCSI (and other) offloads not steal magic
+> ports but actually hook into the normal infrastructure so that the
+> offloaded connections show up in netstat, etc.
+
+Why show these special connections if the user cannot interact with or
+shape the stream at all like normal ones?
+
+This whole "make it look normal" argument is entirely bogus because
+none of the standard Linux networking facilities can be applied to
+these things.
+
+And I even wonder, these days, if you probably get %90 or more of the
+gain these "optimized" iSCSI connections obtain from things like LRO.
+And since LRO can be done entirely in software (although stateless
+HW assistence helps), it is even a NIC agnostic performance improvement.
