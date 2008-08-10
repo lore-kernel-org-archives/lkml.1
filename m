@@ -1,81 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754649AbYHJVlX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754755AbYHJVoR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754649AbYHJVlX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Aug 2008 17:41:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753788AbYHJVlP
+	id S1754755AbYHJVoR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Aug 2008 17:44:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753747AbYHJVoI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Aug 2008 17:41:15 -0400
-Received: from 3a.49.1343.static.theplanet.com ([67.19.73.58]:39620 "EHLO
-	pug.o-hand.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753783AbYHJVlO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Aug 2008 17:41:14 -0400
-Date: Sun, 10 Aug 2008 23:41:08 +0200
-From: Samuel Ortiz <sameo@openedhand.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, ian <spyro@f2s.com>,
-       Pierre Ossman <drzeus@drzeus.cx>,
-       David Woodhouse <David.Woodhouse@intel.com>
-Subject: [GIT] MFD update
-Message-ID: <20080810214108.GA6333@caravaggio>
-Reply-To: Samuel Ortiz <sameo@openedhand.com>
+	Sun, 10 Aug 2008 17:44:08 -0400
+Received: from smtpq1.tilbu1.nb.home.nl ([213.51.146.200]:41542 "EHLO
+	smtpq1.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753710AbYHJVoH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 Aug 2008 17:44:07 -0400
+Message-ID: <489F612E.7070400@keyaccess.nl>
+Date: Sun, 10 Aug 2008 23:44:14 +0200
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080707)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Wim Van Sebroeck <wim@iguana.be>
+CC: Ingo Molnar <mingo@redhat.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Andrew Morton <akpm@osdl.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] WATCHDOG: don't auto-grab eurotechwdt.
+References: <489E0F5A.8010404@keyaccess.nl>
+In-Reply-To: <489E0F5A.8010404@keyaccess.nl>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -1.0 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+On 09-08-08 23:42, Rene Herman wrote:
 
-Please pull the latest MFD updates for 2.6.27.
-They are new driver for the tc6387 and the t7l66 TMIO controllers.
-You will also find the corresponding MMC and NAND TMIO drivers.
+> [ Andrew: not submitted ]
+> 
+> Hi Wim.
+> 
+> I'm going over a list of drivers that break the boot of randconfig 
+> kernels by keeping resources busy:
+> 
+> http://lkml.org/lkml/2008/8/1/96
+> 
+> and eurotechwdt and plain wdt are in that list. Below is an eurotechwdt 
+> that makes passing in io and irq values mandatory as to keep that from 
+> happening.
+> 
+> I saw pcwd was already isafied and followed that -- due to the comment 
+> in eurwdt_release() though, I'm not sure about a .shutdown() method.
+> 
+> Do you want this in the first place? The randconfig testing does find 
+> actual bugs so it is useful.
+> 
+> I'll do wdt and the other applicable ones in there as well if yes.
 
-The following changes since commit 796aadeb1b2db9b5d463946766c5bbfd7717158c:
-  Linus Torvalds (1):
-        Merge branch 'fixes' of git://git.kernel.org/.../davej/cpufreq
+Wim, do you want them with the grab when modular, not grab when builtin 
+distinction?
 
-are available in the git repository at:
-
-  git://git.o-hand.com/linux-mfd for-linus
-
-Ian Molton (8):
-      mfd: TMIO MMC structures and accessors.
-      mfd: driver for the T7L66XB TMIO SoC
-      mfd: driver for the TC6387XB TMIO controller.
-      mfd: tc6387 MMC platform data
-      mfd: t7l66 MMC platform data
-      mfd: driver for the TMIO NAND controller
-      mfd: TMIO MMC driver
-      mfd: tc6393 cleanup and update
-
-Samuel Ortiz (3):
-      mfd: Fix tc6393 according to the new tmio.h
-      mfd: Fix 7l66 and 6387 according to the new mfd-core API
-      mfd: have TMIO drivers and subdevices depend on ARM
-
- drivers/mfd/Kconfig          |   21 ++
- drivers/mfd/Makefile         |    2 +
- drivers/mfd/t7l66xb.c        |  419 +++++++++++++++++++++++++
- drivers/mfd/tc6387xb.c       |  181 +++++++++++
- drivers/mfd/tc6393xb.c       |  159 ++++++----
- drivers/mmc/host/Kconfig     |    6 +
- drivers/mmc/host/Makefile    |    1 +
- drivers/mmc/host/tmio_mmc.c  |  691 ++++++++++++++++++++++++++++++++++++++++++
- drivers/mmc/host/tmio_mmc.h  |  194 ++++++++++++
- drivers/mtd/nand/Kconfig     |    7 +
- drivers/mtd/nand/Makefile    |    1 +
- drivers/mtd/nand/tmio_nand.c |  556 +++++++++++++++++++++++++++++++++
- include/linux/mfd/t7l66xb.h  |   36 +++
- include/linux/mfd/tc6387xb.h |   23 ++
- include/linux/mfd/tc6393xb.h |    9 +-
- include/linux/mfd/tmio.h     |   19 +-
- 16 files changed, 2249 insertions(+), 76 deletions(-)
- create mode 100644 drivers/mfd/t7l66xb.c
- create mode 100644 drivers/mfd/tc6387xb.c
- create mode 100644 drivers/mmc/host/tmio_mmc.c
- create mode 100644 drivers/mmc/host/tmio_mmc.h
- create mode 100644 drivers/mtd/nand/tmio_nand.c
- create mode 100644 include/linux/mfd/t7l66xb.h
- create mode 100644 include/linux/mfd/tc6387xb.h
+Rene.
