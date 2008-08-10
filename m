@@ -1,115 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755358AbYHJNwp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755112AbYHJOEj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755358AbYHJNwp (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Aug 2008 09:52:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751637AbYHJNwg
+	id S1755112AbYHJOEj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Aug 2008 10:04:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753455AbYHJOEb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Aug 2008 09:52:36 -0400
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:58909 "EHLO e6.ny.us.ibm.com"
+	Sun, 10 Aug 2008 10:04:31 -0400
+Received: from winfree.gag.com ([192.133.104.8]:39318 "EHLO winfree.gag.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751956AbYHJNwf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Aug 2008 09:52:35 -0400
-In-Reply-To: <20080809185340.GC22905@infradead.org>
-References: <20080808184349.999902616@linux.vnet.ibm.com> <1218221761.4444.13.camel@localhost.localdomain> <20080809185340.GC22905@infradead.org>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       Al Viro <viro@ZenIV.linux.org.uk>, Stephen Smalley <sds@tycho.nsa.gov>,
-       James Morris <jmorris@namei.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>, safford@watson.ibm.com,
-       serue@linux.vnet.ibm.com, sailer@watson.ibm.com,
-       Mimi Zohar <zohar@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Subject: Re: [PATCH 3/4] integrity: Linux Integrity Module(LIM)
-X-KeepSent: 0AEBDCA2:1E27B823-852574A1:000FEE48;
- type=4; name=$KeepSent
-X-Mailer: Lotus Notes Release 8.0.1 February 07, 2008
-Message-ID: <OF0AEBDCA2.1E27B823-ON852574A1.000FEE48-852574A1.004C3185@us.ibm.com>
-From: Mimi Zohar <zohar@us.ibm.com>
-Date: Sun, 10 Aug 2008 09:52:13 -0400
-X-MIMETrack: Serialize by Router on D01ML604/01/M/IBM(Build V85_M1_05262008|May 26, 2008) at
- 08/10/2008 09:52:13,
-	Serialize complete at 08/10/2008 09:52:13
-Content-Type: text/plain; charset="US-ASCII"
+	id S1752852AbYHJOEa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 Aug 2008 10:04:30 -0400
+X-Greylist: delayed 1350 seconds by postgrey-1.27 at vger.kernel.org; Sun, 10 Aug 2008 10:04:30 EDT
+Subject: Re: [2.6 patch] binfmt_som.c: add MODULE_LICENSE
+From: Bdale Garbee <bdale@hp.com>
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: Grant Grundler <grundler@parisc-linux.org>, Adrian Bunk <bunk@kernel.org>,
+       kyle@mcmartin.ca, linux-parisc@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20080810010005.GL8618@parisc-linux.org>
+References: <20080806211155.GV1702@cs181140183.pp.htv.fi>
+	 <20080810005511.GB2617@colo.lackof.org>
+	 <20080810010005.GL8618@parisc-linux.org>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Sun, 10 Aug 2008 10:41:54 -0300
+Message-Id: <1218375714.18157.56.camel@rover.gag.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Hellwig <hch@infradead.org> wrote on 08/09/2008 02:53:40 PM:
+On Sat, 2008-08-09 at 19:00 -0600, Matthew Wilcox wrote:
+> On Sat, Aug 09, 2008 at 06:55:11PM -0600, Grant Grundler wrote:
+> > Someone from HP needs to ACK this patch since I believe HP funded the code
+> > changes made during the parisc-linux port. This should be a no-brainer
+> > and I expect Bdale Garbee can quickly take care of this.
 
-> > +      if (integrity_inode_alloc(inode)) {
-> > +         if (inode->i_sb->s_op->destroy_inode)
-> > +            inode->i_sb->s_op->destroy_inode(inode);
-> > +         else
-> > +            kmem_cache_free(inode_cachep, (inode));
-> > +         return NULL;
-> > +      }
-> > +
-> 
-> Please factor this and the lsm failure case out into a single
-> out_free_inode goto label.
+> I believe I did this work before joining Linuxcare,
+> so I don't believe HP has any claim to it at all.  You'd have to check
+> CVS history to be sure.  
 
-ok
+If that is indeed the timing, I agree.  If not, let me know, and I'll
+see if I can push the right buttons in HP.
 
-> >  int vfs_permission(struct nameidata *nd, int mask)
-> >  {
-> > -   return inode_permission(nd->path.dentry->d_inode, mask);
-> > +   int retval;
-> > +
-> > +   retval = inode_permission(nd->path.dentry->d_inode, mask);
-> > +   if (retval)
-> > +      return retval;
-> > +   return integrity_inode_permission(NULL, &nd->path,
-> > +                 mask & (MAY_READ | MAY_WRITE |
-> > +                    MAY_EXEC));
-> >  }
-> > 
-> >  /**
-> > @@ -306,7 +314,14 @@ int vfs_permission(struct nameidata *nd,
-> >   */
-> >  int file_permission(struct file *file, int mask)
-> >  {
-> > -   return inode_permission(file->f_path.dentry->d_inode, mask);
-> > +   int retval;
-> > +
-> > +   retval = inode_permission(file->f_path.dentry->d_inode, mask);
-> > +   if (retval)
-> > +      return retval;
-> > +   return integrity_inode_permission(file, NULL,
-> > +                 mask & (MAY_READ | MAY_WRITE |
-> > +                    MAY_EXEC));
-> 
-> Please put your hook into inode_permission.  Note that in inode
-> permission and lots of callers there is no path available so don't pass
-> it.  Please pass the full MAY_FOO mask for new interfaces and do
-> filtering that won't break if new ones are introduced.
- 
-We started out with the integrity_inode_permission() hook call in 
-inode_permission(), but because of the removal of the nameidata 
-parameter in the last merge, based on discussions
-http://marc.info/?l=linux-security-module&m=121797845308246&w=2,
-the call to integrity_inode_permission() was moved up to the caller,
-where either a file or path are available.  Any suggestions?
- 
-> > +#ifdef CONFIG_INTEGRITY
-> > +   void         *i_integrity;
-> > +#endif
-> 
-> Sorry, but I don't think we can bloat the inode even further for this.
+Bdale
 
-The original version of IMA was LSM based, using i_security. Based
-on discussions on the LSM mailing list, it was decided that the LSM hooks
-were meant only for access control.  During the same time frame, there 
-was a lot of work done in stacking LSM modules and i_security, but that
-approach was dropped. It was suggested that we define a separate set of
-hooks for integrity, which this patch set provides. Caching integrity 
-results is an important aspect. Any suggestions in lieu of defining 
-i_integrity?
-
-> > +/*
-> > + * integrity.h
-> 
-> don't bother to mention the filename in the top of file comment.
- 
-ok
-
-Mimi
