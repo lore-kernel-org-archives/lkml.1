@@ -1,71 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755135AbYHJNvx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755358AbYHJNwp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755135AbYHJNvx (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Aug 2008 09:51:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751956AbYHJNvp
+	id S1755358AbYHJNwp (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Aug 2008 09:52:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751637AbYHJNwg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Aug 2008 09:51:45 -0400
-Received: from mk-outboundfilter-4.mail.uk.tiscali.com ([212.74.114.32]:43644
-	"EHLO mk-outboundfilter-4.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751469AbYHJNvo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Aug 2008 09:51:44 -0400
-X-Trace: 120886224/mk-outboundfilter-2.mail.uk.tiscali.com/F2S/$F2S-NILDRAM-ACCEPTED/f2s-nildram-customers/195.149.44.6
-X-SBRS: None
-X-RemoteIP: 195.149.44.6
-X-IP-MAIL-FROM: alistair@devzero.co.uk
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AssHAGKPnkjDlSwG/2dsb2JhbACBX4EspWw
-X-IronPort-AV: E=Sophos;i="4.31,338,1215385200"; 
-   d="scan'208";a="120886224"
-X-IP-Direction: IN
-From: Alistair John Strachan <alistair@devzero.co.uk>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [Bug #11197] Oops in microcode sysfs registration
-Date: Sun, 10 Aug 2008 14:51:39 +0100
-User-Agent: KMail/1.10.0 (Linux/2.6.27-rc2-damocles; KDE/4.1.0; x86_64; ; )
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Dmitry Adamushko" <dmitry.adamushko@gmail.com>
-References: <VYYCiQF4qDI.A.BPH.KCjnIB@albercik> <cX_-nNkxKaF.A.GMD.oEjnIB@albercik> <200808101431.40147.alistair@devzero.co.uk>
-In-Reply-To: <200808101431.40147.alistair@devzero.co.uk>
+	Sun, 10 Aug 2008 09:52:36 -0400
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:58909 "EHLO e6.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751956AbYHJNwf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 Aug 2008 09:52:35 -0400
+In-Reply-To: <20080809185340.GC22905@infradead.org>
+References: <20080808184349.999902616@linux.vnet.ibm.com> <1218221761.4444.13.camel@localhost.localdomain> <20080809185340.GC22905@infradead.org>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       Al Viro <viro@ZenIV.linux.org.uk>, Stephen Smalley <sds@tycho.nsa.gov>,
+       James Morris <jmorris@namei.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>, safford@watson.ibm.com,
+       serue@linux.vnet.ibm.com, sailer@watson.ibm.com,
+       Mimi Zohar <zohar@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200808101451.39797.alistair@devzero.co.uk>
+Subject: Re: [PATCH 3/4] integrity: Linux Integrity Module(LIM)
+X-KeepSent: 0AEBDCA2:1E27B823-852574A1:000FEE48;
+ type=4; name=$KeepSent
+X-Mailer: Lotus Notes Release 8.0.1 February 07, 2008
+Message-ID: <OF0AEBDCA2.1E27B823-ON852574A1.000FEE48-852574A1.004C3185@us.ibm.com>
+From: Mimi Zohar <zohar@us.ibm.com>
+Date: Sun, 10 Aug 2008 09:52:13 -0400
+X-MIMETrack: Serialize by Router on D01ML604/01/M/IBM(Build V85_M1_05262008|May 26, 2008) at
+ 08/10/2008 09:52:13,
+	Serialize complete at 08/10/2008 09:52:13
+Content-Type: text/plain; charset="US-ASCII"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 10 August 2008 14:31:40 Alistair John Strachan wrote:
-> On Saturday 09 August 2008 23:43:50 Rafael J. Wysocki wrote:
-> > This message has been generated automatically as a part of a report
-> > of recent regressions.
-> >
-> > The following bug entry is on the current list of known regressions
-> > from 2.6.26.  Please verify if it still should be listed and let me know
-> > (either way).
-> >
-> >
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11197
-> > Subject		: Oops in microcode sysfs registration
-> > Submitter	: Alistair John Strachan <alistair@devzero.co.uk>
-> > Date		: 2008-07-29 13:57 (12 days old)
-> > References	: http://marc.info/?t=121734004900002&r=1&w=4
-> > Handled-By	: Dmitry Adamushko <dmitry.adamushko@gmail.com>
-> > Patch		: http://marc.info/?l=linux-kernel&m=121741431005777&w=4
->
-> It's still broken in -rc2 but I'll check -git in a minute. Dmitry posted an
-> alternative set of patches but I don't know if they've been merged?
+Christoph Hellwig <hch@infradead.org> wrote on 08/09/2008 02:53:40 PM:
 
--git is still broken too, so it should definitely remain listed.
+> > +      if (integrity_inode_alloc(inode)) {
+> > +         if (inode->i_sb->s_op->destroy_inode)
+> > +            inode->i_sb->s_op->destroy_inode(inode);
+> > +         else
+> > +            kmem_cache_free(inode_cachep, (inode));
+> > +         return NULL;
+> > +      }
+> > +
+> 
+> Please factor this and the lsm failure case out into a single
+> out_free_inode goto label.
 
-The patches to which I am referring are from here:
-http://lkml.org/lkml/2008/8/3/114
+ok
 
--- 
-Cheers,
-Alistair.
+> >  int vfs_permission(struct nameidata *nd, int mask)
+> >  {
+> > -   return inode_permission(nd->path.dentry->d_inode, mask);
+> > +   int retval;
+> > +
+> > +   retval = inode_permission(nd->path.dentry->d_inode, mask);
+> > +   if (retval)
+> > +      return retval;
+> > +   return integrity_inode_permission(NULL, &nd->path,
+> > +                 mask & (MAY_READ | MAY_WRITE |
+> > +                    MAY_EXEC));
+> >  }
+> > 
+> >  /**
+> > @@ -306,7 +314,14 @@ int vfs_permission(struct nameidata *nd,
+> >   */
+> >  int file_permission(struct file *file, int mask)
+> >  {
+> > -   return inode_permission(file->f_path.dentry->d_inode, mask);
+> > +   int retval;
+> > +
+> > +   retval = inode_permission(file->f_path.dentry->d_inode, mask);
+> > +   if (retval)
+> > +      return retval;
+> > +   return integrity_inode_permission(file, NULL,
+> > +                 mask & (MAY_READ | MAY_WRITE |
+> > +                    MAY_EXEC));
+> 
+> Please put your hook into inode_permission.  Note that in inode
+> permission and lots of callers there is no path available so don't pass
+> it.  Please pass the full MAY_FOO mask for new interfaces and do
+> filtering that won't break if new ones are introduced.
+ 
+We started out with the integrity_inode_permission() hook call in 
+inode_permission(), but because of the removal of the nameidata 
+parameter in the last merge, based on discussions
+http://marc.info/?l=linux-security-module&m=121797845308246&w=2,
+the call to integrity_inode_permission() was moved up to the caller,
+where either a file or path are available.  Any suggestions?
+ 
+> > +#ifdef CONFIG_INTEGRITY
+> > +   void         *i_integrity;
+> > +#endif
+> 
+> Sorry, but I don't think we can bloat the inode even further for this.
+
+The original version of IMA was LSM based, using i_security. Based
+on discussions on the LSM mailing list, it was decided that the LSM hooks
+were meant only for access control.  During the same time frame, there 
+was a lot of work done in stacking LSM modules and i_security, but that
+approach was dropped. It was suggested that we define a separate set of
+hooks for integrity, which this patch set provides. Caching integrity 
+results is an important aspect. Any suggestions in lieu of defining 
+i_integrity?
+
+> > +/*
+> > + * integrity.h
+> 
+> don't bother to mention the filename in the top of file comment.
+ 
+ok
+
+Mimi
