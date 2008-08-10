@@ -1,64 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754868AbYHJLIx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754579AbYHJLdT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754868AbYHJLIx (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Aug 2008 07:08:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753228AbYHJLIp
+	id S1754579AbYHJLdT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Aug 2008 07:33:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752998AbYHJLdF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Aug 2008 07:08:45 -0400
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:40786 "EHLO smtp4.pp.htv.fi"
+	Sun, 10 Aug 2008 07:33:05 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:48906 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753056AbYHJLIo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Aug 2008 07:08:44 -0400
-Date: Sun, 10 Aug 2008 14:07:05 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Trent Piepho <xyzzy@speakeasy.org>
-Cc: Jean Delvare <khali@linux-fr.org>, "D. Kelly" <user.kernel@gmail.com>,
-       Sam Ravnborg <sam@ravnborg.org>,
-       "mailing list: linux-kernel" <linux-kernel@vger.kernel.org>,
-       Linux I2C <i2c@lm-sensors.org>
-Subject: Re: Problem with restricted I2C algorithms in kernel 2.6.26!
-Message-ID: <20080810110705.GD16146@cs181140183.pp.htv.fi>
-References: <5ab239b10807161233i6c1c4d0we01ea1b8e6ccaa5b@mail.gmail.com> <20080807131357.59399ddf@hyperion.delvare> <Pine.LNX.4.58.0808070851310.10341@shell4.speakeasy.net> <20080807181416.5de4ce6d@hyperion.delvare> <Pine.LNX.4.58.0808071621060.22108@shell2.speakeasy.net> <20080808113753.03f49efe@hyperion.delvare> <Pine.LNX.4.58.0808081037080.3151@shell2.speakeasy.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.58.0808081037080.3151@shell2.speakeasy.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	id S1752896AbYHJLdC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 Aug 2008 07:33:02 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <20080810113044.19143b0a@worthy.swandive.local>
+References: <20080810113044.19143b0a@worthy.swandive.local> <1218322518.3268.0.camel@luna.unix.geek.nz> <1218287473.3155.13.camel@dhcppc0> <1218281190.3155.5.camel@dhcppc0> <1218214935.3146.5.camel@dhcppc0> <alpine.LRH.1.10.0808090747150.29079@tundra.namei.org> <14476.1218286327@redhat.com> <15386.1218290826@redhat.com> <10251.1218361539@redhat.com> 
+To: Grant Wilson <grant.wilson@zen.co.uk>
+Cc: dhowells@redhat.com, Jasper Bryant-Greene <jasper@amiton.co.nz>,
+       Thomas Meyer <thomas@m3y3r.de>, James Morris <jmorris@namei.org>,
+       Linux-Kernel <linux-kernel@vger.kernel.org>,
+       Linux-Next <linux-next@vger.kernel.org>
+Subject: Re: next-20080808: bash: fork: Resource temporarily unavailable
+X-Mailer: MH-E 8.0.3+cvs; nmh 1.3; GNU Emacs 23.0.50
+Date: Sun, 10 Aug 2008 12:31:52 +0100
+Message-ID: <13299.1218367912@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 08, 2008 at 10:52:05AM -0700, Trent Piepho wrote:
-> On Fri, 8 Aug 2008, Jean Delvare wrote:
-> > On Thu, 7 Aug 2008 16:41:10 -0700 (PDT), Trent Piepho wrote:
-> > > Expecting every developer to keep abreast of linux-next and the tens of
-> > > thousands of patches it gets just isn't realisitic.
-> > >
-> > > The embedded platforms I develop on won't run linux-next.  Continuously
-> > > porting them to linux-next is simply impossible.  The man hours required to
-> > > do that would be staggering.
-> >
-> > Once again a "believe me it's impossible" without any good reason
-> > given. I fail to see why embedded platforms would be any different from
-> > other platforms or subsystem trees. Please enlighten me.
+Grant Wilson <grant.wilson@zen.co.uk> wrote:
+
+> On Sun, 10 Aug 2008 10:45:39 +0100
+> David Howells <dhowells@redhat.com> wrote:
 > 
-> Because they usually require lots of additional patches that aren't in the
-> kernel.  Sometimes embedded developers try to get these patches into the
-> mainline kernel, but some maintainers aren't interested in accepting
-> patches that don't appear to be useful to desktop users.
->...
+> [snip]
+> > 
+> > Are you running as an unprivileged user?  If so, this may be the point
+> > that's biting you.  Can you try applying the attached patch to find more
+> > information?
+> [snip]
+> I'm also experiencing this on an X86_64 system as an unprivileged user.
 
-The last thing mustn't happen.
+Thanks for your help.
 
-Can you give examples?
+> With your patch applied I get the following repeated several times
+> during the boot, but with no apparent ill effects:
+> 
+> [   31.033195] copy_process() = -513 
 
-cu
-Adrian
+That's probably nothing to worry about.  It -ERESTARTNOINTR, indicating, I
+would guess, that fork() was interrupted by a signal.
 
--- 
+> When the fork call starts to fail after a few minutes the following is logged:
+> 
+> [  223.039938] Rlimit EAGAIN (-1 >= 16375, uid 1000)
+> [  223.044744] copy_process() = -11
+> [  226.660319] Rlimit EAGAIN (-1 >= 16375, uid 1000)
+> [  226.664166] copy_process() = -11
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+Okay.  That's useful, thanks.  That indicates that my accounting of user
+processes is incorrect somewhere.  This won't show up when running as a
+privileged user only.
 
+David
