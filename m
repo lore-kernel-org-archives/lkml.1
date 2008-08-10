@@ -1,49 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755239AbYHJCAA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755047AbYHJCrZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755239AbYHJCAA (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Aug 2008 22:00:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753127AbYHJB7t
+	id S1755047AbYHJCrZ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Aug 2008 22:47:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753521AbYHJCrR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Aug 2008 21:59:49 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:40763 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753072AbYHJB7t (ORCPT
+	Sat, 9 Aug 2008 22:47:17 -0400
+Received: from rv-out-0506.google.com ([209.85.198.235]:49743 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753270AbYHJCrQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Aug 2008 21:59:49 -0400
-Date: Sun, 10 Aug 2008 09:59:37 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Wolfgang Walter <wolfgang.walter@stwm.de>
-Cc: "H. Peter Anvin" <hpa@zytor.com>,
-       Suresh Siddha <suresh.b.siddha@intel.com>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       "viro@ZenIV.linux.org.uk" <viro@zeniv.linux.org.uk>,
-       "vegard.nossum@gmail.com" <vegard.nossum@gmail.com>
-Subject: Re: Kernel oops with 2.6.26, padlock and ipsec: probably problem with fpu state changes
-Message-ID: <20080810015937.GB1859@gondor.apana.org.au>
-References: <200807171653.59177.wolfgang.walter@stwm.de> <489DC05E.2080901@zytor.com> <20080810002937.GA1461@gondor.apana.org.au> <200808100356.56432.wolfgang.walter@stwm.de>
+	Sat, 9 Aug 2008 22:47:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=pe5y1RtNcsXyOTyBMuEq7TYNyqsYQYyGfZ8fWIX2ycq8iCzpYJya/7ieVNbvVz8++h
+         W3y0lUsGjseKogePHIlwjkUaiBuKR7C/UP7WubzQQIqyCZIK1tOsu2FtDf/WMhogedm5
+         Z/yYGY7H0qhp/MFoBeh6JmdCcSnATq3CHea8s=
+Message-ID: <dd18b0c30808091947j1f503719i8cb6625878fe3f71@mail.gmail.com>
+Date: Sat, 9 Aug 2008 19:47:16 -0700
+From: "Justin Mattock" <justinmattock@gmail.com>
+To: "Parag Warudkar" <parag.warudkar@gmail.com>
+Subject: Re: [Bug #11277] BUG kmalloc-64: Object already free
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Kernel Testers List" <kernel-testers@vger.kernel.org>
+In-Reply-To: <82e4877d0808091733u34bc4a3dl76dbca4737543c06@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200808100356.56432.wolfgang.walter@stwm.de>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+References: <VYYCiQF4qDI.A.BPH.KCjnIB@albercik>
+	 <cX_-nNkxKaF.A.TX.0CjnIB@albercik>
+	 <dd18b0c30808091725s5974befdp4b57fe54d3d6e255@mail.gmail.com>
+	 <82e4877d0808091733u34bc4a3dl76dbca4737543c06@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Aug 10, 2008 at 03:56:56AM +0200, Wolfgang Walter wrote:
-> On Sunday 08 August 2008, Herbert Xu wrote:
-> > Someone please test this with tcrypt mode=200 with and without
-> > the patch.
-> 
-> Here are the results:
+On Sat, Aug 9, 2008 at 5:33 PM, Parag Warudkar <parag.warudkar@gmail.com> wrote:
+> On Sat, Aug 9, 2008 at 8:25 PM, Justin Mattock <justinmattock@gmail.com> wrote:
+>>> Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=11277
+>>> Subject         : BUG kmalloc-64: Object already free
+>>> Submitter       : Justin Mattock <justinmattock@gmail.com>
+>>> Date            : 2008-08-06 21:21 (4 days old)
+>>> References      : http://marc.info/?l=linux-kernel&m=121805862910241&w=4
+>>> Handled-By      : Parag Warudkar <parag.warudkar@gmail.com>
+>>> Patch           : http://marc.info/?l=linux-kernel&m=121814402609514&w=4
+>>>
+>>>
+>>>
+>>
+>> I think this bug report can be closed.
+>>
+>
+> Patch is not in mainline yet - should be closed after Andrew pushes it to Linus.
+>
+> Parag
+>
 
-Thanks, so for IPsec it's about a 10% increase in CPU utilisation.
+Sounds good to me.
 
-Cheers,
 -- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+Justin P. Mattock
