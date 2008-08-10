@@ -1,46 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755857AbYHJAaS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755319AbYHJAeR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755857AbYHJAaS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Aug 2008 20:30:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752557AbYHJA37
+	id S1755319AbYHJAeR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Aug 2008 20:34:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752802AbYHJAeA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Aug 2008 20:29:59 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:56779 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752761AbYHJA37 (ORCPT
+	Sat, 9 Aug 2008 20:34:00 -0400
+Received: from wx-out-0506.google.com ([66.249.82.229]:13280 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752099AbYHJAd6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Aug 2008 20:29:59 -0400
-Date: Sun, 10 Aug 2008 08:29:37 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Suresh Siddha <suresh.b.siddha@intel.com>,
-       Wolfgang Walter <wolfgang.walter@stwm.de>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       "viro@ZenIV.linux.org.uk" <viro@ZenIV.linux.org.uk>,
-       "vegard.nossum@gmail.com" <vegard.nossum@gmail.com>
-Subject: Re: Kernel oops with 2.6.26, padlock and ipsec: probably problem with fpu state changes
-Message-ID: <20080810002937.GA1461@gondor.apana.org.au>
-References: <200807171653.59177.wolfgang.walter@stwm.de> <20080806201401.GA607@linux-os.sc.intel.com> <200808071823.02364.wolfgang.walter@stwm.de> <200808081236.55172.wolfgang.walter@stwm.de> <20080808185356.GC607@linux-os.sc.intel.com> <489C97FB.2030408@zytor.com> <20080808231121.GA13158@linux-os.sc.intel.com> <20080809143727.GA30499@gondor.apana.org.au> <489DC05E.2080901@zytor.com>
+	Sat, 9 Aug 2008 20:33:58 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=ck4CQmctBLYt6b06A+EBkBwf1ipyAQnC9zh+Am8rXCnyPXLZaO84bUvMjvlEla31N4
+         Uwf7ZRfztOa+VQPYYHPHCmpSr9XqR6oJvvib0lQQ3WPUAmBPgnEOS0QrZwvvIqJ8Sdaj
+         z4R/XCEDOAWu8i7+v/9za/bKTcI9uLgLI2QGU=
+Message-ID: <82e4877d0808091733u34bc4a3dl76dbca4737543c06@mail.gmail.com>
+Date: Sat, 9 Aug 2008 20:33:57 -0400
+From: "Parag Warudkar" <parag.warudkar@gmail.com>
+To: "Justin Mattock" <justinmattock@gmail.com>
+Subject: Re: [Bug #11277] BUG kmalloc-64: Object already free
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Kernel Testers List" <kernel-testers@vger.kernel.org>
+In-Reply-To: <dd18b0c30808091725s5974befdp4b57fe54d3d6e255@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <489DC05E.2080901@zytor.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+References: <VYYCiQF4qDI.A.BPH.KCjnIB@albercik>
+	 <cX_-nNkxKaF.A.TX.0CjnIB@albercik>
+	 <dd18b0c30808091725s5974befdp4b57fe54d3d6e255@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Aug 09, 2008 at 09:05:50AM -0700, H. Peter Anvin wrote:
+On Sat, Aug 9, 2008 at 8:25 PM, Justin Mattock <justinmattock@gmail.com> wrote:
+>> Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=11277
+>> Subject         : BUG kmalloc-64: Object already free
+>> Submitter       : Justin Mattock <justinmattock@gmail.com>
+>> Date            : 2008-08-06 21:21 (4 days old)
+>> References      : http://marc.info/?l=linux-kernel&m=121805862910241&w=4
+>> Handled-By      : Parag Warudkar <parag.warudkar@gmail.com>
+>> Patch           : http://marc.info/?l=linux-kernel&m=121814402609514&w=4
+>>
+>>
+>>
 >
-> We're invoking this code from interrupt handlers?
+> I think this bug report can be closed.
+>
 
-In softirq context, yes.
+Patch is not in mainline yet - should be closed after Andrew pushes it to Linus.
 
-Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+Parag
