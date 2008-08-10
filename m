@@ -1,62 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755335AbYHJGZm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755293AbYHJG1w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755335AbYHJGZm (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Aug 2008 02:25:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752106AbYHJGZa
+	id S1755293AbYHJG1w (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Aug 2008 02:27:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752393AbYHJG1o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Aug 2008 02:25:30 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:51504 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752133AbYHJGZ3 (ORCPT
+	Sun, 10 Aug 2008 02:27:44 -0400
+Received: from rv-out-0506.google.com ([209.85.198.225]:65385 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752165AbYHJG1n (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Aug 2008 02:25:29 -0400
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: rdreier@cisco.com (Roland Dreier)
-Subject: Re: [RFC][PATCH 1/1] cxgb3i: cxgb3 iSCSI initiator
-Cc: jgarzik@pobox.com, swise@opengridcomputing.com, davem@davemloft.net,
-       divy@chelsio.com, kxie@chelsio.com, netdev@vger.kernel.org,
-       open-iscsi@googlegroups.com, michaelc@cs.wisc.edu, daisyc@us.ibm.com,
-       wenxiong@us.ibm.com, bhua@us.ibm.com, dm@chelsio.com,
-       leedom@chelsio.com, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Organization: Core
-In-Reply-To: <adazlnlzc60.fsf@cisco.com>
-X-Newsgroups: apana.lists.os.linux.kernel,apana.lists.os.linux.netdev,apana.lists.os.linux.scsi
-User-Agent: tin/1.7.4-20040225 ("Benbecula") (UNIX) (Linux/2.6.17-rc4 (i686))
-Message-Id: <E1KS4Lr-0000ts-00@gondolin.me.apana.org.au>
-Date: Sun, 10 Aug 2008 14:24:27 +0800
+	Sun, 10 Aug 2008 02:27:43 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=nJLyWR0CZEXOf/KnO3i9VT2bdxTDNPhbJeZ1kx3PyaukigjPcTIK/qY9AySmDMit4y
+         SXzbiuMFdjl6K19B0phsOL77Nn0cwqBBQ1huEg8wJFEQW+QwHpXaxksLiDsOMBKLrWSm
+         hWDGH92x8IaVxKRJDOEyK3N7xuxnQm6e7TlUo=
+Message-ID: <3f9a31f40808092327h272ba73emcfc1ead6b6d1099@mail.gmail.com>
+Date: Sun, 10 Aug 2008 11:57:42 +0530
+From: "Jaswinder Singh" <jaswinderlinux@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [Bug #11271] BUG: fealnx in 2.6.27-rc1
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Kernel Testers List" <kernel-testers@vger.kernel.org>
+In-Reply-To: <cX_-nNkxKaF.A.T-.DDjnIB@albercik>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <VYYCiQF4qDI.A.BPH.KCjnIB@albercik>
+	 <cX_-nNkxKaF.A.T-.DDjnIB@albercik>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Roland Dreier <rdreier@cisco.com> wrote:
+Hello all,
+
+On Sun, Aug 10, 2008 at 4:13 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> This message has been generated automatically as a part of a report
+> of recent regressions.
 >
-> I think there are two ways to proceed:
-> 
-> - Start trying to figure out the best way to support the iSCSI offload
->   hardware that's out there.  I don't know the perfect answer but I'm
->   sure we can figure something out if we make an honest effort.
-> 
-> - Ignore the issue and let users of iSCSI offload hardware (and iWARP
->   and NFS/RDMA etc) stick to hacky out-of-tree solutions.  This pays
->   off if stuff like the Intel CRC32C instruction plus faster CPUs (or
->   "multithreaded" NICs that use multicore better) makes offload
->   irrelevant.  However this ignores the fundamental 3X memory bandwidth
->   cost of not doing direct placement in the NIC, and risks us being in
->   a "well Solaris has support" situation down the road.
+> The following bug entry is on the current list of known regressions
+> from 2.6.26.  Please verify if it still should be listed and let me know
+> (either way).
+>
+>
+> Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=11271
+> Subject         : BUG: fealnx in 2.6.27-rc1
+> Submitter       : Jaswinder Singh <jaswinderlinux@gmail.com>
+> Date            : 2008-08-05 14:58 (5 days old)
+> References      : http://marc.info/?l=linux-netdev&m=121794762016830&w=4
+>
+>
 
-We've been here many times before.  This is just the smae old TOE
-debate all over again.  The fact with TOE is that history has shown
-that Dave's decision has been spot on.
+This still exists on 2.6.27-rc2 when I transfer some data on RealTek 8139C NIC.
 
-So you're going to have to come up with some really convincing
-evidence that shows we are all wrong and these TOE-like hardware
-offload solutions is the only way to go.  You can start by collecting
-solid benchmark numbers that we can all reproduce and look into.
+01:00.0 Ethernet controller: MYSON Technology Inc SURECOM EP-320X-S
+100/10M Ethernet PCI Adapter
+	Subsystem: MYSON Technology Inc SURECOM EP-320X-S 100/10M Ethernet PCI Adapter
+	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV+ VGASnoop- ParErr-
+Stepping- SERR- FastB2B- DisINTx-
+	Status: Cap+ 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort-
+<TAbort- <MAbort- >SERR- <PERR- INTx-
+	Latency: 32 (8000ns min, 16000ns max), Cache Line Size: 64 bytes
+	Interrupt: pin A routed to IRQ 21
+	Region 0: I/O ports at d800 [size=256]
+	Region 1: Memory at ff8ffc00 (32-bit, non-prefetchable) [size=1K]
+	Expansion ROM at e6a00000 [disabled] [size=64K]
+	Capabilities: [88] Power Management version 2
+		Flags: PMEClk- DSI- D1+ D2- AuxCurrent=375mA PME(D0-,D1+,D2-,D3hot+,D3cold+)
+		Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+	Kernel driver in use: fealnx
 
-Thanks,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+If you need more info or need help in debugging please let me know.
+
+Thank you,
+
+Jaswinder Singh.
