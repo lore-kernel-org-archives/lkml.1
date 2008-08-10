@@ -1,71 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753659AbYHJSQV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753835AbYHJSXu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753659AbYHJSQV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Aug 2008 14:16:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752574AbYHJSQO
+	id S1753835AbYHJSXu (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Aug 2008 14:23:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752705AbYHJSXm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Aug 2008 14:16:14 -0400
-Received: from monty.telenet-ops.be ([195.130.132.56]:34232 "EHLO
-	monty.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752403AbYHJSQN (ORCPT
+	Sun, 10 Aug 2008 14:23:42 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:43779 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752672AbYHJSXl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Aug 2008 14:16:13 -0400
-Date: Sun, 10 Aug 2008 20:16:10 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Roman Zippel <zippel@linux-m68k.org>
-Subject: Re: [PATCH] ide: remove M68K_IDE_SWAPW define from <asm-m68k/ide.h>
-In-Reply-To: <200808101746.12697.bzolnier@gmail.com>
-Message-ID: <Pine.LNX.4.64.0808102015580.10672@anakin>
-References: <200808101746.12697.bzolnier@gmail.com>
+	Sun, 10 Aug 2008 14:23:41 -0400
+Message-ID: <489F31FC.9040104@zytor.com>
+Date: Sun, 10 Aug 2008 11:22:52 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       Yinghai Lu <yhlu.kernel@gmail.com>
+Subject: Re: [Bug #11201] kernel BUG at arch/x86/kernel/io_apic_64.c:357!
+References: <VYYCiQF4qDI.A.BPH.KCjnIB@albercik>	<cX_-nNkxKaF.A.AGD.iEjnIB@albercik> <m1sktdsmyy.fsf@frodo.ebiederm.org>
+In-Reply-To: <m1sktdsmyy.fsf@frodo.ebiederm.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 10 Aug 2008, Bartlomiej Zolnierkiewicz wrote:
-> Since we solved this by overriding default ->{in,out}put_data
-> methods in {q40,falcon}ide M68K_IDE_SWAP define can go away.
+Eric W. Biederman wrote:
+> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
 > 
-> Cc: Geert Uytterhoeven <geert@linux-m68k.org>
-> Cc: Roman Zippel <zippel@linux-m68k.org>
-> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-
-Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
-
-> ---
->  include/asm-m68k/ide.h |    9 ---------
->  1 file changed, 9 deletions(-)
+>> This message has been generated automatically as a part of a report
+>> of recent regressions.
+>>
+>> The following bug entry is on the current list of known regressions
+>> from 2.6.26.  Please verify if it still should be listed and let me know
+>> (either way).
 > 
-> Index: b/include/asm-m68k/ide.h
-> ===================================================================
-> --- a/include/asm-m68k/ide.h
-> +++ b/include/asm-m68k/ide.h
-> @@ -92,15 +92,6 @@
->  #define outsw_swapw(port, addr, n)	raw_outsw_swapw((u16 *)port, addr, n)
->  #endif
->  
-> -
-> -/* Q40 and Atari have byteswapped IDE busses and since many interesting
-> - * values in the identification string are text, chars and words they
-> - * happened to be almost correct without swapping.. However *_capacity
-> - * is needed for drives over 8 GB. RZ */
-> -#if defined(CONFIG_Q40) || defined(CONFIG_ATARI)
-> -#define M68K_IDE_SWAPW  (MACH_IS_Q40 || MACH_IS_ATARI)
-> -#endif
-> -
->  #ifdef CONFIG_BLK_DEV_FALCON_IDE
->  #define IDE_ARCH_LOCK
+> Yep.  There is a patch in -mm.  It seems the process is to wait for Thomas &
+> Ingo to get back before we send this to Linus. 
+> 
 
-Gr{oetje,eeting}s,
+Yes, unfortunately I still don't have enough testing resources to want 
+to push this upstream.  I'm queuing it up for submission, though.
 
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+	-hpa
