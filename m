@@ -1,28 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755148AbYHJNJe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755185AbYHJNP6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755148AbYHJNJe (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Aug 2008 09:09:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753587AbYHJNJ1
+	id S1755185AbYHJNP6 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Aug 2008 09:15:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754050AbYHJNPu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Aug 2008 09:09:27 -0400
-Received: from ti-out-0910.google.com ([209.85.142.190]:34696 "EHLO
+	Sun, 10 Aug 2008 09:15:50 -0400
+Received: from ti-out-0910.google.com ([209.85.142.185]:32649 "EHLO
 	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753149AbYHJNJ0 (ORCPT
+	with ESMTP id S1754015AbYHJNPt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Aug 2008 09:09:26 -0400
+	Sun, 10 Aug 2008 09:15:49 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=date:from:to:subject:cc:message-id:mime-version:content-type
          :content-transfer-encoding:x-mailer;
-        b=MBC56qZaYhdNbuHK7wqCkC8+AwkZJjhdxDgpYaSzh/1edGVmudMcGJVfApG1BiBgWL
-         A9XWI8I2++3RkzRGWDdu4aUbOiewBvQfPUJMDLra9NdEAVuBqkE+X7F18LuSmHJLfGdF
-         GtyWLhNwNKHSZDKgofBbc9MtTiGtLA8xoXefc=
-Date: Sun, 10 Aug 2008 21:09:22 +0800
+        b=e/DcoxS+qK5jYVf6zYHwC6G85uqJxxTEU6y9ItR5RVyz7StOqG2LUDfOkfJknOWJic
+         rNUV3gFFVuJqhCv3O7IUVXc312Qpalv66K0ulxqVYCJrDpvYY5UwefnmtSyAtc8c2Lum
+         7st3GGcx5ZayA2esWUcVuf8DQX5Fswww42x1g=
+Date: Sun, 10 Aug 2008 21:15:45 +0800
 From: Huang Weiyi <weiyi.huang@gmail.com>
-To: tglx@linutronix.de
-Subject: arch/x86/kernel/cpuid.c: removed duplicated #include
+To: jack@suse.cz
+Subject: fs/reiserfs/super.c: removed duplicated #include
 Cc: linux-kernel@vger.kernel.org
-Message-Id: <20080810210512.2EFD.WEIYI.HUANG@gmail.com>
+Message-Id: <20080810211208.A47C.WEIYI.HUANG@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
@@ -31,21 +31,21 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Removed duplicated include file <linux/smp_lock.h> in 
-arch/x86/kernel/cpuid.c.
+Removed duplicated #include <linux/quotaops.h> in 
+fs/reiserfs/super.c.
 
 Signed-off-by: Huang Weiyi <weiyi.huang@gmail.com>
 
-diff --git a/arch/x86/kernel/cpuid.c b/arch/x86/kernel/cpuid.c
-index 14b11b3..3fa4e92 100644
---- a/arch/x86/kernel/cpuid.c
-+++ b/arch/x86/kernel/cpuid.c
-@@ -36,7 +36,6 @@
- #include <linux/smp_lock.h>
- #include <linux/major.h>
- #include <linux/fs.h>
--#include <linux/smp_lock.h>
- #include <linux/device.h>
- #include <linux/cpu.h>
- #include <linux/notifier.h>
+diff --git a/fs/reiserfs/super.c b/fs/reiserfs/super.c
+index 282a135..d318c7e 100644
+--- a/fs/reiserfs/super.c
++++ b/fs/reiserfs/super.c
+@@ -27,7 +27,6 @@
+ #include <linux/mnt_namespace.h>
+ #include <linux/mount.h>
+ #include <linux/namei.h>
+-#include <linux/quotaops.h>
+
+ struct file_system_type reiserfs_fs_type;
+
 
