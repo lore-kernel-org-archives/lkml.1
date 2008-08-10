@@ -1,93 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754560AbYHJVdW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754661AbYHJVgy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754560AbYHJVdW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Aug 2008 17:33:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753710AbYHJVdN
+	id S1754661AbYHJVgy (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Aug 2008 17:36:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753723AbYHJVgq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Aug 2008 17:33:13 -0400
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:53442 "EHLO smtp6.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753702AbYHJVdM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Aug 2008 17:33:12 -0400
-Date: Mon, 11 Aug 2008 00:31:31 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Hannes Reinecke <hare@suse.de>, Chandra Seetharaman <sekharan@us.ibm.com>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [2.6 patch make struct scsi_dh_devlist's static
-Message-ID: <20080810213131.GC5480@cs181140183.pp.htv.fi>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+	Sun, 10 Aug 2008 17:36:46 -0400
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:57542 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753702AbYHJVgq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 Aug 2008 17:36:46 -0400
+Date: Sun, 10 Aug 2008 22:35:20 +0100
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: Wim Van Sebroeck <wim@iguana.be>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@kernel.org>
+Subject: Re: [WATCHDOG] v2.6.27-rc watchdog fixes
+Message-ID: <20080810213520.GA2847@flint.arm.linux.org.uk>
+References: <20080810204527.GF2773@infomag.infomag.iguana.be>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20080810204527.GF2773@infomag.infomag.iguana.be>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch makes several needlessly global struct scsi_dh_devlist's 
-static.
+On Sun, Aug 10, 2008 at 10:45:27PM +0200, Wim Van Sebroeck wrote:
+> Hi Linus,
+> 
+> Please pull from 'master' branch of
+> 	git://git.kernel.org/pub/scm/linux/kernel/git/wim/linux-2.6-watchdog.git
+> or if master.kernel.org hasn't synced up yet:
+> 	master.kernel.org:/pub/scm/linux/kernel/git/wim/linux-2.6-watchdog.git
+> 
+> This will update the following files:
+> 
+>  MAINTAINERS                       |    6 ------
+>  drivers/watchdog/Makefile         |    5 ++++-
+>  drivers/watchdog/at91rm9200_wdt.c |    2 +-
+>  drivers/watchdog/ixp4xx_wdt.c     |    2 +-
+>  drivers/watchdog/shwdt.c          |   24 ++++++++++++------------
+>  drivers/watchdog/txx9wdt.c        |    2 +-
+>  drivers/watchdog/wdt285.c         |    2 +-
+>  7 files changed, 20 insertions(+), 23 deletions(-)
 
-Signed-off-by: Adrian Bunk <bunk@kernel.org>
+Note that s3c2410_wdt still gives an additional warning that I've
+fixed in my set of ARM watchdog fixes.
 
----
+It would be nice to get _all_ the issues resolved.
 
- drivers/scsi/device_handler/scsi_dh_alua.c  |    2 +-
- drivers/scsi/device_handler/scsi_dh_emc.c   |    2 +-
- drivers/scsi/device_handler/scsi_dh_hp_sw.c |    2 +-
- drivers/scsi/device_handler/scsi_dh_rdac.c  |    2 +-
- 4 files changed, 4 insertions(+), 4 deletions(-)
-
-ae6ee914615e415cc4b22ee1c0545bb088889b6a 
-diff --git a/drivers/scsi/device_handler/scsi_dh_alua.c b/drivers/scsi/device_handler/scsi_dh_alua.c
-index fcdd73f..994da56 100644
---- a/drivers/scsi/device_handler/scsi_dh_alua.c
-+++ b/drivers/scsi/device_handler/scsi_dh_alua.c
-@@ -680,7 +680,7 @@ static int alua_prep_fn(struct scsi_device *sdev, struct request *req)
- 
- }
- 
--const struct scsi_dh_devlist alua_dev_list[] = {
-+static const struct scsi_dh_devlist alua_dev_list[] = {
- 	{"HP", "MSA VOLUME" },
- 	{"HP", "HSV101" },
- 	{"HP", "HSV111" },
-diff --git a/drivers/scsi/device_handler/scsi_dh_emc.c b/drivers/scsi/device_handler/scsi_dh_emc.c
-index aa46b13..b9d23e9 100644
---- a/drivers/scsi/device_handler/scsi_dh_emc.c
-+++ b/drivers/scsi/device_handler/scsi_dh_emc.c
-@@ -562,7 +562,7 @@ done:
- 	return result;
- }
- 
--const struct scsi_dh_devlist clariion_dev_list[] = {
-+static const struct scsi_dh_devlist clariion_dev_list[] = {
- 	{"DGC", "RAID"},
- 	{"DGC", "DISK"},
- 	{"DGC", "VRAID"},
-diff --git a/drivers/scsi/device_handler/scsi_dh_hp_sw.c b/drivers/scsi/device_handler/scsi_dh_hp_sw.c
-index 9c7a1f8..a6a4ef3 100644
---- a/drivers/scsi/device_handler/scsi_dh_hp_sw.c
-+++ b/drivers/scsi/device_handler/scsi_dh_hp_sw.c
-@@ -282,7 +282,7 @@ static int hp_sw_activate(struct scsi_device *sdev)
- 	return ret;
- }
- 
--const struct scsi_dh_devlist hp_sw_dh_data_list[] = {
-+static const struct scsi_dh_devlist hp_sw_dh_data_list[] = {
- 	{"COMPAQ", "MSA1000 VOLUME"},
- 	{"COMPAQ", "HSV110"},
- 	{"HP", "HSV100"},
-diff --git a/drivers/scsi/device_handler/scsi_dh_rdac.c b/drivers/scsi/device_handler/scsi_dh_rdac.c
-index b093a50..e7c7b4e 100644
---- a/drivers/scsi/device_handler/scsi_dh_rdac.c
-+++ b/drivers/scsi/device_handler/scsi_dh_rdac.c
-@@ -574,7 +574,7 @@ static int rdac_check_sense(struct scsi_device *sdev,
- 	return SCSI_RETURN_NOT_HANDLED;
- }
- 
--const struct scsi_dh_devlist rdac_dev_list[] = {
-+static const struct scsi_dh_devlist rdac_dev_list[] = {
- 	{"IBM", "1722"},
- 	{"IBM", "1724"},
- 	{"IBM", "1726"},
-
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
