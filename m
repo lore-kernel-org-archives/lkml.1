@@ -1,58 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755157AbYHJMuF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755316AbYHJMyn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755157AbYHJMuF (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Aug 2008 08:50:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753573AbYHJMtv
+	id S1755316AbYHJMyn (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Aug 2008 08:54:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753829AbYHJMyf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Aug 2008 08:49:51 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:40609 "EHLO mail.dvmed.net"
+	Sun, 10 Aug 2008 08:54:35 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:49436 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753447AbYHJMtu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Aug 2008 08:49:50 -0400
-Message-ID: <489EE3DC.9060202@pobox.com>
-Date: Sun, 10 Aug 2008 08:49:32 -0400
-From: Jeff Garzik <jgarzik@pobox.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	id S1753676AbYHJMye (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 Aug 2008 08:54:34 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Grant Coady <gcoady.lk@gmail.com>
+Subject: Re: [Bug #11278] 2.6.27-rc2: Very odd top: '5124095h kthreadd' display
+Date: Sun, 10 Aug 2008 14:57:26 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+References: <VYYCiQF4qDI.A.BPH.KCjnIB@albercik> <cX_-nNkxKaF.A.WR.xCjnIB@albercik> <otds94lkpmrooo1s9c0he3j3pral8fmojl@4ax.com>
+In-Reply-To: <otds94lkpmrooo1s9c0he3j3pral8fmojl@4ax.com>
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: Roland Dreier <rdreier@cisco.com>,
-       Steve Wise <swise@opengridcomputing.com>, davem@davemloft.net,
-       Divy Le Ray <divy@chelsio.com>, Karen Xie <kxie@chelsio.com>,
-       netdev@vger.kernel.org, open-iscsi@googlegroups.com,
-       michaelc@cs.wisc.edu, daisyc@us.ibm.com, wenxiong@us.ibm.com,
-       bhua@us.ibm.com, Dimitrios Michailidis <dm@chelsio.com>,
-       Casey Leedom <leedom@chelsio.com>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC][PATCH 1/1] cxgb3i: cxgb3 iSCSI initiator
-References: <200807300019.m6U0JkdY012558@localhost.localdomain>	<aday73jxdfs.fsf@cisco.com>	<200807311752.00911.divy@chelsio.com>	<200808071145.03848.divy@chelsio.com>	<489C8BEB.8060001@opengridcomputing.com>	<489CC58D.4010606@pobox.com>	<adazlnlzc60.fsf@cisco.com> <20080810101935.5c8e8e9a@lxorguk.ukuu.org.uk>
-In-Reply-To: <20080810101935.5c8e8e9a@lxorguk.ukuu.org.uk>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Disposition: inline
+Message-Id: <200808101457.26524.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
->>  - It doesn't work in theory, because the suggestion (I guess) is that
->>    the iSCSI HBA has its own MAC and IP and behaves like a separate
+On Sunday, 10 of August 2008, Grant Coady wrote:
+> On Sun, 10 Aug 2008 00:43:52 +0200 (CEST), "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
 > 
-> The iSCSI HBA is its own system - that is the root of the problem.
+> >This message has been generated automatically as a part of a report
+> >of recent regressions.
+> >
+> >The following bug entry is on the current list of known regressions
+> >from 2.6.26.  Please verify if it still should be listed and let me know
+> >(either way).
+> >
+> >
+> >Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11278
+> >Subject		: 2.6.27-rc2: Very odd top: '5124095h kthreadd' display
+> >Submitter	: Grant Coady <grant_lkml@dodo.com.au>
+> >Date		: 2008-08-07 7:03 (3 days old)
+> >References	: http://marc.info/?l=linux-kernel&m=121809267318795&w=4
+> >
+> 
+> Patch from Peter Z. fixed it for me, so it may be removed now.
 
-Indeed.
+Is the patch in the mainline already?
 
-Just like with TOE, from the net stack's point of view, an iSCSI HBA is 
-essentially a wholly asynchronous remote system [with a really fast 
-communication bus like PCI Express].
+If not, can you please provide me with a link to the patch?
 
-As such, the task becomes updating the net stack such that 
-formerly-private resources are now shared with an independent, external 
-system...  with all the complexity, additional failure modes, and 
-additional security complications that come along with that.
-
-	Jeff
-
-
+Rafael
