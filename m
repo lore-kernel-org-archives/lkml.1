@@ -1,64 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754088AbYHJTZj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754052AbYHJTlB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754088AbYHJTZj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Aug 2008 15:25:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753295AbYHJTZb
+	id S1754052AbYHJTlB (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Aug 2008 15:41:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753313AbYHJTkv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Aug 2008 15:25:31 -0400
-Received: from fg-out-1718.google.com ([72.14.220.153]:29455 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753291AbYHJTZa (ORCPT
+	Sun, 10 Aug 2008 15:40:51 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:51619 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753291AbYHJTkv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Aug 2008 15:25:30 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=mW/8iljfLgG77Ir3DFmthRZpxXt+IK1UhtDMotS+CiGxDG2ViRryXsg1nW4wqZDs6e
-         +U32ntTWWUCR07xsLeKiFrHw5GAvkjJ4ipErHoYgI74CrZqf0ji71Jm7qP0bejD+wZJt
-         gfe348250DNfqCEcoK2Nq979E2v/d21AREjMg=
-Date: Sun, 10 Aug 2008 21:24:49 +0200
-From: Marcin Slusarz <marcin.slusarz@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: LKML <linux-kernel@vger.kernel.org>, Steven Rostedt <srostedt@redhat.com>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       linux-pm@lists.linux-foundation.org
-Subject: Re: resume from s2ram regression (bisected to ftrace...)
-Message-ID: <20080810192444.GA5296@joi>
-References: <20080810170801.GA5739@joi> <200808101940.13753.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200808101940.13753.rjw@sisk.pl>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Sun, 10 Aug 2008 15:40:51 -0400
+Date: Sun, 10 Aug 2008 12:40:11 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: "Yang, Bo" <Bo.Yang@lsi.com>,
+       "'linux-scsi@vger.kernel.org'" <linux-scsi@vger.kernel.org>,
+       "'akpm@osdl.org'" <akpm@linuxfoundation.org>,
+       "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>,
+       "Patro, Sumant" <Sumant.Patro@lsi.com>,
+       "Austria, Winston" <Winston.Austria@lsi.com>,
+       "poswald@novell.com" <poswald@novell.com>
+Subject: Re: [PATCH 1/4] scsi: megaraid_sas - Add the dumy readl to force
+ PCI flush
+Message-Id: <20080810124011.b5e76eb9.akpm@linux-foundation.org>
+In-Reply-To: <1218380616.3418.23.camel@localhost.localdomain>
+References: <FFD04EB4FBD32E4B929B6CFDEDA6AA0D632A9F@NAMAIL1.ad.lsil.com>
+	<4B6A08C587958942AA3002690DD4F8C31B08093F@cosmail02.lsi.com>
+	<20080804174128.a0877c27.akpm@linux-foundation.org>
+	<4B6A08C587958942AA3002690DD4F8C31AADD4C1@cosmail02.lsi.com>
+	<1218380616.3418.23.camel@localhost.localdomain>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Aug 10, 2008 at 07:40:12PM +0200, Rafael J. Wysocki wrote:
-> On Sunday, 10 of August 2008, Marcin Slusarz wrote:
-> > Hi
-> > 
-> > Few days ago I discovered that resume from suspend to ram does not work anymore
-> > on my 2.6.27-rc2 (actually 796aadeb1b2db9b5d463946766c5bbfd7717158c) gentoo box.
-> > My computer just boots on resume. Today I had enough time to bisect it and found
-> > (after 1 panic and 1 build breakage) out "the reason":
-> > 
-> > $ git bisect good
-> > d05cdb25d80f06f77aa6bddb53cd1390d4d91a0b is first bad commit
-> > commit d05cdb25d80f06f77aa6bddb53cd1390d4d91a0b
-> > Author: Steven Rostedt <rostedt@goodmis.org>
-> > Date:   Mon May 12 21:20:54 2008 +0200
-> > 
-> >     ftrace: fix dynamic ftrace selftest
+On Sun, 10 Aug 2008 10:03:36 -0500 James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
+
+> On Tue, 2008-08-05 at 06:27 -0600, Yang, Bo wrote:
+> > Thanks Andrew.
 > 
-> Does it still happen if:
-> - CONFIG_FTRACE is unset
+> So could we have the corrected patch, please ... at least the pci
+> posting flush fix looks like a pure bug fix that's a rc candidate.
+> 
 
-no
-
-> - CONFIG_FTRACE is set, but CONFIG_FTRACE_STARTUP_TEST is unset?
-
-yes
-
-Marcin
+I'll send them over now.
