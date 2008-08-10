@@ -1,72 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754988AbYHJMMZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755228AbYHJMNg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754988AbYHJMMZ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Aug 2008 08:12:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753218AbYHJMMP
+	id S1755228AbYHJMNg (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Aug 2008 08:13:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753291AbYHJMN2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Aug 2008 08:12:15 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:49263 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752908AbYHJMMO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Aug 2008 08:12:14 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Stephen Hemminger <stephen.hemminger@vyatta.com>
-Subject: Re: [PATCH] sky2: Fix suspend/hibernation/shutdown regression with WOL enabled
-Date: Sun, 10 Aug 2008 14:14:34 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: netdev@vger.kernel.org, Jeff Garzik <jeff@garzik.org>,
-       Stephen Hemminger <shemminger@vyatta.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-References: <200808092332.29596.rjw@sisk.pl> <20080809235711.12c2f331@extreme>
-In-Reply-To: <20080809235711.12c2f331@extreme>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Sun, 10 Aug 2008 08:13:28 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:41071 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753285AbYHJMN2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 Aug 2008 08:13:28 -0400
+Date: Sun, 10 Aug 2008 12:54:32 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Grant Coady <gcoady.lk@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: Query: should 'Marvell SATA support' depend on PCI?
+Message-ID: <20080810125432.3504a7fa@lxorguk.ukuu.org.uk>
+In-Reply-To: <200808101408.11393.rjw@sisk.pl>
+References: <vg3t941ebudmtb8afj82thuldug82ak1fs@4ax.com>
+	<200808101408.11393.rjw@sisk.pl>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200808101414.35626.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday, 10 of August 2008, Stephen Hemminger wrote:
-> On Sat, 9 Aug 2008 23:32:28 +0200
-> "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+> > doesn't have 'depends on PCI && EXPERIMENTAL' like other drivers around 
+> > it, this is okay or should it also depend on PCI?
 > 
-> > sky2: Fix suspend/hibernation/shutdown regression with WOL enabled
-> > 
-> > On my test box with the Asus M3A32-MVP main board there is a
-> > regression from 2.6.26 related to suspend, hibernation and
-> > shutdown.  Namely, if Wake-on-LAN is enabled with
-> > 'ethtool -s eth0 wol g', the box hangs solid during all of these
-> > operations, while executing either sky2_suspend(), or
-> > sky2_shutdown().  This patch fixes it for me.
-> > 
-> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> > ---
-> >  drivers/net/sky2.c |    3 ++-
-> >  1 file changed, 2 insertions(+), 1 deletion(-)
-> > 
-> > Index: linux-2.6/drivers/net/sky2.c
-> > ===================================================================
-> > --- linux-2.6.orig/drivers/net/sky2.c
-> > +++ linux-2.6/drivers/net/sky2.c
-> > @@ -665,7 +665,8 @@ static void sky2_phy_power_down(struct s
-> >  		    GM_GPCR_FL_PASS | GM_GPCR_SPEED_100 | GM_GPCR_AU_ALL_DIS);
-> >  
-> >  	if (hw->chip_id != CHIP_ID_YUKON_EC) {
-> > -		if (hw->chip_id == CHIP_ID_YUKON_EC_U) {
-> > +		if (hw->chip_id == CHIP_ID_YUKON_EC_U
-> > +		    && hw->chip_rev != CHIP_REV_YU_EC_U_B0) {
-> >  			ctrl = gm_phy_read(hw, port, PHY_MARV_PHY_CTRL);
-> >  
-> >  			/* enable Power Down */
-> 
-> The problem is not unique to your chip version,
+> Well, I think so.  It obviously depends on PCI.
 
-Well, that's the part I wasn't sure of.
+Obviously ? Try looking a bit harder
 
-> so patching out the power down is not the correct solution.
+/**
+ *      mv_platform_probe - handle a positive probe of an soc Marvell
+ *      host
+ *      @pdev: platform device found
+ *
+ *      LOCKING:
+ *      Inherited from caller.
+ */
+static int mv_platform_probe(struct platform_device *pdev)
 
-Sure.
+
+Alan
