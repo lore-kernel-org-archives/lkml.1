@@ -1,57 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755287AbYHJGfY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755368AbYHJGlU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755287AbYHJGfY (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Aug 2008 02:35:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752365AbYHJGfG
+	id S1755368AbYHJGlU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Aug 2008 02:41:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752275AbYHJGlJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Aug 2008 02:35:06 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:50030 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752133AbYHJGfF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Aug 2008 02:35:05 -0400
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: davem@davemloft.net (David Miller)
-Subject: Re: [RFC][PATCH 1/1] cxgb3i: cxgb3 iSCSI initiator
-Cc: rdreier@cisco.com, jgarzik@pobox.com, swise@opengridcomputing.com,
-       divy@chelsio.com, kxie@chelsio.com, netdev@vger.kernel.org,
-       open-iscsi@googlegroups.com, michaelc@cs.wisc.edu, daisyc@us.ibm.com,
-       wenxiong@us.ibm.com, bhua@us.ibm.com, dm@chelsio.com,
-       leedom@chelsio.com, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Organization: Core
-In-Reply-To: <20080809.224725.130946315.davem@davemloft.net>
-X-Newsgroups: apana.lists.os.linux.kernel,apana.lists.os.linux.netdev,apana.lists.os.linux.scsi
-User-Agent: tin/1.7.4-20040225 ("Benbecula") (UNIX) (Linux/2.6.17-rc4 (i686))
-Message-Id: <E1KS4VN-0000v1-00@gondolin.me.apana.org.au>
-Date: Sun, 10 Aug 2008 14:34:17 +0800
+	Sun, 10 Aug 2008 02:41:09 -0400
+Received: from mx33.mail.ru ([194.67.23.194]:32555 "EHLO mx33.mail.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752157AbYHJGlI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 Aug 2008 02:41:08 -0400
+From: Andrey Borzenkov <arvidjaar@mail.ru>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: 2.6.27-rc2: unable to suspend - one task not freezed
+Date: Sun, 10 Aug 2008 10:40:54 +0400
+User-Agent: KMail/1.9.9
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-usb@vger.kernel.org, Alan Stern <stern@rowland.harvard.edu>
+References: <200808091018.32053.arvidjaar@mail.ru> <200808092353.56006.rjw@sisk.pl>
+In-Reply-To: <200808092353.56006.rjw@sisk.pl>
+MIME-Version: 1.0
+Content-Type: multipart/signed;
+  boundary="nextPart2320365.VJtBkp5mys";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200808101041.00919.arvidjaar@mail.ru>
+X-Spam: Not detected
+X-Mras: OK
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller <davem@davemloft.net> wrote:
->
->> We already support offloads that break other features, eg large receive
->> offload breaks forwarding.  We deal with it.
-> 
-> We turn it off.  If I want to shape or filter one of these iSCSI
-> connections can we turn it off?
+--nextPart2320365.VJtBkp5mys
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Actually one of my TODO items is to restructure software LRO
-so that we preserve the original packet headers while aggregating
-the packets.  That would allow us to easily refragment them on
-output for forwarding.
+On Sunday 10 August 2008, Rafael J. Wysocki wrote:
+> On Saturday, 9 of August 2008, Andrey Borzenkov wrote:
+> > 2.6.27-rc2 + unrevert of e872154921a6b5256a3c412dd69158ac0b135176
+> > (USB: don't explicitly reenable root-hub status interrupts) + fix
+> > of above from Alan Stern (OHCI: fix system hang caused by earlier patch=
+).
+>=20
+> Why do you have to unrevert commit e872154921a6b5256a3c412dd69158ac0b1351=
+76
+> exactly?
+>=20
 
-In other words LRO (at least the software variant) is not
-fundamentally incompatible with forwarding.
+This commit caused my system to hang after ohci_usb was loaded. It was
+reverted in 2.6.26 after my report. Later Alan sent the fix for it which I
+have been testing. This commit (with fix) is scheduled back in 2.6.27.
 
-I'd also like to encourage all hardware manufacturers considering
-LRO support to provide a way for us to access the original headers
-so that it doesn't have to be turned off for forwarding.
+This is regression because 2.6.26 + two patches mentioned above suspend and
+resume just fine.=20
 
-Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+> > System cannot be suspended - some task cannot be freezed. I think it is
+> > khubd ...
+>=20
+> Yes, it is.
+>=20
+> It looks like khubd is running in a loop without checking TIF_FREEZE.
+>=20
+> > dmesg and config attached.
+>=20
+> Hm.  Is this 100% reproducible?
+>=20
+
+So far yes.
+
+
+--nextPart2320365.VJtBkp5mys
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkiejXcACgkQR6LMutpd94wGjwCgsIWjnn5Frtm3CCkvHsYmkLL2
+lyIAni8F0Agz1CjCyahP2RC8YkByPid7
+=gMbD
+-----END PGP SIGNATURE-----
+
+--nextPart2320365.VJtBkp5mys--
