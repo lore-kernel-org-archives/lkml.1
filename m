@@ -1,66 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755047AbYHJCrZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755210AbYHJDFq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755047AbYHJCrZ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Aug 2008 22:47:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753521AbYHJCrR
+	id S1755210AbYHJDFq (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Aug 2008 23:05:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753583AbYHJDFg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Aug 2008 22:47:17 -0400
-Received: from rv-out-0506.google.com ([209.85.198.235]:49743 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753270AbYHJCrQ (ORCPT
+	Sat, 9 Aug 2008 23:05:36 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:42128 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753455AbYHJDFg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Aug 2008 22:47:16 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=pe5y1RtNcsXyOTyBMuEq7TYNyqsYQYyGfZ8fWIX2ycq8iCzpYJya/7ieVNbvVz8++h
-         W3y0lUsGjseKogePHIlwjkUaiBuKR7C/UP7WubzQQIqyCZIK1tOsu2FtDf/WMhogedm5
-         Z/yYGY7H0qhp/MFoBeh6JmdCcSnATq3CHea8s=
-Message-ID: <dd18b0c30808091947j1f503719i8cb6625878fe3f71@mail.gmail.com>
-Date: Sat, 9 Aug 2008 19:47:16 -0700
-From: "Justin Mattock" <justinmattock@gmail.com>
-To: "Parag Warudkar" <parag.warudkar@gmail.com>
-Subject: Re: [Bug #11277] BUG kmalloc-64: Object already free
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Kernel Testers List" <kernel-testers@vger.kernel.org>
-In-Reply-To: <82e4877d0808091733u34bc4a3dl76dbca4737543c06@mail.gmail.com>
+	Sat, 9 Aug 2008 23:05:36 -0400
+Date: Sun, 10 Aug 2008 11:05:21 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Suresh Siddha <suresh.b.siddha@intel.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>,
+       Wolfgang Walter <wolfgang.walter@stwm.de>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       "viro@ZenIV.linux.org.uk" <viro@zeniv.linux.org.uk>,
+       "vegard.nossum@gmail.com" <vegard.nossum@gmail.com>
+Subject: Re: Kernel oops with 2.6.26, padlock and ipsec: probably problem with fpu state changes
+Message-ID: <20080810030521.GA2332@gondor.apana.org.au>
+References: <200807171653.59177.wolfgang.walter@stwm.de> <20080808231121.GA13158@linux-os.sc.intel.com> <20080809143727.GA30499@gondor.apana.org.au> <200808091757.32999.wolfgang.walter@stwm.de> <489DC15D.9070308@zytor.com> <20080809185224.GH13158@linux-os.sc.intel.com> <20080809193724.GJ13158@linux-os.sc.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <VYYCiQF4qDI.A.BPH.KCjnIB@albercik>
-	 <cX_-nNkxKaF.A.TX.0CjnIB@albercik>
-	 <dd18b0c30808091725s5974befdp4b57fe54d3d6e255@mail.gmail.com>
-	 <82e4877d0808091733u34bc4a3dl76dbca4737543c06@mail.gmail.com>
+In-Reply-To: <20080809193724.GJ13158@linux-os.sc.intel.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Aug 9, 2008 at 5:33 PM, Parag Warudkar <parag.warudkar@gmail.com> wrote:
-> On Sat, Aug 9, 2008 at 8:25 PM, Justin Mattock <justinmattock@gmail.com> wrote:
->>> Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=11277
->>> Subject         : BUG kmalloc-64: Object already free
->>> Submitter       : Justin Mattock <justinmattock@gmail.com>
->>> Date            : 2008-08-06 21:21 (4 days old)
->>> References      : http://marc.info/?l=linux-kernel&m=121805862910241&w=4
->>> Handled-By      : Parag Warudkar <parag.warudkar@gmail.com>
->>> Patch           : http://marc.info/?l=linux-kernel&m=121814402609514&w=4
->>>
->>>
->>>
->>
->> I think this bug report can be closed.
->>
->
-> Patch is not in mainline yet - should be closed after Andrew pushes it to Linus.
->
-> Parag
->
+On Sat, Aug 09, 2008 at 12:37:24PM -0700, Suresh Siddha wrote:
+> On Sat, Aug 09, 2008 at 11:52:24AM -0700, Siddha, Suresh B wrote:
+> > Backing out lazy allocation is not just enough here. Let me think a little
+> > more on this.
+> 
+> Can we have something like irq_ts_save() and irq_ts_restore(), which will
+> do something like:
+> 
+> int irq_ts_save()
+> {
+> 	if (!in_interrupt())
+> 		return 0;
+> 
+> 	if (read_cr0() & X86_CR0_TS) {
+> 		clts();
+> 		return 1;
+> 	}
+> 	return 0;
+> }
+> 
+> void irq_ts_restore(int TS_state)
+> {
+> 	if (!in_interrupt())
+> 		return 0;
 
-Sounds good to me.
+This check isn't necessary.
 
+> 
+> 	if (TS_state)
+> 		stts();
+> }
+
+But yes this scheme looks good to me.
+
+> kernel_fpu_begin:
+> 	...
+> 
+> 	local_irq_disable();
+> 
+>         if (me->status & TS_USEDFPU)
+>                 __save_init_fpu(me->task);
+>         else
+>                 clts(); 
+> 
+> 	local_irq_enable();
+> 	...
+
+Couldn't we just move clts before the USEDFPU check? That huld
+close the window.
+
+Cheers,
 -- 
-Justin P. Mattock
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
