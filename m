@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754273AbYHJFqt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754757AbYHJFri@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754273AbYHJFqt (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Aug 2008 01:46:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750915AbYHJFqh
+	id S1754757AbYHJFri (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Aug 2008 01:47:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751123AbYHJFrZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Aug 2008 01:46:37 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:59021
+	Sun, 10 Aug 2008 01:47:25 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:36396
 	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1750893AbYHJFqg (ORCPT
+	by vger.kernel.org with ESMTP id S1750893AbYHJFrY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Aug 2008 01:46:36 -0400
-Date: Sat, 09 Aug 2008 22:46:37 -0700 (PDT)
-Message-Id: <20080809.224637.69833549.davem@davemloft.net>
+	Sun, 10 Aug 2008 01:47:24 -0400
+Date: Sat, 09 Aug 2008 22:47:25 -0700 (PDT)
+Message-Id: <20080809.224725.130946315.davem@davemloft.net>
 To: rdreier@cisco.com
 Cc: jgarzik@pobox.com, swise@opengridcomputing.com, divy@chelsio.com,
        kxie@chelsio.com, netdev@vger.kernel.org, open-iscsi@googlegroups.com,
@@ -20,10 +20,10 @@ Cc: jgarzik@pobox.com, swise@opengridcomputing.com, divy@chelsio.com,
        linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
 Subject: Re: [RFC][PATCH 1/1] cxgb3i: cxgb3 iSCSI initiator
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <adazlnlzc60.fsf@cisco.com>
-References: <489C8BEB.8060001@opengridcomputing.com>
-	<489CC58D.4010606@pobox.com>
-	<adazlnlzc60.fsf@cisco.com>
+In-Reply-To: <adavdy9zc2k.fsf@cisco.com>
+References: <489CC58D.4010606@pobox.com>
+	<20080809.002840.167363463.davem@davemloft.net>
+	<adavdy9zc2k.fsf@cisco.com>
 X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -33,21 +33,20 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Roland Dreier <rdreier@cisco.com>
-Date: Sat, 09 Aug 2008 22:12:07 -0700
+Date: Sat, 09 Aug 2008 22:14:11 -0700
 
-> What I'm sure Chelsio and probably other iSCSI offload vendors
-> would like is a way to make iSCSI (and other) offloads not steal magic
-> ports but actually hook into the normal infrastructure so that the
-> offloaded connections show up in netstat, etc.
+>  > Also, I find it ironic that the port abduction is being asked for in
+>  > order to be "compatible with existing tools" yet in fact this stuff
+>  > breaks everything.  You can't netfilter this traffic, you can't apply
+>  > qdiscs to it, you can't execut TC actions on them, you can't do
+>  > segmentation offload on them, you can't look for the usual TCP MIB
+>  > statistics on the connection, etc. etc. etc.
+> 
+> We already support offloads that break other features, eg large receive
+> offload breaks forwarding.  We deal with it.
 
-Why show these special connections if the user cannot interact with or
-shape the stream at all like normal ones?
+We turn it off.  If I want to shape or filter one of these iSCSI
+connections can we turn it off?
 
-This whole "make it look normal" argument is entirely bogus because
-none of the standard Linux networking facilities can be applied to
-these things.
-
-And I even wonder, these days, if you probably get %90 or more of the
-gain these "optimized" iSCSI connections obtain from things like LRO.
-And since LRO can be done entirely in software (although stateless
-HW assistence helps), it is even a NIC agnostic performance improvement.
+It's funny you mention LRO because it probably gives most of whatever
+gain these special iSCSI TCP connection offload things get.
