@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758713AbYHJHws@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758272AbYHJHwc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758713AbYHJHws (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Aug 2008 03:52:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756078AbYHJHjg
+	id S1758272AbYHJHwc (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Aug 2008 03:52:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753599AbYHJHjc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Aug 2008 03:39:36 -0400
-Received: from rv-out-0506.google.com ([209.85.198.227]:7020 "EHLO
+	Sun, 10 Aug 2008 03:39:32 -0400
+Received: from rv-out-0506.google.com ([209.85.198.229]:3859 "EHLO
 	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756137AbYHJHje (ORCPT
+	with ESMTP id S1753550AbYHJHjb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Aug 2008 03:39:34 -0400
+	Sun, 10 Aug 2008 03:39:31 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=fM52eKPmv6dEPP4MVS0xZBbqDB1U6ItMk1aVpeelkRJj/ebkXxharGGFQNHOnErio/
-         o8cBScN6O8pdpz4XBMp4gKvPd0hKxIoYqrCm1gaSZxKxFqfs1tpnqwWTCfekSJECfry1
-         ryps/YbAXEm3qlcRVS5RhhaZTh1hT6VfvKqnc=
+        b=BhAK8wYp/WNnG5OZnNsyrzu9lA0QKdVI3P2NvD3j3AF2r1/zpu2yRz9/4Z36gAg3X+
+         hEU6/SBfFsdMfaRdRFOpkB64ObQVIEYTZHSbQIuvqdYrK8xc1AsUky0XtObPDW/wWk9S
+         jgOrqrypwrkpMWba/WPDGMj7xAFGr5Fw0DA+E=
 From: Yinghai Lu <yhlu.kernel@gmail.com>
 To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
        "H. Peter Anvin" <hpa@zytor.com>,
@@ -23,11 +23,11 @@ To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
        Dhaval Giani <dhaval@linux.vnet.ibm.com>, Mike Travis <travis@sgi.com>,
        Andrew Morton <akpm@linux-foundation.org>
 Cc: linux-kernel@vger.kernel.org, Yinghai Lu <yhlu.kernel@gmail.com>
-Subject: [PATCH 42/43] x86_64: make /proc/interrupts works with dyn irq_desc
-Date: Sun, 10 Aug 2008 00:36:31 -0700
-Message-Id: <1218353792-3355-43-git-send-email-yhlu.kernel@gmail.com>
+Subject: [PATCH 41/43] x86_64: sperate irq_cfgx with irq_cfgx_free
+Date: Sun, 10 Aug 2008 00:36:30 -0700
+Message-Id: <1218353792-3355-42-git-send-email-yhlu.kernel@gmail.com>
 X-Mailer: git-send-email 1.5.4.5
-In-Reply-To: <1218353792-3355-42-git-send-email-yhlu.kernel@gmail.com>
+In-Reply-To: <1218353792-3355-41-git-send-email-yhlu.kernel@gmail.com>
 References: <1218353792-3355-1-git-send-email-yhlu.kernel@gmail.com>
  <1218353792-3355-2-git-send-email-yhlu.kernel@gmail.com>
  <1218353792-3355-3-git-send-email-yhlu.kernel@gmail.com>
@@ -69,137 +69,168 @@ References: <1218353792-3355-1-git-send-email-yhlu.kernel@gmail.com>
  <1218353792-3355-39-git-send-email-yhlu.kernel@gmail.com>
  <1218353792-3355-40-git-send-email-yhlu.kernel@gmail.com>
  <1218353792-3355-41-git-send-email-yhlu.kernel@gmail.com>
- <1218353792-3355-42-git-send-email-yhlu.kernel@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-loop with irq_desc list
+so later don't need compare with -1U
 
 Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
 ---
- arch/x86/kernel/irq_64.c |   31 ++++++++++++++++++++++++-------
- fs/proc/proc_misc.c      |   28 ++++++++++++++++++++++++----
- 2 files changed, 48 insertions(+), 11 deletions(-)
+ arch/x86/kernel/io_apic_64.c |   90 ++++++++++++++++++++++++++---------------
+ 1 files changed, 57 insertions(+), 33 deletions(-)
 
-diff --git a/arch/x86/kernel/irq_64.c b/arch/x86/kernel/irq_64.c
-index 4ebf884..f7dabe8 100644
---- a/arch/x86/kernel/irq_64.c
-+++ b/arch/x86/kernel/irq_64.c
-@@ -70,9 +70,27 @@ static inline void stack_overflow_check(struct pt_regs *regs)
+diff --git a/arch/x86/kernel/io_apic_64.c b/arch/x86/kernel/io_apic_64.c
+index 4756d04..17a6914 100644
+--- a/arch/x86/kernel/io_apic_64.c
++++ b/arch/x86/kernel/io_apic_64.c
+@@ -111,44 +111,44 @@ static void init_one_irq_cfg(struct irq_cfg *cfg)
+ 	memcpy(cfg, &irq_cfg_init, sizeof(struct irq_cfg));
+ }
  
- int show_interrupts(struct seq_file *p, void *v)
++static struct irq_cfg *irq_cfgx;
++static struct irq_cfg *irq_cfgx_free;
+ static void __init init_work(void *data)
  {
--	int i = *(loff_t *) v, j;
-+	int i, j;
- 	struct irqaction * action;
- 	unsigned long flags;
-+	unsigned int entries;
-+	struct irq_desc *desc;
-+	int tail = 0;
+ 	struct dyn_array *da = data;
+ 	struct irq_cfg *cfg;
++	int legacy_count;
+ 	int i;
+ 
+ 	cfg = *da->name;
+ 
+ 	memcpy(cfg, irq_cfg_legacy, sizeof(irq_cfg_legacy));
+ 
+-	i = sizeof(irq_cfg_legacy)/sizeof(irq_cfg_legacy[0]);
+-	for (; i < *da->nr; i++)
++	legacy_count = sizeof(irq_cfg_legacy)/sizeof(irq_cfg_legacy[0]);
++	for (i = legacy_count; i < *da->nr; i++)
+ 		init_one_irq_cfg(&cfg[i]);
+ 
+ 	for (i = 1; i < *da->nr; i++)
+ 		cfg[i-1].next = &cfg[i];
 +
-+#ifdef CONFIG_HAVE_SPARSE_IRQ
-+	desc = (struct irq_desc *)v;
-+	entries = -1U;
-+	i = desc->irq;
-+	if (!desc->next)
-+		tail = 1;
-+#else
-+	entries = nr_irqs - 1;
-+	i = *(loff_t *) v;
-+	if (i == nr_irqs)
-+		tail = 1;
++	irq_cfgx_free = &irq_cfgx[legacy_count];
++	irq_cfgx[legacy_count - 1].next = NULL;
+ }
+ 
+ #define for_each_irq_cfg(cfg)		\
+-	for (cfg = irq_cfgx; cfg && cfg->irq != -1U; cfg = cfg->next)
++	for (cfg = irq_cfgx; cfg; cfg = cfg->next)
+ 
+-static struct irq_cfg *irq_cfgx;
+ DEFINE_DYN_ARRAY(irq_cfgx, sizeof(struct irq_cfg), nr_irq_cfg, PAGE_SIZE, init_work);
+ 
+ static struct irq_cfg *irq_cfg(unsigned int irq)
+ {
+ 	struct irq_cfg *cfg;
+ 
+-	BUG_ON(irq == -1U);
+-
+-	cfg = &irq_cfgx[0];
++	cfg = irq_cfgx;
+ 	while (cfg) {
+ 		if (cfg->irq == irq)
+ 			return cfg;
+ 
+-		if (cfg->irq == -1U)
+-			return NULL;
+-
+ 		cfg = cfg->next;
+ 	}
+ 
+@@ -161,44 +161,68 @@ static struct irq_cfg *irq_cfg_with_new(unsigned int irq)
+ 	int i;
+ 	int count = 0;
+ 
+-	BUG_ON(irq == -1U);
+-
+-	cfg_pri = cfg = &irq_cfgx[0];
++	cfg_pri = cfg = irq_cfgx;
+ 	while (cfg) {
+ 		if (cfg->irq == irq)
+ 			return cfg;
+ 
+-		if (cfg->irq == -1U) {
+-			cfg->irq = irq;
+-			return cfg;
+-		}
+ 		cfg_pri = cfg;
+ 		cfg = cfg->next;
+ 		count++;
+ 	}
+ 
+-	/*
+-	 *  we run out of pre-allocate ones, allocate more
+-	 */
+-	printk(KERN_DEBUG "try to get more irq_cfg %d\n", nr_irq_cfg);
++	if (!irq_cfgx_free) {
++		unsigned long phys;
++		unsigned long total_bytes;
++		/*
++		 *  we run out of pre-allocate ones, allocate more
++		 */
++		printk(KERN_DEBUG "try to get more irq_cfg %d\n", nr_irq_cfg);
+ 
+-	if (after_bootmem)
+-		cfg = kzalloc(sizeof(struct irq_cfg)*nr_irq_cfg, GFP_ATOMIC);
+-	else
+-		cfg = __alloc_bootmem_nopanic(sizeof(struct irq_cfg)*nr_irq_cfg, PAGE_SIZE, 0);
++		total_bytes = sizeof(struct irq_cfg) * nr_irq_cfg;
++		if (after_bootmem)
++			cfg = kzalloc(total_bytes, GFP_ATOMIC);
++		else
++			cfg = __alloc_bootmem_nopanic(total_bytes, PAGE_SIZE, 0);
+ 
+-	if (!cfg)
+-		panic("please boot with nr_irq_cfg= %d\n", count * 2);
++		if (!cfg)
++			panic("please boot with nr_irq_cfg= %d\n", count * 2);
+ 
+-	for (i = 0; i < nr_irq_cfg; i++)
+-		init_one_irq_cfg(&cfg[i]);
++		phys = __pa(cfg);
++		printk(KERN_DEBUG "irq_irq ==> [%#lx - %#lx]\n", phys, phys + total_bytes);
+ 
+-	for (i = 1; i < nr_irq_cfg; i++)
+-		cfg[i-1].next = &cfg[i];
++		for (i = 0; i < nr_irq_cfg; i++)
++			init_one_irq_cfg(&cfg[i]);
+ 
+-	cfg->irq = irq;
+-	cfg_pri->next = cfg;
++		for (i = 1; i < nr_irq_cfg; i++)
++			cfg[i-1].next = &cfg[i];
++
++		irq_cfgx_free = cfg;
++	}
+ 
++	cfg = irq_cfgx_free;
++	irq_cfgx_free = irq_cfgx_free->next;
++	cfg->next = NULL;
++	if (cfg_pri)
++		cfg_pri->next = cfg;
 +	else
-+		desc = irq_desc(i);
-+#endif
- 
- 	if (i == 0) {
- 		seq_printf(p, "           ");
-@@ -81,12 +99,8 @@ int show_interrupts(struct seq_file *p, void *v)
- 		seq_putc(p, '\n');
- 	}
- 
--	if (i < nr_irqs) {
-+	if (i <= entries) {
- 		unsigned any_count = 0;
--		struct irq_desc *desc = irq_desc(i);
--
--		if (!desc)
--			return 0;
- 
- 		spin_lock_irqsave(&desc->lock, flags);
- #ifndef CONFIG_SMP
-@@ -116,7 +130,9 @@ int show_interrupts(struct seq_file *p, void *v)
- 		seq_putc(p, '\n');
- skip:
- 		spin_unlock_irqrestore(&desc->lock, flags);
--	} else if (i == nr_irqs) {
++		irq_cfgx = cfg;
++	cfg->irq = irq;
++	printk(KERN_DEBUG "found new irq_cfg for irq %d\n", cfg->irq);
++	{
++		/* dump the results */
++		struct irq_cfg *cfg;
++		unsigned long phys;
++		unsigned long bytes = sizeof(struct irq_cfg);
++
++		printk(KERN_DEBUG "=========================== %d\n", irq);
++		printk(KERN_DEBUG "irq_cfg dump after get that for %d\n", irq);
++		for_each_irq_cfg(cfg) {
++			phys = __pa(cfg);
++			printk(KERN_DEBUG "irq_cfg %d ==> [%#lx - %#lx]\n", cfg->irq, phys, phys + bytes);
++		}
++		printk(KERN_DEBUG "===========================\n");
 +	}
-+
-+	if (tail) {
- 		seq_printf(p, "NMI: ");
- 		for_each_online_cpu(j)
- 			seq_printf(p, "%10u ", cpu_pda(j)->__nmi_count);
-@@ -155,6 +171,7 @@ skip:
- 		seq_printf(p, "  Spurious interrupts\n");
- 		seq_printf(p, "ERR: %10u\n", atomic_read(&irq_err_count));
- 	}
-+
- 	return 0;
+ 	return cfg;
  }
  
-diff --git a/fs/proc/proc_misc.c b/fs/proc/proc_misc.c
-index 1131f07..4cf6fdf 100644
---- a/fs/proc/proc_misc.c
-+++ b/fs/proc/proc_misc.c
-@@ -638,15 +638,36 @@ static const struct file_operations proc_stat_operations = {
-  */
- static void *int_seq_start(struct seq_file *f, loff_t *pos)
- {
-+#ifdef CONFIG_HAVE_SPARSE_IRQ
-+	struct irq_desc *desc;
-+	int irq;
-+	int count = *pos;
-+
-+	for_each_irq_desc(irq, desc) {
-+		if (count-- == 0)
-+			return desc;
-+	}
-+
-+	return NULL;
-+#else
- 	return (*pos <= nr_irqs) ? pos : NULL;
-+#endif
- }
- 
-+
- static void *int_seq_next(struct seq_file *f, void *v, loff_t *pos)
- {
-+#ifdef CONFIG_HAVE_SPARSE_IRQ
-+	struct irq_desc *desc;
-+
-+	desc = ((struct irq_desc *)v)->next;
- 	(*pos)++;
--	if (*pos > nr_irqs)
--		return NULL;
--	return pos;
-+
-+	return desc;
-+#else
-+	(*pos)++;
-+	return (*pos <= nr_irqs) ? pos : NULL;
-+#endif
- }
- 
- static void int_seq_stop(struct seq_file *f, void *v)
-@@ -654,7 +675,6 @@ static void int_seq_stop(struct seq_file *f, void *v)
- 	/* Nothing to do */
- }
- 
--
- static const struct seq_operations int_seq_ops = {
- 	.start = int_seq_start,
- 	.next  = int_seq_next,
 -- 
 1.5.4.5
 
