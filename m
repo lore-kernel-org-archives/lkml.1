@@ -1,154 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753599AbYHJJqt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753624AbYHJKA4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753599AbYHJJqt (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Aug 2008 05:46:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752172AbYHJJqn
+	id S1753624AbYHJKA4 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Aug 2008 06:00:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752500AbYHJKAq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Aug 2008 05:46:43 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:37392 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751988AbYHJJqm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Aug 2008 05:46:42 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <1218322518.3268.0.camel@luna.unix.geek.nz>
-References: <1218322518.3268.0.camel@luna.unix.geek.nz> <1218287473.3155.13.camel@dhcppc0> <1218281190.3155.5.camel@dhcppc0> <1218214935.3146.5.camel@dhcppc0> <alpine.LRH.1.10.0808090747150.29079@tundra.namei.org> <14476.1218286327@redhat.com> <15386.1218290826@redhat.com>
-To: Jasper Bryant-Greene <jasper@amiton.co.nz>
-Cc: dhowells@redhat.com, Thomas Meyer <thomas@m3y3r.de>,
-       James Morris <jmorris@namei.org>,
-       Linux-Kernel <linux-kernel@vger.kernel.org>,
-       Linux-Next <linux-next@vger.kernel.org>
-Subject: Re: next-20080808: bash: fork: Resource temporarily unavailable
-X-Mailer: MH-E 8.0.3+cvs; nmh 1.3; GNU Emacs 23.0.50
-Date: Sun, 10 Aug 2008 10:45:39 +0100
-Message-ID: <10251.1218361539@redhat.com>
+	Sun, 10 Aug 2008 06:00:46 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:49053 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752267AbYHJKAo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 Aug 2008 06:00:44 -0400
+Date: Sun, 10 Aug 2008 10:19:35 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Roland Dreier <rdreier@cisco.com>
+Cc: Jeff Garzik <jgarzik@pobox.com>, Steve Wise <swise@opengridcomputing.com>,
+       davem@davemloft.net, Divy Le Ray <divy@chelsio.com>,
+       Karen Xie <kxie@chelsio.com>, netdev@vger.kernel.org,
+       open-iscsi@googlegroups.com, michaelc@cs.wisc.edu, daisyc@us.ibm.com,
+       wenxiong@us.ibm.com, bhua@us.ibm.com,
+       Dimitrios Michailidis <dm@chelsio.com>,
+       Casey Leedom <leedom@chelsio.com>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC][PATCH 1/1] cxgb3i: cxgb3 iSCSI initiator
+Message-ID: <20080810101935.5c8e8e9a@lxorguk.ukuu.org.uk>
+In-Reply-To: <adazlnlzc60.fsf@cisco.com>
+References: <200807300019.m6U0JkdY012558@localhost.localdomain>
+	<aday73jxdfs.fsf@cisco.com>
+	<200807311752.00911.divy@chelsio.com>
+	<200808071145.03848.divy@chelsio.com>
+	<489C8BEB.8060001@opengridcomputing.com>
+	<489CC58D.4010606@pobox.com>
+	<adazlnlzc60.fsf@cisco.com>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+>  - It doesn't work in theory, because the suggestion (I guess) is that
+>    the iSCSI HBA has its own MAC and IP and behaves like a separate
 
-Jasper Bryant-Greene <jasper@amiton.co.nz> wrote:
+The iSCSI HBA is its own system - that is the root of the problem.
 
-> This occurs on my x86_64 system, config was posted to this thread
-> earlier.
+>    system.  But this means that to start with the HBA needs its own ARP,
+>    ICMP, routing, etc interface, which means we need some (probably new)
+>    interface to configure all of this.  And then it doesn't work in lots
 
-Does it happen every time?  I took your config modified it very slightly so
-that it'd work on my system:
+Its another system so surely SNMP ;)
 
-	-CONFIG_INITRAMFS_SOURCE="/usr/share/v86d/initramfs"
-	-CONFIG_INITRAMFS_ROOT_UID=0
-	-CONFIG_INITRAMFS_ROOT_GID=0
-	+CONFIG_INITRAMFS_SOURCE=""
-
-	-CONFIG_PACKET=m
-	+CONFIG_PACKET=y
-
-	-CONFIG_UNIX=m
-	+CONFIG_UNIX=y
-
-	-CONFIG_NET_KEY=m
-	+CONFIG_NET_KEY=y
-
-	-CONFIG_E1000E=m
-	+CONFIG_E1000E=y
-
-	-# CONFIG_SERIAL_8250 is not set
-	+CONFIG_SERIAL_8250=y
-	+CONFIG_SERIAL_8250_CONSOLE=y
-	+CONFIG_SERIAL_8250_PCI=y
-	+CONFIG_SERIAL_8250_PNP=y
-	+CONFIG_SERIAL_8250_NR_UARTS=4
-	+CONFIG_SERIAL_8250_RUNTIME_UARTS=4
-	+# CONFIG_SERIAL_8250_EXTENDED is not set
-
-	+CONFIG_SERIAL_CORE=y
-	+CONFIG_SERIAL_CORE_CONSOLE=y
-
-	-# CONFIG_EXT3_FS is not set
-	+CONFIG_EXT3_FS=y
-	+CONFIG_EXT3_FS_XATTR=y
-	+CONFIG_EXT3_FS_POSIX_ACL=y
-	+CONFIG_EXT3_FS_SECURITY=y
-	+CONFIG_JBD=y
-	+# CONFIG_JBD_DEBUG is not set
-
-None of which should make a difference, but the kernel works fine and survives
-the LTP syscalls testscript:-/
-
-Hmmm... There is a possibility, I suppose.  The only place in the fork path
-that I know of that returns EAGAIN is this bit:
-
-	retval = -EAGAIN;
-	if (atomic_read(&p->real_cred->user->processes) >=
-			p->signal->rlim[RLIMIT_NPROC].rlim_cur) {
-		if (!capable(CAP_SYS_ADMIN) && !capable(CAP_SYS_RESOURCE) &&
-		    p->real_cred->user != current->nsproxy->user_ns->root_user)
-			goto bad_fork_free;
-	}
-
-Are you running as an unprivileged user?  If so, this may be the point that's
-biting you.  Can you try applying the attached patch to find more information?
-
-David
----
-Add printks to find problem
-
-From: David Howells <dhowells@redhat.com>
+More seriously I do think iSCSI is actually a subtly special case of TOE.
+Most TOE disintegrates under carefully chosen "malicious" workloads
+because of the way it is optimised, and the lack of security integration
+ranges can be very very dangeorus. A pure iSCSI connection is generally
+private, single purpose and really is the classic application of "pigs fly
+given enough thrust" - which is the only way to make the pig in question
+(iSCSI) work properly.
 
 
----
-
- kernel/fork.c |   16 +++++++++++++---
- 1 files changed, 13 insertions(+), 3 deletions(-)
 
 
-diff --git a/kernel/fork.c b/kernel/fork.c
-index eb7838d..4d52954 100644
---- a/kernel/fork.c
-+++ b/kernel/fork.c
-@@ -920,8 +920,10 @@ static struct task_struct *copy_process(unsigned long clone_flags,
- 		return ERR_PTR(-EINVAL);
- 
- 	retval = security_task_create(clone_flags);
--	if (retval)
-+	if (retval) {
-+		printk(KERN_ERR "security_task_create() returned %d\n", retval);
- 		goto fork_out;
-+	}
- 
- 	retval = -ENOMEM;
- 	p = dup_task_struct(current);
-@@ -938,13 +940,20 @@ static struct task_struct *copy_process(unsigned long clone_flags,
- 	if (atomic_read(&p->real_cred->user->processes) >=
- 			p->signal->rlim[RLIMIT_NPROC].rlim_cur) {
- 		if (!capable(CAP_SYS_ADMIN) && !capable(CAP_SYS_RESOURCE) &&
--		    p->real_cred->user != current->nsproxy->user_ns->root_user)
-+		    p->real_cred->user != current->nsproxy->user_ns->root_user) {
-+			printk(KERN_ERR "Rlimit EAGAIN (%d >= %lu, uid %d)\n",
-+			       atomic_read(&p->real_cred->user->processes),
-+			       p->signal->rlim[RLIMIT_NPROC].rlim_cur,
-+			       p->real_cred->user->uid);
- 			goto bad_fork_free;
-+		}
- 	}
- 
- 	retval = copy_creds(p, clone_flags);
--	if (retval < 0)
-+	if (retval < 0) {
-+		printk(KERN_ERR "copy_creds() returned %d\n", retval);
- 		goto bad_fork_free;
-+	}
- 
- 	/*
- 	 * If multiple threads are within copy_process(), then this check
-@@ -1274,6 +1283,7 @@ bad_fork_cleanup_count:
- bad_fork_free:
- 	free_task(p);
- fork_out:
-+	printk(KERN_ERR "copy_process() = %d\n", retval);
- 	return ERR_PTR(retval);
- }
- 
+
