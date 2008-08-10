@@ -1,55 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754486AbYHJBlI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754906AbYHJBos@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754486AbYHJBlI (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Aug 2008 21:41:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752634AbYHJBkx
+	id S1754906AbYHJBos (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Aug 2008 21:44:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752706AbYHJBoi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Aug 2008 21:40:53 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:60828 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752380AbYHJBkw (ORCPT
+	Sat, 9 Aug 2008 21:44:38 -0400
+Received: from casper.infradead.org ([85.118.1.10]:58518 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752634AbYHJBoi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Aug 2008 21:40:52 -0400
-Date: Sun, 10 Aug 2008 09:40:37 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Suresh Siddha <suresh.b.siddha@intel.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>,
-       Wolfgang Walter <wolfgang.walter@stwm.de>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       "viro@ZenIV.linux.org.uk" <viro@ZenIV.linux.org.uk>,
-       "vegard.nossum@gmail.com" <vegard.nossum@gmail.com>
-Subject: Re: Kernel oops with 2.6.26, padlock and ipsec: probably problem with fpu state changes
-Message-ID: <20080810014037.GA1859@gondor.apana.org.au>
-References: <200807171653.59177.wolfgang.walter@stwm.de> <20080806201401.GA607@linux-os.sc.intel.com> <200808071823.02364.wolfgang.walter@stwm.de> <200808081236.55172.wolfgang.walter@stwm.de> <20080808185356.GC607@linux-os.sc.intel.com> <489C97FB.2030408@zytor.com> <20080808231121.GA13158@linux-os.sc.intel.com> <20080809143727.GA30499@gondor.apana.org.au> <20080809175940.GE13158@linux-os.sc.intel.com>
+	Sat, 9 Aug 2008 21:44:38 -0400
+Date: Sat, 9 Aug 2008 18:38:08 -0700
+From: Greg KH <greg@kroah.com>
+To: Frans Pop <elendil@planet.nl>
+Cc: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [00/03] [RFC] USB debugging rework
+Message-ID: <20080810013808.GA15828@kroah.com>
+References: <20080809013820.GA10910@kroah.com> <200808100057.58863.elendil@planet.nl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080809175940.GE13158@linux-os.sc.intel.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <200808100057.58863.elendil@planet.nl>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Aug 09, 2008 at 10:59:40AM -0700, Suresh Siddha wrote:
->
-> 0. CPU's TS flag is set
+On Sun, Aug 10, 2008 at 12:57:58AM +0200, Frans Pop wrote:
+> Greg KH wrote:
+> > I've been annoyed for a long time that we make users go off and rebuild
+> > their kernels just to enable usb debug messages.  So finally, here's the
+> > start of fixing that issue.
 > 
-> 1. kernel using FPU in some optimized copy  routine and while doing
-> kernel_fpu_begin() takes an interrupt just before doing clts()
-> 
-> 2. Takes an interrupt and ipsec uses padlock instruction. And we
-> take a DNA fault as TS flag is still set.
+> Will your patches also allow to turn off the usb debugging at some point, 
 
-Right, we could've fixed this by doing the clts before checking
-TS_USEDFPU in kernel_fpu_begin.  However, I admit that taking a
-fault in the general case for the PadLock is stupid anyway so we
-should definitely fix this in the ways that you suggested.
+Yes, you can do that right now with them, just change the value at
+/sys/module/usbcore/paramaters/debug and debugging is disabled on the
+fly.
 
-Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+thanks,
+
+greg k-h
