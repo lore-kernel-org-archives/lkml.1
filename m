@@ -1,56 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754501AbYHJVWT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754560AbYHJVdW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754501AbYHJVWT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Aug 2008 17:22:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753684AbYHJVWK
+	id S1754560AbYHJVdW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Aug 2008 17:33:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753710AbYHJVdN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Aug 2008 17:22:10 -0400
-Received: from the.earth.li ([217.147.81.2]:50167 "EHLO the.earth.li"
+	Sun, 10 Aug 2008 17:33:13 -0400
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:53442 "EHLO smtp6.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753601AbYHJVWK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Aug 2008 17:22:10 -0400
-Date: Sun, 10 Aug 2008 18:22:07 -0300
-From: Jonathan McDowell <noodles@earth.li>
-To: =?iso-8859-1?B?RnLpZOlyaWMgTC4gVy4=?= Meunier <2@pervalidus.net>
-Cc: dri-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: X "Hangs" with RS690 + 2.6.26
-Message-ID: <20080810212207.GC4977@earth.li>
-References: <20080725094334.GC30002@earth.li> <alpine.DEB.0.82.0807251107400.30593@skynet.skynet.ie> <20080801160256.GV30002@earth.li> <alpine.LNX.1.10.0808090541320.4876@pervalidus> <20080810191823.GB4977@earth.li> <alpine.LNX.1.10.0808101722440.4876@pervalidus>
+	id S1753702AbYHJVdM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 Aug 2008 17:33:12 -0400
+Date: Mon, 11 Aug 2008 00:31:31 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Hannes Reinecke <hare@suse.de>, Chandra Seetharaman <sekharan@us.ibm.com>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [2.6 patch make struct scsi_dh_devlist's static
+Message-ID: <20080810213131.GC5480@cs181140183.pp.htv.fi>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <alpine.LNX.1.10.0808101722440.4876@pervalidus>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Aug 10, 2008 at 05:25:55PM -0300, Frédéric L. W. Meunier wrote:
-> On Sun, 10 Aug 2008, Jonathan McDowell wrote:
-> >On Sat, Aug 09, 2008 at 05:47:42AM -0300, Frédéric L. W. Meunier wrote:
-> >>I apparently have the same problem with my RS690. I noticed it after
-> >>upgrading from 2.6.25 to 2.6.26, alongside xorg-server (1.4.99.904 to
-> >>1.4.99.905) and Mesa (7.1-rc1 to 7.1-rc3). The ATI driver is 6.9.0.
-> >>
-> >>Here it always freezes in a few minutes or less than an hour.  When it
-> >>happens, I'm not running any 3D application and the CPU is idle. I may
-> >>be just typing something in a shell. But it works disabling DRI.
-> >
-> >Likewise, I'm not doing anything 3D related (at least, not consciously).
-> 
-> BTW, I forgot to mention that. Here the motherboard is a
-> Gigabyte GA-MA69VM-S2. When it happens and I use SysRq to
-> reboot, it doesn't post in the BIOS screen. I have to press
-> reset.
+This patch makes several needlessly global struct scsi_dh_devlist's 
+static.
 
-My mobo is an ASUS M2A-VM HDMI and a "shutdown -r now" when X is wedged
-(done over ssh) results in a clean reboot; no need to hard reset.
+Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
-J.
+---
 
--- 
-] http://www.earth.li/~noodles/ [] 101 things you can't have too much  [
-]  PGP/GPG Key @ the.earth.li   []     of : 38 - clean underwear.      [
-] via keyserver, web or email.  []                                     [
-] RSA: 4DC4E7FD / DSA: 5B430367 []                                     [
+ drivers/scsi/device_handler/scsi_dh_alua.c  |    2 +-
+ drivers/scsi/device_handler/scsi_dh_emc.c   |    2 +-
+ drivers/scsi/device_handler/scsi_dh_hp_sw.c |    2 +-
+ drivers/scsi/device_handler/scsi_dh_rdac.c  |    2 +-
+ 4 files changed, 4 insertions(+), 4 deletions(-)
+
+ae6ee914615e415cc4b22ee1c0545bb088889b6a 
+diff --git a/drivers/scsi/device_handler/scsi_dh_alua.c b/drivers/scsi/device_handler/scsi_dh_alua.c
+index fcdd73f..994da56 100644
+--- a/drivers/scsi/device_handler/scsi_dh_alua.c
++++ b/drivers/scsi/device_handler/scsi_dh_alua.c
+@@ -680,7 +680,7 @@ static int alua_prep_fn(struct scsi_device *sdev, struct request *req)
+ 
+ }
+ 
+-const struct scsi_dh_devlist alua_dev_list[] = {
++static const struct scsi_dh_devlist alua_dev_list[] = {
+ 	{"HP", "MSA VOLUME" },
+ 	{"HP", "HSV101" },
+ 	{"HP", "HSV111" },
+diff --git a/drivers/scsi/device_handler/scsi_dh_emc.c b/drivers/scsi/device_handler/scsi_dh_emc.c
+index aa46b13..b9d23e9 100644
+--- a/drivers/scsi/device_handler/scsi_dh_emc.c
++++ b/drivers/scsi/device_handler/scsi_dh_emc.c
+@@ -562,7 +562,7 @@ done:
+ 	return result;
+ }
+ 
+-const struct scsi_dh_devlist clariion_dev_list[] = {
++static const struct scsi_dh_devlist clariion_dev_list[] = {
+ 	{"DGC", "RAID"},
+ 	{"DGC", "DISK"},
+ 	{"DGC", "VRAID"},
+diff --git a/drivers/scsi/device_handler/scsi_dh_hp_sw.c b/drivers/scsi/device_handler/scsi_dh_hp_sw.c
+index 9c7a1f8..a6a4ef3 100644
+--- a/drivers/scsi/device_handler/scsi_dh_hp_sw.c
++++ b/drivers/scsi/device_handler/scsi_dh_hp_sw.c
+@@ -282,7 +282,7 @@ static int hp_sw_activate(struct scsi_device *sdev)
+ 	return ret;
+ }
+ 
+-const struct scsi_dh_devlist hp_sw_dh_data_list[] = {
++static const struct scsi_dh_devlist hp_sw_dh_data_list[] = {
+ 	{"COMPAQ", "MSA1000 VOLUME"},
+ 	{"COMPAQ", "HSV110"},
+ 	{"HP", "HSV100"},
+diff --git a/drivers/scsi/device_handler/scsi_dh_rdac.c b/drivers/scsi/device_handler/scsi_dh_rdac.c
+index b093a50..e7c7b4e 100644
+--- a/drivers/scsi/device_handler/scsi_dh_rdac.c
++++ b/drivers/scsi/device_handler/scsi_dh_rdac.c
+@@ -574,7 +574,7 @@ static int rdac_check_sense(struct scsi_device *sdev,
+ 	return SCSI_RETURN_NOT_HANDLED;
+ }
+ 
+-const struct scsi_dh_devlist rdac_dev_list[] = {
++static const struct scsi_dh_devlist rdac_dev_list[] = {
+ 	{"IBM", "1722"},
+ 	{"IBM", "1724"},
+ 	{"IBM", "1726"},
+
