@@ -1,27 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754767AbYHJWJV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754758AbYHJWKQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754767AbYHJWJV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Aug 2008 18:09:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753207AbYHJWJN
+	id S1754758AbYHJWKQ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Aug 2008 18:10:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753230AbYHJWKE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Aug 2008 18:09:13 -0400
-Received: from fg-out-1718.google.com ([72.14.220.155]:13481 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752952AbYHJWJM (ORCPT
+	Sun, 10 Aug 2008 18:10:04 -0400
+Received: from mu-out-0910.google.com ([209.85.134.186]:40071 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753058AbYHJWKB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Aug 2008 18:09:12 -0400
+	Sun, 10 Aug 2008 18:10:01 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:subject:message-id:mime-version:content-type
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
          :content-disposition:user-agent;
-        b=YHc9QRamULiBd19vf9rxLnRwKElTNSLuEA1C7gPlF1+DiCidZHwIyO+xsSUdtkK/KD
-         AezBQKFiQ3djV/lcloCNF0CWrmLU6bHAUYr9ivxRQunVqLXi2et8C8G2X/H9fb3sEfJV
-         4/th0bMCwvGlK+GZNqDBO4FGdPEptW0cdtRuY=
-Date: Mon, 11 Aug 2008 02:09:04 +0400
-From: Alexander Beregalov <a.beregalov@gmail.com>
-To: perex@perex.cz, alsa-devel@alsa-project.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] ice1724/revo: simple clean up
-Message-ID: <20080810220904.GD5093@orion>
+        b=r9dnv6EfAmtsJ/bH6CaIxzUG6X+9o+o6oWi+UJa7kZkxpcIVhA7LpG6z1iXCY4bQRK
+         7OP3eEsUknS1BAxJouPQ2mkeB/9AFGEMTDUmjg+pHFuzKEPubgZaHf6+Qe8zyI94Zlta
+         WKOkaF/cYfe04n9MUUtmu59NMsvxjDvIJWUUc=
+Date: Mon, 11 Aug 2008 00:09:38 +0200
+From: Marcin Slusarz <marcin.slusarz@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com
+Subject: [PATCH] x86: mpparse.c: fix section mismatch warning
+Message-ID: <20080810220934.GB27349@joi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -30,43 +31,44 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Alexander Beregalov <a.beregalov@gmail.com>
+WARNING: vmlinux.o(.text+0x118f7): Section mismatch in reference from the function construct_ioapic_table() to the function .init.text:MP_bus_info()
+The function construct_ioapic_table() references
+the function __init MP_bus_info().
+This is often because construct_ioapic_table lacks a __init
+annotation or the annotation of MP_bus_info is wrong.
 
-ice1724/revo: simple clean up
+construct_ioapic_table is called only from construct_default_ISA_mptable which is __init
 
-
-Signed-off-by: Alexander Beregalov <a.beregalov@gmail.com>
+Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: H. Peter Anvin <hpa@zytor.com>
 ---
+ arch/x86/kernel/mpparse.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
- sound/pci/ice1712/revo.c |   12 ++++++++----
- 1 files changed, 8 insertions(+), 4 deletions(-)
+diff --git a/arch/x86/kernel/mpparse.c b/arch/x86/kernel/mpparse.c
+index 6ae005c..a7189f4 100644
+--- a/arch/x86/kernel/mpparse.c
++++ b/arch/x86/kernel/mpparse.c
+@@ -484,7 +484,7 @@ static void __init construct_default_ioirq_mptable(int mpc_default_type)
+ }
+ 
+ 
+-static void construct_ioapic_table(int mpc_default_type)
++static void __init construct_ioapic_table(int mpc_default_type)
+ {
+ 	struct mpc_config_ioapic ioapic;
+ 	struct mpc_config_bus bus;
+@@ -529,7 +529,7 @@ static void construct_ioapic_table(int mpc_default_type)
+ 	construct_default_ioirq_mptable(mpc_default_type);
+ }
+ #else
+-static inline void construct_ioapic_table(int mpc_default_type) { }
++static inline void __init construct_ioapic_table(int mpc_default_type) { }
+ #endif
+ 
+ static inline void __init construct_default_ISA_mptable(int mpc_default_type)
+-- 
+1.5.4.5
 
-diff --git a/sound/pci/ice1712/revo.c b/sound/pci/ice1712/revo.c
-index 4d26314..5e1b156 100644
---- a/sound/pci/ice1712/revo.c
-+++ b/sound/pci/ice1712/revo.c
-@@ -524,16 +524,20 @@ static int __devinit revo_init(struct snd_ice1712 *ice)
- 	ak = ice->akm = kcalloc(2, sizeof(struct snd_akm4xxx), GFP_KERNEL);
- 	if (! ak)
- 		return -ENOMEM;
--	ice->akm_codecs = 2;
- 	switch (ice->eeprom.subvendor) {
- 	case VT1724_SUBDEVICE_REVOLUTION71:
- 		ice->akm_codecs = 2;
--		if ((err = snd_ice1712_akm4xxx_init(ak, &akm_revo_front, &akm_revo_front_priv, ice)) < 0)
-+		err = snd_ice1712_akm4xxx_init(ak, &akm_revo_front,
-+						&akm_revo_front_priv, ice);
-+		if (err < 0)
- 			return err;
--		if ((err = snd_ice1712_akm4xxx_init(ak + 1, &akm_revo_surround, &akm_revo_surround_priv, ice)) < 0)
-+		err = snd_ice1712_akm4xxx_init(ak+1, &akm_revo_surround,
-+						&akm_revo_surround_priv, ice);
-+		if (err < 0)
- 			return err;
- 		/* unmute all codecs */
--		snd_ice1712_gpio_write_bits(ice, VT1724_REVO_MUTE, VT1724_REVO_MUTE);
-+		snd_ice1712_gpio_write_bits(ice, VT1724_REVO_MUTE,
-+						VT1724_REVO_MUTE);
- 		break;
- 	case VT1724_SUBDEVICE_REVOLUTION51:
- 		ice->akm_codecs = 2;
