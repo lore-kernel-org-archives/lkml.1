@@ -1,75 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755442AbYHJONr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755573AbYHJOPh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755442AbYHJONr (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Aug 2008 10:13:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753781AbYHJONj
+	id S1755573AbYHJOPh (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Aug 2008 10:15:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753781AbYHJOP2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Aug 2008 10:13:39 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:55240 "EHLO smtp5.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753226AbYHJONj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Aug 2008 10:13:39 -0400
-Date: Sun, 10 Aug 2008 17:11:59 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Grant Grundler <grundler@parisc-linux.org>
-Cc: kyle@mcmartin.ca, matthew@wil.cx, linux-parisc@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       bdale@hp.com
-Subject: Re: [2.6 patch] binfmt_som.c: add MODULE_LICENSE
-Message-ID: <20080810141159.GA13105@cs181140183.pp.htv.fi>
-References: <20080806211155.GV1702@cs181140183.pp.htv.fi> <20080810005511.GB2617@colo.lackof.org>
+	Sun, 10 Aug 2008 10:15:28 -0400
+Received: from smtp1.stealer.net ([88.198.224.204]:43435 "EHLO
+	smtp1.stealer.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752185AbYHJOP1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 Aug 2008 10:15:27 -0400
+Date: Sun, 10 Aug 2008 16:15:16 +0200 (CEST)
+From: Sven Wegener <sven.wegener@stealer.net>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>, Andi Kleen <andi@firstfloor.org>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Carlos Corbacho <carlos@strangeworlds.co.uk>
+Subject: Re: [Bug #11235] acer-wmi broken in latest git kernel on TravelMate
+ 6492 (Insufficient arguments - method [WQAA])
+In-Reply-To: <cX_-nNkxKaF.A.ayB.jDjnIB@albercik>
+Message-ID: <alpine.LNX.1.10.0808101605160.12259@titan.stealer.net>
+References: <VYYCiQF4qDI.A.BPH.KCjnIB@albercik> <cX_-nNkxKaF.A.ayB.jDjnIB@albercik>
+User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
+Organization: STEALER.net
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20080810005511.GB2617@colo.lackof.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Score: -0.7
+X-Spam-Bar: /
+X-Spam-Report: Scanned by SpamAssassin 3.2.1-gr1 2007-05-02 on smtp1.stealer.net at Sun, 10 Aug 2008 14:15:26 +0000
+	Bayes: 0.0140 Tokens: new, 216; hammy, 4; neutral, 4; spammy, 0.
+	AutoLearn: no
+	*  0.1 RDNS_NONE Delivered to trusted network by a host with no rDNS
+	*  0.3 SARE_SUB_OBFU_Q0 FVGT - subject contains odd letter combination
+	* -1.1 BAYES_05 BODY: Bayesian spam probability is 1 to 5%
+	*      [score: 0.0140]
+X-Spam-Signature: 873e36af8d860b318274d20a5f70dd797b453674
+X-DomainKey-Status: no signature
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Aug 09, 2008 at 06:55:11PM -0600, Grant Grundler wrote:
-> +bdale@hp.com
+On Sun, 10 Aug 2008, Rafael J. Wysocki wrote:
+
+> This message has been generated automatically as a part of a report
+> of recent regressions.
 > 
-> On Thu, Aug 07, 2008 at 12:11:55AM +0300, Adrian Bunk wrote:
-> > This patch adds the missing MODULE_LICENSE("GPL").
-> > 
-> > Reported-by: Adrian Bunk <bunk@kernel.org>
-> > Signed-off-by: Adrian Bunk <bunk@kernel.org>
-> > 
-> > ---
-> > 
-> > This patch has been sent on:
-> > - 15 Jun 2008
-> > 
-> > 4cec562181f818f16f072b9a14ca7a0ce6c66417 diff --git a/fs/binfmt_som.c b/fs/binfmt_som.c
-> > index fdc36bf..6d3bebb 100644
-> > --- a/fs/binfmt_som.c
-> > +++ b/fs/binfmt_som.c
-> > @@ -308,3 +308,5 @@ static void __exit exit_som_binfmt(void)
-> >  
-> >  core_initcall(init_som_binfmt);
-> >  module_exit(exit_som_binfmt);
-> > +
-> > +MODULE_LICENSE("GPL");
-> 
-> Someone from HP needs to ACK this patch since I believe HP funded the code
-> changes made during the parisc-linux port. This should be a no-brainer
-> and I expect Bdale Garbee can quickly take care of this.
+> The following bug entry is on the current list of known regressions
+> from 2.6.26.  Please verify if it still should be listed and let me know
+> (either way).
 
-Either the file is available since the beginning under the terms of the 
-GPLv2 (or a compatible license that can be reduced to GPLv2) or it's 
-addition to the kernel was a huge mistake.
+Yes.
 
-> thanks,
-> grant
+I don't think it is included in some tree yet. Andi, care to take the 
+patch into your ACPI tree?
 
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11235
+> Subject		: acer-wmi broken in latest git kernel on TravelMate 6492 (Insufficient arguments - method [WQAA])
+> Submitter	: Sven Wegener <sven.wegener@stealer.net>
+> Date		: 2008-08-02 15:50:54 (8 days old)
+> References	: http://marc.info/?l=linux-kernel&m=121769235318600&w=4
+> Handled-By	: Carlos Corbacho <carlos@strangeworlds.co.uk>
+> Patch		: http://marc.info/?l=linux-kernel&m=121769591723088&w=4
