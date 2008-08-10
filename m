@@ -1,137 +1,186 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757196AbYHJPmk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757276AbYHJPmz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757196AbYHJPmk (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Aug 2008 11:42:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755943AbYHJPjP
+	id S1757276AbYHJPmz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Aug 2008 11:42:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754326AbYHJPjW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Aug 2008 11:39:15 -0400
-Received: from mu-out-0910.google.com ([209.85.134.187]:3925 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754650AbYHJPjM (ORCPT
+	Sun, 10 Aug 2008 11:39:22 -0400
+Received: from fk-out-0910.google.com ([209.85.128.191]:10683 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755813AbYHJPjU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Aug 2008 11:39:12 -0400
+	Sun, 10 Aug 2008 11:39:20 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:date:message-id:in-reply-to:references:subject;
-        b=Yp6bIdQ4eign2wMH59LABTa/VTvNQNhliU0MVAhVKb/EFyyyaeI/Kf6eMxUQvQQbH1
-         SKCrrqBg10dmp5y72Unr0AbfBPc1wZ2JJ3a8qxfj0rM+YT08bjHQ9TEVkCzz++2qkstO
-         GKGV/4mHbaGN1cY3ky7J055BALbeQqIczVlOQ=
+        b=e6aY9BHBF0jtR2Edic8T/xFlvGAa8x71ZjsbKOXMobdGmIsbSLDIrnHjmSh2FzPAIr
+         jlP+l7irBkFEXdJ9zpCxkvswNSgBCaXGJUJv6JChm8KyDZni6NhA8lf8Kqg2J7ilWHf4
+         u45ZiZqsahW1B6MNW2Lm4fMGzV3yma9hAmc/c=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: linux-ide@vger.kernel.org
 Cc: Borislav Petkov <petkovbb@gmail.com>,
        Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
        linux-kernel@vger.kernel.org
-Date: Sun, 10 Aug 2008 17:37:00 +0200
-Message-Id: <20080810153700.16255.79527.sendpatchset@localhost.localdomain>
+Date: Sun, 10 Aug 2008 17:37:07 +0200
+Message-Id: <20080810153707.16255.15094.sendpatchset@localhost.localdomain>
 In-Reply-To: <20080810153527.16255.2504.sendpatchset@localhost.localdomain>
 References: <20080810153527.16255.2504.sendpatchset@localhost.localdomain>
-Subject: [PATCH 13/22] ide: add ide_do_test_unit_ready() helper
+Subject: [PATCH 14/22] ide: move IDE{FLOPPY,TAPE}_WAIT_CMD defines to <linux/ide.h>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Add ide_do_test_unit_ready() helper and convert ide-{floppy,tape}.c
-  to use it.
+While at it:
 
-* Remove no longer used idetape_create_test_unit_ready_cmd().
+* IDE{FLOPPY,TAPE}_WAIT_CMD -> WAIT_{FLOPPY,TAPE}_CMD
+
+* Use enum for WAIT_* defines.
 
 There should be no functional changes caused by this patch.
 
 Cc: Borislav Petkov <petkovbb@gmail.com>
 Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- drivers/ide/ide-atapi.c  |   11 +++++++++++
- drivers/ide/ide-floppy.c |    6 +-----
- drivers/ide/ide-tape.c   |   10 +---------
- include/linux/ide.h      |    1 +
- 4 files changed, 14 insertions(+), 14 deletions(-)
+ drivers/ide/ide-floppy.c |   13 ++++---------
+ drivers/ide/ide-tape.c   |   13 +++----------
+ include/linux/ide.h      |   28 ++++++++++++++++++++++------
+ 3 files changed, 29 insertions(+), 25 deletions(-)
 
-Index: b/drivers/ide/ide-atapi.c
-===================================================================
---- a/drivers/ide/ide-atapi.c
-+++ b/drivers/ide/ide-atapi.c
-@@ -162,6 +162,17 @@ int ide_queue_pc_tail(ide_drive_t *drive
- }
- EXPORT_SYMBOL_GPL(ide_queue_pc_tail);
- 
-+int ide_do_test_unit_ready(ide_drive_t *drive, struct gendisk *disk)
-+{
-+	struct ide_atapi_pc pc;
-+
-+	ide_init_pc(&pc);
-+	pc.c[0] = TEST_UNIT_READY;
-+
-+	return ide_queue_pc_tail(drive, disk, &pc);
-+}
-+EXPORT_SYMBOL_GPL(ide_do_test_unit_ready);
-+
- int ide_do_start_stop(ide_drive_t *drive, struct gendisk *disk, int start)
- {
- 	struct ide_atapi_pc pc;
 Index: b/drivers/ide/ide-floppy.c
 ===================================================================
 --- a/drivers/ide/ide-floppy.c
 +++ b/drivers/ide/ide-floppy.c
-@@ -772,7 +772,6 @@ static int idefloppy_open(struct inode *
- 	struct gendisk *disk = inode->i_bdev->bd_disk;
- 	struct ide_floppy_obj *floppy;
- 	ide_drive_t *drive;
--	struct ide_atapi_pc pc;
- 	int ret = 0;
+@@ -60,10 +60,6 @@
+ #define debug_log(fmt, args...) do {} while (0)
+ #endif
  
- 	debug_log("Reached %s\n", __func__);
-@@ -789,10 +788,7 @@ static int idefloppy_open(struct inode *
- 		drive->atapi_flags &= ~IDE_AFLAG_FORMAT_IN_PROGRESS;
- 		/* Just in case */
- 
--		ide_init_pc(&pc);
--		pc.c[0] = GPCMD_TEST_UNIT_READY;
 -
--		if (ide_queue_pc_tail(drive, disk, &pc))
-+		if (ide_do_test_unit_ready(drive, disk))
- 			ide_do_start_stop(drive, disk, 1);
+-/* Some drives require a longer irq timeout. */
+-#define IDEFLOPPY_WAIT_CMD		(5 * WAIT_CMD)
+-
+ /*
+  * After each failed packet command we issue a request sense command and retry
+  * the packet command IDEFLOPPY_MAX_PC_RETRIES times.
+@@ -225,7 +221,7 @@ static ide_startstop_t idefloppy_pc_intr
+ 	idefloppy_floppy_t *floppy = drive->driver_data;
  
- 		if (ide_floppy_get_capacity(drive)
+ 	return ide_pc_intr(drive, floppy->pc, idefloppy_pc_intr,
+-			   IDEFLOPPY_WAIT_CMD, NULL, idefloppy_update_buffers,
++			   WAIT_FLOPPY_CMD, NULL, idefloppy_update_buffers,
+ 			   idefloppy_retry_pc, NULL, ide_io_buffers);
+ }
+ 
+@@ -243,10 +239,9 @@ static int idefloppy_transfer_pc(ide_dri
+ 	drive->hwif->tp_ops->output_data(drive, NULL, floppy->pc->c, 12);
+ 
+ 	/* Timeout for the packet command */
+-	return IDEFLOPPY_WAIT_CMD;
++	return WAIT_FLOPPY_CMD;
+ }
+ 
+-
+ /*
+  * Called as an interrupt (or directly). When the device says it's ready for a
+  * packet, we schedule the packet transfer to occur about 2-3 ticks later in
+@@ -271,7 +266,7 @@ static ide_startstop_t idefloppy_start_p
+ 		timeout = floppy->ticks;
+ 		expiry = &idefloppy_transfer_pc;
+ 	} else {
+-		timeout = IDEFLOPPY_WAIT_CMD;
++		timeout = WAIT_FLOPPY_CMD;
+ 		expiry = NULL;
+ 	}
+ 
+@@ -321,7 +316,7 @@ static ide_startstop_t idefloppy_issue_p
+ 	pc->retries++;
+ 
+ 	return ide_issue_pc(drive, pc, idefloppy_start_pc_transfer,
+-			    IDEFLOPPY_WAIT_CMD, NULL);
++			    WAIT_FLOPPY_CMD, NULL);
+ }
+ 
+ void ide_floppy_create_read_capacity_cmd(struct ide_atapi_pc *pc)
 Index: b/drivers/ide/ide-tape.c
 ===================================================================
 --- a/drivers/ide/ide-tape.c
 +++ b/drivers/ide/ide-tape.c
-@@ -1118,25 +1118,17 @@ static void idetape_create_write_filemar
- 	pc->flags |= PC_FLAG_WAIT_FOR_DSC;
- }
+@@ -81,13 +81,6 @@ enum {
+ #define IDETAPE_MAX_PC_RETRIES		3
  
--static void idetape_create_test_unit_ready_cmd(struct ide_atapi_pc *pc)
--{
--	ide_init_pc(pc);
--	pc->c[0] = TEST_UNIT_READY;
--}
+ /*
+- * Some drives (for example, Seagate STT3401A Travan) require a very long
+- * timeout, because they don't return an interrupt or clear their busy bit
+- * until after the command completes (even retension commands).
+- */
+-#define IDETAPE_WAIT_CMD		(900*HZ)
 -
- static int idetape_wait_ready(ide_drive_t *drive, unsigned long timeout)
+-/*
+  * The following parameter is used to select the point in the internal tape fifo
+  * in which we will start to refill the buffer. Decreasing the following
+  * parameter will improve the system's latency and interactive response, while
+@@ -663,7 +656,7 @@ static ide_startstop_t idetape_pc_intr(i
  {
  	idetape_tape_t *tape = drive->driver_data;
- 	struct gendisk *disk = tape->disk;
--	struct ide_atapi_pc pc;
- 	int load_attempted = 0;
  
- 	/* Wait for the tape to become ready */
- 	set_bit(IDE_AFLAG_MEDIUM_PRESENT, &drive->atapi_flags);
- 	timeout += jiffies;
- 	while (time_before(jiffies, timeout)) {
--		idetape_create_test_unit_ready_cmd(&pc);
--		if (!ide_queue_pc_tail(drive, disk, &pc))
-+		if (ide_do_test_unit_ready(drive, disk) == 0)
- 			return 0;
- 		if ((tape->sense_key == 2 && tape->asc == 4 && tape->ascq == 2)
- 		    || (tape->asc == 0x3A)) {
+-	return ide_pc_intr(drive, tape->pc, idetape_pc_intr, IDETAPE_WAIT_CMD,
++	return ide_pc_intr(drive, tape->pc, idetape_pc_intr, WAIT_TAPE_CMD,
+ 			   NULL, idetape_update_buffers, idetape_retry_pc,
+ 			   ide_tape_handle_dsc, ide_tape_io_buffers);
+ }
+@@ -709,7 +702,7 @@ static ide_startstop_t idetape_transfer_
+ 	idetape_tape_t *tape = drive->driver_data;
+ 
+ 	return ide_transfer_pc(drive, tape->pc, idetape_pc_intr,
+-			       IDETAPE_WAIT_CMD, NULL);
++			       WAIT_TAPE_CMD, NULL);
+ }
+ 
+ static ide_startstop_t idetape_issue_pc(ide_drive_t *drive,
+@@ -758,7 +751,7 @@ static ide_startstop_t idetape_issue_pc(
+ 	pc->retries++;
+ 
+ 	return ide_issue_pc(drive, pc, idetape_transfer_pc,
+-			    IDETAPE_WAIT_CMD, NULL);
++			    WAIT_TAPE_CMD, NULL);
+ }
+ 
+ /* A mode sense command is used to "sense" tape parameters. */
 Index: b/include/linux/ide.h
 ===================================================================
 --- a/include/linux/ide.h
 +++ b/include/linux/ide.h
-@@ -1140,6 +1140,7 @@ void ide_queue_pc_head(ide_drive_t *, st
- 		       struct request *);
- int ide_queue_pc_tail(ide_drive_t *, struct gendisk *, struct ide_atapi_pc *);
+@@ -133,12 +133,28 @@ struct ide_io_ports {
+ /*
+  * Timeouts for various operations:
+  */
+-#define WAIT_DRQ	(HZ/10)		/* 100msec - spec allows up to 20ms */
+-#define WAIT_READY	(5*HZ)		/* 5sec - some laptops are very slow */
+-#define WAIT_PIDENTIFY	(10*HZ)	/* 10sec  - should be less than 3ms (?), if all ATAPI CD is closed at boot */
+-#define WAIT_WORSTCASE	(30*HZ)	/* 30sec  - worst case when spinning up */
+-#define WAIT_CMD	(10*HZ)	/* 10sec  - maximum wait for an IRQ to happen */
+-#define WAIT_MIN_SLEEP	(2*HZ/100)	/* 20msec - minimum sleep time */
++enum {
++	/* spec allows up to 20ms */
++	WAIT_DRQ	= HZ / 10,	/* 100ms */
++	/* some laptops are very slow */
++	WAIT_READY	= 5 * HZ,	/* 5s */
++	/* should be less than 3ms (?), if all ATAPI CD is closed at boot */
++	WAIT_PIDENTIFY	= 10 * HZ,	/* 10s */
++	/* worst case when spinning up */
++	WAIT_WORSTCASE	= 30 * HZ,	/* 30s */
++	/* maximum wait for an IRQ to happen */
++	WAIT_CMD	= 10 * HZ,	/* 10s */
++	/* Some drives require a longer IRQ timeout. */
++	WAIT_FLOPPY_CMD	= 50 * HZ,	/* 50s */
++	/*
++	 * Some drives (for example, Seagate STT3401A Travan) require a very
++	 * long timeout, because they don't return an interrupt or clear their
++	 * BSY bit until after the command completes (even retension commands).
++	 */
++	WAIT_TAPE_CMD	= 900 * HZ,	/* 900s */
++	/* minimum sleep time */
++	WAIT_MIN_SLEEP	= HZ / 50,	/* 20ms */
++};
  
-+int ide_do_test_unit_ready(ide_drive_t *, struct gendisk *);
- int ide_do_start_stop(ide_drive_t *, struct gendisk *, int);
- int ide_set_media_lock(ide_drive_t *, struct gendisk *, int);
- 
+ /*
+  * Op codes for special requests to be handled by ide_special_rq().
