@@ -1,51 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755185AbYHJNP6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754547AbYHJNby@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755185AbYHJNP6 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Aug 2008 09:15:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754050AbYHJNPu
+	id S1754547AbYHJNby (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Aug 2008 09:31:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751469AbYHJNbq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Aug 2008 09:15:50 -0400
-Received: from ti-out-0910.google.com ([209.85.142.185]:32649 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754015AbYHJNPt (ORCPT
+	Sun, 10 Aug 2008 09:31:46 -0400
+Received: from mk-outboundfilter-3.mail.uk.tiscali.com ([212.74.114.23]:40302
+	"EHLO mk-outboundfilter-3.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750852AbYHJNbp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Aug 2008 09:15:49 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:subject:cc:message-id:mime-version:content-type
-         :content-transfer-encoding:x-mailer;
-        b=e/DcoxS+qK5jYVf6zYHwC6G85uqJxxTEU6y9ItR5RVyz7StOqG2LUDfOkfJknOWJic
-         rNUV3gFFVuJqhCv3O7IUVXc312Qpalv66K0ulxqVYCJrDpvYY5UwefnmtSyAtc8c2Lum
-         7st3GGcx5ZayA2esWUcVuf8DQX5Fswww42x1g=
-Date: Sun, 10 Aug 2008 21:15:45 +0800
-From: Huang Weiyi <weiyi.huang@gmail.com>
-To: jack@suse.cz
-Subject: fs/reiserfs/super.c: removed duplicated #include
-Cc: linux-kernel@vger.kernel.org
-Message-Id: <20080810211208.A47C.WEIYI.HUANG@gmail.com>
+	Sun, 10 Aug 2008 09:31:45 -0400
+X-Trace: 154713481/mk-outboundfilter-1.mail.uk.tiscali.com/F2S/$F2S-NILDRAM-ACCEPTED/f2s-nildram-customers/195.149.44.6
+X-SBRS: None
+X-RemoteIP: 195.149.44.6
+X-IP-MAIL-FROM: alistair@devzero.co.uk
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AssHAK+KnkjDlSwG/2dsb2JhbACBX4EspWg
+X-IronPort-AV: E=Sophos;i="4.31,338,1215385200"; 
+   d="scan'208";a="154713481"
+X-IP-Direction: IN
+From: Alistair John Strachan <alistair@devzero.co.uk>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [Bug #11197] Oops in microcode sysfs registration
+Date: Sun, 10 Aug 2008 14:31:40 +0100
+User-Agent: KMail/1.10.0 (Linux/2.6.27-rc2-damocles; KDE/4.1.0; x86_64; ; )
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       "Dmitry Adamushko" <dmitry.adamushko@gmail.com>
+References: <VYYCiQF4qDI.A.BPH.KCjnIB@albercik> <cX_-nNkxKaF.A.GMD.oEjnIB@albercik>
+In-Reply-To: <cX_-nNkxKaF.A.GMD.oEjnIB@albercik>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.24.02 [en]
+Content-Disposition: inline
+Message-Id: <200808101431.40147.alistair@devzero.co.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Removed duplicated #include <linux/quotaops.h> in 
-fs/reiserfs/super.c.
+On Saturday 09 August 2008 23:43:50 Rafael J. Wysocki wrote:
+> This message has been generated automatically as a part of a report
+> of recent regressions.
+>
+> The following bug entry is on the current list of known regressions
+> from 2.6.26.  Please verify if it still should be listed and let me know
+> (either way).
+>
+>
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11197
+> Subject		: Oops in microcode sysfs registration
+> Submitter	: Alistair John Strachan <alistair@devzero.co.uk>
+> Date		: 2008-07-29 13:57 (12 days old)
+> References	: http://marc.info/?t=121734004900002&r=1&w=4
+> Handled-By	: Dmitry Adamushko <dmitry.adamushko@gmail.com>
+> Patch		: http://marc.info/?l=linux-kernel&m=121741431005777&w=4
 
-Signed-off-by: Huang Weiyi <weiyi.huang@gmail.com>
+It's still broken in -rc2 but I'll check -git in a minute. Dmitry posted an 
+alternative set of patches but I don't know if they've been merged?
 
-diff --git a/fs/reiserfs/super.c b/fs/reiserfs/super.c
-index 282a135..d318c7e 100644
---- a/fs/reiserfs/super.c
-+++ b/fs/reiserfs/super.c
-@@ -27,7 +27,6 @@
- #include <linux/mnt_namespace.h>
- #include <linux/mount.h>
- #include <linux/namei.h>
--#include <linux/quotaops.h>
-
- struct file_system_type reiserfs_fs_type;
-
-
+-- 
+Cheers,
+Alistair.
