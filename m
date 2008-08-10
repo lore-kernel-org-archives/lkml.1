@@ -1,70 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753710AbYHJSGS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753659AbYHJSQV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753710AbYHJSGS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Aug 2008 14:06:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752574AbYHJSGD
+	id S1753659AbYHJSQV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Aug 2008 14:16:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752574AbYHJSQO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Aug 2008 14:06:03 -0400
-Received: from fk-out-0910.google.com ([209.85.128.190]:32184 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752223AbYHJSGB (ORCPT
+	Sun, 10 Aug 2008 14:16:14 -0400
+Received: from monty.telenet-ops.be ([195.130.132.56]:34232 "EHLO
+	monty.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752403AbYHJSQN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Aug 2008 14:06:01 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-disposition:message-id:content-type
-         :content-transfer-encoding;
-        b=TgEjaqL7m77sGkZgsbtSnSh34xN5Huyc1vWU0rFea3gsERRGN8jO05zZqMeggsN7t0
-         gg30+MikZS7cfRvs8SYs10YQFVM/dIQlt/4TdzigFWgxCkrD5/+fv08RvvvWmKvFWedE
-         Z8kym6keqc2Hpn6Ls8i6FUFIy8IkyOz9v0qLU=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Kyle McMartin <kyle@mcmartin.ca>
-Subject: Re: [PATCH] ide: remove unused macros from <asm-parisc/ide.h>
-Date: Sun, 10 Aug 2008 20:03:27 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-parisc@vger.kernel.org
-References: <200808101747.08025.bzolnier@gmail.com> <20080810155437.GA6576@phobos.i.cabal.ca>
-In-Reply-To: <20080810155437.GA6576@phobos.i.cabal.ca>
+	Sun, 10 Aug 2008 14:16:13 -0400
+Date: Sun, 10 Aug 2008 20:16:10 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Roman Zippel <zippel@linux-m68k.org>
+Subject: Re: [PATCH] ide: remove M68K_IDE_SWAPW define from <asm-m68k/ide.h>
+In-Reply-To: <200808101746.12697.bzolnier@gmail.com>
+Message-ID: <Pine.LNX.4.64.0808102015580.10672@anakin>
+References: <200808101746.12697.bzolnier@gmail.com>
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200808102003.27727.bzolnier@gmail.com>
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 10 August 2008, Kyle McMartin wrote:
-> On Sun, Aug 10, 2008 at 05:47:07PM +0200, Bartlomiej Zolnierkiewicz wrote:
-> > 
-> > Cc: Kyle McMartin <kyle@mcmartin.ca>
-> > Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> > ---
-> >  include/asm-parisc/ide.h |    4 ----
-> >  1 file changed, 4 deletions(-)
-> > 
-> > Index: b/include/asm-parisc/ide.h
-> > ===================================================================
-> > --- a/include/asm-parisc/ide.h
-> > +++ b/include/asm-parisc/ide.h
-> > @@ -13,10 +13,6 @@
-> >  
-> >  #ifdef __KERNEL__
-> >  
-> > -#define ide_request_irq(irq,hand,flg,dev,id)	request_irq((irq),(hand),(flg),(dev),(id))
-> > -#define ide_free_irq(irq,dev_id)		free_irq((irq), (dev_id))
-> > -#define ide_request_region(from,extent,name)	request_region((from), (extent), (name))
-> > -#define ide_release_region(from,extent)		release_region((from), (extent))
-> >  /* Generic I/O and MEMIO string operations.  */
-> >  
+On Sun, 10 Aug 2008, Bartlomiej Zolnierkiewicz wrote:
+> Since we solved this by overriding default ->{in,out}put_data
+> methods in {q40,falcon}ide M68K_IDE_SWAP define can go away.
 > 
-> Thanks Bart!
+> Cc: Geert Uytterhoeven <geert@linux-m68k.org>
+> Cc: Roman Zippel <zippel@linux-m68k.org>
+> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+
+Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
+
+> ---
+>  include/asm-m68k/ide.h |    9 ---------
+>  1 file changed, 9 deletions(-)
 > 
-> Groovy... Want me to merge this, or will you shepherd it in?
+> Index: b/include/asm-m68k/ide.h
+> ===================================================================
+> --- a/include/asm-m68k/ide.h
+> +++ b/include/asm-m68k/ide.h
+> @@ -92,15 +92,6 @@
+>  #define outsw_swapw(port, addr, n)	raw_outsw_swapw((u16 *)port, addr, n)
+>  #endif
+>  
+> -
+> -/* Q40 and Atari have byteswapped IDE busses and since many interesting
+> - * values in the identification string are text, chars and words they
+> - * happened to be almost correct without swapping.. However *_capacity
+> - * is needed for drives over 8 GB. RZ */
+> -#if defined(CONFIG_Q40) || defined(CONFIG_ATARI)
+> -#define M68K_IDE_SWAPW  (MACH_IS_Q40 || MACH_IS_ATARI)
+> -#endif
+> -
+>  #ifdef CONFIG_BLK_DEV_FALCON_IDE
+>  #define IDE_ARCH_LOCK
 
-In the fear of include/asm-parisc/ shuffle I would prefer that you pick it.
+Gr{oetje,eeting}s,
 
-Thanks.
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
