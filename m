@@ -1,50 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755475AbYHJBMQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754486AbYHJBlI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755475AbYHJBMQ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Aug 2008 21:12:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752932AbYHJBME
+	id S1754486AbYHJBlI (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Aug 2008 21:41:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752634AbYHJBkx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Aug 2008 21:12:04 -0400
-Received: from mtiwmhc11.worldnet.att.net ([204.127.131.115]:53370 "EHLO
-	mtiwmhc11.worldnet.att.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752816AbYHJBMD (ORCPT
+	Sat, 9 Aug 2008 21:40:53 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:60828 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752380AbYHJBkw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Aug 2008 21:12:03 -0400
-Message-ID: <489E4060.1060404@lwfinger.net>
-Date: Sat, 09 Aug 2008 20:12:00 -0500
-From: Larry Finger <Larry.Finger@lwfinger.net>
-User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
+	Sat, 9 Aug 2008 21:40:52 -0400
+Date: Sun, 10 Aug 2008 09:40:37 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Suresh Siddha <suresh.b.siddha@intel.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>,
+       Wolfgang Walter <wolfgang.walter@stwm.de>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       "viro@ZenIV.linux.org.uk" <viro@ZenIV.linux.org.uk>,
+       "vegard.nossum@gmail.com" <vegard.nossum@gmail.com>
+Subject: Re: Kernel oops with 2.6.26, padlock and ipsec: probably problem with fpu state changes
+Message-ID: <20080810014037.GA1859@gondor.apana.org.au>
+References: <200807171653.59177.wolfgang.walter@stwm.de> <20080806201401.GA607@linux-os.sc.intel.com> <200808071823.02364.wolfgang.walter@stwm.de> <200808081236.55172.wolfgang.walter@stwm.de> <20080808185356.GC607@linux-os.sc.intel.com> <489C97FB.2030408@zytor.com> <20080808231121.GA13158@linux-os.sc.intel.com> <20080809143727.GA30499@gondor.apana.org.au> <20080809175940.GE13158@linux-os.sc.intel.com>
 MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-Subject: Re: [Bug #11228] p54usb broken by commit b19fa1f
-References: <VYYCiQF4qDI.A.BPH.KCjnIB@albercik> <cX_-nNkxKaF.A.MCC.vDjnIB@albercik>
-In-Reply-To: <cX_-nNkxKaF.A.MCC.vDjnIB@albercik>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080809175940.GE13158@linux-os.sc.intel.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafael J. Wysocki wrote:
-> This message has been generated automatically as a part of a report
-> of recent regressions.
+On Sat, Aug 09, 2008 at 10:59:40AM -0700, Suresh Siddha wrote:
+>
+> 0. CPU's TS flag is set
 > 
-> The following bug entry is on the current list of known regressions
-> from 2.6.26.  Please verify if it still should be listed and let me know
-> (either way).
+> 1. kernel using FPU in some optimized copy  routine and while doing
+> kernel_fpu_begin() takes an interrupt just before doing clts()
 > 
-> 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11228
-> Subject		: p54usb broken by commit b19fa1f
-> Submitter	: Larry Finger <Larry.Finger@lwfinger.net>
-> Date		: 2008-08-02 3:06 (8 days old)
-> References	: http://marc.info/?l=linux-kernel&m=121764647801783&w=4
-> Handled-By	: Larry Finger <Larry.Finger@lwfinger.net>
-> Patch		: http://marc.info/?l=linux-kernel&m=121779445431434&w=4
+> 2. Takes an interrupt and ipsec uses padlock instruction. And we
+> take a DNA fault as TS flag is still set.
 
-The fix has been submitted to John Linville at Linux Wireless 
-(http://marc.info/?l=linux-wireless&m=121832837824216&w=2).
+Right, we could've fixed this by doing the clts before checking
+TS_USEDFPU in kernel_fpu_begin.  However, I admit that taking a
+fault in the general case for the PadLock is stupid anyway so we
+should definitely fix this in the ways that you suggested.
 
-Larry
+Cheers,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
