@@ -1,28 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754849AbYHJWLo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755060AbYHJWNW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754849AbYHJWLo (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Aug 2008 18:11:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753135AbYHJWLh
+	id S1755060AbYHJWNW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Aug 2008 18:13:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753098AbYHJWNO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Aug 2008 18:11:37 -0400
-Received: from mu-out-0910.google.com ([209.85.134.188]:38064 "EHLO
+	Sun, 10 Aug 2008 18:13:14 -0400
+Received: from mu-out-0910.google.com ([209.85.134.191]:41942 "EHLO
 	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753074AbYHJWLg (ORCPT
+	with ESMTP id S1752952AbYHJWNN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Aug 2008 18:11:36 -0400
+	Sun, 10 Aug 2008 18:13:13 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=date:from:to:cc:subject:message-id:mime-version:content-type
          :content-disposition:user-agent;
-        b=MplwGeG1ePplqtxhKkZMA6+pmOI+5caSzSEdpkk9XIvIBVFXCjrak8mLWhGsQd/JBM
-         0HjeU1roz+akDM0anw/u7pdcpISDtU0VHkn8OokLFnuJ5sbde7x4BQOuvbHAm9m18ej+
-         q+x6tNua3H3//93m/mFo/Bu0zXjS2MDtiwEys=
-Date: Mon, 11 Aug 2008 00:11:13 +0200
+        b=CLbqOOpI6CP0gXUw5uJJBDtxkve/MidvGvl7Y4dNt79Vj0EO3/500awmSs9ClQAbiD
+         jxUwvUhesiF8plmF/yYNevG5ZkBhTI7P5YoRNssQFI0ZEwEfY/IWWIvrQJ1eAciFzJ9V
+         c6/2MIMl3SOcH6f/WiFYYvlNeBCIXsj94xNlo=
+Date: Mon, 11 Aug 2008 00:12:37 +0200
 From: Marcin Slusarz <marcin.slusarz@gmail.com>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com
-Subject: [PATCH] x86: mmconf: fix section mismatch warning
-Message-ID: <20080810221109.GC27349@joi>
+Subject: [PATCH] x86: fix MP_processor_info section mismatch warning
+Message-ID: <20080810221233.GD27349@joi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -31,49 +31,36 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-WARNING: arch/x86/kernel/built-in.o(.cpuinit.text+0x1591): Section mismatch in reference from the function init_amd() to the function .init.text:check_enable_amd_mmconf_dmi()
-The function __cpuinit init_amd() references
-a function __init check_enable_amd_mmconf_dmi().
-If check_enable_amd_mmconf_dmi is only used by init_amd then
-annotate check_enable_amd_mmconf_dmi with a matching annotation.
+WARNING: arch/x86/kernel/built-in.o(.cpuinit.text+0x1fe7): Section mismatch in reference from the function MP_processor_info() to the variable .init.data:x86_quirks
+The function __cpuinit MP_processor_info() references
+a variable __initdata x86_quirks.
+If x86_quirks is only used by MP_processor_info then
+annotate x86_quirks with a matching annotation.
 
-check_enable_amd_mmconf_dmi is only called from init_amd which is __cpuinit
+MP_processor_info uses x86_quirks which is __init and is used only from
+smp_read_mpc and construct_default_ISA_mptable which are __init
 
 Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
 Cc: Thomas Gleixner <tglx@linutronix.de>
 Cc: Ingo Molnar <mingo@redhat.com>
 Cc: H. Peter Anvin <hpa@zytor.com>
 ---
- arch/x86/kernel/mmconf-fam10h_64.c |    2 +-
- include/asm-x86/mmconfig.h         |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+ arch/x86/kernel/mpparse.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/arch/x86/kernel/mmconf-fam10h_64.c b/arch/x86/kernel/mmconf-fam10h_64.c
-index fdfdc55..efc2f36 100644
---- a/arch/x86/kernel/mmconf-fam10h_64.c
-+++ b/arch/x86/kernel/mmconf-fam10h_64.c
-@@ -238,7 +238,7 @@ static struct dmi_system_id __devinitdata mmconf_dmi_table[] = {
- 	{}
- };
- 
--void __init check_enable_amd_mmconf_dmi(void)
-+void __cpuinit check_enable_amd_mmconf_dmi(void)
- {
- 	dmi_check_system(mmconf_dmi_table);
+diff --git a/arch/x86/kernel/mpparse.c b/arch/x86/kernel/mpparse.c
+index a7189f4..2c1963b 100644
+--- a/arch/x86/kernel/mpparse.c
++++ b/arch/x86/kernel/mpparse.c
+@@ -49,7 +49,7 @@ static int __init mpf_checksum(unsigned char *mp, int len)
+ 	return sum & 0xFF;
  }
-diff --git a/include/asm-x86/mmconfig.h b/include/asm-x86/mmconfig.h
-index 95beda0..e293ab8 100644
---- a/include/asm-x86/mmconfig.h
-+++ b/include/asm-x86/mmconfig.h
-@@ -3,7 +3,7 @@
  
- #ifdef CONFIG_PCI_MMCONFIG
- extern void __cpuinit fam10h_check_enable_mmcfg(void);
--extern void __init check_enable_amd_mmconf_dmi(void);
-+extern void __cpuinit check_enable_amd_mmconf_dmi(void);
- #else
- static inline void fam10h_check_enable_mmcfg(void) { }
- static inline void check_enable_amd_mmconf_dmi(void) { }
+-static void __cpuinit MP_processor_info(struct mpc_config_processor *m)
++static void __init MP_processor_info(struct mpc_config_processor *m)
+ {
+ 	int apicid;
+ 	char *bootup_cpu = "";
 -- 
 1.5.4.5
 
