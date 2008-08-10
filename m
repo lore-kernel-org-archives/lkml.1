@@ -1,254 +1,146 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757749AbYHJPoj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756429AbYHJPoy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757749AbYHJPoj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Aug 2008 11:44:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756435AbYHJPj6
+	id S1756429AbYHJPoy (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Aug 2008 11:44:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756079AbYHJPkF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Aug 2008 11:39:58 -0400
-Received: from mu-out-0910.google.com ([209.85.134.188]:2609 "EHLO
+	Sun, 10 Aug 2008 11:40:05 -0400
+Received: from mu-out-0910.google.com ([209.85.134.187]:3925 "EHLO
 	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756383AbYHJPj4 (ORCPT
+	with ESMTP id S1755721AbYHJPkC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Aug 2008 11:39:56 -0400
+	Sun, 10 Aug 2008 11:40:02 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:date:message-id:in-reply-to:references:subject;
-        b=jHDgtXyakvI8jbVTz1m0QqaTGQPrLfRVVFHGPxvmfPo/4jgawGSIXty86h/Ab5uzrr
-         6/t3peMS7wYCSPsUHDoG54KMJ1rOwb8K8Kqi6yErFl14gHaSGMEkKsIUa7SN1YpcZPJg
-         7VKFRX0qjVRssyP4+fAD898x57MZDrSPttMYY=
+        b=xf9GTQchujsavk1qVXZ34CHHOycph97LroYkENho5KB5obkDzUSqQlLoGaObR2HmK+
+         UHyqEeqWPxfHKxq/4HATaeex4pW17HtdiC47cAndrFE3g1egtPTmCdOls9oYM4/N+jXQ
+         LnHfeg0RHf6jpekcNxhWpDQrxr0/XaOiUEi4I=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: linux-ide@vger.kernel.org
 Cc: Borislav Petkov <petkovbb@gmail.com>,
        Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
        linux-kernel@vger.kernel.org
-Date: Sun, 10 Aug 2008 17:37:43 +0200
-Message-Id: <20080810153743.16255.23207.sendpatchset@localhost.localdomain>
+Date: Sun, 10 Aug 2008 17:37:51 +0200
+Message-Id: <20080810153751.16255.87331.sendpatchset@localhost.localdomain>
 In-Reply-To: <20080810153527.16255.2504.sendpatchset@localhost.localdomain>
 References: <20080810153527.16255.2504.sendpatchset@localhost.localdomain>
-Subject: [PATCH 19/22] ide: add ide_retry_pc() helper
+Subject: [PATCH 20/22] ide: add ->pc_{update,io}_buffers methods
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Add ide_create_request_sense_cmd() and ide_retry_pc() helpers
-  and convert ide-{atapi,floppy,tape}.c to use them.
-
-* Remove no longer used ide*_create_request_sense_cmd(),
-  ide*_retry_pc() and 'retry_pc' argument from ide_pc_intr().
-
-* Make ide_queue_pc_head() static.
+Add ->pc_{update,io}_buffers methods to ide_drive_t and use
+them instead of {update,io}_buffers ide_pc_intr() arguments.
 
 There should be no functional changes caused by this patch.
 
 Cc: Borislav Petkov <petkovbb@gmail.com>
 Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- drivers/ide/ide-atapi.c        |   39 ++++++++++++++++++++++++++++++++++-----
- drivers/ide/ide-floppy.c       |   25 +------------------------
- drivers/ide/ide-floppy.h       |    1 -
- drivers/ide/ide-floppy_ioctl.c |    2 +-
- drivers/ide/ide-tape.c         |   29 ++---------------------------
- drivers/scsi/ide-scsi.c        |    2 +-
- include/linux/ide.h            |    5 ++---
- 7 files changed, 41 insertions(+), 62 deletions(-)
+ drivers/ide/ide-atapi.c  |   14 ++++++--------
+ drivers/ide/ide-floppy.c |    7 ++++---
+ drivers/ide/ide-tape.c   |    7 ++++---
+ drivers/scsi/ide-scsi.c  |    6 ++++--
+ include/linux/ide.h      |    9 +++++----
+ 5 files changed, 23 insertions(+), 20 deletions(-)
 
 Index: b/drivers/ide/ide-atapi.c
 ===================================================================
 --- a/drivers/ide/ide-atapi.c
 +++ b/drivers/ide/ide-atapi.c
-@@ -124,8 +124,8 @@ EXPORT_SYMBOL_GPL(ide_init_pc);
-  * the current request, so that it will be processed immediately, on the next
-  * pass through the driver.
-  */
--void ide_queue_pc_head(ide_drive_t *drive, struct gendisk *disk,
--		       struct ide_atapi_pc *pc, struct request *rq)
-+static void ide_queue_pc_head(ide_drive_t *drive, struct gendisk *disk,
-+			      struct ide_atapi_pc *pc, struct request *rq)
- {
- 	blk_rq_init(NULL, rq);
- 	rq->cmd_type = REQ_TYPE_SPECIAL;
-@@ -137,7 +137,6 @@ void ide_queue_pc_head(ide_drive_t *driv
- 		rq->cmd[13] = REQ_IDETAPE_PC1;
- 	ide_do_drive_cmd(drive, rq);
+@@ -246,10 +246,7 @@ int ide_scsi_expiry(ide_drive_t *drive)
  }
--EXPORT_SYMBOL_GPL(ide_queue_pc_head);
+ EXPORT_SYMBOL_GPL(ide_scsi_expiry);
  
- /*
-  * Add a special packet command request to the tail of the request queue,
-@@ -203,6 +202,37 @@ int ide_set_media_lock(ide_drive_t *driv
- }
- EXPORT_SYMBOL_GPL(ide_set_media_lock);
- 
-+void ide_create_request_sense_cmd(ide_drive_t *drive, struct ide_atapi_pc *pc)
-+{
-+	ide_init_pc(pc);
-+	pc->c[0] = REQUEST_SENSE;
-+	if (drive->media == ide_floppy) {
-+		pc->c[4] = 255;
-+		pc->req_xfer = 18;
-+	} else {
-+		pc->c[4] = 20;
-+		pc->req_xfer = 20;
-+	}
-+}
-+EXPORT_SYMBOL_GPL(ide_create_request_sense_cmd);
-+
-+/*
-+ * Called when an error was detected during the last packet command.
-+ * We queue a request sense packet command in the head of the request list.
-+ */
-+void ide_retry_pc(ide_drive_t *drive, struct gendisk *disk)
-+{
-+	struct request *rq = &drive->request_sense_rq;
-+	struct ide_atapi_pc *pc = &drive->request_sense_pc;
-+
-+	(void)ide_read_error(drive);
-+	ide_create_request_sense_cmd(drive, pc);
-+	if (drive->media == ide_tape)
-+		set_bit(IDE_AFLAG_IGNORE_DSC, &drive->atapi_flags);
-+	ide_queue_pc_head(drive, disk, pc, rq);
-+}
-+EXPORT_SYMBOL_GPL(ide_retry_pc);
-+
- int ide_scsi_expiry(ide_drive_t *drive)
+-/* TODO: unify the code thus making some arguments go away */
+-ide_startstop_t ide_pc_intr(ide_drive_t *drive, ide_handler_t *handler,
+-	void (*update_buffers)(ide_drive_t *, struct ide_atapi_pc *),
+-	int (*io_buffers)(ide_drive_t *, struct ide_atapi_pc *, unsigned, int))
++ide_startstop_t ide_pc_intr(ide_drive_t *drive, ide_handler_t *handler)
  {
  	struct ide_atapi_pc *pc = drive->pc;
-@@ -219,7 +249,6 @@ EXPORT_SYMBOL_GPL(ide_scsi_expiry);
- /* TODO: unify the code thus making some arguments go away */
- ide_startstop_t ide_pc_intr(ide_drive_t *drive, ide_handler_t *handler,
- 	void (*update_buffers)(ide_drive_t *, struct ide_atapi_pc *),
--	void (*retry_pc)(ide_drive_t *),
- 	int (*io_buffers)(ide_drive_t *, struct ide_atapi_pc *, unsigned, int))
- {
- 	struct ide_atapi_pc *pc = drive->pc;
-@@ -299,7 +328,7 @@ ide_startstop_t ide_pc_intr(ide_drive_t 
- 			debug_log("[cmd %x]: check condition\n", rq->cmd[0]);
+ 	ide_hwif_t *hwif = drive->hwif;
+@@ -290,8 +287,8 @@ ide_startstop_t ide_pc_intr(ide_drive_t 
+ 			pc->flags |= PC_FLAG_DMA_ERROR;
+ 		} else {
+ 			pc->xferred = pc->req_xfer;
+-			if (update_buffers)
+-				update_buffers(drive, pc);
++			if (drive->pc_update_buffers)
++				drive->pc_update_buffers(drive, pc);
+ 		}
+ 		debug_log("%s: DMA finished\n", drive->name);
+ 	}
+@@ -386,7 +383,8 @@ cmd_finished:
+ 					temp = 0;
+ 				if (temp) {
+ 					if (pc->sg)
+-						io_buffers(drive, pc, temp, 0);
++						drive->pc_io_buffers(drive, pc,
++								     temp, 0);
+ 					else
+ 						tp_ops->input_data(drive, NULL,
+ 							pc->cur_pos, temp);
+@@ -410,7 +408,7 @@ cmd_finished:
+ 	if ((drive->media == ide_floppy && !scsi && !pc->buf) ||
+ 	    (drive->media == ide_tape && !scsi && pc->bh) ||
+ 	    (scsi && pc->sg)) {
+-		int done = io_buffers(drive, pc, bcount,
++		int done = drive->pc_io_buffers(drive, pc, bcount,
+ 				  !!(pc->flags & PC_FLAG_WRITING));
  
- 			/* Retry operation */
--			retry_pc(drive);
-+			ide_retry_pc(drive, rq->rq_disk);
- 
- 			/* queued, but not started */
- 			return ide_stopped;
+ 		/* FIXME: don't do partial completions */
 Index: b/drivers/ide/ide-floppy.c
 ===================================================================
 --- a/drivers/ide/ide-floppy.c
 +++ b/drivers/ide/ide-floppy.c
-@@ -192,34 +192,11 @@ static void ide_floppy_callback(ide_driv
- 	idefloppy_end_request(drive, uptodate, 0);
- }
- 
--void ide_floppy_create_request_sense_cmd(struct ide_atapi_pc *pc)
--{
--	ide_init_pc(pc);
--	pc->c[0] = GPCMD_REQUEST_SENSE;
--	pc->c[4] = 255;
--	pc->req_xfer = 18;
--}
--
--/*
-- * Called when an error was detected during the last packet command. We queue a
-- * request sense packet command in the head of the request list.
-- */
--static void idefloppy_retry_pc(ide_drive_t *drive)
--{
--	struct ide_floppy_obj *floppy = drive->driver_data;
--	struct request *rq = &drive->request_sense_rq;
--	struct ide_atapi_pc *pc = &drive->request_sense_pc;
--
--	(void)ide_read_error(drive);
--	ide_floppy_create_request_sense_cmd(pc);
--	ide_queue_pc_head(drive, floppy->disk, pc, rq);
--}
--
+@@ -195,8 +195,7 @@ static void ide_floppy_callback(ide_driv
  /* The usual interrupt handler called during a packet command. */
  static ide_startstop_t idefloppy_pc_intr(ide_drive_t *drive)
  {
- 	return ide_pc_intr(drive, idefloppy_pc_intr, idefloppy_update_buffers,
--			   idefloppy_retry_pc, ide_io_buffers);
-+			   ide_io_buffers);
+-	return ide_pc_intr(drive, idefloppy_pc_intr, idefloppy_update_buffers,
+-			   ide_io_buffers);
++	return ide_pc_intr(drive, idefloppy_pc_intr);
  }
  
  /*
-Index: b/drivers/ide/ide-floppy.h
-===================================================================
---- a/drivers/ide/ide-floppy.h
-+++ b/drivers/ide/ide-floppy.h
-@@ -49,7 +49,6 @@ typedef struct ide_floppy_obj {
- /* ide-floppy.c */
- void ide_floppy_create_mode_sense_cmd(struct ide_atapi_pc *, u8);
- void ide_floppy_create_read_capacity_cmd(struct ide_atapi_pc *);
--void ide_floppy_create_request_sense_cmd(struct ide_atapi_pc *);
+@@ -635,7 +634,9 @@ static void idefloppy_setup(ide_drive_t 
  
- /* ide-floppy_ioctl.c */
- int ide_floppy_format_ioctl(ide_drive_t *, struct file *, unsigned int,
-Index: b/drivers/ide/ide-floppy_ioctl.c
-===================================================================
---- a/drivers/ide/ide-floppy_ioctl.c
-+++ b/drivers/ide/ide-floppy_ioctl.c
-@@ -195,7 +195,7 @@ static int ide_floppy_get_format_progres
- 	int progress_indication = 0x10000;
+ 	*((u16 *)&gcw) = id[ATA_ID_CONFIG];
  
- 	if (drive->atapi_flags & IDE_AFLAG_SRFP) {
--		ide_floppy_create_request_sense_cmd(&pc);
-+		ide_create_request_sense_cmd(drive, &pc);
- 		if (ide_queue_pc_tail(drive, floppy->disk, &pc))
- 			return -EIO;
+-	drive->pc_callback = ide_floppy_callback;
++	drive->pc_callback	 = ide_floppy_callback;
++	drive->pc_update_buffers = idefloppy_update_buffers;
++	drive->pc_io_buffers	 = ide_io_buffers;
  
+ 	if (((gcw[0] & 0x60) >> 5) == 1)
+ 		drive->atapi_flags |= IDE_AFLAG_DRQ_INTERRUPT;
 Index: b/drivers/ide/ide-tape.c
 ===================================================================
 --- a/drivers/ide/ide-tape.c
 +++ b/drivers/ide/ide-tape.c
-@@ -581,31 +581,6 @@ static void ide_tape_callback(ide_drive_
- 	idetape_end_request(drive, uptodate, 0);
- }
- 
--static void idetape_create_request_sense_cmd(struct ide_atapi_pc *pc)
--{
--	ide_init_pc(pc);
--	pc->c[0] = REQUEST_SENSE;
--	pc->c[4] = 20;
--	pc->req_xfer = 20;
--}
--
--/*
-- *	idetape_retry_pc is called when an error was detected during the
-- *	last packet command. We queue a request sense packet command in
-- *	the head of the request list.
-- */
--static void idetape_retry_pc(ide_drive_t *drive)
--{
--	struct ide_tape_obj *tape = drive->driver_data;
--	struct request *rq = &drive->request_sense_rq;
--	struct ide_atapi_pc *pc = &drive->request_sense_pc;
--
--	(void)ide_read_error(drive);
--	idetape_create_request_sense_cmd(pc);
--	set_bit(IDE_AFLAG_IGNORE_DSC, &drive->atapi_flags);
--	ide_queue_pc_head(drive, tape->disk, pc, rq);
--}
--
- /*
-  * Postpone the current request so that ide.c will be able to service requests
-  * from another device on the same hwgroup while we are polling for DSC.
-@@ -653,7 +628,7 @@ static int ide_tape_io_buffers(ide_drive
+@@ -627,8 +627,7 @@ static int ide_tape_io_buffers(ide_drive
+  */
  static ide_startstop_t idetape_pc_intr(ide_drive_t *drive)
  {
- 	return ide_pc_intr(drive, idetape_pc_intr, idetape_update_buffers,
--			   idetape_retry_pc, ide_tape_io_buffers);
-+			   ide_tape_io_buffers);
+-	return ide_pc_intr(drive, idetape_pc_intr, idetape_update_buffers,
+-			   ide_tape_io_buffers);
++	return ide_pc_intr(drive, idetape_pc_intr);
  }
  
  /*
-@@ -789,7 +764,7 @@ static ide_startstop_t idetape_media_acc
- 				printk(KERN_ERR "ide-tape: %s: I/O error, ",
- 						tape->name);
- 			/* Retry operation */
--			idetape_retry_pc(drive);
-+			ide_retry_pc(drive, tape->disk);
- 			return ide_stopped;
- 		}
- 		pc->error = 0;
+@@ -2210,7 +2209,9 @@ static void idetape_setup(ide_drive_t *d
+ 	u8 gcw[2];
+ 	u16 *ctl = (u16 *)&tape->caps[12];
+ 
+-	drive->pc_callback = ide_tape_callback;
++	drive->pc_callback	 = ide_tape_callback;
++	drive->pc_update_buffers = idetape_update_buffers;
++	drive->pc_io_buffers	 = ide_tape_io_buffers;
+ 
+ 	spin_lock_init(&tape->lock);
+ 	drive->dsc_overlap = 1;
 Index: b/drivers/scsi/ide-scsi.c
 ===================================================================
 --- a/drivers/scsi/ide-scsi.c
@@ -257,36 +149,46 @@ Index: b/drivers/scsi/ide-scsi.c
   */
  static ide_startstop_t idescsi_pc_intr (ide_drive_t *drive)
  {
--	return ide_pc_intr(drive, idescsi_pc_intr, NULL, NULL, ide_io_buffers);
-+	return ide_pc_intr(drive, idescsi_pc_intr, NULL, ide_io_buffers);
+-	return ide_pc_intr(drive, idescsi_pc_intr, NULL, ide_io_buffers);
++	return ide_pc_intr(drive, idescsi_pc_intr);
  }
  
  static ide_startstop_t idescsi_transfer_pc(ide_drive_t *drive)
+@@ -407,7 +407,9 @@ static void idescsi_setup (ide_drive_t *
+ 	set_bit(IDESCSI_LOG_CMD, &scsi->log);
+ #endif /* IDESCSI_DEBUG_LOG */
+ 
+-	drive->pc_callback = ide_scsi_callback;
++	drive->pc_callback	 = ide_scsi_callback;
++	drive->pc_update_buffers = NULL;
++	drive->pc_io_buffers	 = ide_io_buffers;
+ 
+ 	ide_proc_register_driver(drive, scsi->driver);
+ }
 Index: b/include/linux/ide.h
 ===================================================================
 --- a/include/linux/ide.h
 +++ b/include/linux/ide.h
-@@ -1158,13 +1158,13 @@ enum {
- 	REQ_IDETAPE_WRITE	= (1 << 3),
- };
+@@ -552,6 +552,10 @@ struct ide_drive_s {
+ 	/* callback for packet commands */
+ 	void (*pc_callback)(struct ide_drive_s *, int);
  
--void ide_queue_pc_head(ide_drive_t *, struct gendisk *, struct ide_atapi_pc *,
--		       struct request *);
- int ide_queue_pc_tail(ide_drive_t *, struct gendisk *, struct ide_atapi_pc *);
++	void (*pc_update_buffers)(struct ide_drive_s *, struct ide_atapi_pc *);
++	int  (*pc_io_buffers)(struct ide_drive_s *, struct ide_atapi_pc *,
++			      unsigned int, int);
++
+ 	unsigned long atapi_flags;
  
- int ide_do_test_unit_ready(ide_drive_t *, struct gendisk *);
- int ide_do_start_stop(ide_drive_t *, struct gendisk *, int);
- int ide_set_media_lock(ide_drive_t *, struct gendisk *, int);
-+void ide_create_request_sense_cmd(ide_drive_t *, struct ide_atapi_pc *);
-+void ide_retry_pc(ide_drive_t *, struct gendisk *);
+ 	struct ide_atapi_pc request_sense_pc;
+@@ -1173,10 +1177,7 @@ static inline unsigned long ide_scsi_get
  
- static inline unsigned long ide_scsi_get_timeout(struct ide_atapi_pc *pc)
- {
-@@ -1175,7 +1175,6 @@ int ide_scsi_expiry(ide_drive_t *);
+ int ide_scsi_expiry(ide_drive_t *);
  
- ide_startstop_t ide_pc_intr(ide_drive_t *drive, ide_handler_t *handler,
- 	void (*update_buffers)(ide_drive_t *, struct ide_atapi_pc *),
--	void (*retry_pc)(ide_drive_t *),
- 	int (*io_buffers)(ide_drive_t *, struct ide_atapi_pc *, unsigned int,
- 			   int));
+-ide_startstop_t ide_pc_intr(ide_drive_t *drive, ide_handler_t *handler,
+-	void (*update_buffers)(ide_drive_t *, struct ide_atapi_pc *),
+-	int (*io_buffers)(ide_drive_t *, struct ide_atapi_pc *, unsigned int,
+-			   int));
++ide_startstop_t ide_pc_intr(ide_drive_t *drive, ide_handler_t *handler);
  ide_startstop_t ide_transfer_pc(ide_drive_t *,
+ 				ide_handler_t *, unsigned int, ide_expiry_t *);
+ ide_startstop_t ide_issue_pc(ide_drive_t *,
