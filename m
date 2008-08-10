@@ -1,29 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754734AbYHJGAf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755176AbYHJGBu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754734AbYHJGAf (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Aug 2008 02:00:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752006AbYHJGA1
+	id S1755176AbYHJGBu (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Aug 2008 02:01:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752157AbYHJGBm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Aug 2008 02:00:27 -0400
-Received: from E23SMTP01.au.ibm.com ([202.81.18.162]:41745 "EHLO
-	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751095AbYHJGA0 (ORCPT
+	Sun, 10 Aug 2008 02:01:42 -0400
+Received: from e28smtp06.in.ibm.com ([59.145.155.6]:38734 "EHLO
+	e28esmtp06.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752006AbYHJGBl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Aug 2008 02:00:26 -0400
-Date: Sun, 10 Aug 2008 11:29:28 +0530
+	Sun, 10 Aug 2008 02:01:41 -0400
+Date: Sun, 10 Aug 2008 11:31:22 +0530
 From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
 Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: [Bug #11243] Current git fails to compile (gcc 3.4.4)
-Message-ID: <20080810055928.GA19796@linux.vnet.ibm.com>
+       Miao Xie <miaox@cn.fujitsu.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+Subject: Re: [Bug #11207] VolanoMark regression with 2.6.27-rc1
+Message-ID: <20080810060122.GB19796@linux.vnet.ibm.com>
 Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-References: <VYYCiQF4qDI.A.BPH.KCjnIB@albercik> <cX_-nNkxKaF.A.anB.eDjnIB@albercik>
+References: <VYYCiQF4qDI.A.BPH.KCjnIB@albercik> <cX_-nNkxKaF.A.xxC.VEjnIB@albercik>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <cX_-nNkxKaF.A.anB.eDjnIB@albercik>
+In-Reply-To: <cX_-nNkxKaF.A.xxC.VEjnIB@albercik>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -37,18 +39,21 @@ On Sun, Aug 10, 2008 at 12:43:51AM +0200, Rafael J. Wysocki wrote:
 > from 2.6.26.  Please verify if it still should be listed and let me know
 > (either way).
 > 
+
+Yes, it should still be.
+
 > 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11243
-> Subject		: Current git fails to compile (gcc 3.4.4)
-> Submitter	: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-> Date		: 2008-07-18 7:55 (23 days old)
-> References	: http://marc.info/?l=linux-kernel&m=121636772226303&w=4
-> Handled-By	: Jeremy Fitzhardinge <jeremy@goop.org>
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11207
+> Subject		: VolanoMark regression with 2.6.27-rc1
+> Submitter	: Zhang, Yanmin <yanmin_zhang@linux.intel.com>
+> Date		: 2008-07-31 3:20 (10 days old)
+> References	: http://marc.info/?l=linux-kernel&m=121747464114335&w=4
+> Handled-By	: Zhang, Yanmin <yanmin_zhang@linux.intel.com>
+> 		  Peter Zijlstra <a.p.zijlstra@chello.nl>
+> 		  Dhaval Giani <dhaval@linux.vnet.ibm.com>
+> 		  Miao Xie <miaox@cn.fujitsu.com>
 > 
 
-There is a fix available for it now at http://lkml.org/lkml/2008/8/8/349
-
-Thanks,
 -- 
 regards,
 Dhaval
