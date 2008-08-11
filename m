@@ -1,387 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758462AbYHKXyt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758148AbYHKXzO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758462AbYHKXyt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Aug 2008 19:54:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757571AbYHKXxn
+	id S1758148AbYHKXzO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Aug 2008 19:55:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757921AbYHKXxu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Aug 2008 19:53:43 -0400
-Received: from e32.co.us.ibm.com ([32.97.110.150]:35422 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757403AbYHKXxk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Aug 2008 19:53:40 -0400
-Message-Id: <20080811235324.661871296@us.ibm.com>
+	Mon, 11 Aug 2008 19:53:50 -0400
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:44522 "EHLO e3.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757869AbYHKXxt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Aug 2008 19:53:49 -0400
+Message-Id: <20080811235325.917183517@us.ibm.com>
 References: <20080811235323.872291138@us.ibm.com>
 User-Agent: quilt/0.46-1
-Date: Mon, 11 Aug 2008 16:53:25 -0700
+Date: Mon, 11 Aug 2008 16:53:28 -0700
 From: Matt Helsley <matthltc@us.ibm.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Paul Menage <menage@google.com>,
        Li Zefan <lizf@cn.fujitsu.com>,
        Linux-Kernel <linux-kernel@vger.kernel.org>,
        Linux Containers <containers@lists.linux-foundation.org>,
-       linux-pm@lists.linux-foundation.org, Cedric Le Goater <clg@fr.ibm.com>,
-       "Serge E. Hallyn" <serue@us.ibm.com>
-Subject: [PATCH 2/5] Container Freezer: Make refrigerator always available
+       linux-pm@lists.linux-foundation.org
+Subject: [PATCH 5/5] Container Freezer: Prevent frozen tasks or cgroups from changing
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Now that the TIF_FREEZE flag is available in all architectures,
-extract the refrigerator() and freeze_task() from kernel/power/process.c
-and make it available to all.
+Don't let frozen tasks or cgroups change. This means frozen tasks can't
+leave their current cgroup for another cgroup. It also means that tasks
+cannot be added to or removed from a cgroup in the FROZEN state. We
+enforce these rules by checking for frozen tasks and cgroups in the
+can_attach() function.
 
-The refrigerator() can now be used in a control group subsystem
-implementing a control group freezer.
-
-Signed-off-by: Cedric Le Goater <clg@fr.ibm.com>
 Signed-off-by: Matt Helsley <matthltc@us.ibm.com>
-Acked-by: Serge E. Hallyn <serue@us.ibm.com>
-Tested-by: Matt Helsley <matthltc@us.ibm.com>
 ---
- include/linux/freezer.h |   14 ++++-
- kernel/Makefile         |    1 
- kernel/freezer.c        |  122 ++++++++++++++++++++++++++++++++++++++++++++++++
- kernel/power/Kconfig    |    3 +
- kernel/power/process.c  |  116 ---------------------------------------------
- 5 files changed, 137 insertions(+), 119 deletions(-)
- create mode 100644 kernel/freezer.c
+Changes since v4:
+v5:
+	Checked use of task alloc lock for races with swsusp freeze/thaw --
+		looks safe because there are explicit barriers to handle
+		freeze/thaw races for individual tasks, we explicitly
+		handle partial group freezing, and partial group thawing
+		should be resolved without changing swsusp's loop. This should
+		answer Li Zefan's last comment re: races between freeze and
+		thaw.
 
-Index: linux-2.6.27-rc1-mm1/include/linux/freezer.h
+ kernel/cgroup_freezer.c |   43 ++++++++++++++++++++++++++-----------------
+ 1 file changed, 26 insertions(+), 17 deletions(-)
+
+Index: linux-2.6.27-rc1-mm1/kernel/cgroup_freezer.c
 ===================================================================
---- linux-2.6.27-rc1-mm1.orig/include/linux/freezer.h
-+++ linux-2.6.27-rc1-mm1/include/linux/freezer.h
-@@ -6,7 +6,7 @@
- #include <linux/sched.h>
- #include <linux/wait.h>
- 
--#ifdef CONFIG_PM_SLEEP
-+#ifdef CONFIG_FREEZER
- /*
-  * Check if a process has been frozen
-  */
-@@ -39,6 +39,11 @@ static inline void clear_freeze_flag(str
- 	clear_tsk_thread_flag(p, TIF_FREEZE);
+--- linux-2.6.27-rc1-mm1.orig/kernel/cgroup_freezer.c
++++ linux-2.6.27-rc1-mm1/kernel/cgroup_freezer.c
+@@ -145,22 +145,40 @@ static void freezer_destroy(struct cgrou
+ 	kfree(cgroup_freezer(cgroup));
  }
  
-+static inline bool should_send_signal(struct task_struct *p)
++/* Task is frozen or will freeze immediately when next it gets woken */
++static bool is_task_frozen_enough(struct task_struct *task)
 +{
-+	return !(p->flags & PF_FREEZER_NOSIG);
++	return frozen(task) ||
++		(task_is_stopped_or_traced(task) && freezing(task));
 +}
-+
- /*
-  * Wake up a frozen process
-  *
-@@ -75,6 +80,9 @@ static inline int try_to_freeze(void)
- 		return 0;
- }
  
-+extern bool freeze_task(struct task_struct *p, bool sig_only);
-+extern void cancel_freezing(struct task_struct *p);
-+
- /*
-  * The PF_FREEZER_SKIP flag should be set by a vfork parent right before it
-  * calls wait_for_completion(&vfork) and reset right after it returns from this
-@@ -166,7 +174,7 @@ static inline void set_freezable_with_si
- 	} while (try_to_freeze());					\
- 	__retval;							\
- })
--#else /* !CONFIG_PM_SLEEP */
-+#else /* !CONFIG_FREEZER */
- static inline int frozen(struct task_struct *p) { return 0; }
- static inline int freezing(struct task_struct *p) { return 0; }
- static inline void set_freeze_flag(struct task_struct *p) {}
-@@ -191,6 +199,6 @@ static inline void set_freezable_with_si
- #define wait_event_freezable_timeout(wq, condition, timeout)		\
- 		wait_event_interruptible_timeout(wq, condition, timeout)
- 
--#endif /* !CONFIG_PM_SLEEP */
-+#endif /* !CONFIG_FREEZER */
- 
- #endif	/* FREEZER_H_INCLUDED */
-Index: linux-2.6.27-rc1-mm1/kernel/Makefile
-===================================================================
---- linux-2.6.27-rc1-mm1.orig/kernel/Makefile
-+++ linux-2.6.27-rc1-mm1/kernel/Makefile
-@@ -24,6 +24,7 @@ CFLAGS_REMOVE_sched_clock.o = -pg
- CFLAGS_REMOVE_sched.o = -mno-spe -pg
- endif
- 
-+obj-$(CONFIG_FREEZER) += freezer.o
- obj-$(CONFIG_PROFILING) += profile.o
- obj-$(CONFIG_SYSCTL_SYSCALL_CHECK) += sysctl_check.o
- obj-$(CONFIG_STACKTRACE) += stacktrace.o
-Index: linux-2.6.27-rc1-mm1/kernel/freezer.c
-===================================================================
---- /dev/null
-+++ linux-2.6.27-rc1-mm1/kernel/freezer.c
-@@ -0,0 +1,122 @@
 +/*
-+ * kernel/freezer.c - Function to freeze a process
-+ *
-+ * Originally from kernel/power/process.c
++ * The call to cgroup_lock() in the freezer.state write method prevents
++ * a write to that file racing against an attach, and hence the
++ * can_attach() result will remain valid until the attach completes.
 + */
-+
-+#include <linux/interrupt.h>
-+#include <linux/suspend.h>
-+#include <linux/module.h>
-+#include <linux/syscalls.h>
-+#include <linux/freezer.h>
-+
-+/*
-+ * freezing is complete, mark current process as frozen
-+ */
-+static inline void frozen_process(void)
-+{
-+	if (!unlikely(current->flags & PF_NOFREEZE)) {
-+		current->flags |= PF_FROZEN;
-+		wmb();
-+	}
-+	clear_freeze_flag(current);
-+}
-+
-+/* Refrigerator is place where frozen processes are stored :-). */
-+void refrigerator(void)
-+{
-+	/* Hmm, should we be allowed to suspend when there are realtime
-+	   processes around? */
-+	long save;
-+
-+	task_lock(current);
-+	if (freezing(current)) {
-+		frozen_process();
-+		task_unlock(current);
-+	} else {
-+		task_unlock(current);
-+		return;
-+	}
-+	save = current->state;
-+	pr_debug("%s entered refrigerator\n", current->comm);
-+
-+	spin_lock_irq(&current->sighand->siglock);
-+	recalc_sigpending(); /* We sent fake signal, clean it up */
-+	spin_unlock_irq(&current->sighand->siglock);
-+
-+	for (;;) {
-+		set_current_state(TASK_UNINTERRUPTIBLE);
-+		if (!frozen(current))
-+			break;
-+		schedule();
-+	}
-+	pr_debug("%s left refrigerator\n", current->comm);
-+	__set_current_state(save);
-+}
-+EXPORT_SYMBOL(refrigerator);
-+
-+static void fake_signal_wake_up(struct task_struct *p)
-+{
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&p->sighand->siglock, flags);
-+	signal_wake_up(p, 0);
-+	spin_unlock_irqrestore(&p->sighand->siglock, flags);
-+}
-+
-+/**
-+ *	freeze_task - send a freeze request to given task
-+ *	@p: task to send the request to
-+ *	@sig_only: if set, the request will only be sent if the task has the
-+ *		PF_FREEZER_NOSIG flag unset
-+ *	Return value: 'false', if @sig_only is set and the task has
-+ *		PF_FREEZER_NOSIG set or the task is frozen, 'true', otherwise
-+ *
-+ *	The freeze request is sent by setting the tasks's TIF_FREEZE flag and
-+ *	either sending a fake signal to it or waking it up, depending on whether
-+ *	or not it has PF_FREEZER_NOSIG set.  If @sig_only is set and the task
-+ *	has PF_FREEZER_NOSIG set (ie. it is a typical kernel thread), its
-+ *	TIF_FREEZE flag will not be set.
-+ */
-+bool freeze_task(struct task_struct *p, bool sig_only)
-+{
-+	/*
-+	 * We first check if the task is freezing and next if it has already
-+	 * been frozen to avoid the race with frozen_process() which first marks
-+	 * the task as frozen and next clears its TIF_FREEZE.
-+	 */
-+	if (!freezing(p)) {
-+		rmb();
-+		if (frozen(p))
-+			return false;
-+
-+		if (!sig_only || should_send_signal(p))
-+			set_freeze_flag(p);
-+		else
-+			return false;
-+	}
-+
-+	if (should_send_signal(p)) {
-+		if (!signal_pending(p))
-+			fake_signal_wake_up(p);
-+	} else if (sig_only) {
-+		return false;
-+	} else {
-+		wake_up_state(p, TASK_INTERRUPTIBLE);
-+	}
-+
-+	return true;
-+}
-+
-+void cancel_freezing(struct task_struct *p)
-+{
-+	unsigned long flags;
-+
-+	if (freezing(p)) {
-+		pr_debug("  clean up: %s\n", p->comm);
-+		clear_freeze_flag(p);
-+		spin_lock_irqsave(&p->sighand->siglock, flags);
-+		recalc_sigpending_and_wake(p);
-+		spin_unlock_irqrestore(&p->sighand->siglock, flags);
-+	}
-+}
-Index: linux-2.6.27-rc1-mm1/kernel/power/process.c
-===================================================================
---- linux-2.6.27-rc1-mm1.orig/kernel/power/process.c
-+++ linux-2.6.27-rc1-mm1/kernel/power/process.c
-@@ -28,121 +28,6 @@ static inline int freezeable(struct task
- 	return 1;
- }
- 
--/*
-- * freezing is complete, mark current process as frozen
-- */
--static inline void frozen_process(void)
--{
--	if (!unlikely(current->flags & PF_NOFREEZE)) {
--		current->flags |= PF_FROZEN;
--		wmb();
--	}
--	clear_freeze_flag(current);
--}
--
--/* Refrigerator is place where frozen processes are stored :-). */
--void refrigerator(void)
--{
--	/* Hmm, should we be allowed to suspend when there are realtime
--	   processes around? */
--	long save;
--
--	task_lock(current);
--	if (freezing(current)) {
--		frozen_process();
--		task_unlock(current);
--	} else {
--		task_unlock(current);
--		return;
--	}
--	save = current->state;
--	pr_debug("%s entered refrigerator\n", current->comm);
--
--	spin_lock_irq(&current->sighand->siglock);
--	recalc_sigpending(); /* We sent fake signal, clean it up */
--	spin_unlock_irq(&current->sighand->siglock);
--
--	for (;;) {
--		set_current_state(TASK_UNINTERRUPTIBLE);
--		if (!frozen(current))
--			break;
--		schedule();
--	}
--	pr_debug("%s left refrigerator\n", current->comm);
--	__set_current_state(save);
--}
--
--static void fake_signal_wake_up(struct task_struct *p)
--{
--	unsigned long flags;
--
--	spin_lock_irqsave(&p->sighand->siglock, flags);
--	signal_wake_up(p, 0);
--	spin_unlock_irqrestore(&p->sighand->siglock, flags);
--}
--
--static inline bool should_send_signal(struct task_struct *p)
--{
--	return !(p->flags & PF_FREEZER_NOSIG);
--}
--
--/**
-- *	freeze_task - send a freeze request to given task
-- *	@p: task to send the request to
-- *	@sig_only: if set, the request will only be sent if the task has the
-- *		PF_FREEZER_NOSIG flag unset
-- *	Return value: 'false', if @sig_only is set and the task has
-- *		PF_FREEZER_NOSIG set or the task is frozen, 'true', otherwise
-- *
-- *	The freeze request is sent by setting the tasks's TIF_FREEZE flag and
-- *	either sending a fake signal to it or waking it up, depending on whether
-- *	or not it has PF_FREEZER_NOSIG set.  If @sig_only is set and the task
-- *	has PF_FREEZER_NOSIG set (ie. it is a typical kernel thread), its
-- *	TIF_FREEZE flag will not be set.
-- */
--static bool freeze_task(struct task_struct *p, bool sig_only)
--{
--	/*
--	 * We first check if the task is freezing and next if it has already
--	 * been frozen to avoid the race with frozen_process() which first marks
--	 * the task as frozen and next clears its TIF_FREEZE.
--	 */
--	if (!freezing(p)) {
--		rmb();
--		if (frozen(p))
--			return false;
--
--		if (!sig_only || should_send_signal(p))
--			set_freeze_flag(p);
--		else
--			return false;
--	}
--
--	if (should_send_signal(p)) {
--		if (!signal_pending(p))
--			fake_signal_wake_up(p);
--	} else if (sig_only) {
--		return false;
--	} else {
--		wake_up_state(p, TASK_INTERRUPTIBLE);
--	}
--
--	return true;
--}
--
--static void cancel_freezing(struct task_struct *p)
--{
--	unsigned long flags;
--
--	if (freezing(p)) {
--		pr_debug("  clean up: %s\n", p->comm);
--		clear_freeze_flag(p);
--		spin_lock_irqsave(&p->sighand->siglock, flags);
--		recalc_sigpending_and_wake(p);
--		spin_unlock_irqrestore(&p->sighand->siglock, flags);
--	}
--}
--
- static int try_to_freeze_tasks(bool sig_only)
+ static int freezer_can_attach(struct cgroup_subsys *ss,
+ 			      struct cgroup *new_cgroup,
+ 			      struct task_struct *task)
  {
- 	struct task_struct *g, *p;
-@@ -264,4 +149,3 @@ void thaw_processes(void)
- 	printk("done.\n");
+ 	struct freezer *freezer;
+-	int retval = 0;
++	int retval;
++
++	/* Anything frozen can't move or be moved to/from */
++
++	if (is_task_frozen_enough(task))
++		return -EBUSY;
+ 
+-	/*
+-	 * The call to cgroup_lock() in the freezer.state write method prevents
+-	 * a write to that file racing against an attach, and hence the
+-	 * can_attach() result will remain valid until the attach completes.
+-	 */
+ 	freezer = cgroup_freezer(new_cgroup);
+ 	if (freezer->state == STATE_FROZEN)
++		return -EBUSY;
++
++	retval = 0;
++	task_lock(task);
++	freezer = task_freezer(task);
++	if (freezer->state == STATE_FROZEN)
+ 		retval = -EBUSY;
++	task_unlock(task);
+ 	return retval;
  }
  
--EXPORT_SYMBOL(refrigerator);
-Index: linux-2.6.27-rc1-mm1/kernel/power/Kconfig
-===================================================================
---- linux-2.6.27-rc1-mm1.orig/kernel/power/Kconfig
-+++ linux-2.6.27-rc1-mm1/kernel/power/Kconfig
-@@ -85,6 +85,9 @@ config PM_SLEEP
- 	depends on SUSPEND || HIBERNATION || XEN_SAVE_RESTORE
- 	default y
+@@ -193,12 +211,7 @@ static void check_if_frozen(struct cgrou
+ 	cgroup_iter_start(cgroup, &it);
+ 	while ((task = cgroup_iter_next(cgroup, &it))) {
+ 		ntotal++;
+-		/*
+-		 * Task is frozen or will freeze immediately when next it gets
+-		 * woken
+-		 */
+-		if (frozen(task) ||
+-		    (task_is_stopped_or_traced(task) && freezing(task)))
++		if (is_task_frozen_enough(task))
+ 			nfrozen++;
+ 	}
  
-+config FREEZER
-+	def_bool PM_SLEEP
-+
- config SUSPEND
- 	bool "Suspend to RAM and standby"
- 	depends on PM && ARCH_SUSPEND_POSSIBLE
+@@ -249,11 +262,7 @@ static int try_to_freeze_cgroup(struct c
+ 	while ((task = cgroup_iter_next(cgroup, &it))) {
+ 		if (!freeze_task(task, true))
+ 			continue;
+-		if (task_is_stopped_or_traced(task) && freezing(task))
+-			/*
+-			 * The freeze flag is set so these tasks will
+-			 * immediately go into the fridge upon waking.
+-			 */
++		if (is_task_frozen_enough(task))
+ 			continue;
+ 		if (!freezing(task) && !freezer_should_skip(task))
+ 			num_cant_freeze_now++;
 
 -- 
