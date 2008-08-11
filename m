@@ -1,69 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757901AbYHKWE2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757203AbYHKWGw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757901AbYHKWE2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Aug 2008 18:04:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752113AbYHKWEU
+	id S1757203AbYHKWGw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Aug 2008 18:06:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751014AbYHKWGm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Aug 2008 18:04:20 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:36299 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752074AbYHKWEU (ORCPT
+	Mon, 11 Aug 2008 18:06:42 -0400
+Received: from mu-out-0910.google.com ([209.85.134.184]:45261 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750846AbYHKWGm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Aug 2008 18:04:20 -0400
-Date: Mon, 11 Aug 2008 15:03:14 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Ingo Molnar <mingo@elte.hu>
-cc: Dmitry Adamushko <dmitry.adamushko@gmail.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "Langsdorf, Mark" <mark.langsdorf@amd.com>,
-       lkml <linux-kernel@vger.kernel.org>, Gautham R Shenoy <ego@in.ibm.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Regression in 2.6.27-rc1 for set_cpus_allowed_ptr
-In-Reply-To: <20080811123020.GB10082@elte.hu>
-Message-ID: <alpine.LFD.1.10.0808111500330.3462@nehalem.linux-foundation.org>
-References: <6453C3CB8E2B3646B0D020C112613273C5AC5A@sausexmb4.amd.com> <200808082303.41068.rjw@sisk.pl> <b647ffbd0808081431q27a48113q5beee1bae7c24b0a@mail.gmail.com> <20080811123020.GB10082@elte.hu>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Mon, 11 Aug 2008 18:06:42 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :content-type:content-transfer-encoding;
+        b=QTLaRCQ+iHwVV4CSjCmaefqAYl9gCjovCw8yKJX9FjN8lniG9C4RJTQc3DhpCeyKS9
+         5drfuijBVODL3yeNhwS8ljczw9yn9rbnNMV6pXgeOoYDuJlNIcI7E9SJGetyv6v9lAGZ
+         3/1ZVN8eZLYoawvzU+9XQtHo6wSxdz9C6kuZg=
+Message-ID: <48A0B7ED.2010705@gmail.com>
+Date: Tue, 12 Aug 2008 00:06:37 +0200
+From: =?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: mingo@redhat.com, srostedt@redhat.com
+CC: Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: [PATCH] trace: Fix some mistakes in error messages
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This patch fixes some mistakes on the tracer in warning messages when 
+debugfs fails to create tracing files.
+Kernel version: 2.6.27-rc1
 
+Regards.
 
-On Mon, 11 Aug 2008, Ingo Molnar wrote:
-> 
-> i've queued up the fix below in tip/sched/urgent.
-> 
-> diff --git a/kernel/cpu.c b/kernel/cpu.c
-> index e202a68..c977c33 100644
-> --- a/kernel/cpu.c
-> +++ b/kernel/cpu.c
-> @@ -349,6 +349,8 @@ static int __cpuinit _cpu_up(unsigned int cpu, int tasks_frozen)
->  		goto out_notify;
->  	BUG_ON(!cpu_online(cpu));
->  
-> +	cpu_set(cpu, cpu_active_map);
-> +
->  	/* Now call notifier in preparation. */
->  	raw_notifier_call_chain(&cpu_chain, CPU_ONLINE | mod, hcpu);
->  
-> @@ -383,9 +385,6 @@ int __cpuinit cpu_up(unsigned int cpu)
->  
->  	err = _cpu_up(cpu, 0);
->  
-> -	if (cpu_online(cpu))
-> -		cpu_set(cpu, cpu_active_map);
-> -
-
-Ok, not only does that fix the bug, but it simplifies the code and looks 
-obviously ok. However, I don't have it in my tree yet, and I'd like to do 
-an -rc3 that has this fixes (so that along with the PCI MSI thing, we 
-hopefully have most of the suspend/resume regressions fixed).
-
-And I was hoping to do -rc3 today. Can I please have pull-requests for the 
-appropriate urgent scheduler/x86 fixes? Or should I just take these as 
-patches?
-
-		Linus
+Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+---
+diff -rup a/kernel/trace/trace.c b/kernel/trace/trace.c
+--- a/kernel/trace/trace.c    2008-08-11 22:44:25.000000000 +0200
++++ b/kernel/trace/trace.c    2008-08-11 23:10:39.000000000 +0200
+@@ -2881,12 +2881,12 @@ static __init void tracer_init_debugfs(v
+     entry = debugfs_create_file("available_tracers", 0444, d_tracer,
+                     &global_trace, &show_traces_fops);
+     if (!entry)
+-        pr_warning("Could not create debugfs 'trace' entry\n");
++        pr_warning("Could not create debugfs 'available_tracers' entry\n");
+ 
+     entry = debugfs_create_file("current_tracer", 0444, d_tracer,
+                     &global_trace, &set_tracer_fops);
+     if (!entry)
+-        pr_warning("Could not create debugfs 'trace' entry\n");
++        pr_warning("Could not create debugfs 'current_tracer' entry\n");
+ 
+     entry = debugfs_create_file("tracing_max_latency", 0644, d_tracer,
+                     &tracing_max_latency,
+@@ -2899,7 +2899,7 @@ static __init void tracer_init_debugfs(v
+                     &tracing_thresh, &tracing_max_lat_fops);
+     if (!entry)
+         pr_warning("Could not create debugfs "
+-               "'tracing_threash' entry\n");
++               "'tracing_thresh' entry\n");
+     entry = debugfs_create_file("README", 0644, d_tracer,
+                     NULL, &tracing_readme_fops);
+     if (!entry)
+@@ -2909,13 +2909,13 @@ static __init void tracer_init_debugfs(v
+                     NULL, &tracing_pipe_fops);
+     if (!entry)
+         pr_warning("Could not create debugfs "
+-               "'tracing_threash' entry\n");
++               "'trace_pipe' entry\n");
+ 
+     entry = debugfs_create_file("trace_entries", 0644, d_tracer,
+                     &global_trace, &tracing_entries_fops);
+     if (!entry)
+         pr_warning("Could not create debugfs "
+-               "'tracing_threash' entry\n");
++               "'trace_entries' entry\n");
+ 
+ #ifdef CONFIG_DYNAMIC_FTRACE
+     entry = debugfs_create_file("dyn_ftrace_total_info", 0444, d_tracer,
