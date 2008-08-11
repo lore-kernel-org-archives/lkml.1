@@ -1,29 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752175AbYHKMhu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752082AbYHKMtT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752175AbYHKMhu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Aug 2008 08:37:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751411AbYHKMhn
+	id S1752082AbYHKMtT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Aug 2008 08:49:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751178AbYHKMtL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Aug 2008 08:37:43 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:58536 "EHLO mx3.mail.elte.hu"
+	Mon, 11 Aug 2008 08:49:11 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:42419 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750855AbYHKMhm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Aug 2008 08:37:42 -0400
-Date: Mon, 11 Aug 2008 14:36:47 +0200
+	id S1750855AbYHKMtK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Aug 2008 08:49:10 -0400
+Date: Mon, 11 Aug 2008 14:48:57 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, tglx@linutronix.de,
-       marcin.slusarz@gmail.com, linux-kernel@vger.kernel.org,
-       davem@davemloft.net, rostedt@goodmis.org, paulmck@linux.vnet.ibm.com
-Subject: Re: [PATCH] printk: robustify printk
-Message-ID: <20080811123647.GA24311@elte.hu>
-References: <alpine.LFD.1.10.0808081014240.3462@nehalem.linux-foundation.org> <1218217257.29098.2.camel@lappy.programming.kicks-ass.net> <alpine.LFD.1.10.0808081043160.3462@nehalem.linux-foundation.org> <1218219269.29098.5.camel@lappy.programming.kicks-ass.net> <20080808121428.646a8b3c.akpm@linux-foundation.org> <1218223269.29098.12.camel@lappy.programming.kicks-ass.net> <1218224829.29098.19.camel@lappy.programming.kicks-ass.net> <20080811104526.GA15186@elte.hu> <1218452640.10800.58.camel@twins> <20080811115109.GB23529@elte.hu>
+To: Gregory Haskins <ghaskins@novell.com>
+Cc: Mike Galbraith <efault@gmx.de>, LKML <linux-kernel@vger.kernel.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [revert] mysql+oltp regression
+Message-ID: <20080811124857.GD10082@elte.hu>
+References: <1218454322.25098.24.camel@marge.simson.net> <20080811114324.GA23529@elte.hu> <48A03049.202@novell.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20080811115109.GB23529@elte.hu>
+In-Reply-To: <48A03049.202@novell.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -38,56 +35,71 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+* Gregory Haskins <ghaskins@novell.com> wrote:
 
-> > I personally prefer this printk_tick() driven one over the RCU 
-> > driven one because it doesn't trade deadlocks.
-> 
-> i've started testing it in tip/core/printk to give it some track 
-> record - thanks Peter.
+> Ingo Molnar wrote:
+>> * Mike Galbraith <efault@gmx.de> wrote:
+>>
+>>   
+>>> Greetings,
+>>>
+>>> During regression testing of tip/sched/clock fixes, a regression in  
+>>> low client count throughput turned up, which I traced this back to 
+>>> the commit below.  I don't see anything wrong with it, but suspect 
+>>> that it is preventing client/server pairs from staying together on 
+>>> the same CPU as buddies, which mysql definitely likes quite a lot.  
+>>> (I suspect that this is the case, because I've seen this same 
+>>> performance curve while tinkering with wakeup affinity and breaking 
+>>> it all to pieces;)
+>>>
+>>> Changelog and test results below in case nobody sees a problem with  
+>>> the commit itself.
+>>>     
+>>
+>> i've applied your fix to tip/sched/urgent for the time being, thanks  
+>> Mike for tracking it down. We can re-try newer iterations of Greg's  
+>> patch in tip/sched/devel.
+>>
+>>   
+>
+> Hmm..  The patch still looks correct afaict.  I fear we are just 
+> papering over some other issue by reverting it, but I will try to see 
+> if I can track this down.  We will, of course, now be skipping trying 
+> to balance the (effectively random) last task in the queue which may 
+> or may not result in better performance on sheer luck instead of 
+> algorithmic intelligence.  This makes me nervous.
 
-small build fixlet below.
+yeah - but we had that behavior for quite some time.
+
+This is how the patch cycle works normally: we had a fair chance to 
+discover this problem in your testing then in -tip testing and then in 
+linux-next or -mm but we didnt find it at any stage.
+
+Now we are in the upstream release cycle so unless there's some 
+immediate fix available (or there are _really_ strong reasons against 
+the revert) doing the revert is the right approach.
+
+A revert is not necessarily the indicator of the quality of the change 
+in question, it is a tester-driven exception event that guarantees that 
+the kernel improves in a monotonic way. (for all testers who opt to help 
+us in doing so)
+
+And given that the problem was readily reproducible for Mike, it should 
+be reproducible for you as well - so we dont actually make the bug 
+harder to fix by doing the revert.
+
+Perhaps we should introduce the notion of "Defer-to-next-release" 
+reverts - which this really is - in contrast to "Revert-because-bad", 
+which your change definitely is not.
+
+> Speaking of this: Another patch I submitted to you Ingo (had to do 
+> with updating the load_weight inside task_setprio) seems to also have 
+> this phenomenon: e.g. its technically correct but further testing has 
+> revealed negative repercussions elsewhere.  So please ignore that 
+> patch (or revert if you already pulled in, but I don't think you 
+> have).  Ill try to look into this issue as well.
+
+ok, under which thread/subject is that? Not queued in tip/sched/* yet, 
+correct?
 
 	Ingo
-
--------------->
->From 99fc8ce41d639ce46f32c4e8618e8a571858e5aa Mon Sep 17 00:00:00 2001
-From: Ingo Molnar <mingo@elte.hu>
-Date: Mon, 11 Aug 2008 14:38:12 +0200
-Subject: [PATCH] printk: robustify printk, fix
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-
-fix:
-
- include/linux/kernel.h: In function ‘printk_needs_cpu':
- include/linux/kernel.h:217: error: parameter name omitted
-
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- include/linux/kernel.h |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/include/linux/kernel.h b/include/linux/kernel.h
-index c9ed24c..a012579 100644
---- a/include/linux/kernel.h
-+++ b/include/linux/kernel.h
-@@ -201,7 +201,7 @@ extern int printk_ratelimit(void);
- extern bool printk_timed_ratelimit(unsigned long *caller_jiffies,
- 				   unsigned int interval_msec);
- extern void printk_tick(void);
--extern int printk_needs_cpu(int);
-+extern int printk_needs_cpu(int cpu);
- #else
- static inline int vprintk(const char *s, va_list args)
- 	__attribute__ ((format (printf, 1, 0)));
-@@ -214,7 +214,7 @@ static inline bool printk_timed_ratelimit(unsigned long *caller_jiffies, \
- 					  unsigned int interval_msec)	\
- 		{ return false; }
- static inline void printk_tick(void) { }
--static inline int printk_needs_cpu(int) { return 0; }
-+static inline int printk_needs_cpu(int cpu) { return 0; }
- #endif
- 
- extern void asmlinkage __attribute__((format(printf, 1, 2)))
