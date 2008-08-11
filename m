@@ -1,55 +1,158 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753407AbYHKR5T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754288AbYHKR6h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753407AbYHKR5T (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Aug 2008 13:57:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751177AbYHKR5I
+	id S1754288AbYHKR6h (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Aug 2008 13:58:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751826AbYHKR63
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Aug 2008 13:57:08 -0400
-Received: from mga11.intel.com ([192.55.52.93]:28541 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751459AbYHKR5H convert rfc822-to-8bit (ORCPT
+	Mon, 11 Aug 2008 13:58:29 -0400
+Received: from tallyho.bytemark.co.uk ([80.68.81.166]:57246 "EHLO
+	tallyho.bytemark.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751667AbYHKR62 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Aug 2008 13:57:07 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.32,189,1217833200"; 
-   d="scan'208";a="369723286"
-From: "Luck, Tony" <tony.luck@intel.com>
-To: Ingo Molnar <mingo@elte.hu>
-CC: Joerg Roedel <joerg.roedel@amd.com>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "mingo@redhat.com" <mingo@redhat.com>,
-       "tglx@linutronix.de" <tglx@linutronix.de>,
-       "hpa@zytor.com" <hpa@zytor.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       the arch/x86 maintainers <x86@kernel.org>
-Date: Mon, 11 Aug 2008 10:55:22 -0700
-Subject: RE: [PATCH 0/3] make swiotlb prototypes generic
-Thread-Topic: [PATCH 0/3] make swiotlb prototypes generic
-Thread-Index: Acj72hUyJ2pPJnTZQLawMSohyVi6GwAASmLw
-Message-ID: <57C9024A16AD2D4C97DC78E552063EA3083D401F@orsmsx505.amr.corp.intel.com>
-References: <1218114409-20806-1-git-send-email-joerg.roedel@amd.com>
- <57C9024A16AD2D4C97DC78E552063EA3083841F6@orsmsx505.amr.corp.intel.com>
- <20080811174349.GP4524@elte.hu>
-In-Reply-To: <20080811174349.GP4524@elte.hu>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-MIME-Version: 1.0
+	Mon, 11 Aug 2008 13:58:28 -0400
+From: Andy Whitcroft <apw@shadowen.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Gerald Schaefer <gerald.schaefer@de.ibm.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com,
+       Mel Gorman <mel@csn.ul.ie>, Andy Whitcroft <apw@shadowen.org>
+Subject: [PATCH 1/1] allocate structures for reservation tracking in hugetlbfs outside of spinlocks v2
+Date: Mon, 11 Aug 2008 18:58:20 +0100
+Message-Id: <1218477500-11772-1-git-send-email-apw@shadowen.org>
+X-Mailer: git-send-email 1.6.0.rc1.258.g80295
+In-Reply-To: <20080807143824.8e0803da.akpm@linux-foundation.org>
+References: <20080807143824.8e0803da.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > Boot tested on ia64 (using generic_defconfig, tiger_defconfig and
-> > zx1_defconfig).
->
-> given that this touches both x86 and ia64, i suspect queueing it in -mm
-> (as it is already) and merging it upstream from there would be the best
-> approach?
+[Andrew this should replace the previous version which did not check
+the returns from the region prepare for errors.  This has been tested by
+us and Gerald and it looks good.
 
-That sounds fine to me.
+Bah, while reviewing the locking based on your previous email I spotted
+that we need to check the return from the vma_needs_reservation call for
+allocation errors.  Here is an updated patch to correct this.  This passes
+testing here.]
 
--Tony
+In the normal case, hugetlbfs reserves hugepages at map time so that the
+pages exist for future faults.  A struct file_region is used to track
+when reservations have been consumed and where.  These file_regions
+are allocated as necessary with kmalloc() which can sleep with the
+mm->page_table_lock held.  This is wrong and triggers may-sleep warning
+when PREEMPT is enabled.
+
+Updates to the underlying file_region are done in two phases.  The first
+phase prepares the region for the change, allocating any necessary memory,
+without actually making the change.  The second phase actually commits
+the change.  This patch makes use of this by checking the reservations
+before the page_table_lock is taken; triggering any necessary allocations.
+This may then be safely repeated within the locks without any allocations
+being required.
+
+Credit to Mel Gorman for diagnosing this failure and initial versions of
+the patch.
+
+Signed-off-by: Andy Whitcroft <apw@shadowen.org>
+Tested-by: Gerald Schaefer <gerald.schaefer@de.ibm.com>
+---
+ mm/hugetlb.c |   55 ++++++++++++++++++++++++++++++++++++++++++++-----------
+ 1 files changed, 44 insertions(+), 11 deletions(-)
+
+diff --git a/mm/hugetlb.c b/mm/hugetlb.c
+index 28a2980..393ea8b 100644
+--- a/mm/hugetlb.c
++++ b/mm/hugetlb.c
+@@ -1937,6 +1937,18 @@ retry:
+ 			lock_page(page);
+ 	}
+ 
++	/*
++	 * If we are going to COW a private mapping later, we examine the
++	 * pending reservations for this page now. This will ensure that
++	 * any allocations necessary to record that reservation occur outside
++	 * the spinlock.
++	 */
++	if (write_access && !(vma->vm_flags & VM_SHARED))
++		if (vma_needs_reservation(h, vma, address) < 0) {
++			ret = VM_FAULT_OOM;
++			goto backout_unlocked;
++		}
++
+ 	spin_lock(&mm->page_table_lock);
+ 	size = i_size_read(mapping->host) >> huge_page_shift(h);
+ 	if (idx >= size)
+@@ -1962,6 +1974,7 @@ out:
+ 
+ backout:
+ 	spin_unlock(&mm->page_table_lock);
++backout_unlocked:
+ 	unlock_page(page);
+ 	put_page(page);
+ 	goto out;
+@@ -1973,6 +1986,7 @@ int hugetlb_fault(struct mm_struct *mm, struct vm_area_struct *vma,
+ 	pte_t *ptep;
+ 	pte_t entry;
+ 	int ret;
++	struct page *pagecache_page = NULL;
+ 	static DEFINE_MUTEX(hugetlb_instantiation_mutex);
+ 	struct hstate *h = hstate_vma(vma);
+ 
+@@ -1989,25 +2003,44 @@ int hugetlb_fault(struct mm_struct *mm, struct vm_area_struct *vma,
+ 	entry = huge_ptep_get(ptep);
+ 	if (huge_pte_none(entry)) {
+ 		ret = hugetlb_no_page(mm, vma, address, ptep, write_access);
+-		mutex_unlock(&hugetlb_instantiation_mutex);
+-		return ret;
++		goto out_unlock;
+ 	}
+ 
+ 	ret = 0;
+ 
++	/*
++	 * If we are going to COW the mapping later, we examine the pending
++	 * reservations for this page now. This will ensure that any
++	 * allocations necessary to record that reservation occur outside the
++	 * spinlock. For private mappings, we also lookup the pagecache
++	 * page now as it is used to determine if a reservation has been
++	 * consumed.
++	 */
++	if (write_access && !pte_write(entry)) {
++		if (vma_needs_reservation(h, vma, address) < 0) {
++			ret = VM_FAULT_OOM;
++			goto out_unlock;
++		}
++
++		if (!(vma->vm_flags & VM_SHARED))
++			pagecache_page = hugetlbfs_pagecache_page(h,
++								vma, address);
++	}
++
+ 	spin_lock(&mm->page_table_lock);
+ 	/* Check for a racing update before calling hugetlb_cow */
+ 	if (likely(pte_same(entry, huge_ptep_get(ptep))))
+-		if (write_access && !pte_write(entry)) {
+-			struct page *page;
+-			page = hugetlbfs_pagecache_page(h, vma, address);
+-			ret = hugetlb_cow(mm, vma, address, ptep, entry, page);
+-			if (page) {
+-				unlock_page(page);
+-				put_page(page);
+-			}
+-		}
++		if (write_access && !pte_write(entry))
++			ret = hugetlb_cow(mm, vma, address, ptep, entry,
++							pagecache_page);
+ 	spin_unlock(&mm->page_table_lock);
++
++	if (pagecache_page) {
++		unlock_page(pagecache_page);
++		put_page(pagecache_page);
++	}
++
++out_unlock:
+ 	mutex_unlock(&hugetlb_instantiation_mutex);
+ 
+ 	return ret;
+-- 
+1.6.0.rc1.258.g80295
+
