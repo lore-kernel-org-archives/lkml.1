@@ -1,263 +1,142 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757247AbYHKUft@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757557AbYHKUgU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757247AbYHKUft (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Aug 2008 16:35:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753442AbYHKUfl
+	id S1757557AbYHKUgU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Aug 2008 16:36:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753779AbYHKUgH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Aug 2008 16:35:41 -0400
-Received: from brmea-mail-3.Sun.COM ([192.18.98.34]:37901 "EHLO
-	brmea-mail-3.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753424AbYHKUfk (ORCPT
+	Mon, 11 Aug 2008 16:36:07 -0400
+Received: from wr-out-0506.google.com ([64.233.184.238]:48222 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753442AbYHKUgF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Aug 2008 16:35:40 -0400
-Date: Mon, 11 Aug 2008 12:35:23 -0400
-From: David Collier-Brown <davecb@sun.com>
-Subject: Re: RFC: I/O bandwidth controller (was Re: Too many I/O controller
- patches)
-In-reply-to: <2846be6b0808111118q14995d84xdb9e6de500e415e2@mail.gmail.com>
-To: Naveen Gupta <ngupta@google.com>
-Cc: =?ISO-8859-1?Q?Fernando_Luis_V=E1zquez_Cao?= 
-	<fernando@oss.ntt.co.jp>,
-       Dave Hansen <dave@linux.vnet.ibm.com>, Ryo Tsuruta <ryov@valinux.co.jp>,
-       yoshikawa.takuya@oss.ntt.co.jp, taka@valinux.co.jp,
-       uchida@ap.jp.nec.com, linux-kernel@vger.kernel.org, dm-devel@redhat.com,
-       containers@lists.linux-foundation.org,
-       virtualization@lists.linux-foundation.org,
-       xen-devel@lists.xensource.com, agk@sourceware.org,
-       Andrea Righi <righi.andrea@gmail.com>
-Reply-to: davecb@sun.com
-Message-id: <48A06A4B.9090700@sun.com>
-MIME-version: 1.0
-Content-type: multipart/mixed; boundary="Boundary_(ID_QUlQIemj5GUKWpC0M9Ib9w)"
-X-Accept-Language: en-us, en
-References: <20080804.175126.193692178.ryov@valinux.co.jp>
- <1217870433.20260.101.camel@nimitz>
- <1217985189.3154.57.camel@sebastian.kern.oss.ntt.co.jp>
- <2846be6b0808061237o6667c609l21bdb5a765469e95@mail.gmail.com>
- <1218115028.8460.353.camel@sebastian.kern.oss.ntt.co.jp>
- <2846be6b0808111118q14995d84xdb9e6de500e415e2@mail.gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; SunOS sun4u; en-US; rv:1.7) Gecko/20041221
+	Mon, 11 Aug 2008 16:36:05 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:references;
+        b=V0dnL10V8E34zBLPLxRwisJT6V+OnaVWwf8TznFISgzm2ecH2Hl80AU1G951KOqPig
+         JtAM6UTIhmKz9QjILbM02fi/HiLevtOvyZ8cAody6cdBOHnovuGCuw+IPwJFWlzKgEis
+         gnvbhsHNuqafez2W4nW5pnJhJ9LIQ1ZSQMO1Q=
+Message-ID: <86802c440808111336o1dbffbb0xf551b4feb54b231c@mail.gmail.com>
+Date: Mon, 11 Aug 2008 13:36:04 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: 2.6.27rc1 cannot boot more than 8CPUs
+Cc: "Jeff Chua" <jeff.chua.linux@gmail.com>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "David Miller" <davem@davemloft.net>,
+       "Max Krasnyansky" <maxk@qualcomm.com>, "Li Zefan" <lizf@cn.fujitsu.com>,
+       lkml <linux-kernel@vger.kernel.org>
+In-Reply-To: <86802c440808111312n49ce2c0akae18b539ad543410@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; 
+	boundary="----=_Part_74247_15474031.1218486964651"
+References: <b6a2187b0808052015g698430fah95b5dc2c25dc396a@mail.gmail.com>
+	 <alpine.LFD.1.10.0808052259070.15995@nehalem.linux-foundation.org>
+	 <b6a2187b0808052342s40a3079fq6c229e3f36faca26@mail.gmail.com>
+	 <b6a2187b0808060833gc9d02caw2893ae8b021d1aa2@mail.gmail.com>
+	 <20080811195939.GA16716@elte.hu>
+	 <86802c440808111303x16922f43g4e17fa43972e9076@mail.gmail.com>
+	 <20080811200808.GB24111@elte.hu>
+	 <86802c440808111312n49ce2c0akae18b539ad543410@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
+------=_Part_74247_15474031.1218486964651
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
---Boundary_(ID_QUlQIemj5GUKWpC0M9Ib9w)
-Content-type: text/plain; format=flowed; charset=ISO-8859-1
-Content-transfer-encoding: 8BIT
+On Mon, Aug 11, 2008 at 1:12 PM, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+> On Mon, Aug 11, 2008 at 1:08 PM, Ingo Molnar <mingo@elte.hu> wrote:
+>>
+>> * Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+>>
+>>> On Mon, Aug 11, 2008 at 12:59 PM, Ingo Molnar <mingo@elte.hu> wrote:
+>>> >
+>>> > * Jeff Chua <jeff.chua.linux@gmail.com> wrote:
+>>> >
+>>> >> On Wed, Aug 6, 2008 at 2:42 PM, Jeff Chua <jeff.chua.linux@gmail.com> wrote:
+>>> >> > On Wed, Aug 6, 2008 at 2:01 PM, Linus Torvalds
+>>> >> > <torvalds@linux-foundation.org> wrote:
+>>> >> >> One trivial thing to try would be to just bisect it. I assume 2.6.26 is
+>>> >> > Bisecting now.
+>>> >>
+>>> >> Thanks to all the great helpful suggestions from everyone, and this
+>>> >> turns out that I just need to enable the following switches, so I
+>>> >> didn't bisect further, and since it's first machine that I've tried
+>>> >> with more than 8 CPUs so I wasn't sure whether 2.6.16 has the same
+>>> >> problem, but if you wish, I could give 2.6.16 a try.
+>>> >>
+>>> >> > CONFIG_X86_GENERICARCH=y
+>>> >> > CONFIG_X86_BIGSMP=y
+>>> >>
+>>> >> Thank you all for the great linux kernel!
+>>> >
+>>> > i still consider a silent boot hang a bug we need to fix.
+>>> >
+>>> > bigsmp might be required to have all cpus available on your box, but the
+>>> > kernel is still supposed to transparently fall back to less CPUs (and
+>>> > print a warning) if it cannot do that.
+>>> >
+>>> in setup.c::setup_arch() after go over with madt or mptable
+>>>
+>>> #if defined(CONFIG_SMP) && defined(CONFIG_X86_PC) && defined(CONFIG_X86_32)
+>>>         if (def_to_bigsmp)
+>>>                 printk(KERN_WARNING "More than 8 CPUs detected and "
+>>>                         "CONFIG_X86_PC cannot handle it.\nUse "
+>>>                         "CONFIG_X86_GENERICARCH or
+>>> CONFIG_X86_BIGSMP.\n"); ===> here need to change "or" to "and"
+>>> #endif
+>>>
+>>> or just panic here? because screen scroll to pass it, and user will
+>>> not notice that...
+>>
+>> a panic is better but still quite rude and doesnt give a user a system
+>> under which he can build an even greater kernel [after having discovered
+>> the warning in the syslog] ;-)
+>>
+>> best would be to use as many CPUs as we can support, and skip the rest
+>> and boot up fine. (and print the warning prominently - the user does not
+>> make maximum use of available physical resources)
+>
+> then  smp start AP cpu could check the apic id >=8 etc before try to
+> start it.in some cases
 
-A minor sidebar:
-2008/8/7 Fernando Luis Vázquez Cao <fernando@oss.ntt.co.jp> wrote"
->>On the one hand, we have the problem of feeding physical devices with IO
->>requests in such a way that we squeeze the maximum performance out of
->>them. Of course in some cases we may want to prioritize responsiveness
->>over throughput. In either case ...
+please check attach patches..
 
-  Maximum performance for non-batch processes is reached soon after
-the point at which latency starts to degrade badly, so be very
-careful when you're trying for max throughput on anything
-that has a queue (e.g., CPUs, disks, etc).
+YH
 
-  My usual example is a device that takes 10 milliseconds from
-request to end of response, shown in the gif below.
+------=_Part_74247_15474031.1218486964651
+Content-Type: text/x-patch; name=def_big_smp.patch
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_fjrjlk5z0
+Content-Disposition: attachment; filename=def_big_smp.patch
 
-  At load = 10, theoretical throughput should be at 100%. In
-fact, it's around 82%, because some queuing is already happening.
-Sitting in queue cuts performance, so the response time is already
-up to 0.030 seconds (30 milliseconds).  
-
-Trying for 95% of max throughput requires a load of 14, with 
-a truly horrid response time of 0.050 seconds (50 milliseconds).
-
-Therefor: we're trying to deliver good response times as a *first*
-priority, without throttling the device so it can't deliver
-the majority of it's throughput, not the other way around.
-
-By the way, this is the kind of calculation that leads people
-to the rule of thumb of using 80% of max throughput as a good 
-target.  
-
-
---dave
-
--- 
-David Collier-Brown            | Always do right. This will gratify
-Sun Microsystems, Toronto      | some people and astonish the rest
-davecb@sun.com                 |                      -- Mark Twain
-cell: (647) 833-9377, bridge: (877) 385-4099 code: 506 9191#
-
---Boundary_(ID_QUlQIemj5GUKWpC0M9Ib9w)
-Content-type: image/gif; name=usual.gif
-Content-transfer-encoding: BASE64
-Content-disposition: inline; filename=usual.gif
-
-R0lGODdhHwETAvcAAAAAAAgICAoKCgsLCwwMDBUVFRYWFhwcHB0dHR8fHyEhISUl
-JSgoKCkpKS0tLS8vLzAwMDExMTIyMjMzMzQ0NDU1NTY2Njc3Nzg4ODk5OTo6Ojs7
-Ozw8PD09PT4+Pj8/P0BAQEFBQUJCQkNDQ0REREVFRUZGRkdHR0hISElJSUpKSktL
-S01NTU9PT1BQUFFRUVNTU1VVVVZWVldXV1hYWFlZWVtbW1xcXF1dXV5eXl9fX2Bg
-YGFhYWJiYmNjY2VlZWdnZ2hoaGpqamtra2xsbG1tbW9vb3BwcHJycnR0dHh4eHl5
-eXt7e3x8fH19fX9/f4KCgoWFhYiIiIuLi5GRkZSUlJmZ/5qampubm5ycnJ+fn6Cg
-oKGhoaKioqOjo6enp6ioqKurq6ysrK6urrGxsbKysrOzs7a2tre3t7i4uLm5uby8
-vL29vb+/v8DAwMLCwsPDw8TExMXFxcbGxs7Ozs/Pz9DQ0NHR0dLS0tPT09TU1NXV
-1dbW1tfX19jY2NnZ2d/f3+Hh4eLi4uPj4+Tk5OXl5efn5+np6evr6+7u7u/v7/Dw
-8PLy8vPz8/T09Pb29vf39/j4+Pr6+vz8/P39/f7+/v///w0AABMAAEAeAADhAsAA
-AAAe/w/gDQAVAACWACWsUwCcAFgAAAAEDQACAP8AAL8V5uky5uio5gUAACUAADQA
-CQDAAAAC/3dJ2AAA/3EAtxQAv1UA55wA0AACAgDghwEAyAD/AAC/FQDo1HzYUADj
-AAC0ABMAM5gAIAAhABMUAFBUAL8AAOkAAOgAAAC/AADqACUIAAEoAf//AL+/AOrq
-AGgMAeoAAGQCA7/AFeoAlGAfUAAQAAC0AgCoXAK0AAEAAB8AAAARMQBZMgFgLAAA
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-AAAAAAAAAAAAAAAAACwAAAAAHwETAgAI/gAtCRxIsKDBgwgTKlzI0A3DhxAjSmw4
-saLFiwgdYtzIsaNHgho/ihQZcqTJjSVPqlzJMSXLlwpdwpxZUCbNmzdt4oSpcyfL
-nj6DkhSKEyjRoUeTjjSqtGXTl0yfSp1KtarVq1izat3KtavXr2DDih1LtqzZs2jT
-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
-uL471tp1oTxaKU/ZylfGcpa1vGUud9nLiQsIADs=
-
---Boundary_(ID_QUlQIemj5GUKWpC0M9Ib9w)--
+W1BBVENIXSB4ODY6IG1vdmUgZGVmX3RvX2JpZ3NtcCBjaGVjayBsYXRlcgoKYW5kIHNraWwgdGhl
+IGFwaWNpZCBpZCA+IDgKClNpZ25lZC1vZmYtYnk6IFlpbmdoYWkgTHUgPHlobHUua2VybmVsQGdt
+YWlsLmNvbT4KCmRpZmYgLS1naXQgYS9hcmNoL3g4Ni9rZXJuZWwvc2V0dXAuYyBiL2FyY2gveDg2
+L2tlcm5lbC9zZXR1cC5jCmluZGV4IDY5MTc3NzkuLjU5ZjA3ZTEgMTAwNjQ0Ci0tLSBhL2FyY2gv
+eDg2L2tlcm5lbC9zZXR1cC5jCisrKyBiL2FyY2gveDg2L2tlcm5lbC9zZXR1cC5jCkBAIC04NjMs
+MTIgKzg2Myw2IEBAIHZvaWQgX19pbml0IHNldHVwX2FyY2goY2hhciAqKmNtZGxpbmVfcCkKIAlp
+bml0X2FwaWNfbWFwcGluZ3MoKTsKIAlpb2FwaWNfaW5pdF9tYXBwaW5ncygpOwogCi0jaWYgZGVm
+aW5lZChDT05GSUdfU01QKSAmJiBkZWZpbmVkKENPTkZJR19YODZfUEMpICYmIGRlZmluZWQoQ09O
+RklHX1g4Nl8zMikKLQlpZiAoZGVmX3RvX2JpZ3NtcCkKLQkJcHJpbnRrKEtFUk5fV0FSTklORyAi
+TW9yZSB0aGFuIDggQ1BVcyBkZXRlY3RlZCBhbmQgIgotCQkJIkNPTkZJR19YODZfUEMgY2Fubm90
+IGhhbmRsZSBpdC5cblVzZSAiCi0JCQkiQ09ORklHX1g4Nl9HRU5FUklDQVJDSCBvciBDT05GSUdf
+WDg2X0JJR1NNUC5cbiIpOwotI2VuZGlmCiAJa3ZtX2d1ZXN0X2luaXQoKTsKIAogCWU4MjBfcmVz
+ZXJ2ZV9yZXNvdXJjZXMoKTsKZGlmZiAtLWdpdCBhL2FyY2gveDg2L2tlcm5lbC9zbXBib290LmMg
+Yi9hcmNoL3g4Ni9rZXJuZWwvc21wYm9vdC5jCmluZGV4IDIxODIxZjMuLmNlNGVlM2UgMTAwNjQ0
+Ci0tLSBhL2FyY2gveDg2L2tlcm5lbC9zbXBib290LmMKKysrIGIvYXJjaC94ODYva2VybmVsL3Nt
+cGJvb3QuYwpAQCAtOTg3LDcgKzk4NywxNyBAQCBpbnQgX19jcHVpbml0IG5hdGl2ZV9jcHVfdXAo
+dW5zaWduZWQgaW50IGNwdSkKIAlmbHVzaF90bGJfYWxsKCk7CiAJbG93X21hcHBpbmdzID0gMTsK
+IAorI2lmZGVmIENPTkZJR19YODZfUEMKKyAgICAgICAgaWYgKGRlZl90b19iaWdzbXAgJiYgYXBp
+Y2lkID4gOCkgeworICAgICAgICAgICAgICAgIHByaW50ayhLRVJOX1dBUk5JTkcgIk1vcmUgdGhh
+biA4IENQVXMgZGV0ZWN0ZWQgYW5kICIKKyAgICAgICAgICAgICAgICAgICAgICAgICJDT05GSUdf
+WDg2X1BDIGNhbm5vdCBoYW5kbGUgaXQuXG5Vc2UgIgorICAgICAgICAgICAgICAgICAgICAgICAg
+IkNPTkZJR19YODZfR0VORVJJQ0FSQ0ggYW5kIENPTkZJR19YODZfQklHU01QLlxuIik7CisJCWVy
+ciA9IC0xOworCX0gZWxzZQorCQllcnIgPSBkb19ib290X2NwdShhcGljaWQsIGNwdSk7CisjZWxz
+ZQogCWVyciA9IGRvX2Jvb3RfY3B1KGFwaWNpZCwgY3B1KTsKKyNlbmRpZgogCiAJemFwX2xvd19t
+YXBwaW5ncygpOwogCWxvd19tYXBwaW5ncyA9IDA7Cg==
+------=_Part_74247_15474031.1218486964651--
