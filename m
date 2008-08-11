@@ -1,85 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754632AbYHKO5G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753058AbYHKPFt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754632AbYHKO5G (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Aug 2008 10:57:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752009AbYHKO4z
+	id S1753058AbYHKPFt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Aug 2008 11:05:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751630AbYHKPFl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Aug 2008 10:56:55 -0400
-Received: from hiauly1.hia.nrc.ca ([132.246.100.193]:2896 "EHLO
-	hiauly1.hia.nrc.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751944AbYHKO4y (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Aug 2008 10:56:54 -0400
-Subject: Re: [2.6 patch] binfmt_som.c: add MODULE_LICENSE
-To: bunk@kernel.org (Adrian Bunk)
-Date: Mon, 11 Aug 2008 10:56:51 -0400 (EDT)
-From: "John David Anglin" <dave@hiauly1.hia.nrc.ca>
-Cc: grundler@parisc-linux.org, kyle@mcmartin.ca, matthew@wil.cx,
-       linux-parisc@vger.kernel.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, bdale@hp.com
-In-Reply-To: <20080811104643.GA3338@cs181140183.pp.htv.fi> from "Adrian Bunk" at Aug 11, 2008 01:46:43 pm
-X-Mailer: ELM [version 2.4 PL25]
+	Mon, 11 Aug 2008 11:05:41 -0400
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:48089 "EHLO smtp5.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751419AbYHKPFk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Aug 2008 11:05:40 -0400
+Date: Mon, 11 Aug 2008 18:03:58 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, linux-arch@vger.kernel.org,
+       Matthew Wilcox <matthew@wil.cx>, David Woodhouse <dwmw2@infradead.org>,
+       Al Viro <viro@zeniv.linux.org.uk>,
+       Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: RFC: killing ksyms.c
+Message-ID: <20080811150358.GC3338@cs181140183.pp.htv.fi>
+References: <200808111606.44103.arnd@arndb.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-Message-Id: <20080811145652.100E74E77@hiauly1.hia.nrc.ca>
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <200808111606.44103.arnd@arndb.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Sun, Aug 10, 2008 at 06:10:15PM -0600, Grant Grundler wrote:
-> > On Sun, Aug 10, 2008 at 05:11:59PM +0300, Adrian Bunk wrote:
-> > > On Sat, Aug 09, 2008 at 06:55:11PM -0600, Grant Grundler wrote:
-> > ...
-> > > > Someone from HP needs to ACK this patch since I believe HP funded the code
-> > > > changes made during the parisc-linux port. This should be a no-brainer
-> > > > and I expect Bdale Garbee can quickly take care of this.
-> > > 
-> > > Either the file is available since the beginning under the terms of the 
-> > > GPLv2 (or a compatible license that can be reduced to GPLv2) or it's 
-> > > addition to the kernel was a huge mistake.
-> > 
-> > As a former HP employee who was one of the several parisc-linux developers,
-> > I'm certain the intent was to release this as GPL. That's why I said
-> > "this should be a no-brainer".
-> > 
-> > However, it's still HP's (and not my) right to assert that.
+On Mon, Aug 11, 2008 at 04:06:43PM +0200, Arnd Bergmann wrote:
+> I saw this conversation on IRC when I came back to my screen, and
+> managed to dig out an older patch of mine:
 > 
-> If it wasn't already 100% clear that the file was released under
-> the terms of the GPLv2 (or a compatible license that can be reduced
-> to GPLv2) at the day when it was included into the kernel something
-> went horribly wrong back then.
+> [19:03:13] <willy> at some point we really need to forbid that
+> [19:03:28] <willy> bit hard at this point with things like memcpy()
+> [19:04:36] <willy> could do it with a script of some kind and
+>            either a whitelist of filenames (arch/*/kernel/ksyms.c
+>            can export anything) or of functions (anywhere can
+>            EXPORT_SYMBOL(memcpy)).
+> [Sun Aug 10 2008] [19:07:35] <viro> I suspect that we really want
+>            to teach *.S how to do exports
+> [Sun Aug 10 2008] [19:07:58] <viro> and kill ksyms.c
+> [Sun Aug 10 2008] [19:12:47] <dwmw2_gone> if we do the -fwhole-program
+>            --combine thing we'll make it hard anyway
 > 
-> Otherwise HP would have the situation SCO was desperately searching for...
+> I compile-tested this on powerpc, 32 and 64 bit, and it should be usable as
+> an example for other architectures.
+> The idea is to provide an EXPORT_SYMBOL macro for assembly that
+> behaves in the same way as the C version, and then export every
+> symbol from the file that defines it.
+>...
 
-This file was included before the SCO situation arose.  The copyright
-notice is similar to most.  Checking 2.6.22.19, I see that more than
-half the .c files lack MODULE_LICENSE("GPL") lines.
+On some architectures the kernel is linked with libgcc and symbols from 
+libgcc are EXPORT_SYMBOL'ed.
 
-I don't understand why we are talking about HP here.  According to
-Matthew, his last commit to this file occured while he worked for
-Genedata.  It is my understanding that copyright normally acrues
-to employers in employment situations.  If Matthew was an employee
-and not an independent contractor at the time, then why are we not
-talking about Genedata, or its subsequent owner?  Subsequent
-employment at HP or their funding of the parisc port shouldn't
-affect the licensing of a file that was previously contributed.
-The file appears to be a derived work.  This may also affect its
-copyright status.  The only reason HP should be involved is if the
-file somehow contains material copyrighted by HP.
+> 	Arnd <><
 
-The whole licensing issue for the linux program and modules,
-particularly for individual files, appears to be a mess.  The
-COPYING file is vague on the licensing for files.   The recommended
-wording suggested by the FSF isn't used.  I can't see that adding
-MODULE_LICENSE("GPL") lines is going to help much.
+cu
+Adrian
 
-There are several GPL licenses and versions.  The line isn't
-going to mean much to a lawyer.  I really think each file should
-be specific about its licensing in words that can be clearly
-understood.
-
-Dave
 -- 
-J. David Anglin                                  dave.anglin@nrc-cnrc.gc.ca
-National Research Council of Canada              (613) 990-0752 (FAX: 952-6602)
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
