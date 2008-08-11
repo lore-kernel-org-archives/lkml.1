@@ -1,74 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752758AbYHKMOy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752202AbYHKMU6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752758AbYHKMOy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Aug 2008 08:14:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751288AbYHKMOq
+	id S1752202AbYHKMU6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Aug 2008 08:20:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751288AbYHKMUu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Aug 2008 08:14:46 -0400
-Received: from wilson.telenet-ops.be ([195.130.132.42]:37545 "EHLO
-	wilson.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750781AbYHKMOq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Aug 2008 08:14:46 -0400
-Date: Mon, 11 Aug 2008 14:14:43 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: JosephChan@via.com.tw
-cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: RE: [PATCH 1/13 v2] viafb: viafb.modes, viafb.txt
-In-Reply-To: <C80EF34A3D2E494DBAF9AC29C7AE4EB8078F49C6@exchtp03.taipei.via.com.tw>
-Message-ID: <Pine.LNX.4.64.0808111413510.1500@anakin>
-References: <C80EF34A3D2E494DBAF9AC29C7AE4EB8078F49C6@exchtp03.taipei.via.com.tw>
+	Mon, 11 Aug 2008 08:20:50 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:47163 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750855AbYHKMUt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Aug 2008 08:20:49 -0400
+Date: Mon, 11 Aug 2008 14:20:38 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Rene Herman <rene.herman@keyaccess.nl>
+Cc: Andrew Morton <akpm@osdl.org>, Yinghai Lu <yhlu.kernel@gmail.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: kill arch/x86/kernel/mpparse.c debugging printk.
+Message-ID: <20080811122038.GA10082@elte.hu>
+References: <489C77C6.7040408@keyaccess.nl>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <489C77C6.7040408@keyaccess.nl>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-	Hi Joseph,
 
-On Mon, 11 Aug 2008, JosephChan@via.com.tw wrote:
-> > Please send an incremental patch.
-> Do you mean that I can send a signle patch for fixing this issue. (v2 -> v3)
+* Rene Herman <rene.herman@keyaccess.nl> wrote:
 
-Yes.
+> Hi Andrew.
+>
+> <repeat below changelog>
+>
+> Rene.
 
-> And the subject of this mail should be " [PATCH 1/13 v3] viafb: viafb.modes, viafb.txt"
-
-Please also add `fix for' to the subject, so Andrew, sees its
-incremental.
-
-> -----Original Message-----
-> From: geert@linux-m68k.org [mailto:geert@linux-m68k.org] 
-> Sent: Friday, August 08, 2008 11:25 PM
-> To: Joseph Chan
-> Cc: linux-fbdev-devel@lists.sourceforge.net; linux-kernel@vger.kernel.org; akpm@linux-foundation.org
-> Subject: RE: [PATCH 1/13 v2] viafb: viafb.modes, viafb.txt
+> >From 00acea21e579ea0853baba25420f373ea83533a3 Mon Sep 17 00:00:00 2001
+> From: Rene Herman <rene.herman@keyaccess.nl>
+> Date: Thu, 7 Aug 2008 01:50:35 +0200
+> Subject: [PATCH] x86: kill arch/x86/kernel/mpparse.c debugging printk.
 > 
-> On Fri, 8 Aug 2008, JosephChan@via.com.tw wrote:
-> > It should be my carelessness. The check has been added in viafbdev.c already. 
+> commit 11a62a056093a7f25f1595fbd8bd5f93559572b6 turns some formerly 
+> nopped debugging printks in arch/x86/kernel/mppparse.c into regular 
+> ones. The one at the top of smp_scan_config() in particular also 
+> prints on !CONFIG_SMP/CONFIG_X86_LOCAL_APIC kernels and UP machines 
+> without anything resembling MP tables which makes their lowly UP 
+> owners wonder...
 > 
-> OK.
-> 
-> > Do I need to re-send the patch for the documentation? Thanks for your reminding.
-> 
-> Please send an incremental patch. Andrew is good in folding ;-)
-> 
-> > On Fri, 8 Aug 2008, JosephChan@via.com.tw wrote:
-> > > +    4. VX800 2D accelerator hasn't been supported in this driver yet. When
-> > > +       using driver on VX800, one should add parameter "viafb_accel=0" to
-> > > +       disable 2D accelerator.
-> > 
-> > Can't the driver detect this automatically, and disable the 2D 
-> > accelerator when running on a VX800?
+> given that it was up to this point also not considered valuable 
+> user-level information, let's just kill that one.
 
-Gr{oetje,eeting}s,
+hm, i found it useful in the past in about 2-3 cases.
 
-						Geert
+How about a patch that makes the printout depend on apic=debug ? That 
+way the message can still be there in case of bugreports that somehow 
+deal with SMP or APIC bugs (without having to recompile the kernel).
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+The way to make the printout depend on apic=debug/verbose is to do 
+something like this:
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+	apic_printk(APIC_VERBOSE, "Scan SMP from %p for %ld bytes.\n", bp, length);
+
+Would you mind to send a patch for that?
+
+Thanks,
+
+	Ingo
