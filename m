@@ -1,51 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756411AbYHKW5X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755452AbYHKXDT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756411AbYHKW5X (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Aug 2008 18:57:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752225AbYHKW5M
+	id S1755452AbYHKXDT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Aug 2008 19:03:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752225AbYHKXDL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Aug 2008 18:57:12 -0400
-Received: from mga14.intel.com ([143.182.124.37]:3696 "EHLO mga14.intel.com"
+	Mon, 11 Aug 2008 19:03:11 -0400
+Received: from gw.goop.org ([64.81.55.164]:45381 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752036AbYHKW5L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Aug 2008 18:57:11 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.32,191,1217833200"; 
-   d="scan'208";a="32534765"
-Date: Mon, 11 Aug 2008 15:57:09 -0700
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Herbert Xu <herbert@gondor.apana.org.au>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       Wolfgang Walter <wolfgang.walter@stwm.de>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       "viro@ZenIV.linux.org.uk" <viro@ZenIV.linux.org.uk>,
-       "vegard.nossum@gmail.com" <vegard.nossum@gmail.com>,
-       austin zhang <austin_zhang@linux.intel.com>
-Subject: Re: Kernel oops with 2.6.26, padlock and ipsec: probably problem with fpu state changes
-Message-ID: <20080811225709.GO13158@linux-os.sc.intel.com>
-References: <200808081236.55172.wolfgang.walter@stwm.de> <20080808185356.GC607@linux-os.sc.intel.com> <489C97FB.2030408@zytor.com> <20080808231121.GA13158@linux-os.sc.intel.com> <20080809003829.GA25926@gondor.apana.org.au> <20080809142918.GA30387@gondor.apana.org.au> <20080809143259.GA30451@gondor.apana.org.au> <20080809175247.GD13158@linux-os.sc.intel.com> <20080810053048.GA3171@gondor.apana.org.au> <489E7F9C.9000708@zytor.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <489E7F9C.9000708@zytor.com>
-User-Agent: Mutt/1.4.1i
+	id S1752035AbYHKXDK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Aug 2008 19:03:10 -0400
+Message-ID: <48A0C519.6070708@goop.org>
+Date: Mon, 11 Aug 2008 16:02:49 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+MIME-Version: 1.0
+To: benh@kernel.crashing.org
+CC: Andrew Morton <akpm@linux-foundation.org>, ehabkost@redhat.com,
+       x86@kernel.org, linux-kernel@vger.kernel.org,
+       Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH 1/2] add phys_addr_t for holding physical addresses
+References: <489B6B40.5050705@goop.org>	 <20080807145648.ab3dfa90.akpm@linux-foundation.org>	 <489B72C3.30603@goop.org>	 <20080807162741.8dfcd336.akpm@linux-foundation.org>	 <489B8908.2010007@goop.org>	 <20080807170617.79ca3ce7.akpm@linux-foundation.org>	 <48A0954E.20400@goop.org> <1218491896.8041.9.camel@pasglop>	 <48A0B9EB.9020709@goop.org> <1218493925.8041.21.camel@pasglop>	 <48A0C22D.2050400@goop.org> <1218495200.8041.23.camel@pasglop>
+In-Reply-To: <1218495200.8041.23.camel@pasglop>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Aug 09, 2008 at 10:41:48PM -0700, H. Peter Anvin wrote:
-> Herbert Xu wrote:
-> > On Sat, Aug 09, 2008 at 10:52:48AM -0700, Suresh Siddha wrote:
-> >>> Actually I was mistaken, Intel has done the right thing by not
-> >>> generating a fault on crc32c with TS set.
-> >> Yes, the documentation seems to says so. But I am double checking
-> >> with experts inside, to make sure we got the SDM right.
+Benjamin Herrenschmidt wrote:
+> On Mon, 2008-08-11 at 15:50 -0700, Jeremy Fitzhardinge wrote:
+>   
+>> Benjamin Herrenschmidt wrote:
+>>     
+>>> Are we sure resource_size_t is -never- used to represent memory ? I
+>>> though it was on some platforms....
+>>>       
+>> On x86 it's optionally used to put memory in the resource tree, but if 
+>> the memory is larger than can be held in resource_size_t it simply skips 
+>> it.  Don't know about elsewhere.
+>>     
+>
+> That sounds like a good enough reason to not separate the two concepts..
 
-I got confirmation that crc32 instructions don't generate DNA when cr0.TS bit
-is set. So no changes required for Austin's patches in this context.
+The resource_size_t situation is obscure.  I'd be happy to just remove 
+its config, use my patch and typedef phys_addr_t resource_size_t.
 
-thanks,
-suresh
+    J
+
