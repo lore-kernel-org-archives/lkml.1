@@ -1,64 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752057AbYHKJIz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752280AbYHKJLw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752057AbYHKJIz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Aug 2008 05:08:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751054AbYHKJIr
+	id S1752280AbYHKJLw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Aug 2008 05:11:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751181AbYHKJLm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Aug 2008 05:08:47 -0400
-Received: from sh.osrg.net ([192.16.179.4]:59041 "EHLO sh.osrg.net"
+	Mon, 11 Aug 2008 05:11:42 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:36493 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751014AbYHKJIq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Aug 2008 05:08:46 -0400
-Date: Mon, 11 Aug 2008 18:07:15 +0900
-To: drzeus-list@drzeus.cx
-Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       James.Bottomley@HansenPartnership.com, jens.axboe@oracle.com
-Subject: Re: [GIT PULL] MMC updates for 2.6.27-rc1
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20080723234350.3acad60d@mjolnir.drzeus.cx>
-References: <20080723150031.36e5b85a@mjolnir.drzeus.cx>
-	<alpine.LFD.1.10.0807231206230.4754@woody.linux-foundation.org>
-	<20080723234350.3acad60d@mjolnir.drzeus.cx>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20080811180722Y.fujita.tomonori@lab.ntt.co.jp>
+	id S1751023AbYHKJLl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Aug 2008 05:11:41 -0400
+Date: Mon, 11 Aug 2008 11:11:05 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, netdev <netdev@vger.kernel.org>,
+       Jeff Garzik <jgarzik@pobox.com>
+Subject: [PATCH] net, wd.c: fix undefined reference to `NS8390p_init'
+Message-ID: <20080811091105.GA8141@elte.hu>
+References: <20080806182828.6bfe0a16.sfr@canb.auug.org.au> <20080806172148.7fac5999.randy.dunlap@oracle.com> <Pine.LNX.4.64.0808070918510.17614@anakin> <20080807102931.1bb0607d@lxorguk.ukuu.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080807102931.1bb0607d@lxorguk.ukuu.org.uk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 23 Jul 2008 23:43:50 +0200
-Pierre Ossman <drzeus-list@drzeus.cx> wrote:
 
-> On Wed, 23 Jul 2008 12:08:01 -0700 (PDT)
-> Linus Torvalds <torvalds@linux-foundation.org> wrote:
+* Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+
+> On Thu, 7 Aug 2008 09:20:07 +0200 (CEST)
+> Geert Uytterhoeven <geert@linux-m68k.org> wrote:
 > 
-> > 
-> > 
-> > On Wed, 23 Jul 2008, Pierre Ossman wrote:
-> > >
-> > >  include/linux/scatterlist.h |   38 +++++++
-> > >  lib/scatterlist.c           |  176 +++++++++++++++++++++++++---------
+> > On Wed, 6 Aug 2008, Randy Dunlap wrote:
+> > > One randconfig ends with:
 > > > 
-> > > Tejun Heo (1):
-> > >       sg: reimplement sg mapping iterator
+> > > drivers/built-in.o: In function `wd_probe1':
+> > > wd.c:(.init.text+0x6179): undefined reference to `NS8390p_init'
+> > > make[1]: *** [.tmp_vmlinux1] Error 1
 > > 
-> > I'd really have been a lot happier about this one if it had had a few 
-> > Acked-by's from people like Jens and James.
+> > drivers/net/Makefile has:
 > > 
-> > But I pulled, and pushed out. I think Jens is on vacation, but I'm adding 
-> > him to the cc anyway.
+> > obj-$(CONFIG_WD80x3) += wd.o 8390.o
+> > 
+> > So either wd_probe1() should call NS8390_init(), or obj-$(CONFIG_WD80x3)
+> > should link with 8390p.o. Don't know which is the appropriate change
+> > here (my gut feeling says the latter).
 > 
-> Yeah, I was hoping to get Jens' input on this aswell, but this fixes
-> problems in the sdhci driver so it was pushed in the hope that he won't
-> NAK it too badly when he gets back.
-> 
-> (James just got casually poked, but I wasn't even aware he was a
-> suitable person for this. lib/ and kernel/ are generally a bit
-> problematic when it comes to determining maintainer :/)
+> Safest is the latter. The shared memory interface on the wd is full 
+> speed 8 or 16bit (depending on card/jumpers) but I'm not clear about 
+> the NIC. Most of the performance hit is on the packet transfer which 
+> is private methods on this device so using 8390p won't make a big 
+> difference on this board anyway.
 
-I think that you can see that James pushed the old sg buffer helper
-functions from the git log (because it was invented for SCSI drivers).
+Alan, Jeff, i triggered this too with latest -git, please pick up the 
+fix below if you dont have it already.
 
-Anyway, the new helper functions look fine though I'm too late for
-reviewing it.
+	Ingo
+
+------------------>
+>From c03cb1727bb4c5433436bfb0fab59fdcc00749c3 Mon Sep 17 00:00:00 2001
+From: Ingo Molnar <mingo@elte.hu>
+Date: Mon, 11 Aug 2008 11:11:42 +0200
+Subject: [PATCH] net, wd.c: fix undefined reference to `NS8390p_init'
+
+fix:
+
+  drivers/built-in.o: In function `wd_probe1':
+  wd.c:(.init.text+0xb247): undefined reference to `NS8390p_init'
+
+that triggers with:
+
+  http://redhat.com/~mingo/misc/config-Mon_Aug_11_10_40_46_CEST_2008.bad
+
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ drivers/net/Makefile |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/net/Makefile b/drivers/net/Makefile
+index 7629c90..dc6dbf6 100644
+--- a/drivers/net/Makefile
++++ b/drivers/net/Makefile
+@@ -106,7 +106,7 @@ ifeq ($(CONFIG_FEC_MPC52xx_MDIO),y)
+ 	obj-$(CONFIG_FEC_MPC52xx) += fec_mpc52xx_phy.o
+ endif
+ obj-$(CONFIG_68360_ENET) += 68360enet.o
+-obj-$(CONFIG_WD80x3) += wd.o 8390.o
++obj-$(CONFIG_WD80x3) += wd.o 8390p.o
+ obj-$(CONFIG_EL2) += 3c503.o 8390p.o
+ obj-$(CONFIG_NE2000) += ne.o 8390p.o
+ obj-$(CONFIG_NE2_MCA) += ne2.o 8390p.o
