@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752649AbYHKPTF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755308AbYHKPTa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752649AbYHKPTF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Aug 2008 11:19:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752778AbYHKPSs
+	id S1755308AbYHKPTa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Aug 2008 11:19:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755163AbYHKPS6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Aug 2008 11:18:48 -0400
+	Mon, 11 Aug 2008 11:18:58 -0400
 Received: from nlpi053.sbcis.sbc.com ([207.115.36.82]:63095 "EHLO
 	nlpi053.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752867AbYHKPSr (ORCPT
+	with ESMTP id S1755153AbYHKPS5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Aug 2008 11:18:47 -0400
-Message-Id: <20080811150659.051842926@quilx.com>
+	Mon, 11 Aug 2008 11:18:57 -0400
+Message-Id: <20080811150658.772823198@quilx.com>
 References: <20080811150616.207532384@quilx.com>
 User-Agent: quilt/0.46-1
-Date: Mon, 11 Aug 2008 08:06:31 -0700
+Date: Mon, 11 Aug 2008 08:06:30 -0700
 From: Christoph Lameter <cl@linux-foundation.org>
 To: Pekka Enberg <penberg@cs.helsinki.fi>
 CC: akpm@linux-foundation.org, Christoph Lameter <clameter@sgi.com>,
@@ -25,33 +25,47 @@ Cc: andi@firstfloor.org
 Cc: Rik van Riel <riel@redhat.com>
 Cc: mpm@selenic.com
 Cc: Dave Chinner <david@fromorbit.com>
-Subject: [patch 15/19] Filesystem: XFS slab defragmentation
-Content-Disposition: inline; filename=0027-FS-XFS-slab-defragmentation.patch
+Subject: [patch 14/19] Filesystem: Ext4 filesystem defrag
+Content-Disposition: inline; filename=ext4-defrag
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Support inode defragmentation for xfs
+Support defragmentation for extX filesystem inodes
 
 Reviewed-by: Rik van Riel <riel@redhat.com>
 Signed-off-by: Christoph Lameter <clameter@sgi.com>
 Signed-off-by: Christoph Lameter <cl@linux-foundation.org>
 
 ---
- fs/xfs/linux-2.6/xfs_super.c |    1 +
- 1 file changed, 1 insertion(+)
+ fs/ext4/super.c |    8 ++++++++
+ 1 file changed, 8 insertions(+)
 
-Index: linux-next/fs/xfs/linux-2.6/xfs_super.c
+Index: linux-next/fs/ext4/super.c
 ===================================================================
---- linux-next.orig/fs/xfs/linux-2.6/xfs_super.c	2008-08-11 07:42:11.892359719 -0700
-+++ linux-next/fs/xfs/linux-2.6/xfs_super.c	2008-08-11 07:47:05.072348463 -0700
-@@ -1947,6 +1947,7 @@ xfs_init_zones(void)
- 	xfs_ioend_zone = kmem_zone_init(sizeof(xfs_ioend_t), "xfs_ioend");
- 	if (!xfs_ioend_zone)
- 		goto out_destroy_vnode_zone;
-+	kmem_cache_setup_defrag(xfs_vnode_zone, get_inodes, kick_inodes);
+--- linux-next.orig/fs/ext4/super.c	2008-08-11 07:42:10.412359410 -0700
++++ linux-next/fs/ext4/super.c	2008-08-11 07:47:05.062348866 -0700
+@@ -605,6 +605,12 @@ static void init_once(void *foo)
+ 	inode_init_once(&ei->vfs_inode);
+ }
  
- 	xfs_ioend_pool = mempool_create_slab_pool(4 * MAX_BUF_PER_PAGE,
- 						  xfs_ioend_zone);
++static void *ext4_get_inodes(struct kmem_cache *s, int nr, void **v)
++{
++	return fs_get_inodes(s, nr, v,
++		offsetof(struct ext4_inode_info, vfs_inode));
++}
++
+ static int init_inodecache(void)
+ {
+ 	ext4_inode_cachep = kmem_cache_create("ext4_inode_cache",
+@@ -614,6 +620,8 @@ static int init_inodecache(void)
+ 					     init_once);
+ 	if (ext4_inode_cachep == NULL)
+ 		return -ENOMEM;
++	kmem_cache_setup_defrag(ext4_inode_cachep,
++			ext4_get_inodes, kick_inodes);
+ 	return 0;
+ }
+ 
 
 -- 
