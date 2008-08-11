@@ -1,55 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754882AbYHKWed@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755475AbYHKWfL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754882AbYHKWed (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Aug 2008 18:34:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751626AbYHKWeZ
+	id S1755475AbYHKWfL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Aug 2008 18:35:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751996AbYHKWe6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Aug 2008 18:34:25 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:50822 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751680AbYHKWeY (ORCPT
+	Mon, 11 Aug 2008 18:34:58 -0400
+Received: from wr-out-0506.google.com ([64.233.184.237]:65401 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751626AbYHKWe4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Aug 2008 18:34:24 -0400
-Date: Mon, 11 Aug 2008 15:33:09 -0700
-From: Greg KH <greg@kroah.com>
-To: Jason Baron <jbaron@redhat.com>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, joe@perches.com, nick@nick-andrew.net
-Subject: Re: [PATCH 1/7] dynamic debug v2 - infrastructure
-Message-ID: <20080811223309.GD9810@kroah.com>
-References: <20080715213108.GB23331@redhat.com> <20080717070103.GA21961@kroah.com> <20080717212040.GB13252@redhat.com> <20080717223222.GA28016@kroah.com> <20080808215153.GA16729@redhat.com> <20080808193851.24210bc4.randy.dunlap@oracle.com> <20080811173616.GC6103@redhat.com>
+	Mon, 11 Aug 2008 18:34:56 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:subject
+         :content-type:content-transfer-encoding;
+        b=QGmvB1agbfid1OIvQDRKuEgvra+eSGiTX9Tu+NxdyRZ+1pLljITD9qHntZf1sEVSHO
+         bQyKADLrWGDcQFBlm+UOw34COYrcD1m9ZFx9etumoKvAlUZav2bdcZtoHdgssnb4VTpJ
+         sPOZnefDiYyKeWH9vtAtdeGpsP7z+baQBXFxg=
+Message-ID: <48A0BE8A.5080600@gmail.com>
+Date: Mon, 11 Aug 2008 18:34:50 -0400
+From: Ryan Hope <rmh3093@gmail.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080805)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080811173616.GC6103@redhat.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: LKML <linux-kernel@vger.kernel.org>,
+       Edward Shishkin <edward.shishkin@gmail.com>,
+       Reiserfs mailing list <reiserfs-devel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH 1/3][reiser4] use wake_up_process() instead of wake_up() when
+ possible
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 11, 2008 at 01:36:16PM -0400, Jason Baron wrote:
-> On Fri, Aug 08, 2008 at 07:38:51PM -0700, Randy Dunlap wrote:
-> > On Fri, 8 Aug 2008 17:51:53 -0400 Jason Baron wrote:
-> > 
-> > > Few notes...there is still one control file: <debugfs>/dynamic_printk/modules
-> > > We can split this up now or later, but I kind of like being able to see all
-> > > the controls in one file. Also, i've used a djb2 hash function in the code,
-> > > which i'm not sure is under the correct license/copyright, so i just wanted
-> > > to point that out as well. see: scripts/basic/hash.c. If its an issue, i can
-> > > find another hash function. 
-> > 
-> > What license does it have?  I don't see one.
-> > 
-> 
-> hmmm...a search for djb2 finds a number of users, for example, i found this one
-> which is covered by GPL2, http://www.telegraphics.com.au/svn/dpa/trunk/symtab.c
-> is that sufficient to say its ok?
+This was item #6 on the todo list for reiser4 inclusion in mainline:
 
-That's a tough call.  I'd run that through the license board of your
-employer if you have any questions about this, as it is your name with
-their domain that is going to have the "signed-off-by:" pointing back
-to.
+diff --git a/fs/reiser4/entd.c b/fs/reiser4/entd.c
+index ecdfde6..9fd4d6e 100644
+--- a/fs/reiser4/entd.c
++++ b/fs/reiser4/entd.c
+@@ -218,7 +218,7 @@ void reiser4_leave_flush(struct super_block *super)
+  #endif
+  	spin_unlock(&ent->guard);
+  	if (wake_up_ent)
+-		wake_up(&ent->wait);
++		wake_up_process(ent->tsk);
+  }
 
-thanks,
+  #define ENTD_CAPTURE_APAGE_BURST SWAP_CLUSTER_MAX
+@@ -304,7 +304,7 @@ int write_page_by_ent(struct page *page, struct 
+writeback_control *wbc)
+  	ent->nr_todo_reqs++;
+  	list_add_tail(&rq.link, &ent->todo_list);
+  	if (ent->nr_todo_reqs == 1)
+-		wake_up(&ent->wait);
++		wake_up_process(ent->tsk);
 
-greg k-h
+  	spin_unlock(&ent->guard);
+
+
+-Ryan
