@@ -1,52 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752128AbYHKHUv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751944AbYHKH1I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752128AbYHKHUv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Aug 2008 03:20:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750893AbYHKHUm
+	id S1751944AbYHKH1I (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Aug 2008 03:27:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750856AbYHKH04
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Aug 2008 03:20:42 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:55463 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750839AbYHKHUl (ORCPT
+	Mon, 11 Aug 2008 03:26:56 -0400
+Received: from moutng.kundenserver.de ([212.227.126.177]:63491 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750739AbYHKH04 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Aug 2008 03:20:41 -0400
-Date: Mon, 11 Aug 2008 08:00:30 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "S K" <nospamnoham@gmail.com>
-Cc: "Zhao Yakui" <yakui.zhao@intel.com>, "Thomas Renninger" <trenn@suse.de>,
-       "Alan Jenkins" <alan-jenkins@tuffmail.co.uk>,
-       linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
-Subject: Re: cpufreq doesn't seem to work in Intel Q9300
-Message-ID: <20080811080030.05a27bff@lxorguk.ukuu.org.uk>
-In-Reply-To: <514e099a0808102224g6f55fa0ex5f50d8f21f838358@mail.gmail.com>
-References: <514e099a0808030300u140a0ae7m92a2e7294f39f7b7@mail.gmail.com>
-	<200808081430.43012.trenn@suse.de>
-	<aff5deaf0808081123s1fbe6a5cn7847e9cb053c1f5a@mail.gmail.com>
-	<200808092059.47863.trenn@suse.de>
-	<514e099a0808100128u303207clcb22292db2f0cc59@mail.gmail.com>
-	<1218418431.6671.52.camel@yakui_zhao.sh.intel.com>
-	<514e099a0808102144n241c8e9ak255bded0a80744f1@mail.gmail.com>
-	<1218432270.6671.75.camel@yakui_zhao.sh.intel.com>
-	<514e099a0808102224g6f55fa0ex5f50d8f21f838358@mail.gmail.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 11 Aug 2008 03:26:56 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
+Subject: powerpc/cell/oprofile: avoid double free of profile buffer
+Date: Mon, 11 Aug 2008 09:25:43 +0200
+User-Agent: KMail/1.9.9
+Cc: cbe-oss-dev@ozlabs.org, Robert Richter <robert.richter@amd.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       oprofile-list@lists.sourceforge.net, Paul Mackerras <paulus@samba.org>,
+       cel <cel@linux.vnet.ibm.com>
+References: <1217620879.15667.145.camel@carll-linux-desktop> <18591.30474.127939.243247@cargo.ozlabs.ibm.com> <200808110918.57293.arnd@arndb.de>
+In-Reply-To: <200808110918.57293.arnd@arndb.de>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200808110925.44243.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX18uo2qDGH/A6J7fBE6CgPNC1g/1YYy9vzlMrup
+ Lrof6BC1AxteSDBfGk8wfoqfKBkc/NHUO4JC9uvI8fiiw2tETn
+ 9Lllvj+ZLomK5w5/NsBhw==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Does the LKML community consider the Fedora 9 kernels as too different?
-> I would prefer using the F9 kernel for testing this issue since it's
-> easier for me to compile and install.
+From: Carl Love <cel@us.ibm.com>
 
-The F9 kernels are very very close to the linux-kernel ones.
+If an error occurs on opcontrol start, the event and per cpu buffers
+are released.  If later opcontrol shutdown is called then the free
+function will be called again to free buffers that no longer
+exist.  This results in a kernel oops.  The following changes
+prevent the call to delete buffers that don't exist.
 
-See
+Signed-off-by: Carl Love <carll@us.ibm.com>
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+---
+ drivers/oprofile/cpu_buffer.c   |    4 +++-
+ drivers/oprofile/event_buffer.c |    2 ++
+ 2 files changed, 5 insertions(+), 1 deletions(-)
 
-http://docs.fedoraproject.org/release-notes/f9/en_US/sn-Kernel.html
-http://fedoraproject.org/wiki/Docs/CustomKernel
-http://www.howtoforge.com/kernel_compilation_fedora
+diff --git a/drivers/oprofile/cpu_buffer.c b/drivers/oprofile/cpu_buffer.c
+index b8601dc..366b5d2 100644
+--- a/drivers/oprofile/cpu_buffer.c
++++ b/drivers/oprofile/cpu_buffer.c
+@@ -38,8 +38,10 @@ void free_cpu_buffers(void)
+ {
+ 	int i;
+ 
+-	for_each_online_cpu(i)
++	for_each_online_cpu(i) {
+ 		vfree(per_cpu(cpu_buffer, i).buffer);
++		per_cpu(cpu_buffer, i).buffer = NULL;
++	}
+ }
+ 
+ unsigned long oprofile_get_cpu_buffer_size(void)
+diff --git a/drivers/oprofile/event_buffer.c b/drivers/oprofile/event_buffer.c
+index e7fbac5..8d692a5 100644
+--- a/drivers/oprofile/event_buffer.c
++++ b/drivers/oprofile/event_buffer.c
+@@ -93,6 +93,8 @@ out:
+ void free_event_buffer(void)
+ {
+ 	vfree(event_buffer);
++
++	event_buffer = NULL;
+ }
+ 
+  
+-- 
+1.5.4.3
+
+
