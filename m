@@ -1,87 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756849AbYHKXjS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753836AbYHKXjf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756849AbYHKXjS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Aug 2008 19:39:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752908AbYHKXjJ
+	id S1753836AbYHKXjf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Aug 2008 19:39:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753692AbYHKXjY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Aug 2008 19:39:09 -0400
-Received: from gw.goop.org ([64.81.55.164]:54634 "EHLO mail.goop.org"
+	Mon, 11 Aug 2008 19:39:24 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:37931 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751826AbYHKXjI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Aug 2008 19:39:08 -0400
-Message-ID: <48A0CD86.6030704@goop.org>
-Date: Mon, 11 Aug 2008 16:38:46 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
-MIME-Version: 1.0
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-CC: Arnd Bergmann <arnd@arndb.de>, "Serge E. Hallyn" <serue@us.ibm.com>,
-       containers@lists.linux-foundation.org, Theodore Tso <tytso@mit.edu>,
-       linux-kernel@vger.kernel.org, Peter Chubb <peterc@gelato.unsw.edu.au>
-Subject: Re: checkpoint/restart ABI
-References: <20080807224033.FFB3A2C1@kernel>	 <200808090013.41999.arnd@arndb.de> <20080811152201.GB25930@us.ibm.com>	 <200808111853.13854.arnd@arndb.de> <1218484114.5598.43.camel@nimitz>
-In-Reply-To: <1218484114.5598.43.camel@nimitz>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1755564AbYHKXjX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Aug 2008 19:39:23 -0400
+Date: Tue, 12 Aug 2008 09:39:11 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Steven French <sfrench@us.ibm.com>
+Cc: James Morris <jmorris@namei.org>, "David S. Miller" <davem@davemloft.net>,
+       David Howells <dhowells@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: Resolved merge conflicts in next-creds
+Message-Id: <20080812093911.36bc21d3.sfr@canb.auug.org.au>
+In-Reply-To: <OF680EEF56.1C72E960-ON872574A2.005194A0-862574A2.0051B900@us.ibm.com>
+References: <alpine.LRH.1.10.0808110950530.3636@tundra.namei.org>
+	<OF680EEF56.1C72E960-ON872574A2.005194A0-862574A2.0051B900@us.ibm.com>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Tue__12_Aug_2008_09_39_11_+1000_33vaMVWTK..Cd3u1"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dave Hansen wrote:
-> Arnd, Jeremy and Oren,
+--Signature=_Tue__12_Aug_2008_09_39_11_+1000_33vaMVWTK..Cd3u1
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+Hi Steve,
+
+On Mon, 11 Aug 2008 09:51:28 -0500 Steven French <sfrench@us.ibm.com> wrote:
 >
-> Thanks for all of the very interesting comments about the ABI.  
-> Considering that we're still *really* early in getting this concept
-> merged up into mainline, what do you all think we should do now?
->
-> My main goal here is just to get everyone to understand the approach
-> that we're proposing rather than to really fix the interfaces in stone.
-> I bet we're going to be changing them a lot before these patches
-> actually get in.
->   
-Yes.
+> These (cifs) changes should be in Linus's mainline now so should be easie=
+r=20
+> to merge your patch now.
 
-It seems to me that worrying about ABI at this point is a bit premature.
+Yeah, the conflicts were no longer in yesterday's linux-next merge.
+Thanks.
 
-This feature, as it currently stands, is essentially useless for any 
-practical purpose.  Self-checkpointing a single process with no handling 
-of non-file file descriptors and no proper handling of file 
-file-descriptors is not very useful.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-My understanding that this is basically a prototype for a more useful 
-multi-process or container-wide checkpoint facility.
+--Signature=_Tue__12_Aug_2008_09_39_11_+1000_33vaMVWTK..Cd3u1
+Content-Type: application/pgp-signature
 
-While you could try to come up with an extensible file format that would 
-be able to handle any future extensions, the chances are you'd get it 
-wrong and need to break file format compatibility anyway.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-I'm more interested in seeing a description of how you're doing to 
-handle things like:
+iEYEARECAAYFAkigzZ8ACgkQjjKRsyhoI8w/bwCdFwsf5X20gzdn9nRUmvWhlKX7
+F6QAoJtgpOe6o5/mbEr71km/u/+EWzA4
+=Viap
+-----END PGP SIGNATURE-----
 
-    * multiple processes
-    * pipes
-    * UNIX domain sockets
-    * INET sockets (both inter and intra machine)
-    * unlinked open files
-    * checkpointing file content
-    * closed files (ie, files which aren't currently open, but will be
-      soon, esp tmp files)
-    * shared memory
-    * (Peter, what have I forgotten?)
-
-Having gone through this before, I don't think an all-kernel solution 
-can work except for the most simple cases.
-
-Which, come to think of it, is an important point.  What are the 
-expected use-cases for this feature?  Do you really mean 
-checkpoint/restart?  Do you expect to be able to checkpoint a process, 
-leave it running, then "rewind" by restoring the image?  Or does 
-checkpoint always atomically kill the source process(es)?  Are you 
-expecting to be able to resume on another machine?
-
-Lightweight filesystem checkpointing, such as btrfs provides, would seem 
-like a powerful mechanism for handling a lot of the filesystem state 
-problems.  It would have been useful when we did this...
-
-    J
+--Signature=_Tue__12_Aug_2008_09_39_11_+1000_33vaMVWTK..Cd3u1--
