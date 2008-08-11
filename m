@@ -1,70 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756353AbYHKTKl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754726AbYHKTWA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756353AbYHKTKl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Aug 2008 15:10:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751977AbYHKTK3
+	id S1754726AbYHKTWA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Aug 2008 15:22:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752108AbYHKTVw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Aug 2008 15:10:29 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:37527 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751918AbYHKTK2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Aug 2008 15:10:28 -0400
-Date: Mon, 11 Aug 2008 21:10:12 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Tim Bird <tim.bird@am.sony.com>
-Cc: linux kernel <linux-kernel@vger.kernel.org>,
-       linux-embedded <linux-embedded@vger.kernel.org>,
-       Matt Mackall <mpm@selenic.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH] bootup: Add built-in kernel command line for x86
-Message-ID: <20080811191012.GA16553@elte.hu>
-References: <489A1844.3090502@am.sony.com>
+	Mon, 11 Aug 2008 15:21:52 -0400
+Received: from nf-out-0910.google.com ([64.233.182.187]:34512 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751687AbYHKTVu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Aug 2008 15:21:50 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=W94ToVNIA6D4mYnEDe2uVn7OXFOryeFt7hKdwVKNXgg+rkdF7B5xnYHtp4ejGtLz3F
+         S4rRIwlrneXX9z++vhpKSgy9kpWAhefvBQdKChKv8KcmvwrYly0NjHp/S0Xzxfb9kvkj
+         jnlinCjzx9L1bXwl4Cx3cyOaPVGRhu3QrVlO0=
+Date: Mon, 11 Aug 2008 23:22:10 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: akpm@osdl.org, mingo@redhat.com, linux-kernel@vger.kernel.org, ak@suse.de,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [PATCH] x86_64: remove empty lines from stack traces/oopses
+Message-ID: <20080811192210.GA5791@martell.zuzino.mipt.ru>
+References: <20080731235137.GA4816@martell.zuzino.mipt.ru> <20080811170219.GJ4524@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <489A1844.3090502@am.sony.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20080811170219.GJ4524@elte.hu>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Aug 11, 2008 at 07:02:19PM +0200, Ingo Molnar wrote:
+> * Alexey Dobriyan <adobriyan@gmail.com> wrote:
+> 
+> >  show_trace_log_lvl(struct task_struct *task, struct pt_regs *regs,
+> >  		unsigned long *stack, unsigned long bp, char *log_lvl)
+> >  {
+> > -	printk("\nCall Trace:\n");
+> > +	printk("Call Trace:\n");
+> >  	dump_trace(task, regs, stack, bp, &print_trace_ops, log_lvl);
+> > -	printk("\n");
+> >  }
+> 
+> hm, it's nice to have stack traces stand out a bit, and to not get the 
+> 'Call Trace' embedded in the middle of a printk (which happens to crash 
+> or produce a stack dump).
 
-* Tim Bird <tim.bird@am.sony.com> wrote:
+Sometimes all you have is 80x25 or just screenshot from some stupid windows
+monitoring program.
 
-> Add support for a built-in command line for x86 architectures. The 
-> Kconfig help gives the major rationale for this addition.
+> >  void show_trace(struct task_struct *task, struct pt_regs *regs,
+> > @@ -386,6 +385,7 @@ show_stack_log_lvl(struct task_struct *task, struct pt_regs *regs,
+> >  		printk(" %016lx", *stack++);
+> >  		touch_nmi_watchdog();
+> >  	}
+> > +	printk("\n");
+> >  	show_trace_log_lvl(task, regs, sp, bp, log_lvl);
+> >  }
+> >  
+> > @@ -443,7 +443,6 @@ void show_registers(struct pt_regs *regs)
+> >  		printk("Stack: ");
+> >  		show_stack_log_lvl(NULL, regs, (unsigned long *)sp,
+> >  				regs->bp, "");
+> > -		printk("\n");
+> >  
+> >  		printk(KERN_EMERG "Code: ");
+> 
+> just to make sure i get the gist of your change, do you have a 'before' 
+> and 'after' sample oops, so that we can see the difference?
 
-i have actually used a local hack quite similar to this to inject boot 
-options into bzImages via randconfig - so i would find this feature 
-rather useful.
+Any recent oops with and without empty lines after Call trace: and
+after calltrace.
 
-a small observation:
-
-> +	/* append boot loader cmdline to builtin, unless builtin overrides it */
-> +	if (builtin_cmdline[0] != '!') {
-> +		strlcat(builtin_cmdline, " ", COMMAND_LINE_SIZE);
-> +		strlcat(builtin_cmdline, boot_command_line, COMMAND_LINE_SIZE);
-> +		strlcpy(boot_command_line, builtin_cmdline, COMMAND_LINE_SIZE);
-> +	} else {
-> +		strlcpy(boot_command_line, &builtin_cmdline[1],
-> +			COMMAND_LINE_SIZE);
-> +	}
-
-the default branch changes existing command lines slightly: it appends a 
-space to them. This could break scripts that rely on the precise 
-contents of /proc/cmdline output. (i have some - they are arguably 
-dodgy)
-
-Best would be to make it really apparent in the code that nothing 
-changes if this config option is not set. Preferably there should be no 
-extra code at all in that case.
-
-	Ingo
