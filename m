@@ -1,59 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755929AbYHKQzb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754957AbYHKQzs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755929AbYHKQzb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Aug 2008 12:55:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752036AbYHKQzS
+	id S1754957AbYHKQzs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Aug 2008 12:55:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753907AbYHKQzj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Aug 2008 12:55:18 -0400
-Received: from moutng.kundenserver.de ([212.227.126.186]:60505 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751604AbYHKQzQ convert rfc822-to-8bit (ORCPT
+	Mon, 11 Aug 2008 12:55:39 -0400
+Received: from mail-gx0-f16.google.com ([209.85.217.16]:42908 "EHLO
+	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752036AbYHKQzi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Aug 2008 12:55:16 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-Subject: Re: [RFC][PATCH 1/4] checkpoint-restart: general infrastructure
-Date: Mon, 11 Aug 2008 18:53:13 +0200
-User-Agent: KMail/1.9.9
-Cc: Dave Hansen <dave@linux.vnet.ibm.com>,
-       containers@lists.linux-foundation.org, Theodore Tso <tytso@mit.edu>,
-       linux-kernel@vger.kernel.org
-References: <20080807224033.FFB3A2C1@kernel> <200808090013.41999.arnd@arndb.de> <20080811152201.GB25930@us.ibm.com>
-In-Reply-To: <20080811152201.GB25930@us.ibm.com>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Mon, 11 Aug 2008 12:55:38 -0400
+X-Greylist: delayed 383 seconds by postgrey-1.27 at vger.kernel.org; Mon, 11 Aug 2008 12:55:38 EDT
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=IqYvTjsKGbQ8SRX7PhmyezmEmk8I+Q+WNfZLXi/7mc/lmTO+BiAugcOElRZ5DcogGI
+         GSuGZHNoKQLI3ndNSIlbAlK44HBxKnCglUGTykaaMsn8x+D/klGv4WNbTEIv6Ka06lvk
+         8F5yNviL8Ns31ydY4l2j/FgyuC9dM7Xv459ps=
+Message-ID: <19f34abd0808110949n5d7d363es66325b87a8fb0fd1@mail.gmail.com>
+Date: Mon, 11 Aug 2008 18:49:13 +0200
+From: "Vegard Nossum" <vegard.nossum@gmail.com>
+To: "netdev@vger.kernel.org" <netdev@vger.kernel.org>
+Subject: latest -git: kernel hangs when pulling the plug on 8139too
+Cc: LKML <linux-kernel@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200808111853.13854.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1/koEm00te+9HcL58/23mN69PLdlkCeu6EmH1Q
- c1YNNf2cMz1DGdpmhywbGocUxoJ8rpPOHhAz5D9W7Us9hpXiOB
- tpJ0CR6IEEloYxDxfNqew==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 11 August 2008, Serge E. Hallyn wrote:
-> At the restart end, every resource which was checkpointed will have to
-> be re-created, and permissions checked against the privilege of the
-> task which did the restart.  We may end up having to make use of the new
-> credentials for this.
-> 
-> This could become unpleasant: if an unprivileged task asked a privileged
-> helper to create something for the unprivileged task to use (i.e. a
-> raw socket), then the user needs to be privileged to re-created the
-> resource.  But it's necessary.
+Hi,
 
-Right. Of course, the hard part here will be to make it obvious to
-be safe. Having to check all sorts of permissions means there will
-be many opportunities for exploitable bugs.
+I am experiencing a system hang as soon as pull the cable out of eth0.
+Kernel version is unmodified latest -git
+(v2.6.27-rc2/796aadeb1b2db9b5d463946766c5bbfd7717158c) and my network
+driver is 8139too (for both eth0 and eth1).
 
-The best way I can think of for this would be to use existing syscalls
-(e.g. sched_setscheduler, setfsuid, ...) from user space whereever
-possible and do only the bare minimum for the restart part in the kernel.
+I am running netconsole on eth0 (the interface which I disconnect).
 
-	Arnd <><
+A bit of serial console (ttyS0) output:
+
+Linux version 2.6.27-rc2-00325-g796aade (vegardno@ben.ifi.uio.no) (gcc
+version 4.1.2 20071124 (Red Hat 4.1.2-42)) #2 SMP PREEMPT Mon Aug 11
+18:29:29 CEST 2008
+...
+Kernel command line: ro root=/dev/VolGroup00/LogVol00 rhgb
+console=tty0 console=ttyS0,115200 ignore_loglevel debug initcall_debug
+nmi_watchdog=1 panic=30 sysrq_always_enabled
+netconsole=@192.168.0.172/,@192.168.0.11/ 3
+...
+calling  rtl8139_init_module+0x0/0x20
+8139too Fast Ethernet driver 0.9.28
+8139too 0000:02:01.0: PCI INT A -> GSI 18 (level, low) -> IRQ 18
+eth0: RealTek RTL8139 at 0xf881ac00, 00:10:a7:09:48:52, IRQ 18
+eth0:  Identified 8139 chip type 'RTL-8139C'
+8139too 0000:02:05.0: PCI INT A -> GSI 21 (level, low) -> IRQ 21
+eth1: RealTek RTL8139 at 0xf881c000, 00:16:ec:ee:ad:b9, IRQ 21
+eth1:  Identified 8139 chip type 'RTL-8100B/8139D'
+initcall rtl8139_init_module+0x0/0x20 returned 0 after 37 msecs
+...
+eth0: link down
+[hangs here; num lock + scroll lock flashing]
+[reboots automatically, probably due to NMI watchdog?]
+
+There is no detailed crash output on either tty0 or ttyS0. Keyboard
+sysrq does not work.
+
+Is it expected that pulling the plug on an interface running
+netconsole should hang the machine? Is there anything I can do to help
+narrow down the problem? I'd like to avoid a bisect (esp. since I
+don't know the latest good version), but it is a possible solution.
+
+Thanks,
+
+
+Vegard
+
+-- 
+"The animistic metaphor of the bug that maliciously sneaked in while
+the programmer was not looking is intellectually dishonest as it
+disguises that the error is the programmer's own creation."
+	-- E. W. Dijkstra, EWD1036
