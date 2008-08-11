@@ -1,69 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751754AbYHKGhR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751892AbYHKGi4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751754AbYHKGhR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Aug 2008 02:37:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750970AbYHKGhE
+	id S1751892AbYHKGi4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Aug 2008 02:38:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751078AbYHKGit
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Aug 2008 02:37:04 -0400
-Received: from fg-out-1718.google.com ([72.14.220.159]:38954 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750879AbYHKGhC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Aug 2008 02:37:02 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=date:to:cc:subject:message-id:reply-to:mail-followup-to:references
-         :mime-version:content-type:content-disposition:in-reply-to
-         :user-agent:from;
-        b=Mh5GfKCOnEvushva4wVtWzo5G1RtaDVv03zBBXikNgU9vu11tyXy8BK93r69/fF/M5
-         Q3X0lBblsPXjwv2NszfpgWyUtO3vHcTe1B8wt0hENV5DgvW4BC/oqv6nAbF353kt8Yk8
-         m7f9lIK5Di7EurRx+kiwtGR8uXEexR2UCeKhM=
-Date: Mon, 11 Aug 2008 08:36:58 +0200
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 00/22] ide: more work on generic ATAPI support
-Message-ID: <20080811063658.GB15436@gollum.tnic>
-Reply-To: petkovbb@gmail.com
-Mail-Followup-To: petkovbb@gmail.com,
-	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-	linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20080810153527.16255.2504.sendpatchset@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080810153527.16255.2504.sendpatchset@localhost.localdomain>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-From: Borislav Petkov <petkovbb@googlemail.com>
+	Mon, 11 Aug 2008 02:38:49 -0400
+Received: from mga02.intel.com ([134.134.136.20]:61663 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750839AbYHKGis (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Aug 2008 02:38:48 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.31,341,1215414000"; 
+   d="scan'208";a="325067283"
+Subject: Re: [PATCH] lockdep: handle chains involving classes defined in
+	modules
+From: Huang Ying <ying.huang@intel.com>
+To: Rabin Vincent <rabin@rab.in>
+Cc: Eric Sesterhenn <snakebyte@gmx.de>, linux-kernel@vger.kernel.org,
+       peterz@infradead.org, mingo@redhat.com
+In-Reply-To: <20080808222555.GA10656@debian>
+References: <20080806121650.GA3119@alice> <20080806124134.GA3615@alice>
+	 <20080807205340.GA1747@debian> <20080807205729.GB1747@debian>
+	 <1218165877.22039.23.camel@caritas-dev.intel.com>
+	 <20080808222555.GA10656@debian>
+Content-Type: text/plain
+Date: Mon, 11 Aug 2008 14:38:45 +0800
+Message-Id: <1218436725.30464.52.camel@caritas-dev.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Aug 10, 2008 at 05:35:27PM +0200, Bartlomiej Zolnierkiewicz wrote:
+On Sat, 2008-08-09 at 03:55 +0530, Rabin Vincent wrote:
+> On Fri, Aug 08, 2008 at 11:24:37AM +0800, Huang Ying wrote:
+> > On Fri, 2008-08-08 at 02:27 +0530, Rabin Vincent wrote:
+> > > /proc/lockdep_chains currently oopses after any module which creates and
+> > > uses a lock is unloaded.  This is because one of the chains involves a
+> > > class which was defined in the module just unloaded.
+> > > 
+> > > The classes are already correctly taken care of using the
+> > > all_lock_classes which keeps track of all active lock classses.  Add a
+> > > similar all_lock_chains list and use it for keeping track of chains.
+> > > 
+> [...]
+> > 
+> > I think there is a simpler method to deal with this.
 > 
-> Just some more work on generic ATAPI layer...
+> Yes.  I went with the all_lock_chains list approach because there was
+> similar code already being used to keep track of lock_class structures.
 > 
-> - code unifications here and there
+> > - Mark class as useless during zap_class()
+> > - When output lock_chain, if some classes are useless, do not output the
+> > class.
 > 
-> - move IDEFLOPPY_IOCTL_FORMAT_* support to a separate file
+> Like the patch below?  I set ->key to NULL after zapping the class and
+> use that as a condition to not print the class' information.  The only
+> issue is that with this patch there will be some chains output with no
+> locks listed under them.
 > 
-> - ide_pc_intr() no longer requires zillion of arguments
+> ---
+>     lockdep: handle chains involving classes defined in modules
+>     
+>     /proc/lockdep_chains currently oopses after any module which creates and
+>     uses a lock is unloaded.  This is because one of the chains involves a
+>     class which was defined in the module just unloaded.
+>     
+>     Solve this by marking the classes as unused and not printing information
+>     about the unused classes.
+>     
+>     Reported-by: Eric Sesterhenn <snakebyte@gmx.de>
+>     Signed-off-by: Rabin Vincent <rabin@rab.in>
 > 
-> Applies on top of current pata tree, tested with ide-scsi.
-> 
-> diffstat:
->  drivers/ide/Makefile           |    3 
->  drivers/ide/ide-atapi.c        |  323 +++++++++++++++--
->  drivers/ide/ide-floppy.c       |  739 ++++++-----------------------------------
->  drivers/ide/ide-floppy.h       |   72 +++
->  drivers/ide/ide-floppy_ioctl.c |  245 +++++++++++++
->  drivers/ide/ide-tape.c         |  396 ++++++---------------
->  drivers/scsi/ide-scsi.c        |  178 ++-------
->  include/linux/ide.h            |  266 +++++++++-----
->  8 files changed, 1035 insertions(+), 1187 deletions(-)
+> diff --git a/kernel/lockdep.c b/kernel/lockdep.c
+> index d38a643..8ade874 100644
+> --- a/kernel/lockdep.c
+> +++ b/kernel/lockdep.c
+> @@ -2988,6 +2988,7 @@ static void zap_class(struct lock_class *class)
+>  	list_del_rcu(&class->hash_entry);
+>  	list_del_rcu(&class->lock_entry);
+>  
+> +	class->key = NULL;
+>  }
+>  
+>  static inline int within(const void *addr, void *start, unsigned long size)
+> diff --git a/kernel/lockdep_proc.c b/kernel/lockdep_proc.c
+> index 9b0e940..f09b6c7 100644
+> --- a/kernel/lockdep_proc.c
+> +++ b/kernel/lockdep_proc.c
+> @@ -229,6 +229,9 @@ static int lc_show(struct seq_file *m, void *v)
+>  
+>  	for (i = 0; i < chain->depth; i++) {
+>  		class = lock_chain_get_class(chain, i);
+> +		if (!class->key)
+> +			continue;
+> +
+>  		seq_printf(m, "[%p] ", class->key);
+>  		print_name(m, class);
+>  		seq_puts(m, "\n");
 
-ACK 1-14, looks good so far. Will review the rest of them later and do some
-testing.
+I think this patch is OK.
 
--- 
-Regards/Gruss,
-    Boris.
+Acked-by: Huang Ying <ying.huang@intel.com>
+
+Best Regards,
+Huang Ying
+
+
