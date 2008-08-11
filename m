@@ -1,116 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756534AbYHKRDn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756603AbYHKRD5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756534AbYHKRDn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Aug 2008 13:03:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756418AbYHKRDB
+	id S1756603AbYHKRD5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Aug 2008 13:03:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756457AbYHKRDT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Aug 2008 13:03:01 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:44404 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756397AbYHKRDA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Aug 2008 13:03:00 -0400
-Date: Mon, 11 Aug 2008 12:02:55 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Mimi Zohar <zohar@us.ibm.com>
-Cc: Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org,
-       Al Viro <viro@ZenIV.linux.org.uk>, Stephen Smalley <sds@tycho.nsa.gov>,
-       James Morris <jmorris@namei.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>, safford@watson.ibm.com,
-       serue@linux.vnet.ibm.com, sailer@watson.ibm.com,
-       Mimi Zohar <zohar@linux.vnet.ibm.com>
-Subject: Re: [PATCH 3/4] integrity: Linux Integrity Module(LIM)
-Message-ID: <20080811170255.GA2662@us.ibm.com>
-References: <20080808184349.999902616@linux.vnet.ibm.com> <1218221761.4444.13.camel@localhost.localdomain> <20080809185340.GC22905@infradead.org> <OF0AEBDCA2.1E27B823-ON852574A1.000FEE48-852574A1.004C3185@us.ibm.com>
+	Mon, 11 Aug 2008 13:03:19 -0400
+Received: from mailmxout.mailmx.agnat.pl ([193.239.44.238]:18184 "EHLO
+	mailmxout.mailmx.agnat.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756449AbYHKRDR convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Aug 2008 13:03:17 -0400
+From: Arkadiusz Miskiewicz <arekm@maven.pl>
+To: Mikael Pettersson <mikpe@it.uu.se>
+Subject: Re: Opteron Rev E has a bug ... a locked instruction doesn't act as a read-acquire barrier (confirmed)
+Date: Mon, 11 Aug 2008 19:03:06 +0200
+User-Agent: PLD Linux KMail/1.9.9
+Cc: "Wahlig, Elsie" <elsie.wahlig@amd.com>, linux-kernel@vger.kernel.org
+References: <CB2417C2B1152C41919D5B9DE58840FA72D828@sausexmb5.amd.com> <200808061913.34874.arekm@maven.pl> <18585.64037.521673.362547@alkaid.it.uu.se>
+In-Reply-To: <18585.64037.521673.362547@alkaid.it.uu.se>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <OF0AEBDCA2.1E27B823-ON852574A1.000FEE48-852574A1.004C3185@us.ibm.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Message-Id: <200808111903.06953.arekm@maven.pl>
+X-Agnat-Warning: Use smtp.agnat.eu as SMTP server
+X-Authenticated-Id: arekm
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Mimi Zohar (zohar@us.ibm.com):
-> Christoph Hellwig <hch@infradead.org> wrote on 08/09/2008 02:53:40 PM:
-> 
-> > > +      if (integrity_inode_alloc(inode)) {
-> > > +         if (inode->i_sb->s_op->destroy_inode)
-> > > +            inode->i_sb->s_op->destroy_inode(inode);
-> > > +         else
-> > > +            kmem_cache_free(inode_cachep, (inode));
-> > > +         return NULL;
-> > > +      }
-> > > +
-> > 
-> > Please factor this and the lsm failure case out into a single
-> > out_free_inode goto label.
-> 
-> ok
-> 
-> > >  int vfs_permission(struct nameidata *nd, int mask)
-> > >  {
-> > > -   return inode_permission(nd->path.dentry->d_inode, mask);
-> > > +   int retval;
-> > > +
-> > > +   retval = inode_permission(nd->path.dentry->d_inode, mask);
-> > > +   if (retval)
-> > > +      return retval;
-> > > +   return integrity_inode_permission(NULL, &nd->path,
-> > > +                 mask & (MAY_READ | MAY_WRITE |
-> > > +                    MAY_EXEC));
-> > >  }
-> > > 
-> > >  /**
-> > > @@ -306,7 +314,14 @@ int vfs_permission(struct nameidata *nd,
-> > >   */
-> > >  int file_permission(struct file *file, int mask)
-> > >  {
-> > > -   return inode_permission(file->f_path.dentry->d_inode, mask);
-> > > +   int retval;
-> > > +
-> > > +   retval = inode_permission(file->f_path.dentry->d_inode, mask);
-> > > +   if (retval)
-> > > +      return retval;
-> > > +   return integrity_inode_permission(file, NULL,
-> > > +                 mask & (MAY_READ | MAY_WRITE |
-> > > +                    MAY_EXEC));
-> > 
-> > Please put your hook into inode_permission.  Note that in inode
-> > permission and lots of callers there is no path available so don't pass
-> > it.  Please pass the full MAY_FOO mask for new interfaces and do
-> > filtering that won't break if new ones are introduced.
-> 
-> We started out with the integrity_inode_permission() hook call in 
-> inode_permission(), but because of the removal of the nameidata 
-> parameter in the last merge, based on discussions
-> http://marc.info/?l=linux-security-module&m=121797845308246&w=2,
-> the call to integrity_inode_permission() was moved up to the caller,
-> where either a file or path are available.  Any suggestions?
+On Wednesday 06 August 2008, Mikael Pettersson wrote:
+> On Wed, 6 Aug 2008 19:13:34 +0200, Arkadiusz Miskiewicz wrote:
+> >On Wednesday 06 August 2008, Wahlig, Elsie wrote:
+> >> Your issue may be one that has been seen on 1st generation
+> >> AMD Opteron processor's with cpuid family 0Fh, cpuid model's
+> >> < 40h with the code sequence that performs a read-modify write
+> >> operation after acquiring a semaphore.
+[...]
+> Also I think I'll start by writing a user-space test program that
+> does a stress-test of the plain lock;rmw;unlobk sequence to see if
+> it can break it. (Locks/mutexes are also used in user-space.)
 
-Mimi, can you explain exactly (and concisely) what you are doing with
-the pathname?
+Bugreported so hopefully it won't be lost.
 
-> > > +#ifdef CONFIG_INTEGRITY
-> > > +   void         *i_integrity;
-> > > +#endif
-> > 
-> > Sorry, but I don't think we can bloat the inode even further for this.
-> 
-> The original version of IMA was LSM based, using i_security. Based
-> on discussions on the LSM mailing list, it was decided that the LSM hooks
-> were meant only for access control.  During the same time frame, there 
-> was a lot of work done in stacking LSM modules and i_security, but that
-> approach was dropped. It was suggested that we define a separate set of
-> hooks for integrity, which this patch set provides. Caching integrity 
-> results is an important aspect. Any suggestions in lieu of defining 
-> i_integrity?
+http://bugzilla.kernel.org/show_bug.cgi?id=11305
 
-The i_integrity is only bloating the inode if LIM is enabled.  Surely
-that beats having LIM define its own hash table and locking to track
-integrity labels on inodes?  Do you have another suggestion?
+> /Mikael
 
-Or is the concern about having more #ifdefs in the struct inode
-definition?
-
--serge
+-- 
+Arkadiusz Miśkiewicz        PLD/Linux Team
+arekm / maven.pl            http://ftp.pld-linux.org/
