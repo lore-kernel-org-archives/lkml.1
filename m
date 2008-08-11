@@ -1,226 +1,198 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756165AbYHKST0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755879AbYHKSVo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756165AbYHKST0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Aug 2008 14:19:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753804AbYHKSTR
+	id S1755879AbYHKSVo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Aug 2008 14:21:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752974AbYHKSVg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Aug 2008 14:19:17 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:22143 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753363AbYHKSTP convert rfc822-to-8bit (ORCPT
+	Mon, 11 Aug 2008 14:21:36 -0400
+Received: from wa-out-1112.google.com ([209.85.146.181]:8409 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751959AbYHKSVf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Aug 2008 14:19:15 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=kVlacT9RKtLxEWgFD4xcir5q5WZfn9dOYc4E+Bv1FBcHcYZiO60qOWVJKGzD4Gdcg
-	aqzOOdtyBp1juq0fwg1zQ==
-Message-ID: <2846be6b0808111118q14995d84xdb9e6de500e415e2@mail.gmail.com>
-Date: Mon, 11 Aug 2008 11:18:51 -0700
-From: "Naveen Gupta" <ngupta@google.com>
-To: "=?ISO-8859-1?Q?Fernando_Luis_V=E1zquez_Cao?=" 
-	<fernando@oss.ntt.co.jp>
-Subject: Re: RFC: I/O bandwidth controller (was Re: Too many I/O controller patches)
-Cc: "Dave Hansen" <dave@linux.vnet.ibm.com>,
-       "Ryo Tsuruta" <ryov@valinux.co.jp>, yoshikawa.takuya@oss.ntt.co.jp,
-       taka@valinux.co.jp, uchida@ap.jp.nec.com, linux-kernel@vger.kernel.org,
-       dm-devel@redhat.com, containers@lists.linux-foundation.org,
-       virtualization@lists.linux-foundation.org,
-       xen-devel@lists.xensource.com, agk@sourceware.org,
-       "Andrea Righi" <righi.andrea@gmail.com>
-In-Reply-To: <1218115028.8460.353.camel@sebastian.kern.oss.ntt.co.jp>
+	Mon, 11 Aug 2008 14:21:35 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type;
+        b=MBEwiH1lu0WRyjZ37o6blBeRTW5250+atyXM6Rh1v+TObvc621L0dXsdO044n1kMr1
+         wzY6OvvxefHim0f+QA8VsRjzhJ+cf8jfFfb6+lH/Bsf5YBuYPJwZZ4eZy92H6xlR4/3b
+         NFp/a45dZpKlx+FNb+V98cCTA9yLgPlLxGlsw=
+Message-ID: <d77765540808111121l39b3bbb2nc0ef7e58a665ec74@mail.gmail.com>
+Date: Mon, 11 Aug 2008 18:21:34 +0000
+From: "=?UTF-8?Q?Piotr_Jaroszy=C5=84ski?=" <p.jaroszynski@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: No kernel output to serial console
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-References: <20080804.175126.193692178.ryov@valinux.co.jp>
-	 <1217870433.20260.101.camel@nimitz>
-	 <1217985189.3154.57.camel@sebastian.kern.oss.ntt.co.jp>
-	 <2846be6b0808061237o6667c609l21bdb5a765469e95@mail.gmail.com>
-	 <1218115028.8460.353.camel@sebastian.kern.oss.ntt.co.jp>
+Content-Type: multipart/mixed; 
+	boundary="----=_Part_85065_23529091.1218478894564"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Fernando
+------=_Part_85065_23529091.1218478894564
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: base64
+Content-Disposition: inline
 
+SGVsbG8sCgpJIGNhbid0IGdldCBrZXJuZWwgdG8gb3V0cHV0IGFueSBpbmZvIHRvIHNlcmlhbCBj
+b25zb2xlIGR1cmluZyBib290LAp0aGUgb3V0cHV0IGxvb2tzIGxpa2UgdGhhdDoKCmtlcm5lbCAv
+dm1saW51ei0yLjYuMjIuMTktbHVzdHJlLTEuNi41LjEgcm8gcm9vdD0vZGV2L3NkeTUgY29uc29s
+ZT10dHlTMCw5NjAwbjgKICAgW0xpbnV4LWJ6SW1hZ2UsIHNldHVwPTB4MTQwMCwgc2l6ZT0weDJj
+YWQwOF0KCklOSVQ6IHZlcnNpb24gMi44NiBib290aW5nCiguLi4pCgpzbyBib3RoIGdydWIgYW5k
+IGluaXQgY2FuIHVzZSBpdCBidXQga2VybmVsIGRvZXNuJ3Qgc2VlbSB0by4KCmdydWIgY29uZmln
+OgpzZXJpYWwgLS11bml0PTAgLS1zcGVlZD05NjAwCnRlcm1pbmFsIC0tdGltZW91dD01IHNlcmlh
+bCBjb25zb2xlCgppbml0dGFiIGxpbmU6CnMwOjEyMzQ1OnJlc3Bhd246L3NiaW4vYWdldHR5IDk2
+MDAgdHR5UzAgdnQxMDAKCkF0dGFjaGluZyBjdXJyZW50IGtlcm5lbCBjb25maWcgaW4gY2FzZSBp
+IG1pc3NlZCBzb21ldGhpbmcgb2J2aW91cyB0aGVyZS4KCnNvcnJ5IGlmIHRoYXQncyBvZmZ0b3Bp
+YyBoZXJlLCBidXQgSSdtIG5vdCBzdXJlIHdoZXJlIGVsc2UgSSBjb3VsZCBhc2suCgotLSAKQmVz
+dCBSZWdhcmRzLApQaW90ciBKYXJvc3p5xYRza2kK
+------=_Part_85065_23529091.1218478894564
+Content-Type: application/x-gzip; name=config.gz
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_fjreqfmc0
+Content-Disposition: attachment; filename=config.gz
 
-2008/8/7 Fernando Luis Vázquez Cao <fernando@oss.ntt.co.jp>:
-> Hi Naveen,
->
-> On Wed, 2008-08-06 at 12:37 -0700, Naveen Gupta wrote:
->> > 3. & 4. & 5. - I/O bandwidth shaping & General design aspects
->> >
->> > The implementation of an I/O scheduling algorithm is to a certain extent
->> > influenced by what we are trying to achieve in terms of I/O bandwidth
->> > shaping, but, as discussed below, the required accuracy can determine
->> > the layer where the I/O controller has to reside. Off the top of my
->> > head, there are three basic operations we may want perform:
->> >  - I/O nice prioritization: ionice-like approach.
->> >  - Proportional bandwidth scheduling: each process/group of processes
->> > has a weight that determines the share of bandwidth they receive.
->> >  - I/O limiting: set an upper limit to the bandwidth a group of tasks
->> > can use.
->>
->> I/O limiting can be a special case of proportional bandwidth
->> scheduling. A process/process group can use use it's share of
->> bandwidth and if there is spare bandwidth it be allowed to use it. And
->> if we want to absolutely restrict it we add another flag which
->> specifies that the specified proportion is exact and has an upper
->> bound.
->>
->> Let's say the ideal b/w for a device is 100MB/s
->>
->> And process 1 is assigned b/w of 20%. When we say that the proportion
->> is strict, the b/w for process 1 will be 20% of the max b/w (which may
->> be less than 100MB/s) subject to a max of 20MB/s.
-> I essentially agree with you. The nice thing about proportional
-> bandwidth scheduling is that we get bandwidth guarantees when there is
-> contention for the block device, but still get the benefits of
-> statistical multiplexing in the non-contended case. With strict IO
-> limiting we risk underusing the block devices.
->
->> > If we are pursuing a I/O prioritization model à la CFQ the temptation is
->> > to implement it at the elevator layer or extend any of the existing I/O
->> > schedulers.
->> >
->> > There have been several proposals that extend either the CFQ scheduler
->> > (see (1), (2) below) or the AS scheduler (see (3) below). The problem
->> > with these controllers is that they are scheduler dependent, which means
->> > that they become unusable when we change the scheduler or when we want
->> > to control stacking devices which define their own make_request_fn
->> > function (md and dm come to mind). It could be argued that the physical
->> > devices controlled by a dm or md driver are likely to be fed by
->> > traditional I/O schedulers such as CFQ, but these I/O schedulers would
->> > be running independently from each other, each one controlling its own
->> > device ignoring the fact that they part of a stacking device. This lack
->> > of information at the elevator layer makes it pretty difficult to obtain
->> > accurate results when using stacking devices. It seems that unless we
->> > can make the elevator layer aware of the topology of stacking devices
->> > (possibly by extending the elevator API?) evelator-based approaches do
->> > not constitute a generic solution. Here onwards, for discussion
->> > purposes, I will refer to this type of I/O bandwidth controllers as
->> > elevator-based I/O controllers.
->>
->> It can be argued that any scheduling decision wrt to i/o belongs to
->> elevators. Till now they have been used to improve performance. But
->> with new requirements to isolate i/o based on process or cgroup, we
->> need to change the elevators.
-> I have the impression there is a tendency to conflate two different
-> issues when discussing I/O schedulers and resource controllers, so let
-> me elaborate on this point.
->
-> On the one hand, we have the problem of feeding physical devices with IO
-> requests in such a way that we squeeze the maximum performance out of
-> them. Of course in some cases we may want to prioritize responsiveness
-> over throughput. In either case the kernel has to perform the same basic
-> operations: merging and dispatching IO requests. There is no discussion
-> this is the elevator's job and the elevator should take into account the
-> physical characteristics of the device.
->
-> On the other hand, there is the problem of sharing an IO resource, i.e.
-> block device, between multiple tasks or groups of tasks. There are many
-> ways of sharing an IO resource depending on what we are trying to
-> accomplish: proportional bandwidth scheduling, priority-based
-> scheduling, etc. But to implement this sharing algorithms the kernel has
-> to determine the task whose IO will be submitted. In a sense, we are
-> scheduling tasks (and groups of tasks) not IO requests (which has much
-> in common with CPU scheduling). Besides, the sharing problem is not
-> directly related to the characteristics of the underlying device, which
-> means it does not need to be implemented at the elevator layer.
-
-What if we pass the task specific information to the elevator. We do
-this for CFQ (where we pass the priority). And if we need any
-additional information to be passed we could add that in a similar
-manner.
-
-I really liked your initial suggestion where step 1 would be to add
-I/O tracking patches. And then use this in CFQ and AS to do resource
-sharing. And if we see any shortcoming with this approach. Let's see
-what the best place is to solve remaining problems.
-
-
->
-> Traditional elevators limit themselves to schedule IO requests to disk
-> with no regard to where it came from. However, new IO schedulers such as
-> CFQ combine this with IO prioritization capabilities. This means that
-> the elevator decides the application whose IO will be dispatched next.
-> The problem is that at this layer there is not enough information to
-> make such decisions in an accurate way, because, as mentioned in the
-> RFC, the elevator has not way to know the block IO topology. The
-> implication of this is that the elevator does not know the impact a
-> particular scheduling decision will make in the IO throughput seen by
-> applications, which is what users care about.
-
-Is it possible to send the topology information to the elevators. And
-then they can make global as well as local decisions.
-
->
-> For all these reasons, I think the elevator should take care of
-> optimizing the last stretch of the IO path (generic block layer -> block
-> device) for performance/responsiveness, and leave the job of ensuring
-> that each task is guaranteed a fair share of the kernel's IO resources
-> to the upper layers (for example a block layer resource controller).
->
-> I recognize that in some cases global performance could be improved if
-> the block layer had access to information from the elevator, and that is
-> why I mentioned in the RFC that in some cases it might make sense to
-> combine a block layer resource controller and a elevator layer one (we
-> just would need to figure out a way for the to communicate with each
-> other and work well in tandem).
->
->> If we add another layer of i/o scheduling (block layer I/O controller)
->> above elevators
->> 1) It builds another layer of i/o scheduling (bandwidth or priority)
-> As I mentioned before we are trying to achieve two things: making the
-> best use of block devices, and sharing those IO resources between tasks
-> or groups of tasks. There are two possible approaches here: implement
-> everything in the elevator or move the sharing bits somewhere above the
-> elevator layer. In either case we have to carry out the same tasks so
-> the impact of delegating part of the work to a new layer should not be
-> that big, and, hopefully, will improve maintainability.
->
->> 2) This new layer can have decisions for i/o scheduling which conflict
->> with underlying elevator. e.g. If we decide to do b/w scheduling in
->> this new layer, there is no way a priority based elevator could work
->> underneath it.
-> The priority system could be implemented above the elevator layer in the
-> block layer resource controller, which means that the elevator would
-> only have to worry about scheduling the requests it receives from the
-> block layer and dispatching them to disk in the best possible way.
->
-> An alternative would be using a block layer resource controller and a
-> elavator-based resource controller in tandem.
->
->> If a custom make_request_fn is defined (which means the said device is
->> not using existing elevator),
-> Please note that each of the block devices that constitute a stacking
-> device could have its own elevator.
-
-Another possible approach, if the top layer cannot pass topology info
-to the underling block device elevators. We could use FIFO for the
-underlying block devices, effectively disabling them. The Top layer
-will make it's scheduling decision in custom __make_request and the
-layers below will just forward. And we can easily avoid any conflict.
-
->
->> it could build it's own scheduling
->> rather than asking kernel to add another layer at the time of i/o
->> submission. Since it has complete control of i/o.
-> I think that is something we should avoid. The IO scheduling behavior
-> that the user sees should not depend on the topology of the system. We
-> certainly do not want to reimplement the same scheduling algorithm for
-> every RAID driver. I am of the opinion that whatever IO scheduling
-> algorithm we choose should be implemented just once and usable under any
-> IO configuration.
->
-I agree that we shouldn't be reinventing things for every RAID driver.
-We could have a generic algorithm which everyone plugs into. If not
-that is not possible, we always have the option to create one in
-custom __make_request.
-
->
-
-
--Naveen
+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
+------=_Part_85065_23529091.1218478894564--
