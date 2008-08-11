@@ -1,57 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753949AbYHKOV2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754195AbYHKOWh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753949AbYHKOV2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Aug 2008 10:21:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751189AbYHKOVU
+	id S1754195AbYHKOWh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Aug 2008 10:22:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752036AbYHKOW3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Aug 2008 10:21:20 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:48300 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750989AbYHKOVU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Aug 2008 10:21:20 -0400
-Date: Mon, 11 Aug 2008 16:20:41 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: "Langsdorf, Mark" <mark.langsdorf@amd.com>
-Cc: Dmitry Adamushko <dmitry.adamushko@gmail.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, lkml <linux-kernel@vger.kernel.org>,
-       Gautham R Shenoy <ego@in.ibm.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: Regression in 2.6.27-rc1 for set_cpus_allowed_ptr
-Message-ID: <20080811142041.GA15185@elte.hu>
-References: <6453C3CB8E2B3646B0D020C112613273C5AC5A@sausexmb4.amd.com> <200808082303.41068.rjw@sisk.pl> <b647ffbd0808081431q27a48113q5beee1bae7c24b0a@mail.gmail.com> <20080811123020.GB10082@elte.hu> <6453C3CB8E2B3646B0D020C112613273C5AC5C@sausexmb4.amd.com>
+	Mon, 11 Aug 2008 10:22:29 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:52072 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751469AbYHKOW2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Aug 2008 10:22:28 -0400
+Message-ID: <48A04AEE.8090606@linux-foundation.org>
+Date: Mon, 11 Aug 2008 09:21:34 -0500
+From: Christoph Lameter <cl@linux-foundation.org>
+User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <6453C3CB8E2B3646B0D020C112613273C5AC5C@sausexmb4.amd.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+CC: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
+       mathieu.desnoyers@polymtl.ca, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, rdunlap@xenotime.net, mpm@selenic.com,
+       rostedt@goodmis.org, tglx@linutronix.de
+Subject: Re: [PATCH 4/5] kmemtrace: SLUB hooks.
+References: <1218388447-5578-1-git-send-email-eduard.munteanu@linux360.ro>	 <1218388447-5578-2-git-send-email-eduard.munteanu@linux360.ro>	 <1218388447-5578-3-git-send-email-eduard.munteanu@linux360.ro>	 <1218388447-5578-4-git-send-email-eduard.munteanu@linux360.ro>	 <1218388447-5578-5-git-send-email-eduard.munteanu@linux360.ro>	 <48A046F5.2000505@linux-foundation.org>	 <1218463774.7813.291.camel@penberg-laptop>	 <48A048FD.30909@linux-foundation.org> <1218464177.7813.293.camel@penberg-laptop>
+In-Reply-To: <1218464177.7813.293.camel@penberg-laptop>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Pekka Enberg wrote:
 
-* Langsdorf, Mark <mark.langsdorf@amd.com> wrote:
+> The function call is supposed to go away when we convert kmemtrace to
+> use Mathieu's markers but I suppose even then we have a problem with
+> inlining?
 
-> > > does it help?
-> > > 
-> > > (the explanation is also available in this thread).
-> > 
-> > i've queued up the fix below in tip/sched/urgent.
-> 
-> Sorry for the delay in response - we had some building power
-> issues this weekend.
-> 
-> Yes, that fixed the issue.
+The function calls are overwritten with NOPs? Or how does that work?
 
-thanks Mark - i've added your Tested-by line to the commit.
 
-	Ingo
