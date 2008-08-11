@@ -1,50 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755452AbYHKXDT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755377AbYHKXHI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755452AbYHKXDT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Aug 2008 19:03:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752225AbYHKXDL
+	id S1755377AbYHKXHI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Aug 2008 19:07:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751800AbYHKXG4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Aug 2008 19:03:11 -0400
-Received: from gw.goop.org ([64.81.55.164]:45381 "EHLO mail.goop.org"
+	Mon, 11 Aug 2008 19:06:56 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:56546 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752035AbYHKXDK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Aug 2008 19:03:10 -0400
-Message-ID: <48A0C519.6070708@goop.org>
-Date: Mon, 11 Aug 2008 16:02:49 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	id S1751505AbYHKXGz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Aug 2008 19:06:55 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: Re: [Bug #11178] Secondary hard drive fails during both hibernation and resume.
+Date: Tue, 12 Aug 2008 01:09:39 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       "Alan Jenkins" <alan-jenkins@tuffmail.co.uk>,
+       "Matthew Wilcox" <matthew@wil.cx>,
+       "Matthew Wilcox" <willy@linux.intel.com>
+References: <VYYCiQF4qDI.A.BPH.KCjnIB@albercik> <cX_-nNkxKaF.A.rpD._EjnIB@albercik> <200808111515.50622.jbarnes@virtuousgeek.org>
+In-Reply-To: <200808111515.50622.jbarnes@virtuousgeek.org>
 MIME-Version: 1.0
-To: benh@kernel.crashing.org
-CC: Andrew Morton <akpm@linux-foundation.org>, ehabkost@redhat.com,
-       x86@kernel.org, linux-kernel@vger.kernel.org,
-       Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH 1/2] add phys_addr_t for holding physical addresses
-References: <489B6B40.5050705@goop.org>	 <20080807145648.ab3dfa90.akpm@linux-foundation.org>	 <489B72C3.30603@goop.org>	 <20080807162741.8dfcd336.akpm@linux-foundation.org>	 <489B8908.2010007@goop.org>	 <20080807170617.79ca3ce7.akpm@linux-foundation.org>	 <48A0954E.20400@goop.org> <1218491896.8041.9.camel@pasglop>	 <48A0B9EB.9020709@goop.org> <1218493925.8041.21.camel@pasglop>	 <48A0C22D.2050400@goop.org> <1218495200.8041.23.camel@pasglop>
-In-Reply-To: <1218495200.8041.23.camel@pasglop>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200808120109.40127.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Benjamin Herrenschmidt wrote:
-> On Mon, 2008-08-11 at 15:50 -0700, Jeremy Fitzhardinge wrote:
->   
->> Benjamin Herrenschmidt wrote:
->>     
->>> Are we sure resource_size_t is -never- used to represent memory ? I
->>> though it was on some platforms....
->>>       
->> On x86 it's optionally used to put memory in the resource tree, but if 
->> the memory is larger than can be held in resource_size_t it simply skips 
->> it.  Don't know about elsewhere.
->>     
->
-> That sounds like a good enough reason to not separate the two concepts..
+On Tuesday, 12 of August 2008, Jesse Barnes wrote:
+> On Saturday, August 9, 2008 3:43 pm Rafael J. Wysocki wrote:
+> > This message has been generated automatically as a part of a report
+> > of recent regressions.
+> >
+> > The following bug entry is on the current list of known regressions
+> > from 2.6.26.  Please verify if it still should be listed and let me know
+> > (either way).
+> >
+> >
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11178
+> > Subject		: Secondary hard drive fails during both hibernation and resume.
+> > Submitter	: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+> > Date		: 2008-07-30 04:53 (11 days old)
+> > Handled-By	: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+> > Patch		: http://bugzilla.kernel.org/attachment.cgi?id=17043&action=view
+> 
+> Fix pushed to Linus.
 
-The resource_size_t situation is obscure.  I'd be happy to just remove 
-its config, use my patch and typedef phys_addr_t resource_size_t.
+Bug closed, thanks.
 
-    J
-
+Rafael
