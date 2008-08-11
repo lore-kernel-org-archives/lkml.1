@@ -1,80 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752079AbYHKIbv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752210AbYHKIgP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752079AbYHKIbv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Aug 2008 04:31:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751155AbYHKIbn
+	id S1752210AbYHKIgP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Aug 2008 04:36:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751221AbYHKIgA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Aug 2008 04:31:43 -0400
-Received: from mail.hevs.ch ([153.109.23.10]:38183 "EHLO mail.hevs.ch"
+	Mon, 11 Aug 2008 04:36:00 -0400
+Received: from main.gmane.org ([80.91.229.2]:40545 "EHLO ciao.gmane.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751097AbYHKIbn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Aug 2008 04:31:43 -0400
-From: Marc Pignat <marc.pignat@hevs.ch>
-Organization: HEVs
-To: Jean Delvare <khali@linux-fr.org>
-Subject: Re: [RFC,PATCH v2] i2c: fix device_init_wakeup place
-Date: Mon, 11 Aug 2008 10:31:35 +0200
-User-Agent: KMail/1.9.9
-Cc: David Brownell <david-b@pacbell.net>, i2c@lm-sensors.org,
-       linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200808111031.35722.marc.pignat@hevs.ch>
+	id S1751212AbYHKIf7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Aug 2008 04:35:59 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+Subject: Re: Segmentation fault details?
+Date: Mon, 11 Aug 2008 09:35:42 +0100
+Message-ID: <g7otku$h3o$1@ger.gmane.org>
+References: <ac94cb270808102334m1cc2c3a1n45202072d309927c@mail.gmail.com> <ac94cb270808102337i5febf70fkb6d1f27f71cafb34@mail.gmail.com> <ac94cb270808102355o1413f46ehcddb82ae69458c0d@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7Bit
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: 86.53.68.233
+User-Agent: KNode/0.10.9
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-device_init_wakeup must be called after device_register.
+Wang Yi wrote:
 
-Signed-off-by: Marc Pignat <marc.pignat@hevs.ch>
----
+> Hi, all!
+> 
+>  I'd like to know some details about segmentation fault.
+>  What I mean is when a program accesses invalid memory area, it will
+> get a SIGSEGV signal from kernel, and a message "Segmentation fault".
+> 
+>  I also find that dmesg can show we something like this:
+>  ProgramName[Pid]: segfault at xxxx eip xxxx esp xxxx error x
+>  It is useful and provides the first-step information for further
+> debug/analysis.
+> 
+>  My question is how dmesg gets the information, and if there are any
+> "decent" way to get this and maybe more information(An "indecent" way
+> I came to is grep dmesg)
+> so that I can perform some basic auto analysis.
+> 
+>  Thank you.
+> 
+> Leo
 
-Hi all!
+Core dumps.
 
-The current i2c code calls device_init_wakeup() before device_register, but
-device_register (by calling device_initialize) will disable device wakeup.
+You might also like to look at Ubuntu's "apport" bug reporting tool.  IIRC
+the necessary kernel support is now in mainline.  I believe it provides the
+option to dump core by piping it through an arbitrary program.  The aim of
+apport is to capture these core dumps, notify the user, and give them the
+option to submit it to the Ubuntu developers.
 
-This patch (against 2.6.27-rc2) move the device_init_wakeup() call in the bus
-probe function, just before the probe call.
+One advantage of this pipe technique is that you don't need to search the
+filesystem for core files.  (They're dumped in the current directory, but
+you may not know what directory the program was in when it crashed).
 
-This patch also include a small functionnal change: the I2C_CLIENT_WAKE is no
-more removed from the client flags, but this should't hurt.
+Alan
 
-Changes from v1:
- - patch against 2.6.24-rc2
- - call to device_init_wakeup depends on !device_can_wakeup (suggested by David
-   Brownell)
-
-Best regards
-
-Marc
-
-
-diff --git a/drivers/i2c/i2c-core.c b/drivers/i2c/i2c-core.c
-index 7bf38c4..0039bd9 100644
---- a/drivers/i2c/i2c-core.c
-+++ b/drivers/i2c/i2c-core.c
-@@ -108,6 +108,9 @@ static int i2c_device_probe(struct device *dev)
- 	if (!driver->probe || !driver->id_table)
- 		return -ENODEV;
- 	client->driver = driver;
-+	if (!device_can_wakeup(&client->dev))
-+		device_init_wakeup(&client->dev,
-+					client->flags & I2C_CLIENT_WAKE);
- 	dev_dbg(dev, "probe\n");
- 
- 	status = driver->probe(client, i2c_match_id(driver->id_table, client));
-@@ -262,9 +265,8 @@ i2c_new_device(struct i2c_adapter *adap, struct i2c_board_info const *info)
- 	client->adapter = adap;
- 
- 	client->dev.platform_data = info->platform_data;
--	device_init_wakeup(&client->dev, info->flags & I2C_CLIENT_WAKE);
- 
--	client->flags = info->flags & ~I2C_CLIENT_WAKE;
-+	client->flags = info->flags;
- 	client->addr = info->addr;
- 	client->irq = info->irq;
- 
