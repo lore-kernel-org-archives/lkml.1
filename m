@@ -1,72 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754019AbYHKQoh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752974AbYHKQpZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754019AbYHKQoh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Aug 2008 12:44:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751766AbYHKQo1
+	id S1752974AbYHKQpZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Aug 2008 12:45:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751655AbYHKQpL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Aug 2008 12:44:27 -0400
-Received: from casper.infradead.org ([85.118.1.10]:48233 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751248AbYHKQo0 (ORCPT
+	Mon, 11 Aug 2008 12:45:11 -0400
+Received: from fg-out-1718.google.com ([72.14.220.152]:39308 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751583AbYHKQpJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Aug 2008 12:44:26 -0400
-Date: Mon, 11 Aug 2008 09:44:28 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: S K <nospamnoham@gmail.com>, Zhao Yakui <yakui.zhao@intel.com>,
-       Thomas Renninger <trenn@suse.de>,
-       Alan Jenkins <alan-jenkins@tuffmail.co.uk>,
-       linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
-Subject: Re: cpufreq doesn't seem to work in Intel Q9300
-Message-ID: <20080811094428.6b69d744@infradead.org>
-In-Reply-To: <20080811162839.GA22450@cs181140183.pp.htv.fi>
-References: <aff5deaf0808081123s1fbe6a5cn7847e9cb053c1f5a@mail.gmail.com>
-	<200808092059.47863.trenn@suse.de>
-	<514e099a0808100128u303207clcb22292db2f0cc59@mail.gmail.com>
-	<1218418431.6671.52.camel@yakui_zhao.sh.intel.com>
-	<514e099a0808102144n241c8e9ak255bded0a80744f1@mail.gmail.com>
-	<20080811042244.469f8e1d@infradead.org>
-	<20080811140206.GB3338@cs181140183.pp.htv.fi>
-	<20080811071128.0165be50@infradead.org>
-	<20080811160346.GB21292@cs181140183.pp.htv.fi>
-	<20080811092047.42bf716b@infradead.org>
-	<20080811162839.GA22450@cs181140183.pp.htv.fi>
-Organization: Intel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Mon, 11 Aug 2008 12:45:09 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=xAEd7sK6s58AMuFxFX7obiKGeJ+MpW48we4UHvyLDJZwWRcc4pv+TP8rhjskIPf8hf
+         +5cB9mt26RM8hBD0vt+pDIAz3F/JnRqTzxmXzL5aWjDf1JcFl/8r3OLoqW+zyVYK4BRs
+         y/C3aDZ3veQttMMhNrnSVyY6mq2QZvPTfkYBw=
+Date: Mon, 11 Aug 2008 20:45:08 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Rene Herman <rene.herman@keyaccess.nl>
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@osdl.org>,
+       Yinghai Lu <yhlu.kernel@gmail.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: kill arch/x86/kernel/mpparse.c debugging printk.
+Message-ID: <20080811164508.GA18969@lenovo>
+References: <489C77C6.7040408@keyaccess.nl> <20080811122038.GA10082@elte.hu> <48A05E79.4030304@keyaccess.nl> <48A05EB1.3050508@keyaccess.nl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48A05EB1.3050508@keyaccess.nl>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 11 Aug 2008 19:28:39 +0300
-Adrian Bunk <bunk@kernel.org> wrote:
+[Rene Herman - Mon, Aug 11, 2008 at 05:45:53PM +0200]
+> On 11-08-08 17:44, Rene Herman wrote:
+>
+>> One problem; on 32-bit, "apic=" is a __setup() param and isn't actually 
+>> early enough for us here so this needs it turned into an early_param()  
+>> (followup).
+>
+> Ie:
+>
+> Rene.
 
-> > 
-> > yes there is.. for cases where there is overtemperature. Think of
-> > it as the emergency break in the subway. You really don't want to
-> > use it but when you need it you're glad it's there.
-> 
-> But this only helps when the cooling is working but not good enough,
-> for the classic "fan broken" case it won't cool down enough.
+| From 9655f5ab2537ecd5c5d92b03840f3b6aeed441ad Mon Sep 17 00:00:00 2001
+| From: Rene Herman <rene.herman@gmail.com>
+| Date: Mon, 11 Aug 2008 17:35:41 +0200
+| Subject: [PATCH] x86: make "apic" an early_param() on 32-bit
+| 
+| On 32-bit, "apic" is a __setup() param meaning it is parsed rather
+| late in the game. Make it an early_param() for apic_printk() use
+| by arch/x86/kernel/mpparse.c.
+| 
+| On 64-bit, it already is an early_param().
+| 
+| Signed-off-by: Rene Herman <rene.herman@gmail.com>
+| ---
+|  arch/x86/kernel/apic_32.c |    4 ++--
+|  1 files changed, 2 insertions(+), 2 deletions(-)
+| 
+| diff --git a/arch/x86/kernel/apic_32.c b/arch/x86/kernel/apic_32.c
+| index d6c8983..f432d48 100644
+| --- a/arch/x86/kernel/apic_32.c
+| +++ b/arch/x86/kernel/apic_32.c
+| @@ -1726,9 +1726,9 @@ static int __init apic_set_verbosity(char *str)
+|  		apic_verbosity = APIC_DEBUG;
+|  	else if (strcmp("verbose", str) == 0)
+|  		apic_verbosity = APIC_VERBOSE;
+| -	return 1;
+| +	return 0;
+|  }
+| -__setup("apic=", apic_set_verbosity);
+| +early_param("apic", apic_set_verbosity);
+|  
+|  static int __init lapic_insert_resource(void)
+|  {
+| -- 
+| 1.5.5
+| 
 
-I would call this an unclassified statement for which you have no data
-to show that it's correct, at least for Intel cpus in general.
+Hi Rene,
 
-> 
-> Does the Pentium 4 predate CPUs that shutdown when becoming too hot
-> (I experienced such a shutdown recently on my Athlon...)?
-> 
+you turned it into early_param so now it's NULL injecting vulnerabled.
+Could you please add checking for NULL str param?
 
-thermal shutdown is the last measure for sure (and it's in cpus yes)...
-but sysadmins frown on that.. before you go down that path there's
-various things that happen first (thermal throttle being one of them)
-
-
--- 
-If you want to reach me at my work email, use arjan@linux.intel.com
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+		- Cyrill -
