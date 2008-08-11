@@ -1,139 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752003AbYHKKgq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752155AbYHKKp6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752003AbYHKKgq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Aug 2008 06:36:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751234AbYHKKgj
+	id S1752155AbYHKKp6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Aug 2008 06:45:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751433AbYHKKpv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Aug 2008 06:36:39 -0400
-Received: from fg-out-1718.google.com ([72.14.220.158]:52933 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751218AbYHKKgi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Aug 2008 06:36:38 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=oUTtfBhl+Te8C2MoPYjGOJ9zUyTZ/6VlAca6afk2cy0pZ5AZ/AiWdPJmxLIl7c/jVN
-         LDci80fgzZeQcy+FRISsjjjn5QXumxEfyNpaVvVS1TrjRGXuhFJ81j112se/D+pNV40f
-         c4bmwcop9cw4AJv91nW07NfAT4y6jLaQu+TZM=
-Message-ID: <4104961b0808110336x74676e9ane135d2e8c11ccea@mail.gmail.com>
-Date: Mon, 11 Aug 2008 18:36:35 +0800
-From: "jidong xiao" <jidong.xiao@gmail.com>
-To: jmerkey@wolfmountaingroup.com
-Subject: Re: [ANNOUNCE] Merkey's Kernel Debugger
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <17494.166.70.238.46.1217784156.squirrel@webmail.wolfmountaingroup.com>
+	Mon, 11 Aug 2008 06:45:51 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:55764 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751419AbYHKKpu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Aug 2008 06:45:50 -0400
+Date: Mon, 11 Aug 2008 12:45:26 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Andrew Morton <akpm@linux-foundation.org>, torvalds@linux-foundation.org,
+       tglx@linutronix.de, marcin.slusarz@gmail.com,
+       linux-kernel@vger.kernel.org, davem@davemloft.net, rostedt@goodmis.org,
+       paulmck@linux.vnet.ibm.com
+Subject: Re: [PATCH] printk: robustify printk
+Message-ID: <20080811104526.GA15186@elte.hu>
+References: <1218202249.8625.106.camel@twins> <alpine.LFD.1.10.0808080931550.3462@nehalem.linux-foundation.org> <1218215454.8625.133.camel@twins> <alpine.LFD.1.10.0808081014240.3462@nehalem.linux-foundation.org> <1218217257.29098.2.camel@lappy.programming.kicks-ass.net> <alpine.LFD.1.10.0808081043160.3462@nehalem.linux-foundation.org> <1218219269.29098.5.camel@lappy.programming.kicks-ass.net> <20080808121428.646a8b3c.akpm@linux-foundation.org> <1218223269.29098.12.camel@lappy.programming.kicks-ass.net> <1218224829.29098.19.camel@lappy.programming.kicks-ass.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <17494.166.70.238.46.1217784156.squirrel@webmail.wolfmountaingroup.com>
+In-Reply-To: <1218224829.29098.19.camel@lappy.programming.kicks-ass.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 4, 2008 at 1:22 AM,  <jmerkey@wolfmountaingroup.com> wrote:
->
->
-> This is a linux port of the kernel debugger I wrote in 2000 for the
-> MANOS/Gadugi Operating System.  I created this particular
-> port in June of this year from the MANOS/Gadugi source code I released
-> under the GNU public license in 2000.
->
-> I wrote the SMP debugger use in SMP Netware in 1994 and 1995, and that was
-> later rolled into the main Netware kernel, though a lot of folks
-> contributed helped merge it into Netware.  This debugger closely resembles
-> the legacy Netware kernel debugger, and I find it easier to use than kdb
-> with less
-> crashes and problems.
->
-> This version is ia32 only at present, but I am completing x86_64 support
-> and will post it as it is completed.  I basically wrote this tool for
-> my own internal use and for my projects since I could not find a debugger
-> in linux I was used to.  I add support to it as I need it for my own
-> internal use.
->
-> This linux port of my kernel debugger does not require kdb or the kdb hooks
-> and is more minimal than kdb and has some features kdb does not, such as
-> Intel style disassembly with dereferencing of data during disassembly
-> and a very robust mathematical numeric support with conditional breakpoints.
->
-> I created a far more robust version of this debugger in 2001 which
-> included source level support, integrated screen and keyboard support,
-> remote networking capability, and loader support and licensed it to another
-> company.  I was placed under a 5 year non-compete not to port
-> this tool to Linux until end of year 2007.  The folks who licensed it
-> did absolutely nothing with it of consequence, and 2007 has come and gone,
-> so I am released from the non-compete and decided to port the debugger
-> from my old Open Source operating system and I figured it might be as useful
-> to others as it has been for my projects.
->
-> I will be posting user space modules which can be loaded with this version
-> at some point which will enable source level debugging and a bunch of
-> other features.  This add ons may get farmed out to another company for
-> support.
->
-> KNOWN ISSUES
-> ------------
->
-> This debugger works very well on SMP systems, but some of the directed
-> NMI features are intended for post mortem crashed systems.
->
-> All numbers entered are interpreted as hex.  If you want a number
-> interpreted from the debugger console in decimal, add an 'r' to the end of
-> the number for "real number".
->
-> There is awesome help support in the debugger.  type "help" or "help
-> <command name>".
->
-> I have support for post-mortem directed NMI breakpoints from the debugger
-> console if you want to halt another processor which can hang on some
-> systems, but usually does not.
->
-> I do not have ia64 support and since Intel in 2000 refused to share ia64
-> information with me, I never completed the ia64 section of the debugger.
-> If and when I obtain an ia64 system, I will look into putting it in or
-> try to adapt the disassembler out of kdb which has ia64 and x86_64 support.
->
->
->
-> vanilla kernels
->
-> ftp://ftp.wolfmountaingroup.org/pub/mdb/mdb-2.6.18-ia32-08-02-08.patch
-> ftp://ftp.wolfmountaingroup.org/pub/mdb/mdb-2.6.19-ia32-08-02-08.patch
-> ftp://ftp.wolfmountaingroup.org/pub/mdb/mdb-2.6.20-ia32-08-02-08.patch
-> ftp://ftp.wolfmountaingroup.org/pub/mdb/mdb-2.6.21-ia32-08-02-08.patch
-> ftp://ftp.wolfmountaingroup.org/pub/mdb/mdb-2.6.22-ia32-08-02-08.patch
-> ftp://ftp.wolfmountaingroup.org/pub/mdb/mdb-2.6.23-ia32-08-02-08.patch
-> ftp://ftp.wolfmountaingroup.org/pub/mdb/mdb-2.6.24-ia32-08-02-08.patch
-> ftp://ftp.wolfmountaingroup.org/pub/mdb/mdb-2.6.25-ia32-08-02-08.patch
-> ftp://ftp.wolfmountaingroup.org/pub/mdb/mdb-2.6.26-ia32-08-02-08.patch
->
->
-> Linux distributions
->
-> ftp://ftp.wolfmountaingroup.org/pub/mdb/distro/mdb-2.6.16-ia32-SLES-10-08-02-08.patch
-> ftp://ftp.wolfmountaingroup.org/pub/mdb/distro/mdb-2.6.18-el5-08-02-08.patch
-> ftp://ftp.wolfmountaingroup.org/pub/mdb/distro/mdb-2.6.22.5-31-ia32-suse10.3-08-01-08.patch
-> ftp://ftp.wolfmountaingroup.org/pub/mdb/distro/mdb-2.6.23-ia32-fc8-08-02-08.patch
-> ftp://ftp.wolfmountaingroup.org/pub/mdb/distro/mdb-2.6.25.14-ia32-fc9-08-02-08.patch
->
-> Any additional code fixes I would appreciate being placed back into the
-> tree, so please sent them back to me if you find the debugger useful.
->
-> I commend Keith Owens for his work on kdb and his project is more than
-> welcome to share and adapt the code from mdb if it is useful for their
-> project.  I am certainly looking seriously at using the disassembler in
-> kdb for mdb, with my enhancements rolled into it.
->
-> Jeffrey Vernon Merkey
->
->
-Well I think given the fact that kdb is not accepted by Linus, there
-is little possibility that mdb will be included in mainline kernel.
-Though I don't know why kgdb is acceptable.
 
-Regards
-Jason Xiao
+* Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+
+> On Fri, 2008-08-08 at 21:21 +0200, Peter Zijlstra wrote:
+> 
+> > The initial printk_tick() based implementation didn't suffer this
+> > problem, should we revert to that scheme?
+> 
+> Just in case people care..
+> 
+> ---
+> Subject: printk: robustify printk
+> 
+> Avoid deadlocks against rq->lock and xtime_lock by deferring the klogd 
+> wakeup by polling from the timer tick.
+
+i missed most of the discussion, but this seems like the simplest (and 
+hence ultimately the best) approach to me.
+
+Coupling printk with RCU, albeit elegant, does not seem like the right 
+choice to me in this specific case: printk as an essential debug 
+mechanism should be as decoupled as possible.
+
+Also, once we accept the possibility of async klogd completion, we might 
+as well do it all the time.
+
+i have only one sidenote:
+
+> --- linux-2.6.orig/kernel/time/tick-sched.c
+> +++ linux-2.6/kernel/time/tick-sched.c
+> @@ -255,7 +255,7 @@ void tick_nohz_stop_sched_tick(int inidl
+>       next_jiffies = get_next_timer_interrupt(last_jiffies);
+>       delta_jiffies = next_jiffies - last_jiffies;
+>
+> -     if (rcu_needs_cpu(cpu))
+> +     if (rcu_needs_cpu(cpu) || printk_needs_cpu(cpu))
+>               delta_jiffies = 1;
+
+this change made a previous design quirks even more visible: these are 
+items that are not purely event driven but need some polling component. 
+RCU is one, and now printk is another.
+
+We could clean this up further by integrating the rcu_needs_cpu() and 
+printk_needs_cpu() into a softirq mechanism. We already check for 
+pending softirqs in tick-sched.c, so the above complication would go 
+away completely.
+
+( But that's for a separate cleanup patch i think. )
+
+No strong feelings though. Peter, which one do you prefer?
+
+	Ingo
