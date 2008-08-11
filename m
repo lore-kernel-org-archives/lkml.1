@@ -1,86 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756717AbYHKT1c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756933AbYHKT1q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756717AbYHKT1c (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Aug 2008 15:27:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753390AbYHKT1W
+	id S1756933AbYHKT1q (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Aug 2008 15:27:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756743AbYHKT1e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Aug 2008 15:27:22 -0400
-Received: from nf-out-0910.google.com ([64.233.182.189]:33781 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751627AbYHKT1V (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Aug 2008 15:27:21 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=q6DCnIB8ErMprXG+lKVJ4xlyJv67UZ7c0nLQ0TrjqCmn9/vXvMJu7dZnJbTxnLjK0K
-         SJMvxnoN9UqT00gPVN6H5nRGdk3EJRteL6kKI4g8BjFpbuKK3NQPmJHG4XqNtEfHSaBn
-         slGWpkauU5LiwpVHxljhcIxBUbmEYokNQCrII=
-Date: Mon, 11 Aug 2008 23:27:39 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Vegard Nossum <vegard.nossum@gmail.com>
-Cc: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+	Mon, 11 Aug 2008 15:27:34 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:39108 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753436AbYHKT1d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Aug 2008 15:27:33 -0400
+Date: Mon, 11 Aug 2008 21:27:13 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Peter Oruba <peter.oruba@amd.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       Max Krasnyansky <maxk@qualcomm.com>,
+       Tigran Aivazian <tigran@aivazian.fsnet.co.uk>,
        LKML <linux-kernel@vger.kernel.org>
-Subject: Re: latest -git: kernel hangs when pulling the plug on 8139too
-Message-ID: <20080811192739.GB5791@martell.zuzino.mipt.ru>
-References: <19f34abd0808110949n5d7d363es66325b87a8fb0fd1@mail.gmail.com>
+Subject: Re: [patch 4/5] [PATCH 4/5] x86: Minor correction to Intel
+	microcode patch loader.
+Message-ID: <20080811192713.GG12788@elte.hu>
+References: <20080806152117.198754464@amd.com> <20080806152320.081968686@amd.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <19f34abd0808110949n5d7d363es66325b87a8fb0fd1@mail.gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <20080806152320.081968686@amd.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 11, 2008 at 06:49:13PM +0200, Vegard Nossum wrote:
-> I am experiencing a system hang as soon as pull the cable out of eth0.
-> Kernel version is unmodified latest -git
-> (v2.6.27-rc2/796aadeb1b2db9b5d463946766c5bbfd7717158c) and my network
-> driver is 8139too (for both eth0 and eth1).
-> 
-> I am running netconsole on eth0 (the interface which I disconnect).
-> 
-> A bit of serial console (ttyS0) output:
-> 
-> Linux version 2.6.27-rc2-00325-g796aade (vegardno@ben.ifi.uio.no) (gcc
-> version 4.1.2 20071124 (Red Hat 4.1.2-42)) #2 SMP PREEMPT Mon Aug 11
-> 18:29:29 CEST 2008
-> ...
-> Kernel command line: ro root=/dev/VolGroup00/LogVol00 rhgb
-> console=tty0 console=ttyS0,115200 ignore_loglevel debug initcall_debug
-> nmi_watchdog=1 panic=30 sysrq_always_enabled
-> netconsole=@192.168.0.172/,@192.168.0.11/ 3
-> ...
-> calling  rtl8139_init_module+0x0/0x20
-> 8139too Fast Ethernet driver 0.9.28
-> 8139too 0000:02:01.0: PCI INT A -> GSI 18 (level, low) -> IRQ 18
-> eth0: RealTek RTL8139 at 0xf881ac00, 00:10:a7:09:48:52, IRQ 18
-> eth0:  Identified 8139 chip type 'RTL-8139C'
-> 8139too 0000:02:05.0: PCI INT A -> GSI 21 (level, low) -> IRQ 21
-> eth1: RealTek RTL8139 at 0xf881c000, 00:16:ec:ee:ad:b9, IRQ 21
-> eth1:  Identified 8139 chip type 'RTL-8100B/8139D'
-> initcall rtl8139_init_module+0x0/0x20 returned 0 after 37 msecs
-> ...
-> eth0: link down
-> [hangs here; num lock + scroll lock flashing]
-> [reboots automatically, probably due to NMI watchdog?]
-> 
-> There is no detailed crash output on either tty0 or ttyS0. Keyboard
-> sysrq does not work.
-> 
-> Is it expected that pulling the plug on an interface running
-> netconsole should hang the machine?
 
-Of course, no!
+* Peter Oruba <peter.oruba@amd.com> wrote:
 
-> Is there anything I can do to help narrow down the problem?
+> Signed-off-by: Peter Oruba <peter.oruba@amd.com>
+> ---
+>  arch/x86/kernel/microcode_intel.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/arch/x86/kernel/microcode_intel.c b/arch/x86/kernel/microcode_intel.c
+> index 4ab6ce3..8d69470 100644
+> --- a/arch/x86/kernel/microcode_intel.c
+> +++ b/arch/x86/kernel/microcode_intel.c
+> @@ -315,7 +315,7 @@ static void apply_microcode(int cpu)
+>  	unsigned long flags;
+>  	unsigned int val[2];
+>  	int cpu_num = raw_smp_processor_id();
+> -	struct ucode_cpu_info *uci = get_ucode_cpu_info(cpu);
+> +	struct ucode_cpu_info *uci = get_ucode_cpu_info(cpu_num);
 
-I have two realteks and one of them showed very similar symptoms:
-cable unplug and immediate panic without anything. If this is a same
-bug, it's pretty old.
+hm, this does not apply to tip/x86/microcode nor tip/master nor 
+linus/master. Does it fix a bug in one of the earlier patches in this 
+5/5 queue?
 
-> I'd like to avoid a bisect (esp. since I don't know the latest good
-> version), but it is a possible solution.
-
+	Ingo
