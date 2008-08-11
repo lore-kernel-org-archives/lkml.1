@@ -1,58 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754190AbYHKRlt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755054AbYHKRmU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754190AbYHKRlt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Aug 2008 13:41:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751459AbYHKRll
+	id S1755054AbYHKRmU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Aug 2008 13:42:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752527AbYHKRmF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Aug 2008 13:41:41 -0400
-Received: from shadow.wildlava.net ([67.40.138.81]:57556 "EHLO
-	shadow.wildlava.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751108AbYHKRll (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Aug 2008 13:41:41 -0400
-Message-ID: <48A079CC.5020508@skyrush.com>
-Date: Mon, 11 Aug 2008 11:41:32 -0600
-From: Joe Peterson <joe@skyrush.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071119)
+	Mon, 11 Aug 2008 13:42:05 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:41917 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751459AbYHKRmD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Aug 2008 13:42:03 -0400
+Date: Mon, 11 Aug 2008 19:41:47 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Rene Herman <rene.herman@keyaccess.nl>
+Cc: Cyrill Gorcunov <gorcunov@gmail.com>, Andrew Morton <akpm@osdl.org>,
+       Yinghai Lu <yhlu.kernel@gmail.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: kill arch/x86/kernel/mpparse.c debugging printk.
+Message-ID: <20080811174147.GO4524@elte.hu>
+References: <489C77C6.7040408@keyaccess.nl> <20080811122038.GA10082@elte.hu> <48A05E79.4030304@keyaccess.nl> <48A05EB1.3050508@keyaccess.nl> <20080811164508.GA18969@lenovo> <48A074D1.4070803@keyaccess.nl>
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: tty: ctrl-c not always echoed, especially under load
-References: <48977C96.2090005@skyrush.com>	<20080805001129.72d06e60@lxorguk.ukuu.org.uk>	<489A06D9.1080600@skyrush.com>	<20080807203716.4a9870f6@lxorguk.ukuu.org.uk>	<48A0573B.4010602@skyrush.com> <20080811173911.07a3a9c5@lxorguk.ukuu.org.uk>
-In-Reply-To: <20080811173911.07a3a9c5@lxorguk.ukuu.org.uk>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48A074D1.4070803@keyaccess.nl>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
-> First thought would be to simply fire all output through your buffer in
-> n_tty. It's not a performance critical bit of code and it would still be
-> fast as the usual case would be
-> 
-> 	if (queue->length == 0)
-> 		try_write_directly(...)
 
-Only problem with that is that with a steady stream of output, you would likely
-end up quickly filling the new buffer and be right back to the same issue of
-losing echos and other ldisc chars off the start of the buf.  Also, the regular
-output channel has the mechanism to throttle itself already and try again later
-(causing the upstream process to wait as expected - example: ping foo.com; hit
-^S; it stops pinging until ^Q...).
+* Rene Herman <rene.herman@keyaccess.nl> wrote:
 
-What I may try is moving the code that manipulates the column marker (mostly
-"eraser") to happen at real output (i.e. when we know space is available), and
-have all ldisc echos/chars go into the buffer initially.  That way, the regular
-output stream and ldisc stream (out of the buffer) will be able to control the
-column stuff properly and in sync.  By knowing how many chars need to go out
-(eraser is the only non-trivial case, and we can have it tell us the char string
-before sending it), we can be sure there is space before trying and subsequently
-changing the column.
+> On 11-08-08 18:45, Cyrill Gorcunov wrote:
+>
+>> | From: Rene Herman <rene.herman@gmail.com>
+>> | Date: Mon, 11 Aug 2008 17:35:41 +0200
+>> | Subject: [PATCH] x86: make "apic" an early_param() on 32-bit
+>
+> [ ... ]
+>
+>> you turned it into early_param so now it's NULL injecting vulnerabled.
+>> Could you please add checking for NULL str param?
+>
+> Ah, I was unaware of that difference, thank you. Ingo, can you replace  
+> the previous incarnation with this one?
 
-BTW, I'll also need to call the new buffer push function periodically after the
-output happens in case there are characters left to process.  I suspect the
-right place is in the write wakeup func or the poll func.  If you know off hand,
-let me know.
+sure - but some other commits were queued already so i've applied the 
+delta fix below.
 
-						Thanks, Joe
+	Ingo
+
+-------------->
+>From 48d97cb65e62a5f1122ac2cf1149800d4f4693e8 Mon Sep 17 00:00:00 2001
+From: Rene Herman <rene.herman@keyaccess.nl>
+Date: Mon, 11 Aug 2008 19:20:17 +0200
+Subject: [PATCH] x86: make "apic" an early_param() on 32-bit, NULL check
+
+Cyrill Gorcunov observed:
+
+> you turned it into early_param so now it's NULL injecting vulnerabled.
+> Could you please add checking for NULL str param?
+
+fix that.
+
+Also, change the name of 'str' into 'arg', to make it more apparent
+that this is an optional argument that can be NULL, not a string
+parameter that is empty when unset.
+
+Reported-by: Cyrill Gorcunov <gorcunov@gmail.com>
+Signed-off-by: Rene Herman <rene.herman@gmail.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ arch/x86/kernel/apic_32.c |   10 +++++++---
+ 1 files changed, 7 insertions(+), 3 deletions(-)
+
+diff --git a/arch/x86/kernel/apic_32.c b/arch/x86/kernel/apic_32.c
+index f432d48..039a8d4 100644
+--- a/arch/x86/kernel/apic_32.c
++++ b/arch/x86/kernel/apic_32.c
+@@ -1720,12 +1720,16 @@ static int __init parse_lapic_timer_c2_ok(char *arg)
+ }
+ early_param("lapic_timer_c2_ok", parse_lapic_timer_c2_ok);
+ 
+-static int __init apic_set_verbosity(char *str)
++static int __init apic_set_verbosity(char *arg)
+ {
+-	if (strcmp("debug", str) == 0)
++	if (!arg)
++		return -EINVAL;
++
++	if (strcmp(arg, "debug") == 0)
+ 		apic_verbosity = APIC_DEBUG;
+-	else if (strcmp("verbose", str) == 0)
++	else if (strcmp(arg, "verbose") == 0)
+ 		apic_verbosity = APIC_VERBOSE;
++
+ 	return 0;
+ }
+ early_param("apic", apic_set_verbosity);
