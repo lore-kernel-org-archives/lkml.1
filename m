@@ -1,68 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753887AbYHKBY2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754352AbYHKBaj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753887AbYHKBY2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Aug 2008 21:24:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752833AbYHKBYT
+	id S1754352AbYHKBaj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Aug 2008 21:30:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752833AbYHKBab
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Aug 2008 21:24:19 -0400
-Received: from mga03.intel.com ([143.182.124.21]:55092 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753391AbYHKBYT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Aug 2008 21:24:19 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.31,341,1215414000"; 
-   d="scan'208";a="32129873"
-Subject: Re: [PATCH -v2 7/8] kexec jump: ftrace_enabled_save/restore
-From: Huang Ying <ying.huang@intel.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Vivek Goyal <vgoyal@redhat.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Pavel Machek <pavel@ucw.cz>, nigel@nigel.suspend2.net,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org,
-       Kexec Mailing List <kexec@lists.infradead.org>
-In-Reply-To: <alpine.DEB.1.10.0808081026240.22796@gandalf.stny.rr.com>
-References: <1218178368.22039.80.camel@caritas-dev.intel.com>
-	 <20080808141700.GF3840@redhat.com>
-	 <alpine.DEB.1.10.0808081026240.22796@gandalf.stny.rr.com>
-Content-Type: text/plain
-Date: Mon, 11 Aug 2008 09:22:21 +0800
-Message-Id: <1218417741.30464.23.camel@caritas-dev.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Sun, 10 Aug 2008 21:30:31 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:45211 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752524AbYHKBab (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 Aug 2008 21:30:31 -0400
+Date: Sun, 10 Aug 2008 21:30:24 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Hugh Dickins <hugh@veritas.com>
+Cc: Keith Packard <keithp@keithp.com>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Christoph Hellwig <hch@infradead.org>, Eric Anholt <eric@anholt.net>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Export shmem_file_setup and shmem_getpage for DRM-GEM
+Message-ID: <20080811013024.GA28884@infradead.org>
+References: <1217573919-7496-1-git-send-email-eric@anholt.net> <200808041902.23970.nickpiggin@yahoo.com.au> <1217845590.24714.45.camel@koto.keithp.com> <200808042043.46710.nickpiggin@yahoo.com.au> <1217850352.24714.66.camel@koto.keithp.com> <Pine.LNX.4.64.0808041720500.25617@blonde.site>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0808041720500.25617@blonde.site>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, Steven,
+On Mon, Aug 04, 2008 at 06:09:24PM +0100, Hugh Dickins wrote:
+> Whether such usage conforms to VFS API I'm not so sure: as I understand
+> it, it's really for internal use by a filesystem - if it's going to be
+> used beyond that, we ought to add a check that the filesystem it's used
+> upon really has a ->readpage method (and I'd rather we add such a check
+> than you do it at your end, in case we change the implementation later
+> to use something other than a ->readpage method - Nick, you'll be
+> nauseated to hear I was looking to see if ->fault with a pseudo-vma
+> could do it).  But if the layering police are happy with this, I am.
 
-On Fri, 2008-08-08 at 10:30 -0400, Steven Rostedt wrote:
-[...]
-> The only problem with this approach is what happens if the user changes 
-> the enabled in between these two calls. This would make ftrace 
-> inconsistent.
-> 
-> I have a patch from the -rt tree that handles what you want. It is 
-> attached below. Not sure how well it will apply to mainline.
-> 
-> I really need to go through the rt patch set and start submitting a bunch 
-> of clean-up/fixes to mainline. We've been meaning to do it, just have been 
-> distracted :-(
-
-Your version is better in general sense. Thank you very much!
-
-But in this specific situation of kexec/kjump. The execution environment
-is that other CPUs are disabled, local irq is disabled, and it is not
-permitted to switch to other process. But it is safe and sufficient to
-use non-locked version here.
-
-So to satisfy both demands, I think it is better to provide both
-version, locked and non-locked. What do you think about that?
-
-Best Regards,
-Huang Ying
-
+Using read_mapping_page is fine on any pagecache backed file.  What is
+much more difficult is actually writing into pagecache on a sub-page
+level where we don't have proper APIs for anything but the filesystem
+itself.
 
