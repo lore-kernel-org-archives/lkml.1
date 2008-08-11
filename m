@@ -1,48 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753851AbYHKQmE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754019AbYHKQoh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753851AbYHKQmE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Aug 2008 12:42:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751748AbYHKQlx
+	id S1754019AbYHKQoh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Aug 2008 12:44:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751766AbYHKQo1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Aug 2008 12:41:53 -0400
-Received: from usul.saidi.cx ([204.11.33.34]:57507 "EHLO usul.overt.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751680AbYHKQlw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Aug 2008 12:41:52 -0400
-Message-ID: <48A06BBC.7060007@overt.org>
-Date: Mon, 11 Aug 2008 09:41:32 -0700
-From: Philip Langdale <philipl@overt.org>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080707)
-MIME-Version: 1.0
-To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-CC: LKML <linux-kernel@vger.kernel.org>, Matthew Garrett <mjg59@srcf.ucam.org>,
-       toshiba_acpi@memebeam.org, Ivo van Doorn <ivdoorn@gmail.com>,
-       linux-wireless@vger.kernel.org
-Subject: Re: [PATCH 1/1] toshiba_acpi: Add support for bluetooth toggling
- through rfkill (v2)
-References: <4894B1B4.6050003@overt.org> <20080803042613.GC6053@khazad-dum.debian.net> <48965716.6020508@overt.org> <20080805212416.GB21738@khazad-dum.debian.net> <489A7CCF.1090407@overt.org> <20080807134530.GB17062@khazad-dum.debian.net>
-In-Reply-To: <20080807134530.GB17062@khazad-dum.debian.net>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 11 Aug 2008 12:44:27 -0400
+Received: from casper.infradead.org ([85.118.1.10]:48233 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751248AbYHKQo0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Aug 2008 12:44:26 -0400
+Date: Mon, 11 Aug 2008 09:44:28 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: S K <nospamnoham@gmail.com>, Zhao Yakui <yakui.zhao@intel.com>,
+       Thomas Renninger <trenn@suse.de>,
+       Alan Jenkins <alan-jenkins@tuffmail.co.uk>,
+       linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
+Subject: Re: cpufreq doesn't seem to work in Intel Q9300
+Message-ID: <20080811094428.6b69d744@infradead.org>
+In-Reply-To: <20080811162839.GA22450@cs181140183.pp.htv.fi>
+References: <aff5deaf0808081123s1fbe6a5cn7847e9cb053c1f5a@mail.gmail.com>
+	<200808092059.47863.trenn@suse.de>
+	<514e099a0808100128u303207clcb22292db2f0cc59@mail.gmail.com>
+	<1218418431.6671.52.camel@yakui_zhao.sh.intel.com>
+	<514e099a0808102144n241c8e9ak255bded0a80744f1@mail.gmail.com>
+	<20080811042244.469f8e1d@infradead.org>
+	<20080811140206.GB3338@cs181140183.pp.htv.fi>
+	<20080811071128.0165be50@infradead.org>
+	<20080811160346.GB21292@cs181140183.pp.htv.fi>
+	<20080811092047.42bf716b@infradead.org>
+	<20080811162839.GA22450@cs181140183.pp.htv.fi>
+Organization: Intel
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-SA-Do-Not-RunX1: Yes
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Henrique de Moraes Holschuh wrote:
+On Mon, 11 Aug 2008 19:28:39 +0300
+Adrian Bunk <bunk@kernel.org> wrote:
+
+> > 
+> > yes there is.. for cases where there is overtemperature. Think of
+> > it as the emergency break in the subway. You really don't want to
+> > use it but when you need it you're glad it's there.
 > 
-> Hmm?  UNBLOCKED means it is not being rfkilled.  Why is not working?  Put
-> some debug printks on your toggle_radio callback, that might help fix the
-> issue...
+> But this only helps when the cooling is working but not good enough,
+> for the classic "fan broken" case it won't cool down enough.
+
+I would call this an unclassified statement for which you have no data
+to show that it's correct, at least for Intel cpus in general.
+
+> 
+> Does the Pentium 4 predate CPUs that shutdown when becoming too hot
+> (I experienced such a shutdown recently on my Athlon...)?
 > 
 
-Well, what I see is this:
+thermal shutdown is the last measure for sure (and it's in cpus yes)...
+but sysadmins frown on that.. before you go down that path there's
+various things that happen first (thermal throttle being one of them)
 
-At modprobe, I get an explicit unblock request. When I modify 'state' in sysfs,
-I see appropriate requests to soft block and unblock. When I activate the hardware
-kill switch, the rfkill state goes to hard_block but no one calls toggle_radio
-and when I release the kill switch, the state goes to soft_block and no one
-calls toggle_radio.
 
---phil
+-- 
+If you want to reach me at my work email, use arjan@linux.intel.com
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
