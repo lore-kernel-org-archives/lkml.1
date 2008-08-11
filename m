@@ -1,84 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752001AbYHKIlS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753037AbYHKIlc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752001AbYHKIlS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Aug 2008 04:41:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751301AbYHKIlE
+	id S1753037AbYHKIlc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Aug 2008 04:41:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752668AbYHKIlT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Aug 2008 04:41:04 -0400
-Received: from rv-out-0506.google.com ([209.85.198.238]:44414 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751245AbYHKIlC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Aug 2008 04:41:02 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=G0j/i8/MIvkS+mdM2BMW86kjtGxQNGEB7Z6cjbzYtC1qgyJEWMaFBauV1vUcnehjnT
-         hEXk/iYm0bR6eRmxwCDj6bjDpwsj8BWojvGOLAsk4+b6pUY+yBwloNFpNFHkWpf14+zY
-         IHJDRxF//K72gLBB1fjDwMqDseBJ4By6L0XpQ=
-Message-ID: <3f9a31f40808110141y3d6da52cr86b85f29fce00add@mail.gmail.com>
-Date: Mon, 11 Aug 2008 14:11:01 +0530
-From: "Jaswinder Singh" <jaswinderlinux@gmail.com>
-To: "Francois Romieu" <romieu@fr.zoreil.com>
-Subject: Re: [Bug #11271] BUG: fealnx in 2.6.27-rc1
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Kernel Testers List" <kernel-testers@vger.kernel.org>
-In-Reply-To: <20080810130442.GA31367@electric-eye.fr.zoreil.com>
+	Mon, 11 Aug 2008 04:41:19 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:49994 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752638AbYHKIlS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Aug 2008 04:41:18 -0400
+Message-ID: <489FFAF8.3000909@redhat.com>
+Date: Mon, 11 Aug 2008 16:40:24 +0800
+From: Eugene Teo <eteo@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
+To: Brian Haley <brian.haley@hp.com>
+CC: Alexey Dobriyan <adobriyan@gmail.com>, John Gumb <john.gumb@tandberg.com>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org, stable@kernel.org
+Subject: Re: OOPS, ip -f inet6 route get fec0::1, linux-2.6.26,	ip6_route_output,
+ rt6_fill_node+0x175
+References: <9F6ACAE02B6DD040A1E259977622CFDB033590C3@oslexcp1.eu.tandberg.int> <20080807203748.GA5196@martell.zuzino.mipt.ru> <489BD227.6000209@hp.com>
+In-Reply-To: <489BD227.6000209@hp.com>
+X-Enigmail-Version: 0.95.6
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <VYYCiQF4qDI.A.BPH.KCjnIB@albercik>
-	 <cX_-nNkxKaF.A.T-.DDjnIB@albercik>
-	 <3f9a31f40808092327h272ba73emcfc1ead6b6d1099@mail.gmail.com>
-	 <20080810130442.GA31367@electric-eye.fr.zoreil.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Ueimor,
+Brian Haley wrote:
+> Alexey Dobriyan wrote:
+>> On Thu, Aug 07, 2008 at 07:00:56PM +0200, John Gumb wrote:
+>>> Scenario: no ipv6 default route set.
+>>
+>>> # ip -f inet6 route get fec0::1
+>>>
+>>> BUG: unable to handle kernel NULL pointer dereference at 00000000
+>>> IP: [<c0369b85>] rt6_fill_node+0x175/0x3b0
+>>> EIP is at rt6_fill_node+0x175/0x3b0
+>>
+>> 0xffffffff80424dd3 is in rt6_fill_node (net/ipv6/route.c:2191).
+>> 2186                    } else
+>> 2187    #endif
+>> 2188                            NLA_PUT_U32(skb, RTA_IIF, iif);
+>> 2189            } else if (dst) {
+>> 2190                    struct in6_addr saddr_buf;
+>> 2191      ====>         if
+>> (ipv6_dev_get_saddr(ip6_dst_idev(&rt->u.dst)->dev,
+>>                            ^^^^^^^^^^^^^^^^^^^^^^^^
+>>                                    NULL
+>>
+>> 2192                                           dst, 0, &saddr_buf) == 0)
+>> 2193                            NLA_PUT(skb, RTA_PREFSRC, 16,
+>> &saddr_buf);
+>> 2194            }
+> 
+> The commit that changed this can't be reverted easily, but the patch
+> below works for me.
+> 
+> Fix NULL de-reference in rt6_fill_node() when there's no IPv6 input
+> device present in the dst entry.
+> 
+> Signed-off-by: Brian Haley <brian.haley@hp.com>
 
-On Sun, Aug 10, 2008 at 6:34 PM, Francois Romieu <romieu@fr.zoreil.com> wrote:
-> Jaswinder Singh <jaswinderlinux@gmail.com> :
-> [...]
->> This still exists on 2.6.27-rc2 when I transfer some data on RealTek 8139C NIC.
->
-> Does the transfer complete or not ?
->
+Cc: Stable <stable@kernel.org>
 
-I don't know. But I face lot of problems in web browsing, I need to
-Refresh web browser many times :(
-
----[ end trace 1fefaa058f74f4aa ]---
-NETDEV WATCHDOG: eth0 (fealnx): transmit timed out
-eth0: Transmit timed out, status 00000110, resetting...
-  Rx ring f7b46000:  80000000 80000000 80000000 80000000 80000000
-80000000 80000000 80000000 80000000 80000000 80000000 80000000
-  Tx ring f7b47000:  0000 0000 0000 80000000 0000 80000000
-NETDEV WATCHDOG: eth0 (fealnx): transmit timed out
-eth0: Transmit timed out, status 00000000, resetting...
-  Rx ring f7b46000:  80000000 80000000 80000000 80000000 80000000
-80000000 80000000 80000000 80000000 80000000 80000000 80000000
-  Tx ring f7b47000:  0000 80000000 80000000 80000000 80000000 80000000
-NETDEV WATCHDOG: eth0 (fealnx): transmit timed out
-eth0: Transmit timed out, status 00000000, resetting...
-  Rx ring f7b46000:  80000000 80000000 80000000 80000000 80000000
-80000000 80000000 80000000 80000000 80000000 80000000 80000000
-  Tx ring f7b47000:  0000 80000000 80000000 80000000 80000000 0000
-NETDEV WATCHDOG: eth0 (fealnx): transmit timed out
-eth0: Transmit timed out, status 00000000, resetting...
-  Rx ring f7b46000:  80000000 80000000 80000000 80000000 80000000
-80000000 80000000 80000000 80000000 80000000 80000000 80000000
-  Tx ring f7b47000:  80000000 80000000 80000000 80000000 80000000 0000
-NETDEV WATCHDOG: eth0 (fealnx): transmit timed out
-eth0: Transmit timed out, status 00000000, resetting...
-  Rx ring f7b46000:  80000000 80000000 80000000 80000000 80000000
-80000000 80000000 80000000 80000000 80000000 80000000 80000000
-  Tx ring f7b47000:  80000000 0000 80000000 80000000 80000000 80000000
-
-Thank you,
-
-Jaswinder Singh.
+Eugene
