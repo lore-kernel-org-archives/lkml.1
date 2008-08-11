@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752082AbYHKMtT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752671AbYHKMwT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752082AbYHKMtT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Aug 2008 08:49:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751178AbYHKMtL
+	id S1752671AbYHKMwT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Aug 2008 08:52:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751426AbYHKMwK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Aug 2008 08:49:11 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:42419 "EHLO mx2.mail.elte.hu"
+	Mon, 11 Aug 2008 08:52:10 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:42929 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750855AbYHKMtK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Aug 2008 08:49:10 -0400
-Date: Mon, 11 Aug 2008 14:48:57 +0200
+	id S1751421AbYHKMwJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Aug 2008 08:52:09 -0400
+Date: Mon, 11 Aug 2008 14:51:55 +0200
 From: Ingo Molnar <mingo@elte.hu>
 To: Gregory Haskins <ghaskins@novell.com>
 Cc: Mike Galbraith <efault@gmx.de>, LKML <linux-kernel@vger.kernel.org>,
        Peter Zijlstra <a.p.zijlstra@chello.nl>
 Subject: Re: [revert] mysql+oltp regression
-Message-ID: <20080811124857.GD10082@elte.hu>
-References: <1218454322.25098.24.camel@marge.simson.net> <20080811114324.GA23529@elte.hu> <48A03049.202@novell.com>
+Message-ID: <20080811125155.GA32050@elte.hu>
+References: <1218454322.25098.24.camel@marge.simson.net> <20080811114324.GA23529@elte.hu> <48A03049.202@novell.com> <20080811124857.GD10082@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <48A03049.202@novell.com>
+In-Reply-To: <20080811124857.GD10082@elte.hu>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -35,71 +35,86 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Gregory Haskins <ghaskins@novell.com> wrote:
+* Ingo Molnar <mingo@elte.hu> wrote:
 
-> Ingo Molnar wrote:
->> * Mike Galbraith <efault@gmx.de> wrote:
->>
->>   
->>> Greetings,
->>>
->>> During regression testing of tip/sched/clock fixes, a regression in  
->>> low client count throughput turned up, which I traced this back to 
->>> the commit below.  I don't see anything wrong with it, but suspect 
->>> that it is preventing client/server pairs from staying together on 
->>> the same CPU as buddies, which mysql definitely likes quite a lot.  
->>> (I suspect that this is the case, because I've seen this same 
->>> performance curve while tinkering with wakeup affinity and breaking 
->>> it all to pieces;)
->>>
->>> Changelog and test results below in case nobody sees a problem with  
->>> the commit itself.
->>>     
->>
->> i've applied your fix to tip/sched/urgent for the time being, thanks  
->> Mike for tracking it down. We can re-try newer iterations of Greg's  
->> patch in tip/sched/devel.
->>
->>   
->
-> Hmm..  The patch still looks correct afaict.  I fear we are just 
-> papering over some other issue by reverting it, but I will try to see 
-> if I can track this down.  We will, of course, now be skipping trying 
-> to balance the (effectively random) last task in the queue which may 
-> or may not result in better performance on sheer luck instead of 
-> algorithmic intelligence.  This makes me nervous.
+> And given that the problem was readily reproducible for Mike, it 
+> should be reproducible for you as well - so we dont actually make the 
+> bug harder to fix by doing the revert.
+> 
+> Perhaps we should introduce the notion of "Defer-to-next-release" 
+> reverts - which this really is - in contrast to "Revert-because-bad", 
+> which your change definitely is not.
 
-yeah - but we had that behavior for quite some time.
-
-This is how the patch cycle works normally: we had a fair chance to 
-discover this problem in your testing then in -tip testing and then in 
-linux-next or -mm but we didnt find it at any stage.
-
-Now we are in the upstream release cycle so unless there's some 
-immediate fix available (or there are _really_ strong reasons against 
-the revert) doing the revert is the right approach.
-
-A revert is not necessarily the indicator of the quality of the change 
-in question, it is a tester-driven exception event that guarantees that 
-the kernel improves in a monotonic way. (for all testers who opt to help 
-us in doing so)
-
-And given that the problem was readily reproducible for Mike, it should 
-be reproducible for you as well - so we dont actually make the bug 
-harder to fix by doing the revert.
-
-Perhaps we should introduce the notion of "Defer-to-next-release" 
-reverts - which this really is - in contrast to "Revert-because-bad", 
-which your change definitely is not.
-
-> Speaking of this: Another patch I submitted to you Ingo (had to do 
-> with updating the load_weight inside task_setprio) seems to also have 
-> this phenomenon: e.g. its technically correct but further testing has 
-> revealed negative repercussions elsewhere.  So please ignore that 
-> patch (or revert if you already pulled in, but I don't think you 
-> have).  Ill try to look into this issue as well.
-
-ok, under which thread/subject is that? Not queued in tip/sched/* yet, 
-correct?
+i've edited the commit message in the manner below to make this 
+distinction more apparent.
 
 	Ingo
+
+---------------------->
+>From 77ae651347bdd46830da8b28b1efc5e4a9d7cbd0 Mon Sep 17 00:00:00 2001
+From: Mike Galbraith <efault@gmx.de>
+Date: Mon, 11 Aug 2008 13:32:02 +0200
+Subject: [PATCH] sched: fix mysql+oltp regression
+
+Defer commit 6d299f1b53b84e2665f402d9bcc494800aba6386 to the next release.
+
+Testing of the tip/sched/clock tree revealed a mysql+oltp regression
+which bisection eventually traced back to this commit in mainline.
+
+Pertinent test results:  Three run sysbench averages, throughput units
+in read/write requests/sec.
+
+clients         1     2     4     8    16    32    64
+6e0534f      9646 17876 34774 33868 32230 30767 29441
+2.6.26.1     9112 17936 34652 33383 31929 30665 29232
+6d299f1      9112 14637 28370 33339 32038 30762 29204
+
+Note: subsequent commits hide the majority of this regression until you
+apply the clock fixes, at which time it reemerges at full magnitude.
+
+We cannot see anything bad about the change itself so we defer it to the
+next release until this problem is fully analysed.
+
+Signed-off-by: Mike Galbraith <efault@gmx.de>
+Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Gregory Haskins <ghaskins@novell.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ kernel/sched_fair.c |   19 ++++++++++++-------
+ 1 files changed, 12 insertions(+), 7 deletions(-)
+
+diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
+index 0fe94ea..fb8994c 100644
+--- a/kernel/sched_fair.c
++++ b/kernel/sched_fair.c
+@@ -1442,18 +1442,23 @@ __load_balance_iterator(struct cfs_rq *cfs_rq, struct list_head *next)
+ 	struct task_struct *p = NULL;
+ 	struct sched_entity *se;
+ 
+-	while (next != &cfs_rq->tasks) {
++	if (next == &cfs_rq->tasks)
++		return NULL;
++
++	/* Skip over entities that are not tasks */
++	do {
+ 		se = list_entry(next, struct sched_entity, group_node);
+ 		next = next->next;
++	} while (next != &cfs_rq->tasks && !entity_is_task(se));
+ 
+-		/* Skip over entities that are not tasks */
+-		if (entity_is_task(se)) {
+-			p = task_of(se);
+-			break;
+-		}
+-	}
++	if (next == &cfs_rq->tasks)
++		return NULL;
+ 
+ 	cfs_rq->balance_iterator = next;
++
++	if (entity_is_task(se))
++		p = task_of(se);
++
+ 	return p;
+ }
+ 
