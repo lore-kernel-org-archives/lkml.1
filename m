@@ -1,111 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753278AbYHKNWL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753755AbYHKNWl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753278AbYHKNWL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Aug 2008 09:22:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751511AbYHKNV5
+	id S1753755AbYHKNWl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Aug 2008 09:22:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751532AbYHKNWb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Aug 2008 09:21:57 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:41443 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751498AbYHKNV5 (ORCPT
+	Mon, 11 Aug 2008 09:22:31 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:48088 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751511AbYHKNWa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Aug 2008 09:21:57 -0400
-Message-ID: <48A03C6E.60303@novell.com>
-Date: Mon, 11 Aug 2008 09:19:42 -0400
-From: Gregory Haskins <ghaskins@novell.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080720)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Mike Galbraith <efault@gmx.de>, LKML <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [revert] mysql+oltp regression
-References: <1218454322.25098.24.camel@marge.simson.net> <20080811114324.GA23529@elte.hu> <48A03049.202@novell.com> <20080811124857.GD10082@elte.hu> <48A038A6.4010104@novell.com> <20080811131400.GA909@elte.hu>
-In-Reply-To: <20080811131400.GA909@elte.hu>
-X-Enigmail-Version: 0.95.6
-OpenPGP: id=D8195319
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigB1F54F82D8CB421BF0ACCF15"
+	Mon, 11 Aug 2008 09:22:30 -0400
+Date: Mon, 11 Aug 2008 15:23:32 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: S K <nospamnoham@gmail.com>
+Cc: Andi Kleen <andi@firstfloor.org>, Zhao Yakui <yakui.zhao@intel.com>,
+       Thomas Renninger <trenn@suse.de>,
+       Alan Jenkins <alan-jenkins@tuffmail.co.uk>,
+       linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
+Subject: Re: cpufreq doesn't seem to work in Intel Q9300
+Message-ID: <20080811132332.GR9038@one.firstfloor.org>
+References: <514e099a0808030300u140a0ae7m92a2e7294f39f7b7@mail.gmail.com> <200808081430.43012.trenn@suse.de> <aff5deaf0808081123s1fbe6a5cn7847e9cb053c1f5a@mail.gmail.com> <200808092059.47863.trenn@suse.de> <514e099a0808100128u303207clcb22292db2f0cc59@mail.gmail.com> <1218418431.6671.52.camel@yakui_zhao.sh.intel.com> <514e099a0808102144n241c8e9ak255bded0a80744f1@mail.gmail.com> <1218432270.6671.75.camel@yakui_zhao.sh.intel.com> <874p5r3jow.fsf@basil.nowhere.org> <514e099a0808110615i42ade5dctc31d87b483095e35@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <514e099a0808110615i42ade5dctc31d87b483095e35@mail.gmail.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigB1F54F82D8CB421BF0ACCF15
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: quoted-printable
+On Mon, Aug 11, 2008 at 06:15:09AM -0700, S K wrote:
+> > It sounds like the BIOS just doesn't support frequency scaling.
+> > Perhaps it's disabled in the BIOS setup. Or the system doesn't
+> > support it at all.
+> 
+> It works in Windows XP, so I'm not sure if it's only a BIOS issue.
 
-Ingo Molnar wrote:
-> * Gregory Haskins <ghaskins@novell.com> wrote:
->
->  =20
->>>> Speaking of this: Another patch I submitted to you Ingo (had to do=20
->>>> with updating the load_weight inside task_setprio) seems to also=20
->>>> have this phenomenon: e.g. its technically correct but further=20
->>>> testing has revealed negative repercussions elsewhere.  So please=20
->>>> ignore that patch (or revert if you already pulled in, but I don't=20
->>>> think you have).  Ill try to look into this issue as well.
->>>>        =20
->>> ok, under which thread/subject is that? Not queued in tip/sched/*=20
->>> yet, correct?
->>>  =20
->>>      =20
->> Here is the original thread:
->>
->> http://lkml.org/lkml/2008/7/3/416
->>
->> I do not believe you have queued it anywhere (public anyway) yet.
->>
->> Note I have already invalidated 1/2, and now I am retracting 2/2 as=20
->> well.  (1/2 is actually a bogus patch, 2/2 is "technically correct"=20
->> but causes ripples in the load balancer that need to be sorted out=20
->> first.
->>    =20
->
-> ok, thanks. I'm curious, what are those ripple effects? Stability or=20
-> performance?
->  =20
+On Windows platform drivers sometimes provide a replacement DSDT
+that might enable cpufreq. If that's the case there's nothing
+we can do really on the Linux side. You might be able to extract
+that DSDT from somewhere and supply it to Linux as a replacement
+DSDT, but that's not a supported configuration in the kernel.
 
-Performance.  I found it while working on my pi series (which fyi I=20
-should have a v2 refresh for soon, probably today...i am hoping to get=20
-some review feedback from you on that as well, time permitting of course =
-;).
+> If it's not that simple, then care to impart some knowledge?
 
-Basically the behavior I was observing was that kernel builds via distcc =
+If you can't get your BIOS to provide the necessary methods
+then useful Linux cpufreq won't work. It's that simple.
+p4-clockmod aka throttling might work, but it doesn't actually
+save energy and often causes severe performance problems.
 
-would cluster all the cc1 jobs on a single core.  At first I thought my=20
-pi-series was screwed up, but then I realized I had applied the patch=20
-referenced above earlier in my development tree, and removing it allowed =
+-Andi
 
-pi to work fine.
-
-I found the problem with in once boot cycle with ftrace (thanks=20
-Steve!).  Basically newidle balancing was always returning "no=20
-imbalance" even though I had 32 cc1 threads on 1 core, and 3 idle=20
-cores.  Clearly not correct!  So I think that by adjusting the load up,=20
-we throw off the hysteresis built into the load averages and cause the=20
-system to incorrectly think it's balanced. TBD.
-
--Greg
-
-
-> 	Ingo
->  =20
-
-
-
---------------enigB1F54F82D8CB421BF0ACCF15
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
-
-iEYEARECAAYFAkigPG4ACgkQlOSOBdgZUxnoLACfWW0tOMKYYlQatcigMjsUeYVV
-NsgAnR1ClfI8sGJxLs56DFHhacnNVDDh
-=BvLa
------END PGP SIGNATURE-----
-
---------------enigB1F54F82D8CB421BF0ACCF15--
