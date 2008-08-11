@@ -1,62 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756096AbYHKSrK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756659AbYHKSrd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756096AbYHKSrK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Aug 2008 14:47:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751918AbYHKSqz
+	id S1756659AbYHKSrd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Aug 2008 14:47:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753285AbYHKSq4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Aug 2008 14:46:55 -0400
-Received: from wolverine02.qualcomm.com ([199.106.114.251]:33862 "EHLO
-	wolverine02.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751211AbYHKSqz (ORCPT
+	Mon, 11 Aug 2008 14:46:56 -0400
+Received: from fg-out-1718.google.com ([72.14.220.155]:21766 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751234AbYHKSqz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 11 Aug 2008 14:46:55 -0400
-X-IronPort-AV: E=McAfee;i="5200,2160,5358"; a="5317170"
-Message-ID: <48A08920.5040208@qualcomm.com>
-Date: Mon, 11 Aug 2008 11:46:56 -0700
-From: Max Krasnyansky <maxk@qualcomm.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=hxSOyN+ZcMtf2AAQYg0d0bQggWqpZtPRCMyXlcg5H5e2c2Ch84JWslPNAdjzA4Hr8U
+         MgOnRnRfn2yCwINcp7z6pvCnjDKMxBab70jXXqLYMRuqWGtklHavrZn0Ymx0vKitkZsD
+         qLIWKycMVU+3imi0VemWaIwJDRYACynNXjOto=
+Date: Mon, 11 Aug 2008 22:46:54 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>, Rene Herman <rene.herman@keyaccess.nl>,
+       Andrew Morton <akpm@osdl.org>, Yinghai Lu <yhlu.kernel@gmail.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: kill arch/x86/kernel/mpparse.c debugging printk.
+Message-ID: <20080811184654.GC18969@lenovo>
+References: <489C77C6.7040408@keyaccess.nl> <20080811122038.GA10082@elte.hu> <48A05E79.4030304@keyaccess.nl> <48A05EB1.3050508@keyaccess.nl> <20080811164508.GA18969@lenovo> <48A074D1.4070803@keyaccess.nl> <20080811174147.GO4524@elte.hu> <48A07FC1.5040806@keyaccess.nl> <20080811183300.GB9627@elte.hu> <20080811184257.GB18969@lenovo>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       lizf@cn.fujitsu.com, jeff.chua.linux@gmail.com,
-       Glauber Costa <gcosta@redhat.com>
-Subject: Re: [PATCH] Resurect proper handling of maxcpus= kernel option
-References: <1218052854-5020-1-git-send-email-Krasnyansky@qualcomm.com> <20080811181642.GS4524@elte.hu> <48A084C8.6050204@qualcomm.com> <20080811183814.GA12788@elte.hu>
-In-Reply-To: <20080811183814.GA12788@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080811184257.GB18969@lenovo>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+[Cyrill Gorcunov - Mon, Aug 11, 2008 at 10:42:57PM +0400]
+...
+| | 
+| | - in this case your first change was the obvious one and your NULL fix 
+| |   and your cleanup to the parameter expose a fundamental weakness of
+| |   early_param conversions - and i think highlighting that as separate 
+| |   commits might give someone ideas to improve the early_param() 
+| |   facility, if they see the fix patterns.
+| 
+| Ingo - I think the problem with early_param is not NULL itself but
+| rather - what is the right way to deal with boot params? I mean we
+| could pass empty string (not NULL) in case of argument absence _but_ would it
+| be the right way? If you remember when I sent first series for early_param
+| checking (and actually there are number of same issue exists for example
+| in s390 arch) - I was asking community what is the best way - since I'm not
+| that strong in interface engineering - i prefer fix the bugs :)
+| 
+| | 
+| | - Also, the NULL condition is obscure, so there's no bisection breakage
+| |   risk and it's the easiest for me to do append-only patches. The effort
+| |   and thought process you and Cyrill have put into it deserve a separate
+| |   commit as well anyway - and others might learn from it when looking at
+| |   logs.
+| | 
+| | 	Ingo
+| | 
+| 		- Cyrill -
 
+here is the link to that message
 
-Ingo Molnar wrote:
-> * Max Krasnyansky <maxk@qualcomm.com> wrote:
-> 
->>> This will need some test time on 32-bit as that is where this 
->>> represents a material change. ( albeit what matters most is the 
->>> maxcpus=1 distinction - and for that nosmp can be used as well to 
->>> turn off multi-cpu support altogether. So we could do this in 
->>> v2.6.27 as well. )
->> So far we got a couple of reports that it works as expected on 32 
->> (both laptop and server/desktop).
-> 
-> Yes, but the usecase i'm worried about is when say maxcpus=1 was used to 
-> _prevent_ an SMP bootup - because the system would not work otherwise.
-> 
-> i guess we want to tickle those systems anyway as that case is not 
-> supposed to happen (and it can always be totally disabled via nosmp or 
-> noapic).
-> 
-> So i'm not against your fix/change per se, i just wanted to highlight 
-> that it has some impact on existing uses of maxcpus that is outside of 
-> your cpu-hotplug usecase.
+	http://lkml.org/lkml/2008/7/9/222
 
-I see what you mean. I think it's fairly safe though since we do not actually
-do much for the cpus that are not going to be brought online. Mainly just
-setting cpu_*_map and initializing per cpu areas. If something is broken in
-there we'd probably want to fix that asap anyway. And like you said nosmp does
-the job too.
-
-Max
+		- Cyrill -
