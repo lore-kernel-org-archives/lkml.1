@@ -1,88 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751703AbYHKMDg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752288AbYHKMHT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751703AbYHKMDg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Aug 2008 08:03:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751352AbYHKMD2
+	id S1752288AbYHKMHT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Aug 2008 08:07:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751348AbYHKMHH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Aug 2008 08:03:28 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:57733 "EHLO mx2.mail.elte.hu"
+	Mon, 11 Aug 2008 08:07:07 -0400
+Received: from mailtp.via.com.tw ([61.66.243.2]:35722 "EHLO mailtp.via.com.tw"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750855AbYHKMD1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Aug 2008 08:03:27 -0400
-Date: Mon, 11 Aug 2008 14:02:31 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org, tglx@linutronix.de,
-       marcin.slusarz@gmail.com, linux-kernel@vger.kernel.org,
-       davem@davemloft.net, rostedt@goodmis.org, paulmck@linux.vnet.ibm.com
-Subject: Re: [PATCH] printk: robustify printk
-Message-ID: <20080811120231.GC23529@elte.hu>
-References: <alpine.LFD.1.10.0808081014240.3462@nehalem.linux-foundation.org> <1218217257.29098.2.camel@lappy.programming.kicks-ass.net> <alpine.LFD.1.10.0808081043160.3462@nehalem.linux-foundation.org> <1218219269.29098.5.camel@lappy.programming.kicks-ass.net> <20080808121428.646a8b3c.akpm@linux-foundation.org> <1218223269.29098.12.camel@lappy.programming.kicks-ass.net> <1218224829.29098.19.camel@lappy.programming.kicks-ass.net> <20080811104526.GA15186@elte.hu> <87zlnj24qc.fsf@basil.nowhere.org> <1218453726.10800.63.camel@twins>
+	id S1750855AbYHKMHG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Aug 2008 08:07:06 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1218453726.10800.63.camel@twins>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: text/plain;
+	charset="utf-8"
+Subject: RE: [PATCH 1/13 v2] viafb: viafb.modes, viafb.txt
+Date: Mon, 11 Aug 2008 20:07:03 +0800
+Message-ID: <C80EF34A3D2E494DBAF9AC29C7AE4EB8078F49C6@exchtp03.taipei.via.com.tw>
+In-Reply-To: <Pine.LNX.4.64.0808081724210.420@anakin>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH 1/13 v2] viafb: viafb.modes, viafb.txt
+Thread-Index: Acj5auxL+4qHqRawTuyL2BH3C4K0vgCP3REg
+From: <JosephChan@via.com.tw>
+To: <geert@linux-m68k.org>
+Cc: <linux-fbdev-devel@lists.sourceforge.net>, <linux-kernel@vger.kernel.org>,
+       <akpm@linux-foundation.org>
+X-OriginalArrivalTime: 11 Aug 2008 12:07:04.0804 (UTC) FILETIME=[C4FDD240:01C8FBAA]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha id m7BC7Ndq000686
 
+Hi Geert,
 
-* Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+> Please send an incremental patch.
+Do you mean that I can send a signle patch for fixing this issue. (v2 -> v3)
+And the subject of this mail should be " [PATCH 1/13 v3] viafb: viafb.modes, viafb.txt"
+Thanks.
 
-> > The problem is that it means any printk data output that is more 
-> > than DMESG-BUFFER-SIZE bytes during one clock tick is going to lose 
-> > data. It loses the natural adaption to higher printk rates that you 
-> > got previously.
-> > 
-> > Now we could say that for debugging etc. people should switch to 
-> > other mechanisms like relayfs, but I would still worry about some 
-> > corner cases where losing printk data that wasn't lost before could 
-> > be a severe regression (e.g. consider firewall log messages or 
-> > similar)
+BRs,
+Joseph Chan 
+-----Original Message-----
+From: geert@linux-m68k.org [mailto:geert@linux-m68k.org] 
+Sent: Friday, August 08, 2008 11:25 PM
+To: Joseph Chan
+Cc: linux-fbdev-devel@lists.sourceforge.net; linux-kernel@vger.kernel.org; akpm@linux-foundation.org
+Subject: RE: [PATCH 1/13 v2] viafb: viafb.modes, viafb.txt
 
-That's a rather misleading argument, because klogd as it stands today is 
-already lossy: you can overflow it with enough printk data. (It's rather 
-easy to trigger it as well, so nobody sane relies on it as a reliable 
-channel.)
+On Fri, 8 Aug 2008, JosephChan@via.com.tw wrote:
+> It should be my carelessness. The check has been added in viafbdev.c already. 
 
-Using relayfs and dynamic buffers would be a much worse approach because 
-if we are out of buffer space it would be a robustness disaster to start 
-allocating more RAM. (we want less coupling of printk to other kernel 
-subsystems, not more coupling) Preallocating wont help either because it 
-doesnt protect against sudden spikes.
+OK.
 
-> You only loose the msgs with klogd, console still gets everything. If 
-> firewalls are generating that much data, perhaps its time to think 
-> about alternative ways to channel that.
+> Do I need to re-send the patch for the documentation? Thanks for your reminding.
 
-yeah, and note that klogd as it stands today is a lossy channel no 
-matter what - there's nothing that keeps a really verbose kernel from 
-flooding the buffer.
+Please send an incremental patch. Andrew is good in folding ;-)
 
-The issue Andi raises is largely independent of this change and there's 
-three clean options to deal with it:
+> 
+> 
+> 
+> On Fri, 8 Aug 2008, JosephChan@via.com.tw wrote:
+> > +    4. VX800 2D accelerator hasn't been supported in this driver yet. When
+> > +       using driver on VX800, one should add parameter "viafb_accel=0" to
+> > +       disable 2D accelerator.
+> 
+> Can't the driver detect this automatically, and disable the 2D 
+> accelerator when running on a VX800?
 
- - increase buffering (already possible, see CONFIG_LOG_BUF_SHIFT)
+Gr{oetje,eeting}s,
 
- - create a more reliable klogd channel with a dynamically
-   shrinking/growing buffer (i very much doubt the complexity is
-   worth it, and this one wont be 100% loss-less either)
+						Geert
 
- - use a reliable console
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-#1 is what distros use to maximize the yield of user bugreports, and #3
-is what everyone who ultimately cares about massive printk output and 
-reliable logging uses.
+In personal conversations with technical people, I call myself a hacker. But when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
-	Ingo
+ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
