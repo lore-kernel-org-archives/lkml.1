@@ -1,53 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756779AbYHKUuK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757725AbYHKUuj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756779AbYHKUuK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Aug 2008 16:50:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751966AbYHKUt5
+	id S1757725AbYHKUuj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Aug 2008 16:50:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755395AbYHKUuF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Aug 2008 16:49:57 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:33081 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751201AbYHKUt4 (ORCPT
+	Mon, 11 Aug 2008 16:50:05 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:55714
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1754989AbYHKUuD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Aug 2008 16:49:56 -0400
-Date: Mon, 11 Aug 2008 13:49:40 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Claudio Nieder <private@claudio.ch>
-Cc: rpurdie@rpsys.net, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Backlight driver for Tabletkiosk Sahara TouchIT-213
- Tablet PC
-Message-Id: <20080811134940.b3bcde83.akpm@linux-foundation.org>
-In-Reply-To: <488E25F4.4020405@claudio.ch>
-References: <488E0D2A.1000005@claudio.ch>
-	<1217270428.6059.39.camel@dax.rpnet.com>
-	<488E25F4.4020405@claudio.ch>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Mon, 11 Aug 2008 16:50:03 -0400
+Date: Mon, 11 Aug 2008 13:50:03 -0700 (PDT)
+Message-Id: <20080811.135003.105171324.davem@davemloft.net>
+To: eteo@redhat.com
+Cc: brian.haley@hp.com, adobriyan@gmail.com, john.gumb@tandberg.com,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org, stable@kernel.org
+Subject: Re: OOPS, ip -f inet6 route get fec0::1, linux-2.6.26,
+ ip6_route_output, rt6_fill_node+0x175
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <489FFAF8.3000909@redhat.com>
+References: <20080807203748.GA5196@martell.zuzino.mipt.ru>
+	<489BD227.6000209@hp.com>
+	<489FFAF8.3000909@redhat.com>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 28 Jul 2008 22:03:00 +0200
-Claudio Nieder <private@claudio.ch> wrote:
+From: Eugene Teo <eteo@redhat.com>
+Date: Mon, 11 Aug 2008 16:40:24 +0800
 
->
-> ...
->
-> +void kb3886_bl_set_intensity(int intensity)
-> +{
-> +	mutex_lock(&bl_mutex);
-> +	intensity = intensity&0xff;
-> +	outb(KB3886_ADC_DAC_PWM, KB3886_PARENT);
-> +	mdelay(10);
-> +	outb(KB3886_PWM0_WRITE, KB3886_IO);
-> +	mdelay(10);
-> +	outb(intensity, KB3886_IO);
-> +	mutex_unlock(&bl_mutex);
-> +}
+> Brian Haley wrote:
+> > Alexey Dobriyan wrote:
+> >> On Thu, Aug 07, 2008 at 07:00:56PM +0200, John Gumb wrote:
+> >>> Scenario: no ipv6 default route set.
+> >>
+> >>> # ip -f inet6 route get fec0::1
+> >>>
+> >>> BUG: unable to handle kernel NULL pointer dereference at 00000000
+> >>> IP: [<c0369b85>] rt6_fill_node+0x175/0x3b0
+> >>> EIP is at rt6_fill_node+0x175/0x3b0
+> >>
+> >> 0xffffffff80424dd3 is in rt6_fill_node (net/ipv6/route.c:2191).
+> >> 2186                    } else
+> >> 2187    #endif
+> >> 2188                            NLA_PUT_U32(skb, RTA_IIF, iif);
+> >> 2189            } else if (dst) {
+> >> 2190                    struct in6_addr saddr_buf;
+> >> 2191      ====>         if
+> >> (ipv6_dev_get_saddr(ip6_dst_idev(&rt->u.dst)->dev,
+> >>                            ^^^^^^^^^^^^^^^^^^^^^^^^
+> >>                                    NULL
+> >>
+> >> 2192                                           dst, 0, &saddr_buf) == 0)
+> >> 2193                            NLA_PUT(skb, RTA_PREFSRC, 16,
+> >> &saddr_buf);
+> >> 2194            }
+> > 
+> > The commit that changed this can't be reverted easily, but the patch
+> > below works for me.
+> > 
+> > Fix NULL de-reference in rt6_fill_node() when there's no IPv6 input
+> > device present in the dst entry.
+> > 
+> > Signed-off-by: Brian Haley <brian.haley@hp.com>
+> 
+> Cc: Stable <stable@kernel.org>
 
-I believe the mdelay()s could be converted to the preferable msleep()?
+We've already determined from one tester that the behavior is
+changing with Brian's patch.  Furthermore I haven't applied it
+to mainline so it isn't anywhere near being submittable for
+-stable.
 
-> ...
->
+I submit all relevant networking bug fixes to -stable when they are
+ready and in a proper state to be submitted, you don't have to do it
+for me.  Sending me a gentle reminder or nudge, on the other hand, is
+fine.
+
