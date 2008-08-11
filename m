@@ -1,117 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757835AbYHKUwl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757892AbYHKUyK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757835AbYHKUwl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Aug 2008 16:52:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753759AbYHKUwc
+	id S1757892AbYHKUyK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Aug 2008 16:54:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754444AbYHKUx5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Aug 2008 16:52:32 -0400
-Received: from fg-out-1718.google.com ([72.14.220.153]:64058 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753035AbYHKUwa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Aug 2008 16:52:30 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:reply-to:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=S3pDIamqRRdgUb7Dmf7UfUhgQ93l7RezhsLloorNcFkxUrTb3rieZH3GgdWpLmL7oS
-         Xjo99BrO50yNEeoBOWtEEQLR9IukDC/iq5KUYKzffsue4P0kHxBSVwngfChDshmUns+X
-         TgeTbPy2Z0QZtS59ItxwAE9ZXZpeaTPVUyJow=
-Message-ID: <48A0A689.40908@gmail.com>
-Date: Mon, 11 Aug 2008 22:52:25 +0200
-From: Andrea Righi <righi.andrea@gmail.com>
-Reply-To: righi.andrea@gmail.com
-User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
+	Mon, 11 Aug 2008 16:53:57 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:55946 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754289AbYHKUx4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Aug 2008 16:53:56 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Rabin Vincent <rabin@rab.in>
+Subject: Re: [Bug #11231] gspca_zc3xx oops - 2.6.27-rc1
+Date: Mon, 11 Aug 2008 22:56:49 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Parag Warudkar <parag.warudkar@gmail.com>
+References: <VYYCiQF4qDI.A.BPH.KCjnIB@albercik> <cX_-nNkxKaF.A.g4B.pDjnIB@albercik> <20080811154101.GA1667@debian>
+In-Reply-To: <20080811154101.GA1667@debian>
 MIME-Version: 1.0
-To: =?UTF-8?B?RmVybmFuZG8gTHVpcyBWw6F6cXVleiBDYW8=?= 
-	<fernando@oss.ntt.co.jp>
-CC: Dave Hansen <dave@linux.vnet.ibm.com>, Ryo Tsuruta <ryov@valinux.co.jp>,
-       yoshikawa.takuya@oss.ntt.co.jp, taka@valinux.co.jp,
-       uchida@ap.jp.nec.com, ngupta@google.com, linux-kernel@vger.kernel.org,
-       dm-devel@redhat.com, containers@lists.linux-foundation.org,
-       virtualization@lists.linux-foundation.org,
-       xen-devel@lists.xensource.com, agk@sourceware.org
-Subject: Re: RFC: I/O bandwidth controller (was Re: Too many I/O controller
- patches)
-References: <20080804.175126.193692178.ryov@valinux.co.jp>	 <1217870433.20260.101.camel@nimitz>	 <1217985189.3154.57.camel@sebastian.kern.oss.ntt.co.jp>	 <489AA83F.1040306@gmail.com> <1218117578.11703.81.camel@sebastian.kern.oss.ntt.co.jp>
-In-Reply-To: <1218117578.11703.81.camel@sebastian.kern.oss.ntt.co.jp>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200808112256.49750.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fernando Luis Vázquez Cao wrote:
->>> This seems to be the easiest part, but the current cgroups
->>> infrastructure has some limitations when it comes to dealing with block
->>> devices: impossibility of creating/removing certain control structures
->>> dynamically and hardcoding of subsystems (i.e. resource controllers).
->>> This makes it difficult to handle block devices that can be hotplugged
->>> and go away at any time (this applies not only to usb storage but also
->>> to some SATA and SCSI devices). To cope with this situation properly we
->>> would need hotplug support in cgroups, but, as suggested before and
->>> discussed in the past (see (0) below), there are some limitations.
->>>
->>> Even in the non-hotplug case it would be nice if we could treat each
->>> block I/O device as an independent resource, which means we could do
->>> things like allocating I/O bandwidth on a per-device basis. As long as
->>> performance is not compromised too much, adding some kind of basic
->>> hotplug support to cgroups is probably worth it.
->>>
->>> (0) http://lkml.org/lkml/2008/5/21/12
->> What about using major,minor numbers to identify each device and account
->> IO statistics? If a device is unplugged we could reset IO statistics
->> and/or remove IO limitations for that device from userspace (i.e. by a
->> deamon), but pluggin/unplugging the device would not be blocked/affected
->> in any case. Or am I oversimplifying the problem?
-> If a resource we want to control (a block device in this case) is
-> hot-plugged/unplugged the corresponding cgroup-related structures inside
-> the kernel need to be allocated/freed dynamically, respectively. The
-> problem is that this is not always possible. For example, with the
-> current implementation of cgroups it is not possible to treat each block
-> device as a different cgroup subsytem/resource controlled, because
-> subsystems are created at compile time.
+On Monday, 11 of August 2008, Rabin Vincent wrote:
+> On Sun, Aug 10, 2008 at 12:43:51AM +0200, Rafael J. Wysocki wrote:
+> > This message has been generated automatically as a part of a report
+> > of recent regressions.
+> > 
+> > The following bug entry is on the current list of known regressions
+> > from 2.6.26.  Please verify if it still should be listed and let me know
+> > (either way).
+> > 
+> > 
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11231
+> > Subject		: gspca_zc3xx oops - 2.6.27-rc1
+> > Submitter	: Parag Warudkar <parag.warudkar@gmail.com>
+> > Date		: 2008-08-02 16:22 (8 days old)
+> > References	: http://marc.info/?l=linux-kernel&m=121769418920774&w=4
+> > Handled-By	: Rabin Vincent <rabin@rab.in>
+> > Patch		: http://marc.info/?l=linux-kernel&m=121774908213124&w=4
+> 
+> This can be closed.  The patch is now in mainline as
+> fcf5cb2406827fc9d3f3fe260ac883ef72b8bac0 ("V4L/DVB (8605): gspca: Fix of
+> gspca_zc3xx oops - 2.6.27-rc1").
 
-The whole subsystem is created at compile time, but controller data
-structures are allocated dynamically (i.e. see struct mem_cgroup for
-memory controller). So, identifying each device with a name, or a key
-like major,minor, instead of a reference/pointer to a struct could help
-to handle this in userspace. I mean, if a device is unplugged a
-userspace daemon can just handle the event and delete the controller
-data structures allocated for this device, asynchronously, via
-userspace->kernel interface. And without holding a reference to that
-particular block device in the kernel. Anyway, implementing a generic
-interface that would allow to define hooks for hot-pluggable devices (or
-similar events) in cgroups would be interesting.
+Thanks, closed.
 
->>> 3. & 4. & 5. - I/O bandwidth shaping & General design aspects
->>>
->>> The implementation of an I/O scheduling algorithm is to a certain extent
->>> influenced by what we are trying to achieve in terms of I/O bandwidth
->>> shaping, but, as discussed below, the required accuracy can determine
->>> the layer where the I/O controller has to reside. Off the top of my
->>> head, there are three basic operations we may want perform:
->>>   - I/O nice prioritization: ionice-like approach.
->>>   - Proportional bandwidth scheduling: each process/group of processes
->>> has a weight that determines the share of bandwidth they receive.
->>>   - I/O limiting: set an upper limit to the bandwidth a group of tasks
->>> can use.
->> Use a deadline-based IO scheduling could be an interesting path to be
->> explored as well, IMHO, to try to guarantee per-cgroup minimum bandwidth
->> requirements.
-> Please note that the only thing we can do is to guarantee minimum
-> bandwidth requirement when there is contention for an IO resource, which
-> is precisely what a proportional bandwidth scheduler does. An I missing
-> something?
-
-Correct. Proportional bandwidth automatically allows to guarantee min
-requirements (instead of IO limiting approach, that needs additional
-mechanisms to achive this).
-
-In any case there's no guarantee for a cgroup/application to sustain
-i.e. 10MB/s on a certain device, but this is a hard problem anyway, and
-the best we can do is to try to satisfy "soft" constraints.
-
--Andrea
+Rafael
