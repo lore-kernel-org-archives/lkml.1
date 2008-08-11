@@ -1,74 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756025AbYHKRDT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756534AbYHKRDn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756025AbYHKRDT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Aug 2008 13:03:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756248AbYHKRCp
+	id S1756534AbYHKRDn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Aug 2008 13:03:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756418AbYHKRDB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Aug 2008 13:02:45 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:42293 "EHLO mx2.mail.elte.hu"
+	Mon, 11 Aug 2008 13:03:01 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:44404 "EHLO e4.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756245AbYHKRCn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Aug 2008 13:02:43 -0400
-Date: Mon, 11 Aug 2008 19:02:19 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: akpm@osdl.org, mingo@redhat.com, linux-kernel@vger.kernel.org, ak@suse.de,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [PATCH] x86_64: remove empty lines from stack traces/oopses
-Message-ID: <20080811170219.GJ4524@elte.hu>
-References: <20080731235137.GA4816@martell.zuzino.mipt.ru>
+	id S1756397AbYHKRDA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Aug 2008 13:03:00 -0400
+Date: Mon, 11 Aug 2008 12:02:55 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Mimi Zohar <zohar@us.ibm.com>
+Cc: Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org,
+       Al Viro <viro@ZenIV.linux.org.uk>, Stephen Smalley <sds@tycho.nsa.gov>,
+       James Morris <jmorris@namei.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>, safford@watson.ibm.com,
+       serue@linux.vnet.ibm.com, sailer@watson.ibm.com,
+       Mimi Zohar <zohar@linux.vnet.ibm.com>
+Subject: Re: [PATCH 3/4] integrity: Linux Integrity Module(LIM)
+Message-ID: <20080811170255.GA2662@us.ibm.com>
+References: <20080808184349.999902616@linux.vnet.ibm.com> <1218221761.4444.13.camel@localhost.localdomain> <20080809185340.GC22905@infradead.org> <OF0AEBDCA2.1E27B823-ON852574A1.000FEE48-852574A1.004C3185@us.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080731235137.GA4816@martell.zuzino.mipt.ru>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <OF0AEBDCA2.1E27B823-ON852574A1.000FEE48-852574A1.004C3185@us.ibm.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Quoting Mimi Zohar (zohar@us.ibm.com):
+> Christoph Hellwig <hch@infradead.org> wrote on 08/09/2008 02:53:40 PM:
+> 
+> > > +      if (integrity_inode_alloc(inode)) {
+> > > +         if (inode->i_sb->s_op->destroy_inode)
+> > > +            inode->i_sb->s_op->destroy_inode(inode);
+> > > +         else
+> > > +            kmem_cache_free(inode_cachep, (inode));
+> > > +         return NULL;
+> > > +      }
+> > > +
+> > 
+> > Please factor this and the lsm failure case out into a single
+> > out_free_inode goto label.
+> 
+> ok
+> 
+> > >  int vfs_permission(struct nameidata *nd, int mask)
+> > >  {
+> > > -   return inode_permission(nd->path.dentry->d_inode, mask);
+> > > +   int retval;
+> > > +
+> > > +   retval = inode_permission(nd->path.dentry->d_inode, mask);
+> > > +   if (retval)
+> > > +      return retval;
+> > > +   return integrity_inode_permission(NULL, &nd->path,
+> > > +                 mask & (MAY_READ | MAY_WRITE |
+> > > +                    MAY_EXEC));
+> > >  }
+> > > 
+> > >  /**
+> > > @@ -306,7 +314,14 @@ int vfs_permission(struct nameidata *nd,
+> > >   */
+> > >  int file_permission(struct file *file, int mask)
+> > >  {
+> > > -   return inode_permission(file->f_path.dentry->d_inode, mask);
+> > > +   int retval;
+> > > +
+> > > +   retval = inode_permission(file->f_path.dentry->d_inode, mask);
+> > > +   if (retval)
+> > > +      return retval;
+> > > +   return integrity_inode_permission(file, NULL,
+> > > +                 mask & (MAY_READ | MAY_WRITE |
+> > > +                    MAY_EXEC));
+> > 
+> > Please put your hook into inode_permission.  Note that in inode
+> > permission and lots of callers there is no path available so don't pass
+> > it.  Please pass the full MAY_FOO mask for new interfaces and do
+> > filtering that won't break if new ones are introduced.
+> 
+> We started out with the integrity_inode_permission() hook call in 
+> inode_permission(), but because of the removal of the nameidata 
+> parameter in the last merge, based on discussions
+> http://marc.info/?l=linux-security-module&m=121797845308246&w=2,
+> the call to integrity_inode_permission() was moved up to the caller,
+> where either a file or path are available.  Any suggestions?
 
-* Alexey Dobriyan <adobriyan@gmail.com> wrote:
+Mimi, can you explain exactly (and concisely) what you are doing with
+the pathname?
 
->  show_trace_log_lvl(struct task_struct *task, struct pt_regs *regs,
->  		unsigned long *stack, unsigned long bp, char *log_lvl)
->  {
-> -	printk("\nCall Trace:\n");
-> +	printk("Call Trace:\n");
->  	dump_trace(task, regs, stack, bp, &print_trace_ops, log_lvl);
-> -	printk("\n");
->  }
+> > > +#ifdef CONFIG_INTEGRITY
+> > > +   void         *i_integrity;
+> > > +#endif
+> > 
+> > Sorry, but I don't think we can bloat the inode even further for this.
+> 
+> The original version of IMA was LSM based, using i_security. Based
+> on discussions on the LSM mailing list, it was decided that the LSM hooks
+> were meant only for access control.  During the same time frame, there 
+> was a lot of work done in stacking LSM modules and i_security, but that
+> approach was dropped. It was suggested that we define a separate set of
+> hooks for integrity, which this patch set provides. Caching integrity 
+> results is an important aspect. Any suggestions in lieu of defining 
+> i_integrity?
 
-hm, it's nice to have stack traces stand out a bit, and to not get the 
-'Call Trace' embedded in the middle of a printk (which happens to crash 
-or produce a stack dump).
+The i_integrity is only bloating the inode if LIM is enabled.  Surely
+that beats having LIM define its own hash table and locking to track
+integrity labels on inodes?  Do you have another suggestion?
 
->  void show_trace(struct task_struct *task, struct pt_regs *regs,
-> @@ -386,6 +385,7 @@ show_stack_log_lvl(struct task_struct *task, struct pt_regs *regs,
->  		printk(" %016lx", *stack++);
->  		touch_nmi_watchdog();
->  	}
-> +	printk("\n");
->  	show_trace_log_lvl(task, regs, sp, bp, log_lvl);
->  }
->  
-> @@ -443,7 +443,6 @@ void show_registers(struct pt_regs *regs)
->  		printk("Stack: ");
->  		show_stack_log_lvl(NULL, regs, (unsigned long *)sp,
->  				regs->bp, "");
-> -		printk("\n");
->  
->  		printk(KERN_EMERG "Code: ");
+Or is the concern about having more #ifdefs in the struct inode
+definition?
 
-just to make sure i get the gist of your change, do you have a 'before' 
-and 'after' sample oops, so that we can see the difference?
-
-	Ingo
+-serge
