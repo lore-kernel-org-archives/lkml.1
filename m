@@ -1,58 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754528AbYHKRoU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753416AbYHKRuw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754528AbYHKRoU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Aug 2008 13:44:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751856AbYHKRoM
+	id S1753416AbYHKRuw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Aug 2008 13:50:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751944AbYHKRum
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Aug 2008 13:44:12 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:44657 "EHLO mx2.mail.elte.hu"
+	Mon, 11 Aug 2008 13:50:42 -0400
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:35199 "EHLO e2.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751826AbYHKRoL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Aug 2008 13:44:11 -0400
-Date: Mon, 11 Aug 2008 19:43:49 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: "Luck, Tony" <tony.luck@intel.com>
-Cc: Joerg Roedel <joerg.roedel@amd.com>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "mingo@redhat.com" <mingo@redhat.com>,
-       "tglx@linutronix.de" <tglx@linutronix.de>,
-       "hpa@zytor.com" <hpa@zytor.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       the arch/x86 maintainers <x86@kernel.org>
-Subject: Re: [PATCH 0/3] make swiotlb prototypes generic
-Message-ID: <20080811174349.GP4524@elte.hu>
-References: <1218114409-20806-1-git-send-email-joerg.roedel@amd.com> <57C9024A16AD2D4C97DC78E552063EA3083841F6@orsmsx505.amr.corp.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <57C9024A16AD2D4C97DC78E552063EA3083841F6@orsmsx505.amr.corp.intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1751979AbYHKRul (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Aug 2008 13:50:41 -0400
+Subject: [2.6 patch make struct scsi_dh_devlist's static
+From: Chandra Seetharaman <sekharan@us.ibm.com>
+Reply-To: sekharan@us.ibm.com
+To: Hannes Reinecke <hare@suse.de>, Chandra Seetharaman <sekharan@us.ibm.com>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
+X-Sieve: CMU Sieve 2.3
+X-Spam-TestScore: none
+X-Spam-TokenSummary: Bayes not run.
+X-Spam-Relay-Country: FI FI
+X-Xagent-From: bunk@kernel.org
+X-Xagent-To: sekharan@linux.vnet.ibm.com
+X-Xagent-Gateway: vmsdvma.vnet.ibm.com (XAGENTU2 at VMSDVMA)
+Content-Type: text/plain
+Organization: IBM
+Date: Mon, 11 Aug 2008 10:50:13 -0700
+Message-Id: <1218477013.16794.7.camel@chandra-ubuntu>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This patch makes several needlessly global struct scsi_dh_devlist's 
+static.
 
-* Luck, Tony <tony.luck@intel.com> wrote:
+Signed-off-by: Adrian Bunk <bunk@kernel.org>
+Acked-by: Chandra Seetharaman <sekharan@us.ibm.com>
 
-> > this small series of patches introduce a generic header file for the software
-> > IO/TLB implementation in lib/swiotlb.c. Currently each architecture using this
-> > code defines the prototypes itself. The prototypes are moved to
-> > include/linux/swiotlb.h and this file is included in architecture specific code
-> > for X86 and IA64. The changes are compile tested for both architectures.
-> 
-> Boot tested on ia64 (using generic_defconfig, tiger_defconfig and 
-> zx1_defconfig).
+---
 
-given that this touches both x86 and ia64, i suspect queueing it in -mm 
-(as it is already) and merging it upstream from there would be the best 
-approach?
+ drivers/scsi/device_handler/scsi_dh_alua.c  |    2 +-
+ drivers/scsi/device_handler/scsi_dh_emc.c   |    2 +-
+ drivers/scsi/device_handler/scsi_dh_hp_sw.c |    2 +-
+ drivers/scsi/device_handler/scsi_dh_rdac.c  |    2 +-
+ 4 files changed, 4 insertions(+), 4 deletions(-)
 
-	Ingo
+ae6ee914615e415cc4b22ee1c0545bb088889b6a 
+diff --git a/drivers/scsi/device_handler/scsi_dh_alua.c b/drivers/scsi/device_handler/scsi_dh_alua.c
+index fcdd73f..994da56 100644
+--- a/drivers/scsi/device_handler/scsi_dh_alua.c
++++ b/drivers/scsi/device_handler/scsi_dh_alua.c
+@@ -680,7 +680,7 @@ static int alua_prep_fn(struct scsi_device *sdev, struct request *req)
+
+ }
+
+-const struct scsi_dh_devlist alua_dev_list[] = {
++static const struct scsi_dh_devlist alua_dev_list[] = {
+ 	{"HP", "MSA VOLUME" },
+ 	{"HP", "HSV101" },
+ 	{"HP", "HSV111" },
+diff --git a/drivers/scsi/device_handler/scsi_dh_emc.c b/drivers/scsi/device_handler/scsi_dh_emc.c
+index aa46b13..b9d23e9 100644
+--- a/drivers/scsi/device_handler/scsi_dh_emc.c
++++ b/drivers/scsi/device_handler/scsi_dh_emc.c
+@@ -562,7 +562,7 @@ done:
+ 	return result;
+ }
+
+-const struct scsi_dh_devlist clariion_dev_list[] = {
++static const struct scsi_dh_devlist clariion_dev_list[] = {
+ 	{"DGC", "RAID"},
+ 	{"DGC", "DISK"},
+ 	{"DGC", "VRAID"},
+diff --git a/drivers/scsi/device_handler/scsi_dh_hp_sw.c b/drivers/scsi/device_handler/scsi_dh_hp_sw.c
+index 9c7a1f8..a6a4ef3 100644
+--- a/drivers/scsi/device_handler/scsi_dh_hp_sw.c
++++ b/drivers/scsi/device_handler/scsi_dh_hp_sw.c
+@@ -282,7 +282,7 @@ static int hp_sw_activate(struct scsi_device *sdev)
+ 	return ret;
+ }
+
+-const struct scsi_dh_devlist hp_sw_dh_data_list[] = {
++static const struct scsi_dh_devlist hp_sw_dh_data_list[] = {
+ 	{"COMPAQ", "MSA1000 VOLUME"},
+ 	{"COMPAQ", "HSV110"},
+ 	{"HP", "HSV100"},
+diff --git a/drivers/scsi/device_handler/scsi_dh_rdac.c b/drivers/scsi/device_handler/scsi_dh_rdac.c
+index b093a50..e7c7b4e 100644
+--- a/drivers/scsi/device_handler/scsi_dh_rdac.c
++++ b/drivers/scsi/device_handler/scsi_dh_rdac.c
+@@ -574,7 +574,7 @@ static int rdac_check_sense(struct scsi_device *sdev,
+ 	return SCSI_RETURN_NOT_HANDLED;
+ }
+
+-const struct scsi_dh_devlist rdac_dev_list[] = {
++static const struct scsi_dh_devlist rdac_dev_list[] = {
+ 	{"IBM", "1722"},
+ 	{"IBM", "1724"},
+ 	{"IBM", "1726"},
+
+
