@@ -1,24 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754242AbYHKPRu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752665AbYHKPSX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754242AbYHKPRu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Aug 2008 11:17:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752139AbYHKPRm
+	id S1752665AbYHKPSX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Aug 2008 11:18:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751694AbYHKPSL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Aug 2008 11:17:42 -0400
-Received: from nlpi053.sbcis.sbc.com ([207.115.36.82]:61847 "EHLO
+	Mon, 11 Aug 2008 11:18:11 -0400
+Received: from nlpi053.sbcis.sbc.com ([207.115.36.82]:62313 "EHLO
 	nlpi053.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751780AbYHKPRl (ORCPT
+	with ESMTP id S1752139AbYHKPSJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Aug 2008 11:17:41 -0400
-Message-Id: <20080811150657.898186615@quilx.com>
+	Mon, 11 Aug 2008 11:18:09 -0400
+Message-Id: <20080811150656.874896717@quilx.com>
 References: <20080811150616.207532384@quilx.com>
 User-Agent: quilt/0.46-1
-Date: Mon, 11 Aug 2008 08:06:27 -0700
+Date: Mon, 11 Aug 2008 08:06:24 -0700
 From: Christoph Lameter <cl@linux-foundation.org>
 To: Pekka Enberg <penberg@cs.helsinki.fi>
-CC: akpm@linux-foundation.org, Alexander Viro <viro@ftp.linux.org.uk>,
-       Christoph Hellwig <hch@infradead.org>,
-       Christoph Lameter <clameter@sgi.com>,
+CC: akpm@linux-foundation.org, Christoph Lameter <clameter@sgi.com>,
        Christoph Lameter <cl@linux-foundation.org>
 Cc: linux-kernel@vger.kernel.org
 CC: linux-fsdevel@vger.kernel.org
@@ -27,189 +25,252 @@ Cc: andi@firstfloor.org
 Cc: Rik van Riel <riel@redhat.com>
 Cc: mpm@selenic.com
 Cc: Dave Chinner <david@fromorbit.com>
-Subject: [patch 11/19] inodes: Support generic defragmentation
-Content-Disposition: inline; filename=0025-inodes-Support-generic-defragmentation.patch
+Subject: [patch 08/19] slub/slabinfo: add defrag statistics
+Content-Disposition: inline; filename=0008-slub-add-defrag-statistics.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This implements the ability to remove inodes in a particular slab
-from inode caches. In order to remove an inode we may have to write out
-the pages of an inode, the inode itself and remove the dentries referring
-to the node.
+Add statistics counters for slab defragmentation.
 
-Provide generic functionality that can be used by filesystems that have
-their own inode caches to also tie into the defragmentation functions
-that are made available here.
-
-Cc: Alexander Viro <viro@ftp.linux.org.uk>
-Cc: Christoph Hellwig <hch@infradead.org>
-Reviewed-by: Rik van Riel <riel@redhat.com>
 Signed-off-by: Christoph Lameter <clameter@sgi.com>
+Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
 Signed-off-by: Christoph Lameter <cl@linux-foundation.org>
 
 ---
- fs/inode.c         |  123 +++++++++++++++++++++++++++++++++++++++++++++++++++++
- include/linux/fs.h |    6 ++
- 2 files changed, 129 insertions(+)
+ Documentation/vm/slabinfo.c |   45 ++++++++++++++++++++++++++++++++++++--------
+ include/linux/slub_def.h    |    6 +++++
+ mm/slub.c                   |   24 ++++++++++++++++++++++-
+ 3 files changed, 66 insertions(+), 9 deletions(-)
 
-Index: linux-next/fs/inode.c
+Index: linux-next/Documentation/vm/slabinfo.c
 ===================================================================
---- linux-next.orig/fs/inode.c	2008-08-11 07:42:10.738607937 -0700
-+++ linux-next/fs/inode.c	2008-08-11 07:47:04.342348902 -0700
-@@ -1363,6 +1363,128 @@ static int __init set_ihash_entries(char
- __setup("ihash_entries=", set_ihash_entries);
+--- linux-next.orig/Documentation/vm/slabinfo.c	2008-08-11 07:47:01.749625123 -0700
++++ linux-next/Documentation/vm/slabinfo.c	2008-08-11 07:47:01.762349658 -0700
+@@ -41,6 +41,9 @@ struct slabinfo {
+ 	unsigned long cpuslab_flush, deactivate_full, deactivate_empty;
+ 	unsigned long deactivate_to_head, deactivate_to_tail;
+ 	unsigned long deactivate_remote_frees, order_fallback;
++	unsigned long shrink_calls, shrink_attempt_defrag, shrink_empty_slab;
++	unsigned long shrink_slab_skipped, shrink_slab_reclaimed;
++	unsigned long shrink_object_reclaim_failed;
+ 	int numa[MAX_NODES];
+ 	int numa_partial[MAX_NODES];
+ } slabinfo[MAX_SLABS];
+@@ -79,6 +82,7 @@ int sort_active = 0;
+ int set_debug = 0;
+ int show_ops = 0;
+ int show_activity = 0;
++int show_defragcount = 0;
  
- /*
-+ * Obtain a refcount on a list of struct inodes pointed to by v. If the
-+ * inode is in the process of being freed then zap the v[] entry so that
-+ * we skip the freeing attempts later.
-+ *
-+ * This is a generic function for the ->get slab defrag callback.
-+ */
-+void *get_inodes(struct kmem_cache *s, int nr, void **v)
-+{
-+	int i;
-+
-+	spin_lock(&inode_lock);
-+	for (i = 0; i < nr; i++) {
-+		struct inode *inode = v[i];
-+
-+		if (inode->i_state & (I_FREEING|I_CLEAR|I_WILL_FREE))
-+			v[i] = NULL;
-+		else
-+			__iget(inode);
-+	}
-+	spin_unlock(&inode_lock);
-+	return NULL;
-+}
-+EXPORT_SYMBOL(get_inodes);
-+
-+/*
-+ * Function for filesystems that embedd struct inode into their own
-+ * fs inode. The offset is the offset of the struct inode in the fs inode.
-+ *
-+ * The function adds to the pointers in v[] in order to make them point to
-+ * struct inode. Then get_inodes() is used to get the refcount.
-+ * The converted v[] pointers can then also be passed to the kick() callback
-+ * without further processing.
-+ */
-+void *fs_get_inodes(struct kmem_cache *s, int nr, void **v,
-+						unsigned long offset)
-+{
-+	int i;
-+
-+	for (i = 0; i < nr; i++)
-+		v[i] += offset;
-+
-+	return get_inodes(s, nr, v);
-+}
-+EXPORT_SYMBOL(fs_get_inodes);
-+
-+/*
-+ * Generic callback function slab defrag ->kick methods. Takes the
-+ * array with inodes where we obtained refcounts using fs_get_inodes()
-+ * or get_inodes() and tries to free them.
-+ */
-+void kick_inodes(struct kmem_cache *s, int nr, void **v, void *private)
-+{
-+	struct inode *inode;
-+	int i;
-+	int abort = 0;
-+	LIST_HEAD(freeable);
-+	int active;
-+
-+	for (i = 0; i < nr; i++) {
-+		inode = v[i];
-+		if (!inode)
-+			continue;
-+
-+		if (inode_has_buffers(inode) || inode->i_data.nrpages) {
-+			if (remove_inode_buffers(inode))
-+				/*
-+				 * Should we really be doing this? Or
-+				 * limit the writeback here to only a few pages?
-+				 *
-+				 * Possibly an expensive operation but we
-+				 * cannot reclaim the inode if the pages
-+				 * are still present.
-+				 */
-+				invalidate_mapping_pages(&inode->i_data,
-+								0, -1);
-+		}
-+
-+		/* Invalidate children and dentry */
-+		if (S_ISDIR(inode->i_mode)) {
-+			struct dentry *d = d_find_alias(inode);
-+
-+			if (d) {
-+				d_invalidate(d);
-+				dput(d);
-+			}
-+		}
-+
-+		if (inode->i_state & I_DIRTY)
-+			write_inode_now(inode, 1);
-+
-+		d_prune_aliases(inode);
-+	}
-+
-+	mutex_lock(&iprune_mutex);
-+	for (i = 0; i < nr; i++) {
-+		inode = v[i];
-+
-+		if (!inode)
-+			/* inode is alrady being freed */
-+			continue;
-+
-+		active = inode->i_sb->s_flags & MS_ACTIVE;
-+		iput(inode);
-+		if (abort || !active)
-+			continue;
-+
-+		spin_lock(&inode_lock);
-+		abort =  !can_unuse(inode);
-+
-+		if (!abort) {
-+			list_move(&inode->i_list, &freeable);
-+			inode->i_state |= I_FREEING;
-+			inodes_stat.nr_unused--;
-+		}
-+		spin_unlock(&inode_lock);
-+	}
-+	dispose_list(&freeable);
-+	mutex_unlock(&iprune_mutex);
-+}
-+EXPORT_SYMBOL(kick_inodes);
-+
-+/*
-  * Initialize the waitqueues and inode hash table.
-  */
- void __init inode_init_early(void)
-@@ -1401,6 +1523,7 @@ void __init inode_init(void)
- 					 SLAB_MEM_SPREAD),
- 					 init_once);
- 	register_shrinker(&icache_shrinker);
-+	kmem_cache_setup_defrag(inode_cachep, get_inodes, kick_inodes);
+ /* Debug options */
+ int sanity = 0;
+@@ -113,6 +117,7 @@ void usage(void)
+ 		"-e|--empty             Show empty slabs\n"
+ 		"-f|--first-alias       Show first alias\n"
+ 		"-F|--defrag            Show defragmentable caches\n"
++		"-G:--display-defrag    Display defrag counters\n"
+ 		"-h|--help              Show usage information\n"
+ 		"-i|--inverted          Inverted list\n"
+ 		"-l|--slabs             Show slabs\n"
+@@ -300,6 +305,8 @@ void first_line(void)
+ {
+ 	if (show_activity)
+ 		printf("Name                   Objects      Alloc       Free   %%Fast Fallb O\n");
++	else if (show_defragcount)
++		printf("Name                   Objects DefragRQ  Slabs Success   Empty Skipped  Failed\n");
+ 	else
+ 		printf("Name                   Objects Objsize    Space "
+ 			"Slabs/Part/Cpu  O/S O %%Ra %%Ef Flg\n");
+@@ -466,22 +473,28 @@ void slab_stats(struct slabinfo *s)
  
- 	/* Hash may have been set up in inode_init_early */
- 	if (!hashdist)
-Index: linux-next/include/linux/fs.h
-===================================================================
---- linux-next.orig/include/linux/fs.h	2008-08-11 07:42:30.598607988 -0700
-+++ linux-next/include/linux/fs.h	2008-08-11 07:47:05.012377598 -0700
-@@ -1846,6 +1846,12 @@ static inline void insert_inode_hash(str
- 	__insert_inode_hash(inode, inode->i_ino);
+ 	printf("Total                %8lu %8lu\n\n", total_alloc, total_free);
+ 
+-	if (s->cpuslab_flush)
+-		printf("Flushes %8lu\n", s->cpuslab_flush);
+-
+-	if (s->alloc_refill)
+-		printf("Refill %8lu\n", s->alloc_refill);
++	if (s->cpuslab_flush || s->alloc_refill)
++		printf("CPU Slab  : Flushes=%lu Refills=%lu\n",
++			s->cpuslab_flush, s->alloc_refill);
+ 
+ 	total = s->deactivate_full + s->deactivate_empty +
+ 			s->deactivate_to_head + s->deactivate_to_tail;
+ 
+ 	if (total)
+-		printf("Deactivate Full=%lu(%lu%%) Empty=%lu(%lu%%) "
++		printf("Deactivate: Full=%lu(%lu%%) Empty=%lu(%lu%%) "
+ 			"ToHead=%lu(%lu%%) ToTail=%lu(%lu%%)\n",
+ 			s->deactivate_full, (s->deactivate_full * 100) / total,
+ 			s->deactivate_empty, (s->deactivate_empty * 100) / total,
+ 			s->deactivate_to_head, (s->deactivate_to_head * 100) / total,
+ 			s->deactivate_to_tail, (s->deactivate_to_tail * 100) / total);
++
++	if (s->shrink_calls)
++		printf("Shrink    : Calls=%lu Attempts=%lu Empty=%lu Successful=%lu\n",
++			s->shrink_calls, s->shrink_attempt_defrag,
++			s->shrink_empty_slab, s->shrink_slab_reclaimed);
++	if (s->shrink_slab_skipped || s->shrink_object_reclaim_failed)
++		printf("Defrag    : Slabs skipped=%lu Object reclaim failed=%lu\n",
++		s->shrink_slab_skipped, s->shrink_object_reclaim_failed);
  }
  
-+/* Helper functions for inode defragmentation support in filesystems */
-+extern void kick_inodes(struct kmem_cache *, int, void **, void *);
-+extern void *get_inodes(struct kmem_cache *, int nr, void **);
-+extern void *fs_get_inodes(struct kmem_cache *, int nr, void **,
-+						unsigned long offset);
-+
- extern struct file * get_empty_filp(void);
- extern void file_move(struct file *f, struct list_head *list);
- extern void file_kill(struct file *f);
+ void report(struct slabinfo *s)
+@@ -598,7 +611,12 @@ void slabcache(struct slabinfo *s)
+ 			total_alloc ? (s->alloc_fastpath * 100 / total_alloc) : 0,
+ 			total_free ? (s->free_fastpath * 100 / total_free) : 0,
+ 			s->order_fallback, s->order);
+-	}
++	} else
++	if (show_defragcount)
++		printf("%-21s %8ld %7d %7d %7d %7d %7d %7d\n",
++			s->name, s->objects, s->shrink_calls, s->shrink_attempt_defrag,
++			s->shrink_slab_reclaimed, s->shrink_empty_slab,
++			s->shrink_slab_skipped, s->shrink_object_reclaim_failed);
+ 	else
+ 		printf("%-21s %8ld %7d %8s %14s %4d %1d %3ld %3ld %s\n",
+ 			s->name, s->objects, s->object_size, size_str, dist_str,
+@@ -1210,6 +1228,13 @@ void read_slab_dir(void)
+ 			slab->deactivate_to_tail = get_obj("deactivate_to_tail");
+ 			slab->deactivate_remote_frees = get_obj("deactivate_remote_frees");
+ 			slab->order_fallback = get_obj("order_fallback");
++			slab->shrink_calls = get_obj("shrink_calls");
++			slab->shrink_attempt_defrag = get_obj("shrink_attempt_defrag");
++			slab->shrink_empty_slab = get_obj("shrink_empty_slab");
++			slab->shrink_slab_skipped = get_obj("shrink_slab_skipped");
++			slab->shrink_slab_reclaimed = get_obj("shrink_slab_reclaimed");
++			slab->shrink_object_reclaim_failed =
++					get_obj("shrink_object_reclaim_failed");
+ 			slab->defrag_ratio = get_obj("defrag_ratio");
+ 			slab->remote_node_defrag_ratio =
+ 					get_obj("remote_node_defrag_ratio");
+@@ -1274,6 +1299,7 @@ struct option opts[] = {
+ 	{ "ctor", 0, NULL, 'C' },
+ 	{ "debug", 2, NULL, 'd' },
+ 	{ "display-activity", 0, NULL, 'D' },
++	{ "display-defrag", 0, NULL, 'G' },
+ 	{ "empty", 0, NULL, 'e' },
+ 	{ "first-alias", 0, NULL, 'f' },
+ 	{ "defrag", 0, NULL, 'F' },
+@@ -1299,7 +1325,7 @@ int main(int argc, char *argv[])
+ 
+ 	page_size = getpagesize();
+ 
+-	while ((c = getopt_long(argc, argv, "aACd::DefFhil1noprstvzTS",
++	while ((c = getopt_long(argc, argv, "aACd::DefFGhil1noprstvzTS",
+ 						opts, NULL)) != -1)
+ 		switch (c) {
+ 		case '1':
+@@ -1325,6 +1351,9 @@ int main(int argc, char *argv[])
+ 		case 'f':
+ 			show_first_alias = 1;
+ 			break;
++		case 'G':
++			show_defragcount = 1;
++			break;
+ 		case 'h':
+ 			usage();
+ 			return 0;
+Index: linux-next/include/linux/slub_def.h
+===================================================================
+--- linux-next.orig/include/linux/slub_def.h	2008-08-11 07:47:01.362349055 -0700
++++ linux-next/include/linux/slub_def.h	2008-08-11 07:47:01.852357729 -0700
+@@ -30,6 +30,12 @@ enum stat_item {
+ 	DEACTIVATE_TO_TAIL,	/* Cpu slab was moved to the tail of partials */
+ 	DEACTIVATE_REMOTE_FREES,/* Slab contained remotely freed objects */
+ 	ORDER_FALLBACK,		/* Number of times fallback was necessary */
++	SHRINK_CALLS,		/* Number of invocations of kmem_cache_shrink */
++	SHRINK_ATTEMPT_DEFRAG,	/* Slabs that were attempted to be reclaimed */
++	SHRINK_EMPTY_SLAB,	/* Shrink encountered and freed empty slab */
++	SHRINK_SLAB_SKIPPED,	/* Slab reclaim skipped an slab (busy etc) */
++	SHRINK_SLAB_RECLAIMED,	/* Successfully reclaimed slabs */
++	SHRINK_OBJECT_RECLAIM_FAILED, /* Callbacks signaled busy objects */
+ 	NR_SLUB_STAT_ITEMS };
+ 
+ struct kmem_cache_cpu {
+Index: linux-next/mm/slub.c
+===================================================================
+--- linux-next.orig/mm/slub.c	2008-08-11 07:47:01.542349442 -0700
++++ linux-next/mm/slub.c	2008-08-11 07:47:01.932358747 -0700
+@@ -2821,6 +2821,7 @@ static int kmem_cache_vacate(struct page
+ 	void *private;
+ 	unsigned long flags;
+ 	unsigned long objects;
++	struct kmem_cache_cpu *c;
+ 
+ 	local_irq_save(flags);
+ 	slab_lock(page);
+@@ -2869,9 +2870,13 @@ out:
+ 	 * Check the result and unfreeze the slab
+ 	 */
+ 	leftover = page->inuse;
+-	if (leftover)
++	c = get_cpu_slab(s, smp_processor_id());
++	if (leftover) {
+ 		/* Unsuccessful reclaim. Avoid future reclaim attempts. */
++		stat(c, SHRINK_OBJECT_RECLAIM_FAILED);
+ 		__ClearPageSlubKickable(page);
++	} else
++		stat(c, SHRINK_SLAB_RECLAIMED);
+ 	unfreeze_slab(s, page, leftover > 0);
+ 	local_irq_restore(flags);
+ 	return leftover;
+@@ -2922,11 +2927,14 @@ static unsigned long __kmem_cache_shrink
+ 	LIST_HEAD(zaplist);
+ 	int freed = 0;
+ 	struct kmem_cache_node *n = get_node(s, node);
++	struct kmem_cache_cpu *c;
+ 
+ 	if (n->nr_partial <= limit)
+ 		return 0;
+ 
+ 	spin_lock_irqsave(&n->list_lock, flags);
++	c = get_cpu_slab(s, smp_processor_id());
++	stat(c, SHRINK_CALLS);
+ 	list_for_each_entry_safe(page, page2, &n->partial, lru) {
+ 		if (!slab_trylock(page))
+ 			/* Busy slab. Get out of the way */
+@@ -2946,12 +2954,14 @@ static unsigned long __kmem_cache_shrink
+ 
+ 			list_move(&page->lru, &zaplist);
+ 			if (s->kick) {
++				stat(c, SHRINK_ATTEMPT_DEFRAG);
+ 				n->nr_partial--;
+ 				__SetPageSlubFrozen(page);
+ 			}
+ 			slab_unlock(page);
+ 		} else {
+ 			/* Empty slab page */
++			stat(c, SHRINK_EMPTY_SLAB);
+ 			list_del(&page->lru);
+ 			n->nr_partial--;
+ 			slab_unlock(page);
+@@ -4380,6 +4390,12 @@ STAT_ATTR(DEACTIVATE_TO_HEAD, deactivate
+ STAT_ATTR(DEACTIVATE_TO_TAIL, deactivate_to_tail);
+ STAT_ATTR(DEACTIVATE_REMOTE_FREES, deactivate_remote_frees);
+ STAT_ATTR(ORDER_FALLBACK, order_fallback);
++STAT_ATTR(SHRINK_CALLS, shrink_calls);
++STAT_ATTR(SHRINK_ATTEMPT_DEFRAG, shrink_attempt_defrag);
++STAT_ATTR(SHRINK_EMPTY_SLAB, shrink_empty_slab);
++STAT_ATTR(SHRINK_SLAB_SKIPPED, shrink_slab_skipped);
++STAT_ATTR(SHRINK_SLAB_RECLAIMED, shrink_slab_reclaimed);
++STAT_ATTR(SHRINK_OBJECT_RECLAIM_FAILED, shrink_object_reclaim_failed);
+ #endif
+ 
+ static struct attribute *slab_attrs[] = {
+@@ -4434,6 +4450,12 @@ static struct attribute *slab_attrs[] = 
+ 	&deactivate_to_tail_attr.attr,
+ 	&deactivate_remote_frees_attr.attr,
+ 	&order_fallback_attr.attr,
++	&shrink_calls_attr.attr,
++	&shrink_attempt_defrag_attr.attr,
++	&shrink_empty_slab_attr.attr,
++	&shrink_slab_skipped_attr.attr,
++	&shrink_slab_reclaimed_attr.attr,
++	&shrink_object_reclaim_failed_attr.attr,
+ #endif
+ 	NULL
+ };
 
 -- 
