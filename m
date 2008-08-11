@@ -1,55 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752534AbYHKIg7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752324AbYHKIkU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752534AbYHKIg7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Aug 2008 04:36:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751288AbYHKIgu
+	id S1752324AbYHKIkU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Aug 2008 04:40:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751248AbYHKIkH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Aug 2008 04:36:50 -0400
-Received: from metis.extern.pengutronix.de ([83.236.181.26]:56002 "EHLO
-	metis.extern.pengutronix.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751189AbYHKIgt convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Aug 2008 04:36:49 -0400
-From: Juergen Beisert <jbe@pengutronix.de>
-Organization: Pengutronix - Linux Solutions for Science and Industry
-To: linux-rt-users@vger.kernel.org
-Date: Mon, 11 Aug 2008 10:36:36 +0200
-User-Agent: KMail/1.9.9
-Cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
-       Clark Williams <williams@redhat.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Carsten Emde <ce@ceag.ch>
-References: <alpine.LFD.1.10.0807252141420.574@apollo.tec.linutronix.de> <alpine.LFD.1.10.0807291440240.14925@apollo.tec.linutronix.de> <alpine.LFD.1.10.0807300006180.14925@apollo.tec.linutronix.de>
-In-Reply-To: <alpine.LFD.1.10.0807300006180.14925@apollo.tec.linutronix.de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200808111036.37998.jbe@pengutronix.de>
-X-SA-Exim-Connect-IP: 83.236.181.29
-X-SA-Exim-Mail-From: jbe@pengutronix.de
-Subject: Re: 2.6.26-rt1
-X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
-X-SA-Exim-Scanned: Yes (on metis.extern.pengutronix.de)
+	Mon, 11 Aug 2008 04:40:07 -0400
+Received: from main.gmane.org ([80.91.229.2]:46534 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751178AbYHKIkG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Aug 2008 04:40:06 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+Subject: Re: Segmentation fault details?
+Date: Mon, 11 Aug 2008 09:36:33 +0100
+Message-ID: <g7otmh$h3o$2@ger.gmane.org>
+References: <ac94cb270808102334m1cc2c3a1n45202072d309927c@mail.gmail.com> <ac94cb270808102337i5febf70fkb6d1f27f71cafb34@mail.gmail.com> <ac94cb270808102355o1413f46ehcddb82ae69458c0d@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8Bit
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: 86.53.68.233
+User-Agent: KNode/0.10.9
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When CONFIG_GROUP_SCHED is enabled this compile error is back.
+Wang Yi wrote:
 
-[...]
-  CC      mm/bootmem.o
-In file included from kernel/sched.c:1618:
-kernel/sched_rt.c: In function 'inc_rt_tasks':
-kernel/sched_rt.c:408: error: 'struct rq' has no member named 'online'
+> Hi, all!
+> 
+>  I'd like to know some details about segmentation fault.
+>  What I mean is when a program accesses invalid memory area, it will
+> get a SIGSEGV signal from kernel, and a message "Segmentation fault".
+> 
+>  I also find that dmesg can show we something like this:
+>  ProgramName[Pid]: segfault at xxxx eip xxxx esp xxxx error x
+>  It is useful and provides the first-step information for further
+> debug/analysis.
+> 
+>  My question is how dmesg gets the information, and if there are any
+> "decent" way to get this and maybe more information(An "indecent" way
+> I came to is grep dmesg)
+> so that I can perform some basic auto analysis.
+> 
+>  Thank you.
+> 
+> Leo
 
-jbe
--- 
-Dipl.-Ing. Juergen Beisert | http://www.pengutronix.de
-�Pengutronix - Linux Solutions for Science and Industry
-�   Handelsregister: Amtsgericht Hildesheim, HRA 2686
-� � �    Vertretung Sued/Muenchen, Germany
-   Phone: +49-8766-939 228 |  Fax: +49-5121-206917-9
+Core dumps.
+
+You might also like to look at Ubuntu's "apport" bug reporting tool.  IIRC
+the necessary kernel support is now in mainline.  I believe it provides the
+option to dump core by piping it through an arbitrary program.  The aim of
+apport is to capture these core dumps, notify the user, and give them the
+option to submit it to the Ubuntu developers.
+
+One advantage of this last feature is that you don't need to search the
+filesystem for core files.  (They're dumped in the current directory, but
+you may not know what directory the program was in when it crashed).
+
+Alan
+
