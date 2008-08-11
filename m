@@ -1,61 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756715AbYHKVYP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753988AbYHKVdX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756715AbYHKVYP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Aug 2008 17:24:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753114AbYHKVX7
+	id S1753988AbYHKVdX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Aug 2008 17:33:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752380AbYHKVdN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Aug 2008 17:23:59 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:33518
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751306AbYHKVX6 (ORCPT
+	Mon, 11 Aug 2008 17:33:13 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:60937 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752113AbYHKVdL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Aug 2008 17:23:58 -0400
-Date: Mon, 11 Aug 2008 14:23:59 -0700 (PDT)
-Message-Id: <20080811.142359.145735170.davem@davemloft.net>
-To: a.p.zijlstra@chello.nl
-Cc: jkacur@gmail.com, linux-rt-users@vger.kernel.org,
-       linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@linutronix.de,
-       rostedt@goodmis.org
-Subject: Re: [PATCH] BUG: using smp_processor_id() in preemptible
- [00000000] code: caller is __qdisc_run
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1218488979.15798.39.camel@lappy.programming.kicks-ass.net>
-References: <520f0cf10808110611y62f6a4e2v94a0d0cde1d5d79d@mail.gmail.com>
-	<20080811.140014.94581847.davem@davemloft.net>
-	<1218488979.15798.39.camel@lappy.programming.kicks-ass.net>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Mon, 11 Aug 2008 17:33:11 -0400
+Date: Mon, 11 Aug 2008 14:32:08 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Will Newton" <will.newton@gmail.com>
+Cc: alex.williamson@hp.com, linux-serial@vger.kernel.org,
+       linux-kernel@vger.kernel.org, thomas@koeller.dyndns.org,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH] serial 8250: tighten test for using backup timer
+Message-Id: <20080811143208.8cc89478.akpm@linux-foundation.org>
+In-Reply-To: <87a5b0800808060353v505c4957wbd26aaa9a2624786@mail.gmail.com>
+References: <1205945437.6881.13.camel@lappy>
+	<87a5b0800808050444t49480549t758f954c40139c4a@mail.gmail.com>
+	<1217966803.17091.72.camel@2710p.home>
+	<87a5b0800808060353v505c4957wbd26aaa9a2624786@mail.gmail.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Date: Mon, 11 Aug 2008 23:09:38 +0200
+On Wed, 6 Aug 2008 11:53:13 +0100
+"Will Newton" <will.newton@gmail.com> wrote:
 
-> On Mon, 2008-08-11 at 14:00 -0700, David Miller wrote:
-> > From: "John Kacur" <jkacur@gmail.com>
-> > Date: Mon, 11 Aug 2008 15:11:46 +0200
-> > 
-> > > __qdisc_run() calls qdisc_restart() which calls
-> > > handle_dev_cpu_collision(skb, dev, q); and then the problem shows up
-> > > here:
-> > > __get_cpu_var(netdev_rx_stat).cpu_collision++;
-> > > 
-> > > The solution is to disable interrupts around the above increment. Here
-> > > is an attached patch to do so. (Thank's to Peter Zijlstra for help in
-> > > the analysis and dropping the answer in my lap, so if I got it right
-> > > it is due to his help, but if I messed it up, then I did that part all
-> > > by myself.)
-> > 
-> > __qdisc_run() always runs in software interrupt context,
-> > so I guess this is some problem with the -rt stuff running
-> > software interrupts in threads?
+> >From 36ac82a231498247ada098d31e8d12e735eb34f2 Mon Sep 17 00:00:00 2001
+> From: Will Newton <will.newton@gmail.com>
+> Date: Wed, 6 Aug 2008 11:48:29 +0100
+> Subject: [PATCH] 8250: Improve workaround for UARTs that don't
+> re-assert THRE correctly.
 > 
-> Hmm, good point - and those threads should be cpu affine on -rt if I'm
-> not mistaken. Steven, do you happen to remember details?
+> Recent changes to tighten the check for UARTs that don't correctly
+> re-assert THRE caused problems when such a UART was opened for the second
+> time - the bug could only successfully be detected at first initialization.
+> This patch stores the information about the bug in the bugs field of the
+> port structure when the port is first started up so subsequent opens can
+> check this bit even if the test for the bug fails.
+> 
+> Signed-off-by: Will Newton <will.newton@gmail.com>
+> Acked-by: Alex Williamson <alex.williamson@hp.com>
 
-The key issue is whether those threads run software interrupts
-in a compatible environment.  And such a proper environment allows
-plain smp_processor_id() without any special preparations.
+What are the "recent changes" to which you refer?  I had a quick look
+and didn't spot any THRE-related changes this year?
+
+
+> ---
+>  drivers/serial/8250.c |   16 ++++++++++++----
+>  drivers/serial/8250.h |    1 +
+>  2 files changed, 13 insertions(+), 4 deletions(-)
+> 
+> diff --git a/drivers/serial/8250.c b/drivers/serial/8250.c
+> index 342e12f..9ccc563 100644
+> --- a/drivers/serial/8250.c
+> +++ b/drivers/serial/8250.c
+> @@ -1908,15 +1908,23 @@ static int serial8250_startup(struct uart_port *port)
+>  		 * kick the UART on a regular basis.
+>  		 */
+>  		if (!(iir1 & UART_IIR_NO_INT) && (iir & UART_IIR_NO_INT)) {
+> +			up->bugs |= UART_BUG_THRE;
+>  			pr_debug("ttyS%d - using backup timer\n", port->line);
+> -			up->timer.function = serial8250_backup_timeout;
+> -			up->timer.data = (unsigned long)up;
+> -			mod_timer(&up->timer, jiffies +
+> -				poll_timeout(up->port.timeout) + HZ / 5);
+>  		}
+>  	}
+> 
+>  	/*
+> +	 * The above check will only give an accurate result the first time
+> +	 * the port is opened so this value needs to be preserved.
+> +	 */
+> +	if (up->bugs & UART_BUG_THRE) {
+> +		up->timer.function = serial8250_backup_timeout;
+> +		up->timer.data = (unsigned long)up;
+> +		mod_timer(&up->timer, jiffies +
+> +			  poll_timeout(up->port.timeout) + HZ / 5);
+> +	}
+> +
+> +	/*
+>  	 * If the "interrupt" for this port doesn't correspond with any
+>  	 * hardware interrupt, we use a timer-based system.  The original
+>  	 * driver used to do this with IRQ0.
+> diff --git a/drivers/serial/8250.h b/drivers/serial/8250.h
+> index 78c0016..5202603 100644
+> --- a/drivers/serial/8250.h
+> +++ b/drivers/serial/8250.h
+> @@ -47,6 +47,7 @@ struct serial8250_config {
+>  #define UART_BUG_QUOT	(1 << 0)	/* UART has buggy quot LSB */
+>  #define UART_BUG_TXEN	(1 << 1)	/* UART has buggy TX IIR status */
+>  #define UART_BUG_NOMSR	(1 << 2)	/* UART has buggy MSR status bits (Au1x00) */
+> +#define UART_BUG_THRE	(1 << 3)	/* UART has buggy THRE reassertion */
+> 
+>  #define PROBE_RSA	(1 << 0)
+>  #define PROBE_ANY	(~0)
+
+Also, how serious is the problem which is being fixed here?  It
+_sounds_ like it's of the "fatal for people who have that hardware"
+variety, in which case we should get this into 2.6.27 and probably
+2.6.26.x.  Not sure about 2.5.26.x though - the patch doesn't apply
+there, but I didn't check whether this is due to functional changes.
+
+
+Also2, we should officially use setup_timer(), like this:
+
+--- a/drivers/serial/8250.c~serial-8250-tighten-test-for-using-backup-timer-fix
++++ a/drivers/serial/8250.c
+@@ -1964,8 +1964,8 @@ static int serial8250_startup(struct uar
+ 	 * the port is opened so this value needs to be preserved.
+ 	 */
+ 	if (up->bugs & UART_BUG_THRE) {
+-		up->timer.function = serial8250_backup_timeout;
+-		up->timer.data = (unsigned long)up;
++		setup_timer(&up->timer, serial8250_backup_timeout,
++				(unsigned long)up);
+ 		mod_timer(&up->timer, jiffies +
+ 			  poll_timeout(up->port.timeout) + HZ / 5);
+ 	}
+
+but that is a functional change - setup_timer() runs init_timer(),
+whereas the code you have there does not.
+
+We _do_ have an init_timer(&up->timer) all the way over in
+serial8250_isa_init_ports().  It's all a bit weird.  Could you please
+double-check that we're being sensible about the initialisation of this
+timer?
+
+Thanks.
