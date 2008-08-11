@@ -1,89 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751967AbYHKHER@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751962AbYHKHI4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751967AbYHKHER (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Aug 2008 03:04:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750809AbYHKHEH
+	id S1751962AbYHKHI4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Aug 2008 03:08:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750893AbYHKHIt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Aug 2008 03:04:07 -0400
-Received: from mail.hevs.ch ([153.109.23.10]:48239 "EHLO mail.hevs.ch"
+	Mon, 11 Aug 2008 03:08:49 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:56211 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750739AbYHKHEG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Aug 2008 03:04:06 -0400
-From: Marc Pignat <marc.pignat@hevs.ch>
-Organization: HEVs
-To: David Brownell <david-b@pacbell.net>
-Subject: Re: [RFC,PATCH] i2c: fix device_init_wakeup place
-Date: Mon, 11 Aug 2008 09:03:58 +0200
-User-Agent: KMail/1.9.9
-Cc: khali@linux-fr.org, linux-kernel@vger.kernel.org, i2c@lm-sensors.org
-References: <200807291535.45689.marc.pignat@hevs.ch> <20080809185619.6211fbf3@hyperion.delvare> <20080810230404.B2943B2AB@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
-In-Reply-To: <20080810230404.B2943B2AB@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
+	id S1750856AbYHKHIs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Aug 2008 03:08:48 -0400
+Message-ID: <489FE56E.1080707@redhat.com>
+Date: Mon, 11 Aug 2008 09:08:30 +0200
+From: Gerd Hoffmann <kraxel@redhat.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: Glauber de Oliveira Costa <glommer@gmail.com>,
+       Avi Kivity <avi@qumranet.com>, Marcelo Tosatti <mtosatti@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       kvm-devel <kvm-devel@lists.sourceforge.net>
+Subject: Re: Use of barriers in pvclock ABI
+References: <489CA3DA.1090400@goop.org>
+In-Reply-To: <489CA3DA.1090400@goop.org>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200808110903.58658.marc.pignat@hevs.ch>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all!
+  Hi,
 
-First, I would like to ask David to exuse me for saying something like "your
-patch did nothing", it was crude.
-
-David had a real good idea to add the flag I2C_CLIENT_WAKE.
-
-
-On Monday 11 August 2008, David Brownell wrote:
-> > > The current code calls device_init_wakeup() before device_register, but
-...
-> > Interesting point... David, what are you using this code for then? Same
-> > question for you Marc.
-...
-
-I use it for an rtc chip (ds1374), but the board is not in tree (should be
-soon).
-
+> However, the pvclock_clocksource_read() implementation is
+> over-engineered, because it checks for an odd version and uses very
+> strong rmb() barriers (which generates either an "lfence" or "lock add
+> $0, (%esp)").
 > 
+> If we're happy to guarantee as an ABI issue that the record will never
+> be updated cross-cpu, then we can make the barriers simply barrier() and
+> just check for (src->version != dst->version).
 > 
-> > > This patch also include a small functionnal change: the I2C_CLIENT_WAKE
-> > > is no more removed from the client flags, but this should't hurt.
-> >
-> > Why do you want to change this?
-> 
-> It's kind of essential to making this patch work!  Else the flag
-> won't be available when the i2c core gets control of that device
-> node again, after device_initialize() code zeroes those flags.
+> Is that OK with you, or do you want to leave open the possibility of
+> doing cross-cpu time updates?
 
-Now the flag is used in the i2c_device_probe function and must be preserved
-for future use (probe of another device or re-probe).
+Due to the TSC being involved here I don't expect cross-cpu time updates
+will ever happen.  IMHO it is fine to change that.
 
-The downside is that it make this flag visible to the i2c_client.
+cheers,
+  Gerd
 
-To preserve the original behavior (hide the flag to the driver), the flag
-should be saved, for instance in the i2c_device structure.
-I think adding more code and adding a field in the i2c_device structure costs
-more than making this flag visible (but if you think differently, I can fix the
-patch).
-
-
-
-> 
-> 
-...
-> Better would be to preserve any existing settings:
-> 
-> 	if (!device_can_wakeup(&client->dev))
-> 		device_init_wakeup(...)
-> 
-> That way the userspace policy setting is preserved unless the
-> device itself gets removed ... instead of being clobbered by
-> the simple act of (re)probing a driver.
-Ok, will be fixed in version 2
-
-
-Best regards
-
-Marc
+-- 
+http://kraxel.fedorapeople.org/xenner/
