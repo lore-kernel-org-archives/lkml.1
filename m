@@ -1,69 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753218AbYHKNqH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753380AbYHKNtS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753218AbYHKNqH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Aug 2008 09:46:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751426AbYHKNpz
+	id S1753380AbYHKNtS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Aug 2008 09:49:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751539AbYHKNtA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Aug 2008 09:45:55 -0400
-Received: from mail.bitdefender.com ([91.199.104.10]:44154 "EHLO
-	mail.bitdefender.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751411AbYHKNpy (ORCPT
+	Mon, 11 Aug 2008 09:49:00 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:58418 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751221AbYHKNs7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Aug 2008 09:45:54 -0400
-From: Mihai =?utf-8?q?Don=C8=9Bu?= <mdontu@bitdefender.com>
-Organization: BitDefender
-To: Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [malware-list] [RFC 0/5] [TALPA] Intro to a linuxinterfaceforon access scanning
-Date: Mon, 11 Aug 2008 16:45:47 +0300
-User-Agent: KMail/1.9.9
-Cc: Adrian Bunk <bunk@kernel.org>, tvrtko.ursulin@sophos.com,
-       Greg KH <greg@kroah.com>, "Press, Jonathan" <Jonathan.Press@ca.com>,
-       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       malware-list@lists.printk.net
-References: <20080806105008.GF6477@cs181140183.pp.htv.fi> <200808070349.55882.mdontu@bitdefender.com> <20080806213904.37a33a58@infradead.org>
-In-Reply-To: <20080806213904.37a33a58@infradead.org>
-MIME-Version: 1.0
+	Mon, 11 Aug 2008 09:48:59 -0400
+Date: Mon, 11 Aug 2008 15:50:04 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: jmerkey@wolfmountaingroup.com
+Cc: Vivek Goyal <vgoyal@redhat.com>, Andi Kleen <andi@firstfloor.org>,
+       Keith Owens <kaos@ocs.com.au>, Jay Lan <jlan@sgi.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Geert Uytterhoeven <geert@linux-m68k.org>,
+       Josh Boyer <jwboyer@gmail.com>, linux-kernel@vger.kernel.org,
+       Takenori Nagano <t-nagano@ah.jp.nec.com>,
+       Bernhard Walle <bwalle@suse.de>
+Subject: Re: [ANNOUNCE] Merkey's Kernel Debugger
+Message-ID: <20080811135004.GS9038@one.firstfloor.org>
+References: <20080807200659.GJ24801@one.firstfloor.org> <23175.1218148134@ocs10w> <20080808011500.GA531@redhat.com> <20080808022916.GM24801@one.firstfloor.org> <20080808132953.GB3840@redhat.com> <20080808180303.GB9038@one.firstfloor.org> <20080811130256.GB28030@redhat.com> <43117.166.70.238.45.1218460302.squirrel@webmail.wolfmountaingroup.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Message-Id: <200808111645.48177.mdontu@bitdefender.com>
-X-BitDefender-Scanner: Clean, Agent: BitDefender qmail 3.0.0 on
- mail.bitdefender.com, sigver: 7.20466
-X-BitDefender-Spam: No (0)
-X-BitDefender-SpamStamp: v1, build 2.6.17.51344, bayes score: 500(0),
- pbayes score: 0(0), neunet score: 0(0), flags: [VALID_REPLY], total:
- 0
+In-Reply-To: <43117.166.70.238.45.1218460302.squirrel@webmail.wolfmountaingroup.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 07 August 2008, Arjan van de Ven wrote:
-> On Thu, 7 Aug 2008 03:49:55 +0300
->
-> Mihai Donțu <mdontu@bitdefender.com> wrote:
-> > Well, here is one attempt.
-> >
-> > A good percentage of an AV product's job is to prevent exploitation
-> > of a security hole in a product before the vendor (assuming the
-> > vendor admits it's bug and not a misuse of the product's features).
->
-> just to get things clear;
-> you're not talking about preventing the actual exploitation per se
-> (that would be the job of the various protection technologies) or the
-> containment (that would be SELinux), but more about detecting the
-> presence and preventing to (accidental) use of pre-canned, widely used
-> exploit binaries/files ?
+On Mon, Aug 11, 2008 at 07:11:42AM -0600, jmerkey@wolfmountaingroup.com wrote:
+> I found a problem with APIC NMI support which seems to affect all the
+> debuggers, but appears machine specific -- at least I can reproduce it
+> with all of the modules MDB, KDB, and KGDB modules on my ACER 2410 dual
 
-I apologize for the late reply. The answer to your question is: yes. I was 
-planning to write some more on this subject but this is unnecessary now, 
-because I see [almost] everyone accepted that some kind of antimalware 
-scanning is needed and are looking for alternative (better) solutions to the 
-patch that started all this.
+A couple of laptop BIOS (e.g. some thinkpads) are unfortunately
+not NMI safe. There is no known workaround other than not using NMIs
+on these systems.
 
-Can't wait to see the end result. :)
+There's unfortunately no global blacklist for these systems, although
+having would be useful for a couple of subsystems.
 
-Thanks,
+-Andi
 
--- 
-Mihai Donțu
