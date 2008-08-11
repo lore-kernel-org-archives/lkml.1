@@ -1,81 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755221AbYHKBU6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754735AbYHKBX7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755221AbYHKBU6 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Aug 2008 21:20:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753391AbYHKBUt
+	id S1754735AbYHKBX7 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Aug 2008 21:23:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752833AbYHKBXv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Aug 2008 21:20:49 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:49529 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753256AbYHKBUs (ORCPT
+	Sun, 10 Aug 2008 21:23:51 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:58312 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752524AbYHKBXv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Aug 2008 21:20:48 -0400
-Message-ID: <489F938A.10302@jp.fujitsu.com>
-Date: Mon, 11 Aug 2008 10:19:06 +0900
-From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
+	Sun, 10 Aug 2008 21:23:51 -0400
+Date: Sun, 10 Aug 2008 21:23:47 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Keith Packard <keithp@keithp.com>
+Cc: Christoph Hellwig <hch@infradead.org>, Eric Anholt <eric@anholt.net>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Export shmem_file_setup and shmem_getpage for DRM-GEM
+Message-ID: <20080811012347.GA27264@infradead.org>
+References: <1217573919-7496-1-git-send-email-eric@anholt.net> <1217573919-7496-2-git-send-email-eric@anholt.net> <20080801205052.GA28747@infradead.org> <1217631718.23437.290.camel@koto.keithp.com>
 MIME-Version: 1.0
-To: Alex Chiang <achiang@hp.com>,
-       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
-       Matthew Wilcox <matthew@wil.cx>, Pierre Ossman <drzeus-list@drzeus.cx>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       LKML <linux-kernel@vger.kernel.org>, linux-pci@vger.kernel.org
-Subject: Re: [PATCH 0/7] Fixups for duplicate slot names
-References: <20080806050745.GA31319@ldl.fc.hp.com> <489AB595.7000006@jp.fujitsu.com> <20080807172529.GB25902@ldl.fc.hp.com>
-In-Reply-To: <20080807172529.GB25902@ldl.fc.hp.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1217631718.23437.290.camel@koto.keithp.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alex Chiang wrote:
-> * Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>:
->> Hi Alex-san,
->>
->> Thank you for patches!
->>
->> I looked at your patches and it looks good. But I have only one
->> concern about how to allocate/free memory for slot name.
->>
->> With your change, memory region for slot name will be allocated
->> by hotplug *controller* driver and it can be freed using kfree()
->> by hotplug *core* driver (not hotplug controller driver). So all
->> hotplug controller drivers including drivers implemented in the
->> future need to take it into account.
->>
->> I think it will be more robust if we can allocate and free memory
->> in the same component (maybe hotplug core driver in this case).
+On Fri, Aug 01, 2008 at 04:01:58PM -0700, Keith Packard wrote:
+> On Fri, 2008-08-01 at 16:50 -0400, Christoph Hellwig wrote:
 > 
-> Hm, I didn't think this would be a problem. The sequence is:
+> > Nope.  Let the userspace protion create a file in shmfs instead of
+> > adding fugly kernel interfaces hdiing this fact.
 > 
-> 	- controller allocates memory for slot name
-> 	- if core detects a collision:
-> 		- it frees the name
-> 		- it allocates new memory for name
-> 		- it assigns that memory to the name parameter
-> 	- controller->release will eventually free the name
-> 
-> So it shouldn't matter if the core frees the original name
-> pointer and allocates new memory, because the core will change
-> the pointer for the controller.
-> 
-> This is why I had to change the interface of pci_create_slot()
-> from taking a const char *name to a char *name.
-> 
-> Is there something I'm missing?
-> 
-> /ac
+> I can't create that many files; I need thousands of them.
 
-I'm worrying about the following cases for example:
-
- - hotplug controller driver allocates memory for slot name using
-   other than kmalloc().
-
- - hotplug controller driver allocates memory for slot name as
-   a part of another data structure.
-
-Thanks,
-Kenji Kaneshige
-
+shmfs is perfectly happy to have thousands of files, there are workloads
+that have a lot more than that.  Note that in other subthreads there is
+the assumption that all of them are open and in the fd table at the same
+time.  I haven't really seen a good explanation for that - objects on
+shmfs are persistant until deleted, and when you keep your parent
+directory fd open an openat to get at the actual object is cheap.
 
