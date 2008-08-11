@@ -1,70 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754250AbYHKOMf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753414AbYHKOOo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754250AbYHKOMf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Aug 2008 10:12:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752411AbYHKOMO
+	id S1753414AbYHKOOo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Aug 2008 10:14:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751006AbYHKOOg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Aug 2008 10:12:14 -0400
-Received: from casper.infradead.org ([85.118.1.10]:42935 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751748AbYHKOMN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Aug 2008 10:12:13 -0400
-Date: Mon, 11 Aug 2008 07:12:09 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: Adrian Bunk <bunk@kernel.org>, S K <nospamnoham@gmail.com>,
-       Zhao Yakui <yakui.zhao@intel.com>, Thomas Renninger <trenn@suse.de>,
-       Alan Jenkins <alan-jenkins@tuffmail.co.uk>,
-       linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
-Subject: Re: cpufreq doesn't seem to work in Intel Q9300
-Message-ID: <20080811071209.189b68c5@infradead.org>
-In-Reply-To: <20080811140734.GA27959@srcf.ucam.org>
-References: <514e099a0808030300u140a0ae7m92a2e7294f39f7b7@mail.gmail.com>
-	<200808081430.43012.trenn@suse.de>
-	<aff5deaf0808081123s1fbe6a5cn7847e9cb053c1f5a@mail.gmail.com>
-	<200808092059.47863.trenn@suse.de>
-	<514e099a0808100128u303207clcb22292db2f0cc59@mail.gmail.com>
-	<1218418431.6671.52.camel@yakui_zhao.sh.intel.com>
-	<514e099a0808102144n241c8e9ak255bded0a80744f1@mail.gmail.com>
-	<20080811042244.469f8e1d@infradead.org>
-	<20080811140206.GB3338@cs181140183.pp.htv.fi>
-	<20080811140734.GA27959@srcf.ucam.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
+	Mon, 11 Aug 2008 10:14:36 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:37871 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750727AbYHKOOf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Aug 2008 10:14:35 -0400
+Date: Mon, 11 Aug 2008 10:12:34 -0400
+From: Jason Baron <jbaron@redhat.com>
+To: Greg KH <greg@kroah.com>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, joe@perches.com,
+       nick@nick-andrew.net, randy.dunlap@oracle.com
+Subject: Re: [PATCH 1/7] dynamic debug v2 - infrastructure
+Message-ID: <20080811141231.GA6103@redhat.com>
+References: <20080715213108.GB23331@redhat.com> <20080717070103.GA21961@kroah.com> <20080717212040.GB13252@redhat.com> <20080717223222.GA28016@kroah.com> <20080808215153.GA16729@redhat.com> <20080809010741.GA26036@kroah.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080809010741.GA26036@kroah.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 11 Aug 2008 15:07:34 +0100
-Matthew Garrett <mjg59@srcf.ucam.org> wrote:
-
-> On Mon, Aug 11, 2008 at 05:02:06PM +0300, Adrian Bunk wrote:
+On Fri, Aug 08, 2008 at 06:07:41PM -0700, Greg KH wrote:
+> > Few notes...there is still one control file: <debugfs>/dynamic_printk/modules
+> > We can split this up now or later, but I kind of like being able to see all
+> > the controls in one file. Also, i've used a djb2 hash function in the code,
+> > which i'm not sure is under the correct license/copyright, so i just wanted
+> > to point that out as well. see: scripts/basic/hash.c. If its an issue, i can
+> > find another hash function. 
 > 
-> > This statement is only true for HPC environments and when you
-> > measure Watts per work done.
-> > 
-> > But if you have some desktop or server with a load that is
-> > determined by when it gets used, then p4-clockmod can actually save
-> > energy when the computer is not under high load or even idle.
-> > 
-> > Or do I miss anything?
-> 
-> On modern hardware, the C states will win you more than downclocking
-> the processor would.
+> Why use that hash function?  Actually, it looks like you are using 2
+> different ones, right?  Why?
 > 
 
-actually.. p4_clockmod is *NOT* downclocking the processor.. that's the
-whole problem with it..
+The hash functions are used to map between the calling module name, 
+KBUILD_MODNAME, and whether or not debugging is enabled. In the 'fast' case a
+bitmask is used to represent each hash bucket. One bit per bucket. Thus, if
+all the modules in a bucket are disabled the bitmask is simply 0. Two
+hashes are used in order to reduce the probability of collisions, used in this
+way it is similar to a bloom filter. The code that implements this is:
+
+#define __dynamic_dbg_enabled(module, type, value, level, hash)  ({          \
+        int ret = 0;                                                         \
+        if (unlikely((dynamic_printk_enabled & (1LL << DEBUG_HASH)) &&       \
+                        (dynamic_printk_enabled2 & (1LL << DEBUG_HASH2))))   \
+                        ret = __dynamic_dbg_enabled_helper(module, type,     \
+                                                                value, hash);\
+        ret; })
+
+where DEBUG_HASH and DEBUG_HASH2 are computed at compile time. Thus, in the
+'fast' case where debugging is off, we have two extra intructions, a test and
+a jmp. Further, if we enable debugging for a single module, we will at most
+do two 'tests' and a jump for disabled modules. If the module is enabled, we
+would call through to __dynamic_dbg_enabled_helper(), which verifies whether
+or not debugging is enabled for the module. I believe if we are then calling
+'printk()' the cost of this function call is 'in the noise'. Thus, i've tried
+to optimize the disabled case.
+
+> > --- /dev/null
+> > +++ b/include/linux/dynamic_printk.h
+> > @@ -0,0 +1,94 @@
+> > +#ifndef _DYNAMIC_PRINTK_H
+> > +#define _DYNAMIC_PRINTK_H
+> > +
+> > +#ifdef __KERNEL__
+> 
+> Shouldn't be needed.
+> 
+
+ok
+
+> > +#include <linux/string.h>
+> > +#include <linux/hash.h>
+> > +
+> > +#define DYNAMIC_DEBUG_HASH_BITS 6
+> > +#define DEBUG_HASH_TABLE_SIZE (1 << DYNAMIC_DEBUG_HASH_BITS)
+> > +
+> > +#define TYPE_BOOLEAN 1
+> 
+> What's this for?
+> 
+
+This is really in anticipation of more 'involved' dynamic debugging. That is,
+'TYPE_BOOLEAN', just means the debugging is either off/on. The other types
+are 'TYPE_FLAG', where you can control debugging for a module via a bitmask,
+or 'TYPE_LEVEL', where you control the debugging for a module via a level 
+control like printk levels. These different types were implemented in the
+orginal patchset.
 
 
+> > +#define DYNAMIC_ENABLED_ALL 0
+> > +#define DYNAMIC_ENABLED_NONE 1
+> > +#define DYNAMIC_ENABLED_SOME 2
+> > +
+> > +extern int dynamic_enabled;
+> > +extern long long dynamic_printk_enabled;
+> > +extern long long dynamic_printk_enabled2;
+> 
+> What's up with the "2" versions?
+> 
 
--- 
-If you want to reach me at my work email, use arjan@linux.intel.com
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+"2" here is the second bitmask as explained previously.
+
+thanks,
+
+-Jason
