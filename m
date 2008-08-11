@@ -1,56 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757892AbYHKUyK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757389AbYHKUzq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757892AbYHKUyK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Aug 2008 16:54:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754444AbYHKUx5
+	id S1757389AbYHKUzq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Aug 2008 16:55:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753077AbYHKUzh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Aug 2008 16:53:57 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:55946 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754289AbYHKUx4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Aug 2008 16:53:56 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Rabin Vincent <rabin@rab.in>
-Subject: Re: [Bug #11231] gspca_zc3xx oops - 2.6.27-rc1
-Date: Mon, 11 Aug 2008 22:56:49 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Parag Warudkar <parag.warudkar@gmail.com>
-References: <VYYCiQF4qDI.A.BPH.KCjnIB@albercik> <cX_-nNkxKaF.A.g4B.pDjnIB@albercik> <20080811154101.GA1667@debian>
-In-Reply-To: <20080811154101.GA1667@debian>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Mon, 11 Aug 2008 16:55:37 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:43463 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751867AbYHKUzg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Aug 2008 16:55:36 -0400
+Date: Mon, 11 Aug 2008 13:44:13 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Marcin Obara" <marcin_obara@users.sourceforge.net>
+Cc: Valdis.Kletnieks@vt.edu, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org, tpm@selhorst.net, kjhall@us.ibm.com,
+       tpmdd-devel@lists.sourceforge.net
+Subject: Re: [PATCH] 2.6.26-mmotm
+ tpm-correct-tpm-timeouts-to-jiffies-conversion-d820-fix.patch
+Message-Id: <20080811134413.014ddcf2.akpm@linux-foundation.org>
+In-Reply-To: <ea8d860a0807261227w66e29978uecd12cf1fcb915d1@mail.gmail.com>
+References: <20080725164614.044a526e.akpm@linux-foundation.org>
+	<50684.1217035060@turing-police.cc.vt.edu>
+	<20080725185115.5d1a107d.akpm@linux-foundation.org>
+	<15114.1217045033@turing-police.cc.vt.edu>
+	<ea8d860a0807261227w66e29978uecd12cf1fcb915d1@mail.gmail.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200808112256.49750.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, 11 of August 2008, Rabin Vincent wrote:
-> On Sun, Aug 10, 2008 at 12:43:51AM +0200, Rafael J. Wysocki wrote:
-> > This message has been generated automatically as a part of a report
-> > of recent regressions.
-> > 
-> > The following bug entry is on the current list of known regressions
-> > from 2.6.26.  Please verify if it still should be listed and let me know
-> > (either way).
-> > 
-> > 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11231
-> > Subject		: gspca_zc3xx oops - 2.6.27-rc1
-> > Submitter	: Parag Warudkar <parag.warudkar@gmail.com>
-> > Date		: 2008-08-02 16:22 (8 days old)
-> > References	: http://marc.info/?l=linux-kernel&m=121769418920774&w=4
-> > Handled-By	: Rabin Vincent <rabin@rab.in>
-> > Patch		: http://marc.info/?l=linux-kernel&m=121774908213124&w=4
+On Sat, 26 Jul 2008 20:27:33 +0100
+"Marcin Obara" <marcin_obara@users.sourceforge.net> wrote:
+
+> 2008/7/26  <Valdis.Kletnieks@vt.edu>:
+> > +       if (chip->vendor.duration[TPM_SHORT] == 1)
+> > +               chip->vendor.duration[TPM_SHORT] *= 1000;
+> > +
+> >        chip->vendor.duration[TPM_MEDIUM] =
+> >            usecs_to_jiffies(be32_to_cpu
+> >                             (*((__be32 *) (data +
 > 
-> This can be closed.  The patch is now in mainline as
-> fcf5cb2406827fc9d3f3fe260ac883ef72b8bac0 ("V4L/DVB (8605): gspca: Fix of
-> gspca_zc3xx oops - 2.6.27-rc1").
+> 
+> Value in  chip->vendor.duration[TPM_SHORT]  is in jiffies not in  milliseconds.
+>  (As I know it's not the same. Jiffy is in range 1-10 ms.)
+> I know the result may be the same, but it is unclear.
+> 
+> Maybe... value should be compared (to 1000) before conversion?
+> or...
+> If after conversion, there should be something like this:
+>        if (chip->vendor.duration[TPM_SHORT]  < (HZ/100))  /*  less
+> than 10ms ? */
+>                chip->vendor.duration[TPM_SHORT] = HZ;
+> 
+> What do you think?
+> 
 
-Thanks, closed.
+This all seemed to die off without a conclusion.
 
-Rafael
+Here's the current
+tpm-correct-tpm-timeouts-to-jiffies-conversion.patch.  Does it need
+updating?
+
+Thanks.
+
+
+From: Marcin Obara <marcin_obara@users.sourceforge.net>
+
+This patch fixes timeouts conversion to jiffies, by replacing
+msecs_to_jiffies() calls with usecs_to_jiffies().  According to TCG TPM
+Specification Version 1.2 Revision 103 (pages 166, 167) TPM timeouts and
+durations are returned in microseconds (usec) not in miliseconds (msec).
+
+Signed-off-by: Marcin Obara <marcin_obara@users.sourceforge.net>
+Cc: Marcel Selhorst <tpm@selhorst.net>
+Cc: Kylene Jo Hall <kjhall@us.ibm.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ drivers/char/tpm/tpm.c |   14 +++++++-------
+ 1 file changed, 7 insertions(+), 7 deletions(-)
+
+diff -puN drivers/char/tpm/tpm.c~tpm-correct-tpm-timeouts-to-jiffies-conversion drivers/char/tpm/tpm.c
+--- a/drivers/char/tpm/tpm.c~tpm-correct-tpm-timeouts-to-jiffies-conversion
++++ a/drivers/char/tpm/tpm.c
+@@ -525,19 +525,19 @@ void tpm_get_timeouts(struct tpm_chip *c
+ 	timeout =
+ 	    be32_to_cpu(*((__be32 *) (data + TPM_GET_CAP_RET_UINT32_1_IDX)));
+ 	if (timeout)
+-		chip->vendor.timeout_a = msecs_to_jiffies(timeout);
++		chip->vendor.timeout_a = usecs_to_jiffies(timeout);
+ 	timeout =
+ 	    be32_to_cpu(*((__be32 *) (data + TPM_GET_CAP_RET_UINT32_2_IDX)));
+ 	if (timeout)
+-		chip->vendor.timeout_b = msecs_to_jiffies(timeout);
++		chip->vendor.timeout_b = usecs_to_jiffies(timeout);
+ 	timeout =
+ 	    be32_to_cpu(*((__be32 *) (data + TPM_GET_CAP_RET_UINT32_3_IDX)));
+ 	if (timeout)
+-		chip->vendor.timeout_c = msecs_to_jiffies(timeout);
++		chip->vendor.timeout_c = usecs_to_jiffies(timeout);
+ 	timeout =
+ 	    be32_to_cpu(*((__be32 *) (data + TPM_GET_CAP_RET_UINT32_4_IDX)));
+ 	if (timeout)
+-		chip->vendor.timeout_d = msecs_to_jiffies(timeout);
++		chip->vendor.timeout_d = usecs_to_jiffies(timeout);
+ 
+ duration:
+ 	memcpy(data, tpm_cap, sizeof(tpm_cap));
+@@ -554,15 +554,15 @@ duration:
+ 		return;
+ 
+ 	chip->vendor.duration[TPM_SHORT] =
+-	    msecs_to_jiffies(be32_to_cpu
++	    usecs_to_jiffies(be32_to_cpu
+ 			     (*((__be32 *) (data +
+ 					    TPM_GET_CAP_RET_UINT32_1_IDX))));
+ 	chip->vendor.duration[TPM_MEDIUM] =
+-	    msecs_to_jiffies(be32_to_cpu
++	    usecs_to_jiffies(be32_to_cpu
+ 			     (*((__be32 *) (data +
+ 					    TPM_GET_CAP_RET_UINT32_2_IDX))));
+ 	chip->vendor.duration[TPM_LONG] =
+-	    msecs_to_jiffies(be32_to_cpu
++	    usecs_to_jiffies(be32_to_cpu
+ 			     (*((__be32 *) (data +
+ 					    TPM_GET_CAP_RET_UINT32_3_IDX))));
+ }
+_
+
