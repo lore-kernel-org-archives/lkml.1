@@ -1,27 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755650AbYHKQuu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755896AbYHKQvP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755650AbYHKQuu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Aug 2008 12:50:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751754AbYHKQum
+	id S1755896AbYHKQvP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Aug 2008 12:51:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752476AbYHKQu6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Aug 2008 12:50:42 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:35673 "EHLO mx3.mail.elte.hu"
+	Mon, 11 Aug 2008 12:50:58 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:38545 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751604AbYHKQum (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Aug 2008 12:50:42 -0400
-Date: Mon, 11 Aug 2008 18:48:52 +0200
+	id S1754354AbYHKQu5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Aug 2008 12:50:57 -0400
+Date: Mon, 11 Aug 2008 18:50:08 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Muli Ben-Yehuda <muli@il.ibm.com>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>,
-       lkml <linux-kernel@vger.kernel.org>, x86@kernel.org,
-       akpm <akpm@linux-foundation.org>, jdmason@kudzu.us
-Subject: Re: [PATCH] pci-calgary: fix function declaration
-Message-ID: <20080811164852.GG4524@elte.hu>
-References: <20080807151455.12b53aa5.randy.dunlap@oracle.com> <20080808070040.GA6931@il.ibm.com>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: lkml <linux-kernel@vger.kernel.org>, akpm <akpm@linux-foundation.org>,
+       x86@kernel.org
+Subject: Re: [PATCH] EFI: fix function prototype
+Message-ID: <20080811165008.GH4524@elte.hu>
+References: <20080807151239.2fb2b75d.randy.dunlap@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080808070040.GA6931@il.ibm.com>
+In-Reply-To: <20080807151239.2fb2b75d.randy.dunlap@oracle.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -36,20 +35,14 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Muli Ben-Yehuda <muli@il.ibm.com> wrote:
+* Randy Dunlap <randy.dunlap@oracle.com> wrote:
 
-> On Thu, Aug 07, 2008 at 03:14:55PM -0700, Randy Dunlap wrote:
-> > From: Randy Dunlap <randy.dunlap@oracle.com>
-> > cc: muli@il.ibm.com, jdmason@kudzu.us
-> > 
-> > Fix function declaration:
-> > 
-> > linux-next-20080807/arch/x86/kernel/pci-calgary_64.c:1353:36: warning: non-ANSI function declaration of function 'get_tce_space_from_tar'
-> > 
-> > Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+> From: Randy Dunlap <randy.dunlap@oracle.com>
 > 
-> Acked-by: Muli Ben-Yehuda <muli@il.ibm.com>
+> Fix function prototype in header file to match source code:
+> 
+> linux-next-20080807/arch/x86/kernel/efi_64.c:100:14: error: symbol 'efi_ioremap' redeclared with different type (originally declared at include2/asm/efi.h:89) - different address spaces
 
-applied to tip/x86/urgent - thanks.
+applied to tip/x86/urgent, thanks Randy.
 
 	Ingo
