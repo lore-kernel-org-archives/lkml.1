@@ -1,71 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753478AbYHKOCL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753880AbYHKOD5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753478AbYHKOCL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Aug 2008 10:02:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751700AbYHKOB5
+	id S1753880AbYHKOD5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Aug 2008 10:03:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751835AbYHKODt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Aug 2008 10:01:57 -0400
-Received: from outbound-va3.frontbridge.com ([216.32.180.16]:32702 "EHLO
-	VA3EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751592AbYHKOB5 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Aug 2008 10:01:57 -0400
-X-BigFish: VPS-51(z21eWz11fbM1432R98dR936eQ1805Mzzzz5a6ci2f39iz32i6bh62h)
-X-Spam-TCS-SCL: 1:0
-X-WSS-ID: 0K5FW9Z-01-B45-01
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-Class: urn:content-classes:message
+	Mon, 11 Aug 2008 10:03:49 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:36288 "EHLO smtp4.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751700AbYHKODs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Aug 2008 10:03:48 -0400
+Date: Mon, 11 Aug 2008 17:02:06 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: S K <nospamnoham@gmail.com>, Zhao Yakui <yakui.zhao@intel.com>,
+       Thomas Renninger <trenn@suse.de>,
+       Alan Jenkins <alan-jenkins@tuffmail.co.uk>,
+       linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
+Subject: Re: cpufreq doesn't seem to work in Intel Q9300
+Message-ID: <20080811140206.GB3338@cs181140183.pp.htv.fi>
+References: <514e099a0808030300u140a0ae7m92a2e7294f39f7b7@mail.gmail.com> <200808081430.43012.trenn@suse.de> <aff5deaf0808081123s1fbe6a5cn7847e9cb053c1f5a@mail.gmail.com> <200808092059.47863.trenn@suse.de> <514e099a0808100128u303207clcb22292db2f0cc59@mail.gmail.com> <1218418431.6671.52.camel@yakui_zhao.sh.intel.com> <514e099a0808102144n241c8e9ak255bded0a80744f1@mail.gmail.com> <20080811042244.469f8e1d@infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: Regression in 2.6.27-rc1 for set_cpus_allowed_ptr
-Date: Mon, 11 Aug 2008 09:01:17 -0500
-Message-ID: <6453C3CB8E2B3646B0D020C112613273C5AC5C@sausexmb4.amd.com>
-In-Reply-To: <20080811123020.GB10082@elte.hu>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: Regression in 2.6.27-rc1 for set_cpus_allowed_ptr
-Thread-Index: Acj7rh2NI+eH1grLQeSc/mNJUaNBoAADIINQ
-References: <6453C3CB8E2B3646B0D020C112613273C5AC5A@sausexmb4.amd.com> <200808082303.41068.rjw@sisk.pl> <b647ffbd0808081431q27a48113q5beee1bae7c24b0a@mail.gmail.com> <20080811123020.GB10082@elte.hu>
-From: "Langsdorf, Mark" <mark.langsdorf@amd.com>
-To: "Ingo Molnar" <mingo@elte.hu>,
-       "Dmitry Adamushko" <dmitry.adamushko@gmail.com>
-CC: "Rafael J. Wysocki" <rjw@sisk.pl>, "lkml" <linux-kernel@vger.kernel.org>,
-       "Gautham R Shenoy" <ego@in.ibm.com>,
-       "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>
-X-OriginalArrivalTime: 11 Aug 2008 14:01:17.0694 (UTC) FILETIME=[B9A1D9E0:01C8FBBA]
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20080811042244.469f8e1d@infradead.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
- > * Dmitry Adamushko <dmitry.adamushko@gmail.com> wrote:
+On Mon, Aug 11, 2008 at 04:22:44AM -0700, Arjan van de Ven wrote:
+> On Sun, 10 Aug 2008 21:44:50 -0700
+> "S K" <nospamnoham@gmail.com> wrote:
 > 
-> > 2008/8/8 Rafael J. Wysocki <rjw@sisk.pl>:
-> > > [Adding CCs]
+> > > But it is very strange that cpufreq scaling can work on Windows XP.
+> > > Will you please try the P4 clock cpufreq driver and see whether the
+> > > scaling can work ? In fact P4 clock cpufreq driver is already
+> > > replaced by acpi_cpufreq driver for the latest cpu.
+> > > Anyway please try p4 clock cpufreq driver.
 > > 
-> > 
-> > if it gets called from any of the cpu-hotplug handlers, it 
-> won't work
-> > now (x86-microcode is another victim).
-> > 
-> > Please give a try to the following patch: 
-> http://lkml.org/lkml/2008/7/30/171
-> > 
-> > does it help?
-> > 
-> > (the explanation is also available in this thread).
+> > What is the name of the driver? I'm not able to find any such driver
+> > in Fedora 9 installed modules. There is only acpi-cpufreq and
+> > powernow-k8.
 > 
-> i've queued up the fix below in tip/sched/urgent.
+> yeah don't bother with p4-clockmod, it's not something that saves you
+> energy... it only gives you a fake feeling that you would.
 
-Sorry for the delay in response - we had some building power
-issues this weekend.
+This statement is only true for HPC environments and when you measure 
+Watts per work done.
 
-Yes, that fixed the issue.
+But if you have some desktop or server with a load that is determined by 
+when it gets used, then p4-clockmod can actually save energy when the 
+computer is not under high load or even idle.
 
--Mark Langsdorf
-Operating System Research Center
-AMD
+Or do I miss anything?
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
