@@ -1,215 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757079AbYHKTwp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757079AbYHKTym@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757079AbYHKTwp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Aug 2008 15:52:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753265AbYHKTwh
+	id S1757079AbYHKTym (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Aug 2008 15:54:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753100AbYHKTye
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Aug 2008 15:52:37 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:41064 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751630AbYHKTwh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Aug 2008 15:52:37 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=Q7xdW/FT2Sh3SNSXMpGeHwNuYtxIu2Zu+w+stT9j/mDUaThfU6Ln5aTe10r1cgqih
-	FCATe7xfY5n+CEgM40xPA==
-Message-ID: <da824cf30808111252m1decf08fk7ce3405105e1ceef@mail.gmail.com>
-Date: Mon, 11 Aug 2008 12:52:19 -0700
-From: "Grant Grundler" <grundler@google.com>
-To: "Stefan Richter" <stefanr@s5r6.in-berlin.de>
-Subject: Re: [PATCH] firewire: fw-sbp2: enforce s/g segment size limit
-Cc: linux1394-devel@lists.sourceforge.net,
-       "FUJITA Tomonori" <fujita.tomonori@lab.ntt.co.jp>,
-       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <tkrat.fa7d9c31f0c263fb@s5r6.in-berlin.de>
+	Mon, 11 Aug 2008 15:54:34 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:38870 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752501AbYHKTye (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Aug 2008 15:54:34 -0400
+Date: Mon, 11 Aug 2008 21:54:21 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jeff Chua <jeff.chua.linux@gmail.com>
+Cc: Yinghai Lu <yhlu.kernel@gmail.com>, David Miller <davem@davemloft.net>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.27rc1 cannot boot more than 8CPUs
+Message-ID: <20080811195421.GN12788@elte.hu>
+References: <Pine.LNX.4.64.0808061908100.12476@boston.corp.fedex.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <489CB8D8.60908@s5r6.in-berlin.de>
-	 <20080809063159F.fujita.tomonori@lab.ntt.co.jp>
-	 <489CC17F.7000208@s5r6.in-berlin.de>
-	 <20080809071744I.fujita.tomonori@lab.ntt.co.jp>
-	 <tkrat.8f7aa8cea95d423b@s5r6.in-berlin.de>
-	 <tkrat.fa7d9c31f0c263fb@s5r6.in-berlin.de>
+In-Reply-To: <Pine.LNX.4.64.0808061908100.12476@boston.corp.fedex.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Aug 9, 2008 at 11:21 AM, Stefan Richter
-<stefanr@s5r6.in-berlin.de> wrote:
-> 1. We don't need to round the SBP-2 segment size limit down to a
->   multiple of 4 kB (0xffff -> 0xf000).  It is only necessary to
->   ensure quadlet alignment (0xffff -> 0xfffc).
->
-> 2. Use dma_set_max_seg_size() to tell the DMA mapping infrastructure
->   and the block IO layer about the restriction.  This way we can
->   remove the size checks and segment splitting in the queuecommand
->   path.
->
->   This assumes that no other code in the firewire stack uses
->   dma_map_sg() with conflicting requirements.  It furthermore assumes
->   that the controller device's platform actually allows us to set the
->   segment size to our liking.  Assert the latter with a BUG_ON().
->
-> 3. Also use blk_queue_max_segment_size() to tell the block IO layer
->   about it.  It cannot know it because our scsi_add_host() does not
->   point to the FireWire controller's device.
->
-> Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
-> ---
->  drivers/firewire/fw-sbp2.c |   68 +++++++++++++++++--------------------
->  1 file changed, 33 insertions(+), 35 deletions(-)
->
-> Index: linux-2.6.27-rc2/drivers/firewire/fw-sbp2.c
-> ===================================================================
-> --- linux-2.6.27-rc2.orig/drivers/firewire/fw-sbp2.c
-> +++ linux-2.6.27-rc2/drivers/firewire/fw-sbp2.c
-> @@ -29,6 +29,7 @@
->  */
->
->  #include <linux/blkdev.h>
-> +#include <linux/bug.h>
->  #include <linux/delay.h>
->  #include <linux/device.h>
->  #include <linux/dma-mapping.h>
-> @@ -181,10 +182,16 @@ struct sbp2_target {
->  #define SBP2_MAX_LOGIN_ORB_TIMEOUT     40000U  /* Timeout in ms */
->  #define SBP2_ORB_TIMEOUT               2000U   /* Timeout in ms */
->  #define SBP2_ORB_NULL                  0x80000000
-> -#define SBP2_MAX_SG_ELEMENT_LENGTH     0xf000
->  #define SBP2_RETRY_LIMIT               0xf             /* 15 retries */
->  #define SBP2_CYCLE_LIMIT               (0xc8 << 12)    /* 200 125us cycles */
->
-> +/*
-> + * The default maximum s/g segment size of a FireWire controller is
-> + * usually 0x10000, but SBP-2 only allows 0xffff. Since buffers have to
-> + * be quadlet-aligned, we set the length limit to 0xffff & ~3.
-> + */
-> +#define SBP2_MAX_SEG_SIZE              0xfffc
-> +
->  /* Unit directory keys */
->  #define SBP2_CSR_UNIT_CHARACTERISTICS  0x3a
->  #define SBP2_CSR_FIRMWARE_REVISION     0x3c
-> @@ -1099,6 +1106,10 @@ static int sbp2_probe(struct device *dev
->        struct Scsi_Host *shost;
->        u32 model, firmware_revision;
->
-> +       if (dma_get_max_seg_size(device->card->device) > SBP2_MAX_SEG_SIZE)
-> +               BUG_ON(dma_set_max_seg_size(device->card->device,
-> +                                           SBP2_MAX_SEG_SIZE));
-> +
->        shost = scsi_host_alloc(&scsi_driver_template, sizeof(*tgt));
->        if (shost == NULL)
->                return -ENOMEM;
-> @@ -1347,14 +1358,12 @@ static int
->  sbp2_map_scatterlist(struct sbp2_command_orb *orb, struct fw_device *device,
->                     struct sbp2_logical_unit *lu)
->  {
-> -       struct scatterlist *sg;
-> -       int sg_len, l, i, j, count;
-> -       dma_addr_t sg_addr;
-> -
-> -       sg = scsi_sglist(orb->cmd);
-> -       count = dma_map_sg(device->card->device, sg, scsi_sg_count(orb->cmd),
-> -                          orb->cmd->sc_data_direction);
-> -       if (count == 0)
-> +       struct scatterlist *sg = scsi_sglist(orb->cmd);
-> +       int i, j, len;
-> +
-> +       i = dma_map_sg(device->card->device, sg, scsi_sg_count(orb->cmd),
-> +                      orb->cmd->sc_data_direction);
-> +       if (i == 0)
->                goto fail;
->
->        /*
-> @@ -1364,7 +1373,7 @@ sbp2_map_scatterlist(struct sbp2_command
->         * as the second generation iPod which doesn't support page
->         * tables.
->         */
-> -       if (count == 1 && sg_dma_len(sg) < SBP2_MAX_SG_ELEMENT_LENGTH) {
-> +       if (i == 1) {
->                orb->request.data_descriptor.high =
->                        cpu_to_be32(lu->tgt->address_high);
->                orb->request.data_descriptor.low  =
-> @@ -1374,29 +1383,15 @@ sbp2_map_scatterlist(struct sbp2_command
->                return 0;
->        }
->
-> -       /*
-> -        * Convert the scatterlist to an sbp2 page table.  If any
-> -        * scatterlist entries are too big for sbp2, we split them as we
-> -        * go.  Even if we ask the block I/O layer to not give us sg
-> -        * elements larger than 65535 bytes, some IOMMUs may merge sg elements
-> -        * during DMA mapping, and Linux currently doesn't prevent this.
-> -        */
-> -       for (i = 0, j = 0; i < count; i++, sg = sg_next(sg)) {
-> -               sg_len = sg_dma_len(sg);
-> -               sg_addr = sg_dma_address(sg);
-> -               while (sg_len) {
-> -                       /* FIXME: This won't get us out of the pinch. */
-> -                       if (unlikely(j >= ARRAY_SIZE(orb->page_table))) {
-> -                               fw_error("page table overflow\n");
-> -                               goto fail_page_table;
-> -                       }
-> -                       l = min(sg_len, SBP2_MAX_SG_ELEMENT_LENGTH);
-> -                       orb->page_table[j].low = cpu_to_be32(sg_addr);
-> -                       orb->page_table[j].high = cpu_to_be32(l << 16);
 
-I didn't check the rest of the driver - but it would be good if it
-explicitly called dma_set_mask() or  pci_dma_set_mask() with a 32-bit
-mask value. Most drivers assume 32-bit and that's why I point this
-out.
+* Jeff Chua <jeff.chua.linux@gmail.com> wrote:
 
-The rest looks ok at first glance.
+>
+> On Wed, Aug 6, 2008 at 5:42 PM, Jeff Chua <jeff.chua.linux@gmail.com>  
+> wrote:
+>>>> CONFIG_X86_GENERICARCH=y
+>>>> CONFIG_X86_BIGSMP=y
+>>>> 8 more cpu need bigsmp mode.
+>
+>> Just found it under " Subarchitecture Type (Generic architecture)",
+>> and then it shows the CONFIG_X86_BIGSMP option.
+>
+> It works. Booted with 16CPUs. 32GB RAM.
+>
+> CPU0 L7345 1.86GHz  0C
+> CPU1 L7345 1.86GHz  0C
+> CPU2 L7345 1.86GHz  0C
+> CPU3 L7345 1.86GHz  0C
+> CPU4 L7345 1.86GHz  0C
+> CPU5 L7345 1.86GHz  0C
+> CPU6 L7345 1.86GHz  0C
+> CPU7 L7345 1.86GHz  0C
+> CPU8 L7345 1.86GHz  0C
+> CPU9 L7345 1.86GHz  0C
+> CPU10 L7345 1.86GHz  0C
+> CPU11 L7345 1.86GHz  0C
+> CPU12 L7345 1.86GHz  0C
+> CPU13 L7345 1.86GHz  0C
+> CPU14 L7345 1.86GHz  0C
+> CPU15 L7345 1.86GHz  0C
+>
+>
+> So, but setting the config not obvious. And should CONFIG_X86_PC be  
+> considered as well as CONFIG_X86_GENERICARCH?
+>
+> With CONFIG_X86_PC, I can set CONFIG_SPARSEMEM=y.
+>
+> With CONFIG_X86_GENERICARCH, CONFIG_SPARSEMEM depends on CONFIG_NUMA.
+>
+> I'm using the patch below to enable sparsemem instead of flatmem, but  
+> don't know what impact it has. System booted and running.
+>
+> It would be nice to automatically default CONFIG_X86_BIGSMP with CPUs 
+> > 8. But I don't know to do that.
 
-thanks,
-grant
+thanks, applied.
 
-> -                       sg_addr += l;
-> -                       sg_len -= l;
-> -                       j++;
-> -               }
-> +       j = 0;
-> +       for_each_sg(sg, sg, scsi_sg_count(orb->cmd), i) {
-> +               len = sg_dma_len(sg);
-> +               if (len == 0)
-> +                       continue;
-> +
-> +               orb->page_table[j].high = cpu_to_be32(len << 16);
-> +               orb->page_table[j].low = cpu_to_be32(sg_dma_address(sg));
-> +               j++;
->        }
->
->        orb->page_table_bus =
-> @@ -1420,8 +1415,9 @@ sbp2_map_scatterlist(struct sbp2_command
->        return 0;
->
->  fail_page_table:
-> -       dma_unmap_sg(device->card->device, sg, scsi_sg_count(orb->cmd),
-> -                    orb->cmd->sc_data_direction);
-> +       orb->page_table_bus = 0;
-> +       dma_unmap_sg(device->card->device, scsi_sglist(orb->cmd),
-> +                    scsi_sg_count(orb->cmd), orb->cmd->sc_data_direction);
->  fail:
->        return -ENOMEM;
->  }
-> @@ -1542,6 +1538,8 @@ static int sbp2_scsi_slave_configure(str
->        if (lu->tgt->workarounds & SBP2_WORKAROUND_128K_MAX_TRANS)
->                blk_queue_max_sectors(sdev->request_queue, 128 * 1024 / 512);
->
-> +       blk_queue_max_segment_size(sdev->request_queue, SBP2_MAX_SEG_SIZE);
-> +
->        return 0;
->  }
->
->
-> --
-> Stefan Richter
-> -=====-==--- =--- -=--=
-> http://arcgraph.de/sr/
->
->
+i'm wondering, does with that patch applied a working 2.6.26 .config if 
+put through 'make oldconfig' boot fine on your box now? Any make 
+oldconfig breakage is a regression we want to fix. We want upgrades 
+between kernel versions to be seemless and complete.
+
+	Ingo
