@@ -1,65 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755299AbYHKPtq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755654AbYHKPui@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755299AbYHKPtq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Aug 2008 11:49:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752804AbYHKPtg
+	id S1755654AbYHKPui (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Aug 2008 11:50:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752103AbYHKPua
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Aug 2008 11:49:36 -0400
-Received: from E23SMTP02.au.ibm.com ([202.81.18.163]:48076 "EHLO
-	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752688AbYHKPtf (ORCPT
+	Mon, 11 Aug 2008 11:50:30 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:44594 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750852AbYHKPu3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Aug 2008 11:49:35 -0400
-Message-ID: <48A05F89.4070702@linux.vnet.ibm.com>
-Date: Mon, 11 Aug 2008 21:19:29 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-User-Agent: Thunderbird 1.5.0.14ubu (X11/20080724)
+	Mon, 11 Aug 2008 11:50:29 -0400
+Message-ID: <48A05F4D.4080404@linux-foundation.org>
+Date: Mon, 11 Aug 2008 10:48:29 -0500
+From: Christoph Lameter <cl@linux-foundation.org>
+User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
 MIME-Version: 1.0
-To: Eric Sandeen <sandeen@redhat.com>
-CC: linux-ext4@vger.kernel.org, kernel list <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       aneesh.kumar@linux.vnet.ibm.com, Andy Whitcroft <apw@shadowen.org>
-Subject: Re: [BUG] 2.6.27-rc1 - Filesystem warning on ext4 with e2fsck
-References: <48A0127E.6000505@linux.vnet.ibm.com> <48A04C40.1040206@redhat.com>
-In-Reply-To: <48A04C40.1040206@redhat.com>
+To: "Frank Ch. Eigler" <fche@redhat.com>
+CC: Steven Rostedt <rostedt@goodmis.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
+       mathieu.desnoyers@polymtl.ca, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, rdunlap@xenotime.net, mpm@selenic.com,
+       tglx@linutronix.de
+Subject: Re: [PATCH 4/5] kmemtrace: SLUB hooks.
+References: <1218388447-5578-1-git-send-email-eduard.munteanu@linux360.ro>	<1218388447-5578-2-git-send-email-eduard.munteanu@linux360.ro>	<1218388447-5578-3-git-send-email-eduard.munteanu@linux360.ro>	<1218388447-5578-4-git-send-email-eduard.munteanu@linux360.ro>	<1218388447-5578-5-git-send-email-eduard.munteanu@linux360.ro>	<48A046F5.2000505@linux-foundation.org>	<1218463774.7813.291.camel@penberg-laptop>	<48A048FD.30909@linux-foundation.org>	<alpine.DEB.1.10.0808111027370.29861@gandalf.stny.rr.com>	<48A04EC2.1080302@linux-foundation.org> <y0mhc9ra7m6.fsf@ton.toronto.redhat.com>
+In-Reply-To: <y0mhc9ra7m6.fsf@ton.toronto.redhat.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric Sandeen wrote:
-> Kamalesh Babulal wrote:
->> Hi,
->>
->> After running the fsx linux test on the ext4 partition mounted with 
->> -o errors=panic,journal_async_commit, filesystem check is reporting
->> warning
->>
->> # /usr/local/e2fsprogs/sbin/e2fsck -fnv /dev/sda6 
->> e2fsck 1.41.0 (10-Jul-2008)
->> Pass 1: Checking inodes, blocks, and sizes
->> Pass 2: Checking directory structure
->> Pass 3: Checking directory connectivity
->> /lost+found not found.  Create? no
->>
->> Pass 4: Checking reference counts
->> Pass 5: Checking group summary information
->>
->> /dev/sda6: ********** WARNING: Filesystem still has errors **********
+Frank Ch. Eigler wrote:
+> Christoph Lameter <cl@linux-foundation.org> writes:
 > 
-> Was lost+found manually removed between mkfs & fsck?  (did you do an rm
-> -rf * or similar ?)  That'd produce exactly the above warning, since you
-> told e2fsck "-n" ...
+>> [...]
+>>> There should be no extra function calls when this is configured on but 
+>>> tracing disabled. We try very hard to keep the speed of the tracer as 
+>>> close to a non tracing kernel as possible when tracing is disabled.
+>> Makes sense. But then we have even more code bloat because of the
+>> tests that are inserted in all call sites of kmalloc.
 > 
-> -Eric
-> --
-Hi Eric,
+> Are you talking about the tests that implement checking whether a
+> marker is active or not?  Those checks are already efficient, and will
+> get more so with the "immediate values" optimization in or near the
+> tree.
 
-Yes, the test program does a rm -rf * of the partition and  
-usr/local/e2fsprogs/sbin/e2fsck -fvp /dev/sda6 helps. Sorry
-for the noise.
-
--- 
-Thanks & Regards,
-Kamalesh Babulal.
+AFAICT: Each test also adds an out of line call to the tracing facility.
