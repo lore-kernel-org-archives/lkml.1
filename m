@@ -1,91 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752108AbYHKLWU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752778AbYHKLWv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752108AbYHKLWU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Aug 2008 07:22:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751221AbYHKLWM
+	id S1752778AbYHKLWv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Aug 2008 07:22:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751533AbYHKLWl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Aug 2008 07:22:12 -0400
-Received: from viefep18-int.chello.at ([213.46.255.22]:35106 "EHLO
-	viefep12-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751203AbYHKLWL (ORCPT
+	Mon, 11 Aug 2008 07:22:41 -0400
+Received: from casper.infradead.org ([85.118.1.10]:36296 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751221AbYHKLWk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Aug 2008 07:22:11 -0400
-X-SourceIP: 80.57.229.25
-Subject: Re: [PATCH] printk: robustify printk
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org, tglx@linutronix.de,
-       marcin.slusarz@gmail.com, linux-kernel@vger.kernel.org,
-       davem@davemloft.net, rostedt@goodmis.org, paulmck@linux.vnet.ibm.com
-In-Reply-To: <87zlnj24qc.fsf@basil.nowhere.org>
-References: <1218202249.8625.106.camel@twins>
-	 <alpine.LFD.1.10.0808080931550.3462@nehalem.linux-foundation.org>
-	 <1218215454.8625.133.camel@twins>
-	 <alpine.LFD.1.10.0808081014240.3462@nehalem.linux-foundation.org>
-	 <1218217257.29098.2.camel@lappy.programming.kicks-ass.net>
-	 <alpine.LFD.1.10.0808081043160.3462@nehalem.linux-foundation.org>
-	 <1218219269.29098.5.camel@lappy.programming.kicks-ass.net>
-	 <20080808121428.646a8b3c.akpm@linux-foundation.org>
-	 <1218223269.29098.12.camel@lappy.programming.kicks-ass.net>
-	 <1218224829.29098.19.camel@lappy.programming.kicks-ass.net>
-	 <20080811104526.GA15186@elte.hu>  <87zlnj24qc.fsf@basil.nowhere.org>
-Content-Type: text/plain
-Date: Mon, 11 Aug 2008 13:22:06 +0200
-Message-Id: <1218453726.10800.63.camel@twins>
+	Mon, 11 Aug 2008 07:22:40 -0400
+Date: Mon, 11 Aug 2008 04:22:44 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: "S K" <nospamnoham@gmail.com>
+Cc: "Zhao Yakui" <yakui.zhao@intel.com>, "Thomas Renninger" <trenn@suse.de>,
+       "Alan Jenkins" <alan-jenkins@tuffmail.co.uk>,
+       linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
+Subject: Re: cpufreq doesn't seem to work in Intel Q9300
+Message-ID: <20080811042244.469f8e1d@infradead.org>
+In-Reply-To: <514e099a0808102144n241c8e9ak255bded0a80744f1@mail.gmail.com>
+References: <514e099a0808030300u140a0ae7m92a2e7294f39f7b7@mail.gmail.com>
+	<200808081430.43012.trenn@suse.de>
+	<aff5deaf0808081123s1fbe6a5cn7847e9cb053c1f5a@mail.gmail.com>
+	<200808092059.47863.trenn@suse.de>
+	<514e099a0808100128u303207clcb22292db2f0cc59@mail.gmail.com>
+	<1218418431.6671.52.camel@yakui_zhao.sh.intel.com>
+	<514e099a0808102144n241c8e9ak255bded0a80744f1@mail.gmail.com>
+Organization: Intel
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-08-11 at 13:03 +0200, Andi Kleen wrote:
-> Ingo Molnar <mingo@elte.hu> writes:
-> 
-> > * Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+On Sun, 10 Aug 2008 21:44:50 -0700
+"S K" <nospamnoham@gmail.com> wrote:
+
+
 > >
-> >> On Fri, 2008-08-08 at 21:21 +0200, Peter Zijlstra wrote:
-> >> 
-> >> > The initial printk_tick() based implementation didn't suffer this
-> >> > problem, should we revert to that scheme?
-> >> 
-> >> Just in case people care..
-> >> 
-> >> ---
-> >> Subject: printk: robustify printk
-> >> 
-> >> Avoid deadlocks against rq->lock and xtime_lock by deferring the klogd 
-> >> wakeup by polling from the timer tick.
-> >
-> > i missed most of the discussion, but this seems like the simplest (and 
-> > hence ultimately the best) approach to me.
+> > But it is very strange that cpufreq scaling can work on Windows XP.
+> > Will you please try the P4 clock cpufreq driver and see whether the
+> > scaling can work ? In fact P4 clock cpufreq driver is already
+> > replaced by acpi_cpufreq driver for the latest cpu.
+> > Anyway please try p4 clock cpufreq driver.
 > 
-> The problem is that it means any printk data output that is more
-> than DMESG-BUFFER-SIZE bytes during one clock tick is going to lose data.
-> It loses the natural adaption to higher printk rates that you
-> got previously.
+> What is the name of the driver? I'm not able to find any such driver
+> in Fedora 9 installed modules. There is only acpi-cpufreq and
+> powernow-k8.
 > 
-> Now we could say that for debugging etc. people should switch
-> to other mechanisms like relayfs, but I would still worry about
-> some corner cases where losing printk data that wasn't lost before
-> could be a severe regression (e.g. consider firewall log messages
-> or similar)
 
-You only loose the msgs with klogd, console still gets everything. If
-firewalls are generating that much data, perhaps its time to think about
-alternative ways to channel that.
+yeah don't bother with p4-clockmod, it's not something that saves you
+energy... it only gives you a fake feeling that you would.
 
-> Essentially it makes printk (much?) less reliable than it was before
-> in the general case. Not sure that's a good thing. So the patch
-> title is definitely misleading.
-
-Depends, I don't give a rats arse about klogd - I get everything through
-serial onto another machine. 
-
-> As Linus pointed out earlier we've survived with this restriction
-> (not doing printk in the scheduler) for a long time, so is there
-> really a that pressing need to change that?
-
-Why not fix it if its acceptable - the deadlock is just ugly.
-
+-- 
+If you want to reach me at my work email, use arjan@linux.intel.com
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
