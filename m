@@ -1,68 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754858AbYHKAWg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755190AbYHKAXw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754858AbYHKAWg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Aug 2008 20:22:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752703AbYHKAW2
+	id S1755190AbYHKAXw (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Aug 2008 20:23:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752703AbYHKAXo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Aug 2008 20:22:28 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:50557 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752262AbYHKAW1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Aug 2008 20:22:27 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <20080810113044.19143b0a@worthy.swandive.local>
-References: <20080810113044.19143b0a@worthy.swandive.local> <1218322518.3268.0.camel@luna.unix.geek.nz> <1218287473.3155.13.camel@dhcppc0> <1218281190.3155.5.camel@dhcppc0> <1218214935.3146.5.camel@dhcppc0> <alpine.LRH.1.10.0808090747150.29079@tundra.namei.org> <14476.1218286327@redhat.com> <15386.1218290826@redhat.com> <10251.1218361539@redhat.com> 
-To: Grant Wilson <grant.wilson@zen.co.uk>
-Cc: dhowells@redhat.com, Jasper Bryant-Greene <jasper@amiton.co.nz>,
-       Thomas Meyer <thomas@m3y3r.de>, James Morris <jmorris@namei.org>,
-       Linux-Kernel <linux-kernel@vger.kernel.org>,
-       Linux-Next <linux-next@vger.kernel.org>
-Subject: Re: next-20080808: bash: fork: Resource temporarily unavailable
-X-Mailer: MH-E 8.0.3+cvs; nmh 1.3; GNU Emacs 23.0.50
-Date: Mon, 11 Aug 2008 01:21:10 +0100
-Message-ID: <22475.1218414070@redhat.com>
+	Sun, 10 Aug 2008 20:23:44 -0400
+Received: from wf-out-1314.google.com ([209.85.200.174]:57557 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751918AbYHKAXn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 Aug 2008 20:23:43 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:content-type:date:message-id:mime-version
+         :x-mailer:content-transfer-encoding;
+        b=rPyQ9u1xz7ho9xZXQM0InHryv4BssrBPII5E7oJYYaZNqvVmtBA3xSv6KP5pAS6Qhd
+         eEf7o5syruspQZcv0KWKe+lqyrXgZL9TnRGmThXBawjSt85jGH5oFmurpPx+0MwDYbbj
+         f2oI8NRNPM9RB0tM+QMJ8SrcSw9TNlivGalYc=
+Subject: [PATCH 1/2] mISDN: endian annotations for struct zt
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Karsten Keil <kkeil@suse.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Sun, 10 Aug 2008 17:23:47 -0700
+Message-Id: <1218414227.24441.28.camel@brick>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Grant Wilson <grant.wilson@zen.co.uk> wrote:
+Found two possible bugs where the z1 value was used directly without
+byteswapping.
 
-> [  223.039938] Rlimit EAGAIN (-1 >= 16375, uid 1000)
-> [  223.044744] copy_process() = -11
-> [  226.660319] Rlimit EAGAIN (-1 >= 16375, uid 1000)
-> [  226.664166] copy_process() = -11
-
-Can you try the attached patch please?
-
-David
+Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
 ---
-CRED: Inc the user processes count on cred share return from copy_creds()
+ drivers/isdn/hardware/mISDN/hfc_pci.h |    4 ++--
+ drivers/isdn/hardware/mISDN/hfcpci.c  |    9 ++++-----
+ 2 files changed, 6 insertions(+), 7 deletions(-)
 
-From: David Howells <dhowells@redhat.com>
-
-Increment the user processes count in the case where copy_creds() returns after
-sharing the parent's credentials instead of allocating new ones.
-
-Signed-off-by: David Howells <dhowells@redhat.com>
----
-
- kernel/cred.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
-
-
-diff --git a/kernel/cred.c b/kernel/cred.c
-index f89c5e5..056ec90 100644
---- a/kernel/cred.c
-+++ b/kernel/cred.c
-@@ -299,6 +299,7 @@ int copy_creds(struct task_struct *p, unsigned long clone_flags)
- #endif
- 		p->real_cred = get_cred(p->cred);
- 		get_cred(p->cred);
-+		atomic_inc(&p->cred->user->processes);
- 		return 0;
- 	}
+diff --git a/drivers/isdn/hardware/mISDN/hfc_pci.h b/drivers/isdn/hardware/mISDN/hfc_pci.h
+index fd2c9be..5783d22 100644
+--- a/drivers/isdn/hardware/mISDN/hfc_pci.h
++++ b/drivers/isdn/hardware/mISDN/hfc_pci.h
+@@ -183,8 +183,8 @@
+ #define D_FREG_MASK  0xF
  
+ struct zt {
+-	unsigned short z1;  /* Z1 pointer 16 Bit */
+-	unsigned short z2;  /* Z2 pointer 16 Bit */
++	__le16 z1;  /* Z1 pointer 16 Bit */
++	__le16 z2;  /* Z2 pointer 16 Bit */
+ };
+ 
+ struct dfifo {
+diff --git a/drivers/isdn/hardware/mISDN/hfcpci.c b/drivers/isdn/hardware/mISDN/hfcpci.c
+index 9cf5edb..9f808ec 100644
+--- a/drivers/isdn/hardware/mISDN/hfcpci.c
++++ b/drivers/isdn/hardware/mISDN/hfcpci.c
+@@ -366,8 +366,7 @@ static void hfcpci_clear_fifo_tx(struct hfc_pci *hc, int fifo)
+ 	bzt->f2 = MAX_B_FRAMES;
+ 	bzt->f1 = bzt->f2;	/* init F pointers to remain constant */
+ 	bzt->za[MAX_B_FRAMES].z1 = cpu_to_le16(B_FIFO_SIZE + B_SUB_VAL - 1);
+-	bzt->za[MAX_B_FRAMES].z2 = cpu_to_le16(
+-	    le16_to_cpu(bzt->za[MAX_B_FRAMES].z1 - 1));
++	bzt->za[MAX_B_FRAMES].z2 = cpu_to_le16(B_FIFO_SIZE + B_SUB_VAL - 2);
+ 	if (fifo_state)
+ 		hc->hw.fifo_en |= fifo_state;
+ 	Write_hfc(hc, HFCPCI_FIFO_EN, hc->hw.fifo_en);
+@@ -482,7 +481,7 @@ receive_dmsg(struct hfc_pci *hc)
+ 			df->f2 = ((df->f2 + 1) & MAX_D_FRAMES) |
+ 			    (MAX_D_FRAMES + 1);	/* next buffer */
+ 			df->za[df->f2 & D_FREG_MASK].z2 =
+-			    cpu_to_le16((zp->z2 + rcnt) & (D_FIFO_SIZE - 1));
++			    cpu_to_le16((le16_to_cpu(zp->z2) + rcnt) & (D_FIFO_SIZE - 1));
+ 		} else {
+ 			dch->rx_skb = mI_alloc_skb(rcnt - 3, GFP_ATOMIC);
+ 			if (!dch->rx_skb) {
+@@ -526,7 +525,7 @@ receive_dmsg(struct hfc_pci *hc)
+ int
+ hfcpci_empty_fifo_trans(struct bchannel *bch, struct bzfifo *bz, u_char *bdata)
+ {
+-	unsigned short	*z1r, *z2r;
++	 __le16 *z1r, *z2r;
+ 	int		new_z2, fcnt, maxlen;
+ 	u_char		*ptr, *ptr1;
+ 
+@@ -724,7 +723,7 @@ hfcpci_fill_fifo(struct bchannel *bch)
+ 	struct bzfifo	*bz;
+ 	u_char		*bdata;
+ 	u_char		new_f1, *src, *dst;
+-	unsigned short	*z1t, *z2t;
++	__le16 *z1t, *z2t;
+ 
+ 	if ((bch->debug & DEBUG_HW_BCHANNEL) && !(bch->debug & DEBUG_HW_BFIFO))
+ 		printk(KERN_DEBUG "%s\n", __func__);
+-- 
+1.6.0.rc1.278.g9c632
+
+
