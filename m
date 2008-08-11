@@ -1,41 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754057AbYHKQBR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754308AbYHKQCm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754057AbYHKQBR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Aug 2008 12:01:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752062AbYHKQBE
+	id S1754308AbYHKQCm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Aug 2008 12:02:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752062AbYHKQCf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Aug 2008 12:01:04 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:43095 "EHLO mx1.redhat.com"
+	Mon, 11 Aug 2008 12:02:35 -0400
+Received: from gw.goop.org ([64.81.55.164]:49897 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751946AbYHKQBD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Aug 2008 12:01:03 -0400
-Date: Mon, 11 Aug 2008 11:57:47 -0400
-From: "Frank Ch. Eigler" <fche@redhat.com>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: Steven Rostedt <rostedt@goodmis.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
-       mathieu.desnoyers@polymtl.ca, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, rdunlap@xenotime.net, mpm@selenic.com,
-       tglx@linutronix.de
-Subject: Re: [PATCH 4/5] kmemtrace: SLUB hooks.
-Message-ID: <20080811155747.GC15331@redhat.com>
-References: <1218388447-5578-3-git-send-email-eduard.munteanu@linux360.ro> <1218388447-5578-4-git-send-email-eduard.munteanu@linux360.ro> <1218388447-5578-5-git-send-email-eduard.munteanu@linux360.ro> <48A046F5.2000505@linux-foundation.org> <1218463774.7813.291.camel@penberg-laptop> <48A048FD.30909@linux-foundation.org> <alpine.DEB.1.10.0808111027370.29861@gandalf.stny.rr.com> <48A04EC2.1080302@linux-foundation.org> <y0mhc9ra7m6.fsf@ton.toronto.redhat.com> <48A05F4D.4080404@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <48A05F4D.4080404@linux-foundation.org>
-User-Agent: Mutt/1.4.1i
+	id S1751532AbYHKQCe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Aug 2008 12:02:34 -0400
+Message-ID: <48A06287.8020906@goop.org>
+Date: Mon, 11 Aug 2008 09:02:15 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+MIME-Version: 1.0
+To: Glauber Costa <glommer@gmail.com>
+CC: Gerd Hoffmann <kraxel@redhat.com>, Avi Kivity <avi@qumranet.com>,
+       Marcelo Tosatti <mtosatti@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       kvm-devel <kvm-devel@lists.sourceforge.net>
+Subject: Re: Use of barriers in pvclock ABI
+References: <489CA3DA.1090400@goop.org> <489FE56E.1080707@redhat.com> <5d6222a80808110718i6a600858v7bdb5e08054ebefa@mail.gmail.com>
+In-Reply-To: <5d6222a80808110718i6a600858v7bdb5e08054ebefa@mail.gmail.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi -
+Glauber Costa wrote:
+> Okay for guest vcpu, but what about physical cpus?
+>
+> IIRC, the checks are there, and so strict, to account for the
+> possiblity of the vcpu to be migrated to another cpu in the middle of
+> the
+> clock reading.
+>   
 
-On Mon, Aug 11, 2008 at 10:48:29AM -0500, Christoph Lameter wrote:
-> [...]
-> AFAICT: Each test also adds an out of line call to the tracing facility.
+That's fine.  As part of rescheduling a vcpu on a new pcpu, the clock 
+record will be updated with the new cpu's parameters, but that update 
+will be complete by the time the vcpu gets rescheduled.  The version 
+check and loop still needs to be there, but it will never see an 
+inconsistent (partially updated) clock record.
 
-Yes, but that call is normally placed out of the cache-hot path with unlikely().
-
-- FChE
+    J
