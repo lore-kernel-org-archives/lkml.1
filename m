@@ -1,126 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754842AbYHKQXQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755403AbYHKQXd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754842AbYHKQXQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Aug 2008 12:23:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752412AbYHKQW5
+	id S1755403AbYHKQXd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Aug 2008 12:23:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754990AbYHKQXV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Aug 2008 12:22:57 -0400
-Received: from e35.co.us.ibm.com ([32.97.110.153]:46385 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751630AbYHKQW4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Aug 2008 12:22:56 -0400
-Date: Mon, 11 Aug 2008 09:22:41 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: David Witbrodt <dawitbro@sbcglobal.net>
-Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
-       Yinghai Lu <yhlu.kernel@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       netdev <netdev@vger.kernel.org>
-Subject: Re: [PATCH diagnostic] Re: HPET regression in 2.6.26 versus 2.6.25
-	-- RCU problem
-Message-ID: <20080811162241.GF6762@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <433343.88181.qm@web82107.mail.mud.yahoo.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <433343.88181.qm@web82107.mail.mud.yahoo.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+	Mon, 11 Aug 2008 12:23:21 -0400
+Received: from ms01.sssup.it ([193.205.80.99]:59149 "EHLO sssup.it"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753478AbYHKQXU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Aug 2008 12:23:20 -0400
+Subject: Re: [RFC 0/1][PATCH] POSIX SCHED_SPORADIC implementation for tasks
+	and groups
+From: Dario Faggioli <raistlin@linux.it>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Ulrich Drepper <drepper@redhat.com>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Steven Rostedt <rostedt@goodmis.org>, Andrew Morton <akpm@osdl.org>
+In-Reply-To: <1218464753.10800.92.camel@twins>
+References: <1218462574.6450.24.camel@Palanthas>
+	 <48A0487B.7080600@redhat.com>  <1218464753.10800.92.camel@twins>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-02LuVa+oLVR5EkVW6w7o"
+Date: Mon, 11 Aug 2008 18:23:14 +0200
+Message-Id: <1218471794.6450.87.camel@Palanthas>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 11, 2008 at 09:04:12AM -0700, David Witbrodt wrote:
-> 
-> I didn't check my email yesterday -- sorry about that, but sometimes life
-> intervenes -- so I'm a bit late replying.
-> 
-> Also, I see several messages relevant to this thread in my inbox:  I have
-> decided to address each in order, so that I don't mix something up and do
-> something foolish.
-> 
-> 
-> 
-> > And here is the patch.  It is still a bit raw, so the results should
-> > be viewed with some suspicion.  It adds a default-off kernel parameter
-> > CONFIG_RCU_CPU_STALL which must be enabled.
-> 
-> Thanks for the patch.  I had a problem applying the patch because I
-> have not yet transitioned my email system from my old machine to my new
-> 3-system home network setup.  (I used to share a data partition between
-> Windows and Linux so that my archives would stay in sync; my new setup
-> will allow keeping the POP downloads on one machine, and sharing the
-> archives via IMAP, but even since May I still haven't gotten around to 
-> it.)
-> 
-> My ISP's webmail interface altered the whitespace, and I'm so new to
-> git that I couldn't figure out how to keep it from rejecting the
-> patch.  I had updated Linus' git tree to 2.6.27-rc2, and when I saw
-> that your patch was against something in 2.6.27-rc1 I thought this
-> might be the problem.  Visually inspecting the files, I saw that the
-> lines matched perfectly, other than whitespace, so I just gave up and
-> applied the patches manually.
-> 
-> I ran 'make menuconfig', but nothing about your new feature was asked.
-> Then I realized that I had changed the .config to CONFIG_PREEMPT because
-> of an experiment you had my try a few days ago.  When I disabled that,
-> I was able to see the new option and enable it.
-> 
-> The kernel built fine, so I installed and rebooted...
-> 
-> 
-> > Rather than exponential backoff, it backs off to once per 30 seconds.
-> > My feeling upon thinking on it was that if you have stalled RCU grace
-> > periods for that long, a few extra printk() messages are probably the
-> > least of your worries...
-> 
-> Well, I was hoping to see something interesting.  I ran it with parameters
-> "debug initcall_debug", and it locked up at the same place.  I let it for
-> 15 minutes, in case of some delayed reaction.  Nada.
 
-Interesting.  The causes could be:
+--=-02LuVa+oLVR5EkVW6w7o
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-o	Scheduling-clock interrupts aren't happening, as Ingo suggested.
+On Mon, 2008-08-11 at 16:25 +0200, Peter Zijlstra wrote:
+> My suggestion would be to create struct sched_param2 with plenty of
+> padding to support future expansion and add
+> sys_sched_setscheduler2()/sys_sched_getscheduler2() to deal with this
+> new structure.
+And we will miss POSIX compliance. :-(
+Anyway, I agree the ABI issue this could raise are serious enough and, I
+repeat, I can't see any other solution too.
 
-o	All the CPUs are spinning with hard irqs disabled, or are
-	otherwise AWOL.
+So, whatever someone is interested in the code or not, I think I'll
+rewrite the interface part of the patch coping with something like the
+solution you are proposing... Thank you.
 
-And perhaps other issues as well.
+> I think at least 3 struct timespec fields and a flags field might be
+> needed for the most exotic deadline parameters:
+>=20
+>  - budget
+>  - deadline
+>  - period
+>=20
+Let's hope they're enough... You know, real-time people are... Well...
+Quite unpredictable!! :-P
 
-							Thanx, Paul
+> My own take is that SCHED_SPORADIC is a nice excersice in scheduler
+> development
+Can't disagree on that, especially because this is exactly one of the
+first reasons why I started writing it! :-D
 
-> The output was nearly identical to what I posted last Tuesday (see
-> http://www.uwsg.indiana.edu/hypermail/linux/kernel/0808.0/2224.html).
-> Here are the last few lines:
-> ==================================
-> [snip]
-> calling pci_bios_assign_resources+0x0/0x8b
-> pci 0000:00:01.0: PCI bridge, secondary bus 0000:01
-> pci 0000:00:01.0:   IO window: 0xe000-0xefff
-> pci 0000:00:01.0:   MEM window: 0xfdd00000-0xfdefffff
-> pci 0000:00:01.0:   PREFETCH window: 0x000000d8000000-0x000000dfffffff
-> pci 0000:00:14.4: PCI bridge, secondary bus 0000:02
-> pci 0000:00:14.4:   IO window: 0xd000-0xdfff
-> pci 0000:00:14.4:   MEM window: 0xfdc00000-0xfdcfffff
-> pci 0000:00:14.4:   PREFETCH window: 0x000000fdf00000-0x000000fdffffff
-> initcall pci_bios_assign_resources returned 0 after 285702 msecs
-> calling inet_init+0x0/0x250
-> NET: Registered protocol family 2
-> ===== END OUTPUT =================
-> 
-> The only difference in the output was trivial:  "285696 msecs" became
-> "285702 msecs".  None of the printk()'s from your driver were executed.
-> 
-> (As I mentioned on Tuesday, that number of milliseconds is WAY off, and
-> it still bothers me.  The total time from the GRUB screen disappearing
-> to the last line printed is < 5 secs (maybe < 3 secs), not 285 secs!)
-> 
-> Moving on to the other LKML messages....
-> 
-> Thanks,
-> Dave W.
-> --
-> To unsubscribe from this list: send the line "unsubscribe netdev" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> but I'm not sure its actually in demand from application
+> developers=20
+Indeed, I also think that the task scheduling policy could be tricky and
+quite difficult to be used for applications, especially in general
+purpose environments, where the use of RT priorities is uncommon and,
+often, an exceptional event.
+If, conversely, you have an embedded system with very few tasks and you
+run them with RT prios, I think this could be profitably used.
+
+Anyway, even if we came to the agreement that SCHED_SPORADIC task
+scheduling is not that useful, or, if you want, it is a complete mess,
+what do you think about group scheduling and throttling?
+
+I think, as I write, that it could be nice to have the possibility to
+"throttle" task groups according to something similar to a Sporadic
+Server.
+
+I re-red my first mail and I can understand it could be quite difficult
+to figure out what the main differences are just reading my (poorly
+written!) English sentences... So I think I'll try to come out with an
+example (as soon as I can).
+Also, if you know any existing application that is making use of the
+throttling/group scheduling infrastructure, please, point them out to
+me, and I'll give them a try with SCHED_SPORADIC group scheduling, and
+try to compare their behavior with the present one.
+
+> (those of you who actually write RT progs, please holler if
+> you care - I'm interested to hear your stories).
+Well, we will for sure (at least try to) use it for implementing a soft
+and hard real-time library from a research project.
+Maybe we will modify it a little bit more, but it will be the basis.
+
+Furthermore, I remember that, when we met in Prague, T. Backer from FSU
+seemed quite interested in SCHED_SPORADIC... Maybe we can ask him to
+help us too... What do you think?
+
+> SCHED_EDF is in great demand - and is being worked on - albeit not as
+> much as I'd like to, due to me being too busy with other stuff atm :-/
+Hey, we sent you our code, even if it is very, very preliminary state...
+And you have not make us know what you do think about it! :-O
+Anyway, we also are continuing working on it, even if being busy with a
+lot of other things too, and we would be glad collaborate, it there is
+room for. :-D
+
+But this is another thread, and I don't want to mix things! :-)
+
+Thanks for replying,
+Dario
+
+--=20
+<<This happens because I choose it to happen!>>
+(Raistlin Majere, DragonLance Chronicles -Dragons of Spring Drawning-)
+----------------------------------------------------------------------
+Dario Faggioli
+GNU/Linux Registered User: #340657
+Web: http://www.linux.it/~raistlin
+Blog: http://blog.linux.it/raistlin
+SIP Account: dario.faggioli@sipproxy.wengo.fr or
+             raistlin@ekiga.net
+Jabber Account: dario.faggioli@jabber.org/WengoPhone
+GnuPG Key ID: 4DC83AC4
+GnuPG Key Fingerprint: 2A78 AD5D B9CF A082 0836 08AD 9385 DA04 4DC8 3AC4
+
+--=-02LuVa+oLVR5EkVW6w7o
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBIoGdxk4XaBE3IOsQRAllJAJ4/Jo4rl+QHMHx5ubFSDMZCLMG5qQCgnilx
+IiGB6Hp04MNxH9+S+RUg0uo=
+=Fx+9
+-----END PGP SIGNATURE-----
+
+--=-02LuVa+oLVR5EkVW6w7o--
+
