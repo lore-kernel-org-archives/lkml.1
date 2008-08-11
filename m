@@ -1,87 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754783AbYHKAQX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754858AbYHKAWg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754783AbYHKAQX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Aug 2008 20:16:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752733AbYHKAQP
+	id S1754858AbYHKAWg (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Aug 2008 20:22:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752703AbYHKAW2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Aug 2008 20:16:15 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:51117 "EHLO smtps.tip.net.au"
+	Sun, 10 Aug 2008 20:22:28 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:50557 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752703AbYHKAQP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Aug 2008 20:16:15 -0400
-Date: Mon, 11 Aug 2008 10:16:02 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: James Morris <jmorris@namei.org>
-Cc: David Howells <dhowells@redhat.com>, linux-kernel@vger.kernel.org,
-       "David S. Miller" <davem@davemloft.net>,
-       Steve French <sfrench@us.ibm.com>
-Subject: Re: Resolved merge conflicts in next-creds
-Message-Id: <20080811101602.09555609.sfr@canb.auug.org.au>
-In-Reply-To: <alpine.LRH.1.10.0808110950530.3636@tundra.namei.org>
-References: <alpine.LRH.1.10.0808110950530.3636@tundra.namei.org>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Mon__11_Aug_2008_10_16_02_+1000_kHu4xOUMxHKK0W6m"
+	id S1752262AbYHKAW1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 Aug 2008 20:22:27 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <20080810113044.19143b0a@worthy.swandive.local>
+References: <20080810113044.19143b0a@worthy.swandive.local> <1218322518.3268.0.camel@luna.unix.geek.nz> <1218287473.3155.13.camel@dhcppc0> <1218281190.3155.5.camel@dhcppc0> <1218214935.3146.5.camel@dhcppc0> <alpine.LRH.1.10.0808090747150.29079@tundra.namei.org> <14476.1218286327@redhat.com> <15386.1218290826@redhat.com> <10251.1218361539@redhat.com> 
+To: Grant Wilson <grant.wilson@zen.co.uk>
+Cc: dhowells@redhat.com, Jasper Bryant-Greene <jasper@amiton.co.nz>,
+       Thomas Meyer <thomas@m3y3r.de>, James Morris <jmorris@namei.org>,
+       Linux-Kernel <linux-kernel@vger.kernel.org>,
+       Linux-Next <linux-next@vger.kernel.org>
+Subject: Re: next-20080808: bash: fork: Resource temporarily unavailable
+X-Mailer: MH-E 8.0.3+cvs; nmh 1.3; GNU Emacs 23.0.50
+Date: Mon, 11 Aug 2008 01:21:10 +0100
+Message-ID: <22475.1218414070@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Mon__11_Aug_2008_10_16_02_+1000_kHu4xOUMxHKK0W6m
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Grant Wilson <grant.wilson@zen.co.uk> wrote:
 
-Hi James,
+> [  223.039938] Rlimit EAGAIN (-1 >= 16375, uid 1000)
+> [  223.044744] copy_process() = -11
+> [  226.660319] Rlimit EAGAIN (-1 >= 16375, uid 1000)
+> [  226.664166] copy_process() = -11
 
-On Mon, 11 Aug 2008 09:57:44 +1000 (EST) James Morris <jmorris@namei.org> w=
-rote:
->
-> I manually resolved the following conflicts in
->=20
-> git://git.kernel.org/pub/scm/linux/kernel/git/jmorris/security-testing-2.=
-6#next-creds
->=20
-> when merging with latest Linus.  (This branch holds the creds API changes
-> from David Howells and is being pulled into linux-next).
+Can you try the attached patch please?
 
-Thanks for that.
+David
+---
+CRED: Inc the user processes count on cred share return from copy_creds()
 
-> The CIFS conflicts were collisions with API changes.  I'm not sure how=20
-> best to extract this information from git.  'git-rerere' doesn't seem to=
-=20
-> do anythig, even with:
->=20
-> $ git-config --list
-> rerere.enabled=3D1
+From: David Howells <dhowells@redhat.com>
 
-"git rerere" works behind the scenes to fix up merge conflicts that you
-have fixed once before.  All it does is record the diff of conflicted
-files after the merge fails and then the new versions of those files when
-you do the next commit.  I know of no way to get any useful information
-out of it.
+Increment the user processes count in the case where copy_creds() returns after
+sharing the parent's credentials instead of allocating new ones.
 
-The git show below should, however, be sufficient and looks just like
-what I did on Friday.
+Signed-off-by: David Howells <dhowells@redhat.com>
+---
 
-I have a plan for getting rid of these - I will start on it today or
-tomorrow.
+ kernel/cred.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
 
---Signature=_Mon__11_Aug_2008_10_16_02_+1000_kHu4xOUMxHKK0W6m
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkifhMIACgkQjjKRsyhoI8y/0ACgtUXjXg9F8nPKacUNGTwRtbKH
-N/0AnRwN2Gh7bkfAUN4k7XC5dcYsoFuo
-=UDmi
------END PGP SIGNATURE-----
-
---Signature=_Mon__11_Aug_2008_10_16_02_+1000_kHu4xOUMxHKK0W6m--
+diff --git a/kernel/cred.c b/kernel/cred.c
+index f89c5e5..056ec90 100644
+--- a/kernel/cred.c
++++ b/kernel/cred.c
+@@ -299,6 +299,7 @@ int copy_creds(struct task_struct *p, unsigned long clone_flags)
+ #endif
+ 		p->real_cred = get_cred(p->cred);
+ 		get_cred(p->cred);
++		atomic_inc(&p->cred->user->processes);
+ 		return 0;
+ 	}
+ 
