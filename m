@@ -1,82 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754525AbYHKOQ3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754574AbYHKORa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754525AbYHKOQ3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Aug 2008 10:16:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752122AbYHKOQU
+	id S1754574AbYHKORa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Aug 2008 10:17:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751901AbYHKORW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Aug 2008 10:16:20 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:43201 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752165AbYHKOQT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Aug 2008 10:16:19 -0400
-Subject: Re: [PATCH 4/5] kmemtrace: SLUB hooks.
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
-       mathieu.desnoyers@polymtl.ca, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, rdunlap@xenotime.net, mpm@selenic.com,
-       rostedt@goodmis.org, tglx@linutronix.de
-In-Reply-To: <48A048FD.30909@linux-foundation.org>
-References: <1218388447-5578-1-git-send-email-eduard.munteanu@linux360.ro>
-	 <1218388447-5578-2-git-send-email-eduard.munteanu@linux360.ro>
-	 <1218388447-5578-3-git-send-email-eduard.munteanu@linux360.ro>
-	 <1218388447-5578-4-git-send-email-eduard.munteanu@linux360.ro>
-	 <1218388447-5578-5-git-send-email-eduard.munteanu@linux360.ro>
-	 <48A046F5.2000505@linux-foundation.org>
-	 <1218463774.7813.291.camel@penberg-laptop>
-	 <48A048FD.30909@linux-foundation.org>
-Date: Mon, 11 Aug 2008 17:16:17 +0300
-Message-Id: <1218464177.7813.293.camel@penberg-laptop>
+	Mon, 11 Aug 2008 10:17:22 -0400
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:42784 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751314AbYHKORV (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Aug 2008 10:17:21 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org, tglx@linutronix.de,
+       marcin.slusarz@gmail.com, linux-kernel@vger.kernel.org,
+       davem@davemloft.net, rostedt@goodmis.org, paulmck@linux.vnet.ibm.com
+Subject: Re: [PATCH] printk: robustify printk
+In-Reply-To: Your message of "Mon, 11 Aug 2008 13:42:43 +0200."
+             <20080811114243.GO9038@one.firstfloor.org>
+From: Valdis.Kletnieks@vt.edu
+References: <alpine.LFD.1.10.0808081014240.3462@nehalem.linux-foundation.org> <1218217257.29098.2.camel@lappy.programming.kicks-ass.net> <alpine.LFD.1.10.0808081043160.3462@nehalem.linux-foundation.org> <1218219269.29098.5.camel@lappy.programming.kicks-ass.net> <20080808121428.646a8b3c.akpm@linux-foundation.org> <1218223269.29098.12.camel@lappy.programming.kicks-ass.net> <1218224829.29098.19.camel@lappy.programming.kicks-ass.net> <20080811104526.GA15186@elte.hu> <87zlnj24qc.fsf@basil.nowhere.org> <1218453726.10800.63.camel@twins>
+            <20080811114243.GO9038@one.firstfloor.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: multipart/signed; boundary="==_Exmh_1218464121_9495P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
-X-Mailer: Evolution 2.22.3.1 
+Date: Mon, 11 Aug 2008 10:15:21 -0400
+Message-ID: <22551.1218464121@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-08-11 at 09:13 -0500, Christoph Lameter wrote:
-> Pekka Enberg wrote:
-> > On Mon, 2008-08-11 at 09:04 -0500, Christoph Lameter wrote:
-> >> Eduard - Gabriel Munteanu wrote:
-> >>
-> >>
-> >>
-> >>>  static __always_inline void *kmalloc_node(size_t size, gfp_t flags, int node)
-> >>>  {
-> >>> +	void *ret;
-> >>> +
-> >>>  	if (__builtin_constant_p(size) &&
-> >>>  		size <= PAGE_SIZE && !(flags & SLUB_DMA)) {
-> >>>  			struct kmem_cache *s = kmalloc_slab(size);
-> >>> @@ -239,7 +280,13 @@ static __always_inline void *kmalloc_node(size_t size, gfp_t flags, int node)
-> >>>  		if (!s)
-> >>>  			return ZERO_SIZE_PTR;
-> >>>  
-> >>> -		return kmem_cache_alloc_node(s, flags, node);
-> >>> +		ret = kmem_cache_alloc_node_notrace(s, flags, node);
-> >>> +
-> >>> +		kmemtrace_mark_alloc_node(KMEMTRACE_TYPE_KMALLOC,
-> >>> +					  _THIS_IP_, ret,
-> >>> +					  size, s->size, flags, node);
-> >>> +
-> >>> +		return ret;
-> >> You could simplify the stuff in slub.h if you would fall back to the uninlined
-> >> functions in the case that kmemtrace is enabled. IMHO adding additional inline
-> >> code here does grow these function to a size where inlining is not useful anymore.
-> > 
-> > So, if CONFIG_KMEMTRACE is enabled, make the inlined version go away
-> > completely? I'm okay with that though I wonder if that means we now take
-> > a performance hit when CONFIG_KMEMTRACE is enabled but tracing is
-> > disabled at run-time...
-> 
-> We already take a performance hit because of the additional function calls.
-> 
-> With the above approach the kernel binary will grow significantly because you
-> are now inserting an additional function call at all call sites.
+--==_Exmh_1218464121_9495P
+Content-Type: text/plain; charset=us-ascii
 
-The function call is supposed to go away when we convert kmemtrace to
-use Mathieu's markers but I suppose even then we have a problem with
-inlining?
+On Mon, 11 Aug 2008 13:42:43 +0200, Andi Kleen said:
+> On Mon, Aug 11, 2008 at 01:22:06PM +0200, Peter Zijlstra wrote:
+> > You only loose the msgs with klogd, console still gets everything. If
+> > firewalls are generating that much data, perhaps its time to think about
+> > alternative ways to channel that.
+> 
+> Yes, and netfilter has them in fact, but it's clearly still a regression for 
+> people who rely on klogd for this today.
+> 
+> Also firewall is just an example. Other cases might be people relying
+> on these selinux messages. Or some other kernel messages.
 
+Similar to "netfilter has other ways", the SELinux messages have another
+defined way as well.  If your site is high-security and *depends* on the
+messages, the *right* answer is to run auditd to catch and log the messages,
+and configure auditd to bring the system to a screeching halt if the
+log space fills up or there's other problems (yes, some sites would rather
+have the machine drop dead than possibly miss an SELinux message).
+
+--==_Exmh_1218464121_9495P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFIoEl5cC3lWbTT17ARAiLcAJ4udSOBjHfBIVa0hwCBlYcWKqcLTQCgmTG0
+8zLnnZ3nAiJKR++gjSemmbw=
+=nVxd
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1218464121_9495P--
