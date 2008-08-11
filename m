@@ -1,102 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753930AbYHKOJp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753951AbYHKOLk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753930AbYHKOJp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Aug 2008 10:09:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751564AbYHKOJg
+	id S1753951AbYHKOLk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Aug 2008 10:11:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751763AbYHKOLc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Aug 2008 10:09:36 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:40569 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751397AbYHKOJg (ORCPT
+	Mon, 11 Aug 2008 10:11:32 -0400
+Received: from casper.infradead.org ([85.118.1.10]:42926 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751604AbYHKOLc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Aug 2008 10:09:36 -0400
-Subject: Re: [PATCH 4/5] kmemtrace: SLUB hooks.
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
-       mathieu.desnoyers@polymtl.ca, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, rdunlap@xenotime.net, mpm@selenic.com,
-       rostedt@goodmis.org, tglx@linutronix.de
-In-Reply-To: <48A046F5.2000505@linux-foundation.org>
-References: <1218388447-5578-1-git-send-email-eduard.munteanu@linux360.ro>
-	 <1218388447-5578-2-git-send-email-eduard.munteanu@linux360.ro>
-	 <1218388447-5578-3-git-send-email-eduard.munteanu@linux360.ro>
-	 <1218388447-5578-4-git-send-email-eduard.munteanu@linux360.ro>
-	 <1218388447-5578-5-git-send-email-eduard.munteanu@linux360.ro>
-	 <48A046F5.2000505@linux-foundation.org>
-Date: Mon, 11 Aug 2008 17:09:34 +0300
-Message-Id: <1218463774.7813.291.camel@penberg-laptop>
+	Mon, 11 Aug 2008 10:11:32 -0400
+Date: Mon, 11 Aug 2008 07:11:28 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: S K <nospamnoham@gmail.com>, Zhao Yakui <yakui.zhao@intel.com>,
+       Thomas Renninger <trenn@suse.de>,
+       Alan Jenkins <alan-jenkins@tuffmail.co.uk>,
+       linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
+Subject: Re: cpufreq doesn't seem to work in Intel Q9300
+Message-ID: <20080811071128.0165be50@infradead.org>
+In-Reply-To: <20080811140206.GB3338@cs181140183.pp.htv.fi>
+References: <514e099a0808030300u140a0ae7m92a2e7294f39f7b7@mail.gmail.com>
+	<200808081430.43012.trenn@suse.de>
+	<aff5deaf0808081123s1fbe6a5cn7847e9cb053c1f5a@mail.gmail.com>
+	<200808092059.47863.trenn@suse.de>
+	<514e099a0808100128u303207clcb22292db2f0cc59@mail.gmail.com>
+	<1218418431.6671.52.camel@yakui_zhao.sh.intel.com>
+	<514e099a0808102144n241c8e9ak255bded0a80744f1@mail.gmail.com>
+	<20080811042244.469f8e1d@infradead.org>
+	<20080811140206.GB3338@cs181140183.pp.htv.fi>
+Organization: Intel
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Mailer: Evolution 2.22.3.1 
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-08-11 at 09:04 -0500, Christoph Lameter wrote:
-> Eduard - Gabriel Munteanu wrote:
-> 
-> 
-> 
-> >  static __always_inline void *kmalloc_node(size_t size, gfp_t flags, int node)
-> >  {
-> > +	void *ret;
-> > +
-> >  	if (__builtin_constant_p(size) &&
-> >  		size <= PAGE_SIZE && !(flags & SLUB_DMA)) {
-> >  			struct kmem_cache *s = kmalloc_slab(size);
-> > @@ -239,7 +280,13 @@ static __always_inline void *kmalloc_node(size_t size, gfp_t flags, int node)
-> >  		if (!s)
-> >  			return ZERO_SIZE_PTR;
-> >  
-> > -		return kmem_cache_alloc_node(s, flags, node);
-> > +		ret = kmem_cache_alloc_node_notrace(s, flags, node);
-> > +
-> > +		kmemtrace_mark_alloc_node(KMEMTRACE_TYPE_KMALLOC,
-> > +					  _THIS_IP_, ret,
-> > +					  size, s->size, flags, node);
-> > +
-> > +		return ret;
-> 
-> You could simplify the stuff in slub.h if you would fall back to the uninlined
-> functions in the case that kmemtrace is enabled. IMHO adding additional inline
-> code here does grow these function to a size where inlining is not useful anymore.
+On Mon, 11 Aug 2008 17:02:06 +0300
+Adrian Bunk <bunk@kernel.org> wrote:
 
-So, if CONFIG_KMEMTRACE is enabled, make the inlined version go away
-completely? I'm okay with that though I wonder if that means we now take
-a performance hit when CONFIG_KMEMTRACE is enabled but tracing is
-disabled at run-time...
-
-> > diff --git a/mm/slub.c b/mm/slub.c
-> > index 315c392..940145f 100644
-> > --- a/mm/slub.c
-> > +++ b/mm/slub.c
-> > @@ -23,6 +23,7 @@
-> >  #include <linux/kallsyms.h>
-> >  #include <linux/memory.h>
-> >  #include <linux/math64.h>
-> > +#include <linux/kmemtrace.h>
-> >  
-> >  /*
-> >   * Lock order:
-> > @@ -1652,18 +1653,47 @@ static __always_inline void *slab_alloc(struct kmem_cache *s,
-> >  
-> >  void *kmem_cache_alloc(struct kmem_cache *s, gfp_t gfpflags)
-> >  {
-> > -	return slab_alloc(s, gfpflags, -1, __builtin_return_address(0));
-> > +	void *ret = slab_alloc(s, gfpflags, -1, __builtin_return_address(0));
-> > +
-> > +	kmemtrace_mark_alloc(KMEMTRACE_TYPE_CACHE, _RET_IP_, ret,
-> > +			     s->objsize, s->size, gfpflags);
-> > +
-> > +	return ret;
-> >  }
+> On Mon, Aug 11, 2008 at 04:22:44AM -0700, Arjan van de Ven wrote:
+> > On Sun, 10 Aug 2008 21:44:50 -0700
+> > "S K" <nospamnoham@gmail.com> wrote:
+> > 
+> > > > But it is very strange that cpufreq scaling can work on Windows
+> > > > XP. Will you please try the P4 clock cpufreq driver and see
+> > > > whether the scaling can work ? In fact P4 clock cpufreq driver
+> > > > is already replaced by acpi_cpufreq driver for the latest cpu.
+> > > > Anyway please try p4 clock cpufreq driver.
+> > > 
+> > > What is the name of the driver? I'm not able to find any such
+> > > driver in Fedora 9 installed modules. There is only acpi-cpufreq
+> > > and powernow-k8.
+> > 
+> > yeah don't bother with p4-clockmod, it's not something that saves
+> > you energy... it only gives you a fake feeling that you would.
 > 
-> _RET_IP == __builtin_return_address(0) right? Put that into a local variable?
-> At least we need consistent usage within one function. Maybe convert
-> __builtin_return_address(0) to _RET_IP_ within slub?
+> This statement is only true for HPC environments and when you measure 
+> Watts per work done.
+> 
+> But if you have some desktop or server with a load that is determined
+> by when it gets used, then p4-clockmod can actually save energy when
+> the computer is not under high load or even idle.
+> 
+> Or do I miss anything?
 
-I think we should just convert SLUB to use _RET_IP_ everywhere. Eduard,
-care to make a patch and send it and rebase this on top of that?
+yes you're missing quite a few things...
+lets build this up
 
+1) when the cpu is idle (as in "idle loop C states/hlt"; p4_clockmod
+doesn't mean anything.. the clock is stopped not just skipped.
+2) when the cpu is executing code (eg non-idle), it takes more power
+for a unit of time than it takes when it's idle
+3) when the cpu is in thermal throttle (p4_clockmod) and does a
+throttle cycle, it'll take less power for that cycle than a full
+execution (at least of the power intensive type of instruction), but
+more than if it would have been in idle.
+
+now lets take your "Light load" example (light could mean anything less
+than 100% cpu use for all I care) and lets assume a 50% throttle (just
+because it makes the explenation simpler, not fundamental)
+
+in 50% thermal throttle, after every cycle a throttle cycle is
+inserted, this means that code that gets executed will take 2x as long
+basically.
+
+take your lightly loaded case, and lets say you have 20% CPU
+utilization in the unthrottled case (again, random number, works with
+any number). Now with the thermal throttle, you suddenly take 40%.
+
+so before you had for one second "20% expensive, 80% low power" 
+now you have for one second "20% expensive, 20% throttle power, 60% low
+power"
+
+since throttle power is higher than low/idle power.. you lose.
+
+-- 
+If you want to reach me at my work email, use arjan@linux.intel.com
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
