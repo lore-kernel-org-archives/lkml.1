@@ -1,63 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754675AbYHKQj1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753851AbYHKQmE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754675AbYHKQj1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Aug 2008 12:39:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753312AbYHKQjM
+	id S1753851AbYHKQmE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Aug 2008 12:42:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751748AbYHKQlx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Aug 2008 12:39:12 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:38296 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753218AbYHKQjL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Aug 2008 12:39:11 -0400
-Date: Mon, 11 Aug 2008 18:38:55 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Rene Herman <rene.herman@keyaccess.nl>
-Cc: Andrew Morton <akpm@osdl.org>, Yinghai Lu <yhlu.kernel@gmail.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: kill arch/x86/kernel/mpparse.c debugging printk.
-Message-ID: <20080811163855.GE4524@elte.hu>
-References: <489C77C6.7040408@keyaccess.nl> <20080811122038.GA10082@elte.hu> <48A05E79.4030304@keyaccess.nl>
+	Mon, 11 Aug 2008 12:41:53 -0400
+Received: from usul.saidi.cx ([204.11.33.34]:57507 "EHLO usul.overt.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751680AbYHKQlw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Aug 2008 12:41:52 -0400
+Message-ID: <48A06BBC.7060007@overt.org>
+Date: Mon, 11 Aug 2008 09:41:32 -0700
+From: Philip Langdale <philipl@overt.org>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080707)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <48A05E79.4030304@keyaccess.nl>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+CC: LKML <linux-kernel@vger.kernel.org>, Matthew Garrett <mjg59@srcf.ucam.org>,
+       toshiba_acpi@memebeam.org, Ivo van Doorn <ivdoorn@gmail.com>,
+       linux-wireless@vger.kernel.org
+Subject: Re: [PATCH 1/1] toshiba_acpi: Add support for bluetooth toggling
+ through rfkill (v2)
+References: <4894B1B4.6050003@overt.org> <20080803042613.GC6053@khazad-dum.debian.net> <48965716.6020508@overt.org> <20080805212416.GB21738@khazad-dum.debian.net> <489A7CCF.1090407@overt.org> <20080807134530.GB17062@khazad-dum.debian.net>
+In-Reply-To: <20080807134530.GB17062@khazad-dum.debian.net>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-SA-Do-Not-RunX1: Yes
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Henrique de Moraes Holschuh wrote:
+> 
+> Hmm?  UNBLOCKED means it is not being rfkilled.  Why is not working?  Put
+> some debug printks on your toggle_radio callback, that might help fix the
+> issue...
+> 
 
-* Rene Herman <rene.herman@keyaccess.nl> wrote:
+Well, what I see is this:
 
->> The way to make the printout depend on apic=debug/verbose is to do 
->> something like this:
->>
->> 	apic_printk(APIC_VERBOSE, "Scan SMP from %p for %ld bytes.\n", bp, length);
->>
->> Would you mind to send a patch for that?
->
-> I wouldn't. Like this? This turns the printk's that used to be 
-> Dprintk's into apic_printk's.
+At modprobe, I get an explicit unblock request. When I modify 'state' in sysfs,
+I see appropriate requests to soft block and unblock. When I activate the hardware
+kill switch, the rfkill state goes to hard_block but no one calls toggle_radio
+and when I release the kill switch, the state goes to soft_block and no one
+calls toggle_radio.
 
-applied to tip/x86/urgent - thanks Rene.
-
-> I am myself only interested in the one at the top of smp_scan_config() 
-> (it made me think I had misconfigured something upon all of a sudden 
-> seeing SMP printk's on my UP machine on 2.6.27-rc) but I guess this is 
-> the more complete version.
->
-> One problem; on 32-bit, "apic=" is a __setup() param and isn't 
-> actually early enough for us here so this needs it turned into an 
-> early_param() (followup).
-
-good spotting, applied that one to tip/x86/urgent as well - thanks.
-
-	Ingo
+--phil
