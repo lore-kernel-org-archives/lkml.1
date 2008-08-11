@@ -1,126 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751892AbYHKHAl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751967AbYHKHER@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751892AbYHKHAl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Aug 2008 03:00:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750893AbYHKHAd
+	id S1751967AbYHKHER (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Aug 2008 03:04:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750809AbYHKHEH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Aug 2008 03:00:33 -0400
-Received: from wilson.telenet-ops.be ([195.130.132.42]:46429 "EHLO
-	wilson.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750739AbYHKHAd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Aug 2008 03:00:33 -0400
-Date: Mon, 11 Aug 2008 09:00:30 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-cc: Greg Ungerer <gerg@uclinux.org>, Geert Uytterhoeven <geert@linux-m68k.org>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>
-Subject: [PATCH] m68k{,nommu}: Wire up new system calls
-Message-ID: <Pine.LNX.4.64.0808110859340.10672@anakin>
+	Mon, 11 Aug 2008 03:04:07 -0400
+Received: from mail.hevs.ch ([153.109.23.10]:48239 "EHLO mail.hevs.ch"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750739AbYHKHEG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Aug 2008 03:04:06 -0400
+From: Marc Pignat <marc.pignat@hevs.ch>
+Organization: HEVs
+To: David Brownell <david-b@pacbell.net>
+Subject: Re: [RFC,PATCH] i2c: fix device_init_wakeup place
+Date: Mon, 11 Aug 2008 09:03:58 +0200
+User-Agent: KMail/1.9.9
+Cc: khali@linux-fr.org, linux-kernel@vger.kernel.org, i2c@lm-sensors.org
+References: <200807291535.45689.marc.pignat@hevs.ch> <20080809185619.6211fbf3@hyperion.delvare> <20080810230404.B2943B2AB@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
+In-Reply-To: <20080810230404.B2943B2AB@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200808110903.58658.marc.pignat@hevs.ch>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Wire up for m68k{,nommu} the system calls that were added in the last merge
-window:
+Hi all!
 
-commit 4006553b06306b34054529477b06b68a1c66249b (flag parameters: inotify_init)
-commit ed8cae8ba01348bfd83333f4648dd807b04d7f08 (flag parameters: pipe)
-commit 336dd1f70ff62d7dd8655228caed4c5bfc818c56 (flag parameters: dup2)
-commit a0998b50c3f0b8fdd265c63e0032f86ebe377dbf (flag parameters: epoll_create)
-commit 9fe5ad9c8cef9ad5873d8ee55d1cf00d9b607df0 (flag parameters add-on: remove
-						 epoll_create size param)
-commit b087498eb5605673b0f260a7620d91818cd72304 (flag parameters: eventfd)
-commit 9deb27baedb79759c3ab9435a7d8b841842d56e9 (flag parameters: signalfd)
+First, I would like to ask David to exuse me for saying something like "your
+patch did nothing", it was crude.
 
-Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
-Acked-by: Greg Ungerer <gerg@uclinux.org>
----
- arch/m68k/kernel/entry.S             |    6 ++++++
- arch/m68knommu/include/asm/unistd.h  |    8 +++++++-
- arch/m68knommu/kernel/syscalltable.S |    6 ++++++
- include/asm-m68k/unistd.h            |    8 +++++++-
- 4 files changed, 26 insertions(+), 2 deletions(-)
+David had a real good idea to add the flag I2C_CLIENT_WAKE.
 
---- a/arch/m68k/kernel/entry.S
-+++ b/arch/m68k/kernel/entry.S
-@@ -747,4 +747,10 @@ sys_call_table:
- 	.long sys_fallocate		/* 320 */
- 	.long sys_timerfd_settime
- 	.long sys_timerfd_gettime
-+	.long sys_signalfd4
-+	.long sys_eventfd2
-+	.long sys_epoll_create1		/* 325 */
-+	.long sys_dup3
-+	.long sys_pipe2
-+	.long sys_inotify_init1
- 
---- a/arch/m68knommu/include/asm/unistd.h
-+++ b/arch/m68knommu/include/asm/unistd.h
-@@ -326,10 +326,16 @@
- #define __NR_fallocate		320
- #define __NR_timerfd_settime	321
- #define __NR_timerfd_gettime	322
-+#define __NR_signalfd4		323
-+#define __NR_eventfd2		324
-+#define __NR_epoll_create1	325
-+#define __NR_dup3		326
-+#define __NR_pipe2		327
-+#define __NR_inotify_init1	328
- 
- #ifdef __KERNEL__
- 
--#define NR_syscalls		323
-+#define NR_syscalls		329
- 
- #define __ARCH_WANT_IPC_PARSE_VERSION
- #define __ARCH_WANT_OLD_READDIR
---- a/arch/m68knommu/kernel/syscalltable.S
-+++ b/arch/m68knommu/kernel/syscalltable.S
-@@ -341,6 +341,12 @@ ENTRY(sys_call_table)
- 	.long sys_fallocate		/* 320 */
- 	.long sys_timerfd_settime
- 	.long sys_timerfd_gettime
-+	.long sys_signalfd4
-+	.long sys_eventfd2
-+	.long sys_epoll_create1		/* 325 */
-+	.long sys_dup3
-+	.long sys_pipe2
-+	.long sys_inotify_init1
- 
- 	.rept NR_syscalls-(.-sys_call_table)/4
- 		.long sys_ni_syscall
---- a/include/asm-m68k/unistd.h
-+++ b/include/asm-m68k/unistd.h
-@@ -325,10 +325,16 @@
- #define __NR_fallocate		320
- #define __NR_timerfd_settime	321
- #define __NR_timerfd_gettime	322
-+#define __NR_signalfd4		323
-+#define __NR_eventfd2		324
-+#define __NR_epoll_create1	325
-+#define __NR_dup3		326
-+#define __NR_pipe2		327
-+#define __NR_inotify_init1	328
- 
- #ifdef __KERNEL__
- 
--#define NR_syscalls		323
-+#define NR_syscalls		329
- 
- #define __ARCH_WANT_IPC_PARSE_VERSION
- #define __ARCH_WANT_OLD_READDIR
 
-Gr{oetje,eeting}s,
+On Monday 11 August 2008, David Brownell wrote:
+> > > The current code calls device_init_wakeup() before device_register, but
+...
+> > Interesting point... David, what are you using this code for then? Same
+> > question for you Marc.
+...
 
-						Geert
+I use it for an rtc chip (ds1374), but the board is not in tree (should be
+soon).
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+> 
+> 
+> > > This patch also include a small functionnal change: the I2C_CLIENT_WAKE
+> > > is no more removed from the client flags, but this should't hurt.
+> >
+> > Why do you want to change this?
+> 
+> It's kind of essential to making this patch work!  Else the flag
+> won't be available when the i2c core gets control of that device
+> node again, after device_initialize() code zeroes those flags.
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+Now the flag is used in the i2c_device_probe function and must be preserved
+for future use (probe of another device or re-probe).
+
+The downside is that it make this flag visible to the i2c_client.
+
+To preserve the original behavior (hide the flag to the driver), the flag
+should be saved, for instance in the i2c_device structure.
+I think adding more code and adding a field in the i2c_device structure costs
+more than making this flag visible (but if you think differently, I can fix the
+patch).
+
+
+
+> 
+> 
+...
+> Better would be to preserve any existing settings:
+> 
+> 	if (!device_can_wakeup(&client->dev))
+> 		device_init_wakeup(...)
+> 
+> That way the userspace policy setting is preserved unless the
+> device itself gets removed ... instead of being clobbered by
+> the simple act of (re)probing a driver.
+Ok, will be fixed in version 2
+
+
+Best regards
+
+Marc
