@@ -1,220 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755290AbYHLO7R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754416AbYHLO7n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755290AbYHLO7R (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Aug 2008 10:59:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753005AbYHLO67
+	id S1754416AbYHLO7n (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Aug 2008 10:59:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753050AbYHLO7d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Aug 2008 10:58:59 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:59202 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752556AbYHLO66 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Aug 2008 10:58:58 -0400
-Date: Tue, 12 Aug 2008 10:58:12 -0400
-From: Aristeu Rozanski <aris@redhat.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       jirislaby@gmail.com
-Subject: [PATCH] vt: kill tty->count usage (v2)
-Message-ID: <20080812145812.GH7154@redhat.com>
-References: <20080808213625.GK20355@redhat.com> <20080808222635.4fe52b51@lxorguk.ukuu.org.uk>
+	Tue, 12 Aug 2008 10:59:33 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:3543 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752898AbYHLO7c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Aug 2008 10:59:32 -0400
+Date: Mon, 11 Aug 2008 18:10:15 +0200
+From: Pavel Machek <pavel@suse.cz>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: Ulrich Drepper <drepper@gmail.com>, austin_zhang@linux.intel.com,
+       bunk@kernel.org, dwmw2@infradead.org, davem@davemloft.net,
+       randy.dunlap@oracle.com, linux-kernel@vger.kernel.org,
+       linux-crypto@vger.kernel.org
+Subject: Re: [PATCH] Using Intel CRC32 instruction to accelerate CRC32c algorithm by new crypto API -V3.
+Message-ID: <20080811161015.GA5240@ucw.cz>
+References: <a36005b50808072038w3e88658p6769e1e3779b6cab@mail.gmail.com> <E1KRS7u-0005EP-00@gondolin.me.apana.org.au>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080808222635.4fe52b51@lxorguk.ukuu.org.uk>
-User-Agent: Mutt/1.4.2.2i
+In-Reply-To: <E1KRS7u-0005EP-00@gondolin.me.apana.org.au>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The commit e0426e6a09954d205da2d674a3d368d2715e3afd fixes a real race but
-still isn't enough to prevent these:
+On Fri 2008-08-08 21:35:30, Herbert Xu wrote:
+> Ulrich Drepper <drepper@gmail.com> wrote:
+> >
+> > I think you want to use
+> > 
+> >  #define SCALE_F sizeof(unsigned long)
+> 
+> Yeah in general that's what we should do.  However, this driver
+> is specific to Intel x86 CPUs.
 
-kobject_add_internal failed for vcs7 with -EEXIST, don't try to register
-things with the same name in the same direc.
-Pid: 2967, comm: vcs_stress Not tainted 2.6.25 #10
- [<c04e852e>] kobject_add_internal+0x137/0x149
- [<c04e85d4>] kobject_add_varg+0x35/0x41
- [<c04e8645>] kobject_add+0x43/0x49
- [<c055e54f>] device_add+0x91/0x4b4
- [<c055e984>] device_register+0x12/0x15
- [<c055e9f6>] device_create+0x6f/0x95
- [<c053e69b>] vcs_make_sysfs+0x23/0x4f
- [<c0543aff>] con_open+0x74/0x82
- [<c0538b64>] tty_open+0x188/0x287
- [<c047b1c8>] chrdev_open+0x119/0x135
- [<c04775d4>] __dentry_open+0xcf/0x185
- [<c0477711>] nameidata_to_filp+0x1f/0x33
- [<c047b0af>] ? chrdev_open+0x0/0x135
- [<c0477753>] do_filp_open+0x2e/0x35
- [<c0627da6>] ? _spin_unlock+0x1d/0x20
- [<c04774ef>] ? get_unused_fd_flags+0xc9/0xd3
- [<c047779a>] do_sys_open+0x40/0xb5
- [<c0477851>] sys_open+0x1e/0x26
- [<c0404962>] syscall_call+0x7/0xb
- =======================
+I thought we support intel x86 cpus in both 32 and 64bit modes...?
 
-and the reason for that is a race in release_dev() that can call driver's close
-two or more at the same time. If these are the last two references, both calls
-will be made before tty->count is decremented. And most tty drivers check
-tty->count to identify the last close so the resources can be released. So
-the close() method and the tty->count should happen without concurrency or
-each driver can keep the number of the references itself. Holding tty_mutex
-before calling driver's close() and updating tty->count is not possible
-because some drivers sleep waiting until the tx buffer is empty.
-
-This patch was tested under normal usage and using the stress application I
-wrote that triggers the problem more easily.
-
-Updates:
-- now con_open() returns -ERESTARTSYS instead of -EBUSY to make tty_open()
-  retry the open in case of vt being closed
-- do not release console_semaphore on con_release() when calling
-  vcs_remove_sysfs(), this would be a revert of
-  e0426e6a09954d205da2d674a3d368d2715e3afd
-
-Signed-off-by: Aristeu Rozanski <arozansk@redhat.com>
-
----
-
- drivers/char/vt.c              |   79 ++++++++++++++++++++++++++++-------------
- include/linux/console_struct.h |    2 +
- 2 files changed, 57 insertions(+), 24 deletions(-)
-
---- tty.orig/drivers/char/vt.c	2008-08-06 11:49:59.000000000 -0400
-+++ tty/drivers/char/vt.c	2008-08-12 09:14:11.000000000 -0400
-@@ -2732,15 +2732,24 @@ static int con_open(struct tty_struct *t
- {
- 	unsigned int currcons = tty->index;
- 	int ret = 0;
-+	struct vc_data *vc;
- 
- 	acquire_console_sem();
- 	if (tty->driver_data == NULL) {
- 		ret = vc_allocate(currcons);
- 		if (ret == 0) {
--			struct vc_data *vc = vc_cons[currcons].d;
-+			vc = vc_cons[currcons].d;
-+
-+			if (vc->vc_tty != NULL) {
-+				/* we're still releasing this console entry */
-+				release_console_sem();
-+				return -ERESTARTSYS;
-+			}
-+
- 			tty->driver_data = vc;
- 			vc->vc_tty = tty;
- 
-+			kref_init(&vc->kref);
- 			if (!tty->winsize.ws_row && !tty->winsize.ws_col) {
- 				tty->winsize.ws_row = vc_cons[currcons].d->vc_rows;
- 				tty->winsize.ws_col = vc_cons[currcons].d->vc_cols;
-@@ -2753,39 +2762,60 @@ static int con_open(struct tty_struct *t
- 			release_console_sem();
- 			return ret;
- 		}
-+	} else {
-+		vc = tty->driver_data;
-+		kref_get(&vc->kref);
- 	}
- 	release_console_sem();
- 	return ret;
- }
- 
--/*
-- * We take tty_mutex in here to prevent another thread from coming in via init_dev
-- * and taking a ref against the tty while we're in the process of forgetting
-- * about it and cleaning things up.
-- *
-- * This is because vcs_remove_sysfs() can sleep and will drop the BKL.
-- */
-+static void con_release(struct kref *kref)
-+{
-+	struct vc_data *vc = container_of(kref, struct vc_data, kref);
-+	struct tty_struct *tty = vc->vc_tty;
-+
-+	tty->driver_data = NULL;
-+
-+	vcs_remove_sysfs(tty);
-+
-+	/* now this slot is officially free */
-+	vc->vc_tty = NULL;
-+}
-+
- static void con_close(struct tty_struct *tty, struct file *filp)
- {
--	mutex_lock(&tty_mutex);
--	acquire_console_sem();
--	if (tty && tty->count == 1) {
--		struct vc_data *vc = tty->driver_data;
-+	struct vc_data *vc = tty->driver_data;
- 
--		if (vc)
--			vc->vc_tty = NULL;
--		tty->driver_data = NULL;
--		vcs_remove_sysfs(tty);
--		release_console_sem();
--		mutex_unlock(&tty_mutex);
--		/*
--		 * tty_mutex is released, but we still hold BKL, so there is
--		 * still exclusion against init_dev()
--		 */
-+	/*
-+	 * if this tty was hung up, all the resources have been freed already
-+	 */
-+	if (tty_hung_up_p(filp))
- 		return;
--	}
-+
-+	acquire_console_sem();
-+	/*
-+	 * tty->driver_data can be NULL if con_open() fails because tty layer
-+	 * will call us even if the first open wasn't successful.
-+	 */
-+	if (vc != NULL)
-+		kref_put(&vc->kref, con_release);
-+	release_console_sem();
-+}
-+
-+/*
-+ * hangup was called: release all resources. all the currently open files will
-+ * have the file_operations changed to hung_up_tty_fops. this means that the
-+ * only choice the application has is close and open again.
-+ */
-+static void con_hangup(struct tty_struct *tty)
-+{
-+	struct vc_data *vc = tty->driver_data;
-+
-+	acquire_console_sem();
-+	BUG_ON(vc == NULL);
-+	con_release(&vc->kref);
- 	release_console_sem();
--	mutex_unlock(&tty_mutex);
- }
- 
- static int default_italic_color    = 2; // green (ASCII)
-@@ -2909,6 +2939,7 @@ static const struct tty_operations con_o
- 	.start = con_start,
- 	.throttle = con_throttle,
- 	.unthrottle = con_unthrottle,
-+	.hangup = con_hangup,
- };
- 
- int __init vty_init(void)
---- tty.orig/include/linux/console_struct.h	2008-08-12 09:14:18.000000000 -0400
-+++ tty/include/linux/console_struct.h	2008-08-11 10:25:51.000000000 -0400
-@@ -15,6 +15,7 @@
- #include <linux/wait.h>
- #include <linux/vt.h>
- #include <linux/workqueue.h>
-+#include <linux/kref.h>
- 
- struct vt_struct;
- 
-@@ -108,6 +109,7 @@ struct vc_data {
- 	unsigned long	vc_uni_pagedir;
- 	unsigned long	*vc_uni_pagedir_loc;  /* [!] Location of uni_pagedir variable for this console */
- 	/* additional information is in vt_kern.h */
-+	struct kref	kref;
- };
- 
- struct vc {
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
