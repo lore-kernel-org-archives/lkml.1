@@ -1,48 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752348AbYHKKBj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752524AbYHKKHf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752348AbYHKKBj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Aug 2008 06:01:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751193AbYHKKB1
+	id S1752524AbYHKKHf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Aug 2008 06:07:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751342AbYHKKH0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Aug 2008 06:01:27 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:39599 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751163AbYHKKB0 (ORCPT
+	Mon, 11 Aug 2008 06:07:26 -0400
+Received: from e34.co.us.ibm.com ([32.97.110.152]:60621 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751184AbYHKKHZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Aug 2008 06:01:26 -0400
-Subject: Changing the timing of -gitX snapshot releases?
-From: David Woodhouse <dwmw2@infradead.org>
-To: Theodore Tso <tytso@MIT.EDU>
-Cc: Christoph Hellwig <hch@lst.de>, akpm@osdl.org, linux-ext4@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20080210125432.GA21729@mit.edu>
-References: <20080209093933.GA5882@lst.de> <20080210065222.GA22951@lst.de>
-	 <20080210125432.GA21729@mit.edu>
-Content-Type: text/plain
-Date: Mon, 11 Aug 2008 11:01:14 +0100
-Message-Id: <1218448874.12956.9.camel@pmac.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
-X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+	Mon, 11 Aug 2008 06:07:25 -0400
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: linux-mm@kvack.org
+Cc: Sudhir Kumar <skumar@linux.vnet.ibm.com>,
+       YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
+       Paul Menage <menage@google.com>, lizf@cn.fujitsu.com,
+       linux-kernel@vger.kernel.org, nishimura@mxp.nes.nec.co.jp,
+       Pavel Emelianov <xemul@openvz.org>, hugh@veritas.com,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Date: Mon, 11 Aug 2008 15:37:19 +0530
+Message-Id: <20080811100719.26336.98302.sendpatchset@balbir-laptop>
+Subject: [-mm][PATCH 0/2] Memory rlimit fix crash on fork
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2008-02-10 at 07:54 -0500, Theodore Tso wrote:
-> <aside> it would be nice if that happend at
-> 3am Pacific instead of midnight Pacific since very occasionally it's a
-> little after midnight before Linus pushes his last set of changes to
-> master.kernel.org</aside>
 
-That can be done. Does anyone else really care about the timing of the
-snapshots? TBH I've no idea how I ended up with '7,19' in my crontab...
+
+This patch fixes a crash that occurs when kernbench is set with memrlimit
+set to 500M on my x86_64 box. The root cause for the failure is
+
+1. We don't set mm->mmap to NULL for the process for which fork() failed
+2. mmput() dereferences vma (in unmap_vmas, vma->vm_mm).
+
+This patch fixes the problem by
+
+1. Initializing mm->mmap to NULL prior to failing dup_mmap()
+2. unmap_vmas() check if mm->mmap is NULL (vma is NULL)
+3. Don't uncharge when do_fork() fails in exit_mmap()
+
+Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+---
+
+ kernel/fork.c |   19 ++++++++++---------
+ mm/memory.c   |    6 +++++-
+ mm/mmap.c     |    6 +++++-
+ 3 files changed, 20 insertions(+), 11 deletions(-)
+
+diff -puN mm/mmap.c~memrlimit-fix-crash-on-fork mm/mmap.c
+--- linux-2.6.27-rc1/mm/mmap.c~memrlimit-fix-crash-on-fork	2008-08-11 14:45:07.000000000 +0530
++++ linux-2.6.27-rc1-balbir/mm/mmap.c	2008-08-11 14:57:45.000000000 +0530
+@@ -2104,6 +2104,7 @@ void exit_mmap(struct mm_struct *mm)
+ 	struct vm_area_struct *vma;
+ 	unsigned long nr_accounted = 0;
+ 	unsigned long end;
++	bool uncharge_as = true;
+ 
+ 	/* mm's last user has gone, and its about to be pulled down */
+ 	arch_exit_mmap(mm);
+@@ -2118,6 +2119,8 @@ void exit_mmap(struct mm_struct *mm)
+ 		}
+ 	}
+ 	vma = mm->mmap;
++	if (!vma)
++		uncharge_as = false;
+ 	lru_add_drain();
+ 	flush_cache_mm(mm);
+ 	tlb = tlb_gather_mmu(mm, 1);
+@@ -2125,7 +2128,8 @@ void exit_mmap(struct mm_struct *mm)
+ 	/* Use -1 here to ensure all VMAs in the mm are unmapped */
+ 	end = unmap_vmas(&tlb, vma, 0, -1, &nr_accounted, NULL);
+ 	vm_unacct_memory(nr_accounted);
+-	memrlimit_cgroup_uncharge_as(mm, mm->total_vm);
++	if (uncharge_as)
++		memrlimit_cgroup_uncharge_as(mm, mm->total_vm);
+ 	free_pgtables(tlb, vma, FIRST_USER_ADDRESS, 0);
+ 	tlb_finish_mmu(tlb, 0, end);
+ 
+diff -puN kernel/fork.c~memrlimit-fix-crash-on-fork kernel/fork.c
+--- linux-2.6.27-rc1/kernel/fork.c~memrlimit-fix-crash-on-fork	2008-08-11 14:45:07.000000000 +0530
++++ linux-2.6.27-rc1-balbir/kernel/fork.c	2008-08-11 14:56:04.000000000 +0530
+@@ -274,15 +274,6 @@ static int dup_mmap(struct mm_struct *mm
+ 	 */
+ 	down_write_nested(&mm->mmap_sem, SINGLE_DEPTH_NESTING);
+ 
+-	/*
+-	 * Uncharging as a result of failure is done by mmput()
+-	 * in dup_mm()
+-	 */
+-	if (memrlimit_cgroup_charge_as(oldmm, oldmm->total_vm)) {
+-		retval = -ENOMEM;
+-		goto out;
+-	}
+-
+ 	mm->locked_vm = 0;
+ 	mm->mmap = NULL;
+ 	mm->mmap_cache = NULL;
+@@ -295,6 +286,16 @@ static int dup_mmap(struct mm_struct *mm
+ 	rb_parent = NULL;
+ 	pprev = &mm->mmap;
+ 
++	/*
++	 * Called after mm->mmap is set to NULL, so that the routines
++	 * following this function understand that fork failed (read
++	 * mmput).
++	 */
++	if (memrlimit_cgroup_charge_as(oldmm, oldmm->total_vm)) {
++		retval = -ENOMEM;
++		goto out;
++	}
++
+ 	for (mpnt = oldmm->mmap; mpnt; mpnt = mpnt->vm_next) {
+ 		struct file *file;
+ 
+diff -puN mm/memory.c~memrlimit-fix-crash-on-fork mm/memory.c
+--- linux-2.6.27-rc1/mm/memory.c~memrlimit-fix-crash-on-fork	2008-08-11 14:57:48.000000000 +0530
++++ linux-2.6.27-rc1-balbir/mm/memory.c	2008-08-11 14:58:33.000000000 +0530
+@@ -901,8 +901,12 @@ unsigned long unmap_vmas(struct mmu_gath
+ 	unsigned long start = start_addr;
+ 	spinlock_t *i_mmap_lock = details? details->i_mmap_lock: NULL;
+ 	int fullmm = (*tlbp)->fullmm;
+-	struct mm_struct *mm = vma->vm_mm;
++	struct mm_struct *mm;
++
++	if (!vma)
++		return;
+ 
++	mm = vma->vm_mm;
+ 	mmu_notifier_invalidate_range_start(mm, start_addr, end_addr);
+ 	for ( ; vma && vma->vm_start < end_addr; vma = vma->vm_next) {
+ 		unsigned long end;
+_
 
 -- 
-David Woodhouse                            Open Source Technology Centre
-David.Woodhouse@intel.com                              Intel Corporation
-
-
-
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
