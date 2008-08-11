@@ -1,103 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753857AbYHKPHm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754388AbYHKPIE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753857AbYHKPHm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Aug 2008 11:07:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751610AbYHKPHg
+	id S1754388AbYHKPIE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Aug 2008 11:08:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752035AbYHKPHw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Aug 2008 11:07:36 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:38038 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751348AbYHKPHf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Aug 2008 11:07:35 -0400
-Date: Mon, 11 Aug 2008 08:05:45 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Dario Faggioli <raistlin@linux.it>
-Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Steven Rostedt <rostedt@goodmis.org>, Andrew Morton <akpm@osdl.org>,
-       Ulrich Drepper <drepper@redhat.com>
-Subject: Re: [RFC 1/1][PATCH] POSIX SCHED_SPORADIC implementation for tasks
- and groups
-Message-Id: <20080811080545.d8f42601.randy.dunlap@oracle.com>
-In-Reply-To: <1218465906.6450.42.camel@Palanthas>
-References: <1218465906.6450.42.camel@Palanthas>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Mon, 11 Aug 2008 11:07:52 -0400
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:49577 "EHLO e1.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752055AbYHKPHw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Aug 2008 11:07:52 -0400
+Date: Mon, 11 Aug 2008 10:07:03 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+Cc: Arnd Bergmann <arnd@arndb.de>, containers@lists.linux-foundation.org,
+       Theodore Tso <tytso@mit.edu>, linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCH 1/4] checkpoint-restart: general infrastructure
+Message-ID: <20080811150703.GA25930@us.ibm.com>
+References: <20080807224033.FFB3A2C1@kernel> <200808081146.54834.arnd@arndb.de> <1218221451.19082.36.camel@nimitz> <200808090013.41999.arnd@arndb.de> <1218234411.19082.58.camel@nimitz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1218234411.19082.58.camel@nimitz>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 11 Aug 2008 16:45:06 +0200 Dario Faggioli wrote:
+Quoting Dave Hansen (dave@linux.vnet.ibm.com):
+> On Sat, 2008-08-09 at 00:13 +0200, Arnd Bergmann wrote:
+> > > I have to wonder if this is just a symptom of us trying to do this the
+> > > wrong way.  We're trying to talk the kernel into writing internal gunk
+> > > into a FD.  You're right, it is like a splice where one end of the pipe
+> > > is in the kernel.
+> > > 
+> > > Any thoughts on a better way to do this?  
+> > 
+> > Maybe you can invert the logic and let the new syscalls create a file
+> > descriptor, and then have user space read or splice the checkpoint
+> > data from it, and restore it by writing to the file descriptor.
+> > It's probably easy to do using anon_inode_getfd() and would solve this
+> > problem, but at the same time make checkpointing the current thread
+> > hard if not impossible.
+> 
+> Yeah, it does seem kinda backwards.  But, instead of even having to
+> worry about the anon_inode stuff, why don't we just put it in a fs like
+> everything else?  checkpointfs!
 
-> diff --git a/init/Kconfig b/init/Kconfig
-> index b678803..97fbdfc 100644
-> --- a/init/Kconfig
-> +++ b/init/Kconfig
-> @@ -323,6 +323,44 @@ config CPUSETS
->  config HAVE_UNSTABLE_SCHED_CLOCK
->  	bool
->  
-> +config POSIX_SCHED_SPORADIC
-> +	bool "SCHED_SPORADIC POSIX scheduling policy support"
-> +	default n
-> +	help
-> +	  Enable the SCHED_SPORADIC POSIX scheduling policy, which mimics
-> +	  the behaviour of the Sporadic Server, a well known mechanism
-> +	  to schedule aperiodic or sporadic tasks in periodic-based fixed
-> +	  priorit real-time systems.
+One reason is that I suspect that stops us from being able to send that
+data straight to a pipe to compress and/or send on the network, without
+hitting local disk.  Though if the checkpointfs was ram-based maybe not?
 
-	  priority
+As Oren has pointed out before, passing in an fd means we can pass a
+socket into the syscall.
 
-> +
-> +	  To get details about the SCHED_SPORADIC scheduling policy refer to
-> +	  "The Open Group Base Specifications Issue 6", IEEE Std 1003.1,
-> +	  2004 Edition.
-> +
-> +	  [http://www.opengroup.org/onlinepubs/009695399/nfindex.html]
-> +
-> +config SCHED_SPORADIC_REPL_MAX
-> +	int "Maximum number of pending recharges"
-> +	range 1 1000
-> +	depends on POSIX_SCHED_SPORADIC
-> +	default 10
-> +	help
-> +	  Let you chose the maximum number of recharges that can be
+Using the anon_inodes would also prevent that, but if it makes for a
+cleaner overall solution then I'm not against considering either one
+of course.
 
-	  Lets you choose
-
-> +	  pending at a given time instant for a SCHED_SPORADIC task
-> +	  (or task group if group scheduling is configured).
-> +
-> +	  The kernel data structure handling the SCHED_SPORADIC scheduling
-> +	  policy for tasks and groups contains a buffer of pending
-> +	  replenishment this size large.
-> +	  For tasks it is dynamically allocated when SCHED_SPORADIC is set
-> +	  as the scheduling policy of the task, while for group it is created
-> +	  as soon as the group itself is allocated.
-> +
-> +	  Anyway, since this is going to cause some memory overhead, it is
-> +	  wise to not set this to a too much high value.
-
-	  wise not to set this to a very high value.	// or some other rewording
-
-> +	  The best value depends on the characteristics of the application
-> +	  you are going to use, but probably a value from 10 to 20 is
-> +	  suitable for the most of the situations.
-> +
->  config GROUP_SCHED
->  	bool "Group CPU scheduler"
->  	depends on EXPERIMENTAL
-
-
----
-~Randy
-Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
-http://linuxplumbersconf.org/
+> I'm also really not convinced that putting the entire checkpoint in one
+> glob is really the solution, either.  I mean, is system call overhead
+> really a problem here?
+> 
+> -- Dave
+> 
+> _______________________________________________
+> Containers mailing list
+> Containers@lists.linux-foundation.org
+> https://lists.linux-foundation.org/mailman/listinfo/containers
