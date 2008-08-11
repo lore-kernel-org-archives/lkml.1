@@ -1,25 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754242AbYHKPOa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754007AbYHKPQa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754242AbYHKPOa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Aug 2008 11:14:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753676AbYHKPOU
+	id S1754007AbYHKPQa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Aug 2008 11:16:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752009AbYHKPQU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Aug 2008 11:14:20 -0400
-Received: from nlpi053.sbcis.sbc.com ([207.115.36.82]:57976 "EHLO
+	Mon, 11 Aug 2008 11:16:20 -0400
+Received: from nlpi053.sbcis.sbc.com ([207.115.36.82]:60229 "EHLO
 	nlpi053.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753437AbYHKPOS (ORCPT
+	with ESMTP id S1752028AbYHKPQT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Aug 2008 11:14:18 -0400
-X-Greylist: delayed 356 seconds by postgrey-1.27 at vger.kernel.org; Mon, 11 Aug 2008 11:14:17 EDT
-Message-Id: <20080811150702.264510758@quilx.com>
+	Mon, 11 Aug 2008 11:16:19 -0400
+Message-Id: <20080811150653.575096604@quilx.com>
 References: <20080811150616.207532384@quilx.com>
 User-Agent: quilt/0.46-1
-Date: Mon, 11 Aug 2008 08:06:34 -0700
+Date: Mon, 11 Aug 2008 08:06:17 -0700
 From: Christoph Lameter <cl@linux-foundation.org>
 To: Pekka Enberg <penberg@cs.helsinki.fi>
-CC: akpm@linux-foundation.org, Alexander Viro <viro@ftp.linux.org.uk>,
-       Christoph Hellwig <hch@infradead.org>,
-       Christoph Lameter <clameter@sgi.com>,
+CC: akpm@linux-foundation.org, Christoph Lameter <clameter@sgi.com>,
        Christoph Lameter <cl@linux-foundation.org>
 Cc: linux-kernel@vger.kernel.org
 CC: linux-fsdevel@vger.kernel.org
@@ -28,86 +25,97 @@ Cc: andi@firstfloor.org
 Cc: Rik van Riel <riel@redhat.com>
 Cc: mpm@selenic.com
 Cc: Dave Chinner <david@fromorbit.com>
-Subject: [patch 18/19] dentries: Add constructor
-Content-Disposition: inline; filename=0031-dentries-Add-constructor.patch
+Subject: [patch 01/19] slub: Add defrag_ratio field and sysfs support.
+Content-Disposition: inline; filename=0001-SLUB-Add-defrag_ratio-field-and-sysfs-support.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In order to support defragmentation on the dentry cache we need to have
-a determined object state at all times. Without a constructor the object
-would have a random state after allocation.
+The defrag_ratio is used to set the threshold at which defragmentation
+should be attempted on a slab page.
 
-So provide a constructor.
+The allocation ratio is measured by the percentage of the available slots
+allocated.
 
-Cc: Alexander Viro <viro@ftp.linux.org.uk>
-Cc: Christoph Hellwig <hch@infradead.org>
+Add a defrag ratio field and set it to 30% by default. A limit of 30% specified
+that less than 3 out of 10 available slots for objects are in use before
+slab defragmeentation runs.
+
 Reviewed-by: Rik van Riel <riel@redhat.com>
 Signed-off-by: Christoph Lameter <clameter@sgi.com>
+Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
 Signed-off-by: Christoph Lameter <cl@linux-foundation.org>
 
 ---
- fs/dcache.c |   26 ++++++++++++++------------
- 1 file changed, 14 insertions(+), 12 deletions(-)
+ include/linux/slub_def.h |    7 +++++++
+ mm/slub.c                |   23 +++++++++++++++++++++++
+ 2 files changed, 30 insertions(+)
 
-Index: linux-next/fs/dcache.c
+Index: linux-next/include/linux/slub_def.h
 ===================================================================
---- linux-next.orig/fs/dcache.c	2008-08-11 07:42:10.072351650 -0700
-+++ linux-next/fs/dcache.c	2008-08-11 07:50:02.361383352 -0700
-@@ -899,6 +899,16 @@ static struct shrinker dcache_shrinker =
- 	.seeks = DEFAULT_SEEKS,
- };
- 
-+static void dcache_ctor(void *p)
-+{
-+	struct dentry *dentry = p;
+--- linux-next.orig/include/linux/slub_def.h	2008-08-11 07:42:32.301017715 -0700
++++ linux-next/include/linux/slub_def.h	2008-08-11 07:50:11.382348462 -0700
+@@ -89,6 +89,13 @@ struct kmem_cache {
+ 	void (*ctor)(void *);
+ 	int inuse;		/* Offset to metadata */
+ 	int align;		/* Alignment */
++	int defrag_ratio;	/*
++				 * Ratio used to check the percentage of
++				 * objects allocate in a slab page.
++				 * If less than this ratio is allocated
++				 * then reclaim attempts are made.
++				 */
 +
-+	spin_lock_init(&dentry->d_lock);
-+	dentry->d_inode = NULL;
-+	INIT_LIST_HEAD(&dentry->d_lru);
-+	INIT_LIST_HEAD(&dentry->d_alias);
+ 	const char *name;	/* Name (only for display!) */
+ 	struct list_head list;	/* List of slab caches */
+ #ifdef CONFIG_SLUB_DEBUG
+Index: linux-next/mm/slub.c
+===================================================================
+--- linux-next.orig/mm/slub.c	2008-08-11 07:42:34.392348172 -0700
++++ linux-next/mm/slub.c	2008-08-11 07:50:11.802347432 -0700
+@@ -2324,6 +2324,7 @@ static int kmem_cache_open(struct kmem_c
+ 		goto error;
+ 
+ 	s->refcount = 1;
++	s->defrag_ratio = 30;
+ #ifdef CONFIG_NUMA
+ 	s->remote_node_defrag_ratio = 100;
+ #endif
+@@ -4056,6 +4057,27 @@ static ssize_t free_calls_show(struct km
+ }
+ SLAB_ATTR_RO(free_calls);
+ 
++static ssize_t defrag_ratio_show(struct kmem_cache *s, char *buf)
++{
++	return sprintf(buf, "%d\n", s->defrag_ratio);
 +}
 +
- /**
-  * d_alloc	-	allocate a dcache entry
-  * @parent: parent of entry to allocate
-@@ -936,8 +946,6 @@ struct dentry *d_alloc(struct dentry * p
- 
- 	atomic_set(&dentry->d_count, 1);
- 	dentry->d_flags = DCACHE_UNHASHED;
--	spin_lock_init(&dentry->d_lock);
--	dentry->d_inode = NULL;
- 	dentry->d_parent = NULL;
- 	dentry->d_sb = NULL;
- 	dentry->d_op = NULL;
-@@ -947,9 +955,7 @@ struct dentry *d_alloc(struct dentry * p
- 	dentry->d_cookie = NULL;
- #endif
- 	INIT_HLIST_NODE(&dentry->d_hash);
--	INIT_LIST_HEAD(&dentry->d_lru);
- 	INIT_LIST_HEAD(&dentry->d_subdirs);
--	INIT_LIST_HEAD(&dentry->d_alias);
- 
- 	if (parent) {
- 		dentry->d_parent = dget(parent);
-@@ -2275,14 +2281,10 @@ static void __init dcache_init(void)
- {
- 	int loop;
- 
--	/* 
--	 * A constructor could be added for stable state like the lists,
--	 * but it is probably not worth it because of the cache nature
--	 * of the dcache. 
--	 */
--	dentry_cache = KMEM_CACHE(dentry,
--		SLAB_RECLAIM_ACCOUNT|SLAB_PANIC|SLAB_MEM_SPREAD);
--	
-+	dentry_cache = kmem_cache_create("dentry_cache", sizeof(struct dentry),
-+		0, SLAB_RECLAIM_ACCOUNT|SLAB_PANIC|SLAB_MEM_SPREAD,
-+		dcache_ctor);
++static ssize_t defrag_ratio_store(struct kmem_cache *s,
++				const char *buf, size_t length)
++{
++	unsigned long ratio;
++	int err;
 +
- 	register_shrinker(&dcache_shrinker);
- 
- 	/* Hash may have been set up in dcache_init_early */
++	err = strict_strtoul(buf, 10, &ratio);
++	if (err)
++		return err;
++
++	if (ratio < 100)
++		s->defrag_ratio = ratio;
++	return length;
++}
++SLAB_ATTR(defrag_ratio);
++
+ #ifdef CONFIG_NUMA
+ static ssize_t remote_node_defrag_ratio_show(struct kmem_cache *s, char *buf)
+ {
+@@ -4163,6 +4185,7 @@ static struct attribute *slab_attrs[] = 
+ 	&shrink_attr.attr,
+ 	&alloc_calls_attr.attr,
+ 	&free_calls_attr.attr,
++	&defrag_ratio_attr.attr,
+ #ifdef CONFIG_ZONE_DMA
+ 	&cache_dma_attr.attr,
+ #endif
 
 -- 
