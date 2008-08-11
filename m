@@ -1,79 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752524AbYHKI4l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752057AbYHKJIz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752524AbYHKI4l (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Aug 2008 04:56:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751335AbYHKI4d
+	id S1752057AbYHKJIz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Aug 2008 05:08:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751054AbYHKJIr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Aug 2008 04:56:33 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:38487 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751093AbYHKI4c (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Aug 2008 04:56:32 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=fv3cptOpsgOGXGa9lBuPA1lRtwGVa1cD+4f3ZgF6Ui39Bfc9esL/ltL4m4SpMd0aC
-	yK1/JAmTyIIl7WHIqeMpA==
-Message-ID: <6599ad830808110156j3ad0aeacjbd00739a4e7bb906@mail.gmail.com>
-Date: Mon, 11 Aug 2008 01:56:26 -0700
-From: "Paul Menage" <menage@google.com>
-To: "Adrian Bunk" <bunk@kernel.org>
-Subject: Re: [2.6 patch] make cgroup_is_removed() static
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20080810211530.GB5480@cs181140183.pp.htv.fi>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 11 Aug 2008 05:08:47 -0400
+Received: from sh.osrg.net ([192.16.179.4]:59041 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751014AbYHKJIq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Aug 2008 05:08:46 -0400
+Date: Mon, 11 Aug 2008 18:07:15 +0900
+To: drzeus-list@drzeus.cx
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       James.Bottomley@HansenPartnership.com, jens.axboe@oracle.com
+Subject: Re: [GIT PULL] MMC updates for 2.6.27-rc1
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20080723234350.3acad60d@mjolnir.drzeus.cx>
+References: <20080723150031.36e5b85a@mjolnir.drzeus.cx>
+	<alpine.LFD.1.10.0807231206230.4754@woody.linux-foundation.org>
+	<20080723234350.3acad60d@mjolnir.drzeus.cx>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080810211530.GB5480@cs181140183.pp.htv.fi>
+Message-Id: <20080811180722Y.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Aug 10, 2008 at 2:15 PM, Adrian Bunk <bunk@kernel.org> wrote:
-> cgroup_is_removed() can now become static.
->
-> Additionally, make it no longer "inline" but let gcc decide whether or
-> not to inline it.
->
-> Signed-off-by: Adrian Bunk <bunk@kernel.org>
+On Wed, 23 Jul 2008 23:43:50 +0200
+Pierre Ossman <drzeus-list@drzeus.cx> wrote:
 
-Acked-by: Paul Menage <menage@google.com>
+> On Wed, 23 Jul 2008 12:08:01 -0700 (PDT)
+> Linus Torvalds <torvalds@linux-foundation.org> wrote:
+> 
+> > 
+> > 
+> > On Wed, 23 Jul 2008, Pierre Ossman wrote:
+> > >
+> > >  include/linux/scatterlist.h |   38 +++++++
+> > >  lib/scatterlist.c           |  176 +++++++++++++++++++++++++---------
+> > > 
+> > > Tejun Heo (1):
+> > >       sg: reimplement sg mapping iterator
+> > 
+> > I'd really have been a lot happier about this one if it had had a few 
+> > Acked-by's from people like Jens and James.
+> > 
+> > But I pulled, and pushed out. I think Jens is on vacation, but I'm adding 
+> > him to the cc anyway.
+> 
+> Yeah, I was hoping to get Jens' input on this aswell, but this fixes
+> problems in the sdhci driver so it was pushed in the hope that he won't
+> NAK it too badly when he gets back.
+> 
+> (James just got casually poked, but I wasn't even aware he was a
+> suitable person for this. lib/ and kernel/ are generally a bit
+> problematic when it comes to determining maintainer :/)
 
-It might become non-static again in some future changes that I'm
-planning for the locking, but we can make that change if/when it
-arises.
+I think that you can see that James pushed the old sg buffer helper
+functions from the git log (because it was invented for SCSI drivers).
 
->
-> ---
-> 8e37a5ecc6f51b3904d5be693c16324bad6923c5
-> diff --git a/include/linux/cgroup.h b/include/linux/cgroup.h
-> index c98dd7c..f5df0ae 100644
-> --- a/include/linux/cgroup.h
-> +++ b/include/linux/cgroup.h
-> @@ -295,8 +295,6 @@ int cgroup_add_files(struct cgroup *cgrp,
->                        const struct cftype cft[],
->                        int count);
->
-> -int cgroup_is_removed(const struct cgroup *cgrp);
-> -
->  int cgroup_path(const struct cgroup *cgrp, char *buf, int buflen);
->
->  int cgroup_task_count(const struct cgroup *cgrp);
-> diff --git a/kernel/cgroup.c b/kernel/cgroup.c
-> index 13932ab..e6d6d40 100644
-> --- a/kernel/cgroup.c
-> +++ b/kernel/cgroup.c
-> @@ -119,7 +119,7 @@ static int need_forkexit_callback __read_mostly;
->  static int need_mm_owner_callback __read_mostly;
->
->  /* convenient tests for these bits */
-> -inline int cgroup_is_removed(const struct cgroup *cgrp)
-> +static int cgroup_is_removed(const struct cgroup *cgrp)
->  {
->        return test_bit(CGRP_REMOVED, &cgrp->flags);
->  }
->
->
+Anyway, the new helper functions look fine though I'm too late for
+reviewing it.
