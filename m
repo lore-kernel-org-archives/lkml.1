@@ -1,22 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755796AbYHKTjr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756987AbYHKTkA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755796AbYHKTjr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Aug 2008 15:39:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752003AbYHKTjj
+	id S1756987AbYHKTkA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Aug 2008 15:40:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753979AbYHKTjl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Aug 2008 15:39:39 -0400
-Received: from gw.goop.org ([64.81.55.164]:58118 "EHLO mail.goop.org"
+	Mon, 11 Aug 2008 15:39:41 -0400
+Received: from gw.goop.org ([64.81.55.164]:58124 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751564AbYHKTjj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Aug 2008 15:39:39 -0400
-Message-ID: <48A09550.60502@goop.org>
-Date: Mon, 11 Aug 2008 12:38:56 -0700
+	id S1753363AbYHKTjk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Aug 2008 15:39:40 -0400
+Message-ID: <48A0954E.20400@goop.org>
+Date: Mon, 11 Aug 2008 12:38:54 -0700
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
 To: Andrew Morton <akpm@linux-foundation.org>
-CC: ehabkost@redhat.com, x86@kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 2/2] make PFN_PHYS explicitly return phys_addr_t
+CC: ehabkost@redhat.com, x86@kernel.org, linux-kernel@vger.kernel.org,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Paul Mackerras <paulus@samba.org>
+Subject: [PATCH 1/2] add phys_addr_t for holding physical addresses
 References: <489B6B40.5050705@goop.org>	<20080807145648.ab3dfa90.akpm@linux-foundation.org>	<489B72C3.30603@goop.org>	<20080807162741.8dfcd336.akpm@linux-foundation.org>	<489B8908.2010007@goop.org> <20080807170617.79ca3ce7.akpm@linux-foundation.org>
 In-Reply-To: <20080807170617.79ca3ce7.akpm@linux-foundation.org>
 X-Enigmail-Version: 0.95.6
@@ -26,73 +28,115 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-PFN_PHYS, as its name suggests, turns a pfn into a physical address.
-However, it is a macro which just operates on its argument without
-modifying its type.  pfns are typed unsigned long, but an unsigned
-long may not be long enough to hold a physical address (32-bit systems
-with more than 32 bits of physcial address).
-
-Make sure we cast to phys_addr_t to return a complete result.
+Add a kernel-wide "phys_addr_t" which is guaranteed to be able to hold
+any physical address.  By default it equals the word size of the
+architecture, but a 32-bit architecture can set ARCH_PHYS_ADDR_T_64BIT
+if it needs a 64-bit phys_addr_t.
 
 Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Cc: Eduardo Habkost <ehabkost@redhat.com>
----
- arch/m32r/mm/discontig.c   |    2 +-
- include/asm-x86/xen/page.h |    4 ++--
- include/linux/pfn.h        |    6 +++++-
- 3 files changed, 8 insertions(+), 4 deletions(-)
-
-diff -r 6b03eb6361dd arch/m32r/mm/discontig.c
---- a/arch/m32r/mm/discontig.c	Mon Aug 11 11:19:24 2008 -0700
-+++ b/arch/m32r/mm/discontig.c	Mon Aug 11 11:20:07 2008 -0700
-@@ -112,9 +112,9 @@
- 				initrd_start, INITRD_SIZE);
- 		} else {
- 			printk("initrd extends beyond end of memory "
--				"(0x%08lx > 0x%08lx)\ndisabling initrd\n",
-+				"(0x%08lx > 0x%08llx)\ndisabling initrd\n",
- 				INITRD_START + INITRD_SIZE,
--				PFN_PHYS(max_low_pfn));
-+			        (unsigned long long)PFN_PHYS(max_low_pfn));
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+diff -r 4909b40dbdc5 arch/powerpc/Kconfig
+--- a/arch/powerpc/Kconfig	Fri Aug 08 13:40:52 2008 -0700
++++ b/arch/powerpc/Kconfig	Mon Aug 11 10:32:52 2008 -0700
+@@ -21,6 +21,9 @@
  
- 			initrd_start = 0;
- 		}
-diff -r 6b03eb6361dd include/asm-x86/xen/page.h
---- a/include/asm-x86/xen/page.h	Mon Aug 11 11:19:24 2008 -0700
-+++ b/include/asm-x86/xen/page.h	Mon Aug 11 11:20:07 2008 -0700
-@@ -76,13 +76,13 @@
- static inline xmaddr_t phys_to_machine(xpaddr_t phys)
- {
- 	unsigned offset = phys.paddr & ~PAGE_MASK;
--	return XMADDR(PFN_PHYS((u64)pfn_to_mfn(PFN_DOWN(phys.paddr))) | offset);
-+	return XMADDR(PFN_PHYS(pfn_to_mfn(PFN_DOWN(phys.paddr))) | offset);
- }
- 
- static inline xpaddr_t machine_to_phys(xmaddr_t machine)
- {
- 	unsigned offset = machine.maddr & ~PAGE_MASK;
--	return XPADDR(PFN_PHYS((u64)mfn_to_pfn(PFN_DOWN(machine.maddr))) | offset);
-+	return XPADDR(PFN_PHYS(mfn_to_pfn(PFN_DOWN(machine.maddr))) | offset);
- }
- 
- /*
-diff -r 6b03eb6361dd include/linux/pfn.h
---- a/include/linux/pfn.h	Mon Aug 11 11:19:24 2008 -0700
-+++ b/include/linux/pfn.h	Mon Aug 11 11:20:07 2008 -0700
-@@ -1,9 +1,13 @@
- #ifndef _LINUX_PFN_H_
- #define _LINUX_PFN_H_
+ config PPC_MERGE
+ 	def_bool y
 +
-+#ifndef __ASSEMBLY__
-+#include <linux/types.h>
-+#endif
++config ARCH_PHYS_ADDR_T_64BIT
++       def_bool PPC64 || PHYS_64BIT
  
- #define PFN_ALIGN(x)	(((unsigned long)(x) + (PAGE_SIZE - 1)) & PAGE_MASK)
- #define PFN_UP(x)	(((x) + PAGE_SIZE-1) >> PAGE_SHIFT)
- #define PFN_DOWN(x)	((x) >> PAGE_SHIFT)
--#define PFN_PHYS(x)	((x) << PAGE_SHIFT)
-+#define PFN_PHYS(x)	((phys_addr_t)(x) << PAGE_SHIFT)
+ config MMU
+ 	bool
+diff -r 4909b40dbdc5 arch/x86/Kconfig
+--- a/arch/x86/Kconfig	Fri Aug 08 13:40:52 2008 -0700
++++ b/arch/x86/Kconfig	Mon Aug 11 10:32:53 2008 -0700
+@@ -1002,6 +1002,9 @@
+ 	  has the cost of more pagetable lookup overhead, and also
+ 	  consumes more pagetable space per process.
  
++config ARCH_PHYS_ADDR_T_64BIT
++       def_bool X86_64 || X86_PAE
++
+ # Common NUMA Features
+ config NUMA
+ 	bool "Numa Memory Allocation and Scheduler Support (EXPERIMENTAL)"
+diff -r 4909b40dbdc5 include/asm-powerpc/types.h
+--- a/include/asm-powerpc/types.h	Fri Aug 08 13:40:52 2008 -0700
++++ b/include/asm-powerpc/types.h	Mon Aug 11 10:32:53 2008 -0700
+@@ -48,13 +48,6 @@
+ 
+ typedef __vector128 vector128;
+ 
+-/* Physical address used by some IO functions */
+-#if defined(CONFIG_PPC64) || defined(CONFIG_PHYS_64BIT)
+-typedef u64 phys_addr_t;
+-#else
+-typedef u32 phys_addr_t;
+-#endif
+-
+ #ifdef __powerpc64__
+ typedef u64 dma_addr_t;
+ #else
+diff -r 4909b40dbdc5 include/asm-x86/page_32.h
+--- a/include/asm-x86/page_32.h	Fri Aug 08 13:40:52 2008 -0700
++++ b/include/asm-x86/page_32.h	Mon Aug 11 10:32:53 2008 -0700
+@@ -33,7 +33,6 @@
+ typedef u64	pudval_t;
+ typedef u64	pgdval_t;
+ typedef u64	pgprotval_t;
+-typedef u64	phys_addr_t;
+ 
+ typedef union {
+ 	struct {
+@@ -54,7 +53,6 @@
+ typedef unsigned long	pudval_t;
+ typedef unsigned long	pgdval_t;
+ typedef unsigned long	pgprotval_t;
+-typedef unsigned long	phys_addr_t;
+ 
+ typedef union {
+ 	pteval_t pte;
+diff -r 4909b40dbdc5 include/asm-x86/page_64.h
+--- a/include/asm-x86/page_64.h	Fri Aug 08 13:40:52 2008 -0700
++++ b/include/asm-x86/page_64.h	Mon Aug 11 10:32:53 2008 -0700
+@@ -79,7 +79,6 @@
+ typedef unsigned long	pudval_t;
+ typedef unsigned long	pgdval_t;
+ typedef unsigned long	pgprotval_t;
+-typedef unsigned long	phys_addr_t;
+ 
+ typedef struct page *pgtable_t;
+ 
+diff -r 4909b40dbdc5 include/linux/types.h
+--- a/include/linux/types.h	Fri Aug 08 13:40:52 2008 -0700
++++ b/include/linux/types.h	Mon Aug 11 10:32:53 2008 -0700
+@@ -197,6 +197,12 @@
+ typedef u32 resource_size_t;
  #endif
+ 
++#ifdef CONFIG_PHYS_ADDR_T_64BIT
++typedef u64 phys_addr_t;
++#else
++typedef u32 phys_addr_t;
++#endif
++
+ struct ustat {
+ 	__kernel_daddr_t	f_tfree;
+ 	__kernel_ino_t		f_tinode;
+diff -r 4909b40dbdc5 mm/Kconfig
+--- a/mm/Kconfig	Fri Aug 08 13:40:52 2008 -0700
++++ b/mm/Kconfig	Mon Aug 11 10:32:53 2008 -0700
+@@ -190,6 +190,9 @@
+ 	help
+ 	  This option allows memory and IO resources to be 64 bit.
+ 
++config PHYS_ADDR_T_64BIT
++	def_bool 64BIT || ARCH_PHYS_ADDR_T_64BIT
++
+ config ZONE_DMA_FLAG
+ 	int
+ 	default "0" if !ZONE_DMA
 
 
