@@ -1,57 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755184AbYHKQFi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754648AbYHKQIN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755184AbYHKQFi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Aug 2008 12:05:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752956AbYHKQF3
+	id S1754648AbYHKQIN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Aug 2008 12:08:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752321AbYHKQH4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Aug 2008 12:05:29 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:50974 "EHLO smtp5.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751694AbYHKQF2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Aug 2008 12:05:28 -0400
-Date: Mon, 11 Aug 2008 19:03:46 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: S K <nospamnoham@gmail.com>, Zhao Yakui <yakui.zhao@intel.com>,
-       Thomas Renninger <trenn@suse.de>,
-       Alan Jenkins <alan-jenkins@tuffmail.co.uk>,
-       linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
-Subject: Re: cpufreq doesn't seem to work in Intel Q9300
-Message-ID: <20080811160346.GB21292@cs181140183.pp.htv.fi>
-References: <514e099a0808030300u140a0ae7m92a2e7294f39f7b7@mail.gmail.com> <200808081430.43012.trenn@suse.de> <aff5deaf0808081123s1fbe6a5cn7847e9cb053c1f5a@mail.gmail.com> <200808092059.47863.trenn@suse.de> <514e099a0808100128u303207clcb22292db2f0cc59@mail.gmail.com> <1218418431.6671.52.camel@yakui_zhao.sh.intel.com> <514e099a0808102144n241c8e9ak255bded0a80744f1@mail.gmail.com> <20080811042244.469f8e1d@infradead.org> <20080811140206.GB3338@cs181140183.pp.htv.fi> <20080811071128.0165be50@infradead.org>
+	Mon, 11 Aug 2008 12:07:56 -0400
+Received: from sj-iport-6.cisco.com ([171.71.176.117]:47090 "EHLO
+	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752062AbYHKQHy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Aug 2008 12:07:54 -0400
+X-IronPort-AV: E=Sophos;i="4.31,342,1215388800"; 
+   d="scan'208";a="138558111"
+From: Roland Dreier <rdreier@cisco.com>
+To: David Miller <davem@davemloft.net>
+Cc: jgarzik@pobox.com, swise@opengridcomputing.com, divy@chelsio.com,
+       kxie@chelsio.com, netdev@vger.kernel.org, open-iscsi@googlegroups.com,
+       michaelc@cs.wisc.edu, daisyc@us.ibm.com, wenxiong@us.ibm.com,
+       bhua@us.ibm.com, dm@chelsio.com, leedom@chelsio.com,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCH 1/1] cxgb3i: cxgb3 iSCSI initiator
+References: <489C8BEB.8060001@opengridcomputing.com>
+	<489CC58D.4010606@pobox.com> <adazlnlzc60.fsf@cisco.com>
+	<20080809.224637.69833549.davem@davemloft.net>
+X-Message-Flag: Warning: May contain useful information
+Date: Mon, 11 Aug 2008 09:07:51 -0700
+In-Reply-To: <20080809.224637.69833549.davem@davemloft.net> (David Miller's
+	message of "Sat, 09 Aug 2008 22:46:37 -0700 (PDT)")
+Message-ID: <adafxpbzga0.fsf@cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20080811071128.0165be50@infradead.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 11 Aug 2008 16:07:51.0780 (UTC) FILETIME=[680F6A40:01C8FBCC]
+Authentication-Results: sj-dkim-3; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim3002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 11, 2008 at 07:11:28AM -0700, Arjan van de Ven wrote:
->...
-> so before you had for one second "20% expensive, 80% low power" 
-> now you have for one second "20% expensive, 20% throttle power, 60% low
-> power"
-> 
-> since throttle power is higher than low/idle power.. you lose.
+ > Why show these special connections if the user cannot interact with or
+ > shape the stream at all like normal ones?
 
-So what is the intended use case?
+So that an admin can see what connections are open, so that the stack
+doesn't try to reuse the same 4-tuple for another connection, etc, etc.
 
-Is it for people who bought an Intel Heating 4 but forgot to buy an 
-appropriate cooling?
+ > And I even wonder, these days, if you probably get %90 or more of the
+ > gain these "optimized" iSCSI connections obtain from things like LRO.
 
-That sounds absurd.
+Yes, that's the question -- are stateless offloads (plus CRC32C in the
+CPU etc) going to give good enough performance that the whole TCP
+offload exercise is pointless?  The only issue is that I don't see how
+to avoid the fundamental 3X increase in memory bandwidth that is chewed
+up if the NIC can't do direct placement.
 
-There must be a reason why Intels CPUs support this throttling?
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+ - R.
