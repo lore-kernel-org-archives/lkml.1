@@ -1,80 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754140AbYHKAom@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754429AbYHKBAO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754140AbYHKAom (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Aug 2008 20:44:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753134AbYHKAoe
+	id S1754429AbYHKBAO (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Aug 2008 21:00:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753247AbYHKBAA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Aug 2008 20:44:34 -0400
-Received: from tundra.namei.org ([65.99.196.166]:50986 "EHLO tundra.namei.org"
+	Sun, 10 Aug 2008 21:00:00 -0400
+Received: from mga02.intel.com ([134.134.136.20]:45320 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752879AbYHKAod (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Aug 2008 20:44:33 -0400
-Date: Mon, 11 Aug 2008 10:44:06 +1000 (EST)
-From: James Morris <jmorris@namei.org>
-To: David Howells <dhowells@redhat.com>
-cc: Grant Wilson <grant.wilson@zen.co.uk>,
-       Jasper Bryant-Greene <jasper@amiton.co.nz>,
-       Thomas Meyer <thomas@m3y3r.de>,
-       Linux-Kernel <linux-kernel@vger.kernel.org>,
-       Linux-Next <linux-next@vger.kernel.org>
-Subject: Re: next-20080808: bash: fork: Resource temporarily unavailable
-In-Reply-To: <22475.1218414070@redhat.com>
-Message-ID: <alpine.LRH.1.10.0808111043240.3889@tundra.namei.org>
-References: <20080810113044.19143b0a@worthy.swandive.local> <1218322518.3268.0.camel@luna.unix.geek.nz> <1218287473.3155.13.camel@dhcppc0> <1218281190.3155.5.camel@dhcppc0> <1218214935.3146.5.camel@dhcppc0> <alpine.LRH.1.10.0808090747150.29079@tundra.namei.org>
- <14476.1218286327@redhat.com> <15386.1218290826@redhat.com> <10251.1218361539@redhat.com>  <22475.1218414070@redhat.com>
-User-Agent: Alpine 1.10 (LRH 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S1753134AbYHKBAA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 Aug 2008 21:00:00 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.31,341,1215414000"; 
+   d="scan'208";a="324999474"
+Subject: Re: [PATCH -v2 6/8] kexec jump: fix for lockdep
+From: Huang Ying <ying.huang@intel.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>, Pavel Machek <pavel@ucw.cz>,
+       nigel@nigel.suspend2.net, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Vivek Goyal <vgoyal@redhat.com>, mingo@elte.hu,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org,
+       Kexec Mailing List <kexec@lists.infradead.org>
+In-Reply-To: <1218190426.8625.71.camel@twins>
+References: <1218178365.22039.79.camel@caritas-dev.intel.com>
+	 <1218190426.8625.71.camel@twins>
+Content-Type: text/plain
+Date: Mon, 11 Aug 2008 08:59:56 +0800
+Message-Id: <1218416396.30464.9.camel@caritas-dev.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 11 Aug 2008, David Howells wrote:
+On Fri, 2008-08-08 at 12:13 +0200, Peter Zijlstra wrote:
+> On Fri, 2008-08-08 at 14:52 +0800, Huang Ying wrote:
+> > Replace local_irq_disable() with raw_local_irq_disable() to prevent
+> > lockdep complain.
+> Uhhm, please provide more information - just using raw_* to silence
+> lockdep is generally the wrong thing to do.
 
-> Grant Wilson <grant.wilson@zen.co.uk> wrote:
-> 
-> > [  223.039938] Rlimit EAGAIN (-1 >= 16375, uid 1000)
-> > [  223.044744] copy_process() = -11
-> > [  226.660319] Rlimit EAGAIN (-1 >= 16375, uid 1000)
-> > [  226.664166] copy_process() = -11
-> 
-> Can you try the attached patch please?
+In traditional kexec, the new kernel will replace current one, so the
+irq is simply disabled. But now jumping back from kexeced kernel is
+supported, so the irq should be enabled again.
 
-This is working for me.  I'll push it to next-creds so it (hopefully) gets 
-into the next linux-next for wider testing.
+The code sequence of irq during kexec jump is as follow:
+
+local_irq_disable(); /* in kernel_kexec() */
+local_irq_disable(); /* in machine_kexec() */
+local_irq_enable(); /* in kernel_kexec() */
+
+The disable and enable is not match. Maybe another method is to use
+local_irq_save(), local_irq_restore() pair in machine_kexec(), so the
+disable and enable is matched.
+
+Best Regrards,
+Huang Ying
 
 
-> 
-> David
-> ---
-> CRED: Inc the user processes count on cred share return from copy_creds()
-> 
-> From: David Howells <dhowells@redhat.com>
-> 
-> Increment the user processes count in the case where copy_creds() returns after
-> sharing the parent's credentials instead of allocating new ones.
-> 
-> Signed-off-by: David Howells <dhowells@redhat.com>
-> ---
-> 
->  kernel/cred.c |    1 +
->  1 files changed, 1 insertions(+), 0 deletions(-)
-> 
-> 
-> diff --git a/kernel/cred.c b/kernel/cred.c
-> index f89c5e5..056ec90 100644
-> --- a/kernel/cred.c
-> +++ b/kernel/cred.c
-> @@ -299,6 +299,7 @@ int copy_creds(struct task_struct *p, unsigned long clone_flags)
->  #endif
->  		p->real_cred = get_cred(p->cred);
->  		get_cred(p->cred);
-> +		atomic_inc(&p->cred->user->processes);
->  		return 0;
->  	}
->  
-> 
-
--- 
-James Morris
-<jmorris@namei.org>
