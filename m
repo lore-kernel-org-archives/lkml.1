@@ -1,108 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755539AbYHKRUU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753949AbYHKR1w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755539AbYHKRUU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Aug 2008 13:20:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752191AbYHKRUI
+	id S1753949AbYHKR1w (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Aug 2008 13:27:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751835AbYHKR1n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Aug 2008 13:20:08 -0400
-Received: from smtpq1.groni1.gr.home.nl ([213.51.130.200]:36226 "EHLO
-	smtpq1.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751193AbYHKRUH (ORCPT
+	Mon, 11 Aug 2008 13:27:43 -0400
+Received: from outbound-mail-160.bluehost.com ([67.222.39.40]:50772 "HELO
+	outbound-mail-160.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751630AbYHKR1n (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Aug 2008 13:20:07 -0400
-Message-ID: <48A074D1.4070803@keyaccess.nl>
-Date: Mon, 11 Aug 2008 19:20:17 +0200
-From: Rene Herman <rene.herman@keyaccess.nl>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080707)
+	Mon, 11 Aug 2008 13:27:43 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:From:To:Subject:Date:User-Agent:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
+	b=ZkMjDF2/AtHBx6K6NIChOOtebBbxjBQ5LtLX7GwoO+4DawRrRQbG9iYgG0PwZAO/moqs/fjto9SryJeawweM0INLKDNKigM2Z4gCpXSajug0yJ70iZOW4rLm/Rxi8HB7;
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org
+Subject: [git pull] PCI fixes
+Date: Mon, 11 Aug 2008 10:27:38 -0700
+User-Agent: KMail/1.9.9
 MIME-Version: 1.0
-To: Cyrill Gorcunov <gorcunov@gmail.com>, Ingo Molnar <mingo@elte.hu>
-CC: Andrew Morton <akpm@osdl.org>, Yinghai Lu <yhlu.kernel@gmail.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: kill arch/x86/kernel/mpparse.c debugging printk.
-References: <489C77C6.7040408@keyaccess.nl> <20080811122038.GA10082@elte.hu> <48A05E79.4030304@keyaccess.nl> <48A05EB1.3050508@keyaccess.nl> <20080811164508.GA18969@lenovo>
-In-Reply-To: <20080811164508.GA18969@lenovo>
-Content-Type: multipart/mixed;
- boundary="------------050308060901000304000107"
-X-Spam-Score: -1.0 (-)
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200808111027.38682.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------050308060901000304000107
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+Please pull my for-linus branch:
+git pull git://git.kernel.org/pub/scm/linux/kernel/git/jbarnes/pci-2.6.git for-linus
 
-On 11-08-08 18:45, Cyrill Gorcunov wrote:
+The most exciting thing in this set is the MSI restore fix.  It should get
+suspend/resume working again on several machines.  Shortlog & diffstat
+below.
 
-> | From: Rene Herman <rene.herman@gmail.com>
-> | Date: Mon, 11 Aug 2008 17:35:41 +0200
-> | Subject: [PATCH] x86: make "apic" an early_param() on 32-bit
-
-[ ... ]
-
-> you turned it into early_param so now it's NULL injecting vulnerabled.
-> Could you please add checking for NULL str param?
-
-Ah, I was unaware of that difference, thank you. Ingo, can you replace 
-the previous incarnation with this one?
-
-Rene.
-
---------------050308060901000304000107
-Content-Type: text/plain;
- name="0001-x86-make-apic-an-early_param-on-32-bit.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="0001-x86-make-apic-an-early_param-on-32-bit.patch"
-
->From 98cf69c9acbc2c1a29fdaa6fc8c29f1bacae8316 Mon Sep 17 00:00:00 2001
-From: Rene Herman <rene.herman@gmail.com>
-Date: Mon, 11 Aug 2008 17:35:41 +0200
-Subject: [PATCH] x86: make "apic" an early_param() on 32-bit
-
-On 32-bit, "apic" is a __setup() param meaning it is parsed rather
-late in the game. Make it an early_param() for apic_printk() use
-by arch/x86/kernel/mpparse.c.
-
-On 64-bit, it already is an early_param().
-
-Signed-off-by: Rene Herman <rene.herman@gmail.com>
----
- arch/x86/kernel/apic_32.c |   14 +++++++++-----
- 1 files changed, 9 insertions(+), 5 deletions(-)
-
-diff --git a/arch/x86/kernel/apic_32.c b/arch/x86/kernel/apic_32.c
-index d6c8983..039a8d4 100644
---- a/arch/x86/kernel/apic_32.c
-+++ b/arch/x86/kernel/apic_32.c
-@@ -1720,15 +1720,19 @@ static int __init parse_lapic_timer_c2_ok(char *arg)
- }
- early_param("lapic_timer_c2_ok", parse_lapic_timer_c2_ok);
- 
--static int __init apic_set_verbosity(char *str)
-+static int __init apic_set_verbosity(char *arg)
- {
--	if (strcmp("debug", str) == 0)
-+	if (!arg)
-+		return -EINVAL;
-+
-+	if (strcmp(arg, "debug") == 0)
- 		apic_verbosity = APIC_DEBUG;
--	else if (strcmp("verbose", str) == 0)
-+	else if (strcmp(arg, "verbose") == 0)
- 		apic_verbosity = APIC_VERBOSE;
--	return 1;
-+
-+	return 0;
- }
--__setup("apic=", apic_set_verbosity);
-+early_param("apic", apic_set_verbosity);
- 
- static int __init lapic_insert_resource(void)
- {
 -- 
-1.5.5
+Jesse Barnes, Intel Open Source Technology Center
+
+Andrew Morton (1):
+      PCI: make pci_register_driver() a macro
+
+Dean Hildebrand (1):
+      PCI: Limit VPD length for Broadcom 5708S
+
+Dmitry Baryshkov (1):
+      DMA: make dma-coherent.c documentation kdoc-friendly
+
+Eric Dumazet (1):
+      PCI: add Broadcom 5708S to VPD length quirk
+
+Jesse Barnes (1):
+      PCI: fully restore MSI state at resume time
+
+Rafael J. Wysocki (1):
+      PCI PM: Export pci_pme_active to drivers
+
+Simon Horman (1):
+      PCI: check the return value of device_create_bin_file() in pci_create_bus()
+
+akpm@linux-foundation.org (1):
+      PCI: remove duplicate symbol from pci_ids.h
 
 
---------------050308060901000304000107--
+ drivers/pci/msi.c       |    5 +--
+ drivers/pci/pci.c       |    3 +-
+ drivers/pci/probe.c     |   54 +++++++++++++++++++++++++++++++++--------------
+ drivers/pci/quirks.c    |    7 +++++-
+ include/linux/pci.h     |   11 ++++++---
+ include/linux/pci_ids.h |    2 -
+ kernel/dma-coherent.c   |   10 ++++----
+ 7 files changed, 60 insertions(+), 32 deletions(-)
