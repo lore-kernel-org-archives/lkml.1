@@ -1,67 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755571AbYHKWmR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754675AbYHKWrU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755571AbYHKWmR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Aug 2008 18:42:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752264AbYHKWmF
+	id S1754675AbYHKWrU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Aug 2008 18:47:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752104AbYHKWrJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Aug 2008 18:42:05 -0400
-Received: from aeryn.fluff.org.uk ([87.194.8.8]:52665 "EHLO
-	kira.home.fluff.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752036AbYHKWmE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Aug 2008 18:42:04 -0400
-Subject: MMC: s3cmci: wirte get_cd host ops
-Message-Id: <20080811224200.522806334@fluff.org.uk>
-User-Agent: quilt/0.46-1
-From: Ben Dooks <ben-linux@fluff.org>
-To: drzeus-mmc@drzeus.cx, linux-kernel@vger.kernel.org
-Cc: Ben Dooks <ben-linux@fluff.org>
-Content-Disposition: inline; filename=simtec/simtec-mmc-fix-card-detect.patch
-Date: Mon, 11 Aug 2008 23:42:00 +0100
+	Mon, 11 Aug 2008 18:47:09 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:42016 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752036AbYHKWrI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Aug 2008 18:47:08 -0400
+Date: Tue, 12 Aug 2008 00:46:36 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Max Krasnyansky <maxk@qualcomm.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "Langsdorf, Mark" <mark.langsdorf@amd.com>,
+       lkml <linux-kernel@vger.kernel.org>, Gautham R Shenoy <ego@in.ibm.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Regression in 2.6.27-rc1 for set_cpus_allowed_ptr
+Message-ID: <20080811224636.GA25577@elte.hu>
+References: <6453C3CB8E2B3646B0D020C112613273C5AC5A@sausexmb4.amd.com> <200808082303.41068.rjw@sisk.pl> <b647ffbd0808081431q27a48113q5beee1bae7c24b0a@mail.gmail.com> <20080811123020.GB10082@elte.hu> <alpine.LFD.1.10.0808111500330.3462@nehalem.linux-foundation.org> <48A0B9AC.6020901@qualcomm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48A0B9AC.6020901@qualcomm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Attach the routine to get_cd to allow the MMC core to find out whether
-there is a card present or not without the tedious process of trying to
-send commands to the card or not.
 
-Signed-off-by: Ben Dooks <ben-linux@fluff.org>
+* Max Krasnyansky <maxk@qualcomm.com> wrote:
 
-Index: linux-2.6.27-rc2-quilt3/drivers/mmc/host/s3cmci.c
-===================================================================
---- linux-2.6.27-rc2-quilt3.orig/drivers/mmc/host/s3cmci.c	2008-08-11 23:33:09.000000000 +0100
-+++ linux-2.6.27-rc2-quilt3/drivers/mmc/host/s3cmci.c	2008-08-11 23:39:33.000000000 +0100
-@@ -1004,8 +1004,9 @@ static void s3cmci_send_request(struct m
- 	enable_irq(host->irq);
- }
- 
--static int s3cmci_card_present(struct s3cmci_host *host)
-+static int s3cmci_card_present(struct mmc_host *mmc)
- {
-+	struct s3cmci_host *host = mmc_priv(mmc);
- 	struct s3c24xx_mci_pdata *pdata = host->pdata;
- 	int ret;
- 
-@@ -1024,7 +1025,7 @@ static void s3cmci_request(struct mmc_ho
- 	host->cmd_is_stop = 0;
- 	host->mrq = mrq;
- 
--	if (s3cmci_card_present(host) == 0) {
-+	if (s3cmci_card_present(mmc) == 0) {
- 		dbg(host, dbg_err, "%s: no medium present\n", __func__);
- 		host->mrq->cmd->error = -ENOMEDIUM;
- 		mmc_request_done(mmc, mrq);
-@@ -1139,6 +1140,7 @@ static struct mmc_host_ops s3cmci_ops = 
- 	.request	= s3cmci_request,
- 	.set_ios	= s3cmci_set_ios,
- 	.get_ro		= s3cmci_get_ro,
-+	.get_cd		= s3cmci_card_present,
- };
- 
- static struct s3c24xx_mci_pdata s3cmci_def_pdata = {
+> > And I was hoping to do -rc3 today. Can I please have pull-requests for the 
+> > appropriate urgent scheduler/x86 fixes? Or should I just take these as 
+> > patches?
+>
+> It'd be nice if -rc3 included my cpuset patch so that we could put circular
+> locking issues in the cpu hotplug path to the rest.
+> Ingo, I'm talking about this:
+> 	[PATCH] cpuset: Rework sched domains and CPU hotplug handling (take 4)
 
--- 
-Ben (ben@fluff.org, http://www.fluff.org/)
+the latest (-v4) version of the patch was submitted just half an hour 
+ago and it's rather large/complex, with a few unrelated changes 
+(whitespace, etc.) mixed in as well. I'd like to wait for Paul's final 
+ack for -v4 (he has already agreed with the approach in general), and 
+wanted to have it tested myself as well, at least minimally.
 
-  'a smiley only costs 4 bytes'
+	Ingo
