@@ -1,439 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755478AbYHKPco@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754738AbYHKPf1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755478AbYHKPco (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Aug 2008 11:32:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754759AbYHKPcP
+	id S1754738AbYHKPf1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Aug 2008 11:35:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751558AbYHKPfS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Aug 2008 11:32:15 -0400
-Received: from nlpi053.sbcis.sbc.com ([207.115.36.82]:17379 "EHLO
-	nlpi053.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754714AbYHKPcM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Aug 2008 11:32:12 -0400
-Message-Id: <20080811150655.870949377@quilx.com>
-References: <20080811150616.207532384@quilx.com>
-User-Agent: quilt/0.46-1
-Date: Mon, 11 Aug 2008 08:06:21 -0700
-From: Christoph Lameter <cl@linux-foundation.org>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-CC: akpm@linux-foundation.org, Christoph Lameter <clameter@sgi.com>,
-       Christoph Lameter <cl@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-CC: linux-fsdevel@vger.kernel.org
-Cc: Mel Gorman <mel@skynet.ie>
-Cc: andi@firstfloor.org
-Cc: Rik van Riel <riel@redhat.com>
-Cc: mpm@selenic.com
-Cc: Dave Chinner <david@fromorbit.com>
-Subject: [patch 05/19] slub: Slab defrag core
-Content-Disposition: inline; filename=0005-SLUB-Slab-defrag-core.patch
+	Mon, 11 Aug 2008 11:35:18 -0400
+Received: from ms01.sssup.it ([193.205.80.99]:33638 "EHLO sssup.it"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751348AbYHKPfR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Aug 2008 11:35:17 -0400
+Subject: Re: [RFC 1/1][PATCH] POSIX SCHED_SPORADIC implementation for tasks
+	and groups
+From: Dario Faggioli <raistlin@linux.it>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Steven Rostedt <rostedt@goodmis.org>, Andrew Morton <akpm@osdl.org>,
+       Ulrich Drepper <drepper@redhat.com>
+In-Reply-To: <20080811080545.d8f42601.randy.dunlap@oracle.com>
+References: <1218465906.6450.42.camel@Palanthas>
+	 <20080811080545.d8f42601.randy.dunlap@oracle.com>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-YQYVs/LKnaI1GfyAz/lh"
+Date: Mon, 11 Aug 2008 17:35:07 +0200
+Message-Id: <1218468907.6450.46.camel@Palanthas>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Slab defragmentation may occur:
 
-1. Unconditionally when kmem_cache_shrink is called on a slab cache by the
-   kernel calling kmem_cache_shrink.
+--=-YQYVs/LKnaI1GfyAz/lh
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-2. Through the use of the slabinfo command.
+On Mon, 2008-08-11 at 08:05 -0700, Randy Dunlap wrote:
+> > +	  to schedule aperiodic or sporadic tasks in periodic-based fixed
+> > +	  priorit real-time systems.
+>=20
+> 	  priority
 
-3. Per node defrag conditionally when kmem_cache_defrag(<node>) is called
-   (can be called from reclaim code with a later patch).
+> > +	help
+> > +	  Let you chose the maximum number of recharges that can be
+>=20
+> 	  Lets you choose
 
-   Defragmentation is only performed if the fragmentation of the slab
-   is lower than the specified percentage. Fragmentation ratios are measured
-   by calculating the percentage of objects in use compared to the total
-   number of objects that the slab page can accomodate.
+Thank you very much, I'll aplly your fixes right now! :-)
 
-   The scanning of slab caches is optimized because the
-   defragmentable slabs come first on the list. Thus we can terminate scans
-   on the first slab encountered that does not support defragmentation.
+> > +	  Anyway, since this is going to cause some memory overhead, it is
+> > +	  wise to not set this to a too much high value.
+>=20
+> 	  wise not to set this to a very high value.	// or some other rewording
 
-   kmem_cache_defrag() takes a node parameter. This can either be -1 if
-   defragmentation should be performed on all nodes, or a node number.
+Yep, I agree... I will rephrase it to something better.
 
-A couple of functions must be setup via a call to kmem_cache_setup_defrag()
-in order for a slabcache to support defragmentation. These are
+Thank you very much for your review! :-D
+Dario
 
-kmem_defrag_get_func (void *get(struct kmem_cache *s, int nr, void **objects))
+--=20
+<<This happens because I choose it to happen!>>
+(Raistlin Majere, DragonLance Chronicles -Dragons of Spring Drawning-)
+----------------------------------------------------------------------
+Dario Faggioli
+GNU/Linux Registered User: #340657
+Web: http://www.linux.it/~raistlin
+Blog: http://blog.linux.it/raistlin
+SIP Account: dario.faggioli@sipproxy.wengo.fr or
+             raistlin@ekiga.net
+Jabber Account: dario.faggioli@jabber.org/WengoPhone
+GnuPG Key ID: 4DC83AC4
+GnuPG Key Fingerprint: 2A78 AD5D B9CF A082 0836 08AD 9385 DA04 4DC8 3AC4
 
-	Must obtain a reference to the listed objects. SLUB guarantees that
-	the objects are still allocated. However, other threads may be blocked
-	in slab_free() attempting to free objects in the slab. These may succeed
-	as soon as get() returns to the slab allocator. The function must
-	be able to detect such situations and void the attempts to free such
-	objects (by for example voiding the corresponding entry in the objects
-	array).
+--=-YQYVs/LKnaI1GfyAz/lh
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
 
-	No slab operations may be performed in get(). Interrupts
-	are disabled. What can be done is very limited. The slab lock
-	for the page that contains the object is taken. Any attempt to perform
-	a slab operation may lead to a deadlock.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
 
-	kmem_defrag_get_func returns a private pointer that is passed to
-	kmem_defrag_kick_func(). Should we be unable to obtain all references
-	then that pointer may indicate to the kick() function that it should
-	not attempt any object removal or move but simply remove the
-	reference counts.
+iD8DBQBIoFwrk4XaBE3IOsQRAgZ+AKCvaDC0y8KIWJAsTgjK/GxO0MyOXwCgnctd
+KL8KKrNp3VhO32cOz9l5dic=
+=Sisg
+-----END PGP SIGNATURE-----
 
-kmem_defrag_kick_func (void kick(struct kmem_cache *, int nr, void **objects,
-							void *get_result))
+--=-YQYVs/LKnaI1GfyAz/lh--
 
-	After SLUB has established references to the objects in a
-	slab it will then drop all locks and use kick() to move objects out
-	of the slab. The existence of the object is guaranteed by virtue of
-	the earlier obtained references via kmem_defrag_get_func(). The
-	callback may perform any slab operation since no locks are held at
-	the time of call.
-
-	The callback should remove the object from the slab in some way. This
-	may be accomplished by reclaiming the object and then running
-	kmem_cache_free() or reallocating it and then running
-	kmem_cache_free(). Reallocation is advantageous because the partial
-	slabs were just sorted to have the partial slabs with the most objects
-	first. Reallocation is likely to result in filling up a slab in
-	addition to freeing up one slab. A filled up slab can also be removed
-	from the partial list. So there could be a double effect.
-
-	kmem_defrag_kick_func() does not return a result. SLUB will check
-	the number of remaining objects in the slab. If all objects were
-	removed then the operation was successful.
-
-Reviewed-by: Rik van Riel <riel@redhat.com>
-Signed-off-by: Christoph Lameter <clameter@sgi.com>
-Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
-Signed-off-by: Christoph Lameter <cl@linux-foundation.org>
-
----
- include/linux/slab.h |    3 
- mm/slub.c            |  265 ++++++++++++++++++++++++++++++++++++++++-----------
- 2 files changed, 215 insertions(+), 53 deletions(-)
-
-Index: linux-next/mm/slub.c
-===================================================================
---- linux-next.orig/mm/slub.c	2008-08-11 07:47:01.472348849 -0700
-+++ linux-next/mm/slub.c	2008-08-11 07:50:10.102347910 -0700
-@@ -128,10 +128,10 @@
- 
- /*
-  * Maximum number of desirable partial slabs.
-- * The existence of more partial slabs makes kmem_cache_shrink
-- * sort the partial list by the number of objects in the.
-+ * More slabs cause kmem_cache_shrink to sort the slabs by objects
-+ * and triggers slab defragmentation.
-  */
--#define MAX_PARTIAL 10
-+#define MAX_PARTIAL 20
- 
- #define DEBUG_DEFAULT_FLAGS (SLAB_DEBUG_FREE | SLAB_RED_ZONE | \
- 				SLAB_POISON | SLAB_STORE_USER)
-@@ -2797,76 +2797,235 @@ void kmem_cache_setup_defrag(struct kmem
- EXPORT_SYMBOL(kmem_cache_setup_defrag);
- 
- /*
-- * kmem_cache_shrink removes empty slabs from the partial lists and sorts
-- * the remaining slabs by the number of items in use. The slabs with the
-- * most items in use come first. New allocations will then fill those up
-- * and thus they can be removed from the partial lists.
-+ * Vacate all objects in the given slab.
-  *
-- * The slabs with the least items are placed last. This results in them
-- * being allocated from last increasing the chance that the last objects
-- * are freed in them.
-+ * The scratch aread passed to list function is sufficient to hold
-+ * struct listhead times objects per slab. We use it to hold void ** times
-+ * objects per slab plus a bitmap for each object.
-  */
--int kmem_cache_shrink(struct kmem_cache *s)
-+static int kmem_cache_vacate(struct page *page, void *scratch)
- {
--	int node;
--	int i;
--	struct kmem_cache_node *n;
--	struct page *page;
--	struct page *t;
--	int objects = oo_objects(s->max);
--	struct list_head *slabs_by_inuse =
--		kmalloc(sizeof(struct list_head) * objects, GFP_KERNEL);
-+	void **vector = scratch;
-+	void *p;
-+	void *addr = page_address(page);
-+	struct kmem_cache *s;
-+	unsigned long *map;
-+	int leftover;
-+	int count;
-+	void *private;
- 	unsigned long flags;
-+	unsigned long objects;
- 
--	if (!slabs_by_inuse)
--		return -ENOMEM;
-+	local_irq_save(flags);
-+	slab_lock(page);
- 
--	flush_all(s);
--	for_each_node_state(node, N_NORMAL_MEMORY) {
--		n = get_node(s, node);
-+	BUG_ON(!PageSlab(page));	/* Must be s slab page */
-+	BUG_ON(!SlabFrozen(page));	/* Slab must have been frozen earlier */
-+
-+	s = page->slab;
-+	objects = page->objects;
-+	map = scratch + objects * sizeof(void **);
-+	if (!page->inuse || !s->kick)
-+		goto out;
-+
-+	/* Determine used objects */
-+	bitmap_fill(map, objects);
-+	for_each_free_object(p, s, page->freelist)
-+		__clear_bit(slab_index(p, s, addr), map);
-+
-+	/* Build vector of pointers to objects */
-+	count = 0;
-+	memset(vector, 0, objects * sizeof(void **));
-+	for_each_object(p, s, addr, objects)
-+		if (test_bit(slab_index(p, s, addr), map))
-+			vector[count++] = p;
-+
-+	private = s->get(s, count, vector);
-+
-+	/*
-+	 * Got references. Now we can drop the slab lock. The slab
-+	 * is frozen so it cannot vanish from under us nor will
-+	 * allocations be performed on the slab. However, unlocking the
-+	 * slab will allow concurrent slab_frees to proceed.
-+	 */
-+	slab_unlock(page);
-+	local_irq_restore(flags);
-+
-+	/*
-+	 * Perform the KICK callbacks to remove the objects.
-+	 */
-+	s->kick(s, count, vector, private);
-+
-+	local_irq_save(flags);
-+	slab_lock(page);
-+out:
-+	/*
-+	 * Check the result and unfreeze the slab
-+	 */
-+	leftover = page->inuse;
-+	unfreeze_slab(s, page, leftover > 0);
-+	local_irq_restore(flags);
-+	return leftover;
-+}
-+
-+/*
-+ * Remove objects from a list of slab pages that have been gathered.
-+ * Must be called with slabs that have been isolated before.
-+ *
-+ * kmem_cache_reclaim() is never called from an atomic context. It
-+ * allocates memory for temporary storage. We are holding the
-+ * slub_lock semaphore which prevents another call into
-+ * the defrag logic.
-+ */
-+int kmem_cache_reclaim(struct list_head *zaplist)
-+{
-+	int freed = 0;
-+	void **scratch;
-+	struct page *page;
-+	struct page *page2;
-+
-+	if (list_empty(zaplist))
-+		return 0;
-+
-+	scratch = alloc_scratch();
-+	if (!scratch)
-+		return 0;
-+
-+	list_for_each_entry_safe(page, page2, zaplist, lru) {
-+		list_del(&page->lru);
-+		if (kmem_cache_vacate(page, scratch) == 0)
-+			freed++;
-+	}
-+	kfree(scratch);
-+	return freed;
-+}
-+
-+/*
-+ * Shrink the slab cache on a particular node of the cache
-+ * by releasing slabs with zero objects and trying to reclaim
-+ * slabs with less than the configured percentage of objects allocated.
-+ */
-+static unsigned long __kmem_cache_shrink(struct kmem_cache *s, int node,
-+							unsigned long limit)
-+{
-+	unsigned long flags;
-+	struct page *page, *page2;
-+	LIST_HEAD(zaplist);
-+	int freed = 0;
-+	struct kmem_cache_node *n = get_node(s, node);
- 
--		if (!n->nr_partial)
-+	if (n->nr_partial <= limit)
-+		return 0;
-+
-+	spin_lock_irqsave(&n->list_lock, flags);
-+	list_for_each_entry_safe(page, page2, &n->partial, lru) {
-+		if (!slab_trylock(page))
-+			/* Busy slab. Get out of the way */
- 			continue;
- 
--		for (i = 0; i < objects; i++)
--			INIT_LIST_HEAD(slabs_by_inuse + i);
-+		if (page->inuse) {
-+			if (page->inuse * 100 >=
-+					s->defrag_ratio * page->objects) {
-+				slab_unlock(page);
-+				/* Slab contains enough objects */
-+				continue;
-+			}
- 
--		spin_lock_irqsave(&n->list_lock, flags);
-+			list_move(&page->lru, &zaplist);
-+			if (s->kick) {
-+				n->nr_partial--;
-+				SetSlabFrozen(page);
-+			}
-+			slab_unlock(page);
-+		} else {
-+			/* Empty slab page */
-+			list_del(&page->lru);
-+			n->nr_partial--;
-+			slab_unlock(page);
-+			discard_slab(s, page);
-+			freed++;
-+		}
-+	}
- 
-+	if (!s->kick)
- 		/*
--		 * Build lists indexed by the items in use in each slab.
-+		 * No defrag methods. By simply putting the zaplist at the
-+		 * end of the partial list we can let them simmer longer
-+		 * and thus increase the chance of all objects being
-+		 * reclaimed.
- 		 *
--		 * Note that concurrent frees may occur while we hold the
--		 * list_lock. page->inuse here is the upper limit.
-+		 * We have effectively sorted the partial list and put
-+		 * the slabs with more objects first. As soon as they
-+		 * are allocated they are going to be removed from the
-+		 * partial list.
- 		 */
--		list_for_each_entry_safe(page, t, &n->partial, lru) {
--			if (!page->inuse && slab_trylock(page)) {
--				/*
--				 * Must hold slab lock here because slab_free
--				 * may have freed the last object and be
--				 * waiting to release the slab.
--				 */
--				list_del(&page->lru);
--				n->nr_partial--;
--				slab_unlock(page);
--				discard_slab(s, page);
--			} else {
--				list_move(&page->lru,
--				slabs_by_inuse + page->inuse);
--			}
--		}
-+		list_splice(&zaplist, n->partial.prev);
-+
-+
-+	spin_unlock_irqrestore(&n->list_lock, flags);
-+
-+	if (s->kick)
-+		freed += kmem_cache_reclaim(&zaplist);
-+
-+	return freed;
-+}
-+
-+/*
-+ * Defrag slabs conditional on the amount of fragmentation in a page.
-+ */
-+int kmem_cache_defrag(int node)
-+{
-+	struct kmem_cache *s;
-+	unsigned long slabs = 0;
-+
-+	/*
-+	 * kmem_cache_defrag may be called from the reclaim path which may be
-+	 * called for any page allocator alloc. So there is the danger that we
-+	 * get called in a situation where slub already acquired the slub_lock
-+	 * for other purposes.
-+	 */
-+	if (!down_read_trylock(&slub_lock))
-+		return 0;
-+
-+	list_for_each_entry(s, &slab_caches, list) {
-+		unsigned long reclaimed = 0;
- 
- 		/*
--		 * Rebuild the partial list with the slabs filled up most
--		 * first and the least used slabs at the end.
-+		 * Defragmentable caches come first. If the slab cache is not
-+		 * defragmentable then we can stop traversing the list.
- 		 */
--		for (i = objects - 1; i >= 0; i--)
--			list_splice(slabs_by_inuse + i, n->partial.prev);
-+		if (!s->kick)
-+			break;
- 
--		spin_unlock_irqrestore(&n->list_lock, flags);
-+		if (node == -1) {
-+			int nid;
-+
-+			for_each_node_state(nid, N_NORMAL_MEMORY)
-+				reclaimed += __kmem_cache_shrink(s, nid,
-+								MAX_PARTIAL);
-+		} else
-+			reclaimed = __kmem_cache_shrink(s, node, MAX_PARTIAL);
-+
-+		slabs += reclaimed;
- 	}
-+	up_read(&slub_lock);
-+	return slabs;
-+}
-+EXPORT_SYMBOL(kmem_cache_defrag);
-+
-+/*
-+ * kmem_cache_shrink removes empty slabs from the partial lists.
-+ * If the slab cache supports defragmentation then objects are
-+ * reclaimed.
-+ */
-+int kmem_cache_shrink(struct kmem_cache *s)
-+{
-+	int node;
-+
-+	flush_all(s);
-+	for_each_node_state(node, N_NORMAL_MEMORY)
-+		__kmem_cache_shrink(s, node, 0);
- 
--	kfree(slabs_by_inuse);
- 	return 0;
- }
- EXPORT_SYMBOL(kmem_cache_shrink);
-Index: linux-next/include/linux/slab.h
-===================================================================
---- linux-next.orig/include/linux/slab.h	2008-08-11 07:47:01.452357887 -0700
-+++ linux-next/include/linux/slab.h	2008-08-11 07:47:01.522357705 -0700
-@@ -149,13 +149,16 @@ typedef void kmem_defrag_kick_func(struc
- 
- /*
-  * kmem_cache_setup_defrag() is used to setup callbacks for a slab cache.
-+ * kmem_cache_defrag() performs the actual defragmentation.
-  */
- #ifdef CONFIG_SLUB
- void kmem_cache_setup_defrag(struct kmem_cache *, kmem_defrag_get_func,
- 						kmem_defrag_kick_func);
-+int kmem_cache_defrag(int node);
- #else
- static inline void kmem_cache_setup_defrag(struct kmem_cache *s,
- 	kmem_defrag_get_func get, kmem_defrag_kick_func kiok) {}
-+static inline int kmem_cache_defrag(int node) { return 0; }
- #endif
- 
- /*
-
--- 
