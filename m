@@ -1,104 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752280AbYHKJLw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752036AbYHKJSE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752280AbYHKJLw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Aug 2008 05:11:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751181AbYHKJLm
+	id S1752036AbYHKJSE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Aug 2008 05:18:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751078AbYHKJRy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Aug 2008 05:11:42 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:36493 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751023AbYHKJLl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Aug 2008 05:11:41 -0400
-Date: Mon, 11 Aug 2008 11:11:05 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, netdev <netdev@vger.kernel.org>,
-       Jeff Garzik <jgarzik@pobox.com>
-Subject: [PATCH] net, wd.c: fix undefined reference to `NS8390p_init'
-Message-ID: <20080811091105.GA8141@elte.hu>
-References: <20080806182828.6bfe0a16.sfr@canb.auug.org.au> <20080806172148.7fac5999.randy.dunlap@oracle.com> <Pine.LNX.4.64.0808070918510.17614@anakin> <20080807102931.1bb0607d@lxorguk.ukuu.org.uk>
+	Mon, 11 Aug 2008 05:17:54 -0400
+Received: from smtp239.poczta.interia.pl ([217.74.64.239]:6263 "EHLO
+	smtp239.poczta.interia.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751014AbYHKJRy convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Aug 2008 05:17:54 -0400
+Date: 11 Aug 2008 11:17:46 +0200
+From: krzysztof.h1@poczta.fm
+Subject: RE: [Linux-fbdev-devel] [PATCH 0/13 v2] viafb: VIA Frame Buffer Device Driver
+To: "JosephChan@via.com.tw" <JosephChan@via.com.tw>,
+       "krzysztof.h1@poczta.fm" <krzysztof.h1@poczta.fm>
+Cc: "linux-fbdev-devel@lists.sourceforge.net" 
+	<linux-fbdev-devel@lists.sourceforge.net>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "geert@linux-m68k.org" <geert@linux-m68k.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080807102931.1bb0607d@lxorguk.ukuu.org.uk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-ORIGINATE-IP: 83.17.101.58
+X-Mailer: PSE
+Message-Id: <20080811091747.045A66D605@f09.poczta.interia.pl>
+X-EMID: c5240acc
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
-
-> On Thu, 7 Aug 2008 09:20:07 +0200 (CEST)
-> Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+> Hi Krzysztof,
 > 
-> > On Wed, 6 Aug 2008, Randy Dunlap wrote:
-> > > One randconfig ends with:
-> > > 
-> > > drivers/built-in.o: In function `wd_probe1':
-> > > wd.c:(.init.text+0x6179): undefined reference to `NS8390p_init'
-> > > make[1]: *** [.tmp_vmlinux1] Error 1
-> > 
-> > drivers/net/Makefile has:
-> > 
-> > obj-$(CONFIG_WD80x3) += wd.o 8390.o
-> > 
-> > So either wd_probe1() should call NS8390_init(), or obj-$(CONFIG_WD80x3)
-> > should link with 8390p.o. Don't know which is the appropriate change
-> > here (my gut feeling says the latter).
+> Thanks to remind, but after I checked the patches in linux-fbdev-devel
+> mailing list.
+> It seems there is no missing lines as you mentioned. 
 > 
-> Safest is the latter. The shared memory interface on the wd is full 
-> speed 8 or 16bit (depending on card/jumpers) but I'm not clear about 
-> the NIC. Most of the performance hit is on the packet transfer which 
-> is private methods on this device so using 8390p won't make a big 
-> difference on this board anyway.
 
-Alan, Jeff, i triggered this too with latest -git, please pick up the 
-fix below if you dont have it already.
+There are 3 lines missing at the end of each file. I assume they are empty one
+so no content is missing but the command:
 
-	Ingo
+patch -p1 < viafb3.patch
 
------------------->
->From c03cb1727bb4c5433436bfb0fab59fdcc00749c3 Mon Sep 17 00:00:00 2001
-From: Ingo Molnar <mingo@elte.hu>
-Date: Mon, 11 Aug 2008 11:11:42 +0200
-Subject: [PATCH] net, wd.c: fix undefined reference to `NS8390p_init'
+ends with:
+patch: **** malformed patch at line 259: diff -Nurp a/drivers/video/via/accel.h b/drivers/video/via/accel.h
 
-fix:
+If one adds three lines "+" at the line 259, the patch command ends with:
 
-  drivers/built-in.o: In function `wd_probe1':
-  wd.c:(.init.text+0xb247): undefined reference to `NS8390p_init'
+patching file drivers/video/via/accel.h
+patch: **** malformed patch at line 446:
 
-that triggers with:
+Adding three lines "+" at the mentioned file solves the problem.
 
-  http://redhat.com/~mingo/misc/config-Mon_Aug_11_10_40_46_CEST_2008.bad
+Kind regards,
+Krzysztof
 
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- drivers/net/Makefile |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+----------------------------------------------------------------------
+Taniej na zagraniczne komorki!
+Sprawdz >>> http://link.interia.pl/f1ece
 
-diff --git a/drivers/net/Makefile b/drivers/net/Makefile
-index 7629c90..dc6dbf6 100644
---- a/drivers/net/Makefile
-+++ b/drivers/net/Makefile
-@@ -106,7 +106,7 @@ ifeq ($(CONFIG_FEC_MPC52xx_MDIO),y)
- 	obj-$(CONFIG_FEC_MPC52xx) += fec_mpc52xx_phy.o
- endif
- obj-$(CONFIG_68360_ENET) += 68360enet.o
--obj-$(CONFIG_WD80x3) += wd.o 8390.o
-+obj-$(CONFIG_WD80x3) += wd.o 8390p.o
- obj-$(CONFIG_EL2) += 3c503.o 8390p.o
- obj-$(CONFIG_NE2000) += ne.o 8390p.o
- obj-$(CONFIG_NE2_MCA) += ne2.o 8390p.o
