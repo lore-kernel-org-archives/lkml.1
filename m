@@ -1,22 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754600AbYHKPQ7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754242AbYHKPRu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754600AbYHKPQ7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Aug 2008 11:16:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752195AbYHKPQt
+	id S1754242AbYHKPRu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Aug 2008 11:17:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752139AbYHKPRm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Aug 2008 11:16:49 -0400
-Received: from nlpi053.sbcis.sbc.com ([207.115.36.82]:60828 "EHLO
+	Mon, 11 Aug 2008 11:17:42 -0400
+Received: from nlpi053.sbcis.sbc.com ([207.115.36.82]:61847 "EHLO
 	nlpi053.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752009AbYHKPQs (ORCPT
+	with ESMTP id S1751780AbYHKPRl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Aug 2008 11:16:48 -0400
-Message-Id: <20080811150656.117393595@quilx.com>
+	Mon, 11 Aug 2008 11:17:41 -0400
+Message-Id: <20080811150657.898186615@quilx.com>
 References: <20080811150616.207532384@quilx.com>
 User-Agent: quilt/0.46-1
-Date: Mon, 11 Aug 2008 08:06:22 -0700
+Date: Mon, 11 Aug 2008 08:06:27 -0700
 From: Christoph Lameter <cl@linux-foundation.org>
 To: Pekka Enberg <penberg@cs.helsinki.fi>
-CC: akpm@linux-foundation.org, Christoph Lameter <clameter@sgi.com>,
+CC: akpm@linux-foundation.org, Alexander Viro <viro@ftp.linux.org.uk>,
+       Christoph Hellwig <hch@infradead.org>,
+       Christoph Lameter <clameter@sgi.com>,
        Christoph Lameter <cl@linux-foundation.org>
 Cc: linux-kernel@vger.kernel.org
 CC: linux-fsdevel@vger.kernel.org
@@ -25,131 +27,189 @@ Cc: andi@firstfloor.org
 Cc: Rik van Riel <riel@redhat.com>
 Cc: mpm@selenic.com
 Cc: Dave Chinner <david@fromorbit.com>
-Subject: [patch 06/19] slub: Add KICKABLE to avoid repeated kick() attempts
-Content-Disposition: inline; filename=0006-SLUB-Add-KICKABLE-to-avoid-repeated-kick-attempts.patch
+Subject: [patch 11/19] inodes: Support generic defragmentation
+Content-Disposition: inline; filename=0025-inodes-Support-generic-defragmentation.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add a flag KICKABLE to be set on slabs with a defragmentation method
+This implements the ability to remove inodes in a particular slab
+from inode caches. In order to remove an inode we may have to write out
+the pages of an inode, the inode itself and remove the dentries referring
+to the node.
 
-Clear the flag if a kick action is not successful in reducing the
-number of objects in a slab. This will avoid future attempts to
-kick objects out.
+Provide generic functionality that can be used by filesystems that have
+their own inode caches to also tie into the defragmentation functions
+that are made available here.
 
-The KICKABLE flag is set again when all objects of the slab have been
-allocated (Occurs during removal of a slab from the partial lists).
-
+Cc: Alexander Viro <viro@ftp.linux.org.uk>
+Cc: Christoph Hellwig <hch@infradead.org>
 Reviewed-by: Rik van Riel <riel@redhat.com>
 Signed-off-by: Christoph Lameter <clameter@sgi.com>
-Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
 Signed-off-by: Christoph Lameter <cl@linux-foundation.org>
 
 ---
- include/linux/page-flags.h |    2 ++
- mm/slub.c                  |   23 ++++++++++++++++++-----
- 2 files changed, 20 insertions(+), 5 deletions(-)
+ fs/inode.c         |  123 +++++++++++++++++++++++++++++++++++++++++++++++++++++
+ include/linux/fs.h |    6 ++
+ 2 files changed, 129 insertions(+)
 
-Index: linux-next/mm/slub.c
+Index: linux-next/fs/inode.c
 ===================================================================
---- linux-next.orig/mm/slub.c	2008-08-11 07:47:01.482348822 -0700
-+++ linux-next/mm/slub.c	2008-08-11 07:50:09.282347574 -0700
-@@ -1138,6 +1138,9 @@ static struct page *new_slab(struct kmem
- 			SLAB_STORE_USER | SLAB_TRACE))
- 		__SetPageSlubDebug(page);
- 
-+	if (s->kick)
-+		__SetPageSlubKickable(page);
-+
- 	start = page_address(page);
- 
- 	if (unlikely(s->flags & SLAB_POISON))
-@@ -1181,6 +1184,7 @@ static void __free_slab(struct kmem_cach
- 		NR_SLAB_RECLAIMABLE : NR_SLAB_UNRECLAIMABLE,
- 		-pages);
- 
-+	__ClearPageSlubKickable(page);
- 	__ClearPageSlab(page);
- 	reset_page_mapcount(page);
- 	__free_pages(page, order);
-@@ -1391,6 +1395,8 @@ static void unfreeze_slab(struct kmem_ca
- 			if (SLABDEBUG && PageSlubDebug(page) &&
- 						(s->flags & SLAB_STORE_USER))
- 				add_full(n, page);
-+			if (s->kick)
-+				__SetPageSlubKickable(page);
- 		}
- 		slab_unlock(page);
- 	} else {
-@@ -2820,12 +2826,12 @@ static int kmem_cache_vacate(struct page
- 	slab_lock(page);
- 
- 	BUG_ON(!PageSlab(page));	/* Must be s slab page */
--	BUG_ON(!SlabFrozen(page));	/* Slab must have been frozen earlier */
-+	BUG_ON(!PageSlubFrozen(page));	/* Slab must have been frozen earlier */
- 
- 	s = page->slab;
- 	objects = page->objects;
- 	map = scratch + objects * sizeof(void **);
--	if (!page->inuse || !s->kick)
-+	if (!page->inuse || !s->kick || !PageSlubKickable(page))
- 		goto out;
- 
- 	/* Determine used objects */
-@@ -2863,6 +2869,9 @@ out:
- 	 * Check the result and unfreeze the slab
- 	 */
- 	leftover = page->inuse;
-+	if (leftover)
-+		/* Unsuccessful reclaim. Avoid future reclaim attempts. */
-+		__ClearPageSlubKickable(page);
- 	unfreeze_slab(s, page, leftover > 0);
- 	local_irq_restore(flags);
- 	return leftover;
-@@ -2924,17 +2933,21 @@ static unsigned long __kmem_cache_shrink
- 			continue;
- 
- 		if (page->inuse) {
--			if (page->inuse * 100 >=
-+			if (!PageSlubKickable(page) || page->inuse * 100 >=
- 					s->defrag_ratio * page->objects) {
- 				slab_unlock(page);
--				/* Slab contains enough objects */
-+				/*
-+				 * Slab contains enough objects
-+				 * or we alrady tried reclaim before and
-+				 * it failed. Skip this one.
-+				 */
- 				continue;
- 			}
- 
- 			list_move(&page->lru, &zaplist);
- 			if (s->kick) {
- 				n->nr_partial--;
--				SetSlabFrozen(page);
-+				__SetPageSlubFrozen(page);
- 			}
- 			slab_unlock(page);
- 		} else {
-Index: linux-next/include/linux/page-flags.h
-===================================================================
---- linux-next.orig/include/linux/page-flags.h	2008-08-11 07:42:31.882358716 -0700
-+++ linux-next/include/linux/page-flags.h	2008-08-11 07:47:01.612357581 -0700
-@@ -112,6 +112,7 @@ enum pageflags {
- 	/* SLUB */
- 	PG_slub_frozen = PG_active,
- 	PG_slub_debug = PG_error,
-+	PG_slub_kickable = PG_dirty,
- };
- 
- #ifndef __GENERATING_BOUNDS_H
-@@ -182,6 +183,7 @@ __PAGEFLAG(SlobFree, slob_free)
- 
- __PAGEFLAG(SlubFrozen, slub_frozen)
- __PAGEFLAG(SlubDebug, slub_debug)
-+__PAGEFLAG(SlubKickable, slub_kickable)
+--- linux-next.orig/fs/inode.c	2008-08-11 07:42:10.738607937 -0700
++++ linux-next/fs/inode.c	2008-08-11 07:47:04.342348902 -0700
+@@ -1363,6 +1363,128 @@ static int __init set_ihash_entries(char
+ __setup("ihash_entries=", set_ihash_entries);
  
  /*
-  * Only test-and-set exist for PG_writeback.  The unconditional operators are
++ * Obtain a refcount on a list of struct inodes pointed to by v. If the
++ * inode is in the process of being freed then zap the v[] entry so that
++ * we skip the freeing attempts later.
++ *
++ * This is a generic function for the ->get slab defrag callback.
++ */
++void *get_inodes(struct kmem_cache *s, int nr, void **v)
++{
++	int i;
++
++	spin_lock(&inode_lock);
++	for (i = 0; i < nr; i++) {
++		struct inode *inode = v[i];
++
++		if (inode->i_state & (I_FREEING|I_CLEAR|I_WILL_FREE))
++			v[i] = NULL;
++		else
++			__iget(inode);
++	}
++	spin_unlock(&inode_lock);
++	return NULL;
++}
++EXPORT_SYMBOL(get_inodes);
++
++/*
++ * Function for filesystems that embedd struct inode into their own
++ * fs inode. The offset is the offset of the struct inode in the fs inode.
++ *
++ * The function adds to the pointers in v[] in order to make them point to
++ * struct inode. Then get_inodes() is used to get the refcount.
++ * The converted v[] pointers can then also be passed to the kick() callback
++ * without further processing.
++ */
++void *fs_get_inodes(struct kmem_cache *s, int nr, void **v,
++						unsigned long offset)
++{
++	int i;
++
++	for (i = 0; i < nr; i++)
++		v[i] += offset;
++
++	return get_inodes(s, nr, v);
++}
++EXPORT_SYMBOL(fs_get_inodes);
++
++/*
++ * Generic callback function slab defrag ->kick methods. Takes the
++ * array with inodes where we obtained refcounts using fs_get_inodes()
++ * or get_inodes() and tries to free them.
++ */
++void kick_inodes(struct kmem_cache *s, int nr, void **v, void *private)
++{
++	struct inode *inode;
++	int i;
++	int abort = 0;
++	LIST_HEAD(freeable);
++	int active;
++
++	for (i = 0; i < nr; i++) {
++		inode = v[i];
++		if (!inode)
++			continue;
++
++		if (inode_has_buffers(inode) || inode->i_data.nrpages) {
++			if (remove_inode_buffers(inode))
++				/*
++				 * Should we really be doing this? Or
++				 * limit the writeback here to only a few pages?
++				 *
++				 * Possibly an expensive operation but we
++				 * cannot reclaim the inode if the pages
++				 * are still present.
++				 */
++				invalidate_mapping_pages(&inode->i_data,
++								0, -1);
++		}
++
++		/* Invalidate children and dentry */
++		if (S_ISDIR(inode->i_mode)) {
++			struct dentry *d = d_find_alias(inode);
++
++			if (d) {
++				d_invalidate(d);
++				dput(d);
++			}
++		}
++
++		if (inode->i_state & I_DIRTY)
++			write_inode_now(inode, 1);
++
++		d_prune_aliases(inode);
++	}
++
++	mutex_lock(&iprune_mutex);
++	for (i = 0; i < nr; i++) {
++		inode = v[i];
++
++		if (!inode)
++			/* inode is alrady being freed */
++			continue;
++
++		active = inode->i_sb->s_flags & MS_ACTIVE;
++		iput(inode);
++		if (abort || !active)
++			continue;
++
++		spin_lock(&inode_lock);
++		abort =  !can_unuse(inode);
++
++		if (!abort) {
++			list_move(&inode->i_list, &freeable);
++			inode->i_state |= I_FREEING;
++			inodes_stat.nr_unused--;
++		}
++		spin_unlock(&inode_lock);
++	}
++	dispose_list(&freeable);
++	mutex_unlock(&iprune_mutex);
++}
++EXPORT_SYMBOL(kick_inodes);
++
++/*
+  * Initialize the waitqueues and inode hash table.
+  */
+ void __init inode_init_early(void)
+@@ -1401,6 +1523,7 @@ void __init inode_init(void)
+ 					 SLAB_MEM_SPREAD),
+ 					 init_once);
+ 	register_shrinker(&icache_shrinker);
++	kmem_cache_setup_defrag(inode_cachep, get_inodes, kick_inodes);
+ 
+ 	/* Hash may have been set up in inode_init_early */
+ 	if (!hashdist)
+Index: linux-next/include/linux/fs.h
+===================================================================
+--- linux-next.orig/include/linux/fs.h	2008-08-11 07:42:30.598607988 -0700
++++ linux-next/include/linux/fs.h	2008-08-11 07:47:05.012377598 -0700
+@@ -1846,6 +1846,12 @@ static inline void insert_inode_hash(str
+ 	__insert_inode_hash(inode, inode->i_ino);
+ }
+ 
++/* Helper functions for inode defragmentation support in filesystems */
++extern void kick_inodes(struct kmem_cache *, int, void **, void *);
++extern void *get_inodes(struct kmem_cache *, int nr, void **);
++extern void *fs_get_inodes(struct kmem_cache *, int nr, void **,
++						unsigned long offset);
++
+ extern struct file * get_empty_filp(void);
+ extern void file_move(struct file *f, struct list_head *list);
+ extern void file_kill(struct file *f);
 
 -- 
