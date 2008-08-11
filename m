@@ -1,58 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755555AbYHKPsc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755299AbYHKPtq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755555AbYHKPsc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Aug 2008 11:48:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752348AbYHKPsY
+	id S1755299AbYHKPtq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Aug 2008 11:49:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752804AbYHKPtg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Aug 2008 11:48:24 -0400
-Received: from rv-out-0506.google.com ([209.85.198.227]:15482 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751762AbYHKPsW (ORCPT
+	Mon, 11 Aug 2008 11:49:36 -0400
+Received: from E23SMTP02.au.ibm.com ([202.81.18.163]:48076 "EHLO
+	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752688AbYHKPtf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Aug 2008 11:48:22 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent:sender;
-        b=o9tAN4AD+pvwXzobPjsCb720u6l44vtkimeSOd9u8BlepOn6dV7ZqbDzUuS/EIgHqj
-         qluCpClv+QaUnw6uYAjzzmJlNHjNlITPp5h9AB7BIypKNBCy2gWeD17NfBhqtbk2M3GU
-         nm5ABlK6VAZL/Sf4xzN2IbpE+KsEV0WqjzyMw=
-Date: Mon, 11 Aug 2008 21:18:12 +0530
-From: Rabin Vincent <rabin@rab.in>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Eric Sesterhenn <snakebyte@gmx.de>
-Subject: Re: [Bug #11270] BUG when doing a cat
-	/sys/devices/system/cpu/cpuidle/current_driver
-Message-ID: <20080811154812.GB1667@debian>
-References: <VYYCiQF4qDI.A.BPH.KCjnIB@albercik> <cX_-nNkxKaF.A.7EB.GDjnIB@albercik>
+	Mon, 11 Aug 2008 11:49:35 -0400
+Message-ID: <48A05F89.4070702@linux.vnet.ibm.com>
+Date: Mon, 11 Aug 2008 21:19:29 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+User-Agent: Thunderbird 1.5.0.14ubu (X11/20080724)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <cX_-nNkxKaF.A.7EB.GDjnIB@albercik>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Eric Sandeen <sandeen@redhat.com>
+CC: linux-ext4@vger.kernel.org, kernel list <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       aneesh.kumar@linux.vnet.ibm.com, Andy Whitcroft <apw@shadowen.org>
+Subject: Re: [BUG] 2.6.27-rc1 - Filesystem warning on ext4 with e2fsck
+References: <48A0127E.6000505@linux.vnet.ibm.com> <48A04C40.1040206@redhat.com>
+In-Reply-To: <48A04C40.1040206@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Aug 10, 2008 at 12:43:51AM +0200, Rafael J. Wysocki wrote:
-> This message has been generated automatically as a part of a report
-> of recent regressions.
+Eric Sandeen wrote:
+> Kamalesh Babulal wrote:
+>> Hi,
+>>
+>> After running the fsx linux test on the ext4 partition mounted with 
+>> -o errors=panic,journal_async_commit, filesystem check is reporting
+>> warning
+>>
+>> # /usr/local/e2fsprogs/sbin/e2fsck -fnv /dev/sda6 
+>> e2fsck 1.41.0 (10-Jul-2008)
+>> Pass 1: Checking inodes, blocks, and sizes
+>> Pass 2: Checking directory structure
+>> Pass 3: Checking directory connectivity
+>> /lost+found not found.  Create? no
+>>
+>> Pass 4: Checking reference counts
+>> Pass 5: Checking group summary information
+>>
+>> /dev/sda6: ********** WARNING: Filesystem still has errors **********
 > 
-> The following bug entry is on the current list of known regressions
-> from 2.6.26.  Please verify if it still should be listed and let me know
-> (either way).
+> Was lost+found manually removed between mkfs & fsck?  (did you do an rm
+> -rf * or similar ?)  That'd produce exactly the above warning, since you
+> told e2fsck "-n" ...
 > 
-> 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11270
-> Subject		: BUG when doing a cat /sys/devices/system/cpu/cpuidle/current_driver
-> Submitter	: Eric Sesterhenn <snakebyte@gmx.de>
-> Date		: 2008-08-05 12:33 (5 days old)
-> References	: http://marc.info/?l=linux-kernel&m=121793969102438&w=4
-> Handled-By	: Rabin Vincent <rabin@rab.in>
-> Patch		: http://marc.info/?l=linux-kernel&m=121795955208618&w=4
+> -Eric
+> --
+Hi Eric,
 
-Needs to be open.  The patch is in -mm, but is not yet in mainline.
+Yes, the test program does a rm -rf * of the partition and  
+usr/local/e2fsprogs/sbin/e2fsck -fvp /dev/sda6 helps. Sorry
+for the noise.
 
-Rabin
+-- 
+Thanks & Regards,
+Kamalesh Babulal.
