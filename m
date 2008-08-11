@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752392AbYHKIZF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752629AbYHKIZh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752392AbYHKIZF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Aug 2008 04:25:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751193AbYHKIYz
+	id S1752629AbYHKIZh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Aug 2008 04:25:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751193AbYHKIZ2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Aug 2008 04:24:55 -0400
-Received: from ns2.suse.de ([195.135.220.15]:56410 "EHLO mx2.suse.de"
+	Mon, 11 Aug 2008 04:25:28 -0400
+Received: from cantor.suse.de ([195.135.220.2]:49032 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750989AbYHKIYy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Aug 2008 04:24:54 -0400
-Date: Mon, 11 Aug 2008 10:24:51 +0200
-Message-ID: <s5h63q8m018.wl%tiwai@suse.de>
+	id S1751288AbYHKIZ2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Aug 2008 04:25:28 -0400
+Date: Mon, 11 Aug 2008 10:25:26 +0200
+Message-ID: <s5h4p5sm009.wl%tiwai@suse.de>
 From: Takashi Iwai <tiwai@suse.de>
 To: Alexander Beregalov <a.beregalov@gmail.com>
 Cc: perex@perex.cz, alsa-devel@alsa-project.org, linux-kernel@vger.kernel.org
-Subject: Re: [alsa-devel] [PATCH] ice1724/revo: simple clean up
-In-Reply-To: <20080810220904.GD5093@orion>
-References: <20080810220904.GD5093@orion>
+Subject: Re: [alsa-devel] [PATCH] sound/pci/Kconfig: update for ice1712/24
+In-Reply-To: <20080810225242.GE5093@orion>
+References: <20080810225242.GE5093@orion>
 User-Agent: Wanderlust/2.12.0 (Your Wildest Dreams) SEMI/1.14.6 (Maruoka)
  FLIM/1.14.7 (=?ISO-8859-4?Q?Sanj=F2?=) APEL/10.6 Emacs/22.2
  (x86_64-suse-linux-gnu) MULE/5.0 (SAKAKI)
@@ -26,53 +26,62 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-At Mon, 11 Aug 2008 02:09:04 +0400,
+At Mon, 11 Aug 2008 02:52:42 +0400,
 Alexander Beregalov wrote:
 > 
 > From: Alexander Beregalov <a.beregalov@gmail.com>
 > 
-> ice1724/revo: simple clean up
+> sound/pci/Kconfig: update for ice1712/24
 > 
 > 
 > Signed-off-by: Alexander Beregalov <a.beregalov@gmail.com>
 
-Applied.  Thanks.
+Applied.
 
+Care to update Documentation/sound/alsa/ALSA-Configuration.txt, too?
+
+Thanks,
+
+
+Takashi
 
 > ---
 > 
->  sound/pci/ice1712/revo.c |   12 ++++++++----
->  1 files changed, 8 insertions(+), 4 deletions(-)
+>  sound/pci/Kconfig |   14 +++++++++-----
+>  1 files changed, 9 insertions(+), 5 deletions(-)
 > 
-> diff --git a/sound/pci/ice1712/revo.c b/sound/pci/ice1712/revo.c
-> index 4d26314..5e1b156 100644
-> --- a/sound/pci/ice1712/revo.c
-> +++ b/sound/pci/ice1712/revo.c
-> @@ -524,16 +524,20 @@ static int __devinit revo_init(struct snd_ice1712 *ice)
->  	ak = ice->akm = kcalloc(2, sizeof(struct snd_akm4xxx), GFP_KERNEL);
->  	if (! ak)
->  		return -ENOMEM;
-> -	ice->akm_codecs = 2;
->  	switch (ice->eeprom.subvendor) {
->  	case VT1724_SUBDEVICE_REVOLUTION71:
->  		ice->akm_codecs = 2;
-> -		if ((err = snd_ice1712_akm4xxx_init(ak, &akm_revo_front, &akm_revo_front_priv, ice)) < 0)
-> +		err = snd_ice1712_akm4xxx_init(ak, &akm_revo_front,
-> +						&akm_revo_front_priv, ice);
-> +		if (err < 0)
->  			return err;
-> -		if ((err = snd_ice1712_akm4xxx_init(ak + 1, &akm_revo_surround, &akm_revo_surround_priv, ice)) < 0)
-> +		err = snd_ice1712_akm4xxx_init(ak+1, &akm_revo_surround,
-> +						&akm_revo_surround_priv, ice);
-> +		if (err < 0)
->  			return err;
->  		/* unmute all codecs */
-> -		snd_ice1712_gpio_write_bits(ice, VT1724_REVO_MUTE, VT1724_REVO_MUTE);
-> +		snd_ice1712_gpio_write_bits(ice, VT1724_REVO_MUTE,
-> +						VT1724_REVO_MUTE);
->  		break;
->  	case VT1724_SUBDEVICE_REVOLUTION51:
->  		ice->akm_codecs = 2;
+> diff --git a/sound/pci/Kconfig b/sound/pci/Kconfig
+> index f7d95b2..e14dc54 100644
+> --- a/sound/pci/Kconfig
+> +++ b/sound/pci/Kconfig
+> @@ -649,8 +649,9 @@ config SND_ICE1712
+>  
+>  	  Currently supported hardware is: M-Audio Delta 1010(LT),
+>  	  DiO 2496, 66, 44, 410, Audiophile 24/96; Digigram VX442;
+> -	  TerraTec EWX 24/96, EWS 88MT, 88D, DMX 6Fire, Phase 88;
+> -	  Hoontech SoundTrack DSP 24/Value/Media7.1; Event EZ8.
+> +	  TerraTec EWX 24/96, EWS 88MT/D, DMX 6Fire, Phase 88;
+> +	  Hoontech SoundTrack DSP 24/Value/Media7.1; Event EZ8;
+> +	  Lionstracs Mediastation, Terrasoniq TS 88.
+>  
+>  	  To compile this driver as a module, choose M here: the module
+>  	  will be called snd-ice1712.
+> @@ -665,9 +666,12 @@ config SND_ICE1724
+>  	  ICE/VT1724/1720 (Envy24HT/PT) chips.
+>  
+>  	  Currently supported hardware is: AMP AUDIO2000; M-Audio
+> -	  Revolution 7.1; TerraTec Aureon 5.1 Sky, 7.1 Space/Universe;
+> -	  AudioTrak Prodigy 7.1; Pontis MS300; Albatron K8X800 Pro II;
+> -	  Chaintech ZNF3-150/250.
+> +	  Revolution 5.1, 7.1, Audiophile 192; TerraTec Aureon 5.1 Sky,
+> +	  7.1 Space/Universe, Phase 22/28; Onkyo SE-90PCI, SE-200PCI;
+> +	  AudioTrak Prodigy 192, 7.1 (HIFI/LT/XT), HD2; Hercules
+> +	  Fortissimo IV; ESI Juli@; Pontis MS300; EGO-SYS WaveTerminal
+> +	  192M; Albatron K8X800 Pro II; Chaintech ZNF3-150/250, 9CJS,
+> +	  AV-710; Shuttle SN25P.
+>  
+>  	  To compile this driver as a module, choose M here: the module
+>  	  will be called snd-ice1724.
 > _______________________________________________
 > Alsa-devel mailing list
 > Alsa-devel@alsa-project.org
