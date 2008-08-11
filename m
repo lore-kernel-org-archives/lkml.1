@@ -1,56 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752974AbYHKKIp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752139AbYHKKVI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752974AbYHKKIp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Aug 2008 06:08:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751513AbYHKKIg
+	id S1752139AbYHKKVI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Aug 2008 06:21:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751283AbYHKKU4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Aug 2008 06:08:36 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:48709 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751511AbYHKKIg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Aug 2008 06:08:36 -0400
-Date: Mon, 11 Aug 2008 12:08:07 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, jeremy@goop.org, hugh@veritas.com,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       davej@redhat.com
-Subject: Re: [RFC][PATCH 0/7] lockdep
-Message-ID: <20080811100807.GA8184@elte.hu>
-References: <20080804130317.994042639@chello.nl>
+	Mon, 11 Aug 2008 06:20:56 -0400
+Received: from E23SMTP01.au.ibm.com ([202.81.18.162]:42386 "EHLO
+	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751108AbYHKKUz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Aug 2008 06:20:55 -0400
+Message-ID: <48A0127E.6000505@linux.vnet.ibm.com>
+Date: Mon, 11 Aug 2008 15:50:46 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+User-Agent: Thunderbird 1.5.0.14ubu (X11/20080724)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080804130317.994042639@chello.nl>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: linux-ext4@vger.kernel.org
+CC: kernel list <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       aneesh.kumar@linux.vnet.ibm.com, Andy Whitcroft <apw@shadowen.org>
+Subject: [BUG] 2.6.27-rc1 - Filesystem warning on ext4 with e2fsck
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
-* Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+After running the fsx linux test on the ext4 partition mounted with 
+-o errors=panic,journal_async_commit, filesystem check is reporting
+warning
 
-> Hi,
-> 
-> This series is my pending lockdep queue, it includes David's graph 
-> optimization, my new scheduler runqueue annotation amongst others.
-> 
-> The part that makes this RFC are the latter few patches that add the 
-> "lock protection locks" thing Linus proposed a few days ago. I've not 
-> yet written a test case that actively tests this functionality, but 
-> wanted to get this out so that Jeremy can see if it works for him.
+# /usr/local/e2fsprogs/sbin/e2fsck -fnv /dev/sda6 
+e2fsck 1.41.0 (10-Jul-2008)
+Pass 1: Checking inodes, blocks, and sizes
+Pass 2: Checking directory structure
+Pass 3: Checking directory connectivity
+/lost+found not found.  Create? no
 
-update: i'm now back from vacation and i've added these patches to 
-tip/core/locking, but -tip testing found a few problems with them so i 
-wont push them upstream yet.
+Pass 4: Checking reference counts
+Pass 5: Checking group summary information
 
-	Ingo
+/dev/sda6: ********** WARNING: Filesystem still has errors **********
+
+
+      63 inodes used (0.00%)
+       2 non-contiguous inodes (3.2%)
+         # of inodes with ind/dind/tind blocks: 12/11/11
+  463336 blocks used (1.77%)
+       0 bad blocks
+       1 large file
+
+      31 regular files
+      23 directories
+       0 character device files
+       0 block device files
+       0 fifos
+       0 links
+       0 symbolic links (0 fast symbolic links)
+       0 sockets
+--------
+      54 files
+
+# /usr/local/e2fsprogs/sbin/e2fsck -V
+e2fsck 1.41.0 (10-Jul-2008)
+        Using EXT2FS Library version 1.41.0, 10-Jul-2008
+
+-- 
+Thanks & Regards,
+Kamalesh Babulal,
+Linux Technology Center,
+IBM, ISTL.
