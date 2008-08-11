@@ -1,70 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755753AbYHKRT0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755539AbYHKRUU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755753AbYHKRT0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Aug 2008 13:19:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753731AbYHKRTP
+	id S1755539AbYHKRUU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Aug 2008 13:20:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752191AbYHKRUI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Aug 2008 13:19:15 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:44898 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751498AbYHKRTN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Aug 2008 13:19:13 -0400
-Date: Mon, 11 Aug 2008 19:18:49 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Matt Parnell <mparnell@gmail.com>, linux-kernel@vger.kernel.org,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: 2.6.27-rc0 Power Bugs with HP/Compaq Laptops
-Message-ID: <20080811171849.GN4524@elte.hu>
-References: <680ad8bc0808070757u49e13b3br1f69fb4881dc44ce@mail.gmail.com> <200808072300.21771.rjw@sisk.pl>
+	Mon, 11 Aug 2008 13:20:08 -0400
+Received: from smtpq1.groni1.gr.home.nl ([213.51.130.200]:36226 "EHLO
+	smtpq1.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751193AbYHKRUH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Aug 2008 13:20:07 -0400
+Message-ID: <48A074D1.4070803@keyaccess.nl>
+Date: Mon, 11 Aug 2008 19:20:17 +0200
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080707)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200808072300.21771.rjw@sisk.pl>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: 0.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.3
-	_SUMMARY_
+To: Cyrill Gorcunov <gorcunov@gmail.com>, Ingo Molnar <mingo@elte.hu>
+CC: Andrew Morton <akpm@osdl.org>, Yinghai Lu <yhlu.kernel@gmail.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: kill arch/x86/kernel/mpparse.c debugging printk.
+References: <489C77C6.7040408@keyaccess.nl> <20080811122038.GA10082@elte.hu> <48A05E79.4030304@keyaccess.nl> <48A05EB1.3050508@keyaccess.nl> <20080811164508.GA18969@lenovo>
+In-Reply-To: <20080811164508.GA18969@lenovo>
+Content-Type: multipart/mixed;
+ boundary="------------050308060901000304000107"
+X-Spam-Score: -1.0 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is a multi-part message in MIME format.
+--------------050308060901000304000107
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 
-> > "This is not the right fix. Instead, HPET should be used as a timer 
-> > source for dynticks. This is not in 2.6.26, but I tried the 
-> > linux-next tree (google it) and it looked like dynticks worked fine, 
-> > without disabling C1E. Can't place my finger on the exact commit, 
-> > but you could check."
+On 11-08-08 18:45, Cyrill Gorcunov wrote:
 
-Would be nice to figure out which exact change solves the problem, so 
-that we could fast-route it into v2.6.27. (and for eventual .26 and .25 
-backporting, if it's simple enough)
+> | From: Rene Herman <rene.herman@gmail.com>
+> | Date: Mon, 11 Aug 2008 17:35:41 +0200
+> | Subject: [PATCH] x86: make "apic" an early_param() on 32-bit
 
-first thing would be to check whether tip/master works fine:
+[ ... ]
 
-  http://people.redhat.com/mingo/tip.git/README
+> you turned it into early_param so now it's NULL injecting vulnerabled.
+> Could you please add checking for NULL str param?
 
-if that works fine it would be nice to check whether the pending changes 
-in tip/timers/hpet solves this particular issue. That can be done by:
+Ah, I was unaware of that difference, thank you. Ingo, can you replace 
+the previous incarnation with this one?
 
-  git-checkout -b tmp.test tip/timers/hpet
+Rene.
 
-[ once you have set up tip as a remote repository, as described in the 
-  README above. ]
+--------------050308060901000304000107
+Content-Type: text/plain;
+ name="0001-x86-make-apic-an-early_param-on-32-bit.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="0001-x86-make-apic-an-early_param-on-32-bit.patch"
 
-If tip/timers/hpet solves the problem then it's one of these five 
-commits that solves it:
+>From 98cf69c9acbc2c1a29fdaa6fc8c29f1bacae8316 Mon Sep 17 00:00:00 2001
+From: Rene Herman <rene.herman@gmail.com>
+Date: Mon, 11 Aug 2008 17:35:41 +0200
+Subject: [PATCH] x86: make "apic" an early_param() on 32-bit
 
- f92a789: hpet: /dev/hpet - fixes and cleanup, fix
- 64a76f6: hpet: /dev/hpet - fixes and cleanup
- f356181: x86: add PCI ID for 6300ESB force hpet
- 3243b4e: x86: add another PCI ID for ICH6 force-hpet
- 70ef6d5: x86: get irq for hpet timer
+On 32-bit, "apic" is a __setup() param meaning it is parsed rather
+late in the game. Make it an early_param() for apic_printk() use
+by arch/x86/kernel/mpparse.c.
 
-	Ingo
+On 64-bit, it already is an early_param().
+
+Signed-off-by: Rene Herman <rene.herman@gmail.com>
+---
+ arch/x86/kernel/apic_32.c |   14 +++++++++-----
+ 1 files changed, 9 insertions(+), 5 deletions(-)
+
+diff --git a/arch/x86/kernel/apic_32.c b/arch/x86/kernel/apic_32.c
+index d6c8983..039a8d4 100644
+--- a/arch/x86/kernel/apic_32.c
++++ b/arch/x86/kernel/apic_32.c
+@@ -1720,15 +1720,19 @@ static int __init parse_lapic_timer_c2_ok(char *arg)
+ }
+ early_param("lapic_timer_c2_ok", parse_lapic_timer_c2_ok);
+ 
+-static int __init apic_set_verbosity(char *str)
++static int __init apic_set_verbosity(char *arg)
+ {
+-	if (strcmp("debug", str) == 0)
++	if (!arg)
++		return -EINVAL;
++
++	if (strcmp(arg, "debug") == 0)
+ 		apic_verbosity = APIC_DEBUG;
+-	else if (strcmp("verbose", str) == 0)
++	else if (strcmp(arg, "verbose") == 0)
+ 		apic_verbosity = APIC_VERBOSE;
+-	return 1;
++
++	return 0;
+ }
+-__setup("apic=", apic_set_verbosity);
++early_param("apic", apic_set_verbosity);
+ 
+ static int __init lapic_insert_resource(void)
+ {
+-- 
+1.5.5
+
+
+--------------050308060901000304000107--
