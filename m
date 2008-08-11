@@ -1,249 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754044AbYHKNXY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753739AbYHKN0C@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754044AbYHKNXY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Aug 2008 09:23:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752103AbYHKNXK
+	id S1753739AbYHKN0C (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Aug 2008 09:26:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751827AbYHKNZw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Aug 2008 09:23:10 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:60697 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751538AbYHKNXI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Aug 2008 09:23:08 -0400
-Date: Mon, 11 Aug 2008 15:22:39 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Venki Pallipadi <venkatesh.pallipadi@intel.com>,
-       Jens Axboe <jens.axboe@oracle.com>, npiggin@suse.de,
-       linux-kernel <linux-kernel@vger.kernel.org>, suresh.b.siddha@intel.com,
-       Jeremy Fitzhardinge <jeremy@goop.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH] stack and rcu interaction bug in
-	smp_call_function_mask()
-Message-ID: <20080811132239.GA14474@elte.hu>
-References: <20080808193753.GA21964@linux-os.sc.intel.com> <200808101624.15112.nickpiggin@yahoo.com.au> <200808111349.30463.nickpiggin@yahoo.com.au>
+	Mon, 11 Aug 2008 09:25:52 -0400
+Received: from nf-out-0910.google.com ([64.233.182.185]:51359 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751658AbYHKNZu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Aug 2008 09:25:50 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=IdZTpl2In3CivzAP727tXbfwyXYWNmPts0NsoTBuhythlpdKpXibImAQ4ctGZ/KesQ
+         pLtF3ErpiwmTHOYjxzoIvZnrQjZAMhynlLiotn1CeKzL7YlEHdTsALpaD9DPj7JeOmQ/
+         9agaUcvuBA573n8UIxkv/5xsGldadbFo2hi2w=
+Message-ID: <520f0cf10808110625h4d130d04ke8e4f6c998b0cd81@mail.gmail.com>
+Date: Mon, 11 Aug 2008 15:25:49 +0200
+From: "John Kacur" <jkacur@gmail.com>
+To: "Peter Zijlstra" <peterz@infradead.org>
+Subject: Re: [PATCH RFC] pm_qos_requirement might sleep
+Cc: mgross@linux.intel.com, LKML <linux-kernel@vger.kernel.org>,
+       rt-users <linux-rt-users@vger.kernel.org>,
+       "Steven Rostedt" <rostedt@goodmis.org>, "Ingo Molnar" <mingo@elte.hu>,
+       "Thomas Gleixner" <tglx@linutronix.de>, arjan <arjan@infradead.org>
+In-Reply-To: <520f0cf10808051518h1459d353r8de78e98f79ec57c@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200808111349.30463.nickpiggin@yahoo.com.au>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+References: <520f0cf10808041352h78bd4319x1802f018aeffe6dc@mail.gmail.com>
+	 <1217921101.3589.98.camel@twins>
+	 <20080805204901.GA31132@linux.intel.com>
+	 <1217970588.29415.36.camel@lappy.programming.kicks-ass.net>
+	 <520f0cf10808051518h1459d353r8de78e98f79ec57c@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Nick Piggin <nickpiggin@yahoo.com.au> wrote:
-
-> On Sunday 10 August 2008 16:24, Nick Piggin wrote:
-> 
-> > I'd suggest something like the attached (untested) patch as the simple
-> > fix for now.
-> >
-> > I expect the benefits from the less synchronized, 
-> > multiple-in-flight-data global queue will still outweigh the costs 
-> > of dynamic allocations. But if worst comes to worst then we just go 
-> > back to a globally synchronous one-at-a-time implementation, but 
-> > that would be pretty sad!
-> 
-> Just needed a little fix and it appears to boot now. I think it does 
-> the right thing...
-
-nice find! I've queued it up in tip/core/urgent and started testing it. 
-Full commit is quoted below.
-
-	Ingo
-
------------------------->
->From cc7a486cac78f6fc1a24e8cd63036bae8d2ab431 Mon Sep 17 00:00:00 2001
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-Date: Mon, 11 Aug 2008 13:49:30 +1000
-Subject: [PATCH] generic-ipi: fix stack and rcu interaction bug in smp_call_function_mask()
-
-* Venki Pallipadi <venkatesh.pallipadi@intel.com> wrote:
-
-> Found a OOPS on a big SMP box during an overnight reboot test with
-> upstream git.
+On Wed, Aug 6, 2008 at 12:18 AM, John Kacur <jkacur@gmail.com> wrote:
+> On Tue, Aug 5, 2008 at 11:09 PM, Peter Zijlstra <peterz@infradead.org> wrote:
+>> On Tue, 2008-08-05 at 13:49 -0700, mark gross wrote:
+>>> On Tue, Aug 05, 2008 at 09:25:01AM +0200, Peter Zijlstra wrote:
+>>> > On Mon, 2008-08-04 at 22:52 +0200, John Kacur wrote:
+>>> > > Even after applying some fixes posted by Chirag and Peter Z, I'm still
+>>> > > getting some messages in my log like this
+>>> >
+>>> > > BUG: sleeping function called from invalid context swapper(0) at
+>>> > > kernel/rtmutex.c:743
+>>> > > in_atomic():1 [00000001], irqs_disabled():1
+>>> > > Pid: 0, comm: swapper Tainted: G        W 2.6.26.1-rt1.jk #2
+>>> > >
+>>> > > Call Trace:
+>>> > >  [<ffffffff802305d3>] __might_sleep+0x12d/0x132
+>>> > >  [<ffffffff8046cdbe>] __rt_spin_lock+0x34/0x7d
+>>> > >  [<ffffffff8046ce15>] rt_spin_lock+0xe/0x10
+>>> > >  [<ffffffff802532e5>] pm_qos_requirement+0x1f/0x3c
+>>> > >  [<ffffffff803e1b7f>] menu_select+0x7b/0x9c
+>>> > >  [<ffffffff8020b1be>] ? default_idle+0x0/0x5a
+>>> > >  [<ffffffff8020b1be>] ? default_idle+0x0/0x5a
+>>> > >  [<ffffffff803e0b4b>] cpuidle_idle_call+0x68/0xd8
+>>> > >  [<ffffffff803e0ae3>] ? cpuidle_idle_call+0x0/0xd8
+>>> > >  [<ffffffff8020b1be>] ? default_idle+0x0/0x5a
+>>> > >  [<ffffffff8020b333>] cpu_idle+0xb2/0x12d
+>>> > >  [<ffffffff80466af0>] start_secondary+0x186/0x18b
+>>> > >
+>>> > > ---------------------------
+>>> > > | preempt count: 00000001 ]
+>>> > > | 1-level deep critical section nesting:
+>>> > > ----------------------------------------
+>>> > > ... [<ffffffff8020b39c>] .... cpu_idle+0x11b/0x12d
+>>> > > ......[<ffffffff80466af0>] ..   ( <= start_secondary+0x186/0x18b)
+>>> > >
+>>> > > The following simple patch makes the messages disappear - however,
+>>> > > there may be a better more fine grained solution, but the problem is
+>>> > > also that all the functions are designed to use the same lock.
+>>> >
+>>> > Hmm, I think you're right - its called from the idle routine so we can't
+>>> > go about sleeping there.
+>>> >
+>>> > The only trouble I have is with kernel/pm_qos_params.c:update_target()'s
+>>> > use of this lock - that is decidedly not O(1).
+>>> >
+>>> > Mark, would it be possible to split that lock in two, one lock
+>>> > protecting pm_qos_array[], and one lock protecting the
+>>> > requirements.list ?
+>>>
+>>> very likely, but I'm not sure how it will help.
+>>>
+>>> the fine grain locking I had initially worked out on pm_qos was to have
+>>> a lock per pm_qos_object, that would be used for accessing the
+>>> requirement_list and the target_value.  But that isn't what you are
+>>> asking about is it?
+>>>
+>>> Is what you want is a pm_qos_requirements_list_lock and a
+>>> pm_qos_target_value_lock, for each pm_qos_object instance?
+>>>
+>>> I guess it wold work but besides giving the code spinlock diarrhea would
+>>> it really help solve the issue you are seeing?
+>>
+>> The problem is that on -rt spinlocks turn into mutexes. And the above
+>> BUG tells us that the idle loop might end up scheduling due to trying to
+>> take this lock.
+>>
+>> Now, the way I read the code, pm_qos_lock protects multiple things:
+>>
+>>  - pm_qos_array[target]->target_value
+>>
+>>  - &pm_qos_array[pm_qos_class]->requirements.list
+>>
+>> Now, the thing is, we could turn the lock back into a real spinlock
+>> (raw_spinlock_t), but the loops in eg update_target() are not O(1) and
+>> could thus cause serious preempt-off latencies.
+>>
+>> My question was, and now having had a second look at the code I think it
+>> is, would it be possible to guard the list using a sleeping lock,
+>> protect the target_value using a (raw) spinlock.
+>>
+>> OTOH, just reading a (word aligned, word sized) value doesn't normally
+>> require serialization, esp if the update site is already serialized by
+>> other means.
+>>
+>> So could we perhaps remove the lock usage from pm_qos_requirement()? -
+>> that too would solve the issue.
+>>
+>>
+>>  - Peter
+>>
 >
-> Suresh and I looked at the oops and looks like the root cause is in
-> generic_smp_call_function_interrupt() and smp_call_function_mask() with
-> wait parameter.
+> How about this patch? Like Peter suggests, It adds a raw spinlock only
+> for the target value. I'm currently running with it, but still
+> testing, comments are appreciated.
 >
-> The actual oops looked like
+> Thanks
 >
-> [   11.277260] BUG: unable to handle kernel paging request at ffff8802ffffffff
-> [   11.277815] IP: [<ffff8802ffffffff>] 0xffff8802ffffffff
-> [   11.278155] PGD 202063 PUD 0
-> [   11.278576] Oops: 0010 [1] SMP
-> [   11.279006] CPU 5
-> [   11.279336] Modules linked in:
-> [   11.279752] Pid: 0, comm: swapper Not tainted 2.6.27-rc2-00020-g685d87f #290
-> [   11.280039] RIP: 0010:[<ffff8802ffffffff>]  [<ffff8802ffffffff>] 0xffff8802ffffffff
-> [   11.280692] RSP: 0018:ffff88027f1f7f70  EFLAGS: 00010086
-> [   11.280976] RAX: 00000000ffffffff RBX: 0000000000000000 RCX: 0000000000000000
-> [   11.281264] RDX: 0000000000004f4e RSI: 0000000000000001 RDI: 0000000000000000
-> [   11.281624] RBP: ffff88027f1f7f98 R08: 0000000000000001 R09: ffffffff802509af
-> [   11.281925] R10: ffff8800280c2780 R11: 0000000000000000 R12: ffff88027f097d48
-> [   11.282214] R13: ffff88027f097d70 R14: 0000000000000005 R15: ffff88027e571000
-> [   11.282502] FS:  0000000000000000(0000) GS:ffff88027f1c3340(0000) knlGS:0000000000000000
-> [   11.283096] CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
-> [   11.283382] CR2: ffff8802ffffffff CR3: 0000000000201000 CR4: 00000000000006e0
-> [   11.283760] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-> [   11.284048] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-> [   11.284337] Process swapper (pid: 0, threadinfo ffff88027f1f2000, task ffff88027f1f0640)
-> [   11.284936] Stack:  ffffffff80250963 0000000000000212 0000000000ee8c78 0000000000ee8a66
-> [   11.285802]  ffff88027e571550 ffff88027f1f7fa8 ffffffff8021adb5 ffff88027f1f3e40
-> [   11.286599]  ffffffff8020bdd6 ffff88027f1f3e40 <EOI>  ffff88027f1f3ef8 0000000000000000
-> [   11.287120] Call Trace:
-> [   11.287768]  <IRQ>  [<ffffffff80250963>] ? generic_smp_call_function_interrupt+0x61/0x12c
-> [   11.288354]  [<ffffffff8021adb5>] smp_call_function_interrupt+0x17/0x27
-> [   11.288744]  [<ffffffff8020bdd6>] call_function_interrupt+0x66/0x70
-> [   11.289030]  <EOI>  [<ffffffff8024ab3b>] ? clockevents_notify+0x19/0x73
-> [   11.289380]  [<ffffffff803b9b75>] ? acpi_idle_enter_simple+0x18b/0x1fa
-> [   11.289760]  [<ffffffff803b9b6b>] ? acpi_idle_enter_simple+0x181/0x1fa
-> [   11.290051]  [<ffffffff8053aeca>] ? cpuidle_idle_call+0x70/0xa2
-> [   11.290338]  [<ffffffff80209f61>] ? cpu_idle+0x5f/0x7d
-> [   11.290723]  [<ffffffff8060224a>] ? start_secondary+0x14d/0x152
-> [   11.291010]
-> [   11.291287]
-> [   11.291654] Code:  Bad RIP value.
-> [   11.292041] RIP  [<ffff8802ffffffff>] 0xffff8802ffffffff
-> [   11.292380]  RSP <ffff88027f1f7f70>
-> [   11.292741] CR2: ffff8802ffffffff
-> [   11.310951] ---[ end trace 137c54d525305f1c ]---
->
-> The problem is with the following sequence of events:
->
-> - CPU A calls smp_call_function_mask() for CPU B with wait parameter
-> - CPU A sets up the call_function_data on the stack and does an rcu add to
->   call_function_queue
-> - CPU A waits until the WAIT flag is cleared
-> - CPU B gets the call function interrupt and starts going through the
->   call_function_queue
-> - CPU C also gets some other call function interrupt and starts going through
->   the call_function_queue
-> - CPU C, which is also going through the call_function_queue, starts referencing
->   CPU A's stack, as that element is still in call_function_queue
-> - CPU B finishes the function call that CPU A set up and as there are no other
->   references to it, rcu deletes the call_function_data (which was from CPU A
->   stack)
-> - CPU B sees the wait flag and just clears the flag (no call_rcu to free)
-> - CPU A which was waiting on the flag continues executing and the stack
->   contents change
->
-> - CPU C is still in rcu_read section accessing the CPU A's stack sees
->   inconsistent call_funation_data and can try to execute
->   function with some random pointer, causing stack corruption for A
->   (by clearing the bits in mask field) and oops.
 
-Nice debugging work.
-
-I'd suggest something like the attached (boot tested) patch as the simple
-fix for now.
-
-I expect the benefits from the less synchronized, multiple-in-flight-data
-global queue will still outweigh the costs of dynamic allocations. But
-if worst comes to worst then we just go back to a globally synchronous
-one-at-a-time implementation, but that would be pretty sad!
-
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- kernel/smp.c |   54 +++++++++++++++++++++++++++++++++++++++++++++++-------
- 1 files changed, 47 insertions(+), 7 deletions(-)
-
-diff --git a/kernel/smp.c b/kernel/smp.c
-index 96fc7c0..e6084f6 100644
---- a/kernel/smp.c
-+++ b/kernel/smp.c
-@@ -260,6 +260,41 @@ void __smp_call_function_single(int cpu, struct call_single_data *data)
- 	generic_exec_single(cpu, data);
- }
- 
-+/* Dummy function */
-+static void quiesce_dummy(void *unused)
-+{
-+}
-+
-+/*
-+ * Ensure stack based data used in call function mask is safe to free.
-+ *
-+ * This is needed by smp_call_function_mask when using on-stack data, because
-+ * a single call function queue is shared by all CPUs, and any CPU may pick up
-+ * the data item on the queue at any time before it is deleted. So we need to
-+ * ensure that all CPUs have transitioned through a quiescent state after
-+ * this call.
-+ *
-+ * This is a very slow function, implemented by sending synchronous IPIs to
-+ * all possible CPUs. For this reason, we have to alloc data rather than use
-+ * stack based data even in the case of synchronous calls. The stack based
-+ * data is then just used for deadlock/oom fallback which will be very rare.
-+ *
-+ * If a faster scheme can be made, we could go back to preferring stack based
-+ * data -- the data allocation/free is non-zero cost.
-+ */
-+static void smp_call_function_mask_quiesce_stack(cpumask_t mask)
-+{
-+	struct call_single_data data;
-+	int cpu;
-+
-+	data.func = quiesce_dummy;
-+	data.info = NULL;
-+	data.flags = CSD_FLAG_WAIT;
-+
-+	for_each_cpu_mask(cpu, mask)
-+		generic_exec_single(cpu, &data);
-+}
-+
- /**
-  * smp_call_function_mask(): Run a function on a set of other CPUs.
-  * @mask: The set of cpus to run on.
-@@ -285,6 +320,7 @@ int smp_call_function_mask(cpumask_t mask, void (*func)(void *), void *info,
- 	cpumask_t allbutself;
- 	unsigned long flags;
- 	int cpu, num_cpus;
-+	int slowpath = 0;
- 
- 	/* Can deadlock when called with interrupts disabled */
- 	WARN_ON(irqs_disabled());
-@@ -306,15 +342,16 @@ int smp_call_function_mask(cpumask_t mask, void (*func)(void *), void *info,
- 		return smp_call_function_single(cpu, func, info, wait);
- 	}
- 
--	if (!wait) {
--		data = kmalloc(sizeof(*data), GFP_ATOMIC);
--		if (data)
--			data->csd.flags = CSD_FLAG_ALLOC;
--	}
--	if (!data) {
-+	data = kmalloc(sizeof(*data), GFP_ATOMIC);
-+	if (data) {
-+		data->csd.flags = CSD_FLAG_ALLOC;
-+		if (wait)
-+			data->csd.flags |= CSD_FLAG_WAIT;
-+	} else {
- 		data = &d;
- 		data->csd.flags = CSD_FLAG_WAIT;
- 		wait = 1;
-+		slowpath = 1;
- 	}
- 
- 	spin_lock_init(&data->lock);
-@@ -331,8 +368,11 @@ int smp_call_function_mask(cpumask_t mask, void (*func)(void *), void *info,
- 	arch_send_call_function_ipi(mask);
- 
- 	/* optionally wait for the CPUs to complete */
--	if (wait)
-+	if (wait) {
- 		csd_flag_wait(&data->csd);
-+		if (unlikely(slowpath))
-+			smp_call_function_mask_quiesce_stack(allbutself);
-+	}
- 
- 	return 0;
- }
+I have been running with this patch for quite a while now without any
+problems, so please apply. If Mark is able to remove the lock
+altogether at some point in the future then we can remove this patch.
