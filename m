@@ -1,64 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753175AbYHKLi7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752845AbYHKLlr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753175AbYHKLi7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Aug 2008 07:38:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752691AbYHKLir
+	id S1752845AbYHKLlr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Aug 2008 07:41:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751509AbYHKLlk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Aug 2008 07:38:47 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:38471 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751511AbYHKLiq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Aug 2008 07:38:46 -0400
-Date: Mon, 11 Aug 2008 13:38:17 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: David Witbrodt <dawitbro@sbcglobal.net>,
-       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
-       Yinghai Lu <yhlu.kernel@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       netdev <netdev@vger.kernel.org>
-Subject: Re: [PATCH diagnostic] Re: HPET regression in 2.6.26 versus 2.6.25
-	-- RCU problem
-Message-ID: <20080811113817.GF6925@elte.hu>
-References: <630464.55583.qm@web82105.mail.mud.yahoo.com> <20080810151520.GG8125@linux.vnet.ibm.com> <20080811013538.GA3958@linux.vnet.ibm.com>
-MIME-Version: 1.0
+	Mon, 11 Aug 2008 07:41:40 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:33339 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751221AbYHKLlj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Aug 2008 07:41:39 -0400
+Date: Mon, 11 Aug 2008 13:42:43 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org, tglx@linutronix.de,
+       marcin.slusarz@gmail.com, linux-kernel@vger.kernel.org,
+       davem@davemloft.net, rostedt@goodmis.org, paulmck@linux.vnet.ibm.com
+Subject: Re: [PATCH] printk: robustify printk
+Message-ID: <20080811114243.GO9038@one.firstfloor.org>
+References: <alpine.LFD.1.10.0808081014240.3462@nehalem.linux-foundation.org> <1218217257.29098.2.camel@lappy.programming.kicks-ass.net> <alpine.LFD.1.10.0808081043160.3462@nehalem.linux-foundation.org> <1218219269.29098.5.camel@lappy.programming.kicks-ass.net> <20080808121428.646a8b3c.akpm@linux-foundation.org> <1218223269.29098.12.camel@lappy.programming.kicks-ass.net> <1218224829.29098.19.camel@lappy.programming.kicks-ass.net> <20080811104526.GA15186@elte.hu> <87zlnj24qc.fsf@basil.nowhere.org> <1218453726.10800.63.camel@twins>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080811013538.GA3958@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <1218453726.10800.63.camel@twins>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Aug 11, 2008 at 01:22:06PM +0200, Peter Zijlstra wrote:
+> You only loose the msgs with klogd, console still gets everything. If
+> firewalls are generating that much data, perhaps its time to think about
+> alternative ways to channel that.
 
-* Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
+Yes, and netfilter has them in fact, but it's clearly still a regression for 
+people who rely on klogd for this today.
 
-> And here is the patch.  It is still a bit raw, so the results should 
-> be viewed with some suspicion.  It adds a default-off kernel parameter 
-> CONFIG_RCU_CPU_STALL which must be enabled.
+Also firewall is just an example. Other cases might be people relying
+on these selinux messages. Or some other kernel messages.
+
 > 
-> Rather than exponential backoff, it backs off to once per 30 seconds. 
-> My feeling upon thinking on it was that if you have stalled RCU grace 
-> periods for that long, a few extra printk() messages are probably the 
-> least of your worries...
+> > Essentially it makes printk (much?) less reliable than it was before
+> > in the general case. Not sure that's a good thing. So the patch
+> > title is definitely misleading.
+> 
+> Depends, I don't give a rats arse about klogd - I get everything through
+> serial onto another machine. 
 
-while this wont debug problems were timer irqs are genuinely stuck for 
-long periods of time, it should find problems with RCU completion logic 
-itself in the presence of correct timer irqs - and the lack of any 
-messages from this debug option should point the finger more firmly in 
-the direction of stalled timer irqs.
+The question of interest is not how you personally configure your systems, 
+but what the userbase uses.
 
-So i find this debug feature rather useful and have applied it to 
-tip/core/rcu (and cleaned it up a bit). I renamed the config option to 
-CONFIG_DEBUG_RCU_STALL to make it more in line with usual debug option 
-names. Lets see whether -tip testing finds any false positives.
+> > As Linus pointed out earlier we've survived with this restriction
+> > (not doing printk in the scheduler) for a long time, so is there
+> > really a that pressing need to change that?
+> 
+> Why not fix it if its acceptable - the deadlock is just ugly.
 
-	Ingo
+Well you fix one thing and you break another thing (high rate
+printk). It's not clear to me that the trade off is a good
+one in this case. I suppose far more people care about
+high rate printk than the number of people who put
+printk into the scheduler.
+
+-Andi
+
