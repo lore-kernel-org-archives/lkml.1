@@ -1,82 +1,153 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757725AbYHKUuj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756293AbYHKUvj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757725AbYHKUuj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Aug 2008 16:50:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755395AbYHKUuF
+	id S1756293AbYHKUvj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Aug 2008 16:51:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753510AbYHKUvb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Aug 2008 16:50:05 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:55714
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1754989AbYHKUuD (ORCPT
+	Mon, 11 Aug 2008 16:51:31 -0400
+Received: from mailrelay004.isp.belgacom.be ([195.238.6.170]:15591 "EHLO
+	mailrelay004.isp.belgacom.be" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753091AbYHKUva (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Aug 2008 16:50:03 -0400
-Date: Mon, 11 Aug 2008 13:50:03 -0700 (PDT)
-Message-Id: <20080811.135003.105171324.davem@davemloft.net>
-To: eteo@redhat.com
-Cc: brian.haley@hp.com, adobriyan@gmail.com, john.gumb@tandberg.com,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org, stable@kernel.org
-Subject: Re: OOPS, ip -f inet6 route get fec0::1, linux-2.6.26,
- ip6_route_output, rt6_fill_node+0x175
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <489FFAF8.3000909@redhat.com>
-References: <20080807203748.GA5196@martell.zuzino.mipt.ru>
-	<489BD227.6000209@hp.com>
-	<489FFAF8.3000909@redhat.com>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Mon, 11 Aug 2008 16:51:30 -0400
+X-Belgacom-Dynamic: yes
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AmoFAPRBoEhQyAwK/2dsb2JhbACBX6o5
+Date: Mon, 11 Aug 2008 22:51:24 +0200
+From: Wim Van Sebroeck <wim@iguana.be>
+To: Russell King <rmk+lkml@arm.linux.org.uk>, Ben Dooks <ben-linux@fluff.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@kernel.org>
+Subject: Re: [WATCHDOG] v2.6.27-rc watchdog fixes
+Message-ID: <20080811205124.GB26249@infomag.infomag.iguana.be>
+References: <20080810204527.GF2773@infomag.infomag.iguana.be> <20080810213520.GA2847@flint.arm.linux.org.uk> <20080811183604.GA26249@infomag.infomag.iguana.be> <20080811184049.GB21967@flint.arm.linux.org.uk>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080811184049.GB21967@flint.arm.linux.org.uk>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Eugene Teo <eteo@redhat.com>
-Date: Mon, 11 Aug 2008 16:40:24 +0800
+Hi Russell,
 
-> Brian Haley wrote:
-> > Alexey Dobriyan wrote:
-> >> On Thu, Aug 07, 2008 at 07:00:56PM +0200, John Gumb wrote:
-> >>> Scenario: no ipv6 default route set.
-> >>
-> >>> # ip -f inet6 route get fec0::1
-> >>>
-> >>> BUG: unable to handle kernel NULL pointer dereference at 00000000
-> >>> IP: [<c0369b85>] rt6_fill_node+0x175/0x3b0
-> >>> EIP is at rt6_fill_node+0x175/0x3b0
-> >>
-> >> 0xffffffff80424dd3 is in rt6_fill_node (net/ipv6/route.c:2191).
-> >> 2186                    } else
-> >> 2187    #endif
-> >> 2188                            NLA_PUT_U32(skb, RTA_IIF, iif);
-> >> 2189            } else if (dst) {
-> >> 2190                    struct in6_addr saddr_buf;
-> >> 2191      ====>         if
-> >> (ipv6_dev_get_saddr(ip6_dst_idev(&rt->u.dst)->dev,
-> >>                            ^^^^^^^^^^^^^^^^^^^^^^^^
-> >>                                    NULL
-> >>
-> >> 2192                                           dst, 0, &saddr_buf) == 0)
-> >> 2193                            NLA_PUT(skb, RTA_PREFSRC, 16,
-> >> &saddr_buf);
-> >> 2194            }
-> > 
-> > The commit that changed this can't be reverted easily, but the patch
-> > below works for me.
-> > 
-> > Fix NULL de-reference in rt6_fill_node() when there's no IPv6 input
-> > device present in the dst entry.
-> > 
-> > Signed-off-by: Brian Haley <brian.haley@hp.com>
-> 
-> Cc: Stable <stable@kernel.org>
+> It's in part of my general ARM updates, and I combined Adrian's three
+> patches together, along with the remaining bits from my s3c2410 patch.
+> Here's the mbox mail corresponding with the commit:
 
-We've already determined from one tester that the behavior is
-changing with Brian's patch.  Furthermore I haven't applied it
-to mainline so it isn't anywhere near being submittable for
--stable.
+Applied the patch together with Ben's previously issued patches.
+We now have these Changes (Ben can you test also?):
 
-I submit all relevant networking bug fixes to -stable when they are
-ready and in a proper state to be submitted, you don't have to do it
-for me.  Sending me a gentle reminder or nudge, on the other hand, is
-fine.
+Author: Russell King <rmk+kernel@arm.linux.org.uk>
+Date:   Sun Aug 10 23:28:46 2008 +0100
+
+    [WATCHDOG] fix watchdog/s3c2410_wdt.c compilation
+    
+    This patch fixes the following compile errors caused by
+    commit 41dc8b72e37c514f7332cbc3f3dd864910c2a1fa
+    (s3c2410_wdt watchdog driver: Locking and coding style):
+    
+    <--  snip  -->
+    
+    ...
+      CC      drivers/watchdog/s3c2410_wdt.o
+    s3c2410_wdt.c: In function `s3c2410wdt_start':
+    s3c2410_wdt.c:161: warning: `return' with a value, in function returning void
+    
+    <--  snip  -->
+    
+    Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+    Signed-off-by: Wim Van Sebroeck <wim@iguana.be>
+
+Author: Ben Dooks <ben-linux@fluff.org>
+Date:   Sun Jun 22 22:36:51 2008 +0100
+
+    [WATCHDOG] Fix s3c2410_wdt driver coding style issues
+    
+    Fixup coding style issues in the s3c2410_wdt driver.
+    
+    Signed-off-by: Ben Dooks <ben-linux@fluff.org>
+    Signed-off-by: Wim Van Sebroeck <wim@iguana.be>
+
+Author: Ben Dooks <ben-linux@fluff.org>
+Date:   Sun Jun 22 22:36:50 2008 +0100
+
+    [WATCHDOG] Clean out header of s3c2410_wdt driver.
+    
+    Remove the changelog from the top of the driver, which
+    is redundant as this information is more accurately
+    represented from the revision control holding the
+    file.
+    
+    Signed-off-by: Ben Dooks <ben-linux@fluff.org>
+    Signed-off-by: Wim Van Sebroeck <wim@iguana.be>
+
+Author: Ben Dooks <ben-linux@fluff.org>
+Date:   Sun Jun 22 22:36:49 2008 +0100
+
+    [WATCHDOG] Fix NULL usage in s3c2410_wdt driver.
+    
+    Fix comparison of a pointer to 0, instead of using
+    NULL for a invalid pointer.
+    
+    Signed-off-by: Ben Dooks <ben-linux@fluff.org>
+    Signed-off-by: Wim Van Sebroeck <wim@iguana.be>
+
+================================================================================
+diff --git a/drivers/watchdog/s3c2410_wdt.c b/drivers/watchdog/s3c2410_wdt.c
+index 3da2b90..86d4280 100644
+--- a/drivers/watchdog/s3c2410_wdt.c
++++ b/drivers/watchdog/s3c2410_wdt.c
+@@ -21,18 +21,6 @@
+  * You should have received a copy of the GNU General Public License
+  * along with this program; if not, write to the Free Software
+  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+- *
+- * Changelog:
+- *	05-Oct-2004	BJD	Added semaphore init to stop crashes on open
+- *				Fixed tmr_count / wdt_count confusion
+- *				Added configurable debug
+- *
+- *	11-Jan-2005	BJD	Fixed divide-by-2 in timeout code
+- *
+- *	25-Jan-2005	DA	Added suspend/resume support
+- *				Replaced reboot notifier with .shutdown method
+- *
+- *	10-Mar-2005	LCVR	Changed S3C2410_VA to S3C24XX_VA
+ */
+ 
+ #include <linux/module.h>
+@@ -157,8 +145,6 @@ static void s3c2410wdt_start(void)
+ 	writel(wdt_count, wdt_base + S3C2410_WTCNT);
+ 	writel(wtcon, wdt_base + S3C2410_WTCON);
+ 	spin_unlock(&wdt_lock);
+-
+-	return 0;
+ }
+ 
+ static int s3c2410wdt_set_heartbeat(int timeout)
+@@ -367,7 +353,7 @@ static int s3c2410wdt_probe(struct platform_device *pdev)
+ 		return -ENOENT;
+ 	}
+ 
+-	size = (res->end-res->start)+1;
++	size = (res->end - res->start) + 1;
+ 	wdt_mem = request_mem_region(res->start, size, pdev->name);
+ 	if (wdt_mem == NULL) {
+ 		dev_err(dev, "failed to get memory region\n");
+@@ -376,7 +362,7 @@ static int s3c2410wdt_probe(struct platform_device *pdev)
+ 	}
+ 
+ 	wdt_base = ioremap(res->start, size);
+-	if (wdt_base == 0) {
++	if (wdt_base == NULL) {
+ 		dev_err(dev, "failed to ioremap() region\n");
+ 		ret = -EINVAL;
+ 		goto err_req;
+================================================================================
+
+Greetings,
+Wim.
 
