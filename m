@@ -1,62 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752778AbYHKLWv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752282AbYHKLZl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752778AbYHKLWv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Aug 2008 07:22:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751533AbYHKLWl
+	id S1752282AbYHKLZl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Aug 2008 07:25:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751400AbYHKLZd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Aug 2008 07:22:41 -0400
-Received: from casper.infradead.org ([85.118.1.10]:36296 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751221AbYHKLWk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Aug 2008 07:22:40 -0400
-Date: Mon, 11 Aug 2008 04:22:44 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: "S K" <nospamnoham@gmail.com>
-Cc: "Zhao Yakui" <yakui.zhao@intel.com>, "Thomas Renninger" <trenn@suse.de>,
-       "Alan Jenkins" <alan-jenkins@tuffmail.co.uk>,
-       linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
-Subject: Re: cpufreq doesn't seem to work in Intel Q9300
-Message-ID: <20080811042244.469f8e1d@infradead.org>
-In-Reply-To: <514e099a0808102144n241c8e9ak255bded0a80744f1@mail.gmail.com>
-References: <514e099a0808030300u140a0ae7m92a2e7294f39f7b7@mail.gmail.com>
-	<200808081430.43012.trenn@suse.de>
-	<aff5deaf0808081123s1fbe6a5cn7847e9cb053c1f5a@mail.gmail.com>
-	<200808092059.47863.trenn@suse.de>
-	<514e099a0808100128u303207clcb22292db2f0cc59@mail.gmail.com>
-	<1218418431.6671.52.camel@yakui_zhao.sh.intel.com>
-	<514e099a0808102144n241c8e9ak255bded0a80744f1@mail.gmail.com>
-Organization: Intel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 11 Aug 2008 07:25:33 -0400
+Received: from mga09.intel.com ([134.134.136.24]:35768 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751248AbYHKLZc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Aug 2008 07:25:32 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.31,341,1215414000"; 
+   d="scan'208";a="428098647"
+Message-ID: <48A021B2.6060205@linux.intel.com>
+Date: Mon, 11 Aug 2008 13:25:38 +0200
+From: Andi Kleen <ak@linux.intel.com>
+User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
+MIME-Version: 1.0
+To: Randy Dunlap <randy.dunlap@oracle.com>
+CC: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, akpm <akpm@linux-foundation.org>
+Subject: Re: [PATCH -next] Panasonic ACPI depends on INPUT
+References: <20080806182828.6bfe0a16.sfr@canb.auug.org.au> <20080806172938.74b8033b.randy.dunlap@oracle.com>
+In-Reply-To: <20080806172938.74b8033b.randy.dunlap@oracle.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 10 Aug 2008 21:44:50 -0700
-"S K" <nospamnoham@gmail.com> wrote:
-
-
-> >
-> > But it is very strange that cpufreq scaling can work on Windows XP.
-> > Will you please try the P4 clock cpufreq driver and see whether the
-> > scaling can work ? In fact P4 clock cpufreq driver is already
-> > replaced by acpi_cpufreq driver for the latest cpu.
-> > Anyway please try p4 clock cpufreq driver.
+Randy Dunlap wrote:
+> From: Randy Dunlap <randy.dunlap@oracle.com>
 > 
-> What is the name of the driver? I'm not able to find any such driver
-> in Fedora 9 installed modules. There is only acpi-cpufreq and
-> powernow-k8.
-> 
+> Panasonic ACPI driver needs to depend on INPUT.
+> Otherwise it has build errors when CONFIG_INPUT=n:
 
-yeah don't bother with p4-clockmod, it's not something that saves you
-energy... it only gives you a fake feeling that you would.
+Applied thanks.
 
--- 
-If you want to reach me at my work email, use arjan@linux.intel.com
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+-Andi
+
