@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751458AbYHKIYN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752392AbYHKIZF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751458AbYHKIYN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Aug 2008 04:24:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751201AbYHKIX7
+	id S1752392AbYHKIZF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Aug 2008 04:25:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751193AbYHKIYz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Aug 2008 04:23:59 -0400
-Received: from ns.suse.de ([195.135.220.2]:48867 "EHLO mx1.suse.de"
+	Mon, 11 Aug 2008 04:24:55 -0400
+Received: from ns2.suse.de ([195.135.220.15]:56410 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751178AbYHKIX6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Aug 2008 04:23:58 -0400
-Date: Mon, 11 Aug 2008 10:23:57 +0200
-Message-ID: <s5h7iaom02q.wl%tiwai@suse.de>
+	id S1750989AbYHKIYy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Aug 2008 04:24:54 -0400
+Date: Mon, 11 Aug 2008 10:24:51 +0200
+Message-ID: <s5h63q8m018.wl%tiwai@suse.de>
 From: Takashi Iwai <tiwai@suse.de>
-To: Seth Heasley <seth.heasley@intel.com>
+To: Alexander Beregalov <a.beregalov@gmail.com>
 Cc: perex@perex.cz, alsa-devel@alsa-project.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2.6.26.2] hda_intel: ALSA HD Audio patch for Intel Ibex Peak DeviceIDs
-In-Reply-To: <200808081556.40013.seth.heasley@intel.com>
-References: <200808081556.40013.seth.heasley@intel.com>
+Subject: Re: [alsa-devel] [PATCH] ice1724/revo: simple clean up
+In-Reply-To: <20080810220904.GD5093@orion>
+References: <20080810220904.GD5093@orion>
 User-Agent: Wanderlust/2.12.0 (Your Wildest Dreams) SEMI/1.14.6 (Maruoka)
  FLIM/1.14.7 (=?ISO-8859-4?Q?Sanj=F2?=) APEL/10.6 Emacs/22.2
  (x86_64-suse-linux-gnu) MULE/5.0 (SAKAKI)
@@ -26,44 +26,55 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-At Fri, 8 Aug 2008 15:56:39 -0700,
-Seth Heasley wrote:
+At Mon, 11 Aug 2008 02:09:04 +0400,
+Alexander Beregalov wrote:
 > 
-> This patch adds the Intel Ibex Peak (PCH) HD Audio Controller DeviceIDs.
+> From: Alexander Beregalov <a.beregalov@gmail.com>
 > 
-> Signed-off by: Seth Heasley <seth.heasley@intel.com>
-
-Your embedded patch couldn't be applied properly, maybe because of
-broken spaces.  Check your MUA setting.
-
-Anyway, I applied it manually.  Thanks!
-
-
-Takashi
-
+> ice1724/revo: simple clean up
 > 
-> --- linux-2.6.26.2/sound/pci/hda/hda_intel.c.orig       2008-08-08 11:25:05.000000000 -0700
-> +++ linux-2.6.26.2/sound/pci/hda/hda_intel.c    2008-08-08 11:27:24.000000000 -0700
-> @@ -98,6 +98,7 @@
->                          "{Intel, ICH8},"
->                          "{Intel, ICH9},"
->                          "{Intel, ICH10},"
-> +                        "{Intel, PCH},"
->                          "{Intel, SCH},"
->                          "{ATI, SB450},"
->                          "{ATI, SB600},"
-> @@ -2181,6 +2182,8 @@
->         { PCI_DEVICE(0x8086, 0x293f), .driver_data = AZX_DRIVER_ICH },
->         { PCI_DEVICE(0x8086, 0x3a3e), .driver_data = AZX_DRIVER_ICH },
->         { PCI_DEVICE(0x8086, 0x3a6e), .driver_data = AZX_DRIVER_ICH },
-> +       /* PCH */
-> +       { PCI_DEVICE(0x8086, 0x3b56), .driver_data = AZX_DRIVER_ICH },
->         /* SCH */
->         { PCI_DEVICE(0x8086, 0x811b), .driver_data = AZX_DRIVER_SCH },
->         /* ATI SB 450/600 */
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> 
+> Signed-off-by: Alexander Beregalov <a.beregalov@gmail.com>
+
+Applied.  Thanks.
+
+
+> ---
+> 
+>  sound/pci/ice1712/revo.c |   12 ++++++++----
+>  1 files changed, 8 insertions(+), 4 deletions(-)
+> 
+> diff --git a/sound/pci/ice1712/revo.c b/sound/pci/ice1712/revo.c
+> index 4d26314..5e1b156 100644
+> --- a/sound/pci/ice1712/revo.c
+> +++ b/sound/pci/ice1712/revo.c
+> @@ -524,16 +524,20 @@ static int __devinit revo_init(struct snd_ice1712 *ice)
+>  	ak = ice->akm = kcalloc(2, sizeof(struct snd_akm4xxx), GFP_KERNEL);
+>  	if (! ak)
+>  		return -ENOMEM;
+> -	ice->akm_codecs = 2;
+>  	switch (ice->eeprom.subvendor) {
+>  	case VT1724_SUBDEVICE_REVOLUTION71:
+>  		ice->akm_codecs = 2;
+> -		if ((err = snd_ice1712_akm4xxx_init(ak, &akm_revo_front, &akm_revo_front_priv, ice)) < 0)
+> +		err = snd_ice1712_akm4xxx_init(ak, &akm_revo_front,
+> +						&akm_revo_front_priv, ice);
+> +		if (err < 0)
+>  			return err;
+> -		if ((err = snd_ice1712_akm4xxx_init(ak + 1, &akm_revo_surround, &akm_revo_surround_priv, ice)) < 0)
+> +		err = snd_ice1712_akm4xxx_init(ak+1, &akm_revo_surround,
+> +						&akm_revo_surround_priv, ice);
+> +		if (err < 0)
+>  			return err;
+>  		/* unmute all codecs */
+> -		snd_ice1712_gpio_write_bits(ice, VT1724_REVO_MUTE, VT1724_REVO_MUTE);
+> +		snd_ice1712_gpio_write_bits(ice, VT1724_REVO_MUTE,
+> +						VT1724_REVO_MUTE);
+>  		break;
+>  	case VT1724_SUBDEVICE_REVOLUTION51:
+>  		ice->akm_codecs = 2;
+> _______________________________________________
+> Alsa-devel mailing list
+> Alsa-devel@alsa-project.org
+> http://mailman.alsa-project.org/mailman/listinfo/alsa-devel
 > 
