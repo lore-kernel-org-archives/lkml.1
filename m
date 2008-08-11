@@ -1,81 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752119AbYHKIDd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752139AbYHKIFJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752119AbYHKIDd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Aug 2008 04:03:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751058AbYHKIDT
+	id S1752139AbYHKIFJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Aug 2008 04:05:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751091AbYHKIEx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Aug 2008 04:03:19 -0400
-Received: from mailtp.via.com.tw ([61.66.243.2]:6951 "EHLO mailtp.via.com.tw"
+	Mon, 11 Aug 2008 04:04:53 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:56086 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750979AbYHKIDR convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Aug 2008 04:03:17 -0400
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	id S1751058AbYHKIEw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Aug 2008 04:04:52 -0400
+Date: Mon, 11 Aug 2008 09:04:49 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, ebmunson@us.ibm.com,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, libhugetlbfs-devel@lists.sourceforge.net,
+       abh@cray.com
+Subject: Re: [RFC] [PATCH 0/5 V2] Huge page backed user-space stacks
+Message-ID: <20080811080449.GB17452@csn.ul.ie>
+References: <20080731103137.GD1704@csn.ul.ie> <1217884211.20260.144.camel@nimitz> <20080805111147.GD20243@csn.ul.ie> <1217952748.10907.18.camel@nimitz> <20080805162800.GJ20243@csn.ul.ie> <1217958805.10907.45.camel@nimitz> <20080806090222.GD21190@csn.ul.ie> <1218052249.10907.125.camel@nimitz> <20080807160605.GA9200@csn.ul.ie> <1218130190.10907.188.camel@nimitz>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="big5"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [Linux-fbdev-devel] [PATCH 0/13 v2] viafb: VIA Frame Buffer Device Driver
-Date: Mon, 11 Aug 2008 16:03:12 +0800
-Message-ID: <C80EF34A3D2E494DBAF9AC29C7AE4EB8078B70E3@exchtp03.taipei.via.com.tw>
-In-Reply-To: <20080808182704.28bd9fb3.krzysztof.h1@poczta.fm>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [Linux-fbdev-devel] [PATCH 0/13 v2] viafb: VIA Frame Buffer Device Driver
-Thread-Index: Acj5cuINkCmkElaDQBC7cUSnTq6kJACFUfyQ
-From: <JosephChan@via.com.tw>
-To: <krzysztof.h1@poczta.fm>
-Cc: <linux-fbdev-devel@lists.sourceforge.net>, <linux-kernel@vger.kernel.org>,
-       <akpm@linux-foundation.org>, <geert@linux-m68k.org>
-X-OriginalArrivalTime: 11 Aug 2008 08:03:13.0925 (UTC) FILETIME=[B44EDB50:01C8FB88]
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <1218130190.10907.188.camel@nimitz>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Krzysztof,
-
-Thanks to remind, but after I checked the patches in linux-fbdev-devel mailing list.
-It seems there is no missing lines as you mentioned. 
-
-Would you please tell me the detailed problem you met? Thanks.
-
-In addition, if possible, I could send you a file which includes all patches.
-How do you think that? 
-
-BRs,
-Joseph
-
------Original Message-----
-From: Krzysztof Helt [mailto:krzysztof.h1@poczta.fm] 
-Sent: Saturday, August 09, 2008 12:27 AM
-To: Joseph Chan
-Cc: linux-fbdev-devel@lists.sourceforge.net; linux-kernel@vger.kernel.org; akpm@linux-foundation.org; geert@linux-m68k.org
-Subject: Re: [Linux-fbdev-devel] [PATCH 0/13 v2] viafb: VIA Frame Buffer Device Driver
-
-On Fri, 8 Aug 2008 18:09:21 +0800
-<JosephChan@via.com.tw> wrote:
-
-> Hi all,
+On (07/08/08 10:29), Dave Hansen didst pronounce:
+> On Thu, 2008-08-07 at 17:06 +0100, Mel Gorman wrote:
+> > On (06/08/08 12:50), Dave Hansen didst pronounce:
+> > > The main thing this set of patches does that I care about is take an
+> > > anonymous VMA and replace it with a hugetlb VMA.  It does this on a
+> > > special cue, but does it nonetheless.
+> > 
+> > This is not actually a new thing. For a long time now, it has been possible to
+> > back  malloc() with hugepages at a userspace level using the morecore glibc
+> > hook. That is replacing anonymous memory with a file-backed VMA. It happens
+> > in a different place but it's just as deliberate as backing stack and the
+> > end result is very similar. As the file is ram-based, it doesn't have the
+> > same types of consequences like dirty page syncing that you'd ordinarily
+> > watch for when moving from anonymous to file-backed memory.
 > 
-> Here comes the 13 updated patchs for VIA Frame Buffer Device Driver.
-> This driver could be used on VIA UniChrome (Pro) and Chrome9 family chips.
-> All the patches are based on linux kernel 2.6.27-rc2 and they're modified by adopting community's feedback.
-> I would like to thank all who provided their suggestions for VIAFB by mail.
-> Any question, please contact me. Thanks.
+> Yes, it has already been done in userspace.  That's fine.  It isn't
+> adding any complexity to the kernel.  This is adding behavior that the
+> kernel has to support as well as complexity.
 > 
 
-Please resend the 3rd patch as it is damaged (missing 3 lines of each file).
+The complexity is minimal and the progression logical.
+hugetlb_file_setup() is the API shmem was using to create a file on an
+internal mount suitable for MAP_SHARED. This patchset adds support for
+MAP_PRIVATE and the additional complexity is a lot less than supporting
+direct pagetable inserts.
 
-I am for merging these patches as they are sent now. It allows sending fixes to them as incremental patches.
+> > > This patch has crossed a line in that it is really the first
+> > > *replacement* of a normal VMA with a hugetlb VMA instead of the creation
+> > > of the VMAs at the user's request. 
+> > 
+> > We crossed that line with morecore, it's back there somewhere. We're just
+> > doing in kernel this time because backing stacks with hugepages in userspace
+> > turned out to be a hairy endevour.
+> > 
+> > Properly supporting anonymous hugepages would either require larger
+> > changes to the core or reimplementing yet more of mm/ in mm/hugetlb.c.
+> > Neither is a particularly appealing approach, nor is it likely to be a
+> > very popular one.
+> 
+> I agree.  It is always much harder to write code that can work
+> generically??? (and get it accepted) than just write the smallest possible
+> hack and stick it in fs/exec.c.
+> 
+> Could this patch at least get fixed up to look like it could be used
+> more generically?  Some code to look up and replace anonymous VMAs with
+> hugetlb-backed ones???
 
-This set builds at least for my configuration (Pentium3 SMP). 
-Unfortunately, I do not have hardware to test. I though about buying one of these sexy VIA ITX boards but it is outside my budget now. Anyway, I have too many computers according to my spouse.
+Ok, this latter point can be looked into at least although the
+underlying principal may still be using hugetlb_file_setup() rather than
+direct pagetable insertions.
 
-Kind regards,
-Krzysztof
+> > > Because of the limitations like its inability to grow the VMA, I can't
+> > > imagine that this would be a generic mechanism that we can use
+> > > elsewhere.
+> > 
+> > What other than a stack even cares about VM_GROWSDOWN working? Besides,
+> > VM_GROWSDOWN could be supported in a hugetlbfs file by mapping the end of
+> > the file and moving the offset backwards (yeah ok, it ain't the prettiest
+> > but it's less churn than introducing significantly different codepaths). It's
+> > just not something that needs to be supported at first cut.
+> > 
+> > brk() if you wanted to back hugepages with it conceivably needs a resizing
+> > VMA but in that case it's growing up in which case just extend the end of
+> > the VMA and increase the size of the file.
+> 
+> I'm more worried about a small huge page size (say 64k) and not being
+> able to merge the VMAs.  I guess it could start in the *middle* of a
+> file and map both directions.
+> 
+> I guess you could always just have a single (very sparse) hugetlb file
+> per mm to do all of this 'anonymous' hugetlb memory memory stuff, and
+> just map its offsets 1:1 on to the process's virtual address space.
+> That would make sure you could always merge VMAs, no matter how they
+> grew together.
+> 
 
+That's an interesting idea. It isn't as straight-forward as it sounds
+due to reservation tracking but at the face of it, I can't see why it
+couldn't be made work.
 
-----------------------------------------------------------------------
-Tylko dla detektywow! Konkurs na Smaker.pl Kliknij >>> http://link.interia.pl/f1eb1
-
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
