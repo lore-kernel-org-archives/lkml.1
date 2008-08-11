@@ -1,50 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754047AbYHKRi3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754190AbYHKRlt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754047AbYHKRi3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Aug 2008 13:38:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752024AbYHKRiU
+	id S1754190AbYHKRlt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Aug 2008 13:41:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751459AbYHKRll
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Aug 2008 13:38:20 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:46924 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751962AbYHKRiU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Aug 2008 13:38:20 -0400
-Date: Mon, 11 Aug 2008 13:36:16 -0400
-From: Jason Baron <jbaron@redhat.com>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, joe@perches.com, nick@nick-andrew.net
-Subject: Re: [PATCH 1/7] dynamic debug v2 - infrastructure
-Message-ID: <20080811173616.GC6103@redhat.com>
-References: <20080715213108.GB23331@redhat.com> <20080717070103.GA21961@kroah.com> <20080717212040.GB13252@redhat.com> <20080717223222.GA28016@kroah.com> <20080808215153.GA16729@redhat.com> <20080808193851.24210bc4.randy.dunlap@oracle.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080808193851.24210bc4.randy.dunlap@oracle.com>
-User-Agent: Mutt/1.4.1i
+	Mon, 11 Aug 2008 13:41:41 -0400
+Received: from shadow.wildlava.net ([67.40.138.81]:57556 "EHLO
+	shadow.wildlava.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751108AbYHKRll (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Aug 2008 13:41:41 -0400
+Message-ID: <48A079CC.5020508@skyrush.com>
+Date: Mon, 11 Aug 2008 11:41:32 -0600
+From: Joe Peterson <joe@skyrush.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071119)
+MIME-Version: 1.0
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: tty: ctrl-c not always echoed, especially under load
+References: <48977C96.2090005@skyrush.com>	<20080805001129.72d06e60@lxorguk.ukuu.org.uk>	<489A06D9.1080600@skyrush.com>	<20080807203716.4a9870f6@lxorguk.ukuu.org.uk>	<48A0573B.4010602@skyrush.com> <20080811173911.07a3a9c5@lxorguk.ukuu.org.uk>
+In-Reply-To: <20080811173911.07a3a9c5@lxorguk.ukuu.org.uk>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 08, 2008 at 07:38:51PM -0700, Randy Dunlap wrote:
-> On Fri, 8 Aug 2008 17:51:53 -0400 Jason Baron wrote:
+Alan Cox wrote:
+> First thought would be to simply fire all output through your buffer in
+> n_tty. It's not a performance critical bit of code and it would still be
+> fast as the usual case would be
 > 
-> > Few notes...there is still one control file: <debugfs>/dynamic_printk/modules
-> > We can split this up now or later, but I kind of like being able to see all
-> > the controls in one file. Also, i've used a djb2 hash function in the code,
-> > which i'm not sure is under the correct license/copyright, so i just wanted
-> > to point that out as well. see: scripts/basic/hash.c. If its an issue, i can
-> > find another hash function. 
-> 
-> What license does it have?  I don't see one.
-> 
+> 	if (queue->length == 0)
+> 		try_write_directly(...)
 
-hmmm...a search for djb2 finds a number of users, for example, i found this one
-which is covered by GPL2, http://www.telegraphics.com.au/svn/dpa/trunk/symtab.c
-is that sufficient to say its ok?
+Only problem with that is that with a steady stream of output, you would likely
+end up quickly filling the new buffer and be right back to the same issue of
+losing echos and other ldisc chars off the start of the buf.  Also, the regular
+output channel has the mechanism to throttle itself already and try again later
+(causing the upstream process to wait as expected - example: ping foo.com; hit
+^S; it stops pinging until ^Q...).
 
-i'll clean up the additional points that you raised.
+What I may try is moving the code that manipulates the column marker (mostly
+"eraser") to happen at real output (i.e. when we know space is available), and
+have all ldisc echos/chars go into the buffer initially.  That way, the regular
+output stream and ldisc stream (out of the buffer) will be able to control the
+column stuff properly and in sync.  By knowing how many chars need to go out
+(eraser is the only non-trivial case, and we can have it tell us the char string
+before sending it), we can be sure there is space before trying and subsequently
+changing the column.
 
-thanks,
+BTW, I'll also need to call the new buffer push function periodically after the
+output happens in case there are characters left to process.  I suspect the
+right place is in the write wakeup func or the poll func.  If you know off hand,
+let me know.
 
--Jason
+						Thanks, Joe
