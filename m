@@ -1,71 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754450AbYHKBUM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755221AbYHKBU6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754450AbYHKBUM (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Aug 2008 21:20:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753045AbYHKBT6
+	id S1755221AbYHKBU6 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Aug 2008 21:20:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753391AbYHKBUt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Aug 2008 21:19:58 -0400
-Received: from mga11.intel.com ([192.55.52.93]:49093 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752838AbYHKBT6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Aug 2008 21:19:58 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.31,341,1215414000"; 
-   d="scan'208";a="605625410"
-Subject: Re: cpufreq doesn't seem to work in Intel Q9300
-From: Zhao Yakui <yakui.zhao@intel.com>
-To: S K <nospamnoham@gmail.com>
-Cc: Thomas Renninger <trenn@suse.de>,
-       Alan Jenkins <alan-jenkins@tuffmail.co.uk>,
-       linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
-In-Reply-To: <514e099a0808100128u303207clcb22292db2f0cc59@mail.gmail.com>
-References: <514e099a0808030300u140a0ae7m92a2e7294f39f7b7@mail.gmail.com>
-	 <200808081430.43012.trenn@suse.de>
-	 <aff5deaf0808081123s1fbe6a5cn7847e9cb053c1f5a@mail.gmail.com>
-	 <200808092059.47863.trenn@suse.de>
-	 <514e099a0808100128u303207clcb22292db2f0cc59@mail.gmail.com>
-Content-Type: text/plain
-Date: Mon, 11 Aug 2008 09:33:51 +0800
-Message-Id: <1218418431.6671.52.camel@yakui_zhao.sh.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.0 (2.8.0-7.fc6) 
+	Sun, 10 Aug 2008 21:20:49 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:49529 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753256AbYHKBUs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 Aug 2008 21:20:48 -0400
+Message-ID: <489F938A.10302@jp.fujitsu.com>
+Date: Mon, 11 Aug 2008 10:19:06 +0900
+From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
+MIME-Version: 1.0
+To: Alex Chiang <achiang@hp.com>,
+       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
+       Matthew Wilcox <matthew@wil.cx>, Pierre Ossman <drzeus-list@drzeus.cx>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       LKML <linux-kernel@vger.kernel.org>, linux-pci@vger.kernel.org
+Subject: Re: [PATCH 0/7] Fixups for duplicate slot names
+References: <20080806050745.GA31319@ldl.fc.hp.com> <489AB595.7000006@jp.fujitsu.com> <20080807172529.GB25902@ldl.fc.hp.com>
+In-Reply-To: <20080807172529.GB25902@ldl.fc.hp.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2008-08-10 at 01:28 -0700, S K wrote:
-> On Sat, Aug 9, 2008 at 11:59 AM, Thomas Renninger <trenn@suse.de> wrote:
-> > On Friday 08 August 2008 08:23:25 pm S K wrote:
-> >> > Try updating the BIOS.
-> >> > I expect your CPU is too new and the BIOS cannot export the correct freq
-> >> > values for the specific CPU yet.
-> >> >
-> >> >      Thomas
-> >>
-> >> The BIOS is already at the latest version :( Is the above comment the
-> >> only possible reason for the issue?
-> >
-> > It is very likely.
+Alex Chiang wrote:
+> * Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>:
+>> Hi Alex-san,
+>>
+>> Thank you for patches!
+>>
+>> I looked at your patches and it looks good. But I have only one
+>> concern about how to allocate/free memory for slot name.
+>>
+>> With your change, memory region for slot name will be allocated
+>> by hotplug *controller* driver and it can be freed using kfree()
+>> by hotplug *core* driver (not hotplug controller driver). So all
+>> hotplug controller drivers including drivers implemented in the
+>> future need to take it into account.
+>>
+>> I think it will be more robust if we can allocate and free memory
+>> in the same component (maybe hotplug core driver in this case).
 > 
-> But Windows XP is able to do the scaling properly. So how can it be a
-> BIOS issue? While reading about the Foxconn BIOS fiasco that happened
-> recently a kernel dev (forgot his name) stated that Linux tries to
-> emulate Windows for ACPI operations.
+> Hm, I didn't think this would be a problem. The sequence is:
 > 
-> So I'm guessing this is a kernel bug.
->From the attached acpidump it seems that there is no definition of
-_PCT,_PSS, _PPC. So acpi_cpufreq driver can't be used on your machine.
-This is a BIOS issue. 
-
-But it is very strange that cpufreq scaling can work on Windows XP.
-Will you please try the P4 clock cpufreq driver and see whether the
-scaling can work ? In fact P4 clock cpufreq driver is already replaced
-by acpi_cpufreq driver for the latest cpu. 
-Anyway please try p4 clock cpufreq driver.
-
-Thanks.
-
+> 	- controller allocates memory for slot name
+> 	- if core detects a collision:
+> 		- it frees the name
+> 		- it allocates new memory for name
+> 		- it assigns that memory to the name parameter
+> 	- controller->release will eventually free the name
 > 
-> -SK
+> So it shouldn't matter if the core frees the original name
+> pointer and allocates new memory, because the core will change
+> the pointer for the controller.
+> 
+> This is why I had to change the interface of pci_create_slot()
+> from taking a const char *name to a char *name.
+> 
+> Is there something I'm missing?
+> 
+> /ac
+
+I'm worrying about the following cases for example:
+
+ - hotplug controller driver allocates memory for slot name using
+   other than kmalloc().
+
+ - hotplug controller driver allocates memory for slot name as
+   a part of another data structure.
+
+Thanks,
+Kenji Kaneshige
+
 
