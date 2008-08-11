@@ -1,90 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752062AbYHKKIJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752974AbYHKKIp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752062AbYHKKIJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Aug 2008 06:08:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753062AbYHKKHr
+	id S1752974AbYHKKIp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Aug 2008 06:08:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751513AbYHKKIg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Aug 2008 06:07:47 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:38088 "EHLO e2.ny.us.ibm.com"
+	Mon, 11 Aug 2008 06:08:36 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:48709 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753030AbYHKKHq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Aug 2008 06:07:46 -0400
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: linux-mm@kvack.org
-Cc: Sudhir Kumar <skumar@linux.vnet.ibm.com>,
-       YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
-       Paul Menage <menage@google.com>, lizf@cn.fujitsu.com,
-       linux-kernel@vger.kernel.org, nishimura@mxp.nes.nec.co.jp,
-       Pavel Emelianov <xemul@openvz.org>, hugh@veritas.com,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Date: Mon, 11 Aug 2008 15:37:43 +0530
-Message-Id: <20080811100743.26336.6497.sendpatchset@balbir-laptop>
-In-Reply-To: <20080811100719.26336.98302.sendpatchset@balbir-laptop>
-References: <20080811100719.26336.98302.sendpatchset@balbir-laptop>
-Subject: [-mm][PATCH 2/2] Memory rlimit enhance mm_owner_changed callback to deal with exited owner
+	id S1751511AbYHKKIg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Aug 2008 06:08:36 -0400
+Date: Mon, 11 Aug 2008 12:08:07 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, jeremy@goop.org, hugh@veritas.com,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       davej@redhat.com
+Subject: Re: [RFC][PATCH 0/7] lockdep
+Message-ID: <20080811100807.GA8184@elte.hu>
+References: <20080804130317.994042639@chello.nl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080804130317.994042639@chello.nl>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+* Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
 
-mm_owner_changed callback can also be called with new task set to NULL.
-(race between try_to_unuse() and mm->owner exiting). Surprisingly the order
-of cgroup arguments being passed was incorrect (proves that we did not
-run into mm_owner_changed callback at all).
+> Hi,
+> 
+> This series is my pending lockdep queue, it includes David's graph 
+> optimization, my new scheduler runqueue annotation amongst others.
+> 
+> The part that makes this RFC are the latter few patches that add the 
+> "lock protection locks" thing Linus proposed a few days ago. I've not 
+> yet written a test case that actively tests this functionality, but 
+> wanted to get this out so that Jeremy can see if it works for him.
 
-Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
----
+update: i'm now back from vacation and i've added these patches to 
+tip/core/locking, but -tip testing found a few problems with them so i 
+wont push them upstream yet.
 
- mm/memrlimitcgroup.c |   15 +++++++++++++--
- 1 file changed, 13 insertions(+), 2 deletions(-)
-
-diff -puN mm/memrlimitcgroup.c~memrlimit-handle-mm-owner-notification-with-task-null mm/memrlimitcgroup.c
---- linux-2.6.27-rc1/mm/memrlimitcgroup.c~memrlimit-handle-mm-owner-notification-with-task-null	2008-08-05 10:56:56.000000000 +0530
-+++ linux-2.6.27-rc1-balbir/mm/memrlimitcgroup.c	2008-08-05 11:24:04.000000000 +0530
-@@ -73,6 +73,12 @@ void memrlimit_cgroup_uncharge_as(struct
- {
- 	struct memrlimit_cgroup *memrcg;
- 
-+	/*
-+	 * Uncharge happened as a part of the mm_owner_changed callback
-+	 */
-+	if (!mm->owner)
-+		return;
-+
- 	memrcg = memrlimit_cgroup_from_task(mm->owner);
- 	res_counter_uncharge(&memrcg->as_res, (nr_pages << PAGE_SHIFT));
- }
-@@ -235,8 +241,8 @@ out:
-  * This callback is called with mmap_sem held
-  */
- static void memrlimit_cgroup_mm_owner_changed(struct cgroup_subsys *ss,
--						struct cgroup *cgrp,
- 						struct cgroup *old_cgrp,
-+						struct cgroup *cgrp,
- 						struct task_struct *p)
- {
- 	struct memrlimit_cgroup *memrcg, *old_memrcg;
-@@ -246,7 +252,12 @@ static void memrlimit_cgroup_mm_owner_ch
- 	memrcg = memrlimit_cgroup_from_cgrp(cgrp);
- 	old_memrcg = memrlimit_cgroup_from_cgrp(old_cgrp);
- 
--	if (res_counter_charge(&memrcg->as_res, (mm->total_vm << PAGE_SHIFT)))
-+	/*
-+	 * If we don't have a new cgroup, we just uncharge from the old one.
-+	 * It means that the task is going away
-+	 */
-+	if (memrcg &&
-+	    res_counter_charge(&memrcg->as_res, (mm->total_vm << PAGE_SHIFT)))
- 		goto out;
- 	res_counter_uncharge(&old_memrcg->as_res, (mm->total_vm << PAGE_SHIFT));
- out:
-_
-
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+	Ingo
