@@ -1,60 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752671AbYHKLii@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753175AbYHKLi7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752671AbYHKLii (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Aug 2008 07:38:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751533AbYHKLi3
+	id S1753175AbYHKLi7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Aug 2008 07:38:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752691AbYHKLir
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Aug 2008 07:38:29 -0400
-Received: from mu-out-0910.google.com ([209.85.134.185]:54090 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751419AbYHKLi3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Aug 2008 07:38:29 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=pbGNNhGJCvUky0hXau/TBYlIPWhkHzTyj0oQwyQhLhUcTyISnYxZe7xZoTLpAIYr0J
-         3ZAtDRJRi2ElyLHNQE0kIiHENTmT94l/I0Ph7ou0Ov64qmKQ2YT4o3Hh+P2bO8m3g5DF
-         3n4Sk/NhZk0xsabqbKFaNKO+SnRiTvszK6yvo=
-Date: Mon, 11 Aug 2008 15:38:48 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: S K <nospamnoham@gmail.com>, Zhao Yakui <yakui.zhao@intel.com>,
-       Thomas Renninger <trenn@suse.de>,
-       Alan Jenkins <alan-jenkins@tuffmail.co.uk>,
-       linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
-Subject: Re: cpufreq doesn't seem to work in Intel Q9300
-Message-ID: <20080811113848.GA8382@martell.zuzino.mipt.ru>
-References: <514e099a0808030300u140a0ae7m92a2e7294f39f7b7@mail.gmail.com> <200808081430.43012.trenn@suse.de> <aff5deaf0808081123s1fbe6a5cn7847e9cb053c1f5a@mail.gmail.com> <200808092059.47863.trenn@suse.de> <514e099a0808100128u303207clcb22292db2f0cc59@mail.gmail.com> <1218418431.6671.52.camel@yakui_zhao.sh.intel.com> <514e099a0808102144n241c8e9ak255bded0a80744f1@mail.gmail.com> <20080811042244.469f8e1d@infradead.org>
+	Mon, 11 Aug 2008 07:38:47 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:38471 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751511AbYHKLiq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Aug 2008 07:38:46 -0400
+Date: Mon, 11 Aug 2008 13:38:17 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: David Witbrodt <dawitbro@sbcglobal.net>,
+       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+       Yinghai Lu <yhlu.kernel@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       netdev <netdev@vger.kernel.org>
+Subject: Re: [PATCH diagnostic] Re: HPET regression in 2.6.26 versus 2.6.25
+	-- RCU problem
+Message-ID: <20080811113817.GF6925@elte.hu>
+References: <630464.55583.qm@web82105.mail.mud.yahoo.com> <20080810151520.GG8125@linux.vnet.ibm.com> <20080811013538.GA3958@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080811042244.469f8e1d@infradead.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <20080811013538.GA3958@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 11, 2008 at 04:22:44AM -0700, Arjan van de Ven wrote:
-> On Sun, 10 Aug 2008 21:44:50 -0700
-> "S K" <nospamnoham@gmail.com> wrote:
-> > > But it is very strange that cpufreq scaling can work on Windows XP.
-> > > Will you please try the P4 clock cpufreq driver and see whether the
-> > > scaling can work ? In fact P4 clock cpufreq driver is already
-> > > replaced by acpi_cpufreq driver for the latest cpu.
-> > > Anyway please try p4 clock cpufreq driver.
-> > 
-> > What is the name of the driver? I'm not able to find any such driver
-> > in Fedora 9 installed modules. There is only acpi-cpufreq and
-> > powernow-k8.
-> > 
+
+* Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
+
+> And here is the patch.  It is still a bit raw, so the results should 
+> be viewed with some suspicion.  It adds a default-off kernel parameter 
+> CONFIG_RCU_CPU_STALL which must be enabled.
 > 
-> yeah don't bother with p4-clockmod, it's not something that saves you
-> energy... it only gives you a fake feeling that you would.
+> Rather than exponential backoff, it backs off to once per 30 seconds. 
+> My feeling upon thinking on it was that if you have stalled RCU grace 
+> periods for that long, a few extra printk() messages are probably the 
+> least of your worries...
 
-Why it is still in tree?
+while this wont debug problems were timer irqs are genuinely stuck for 
+long periods of time, it should find problems with RCU completion logic 
+itself in the presence of correct timer irqs - and the lack of any 
+messages from this debug option should point the finger more firmly in 
+the direction of stalled timer irqs.
 
-It's likely that you'll waste more time explaining everybody to not use
-p4-clockmod than send a patch.
+So i find this debug feature rather useful and have applied it to 
+tip/core/rcu (and cleaned it up a bit). I renamed the config option to 
+CONFIG_DEBUG_RCU_STALL to make it more in line with usual debug option 
+names. Lets see whether -tip testing finds any false positives.
 
+	Ingo
