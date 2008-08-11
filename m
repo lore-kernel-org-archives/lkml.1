@@ -1,83 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754932AbYHKBCw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754450AbYHKBUM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754932AbYHKBCw (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Aug 2008 21:02:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753468AbYHKBCn
+	id S1754450AbYHKBUM (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Aug 2008 21:20:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753045AbYHKBT6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Aug 2008 21:02:43 -0400
-Received: from mga01.intel.com ([192.55.52.88]:15739 "EHLO mga01.intel.com"
+	Sun, 10 Aug 2008 21:19:58 -0400
+Received: from mga11.intel.com ([192.55.52.93]:49093 "EHLO mga11.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753247AbYHKBCm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Aug 2008 21:02:42 -0400
+	id S1752838AbYHKBT6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 Aug 2008 21:19:58 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.31,341,1215414000"; 
-   d="scan'208";a="605621543"
-Subject: Re: [PATCH -v2 3/8] kexec jump: check code size in control page
-From: Huang Ying <ying.huang@intel.com>
-To: Vivek Goyal <vgoyal@redhat.com>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>, Pavel Machek <pavel@ucw.cz>,
-       nigel@nigel.suspend2.net, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org,
-       Kexec Mailing List <kexec@lists.infradead.org>
-In-Reply-To: <20080808140938.GE3840@redhat.com>
-References: <1218178356.22039.76.camel@caritas-dev.intel.com>
-	 <20080808140938.GE3840@redhat.com>
+   d="scan'208";a="605625410"
+Subject: Re: cpufreq doesn't seem to work in Intel Q9300
+From: Zhao Yakui <yakui.zhao@intel.com>
+To: S K <nospamnoham@gmail.com>
+Cc: Thomas Renninger <trenn@suse.de>,
+       Alan Jenkins <alan-jenkins@tuffmail.co.uk>,
+       linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
+In-Reply-To: <514e099a0808100128u303207clcb22292db2f0cc59@mail.gmail.com>
+References: <514e099a0808030300u140a0ae7m92a2e7294f39f7b7@mail.gmail.com>
+	 <200808081430.43012.trenn@suse.de>
+	 <aff5deaf0808081123s1fbe6a5cn7847e9cb053c1f5a@mail.gmail.com>
+	 <200808092059.47863.trenn@suse.de>
+	 <514e099a0808100128u303207clcb22292db2f0cc59@mail.gmail.com>
 Content-Type: text/plain
-Date: Mon, 11 Aug 2008 09:02:38 +0800
-Message-Id: <1218416558.30464.12.camel@caritas-dev.intel.com>
+Date: Mon, 11 Aug 2008 09:33:51 +0800
+Message-Id: <1218418431.6671.52.camel@yakui_zhao.sh.intel.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+X-Mailer: Evolution 2.8.0 (2.8.0-7.fc6) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, Vivek,
-
-On Fri, 2008-08-08 at 10:09 -0400, Vivek Goyal wrote:
-[...]
-> > --- a/arch/x86/kernel/relocate_kernel_32.S
-> > +++ b/arch/x86/kernel/relocate_kernel_32.S
-> > @@ -20,10 +20,11 @@
-> >  #define PAGE_ATTR (_PAGE_PRESENT | _PAGE_RW | _PAGE_ACCESSED | _PAGE_DIRTY)
-> >  #define PAE_PGD_ATTR (_PAGE_PRESENT)
-> >  
-> > -/* control_page + PAGE_SIZE/2 ~ control_page + PAGE_SIZE * 3/4 are
-> > - * used to save some data for jumping back
-> > +/* control_page + KEXEC_CONTROL_CODE_MAX_SIZE
-> > + * ~ control_page + PAGE_SIZE * 3/4 are used to save some data for
-> > + * jumping back
-> >   */
+On Sun, 2008-08-10 at 01:28 -0700, S K wrote:
+> On Sat, Aug 9, 2008 at 11:59 AM, Thomas Renninger <trenn@suse.de> wrote:
+> > On Friday 08 August 2008 08:23:25 pm S K wrote:
+> >> > Try updating the BIOS.
+> >> > I expect your CPU is too new and the BIOS cannot export the correct freq
+> >> > values for the specific CPU yet.
+> >> >
+> >> >      Thomas
+> >>
+> >> The BIOS is already at the latest version :( Is the above comment the
+> >> only possible reason for the issue?
+> >
+> > It is very likely.
 > 
-> Hi Huang,
+> But Windows XP is able to do the scaling properly. So how can it be a
+> BIOS issue? While reading about the Foxconn BIOS fiasco that happened
+> recently a kernel dev (forgot his name) stated that Linux tries to
+> emulate Windows for ACPI operations.
 > 
-> Above comment is not very clear. Can you please elaborate it. I thought
-> that PAGE_SIZE/2 is used for control code and rest half is shared between
-> kjump data and stack. What is PAGE_SIZE *3/4?
+> So I'm guessing this is a kernel bug.
+>From the attached acpidump it seems that there is no definition of
+_PCT,_PSS, _PPC. So acpi_cpufreq driver can't be used on your machine.
+This is a BIOS issue. 
 
-Yes. Rest half is shared between kjump data and stack. I will change it.
+But it is very strange that cpufreq scaling can work on Windows XP.
+Will you please try the P4 clock cpufreq driver and see whether the
+scaling can work ? In fact P4 clock cpufreq driver is already replaced
+by acpi_cpufreq driver for the latest cpu. 
+Anyway please try p4 clock cpufreq driver.
 
-> > +++ b/arch/x86/kernel/vmlinux_check_32.lds.S
-> > @@ -0,0 +1,7 @@
-> > +/*
-> > + * Link time checks
-> > + */
-> > +
-> > +#include <asm/kexec.h>
-> > +
-> > +ASSERT(kexec_control_code_size <= KEXEC_CONTROL_CODE_MAX_SIZE,
-> "kexec control code size is too big")
+Thanks.
+
 > 
-> Will it make sense to move it into vmlinux_32.lds.S itself? Creating a
-> separate
-> file for a single check seems superfluous.
-
-I hope other ones can use it. But for now, put it in vmlinux_32.lds.S is
-better. I will change it.
-
-Best Regards,
-HUang Ying
-
+> -SK
 
