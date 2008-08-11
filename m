@@ -1,52 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758468AbYHKWPi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758733AbYHKWQA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758468AbYHKWPi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Aug 2008 18:15:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752122AbYHKWP3
+	id S1758733AbYHKWQA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Aug 2008 18:16:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753369AbYHKWPv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Aug 2008 18:15:29 -0400
-Received: from gw.goop.org ([64.81.55.164]:53134 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752113AbYHKWP3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Aug 2008 18:15:29 -0400
-Message-ID: <48A0B9EB.9020709@goop.org>
-Date: Mon, 11 Aug 2008 15:15:07 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	Mon, 11 Aug 2008 18:15:51 -0400
+Received: from outbound-mail-17.bluehost.com ([69.89.20.232]:57633 "HELO
+	outbound-mail-17.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752911AbYHKWPu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Aug 2008 18:15:50 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
+	b=bIv3Ta+rcmxgqcVPQqPEduwuyQN/f3aN/r5m7isiyETzaIT7hZDcI/pjQSgQeDC/a0/qFhC+bDSsl6Qla6Yx+bapFue5XBJbE9WIw+OqLl2nb2huKLlU3U5ZDFltR9HC;
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [Bug #11283] MSI patch blamed for T60p not coming out of suspend to ram
+Date: Mon, 11 Aug 2008 15:15:39 -0700
+User-Agent: KMail/1.9.9
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       "Matthew Wilcox" <matthew@wil.cx>,
+       "Matthew Wilcox" <willy@linux.intel.com>,
+       "Michael S. Tsirkin" <m.s.tsirkin@gmail.com>
+References: <VYYCiQF4qDI.A.BPH.KCjnIB@albercik> <cX_-nNkxKaF.A._1H.lCjnIB@albercik>
+In-Reply-To: <cX_-nNkxKaF.A._1H.lCjnIB@albercik>
 MIME-Version: 1.0
-To: benh@kernel.crashing.org
-CC: Andrew Morton <akpm@linux-foundation.org>, ehabkost@redhat.com,
-       x86@kernel.org, linux-kernel@vger.kernel.org,
-       Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH 1/2] add phys_addr_t for holding physical addresses
-References: <489B6B40.5050705@goop.org>	 <20080807145648.ab3dfa90.akpm@linux-foundation.org>	 <489B72C3.30603@goop.org>	 <20080807162741.8dfcd336.akpm@linux-foundation.org>	 <489B8908.2010007@goop.org>	 <20080807170617.79ca3ce7.akpm@linux-foundation.org>	 <48A0954E.20400@goop.org> <1218491896.8041.9.camel@pasglop>
-In-Reply-To: <1218491896.8041.9.camel@pasglop>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200808111515.40782.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Benjamin Herrenschmidt wrote:
-> On Mon, 2008-08-11 at 12:38 -0700, Jeremy Fitzhardinge wrote:
->   
->> Add a kernel-wide "phys_addr_t" which is guaranteed to be able to hold
->> any physical address.  By default it equals the word size of the
->> architecture, but a 32-bit architecture can set ARCH_PHYS_ADDR_T_64BIT
->> if it needs a 64-bit phys_addr_t.
->>     
+On Saturday, August 9, 2008 3:43 pm Rafael J. Wysocki wrote:
+> This message has been generated automatically as a part of a report
+> of recent regressions.
 >
-> I've been wondering for some time why can't we make phys_addr_t and
-> resource_size_t the same thing... I don't like having two ARCH_* thing
-> especially since I believe the one for resources is already what we
-> want.
->   
+> The following bug entry is on the current list of known regressions
+> from 2.6.26.  Please verify if it still should be listed and let me know
+> (either way).
+>
+>
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11283
+> Subject		: MSI patch blamed for T60p not coming out of suspend to ram
+> Submitter	: Michael S. Tsirkin <m.s.tsirkin@gmail.com>
+> Date		: 2008-08-07 16:07 (3 days old)
 
-I made the same argument, but Andrew thinks they're conceptually 
-distinct.  It is theoretically possible you might have a system with >4G 
-memory, but all io resources < 4G, so you'd have resource_size_t 
-32-bits, while having 64-bit physical addresses.  You can configure such 
-a thing, but I don't know if it's 1) useful or 2) used.
+The fix for this should be in Linus' tree now.
 
-    J
+-- 
+Jesse Barnes, Intel Open Source Technology Center
