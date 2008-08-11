@@ -1,97 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753183AbYHKLOS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752108AbYHKLWU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753183AbYHKLOS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Aug 2008 07:14:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751592AbYHKLOI
+	id S1752108AbYHKLWU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Aug 2008 07:22:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751221AbYHKLWM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Aug 2008 07:14:08 -0400
-Received: from ozlabs.org ([203.10.76.45]:51512 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751509AbYHKLOH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Aug 2008 07:14:07 -0400
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 11 Aug 2008 07:22:12 -0400
+Received: from viefep18-int.chello.at ([213.46.255.22]:35106 "EHLO
+	viefep12-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751203AbYHKLWL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Aug 2008 07:22:11 -0400
+X-SourceIP: 80.57.229.25
+Subject: Re: [PATCH] printk: robustify printk
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org, tglx@linutronix.de,
+       marcin.slusarz@gmail.com, linux-kernel@vger.kernel.org,
+       davem@davemloft.net, rostedt@goodmis.org, paulmck@linux.vnet.ibm.com
+In-Reply-To: <87zlnj24qc.fsf@basil.nowhere.org>
+References: <1218202249.8625.106.camel@twins>
+	 <alpine.LFD.1.10.0808080931550.3462@nehalem.linux-foundation.org>
+	 <1218215454.8625.133.camel@twins>
+	 <alpine.LFD.1.10.0808081014240.3462@nehalem.linux-foundation.org>
+	 <1218217257.29098.2.camel@lappy.programming.kicks-ass.net>
+	 <alpine.LFD.1.10.0808081043160.3462@nehalem.linux-foundation.org>
+	 <1218219269.29098.5.camel@lappy.programming.kicks-ass.net>
+	 <20080808121428.646a8b3c.akpm@linux-foundation.org>
+	 <1218223269.29098.12.camel@lappy.programming.kicks-ass.net>
+	 <1218224829.29098.19.camel@lappy.programming.kicks-ass.net>
+	 <20080811104526.GA15186@elte.hu>  <87zlnj24qc.fsf@basil.nowhere.org>
+Content-Type: text/plain
+Date: Mon, 11 Aug 2008 13:22:06 +0200
+Message-Id: <1218453726.10800.63.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
-Message-ID: <18592.7928.466322.954498@cargo.ozlabs.ibm.com>
-Date: Mon, 11 Aug 2008 21:14:00 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: [git pull] Please pull powerpc.git merge branch
-X-Mailer: VM 8.0.9 under Emacs 22.2.1 (i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
+On Mon, 2008-08-11 at 13:03 +0200, Andi Kleen wrote:
+> Ingo Molnar <mingo@elte.hu> writes:
+> 
+> > * Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+> >
+> >> On Fri, 2008-08-08 at 21:21 +0200, Peter Zijlstra wrote:
+> >> 
+> >> > The initial printk_tick() based implementation didn't suffer this
+> >> > problem, should we revert to that scheme?
+> >> 
+> >> Just in case people care..
+> >> 
+> >> ---
+> >> Subject: printk: robustify printk
+> >> 
+> >> Avoid deadlocks against rq->lock and xtime_lock by deferring the klogd 
+> >> wakeup by polling from the timer tick.
+> >
+> > i missed most of the discussion, but this seems like the simplest (and 
+> > hence ultimately the best) approach to me.
+> 
+> The problem is that it means any printk data output that is more
+> than DMESG-BUFFER-SIZE bytes during one clock tick is going to lose data.
+> It loses the natural adaption to higher printk rates that you
+> got previously.
+> 
+> Now we could say that for debugging etc. people should switch
+> to other mechanisms like relayfs, but I would still worry about
+> some corner cases where losing printk data that wasn't lost before
+> could be a severe regression (e.g. consider firewall log messages
+> or similar)
 
-Please pull from the 'merge' branch of
+You only loose the msgs with klogd, console still gets everything. If
+firewalls are generating that much data, perhaps its time to think about
+alternative ways to channel that.
 
-git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git merge
+> Essentially it makes printk (much?) less reliable than it was before
+> in the general case. Not sure that's a good thing. So the patch
+> title is definitely misleading.
 
-There are some assorted powerpc bugfixes and defconfig updates, plus a
-patch to Documentation/feature-removal-schedule.txt from Robert
-P. J. Day that removes the section on removing arch/ppc, since that is
-done, plus one from me removing include/linux/harrier_defs.h, since it
-was only used by code in arch/ppc which is now gone.
+Depends, I don't give a rats arse about klogd - I get everything through
+serial onto another machine. 
 
-Thanks,
-Paul.
+> As Linus pointed out earlier we've survived with this restriction
+> (not doing printk in the scheduler) for a long time, so is there
+> really a that pressing need to change that?
 
- Documentation/feature-removal-schedule.txt     |   13 -
- arch/powerpc/boot/dts/warp.dts                 |   22 +
- arch/powerpc/configs/40x/ep405_defconfig       |  207 +++++++++----
- arch/powerpc/configs/40x/kilauea_defconfig     |  196 +++++++++----
- arch/powerpc/configs/40x/makalu_defconfig      |  196 +++++++++----
- arch/powerpc/configs/40x/walnut_defconfig      |  203 +++++++++----
- arch/powerpc/configs/44x/bamboo_defconfig      |  206 +++++++++----
- arch/powerpc/configs/44x/canyonlands_defconfig |  116 +++++--
- arch/powerpc/configs/44x/ebony_defconfig       |  207 +++++++++----
- arch/powerpc/configs/44x/katmai_defconfig      |  259 ++++++++++++-----
- arch/powerpc/configs/44x/rainier_defconfig     |  207 +++++++++----
- arch/powerpc/configs/44x/sam440ep_defconfig    |  109 +++++--
- arch/powerpc/configs/44x/sequoia_defconfig     |  207 +++++++++----
- arch/powerpc/configs/44x/taishan_defconfig     |  208 +++++++++----
- arch/powerpc/configs/44x/virtex5_defconfig     |  100 +++++-
- arch/powerpc/configs/44x/warp_defconfig        |  232 ++++++++++-----
- arch/powerpc/configs/ppc40x_defconfig          |  374 ++++++++++++++++++++----
- arch/powerpc/configs/ppc44x_defconfig          |  375 ++++++++++++++++++++++--
- arch/powerpc/include/asm/mmu-hash64.h          |    2 
- arch/powerpc/kernel/pci-common.c               |   17 +
- arch/powerpc/kernel/rtas.c                     |    5 
- arch/powerpc/mm/hash_utils_64.c                |   63 ++--
- arch/powerpc/mm/init_64.c                      |    9 -
- arch/powerpc/platforms/44x/warp-nand.c         |    2 
- arch/powerpc/platforms/44x/warp.c              |   25 +-
- include/linux/harrier_defs.h                   |  212 --------------
- 26 files changed, 2598 insertions(+), 1174 deletions(-)
- delete mode 100644 include/linux/harrier_defs.h
-
-Benjamin Herrenschmidt (2):
-      powerpc/pci: Don't keep ISA memory hole resources in the tree
-      powerpc/mm: Fix attribute confusion with htab_bolt_mapping()
-
-Josh Boyer (1):
-      powerpc/4xx: Update defconfig files for 2.6.27-rc1
-
-Junio C Hamano (1):
-      powerpc: Do not ignore arch/powerpc/include
-
-Nathan Fontenot (1):
-      powerpc: Zero fill the return values of rtas argument buffer
-
-Paul Mackerras (1):
-      powerpc: Remove include/linux/harrier_defs.h
-
-Robert P. J. Day (1):
-      powerpc: Delete completed "ppc removal" task from feature removal file
-
-Sean MacLennan (3):
-      powerpc/4xx: Cleanup Warp for i2c driver changes.
-      powerpc/44x: Warp DTS changes for board updates
-      powerpc/44x: Incorrect NOR offset in Warp DTS
-
-Valentine Barshak (1):
-      powerpc/44x: Adjust warp-nand resource end address
+Why not fix it if its acceptable - the deadlock is just ugly.
 
