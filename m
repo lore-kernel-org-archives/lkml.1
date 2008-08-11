@@ -1,49 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754677AbYHKDJA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754588AbYHKDWn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754677AbYHKDJA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Aug 2008 23:09:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753846AbYHKDIw
+	id S1754588AbYHKDWn (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Aug 2008 23:22:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753836AbYHKDWd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Aug 2008 23:08:52 -0400
-Received: from esbens.latnet.lv ([92.240.66.74]:39014 "EHLO esbens.latnet.lv"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753835AbYHKDIv convert rfc822-to-8bit (ORCPT
+	Sun, 10 Aug 2008 23:22:33 -0400
+Received: from ik-out-1112.google.com ([66.249.90.182]:17762 "EHLO
+	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753832AbYHKDWc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Aug 2008 23:08:51 -0400
-From: Aivils Stoss <aivils@latnet.lv>
-To: Samuel Thibault <samuel.thibault@ens-lyon.org>
-Subject: Re: PROBLEM: USB keyboards works only 4 per PC host port
-Date: Sun, 10 Aug 2008 04:08:37 +0100
-User-Agent: KMail/1.9.7
-Cc: linux-input@vger.kernel.org, jkosina@suse.cz, linux-kernel@vger.kernel.org,
-       linuxconsole-dev@lists.sourceforge.net
-References: <200808080702.24969.aivils@latnet.lv> <20080809104226.GF4546@implementation>
-In-Reply-To: <20080809104226.GF4546@implementation>
+	Sun, 10 Aug 2008 23:22:32 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=UlrXMeI1JQwUPl+7i6ZJkxkLnDTy4XENhQT5XvcMk28EJZyr3d+sWhXQ0H2/yxVYQD
+         0tsxWviJl9upLQrnWP+nkgj0ajKbLxOQO30/cwFF0J0JT3xirWruWvZXDqT3Q8mHc96I
+         2ujm7mJLRtB13j4GzMS+IyJjIGm04SihAKUbA=
+Message-ID: <517f3f820808102022y466b370qb9ce38177eaa6127@mail.gmail.com>
+Date: Mon, 11 Aug 2008 05:22:30 +0200
+From: "Michael Kerrisk" <mtk.manpages@gmail.com>
+To: "Nick Piggin" <nickpiggin@yahoo.com.au>, jens.axboe@oracle.com
+Subject: Re: [patch v3] splice: fix race with page invalidation
+Cc: "Jamie Lokier" <jamie@shareable.org>, "Miklos Szeredi" <miklos@szeredi.hu>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+In-Reply-To: <200808051257.12801.nickpiggin@yahoo.com.au>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200808100408.37473.aivils@latnet.lv>
+References: <E1KO8DV-0004E4-6H@pomaz-ex.szeredi.hu>
+	 <200808021426.50436.nickpiggin@yahoo.com.au>
+	 <20080804152949.GH18868@shareable.org>
+	 <200808051257.12801.nickpiggin@yahoo.com.au>
+X-Google-Sender-Auth: 52045f514a55beda
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 09 August 2008 11:42:26 am Samuel Thibault wrote:
-> Aivils Stoss, le Fri 08 Aug 2008 07:02:24 +0100, a écrit :
-> > I suppose this is Linux kernel bug because i test keyboards under
-> > Windows, which support any schema of cascading of usb hubs.
+Nick, Jens
+
+On Tue, Aug 5, 2008 at 4:57 AM, Nick Piggin <nickpiggin@yahoo.com.au> wrote:
+> On Tuesday 05 August 2008 01:29, Jamie Lokier wrote:
+>> Nick Piggin wrote:
+>> > On Saturday 02 August 2008 04:28, Miklos Szeredi wrote:
+>> > > On Fri, 1 Aug 2008, Nick Piggin wrote:
+>> > > > Well, a) it probably makes sense in that case to provide another mode
+>> > > > of operation which fills the data synchronously from the sender and
+>> > > > copys it to the pipe (although the sender might just use read/write)
+>> > > > And b) we could *also* look at clearing PG_uptodate as an
+>> > > > optimisation iff that is found to help.
+>> > >
+>> > > IMO it's not worth it to complicate the API just for the sake of
+>> > > correctness in the so-very-rare read error case.  Users of the splice
+>> > > API will simply ignore this requirement, because things will work fine
+>> > > on ext3 and friends, and will break only rarely on NFS and FUSE.
+>> > >
+>> > > So I think it's much better to make the API simple: invalid pages are
+>> > > OK, and for I/O errors we return -EIO on the pipe.  It's not 100%
+>> > > correct, but all in all it will result in less buggy programs.
+>> >
+>> > That's true, but I hate how we always (in the VM, at least) just brush
+>> > error handling under the carpet because it is too hard :(
+>> >
+>> > I guess your patch is OK, though. I don't see any reasons it could cause
+>> > problems...
+>>
+>> At least, if there are situations where the data received is not what
+>> a common sense programmer would expect (e.g. blocks of zeros, data
+>> from an unexpected time in syscall sequence, or something, or just
+>> "reliable except with FUSE and NFS"), please ensure it's documented in
+>> splice.txt or wherever.
 >
-> On the very same machine and hubs?
-
-Yes, on same machine. Under Windows i don't have evdev interface,
-checked only how keypress go to console.
-Of course to repeat a try You must have at least 5 keyboards and
-1 7-port or 2 4-port hubs and kernel 2.6.22 and above. I allways
-got result - 5th, 6th, 7th keyboard does not send events to console
-or evdev.
-
+> Not quite true. Many filesystems can return -EIO, and truncate can
+> partially zero pages.
 >
-> Samuel
+> Basically the man page should note that until the splice API is
+> improved, then a) -EIO errors will be seen at the receiever, b)
+> the pages can see transient zeroes (this is the case with read(2)
+> as well, but splice has a much bigger window), and c) the sender
+> does not send a snapshot of data because it can still be modified
+> until it is recieved.
+>
+> c is not too surprising for an asynchronous interface, but it is
+> nice to document in case people are expecting COw or something.
+> b and c can more or less be worked around by not doing silly things
+> like truncating or scribbling on data until reciever really has it.
+> a, I argue, should be fixed in API.
 
+Nick, could you come up with a patch to the man page for this?
+Something that's ACKable by Jens?
 
+Cheers,
+
+Michael
+
+-- 
+Michael Kerrisk
+Linux man-pages maintainer; http://www.kernel.org/doc/man-pages/
+Found a bug? http://www.kernel.org/doc/man-pages/reporting_bugs.html
