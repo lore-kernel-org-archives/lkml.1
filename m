@@ -1,88 +1,265 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754020AbYHKOa1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752742AbYHKOeU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754020AbYHKOa1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Aug 2008 10:30:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751505AbYHKOaT
+	id S1752742AbYHKOeU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Aug 2008 10:34:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751181AbYHKOeM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Aug 2008 10:30:19 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:61980 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750817AbYHKOaS (ORCPT
+	Mon, 11 Aug 2008 10:34:12 -0400
+Received: from fg-out-1718.google.com ([72.14.220.154]:64105 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751075AbYHKOeL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Aug 2008 10:30:18 -0400
-Date: Mon, 11 Aug 2008 10:30:15 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Christoph Lameter <cl@linux-foundation.org>
-cc: Pekka Enberg <penberg@cs.helsinki.fi>,
-       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
-       mathieu.desnoyers@polymtl.ca, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, rdunlap@xenotime.net, mpm@selenic.com,
-       tglx@linutronix.de
-Subject: Re: [PATCH 4/5] kmemtrace: SLUB hooks.
-In-Reply-To: <48A048FD.30909@linux-foundation.org>
-Message-ID: <alpine.DEB.1.10.0808111027370.29861@gandalf.stny.rr.com>
-References: <1218388447-5578-1-git-send-email-eduard.munteanu@linux360.ro>  <1218388447-5578-2-git-send-email-eduard.munteanu@linux360.ro>  <1218388447-5578-3-git-send-email-eduard.munteanu@linux360.ro>  <1218388447-5578-4-git-send-email-eduard.munteanu@linux360.ro>
-  <1218388447-5578-5-git-send-email-eduard.munteanu@linux360.ro>  <48A046F5.2000505@linux-foundation.org> <1218463774.7813.291.camel@penberg-laptop> <48A048FD.30909@linux-foundation.org>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Mon, 11 Aug 2008 10:34:11 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:content-transfer-encoding
+         :in-reply-to:user-agent;
+        b=SA+rEP0d5mkAx2Rc6s6Qfrnwn7h7Tmoi93QiNLfTKZM4WL3gt/Dyol4GMmujnY+SHp
+         pqF1dw5hejUU1UG/G44Lf0h9QvQil0eaxdL8eMPZEk1N+nCPU57oprc/ZQmvIZcw3HD2
+         KB2vhTAyVSStNIR3Y0oSTpkthCyErGRfF0e08=
+Date: Mon, 11 Aug 2008 18:34:08 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andi Kleen <andi@firstfloor.org>,
+       "Maciej W. Rozycki" <macro@linux-mips.org>,
+       Yinghai Lu <yhlu.kernel@gmail.com>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH -tip] x86: apic interrupts - move assignments to
+	irqinit_32.c
+Message-ID: <20080811143408.GB7196@lenovo>
+References: <20080808195006.GA7014@lenovo> <20080811125729.GB2842@elte.hu> <20080811130647.GA23289@elte.hu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20080811130647.GA23289@elte.hu>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+[Ingo Molnar - Mon, Aug 11, 2008 at 03:06:47PM +0200]
+| 
+| * Ingo Molnar <mingo@elte.hu> wrote:
+| 
+| > * Cyrill Gorcunov <gorcunov@gmail.com> wrote:
+| > 
+| > > 64bit mode APIC interrupt handlers are set within irqinit_64.c.
+| > > Lets do tha same for 32bit mode which would help in furter code merging.
+| > > 
+| > > Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
+| > > ---
+| > > 
+| > > I found it useful for APIC code merging process (in which
+| > > i'm now). So please review and test if possible.
+| > > Any comments are quite welcome!
+| > > 
+| > > Ugh... almost forget - the patch is over -tip tree
+| > > commit 62c67a7cc7dbd9c8d92d49cfd7d5ca1d8f354616
+| > 
+| > applied to tip/x86/core for more testing, thanks Cyrill.
+| 
+| doesnt build:
+| 
+|  arch/x86/mach-default/setup.c:44: warning: ‘irq2’ defined but not used
+|  arch/x86/kernel/irqinit_32.c: In function ‘native_init_IRQ’:
+|  arch/x86/kernel/irqinit_32.c:139: error: ‘irq2’ undeclared (first use in this function)
+|  arch/x86/kernel/irqinit_32.c:139: error: (Each undeclared identifier is reported only once
+|  arch/x86/kernel/irqinit_32.c:139: error: for each function it appears in.)
+| 
+| with:
+| 
+|  http://redhat.com/~mingo/misc/config-Mon_Aug_11_14_48_29_CEST_2008.bad
+| 
+| 	Ingo
+| 
 
+Sorry, Ingo, for that. Here is an updated version. Could you please
+update it?
 
-On Mon, 11 Aug 2008, Christoph Lameter wrote:
+		- Cyrill -
+---
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+Subject: [PATCH -tip] x86: apic interrupts - move assignments to irqinit_32.c v2
 
-> Pekka Enberg wrote:
-> > On Mon, 2008-08-11 at 09:04 -0500, Christoph Lameter wrote:
-> >> Eduard - Gabriel Munteanu wrote:
-> >>
-> >>
-> >>
-> >>>  static __always_inline void *kmalloc_node(size_t size, gfp_t flags, int node)
-> >>>  {
-> >>> +	void *ret;
-> >>> +
-> >>>  	if (__builtin_constant_p(size) &&
-> >>>  		size <= PAGE_SIZE && !(flags & SLUB_DMA)) {
-> >>>  			struct kmem_cache *s = kmalloc_slab(size);
-> >>> @@ -239,7 +280,13 @@ static __always_inline void *kmalloc_node(size_t size, gfp_t flags, int node)
-> >>>  		if (!s)
-> >>>  			return ZERO_SIZE_PTR;
-> >>>  
-> >>> -		return kmem_cache_alloc_node(s, flags, node);
-> >>> +		ret = kmem_cache_alloc_node_notrace(s, flags, node);
-> >>> +
-> >>> +		kmemtrace_mark_alloc_node(KMEMTRACE_TYPE_KMALLOC,
-> >>> +					  _THIS_IP_, ret,
-> >>> +					  size, s->size, flags, node);
-> >>> +
-> >>> +		return ret;
-> >> You could simplify the stuff in slub.h if you would fall back to the uninlined
-> >> functions in the case that kmemtrace is enabled. IMHO adding additional inline
-> >> code here does grow these function to a size where inlining is not useful anymore.
-> > 
-> > So, if CONFIG_KMEMTRACE is enabled, make the inlined version go away
-> > completely? I'm okay with that though I wonder if that means we now take
-> > a performance hit when CONFIG_KMEMTRACE is enabled but tracing is
-> > disabled at run-time...
-> 
-> We already take a performance hit because of the additional function calls.
-> 
-> With the above approach the kernel binary will grow significantly because you
-> are now inserting an additional function call at all call sites.
-> 
+64bit mode APIC interrupt handlers are set within irqinit_64.c.
+Lets do tha same for 32bit mode which would help in furter code merging.
 
-The kmemtrace_mark_alloc_node itself is an inline function, which calls 
-another inline function "trace_mark" which is designed to test a 
-read_mostly variable, and will do an "unlikely" jmp if the variable is 
-set (which it is when tracing is enabled), to the actual function call.
+Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
+---
 
-There should be no extra function calls when this is configured on but 
-tracing disabled. We try very hard to keep the speed of the tracer as 
-close to a non tracing kernel as possible when tracing is disabled.
+The patch is on top of 62c67a7cc7dbd9c8d92d49cfd7d5ca1d8f354616 -tip tree.
 
--- Steve
-
+Index: linux-2.6.git/arch/x86/kernel/apic_32.c
+===================================================================
+--- linux-2.6.git.orig/arch/x86/kernel/apic_32.c	2008-08-11 18:16:22.000000000 +0400
++++ linux-2.6.git/arch/x86/kernel/apic_32.c	2008-08-11 18:18:13.000000000 +0400
+@@ -1366,54 +1366,6 @@ void smp_error_interrupt(struct pt_regs 
+ 	irq_exit();
+ }
+ 
+-#ifdef CONFIG_SMP
+-void __init smp_intr_init(void)
+-{
+-	/*
+-	 * IRQ0 must be given a fixed assignment and initialized,
+-	 * because it's used before the IO-APIC is set up.
+-	 */
+-	set_intr_gate(FIRST_DEVICE_VECTOR, interrupt[0]);
+-
+-	/*
+-	 * The reschedule interrupt is a CPU-to-CPU reschedule-helper
+-	 * IPI, driven by wakeup.
+-	 */
+-	alloc_intr_gate(RESCHEDULE_VECTOR, reschedule_interrupt);
+-
+-	/* IPI for invalidation */
+-	alloc_intr_gate(INVALIDATE_TLB_VECTOR, invalidate_interrupt);
+-
+-	/* IPI for generic function call */
+-	alloc_intr_gate(CALL_FUNCTION_VECTOR, call_function_interrupt);
+-
+-	/* IPI for single call function */
+-	set_intr_gate(CALL_FUNCTION_SINGLE_VECTOR,
+-				call_function_single_interrupt);
+-}
+-#endif
+-
+-/*
+- * Initialize APIC interrupts
+- */
+-void __init apic_intr_init(void)
+-{
+-#ifdef CONFIG_SMP
+-	smp_intr_init();
+-#endif
+-	/* self generated IPI for local APIC timer */
+-	alloc_intr_gate(LOCAL_TIMER_VECTOR, apic_timer_interrupt);
+-
+-	/* IPI vectors for APIC spurious and error interrupts */
+-	alloc_intr_gate(SPURIOUS_APIC_VECTOR, spurious_interrupt);
+-	alloc_intr_gate(ERROR_APIC_VECTOR, error_interrupt);
+-
+-	/* thermal monitor LVT interrupt */
+-#ifdef CONFIG_X86_MCE_P4THERMAL
+-	alloc_intr_gate(THERMAL_APIC_VECTOR, thermal_interrupt);
+-#endif
+-}
+-
+ /**
+  * connect_bsp_APIC - attach the APIC to the interrupt system
+  */
+Index: linux-2.6.git/arch/x86/kernel/irqinit_32.c
+===================================================================
+--- linux-2.6.git.orig/arch/x86/kernel/irqinit_32.c	2008-08-11 18:16:22.000000000 +0400
++++ linux-2.6.git/arch/x86/kernel/irqinit_32.c	2008-08-11 18:23:51.000000000 +0400
+@@ -74,6 +74,15 @@ void __init init_ISA_irqs (void)
+ 	}
+ }
+ 
++/*
++ * IRQ2 is cascade interrupt to second interrupt controller
++ */
++static struct irqaction irq2 = {
++	.handler = no_action,
++	.mask = CPU_MASK_NONE,
++	.name = "cascade",
++};
++
+ /* Overridden in paravirt.c */
+ void init_IRQ(void) __attribute__((weak, alias("native_init_IRQ")));
+ 
+@@ -98,6 +107,46 @@ void __init native_init_IRQ(void)
+ 			set_intr_gate(vector, interrupt[i]);
+ 	}
+ 
++#if defined(CONFIG_X86_LOCAL_APIC) && defined(CONFIG_SMP)
++	/*
++	 * IRQ0 must be given a fixed assignment and initialized,
++	 * because it's used before the IO-APIC is set up.
++	 */
++	set_intr_gate(FIRST_DEVICE_VECTOR, interrupt[0]);
++
++	/*
++	 * The reschedule interrupt is a CPU-to-CPU reschedule-helper
++	 * IPI, driven by wakeup.
++	 */
++	alloc_intr_gate(RESCHEDULE_VECTOR, reschedule_interrupt);
++
++	/* IPI for invalidation */
++	alloc_intr_gate(INVALIDATE_TLB_VECTOR, invalidate_interrupt);
++
++	/* IPI for generic function call */
++	alloc_intr_gate(CALL_FUNCTION_VECTOR, call_function_interrupt);
++
++	/* IPI for single call function */
++	set_intr_gate(CALL_FUNCTION_SINGLE_VECTOR, call_function_single_interrupt);
++#endif
++
++#ifdef CONFIG_X86_LOCAL_APIC
++	/* self generated IPI for local APIC timer */
++	alloc_intr_gate(LOCAL_TIMER_VECTOR, apic_timer_interrupt);
++
++	/* IPI vectors for APIC spurious and error interrupts */
++	alloc_intr_gate(SPURIOUS_APIC_VECTOR, spurious_interrupt);
++	alloc_intr_gate(ERROR_APIC_VECTOR, error_interrupt);
++#endif
++
++#if defined(CONFIG_X86_LOCAL_APIC) && defined(CONFIG_X86_MCE_P4THERMAL)
++	/* thermal monitor LVT interrupt */
++	alloc_intr_gate(THERMAL_APIC_VECTOR, thermal_interrupt);
++#endif
++
++	if (!acpi_ioapic)
++		setup_irq(2, &irq2);
++
+ 	/* setup after call gates are initialised (usually add in
+ 	 * the architecture specific gates)
+ 	 */
+Index: linux-2.6.git/arch/x86/mach-default/setup.c
+===================================================================
+--- linux-2.6.git.orig/arch/x86/mach-default/setup.c	2008-08-11 18:16:22.000000000 +0400
++++ linux-2.6.git/arch/x86/mach-default/setup.c	2008-08-11 18:22:51.000000000 +0400
+@@ -38,15 +38,6 @@ void __init pre_intr_init_hook(void)
+ 	init_ISA_irqs();
+ }
+ 
+-/*
+- * IRQ2 is cascade interrupt to second interrupt controller
+- */
+-static struct irqaction irq2 = {
+-	.handler = no_action,
+-	.mask = CPU_MASK_NONE,
+-	.name = "cascade",
+-};
+-
+ /**
+  * intr_init_hook - post gate setup interrupt initialisation
+  *
+@@ -62,12 +53,6 @@ void __init intr_init_hook(void)
+ 		if (x86_quirks->arch_intr_init())
+ 			return;
+ 	}
+-#ifdef CONFIG_X86_LOCAL_APIC
+-	apic_intr_init();
+-#endif
+-
+-	if (!acpi_ioapic)
+-		setup_irq(2, &irq2);
+ }
+ 
+ /**
+Index: linux-2.6.git/include/asm-x86/arch_hooks.h
+===================================================================
+--- linux-2.6.git.orig/include/asm-x86/arch_hooks.h	2008-08-11 18:16:22.000000000 +0400
++++ linux-2.6.git/include/asm-x86/arch_hooks.h	2008-08-11 18:18:13.000000000 +0400
+@@ -12,8 +12,6 @@
+ /* these aren't arch hooks, they are generic routines
+  * that can be used by the hooks */
+ extern void init_ISA_irqs(void);
+-extern void apic_intr_init(void);
+-extern void smp_intr_init(void);
+ extern irqreturn_t timer_interrupt(int irq, void *dev_id);
+ 
+ /* these are the defined hooks */
