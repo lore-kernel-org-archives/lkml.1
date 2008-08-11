@@ -1,60 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756350AbYHKS2d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754774AbYHKS3M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756350AbYHKS2d (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Aug 2008 14:28:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755914AbYHKS2R
+	id S1754774AbYHKS3M (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Aug 2008 14:29:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756379AbYHKS2e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Aug 2008 14:28:17 -0400
-Received: from gw.goop.org ([64.81.55.164]:54650 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755688AbYHKS2R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Aug 2008 14:28:17 -0400
-Message-ID: <48A084AC.4090006@goop.org>
-Date: Mon, 11 Aug 2008 11:27:56 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
-MIME-Version: 1.0
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-CC: Venki Pallipadi <venkatesh.pallipadi@intel.com>,
-       Jens Axboe <jens.axboe@oracle.com>, Ingo Molnar <mingo@elte.hu>,
-       npiggin@suse.de, linux-kernel <linux-kernel@vger.kernel.org>,
-       suresh.b.siddha@intel.com
-Subject: Re: [PATCH] stack and rcu interaction bug in smp_call_function_mask()
-References: <20080808193753.GA21964@linux-os.sc.intel.com> <200808101624.15112.nickpiggin@yahoo.com.au> <489FBF6A.40402@goop.org> <200808111449.48123.nickpiggin@yahoo.com.au>
-In-Reply-To: <200808111449.48123.nickpiggin@yahoo.com.au>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+	Mon, 11 Aug 2008 14:28:34 -0400
+Received: from tomts25.bellnexxia.net ([209.226.175.188]:65172 "EHLO
+	tomts25-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756317AbYHKS2d (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Aug 2008 14:28:33 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AmoFAAMcoEhMRKxB/2dsb2JhbACBX6oR
+Date: Mon, 11 Aug 2008 14:28:31 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Christoph Lameter <cl@linux-foundation.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org, rdunlap@xenotime.net,
+       mpm@selenic.com, tglx@linutronix.de
+Subject: Re: [PATCH 4/5] kmemtrace: SLUB hooks.
+Message-ID: <20080811182831.GC32207@Krystal>
+References: <1218388447-5578-2-git-send-email-eduard.munteanu@linux360.ro> <1218388447-5578-3-git-send-email-eduard.munteanu@linux360.ro> <1218388447-5578-4-git-send-email-eduard.munteanu@linux360.ro> <1218388447-5578-5-git-send-email-eduard.munteanu@linux360.ro> <48A046F5.2000505@linux-foundation.org> <1218463774.7813.291.camel@penberg-laptop> <48A048FD.30909@linux-foundation.org> <1218464177.7813.293.camel@penberg-laptop> <48A04AEE.8090606@linux-foundation.org> <alpine.DEB.1.10.0808111033320.29861@gandalf.stny.rr.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.1.10.0808111033320.29861@gandalf.stny.rr.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 14:25:15 up 67 days, 23:06,  7 users,  load average: 0.03, 0.30,
+	0.44
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nick Piggin wrote:
-> Well that's implemented with the optimized call-single code of course,
-> so it could be used to implement the masked calls...
->
-> I had wanted to look into finding a good cutoff point and use the
-> percpu queues for light weight masks, and the single global queue for
-> larger ones.
->
-> Queue per cpu is not going to be perfect, though. In the current
-> implementation, you would need a lot of data structures. You could
-> alleviate this problem by using per CPU vectors rather than lists,
-> but then you get the added problem of resource starvation at the
-> remote end too.
->
-> For heavy weight masks on large systems, the single queue I'd say
-> will be a win. But I never did detailed measurements, so I'm open
-> to be proven wrong.
->   
+* Steven Rostedt (rostedt@goodmis.org) wrote:
+> 
+> On Mon, 11 Aug 2008, Christoph Lameter wrote:
+> 
+> > Pekka Enberg wrote:
+> > 
+> > > The function call is supposed to go away when we convert kmemtrace to
+> > > use Mathieu's markers but I suppose even then we have a problem with
+> > > inlining?
+> > 
+> > The function calls are overwritten with NOPs? Or how does that work?
+> 
+> I believe in the latest version they are just a variable test. But when 
+> Mathieu's immediate code makes it in (which it is in linux-tip), we will 
+> be overwriting the conditionals with nops (Mathieu, correct me if I'm 
+> wrong here).
+> 
 
-Yeah, there's a lot of parameters there.  And as I've mentioned before, 
-I wonder whether we should take NUMA topology into account when deciding 
-where and when to use queues.  My intuition is that most cross-cpu calls 
-are going to be within cpus on a node, on the grounds that most are 
-mm->cpu_vm_mask calls, and the rest of the system tries hard to 
-co-locate processes sharing memory on one node.
+The current immediate values in tip does a load immediate, test, branch,
+which removes the cost of the memory load. We will try to get gcc
+support to be able to declare patchable static jump sites, which could
+be patched with NOPs when disabled. But that will probably not happen
+"now".
 
-Waffle, handwave.
+Mathieu
 
-    J
+> But the calls themselves are done in the unlikely branch. This is 
+> important, as Mathieu stated in previous thread. The reason is that all 
+> the stack setup for the function call is also in the unlikely branch, and 
+> the normal fast path does not take a hit for the function call setup.
+> 
+> -- Steve
+> 
+
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
