@@ -1,91 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756717AbYHKTJh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756353AbYHKTKl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756717AbYHKTJh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Aug 2008 15:09:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753983AbYHKTJO
+	id S1756353AbYHKTKl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Aug 2008 15:10:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751977AbYHKTK3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Aug 2008 15:09:14 -0400
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:41970 "EHLO e3.ny.us.ibm.com"
+	Mon, 11 Aug 2008 15:10:29 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:37527 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753035AbYHKTJL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Aug 2008 15:09:11 -0400
-In-Reply-To: <20080811170255.GA2662@us.ibm.com>
-References: <20080808184349.999902616@linux.vnet.ibm.com> <1218221761.4444.13.camel@localhost.localdomain> <20080809185340.GC22905@infradead.org> <OF0AEBDCA2.1E27B823-ON852574A1.000FEE48-852574A1.004C3185@us.ibm.com> <20080811170255.GA2662@us.ibm.com>
-To: serue@linux.vnet.ibm.com
-Cc: Christoph Hellwig <hch@infradead.org>, James Morris <jmorris@namei.org>,
-       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       Randy Dunlap <randy.dunlap@oracle.com>, safford@watson.ibm.com,
-       sailer@watson.ibm.com, Stephen Smalley <sds@tycho.nsa.gov>,
-       serue@linux.vnet.ibm.com, Al Viro <viro@ZenIV.linux.org.uk>,
-       Mimi Zohar <zohar@linux.vnet.ibm.com>
+	id S1751918AbYHKTK2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Aug 2008 15:10:28 -0400
+Date: Mon, 11 Aug 2008 21:10:12 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Tim Bird <tim.bird@am.sony.com>
+Cc: linux kernel <linux-kernel@vger.kernel.org>,
+       linux-embedded <linux-embedded@vger.kernel.org>,
+       Matt Mackall <mpm@selenic.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH] bootup: Add built-in kernel command line for x86
+Message-ID: <20080811191012.GA16553@elte.hu>
+References: <489A1844.3090502@am.sony.com>
 MIME-Version: 1.0
-Subject: Re: [PATCH 3/4] integrity: Linux Integrity Module(LIM)
-X-KeepSent: AC0E3107:C68382CD-852574A2:0068E1AD;
- type=4; name=$KeepSent
-X-Mailer: Lotus Notes Release 8.0.1 February 07, 2008
-Message-ID: <OFAC0E3107.C68382CD-ON852574A2.0068E1AD-852574A2.00692623@us.ibm.com>
-From: Mimi Zohar <zohar@us.ibm.com>
-Date: Mon, 11 Aug 2008 15:08:36 -0400
-X-MIMETrack: Serialize by Router on D01ML604/01/M/IBM(Build V85_M1_05262008|May 26, 2008) at
- 08/11/2008 15:08:37,
-	Serialize complete at 08/11/2008 15:08:37
-Content-Type: text/plain; charset="US-ASCII"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <489A1844.3090502@am.sony.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-serue@linux.vnet.ibm.com wrote on 08/11/2008 01:02:55 PM:
 
-> Quoting Mimi Zohar (zohar@us.ibm.com):
-> > Christoph Hellwig <hch@infradead.org> wrote on 08/09/2008 02:53:40 PM:
-> > > >  int vfs_permission(struct nameidata *nd, int mask)
-> > > >  {
-> > > > -   return inode_permission(nd->path.dentry->d_inode, mask);
-> > > > +   int retval;
-> > > > +
-> > > > +   retval = inode_permission(nd->path.dentry->d_inode, mask);
-> > > > +   if (retval)
-> > > > +      return retval;
-> > > > +   return integrity_inode_permission(NULL, &nd->path,
-> > > > +                 mask & (MAY_READ | MAY_WRITE |
-> > > > +                    MAY_EXEC));
-> > > >  }
-> > > > 
-> > > >  /**
-> > > > @@ -306,7 +314,14 @@ int vfs_permission(struct nameidata *nd,
-> > > >   */
-> > > >  int file_permission(struct file *file, int mask)
-> > > >  {
-> > > > -   return inode_permission(file->f_path.dentry->d_inode, mask);
-> > > > +   int retval;
-> > > > +
-> > > > +   retval = inode_permission(file->f_path.dentry->d_inode, mask);
-> > > > +   if (retval)
-> > > > +      return retval;
-> > > > +   return integrity_inode_permission(file, NULL,
-> > > > +                 mask & (MAY_READ | MAY_WRITE |
-> > > > +                    MAY_EXEC));
-> > > 
-> > > Please put your hook into inode_permission.  Note that in inode
-> > > permission and lots of callers there is no path available so don't 
-pass
-> > > it.  Please pass the full MAY_FOO mask for new interfaces and do
-> > > filtering that won't break if new ones are introduced.
-> > 
-> > We started out with the integrity_inode_permission() hook call in 
-> > inode_permission(), but because of the removal of the nameidata 
-> > parameter in the last merge, based on discussions
-> > http://marc.info/?l=linux-security-module&m=121797845308246&w=2,
-> > the call to integrity_inode_permission() was moved up to the caller,
-> > where either a file or path are available.  Any suggestions?
-> 
-> Mimi, can you explain exactly (and concisely) what you are doing with
-> the pathname?
+* Tim Bird <tim.bird@am.sony.com> wrote:
 
-IMA maintains a list of hash values of system sensitive files loaded 
-into the run-time of the system and extends a PCR with the hash value. 
-In order to calculate this hash value, IMA requires access to either
-the file or the path, which currently is not accessible in 
-inode_permission().
+> Add support for a built-in command line for x86 architectures. The 
+> Kconfig help gives the major rationale for this addition.
 
-Mimi
+i have actually used a local hack quite similar to this to inject boot 
+options into bzImages via randconfig - so i would find this feature 
+rather useful.
+
+a small observation:
+
+> +	/* append boot loader cmdline to builtin, unless builtin overrides it */
+> +	if (builtin_cmdline[0] != '!') {
+> +		strlcat(builtin_cmdline, " ", COMMAND_LINE_SIZE);
+> +		strlcat(builtin_cmdline, boot_command_line, COMMAND_LINE_SIZE);
+> +		strlcpy(boot_command_line, builtin_cmdline, COMMAND_LINE_SIZE);
+> +	} else {
+> +		strlcpy(boot_command_line, &builtin_cmdline[1],
+> +			COMMAND_LINE_SIZE);
+> +	}
+
+the default branch changes existing command lines slightly: it appends a 
+space to them. This could break scripts that rely on the precise 
+contents of /proc/cmdline output. (i have some - they are arguably 
+dodgy)
+
+Best would be to make it really apparent in the code that nothing 
+changes if this config option is not set. Preferably there should be no 
+extra code at all in that case.
+
+	Ingo
