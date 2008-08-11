@@ -1,62 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757350AbYHKXqY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757350AbYHKXtP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757350AbYHKXqY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Aug 2008 19:46:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754046AbYHKXqN
+	id S1757350AbYHKXtP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Aug 2008 19:49:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754101AbYHKXs5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Aug 2008 19:46:13 -0400
-Received: from stargate.chelsio.com ([12.22.49.110]:22772 "EHLO
-	stargate.asicdesigners.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753902AbYHKXqL (ORCPT
+	Mon, 11 Aug 2008 19:48:57 -0400
+Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:30599 "EHLO
+	pd2mo1so-dmz.prod.shaw.ca" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1754057AbYHKXs4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Aug 2008 19:46:11 -0400
-From: Divy Le Ray <divy@chelsio.com>
-Organization: Chelsio Communications
-To: "Steve Wise" <swise@opengridcomputing.com>
-Subject: Re: [RFC][PATCH 1/1] cxgb3i: cxgb3 iSCSI initiator
-Date: Mon, 11 Aug 2008 16:45:03 -0700
-User-Agent: KMail/1.9.9
-Cc: "David Miller" <davem@davemloft.net>, rdreier@cisco.com, jgarzik@pobox.com,
-       "Karen Xie" <kxie@chelsio.com>, netdev@vger.kernel.org,
-       open-iscsi@googlegroups.com, michaelc@cs.wisc.edu, daisyc@us.ibm.com,
-       wenxiong@us.ibm.com, bhua@us.ibm.com,
-       "Dimitrios Michailidis" <dm@chelsio.com>,
-       "Casey Leedom" <leedom@chelsio.com>, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-References: <adavdy9zc2k.fsf@cisco.com> <20080811.140918.213422266.davem@davemloft.net> <48A0C927.8020501@opengridcomputing.com>
-In-Reply-To: <48A0C927.8020501@opengridcomputing.com>
+	Mon, 11 Aug 2008 19:48:56 -0400
+X-Cloudmark-SP-Filtered: true
+X-Cloudmark-SP-Result: v=1.0 c=0 a=7_tdhnrDAAAA:8 a=up6kH5ZQ6YfkyP98kgIA:9 a=Ui5VaynZMwXN-d04MZoA:7 a=m5pv5xSILfut7sqYyLc47p9gw_EA:4 a=MSl-tDqOz04A:10 a=Yd0ZYPPrE7cA:10 a=ctHlUJ6XgvMA:10
+Message-ID: <48A0CFE2.6090705@shaw.ca>
+Date: Mon, 11 Aug 2008 17:48:50 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+To: Andi Kleen <andi@firstfloor.org>
+CC: Ingo Molnar <mingo@elte.hu>, Maciej Rutecki <maciej.rutecki@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-ide@vger.kernel.org, Jeff Garzik <jgarzik@pobox.com>,
+       tj@kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Yinghai Lu <yhlu.kernel@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: Re: [2.6.26.*] boot problem (ahci/irq related?)
+References: <8db1092f0808111312x3baf819bxbb05030c05693065@mail.gmail.com> <20080811202731.GB2916@elte.hu> <20080811210140.GW9038@one.firstfloor.org>
+In-Reply-To: <20080811210140.GW9038@one.firstfloor.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200808111645.04677.divy@chelsio.com>
-X-OriginalArrivalTime: 11 Aug 2008 23:44:37.0531 (UTC) FILETIME=[372926B0:01C8FC0C]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 11 August 2008 04:20:07 pm Steve Wise wrote:
-> David Miller wrote:
-> > From: Roland Dreier <rdreier@cisco.com>
-> > Date: Mon, 11 Aug 2008 09:09:02 -0700
-> >
-> >>  > We turn it off.  If I want to shape or filter one of these iSCSI
-> >>  > connections can we turn it off?
-> >>
-> >> That seems like a reasonable idea to me -- the standard thing to do when
-> >> a NIC offload conflicts with something else is to turn off the offload
-> >> and fall back to software.
-> >
-> > But as Herbert says, we can make LRO such that turning it off
-> > isn't necessary.
-> >
-> > Can we shape the iSCSI offload traffic without turning it off?
->
-> With Chelsio's product you can do this.  Maybe Divy can provide details?
+Andi Kleen wrote:
+> On Mon, Aug 11, 2008 at 10:27:31PM +0200, Ingo Molnar wrote:
+>> * Maciej Rutecki <maciej.rutecki@gmail.com> wrote:
+>>
+>>> A have problem with booting 2.6.26* and 2.6.27-rc* kernels. Very often
+>>> booting stops on this message:
+>>>
+>>> [...]
+>>> Uniform Multi-Platform E-IDE driver
+>>> ide: Assuming 33MHz system bus speed for PIO modes; override with idebus=xx
+>>> ICH7: IDE controller (0x8086:0x27df rev 0x01) at  PCI slot 0000:00:1f.1
+>>> ACPI: PCI Interrupt 0000:00:1f.1[A] -> GSI 16 (level, low) -> IRQ 16
+>>> ICH7: not 100% native mode: will probe irqs later
+>>> ICH7: IDE port disabled
+>>>     ide0: BM-DMA at 0x60a0-0x60a7
+>>>
+>>> afer should be:
+>>> hda: MATSHITADVD-RAM UJ-840S, ATAPI CD/DVD-ROM drive
+>>> hda: host max PIO4 wanted PIO255(auto-tune) selected PIO4
+>>> hda: MWDMA2 mode selected
+>>> ide0 at 0x1f0-0x1f7,0x3f6 on irq 14
+>>> [...]
+>>>
+>>> Initially I was think, that is hardware problem. But XP and 2.6.25.8 
+>>> work with _no_ problem (booting from xp, linux, knoppix, linux 
+>>> firmware development kit - about 50 reboots).
+>>> http://unixy.pl/maciek/download/kernel/dupa/dmesg-2.6.26.2.txt
+>>> dmesg: http://unixy.pl/maciek/download/kernel/dupa/dmesg-2.6.25.8.txt
+>> i had a look at diff -up dmesg-2.6.25.8.txt dmesg-2.6.26.2.txt, and 
+>> these changes stood out:
+> 
+> Yes post 2.6.25 changed to trust the ACPI motherboard resources
+> to signify working mmcfg, previously it would use the e820 table
+> which excluded near all motherboards which were not white listed
+> by PCI-ID because BIOS programmers were generally not aware
+> they had to reserve mcfg in e820. 
+> 
+> You can verify this by booting with pci=nommconf. If it works
+> then it's likely that.
+> 
+> The new heuristic is apparently the same as what Vista does.
+> 
+> Robert Hancock (cc'ed, fullquote) is mr. mmconfig quirk.
+> 
+> -Andi
 
-The T3 adapter is capable of performing rate control and pacing based on RTT 
-on a per-connection basis.
-
-Cheers,
-Divy
+Wouldn't hurt to try it, but I'm kind of doubtful it's that - MMCONFIG 
+failures don't normally get that far into bootup, and I believe we're 
+not using it for non-extended config space anyways - I doubt IDE is 
+doing extended config space access..
