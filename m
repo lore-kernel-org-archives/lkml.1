@@ -1,303 +1,153 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755210AbYHKBiV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754301AbYHKBqY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755210AbYHKBiV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Aug 2008 21:38:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753303AbYHKBiJ
+	id S1754301AbYHKBqY (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Aug 2008 21:46:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753419AbYHKBqQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Aug 2008 21:38:09 -0400
-Received: from e33.co.us.ibm.com ([32.97.110.151]:50234 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752838AbYHKBiG (ORCPT
+	Sun, 10 Aug 2008 21:46:16 -0400
+Received: from rex.securecomputing.com ([203.24.151.4]:48630 "EHLO
+	cyberguard.com.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753303AbYHKBqP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Aug 2008 21:38:06 -0400
-Date: Sun, 10 Aug 2008 18:38:09 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: David Witbrodt <dawitbro@sbcglobal.net>
-Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
-       Yinghai Lu <yhlu.kernel@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       netdev <netdev@vger.kernel.org>
-Subject: Re: [PATCH diagnostic] Re: HPET regression in 2.6.26 versus 2.6.25
-	-- RCU problem
-Message-ID: <20080811013808.GA4242@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <630464.55583.qm@web82105.mail.mud.yahoo.com> <20080810151520.GG8125@linux.vnet.ibm.com> <20080811013538.GA3958@linux.vnet.ibm.com>
+	Sun, 10 Aug 2008 21:46:15 -0400
+Message-ID: <489F9956.5030009@snapgear.com>
+Date: Mon, 11 Aug 2008 11:43:50 +1000
+From: Greg Ungerer <gerg@snapgear.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="jRHKVT23PllUwdXP"
-Content-Disposition: inline
-In-Reply-To: <20080811013538.GA3958@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+CC: Linux/m68k <linux-m68k@vger.kernel.org>,
+       uClinux list <uclinux-dev@uclinux.org>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] m68k{,nommu}: Wire up new system calls
+References: <Pine.LNX.4.64.0808101413390.10672@anakin>
+In-Reply-To: <Pine.LNX.4.64.0808101413390.10672@anakin>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Geert,
 
---jRHKVT23PllUwdXP
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-
-On Sun, Aug 10, 2008 at 06:35:38PM -0700, Paul E. McKenney wrote:
-> On Sun, Aug 10, 2008 at 08:15:20AM -0700, Paul E. McKenney wrote:
-> > I will see about putting together a diagnostic patch for Classic RCU.
-> > The approach will be to record jiffies (or some such) at the beginning
-> > of the grace period (in rcu_start_batch()), then have
-> > rcu_check_callbacks() complain if:
-> > 
-> > 1.	it is running on a CPU that has holding up grace periods for
-> > 	a long time (say one second).  This will identify the culprit
-> > 	assuming that the culprit has not disabled hardware irqs,
-> > 	instruction execution, or some such.
-> > 
-> > 2.	it is running on a CPU that is not holding up grace periods,
-> > 	but grace periods have been held up for an even longer time
-> > 	(say two seconds).
-> > 
-> > In either case, some sort of exponential backoff would be needed to
-> > avoid multi-gigabyte log files.  Of course, all of this assumes that
-> > the machine remains healthy enough to actually get any such messages
-> > somewhere that you can see them, but so it goes...
-
-And attached is the kernel module I used to test the patch, for whatever
-that might be worth.
-
-							Thanx, Paul
-
-> And here is the patch.  It is still a bit raw, so the results should
-> be viewed with some suspicion.  It adds a default-off kernel parameter
-> CONFIG_RCU_CPU_STALL which must be enabled.
+Geert Uytterhoeven wrote:
+> Wire up for m68k{,nommu} the system calls that were added in the last merge
+> window:
 > 
-> Rather than exponential backoff, it backs off to once per 30 seconds.
-> My feeling upon thinking on it was that if you have stalled RCU grace
-> periods for that long, a few extra printk() messages are probably the
-> least of your worries...
+> commit 4006553b06306b34054529477b06b68a1c66249b (flag parameters: inotify_init)
+> commit ed8cae8ba01348bfd83333f4648dd807b04d7f08 (flag parameters: pipe)
+> commit 336dd1f70ff62d7dd8655228caed4c5bfc818c56 (flag parameters: dup2)
+> commit a0998b50c3f0b8fdd265c63e0032f86ebe377dbf (flag parameters: epoll_create)
+> commit 9fe5ad9c8cef9ad5873d8ee55d1cf00d9b607df0 (flag parameters add-on: remove
+> 						 epoll_create size param)
+> commit b087498eb5605673b0f260a7620d91818cd72304 (flag parameters: eventfd)
+> commit 9deb27baedb79759c3ab9435a7d8b841842d56e9 (flag parameters: signalfd)
 > 
-> Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
 > ---
+> Greg, please ack or forward to Linus. Thx!
+
+Here is an ack:
+
+Acked-by: Greg Ungerer <gerg@uclinux.org>
+
+I am happy to send on if you want me too?
+
+Regards
+Greg
+
+
+
+>  arch/m68k/kernel/entry.S             |    6 ++++++
+>  arch/m68knommu/include/asm/unistd.h  |    8 +++++++-
+>  arch/m68knommu/kernel/syscalltable.S |    6 ++++++
+>  include/asm-m68k/unistd.h            |    8 +++++++-
+>  4 files changed, 26 insertions(+), 2 deletions(-)
 > 
->  include/linux/rcuclassic.h |    3 +
->  kernel/rcuclassic.c        |   80 +++++++++++++++++++++++++++++++++++++++++++++
->  lib/Kconfig.debug          |   13 +++++++
->  3 files changed, 96 insertions(+)
+> --- a/arch/m68k/kernel/entry.S
+> +++ b/arch/m68k/kernel/entry.S
+> @@ -747,4 +747,10 @@ sys_call_table:
+>  	.long sys_fallocate		/* 320 */
+>  	.long sys_timerfd_settime
+>  	.long sys_timerfd_gettime
+> +	.long sys_signalfd4
+> +	.long sys_eventfd2
+> +	.long sys_epoll_create1		/* 325 */
+> +	.long sys_dup3
+> +	.long sys_pipe2
+> +	.long sys_inotify_init1
+>  
+> --- a/arch/m68knommu/include/asm/unistd.h
+> +++ b/arch/m68knommu/include/asm/unistd.h
+> @@ -326,10 +326,16 @@
+>  #define __NR_fallocate		320
+>  #define __NR_timerfd_settime	321
+>  #define __NR_timerfd_gettime	322
+> +#define __NR_signalfd4		323
+> +#define __NR_eventfd2		324
+> +#define __NR_epoll_create1	325
+> +#define __NR_dup3		326
+> +#define __NR_pipe2		327
+> +#define __NR_inotify_init1	328
+>  
+>  #ifdef __KERNEL__
+>  
+> -#define NR_syscalls		323
+> +#define NR_syscalls		329
+>  
+>  #define __ARCH_WANT_IPC_PARSE_VERSION
+>  #define __ARCH_WANT_OLD_READDIR
+> --- a/arch/m68knommu/kernel/syscalltable.S
+> +++ b/arch/m68knommu/kernel/syscalltable.S
+> @@ -341,6 +341,12 @@ ENTRY(sys_call_table)
+>  	.long sys_fallocate		/* 320 */
+>  	.long sys_timerfd_settime
+>  	.long sys_timerfd_gettime
+> +	.long sys_signalfd4
+> +	.long sys_eventfd2
+> +	.long sys_epoll_create1		/* 325 */
+> +	.long sys_dup3
+> +	.long sys_pipe2
+> +	.long sys_inotify_init1
+>  
+>  	.rept NR_syscalls-(.-sys_call_table)/4
+>  		.long sys_ni_syscall
+> --- a/include/asm-m68k/unistd.h
+> +++ b/include/asm-m68k/unistd.h
+> @@ -325,10 +325,16 @@
+>  #define __NR_fallocate		320
+>  #define __NR_timerfd_settime	321
+>  #define __NR_timerfd_gettime	322
+> +#define __NR_signalfd4		323
+> +#define __NR_eventfd2		324
+> +#define __NR_epoll_create1	325
+> +#define __NR_dup3		326
+> +#define __NR_pipe2		327
+> +#define __NR_inotify_init1	328
+>  
+>  #ifdef __KERNEL__
+>  
+> -#define NR_syscalls		323
+> +#define NR_syscalls		329
+>  
+>  #define __ARCH_WANT_IPC_PARSE_VERSION
+>  #define __ARCH_WANT_OLD_READDIR
 > 
-> diff -urpNa -X dontdiff linux-2.6.27-rc1/include/linux/rcuclassic.h linux-2.6.27-rc1-cpustall/include/linux/rcuclassic.h
-> --- linux-2.6.27-rc1/include/linux/rcuclassic.h	2008-07-30 08:48:16.000000000 -0700
-> +++ linux-2.6.27-rc1-cpustall/include/linux/rcuclassic.h	2008-08-10 12:21:22.000000000 -0700
-> @@ -46,6 +46,9 @@ struct rcu_ctrlblk {
->  	long	cur;		/* Current batch number.                      */
->  	long	completed;	/* Number of the last completed batch         */
->  	int	next_pending;	/* Is the next batch already waiting?         */
-> +#ifdef CONFIG_RCU_CPU_STALL
-> +	unsigned long gp_check;	/* Time grace period should end, in seconds.  */
-> +#endif /* #ifdef CONFIG_RCU_CPU_STALL */
->  
->  	int	signaled;
->  
-> diff -urpNa -X dontdiff linux-2.6.27-rc1/kernel/rcuclassic.c linux-2.6.27-rc1-cpustall/kernel/rcuclassic.c
-> --- linux-2.6.27-rc1/kernel/rcuclassic.c	2008-07-30 08:48:17.000000000 -0700
-> +++ linux-2.6.27-rc1-cpustall/kernel/rcuclassic.c	2008-08-10 17:51:32.000000000 -0700
-> @@ -47,6 +47,7 @@
->  #include <linux/notifier.h>
->  #include <linux/cpu.h>
->  #include <linux/mutex.h>
-> +#include <linux/time.h>
->  
->  #ifdef CONFIG_DEBUG_LOCK_ALLOC
->  static struct lock_class_key rcu_lock_key;
-> @@ -269,6 +270,81 @@ static void rcu_do_batch(struct rcu_data
->   *   rcu_check_quiescent_state calls rcu_start_batch(0) to start the next grace
->   *   period (if necessary).
->   */
-> +
-> +#ifdef CONFIG_RCU_CPU_STALL
-> +
-> +static inline void record_gp_check_time(struct rcu_ctrlblk *rcp)
-> +{
-> +	rcp->gp_check = get_seconds() + 3;
-> +}
-> +static void print_other_cpu_stall(struct rcu_ctrlblk *rcp)
-> +{
-> +	int cpu;
-> +	long delta;
-> +
-> +	/* Only let one CPU complain about others per time interval. */
-> +
-> +	spin_lock(&rcp->lock);
-> +	delta = get_seconds() - rcp->gp_check;
-> +	if (delta < 2L ||
-> +	    cpus_empty(rcp->cpumask)) {
-> +		spin_unlock(&rcp->lock);
-> +		return;
-> +	rcp->gp_check = get_seconds() + 30;
-> +	}
-> +	spin_unlock(&rcp->lock);
-> +
-> +	/* OK, time to rat on our buddy... */
-> +
-> +	printk(KERN_ERR "RCU detected CPU stalls:");
-> +	for_each_cpu_mask(cpu, rcp->cpumask)
-> +		printk(" %d", cpu);
-> +	printk(" (detected by %d, t=%lu/%lu)\n",
-> +	       smp_processor_id(), get_seconds(), rcp->gp_check);
-> +}
-> +static void print_cpu_stall(struct rcu_ctrlblk *rcp)
-> +{
-> +	printk(KERN_ERR "RCU detected CPU %d stall (t=%lu/%lu)\n",
-> +			smp_processor_id(), get_seconds(), rcp->gp_check);
-> +	dump_stack();
-> +	spin_lock(&rcp->lock);
-> +	if ((long)(get_seconds() - rcp->gp_check) >= 0L)
-> +		rcp->gp_check = get_seconds() + 30;
-> +	spin_unlock(&rcp->lock);
-> +}
-> +static inline void check_cpu_stall(struct rcu_ctrlblk *rcp,
-> +				   struct rcu_data *rdp)
-> +{
-> +	long delta;
-> +
-> +	delta = get_seconds() - rcp->gp_check;
-> +	if (cpu_isset(smp_processor_id(), rcp->cpumask) && delta >= 0L) {
-> +
-> +		/* We haven't checked in, so go dump stack. */
-> +
-> +		print_cpu_stall(rcp);
-> +
-> +	} else if (!cpus_empty(rcp->cpumask) && delta >= 2L) {
-> +
-> +		/* They had two seconds to dump stack, so complain. */
-> +
-> +		print_other_cpu_stall(rcp);
-> +
-> +	}
-> +}
-> +
-> +#else /* #ifdef CONFIG_RCU_CPU_STALL */
-> +
-> +static inline void record_gp_check_time(struct rcu_ctrlblk *rcp)
-> +{
-> +}
-> +static inline void check_cpu_stall(struct rcu_ctrlblk *rcp,
-> +				   struct rcu_data *rdp)
-> +{
-> +}
-> +
-> +#endif /* #else #ifdef CONFIG_RCU_CPU_STALL */
-> +
->  /*
->   * Register a new batch of callbacks, and start it up if there is currently no
->   * active batch and the batch to be registered has not already occurred.
-> @@ -285,6 +361,7 @@ static void rcu_start_batch(struct rcu_c
->  		 */
->  		smp_wmb();
->  		rcp->cur++;
-> +		record_gp_check_time(rcp);
->  
->  		/*
->  		 * Accessing nohz_cpu_mask before incrementing rcp->cur needs a
-> @@ -468,6 +545,9 @@ static void rcu_process_callbacks(struct
->  
->  static int __rcu_pending(struct rcu_ctrlblk *rcp, struct rcu_data *rdp)
->  {
-> +	/* Check for CPU stalls, if enabled. */
-> +	check_cpu_stall(rcp, rdp);
-> +
->  	/* This cpu has pending rcu entries and the grace period
->  	 * for them has completed.
->  	 */
-> diff -urpNa -X dontdiff linux-2.6.27-rc1/lib/Kconfig.debug linux-2.6.27-rc1-cpustall/lib/Kconfig.debug
-> --- linux-2.6.27-rc1/lib/Kconfig.debug	2008-07-30 08:48:17.000000000 -0700
-> +++ linux-2.6.27-rc1-cpustall/lib/Kconfig.debug	2008-08-10 12:14:18.000000000 -0700
-> @@ -597,6 +597,19 @@ config RCU_TORTURE_TEST_RUNNABLE
->  	  Say N here if you want the RCU torture tests to start only
->  	  after being manually enabled via /proc.
->  
-> +config RCU_CPU_STALL
-> +	bool "Check for stalled CPUs delaying RCU grace periods"
-> +	depends on CLASSIC_RCU
-> +	default n
-> +	help
-> +	  This option causes RCU to printk information on which
-> +	  CPUs are delaying the current grace period, but only when
-> +	  the grace period extends for excessive time periods.
-> +
-> +	  Say Y if you want RCU to perform such checks.
-> +
-> +	  Say N if you are unsure.
-> +
->  config KPROBES_SANITY_TEST
->  	bool "Kprobes sanity tests"
->  	depends on DEBUG_KERNEL
+> Gr{oetje,eeting}s,
+> 
+> 						Geert
+> 
+> --
+> Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+> 
+> In personal conversations with technical people, I call myself a hacker. But
+> when I'm talking to journalists I just say "programmer" or something like that.
+> 							    -- Linus Torvalds
+> 
 
---jRHKVT23PllUwdXP
-Content-Type: text/x-csrc; charset=us-ascii
-Content-Disposition: attachment; filename="stall.c"
-
-/*
- * Taken from Linux Device Drivers, 3rd Edition.
- * Corbet, Rubini, and Kroah-Hartman.
- *
- * Modified by Paul E. McKenney (c) 2008 to test CPU-stall detection.
- */
-
-#include <linux/init.h>
-#include <linux/module.h>
-#include <linux/sched.h>
-#include <linux/kthread.h>
-#include <linux/err.h>
-#include <linux/time.h>
-MODULE_LICENSE("Dual BSD/GPL");
-
-int stall_secs = 0;
-module_param(stall_secs, int, 0);
-MODULE_PARM_DESC(stall_secs, "Number of seconds to stall");
-
-static struct task_struct *kstall_task;
-
-static int stall_thread(void *arg)
-{
-	unsigned long stop_at;
-
-	printk(KERN_ALERT "stall_thread %ld\n", (long)arg);
-	do {
-		stop_at = get_seconds();
-		printk(KERN_ALERT "stall_thread at %ld seconds\n", stop_at);
-		stop_at += stall_secs;
-		printk(KERN_ALERT "stall_thread wait until %ld seconds\n", stop_at);
-		while ((long)(get_seconds() - stop_at) < 0)
-			continue;
-		printk(KERN_ALERT "stall_thread ended wait at %ld seconds\n", get_seconds());
-		set_current_state(TASK_UNINTERRUPTIBLE);
-		schedule_timeout(10 * HZ);
-		printk(KERN_ALERT "stall_thread %ld awakening\n", (long)arg);
-	} while (!kthread_should_stop());
-	printk(KERN_ALERT "stall_thread %ld exiting\n", (long)arg);
-	return 0;
-}
-
-static int stall_init(void)
-{
-	int err;
-
-	printk(KERN_ALERT "Hello, world!  stall_secs = %d\n", stall_secs);
-	kstall_task = kthread_run(stall_thread, (void *)(long)stall_secs,
-				  "stall_thread");
-	if (IS_ERR(kstall_task)) {
-		err = PTR_ERR(kstall_task);
-		kstall_task = NULL;
-		return err;
-	}
-	return 0;
-}
-
-static void stall_exit(void)
-{
-	if (kstall_task != NULL) {
-		kthread_stop(kstall_task);
-	}
-	kstall_task = NULL;
-	printk(KERN_ALERT "Goodbye, cruel world\n");
-}
-
-module_init(stall_init);
-module_exit(stall_exit);
-
---jRHKVT23PllUwdXP--
+-- 
+------------------------------------------------------------------------
+Greg Ungerer  --  Chief Software Dude       EMAIL:     gerg@snapgear.com
+Secure Computing Corporation                PHONE:       +61 7 3435 2888
+825 Stanley St,                             FAX:         +61 7 3891 3630
+Woolloongabba, QLD, 4102, Australia         WEB: http://www.SnapGear.com
