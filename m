@@ -1,92 +1,161 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753252AbYHKVsP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754774AbYHKVuZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753252AbYHKVsP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Aug 2008 17:48:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752108AbYHKVr7
+	id S1754774AbYHKVuZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Aug 2008 17:50:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752906AbYHKVuJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Aug 2008 17:47:59 -0400
-Received: from moutng.kundenserver.de ([212.227.126.177]:52694 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751604AbYHKVr7 convert rfc822-to-8bit (ORCPT
+	Mon, 11 Aug 2008 17:50:09 -0400
+Received: from smtp.wellnetcz.com ([212.24.148.102]:32794 "EHLO
+	smtp.wellnetcz.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752811AbYHKVuH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Aug 2008 17:47:59 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-Subject: Re: checkpoint/restart ABI
-Date: Mon, 11 Aug 2008 23:47:49 +0200
-User-Agent: KMail/1.9.9
-Cc: "Serge E. Hallyn" <serue@us.ibm.com>,
-       containers@lists.linux-foundation.org, Theodore Tso <tytso@mit.edu>,
-       linux-kernel@vger.kernel.org
-References: <20080807224033.FFB3A2C1@kernel> <200808111853.13854.arnd@arndb.de> <1218484114.5598.43.camel@nimitz>
-In-Reply-To: <1218484114.5598.43.camel@nimitz>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200808112347.50245.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1+SgG1fbAMHgx3bedH92UOwNbSJCwyJCbq3FzV
- SzkWvMDTqwhGzDE3BOnYzEv4ngusrU0d+lXJkbDT8w4sXIfXqo
- eZQJmi9endqz+Oo7WtuRA==
+	Mon, 11 Aug 2008 17:50:07 -0400
+From: Jiri Slaby <jirislaby@gmail.com>
+To: linville@tuxdriver.com
+Cc: linux-wireless@vger.kernel.org, ipw3945-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, Jiri Slaby <jirislaby@gmail.com>,
+       Zhu Yi <yi.zhu@intel.com>, Reinette Chatre <reinette.chatre@intel.com>
+Subject: [PATCH 1/1] iwlwifi: fix printk newlines
+Date: Mon, 11 Aug 2008 23:49:41 +0200
+Message-Id: <1218491381-1313-1-git-send-email-jirislaby@gmail.com>
+X-Mailer: git-send-email 1.5.6.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 11 August 2008, Dave Hansen wrote:
-> Thanks for all of the very interesting comments about the ABI.  
-> 
-> Considering that we're still *really* early in getting this concept
-> merged up into mainline, what do you all think we should do now?
+Add newlines at printk outputs to not break dmesg.
 
-I think the two most important aspects here need to be security and
-simplicity. If you have to choose between the two, it probably makes
-sense to put security first, because loading untrusted data into
-the kernel puts you at a significant risk to start with. If you
-can show a restart interface that lets regular users restart their
-tasks in a way anyone can verify to be secure, that will be a
-good indication that you're on the right track.
+Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+Cc: Zhu Yi <yi.zhu@intel.com>
+Cc: Reinette Chatre <reinette.chatre@intel.com>
+Cc: John W. Linville <linville@tuxdriver.com>
+---
+ drivers/net/wireless/iwlwifi/iwl-4965.c     |    2 +-
+ drivers/net/wireless/iwlwifi/iwl-eeprom.c   |    6 +++---
+ drivers/net/wireless/iwlwifi/iwl-sta.c      |    4 ++--
+ drivers/net/wireless/iwlwifi/iwl-tx.c       |    4 ++--
+ drivers/net/wireless/iwlwifi/iwl3945-base.c |    6 +++---
+ 5 files changed, 11 insertions(+), 11 deletions(-)
 
-The other problem that you really need to solve is interface
-stability. What you are creating is a binary representation
-of many kernel internal data structures, so in our common
-rules, you have to make sure that you remain forward and
-backward compatible. Simply saying that you need to run
-an identical kernel when restarting from a checkpoint is not
-enough IMHO.
+diff --git a/drivers/net/wireless/iwlwifi/iwl-4965.c b/drivers/net/wireless/iwlwifi/iwl-4965.c
+index 22bb269..4a0cc78 100644
+--- a/drivers/net/wireless/iwlwifi/iwl-4965.c
++++ b/drivers/net/wireless/iwlwifi/iwl-4965.c
+@@ -967,7 +967,7 @@ static int iwl4965_interpolate_chan(struct iwl_priv *priv, u32 channel,
+ 
+ 	s = iwl4965_get_sub_band(priv, channel);
+ 	if (s >= EEPROM_TX_POWER_BANDS) {
+-		IWL_ERROR("Tx Power can not find channel %d ", channel);
++		IWL_ERROR("Tx Power can not find channel %d\n", channel);
+ 		return -1;
+ 	}
+ 
+diff --git a/drivers/net/wireless/iwlwifi/iwl-eeprom.c b/drivers/net/wireless/iwlwifi/iwl-eeprom.c
+index bce5383..19985bf 100644
+--- a/drivers/net/wireless/iwlwifi/iwl-eeprom.c
++++ b/drivers/net/wireless/iwlwifi/iwl-eeprom.c
+@@ -146,7 +146,7 @@ int iwlcore_eeprom_verify_signature(struct iwl_priv *priv)
+ {
+ 	u32 gp = iwl_read32(priv, CSR_EEPROM_GP);
+ 	if ((gp & CSR_EEPROM_GP_VALID_MSK) == CSR_EEPROM_GP_BAD_SIGNATURE) {
+-		IWL_ERROR("EEPROM not found, EEPROM_GP=0x%08x", gp);
++		IWL_ERROR("EEPROM not found, EEPROM_GP=0x%08x\n", gp);
+ 		return -ENOENT;
+ 	}
+ 	return 0;
+@@ -227,7 +227,7 @@ int iwl_eeprom_init(struct iwl_priv *priv)
+ 
+ 	ret = priv->cfg->ops->lib->eeprom_ops.verify_signature(priv);
+ 	if (ret < 0) {
+-		IWL_ERROR("EEPROM not found, EEPROM_GP=0x%08x", gp);
++		IWL_ERROR("EEPROM not found, EEPROM_GP=0x%08x\n", gp);
+ 		ret = -ENOENT;
+ 		goto err;
+ 	}
+@@ -254,7 +254,7 @@ int iwl_eeprom_init(struct iwl_priv *priv)
+ 		}
+ 
+ 		if (!(r & CSR_EEPROM_REG_READ_VALID_MSK)) {
+-			IWL_ERROR("Time out reading EEPROM[%d]", addr);
++			IWL_ERROR("Time out reading EEPROM[%d]\n", addr);
+ 			ret = -ETIMEDOUT;
+ 			goto done;
+ 		}
+diff --git a/drivers/net/wireless/iwlwifi/iwl-sta.c b/drivers/net/wireless/iwlwifi/iwl-sta.c
+index 60a6e01..6283a3a 100644
+--- a/drivers/net/wireless/iwlwifi/iwl-sta.c
++++ b/drivers/net/wireless/iwlwifi/iwl-sta.c
+@@ -207,7 +207,7 @@ static void iwl_set_ht_add_station(struct iwl_priv *priv, u8 index,
+ 	case WLAN_HT_CAP_MIMO_PS_DISABLED:
+ 		break;
+ 	default:
+-		IWL_WARNING("Invalid MIMO PS mode %d", mimo_ps_mode);
++		IWL_WARNING("Invalid MIMO PS mode %d\n", mimo_ps_mode);
+ 		break;
+ 	}
+ 
+@@ -969,7 +969,7 @@ int iwl_get_sta_id(struct iwl_priv *priv, struct ieee80211_hdr *hdr)
+ 		return priv->hw_params.bcast_sta_id;
+ 
+ 	default:
+-		IWL_WARNING("Unknown mode of operation: %d", priv->iw_mode);
++		IWL_WARNING("Unknown mode of operation: %d\n", priv->iw_mode);
+ 		return priv->hw_params.bcast_sta_id;
+ 	}
+ }
+diff --git a/drivers/net/wireless/iwlwifi/iwl-tx.c b/drivers/net/wireless/iwlwifi/iwl-tx.c
+index 4108c7c..d82823b 100644
+--- a/drivers/net/wireless/iwlwifi/iwl-tx.c
++++ b/drivers/net/wireless/iwlwifi/iwl-tx.c
+@@ -493,7 +493,7 @@ int iwl_txq_ctx_reset(struct iwl_priv *priv)
+ 	/* Alloc keep-warm buffer */
+ 	ret = iwl_kw_alloc(priv);
+ 	if (ret) {
+-		IWL_ERROR("Keep Warm allocation failed");
++		IWL_ERROR("Keep Warm allocation failed\n");
+ 		goto error_kw;
+ 	}
+ 	spin_lock_irqsave(&priv->lock, flags);
+@@ -1463,7 +1463,7 @@ void iwl_rx_reply_compressed_ba(struct iwl_priv *priv,
+ 	u16 ba_resp_scd_ssn = le16_to_cpu(ba_resp->scd_ssn);
+ 
+ 	if (scd_flow >= priv->hw_params.max_txq_num) {
+-		IWL_ERROR("BUG_ON scd_flow is bigger than number of queues");
++		IWL_ERROR("BUG_ON scd_flow is bigger than number of queues\n");
+ 		return;
+ 	}
+ 
+diff --git a/drivers/net/wireless/iwlwifi/iwl3945-base.c b/drivers/net/wireless/iwlwifi/iwl3945-base.c
+index 444847a..348048a 100644
+--- a/drivers/net/wireless/iwlwifi/iwl3945-base.c
++++ b/drivers/net/wireless/iwlwifi/iwl3945-base.c
+@@ -1558,7 +1558,7 @@ int iwl3945_eeprom_init(struct iwl3945_priv *priv)
+ 	BUILD_BUG_ON(sizeof(priv->eeprom) != IWL_EEPROM_IMAGE_SIZE);
+ 
+ 	if ((gp & CSR_EEPROM_GP_VALID_MSK) == CSR_EEPROM_GP_BAD_SIGNATURE) {
+-		IWL_ERROR("EEPROM not found, EEPROM_GP=0x%08x", gp);
++		IWL_ERROR("EEPROM not found, EEPROM_GP=0x%08x\n", gp);
+ 		return -ENOENT;
+ 	}
+ 
+@@ -1583,7 +1583,7 @@ int iwl3945_eeprom_init(struct iwl3945_priv *priv)
+ 		}
+ 
+ 		if (!(r & CSR_EEPROM_REG_READ_VALID_MSK)) {
+-			IWL_ERROR("Time out reading EEPROM[%d]", addr);
++			IWL_ERROR("Time out reading EEPROM[%d]\n", addr);
+ 			return -ETIMEDOUT;
+ 		}
+ 		e[addr / 2] = le16_to_cpu((__force __le16)(r >> 16));
+@@ -2507,7 +2507,7 @@ static int iwl3945_get_sta_id(struct iwl3945_priv *priv, struct ieee80211_hdr *h
+ 		return priv->hw_setting.bcast_sta_id;
+ 
+ 	default:
+-		IWL_WARNING("Unknown mode of operation: %d", priv->iw_mode);
++		IWL_WARNING("Unknown mode of operation: %d\n", priv->iw_mode);
+ 		return priv->hw_setting.bcast_sta_id;
+ 	}
+ }
+-- 
+1.5.6.5
 
-
-Some more words on specific interfaces that we have discussed:
-
-The single-file-descriptor approach has the big advantage of
-keeping the complexity in one place (the kernel). To be consistent
-with other kernel interfaces, I would make the kernel hand out a
-file descriptor, not let the user open a file and pass that into
-the kernel as you do now.
-
-A new file system is a good idea for many complex interfaces that
-make their way into the kernel, but I don't think it will help
-in this case.
-
-For checkpointing a single task, or even a task with its children,
-a different interface I could imagine would be to have a new
-file in procfs per pid that you can read as a pipe giving our
-the same data that you currently save in the checkpoint file
-descriptor. It does mean that you won't be able to pass flags
-down easily (you could write to the pipe before you start reading,
-but that's not too nice).
-
-On the restart side, I think the most consistent interface would
-be a new binfmt_chkpt implementation that you can use to execve
-a checkpoint, just like you execute an ELF file today. The binfmt
-can be a module (unlike a syscall), so an administrator that is
-afraid of the security implications can just disable it by not
-loading the module. In an execve model, the parent process can
-set up anything related to credentials as good as it's allowed
-to and then let the kernel do the rest.
-
-	Arnd <><
