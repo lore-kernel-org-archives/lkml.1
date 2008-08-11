@@ -1,81 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754263AbYHKO0W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753583AbYHKO2J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754263AbYHKO0W (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Aug 2008 10:26:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752559AbYHKOZ5
+	id S1753583AbYHKO2J (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Aug 2008 10:28:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751469AbYHKO14
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Aug 2008 10:25:57 -0400
-Received: from viefep20-int.chello.at ([62.179.121.40]:37795 "EHLO
-	viefep20-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752104AbYHKOZ4 (ORCPT
+	Mon, 11 Aug 2008 10:27:56 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:59087 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750989AbYHKO14 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Aug 2008 10:25:56 -0400
-X-SourceIP: 80.57.229.25
-Subject: Re: [RFC 0/1][PATCH] POSIX SCHED_SPORADIC implementation for tasks
-	and	groups
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Ulrich Drepper <drepper@redhat.com>
-Cc: Dario Faggioli <raistlin@linux.it>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Steven Rostedt <rostedt@goodmis.org>, Andrew Morton <akpm@osdl.org>
-In-Reply-To: <48A0487B.7080600@redhat.com>
-References: <1218462574.6450.24.camel@Palanthas>
-	 <48A0487B.7080600@redhat.com>
-Content-Type: text/plain
-Date: Mon, 11 Aug 2008 16:25:53 +0200
-Message-Id: <1218464753.10800.92.camel@twins>
+	Mon, 11 Aug 2008 10:27:56 -0400
+Date: Mon, 11 Aug 2008 16:29:00 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Valdis.Kletnieks@vt.edu
+Cc: Andi Kleen <andi@firstfloor.org>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org, tglx@linutronix.de,
+       marcin.slusarz@gmail.com, linux-kernel@vger.kernel.org,
+       davem@davemloft.net, rostedt@goodmis.org, paulmck@linux.vnet.ibm.com
+Subject: Re: [PATCH] printk: robustify printk
+Message-ID: <20080811142900.GU9038@one.firstfloor.org>
+References: <alpine.LFD.1.10.0808081043160.3462@nehalem.linux-foundation.org> <1218219269.29098.5.camel@lappy.programming.kicks-ass.net> <20080808121428.646a8b3c.akpm@linux-foundation.org> <1218223269.29098.12.camel@lappy.programming.kicks-ass.net> <1218224829.29098.19.camel@lappy.programming.kicks-ass.net> <20080811104526.GA15186@elte.hu> <87zlnj24qc.fsf@basil.nowhere.org> <1218453726.10800.63.camel@twins> <20080811114243.GO9038@one.firstfloor.org> <22551.1218464121@turing-police.cc.vt.edu>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <22551.1218464121@turing-police.cc.vt.edu>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-08-11 at 07:11 -0700, Ulrich Drepper wrote:
-> -----BEGIN PGP SIGNED MESSAGE-----
-> Hash: SHA1
-> 
-> Dario Faggioli wrote:
-> > I'm spending some time implementing the POSIX real-time SCHED_SPORADIC
-> > scheduling policy on top of the mainline Linux kernel, and here it is
-> > the code in its very first version.
-> 
-> I'm not commenting on the code or usefulness of ht features.  I just
-> want to point out a problem.
-> 
-> The authors of that POSIX extension unfortunately decided to extend the
-> sched_param structure.  If you look at the definition of that structure
-> Linux uses you'll see that there is no place for this.  I.e., any
-> implementation of that feature following the POSIX spec to the letter
-> will introduce major headache in the form of binary incompatibility.
-> 
-> In case the features is useful enough (I actually always thought it
-> isn't an have actually proposed to remove it again from POSIX) then I
-> would rather prefer to not claim support for this feature in the POSIX
-> way.  One could still implement it as described.  But change the
-> interface to not require the sched_param change.
+$INSERT-ANY-OTHER-PRINTK-USE$
 
-Whichever way you turn SCHED_SPORADIC or SCHED_EDF etc.. you'll need
-some place to pass along extra data. The single int in sched_param is
-not enough for these policies.
+The point was that printk may have been perfectly adequate for 
+them with its existing buffer sizes and dynamic wake up frequency,
+and might not anymore with the timer wakeup change. Essentially
+it is making a widely used kernel facility more fragile.
 
-My suggestion would be to create struct sched_param2 with plenty of
-padding to support future expansion and add
-sys_sched_setscheduler2()/sys_sched_getscheduler2() to deal with this
-new structure.
-
-I think at least 3 struct timespec fields and a flags field might be
-needed for the most exotic deadline parameters:
-
- - budget
- - deadline
- - period
-
-My own take is that SCHED_SPORADIC is a nice excersice in scheduler
-development - but I'm not sure its actually in demand from application
-developers (those of you who actually write RT progs, please holler if
-you care - I'm interested to hear your stories).
-
-SCHED_EDF is in great demand - and is being worked on - albeit not as
-much as I'd like to, due to me being too busy with other stuff atm :-/
-
+-Andi
