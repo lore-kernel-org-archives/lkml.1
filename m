@@ -1,46 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756128AbYHKRM3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754560AbYHKRSL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756128AbYHKRM3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Aug 2008 13:12:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755630AbYHKRLy
+	id S1754560AbYHKRSL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Aug 2008 13:18:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751498AbYHKRR5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Aug 2008 13:11:54 -0400
-Received: from e35.co.us.ibm.com ([32.97.110.153]:40527 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755601AbYHKRLx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Aug 2008 13:11:53 -0400
-Subject: Re: [RFC][PATCH 1/4] checkpoint-restart: general infrastructure
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: "Serge E. Hallyn" <serue@us.ibm.com>,
-       containers@lists.linux-foundation.org, Theodore Tso <tytso@mit.edu>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <200808111853.13854.arnd@arndb.de>
-References: <20080807224033.FFB3A2C1@kernel>
-	 <200808090013.41999.arnd@arndb.de> <20080811152201.GB25930@us.ibm.com>
-	 <200808111853.13854.arnd@arndb.de>
-Content-Type: text/plain
-Date: Mon, 11 Aug 2008 10:11:45 -0700
-Message-Id: <1218474705.5598.17.camel@nimitz>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
-Content-Transfer-Encoding: 7bit
+	Mon, 11 Aug 2008 13:17:57 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:43135 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751005AbYHKRR5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Aug 2008 13:17:57 -0400
+Message-ID: <48A0741F.60901@redhat.com>
+Date: Mon, 11 Aug 2008 10:17:19 -0700
+From: Ulrich Drepper <drepper@redhat.com>
+Organization: Red Hat, Inc.
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+MIME-Version: 1.0
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+CC: Dario Faggioli <raistlin@linux.it>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Steven Rostedt <rostedt@goodmis.org>, Andrew Morton <akpm@osdl.org>
+Subject: Re: [RFC 0/1][PATCH] POSIX SCHED_SPORADIC implementation for tasks
+ and groups
+References: <1218462574.6450.24.camel@Palanthas>	 <48A0487B.7080600@redhat.com>  <1218464753.10800.92.camel@twins>	 <1218471794.6450.87.camel@Palanthas> <1218472252.10800.107.camel@twins>
+In-Reply-To: <1218472252.10800.107.camel@twins>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-08-11 at 18:53 +0200, Arnd Bergmann wrote:
-> The best way I can think of for this would be to use existing syscalls
-> (e.g. sched_setscheduler, setfsuid, ...) from user space whereever
-> possible and do only the bare minimum for the restart part in the
-> kernel.
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-Well, the current direction is about as far away from that as you can
-get, unless we basically call those system calls from inside our new
-sys_restart() one.  As of now, we're as much work in the kernel as
-possible, and doing the bare minimum in userspace.  That's what both
-Oren and our OpenVZ colleagues have advocated.
+Peter Zijlstra wrote:
+> Well, a new version of glibc could use those to implement the posix
+> interface. Because as I understand it, glibc can break ABI on certain
+> version bumps.
 
--- Dave
+In theory.  But this hasn't happened so far and I don't expect it to
+happen any time soon.  New interfaces are not a real problem for me, though.
 
+- --
+➧ Ulrich Drepper ➧ Red Hat, Inc. ➧ 444 Castro St ➧ Mountain View, CA ❖
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkigdB8ACgkQ2ijCOnn/RHSQSQCfaDp3XAM9vJXHBIqSM7PQq1n2
+AwkAoMmMyglHDYe4aw2Yqa6jQgG/48er
+=D9Eb
+-----END PGP SIGNATURE-----
