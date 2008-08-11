@@ -1,109 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755364AbYHKAYL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755219AbYHKA1U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755364AbYHKAYL (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Aug 2008 20:24:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753788AbYHKAXr
+	id S1755219AbYHKA1U (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Aug 2008 20:27:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752734AbYHKA1M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Aug 2008 20:23:47 -0400
-Received: from wf-out-1314.google.com ([209.85.200.174]:57557 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753495AbYHKAXp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Aug 2008 20:23:45 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version
-         :x-mailer:content-transfer-encoding;
-        b=ensQYGR7t6w9IUjKrFYShMk9RZpbUzxXTPmoWrcTXU0PQGYD59TQrWYVgkiVRg/MAz
-         0fhdmbmdfbQHBezh49DzfoUiNIAtnBql34YgjlUJm17RuXzuhpMse+Kwu/aUhMJfd3qp
-         I1rWgML41MKm0SXa3yVsE3nacK3pD7IfB8QaQ=
-Subject: [PATCH 2/2] mISDN: annotate iomem pointer and add statics
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Karsten Keil <kkeil@suse.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Sun, 10 Aug 2008 17:23:48 -0700
-Message-Id: <1218414228.24441.30.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Sun, 10 Aug 2008 20:27:12 -0400
+Received: from tundra.namei.org ([65.99.196.166]:38187 "EHLO tundra.namei.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751918AbYHKA1M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 Aug 2008 20:27:12 -0400
+Date: Mon, 11 Aug 2008 10:26:36 +1000 (EST)
+From: James Morris <jmorris@namei.org>
+To: David Howells <dhowells@redhat.com>
+cc: Grant Wilson <grant.wilson@zen.co.uk>,
+       Jasper Bryant-Greene <jasper@amiton.co.nz>,
+       Thomas Meyer <thomas@m3y3r.de>,
+       Linux-Kernel <linux-kernel@vger.kernel.org>,
+       Linux-Next <linux-next@vger.kernel.org>
+Subject: Re: next-20080808: bash: fork: Resource temporarily unavailable
+In-Reply-To: <13299.1218367912@redhat.com>
+Message-ID: <alpine.LRH.1.10.0808111026090.3809@tundra.namei.org>
+References: <20080810113044.19143b0a@worthy.swandive.local> <1218322518.3268.0.camel@luna.unix.geek.nz> <1218287473.3155.13.camel@dhcppc0> <1218281190.3155.5.camel@dhcppc0> <1218214935.3146.5.camel@dhcppc0> <alpine.LRH.1.10.0808090747150.29079@tundra.namei.org>
+ <14476.1218286327@redhat.com> <15386.1218290826@redhat.com> <10251.1218361539@redhat.com>  <13299.1218367912@redhat.com>
+User-Agent: Alpine 1.10 (LRH 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
----
- drivers/isdn/hardware/mISDN/hfcpci.c |   14 +++++++-------
- 1 files changed, 7 insertions(+), 7 deletions(-)
+On Sun, 10 Aug 2008, David Howells wrote:
 
-diff --git a/drivers/isdn/hardware/mISDN/hfcpci.c b/drivers/isdn/hardware/mISDN/hfcpci.c
-index 9f808ec..cd8302a 100644
---- a/drivers/isdn/hardware/mISDN/hfcpci.c
-+++ b/drivers/isdn/hardware/mISDN/hfcpci.c
-@@ -43,7 +43,7 @@ MODULE_LICENSE("GPL");
- module_param(debug, uint, 0);
- 
- static LIST_HEAD(HFClist);
--DEFINE_RWLOCK(HFClock);
-+static DEFINE_RWLOCK(HFClock);
- 
- enum {
- 	HFC_CCD_2BD0,
-@@ -88,7 +88,7 @@ struct hfcPCI_hw {
- 	unsigned char		bswapped;
- 	unsigned char		protocol;
- 	int			nt_timer;
--	unsigned char		*pci_io; /* start of PCI IO memory */
-+	unsigned char __iomem 	*pci_io; /* start of PCI IO memory */
- 	dma_addr_t		dmahandle;
- 	void			*fifos; /* FIFO memory */
- 	int			last_bfifo_cnt[2];
-@@ -153,7 +153,7 @@ release_io_hfcpci(struct hfc_pci *hc)
- 	pci_write_config_word(hc->pdev, PCI_COMMAND, 0);
- 	del_timer(&hc->hw.timer);
- 	pci_free_consistent(hc->pdev, 0x8000, hc->hw.fifos, hc->hw.dmahandle);
--	iounmap((void *)hc->hw.pci_io);
-+	iounmap(hc->hw.pci_io);
- }
- 
- /*
-@@ -522,7 +522,7 @@ receive_dmsg(struct hfc_pci *hc)
- /*
-  * check for transparent receive data and read max one threshold size if avail
-  */
--int
-+static int
- hfcpci_empty_fifo_trans(struct bchannel *bch, struct bzfifo *bz, u_char *bdata)
- {
- 	 __le16 *z1r, *z2r;
-@@ -575,7 +575,7 @@ hfcpci_empty_fifo_trans(struct bchannel *bch, struct bzfifo *bz, u_char *bdata)
- /*
-  * B-channel main receive routine
-  */
--void
-+static void
- main_rec_hfcpci(struct bchannel *bch)
- {
- 	struct hfc_pci	*hc = bch->hw;
-@@ -1678,7 +1678,7 @@ hfcpci_l2l1B(struct mISDNchannel *ch, struct sk_buff *skb)
-  * called for card init message
-  */
- 
--void
-+static void
- inithfcpci(struct hfc_pci *hc)
- {
- 	printk(KERN_DEBUG "inithfcpci: entered\n");
-@@ -1965,7 +1965,7 @@ setup_hw(struct hfc_pci *hc)
- 		printk(KERN_WARNING "HFC-PCI: No IRQ for PCI card found\n");
- 		return 1;
- 	}
--	hc->hw.pci_io = (char *)(ulong)hc->pdev->resource[1].start;
-+	hc->hw.pci_io = (char __iomem *)(unsigned long)hc->pdev->resource[1].start;
- 
- 	if (!hc->hw.pci_io) {
- 		printk(KERN_WARNING "HFC-PCI: No IO-Mem for PCI card found\n");
+> Okay.  That's useful, thanks.  That indicates that my accounting of user
+> processes is incorrect somewhere.  This won't show up when running as a
+> privileged user only.
+
+I'm seeing this also now when running X (previously was not).
+
+
 -- 
-1.6.0.rc1.278.g9c632
-
+James Morris
+<jmorris@namei.org>
