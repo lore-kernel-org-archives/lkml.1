@@ -1,64 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752280AbYHKJfh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752123AbYHKJlp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752280AbYHKJfh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Aug 2008 05:35:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751079AbYHKJf3
+	id S1752123AbYHKJlp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Aug 2008 05:41:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751196AbYHKJlh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Aug 2008 05:35:29 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:44652 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751014AbYHKJf3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Aug 2008 05:35:29 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=uIWUFk/rcqRrI/dgIB7RzP2ZAyJxeF33sCzS/+S2A2gELClLYoDwTlWVm5K1nytWA
-	VfO4+ywSflwLbTbkQeGvQ==
-Message-ID: <6599ad830808110235s1ba7bcf0y9fa23908479d20d1@mail.gmail.com>
-Date: Mon, 11 Aug 2008 02:35:21 -0700
-From: "Paul Menage" <menage@google.com>
-To: "Rakib Mullick" <rakib.mullick@gmail.com>
-Subject: Re: [PATCH] cgroup.c: remove goto statement from cgroup_init.
-Cc: "Paul Jackson" <pj@sgi.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <b9df5fa10808110225r2772ab62w155fdec7af5759d8@mail.gmail.com>
+	Mon, 11 Aug 2008 05:41:37 -0400
+Received: from il.qumranet.com ([212.179.150.194]:15308 "EHLO il.qumranet.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751184AbYHKJlg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Aug 2008 05:41:36 -0400
+Message-ID: <48A0094E.8020203@qumranet.com>
+Date: Mon, 11 Aug 2008 12:41:34 +0300
+From: Avi Kivity <avi@qumranet.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+CC: kvm-devel <kvm@vger.kernel.org>, Anthony Liguori <aliguori@us.ibm.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/4] reduce stack usage in kvm_vcpu_ioctl()
+References: <1217874693-28398-1-git-send-email-dave@linux.vnet.ibm.com> <1217874695-28430-1-git-send-email-dave@linux.vnet.ibm.com>
+In-Reply-To: <1217874695-28430-1-git-send-email-dave@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <b9df5fa10808110225r2772ab62w155fdec7af5759d8@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 11, 2008 at 2:25 AM, Rakib Mullick <rakib.mullick@gmail.com> wrote:
-> Hello everyone, following patch removes the use of goto statement.
-> Actually, we don't need it. Beacuse, if "err < 0", then it will never
-> be TRUE.
+Dave Hansen wrote:
+> Same as the last one, but this time we use kmalloc()
+> for all of the uses.
+>
+> Note that the kfree()s take advantage of the fact that
+> kfree() is OK on NULL.
+>
+> Signed-off-by: Dave Hansen <dave@linux.vnet.ibm.com>
+> ---
+>  virt/kvm/kvm_main.c |   48 ++++++++++++++++++++++++++++++------------------
+>  1 files changed, 30 insertions(+), 18 deletions(-)
+>
+> diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+> index 7dd9b0b..70bf180 100644
+> --- a/virt/kvm/kvm_main.c
+> +++ b/virt/kvm/kvm_main.c
+> @@ -1118,6 +1118,9 @@ static long kvm_vcpu_ioctl(struct file *filp,
+>  	struct kvm_vcpu *vcpu = filp->private_data;
+>  	void __user *argp = (void __user *)arg;
+>  	int r;
+> +	struct kvm_fpu *fpu = NULL;
+> +	struct kvm_sregs *kvm_sregs = NULL;
+> +
+>   
 
-"err" will be regarded by the compiler as true if it's anything other
-than 0. So this patch introduces breakage.
+Spurious blank line.
 
-Paul
+>  
+>  	if (vcpu->kvm->mm != current->mm)
+>  		return -EIO;
+> @@ -1165,25 +1168,29 @@ out_free2:
+>  		break;
+>  	}
+>  	case KVM_GET_SREGS: {
+> -		struct kvm_sregs kvm_sregs;
+> -
+> -		memset(&kvm_sregs, 0, sizeof kvm_sregs);
+> -		r = kvm_arch_vcpu_ioctl_get_sregs(vcpu, &kvm_sregs);
+> +		kvm_sregs = kzalloc(sizeof(struct kvm_sregs), GFP_KERNEL);
+> +		r = -ENOMEM;
+> +		if (!kvm_sregs)
+> +			goto out;
+> +		memset(kvm_sregs, 0, sizeof(struct kvm_sregs));
+>   
 
-> So, we can skip the goto statement and can just return.
-> Thanks.
->
-> Signed-off-by: Rakib Mullick (rakib.mullick@gmail.com)
->
-> --- linux-2.6.27-rc2.orig/kernel/cgroup.c       2008-08-11 15:16:49.000000000 +0600
-> +++ linux-2.6.27-rc2/kernel/cgroup.c    2008-08-11 15:16:26.000000000 +0600
-> @@ -2562,11 +2562,10 @@ int __init cgroup_init(void)
->
->        err = register_filesystem(&cgroup_fs_type);
->        if (err < 0)
-> -               goto out;
-> +               return err;
->
->        proc_create("cgroups", 0, NULL, &proc_cgroupstats_operations);
->
-> -out:
->        if (err)
->                bdi_destroy(&cgroup_backing_dev_info);
->
+memset unneeded after kzalloc.
+
+
+btw, this is a generic problem, and could be handled generically:
+
+struct ioctl_handler_entry {
+    u32 ioctl;
+    union {
+        long (*handler_parg)(void *arg);
+        long (*handler_larg)(long arg);
+    };
+};
+
+void process_ioctl(struct ioctl_handler_entry *ioctls)
+{
+     search for correct entry;
+     allocate memory (get size from ioctl number);
+     copy from user (if _IOW);
+     call handler;
+     copy to user (if _IOR, and no error);
+     free memory;
+}
+
+I imagine this can be used to simplify many ioctls.
+
+-- 
+error compiling committee.c: too many arguments to function
+
