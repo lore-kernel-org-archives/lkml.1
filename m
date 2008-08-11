@@ -1,79 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756244AbYHKXgt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756849AbYHKXjS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756244AbYHKXgt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Aug 2008 19:36:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753619AbYHKXgm
+	id S1756849AbYHKXjS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Aug 2008 19:39:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752908AbYHKXjJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Aug 2008 19:36:42 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:37858 "EHLO smtps.tip.net.au"
+	Mon, 11 Aug 2008 19:39:09 -0400
+Received: from gw.goop.org ([64.81.55.164]:54634 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752128AbYHKXgl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Aug 2008 19:36:41 -0400
-Date: Tue, 12 Aug 2008 09:36:24 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: James Morris <jmorris@namei.org>
-Cc: David Howells <dhowells@redhat.com>, linux-kernel@vger.kernel.org,
-       "David S. Miller" <davem@davemloft.net>,
-       Steve French <sfrench@us.ibm.com>
-Subject: Re: Resolved merge conflicts in next-creds
-Message-Id: <20080812093624.de7d4ad8.sfr@canb.auug.org.au>
-In-Reply-To: <alpine.LRH.1.10.0808120751001.10017@tundra.namei.org>
-References: <alpine.LRH.1.10.0808110950530.3636@tundra.namei.org>
-	<20080811101602.09555609.sfr@canb.auug.org.au>
-	<20080811153536.02ac0561.sfr@canb.auug.org.au>
-	<alpine.LRH.1.10.0808120751001.10017@tundra.namei.org>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Tue__12_Aug_2008_09_36_24_+1000_b1X+p3.NOV9+.dA="
+	id S1751826AbYHKXjI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Aug 2008 19:39:08 -0400
+Message-ID: <48A0CD86.6030704@goop.org>
+Date: Mon, 11 Aug 2008 16:38:46 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+MIME-Version: 1.0
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+CC: Arnd Bergmann <arnd@arndb.de>, "Serge E. Hallyn" <serue@us.ibm.com>,
+       containers@lists.linux-foundation.org, Theodore Tso <tytso@mit.edu>,
+       linux-kernel@vger.kernel.org, Peter Chubb <peterc@gelato.unsw.edu.au>
+Subject: Re: checkpoint/restart ABI
+References: <20080807224033.FFB3A2C1@kernel>	 <200808090013.41999.arnd@arndb.de> <20080811152201.GB25930@us.ibm.com>	 <200808111853.13854.arnd@arndb.de> <1218484114.5598.43.camel@nimitz>
+In-Reply-To: <1218484114.5598.43.camel@nimitz>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Tue__12_Aug_2008_09_36_24_+1000_b1X+p3.NOV9+.dA=
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-Hi James, David,
-
-On Tue, 12 Aug 2008 07:53:40 +1000 (EST) James Morris <jmorris@namei.org> w=
-rote:
+Dave Hansen wrote:
+> Arnd, Jeremy and Oren,
 >
-> We have tried this approach thus far without success, although perhaps no=
-w=20
-> the code has been in linux-next and you've come to the same conclusion, w=
-e=20
-> could try again.
->=20
-> David, if you want to make a minimal API-only patch set, I'll can stage i=
-t=20
-> and push to Linus.
+> Thanks for all of the very interesting comments about the ABI.  
+> Considering that we're still *really* early in getting this concept
+> merged up into mainline, what do you all think we should do now?
+>
+> My main goal here is just to get everyone to understand the approach
+> that we're proposing rather than to really fix the interfaces in stone.
+> I bet we're going to be changing them a lot before these patches
+> actually get in.
+>   
+Yes.
 
-The important thing (and what is different in what I have proposed) is
-that what you are asking Linus to take here has zero impact (i.e. you just
-add a header file that noone uses and whose contents are clearly noops)
-and then it is very obvious that when people start to use it, the changes
-really cannot introduce a regression.
+It seems to me that worrying about ABI at this point is a bit premature.
 
-Of course, Linus has to be convinced that the long term API change is
-sensible as well.
+This feature, as it currently stands, is essentially useless for any 
+practical purpose.  Self-checkpointing a single process with no handling 
+of non-file file descriptors and no proper handling of file 
+file-descriptors is not very useful.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+My understanding that this is basically a prototype for a more useful 
+multi-process or container-wide checkpoint facility.
 
---Signature=_Tue__12_Aug_2008_09_36_24_+1000_b1X+p3.NOV9+.dA=
-Content-Type: application/pgp-signature
+While you could try to come up with an extensible file format that would 
+be able to handle any future extensions, the chances are you'd get it 
+wrong and need to break file format compatibility anyway.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+I'm more interested in seeing a description of how you're doing to 
+handle things like:
 
-iEYEARECAAYFAkigzPgACgkQjjKRsyhoI8wJvgCgt4pniPwJ2HKBfdeRy/n4wVYN
-EdgAnjL7v32l6GDO4mYy+vJ6LonagE1o
-=G5sd
------END PGP SIGNATURE-----
+    * multiple processes
+    * pipes
+    * UNIX domain sockets
+    * INET sockets (both inter and intra machine)
+    * unlinked open files
+    * checkpointing file content
+    * closed files (ie, files which aren't currently open, but will be
+      soon, esp tmp files)
+    * shared memory
+    * (Peter, what have I forgotten?)
 
---Signature=_Tue__12_Aug_2008_09_36_24_+1000_b1X+p3.NOV9+.dA=--
+Having gone through this before, I don't think an all-kernel solution 
+can work except for the most simple cases.
+
+Which, come to think of it, is an important point.  What are the 
+expected use-cases for this feature?  Do you really mean 
+checkpoint/restart?  Do you expect to be able to checkpoint a process, 
+leave it running, then "rewind" by restoring the image?  Or does 
+checkpoint always atomically kill the source process(es)?  Are you 
+expecting to be able to resume on another machine?
+
+Lightweight filesystem checkpointing, such as btrfs provides, would seem 
+like a powerful mechanism for handling a lot of the filesystem state 
+problems.  It would have been useful when we did this...
+
+    J
