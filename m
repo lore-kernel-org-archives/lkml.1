@@ -1,143 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753739AbYHKN0C@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753316AbYHKN32@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753739AbYHKN0C (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Aug 2008 09:26:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751827AbYHKNZw
+	id S1753316AbYHKN32 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Aug 2008 09:29:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751687AbYHKN3U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Aug 2008 09:25:52 -0400
-Received: from nf-out-0910.google.com ([64.233.182.185]:51359 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751658AbYHKNZu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Aug 2008 09:25:50 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=IdZTpl2In3CivzAP727tXbfwyXYWNmPts0NsoTBuhythlpdKpXibImAQ4ctGZ/KesQ
-         pLtF3ErpiwmTHOYjxzoIvZnrQjZAMhynlLiotn1CeKzL7YlEHdTsALpaD9DPj7JeOmQ/
-         9agaUcvuBA573n8UIxkv/5xsGldadbFo2hi2w=
-Message-ID: <520f0cf10808110625h4d130d04ke8e4f6c998b0cd81@mail.gmail.com>
-Date: Mon, 11 Aug 2008 15:25:49 +0200
-From: "John Kacur" <jkacur@gmail.com>
-To: "Peter Zijlstra" <peterz@infradead.org>
-Subject: Re: [PATCH RFC] pm_qos_requirement might sleep
-Cc: mgross@linux.intel.com, LKML <linux-kernel@vger.kernel.org>,
-       rt-users <linux-rt-users@vger.kernel.org>,
-       "Steven Rostedt" <rostedt@goodmis.org>, "Ingo Molnar" <mingo@elte.hu>,
-       "Thomas Gleixner" <tglx@linutronix.de>, arjan <arjan@infradead.org>
-In-Reply-To: <520f0cf10808051518h1459d353r8de78e98f79ec57c@mail.gmail.com>
+	Mon, 11 Aug 2008 09:29:20 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:51687 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751498AbYHKN3U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Aug 2008 09:29:20 -0400
+Date: Mon, 11 Aug 2008 15:29:02 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Gregory Haskins <ghaskins@novell.com>
+Cc: Mike Galbraith <efault@gmx.de>, LKML <linux-kernel@vger.kernel.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [revert] mysql+oltp regression
+Message-ID: <20080811132902.GB14474@elte.hu>
+References: <1218454322.25098.24.camel@marge.simson.net> <20080811114324.GA23529@elte.hu> <48A03049.202@novell.com> <20080811124857.GD10082@elte.hu> <48A038A6.4010104@novell.com> <20080811131400.GA909@elte.hu> <48A03C6E.60303@novell.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <520f0cf10808041352h78bd4319x1802f018aeffe6dc@mail.gmail.com>
-	 <1217921101.3589.98.camel@twins>
-	 <20080805204901.GA31132@linux.intel.com>
-	 <1217970588.29415.36.camel@lappy.programming.kicks-ass.net>
-	 <520f0cf10808051518h1459d353r8de78e98f79ec57c@mail.gmail.com>
+In-Reply-To: <48A03C6E.60303@novell.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 6, 2008 at 12:18 AM, John Kacur <jkacur@gmail.com> wrote:
-> On Tue, Aug 5, 2008 at 11:09 PM, Peter Zijlstra <peterz@infradead.org> wrote:
->> On Tue, 2008-08-05 at 13:49 -0700, mark gross wrote:
->>> On Tue, Aug 05, 2008 at 09:25:01AM +0200, Peter Zijlstra wrote:
->>> > On Mon, 2008-08-04 at 22:52 +0200, John Kacur wrote:
->>> > > Even after applying some fixes posted by Chirag and Peter Z, I'm still
->>> > > getting some messages in my log like this
->>> >
->>> > > BUG: sleeping function called from invalid context swapper(0) at
->>> > > kernel/rtmutex.c:743
->>> > > in_atomic():1 [00000001], irqs_disabled():1
->>> > > Pid: 0, comm: swapper Tainted: G        W 2.6.26.1-rt1.jk #2
->>> > >
->>> > > Call Trace:
->>> > >  [<ffffffff802305d3>] __might_sleep+0x12d/0x132
->>> > >  [<ffffffff8046cdbe>] __rt_spin_lock+0x34/0x7d
->>> > >  [<ffffffff8046ce15>] rt_spin_lock+0xe/0x10
->>> > >  [<ffffffff802532e5>] pm_qos_requirement+0x1f/0x3c
->>> > >  [<ffffffff803e1b7f>] menu_select+0x7b/0x9c
->>> > >  [<ffffffff8020b1be>] ? default_idle+0x0/0x5a
->>> > >  [<ffffffff8020b1be>] ? default_idle+0x0/0x5a
->>> > >  [<ffffffff803e0b4b>] cpuidle_idle_call+0x68/0xd8
->>> > >  [<ffffffff803e0ae3>] ? cpuidle_idle_call+0x0/0xd8
->>> > >  [<ffffffff8020b1be>] ? default_idle+0x0/0x5a
->>> > >  [<ffffffff8020b333>] cpu_idle+0xb2/0x12d
->>> > >  [<ffffffff80466af0>] start_secondary+0x186/0x18b
->>> > >
->>> > > ---------------------------
->>> > > | preempt count: 00000001 ]
->>> > > | 1-level deep critical section nesting:
->>> > > ----------------------------------------
->>> > > ... [<ffffffff8020b39c>] .... cpu_idle+0x11b/0x12d
->>> > > ......[<ffffffff80466af0>] ..   ( <= start_secondary+0x186/0x18b)
->>> > >
->>> > > The following simple patch makes the messages disappear - however,
->>> > > there may be a better more fine grained solution, but the problem is
->>> > > also that all the functions are designed to use the same lock.
->>> >
->>> > Hmm, I think you're right - its called from the idle routine so we can't
->>> > go about sleeping there.
->>> >
->>> > The only trouble I have is with kernel/pm_qos_params.c:update_target()'s
->>> > use of this lock - that is decidedly not O(1).
->>> >
->>> > Mark, would it be possible to split that lock in two, one lock
->>> > protecting pm_qos_array[], and one lock protecting the
->>> > requirements.list ?
->>>
->>> very likely, but I'm not sure how it will help.
->>>
->>> the fine grain locking I had initially worked out on pm_qos was to have
->>> a lock per pm_qos_object, that would be used for accessing the
->>> requirement_list and the target_value.  But that isn't what you are
->>> asking about is it?
->>>
->>> Is what you want is a pm_qos_requirements_list_lock and a
->>> pm_qos_target_value_lock, for each pm_qos_object instance?
->>>
->>> I guess it wold work but besides giving the code spinlock diarrhea would
->>> it really help solve the issue you are seeing?
->>
->> The problem is that on -rt spinlocks turn into mutexes. And the above
->> BUG tells us that the idle loop might end up scheduling due to trying to
->> take this lock.
->>
->> Now, the way I read the code, pm_qos_lock protects multiple things:
->>
->>  - pm_qos_array[target]->target_value
->>
->>  - &pm_qos_array[pm_qos_class]->requirements.list
->>
->> Now, the thing is, we could turn the lock back into a real spinlock
->> (raw_spinlock_t), but the loops in eg update_target() are not O(1) and
->> could thus cause serious preempt-off latencies.
->>
->> My question was, and now having had a second look at the code I think it
->> is, would it be possible to guard the list using a sleeping lock,
->> protect the target_value using a (raw) spinlock.
->>
->> OTOH, just reading a (word aligned, word sized) value doesn't normally
->> require serialization, esp if the update site is already serialized by
->> other means.
->>
->> So could we perhaps remove the lock usage from pm_qos_requirement()? -
->> that too would solve the issue.
->>
->>
->>  - Peter
->>
->
-> How about this patch? Like Peter suggests, It adds a raw spinlock only
-> for the target value. I'm currently running with it, but still
-> testing, comments are appreciated.
->
-> Thanks
->
 
-I have been running with this patch for quite a while now without any
-problems, so please apply. If Mark is able to remove the lock
-altogether at some point in the future then we can remove this patch.
+* Gregory Haskins <ghaskins@novell.com> wrote:
+
+>> ok, thanks. I'm curious, what are those ripple effects? Stability or 
+>> performance?
+>
+> Performance.  I found it while working on my pi series (which fyi I 
+> should have a v2 refresh for soon, probably today...i am hoping to get 
+> some review feedback from you on that as well, time permitting of 
+> course ;).
+>
+> Basically the behavior I was observing was that kernel builds via 
+> distcc would cluster all the cc1 jobs on a single core.  At first I 
+> thought my pi-series was screwed up, but then I realized I had applied 
+> the patch referenced above earlier in my development tree, and 
+> removing it allowed pi to work fine.
+>
+> I found the problem with in once boot cycle with ftrace (thanks 
+> Steve!).  Basically newidle balancing was always returning "no 
+> imbalance" even though I had 32 cc1 threads on 1 core, and 3 idle 
+> cores.  Clearly not correct!  So I think that by adjusting the load 
+> up, we throw off the hysteresis built into the load averages and cause 
+> the system to incorrectly think it's balanced. TBD.
+
+ok. If you touch that area i'd suggest to also test Mike's 
+mysql+sysbench workload (all CPU bound, not IO bound) - it is rather 
+sensitive to many aspects of load-balancing. Mysqld also has scalability 
+limits due to user-space locking with increasing number of cores, so it 
+will show wakeup and buddy balancing artifacts very quickly.
+
+(With postgresql you'll need to go to 32 cores to see it scale badly 
+under Linux due to user-space locking.)
+
+	Ingo
