@@ -1,92 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753468AbYHKNb4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753632AbYHKNeV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753468AbYHKNb4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Aug 2008 09:31:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751538AbYHKNbp
+	id S1753632AbYHKNeV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Aug 2008 09:34:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751916AbYHKNeL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Aug 2008 09:31:45 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:52052 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751511AbYHKNbo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Aug 2008 09:31:44 -0400
-Date: Mon, 11 Aug 2008 15:31:26 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Gregory Haskins <ghaskins@novell.com>
-Cc: Mike Galbraith <efault@gmx.de>, LKML <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [revert] mysql+oltp regression
-Message-ID: <20080811133126.GC14474@elte.hu>
-References: <1218454322.25098.24.camel@marge.simson.net> <20080811114324.GA23529@elte.hu> <48A03049.202@novell.com> <20080811124857.GD10082@elte.hu> <48A038A6.4010104@novell.com> <20080811131400.GA909@elte.hu> <48A03C6E.60303@novell.com> <48A03E28.9040801@novell.com>
+	Mon, 11 Aug 2008 09:34:11 -0400
+Received: from 166-70-238-42.ip.xmission.com ([166.70.238.42]:39600 "EHLO
+	ns1.wolfmountaingroup.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751674AbYHKNeJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Aug 2008 09:34:09 -0400
+Message-ID: <43117.166.70.238.45.1218460302.squirrel@webmail.wolfmountaingroup.com>
+In-Reply-To: <20080811130256.GB28030@redhat.com>
+References: <20080807200659.GJ24801@one.firstfloor.org>
+    <23175.1218148134@ocs10w> <20080808011500.GA531@redhat.com>
+    <20080808022916.GM24801@one.firstfloor.org>
+    <20080808132953.GB3840@redhat.com>
+    <20080808180303.GB9038@one.firstfloor.org>
+    <20080811130256.GB28030@redhat.com>
+Date: Mon, 11 Aug 2008 07:11:42 -0600 (MDT)
+Subject: Re: [ANNOUNCE] Merkey's Kernel Debugger
+From: jmerkey@wolfmountaingroup.com
+To: "Vivek Goyal" <vgoyal@redhat.com>
+Cc: "Andi Kleen" <andi@firstfloor.org>, "Keith Owens" <kaos@ocs.com.au>,
+       "Jay Lan" <jlan@sgi.com>, "Christoph Lameter" <cl@linux-foundation.org>,
+       "Stefan Richter" <stefanr@s5r6.in-berlin.de>,
+       "Nick Piggin" <nickpiggin@yahoo.com.au>, jmerkey@wolfmountaingroup.com,
+       "Geert Uytterhoeven" <geert@linux-m68k.org>,
+       "Josh Boyer" <jwboyer@gmail.com>, linux-kernel@vger.kernel.org,
+       "Takenori Nagano" <t-nagano@ah.jp.nec.com>,
+       "Bernhard Walle" <bwalle@suse.de>
+User-Agent: SquirrelMail/1.4.6
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <48A03E28.9040801@novell.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Gregory Haskins <ghaskins@novell.com> wrote:
 
-> Gregory Haskins wrote:
->> Ingo Molnar wrote:
->>> * Gregory Haskins <ghaskins@novell.com> wrote:
->>>
->>>  
->>>>>> Speaking of this: Another patch I submitted to you Ingo (had to 
->>>>>> do with updating the load_weight inside task_setprio) seems to 
->>>>>> also have this phenomenon: e.g. its technically correct but 
->>>>>> further testing has revealed negative repercussions elsewhere.  
->>>>>> So please ignore that patch (or revert if you already pulled 
->>>>>> in, but I don't think you have).  Ill try to look into this 
->>>>>> issue as well.
->>>>>>         
->>>>> ok, under which thread/subject is that? Not queued in tip/sched/* 
->>>>> yet, correct?
->>>>>         
->>>> Here is the original thread:
->>>>
->>>> http://lkml.org/lkml/2008/7/3/416
->>>>
->>>> I do not believe you have queued it anywhere (public anyway) yet.
->>>>
->>>> Note I have already invalidated 1/2, and now I am retracting 2/2 as 
->>>> well.  (1/2 is actually a bogus patch, 2/2 is "technically correct" 
->>>> but causes ripples in the load balancer that need to be sorted out  
->>>> first.
->>>>     
->>>
->>> ok, thanks. I'm curious, what are those ripple effects? Stability or  
->>> performance?
->>>   
->>
->> Performance.  I found it while working on my pi series (which fyi I  
->> should have a v2 refresh for soon, probably today...i am hoping to get  
->> some review feedback from you on that as well, time permitting of  
->> course ;).
->>
->> Basically the behavior I was observing was that kernel builds via  
->> distcc would cluster all the cc1 jobs on a single core.  At first I  
->> thought my pi-series was screwed up, but then I realized I had applied  
->> the patch referenced above earlier in my development tree, and  
->> removing it allowed pi to work fine.
->>
->> I found the problem with in once boot cycle with ftrace (thanks Steve!).
->
-> Hmm..Im not sure what went wrong between brain and hand above, but of 
-> course I meant to say ".. within one boot cycle ..", not "with in 
-> once".  Heh.
+I found a problem with APIC NMI support which seems to affect all the
+debuggers, but appears machine specific -- at least I can reproduce it
+with all of the modules MDB, KDB, and KGDB modules on my ACER 2410 dual
+core laptop.  It explains the mysterious hangs I would see in KDB all the
+time on SMP systems.
 
-my second reading of that sentence auto-corrected it to your intented 
-version ;-)
+The call:
 
-	Ingo
+send_IPI_allbutself(vector)
+
+will hard hang an on ACER laptop with dual core processors if issued while
+any one of the processors are actively inside an INT 1 handler, then take
+a SECOND NMI inside of this path, and nest.   It hangs the requesting
+(focus) processor during nested interrupts if a target processor is A)
+inside an INT 1 exception B) takes an NMI interrupt C) returns from the
+NMI back into the INT1 D) receives a second NMI.
+
+I am aware that a second NMI will not propagate to a processor currently
+servicing an NMI until the processor sees an IRET instruction (at least
+this is how intel worked years back).
+
+I have not been able to reproduce it on the Xeon based motherboards.  I
+have seen the APIC bus hang this way on my other OS project -- when the
+APIC was programmed incorrectly, and assume it must be a bug in the APIC,
+how the APIC is programmed by Linux, etc.
+
+I am coding around the problem to prevent such convoluted nesting levels
+in MDB (this was from testing) but this was the final test for enabling
+SSB and all the fixes before I post and rc3 patch series which really
+cleanup up the code, and there's a mystery with send_IPI_allbutself().
+
+Jeff
+
