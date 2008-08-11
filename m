@@ -1,57 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754884AbYHKQy6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755929AbYHKQzb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754884AbYHKQy6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Aug 2008 12:54:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752036AbYHKQys
+	id S1755929AbYHKQzb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Aug 2008 12:55:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752036AbYHKQzS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Aug 2008 12:54:48 -0400
-Received: from outbound-wa4.frontbridge.com ([216.32.181.16]:6653 "EHLO
-	WA4EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751760AbYHKQyr convert rfc822-to-8bit (ORCPT
+	Mon, 11 Aug 2008 12:55:18 -0400
+Received: from moutng.kundenserver.de ([212.227.126.186]:60505 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751604AbYHKQzQ convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Aug 2008 12:54:47 -0400
-X-BigFish: VPS-26(z21eWz1447R1442Jzzzzz32i6bh66h)
-X-Spam-TCS-SCL: 5:0
-X-WSS-ID: 0K5G4AU-01-JO1-01
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-Class: urn:content-classes:message
+	Mon, 11 Aug 2008 12:55:16 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+Subject: Re: [RFC][PATCH 1/4] checkpoint-restart: general infrastructure
+Date: Mon, 11 Aug 2008 18:53:13 +0200
+User-Agent: KMail/1.9.9
+Cc: Dave Hansen <dave@linux.vnet.ibm.com>,
+       containers@lists.linux-foundation.org, Theodore Tso <tytso@mit.edu>,
+       linux-kernel@vger.kernel.org
+References: <20080807224033.FFB3A2C1@kernel> <200808090013.41999.arnd@arndb.de> <20080811152201.GB25930@us.ibm.com>
+In-Reply-To: <20080811152201.GB25930@us.ibm.com>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 8BIT
-Subject: RE: Regression in 2.6.27-rc2 in acpi_processor_init()
-Date: Mon, 11 Aug 2008 11:54:38 -0500
-Message-ID: <6453C3CB8E2B3646B0D020C112613273C5AC5E@sausexmb4.amd.com>
-In-Reply-To: <1218339276.6671.43.camel@yakui_zhao.sh.intel.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: Regression in 2.6.27-rc2 in acpi_processor_init()
-Thread-Index: Acj6mCAIaRLDZlRdQl+Ch9SLCYS9eQBOr1ZA
-References: <6453C3CB8E2B3646B0D020C112613273C5AC59@sausexmb4.amd.com> <200808082302.11358.rjw@sisk.pl> <1218339276.6671.43.camel@yakui_zhao.sh.intel.com>
-From: "Langsdorf, Mark" <mark.langsdorf@amd.com>
-To: "Zhao Yakui" <yakui.zhao@intel.com>, "Rafael J. Wysocki" <rjw@sisk.pl>
-CC: "lkml" <linux-kernel@vger.kernel.org>,
-       "ACPI Devel Maling List" <linux-acpi@vger.kernel.org>,
-       "Andi Kleen" <andi@firstfloor.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>
-X-OriginalArrivalTime: 11 Aug 2008 16:54:38.0877 (UTC) FILETIME=[F1386CD0:01C8FBD2]
+Content-Disposition: inline
+Message-Id: <200808111853.13854.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1/koEm00te+9HcL58/23mN69PLdlkCeu6EmH1Q
+ c1YNNf2cMz1DGdpmhywbGocUxoJ8rpPOHhAz5D9W7Us9hpXiOB
+ tpJ0CR6IEEloYxDxfNqew==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->    Will you please attach the output of acpidump on bug 11287?
->    Of course it will be great if you can enable CONFIG_ACPI_DEBUG and
-> CONFIG_CPUFREQ_DEBUG in kernel configuration  and boot the system with
-> the option of "cpufreq.debug=7 acpi.debug_layer=0x01010000
-> acpi.debug_level=0x17".
->    After the system is booted, please attach the output of dmesg.
->    Please do the above test on both kernel 2.6.27-rc1 and 2.6.27-rc2.
+On Monday 11 August 2008, Serge E. Hallyn wrote:
+> At the restart end, every resource which was checkpointed will have to
+> be re-created, and permissions checked against the privilege of the
+> task which did the restart.  We may end up having to make use of the new
+> credentials for this.
+> 
+> This could become unpleasant: if an unprivileged task asked a privileged
+> helper to create something for the unprivileged task to use (i.e. a
+> raw socket), then the user needs to be privileged to re-created the
+> resource.  But it's necessary.
 
-False alarm.  I had acpi=off set in my command line for some
-reason.
+Right. Of course, the hard part here will be to make it obvious to
+be safe. Having to check all sorts of permissions means there will
+be many opportunities for exploitable bugs.
 
-Thanks for the offer of help.
+The best way I can think of for this would be to use existing syscalls
+(e.g. sched_setscheduler, setfsuid, ...) from user space whereever
+possible and do only the bare minimum for the restart part in the kernel.
 
--Mark Langsdorf
-Operating System Research Center
-AMD
-
+	Arnd <><
