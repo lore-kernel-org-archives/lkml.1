@@ -1,50 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753436AbYHKOHz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753930AbYHKOJp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753436AbYHKOHz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Aug 2008 10:07:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751175AbYHKOHr
+	id S1753930AbYHKOJp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Aug 2008 10:09:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751564AbYHKOJg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Aug 2008 10:07:47 -0400
-Received: from cavan.codon.org.uk ([93.93.128.6]:54224 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751155AbYHKOHq (ORCPT
+	Mon, 11 Aug 2008 10:09:36 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:40569 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751397AbYHKOJg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Aug 2008 10:07:46 -0400
-Date: Mon, 11 Aug 2008 15:07:34 +0100
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Arjan van de Ven <arjan@infradead.org>, S K <nospamnoham@gmail.com>,
-       Zhao Yakui <yakui.zhao@intel.com>, Thomas Renninger <trenn@suse.de>,
-       Alan Jenkins <alan-jenkins@tuffmail.co.uk>,
-       linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
-Subject: Re: cpufreq doesn't seem to work in Intel Q9300
-Message-ID: <20080811140734.GA27959@srcf.ucam.org>
-References: <514e099a0808030300u140a0ae7m92a2e7294f39f7b7@mail.gmail.com> <200808081430.43012.trenn@suse.de> <aff5deaf0808081123s1fbe6a5cn7847e9cb053c1f5a@mail.gmail.com> <200808092059.47863.trenn@suse.de> <514e099a0808100128u303207clcb22292db2f0cc59@mail.gmail.com> <1218418431.6671.52.camel@yakui_zhao.sh.intel.com> <514e099a0808102144n241c8e9ak255bded0a80744f1@mail.gmail.com> <20080811042244.469f8e1d@infradead.org> <20080811140206.GB3338@cs181140183.pp.htv.fi>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080811140206.GB3338@cs181140183.pp.htv.fi>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
+	Mon, 11 Aug 2008 10:09:36 -0400
+Subject: Re: [PATCH 4/5] kmemtrace: SLUB hooks.
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
+       mathieu.desnoyers@polymtl.ca, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, rdunlap@xenotime.net, mpm@selenic.com,
+       rostedt@goodmis.org, tglx@linutronix.de
+In-Reply-To: <48A046F5.2000505@linux-foundation.org>
+References: <1218388447-5578-1-git-send-email-eduard.munteanu@linux360.ro>
+	 <1218388447-5578-2-git-send-email-eduard.munteanu@linux360.ro>
+	 <1218388447-5578-3-git-send-email-eduard.munteanu@linux360.ro>
+	 <1218388447-5578-4-git-send-email-eduard.munteanu@linux360.ro>
+	 <1218388447-5578-5-git-send-email-eduard.munteanu@linux360.ro>
+	 <48A046F5.2000505@linux-foundation.org>
+Date: Mon, 11 Aug 2008 17:09:34 +0300
+Message-Id: <1218463774.7813.291.camel@penberg-laptop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 11, 2008 at 05:02:06PM +0300, Adrian Bunk wrote:
-
-> This statement is only true for HPC environments and when you measure 
-> Watts per work done.
+On Mon, 2008-08-11 at 09:04 -0500, Christoph Lameter wrote:
+> Eduard - Gabriel Munteanu wrote:
 > 
-> But if you have some desktop or server with a load that is determined by 
-> when it gets used, then p4-clockmod can actually save energy when the 
-> computer is not under high load or even idle.
 > 
-> Or do I miss anything?
+> 
+> >  static __always_inline void *kmalloc_node(size_t size, gfp_t flags, int node)
+> >  {
+> > +	void *ret;
+> > +
+> >  	if (__builtin_constant_p(size) &&
+> >  		size <= PAGE_SIZE && !(flags & SLUB_DMA)) {
+> >  			struct kmem_cache *s = kmalloc_slab(size);
+> > @@ -239,7 +280,13 @@ static __always_inline void *kmalloc_node(size_t size, gfp_t flags, int node)
+> >  		if (!s)
+> >  			return ZERO_SIZE_PTR;
+> >  
+> > -		return kmem_cache_alloc_node(s, flags, node);
+> > +		ret = kmem_cache_alloc_node_notrace(s, flags, node);
+> > +
+> > +		kmemtrace_mark_alloc_node(KMEMTRACE_TYPE_KMALLOC,
+> > +					  _THIS_IP_, ret,
+> > +					  size, s->size, flags, node);
+> > +
+> > +		return ret;
+> 
+> You could simplify the stuff in slub.h if you would fall back to the uninlined
+> functions in the case that kmemtrace is enabled. IMHO adding additional inline
+> code here does grow these function to a size where inlining is not useful anymore.
 
-On modern hardware, the C states will win you more than downclocking the 
-processor would.
+So, if CONFIG_KMEMTRACE is enabled, make the inlined version go away
+completely? I'm okay with that though I wonder if that means we now take
+a performance hit when CONFIG_KMEMTRACE is enabled but tracing is
+disabled at run-time...
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+> > diff --git a/mm/slub.c b/mm/slub.c
+> > index 315c392..940145f 100644
+> > --- a/mm/slub.c
+> > +++ b/mm/slub.c
+> > @@ -23,6 +23,7 @@
+> >  #include <linux/kallsyms.h>
+> >  #include <linux/memory.h>
+> >  #include <linux/math64.h>
+> > +#include <linux/kmemtrace.h>
+> >  
+> >  /*
+> >   * Lock order:
+> > @@ -1652,18 +1653,47 @@ static __always_inline void *slab_alloc(struct kmem_cache *s,
+> >  
+> >  void *kmem_cache_alloc(struct kmem_cache *s, gfp_t gfpflags)
+> >  {
+> > -	return slab_alloc(s, gfpflags, -1, __builtin_return_address(0));
+> > +	void *ret = slab_alloc(s, gfpflags, -1, __builtin_return_address(0));
+> > +
+> > +	kmemtrace_mark_alloc(KMEMTRACE_TYPE_CACHE, _RET_IP_, ret,
+> > +			     s->objsize, s->size, gfpflags);
+> > +
+> > +	return ret;
+> >  }
+> 
+> _RET_IP == __builtin_return_address(0) right? Put that into a local variable?
+> At least we need consistent usage within one function. Maybe convert
+> __builtin_return_address(0) to _RET_IP_ within slub?
+
+I think we should just convert SLUB to use _RET_IP_ everywhere. Eduard,
+care to make a patch and send it and rebase this on top of that?
+
