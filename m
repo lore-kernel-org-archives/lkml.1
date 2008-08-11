@@ -1,112 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753414AbYHKOOo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754307AbYHKOO5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753414AbYHKOOo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Aug 2008 10:14:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751006AbYHKOOg
+	id S1754307AbYHKOO5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Aug 2008 10:14:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752337AbYHKOOj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Aug 2008 10:14:36 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:37871 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750727AbYHKOOf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Aug 2008 10:14:35 -0400
-Date: Mon, 11 Aug 2008 10:12:34 -0400
-From: Jason Baron <jbaron@redhat.com>
-To: Greg KH <greg@kroah.com>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, joe@perches.com,
-       nick@nick-andrew.net, randy.dunlap@oracle.com
-Subject: Re: [PATCH 1/7] dynamic debug v2 - infrastructure
-Message-ID: <20080811141231.GA6103@redhat.com>
-References: <20080715213108.GB23331@redhat.com> <20080717070103.GA21961@kroah.com> <20080717212040.GB13252@redhat.com> <20080717223222.GA28016@kroah.com> <20080808215153.GA16729@redhat.com> <20080809010741.GA26036@kroah.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080809010741.GA26036@kroah.com>
-User-Agent: Mutt/1.4.1i
+	Mon, 11 Aug 2008 10:14:39 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:38567 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752191AbYHKOOi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Aug 2008 10:14:38 -0400
+Message-ID: <48A048FD.30909@linux-foundation.org>
+Date: Mon, 11 Aug 2008 09:13:17 -0500
+From: Christoph Lameter <cl@linux-foundation.org>
+User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
+MIME-Version: 1.0
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+CC: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
+       mathieu.desnoyers@polymtl.ca, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, rdunlap@xenotime.net, mpm@selenic.com,
+       rostedt@goodmis.org, tglx@linutronix.de
+Subject: Re: [PATCH 4/5] kmemtrace: SLUB hooks.
+References: <1218388447-5578-1-git-send-email-eduard.munteanu@linux360.ro>	 <1218388447-5578-2-git-send-email-eduard.munteanu@linux360.ro>	 <1218388447-5578-3-git-send-email-eduard.munteanu@linux360.ro>	 <1218388447-5578-4-git-send-email-eduard.munteanu@linux360.ro>	 <1218388447-5578-5-git-send-email-eduard.munteanu@linux360.ro>	 <48A046F5.2000505@linux-foundation.org> <1218463774.7813.291.camel@penberg-laptop>
+In-Reply-To: <1218463774.7813.291.camel@penberg-laptop>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 08, 2008 at 06:07:41PM -0700, Greg KH wrote:
-> > Few notes...there is still one control file: <debugfs>/dynamic_printk/modules
-> > We can split this up now or later, but I kind of like being able to see all
-> > the controls in one file. Also, i've used a djb2 hash function in the code,
-> > which i'm not sure is under the correct license/copyright, so i just wanted
-> > to point that out as well. see: scripts/basic/hash.c. If its an issue, i can
-> > find another hash function. 
+Pekka Enberg wrote:
+> On Mon, 2008-08-11 at 09:04 -0500, Christoph Lameter wrote:
+>> Eduard - Gabriel Munteanu wrote:
+>>
+>>
+>>
+>>>  static __always_inline void *kmalloc_node(size_t size, gfp_t flags, int node)
+>>>  {
+>>> +	void *ret;
+>>> +
+>>>  	if (__builtin_constant_p(size) &&
+>>>  		size <= PAGE_SIZE && !(flags & SLUB_DMA)) {
+>>>  			struct kmem_cache *s = kmalloc_slab(size);
+>>> @@ -239,7 +280,13 @@ static __always_inline void *kmalloc_node(size_t size, gfp_t flags, int node)
+>>>  		if (!s)
+>>>  			return ZERO_SIZE_PTR;
+>>>  
+>>> -		return kmem_cache_alloc_node(s, flags, node);
+>>> +		ret = kmem_cache_alloc_node_notrace(s, flags, node);
+>>> +
+>>> +		kmemtrace_mark_alloc_node(KMEMTRACE_TYPE_KMALLOC,
+>>> +					  _THIS_IP_, ret,
+>>> +					  size, s->size, flags, node);
+>>> +
+>>> +		return ret;
+>> You could simplify the stuff in slub.h if you would fall back to the uninlined
+>> functions in the case that kmemtrace is enabled. IMHO adding additional inline
+>> code here does grow these function to a size where inlining is not useful anymore.
 > 
-> Why use that hash function?  Actually, it looks like you are using 2
-> different ones, right?  Why?
-> 
+> So, if CONFIG_KMEMTRACE is enabled, make the inlined version go away
+> completely? I'm okay with that though I wonder if that means we now take
+> a performance hit when CONFIG_KMEMTRACE is enabled but tracing is
+> disabled at run-time...
 
-The hash functions are used to map between the calling module name, 
-KBUILD_MODNAME, and whether or not debugging is enabled. In the 'fast' case a
-bitmask is used to represent each hash bucket. One bit per bucket. Thus, if
-all the modules in a bucket are disabled the bitmask is simply 0. Two
-hashes are used in order to reduce the probability of collisions, used in this
-way it is similar to a bloom filter. The code that implements this is:
+We already take a performance hit because of the additional function calls.
 
-#define __dynamic_dbg_enabled(module, type, value, level, hash)  ({          \
-        int ret = 0;                                                         \
-        if (unlikely((dynamic_printk_enabled & (1LL << DEBUG_HASH)) &&       \
-                        (dynamic_printk_enabled2 & (1LL << DEBUG_HASH2))))   \
-                        ret = __dynamic_dbg_enabled_helper(module, type,     \
-                                                                value, hash);\
-        ret; })
-
-where DEBUG_HASH and DEBUG_HASH2 are computed at compile time. Thus, in the
-'fast' case where debugging is off, we have two extra intructions, a test and
-a jmp. Further, if we enable debugging for a single module, we will at most
-do two 'tests' and a jump for disabled modules. If the module is enabled, we
-would call through to __dynamic_dbg_enabled_helper(), which verifies whether
-or not debugging is enabled for the module. I believe if we are then calling
-'printk()' the cost of this function call is 'in the noise'. Thus, i've tried
-to optimize the disabled case.
-
-> > --- /dev/null
-> > +++ b/include/linux/dynamic_printk.h
-> > @@ -0,0 +1,94 @@
-> > +#ifndef _DYNAMIC_PRINTK_H
-> > +#define _DYNAMIC_PRINTK_H
-> > +
-> > +#ifdef __KERNEL__
-> 
-> Shouldn't be needed.
-> 
-
-ok
-
-> > +#include <linux/string.h>
-> > +#include <linux/hash.h>
-> > +
-> > +#define DYNAMIC_DEBUG_HASH_BITS 6
-> > +#define DEBUG_HASH_TABLE_SIZE (1 << DYNAMIC_DEBUG_HASH_BITS)
-> > +
-> > +#define TYPE_BOOLEAN 1
-> 
-> What's this for?
-> 
-
-This is really in anticipation of more 'involved' dynamic debugging. That is,
-'TYPE_BOOLEAN', just means the debugging is either off/on. The other types
-are 'TYPE_FLAG', where you can control debugging for a module via a bitmask,
-or 'TYPE_LEVEL', where you control the debugging for a module via a level 
-control like printk levels. These different types were implemented in the
-orginal patchset.
-
-
-> > +#define DYNAMIC_ENABLED_ALL 0
-> > +#define DYNAMIC_ENABLED_NONE 1
-> > +#define DYNAMIC_ENABLED_SOME 2
-> > +
-> > +extern int dynamic_enabled;
-> > +extern long long dynamic_printk_enabled;
-> > +extern long long dynamic_printk_enabled2;
-> 
-> What's up with the "2" versions?
-> 
-
-"2" here is the second bitmask as explained previously.
-
-thanks,
-
--Jason
+With the above approach the kernel binary will grow significantly because you
+are now inserting an additional function call at all call sites.
