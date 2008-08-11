@@ -1,75 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753949AbYHKR1w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753434AbYHKRfh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753949AbYHKR1w (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Aug 2008 13:27:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751835AbYHKR1n
+	id S1753434AbYHKRfh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Aug 2008 13:35:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751835AbYHKRf3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Aug 2008 13:27:43 -0400
-Received: from outbound-mail-160.bluehost.com ([67.222.39.40]:50772 "HELO
-	outbound-mail-160.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751630AbYHKR1n (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Aug 2008 13:27:43 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:From:To:Subject:Date:User-Agent:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
-	b=ZkMjDF2/AtHBx6K6NIChOOtebBbxjBQ5LtLX7GwoO+4DawRrRQbG9iYgG0PwZAO/moqs/fjto9SryJeawweM0INLKDNKigM2Z4gCpXSajug0yJ70iZOW4rLm/Rxi8HB7;
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org
-Subject: [git pull] PCI fixes
-Date: Mon, 11 Aug 2008 10:27:38 -0700
-User-Agent: KMail/1.9.9
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+	Mon, 11 Aug 2008 13:35:29 -0400
+Received: from mga02.intel.com ([134.134.136.20]:24090 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751301AbYHKRf2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Aug 2008 13:35:28 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.32,189,1217833200"; 
+   d="scan'208";a="428214005"
+Date: Mon, 11 Aug 2008 10:35:26 -0700
+From: Venki Pallipadi <venkatesh.pallipadi@intel.com>
+To: Pavel Machek <pavel@suse.cz>
+Cc: David Woodhouse <dwmw2@infradead.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       "arjan@infradead.org" <arjan@infradead.org>
+Subject: Re: [RFC] Imprecise timers.
+Message-ID: <20080811173526.GA28661@linux-os.sc.intel.com>
+References: <1216695757.18980.16.camel@shinybook.infradead.org> <7E82351C108FA840AB1866AC776AEC4608E23BE7@orsmsx505.amr.corp.intel.com> <20080809125447.GA13169@ucw.cz>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200808111027.38682.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
+In-Reply-To: <20080809125447.GA13169@ucw.cz>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Please pull my for-linus branch:
-git pull git://git.kernel.org/pub/scm/linux/kernel/git/jbarnes/pci-2.6.git for-linus
+On Sat, Aug 09, 2008 at 05:54:47AM -0700, Pavel Machek wrote:
+> On Mon 2008-07-28 17:36:57, Pallipadi, Venkatesh wrote:
+> >
+> >
+> > >-----Original Message-----
+> > >From: linux-kernel-owner@vger.kernel.org
+> > >[mailto:linux-kernel-owner@vger.kernel.org] On Behalf Of David
+> > >Woodhouse
+> > >Sent: Monday, July 21, 2008 8:03 PM
+> > >To: linux-kernel@vger.kernel.org
+> > >Cc: Thomas Gleixner; Ingo Molnar; arjan@infradead.org
+> > >Subject: [RFC] Imprecise timers.
+> > >
+> > >Many users of timers don't really care too much about exactly
+> > >when their
+> > >timer fires -- and waking a CPU to satisfy such a timer is a waste of
+> > >power. This patch implements a 'range' timer which will fire
+> > >at a 'convenient'
+> > >moment within given constraints.
+> > >
+> > >It's implemented by a deferrable timer at the beginning of the range,
+> > >which will run some time later when the CPU happens to be awake. And a
+> > >non-deferrable timer at the hard deadline, to ensure it really does
+> > >happen by then.
+> > >
+> >
+> > One concern I have is drivers using range_timers thinking that they need
+> > some upper bound, while all they need is a simple deferrable timer. With that
+> > we will have multiple timers waking up the CPU all the time (say, on
+> > different CPUs) problem again. Even without the timers waking up all
+> 
+> I don't get it. Who has timers that can be deferred forever? At that
+> point they may simply not set the timer at all, right?
+> 
 
-The most exciting thing in this set is the MSI restore fix.  It should get
-suspend/resume working again on several machines.  Shortlog & diffstat
-below.
+I don't think I said drivers have or need timers that can be deferred forever.
 
--- 
-Jesse Barnes, Intel Open Source Technology Center
+My point is, is it worth the overhead of setting and deleting additional timer,
+just because drivers think that they need to use this new interface,
+need to set a upper bound and come up with random upper bounds.
+Apart from the overhead of setup and teardown we will somewhat negate the
+benefits of deferrable timers as the upper bound hard timers can fire at
+different times waking up the CPUs frequently.
 
-Andrew Morton (1):
-      PCI: make pci_register_driver() a macro
+I understand that some drivers need this kind of upper limit. I am not sure
+whether all drivers need it and if not, how can we restrict drivers from using
+this when they don't really need it.
 
-Dean Hildebrand (1):
-      PCI: Limit VPD length for Broadcom 5708S
-
-Dmitry Baryshkov (1):
-      DMA: make dma-coherent.c documentation kdoc-friendly
-
-Eric Dumazet (1):
-      PCI: add Broadcom 5708S to VPD length quirk
-
-Jesse Barnes (1):
-      PCI: fully restore MSI state at resume time
-
-Rafael J. Wysocki (1):
-      PCI PM: Export pci_pme_active to drivers
-
-Simon Horman (1):
-      PCI: check the return value of device_create_bin_file() in pci_create_bus()
-
-akpm@linux-foundation.org (1):
-      PCI: remove duplicate symbol from pci_ids.h
+Thanks,
+Venki
 
 
- drivers/pci/msi.c       |    5 +--
- drivers/pci/pci.c       |    3 +-
- drivers/pci/probe.c     |   54 +++++++++++++++++++++++++++++++++--------------
- drivers/pci/quirks.c    |    7 +++++-
- include/linux/pci.h     |   11 ++++++---
- include/linux/pci_ids.h |    2 -
- kernel/dma-coherent.c   |   10 ++++----
- 7 files changed, 60 insertions(+), 32 deletions(-)
