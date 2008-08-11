@@ -1,198 +1,382 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755879AbYHKSVo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756197AbYHKSWL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755879AbYHKSVo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Aug 2008 14:21:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752974AbYHKSVg
+	id S1756197AbYHKSWL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Aug 2008 14:22:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753056AbYHKSV4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Aug 2008 14:21:36 -0400
-Received: from wa-out-1112.google.com ([209.85.146.181]:8409 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751959AbYHKSVf (ORCPT
+	Mon, 11 Aug 2008 14:21:56 -0400
+Received: from tomts10.bellnexxia.net ([209.226.175.54]:54419 "EHLO
+	tomts10-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751959AbYHKSVy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Aug 2008 14:21:35 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type;
-        b=MBEwiH1lu0WRyjZ37o6blBeRTW5250+atyXM6Rh1v+TObvc621L0dXsdO044n1kMr1
-         wzY6OvvxefHim0f+QA8VsRjzhJ+cf8jfFfb6+lH/Bsf5YBuYPJwZZ4eZy92H6xlR4/3b
-         NFp/a45dZpKlx+FNb+V98cCTA9yLgPlLxGlsw=
-Message-ID: <d77765540808111121l39b3bbb2nc0ef7e58a665ec74@mail.gmail.com>
-Date: Mon, 11 Aug 2008 18:21:34 +0000
-From: "=?UTF-8?Q?Piotr_Jaroszy=C5=84ski?=" <p.jaroszynski@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: No kernel output to serial console
-MIME-Version: 1.0
-Content-Type: multipart/mixed; 
-	boundary="----=_Part_85065_23529091.1218478894564"
+	Mon, 11 Aug 2008 14:21:54 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AmoFANAdoEhMRKxB/2dsb2JhbACBX6oc
+Date: Mon, 11 Aug 2008 14:21:50 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, Roland McGrath <roland@redhat.com>,
+       Ulrich Drepper <drepper@redhat.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Gregory Haskins <ghaskins@novell.com>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       "Luis Claudio R. Goncalves" <lclaudio@uudg.org>,
+       Clark Williams <williams@redhat.com>
+Subject: Re: [PATCH 0/5] ftrace: to kill a daemon
+Message-ID: <20080811182150.GB32207@Krystal>
+References: <alpine.DEB.1.10.0808071639420.9449@gandalf.stny.rr.com> <20080808172259.GB8244@Krystal> <alpine.DEB.1.10.0808081334010.4436@gandalf.stny.rr.com> <20080808174607.GG8244@Krystal> <alpine.DEB.1.10.0808081410380.6116@gandalf.stny.rr.com> <20080808182104.GA11376@Krystal> <alpine.DEB.1.10.0808081432400.8922@gandalf.stny.rr.com> <20080808190506.GD11376@Krystal> <alpine.DEB.1.10.0808081750590.16691@gandalf.stny.rr.com> <alpine.DEB.1.10.0808082024580.1396@gandalf.stny.rr.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.1.10.0808082024580.1396@gandalf.stny.rr.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 14:15:00 up 67 days, 22:55,  7 users,  load average: 0.71, 0.68,
+	0.62
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------=_Part_85065_23529091.1218478894564
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: base64
-Content-Disposition: inline
+* Steven Rostedt (rostedt@goodmis.org) wrote:
+> 
+> [ updated patch ]
+> 
+> On Fri, 8 Aug 2008, Steven Rostedt wrote:
+> > 
+> > 
+> > The do_something_silly had an mcount pointer to it. I put in printks in 
+> > the ftrace enabled code to see where this was preempted. It was preempted 
+> > several times before and after the nops, but never at either nop.
+> > 
+> > Maybe I didn't run it enough (almost 2 hours), but perhaps it is very 
+> > unlikely to be preempted at a nop if there's something coming up next.
+> > 
+> > Yes a string of nops may be preempted, but perhaps only two nops followed 
+> > by an actual command might be skipped quickly.
+> > 
+> > I'll write some hacks to look at where it is preempted in the scheduler 
+> > itself, and see if I see it preempting at the second nop ever.
+> 
+> I put that code in the scheduler and it does indeed preempt in the nops!
+> It also uncovered a nasty bug I had in my code:
+> 
+> [...]
+> 
+> > Index: linux-tip.git/arch/x86/kernel/ftrace.c
+> > ===================================================================
+> > --- linux-tip.git.orig/arch/x86/kernel/ftrace.c	2008-06-26 14:58:54.000000000 -0400
+> > +++ linux-tip.git/arch/x86/kernel/ftrace.c	2008-08-08 17:48:04.000000000 -0400
+> > @@ -127,6 +127,46 @@ notrace int ftrace_mcount_set(unsigned l
+> >  	return 0;
+> >  }
+> >  
+> > +static const unsigned char *second_nop;
+> > +
+> > +void arch_ftrace_pre_enable(void)
+> > +{
+> > +	struct task_struct *g, *p;
+> > +	unsigned long **ip;
+> > +
+> 
+> [...]
+> 
+> > +		ip = task_thread_info(p)->ip;
+> > +		if (!ip)
+> > +			continue;
+> > +		if (memcmp(*ip, second_nop, x86_nop5_part2) == 0)
+> > +			/* Match, move the ip forward */
+> > +			*ip += x86_nop5_part2;
+> 
+> Notice the bug? Hint, *ip is of type unsigned long *.
+> 
+> Here's the updated fix:
+> 
 
-SGVsbG8sCgpJIGNhbid0IGdldCBrZXJuZWwgdG8gb3V0cHV0IGFueSBpbmZvIHRvIHNlcmlhbCBj
-b25zb2xlIGR1cmluZyBib290LAp0aGUgb3V0cHV0IGxvb2tzIGxpa2UgdGhhdDoKCmtlcm5lbCAv
-dm1saW51ei0yLjYuMjIuMTktbHVzdHJlLTEuNi41LjEgcm8gcm9vdD0vZGV2L3NkeTUgY29uc29s
-ZT10dHlTMCw5NjAwbjgKICAgW0xpbnV4LWJ6SW1hZ2UsIHNldHVwPTB4MTQwMCwgc2l6ZT0weDJj
-YWQwOF0KCklOSVQ6IHZlcnNpb24gMi44NiBib290aW5nCiguLi4pCgpzbyBib3RoIGdydWIgYW5k
-IGluaXQgY2FuIHVzZSBpdCBidXQga2VybmVsIGRvZXNuJ3Qgc2VlbSB0by4KCmdydWIgY29uZmln
-OgpzZXJpYWwgLS11bml0PTAgLS1zcGVlZD05NjAwCnRlcm1pbmFsIC0tdGltZW91dD01IHNlcmlh
-bCBjb25zb2xlCgppbml0dGFiIGxpbmU6CnMwOjEyMzQ1OnJlc3Bhd246L3NiaW4vYWdldHR5IDk2
-MDAgdHR5UzAgdnQxMDAKCkF0dGFjaGluZyBjdXJyZW50IGtlcm5lbCBjb25maWcgaW4gY2FzZSBp
-IG1pc3NlZCBzb21ldGhpbmcgb2J2aW91cyB0aGVyZS4KCnNvcnJ5IGlmIHRoYXQncyBvZmZ0b3Bp
-YyBoZXJlLCBidXQgSSdtIG5vdCBzdXJlIHdoZXJlIGVsc2UgSSBjb3VsZCBhc2suCgotLSAKQmVz
-dCBSZWdhcmRzLApQaW90ciBKYXJvc3p5xYRza2kK
-------=_Part_85065_23529091.1218478894564
-Content-Type: application/x-gzip; name=config.gz
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_fjreqfmc0
-Content-Disposition: attachment; filename=config.gz
+Hi Steven,
 
-H4sIAHR5oEgCA5RcWY/buJZ+718hpAe4CXCT8lLlcjWmBqApymZbW5GUl7wITpWSeOKy63rpTv79
-HFJeKImkexpIOuJ3uB+ejYf+/bffPXTYb14X++XzYrX65X0r1sV2sS9evNfFj8J73qy/Lr/94b1s
-1v/ae8XLcg81wuX68NP7UWzXxcr7q9julpv1H17nU+9Tp/Nxddjtt8XHNnzdfWoDdbRZQx/fvHbb
-a9//cdv6o3XrdVqt/m+//4aTOKDDfNbv5b3bx1+n797tgIrLJ8CXjyGJCaM4FzQi5tJ8wuccozC8
-wJ+TmOR+hLqdS1mY4LFP0pxnaZowrTsuEB4LhjAxYCRC6ShhAIWEpITxCxZFWbPHSwmbQuXzQHlK
-YzmC5hRGU0KHI9EEYEp0wJCAdkmI5pX1yXGUzvBoeCkkiIXzPGU0FoZOKEfV0Z2BBCZ4KUYMj/II
-zfMRmpA8xXng4xqaJmkWwqh4Hic+ySvV/Yhq1JlPharT7HaQyaH/7ukNjxDPaZgMO3nW7XjLnbfe
-7L1dsbeT9W51stMYSHDaccrF47ub1fLLzevm5bAqdjf/lcUIOIaRkCBObj6V7P7uN+BN6GXzUsAp
-2B+2y/0vb1X8Bdy+edsDs+8uvEtmwAXAdbFAYZW58jFhMdEKaQzzJ/EExi0HEwGPdztlV0N16lZy
-3Ie3S+PQDAonwGU0iR/fvTMVw7KKRGPQqb7+cBAmNMX60sJnHnPDOh1p5f+x0EadJpzO8ugpIxnR
-GxpwH9grwYTzHGEsjDskEB/DeRLciGaC18Zy2VrJLIZR0nH5D21Vx6eBwmD0HYAhZkHORzQQj+3+
-pWmcZpwIyxIEHBgmZQQDR/v6dJk8c8ahDsIx1Jmo7WW+kQTjPElBNtHPJA8SlnP4h7n/cunPFUk0
-IL5PfANxRv12r7LVUDdviL4xfPF5xJsleUl37utcTmYg/fIUcdMajRKRhpm2/nURM9BBEgY5BnGp
-wXDO8iDThxhkgsw0OREDV1MpTLRBkzTRq3A6jFEY+BrBBI6gXsBHEYkun5OoJIHhZLGoCG4eooG+
-EDzMBsZt5GEyMCwJE3kkp6DGe2F9Gs/LQRiqqFXgkdyBVikBws3iZfFlBQJHiSZvd3h722z3F1kQ
-JX4W6ktSFuQZ6BHkN4qBzbAGnocF8FFymA/esTpn+CxgwtAwgzEQ6jozSUH04xGN5V6rGQ1Wm+cf
-3mrxq9heZjE4Kr3m6UlypXP1rlQzNPH48/dCLspWk7s04XhEfFA6iSbwTqWIN8t8gvywHF8NwcGT
-PiTQGCgLQVWZV+gEn9oz6xxFYmlYjtlR6zisx3fPX/9zVEXpdvNc7Habrbf/9VZ4i/WL97WQmqnY
-Vc2oqrCXJRMemTqLxv0KW6Qcm/lBHl+z+j0bJmlm6ED2HbbBaoG55IM5GAiPvVsjWIrono5ReUSV
-PWGvLziu2kDDJIGdT2llCSKKQS9AS5YhRpzVLKkUJGu1CHjz2Kw+fKmEa+WRYFprsPDah+I0Hol6
-UYR1WUpIlEoGiSu69lQ+SUIQXoiZFdGRyoXlg7HpMMeZbguO+7UCJYtN29S7BdWf0jo5fIHmymqG
-ok85fAo6BJEIZhAahMRFcTwNNRKeIgZ2tKEFDjYcBklMooTNpRgjFe0WgI0qq0UozpBpDSqdl1QV
-pXDu+B+1oGk36PhoGqvKGk/ERO4/TJKmIHJPGs/QpTShqOV8lvM9qmWTUZGGYHamQpmk0vZ5PJ+i
-iA7Bn5C25cVLITzJQHPwuhN2cmjkfIaP7bM5IP0CtTNHhyOIc5HksX6EkkzkSZBLWXnCUzTUti5m
-p4Gdp3Wcj0W2lB0qBqgtwKXRUUqE8gdZrQw4U/oroLaxrgpK9+1isqFwCAetBEzLOqWJCAdVmRBh
-Uhe/UKSkWWiTP4CjqKKix2BKmDcbM8ThmGRVia7bqCCUhFwWQ2/paM6plFnATeDTtn6CEw7/afxG
-ME4sTYMFq/xiMLIFHLOEmUzDz3m71dJnAiWdu5axQYC6LSsE7bSMPTwCosupgcGBRsyn7IkbnFv2
-JL2EgW4ClI6wlONN+pTEPo2Hst7JqEk3fxdbcArXi2/Fa7HeNx3CNKpI7igPyRBhi8SWYm5QPbY6
-WHdIGsaRlL7ee/Ty12L9XLyAxyrd18N2IcekrIRyvHS9L7ZfF8/FB4/X7UrZhCZkpTiXnlTAa4Wo
-olZV0QAJUNNz0wFVcCaELltUYYDiRjs+iCZbI0cXM2G1dsSIsEh3uXVFVG0e8cziZKqGElBsA2Sd
-RAhcLyMH+Rwk3GOrPvT69ukgwfWFTaakPhHYY6HrC2XFRWfJVe1O6hcEcpTZ58MHvMEmUooG2+I/
-h2L9/MvbPS9Wy/W3Ejn7xHnAyFOj5uCwO7G49z7F1Cv2z58+aNyONeaBD1CCwKuiWhZFdacdSomM
-rA0yXi1ElfVRGr+MwXGw1GpdlQWX84Kp4zSNhDzGjfmlGIO4kFOLMEU3eLF9gSl/0NwvrX1Famz8
-qK3kAtV7ID+L58NeuXZfl/KvzfZ1sd95Nx55PawWNekxoHEQCek3V5yksjSiVSP9JMNQt3PUahVd
-rsoRaN9LkZTvSDQCRJdyNeS42P+92f4oeeRsqxhgg/SD06IoL8umSoAHkMkNyWI606mhG9B/JpFC
-yxGcw1il4YQRF9XwVo78CYoxWFYMpk5MigqIAjqQkcNRpcU0TuvfuT/Caa0DWTxIYMuNvHAkYIiZ
-cTlDmlIXOGTE1nSkJmWJhqZm7uTzGDY4GVNiFoNyZXM0smOEp3YQ2MdmNCh8FjCQZlkcG00gRVKi
-lVU+15SGvIwMxFxKgSvdlMSNvmyUA0KEbUw+RXqQUQ0Tp6fiS5QHyuCfwzPXGdo70+BsoHuLJ3//
-hIPDf/iyfH5XbT3y7zgdGrl40qty5qQno3ETm7WhCMpDIf3BwE5UBis5HK/cR751KXsuruk52abn
-5Bs5hoimPUd1C1vVqK4S/H94rPfPmazn4DIrodqaY5xYiXLLpuecisbGuwaklvPkZir3gNukzzRh
-Y+kIRIiNbTQBDYXFAgEJ5WOcmmUux6IiSuV37g/AD+VmnX0mSAZ/4ljYaUYRwipocoWEj1Db5Mud
-CeCwVWO4qdkRQyIy3wUw6g/No5iEKM77rU77yRJVxLGFT8IQdyyrPbOMDoXm3Zt17sxdoNQc8ibw
-f8uwpjCfpopVFsLThkvv42az9b4ullsPDM9DUTM5pURVEbBG7aN94e2L3d5QKR0LcNDMdhiKGPJp
-Yl4t5iPzppnnh4KczViVAdRYpsttsSp2u4oBHQzl3rbNK0XlBSNXNyvmIA7C9tqUEGJHWTCm1QC9
-GpZf/LV8Ljx/u/yrDJtfrhmXz8diL6lbb+Dixz4KEz1IDppC3ZsElEVTxECeZTTUojvBNJd3DFVn
-RdnhuQ/KyCIojgRkwiyyCCzTfDRPCZtQnjQ5DDzddfG8Bwb76B3Wy69L8H4PO5jqG3i53n9//J9j
-ekL5De7OD3ULcdmvBMRlPY5x2Q/R5Mp0sV2sVsXKk36B0T8AA6ymPsqKq8O30hdfLX4173VKo/PS
-irQ5617M6Q5gv3nerHaVukf3XbtxeVFbX+HO0yVL4FtvMHH6lNvOxxHGFFjYQSN78BF+6LWcJFnt
-SqxBgJOpdEgiowI8EYXlvU+zMpunIglrNywNsnjgO3E+67snMXCMjSHNn9cKy7vHx3bPhMk74cfb
-1oMRVNdmiqLd6mhhUuyzJJISEfsT36YL8gROYU7EqMFS0XL3bOIXOohyxM27lI5QLBIzxoc0pwm+
-NecC0CBSl8Hmqkk8l2pIWDZOjGg8TpGvghwm+8InzTUvC4+nsFjsCqgBQnHzfJCxO+V73yxfik/7
-n3vpl3vfi9XbzXL9deNt1h5U9l6koDQeJUBzDovr5JKRL+kcnAKoT7l2e34sKM01ZRYaZ4V94x2q
-TwRKiTtLAbyOMEnT+TUqjjl1j/woei5cI+1iBIMHFhCheY9UPC9XwcXydheW5/n78g2oTqLx5svh
-29flT/1mU1Y8BmWNZz7ye7etaxMCYemeTxnL0qcjQ0pgM4LSq8WOqiTwZ5DxPGE1LXhqOwmCQWKL
-HZ2IjvNz0kjnoNdpO2nYZ0vwXOe5COW12dZQlT5g8fxKiiQO55JVnYNBBPc6s5mbJqTtu1nXMWIU
-+fe3s5lpuOAn0Zlb1CvucA9BMBqExE2D5/0O7j103UT87q7TukrSdZOMUtG9MmJJ0us5Sf5UV9+x
-W83hdqflHkwKC+w+WqLfaXevk7hbiXn//rZ95x6KjzstYKc8Cf1/RhiTqXv+k+mYuykojdCQXKGB
-Pb2yBDzEDy1yZcsEizoP7u2YUAR8OLtypgTu93Cr1bYd4Byx6KqIqAlDeejpZHBF4TVsDKVHShvD
-ZDUzREGnC8GMCXlYj/nLr1wMRTWGAGXgFYZgHVgaqKscNaDjSMp0mvcvy92Pf3v7xVvxbw/7H8Gm
-+qCnLB13UM938mWWjkxsrNwZj1hJafbyTnDCuXAsPjfqEM5ycMN848Xrud+hcTS4afjxzWuh78zO
-e198+vYJJu/97+FH8WXz83wF4r0eVvvl26rwwiyumEJqcUtDBSDb6sO/pVtZXSmFhMlwSGNb6AcI
-OEYx2KHzGNsanyIqFNnjq7a5YrtY7+TYdddWNShvAyWvNcYS4CYTVimo+tvFqWAPckvzEgnpgCNu
-Ph+rzd8fywTjl7PHfjl7JeNjt5rrTnOQCjN1oOyzAKoHm/AoJ2i95CphhN0dIIrv3R2UBFYZfiZ6
-uNLKw62TgOGIW7x7MkRK7IB2sEWSzjSO2/szDUcOvgFNTS0+jcLBcoSDYDH8FIUfzbrth7ZjuYjN
-ESl5OxMZmLB+EiEa28mGvhg52D91nY2YCkvU7YSjtsXOKM+HII695PPorov7wDQd1wCZHXxSS5y3
-O/2WiwjsXuzGad0tqom01NWAj7sPdz/deEs4cOvtdrlMzOTgAGtU0ggEkpHyMtLHfHOFWlIIV0Wj
-qsOgCsF+skYd6oajXi+aNJqKJ+Zwgw+SGUwP87RlxSduC+MpGLR/RDmxE/DZrQOkoRPsOOtyO5iF
-1A6CkecCBeGuCcFpw21wu8zrqfbS0nkJRr4DZLYATQnb3TGFl556PU/CQOMYvMPHOuNdFz5PGeHc
-TkACxKxc7XLTVW2HZ3bG72dufNaJrxB07bjD2brgjvouv1ERuLxlRRAhNiFh6CCwOpUKBtPATQAG
-P3Z2UHqTDiaQkRQ3apM5ikBKJZsBowjkNRSfO5isGaap4g7PvMQJrDGT17XcOUzwg13cBiKs13d1
-Qx3N28SUAqc0HiRx0x+MpDvxseoQeu+VUSkvScKJ7ntFfjP8WU2WjXyVWIxMfhFgst2WlqBflrRr
-Lagy8yoc0du7ng0ub9aRxXgCApXlMXd4fH4lZdR3JYUCqG44bCCPUcpHiRWPKGMWbQnoZ8ISa03n
-NNWgay/k1HYHB/k62JPvEuxBgCDj1CJxSkh6bi7YYnWdKhvcLnmr6rW7D7fe+2C5LeSdrjHrL6CM
-yPtb69WsaqPReidxTFeilmtgGst81OPNKbdejTfavtyPA0NRXH1I4GdRZIn3JyrD2Xz1/5SBnfDZ
-mEEnsrietccHVoEGvlgtiaDMjNx/l3e0cPrh7G22HtSPviz3H+oX/kTm+sbGVK1yvipdvJorS2KL
-jvbDjilQROpNqIIcTpOZ70oYZLx6g3DMcVRPLcxZM7zf7VuMlhFSD+eM2By0XDINLG4b67d7D2Y7
-kPK2JZDIx5ZoJh/PLe7V+KEfWoYAKiCfyGcHVMwtt37DJLaERuOZuUNwtLq2GAISYduWmHRiBfPE
-BbNmcnghinWum8pcHbASHSkdp2yedqPRjA/O5xS9LN72tXAO4DlGwsyeEhyjKbGIWQmnZGjNaJc4
-E2G/bXl1IXH4I09VROkVElvWj1nU+r65vRFNLWcoTS1hkdCRHWvzr0cotaSaSGMRHN4kJDZYvi22
-dihBlXfP4B+GXCfK/RgE8Zfdr92+eK3G7fy4QS6A4d6+b9a/tJcY2t16LYet7GH9dthbRT6N06ya
-DigL8iCQL6NCm6NTEsm5waFpsvCu2K6kNbY8PRzZ1TrMoyTjBOo2ez4hecpRNjPm11bIOGaExPms
-TG1w0swf73v9en9/JvPaHGoEgtfwCkomxlmQiSkHp9yKRnJVpeaYzNVtr/ag8lgCwms8qD31OiI8
-i8eWlJQzTTi+SjITV0liMhUWW+syGpFM0dTyewfa1jhw2BWZPzx27YvUncJFkGR4VG69ayS1VxFq
-o0aL7cvfi23h0ZvEq18FgAOv/2SG/Mxpv3XbqQSlVDH8bc0JLikwuNP43uI9lCQppinvmGJhCg7p
-AOBm3wyZg2tDFBFjphn+vtgunuHEajk9Jz2tvZ2YiPwoELWXkdNmGdBdiuUbFGkq1oeJQls4sbzd
-KLbLhX6rUa3a79y1qjtxLGyORgcrr44qgP6CQwdilmeICe3xq46yLFa/HHQiqc9QEZGZILFvylfd
-rD9KCihRk60lCFabqv4ahlaozbje/Z88sjydeejnqZhrb6jK6wpr4TEDrXPXO8qzNKIVlQXfYJDG
-fmhRplMwXEZ+YnqPALzCoGZScWbPhdZHsBeK2jPYCzAktff7FwU9YSgy/iRHJVGIdR965kAtSsFm
-x4mpDTTUfwhpmMrxqV+pulSGwsa0KqgtfCIxW/TEZ+bkumiKJuZVSHH/vtv7mQ9TyyUMSBJDMq72
-KLqy7vKRNCygJedJwVH5jl3zYeIhHhE8Lt8tNq2eNDLlGQoMf1LzdGFZcWh+GAoKu/qzXLSDH1+1
-j1ypMRoHSYUmx/JtMGj715OXjj20+rbZLvffX6tXrkCMwmEysPhzJzzFwRUcGWID+KKe5PtKY4QA
-l3lR3TtH+4D3um585sAj/94S1TrC/bYtJR1wUJgu0KIQJShju7dWNFapZx0rnkhhye2Nl1nYoFSH
-I/vepSzhaGLL65EUJWwfJqeRsLzSL2F+d/dw58J73ZYLfujN7LCw/EKRBNUPD0kn1EZgEzxHLLXE
-ABWcJH6SdI2JxMUKXIZiAwwtORx/X76ZOJsT0HKM5z5vd7v3FqPpQnJ/6yQhRF7vOUngiPbvrjQD
-x/ThrvtwvZ2HtpMmQrNe/96+6+WrB2sO9IVEyo4rJIOMX+tnVPWjS4MspcZtsfjoMmMmQtz0yMdf
-wIbv/rXz2h//XoIo+3KoiNBp26jso+T/Gru25kZxLPxXUvsyM1U71cFXvPMkENjEXNwgkvS8uNyJ
-J+OaxO5ykq3q/fWrI2EsgY7ES6et8yGJg67nmuubPC/go45a+Ur4Olwv67K2o+h84vkOSMZvmd4A
-zHQAZjYAs3Bjxs7+LEaTWytm7bMIcaZsqxECWjuEPW4815ScOdgXzz3/dhrbMeD4Vbogm6KyQpbp
-1POrzIUZ3RqPzxcEzEZgnn7ulrSE+fYlKs2QDfgKmE9dAFcTc98B8G9dAFcnfVcnnXxYuPqwGLmW
-Tm/mLZzL62x661im4SzsxkxG9jeybeAtJqvCyTzzBoEWI8sglKBgvJjzs2mvCr4pz/wZsTZzzzxM
-Vn2F+CPHWvPgj+e+R52YxRDMaABm7IKkc3/KKhdqNpqv4gGgyIFaUbKxNwYXxqjKzCc/uZtZdl+h
-/P7r8/gkAvQ0Il2DyWcWQ6y46a1nruFt/3zYmS5UfCONii0mDqX3AX74oCToNbY87378fXgyXlEC
-EReHH7K3aUgvUVr6h4TD+w9we8SVoTSpNin5Zqrh+lpLAsbW5o7Hgck79P30yjl7aV36u/ZkMrxe
-k9iFF4egNi5iMC4GuT+8LKL/AobL2HOmmypoXpUmGuPrz+OzdvgqaoOhxIofimhXjrdKdBlJQhFv
-UbgAqNLqngpqlVDjQ1AenHjpxd/UND6FmgqRNAOtJx1uq+99A4C3gZxXoSI21yjFSpX5aaSoS1I5
-BEgzh/Q7C/StF81GPgz69LjqVwrl2zAlFa6Lo99ykiXhNkvyosRhVV1BrDGUXjDzB16d3j9gsH+c
-T6+vfID3NBLwMLCnYaxWqSiX0QGTqkDbFrCyKNh2VQdbxuxAxkDB0PPr7wMDUKLnNCH5NssSvHm+
-Onje7BFewCQDBeYg71d0mgGXRpzDjj51oZxrLI0atD4ua6Q/Vep7Xvc92k/Z6JRCfqV6x2YcCTOk
-TyIIs3A+lBLpgkX/uRGNsqIEMcf+CBGo3oW3wb+FodUv0v3j8P7PZU7+cgkT8MaXzN3r++nm+/7m
-uN8/75//EI6zaoWr/esP4TP7duJ3P/CZhbBWfProg6+B93ghiy2GThqKMBKTwImLyygKEXGAiksq
-itnWac1uQndd/P+EOVEVpeXtYhBsOnXC7uoMN/JSgSQlNeKwr8LWpMxwVArOrZ2Ip9ct5m33AoHA
-ns2bTEZD38JpYWnKojUyqqWsoG1L6FWe9YgWUN7omPg6yCkf2j6vv67QphhfQ98LkOkXZclshK9q
-WYIIBMTUpTWrH3FyHZXVA0nxRbNMiqmFk2m0LBhEF8QRIV55EJXlNyEdRySisgm8gsammv+dh8iN
-WMJE2EbctGUF4XPwcZ1QXO0M9JjRZBuliImKYDQc35sjJz4vEr4hB/wUiPMCZwXEkQr52QBSdRT4
-50iKB1Lyj4ojWFQx81ZRpRAlfv+mDPSWuNw9v+w/TMYlUOeSoPzNsr4WHT65YWbzHR5GQ2XG6xMU
-itj58PKilCXHvw7HQwC7kEn3wf/Nk4AYjsQRJeHN7zf78/kEOu6P/VMb6PS8h3pgKfq1JNVvN7+q
-iTk0k0JRSbfmcs9XEMYvVnwHPj39o3mosrB/ypOXG75qRke+/hnMcsBbNsqXSjx8QIevh/1RtUUQ
-oeaEq22LMZzXhZKRDxnCOlbpAnR/OH987l4P/7vsv1eDjvusb5B7OL8J1RPtr3IRpUi0njTdloFZ
-/EpDGhgMbGMIdimNorR0KWy0VWPLNgXbR3Cc7BfL7CMk1LNiNMQqCusSMzxsK05MXlGcOu72Y2zu
-x9jWj/GQfkxE7B2T2+idbg7Ef6IRZXk7WSCi4avRuhO+qcXVVr+etMVCJYuEim4gwjkaNKUmLfq1
-+i5fVJKRNyrAyp87gTG/sLHmR+yBZVzpY6spENl4II5zXnRSLnXoNFXi9kAIZL06WSKlOxmp1mmx
-1DMN5LyzsfmWVxYZ1m1+NWRJ/E0NNikK+IKtBsP9Whe6J99XCAl7b5bnSZpJ4iiq0RL80LZ9JfsO
-K7DuStpE40xcQ1IXQ8Rt+enkEiP86r9AnCJYGnorA7+DLmazW62auyJNdOOEPzkMYXFN406P5ZJa
-VF9iwr7kzNwup2ltZhV/Qiu570Lgd5vio6CRiGY/Gc9N9KSAY1XF3+Jfh/eT708Xv3tKhM+c9fgs
-wxW97z+fTyJicK/H13gGasFatywSZd1cTiKe+PUnyza9n9qcu0iZan5oSAMV2xR1AvmXJFNB8s9l
-eTIIXfTXuw4/2mOKEpUPp62spE1ao+Qgwh8NcJLlqVDwwiwzfLT0c4PTvuaPE5wKoZwxWm0eZBcr
-dbFVV91hlsf6NIDf92PN7UOUwFgxG2cBeYKSZKRwo5iFk6nWMO23TB1N007bKoWFimmXkG3l6puK
-1ICdn7w29VQAououc2TMOmW21Xmp5+ORJcKUcmxmDCfz3XK75HepdRlMXZhqs84QFUoWoEMzQQh5
-uEGfKSjBpyQ6KBcb4+K24yd1cXJnP3/oJ90NKRnEEshtAZXlEt1CW6kXP//+d3+T7o4vn7uXfT/V
-QZ6qXyyt2hwz6tKskC9r+5av7droU2lzxIpFByFaYA3kI6rNDmg0BDSouQEd92dD+jTzhoCGdBwR
-HnRAkyGgISxAHLU7oIUbtBgPqGkx5AMvxgP4tJgM6JM/x/nEj1Ew4Le+uxpvNKTbHGUy+AEMqcIk
-0SfepXmvO60uhJGz52Mnwv32Uydi5kTMnYiFE+G5X8abINxtAdMuL9dF4m9LtGZBrpFaaxb7rVDi
-8P5xPnz/hKTAKUSYzUT6GyWrn7w4KT6WGaJzS468qmvwTaMPVFnESYo5pa5F/p7+lrKWyYj/3j3p
-aStkHt+k/Appqyoloa/SHuSvFHbL5jNek2aqrlj/Pt067kJ0GX4CE4mCWvt8cF6C4DVBoW488gKp
-39hXEURQrtAG5DNtQtlOGOVqZTbVphHkahJ6bDjD1J3o66uI4rlZhR33Fqc3LaeIWkaSr5kxzQeZ
-hixEndZA0Zd0yRaIrSGJEBnQSMr/ICnyivvoIgsY0BeZAtrRHogVCGTlidIY3tLWv3UR3CFmBI3F
-5/I+KoOiivpDoCvB6ZDvM1s/EyRgXVxCcuRNIXSLZoQIE8pb5xMW41oZ1lvGJx3EoOrKtK8Vycty
-fieuBLltTBUUi3YlcrWhArTm60EWMwiIHKfFg2EqAXlbVx3T8MaX6Ummgr7aCaiuc5jdUF/2JR88
-//zxcXqRFjZ90wMZx1q5S4vfYBispSprioN0HSabVVRe3SAaip7kpinMSM5fsOyVQw4ELYSgLH4M
-AywfnaDnNeI/e2mOmjavljg1NNnN1GCgjxDnhSti6o1siIeNA8CWpbewIpaxN/KzOsVfLwqD3jfh
-7OyVbWRht4G0fLC1L/5QG4JGlY0c49FE2qEFAQiqlZVRD8VASJM21PrhonIT5dY+EftLcfKAdiB1
-1NQFsA4xFhFrN8rQ2oH1ivxJrB+P5HWQVPbPC/lFI+vsS8IViVL4ax9K4XhkR/DdIE0TYmeJQWnZ
-ejs9iTVPUSlKFeHh+3l3/nlzPn1+HI57LRsag+wTpb7j8Z5uwzBh2BAJPeyrhduE8c3IOFv526uN
-pEnQ58jlpAA7piILJRVsPWoSP1mkO6lBmVT1/R+xhbt1doMAAA==
-------=_Part_85065_23529091.1218478894564--
+I'm actually a bit worried about this scheduler-centric approach. The
+problem is that any trap that could be generated in the middle of the
+3/2 nops (think of performance counters if the APIC is set as a trap
+gate) which would stack an interruptible trap handler on top of those
+instructions would lead to having a return IP pointing in the wrong
+spot, but because the scheduler would interrupt the trap handler and not
+the trapped code, it would not detect this.
+
+I am not sure wheter we do actually have the possibility to have these
+interruptible trap handlers considering the way the kernel sets up the
+gates, but I think the "let's figure out where the IP stopped" approach
+is a bit complex and fragile.
+
+Trying to find a fast atomic 5-bytes nop, involving the
+microarchitecture guys, seems like a better approach to me.
+
+Mathieu
+
+> Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+> ---
+>  arch/x86/kernel/alternative.c    |   29 ++++++++++++++++++++-------
+>  arch/x86/kernel/asm-offsets_32.c |    1 
+>  arch/x86/kernel/asm-offsets_64.c |    1 
+>  arch/x86/kernel/entry_32.S       |    4 +++
+>  arch/x86/kernel/entry_64.S       |    4 +++
+>  arch/x86/kernel/ftrace.c         |   41 +++++++++++++++++++++++++++++++++++++++
+>  include/asm-x86/ftrace.h         |    5 ++++
+>  include/asm-x86/thread_info.h    |    4 +++
+>  kernel/trace/ftrace.c            |   12 +++++++++++
+>  9 files changed, 94 insertions(+), 7 deletions(-)
+> 
+> Index: linux-tip.git/arch/x86/kernel/alternative.c
+> ===================================================================
+> --- linux-tip.git.orig/arch/x86/kernel/alternative.c	2008-06-05 11:52:24.000000000 -0400
+> +++ linux-tip.git/arch/x86/kernel/alternative.c	2008-08-08 16:20:23.000000000 -0400
+> @@ -140,13 +140,26 @@ static const unsigned char *const p6_nop
+>  };
+>  #endif
+>  
+> +/*
+> + * Some versions of x86 CPUs have a two part NOP5. This
+> + * can break ftrace if a process is preempted between
+> + * the two. ftrace needs to know what the second nop
+> + * is to handle this case.
+> + */
+> +int x86_nop5_part2;
+> +
+>  #ifdef CONFIG_X86_64
+>  
+>  extern char __vsyscall_0;
+>  const unsigned char *const *find_nop_table(void)
+>  {
+> -	return boot_cpu_data.x86_vendor != X86_VENDOR_INTEL ||
+> -	       boot_cpu_data.x86 < 6 ? k8_nops : p6_nops;
+> +	if (boot_cpu_data.x86_vendor != X86_VENDOR_INTEL ||
+> +	    boot_cpu_data.x86 < 6) {
+> +		x86_nop5_part2 = 2; /* K8_NOP2 */
+> +		return k8_nops;
+> +	} else
+> +		/* keep k86_nop5_part2 NULL */
+> +		return p6_nops;
+>  }
+>  
+>  #else /* CONFIG_X86_64 */
+> @@ -154,12 +167,13 @@ const unsigned char *const *find_nop_tab
+>  static const struct nop {
+>  	int cpuid;
+>  	const unsigned char *const *noptable;
+> +	int nop5_part2;
+>  } noptypes[] = {
+> -	{ X86_FEATURE_K8, k8_nops },
+> -	{ X86_FEATURE_K7, k7_nops },
+> -	{ X86_FEATURE_P4, p6_nops },
+> -	{ X86_FEATURE_P3, p6_nops },
+> -	{ -1, NULL }
+> +	{ X86_FEATURE_K8, k8_nops, 2},
+> +	{ X86_FEATURE_K7, k7_nops, 1 },
+> +	{ X86_FEATURE_P4, p6_nops, 0 },
+> +	{ X86_FEATURE_P3, p6_nops, 0 },
+> +	{ -1, NULL, 0 }
+>  };
+>  
+>  const unsigned char *const *find_nop_table(void)
+> @@ -170,6 +184,7 @@ const unsigned char *const *find_nop_tab
+>  	for (i = 0; noptypes[i].cpuid >= 0; i++) {
+>  		if (boot_cpu_has(noptypes[i].cpuid)) {
+>  			noptable = noptypes[i].noptable;
+> +			x86_nop5_part2 = noptypes[i].nop5_part2;
+>  			break;
+>  		}
+>  	}
+> Index: linux-tip.git/arch/x86/kernel/asm-offsets_32.c
+> ===================================================================
+> --- linux-tip.git.orig/arch/x86/kernel/asm-offsets_32.c	2008-07-27 10:43:26.000000000 -0400
+> +++ linux-tip.git/arch/x86/kernel/asm-offsets_32.c	2008-08-08 15:46:55.000000000 -0400
+> @@ -59,6 +59,7 @@ void foo(void)
+>  	OFFSET(TI_restart_block, thread_info, restart_block);
+>  	OFFSET(TI_sysenter_return, thread_info, sysenter_return);
+>  	OFFSET(TI_cpu, thread_info, cpu);
+> +	OFFSET(TI_ip, thread_info, ip);
+>  	BLANK();
+>  
+>  	OFFSET(GDS_size, desc_ptr, size);
+> Index: linux-tip.git/arch/x86/kernel/asm-offsets_64.c
+> ===================================================================
+> --- linux-tip.git.orig/arch/x86/kernel/asm-offsets_64.c	2008-07-27 10:43:26.000000000 -0400
+> +++ linux-tip.git/arch/x86/kernel/asm-offsets_64.c	2008-08-08 15:52:34.000000000 -0400
+> @@ -41,6 +41,7 @@ int main(void)
+>  	ENTRY(addr_limit);
+>  	ENTRY(preempt_count);
+>  	ENTRY(status);
+> +	ENTRY(ip);
+>  #ifdef CONFIG_IA32_EMULATION
+>  	ENTRY(sysenter_return);
+>  #endif
+> Index: linux-tip.git/arch/x86/kernel/entry_32.S
+> ===================================================================
+> --- linux-tip.git.orig/arch/x86/kernel/entry_32.S	2008-07-27 10:43:26.000000000 -0400
+> +++ linux-tip.git/arch/x86/kernel/entry_32.S	2008-08-08 17:13:27.000000000 -0400
+> @@ -304,7 +304,11 @@ need_resched:
+>  	jz restore_all
+>  	testl $X86_EFLAGS_IF,PT_EFLAGS(%esp)	# interrupts off (exception path) ?
+>  	jz restore_all
+> +	lea PT_EIP(%esp), %eax
+> +	movl %eax, TI_ip(%ebp)
+>  	call preempt_schedule_irq
+> +	GET_THREAD_INFO(%ebp)
+> +	movl $0, TI_ip(%ebp)
+>  	jmp need_resched
+>  END(resume_kernel)
+>  #endif
+> Index: linux-tip.git/arch/x86/kernel/entry_64.S
+> ===================================================================
+> --- linux-tip.git.orig/arch/x86/kernel/entry_64.S	2008-07-27 10:43:26.000000000 -0400
+> +++ linux-tip.git/arch/x86/kernel/entry_64.S	2008-08-08 17:12:47.000000000 -0400
+> @@ -837,7 +837,11 @@ ENTRY(retint_kernel)
+>  	jnc  retint_restore_args
+>  	bt   $9,EFLAGS-ARGOFFSET(%rsp)	/* interrupts off? */
+>  	jnc  retint_restore_args
+> +	leaq RIP-ARGOFFSET(%rsp), %rax
+> +	movq %rax, TI_ip(%rcx)
+>  	call preempt_schedule_irq
+> +	GET_THREAD_INFO(%rcx)
+> +	movq $0, TI_ip(%rcx)
+>  	jmp exit_intr
+>  #endif	
+>  
+> Index: linux-tip.git/arch/x86/kernel/ftrace.c
+> ===================================================================
+> --- linux-tip.git.orig/arch/x86/kernel/ftrace.c	2008-06-26 14:58:54.000000000 -0400
+> +++ linux-tip.git/arch/x86/kernel/ftrace.c	2008-08-08 20:22:19.000000000 -0400
+> @@ -127,6 +127,44 @@ notrace int ftrace_mcount_set(unsigned l
+>  	return 0;
+>  }
+>  
+> +static const unsigned char *second_nop;
+> +
+> +void arch_ftrace_pre_enable(void)
+> +{
+> +	struct task_struct *g, *p;
+> +	void **ip;
+> +
+> +	if (!second_nop)
+> +		return;
+> +
+> +	/*
+> +	 * x86 has a two part nop to handle 5 byte instructions.
+> +	 * If a task was preempted after the first nop, and has
+> +	 * not ran the second nop, if we modify the code, we can
+> +	 * crash the system. Thus, we will look at all the tasks
+> +	 * and if any of them was preempted and will run the
+> +	 * second nop next, we simply move their ip pointer past
+> +	 * the second nop.
+> +	 */
+> +
+> +	/*
+> +	 * Don't need to grab the task list lock, we are running
+> +	 * in kstop_machine
+> +	 */
+> +	do_each_thread(g, p) {
+> +		/*
+> +		 * In entry.S we save the ip when a task is preempted
+> +		 * and reset it when it is back running.
+> +		 */
+> +		ip = (void **)task_thread_info(p)->ip;
+> +		if (!ip)
+> +			continue;
+> +		if (memcmp(*ip, second_nop, x86_nop5_part2) == 0)
+> +			/* Match, move the ip forward */
+> +			*ip += x86_nop5_part2;
+> +	} while_each_thread(g, p);
+> +}
+> +
+>  int __init ftrace_dyn_arch_init(void *data)
+>  {
+>  	const unsigned char *const *noptable = find_nop_table();
+> @@ -137,5 +175,8 @@ int __init ftrace_dyn_arch_init(void *da
+>  
+>  	ftrace_nop = (unsigned long *)noptable[MCOUNT_INSN_SIZE];
+>  
+> +	if (x86_nop5_part2)
+> +		second_nop = noptable[x86_nop5_part2];
+> +
+>  	return 0;
+>  }
+> Index: linux-tip.git/include/asm-x86/ftrace.h
+> ===================================================================
+> --- linux-tip.git.orig/include/asm-x86/ftrace.h	2008-08-08 13:00:51.000000000 -0400
+> +++ linux-tip.git/include/asm-x86/ftrace.h	2008-08-08 16:41:09.000000000 -0400
+> @@ -17,6 +17,11 @@ static inline unsigned long ftrace_call_
+>  	 */
+>  	return addr - 1;
+>  }
+> +
+> +extern int x86_nop5_part2;
+> +extern void arch_ftrace_pre_enable(void);
+> +#define ftrace_pre_enable arch_ftrace_pre_enable
+> +
+>  #endif
+>  
+>  #endif /* CONFIG_FTRACE */
+> Index: linux-tip.git/include/asm-x86/thread_info.h
+> ===================================================================
+> --- linux-tip.git.orig/include/asm-x86/thread_info.h	2008-08-07 11:14:43.000000000 -0400
+> +++ linux-tip.git/include/asm-x86/thread_info.h	2008-08-08 17:06:15.000000000 -0400
+> @@ -29,6 +29,9 @@ struct thread_info {
+>  	__u32			cpu;		/* current CPU */
+>  	int			preempt_count;	/* 0 => preemptable,
+>  						   <0 => BUG */
+> +	unsigned long		**ip;		/* pointer to ip on stackwhen
+> +						   preempted
+> +						*/
+>  	mm_segment_t		addr_limit;
+>  	struct restart_block    restart_block;
+>  	void __user		*sysenter_return;
+> @@ -47,6 +50,7 @@ struct thread_info {
+>  	.flags		= 0,			\
+>  	.cpu		= 0,			\
+>  	.preempt_count	= 1,			\
+> +	.ip		= NULL,			\
+>  	.addr_limit	= KERNEL_DS,		\
+>  	.restart_block = {			\
+>  		.fn = do_no_restart_syscall,	\
+> Index: linux-tip.git/kernel/trace/ftrace.c
+> ===================================================================
+> --- linux-tip.git.orig/kernel/trace/ftrace.c	2008-08-08 13:00:52.000000000 -0400
+> +++ linux-tip.git/kernel/trace/ftrace.c	2008-08-08 16:18:14.000000000 -0400
+> @@ -32,6 +32,10 @@
+>  
+>  #include "trace.h"
+>  
+> +#ifndef ftrace_pre_enable
+> +# define ftrace_pre_enable() do { } while (0)
+> +#endif
+> +
+>  /* ftrace_enabled is a method to turn ftrace on or off */
+>  int ftrace_enabled __read_mostly;
+>  static int last_ftrace_enabled;
+> @@ -500,6 +504,14 @@ static void ftrace_replace_code(int enab
+>  	else
+>  		new = ftrace_nop_replace();
+>  
+> +	/*
+> +	 * Some archs *cough*x86*cough* have more than one nop to cover
+> +	 * the call to mcount. In these cases, special care must be taken
+> +	 * before we start converting nops into calls.
+> +	 */
+> +	if (enable)
+> +		ftrace_pre_enable();
+> +
+>  	for (pg = ftrace_pages_start; pg; pg = pg->next) {
+>  		for (i = 0; i < pg->index; i++) {
+>  			rec = &pg->records[i];
+
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
