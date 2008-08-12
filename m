@@ -1,126 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753125AbYHLCIx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752693AbYHLCXT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753125AbYHLCIx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Aug 2008 22:08:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751517AbYHLCIo
+	id S1752693AbYHLCXT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Aug 2008 22:23:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751517AbYHLCXK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Aug 2008 22:08:44 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:44435 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751492AbYHLCIo (ORCPT
+	Mon, 11 Aug 2008 22:23:10 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:62935 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751466AbYHLCXJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Aug 2008 22:08:44 -0400
-Message-ID: <48A0F024.30609@novell.com>
-Date: Mon, 11 Aug 2008 22:06:28 -0400
-From: Gregory Haskins <ghaskins@novell.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080720)
+	Mon, 11 Aug 2008 22:23:09 -0400
+Date: Mon, 11 Aug 2008 22:23:06 -0400
+From: Steven Rostedt <rostedt@goodmis.org>
+To: Dave Jones <davej@redhat.com>, Linux Kernel <linux-kernel@vger.kernel.org>,
+       x86@kernel.org
+Cc: Ingo Molnar <mingo@elte.hu>
+Subject: Re: Only three cores found on quad-core machine.
+Message-ID: <20080812022306.GA31444@goodmis.org>
+References: <20080801181532.GC6304@redhat.com>
 MIME-Version: 1.0
-To: Steven Rostedt <rostedt@goodmis.org>
-CC: David Miller <davem@davemloft.net>, a.p.zijlstra@chello.nl,
-       jkacur@gmail.com, linux-rt-users@vger.kernel.org,
-       linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@linutronix.de
-Subject: Re: [PATCH] BUG: using smp_processor_id() in preemptible [00000000]
- code: caller is __qdisc_run
-References: <520f0cf10808110611y62f6a4e2v94a0d0cde1d5d79d@mail.gmail.com> <20080811.140014.94581847.davem@davemloft.net> <1218488979.15798.39.camel@lappy.programming.kicks-ass.net> <20080811.142359.145735170.davem@davemloft.net> <alpine.DEB.1.10.0808112121370.32393@gandalf.stny.rr.com>
-In-Reply-To: <alpine.DEB.1.10.0808112121370.32393@gandalf.stny.rr.com>
-X-Enigmail-Version: 0.95.6
-OpenPGP: id=D8195319
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig004DA4DEBFB276E5BC2CD29B"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080801181532.GC6304@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig004DA4DEBFB276E5BC2CD29B
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: quoted-printable
+On Fri, Aug 01, 2008 at 02:15:32PM -0400, Dave Jones wrote:
+> I just installed .27rc1 on a fairly recent quad-core machine.
+> The first thing that seemed out of the ordinary was only 3 penguins
+> showing up in the framebuffer.  Closer examination after it had
+> booted revealed the backtrace-o-rama that is below.
+> 
+> 	Dave
+> 
 
-Steven Rostedt wrote:
-> On Mon, 11 Aug 2008, David Miller wrote:
->
->  =20
->> From: Peter Zijlstra <a.p.zijlstra@chello.nl>
->> Date: Mon, 11 Aug 2008 23:09:38 +0200
->>
->>    =20
->>> On Mon, 2008-08-11 at 14:00 -0700, David Miller wrote:
->>>      =20
->>>> From: "John Kacur" <jkacur@gmail.com>
->>>> Date: Mon, 11 Aug 2008 15:11:46 +0200
->>>>
->>>>        =20
->>>>> __qdisc_run() calls qdisc_restart() which calls
->>>>> handle_dev_cpu_collision(skb, dev, q); and then the problem shows u=
-p
->>>>> here:
->>>>> __get_cpu_var(netdev_rx_stat).cpu_collision++;
->>>>>
->>>>> The solution is to disable interrupts around the above increment. H=
-ere
->>>>> is an attached patch to do so. (Thank's to Peter Zijlstra for help =
-in
->>>>> the analysis and dropping the answer in my lap, so if I got it righ=
-t
->>>>> it is due to his help, but if I messed it up, then I did that part =
-all
->>>>> by myself.)
->>>>>          =20
->>>> __qdisc_run() always runs in software interrupt context,
->>>> so I guess this is some problem with the -rt stuff running
->>>> software interrupts in threads?
->>>>        =20
->>> Hmm, good point - and those threads should be cpu affine on -rt if I'=
-m
->>> not mistaken. Steven, do you happen to remember details?
->>>      =20
->> The key issue is whether those threads run software interrupts
->> in a compatible environment.  And such a proper environment allows
->> plain smp_processor_id() without any special preparations.
->>
->>    =20
->
-> Yes, we have a softirq thread per CPU. We should have a test in the=20
-> smp_processor_id for rt to not bug if it is called by known "per_cpu"=20
-> threads.
->  =20
-something like
+[...]
 
-#ifdef CONFIG_PREEMPT_RT
-    WARN_ON(!in_atomic() && current->rt.nr_cpus_allowed > 1);
-#else
-    WARN_ON(!in_atomic());
-#endif
+> khelper used greatest stack depth: 5728 bytes left
+> net_namespace: 1680 bytes
+> Booting paravirtualized kernel on bare hardware
+> Time: 13:32:13  Date: 07/31/08
+> NET: Registered protocol family 16
+> No dock devices found.
+> ACPI: bus type pci registered
+> PCI: MCFG configuration 0: base f0000000 segment 0 buses 0 - 127
+> PCI: Not using MMCONFIG.
+> PCI: Using configuration type 1 for base access
+> khelper used greatest stack depth: 5016 bytes left
+> general protection fault: 0000 [1] SMP DEBUG_PAGEALLOC
+> CPU 2 
+> Modules linked in:
+> Pid: 0, comm: swapper Not tainted 2.6.27-0.205.rc1.git2.fc10.x86_64 #1
+> RIP: 0010:[<ffffffff81094d61>]  [<ffffffff81094d61>] ftrace_record_ip+0x214/0x22b
 
-would probably work and be fairly efficient.  Of course nr_cpus_allowed=20
-technically could be adjusted at any time, so perhaps not.  Its probably =
+Dave,
 
-good enough for a warning check, however.
+Would it be possible to pull this kernel into gdb and show me the output
+of:
 
-> -- Steve
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-rt-user=
-s" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->  =20
+gdb> li *0xffffffff81094d61
+
+and a
+
+gdb> disass 0xffffffff81094d61
 
 
+Thanks,
 
---------------enig004DA4DEBFB276E5BC2CD29B
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+-- Steve
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
-
-iEYEARECAAYFAkig8CQACgkQlOSOBdgZUxmw6ACeJ6jWS0JXIjER77d+Hy8W/sYh
-lfkAnAzlmoUUvjyXKSyE1wNQS0UYaF/1
-=Fibs
------END PGP SIGNATURE-----
-
---------------enig004DA4DEBFB276E5BC2CD29B--
+> RSP: 0018:ffff88007f04fe08  EFLAGS: 00010292
+> RAX: ffffffff816b26c0 RBX: 000000000000010d RCX: 000000000000020f
+> RDX: ffff880001027f80 RSI: 0000000000000000 RDI: 0000000000000292
+> RBP: ffff88007f04fe38 R08: 0000000000000075 R09: ffff88007fbd2090
+> R10: 0000000000000046 R11: ffffffff81b68de8 R12: 00000040812fba2b
+> R13: 000a81a000000002 R14: ffffffff81b68de8 R15: 0000000000000292
+> FS:  0000000000000000(0000) GS:ffff88007f821898(0000) knlGS:0000000000000000
+> CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
+> CR2: 0000000000000000 CR3: 0000000000201000 CR4: 00000000000006a0
+> DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+> DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+> Process swapper (pid: 0, threadinfo ffff88007f04e000, task ffff88007f050000)
+> Stack:  ffff88007f04fe78 0000002649d25248 00000040fffb6cbf 000a81a000000002
+>  000000000051621c 0000000000000002 ffff88007f04fe98 ffffffff81010164
+>  00000000fffb8093 0000000049d25248 ffff88007f050000 000000231a06706a
+> Call Trace:
+>  [<ffffffff81010164>] mcount_call+0x5/0x31
+>  [<ffffffff812fba30>] ? read_current_timer+0xe/0x30
+>  [<ffffffff8130150b>] calibrate_delay+0xe2/0x2a7
+>  [<ffffffff8130615b>] start_secondary+0xc0/0x16e
+> 
+> 
