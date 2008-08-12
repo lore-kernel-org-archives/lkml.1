@@ -1,58 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751817AbYHLFbX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751993AbYHLFfh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751817AbYHLFbX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Aug 2008 01:31:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750808AbYHLFbP
+	id S1751993AbYHLFfh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Aug 2008 01:35:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751102AbYHLFf0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Aug 2008 01:31:15 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:57957 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750807AbYHLFbO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Aug 2008 01:31:14 -0400
-Date: Mon, 11 Aug 2008 22:30:43 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Rene Herman <rene.herman@keyaccess.nl>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, akpm@linuxfoundation.org,
-       fritz@isdn4linux.de, kkeil@suse.de, isdn4linux@listserv.isdn4linux.de,
-       linux-kernel@vger.kernel.org, mingo@elte.hu
-Subject: Re: [PATCH] ISDN: make ICN not auto-grab port 0x320
-Message-Id: <20080811223043.9ad55c51.akpm@linux-foundation.org>
-In-Reply-To: <48A11952.6090203@keyaccess.nl>
-References: <489DD669.2090207@keyaccess.nl>
-	<20080809215020.1bb602e7@lxorguk.ukuu.org.uk>
-	<20080811164814.db41c20b.akpm@linux-foundation.org>
-	<48A11952.6090203@keyaccess.nl>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 12 Aug 2008 01:35:26 -0400
+Received: from ns.suse.de ([195.135.220.2]:54184 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750878AbYHLFfZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Aug 2008 01:35:25 -0400
+From: Neil Brown <neilb@suse.de>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Date: Tue, 12 Aug 2008 15:35:14 +1000
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <18593.8466.965002.476705@notabene.brown>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, netdev@vger.kernel.org, trond.myklebust@fys.uio.no,
+       Daniel Lezcano <dlezcano@fr.ibm.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>
+Subject: Re: [PATCH 05/30] mm: slb: add knowledge of reserve pages
+In-Reply-To: message from Peter Zijlstra on Thursday July 24
+References: <20080724140042.408642539@chello.nl>
+	<20080724141529.635920366@chello.nl>
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 12 Aug 2008 07:02:10 +0200 Rene Herman <rene.herman@keyaccess.nl> wrote:
+On Thursday July 24, a.p.zijlstra@chello.nl wrote:
+> Restrict objects from reserve slabs (ALLOC_NO_WATERMARKS) to allocation
+> contexts that are entitled to it. This is done to ensure reserve pages don't
+> leak out and get consumed.
 
-> On 12-08-08 01:48, Andrew Morton wrote:
-> 
-> > otoh it's a bit sad to break allyesconfig kernels - there is
-> > regression-testing value in being able to run such kernels.
-> > 
-> > I wonder if we can add a new boot option `allyesconfig-test' or
-> > something like that, and then, within the offending drivers, test that
-> > flag and take suitable avoiding action.
-> > 
-> > Or we could do it at compile-time - define
-> > CONFIG_ALLYESCONFIG_TESTING in some fashion.
-> 
-> Yes, latter I'd feel with the thing most against it that there aren't 
-> actually many that need it.
+This looks good (we are still missing slob though, aren't we :-( )
 
-I think the boot option is the way, if at all.
+> @@ -1526,7 +1540,7 @@ load_freelist:
+>  	object = c->page->freelist;
+>  	if (unlikely(!object))
+>  		goto another_slab;
+> -	if (unlikely(SLABDEBUG && PageSlubDebug(c->page)))
+> +	if (unlikely(PageSlubDebug(c->page) || c->reserve))
+>  		goto debug;
 
-Because the config option isn't very usable.  What's to stop someone
-from doing `make allyesconfig' and then menually editing the .config so
-it's no longer truly an allyesconfig .config?
+This looks suspiciously like debugging code that you have left in.
+Is it??
 
-otoh, if is't purely a manual setting rather than some automagic thing
-then it might be workable.  CONFIG_INGO :)
+> @@ -265,7 +267,8 @@ struct array_cache {
+>  	unsigned int avail;
+>  	unsigned int limit;
+>  	unsigned int batchcount;
+> -	unsigned int touched;
+> +	unsigned int touched:1,
+> +		     reserve:1;
+
+This sort of thing always worries me.
+It is a per-cpu data structure so you won't get SMP races corrupting
+fields.  But you do get read-modify-write in place of simple updates.
+I guess it's not a problem..  But it worries me :-)
+
+
+NeilBrown
