@@ -1,45 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752230AbYHLBES@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752891AbYHLBJr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752230AbYHLBES (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Aug 2008 21:04:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750722AbYHLBEF
+	id S1752891AbYHLBJr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Aug 2008 21:09:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751583AbYHLBJS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Aug 2008 21:04:05 -0400
-Received: from wr-out-0506.google.com ([64.233.184.228]:19880 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750762AbYHLBED (ORCPT
+	Mon, 11 Aug 2008 21:09:18 -0400
+Received: from senator.holtmann.net ([87.106.208.187]:33814 "EHLO
+	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751517AbYHLBJG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Aug 2008 21:04:03 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=sU/H28JQKzME8znU35w6vQ57ZYC97+2SFKlSfu6F9Lc9BhjPegdWZ5TZGJAYWjwJo0
-         Dl6H/tRfPHkBfiZMYyBg2mL0CxGqykXMeTijQwEUyw6J8N1a3jxdHjgk78qFauAx5eyE
-         +lviTI9DQYuJ4e/zdcKZztPotXeZZPPPf8VDg=
-Message-ID: <43e72e890808111804j6ecd66c9r9907523d7f7594ed@mail.gmail.com>
-Date: Mon, 11 Aug 2008 18:04:01 -0700
-From: "Luis R. Rodriguez" <mcgrof@gmail.com>
-To: "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>
-Subject: Re: CRDA and uevent
-Cc: "linux kernel" <linux-kernel@vger.kernel.org>,
-       "Marcel Holtmann" <marcel@holtmann.org>
-In-Reply-To: <43e72e890808051812y1f6b18ecpac089e45d4c18b84@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+	Mon, 11 Aug 2008 21:09:06 -0400
+Subject: Re: [patch 2/2] fastboot: use a DMI match table to set defaults
+	for port-disable
+From: Marcel Holtmann <marcel@holtmann.org>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+In-Reply-To: <20080811153730.74599410@infradead.org>
+References: <20080811153542.61095e5c@infradead.org>
+	 <20080811153730.74599410@infradead.org>
+Content-Type: text/plain
+Date: Tue, 12 Aug 2008 03:09:11 +0200
+Message-Id: <1218503351.25524.28.camel@californication>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <43e72e890808051812y1f6b18ecpac089e45d4c18b84@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 5, 2008 at 6:12 PM, Luis R. Rodriguez <mcgrof@gmail.com> wrote:
+Hi Arjan,
 
-> Marcel I know you also mentioned about using device platform for this?
-> Is this correct or did I misunderstand? Can you elaborate a bit?
+> Subject: [PATCH] libata: use a DMI match table to set defaults for port-disable
+> 
+> As suggested by Jeff:
+> This patch adds a DMI table that is used for setting defaults for
+> the new dont-probe-port parameter boot time optimization feature.
+> 
+> Initially, the table only contains the Asus EeePC 901 as this is the
+> device I have for testing.
 
-OK I got this to work, will send patches soon.
+last time I had mine open, I saw that the other ATA connectors are in
+theory usable. You have to do some heavy modifications, but some people
+do modifications to this kind of hardware to use it for really weird
+purposes. We might wanna consider adding a module parameter to disable
+the magic DMI table. Or do we expect them to always compile their own
+kernel and know where to fix this? Thoughts?
 
-  Luis
+Regards
+
+Marcel
+
+
