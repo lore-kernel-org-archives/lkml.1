@@ -1,89 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752580AbYHLRF3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753885AbYHLROU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752580AbYHLRF3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Aug 2008 13:05:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752450AbYHLRFT
+	id S1753885AbYHLROU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Aug 2008 13:14:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751885AbYHLROM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Aug 2008 13:05:19 -0400
-Received: from gw.goop.org ([64.81.55.164]:49632 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752282AbYHLRFS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Aug 2008 13:05:18 -0400
-Message-ID: <48A1C2B9.9070107@goop.org>
-Date: Tue, 12 Aug 2008 10:04:57 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	Tue, 12 Aug 2008 13:14:12 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:47581 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751754AbYHLROM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Aug 2008 13:14:12 -0400
+Date: Tue, 12 Aug 2008 13:14:09 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Roland Dreier <rdreier@cisco.com>
+cc: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, rolandd@cisco.com,
+       sean.hefty@intel.com, hal.rosenstock@gmail.com,
+       general@lists.openfabrics.org
+Subject: Re: [PATCH] infiniband: change flags from int to long
+In-Reply-To: <aday732w8d6.fsf@cisco.com>
+Message-ID: <alpine.DEB.1.10.0808121310550.30444@gandalf.stny.rr.com>
+References: <alpine.DEB.1.10.0808121030160.18695@gandalf.stny.rr.com> <aday732w8d6.fsf@cisco.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-CC: Theodore Tso <tytso@mit.edu>, Daniel Lezcano <daniel.lezcano@fr.ibm.com>,
-       Arnd Bergmann <arnd@arndb.de>, containers@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org, Peter Chubb <peterc@gelato.unsw.edu.au>
-Subject: Re: checkpoint/restart ABI
-References: <20080807224033.FFB3A2C1@kernel>	 <200808090013.41999.arnd@arndb.de> <20080811152201.GB25930@us.ibm.com>	 <200808111853.13854.arnd@arndb.de> <1218484114.5598.43.camel@nimitz>	 <48A0CD86.6030704@goop.org> <1218553091.5598.76.camel@nimitz>	 <48A1BB39.3090108@goop.org> <1218559619.5598.97.camel@nimitz>
-In-Reply-To: <1218559619.5598.97.camel@nimitz>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dave Hansen wrote:
->>> I'm not sure what you mean by "closed files".  Either the app has a fd,
->>> it doesn't, or it is in sys_open() somewhere.  We have to get the app
->>> into a quiescent state before we can checkpoint, so we basically just
->>> say that we won't checkpoint things that are *in* the kernel.
->>>       
->> It's common for an app to write a tmp file, close it, and then open it a 
->> bit later expecting to find the content it just wrote.  If you 
->> checkpoint-kill it in the interim, reboot (clearing out /tmp) and then 
->> resume, then it will lose its tmp file.  There's no explicit connection 
->> between the process and its potential working set of files.
->>     
->
-> I respectfully disagree.  The number one prerequisite for
-> checkpoint/restart is isolation.  Xen just happens to get this for free.
->   
 
-(I don't have my Xen hat on at all for this thread.)
+On Tue, 12 Aug 2008, Roland Dreier wrote:
 
-> So, instead of saying that there's no explicit connection between the
-> process and its working set, ask yourself how we make a connection.
->
-> In this case, we can do it with a filesystem (mount) namespace.  Each
-> container that we might want to checkpoint must have its writable
-> filesystems contained to a private set that are not shared with other
-> containers.  Things like union mounts would help here, but aren't
-> necessarily required.  They just make it more efficient.
->   
+>  > It is a bug to have irq saved flags as an int and not long since
+>  > some archs may use more that 32 bits in flags.
+> 
+> Isn't this already upstream for a while as 52fd8ca6?
 
-We were dealing with checkpointing random sets of processes, and that 
-posed all sorts of problems.  Filesystem namespace was one, the pid 
-namespace was another.  Doing checkpointing at the container-level 
-granularity definitely solves a lot of problems.
+This is the problem with having multiple git repos lying around. You never 
+know which one is updated. I should have done a git pull on the git repo I 
+examined.
 
->>> Is there anything specific you are thinking of that particularly worries
->>> you?  I could write pages on the list you have there.
->>>       
->> No, that's the problem; it all worries me.  It's a big problem space.
->>     
->
-> It's almost as big of a problem as trying to virtualize entire machines
-> and expecting them to run as fast as native. :)
->   
+Last commit on the repo I looked at:
 
-No, it's much harder.  Hardware is relatively simple and immutable 
-compared to kernel and process state ;)
+commit 94ad374a0751f40d25e22e036c37f7263569d24c
+Author: Linus Torvalds <torvalds@linux-foundation.org>
+Date:   Wed Jul 30 14:45:12 2008 -0700
 
-> Cool!  I didn't know you guys did the IRIX implementation.  I'm sure you
-> guys got a lot farther than any of us are.  Did you guys ever write any
-> papers or anything on it?  I'd be interested in more information.
->   
 
-Yeah, there was a paper, but it looks like the internet has lost it.  It 
-was at 
-http://www.csu.edu.au/special/conference/apwww95/.papers95/cmaltby/cmaltby.ps
-http://www.csu.edu.au/special/conference/apwww95/sept-all.html has 
-mention of the paper.
+And the commit you stated:
 
-    J
+commit 52fd8ca6ad4124c15952ded35cfcf6adbd7ae8d4
+Author: Vegard Nossum <vegard.nossum@gmail.com>
+Date:   Wed Jul 30 09:29:06 2008 -0700
+
+
+Which Linus pulled in on:
+
+commit 273b2578392bbf6e5c47a8a3d1ee461ce6fc7182
+Merge: 8e43e12... 06a91a0...
+Author: Linus Torvalds <torvalds@linux-foundation.org>
+Date:   Thu Aug 7 18:14:07 2008 -0700
+
+
+Sorry for the noise :-/
+
+-- Steve
+
