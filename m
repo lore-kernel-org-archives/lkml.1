@@ -1,49 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753403AbYHLNA1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753994AbYHLNAj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753403AbYHLNA1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Aug 2008 09:00:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752223AbYHLNAO
+	id S1753994AbYHLNAj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Aug 2008 09:00:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753344AbYHLNA0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Aug 2008 09:00:14 -0400
-Received: from il.qumranet.com ([212.179.150.194]:16334 "EHLO il.qumranet.com"
+	Tue, 12 Aug 2008 09:00:26 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:48435 "EHLO smtp4.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752110AbYHLNAN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Aug 2008 09:00:13 -0400
-Message-ID: <48A18958.8060307@qumranet.com>
-Date: Tue, 12 Aug 2008 16:00:08 +0300
-From: Avi Kivity <avi@qumranet.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	id S1753295AbYHLNA0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Aug 2008 09:00:26 -0400
+Date: Tue, 12 Aug 2008 15:58:40 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Rene Herman <rene.herman@keyaccess.nl>
+Cc: Wim Van Sebroeck <wim@iguana.be>, Ingo Molnar <mingo@redhat.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Andrew Morton <akpm@osdl.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] WATCHDOG: don't auto-grab eurotechwdt.
+Message-ID: <20080812125840.GA13910@cs181140183.pp.htv.fi>
+References: <489E0F5A.8010404@keyaccess.nl>
 MIME-Version: 1.0
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-CC: Avi Kivity <avi@argo.co.il>, kvm-devel <kvm@vger.kernel.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/4] reduce kvm stack usage in kvm_arch_vm_ioctl()
-References: <1218474105-14678-1-git-send-email-dave@linux.vnet.ibm.com>
-In-Reply-To: <1218474105-14678-1-git-send-email-dave@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <489E0F5A.8010404@keyaccess.nl>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dave Hansen wrote:
-> On my machine with gcc 3.4, kvm uses ~2k of stack in a few
-> select functions.  This is mostly because gcc fails to
-> notice that the different case: statements could have their
-> stack usage combined.  It overflows very nicely if interrupts
-> happen during one of these large uses.
+On Sat, Aug 09, 2008 at 11:42:50PM +0200, Rene Herman wrote:
+> [ Andrew: not submitted ]
 >
-> This patch uses two methods for reducing stack usage.
-> 1. dynamically allocate large objects instead of putting
->    on the stack.
-> 2. Use a union{} member for all of the case variables. This
->    tricks gcc into combining them all into a single stack
->    allocation. (There's also a comment on this)
+> Hi Wim.
 >
->   
+> I'm going over a list of drivers that break the boot of randconfig  
+> kernels by keeping resources busy:
+>...
 
-Applied all, thanks.
+WTF?
+
+You are expecting randconfig kernels to boot?
+
+cu
+Adrian
 
 -- 
-error compiling committee.c: too many arguments to function
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
