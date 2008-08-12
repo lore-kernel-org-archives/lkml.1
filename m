@@ -1,52 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752315AbYHLGa0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752166AbYHLGoS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752315AbYHLGa0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Aug 2008 02:30:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751313AbYHLGaO
+	id S1752166AbYHLGoS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Aug 2008 02:44:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751152AbYHLGoF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Aug 2008 02:30:14 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:43452
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751152AbYHLGaM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Aug 2008 02:30:12 -0400
-Date: Mon, 11 Aug 2008 23:30:13 -0700 (PDT)
-Message-Id: <20080811.233013.49328708.davem@davemloft.net>
-To: mpatocka@redhat.com
-Cc: sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: stack overflow on Sparc64
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <Pine.LNX.4.64.0806211542050.21474@engineering.redhat.com>
-References: <20080620.144128.32005196.davem@davemloft.net>
-	<20080620.215139.218732028.davem@davemloft.net>
-	<Pine.LNX.4.64.0806211542050.21474@engineering.redhat.com>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Tue, 12 Aug 2008 02:44:05 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:37604 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750808AbYHLGoD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Aug 2008 02:44:03 -0400
+Date: Tue, 12 Aug 2008 16:43:52 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: "linux-kernel" <linux-kernel@vger.kernel.org>, linux-arch@vger.kernel.org,
+       Matthew Wilcox <matthew@wil.cx>, David Woodhouse <dwmw2@infradead.org>,
+       Al Viro <viro@zeniv.linux.org.uk>,
+       Rusty Russell <rusty@rustcorp.com.au>, linuxppc-dev@ozlabs.org
+Subject: Re: [RFC 1/3] add support for exporting symbols from .S files
+Message-Id: <20080812164352.ddcf1ef5.sfr@canb.auug.org.au>
+In-Reply-To: <200808111618.08206.arnd@arndb.de>
+References: <200808111606.44103.arnd@arndb.de>
+	<200808111618.08206.arnd@arndb.de>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Tue__12_Aug_2008_16_43_52_+1000_D8CMr=yIctHD7/_o"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Mikulas Patocka <mpatocka@redhat.com>
-Date: Sat, 21 Jun 2008 15:42:56 -0400 (EDT)
+--Signature=_Tue__12_Aug_2008_16_43_52_+1000_D8CMr=yIctHD7/_o
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> On Fri, 20 Jun 2008, David Miller wrote:
-> 
-> > giving a try.
-> >
-> > sparc64: Implement support for IRQ stacks.
-> 
-> For me it doesn't work. Locked up after "console: colour dummy device 
-> 80x25".
+Hi Arnd,
 
-Are you sure you didn't see a "Stack overflow" message on the
-screen? :-)
+On Mon, 11 Aug 2008 16:18:07 +0200 Arnd Bergmann <arnd@arndb.de> wrote:
+>
+> +#ifdef CONFIG_MODULES
+> +.macro __EXPORT_SYMBOL sym section symtab strtab
+> +	.section \section,"a",@progbits
+> +	.type \symtab, @object
+> +	.ifeq BITS_PER_LONG-32
+> +	.align 3
+> +\symtab:
+> +	.long \sym
+> +	.long \strtab
+> +	.else
+> +	.align 4
 
-That's what I get when I try to boot with your provided
-kernel config.
+This won't be portable across architectures as .align is sometimes in
+bytes and sometimes a power of two.  You can use .balign or .p2align
+portably on gas, though.=20
 
-The problem is that CONFIG_STACK_DEBUG doesn't understand
-the IRQ stacks at all.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-I'll see if I can tweak it to handle this.
+--Signature=_Tue__12_Aug_2008_16_43_52_+1000_D8CMr=yIctHD7/_o
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkihMSgACgkQjjKRsyhoI8z1NgCdE+5N8sLRvEyit8oSyDlvgFDC
+A1QAoLW3fr0aR/zWgq/v5nbXOSHaCWv4
+=jmEu
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__12_Aug_2008_16_43_52_+1000_D8CMr=yIctHD7/_o--
