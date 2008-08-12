@@ -1,175 +1,387 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752653AbYHLIFj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753147AbYHLIHP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752653AbYHLIFj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Aug 2008 04:05:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751490AbYHLIFY
+	id S1753147AbYHLIHP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Aug 2008 04:07:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751677AbYHLIG5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Aug 2008 04:05:24 -0400
-Received: from smtp106.mail.mud.yahoo.com ([209.191.85.216]:44307 "HELO
-	smtp106.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751575AbYHLIFX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Aug 2008 04:05:23 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Message-Id;
-  b=rYrN516Mv2w+3UEBdL6WjixwO07yJGnKEHDt3COFdUbBRD/0pXzVEvouOWJuCKCtq6F2/i2oQKgzUD2hF/joLvNmEjiMUYojJ4hp+8jBHpvlP7ttXuGTKqd/fwaN8zEwLFftDZpehGYxLoVn7GsaPJFj3/oXi3FCZWcqR/tZctI=  ;
-X-YMail-OSG: MrtUMbEVM1nPmMfOudb.81AUGEFkoc2FcbN6KhGy0eldQPSSRUp2l3cnSCPYdcLx4UEGt2KZrOJsg1WDtV2fZRRL6YWXRH6hRsK8LgNJVmFWCCjfgfTscEwAe7sBuZ4Qj6IvvpyinrgVwn2U3M.IkB3s
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [git pull] core fixes
-Date: Tue, 12 Aug 2008 18:05:13 +1000
-User-Agent: KMail/1.9.5
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       "David S. Miller" <davem@davemloft.net>
-References: <20080811222026.GA20579@elte.hu> <200808121613.24846.nickpiggin@yahoo.com.au>
-In-Reply-To: <200808121613.24846.nickpiggin@yahoo.com.au>
+	Tue, 12 Aug 2008 04:06:57 -0400
+Received: from ozlabs.org ([203.10.76.45]:56470 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751490AbYHLIGy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Aug 2008 04:06:54 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: [PULL] misc fixes
+Date: Tue, 12 Aug 2008 18:06:36 +1000
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org,
+       Christian Borntraeger <borntraeger@de.ibm.com>,
+       Li Zefan <lizf@cn.fujitsu.com>, Arjan van de Ven <arjan@infradead.org>
 MIME-Version: 1.0
-Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_6QUoIl1RjpG1zc2"
-Message-Id: <200808121805.14009.nickpiggin@yahoo.com.au>
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200808121806.36553.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Boundary-00=_6QUoIl1RjpG1zc2
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+(Little hard-to-categorize crap, but I'm lazy.  I'll send multiple pull
+ requests if you ignore this, so feel free).
 
-On Tuesday 12 August 2008 16:13, Nick Piggin wrote:
-> On Tuesday 12 August 2008 08:20, Ingo Molnar wrote:
+The following changes since commit 10fec20ef5eec1c91913baec1225400f0d02df40:
+  Linus Torvalds (1):
+        Merge branch 'for-linus' of git://git.o-hand.com/linux-mfd
 
-> > Nick Piggin (1):
-> >       generic-ipi: fix stack and rcu interaction bug in
-> > smp_call_function_mask()
->
-> I'm still not 100% sure that I have this patch right... I might have seen
-> a lockup trace implicating the smp call function path... which may have
-> been due to some other problem or a different bug in the new call function
-> code, but if some more people can take a look at it before merging?
+are available in the git repository at:
 
-OK indeed it did have a couple of bugs. Firstly, I wasn't freeing the
-data properly in the alloc && wait case. Secondly, I wasn't resetting
-CSD_FLAG_WAIT in the for each cpu loop (so only the first CPU would
-wait).
+  ssh://master.kernel.org/pub/scm/linux/kernel/git/rusty/linux-2.6-for-linus.git master
 
-After those fixes, the patch boots and runs with the kmalloc commented
-out (so it always executes the slowpath).
+Arjan van de Ven (1):
+      modules: extend initcall_debug functionality to the module loader
 
+Christian Borntraeger (2):
+      export virtio_rng.h
+      fix spinlock recursion in hvc_console
 
---Boundary-00=_6QUoIl1RjpG1zc2
-Content-Type: text/x-diff;
-  charset="iso-8859-1";
-  name="kernel-smp-call-function-fix.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
-	filename="kernel-smp-call-function-fix.patch"
+Li Zefan (1):
+      stop_machine: remove unused variable
 
-Index: linux-2.6/kernel/smp.c
-===================================================================
---- linux-2.6.orig/kernel/smp.c	2008-08-12 17:45:07.000000000 +1000
-+++ linux-2.6/kernel/smp.c	2008-08-12 18:02:27.000000000 +1000
-@@ -135,7 +135,8 @@ void generic_smp_call_function_interrupt
- 			 */
- 			smp_wmb();
- 			data->csd.flags &= ~CSD_FLAG_WAIT;
--		} else
-+		}
-+		if (data->csd.flags & CSD_FLAG_ALLOC)
- 			call_rcu(&data->rcu_head, rcu_free_call_data);
- 	}
- 	rcu_read_unlock();
-@@ -260,6 +261,42 @@ void __smp_call_function_single(int cpu,
- 	generic_exec_single(cpu, data);
+Rusty Russell (3):
+      lguest: don't set MAC address for guest unless specified
+      mm: Make generic weak get_user_pages_fast and EXPORT_GPL it
+      lguest: use get_user_pages_fast() instead of get_user_pages()
+
+ Documentation/lguest/lguest.c |   23 +----------------------
+ arch/powerpc/Kconfig          |    3 ---
+ arch/x86/Kconfig              |    1 -
+ arch/x86/mm/Makefile          |    3 +--
+ drivers/char/hvc_console.c    |    5 ++---
+ drivers/lguest/page_tables.c  |   25 +++++++++----------------
+ include/linux/Kbuild          |    1 +
+ include/linux/init.h          |    1 +
+ include/linux/mm.h            |   20 --------------------
+ init/main.c                   |    6 ++++--
+ kernel/module.c               |    2 +-
+ kernel/stop_machine.c         |    1 -
+ mm/Kconfig                    |    3 ---
+ mm/util.c                     |   15 +++++++++++++++
+ 14 files changed, 35 insertions(+), 74 deletions(-)
+
+diff --git a/Documentation/lguest/lguest.c b/Documentation/lguest/lguest.c
+index b88b0ea..6554148 100644
+--- a/Documentation/lguest/lguest.c
++++ b/Documentation/lguest/lguest.c
+@@ -1447,21 +1447,6 @@ static void configure_device(int fd, const char *tapif, u32 ipaddr)
+ 		err(1, "Bringing interface %s up", tapif);
  }
  
-+/* Dummy function */
-+static void quiesce_dummy(void *unused)
-+{
-+}
-+
-+/*
-+ * Ensure stack based data used in call function mask is safe to free.
-+ *
-+ * This is needed by smp_call_function_mask when using on-stack data, because
-+ * a single call function queue is shared by all CPUs, and any CPU may pick up
-+ * the data item on the queue at any time before it is deleted. So we need to
-+ * ensure that all CPUs have transitioned through a quiescent state after
-+ * this call.
-+ *
-+ * This is a very slow function, implemented by sending synchronous IPIs to
-+ * all possible CPUs. For this reason, we have to alloc data rather than use
-+ * stack based data even in the case of synchronous calls. The stack based
-+ * data is then just used for deadlock/oom fallback which will be very rare.
-+ *
-+ * If a faster scheme can be made, we could go back to preferring stack based
-+ * data -- the data allocation/free is non-zero cost.
-+ */
-+static void smp_call_function_mask_quiesce_stack(cpumask_t mask)
-+{
-+	struct call_single_data data;
-+	int cpu;
-+
-+	data.func = quiesce_dummy;
-+	data.info = NULL;
-+
-+	for_each_cpu_mask(cpu, mask) {
-+		data.flags = CSD_FLAG_WAIT;
-+		generic_exec_single(cpu, &data);
-+	}
-+}
-+
- /**
-  * smp_call_function_mask(): Run a function on a set of other CPUs.
-  * @mask: The set of cpus to run on.
-@@ -285,6 +322,7 @@ int smp_call_function_mask(cpumask_t mas
- 	cpumask_t allbutself;
- 	unsigned long flags;
- 	int cpu, num_cpus;
-+	int slowpath = 0;
- 
- 	/* Can deadlock when called with interrupts disabled */
- 	WARN_ON(irqs_disabled());
-@@ -306,15 +344,16 @@ int smp_call_function_mask(cpumask_t mas
- 		return smp_call_function_single(cpu, func, info, wait);
+-static void get_mac(int fd, const char *tapif, unsigned char hwaddr[6])
+-{
+-	struct ifreq ifr;
+-
+-	memset(&ifr, 0, sizeof(ifr));
+-	strcpy(ifr.ifr_name, tapif);
+-
+-	/* SIOC stands for Socket I/O Control.  G means Get (vs S for Set
+-	 * above).  IF means Interface, and HWADDR is hardware address.
+-	 * Simple! */
+-	if (ioctl(fd, SIOCGIFHWADDR, &ifr) != 0)
+-		err(1, "getting hw address for %s", tapif);
+-	memcpy(hwaddr, ifr.ifr_hwaddr.sa_data, 6);
+-}
+-
+ static int get_tun_device(char tapif[IFNAMSIZ])
+ {
+ 	struct ifreq ifr;
+@@ -1531,11 +1516,8 @@ static void setup_tun_net(char *arg)
+ 	p = strchr(arg, ':');
+ 	if (p) {
+ 		str2mac(p+1, conf.mac);
++		add_feature(dev, VIRTIO_NET_F_MAC);
+ 		*p = '\0';
+-	} else {
+-		p = arg + strlen(arg);
+-		/* None supplied; query the randomly assigned mac. */
+-		get_mac(ipfd, tapif, conf.mac);
  	}
  
--	if (!wait) {
--		data = kmalloc(sizeof(*data), GFP_ATOMIC);
--		if (data)
--			data->csd.flags = CSD_FLAG_ALLOC;
--	}
--	if (!data) {
-+	data = kmalloc(sizeof(*data), GFP_ATOMIC);
-+	if (data) {
-+		data->csd.flags = CSD_FLAG_ALLOC;
-+		if (wait)
-+			data->csd.flags |= CSD_FLAG_WAIT;
-+	} else {
- 		data = &d;
- 		data->csd.flags = CSD_FLAG_WAIT;
- 		wait = 1;
-+		slowpath = 1;
- 	}
+ 	/* arg is now either an IP address or a bridge name */
+@@ -1547,13 +1529,10 @@ static void setup_tun_net(char *arg)
+ 	/* Set up the tun device. */
+ 	configure_device(ipfd, tapif, ip);
  
- 	spin_lock_init(&data->lock);
-@@ -331,8 +370,11 @@ int smp_call_function_mask(cpumask_t mas
- 	arch_send_call_function_ipi(mask);
+-	/* Tell Guest what MAC address to use. */
+-	add_feature(dev, VIRTIO_NET_F_MAC);
+ 	add_feature(dev, VIRTIO_F_NOTIFY_ON_EMPTY);
+ 	/* Expect Guest to handle everything except UFO */
+ 	add_feature(dev, VIRTIO_NET_F_CSUM);
+ 	add_feature(dev, VIRTIO_NET_F_GUEST_CSUM);
+-	add_feature(dev, VIRTIO_NET_F_MAC);
+ 	add_feature(dev, VIRTIO_NET_F_GUEST_TSO4);
+ 	add_feature(dev, VIRTIO_NET_F_GUEST_TSO6);
+ 	add_feature(dev, VIRTIO_NET_F_GUEST_ECN);
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 63c9caf..587da5e 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -42,9 +42,6 @@ config GENERIC_HARDIRQS
+ 	bool
+ 	default y
  
- 	/* optionally wait for the CPUs to complete */
--	if (wait)
-+	if (wait) {
- 		csd_flag_wait(&data->csd);
-+		if (unlikely(slowpath))
-+			smp_call_function_mask_quiesce_stack(mask);
-+	}
+-config HAVE_GET_USER_PAGES_FAST
+-	def_bool PPC64
+-
+ config HAVE_SETUP_PER_CPU_AREA
+ 	def_bool PPC64
  
- 	return 0;
+diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+index 3d0f2b6..ac2fb06 100644
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -22,7 +22,6 @@ config X86
+ 	select HAVE_IDE
+ 	select HAVE_OPROFILE
+ 	select HAVE_IOREMAP_PROT
+-	select HAVE_GET_USER_PAGES_FAST
+ 	select HAVE_KPROBES
+ 	select ARCH_WANT_OPTIONAL_GPIOLIB
+ 	select HAVE_KRETPROBES
+diff --git a/arch/x86/mm/Makefile b/arch/x86/mm/Makefile
+index 2977ea3..dfb932d 100644
+--- a/arch/x86/mm/Makefile
++++ b/arch/x86/mm/Makefile
+@@ -1,7 +1,6 @@
+ obj-y	:=  init_$(BITS).o fault.o ioremap.o extable.o pageattr.o mmap.o \
+-	    pat.o pgtable.o
++	    pat.o pgtable.o gup.o
+ 
+-obj-$(CONFIG_HAVE_GET_USER_PAGES_FAST) += gup.o
+ obj-$(CONFIG_X86_32)		+= pgtable_32.o
+ 
+ obj-$(CONFIG_HUGETLB_PAGE)	+= hugetlbpage.o
+diff --git a/drivers/char/hvc_console.c b/drivers/char/hvc_console.c
+index 02aac10..fd64137 100644
+--- a/drivers/char/hvc_console.c
++++ b/drivers/char/hvc_console.c
+@@ -322,11 +322,10 @@ static int hvc_open(struct tty_struct *tty, struct file * filp)
+ 
+ 	hp->tty = tty;
+ 
+-	if (hp->ops->notifier_add)
+-		rc = hp->ops->notifier_add(hp, hp->data);
+-
+ 	spin_unlock_irqrestore(&hp->lock, flags);
+ 
++	if (hp->ops->notifier_add)
++		rc = hp->ops->notifier_add(hp, hp->data);
+ 
+ 	/*
+ 	 * If the notifier fails we return an error.  The tty layer
+diff --git a/drivers/lguest/page_tables.c b/drivers/lguest/page_tables.c
+index d93500f..81d0c60 100644
+--- a/drivers/lguest/page_tables.c
++++ b/drivers/lguest/page_tables.c
+@@ -108,9 +108,8 @@ static unsigned long gpte_addr(pgd_t gpgd, unsigned long vaddr)
  }
-
---Boundary-00=_6QUoIl1RjpG1zc2--
+ /*:*/
+ 
+-/*M:014 get_pfn is slow; it takes the mmap sem and calls get_user_pages.  We
+- * could probably try to grab batches of pages here as an optimization
+- * (ie. pre-faulting). :*/
++/*M:014 get_pfn is slow: we could probably try to grab batches of pages here as
++ * an optimization (ie. pre-faulting). :*/
+ 
+ /*H:350 This routine takes a page number given by the Guest and converts it to
+  * an actual, physical page number.  It can fail for several reasons: the
+@@ -123,19 +122,13 @@ static unsigned long gpte_addr(pgd_t gpgd, unsigned long vaddr)
+ static unsigned long get_pfn(unsigned long virtpfn, int write)
+ {
+ 	struct page *page;
+-	/* This value indicates failure. */
+-	unsigned long ret = -1UL;
+ 
+-	/* get_user_pages() is a complex interface: it gets the "struct
+-	 * vm_area_struct" and "struct page" assocated with a range of pages.
+-	 * It also needs the task's mmap_sem held, and is not very quick.
+-	 * It returns the number of pages it got. */
+-	down_read(&current->mm->mmap_sem);
+-	if (get_user_pages(current, current->mm, virtpfn << PAGE_SHIFT,
+-			   1, write, 1, &page, NULL) == 1)
+-		ret = page_to_pfn(page);
+-	up_read(&current->mm->mmap_sem);
+-	return ret;
++	/* gup me one page at this address please! */
++	if (get_user_pages_fast(virtpfn << PAGE_SHIFT, 1, write, &page) == 1)
++		return page_to_pfn(page);
++
++	/* This value indicates failure. */
++	return -1UL;
+ }
+ 
+ /*H:340 Converting a Guest page table entry to a shadow (ie. real) page table
+@@ -174,7 +167,7 @@ static pte_t gpte_to_spte(struct lg_cpu *cpu, pte_t gpte, int write)
+ /*H:460 And to complete the chain, release_pte() looks like this: */
+ static void release_pte(pte_t pte)
+ {
+-	/* Remember that get_user_pages() took a reference to the page, in
++	/* Remember that get_user_pages_fast() took a reference to the page, in
+ 	 * get_pfn()?  We have to put it back now. */
+ 	if (pte_flags(pte) & _PAGE_PRESENT)
+ 		put_page(pfn_to_page(pte_pfn(pte)));
+diff --git a/include/linux/Kbuild b/include/linux/Kbuild
+index a26f565..327f606 100644
+--- a/include/linux/Kbuild
++++ b/include/linux/Kbuild
+@@ -356,6 +356,7 @@ unifdef-y += virtio_balloon.h
+ unifdef-y += virtio_console.h
+ unifdef-y += virtio_pci.h
+ unifdef-y += virtio_ring.h
++unifdef-y += virtio_rng.h
+ unifdef-y += vt.h
+ unifdef-y += wait.h
+ unifdef-y += wanrouter.h
+diff --git a/include/linux/init.h b/include/linux/init.h
+index 11b84e1..93538b6 100644
+--- a/include/linux/init.h
++++ b/include/linux/init.h
+@@ -139,6 +139,7 @@ extern initcall_t __con_initcall_start[], __con_initcall_end[];
+ extern initcall_t __security_initcall_start[], __security_initcall_end[];
+ 
+ /* Defined in init/main.c */
++extern int do_one_initcall(initcall_t fn);
+ extern char __initdata boot_command_line[];
+ extern char *saved_command_line;
+ extern unsigned int reset_devices;
+diff --git a/include/linux/mm.h b/include/linux/mm.h
+index 335288b..fa65160 100644
+--- a/include/linux/mm.h
++++ b/include/linux/mm.h
+@@ -834,7 +834,6 @@ extern int mprotect_fixup(struct vm_area_struct *vma,
+ 			  struct vm_area_struct **pprev, unsigned long start,
+ 			  unsigned long end, unsigned long newflags);
+ 
+-#ifdef CONFIG_HAVE_GET_USER_PAGES_FAST
+ /*
+  * get_user_pages_fast provides equivalent functionality to get_user_pages,
+  * operating on current and current->mm (force=0 and doesn't return any vmas).
+@@ -848,25 +847,6 @@ extern int mprotect_fixup(struct vm_area_struct *vma,
+ int get_user_pages_fast(unsigned long start, int nr_pages, int write,
+ 			struct page **pages);
+ 
+-#else
+-/*
+- * Should probably be moved to asm-generic, and architectures can include it if
+- * they don't implement their own get_user_pages_fast.
+- */
+-#define get_user_pages_fast(start, nr_pages, write, pages)	\
+-({								\
+-	struct mm_struct *mm = current->mm;			\
+-	int ret;						\
+-								\
+-	down_read(&mm->mmap_sem);				\
+-	ret = get_user_pages(current, mm, start, nr_pages,	\
+-					write, 0, pages, NULL);	\
+-	up_read(&mm->mmap_sem);					\
+-								\
+-	ret;							\
+-})
+-#endif
+-
+ /*
+  * A callback you can register to apply pressure to ageable caches.
+  *
+diff --git a/init/main.c b/init/main.c
+index 0bc7e16..f6f7042 100644
+--- a/init/main.c
++++ b/init/main.c
+@@ -691,7 +691,7 @@ asmlinkage void __init start_kernel(void)
+ 	rest_init();
+ }
+ 
+-static int __initdata initcall_debug;
++static int initcall_debug;
+ 
+ static int __init initcall_debug_setup(char *str)
+ {
+@@ -700,7 +700,7 @@ static int __init initcall_debug_setup(char *str)
+ }
+ __setup("initcall_debug", initcall_debug_setup);
+ 
+-static void __init do_one_initcall(initcall_t fn)
++int do_one_initcall(initcall_t fn)
+ {
+ 	int count = preempt_count();
+ 	ktime_t t0, t1, delta;
+@@ -740,6 +740,8 @@ static void __init do_one_initcall(initcall_t fn)
+ 		print_fn_descriptor_symbol(KERN_WARNING "initcall %s", fn);
+ 		printk(" returned with %s\n", msgbuf);
+ 	}
++
++	return result;
+ }
+ 
+ 
+diff --git a/kernel/module.c b/kernel/module.c
+index 61d2121..08864d2 100644
+--- a/kernel/module.c
++++ b/kernel/module.c
+@@ -2288,7 +2288,7 @@ sys_init_module(void __user *umod,
+ 
+ 	/* Start the module */
+ 	if (mod->init != NULL)
+-		ret = mod->init();
++		ret = do_one_initcall(mod->init);
+ 	if (ret < 0) {
+ 		/* Init routine failed: abort.  Try to protect us from
+                    buggy refcounters. */
+diff --git a/kernel/stop_machine.c b/kernel/stop_machine.c
+index e446c7c..af3c7ce 100644
+--- a/kernel/stop_machine.c
++++ b/kernel/stop_machine.c
+@@ -65,7 +65,6 @@ static void ack_state(void)
+ static int stop_cpu(struct stop_machine_data *smdata)
+ {
+ 	enum stopmachine_state curstate = STOPMACHINE_NONE;
+-	int uninitialized_var(ret);
+ 
+ 	/* Simple state machine */
+ 	do {
+diff --git a/mm/Kconfig b/mm/Kconfig
+index 446c658..0bd9c2d 100644
+--- a/mm/Kconfig
++++ b/mm/Kconfig
+@@ -77,9 +77,6 @@ config FLAT_NODE_MEM_MAP
+ 	def_bool y
+ 	depends on !SPARSEMEM
+ 
+-config HAVE_GET_USER_PAGES_FAST
+-	bool
+-
+ #
+ # Both the NUMA code and DISCONTIGMEM use arrays of pg_data_t's
+ # to represent different areas of memory.  This variable allows
+diff --git a/mm/util.c b/mm/util.c
+index 9341ca7..cb00b74 100644
+--- a/mm/util.c
++++ b/mm/util.c
+@@ -171,3 +171,18 @@ void arch_pick_mmap_layout(struct mm_struct *mm)
+ 	mm->unmap_area = arch_unmap_area;
+ }
+ #endif
++
++int __attribute__((weak)) get_user_pages_fast(unsigned long start,
++				int nr_pages, int write, struct page **pages)
++{
++	struct mm_struct *mm = current->mm;
++	int ret;
++
++	down_read(&mm->mmap_sem);
++	ret = get_user_pages(current, mm, start, nr_pages,
++					write, 0, pages, NULL);
++	up_read(&mm->mmap_sem);
++
++	return ret;
++}
++EXPORT_SYMBOL_GPL(get_user_pages_fast);
