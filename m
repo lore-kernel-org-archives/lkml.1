@@ -1,257 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753996AbYHLP73@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754426AbYHLQBe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753996AbYHLP73 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Aug 2008 11:59:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752491AbYHLP7R
+	id S1754426AbYHLQBe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Aug 2008 12:01:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753900AbYHLQBY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Aug 2008 11:59:17 -0400
-Received: from outbound-dub.frontbridge.com ([213.199.154.16]:45143 "EHLO
-	IE1EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752480AbYHLP7Q convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Aug 2008 11:59:16 -0400
-X-BigFish: VPS-55(z21eWz1432R9370P98dR1805M936fQzz10d3izzz32i6bh62h)
-X-Spam-TCS-SCL: 1:0
-X-WSS-ID: 0K5HWE5-01-TXG-01
-From: Mark Langsdorf <mark.langsdorf@amd.com>
-To: Pavel Machek <pavel@suse.cz>, <joachim.deguara@amd.com>
-Subject: Re: [PATCH 01/01][retry 1] x86: L3 cache index disable for 2.6.26
-Date: Tue, 12 Aug 2008 11:04:08 -0500
+	Tue, 12 Aug 2008 12:01:24 -0400
+Received: from ns1.suse.de ([195.135.220.2]:58918 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753689AbYHLQBX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Aug 2008 12:01:23 -0400
+From: Thomas Renninger <trenn@suse.de>
+Organization: SUSE Linux - Novell
+To: Milan Broz <mbroz@redhat.com>
+Subject: Re: 2.6.27-rc1 and 2.6.26.1: critical thermal shutdown on thinkpad x60 (bisected)
+Date: Tue, 12 Aug 2008 18:01:18 +0200
 User-Agent: KMail/1.9.9
-CC: <gregkh@ucw.cz>, <tglx@linutronix.de>, <mingo@redhat.com>, <hpa@zytor.com>,
-       <linux-kernel@vger.kernel.org>
-References: <200807181603.52332.mark.langsdorf@amd.com> <20080808220011.GA12156@ucw.cz>
-In-Reply-To: <20080808220011.GA12156@ucw.cz>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Pavel Machek <pavel@suse.cz>,
+       Andi Kleen <andi@firstfloor.org>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       ACPI mailing list <linux-acpi@vger.kernel.org>,
+       Alexey Starikovskiy <astarikovskiy@suse.de>,
+       "Greg Kroah-Hartman" <gregkh@novell.com>, stable@kernel.org
+References: <20080806090246.GA1572@elf.ucw.cz> <48A1A4F6.9080706@redhat.com> <48A1B0CB.9050908@redhat.com>
+In-Reply-To: <48A1B0CB.9050908@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-ID: <200808121104.09288.mark.langsdorf@amd.com>
-X-OriginalArrivalTime: 12 Aug 2008 15:59:00.0198 (UTC) FILETIME=[55A03060:01C8FC94]
+Message-Id: <200808121801.21374.trenn@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 08 August 2008, Pavel Machek wrote:
+On Tuesday 12 August 2008 17:48:27 Milan Broz wrote:
+> >>>> yes. maybe some userspace tool controlling frequency is involved, no
+> >>>> idea yet. But it is 2.6.26 tree for sure.
+> >>>
+> >>> So it definitely is in 2.6.26.2, and it definitely is in 2.6.26?
+> >
+> > The bug is _not_ in 2.6.26, it was introduced in 2.6.26.1.
+> >
+> > The problem is, that now the CPU frequency doesn't decrease at some
+> > temperature level and fan is unable to cool it properly.
+Hmm, the machine should still not shut down. We need the virtual
+passive trip point...
+> >
+> > bisect on 2.6.26.y tree finished in this patch:
+> > (I expect similar patch in 2.6.27-rc)
+> >
+> > commit 04f496871e8af87a1e40c504371a206fd7389193
+> > Author: Thomas Renninger <trenn@suse.de>
+> > Date:   Wed Jul 30 18:20:10 2008 +0000
+>
+> and this seems to fix it for me:
+> --
+>
+> Do not use unsigned int if there is test for negative number...
+>
+> See drivers/acpi/processor_perflib.c
+>   static unsigned int ignore_ppc = -1;
+> ...
+>   if (event == CPUFREQ_START && ignore_ppc <= 0) {
+>        ignore_ppc = 0;
+> ...
+>
+> Signed-off-by: Milan Broz <mbroz@redhat.com>
+> ---
+>  drivers/acpi/processor_perflib.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> Index: linux-2.6.26.y/drivers/acpi/processor_perflib.c
+> ===================================================================
+> --- linux-2.6.26.y.orig/drivers/acpi/processor_perflib.c	2008-08-12
+> 17:20:07.000000000 +0200 +++
+> linux-2.6.26.y/drivers/acpi/processor_perflib.c	2008-08-12
+> 17:35:53.000000000 +0200 @@ -70,7 +70,7 @@ static
+> DEFINE_MUTEX(performance_mutex);
+>   *  0 -> cpufreq low level drivers initialized -> consider _PPC values
+>   *  1 -> ignore _PPC totally -> forced by user through boot param
+>   */
+> -static unsigned int ignore_ppc = -1;
+> +static int ignore_ppc = -1;
+Ohh dear..., what kind of obvious bug have I introduced.
 
-> I think there's one-value-per-file rule in sysfs...
-> 
-> I guess it is better to return -EOPNOTSUP (or something) instead of
-> english text explaining that...
-> 
-> No, really, what you created is impossible to parse -- /proc like
-> nightmare.
+Thanks a lot!
 
-Okay, this is a simpler version that includes most of Ingo's
-clean-ups and style changes.  It only displays the two
-cache index values.  Is this acceptable?
-
-
-
-New versions of AMD processors have support to disable parts
-of their L3 caches if too many MCEs are generated by the
-L3 cache.  
-
-This patch provides a /sysfs interface under the cache
-hierarchy to display which caches indices are disabled
-(if any) and to ALLOW monitoring applications to disable a
-cache index.
-
-This patch does not set an automatic policy to disable
-the L3 cache.  Policy decisions would need to be made
-by a RAS handler.  This patch merely makes it easier to
-see what indices are currently disabled.
-
-Signed-off-by: Mark Langsdorf <mark.langsdorf@amd.com>
-
-diff -r f3f819497a68 arch/x86/kernel/cpu/intel_cacheinfo.c
---- a/arch/x86/kernel/cpu/intel_cacheinfo.c	Thu Aug 07 04:24:53 2008 -0500
-+++ b/arch/x86/kernel/cpu/intel_cacheinfo.c	Tue Aug 12 05:29:37 2008 -0500
-@@ -130,6 +130,7 @@ struct _cpuid4_info {
- 	union _cpuid4_leaf_ebx ebx;
- 	union _cpuid4_leaf_ecx ecx;
- 	unsigned long size;
-+	unsigned long can_disable;
- 	cpumask_t shared_cpu_map;	/* future?: only cpus/node is needed */
- };
- 
-@@ -251,6 +252,14 @@ static void __cpuinit amd_cpuid4(int lea
- 		(ebx->split.ways_of_associativity + 1) - 1;
- }
- 
-+static void __cpuinit 
-+amd_check_l3_disable(int index, struct _cpuid4_info *this_leaf)
-+{
-+	if (index < 3)
-+		return;
-+	this_leaf->can_disable = 1;     
-+}
-+
- static int __cpuinit cpuid4_cache_lookup(int index, struct _cpuid4_info *this_leaf)
- {
- 	union _cpuid4_leaf_eax 	eax;
-@@ -258,10 +267,13 @@ static int __cpuinit cpuid4_cache_lookup
- 	union _cpuid4_leaf_ecx 	ecx;
- 	unsigned		edx;
- 
--	if (boot_cpu_data.x86_vendor == X86_VENDOR_AMD)
-+	if (boot_cpu_data.x86_vendor == X86_VENDOR_AMD) {
- 		amd_cpuid4(index, &eax, &ebx, &ecx);
--	else
--		cpuid_count(4, index, &eax.full, &ebx.full, &ecx.full,  &edx);
-+		if (boot_cpu_data.x86 >= 0x10)
-+			amd_check_l3_disable(index, this_leaf);
-+	} else {
-+		cpuid_count(4, index, &eax.full, &ebx.full, &ecx.full, &edx);
-+	}
- 	if (eax.split.type == CACHE_TYPE_NULL)
- 		return -EIO; /* better error ? */
- 
-@@ -269,9 +281,9 @@ static int __cpuinit cpuid4_cache_lookup
- 	this_leaf->ebx = ebx;
- 	this_leaf->ecx = ecx;
- 	this_leaf->size = (ecx.split.number_of_sets + 1) *
--		(ebx.split.coherency_line_size + 1) *
--		(ebx.split.physical_line_partition + 1) *
--		(ebx.split.ways_of_associativity + 1);
-+			(ebx.split.coherency_line_size + 1) *
-+			(ebx.split.physical_line_partition + 1) *
-+			(ebx.split.ways_of_associativity + 1);
- 	return 0;
- }
- 
-@@ -574,6 +586,9 @@ static DEFINE_PER_CPU(struct _index_kobj
- static DEFINE_PER_CPU(struct _index_kobject *, index_kobject);
- #define INDEX_KOBJECT_PTR(x, y)    (&((per_cpu(index_kobject, x))[y]))
- 
-+#define to_object(k)    container_of(k, struct _index_kobject, kobj)
-+#define to_attr(a)      container_of(a, struct _cache_attr, attr)
-+
- #define show_one_plus(file_name, object, val)				\
- static ssize_t show_##file_name						\
- 			(struct _cpuid4_info *this_leaf, char *buf)	\
-@@ -618,6 +633,83 @@ static inline ssize_t show_shared_cpu_li
- static inline ssize_t show_shared_cpu_list(struct _cpuid4_info *leaf, char *buf)
- {
- 	return show_shared_cpu_map_func(leaf, 1, buf);
-+}
-+
-+#if defined(CONFIG_PCI) && defined(CONFIG_K8_NB)
-+#include <linux/pci.h>
-+#include <asm/k8.h>
-+static struct pci_dev *get_k8_northbridge(int node)
-+{
-+        return k8_northbridges[node];
-+}
-+#else
-+static inline int pci_write_config_dword(struct pci_dev *dev, int where,
-+                                         u32 val)
-+{
-+	return 0;
-+}
-+
-+static inline int pci_read_config_dword(struct pci_dev *dev, int where,
-+                                        u32 *val)
-+{
-+	return 0;
-+}
-+
-+static struct pci_dev *get_k8_northbridge(int node)
-+{
-+        return NULL;
-+}
-+#endif
-+
-+static ssize_t show_cache_disable(struct _cpuid4_info *this_leaf, char *buf)
-+{
-+        int node = cpu_to_node(first_cpu(this_leaf->shared_cpu_map));
-+        struct pci_dev *dev = get_k8_northbridge(node);
-+        ssize_t ret = 0;
-+        int i;
-+
-+        if (!this_leaf->can_disable) 
-+                return sprintf(buf, "-1");
-+
-+        for (i = 0; i < 2; i++) {
-+                unsigned int reg = 0;
-+
-+                pci_read_config_dword(dev, 0x1BC + i * 4, &reg);
-+
-+                ret += sprintf(buf, "%s %x\t", buf, reg);
-+        }
-+	ret += sprintf(buf,"%s\n", buf);
-+
-+	return ret;
-+}
-+
-+static ssize_t 
-+store_cache_disable(struct _cpuid4_info *this_leaf, const char *buf,
-+                size_t count)
-+{
-+        int node = cpu_to_node(first_cpu(this_leaf->shared_cpu_map));
-+        struct pci_dev *dev = get_k8_northbridge(node);
-+        ssize_t ret = 0;
-+        unsigned int index, val;
-+
-+        if (!this_leaf->can_disable)
-+                return 0;
-+
-+        if (strlen(buf) > 15)
-+                return -EINVAL;
-+
-+        ret = sscanf(buf, "%x %x\n", &index, &val);
-+        if (ret != 2)
-+                return -EINVAL;
-+        if (index > 1) 
-+                return -EINVAL;
-+
-+        val |= 0xc0000000;
-+        pci_write_config_dword(dev, 0x1BC + index * 4, val & ~0x40000000);
-+        wbinvd();
-+        pci_write_config_dword(dev, 0x1BC + index * 4, val);
-+
-+        return strlen(buf);
- }
- 
- static ssize_t show_type(struct _cpuid4_info *this_leaf, char *buf) {
-@@ -657,6 +749,8 @@ define_one_ro(shared_cpu_map);
- define_one_ro(shared_cpu_map);
- define_one_ro(shared_cpu_list);
- 
-+static struct _cache_attr cache_disable = __ATTR(cache_disable, 0644, show_cache_disable, store_cache_disable);
-+
- static struct attribute * default_attrs[] = {
- 	&type.attr,
- 	&level.attr,
-@@ -667,11 +761,9 @@ static struct attribute * default_attrs[
- 	&size.attr,
- 	&shared_cpu_map.attr,
- 	&shared_cpu_list.attr,
-+	&cache_disable.attr,
- 	NULL
- };
--
--#define to_object(k) container_of(k, struct _index_kobject, kobj)
--#define to_attr(a) container_of(a, struct _cache_attr, attr)
- 
- static ssize_t show(struct kobject * kobj, struct attribute * attr, char * buf)
- {
-@@ -689,7 +781,15 @@ static ssize_t store(struct kobject * ko
- static ssize_t store(struct kobject * kobj, struct attribute * attr,
- 		     const char * buf, size_t count)
- {
--	return 0;
-+	struct _cache_attr *fattr = to_attr(attr);
-+	struct _index_kobject *this_leaf = to_object(kobj);
-+	ssize_t ret;
-+
-+	ret = fattr->store ?
-+		fattr->store(CPUID4_INFO_IDX(this_leaf->cpu, this_leaf->index),
-+			 buf, count) :
-+		0;
-+	return ret;
- }
- 
- static struct sysfs_ops sysfs_ops = {
-
-
+         Thomas
