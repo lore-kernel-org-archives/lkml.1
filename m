@@ -1,55 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754115AbYHLTal@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752560AbYHLTf7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754115AbYHLTal (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Aug 2008 15:30:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751917AbYHLTac
+	id S1752560AbYHLTf7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Aug 2008 15:35:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751386AbYHLTfv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Aug 2008 15:30:32 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:37872 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751386AbYHLTac (ORCPT
+	Tue, 12 Aug 2008 15:35:51 -0400
+Received: from smooth.piipiip.net ([194.100.76.170]:52780 "EHLO
+	smooth.piipiip.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750777AbYHLTfu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Aug 2008 15:30:32 -0400
-Date: Tue, 12 Aug 2008 15:30:31 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Mimi Zohar <zohar@us.ibm.com>
-Cc: Christoph Hellwig <hch@infradead.org>, James Morris <jmorris@namei.org>,
-       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       Randy Dunlap <randy.dunlap@oracle.com>, safford@watson.ibm.com,
-       sailer@watson.ibm.com, Stephen Smalley <sds@tycho.nsa.gov>,
-       serue@linux.vnet.ibm.com, Al Viro <viro@ZenIV.linux.org.uk>,
-       Debora Velarde <debora@linux.vnet.ibm.com>,
-       Mimi Zohar <zohar@linux.vnet.ibm.com>,
-       Kenneth Goldman <kgold@watson.ibm.com>
-Subject: Re: [PATCH 1/4] integrity: TPM internel kernel interface
-Message-ID: <20080812193031.GD18034@infradead.org>
-References: <20080808184349.999902616@linux.vnet.ibm.com> <1218221718.4444.11.camel@localhost.localdomain> <20080809184622.GA22905@infradead.org> <OF9A2A62B8.D4E0AE57-ON852574A2.006CEDC6-852574A2.00749DAC@us.ibm.com>
+	Tue, 12 Aug 2008 15:35:50 -0400
+X-Greylist: delayed 1795 seconds by postgrey-1.27 at vger.kernel.org; Tue, 12 Aug 2008 15:35:50 EDT
+Date: Tue, 12 Aug 2008 22:05:47 +0300
+From: Riku Voipio <riku.voipio@iki.fi>
+To: Sven Wegener <sven.wegener@stealer.net>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] leds-pca9532: Fix memory leak and properly handle errors
+Message-ID: <20080812190547.GA3616@kos.to>
+References: <alpine.LNX.1.10.0808080047290.16201@titan.stealer.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <OF9A2A62B8.D4E0AE57-ON852574A2.006CEDC6-852574A2.00749DAC@us.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+In-Reply-To: <alpine.LNX.1.10.0808080047290.16201@titan.stealer.net>
+X-message-flag: Warning: message not sent with a DRM-Certified client
+User-Agent: Mutt/1.5.11+cvs20060126
+X-SA-Exim-Connect-IP: 127.0.0.1
+X-SA-Exim-Mail-From: nchip@kos.to
+X-SA-Exim-Scanned: No (on smooth.piipiip.net); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 11, 2008 at 05:13:51PM -0400, Mimi Zohar wrote:
-> 
-> I assume the concern here is that between looking up the chip and actually 
-> 
-> using the chip, the TPM chip is disabled/deactivated.  Based on 
-> discussions 
-> with Kenneth Goldman, the TCG main specification part2: structures, 
-> require
-> that even if the TPM is disabled/deactivated, the command to extend the 
-> PCR 
-> will succeed, but the command to read the PCR will fail with an 
-> appropriate 
-> error code.
+On Fri, Aug 08, 2008 at 12:49:40AM +0200, Sven Wegener wrote:
+> When the registration fails, we need to release the memory we allocated. Also
+> we need to save the error from led_classdev_register and propagate it up, else
+> we'll return success, even if we failed.
 
-And what happens when the chip simply goes away due to a hotplug action?
-Or not even the actual chip goes away but just the chip driver and you
-now dereference freed memory?
+> Not-yet-signed-off-by: Sven Wegener <sven.wegener@stealer.net>
+> Cc: Riku Voipio <riku.voipio@iki.fi>
 
+Driver in general works after this, error path(s) not tested.
+
+Acked-By: Riku Voipio <riku.voipio@iki.fi>
+
+> ---
+>  drivers/leds/leds-pca9532.c |   22 +++++++++++++---------
+>  1 files changed, 13 insertions(+), 9 deletions(-)
+> 
+> I don't have the hardware. Riku, can you please test if it still works as 
+> expected.
+> 
+> diff --git a/drivers/leds/leds-pca9532.c b/drivers/leds/leds-pca9532.c
+> index 4064d4f..16af817 100644
+> --- a/drivers/leds/leds-pca9532.c
+> +++ b/drivers/leds/leds-pca9532.c
+> @@ -204,8 +204,8 @@ static int pca9532_configure(struct i2c_client *client,
+>  			led->ldev.brightness = LED_OFF;
+>  			led->ldev.brightness_set = pca9532_set_brightness;
+>  			led->ldev.blink_set = pca9532_set_blink;
+> -			if (led_classdev_register(&client->dev,
+> -				&led->ldev) < 0)	{
+> +			err = led_classdev_register(&client->dev, &led->ldev);
+> +			if (err < 0) {
+>  				dev_err(&client->dev,
+>  					"couldn't register LED %s\n",
+>  					led->name);
+> @@ -263,7 +263,6 @@ exit:
+>  			}
+>  
+>  	return err;
+> -
+>  }
+>  
+>  static int pca9532_probe(struct i2c_client *client,
+> @@ -271,12 +270,16 @@ static int pca9532_probe(struct i2c_client *client,
+>  {
+>  	struct pca9532_data *data = i2c_get_clientdata(client);
+>  	struct pca9532_platform_data *pca9532_pdata = client->dev.platform_data;
+> +	int err;
+> +
+> +	if (!pca9532_pdata)
+> +		return -EIO;
+>  
+>  	if (!i2c_check_functionality(client->adapter,
+>  		I2C_FUNC_SMBUS_BYTE_DATA))
+>  		return -EIO;
+>  
+> -	data = kzalloc(sizeof(struct pca9532_data), GFP_KERNEL);
+> +	data = kzalloc(sizeof(*data), GFP_KERNEL);
+>  	if (!data)
+>  		return -ENOMEM;
+>  
+> @@ -285,12 +288,13 @@ static int pca9532_probe(struct i2c_client *client,
+>  	data->client = client;
+>  	mutex_init(&data->update_lock);
+>  
+> -	if (pca9532_pdata == NULL)
+> -		return -EIO;
+> -
+> -	pca9532_configure(client, data, pca9532_pdata);
+> -	return 0;
+> +	err = pca9532_configure(client, data, pca9532_pdata);
+> +	if (err) {
+> +		kfree(data);
+> +		i2c_set_clientdata(client, NULL);
+> +	}
+>  
+> +	return err;
+>  }
+>  
+>  static int pca9532_remove(struct i2c_client *client)
+
+-- 
+"rm -rf" only sounds scary if you don't have backups
