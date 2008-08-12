@@ -1,98 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754606AbYHLQDX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754754AbYHLQES@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754606AbYHLQDX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Aug 2008 12:03:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753036AbYHLQDN
+	id S1754754AbYHLQES (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Aug 2008 12:04:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752799AbYHLQEG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Aug 2008 12:03:13 -0400
-Received: from py-out-1112.google.com ([64.233.166.181]:7268 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752649AbYHLQDL (ORCPT
+	Tue, 12 Aug 2008 12:04:06 -0400
+Received: from outbound-va3.frontbridge.com ([216.32.180.16]:43331 "EHLO
+	VA3EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751368AbYHLQEF convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Aug 2008 12:03:11 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=b4Y+0OUhsTlTYWC15B33XRCcP+XwVTXDe3CleqjcZBUJdckgSzJ+xN1HIa0BkWWoGW
-         tBZP2UkSRyC1/YR8DFmx/qG/UCMWPbBLGOqZGxE8ynky5sfpjtAc5CLfLDbjo1RDXcxm
-         HJn9nWSZInbvZHE/a97ipF0cu9JJR2ZsSy8o8=
-Message-ID: <2c0942db0808120903i3680dab2k920eb952bf806ab1@mail.gmail.com>
-Date: Tue, 12 Aug 2008 09:03:10 -0700
-From: "Ray Lee" <ray-lk@madrabbit.org>
-To: "David Witbrodt" <dawitbro@sbcglobal.net>
-Subject: Re: HPET regression in 2.6.26 versus 2.6.25 -- RCU problem
-Cc: linux-kernel@vger.kernel.org, "Peter Zijlstra" <peterz@infradead.org>,
-       "Yinghai Lu" <yhlu.kernel@gmail.com>, "Ingo Molnar" <mingo@elte.hu>,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       netdev <netdev@vger.kernel.org>
-In-Reply-To: <962464.9576.qm@web82108.mail.mud.yahoo.com>
+	Tue, 12 Aug 2008 12:04:05 -0400
+X-BigFish: VPS-39(z21eWz1432R1447R1805M14e1Jzzzzz32i6bh43j65h)
+X-Spam-TCS-SCL: 4:0
+X-WSS-ID: 0K5HWMD-01-UA6-01
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-Class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <962464.9576.qm@web82108.mail.mud.yahoo.com>
-X-Google-Sender-Auth: d204bf819cf81e9f
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [Regression] 2.6.27-rc2-git4: suspend and power off fails on Asus M3A32-MVP
+Date: Tue, 12 Aug 2008 11:03:54 -0500
+Message-ID: <6453C3CB8E2B3646B0D020C112613273C5AC60@sausexmb4.amd.com>
+In-Reply-To: <200808092321.16711.rjw@sisk.pl>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [Regression] 2.6.27-rc2-git4: suspend and power off fails on Asus M3A32-MVP
+Thread-Index: Acj6ZYlcwx+tdXUkSQyd8YdKJ54PtwCL2B/g
+References: <200808092321.16711.rjw@sisk.pl>
+From: "Langsdorf, Mark" <mark.langsdorf@amd.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: "Andrew Morton" <akpm@linux-foundation.org>,
+       "Dave Jones" <davej@redhat.com>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "LKML" <linux-kernel@vger.kernel.org>, <kernel-testers@vger.kernel.org>,
+       "Randy Dunlap" <randy.dunlap@oracle.com>,
+       "Arnold, Frank" <Frank.Arnold@amd.com>
+X-OriginalArrivalTime: 12 Aug 2008 16:03:56.0888 (UTC) FILETIME=[06777D80:01C8FC95]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 12, 2008 at 8:17 AM, David Witbrodt <dawitbro@sbcglobal.net> wrote:
-> BRAIN DAMAGE CONTROL:  the problem is only on my hardware, so no one
-> on LKML can play with this hardware directly.  That makes _me_ the weak
-> link.
 
-Heh. Can I offer a suggestion here? You're trying to do two things at
-once -- finding where the problem is, and also trying to understand
-the problem at the same time. Speaking just for myself, I try to
-either do one of those or the other, but not both at the same time
-:-). Since you bisected it (seems like a good log when I view the
-commit history, but I'm no git expert), let's just work with that.
+> Unfortunately, your commit 34ae7f35a21694aa5cb8829dc5142c39d73d6ba0
+> ("[CPUFREQ][2/2] preregister support for powernow-k8") causes 
+> a power off/
+> suspend/ hibernation regression on my test box with the Asus M3A32-MVP
+> mainboard (AMD 790 chipset) and the Phenom 9850 CPU.
+> 
+> Apparently, the patch causes a crash in a CPU hotplug 
+> notifier to happen, but I'm not really sure of that, since there are a
+lot of stack 
+> traces resulting from it and I'm unable to capture them over a serial
+console.
+> 
+> It is sufficient to revert commit 
+> 34ae7f35a21694aa5cb8829dc5142c39d73d6ba0 to
+> make things work again.
 
-> 1.  Can someone comment on whether I correctly identified the commit #
-> causing the issue for me.  Here is the 'git bisect' data from my first
-> post:
->
-> 2.6.25, good
-> 2.6.26-rc4, bad
-> 10c993a6b5418cb1026775765ba4c70ffb70853d, bad
-> 334d094504c2fe1c44211ecb49146ae6bca8c321, bad
-> eddeb0e2d863e3941d8768e70cb50c6120e61fa0, bad
-> 77ad386e596c6b0930cc2e09e3cce485e3ee7f72, bad
-> ede1389f8ab4f3a1343e567133fa9720a054a3aa, bad
-> c048fdfe6178e082be918d4062c86d9764979112, bad
-> f73920cd63d316008738427a0df2caab6cc88ad7, bad
-> 04aaa7ba096c707a8df337b29303f1a5a65f0462, good
-> 8fa6878ffc6366f490e99a1ab31127fb599657c9, good
-> 1180e01de50c0c7683c6648251f32957bc2d7850, good
-> 1e934dda0c77c8ad13fdda02074f2cfcea118a56, bad
-> 322850af8d93735f67b8ebf84bb1350639be3f34, good
-> 3def3d6ddf43dbe20c00c3cbc38dfacc8586998f, bad
-> 700efc1b9f6afe34caae231b87d129ad8ffb559f, good
->
-> I concluded that 3def3d... was causing the problem for me, but I didn't
-> actually pipe or redirect the output message from 'git bisect' when it
-> stated that.  Does that conclusion look OK?
+Thanks for the clear report.  I'll look into it and try to fix it.
 
-Git should have printed out "<SHA1> is first bad commit" Did you see
-that? If not, you stopped the process too soon. Viewing the history
-with gitk, though, it seems you fingered the right commit. Which leads
-to the next step...
+-Mark Langsdorf
+Operating System Research Center
+AMD
 
-> 2.  I have not tried different versions of gcc.
-
-Which is not this :-).
-
-> 3.  I keep wanting to play with source code,
-
-Or this :-).
-
-Can you try reverting that commit against the top of the latest tree,
-and see if the revert applies correctly? If it does, compile and boot
-and see if it works. If it does, it'll be Yinghai's job to figure out
-what went wrong, not yours (unless you're a real gluton for
-punishment, and happen to know what was going on in Yinghai's head
-when he decided that it was safe to make those changes).
