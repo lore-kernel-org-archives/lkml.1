@@ -1,107 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752692AbYHLGXg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752315AbYHLGa0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752692AbYHLGXg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Aug 2008 02:23:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751351AbYHLGXZ
+	id S1752315AbYHLGa0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Aug 2008 02:30:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751313AbYHLGaO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Aug 2008 02:23:25 -0400
-Received: from mail.suse.de ([195.135.220.2]:57622 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751275AbYHLGXZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Aug 2008 02:23:25 -0400
-From: Neil Brown <neilb@suse.de>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Date: Tue, 12 Aug 2008 16:23:08 +1000
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 12 Aug 2008 02:30:14 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:43452
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751152AbYHLGaM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Aug 2008 02:30:12 -0400
+Date: Mon, 11 Aug 2008 23:30:13 -0700 (PDT)
+Message-Id: <20080811.233013.49328708.davem@davemloft.net>
+To: mpatocka@redhat.com
+Cc: sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: stack overflow on Sparc64
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <Pine.LNX.4.64.0806211542050.21474@engineering.redhat.com>
+References: <20080620.144128.32005196.davem@davemloft.net>
+	<20080620.215139.218732028.davem@davemloft.net>
+	<Pine.LNX.4.64.0806211542050.21474@engineering.redhat.com>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Message-ID: <18593.11340.609526.649904@notabene.brown>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, netdev@vger.kernel.org, trond.myklebust@fys.uio.no,
-       Daniel Lezcano <dlezcano@fr.ibm.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>
-Subject: Re: [PATCH 12/30] mm: memory reserve management
-In-Reply-To: message from Peter Zijlstra on Thursday July 24
-References: <20080724140042.408642539@chello.nl>
-	<20080724141530.127530749@chello.nl>
-X-Mailer: VM 7.19 under Emacs 21.4.1
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday July 24, a.p.zijlstra@chello.nl wrote:
-> Generic reserve management code. 
+From: Mikulas Patocka <mpatocka@redhat.com>
+Date: Sat, 21 Jun 2008 15:42:56 -0400 (EDT)
+
+> On Fri, 20 Jun 2008, David Miller wrote:
 > 
-> It provides methods to reserve and charge. Upon this, generic alloc/free style
-> reserve pools could be build, which could fully replace mempool_t
-> functionality.
+> > giving a try.
+> >
+> > sparc64: Implement support for IRQ stacks.
+> 
+> For me it doesn't work. Locked up after "console: colour dummy device 
+> 80x25".
 
-This looks quite different to last time I looked at the code (I
-think).
+Are you sure you didn't see a "Stack overflow" message on the
+screen? :-)
 
-You now have a more structured "kmalloc_reserve" interface which
-returns a flag to say if the allocation was from an emergency pool.  I
-think this will be a distinct improvement at the call sites, though I
-haven't looked at them yet. :-)
+That's what I get when I try to boot with your provided
+kernel config.
 
-> +
-> +struct mem_reserve {
-> +	struct mem_reserve *parent;
-> +	struct list_head children;
-> +	struct list_head siblings;
-> +
-> +	const char *name;
-> +
-> +	long pages;
-> +	long limit;
-> +	long usage;
-> +	spinlock_t lock;	/* protects limit and usage */
-                                            ^^^^^
-> +
-> +	wait_queue_head_t waitqueue;
-> +};
+The problem is that CONFIG_STACK_DEBUG doesn't understand
+the IRQ stacks at all.
 
-....
-> +static void __calc_reserve(struct mem_reserve *res, long pages, long limit)
-> +{
-> +	unsigned long flags;
-> +
-> +	for ( ; res; res = res->parent) {
-> +		res->pages += pages;
-> +
-> +		if (limit) {
-> +			spin_lock_irqsave(&res->lock, flags);
-> +			res->limit += limit;
-> +			spin_unlock_irqrestore(&res->lock, flags);
-> +		}
-> +	}
-> +}
-
-I cannot figure out why the spinlock is being used to protect updates
-to 'limit'.
-As far as I can see, mem_reserve_mutex already protects all those
-updates.
-Certainly we need the spinlock for usage, but why for limit??
-
-> +
-> +void *___kmalloc_reserve(size_t size, gfp_t flags, int node, void *ip,
-> +			 struct mem_reserve *res, int *emerg)
-> +{
-....
-> +	if (emerg)
-> +		*emerg |= 1;
-
-Why not just
-
-	if (emerg)
-		*emerg = 1.
-
-I can't we where '*emerg' can have any value but 0 or 1, so the '|' is
-pointless ???
-
-Thanks,
-NeilBrown
+I'll see if I can tweak it to handle this.
