@@ -1,115 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752560AbYHLTf7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752771AbYHLTmr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752560AbYHLTf7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Aug 2008 15:35:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751386AbYHLTfv
+	id S1752771AbYHLTmr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Aug 2008 15:42:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751388AbYHLTmj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Aug 2008 15:35:51 -0400
-Received: from smooth.piipiip.net ([194.100.76.170]:52780 "EHLO
-	smooth.piipiip.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750777AbYHLTfu (ORCPT
+	Tue, 12 Aug 2008 15:42:39 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:33232 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751386AbYHLTmi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Aug 2008 15:35:50 -0400
-X-Greylist: delayed 1795 seconds by postgrey-1.27 at vger.kernel.org; Tue, 12 Aug 2008 15:35:50 EDT
-Date: Tue, 12 Aug 2008 22:05:47 +0300
-From: Riku Voipio <riku.voipio@iki.fi>
-To: Sven Wegener <sven.wegener@stealer.net>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] leds-pca9532: Fix memory leak and properly handle errors
-Message-ID: <20080812190547.GA3616@kos.to>
-References: <alpine.LNX.1.10.0808080047290.16201@titan.stealer.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LNX.1.10.0808080047290.16201@titan.stealer.net>
-X-message-flag: Warning: message not sent with a DRM-Certified client
-User-Agent: Mutt/1.5.11+cvs20060126
-X-SA-Exim-Connect-IP: 127.0.0.1
-X-SA-Exim-Mail-From: nchip@kos.to
-X-SA-Exim-Scanned: No (on smooth.piipiip.net); SAEximRunCond expanded to false
+	Tue, 12 Aug 2008 15:42:38 -0400
+Date: Tue, 12 Aug 2008 20:24:45 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "Marcin Obara" <marcin_obara@users.sourceforge.net>
+Cc: "Jiri Slaby" <jirislaby@gmail.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Intel Management Engine Interface
+Message-ID: <20080812202445.5ac3c8d1@lxorguk.ukuu.org.uk>
+In-Reply-To: <ea8d860a0808121224y63bd4178xe0c74d5fb3e34180@mail.gmail.com>
+References: <alpine.DEB.1.00.0807172021450.26825@ip-195-3-221-75.vnet.pl>
+	<alpine.DEB.1.00.0807180742560.7868@ip-195-3-221-75.vnet.pl>
+	<alpine.DEB.1.00.0807181938180.12442@ip-195-3-221-75.vnet.pl>
+	<alpine.DEB.1.00.0807182122460.24146@ip-195-3-221-75.vnet.pl>
+	<alpine.DEB.1.00.0807182229070.30162@ip-195-3-221-75.vnet.pl>
+	<alpine.DEB.1.00.0807231958130.20791@ip-195-3-221-75.vnet.pl>
+	<alpine.DEB.1.00.0808112115140.6724@ip-195-3-221-75.vnet.pl>
+	<20080811215340.2c0635dd.akpm@linux-foundation.org>
+	<48A1B71C.6080201@gmail.com>
+	<ea8d860a0808121224y63bd4178xe0c74d5fb3e34180@mail.gmail.com>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 08, 2008 at 12:49:40AM +0200, Sven Wegener wrote:
-> When the registration fails, we need to release the memory we allocated. Also
-> we need to save the error from led_classdev_register and propagate it up, else
-> we'll return success, even if we failed.
+> This source code was designed few years ago and there is already
+> written userspace software.
 
-> Not-yet-signed-off-by: Sven Wegener <sven.wegener@stealer.net>
-> Cc: Riku Voipio <riku.voipio@iki.fi>
+Diddums that is what you get for keeping stuff away from upstream
 
-Driver in general works after this, error path(s) not tested.
+> Removal of driver internal error codes may affect software.
+> I think it is more risky than keeping these own errno numbers.
 
-Acked-By: Riku Voipio <riku.voipio@iki.fi>
-
-> ---
->  drivers/leds/leds-pca9532.c |   22 +++++++++++++---------
->  1 files changed, 13 insertions(+), 9 deletions(-)
+I would disagree. We use ERR_PTR() and other macros with errors. Using
+strange numbers is asking for risk.
 > 
-> I don't have the hardware. Riku, can you please test if it still works as 
-> expected.
-> 
-> diff --git a/drivers/leds/leds-pca9532.c b/drivers/leds/leds-pca9532.c
-> index 4064d4f..16af817 100644
-> --- a/drivers/leds/leds-pca9532.c
-> +++ b/drivers/leds/leds-pca9532.c
-> @@ -204,8 +204,8 @@ static int pca9532_configure(struct i2c_client *client,
->  			led->ldev.brightness = LED_OFF;
->  			led->ldev.brightness_set = pca9532_set_brightness;
->  			led->ldev.blink_set = pca9532_set_blink;
-> -			if (led_classdev_register(&client->dev,
-> -				&led->ldev) < 0)	{
-> +			err = led_classdev_register(&client->dev, &led->ldev);
-> +			if (err < 0) {
->  				dev_err(&client->dev,
->  					"couldn't register LED %s\n",
->  					led->name);
-> @@ -263,7 +263,6 @@ exit:
->  			}
->  
->  	return err;
-> -
->  }
->  
->  static int pca9532_probe(struct i2c_client *client,
-> @@ -271,12 +270,16 @@ static int pca9532_probe(struct i2c_client *client,
->  {
->  	struct pca9532_data *data = i2c_get_clientdata(client);
->  	struct pca9532_platform_data *pca9532_pdata = client->dev.platform_data;
-> +	int err;
-> +
-> +	if (!pca9532_pdata)
-> +		return -EIO;
->  
->  	if (!i2c_check_functionality(client->adapter,
->  		I2C_FUNC_SMBUS_BYTE_DATA))
->  		return -EIO;
->  
-> -	data = kzalloc(sizeof(struct pca9532_data), GFP_KERNEL);
-> +	data = kzalloc(sizeof(*data), GFP_KERNEL);
->  	if (!data)
->  		return -ENOMEM;
->  
-> @@ -285,12 +288,13 @@ static int pca9532_probe(struct i2c_client *client,
->  	data->client = client;
->  	mutex_init(&data->update_lock);
->  
-> -	if (pca9532_pdata == NULL)
-> -		return -EIO;
-> -
-> -	pca9532_configure(client, data, pca9532_pdata);
-> -	return 0;
-> +	err = pca9532_configure(client, data, pca9532_pdata);
-> +	if (err) {
-> +		kfree(data);
-> +		i2c_set_clientdata(client, NULL);
-> +	}
->  
-> +	return err;
->  }
->  
->  static int pca9532_remove(struct i2c_client *client)
+> >
+> > E.g. unlocked_ioctl switch hasn't been done plus other things mentioned
+> > below too (not all of them)
+> >
+> unlocked_ioctl would require to add lock as big kernel lock replacement.
+> It is risky in such complex code, especially if speed increase is not expected.
+>
+>  We don't want to init_timer() here. It is done later, to avoid race condition.
+> We only configure timer, but we are not ready to start it.
 
--- 
-"rm -rf" only sounds scary if you don't have backups
+init_timer does not start a timer.
+ 
+> >
+> >>> +/* IOCTL commands */
+> >>> +#define IOCTL_HECI_GET_VERSION \
+> >>> +    _IOWR('H' , 0x0, struct heci_message_data)
+> > ... and conflicts with hid as I commented before.
+> 
+> Sorry for missing explanations.
+> This conflict can't be avoided, because there is already written
+> software that depends on these ioctl definitions.
+
+See "diddums" message above. You mess up tools like strace if you don't
+fix this and strace is more important than some minor driver detail
+caused by not upstreaming code earlier.
+
+The non unlocked version of ioctl() is going away and the BKL will in
+time follow so you might as well deal with that now too.
+
