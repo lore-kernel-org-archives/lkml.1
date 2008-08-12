@@ -1,21 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758588AbYHKX6W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758470AbYHKX6f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758588AbYHKX6W (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Aug 2008 19:58:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756627AbYHKX5t
+	id S1758470AbYHKX6f (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Aug 2008 19:58:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757186AbYHKX5u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Aug 2008 19:57:49 -0400
+	Mon, 11 Aug 2008 19:57:50 -0400
 Received: from mga02.intel.com ([134.134.136.20]:52956 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755526AbYHKX5s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Aug 2008 19:57:48 -0400
+	id S1756023AbYHKX5t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Aug 2008 19:57:49 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.32,192,1217833200"; 
-   d="scan'208";a="325370562"
+   d="scan'208";a="428332773"
 From: Seth Heasley <seth.heasley@intel.com>
-To: linux-kernel@vger.kernel.org, i2c@lm-sensors.org, khali@linux-fr.org
-Subject: [PATCH 2.6.26.2][RESEND] i2c-i801: SMBus patch for Intel Ibex Peak DeviceIDs
-Date: Mon, 11 Aug 2008 17:02:38 -0700
+To: perex@perex.cz, alsa-devel@alsa-project.org, linux-kernel@vger.kernel.org,
+       tiwai@suse.de
+Subject: [PATCH 2.6.26.2][RESEND] hda_intel: ALSA HD patch for Intel Ibex Peak DeviceIDs
+Date: Mon, 11 Aug 2008 17:02:58 -0700
 User-Agent: KMail/1.9.1
 Cc: seth.heasley@intel.com
 MIME-Version: 1.0
@@ -23,51 +24,33 @@ Content-Type: text/plain;
   charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200808111702.38396.seth.heasley@intel.com>
+Message-Id: <200808111702.58184.seth.heasley@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Resend with proper whitespace.
 
-This patch adds the Intel Ibex Peak (PCH) SMBus Controller DeviceIDs.
+This patch adds the Intel Ibex Peak (PCH) HD Audio Controller DeviceIDs.
 
 Signed-off-by: Seth Heasley <seth.heasley@intel.com>
 
---- linux-2.6.26.2/drivers/i2c/busses/i2c-i801.c.orig	2008-08-08 11:28:08.000000000 -0700
-+++ linux-2.6.26.2/drivers/i2c/busses/i2c-i801.c	2008-08-08 11:32:18.000000000 -0700
-@@ -43,6 +43,7 @@
-   Tolapai               0x5032     32     hard     yes     yes     yes
-   ICH10                 0x3a30     32     hard     yes     yes     yes
-   ICH10                 0x3a60     32     hard     yes     yes     yes
-+  PCH                   0x3b30     32     hard     yes     yes     yes
- 
-   Features supported by this driver:
-   Software PEC                     no
-@@ -592,6 +593,7 @@
- 	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_TOLAPAI_1) },
- 	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_ICH10_4) },
- 	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_ICH10_5) },
-+	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_PCH_2) },
- 	{ 0, }
- };
- 
-@@ -615,6 +617,7 @@
- 	case PCI_DEVICE_ID_INTEL_TOLAPAI_1:
- 	case PCI_DEVICE_ID_INTEL_ICH10_4:
- 	case PCI_DEVICE_ID_INTEL_ICH10_5:
-+	case PCI_DEVICE_ID_INTEL_PCH_2:
- 		i801_features |= FEATURE_I2C_BLOCK_READ;
- 		/* fall through */
- 	case PCI_DEVICE_ID_INTEL_82801DB_3:
---- linux-2.6.26.2/drivers/i2c/busses/Kconfig.orig	2008-08-08 11:27:52.000000000 -0700
-+++ linux-2.6.26.2/drivers/i2c/busses/Kconfig	2008-08-08 11:30:42.000000000 -0700
-@@ -182,6 +182,7 @@
- 	    ICH9
- 	    Tolapai
- 	    ICH10
-+	    PCH
- 
- 	  This driver can also be built as a module.  If so, the module
- 	  will be called i2c-i801.
-
+--- linux-2.6.26.2/sound/pci/hda/hda_intel.c.orig	2008-08-08 11:25:05.000000000 -0700
++++ linux-2.6.26.2/sound/pci/hda/hda_intel.c	2008-08-08 11:27:24.000000000 -0700
+@@ -98,6 +98,7 @@
+ 			 "{Intel, ICH8},"
+ 			 "{Intel, ICH9},"
+ 			 "{Intel, ICH10},"
++			 "{Intel, PCH},"
+ 			 "{Intel, SCH},"
+ 			 "{ATI, SB450},"
+ 			 "{ATI, SB600},"
+@@ -2181,6 +2182,8 @@
+ 	{ PCI_DEVICE(0x8086, 0x293f), .driver_data = AZX_DRIVER_ICH },
+ 	{ PCI_DEVICE(0x8086, 0x3a3e), .driver_data = AZX_DRIVER_ICH },
+ 	{ PCI_DEVICE(0x8086, 0x3a6e), .driver_data = AZX_DRIVER_ICH },
++	/* PCH */
++	{ PCI_DEVICE(0x8086, 0x3b56), .driver_data = AZX_DRIVER_ICH },
+ 	/* SCH */
+ 	{ PCI_DEVICE(0x8086, 0x811b), .driver_data = AZX_DRIVER_SCH },
+ 	/* ATI SB 450/600 */
