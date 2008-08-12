@@ -1,61 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753134AbYHLKZ1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752858AbYHLKai@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753134AbYHLKZ1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Aug 2008 06:25:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751700AbYHLKZT
+	id S1752858AbYHLKai (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Aug 2008 06:30:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751040AbYHLKaa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Aug 2008 06:25:19 -0400
-Received: from mga10.intel.com ([192.55.52.92]:41667 "EHLO
-	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751667AbYHLKZT (ORCPT
+	Tue, 12 Aug 2008 06:30:30 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:34185 "EHLO
+	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750737AbYHLKa3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Aug 2008 06:25:19 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.32,195,1217833200"; 
-   d="scan'208";a="369969792"
-Subject: [PATCH]Clean-up for crypto Intel CRC32 code.
-From: Austin Zhang <austin_zhang@linux.intel.com>
-To: herbert@gondor.apana.org.au, drepper@gmail.com
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Date: Tue, 12 Aug 2008 06:23:13 -0400
-Message-Id: <1218536593.16293.9.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
-Content-Transfer-Encoding: 8bit
+	Tue, 12 Aug 2008 06:30:29 -0400
+Date: Tue, 12 Aug 2008 12:31:43 +0200
+From: Pavel Machek <pavel@suse.cz>
+To: Simon Arlott <simon@fire.lp0.eu>
+Cc: linux-pm@lists.linux-foundation.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [linux-pm] Tyan S2923-E suspend to ram fails to resume
+Message-ID: <20080812103143.GD2641@elf.ucw.cz>
+References: <48977AF7.2070300@simon.arlott.org.uk> <20080808071430.GA10370@ucw.cz> <21f16315cade48d9ecdc87a25b769b9f310fa112@8b5064a13e22126c1b9329f0dc35b8915774b7c3.invalid> <489DACCE.7050000@simon.arlott.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <489DACCE.7050000@simon.arlott.org.uk>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-﻿Herbert and ﻿Ulrich, sorry for late reply.
-see below.
-This patch was created against cryptodev-2.6
+On Sat 2008-08-09 15:42:22, Simon Arlott wrote:
+> On 08/08/08 12:20, Simon Arlott wrote:
+>> On Fri, August 8, 2008 08:14, Pavel Machek wrote:
+>>> On Mon 2008-08-04 22:56:07, Simon Arlott wrote:
+>>>> My system (Tyan S2923-E, dmesg attached) suspends ok in
+>>>> all pm_test modes, but it won't resume with pm_test
+>>>> "none".
+>>>>
+>>>> [    6.423515] mem full: hash matches
+>>>>
+>>>> When I press the power button, the port 80 display shows:
+>>>> FF D0 23 01 D0 ... DE
+>>>> (and again each time I press it)
+>>>>
+>>>> If I force it to turn off, then on again:
+>>>> FF D0 23 01 D0 ... FF D0 23 01 D0 ... (D2?) D3 00 01 D5
+>>>> D6 <normal boot>
+>>>>
+>>>> Any ideas? (onboard SAS is disabled, watchdog is
+>>>> disabled, everything else is enabled, PCI-E graphics
+>>>> card)
+>>>
+>>> Try verifying if it reaches assembly code under realmode/ ...
+>
+> I've tried acpi_sleep=s3_beep, and this:
+>
+> diff --git a/arch/x86/kernel/acpi/realmode/wakeup.S b/arch/x86/kernel/acpi/realmode/wakeup.S
+> index 3355973..50e50df 100644
+> --- a/arch/x86/kernel/acpi/realmode/wakeup.S
+> +++ b/arch/x86/kernel/acpi/realmode/wakeup.S
+> @@ -37,6 +37,11 @@ signature:	.long	0x51ee1111
+> 	.code16
+> wakeup_code:
+> _start:
+> +	movb $0xC1, %al
+> +	outb %al, $0x80
+> +	cli
+> +	hlt
+> +
+> 	cli
+> 	cld
+>
+>
+> Which doesn't work either.
 
-
-Clean-up by new MACRO;
-
-Signed-off-by: Austin Zhang <austin.zhang@intel.com>
----
- crc32c-intel.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-diff -Naurp cryptodev-2.6/arch/x86/crypto/crc32c-intel.c cryptodev-2.6-patch/arch/x86/crypto/crc32c-intel.c
---- cryptodev-2.6/arch/x86/crypto/crc32c-intel.c	2008-08-12 04:44:00.000000000 -0400
-+++ cryptodev-2.6-patch/arch/x86/crypto/crc32c-intel.c	2008-08-12 05:58:56.000000000 -0400
-@@ -26,12 +26,12 @@
- #define CHKSUM_BLOCK_SIZE	1
- #define CHKSUM_DIGEST_SIZE	4
- 
-+#define SCALE_F	sizeof(unsigned long)
-+
- #ifdef CONFIG_X86_64
- #define REX_PRE "0x48, "
--#define SCALE_F 8
- #else
- #define REX_PRE
--#define SCALE_F 4
- #endif
- 
- static u32 crc32c_intel_le_hw_byte(u32 crc, unsigned char const *data, size_t length)
-
-
+Yep, that should work. When it does not, it means BIOS is not
+returning to our real mode code :-(. You may want to try disabling
+APIC and similar stuff, in hope of working around BIOS bug you are
+hitting, but ...
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
