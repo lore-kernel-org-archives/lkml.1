@@ -1,100 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752790AbYHLETn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752347AbYHLEZ5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752790AbYHLETn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Aug 2008 00:19:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751040AbYHLETe
+	id S1752347AbYHLEZ5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Aug 2008 00:25:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750779AbYHLEZt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Aug 2008 00:19:34 -0400
-Received: from ti-out-0910.google.com ([209.85.142.184]:58779 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750878AbYHLETd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Aug 2008 00:19:33 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=C58s4u9urB6wyjAtx5uYqOXFCbo1WBDNM8sH5dG3HZA1rDfS7brxJebzKH1T6jYorW
-         GQpnAoSnnl78h2EntZcBYWeASaLItTNANBfPx6BF8ydisAHwTnWHoVBhfaTkyZbqdnjO
-         rJCuH5YU7LmWvVQckSJZpdSn8K9aB1EVYGA3o=
-Message-ID: <a8e1da0808112119y3114512fj134cb916bbc6076@mail.gmail.com>
-Date: Tue, 12 Aug 2008 12:19:31 +0800
-From: "Dave Young" <hidave.darkstar@gmail.com>
-To: "Bob Copeland" <me@bobcopeland.com>
-Subject: Re: [BUG] wireless : cpu stuck for 61s
-Cc: "Jiri Slaby" <jirislaby@gmail.com>,
-       "Pekka J Enberg" <penberg@cs.helsinki.fi>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Johannes Berg" <johannes@sipsolutions.net>,
-       linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org
-In-Reply-To: <a8e1da0808051851y752b3525l98271ceca4eb189a@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+	Tue, 12 Aug 2008 00:25:49 -0400
+Received: from mx1.wp.pl ([212.77.101.5]:41638 "EHLO mx1.wp.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750730AbYHLEZs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Aug 2008 00:25:48 -0400
+Date: Tue, 12 Aug 2008 06:31:35 +0200
+From: Krzysztof Helt <krzysztof.h1@wp.pl>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: airlied@linux.ie, linux-kernel@vger.kernel.org, stable@kernel.org
+Subject: Re: [PATCH RESEND] agp: fix SIS 5591/5592 wrong PCI id
+Message-Id: <20080812063135.a8c114ce.krzysztof.h1@wp.pl>
+In-Reply-To: <20080811170803.0f3f5df9.akpm@linux-foundation.org>
+References: <20080810225452.48ab9fd1.krzysztof.h1@wp.pl>
+	<20080811170803.0f3f5df9.akpm@linux-foundation.org>
+X-Mailer: Sylpheed 2.4.3 (GTK+ 2.11.0; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080729055731.GA3265@darkstar>
-	 <1217334724.10489.47.camel@johannes.berg>
-	 <20080730020820.8bcc00e2.akpm@linux-foundation.org>
-	 <a8e1da0807300302m35a0a7c0q2ff2e0ab92a69239@mail.gmail.com>
-	 <20080730031047.54e13e2d.akpm@linux-foundation.org>
-	 <a8e1da0808010032h32c18054g3712466eb40f0acf@mail.gmail.com>
-	 <4896D34A.1000005@gmail.com>
-	 <a8e1da0808041829sac34939yd9163b02e6b8b515@mail.gmail.com>
-	 <20080805122408.GA5000@hash.localnet>
-	 <a8e1da0808051851y752b3525l98271ceca4eb189a@mail.gmail.com>
+X-WP-AV: skaner antywirusowy poczty Wirtualnej Polski S. A.
+X-WP-SPAM: NO 0000000 [oUNU]                               
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 6, 2008 at 9:51 AM, Dave Young <hidave.darkstar@gmail.com> wrote:
-> On Tue, Aug 5, 2008 at 8:24 PM, Bob Copeland <me@bobcopeland.com> wrote:
->> On Tue, Aug 05, 2008 at 09:29:26AM +0800, Dave Young wrote:
->>> With the patch I cann't reproduce the bug with 27-rc1 now.
->>>
->>> >  [<c02375a6>] ? debugfs_create_file+0x46/0x210
->>> >  [<c02375a6>] ? debugfs_create_file+0x46/0x210
->>> >  [<c02375a6>] debugfs_create_file+0x46/0x210
->>> >  [<c02377f1>] debugfs_create_dir+0x21/0x30
->>> >  [<f8901f6d>] ieee80211_sta_debugfs_add+0x2d/0x150 [mac80211]
->>> >  [<f88eba89>] sta_info_debugfs_add_work+0x89/0x130 [mac80211]
->>> >  [<f890a170>] ? rate_control_pid_add_sta_debugfs+0x0/0x30 [mac80211]
->>
->> I wonder if there were two separate problems here.  I looked into
->> this with some detail yesterday and agree with Johannes that the above
->> trace is on locking the parent directory's i_mutex, but I too couldn't
->> see any problems with sta_info_debugfs_add_work.  Other stuff could also
->> modify the directory with or without rtnl_lock, but not in a way that
->> to my untrained eyes would lead to deadlock.
->
-> Yes,. I think so. It's the original bug for me, while testing I found
-> the mutex deadlock problem.
->
-> But this week I will have no time to trace it. so if I have time I
-> will keep tracing the problem
+On Mon, 11 Aug 2008 17:08:03 -0700
+Andrew Morton <akpm@linux-foundation.org> wrote:
 
-Unfortunately I have no more time to do this these days.
-As I can't reproduce it with the latest git kernel I think that It
-might have been fixed already.
+> On Sun, 10 Aug 2008 22:54:52 +0200
+> Krzysztof Helt <krzysztof.h1@wp.pl> wrote:
+> 
+> > From: Krzysztof Helt <krzysztof.h1@wp.pl>
+> > 
+> > The correct id for the AGP bridge is the id of 
+> > the main host (5591) not the id of the PCI-to-PCI
+> > bridge AGP (0001). Output from "lspci -nv" shows 
+> > that only the former has AGP capabilities flag set:
+> > 
+> > 00:00.0 0600: 1039:5591 (rev 02)
+> >         Flags: bus master, medium devsel, latency 64
+> >         Memory at ec000000 (32-bit, non-prefetchable) [size=32M]
+> >         Capabilities: [c0] AGP version 1.0
+> > 
+> > 00:02.0 0604: 1039:0001 (prog-if 00 [Normal decode])
+> >         Flags: bus master, fast devsel, latency 0
+> >         Bus: primary=00, secondary=01, subordinate=01, sec-latency=0
+> >         I/O behind bridge: 0000c000-0000cfff
+> >         Memory behind bridge: eb500000-eb5fffff
+> >         Prefetchable memory behind bridge: eb300000-eb3fffff
+> > 
+> > 
+> > Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
+> > ---
+> > 
+> > The AGP bridge is correctly detected with the patch applied.
+> > I have tested it on PC Chips M570 motherboard.
+> > 
+> > --- linux-mm/drivers/char/agp/sis-agp.c~	2008-08-04 18:00:31.133979040 +0200
+> > +++ linux-mm/drivers/char/agp/sis-agp.c	2008-08-06 18:33:02.162916563 +0200
+> > @@ -241,7 +241,7 @@ static struct pci_device_id agp_sis_pci_
+> >  		.class		= (PCI_CLASS_BRIDGE_HOST << 8),
+> >  		.class_mask	= ~0,
+> >  		.vendor		= PCI_VENDOR_ID_SI,
+> > -		.device		= PCI_DEVICE_ID_SI_5591_AGP,
+> > +		.device		= PCI_DEVICE_ID_SI_5591,
+> >  		.subvendor	= PCI_ANY_ID,
+> >  		.subdevice	= PCI_ANY_ID,
+> >  	},
+> 
+> This fix appears to be applicable to both 2.6.25.x and to 2.6.26.x.  Do you
+> think that the problem which it solves is sufficiently serious to
+> warrant the backport?
+> 
 
->
->>
->> Or is the trace just wrong?
->>
->> --
->> Bob Copeland %% www.bobcopeland.com
->>
->>
->
->
->
-> --
-> Regards
-> dave
->
+This is old chipset and the error is since kernel 2.6.8 when the
+untested support was introduced. I would skip stable branches
+as I used it only few days for now. In fact, it is like adding new
+hardware which was previously not supported.
 
-
-
--- 
-Regards
-dave
+Regards,
+Krzysztof
