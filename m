@@ -1,56 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753830AbYHLU5n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753618AbYHLU74@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753830AbYHLU5n (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Aug 2008 16:57:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752166AbYHLU5e
+	id S1753618AbYHLU74 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Aug 2008 16:59:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751861AbYHLU7r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Aug 2008 16:57:34 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:58081 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752165AbYHLU5c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Aug 2008 16:57:32 -0400
-In-Reply-To: <20080812193031.GD18034@infradead.org>
-Subject: Re: [PATCH 1/4] integrity: TPM internel kernel interface
-To: Christoph Hellwig <hch@infradead.org>
-Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       Mimi Zohar <zohar@us.ibm.com>
-X-Mailer: Lotus Notes Release 7.0 HF277 June 21, 2006
-Message-ID: <OF6C940C00.249617D7-ON852574A3.0071F8B0-852574A3.00732160@us.ibm.com>
-From: Kenneth Goldman <kgoldman@us.ibm.com>
-Date: Tue, 12 Aug 2008 16:57:31 -0400
-X-MIMETrack: Serialize by Router on D01ML604/01/M/IBM(Build V85_M1_05262008|May 26, 2008) at
- 08/12/2008 16:57:31
+	Tue, 12 Aug 2008 16:59:47 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:39609 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751626AbYHLU7q (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Aug 2008 16:59:46 -0400
+Date: Tue, 12 Aug 2008 21:59:43 +0100
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [RFC] readdir mess
+Message-ID: <20080812205943.GX28946@ZenIV.linux.org.uk>
+References: <20080812062241.GQ28946@ZenIV.linux.org.uk> <87ej4u9nf5.fsf@devron.myhome.or.jp> <alpine.LFD.1.10.0808121009370.3462@nehalem.linux-foundation.org> <87proe81c1.fsf@devron.myhome.or.jp> <alpine.LFD.1.10.0808121303510.3462@nehalem.linux-foundation.org>
 MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.1.10.0808121303510.3462@nehalem.linux-foundation.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Hellwig <hch@infradead.org> wrote on 08/12/2008 03:30:31 PM:
+On Tue, Aug 12, 2008 at 01:05:43PM -0700, Linus Torvalds wrote:
+> 
+> 
+> On Wed, 13 Aug 2008, OGAWA Hirofumi wrote:
+> > 
+> > However, there are some similar stuff: ->st_size, ->st_nlink and
+> > ->st_ino in stat() (cp_old_stat()). Maybe EOVERFLOW is the reason for
+> > consistency...
+> 
+> .. I actually had an old binary that triggered that case (actually, it was 
+> O_LARGEFILE in open()), and didn't work as a result. I only needed to run 
+> it once, so I literally hacked up a once-time-use kernel that just removed 
+> the EOVERFLOW in open.
+> 
+> So no, I'm not a fan of EOVERFLOW at all. Not in readdir(), not really 
+> anywhere else. 
 
-> On Mon, Aug 11, 2008 at 05:13:51PM -0400, Mimi Zohar wrote:
-> >
-> > I assume the concern here is that between looking up the chip and
-actually
-> >
-> > using the chip, the TPM chip is disabled/deactivated.  Based on
-> > discussions
-> > with Kenneth Goldman, the TCG main specification part2: structures,
-> > require
-> > that even if the TPM is disabled/deactivated, the command to extend the
-
-> > PCR
-> > will succeed, but the command to read the PCR will fail with an
-> > appropriate
-> > error code.
->
-> And what happens when the chip simply goes away due to a hotplug action?
-> Or not even the actual chip goes away but just the chip driver and you
-> now dereference freed memory?
-
-Being a TCG/TPM person, I can only address the first question.  The
-intent is that the TPM is soldered to the planar/motherboard (the TCG
-uses the phrase "bound to the platform").  I can't imagine
-any manufacturer designing a pluggable TPM.  It would subvert PCR
-measurements and thus attestation, data sealing, etc.
-
+Um...  Here it would happen only on attempt to return an entry for file
+that really has an inumber not fitting into the field; what would you
+do in such case?  open() on a huge file is a different story, since you
+would get a valid opened file and that'd be it; the logics in case of
+open() is, IIRC, "I guess your binary is old, so it'll probably do other
+things that would really have to trigger -EOVERFLOW; better bail out right
+now".  In this case, though, you either generate an error or get wrong
+values silently stored in userland struct (wrapped around inumber).
