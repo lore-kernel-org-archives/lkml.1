@@ -1,96 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752415AbYHLCvk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752514AbYHLC5r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752415AbYHLCvk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Aug 2008 22:51:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751376AbYHLCvc
+	id S1752514AbYHLC5r (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Aug 2008 22:57:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751376AbYHLC5g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Aug 2008 22:51:32 -0400
-Received: from py-out-1112.google.com ([64.233.166.177]:36809 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751351AbYHLCvb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Aug 2008 22:51:31 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=eKoYd7rKRNkxenLfzHOMj/weyMzR2QO4c8SYisz3mP4Yes1Uo7TOuK7PvtPOTL4JW3
-         QydZs0QBMZfzZLc/WjzoX5/2zGLlHsayAAdyQ+RaOD67URoGwnmKxDYAeF9ZiMqxx1T6
-         zuFcnnGyFtpbicxxS2pjE/96yY+QsPbURAlh0=
-Message-ID: <12e8e7240808111951o19afce35h48b693a618bd6120@mail.gmail.com>
-Date: Mon, 11 Aug 2008 22:51:30 -0400
-From: "Javeed Shaikh" <syscrash2k@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Re: TIOCGWINSZ retuns old pty size after receiving SIGWINCH
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+	Mon, 11 Aug 2008 22:57:36 -0400
+Received: from mail.vyatta.com ([216.93.170.194]:41771 "EHLO mail.vyatta.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750911AbYHLC5f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Aug 2008 22:57:35 -0400
+X-Spam-Flag: NO
+X-Spam-Score: -1.446
+Date: Mon, 11 Aug 2008 19:57:33 -0700
+From: Stephen Hemminger <stephen.hemminger@vyatta.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: netdev@vger.kernel.org, Jeff Garzik <jeff@garzik.org>,
+       Stephen Hemminger <shemminger@vyatta.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] sky2: Fix suspend/hibernation/shutdown regression with
+ WOL enabled (rev. 2)
+Message-ID: <20080811195733.35e9de14@extreme>
+In-Reply-To: <200808101930.29574.rjw@sisk.pl>
+References: <200808092332.29596.rjw@sisk.pl>
+	<20080809235711.12c2f331@extreme>
+	<200808101414.35626.rjw@sisk.pl>
+	<200808101930.29574.rjw@sisk.pl>
+Organization: Vyatta
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ico Doornekamp wrote:
-> Hello,
->
-> Recently my X terminals showed annoying behaviour where the application
-> in the terminal was not resized properly to the actual size of the X
-> terminal emulator window, resulting in a lot of misaligned text on the
-> screen. Hunting the issue down from the windowmanager and the terminal
-> emulator program, I suspect the problem might lie in the kernel. I'm
-> running 2.6.26 on a dual core i386.
->
-> What I see is this: the userspace application receives a SIGWINCH signal
-> and acquires the terminal size usign the TIOCGWINSZ ioctl. It seems that
-> in some cases the old instead of the new terminal size is returned.
-> A small delay before the ioctl seems to 'fix' this behaviour.
->
-> I noticed some changes involving locking in the the pty code in the last
-> kernel verions, could one of these changes cause the above behaviour ? If
-> so, wouldn't this affect much more users ?
->
-> Ico
+On Sun, 10 Aug 2008 19:30:28 +0200
+"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
 
-Hi,
+> On Sunday, 10 of August 2008, Rafael J. Wysocki wrote:
+> > On Sunday, 10 of August 2008, Stephen Hemminger wrote:
+> > > On Sat, 9 Aug 2008 23:32:28 +0200
+> > > "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+> > > 
+> [--snip--]
+> > > 
+> > > The problem is not unique to your chip version,
+> > 
+> > Well, that's the part I wasn't sure of.
+> > 
+> > > so patching out the power down is not the correct solution.
+> > 
+> > Sure.
+> 
+> But, shouldn't we switch to page 2 before selecting PHY_MARV_PHY_CTRL?  Things
+> work correctly if this is done (patch below).
+> 
+> Thanks,
+> Rafael
+> 
+> 
+> ---
+> On my test box with the Asus M3A32-MVP main board there is a
+> regression from 2.6.26 related to suspend, hibernation and
+> shutdown.  Namely, if Wake-on-LAN is enabled with
+> 'ethtool -s eth0 wol g', the box hangs solid during all of these
+> operations, while executing either sky2_suspend(), or
+> sky2_shutdown().  This patch fixes it for me.
+> 
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> ---
+>  drivers/net/sky2.c |    7 ++++++-
+>  1 file changed, 6 insertions(+), 1 deletion(-)
+> 
+> Index: linux-2.6/drivers/net/sky2.c
+> ===================================================================
+> --- linux-2.6.orig/drivers/net/sky2.c
+> +++ linux-2.6/drivers/net/sky2.c
+> @@ -666,11 +666,16 @@ static void sky2_phy_power_down(struct s
+>  
+>  	if (hw->chip_id != CHIP_ID_YUKON_EC) {
+>  		if (hw->chip_id == CHIP_ID_YUKON_EC_U) {
+> -			ctrl = gm_phy_read(hw, port, PHY_MARV_PHY_CTRL);
+> +			/* select page 2 to access MAC control register */
+> +			gm_phy_write(hw, port, PHY_MARV_EXT_ADR, 2);
+>  
+> +			ctrl = gm_phy_read(hw, port, PHY_MARV_PHY_CTRL);
+>  			/* enable Power Down */
+>  			ctrl |= PHY_M_PC_POW_D_ENA;
+>  			gm_phy_write(hw, port, PHY_MARV_PHY_CTRL, ctrl);
+> +
+> +			/* set page register back to 0 */
+> +			gm_phy_write(hw, port, PHY_MARV_EXT_ADR, 0);
+>  		}
+>  
+>  		/* set IEEE compatible Power Down Mode (dev. #4.99) */
 
-I've been experiencing similar issues.
-Here's a screenshot: http://omploader.org/vbzA1 .
-Note how emacs is only taking up half of the terminal's total height.
+Yes, that's better.
 
-However, my diagnostics are different from yours. Sending SIGWINCH
-(in this case, to emacs) fixes the issue, at least temporarily. However,
-sending SIGWINCH to the shell process under which emacs is running
-(using a negative PID, to specify the "process group") has no visible effect.
-I believe the issue has to do with sending SIGWINCH to process groups,
-though I do not have enough experience in this area to be sure.
-
-git-bisect tracked it down to this:
-46151122e0a2e80e5a6b2889f595e371fe2b600d is first bad commit
-commit 46151122e0a2e80e5a6b2889f595e371fe2b600d
-Author: Mike Galbraith <efault@gmx.de>
-Date:   Thu May 8 17:00:42 2008 +0200
-
-    sched: fix weight calculations
-
-Starting at v2.6.26, I wasn't able to easily revert the commit. However,
-the following "patch" seems to have alleviated the problem.
-
-=== begin patch ===
-diff --git a/kernel/sched_features.h b/kernel/sched_features.h
-index 1c7283c..0e269ed 100644
---- a/kernel/sched_features.h
-+++ b/kernel/sched_features.h
-@@ -1,4 +1,4 @@
--SCHED_FEAT(NEW_FAIR_SLEEPERS, 1)
-+SCHED_FEAT(NEW_FAIR_SLEEPERS, 0)
- SCHED_FEAT(WAKEUP_PREEMPT, 1)
- SCHED_FEAT(START_DEBIT, 1)
- SCHED_FEAT(AFFINE_WAKEUPS, 1)
-=== end patch ===
-
-This is merely a workaround, however.
-
-I was able to easily revert commit 46151122e0a2e80e5a6b2889f595e371fe2b600d on
-the latest git version of the kernel. However, it did not alleviate the problem.
-
-As in v2.6.26, the above patch (disabling NEW_FAIR_SLEEPERS) seems to work well.
+Acked-by: Stephen Hemminger <shemminger@vyatta.com>
