@@ -1,65 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754754AbYHLQES@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754260AbYHLQIH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754754AbYHLQES (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Aug 2008 12:04:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752799AbYHLQEG
+	id S1754260AbYHLQIH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Aug 2008 12:08:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752520AbYHLQH4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Aug 2008 12:04:06 -0400
-Received: from outbound-va3.frontbridge.com ([216.32.180.16]:43331 "EHLO
-	VA3EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751368AbYHLQEF convert rfc822-to-8bit (ORCPT
+	Tue, 12 Aug 2008 12:07:56 -0400
+Received: from mtagate4.de.ibm.com ([195.212.29.153]:56321 "EHLO
+	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750869AbYHLQHz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Aug 2008 12:04:05 -0400
-X-BigFish: VPS-39(z21eWz1432R1447R1805M14e1Jzzzzz32i6bh43j65h)
-X-Spam-TCS-SCL: 4:0
-X-WSS-ID: 0K5HWMD-01-UA6-01
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-Class: urn:content-classes:message
+	Tue, 12 Aug 2008 12:07:55 -0400
+Date: Tue, 12 Aug 2008 19:06:58 +0300
+From: Muli Ben-Yehuda <muli@il.ibm.com>
+To: Joerg Roedel <joerg.roedel@amd.com>
+Cc: mingo@redhat.com, tglx@linutronix.de, hpa@zytor.com,
+       linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org,
+       andi@firstfloor.org
+Subject: Re: [PATCH 0/7] x86 dma_*_coherent rework patchset
+Message-ID: <20080812160658.GH30426@il.ibm.com>
+References: <1218554657-16070-1-git-send-email-joerg.roedel@amd.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [Regression] 2.6.27-rc2-git4: suspend and power off fails on Asus M3A32-MVP
-Date: Tue, 12 Aug 2008 11:03:54 -0500
-Message-ID: <6453C3CB8E2B3646B0D020C112613273C5AC60@sausexmb4.amd.com>
-In-Reply-To: <200808092321.16711.rjw@sisk.pl>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [Regression] 2.6.27-rc2-git4: suspend and power off fails on Asus M3A32-MVP
-Thread-Index: Acj6ZYlcwx+tdXUkSQyd8YdKJ54PtwCL2B/g
-References: <200808092321.16711.rjw@sisk.pl>
-From: "Langsdorf, Mark" <mark.langsdorf@amd.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-CC: "Andrew Morton" <akpm@linux-foundation.org>,
-       "Dave Jones" <davej@redhat.com>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "LKML" <linux-kernel@vger.kernel.org>, <kernel-testers@vger.kernel.org>,
-       "Randy Dunlap" <randy.dunlap@oracle.com>,
-       "Arnold, Frank" <Frank.Arnold@amd.com>
-X-OriginalArrivalTime: 12 Aug 2008 16:03:56.0888 (UTC) FILETIME=[06777D80:01C8FC95]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1218554657-16070-1-git-send-email-joerg.roedel@amd.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+[added Andi to CC]
 
-> Unfortunately, your commit 34ae7f35a21694aa5cb8829dc5142c39d73d6ba0
-> ("[CPUFREQ][2/2] preregister support for powernow-k8") causes 
-> a power off/
-> suspend/ hibernation regression on my test box with the Asus M3A32-MVP
-> mainboard (AMD 790 chipset) and the Phenom 9850 CPU.
+On Tue, Aug 12, 2008 at 05:24:10PM +0200, Joerg Roedel wrote:
+> Hi,
 > 
-> Apparently, the patch causes a crash in a CPU hotplug 
-> notifier to happen, but I'm not really sure of that, since there are a
-lot of stack 
-> traces resulting from it and I'm unable to capture them over a serial
-console.
-> 
-> It is sufficient to revert commit 
-> 34ae7f35a21694aa5cb8829dc5142c39d73d6ba0 to
-> make things work again.
+> this patchset reworks the dma_*_coherent functions in the DMA layer
+> for the x86 architecture. The patch series extends the existing DMA
+> backends with missing *coherent callbacks and simplifies the generic
+> function to basically only call the registered backend. This allows
+> future optimizations in hardware specific IOMMU implementations.
+> The code ist tested on AMD64 with AMD IOMMU and GART as well as on
+> my old 486 box. It is not yet tested on a Calgary IOMMU system.
 
-Thanks for the clear report.  I'll look into it and try to fix it.
+Now it is---appears to work fine on a Calgary system.
 
--Mark Langsdorf
-Operating System Research Center
-AMD
+In general the patchset looks good and is definitely a step in the
+right direction. I am a bit concerned about the contortions that the
+generic dma_alloc_coherent went through before calling the ops
+version---have you verified they are no longer needed?
 
+Cheers,
+Muli
+-- 
+Workshop on I/O Virtualization (WIOV '08)
+Co-located with OSDI '08, Dec 2008, San Diego, CA
+http://www.usenix.org/wiov08
