@@ -1,105 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751942AbYHLEDb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751843AbYHLEI3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751942AbYHLEDb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Aug 2008 00:03:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750706AbYHLEDX
+	id S1751843AbYHLEI3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Aug 2008 00:08:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750706AbYHLEIV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Aug 2008 00:03:23 -0400
-Received: from py-out-1112.google.com ([64.233.166.181]:50724 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750705AbYHLEDW (ORCPT
+	Tue, 12 Aug 2008 00:08:21 -0400
+Received: from E23SMTP03.au.ibm.com ([202.81.18.172]:37172 "EHLO
+	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750695AbYHLEIU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Aug 2008 00:03:22 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=ryKyQ/pmDoFp5BAZ7Hpp7yOkxjisuKuPSq0JBXpy9r0VfwRA704ZOpOlZM7urcWDoL
-         g+xtf9Xgm3XCb0EL+nSzUQlk/DBU1S92k1WVyzsk9BK/XIjXiA87NUIjJfb6vWwWA3ab
-         ATYGB3X6h298q+a+pGU6DRlodSHYzEzr+HL5w=
-Message-ID: <12e8e7240808112103m21659d4fg3f30a139ae493473@mail.gmail.com>
-Date: Tue, 12 Aug 2008 00:03:21 -0400
-From: "Javeed Shaikh" <syscrash2k@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Re: TIOCGWINSZ retuns old pty size after receiving SIGWINCH
-In-Reply-To: <12e8e7240808111951o19afce35h48b693a618bd6120@mail.gmail.com>
+	Tue, 12 Aug 2008 00:08:20 -0400
+Message-ID: <48A10C4C.6020009@linux.vnet.ibm.com>
+Date: Tue, 12 Aug 2008 09:36:36 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-mm@kvack.org, skumar@linux.vnet.ibm.com, yamamoto@valinux.co.jp,
+       menage@google.com, lizf@cn.fujitsu.com, linux-kernel@vger.kernel.org,
+       nishimura@mxp.nes.nec.co.jp, xemul@openvz.org, hugh@veritas.com,
+       kamezawa.hiroyu@jp.fujitsu.com
+Subject: Re: [-mm][PATCH 1/2] mm owner fix race between swap and exit
+References: <20080811100719.26336.98302.sendpatchset@balbir-laptop> <20080811100733.26336.31346.sendpatchset@balbir-laptop> <20080811173138.71f5bbe4.akpm@linux-foundation.org>
+In-Reply-To: <20080811173138.71f5bbe4.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <12e8e7240808111951o19afce35h48b693a618bd6120@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I spoke too soon. The problem still exists with my workaround on the
-latest git kernel,
-but it seems to be harder to reproduce.
+Andrew Morton wrote:
+> On Mon, 11 Aug 2008 15:37:33 +0530
+> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> 
+>> There's a race between mm->owner assignment and try_to_unuse(). The condition
+>> occurs when try_to_unuse() runs in parallel with an exiting task.
+>>
+>> The race can be visualized below. To quote Hugh
+>> "I don't think your careful alternation of CPU0/1 events at the end matters:
+>> the swapoff CPU simply dereferences mm->owner after that task has gone"
+>>
+>> But the alteration does help understand the race better (at-least for me :))
+>>
+>> CPU0					CPU1
+>> 					try_to_unuse
+>> task 1 stars exiting			look at mm = task1->mm
+>> ..					increment mm_users
+>> task 1 exits
+>> mm->owner needs to be updated, but
+>> no new owner is found
+>> (mm_users > 1, but no other task
+>> has task->mm = task1->mm)
+>> mm_update_next_owner() leaves
+>>
+>> grace period
+>> 					user count drops, call mmput(mm)
+>> task 1 freed
+>> 					dereferencing mm->owner fails
+>>
+>> The fix is to notify the subsystem (via mm_owner_changed callback), if
+>> no new owner is found by specifying the new task as NULL.
+> 
+> This patch applies to mainline, 2.6.27-rc2 and even 2.6.26.
+> 
+> Against which kernel/patch is it actually applicable?
+> 
+> (If the answer was "all of the above" then please don't go embedding
+> mainline bugfixes in the middle of a -mm-only patch series!)
 
-On Mon, Aug 11, 2008 at 10:51 PM, Javeed Shaikh <syscrash2k@gmail.com> wrote:
-> Ico Doornekamp wrote:
->> Hello,
->>
->> Recently my X terminals showed annoying behaviour where the application
->> in the terminal was not resized properly to the actual size of the X
->> terminal emulator window, resulting in a lot of misaligned text on the
->> screen. Hunting the issue down from the windowmanager and the terminal
->> emulator program, I suspect the problem might lie in the kernel. I'm
->> running 2.6.26 on a dual core i386.
->>
->> What I see is this: the userspace application receives a SIGWINCH signal
->> and acquires the terminal size usign the TIOCGWINSZ ioctl. It seems that
->> in some cases the old instead of the new terminal size is returned.
->> A small delay before the ioctl seems to 'fix' this behaviour.
->>
->> I noticed some changes involving locking in the the pty code in the last
->> kernel verions, could one of these changes cause the above behaviour ? If
->> so, wouldn't this affect much more users ?
->>
->> Ico
->
-> Hi,
->
-> I've been experiencing similar issues.
-> Here's a screenshot: http://omploader.org/vbzA1 .
-> Note how emacs is only taking up half of the terminal's total height.
->
-> However, my diagnostics are different from yours. Sending SIGWINCH
-> (in this case, to emacs) fixes the issue, at least temporarily. However,
-> sending SIGWINCH to the shell process under which emacs is running
-> (using a negative PID, to specify the "process group") has no visible effect.
-> I believe the issue has to do with sending SIGWINCH to process groups,
-> though I do not have enough experience in this area to be sure.
->
-> git-bisect tracked it down to this:
-> 46151122e0a2e80e5a6b2889f595e371fe2b600d is first bad commit
-> commit 46151122e0a2e80e5a6b2889f595e371fe2b600d
-> Author: Mike Galbraith <efault@gmx.de>
-> Date:   Thu May 8 17:00:42 2008 +0200
->
->    sched: fix weight calculations
->
-> Starting at v2.6.26, I wasn't able to easily revert the commit. However,
-> the following "patch" seems to have alleviated the problem.
->
-> === begin patch ===
-> diff --git a/kernel/sched_features.h b/kernel/sched_features.h
-> index 1c7283c..0e269ed 100644
-> --- a/kernel/sched_features.h
-> +++ b/kernel/sched_features.h
-> @@ -1,4 +1,4 @@
-> -SCHED_FEAT(NEW_FAIR_SLEEPERS, 1)
-> +SCHED_FEAT(NEW_FAIR_SLEEPERS, 0)
->  SCHED_FEAT(WAKEUP_PREEMPT, 1)
->  SCHED_FEAT(START_DEBIT, 1)
->  SCHED_FEAT(AFFINE_WAKEUPS, 1)
-> === end patch ===
->
-> This is merely a workaround, however.
->
-> I was able to easily revert commit 46151122e0a2e80e5a6b2889f595e371fe2b600d on
-> the latest git version of the kernel. However, it did not alleviate the problem.
->
-> As in v2.6.26, the above patch (disabling NEW_FAIR_SLEEPERS) seems to work well.
->
+Andrew,
+
+The answer is all, but the bug is not exposed *outside* of the memrlimit
+controller, thus the push into -mm. I can redo and rework the patches for
+mainline if required and pull it out of -mm.
+
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
