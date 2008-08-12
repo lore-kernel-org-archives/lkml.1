@@ -1,96 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752594AbYHLHaM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752905AbYHLHby@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752594AbYHLHaM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Aug 2008 03:30:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751437AbYHLHaA
+	id S1752905AbYHLHby (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Aug 2008 03:31:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751509AbYHLHbq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Aug 2008 03:30:00 -0400
-Received: from qmta10.westchester.pa.mail.comcast.net ([76.96.62.17]:37441
-	"EHLO QMTA10.westchester.pa.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751386AbYHLH37 (ORCPT
+	Tue, 12 Aug 2008 03:31:46 -0400
+Received: from smtp111.mail.mud.yahoo.com ([209.191.84.64]:26265 "HELO
+	smtp111.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751505AbYHLHbp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Aug 2008 03:29:59 -0400
-X-Authority-Analysis: v=1.0 c=1 a=o6SizqMz_CkA:10 a=6LLILg6-L-YA:10
- a=rITDv7nW5hcA:10 a=dlLkqa3d77d3BijdyVcA:9 a=T7Nr2E_OBGpdK9cbIJx_0cGPWy8A:4
- a=3SmO1NJXDBsA:10
-Message-ID: <48A13BF4.3090500@comcast.net>
-Date: Tue, 12 Aug 2008 00:29:56 -0700
-From: Eric Benton <erbenton@comcast.net>
-Reply-To: erbenton@comcast.net
-User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
+	Tue, 12 Aug 2008 03:31:45 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=RihO0Ng8sOVZAFVHOUCB3sMZ6YtXQZCslav5Ir/Wmnz47jVAAN4zLJuwDWaz/mWdGHwRyBKq+bED9rNBuq0qmIlYgga6g5kXeZ/QyToR4ZTsaeiXAJ5s8swDxjo5qEBDpg1tKwjmO+C7ViSX8rUfcdQ64HSWd8Q0LQWiNyV3yqk=  ;
+X-YMail-OSG: tX52f_kVM1ml5CVqSdmpIWEHBMG.jnFT.W10Iq9ZxPNgqupjkk27HntBq3sHokwSDg5l2uZ_wCTIuAkS.4LW0lxpwAewNxAbEpc8.HuCqh79N9RKQN1wg4Xu396Dbex86Kg-
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [git pull] core fixes
+Date: Tue, 12 Aug 2008 17:31:36 +1000
+User-Agent: KMail/1.9.5
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       Paul E McKenney <paulmck@linux.vnet.ibm.com>
+References: <20080811222026.GA20579@elte.hu> <200808121613.24846.nickpiggin@yahoo.com.au> <1218525442.10800.152.camel@twins>
+In-Reply-To: <1218525442.10800.152.camel@twins>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: [Fwd: how to add support in coretemp.c for Q9450 processor]
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200808121731.37296.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tuesday 12 August 2008 17:17, Peter Zijlstra wrote:
+> On Tue, 2008-08-12 at 16:13 +1000, Nick Piggin wrote:
+> > On Tuesday 12 August 2008 08:20, Ingo Molnar wrote:
+> > > Nick Piggin (1):
+> > >       generic-ipi: fix stack and rcu interaction bug in
+> > > smp_call_function_mask()
+> >
+> > I'm still not 100% sure that I have this patch right... I might have seen
+> > a lockup trace implicating the smp call function path... which may have
+> > been due to some other problem or a different bug in the new call
+> > function code, but if some more people can take a look at it before
+> > merging?
+>
+> Right - so we cannot use synchronize_rcu() because the caller of
+> smp_call_function_mask() might not be in a preemptible context.
+>
+> Therefore you implement this barrier like function, that uses the single
+> call ipi to validate that all the cpus are done processing the
+> call_function_queue - because that is with IRQs disabled, and this other
+> IPI cannot interrupt. Thereby guaranteeing that there are no more
+> references to any former elements on said list.
+>
+> Clever. But as you say, rather expensive.
 
-Hi,
-To add coretemp (thermal monitoring) support for the Intel Q9450 
-processor add the code below. i have tested this on several kernels 
-including 2.6.26 and it works fine.  the code addition is 
-*||(c->x86_model == 0x17) in the if statement*
-Thanks
-Eric
-
-*in:*
-drivers/hwmon/coretemp.c
-*in function:*
-static int __init coretemp_init(void)
-
-*change:*
- if ((c->cpuid_level < 0) || (c->x86 != 0x6) ||
-                    !((c->x86_model == 0xe) || (c->x86_model == 0xf) ||
-                        (c->x86_model == 0x16))) {
-
-                        /* supported CPU not found, but report the unknown
-                           family 6 CPU */
-                        if ((c->x86 == 0x6) && (c->x86_model > 0xf))
-                                printk(KERN_WARNING DRVNAME ": Unknown CPU "
-                                        "model %x\n", c->x86_model);
-                        continue;
-                }
-*to*
- if ((c->cpuid_level < 0) || (c->x86 != 0x6) ||
-                    !((c->x86_model == 0xe) || (c->x86_model == 0xf) ||
-                        (c->x86_model == 0x16)*||(c->x86_model == 0x17)*)) {
-
-                        /* supported CPU not found, but report the unknown
-                           family 6 CPU */
-                        if ((c->x86 == 0x6) && (c->x86_model > 0xf))
-                                printk(KERN_WARNING DRVNAME ": Unknown CPU "
-                                        "model %x\n", c->x86_model);
-                        continue;
-                }
-----------------------------------------------------------
-*Info:*
-# cat /proc/cpuinfo
-processor       : 0
-vendor_id       : GenuineIntel
-cpu family      : 6
-model           : *23*
-model name      : Intel(R) Core(TM)2 Quad  CPU   Q9450  @ 2.66GHz
-stepping        : 7
-cpu MHz         : 1998.000
-cache size      : 6144 KB
-physical id     : 0
-siblings        : 4
-core id         : 0
-cpu cores       : 4
-fpu             : yes
-fpu_exception   : yes
-cpuid level     : 10
-wp              : yes
-flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge 
-mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe 
-syscall nx lm constant_tsc arch_perfmon pebs bts rep_good pni monitor 
-ds_cpl vmx smx est tm2 ssse3 cx16 xtpr sse4_1 lahf_lm
-bogomips        : 5319.97
-clflush size    : 64
-cache_alignment : 64
-address sizes   : 36 bits physical, 48 bits virtual
-power management:
-
+Yeah... Aside, I think this is how some OSes implement a lot of
+scalable read side primitives without RCU. Downside is that it
+requires interrupt disabled read side, upside is much simpler and
+potentially more deterministic to quiesce. (and fewer patents I
+guess!)
