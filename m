@@ -1,50 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754862AbYHLWC6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754534AbYHLWEr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754862AbYHLWC6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Aug 2008 18:02:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752113AbYHLWCq
+	id S1754534AbYHLWEr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Aug 2008 18:04:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751700AbYHLWEf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Aug 2008 18:02:46 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:47303
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751835AbYHLWCp (ORCPT
+	Tue, 12 Aug 2008 18:04:35 -0400
+Received: from rv-out-0506.google.com ([209.85.198.231]:26947 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751583AbYHLWEe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Aug 2008 18:02:45 -0400
-Date: Tue, 12 Aug 2008 15:02:46 -0700 (PDT)
-Message-Id: <20080812.150246.42068558.davem@davemloft.net>
-To: divy@chelsio.com
-Cc: rdreier@cisco.com, rick.jones2@hp.com, jgarzik@pobox.com,
-       swise@opengridcomputing.com, kxie@chelsio.com, netdev@vger.kernel.org,
-       open-iscsi@googlegroups.com, michaelc@cs.wisc.edu, daisyc@us.ibm.com,
-       wenxiong@us.ibm.com, bhua@us.ibm.com, dm@chelsio.com,
-       leedom@chelsio.com, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC][PATCH 1/1] cxgb3i: cxgb3 iSCSI initiator
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <200808121457.11356.divy@chelsio.com>
-References: <adad4kfxm9v.fsf@cisco.com>
-	<20080811.145313.178992274.davem@davemloft.net>
-	<200808121457.11356.divy@chelsio.com>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Tue, 12 Aug 2008 18:04:34 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=OYTpFZY1cJqkq1350nssTxTSb0vmfzdSeLDl7t+ilmzuBFnxakynaKRQCgMRt+/FuG
+         VBVfV9Hlc/Ushzg2VtwH/YIO74dA5spifzcDpUo74O8ueONVEdTCzYclYckQVluaBY7b
+         4Q/3VIrFkxfjI2HEWFTUSb1yak3N0Xo96b7Ps=
+Message-ID: <1ba2fa240808121504k34640c45o1fd1e165483f081f@mail.gmail.com>
+Date: Wed, 13 Aug 2008 01:04:33 +0300
+From: "Tomas Winkler" <tomasw@gmail.com>
+To: "Jiri Slaby" <jirislaby@gmail.com>
+Subject: Re: iwl + iomap + readl/writel
+Cc: yi.zhu@intel.com, reinette.chatre@intel.com,
+       linux-wireless <linux-wireless@vger.kernel.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <48A20776.80302@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <48A1F734.7040801@gmail.com>
+	 <1ba2fa240808121449j4c04039bu2fc9b58129dc6027@mail.gmail.com>
+	 <48A20686.5080402@gmail.com>
+	 <1ba2fa240808121457j33a83effo44110a0423d83f@mail.gmail.com>
+	 <48A20776.80302@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Divy Le Ray <divy@chelsio.com>
-Date: Tue, 12 Aug 2008 14:57:09 -0700
+On Wed, Aug 13, 2008 at 12:58 AM, Jiri Slaby <jirislaby@gmail.com> wrote:
+> On 08/12/2008 11:57 PM, Tomas Winkler wrote:
+>>
+>> On Wed, Aug 13, 2008 at 12:54 AM, Jiri Slaby <jirislaby@gmail.com> wrote:
+>>>
+>>> On 08/12/2008 11:49 PM, Tomas Winkler wrote:
+>>>>
+>>>> On Tue, Aug 12, 2008 at 11:48 PM, Jiri Slaby <jirislaby@gmail.com>
+>>>> wrote:
+>>>>>
+>>>>> Hi,
+>>>>>
+>>>>> I spotted that iwl drivers use readl method on an iomap space. IIRC
+>>>>> some
+>>>>> archs might return a tag instead of an address expected by
+>>>>> readl/writel.
+>>>>>
+>>>>> I think you should either switch to ioread32/iowrite32 or to ioremap.
+>>>>
+>>>> Can you give me reading material  on this?
+>>>
+>>> No, google will (you can even feel lucky).
+>>
+>> I didn't ask for obvious answers :)
+>
+> Sorry, I don't remember where/when this was discussed, you have to search
+> for it.
 
-> In any case, such a stateless solution is not yet designed, whereas 
-> accelerated iSCSI is available now, from us and other companies.
-
-So, WHAT?!
-
-There are TOE pieces of crap out there too.
-
-It's strictly not our problem.
-
-Like Herbert said, this is the TOE discussion all over again.
-The results will be the same, and as per our decisions wrt.
-TOE, history speaks for itself.
+It's okay I'm already digging into it
