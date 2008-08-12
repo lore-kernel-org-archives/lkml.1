@@ -1,75 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752179AbYHLGWw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752692AbYHLGXg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752179AbYHLGWw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Aug 2008 02:22:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751275AbYHLGWn
+	id S1752692AbYHLGXg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Aug 2008 02:23:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751351AbYHLGXZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Aug 2008 02:22:43 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:57123 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751243AbYHLGWm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Aug 2008 02:22:42 -0400
-Date: Tue, 12 Aug 2008 07:22:41 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: linux-fsdevel@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [RFC] readdir mess
-Message-ID: <20080812062241.GQ28946@ZenIV.linux.org.uk>
+	Tue, 12 Aug 2008 02:23:25 -0400
+Received: from mail.suse.de ([195.135.220.2]:57622 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751275AbYHLGXZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Aug 2008 02:23:25 -0400
+From: Neil Brown <neilb@suse.de>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Date: Tue, 12 Aug 2008 16:23:08 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Transfer-Encoding: 7bit
+Message-ID: <18593.11340.609526.649904@notabene.brown>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, netdev@vger.kernel.org, trond.myklebust@fys.uio.no,
+       Daniel Lezcano <dlezcano@fr.ibm.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>
+Subject: Re: [PATCH 12/30] mm: memory reserve management
+In-Reply-To: message from Peter Zijlstra on Thursday July 24
+References: <20080724140042.408642539@chello.nl>
+	<20080724141530.127530749@chello.nl>
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-	When getdents() had been introduced in 1.3.0, ->readdir() has grown
-a callback and became an iterator.  The type of that iterator had been
-a Bloody Bad Idea(tm); it returns a value that gets reduced to one bit
-by all callers.  Basically it's "do we stop or do we move to the next
-entry?".  0 means "go on" for all ->readdir() instances, negative - "stop".
-Positives are treated inconsistently.
+On Thursday July 24, a.p.zijlstra@chello.nl wrote:
+> Generic reserve management code. 
+> 
+> It provides methods to reserve and charge. Upon this, generic alloc/free style
+> reserve pools could be build, which could fully replace mempool_t
+> functionality.
 
-	Note that it can not be used to return an error.  In particular,
-the callback of getdents(2) returns "stop" when we run out of buffer.
-If any instance of ->readdir() would ever treat that as an error to
-pass back to caller, it would break spectaculary on the first ls(1) on
-a directory large enough to require more than one getdents(2) call.
+This looks quite different to last time I looked at the code (I
+think).
 
-	Anything that wants to pass errors back to caller of ->readdir()
-has to store it in whatever struct we are passing to the callback.
+You now have a more structured "kmalloc_reserve" interface which
+returns a flag to say if the allocation was from an emergency pool.  I
+think this will be a distinct improvement at the call sites, though I
+haven't looked at them yet. :-)
 
-	That had lead to two recurring classes of bugs:
-1) something_readdir() treats "callback returned negative" as "return
-than negative".  Breaks pretty fast.
-2) whatever_filldir() happily returns some error value and expects it
-to be seen by caller of ->readdir().  Somehow.  Doesn't work.  We do
-have such bugs right now.
+> +
+> +struct mem_reserve {
+> +	struct mem_reserve *parent;
+> +	struct list_head children;
+> +	struct list_head siblings;
+> +
+> +	const char *name;
+> +
+> +	long pages;
+> +	long limit;
+> +	long usage;
+> +	spinlock_t lock;	/* protects limit and usage */
+                                            ^^^^^
+> +
+> +	wait_queue_head_t waitqueue;
+> +};
 
-	In addition, we have other kinds of crap going on around ->readdir()
-(the most popular being "whaddya mean, somebody might've done lseek(2) and
-set offset to hell knows what???"), but those are separate story.
+....
+> +static void __calc_reserve(struct mem_reserve *res, long pages, long limit)
+> +{
+> +	unsigned long flags;
+> +
+> +	for ( ; res; res = res->parent) {
+> +		res->pages += pages;
+> +
+> +		if (limit) {
+> +			spin_lock_irqsave(&res->lock, flags);
+> +			res->limit += limit;
+> +			spin_unlock_irqrestore(&res->lock, flags);
+> +		}
+> +	}
+> +}
 
-	An obvious way to deal with that would be to have filldir_t return
-bool; true => stop, false => go on.  However, that's going to cause silent
-breakage of out-of-tree filesystems.  Even though e.g. ext2 had always
-treated any non-zero return value of filldir as "stop", we'd grown filesystems
-that check for return value < 0 instead.  Having it return true (i.e. 1)
-will break all of those.  Note that generic callbacks currently return
-negative values for "stop", so they work with those filesystems right now.
+I cannot figure out why the spinlock is being used to protect updates
+to 'limit'.
+As far as I can see, mem_reserve_mutex already protects all those
+updates.
+Certainly we need the spinlock for usage, but why for limit??
 
-	FWIW, I'm seriously tempted to go for the following variant:
-new __bitwise type with two values - READDIR_STOP and READDIR_CONTINUE,
--1 and 0 resp.  The type of filldir_t would become filldir_res_t (*)(......),
-all existing instances of ->readdir() would keep working and sparse
-would catch all mismatches.
+> +
+> +void *___kmalloc_reserve(size_t size, gfp_t flags, int node, void *ip,
+> +			 struct mem_reserve *res, int *emerg)
+> +{
+....
+> +	if (emerg)
+> +		*emerg |= 1;
 
-	Another variant is to change filldir_t in visible incompatible way
-that would have bool as return value and let readdir instances adjust or
-refuse to compile; maintainers of out-of-tree code would presumably notice
-that, so we would just have to document the calling conventions and say
-that checking for < 0 doesn't work anymore.
+Why not just
 
-	Comments?
+	if (emerg)
+		*emerg = 1.
+
+I can't we where '*emerg' can have any value but 0 or 1, so the '|' is
+pointless ???
+
+Thanks,
+NeilBrown
