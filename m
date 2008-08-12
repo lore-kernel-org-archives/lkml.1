@@ -1,55 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754771AbYHLV6e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754890AbYHLV6s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754771AbYHLV6e (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Aug 2008 17:58:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751700AbYHLV6T
+	id S1754890AbYHLV6s (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Aug 2008 17:58:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754580AbYHLV62
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Aug 2008 17:58:19 -0400
-Received: from mu-out-0910.google.com ([209.85.134.187]:46394 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751868AbYHLV6S (ORCPT
+	Tue, 12 Aug 2008 17:58:28 -0400
+Received: from stargate.chelsio.com ([12.22.49.110]:17516 "EHLO
+	stargate.asicdesigners.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1754235AbYHLV60 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Aug 2008 17:58:18 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=CNid5bPA/h4sfa5wZkQyx8HnOlxvOD+OJqTKyga1IlhKva5WlnQX6PpbO+3cmo172N
-         WjbDGWZ0C3kTWeIScz/NEG3cEhADh8KPF9XYEcmXuDDDFN4zyesMdNemRAak0jQQNjIZ
-         9mggYpVTLT48AbLK8+R77dpaLonetg1E60E3g=
-Message-ID: <48A20776.80302@gmail.com>
-Date: Tue, 12 Aug 2008 23:58:14 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080720)
+	Tue, 12 Aug 2008 17:58:26 -0400
+From: Divy Le Ray <divy@chelsio.com>
+Organization: Chelsio Communications
+To: "David Miller" <davem@davemloft.net>
+Subject: Re: [RFC][PATCH 1/1] cxgb3i: cxgb3 iSCSI initiator
+Date: Tue, 12 Aug 2008 14:57:09 -0700
+User-Agent: KMail/1.9.9
+Cc: rdreier@cisco.com, rick.jones2@hp.com, jgarzik@pobox.com,
+       "Steve Wise" <swise@opengridcomputing.com>,
+       "Karen Xie" <kxie@chelsio.com>, netdev@vger.kernel.org,
+       open-iscsi@googlegroups.com, michaelc@cs.wisc.edu, daisyc@us.ibm.com,
+       wenxiong@us.ibm.com, bhua@us.ibm.com,
+       "Dimitrios Michailidis" <dm@chelsio.com>,
+       "Casey Leedom" <leedom@chelsio.com>, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+References: <48A08145.6060703@hp.com> <adad4kfxm9v.fsf@cisco.com> <20080811.145313.178992274.davem@davemloft.net>
+In-Reply-To: <20080811.145313.178992274.davem@davemloft.net>
 MIME-Version: 1.0
-To: Tomas Winkler <tomasw@gmail.com>
-CC: yi.zhu@intel.com, reinette.chatre@intel.com,
-       linux-wireless <linux-wireless@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: iwl + iomap + readl/writel
-References: <48A1F734.7040801@gmail.com>	 <1ba2fa240808121449j4c04039bu2fc9b58129dc6027@mail.gmail.com>	 <48A20686.5080402@gmail.com> <1ba2fa240808121457j33a83effo44110a0423d83f@mail.gmail.com>
-In-Reply-To: <1ba2fa240808121457j33a83effo44110a0423d83f@mail.gmail.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200808121457.11356.divy@chelsio.com>
+X-OriginalArrivalTime: 12 Aug 2008 21:56:54.0906 (UTC) FILETIME=[558C95A0:01C8FCC6]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/12/2008 11:57 PM, Tomas Winkler wrote:
-> On Wed, Aug 13, 2008 at 12:54 AM, Jiri Slaby <jirislaby@gmail.com> wrote:
->> On 08/12/2008 11:49 PM, Tomas Winkler wrote:
->>> On Tue, Aug 12, 2008 at 11:48 PM, Jiri Slaby <jirislaby@gmail.com> wrote:
->>>> Hi,
->>>>
->>>> I spotted that iwl drivers use readl method on an iomap space. IIRC some
->>>> archs might return a tag instead of an address expected by readl/writel.
->>>>
->>>> I think you should either switch to ioread32/iowrite32 or to ioremap.
->>> Can you give me reading material  on this?
->> No, google will (you can even feel lucky).
-> 
-> I didn't ask for obvious answers :)
+On Monday 11 August 2008 02:53:13 pm David Miller wrote:
+> From: Roland Dreier <rdreier@cisco.com>
+> Date: Mon, 11 Aug 2008 14:41:16 -0700
+>
+> >  > > Probably depends on whether or not the iSCSI offload solutions are
+> >  > > doing zero-copy receive into the filecache?
+> >  >
+> >  > That's a data placement issue, which also can be solved with
+> >  > stateless offloading.
+> >
+> > How can you place iSCSI data properly with only stateless offloads?
+>
+> By teaching the stateless offload how to parse the iSCSI headers
+> on the flow and place the data into pages at the correct offsets
+> such that you can place the pages hanging off of the SKB directly
+> into the page cache.
 
-Sorry, I don't remember where/when this was discussed, you have to search for it.
+Hi Dave,
+
+iSCSI PDUs might spawn over multiple TCP segments, it is unclear to me how to 
+do placement without keeping some state of the transactions.
+
+In any case, such a stateless solution is not yet designed, whereas 
+accelerated iSCSI is available now, from us and other companies.
+The accelerated iSCSI streams benefit from the performance TOE provides, 
+outlined in the following third party papers:
+http://www.chelsio.com/assetlibrary/pdf/redhat-chelsio-toe-final_v2.pdf
+http://www.chelsio.com/assetlibrary/pdf/RMDS6BNTChelsioRHEL5.pdf
+
+iSCSI is primarily targeted to the data center, where the SW stack's traffic 
+shaping features might be redundant with specialized equipment. It should 
+however be possible to integrate security features on a per offoaded 
+connection basis, and TOEs - at least ours :) - are capable of rate control 
+and traffic shaping.
+
+While CPU and - to a far lesser extent - memory performance improves, so does 
+ethernet's. 40G, 100G are not too far ahead. It is not obvious at all that 
+TOE is a point of time solution, especially for heavy load traffic as in a 
+storage environment. It is quite the opposite actually.
+
+There is room for co-existence of the SW managed traffic and accelerated 
+traffic. As our submission shows, enabling accelerated iSCSI is not intrusive 
+code wise to the stack. The port stealing issue is solved if we can grab a 
+port from the stack.
+
+Cheers,
+Divy
