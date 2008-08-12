@@ -1,61 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753575AbYHLPLm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753905AbYHLPNT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753575AbYHLPLm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Aug 2008 11:11:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752033AbYHLPLe
+	id S1753905AbYHLPNT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Aug 2008 11:13:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752191AbYHLPNL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Aug 2008 11:11:34 -0400
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:52941 "EHLO e3.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751548AbYHLPLd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Aug 2008 11:11:33 -0400
-Subject: Re: checkpoint/restart ABI
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-To: Peter Chubb <peterc@gelato.unsw.edu.au>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Theodore Tso <tytso@mit.edu>,
-       Arnd Bergmann <arnd@arndb.de>, containers@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <87d4kfds5i.wl%peterc@chubb.wattle.id.au>
-References: <20080807224033.FFB3A2C1@kernel>
-	 <200808090013.41999.arnd@arndb.de> <20080811152201.GB25930@us.ibm.com>
-	 <200808111853.13854.arnd@arndb.de> <1218484114.5598.43.camel@nimitz>
-	 <48A0CD86.6030704@goop.org>  <87d4kfds5i.wl%peterc@chubb.wattle.id.au>
-Content-Type: text/plain
-Date: Tue, 12 Aug 2008 08:11:10 -0700
-Message-Id: <1218553870.5598.83.camel@nimitz>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
-Content-Transfer-Encoding: 7bit
+	Tue, 12 Aug 2008 11:13:11 -0400
+Received: from moutng.kundenserver.de ([212.227.126.187]:61386 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752104AbYHLPNK convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Aug 2008 11:13:10 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH]: Make ioctl.h compatible with userland
+Date: Tue, 12 Aug 2008 17:12:18 +0200
+User-Agent: KMail/1.9.9
+Cc: Michael Abbott <michael@araneidae.co.uk>, linux-kernel@vger.kernel.org
+References: <20080728063957.J72435@saturn.araneidae.co.uk> <20080730011035.a7d84e55.akpm@linux-foundation.org>
+In-Reply-To: <20080730011035.a7d84e55.akpm@linux-foundation.org>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200808121712.19207.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1+Va5EiBOIf2s5fRHkubOYNZTWoTLWKw3WyzIz
+ G92Wjg1aOpnpPwrfgzjQGT8iITRPXmImRDX5Bq/39+QPhEmzcO
+ SqHqYvRI4sw4qCSPgNIxg==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-08-12 at 09:54 +1000, Peter Chubb wrote:
-> Jeremy>    * multiple processes * pipes * UNIX domain sockets * INET
-> Jeremy> sockets (both inter and intra machine) * unlinked open files *
-> Jeremy> checkpointing file content * closed files (ie, files which
-> Jeremy> aren't currently open, but will be soon, esp tmp files) *
-> Jeremy> shared memory * (Peter, what have I forgotten?)
-> 
-> File sharing; multiple threads with wierd sharing arrangements (think:
-> clone with various parameters, followed by exec in some of the threads
-> but not others); MERT/system-V shared memory, semaphores and message
-> queues; devices (audio, framebuffer, etc), HugeTLBFS, numa issues
-> (pinning, memory layout), processes being debugged (so,
-> checkpoint.restart a gdb/target pair), futexes, etc., etc.  Linux
-> process state keeps expanding.
+[PATCH] Make _IOC_TYPECHECK use BUILD_BUG_ON_ZERO
 
-Yep, these are all challenges.  If you have some really specific
-questions, or things you truly think can't be done, please speak up.
-But, I really don't see any show stoppers in your list.
+This converts _IOC_TYPECHECK from a link error to a compile-time
+error using BUILD_BUG_ON_ZERO. This makes it possible to use
+the standard _IOC macros in user space even with non-optizing
+compilers.
 
-We also plan to do this incrementally.  The first consumers are likely
-to be dumb, simple HPC apps that don't have real hardware like audio or
-video.  Eventually, we'll get to real hardware like infiniband (ugh) or
-audio.  Eventually.
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 
-(Actually futexes aren't that bad because they don't keep state
-in-kernel)
+---
+On Wednesday 30 July 2008, Andrew Morton wrote:
+> We could also replace that open-coded assertion with the shiny new
+> BUILD_BUG_ON(), which would a) be cleaner and b) fix the problem which
+> you describe.  I expect that would be quite safe, but obviously doesn't
+> have all the testing which the above patch has, so shrug.
 
--- Dave
+There is one significant difference: using BUILD_BUG_ON_ZERO will
+break user space code that uses broken ioctl number definitions
+like _IOC('x', 1, sizeof(int)) that were fixed up in the kernel
+but not in external copies of the definitions.
+I'm undecided whether such breakage would be a good or a bad thing.
 
+--- a/include/asm-generic/ioctl.h
++++ b/include/asm-generic/ioctl.h
+@@ -69,11 +69,9 @@
+ 	 ((size) << _IOC_SIZESHIFT))
+ 
+ /* provoke compile error for invalid uses of size argument */
+-extern unsigned int __invalid_size_argument_for_IOC;
+-#define _IOC_TYPECHECK(t) \
+-	((sizeof(t) == sizeof(t[1]) && \
+-	  sizeof(t) < (1 << _IOC_SIZEBITS)) ? \
+-	  sizeof(t) : __invalid_size_argument_for_IOC)
++#define _IOC_TYPECHECK(t) (sizeof(t) + \
++	BUILD_BUG_ON_ZERO(sizeof(t) != sizeof(t[1]) || \
++			  sizeof(t) >= (1 << _IOC_SIZEBITS)))
+ 
+ /* used to create numbers */
+ #define _IO(type,nr)		_IOC(_IOC_NONE,(type),(nr),0)
