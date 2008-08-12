@@ -1,116 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753829AbYHLNmX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753857AbYHLNpb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753829AbYHLNmX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Aug 2008 09:42:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752154AbYHLNmO
+	id S1753857AbYHLNpb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Aug 2008 09:45:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752237AbYHLNpX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Aug 2008 09:42:14 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:47163 "EHLO mx1.redhat.com"
+	Tue, 12 Aug 2008 09:45:23 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:51370 "EHLO smtp4.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752029AbYHLNmN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Aug 2008 09:42:13 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 1/2] CRED: Alter XFS so as to avoid namespace collisions with
-	upcoming COW creds
-To: sfr@canb.auug.org.au, jmorris@namei.org, hch@infradead.org
-Cc: dhowells@redhat.com, davem@davemloft.net, sfrench@us.ibm.com,
-       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org
-Date: Tue, 12 Aug 2008 14:28:45 +0100
-Message-ID: <20080812132845.5472.30943.stgit@warthog.procyon.org.uk>
-In-Reply-To: <20080812132840.5472.25856.stgit@warthog.procyon.org.uk>
-References: <20080812132840.5472.25856.stgit@warthog.procyon.org.uk>
-User-Agent: StGIT/0.14.3
+	id S1751651AbYHLNpX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Aug 2008 09:45:23 -0400
+Date: Tue, 12 Aug 2008 16:43:38 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Rene Herman <rene.herman@keyaccess.nl>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, fritz@isdn4linux.de, kkeil@suse.de,
+       isdn4linux@listserv.isdn4linux.de, linux-kernel@vger.kernel.org,
+       mingo@elte.hu
+Subject: Re: [PATCH] ISDN: make ICN not auto-grab port 0x320
+Message-ID: <20080812134337.GG13910@cs181140183.pp.htv.fi>
+References: <489DD669.2090207@keyaccess.nl> <20080809215020.1bb602e7@lxorguk.ukuu.org.uk> <20080811164814.db41c20b.akpm@linux-foundation.org> <48A11952.6090203@keyaccess.nl> <20080811223043.9ad55c51.akpm@linux-foundation.org> <20080812130823.GD13910@cs181140183.pp.htv.fi> <48A18F7B.6040809@keyaccess.nl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <48A18F7B.6040809@keyaccess.nl>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rename XFS's current_fsuid() and current_fsgid() to avoid collision with
-functions of the same name in upcoming COW creds.
+On Tue, Aug 12, 2008 at 03:26:19PM +0200, Rene Herman wrote:
+> On 12-08-08 15:08, Adrian Bunk wrote:
+>
+>> On Mon, Aug 11, 2008 at 10:30:43PM -0700, Andrew Morton wrote:
+>
+>>> I think the boot option is the way, if at all.
+>>>
+>>> Because the config option isn't very usable.  What's to stop someone
+>>> from doing `make allyesconfig' and then menually editing the .config so
+>>> it's no longer truly an allyesconfig .config?
+>>>
+>>> otoh, if is't purely a manual setting rather than some automagic thing
+>>> then it might be workable.  CONFIG_INGO :)
+>>
+>> Write the required settings into a file and use KCONFIG_ALLCONFIG.
+>
+> Found those, but seems unable to express the "depends on BROKEN_BOOT if  
+> FOO=y" method that's currently used.
+>
+> Yes, might admittedly not be considered a huge problem and perhaps we  
+> could just ship an allyes.config (and same allrandom.config) but it's  
+> not nice to spread information about a single symbol over various files  
+> like that.
 
-Signed-off-by: David Howells <dhowells@redhat.com>
----
+The dependencies we express in kconfig are already pretty complicated, 
+and that is continuously causing problems.
 
- fs/xfs/linux-2.6/xfs_linux.h |    4 ++--
- fs/xfs/xfs_inode.c           |    4 ++--
- fs/xfs/xfs_vnodeops.c        |    8 ++++----
- 3 files changed, 8 insertions(+), 8 deletions(-)
+Stuffing more stuff into kconfig for such an exotic developer-only use 
+case is not a good idea.
 
+And as already said, tomorrow someone might want to boot an allyesconfig 
+kernel on a Pentium-MMX...
 
-diff --git a/fs/xfs/linux-2.6/xfs_linux.h b/fs/xfs/linux-2.6/xfs_linux.h
-index 4d45d93..05a2e7e 100644
---- a/fs/xfs/linux-2.6/xfs_linux.h
-+++ b/fs/xfs/linux-2.6/xfs_linux.h
-@@ -126,8 +126,8 @@
- 
- #define current_cpu()		(raw_smp_processor_id())
- #define current_pid()		(current->pid)
--#define current_fsuid(cred)	(current->fsuid)
--#define current_fsgid(cred)	(current->fsgid)
-+#define this_fsuid(cred)	(current->fsuid)
-+#define this_fsgid(cred)	(current->fsgid)
- #define current_test_flags(f)	(current->flags & (f))
- #define current_set_flags_nested(sp, f)		\
- 		(*(sp) = current->flags, current->flags |= (f))
-diff --git a/fs/xfs/xfs_inode.c b/fs/xfs/xfs_inode.c
-index bedc661..5e481ae 100644
---- a/fs/xfs/xfs_inode.c
-+++ b/fs/xfs/xfs_inode.c
-@@ -1082,8 +1082,8 @@ xfs_ialloc(
- 	ip->i_d.di_onlink = 0;
- 	ip->i_d.di_nlink = nlink;
- 	ASSERT(ip->i_d.di_nlink == nlink);
--	ip->i_d.di_uid = current_fsuid(cr);
--	ip->i_d.di_gid = current_fsgid(cr);
-+	ip->i_d.di_uid = this_fsuid(cr);
-+	ip->i_d.di_gid = this_fsgid(cr);
- 	ip->i_d.di_projid = prid;
- 	memset(&(ip->i_d.di_pad[0]), 0, sizeof(ip->i_d.di_pad));
- 
-diff --git a/fs/xfs/xfs_vnodeops.c b/fs/xfs/xfs_vnodeops.c
-index 76a1166..3dfe8a0 100644
---- a/fs/xfs/xfs_vnodeops.c
-+++ b/fs/xfs/xfs_vnodeops.c
-@@ -182,7 +182,7 @@ xfs_setattr(
- 	xfs_ilock(ip, lock_flags);
- 
- 	/* boolean: are we the file owner? */
--	file_owner = (current_fsuid(credp) == ip->i_d.di_uid);
-+	file_owner = (this_fsuid(credp) == ip->i_d.di_uid);
- 
- 	/*
- 	 * Change various properties of a file.
-@@ -1536,7 +1536,7 @@ xfs_create(
- 	 * Make sure that we have allocated dquot(s) on disk.
- 	 */
- 	error = XFS_QM_DQVOPALLOC(mp, dp,
--			current_fsuid(credp), current_fsgid(credp), prid,
-+			this_fsuid(credp), this_fsgid(credp), prid,
- 			XFS_QMOPT_QUOTALL|XFS_QMOPT_INHERIT, &udqp, &gdqp);
- 	if (error)
- 		goto std_return;
-@@ -2352,7 +2352,7 @@ xfs_mkdir(
- 	 * Make sure that we have allocated dquot(s) on disk.
- 	 */
- 	error = XFS_QM_DQVOPALLOC(mp, dp,
--			current_fsuid(credp), current_fsgid(credp), prid,
-+			this_fsuid(credp), this_fsgid(credp), prid,
- 			XFS_QMOPT_QUOTALL | XFS_QMOPT_INHERIT, &udqp, &gdqp);
- 	if (error)
- 		goto std_return;
-@@ -2578,7 +2578,7 @@ xfs_symlink(
- 	 * Make sure that we have allocated dquot(s) on disk.
- 	 */
- 	error = XFS_QM_DQVOPALLOC(mp, dp,
--			current_fsuid(credp), current_fsgid(credp), prid,
-+			this_fsuid(credp), this_fsgid(credp), prid,
- 			XFS_QMOPT_QUOTALL | XFS_QMOPT_INHERIT, &udqp, &gdqp);
- 	if (error)
- 		goto std_return;
+> Currently, we have a tristate that turns into a y/n bool if !MODULES.  
+> What would be real nice here is a tristate that turns into a m/n bool if  
+> !RANDOM, where allyesconfig and randconfig would pre-select RANDOM.
+
+allyesconfig is not random.
+
+> If I'm not mistaken, that's currently not possible...
+> 
+> Rene
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
