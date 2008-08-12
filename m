@@ -1,53 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752850AbYHLQsC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754036AbYHLQtZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752850AbYHLQsC (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Aug 2008 12:48:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751861AbYHLQry
+	id S1754036AbYHLQtZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Aug 2008 12:49:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752170AbYHLQtR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Aug 2008 12:47:54 -0400
-Received: from fg-out-1718.google.com ([72.14.220.157]:11933 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751411AbYHLQrx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Aug 2008 12:47:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=gmKsP2OxwVS1t4xJ4sgFaFNYXUdQ2HqIo9kJNppQbTSaVaXbK0wNs94tb1cQkI2WAB
-         4A4RWt0/aQabfZcLZeeAQ0xHddq9D2cVcpku1HXL96iUKzX4+IDDxKtHQCeTj4Skkwim
-         5rfu2kT/7lfVdsS8OvmLKhLpbIlGQSMMlQJ/8=
-Date: Tue, 12 Aug 2008 18:47:13 +0200
-From: Bernhard Fischer <rep.dot.nop@gmail.com>
-To: JosephChan@via.com.tw
-Cc: krzysztof.h1@poczta.fm, geert@linux-m68k.org, akpm@linux-foundation.org,
-       linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: [Linux-fbdev-devel] [Patch 3/13 v3] [RESEND] viafb: fix for
-	the malformed patch issue
-Message-ID: <20080812164713.GB3571@mx.loc>
-References: <C80EF34A3D2E494DBAF9AC29C7AE4EB8078F4A1A@exchtp03.taipei.via.com.tw>
+	Tue, 12 Aug 2008 12:49:17 -0400
+Received: from 8bytes.org ([88.198.83.132]:46723 "EHLO 8bytes.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751861AbYHLQtR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Aug 2008 12:49:17 -0400
+Date: Tue, 12 Aug 2008 18:49:14 +0200
+From: Joerg Roedel <joro@8bytes.org>
+To: Muli Ben-Yehuda <muli@il.ibm.com>
+Cc: Joerg Roedel <joerg.roedel@amd.com>, mingo@redhat.com, tglx@linutronix.de,
+       hpa@zytor.com, linux-kernel@vger.kernel.org,
+       iommu@lists.linux-foundation.org, andi@firstfloor.org
+Subject: Re: [PATCH 0/7] x86 dma_*_coherent rework patchset
+Message-ID: <20080812164914.GC4342@8bytes.org>
+References: <1218554657-16070-1-git-send-email-joerg.roedel@amd.com> <20080812160658.GH30426@il.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <C80EF34A3D2E494DBAF9AC29C7AE4EB8078F4A1A@exchtp03.taipei.via.com.tw>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20080812160658.GH30426@il.ibm.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 12, 2008 at 09:00:04AM +0800, JosephChan@via.com.tw wrote:
->Correct the malformed issue for v2's patch which .
->2D and HW cursor stuff of viafb driver.
->
->Signed-off-by: Joseph Chan <josephchan@via.com.tw>
->
->diff -Nurp a/drivers/video/via/accel.c b/drivers/video/via/accel.c
->--- a/drivers/video/via/accel.c	1970-01-01 08:00:00.000000000 +0800
->+++ b/drivers/video/via/accel.c	2008-07-22 02:07:29.000000000 +0800
+On Tue, Aug 12, 2008 at 07:06:58PM +0300, Muli Ben-Yehuda wrote:
+> [added Andi to CC]
+> 
+> On Tue, Aug 12, 2008 at 05:24:10PM +0200, Joerg Roedel wrote:
+> > Hi,
+> > 
+> > this patchset reworks the dma_*_coherent functions in the DMA layer
+> > for the x86 architecture. The patch series extends the existing DMA
+> > backends with missing *coherent callbacks and simplifies the generic
+> > function to basically only call the registered backend. This allows
+> > future optimizations in hardware specific IOMMU implementations.
+> > The code ist tested on AMD64 with AMD IOMMU and GART as well as on
+> > my old 486 box. It is not yet tested on a Calgary IOMMU system.
+> 
+> Now it is---appears to work fine on a Calgary system.
+> 
+> In general the patchset looks good and is definitely a step in the
+> right direction. I am a bit concerned about the contortions that the
+> generic dma_alloc_coherent went through before calling the ops
+> version---have you verified they are no longer needed?
 
->+void viafb_init_accel(void)
->+{
+Most of the logic in the old dma_alloc_coherent function is moved to the
+specific IOMMU implementations now. The old function tried to handle all
+cases, hardware IOMMU, GART and NOMMU in one function which made it a
+bit hard to read. This logic is split up and moved to the specific DMA
+backends now.
 
->+	/* Reverse 8*1024 memory space for cursor image */
+Joerg
 
-s/verse/serve/
