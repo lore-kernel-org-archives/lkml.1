@@ -1,40 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754486AbYHLXVe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753984AbYHLX3h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754486AbYHLXVe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Aug 2008 19:21:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752128AbYHLXVZ
+	id S1753984AbYHLX3h (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Aug 2008 19:29:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752202AbYHLX32
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Aug 2008 19:21:25 -0400
-Received: from kirsty.vergenet.net ([202.4.237.240]:56098 "EHLO
-	kirsty.vergenet.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751457AbYHLXVY (ORCPT
+	Tue, 12 Aug 2008 19:29:28 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:58812 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751967AbYHLX32 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Aug 2008 19:21:24 -0400
-Date: Wed, 13 Aug 2008 09:21:22 +1000
-From: Simon Horman <horms@verge.net.au>
-To: "Luck, Tony" <tony.luck@intel.com>
-Cc: "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [patch] IA64: make rsvd_region and num_rsvd_regions static
-Message-ID: <20080812232121.GC11363@verge.net.au>
-References: <20080805095739.GA12078@verge.net.au> <57C9024A16AD2D4C97DC78E552063EA30844AEFB@orsmsx505.amr.corp.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <57C9024A16AD2D4C97DC78E552063EA30844AEFB@orsmsx505.amr.corp.intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 12 Aug 2008 19:29:28 -0400
+Date: Tue, 12 Aug 2008 16:28:54 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Alexey Starikovskiy <astarikovskiy@suse.de>
+Cc: alan-jenkins@tuffmail.co.uk, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, hmh@hmh.eng.br,
+       Maximilian Engelhardt <maxi@daemonizer.de>
+Subject: Re: [PATCH] acpi: Avoid dropping rapid hotkey events (or other
+ GPEs) on Asus EeePC
+Message-Id: <20080812162854.d6907c95.akpm@linux-foundation.org>
+In-Reply-To: <487F9677.4060001@suse.de>
+References: <487D23C3.5070301@student.cs.york.ac.uk>
+	<487F58B6.5040309@suse.de>
+	<487F6D2E.2040501@tuffmail.co.uk>
+	<487F772C.1070806@suse.de>
+	<487F9592.1060003@tuffmail.co.uk>
+	<487F9677.4060001@suse.de>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 12, 2008 at 01:47:37PM -0700, Luck, Tony wrote:
-> > rsvd_region and num_rsvd_regions are only accessed in
-> > arch/ia64/kernel/setup.c, so they should be static.
-> 
-> Are you looking at -mm or linux-next?  In my tree I see:
 
-Whatever I was looking at, I was wrong. Sorry for the noise.
+Did this get fixed yet?
 
-> arch/ia64/mm/contig.c:  for (i = 0; i < num_rsvd_regions; i++) {
-> arch/ia64/mm/contig.c:          range_end   = min(end, rsvd_region[i].start & PAGE_MASK);
-> arch/ia64/mm/contig.c:          free_start = PAGE_ALIGN(rsvd_region[i].end);
+I have an patch in -mm which I just restored (I had to tempdrop it
+because the acpi tree was busted for some time).  But it seems to be
+old.
+
+http://bugzilla.kernel.org/show_bug.cgi?id=10919 is marked "resolved"
+but the reporter (Maximilian) seems to think otherwise.  2.6.26.x is,
+afaik, still unfixed, as is 2.6.27-rc.
+
+Thanks.
