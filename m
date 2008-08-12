@@ -1,83 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751843AbYHLEI3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751950AbYHLEMb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751843AbYHLEI3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Aug 2008 00:08:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750706AbYHLEIV
+	id S1751950AbYHLEMb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Aug 2008 00:12:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750737AbYHLEMW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Aug 2008 00:08:21 -0400
-Received: from E23SMTP03.au.ibm.com ([202.81.18.172]:37172 "EHLO
-	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750695AbYHLEIU (ORCPT
+	Tue, 12 Aug 2008 00:12:22 -0400
+Received: from wa-out-1112.google.com ([209.85.146.176]:2863 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750705AbYHLEMV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Aug 2008 00:08:20 -0400
-Message-ID: <48A10C4C.6020009@linux.vnet.ibm.com>
-Date: Tue, 12 Aug 2008 09:36:36 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
+	Tue, 12 Aug 2008 00:12:21 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=lef346wKRbrYTX2aCiDg7jc43COOiQnRG9b0A+NqmduPKsGaxUPVi+JABfLVWiBwyP
+         vJkR0CmVeE0vI8rXMbSxIqoXKIcmk4OcUImlOu5lGEgTwWOCVzuQdBhTspmZWQsJY6lf
+         ns7cpEOo3CJv0qnLVqqZzJAuB87AEWPhMEjU8=
+Message-ID: <48f7fe350808112112k5e92330epa8345cbe4eb4c1b5@mail.gmail.com>
+Date: Tue, 12 Aug 2008 00:12:21 -0400
+From: "Ryan Hope" <rmh3093@gmail.com>
+To: "Nick Piggin" <nickpiggin@yahoo.com.au>
+Subject: Re: [PATCH 3/3][reiser4] dont get radix-tree dirty tagging out of sync
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "Edward Shishkin" <edward.shishkin@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Reiserfs mailing list" <reiserfs-devel@vger.kernel.org>
+In-Reply-To: <200808121236.51599.nickpiggin@yahoo.com.au>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-mm@kvack.org, skumar@linux.vnet.ibm.com, yamamoto@valinux.co.jp,
-       menage@google.com, lizf@cn.fujitsu.com, linux-kernel@vger.kernel.org,
-       nishimura@mxp.nes.nec.co.jp, xemul@openvz.org, hugh@veritas.com,
-       kamezawa.hiroyu@jp.fujitsu.com
-Subject: Re: [-mm][PATCH 1/2] mm owner fix race between swap and exit
-References: <20080811100719.26336.98302.sendpatchset@balbir-laptop> <20080811100733.26336.31346.sendpatchset@balbir-laptop> <20080811173138.71f5bbe4.akpm@linux-foundation.org>
-In-Reply-To: <20080811173138.71f5bbe4.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <48A0BFC9.40502@gmail.com>
+	 <200808121236.51599.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Mon, 11 Aug 2008 15:37:33 +0530
-> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> 
->> There's a race between mm->owner assignment and try_to_unuse(). The condition
->> occurs when try_to_unuse() runs in parallel with an exiting task.
->>
->> The race can be visualized below. To quote Hugh
->> "I don't think your careful alternation of CPU0/1 events at the end matters:
->> the swapoff CPU simply dereferences mm->owner after that task has gone"
->>
->> But the alteration does help understand the race better (at-least for me :))
->>
->> CPU0					CPU1
->> 					try_to_unuse
->> task 1 stars exiting			look at mm = task1->mm
->> ..					increment mm_users
->> task 1 exits
->> mm->owner needs to be updated, but
->> no new owner is found
->> (mm_users > 1, but no other task
->> has task->mm = task1->mm)
->> mm_update_next_owner() leaves
->>
->> grace period
->> 					user count drops, call mmput(mm)
->> task 1 freed
->> 					dereferencing mm->owner fails
->>
->> The fix is to notify the subsystem (via mm_owner_changed callback), if
->> no new owner is found by specifying the new task as NULL.
-> 
-> This patch applies to mainline, 2.6.27-rc2 and even 2.6.26.
-> 
-> Against which kernel/patch is it actually applicable?
-> 
-> (If the answer was "all of the above" then please don't go embedding
-> mainline bugfixes in the middle of a -mm-only patch series!)
+I tried just using __set_page_dirty_nobuffers but that caused issues
+with ext3/ext4 (i can send a bug trace later if needed).
 
-Andrew,
+                                __inc_bdi_stat(mapping->backing_dev_info,
+                                                BDI_RECLAIMABLE);
+                                task_io_account_write(PAGE_CACHE_SIZE);
 
-The answer is all, but the bug is not exposed *outside* of the memrlimit
-controller, thus the push into -mm. I can redo and rework the patches for
-mainline if required and pull it out of -mm.
+^^^ the above code in __set_page_dirty_nobuffers causes an issue with
+do_writepages in ext3/4 when I use something like the code below:
 
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+int reiser4_set_page_dirty_internal(struct page *page)
+{
+     return __set_page_dirty_nobuffers(page);
+}
+
+On Mon, Aug 11, 2008 at 10:36 PM, Nick Piggin <nickpiggin@yahoo.com.au> wrote:
+> On Tuesday 12 August 2008 08:40, Ryan Hope wrote:
+>> This was item #14 on the todo list for reiser4 inclusion in mainline:
+>>
+>> diff --git a/fs/reiser4/page_cache.c b/fs/reiser4/page_cache.c
+>> index fe71368..a662c25 100644
+>> --- a/fs/reiser4/page_cache.c
+>> +++ b/fs/reiser4/page_cache.c
+>> @@ -467,15 +467,14 @@ int reiser4_set_page_dirty_internal(struct page
+>> *page) BUG_ON(mapping == NULL);
+>>
+>>       if (!TestSetPageDirty(page)) {
+>> +             spin_lock_irq(&mapping->tree_lock);
+>>               if (mapping_cap_account_dirty(mapping))
+>>                       inc_zone_page_state(page, NR_FILE_DIRTY);
+>> -
+>> +             radix_tree_tag_set(&mapping->page_tree,
+>> +                     page_index(page), PAGECACHE_TAG_DIRTY);
+>>               __mark_inode_dirty(mapping->host, I_DIRTY_PAGES);
+>> +             spin_unlock_irq(&mapping->tree_lock);
+>>       }
+>> -
+>> -     /* znode must be dirty ? */
+>> -     if (mapping->host == reiser4_get_super_fake(mapping->host->i_sb))
+>> -             assert("", JF_ISSET(jprivate(page), JNODE_DIRTY));
+>>       return 0;
+>>   }
+>
+> Any reason why this can't use a generic function such as
+> __set_page_dirty_nobuffers? There are accounting changes gone in
+> there now which I suspetc may be wrong now in reiser4 (eg. task
+> io accounting).
+>
+> Actually every site that does a radix_tree_operation there should
+> be reviewed to try to use core functoins.
+>
