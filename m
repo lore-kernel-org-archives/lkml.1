@@ -1,81 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752024AbYHLFCK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751351AbYHLFC1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752024AbYHLFCK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Aug 2008 01:02:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750858AbYHLFBx
+	id S1751351AbYHLFC1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Aug 2008 01:02:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751071AbYHLFB6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Aug 2008 01:01:53 -0400
-Received: from ns1.suse.de ([195.135.220.2]:52352 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750849AbYHLFBw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Aug 2008 01:01:52 -0400
-From: Neil Brown <neilb@suse.de>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Date: Tue, 12 Aug 2008 15:01:36 +1000
+	Tue, 12 Aug 2008 01:01:58 -0400
+Received: from smtpq2.tilbu1.nb.home.nl ([213.51.146.201]:38267 "EHLO
+	smtpq2.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751195AbYHLFB5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Aug 2008 01:01:57 -0400
+Message-ID: <48A11952.6090203@keyaccess.nl>
+Date: Tue, 12 Aug 2008 07:02:10 +0200
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080707)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, akpm@linuxfoundation.org,
+       fritz@isdn4linux.de, kkeil@suse.de, isdn4linux@listserv.isdn4linux.de,
+       linux-kernel@vger.kernel.org, mingo@elte.hu
+Subject: Re: [PATCH] ISDN: make ICN not auto-grab port 0x320
+References: <489DD669.2090207@keyaccess.nl>	<20080809215020.1bb602e7@lxorguk.ukuu.org.uk> <20080811164814.db41c20b.akpm@linux-foundation.org>
+In-Reply-To: <20080811164814.db41c20b.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-ID: <18593.6448.132048.150818@notabene.brown>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, netdev@vger.kernel.org, trond.myklebust@fys.uio.no,
-       Daniel Lezcano <dlezcano@fr.ibm.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>
-Subject: Re: [PATCH 02/30] mm: gfp_to_alloc_flags()
-In-Reply-To: message from Peter Zijlstra on Thursday July 24
-References: <20080724140042.408642539@chello.nl>
-	<20080724141529.408041430@chello.nl>
-X-Mailer: VM 7.19 under Emacs 21.4.1
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
+X-Spam-Score: 1.0 (+)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday July 24, a.p.zijlstra@chello.nl wrote:
-> Factor out the gfp to alloc_flags mapping so it can be used in other places.
+On 12-08-08 01:48, Andrew Morton wrote:
+
+> otoh it's a bit sad to break allyesconfig kernels - there is
+> regression-testing value in being able to run such kernels.
 > 
-> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> ---
->  mm/internal.h   |   10 +++++
->  mm/page_alloc.c |   95 +++++++++++++++++++++++++++++++-------------------------
->  2 files changed, 64 insertions(+), 41 deletions(-)
-
-This patch all looks "obviously correct" and a nice factorisation of
-code, except the last little bit:
-
-> @@ -1618,6 +1627,10 @@ nofail_alloc:
->  	if (!wait)
->  		goto nopage;
->  
-> +	/* Avoid recursion of direct reclaim */
-> +	if (p->flags & PF_MEMALLOC)
-> +		goto nopage;
-> +
->  	cond_resched();
->  
->  	/* We now go into synchronous reclaim */
+> I wonder if we can add a new boot option `allyesconfig-test' or
+> something like that, and then, within the offending drivers, test that
+> flag and take suitable avoiding action.
 > 
-> -- 
+> Or we could do it at compile-time - define
+> CONFIG_ALLYESCONFIG_TESTING in some fashion.
 
-I don't remember seeing it before (though my memory is imperfect) and
-it doesn't seem to fit with the rest of the patch (except spatially).
+Yes, latter I'd feel with the thing most against it that there aren't 
+actually many that need it. Here's the list that was posted:
 
-There is a test above for PF_MEMALLOC which will result in a "goto"
-somewhere else unless "in_interrupt()".
-There is immediately above a test for "!wait".
-So the only way this test can fire is when in_interrupt and wait.
-But if that happens, then the
-	might_sleep_if(wait)
-at the top should have thrown a warning...  It really shouldn't happen.
+http://lkml.org/lkml/2008/8/1/96
 
-So it looks like it is useless code:  there is already protection
-against recursion in this case.
+Three legacy ISA driver from that list can now be stricken. Hurrah.
 
-Did I miss something?
-If I did, maybe more text in the changelog entry (or the comment)
-would help.
+There's always going to be at least a few that'll remain though. For 
+example, what are you going to do with:
 
-Thanks,
-NeilBrown
+--- linux.orig/drivers/ide/Kconfig
++++ linux/drivers/ide/Kconfig
+@@ -9,6 +9,11 @@ config HAVE_IDE
+  menuconfig IDE
+  	tristate "ATA/ATAPI/MFM/RLL support"
+  	depends on HAVE_IDE
++
++	# my test box expects /dev/sda, not /dev/hda
++	depends on BROKEN_BOOT_ALLOWED
++	select BROKEN_BOOT if IDE = y
++
+  	depends on BLOCK
+  	---help---
+  	  If you say Y here, your kernel will be able to manage low cost
+
+The hda->sda thing was just a disaster -- personally I have to remember 
+to change things around till this very day before I boot into my distro 
+kernel to test things. I wouldn't be the one suggesting a patch to 
+drivers/ide to "fix" that though including really a patch to its Kconfig 
+marking it as breaking anything in a global way rather than a 
+user-specific way as was done here.
+
+Maybe the test boxes should always boot with ide_core.noprobe=<all> for 
+a suitable value of <all> or some such...
+
+Others are the video ones. FB_VESA, FB_VGA16FB and even MDA_CONSOLE are 
+in there which seems to imply some decidly non-legacy hardware and I 
+sort of doubt willingness to assume global validity of such a setup.
+
+But yes, there is value in the testing so perhaps still worh something 
+generic.
+
+(I'll continue some specific looking through the list first although I 
+don't believe there is much else that really wants specific fixing).
+
+Rene.
