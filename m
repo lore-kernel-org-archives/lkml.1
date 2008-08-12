@@ -1,154 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752978AbYHLIcZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753006AbYHLIl1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752978AbYHLIcZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Aug 2008 04:32:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751908AbYHLIcQ
+	id S1753006AbYHLIl1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Aug 2008 04:41:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751921AbYHLIlS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Aug 2008 04:32:16 -0400
-Received: from wf-out-1314.google.com ([209.85.200.174]:32859 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751894AbYHLIcO (ORCPT
+	Tue, 12 Aug 2008 04:41:18 -0400
+Received: from py-out-1112.google.com ([64.233.166.182]:45527 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751895AbYHLIlR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Aug 2008 04:32:14 -0400
+	Tue, 12 Aug 2008 04:41:17 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
          :content-type:content-transfer-encoding:content-disposition
          :references;
-        b=OO4ZEK5pUcHxQ10h8o8VSAFH+2BkfDR4tc8Z5yaApRYoVeniaWHvBAE8D/JuXjNxnH
-         4cZAIQHM2qtY4wGnwtLH2HCsNhLuu8NO7PHTZOsIwbHGs9DQAzgBeJEacrw6Wq8vjfre
-         gbgy1uFDk/JcT0WkZ4Obi5b3EYrmMcoI93OkY=
-Message-ID: <87a5b0800808120132u11c3734es486b13027f3ec191@mail.gmail.com>
-Date: Tue, 12 Aug 2008 09:32:13 +0100
-From: "Will Newton" <will.newton@gmail.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: [PATCH] serial 8250: tighten test for using backup timer
-Cc: alex.williamson@hp.com, linux-serial@vger.kernel.org,
-       linux-kernel@vger.kernel.org, "Alan Cox" <alan@lxorguk.ukuu.org.uk>
-In-Reply-To: <20080811143208.8cc89478.akpm@linux-foundation.org>
+        b=Uw1UWXbbM61EB0FbPkFC7rFe0My5DXPnU5f5qKhiY34LtxOQs7TeQqc8y+ob4K+rKR
+         zHlWNqw76PiPRbBf1MFuY0i470jY6HwqEqk3s7gTpI+/2UZuZO4MQCR23cJrzV9fPYly
+         dX3vla5CAjqcQeaftT4UVDOmby1gxKesJa+Go=
+Message-ID: <e7d8f83e0808120141s4a0561fdw4919ce6f74d211af@mail.gmail.com>
+Date: Tue, 12 Aug 2008 18:41:16 +1000
+From: "Peter Dolding" <oiaohm@gmail.com>
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+Subject: Re: [PATCH 3/4] integrity: Linux Integrity Module(LIM)
+Cc: "Mimi Zohar" <zohar@us.ibm.com>, serue@linux.vnet.ibm.com,
+       "Christoph Hellwig" <hch@infradead.org>,
+       "James Morris" <jmorris@namei.org>, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org,
+       "Randy Dunlap" <randy.dunlap@oracle.com>, safford@watson.ibm.com,
+       sailer@watson.ibm.com, "Stephen Smalley" <sds@tycho.nsa.gov>,
+       "Al Viro" <viro@zeniv.linux.org.uk>,
+       "Mimi Zohar" <zohar@linux.vnet.ibm.com>
+In-Reply-To: <20080811195645.GA16685@us.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <1205945437.6881.13.camel@lappy>
-	 <87a5b0800808050444t49480549t758f954c40139c4a@mail.gmail.com>
-	 <1217966803.17091.72.camel@2710p.home>
-	 <87a5b0800808060353v505c4957wbd26aaa9a2624786@mail.gmail.com>
-	 <20080811143208.8cc89478.akpm@linux-foundation.org>
+References: <20080808184349.999902616@linux.vnet.ibm.com>
+	 <1218221761.4444.13.camel@localhost.localdomain>
+	 <20080809185340.GC22905@infradead.org>
+	 <OF0AEBDCA2.1E27B823-ON852574A1.000FEE48-852574A1.004C3185@us.ibm.com>
+	 <20080811170255.GA2662@us.ibm.com>
+	 <OFAC0E3107.C68382CD-ON852574A2.0068E1AD-852574A2.00692623@us.ibm.com>
+	 <20080811195645.GA16685@us.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 11, 2008 at 10:32 PM, Andrew Morton
-<akpm@linux-foundation.org> wrote:
-> On Wed, 6 Aug 2008 11:53:13 +0100
-> "Will Newton" <will.newton@gmail.com> wrote:
->
->> >From 36ac82a231498247ada098d31e8d12e735eb34f2 Mon Sep 17 00:00:00 2001
->> From: Will Newton <will.newton@gmail.com>
->> Date: Wed, 6 Aug 2008 11:48:29 +0100
->> Subject: [PATCH] 8250: Improve workaround for UARTs that don't
->> re-assert THRE correctly.
+On Tue, Aug 12, 2008 at 5:56 AM, Serge E. Hallyn <serue@us.ibm.com> wrote:
+> Quoting Mimi Zohar (zohar@us.ibm.com):
+>> serue@linux.vnet.ibm.com wrote on 08/11/2008 01:02:55 PM:
 >>
->> Recent changes to tighten the check for UARTs that don't correctly
->> re-assert THRE caused problems when such a UART was opened for the second
->> time - the bug could only successfully be detected at first initialization.
->> This patch stores the information about the bug in the bugs field of the
->> port structure when the port is first started up so subsequent opens can
->> check this bit even if the test for the bug fails.
+>> > Quoting Mimi Zohar (zohar@us.ibm.com):
+>> > > Christoph Hellwig <hch@infradead.org> wrote on 08/09/2008 02:53:40 PM:
+>> > > > >  int vfs_permission(struct nameidata *nd, int mask)
+>> > > > >  {
+>> > > > > -   return inode_permission(nd->path.dentry->d_inode, mask);
+>> > > > > +   int retval;
+>> > > > > +
+>> > > > > +   retval = inode_permission(nd->path.dentry->d_inode, mask);
+>> > > > > +   if (retval)
+>> > > > > +      return retval;
+>> > > > > +   return integrity_inode_permission(NULL, &nd->path,
+>> > > > > +                 mask & (MAY_READ | MAY_WRITE |
+>> > > > > +                    MAY_EXEC));
+>> > > > >  }
+>> > > > >
+>> > > > >  /**
+>> > > > > @@ -306,7 +314,14 @@ int vfs_permission(struct nameidata *nd,
+>> > > > >   */
+>> > > > >  int file_permission(struct file *file, int mask)
+>> > > > >  {
+>> > > > > -   return inode_permission(file->f_path.dentry->d_inode, mask);
+>> > > > > +   int retval;
+>> > > > > +
+>> > > > > +   retval = inode_permission(file->f_path.dentry->d_inode, mask);
+>> > > > > +   if (retval)
+>> > > > > +      return retval;
+>> > > > > +   return integrity_inode_permission(file, NULL,
+>> > > > > +                 mask & (MAY_READ | MAY_WRITE |
+>> > > > > +                    MAY_EXEC));
+>> > > >
+>> > > > Please put your hook into inode_permission.  Note that in inode
+>> > > > permission and lots of callers there is no path available so don't
+>> pass
+>> > > > it.  Please pass the full MAY_FOO mask for new interfaces and do
+>> > > > filtering that won't break if new ones are introduced.
+>> > >
+>> > > We started out with the integrity_inode_permission() hook call in
+>> > > inode_permission(), but because of the removal of the nameidata
+>> > > parameter in the last merge, based on discussions
+>> > > http://marc.info/?l=linux-security-module&m=121797845308246&w=2,
+>> > > the call to integrity_inode_permission() was moved up to the caller,
+>> > > where either a file or path are available.  Any suggestions?
+>> >
+>> > Mimi, can you explain exactly (and concisely) what you are doing with
+>> > the pathname?
 >>
->> Signed-off-by: Will Newton <will.newton@gmail.com>
->> Acked-by: Alex Williamson <alex.williamson@hp.com>
+>> IMA maintains a list of hash values of system sensitive files loaded
+>> into the run-time of the system and extends a PCR with the hash value.
+>> In order to calculate this hash value, IMA requires access to either
+>> the file or the path, which currently is not accessible in
+>> inode_permission().
 >
-> What are the "recent changes" to which you refer?  I had a quick look
-> and didn't spot any THRE-related changes this year?
-
-Sorry, I should have been more specific. Commit
-01c194d9278efc15d4785ff205643e9c0bdcef53.
-
->> ---
->>  drivers/serial/8250.c |   16 ++++++++++++----
->>  drivers/serial/8250.h |    1 +
->>  2 files changed, 13 insertions(+), 4 deletions(-)
->>
->> diff --git a/drivers/serial/8250.c b/drivers/serial/8250.c
->> index 342e12f..9ccc563 100644
->> --- a/drivers/serial/8250.c
->> +++ b/drivers/serial/8250.c
->> @@ -1908,15 +1908,23 @@ static int serial8250_startup(struct uart_port *port)
->>                * kick the UART on a regular basis.
->>                */
->>               if (!(iir1 & UART_IIR_NO_INT) && (iir & UART_IIR_NO_INT)) {
->> +                     up->bugs |= UART_BUG_THRE;
->>                       pr_debug("ttyS%d - using backup timer\n", port->line);
->> -                     up->timer.function = serial8250_backup_timeout;
->> -                     up->timer.data = (unsigned long)up;
->> -                     mod_timer(&up->timer, jiffies +
->> -                             poll_timeout(up->port.timeout) + HZ / 5);
->>               }
->>       }
->>
->>       /*
->> +      * The above check will only give an accurate result the first time
->> +      * the port is opened so this value needs to be preserved.
->> +      */
->> +     if (up->bugs & UART_BUG_THRE) {
->> +             up->timer.function = serial8250_backup_timeout;
->> +             up->timer.data = (unsigned long)up;
->> +             mod_timer(&up->timer, jiffies +
->> +                       poll_timeout(up->port.timeout) + HZ / 5);
->> +     }
->> +
->> +     /*
->>        * If the "interrupt" for this port doesn't correspond with any
->>        * hardware interrupt, we use a timer-based system.  The original
->>        * driver used to do this with IRQ0.
->> diff --git a/drivers/serial/8250.h b/drivers/serial/8250.h
->> index 78c0016..5202603 100644
->> --- a/drivers/serial/8250.h
->> +++ b/drivers/serial/8250.h
->> @@ -47,6 +47,7 @@ struct serial8250_config {
->>  #define UART_BUG_QUOT        (1 << 0)        /* UART has buggy quot LSB */
->>  #define UART_BUG_TXEN        (1 << 1)        /* UART has buggy TX IIR status */
->>  #define UART_BUG_NOMSR       (1 << 2)        /* UART has buggy MSR status bits (Au1x00) */
->> +#define UART_BUG_THRE        (1 << 3)        /* UART has buggy THRE reassertion */
->>
->>  #define PROBE_RSA    (1 << 0)
->>  #define PROBE_ANY    (~0)
+> So the usual question is, if I've done
+>        ln -s /etc/shadow /tmp/shadow
+> will IMA do the right thing if I'm opening /tmp/shadow?  Or will it only
+> catch any writes I've done the next time someone (i.e. passwd) opens
+> /etc/shadow?
 >
-> Also, how serious is the problem which is being fixed here?  It
-> _sounds_ like it's of the "fatal for people who have that hardware"
-> variety, in which case we should get this into 2.6.27 and probably
-> 2.6.26.x.  Not sure about 2.5.26.x though - the patch doesn't apply
-> there, but I didn't check whether this is due to functional changes.
+> thanks,
+> -serge
 
-For users of this version of this particular UART IP it is fatal. From
-looking at the git history it looks like the original patch went into
-2.6.26 so it might also affect that kernel.
+We really do need to get credentials patch in to common store all this
+permission/secuirty data..  With a section for integrity related
+entries.
 
-> Also2, we should officially use setup_timer(), like this:
->
-> --- a/drivers/serial/8250.c~serial-8250-tighten-test-for-using-backup-timer-fix
-> +++ a/drivers/serial/8250.c
-> @@ -1964,8 +1964,8 @@ static int serial8250_startup(struct uar
->         * the port is opened so this value needs to be preserved.
->         */
->        if (up->bugs & UART_BUG_THRE) {
-> -               up->timer.function = serial8250_backup_timeout;
-> -               up->timer.data = (unsigned long)up;
-> +               setup_timer(&up->timer, serial8250_backup_timeout,
-> +                               (unsigned long)up);
->                mod_timer(&up->timer, jiffies +
->                          poll_timeout(up->port.timeout) + HZ / 5);
->        }
->
-> but that is a functional change - setup_timer() runs init_timer(),
-> whereas the code you have there does not.
->
-> We _do_ have an init_timer(&up->timer) all the way over in
-> serial8250_isa_init_ports().  It's all a bit weird.  Could you please
-> double-check that we're being sensible about the initialisation of this
-> timer?
+Anti-Virus Passes and fails, signed running programs support and so on.
 
-I'll look into it. Some of the weirdness comes from the way the timer
-is used for this bug workaround but also for irq-less ports.
+Lot of different things need ways of recording integrity status's.
+Users also need to know if a application does not work is it TPM is it
+Anti-virus is it lack of signature.
+
+A common way of extracting what the blockage has to be the way
+forward.  Since then this can be integrated into file managers and the
+like.  Running like 12 different tools to find what blocked a program
+is kinda wasteful.
+
+ Sorting out this storage is kinda critical.  People could be running
+a few different integrity systems side by side.
+
+Peter Dolding
