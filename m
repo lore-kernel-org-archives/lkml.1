@@ -1,69 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755193AbYHLAiy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756261AbYHLAjr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755193AbYHLAiy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Aug 2008 20:38:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753931AbYHLAio
+	id S1756261AbYHLAjr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Aug 2008 20:39:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754034AbYHLAjj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Aug 2008 20:38:44 -0400
-Received: from mailin.studentenwerk.mhn.de ([141.84.225.229]:33444 "EHLO
-	email.studentenwerk.mhn.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753822AbYHLAin (ORCPT
+	Mon, 11 Aug 2008 20:39:39 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:24841 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753909AbYHLAji (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Aug 2008 20:38:43 -0400
-From: Wolfgang Walter <wolfgang.walter@stwm.de>
-Organization: Studentenwerk =?utf-8?q?M=C3=BCnchen?=
-To: Suresh Siddha <suresh.b.siddha@intel.com>
-Subject: Re: Kernel oops with 2.6.26, padlock and ipsec: probably problem with fpu state changes
-Date: Tue, 12 Aug 2008 02:38:40 +0200
-User-Agent: KMail/1.9.9
-Cc: Herbert Xu <herbert@gondor.apana.org.au>, "H. Peter Anvin" <hpa@zytor.com>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       "viro@ZenIV.linux.org.uk" <viro@zeniv.linux.org.uk>,
-       "vegard.nossum@gmail.com" <vegard.nossum@gmail.com>
-References: <200807171653.59177.wolfgang.walter@stwm.de> <20080810030521.GA2332@gondor.apana.org.au> <20080811190131.GL13158@linux-os.sc.intel.com>
-In-Reply-To: <20080811190131.GL13158@linux-os.sc.intel.com>
+	Mon, 11 Aug 2008 20:39:38 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=wvoA/uuXjv1WgB0qsmixBJiHJmonMBTqopOp4rkCAJsPshSqs8ilQg07f5tlAxQeV
+	N17ziH/6Zuvl5kdGIc++g==
+Message-ID: <6599ad830808111739x27078313x16ac270b42abee3c@mail.gmail.com>
+Date: Mon, 11 Aug 2008 17:39:33 -0700
+From: "Paul Menage" <menage@google.com>
+To: "Balbir Singh" <balbir@linux.vnet.ibm.com>
+Subject: Re: [-mm][PATCH 2/2] Memory rlimit enhance mm_owner_changed callback to deal with exited owner
+Cc: linux-mm@kvack.org, "Sudhir Kumar" <skumar@linux.vnet.ibm.com>,
+       "YAMAMOTO Takashi" <yamamoto@valinux.co.jp>, lizf@cn.fujitsu.com,
+       linux-kernel@vger.kernel.org, nishimura@mxp.nes.nec.co.jp,
+       "Pavel Emelianov" <xemul@openvz.org>, hugh@veritas.com,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20080811100743.26336.6497.sendpatchset@balbir-laptop>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200808120238.41237.wolfgang.walter@stwm.de>
+References: <20080811100719.26336.98302.sendpatchset@balbir-laptop>
+	 <20080811100743.26336.6497.sendpatchset@balbir-laptop>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 11 August 2008, Suresh Siddha wrote:
-> On Sat, Aug 09, 2008 at 08:05:21PM -0700, Herbert Xu wrote:
-> > > void irq_ts_restore(int TS_state)
-> > > {
-> > >       if (!in_interrupt())
-> > >               return 0;
-> > 
-> > This check isn't necessary.
-> > 
-> > >
-> > >       if (TS_state)
-> > >               stts();
-> > > }
-> > 
-> > But yes this scheme looks good to me.
-> 
-> Appended the complete patch. Wolf, can you please help test this again
-> and check the perf aswell.
+On Mon, Aug 11, 2008 at 3:07 AM, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+>
+>
+> mm_owner_changed callback can also be called with new task set to NULL.
+> (race between try_to_unuse() and mm->owner exiting). Surprisingly the order
+> of cgroup arguments being passed was incorrect (proves that we did not
+> run into mm_owner_changed callback at all).
+>
+> Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
 
-Yes, I'll test that tomorrow.
+Acked-by: Paul Menage <menage@google.com>
 
-Regards,
--- 
-Wolfgang Walter
-Studentenwerk München
-Anstalt des öffentlichen Rechts
-Leiter EDV
-Leopoldstraße 15
-80802 München
-Tel: +49 89 38196-276
-Fax: +49 89 38196-144
-wolfgang.walter@stwm.de
-http://www.studentenwerk-muenchen.de/
+
+> ---
+>
+>  mm/memrlimitcgroup.c |   15 +++++++++++++--
+>  1 file changed, 13 insertions(+), 2 deletions(-)
+>
+> diff -puN mm/memrlimitcgroup.c~memrlimit-handle-mm-owner-notification-with-task-null mm/memrlimitcgroup.c
+> --- linux-2.6.27-rc1/mm/memrlimitcgroup.c~memrlimit-handle-mm-owner-notification-with-task-null 2008-08-05 10:56:56.000000000 +0530
+> +++ linux-2.6.27-rc1-balbir/mm/memrlimitcgroup.c        2008-08-05 11:24:04.000000000 +0530
+> @@ -73,6 +73,12 @@ void memrlimit_cgroup_uncharge_as(struct
+>  {
+>        struct memrlimit_cgroup *memrcg;
+>
+> +       /*
+> +        * Uncharge happened as a part of the mm_owner_changed callback
+> +        */
+> +       if (!mm->owner)
+> +               return;
+> +
+>        memrcg = memrlimit_cgroup_from_task(mm->owner);
+>        res_counter_uncharge(&memrcg->as_res, (nr_pages << PAGE_SHIFT));
+>  }
+> @@ -235,8 +241,8 @@ out:
+>  * This callback is called with mmap_sem held
+>  */
+>  static void memrlimit_cgroup_mm_owner_changed(struct cgroup_subsys *ss,
+> -                                               struct cgroup *cgrp,
+>                                                struct cgroup *old_cgrp,
+> +                                               struct cgroup *cgrp,
+>                                                struct task_struct *p)
+>  {
+>        struct memrlimit_cgroup *memrcg, *old_memrcg;
+> @@ -246,7 +252,12 @@ static void memrlimit_cgroup_mm_owner_ch
+>        memrcg = memrlimit_cgroup_from_cgrp(cgrp);
+>        old_memrcg = memrlimit_cgroup_from_cgrp(old_cgrp);
+>
+> -       if (res_counter_charge(&memrcg->as_res, (mm->total_vm << PAGE_SHIFT)))
+> +       /*
+> +        * If we don't have a new cgroup, we just uncharge from the old one.
+> +        * It means that the task is going away
+> +        */
+> +       if (memrcg &&
+> +           res_counter_charge(&memrcg->as_res, (mm->total_vm << PAGE_SHIFT)))
+>                goto out;
+>        res_counter_uncharge(&old_memrcg->as_res, (mm->total_vm << PAGE_SHIFT));
+>  out:
+> _
+>
+> --
+>        Warm Regards,
+>        Balbir Singh
+>        Linux Technology Center
+>        IBM, ISTL
+>
