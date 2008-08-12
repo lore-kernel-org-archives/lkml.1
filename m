@@ -1,67 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754633AbYHLWA4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754508AbYHLWBw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754633AbYHLWA4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Aug 2008 18:00:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752133AbYHLWAq
+	id S1754508AbYHLWBw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Aug 2008 18:01:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751894AbYHLWBk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Aug 2008 18:00:46 -0400
-Received: from smtp118.sbc.mail.sp1.yahoo.com ([69.147.64.91]:44927 "HELO
-	smtp118.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751303AbYHLWAp (ORCPT
+	Tue, 12 Aug 2008 18:01:40 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:44654
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1750849AbYHLWBj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Aug 2008 18:00:45 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-Yahoo-Newman-Property:Received:Date:From:To:Subject:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-Id;
-  b=GbneNH0KnIqD4S43FFcf7Tp/0RbfB0cMHuPKL5zR67Fd0xO3Bdy3Z9Qw0Aci89y14dBBTxKwXK4lmA/QY20yY9UZVR/e0vNbStwDrKUfsHVco7MzDO33VAjOGER6183MMKHEzG6c6kzh1nPPFlYptwHeGEH6QMb9obKf5SduFtU=  ;
-X-Yahoo-Newman-Property: ymail-3
-Date: Tue, 12 Aug 2008 15:06:19 -0700
-From: David Brownell <david-b@pacbell.net>
-To: linux-kernel@vger.kernel.org, dbaryshkov@gmail.com
-Subject: Re: [PATCH] Make gpiochip label const
-Cc: dbrownell@users.sourceforge.net
-References: <1218573588-25528-1-git-send-email-dbaryshkov@gmail.com>
-In-Reply-To: <1218573588-25528-1-git-send-email-dbaryshkov@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 12 Aug 2008 18:01:39 -0400
+Date: Tue, 12 Aug 2008 15:01:40 -0700 (PDT)
+Message-Id: <20080812.150140.200481459.davem@davemloft.net>
+To: divy@chelsio.com
+Cc: rdreier@cisco.com, rick.jones2@hp.com, jgarzik@pobox.com,
+       swise@opengridcomputing.com, kxie@chelsio.com, netdev@vger.kernel.org,
+       open-iscsi@googlegroups.com, michaelc@cs.wisc.edu, daisyc@us.ibm.com,
+       wenxiong@us.ibm.com, bhua@us.ibm.com, dm@chelsio.com,
+       leedom@chelsio.com, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCH 1/1] cxgb3i: cxgb3 iSCSI initiator
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <200808121457.11356.divy@chelsio.com>
+References: <adad4kfxm9v.fsf@cisco.com>
+	<20080811.145313.178992274.davem@davemloft.net>
+	<200808121457.11356.divy@chelsio.com>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Message-Id: <20080812220619.D2011362B0F@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> From dbaryshkov@gmail.com  Tue Aug 12 13:54:29 2008
-> From: Dmitry Baryshkov <dbaryshkov@gmail.com>
-> To: linux-kernel@vger.kernel.org
-> Cc: Dmitry Baryshkov <dbaryshkov@gmail.com>,
-> 	David Brownell <dbrownell@users.sourceforge.net>
-> Subject: [PATCH] Make gpiochip label const
-> Date: Wed, 13 Aug 2008 00:39:48 +0400
->
-> Mark gpiochip label as a const char pointer.
->
-> Signed-off-by: Dmitry Baryshkov <dbaryshkov@gmail.com>
-> Cc: David Brownell <dbrownell@users.sourceforge.net>
+From: Divy Le Ray <divy@chelsio.com>
+Date: Tue, 12 Aug 2008 14:57:09 -0700
 
-Acked-By: David Brownell <dbrownell@users.sourceforge.net>
+> iSCSI PDUs might spawn over multiple TCP segments, it is unclear to me how to 
+> do placement without keeping some state of the transactions.
 
-> ---
->  include/asm-generic/gpio.h |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
->
-> diff --git a/include/asm-generic/gpio.h b/include/asm-generic/gpio.h
-> index 6be061d..8ab874a 100644
-> --- a/include/asm-generic/gpio.h
-> +++ b/include/asm-generic/gpio.h
-> @@ -58,7 +58,7 @@ struct module;
->   * is calculated by subtracting @base from the gpio number.
->   */
->  struct gpio_chip {
-> -	char			*label;
-> +	const char		*label;
->  	struct module		*owner;
->  
->  	int			(*direction_input)(struct gpio_chip *chip,
-> -- 
-> 1.5.6.3
->
+You keep a flow table with buffer IDs and offsets.
+
+The S2IO guys did something similar for one of their initial LRO
+impelementations.
+
+It's still strictly stateless, and best-effort.  Entries can fall out
+of the flow cache which makes upcoming data use new buffers and
+offsets.
+
+But these are the kinds of tricks you hardware folks should be
+more than adequately able to design, rather than me. :-)
