@@ -1,250 +1,332 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753215AbYHLIyJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753090AbYHLJMU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753215AbYHLIyJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Aug 2008 04:54:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751821AbYHLIxz
+	id S1753090AbYHLJMU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Aug 2008 05:12:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752092AbYHLJMI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Aug 2008 04:53:55 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:53427 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751357AbYHLIxy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Aug 2008 04:53:54 -0400
-Date: Tue, 12 Aug 2008 18:53:45 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: linux-next@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: linux-next: Tree for August 12
-Message-Id: <20080812185345.d7496513.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Tue__12_Aug_2008_18_53_45_+1000_t_Ko4Uc5wTb+VP2X"
+	Tue, 12 Aug 2008 05:12:08 -0400
+Received: from oslproxyp1.tandberg.com ([194.0.215.2]:52555 "EHLO
+	oslproxyp1.tandberg.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752035AbYHLJMG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Aug 2008 05:12:06 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: multipart/mixed;
+	boundary="----_=_NextPart_001_01C8FC5B.733BF61F"
+Subject: RE: OOPS, ip -f inet6 route get fec0::1, linux-2.6.26,ip6_route_output, rt6_fill_node+0x175
+Date: Tue, 12 Aug 2008 11:11:47 +0200
+Message-ID: <9F6ACAE02B6DD040A1E259977622CFDB0335994F@oslexcp1.eu.tandberg.int>
+In-Reply-To: <20080811110335.GA29407@kernel.sg>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: OOPS, ip -f inet6 route get fec0::1, linux-2.6.26,ip6_route_output, rt6_fill_node+0x175
+Thread-Index: Acj7ofhx7sqsHgxZSQmbDKHPfzIRrwAuCV4g
+From: "John Gumb" <john.gumb@tandberg.com>
+To: "Eugene Teo" <eugeneteo@kernel.sg>, "Brian Haley" <brian.haley@hp.com>
+Cc: "Alexey Dobriyan" <adobriyan@gmail.com>, <linux-kernel@vger.kernel.org>,
+       <netdev@vger.kernel.org>, "YOSHIFUJI Hideaki" <yoshfuji@linux-ipv6.org>
+X-OriginalArrivalTime: 12 Aug 2008 09:11:48.0438 (UTC) FILETIME=[73297760:01C8FC5B]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Tue__12_Aug_2008_18_53_45_+1000_t_Ko4Uc5wTb+VP2X
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
+This is a multi-part message in MIME format.
+
+------_=_NextPart_001_01C8FC5B.733BF61F
+Content-Type: text/plain;
+	charset="us-ascii"
 Content-Transfer-Encoding: quoted-printable
 
-Hi all,
+Folks
 
-Changes since next-20080811:
+I've enclosed patch from Eugene just so we all know which patch we're
+talking about. It 'works' according to the following definition:
 
-The arm-current tree gained a trivial whitespace conflict against Linus'
-tree (unreported).
+a) Fixed OOPS
+b) runs overnight in our test network. This run doesn't do much specific
+ipv6 testing - but clearly what's there is catching stuff :-;
 
-The ide tree gained a build fix patch.
+cheers
 
-The acpi tree gained a build fix patch.
+John
+-----Original Message-----
+From: Eugene Teo [mailto:eugeneteo@kernel.sg]=20
+Sent: 11 August 2008 12:04
+To: Brian Haley
+Cc: Alexey Dobriyan; John Gumb; linux-kernel@vger.kernel.org;
+netdev@vger.kernel.org; YOSHIFUJI Hideaki
+Subject: Re: OOPS, ip -f inet6 route get fec0::1,
+linux-2.6.26,ip6_route_output, rt6_fill_node+0x175
 
-The vfs tree gained 2 conflicts against the xfs tree and one against the
-nfsd tree.
+Hi,
 
-The ubifs tree gained a build failure which required a revert to a commit
-(interaction with the vfs tree).
+<quote sender=3D"Brian Haley">
+> Alexey Dobriyan wrote:
+>> On Thu, Aug 07, 2008 at 07:00:56PM +0200, John Gumb wrote:
+[...]
+> The commit that changed this can't be reverted easily, but the patch =20
+> below works for me.
+>
+> Fix NULL de-reference in rt6_fill_node() when there's no IPv6 input =20
+> device present in the dst entry.
+>
+> Signed-off-by: Brian Haley <brian.haley@hp.com>
 
-The ttydev tree gained 2 conflicts against Linus' tree and against the
-usb.current tree and lost one against Linus' tree.
+I think it's better to use a helper routine like ipv6_get_saddr to make
+sure that both dst and rt6i_idev arguments are checked for NULL.
 
-The creds tree gained a conflict against the vfs tree.
+I have compiled, and tested the patch.
 
-I have also applied the following patches for known problems:
+Thanks,
+Eugene
 
-	Add cuImage.mpc866ads to the bootwrapper as a cuboot-8xx target
-	xen-balloon: fix up sysfs issues
-	ath9k: work around gcc ICE again
+---
+Fix NULL pointer dereference in rt6_fill_node().
 
-----------------------------------------------------------------------------
+# ip -f inet6 route get fec0::1
 
-I have created today's linux-next tree at
-git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
-(patches at
-http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/).  If you
-are tracking the linux-next tree using git, you should not use "git pull"
-to do so as that will try to merge the new linux-next release with the
-old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
-(see below).
+BUG: unable to handle kernel NULL pointer dereference at 00000000
+IP: [<c0369b85>] rt6_fill_node+0x175/0x3b0
+EIP is at rt6_fill_node+0x175/0x3b0
 
-You can see which trees have been included by looking in the Next/Trees
-file in the source.  There are also quilt-import.log and merge.log files
-in the Next directory.  Between each merge, the tree was built with
-a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
-final fixups, it is also built with powerpc allnoconfig,
-44x_defconfig and allyesconfig and i386, sparc and sparc64 defconfig.
+Cc: Stable <stable@kernel.org>
+Signed-off-by: Eugene Teo <eugeneteo@kernel.sg>
+---
+ include/net/addrconf.h  |    4 ++++
+ include/net/ip6_fib.h   |    2 +-
+ net/ipv6/addrconf.c     |    8 ++++++++
+ net/ipv6/fib6_rules.c   |    3 +--
+ net/ipv6/ip6_output.c   |    3 +--
+ net/ipv6/route.c        |    3 +--
+ net/ipv6/xfrm6_policy.c |    3 +--
+ net/sctp/ipv6.c         |    3 +--
+ 8 files changed, 18 insertions(+), 11 deletions(-)
 
-Below is a summary of the state of the merge.
+diff --git a/include/net/addrconf.h b/include/net/addrconf.h
+index 06b2814..c43ad8e 100644
+--- a/include/net/addrconf.h
++++ b/include/net/addrconf.h
+@@ -80,6 +80,10 @@ extern struct inet6_ifaddr
+*ipv6_get_ifaddr(struct net *net,
+ 						 struct net_device *dev,
+ 						 int strict);
+=20
++extern int			ipv6_get_saddr(struct dst_entry *dst,
++					       const struct in6_addr
+*daddr,
++					       unsigned int srcprefs,
++					       struct in6_addr *saddr);
+ extern int			ipv6_dev_get_saddr(struct net_device
+*dev,=20
+ 					       const struct in6_addr
+*daddr,
+ 					       unsigned int srcprefs,
+diff --git a/include/net/ip6_fib.h b/include/net/ip6_fib.h
+index 7c5c0f7..73f7f6b 100644
+--- a/include/net/ip6_fib.h
++++ b/include/net/ip6_fib.h
+@@ -118,7 +118,7 @@ struct rt6_info
+=20
+ static inline struct inet6_dev *ip6_dst_idev(struct dst_entry *dst)
+ {
+-	return ((struct rt6_info *)dst)->rt6i_idev;
++	return dst ? ((struct rt6_info *)dst)->rt6i_idev : NULL;
+ }
+=20
+ struct fib6_walker_t
+diff --git a/net/ipv6/addrconf.c b/net/ipv6/addrconf.c
+index a7842c5..55647bd 100644
+--- a/net/ipv6/addrconf.c
++++ b/net/ipv6/addrconf.c
+@@ -1239,6 +1239,14 @@ try_nextdev:
+ 	return 0;
+ }
+=20
++int ipv6_get_saddr(struct dst_entry *dst, const struct in6_addr *daddr,
++		    unsigned int srcprefs, struct in6_addr *saddr)
++{
++	struct inet6_dev *idev =3D ip6_dst_idev(dst);
++	return ipv6_dev_get_saddr(idev ? idev->dev : NULL, daddr,
+srcprefs, saddr);
++
++}
++EXPORT_SYMBOL(ipv6_get_saddr);
+ EXPORT_SYMBOL(ipv6_dev_get_saddr);
+=20
+ int ipv6_get_lladdr(struct net_device *dev, struct in6_addr *addr,
+diff --git a/net/ipv6/fib6_rules.c b/net/ipv6/fib6_rules.c
+index 8d05527..27c859c 100644
+--- a/net/ipv6/fib6_rules.c
++++ b/net/ipv6/fib6_rules.c
+@@ -93,8 +93,7 @@ static int fib6_rule_action(struct fib_rule *rule,
+struct flowi *flp,
+ 			if (flags & RT6_LOOKUP_F_SRCPREF_COA)
+ 				srcprefs |=3D IPV6_PREFER_SRC_COA;
+=20
+-			if
+(ipv6_dev_get_saddr(ip6_dst_idev(&rt->u.dst)->dev,
+-					       &flp->fl6_dst, srcprefs,
++			if (ipv6_get_saddr(&rt->u.dst, &flp->fl6_dst,
+srcprefs,
+ 					       &saddr))
+ 				goto again;
+ 			if (!ipv6_prefix_equal(&saddr, &r->src.addr,
+diff --git a/net/ipv6/ip6_output.c b/net/ipv6/ip6_output.c
+index a4402de..fc5f4f4 100644
+--- a/net/ipv6/ip6_output.c
++++ b/net/ipv6/ip6_output.c
+@@ -934,8 +934,7 @@ static int ip6_dst_lookup_tail(struct sock *sk,
+ 		goto out_err_release;
+=20
+ 	if (ipv6_addr_any(&fl->fl6_src)) {
+-		err =3D ipv6_dev_get_saddr(ip6_dst_idev(*dst)->dev,
+-					 &fl->fl6_dst,
++		err =3D ipv6_get_saddr(*dst, &fl->fl6_dst,
+ 					 sk ? inet6_sk(sk)->srcprefs :
+0,
+ 					 &fl->fl6_src);
+ 		if (err)
+diff --git a/net/ipv6/route.c b/net/ipv6/route.c
+index 5a3e87e..950d709 100644
+--- a/net/ipv6/route.c
++++ b/net/ipv6/route.c
+@@ -2188,8 +2188,7 @@ static int rt6_fill_node(struct sk_buff *skb,
+struct rt6_info *rt,
+ 			NLA_PUT_U32(skb, RTA_IIF, iif);
+ 	} else if (dst) {
+ 		struct in6_addr saddr_buf;
+-		if (ipv6_dev_get_saddr(ip6_dst_idev(&rt->u.dst)->dev,
+-				       dst, 0, &saddr_buf) =3D=3D 0)
++		if (ipv6_get_saddr(&rt->u.dst, dst, 0, &saddr_buf) =3D=3D 0)
+ 			NLA_PUT(skb, RTA_PREFSRC, 16, &saddr_buf);
+ 	}
+=20
+diff --git a/net/ipv6/xfrm6_policy.c b/net/ipv6/xfrm6_policy.c
+index 8f1e054..ad582bd 100644
+--- a/net/ipv6/xfrm6_policy.c
++++ b/net/ipv6/xfrm6_policy.c
+@@ -57,8 +57,7 @@ static int xfrm6_get_saddr(xfrm_address_t *saddr,
+xfrm_address_t *daddr)
+ 	if (IS_ERR(dst))
+ 		return -EHOSTUNREACH;
+=20
+-	ipv6_dev_get_saddr(ip6_dst_idev(dst)->dev,
+-			   (struct in6_addr *)&daddr->a6, 0,
++	ipv6_get_saddr(dst, (struct in6_addr *)&daddr->a6, 0,
+ 			   (struct in6_addr *)&saddr->a6);
+ 	dst_release(dst);
+ 	return 0;
+diff --git a/net/sctp/ipv6.c b/net/sctp/ipv6.c
+index 483a01d..0fa9411 100644
+--- a/net/sctp/ipv6.c
++++ b/net/sctp/ipv6.c
+@@ -319,8 +319,7 @@ static void sctp_v6_get_saddr(struct sctp_sock *sk,
+ 			  __func__, asoc, dst,
+NIP6(daddr->v6.sin6_addr));
+=20
+ 	if (!asoc) {
+-		ipv6_dev_get_saddr(dst ? ip6_dst_idev(dst)->dev : NULL,
+-				   &daddr->v6.sin6_addr,
++		ipv6_get_saddr(dst, &daddr->v6.sin6_addr,
+ 				   inet6_sk(&sk->inet.sk)->srcprefs,
+ 				   &saddr->v6.sin6_addr);
+ 		SCTP_DEBUG_PRINTK("saddr from ipv6_get_saddr: " NIP6_FMT
+"\n",
 
-We are up to 108 trees (counting Linus' and 14 trees of patches pending for
-Linus' tree), more are welcome (even if they are currently empty).
-Thanks to those who have contributed, and to those who haven't, please do.
+------_=_NextPart_001_01C8FC5B.733BF61F
+Content-Type: application/octet-stream;
+	name="bug#52312-idev.patch"
+Content-Transfer-Encoding: base64
+Content-Description: bug#52312-idev.patch
+Content-Disposition: attachment;
+	filename="bug#52312-idev.patch"
 
-Status of my local build tests will be at
-http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
-advice about cross compilers/configs that work, we are always open to add
-more builds.
+Rml4IE5VTEwgcG9pbnRlciBkZXJlZmVyZW5jZSBpbiBydDZfZmlsbF9ub2RlKCkuCgojIGlwIC1m
+IGluZXQ2IHJvdXRlIGdldCBmZWMwOjoxCgpCVUc6IHVuYWJsZSB0byBoYW5kbGUga2VybmVsIE5V
+TEwgcG9pbnRlciBkZXJlZmVyZW5jZSBhdCAwMDAwMDAwMApJUDogWzxjMDM2OWI4NT5dIHJ0Nl9m
+aWxsX25vZGUrMHgxNzUvMHgzYjAKRUlQIGlzIGF0IHJ0Nl9maWxsX25vZGUrMHgxNzUvMHgzYjAK
+CkNjOiBTdGFibGUgPHN0YWJsZUBrZXJuZWwub3JnPgpTaWduZWQtb2ZmLWJ5OiBFdWdlbmUgVGVv
+IDxldWdlbmV0ZW9Aa2VybmVsLnNnPgotLS0KIGluY2x1ZGUvbmV0L2FkZHJjb25mLmggIHwgICAg
+NCArKysrCiBpbmNsdWRlL25ldC9pcDZfZmliLmggICB8ICAgIDIgKy0KIG5ldC9pcHY2L2FkZHJj
+b25mLmMgICAgIHwgICAgOCArKysrKysrKwogbmV0L2lwdjYvZmliNl9ydWxlcy5jICAgfCAgICAz
+ICstLQogbmV0L2lwdjYvaXA2X291dHB1dC5jICAgfCAgICAzICstLQogbmV0L2lwdjYvcm91dGUu
+YyAgICAgICAgfCAgICAzICstLQogbmV0L2lwdjYveGZybTZfcG9saWN5LmMgfCAgICAzICstLQog
+bmV0L3NjdHAvaXB2Ni5jICAgICAgICAgfCAgICAzICstLQogOCBmaWxlcyBjaGFuZ2VkLCAxOCBp
+bnNlcnRpb25zKCspLCAxMSBkZWxldGlvbnMoLSkKCmRpZmYgLS1naXQgYS9pbmNsdWRlL25ldC9h
+ZGRyY29uZi5oIGIvaW5jbHVkZS9uZXQvYWRkcmNvbmYuaAppbmRleCAwNmIyODE0Li5jNDNhZDhl
+IDEwMDY0NAotLS0gYS9pbmNsdWRlL25ldC9hZGRyY29uZi5oCisrKyBiL2luY2x1ZGUvbmV0L2Fk
+ZHJjb25mLmgKQEAgLTgwLDYgKzgwLDEwIEBAIGV4dGVybiBzdHJ1Y3QgaW5ldDZfaWZhZGRyICAg
+ICAgKmlwdjZfZ2V0X2lmYWRkcihzdHJ1Y3QgbmV0ICpuZXQsCiAJCQkJCQkgc3RydWN0IG5ldF9k
+ZXZpY2UgKmRldiwKIAkJCQkJCSBpbnQgc3RyaWN0KTsKIAorZXh0ZXJuIGludAkJCWlwdjZfZ2V0
+X3NhZGRyKHN0cnVjdCBkc3RfZW50cnkgKmRzdCwKKwkJCQkJICAgICAgIGNvbnN0IHN0cnVjdCBp
+bjZfYWRkciAqZGFkZHIsCisJCQkJCSAgICAgICB1bnNpZ25lZCBpbnQgc3JjcHJlZnMsCisJCQkJ
+CSAgICAgICBzdHJ1Y3QgaW42X2FkZHIgKnNhZGRyKTsKIGV4dGVybiBpbnQJCQlpcHY2X2Rldl9n
+ZXRfc2FkZHIoc3RydWN0IG5ldF9kZXZpY2UgKmRldiwgCiAJCQkJCSAgICAgICBjb25zdCBzdHJ1
+Y3QgaW42X2FkZHIgKmRhZGRyLAogCQkJCQkgICAgICAgdW5zaWduZWQgaW50IHNyY3ByZWZzLApk
+aWZmIC0tZ2l0IGEvaW5jbHVkZS9uZXQvaXA2X2ZpYi5oIGIvaW5jbHVkZS9uZXQvaXA2X2ZpYi5o
+CmluZGV4IDdjNWMwZjcuLjczZjdmNmIgMTAwNjQ0Ci0tLSBhL2luY2x1ZGUvbmV0L2lwNl9maWIu
+aAorKysgYi9pbmNsdWRlL25ldC9pcDZfZmliLmgKQEAgLTExOCw3ICsxMTgsNyBAQCBzdHJ1Y3Qg
+cnQ2X2luZm8KIAogc3RhdGljIGlubGluZSBzdHJ1Y3QgaW5ldDZfZGV2ICppcDZfZHN0X2lkZXYo
+c3RydWN0IGRzdF9lbnRyeSAqZHN0KQogewotCXJldHVybiAoKHN0cnVjdCBydDZfaW5mbyAqKWRz
+dCktPnJ0NmlfaWRldjsKKwlyZXR1cm4gZHN0ID8gKChzdHJ1Y3QgcnQ2X2luZm8gKilkc3QpLT5y
+dDZpX2lkZXYgOiBOVUxMOwogfQogCiBzdHJ1Y3QgZmliNl93YWxrZXJfdApkaWZmIC0tZ2l0IGEv
+bmV0L2lwdjYvYWRkcmNvbmYuYyBiL25ldC9pcHY2L2FkZHJjb25mLmMKaW5kZXggYTc4NDJjNS4u
+NTU2NDdiZCAxMDA2NDQKLS0tIGEvbmV0L2lwdjYvYWRkcmNvbmYuYworKysgYi9uZXQvaXB2Ni9h
+ZGRyY29uZi5jCkBAIC0xMjM5LDYgKzEyMzksMTQgQEAgdHJ5X25leHRkZXY6CiAJcmV0dXJuIDA7
+CiB9CiAKK2ludCBpcHY2X2dldF9zYWRkcihzdHJ1Y3QgZHN0X2VudHJ5ICpkc3QsIGNvbnN0IHN0
+cnVjdCBpbjZfYWRkciAqZGFkZHIsCisJCSAgICB1bnNpZ25lZCBpbnQgc3JjcHJlZnMsIHN0cnVj
+dCBpbjZfYWRkciAqc2FkZHIpCit7CisJc3RydWN0IGluZXQ2X2RldiAqaWRldiA9IGlwNl9kc3Rf
+aWRldihkc3QpOworCXJldHVybiBpcHY2X2Rldl9nZXRfc2FkZHIoaWRldiA/IGlkZXYtPmRldiA6
+IE5VTEwsIGRhZGRyLCBzcmNwcmVmcywgc2FkZHIpOworCit9CitFWFBPUlRfU1lNQk9MKGlwdjZf
+Z2V0X3NhZGRyKTsKIEVYUE9SVF9TWU1CT0woaXB2Nl9kZXZfZ2V0X3NhZGRyKTsKIAogaW50IGlw
+djZfZ2V0X2xsYWRkcihzdHJ1Y3QgbmV0X2RldmljZSAqZGV2LCBzdHJ1Y3QgaW42X2FkZHIgKmFk
+ZHIsCmRpZmYgLS1naXQgYS9uZXQvaXB2Ni9maWI2X3J1bGVzLmMgYi9uZXQvaXB2Ni9maWI2X3J1
+bGVzLmMKaW5kZXggOGQwNTUyNy4uMjdjODU5YyAxMDA2NDQKLS0tIGEvbmV0L2lwdjYvZmliNl9y
+dWxlcy5jCisrKyBiL25ldC9pcHY2L2ZpYjZfcnVsZXMuYwpAQCAtOTMsOCArOTMsNyBAQCBzdGF0
+aWMgaW50IGZpYjZfcnVsZV9hY3Rpb24oc3RydWN0IGZpYl9ydWxlICpydWxlLCBzdHJ1Y3QgZmxv
+d2kgKmZscCwKIAkJCWlmIChmbGFncyAmIFJUNl9MT09LVVBfRl9TUkNQUkVGX0NPQSkKIAkJCQlz
+cmNwcmVmcyB8PSBJUFY2X1BSRUZFUl9TUkNfQ09BOwogCi0JCQlpZiAoaXB2Nl9kZXZfZ2V0X3Nh
+ZGRyKGlwNl9kc3RfaWRldigmcnQtPnUuZHN0KS0+ZGV2LAotCQkJCQkgICAgICAgJmZscC0+Zmw2
+X2RzdCwgc3JjcHJlZnMsCisJCQlpZiAoaXB2Nl9nZXRfc2FkZHIoJnJ0LT51LmRzdCwgJmZscC0+
+Zmw2X2RzdCwgc3JjcHJlZnMsCiAJCQkJCSAgICAgICAmc2FkZHIpKQogCQkJCWdvdG8gYWdhaW47
+CiAJCQlpZiAoIWlwdjZfcHJlZml4X2VxdWFsKCZzYWRkciwgJnItPnNyYy5hZGRyLApkaWZmIC0t
+Z2l0IGEvbmV0L2lwdjYvaXA2X291dHB1dC5jIGIvbmV0L2lwdjYvaXA2X291dHB1dC5jCmluZGV4
+IGE0NDAyZGUuLmZjNWY0ZjQgMTAwNjQ0Ci0tLSBhL25ldC9pcHY2L2lwNl9vdXRwdXQuYworKysg
+Yi9uZXQvaXB2Ni9pcDZfb3V0cHV0LmMKQEAgLTkzNCw4ICs5MzQsNyBAQCBzdGF0aWMgaW50IGlw
+Nl9kc3RfbG9va3VwX3RhaWwoc3RydWN0IHNvY2sgKnNrLAogCQlnb3RvIG91dF9lcnJfcmVsZWFz
+ZTsKIAogCWlmIChpcHY2X2FkZHJfYW55KCZmbC0+Zmw2X3NyYykpIHsKLQkJZXJyID0gaXB2Nl9k
+ZXZfZ2V0X3NhZGRyKGlwNl9kc3RfaWRldigqZHN0KS0+ZGV2LAotCQkJCQkgJmZsLT5mbDZfZHN0
+LAorCQllcnIgPSBpcHY2X2dldF9zYWRkcigqZHN0LCAmZmwtPmZsNl9kc3QsCiAJCQkJCSBzayA/
+IGluZXQ2X3NrKHNrKS0+c3JjcHJlZnMgOiAwLAogCQkJCQkgJmZsLT5mbDZfc3JjKTsKIAkJaWYg
+KGVycikKZGlmZiAtLWdpdCBhL25ldC9pcHY2L3JvdXRlLmMgYi9uZXQvaXB2Ni9yb3V0ZS5jCmlu
+ZGV4IDVhM2U4N2UuLjk1MGQ3MDkgMTAwNjQ0Ci0tLSBhL25ldC9pcHY2L3JvdXRlLmMKKysrIGIv
+bmV0L2lwdjYvcm91dGUuYwpAQCAtMjE4OCw4ICsyMTg4LDcgQEAgc3RhdGljIGludCBydDZfZmls
+bF9ub2RlKHN0cnVjdCBza19idWZmICpza2IsIHN0cnVjdCBydDZfaW5mbyAqcnQsCiAJCQlOTEFf
+UFVUX1UzMihza2IsIFJUQV9JSUYsIGlpZik7CiAJfSBlbHNlIGlmIChkc3QpIHsKIAkJc3RydWN0
+IGluNl9hZGRyIHNhZGRyX2J1ZjsKLQkJaWYgKGlwdjZfZGV2X2dldF9zYWRkcihpcDZfZHN0X2lk
+ZXYoJnJ0LT51LmRzdCktPmRldiwKLQkJCQkgICAgICAgZHN0LCAwLCAmc2FkZHJfYnVmKSA9PSAw
+KQorCQlpZiAoaXB2Nl9nZXRfc2FkZHIoJnJ0LT51LmRzdCwgZHN0LCAwLCAmc2FkZHJfYnVmKSA9
+PSAwKQogCQkJTkxBX1BVVChza2IsIFJUQV9QUkVGU1JDLCAxNiwgJnNhZGRyX2J1Zik7CiAJfQog
+CmRpZmYgLS1naXQgYS9uZXQvaXB2Ni94ZnJtNl9wb2xpY3kuYyBiL25ldC9pcHY2L3hmcm02X3Bv
+bGljeS5jCmluZGV4IDhmMWUwNTQuLmFkNTgyYmQgMTAwNjQ0Ci0tLSBhL25ldC9pcHY2L3hmcm02
+X3BvbGljeS5jCisrKyBiL25ldC9pcHY2L3hmcm02X3BvbGljeS5jCkBAIC01Nyw4ICs1Nyw3IEBA
+IHN0YXRpYyBpbnQgeGZybTZfZ2V0X3NhZGRyKHhmcm1fYWRkcmVzc190ICpzYWRkciwgeGZybV9h
+ZGRyZXNzX3QgKmRhZGRyKQogCWlmIChJU19FUlIoZHN0KSkKIAkJcmV0dXJuIC1FSE9TVFVOUkVB
+Q0g7CiAKLQlpcHY2X2Rldl9nZXRfc2FkZHIoaXA2X2RzdF9pZGV2KGRzdCktPmRldiwKLQkJCSAg
+IChzdHJ1Y3QgaW42X2FkZHIgKikmZGFkZHItPmE2LCAwLAorCWlwdjZfZ2V0X3NhZGRyKGRzdCwg
+KHN0cnVjdCBpbjZfYWRkciAqKSZkYWRkci0+YTYsIDAsCiAJCQkgICAoc3RydWN0IGluNl9hZGRy
+ICopJnNhZGRyLT5hNik7CiAJZHN0X3JlbGVhc2UoZHN0KTsKIAlyZXR1cm4gMDsKZGlmZiAtLWdp
+dCBhL25ldC9zY3RwL2lwdjYuYyBiL25ldC9zY3RwL2lwdjYuYwppbmRleCA0ODNhMDFkLi4wZmE5
+NDExIDEwMDY0NAotLS0gYS9uZXQvc2N0cC9pcHY2LmMKKysrIGIvbmV0L3NjdHAvaXB2Ni5jCkBA
+IC0zMTksOCArMzE5LDcgQEAgc3RhdGljIHZvaWQgc2N0cF92Nl9nZXRfc2FkZHIoc3RydWN0IHNj
+dHBfc29jayAqc2ssCiAJCQkgIF9fZnVuY19fLCBhc29jLCBkc3QsIE5JUDYoZGFkZHItPnY2LnNp
+bjZfYWRkcikpOwogCiAJaWYgKCFhc29jKSB7Ci0JCWlwdjZfZGV2X2dldF9zYWRkcihkc3QgPyBp
+cDZfZHN0X2lkZXYoZHN0KS0+ZGV2IDogTlVMTCwKLQkJCQkgICAmZGFkZHItPnY2LnNpbjZfYWRk
+ciwKKwkJaXB2Nl9nZXRfc2FkZHIoZHN0LCAmZGFkZHItPnY2LnNpbjZfYWRkciwKIAkJCQkgICBp
+bmV0Nl9zaygmc2stPmluZXQuc2spLT5zcmNwcmVmcywKIAkJCQkgICAmc2FkZHItPnY2LnNpbjZf
+YWRkcik7CiAJCVNDVFBfREVCVUdfUFJJTlRLKCJzYWRkciBmcm9tIGlwdjZfZ2V0X3NhZGRyOiAi
+IE5JUDZfRk1UICJcbiIsCg==
 
-Thanks to Jan Dittmer for adding the linux-next tree to his build tests
-at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
-Dunlap for doing many randconfig builds.
-
-There is a wiki covering stuff to do with linux-next at
-http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
-$ git checkout master
-$ git reset --hard stable
-Merging origin/master
-Merging powerpc-merge/merge
-Merging scsi-rc-fixes/master
-Merging net-current/master
-Merging sparc-current/master
-Merging sound-current/for-linus
-Merging arm-current/master
-CONFLICT (content): Merge conflict in drivers/watchdog/at91rm9200_wdt.c
-Merging pci-current/for-linus
-Merging wireless-current/master
-Merging kbuild-current/master
-Merging quilt/driver-core.current
-Merging quilt/usb.current
-CONFLICT (content): Merge conflict in drivers/usb/gadget/omap_udc.c
-Merging cpufreq-current/fixes
-Merging input-current/for-linus
-Merging md-current/for-2.6.26
-Merging dwmw2/master
-Merging quilt/driver-core
-Merging quilt/usb
-Merging tip-core/auto-core-next
-CONFLICT (content): Merge conflict in include/asm-generic/vmlinux.lds.h
-Merging cpus4096/auto-cpus4096-next
-CONFLICT (content): Merge conflict in net/sunrpc/svc.c
-Merging ftrace/auto-ftrace-next
-Merging genirq/auto-genirq-next
-Merging safe-poison-pointers/auto-safe-poison-pointers-next
-Merging sched/auto-sched-next
-Merging stackprotector/auto-stackprotector-next
-Merging timers/auto-timers-next
-Merging x86/auto-x86-next
-CONFLICT (content): Merge conflict in arch/x86/kernel/genapic_64.c
-CONFLICT (content): Merge conflict in drivers/pci/dmar.c
-Applying x86: export is_uv_system
-Merging pci/linux-next
-Merging quilt/device-mapper
-Merging hid/mm
-Merging quilt/i2c
-Merging quilt/jdelvare-hwmon
-Merging quilt/kernel-doc
-Merging avr32/avr32-arch
-Merging v4l-dvb/stable
-Merging s390/features
-Merging sh/master
-Merging jfs/next
-Merging kbuild/master
-Merging quilt/ide
-Applying ide: drivers/ide/floppy.c needs linux/scatterlist.h on some platfo=
-rms
-Merging libata/NEXT
-Merging nfs/linux-next
-Merging xfs/master
-Merging infiniband/for-next
-Merging acpi/test
-Applying acpi: missing status declaration in acer-wmi.c
-Merging blackfin/for-linus
-Merging nfsd/nfsd-next
-Merging ieee1394/for-next
-Merging ubi/linux-next
-Merging kvm/master
-Merging dlm/next
-Merging scsi/master
-Merging ia64/test
-Merging tests/master
-Merging ocfs2/linux-next
-Merging quilt/m68k
-Merging powerpc/powerpc-next
-Merging ext4/next
-Merging 4xx/next
-Merging async_tx/next
-Merging udf/for_next
-Merging net/master
-Merging sparc/master
-Merging galak/powerpc-next
-Merging mtd/master
-Merging wireless/master
-Merging crypto/master
-CONFLICT (content): Merge conflict in include/asm-x86/cpufeature.h
-Merging vfs/for-next
-CONFLICT (content): Merge conflict in fs/nfsd/export.c
-CONFLICT (content): Merge conflict in fs/xfs/linux-2.6/xfs_export.c
-CONFLICT (content): Merge conflict in fs/xfs/linux-2.6/xfs_iops.c
-Merging sound/for-next
-Merging arm/devel
-Merging cpufreq/next
-Merging v9fs/for-next
-Merging quilt/rr
-Merging cifs/master
-Merging mmc/next
-Merging gfs2/master
-Merging input/next
-Merging semaphore/semaphore
-Merging semaphore-removal/semaphore-removal
-Merging bkl-removal/bkl-removal
-Merging trivial/next
-CONFLICT (content): Merge conflict in Documentation/edac.txt
-CONFLICT (content): Merge conflict in include/linux/securebits.h
-Merging ubifs/linux-next
-CONFLICT (content): Merge conflict in fs/ubifs/super.c
-Created commit c4e1eb4: Revert "UBIFS: add NFS support"
-Merging lsm/for-next
-Merging block/for-next
-Merging embedded/master
-Merging firmware/master
-CONFLICT (content): Merge conflict in drivers/media/dvb/ttpci/Kconfig
-CONFLICT (content): Merge conflict in drivers/media/dvb/ttpci/Makefile
-Merging pcmcia/master
-Merging battery/master
-Merging leds/for-mm
-Merging backlight/for-mm
-Merging kgdb/kgdb-next
-Merging slab/for-next
-Merging m68knommu/for-next
-Merging uclinux/for-next
-Merging md/for-next
-Merging cris/for-next
-Merging kmemcheck/auto-kmemcheck-next
-Merging generic-ipi/auto-generic-ipi-next
-Merging mips/mips-for-linux-next
-Merging mfd/for-next
-Merging hdlc/hdlc-next
-Merging drm/drm-next
-Merging voltage/reg-for-linus
-Merging security-testing/next
-Merging lblnet/master
-Merging quilt/ttydev
-CONFLICT (content): Merge conflict in drivers/char/tty_io.c
-CONFLICT (content): Merge conflict in drivers/usb/class/cdc-acm.c
-Merging agp/agp-next
-Merging creds/next-creds
-CONFLICT (content): Merge conflict in fs/namespace.c
-CONFLICT (content): Merge conflict in fs/nfsd/nfs4recover.c
-CONFLICT (content): Merge conflict in fs/xfs/xfs_acl.c
-Applying Add cuImage.mpc866ads to the bootwrapper as a cuboot-8xx target
-Applying xen-balloon: fix up sysfs issues
-Applying ath9k: work around gcc ICE again
-
---Signature=_Tue__12_Aug_2008_18_53_45_+1000_t_Ko4Uc5wTb+VP2X
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkihT5kACgkQjjKRsyhoI8wa5wCeM9txaIQhTbKIpCSmE7BheoXq
-sroAnjDzO/MTXmxjaN55KPRu1hVKaqE1
-=aAsS
------END PGP SIGNATURE-----
-
---Signature=_Tue__12_Aug_2008_18_53_45_+1000_t_Ko4Uc5wTb+VP2X--
+------_=_NextPart_001_01C8FC5B.733BF61F--
