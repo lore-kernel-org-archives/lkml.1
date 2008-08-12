@@ -1,76 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753905AbYHLPNT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754030AbYHLPOw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753905AbYHLPNT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Aug 2008 11:13:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752191AbYHLPNL
+	id S1754030AbYHLPOw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Aug 2008 11:14:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752191AbYHLPOo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Aug 2008 11:13:11 -0400
-Received: from moutng.kundenserver.de ([212.227.126.187]:61386 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752104AbYHLPNK convert rfc822-to-8bit (ORCPT
+	Tue, 12 Aug 2008 11:14:44 -0400
+Received: from emulex.emulex.com ([138.239.112.1]:56550 "EHLO
+	emulex.emulex.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752033AbYHLPOn convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Aug 2008 11:13:10 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH]: Make ioctl.h compatible with userland
-Date: Tue, 12 Aug 2008 17:12:18 +0200
-User-Agent: KMail/1.9.9
-Cc: Michael Abbott <michael@araneidae.co.uk>, linux-kernel@vger.kernel.org
-References: <20080728063957.J72435@saturn.araneidae.co.uk> <20080730011035.a7d84e55.akpm@linux-foundation.org>
-In-Reply-To: <20080730011035.a7d84e55.akpm@linux-foundation.org>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Tue, 12 Aug 2008 11:14:43 -0400
+From: James.Smart@Emulex.Com
+content-class: urn:content-classes:message
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
+	charset="iso-8859-1"
 Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200808121712.19207.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1+Va5EiBOIf2s5fRHkubOYNZTWoTLWKw3WyzIz
- G92Wjg1aOpnpPwrfgzjQGT8iITRPXmImRDX5Bq/39+QPhEmzcO
- SqHqYvRI4sw4qCSPgNIxg==
+Subject: RE: RFC: I/O bandwidth controller
+X-MimeOLE: Produced By Microsoft Exchange V6.0.6619.12
+Date: Tue, 12 Aug 2008 11:03:24 -0400
+Message-ID: <D1D4C3FF75F9354393DB8314DF43DEF2E7F7ED@xbl3.emulex.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: RFC: I/O bandwidth controller
+Thread-Index: Acj8g14F+MzS3/B+SNmfCy2Vprl+TAAB5/qQ
+References: <1218117578.11703.81.camel@sebastian.kern.oss.ntt.co.jp><48A0A689.40908@gmail.com>	<loom.20080812T071504-212@post.gmane.org><20080812.201025.57762305.taka@valinux.co.jp><48A18854.9020000@gmail.com> <48A18B1F.6080000@gmail.com> <1218549276.4456.100.camel@sebastian.kern.oss.ntt.co.jp>
+To: <fernando@oss.ntt.co.jp>, <righi.andrea@gmail.com>
+Cc: <xen-devel@lists.xensource.com>, <containers@lists.linux-foundation.org>,
+       <linux-kernel@vger.kernel.org>,
+       <virtualization@lists.linux-foundation.org>, <taka@valinux.co.jp>,
+       <dm-devel@redhat.com>, <agk@sourceware.org>, <baramsori72@gmail.com>,
+       <dave@linux.vnet.ibm.com>, <ngupta@google.com>,
+       <balbir@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[PATCH] Make _IOC_TYPECHECK use BUILD_BUG_ON_ZERO
+Fernando Luis Vázquez Cao wrote:
+> > BTW as I said in a previous email, an interesting path to 
+> be explored
+> > IMHO could be to think in terms of IO time. So, look at the 
+> time an IO
+> > request is issued to the drive, look at the time the 
+> request is served,
+> > evaluate the difference and charge the consumed IO time to the
+> > appropriate cgroup. Then dispatch IO requests in function of the
+> > consumed IO time debts / credits, using for example a token-bucket
+> > strategy. And probably the best place to implement the IO time
+> > accounting is the elevator.
+> Please note that the seek time for a specific IO request is strongly
+> correlated with the IO requests that preceded it, which means that the
+> owner of that request is not the only one to blame if it 
+> takes too long
+> to process it. In other words, with the algorithm you propose 
+> we may end
+> up charging the wrong guy.
 
-This converts _IOC_TYPECHECK from a link error to a compile-time
-error using BUILD_BUG_ON_ZERO. This makes it possible to use
-the standard _IOC macros in user space even with non-optizing
-compilers.
+I assume all of these discussions are focused on simple storage - disks
+direct attached to a single server - and are not targeted at SANs with
+arrays, multi-initiator accesses, and fabric/network impacts. True ? 
+Such algorithms can be seriously off-base in these latter configurations.
 
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-
----
-On Wednesday 30 July 2008, Andrew Morton wrote:
-> We could also replace that open-coded assertion with the shiny new
-> BUILD_BUG_ON(), which would a) be cleaner and b) fix the problem which
-> you describe.  I expect that would be quite safe, but obviously doesn't
-> have all the testing which the above patch has, so shrug.
-
-There is one significant difference: using BUILD_BUG_ON_ZERO will
-break user space code that uses broken ioctl number definitions
-like _IOC('x', 1, sizeof(int)) that were fixed up in the kernel
-but not in external copies of the definitions.
-I'm undecided whether such breakage would be a good or a bad thing.
-
---- a/include/asm-generic/ioctl.h
-+++ b/include/asm-generic/ioctl.h
-@@ -69,11 +69,9 @@
- 	 ((size) << _IOC_SIZESHIFT))
- 
- /* provoke compile error for invalid uses of size argument */
--extern unsigned int __invalid_size_argument_for_IOC;
--#define _IOC_TYPECHECK(t) \
--	((sizeof(t) == sizeof(t[1]) && \
--	  sizeof(t) < (1 << _IOC_SIZEBITS)) ? \
--	  sizeof(t) : __invalid_size_argument_for_IOC)
-+#define _IOC_TYPECHECK(t) (sizeof(t) + \
-+	BUILD_BUG_ON_ZERO(sizeof(t) != sizeof(t[1]) || \
-+			  sizeof(t) >= (1 << _IOC_SIZEBITS)))
- 
- /* used to create numbers */
- #define _IO(type,nr)		_IOC(_IOC_NONE,(type),(nr),0)
+-- james s
