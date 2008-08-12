@@ -1,131 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756338AbYHLANL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757391AbYHLAOV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756338AbYHLANL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Aug 2008 20:13:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752898AbYHLAM4
+	id S1757391AbYHLAOV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Aug 2008 20:14:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752989AbYHLAOJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Aug 2008 20:12:56 -0400
-Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:54774 "EHLO
-	pd2mo1so-dmz.prod.shaw.ca" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751942AbYHLAM4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Aug 2008 20:12:56 -0400
-X-Cloudmark-SP-Filtered: true
-X-Cloudmark-SP-Result: v=1.0 c=0 a=CBW28Q0uAAAA:8 a=LVikF8etCVCo62mv9r4A:9 a=YPkgVxcWgUC2uuPFQLYA:7 a=bQUAODAzvudQstGyRLNzNeLC18YA:4
-Message-ID: <48A0D583.6030405@shaw.ca>
-Date: Mon, 11 Aug 2008 18:12:51 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
+	Mon, 11 Aug 2008 20:14:09 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:45597 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753051AbYHLAOI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Aug 2008 20:14:08 -0400
+Message-ID: <48A0D5B4.9050908@kernel.sg>
+Date: Tue, 12 Aug 2008 08:13:40 +0800
+From: Eugene Teo <eugeneteo@kernel.sg>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-CC: linux-ide <linux-ide@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: issues with sata hotplug?
-References: <fa.WE0LXb3yPPXbfrlh+DpB73jDV0Q@ifi.uio.no>
-In-Reply-To: <fa.WE0LXb3yPPXbfrlh+DpB73jDV0Q@ifi.uio.no>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: David Miller <davem@davemloft.net>
+CC: brian.haley@hp.com, adobriyan@gmail.com, john.gumb@tandberg.com,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       parag.warudkar@gmail.com
+Subject: Re: OOPS, ip -f inet6 route get fec0::1, linux-2.6.26, ip6_route_output,
+ rt6_fill_node+0x175
+References: <20080807203748.GA5196@martell.zuzino.mipt.ru>	<489BD227.6000209@hp.com>	<489FFAF8.3000909@redhat.com> <20080811.135003.105171324.davem@davemloft.net>
+In-Reply-To: <20080811.135003.105171324.davem@davemloft.net>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kumar Gala wrote:
-> I've got a system with a nvidia chipset running fedora 9 (2.6.25.11)
+David Miller wrote:
+> From: Eugene Teo <eteo@redhat.com>
+> Date: Mon, 11 Aug 2008 16:40:24 +0800
 > 
-> 00:05.0 IDE interface: nVidia Corporation MCP55 SATA Controller (rev a3) 
-> (prog-if 85 [Master SecO PriO])
->     Subsystem: Sun Microsystems Computer Corp. Unknown device 534d
->     Flags: bus master, 66MHz, fast devsel, latency 0, IRQ 21
->     I/O ports at 34c0 [size=8]
->     I/O ports at 34b4 [size=4]
->     I/O ports at 34b8 [size=8]
->     I/O ports at 34b0 [size=4]
->     I/O ports at 3490 [size=16]
->     Memory at d0006000 (32-bit, non-prefetchable) [size=4K]
->     Capabilities: [44] Power Management version 2
->     Capabilities: [b0] Message Signalled Interrupts: Mask- 64bit+ 
-> Queue=0/2 Enable-
->     Capabilities: [cc] HyperTransport: MSI Mapping Enable+ Fixed+
->     Kernel driver in use: sata_nv
->     Kernel modules: ata_generic, sata_nv, pata_acpi
+>> Brian Haley wrote:
+>>> Alexey Dobriyan wrote:
+>>>> On Thu, Aug 07, 2008 at 07:00:56PM +0200, John Gumb wrote:
+>>>>> Scenario: no ipv6 default route set.
+>>>>> # ip -f inet6 route get fec0::1
+>>>>>
+>>>>> BUG: unable to handle kernel NULL pointer dereference at 00000000
+>>>>> IP: [<c0369b85>] rt6_fill_node+0x175/0x3b0
+>>>>> EIP is at rt6_fill_node+0x175/0x3b0
+>>>> 0xffffffff80424dd3 is in rt6_fill_node (net/ipv6/route.c:2191).
+>>>> 2186                    } else
+>>>> 2187    #endif
+>>>> 2188                            NLA_PUT_U32(skb, RTA_IIF, iif);
+>>>> 2189            } else if (dst) {
+>>>> 2190                    struct in6_addr saddr_buf;
+>>>> 2191      ====>         if
+>>>> (ipv6_dev_get_saddr(ip6_dst_idev(&rt->u.dst)->dev,
+>>>>                            ^^^^^^^^^^^^^^^^^^^^^^^^
+>>>>                                    NULL
+>>>>
+>>>> 2192                                           dst, 0, &saddr_buf) == 0)
+>>>> 2193                            NLA_PUT(skb, RTA_PREFSRC, 16,
+>>>> &saddr_buf);
+>>>> 2194            }
+>>> The commit that changed this can't be reverted easily, but the patch
+>>> below works for me.
+>>>
+>>> Fix NULL de-reference in rt6_fill_node() when there's no IPv6 input
+>>> device present in the dst entry.
+>>>
+>>> Signed-off-by: Brian Haley <brian.haley@hp.com>
+>> Cc: Stable <stable@kernel.org>
 > 
-> 00:05.1 IDE interface: nVidia Corporation MCP55 SATA Controller (rev a3) 
-> (prog-if 85 [Master SecO PriO])
->     Subsystem: Sun Microsystems Computer Corp. Unknown device 534d
->     Flags: bus master, 66MHz, fast devsel, latency 0, IRQ 20
->     I/O ports at 34d8 [size=8]
->     I/O ports at 34cc [size=4]
->     I/O ports at 34d0 [size=8]
->     I/O ports at 34c8 [size=4]
->     I/O ports at 34a0 [size=16]
->     Memory at d0007000 (32-bit, non-prefetchable) [size=4K]
->     Capabilities: [44] Power Management version 2
->     Capabilities: [b0] Message Signalled Interrupts: Mask- 64bit+ 
-> Queue=0/2 Enable-
->     Capabilities: [cc] HyperTransport: MSI Mapping Enable+ Fixed+
->     Kernel driver in use: sata_nv
->     Kernel modules: ata_generic, sata_nv, pata_acpi
-> 
-> I've connected a SATA to eSATA adapter on an internal port and connected 
-> the eSATA port to a Thermaltake docking station:
-> 
-> http://www.thermaltakeusa.com/Product.aspx?C=1346&ID=1731
-> 
-> When I "eject" the drive I see no dmesg output related to hotplug.  I 
-> also don't see anything when I plug a drive in.
-> 
-> scsi0 : sata_nv
-> scsi1 : sata_nv
-> ata1: SATA max UDMA/133 cmd 0x34c0 ctl 0x34b4 bmdma 0x3490 irq 21
-> ata2: SATA max UDMA/133 cmd 0x34b8 ctl 0x34b0 bmdma 0x3498 irq 21
-> ata1: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
-> ata1.00: ATA-7: HITACHI HDS7225SCSUN250G 0721BA6TRD, V5DOA7BA, max UDMA/133
-> ata1.00: 488390625 sectors, multi 16: LBA48 NCQ (depth 0/32)
-> ata1.00: configured for UDMA/133
-> ata2: SATA link down (SStatus 0 SControl 300)
-> scsi 0:0:0:0: Direct-Access     ATA      HITACHI HDS7225S V5DO PQ: 0 
-> ANSI: 5
-> sd 0:0:0:0: [sda] 488390625 512-byte hardware sectors (250056 MB)
-> sd 0:0:0:0: [sda] Write Protect is off
-> sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
-> sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't 
-> support DPO or FUA
-> sd 0:0:0:0: [sda] 488390625 512-byte hardware sectors (250056 MB)
-> sd 0:0:0:0: [sda] Write Protect is off
-> sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
-> sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't 
-> support DPO or FUA
->  sda: sda1 sda2 sda3
-> sd 0:0:0:0: [sda] Attached SCSI disk
-> ACPI: PCI Interrupt 0000:00:05.1[B] -> Link [LSI1] -> GSI 20 (level, 
-> low) -> IRQ 20
-> PCI: Setting latency timer of device 0000:00:05.1 to 64
-> scsi2 : sata_nv
-> scsi3 : sata_nv
-> ata3: SATA max UDMA/133 cmd 0x34d8 ctl 0x34cc bmdma 0x34a0 irq 20
-> ata4: SATA max UDMA/133 cmd 0x34d0 ctl 0x34c8 bmdma 0x34a8 irq 20
-> ata3: SATA link down (SStatus 0 SControl 300)
-> ata4: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
-> ata4.00: ATA-7: ST3808110AS, 3.AAE, max UDMA/133
-> ata4.00: 156301488 sectors, multi 16: LBA48 NCQ (depth 0/32)
-> ata4.00: configured for UDMA/133
-> scsi 3:0:0:0: Direct-Access     ATA      ST3808110AS      3.AA PQ: 0 
-> ANSI: 5
-> sd 3:0:0:0: [sdb] 156301488 512-byte hardware sectors (80026 MB)
-> sd 3:0:0:0: [sdb] Write Protect is off
-> sd 3:0:0:0: [sdb] Mode Sense: 00 3a 00 00
-> sd 3:0:0:0: [sdb] Write cache: enabled, read cache: enabled, doesn't 
-> support DPO or FUA
-> sd 3:0:0:0: [sdb] 156301488 512-byte hardware sectors (80026 MB)
-> sd 3:0:0:0: [sdb] Write Protect is off
-> sd 3:0:0:0: [sdb] Mode Sense: 00 3a 00 00
-> sd 3:0:0:0: [sdb] Write cache: enabled, read cache: enabled, doesn't 
-> support DPO or FUA
->  sdb: sdb1 sdb2 sdb3 sdb4
-> sd 3:0:0:0: [sdb] Attached SCSI disk
-> kjournald starting.  Commit interval 5 seconds
-> 
-> Is there something I'm doing wrong w/regards to SATA hotplug support?
+> We've already determined from one tester that the behavior is
+> changing with Brian's patch.  Furthermore I haven't applied it
+> to mainline so it isn't anywhere near being submittable for
+> -stable.
 
-No, it "should" work.. Is that drive working at all, i.e. does it detect 
-it if you boot up with it plugged in? Does the BIOS detect it?
+With the patch I posted, this is the behaviour I get:
+
+$ ip -f inet6 route get fec0::1
+unreachable fec0::1 dev lo  table unspec  proto none  src
+fe80::214:4fff:fe0f:7332  metric -1  error -101 hoplimit 255
+
+John emailed me that he will be testing this patch. I have not tested
+Brian's patch.
+
+> I submit all relevant networking bug fixes to -stable when they are
+> ready and in a proper state to be submitted, you don't have to do it
+> for me.  Sending me a gentle reminder or nudge, on the other hand, is
+> fine.
+
+Thanks for letting me know. I wasn't familiar, but I welcome the hint.
+
+Thanks,
+Eugene
