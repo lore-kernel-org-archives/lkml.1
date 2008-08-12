@@ -1,360 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754562AbYHLW57@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754661AbYHLW6b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754562AbYHLW57 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Aug 2008 18:57:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752262AbYHLW5t
+	id S1754661AbYHLW6b (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Aug 2008 18:58:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754506AbYHLW55
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Aug 2008 18:57:49 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:52541 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754189AbYHLW5s (ORCPT
+	Tue, 12 Aug 2008 18:57:57 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:51889 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752424AbYHLW54 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Aug 2008 18:57:48 -0400
-Date: Tue, 12 Aug 2008 15:56:10 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Matt Helsley <matthltc@us.ibm.com>
-Cc: rjw@sisk.pl, menage@google.com, lizf@cn.fujitsu.com,
-       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       linux-pm@lists.linux-foundation.org, clg@fr.ibm.com, serue@us.ibm.com
-Subject: Re: [PATCH 3/5] Container Freezer: Implement freezer cgroup
- subsystem
-Message-Id: <20080812155610.f4d40bb1.akpm@linux-foundation.org>
-In-Reply-To: <20080811235325.121356317@us.ibm.com>
-References: <20080811235323.872291138@us.ibm.com>
-	<20080811235325.121356317@us.ibm.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 12 Aug 2008 18:57:56 -0400
+Message-ID: <48A2155B.1020904@zytor.com>
+Date: Tue, 12 Aug 2008 15:57:31 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Joerg Roedel <joro@8bytes.org>
+CC: mingo@redhat.com, tglx@linutronix.de, linux-kernel@vger.kernel.org
+Subject: Re: Setup code crashes my old 486 box
+References: <20080812224703.GV31439@8bytes.org>
+In-Reply-To: <20080812224703.GV31439@8bytes.org>
+Content-Type: multipart/mixed;
+ boundary="------------040605050804090606040102"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 11 Aug 2008 16:53:26 -0700
-Matt Helsley <matthltc@us.ibm.com> wrote:
+This is a multi-part message in MIME format.
+--------------040605050804090606040102
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-> This patch implements a new freezer subsystem in the control groups framework.
-> It provides a way to stop and resume execution of all tasks in a cgroup by
-> writing in the cgroup filesystem.
+Joerg Roedel wrote:
+> Hello,
 > 
-> The freezer subsystem in the container filesystem defines a file named
-> freezer.state. Writing "FROZEN" to the state file will freeze all tasks in the
-> cgroup. Subsequently writing "RUNNING" will unfreeze the tasks in the cgroup.
-> Reading will return the current state.
+> yesterday I tried to reactivate my old 486 box and wanted to install a
+> current Linux with latest kernel on it. But it turned out that the
+> latest kernel does not boot because the machine crashes early in the
+> setup code.
+> After some debugging it turned out that the problem is the query_ist()
+> function. If this interrupt with that function is called the machine
+> simply locks up. It looks like a BIOS bug. Looking for a workaround for
+> this problem I wrote the attached patch. It checks for the CPUID
+> instruction and if it is not implemented it does not call the speedstep
+> BIOS function. As far as I know speedstep should be available since some
+> Pentium earliest.
+> Is this an acceptable workaround or is there a better one for this?
 > 
-> * Examples of usage :
+> Regards,
 > 
->    # mkdir /containers/freezer
->    # mount -t cgroup -ofreezer freezer  /containers
->    # mkdir /containers/0
->    # echo $some_pid > /containers/0/tasks
-> 
-> to get status of the freezer subsystem :
-> 
->    # cat /containers/0/freezer.state
->    RUNNING
-> 
-> to freeze all tasks in the container :
-> 
->    # echo FROZEN > /containers/0/freezer.state
->    # cat /containers/0/freezer.state
->    FREEZING
->    # cat /containers/0/freezer.state
->    FROZEN
-> 
-> to unfreeze all tasks in the container :
-> 
->    # echo RUNNING > /containers/0/freezer.state
->    # cat /containers/0/freezer.state
->    RUNNING
-> 
-> This is the basic mechanism which should do the right thing for user space task
-> in a simple scenario.
-> 
-> It's important to note that freezing can be incomplete. In that case we return
-> EBUSY. This means that some tasks in the cgroup are busy doing something that
-> prevents us from completely freezing the cgroup at this time. After EBUSY,
-> the cgroup will remain partially frozen -- reflected by freezer.state reporting
-> "FREEZING" when read. The state will remain "FREEZING" until one of these
-> things happens:
-> 
-> 	1) Userspace cancels the freezing operation by writing "RUNNING" to
-> 		the freezer.state file
-> 	2) Userspace retries the freezing operation by writing "FROZEN" to
-> 		the freezer.state file (writing "FREEZING" is not legal
-> 		and returns EIO)
-> 	3) The tasks that blocked the cgroup from entering the "FROZEN"
-> 		state disappear from the cgroup's set of tasks.
-> 
-> ...
+> Joerg
 
-Is a Documentation/ update planned?  Documentation/cgroups.txt might be
-the place, or not.
+Right in concept, but I dislike the implementation (duplication of the 
+CPU detect code we already have).  Could you try this patch and see if 
+it works for you?
 
-> +
-> +#ifdef CONFIG_CGROUP_FREEZER
-> +SUBSYS(freezer)
-> +#endif
-> +
-> +/* */
-> Index: linux-2.6.27-rc1-mm1/include/linux/freezer.h
-> ===================================================================
-> --- linux-2.6.27-rc1-mm1.orig/include/linux/freezer.h
-> +++ linux-2.6.27-rc1-mm1/include/linux/freezer.h
-> @@ -47,22 +47,30 @@ static inline bool should_send_signal(st
->  /*
->   * Wake up a frozen process
->   *
-> - * task_lock() is taken to prevent the race with refrigerator() which may
-> + * task_lock() is needed to prevent the race with refrigerator() which may
->   * occur if the freezing of tasks fails.  Namely, without the lock, if the
->   * freezing of tasks failed, thaw_tasks() might have run before a task in
->   * refrigerator() could call frozen_process(), in which case the task would be
->   * frozen and no one would thaw it.
->   */
-> -static inline int thaw_process(struct task_struct *p)
-> +static inline int __thaw_process(struct task_struct *p)
->  {
-> -	task_lock(p);
->  	if (frozen(p)) {
->  		p->flags &= ~PF_FROZEN;
-> +		return 1;
-> +	}
-> +	clear_freeze_flag(p);
-> +	return 0;
-> +}
-> +
-> +static inline int thaw_process(struct task_struct *p)
-> +{
-> +	task_lock(p);
-> +	if (__thaw_process(p) == 1) {
->  		task_unlock(p);
->  		wake_up_process(p);
->  		return 1;
->  	}
-> -	clear_freeze_flag(p);
->  	task_unlock(p);
->  	return 0;
->  }
+	-hpa
 
-I wonder why these are inlined.
+--------------040605050804090606040102
+Content-Type: text/plain;
+ name="diff"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="diff"
 
-> @@ -83,6 +91,12 @@ static inline int try_to_freeze(void)
->  extern bool freeze_task(struct task_struct *p, bool sig_only);
->  extern void cancel_freezing(struct task_struct *p);
->  
-> +#ifdef CONFIG_CGROUP_FREEZER
-> +extern int cgroup_frozen(struct task_struct *task);
-> +#else /* !CONFIG_CGROUP_FREEZER */
-> +static inline int cgroup_frozen(struct task_struct *task) { return 0; }
-> +#endif /* !CONFIG_CGROUP_FREEZER */
-> +
->  /*
->   * The PF_FREEZER_SKIP flag should be set by a vfork parent right before it
->   * calls wait_for_completion(&vfork) and reset right after it returns from this
-> Index: linux-2.6.27-rc1-mm1/init/Kconfig
-> ===================================================================
-> --- linux-2.6.27-rc1-mm1.orig/init/Kconfig
-> +++ linux-2.6.27-rc1-mm1/init/Kconfig
-> @@ -299,6 +299,13 @@ config CGROUP_NS
->            for instance virtual servers and checkpoint/restart
->            jobs.
->  
-> +config CGROUP_FREEZER
-> +        bool "control group freezer subsystem"
-> +        depends on CGROUPS
+diff --git a/arch/x86/boot/boot.h b/arch/x86/boot/boot.h
+index a34b998..9ce8d29 100644
+--- a/arch/x86/boot/boot.h
++++ b/arch/x86/boot/boot.h
+@@ -242,6 +242,12 @@ int cmdline_find_option(const char *option, char *buffer, int bufsize);
+ int cmdline_find_option_bool(const char *option);
+ 
+ /* cpu.c, cpucheck.c */
++struct cpu_features {
++	int level;		/* Family, or 64 for x86-64 */
++	int model;
++	u32 flags[NCAPINTS];
++};
++extern struct cpu_features cpu;
+ int check_cpu(int *cpu_level_ptr, int *req_level_ptr, u32 **err_flags_ptr);
+ int validate_cpu(void);
+ 
+diff --git a/arch/x86/boot/cpucheck.c b/arch/x86/boot/cpucheck.c
+index 7804389..c1ce030 100644
+--- a/arch/x86/boot/cpucheck.c
++++ b/arch/x86/boot/cpucheck.c
+@@ -30,13 +30,7 @@
+ #include <asm/required-features.h>
+ #include <asm/msr-index.h>
+ 
+-struct cpu_features {
+-	int level;		/* Family, or 64 for x86-64 */
+-	int model;
+-	u32 flags[NCAPINTS];
+-};
+-
+-static struct cpu_features cpu;
++struct cpu_features cpu;
+ static u32 cpu_vendor[3];
+ static u32 err_flags[NCAPINTS];
+ 
+diff --git a/arch/x86/boot/main.c b/arch/x86/boot/main.c
+index 2296164..9b04773 100644
+--- a/arch/x86/boot/main.c
++++ b/arch/x86/boot/main.c
+@@ -73,6 +73,10 @@ static void keyboard_set_repeat(void)
+  */
+ static void query_ist(void)
+ {
++	/* Some 486 BIOSes apparently crash on this call */
++	if (cpu.level < 5)
++		return;
++
+ 	asm("int $0x15"
+ 	    : "=a" (boot_params.ist_info.signature),
+ 	      "=b" (boot_params.ist_info.command),
 
-Should it depend on FREEZER also?
-
-oh,
-
-> --- linux-2.6.27-rc1-mm1.orig/kernel/power/Kconfig
-> +++ linux-2.6.27-rc1-mm1/kernel/power/Kconfig
-> @@ -86,7 +86,7 @@ config PM_SLEEP
->  	default y
->  
->  config FREEZER
-> -	def_bool PM_SLEEP
-> +	def_bool PM_SLEEP || CGROUP_FREEZER
->  
-
-we did it that way.  Spose that makes sense.
-
-> +        help
-> +          Provides a way to freeze and unfreeze all tasks in a
-> +	  cgroup.
-> +
->  config CGROUP_DEVICE
->  	bool "Device controller for cgroups"
->  	depends on CGROUPS && EXPERIMENTAL
-> Index: linux-2.6.27-rc1-mm1/kernel/Makefile
-> ===================================================================
-> --- linux-2.6.27-rc1-mm1.orig/kernel/Makefile
-> +++ linux-2.6.27-rc1-mm1/kernel/Makefile
-> @@ -54,6 +54,7 @@ obj-$(CONFIG_KEXEC) += kexec.o
->  obj-$(CONFIG_COMPAT) += compat.o
->  obj-$(CONFIG_CGROUPS) += cgroup.o
->  obj-$(CONFIG_CGROUP_DEBUG) += cgroup_debug.o
-> +obj-$(CONFIG_CGROUP_FREEZER) += cgroup_freezer.o
->  obj-$(CONFIG_CPUSETS) += cpuset.o
->  obj-$(CONFIG_CGROUP_NS) += ns_cgroup.o
->  obj-$(CONFIG_UTS_NS) += utsname.o
-> Index: linux-2.6.27-rc1-mm1/kernel/cgroup_freezer.c
-> ===================================================================
-> --- /dev/null
-> +++ linux-2.6.27-rc1-mm1/kernel/cgroup_freezer.c
-> @@ -0,0 +1,366 @@
-> +/*
-> + * cgroup_freezer.c -  control group freezer subsystem
-> + *
-> + * Copyright IBM Corporation, 2007
-> + *
-> + * Author : Cedric Le Goater <clg@fr.ibm.com>
-> + *
-> + * This program is free software; you can redistribute it and/or modify it
-> + * under the terms of version 2.1 of the GNU Lesser General Public License
-> + * as published by the Free Software Foundation.
-> + *
-> + * This program is distributed in the hope that it would be useful, but
-> + * WITHOUT ANY WARRANTY; without even the implied warranty of
-> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-> + */
-> +
-> +#include <linux/module.h>
-> +#include <linux/cgroup.h>
-> +#include <linux/fs.h>
-> +#include <linux/uaccess.h>
-> +#include <linux/freezer.h>
-> +#include <linux/seq_file.h>
-> +
-> +enum freezer_state {
-> +	STATE_RUNNING = 0,
-
-That's a pretty vanilla-sounding identifier.  Let's hope this file
-never ends up including drivers/net/sfc/net_driver.h by some means. 
-That's rather unlikely, but someone could easily choose to implement a
-new STATE_RUNNING somewhere else.
-
-> +	STATE_FREEZING,
-> +	STATE_FROZEN,
-> +};
-> +
-> +struct freezer {
-> +	struct cgroup_subsys_state css;
-> +	enum freezer_state state;
-> +	spinlock_t lock; /* protects _writes_ to state */
-> +};
-> +
-> +static inline struct freezer *cgroup_freezer(
-> +		struct cgroup *cgroup)
-> +{
-> +	return container_of(
-> +		cgroup_subsys_state(cgroup, freezer_subsys_id),
-> +		struct freezer, css);
-> +}
-> +
-> +static inline struct freezer *task_freezer(struct task_struct *task)
-> +{
-> +	return container_of(task_subsys_state(task, freezer_subsys_id),
-> +			    struct freezer, css);
-> +}
-> +
-> +int cgroup_frozen(struct task_struct *task)
-> +{
-> +	struct freezer *freezer;
-> +	enum freezer_state state;
-> +
-> +	task_lock(task);
-> +	freezer = task_freezer(task);
-> +	state = freezer->state;
-> +	task_unlock(task);
-> +
-> +	return state == STATE_FROZEN;
-> +}
-> +
-> +/*
-> + * Buffer size for freezer state is limited by cgroups write_string()
-> + * interface. See cgroups code for the current size.
-> + */
-
-Is this comment in the correct place?
-
-> +static const char *freezer_state_strs[] = {
-> +	"RUNNING",
-> +	"FREEZING",
-> +	"FROZEN",
-> +};
-> +
->
-> ...
->
-> +
-> +/*
-> + * caller must hold freezer->lock
-> + */
-> +static void check_if_frozen(struct cgroup *cgroup,
-> +			     struct freezer *freezer)
-
-check_if_frozen() is an unfortunate name, I suspect.  Normally one
-would expect a check_foo() to return a bool and have no side-effects.
-
-Perhaps some comments explaining what it does would help.
-
-> +{
-> +	struct cgroup_iter it;
-> +	struct task_struct *task;
-> +	unsigned int nfrozen = 0, ntotal = 0;
-> +
-> +	cgroup_iter_start(cgroup, &it);
-> +	while ((task = cgroup_iter_next(cgroup, &it))) {
-> +		ntotal++;
-> +		/*
-> +		 * Task is frozen or will freeze immediately when next it gets
-> +		 * woken
-> +		 */
-> +		if (frozen(task) ||
-> +		    (task_is_stopped_or_traced(task) && freezing(task)))
-> +			nfrozen++;
-> +	}
-> +
-> +	/*
-> +	 * Transition to FROZEN when no new tasks can be added ensures
-> +	 * that we never exist in the FROZEN state while there are unfrozen
-> +	 * tasks.
-> +	 */
-> +	if (nfrozen == ntotal)
-> +		freezer->state = STATE_FROZEN;
-> +	cgroup_iter_end(cgroup, &it);
-> +}
-> +
->
-> ...
->
-> +static int freezer_write(struct cgroup *cgroup,
-> +			 struct cftype *cft,
-> +			 const char *buffer)
-> +{
-> +	int retval;
-> +	enum freezer_state goal_state;
-> +
-> +	if (strcmp(buffer, freezer_state_strs[STATE_RUNNING]) == 0)
-
-Did some higher-level code take care of removing the trailing \n?
-
-> +		goal_state = STATE_RUNNING;
-> +	else if (strcmp(buffer, freezer_state_strs[STATE_FROZEN]) == 0)
-> +		goal_state = STATE_FROZEN;
-> +	else
-> +		return -EIO;
-> +
-> +	if (!cgroup_lock_live_group(cgroup))
-> +		return -ENODEV;
-> +	retval = freezer_change_state(cgroup, goal_state);
-> +	cgroup_unlock();
-> +	return retval;
-> +}
-> +
->
-> ...
->
-
+--------------040605050804090606040102--
