@@ -1,138 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753849AbYHLNH7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754038AbYHLNKV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753849AbYHLNH7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Aug 2008 09:07:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752143AbYHLNHv
+	id S1754038AbYHLNKV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Aug 2008 09:10:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752524AbYHLNKJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Aug 2008 09:07:51 -0400
-Received: from as3.cineca.com ([130.186.84.211]:60484 "EHLO as3.cineca.com"
+	Tue, 12 Aug 2008 09:10:09 -0400
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:52306 "EHLO smtp5.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751213AbYHLNHv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Aug 2008 09:07:51 -0400
-Message-ID: <48A18B1F.6080000@gmail.com>
-From: Andrea Righi <righi.andrea@gmail.com>
-Reply-To: righi.andrea@gmail.com
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.12) Gecko/20070604 Thunderbird/1.5.0.12 Mnenhy/0.7.5.666
+	id S1752726AbYHLNKI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Aug 2008 09:10:08 -0400
+Date: Tue, 12 Aug 2008 16:08:23 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Rene Herman <rene.herman@keyaccess.nl>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, fritz@isdn4linux.de, kkeil@suse.de,
+       isdn4linux@listserv.isdn4linux.de, linux-kernel@vger.kernel.org,
+       mingo@elte.hu
+Subject: Re: [PATCH] ISDN: make ICN not auto-grab port 0x320
+Message-ID: <20080812130823.GD13910@cs181140183.pp.htv.fi>
+References: <489DD669.2090207@keyaccess.nl> <20080809215020.1bb602e7@lxorguk.ukuu.org.uk> <20080811164814.db41c20b.akpm@linux-foundation.org> <48A11952.6090203@keyaccess.nl> <20080811223043.9ad55c51.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Hirokazu Takahashi <taka@valinux.co.jp>
-Cc: baramsori72@gmail.com, balbir@linux.vnet.ibm.com,
-       xen-devel@lists.xensource.com, Satoshi UCHIDA <s-uchida@ap.jp.nec.com>,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       virtualization@lists.linux-foundation.org, dm-devel@redhat.com,
-       agk@sourceware.org, dave@linux.vnet.ibm.com, ngupta@google.com
-Subject: Re: RFC: I/O bandwidth controller
-References: <1218117578.11703.81.camel@sebastian.kern.oss.ntt.co.jp>	<48A0A689.40908@gmail.com>	<loom.20080812T071504-212@post.gmane.org> <20080812.201025.57762305.taka@valinux.co.jp> <48A18854.9020000@gmail.com>
-In-Reply-To: <48A18854.9020000@gmail.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 8bit
-Date: Tue, 12 Aug 2008 15:07:43 +0200 (MEST)
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20080811223043.9ad55c51.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrea Righi wrote:
-> Hirokazu Takahashi wrote:
->>>>>>> 3. & 4. & 5. - I/O bandwidth shaping & General design aspects
->>>>>>>
->>>>>>> The implementation of an I/O scheduling algorithm is to a certain extent
->>>>>>> influenced by what we are trying to achieve in terms of I/O bandwidth
->>>>>>> shaping, but, as discussed below, the required accuracy can determine
->>>>>>> the layer where the I/O controller has to reside. Off the top of my
->>>>>>> head, there are three basic operations we may want perform:
->>>>>>>   - I/O nice prioritization: ionice-like approach.
->>>>>>>   - Proportional bandwidth scheduling: each process/group of processes
->>>>>>> has a weight that determines the share of bandwidth they receive.
->>>>>>>   - I/O limiting: set an upper limit to the bandwidth a group of tasks
->>>>>>> can use.
->>>>>> Use a deadline-based IO scheduling could be an interesting path to be
->>>>>> explored as well, IMHO, to try to guarantee per-cgroup minimum bandwidth
->>>>>> requirements.
->>>>> Please note that the only thing we can do is to guarantee minimum
->>>>> bandwidth requirement when there is contention for an IO resource, which
->>>>> is precisely what a proportional bandwidth scheduler does. An I missing
->>>>> something?
->>>> Correct. Proportional bandwidth automatically allows to guarantee min
->>>> requirements (instead of IO limiting approach, that needs additional
->>>> mechanisms to achive this).
->>>>
->>>> In any case there's no guarantee for a cgroup/application to sustain
->>>> i.e. 10MB/s on a certain device, but this is a hard problem anyway, and
->>>> the best we can do is to try to satisfy "soft" constraints.
->>> I think guaranteeing the minimum I/O bandwidth is very important. In the 
->>> business site, especially in streaming service system, administrator requires 
->>> the functionality to satisfy QoS or performance of their service. 
->>> Of course, IO throttling is important, but, personally, I think guaranteeing 
->>> the minimum bandwidth is more important than limitation of maximum bandwidth 
->>> to satisfy the requirement in real business sites.
->>> And I know Andrea’s io-throttle patch supports the latter case well and it is 
->>> very stable. 
->>> But, the first case(guarantee the minimum bandwidth) is not supported in any 
->>> patches.
->>> Is there any plans to support it? and Is there any problems in implementing it?
->>> I think if IO controller can support guaranteeing the minimum bandwidth and 
->>> work-conserving mode simultaneously, it more easily satisfies the requirement 
->>> of the business sites.
->>> Additionally, I didn’t understand “Proportional bandwidth automatically allows 
->>> to guarantee min
->>> requirements” and “soft constraints”.
->>> Can you give me a advice about this ? 
->>> Thanks in advance.
->>>
->>> Dong-Jae Kang
->> I think this is what dm-ioband does.
->>
->> Let's say you make two groups share the same disk, and give them
->> 70% of the bandwidth the disk physically has and 30% respectively.
->> This means the former group is almost guaranteed to be able to use
->> 70% of the bandwidth even when the latter one is issuing quite
->> a lot of I/O requests.
->>
->> Yes, I know there exist head seek lags with traditional magnetic disks,
->> so it's important to improve the algorithm to reduce this overhead.
->>
->> And I think it is also possible to add a new scheduling policy to
->> guarantee the minimum bandwidth. It might be cool if some group can
->> use guranteed bandwidths and the other share the rest on proportional
->> bandwidth policy.
->>
->> Thanks,
->> Hirokazu Takahashi.
+On Mon, Aug 11, 2008 at 10:30:43PM -0700, Andrew Morton wrote:
+> On Tue, 12 Aug 2008 07:02:10 +0200 Rene Herman <rene.herman@keyaccess.nl> wrote:
 > 
-> With IO limiting approach minimum requirements are supposed to be
-> guaranteed if the user configures a generic block device so that the sum
-> of the limits doesn't exceed the total IO bandwidth of that device. But,
-> in principle, there's nothing in "throttling" that guarantees "fairness"
-> among different cgroups doing IO on the same block devices, that means
-> there's nothing to guarantee minimum requirements (and this is the
-> reason because I liked the Satoshi's CFQ-cgroup approach together with
-> io-throttle).
+> > On 12-08-08 01:48, Andrew Morton wrote:
+> > 
+> > > otoh it's a bit sad to break allyesconfig kernels - there is
+> > > regression-testing value in being able to run such kernels.
+> > > 
+> > > I wonder if we can add a new boot option `allyesconfig-test' or
+> > > something like that, and then, within the offending drivers, test that
+> > > flag and take suitable avoiding action.
+> > > 
+> > > Or we could do it at compile-time - define
+> > > CONFIG_ALLYESCONFIG_TESTING in some fashion.
+> > 
+> > Yes, latter I'd feel with the thing most against it that there aren't 
+> > actually many that need it.
 > 
-> A more complicated issue is how to evaluate the total IO bandwidth of a
-> generic device. We can use some kind of averaging/prediction, but
-> basically it would be inaccurate due to the mechanic of disks (head
-> seeks, but also caching, buffering mechanisms implemented directly into
-> the device, etc.). It's a hard problem. And the same problem exists also
-> for proportional bandwidth as well, in terms of IO rate predictability I
-> mean.
+> I think the boot option is the way, if at all.
+> 
+> Because the config option isn't very usable.  What's to stop someone
+> from doing `make allyesconfig' and then menually editing the .config so
+> it's no longer truly an allyesconfig .config?
+> 
+> otoh, if is't purely a manual setting rather than some automagic thing
+> then it might be workable.  CONFIG_INGO :)
 
-BTW as I said in a previous email, an interesting path to be explored
-IMHO could be to think in terms of IO time. So, look at the time an IO
-request is issued to the drive, look at the time the request is served,
-evaluate the difference and charge the consumed IO time to the
-appropriate cgroup. Then dispatch IO requests in function of the
-consumed IO time debts / credits, using for example a token-bucket
-strategy. And probably the best place to implement the IO time
-accounting is the elevator.
+Write the required settings into a file and use KCONFIG_ALLCONFIG.
 
--Andrea
+Our kconfig files are already complicated enough, and needlessly adding 
+more complexity only increases the problems (which would in turn result 
+in this Hungarian guy spreading his kconfig FUD even more often).
 
-> 
-> The only difference is that with proportional bandwidth you know that
-> (taking the same example reported by Hirokazu) with i.e. 10 similar IO
-> requests, 7 will be dispatched to the first cgroup and 3 to the other
-> cgroup. So, you don't need anything to guarantee "fairness", but it's
-> hard also for this case to evaluate the cost of the 7 IO requests
-> respect to the cost of the other 3 IO requests as seen by user
-> applications, that is the cost the users care about.
-> 
-> -Andrea
+Tomorrow someone might want to boot an allyesconfig kernel on an old
+Pentium-MMX, and the CONFIG_M686=y allyesconfig gives might break his 
+boot - another special case in kconfig for an even more exotic use case?
+
+Everyone doing randconfig builds knows that CONFIG_STANDALONE=n is not a 
+good idea, and similarly someone trying to boot allyesconfig kernels 
+might need a list of options he mustn't enable.
+
+After all, we are not talking about stuff for normal users.
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
