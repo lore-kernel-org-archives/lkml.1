@@ -1,108 +1,309 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752783AbYHLRiV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753111AbYHLRis@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752783AbYHLRiV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Aug 2008 13:38:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751007AbYHLRiH
+	id S1753111AbYHLRis (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Aug 2008 13:38:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751682AbYHLRij
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Aug 2008 13:38:07 -0400
-Received: from rv-out-0506.google.com ([209.85.198.224]:5252 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750779AbYHLRiE (ORCPT
+	Tue, 12 Aug 2008 13:38:39 -0400
+Received: from vs251036.vserver.de ([62.75.251.36]:53559 "EHLO
+	vs251036.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751007AbYHLRij (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Aug 2008 13:38:04 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=Pm77Uon+Sn80C6Yl2QHo9mtPAfc6JaPBiAKwdC8mFh1NnVtoYRfPwkwz3F33iT3SOt
-         /9vhLKoo9Qnsjk2wcDj5nwKojatntzZsQazn8r7NtQk04xWKfc5VL8gZV6LyfzXD5fSn
-         6+7RPxvgqYAq/aySJhSiMLCMMDelR27Oo85p0=
-Message-ID: <2c0942db0808121038w1e049e6bw279af5448b8bab92@mail.gmail.com>
-Date: Tue, 12 Aug 2008 10:38:04 -0700
-From: "Ray Lee" <ray-lk@madrabbit.org>
-To: "David Witbrodt" <dawitbro@sbcglobal.net>
-Subject: Re: HPET regression in 2.6.26 versus 2.6.25 -- RCU problem
-Cc: linux-kernel@vger.kernel.org, "Peter Zijlstra" <peterz@infradead.org>,
-       "Yinghai Lu" <yhlu.kernel@gmail.com>, "Ingo Molnar" <mingo@elte.hu>,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       netdev <netdev@vger.kernel.org>
-In-Reply-To: <151835.36545.qm@web82108.mail.mud.yahoo.com>
+	Tue, 12 Aug 2008 13:38:39 -0400
+Message-ID: <48A1CA9A.4000007@claudio.ch>
+Date: Tue, 12 Aug 2008 19:38:34 +0200
+From: Claudio Nieder <private@claudio.ch>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: rpurdie@rpsys.net, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Backlight driver for Tabletkiosk Sahara TouchIT-213 Tablet
+ PC
+References: <488E0D2A.1000005@claudio.ch>	<1217270428.6059.39.camel@dax.rpnet.com>	<488E25F4.4020405@claudio.ch> <20080811134940.b3bcde83.akpm@linux-foundation.org>
+In-Reply-To: <20080811134940.b3bcde83.akpm@linux-foundation.org>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <151835.36545.qm@web82108.mail.mud.yahoo.com>
-X-Google-Sender-Auth: 7690113887b6371e
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 12, 2008 at 10:29 AM, David Witbrodt <dawitbro@sbcglobal.net> wrote:
-> Since this _feels_ like my problem alone, then it _feels_ like I
-> should have to be the one to fix it.
+Hi,
 
-Hard data first, and then there will be plenty of time for blame
-later. Not that there's any real blame for anyone here, we just have a
-bug that needs to be found and fixed.
+> I believe the mdelay()s could be converted to the preferable msleep()?
 
-> I hate having to throw my arms
-> up and admit I am unable to do something about it....
+thank you for the remark. I have changed the mdelay to msleep in my
+patch, reapplied it to the current Linus tree, built a kernel, installed
+it on my computer and tested it. It works perfectly as you surely
+expected. The corrected patch is included here.
 
-Finding the problem is over half the battle, so you *are* doing something.
+BTW: I have noticed that some other drivers in video/backlight still use
+mdelay: ili9320.c, locomolcd.c and vgg2432a4.c.
 
->> Can you try reverting that commit against the top of the latest tree,
->> and see if the revert applies correctly? If it does, compile and boot
->> and see if it works.
->
-> OK, I can give it a try.  I probably would have tried it already but I
-> noticed that the file(s) touched by the commit had been merged with one
-> or more other files in the meantime, so I decided to leave it alone.  But
-> now that I think about it, what is the worst that can happen?  The kernel
-> will fail to build?  It will build, but it won't run?  That's happening
-> already, so I have nothing to lose.
+claudio
 
-Right.
 
->> If it does, it'll be Yinghai's job to figure out
->> what went wrong, not yours (unless you're a real gluton for
->> punishment, and happen to know what was going on in Yinghai's head
->> when he decided that it was safe to make those changes).
->
-> Well, it's his job only if his commit broke something.
+Signed-off-by: Claudio Nieder <private@claudio.ch>
 
-His commit may have uncovered a latent problem somewhere else, that
-happens often. But if the commit really is the trouble one, then two
-things happen: It's rc3 or rc4 now, so we just revert the damn thing,
-and then (secondly) he works with you (by adding debugging or
-whatever) to figure out where the problem actually is.
+---
+ drivers/video/backlight/Kconfig     |    7 +
+ drivers/video/backlight/Makefile    |    1 +
+ drivers/video/backlight/kb3886_bl.c |  218 +++++++++++++++++++++++++++++++++++
+ 3 files changed, 226 insertions(+), 0 deletions(-)
 
-The point I'm trying to make here is when you take on too much for
-yourself, then it slows down debugging the problem, and means whatever
-issue is in the code will be in there longer, affecting more people.
+diff --git a/drivers/video/backlight/Kconfig b/drivers/video/backlight/Kconfig
+index 452b770..bc65541 100644
+--- a/drivers/video/backlight/Kconfig
++++ b/drivers/video/backlight/Kconfig
+@@ -164,3 +164,10 @@ config BACKLIGHT_MBP_NVIDIA
+          If you have an Apple Macbook Pro with Nvidia graphics hardware say Y
+ 	 to enable a driver for its backlight
 
-> Is 2.6.2[67] broken on your machine?
++config BACKLIGHT_SAHARA
++	tristate "Tabletkiosk Sahara Touch-iT Backlight Driver"
++	depends on BACKLIGHT_CLASS_DEVICE && X86
++	default y
++	help
++	  If you have a Tabletkiosk Sahara Touch-iT, say y to enable the
++	  backlight driver.
+diff --git a/drivers/video/backlight/Makefile b/drivers/video/backlight/Makefile
+index b405aac..f4a1183 100644
+--- a/drivers/video/backlight/Makefile
++++ b/drivers/video/backlight/Makefile
+@@ -16,4 +16,5 @@ obj-$(CONFIG_BACKLIGHT_PROGEAR) += progear_bl.o
+ obj-$(CONFIG_BACKLIGHT_CARILLO_RANCH) += cr_bllcd.o
+ obj-$(CONFIG_BACKLIGHT_PWM)	+= pwm_bl.o
+ obj-$(CONFIG_BACKLIGHT_MBP_NVIDIA) += mbp_nvidia_bl.o
++obj-$(CONFIG_BACKLIGHT_SAHARA)	+= kb3886_bl.o
 
-2.6.26-rc9+ seems to work fine on my system. I haven't tried 2.6.26.0
-or 2.6.27-rcX yet, I'm overloaded with actual work and other things
-right now. But no one is ever alone in problems with the kernel, only
-alone in reporting them. You're a canary in the coal mine.
+diff --git a/drivers/video/backlight/kb3886_bl.c
+b/drivers/video/backlight/kb3886_bl.c
+new file mode 100644
+index 0000000..60eec06
+--- /dev/null
++++ b/drivers/video/backlight/kb3886_bl.c
+@@ -0,0 +1,218 @@
++/*
++ *  Backlight Driver for the KB3886 Backlight
++ *
++ *  Copyright (c) 2007 Claudio Nieder
++ *
++ *  Based on corgi_bl.c by Richard Purdie and kb3886 driver by Robert Woerle
++ *
++ *  This program is free software; you can redistribute it and/or modify
++ *  it under the terms of the GNU General Public License version 2 as
++ *  published by the Free Software Foundation.
++ *
++ */
++
++#include <linux/module.h>
++#include <linux/kernel.h>
++#include <linux/init.h>
++#include <linux/platform_device.h>
++#include <linux/mutex.h>
++#include <linux/fb.h>
++#include <linux/backlight.h>
++#include <linux/delay.h>
++
++
++/*
++ * The following is what corgi has in arch/arm/mach-pxa/corgi.c and
++ * corgi_lcd.c. On kernelnebwies it was suggested I put the platform_device
++ * code in my driver.
++ */
++
++#define KB3886_PARENT 0x64
++#define KB3886_IO 0x60
++#define KB3886_ADC_DAC_PWM 0xC4
++#define KB3886_PWM0_WRITE 0x81
++#define KB3886_PWM0_READ 0x41
++
++static DEFINE_MUTEX(bl_mutex);
++
++void kb3886_bl_set_intensity(int intensity)
++{
++	mutex_lock(&bl_mutex);
++	intensity = intensity&0xff;
++	outb(KB3886_ADC_DAC_PWM, KB3886_PARENT);
++	msleep(10);
++	outb(KB3886_PWM0_WRITE, KB3886_IO);
++	msleep(10);
++	outb(intensity, KB3886_IO);
++	mutex_unlock(&bl_mutex);
++}
++
++struct kb3886bl_machinfo {
++	int max_intensity;
++	int default_intensity;
++	int limit_mask;
++	void (*set_bl_intensity)(int intensity);
++};
++
++static struct kb3886bl_machinfo kb3886_bl_machinfo = {
++	.max_intensity = 0xff,
++	.default_intensity = 0xa0,
++	.limit_mask = 0x7f,
++	.set_bl_intensity = kb3886_bl_set_intensity,
++};
++
++static struct platform_device kb3886bl_device = {
++	.name		= "kb3886-bl",
++	.dev		= {
++		.platform_data	= &kb3886_bl_machinfo,
++	},
++	.id		= -1,
++};
++
++static struct platform_device *devices[] __initdata = {
++	&kb3886bl_device,
++};
++
++static void __init sahara_init(void)
++{
++	platform_add_devices(devices, ARRAY_SIZE(devices));
++}
++
++/*
++ * Back to driver
++ */
++
++static int kb3886bl_intensity;
++static struct backlight_device *kb3886_backlight_device;
++static struct kb3886bl_machinfo *bl_machinfo;
++
++static unsigned long kb3886bl_flags;
++#define KB3886BL_SUSPENDED     0x01
++#define KB3886BL_BATTLOW       0x02
++
++static int kb3886bl_send_intensity(struct backlight_device *bd)
++{
++	int intensity = bd->props.brightness;
++
++	if (bd->props.power != FB_BLANK_UNBLANK)
++		intensity = 0;
++	if (bd->props.fb_blank != FB_BLANK_UNBLANK)
++		intensity = 0;
++	if (kb3886bl_flags & KB3886BL_SUSPENDED)
++		intensity = 0;
++	if (kb3886bl_flags & KB3886BL_BATTLOW)
++		intensity &= bl_machinfo->limit_mask;
++
++	bl_machinfo->set_bl_intensity(intensity);
++
++	kb3886bl_intensity = intensity;
++	return 0;
++}
++
++#ifdef CONFIG_PM
++static int kb3886bl_suspend(struct platform_device *pdev, pm_message_t state)
++{
++	struct backlight_device *bd = platform_get_drvdata(pdev);
++
++	kb3886bl_flags |= KB3886BL_SUSPENDED;
++	backlight_update_status(bd);
++	return 0;
++}
++
++static int kb3886bl_resume(struct platform_device *pdev)
++{
++	struct backlight_device *bd = platform_get_drvdata(pdev);
++
++	kb3886bl_flags &= ~KB3886BL_SUSPENDED;
++	backlight_update_status(bd);
++	return 0;
++}
++#else
++#define kb3886bl_suspend	NULL
++#define kb3886bl_resume		NULL
++#endif
++
++static int kb3886bl_get_intensity(struct backlight_device *bd)
++{
++	return kb3886bl_intensity;
++}
++
++/*
++ * Called when the battery is low to limit the backlight intensity.
++ * If limit==0 clear any limit, otherwise limit the intensity
++ */
++void kb3886bl_limit_intensity(int limit)
++{
++	if (limit)
++		kb3886bl_flags |= KB3886BL_BATTLOW;
++	else
++		kb3886bl_flags &= ~KB3886BL_BATTLOW;
++	backlight_update_status(kb3886_backlight_device);
++}
++EXPORT_SYMBOL(kb3886bl_limit_intensity);
++
++
++static struct backlight_ops kb3886bl_ops = {
++	.get_brightness = kb3886bl_get_intensity,
++	.update_status  = kb3886bl_send_intensity,
++};
++
++static int kb3886bl_probe(struct platform_device *pdev)
++{
++	struct kb3886bl_machinfo *machinfo = pdev->dev.platform_data;
++
++	bl_machinfo = machinfo;
++	if (!machinfo->limit_mask)
++		machinfo->limit_mask = -1;
++
++	kb3886_backlight_device = backlight_device_register("kb3886-bl",
++		&pdev->dev, NULL, &kb3886bl_ops);
++	if (IS_ERR (kb3886_backlight_device))
++		return PTR_ERR(kb3886_backlight_device);
++
++	platform_set_drvdata(pdev, kb3886_backlight_device);
++
++	kb3886_backlight_device->props.max_brightness = machinfo->max_intensity;
++	kb3886_backlight_device->props.power = FB_BLANK_UNBLANK;
++	kb3886_backlight_device->props.brightness = machinfo->default_intensity;
++	backlight_update_status(kb3886_backlight_device);
++
++	return 0;
++}
++
++static int kb3886bl_remove(struct platform_device *pdev)
++{
++	struct backlight_device *bd = platform_get_drvdata(pdev);
++
++	backlight_device_unregister(bd);
++
++	return 0;
++}
++
++static struct platform_driver kb3886bl_driver = {
++	.probe		= kb3886bl_probe,
++	.remove		= kb3886bl_remove,
++	.suspend	= kb3886bl_suspend,
++	.resume		= kb3886bl_resume,
++	.driver		= {
++		.name	= "kb3886-bl",
++	},
++};
++
++static int __init kb3886_init(void)
++{
++	sahara_init();
++	return platform_driver_register(&kb3886bl_driver);
++}
++
++static void __exit kb3886_exit(void)
++{
++	platform_driver_unregister(&kb3886bl_driver);
++}
++
++module_init(kb3886_init);
++module_exit(kb3886_exit);
++
++MODULE_AUTHOR("Claudio Nieder <private@claudio.ch>");
++MODULE_DESCRIPTION("Tabletkiosk Sahara Touch-iT Backlight Driver");
++MODULE_LICENSE("GPL");
+-- 
+1.4.4.4
 
-> Or on anyone's machine on LKML?
-> These kernels even work on one of my machines!  So it's not clear that
-> Yinghai's commit is to blame:  maybe it is, maybe it isn't.  All that
-> we know is that commit triggered the problem, and we don't even know
-> whether the problem will affect a lot of hardware or just mine!
 
-Yes, all of that is true, but changes nothing.
-
-> Anyway, I think you were really just trying to be nice, and I thank you
-> for it.  I do feel marginally better.  ;)
-
-I *am* nice :-). Email is tricky sometimes, y'know?
-
-> I'll really feel better if the reverting experiment works.
-
-Good luck.
+-- 
+Claudio Nieder, Talweg 6, CH-8610 Uster, Tel +4179 357 6743, www.claudio.ch
