@@ -1,28 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752847AbYHLHtX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752785AbYHLH42@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752847AbYHLHtX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Aug 2008 03:49:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751651AbYHLHtQ
+	id S1752785AbYHLH42 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Aug 2008 03:56:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751535AbYHLH4T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Aug 2008 03:49:16 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:39455 "EHLO
+	Tue, 12 Aug 2008 03:56:19 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:51331 "EHLO
 	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751535AbYHLHtP (ORCPT
+	with ESMTP id S1751466AbYHLH4S (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Aug 2008 03:49:15 -0400
-Date: Tue, 12 Aug 2008 08:32:04 +0100
+	Tue, 12 Aug 2008 03:56:18 -0400
+Date: Tue, 12 Aug 2008 08:39:03 +0100
 From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: daw-news@cs.berkeley.edu (David Wagner)
-Cc: daw@cs.berkeley.edu, linux-kernel@vger.kernel.org
-Subject: Re: [malware-list] [RFC 0/5] [TALPA] Intro to a linuxinterfaceforon
- access scanning
-Message-ID: <20080812083204.53602192@lxorguk.ukuu.org.uk>
-In-Reply-To: <g7qdbj$6m0$2@taverner.cs.berkeley.edu>
-References: <20080806105008.GF6477@cs181140183.pp.htv.fi>
-	<20080811065608.44687f65@infradead.org>
-	<48A0649B.4010706@sun.com>
-	<2629CC4E1D22A64593B02C43E855530304AE4B80@USILMS12.ca.com>
-	<g7qdbj$6m0$2@taverner.cs.berkeley.edu>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: linux-kernel@vger.kernel.org, Arjan van de Ven <arjan@infradead.org>,
+       linux-ide@vger.kernel.org
+Subject: Re: [patch 1/2] fastboot: Add a module parameter to skip probing of
+ specific ports
+Message-ID: <20080812083903.6d402c2e@lxorguk.ukuu.org.uk>
+In-Reply-To: <20080811153641.706726ec@infradead.org>
+References: <20080811153542.61095e5c@infradead.org>
+	<20080811153641.706726ec@infradead.org>
 X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
 Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
  Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
@@ -34,41 +32,48 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> theoretical possibility)?  There are a few obvious ones: files shared
-> over a SMB filesystem; attachments sent via email.  What else?  Can
-> you give some other examples?
+On Mon, 11 Aug 2008 15:36:41 -0700
+Arjan van de Ven <arjan@infradead.org> wrote:
 
-This is the nightclub model and doesn't work viz:
+> 
+> From: Kristen Accardi <kristen.c.accardi@intel.com>
+> Subject: [PATCH] libata: Add a module parameter to skip probing of specific ports
+> 
+> Port probing by libata can easily take 10% or more of the kernel boot
+> time (2%+ of total). For cases where one knows there is nothing
+> connected to certain ports (for example on netbooks) this is a waste
+> of boot time.
+> 
+> This patch adds a module parameter that allows the admin to specify
+> to skip ports (specified by a bitmask) and recoup this boot time.
+> This capability is potentially also useful to get systems to boot
+> for cases where port-probing on a certain ports causes crashes.
+> 
+> A follow-on patch will add the capability to use DMI identification
+> to automate this for certain known systems.
 
-"If I put a big scary man on the door nobody will be able to get knives
-and drugs in because we only have one door for the public"
+What happens if I plug in an additional libata using device ? What
+defines the probe order here particularly as people are pushing for
+parallel probing of multiple devices.
 
-If you have to enumerate the potential attack vectors to make your model
-work you already lost. There is one of you and a lot of them. Smart
-nightclubs don't do that they circulate looking for evidence. Yes, they
-will miss some, yes they will respond late to some, but they will at
-least notice there has been a problem.
+This doesn't appear to make any rational sense as the mask isn't tied to
+the actual bus device identifier to keep it on the same port. It might
+kidn of work for an EEEPC (until you see what people retrofit into the
+corners of them) but it isn't a valid general solution.
 
-Now computer security is a bit different because it has some night of the
-living dead type properties where the zombies don't just sneak in through
-the toilet window but they go around turning security guards into zombies
-too but the basic premise is very much the same.
+Also the EEE problem seems to be a controller specific screwup - they
+didn't apparently manage the enablebits on the ATA controller correctly,
+so it belongs in that driver. That also lets you tie it to the right
+system, pci id, bus id so it'll always hit the right device.
 
-> Are we talking about enterprise networks?  Are we talking about consumers?
+(Plus double check the enables code in case you are papering over the
+real bug)
 
-What theat model and set of security properties does this change ?
-The reasons for poor security may change from 'who cares if we get a
-virus, I get an afternoon drinking coffee' to 'not computer skilled' but
-the basic problem is very similar.
+Second problem is you've changed the API. Several drivers do things on
+the port 0 register they know they will receive and will simply crash and
+burn if you change this.
 
-What are the invariants and what are the probability based things we are
-trying to achieve ? What level of interference with existing behaviour is
-acceptable ?
+NAK this patch for now: right theory, wrong implementation. Please post a
+version which uses DMI in the relevant driver and checks the PCI DEVFN
+matches.
 
-The last is important as we SELinux you can achieve much of what is
-needed but only at a cost of interfering in normal practice now and then
-- eg downloading a shell script versus accidentally downloading a worm is
-rather hard for a PC to tell apart so implementing 'written by web
-browser, can't be executed' is easy but has side effects
-
-Alan
