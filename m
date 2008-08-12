@@ -1,47 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754161AbYHLXko@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754098AbYHLXpa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754161AbYHLXko (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Aug 2008 19:40:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752331AbYHLXkd
+	id S1754098AbYHLXpa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Aug 2008 19:45:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752423AbYHLXpV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Aug 2008 19:40:33 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:46749 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752235AbYHLXkc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Aug 2008 19:40:32 -0400
-Date: Wed, 13 Aug 2008 09:40:12 +1000
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Suresh Siddha <suresh.b.siddha@intel.com>
-Cc: Wolfgang Walter <wolfgang.walter@stwm.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       "viro@ZenIV.linux.org.uk" <viro@zeniv.linux.org.uk>,
-       "vegard.nossum@gmail.com" <vegard.nossum@gmail.com>
-Subject: Re: Kernel oops with 2.6.26, padlock and ipsec: probably problem with fpu state changes
-Message-ID: <20080812234012.GC29155@gondor.apana.org.au>
-References: <200807171653.59177.wolfgang.walter@stwm.de> <20080810030521.GA2332@gondor.apana.org.au> <20080811190131.GL13158@linux-os.sc.intel.com> <200808121343.22892.wolfgang.walter@stwm.de> <20080812120213.GA22992@gondor.apana.org.au> <20080812182811.GA646@linux-os.sc.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080812182811.GA646@linux-os.sc.intel.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Tue, 12 Aug 2008 19:45:21 -0400
+Received: from sh.osrg.net ([192.16.179.4]:48518 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752262AbYHLXpU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Aug 2008 19:45:20 -0400
+Date: Wed, 13 Aug 2008 08:44:48 +0900
+To: grundler@google.com
+Cc: stefanr@s5r6.in-berlin.de, linux1394-devel@lists.sourceforge.net,
+       fujita.tomonori@lab.ntt.co.jp, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] ieee1394: sbp2: enforce s/g segment size limit
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <da824cf30808121004w1ea59dc9rd805e2ae4d9f47a7@mail.gmail.com>
+References: <20080809071744I.fujita.tomonori@lab.ntt.co.jp>
+	<tkrat.8f7aa8cea95d423b@s5r6.in-berlin.de>
+	<da824cf30808121004w1ea59dc9rd805e2ae4d9f47a7@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20080813084514K.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 12, 2008 at 11:28:11AM -0700, Suresh Siddha wrote:
+On Tue, 12 Aug 2008 10:04:14 -0700
+"Grant Grundler" <grundler@google.com> wrote:
+
+> On Sat, Aug 9, 2008 at 11:20 AM, Stefan Richter
+> <stefanr@s5r6.in-berlin.de> wrote:
+> > 1. We don't need to round the SBP-2 segment size limit down to a
+> >   multiple of 4 kB (0xffff -> 0xf000).  It is only necessary to
+> >   ensure quadlet alignment (0xffff -> 0xfffc).
+> >
+> > 2. Use dma_set_max_seg_size() to tell the DMA mapping infrastructure
+> >   and the block IO layer about the restriction.  This way we can
+> >   remove the size checks and segment splitting in the queuecommand
+> >   path.
+> >
+> >   This assumes that no other code in the ieee1394 stack uses
+> >   dma_map_sg() with conflicting requirements.  It furthermore assumes
+> >   that the controller device's platform actually allows us to set the
+> >   segment size to our liking.  Assert the latter with a BUG_ON().
+> >
+> > 3. Also use blk_queue_max_segment_size() to tell the block IO layer
+> >   about it.  It cannot know it because our scsi_add_host() does not
+> >   point to the FireWire controller's device.
+> >
+> > We can also uniformly use dma_map_sg() for the single segment case just
+> > like for the multi segment case, to further simplify the code.
+> >
+> > Also clean up how the page table is converted to big endian.
+> >
+> > Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+> > ---
+> >
+> > Applicable after
+> >   [PATCH update] ieee1394: sbp2: stricter dma_sync
+> >   [PATCH] ieee1394: sbp2: check for DMA mapping failures
+> > from a few minutes ago.
+> >
+> >  drivers/ieee1394/sbp2.c |  106 +++++++++++++---------------------------
+> >  drivers/ieee1394/sbp2.h |   37 +++++--------
+> >  2 files changed, 52 insertions(+), 91 deletions(-)
+> ...
+> > +               for_each_sg(sg, sg, sg_count, i) {
+> > +                       len = sg_dma_len(sg);
+> > +                       if (len == 0)
+> > +                               continue;
+> >
+> > -               orb->misc |= ORB_SET_DATA_SIZE(sg_count);
+> > +                       pt[j].high = cpu_to_be32(len << 16);
+> > +                       pt[j].low = cpu_to_be32(sg_dma_address(sg));
+> > +                       j++;
+> > +               }
 > 
-> As there are no further objections, Herbert/Ingo not sure who among you
-> will push this patch to Linus tree and  2.6.26 -stable tree aswell.
+> While this code will probably work correctly, I believe if the
+> sg_dma_len() returns 0, one has walked off the end of the
+> "bus address" list.
+>
+> pci_map_sg() returns how many DMA addr/len pairs are used
+> and that count could (should?) be used when pulling the
+> dma_len/addr pairs out of the sg list.
 
-I'll push this one along.
+Yeah, from a quick look, seems that this patch wrongly handles
+sg_count.
 
-Thanks,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+This patch sets scsi_sg_count(sc) to sg_count, right? for_each_sg is
+expected to be used with a return value of pci_map_sg.
+
+Then this patch can simply do something like:
+
+for_each_sg(sg, sg, sg_count, i) {
+        pt[i].high = cpu_to_be32(sg_dma_len(sg) << 16);
+        pt[i].low = cpu_to_be32(sg_dma_address(sg));
+}
