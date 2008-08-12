@@ -1,91 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754544AbYHLNq5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752908AbYHLNrV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754544AbYHLNq5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Aug 2008 09:46:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754106AbYHLNq2
+	id S1752908AbYHLNrV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Aug 2008 09:47:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754112AbYHLNq3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Aug 2008 09:46:28 -0400
-Received: from mtagate1.de.ibm.com ([195.212.29.150]:20821 "EHLO
-	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754047AbYHLNq1 (ORCPT
+	Tue, 12 Aug 2008 09:46:29 -0400
+Received: from smtpq1.tilbu1.nb.home.nl ([213.51.146.200]:46529 "EHLO
+	smtpq1.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754099AbYHLNq1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 12 Aug 2008 09:46:27 -0400
-From: Alexander Schmidt <alexs@linux.vnet.ibm.com>
-To: Roland Dreier <rolandd@cisco.com>, "of-ewg" <ewg@lists.openfabrics.org>,
-       "of-general" <general@lists.openfabrics.org>,
-       lkml <linux-kernel@vger.kernel.org>,
-       "linuxppc-dev" <linuxppc-dev@ozlabs.org>
-Subject: [PATCH 1/5 try2] ib/ehca: update qp_state on cached modify_qp()
-Date: Tue, 12 Aug 2008 15:46:07 +0200
-User-Agent: KMail/1.9.9
-Cc: Stefan Roscher <stefan.roscher@de.ibm.com>,
-       "Hoang-Nam Nguyen" <hnguyen@de.ibm.com>,
-       Joachim Fenkes <fenkes@de.ibm.com>,
-       Christoph Raisch <raisch@de.ibm.com>
+Message-ID: <48A1944C.2010407@keyaccess.nl>
+Date: Tue, 12 Aug 2008 15:46:52 +0200
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080707)
 MIME-Version: 1.0
-Content-Disposition: inline
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Adrian Bunk <bunk@kernel.org>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, fritz@isdn4linux.de, kkeil@suse.de,
+       isdn4linux@listserv.isdn4linux.de, linux-kernel@vger.kernel.org,
+       mingo@elte.hu
+Subject: Re: [PATCH] ISDN: make ICN not auto-grab port 0x320
+References: <489DD669.2090207@keyaccess.nl> <20080809215020.1bb602e7@lxorguk.ukuu.org.uk> <20080811164814.db41c20b.akpm@linux-foundation.org> <48A11952.6090203@keyaccess.nl> <20080811223043.9ad55c51.akpm@linux-foundation.org> <20080812130823.GD13910@cs181140183.pp.htv.fi> <48A18F7B.6040809@keyaccess.nl>
+In-Reply-To: <48A18F7B.6040809@keyaccess.nl>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <200808121546.07212.alexs@linux.vnet.ibm.com>
+X-Spam-Score: 1.0 (+)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Since the introduction of the port auto-detect mode for ehca, calls to
-modify_qp() may be cached in the device driver when the ports are not
-activated yet. When a modify_qp() call is cached, the qp state remains
-untouched until the port is activated, which will leave the qp in the reset
-state. In the reset state, however, it is not allowed to post SQ WQEs,
-which confuses applications like ib_mad.
+On 12-08-08 15:26, Rene Herman wrote:
 
-The solution for this problem is to immediately set the qp state as requested
-by modify_qp(), even when the call is cached.
+> On 12-08-08 15:08, Adrian Bunk wrote:
 
+>> Write the required settings into a file and use KCONFIG_ALLCONFIG.
+> 
+> Found those, but seems unable to express the "depends on BROKEN_BOOT if 
+> FOO=y" method that's currently used.
+> 
+> Yes, might admittedly not be considered a huge problem and perhaps we 
+> could just ship an allyes.config (and same allrandom.config) but it's 
+> not nice to spread information about a single symbol over various files 
+> like that.
+> 
+> Currently, we have a tristate that turns into a y/n bool if !MODULES. 
+> What would be real nice here is a tristate that turns into a m/n bool if 
+> !RANDOM, where allyesconfig and randconfig would pre-select RANDOM.
 
-Signed-off-by: Alexander Schmidt <alexs@linux.vnet.ibm.com>
----
- drivers/infiniband/hw/ehca/ehca_qp.c |   14 ++++++++++----
- 1 file changed, 10 insertions(+), 4 deletions(-)
+(I ofcourse mean "if RANDOM" here)
 
---- infiniband.git.orig/drivers/infiniband/hw/ehca/ehca_qp.c
-+++ infiniband.git/drivers/infiniband/hw/ehca/ehca_qp.c
-@@ -1534,8 +1534,6 @@ static int internal_modify_qp(struct ib_
- 	if (attr_mask & IB_QP_QKEY)
- 		my_qp->qkey = attr->qkey;
- 
--	my_qp->state = qp_new_state;
--
- modify_qp_exit2:
- 	if (squeue_locked) { /* this means: sqe -> rts */
- 		spin_unlock_irqrestore(&my_qp->spinlock_s, flags);
-@@ -1551,6 +1549,8 @@ modify_qp_exit1:
- int ehca_modify_qp(struct ib_qp *ibqp, struct ib_qp_attr *attr, int attr_mask,
- 		   struct ib_udata *udata)
- {
-+	int ret = 0;
-+
- 	struct ehca_shca *shca = container_of(ibqp->device, struct ehca_shca,
- 					      ib_device);
- 	struct ehca_qp *my_qp = container_of(ibqp, struct ehca_qp, ib_qp);
-@@ -1597,12 +1597,18 @@ int ehca_modify_qp(struct ib_qp *ibqp, s
- 				 attr->qp_state, my_qp->init_attr.port_num,
- 				 ibqp->qp_type);
- 			spin_unlock_irqrestore(&sport->mod_sqp_lock, flags);
--			return 0;
-+			goto out;
- 		}
- 		spin_unlock_irqrestore(&sport->mod_sqp_lock, flags);
- 	}
- 
--	return internal_modify_qp(ibqp, attr, attr_mask, 0);
-+	ret = internal_modify_qp(ibqp, attr, attr_mask, 0);
-+
-+out:
-+	if ((ret == 0) && (attr_mask & IB_QP_STATE))
-+		my_qp->state = attr->qp_state;
-+
-+	return ret;
- }
- 
- void ehca_recover_sqp(struct ib_qp *sqp)
+> If I'm not mistaken, that's currently not possible...
+
+Rene.
+
