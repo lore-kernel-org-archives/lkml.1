@@ -1,47 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753509AbYHLOii@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754251AbYHLOjl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753509AbYHLOii (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Aug 2008 10:38:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752331AbYHLOi3
+	id S1754251AbYHLOjl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Aug 2008 10:39:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752654AbYHLOjV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Aug 2008 10:38:29 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:55161 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752175AbYHLOi2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Aug 2008 10:38:28 -0400
-Date: Tue, 12 Aug 2008 15:21:00 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-Subject: Re: [patch 1/2] fastboot: Add a module parameter to skip probing of
- specific ports
-Message-ID: <20080812152100.0123a2e1@lxorguk.ukuu.org.uk>
-In-Reply-To: <20080812070222.3dc9efcb@infradead.org>
-References: <20080811153542.61095e5c@infradead.org>
-	<20080811153641.706726ec@infradead.org>
-	<20080812083903.6d402c2e@lxorguk.ukuu.org.uk>
-	<20080812043603.3d8471d4@infradead.org>
-	<20080812130027.2c4643a9@lxorguk.ukuu.org.uk>
-	<20080812070222.3dc9efcb@infradead.org>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 12 Aug 2008 10:39:21 -0400
+Received: from multi.imgtec.com ([194.200.65.239]:20506 "EHLO multi.imgtec.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752331AbYHLOjU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Aug 2008 10:39:20 -0400
+From: Will Newton <will.newton@imgtec.com>
+To: gregkh@suse.de
+Cc: linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org,
+       leoli@freescale.com, Will Newton <will.newton@gmail.com>
+Subject: [PATCH 00/11] fsl_usb2_udc: A number of bug fixes and cleanups.
+Date: Tue, 12 Aug 2008 15:39:06 +0100
+Message-Id: <1218551957-17091-1-git-send-email-will.newton@imgtec.com>
+X-Mailer: git-send-email 1.5.5.2
+X-OriginalArrivalTime: 12 Aug 2008 14:39:17.0712 (UTC) FILETIME=[330ABD00:01C8FC89]
+X-SEF-Processed: 6_0_1_111__2008_08_12_15_39_18
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> and can add the option for this case. It's the "push policy out of the
-> kernel" thing.. while the kernel probably can't know this (and you're
-> right, the DMI patch is thus the wrong thing to do).. the admin can.
+From: Will Newton <will.newton@gmail.com>
 
-libata lets you set the nth controller to various things (40wire etc) so
-I suspect the right thing to extent is the existing libata option code
-that Tejun wrote to include 'skip' if it doesn't already.
+Hi,
 
-If that gets done cc me and I'll then go audit the drivers to see who
-apart from it821x knows port 0 is always probed
+These patches fix a couple of small bugs and clean up parts of the
+fsl_usb2_udc USB gadget driver. I've split them up quite finely for ease
+of reviewing and to separate functional changes.
+
+I'm testing this driver with a non-Freescale SoC containing the same
+TDI/ARC/ChipIdea IP block, but the series has been tested and acked by
+the maintainer.
+
+Will Newton (11):
+  fsl_usb2_udc: Make dr_ep_setup function static.
+  fsl_usb2_udc: Remove check for udc == NULL in dr_controller_setup.
+  fsl_usb2_udc: Fix some sparse warnings and remove redundant code.
+  fsl_usb2_udc: Clean up whitespace in errors and warnings.
+  fsl_usb2_udc: Clean up whitespace in /proc debugging output.
+  fsl_usb2_udc: Initialize spinlock earlier.
+  fsl_usb2_udc: Rename the arguments of the fsl_writel macro.
+  fsl_usb2_udc: Uninline udc_reset_ep_queue.
+  fsl_usb2_udc: Make fsl_queue_td return type void.
+  fsl_usb2_udc: Add a wmb before priming endpoint.
+  fsl_usb2_udc: Fix oops on probe failure.
+
+ drivers/usb/gadget/fsl_usb2_udc.c |  176 ++++++++++++++++--------------------
+ drivers/usb/gadget/fsl_usb2_udc.h |   21 +----
+ 2 files changed, 80 insertions(+), 117 deletions(-)
+
