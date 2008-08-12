@@ -1,57 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752766AbYHLMZz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753198AbYHLM2B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752766AbYHLMZz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Aug 2008 08:25:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751979AbYHLMZs
+	id S1753198AbYHLM2B (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Aug 2008 08:28:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751978AbYHLM1x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Aug 2008 08:25:48 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:58000 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751271AbYHLMZr (ORCPT
+	Tue, 12 Aug 2008 08:27:53 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:57297 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751892AbYHLM1x (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Aug 2008 08:25:47 -0400
-Subject: [PATCH] Fix date output in x86 microcode driver.
-From: David Woodhouse <dwmw2@infradead.org>
-To: Shaohua Li <shaohua.li@intel.com>
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain
-Date: Tue, 12 Aug 2008 13:25:44 +0100
-Message-Id: <1218543944.2977.164.camel@pmac.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+	Tue, 12 Aug 2008 08:27:53 -0400
+Date: Tue, 12 Aug 2008 06:27:51 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Pekka J Enberg <penberg@cs.helsinki.fi>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       akpm@linux-foundation.org, cl@linux-foundation.org
+Subject: Re: [RFC/PATCH] SLUB: dynamic per-cache MIN_PARTIAL
+Message-ID: <20080812122751.GY8618@parisc-linux.org>
+References: <Pine.LNX.4.64.0808050037400.26319@sbz-30.cs.Helsinki.FI>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0808050037400.26319@sbz-30.cs.Helsinki.FI>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The microcode stores its date in a uint32_t in some weird order
-approximating pdp-endian. Rather than printing it like that, print it
-properly in ISO standard form.
+On Tue, Aug 05, 2008 at 12:39:36AM +0300, Pekka J Enberg wrote:
+> This patch changes the static MIN_PARTIAL to a dynamic per-cache ->min_partial
+> value that is calculated from object size. The bigger the object size, the more
+> pages we keep on the partial list.
+> 
+> I tested SLAB, SLUB, and SLUB with this patch on Jens Axboe's 'netio' example
+> script of the fio benchmarking tool. The script stresses the networking
+> subsystem which should also give a fairly good beating of kmalloc() et al.
 
-Signed-off-by: David Woodhouse <David.Woodhouse@intel.com>
+Hi Pekka,
 
-diff --git a/arch/x86/kernel/microcode.c b/arch/x86/kernel/microcode.c
-index 652fa5c..394fbdd 100644
---- a/arch/x86/kernel/microcode.c
-+++ b/arch/x86/kernel/microcode.c
-@@ -343,8 +343,9 @@ static void apply_microcode(int cpu)
- 		return;
- 	}
- 	printk(KERN_INFO "microcode: CPU%d updated from revision "
--	       "0x%x to 0x%x, date = %08x \n",
--	       cpu_num, uci->rev, val[1], uci->mc->hdr.date);
-+	       "0x%x to 0x%x, date = %04x-%02x-%02x \n",
-+	       cpu_num, uci->rev, val[1], uci->mc->hdr.date & 0xffff,
-+	       uci->mc->hdr.date >> 24, (uci->mc->hdr.date >> 16) & 0xff);
- 	uci->rev = val[1];
- }
- 
+We tested this patch and it was performance-neutral on TPC-C.  I was
+hoping it would give a nice improvement ... so I'm disappointed.  But at
+least there's no regression!
 
 -- 
-David Woodhouse                            Open Source Technology Centre
-David.Woodhouse@intel.com                              Intel Corporation
-
-
-
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
