@@ -1,73 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753703AbYHLXSb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754193AbYHLXUk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753703AbYHLXSb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Aug 2008 19:18:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752081AbYHLXSX
+	id S1754193AbYHLXUk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Aug 2008 19:20:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752155AbYHLXUa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Aug 2008 19:18:23 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:38557 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751754AbYHLXSW (ORCPT
+	Tue, 12 Aug 2008 19:20:30 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:51762 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752113AbYHLXU3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Aug 2008 19:18:22 -0400
-Date: Tue, 12 Aug 2008 16:16:02 -0700
-From: Greg KH <greg@kroah.com>
-To: Kenneth Goldman <kgoldman@us.ibm.com>
-Cc: Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org, Mimi Zohar <zohar@us.ibm.com>
-Subject: Re: [PATCH 1/4] integrity: TPM internel kernel interface
-Message-ID: <20080812231602.GB12838@kroah.com>
-References: <20080812193031.GD18034@infradead.org> <OF6C940C00.249617D7-ON852574A3.0071F8B0-852574A3.00732160@us.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <OF6C940C00.249617D7-ON852574A3.0071F8B0-852574A3.00732160@us.ibm.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Tue, 12 Aug 2008 19:20:29 -0400
+Date: Tue, 12 Aug 2008 16:20:13 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Pavel Machek <pavel@suse.cz>
+Cc: andi@firstfloor.org, linux-kernel@vger.kernel.org,
+       linux-acpi@vger.kernel.org, trivial@kernel.org
+Subject: Re: acpi: trivial cleanups
+Message-Id: <20080812162013.b139035b.akpm@linux-foundation.org>
+In-Reply-To: <20080812102434.GA2676@elf.ucw.cz>
+References: <20080812102434.GA2676@elf.ucw.cz>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 12, 2008 at 04:57:31PM -0400, Kenneth Goldman wrote:
-> Christoph Hellwig <hch@infradead.org> wrote on 08/12/2008 03:30:31 PM:
+On Tue, 12 Aug 2008 12:24:34 +0200
+Pavel Machek <pavel@suse.cz> wrote:
+
 > 
-> > On Mon, Aug 11, 2008 at 05:13:51PM -0400, Mimi Zohar wrote:
-> > >
-> > > I assume the concern here is that between looking up the chip and
-> actually
-> > >
-> > > using the chip, the TPM chip is disabled/deactivated.  Based on
-> > > discussions
-> > > with Kenneth Goldman, the TCG main specification part2: structures,
-> > > require
-> > > that even if the TPM is disabled/deactivated, the command to extend the
+> Trivial cleanups for ACPI. Fix misspelling in printk(), fix mismerge,
+> add file header.
 > 
-> > > PCR
-> > > will succeed, but the command to read the PCR will fail with an
-> > > appropriate
-> > > error code.
-> >
-> > And what happens when the chip simply goes away due to a hotplug action?
-> > Or not even the actual chip goes away but just the chip driver and you
-> > now dereference freed memory?
-> 
-> Being a TCG/TPM person, I can only address the first question.  The
-> intent is that the TPM is soldered to the planar/motherboard (the TCG
-> uses the phrase "bound to the platform").  I can't imagine
-> any manufacturer designing a pluggable TPM.  It would subvert PCR
-> measurements and thus attestation, data sealing, etc.
+>
+> --- a/drivers/acpi/processor_core.c
+> +++ b/drivers/acpi/processor_core.c
+> @@ -123,7 +123,7 @@ struct acpi_processor_errata errata __re
+>  static int set_no_mwait(const struct dmi_system_id *id)
+>  {
+>  	printk(KERN_NOTICE PREFIX "%s detected - "
+> -		"disable mwait for CPU C-stetes\n", id->ident);
+> +		"disabling mwait for CPU C-states\n", id->ident);
+>  	idle_nomwait = 1;
+>  	return 0;
 
-Load up the fake-php hotplug pci driver and "soft" disconnect it from
-the system :)
+OK
 
-That was easy...
+> diff --git a/drivers/acpi/processor_idle.c b/drivers/acpi/processor_idle.c
+> index 283c08f..cf5b1b7 100644
+> --- a/drivers/acpi/processor_idle.c
+> +++ b/drivers/acpi/processor_idle.c
+> @@ -41,7 +41,6 @@ #include <linux/sched.h>	/* need_resched
+>  #include <linux/pm_qos_params.h>
+>  #include <linux/clockchips.h>
+>  #include <linux/cpuidle.h>
+> -#include <linux/cpuidle.h>
 
-Note, just because you think your device is always going to be soldered
-to the motherboard, doesn't mean it can't be disconnected at any point
-in time with the kernel running.
+OK
 
-Or the module could just be unloaded, that's also a very common thing to
-have happen, right?
+>  /*
+>   * Include the apic definitions for x86 to have the APIC timer related defines
+> diff --git a/drivers/acpi/reboot.c b/drivers/acpi/reboot.c
+> index a6b662c..b4d9cb3 100644
+> --- a/drivers/acpi/reboot.c
+> +++ b/drivers/acpi/reboot.c
+> @@ -1,4 +1,8 @@
+> -
+> +/*
+> + * Reset the machine using the RESET_REG
+> + *
+> + * Distribute under GPL.
+> + */
 
-thanks,
+That was a trivial dirtyup.  Should at least be "Distributed under the
+GPL" but I suspect that the policy in drivers/acpi/ is to add fancier
+copyright text than this.
 
-greg k-h
+
