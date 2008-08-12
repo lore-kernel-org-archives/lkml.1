@@ -1,87 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753493AbYHLV3s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752671AbYHLVhQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753493AbYHLV3s (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Aug 2008 17:29:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751457AbYHLV3k
+	id S1752671AbYHLVhQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Aug 2008 17:37:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751664AbYHLVhE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Aug 2008 17:29:40 -0400
-Received: from saeurebad.de ([85.214.36.134]:38147 "EHLO saeurebad.de"
+	Tue, 12 Aug 2008 17:37:04 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:44291 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751305AbYHLV3k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Aug 2008 17:29:40 -0400
-From: Johannes Weiner <hannes@saeurebad.de>
-To: Nageswara R Sastry <rnsastry@linux.vnet.ibm.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
-       balbir@linux.vnet.ibm.com, ego@linux.vnet.ibm.com,
-       svaidy@linux.vnet.ibm.com, davej@codemonkey.org.uk,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       Alexey Starikovskiy <alexey.y.starikovskiy@intel.com>
-Subject: Re: [BUG] While changing the cpufreq governor, kernel hits a bug in workqueue.c
-References: <485F8028.1070302@linux.vnet.ibm.com>
-	<87y74w41fp.fsf@skyscraper.fehenstaub.lan>
-	<4860BB8E.2070505@linux.vnet.ibm.com>
-	<87tzfh2t5l.fsf@skyscraper.fehenstaub.lan>
-	<48638906.4090308@linux.vnet.ibm.com>
-	<87y74l4scd.fsf@skyscraper.fehenstaub.lan>
-	<87fxqp7nye.fsf@skyscraper.fehenstaub.lan>
-	<4871E657.3040403@linux.vnet.ibm.com> <87d4lqq7ec.fsf@saeurebad.de>
-	<487300B1.4040300@linux.vnet.ibm.com> <877ibukn8k.fsf@saeurebad.de>
-	<1216215897.1652.24.camel@lappy.programming.kicks-ass.net>
-	<48A145FA.2030803@linux.vnet.ibm.com>
-Date: Tue, 12 Aug 2008 23:29:15 +0200
-In-Reply-To: <48A145FA.2030803@linux.vnet.ibm.com> (Nageswara R. Sastry's
-	message of "Tue, 12 Aug 2008 13:42:42 +0530")
-Message-ID: <8763q53ot0.fsf@skyscraper.fehenstaub.lan>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	id S1751509AbYHLVhD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Aug 2008 17:37:03 -0400
+Date: Tue, 12 Aug 2008 22:37:00 +0100 (IST)
+From: Dave Airlie <airlied@linux.ie>
+X-X-Sender: airlied@skynet.skynet.ie
+To: Adrian Bunk <bunk@kernel.org>
+cc: Randy Dunlap <randy.dunlap@oracle.com>,
+       lkml <linux-kernel@vger.kernel.org>, akpm <akpm@linux-foundation.org>
+Subject: Re: [PATCH -next] drm: sis depends on FB_SIS
+In-Reply-To: <20080812125906.GC13910@cs181140183.pp.htv.fi>
+Message-ID: <alpine.DEB.0.82.0808122236130.13090@skynet.skynet.ie>
+References: <20080807083228.0fc40405.randy.dunlap@oracle.com>
+ <alpine.DEB.0.82.0808080008050.13875@skynet.skynet.ie>
+ <20080807175552.67d5385d.randy.dunlap@oracle.com>
+ <alpine.DEB.0.82.0808080309270.13875@skynet.skynet.ie>
+ <20080812125906.GC13910@cs181140183.pp.htv.fi>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Nageswara,
 
-Nageswara R Sastry <rnsastry@linux.vnet.ibm.com> writes:
+> > 
+> > Maybe the other way around, I don't want DRM_SIS influencing whether 
+> > FB_SIS is on or off, if the user wants sisfb on, then when they select it, 
+> > DRM_SIS should be built in the same way. But if sisfb isn't selected by 
+> > the user, then selecting DRM_SIS shouldn't enable it.
+> 
+> If FB_SIS=m, should DRM_SIS=y be allowed or should in this case DRM_SIS 
+> be restricted to n/m?
 
-> Any updates on this bug.
+Probably not. if FB_SIS is selected at all, DRM_SIS should match it, if 
+FB_SIS isn't selected, DRM_SIS should not select it.
 
-Sorry.  I was just looking into it again and still see no resolution.
-Added Venkatesh and Alexey to CC.
-
-To summarize again:
-
-The problem we have is that cpufreq_ondemand has a self-rearming worker
-function which we should but can not cancel synchroneously with the
-current code.  The locking order is like this:
-
-store()
-  policy_rwsem write
-    cpufreq_governor_dbs()
-    dbs_mutex
-
-work lock
-  do_dbs_timer()
-    policy_rwsem write
-
-which gives a locking hierarchy of:
-
-work lock
-  policy_rwsem
-    dbs_mutex
-
-Now, we _should_ cancel the worker synchroneously, but that won't fly
-since when cpufreq_governor_dbs() is called, we already hold
-policy_rwsem and grabbing the work lock is illegal.
-
-I will continue to read code and see if I can come up with a solution,
-but any help is really appreciated.
-
-I have not yet looked at cpufreq_conservative...
-
-> Thanks and Regards
-> R.Nageswara Sastry
-
-Thanks for your patience and insistence,
-
-	Hannes
+Dave.
