@@ -1,54 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756767AbYHLAkV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756615AbYHLAlh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756767AbYHLAkV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Aug 2008 20:40:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753915AbYHLAkE
+	id S1756615AbYHLAlh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Aug 2008 20:41:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754090AbYHLAl0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Aug 2008 20:40:04 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:43045 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751932AbYHLAkD (ORCPT
+	Mon, 11 Aug 2008 20:41:26 -0400
+Received: from g1t0029.austin.hp.com ([15.216.28.36]:21252 "EHLO
+	g1t0029.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754079AbYHLAlZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Aug 2008 20:40:03 -0400
-Date: Tue, 12 Aug 2008 08:39:38 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Suresh Siddha <suresh.b.siddha@intel.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
-       Wolfgang Walter <wolfgang.walter@stwm.de>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "viro@ZenIV.linux.org.uk" <viro@zeniv.linux.org.uk>,
-       "vegard.nossum@gmail.com" <vegard.nossum@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: Kernel oops with 2.6.26, padlock and ipsec: probably problem with fpu state changes
-Message-ID: <20080812003938.GC18230@gondor.apana.org.au>
-References: <20080809143727.GA30499@gondor.apana.org.au> <200808091757.32999.wolfgang.walter@stwm.de> <489DC15D.9070308@zytor.com> <20080809185224.GH13158@linux-os.sc.intel.com> <20080809193724.GJ13158@linux-os.sc.intel.com> <20080810030521.GA2332@gondor.apana.org.au> <20080811190131.GL13158@linux-os.sc.intel.com> <20080811192203.GC12788@elte.hu> <48A0920B.30306@zytor.com> <20080811201901.GN13158@linux-os.sc.intel.com>
+	Mon, 11 Aug 2008 20:41:25 -0400
+Message-ID: <48A0DC32.9030309@hp.com>
+Date: Mon, 11 Aug 2008 20:41:22 -0400
+From: Brian Haley <brian.haley@hp.com>
+Organization: Open Source and Linux Organization
+User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080811201901.GN13158@linux-os.sc.intel.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Eugene Teo <eugeneteo@kernel.sg>
+CC: Alexey Dobriyan <adobriyan@gmail.com>, John Gumb <john.gumb@tandberg.com>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       YOSHIFUJI Hideaki <yoshfuji@linux-ipv6.org>
+Subject: Re: OOPS, ip -f inet6 route get fec0::1, linux-2.6.26,	ip6_route_output,
+ rt6_fill_node+0x175
+References: <9F6ACAE02B6DD040A1E259977622CFDB033590C3@oslexcp1.eu.tandberg.int> <20080807203748.GA5196@martell.zuzino.mipt.ru> <489BD227.6000209@hp.com> <20080811110335.GA29407@kernel.sg>
+In-Reply-To: <20080811110335.GA29407@kernel.sg>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 11, 2008 at 01:19:01PM -0700, Suresh Siddha wrote:
-.
-> we can't unconditionally do clts() in the process context. We have
-> to disable pre-emption to avoid interactions with context switch and
-> lazy restore. So there will be RT latency issues aswell.
+Eugene Teo wrote:
+> I think it's better to use a helper routine like ipv6_get_saddr to make
+> sure that both dst and rt6i_idev arguments are checked for NULL.
+> 
+> I have compiled, and tested the patch.
+> 
+> Thanks,
+> Eugene
+> 
+> ---
+> Fix NULL pointer dereference in rt6_fill_node().
+> 
+> # ip -f inet6 route get fec0::1
+> 
+> BUG: unable to handle kernel NULL pointer dereference at 00000000
+> IP: [<c0369b85>] rt6_fill_node+0x175/0x3b0
+> EIP is at rt6_fill_node+0x175/0x3b0
+> 
+> Cc: Stable <stable@kernel.org>
+> Signed-off-by: Eugene Teo <eugeneteo@kernel.sg>
 
-Yes disabling preemption is the real killer.
+Acked-by: Brian Haley <brian.haley@hp.com>
 
-This is just a quick band-aid.  Longer term we should add a task
-flag that indicates the task is currently doing kernel FPU which
-will tell the scheduler to clear TS the next time it's run.  That
-way we won't need to disable preemtion or pollute the user task's
-FPU used state.
+But Yoshfuji might have another opinion since he did the work to remove 
+ipv6_get_saddr() in the first place.
 
-Thanks,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+-Brian
