@@ -1,71 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752594AbYHLSLT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753269AbYHLSLw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752594AbYHLSLT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Aug 2008 14:11:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751517AbYHLSLB
+	id S1753269AbYHLSLw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Aug 2008 14:11:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751594AbYHLSLo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Aug 2008 14:11:01 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:35128 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750877AbYHLSLA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Aug 2008 14:11:00 -0400
-Date: Tue, 12 Aug 2008 19:10:57 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [RFC] readdir mess
-Message-ID: <20080812181057.GR28946@ZenIV.linux.org.uk>
-References: <20080812062241.GQ28946@ZenIV.linux.org.uk> <87ej4u9nf5.fsf@devron.myhome.or.jp> <alpine.LFD.1.10.0808121009370.3462@nehalem.linux-foundation.org>
-MIME-Version: 1.0
+	Tue, 12 Aug 2008 14:11:44 -0400
+Received: from mga01.intel.com ([192.55.52.88]:54887 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751459AbYHLSLn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Aug 2008 14:11:43 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.32,197,1217833200"; 
+   d="scan'208";a="606182109"
+Date: Tue, 12 Aug 2008 11:11:27 -0700
+From: Venki Pallipadi <venkatesh.pallipadi@intel.com>
+To: Pavel Machek <pavel@suse.cz>
+Cc: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       David Woodhouse <dwmw2@infradead.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       "arjan@infradead.org" <arjan@infradead.org>
+Subject: Re: [RFC] Imprecise timers.
+Message-ID: <20080812181126.GA30061@linux-os.sc.intel.com>
+References: <1216695757.18980.16.camel@shinybook.infradead.org> <7E82351C108FA840AB1866AC776AEC4608E23BE7@orsmsx505.amr.corp.intel.com> <20080809125447.GA13169@ucw.cz> <20080811173526.GA28661@linux-os.sc.intel.com> <20080812120031.GD8806@elf.ucw.cz>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.10.0808121009370.3462@nehalem.linux-foundation.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <20080812120031.GD8806@elf.ucw.cz>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 12, 2008 at 10:18:49AM -0700, Linus Torvalds wrote:
-
-> If we actually want to change the readdir() thing, then we should just 
-> make the rule be:
+On Tue, Aug 12, 2008 at 05:00:31AM -0700, Pavel Machek wrote:
+> Hi!
 > 
->  - if the callback returns a non-zero value, the filesystem "readdir()" 
->    function should return that value (right now they are taught to return 
->    zero, and return errors on internal fatal things). And get rid of 
->    "buf.error" entirely.
-
-Doesn't work well for readdir(2)...
-
-> 	error = vfs_readdir(file, filldir, &buf);
-> 	lastdirent = buf.previous;
-> 	if (lastdirent) {
-> 		error = count - buf.count;
-> 		if (put_user(file->f_pos, &lastdirent->d_off))
-> 			error = -EFAULT;
-> 	}
-> 	fput(file);
-> 	return error;
+> > > > >which will run some time later when the CPU happens to be awake. And a
+> > > > >non-deferrable timer at the hard deadline, to ensure it really does
+> > > > >happen by then.
+> > > > >
+> > > >
+> > > > One concern I have is drivers using range_timers thinking that they need
+> > > > some upper bound, while all they need is a simple deferrable timer. With that
+> > > > we will have multiple timers waking up the CPU all the time (say, on
+> > > > different CPUs) problem again. Even without the timers waking up all
+> > >
+> > > I don't get it. Who has timers that can be deferred forever? At that
+> > > point they may simply not set the timer at all, right?
+> > >
+> >
+> > I don't think I said drivers have or need timers that can be deferred forever.
+> >
+> > My point is, is it worth the overhead of setting and deleting additional timer,
+> > just because drivers think that they need to use this new interface,
+> > need to set a upper bound and come up with random upper bounds.
+> > Apart from the overhead of setup and teardown we will somewhat negate the
+> > benefits of deferrable timers as the upper bound hard timers can fire at
+> > different times waking up the CPUs frequently.
 > 
->    and we wouldn't need any other logic at all.
+> > I understand that some drivers need this kind of upper limit. I am not sure
+> > whether all drivers need it and if not, how can we restrict drivers from using
+> > this when they don't really need it.
+> 
+> Do you have example of driver that does NOT need upper limit?
+> 
+> Like... lets take ATA.
+> 
+> submit_command()
+> if command is not back in ~5 seconds, it probably timed out.
+> 
+> So you set soft limit to 5 seconds, and hard limit to 10. You
+> definitely want user to know something is wrong after 10 seconds,
+> right?
+> 
 
-you've just lost e.g. -EIO for getdents().  And if you bail out on
-non-zero return value from vfs_readdir(), you are back to -EINVAL
-on full buffer.
+I would say this will be the wrong usage of deadline, atleast with the
+two timer and no round off implementation.
 
-Frankly, I'd rather keep ->readdir() instances simpler.  There are far
-more of those, for one thing.  As it is, we only have "stop"/"continue"
-->readdir() has to care about...
+For this example, it will probably be better to use round_jiffies to round the
+timer to second level and make it go in sync with all other round timers on
+this CPU, rather than setting two timers with hard timer not in sync with
+other timers on the CPU.
 
-There's one more thing in that mess: a bunch of vfs_readdir() callers
-end up playing very sick games to make sure they get the entire
-directory.  The trick is to find whether the damn thing has reached
-the end; as it is, there are instances of ->readdir() that do _not_
-(e.g. call filldir only once and let the caller repeat).
+- if there are other timers (rounded or otherwise) on this CPU that goes off
+between 5-10 seconds, we are paying penalty for setting up and removing one
+extra timer with no obvious benefit.
+- if there are no other timers on this CPU, that goes off between 5-10 seconds,
+timer after 10 seconds will not be in sync with other potential round timers
+on this CPU that may go off between 10-11 seconds, causing one extra wakeup
+and again the overhead of setting up and removing one extra timer.
 
-I'm certainly not too fond of buf->error.  If you see a better interface
-I'd love to hear about it, but I don't think that "just return anything
-non-zero we'd got from callback" is going to be good.  And if we go for
-flagday changes in ->readdir(), we'd better get it right...
+Instead a rounded timer after 5 seconds still ensures atleast 1s idle time on
+the CPU without the overhead.
+
+There can be many users who really don't care about the deadline or can happliy
+use rounded timers or deferrable timers. Say garbage collectors, cache_reap
+and friends, ondemand governor, vga cursor blinking comes to my mind.
+
+Thanks,
+Venki
+
+
