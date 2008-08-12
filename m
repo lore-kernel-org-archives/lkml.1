@@ -1,43 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751087AbYHLS5i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752913AbYHLS6m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751087AbYHLS5i (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Aug 2008 14:57:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751754AbYHLS52
+	id S1752913AbYHLS6m (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Aug 2008 14:58:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751881AbYHLS6e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Aug 2008 14:57:28 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:58685 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751654AbYHLS51 (ORCPT
+	Tue, 12 Aug 2008 14:58:34 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:57681 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751857AbYHLS6d (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Aug 2008 14:57:27 -0400
-Message-ID: <48A1DD09.8000909@linux-foundation.org>
-Date: Tue, 12 Aug 2008 13:57:13 -0500
-From: Christoph Lameter <cl@linux-foundation.org>
-User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
-MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: David Miller <davem@davemloft.net>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: tbench regression on each kernel release from 2.6.22 -> 2.6.28
-References: <48A086B6.2000901@linux-foundation.org>	<20080811.141501.01468546.davem@davemloft.net>	<48A0B037.501@linux-foundation.org> <87r68u1zeb.fsf@basil.nowhere.org>
-In-Reply-To: <87r68u1zeb.fsf@basil.nowhere.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Tue, 12 Aug 2008 14:58:33 -0400
+Date: Tue, 12 Aug 2008 20:59:41 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Dominik Brodowski <linux@dominikbrodowski.net>,
+       Milan Broz <mbroz@redhat.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Pavel Machek <pavel@suse.cz>, Andi Kleen <andi@firstfloor.org>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       ACPI mailing list <linux-acpi@vger.kernel.org>,
+       Alexey Starikovskiy <astarikovskiy@suse.de>,
+       Thomas Renninger <trenn@suse.de>
+Subject: Re: 2.6.27-rc1: critical thermal shutdown on thinkpad x60 (bisected)
+Message-ID: <20080812185941.GE1366@one.firstfloor.org>
+References: <20080806090246.GA1572@elf.ucw.cz> <48A1779B.5020303@redhat.com> <20080812115530.GB8806@elf.ucw.cz> <200808121634.34634.rjw@sisk.pl> <48A1A4F6.9080706@redhat.com> <48A1B0CB.9050908@redhat.com> <20080812183004.GA24211@isilmar.linta.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080812183004.GA24211@isilmar.linta.de>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
-> Christoph Lameter <cl@linux-foundation.org> writes:
+On Tue, Aug 12, 2008 at 08:30:04PM +0200, Dominik Brodowski wrote:
+> Hi,
 > 
->> Maybe what we are seeing is general bloat in kernel execution paths
->> due to the growth in complexity?
-> 
-> Wouldn't surprise me. Have you considered doing profiles? 
+> On Tue, Aug 12, 2008 at 05:48:27PM +0200, Milan Broz wrote:
+> > -static unsigned int ignore_ppc = -1;
+> > +static int ignore_ppc = -1;
+> >  module_param(ignore_ppc, uint, 0644);
+> 			    ^^^^
+> follow-up change?
 
-If I get the time I will try to do that.
+I'll fix it in the patch, thanks.
 
-Another way to understand why we are accepting the regressions here may be
-that we give more consideration to real time issues and deterministic
-performance these days. Hardware speed gains compensate for the additional
-bloat? (I ran the old kernels on cutting edge hardware after all).
+-Andi
