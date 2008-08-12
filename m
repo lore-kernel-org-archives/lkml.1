@@ -1,91 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754230AbYHLOtW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754774AbYHLOxM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754230AbYHLOtW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Aug 2008 10:49:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753483AbYHLOtN
+	id S1754774AbYHLOxM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Aug 2008 10:53:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752552AbYHLOw5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Aug 2008 10:49:13 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:55681 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753095AbYHLOtM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Aug 2008 10:49:12 -0400
-Date: Tue, 12 Aug 2008 09:49:05 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Peter Chubb <peterc@gelato.unsw.edu.au>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
-       Dave Hansen <dave@linux.vnet.ibm.com>, Arnd Bergmann <arnd@arndb.de>,
-       containers@lists.linux-foundation.org, Theodore Tso <tytso@mit.edu>,
-       linux-kernel@vger.kernel.org
-Subject: Re: checkpoint/restart ABI
-Message-ID: <20080812144905.GA16016@us.ibm.com>
-References: <20080807224033.FFB3A2C1@kernel> <200808090013.41999.arnd@arndb.de> <20080811152201.GB25930@us.ibm.com> <200808111853.13854.arnd@arndb.de> <1218484114.5598.43.camel@nimitz> <48A0CD86.6030704@goop.org> <87d4kfds5i.wl%peterc@chubb.wattle.id.au>
+	Tue, 12 Aug 2008 10:52:57 -0400
+Received: from wa-out-1112.google.com ([209.85.146.181]:65394 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752262AbYHLOwz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Aug 2008 10:52:55 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=DK+WYUYtFTYjX+VjFlnqJnchQMxiB7DkOJ8t4gl5FgfMRvKvYsuQ2KQpin3NNUHbk/
+         qFSK3j6A+IXVQqgB1Z72NaGw3fVYDGZG47xzr3pL4Kbi2XPAbeLDpb3ppShm8y15w33J
+         XR4XnshqpTblvlbM4ugNqbeHmMJUWNIv7p6OI=
+Message-ID: <48f7fe350808120752ud51183xeb870558d196c5fd@mail.gmail.com>
+Date: Tue, 12 Aug 2008 10:52:53 -0400
+From: "Ryan Hope" <rmh3093@gmail.com>
+To: "Nick Piggin" <nickpiggin@yahoo.com.au>
+Subject: Re: [PATCH 3/3][reiser4] dont get radix-tree dirty tagging out of sync
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "Edward Shishkin" <edward.shishkin@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Reiserfs mailing list" <reiserfs-devel@vger.kernel.org>
+In-Reply-To: <200808121600.40293.nickpiggin@yahoo.com.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <87d4kfds5i.wl%peterc@chubb.wattle.id.au>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+References: <48A0BFC9.40502@gmail.com>
+	 <200808121236.51599.nickpiggin@yahoo.com.au>
+	 <48f7fe350808112112k5e92330epa8345cbe4eb4c1b5@mail.gmail.com>
+	 <200808121600.40293.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Peter Chubb (peterc@gelato.unsw.edu.au):
-> >>>>> "Jeremy" == Jeremy Fitzhardinge <jeremy@goop.org> writes:
-> 
-> Jeremy> Dave Hansen wrote:
-> >> Arnd, Jeremy and Oren,
-> >> 
-> 
-> 
-> Jeremy>    * multiple processes * pipes * UNIX domain sockets * INET
-> Jeremy> sockets (both inter and intra machine) * unlinked open files *
-> Jeremy> checkpointing file content * closed files (ie, files which
-> Jeremy> aren't currently open, but will be soon, esp tmp files) *
-> Jeremy> shared memory * (Peter, what have I forgotten?)
-> 
-> File sharing; multiple threads with wierd sharing arrangements (think:
-> clone with various parameters, followed by exec in some of the threads
-> but not others); MERT/system-V shared memory, semaphores and message
-> queues; devices (audio, framebuffer, etc), HugeTLBFS, numa issues
-> (pinning, memory layout), processes being debugged (so,
-> checkpoint.restart a gdb/target pair), futexes, etc., etc.  Linux
-> process state keeps expanding.
-> 
-> Jeremy> Having gone through this before, I don't think an all-kernel
-> Jeremy> solution can work except for the most simple cases.
-> 
-> I agree ... it's better to put mechanisms into the kernel that can
-> then be used by a user-space programme to actually do the
-> checkpointing and restarting.
-> 
-> Beefing up ptrace or fixing /proc to be a real debugging interface
-> would be a start ... when you can get at *all* the info you need,
+On Tue, Aug 12, 2008 at 2:00 AM, Nick Piggin <nickpiggin@yahoo.com.au> wrote:
+> On Tuesday 12 August 2008 14:12, Ryan Hope wrote:
+>> I tried just using __set_page_dirty_nobuffers but that caused issues
+>> with ext3/ext4 (i can send a bug trace later if needed).
+>>
+>>                                 __inc_bdi_stat(mapping->backing_dev_info,
+>>                                                 BDI_RECLAIMABLE);
+>>                                 task_io_account_write(PAGE_CACHE_SIZE);
+>>
+>> ^^^ the above code in __set_page_dirty_nobuffers causes an issue with
+>> do_writepages in ext3/4 when I use something like the code below:
+>>
+>> int reiser4_set_page_dirty_internal(struct page *page)
+>> {
+>>      return __set_page_dirty_nobuffers(page);
+>> }
+>
+> Hmm, it causes issues in ext3/4 even though it doesn't change any
+> code executed by ext3/4? Yes, if you could send a trace...
+>
 
-Except we don't really want to export all the info you need for a
-complete restartable checkpoint.  And especially not make it
-generally writable.
-
-We have also started down that path using ptrace (see cryo, at
-git://git.sr71.net/~hallyn/cryodev.git).
-
-Right before the containers mini-summit, where the general agreement was
-that a complete in-kernel solution ought to be pursued, I had tried
-a restart using a binary format that read a checkpoint file and used
-cryo (userspace using ptrace) for the rest of the restart, only
-because there was no other reasonable way to set tsk->did_exec on
-restart.
-
-> quickly and easily, the userspace checkpoint falls out fairly
-> naturally.  You still have to work out an extensible file format to
-> store stuff, and how to restore all that state you've so lovingly
-> collected.
-> 
-> Jeremy> Lightweight filesystem checkpointing, such as btrfs provides,
-> Jeremy> would seem like a powerful mechanism for handling a lot of the
-> Jeremy> filesystem state problems.  It would have been useful when we
-> Jeremy> did this...
-> 
-> And how!  saving bits of files was very timeconsuming.
-
-Yes, we're looking forward to using btrfs' snapshots :)
-
--serge
+Pid: 2620, comm: bonnie Not tainted 2.6.27-rc2-zen1 #1
+ [<c026d729>] do_writepages+0x49/0x50
+ [<c02dc830>] ext3_write_inode+0x0/0x40
+ [<c02dc860>] ext3_write_inode+0x30/0x40
+ [<c02ad3a2>] __writeback_single_inode+0x282/0x390
+ [<c02ad9d4>] generic_sync_sb_inodes+0x304/0x3a0
+ [<f9b9b234>] reiser4_sync_inodes+0x54/0x130 [reiser4]
+ [<c02ad940>] generic_sync_sb_inodes+0x270/0x3a0
+ [<c02adc64>] writeback_inodes+0x44/0xd0
+ [<c026d0d0>] balance_dirty_pages_ratelimited_nr+0x230/0x370
+ [<f9b79a5c>] reiser4_txn_end+0x4ec/0xae0 [reiser4]
+ [<f9bc95ca>] balance_dirty_page_cluster+0x10a/0x1b0 [reiser4]
+ [<f9bd17a0>] write_cryptcompress+0x610/0xdf0 [reiser4]
+ [<f9bc2e76>] reiser4_write_careful+0xb6/0x880 [reiser4]
+ [<c021c3ae>] update_curr+0x4e/0x70
+ [<c02214c2>] task_tick_fair+0x32/0x90
+ [<c023cf57>] hrtimer_forward+0xf7/0x150
+ [<c0240523>] getnstimeofday+0x43/0xf0
+ [<c0243885>] clockevents_program_event+0xa5/0x160
+ [<c022f746>] run_timer_softirq+0x146/0x1c0
+ [<c02449ca>] tick_program_event+0x3a/0x70
+ [<c034a74c>] security_file_permission+0xc/0x10
+ [<c028dcca>] rw_verify_area+0x4a/0xc0
+ [<f9bc2dc0>] reiser4_write_careful+0x0/0x880 [reiser4]
+ [<c028e1a0>] vfs_write+0xa0/0x140
+ [<c028e311>] sys_write+0x41/0x80
+ [<c020330d>] sysenter_do_call+0x12/0x25
+ =======================
