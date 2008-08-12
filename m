@@ -1,182 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752842AbYHLTCd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753446AbYHLTDU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752842AbYHLTCd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Aug 2008 15:02:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751751AbYHLTCW
+	id S1753446AbYHLTDU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Aug 2008 15:03:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751967AbYHLTDH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Aug 2008 15:02:22 -0400
-Received: from mail-gx0-f16.google.com ([209.85.217.16]:42765 "EHLO
-	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751087AbYHLTCV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Aug 2008 15:02:21 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=XXMuK6JT4fZL984I1lH4bv3uh8XyYyiH5eV7TtB0hqD5b6xJs7OYqGp6XQBR4fmBy3
-         o1i1+tWSGMahLaIY1KS3tTmIWeYzzoPX9Yb69T11coeeQpU31gAp1S/6w4eGdRV2tY6Q
-         YrCmbX5iMhR+rADr2ff25hcKvC23iX1FjlcrE=
-Message-ID: <19f34abd0808121202p6a59917ey561ac48012fb92ca@mail.gmail.com>
-Date: Tue, 12 Aug 2008 21:02:20 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "Alexey Dobriyan" <adobriyan@gmail.com>
-Subject: Re: latest -git: kernel hangs when pulling the plug on 8139too
-Cc: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <19f34abd0808121020l4a0552a0v3d48b181d980d600@mail.gmail.com>
+	Tue, 12 Aug 2008 15:03:07 -0400
+Received: from isilmar.linta.de ([213.133.102.198]:57253 "EHLO linta.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751791AbYHLTDG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Aug 2008 15:03:06 -0400
+Date: Tue, 12 Aug 2008 21:03:02 +0200
+From: Dominik Brodowski <linux@dominikbrodowski.net>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Adrian Bunk <bunk@kernel.org>, S K <nospamnoham@gmail.com>,
+       Zhao Yakui <yakui.zhao@intel.com>, Thomas Renninger <trenn@suse.de>,
+       Alan Jenkins <alan-jenkins@tuffmail.co.uk>,
+       linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
+Subject: Re: cpufreq doesn't seem to work in Intel Q9300
+Message-ID: <20080812190302.GA26751@isilmar.linta.de>
+Mail-Followup-To: Dominik Brodowski <linux@dominikbrodowski.net>,
+	Arjan van de Ven <arjan@infradead.org>,
+	Adrian Bunk <bunk@kernel.org>, S K <nospamnoham@gmail.com>,
+	Zhao Yakui <yakui.zhao@intel.com>, Thomas Renninger <trenn@suse.de>,
+	Alan Jenkins <alan-jenkins@tuffmail.co.uk>,
+	linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
+References: <aff5deaf0808081123s1fbe6a5cn7847e9cb053c1f5a@mail.gmail.com> <200808092059.47863.trenn@suse.de> <514e099a0808100128u303207clcb22292db2f0cc59@mail.gmail.com> <1218418431.6671.52.camel@yakui_zhao.sh.intel.com> <514e099a0808102144n241c8e9ak255bded0a80744f1@mail.gmail.com> <20080811042244.469f8e1d@infradead.org> <20080811140206.GB3338@cs181140183.pp.htv.fi> <20080811071128.0165be50@infradead.org> <20080811193316.GA16631@isilmar.linta.de> <20080811165816.679cfdb9@infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <19f34abd0808110949n5d7d363es66325b87a8fb0fd1@mail.gmail.com>
-	 <20080811192739.GB5791@martell.zuzino.mipt.ru>
-	 <19f34abd0808121020l4a0552a0v3d48b181d980d600@mail.gmail.com>
+In-Reply-To: <20080811165816.679cfdb9@infradead.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 12, 2008 at 7:20 PM, Vegard Nossum <vegard.nossum@gmail.com> wrote:
-> ...but after pulling the cable and seeing the keyboard blink for five
-> seconds, the CPU resets without running the new kernel (i.e. it
-> reboots and I see the BIOS messages, etc.).
->
-> Maybe I did something wrong? (Though I don't think so.)
->
-> I will try to replace some printk()s to early_printk() (allows me to
-> maybe capture some messages on ttyS0 without trying to send anything
-> over netconsole).
+Hi Arjan,
 
-It turns out that we're not getting as far as the "panic:" line in panic().
+On Mon, Aug 11, 2008 at 04:58:16PM -0700, Arjan van de Ven wrote:
+> > Hi,
+> > 
+> > On Mon, Aug 11, 2008 at 07:11:28AM -0700, Arjan van de Ven wrote:
+> > > 1) when the cpu is idle (as in "idle loop C states/hlt"; p4_clockmod
+> > > doesn't mean anything.. the clock is stopped not just skipped.
+> > > 2) when the cpu is executing code (eg non-idle), it takes more power
+> > > for a unit of time than it takes when it's idle
+> > 
+> > This statement might be true, but might also be wrong:
+> > 	a) on systems where only C1 is exported, p4-clockmod most
+> > often equals the state the CPU is in when in C1[*], 
+> 
+> that's.. not entirely true btw.
 
-So I tried something new: Running a bash busy loop while unplugging the cable:
+well, the spec isn't really clear about this. It says (IA32 Intel
+Architecture Software Developer's Manual, Volume 3, section 13.14.3) that
+P6 family processors did this using STPCLK#. And STPCLK# was also used by the
+chipset to force the CPU to enter C2, IIRC.
+Do P4s only do an C1-equivalent (or even less than that) now, as they do the
+thermal throttling internally instead of externally using STPCLK#?
 
-    $ while true; do echo p > /proc/sysrq-trigger; done
+> >so we're in a 
+> > 	   win-win, or lose-lose situation.
+> 
+> even if it were EXACTLY identical (which it isn't).. you would be at
+> BEST a tie... not a savings. so it's lose-lose or tie-tie, but never win
 
-And to my great surprise, the kernel doesn't reboot. But I can't use
-it either. It's simply printing the same message to ttyS0 over and
-over:
+If it's C2-equivalent vs. C1, it's a win. So throttling would be a win from
+this perspective on a only C1-capable PIII, but not on a P4? Is that what
+you're trying to hint at here?
 
-    SysRq : Show Regs
+To summarize:
 
-It is also occasionally garbled, like this:
+(1) p6 family processors use STPCLK# initiated by the chipset for thermal
+    throttling.
+(2) STPCLK# is also used by the chipset to make the CPU enter C2.
+(3) p4-clockmod uses the STPCLK#-equivalent in p4 CPUs.
+(4) Therefore, it is as effective as STPCLK#, and as effective as C2.
+(5) STPCLK#/C2 has higher energy savings than hlt/C1.
+(6) therefore, p4-clockmod might make sense on systems which only export C1
+    as an idle state.
 
-    SysRq : ow Regs
-    ...
-    Sys : Show Regs
-    ...
-    SysRq : Shw Regs
+Where's my mistake?
 
-(Can this be an artefact of high-speed serial console?)
-
-I also tried to press SysRq-p from the keyboard a couple of times, but
-it didn't seem to have much effect. At one point, these is this:
-
-    SysRq : Show Regs
-    vt: argh, driver_data is NULL !
-    vt: argh, driver_data is NULL !
-    SysRq : Show Regs
-
-Also encountered this in the middle of everything:
-
-    SysRq : Show Regs
-    Clocksource tsc unstable (delta = 299973911855 ns)
-    SysRq : Show Regs
-    SysRq : Show Regs
-    SysRq : Show Regs
-    SysRq : Show Regs
-    Clockevents: could not switch to one-shot mode: lapic is not functional.
-    Could not switch to high resolution mode on CPU 0
-    SysRq : Show Regs
-    ...
-    SysRq : Show Regs
-    SysRq : <6>Clockevents: could not switch to one-shot mode: lapic
-is not function
-    al.
-    Could not switch to high resolution mode on CPU 1
-    Show Regs
-    SysRq : Show Regs
-
-Although these are all curious cases, the one piece of possibly
-valuable information I might have gotten out of it is this:
-
-    Pid: 10, comm: events/0 Not tainted (2.6.27-rc2-00325-g796aade-dirty #7)
-    EIP: 0060:[<c0593a7d>] EFLAGS: 00000292 CPU: 0
-    EIP is at _spin_unlock_irqrestore+0x5d/0x70
-    EAX: 00000292 EBX: f6c80970 ECX: 00000003 EDX: f789a4d4
-    ESI: 00000292 EDI: f6d3c430 EBP: f78a3f34 ESP: f78a3f2c
-     DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
-    CR0: 8005003b CR2: 00bf0f80 CR3: 35278000 CR4: 000006d0
-    DR0: c0b901bc DR1: 00000000 DR2: 00000000 DR3: 00000000
-    DR6: ffff0ff0 DR7: 00000400
-     [<c02df3cf>] flush_to_ldisc+0x11f/0x1a0
-     [<c014677a>] run_workqueue+0x15a/0x1f0
-     [<c0146727>] ? run_workqueue+0x107/0x1f0
-     [<c02df2b0>] ? flush_to_ldisc+0x0/0x1a0
-     [<c01472ad>] worker_thread+0x7d/0xe0
-     [<c0149e10>] ? autoremove_wake_function+0x0/0x50
-     [<c0147230>] ? worker_thread+0x0/0xe0
-     [<c0149b22>] kthread+0x42/0x70
-     [<c0149ae0>] ? kthread+0x0/0x70
-     [<c0105ce3>] kernel_thread_helper+0x7/0x14
-     =======================
-    eth0: link down
-    SysR
-    SysRhow Regs
-    Pid: 10, comm: events/0 Not tainted (2.6.27-rc2-00325-g796aade-dirty #7)
-    EIP: 0060:[<c0593abb>] EFLAGS: 00000202 CPU: 0
-    EIP is at _spin_unlock_irq+0x2b/0x60
-    EAX: 000bc04d EBX: c5f5ee00 ECX: f7899fe0 EDX: 00000000
-    ESI: 00000000 EDI: f5111fe0 EBP: f78a3f14 ESP: f78a3f10
-     DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
-    CR0: 8005003b CR2: b7f3a000 CR3: 353a2000 CR4: 000006d0
-    DR0: c0b901bc DR1: 00000000 DR2: 00000000 DR3: 00000000
-    DR6: ffff0ff0 DR7: 00000400
-     [<c013079b>] finish_task_switch+0x5b/0xc0
-     [<c0130740>] ? finish_task_switch+0x0/0xc0
-     [<c0590a40>] schedule+0x3a0/0x890
-     [<c0159a5b>] ? trace_hardirqs_on+0xb/0x10
-     [<c0149fd1>] ? prepare_to_wait+0x41/0x60
-     [<c01472e5>] worker_thread+0xb5/0xe0
-     [<c0149e10>] ? autoremove_wake_function+0x0/0x50
-     [<c0147230>] ? worker_thread+0x0/0xe0
-     [<c0149b22>] kthread+0x42/0x70
-     [<c0149ae0>] ? kthread+0x0/0x70
-     [<c0105ce3>] kernel_thread_helper+0x7/0x14
-     =======================
-    SysRhow Regs
-    SysRhow Regs
-    SysRhow Regs
-
-(The stack traces are from sysrq-p, so I am not sure how to interpret it.)
-
-Also, the netconsole is printing about the same thing (lots of Show
-Regs lines), some of those also garbled, but always like this:
-
-    ysRq : Show Regs
-
-I'm wondering if it just got stuck sending the same packet(s) over and
-over. The corruption seems to happen very regularly, anyway:
-
-    debian@debian01:~$ nc -l -p 6666 -u | grep -b '^ysRq'
-    4086:ysRq : Show Regs
-    26678:ysRq : Show Regs
-    49270:ysRq : Show Regs
-    71844:ysRq : Show Regs
-    94454:ysRq : Show Regs
-    117064:ysRq : Show Regs
-    139656:ysRq : Show Regs
-    161104:ysRq : Show Regs
-    206252:ysRq : Show Regs
-
-(Deltas seem to be mostly 22574 and 22592.)
-
-
-Vegard
-
--- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
+Thanks,
+	Dominik
