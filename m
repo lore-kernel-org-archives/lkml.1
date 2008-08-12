@@ -1,82 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752771AbYHLTmr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753128AbYHLTpV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752771AbYHLTmr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Aug 2008 15:42:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751388AbYHLTmj
+	id S1753128AbYHLTpV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Aug 2008 15:45:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751538AbYHLTpI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Aug 2008 15:42:39 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:33232 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751386AbYHLTmi (ORCPT
+	Tue, 12 Aug 2008 15:45:08 -0400
+Received: from mail.parknet.ad.jp ([210.171.162.6]:60800 "EHLO
+	mail.officemail.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751388AbYHLTpG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Aug 2008 15:42:38 -0400
-Date: Tue, 12 Aug 2008 20:24:45 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "Marcin Obara" <marcin_obara@users.sourceforge.net>
-Cc: "Jiri Slaby" <jirislaby@gmail.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
+	Tue, 12 Aug 2008 15:45:06 -0400
+From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Al Viro <viro@ZenIV.linux.org.uk>, linux-fsdevel@vger.kernel.org,
        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Intel Management Engine Interface
-Message-ID: <20080812202445.5ac3c8d1@lxorguk.ukuu.org.uk>
-In-Reply-To: <ea8d860a0808121224y63bd4178xe0c74d5fb3e34180@mail.gmail.com>
-References: <alpine.DEB.1.00.0807172021450.26825@ip-195-3-221-75.vnet.pl>
-	<alpine.DEB.1.00.0807180742560.7868@ip-195-3-221-75.vnet.pl>
-	<alpine.DEB.1.00.0807181938180.12442@ip-195-3-221-75.vnet.pl>
-	<alpine.DEB.1.00.0807182122460.24146@ip-195-3-221-75.vnet.pl>
-	<alpine.DEB.1.00.0807182229070.30162@ip-195-3-221-75.vnet.pl>
-	<alpine.DEB.1.00.0807231958130.20791@ip-195-3-221-75.vnet.pl>
-	<alpine.DEB.1.00.0808112115140.6724@ip-195-3-221-75.vnet.pl>
-	<20080811215340.2c0635dd.akpm@linux-foundation.org>
-	<48A1B71C.6080201@gmail.com>
-	<ea8d860a0808121224y63bd4178xe0c74d5fb3e34180@mail.gmail.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Subject: Re: [RFC] readdir mess
+References: <20080812062241.GQ28946@ZenIV.linux.org.uk>
+	<87ej4u9nf5.fsf@devron.myhome.or.jp>
+	<alpine.LFD.1.10.0808121009370.3462@nehalem.linux-foundation.org>
+Date: Wed, 13 Aug 2008 04:45:02 +0900
+In-Reply-To: <alpine.LFD.1.10.0808121009370.3462@nehalem.linux-foundation.org>
+	(Linus Torvalds's message of "Tue, 12 Aug 2008 10:18:49 -0700 (PDT)")
+Message-ID: <87proe81c1.fsf@devron.myhome.or.jp>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-Anti-Virus: Kaspersky Anti-Virus for MailServers 5.5.10/RELEASE, bases: 24052007 #308098, status: clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> This source code was designed few years ago and there is already
-> written userspace software.
+Linus Torvalds <torvalds@linux-foundation.org> writes:
 
-Diddums that is what you get for keeping stuff away from upstream
+> As to -EOVERFLOW, I suspect we are better off just dropping that whole 
+> logic. Returning -EOVERFLOW and truncating the readdir listing is likely 
+> much worse than the alternative. It made sense back when we needed to get 
+> people to upgrade the system interfaces, now it just means that old 
+> binaries won't work at all.
 
-> Removal of driver internal error codes may affect software.
-> I think it is more risky than keeping these own errno numbers.
-
-I would disagree. We use ERR_PTR() and other macros with errors. Using
-strange numbers is asking for risk.
-> 
-> >
-> > E.g. unlocked_ioctl switch hasn't been done plus other things mentioned
-> > below too (not all of them)
-> >
-> unlocked_ioctl would require to add lock as big kernel lock replacement.
-> It is risky in such complex code, especially if speed increase is not expected.
->
->  We don't want to init_timer() here. It is done later, to avoid race condition.
-> We only configure timer, but we are not ready to start it.
-
-init_timer does not start a timer.
- 
-> >
-> >>> +/* IOCTL commands */
-> >>> +#define IOCTL_HECI_GET_VERSION \
-> >>> +    _IOWR('H' , 0x0, struct heci_message_data)
-> > ... and conflicts with hid as I commented before.
-> 
-> Sorry for missing explanations.
-> This conflict can't be avoided, because there is already written
-> software that depends on these ioctl definitions.
-
-See "diddums" message above. You mess up tools like strace if you don't
-fix this and strace is more important than some minor driver detail
-caused by not upstreaming code earlier.
-
-The non unlocked version of ioctl() is going away and the BKL will in
-time follow so you might as well deal with that now too.
-
+However, there are some similar stuff: ->st_size, ->st_nlink and
+->st_ino in stat() (cp_old_stat()). Maybe EOVERFLOW is the reason for
+consistency...
+-- 
+OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
