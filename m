@@ -1,42 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754809AbYHLQJC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754846AbYHLQKy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754809AbYHLQJC (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Aug 2008 12:09:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752544AbYHLQIx
+	id S1754846AbYHLQKy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Aug 2008 12:10:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750762AbYHLQKr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Aug 2008 12:08:53 -0400
-Received: from mtagate7.de.ibm.com ([195.212.29.156]:45270 "EHLO
-	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752520AbYHLQIx (ORCPT
+	Tue, 12 Aug 2008 12:10:47 -0400
+Received: from pegasus.biostat.wisc.edu ([144.92.73.35]:58287 "EHLO
+	pegasus.biostat.wisc.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750899AbYHLQKq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Aug 2008 12:08:53 -0400
-Date: Tue, 12 Aug 2008 19:07:19 +0300
-From: Muli Ben-Yehuda <muli@il.ibm.com>
-To: Joerg Roedel <joerg.roedel@amd.com>
-Cc: mingo@redhat.com, tglx@linutronix.de, hpa@zytor.com,
-       linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org
-Subject: Re: [PATCH 3/7] x86: add free_coherent dma_ops callback to Calgary
-	IOMMU driver
-Message-ID: <20080812160719.GI30426@il.ibm.com>
-References: <1218554657-16070-1-git-send-email-joerg.roedel@amd.com> <1218554657-16070-4-git-send-email-joerg.roedel@amd.com>
+	Tue, 12 Aug 2008 12:10:46 -0400
+X-Greylist: delayed 1882 seconds by postgrey-1.27 at vger.kernel.org; Tue, 12 Aug 2008 12:10:46 EDT
+Message-ID: <48A1AEA4.5070004@biostat.wisc.edu>
+Date: Tue, 12 Aug 2008 10:39:16 -0500
+From: Beverly Seavey <seavey@biostat.wisc.edu>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080515)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1218554657-16070-4-git-send-email-joerg.roedel@amd.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+To: linux-kernel@vger.kernel.org
+Subject: fscanf changes value when reading .  cc version 4.1.2 20071124 (Red
+ Hat 4.1.2-42)
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-BCG-MailScanner-Information: BCG: sysreq@biostat.wisc.edu
+X-BCG-MailScanner: Found to be clean
+X-BCG-MailScanner-From: seavey@biostat.wisc.edu
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 12, 2008 at 05:24:13PM +0200, Joerg Roedel wrote:
+hornbill% 10:36>g++ -v
+Using built-in specs.
+Target: i386-redhat-linux
+Configured with: ../configure --prefix=/usr --mandir=/usr/share/man 
+--infodir=/usr/share/info --enable-shared --enable-threads=posix 
+--enable-checking=release --with-system-zlib --enable-__cxa_atexit 
+--disable-libunwind-exceptions --enable-libgcj-multifile 
+--enable-languages=c,c++,objc,obj-c++,java,fortran,ada 
+--enable-java-awt=gtk --disable-dssi --enable-plugin 
+--with-java-home=/usr/lib/jvm/java-1.4.2-gcj-1.4.2.0/jre 
+--with-cpu=generic --host=i386-redhat-linux
+Thread model: posix
+gcc version 4.1.2 20071124 (Red Hat 4.1.2-42)
+hornbill% 10:36>
 
-> Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
 
-Acked-by: Muli Ben-Yehuda <muli@il.ibm.com>
 
-Cheers,
-Muli
--- 
-Workshop on I/O Virtualization (WIOV '08)
-Co-located with OSDI '08, Dec 2008, San Diego, CA
-http://www.usenix.org/wiov08
+(gdb) watch *(allLeavesUpperBounds + 12)
+Hardware watchpoint 1: *(allLeavesUpperBounds + 12)
+(gdb) run
+Starting program: 
+/v/v03/s/seavey/private/condStuff/apD14L14-S07-75751_S04-1616-100f-NF
+Hardware watchpoint 1: *(allLeavesUpperBounds + 12)
+Hardware watchpoint 1: *(allLeavesUpperBounds + 12)
+Hardware watchpoint 1: *(allLeavesUpperBounds + 12)
+Hardware watchpoint 1: *(allLeavesUpperBounds + 12)
+Hardware watchpoint 1: *(allLeavesUpperBounds + 12)
+Hardware watchpoint 1: *(allLeavesUpperBounds + 12)
+
+Old value = 
+0                                                                            
+<<<<<<<<<<<<<<< this I did
+New value = 1
+0x00546231 in _IO_vfscanf_internal () from /lib/libc.so.6
+(gdb) cont
+Continuing.
+Hardware watchpoint 1: *(allLeavesUpperBounds + 12)
+
+Old value = 1
+New value = 
+0                                                                         
+<<<<<<<<<<<<<<< fscanf did this
+0x00546231 in _IO_vfscanf_internal () from /lib/libc.so.6
+(gdb) where
+#0  0x00546231 in _IO_vfscanf_internal () from /lib/libc.so.6
+#1  0x00547b33 in vfscanf () from /lib/libc.so.6
+#2  0x0054c612 in fscanf () from /lib/libc.so.6
+#3  0x0804b7e2 in readCompiled (readParamsPtr=0x870f070, treeCtr=14, 
+numLeaves=1, allTreesLowerBounds=0x804efa0, allTreesUpperBounds=0x8050bc0)
+    at apD14L14-S07-75751_S04-1616-100f-NF.c:880
+#4  0x0804c230 in main () at apD14L14-S07-75751_S04-1616-100f-NF.c:423
+(gdb)
+
