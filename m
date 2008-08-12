@@ -1,61 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756615AbYHLAlh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756900AbYHLAm3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756615AbYHLAlh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Aug 2008 20:41:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754090AbYHLAl0
+	id S1756900AbYHLAm3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Aug 2008 20:42:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753962AbYHLAmR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Aug 2008 20:41:26 -0400
-Received: from g1t0029.austin.hp.com ([15.216.28.36]:21252 "EHLO
-	g1t0029.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754079AbYHLAlZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Aug 2008 20:41:25 -0400
-Message-ID: <48A0DC32.9030309@hp.com>
-Date: Mon, 11 Aug 2008 20:41:22 -0400
-From: Brian Haley <brian.haley@hp.com>
-Organization: Open Source and Linux Organization
-User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
+	Mon, 11 Aug 2008 20:42:17 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:59484 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753341AbYHLAmR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Aug 2008 20:42:17 -0400
+Message-ID: <48A0DC37.7080209@kernel.sg>
+Date: Tue, 12 Aug 2008 08:41:27 +0800
+From: Eugene Teo <eugeneteo@kernel.sg>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-To: Eugene Teo <eugeneteo@kernel.sg>
-CC: Alexey Dobriyan <adobriyan@gmail.com>, John Gumb <john.gumb@tandberg.com>,
+To: David Miller <davem@davemloft.net>
+CC: brian.haley@hp.com, adobriyan@gmail.com, john.gumb@tandberg.com,
        linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       YOSHIFUJI Hideaki <yoshfuji@linux-ipv6.org>
-Subject: Re: OOPS, ip -f inet6 route get fec0::1, linux-2.6.26,	ip6_route_output,
+       parag.warudkar@gmail.com
+Subject: Re: OOPS, ip -f inet6 route get fec0::1, linux-2.6.26, ip6_route_output,
  rt6_fill_node+0x175
-References: <9F6ACAE02B6DD040A1E259977622CFDB033590C3@oslexcp1.eu.tandberg.int> <20080807203748.GA5196@martell.zuzino.mipt.ru> <489BD227.6000209@hp.com> <20080811110335.GA29407@kernel.sg>
-In-Reply-To: <20080811110335.GA29407@kernel.sg>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+References: <20080807203748.GA5196@martell.zuzino.mipt.ru>	<489BD227.6000209@hp.com>	<489FFAF8.3000909@redhat.com> <20080811.135003.105171324.davem@davemloft.net> <48A0D5B4.9050908@kernel.sg>
+In-Reply-To: <48A0D5B4.9050908@kernel.sg>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Eugene Teo wrote:
-> I think it's better to use a helper routine like ipv6_get_saddr to make
-> sure that both dst and rt6i_idev arguments are checked for NULL.
+> David Miller wrote:
+>> From: Eugene Teo <eteo@redhat.com>
+>> Date: Mon, 11 Aug 2008 16:40:24 +0800
+[...]
+> With the patch I posted, this is the behaviour I get:
 > 
-> I have compiled, and tested the patch.
-> 
-> Thanks,
-> Eugene
-> 
-> ---
-> Fix NULL pointer dereference in rt6_fill_node().
-> 
-> # ip -f inet6 route get fec0::1
-> 
-> BUG: unable to handle kernel NULL pointer dereference at 00000000
-> IP: [<c0369b85>] rt6_fill_node+0x175/0x3b0
-> EIP is at rt6_fill_node+0x175/0x3b0
-> 
-> Cc: Stable <stable@kernel.org>
-> Signed-off-by: Eugene Teo <eugeneteo@kernel.sg>
+> $ ip -f inet6 route get fec0::1
+> unreachable fec0::1 dev lo  table unspec  proto none  src
+> fe80::214:4fff:fe0f:7332  metric -1  error -101 hoplimit 255
 
-Acked-by: Brian Haley <brian.haley@hp.com>
+Ok, so there's a mistake in my patch. It should return the loopback MAC
+address instead. I'm wondering if the fix should be related to
+initialising rt6i_idev in addrconf_init routine like in the upstream
+commit: c62dba9011b93fd88fde929848582b2a98309878. The code changed quite
+a lot.
 
-But Yoshfuji might have another opinion since he did the work to remove 
-ipv6_get_saddr() in the first place.
-
--Brian
+Eugene
