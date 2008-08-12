@@ -1,95 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752811AbYHLIWO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752896AbYHLIZH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752811AbYHLIWO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Aug 2008 04:22:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751863AbYHLIWA
+	id S1752896AbYHLIZH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Aug 2008 04:25:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751773AbYHLIYw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Aug 2008 04:22:00 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:35222
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751821AbYHLIV7 (ORCPT
+	Tue, 12 Aug 2008 04:24:52 -0400
+Received: from aeryn.fluff.org.uk ([87.194.8.8]:55321 "EHLO
+	kira.home.fluff.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751575AbYHLIYv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Aug 2008 04:21:59 -0400
-Date: Tue, 12 Aug 2008 01:22:01 -0700 (PDT)
-Message-Id: <20080812.012201.164876122.davem@davemloft.net>
-To: mpatocka@redhat.com
-Cc: sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: stack overflow on Sparc64
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20080811.233013.49328708.davem@davemloft.net>
-References: <20080620.215139.218732028.davem@davemloft.net>
-	<Pine.LNX.4.64.0806211542050.21474@engineering.redhat.com>
-	<20080811.233013.49328708.davem@davemloft.net>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Tue, 12 Aug 2008 04:24:51 -0400
+Subject: MMC: s3cmci: attach get_cd host ops
+Message-Id: <20080812082449.729133366@fluff.org.uk>
+User-Agent: quilt/0.46-1
+From: Ben Dooks <ben-linux@fluff.org>
+To: drzeus-mmc@drzeus.cx, linux-kernel@vger.kernel.org
+Cc: Ben Dooks <ben-linux@fluff.org>
+Content-Disposition: inline; filename=simtec/simtec-mmc-fix-card-detect.patch
+Date: Tue, 12 Aug 2008 09:24:50 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: David Miller <davem@davemloft.net>
-Date: Mon, 11 Aug 2008 23:30:13 -0700 (PDT)
+Attach the routine to get_cd to allow the MMC core to find out whether
+there is a card present or not without the tedious process of trying to
+send commands to the card or not.
 
-> The problem is that CONFIG_STACK_DEBUG doesn't understand
-> the IRQ stacks at all.
-> 
-> I'll see if I can tweak it to handle this.
+Signed-off-by: Ben Dooks <ben-linux@fluff.org>
 
-This patch, on top of my original IRQSTACKS patch for
-sparc64, seems to get things working for me.
+Index: linux-2.6.27-rc2-quilt3/drivers/mmc/host/s3cmci.c
+===================================================================
+--- linux-2.6.27-rc2-quilt3.orig/drivers/mmc/host/s3cmci.c	2008-08-11 23:33:09.000000000 +0100
++++ linux-2.6.27-rc2-quilt3/drivers/mmc/host/s3cmci.c	2008-08-11 23:39:33.000000000 +0100
+@@ -1004,8 +1004,9 @@ static void s3cmci_send_request(struct m
+ 	enable_irq(host->irq);
+ }
+ 
+-static int s3cmci_card_present(struct s3cmci_host *host)
++static int s3cmci_card_present(struct mmc_host *mmc)
+ {
++	struct s3cmci_host *host = mmc_priv(mmc);
+ 	struct s3c24xx_mci_pdata *pdata = host->pdata;
+ 	int ret;
+ 
+@@ -1024,7 +1025,7 @@ static void s3cmci_request(struct mmc_ho
+ 	host->cmd_is_stop = 0;
+ 	host->mrq = mrq;
+ 
+-	if (s3cmci_card_present(host) == 0) {
++	if (s3cmci_card_present(mmc) == 0) {
+ 		dbg(host, dbg_err, "%s: no medium present\n", __func__);
+ 		host->mrq->cmd->error = -ENOMEDIUM;
+ 		mmc_request_done(mmc, mrq);
+@@ -1139,6 +1140,7 @@ static struct mmc_host_ops s3cmci_ops = 
+ 	.request	= s3cmci_request,
+ 	.set_ios	= s3cmci_set_ios,
+ 	.get_ro		= s3cmci_get_ro,
++	.get_cd		= s3cmci_card_present,
+ };
+ 
+ static struct s3c24xx_mci_pdata s3cmci_def_pdata = {
 
-diff --git a/arch/sparc64/lib/mcount.S b/arch/sparc64/lib/mcount.S
-index 9e4534b..24e6a3c 100644
---- a/arch/sparc64/lib/mcount.S
-+++ b/arch/sparc64/lib/mcount.S
-@@ -45,11 +45,47 @@ _mcount:
- 	sub		%g3, STACK_BIAS, %g3
- 	cmp		%sp, %g3
- 	bg,pt		%xcc, 1f
--	 sethi		%hi(panicstring), %g3
-+	 nop
-+#ifdef CONFIG_IRQSTACKS
-+	lduh		[%g6 + TI_CPU], %g1
-+	sethi		%hi(hardirq_stack), %g3
-+	or		%g3, %lo(hardirq_stack), %g3
-+	sllx		%g1, 3, %g1
-+	ldx		[%g3 + %g1], %g7
-+	sub		%g7, STACK_BIAS, %g7
-+	cmp		%sp, %g7
-+	bleu,pt		%xcc, 2f
-+	 sethi		%hi(THREAD_SIZE), %g3
-+	add		%g7, %g3, %g7
-+	cmp		%sp, %g7
-+	blu,pn		%xcc, 1f
-+2:	 sethi		%hi(softirq_stack), %g3
-+	or		%g3, %lo(softirq_stack), %g3
-+	ldx		[%g3 + %g1], %g7
-+	cmp		%sp, %g7
-+	bleu,pt		%xcc, 2f
-+	 sethi		%hi(THREAD_SIZE), %g3
-+	add		%g7, %g3, %g7
-+	cmp		%sp, %g7
-+	blu,pn		%xcc, 1f
-+	 nop
-+#endif
-+	/* If we are already on panic stack, don't hop onto it
-+	 * again, we are already trying to output the stack overflow
-+	 * message.
-+	 */
- 	sethi		%hi(ovstack), %g7		! cant move to panic stack fast enough
- 	 or		%g7, %lo(ovstack), %g7
--	add		%g7, OVSTACKSIZE, %g7
-+	add		%g7, OVSTACKSIZE, %g3
-+	sub		%g3, STACK_BIAS - 192, %g3
- 	sub		%g7, STACK_BIAS, %g7
-+	cmp		%sp, %g7
-+	blu,pn		%xcc, 2f
-+	 cmp		%sp, %g3
-+	bleu,pn		%xcc, 1f
-+	 nop
-+2:	mov		%g3, %sp
-+	sethi		%hi(panicstring), %g3
- 	mov		%g7, %sp
- 	call		prom_printf
- 	 or		%g3, %lo(panicstring), %o0
+-- 
+Ben (ben@fluff.org, http://www.fluff.org/)
+
+  'a smiley only costs 4 bytes'
