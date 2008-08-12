@@ -1,62 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753169AbYHLV2I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753493AbYHLV3s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753169AbYHLV2I (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Aug 2008 17:28:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751306AbYHLV14
+	id S1753493AbYHLV3s (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Aug 2008 17:29:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751457AbYHLV3k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Aug 2008 17:27:56 -0400
-Received: from g4t0014.houston.hp.com ([15.201.24.17]:11326 "EHLO
-	g4t0014.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751351AbYHLV1z (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Aug 2008 17:27:55 -0400
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: Uwe Bugla <uwe.bugla@gmx.de>
-Subject: Re: pnp bug in 2.6.27-rc1 (ad1816a / mpu401 / parport_pc issue)
-Date: Tue, 12 Aug 2008 15:26:12 -0600
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: akpm@osdl.org, perex@perex.cz, abelay@mit.edu,
-       debian-kernel@lists.debian.org, linux-kernel@vger.kernel.org
-References: <200808041531.10557.uwe.bugla@gmx.de> <200808121317.27323.uwe.bugla@gmx.de> <200808121210.52589.bjorn.helgaas@hp.com>
-In-Reply-To: <200808121210.52589.bjorn.helgaas@hp.com>
+	Tue, 12 Aug 2008 17:29:40 -0400
+Received: from saeurebad.de ([85.214.36.134]:38147 "EHLO saeurebad.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751305AbYHLV3k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Aug 2008 17:29:40 -0400
+From: Johannes Weiner <hannes@saeurebad.de>
+To: Nageswara R Sastry <rnsastry@linux.vnet.ibm.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+       balbir@linux.vnet.ibm.com, ego@linux.vnet.ibm.com,
+       svaidy@linux.vnet.ibm.com, davej@codemonkey.org.uk,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Alexey Starikovskiy <alexey.y.starikovskiy@intel.com>
+Subject: Re: [BUG] While changing the cpufreq governor, kernel hits a bug in workqueue.c
+References: <485F8028.1070302@linux.vnet.ibm.com>
+	<87y74w41fp.fsf@skyscraper.fehenstaub.lan>
+	<4860BB8E.2070505@linux.vnet.ibm.com>
+	<87tzfh2t5l.fsf@skyscraper.fehenstaub.lan>
+	<48638906.4090308@linux.vnet.ibm.com>
+	<87y74l4scd.fsf@skyscraper.fehenstaub.lan>
+	<87fxqp7nye.fsf@skyscraper.fehenstaub.lan>
+	<4871E657.3040403@linux.vnet.ibm.com> <87d4lqq7ec.fsf@saeurebad.de>
+	<487300B1.4040300@linux.vnet.ibm.com> <877ibukn8k.fsf@saeurebad.de>
+	<1216215897.1652.24.camel@lappy.programming.kicks-ass.net>
+	<48A145FA.2030803@linux.vnet.ibm.com>
+Date: Tue, 12 Aug 2008 23:29:15 +0200
+In-Reply-To: <48A145FA.2030803@linux.vnet.ibm.com> (Nageswara R. Sastry's
+	message of "Tue, 12 Aug 2008 13:42:42 +0530")
+Message-ID: <8763q53ot0.fsf@skyscraper.fehenstaub.lan>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200808121526.12483.bjorn.helgaas@hp.com>
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
+Content-Type: text/plain; charset=us-ascii
+X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 12 August 2008 12:10:51 pm Bjorn Helgaas wrote:
-> On Tuesday 12 August 2008 05:17:26 am Uwe Bugla wrote:
-> > Case C:
-> > same preconditions as case B, but additionally:
-> > 1. no IRQs reserved for ISA use only (in BIOS)
-> > This option I would call "PNP pure"
+Hi Nageswara,
 
-> > ...
-> > My only criticism within the desired case C (no additional screwing around 
-> > done by user)
-> > consists of two points:
-> > 1. I'd prefer the second parport running with IRQ 5 instead of in polling 
-> > mode.
-> 
-> Yes, that would be good.  But I think the only way to achieve this
-> reliably is to use the "pnp_reserve_irq=5" kernel parameter and the
-> "options parport_pc io=0x278 irq=5" module parameter.  Otherwise the
-> kernel doesn't know how the jumpers on the ISA parport card are set.
+Nageswara R Sastry <rnsastry@linux.vnet.ibm.com> writes:
 
-One more thing: since you have a non-PNP ISA card, I don't think
-you can reliably use a "pure PNP" approach.  In addition to the
-kernel and module parameters, I think you need to configure the
-BIOS to reserve IRQ 5 for ISA use.  Otherwise, the BIOS might put
-some other device on IRQ 5.
+> Any updates on this bug.
 
-Of course, if you are content to run the second parport in polling
-mode, you wouldn't need the BIOS configuration.
+Sorry.  I was just looking into it again and still see no resolution.
+Added Venkatesh and Alexey to CC.
 
-Bjorn
+To summarize again:
+
+The problem we have is that cpufreq_ondemand has a self-rearming worker
+function which we should but can not cancel synchroneously with the
+current code.  The locking order is like this:
+
+store()
+  policy_rwsem write
+    cpufreq_governor_dbs()
+    dbs_mutex
+
+work lock
+  do_dbs_timer()
+    policy_rwsem write
+
+which gives a locking hierarchy of:
+
+work lock
+  policy_rwsem
+    dbs_mutex
+
+Now, we _should_ cancel the worker synchroneously, but that won't fly
+since when cpufreq_governor_dbs() is called, we already hold
+policy_rwsem and grabbing the work lock is illegal.
+
+I will continue to read code and see if I can come up with a solution,
+but any help is really appreciated.
+
+I have not yet looked at cpufreq_conservative...
+
+> Thanks and Regards
+> R.Nageswara Sastry
+
+Thanks for your patience and insistence,
+
+	Hannes
