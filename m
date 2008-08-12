@@ -1,67 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752896AbYHLIZH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752905AbYHLI12@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752896AbYHLIZH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Aug 2008 04:25:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751773AbYHLIYw
+	id S1752905AbYHLI12 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Aug 2008 04:27:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751817AbYHLI1T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Aug 2008 04:24:52 -0400
-Received: from aeryn.fluff.org.uk ([87.194.8.8]:55321 "EHLO
-	kira.home.fluff.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751575AbYHLIYv (ORCPT
+	Tue, 12 Aug 2008 04:27:19 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:38537 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751773AbYHLI1S (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Aug 2008 04:24:51 -0400
-Subject: MMC: s3cmci: attach get_cd host ops
-Message-Id: <20080812082449.729133366@fluff.org.uk>
-User-Agent: quilt/0.46-1
-From: Ben Dooks <ben-linux@fluff.org>
-To: drzeus-mmc@drzeus.cx, linux-kernel@vger.kernel.org
-Cc: Ben Dooks <ben-linux@fluff.org>
-Content-Disposition: inline; filename=simtec/simtec-mmc-fix-card-detect.patch
-Date: Tue, 12 Aug 2008 09:24:50 +0100
+	Tue, 12 Aug 2008 04:27:18 -0400
+Date: Tue, 12 Aug 2008 09:10:09 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Marcel Holtmann <marcel@holtmann.org>, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org
+Subject: Re: [patch 2/2] fastboot: use a DMI match table to set defaults for
+ port-disable
+Message-ID: <20080812091009.05a32b39@lxorguk.ukuu.org.uk>
+In-Reply-To: <20080811220440.5cc1bc2d@infradead.org>
+References: <20080811153542.61095e5c@infradead.org>
+	<20080811153730.74599410@infradead.org>
+	<1218503351.25524.28.camel@californication>
+	<20080811220440.5cc1bc2d@infradead.org>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Attach the routine to get_cd to allow the MMC core to find out whether
-there is a card present or not without the tedious process of trying to
-send commands to the card or not.
+> if you solder the board... well you can add a tiny kernel patch or
+> change the dmi ;)
 
-Signed-off-by: Ben Dooks <ben-linux@fluff.org>
+Lots of people have them modified and you can even buy them pre-modded as
+an end user. It needs to be simpler than hacking your kernel. In fact
+this argues that the port disables should be handled by user space not by
+the kernel ?
 
-Index: linux-2.6.27-rc2-quilt3/drivers/mmc/host/s3cmci.c
-===================================================================
---- linux-2.6.27-rc2-quilt3.orig/drivers/mmc/host/s3cmci.c	2008-08-11 23:33:09.000000000 +0100
-+++ linux-2.6.27-rc2-quilt3/drivers/mmc/host/s3cmci.c	2008-08-11 23:39:33.000000000 +0100
-@@ -1004,8 +1004,9 @@ static void s3cmci_send_request(struct m
- 	enable_irq(host->irq);
- }
- 
--static int s3cmci_card_present(struct s3cmci_host *host)
-+static int s3cmci_card_present(struct mmc_host *mmc)
- {
-+	struct s3cmci_host *host = mmc_priv(mmc);
- 	struct s3c24xx_mci_pdata *pdata = host->pdata;
- 	int ret;
- 
-@@ -1024,7 +1025,7 @@ static void s3cmci_request(struct mmc_ho
- 	host->cmd_is_stop = 0;
- 	host->mrq = mrq;
- 
--	if (s3cmci_card_present(host) == 0) {
-+	if (s3cmci_card_present(mmc) == 0) {
- 		dbg(host, dbg_err, "%s: no medium present\n", __func__);
- 		host->mrq->cmd->error = -ENOMEDIUM;
- 		mmc_request_done(mmc, mrq);
-@@ -1139,6 +1140,7 @@ static struct mmc_host_ops s3cmci_ops = 
- 	.request	= s3cmci_request,
- 	.set_ios	= s3cmci_set_ios,
- 	.get_ro		= s3cmci_get_ro,
-+	.get_cd		= s3cmci_card_present,
- };
- 
- static struct s3c24xx_mci_pdata s3cmci_def_pdata = {
+We have various other libata arguments so what would happen if instead we
+pushing setting it up to userspace but fixing the libata. options line
+for settings to take PCI bus info so you always hit the right port.
 
--- 
-Ben (ben@fluff.org, http://www.fluff.org/)
+Yes you'd still need to fix some drivers to cope with that behaviour too
+but it would kick policy (which this is) back into the hands of the
+distro and end user.
 
-  'a smiley only costs 4 bytes'
+Spinning a new kernel to get your off the shelf modded Eee PC wrking
+isn't very user friendly.
+
+Alan
