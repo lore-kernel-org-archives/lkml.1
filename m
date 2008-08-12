@@ -1,83 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754038AbYHLNKV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754366AbYHLNKx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754038AbYHLNKV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Aug 2008 09:10:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752524AbYHLNKJ
+	id S1754366AbYHLNKx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Aug 2008 09:10:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753109AbYHLNKn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Aug 2008 09:10:09 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:52306 "EHLO smtp5.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752726AbYHLNKI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Aug 2008 09:10:08 -0400
-Date: Tue, 12 Aug 2008 16:08:23 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Rene Herman <rene.herman@keyaccess.nl>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, fritz@isdn4linux.de, kkeil@suse.de,
-       isdn4linux@listserv.isdn4linux.de, linux-kernel@vger.kernel.org,
-       mingo@elte.hu
-Subject: Re: [PATCH] ISDN: make ICN not auto-grab port 0x320
-Message-ID: <20080812130823.GD13910@cs181140183.pp.htv.fi>
-References: <489DD669.2090207@keyaccess.nl> <20080809215020.1bb602e7@lxorguk.ukuu.org.uk> <20080811164814.db41c20b.akpm@linux-foundation.org> <48A11952.6090203@keyaccess.nl> <20080811223043.9ad55c51.akpm@linux-foundation.org>
+	Tue, 12 Aug 2008 09:10:43 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:44217 "EHLO
+	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752524AbYHLNKj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Aug 2008 09:10:39 -0400
+Date: Tue, 12 Aug 2008 14:00:31 +0200
+From: Pavel Machek <pavel@suse.cz>
+To: Venki Pallipadi <venkatesh.pallipadi@intel.com>
+Cc: David Woodhouse <dwmw2@infradead.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       "arjan@infradead.org" <arjan@infradead.org>
+Subject: Re: [RFC] Imprecise timers.
+Message-ID: <20080812120031.GD8806@elf.ucw.cz>
+References: <1216695757.18980.16.camel@shinybook.infradead.org> <7E82351C108FA840AB1866AC776AEC4608E23BE7@orsmsx505.amr.corp.intel.com> <20080809125447.GA13169@ucw.cz> <20080811173526.GA28661@linux-os.sc.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080811223043.9ad55c51.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20080811173526.GA28661@linux-os.sc.intel.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 11, 2008 at 10:30:43PM -0700, Andrew Morton wrote:
-> On Tue, 12 Aug 2008 07:02:10 +0200 Rene Herman <rene.herman@keyaccess.nl> wrote:
-> 
-> > On 12-08-08 01:48, Andrew Morton wrote:
+Hi!
+
+> > > >which will run some time later when the CPU happens to be awake. And a
+> > > >non-deferrable timer at the hard deadline, to ensure it really does
+> > > >happen by then.
+> > > >
+> > >
+> > > One concern I have is drivers using range_timers thinking that they need
+> > > some upper bound, while all they need is a simple deferrable timer. With that
+> > > we will have multiple timers waking up the CPU all the time (say, on
+> > > different CPUs) problem again. Even without the timers waking up all
 > > 
-> > > otoh it's a bit sad to break allyesconfig kernels - there is
-> > > regression-testing value in being able to run such kernels.
-> > > 
-> > > I wonder if we can add a new boot option `allyesconfig-test' or
-> > > something like that, and then, within the offending drivers, test that
-> > > flag and take suitable avoiding action.
-> > > 
-> > > Or we could do it at compile-time - define
-> > > CONFIG_ALLYESCONFIG_TESTING in some fashion.
+> > I don't get it. Who has timers that can be deferred forever? At that
+> > point they may simply not set the timer at all, right?
 > > 
-> > Yes, latter I'd feel with the thing most against it that there aren't 
-> > actually many that need it.
 > 
-> I think the boot option is the way, if at all.
+> I don't think I said drivers have or need timers that can be deferred forever.
 > 
-> Because the config option isn't very usable.  What's to stop someone
-> from doing `make allyesconfig' and then menually editing the .config so
-> it's no longer truly an allyesconfig .config?
-> 
-> otoh, if is't purely a manual setting rather than some automagic thing
-> then it might be workable.  CONFIG_INGO :)
+> My point is, is it worth the overhead of setting and deleting additional timer,
+> just because drivers think that they need to use this new interface,
+> need to set a upper bound and come up with random upper bounds.
+> Apart from the overhead of setup and teardown we will somewhat negate the
+> benefits of deferrable timers as the upper bound hard timers can fire at
+> different times waking up the CPUs frequently.
 
-Write the required settings into a file and use KCONFIG_ALLCONFIG.
+> I understand that some drivers need this kind of upper limit. I am not sure
+> whether all drivers need it and if not, how can we restrict drivers from using
+> this when they don't really need it.
 
-Our kconfig files are already complicated enough, and needlessly adding 
-more complexity only increases the problems (which would in turn result 
-in this Hungarian guy spreading his kconfig FUD even more often).
+Do you have example of driver that does NOT need upper limit?
 
-Tomorrow someone might want to boot an allyesconfig kernel on an old
-Pentium-MMX, and the CONFIG_M686=y allyesconfig gives might break his 
-boot - another special case in kconfig for an even more exotic use case?
+Like... lets take ATA.
 
-Everyone doing randconfig builds knows that CONFIG_STANDALONE=n is not a 
-good idea, and similarly someone trying to boot allyesconfig kernels 
-might need a list of options he mustn't enable.
+submit_command()
+if command is not back in ~5 seconds, it probably timed out.
 
-After all, we are not talking about stuff for normal users.
+So you set soft limit to 5 seconds, and hard limit to 10. You
+definitely want user to know something is wrong after 10 seconds,
+right?
 
-cu
-Adrian
-
+								Pavel
 -- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
