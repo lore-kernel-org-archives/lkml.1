@@ -1,117 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753480AbYHLPnh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754467AbYHLPnu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753480AbYHLPnh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Aug 2008 11:43:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752240AbYHLPn3
+	id S1754467AbYHLPnu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Aug 2008 11:43:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753669AbYHLPnj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Aug 2008 11:43:29 -0400
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:38527 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752191AbYHLPn2 (ORCPT
+	Tue, 12 Aug 2008 11:43:39 -0400
+Received: from tomts5-srv.bellnexxia.net ([209.226.175.25]:38162 "EHLO
+	tomts5-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753493AbYHLPni (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Aug 2008 11:43:28 -0400
-X-Sasl-enc: o0QG6SYP/iB9jLuPZ8T1s5f/Zahquvhtzxa9kJFRa3ED 1218555806
-Subject: Re: [Unionfs] Re: [PATCH -mm] unionfs: build fixes
-From: Ian Kent <raven@themaw.net>
-To: Erez Zadok <ezk@cs.sunysb.edu>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Hugh Dickins <hugh@veritas.com>,
-       unionfs@filesystems.org, linux-kernel@vger.kernel.org,
-       Bharata B Rao <bharata@linux.vnet.ibm.com>
-In-Reply-To: <200807300102.m6U123KW015449@agora.fsl.cs.sunysb.edu>
-References: <200807300102.m6U123KW015449@agora.fsl.cs.sunysb.edu>
-Content-Type: text/plain
-Date: Tue, 12 Aug 2008 23:38:44 +0800
-Message-Id: <1218555525.3248.18.camel@raven.themaw.net>
+	Tue, 12 Aug 2008 11:43:38 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApsEAGVMoUhMRKxB/2dsb2JhbACBYK4WgSk
+Date: Tue, 12 Aug 2008 11:43:34 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
+       Christoph Lameter <cl@linux-foundation.org>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, rdunlap@xenotime.net, mpm@selenic.com,
+       rostedt@goodmis.org, tglx@linutronix.de
+Subject: Re: [PATCH 4/5] kmemtrace: SLUB hooks.
+Message-ID: <20080812154334.GA18581@Krystal>
+References: <1218388447-5578-3-git-send-email-eduard.munteanu@linux360.ro> <1218388447-5578-4-git-send-email-eduard.munteanu@linux360.ro> <1218388447-5578-5-git-send-email-eduard.munteanu@linux360.ro> <48A046F5.2000505@linux-foundation.org> <1218463774.7813.291.camel@penberg-laptop> <48A048FD.30909@linux-foundation.org> <1218464177.7813.293.camel@penberg-laptop> <48A04AEE.8090606@linux-foundation.org> <1218464557.7813.295.camel@penberg-laptop> <20080812152954.GB5973@localhost>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-5.fc8) 
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20080812152954.GB5973@localhost>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 11:39:53 up 68 days, 20:20,  7 users,  load average: 0.65, 0.54,
+	0.55
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Tue, 2008-07-29 at 21:02 -0400, Erez Zadok wrote:
-> In message <20080729172216.84e958f7.akpm@linux-foundation.org>, Andrew Morton writes:
-> > On Tue, 29 Jul 2008 19:12:47 +0100 (BST)
-> > Hugh Dickins <hugh@veritas.com> wrote:
-> > 
-> > > Get unionfs building and working in mmotm with the 2.6.27-rc1 VFS changes:
-> > > permission() has been replaced by inode_permission() without nameidata arg;
-> > > unionfs_permission() without nameidata arg; vfs_symlink() without mode arg;
-> > > LOOKUP_ACCESS no longer defined; and kmem_cache_create() no longer passes
-> > > kmem_cachep to the init_once() constructor.
+* Eduard - Gabriel Munteanu (eduard.munteanu@linux360.ro) wrote:
+> On Mon, Aug 11, 2008 at 05:22:37PM +0300, Pekka Enberg wrote:
+> > On Mon, 2008-08-11 at 09:21 -0500, Christoph Lameter wrote:
+> > > Pekka Enberg wrote:
 > > > 
-> > > Note: while okay for inclusion in -mm for now, unionfs_permission() mods
-> > > will need review and perhaps correction by Erez: without a nameidata arg,
-> > > some locking vanishes from unionfs_permission(), and a MNT_NOEXEC check on
-> > > its lower_inode; I have not studied the VFS changes enough to tell whether
-> > > that amounts to a real issue for unionfs, or just removal of dead code.
+> > > > The function call is supposed to go away when we convert kmemtrace to
+> > > > use Mathieu's markers but I suppose even then we have a problem with
+> > > > inlining?
+> > > 
+> > > The function calls are overwritten with NOPs? Or how does that work?
 > > 
-> > thanks.
-> > 
-> > > This should follow git-unionfs.patch
-> > > I notice my unionfs-fix-memory-leak.patch
-> > > and fsstack-fsstack_copy_inode_size-locking.patch
-> > > are currently commented out, yet I don't recall the
-> > > mm-commits dispatch rider bringing me a telegram to explain why?
-> > 
-> > git-unionfs got commented out because of some upstream git (or build)
-> > catastrophe.  So its fixes got comemnted out too.  Then git-unionfs was
-> > restored but I forgot to manually restore the followon fixes.  It
-> > happens.
+> > I have no idea. Mathieu, Eduard?
 > 
-> Shortly I'm going to post fixes which include Hugh's stuff and more.  Sorry
-> for the delay.
+> Yes, the code is patched at runtime. But AFAIK markers already provide
+> this stuff (called "immediate values"). Mathieu's tracepoints also do
+> it. But it's not available on all arches. x86 and x86-64 work as far as
+> I remember.
 > 
-> > I must say that I'm not really sure why we're struggling along with
-> > unionfs.  Last I heard there were fundamental, unresolveable design
-> > disagreements with the VFS guys.  Those issues should be where 100% of
-> > the effort is being devoted, but instead we seem to be cruising along
-> > in a different direction?
-> 
-> Some of my upcoming patches begin to address this (took longer than
-> expected):
-> 
-> - extracting all whiteout related code into callable methods in unionfs, so
->   that I can "drop in" the new whiteout code that Bharata et al. are
->   reportedly working on.  I really hope to see some new whiteout code in -mm
->   soon.  Bharata?
-> 
-> - reworking the lookup code to handle vfsmounts: this'll be needed when we
->   switch from vfs_* to path_* (Miklos's patches).
-> 
-> As for other fundamental issues, I've been posting some suggestions in
-> recent months.  For example
-> 
-> - the need for cleaner handling of vma->fault(), a relatively minor patch I
->   posted, based on hch's LSF08 suggestions.  Got no response from any of the
->   VFS folks.
-> 
-> - a post I made regarding suggestions on how to handle lower f/s changes,
->   based on Viro's LSF08 comments: to have a superblock level writers count
->   (I suggested that it's a superset of the superblock->s_vfs_rename_mutex,
->   and perhaps be elevated to be one).  Again, got no responses from anyone
->   on the VFS team.
 
-Erez, do you have links to email threads or a commentary of the things
-that are causing concern somewhere?
+The markers present in mainline kernel does not use immediate values.
+However, immediate values in tip does implement a load
+immediate/test/branch for x86, x86_64 and powerpc. I also have support
+for sparc64 in my lttng tree.
 
-I spotted one but it seems light on for descriptive value (or maybe it's
-me who's light on for understanding, ;)).
-
-> 
-> So I'm not sure how much the VFS guys have time now to review such patches
-> and help me address these issues.  We can't seem to get through even simpler
-> issues, nor get simple patches merged (ala the copy_inode_size) despite
-> repeated attempts.
-
-Yeah, life is like that a lot for me too.
-
-But why not assume that, given a reasonable amount of time, a "no
-response" is equivalent to a "no complaints" and push on with the
-updates. Sooner or later someone who cares enough will take a look and
-give the needed feedback.
-
-Ian
+Mathieu
 
 
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
