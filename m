@@ -1,65 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755015AbYHLP3U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754196AbYHLPca@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755015AbYHLP3U (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Aug 2008 11:29:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752600AbYHLP3H
+	id S1754196AbYHLPca (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Aug 2008 11:32:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752578AbYHLPcU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Aug 2008 11:29:07 -0400
-Received: from khc.piap.pl ([195.187.100.11]:42363 "EHLO khc.piap.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753495AbYHLP3G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Aug 2008 11:29:06 -0400
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Andy Whitcroft <apw@shadowen.org>, Randy Dunlap <rdunlap@xenotime.net>,
-       Joel Schopp <jschopp@austin.ibm.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-Subject: Re: Possible false positive in checkpatch
-References: <Pine.LNX.4.44L0.0808121017510.2509-100000@iolanthe.rowland.org>
-From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Tue, 12 Aug 2008 17:29:02 +0200
-In-Reply-To: <Pine.LNX.4.44L0.0808121017510.2509-100000@iolanthe.rowland.org> (Alan Stern's message of "Tue\, 12 Aug 2008 10\:25\:08 -0400 \(EDT\)")
-Message-ID: <m3d4kefe0x.fsf@maximus.localdomain>
+	Tue, 12 Aug 2008 11:32:20 -0400
+Received: from cavan.codon.org.uk ([93.93.128.6]:56566 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752569AbYHLPcT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Aug 2008 11:32:19 -0400
+Date: Tue, 12 Aug 2008 16:32:05 +0100
+From: Matthew Garrett <mjg@redhat.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Pavel Machek <pavel@suse.cz>, Milan Broz <mbroz@redhat.com>,
+       Andi Kleen <andi@firstfloor.org>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       ACPI mailing list <linux-acpi@vger.kernel.org>,
+       Alexey Starikovskiy <astarikovskiy@suse.de>
+Subject: Re: 2.6.27-rc1: critical thermal shutdown on thinkpad x60
+Message-ID: <20080812153205.GA19070@srcf.ucam.org>
+References: <20080806090246.GA1572@elf.ucw.cz> <48A1779B.5020303@redhat.com> <20080812115530.GB8806@elf.ucw.cz> <200808121634.34634.rjw@sisk.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200808121634.34634.rjw@sisk.pl>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Stern <stern@rowland.harvard.edu> writes:
+On Tue, Aug 12, 2008 at 04:34:33PM +0200, Rafael J. Wysocki wrote:
 
-> ERROR: space prohibited after that '*' (ctx:BxW)
+> Pavel, can you check if the state of the fan(s) change while the thermal trip
+> points are being passed?
 
-
-> Certainly this is a rather uncommon code construction, but similar
-> ones might occur elsewhere.  To my eyes,
->
-> 	(* (type *) ptr)
->
-> looks better than
->
-> 	(*(type *) ptr)
->
-> or
->
-> 	(*(type *)ptr)
->
-> or even
->
-> 	(*(type*)ptr)
->
-> but of course this is a matter of opinion.  Is there any strong feeling 
-> about this in the kernel community?
-
-I think checkpatch already has gone way too far with this (and not
-only this).
-
-"type *var" vs "type* var" - sure, the latter is worse and provokes
-"type* var1, var2", but anything else is IMHO only annoying and,
-actually, not important WRT readability at all.
-
-For example I prefer "type* func()" - as it's a function returning
-"a pointer to type" and not "a pointer to a function returning type"
-(which "type *func()" may suggest). Yes, func is not a pointer, so why
-write "*" next to it?
+Thinkpads don't expose fans as ACPI devices, so there's no active trip 
+points.
 -- 
-Krzysztof Halasa
+Matthew Garrett | mjg59@srcf.ucam.org
