@@ -1,18 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751868AbYHLDOt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753341AbYHLDPI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751868AbYHLDOt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Aug 2008 23:14:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751948AbYHLDO0
+	id S1753341AbYHLDPI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Aug 2008 23:15:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752114AbYHLDO3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Aug 2008 23:14:26 -0400
-Received: from mga09.intel.com ([134.134.136.24]:23764 "EHLO mga09.intel.com"
+	Mon, 11 Aug 2008 23:14:29 -0400
+Received: from mga01.intel.com ([192.55.52.88]:45921 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751892AbYHLDOZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Aug 2008 23:14:25 -0400
+	id S1752035AbYHLDO2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Aug 2008 23:14:28 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.32,192,1217833200"; 
-   d="scan'208";a="428377107"
-Subject: [PATCH -v3 1/7] kexec jump: clean up #ifdef and comments
+   d="scan'208";a="369885778"
+Subject: [PATCH -v3 2/7] kexec jump: rename KEXEC_CONTROL_CODE_SIZE to
+	KEXEC_CONTROL_PAGE_SIZE
 From: Huang Ying <ying.huang@intel.com>
 To: "Eric W. Biederman" <ebiederm@xmission.com>, Pavel Machek <pavel@ucw.cz>,
        nigel@nigel.suspend2.net, "Rafael J. Wysocki" <rjw@sisk.pl>,
@@ -22,8 +23,8 @@ To: "Eric W. Biederman" <ebiederm@xmission.com>, Pavel Machek <pavel@ucw.cz>,
 Cc: linux-kernel@vger.kernel.org,
        Kexec Mailing List <kexec@lists.infradead.org>
 Content-Type: text/plain
-Date: Tue, 12 Aug 2008 11:14:21 +0800
-Message-Id: <1218510861.24951.40.camel@caritas-dev.intel.com>
+Date: Tue, 12 Aug 2008 11:14:24 +0800
+Message-Id: <1218510864.24951.41.camel@caritas-dev.intel.com>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
@@ -31,75 +32,142 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Move if (kexec_image->preserve_context) { ... } into #ifdef
-CONFIG_KEXEC_JUMP to make code looks cleaner.
-
-Fix no longer correct comments of kernel_kexec().
+Rename KEXEC_CONTROL_CODE_SIZE to KEXEC_CONTROL_PAGE_SIZE, because
+control page is used for not only code on some platform. For example
+in kexec jump, it is used for data and stack too.
 
 Signed-off-by: Huang Ying <ying.huang@intel.com>
-Acked-by: Vivek Goyal <vgoyal@redhat.com>
 
 ---
- kernel/kexec.c |   17 ++++++++---------
- 1 file changed, 8 insertions(+), 9 deletions(-)
+ arch/arm/include/asm/kexec.h     |    2 +-
+ arch/ia64/include/asm/kexec.h    |    2 +-
+ arch/powerpc/include/asm/kexec.h |    2 +-
+ arch/s390/include/asm/kexec.h    |    2 +-
+ arch/sh/include/asm/kexec.h      |    2 +-
+ include/asm-mips/kexec.h         |    2 +-
+ include/asm-x86/kexec.h          |    4 ++--
+ include/linux/kexec.h            |    4 ++--
+ kernel/kexec.c                   |    4 ++--
+ 9 files changed, 12 insertions(+), 12 deletions(-)
 
+--- a/include/asm-x86/kexec.h
++++ b/include/asm-x86/kexec.h
+@@ -63,7 +63,7 @@
+ /* Maximum address we can use for the control code buffer */
+ # define KEXEC_CONTROL_MEMORY_LIMIT TASK_SIZE
+ 
+-# define KEXEC_CONTROL_CODE_SIZE	4096
++# define KEXEC_CONTROL_PAGE_SIZE	4096
+ 
+ /* The native architecture */
+ # define KEXEC_ARCH KEXEC_ARCH_386
+@@ -79,7 +79,7 @@
+ # define KEXEC_CONTROL_MEMORY_LIMIT     (0xFFFFFFFFFFUL)
+ 
+ /* Allocate one page for the pdp and the second for the code */
+-# define KEXEC_CONTROL_CODE_SIZE  (4096UL + 4096UL)
++# define KEXEC_CONTROL_PAGE_SIZE  (4096UL + 4096UL)
+ 
+ /* The native architecture */
+ # define KEXEC_ARCH KEXEC_ARCH_X86_64
+--- a/arch/sh/include/asm/kexec.h
++++ b/arch/sh/include/asm/kexec.h
+@@ -21,7 +21,7 @@
+ /* Maximum address we can use for the control code buffer */
+ #define KEXEC_CONTROL_MEMORY_LIMIT TASK_SIZE
+ 
+-#define KEXEC_CONTROL_CODE_SIZE	4096
++#define KEXEC_CONTROL_PAGE_SIZE	4096
+ 
+ /* The native architecture */
+ #define KEXEC_ARCH KEXEC_ARCH_SH
+--- a/arch/powerpc/include/asm/kexec.h
++++ b/arch/powerpc/include/asm/kexec.h
+@@ -22,7 +22,7 @@
+ #define KEXEC_CONTROL_MEMORY_LIMIT TASK_SIZE
+ #endif
+ 
+-#define KEXEC_CONTROL_CODE_SIZE 4096
++#define KEXEC_CONTROL_PAGE_SIZE 4096
+ 
+ /* The native architecture */
+ #ifdef __powerpc64__
+--- a/arch/ia64/include/asm/kexec.h
++++ b/arch/ia64/include/asm/kexec.h
+@@ -9,7 +9,7 @@
+ /* Maximum address we can use for the control code buffer */
+ #define KEXEC_CONTROL_MEMORY_LIMIT TASK_SIZE
+ 
+-#define KEXEC_CONTROL_CODE_SIZE (8192 + 8192 + 4096)
++#define KEXEC_CONTROL_PAGE_SIZE (8192 + 8192 + 4096)
+ 
+ /* The native architecture */
+ #define KEXEC_ARCH KEXEC_ARCH_IA_64
+--- a/arch/s390/include/asm/kexec.h
++++ b/arch/s390/include/asm/kexec.h
+@@ -31,7 +31,7 @@
+ #define KEXEC_CONTROL_MEMORY_LIMIT (1UL<<31)
+ 
+ /* Allocate one page for the pdp and the second for the code */
+-#define KEXEC_CONTROL_CODE_SIZE 4096
++#define KEXEC_CONTROL_PAGE_SIZE 4096
+ 
+ /* The native architecture */
+ #define KEXEC_ARCH KEXEC_ARCH_S390
+--- a/arch/arm/include/asm/kexec.h
++++ b/arch/arm/include/asm/kexec.h
+@@ -10,7 +10,7 @@
+ /* Maximum address we can use for the control code buffer */
+ #define KEXEC_CONTROL_MEMORY_LIMIT (-1UL)
+ 
+-#define KEXEC_CONTROL_CODE_SIZE	4096
++#define KEXEC_CONTROL_PAGE_SIZE	4096
+ 
+ #define KEXEC_ARCH KEXEC_ARCH_ARM
+ 
+--- a/include/asm-mips/kexec.h
++++ b/include/asm-mips/kexec.h
+@@ -16,7 +16,7 @@
+  /* Maximum address we can use for the control code buffer */
+ #define KEXEC_CONTROL_MEMORY_LIMIT (0x20000000)
+ 
+-#define KEXEC_CONTROL_CODE_SIZE 4096
++#define KEXEC_CONTROL_PAGE_SIZE 4096
+ 
+ /* The native architecture */
+ #define KEXEC_ARCH KEXEC_ARCH_MIPS
 --- a/kernel/kexec.c
 +++ b/kernel/kexec.c
-@@ -1426,11 +1426,9 @@ static int __init crash_save_vmcoreinfo_
- 
- module_init(crash_save_vmcoreinfo_init)
- 
--/**
-- *	kernel_kexec - reboot the system
-- *
-- *	Move into place and start executing a preloaded standalone
-- *	executable.  If nothing was preloaded return an error.
-+/*
-+ * Move into place and start executing a preloaded standalone
-+ * executable.  If nothing was preloaded return an error.
-  */
- int kernel_kexec(void)
- {
-@@ -1443,8 +1441,8 @@ int kernel_kexec(void)
- 		goto Unlock;
- 	}
- 
--	if (kexec_image->preserve_context) {
- #ifdef CONFIG_KEXEC_JUMP
-+	if (kexec_image->preserve_context) {
- 		mutex_lock(&pm_mutex);
- 		pm_prepare_console();
- 		error = freeze_processes();
-@@ -1471,8 +1469,9 @@ int kernel_kexec(void)
- 		if (error)
- 			goto Enable_irqs;
- 		save_processor_state();
-+	} else
+@@ -242,7 +242,7 @@ static int kimage_normal_alloc(struct ki
+ 	 */
+ 	result = -ENOMEM;
+ 	image->control_code_page = kimage_alloc_control_pages(image,
+-					   get_order(KEXEC_CONTROL_CODE_SIZE));
++					   get_order(KEXEC_CONTROL_PAGE_SIZE));
+ 	if (!image->control_code_page) {
+ 		printk(KERN_ERR "Could not allocate control_code_buffer\n");
+ 		goto out;
+@@ -317,7 +317,7 @@ static int kimage_crash_alloc(struct kim
+ 	 */
+ 	result = -ENOMEM;
+ 	image->control_code_page = kimage_alloc_control_pages(image,
+-					   get_order(KEXEC_CONTROL_CODE_SIZE));
++					   get_order(KEXEC_CONTROL_PAGE_SIZE));
+ 	if (!image->control_code_page) {
+ 		printk(KERN_ERR "Could not allocate control_code_buffer\n");
+ 		goto out;
+--- a/include/linux/kexec.h
++++ b/include/linux/kexec.h
+@@ -25,8 +25,8 @@
+ #error KEXEC_CONTROL_MEMORY_LIMIT not defined
  #endif
--	} else {
-+	{
- 		blocking_notifier_call_chain(&reboot_notifier_list,
- 					     SYS_RESTART, NULL);
- 		system_state = SYSTEM_RESTART;
-@@ -1484,8 +1483,8 @@ int kernel_kexec(void)
  
- 	machine_kexec(kexec_image);
+-#ifndef KEXEC_CONTROL_CODE_SIZE
+-#error KEXEC_CONTROL_CODE_SIZE not defined
++#ifndef KEXEC_CONTROL_PAGE_SIZE
++#error KEXEC_CONTROL_PAGE_SIZE not defined
+ #endif
  
--	if (kexec_image->preserve_context) {
- #ifdef CONFIG_KEXEC_JUMP
-+	if (kexec_image->preserve_context) {
- 		restore_processor_state();
- 		device_power_up(PMSG_RESTORE);
-  Enable_irqs:
-@@ -1499,8 +1498,8 @@ int kernel_kexec(void)
-  Restore_console:
- 		pm_restore_console();
- 		mutex_unlock(&pm_mutex);
--#endif
- 	}
-+#endif
- 
-  Unlock:
- 	xchg(&kexec_lock, 0);
+ #ifndef KEXEC_ARCH
 
 
