@@ -1,126 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752559AbYHLHqj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752847AbYHLHtX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752559AbYHLHqj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Aug 2008 03:46:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751584AbYHLHq2
+	id S1752847AbYHLHtX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Aug 2008 03:49:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751651AbYHLHtQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Aug 2008 03:46:28 -0400
-Received: from ns.suse.de ([195.135.220.2]:36548 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751466AbYHLHq1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Aug 2008 03:46:27 -0400
-From: Neil Brown <neilb@suse.de>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Date: Tue, 12 Aug 2008 17:46:14 +1000
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 12 Aug 2008 03:49:16 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:39455 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751535AbYHLHtP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Aug 2008 03:49:15 -0400
+Date: Tue, 12 Aug 2008 08:32:04 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: daw-news@cs.berkeley.edu (David Wagner)
+Cc: daw@cs.berkeley.edu, linux-kernel@vger.kernel.org
+Subject: Re: [malware-list] [RFC 0/5] [TALPA] Intro to a linuxinterfaceforon
+ access scanning
+Message-ID: <20080812083204.53602192@lxorguk.ukuu.org.uk>
+In-Reply-To: <g7qdbj$6m0$2@taverner.cs.berkeley.edu>
+References: <20080806105008.GF6477@cs181140183.pp.htv.fi>
+	<20080811065608.44687f65@infradead.org>
+	<48A0649B.4010706@sun.com>
+	<2629CC4E1D22A64593B02C43E855530304AE4B80@USILMS12.ca.com>
+	<g7qdbj$6m0$2@taverner.cs.berkeley.edu>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-ID: <18593.16326.701825.625469@notabene.brown>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, netdev@vger.kernel.org, trond.myklebust@fys.uio.no,
-       Daniel Lezcano <dlezcano@fr.ibm.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>
-Subject: Re: [PATCH 12/30] mm: memory reserve management
-In-Reply-To: message from Peter Zijlstra on Thursday July 24
-References: <20080724140042.408642539@chello.nl>
-	<20080724141530.127530749@chello.nl>
-X-Mailer: VM 7.19 under Emacs 21.4.1
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday July 24, a.p.zijlstra@chello.nl wrote:
-> Generic reserve management code. 
-> 
-> It provides methods to reserve and charge. Upon this, generic alloc/free style
-> reserve pools could be build, which could fully replace mempool_t
-> functionality.
+> theoretical possibility)?  There are a few obvious ones: files shared
+> over a SMB filesystem; attachments sent via email.  What else?  Can
+> you give some other examples?
 
-More comments on this patch .....
+This is the nightclub model and doesn't work viz:
 
-> +void *___kmalloc_reserve(size_t size, gfp_t flags, int node, void *ip,
-> +			 struct mem_reserve *res, int *emerg);
-> +
-> +static inline
-> +void *__kmalloc_reserve(size_t size, gfp_t flags, int node, void *ip,
-> +			struct mem_reserve *res, int *emerg)
-> +{
-> +	void *obj;
-> +
-> +	obj = __kmalloc_node_track_caller(size,
-> +			flags | __GFP_NOMEMALLOC | __GFP_NOWARN, node, ip);
-> +	if (!obj)
-> +		obj = ___kmalloc_reserve(size, flags, node, ip, res, emerg);
-> +
-> +	return obj;
-> +}
-> +
-> +#define kmalloc_reserve(size, gfp, node, res, emerg) 			\
-> +	__kmalloc_reserve(size, gfp, node, 				\
-> +			  __builtin_return_address(0), res, emerg)
-> +
-.....
-> +/*
-> + * alloc wrappers
-> + */
-> +
-> +void *___kmalloc_reserve(size_t size, gfp_t flags, int node, void *ip,
-> +			 struct mem_reserve *res, int *emerg)
-> +{
-> +	void *obj;
-> +	gfp_t gfp;
-> +
-> +	gfp = flags | __GFP_NOMEMALLOC | __GFP_NOWARN;
-> +	obj = __kmalloc_node_track_caller(size, gfp, node, ip);
-> +
-> +	if (obj || !(gfp_to_alloc_flags(flags) & ALLOC_NO_WATERMARKS))
-> +		goto out;
-> +
-> +	if (res && !mem_reserve_kmalloc_charge(res, size)) {
-> +		if (!(flags & __GFP_WAIT))
-> +			goto out;
-> +
-> +		wait_event(res->waitqueue,
-> +				mem_reserve_kmalloc_charge(res, size));
-> +
-> +		obj = __kmalloc_node_track_caller(size, gfp, node, ip);
-> +		if (obj) {
-> +			mem_reserve_kmalloc_charge(res, -size);
-> +			goto out;
-> +		}
-> +	}
-> +
-> +	obj = __kmalloc_node_track_caller(size, flags, node, ip);
-> +	WARN_ON(!obj);
-> +	if (emerg)
-> +		*emerg |= 1;
-> +
-> +out:
-> +	return obj;
-> +}
+"If I put a big scary man on the door nobody will be able to get knives
+and drugs in because we only have one door for the public"
 
-Two comments to be precise.
+If you have to enumerate the potential attack vectors to make your model
+work you already lost. There is one of you and a lot of them. Smart
+nightclubs don't do that they circulate looking for evidence. Yes, they
+will miss some, yes they will respond late to some, but they will at
+least notice there has been a problem.
 
-1/ __kmalloc_reserve attempts a __GFP_NOMEMALLOC allocation, and then
-   if that fails, ___kmalloc_reserve immediately tries again.
-   Is that pointless?  Should the second one be removed?
+Now computer security is a bit different because it has some night of the
+living dead type properties where the zombies don't just sneak in through
+the toilet window but they go around turning security guards into zombies
+too but the basic premise is very much the same.
 
-2/ mem_reserve_kmalloc_charge appears to assume that the 'mem_reserve'
-   has been 'connected' and so is active.
-   While callers probably only set GFP_MEMALLOC in cases where the
-   mem_reserve is connected, ALLOC_NO_WATERMARKS could get via
-   PF_MEMALLOC so we could end up calling mem_reserve_kmalloc_charge
-   when the mem_reserve is not connected.
-   That seems to be 'odd' at least.
-   It might even be 'wrong' as mem_reserve_connect doesn't add the
-   usage of the child to the parent - only the ->pages and ->limit.
+> Are we talking about enterprise networks?  Are we talking about consumers?
 
-   What is your position on this?  Mine is "still slightly confused".
+What theat model and set of security properties does this change ?
+The reasons for poor security may change from 'who cares if we get a
+virus, I get an afternoon drinking coffee' to 'not computer skilled' but
+the basic problem is very similar.
 
-NeilBrown
+What are the invariants and what are the probability based things we are
+trying to achieve ? What level of interference with existing behaviour is
+acceptable ?
 
-  
+The last is important as we SELinux you can achieve much of what is
+needed but only at a cost of interfering in normal practice now and then
+- eg downloading a shell script versus accidentally downloading a worm is
+rather hard for a PC to tell apart so implementing 'written by web
+browser, can't be executed' is easy but has side effects
+
+Alan
