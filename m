@@ -1,50 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753999AbYHLNaf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753510AbYHLNc4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753999AbYHLNaf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Aug 2008 09:30:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752255AbYHLNa1
+	id S1753510AbYHLNc4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Aug 2008 09:32:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752212AbYHLNcq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Aug 2008 09:30:27 -0400
-Received: from smtpq1.tilbu1.nb.home.nl ([213.51.146.200]:49293 "EHLO
-	smtpq1.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751651AbYHLNa1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Aug 2008 09:30:27 -0400
-Message-ID: <48A19082.3030507@keyaccess.nl>
-Date: Tue, 12 Aug 2008 15:30:42 +0200
-From: Rene Herman <rene.herman@keyaccess.nl>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080707)
+	Tue, 12 Aug 2008 09:32:46 -0400
+Received: from ra.tuxdriver.com ([70.61.120.52]:2561 "EHLO ra.tuxdriver.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752155AbYHLNcp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Aug 2008 09:32:45 -0400
+Date: Tue, 12 Aug 2008 09:21:48 -0400
+From: "John W. Linville" <linville@tuxdriver.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: "Luis R. Rodriguez" <lrodriguez@atheros.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       Adrian Bunk <bunk@kernel.org>,
+       Luis Rodriguez <Luis.Rodriguez@atheros.com>,
+       Sujith Manoharan <Sujith.Manoharan@atheros.com>
+Subject: Re: ath9k build failure
+Message-ID: <20080812132148.GC27672@tuxdriver.com>
+References: <20080811162040.ed7b8ab7.sfr@canb.auug.org.au> <20080811164657.GE6128@tesla> <20080812133354.2eadf82d.sfr@canb.auug.org.au>
 MIME-Version: 1.0
-To: Adrian Bunk <bunk@kernel.org>
-CC: Wim Van Sebroeck <wim@iguana.be>, Ingo Molnar <mingo@redhat.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Andrew Morton <akpm@osdl.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] WATCHDOG: don't auto-grab eurotechwdt.
-References: <489E0F5A.8010404@keyaccess.nl> <20080812125840.GA13910@cs181140183.pp.htv.fi> <48A18C2C.3030009@keyaccess.nl> <20080812131850.GE13910@cs181140183.pp.htv.fi>
-In-Reply-To: <20080812131850.GE13910@cs181140183.pp.htv.fi>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -1.0 (-)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080812133354.2eadf82d.sfr@canb.auug.org.au>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12-08-08 15:18, Adrian Bunk wrote:
-
->>> You are expecting randconfig kernels to boot?
->> 90% does it seems. Ingo has been using it as part of automated testing  
->> for some time now.
+On Tue, Aug 12, 2008 at 01:33:54PM +1000, Stephen Rothwell wrote:
+> Hi Luis,
 > 
-> Please define "boot".
-
-I can't since I'm not doing the testing, Ingo is. When you ask him, do 
-take into account the inherent goodness of things that catch bugs...
-
-> E.g. for your harddisk driver alone the probability of not having it 
-> included in a randconfig kernel is definitely > 10%.
+> On Mon, 11 Aug 2008 09:46:57 -0700 "Luis R. Rodriguez" <lrodriguez@atheros.com> wrote:
+> >
+> > On Sun, Aug 10, 2008 at 11:20:40PM -0700, Stephen Rothwell wrote:
+> > > 
+> > > Today's linux-next build (powerpc allyesconfig) failed like this:
+> > > 
+> > > drivers/net/wireless/ath9k/hw.c: In function 'ath9k_hw_spur_mitigate':
+> > > drivers/net/wireless/ath9k/hw.c:4925: internal compiler error: in expand_expr_real_1, at expr.c:9199
+> > > 
+> > > This is a driver that is in Linus' tree and has no patches in the
+> > > linux-next tree.
+> > > 
+> > > The original work around talked about applying the patch twice, so I
+> > > applied the below patch.
+> > 
+> > this is also in wireless-testing. I also see this in linux-2.6
+> > under b08cbcd4546445740c2a04291204b56f8baf7be2. Not sure how this didn't
+> > get through linux-next.
 > 
-> Same goes for the network driver.
+> That is only the first application of the patch, my patch is a fix of a
+> second instance of the same code.  See Adrian's post.
 
-I suppose he has local allrandom.config files.
+My bad...I'll fix it up w/ the next batch of fixes...
 
-Rene.
+John
+-- 
+John W. Linville
+linville@tuxdriver.com
