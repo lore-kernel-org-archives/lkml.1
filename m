@@ -1,65 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753628AbYHLOOd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754189AbYHLOPK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753628AbYHLOOd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Aug 2008 10:14:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752337AbYHLOOZ
+	id S1754189AbYHLOPK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Aug 2008 10:15:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752553AbYHLOO6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Aug 2008 10:14:25 -0400
-Received: from hs-out-0708.google.com ([64.233.178.250]:55768 "EHLO
-	hs-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752255AbYHLOOY (ORCPT
+	Tue, 12 Aug 2008 10:14:58 -0400
+Received: from outbound-sin.frontbridge.com ([207.46.51.80]:38577 "EHLO
+	SG2EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752209AbYHLOO5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Aug 2008 10:14:24 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=W5oal1Fw7cug+axAF/is7iXZpVO3P1pOeJTEFHvKDPluLioMXqoRRvJUuihdFVs6mz
-         Ofx7zdhhxtQGyul8z2DJfho6tEe9a+VHYcYnQedGlEqdj+zxN5V2vxT5wO0hbibrCBaS
-         HzmZ0qYa5hbp0zYj8nsNnOkFvXvejHBVqYkE8=
-Message-ID: <e8ca35370808120714x42e37db8sb76ad098edb398db@mail.gmail.com>
-Date: Tue, 12 Aug 2008 16:14:22 +0200
-From: "Pascal Terjan" <pterjan@mandriva.com>
-To: "Shaohua Li" <shaohua.li@intel.com>
-Subject: Re: 2.6.26 fails to boot on Acer TravelMate 5520 due to PCIE ASPM
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-pci <linux-pci@vger.kernel.org>
-In-Reply-To: <1216400987.21525.9.camel@plop>
+	Tue, 12 Aug 2008 10:14:57 -0400
+X-BigFish: VPS-17(z34a4lz1432R98dR1805Mzz10d3izzz32i6bh43j65h)
+X-Spam-TCS-SCL: 4:0
+X-WSS-ID: 0K5HRK8-02-K2H-01
+Message-ID: <48A19ACB.8020109@amd.com>
+Date: Tue, 12 Aug 2008 16:14:35 +0200
+From: Peter Oruba <peter.oruba@amd.com>
+Organization: AMD (OSRC)
+User-Agent: Thunderbird 2.0.0.16 (X11/20080720)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Ingo Molnar <mingo@elte.hu>
+CC: Thomas Gleixner <tglx@linutronix.de>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       Max Krasnyansky <maxk@qualcomm.com>,
+       Tigran Aivazian <tigran@aivazian.fsnet.co.uk>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [patch 4/5] [PATCH 4/5] x86: Minor correction to Intel	microcode
+ patch loader.
+References: <20080806152117.198754464@amd.com> <20080806152320.081968686@amd.com> <20080811192713.GG12788@elte.hu>
+In-Reply-To: <20080811192713.GG12788@elte.hu>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1216286420.26653.12.camel@plop>
-	 <1216344100.6105.1.camel@sli10-desk.sh.intel.com>
-	 <1216400987.21525.9.camel@plop>
-X-Google-Sender-Auth: fd61a0b8fc4aac64
+X-OriginalArrivalTime: 12 Aug 2008 14:14:35.0917 (UTC) FILETIME=[BFD2C3D0:01C8FC85]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 18, 2008 at 7:09 PM, Pascal Terjan <pterjan@mandriva.com> wrote:
-> On Fri, 2008-07-18 at 09:21 +0800, Shaohua Li wrote:
->> On Thu, 2008-07-17 at 11:20 +0200, Pascal Terjan wrote:
->> > When CONFIG_PCIEASPM is activated, Acer TravelMate 5520 will hang at
->> > "Setting up standard PCI resources"
->> >
->> > pcie_noaspm does not seem to help
->> Can you double check it? With pcie_noaspm, the aspm driver does nothing.
+Ingo Molnar schrieb:
+> * Peter Oruba <peter.oruba@amd.com> wrote:
+> 
+>> Signed-off-by: Peter Oruba <peter.oruba@amd.com>
+>> ---
+>>  arch/x86/kernel/microcode_intel.c |    2 +-
+>>  1 files changed, 1 insertions(+), 1 deletions(-)
 >>
->
-> Indeed, the option actually works fine and allows the machine to boot my
-> small test kernel with CONFIG_PCIEASPM.
->
-> I had tried the option on another 2.6.26 vanilla kernel (with a totally
-> different config) and that one hangs at the same point without ASPM so
-> I'm currently doing some more investigation
+>> diff --git a/arch/x86/kernel/microcode_intel.c b/arch/x86/kernel/microcode_intel.c
+>> index 4ab6ce3..8d69470 100644
+>> --- a/arch/x86/kernel/microcode_intel.c
+>> +++ b/arch/x86/kernel/microcode_intel.c
+>> @@ -315,7 +315,7 @@ static void apply_microcode(int cpu)
+>>  	unsigned long flags;
+>>  	unsigned int val[2];
+>>  	int cpu_num = raw_smp_processor_id();
+>> -	struct ucode_cpu_info *uci = get_ucode_cpu_info(cpu);
+>> +	struct ucode_cpu_info *uci = get_ucode_cpu_info(cpu_num);
+> 
+> hm, this does not apply to tip/x86/microcode nor tip/master nor 
+> linus/master. Does it fix a bug in one of the earlier patches in this 
+> 5/5 queue?
+> 
+> 	Ingo
+> 
+Yes, it's a fix for PATCH 3/5
 
-OK, I could work on this machine again and have some news.
+-Peter
 
-I had another bug on 2.6.26 causing hang at almost the same place and
-fixed by a0176e2485ce6468f9b74264a2fd6c19811f027a.
+-- 
+            |           AMD Saxony Limited Liability Company & Co. KG
+  Operating |         Wilschdorfer Landstr. 101, 01109 Dresden, Germany
+  System    |                  Register Court Dresden: HRA 4896
+  Research  |              General Partner authorized to represent:
+  Center    |             AMD Saxony LLC (Wilmington, Delaware, US)
+            | General Manager of AMD Saxony LLC: Dr. Hans-R. Deppe, Thomas McCoy
 
-I can confirm that pcie_noaspm is now enough to boot on this machine
-and will try to
-identify the faulty device
