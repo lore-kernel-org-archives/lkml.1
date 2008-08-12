@@ -1,39 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754766AbYHLW6w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754045AbYHLXBj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754766AbYHLW6w (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Aug 2008 18:58:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752380AbYHLW6k
+	id S1754045AbYHLXBj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Aug 2008 19:01:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751548AbYHLXBa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Aug 2008 18:58:40 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:52790 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752437AbYHLW6j (ORCPT
+	Tue, 12 Aug 2008 19:01:30 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:36851 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751351AbYHLXBa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Aug 2008 18:58:39 -0400
-Date: Tue, 12 Aug 2008 15:58:06 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: ia64 allmodconfig on current mainline
-Message-Id: <20080812155806.4e8554a9.akpm@linux-foundation.org>
-In-Reply-To: <200808130022.50501.rjw@sisk.pl>
-References: <20080812150608.231a948a.akpm@linux-foundation.org>
-	<200808130022.50501.rjw@sisk.pl>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 12 Aug 2008 19:01:30 -0400
+Date: Tue, 12 Aug 2008 19:01:19 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: David Howells <dhowells@redhat.com>
+Cc: sfr@canb.auug.org.au, jmorris@namei.org, hch@infradead.org,
+       davem@davemloft.net, sfrench@us.ibm.com, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org
+Subject: Re: [PATCH 1/2] CRED: Alter XFS so as to avoid namespace
+	collisions with upcoming COW creds
+Message-ID: <20080812230119.GA25748@infradead.org>
+References: <20080812132840.5472.25856.stgit@warthog.procyon.org.uk> <20080812132845.5472.30943.stgit@warthog.procyon.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080812132845.5472.30943.stgit@warthog.procyon.org.uk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 13 Aug 2008 00:22:50 +0200
-"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+On Tue, Aug 12, 2008 at 02:28:45PM +0100, David Howells wrote:
+> Rename XFS's current_fsuid() and current_fsgid() to avoid collision with
+> functions of the same name in upcoming COW creds.
 
-> On Wednesday, 13 of August 2008, Andrew Morton wrote:
-> > /opt/crosstool/gcc-3.4.5-glibc-2.3.6/ia64-unknown-linux-gnu/bin/ia64-unknown-linux-gnu-ld: section .data [0000000004ea0000 -> 0000000004f656e7] overlaps section .data.percpu [0000000004e90000 -> 0000000004ea0d17]
-> > make: *** [.tmp_vmlinux1] Error 1
-> 
-> I gather this is a regression from .26?
+Just switch it directly to your new version without the paramter.
 
-yes, more recent than that, actually.  2.6.27-rc1-mm1 was OK.
