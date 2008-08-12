@@ -1,72 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753284AbYHLUDo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753894AbYHLUEg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753284AbYHLUDo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Aug 2008 16:03:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751985AbYHLUDe
+	id S1753894AbYHLUEg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Aug 2008 16:04:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751248AbYHLUE1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Aug 2008 16:03:34 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:37402 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751951AbYHLUDd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Aug 2008 16:03:33 -0400
-Date: Tue, 12 Aug 2008 13:02:59 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Al Viro <viro@ZenIV.linux.org.uk>
-cc: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [RFC] readdir mess
-In-Reply-To: <20080812181057.GR28946@ZenIV.linux.org.uk>
-Message-ID: <alpine.LFD.1.10.0808121259400.3462@nehalem.linux-foundation.org>
-References: <20080812062241.GQ28946@ZenIV.linux.org.uk> <87ej4u9nf5.fsf@devron.myhome.or.jp> <alpine.LFD.1.10.0808121009370.3462@nehalem.linux-foundation.org> <20080812181057.GR28946@ZenIV.linux.org.uk>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Tue, 12 Aug 2008 16:04:27 -0400
+Received: from mail.fieldses.org ([66.93.2.214]:41740 "EHLO fieldses.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750989AbYHLUE1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Aug 2008 16:04:27 -0400
+Date: Tue, 12 Aug 2008 16:04:23 -0400
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org,
+       Neil Brown <neilb@suse.de>
+Subject: nfsd-related changes for 2.6.27
+Message-ID: <20080812200423.GA384@fieldses.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+A few nfsd-related changes are ready in:
 
+	git://linux-nfs.org/~bfields/linux.git for-2.6.27
 
-On Tue, 12 Aug 2008, Al Viro wrote:
-> 
-> Doesn't work well for readdir(2)...
+One is a bugfix and the other two are completely trivial, so I assume
+all are appropriate for 2.6.27.
 
-Sure it does.
+--b.
 
-> > 	error = vfs_readdir(file, filldir, &buf);
-> > 	lastdirent = buf.previous;
-> > 	if (lastdirent) {
-> > 		error = count - buf.count;
-> > 		if (put_user(file->f_pos, &lastdirent->d_off))
-> > 			error = -EFAULT;
-> > 	}
-> > 	fput(file);
-> > 	return error;
-> > 
-> >    and we wouldn't need any other logic at all.
-> 
-> you've just lost e.g. -EIO for getdents().
+Harvey Harrison (1):
+      lockd: trivial sparse endian annotations
 
-No I've not.
+J. Bruce Fields (1):
+      MAINTAINERS: mention lockd and sunrpc in nfs entries
 
-If we returned a partial result, we _should_ return a partial result.
+Julia Lawall (1):
+      fs/nfsd/export.c: Adjust error handling code involving auth_domain_put
 
-And if we got EIO on the first entry, we should return EIO.
-
-The _current_ code is crap. It sometimes returns the error (if the 
-->readdir() function returned error), and sometimes returns the partial 
-result (if the "buf.error" was set).
-
-> Frankly, I'd rather keep ->readdir() instances simpler.  There are far
-> more of those, for one thing.  As it is, we only have "stop"/"continue"
-> ->readdir() has to care about...
-
-Keeping them simple (and not changing them - always returning zero is what 
-the _original_ readdir() thing did!) is why the current situation exists.
-
-So if we keep it that way, then we really *KEEP* it that way. Don't go 
-around changing any of the existing rules. Just make sure that the 
-callbacks keep on always returning negative or zero (and never positive).
-
-			Linus
+ MAINTAINERS         |    4 ++--
+ fs/lockd/svc4proc.c |    4 ++--
+ fs/lockd/svcproc.c  |    4 ++--
+ fs/nfsd/export.c    |    6 +++---
+ 4 files changed, 9 insertions(+), 9 deletions(-)
