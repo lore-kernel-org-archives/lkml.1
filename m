@@ -1,73 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754018AbYHLO1I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753768AbYHLOb0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754018AbYHLO1I (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Aug 2008 10:27:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752139AbYHLO04
+	id S1753768AbYHLOb0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Aug 2008 10:31:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752419AbYHLObQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Aug 2008 10:26:56 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:33000 "EHLO ogre.sisk.pl"
+	Tue, 12 Aug 2008 10:31:16 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:33028 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751946AbYHLO0z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Aug 2008 10:26:55 -0400
+	id S1752343AbYHLObP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Aug 2008 10:31:15 -0400
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Adrian Bunk <bunk@kernel.org>
-Subject: Re: [PATCH] PM: Remove WARN_ON from device_pm_add
-Date: Tue, 12 Aug 2008 16:29:52 +0200
+To: Pavel Machek <pavel@suse.cz>
+Subject: Re: 2.6.27-rc1: critical thermal shutdown on thinkpad x60
+Date: Tue, 12 Aug 2008 16:34:33 +0200
 User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Greg KH <greg@kroah.com>, Alan Stern <stern@rowland.harvard.edu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       "Michael S. Tsirkin" <m.s.tsirkin@gmail.com>
-References: <200808090105.14770.rjw@sisk.pl> <20080812125902.GB13910@cs181140183.pp.htv.fi>
-In-Reply-To: <20080812125902.GB13910@cs181140183.pp.htv.fi>
+Cc: Milan Broz <mbroz@redhat.com>, Andi Kleen <andi@firstfloor.org>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       ACPI mailing list <linux-acpi@vger.kernel.org>,
+       Alexey Starikovskiy <astarikovskiy@suse.de>
+References: <20080806090246.GA1572@elf.ucw.cz> <48A1779B.5020303@redhat.com> <20080812115530.GB8806@elf.ucw.cz>
+In-Reply-To: <20080812115530.GB8806@elf.ucw.cz>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="utf-8"
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200808121629.53425.rjw@sisk.pl>
+Message-Id: <200808121634.34634.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, 12 of August 2008, Adrian Bunk wrote:
-> On Sat, Aug 09, 2008 at 01:05:13AM +0200, Rafael J. Wysocki wrote:
-> > PM: Remove WARN_ON from device_pm_add
+On Tuesday, 12 of August 2008, Pavel Machek wrote:
+> On Tue 2008-08-12 13:44:27, Milan Broz wrote:
+> > Pavel Machek wrote:
+> > > Hi!
+> > >>> On Tue, Aug 12, 2008 at 11:41:35AM +0200, Pavel Machek wrote:
+> > >>>>>> Aug  6 11:00:10 amd kernel: ACPI: Critical trip point
+> > >>>>>> Aug  6 11:00:10 amd kernel: Critical temperature reached (128 C),
+> > >>>>>> shutting down.
+> > >>>>>> Aug  6 11:00:10 amd shutdown[24414]: shutting down for system halt
+> > >>>>>>
+> > >>>>>> ...and machine went down at that point :-(.
+> > >>>>> I hope you can easily reproduce it?
+> > >>>>>
+> > >>>>> So it's new in 2.6.27rc1 and wasn't in 2.6.26? Can you please
+> > >>>> Yes, I'm very sure. It makes machine basically unusable.
+> > >>> Does this mean you can easily reproduce it?  
+> > >>> Please do a bisect then. 
+> > >>>
+> > >>>> Not that one :-(. Thinkpad does not even have fan device: it is
+> > >>>> controlled by hardware.
+> > >> Hi,
+> > >> I see exactly the same on my x60s, but during upgrade to 2.6.26.2.
+> > > 
+> > > Are you sure?
 > > 
-> > Fix message in device_pm_add() saying that the device will not be
-> > added to dpm_list, although in fact the device is going to be added
-> > to the list regardless of the ordering violation.
+> > yes. maybe some userspace tool controlling frequency is involved, no idea yet.
+> > But it is 2.6.26 tree for sure.
+> 
+> So it definitely is in 2.6.26.2, and it definitely is in 2.6.26?
+> 
+> ...because I'm using 2.6.26, and see nothing..
+> 
+> > >> Now, the CPU cores remains on 1.67GHz and fan is unable to cool them properly
+> > >> under heavy load (even if I set "level disengaged" through thinkpad fan control,
+> > >> temperature sensor shows after a while 128 C (probably not real temp,
+> > >> I expect some critical flag => and it properly switch off the
+> > >> system...)
+> > > 
+> > > How do you control fans? I could not get anything but -EINVAL from IBM
+> > > ACPI driver :-(.
 > > 
-> > Remove the WARN_ON(true) triggered in that situation, because it is
-> > hit by USB very often and spams the users' logs.
+> > you need add fan_control=1 to thinkpad_acpi module
 > > 
-> > This patch fixes bug #11263
+> > http://www.thinkwiki.org/wiki/How_to_control_fan_speed
+> > http://www.thinkwiki.org/wiki/ACPI_fan_control_script
 > 
-> Michael Tsirkin said in #11284 (which is marked as a duplicate of #11263):
-> 
-> <--  snip  -->
-> 
-> > What exactly is this instability?
-> 
-> X often crashes on resume, sometimes ACPI seems to stop working
-> after resume. I am trying to figure exact way to reproduce first,
-> or get some relevant logs, then I'll report.
-> 
-> > Does 2.6.26 work fine?
-> 
-> yes
-> 
-> <--  snip  -->
-> 
-> 
-> Is this a separate regression or did the WARN_ON different from the 
-> first assumption indicate a functional regression?
+> Thanks for pointers!
 
-No, it doesn't indicate a functional regression.
+Pavel, can you check if the state of the fan(s) change while the thermal trip
+points are being passed?
 
-In 2.6.26 the WARN_ON() was artificially silenced by USB, but that stopped
-working after the PM core had changed in 2.6.27-rc.
+As I said in http://bugzilla.kernel.org/show_bug.cgi?id=11281, I suspect that
+this mechanism may be broken.
 
 Thanks,
 Rafael
