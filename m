@@ -1,83 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753242AbYHLLTd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751433AbYHLLaT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753242AbYHLLTd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Aug 2008 07:19:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752122AbYHLLTZ
+	id S1751433AbYHLLaT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Aug 2008 07:30:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750996AbYHLLaE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Aug 2008 07:19:25 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:48834 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752106AbYHLLTY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Aug 2008 07:19:24 -0400
-Date: Tue, 12 Aug 2008 21:19:04 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: David Howells <dhowells@redhat.com>
-Cc: James Morris <jmorris@namei.org>, linux-kernel@vger.kernel.org,
-       "David S. Miller" <davem@davemloft.net>,
-       Steve French <sfrench@us.ibm.com>
-Subject: Re: Resolved merge conflicts in next-creds
-Message-Id: <20080812211904.01f9291d.sfr@canb.auug.org.au>
-In-Reply-To: <22136.1218533228@redhat.com>
-References: <20080812093624.de7d4ad8.sfr@canb.auug.org.au>
-	<alpine.LRH.1.10.0808110950530.3636@tundra.namei.org>
-	<20080811101602.09555609.sfr@canb.auug.org.au>
-	<20080811153536.02ac0561.sfr@canb.auug.org.au>
-	<alpine.LRH.1.10.0808120751001.10017@tundra.namei.org>
-	<22136.1218533228@redhat.com>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Tue__12_Aug_2008_21_19_04_+1000_54=UEX/jKXzvs=Zx"
+	Tue, 12 Aug 2008 07:30:04 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:38288 "EHLO
+	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751944AbYHLLaD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Aug 2008 07:30:03 -0400
+Date: Tue, 12 Aug 2008 13:02:59 +0200
+From: Pavel Machek <pavel@suse.cz>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: kernel list <linux-kernel@vger.kernel.org>,
+       ACPI mailing list <linux-acpi@vger.kernel.org>
+Subject: Re: 2.6.27-rc1: critical thermal shutdown on thinkpad x60
+Message-ID: <20080812110259.GA15911@elf.ucw.cz>
+References: <20080806090246.GA1572@elf.ucw.cz> <87bq046cht.fsf@basil.nowhere.org> <20080812094135.GA1565@elf.ucw.cz> <20080812105409.GA1366@one.firstfloor.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080812105409.GA1366@one.firstfloor.org>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Tue__12_Aug_2008_21_19_04_+1000_54=UEX/jKXzvs=Zx
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Tue 2008-08-12 12:54:09, Andi Kleen wrote:
+> On Tue, Aug 12, 2008 at 11:41:35AM +0200, Pavel Machek wrote:
+> > Hi!
+> > 
+> > > > Aug  6 11:00:10 amd kernel: ACPI: Critical trip point
+> > > > Aug  6 11:00:10 amd kernel: Critical temperature reached (128 C),
+> > > > shutting down.
+> > > > Aug  6 11:00:10 amd shutdown[24414]: shutting down for system halt
+> > > >
+> > > > ...and machine went down at that point :-(.
+> > > 
+> > > I hope you can easily reproduce it?
+> > > 
+> > > So it's new in 2.6.27rc1 and wasn't in 2.6.26? Can you please
+> > 
+> > Yes, I'm very sure. It makes machine basically unusable.
+> 
+> Does this mean you can easily reproduce it?  
+> Please do a bisect then. 
 
-Hi David,
+It is easily reproduced, but it takes 10+ minutes, and at the end
+machine is so hot it will not even power up. So yes, bisect is
+possible, but I'd prefer to avoid it.
 
-On Tue, 12 Aug 2008 10:27:08 +0100 David Howells <dhowells@redhat.com> wrot=
-e:
->
-> Stephen Rothwell <sfr@canb.auug.org.au> wrote:
->=20
-> > The important thing (and what is different in what I have proposed) is
-> > that what you are asking Linus to take here has zero impact (i.e. you j=
-ust
-> > add a header file that noone uses and whose contents are clearly noops)
-> > and then it is very obvious that when people start to use it, the chang=
-es
-> > really cannot introduce a regression.
->=20
-> Actually, you do have to modify XFS too.  It declares current_fsuid(),
-> current_fsgid() and struct cred within itself.  The first two just require
-> some simple renames, and the third just requires using my struct cred ins=
-tead
-> when it appears.
-
-One step at a time ... the rename is clearly necessary, but adding
-"struct cred" can wait.  We may not be able to get all the conflicts
-solved by adding stuff to Linus' tree early.  My aim is just to reduce my
-pain level.  :-)
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Tue__12_Aug_2008_21_19_04_+1000_54=UEX/jKXzvs=Zx
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkihcagACgkQjjKRsyhoI8xIDwCeOvzsB7XahZx9+Um9Lwujg300
-YDEAnivvK/U8AZtXjhQR3Nvrved0jqI+
-=at/P
------END PGP SIGNATURE-----
-
---Signature=_Tue__12_Aug_2008_21_19_04_+1000_54=UEX/jKXzvs=Zx--
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
