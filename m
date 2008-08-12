@@ -1,199 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755142AbYHLP0t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754817AbYHLP2u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755142AbYHLP0t (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Aug 2008 11:26:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753652AbYHLPZY
+	id S1754817AbYHLP2u (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Aug 2008 11:28:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752838AbYHLP2k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Aug 2008 11:25:24 -0400
-Received: from outbound-dub.frontbridge.com ([213.199.154.16]:46839 "EHLO
-	IE1EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753455AbYHLPZW (ORCPT
+	Tue, 12 Aug 2008 11:28:40 -0400
+Received: from qb-out-0506.google.com ([72.14.204.236]:31396 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752277AbYHLP2j (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Aug 2008 11:25:22 -0400
-X-BigFish: VPS4(zzzz10d3izzz32i43j65h)
-X-Spam-TCS-SCL: 4:0
-X-WSS-ID: 0K5HUTG-04-OI3-01
-From: Joerg Roedel <joerg.roedel@amd.com>
-To: mingo@redhat.com, tglx@linutronix.de, hpa@zytor.com
-CC: linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org,
-       muli@il.ibm.com, Joerg Roedel <joerg.roedel@amd.com>
-Subject: [PATCH 6/7] x86: cleanup dma_*_coherent functions
-Date: Tue, 12 Aug 2008 17:24:16 +0200
-Message-ID: <1218554657-16070-7-git-send-email-joerg.roedel@amd.com>
-X-Mailer: git-send-email 1.5.3.7
-In-Reply-To: <1218554657-16070-1-git-send-email-joerg.roedel@amd.com>
-References: <1218554657-16070-1-git-send-email-joerg.roedel@amd.com>
-X-OriginalArrivalTime: 12 Aug 2008 15:24:18.0204 (UTC) FILETIME=[7CA91DC0:01C8FC8F]
+	Tue, 12 Aug 2008 11:28:39 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent:sender;
+        b=QSmr0f1v4BOYgTbKZQq45V9TGre+r6KtAnZGv/2268eY0v/sv3MjWRDAi5hpcdCHdg
+         7fUuvgyAMNE4H5T6p1ZRFNh2oWLOKI9e8Yv0KlcDPDPt6xvT2DAdU4tdGlSQf1AqN2YT
+         T0uMf00mz0zGRsvXgFM+yHxH2FWT8PoJ02csk=
+Date: Tue, 12 Aug 2008 18:25:49 +0300
+From: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Christoph Lameter <cl@linux-foundation.org>, mathieu.desnoyers@polymtl.ca,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org, rdunlap@xenotime.net,
+       mpm@selenic.com, rostedt@goodmis.org, tglx@linutronix.de
+Subject: Re: [PATCH 4/5] kmemtrace: SLUB hooks.
+Message-ID: <20080812152548.GA5973@localhost>
+References: <1218388447-5578-1-git-send-email-eduard.munteanu@linux360.ro> <1218388447-5578-2-git-send-email-eduard.munteanu@linux360.ro> <1218388447-5578-3-git-send-email-eduard.munteanu@linux360.ro> <1218388447-5578-4-git-send-email-eduard.munteanu@linux360.ro> <1218388447-5578-5-git-send-email-eduard.munteanu@linux360.ro> <48A046F5.2000505@linux-foundation.org> <1218463774.7813.291.camel@penberg-laptop>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1218463774.7813.291.camel@penberg-laptop>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-All dma_ops implementations support the alloc_coherent and free_coherent
-callbacks now. This allows a big simplification of the dma_alloc_coherent
-function which is done with this patch. The dma_free_coherent functions is also
-cleaned up and calls now the free_coherent callback of the dma_ops
-implementation.
+On Mon, Aug 11, 2008 at 05:09:34PM +0300, Pekka Enberg wrote:
+> On Mon, 2008-08-11 at 09:04 -0500, Christoph Lameter wrote:
+> > Eduard - Gabriel Munteanu wrote:
+> > 
+> > 
+> > 
+> > >  static __always_inline void *kmalloc_node(size_t size, gfp_t flags, int node)
+> > >  {
+> > > +	void *ret;
+> > > +
+> > >  	if (__builtin_constant_p(size) &&
+> > >  		size <= PAGE_SIZE && !(flags & SLUB_DMA)) {
+> > >  			struct kmem_cache *s = kmalloc_slab(size);
+> > > @@ -239,7 +280,13 @@ static __always_inline void *kmalloc_node(size_t size, gfp_t flags, int node)
+> > >  		if (!s)
+> > >  			return ZERO_SIZE_PTR;
+> > >  
+> > > -		return kmem_cache_alloc_node(s, flags, node);
+> > > +		ret = kmem_cache_alloc_node_notrace(s, flags, node);
+> > > +
+> > > +		kmemtrace_mark_alloc_node(KMEMTRACE_TYPE_KMALLOC,
+> > > +					  _THIS_IP_, ret,
+> > > +					  size, s->size, flags, node);
+> > > +
+> > > +		return ret;
+> > 
+> > You could simplify the stuff in slub.h if you would fall back to the uninlined
+> > functions in the case that kmemtrace is enabled. IMHO adding additional inline
+> > code here does grow these function to a size where inlining is not useful anymore.
+> 
+> So, if CONFIG_KMEMTRACE is enabled, make the inlined version go away
+> completely? I'm okay with that though I wonder if that means we now take
+> a performance hit when CONFIG_KMEMTRACE is enabled but tracing is
+> disabled at run-time...
 
-Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
----
- arch/x86/kernel/pci-dma.c |  116 ++++-----------------------------------------
- 1 files changed, 10 insertions(+), 106 deletions(-)
+Oh, good. I'm also thinking to add a macro that expands to simple inline when
+CONFIG_KMEMTRACE is disabled and to __always_inline otherwise.
 
-diff --git a/arch/x86/kernel/pci-dma.c b/arch/x86/kernel/pci-dma.c
-index f704cb5..60fa80d 100644
---- a/arch/x86/kernel/pci-dma.c
-+++ b/arch/x86/kernel/pci-dma.c
-@@ -241,17 +241,6 @@ int dma_supported(struct device *dev, u64 mask)
- }
- EXPORT_SYMBOL(dma_supported);
- 
--/* Allocate DMA memory on node near device */
--static noinline struct page *
--dma_alloc_pages(struct device *dev, gfp_t gfp, unsigned order)
--{
--	int node;
--
--	node = dev_to_node(dev);
--
--	return alloc_pages_node(node, gfp, order);
--}
--
- /*
-  * Allocate memory for a coherent mapping.
-  */
-@@ -260,14 +249,7 @@ dma_alloc_coherent(struct device *dev, size_t size, dma_addr_t *dma_handle,
- 		   gfp_t gfp)
- {
- 	struct dma_mapping_ops *ops = get_dma_ops(dev);
--	void *memory = NULL;
--	struct page *page;
--	unsigned long dma_mask = 0;
--	dma_addr_t bus;
--	int noretry = 0;
--
--	/* ignore region specifiers */
--	gfp &= ~(__GFP_DMA | __GFP_HIGHMEM | __GFP_DMA32);
-+	void *memory;
- 
- 	if (dma_alloc_from_coherent(dev, size, dma_handle, &memory))
- 		return memory;
-@@ -276,90 +258,12 @@ dma_alloc_coherent(struct device *dev, size_t size, dma_addr_t *dma_handle,
- 		dev = &fallback_dev;
- 		gfp |= GFP_DMA;
- 	}
--	dma_mask = dev->coherent_dma_mask;
--	if (dma_mask == 0)
--		dma_mask = (gfp & GFP_DMA) ? DMA_24BIT_MASK : DMA_32BIT_MASK;
--
--	/* Device not DMA able */
--	if (dev->dma_mask == NULL)
--		return NULL;
--
--	/* Don't invoke OOM killer or retry in lower 16MB DMA zone */
--	if (gfp & __GFP_DMA)
--		noretry = 1;
--
--#ifdef CONFIG_X86_64
--	/* Why <=? Even when the mask is smaller than 4GB it is often
--	   larger than 16MB and in this case we have a chance of
--	   finding fitting memory in the next higher zone first. If
--	   not retry with true GFP_DMA. -AK */
--	if (dma_mask <= DMA_32BIT_MASK && !(gfp & GFP_DMA)) {
--		gfp |= GFP_DMA32;
--		if (dma_mask < DMA_32BIT_MASK)
--			noretry = 1;
--	}
--#endif
--
-- again:
--	page = dma_alloc_pages(dev,
--		noretry ? gfp | __GFP_NORETRY : gfp, get_order(size));
--	if (page == NULL)
--		return NULL;
--
--	{
--		int high, mmu;
--		bus = page_to_phys(page);
--		memory = page_address(page);
--		high = (bus + size) >= dma_mask;
--		mmu = high;
--		if (force_iommu && !(gfp & GFP_DMA))
--			mmu = 1;
--		else if (high) {
--			free_pages((unsigned long)memory,
--				   get_order(size));
--
--			/* Don't use the 16MB ZONE_DMA unless absolutely
--			   needed. It's better to use remapping first. */
--			if (dma_mask < DMA_32BIT_MASK && !(gfp & GFP_DMA)) {
--				gfp = (gfp & ~GFP_DMA32) | GFP_DMA;
--				goto again;
--			}
--
--			/* Let low level make its own zone decisions */
--			gfp &= ~(GFP_DMA32|GFP_DMA);
--
--			if (ops->alloc_coherent)
--				return ops->alloc_coherent(dev, size,
--							   dma_handle, gfp);
--			return NULL;
--		}
--
--		memset(memory, 0, size);
--		if (!mmu) {
--			*dma_handle = bus;
--			return memory;
--		}
--	}
--
--	if (ops->alloc_coherent) {
--		free_pages((unsigned long)memory, get_order(size));
--		gfp &= ~(GFP_DMA|GFP_DMA32);
--		return ops->alloc_coherent(dev, size, dma_handle, gfp);
--	}
--
--	if (ops->map_simple) {
--		*dma_handle = ops->map_simple(dev, virt_to_phys(memory),
--					      size,
--					      PCI_DMA_BIDIRECTIONAL);
--		if (*dma_handle != bad_dma_address)
--			return memory;
--	}
- 
--	if (panic_on_overflow)
--		panic("dma_alloc_coherent: IOMMU overflow by %lu bytes\n",
--		      (unsigned long)size);
--	free_pages((unsigned long)memory, get_order(size));
-+	if (ops->alloc_coherent)
-+		return ops->alloc_coherent(dev, size,
-+				dma_handle, gfp);
- 	return NULL;
-+
- }
- EXPORT_SYMBOL(dma_alloc_coherent);
- 
-@@ -372,13 +276,13 @@ void dma_free_coherent(struct device *dev, size_t size,
- {
- 	struct dma_mapping_ops *ops = get_dma_ops(dev);
- 
--	int order = get_order(size);
- 	WARN_ON(irqs_disabled());	/* for portability */
--	if (dma_release_from_coherent(dev, order, vaddr))
-+
-+	if (dma_release_from_coherent(dev, get_order(size), vaddr))
- 		return;
--	if (ops->unmap_single)
--		ops->unmap_single(dev, bus, size, 0);
--	free_pages((unsigned long)vaddr, order);
-+
-+	if (ops->free_coherent)
-+		ops->free_coherent(dev, size, vaddr, bus);
- }
- EXPORT_SYMBOL(dma_free_coherent);
- 
--- 
-1.5.3.7
+> > > +	kmemtrace_mark_alloc(KMEMTRACE_TYPE_CACHE, _RET_IP_, ret,
+> > > +			     s->objsize, s->size, gfpflags);
+> > > +
+> > > +	return ret;
+> > >  }
+> > 
+> > _RET_IP == __builtin_return_address(0) right? Put that into a local variable?
+> > At least we need consistent usage within one function. Maybe convert
+> > __builtin_return_address(0) to _RET_IP_ within slub?
+> 
+> I think we should just convert SLUB to use _RET_IP_ everywhere. Eduard,
+> care to make a patch and send it and rebase this on top of that?
 
+Sure. Will get back soon.
 
