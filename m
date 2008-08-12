@@ -1,309 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753111AbYHLRis@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754368AbYHLRjW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753111AbYHLRis (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Aug 2008 13:38:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751682AbYHLRij
+	id S1754368AbYHLRjW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Aug 2008 13:39:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751411AbYHLRjN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Aug 2008 13:38:39 -0400
-Received: from vs251036.vserver.de ([62.75.251.36]:53559 "EHLO
-	vs251036.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751007AbYHLRij (ORCPT
+	Tue, 12 Aug 2008 13:39:13 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:2816 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751267AbYHLRjN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Aug 2008 13:38:39 -0400
-Message-ID: <48A1CA9A.4000007@claudio.ch>
-Date: Tue, 12 Aug 2008 19:38:34 +0200
-From: Claudio Nieder <private@claudio.ch>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
+	Tue, 12 Aug 2008 13:39:13 -0400
+Message-ID: <48A1CABC.5010407@ct.jp.nec.com>
+Date: Tue, 12 Aug 2008 10:39:08 -0700
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: rpurdie@rpsys.net, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Backlight driver for Tabletkiosk Sahara TouchIT-213 Tablet
- PC
-References: <488E0D2A.1000005@claudio.ch>	<1217270428.6059.39.camel@dax.rpnet.com>	<488E25F4.4020405@claudio.ch> <20080811134940.b3bcde83.akpm@linux-foundation.org>
-In-Reply-To: <20080811134940.b3bcde83.akpm@linux-foundation.org>
-X-Enigmail-Version: 0.95.0
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       Alan Cox <alan@redhat.com>, Jeff Dike <jdike@addtoit.com>
+Subject: Re: linux-next: Tree for August 11
+References: <20080811164617.7b06df12.sfr@canb.auug.org.au>	<48A09CE5.70402@ct.jp.nec.com> <20080812153851.179fc90d.sfr@canb.auug.org.au>
+In-Reply-To: <20080812153851.179fc90d.sfr@canb.auug.org.au>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Stephen Rothwell wrote:
+> Hi Hiroshi,
+> 
+> On Mon, 11 Aug 2008 13:11:17 -0700 Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com> wrote:
+>> I got an error on um defconfig;
+>>
+>> arch/um/drivers/line.c: In function 'line_ioctl':
+>> arch/um/drivers/line.c:306: error: implicit declaration of function 'tioclinux'
+>> make[1]: *** [arch/um/drivers/line.o] Error 1
+>>
+>>
+>> This commit may cause it.
+>>
+>> commit 1aa5f1fab397054a9133bcaf511973db5a6b97be
+>> Author: Alan Cox <alan@redhat.com>
+>> Date:   Mon Aug 11 10:27:35 2008 +1000
+>>
+>>     tty-fixup-uml
+>>
+>>     Add a new nicer hook for tioclinux
+> 
+> It looks like it may be fixed in today's linux-next as that patch has
+> been updated.
+> 
 
-> I believe the mdelay()s could be converted to the preferable msleep()?
+Hi, thanks for working.
 
-thank you for the remark. I have changed the mdelay to msleep in my
-patch, reapplied it to the current Linus tree, built a kernel, installed
-it on my computer and tested it. It works perfectly as you surely
-expected. The corrected patch is included here.
+I got a linkage error, next;
 
-BTW: I have noticed that some other drivers in video/backlight still use
-mdelay: ili9320.c, locomolcd.c and vgg2432a4.c.
+arch/um/drivers/built-in.o: In function `line_ioctl':
+/data/kernel/mainline/workdir/next/.branches/um/linux/arch/um/drivers/line.c:306: undefined reference to `tioclinux'
+collect2: ld returned 1 exit status
+  KSYM    .tmp_kallsyms1.S
+nm: '.tmp_vmlinux1': No such file
+No valid symbol.
+make: *** [.tmp_kallsyms1.S] Error 1
 
-claudio
+The tioclinux() is in drivers/char/vt.c and this is compiled when
+CONFIG_HW_CONSOLE is enabled. I think this config is never turned on in uml,
+because of the following definition in drivers/char/Kconfig;
 
-
-Signed-off-by: Claudio Nieder <private@claudio.ch>
-
----
- drivers/video/backlight/Kconfig     |    7 +
- drivers/video/backlight/Makefile    |    1 +
- drivers/video/backlight/kb3886_bl.c |  218 +++++++++++++++++++++++++++++++++++
- 3 files changed, 226 insertions(+), 0 deletions(-)
-
-diff --git a/drivers/video/backlight/Kconfig b/drivers/video/backlight/Kconfig
-index 452b770..bc65541 100644
---- a/drivers/video/backlight/Kconfig
-+++ b/drivers/video/backlight/Kconfig
-@@ -164,3 +164,10 @@ config BACKLIGHT_MBP_NVIDIA
-          If you have an Apple Macbook Pro with Nvidia graphics hardware say Y
- 	 to enable a driver for its backlight
-
-+config BACKLIGHT_SAHARA
-+	tristate "Tabletkiosk Sahara Touch-iT Backlight Driver"
-+	depends on BACKLIGHT_CLASS_DEVICE && X86
-+	default y
-+	help
-+	  If you have a Tabletkiosk Sahara Touch-iT, say y to enable the
-+	  backlight driver.
-diff --git a/drivers/video/backlight/Makefile b/drivers/video/backlight/Makefile
-index b405aac..f4a1183 100644
---- a/drivers/video/backlight/Makefile
-+++ b/drivers/video/backlight/Makefile
-@@ -16,4 +16,5 @@ obj-$(CONFIG_BACKLIGHT_PROGEAR) += progear_bl.o
- obj-$(CONFIG_BACKLIGHT_CARILLO_RANCH) += cr_bllcd.o
- obj-$(CONFIG_BACKLIGHT_PWM)	+= pwm_bl.o
- obj-$(CONFIG_BACKLIGHT_MBP_NVIDIA) += mbp_nvidia_bl.o
-+obj-$(CONFIG_BACKLIGHT_SAHARA)	+= kb3886_bl.o
-
-diff --git a/drivers/video/backlight/kb3886_bl.c
-b/drivers/video/backlight/kb3886_bl.c
-new file mode 100644
-index 0000000..60eec06
---- /dev/null
-+++ b/drivers/video/backlight/kb3886_bl.c
-@@ -0,0 +1,218 @@
-+/*
-+ *  Backlight Driver for the KB3886 Backlight
-+ *
-+ *  Copyright (c) 2007 Claudio Nieder
-+ *
-+ *  Based on corgi_bl.c by Richard Purdie and kb3886 driver by Robert Woerle
-+ *
-+ *  This program is free software; you can redistribute it and/or modify
-+ *  it under the terms of the GNU General Public License version 2 as
-+ *  published by the Free Software Foundation.
-+ *
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/kernel.h>
-+#include <linux/init.h>
-+#include <linux/platform_device.h>
-+#include <linux/mutex.h>
-+#include <linux/fb.h>
-+#include <linux/backlight.h>
-+#include <linux/delay.h>
-+
-+
-+/*
-+ * The following is what corgi has in arch/arm/mach-pxa/corgi.c and
-+ * corgi_lcd.c. On kernelnebwies it was suggested I put the platform_device
-+ * code in my driver.
-+ */
-+
-+#define KB3886_PARENT 0x64
-+#define KB3886_IO 0x60
-+#define KB3886_ADC_DAC_PWM 0xC4
-+#define KB3886_PWM0_WRITE 0x81
-+#define KB3886_PWM0_READ 0x41
-+
-+static DEFINE_MUTEX(bl_mutex);
-+
-+void kb3886_bl_set_intensity(int intensity)
-+{
-+	mutex_lock(&bl_mutex);
-+	intensity = intensity&0xff;
-+	outb(KB3886_ADC_DAC_PWM, KB3886_PARENT);
-+	msleep(10);
-+	outb(KB3886_PWM0_WRITE, KB3886_IO);
-+	msleep(10);
-+	outb(intensity, KB3886_IO);
-+	mutex_unlock(&bl_mutex);
-+}
-+
-+struct kb3886bl_machinfo {
-+	int max_intensity;
-+	int default_intensity;
-+	int limit_mask;
-+	void (*set_bl_intensity)(int intensity);
-+};
-+
-+static struct kb3886bl_machinfo kb3886_bl_machinfo = {
-+	.max_intensity = 0xff,
-+	.default_intensity = 0xa0,
-+	.limit_mask = 0x7f,
-+	.set_bl_intensity = kb3886_bl_set_intensity,
-+};
-+
-+static struct platform_device kb3886bl_device = {
-+	.name		= "kb3886-bl",
-+	.dev		= {
-+		.platform_data	= &kb3886_bl_machinfo,
-+	},
-+	.id		= -1,
-+};
-+
-+static struct platform_device *devices[] __initdata = {
-+	&kb3886bl_device,
-+};
-+
-+static void __init sahara_init(void)
-+{
-+	platform_add_devices(devices, ARRAY_SIZE(devices));
-+}
-+
-+/*
-+ * Back to driver
-+ */
-+
-+static int kb3886bl_intensity;
-+static struct backlight_device *kb3886_backlight_device;
-+static struct kb3886bl_machinfo *bl_machinfo;
-+
-+static unsigned long kb3886bl_flags;
-+#define KB3886BL_SUSPENDED     0x01
-+#define KB3886BL_BATTLOW       0x02
-+
-+static int kb3886bl_send_intensity(struct backlight_device *bd)
-+{
-+	int intensity = bd->props.brightness;
-+
-+	if (bd->props.power != FB_BLANK_UNBLANK)
-+		intensity = 0;
-+	if (bd->props.fb_blank != FB_BLANK_UNBLANK)
-+		intensity = 0;
-+	if (kb3886bl_flags & KB3886BL_SUSPENDED)
-+		intensity = 0;
-+	if (kb3886bl_flags & KB3886BL_BATTLOW)
-+		intensity &= bl_machinfo->limit_mask;
-+
-+	bl_machinfo->set_bl_intensity(intensity);
-+
-+	kb3886bl_intensity = intensity;
-+	return 0;
-+}
-+
-+#ifdef CONFIG_PM
-+static int kb3886bl_suspend(struct platform_device *pdev, pm_message_t state)
-+{
-+	struct backlight_device *bd = platform_get_drvdata(pdev);
-+
-+	kb3886bl_flags |= KB3886BL_SUSPENDED;
-+	backlight_update_status(bd);
-+	return 0;
-+}
-+
-+static int kb3886bl_resume(struct platform_device *pdev)
-+{
-+	struct backlight_device *bd = platform_get_drvdata(pdev);
-+
-+	kb3886bl_flags &= ~KB3886BL_SUSPENDED;
-+	backlight_update_status(bd);
-+	return 0;
-+}
-+#else
-+#define kb3886bl_suspend	NULL
-+#define kb3886bl_resume		NULL
-+#endif
-+
-+static int kb3886bl_get_intensity(struct backlight_device *bd)
-+{
-+	return kb3886bl_intensity;
-+}
-+
-+/*
-+ * Called when the battery is low to limit the backlight intensity.
-+ * If limit==0 clear any limit, otherwise limit the intensity
-+ */
-+void kb3886bl_limit_intensity(int limit)
-+{
-+	if (limit)
-+		kb3886bl_flags |= KB3886BL_BATTLOW;
-+	else
-+		kb3886bl_flags &= ~KB3886BL_BATTLOW;
-+	backlight_update_status(kb3886_backlight_device);
-+}
-+EXPORT_SYMBOL(kb3886bl_limit_intensity);
-+
-+
-+static struct backlight_ops kb3886bl_ops = {
-+	.get_brightness = kb3886bl_get_intensity,
-+	.update_status  = kb3886bl_send_intensity,
-+};
-+
-+static int kb3886bl_probe(struct platform_device *pdev)
-+{
-+	struct kb3886bl_machinfo *machinfo = pdev->dev.platform_data;
-+
-+	bl_machinfo = machinfo;
-+	if (!machinfo->limit_mask)
-+		machinfo->limit_mask = -1;
-+
-+	kb3886_backlight_device = backlight_device_register("kb3886-bl",
-+		&pdev->dev, NULL, &kb3886bl_ops);
-+	if (IS_ERR (kb3886_backlight_device))
-+		return PTR_ERR(kb3886_backlight_device);
-+
-+	platform_set_drvdata(pdev, kb3886_backlight_device);
-+
-+	kb3886_backlight_device->props.max_brightness = machinfo->max_intensity;
-+	kb3886_backlight_device->props.power = FB_BLANK_UNBLANK;
-+	kb3886_backlight_device->props.brightness = machinfo->default_intensity;
-+	backlight_update_status(kb3886_backlight_device);
-+
-+	return 0;
-+}
-+
-+static int kb3886bl_remove(struct platform_device *pdev)
-+{
-+	struct backlight_device *bd = platform_get_drvdata(pdev);
-+
-+	backlight_device_unregister(bd);
-+
-+	return 0;
-+}
-+
-+static struct platform_driver kb3886bl_driver = {
-+	.probe		= kb3886bl_probe,
-+	.remove		= kb3886bl_remove,
-+	.suspend	= kb3886bl_suspend,
-+	.resume		= kb3886bl_resume,
-+	.driver		= {
-+		.name	= "kb3886-bl",
-+	},
-+};
-+
-+static int __init kb3886_init(void)
-+{
-+	sahara_init();
-+	return platform_driver_register(&kb3886bl_driver);
-+}
-+
-+static void __exit kb3886_exit(void)
-+{
-+	platform_driver_unregister(&kb3886bl_driver);
-+}
-+
-+module_init(kb3886_init);
-+module_exit(kb3886_exit);
-+
-+MODULE_AUTHOR("Claudio Nieder <private@claudio.ch>");
-+MODULE_DESCRIPTION("Tabletkiosk Sahara Touch-iT Backlight Driver");
-+MODULE_LICENSE("GPL");
--- 
-1.4.4.4
+config HW_CONSOLE
+	bool
+	depends on VT && !S390 && !UML
+	default y
 
 
--- 
-Claudio Nieder, Talweg 6, CH-8610 Uster, Tel +4179 357 6743, www.claudio.ch
+thanks,
+Hiroshi Shimamoto
