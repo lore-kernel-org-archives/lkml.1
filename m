@@ -1,75 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753290AbYHLHWn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752594AbYHLHaM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753290AbYHLHWn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Aug 2008 03:22:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752723AbYHLHWc
+	id S1752594AbYHLHaM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Aug 2008 03:30:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751437AbYHLHaA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Aug 2008 03:22:32 -0400
-Received: from viefep18-int.chello.at ([213.46.255.22]:64148 "EHLO
-	viefep19-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752906AbYHLHWb (ORCPT
+	Tue, 12 Aug 2008 03:30:00 -0400
+Received: from qmta10.westchester.pa.mail.comcast.net ([76.96.62.17]:37441
+	"EHLO QMTA10.westchester.pa.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751386AbYHLH37 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Aug 2008 03:22:31 -0400
-X-SourceIP: 80.57.229.25
-Subject: Re: [PATCH 05/30] mm: slb: add knowledge of reserve pages
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Neil Brown <neilb@suse.de>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, netdev@vger.kernel.org, trond.myklebust@fys.uio.no,
-       Daniel Lezcano <dlezcano@fr.ibm.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>
-In-Reply-To: <18593.8466.965002.476705@notabene.brown>
-References: <20080724140042.408642539@chello.nl>
-	 <20080724141529.635920366@chello.nl>
-	 <18593.8466.965002.476705@notabene.brown>
-Content-Type: text/plain
-Date: Tue, 12 Aug 2008 09:22:30 +0200
-Message-Id: <1218525750.10800.156.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Tue, 12 Aug 2008 03:29:59 -0400
+X-Authority-Analysis: v=1.0 c=1 a=o6SizqMz_CkA:10 a=6LLILg6-L-YA:10
+ a=rITDv7nW5hcA:10 a=dlLkqa3d77d3BijdyVcA:9 a=T7Nr2E_OBGpdK9cbIJx_0cGPWy8A:4
+ a=3SmO1NJXDBsA:10
+Message-ID: <48A13BF4.3090500@comcast.net>
+Date: Tue, 12 Aug 2008 00:29:56 -0700
+From: Eric Benton <erbenton@comcast.net>
+Reply-To: erbenton@comcast.net
+User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+Subject: [Fwd: how to add support in coretemp.c for Q9450 processor]
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-08-12 at 15:35 +1000, Neil Brown wrote:
-> On Thursday July 24, a.p.zijlstra@chello.nl wrote:
-> > Restrict objects from reserve slabs (ALLOC_NO_WATERMARKS) to allocation
-> > contexts that are entitled to it. This is done to ensure reserve pages don't
-> > leak out and get consumed.
-> 
-> This looks good (we are still missing slob though, aren't we :-( )
 
-I actually have that now, just needs some testing..
+Hi,
+To add coretemp (thermal monitoring) support for the Intel Q9450 
+processor add the code below. i have tested this on several kernels 
+including 2.6.26 and it works fine.  the code addition is 
+*||(c->x86_model == 0x17) in the if statement*
+Thanks
+Eric
 
-> > @@ -1526,7 +1540,7 @@ load_freelist:
-> >  	object = c->page->freelist;
-> >  	if (unlikely(!object))
-> >  		goto another_slab;
-> > -	if (unlikely(SLABDEBUG && PageSlubDebug(c->page)))
-> > +	if (unlikely(PageSlubDebug(c->page) || c->reserve))
-> >  		goto debug;
-> 
-> This looks suspiciously like debugging code that you have left in.
-> Is it??
+*in:*
+drivers/hwmon/coretemp.c
+*in function:*
+static int __init coretemp_init(void)
 
-Its not, we need to force slub into the debug slow path when we have a
-reserve page, otherwise we cannot do the permission check on each
-allocation.
+*change:*
+ if ((c->cpuid_level < 0) || (c->x86 != 0x6) ||
+                    !((c->x86_model == 0xe) || (c->x86_model == 0xf) ||
+                        (c->x86_model == 0x16))) {
 
-> > @@ -265,7 +267,8 @@ struct array_cache {
-> >  	unsigned int avail;
-> >  	unsigned int limit;
-> >  	unsigned int batchcount;
-> > -	unsigned int touched;
-> > +	unsigned int touched:1,
-> > +		     reserve:1;
-> 
-> This sort of thing always worries me.
-> It is a per-cpu data structure so you won't get SMP races corrupting
-> fields.  But you do get read-modify-write in place of simple updates.
-> I guess it's not a problem..  But it worries me :-)
+                        /* supported CPU not found, but report the unknown
+                           family 6 CPU */
+                        if ((c->x86 == 0x6) && (c->x86_model > 0xf))
+                                printk(KERN_WARNING DRVNAME ": Unknown CPU "
+                                        "model %x\n", c->x86_model);
+                        continue;
+                }
+*to*
+ if ((c->cpuid_level < 0) || (c->x86 != 0x6) ||
+                    !((c->x86_model == 0xe) || (c->x86_model == 0xf) ||
+                        (c->x86_model == 0x16)*||(c->x86_model == 0x17)*)) {
 
-Right,.. do people prefer I just add another int?
+                        /* supported CPU not found, but report the unknown
+                           family 6 CPU */
+                        if ((c->x86 == 0x6) && (c->x86_model > 0xf))
+                                printk(KERN_WARNING DRVNAME ": Unknown CPU "
+                                        "model %x\n", c->x86_model);
+                        continue;
+                }
+----------------------------------------------------------
+*Info:*
+# cat /proc/cpuinfo
+processor       : 0
+vendor_id       : GenuineIntel
+cpu family      : 6
+model           : *23*
+model name      : Intel(R) Core(TM)2 Quad  CPU   Q9450  @ 2.66GHz
+stepping        : 7
+cpu MHz         : 1998.000
+cache size      : 6144 KB
+physical id     : 0
+siblings        : 4
+core id         : 0
+cpu cores       : 4
+fpu             : yes
+fpu_exception   : yes
+cpuid level     : 10
+wp              : yes
+flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge 
+mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe 
+syscall nx lm constant_tsc arch_perfmon pebs bts rep_good pni monitor 
+ds_cpl vmx smx est tm2 ssse3 cx16 xtpr sse4_1 lahf_lm
+bogomips        : 5319.97
+clflush size    : 64
+cache_alignment : 64
+address sizes   : 36 bits physical, 48 bits virtual
+power management:
 
