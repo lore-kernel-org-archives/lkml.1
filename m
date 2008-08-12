@@ -1,89 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754426AbYHLQBe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754606AbYHLQDX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754426AbYHLQBe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Aug 2008 12:01:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753900AbYHLQBY
+	id S1754606AbYHLQDX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Aug 2008 12:03:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753036AbYHLQDN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Aug 2008 12:01:24 -0400
-Received: from ns1.suse.de ([195.135.220.2]:58918 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753689AbYHLQBX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Aug 2008 12:01:23 -0400
-From: Thomas Renninger <trenn@suse.de>
-Organization: SUSE Linux - Novell
-To: Milan Broz <mbroz@redhat.com>
-Subject: Re: 2.6.27-rc1 and 2.6.26.1: critical thermal shutdown on thinkpad x60 (bisected)
-Date: Tue, 12 Aug 2008 18:01:18 +0200
-User-Agent: KMail/1.9.9
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Pavel Machek <pavel@suse.cz>,
-       Andi Kleen <andi@firstfloor.org>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       ACPI mailing list <linux-acpi@vger.kernel.org>,
-       Alexey Starikovskiy <astarikovskiy@suse.de>,
-       "Greg Kroah-Hartman" <gregkh@novell.com>, stable@kernel.org
-References: <20080806090246.GA1572@elf.ucw.cz> <48A1A4F6.9080706@redhat.com> <48A1B0CB.9050908@redhat.com>
-In-Reply-To: <48A1B0CB.9050908@redhat.com>
+	Tue, 12 Aug 2008 12:03:13 -0400
+Received: from py-out-1112.google.com ([64.233.166.181]:7268 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752649AbYHLQDL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Aug 2008 12:03:11 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=b4Y+0OUhsTlTYWC15B33XRCcP+XwVTXDe3CleqjcZBUJdckgSzJ+xN1HIa0BkWWoGW
+         tBZP2UkSRyC1/YR8DFmx/qG/UCMWPbBLGOqZGxE8ynky5sfpjtAc5CLfLDbjo1RDXcxm
+         HJn9nWSZInbvZHE/a97ipF0cu9JJR2ZsSy8o8=
+Message-ID: <2c0942db0808120903i3680dab2k920eb952bf806ab1@mail.gmail.com>
+Date: Tue, 12 Aug 2008 09:03:10 -0700
+From: "Ray Lee" <ray-lk@madrabbit.org>
+To: "David Witbrodt" <dawitbro@sbcglobal.net>
+Subject: Re: HPET regression in 2.6.26 versus 2.6.25 -- RCU problem
+Cc: linux-kernel@vger.kernel.org, "Peter Zijlstra" <peterz@infradead.org>,
+       "Yinghai Lu" <yhlu.kernel@gmail.com>, "Ingo Molnar" <mingo@elte.hu>,
+       "Thomas Gleixner" <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       netdev <netdev@vger.kernel.org>
+In-Reply-To: <962464.9576.qm@web82108.mail.mud.yahoo.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200808121801.21374.trenn@suse.de>
+References: <962464.9576.qm@web82108.mail.mud.yahoo.com>
+X-Google-Sender-Auth: d204bf819cf81e9f
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 12 August 2008 17:48:27 Milan Broz wrote:
-> >>>> yes. maybe some userspace tool controlling frequency is involved, no
-> >>>> idea yet. But it is 2.6.26 tree for sure.
-> >>>
-> >>> So it definitely is in 2.6.26.2, and it definitely is in 2.6.26?
-> >
-> > The bug is _not_ in 2.6.26, it was introduced in 2.6.26.1.
-> >
-> > The problem is, that now the CPU frequency doesn't decrease at some
-> > temperature level and fan is unable to cool it properly.
-Hmm, the machine should still not shut down. We need the virtual
-passive trip point...
-> >
-> > bisect on 2.6.26.y tree finished in this patch:
-> > (I expect similar patch in 2.6.27-rc)
-> >
-> > commit 04f496871e8af87a1e40c504371a206fd7389193
-> > Author: Thomas Renninger <trenn@suse.de>
-> > Date:   Wed Jul 30 18:20:10 2008 +0000
->
-> and this seems to fix it for me:
-> --
->
-> Do not use unsigned int if there is test for negative number...
->
-> See drivers/acpi/processor_perflib.c
->   static unsigned int ignore_ppc = -1;
-> ...
->   if (event == CPUFREQ_START && ignore_ppc <= 0) {
->        ignore_ppc = 0;
-> ...
->
-> Signed-off-by: Milan Broz <mbroz@redhat.com>
-> ---
->  drivers/acpi/processor_perflib.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->
-> Index: linux-2.6.26.y/drivers/acpi/processor_perflib.c
-> ===================================================================
-> --- linux-2.6.26.y.orig/drivers/acpi/processor_perflib.c	2008-08-12
-> 17:20:07.000000000 +0200 +++
-> linux-2.6.26.y/drivers/acpi/processor_perflib.c	2008-08-12
-> 17:35:53.000000000 +0200 @@ -70,7 +70,7 @@ static
-> DEFINE_MUTEX(performance_mutex);
->   *  0 -> cpufreq low level drivers initialized -> consider _PPC values
->   *  1 -> ignore _PPC totally -> forced by user through boot param
->   */
-> -static unsigned int ignore_ppc = -1;
-> +static int ignore_ppc = -1;
-Ohh dear..., what kind of obvious bug have I introduced.
+On Tue, Aug 12, 2008 at 8:17 AM, David Witbrodt <dawitbro@sbcglobal.net> wrote:
+> BRAIN DAMAGE CONTROL:  the problem is only on my hardware, so no one
+> on LKML can play with this hardware directly.  That makes _me_ the weak
+> link.
 
-Thanks a lot!
+Heh. Can I offer a suggestion here? You're trying to do two things at
+once -- finding where the problem is, and also trying to understand
+the problem at the same time. Speaking just for myself, I try to
+either do one of those or the other, but not both at the same time
+:-). Since you bisected it (seems like a good log when I view the
+commit history, but I'm no git expert), let's just work with that.
 
-         Thomas
+> 1.  Can someone comment on whether I correctly identified the commit #
+> causing the issue for me.  Here is the 'git bisect' data from my first
+> post:
+>
+> 2.6.25, good
+> 2.6.26-rc4, bad
+> 10c993a6b5418cb1026775765ba4c70ffb70853d, bad
+> 334d094504c2fe1c44211ecb49146ae6bca8c321, bad
+> eddeb0e2d863e3941d8768e70cb50c6120e61fa0, bad
+> 77ad386e596c6b0930cc2e09e3cce485e3ee7f72, bad
+> ede1389f8ab4f3a1343e567133fa9720a054a3aa, bad
+> c048fdfe6178e082be918d4062c86d9764979112, bad
+> f73920cd63d316008738427a0df2caab6cc88ad7, bad
+> 04aaa7ba096c707a8df337b29303f1a5a65f0462, good
+> 8fa6878ffc6366f490e99a1ab31127fb599657c9, good
+> 1180e01de50c0c7683c6648251f32957bc2d7850, good
+> 1e934dda0c77c8ad13fdda02074f2cfcea118a56, bad
+> 322850af8d93735f67b8ebf84bb1350639be3f34, good
+> 3def3d6ddf43dbe20c00c3cbc38dfacc8586998f, bad
+> 700efc1b9f6afe34caae231b87d129ad8ffb559f, good
+>
+> I concluded that 3def3d... was causing the problem for me, but I didn't
+> actually pipe or redirect the output message from 'git bisect' when it
+> stated that.  Does that conclusion look OK?
+
+Git should have printed out "<SHA1> is first bad commit" Did you see
+that? If not, you stopped the process too soon. Viewing the history
+with gitk, though, it seems you fingered the right commit. Which leads
+to the next step...
+
+> 2.  I have not tried different versions of gcc.
+
+Which is not this :-).
+
+> 3.  I keep wanting to play with source code,
+
+Or this :-).
+
+Can you try reverting that commit against the top of the latest tree,
+and see if the revert applies correctly? If it does, compile and boot
+and see if it works. If it does, it'll be Yinghai's job to figure out
+what went wrong, not yours (unless you're a real gluton for
+punishment, and happen to know what was going on in Yinghai's head
+when he decided that it was safe to make those changes).
