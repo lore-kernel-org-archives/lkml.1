@@ -1,65 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755004AbYHLWFA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755084AbYHLWFg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755004AbYHLWFA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Aug 2008 18:05:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752717AbYHLWEi
+	id S1755084AbYHLWFg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Aug 2008 18:05:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752397AbYHLWFO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Aug 2008 18:04:38 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:33083 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752133AbYHLWEh (ORCPT
+	Tue, 12 Aug 2008 18:05:14 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:50057 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752133AbYHLWFN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Aug 2008 18:04:37 -0400
-Date: Tue, 12 Aug 2008 15:04:05 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Al Viro <viro@ZenIV.linux.org.uk>
-cc: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+	Tue, 12 Aug 2008 18:05:13 -0400
+Date: Tue, 12 Aug 2008 22:47:30 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
+       Al Viro <viro@ZenIV.linux.org.uk>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
 Subject: Re: [RFC] readdir mess
-In-Reply-To: <20080812215441.GY28946@ZenIV.linux.org.uk>
-Message-ID: <alpine.LFD.1.10.0808121500340.3462@nehalem.linux-foundation.org>
-References: <20080812062241.GQ28946@ZenIV.linux.org.uk> <87ej4u9nf5.fsf@devron.myhome.or.jp> <alpine.LFD.1.10.0808121009370.3462@nehalem.linux-foundation.org> <87proe81c1.fsf@devron.myhome.or.jp> <alpine.LFD.1.10.0808121303510.3462@nehalem.linux-foundation.org>
- <20080812205943.GX28946@ZenIV.linux.org.uk> <alpine.LFD.1.10.0808121415390.3462@nehalem.linux-foundation.org> <20080812215441.GY28946@ZenIV.linux.org.uk>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-ID: <20080812224730.0e668dee@lxorguk.ukuu.org.uk>
+In-Reply-To: <alpine.LFD.1.10.0808121303510.3462@nehalem.linux-foundation.org>
+References: <20080812062241.GQ28946@ZenIV.linux.org.uk>
+	<87ej4u9nf5.fsf@devron.myhome.or.jp>
+	<alpine.LFD.1.10.0808121009370.3462@nehalem.linux-foundation.org>
+	<87proe81c1.fsf@devron.myhome.or.jp>
+	<alpine.LFD.1.10.0808121303510.3462@nehalem.linux-foundation.org>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 12 Aug 2008 13:05:43 -0700 (PDT)
+Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-
-On Tue, 12 Aug 2008, Al Viro wrote:
-
-> On Tue, Aug 12, 2008 at 02:24:04PM -0700, Linus Torvalds wrote:
-> > 
-> > You'd truncate the inode number. What's the big deal? Inode numbers aren't 
-> > that important - they're just about the _least_ important part of the data 
-> > returned for a readdir. 
 > 
-> Tell that to tar(1) ;-)
+> 
+> On Wed, 13 Aug 2008, OGAWA Hirofumi wrote:
+> > 
+> > However, there are some similar stuff: ->st_size, ->st_nlink and
+> > ->st_ino in stat() (cp_old_stat()). Maybe EOVERFLOW is the reason for
+> > consistency...
+> 
+> .. I actually had an old binary that triggered that case (actually, it was 
+> O_LARGEFILE in open()), and didn't work as a result. I only needed to run 
+> it once, so I literally hacked up a once-time-use kernel that just removed 
+> the EOVERFLOW in open.
+> 
+> So no, I'm not a fan of EOVERFLOW at all. Not in readdir(), not really 
+> anywhere else. 
 
-The thing is, you still have the low 32 (or 16) bits, so even tar is 
-better off most of the time. 
+In a lot of places the standard mandates it to ensure you don't get nasty
+suprises. There are places where during the LFS work people found apps
+whose large file response was unpleasant - things like "get the file
+length, reduce it to an exact number of records long with ftruncate in
+case we got a partial record write somewhere" do horrible things when the
+length wraps.
 
-Let's face it, we actually always truncate things as-is. What are inode 
-numbers on NFS but truncated file handles? 
+That said there is nothing that says we can't have a 'posix_me_harder'
+sysfs control for such things. The standards say what should occur in the
+normal situation not what should occur if you intentionally move out of
+the standard definition.
 
-And the other side of the coin is that legacy binaries are almost never 
-_system_ binaries. You upgrade those with your system They are some odd 
-special-purpose thing.
+Alan
 
-> Anyway, the point for getdents() is simply that we *do* return an error; it's
-> just that it ends up with -EINVAL instead of -EOVERFLOW, and that's simply
-> bogus - we should either truncate silently or return the right value.  The
-> code definitely intends to do the latter and fucks up.
-
-I agree. However, the reason it f*cks up is exactly the fact that we have 
-two different error numbers, which was why I suggested that if we really 
-want to fix this problem and are talking about cleaning things up, then 
-_that_ should be our primary place to look at.
-
-Yes, it implies fixing and checking a lot of low-level filesystems. I 
-agree. It's easier to just leave it be. 
-
-			Linus
