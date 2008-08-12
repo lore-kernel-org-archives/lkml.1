@@ -1,51 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752668AbYHLUZp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752681AbYHLU3X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752668AbYHLUZp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Aug 2008 16:25:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751267AbYHLUZh
+	id S1752681AbYHLU3X (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Aug 2008 16:29:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751052AbYHLU3P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Aug 2008 16:25:37 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:58533 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751175AbYHLUZh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Aug 2008 16:25:37 -0400
-Date: Tue, 12 Aug 2008 13:25:17 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Yoshinori Sato <ysato@users.sourceforge.jp>
-cc: Sam Ravnborg <sam@ravnborg.org>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] h8300 move header files
-In-Reply-To: <87myjiq960.wl%ysato@users.sourceforge.jp>
-Message-ID: <alpine.LFD.1.10.0808121322190.3462@nehalem.linux-foundation.org>
-References: <871w0wvgng.wl%ysato@users.sourceforge.jp> <20080811170534.22f26b7e.akpm@linux-foundation.org> <20080812051101.GA21095@uranus.ravnborg.org> <87myjiq960.wl%ysato@users.sourceforge.jp>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 12 Aug 2008 16:29:15 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:49453 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750737AbYHLU3O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Aug 2008 16:29:14 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <200808122102.15794.ioe-lkml@rameria.de>
+References: <200808122102.15794.ioe-lkml@rameria.de> <20080812132840.5472.25856.stgit@warthog.procyon.org.uk> <20080812132850.5472.5131.stgit@warthog.procyon.org.uk>
+To: Ingo Oeser <ioe-lkml@rameria.de>
+Cc: dhowells@redhat.com, sfr@canb.auug.org.au, jmorris@namei.org,
+       hch@infradead.org, davem@davemloft.net, sfrench@us.ibm.com,
+       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org
+Subject: Re: [PATCH 2/2] CRED: Introduce credential access wrappers
+X-Mailer: MH-E 8.0.3+cvs; nmh 1.3; GNU Emacs 23.0.50
+Date: Tue, 12 Aug 2008 21:27:32 +0100
+Message-ID: <9503.1218572852@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Ingo Oeser <ioe-lkml@rameria.de> wrote:
 
+> Why macros? When introducing APIs using trivial inlines makes sure that 
+> the conversion is correct, type correct and side effect free for the callers.
+> Macros cannot ensure this without pain.
 
-On Tue, 12 Aug 2008, Yoshinori Sato wrote:
-> 
-> My h8300 repository can't public access.
-> Also difficult pull request.
+But macros don't care that you can't access current at this point.
 
-The nice thing about git is that it doesn't care one whit how something 
-gets moved. So you can
-
- - just send me a regular patch (as a git user, it can be the "git 
-   shorthand" kind of patch that has explicit renames, but it can be a 
-   traditional patch with delete/create pairs too, and git won't care AT 
-   ALL because the end result is the same)
-
- - or just send me a shell script to do the renames along with a small 
-   patch to fix up any other issues that happen as a result of the rename, 
-   and a explanation for me to use as a commit message.
-
-Renames in git do not have to be handled as "git" events, unlike many 
-other broken models. Git will do the right thing regardless.
-
-			Linus
+David
