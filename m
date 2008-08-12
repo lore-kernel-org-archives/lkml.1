@@ -1,69 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752267AbYHLETA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752790AbYHLETn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752267AbYHLETA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Aug 2008 00:19:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750756AbYHLESx
+	id S1752790AbYHLETn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Aug 2008 00:19:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751040AbYHLETe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Aug 2008 00:18:53 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:12965 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750706AbYHLESw (ORCPT
+	Tue, 12 Aug 2008 00:19:34 -0400
+Received: from ti-out-0910.google.com ([209.85.142.184]:58779 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750878AbYHLETd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Aug 2008 00:18:52 -0400
-Date: Mon, 11 Aug 2008 21:18:02 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Subject: 2.6.27-rc2-git5 BUG: unable to handle kernel paging request
-Message-Id: <20080811211802.8fed7a4b.randy.dunlap@oracle.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 12 Aug 2008 00:19:33 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=C58s4u9urB6wyjAtx5uYqOXFCbo1WBDNM8sH5dG3HZA1rDfS7brxJebzKH1T6jYorW
+         GQpnAoSnnl78h2EntZcBYWeASaLItTNANBfPx6BF8ydisAHwTnWHoVBhfaTkyZbqdnjO
+         rJCuH5YU7LmWvVQckSJZpdSn8K9aB1EVYGA3o=
+Message-ID: <a8e1da0808112119y3114512fj134cb916bbc6076@mail.gmail.com>
+Date: Tue, 12 Aug 2008 12:19:31 +0800
+From: "Dave Young" <hidave.darkstar@gmail.com>
+To: "Bob Copeland" <me@bobcopeland.com>
+Subject: Re: [BUG] wireless : cpu stuck for 61s
+Cc: "Jiri Slaby" <jirislaby@gmail.com>,
+       "Pekka J Enberg" <penberg@cs.helsinki.fi>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Johannes Berg" <johannes@sipsolutions.net>,
+       linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org
+In-Reply-To: <a8e1da0808051851y752b3525l98271ceca4eb189a@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Disposition: inline
+References: <20080729055731.GA3265@darkstar>
+	 <1217334724.10489.47.camel@johannes.berg>
+	 <20080730020820.8bcc00e2.akpm@linux-foundation.org>
+	 <a8e1da0807300302m35a0a7c0q2ff2e0ab92a69239@mail.gmail.com>
+	 <20080730031047.54e13e2d.akpm@linux-foundation.org>
+	 <a8e1da0808010032h32c18054g3712466eb40f0acf@mail.gmail.com>
+	 <4896D34A.1000005@gmail.com>
+	 <a8e1da0808041829sac34939yd9163b02e6b8b515@mail.gmail.com>
+	 <20080805122408.GA5000@hash.localnet>
+	 <a8e1da0808051851y752b3525l98271ceca4eb189a@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-on x86_64, SMP, 8 GB RAM:
+On Wed, Aug 6, 2008 at 9:51 AM, Dave Young <hidave.darkstar@gmail.com> wrote:
+> On Tue, Aug 5, 2008 at 8:24 PM, Bob Copeland <me@bobcopeland.com> wrote:
+>> On Tue, Aug 05, 2008 at 09:29:26AM +0800, Dave Young wrote:
+>>> With the patch I cann't reproduce the bug with 27-rc1 now.
+>>>
+>>> >  [<c02375a6>] ? debugfs_create_file+0x46/0x210
+>>> >  [<c02375a6>] ? debugfs_create_file+0x46/0x210
+>>> >  [<c02375a6>] debugfs_create_file+0x46/0x210
+>>> >  [<c02377f1>] debugfs_create_dir+0x21/0x30
+>>> >  [<f8901f6d>] ieee80211_sta_debugfs_add+0x2d/0x150 [mac80211]
+>>> >  [<f88eba89>] sta_info_debugfs_add_work+0x89/0x130 [mac80211]
+>>> >  [<f890a170>] ? rate_control_pid_add_sta_debugfs+0x0/0x30 [mac80211]
+>>
+>> I wonder if there were two separate problems here.  I looked into
+>> this with some detail yesterday and agree with Johannes that the above
+>> trace is on locking the parent directory's i_mutex, but I too couldn't
+>> see any problems with sta_info_debugfs_add_work.  Other stuff could also
+>> modify the directory with or without rtnl_lock, but not in a way that
+>> to my untrained eyes would lead to deadlock.
+>
+> Yes,. I think so. It's the original bug for me, while testing I found
+> the mutex deadlock problem.
+>
+> But this week I will have no time to trace it. so if I have time I
+> will keep tracing the problem
 
-BUG: unable to handle kernel paging request at ffffe20001d5ae00
-IP: [<ffffffff8027c08f>] unmap_vmas+0x42d/0x7a0
-PGD 28102067 PUD 28103067 PMD 0
-Oops: 0000 [1] SMP
-CPU 3
-Modules linked in: lpfc(+) cciss ehci_hcd ohci_hcd uhci_hcd
-Pid: 1382, comm: udevd Not tainted 2.6.27-rc2-git5 #1
-RIP: 0010:[<ffffffff8027c08f>]  [<ffffffff8027c08f>] unmap_vmas+0x42d/0x7a0
-RSP: 0018:ffff88027dcffd68  EFLAGS: 00010246
-RAX: 000000008631b98b RBX: ffffe20001d5ade8 RCX: ffff880183a27500
-RDX: 0000000001d5ad00 RSI: 000000008631b98b RDI: ffff88027e549840
-RBP: ffff88027dcffe38 R08: 000000017efc3402 R09: 000000ffffffffff
-R10: ffff88017e84c9d8 R11: 0000000000000006 R12: 0000000000000020
-R13: 00007fbedb007000 R14: ffff88027dd81038 R15: 00007fbedb10a000
-FS:  00007fbedb777710(0000) GS:ffff88027f623c80(0000) knlGS:0000000000000000
-CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
-CR2: ffffe20001d5ae00 CR3: 000000027e12c000 CR4: 00000000000006e0
-DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-Process udevd (pid: 1382, threadinfo ffff88027dcfe000, task ffff88027d959bc0)
-Stack:  0000000000000000 0000000000000000 ffff88027dcffe50 ffffffffffffffff
- 0000000000000000 ffff88027e549840 ffff88027dcffe58 00000000003bc9f2
- 0000000000000000 0000000108b985a8 00007fbedb10a000 ffff88027e12c7f8
-Call Trace:
- [<ffffffff8027ff11>] exit_mmap+0x75/0xed
- [<ffffffff80232f3a>] mmput+0x42/0x98
- [<ffffffff802369ff>] exit_mm+0xfd/0x108
- [<ffffffff80237fce>] do_exit+0x272/0x84d
- [<ffffffff8023861b>] do_group_exit+0x72/0xa2
- [<ffffffff8023865d>] sys_exit_group+0x12/0x14
- [<ffffffff8020beeb>] system_call_fastpath+0x16/0x1b
+Unfortunately I have no more time to do this these days.
+As I can't reproduce it with the latest git kernel I think that It
+might have been fixed already.
+
+>
+>>
+>> Or is the trace just wrong?
+>>
+>> --
+>> Bob Copeland %% www.bobcopeland.com
+>>
+>>
+>
+>
+>
+> --
+> Regards
+> dave
+>
 
 
----
-~Randy
-Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
-http://linuxplumbersconf.org/
+
+-- 
+Regards
+dave
