@@ -1,64 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753468AbYHLINg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753641AbYHLIOG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753468AbYHLINg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Aug 2008 04:13:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751809AbYHLINT
+	id S1753641AbYHLIOG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Aug 2008 04:14:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752017AbYHLINt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Aug 2008 04:13:19 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:48387 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751575AbYHLINS (ORCPT
+	Tue, 12 Aug 2008 04:13:49 -0400
+Received: from E23SMTP05.au.ibm.com ([202.81.18.174]:43879 "EHLO
+	e23smtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751809AbYHLINs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Aug 2008 04:13:18 -0400
-Date: Tue, 12 Aug 2008 11:13:15 +0300 (EEST)
-From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
-X-X-Sender: ijjarvin@wrl-59.cs.helsinki.fi
-To: David Miller <davem@davemloft.net>
-cc: cl@linux-foundation.org, Netdev <netdev@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: tbench regression on each kernel release from 2.6.22 -> 2.6.28
-In-Reply-To: <20080811.141501.01468546.davem@davemloft.net>
-Message-ID: <Pine.LNX.4.64.0808121058550.4551@wrl-59.cs.helsinki.fi>
-References: <48A086B6.2000901@linux-foundation.org> <20080811.141501.01468546.davem@davemloft.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 12 Aug 2008 04:13:48 -0400
+Message-ID: <48A145FA.2030803@linux.vnet.ibm.com>
+Date: Tue, 12 Aug 2008 13:42:42 +0530
+From: Nageswara R Sastry <rnsastry@linux.vnet.ibm.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
+MIME-Version: 1.0
+To: Johannes Weiner <hannes@saeurebad.de>
+CC: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+       balbir@linux.vnet.ibm.com, ego@linux.vnet.ibm.com,
+       svaidy@linux.vnet.ibm.com, davej@codemonkey.org.uk
+Subject: Re: [BUG] While changing the cpufreq governor, kernel hits a bug
+ in workqueue.c
+References: <485F8028.1070302@linux.vnet.ibm.com> <87y74w41fp.fsf@skyscraper.fehenstaub.lan> <4860BB8E.2070505@linux.vnet.ibm.com> <87tzfh2t5l.fsf@skyscraper.fehenstaub.lan> <48638906.4090308@linux.vnet.ibm.com> <87y74l4scd.fsf@skyscraper.fehenstaub.lan> <87fxqp7nye.fsf@skyscraper.fehenstaub.lan> <4871E657.3040403@linux.vnet.ibm.com> <87d4lqq7ec.fsf@saeurebad.de> <487300B1.4040300@linux.vnet.ibm.com>  <877ibukn8k.fsf@saeurebad.de> <1216215897.1652.24.camel@lappy.programming.kicks-ass.net>
+In-Reply-To: <1216215897.1652.24.camel@lappy.programming.kicks-ass.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 11 Aug 2008, David Miller wrote:
+Any updates on this bug.
 
-> From: Christoph Lameter <cl@linux-foundation.org>
-> Date: Mon, 11 Aug 2008 13:36:38 -0500
-> 
-> > It seems that the network stack becomes slower over time? Here is a list of
-> > tbench results with various kernel versions:
-> > 
-> > 2.6.22		3207.77 mb/sec
-> > 2.6.24		3185.66
-> > 2.6.25		2848.83
-> > 2.6.26		2706.09
-> > 2.6.27(rc2)	2571.03
-> > 
-> > And linux-next is:
-> > 
-> > 2.6.28(l-next)	2568.74
-> > 
-> > It shows that there is still have work to be done on linux-next. Too close to
-> > upstream in performance.
-> > 
-> > Note the KT event between 2.6.24 and 2.6.25. Why is that?
-> 
-> Isn't that when some major scheduler changes went in?  I'm not blaming
-> the scheduler, but rather I'm making the point that there are other
-> subsystems in the kernel that the networking interacts with that
-> influences performance at such a low level.
-
-...IIRC, somebody in the past did even bisect his (probably netperf) 
-2.6.24-25 regression to some scheduler change (obviously it might or might 
-not be related to this case of yours)...
-
-
--- 
- i.
+Thanks and Regards
+R.Nageswara Sastry
