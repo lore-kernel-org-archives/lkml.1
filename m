@@ -1,83 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752450AbYHLGNl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752179AbYHLGWw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752450AbYHLGNl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Aug 2008 02:13:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751271AbYHLGNd
+	id S1752179AbYHLGWw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Aug 2008 02:22:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751275AbYHLGWn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Aug 2008 02:13:33 -0400
-Received: from smtp112.mail.mud.yahoo.com ([209.191.84.65]:20284 "HELO
-	smtp112.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751267AbYHLGNd (ORCPT
+	Tue, 12 Aug 2008 02:22:43 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:57123 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751243AbYHLGWm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Aug 2008 02:13:33 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=e0nOynr0+Y3ZZG9qNBByXXNsTFPPxkHuhs3EpDYVVlsb/mCcWcOgcT5Adq7q21+B2wO/ZwH+JeHp4s8LaLBY4YQwx7052qihqAZ5JfLNXEEIWXAXU27dI0iYk2xs+awKUW89iuAhwS99lSlfyY/E/BCplgAlNACEQc/zl8DqHm8=  ;
-X-YMail-OSG: WQaeGtsVM1n.h1VhlZ6e.D0CG_nHlBe.nNra0flPWKRNPTjopj6rJoVaw3gBbGt9QxVDIAUaLFDV1K7MO2Ux3XZL7BCuEApJVGD45_Zzeb7lIOTayl9YPdDxGFrH00hVLM.t8dzsozKXr1x0z13dWyE2
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [git pull] core fixes
-Date: Tue, 12 Aug 2008 16:13:24 +1000
-User-Agent: KMail/1.9.5
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       "David S. Miller" <davem@davemloft.net>
-References: <20080811222026.GA20579@elte.hu>
-In-Reply-To: <20080811222026.GA20579@elte.hu>
+	Tue, 12 Aug 2008 02:22:42 -0400
+Date: Tue, 12 Aug 2008 07:22:41 +0100
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: linux-fsdevel@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: [RFC] readdir mess
+Message-ID: <20080812062241.GQ28946@ZenIV.linux.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200808121613.24846.nickpiggin@yahoo.com.au>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 12 August 2008 08:20, Ingo Molnar wrote:
-> Linus,
->
-> Please pull the latest core-fixes-for-linus git tree from:
->
->    git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git
-> core-fixes-for-linus
->
-> 90% of the flux comes from lockdep - and most of the fixes are for
-> long-standing bugs/weaknesses. (like the quadratic overhead bug David
-> uncovered and fixed)
->
-> The only non-strictly bugfix change is:
->
->    # f82b217: lockdep: shrink held_lock structure
->
-> but Peter wrote and tested/improved that one together with other patches
-> so i decided against extracting the commit artificially which would have
-> been pretty invasive.
->
-> Thanks,
->
-> 	Ingo
->
-> ------------------>
-> Dave Jones (1):
->       lockdep: shrink held_lock structure
->
-> David Miller (2):
->       lockdep: fix combinatorial explosion in lock subgraph traversal
->       debug_locks: set oops_in_progress if we will log messages.
->
-> Ingo Molnar (2):
->       lockdep: rename map_[acquire|release]() =>
-> lock_map_[acquire|release]() lockdep: increase MAX_LOCKDEP_KEYS
->
-> Nick Piggin (1):
->       generic-ipi: fix stack and rcu interaction bug in
-> smp_call_function_mask()
+	When getdents() had been introduced in 1.3.0, ->readdir() has grown
+a callback and became an iterator.  The type of that iterator had been
+a Bloody Bad Idea(tm); it returns a value that gets reduced to one bit
+by all callers.  Basically it's "do we stop or do we move to the next
+entry?".  0 means "go on" for all ->readdir() instances, negative - "stop".
+Positives are treated inconsistently.
 
-I'm still not 100% sure that I have this patch right... I might have seen
-a lockup trace implicating the smp call function path... which may have
-been due to some other problem or a different bug in the new call function
-code, but if some more people can take a look at it before merging?
+	Note that it can not be used to return an error.  In particular,
+the callback of getdents(2) returns "stop" when we run out of buffer.
+If any instance of ->readdir() would ever treat that as an error to
+pass back to caller, it would break spectaculary on the first ls(1) on
+a directory large enough to require more than one getdents(2) call.
+
+	Anything that wants to pass errors back to caller of ->readdir()
+has to store it in whatever struct we are passing to the callback.
+
+	That had lead to two recurring classes of bugs:
+1) something_readdir() treats "callback returned negative" as "return
+than negative".  Breaks pretty fast.
+2) whatever_filldir() happily returns some error value and expects it
+to be seen by caller of ->readdir().  Somehow.  Doesn't work.  We do
+have such bugs right now.
+
+	In addition, we have other kinds of crap going on around ->readdir()
+(the most popular being "whaddya mean, somebody might've done lseek(2) and
+set offset to hell knows what???"), but those are separate story.
+
+	An obvious way to deal with that would be to have filldir_t return
+bool; true => stop, false => go on.  However, that's going to cause silent
+breakage of out-of-tree filesystems.  Even though e.g. ext2 had always
+treated any non-zero return value of filldir as "stop", we'd grown filesystems
+that check for return value < 0 instead.  Having it return true (i.e. 1)
+will break all of those.  Note that generic callbacks currently return
+negative values for "stop", so they work with those filesystems right now.
+
+	FWIW, I'm seriously tempted to go for the following variant:
+new __bitwise type with two values - READDIR_STOP and READDIR_CONTINUE,
+-1 and 0 resp.  The type of filldir_t would become filldir_res_t (*)(......),
+all existing instances of ->readdir() would keep working and sparse
+would catch all mismatches.
+
+	Another variant is to change filldir_t in visible incompatible way
+that would have bool as return value and let readdir instances adjust or
+refuse to compile; maintainers of out-of-tree code would presumably notice
+that, so we would just have to document the calling conventions and say
+that checking for < 0 doesn't work anymore.
+
+	Comments?
