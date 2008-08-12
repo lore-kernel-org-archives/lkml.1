@@ -1,126 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753335AbYHLKXs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753134AbYHLKZ1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753335AbYHLKXs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Aug 2008 06:23:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751667AbYHLKXg
+	id S1753134AbYHLKZ1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Aug 2008 06:25:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751700AbYHLKZT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Aug 2008 06:23:36 -0400
-Received: from viefep18-int.chello.at ([213.46.255.22]:30753 "EHLO
-	viefep17-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752790AbYHLKXd (ORCPT
+	Tue, 12 Aug 2008 06:25:19 -0400
+Received: from mga10.intel.com ([192.55.52.92]:41667 "EHLO
+	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751667AbYHLKZT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Aug 2008 06:23:33 -0400
-X-SourceIP: 80.57.229.25
-Subject: Re: [PATCH 05/30] mm: slb: add knowledge of reserve pages
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Neil Brown <neilb@suse.de>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, netdev@vger.kernel.org, trond.myklebust@fys.uio.no,
-       Daniel Lezcano <dlezcano@fr.ibm.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>
-In-Reply-To: <18593.22902.998611.967202@notabene.brown>
-References: <20080724140042.408642539@chello.nl>
-	 <20080724141529.635920366@chello.nl>
-	 <18593.8466.965002.476705@notabene.brown>
-	 <1218525750.10800.156.camel@twins>
-	 <18593.22902.998611.967202@notabene.brown>
-Content-Type: text/plain
-Date: Tue, 12 Aug 2008 12:23:27 +0200
-Message-Id: <1218536607.10800.181.camel@twins>
+	Tue, 12 Aug 2008 06:25:19 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.32,195,1217833200"; 
+   d="scan'208";a="369969792"
+Subject: [PATCH]Clean-up for crypto Intel CRC32 code.
+From: Austin Zhang <austin_zhang@linux.intel.com>
+To: herbert@gondor.apana.org.au, drepper@gmail.com
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Date: Tue, 12 Aug 2008 06:23:13 -0400
+Message-Id: <1218536593.16293.9.camel@localhost.localdomain>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-08-12 at 19:35 +1000, Neil Brown wrote:
-> On Tuesday August 12, a.p.zijlstra@chello.nl wrote:
-> > On Tue, 2008-08-12 at 15:35 +1000, Neil Brown wrote:
-> > > On Thursday July 24, a.p.zijlstra@chello.nl wrote:
-> > > > Restrict objects from reserve slabs (ALLOC_NO_WATERMARKS) to allocation
-> > > > contexts that are entitled to it. This is done to ensure reserve pages don't
-> > > > leak out and get consumed.
-> > > 
-> > > This looks good (we are still missing slob though, aren't we :-( )
-> > 
-> > I actually have that now, just needs some testing..
-> 
-> Cool!
-> 
-> > 
-> > > > @@ -1526,7 +1540,7 @@ load_freelist:
-> > > >  	object = c->page->freelist;
-> > > >  	if (unlikely(!object))
-> > > >  		goto another_slab;
-> > > > -	if (unlikely(SLABDEBUG && PageSlubDebug(c->page)))
-> > > > +	if (unlikely(PageSlubDebug(c->page) || c->reserve))
-> > > >  		goto debug;
-> > > 
-> > > This looks suspiciously like debugging code that you have left in.
-> > > Is it??
-> > 
-> > Its not, we need to force slub into the debug slow path when we have a
-> > reserve page, otherwise we cannot do the permission check on each
-> > allocation.
-> 
-> I see.... a little.  I'm trying to avoid understanding slub too
-> deeply, I don't want to use up valuable brain cell :-)
+﻿Herbert and ﻿Ulrich, sorry for late reply.
+see below.
+This patch was created against cryptodev-2.6
 
-:-)
 
-> Would we be justified in changing the label from 'debug:' to
-> 'slow_path:'  or something?  
+Clean-up by new MACRO;
 
-Could do I guess.
+Signed-off-by: Austin Zhang <austin.zhang@intel.com>
+---
+ crc32c-intel.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-Index: linux-2.6/mm/slub.c
-===================================================================
---- linux-2.6.orig/mm/slub.c
-+++ linux-2.6/mm/slub.c
-@@ -1543,7 +1543,7 @@ load_freelist:
- 	if (unlikely(!object))
- 		goto another_slab;
- 	if (unlikely(PageSlubDebug(c->page) || c->reserve))
--		goto debug;
-+		goto slow_path;
+diff -Naurp cryptodev-2.6/arch/x86/crypto/crc32c-intel.c cryptodev-2.6-patch/arch/x86/crypto/crc32c-intel.c
+--- cryptodev-2.6/arch/x86/crypto/crc32c-intel.c	2008-08-12 04:44:00.000000000 -0400
++++ cryptodev-2.6-patch/arch/x86/crypto/crc32c-intel.c	2008-08-12 05:58:56.000000000 -0400
+@@ -26,12 +26,12 @@
+ #define CHKSUM_BLOCK_SIZE	1
+ #define CHKSUM_DIGEST_SIZE	4
  
- 	c->freelist = object[c->offset];
- 	c->page->inuse = c->page->objects;
-@@ -1586,11 +1586,21 @@ grow_slab:
- 		goto load_freelist;
- 	}
- 	return NULL;
--debug:
++#define SCALE_F	sizeof(unsigned long)
 +
-+slow_path:
- 	if (PageSlubDebug(c->page) &&
- 			!alloc_debug_processing(s, c->page, object, addr))
- 		goto another_slab;
+ #ifdef CONFIG_X86_64
+ #define REX_PRE "0x48, "
+-#define SCALE_F 8
+ #else
+ #define REX_PRE
+-#define SCALE_F 4
+ #endif
  
-+	/*
-+	 * Avoid the slub fast path in slab_alloc by not setting
-+	 * c->freelist and the fast path in slab_fere by making 
-+	 * node_match() fail by setting c->node to -1.
-+	 *
-+	 * We use this for for debug checks and reserve handling,
-+	 * which needs to do permission checks on each allocation.
-+	 */
-+
- 	c->page->inuse++;
- 	c->page->freelist = object[c->offset];
- 	c->node = -1;
+ static u32 crc32c_intel_le_hw_byte(u32 crc, unsigned char const *data, size_t length)
 
-
-> And if it is just c->reserve, should
-> we avoid the call to alloc_debug_processing?
-
-We already do:
-
-	if (PageSlubDebug(c->page) &&
-			!alloc_debug_processing(s, c->page, object, addr))
-		goto another_slab;
-
-since in that case PageSlubDebug() will be false.
 
