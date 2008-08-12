@@ -1,91 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752649AbYHLKXa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753335AbYHLKXs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752649AbYHLKXa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Aug 2008 06:23:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751667AbYHLKXV
+	id S1753335AbYHLKXs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Aug 2008 06:23:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751667AbYHLKXg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Aug 2008 06:23:21 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:39948 "EHLO
-	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751630AbYHLKXU (ORCPT
+	Tue, 12 Aug 2008 06:23:36 -0400
+Received: from viefep18-int.chello.at ([213.46.255.22]:30753 "EHLO
+	viefep17-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752790AbYHLKXd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Aug 2008 06:23:20 -0400
-Date: Tue, 12 Aug 2008 12:24:34 +0200
-From: Pavel Machek <pavel@suse.cz>
-To: Andi Kleen <andi@firstfloor.org>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       ACPI mailing list <linux-acpi@vger.kernel.org>,
-       Trivial patch monkey <trivial@kernel.org>,
-       Andrew Morton <akpm@osdl.org>
-Subject: acpi: trivial cleanups
-Message-ID: <20080812102434.GA2676@elf.ucw.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Tue, 12 Aug 2008 06:23:33 -0400
+X-SourceIP: 80.57.229.25
+Subject: Re: [PATCH 05/30] mm: slb: add knowledge of reserve pages
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Neil Brown <neilb@suse.de>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, netdev@vger.kernel.org, trond.myklebust@fys.uio.no,
+       Daniel Lezcano <dlezcano@fr.ibm.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>
+In-Reply-To: <18593.22902.998611.967202@notabene.brown>
+References: <20080724140042.408642539@chello.nl>
+	 <20080724141529.635920366@chello.nl>
+	 <18593.8466.965002.476705@notabene.brown>
+	 <1218525750.10800.156.camel@twins>
+	 <18593.22902.998611.967202@notabene.brown>
+Content-Type: text/plain
+Date: Tue, 12 Aug 2008 12:23:27 +0200
+Message-Id: <1218536607.10800.181.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 2008-08-12 at 19:35 +1000, Neil Brown wrote:
+> On Tuesday August 12, a.p.zijlstra@chello.nl wrote:
+> > On Tue, 2008-08-12 at 15:35 +1000, Neil Brown wrote:
+> > > On Thursday July 24, a.p.zijlstra@chello.nl wrote:
+> > > > Restrict objects from reserve slabs (ALLOC_NO_WATERMARKS) to allocation
+> > > > contexts that are entitled to it. This is done to ensure reserve pages don't
+> > > > leak out and get consumed.
+> > > 
+> > > This looks good (we are still missing slob though, aren't we :-( )
+> > 
+> > I actually have that now, just needs some testing..
+> 
+> Cool!
+> 
+> > 
+> > > > @@ -1526,7 +1540,7 @@ load_freelist:
+> > > >  	object = c->page->freelist;
+> > > >  	if (unlikely(!object))
+> > > >  		goto another_slab;
+> > > > -	if (unlikely(SLABDEBUG && PageSlubDebug(c->page)))
+> > > > +	if (unlikely(PageSlubDebug(c->page) || c->reserve))
+> > > >  		goto debug;
+> > > 
+> > > This looks suspiciously like debugging code that you have left in.
+> > > Is it??
+> > 
+> > Its not, we need to force slub into the debug slow path when we have a
+> > reserve page, otherwise we cannot do the permission check on each
+> > allocation.
+> 
+> I see.... a little.  I'm trying to avoid understanding slub too
+> deeply, I don't want to use up valuable brain cell :-)
 
-Trivial cleanups for ACPI. Fix misspelling in printk(), fix mismerge,
-add file header.
+:-)
 
-Signed-off-by: Pavel Machek <pavel@suse.cz>
+> Would we be justified in changing the label from 'debug:' to
+> 'slow_path:'  or something?  
 
----
-commit 2d81db56ce92e04b57b76c0ca6a9b57432bf8fce
-tree e3c47f9a5448b5be5f64224229d6eac3320d12e4
-parent 7f8e83c414b78ee89b8e59c1a1cb74937f519be4
-author Pavel <pavel@amd.ucw.cz> Tue, 12 Aug 2008 12:20:29 +0200
-committer Pavel <pavel@amd.ucw.cz> Tue, 12 Aug 2008 12:20:29 +0200
+Could do I guess.
 
- drivers/acpi/processor_core.c |    2 +-
- drivers/acpi/processor_idle.c |    1 -
- drivers/acpi/reboot.c         |    6 +++++-
- 3 files changed, 6 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/acpi/processor_core.c b/drivers/acpi/processor_core.c
-index e36422a..d3f0a62 100644
---- a/drivers/acpi/processor_core.c
-+++ b/drivers/acpi/processor_core.c
-@@ -123,7 +123,7 @@ struct acpi_processor_errata errata __re
- static int set_no_mwait(const struct dmi_system_id *id)
- {
- 	printk(KERN_NOTICE PREFIX "%s detected - "
--		"disable mwait for CPU C-stetes\n", id->ident);
-+		"disabling mwait for CPU C-states\n", id->ident);
- 	idle_nomwait = 1;
- 	return 0;
- }
-diff --git a/drivers/acpi/processor_idle.c b/drivers/acpi/processor_idle.c
-index 283c08f..cf5b1b7 100644
---- a/drivers/acpi/processor_idle.c
-+++ b/drivers/acpi/processor_idle.c
-@@ -41,7 +41,6 @@ #include <linux/sched.h>	/* need_resched
- #include <linux/pm_qos_params.h>
- #include <linux/clockchips.h>
- #include <linux/cpuidle.h>
--#include <linux/cpuidle.h>
+Index: linux-2.6/mm/slub.c
+===================================================================
+--- linux-2.6.orig/mm/slub.c
++++ linux-2.6/mm/slub.c
+@@ -1543,7 +1543,7 @@ load_freelist:
+ 	if (unlikely(!object))
+ 		goto another_slab;
+ 	if (unlikely(PageSlubDebug(c->page) || c->reserve))
+-		goto debug;
++		goto slow_path;
  
- /*
-  * Include the apic definitions for x86 to have the APIC timer related defines
-diff --git a/drivers/acpi/reboot.c b/drivers/acpi/reboot.c
-index a6b662c..b4d9cb3 100644
---- a/drivers/acpi/reboot.c
-+++ b/drivers/acpi/reboot.c
-@@ -1,4 +1,8 @@
--
-+/*
-+ * Reset the machine using the RESET_REG
-+ *
-+ * Distribute under GPL.
-+ */
- #include <linux/pci.h>
- #include <linux/acpi.h>
- #include <acpi/reboot.h>
+ 	c->freelist = object[c->offset];
+ 	c->page->inuse = c->page->objects;
+@@ -1586,11 +1586,21 @@ grow_slab:
+ 		goto load_freelist;
+ 	}
+ 	return NULL;
+-debug:
++
++slow_path:
+ 	if (PageSlubDebug(c->page) &&
+ 			!alloc_debug_processing(s, c->page, object, addr))
+ 		goto another_slab;
+ 
++	/*
++	 * Avoid the slub fast path in slab_alloc by not setting
++	 * c->freelist and the fast path in slab_fere by making 
++	 * node_match() fail by setting c->node to -1.
++	 *
++	 * We use this for for debug checks and reserve handling,
++	 * which needs to do permission checks on each allocation.
++	 */
++
+ 	c->page->inuse++;
+ 	c->page->freelist = object[c->offset];
+ 	c->node = -1;
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+
+> And if it is just c->reserve, should
+> we avoid the call to alloc_debug_processing?
+
+We already do:
+
+	if (PageSlubDebug(c->page) &&
+			!alloc_debug_processing(s, c->page, object, addr))
+		goto another_slab;
+
+since in that case PageSlubDebug() will be false.
+
