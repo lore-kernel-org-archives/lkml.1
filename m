@@ -1,138 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754141AbYHLNyr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753550AbYHLOAd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754141AbYHLNyr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Aug 2008 09:54:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752237AbYHLNyj
+	id S1753550AbYHLOAd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Aug 2008 10:00:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752255AbYHLOAY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Aug 2008 09:54:39 -0400
-Received: from serv2.oss.ntt.co.jp ([222.151.198.100]:57149 "EHLO
-	serv2.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751979AbYHLNyi (ORCPT
+	Tue, 12 Aug 2008 10:00:24 -0400
+Received: from moutng.kundenserver.de ([212.227.126.177]:63405 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752237AbYHLOAX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Aug 2008 09:54:38 -0400
-Subject: Re: RFC: I/O bandwidth controller
-From: Fernando Luis =?ISO-8859-1?Q?V=E1zquez?= Cao 
-	<fernando@oss.ntt.co.jp>
-To: righi.andrea@gmail.com
-Cc: Hirokazu Takahashi <taka@valinux.co.jp>, baramsori72@gmail.com,
-       balbir@linux.vnet.ibm.com, xen-devel@lists.xensource.com,
-       Satoshi UCHIDA <s-uchida@ap.jp.nec.com>,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       virtualization@lists.linux-foundation.org, dm-devel@redhat.com,
-       agk@sourceware.org, dave@linux.vnet.ibm.com, ngupta@google.com
-In-Reply-To: <48A18B1F.6080000@gmail.com>
-References: <1218117578.11703.81.camel@sebastian.kern.oss.ntt.co.jp>
-	 <48A0A689.40908@gmail.com>	<loom.20080812T071504-212@post.gmane.org>
-	 <20080812.201025.57762305.taka@valinux.co.jp> <48A18854.9020000@gmail.com>
-	 <48A18B1F.6080000@gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Organization: NTT Open Source Software Center
-Date: Tue, 12 Aug 2008 22:54:36 +0900
-Message-Id: <1218549276.4456.100.camel@sebastian.kern.oss.ntt.co.jp>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 8bit
+	Tue, 12 Aug 2008 10:00:23 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: [RFC 1/3] add support for exporting symbols from .S files
+Date: Tue, 12 Aug 2008 15:58:52 +0200
+User-Agent: KMail/1.9.9
+Cc: "linux-kernel" <linux-kernel@vger.kernel.org>, linux-arch@vger.kernel.org,
+       Matthew Wilcox <matthew@wil.cx>, David Woodhouse <dwmw2@infradead.org>,
+       Al Viro <viro@zeniv.linux.org.uk>,
+       Rusty Russell <rusty@rustcorp.com.au>, linuxppc-dev@ozlabs.org
+References: <200808111606.44103.arnd@arndb.de> <200808111618.08206.arnd@arndb.de> <20080812164352.ddcf1ef5.sfr@canb.auug.org.au>
+In-Reply-To: <20080812164352.ddcf1ef5.sfr@canb.auug.org.au>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200808121558.53576.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX181bOuVFzFN6rfBPM0vdUOnJMs0SrB0186eVTt
+ 2//YyjdM77v/zqxgCzHsnJjRJNqVYRzihLYEqb4Rf/F5gHu5MM
+ 5/rN7XK3yT5n+2im0D0hA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-08-12 at 22:29 +0900, Andrea Righi wrote:
-> Andrea Righi wrote:
-> > Hirokazu Takahashi wrote:
-> >>>>>>> 3. & 4. & 5. - I/O bandwidth shaping & General design aspects
-> >>>>>>>
-> >>>>>>> The implementation of an I/O scheduling algorithm is to a certain extent
-> >>>>>>> influenced by what we are trying to achieve in terms of I/O bandwidth
-> >>>>>>> shaping, but, as discussed below, the required accuracy can determine
-> >>>>>>> the layer where the I/O controller has to reside. Off the top of my
-> >>>>>>> head, there are three basic operations we may want perform:
-> >>>>>>>   - I/O nice prioritization: ionice-like approach.
-> >>>>>>>   - Proportional bandwidth scheduling: each process/group of processes
-> >>>>>>> has a weight that determines the share of bandwidth they receive.
-> >>>>>>>   - I/O limiting: set an upper limit to the bandwidth a group of tasks
-> >>>>>>> can use.
-> >>>>>> Use a deadline-based IO scheduling could be an interesting path to be
-> >>>>>> explored as well, IMHO, to try to guarantee per-cgroup minimum bandwidth
-> >>>>>> requirements.
-> >>>>> Please note that the only thing we can do is to guarantee minimum
-> >>>>> bandwidth requirement when there is contention for an IO resource, which
-> >>>>> is precisely what a proportional bandwidth scheduler does. An I missing
-> >>>>> something?
-> >>>> Correct. Proportional bandwidth automatically allows to guarantee min
-> >>>> requirements (instead of IO limiting approach, that needs additional
-> >>>> mechanisms to achive this).
-> >>>>
-> >>>> In any case there's no guarantee for a cgroup/application to sustain
-> >>>> i.e. 10MB/s on a certain device, but this is a hard problem anyway, and
-> >>>> the best we can do is to try to satisfy "soft" constraints.
-> >>> I think guaranteeing the minimum I/O bandwidth is very important. In the 
-> >>> business site, especially in streaming service system, administrator requires 
-> >>> the functionality to satisfy QoS or performance of their service. 
-> >>> Of course, IO throttling is important, but, personally, I think guaranteeing 
-> >>> the minimum bandwidth is more important than limitation of maximum bandwidth 
-> >>> to satisfy the requirement in real business sites.
-> >>> And I know Andrea’s io-throttle patch supports the latter case well and it is 
-> >>> very stable. 
-> >>> But, the first case(guarantee the minimum bandwidth) is not supported in any 
-> >>> patches.
-> >>> Is there any plans to support it? and Is there any problems in implementing it?
-> >>> I think if IO controller can support guaranteeing the minimum bandwidth and 
-> >>> work-conserving mode simultaneously, it more easily satisfies the requirement 
-> >>> of the business sites.
-> >>> Additionally, I didn’t understand “Proportional bandwidth automatically allows 
-> >>> to guarantee min
-> >>> requirements” and “soft constraints”.
-> >>> Can you give me a advice about this ? 
-> >>> Thanks in advance.
-> >>>
-> >>> Dong-Jae Kang
-> >> I think this is what dm-ioband does.
-> >>
-> >> Let's say you make two groups share the same disk, and give them
-> >> 70% of the bandwidth the disk physically has and 30% respectively.
-> >> This means the former group is almost guaranteed to be able to use
-> >> 70% of the bandwidth even when the latter one is issuing quite
-> >> a lot of I/O requests.
-> >>
-> >> Yes, I know there exist head seek lags with traditional magnetic disks,
-> >> so it's important to improve the algorithm to reduce this overhead.
-> >>
-> >> And I think it is also possible to add a new scheduling policy to
-> >> guarantee the minimum bandwidth. It might be cool if some group can
-> >> use guranteed bandwidths and the other share the rest on proportional
-> >> bandwidth policy.
-> >>
-> >> Thanks,
-> >> Hirokazu Takahashi.
-> > 
-> > With IO limiting approach minimum requirements are supposed to be
-> > guaranteed if the user configures a generic block device so that the sum
-> > of the limits doesn't exceed the total IO bandwidth of that device. But,
-> > in principle, there's nothing in "throttling" that guarantees "fairness"
-> > among different cgroups doing IO on the same block devices, that means
-> > there's nothing to guarantee minimum requirements (and this is the
-> > reason because I liked the Satoshi's CFQ-cgroup approach together with
-> > io-throttle).
-> > 
-> > A more complicated issue is how to evaluate the total IO bandwidth of a
-> > generic device. We can use some kind of averaging/prediction, but
-> > basically it would be inaccurate due to the mechanic of disks (head
-> > seeks, but also caching, buffering mechanisms implemented directly into
-> > the device, etc.). It's a hard problem. And the same problem exists also
-> > for proportional bandwidth as well, in terms of IO rate predictability I
-> > mean.
-> 
-> BTW as I said in a previous email, an interesting path to be explored
-> IMHO could be to think in terms of IO time. So, look at the time an IO
-> request is issued to the drive, look at the time the request is served,
-> evaluate the difference and charge the consumed IO time to the
-> appropriate cgroup. Then dispatch IO requests in function of the
-> consumed IO time debts / credits, using for example a token-bucket
-> strategy. And probably the best place to implement the IO time
-> accounting is the elevator.
-Please note that the seek time for a specific IO request is strongly
-correlated with the IO requests that preceded it, which means that the
-owner of that request is not the only one to blame if it takes too long
-to process it. In other words, with the algorithm you propose we may end
-up charging the wrong guy.
+This makes it possible to export symbols from assembly files, instead
+of having to export them through an extra ksyms.c file.
 
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+
+---
+
+On Tuesday 12 August 2008, Stephen Rothwell wrote:
+> This won't be portable across architectures as .align is sometimes in
+> bytes and sometimes a power of two.  You can use .balign or .p2align
+> portably on gas, though.
+
+Ok, this version uses the .balign as suggested by rusty, and also
+fixes building with modversions turned on, which did not work in the
+first version.
+
+	Arnd <><
+
+--- a/include/linux/module.h
++++ b/include/linux/module.h
+@@ -1,5 +1,7 @@
+ #ifndef _LINUX_MODULE_H
+ #define _LINUX_MODULE_H
++
++#ifndef __ASSEMBLY__
+ /*
+  * Dynamic loading of modules into the kernel.
+  *
+@@ -605,4 +607,72 @@ static inline void module_remove_modinfo_attrs(struct module *mod)
+ 
+ #define __MODULE_STRING(x) __stringify(x)
+ 
++#else /* __ASSEMBLY__ */
++#include <asm/types.h>
++
++#ifdef CONFIG_MODULES
++.macro __EXPORT_SYMBOL sym section symtab strtab crctab crc
++	.section \section, "a", @progbits
++	.type \symtab, @object
++	.balign BITS_PER_LONG/8
++\symtab:
++	.ifeq BITS_PER_LONG - 32
++	.long \sym
++	.long \strtab
++	.else
++	.quad \sym
++	.quad \strtab
++	.endif
++	.size \symtab, . - \symtab
++	.previous
++
++	.section __ksymtab_strings, "a", @progbits
++	.type \strtab, @object
++\strtab:
++	.string "\sym"
++	.size \strtab, . - \strtab
++	.previous
++
++#ifdef CONFIG_MODVERSIONS
++	/*
++	 * Modversions doesn't work with assembly files,
++	 * so insert a dummy CRC.
++	 */
++	.section __kcrctab, "a", @progbits
++	.balign 4
++	.type \crctab, @object
++\crctab:
++	.long \crc
++	.size \crctab, . - \crctab
++	.set \crc, 0
++	.previous
++#endif
++	.endm
++
++#define EXPORT_SYMBOL(sym) \
++	 __EXPORT_SYMBOL sym, __ksymtab, __ksymtab_ ## sym, \
++		__kstrtab_ ## sym, __kcrctab_ ## sym, __crc_ ## sym
++#define EXPORT_SYMBOL_GPL(sym) \
++	 __EXPORT_SYMBOL sym, __ksymtab_gpl, __ksymtab_ ## sym, \
++		__kstrtab_ ## sym, __kcrctab_ ## sym, __crc_ ## sym
++#define EXPORT_SYMBOL_GPL_FUTURE(sym) \
++	 __EXPORT_SYMBOL sym, __ksymtab_gpl_future, __ksymtab_ ## sym, \
++		__kstrtab_ ## sym, __kcrctab_ ## sym, __crc_ ## sym
++#define EXPORT_UNUSED_SYMBOL(sym) \
++	 __EXPORT_SYMBOL sym, __ksymtab_unused, __ksymtab_ ## sym, \
++		__kstrtab_ ## sym, __kcrctab_ ## sym, __crc_ ## sym
++#define EXPORT_UNUSED_SYMBOL_GPL(sym) \
++	 __EXPORT_SYMBOL sym, __ksymtab_unused_gpl, __ksymtab_ ## sym, \
++		__kstrtab_ ## sym, __kcrctab_ ## sym, __crc_ ## sym
++
++#else /* CONFIG_MODULES... */
++#define EXPORT_SYMBOL(sym)
++#define EXPORT_SYMBOL_GPL(sym)
++#define EXPORT_SYMBOL_GPL_FUTURE(sym)
++#define EXPORT_UNUSED_SYMBOL(sym)
++#define EXPORT_UNUSED_SYMBOL_GPL(sym)
++#endif /* !CONFIG_MODULES... */
++
++#endif /* __ASSEMBLY__ */
++
+ #endif /* _LINUX_MODULE_H */
