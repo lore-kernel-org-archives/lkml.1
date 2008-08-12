@@ -1,41 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752576AbYHLHLW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752980AbYHLHLs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752576AbYHLHLW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Aug 2008 03:11:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751575AbYHLHLM
+	id S1752980AbYHLHLs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Aug 2008 03:11:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751773AbYHLHLi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Aug 2008 03:11:12 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:43906 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751535AbYHLHLL (ORCPT
+	Tue, 12 Aug 2008 03:11:38 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:38191 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751575AbYHLHLh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Aug 2008 03:11:11 -0400
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: David Miller <davem@davemloft.net>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: tbench regression on each kernel release from 2.6.22 -> 2.6.28
-From: Andi Kleen <andi@firstfloor.org>
-References: <48A086B6.2000901@linux-foundation.org>
-	<20080811.141501.01468546.davem@davemloft.net>
-	<48A0B037.501@linux-foundation.org>
-Date: Tue, 12 Aug 2008 09:11:08 +0200
-In-Reply-To: <48A0B037.501@linux-foundation.org> (Christoph Lameter's message of "Mon, 11 Aug 2008 16:33:43 -0500")
-Message-ID: <87r68u1zeb.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
+	Tue, 12 Aug 2008 03:11:37 -0400
+Message-ID: <48A136D7.4080505@cs.helsinki.fi>
+Date: Tue, 12 Aug 2008 10:08:07 +0300
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+User-Agent: Thunderbird 2.0.0.16 (Macintosh/20080707)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Christoph Lameter <cl@linux-foundation.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, akpm@linux-foundation.org,
+       Christoph Lameter <clameter@sgi.com>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, Mel Gorman <mel@skynet.ie>,
+       andi@firstfloor.org, Rik van Riel <riel@redhat.com>, mpm@selenic.com
+Subject: Re: [patch 15/19] Filesystem: XFS slab defragmentation
+References: <20080811150616.207532384@quilx.com> <20080811150659.051842926@quilx.com> <20080812002057.GH6119@disturbed>
+In-Reply-To: <20080812002057.GH6119@disturbed>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Lameter <cl@linux-foundation.org> writes:
+Dave Chinner wrote:
+> On Mon, Aug 11, 2008 at 08:06:31AM -0700, Christoph Lameter wrote:
+>> Support inode defragmentation for xfs
+>>
+>> Reviewed-by: Rik van Riel <riel@redhat.com>
+>> Signed-off-by: Christoph Lameter <clameter@sgi.com>
+>> Signed-off-by: Christoph Lameter <cl@linux-foundation.org>
+>>
+>> ---
+>>  fs/xfs/linux-2.6/xfs_super.c |    1 +
+>>  1 file changed, 1 insertion(+)
+>>
+>> Index: linux-next/fs/xfs/linux-2.6/xfs_super.c
+>> ===================================================================
+>> --- linux-next.orig/fs/xfs/linux-2.6/xfs_super.c	2008-08-11 07:42:11.892359719 -0700
+>> +++ linux-next/fs/xfs/linux-2.6/xfs_super.c	2008-08-11 07:47:05.072348463 -0700
+>> @@ -1947,6 +1947,7 @@ xfs_init_zones(void)
+>>  	xfs_ioend_zone = kmem_zone_init(sizeof(xfs_ioend_t), "xfs_ioend");
+>>  	if (!xfs_ioend_zone)
+>>  		goto out_destroy_vnode_zone;
+>> +	kmem_cache_setup_defrag(xfs_vnode_zone, get_inodes, kick_inodes);
+>>  
+>>  	xfs_ioend_pool = mempool_create_slab_pool(4 * MAX_BUF_PER_PAGE,
+>>  						  xfs_ioend_zone);
+> 
+> Please update this patch as per my last comment.
 
-> Maybe what we are seeing is general bloat in kernel execution paths
-> due to the growth in complexity?
-
-Wouldn't surprise me. Have you considered doing profiles? 
-
-e.g. just oprofiling the benchmark on the different kernels and see
-if there's some obvious difference in the CPU consumers? 
-
--Andi
+Christoph, I'm dropping this patch from my tree.
