@@ -1,48 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753295AbYHLWfq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753214AbYHLWpt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753295AbYHLWfq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Aug 2008 18:35:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752157AbYHLWfi
+	id S1753214AbYHLWpt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Aug 2008 18:45:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752108AbYHLWpk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Aug 2008 18:35:38 -0400
-Received: from ishtar.tlinx.org ([64.81.245.74]:41683 "EHLO ishtar.tlinx.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752155AbYHLWfh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Aug 2008 18:35:37 -0400
-X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Tue, 12 Aug 2008 18:35:37 EDT
-Message-ID: <48A20E9E.9090100@tlinx.org>
-Date: Tue, 12 Aug 2008 15:28:46 -0700
-From: "Linda A. Walsh" <xfs@tlinx.org>
-User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
-MIME-Version: 1.0
-To: xfs-oss <xfs@oss.sgi.com>, LKML <linux-kernel@vger.kernel.org>
-CC: Eric Sandeen <sandeen@sandeen.net>
-Subject: Re: XFS Lock debugging noise or real problem?
-References: <48A093A7.40606@tlinx.org> <48A09CA9.9080705@sandeen.net> <48A0F686.2090700@tlinx.org> <48A0F9FC.1070805@sandeen.net>
-In-Reply-To: <48A0F9FC.1070805@sandeen.net>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Tue, 12 Aug 2008 18:45:40 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:43150 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751985AbYHLWpk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Aug 2008 18:45:40 -0400
+Date: Tue, 12 Aug 2008 15:44:29 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Matt Helsley <matthltc@us.ibm.com>
+Cc: rjw@sisk.pl, menage@google.com, lizf@cn.fujitsu.com,
+       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       linux-pm@lists.linux-foundation.org
+Subject: Re: [PATCH 0/5] Container Freezer v6: Reuse Suspend Freezer
+Message-Id: <20080812154429.c5377bd0.akpm@linux-foundation.org>
+In-Reply-To: <20080811235323.872291138@us.ibm.com>
+References: <20080811235323.872291138@us.ibm.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric Sandeen wrote:
->   ...
-Is it also known, (and the same bug) when you get the lock warnings when 
-doing
-"xfs_restore", as well (dio_get_page and xfs_ilock)...
+On Mon, 11 Aug 2008 16:53:23 -0700
+Matt Helsley <matthltc@us.ibm.com> wrote:
 
-Doesn't give me the warm & fuzzies, but I'm sure you've heard that 
-sentiment plenty
-of times...
+> This patch series introduces a cgroup subsystem that utilizes the swsusp
+> freezer to freeze a group of tasks. It's immediately useful for batch job
+> management scripts. It should also be useful in the future for implementing
+> container checkpoint/restart.
 
-The bugs with 'sort', & imap were both with xfs_ilock and 
-shrink_icache_memory.
+I don't think that this provides anything like sufficient detail to justify
+merging a whole bunch of stuff into Linux.
 
-I saw another bug (different prog) with those two locks that was said to 
-be a bug in
-XFS by Andrew Morton, but he didn't say if it was the same known 
-"harmless" "bug" or
-if it was more serious.
+What does "It's immediately useful for batch job management scripts."
+mean?  How is it useful?  Examples?  Why would an operator want this
+feature, and how would it be used?  _much_ more information is needed!
 
-
+Once we've actually found out what this work is useful for, we can move
+onto identification of and discussion of alternatives.  One would be "why not
+use plain old SIGSTOP?"  Another alternative is, of course "that's not useful
+enough to justify merging the code".  But we don't know yet, coz you didn't
+tell us.
