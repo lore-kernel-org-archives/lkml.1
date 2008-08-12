@@ -1,129 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754093AbYHLREq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752580AbYHLRF3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754093AbYHLREq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Aug 2008 13:04:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752105AbYHLREj
+	id S1752580AbYHLRF3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Aug 2008 13:05:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752450AbYHLRFT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Aug 2008 13:04:39 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:53642 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752029AbYHLREi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Aug 2008 13:04:38 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=Iuja7LsD93bafFRCsjI3KFKAPbsrNrTvQq0u6NPkA5Oq2NXfoUy6NVYtjUX6uHuCV
-	Jo74jeterm8MPcbJzDSeA==
-Message-ID: <da824cf30808121004w1ea59dc9rd805e2ae4d9f47a7@mail.gmail.com>
-Date: Tue, 12 Aug 2008 10:04:14 -0700
-From: "Grant Grundler" <grundler@google.com>
-To: "Stefan Richter" <stefanr@s5r6.in-berlin.de>
-Subject: Re: [PATCH] ieee1394: sbp2: enforce s/g segment size limit
-Cc: linux1394-devel@lists.sourceforge.net,
-       "FUJITA Tomonori" <fujita.tomonori@lab.ntt.co.jp>,
-       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <tkrat.8f7aa8cea95d423b@s5r6.in-berlin.de>
+	Tue, 12 Aug 2008 13:05:19 -0400
+Received: from gw.goop.org ([64.81.55.164]:49632 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752282AbYHLRFS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Aug 2008 13:05:18 -0400
+Message-ID: <48A1C2B9.9070107@goop.org>
+Date: Tue, 12 Aug 2008 10:04:57 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+CC: Theodore Tso <tytso@mit.edu>, Daniel Lezcano <daniel.lezcano@fr.ibm.com>,
+       Arnd Bergmann <arnd@arndb.de>, containers@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org, Peter Chubb <peterc@gelato.unsw.edu.au>
+Subject: Re: checkpoint/restart ABI
+References: <20080807224033.FFB3A2C1@kernel>	 <200808090013.41999.arnd@arndb.de> <20080811152201.GB25930@us.ibm.com>	 <200808111853.13854.arnd@arndb.de> <1218484114.5598.43.camel@nimitz>	 <48A0CD86.6030704@goop.org> <1218553091.5598.76.camel@nimitz>	 <48A1BB39.3090108@goop.org> <1218559619.5598.97.camel@nimitz>
+In-Reply-To: <1218559619.5598.97.camel@nimitz>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <489CB8D8.60908@s5r6.in-berlin.de>
-	 <20080809063159F.fujita.tomonori@lab.ntt.co.jp>
-	 <489CC17F.7000208@s5r6.in-berlin.de>
-	 <20080809071744I.fujita.tomonori@lab.ntt.co.jp>
-	 <tkrat.8f7aa8cea95d423b@s5r6.in-berlin.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Aug 9, 2008 at 11:20 AM, Stefan Richter
-<stefanr@s5r6.in-berlin.de> wrote:
-> 1. We don't need to round the SBP-2 segment size limit down to a
->   multiple of 4 kB (0xffff -> 0xf000).  It is only necessary to
->   ensure quadlet alignment (0xffff -> 0xfffc).
+Dave Hansen wrote:
+>>> I'm not sure what you mean by "closed files".  Either the app has a fd,
+>>> it doesn't, or it is in sys_open() somewhere.  We have to get the app
+>>> into a quiescent state before we can checkpoint, so we basically just
+>>> say that we won't checkpoint things that are *in* the kernel.
+>>>       
+>> It's common for an app to write a tmp file, close it, and then open it a 
+>> bit later expecting to find the content it just wrote.  If you 
+>> checkpoint-kill it in the interim, reboot (clearing out /tmp) and then 
+>> resume, then it will lose its tmp file.  There's no explicit connection 
+>> between the process and its potential working set of files.
+>>     
 >
-> 2. Use dma_set_max_seg_size() to tell the DMA mapping infrastructure
->   and the block IO layer about the restriction.  This way we can
->   remove the size checks and segment splitting in the queuecommand
->   path.
->
->   This assumes that no other code in the ieee1394 stack uses
->   dma_map_sg() with conflicting requirements.  It furthermore assumes
->   that the controller device's platform actually allows us to set the
->   segment size to our liking.  Assert the latter with a BUG_ON().
->
-> 3. Also use blk_queue_max_segment_size() to tell the block IO layer
->   about it.  It cannot know it because our scsi_add_host() does not
->   point to the FireWire controller's device.
->
-> We can also uniformly use dma_map_sg() for the single segment case just
-> like for the multi segment case, to further simplify the code.
->
-> Also clean up how the page table is converted to big endian.
->
-> Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
-> ---
->
-> Applicable after
->   [PATCH update] ieee1394: sbp2: stricter dma_sync
->   [PATCH] ieee1394: sbp2: check for DMA mapping failures
-> from a few minutes ago.
->
->  drivers/ieee1394/sbp2.c |  106 +++++++++++++---------------------------
->  drivers/ieee1394/sbp2.h |   37 +++++--------
->  2 files changed, 52 insertions(+), 91 deletions(-)
-...
-> +               for_each_sg(sg, sg, sg_count, i) {
-> +                       len = sg_dma_len(sg);
-> +                       if (len == 0)
-> +                               continue;
->
-> -               orb->misc |= ORB_SET_DATA_SIZE(sg_count);
-> +                       pt[j].high = cpu_to_be32(len << 16);
-> +                       pt[j].low = cpu_to_be32(sg_dma_address(sg));
-> +                       j++;
-> +               }
+> I respectfully disagree.  The number one prerequisite for
+> checkpoint/restart is isolation.  Xen just happens to get this for free.
+>   
 
-While this code will probably work correctly, I believe if the
-sg_dma_len() returns 0, one has walked off the end of the
-"bus address" list.
+(I don't have my Xen hat on at all for this thread.)
 
-pci_map_sg() returns how many DMA addr/len pairs are used
-and that count could (should?) be used when pulling the
-dma_len/addr pairs out of the sg list.
+> So, instead of saying that there's no explicit connection between the
+> process and its working set, ask yourself how we make a connection.
+>
+> In this case, we can do it with a filesystem (mount) namespace.  Each
+> container that we might want to checkpoint must have its writable
+> filesystems contained to a private set that are not shared with other
+> containers.  Things like union mounts would help here, but aren't
+> necessarily required.  They just make it more efficient.
+>   
 
-Effectively, the SG list is really two lists with seperate counts:
-the original list with virtual addresses/len/count and the "DMA mapped"
-list with it's own count of addresses/len pairs. When no IOMMU
-is used those lists are 1:1.
+We were dealing with checkpointing random sets of processes, and that 
+posed all sorts of problems.  Filesystem namespace was one, the pid 
+namespace was another.  Doing checkpointing at the container-level 
+granularity definitely solves a lot of problems.
 
-hth,
-grant
+>>> Is there anything specific you are thinking of that particularly worries
+>>> you?  I could write pages on the list you have there.
+>>>       
+>> No, that's the problem; it all worries me.  It's a big problem space.
+>>     
+>
+> It's almost as big of a problem as trying to virtualize entire machines
+> and expecting them to run as fast as native. :)
+>   
 
-> -               sbp2util_cpu_to_be32_buffer(sg_element,
-> -                               (sizeof(struct sbp2_unrestricted_page_table)) *
-> -                               sg_count);
-> +               orb->misc |= ORB_SET_PAGE_TABLE_PRESENT(0x1) |
-> +                            ORB_SET_DATA_SIZE(j);
-> +               orb->data_descriptor_lo = cmd->sge_dma;
->
->                dma_sync_single_for_device(dmadev, cmd->sge_dma,
->                                           sizeof(cmd->scatter_gather_element),
-> @@ -2037,6 +2003,8 @@ static int sbp2scsi_slave_configure(stru
->                sdev->start_stop_pwr_cond = 1;
->        if (lu->workarounds & SBP2_WORKAROUND_128K_MAX_TRANS)
->                blk_queue_max_sectors(sdev->request_queue, 128 * 1024 / 512);
-> +
-> +       blk_queue_max_segment_size(sdev->request_queue, SBP2_MAX_SEG_SIZE);
->        return 0;
->  }
->
->
-> --
-> Stefan Richter
-> -=====-==--- =--- -=--=
-> http://arcgraph.de/sr/
->
->
+No, it's much harder.  Hardware is relatively simple and immutable 
+compared to kernel and process state ;)
+
+> Cool!  I didn't know you guys did the IRIX implementation.  I'm sure you
+> guys got a lot farther than any of us are.  Did you guys ever write any
+> papers or anything on it?  I'd be interested in more information.
+>   
+
+Yeah, there was a paper, but it looks like the internet has lost it.  It 
+was at 
+http://www.csu.edu.au/special/conference/apwww95/.papers95/cmaltby/cmaltby.ps
+http://www.csu.edu.au/special/conference/apwww95/sept-all.html has 
+mention of the paper.
+
+    J
