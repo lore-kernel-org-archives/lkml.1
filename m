@@ -1,67 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752099AbYHLVZJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753169AbYHLV2I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752099AbYHLVZJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Aug 2008 17:25:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751917AbYHLVYy
+	id S1753169AbYHLV2I (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Aug 2008 17:28:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751306AbYHLV14
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Aug 2008 17:24:54 -0400
-Received: from nf-out-0910.google.com ([64.233.182.185]:53278 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754341AbYHLVYw (ORCPT
+	Tue, 12 Aug 2008 17:27:56 -0400
+Received: from g4t0014.houston.hp.com ([15.201.24.17]:11326 "EHLO
+	g4t0014.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751351AbYHLV1z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Aug 2008 17:24:52 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=omk0S3HFAKxayRpXpc5mpjM9QpiO2KN0w9aQRtGIlHpbT7jshy6jRqjIyXvC6DYDBI
-         uyb76VVKvj9iRMXZdcTiiUxd5u7txVtv34mBcPPKqM85c1X97MQNTpi1YN1FeJbayNJO
-         4GoROAP05JJY+dsoqVatGX6OYz5xsaOOud6+o=
-From: Marcin Slusarz <marcin.slusarz@gmail.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Pavel Machek <pavel@suse.cz>,
-       Len Brown <len.brown@intel.com>
-Subject: [PATCH] suspend: fix section mismatch warning - register_nosave_region
-Date: Tue, 12 Aug 2008 23:23:06 +0200
-Message-Id: <1218576186-31442-4-git-send-email-marcin.slusarz@gmail.com>
-X-Mailer: git-send-email 1.5.4.5
+	Tue, 12 Aug 2008 17:27:55 -0400
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: Uwe Bugla <uwe.bugla@gmx.de>
+Subject: Re: pnp bug in 2.6.27-rc1 (ad1816a / mpu401 / parport_pc issue)
+Date: Tue, 12 Aug 2008 15:26:12 -0600
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: akpm@osdl.org, perex@perex.cz, abelay@mit.edu,
+       debian-kernel@lists.debian.org, linux-kernel@vger.kernel.org
+References: <200808041531.10557.uwe.bugla@gmx.de> <200808121317.27323.uwe.bugla@gmx.de> <200808121210.52589.bjorn.helgaas@hp.com>
+In-Reply-To: <200808121210.52589.bjorn.helgaas@hp.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200808121526.12483.bjorn.helgaas@hp.com>
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-WARNING: vmlinux.o(.text+0xe684): Section mismatch in reference from the function register_nosave_region() to the function .init.text:__register_nosave_region()
-The function register_nosave_region() references
-the function __init __register_nosave_region().
-This is often because register_nosave_region lacks a __init
-annotation or the annotation of __register_nosave_region is wrong.
+On Tuesday 12 August 2008 12:10:51 pm Bjorn Helgaas wrote:
+> On Tuesday 12 August 2008 05:17:26 am Uwe Bugla wrote:
+> > Case C:
+> > same preconditions as case B, but additionally:
+> > 1. no IRQs reserved for ISA use only (in BIOS)
+> > This option I would call "PNP pure"
 
-register_nosave_region calls __init function and is called only from __init functions
+> > ...
+> > My only criticism within the desired case C (no additional screwing around 
+> > done by user)
+> > consists of two points:
+> > 1. I'd prefer the second parport running with IRQ 5 instead of in polling 
+> > mode.
+> 
+> Yes, that would be good.  But I think the only way to achieve this
+> reliably is to use the "pnp_reserve_irq=5" kernel parameter and the
+> "options parport_pc io=0x278 irq=5" module parameter.  Otherwise the
+> kernel doesn't know how the jumpers on the ISA parport card are set.
 
-Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
-Cc: Rafael J. Wysocki <rjw@sisk.pl>
-Cc: Pavel Machek <pavel@suse.cz>
-Cc: Len Brown <len.brown@intel.com>
----
- include/linux/suspend.h |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+One more thing: since you have a non-PNP ISA card, I don't think
+you can reliably use a "pure PNP" approach.  In addition to the
+kernel and module parameters, I think you need to configure the
+BIOS to reserve IRQ 5 for ISA use.  Otherwise, the BIOS might put
+some other device on IRQ 5.
 
-diff --git a/include/linux/suspend.h b/include/linux/suspend.h
-index c634350..2ce8207 100644
---- a/include/linux/suspend.h
-+++ b/include/linux/suspend.h
-@@ -217,11 +217,11 @@ struct platform_hibernation_ops {
- #ifdef CONFIG_HIBERNATION
- /* kernel/power/snapshot.c */
- extern void __register_nosave_region(unsigned long b, unsigned long e, int km);
--static inline void register_nosave_region(unsigned long b, unsigned long e)
-+static inline void __init register_nosave_region(unsigned long b, unsigned long e)
- {
- 	__register_nosave_region(b, e, 0);
- }
--static inline void register_nosave_region_late(unsigned long b, unsigned long e)
-+static inline void __init register_nosave_region_late(unsigned long b, unsigned long e)
- {
- 	__register_nosave_region(b, e, 1);
- }
--- 
-1.5.4.5
+Of course, if you are content to run the second parport in polling
+mode, you wouldn't need the BIOS configuration.
 
+Bjorn
