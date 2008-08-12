@@ -1,58 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753846AbYHLT3V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753983AbYHLT35@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753846AbYHLT3V (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Aug 2008 15:29:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750777AbYHLT3J
+	id S1753983AbYHLT35 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Aug 2008 15:29:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751458AbYHLT3s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Aug 2008 15:29:09 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:55325 "EHLO smtp5.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751390AbYHLT3I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Aug 2008 15:29:08 -0400
-Date: Tue, 12 Aug 2008 22:27:21 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: S K <nospamnoham@gmail.com>, Zhao Yakui <yakui.zhao@intel.com>,
-       Thomas Renninger <trenn@suse.de>,
-       Alan Jenkins <alan-jenkins@tuffmail.co.uk>,
-       linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
-Subject: Re: cpufreq doesn't seem to work in Intel Q9300
-Message-ID: <20080812192721.GB13880@cs181140183.pp.htv.fi>
-References: <514e099a0808100128u303207clcb22292db2f0cc59@mail.gmail.com> <1218418431.6671.52.camel@yakui_zhao.sh.intel.com> <514e099a0808102144n241c8e9ak255bded0a80744f1@mail.gmail.com> <20080811042244.469f8e1d@infradead.org> <20080811140206.GB3338@cs181140183.pp.htv.fi> <20080811071128.0165be50@infradead.org> <20080811160346.GB21292@cs181140183.pp.htv.fi> <20080811092047.42bf716b@infradead.org> <20080811162839.GA22450@cs181140183.pp.htv.fi> <20080811094428.6b69d744@infradead.org>
+	Tue, 12 Aug 2008 15:29:48 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:37858 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750777AbYHLT3r (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Aug 2008 15:29:47 -0400
+Date: Tue, 12 Aug 2008 15:29:25 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Peter Dolding <oiaohm@gmail.com>
+Cc: "Serge E. Hallyn" <serue@us.ibm.com>, Mimi Zohar <zohar@us.ibm.com>,
+       serue@linux.vnet.ibm.com, Christoph Hellwig <hch@infradead.org>,
+       James Morris <jmorris@namei.org>, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org,
+       Randy Dunlap <randy.dunlap@oracle.com>, safford@watson.ibm.com,
+       sailer@watson.ibm.com, Stephen Smalley <sds@tycho.nsa.gov>,
+       Al Viro <viro@zeniv.linux.org.uk>,
+       Mimi Zohar <zohar@linux.vnet.ibm.com>
+Subject: Re: [PATCH 3/4] integrity: Linux Integrity Module(LIM)
+Message-ID: <20080812192925.GC18034@infradead.org>
+References: <20080808184349.999902616@linux.vnet.ibm.com> <1218221761.4444.13.camel@localhost.localdomain> <20080809185340.GC22905@infradead.org> <OF0AEBDCA2.1E27B823-ON852574A1.000FEE48-852574A1.004C3185@us.ibm.com> <20080811170255.GA2662@us.ibm.com> <OFAC0E3107.C68382CD-ON852574A2.0068E1AD-852574A2.00692623@us.ibm.com> <20080811195645.GA16685@us.ibm.com> <e7d8f83e0808120141s4a0561fdw4919ce6f74d211af@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080811094428.6b69d744@infradead.org>
+In-Reply-To: <e7d8f83e0808120141s4a0561fdw4919ce6f74d211af@mail.gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 11, 2008 at 09:44:28AM -0700, Arjan van de Ven wrote:
-> On Mon, 11 Aug 2008 19:28:39 +0300
-> Adrian Bunk <bunk@kernel.org> wrote:
+On Tue, Aug 12, 2008 at 06:41:16PM +1000, Peter Dolding wrote:
+> We really do need to get credentials patch in to common store all this
+> permission/secuirty data..  With a section for integrity related
+> entries.
 > 
-> > > 
-> > > yes there is.. for cases where there is overtemperature. Think of
-> > > it as the emergency break in the subway. You really don't want to
-> > > use it but when you need it you're glad it's there.
-> > 
-> > But this only helps when the cooling is working but not good enough,
-> > for the classic "fan broken" case it won't cool down enough.
+> Anti-Virus Passes and fails, signed running programs support and so on.
 > 
-> I would call this an unclassified statement for which you have no data
-> to show that it's correct, at least for Intel cpus in general.
->...
- 
-Sorry, I was a bit too surprised after your description.
+> Lot of different things need ways of recording integrity status's.
+> Users also need to know if a application does not work is it TPM is it
+> Anti-virus is it lack of signature.
 
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+Peter, please read up what the credentials patches do, or how struct
+cred/ucred is used in SVR4 and BSD for the last 20 years.  It is useful,
+but it's not going to help with any of the strange thigns the AV or
+Integrity people are doing.
