@@ -1,41 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753696AbYHLXNG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753703AbYHLXSb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753696AbYHLXNG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Aug 2008 19:13:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751871AbYHLXMz
+	id S1753703AbYHLXSb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Aug 2008 19:18:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752081AbYHLXSX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Aug 2008 19:12:55 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:56765 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751754AbYHLXMz (ORCPT
+	Tue, 12 Aug 2008 19:18:23 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:38557 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751754AbYHLXSW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Aug 2008 19:12:55 -0400
-Date: Tue, 12 Aug 2008 23:55:35 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Joerg Roedel <joro@8bytes.org>, mingo@redhat.com, tglx@linutronix.de,
-       linux-kernel@vger.kernel.org
-Subject: Re: Setup code crashes my old 486 box
-Message-ID: <20080812235535.18f7519c@lxorguk.ukuu.org.uk>
-In-Reply-To: <48A2155B.1020904@zytor.com>
-References: <20080812224703.GV31439@8bytes.org>
-	<48A2155B.1020904@zytor.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 12 Aug 2008 19:18:22 -0400
+Date: Tue, 12 Aug 2008 16:16:02 -0700
+From: Greg KH <greg@kroah.com>
+To: Kenneth Goldman <kgoldman@us.ibm.com>
+Cc: Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org, Mimi Zohar <zohar@us.ibm.com>
+Subject: Re: [PATCH 1/4] integrity: TPM internel kernel interface
+Message-ID: <20080812231602.GB12838@kroah.com>
+References: <20080812193031.GD18034@infradead.org> <OF6C940C00.249617D7-ON852574A3.0071F8B0-852574A3.00732160@us.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <OF6C940C00.249617D7-ON852574A3.0071F8B0-852574A3.00732160@us.ibm.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Right in concept, but I dislike the implementation (duplication of the 
-> CPU detect code we already have).  Could you try this patch and see if 
-> it works for you?
+On Tue, Aug 12, 2008 at 04:57:31PM -0400, Kenneth Goldman wrote:
+> Christoph Hellwig <hch@infradead.org> wrote on 08/12/2008 03:30:31 PM:
+> 
+> > On Mon, Aug 11, 2008 at 05:13:51PM -0400, Mimi Zohar wrote:
+> > >
+> > > I assume the concern here is that between looking up the chip and
+> actually
+> > >
+> > > using the chip, the TPM chip is disabled/deactivated.  Based on
+> > > discussions
+> > > with Kenneth Goldman, the TCG main specification part2: structures,
+> > > require
+> > > that even if the TPM is disabled/deactivated, the command to extend the
+> 
+> > > PCR
+> > > will succeed, but the command to read the PCR will fail with an
+> > > appropriate
+> > > error code.
+> >
+> > And what happens when the chip simply goes away due to a hotplug action?
+> > Or not even the actual chip goes away but just the chip driver and you
+> > now dereference freed memory?
+> 
+> Being a TCG/TPM person, I can only address the first question.  The
+> intent is that the TPM is soldered to the planar/motherboard (the TCG
+> uses the phrase "bound to the platform").  I can't imagine
+> any manufacturer designing a pluggable TPM.  It would subvert PCR
+> measurements and thus attestation, data sealing, etc.
 
-I was under the impression that spudstop came in with the Pentium II so
-presumably < 6 would be even safer ?
+Load up the fake-php hotplug pci driver and "soft" disconnect it from
+the system :)
 
-Alan
+That was easy...
+
+Note, just because you think your device is always going to be soldered
+to the motherboard, doesn't mean it can't be disconnected at any point
+in time with the kernel running.
+
+Or the module could just be unloaded, that's also a very common thing to
+have happen, right?
+
+thanks,
+
+greg k-h
