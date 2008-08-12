@@ -1,83 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753772AbYHLPER@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753575AbYHLPLm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753772AbYHLPER (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Aug 2008 11:04:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752419AbYHLPEF
+	id S1753575AbYHLPLm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Aug 2008 11:11:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752033AbYHLPLe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Aug 2008 11:04:05 -0400
-Received: from tomts36.bellnexxia.net ([209.226.175.93]:41032 "EHLO
-	tomts36-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752240AbYHLPEE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Aug 2008 11:04:04 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApsEADRAoUhMRKxB/2dsb2JhbACBYK1tgSk
-Date: Tue, 12 Aug 2008 11:04:01 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: ltt-dev@lists.casi.polymtl.ca, linux-kernel@vger.kernel.org
-Cc: Steven Rostedt <rostedt@goodmis.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: LTTng 0.16 for 2.6.27-rc2 (ftrace integration)
-Message-ID: <20080812150401.GB11838@Krystal>
+	Tue, 12 Aug 2008 11:11:34 -0400
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:52941 "EHLO e3.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751548AbYHLPLd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Aug 2008 11:11:33 -0400
+Subject: Re: checkpoint/restart ABI
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: Peter Chubb <peterc@gelato.unsw.edu.au>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Theodore Tso <tytso@mit.edu>,
+       Arnd Bergmann <arnd@arndb.de>, containers@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <87d4kfds5i.wl%peterc@chubb.wattle.id.au>
+References: <20080807224033.FFB3A2C1@kernel>
+	 <200808090013.41999.arnd@arndb.de> <20080811152201.GB25930@us.ibm.com>
+	 <200808111853.13854.arnd@arndb.de> <1218484114.5598.43.camel@nimitz>
+	 <48A0CD86.6030704@goop.org>  <87d4kfds5i.wl%peterc@chubb.wattle.id.au>
+Content-Type: text/plain
+Date: Tue, 12 Aug 2008 08:11:10 -0700
+Message-Id: <1218553870.5598.83.camel@nimitz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+X-Mailer: Evolution 2.22.2 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 10:51:41 up 68 days, 19:32,  7 users,  load average: 5.08, 2.35,
-	1.18
-User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Tue, 2008-08-12 at 09:54 +1000, Peter Chubb wrote:
+> Jeremy>    * multiple processes * pipes * UNIX domain sockets * INET
+> Jeremy> sockets (both inter and intra machine) * unlinked open files *
+> Jeremy> checkpointing file content * closed files (ie, files which
+> Jeremy> aren't currently open, but will be soon, esp tmp files) *
+> Jeremy> shared memory * (Peter, what have I forgotten?)
+> 
+> File sharing; multiple threads with wierd sharing arrangements (think:
+> clone with various parameters, followed by exec in some of the threads
+> but not others); MERT/system-V shared memory, semaphores and message
+> queues; devices (audio, framebuffer, etc), HugeTLBFS, numa issues
+> (pinning, memory layout), processes being debugged (so,
+> checkpoint.restart a gdb/target pair), futexes, etc., etc.  Linux
+> process state keeps expanding.
 
-I just released the latest LTTng version I used to pinpoint the "prove
-locking correctness" latency issue. It integrates with ftrace (only the
-dynamic function tracing part) with what I call a "tap".
+Yep, these are all challenges.  If you have some really specific
+questions, or things you truly think can't be done, please speak up.
+But, I really don't see any show stoppers in your list.
 
-See http://lkml.org/lkml/2008/8/5/321 to find out how I dug in this
-problem.
+We also plan to do this incrementally.  The first consumers are likely
+to be dumb, simple HPC apps that don't have real hardware like audio or
+video.  Eventually, we'll get to real hardware like infiniband (ugh) or
+audio.  Eventually.
 
-Basically, a "tap" is a set of "enable/disable" probes one can connect
-on specific markers/tracepoints. These probes enable/disable a "tap",
-which controls recording of specific events to the trace.
+(Actually futexes aren't that bad because they don't keep state
+in-kernel)
 
-Since dynamic function tracing is very high overhead, this tap mechanism
-can be used to control the event flow to only trace the interesting code
-areas. All markers named "tap_*" are also controlled by such mechanism.
-By removing a comment from the ltt-armall script, one can use the tap to
-enable lockdep event tracing.
+-- Dave
 
-See the new ltt-armtap and the modified ltt-armall scripts in the
-ltt-control package for details.
-
-New versions :
-
-LTTng gitweb
-http://git.kernel.org/?p=linux/kernel/git/compudj/linux-2.6-lttng.git;a=shortlog;h=2.6.27-rc2-lttng
-
-LTTng Git tree
-git://git.kernel.org/pub/scm/linux/kernel/git/compudj/linux-2.6-lttng.git 2.6.27-rc2-lttng
-
-LTTng tarball
-http://www.kernel.org/pub/linux/kernel/people/compudj/patches/2.6/2.6.27-rc2/lttng-2.6.27-rc2-0.16.tar.bz2
-
-ltt-control
-http://ltt.polymtl.ca/lttng/ltt-control-0.51-12082008.tar.gz
-
-LTTV
-http://ltt.polymtl.ca/packages/lttv-0.10.0-pre15-12082008.tar.gz
-
-
-Testing, especially of the new tap scripts, is welcome.
-
-Mathieu
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
