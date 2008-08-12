@@ -1,62 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753561AbYHLNgw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754046AbYHLNht@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753561AbYHLNgw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Aug 2008 09:36:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752243AbYHLNgo
+	id S1754046AbYHLNht (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Aug 2008 09:37:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752318AbYHLNhj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Aug 2008 09:36:44 -0400
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:50612 "EHLO smtp4.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752239AbYHLNgo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Aug 2008 09:36:44 -0400
-Date: Tue, 12 Aug 2008 16:34:59 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Rene Herman <rene.herman@keyaccess.nl>
-Cc: Wim Van Sebroeck <wim@iguana.be>, Ingo Molnar <mingo@redhat.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Andrew Morton <akpm@osdl.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] WATCHDOG: don't auto-grab eurotechwdt.
-Message-ID: <20080812133459.GF13910@cs181140183.pp.htv.fi>
-References: <489E0F5A.8010404@keyaccess.nl> <20080812125840.GA13910@cs181140183.pp.htv.fi> <48A18C2C.3030009@keyaccess.nl> <20080812131850.GE13910@cs181140183.pp.htv.fi> <48A19082.3030507@keyaccess.nl>
+	Tue, 12 Aug 2008 09:37:39 -0400
+Received: from wf-out-1314.google.com ([209.85.200.171]:16878 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752237AbYHLNhi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Aug 2008 09:37:38 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:references;
+        b=knm6RlbSnHjoJcZuWy89HIaLqCg74xJJSFUNDu/cHys9bcwQlubhZf1miuM1oeVgFX
+         OFoKVUS2p8fL6uBmomX9XnKDorNG1UvZ6YT3u3/rr4TF30nyangmOkMmTpmzLaX49BM6
+         dE6mwxq8z4eIUA7BqLaa2h0ag1R4Te2CY7Z4I=
+Message-ID: <9ea470500808120637w354b3ae0w3ceca791344bd7cc@mail.gmail.com>
+Date: Tue, 12 Aug 2008 15:37:37 +0200
+From: "Boris Petkov" <petkovbb@googlemail.com>
+Reply-To: petkovbb@gmail.com
+To: "Bartlomiej Zolnierkiewicz" <bzolnier@gmail.com>
+Subject: Re: [PATCH 11/22] ide: add ide_set_media_lock() helper
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <200808121105.49645.bzolnier@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <48A19082.3030507@keyaccess.nl>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+References: <20080810153527.16255.2504.sendpatchset@localhost.localdomain>
+	 <20080810153645.16255.80542.sendpatchset@localhost.localdomain>
+	 <20080811060232.GA15436@gollum.tnic>
+	 <200808121105.49645.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 12, 2008 at 03:30:42PM +0200, Rene Herman wrote:
-> On 12-08-08 15:18, Adrian Bunk wrote:
+>> Are we switching to SCSI opcodes? What about the generic packet commands in
+>> <include/linux/cdrom.h>?
 >
->>>> You are expecting randconfig kernels to boot?
->>> 90% does it seems. Ingo has been using it as part of automated 
->>> testing  for some time now.
->>
->> Please define "boot".
+> I prefer to use them when possible but there is no strict policy.
 >
-> I can't since I'm not doing the testing, Ingo is. When you ask him, do  
-> take into account the inherent goodness of things that catch bugs...
->
->> E.g. for your harddisk driver alone the probability of not having it  
->> included in a randconfig kernel is definitely > 10%.
->>
->> Same goes for the network driver.
->
-> I suppose he has local allrandom.config files.
+> [ SCSI defines are shorter, one of the drivers was using them already
+>  and it also makes easier for comparing code with SCSI. ]
 
-Then he could add a few additional options there if required.
-
-> Rene.
-
-cu
-Adrian
+I still think we should stick to one format or the other. All
+the drivers' functions, for example, comply with a naming scheme
+(ide_cd/ide_floppy/...) so opcodes shouldn't be an exception, imho...
 
 -- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+Regards/Gruss,
+Boris
