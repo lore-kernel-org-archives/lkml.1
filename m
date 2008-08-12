@@ -1,86 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753450AbYHLJdP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753784AbYHLJdl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753450AbYHLJdP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Aug 2008 05:33:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752155AbYHLJc7
+	id S1753784AbYHLJdl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Aug 2008 05:33:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752155AbYHLJda
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Aug 2008 05:32:59 -0400
-Received: from fk-out-0910.google.com ([209.85.128.188]:49628 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751944AbYHLJc6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Aug 2008 05:32:58 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=to:subject:date:user-agent:cc:references:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :message-id:from;
-        b=IvZMeRKpMpiOXoaGhQP0jJvYdiXzMLg6PI6lRv9ocztNUFOUXF6vu8Nhp5vh+hBxkO
-         YWcPhHMhD181hvRr3N106FD3CDNebiT/XvDrlegafGVD/ds80ajX7WebF/JR7NwKc1t8
-         u+IbL/anf7FMsRS99zH+NfBNXrpNdSC5ka5JY=
-To: John Linville <linville@tuxdriver.com>
-Subject: Re: Fixing rt2500pci [PATCH]
-Date: Tue, 12 Aug 2008 12:01:26 +0200
-User-Agent: KMail/1.9.9
-Cc: Peter Chubb <peterc@gelato.unsw.edu.au>, linux-kernel@vger.kernel.org,
-       linux-wireless@vger.kernel.org, stable@kernel.org
-References: <87tze8vu18.wl%peterc@chubb.wattle.id.au> <200807302115.03865.IvDoorn@gmail.com> <87vdym6fct.wl%peterc@chubb.wattle.id.au>
-In-Reply-To: <87vdym6fct.wl%peterc@chubb.wattle.id.au>
+	Tue, 12 Aug 2008 05:33:30 -0400
+Received: from mx2.suse.de ([195.135.220.15]:60623 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752110AbYHLJd3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Aug 2008 05:33:29 -0400
+From: Neil Brown <neilb@suse.de>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Date: Tue, 12 Aug 2008 19:33:16 +1000
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200808121201.26544.IvDoorn@gmail.com>
-From: Ivo van Doorn <ivdoorn@gmail.com>
+Message-ID: <18593.22748.791219.689521@notabene.brown>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, netdev@vger.kernel.org, trond.myklebust@fys.uio.no,
+       Daniel Lezcano <dlezcano@fr.ibm.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>
+Subject: Re: [PATCH 02/30] mm: gfp_to_alloc_flags()
+In-Reply-To: message from Peter Zijlstra on Tuesday August 12
+References: <20080724140042.408642539@chello.nl>
+	<20080724141529.408041430@chello.nl>
+	<18593.6448.132048.150818@notabene.brown>
+	<1218526385.10800.165.camel@twins>
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 31 July 2008, Peter Chubb wrote:
+On Tuesday August 12, a.p.zijlstra@chello.nl wrote:
+> On Tue, 2008-08-12 at 15:01 +1000, Neil Brown wrote:
+> > Did I miss something?
+> > If I did, maybe more text in the changelog entry (or the comment)
+> > would help.
 > 
-> In kernel version 2.6.26-rc9 my wireless LAN card worked; but in the
-> released 2.6.26, my RaLink rt2500 card wouldn't associate.
+> Ok, so the old code did:
 > 
-> Git-bisect led me to this patch:
+>   if (((p->flags & PF_MEMALLOC) || ...) && !in_interrupt) {
+>     ....
+>     goto nopage;
+>   }
 > 
-> 	61486e0f68d1f8966c09b734566a187d42d65c54
-> 	rt2x00: Remove ieee80211_tx_control argument from write_tx_desc()
+> which avoid anything that has PF_MEMALLOC set from entering into direct
+> reclaim, right?
 > 
-> I believe that there is a problem with that patch --- it
-> (inadvertantly) removes an extra line of code, that used to set the
-> DATABYTE_COUNT field.
->  
-> This patch reinstates that line, and with it my card works again.
->  
-> Signed-off-by: Peter Chubb <peterc@gelato.unsw.edu.au>
-> Acked-by: Ivo van Doorn <IvDoorn@gmail.com>
-
-[stable@kernel.org added to CC]
-
-The 2.6.27 version of the patch has already been pushed upstream,
-this one is for 2.6.26-stable since this fixes a regression introduced after 2.6.25.
-
----
-> diff --git a/drivers/net/wireless/rt2x00/rt2500pci.c b/drivers/net/wireless/rt2x00/rt2500pci.c
-> index 1724ce9..4ba2165 100644
-> --- a/drivers/net/wireless/rt2x00/rt2500pci.c
-> +++ b/drivers/net/wireless/rt2x00/rt2500pci.c
-> @@ -1198,6 +1198,7 @@ static void rt2500pci_write_tx_desc(struct rt2x00_dev *rt2x00dev,
->  	rt2x00_set_field32(&word, TXD_W0_IFS, txdesc->ifs);
->  	rt2x00_set_field32(&word, TXD_W0_RETRY_MODE,
->  			   test_bit(ENTRY_TXD_RETRY_MODE, &txdesc->flags));
-> +	rt2x00_set_field32(&word, TXD_W0_DATABYTE_COUNT, skbdesc->data_len);
->  	rt2x00_set_field32(&word, TXD_W0_CIPHER_ALG, CIPHER_NONE);
->  	rt2x00_desc_write(txd, 0, word);
->  }
+> Now, the new code reads:
 > 
-> --
-> Dr Peter Chubb  http://www.gelato.unsw.edu.au  peterc AT gelato.unsw.edu.au
-> http://www.ertos.nicta.com.au           ERTOS within National ICT Australia
-> --
-> Dr Peter Chubb  http://www.gelato.unsw.edu.au  peterc AT gelato.unsw.edu.au
-> http://www.ertos.nicta.com.au           ERTOS within National ICT Australia
+>   if (alloc_flags & ALLOC_NO_WATERMARK) {
+>   }
+> 
+> Which might be false, even though we have PF_MEMALLOC set -
+> __GFP_NOMEMALLOC comes to mind.
+> 
+> So we have to stop that recursion from happening.
+> 
+> so we add:
+> 
+>   if (p->flags & PF_MEMALLOC)
+>     goto nopage;
+> 
+> Now, if it were done before the !wait check, we'd have to consider
+> atomic contexts, but as those are - as you rightly pointed out - handled
+> by the !wait case, we can plainly do this check.
+> 
 > 
 
+Oh yes, obvious when you explain it, thanks.
 
+cat << END >> Changelog
+
+As the test
+-	if (((p->flags & PF_MEMALLOC) || unlikely(test_thread_flag(TIF_MEMDIE)))
+-			&& !in_interrupt()) {
+-		if (!(gfp_mask & __GFP_NOMEMALLOC)) {
+has been replaced with a slightly strong
++	if (alloc_flags & ALLOC_NO_WATERMARKS) {
+
+we need to ensure we don't recurse when PF_MEMALLOC is set
+
+END
+
+??
+
+Thanks,
+NeilBrown
