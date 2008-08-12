@@ -1,47 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758291AbYHKX54@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758588AbYHKX6W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758291AbYHKX54 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Aug 2008 19:57:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754034AbYHKX5r
+	id S1758588AbYHKX6W (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Aug 2008 19:58:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756627AbYHKX5t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Aug 2008 19:57:47 -0400
-Received: from gw.goop.org ([64.81.55.164]:55878 "EHLO mail.goop.org"
+	Mon, 11 Aug 2008 19:57:49 -0400
+Received: from mga02.intel.com ([134.134.136.20]:52956 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753691AbYHKX5q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Aug 2008 19:57:46 -0400
-Message-ID: <48A0D1E6.5030609@goop.org>
-Date: Mon, 11 Aug 2008 16:57:26 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	id S1755526AbYHKX5s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Aug 2008 19:57:48 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.32,192,1217833200"; 
+   d="scan'208";a="325370562"
+From: Seth Heasley <seth.heasley@intel.com>
+To: linux-kernel@vger.kernel.org, i2c@lm-sensors.org, khali@linux-fr.org
+Subject: [PATCH 2.6.26.2][RESEND] i2c-i801: SMBus patch for Intel Ibex Peak DeviceIDs
+Date: Mon, 11 Aug 2008 17:02:38 -0700
+User-Agent: KMail/1.9.1
+Cc: seth.heasley@intel.com
 MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       x86@kernel.org, Nick Piggin <nickpiggin@yahoo.com.au>,
-       Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [PATCH 0 of 8] x86/smp function calls: convert x86 tlb flushes
- to use function calls
-References: <patchbomb.1217636085@localhost> <87k5eu6d4f.fsf@basil.nowhere.org> <48991B84.2080704@goop.org> <20080806033736.GB24801@one.firstfloor.org>
-In-Reply-To: <20080806033736.GB24801@one.firstfloor.org>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200808111702.38396.seth.heasley@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
-> Micro benchmark. Just stick RDTSC around the calls and trigger
-> a few remote flushes by e.g. doing mmap/munmap on a multithreaded program
-> running on different CPUs.
->   
+Resend with proper whitespace.
 
-On a HT 3GHz Xeon, I see a ~35% increase in time (1830ns -> 2500ns), 
-averaged over 1000,000 interrupts.  Because it's only 2 cpu, it ends up 
-always using the smp_call_function_single path (but via the 
-smp_call_function_mask path).
+This patch adds the Intel Ibex Peak (PCH) SMBus Controller DeviceIDs.
 
-I need to try getting a more-cpu machine running native to do a proper 
-test, esp to see if putting kmalloc on that path is very expensive or 
-not.  (Is it worth using a kmem_cache?)
+Signed-off-by: Seth Heasley <seth.heasley@intel.com>
 
-    J
+--- linux-2.6.26.2/drivers/i2c/busses/i2c-i801.c.orig	2008-08-08 11:28:08.000000000 -0700
++++ linux-2.6.26.2/drivers/i2c/busses/i2c-i801.c	2008-08-08 11:32:18.000000000 -0700
+@@ -43,6 +43,7 @@
+   Tolapai               0x5032     32     hard     yes     yes     yes
+   ICH10                 0x3a30     32     hard     yes     yes     yes
+   ICH10                 0x3a60     32     hard     yes     yes     yes
++  PCH                   0x3b30     32     hard     yes     yes     yes
+ 
+   Features supported by this driver:
+   Software PEC                     no
+@@ -592,6 +593,7 @@
+ 	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_TOLAPAI_1) },
+ 	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_ICH10_4) },
+ 	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_ICH10_5) },
++	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_PCH_2) },
+ 	{ 0, }
+ };
+ 
+@@ -615,6 +617,7 @@
+ 	case PCI_DEVICE_ID_INTEL_TOLAPAI_1:
+ 	case PCI_DEVICE_ID_INTEL_ICH10_4:
+ 	case PCI_DEVICE_ID_INTEL_ICH10_5:
++	case PCI_DEVICE_ID_INTEL_PCH_2:
+ 		i801_features |= FEATURE_I2C_BLOCK_READ;
+ 		/* fall through */
+ 	case PCI_DEVICE_ID_INTEL_82801DB_3:
+--- linux-2.6.26.2/drivers/i2c/busses/Kconfig.orig	2008-08-08 11:27:52.000000000 -0700
++++ linux-2.6.26.2/drivers/i2c/busses/Kconfig	2008-08-08 11:30:42.000000000 -0700
+@@ -182,6 +182,7 @@
+ 	    ICH9
+ 	    Tolapai
+ 	    ICH10
++	    PCH
+ 
+ 	  This driver can also be built as a module.  If so, the module
+ 	  will be called i2c-i801.
+
