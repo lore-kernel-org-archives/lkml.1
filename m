@@ -1,60 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754095AbYHLRQs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754184AbYHLRSQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754095AbYHLRQs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Aug 2008 13:16:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752247AbYHLRQk
+	id S1754184AbYHLRSQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Aug 2008 13:18:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751772AbYHLRSC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Aug 2008 13:16:40 -0400
-Received: from mail.gmx.net ([213.165.64.20]:45851 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752177AbYHLRQj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Aug 2008 13:16:39 -0400
-X-Authenticated: #704063
-X-Provags-ID: V01U2FsdGVkX18JlCks4/IJOHgCjPAP2pSn6qMBoL6wySKTcWOYwm
-	2/bJ9kUdL3m/Lb
-Date: Tue, 12 Aug 2008 19:16:35 +0200
-From: Eric Sesterhenn <snakebyte@gmx.de>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Rabin Vincent <rabin@rab.in>
-Subject: Re: [Bug #11274] Oops when accessing /proc/lockdep_chains
-Message-ID: <20080812171635.GA18689@alice>
-References: <VYYCiQF4qDI.A.BPH.KCjnIB@albercik> <cX_-nNkxKaF.A.Ks.8CjnIB@albercik>
+	Tue, 12 Aug 2008 13:18:02 -0400
+Received: from bigben2.bytemark.co.uk ([80.68.81.132]:56660 "EHLO
+	bigben2.bytemark.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751885AbYHLRSA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Aug 2008 13:18:00 -0400
+Date: Tue, 12 Aug 2008 18:18:00 +0100
+From: Andy Whitcroft <apw@shadowen.org>
+To: Krzysztof Halasa <khc@pm.waw.pl>
+Cc: Alan Stern <stern@rowland.harvard.edu>,
+       Randy Dunlap <rdunlap@xenotime.net>,
+       Joel Schopp <jschopp@austin.ibm.com>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+Subject: Re: Possible false positive in checkpatch
+Message-ID: <20080812171800.GA29207@brain>
+References: <Pine.LNX.4.44L0.0808121017510.2509-100000@iolanthe.rowland.org> <m3d4kefe0x.fsf@maximus.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <cX_-nNkxKaF.A.Ks.8CjnIB@albercik>
-X-Editor: Vim http://www.vim.org/
-X-Info: http://www.snake-basket.de
-X-Operating-System: Linux/2.6.27-rc2 (x86_64)
-X-Uptime: 19:16:05 up 1 day,  6:06,  3 users,  load average: 0.00, 0.07,
-	0.09
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.58
+In-Reply-To: <m3d4kefe0x.fsf@maximus.localdomain>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Rafael J. Wysocki (rjw@sisk.pl) wrote:
-> This message has been generated automatically as a part of a report
-> of recent regressions.
+On Tue, Aug 12, 2008 at 05:29:02PM +0200, Krzysztof Halasa wrote:
+> Alan Stern <stern@rowland.harvard.edu> writes:
 > 
-> The following bug entry is on the current list of known regressions
-> from 2.6.26.  Please verify if it still should be listed and let me know
-> (either way).
+> > ERROR: space prohibited after that '*' (ctx:BxW)
 > 
 > 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11274
-> Subject		: Oops when accessing /proc/lockdep_chains
-> Submitter	: Eric Sesterhenn <snakebyte@gmx.de>
-> Date		: 2008-08-06 12:16 (4 days old)
-> References	: http://marc.info/?l=linux-kernel&m=121802509626294&w=4
-> Handled-By	: Rabin Vincent <rabin@rab.in>
-> Patch		: http://marc.info/?l=linux-kernel&m=121814269607276&w=4
+> > Certainly this is a rather uncommon code construction, but similar
+> > ones might occur elsewhere.  To my eyes,
+> >
+> > 	(* (type *) ptr)
+> >
+> > looks better than
+> >
+> > 	(*(type *) ptr)
+> >
+> > or
+> >
+> > 	(*(type *)ptr)
+> >
+> > or even
+> >
+> > 	(*(type*)ptr)
+> >
+> > but of course this is a matter of opinion.  Is there any strong feeling 
+> > about this in the kernel community?
+> 
+> I think checkpatch already has gone way too far with this (and not
+> only this).
+> 
+> "type *var" vs "type* var" - sure, the latter is worse and provokes
+> "type* var1, var2", but anything else is IMHO only annoying and,
+> actually, not important WRT readability at all.
+> 
+> For example I prefer "type* func()" - as it's a function returning
+> "a pointer to type" and not "a pointer to a function returning type"
+> (which "type *func()" may suggest). Yes, func is not a pointer, so why
+> write "*" next to it?
 
-the patch went into linus -git today, you can close this.
+The recommendations it makes match the style of the whole, which new
+contributions should follow.  To a lot of people these nuances don't
+matter to others they do.  checkpatch aims to tell you what you will
+likely be picked up on.  Its recommending a standardised style that is
+not necessarily what any one of us would use.  But that is its role.
+Feel free to ignore any of its recommendations, but expect to be pulled
+up on a lot of them if you do; remembering the time of the reviewer
+that is wasted in doing so.
 
-Thanks, Eric
-
+-apw
