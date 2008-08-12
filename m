@@ -1,49 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753894AbYHLUEg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752852AbYHLUGY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753894AbYHLUEg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Aug 2008 16:04:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751248AbYHLUE1
+	id S1752852AbYHLUGY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Aug 2008 16:06:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751586AbYHLUGP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Aug 2008 16:04:27 -0400
-Received: from mail.fieldses.org ([66.93.2.214]:41740 "EHLO fieldses.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750989AbYHLUE1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Aug 2008 16:04:27 -0400
-Date: Tue, 12 Aug 2008 16:04:23 -0400
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org,
-       Neil Brown <neilb@suse.de>
-Subject: nfsd-related changes for 2.6.27
-Message-ID: <20080812200423.GA384@fieldses.org>
+	Tue, 12 Aug 2008 16:06:15 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:56924 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750705AbYHLUGO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Aug 2008 16:06:14 -0400
+Date: Tue, 12 Aug 2008 13:05:43 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+cc: Al Viro <viro@ZenIV.linux.org.uk>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC] readdir mess
+In-Reply-To: <87proe81c1.fsf@devron.myhome.or.jp>
+Message-ID: <alpine.LFD.1.10.0808121303510.3462@nehalem.linux-foundation.org>
+References: <20080812062241.GQ28946@ZenIV.linux.org.uk> <87ej4u9nf5.fsf@devron.myhome.or.jp> <alpine.LFD.1.10.0808121009370.3462@nehalem.linux-foundation.org> <87proe81c1.fsf@devron.myhome.or.jp>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
-From: "J. Bruce Fields" <bfields@fieldses.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A few nfsd-related changes are ready in:
 
-	git://linux-nfs.org/~bfields/linux.git for-2.6.27
 
-One is a bugfix and the other two are completely trivial, so I assume
-all are appropriate for 2.6.27.
+On Wed, 13 Aug 2008, OGAWA Hirofumi wrote:
+> 
+> However, there are some similar stuff: ->st_size, ->st_nlink and
+> ->st_ino in stat() (cp_old_stat()). Maybe EOVERFLOW is the reason for
+> consistency...
 
---b.
+.. I actually had an old binary that triggered that case (actually, it was 
+O_LARGEFILE in open()), and didn't work as a result. I only needed to run 
+it once, so I literally hacked up a once-time-use kernel that just removed 
+the EOVERFLOW in open.
 
-Harvey Harrison (1):
-      lockd: trivial sparse endian annotations
+So no, I'm not a fan of EOVERFLOW at all. Not in readdir(), not really 
+anywhere else. 
 
-J. Bruce Fields (1):
-      MAINTAINERS: mention lockd and sunrpc in nfs entries
-
-Julia Lawall (1):
-      fs/nfsd/export.c: Adjust error handling code involving auth_domain_put
-
- MAINTAINERS         |    4 ++--
- fs/lockd/svc4proc.c |    4 ++--
- fs/lockd/svcproc.c  |    4 ++--
- fs/nfsd/export.c    |    6 +++---
- 4 files changed, 9 insertions(+), 9 deletions(-)
+		Linus
