@@ -1,76 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753639AbYHLOdD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753509AbYHLOii@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753639AbYHLOdD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Aug 2008 10:33:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752175AbYHLOcy
+	id S1753509AbYHLOii (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Aug 2008 10:38:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752331AbYHLOi3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Aug 2008 10:32:54 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:61442 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751946AbYHLOcx (ORCPT
+	Tue, 12 Aug 2008 10:38:29 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:55161 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752175AbYHLOi2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Aug 2008 10:32:53 -0400
-Date: Tue, 12 Aug 2008 10:32:51 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: LKML <linux-kernel@vger.kernel.org>
-cc: Andrew Morton <akpm@linux-foundation.org>, rolandd@cisco.com,
-       sean.hefty@intel.com, hal.rosenstock@gmail.com,
-       general@lists.openfabrics.org
-Subject: [PATCH] infiniband: change flags from int to long
-Message-ID: <alpine.DEB.1.10.0808121030160.18695@gandalf.stny.rr.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 12 Aug 2008 10:38:28 -0400
+Date: Tue, 12 Aug 2008 15:21:00 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+Subject: Re: [patch 1/2] fastboot: Add a module parameter to skip probing of
+ specific ports
+Message-ID: <20080812152100.0123a2e1@lxorguk.ukuu.org.uk>
+In-Reply-To: <20080812070222.3dc9efcb@infradead.org>
+References: <20080811153542.61095e5c@infradead.org>
+	<20080811153641.706726ec@infradead.org>
+	<20080812083903.6d402c2e@lxorguk.ukuu.org.uk>
+	<20080812043603.3d8471d4@infradead.org>
+	<20080812130027.2c4643a9@lxorguk.ukuu.org.uk>
+	<20080812070222.3dc9efcb@infradead.org>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> and can add the option for this case. It's the "push policy out of the
+> kernel" thing.. while the kernel probably can't know this (and you're
+> right, the DMI patch is thus the wrong thing to do).. the admin can.
 
-It is a bug to have irq saved flags as an int and not long since
-some archs may use more that 32 bits in flags.
+libata lets you set the nth controller to various things (40wire etc) so
+I suspect the right thing to extent is the existing libata option code
+that Tejun wrote to include 'skip' if it doesn't already.
 
-(This patch was only compiled tested)
-
-[
- Found by the -rt patch checks. These should now be in mainline,
- but it looks like they may not have been used.
-]
-
-Signed-off-by: Steven Rostedt <srostedt@redhat.com>
----
- drivers/infiniband/hw/ipath/ipath_verbs.c |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
-
-Index: linus.git/drivers/infiniband/hw/ipath/ipath_verbs.c
-===================================================================
---- linus.git.orig/drivers/infiniband/hw/ipath/ipath_verbs.c	2008-08-12 10:23:25.000000000 -0400
-+++ linus.git/drivers/infiniband/hw/ipath/ipath_verbs.c	2008-08-12 10:25:24.000000000 -0400
-@@ -1021,7 +1021,7 @@ static void sdma_complete(void *cookie, 
- 	struct ipath_verbs_txreq *tx = cookie;
- 	struct ipath_qp *qp = tx->qp;
- 	struct ipath_ibdev *dev = to_idev(qp->ibqp.device);
--	unsigned int flags;
-+	unsigned long flags;
- 	enum ib_wc_status ibs = status == IPATH_SDMA_TXREQ_S_OK ?
- 		IB_WC_SUCCESS : IB_WC_WR_FLUSH_ERR;
- 
-@@ -1051,7 +1051,7 @@ static void sdma_complete(void *cookie, 
- 
- static void decrement_dma_busy(struct ipath_qp *qp)
- {
--	unsigned int flags;
-+	unsigned long flags;
- 
- 	if (atomic_dec_and_test(&qp->s_dma_busy)) {
- 		spin_lock_irqsave(&qp->s_lock, flags);
-@@ -1221,7 +1221,7 @@ static int ipath_verbs_send_pio(struct i
- 	unsigned flush_wc;
- 	u32 control;
- 	int ret;
--	unsigned int flags;
-+	unsigned long flags;
- 
- 	piobuf = ipath_getpiobuf(dd, plen, NULL);
- 	if (unlikely(piobuf == NULL)) {
-
+If that gets done cc me and I'll then go audit the drivers to see who
+apart from it821x knows port 0 is always probed
