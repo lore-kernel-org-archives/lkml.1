@@ -1,47 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753420AbYHLNXT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753211AbYHLN0N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753420AbYHLNXT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Aug 2008 09:23:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751651AbYHLNXI
+	id S1753211AbYHLN0N (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Aug 2008 09:26:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751651AbYHLNZ7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Aug 2008 09:23:08 -0400
-Received: from fk-out-0910.google.com ([209.85.128.184]:17183 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751433AbYHLNXH (ORCPT
+	Tue, 12 Aug 2008 09:25:59 -0400
+Received: from smtpq1.tilbu1.nb.home.nl ([213.51.146.200]:33049 "EHLO
+	smtpq1.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751213AbYHLNZ6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Aug 2008 09:23:07 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=Ms+dUmEH8PAKQgSEzq9PRQhJlraCTBtZiMiJ7RuKmzcNpY4YA0YKYSisQ9aCBzkiEE
-         wwZuyE49V9ZwYb00SA6QfkNStaExaq3yfEOC+2Bt2O2fx2oYBCTxqrUjfHdmTbxDlPH1
-         10XyGBZ1PmCphdSQ2Er6bwT0O9k77SoRVOng0=
-Message-ID: <48A18EAB.40808@googlemail.com>
-Date: Tue, 12 Aug 2008 14:22:51 +0100
-From: Johannes Engel <jcnengel@googlemail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; de; rv:1.8.1.12) Gecko/20071114 SUSE/2.0.0.12-34.1 Lightning/0.8 Thunderbird/2.0.0.12 Mnenhy/0.7.5.0
+	Tue, 12 Aug 2008 09:25:58 -0400
+Message-ID: <48A18F7B.6040809@keyaccess.nl>
+Date: Tue, 12 Aug 2008 15:26:19 +0200
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080707)
 MIME-Version: 1.0
-To: =?ISO-8859-1?Q?Thomas_Hellstr=F6m?= <thomas@tungstengraphics.com>
-CC: dri-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/1 repost #1] DRM: don't enable irqs in locking
-References: <1216975369-6749-1-git-send-email-jirislaby@gmail.com>	<21d7e9970807250154q4a1958f5k45f62408e97ae3c7@mail.gmail.com> <488E2CED.1040207@tungstengraphics.com>
-In-Reply-To: <488E2CED.1040207@tungstengraphics.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
+To: Adrian Bunk <bunk@kernel.org>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, fritz@isdn4linux.de, kkeil@suse.de,
+       isdn4linux@listserv.isdn4linux.de, linux-kernel@vger.kernel.org,
+       mingo@elte.hu
+Subject: Re: [PATCH] ISDN: make ICN not auto-grab port 0x320
+References: <489DD669.2090207@keyaccess.nl> <20080809215020.1bb602e7@lxorguk.ukuu.org.uk> <20080811164814.db41c20b.akpm@linux-foundation.org> <48A11952.6090203@keyaccess.nl> <20080811223043.9ad55c51.akpm@linux-foundation.org> <20080812130823.GD13910@cs181140183.pp.htv.fi>
+In-Reply-To: <20080812130823.GD13910@cs181140183.pp.htv.fi>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: 1.0 (+)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas Hellström wrote:
-> Yes, this bug could occur, but the remedy is not to use 
-> spin_lock_irqsave() for lock_data::spinlock but to avoid calling 
-> drm_lock_take with the drm_device::tasklet_lock held with irqs disabled.
-> I'll see if I can come up with a patch.
-Hi Thomas,
+On 12-08-08 15:08, Adrian Bunk wrote:
 
-any news on that so far?
+> On Mon, Aug 11, 2008 at 10:30:43PM -0700, Andrew Morton wrote:
 
-Cheers, Johannes
+>> I think the boot option is the way, if at all.
+>>
+>> Because the config option isn't very usable.  What's to stop someone
+>> from doing `make allyesconfig' and then menually editing the .config so
+>> it's no longer truly an allyesconfig .config?
+>>
+>> otoh, if is't purely a manual setting rather than some automagic thing
+>> then it might be workable.  CONFIG_INGO :)
+> 
+> Write the required settings into a file and use KCONFIG_ALLCONFIG.
+
+Found those, but seems unable to express the "depends on BROKEN_BOOT if 
+FOO=y" method that's currently used.
+
+Yes, might admittedly not be considered a huge problem and perhaps we 
+could just ship an allyes.config (and same allrandom.config) but it's 
+not nice to spread information about a single symbol over various files 
+like that.
+
+Currently, we have a tristate that turns into a y/n bool if !MODULES. 
+What would be real nice here is a tristate that turns into a m/n bool if 
+!RANDOM, where allyesconfig and randconfig would pre-select RANDOM.
+
+If I'm not mistaken, that's currently not possible...
+
+Rene
