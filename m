@@ -1,48 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753984AbYHLX3h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753890AbYHLXdl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753984AbYHLX3h (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Aug 2008 19:29:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752202AbYHLX32
+	id S1753890AbYHLXdl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Aug 2008 19:33:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752212AbYHLXdd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Aug 2008 19:29:28 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:58812 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751967AbYHLX32 (ORCPT
+	Tue, 12 Aug 2008 19:33:33 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:42819 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752170AbYHLXdc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Aug 2008 19:29:28 -0400
-Date: Tue, 12 Aug 2008 16:28:54 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Alexey Starikovskiy <astarikovskiy@suse.de>
-Cc: alan-jenkins@tuffmail.co.uk, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, hmh@hmh.eng.br,
-       Maximilian Engelhardt <maxi@daemonizer.de>
-Subject: Re: [PATCH] acpi: Avoid dropping rapid hotkey events (or other
- GPEs) on Asus EeePC
-Message-Id: <20080812162854.d6907c95.akpm@linux-foundation.org>
-In-Reply-To: <487F9677.4060001@suse.de>
-References: <487D23C3.5070301@student.cs.york.ac.uk>
-	<487F58B6.5040309@suse.de>
-	<487F6D2E.2040501@tuffmail.co.uk>
-	<487F772C.1070806@suse.de>
-	<487F9592.1060003@tuffmail.co.uk>
-	<487F9677.4060001@suse.de>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 12 Aug 2008 19:33:32 -0400
+Message-ID: <48A21DD6.8010509@ct.jp.nec.com>
+Date: Tue, 12 Aug 2008 16:33:42 -0700
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Cc: John Keller <jpk@sgi.com>, linux-kernel@vger.kernel.org,
+       linux-acpi@vger.kernel.org
+Subject: [PATCH] x86: acpi: move acpi_mcfg_64bit_base_addr into CONFIG_PCI_MMCONFIG
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
 
-Did this get fixed yet?
+acpi_mcfg_64bit_base_addr is used when CONFIG_PCI_MMCONFIG is enabled.
 
-I have an patch in -mm which I just restored (I had to tempdrop it
-because the acpi tree was busted for some time).  But it seems to be
-old.
+Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+---
+ arch/x86/kernel/acpi/boot.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-http://bugzilla.kernel.org/show_bug.cgi?id=10919 is marked "resolved"
-but the reporter (Maximilian) seems to think otherwise.  2.6.26.x is,
-afaik, still unfixed, as is 2.6.27-rc.
+diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
+index 5c89f1e..267e684 100644
+--- a/arch/x86/kernel/acpi/boot.c
++++ b/arch/x86/kernel/acpi/boot.c
+@@ -96,8 +96,6 @@ static u64 acpi_lapic_addr __initdata = APIC_DEFAULT_PHYS_BASE;
+ #warning ACPI uses CMPXCHG, i486 and later hardware
+ #endif
+ 
+-static int acpi_mcfg_64bit_base_addr __initdata = FALSE;
+-
+ /* --------------------------------------------------------------------------
+                               Boot-time Configuration
+    -------------------------------------------------------------------------- */
+@@ -159,6 +157,8 @@ char *__init __acpi_map_table(unsigned long phys, unsigned long size)
+ struct acpi_mcfg_allocation *pci_mmcfg_config;
+ int pci_mmcfg_config_num;
+ 
++static int acpi_mcfg_64bit_base_addr __initdata = FALSE;
++
+ static int __init acpi_mcfg_oem_check(struct acpi_table_mcfg *mcfg)
+ {
+ 	if (!strcmp(mcfg->header.oem_id, "SGI"))
+-- 
+1.5.6
 
-Thanks.
