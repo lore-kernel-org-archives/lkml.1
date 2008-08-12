@@ -1,81 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754535AbYHLNLO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754222AbYHLNMT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754535AbYHLNLO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Aug 2008 09:11:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752524AbYHLNKo
+	id S1754222AbYHLNMT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Aug 2008 09:12:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752165AbYHLNMI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Aug 2008 09:10:44 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:44218 "EHLO
-	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753050AbYHLNKl (ORCPT
+	Tue, 12 Aug 2008 09:12:08 -0400
+Received: from smtpq2.tilbu1.nb.home.nl ([213.51.146.201]:58659 "EHLO
+	smtpq2.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752605AbYHLNMH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Aug 2008 09:10:41 -0400
-Date: Tue, 12 Aug 2008 13:55:30 +0200
-From: Pavel Machek <pavel@suse.cz>
-To: Milan Broz <mbroz@redhat.com>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       ACPI mailing list <linux-acpi@vger.kernel.org>
-Subject: Re: 2.6.27-rc1: critical thermal shutdown on thinkpad x60
-Message-ID: <20080812115530.GB8806@elf.ucw.cz>
-References: <20080806090246.GA1572@elf.ucw.cz> <87bq046cht.fsf@basil.nowhere.org> <20080812094135.GA1565@elf.ucw.cz> <20080812105409.GA1366@one.firstfloor.org> <48A16EFC.1050401@redhat.com> <20080812112602.GA2948@elf.ucw.cz> <48A1779B.5020303@redhat.com>
+	Tue, 12 Aug 2008 09:12:07 -0400
+Message-ID: <48A18C2C.3030009@keyaccess.nl>
+Date: Tue, 12 Aug 2008 15:12:12 +0200
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080707)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <48A1779B.5020303@redhat.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Adrian Bunk <bunk@kernel.org>
+CC: Wim Van Sebroeck <wim@iguana.be>, Ingo Molnar <mingo@redhat.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Andrew Morton <akpm@osdl.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] WATCHDOG: don't auto-grab eurotechwdt.
+References: <489E0F5A.8010404@keyaccess.nl> <20080812125840.GA13910@cs181140183.pp.htv.fi>
+In-Reply-To: <20080812125840.GA13910@cs181140183.pp.htv.fi>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -1.0 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue 2008-08-12 13:44:27, Milan Broz wrote:
-> Pavel Machek wrote:
-> > Hi!
-> >>> On Tue, Aug 12, 2008 at 11:41:35AM +0200, Pavel Machek wrote:
-> >>>>>> Aug  6 11:00:10 amd kernel: ACPI: Critical trip point
-> >>>>>> Aug  6 11:00:10 amd kernel: Critical temperature reached (128 C),
-> >>>>>> shutting down.
-> >>>>>> Aug  6 11:00:10 amd shutdown[24414]: shutting down for system halt
-> >>>>>>
-> >>>>>> ...and machine went down at that point :-(.
-> >>>>> I hope you can easily reproduce it?
-> >>>>>
-> >>>>> So it's new in 2.6.27rc1 and wasn't in 2.6.26? Can you please
-> >>>> Yes, I'm very sure. It makes machine basically unusable.
-> >>> Does this mean you can easily reproduce it?  
-> >>> Please do a bisect then. 
-> >>>
-> >>>> Not that one :-(. Thinkpad does not even have fan device: it is
-> >>>> controlled by hardware.
-> >> Hi,
-> >> I see exactly the same on my x60s, but during upgrade to 2.6.26.2.
-> > 
-> > Are you sure?
+On 12-08-08 14:58, Adrian Bunk wrote:
+
+> On Sat, Aug 09, 2008 at 11:42:50PM +0200, Rene Herman wrote:
+
+>> I'm going over a list of drivers that break the boot of randconfig  
+>> kernels by keeping resources busy:
+>> ...
 > 
-> yes. maybe some userspace tool controlling frequency is involved, no idea yet.
-> But it is 2.6.26 tree for sure.
-
-So it definitely is in 2.6.26.2, and it definitely is in 2.6.26?
-
-...because I'm using 2.6.26, and see nothing..
-
-> >> Now, the CPU cores remains on 1.67GHz and fan is unable to cool them properly
-> >> under heavy load (even if I set "level disengaged" through thinkpad fan control,
-> >> temperature sensor shows after a while 128 C (probably not real temp,
-> >> I expect some critical flag => and it properly switch off the
-> >> system...)
-> > 
-> > How do you control fans? I could not get anything but -EINVAL from IBM
-> > ACPI driver :-(.
+> WTF?
 > 
-> you need add fan_control=1 to thinkpad_acpi module
-> 
-> http://www.thinkwiki.org/wiki/How_to_control_fan_speed
-> http://www.thinkwiki.org/wiki/ACPI_fan_control_script
+> You are expecting randconfig kernels to boot?
 
-Thanks for pointers!
+90% does it seems. Ingo has been using it as part of automated testing 
+for some time now.
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Rene.
