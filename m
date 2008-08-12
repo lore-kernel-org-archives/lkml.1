@@ -1,68 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751993AbYHLFfh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752684AbYHLFgK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751993AbYHLFfh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Aug 2008 01:35:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751102AbYHLFf0
+	id S1752684AbYHLFgK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Aug 2008 01:36:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752341AbYHLFfn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Aug 2008 01:35:26 -0400
-Received: from ns.suse.de ([195.135.220.2]:54184 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750878AbYHLFfZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Aug 2008 01:35:25 -0400
-From: Neil Brown <neilb@suse.de>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Date: Tue, 12 Aug 2008 15:35:14 +1000
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 12 Aug 2008 01:35:43 -0400
+Received: from serv2.oss.ntt.co.jp ([222.151.198.100]:41068 "EHLO
+	serv2.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752239AbYHLFfm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Aug 2008 01:35:42 -0400
+X-Greylist: delayed 1321 seconds by postgrey-1.27 at vger.kernel.org; Tue, 12 Aug 2008 01:35:42 EDT
+Message-Id: <6.0.0.20.2.20080812113004.03c68f48@172.19.0.2>
+X-Mailer: QUALCOMM Windows Eudora Version 6J-Jr3
+Date: Tue, 12 Aug 2008 12:57:11 +0900
+To: Nick Piggin <nickpiggin@yahoo.com.au>,
+       Christoph Hellwig <hch@infradead.org>
+From: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>
+Subject: Re: [patch 12/17] vfs: pagecache usage optimization for
+  pagesize!=blocksize
+Cc: akpm@linux-foundation.org, jack@ucw.cz, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+In-Reply-To: <200808041719.43293.nickpiggin@yahoo.com.au>
+References: <200807282246.m6SMkaHT032267@imap1.linux-foundation.org>
+ <20080728230031.GA22218@infradead.org>
+ <200808041719.43293.nickpiggin@yahoo.com.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Message-ID: <18593.8466.965002.476705@notabene.brown>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, netdev@vger.kernel.org, trond.myklebust@fys.uio.no,
-       Daniel Lezcano <dlezcano@fr.ibm.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>
-Subject: Re: [PATCH 05/30] mm: slb: add knowledge of reserve pages
-In-Reply-To: message from Peter Zijlstra on Thursday July 24
-References: <20080724140042.408642539@chello.nl>
-	<20080724141529.635920366@chello.nl>
-X-Mailer: VM 7.19 under Emacs 21.4.1
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday July 24, a.p.zijlstra@chello.nl wrote:
-> Restrict objects from reserve slabs (ALLOC_NO_WATERMARKS) to allocation
-> contexts that are entitled to it. This is done to ensure reserve pages don't
-> leak out and get consumed.
+Hi Nick.
 
-This looks good (we are still missing slob though, aren't we :-( )
+>
+>This patch unfortunately appears like it may introduce an
+>uninitialized memory leak due to a data race between one
+>thread initializing a buffer then marking it uptodate, and
+>the other testing buffer uptodate then reading from the
+>buffer (buffer, read as: page memory covered by buffer head).
+>
+>For reference, this is basically the same class of data race
+>that I fixed 0ed361dec36945f3116ee1338638ada9a8920905
 
-> @@ -1526,7 +1540,7 @@ load_freelist:
->  	object = c->page->freelist;
->  	if (unlikely(!object))
->  		goto another_slab;
-> -	if (unlikely(SLABDEBUG && PageSlubDebug(c->page)))
-> +	if (unlikely(PageSlubDebug(c->page) || c->reserve))
->  		goto debug;
+I think the same issue that your patch 0ed361dec36945f3116ee
+1338638ada9a8920905 "fix PageUptodate data race" pointed out 
+is there around buffer_head without my patch "vfs: pagecache usage 
+optimization for pagesize!=blocksize".
+Because set_buffer_uptodate or buffer_uptodate are used without
+distinct locking facility (lock_buffer, or lock_page) in many places,
+so it would be needed to deal with memory ordering issue.
 
-This looks suspiciously like debugging code that you have left in.
-Is it??
-
-> @@ -265,7 +267,8 @@ struct array_cache {
->  	unsigned int avail;
->  	unsigned int limit;
->  	unsigned int batchcount;
-> -	unsigned int touched;
-> +	unsigned int touched:1,
-> +		     reserve:1;
-
-This sort of thing always worries me.
-It is a per-cpu data structure so you won't get SMP races corrupting
-fields.  But you do get read-modify-write in place of simple updates.
-I guess it's not a problem..  But it worries me :-)
+Do you add wmb/rmb to BUFFER_FNS macros?
 
 
-NeilBrown
+>
+>I don't think this patch got quite enough justification to
+>warrant just blindly putting barriers in the buffer bitops.
+>The best-case numbers for it were reasonable enough when the
+>downside was only an extra branch or two in a relatively slow
+>path. I don't really know how best to go from here (maybe
+>someone can argue it is not a problem or come up with a better
+>fix?).
+>
+>Thanks,
+>Nick
+
