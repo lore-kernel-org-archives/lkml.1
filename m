@@ -1,38 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753838AbYHLN3c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753999AbYHLNaf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753838AbYHLN3c (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Aug 2008 09:29:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751651AbYHLN3X
+	id S1753999AbYHLNaf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Aug 2008 09:30:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752255AbYHLNa1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Aug 2008 09:29:23 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:43547 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751366AbYHLN3W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Aug 2008 09:29:22 -0400
-From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 0/2] Introduce credentials API
-To: sfr@canb.auug.org.au, jmorris@namei.org, hch@infradead.org
-Cc: dhowells@redhat.com, davem@davemloft.net, sfrench@us.ibm.com,
-       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org
-Date: Tue, 12 Aug 2008 14:28:40 +0100
-Message-ID: <20080812132840.5472.25856.stgit@warthog.procyon.org.uk>
-User-Agent: StGIT/0.14.3
+	Tue, 12 Aug 2008 09:30:27 -0400
+Received: from smtpq1.tilbu1.nb.home.nl ([213.51.146.200]:49293 "EHLO
+	smtpq1.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751651AbYHLNa1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Aug 2008 09:30:27 -0400
+Message-ID: <48A19082.3030507@keyaccess.nl>
+Date: Tue, 12 Aug 2008 15:30:42 +0200
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080707)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+To: Adrian Bunk <bunk@kernel.org>
+CC: Wim Van Sebroeck <wim@iguana.be>, Ingo Molnar <mingo@redhat.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Andrew Morton <akpm@osdl.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] WATCHDOG: don't auto-grab eurotechwdt.
+References: <489E0F5A.8010404@keyaccess.nl> <20080812125840.GA13910@cs181140183.pp.htv.fi> <48A18C2C.3030009@keyaccess.nl> <20080812131850.GE13910@cs181140183.pp.htv.fi>
+In-Reply-To: <20080812131850.GE13910@cs181140183.pp.htv.fi>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -1.0 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 12-08-08 15:18, Adrian Bunk wrote:
 
+>>> You are expecting randconfig kernels to boot?
+>> 90% does it seems. Ingo has been using it as part of automated testing  
+>> for some time now.
+> 
+> Please define "boot".
 
-Hi James, Andrew,
+I can't since I'm not doing the testing, Ingo is. When you ask him, do 
+take into account the inherent goodness of things that catch bugs...
 
-Here are the patches that are necessary just to add the credentials wrapper
-API as Stephen suggested.
+> E.g. for your harddisk driver alone the probability of not having it 
+> included in a randconfig kernel is definitely > 10%.
+> 
+> Same goes for the network driver.
 
-There are two patches: the first renames some things in XFS that would
-otherwise collide in the namespace, and the second adds the wrappers in no-op
-forms.
+I suppose he has local allrandom.config files.
 
-David
+Rene.
