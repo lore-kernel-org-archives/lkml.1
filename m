@@ -1,91 +1,220 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755178AbYHLO6l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755290AbYHLO7R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755178AbYHLO6l (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Aug 2008 10:58:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752556AbYHLO6a
+	id S1755290AbYHLO7R (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Aug 2008 10:59:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753005AbYHLO67
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Aug 2008 10:58:30 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:59165 "EHLO mx1.redhat.com"
+	Tue, 12 Aug 2008 10:58:59 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:59202 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751993AbYHLO63 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Aug 2008 10:58:29 -0400
-Message-ID: <48A1A4F6.9080706@redhat.com>
-Date: Tue, 12 Aug 2008 16:57:58 +0200
-From: Milan Broz <mbroz@redhat.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-CC: Pavel Machek <pavel@suse.cz>, Andi Kleen <andi@firstfloor.org>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       ACPI mailing list <linux-acpi@vger.kernel.org>,
-       Alexey Starikovskiy <astarikovskiy@suse.de>,
-       Thomas Renninger <trenn@suse.de>
-Subject: Re: 2.6.27-rc1: critical thermal shutdown on thinkpad x60 (bisected)
-References: <20080806090246.GA1572@elf.ucw.cz> <48A1779B.5020303@redhat.com> <20080812115530.GB8806@elf.ucw.cz> <200808121634.34634.rjw@sisk.pl>
-In-Reply-To: <200808121634.34634.rjw@sisk.pl>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	id S1752556AbYHLO66 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Aug 2008 10:58:58 -0400
+Date: Tue, 12 Aug 2008 10:58:12 -0400
+From: Aristeu Rozanski <aris@redhat.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       jirislaby@gmail.com
+Subject: [PATCH] vt: kill tty->count usage (v2)
+Message-ID: <20080812145812.GH7154@redhat.com>
+References: <20080808213625.GK20355@redhat.com> <20080808222635.4fe52b51@lxorguk.ukuu.org.uk>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080808222635.4fe52b51@lxorguk.ukuu.org.uk>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafael J. Wysocki wrote:
-> On Tuesday, 12 of August 2008, Pavel Machek wrote:
->> On Tue 2008-08-12 13:44:27, Milan Broz wrote:
->>> Pavel Machek wrote:
->>>> Hi!
->>>>>> On Tue, Aug 12, 2008 at 11:41:35AM +0200, Pavel Machek wrote:
->>>>>>>>> Aug  6 11:00:10 amd kernel: ACPI: Critical trip point
->>>>>>>>> Aug  6 11:00:10 amd kernel: Critical temperature reached (128 C),
->>>>>>>>> shutting down.
->>>>>>>>> Aug  6 11:00:10 amd shutdown[24414]: shutting down for system halt
->>>>>>>>>
->>>>>>>>> ...and machine went down at that point :-(.
->>>>>>>> I hope you can easily reproduce it?
->>>>>>>>
->>>>>>>> So it's new in 2.6.27rc1 and wasn't in 2.6.26? Can you please
->>>>>>> Yes, I'm very sure. It makes machine basically unusable.
->>>>>> Does this mean you can easily reproduce it?  
->>>>>> Please do a bisect then. 
->>>>>>
->>>>>>> Not that one :-(. Thinkpad does not even have fan device: it is
->>>>>>> controlled by hardware.
->>>>> Hi,
->>>>> I see exactly the same on my x60s, but during upgrade to 2.6.26.2.
->>>> Are you sure?
->>> yes. maybe some userspace tool controlling frequency is involved, no idea yet.
->>> But it is 2.6.26 tree for sure.
->> So it definitely is in 2.6.26.2, and it definitely is in 2.6.26?
+The commit e0426e6a09954d205da2d674a3d368d2715e3afd fixes a real race but
+still isn't enough to prevent these:
 
+kobject_add_internal failed for vcs7 with -EEXIST, don't try to register
+things with the same name in the same direc.
+Pid: 2967, comm: vcs_stress Not tainted 2.6.25 #10
+ [<c04e852e>] kobject_add_internal+0x137/0x149
+ [<c04e85d4>] kobject_add_varg+0x35/0x41
+ [<c04e8645>] kobject_add+0x43/0x49
+ [<c055e54f>] device_add+0x91/0x4b4
+ [<c055e984>] device_register+0x12/0x15
+ [<c055e9f6>] device_create+0x6f/0x95
+ [<c053e69b>] vcs_make_sysfs+0x23/0x4f
+ [<c0543aff>] con_open+0x74/0x82
+ [<c0538b64>] tty_open+0x188/0x287
+ [<c047b1c8>] chrdev_open+0x119/0x135
+ [<c04775d4>] __dentry_open+0xcf/0x185
+ [<c0477711>] nameidata_to_filp+0x1f/0x33
+ [<c047b0af>] ? chrdev_open+0x0/0x135
+ [<c0477753>] do_filp_open+0x2e/0x35
+ [<c0627da6>] ? _spin_unlock+0x1d/0x20
+ [<c04774ef>] ? get_unused_fd_flags+0xc9/0xd3
+ [<c047779a>] do_sys_open+0x40/0xb5
+ [<c0477851>] sys_open+0x1e/0x26
+ [<c0404962>] syscall_call+0x7/0xb
+ =======================
 
-The bug is _not_ in 2.6.26, it was introduced in 2.6.26.1.
+and the reason for that is a race in release_dev() that can call driver's close
+two or more at the same time. If these are the last two references, both calls
+will be made before tty->count is decremented. And most tty drivers check
+tty->count to identify the last close so the resources can be released. So
+the close() method and the tty->count should happen without concurrency or
+each driver can keep the number of the references itself. Holding tty_mutex
+before calling driver's close() and updating tty->count is not possible
+because some drivers sleep waiting until the tx buffer is empty.
 
-The problem is, that now the CPU frequency doesn't decrease at some
-temperature level and fan is unable to cool it properly.
+This patch was tested under normal usage and using the stress application I
+wrote that triggers the problem more easily.
 
-bisect on 2.6.26.y tree finished in this patch:
-(I expect similar patch in 2.6.27-rc)
+Updates:
+- now con_open() returns -ERESTARTSYS instead of -EBUSY to make tty_open()
+  retry the open in case of vt being closed
+- do not release console_semaphore on con_release() when calling
+  vcs_remove_sysfs(), this would be a revert of
+  e0426e6a09954d205da2d674a3d368d2715e3afd
 
-commit 04f496871e8af87a1e40c504371a206fd7389193
-Author: Thomas Renninger <trenn@suse.de>
-Date:   Wed Jul 30 18:20:10 2008 +0000
+Signed-off-by: Aristeu Rozanski <arozansk@redhat.com>
 
-    cpufreq acpi: only call _PPC after cpufreq ACPI init funcs got called already
+---
 
-    commit a1531acd43310a7e4571d52e8846640667f4c74b upstream
+ drivers/char/vt.c              |   79 ++++++++++++++++++++++++++++-------------
+ include/linux/console_struct.h |    2 +
+ 2 files changed, 57 insertions(+), 24 deletions(-)
 
-    Ingo Molnar provided a fix to not call _PPC at processor driver
-    initialization time in "[PATCH] ACPI: fix cpufreq regression" (git
-    commit e4233dec749a3519069d9390561b5636a75c7579)
-
-    But it can still happen that _PPC is called at processor driver
-    initialization time.
-
-    This patch should make sure that this is not possible anymore.
-
-
-
-That seems strange to me... please could anyone verify that it 
-on some other x60?
-
-Milan
+--- tty.orig/drivers/char/vt.c	2008-08-06 11:49:59.000000000 -0400
++++ tty/drivers/char/vt.c	2008-08-12 09:14:11.000000000 -0400
+@@ -2732,15 +2732,24 @@ static int con_open(struct tty_struct *t
+ {
+ 	unsigned int currcons = tty->index;
+ 	int ret = 0;
++	struct vc_data *vc;
+ 
+ 	acquire_console_sem();
+ 	if (tty->driver_data == NULL) {
+ 		ret = vc_allocate(currcons);
+ 		if (ret == 0) {
+-			struct vc_data *vc = vc_cons[currcons].d;
++			vc = vc_cons[currcons].d;
++
++			if (vc->vc_tty != NULL) {
++				/* we're still releasing this console entry */
++				release_console_sem();
++				return -ERESTARTSYS;
++			}
++
+ 			tty->driver_data = vc;
+ 			vc->vc_tty = tty;
+ 
++			kref_init(&vc->kref);
+ 			if (!tty->winsize.ws_row && !tty->winsize.ws_col) {
+ 				tty->winsize.ws_row = vc_cons[currcons].d->vc_rows;
+ 				tty->winsize.ws_col = vc_cons[currcons].d->vc_cols;
+@@ -2753,39 +2762,60 @@ static int con_open(struct tty_struct *t
+ 			release_console_sem();
+ 			return ret;
+ 		}
++	} else {
++		vc = tty->driver_data;
++		kref_get(&vc->kref);
+ 	}
+ 	release_console_sem();
+ 	return ret;
+ }
+ 
+-/*
+- * We take tty_mutex in here to prevent another thread from coming in via init_dev
+- * and taking a ref against the tty while we're in the process of forgetting
+- * about it and cleaning things up.
+- *
+- * This is because vcs_remove_sysfs() can sleep and will drop the BKL.
+- */
++static void con_release(struct kref *kref)
++{
++	struct vc_data *vc = container_of(kref, struct vc_data, kref);
++	struct tty_struct *tty = vc->vc_tty;
++
++	tty->driver_data = NULL;
++
++	vcs_remove_sysfs(tty);
++
++	/* now this slot is officially free */
++	vc->vc_tty = NULL;
++}
++
+ static void con_close(struct tty_struct *tty, struct file *filp)
+ {
+-	mutex_lock(&tty_mutex);
+-	acquire_console_sem();
+-	if (tty && tty->count == 1) {
+-		struct vc_data *vc = tty->driver_data;
++	struct vc_data *vc = tty->driver_data;
+ 
+-		if (vc)
+-			vc->vc_tty = NULL;
+-		tty->driver_data = NULL;
+-		vcs_remove_sysfs(tty);
+-		release_console_sem();
+-		mutex_unlock(&tty_mutex);
+-		/*
+-		 * tty_mutex is released, but we still hold BKL, so there is
+-		 * still exclusion against init_dev()
+-		 */
++	/*
++	 * if this tty was hung up, all the resources have been freed already
++	 */
++	if (tty_hung_up_p(filp))
+ 		return;
+-	}
++
++	acquire_console_sem();
++	/*
++	 * tty->driver_data can be NULL if con_open() fails because tty layer
++	 * will call us even if the first open wasn't successful.
++	 */
++	if (vc != NULL)
++		kref_put(&vc->kref, con_release);
++	release_console_sem();
++}
++
++/*
++ * hangup was called: release all resources. all the currently open files will
++ * have the file_operations changed to hung_up_tty_fops. this means that the
++ * only choice the application has is close and open again.
++ */
++static void con_hangup(struct tty_struct *tty)
++{
++	struct vc_data *vc = tty->driver_data;
++
++	acquire_console_sem();
++	BUG_ON(vc == NULL);
++	con_release(&vc->kref);
+ 	release_console_sem();
+-	mutex_unlock(&tty_mutex);
+ }
+ 
+ static int default_italic_color    = 2; // green (ASCII)
+@@ -2909,6 +2939,7 @@ static const struct tty_operations con_o
+ 	.start = con_start,
+ 	.throttle = con_throttle,
+ 	.unthrottle = con_unthrottle,
++	.hangup = con_hangup,
+ };
+ 
+ int __init vty_init(void)
+--- tty.orig/include/linux/console_struct.h	2008-08-12 09:14:18.000000000 -0400
++++ tty/include/linux/console_struct.h	2008-08-11 10:25:51.000000000 -0400
+@@ -15,6 +15,7 @@
+ #include <linux/wait.h>
+ #include <linux/vt.h>
+ #include <linux/workqueue.h>
++#include <linux/kref.h>
+ 
+ struct vt_struct;
+ 
+@@ -108,6 +109,7 @@ struct vc_data {
+ 	unsigned long	vc_uni_pagedir;
+ 	unsigned long	*vc_uni_pagedir_loc;  /* [!] Location of uni_pagedir variable for this console */
+ 	/* additional information is in vt_kern.h */
++	struct kref	kref;
+ };
+ 
+ struct vc {
