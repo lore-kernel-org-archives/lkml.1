@@ -1,101 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752514AbYHLC5r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752346AbYHLDOb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752514AbYHLC5r (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Aug 2008 22:57:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751376AbYHLC5g
+	id S1752346AbYHLDOb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Aug 2008 23:14:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751505AbYHLDOW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Aug 2008 22:57:36 -0400
-Received: from mail.vyatta.com ([216.93.170.194]:41771 "EHLO mail.vyatta.com"
+	Mon, 11 Aug 2008 23:14:22 -0400
+Received: from mga11.intel.com ([192.55.52.93]:9057 "EHLO mga11.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750911AbYHLC5f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Aug 2008 22:57:35 -0400
-X-Spam-Flag: NO
-X-Spam-Score: -1.446
-Date: Mon, 11 Aug 2008 19:57:33 -0700
-From: Stephen Hemminger <stephen.hemminger@vyatta.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: netdev@vger.kernel.org, Jeff Garzik <jeff@garzik.org>,
-       Stephen Hemminger <shemminger@vyatta.com>,
+	id S1751490AbYHLDOW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Aug 2008 23:14:22 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.32,192,1217833200"; 
+   d="scan'208";a="605967477"
+Subject: [PATCH -v3 0/7] kexec jump: fixes for 2.6.27
+From: Huang Ying <ying.huang@intel.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>, Pavel Machek <pavel@ucw.cz>,
+       nigel@nigel.suspend2.net, "Rafael J. Wysocki" <rjw@sisk.pl>,
        Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] sky2: Fix suspend/hibernation/shutdown regression with
- WOL enabled (rev. 2)
-Message-ID: <20080811195733.35e9de14@extreme>
-In-Reply-To: <200808101930.29574.rjw@sisk.pl>
-References: <200808092332.29596.rjw@sisk.pl>
-	<20080809235711.12c2f331@extreme>
-	<200808101414.35626.rjw@sisk.pl>
-	<200808101930.29574.rjw@sisk.pl>
-Organization: Vyatta
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+       Vivek Goyal <vgoyal@redhat.com>, mingo@elte.hu,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org,
+       Kexec Mailing List <kexec@lists.infradead.org>
+Content-Type: text/plain
+Date: Tue, 12 Aug 2008 11:14:18 +0800
+Message-Id: <1218510858.24951.39.camel@caritas-dev.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 10 Aug 2008 19:30:28 +0200
-"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+Hi,
 
-> On Sunday, 10 of August 2008, Rafael J. Wysocki wrote:
-> > On Sunday, 10 of August 2008, Stephen Hemminger wrote:
-> > > On Sat, 9 Aug 2008 23:32:28 +0200
-> > > "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
-> > > 
-> [--snip--]
-> > > 
-> > > The problem is not unique to your chip version,
-> > 
-> > Well, that's the part I wasn't sure of.
-> > 
-> > > so patching out the power down is not the correct solution.
-> > 
-> > Sure.
-> 
-> But, shouldn't we switch to page 2 before selecting PHY_MARV_PHY_CTRL?  Things
-> work correctly if this is done (patch below).
-> 
-> Thanks,
-> Rafael
-> 
-> 
-> ---
-> On my test box with the Asus M3A32-MVP main board there is a
-> regression from 2.6.26 related to suspend, hibernation and
-> shutdown.  Namely, if Wake-on-LAN is enabled with
-> 'ethtool -s eth0 wol g', the box hangs solid during all of these
-> operations, while executing either sky2_suspend(), or
-> sky2_shutdown().  This patch fixes it for me.
-> 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> ---
->  drivers/net/sky2.c |    7 ++++++-
->  1 file changed, 6 insertions(+), 1 deletion(-)
-> 
-> Index: linux-2.6/drivers/net/sky2.c
-> ===================================================================
-> --- linux-2.6.orig/drivers/net/sky2.c
-> +++ linux-2.6/drivers/net/sky2.c
-> @@ -666,11 +666,16 @@ static void sky2_phy_power_down(struct s
->  
->  	if (hw->chip_id != CHIP_ID_YUKON_EC) {
->  		if (hw->chip_id == CHIP_ID_YUKON_EC_U) {
-> -			ctrl = gm_phy_read(hw, port, PHY_MARV_PHY_CTRL);
-> +			/* select page 2 to access MAC control register */
-> +			gm_phy_write(hw, port, PHY_MARV_EXT_ADR, 2);
->  
-> +			ctrl = gm_phy_read(hw, port, PHY_MARV_PHY_CTRL);
->  			/* enable Power Down */
->  			ctrl |= PHY_M_PC_POW_D_ENA;
->  			gm_phy_write(hw, port, PHY_MARV_PHY_CTRL, ctrl);
-> +
-> +			/* set page register back to 0 */
-> +			gm_phy_write(hw, port, PHY_MARV_EXT_ADR, 0);
->  		}
->  
->  		/* set IEEE compatible Power Down Mode (dev. #4.99) */
+This patchset fixes some issues of kexec jump for 2.6.27.
 
-Yes, that's better.
+It is based on 2.6.27-rc2 and has been tested on i386 platform.
 
-Acked-by: Stephen Hemminger <shemminger@vyatta.com>
+
+ChangeLog:
+
+v3:
+
+- Merge added file vmlinux_check_32.lds.S into vmlinux_32.lds.S.
+- Add comments about lock for ftrace code.
+
+v2:
+
+- Check control code size at link time instead of run time.
+- Encapsulate ftrace related code into functions.
+
+Best Regards,
+Huang Ying
+
+
