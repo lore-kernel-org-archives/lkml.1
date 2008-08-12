@@ -1,69 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752684AbYHLFgK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752035AbYHLFfu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752684AbYHLFgK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Aug 2008 01:36:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752341AbYHLFfn
+	id S1752035AbYHLFfu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Aug 2008 01:35:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751195AbYHLFf1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Aug 2008 01:35:43 -0400
-Received: from serv2.oss.ntt.co.jp ([222.151.198.100]:41068 "EHLO
+	Tue, 12 Aug 2008 01:35:27 -0400
+Received: from serv2.oss.ntt.co.jp ([222.151.198.100]:41059 "EHLO
 	serv2.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752239AbYHLFfm (ORCPT
+	with ESMTP id S1750996AbYHLFfZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Aug 2008 01:35:42 -0400
-X-Greylist: delayed 1321 seconds by postgrey-1.27 at vger.kernel.org; Tue, 12 Aug 2008 01:35:42 EDT
-Message-Id: <6.0.0.20.2.20080812113004.03c68f48@172.19.0.2>
-X-Mailer: QUALCOMM Windows Eudora Version 6J-Jr3
-Date: Tue, 12 Aug 2008 12:57:11 +0900
-To: Nick Piggin <nickpiggin@yahoo.com.au>,
-       Christoph Hellwig <hch@infradead.org>
-From: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>
-Subject: Re: [patch 12/17] vfs: pagecache usage optimization for
-  pagesize!=blocksize
-Cc: akpm@linux-foundation.org, jack@ucw.cz, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-In-Reply-To: <200808041719.43293.nickpiggin@yahoo.com.au>
-References: <200807282246.m6SMkaHT032267@imap1.linux-foundation.org>
- <20080728230031.GA22218@infradead.org>
- <200808041719.43293.nickpiggin@yahoo.com.au>
+	Tue, 12 Aug 2008 01:35:25 -0400
+Subject: Re: RFC: I/O bandwidth controller
+From: Fernando Luis =?ISO-8859-1?Q?V=E1zquez?= Cao 
+	<fernando@oss.ntt.co.jp>
+To: Hirokazu Takahashi <taka@valinux.co.jp>
+Cc: balbir@linux.vnet.ibm.com, xen-devel@lists.xensource.com,
+       uchida@ap.jp.nec.com, containers@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org, virtualization@lists.linux-foundation.org,
+       dm-devel@redhat.com, agk@sourceware.org, dave@linux.vnet.ibm.com,
+       ngupta@google.com, righi.andrea@gmail.com
+In-Reply-To: <20080808.203944.29203232.taka@valinux.co.jp>
+References: <1217985189.3154.57.camel@sebastian.kern.oss.ntt.co.jp>
+	 <4899D464.1070506@linux.vnet.ibm.com>
+	 <1218078075.3803.149.camel@sebastian.kern.oss.ntt.co.jp>
+	 <20080808.203944.29203232.taka@valinux.co.jp>
+Content-Type: text/plain
+Organization: NTT Open Source Software Center
+Date: Tue, 12 Aug 2008 14:35:23 +0900
+Message-Id: <1218519323.3964.0.camel@sebastian.kern.oss.ntt.co.jp>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Nick.
+On Fri, 2008-08-08 at 20:39 +0900, Hirokazu Takahashi wrote:
+> Hi,
+> 
+> > > Would you like to split up IO into read and write IO. We know that read can be
+> > > very latency sensitive when compared to writes. Should we consider them
+> > > separately in the RFC?
+> > Oops, I somehow ended up leaving your first question unanswered. Sorry.
+> > 
+> > I do not think we should consider them separately, as long as there is a
+> > proper IO tracking infrastructure in place. As you mentioned, reads can
+> > be very latecy sensitive, but the read case could be treated as an
+> > special case IO controller/IO tracking subsystem. There certainly are
+> > optimization opportunities. For example, in the synchronous I/O patch ww
+> > could mark bios with the iocontext of the current task, because it will
+> > happen to be originator of that IO. By effectively caching the ownership
+> > information in the bio we can avoid all the accesses to struct page,
+> > page_cgroup, etc, and reads would definitively benefit from that. 
+> 
+> FYI, we should also take special care of pages being reclaimed, the free
+> memory of the cgroup these pages belong to may be really low.
+> Dm-ioband is doing this.
+Thank you for the heads-up.
 
->
->This patch unfortunately appears like it may introduce an
->uninitialized memory leak due to a data race between one
->thread initializing a buffer then marking it uptodate, and
->the other testing buffer uptodate then reading from the
->buffer (buffer, read as: page memory covered by buffer head).
->
->For reference, this is basically the same class of data race
->that I fixed 0ed361dec36945f3116ee1338638ada9a8920905
-
-I think the same issue that your patch 0ed361dec36945f3116ee
-1338638ada9a8920905 "fix PageUptodate data race" pointed out 
-is there around buffer_head without my patch "vfs: pagecache usage 
-optimization for pagesize!=blocksize".
-Because set_buffer_uptodate or buffer_uptodate are used without
-distinct locking facility (lock_buffer, or lock_page) in many places,
-so it would be needed to deal with memory ordering issue.
-
-Do you add wmb/rmb to BUFFER_FNS macros?
-
-
->
->I don't think this patch got quite enough justification to
->warrant just blindly putting barriers in the buffer bitops.
->The best-case numbers for it were reasonable enough when the
->downside was only an extra branch or two in a relatively slow
->path. I don't really know how best to go from here (maybe
->someone can argue it is not a problem or come up with a better
->fix?).
->
->Thanks,
->Nick
+- Fernando
 
