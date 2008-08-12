@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753204AbYHLILQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753374AbYHLIMh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753204AbYHLILQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Aug 2008 04:11:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751809AbYHLILA
+	id S1753374AbYHLIMh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Aug 2008 04:12:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751809AbYHLIMV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Aug 2008 04:11:00 -0400
-Received: from viefep18-int.chello.at ([213.46.255.22]:55498 "EHLO
+	Tue, 12 Aug 2008 04:12:21 -0400
+Received: from viefep18-int.chello.at ([213.46.255.22]:60428 "EHLO
 	viefep15-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751767AbYHLIK7 (ORCPT
+	with ESMTP id S1751921AbYHLIMT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Aug 2008 04:10:59 -0400
+	Tue, 12 Aug 2008 04:12:19 -0400
 X-SourceIP: 80.57.229.25
 Subject: Re: [PATCH 12/30] mm: memory reserve management
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
@@ -19,13 +19,13 @@ Cc: Linus Torvalds <torvalds@linux-foundation.org>,
        linux-mm@kvack.org, netdev@vger.kernel.org, trond.myklebust@fys.uio.no,
        Daniel Lezcano <dlezcano@fr.ibm.com>,
        Pekka Enberg <penberg@cs.helsinki.fi>
-In-Reply-To: <18593.11340.609526.649904@notabene.brown>
+In-Reply-To: <18593.16326.701825.625469@notabene.brown>
 References: <20080724140042.408642539@chello.nl>
 	 <20080724141530.127530749@chello.nl>
-	 <18593.11340.609526.649904@notabene.brown>
+	 <18593.16326.701825.625469@notabene.brown>
 Content-Type: text/plain
-Date: Tue, 12 Aug 2008 10:10:58 +0200
-Message-Id: <1218528658.10800.173.camel@twins>
+Date: Tue, 12 Aug 2008 10:12:20 +0200
+Message-Id: <1218528740.10800.176.camel@twins>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
@@ -33,7 +33,7 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-08-12 at 16:23 +1000, Neil Brown wrote:
+On Tue, 2008-08-12 at 17:46 +1000, Neil Brown wrote:
 > On Thursday July 24, a.p.zijlstra@chello.nl wrote:
 > > Generic reserve management code. 
 > > 
@@ -41,71 +41,99 @@ On Tue, 2008-08-12 at 16:23 +1000, Neil Brown wrote:
 > > reserve pools could be build, which could fully replace mempool_t
 > > functionality.
 > 
-> This looks quite different to last time I looked at the code (I
-> think).
+> More comments on this patch .....
 > 
-> You now have a more structured "kmalloc_reserve" interface which
-> returns a flag to say if the allocation was from an emergency pool.  I
-> think this will be a distinct improvement at the call sites, though I
-> haven't looked at them yet. :-)
-> 
+> > +void *___kmalloc_reserve(size_t size, gfp_t flags, int node, void *ip,
+> > +			 struct mem_reserve *res, int *emerg);
 > > +
-> > +struct mem_reserve {
-> > +	struct mem_reserve *parent;
-> > +	struct list_head children;
-> > +	struct list_head siblings;
-> > +
-> > +	const char *name;
-> > +
-> > +	long pages;
-> > +	long limit;
-> > +	long usage;
-> > +	spinlock_t lock;	/* protects limit and usage */
->                                             ^^^^^
-> > +
-> > +	wait_queue_head_t waitqueue;
-> > +};
-> 
-> .....
-> > +static void __calc_reserve(struct mem_reserve *res, long pages, long limit)
+> > +static inline
+> > +void *__kmalloc_reserve(size_t size, gfp_t flags, int node, void *ip,
+> > +			struct mem_reserve *res, int *emerg)
 > > +{
-> > +	unsigned long flags;
+> > +	void *obj;
 > > +
-> > +	for ( ; res; res = res->parent) {
-> > +		res->pages += pages;
+> > +	obj = __kmalloc_node_track_caller(size,
+> > +			flags | __GFP_NOMEMALLOC | __GFP_NOWARN, node, ip);
+> > +	if (!obj)
+> > +		obj = ___kmalloc_reserve(size, flags, node, ip, res, emerg);
 > > +
-> > +		if (limit) {
-> > +			spin_lock_irqsave(&res->lock, flags);
-> > +			res->limit += limit;
-> > +			spin_unlock_irqrestore(&res->lock, flags);
-> > +		}
-> > +	}
+> > +	return obj;
 > > +}
-> 
-> I cannot figure out why the spinlock is being used to protect updates
-> to 'limit'.
-> As far as I can see, mem_reserve_mutex already protects all those
-> updates.
-> Certainly we need the spinlock for usage, but why for limit??
-
-against __mem_reserve_charge(), granted, the race would be minimal at
-best - but it seemed better this way.
-
+> > +
+> > +#define kmalloc_reserve(size, gfp, node, res, emerg) 			\
+> > +	__kmalloc_reserve(size, gfp, node, 				\
+> > +			  __builtin_return_address(0), res, emerg)
+> > +
+> ......
+> > +/*
+> > + * alloc wrappers
+> > + */
 > > +
 > > +void *___kmalloc_reserve(size_t size, gfp_t flags, int node, void *ip,
 > > +			 struct mem_reserve *res, int *emerg)
 > > +{
-> .....
+> > +	void *obj;
+> > +	gfp_t gfp;
+> > +
+> > +	gfp = flags | __GFP_NOMEMALLOC | __GFP_NOWARN;
+> > +	obj = __kmalloc_node_track_caller(size, gfp, node, ip);
+> > +
+> > +	if (obj || !(gfp_to_alloc_flags(flags) & ALLOC_NO_WATERMARKS))
+> > +		goto out;
+> > +
+> > +	if (res && !mem_reserve_kmalloc_charge(res, size)) {
+> > +		if (!(flags & __GFP_WAIT))
+> > +			goto out;
+> > +
+> > +		wait_event(res->waitqueue,
+> > +				mem_reserve_kmalloc_charge(res, size));
+> > +
+> > +		obj = __kmalloc_node_track_caller(size, gfp, node, ip);
+> > +		if (obj) {
+> > +			mem_reserve_kmalloc_charge(res, -size);
+> > +			goto out;
+> > +		}
+> > +	}
+> > +
+> > +	obj = __kmalloc_node_track_caller(size, flags, node, ip);
+> > +	WARN_ON(!obj);
 > > +	if (emerg)
 > > +		*emerg |= 1;
+> > +
+> > +out:
+> > +	return obj;
+> > +}
 > 
-> Why not just
+> Two comments to be precise.
 > 
-> 	if (emerg)
-> 		*emerg = 1.
-> 
-> I can't we where '*emerg' can have any value but 0 or 1, so the '|' is
-> pointless ???
+> 1/ __kmalloc_reserve attempts a __GFP_NOMEMALLOC allocation, and then
+>    if that fails, ___kmalloc_reserve immediately tries again.
+>    Is that pointless?  Should the second one be removed?
 
-weirdness in my brain when I wrote that I guess, shall ammend!
+Pretty pointless yes, except that it made ___kmalloc_reserve a nicer
+function to read, and as its an utter slow path I couldn't be arsed to
+optimize :-)
+
+> 2/ mem_reserve_kmalloc_charge appears to assume that the 'mem_reserve'
+>    has been 'connected' and so is active.
+
+Hmm, that would be __mem_reserve_charge() then, because the callers
+don't do much.
+
+>    While callers probably only set GFP_MEMALLOC in cases where the
+>    mem_reserve is connected, ALLOC_NO_WATERMARKS could get via
+>    PF_MEMALLOC so we could end up calling mem_reserve_kmalloc_charge
+>    when the mem_reserve is not connected.
+
+Right..
+
+>    That seems to be 'odd' at least.
+>    It might even be 'wrong' as mem_reserve_connect doesn't add the
+>    usage of the child to the parent - only the ->pages and ->limit.
+> 
+>    What is your position on this?  Mine is "still slightly confused".
+
+Uhmm,. good point. Let me ponder this while I go for breakfast ;-)
+
+
 
