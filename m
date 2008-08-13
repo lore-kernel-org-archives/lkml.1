@@ -1,82 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755554AbYHMRXv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756119AbYHMRZI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755554AbYHMRXv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Aug 2008 13:23:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751306AbYHMRXo
+	id S1756119AbYHMRZI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Aug 2008 13:25:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751306AbYHMRY4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Aug 2008 13:23:44 -0400
-Received: from outbound-dub.frontbridge.com ([213.199.154.16]:65120 "EHLO
-	IE1EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750987AbYHMRXn (ORCPT
+	Wed, 13 Aug 2008 13:24:56 -0400
+Received: from outbound-va3.frontbridge.com ([216.32.180.16]:36496 "EHLO
+	VA3EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750943AbYHMRYz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Aug 2008 13:23:43 -0400
-X-BigFish: VPS-22(z21eWz936fQzz10d3izzz32i6bh61h)
-X-Spam-TCS-SCL: 0:0
-X-WSS-ID: 0K5JUYZ-01-IMZ-01
-Content-Disposition: inline
+	Wed, 13 Aug 2008 13:24:55 -0400
+X-BigFish: VPS-40(zz1432R9370P98dR1805M936fQzz10d3izzz32i6bh65h)
+X-Spam-TCS-SCL: 4:0
+X-WSS-ID: 0K5JV14-01-IOJ-01
 From: Mark Langsdorf <mark.langsdorf@amd.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH][retry 1] 2.6.27-rc2: invalidate caches before going into suspend
-Date: Wed, 13 Aug 2008 12:28:50 -0500
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: invalidate caches before going into suspend
+Date: Wed, 13 Aug 2008 12:30:07 -0500
 User-Agent: KMail/1.9.9
+CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
+References: <200808131141.18003.mark.langsdorf@amd.com> <200808131209.57534.mark.langsdorf@amd.com> <alpine.LFD.1.10.0808131011050.3462@nehalem.linux-foundation.org>
+In-Reply-To: <alpine.LFD.1.10.0808131011050.3462@nehalem.linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Message-ID: <200808131228.50415.mark.langsdorf@amd.com>
-X-OriginalArrivalTime: 13 Aug 2008 17:23:31.0376 (UTC) FILETIME=[4EB24B00:01C8FD69]
+Content-Disposition: inline
+Message-ID: <200808131230.07581.mark.langsdorf@amd.com>
+X-OriginalArrivalTime: 13 Aug 2008 17:24:48.0455 (UTC) FILETIME=[7CA39D70:01C8FD69]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When a CPU core is shut down, all of its caches need to be flushed
-to prevent stale data from causing errors if the core is resumed.
-Current Linux suspend code performs an assignment after the flush,
-which can add dirty data back to the cache.  On some AMD platforms,
-additional speculative reads have caused crashes on resume because
-of this dirty data.
+On Wednesday 13 August 2008, Linus Torvalds wrote:
+> 
+> On Wed, 13 Aug 2008, Mark Langsdorf wrote:
+> > 
+> > I don't think it's necessary.  I can submit a delta patch later if you
+> > think it's really necessary.
+> 
+> Why not at least move it to after the local_irq_disable()?
+> 
+> That local_irq_disable() will do tons of writes if you have 
+> lockdep enabled, it calls trace_hardirqs_off() etc. Maybe they don't end 
+> up ever mattering, but wouldn't it make much more sense to just move the 
+> wbinvd down to just before the
+> 
+> 	while (1)
+> 		halt();
+> 
+> which is also likely to make sure that the compiler won't do anything at 
+> all because everything is dead at that point with no function calls etc 
+> happening.
 
-Relocate the cache flush to be the very last thing done before 
-halting.
+I don't think we realized that local_irq_disable() did all that and
+so we only tested the submitted patch.  I've resubmitted the unified
+patch after applying your suggestion.  Thanks.
 
-
-Signed-off-by: Mark Langsdorf <mark.langsdorf@amd.com>
-Acked-by: Mark Borden <mark.borden@amd.com>
-Acked-by: Michael Hohmuth <michael.hohmuth@amd.com>
-
-diff -r 1e74a821dd00 arch/x86/kernel/process_32.c
---- a/arch/x86/kernel/process_32.c	Tue Aug 12 12:04:12 2008 -0500
-+++ b/arch/x86/kernel/process_32.c	Wed Aug 13 07:03:35 2008 -0500
-@@ -95,7 +95,6 @@ static inline void play_dead(void)
- {
- 	/* This must be done before dead CPU ack */
- 	cpu_exit_clear();
--	wbinvd();
- 	mb();
- 	/* Ack it */
- 	__get_cpu_var(cpu_state) = CPU_DEAD;
-@@ -104,6 +103,7 @@ static inline void play_dead(void)
- 	 * With physical CPU hotplug, we should halt the cpu
- 	 */
- 	local_irq_disable();
-+	wbinvd();
- 	while (1)
- 		halt();
- }
-diff -r 1e74a821dd00 arch/x86/kernel/process_64.c
---- a/arch/x86/kernel/process_64.c	Tue Aug 12 12:04:12 2008 -0500
-+++ b/arch/x86/kernel/process_64.c	Wed Aug 13 07:03:54 2008 -0500
-@@ -93,12 +93,12 @@ static inline void play_dead(void)
- static inline void play_dead(void)
- {
- 	idle_task_exit();
--	wbinvd();
- 	mb();
- 	/* Ack it */
- 	__get_cpu_var(cpu_state) = CPU_DEAD;
- 
- 	local_irq_disable();
-+	wbinvd();
- 	while (1)
- 		halt();
- }
+-Mark Langsdorf
+Operating System Research Center
+AMD
 
