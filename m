@@ -1,157 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752803AbYHMIMU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753910AbYHMIOs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752803AbYHMIMU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Aug 2008 04:12:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753696AbYHMIL4
+	id S1753910AbYHMIOs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Aug 2008 04:14:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751802AbYHMIOe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Aug 2008 04:11:56 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:60417 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752944AbYHMILv (ORCPT
-	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
-	Wed, 13 Aug 2008 04:11:51 -0400
-Date: Wed, 13 Aug 2008 18:11:47 +1000
-To: torvalds@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, xfs@oss.sgi.com, akpm@linux-foundation.org
-Subject: [GIT PULL] XFS update for 2.6.27-rc4
-User-Agent: nail 11.25 7/29/05
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 13 Aug 2008 04:14:34 -0400
+Received: from serv2.oss.ntt.co.jp ([222.151.198.100]:33549 "EHLO
+	serv2.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751117AbYHMIOd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Aug 2008 04:14:33 -0400
+Subject: [PATCH] virtio_blk: use a wrapper function to access io context
+	information of IO requests
+From: Fernando Luis =?ISO-8859-1?Q?V=E1zquez?= Cao 
+	<fernando@oss.ntt.co.jp>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
+       =?UTF-8?Q?=E5=90=89=E5=B7=9D_=E6=8B=93=E5=93=89?= 
+	<yoshikawa.takuya@oss.ntt.co.jp>,
+       dpshah@google.com
+In-Reply-To: <1218611163.8001.108.camel@sebastian.kern.oss.ntt.co.jp>
+References: <1218014196.4419.44.camel@sebastian.kern.oss.ntt.co.jp>
+	 <200808070633.06112.rusty@rustcorp.com.au>
+	 <1218611163.8001.108.camel@sebastian.kern.oss.ntt.co.jp>
+Content-Type: text/plain
+Organization: NTT Open Source Software Center
+Date: Wed, 13 Aug 2008 17:14:31 +0900
+Message-Id: <1218615271.16667.38.camel@sebastian.kern.oss.ntt.co.jp>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
-Message-Id: <20080813081147.8ECE258C52A8@chook.melbourne.sgi.com>
-From: lachlan@sgi.com (Lachlan McIlroy)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The following changes since commit 30a2f3c60a84092c8084dfe788b710f8d0768cd4:
-  Linus Torvalds (1):
-        Linux 2.6.27-rc3
+Rusty, Jens
 
-are available in the git repository at:
+What do you think about the patch below? Does it make sense?
 
-  git://oss.sgi.com:8090/xfs/linux-2.6 master
+---
 
-Christoph Hellwig (22):
-      [XFS] don't leak m_fsname/m_rtname/m_logname
-      [XFS] Remove vn_from_inode()
-      [XFS] kill vn_to_inode
-      [XFS] remove spurious VN_HOLD/VN_RELE calls from xfs_acl.c
-      [XFS] remove remaining VN_HOLD calls
-      [XFS] implement IHOLD/IRELE directly
-      [XFS] kill INDUCE_IO_ERROR
-      [XFS] kill xfs_lock_dir_and_entry
-      [XFS] remove some easy bhv_vnode_t instances
-      [XFS] kill bhv_vnode_t
-      [XFS] sanitize xfs_initialize_vnode
-      [XFS] small cleanups in xfs_btree.c
-      [XFS] Use the same btree_cur union member for alloc and inobt trees.
-      [XFS] update timestamp in xfs_ialloc manually
-      [XFS] optimize xfs_ichgtime
-      [XFS] stop using file_update_time
-      [XFS] move root inode IRELE into xfs_unmountfs
-      [XFS] cleanup xfs_mountfs
-      [XFS] xfs_unmountfs should return void
-      [XFS] don't call xfs_freesb from xfs_unmountfs
-      [XFS] refactor xfs_mount_free
-      [XFS] use KM_MAYFAIL in xfs_mountfs
+struct request has an ioprio member but it is never updated because
+currently bios do not hold io context information. The implication of
+this is that virtio_blk ends up passing useless information to the
+backend driver.
 
-David Chinner (12):
-      [XFS] Use the generic bitops rather than implementing them ourselves.
-      [XFS] Avoid directly referencing the VFS inode.
-      [XFS] kill shouty XFS_ITOV_NULL macro
-      [XFS] Kill shouty XFS_ITOV() macro
-      [XFS] XFS: Kill xfs_vtoi()
-      [XFS] Use KM_NOFS for incore inode extent tree allocation V2
-      [XFS] clean up stale references to semaphores
-      [XFS] replace the XFS buf iodone semaphore with a completion
-      [XFS] extend completions to provide XFS object flush requirements
-      [XFS] replace inode flush semaphore with a completion
-      [XFS] replace dquot flush semaphore with a completion
-      [XFS] remove the sema_t from XFS.
+That said, some IO schedulers such as CFQ do store io context
+information in struct request, but use private members for that, which
+means that that information cannot be directly accessed in a IO
+scheduler-independent way.
 
-Eric Sandeen (3):
-      [XFS] remove INT_GET and friends
-      [XFS] convert xfs to use ERR_CAST
-      [XFS] remove shouting-indirection macros from xfs_trans.h
+This patch adds a function to obtain the ioprio of a request. We should
+avoid accessing ioprio directly and use this function instead, so that
+its users do not have to care about changes in block layer structures or
+the currently active IO controller.
 
-Harvey Harrison (1):
-      [XFS] use get_unaligned_* helpers
+This patch does not introduce any functional changes but paves the way
+for future clean-ups and enhancements. 
 
-Lachlan McIlroy (4):
-      [XFS] Do not access buffers after dropping reference count
-      [XFS] Fix compile failure in xfs_buf_trace()
-      [XFS] Use KM_NOFS for debug trace buffers
-      [XFS] Fix use after free in xfs_log_done().
+Signed-off-by: Fernando Luis Vazquez Cao <fernando@oss.ntt.co.jp>
+---
 
-Niv Sardi (2):
-      [XFS] Move attr log alloc size calculator to another function.
-      [XFS] Move xfs_attr_rolltrans to xfs_trans_roll
+diff -urNp linux-2.6.27-rc3/drivers/block/virtio_blk.c linux-2.6.27-rc3-fixes/drivers/block/virtio_blk.c
+--- linux-2.6.27-rc3/drivers/block/virtio_blk.c	2008-08-13 14:25:46.000000000 +0900
++++ linux-2.6.27-rc3-fixes/drivers/block/virtio_blk.c	2008-08-13 16:36:34.000000000 +0900
+@@ -84,11 +84,11 @@ static bool do_req(struct request_queue 
+ 	if (blk_fs_request(vbr->req)) {
+ 		vbr->out_hdr.type = 0;
+ 		vbr->out_hdr.sector = vbr->req->sector;
+-		vbr->out_hdr.ioprio = vbr->req->ioprio;
++		vbr->out_hdr.ioprio = req_get_bio(vbr->req);
+ 	} else if (blk_pc_request(vbr->req)) {
+ 		vbr->out_hdr.type = VIRTIO_BLK_T_SCSI_CMD;
+ 		vbr->out_hdr.sector = 0;
+-		vbr->out_hdr.ioprio = vbr->req->ioprio;
++		vbr->out_hdr.ioprio = req_get_bio(vbr->req);
+ 	} else {
+ 		/* We don't put anything else in the queue. */
+ 		BUG();
+diff -urNp linux-2.6.27-rc3/include/linux/blkdev.h linux-2.6.27-rc3-fixes/include/linux/blkdev.h
+--- linux-2.6.27-rc3/include/linux/blkdev.h	2008-08-13 14:25:57.000000000 +0900
++++ linux-2.6.27-rc3-fixes/include/linux/blkdev.h	2008-08-13 16:36:40.000000000 +0900
+@@ -233,6 +233,11 @@ struct request {
+ 	struct request *next_rq;
+ };
+ 
++static inline unsigned short req_get_bio(struct request *req)
++{
++	return req->ioprio;
++}
++
+ /*
+  * State information carried for REQ_TYPE_PM_SUSPEND and REQ_TYPE_PM_RESUME
+  * requests. Some step values could eventually be made generic.
 
-Ruben Porras (1):
-      [XFS] Make xfs_bmap_*_count_leaves void.
 
- fs/xfs/linux-2.6/sema.h        |   52 -----------
- fs/xfs/linux-2.6/xfs_aops.c    |    3 +-
- fs/xfs/linux-2.6/xfs_buf.c     |   16 ++--
- fs/xfs/linux-2.6/xfs_buf.h     |    4 +-
- fs/xfs/linux-2.6/xfs_export.c  |   10 +-
- fs/xfs/linux-2.6/xfs_fs_subr.c |    6 +-
- fs/xfs/linux-2.6/xfs_ioctl.c   |    4 +-
- fs/xfs/linux-2.6/xfs_iops.c    |  192 +++++++++++++++++++++++++---------------
- fs/xfs/linux-2.6/xfs_iops.h    |   15 +---
- fs/xfs/linux-2.6/xfs_linux.h   |    4 +-
- fs/xfs/linux-2.6/xfs_lrw.c     |    6 +-
- fs/xfs/linux-2.6/xfs_super.c   |  189 +++++++++++-----------------------------
- fs/xfs/linux-2.6/xfs_super.h   |    3 -
- fs/xfs/linux-2.6/xfs_vnode.c   |   22 +----
- fs/xfs/linux-2.6/xfs_vnode.h   |   65 +++++---------
- fs/xfs/quota/xfs_dquot.c       |   38 +++-----
- fs/xfs/quota/xfs_dquot.h       |   29 ++++---
- fs/xfs/quota/xfs_dquot_item.c  |    8 +-
- fs/xfs/quota/xfs_qm.c          |   14 ++--
- fs/xfs/quota/xfs_qm.h          |    2 +-
- fs/xfs/quota/xfs_qm_bhv.c      |    7 +-
- fs/xfs/quota/xfs_qm_syscalls.c |    4 +-
- fs/xfs/xfs_acl.c               |   52 +++++------
- fs/xfs/xfs_acl.h               |   14 ++--
- fs/xfs/xfs_arch.h              |   68 --------------
- fs/xfs/xfs_attr.c              |  110 ++++++++++++++---------
- fs/xfs/xfs_attr.h              |    1 +
- fs/xfs/xfs_attr_leaf.c         |   75 ++--------------
- fs/xfs/xfs_attr_leaf.h         |    2 -
- fs/xfs/xfs_bit.c               |  103 ---------------------
- fs/xfs/xfs_bit.h               |   34 ++++++-
- fs/xfs/xfs_bmap.c              |   34 +++-----
- fs/xfs/xfs_btree.c             |  105 ++++++++--------------
- fs/xfs/xfs_btree.h             |    8 +--
- fs/xfs/xfs_buf_item.c          |    4 +-
- fs/xfs/xfs_dfrag.c             |   33 ++-----
- fs/xfs/xfs_error.c             |    5 +-
- fs/xfs/xfs_error.h             |   12 +--
- fs/xfs/xfs_filestream.c        |    2 +-
- fs/xfs/xfs_ialloc_btree.c      |   30 +++---
- fs/xfs/xfs_iget.c              |   48 ++++------
- fs/xfs/xfs_inode.c             |   66 +++++++-------
- fs/xfs/xfs_inode.h             |   46 ++++++++--
- fs/xfs/xfs_inode_item.c        |   11 +--
- fs/xfs/xfs_itable.c            |    4 +-
- fs/xfs/xfs_log.c               |   86 ++++++++----------
- fs/xfs/xfs_log.h               |    2 +-
- fs/xfs/xfs_log_priv.h          |   14 ++--
- fs/xfs/xfs_log_recover.c       |    7 +-
- fs/xfs/xfs_mount.c             |   82 ++++++------------
- fs/xfs/xfs_mount.h             |   17 +---
- fs/xfs/xfs_rtalloc.c           |   19 ++---
- fs/xfs/xfs_rw.c                |    2 +-
- fs/xfs/xfs_trans.c             |   75 ++++++++++++++--
- fs/xfs/xfs_trans.h             |   12 +---
- fs/xfs/xfs_trans_buf.c         |   12 ++--
- fs/xfs/xfs_trans_item.c        |   66 +++++++-------
- fs/xfs/xfs_utils.c             |    4 +-
- fs/xfs/xfs_utils.h             |    3 -
- fs/xfs/xfs_vfsops.c            |   13 ++--
- fs/xfs/xfs_vnodeops.c          |  190 +++++++++++----------------------------
- include/linux/completion.h     |   45 +++++++++
- 62 files changed, 883 insertions(+), 1326 deletions(-)
- delete mode 100644 fs/xfs/linux-2.6/sema.h
