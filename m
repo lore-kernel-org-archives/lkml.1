@@ -1,23 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755949AbYHMU6h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756461AbYHMU6v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755949AbYHMU6h (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Aug 2008 16:58:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751855AbYHMU63
+	id S1756461AbYHMU6v (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Aug 2008 16:58:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755359AbYHMU6g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Aug 2008 16:58:29 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:50339 "EHLO
+	Wed, 13 Aug 2008 16:58:36 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:56596 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751286AbYHMU62 (ORCPT
+	by vger.kernel.org with ESMTP id S1753800AbYHMU6f (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Aug 2008 16:58:28 -0400
-Date: Wed, 13 Aug 2008 13:57:49 -0700
+	Wed, 13 Aug 2008 16:58:35 -0400
+Date: Wed, 13 Aug 2008 13:56:33 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: linux-kernel@vger.kernel.org, Vegard Nossum <vegard.nossum@gmail.com>
-Subject: Re: [2.6.27 patch] #error for gcc 4.1.{0,1}
-Message-Id: <20080813135749.b9985fcc.akpm@linux-foundation.org>
-In-Reply-To: <20080813204445.GA7071@cs181140183.pp.htv.fi>
-References: <20080813204445.GA7071@cs181140183.pp.htv.fi>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: mingo@elte.hu, drepper@redhat.com, arjan@infradead.org, hugh@veritas.com,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org, briangrant@google.com,
+       cgd@google.com, mbligh@google.com, torvalds@linux-foundation.org,
+       tglx@linutronix.de, hpa@zytor.com
+Subject: Re: pthread_create() slow for many threads; also time to revisit
+ 64b context switch optimization?
+Message-Id: <20080813135633.dcb8d602.akpm@linux-foundation.org>
+In-Reply-To: <87fxp8zlx3.fsf@basil.nowhere.org>
+References: <af8810200808121736q76640cc1kb814385072fe9b29@mail.gmail.com>
+	<af8810200808121745h596c175bk348d0aaeeb9bcb45@mail.gmail.com>
+	<20080813104445.GA24632@elte.hu>
+	<20080813063533.444c650d@infradead.org>
+	<48A2EE07.3040003@redhat.com>
+	<20080813142529.GB21129@elte.hu>
+	<48A2F157.7000303@redhat.com>
+	<20080813151007.GA8780@elte.hu>
+	<87fxp8zlx3.fsf@basil.nowhere.org>
 X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -26,26 +38,38 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 13 Aug 2008 23:44:45 +0300
-Adrian Bunk <bunk@kernel.org> wrote:
+On Wed, 13 Aug 2008 22:42:48 +0200
+Andi Kleen <andi@firstfloor.org> wrote:
 
-> gcc 4.1.0 and 4.1.1 are known to miscompile the kernel:
->   http://gcc.gnu.org/bugzilla/show_bug.cgi?id=27781
+> Ingo Molnar <mingo@elte.hu> writes:
+> >
+> > i find it pretty unacceptable these days that we limit any aspect of 
+> > pure 64-bit apps in any way to 4GB (or any other 32-bit-ish limit). 
 > 
-> Usage of weak functions has become a common pattern in the kernel, and 
-> usages get added in each kernel version increasing the probability of 
-> bugs with each kernel release.
+> It's not limited to 2GB, there's a fallback to >4GB of course. Ok
+> admittedly the fallback is slow, but it's there.
 > 
-> This miscompilation of weak functions can result in subtle runtime 
-> errors.
+> I would prefer to not slow down the P4s. There are **lots** of them in
+> field. And they ran 64bit still quite well. Also back then I
+> benchmarked on early K8 and it also made a difference there (but I
+> admit I forgot the numbers)
 > 
-> #error for gcc 4.1.0 and 4.1.1 to prevent users from running into
-> this bug.
+> I think it would be better to fix the VM because there are
+> other use cases of applications who prefer to allocate in a lower area.
+> For example Java JVMs now widely use a technique called pointer
+> compression where they dynamically adjust the pointer size based
+> on how much memory the process uses. For that you have to get
+> low memory in the 47bit VM too. The VM should deal with that gracefully.
 > 
-> Note:
-> We already printed a #warning for gcc 4.1.0 due to a different bug.
+> To be honest I always thought the linear search in the VMA list
+> was a little dumb. I'm sure there are other cases where it hurts
+> too. Perhaps this would be really an opportunity  to do something about it :)
+> 
 
-I've been hiding from this because it would wreck a lot of my
-cross-compilers, which quite a few other people are using as well.
+Yes, the free_area_cache is always going to have failure modes - I
+think we've been kind of waiting for it to explode.
 
-Vegard, save us!
+I do think that we need an O(log(n)) search in there.  It could still
+be on the fallback path, so we retain the mostly-O(1) benefits of
+free_area_cache.
+
