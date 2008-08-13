@@ -1,91 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756132AbYHMV2L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755448AbYHMVb7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756132AbYHMV2L (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Aug 2008 17:28:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752569AbYHMV1x
+	id S1755448AbYHMVb7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Aug 2008 17:31:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752655AbYHMVbv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Aug 2008 17:27:53 -0400
-Received: from sj-iport-1.cisco.com ([171.71.176.70]:45063 "EHLO
-	sj-iport-1.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752426AbYHMV1w (ORCPT
+	Wed, 13 Aug 2008 17:31:51 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:34159 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752202AbYHMVbv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Aug 2008 17:27:52 -0400
-X-IronPort-AV: E=Sophos;i="4.32,203,1217808000"; 
-   d="scan'208";a="65197287"
-From: Roland Dreier <rdreier@cisco.com>
-To: David Miller <davem@davemloft.net>
-Cc: rick.jones2@hp.com, jgarzik@pobox.com, swise@opengridcomputing.com,
-       divy@chelsio.com, kxie@chelsio.com, netdev@vger.kernel.org,
-       open-iscsi@googlegroups.com, michaelc@cs.wisc.edu, daisyc@us.ibm.com,
-       wenxiong@us.ibm.com, bhua@us.ibm.com, dm@chelsio.com,
-       leedom@chelsio.com, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC][PATCH 1/1] cxgb3i: cxgb3 iSCSI initiator
-References: <48A08145.6060703@hp.com>
-	<20080811.141254.165409473.davem@davemloft.net>
-	<adad4kfxm9v.fsf@cisco.com>
-	<20080811.145313.178992274.davem@davemloft.net>
-X-Message-Flag: Warning: May contain useful information
-Date: Wed, 13 Aug 2008 14:27:50 -0700
-In-Reply-To: <20080811.145313.178992274.davem@davemloft.net> (David Miller's
-	message of "Mon, 11 Aug 2008 14:53:13 -0700 (PDT)")
-Message-ID: <ada3al8k3l5.fsf@cisco.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 13 Aug 2008 21:27:50.0754 (UTC) FILETIME=[705DDC20:01C8FD8B]
-Authentication-Results: sj-dkim-1; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim1004 verified; ); 
+	Wed, 13 Aug 2008 17:31:51 -0400
+Date: Wed, 13 Aug 2008 22:13:48 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "Press, Jonathan" <Jonathan.Press@ca.com>
+Cc: "Eric Paris" <eparis@redhat.com>, <peterz@infradead.org>,
+       <linux-kernel@vger.kernel.org>, <malware-list@lists.printk.net>,
+       <hch@infradead.org>, <andi@firstfloor.org>, <viro@ZenIV.linux.org.uk>,
+       <arjan@infradead.org>
+Subject: Re: [malware-list] TALPA - a threat model?  well sorta.
+Message-ID: <20080813221348.7198434c@lxorguk.ukuu.org.uk>
+In-Reply-To: <2629CC4E1D22A64593B02C43E855530304AE4BC2@USILMS12.ca.com>
+References: <1218645375.3540.71.camel@localhost.localdomain>
+	<20080813172437.3ed90b0d@lxorguk.ukuu.org.uk>
+	<1218646065.3540.75.camel@localhost.localdomain>
+	<20080813173722.13c9c306@lxorguk.ukuu.org.uk>
+	<1218646833.3540.82.camel@localhost.localdomain>
+	<20080813205906.559d3f37@lxorguk.ukuu.org.uk>
+	<2629CC4E1D22A64593B02C43E855530304AE4BC2@USILMS12.ca.com>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > > How can you place iSCSI data properly with only stateless offloads?
+> I may be missing something about your suggestion, but I don't see how
+> this would work.  Who does the chmod?
+> 
+> Here's a sequence:
+> 
+> - Application opens file
+> - AV scanner notified in some way without blocking
+> - Application reads file into memory
 
- > By teaching the stateless offload how to parse the iSCSI headers
- > on the flow and place the data into pages at the correct offsets
- > such that you can place the pages hanging off of the SKB directly
- > into the page cache.
+The discussion has been about scanning on write. 
 
-I don't see how this could work.  First, it seems that you have to let
-the adapter know which connections are iSCSI connections so that it
-knows when to try and parse iSCSI headers.  So you're already not
-totally stateless.  Then, since (AFAIK -- I'm not an expert on iSCSI and
-especially I'm not an expert on what common practice is for current
-implementations) the iSCSI PDUs can start at any offset in the TCP
-stream, I don't see how a stateless adapter can even find the PDU
-headers to parse -- there's not any way that I know of to recognize
-where a PDU boundary is without keeping track of the lengths of all the
-PDUs that go by (ie you need per-connection state).
+> - AV scanner determines file is infected.
+> - AV scanner chmod's file -- oops, too late.
+> - Application sends file over the wire to another machine with a more
+> vulnerable OS
+> 
+> How would this be prevented?
 
-Even if the adapter could find the PDUs, I don't see how it could come
-up with the correct offset to place the data -- PDUs with response data
-just carry an opaque tag assigned by the iSCSI initiator.  Finally, if
-there are ways around all of those difficulties, we would still have to
-do major surgery to our block layer to cope with read requests that
-complete into random pages, rather than using a scatter list passed into
-the low-level driver.
+I don't think you can. In your case how does your AV scanner deal with
+the case where the application opens the file while another user has it
+open and the other user (or even other task with the same handle) changes
+the content possibly via mmap.
 
+Content may also directly be shared between users of a file using the
+mmap interfaces so your scan on read model is rather dysfunctional.
 
-But I think all this argument is missing the point anyway.  The real
-issue is not hand-waving about what someone might build someday, but how
-we want to support iSCSI offload with the existing Chelsio, Broadcom,
-etc adapters.  The answer might be, "we don't," but I disagree with that
-choice because:
-
- a. "No upstream support" really ends up being "enterprise distros and
-    customers end up using hacky out-of-tree drivers and blaming us."
-
- b. It sends a bad message to vendors who put a lot of effort into
-    writing a clean, mergable driver and responding to review if the
-    answer is, "Sorry, your hardware is wrong so no driver for you."
-
-Maybe the answer is that we just add the iSCSI HBA drivers with no help
-from the networking stack, and ignore the port collision problem.  For
-iSCSI initiators, it's really not an issue: for a 4-tuple to collide,
-someone would have to use both offloaded and non-offloaded connections
-to the same target and be unlucky in the source port chosen.  It would
-be nice to be able to discuss solutions to port collisions, but it may
-be that this is too emotional an issue for that to be possible.
-
- - R.
