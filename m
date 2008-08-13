@@ -1,190 +1,166 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755332AbYHMLpx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754866AbYHMLun@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755332AbYHMLpx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Aug 2008 07:45:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752785AbYHMLpn
+	id S1754866AbYHMLun (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Aug 2008 07:50:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752785AbYHMLuf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Aug 2008 07:45:43 -0400
-Received: from nf-out-0910.google.com ([64.233.182.190]:3914 "EHLO
+	Wed, 13 Aug 2008 07:50:35 -0400
+Received: from nf-out-0910.google.com ([64.233.182.188]:1544 "EHLO
 	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751487AbYHMLpm (ORCPT
+	with ESMTP id S1751993AbYHMLue (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Aug 2008 07:45:42 -0400
+	Wed, 13 Aug 2008 07:50:34 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:sender;
-        b=ouQExME2p6O7DvQ/DoDey4weL/0Fu65Onim+uD/1uu9L9eTPesvr2QPNm+C4ItV7vL
-         BeqlNkI+qjdDYZ6vCUV+v2hugedUxBsEMqjjkZNE2BqYVnUjGtG8pExfnvItMnxSniuG
-         FzPCgm6pi5t6/Dca1OhgxIY3F1F21IKmkO64U=
-Message-ID: <48A2C95E.3050807@tuffmail.co.uk>
-Date: Wed, 13 Aug 2008 12:45:34 +0100
-From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:references;
+        b=AEZvIYFVTgqKxk0D+tuOYhyf1okLkFAM/hDoOsLJFkD0Dgn90Sl7VMGPkWgx3ofHdZ
+         b/d5VhxEdSc258UmVSWSLjqK3qXGxDpeb8gy6N872nwmaiN9PLKQF2/ZOV6MRvEYLP0B
+         TcSMKwf/HwgfPFhIsSyWyAUoHgqgHmdUcPOqw=
+Message-ID: <520f0cf10808130450w72757a4dp9b9b0942d6c6a1b1@mail.gmail.com>
+Date: Wed, 13 Aug 2008 13:50:32 +0200
+From: "John Kacur" <jkacur@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: drop overzealous ERROR: do not initialise statics to 0 or NULL from checkpatch.pl
+Cc: "Andy Whitcroft" <apw@shadowen.org>, rdunlap@xenotime.net,
+       jschopp@austin.ibm.com
+In-Reply-To: <520f0cf10808130339r5dd22e12w3477d6bddd545db1@mail.gmail.com>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Alexey Starikovskiy <astarikovskiy@suse.de>, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, hmh@hmh.eng.br,
-       Maximilian Engelhardt <maxi@daemonizer.de>,
-       linux-stable@vger.kernel.org
-Subject: Re: [PATCH] acpi: Avoid dropping rapid hotkey events (or other GPEs)
- on Asus EeePC
-References: <487D23C3.5070301@student.cs.york.ac.uk>	<487F58B6.5040309@suse.de>	<487F6D2E.2040501@tuffmail.co.uk>	<487F772C.1070806@suse.de>	<487F9592.1060003@tuffmail.co.uk>	<487F9677.4060001@suse.de>	<20080812162854.d6907c95.akpm@linux-foundation.org>	<48A2B596.3050401@tuffmail.co.uk> <20080813034628.0ef51866.akpm@linux-foundation.org>
-In-Reply-To: <20080813034628.0ef51866.akpm@linux-foundation.org>
-Content-Type: multipart/mixed;
- boundary="------------010001010402060900030101"
+Content-Type: multipart/mixed; 
+	boundary="----=_Part_55673_4800384.1218628232452"
+References: <520f0cf10808130339r5dd22e12w3477d6bddd545db1@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------010001010402060900030101
+------=_Part_55673_4800384.1218628232452
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-Andrew Morton wrote:
-> On Wed, 13 Aug 2008 11:21:10 +0100 Alan Jenkins <alan-jenkins@tuffmail.co.uk> wrote:
+On Wed, Aug 13, 2008 at 12:39 PM, John Kacur <jkacur@gmail.com> wrote:
+> Could we drop this somewhat overzealous "ERROR: do not initialise
+> statics to 0 or NULL" from checkpatch.pl?
 >
->   
->> Andrew Morton wrote:
->>     
->>> Did this get fixed yet?
->>>
->>> I have an patch in -mm which I just restored (I had to tempdrop it
->>> because the acpi tree was busted for some time).  But it seems to be
->>> old.
->>>
->>> http://bugzilla.kernel.org/show_bug.cgi?id=10919 is marked "resolved"
->>> but the reporter (Maximilian) seems to think otherwise.  2.6.26.x is,
->>> afaik, still unfixed, as is 2.6.27-rc.
->>>   
->>>       
->> That's correct.  I think this specific patch should go in 2.6.27 and
->> 2.6.26-stable.  No objections have been raised so far.
->>
->> I still need this patch to make my brightness and volume control keys
->> usable in 2.6.27-rc3.  (They auto-repeat fast enough to trigger the
->> bug).  This is true even after applying the latest patches from bug
->> 10919 (#25 + #27).
->>
->>     
+> Reasoning:
+> 1. This is not part of Documentation/CodingStyle
+> 2. K&R 2nd.ed do it (pg 83, static int bufp = 0;) The purpose is to
+> remove access to the bufp from external routines, and to avoid name
+> conflict)
+> 3. It can be a good form of documentation.
+> 4. It creates a lot of needless code churn to change this kind of
+> thing for no good reason.
+> 5. It doesn't even change the object size (thus kernel size) to do so.
+> Demo with user space code.
 >
-> Confusing.  Please send the patch which you think we should apply.
+> jkacur@linux-ipxk:~/try> cat foo.c
+> #include <stdio.h>
+> #include <stdlib.h>
 >
->   
->> I think the 10919 fix makes it harder to reproduce, but it definitely
->> still happens.  I guess this is because the polling-driven EC
->> transactions add 1ms delays between each byte.  The slower timings leave
->> a window where the buggy behaviour of my EC can make a difference.  (It
->> has been seen to clear the "pending event" bit after a single event is
->> read, despite having more events pending).
->>
->> There are more serious consequences of this bug.  After a while it can
->> confuse the EC enough to cause lockups or reboots during boot, or after
->> pressing a single hotkey.  This bad state is preserved over reboots,
->> even into known good kernels.  Fortunately the badness clears when power
->> is removed for a long enough period.  For a while I was worried that
->> something had physically burnt out.
->>     
+> static int a[1000];
 >
-> Oh gad.  And there's no workaround?
->   
-Sorry, that was confusing.
+> /* Function Prototype */
+> void foo(void);
+> int main(void)
+> {
+>        exit(0);
+> }
+>
+> void foo(void)
+> {
+>        static int b[1000];
+>        static int c;
+> }
+> jkacur@linux-ipxk:~/try> gcc foo.c
+> jkacur@linux-ipxk:~/try> size a.out
+>   text    data     bss     dec     hex filename
+>   1203     520    8064    9787    263b a.out
+> jkacur@linux-ipxk:~/try> ls -l a.out
+> -rwxr-xr-x 1 jkacur users 11237 2008-08-13 12:26 a.out
+>
+> Now initialize all the statics to 0 and there will be no difference in
+> the object size
+> jkacur@linux-ipxk:~/try> cat foo.c
+> #include <stdio.h>
+> #include <stdlib.h>
+>
+> static int a[1000] = {0};
+>
+> /* Function Prototype */
+> void foo(void);
+> int main(void)
+> {
+>        exit(0);
+> }
+>
+> void foo(void)
+> {
+>        static int b[1000] = {0};
+>        static int c = 0;
+> }
+> jkacur@linux-ipxk:~/try> gcc foo.c
+> jkacur@linux-ipxk:~/try> size a.out
+>   text    data     bss     dec     hex filename
+>   1203     520    8064    9787    263b a.out
+> <----------------------- No difference with the initialization to 0!!!
+> jkacur@linux-ipxk:~/try> ls -l a.out
+> -rwxr-xr-x 1 jkacur users 11237 2008-08-13 12:26 a.out
+> <----------------------- No difference with the initialization to 0!!!
+>
+>
+> Now if we initialize it to a value other than 0 or NULL, then the bss
+> is decreased at the expense of the data section, which does indeed
+> increase the object size, however checkpatch.pl doesn't complain about
+> this. (it is valid to do this)
+> jkacur@linux-ipxk:~/try> cat foo.c
+> #include <stdio.h>
+> #include <stdlib.h>
+>
+> static int a[1000] = {1};
+>
+> /* Function Prototype */
+> void foo(void);
+> int main(void)
+> {
+>        exit(0);
+> }
+>
+> void foo(void)
+> {
+>        static int b[1000] = {1};
+>        static int c = 1;
+> }
+> jkacur@linux-ipxk:~/try> gcc foo.c
+> jkacur@linux-ipxk:~/try> size a.out
+>   text    data     bss     dec     hex filename
+>   1203    8568      16    9787    263b a.out
+> jkacur@linux-ipxk:~/try> ls -l a.out
+> -rwxr-xr-x 1 jkacur users 19301 2008-08-13 12:27 a.out
+>
 
-The patch in currently in -mm _is_ the workaround for this damage.  It
-was not initially obvious just how important it was :-).  I've
-re-attached it as requested.
+My apologies for not ccing the maintainers of checkpatch the first
+time. Attached is a patch to remove the check in case anybody agrees
+with me. :)
+The patch is against a recently updated git tree.
 
-10919, "laggy hotkeys" is just what it says; ACPI EC events are slower
-because of polling.  It appears to be a more cosmetic issue which is
-orthogonal to the _dropping_ of events.
+------=_Part_55673_4800384.1218628232452
+Content-Type: text/x-patch; name=remove_static_initialise_error.patch
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_fjtvpwlx0
+Content-Disposition: attachment;
+ filename=remove_static_initialise_error.patch
 
-Thanks
-Alan
-
---------------010001010402060900030101
-Content-Type: message/rfc822;
- name="Attached Message"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="Attached Message"
-
-Return-Path: <alan.christopher.jenkins@googlemail.com>
-Received: from ?10.222.147.177? ( [86.53.68.233])
-        by mx.google.com with ESMTPS id q9sm4420015gve.5.2008.07.15.15.24.46
-        (version=SSLv3 cipher=RC4-MD5);
-        Tue, 15 Jul 2008 15:24:47 -0700 (PDT)
-Message-ID: <487D23C3.5070301@student.cs.york.ac.uk>
-Date: Tue, 15 Jul 2008 23:25:07 +0100
-From: Alan Jenkins <aj504@student.cs.york.ac.uk>
-Reply-To: alan-jenkins@tuffmail.co.uk
-User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
-MIME-Version: 1.0
-To: astarikovskiy@suse.de
-CC: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] acpi: Avoid dropping rapid hotkey events (or other GPEs)
- on Asus EeePC
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Sender: Alan Jenkins <alan.christopher.jenkins@googlemail.com>
-
-It looks like this EC clears the SMI_EVT bit after every query, even if there
-are more events pending.  The workaround is to repeatedly query the EC until
-it reports that no events remain.
-
-This fixes a regression in 2.6.26 (from 2.6.25.3).  Initially reported as
-"Asus Eee PC hotkeys stop working if pressed quickly" in bugzilla
-<http://bugzilla.kernel.org/show_bug.cgi?id=11089>.
-
-The regression was caused by a recently added check for interrupt storms.
-The Eee PC triggers this check and switches to polling.  When multiple events
-arrive between polling intervals, only one is fetched from the EC.  This causes
-erroneous behaviour; ultimately events stop being delivered altogether when the
-EC buffer overflows.
-
-Signed-off-by: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-
----
-diff --git a/drivers/acpi/ec.c b/drivers/acpi/ec.c
-index 5622aee..2b4c5a2 100644
---- a/drivers/acpi/ec.c
-+++ b/drivers/acpi/ec.c
-@@ -459,14 +459,10 @@ void acpi_ec_remove_query_handler(struct acpi_ec *ec, u8 query_bit)
- 
- EXPORT_SYMBOL_GPL(acpi_ec_remove_query_handler);
- 
--static void acpi_ec_gpe_query(void *ec_cxt)
-+static void acpi_ec_gpe_run_handler(struct acpi_ec *ec, u8 value)
- {
--	struct acpi_ec *ec = ec_cxt;
--	u8 value = 0;
- 	struct acpi_ec_query_handler *handler, copy;
- 
--	if (!ec || acpi_ec_query(ec, &value))
--		return;
- 	mutex_lock(&ec->lock);
- 	list_for_each_entry(handler, &ec->list, node) {
- 		if (value == handler->query_bit) {
-@@ -484,6 +480,18 @@ static void acpi_ec_gpe_query(void *ec_cxt)
- 	mutex_unlock(&ec->lock);
- }
- 
-+static void acpi_ec_gpe_query(void *ec_cxt)
-+{
-+	struct acpi_ec *ec = ec_cxt;
-+	u8 value = 0;
-+
-+	if (!ec)
-+		return;
-+
-+	while (!acpi_ec_query(ec, &value))
-+		acpi_ec_gpe_run_handler(ec, value);
-+}
-+
- static u32 acpi_ec_gpe_handler(void *data)
- {
- 	acpi_status status = AE_OK;
-
-
-
---------------010001010402060900030101--
+U3ViamVjdDogUmVtb3ZlIHVubmVjZXNzYXJ5IGVycm9yIGFib3V0IGluaXRpYWxpc2luZyBzdGF0
+aWNzIHRvIDAgb3IgTlVMTAoKU2lnbmVkLW9mZi1ieTogSm9obiBLYWN1ciA8amthY3VyIGF0IGdt
+YWlsIGRvdCBjb20+CgpJbmRleDogbGludXgtMi42L3NjcmlwdHMvY2hlY2twYXRjaC5wbAo9PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
+PT09PT09Ci0tLSBsaW51eC0yLjYub3JpZy9zY3JpcHRzL2NoZWNrcGF0Y2gucGwKKysrIGxpbnV4
+LTIuNi9zY3JpcHRzL2NoZWNrcGF0Y2gucGwKQEAgLTEzNDEsMTEgKzEzNDEsNiBAQCBzdWIgcHJv
+Y2VzcyB7CiAJCQlFUlJPUigiZG8gbm90IGluaXRpYWxpc2UgZXh0ZXJuYWxzIHRvIDAgb3IgTlVM
+TFxuIiAuCiAJCQkJJGhlcmVjdXJyKTsKIAkJfQotIyBjaGVjayBmb3Igc3RhdGljIGluaXRpYWxp
+c2Vycy4KLQkJaWYgKCRsaW5lID1+IC9ccypzdGF0aWNccy4qPVxzKigwfE5VTEx8ZmFsc2UpXHMq
+Oy8pIHsKLQkJCUVSUk9SKCJkbyBub3QgaW5pdGlhbGlzZSBzdGF0aWNzIHRvIDAgb3IgTlVMTFxu
+IiAuCi0JCQkJJGhlcmVjdXJyKTsKLQkJfQogCiAjIGNoZWNrIGZvciBuZXcgdHlwZWRlZnMsIG9u
+bHkgZnVuY3Rpb24gcGFyYW1ldGVycyBhbmQgc3BhcnNlIGFubm90YXRpb25zCiAjIG1ha2Ugc2Vu
+c2UuCg==
+------=_Part_55673_4800384.1218628232452--
