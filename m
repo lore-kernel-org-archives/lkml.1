@@ -1,105 +1,493 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754929AbYHMG1E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754486AbYHMGbi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754929AbYHMG1E (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Aug 2008 02:27:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752527AbYHMG0x
+	id S1754486AbYHMGbi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Aug 2008 02:31:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751900AbYHMGba
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Aug 2008 02:26:53 -0400
-Received: from serv2.oss.ntt.co.jp ([222.151.198.100]:58178 "EHLO
-	serv2.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752415AbYHMG0w (ORCPT
+	Wed, 13 Aug 2008 02:31:30 -0400
+Received: from tomts5-srv.bellnexxia.net ([209.226.175.25]:64400 "EHLO
+	tomts5-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751868AbYHMGb3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Aug 2008 02:26:52 -0400
-Message-Id: <6.0.0.20.2.20080813150454.03b13e30@172.19.0.2>
-X-Mailer: QUALCOMM Windows Eudora Version 6J-Jr3
-Date: Wed, 13 Aug 2008 15:24:40 +0900
-To: Andrew Morton <akpm@linux-foundation.org>
-From: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>
-Subject: Re: [PATCH] vmscan: set try_to_release_page's gfp_mask to 0
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, Mingming Cao <cmm@us.ibm.com>
-In-Reply-To: <20080812202127.b88e8250.akpm@linux-foundation.org>
-References: <6.0.0.20.2.20080813111835.03d345b0@172.19.0.2>
- <20080812202127.b88e8250.akpm@linux-foundation.org>
+	Wed, 13 Aug 2008 02:31:29 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AjIFADAWokhMRKxB/2dsb2JhbACBYLUMgVU
+Date: Wed, 13 Aug 2008 02:31:26 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, Andi Kleen <andi@firstfloor.org>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, Roland McGrath <roland@redhat.com>,
+       Ulrich Drepper <drepper@redhat.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Gregory Haskins <ghaskins@novell.com>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       "Luis Claudio R. Goncalves" <lclaudio@uudg.org>,
+       Clark Williams <williams@redhat.com>
+Subject: Re: [PATCH 0/5] ftrace: to kill a daemon
+Message-ID: <20080813063126.GA12335@Krystal>
+References: <alpine.DEB.1.10.0808081410380.6116@gandalf.stny.rr.com> <20080808182104.GA11376@Krystal> <alpine.DEB.1.10.0808081432400.8922@gandalf.stny.rr.com> <20080808190506.GD11376@Krystal> <alpine.DEB.1.10.0808081750590.16691@gandalf.stny.rr.com> <87tzdv2g05.fsf@basil.nowhere.org> <alpine.DEB.1.10.0808082030500.1396@gandalf.stny.rr.com> <489CE90D.1040902@goop.org> <alpine.LFD.1.10.0808081750060.3462@nehalem.linux-foundation.org> <alpine.DEB.1.10.0808082113090.3707@gandalf.stny.rr.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.1.10.0808082113090.3707@gandalf.stny.rr.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 02:25:37 up 69 days, 11:06,  5 users,  load average: 1.23, 0.67,
+	0.72
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+* Steven Rostedt (rostedt@goodmis.org) wrote:
+> 
+> On Fri, 8 Aug 2008, Linus Torvalds wrote:
+> > 
+> > 
+> > On Fri, 8 Aug 2008, Jeremy Fitzhardinge wrote:
+> > >
+> > > Steven Rostedt wrote:
+> > > > I wish we had a true 5 byte nop. 
+> > > 
+> > > 0x66 0x66 0x66 0x66 0x90
+> > 
+> > I don't think so. Multiple redundant prefixes can be really expensive on 
+> > some uarchs.
+> > 
+> > A no-op that isn't cheap isn't a no-op at all, it's a slow-op.
+> 
+> 
+> A quick meaningless benchmark showed a slight perfomance hit.
+> 
 
-At 12:21 08/08/13, Andrew Morton wrote:
->On Wed, 13 Aug 2008 11:21:16 +0900 Hisashi Hifumi 
-><hifumi.hisashi@oss.ntt.co.jp> wrote:
->
->> Hi.
->> 
->> shrink_page_list passes gfp_mask to try_to_release_page.
->> When shrink_page_list is called from kswapd or buddy system, gfp_mask is set
->> and (gfp_mask & __GFP_WAIT) and (gfp_mask & __GFP_FS) check is positive.
->> releasepage of jbd/jbd2(ext3/4, ocfs2) and XFS use this parameter. 
->> If try_to_free_page fails due to bh busy in jbd/jbd2, jbd/jbd2 lets a 
->thread wait for 
->> committing transaction. I think this has big performance impacts for vmscan.
->> So I modified shrink_page_list not to pass gfp_mask to try_to_release_page
->> in ordered to improve vmscan performance.
->> 
->> Thanks.
->> 
->> Signed-off-by: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>
->> 
->> diff -Nrup linux-2.6.27-rc2.org/mm/vmscan.c linux-2.6.27-rc2.vmscan/mm/vmscan.c
->> --- linux-2.6.27-rc2.org/mm/vmscan.c	2008-08-11 14:33:24.000000000 +0900
->> +++ linux-2.6.27-rc2.vmscan/mm/vmscan.c	2008-08-12 18:57:05.000000000 +0900
->> @@ -614,7 +614,7 @@ static unsigned long shrink_page_list(st
->>  		* Otherwise, leave the page on the LRU so it is swappable.
->>  		*/
->>  		if (PagePrivate(page)) {
->> -			if (!try_to_release_page(page, sc->gfp_mask))
->> +			if (!try_to_release_page(page, 0))
->>  				goto activate_locked;
->>  			if (!mapping && page_count(page) == 1) {
->>  				unlock_page(page);
->
->I think the change makes sense.
->
->Has this change been shown to improve any workloads?  If so, please
->provide full information for the changelog.  If not, please mention
->this and explain why benefits were not demonstrable.  This information
->should _always_ be present in a "performance" patch's changelog!
+Hi Steven,
 
-Sorry, I do not have performance number yet. I'll try this.
+I tried to run my own tests to see if I could get to know if these
+numbers are actually meaningful at all. My results seems to show that
+there is not any significant difference between the various
+configurations, and actually that the only one tendency I see is that
+the 2-bytes jump offset 0x03 would be slightly faster than the 3/2 nop
+on Intel Xeon. But we would have to run these a bit more often to
+confirm that I guess.
 
->
->Probably a better fix would be to explicitly tell
->journal_try_to_free_buffers() when it need to block on journal commit,
->rather than (mis)interpreting the gfp_t in this fashion.  I assume the
->only caller who really cares is direct-io.  That would be quite a bit
->of churn, and the asynchronous behaviour perhaps makes sense _anyway_
->when called from page reclaim.
->
->otoh, there is a risk that this change will cause page reclaim to sit
->there burning huge amounts of CPU time and not achieving anything,
->because all it is doing is scanning over busy pages.  In that case,
->blocking behind a commit which would make those pages reclaimable is
->correct behaviour.  But given that the offending code in
->journal_try_to_free_buffers() has only been there for a few weeks, I
->guess this isn't a concern.
->
->
->Really, I think what this patch tells us is that 3f31fddf ("jbd: fix
->race between free buffer and commit transaction") was an unpleasant
->hack which had undesirable and unexpected side-effects.  I think - that
->depends upon your as-yet-undisclosed testing results?
->
->Perhaps we should revert 3f31fddf and have another think about how to
->fix the direct-io -EIO problem.  One option would be to hold our noses
->and add a new gfp_t flag for this specific purpose?
+I am just trying to get a sense of whether we are really trying hard to
+optimize something worthless in practice, and to me it looks like it.
+But it could be the architecture I am using that brings these results.
 
-Currently, we are discussing about direct-io -EIO problem because the patch
- ("jbd: fix race between free buffer and commit transaction") was not 
-enough to fix the issue.
-The ML subject of this discussion is 
-"[PATCH] jbd jbd2: fix diowritereturningEIOwhentry_to_release_page fails".
+Mathieu
 
+Intel Xeon dual quad-core
+Intel(R) Xeon(R) CPU           E5405  @ 2.00GHz
+
+3/2 nop used :
+K8_NOP3 K8_NOP2
+#define K8_NOP2 ".byte 0x66,0x90\n"
+#define K8_NOP3 ".byte 0x66,0x66,0x90\n"
+
+** Summary **
+
+Test A : make -j20 2.6.27-rc2 kernel (real time)
+                                          Avg.      std.dev
+Case 1 : ftrace not compiled-in.          1m9.76s   0.41s
+Case 2 : 3/2 nops                         1m9.95s   0.36s
+Case 3 : 2-bytes jump, offset 0x03        1m9.10s   0.40s
+Case 4 : 5-bytes jump, offset 0x00        1m9.25s   0.34s
+
+Test B : hackbench 15
+
+Case 1 : ftrace not compiled-in.          0.349s    0.007s
+Case 2 : 3/2 nops                         0.351s    0.014s
+Case 3 : 2-bytes jump, offset 0x03        0.350s    0.007s
+Case 4 : 5-bytes jump, offset 0x00        0.351s    0.010s
+
+
+
+** Detail **
+
+* Test A
+
+benchmark : make -j20 2.6.27-rc2 kernel
+make clean; make -j20; make clean done before the tests to prime caches.
+Same .config used.
+
+
+Case 1 : ftrace not compiled-in.
+
+real	1m9.980s
+user	7m27.664s
+sys	0m48.771s
+
+real	1m9.330s
+user	7m27.244s
+sys	0m50.567s
+
+real	1m9.393s
+user	7m27.408s
+sys	0m50.511s
+
+real	1m9.674s
+user	7m28.088s
+sys	0m50.327s
+
+real	1m10.441s
+user	7m27.736s
+sys	0m49.687s
+
+real time
+average : 1m9.76s
+std. dev. : 0.41s
+
+after a reboot with the same kernel :
+
+real	1m8.758s
+user	7m26.012s
+sys	0m48.835s
+
+real	1m11.035s
+user	7m26.432s
+sys	0m49.171s
+
+real	1m9.834s
+user	7m25.768s
+sys	0m49.167s
+
+
+Case 2 : 3/2 nops
+
+real	1m9.713s
+user	7m27.524s
+sys	0m48.315s
+
+real	1m9.481s
+user	7m27.144s
+sys	0m48.587s
+
+real	1m10.565s
+user	7m27.048s
+sys	0m48.715s
+
+real	1m10.008s
+user	7m26.436s
+sys	0m49.295s
+
+real	1m9.982s
+user	7m27.160s
+sys	0m48.667s
+
+real time
+avg : 1m9.95s
+std. dev. : 0.36s
+
+
+Case 3 : 2-bytes jump, offset 0x03
+
+real	1m9.158s
+user	7m27.108s
+sys	0m48.775s
+
+real	1m9.159s
+user	7m27.320s
+sys	0m48.659s
+
+real	1m8.390s
+user	7m27.976s
+sys	0m48.359s
+
+real	1m9.143s
+user	7m26.624s
+sys	0m48.719s
+
+real	1m9.642s
+user	7m26.228s
+sys	0m49.483s
+
+real time
+avg : 1m9.10s
+std. dev. : 0.40s
+
+one extra after reboot with same kernel :
+
+real	1m8.855s
+user	7m27.372s
+sys	0m48.543s
+
+
+Case 4 : 5-bytes jump, offset 0x00
+
+real	1m9.173s
+user	7m27.228s
+sys	0m48.151s
+
+real	1m9.735s
+user	7m26.852s
+sys	0m48.499s
+
+real	1m9.502s
+user	7m27.148s
+sys	0m48.107s
+
+real	1m8.727s
+user	7m27.416s
+sys	0m48.071s
+
+real	1m9.115s
+user	7m26.932s
+sys	0m48.727s
+
+real time
+avg : 1m9.25s
+std. dev. : 0.34s
+
+
+* Test B
+
+Hackbench
+
+Case 1 : ftrace not compiled-in.
+
+./hackbench 15
+Time: 0.358
+./hackbench 15
+Time: 0.342
+./hackbench 15
+Time: 0.354
+./hackbench 15
+Time: 0.338
+./hackbench 15
+Time: 0.347
+
+Average : 0.349
+std. dev. : 0.007
+
+Case 2 : 3/2 nops
+
+./hackbench 15
+Time: 0.328
+./hackbench 15
+Time: 0.368
+./hackbench 15
+Time: 0.351
+./hackbench 15
+Time: 0.343
+./hackbench 15
+Time: 0.366
+
+Average : 0.351
+std. dev. : 0.014
+
+Case 3 : jmp 2 bytes
+
+./hackbench 15
+Time: 0.346
+./hackbench 15
+Time: 0.359
+./hackbench 15
+Time: 0.356
+./hackbench 15
+Time: 0.350
+./hackbench 15
+Time: 0.340
+
+Average : 0.350
+std. dev. : 0.007
+
+Case 3 : jmp 5 bytes
+
+./hackbench 15
+Time: 0.346
+./hackbench 15
+Time: 0.346
+./hackbench 15
+Time: 0.364
+./hackbench 15
+Time: 0.362
+./hackbench 15
+Time: 0.338
+
+Average : 0.351
+std. dev. : 0.010
+
+
+Hardware used :
+
+processor	: 0
+vendor_id	: GenuineIntel
+cpu family	: 6
+model		: 23
+model name	: Intel(R) Xeon(R) CPU           E5405  @ 2.00GHz
+stepping	: 6
+cpu MHz		: 2000.114
+cache size	: 6144 KB
+physical id	: 0
+siblings	: 4
+core id		: 0
+cpu cores	: 4
+apicid		: 0
+initial apicid	: 0
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 10
+wp		: yes
+flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov
+pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx lm
+constant_tsc arch_perfmon pebs bts rep_good pni monitor ds_cpl vmx tm2 ssse3
+cx16 xtpr dca sse4_1 lahf_lm
+bogomips	: 4000.22
+clflush size	: 64
+cache_alignment	: 64
+address sizes	: 38 bits physical, 48 bits virtual
+power management:
+
+(7 other similar cpus)
+
+
+> Here's 10 runs of "hackbench 50" using the two part 5 byte nop:
+> 
+> run 1
+> Time: 4.501
+> run 2
+> Time: 4.855
+> run 3
+> Time: 4.198
+> run 4
+> Time: 4.587
+> run 5
+> Time: 5.016
+> run 6
+> Time: 4.757
+> run 7
+> Time: 4.477
+> run 8
+> Time: 4.693
+> run 9
+> Time: 4.710
+> run 10
+> Time: 4.715
+> avg = 4.6509
+> 
+> 
+> And 10 runs using the above 5 byte nop:
+> 
+> run 1
+> Time: 4.832
+> run 2
+> Time: 5.319
+> run 3
+> Time: 5.213
+> run 4
+> Time: 4.830
+> run 5
+> Time: 4.363
+> run 6
+> Time: 4.391
+> run 7
+> Time: 4.772
+> run 8
+> Time: 4.992
+> run 9
+> Time: 4.727
+> run 10
+> Time: 4.825
+> avg = 4.8264
+> 
+> # cat /proc/cpuinfo
+> processor	: 0
+> vendor_id	: AuthenticAMD
+> cpu family	: 15
+> model		: 65
+> model name	: Dual-Core AMD Opteron(tm) Processor 2220
+> stepping	: 3
+> cpu MHz		: 2799.992
+> cache size	: 1024 KB
+> physical id	: 0
+> siblings	: 2
+> core id		: 0
+> cpu cores	: 2
+> apicid		: 0
+> initial apicid	: 0
+> fdiv_bug	: no
+> hlt_bug		: no
+> f00f_bug	: no
+> coma_bug	: no
+> fpu		: yes
+> fpu_exception	: yes
+> cpuid level	: 1
+> wp		: yes
+> flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca 
+> cmov pat pse36 clflush mmx fxsr sse sse2 ht syscall nx mmxext fxsr_opt 
+> rdtscp lm 3dnowext 3dnow pni cx16 lahf_lm cmp_legacy svm extapic 
+> cr8_legacy
+> bogomips	: 5599.98
+> clflush size	: 64
+> power management: ts fid vid ttp tm stc
+> 
+> There's 4 of these.
+> 
+> Just to make sure, I ran the above nop test again:
+> 
+> [ this is reverse from the above runs ]
+> 
+> run 1
+> Time: 4.723
+> run 2
+> Time: 5.080
+> run 3
+> Time: 4.521
+> run 4
+> Time: 4.841
+> run 5
+> Time: 4.696
+> run 6
+> Time: 4.946
+> run 7
+> Time: 4.754
+> run 8
+> Time: 4.717
+> run 9
+> Time: 4.905
+> run 10
+> Time: 4.814
+> avg = 4.7997
+> 
+> And again the two part nop:
+> 
+> run 1
+> Time: 4.434
+> run 2
+> Time: 4.496
+> run 3
+> Time: 4.801
+> run 4
+> Time: 4.714
+> run 5
+> Time: 4.631
+> run 6
+> Time: 5.178
+> run 7
+> Time: 4.728
+> run 8
+> Time: 4.920
+> run 9
+> Time: 4.898
+> run 10
+> Time: 4.770
+> avg = 4.757
+> 
+> 
+> This time it was close, but still seems to have some difference.
+> 
+> heh, perhaps it's just noise.
+> 
+> -- Steve
+> 
+
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
