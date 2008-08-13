@@ -1,56 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753735AbYHMQJg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754190AbYHMQMu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753735AbYHMQJg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Aug 2008 12:09:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751352AbYHMQJ2
+	id S1754190AbYHMQMu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Aug 2008 12:12:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751703AbYHMQMn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Aug 2008 12:09:28 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:42521 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751116AbYHMQJ2 (ORCPT
+	Wed, 13 Aug 2008 12:12:43 -0400
+Received: from toronto-hs-216-138-233-67.s-ip.magma.ca ([216.138.233.67]:57239
+	"HELO yow.seanm.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751447AbYHMQMm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Aug 2008 12:09:28 -0400
-Message-ID: <48A30642.4060709@zytor.com>
-Date: Wed, 13 Aug 2008 09:05:22 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Ulrich Drepper <drepper@redhat.com>
-CC: Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@infradead.org>,
-       akpm@linux-foundation.org, hugh@veritas.com, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, briangrant@google.com, cgd@google.com,
-       mbligh@google.com, Linus Torvalds <torvalds@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: pthread_create() slow for many threads; also time to revisit
- 64b context switch optimization?
-References: <af8810200808121736q76640cc1kb814385072fe9b29@mail.gmail.com> <af8810200808121745h596c175bk348d0aaeeb9bcb45@mail.gmail.com> <20080813104445.GA24632@elte.hu> <20080813063533.444c650d@infradead.org> <48A2EE07.3040003@redhat.com> <20080813142529.GB21129@elte.hu> <48A2F157.7000303@redhat.com> <20080813151007.GA8780@elte.hu> <48A2FC17.9070302@redhat.com>
-In-Reply-To: <48A2FC17.9070302@redhat.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Wed, 13 Aug 2008 12:12:42 -0400
+Date: Wed, 13 Aug 2008 12:12:42 -0400
+From: Sean MacLennan <smaclennan@pikatech.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] vmlinux.strip should be ignored
+Message-ID: <20080813121242.1466551d@lappy.seanm.ca>
+Organization: PIKA
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.9; i686-pc-linux-gnu)
+X-Message-Flag: Warning: This message may contain actual content.
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ulrich Drepper wrote:
-> -----BEGIN PGP SIGNED MESSAGE-----
-> Hash: SHA1
-> 
-> Ingo Molnar wrote:
->> i find it pretty unacceptable these days that we limit any aspect of 
->> pure 64-bit apps in any way to 4GB (or any other 32-bit-ish limit). 
-> 
-> Sure, but if we can pin-point the sub-archs for which it is the problem
-> then a flag to optionally request it is even easier to handle.  You'd
-> simply ignore the flag for anything but the P4 architecture.
-> 
-> I personally have no problem removing the whole thing because I have no
-> such machine running anymore.  But there are people out there who have.
- >
+A new output file vmlinux.strip is created, at least on the powerpc
+arch, and should be ignored by git.
 
-This could also be done entirely in glibc (thus removing the dependency 
-on the kernel): set the flag if and only if you detect a P4 CPU.  You 
-don't even need to enumerate all the CPUs in the system (which would be 
-more painful) if you make the CPUID test wide enough that it catches all 
-compatible CPUs.
+Cheers,
+   Sean
 
-	-hpa
+Signed-off-by: Sean MacLennan <smaclennan@pikatech.com>
+---
+diff --git a/.gitignore b/.gitignore
+index 869e1a3..f7e924a 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -32,6 +32,7 @@
+ tags
+ TAGS
+ vmlinux
++vmlinux.strip
+ System.map
+ Module.markers
+ Module.symvers
