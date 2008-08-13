@@ -1,212 +1,173 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754087AbYHMGRR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754045AbYHMGXS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754087AbYHMGRR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Aug 2008 02:17:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752347AbYHMGRF
+	id S1754045AbYHMGXS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Aug 2008 02:23:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750956AbYHMGXG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Aug 2008 02:17:05 -0400
-Received: from yx-out-2324.google.com ([74.125.44.30]:1151 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751702AbYHMGRE (ORCPT
+	Wed, 13 Aug 2008 02:23:06 -0400
+Received: from ti-out-0910.google.com ([209.85.142.189]:60825 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750943AbYHMGXC convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Aug 2008 02:17:04 -0400
+	Wed, 13 Aug 2008 02:23:02 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=pE2CqMLMUH2ozMq0VShxsYc9awjitA2TPFzeoN0IJyZ7B1UUFd2ITswsEPSrizyBpT
-         A0Ur7qiDpcKG2sfUE/6W7BCeRsSAn4hFQ1lT3+C2uNoUHJfms3WvZNAaQkYHthDAmXjy
-         qyhCfo+s/Kl4TL6Gx1uveaQqJPszdBfFkTOEo=
-Subject: Re: [PATCH 1/3] relay: Fix 4 off-by-one errors occuring when
-	writing to a CPU buffer.
-From: Tom Zanussi <tzanussi@gmail.com>
-To: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-Cc: penberg@cs.helsinki.fi, akpm@linux-foundation.org,
-       compudj@krystal.dyndns.org, linux-kernel@vger.kernel.org,
-       righi.andrea@gmail.com
-In-Reply-To: <20080730174821.GA5222@localhost>
-References: <20080613040947.7465b9a5@linux360.ro>
-	 <1213418437.8237.51.camel@charm-linux>
-	 <20080614175223.4d3c6084@linux360.ro>
-	 <1213593748.7744.34.camel@charm-linux>
-	 <20080621050632.4a7a6c16@linux360.ro>
-	 <1216876176.6392.38.camel@charm-linux>  <20080730174821.GA5222@localhost>
-Content-Type: text/plain
-Date: Wed, 13 Aug 2008 01:16:59 -0500
-Message-Id: <1218608219.8980.92.camel@charm-linux>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
-Content-Transfer-Encoding: 7bit
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=RULq/WfxWsNKNbFkec+dJTtpxhdL4Ba+Jr82Ryfv20Dj4SlFIYthkftrNPFaKDwZY1
+         iqFgsNnX89XwBRURK6ixQkZlxTYgtDNazV+EJNNe5N2/6B+vLukJIdZX9WIIYITn3MH0
+         bSHFIxjit0gSzQlBkfZFb3Ca0sYcXCWQVMuug=
+Message-ID: <2891419e0808122323l5dad8ff7q81cf666e8c814620@mail.gmail.com>
+Date: Wed, 13 Aug 2008 15:23:00 +0900
+From: "=?EUC-KR?B?sK21v8Dn?=" <baramsori72@gmail.com>
+To: "Hirokazu Takahashi" <taka@valinux.co.jp>
+Subject: Re: RFC: I/O bandwidth controller
+Cc: balbir@linux.vnet.ibm.com, xen-devel@lists.xensource.com,
+       uchida@ap.jp.nec.com, containers@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org, virtualization@lists.linux-foundation.org,
+       dm-devel@redhat.com, agk@sourceware.org, dave@linux.vnet.ibm.com,
+       ngupta@google.com, righi.andrea@gmail.com, fernando@oss.ntt.co.jp
+In-Reply-To: <20080812.201025.57762305.taka@valinux.co.jp>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=WINDOWS-1252
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+References: <1218117578.11703.81.camel@sebastian.kern.oss.ntt.co.jp>
+	 <48A0A689.40908@gmail.com> <loom.20080812T071504-212@post.gmane.org>
+	 <20080812.201025.57762305.taka@valinux.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi, Takahashi-san,
+Thank you for your comments
 
-On Wed, 2008-07-30 at 20:48 +0300, Eduard - Gabriel Munteanu wrote:
-> On Thu, Jul 24, 2008 at 12:09:36AM -0500, Tom Zanussi wrote:
-> > 
-> > On Sat, 2008-06-21 at 05:06 +0300, Eduard - Gabriel Munteanu wrote:
-> > > On Mon, 16 Jun 2008 00:22:27 -0500
-> > > Tom Zanussi <tzanussi@gmail.com> wrote:
-> > > 
-> > > > So apparently what you're seeing is zeroes being read when there's a
-> > > > buffer-full condition?  If so, we need to figure out exactly why
-> > > > that's happening to see whether your fix is really what's needed; I
-> > > > haven't seen problems in the buffer-full case before and I think your
-> > > > fix would break it even if it fixed your read problem.  So it would
-> > > > be good to be able to reproduce it first.
-> > > > 
-> > > > Tom  
-> > > 
-> > > Hi,
-> > > 
-> > > Sorry for being so late, there were some exams I had to cope with.
-> > > 
-> > > Although I couldn't reproduce zeros, I've come up with something I'd
-> > > say is equally good. This has been done on a vanilla 2.6.26-rc6.
-> > > 
-> > > Please look at the testcase below and tell me what you think.
-> > > 
-> > 
-> > Hi,
-> > 
-> > Yes, this is a bug - thanks for sending the nice test case.  This patch
-> > should fix it.  BTW, if the output still looks a little different from
-> > what you were expecting, it might make more sense after adding a
-> > relay_test printk for each dropped event, something like this:
-> 
-> The all-zeros problem happened when poll() with infinite timeout is not
-> used before reading. I fixed the user app I was writing, but the docs should
-> really reflect this. Relay has a kinda strange interface.
-> 
-> 
+> Hi,
+>
+>> > Fernando Luis Vázquez Cao wrote:
+>> > >>> This seems to be the easiest part, but the current cgroups
+>> > >>> infrastructure has some limitations when it comes to dealing with block
+>> > >>> devices: impossibility of creating/removing certain control structures
+>> > >>> dynamically and hardcoding of subsystems (i.e. resource controllers).
+>> > >>> This makes it difficult to handle block devices that can be hotplugged
+>> > >>> and go away at any time (this applies not only to usb storage but also
+>> > >>> to some SATA and SCSI devices). To cope with this situation properly we
+>> > >>> would need hotplug support in cgroups, but, as suggested before and
+>> > >>> discussed in the past (see (0) below), there are some limitations.
+>> > >>>
+>> > >>> Even in the non-hotplug case it would be nice if we could treat each
+>> > >>> block I/O device as an independent resource, which means we could do
+>> > >>> things like allocating I/O bandwidth on a per-device basis. As long as
+>> > >>> performance is not compromised too much, adding some kind of basic
+>> > >>> hotplug support to cgroups is probably worth it.
+>> > >>>
+>> > >>> (0) http://lkml.org/lkml/2008/5/21/12
+>> > >> What about using major,minor numbers to identify each device and account
+>> > >> IO statistics? If a device is unplugged we could reset IO statistics
+>> > >> and/or remove IO limitations for that device from userspace (i.e. by a
+>> > >> deamon), but pluggin/unplugging the device would not be blocked/affected
+>> > >> in any case. Or am I oversimplifying the problem?
+>> > > If a resource we want to control (a block device in this case) is
+>> > > hot-plugged/unplugged the corresponding cgroup-related structures inside
+>> > > the kernel need to be allocated/freed dynamically, respectively. The
+>> > > problem is that this is not always possible. For example, with the
+>> > > current implementation of cgroups it is not possible to treat each block
+>> > > device as a different cgroup subsytem/resource controlled, because
+>> > > subsystems are created at compile time.
+>> >
+>> > The whole subsystem is created at compile time, but controller data
+>> > structures are allocated dynamically (i.e. see struct mem_cgroup for
+>> > memory controller). So, identifying each device with a name, or a key
+>> > like major,minor, instead of a reference/pointer to a struct could help
+>> > to handle this in userspace. I mean, if a device is unplugged a
+>> > userspace daemon can just handle the event and delete the controller
+>> > data structures allocated for this device, asynchronously, via
+>> > userspace->kernel interface. And without holding a reference to that
+>> > particular block device in the kernel. Anyway, implementing a generic
+>> > interface that would allow to define hooks for hot-pluggable devices (or
+>> > similar events) in cgroups would be interesting.
+>> >
+>> > >>> 3. & 4. & 5. - I/O bandwidth shaping & General design aspects
+>> > >>>
+>> > >>> The implementation of an I/O scheduling algorithm is to a certain extent
+>> > >>> influenced by what we are trying to achieve in terms of I/O bandwidth
+>> > >>> shaping, but, as discussed below, the required accuracy can determine
+>> > >>> the layer where the I/O controller has to reside. Off the top of my
+>> > >>> head, there are three basic operations we may want perform:
+>> > >>>   - I/O nice prioritization: ionice-like approach.
+>> > >>>   - Proportional bandwidth scheduling: each process/group of processes
+>> > >>> has a weight that determines the share of bandwidth they receive.
+>> > >>>   - I/O limiting: set an upper limit to the bandwidth a group of tasks
+>> > >>> can use.
+>> > >> Use a deadline-based IO scheduling could be an interesting path to be
+>> > >> explored as well, IMHO, to try to guarantee per-cgroup minimum bandwidth
+>> > >> requirements.
+>> > > Please note that the only thing we can do is to guarantee minimum
+>> > > bandwidth requirement when there is contention for an IO resource, which
+>> > > is precisely what a proportional bandwidth scheduler does. An I missing
+>> > > something?
+>> >
+>> > Correct. Proportional bandwidth automatically allows to guarantee min
+>> > requirements (instead of IO limiting approach, that needs additional
+>> > mechanisms to achive this).
+>> >
+>> > In any case there's no guarantee for a cgroup/application to sustain
+>> > i.e. 10MB/s on a certain device, but this is a hard problem anyway, and
+>> > the best we can do is to try to satisfy "soft" constraints.
+>>
+>> I think guaranteeing the minimum I/O bandwidth is very important. In the
+>> business site, especially in streaming service system, administrator requires
+>> the functionality to satisfy QoS or performance of their service.
+>> Of course, IO throttling is important, but, personally, I think guaranteeing
+>> the minimum bandwidth is more important than limitation of maximum bandwidth
+>> to satisfy the requirement in real business sites.
+>> And I know Andrea's io-throttle patch supports the latter case well and it is
+>> very stable.
+>> But, the first case(guarantee the minimum bandwidth) is not supported in any
+>> patches.
+>> Is there any plans to support it? and Is there any problems in implementing it?
+>> I think if IO controller can support guaranteeing the minimum bandwidth and
+>> work-conserving mode simultaneously, it more easily satisfies the requirement
+>> of the business sites.
+>> Additionally, I didn't understand "Proportional bandwidth automatically allows
+>> to guarantee min
+>> requirements" and "soft constraints".
+>> Can you give me a advice about this ?
+>> Thanks in advance.
+>>
+>> Dong-Jae Kang
+>
+> I think this is what dm-ioband does.
+>
+> Let's say you make two groups share the same disk, and give them
+> 70% of the bandwidth the disk physically has and 30% respectively.
+> This means the former group is almost guaranteed to be able to use
+> 70% of the bandwidth even when the latter one is issuing quite
+> a lot of I/O requests.
+>
+> Yes, I know there exist head seek lags with traditional magnetic disks,
+> so it's important to improve the algorithm to reduce this overhead.
+>
 
-Hi,
+In previous my posting, what I mean was absolute guaranteeing for
+minimum bandwidth, regardless of disk seek time, I/O type(sequential,
+random, or mixed …) of process.
+I also basically prefer proportional share depending on priority or
+weight and I think it is meaningful, such like as dm-ioband, 2-layer
+CFQ(satoshi) and 2-Layer CFQ(vasily).
+But, additionally in that situation, I think absolute guaranteeing of
+the minimum bandwidth will be required and several related companies
+want it to be supported. Because proportional share has inaccuracy of
+performance predictability, as Andrea mentioned before.
+So, to complement the point, IMHO, I think so.
 
-You shouldn't have to use poll() with infinite timeout - see for example
-the blktrace user code.  I'm not sure why you're seeing these problems,
-but if you're interested, even if only for comparison, you can try using
-the blktrace user code for kmemtrace too - I recently turned the
-blktrace userspace code into a generic tracing library called libutt,
-which you can get here:
+> And I think it is also possible to add a new scheduling policy to
+> guarantee the minimum bandwidth. It might be cool if some group can
+> use guranteed bandwidths and the other share the rest on proportional
+> bandwidth policy.
 
-http://utt.sourceforge.net
+Yes, I agree with you. This was what I intend to say
+Thank you,
 
-Here are some patches to your code that take a first stab at kmemtrace
-using utt:
-
-http://utt.sourceforge.net/kmemtrace-utt-kernel.patch
-http://utt.sourceforge.net/kmemtrace-utt-user.patch
-
-Most of the kernel patch just adds tracing controls for the purpose of
-controlling the trace:
-
-root@positron:/home/trz/kmemtrace-user# ls -al /sys/kernel/debug/kmem/trace
-total 0
-drwxr-xr-x 2 root root       0 2008-08-12 22:48 .
-drwxr-xr-x 3 root root       0 2008-08-12 22:48 ..
--r-------- 1 root root       0 2008-08-12 22:48 abi_version
----------- 1 root root       0 2008-08-12 22:48 buf_nr
----------- 1 root root       0 2008-08-12 22:48 buf_size
----------- 1 root root       0 2008-08-12 22:48 create
----------- 1 root root       0 2008-08-12 22:48 destroy
--r--r--r-- 1 root root       0 2008-08-12 22:48 dropped
----------- 1 root root       0 2008-08-12 22:48 event_mask
----------- 1 root root       0 2008-08-12 22:48 start
----------- 1 root root       0 2008-08-12 22:48 stop
--r-------- 1 root root 9175040 2008-08-12 22:48 trace0
--r-------- 1 root root 1543192 2008-08-12 22:48 trace1
-
-You'll also notice that the directory structure is a little different
-(/sys/kernel/debug/kmem/trace instead of /sys/kernel/debug/kmemtrace)
-and that the per-cpu files are named traceX instead of cpuX - this is
-just because it follows the blktrace conventions.
-
-The other change to the kernel code is that it allows the buffers (and
-buffer sizes) to be created on demand instead of always allocated at
-boot time.  The boot-time buffer and tracing still works as before, but
-it actually turns tracing off in kmem_setup_late(), since there's really
-no point in continuing logging and overrunning the buffers until
-kmemtraced is started up to read it.  Having the buffers allocated and
-tracing started by kmemtraced also makes more sense to me, rather than
-the current behavior of continually logging and overrunning the buffers
-forever regardless of whether something is reading them.  Maybe that's
-not exactly what you'd want, but it made more sense to me, so that's
-what I did for this.
-
-So anyway, to use it, after you boot up, you can do:
-
-root@positron:/home/trz/kmemtrace-user# ./kmemtraced-utt -t
-^CChannel: trace
-  CPU  0:                    0 events,     8960 KiB data
-  CPU  1:                    0 events,     1508 KiB data
-  Total:                     0 events (dropped 3124),    10468 KiB data
-You have dropped events, consider using a larger buffer size (-b)
-
-(yeah, I know, it shouldn't say 0 events, there were plenty!)
-
-This will read the contents of the per-cpu relay files containing what
-you logged during boot into trace.kmem.0 and trace.kmem.1 - you'll have
-to rename them to cpu0.out,etc to use them with your analysis tools.
-The ctrl-c does the same thing as a normal trace i.e. stops the trace,
-reads the files and destroys the buffers.
-
-You can start a new trace at any time using:
-
-root@positron:/home/trz/kmemtrace-user# ./kmemtraced-utt
-^CChannel: trace
-  CPU  0:                    0 events,      316 KiB data
-  CPU  1:                    0 events,      223 KiB data
-  Total:                     0 events (dropped 0),      538 KiB data
-
-Again, ctrl-c to stop the trace and clean up.
-
-Also, because you're using part of the blktrace code, you get some other
-capabilities for free, such as tracing over the network.  This starts
-the trace server, which will receive the trace data:
-
-root@positron:/home/trz/kmemtrace-user# ./kmemtraced-utt -l
-server: waiting for connections...
-server: connection from 127.0.0.1
-
-Now run the trace on the client, and ctrl-c to stop it:
-
-root@positron:/home/trz/kmemtrace-user# ./kmemtraced-utt -h localhost
-kmem: connecting to localhost
-kmem: connected!
-^CChannel: trace
-  CPU  0:                    0 events,      581 KiB data
-  CPU  1:                    0 events,      399 KiB data
-  Total:                     0 events (dropped 0),      980 KiB data
-
-And you should see something like this on the server as well:
-
-server: end of run for trace
-Channel: trace
-  CPU  0:                    0 events,      581 KiB data
-  CPU  1:                    0 events,      399 KiB data
-  Total:                     0 events (dropped 0),      980 KiB data
-
-The trace files will be in a directory named using the IP address and
-time:
-
-root@positron:/home/trz/kmemtrace-user# ls -al 127.0.0.1-2008-08-13-04:12:39
-total 1000
-drwxr-xr-x 2 root root   4096 2008-08-12 23:12 .
-drwxr-xr-x 6 trz  trz    4096 2008-08-12 23:12 ..
--rw-r--r-- 1 root root 594944 2008-08-12 23:13 trace.kmem.0
--rw-r--r-- 1 root root 408352 2008-08-12 23:13 trace.kmem.1
-
-
-libutt isn't completely baked at this point, and the API will probably
-change depending on feedback, but still it seems to work pretty well at
-this point.  If you decide to try it out, please let me know if you run
-into problems with it too.
-
-Tom
-
-
-> 	Cheers,
-> 	Eduard
-> 
-
+Dong-Jae Kang
