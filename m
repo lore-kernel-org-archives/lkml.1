@@ -1,97 +1,249 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755271AbYHMHTb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754020AbYHMHZQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755271AbYHMHTb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Aug 2008 03:19:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752165AbYHMHTU
+	id S1754020AbYHMHZQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Aug 2008 03:25:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751486AbYHMHZD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Aug 2008 03:19:20 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:35476 "EHLO mx2.mail.elte.hu"
+	Wed, 13 Aug 2008 03:25:03 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:60622 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754748AbYHMHTT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Aug 2008 03:19:19 -0400
-Date: Wed, 13 Aug 2008 09:19:05 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Bruce Duncan <bwduncan@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Steven Rostedt <srostedt@redhat.com>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [git pull] ftrace for v2.6.27
-Message-ID: <20080813071905.GA18529@elte.hu>
-References: <20080714142226.GA11412@elte.hu> <200808130248.58216.bwduncan@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200808130248.58216.bwduncan@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1751309AbYHMHZB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Aug 2008 03:25:01 -0400
+Date: Wed, 13 Aug 2008 17:24:52 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: linux-next@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: linux-next: Tree for August 13
+Message-Id: <20080813172452.14b0775c.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__13_Aug_2008_17_24_52_+1000_eiFIHR0Y8devhI9W"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--Signature=_Wed__13_Aug_2008_17_24_52_+1000_eiFIHR0Y8devhI9W
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-* Bruce Duncan <bwduncan@gmail.com> wrote:
+Hi all,
 
-> Hi Ingo, Steven, everyone,
-> 
-> [ Please CC me in replies ]
-> 
-> I have just tracked down a regression in 2.6.27-rc2 wrt 2.6.26. Commit 
-> 77a2b37d227483fe52aead242652aee406c25bf0 (ftrace: startup tester on 
-> dynamic tracing.) causes my laptop to fail to resume from S3 (it 
-> simply reboots about a second after the resume starts and the display 
-> never shows anything).
-> 
-> The patch doesn't revert with patch -R (I don't know if there's a 
-> cleverer way to ask git to revert it), but the problem goes away if I 
-> turn off CONFIG_DYNAMIC_FTRACE.
-> 
-> The commit and bisect log are attached. Please can you help me to 
-> debug this?
+Changes since next-20080812:
 
-could you please send your .config file as well?
+The ide tree lost its build fix patch.
 
-Suspend+resume bugs are notoriously hard to debug (there's no console 
-output in most cases), so i guess the best way to debug this is for 
-Steve or me to try to reproduce it. Could you send the output of this 
-script:
+The slab tree gained a conflict against linus' tree.
 
-  http://people.redhat.com/mingo/cfs-scheduler/tools/cfs-debug-info.sh
+The kmemcheck tree gained 3 conflicts against the slab tree.
 
-that will tell us what kind of hw you have.
+The ttydev tree lost a conflict.
 
-and could you perhaps try the patch below? The patch disables on the fly 
-dynamic code patching - which is the primary suspect here. If it makes a 
-difference on your box then a theory would be that ftraced runs too soon 
-after suspend+resume.
+I remerged Linus' tree at the end to reduce the size of the patches
+(since -rc3 had been released).
 
-	Ingo
+I have also applied the following patches for known problems:
 
------------------------>
-Subject: ftrace: debug
-From: Ingo Molnar <mingo@elte.hu>
-Date: Wed Aug 13 09:17:12 CEST 2008
+	Add cuImage.mpc866ads to the bootwrapper as a cuboot-8xx target
+	xen-balloon: fix up sysfs issues
+	ath9k: work around gcc ICE again
+	usb: fix up use of usb_dbg
 
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- kernel/trace/ftrace.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+----------------------------------------------------------------------------
 
-Index: linux/kernel/trace/ftrace.c
-===================================================================
---- linux.orig/kernel/trace/ftrace.c
-+++ linux/kernel/trace/ftrace.c
-@@ -811,7 +811,7 @@ static int ftraced(void *ignore)
- 		/* check once a second */
- 		schedule_timeout(HZ);
- 
--		if (unlikely(ftrace_disabled))
-+		if (1)
- 			continue;
- 
- 		mutex_lock(&ftrace_sysctl_lock);
+I have created today's linux-next tree at
+git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
+(patches at
+http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/).  If you
+are tracking the linux-next tree using git, you should not use "git pull"
+to do so as that will try to merge the new linux-next release with the
+old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
+(see below).
+
+You can see which trees have been included by looking in the Next/Trees
+file in the source.  There are also quilt-import.log and merge.log files
+in the Next directory.  Between each merge, the tree was built with
+a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
+final fixups, it is also built with powerpc allnoconfig,
+44x_defconfig and allyesconfig and i386, sparc and sparc64 defconfig.
+
+Below is a summary of the state of the merge.
+
+We are up to 108 trees (counting Linus' and 14 trees of patches pending for
+Linus' tree), more are welcome (even if they are currently empty).
+Thanks to those who have contributed, and to those who haven't, please do.
+
+Status of my local build tests will be at
+http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
+advice about cross compilers/configs that work, we are always open to add
+more builds.
+
+Thanks to Jan Dittmer for adding the linux-next tree to his build tests
+at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
+Dunlap for doing many randconfig builds.
+
+There is a wiki covering stuff to do with linux-next at
+http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+$ git checkout master
+$ git reset --hard stable
+Merging origin/master
+Merging powerpc-merge/merge
+Merging scsi-rc-fixes/master
+Merging net-current/master
+Merging sparc-current/master
+Merging sound-current/for-linus
+Merging arm-current/master
+CONFLICT (content): Merge conflict in drivers/watchdog/at91rm9200_wdt.c
+Merging pci-current/for-linus
+Merging wireless-current/master
+Merging kbuild-current/master
+Merging quilt/driver-core.current
+Merging quilt/usb.current
+CONFLICT (content): Merge conflict in drivers/usb/gadget/omap_udc.c
+Merging cpufreq-current/fixes
+Merging input-current/for-linus
+Merging md-current/for-2.6.26
+Merging dwmw2/master
+Merging quilt/driver-core
+Merging quilt/usb
+Merging tip-core/auto-core-next
+CONFLICT (content): Merge conflict in include/asm-generic/vmlinux.lds.h
+Merging cpus4096/auto-cpus4096-next
+CONFLICT (content): Merge conflict in net/sunrpc/svc.c
+Merging ftrace/auto-ftrace-next
+Merging genirq/auto-genirq-next
+Merging safe-poison-pointers/auto-safe-poison-pointers-next
+Merging sched/auto-sched-next
+Merging stackprotector/auto-stackprotector-next
+Merging timers/auto-timers-next
+Merging x86/auto-x86-next
+CONFLICT (content): Merge conflict in arch/x86/kernel/genapic_64.c
+CONFLICT (content): Merge conflict in drivers/pci/dmar.c
+Applying x86: export is_uv_system
+Merging pci/linux-next
+Merging quilt/device-mapper
+Merging hid/mm
+Merging quilt/i2c
+Merging quilt/jdelvare-hwmon
+Merging quilt/kernel-doc
+Merging avr32/avr32-arch
+Merging v4l-dvb/stable
+Merging s390/features
+Merging sh/master
+Merging jfs/next
+Merging kbuild/master
+Merging quilt/ide
+Merging libata/NEXT
+Merging nfs/linux-next
+Merging xfs/master
+Merging infiniband/for-next
+Merging acpi/test
+Applying acpi: missing status declaration in acer-wmi.c
+Merging blackfin/for-linus
+Merging nfsd/nfsd-next
+Merging ieee1394/for-next
+Merging ubi/linux-next
+Merging kvm/master
+Merging dlm/next
+Merging scsi/master
+Merging ia64/test
+Merging tests/master
+Merging ocfs2/linux-next
+Merging quilt/m68k
+Merging powerpc/powerpc-next
+Merging ext4/next
+Merging 4xx/next
+Merging async_tx/next
+Merging udf/for_next
+Merging net/master
+Merging sparc/master
+Merging galak/powerpc-next
+Merging mtd/master
+Merging wireless/master
+Merging crypto/master
+CONFLICT (content): Merge conflict in include/asm-x86/cpufeature.h
+Merging vfs/for-next
+CONFLICT (content): Merge conflict in fs/nfsd/export.c
+CONFLICT (content): Merge conflict in fs/xfs/linux-2.6/xfs_export.c
+CONFLICT (content): Merge conflict in fs/xfs/linux-2.6/xfs_iops.c
+Merging sound/for-next
+Merging arm/devel
+Merging cpufreq/next
+Merging v9fs/for-next
+Merging quilt/rr
+Merging cifs/master
+Merging mmc/next
+Merging gfs2/master
+Merging input/next
+Merging semaphore/semaphore
+Merging semaphore-removal/semaphore-removal
+Merging bkl-removal/bkl-removal
+Merging trivial/next
+CONFLICT (content): Merge conflict in Documentation/edac.txt
+CONFLICT (content): Merge conflict in include/linux/securebits.h
+Merging ubifs/linux-next
+CONFLICT (content): Merge conflict in fs/ubifs/super.c
+mark the corrected paths with 'git add <paths>' or 'git rm <paths>' and com=
+mit the result.
+Created commit 695543a: Revert "UBIFS: add NFS support"
+Merging lsm/for-next
+Merging block/for-next
+Merging embedded/master
+Merging firmware/master
+CONFLICT (content): Merge conflict in drivers/media/dvb/ttpci/Kconfig
+CONFLICT (content): Merge conflict in drivers/media/dvb/ttpci/Makefile
+Merging pcmcia/master
+Merging battery/master
+Merging leds/for-mm
+Merging backlight/for-mm
+Merging kgdb/kgdb-next
+Merging slab/for-next
+CONFLICT (content): Merge conflict in lib/Kconfig.debug
+Merging m68knommu/for-next
+Merging uclinux/for-next
+Merging md/for-next
+Merging cris/for-next
+Merging kmemcheck/auto-kmemcheck-next
+CONFLICT (content): Merge conflict in MAINTAINERS
+CONFLICT (content): Merge conflict in mm/Makefile
+CONFLICT (content): Merge conflict in mm/slab.c
+Merging generic-ipi/auto-generic-ipi-next
+Merging mips/mips-for-linux-next
+Merging mfd/for-next
+Merging hdlc/hdlc-next
+Merging drm/drm-next
+Merging voltage/reg-for-linus
+Merging security-testing/next
+Merging lblnet/master
+Merging quilt/ttydev
+CONFLICT (content): Merge conflict in drivers/usb/class/cdc-acm.c
+Merging agp/agp-next
+Merging creds/next-creds
+CONFLICT (content): Merge conflict in fs/namespace.c
+CONFLICT (content): Merge conflict in fs/nfsd/nfs4recover.c
+CONFLICT (content): Merge conflict in fs/xfs/xfs_acl.c
+Merging master_tmp
+Applying Add cuImage.mpc866ads to the bootwrapper as a cuboot-8xx target
+Applying xen-balloon: fix up sysfs issues
+Applying ath9k: work around gcc ICE again
+Applying usb: fix up use of usb_dbg
+
+--Signature=_Wed__13_Aug_2008_17_24_52_+1000_eiFIHR0Y8devhI9W
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkiijEQACgkQjjKRsyhoI8wAlACguK3VISqcST088ImWwNrhg4kK
+BtEAn1muU5/vNKV43ok7XB5Xrzzipzbj
+=cHz7
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__13_Aug_2008_17_24_52_+1000_eiFIHR0Y8devhI9W--
