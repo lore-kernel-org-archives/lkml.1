@@ -1,55 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757285AbYHMOSB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753258AbYHMORN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757285AbYHMOSB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Aug 2008 10:18:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753137AbYHMOQs
+	id S1753258AbYHMORN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Aug 2008 10:17:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754556AbYHMOQe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Aug 2008 10:16:48 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:55900 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756764AbYHMOQn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Aug 2008 10:16:43 -0400
-Date: Wed, 13 Aug 2008 16:16:29 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Jeff Chua <jeff.chua.linux@gmail.com>
-Cc: Yinghai Lu <yhlu.kernel@gmail.com>, David Miller <davem@davemloft.net>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.27rc1 cannot boot more than 8CPUs
-Message-ID: <20080813141629.GD19397@elte.hu>
-References: <Pine.LNX.4.64.0808061908100.12476@boston.corp.fedex.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0808061908100.12476@boston.corp.fedex.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Wed, 13 Aug 2008 10:16:34 -0400
+Received: from ug-out-1314.google.com ([66.249.92.172]:18753 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756698AbYHMOQc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Aug 2008 10:16:32 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:in-reply-to:references:content-type:date:message-id
+         :mime-version:x-mailer:content-transfer-encoding;
+        b=WjsRNm+z7Qm8U0d9li5cZ1HOya8Bj1Feq7F9KsD4C/BvzbfQLXyfgAJuhBVV+STYIl
+         g0FEFZg9NU4fhnx4JL+mhrc7JvD9hfVRwHamQ1pIWaxsyVRBHZ6L9pqHg1H+vwzbjs1o
+         UdWowGpat4zyuZkFgxXHKYFbvy8xKbowx+DX8=
+Subject: Possible CPU_IDLE bug [WAS: Re: Timer unstability on when using C2
+	and deeper sleep states (Dell Latitude XT)]
+From: Milan Plzik <milan.plzik@gmail.com>
+To: linux-kernel@vger.kernel.org
+In-Reply-To: <1218625125.4304.7.camel@localhost>
+References: <1218566008.13866.41.camel@localhost>
+	 <1218625125.4304.7.camel@localhost>
+Content-Type: text/plain
+Date: Wed, 13 Aug 2008 16:16:20 +0200
+Message-Id: <1218636980.5250.12.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+  Hello again,
 
-* Jeff Chua <jeff.chua.linux@gmail.com> wrote:
+On St, 2008-08-13 at 12:58 +0200, Milan Plzik wrote:
+> I apologize for replying on my own mail (and also for top-posting, but
+> this information is global update, not exactly fitting any of topics
+> mentioned below).
+> 
+>   After playing for a longer while I found out that the system ends
+> sometimes in state where, in order to do anything useful, I need to
+> press keys on keyboard. Otherwise, the system just stalls and does
+> nothing. I have no idea why does this happen (especially when I know
+> that OHCI or wireless network adapter produce fair amount of
+> interrupts). My /proc/interrupts is below. Just for the record,
+> chipset
+> on board is ATI RS600 with (apparently from lspci) ATI SB600
+> southbridge.
 
-> On Wed, Aug 6, 2008 at 5:42 PM, Jeff Chua <jeff.chua.linux@gmail.com>  
-> wrote:
->>>> CONFIG_X86_GENERICARCH=y
->>>> CONFIG_X86_BIGSMP=y
->>>> 8 more cpu need bigsmp mode.
->
->> Just found it under " Subarchitecture Type (Generic architecture)",
->> and then it shows the CONFIG_X86_BIGSMP option.
->
-> It works. Booted with 16CPUs. 32GB RAM.
+  it looks like this problem disappears if CONFIG_CPU_IDLE option is
+disabled, system seems to be stable for more than one hour. This
+suggests that something may be wrong with the CPU_IDLE code. I can not
+spend much more time by debugging the kernel, but if anyone has an
+suggestion about what to fix, I will gladly test it. 
 
-btw., could you please check that v2.6.27-rc3 (or later) kernels boot 
-fine (with about 8 cpus) even if you hae genericarch/bigsmp disabled, 
-and do not silently hang as it happened on your box before?
+  Best regards,
+	Milan Plzik
 
-	Ingo
