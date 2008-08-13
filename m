@@ -1,76 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755431AbYHMIhM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755293AbYHMIjZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755431AbYHMIhM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Aug 2008 04:37:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752742AbYHMIgy
+	id S1755293AbYHMIjZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Aug 2008 04:39:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751457AbYHMIjQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Aug 2008 04:36:54 -0400
-Received: from [76.245.85.235] ([76.245.85.235]:56207 "EHLO cynthia.pants.nu"
-	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752676AbYHMIgx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Aug 2008 04:36:53 -0400
-Date: Wed, 13 Aug 2008 01:36:35 -0700
-From: Brad Boyer <flar@allandria.com>
-To: Al Viro <viro@ZenIV.linux.org.uk>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [RFC] readdir mess
-Message-ID: <20080813083635.GA5933@cynthia.pants.nu>
-References: <20080812062241.GQ28946@ZenIV.linux.org.uk> <87ej4u9nf5.fsf@devron.myhome.or.jp> <alpine.LFD.1.10.0808121009370.3462@nehalem.linux-foundation.org> <20080812181057.GR28946@ZenIV.linux.org.uk> <alpine.LFD.1.10.0808121316570.3462@nehalem.linux-foundation.org> <20080812203808.GV28946@ZenIV.linux.org.uk> <alpine.LFD.1.10.0808121351570.3462@nehalem.linux-foundation.org> <20080813000433.GZ28946@ZenIV.linux.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080813000433.GZ28946@ZenIV.linux.org.uk>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Wed, 13 Aug 2008 04:39:16 -0400
+Received: from smtp.nokia.com ([192.100.122.230]:37063 "EHLO
+	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751040AbYHMIjP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Aug 2008 04:39:15 -0400
+From: Artem Bityutskiy <dedekind@infradead.org>
+To: linux-kernel@vger.kernel.org
+Cc: Adrian Hunter <ext-adrian.hunter@nokia.com>,
+       Zoltan Sogor <weth@inf.u-szeged.hu>, Christoph Hellwig <hch@lst.de>
+Subject: [PATCH] UBIFS: fix budgeting calculations
+Date: Wed, 13 Aug 2008 13:17:32 +0300
+Message-Id: <1218622675-28853-4-git-send-email-dedekind@infradead.org>
+X-Mailer: git-send-email 1.5.4.1
+In-Reply-To: <1218622675-28853-1-git-send-email-dedekind@infradead.org>
+References: <1218622675-28853-1-git-send-email-dedekind@infradead.org>
+X-OriginalArrivalTime: 13 Aug 2008 08:39:03.0144 (UTC) FILETIME=[0A2B2680:01C8FD20]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 13, 2008 at 01:04:33AM +0100, Al Viro wrote:
-> hfs:	at least missing checks for hfs_bnode_read() failure.  And I'm not
-> 	at all sure that hfs_mac2asc() use is safe there.  BTW, open_dir_list
-> 	handling appears to be odd - how the hell does decrementing ->f_pos
-> 	help anything?  And hfs_dir_release() removes from list without any
-> 	locks, so that's almost certainly racy as well.
-> hfsplus: ditto
+From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
 
-I don't work on this code anymore, but I wrote the original version which
-makes me a bit curious about some of the critcism here. The function
-hfs_bnode_read is declared void, so it doesn't return any errors. The
-only thing inside it that I could even think of failing is kmap, but
-I was under the impression that kmap would sleep until it could
-complete. The actual disk read happens earlier and is saved in the
-page cache as long as the bnode object exists.
+The 'ubifs_release_dirty_inode_budget()' was buggy and incorrectly
+freed the budget, which led to not freeing all dirty data budget.
+This patch fixes that.
 
-Is there any reason that hfs_mac2asc would not be safe? I can't think
-of any good way to avoid that call even if it is unsafe, since the
-readdir will expect UTF8 strings rather than the mac (or UTF16 for
-hfsplus) encoding found on disk.
+Also, this patch fixes ubifs_mkdir() which passed 1 in dirty_ino_d,
+which makes no sense. Well, it is harmless though.
 
-The open_dir_list stuff is a little odd I admit, and I think you are
-right about the locking issue in release. However, I feel like I should
-explain the way hfs and hfsplus use f_pos on directories. The on-disk
-format requires that the directory entries be sorted in order by
-filename and does not allow any holes in the list. Because of this,
-adding and removing entries will move all the items that are later
-in the order to make room or eliminate the hole. The manipulation
-of f_pos is intended to make it act more like a standard unix
-filesystem where removing an item doesn't usually make a pending
-readdir skip an unrelated item. The value of f_pos for a directory
-is only incremented by one for each entry to make seeking work
-in a more sane fashion. Because of this, an increment moves to the
-next item and decrement moves to the previous one.
+Also, add few more useful assertions. And improve few debugging
+messages.
 
-As a side note about the complexity of making hfs and hfsplus fit
-into a unix model, there is just one file that contains the equivalent
-of every directory and the entire inode table. Because of this, the
-directory code is very synthetic. I tried to make it look as much as
-possible like a normal unix filesystem, including making i_nlink on
-the directory inodes reflect the number of child directories. It
-makes for some code that is admittedly a little hard to follow.
+Signed-off-by: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
+---
+ fs/ubifs/budget.c |    5 +++--
+ fs/ubifs/dir.c    |    3 +--
+ 2 files changed, 4 insertions(+), 4 deletions(-)
 
-	Brad Boyer
-	flar@allandria.com
-
+diff --git a/fs/ubifs/budget.c b/fs/ubifs/budget.c
+index d81fb9e..12a1717 100644
+--- a/fs/ubifs/budget.c
++++ b/fs/ubifs/budget.c
+@@ -686,9 +686,10 @@ void ubifs_convert_page_budget(struct ubifs_info *c)
+ void ubifs_release_dirty_inode_budget(struct ubifs_info *c,
+ 				      struct ubifs_inode *ui)
+ {
+-	struct ubifs_budget_req req = {.dd_growth = c->inode_budget,
+-				       .dirtied_ino_d = ui->data_len};
++	struct ubifs_budget_req req;
+ 
++	memset(&req, 0, sizeof(struct ubifs_budget_req));
++	req.dd_growth = c->inode_budget + ui->data_len;
+ 	ubifs_release_budget(c, &req);
+ }
+ 
+diff --git a/fs/ubifs/dir.c b/fs/ubifs/dir.c
+index e90374b..a79e850 100644
+--- a/fs/ubifs/dir.c
++++ b/fs/ubifs/dir.c
+@@ -727,8 +727,7 @@ static int ubifs_mkdir(struct inode *dir, struct dentry *dentry, int mode)
+ 	struct ubifs_inode *dir_ui = ubifs_inode(dir);
+ 	struct ubifs_info *c = dir->i_sb->s_fs_info;
+ 	int err, sz_change = CALC_DENT_SIZE(dentry->d_name.len);
+-	struct ubifs_budget_req req = { .new_ino = 1, .new_dent = 1,
+-					.dirtied_ino_d = 1 };
++	struct ubifs_budget_req req = { .new_ino = 1, .new_dent = 1 };
+ 
+ 	/*
+ 	 * Budget request settings: new inode, new direntry and changing parent
+-- 
+1.5.4.1
 
