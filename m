@@ -1,87 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754007AbYHMVLf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755216AbYHMVMR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754007AbYHMVLf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Aug 2008 17:11:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752242AbYHMVLZ
+	id S1755216AbYHMVMR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Aug 2008 17:12:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752539AbYHMVMA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Aug 2008 17:11:25 -0400
-Received: from rv-out-0506.google.com ([209.85.198.236]:2505 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751369AbYHMVLY (ORCPT
+	Wed, 13 Aug 2008 17:12:00 -0400
+Received: from fg-out-1718.google.com ([72.14.220.158]:51779 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752242AbYHMVL7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Aug 2008 17:11:24 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:mime-version:content-type
-         :content-transfer-encoding:content-disposition:x-google-sender-auth;
-        b=WWY8nZ0VEhMdBvvSW+aCvzUNPyF43H2gFoE7lH9efS55CYd5nlWIDfJW+iGl3qa20D
-         lEJskc7YFxGUapQnSGdMh5vUrsUtIrhyjfQKi9FMB+6KAevBbur1+Ysz/ScFoInOhcoT
-         Di9PpLSJ8262LU8sWfy2EOxChC7NPaDgWBsO0=
-Message-ID: <1ba2fa240808131411o638311f1m2e2daa6ef62057b1@mail.gmail.com>
-Date: Thu, 14 Aug 2008 00:11:24 +0300
-From: "Tomas Winkler" <tomas.winkler@intel.com>
-To: linux-wireless <linux-wireless@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       ipw3945-devel@lists.sourceforge.net, "Zhu Yi" <yi.zhu@intel.com>
-Subject: [ANNOUNCE] Wifi Link 5300 and 5100 Series
+	Wed, 13 Aug 2008 17:11:59 -0400
+Message-ID: <8f3aa8d60808131411l12e0203bv505cf8cd84918c2a@mail.gmail.com>
+Date: Wed, 13 Aug 2008 14:11:57 -0700
+From: "Martin Bligh" <mbligh@mbligh.org>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: Panic on boot for x86_64
+Cc: "Martin Bligh" <mbligh@google.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "Yinghai Lu" <yhlu.kernel@gmail.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
+       "Thomas Gleixner" <tglx@linutronix.de>
+In-Reply-To: <20080813141250.GB19397@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-X-Google-Sender-Auth: dc4c1f22c353e69d
+References: <33307c790808121251t79af0fajf44cebffa8938051@mail.gmail.com>
+	 <20080812131045.b89e98b1.akpm@linux-foundation.org>
+	 <86802c440808121313x26e46c00m9ec6cd73b3bdbf22@mail.gmail.com>
+	 <200808122223.29022.rjw@sisk.pl>
+	 <33307c790808121647j4feef841i23638dba40197648@mail.gmail.com>
+	 <20080813141250.GB19397@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Intel would like to announce Linux support  for Wifi Link 5000 and
-5100 Series Adapters under iwlwifi driver (iwlagn.ko)
+Looks like it's fixed since rc2-git6.
 
-The Intel(R) WiFi Link 5100 Series and 5300 is a families of IEEE
-802.11a/b/g/Draft-N1 wireless network
-adapters that operate in both the 2.4 GHz and 5.0 GHz spectra. These
-adapters, available
-in both PCIe* Mini Card and Half Mini Card form factor
-5100 1x2 MIMO up to 300Mbps
-5300 3x3 MIMO up to 450Mbps
+Thanks,
 
-Note: in 2.6.27-rc3 the MIMO and QoS features are not operational due
-to recent changes in MQ. This has probably hit also other wireless
-drivers We are working on resolving these issues.
-
-The best known working driver can be located in iwl500 branch of
-iwlwifi-2.6.git
-git://git.kernel.org/pub/scm/linux/kernel/git/iwlwifi/iwlwifi-2.6.git iwl5000
-
-It is based 2.6.26-rc6 wireless-testing kernel.
-We will publish compat-wireless that works with this release for easy
-back porting to earlier stable kernels.
-
-The driver requires firmware that can be downloaded from
-http://intellinuxwireless.org
+M.
 
 
-pci.ids were already sent to http://pciids.sourceforge.net
-----------------------------------
-8086  Intel Corporation
-        4232 Wifi Link 5100 Wireless Adapter
-                8086 1201 5100ABGN Mini Card
-                8086 1205 5100BG Mini Card
-                8086 1206 5100ABG Mini Card
-                8086 1301 5100ABGN Half Mini Card
-                8086 1305 5100BG Half Mini Card
-                8086 1306 5100ABG Half Mini Card
-                8086 1321 5100ABGN Half Mini Card Dell
-                8086 1326 5100ABG Half Mini Card Dell
-        4235 Wifi Link 5300 Wireless Adapter
-                8086 1001 5300ABGN Mini Card
-                8086 1101 5300ABGN Half Mini Card
-                8086 1121 5300ABGN Half Mini Card Dell
-        4236 Wifi Link 5300 Wireless Adapter
-                8086 1011 5300ABGN Mini Card Lenovo
-        4237 Wifi Link 5100 Wireless Adapter
-                8086 1211 5100ABGN Mini Card Lenovo
-                8086 1216 5100ABG Mini Card Lenovo
-
-----------------------
-
-Tomas
+On Wed, Aug 13, 2008 at 7:12 AM, Ingo Molnar <mingo@elte.hu> wrote:
+>
+> * Martin Bligh <mbligh@google.com> wrote:
+>
+>> >> please try tip/master, or wait a while after linus pull fix from tip x86 fix.
+>> >
+>> > The fix is in the mainline already.
+>>
+>> Still looks broken to me (rc2-git5)
+>>
+>> http://test.kernel.org/results/IBM/188946/debug/console
+>>
+>> It got in since yesterday?
+>
+> make sure you've got:
+>
+> | commit 3c7569b284e1be55d086b61a70d9f545326f6d74
+> | Author: Eric W. Biederman <ebiederm@xmission.com>
+> | Date:   Sun Aug 10 00:35:50 2008 -0700
+> |
+> |    x86_64: restore the proper NR_IRQS define so larger systems work.
+>
+> is it still broken even with that applied?
+>
+>        Ingo
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
