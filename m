@@ -1,76 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755305AbYHMTsa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755701AbYHMTwV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755305AbYHMTsa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Aug 2008 15:48:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751932AbYHMTsW
+	id S1755701AbYHMTwV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Aug 2008 15:52:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751932AbYHMTwH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Aug 2008 15:48:22 -0400
-Received: from nf-out-0910.google.com ([64.233.182.185]:63957 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751861AbYHMTsV (ORCPT
+	Wed, 13 Aug 2008 15:52:07 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:53163 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751848AbYHMTwG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Aug 2008 15:48:21 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=GsrYBn1vLNjKVsLUJXyYj8hC8R4CuRuqsUMQimN3luSpPaUpkGSHDs7O0n5GZWeXzF
-         1Rgm4+I0t0ysyLBCCPkjLmcPmIsWC7yPVIfYSz5gHx6W71o33pfNPTpa1U9zVS+BnPn2
-         zWkNm7ZLvaUbegdYHm9+e6SkpFdkjUAjme8Lw=
-Message-ID: <ea8d860a0808131248g31ffb10g37b14dc8af89038c@mail.gmail.com>
-Date: Wed, 13 Aug 2008 20:48:19 +0100
-From: "Marcin Obara" <marcin_obara@users.sourceforge.net>
-To: "Greg KH" <greg@kroah.com>
-Subject: Re: [PATCH] Intel Management Engine Interface
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20080813181850.GD4886@kroah.com>
+	Wed, 13 Aug 2008 15:52:06 -0400
+Date: Wed, 13 Aug 2008 12:50:57 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: "Eric W. Biederman" <ebiederm@xmission.com>, ying.huang@intel.com,
+       pavel@ucw.cz, nigel@nigel.suspend2.net, rjw@sisk.pl, vgoyal@redhat.com,
+       mingo@elte.hu, linux-kernel@vger.kernel.org, kexec@lists.infradead.org
+Subject: Re: [PATCH] kexec jump: fix compiling warning on xchg(&kexec_lock,
+ 0) in kernel_kexec()
+In-Reply-To: <20080813124406.21091eae.akpm@linux-foundation.org>
+Message-ID: <alpine.LFD.1.10.0808131247320.3462@nehalem.linux-foundation.org>
+References: <1218618760.24951.137.camel@caritas-dev.intel.com> <alpine.LFD.1.10.0808130956360.3462@nehalem.linux-foundation.org> <m1r68shjhb.fsf@frodo.ebiederm.org> <20080813124406.21091eae.akpm@linux-foundation.org>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <alpine.DEB.1.00.0807172021450.26825@ip-195-3-221-75.vnet.pl>
-	 <alpine.DEB.1.00.0807180742560.7868@ip-195-3-221-75.vnet.pl>
-	 <alpine.DEB.1.00.0807181938180.12442@ip-195-3-221-75.vnet.pl>
-	 <alpine.DEB.1.00.0807182122460.24146@ip-195-3-221-75.vnet.pl>
-	 <alpine.DEB.1.00.0807182229070.30162@ip-195-3-221-75.vnet.pl>
-	 <alpine.DEB.1.00.0807231958130.20791@ip-195-3-221-75.vnet.pl>
-	 <alpine.DEB.1.00.0808112115140.6724@ip-195-3-221-75.vnet.pl>
-	 <20080813005835.GE22793@kroah.com>
-	 <ea8d860a0808130016w646307few3cc6385caf9b1ec7@mail.gmail.com>
-	 <20080813181850.GD4886@kroah.com>
-X-Google-Sender-Auth: 9f8cdefdc17241de
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/8/13 Greg KH <greg@kroah.com>:
->> GET_VERSION is called frequently
->
-> Why?  Shouldn't it only be called once?
-Once per connection. But you can have many clients connecting.
 
->> With ioctl - only one file handle is used, and userspace client logic
->> is simpler.
->
-> But the kernel is messier and we are trying to not add any more ioctls
-> to it.  Especially for trivial things like the version number of the
-> hardware device.
-It's rather protocol version (=running software version) supported by
-hardware device.
-Hmmm, I just didn't know that there is something wrong with ioctls.
 
->> Normal flow looks like:
->>
->> open
->> ioctl(GET_VERSION)
->
-> Great, do an additional open/read/close here for the version, I think
-> you will find it pretty trivial to do :)
-Right, it's trivial.... but will make userspace source code messier and bigger.
+On Wed, 13 Aug 2008, Andrew Morton wrote:
+> - * in interrupt context :)
+> + * Return true if we acquired the lock
+>   */
+> -static int kexec_lock;
+> +static inline bool kexec_trylock(void)
+> +{
+> +	return !test_and_set_bit(0, &kexec_bitlock);
 
-Btw. I know we have powerful CPUs... but small wasting resources is
-still wasting resources... so we still need new CPUs :-).
+Nope. That needs to be an "unsigned long".
 
-Regards
-Marcin
+But more importantl, why not just make it a lock in the first place?
+
+	static DEFINE_SPINLOCK(kexec_lock);
+
+	#define kexec_trylock() spin_trylock(&kexec_lock)
+	#define kexec_unlock() spin_unlock(&kexec_lock)
+
+and then you get it all right and clear and obvious.
+
+Yeah, and I didn't check whether there is anything that is supposed to be 
+able to sleep. If there is, use a mutex instead of a spinlock, of course.
+
+		Linus
