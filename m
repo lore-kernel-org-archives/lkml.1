@@ -1,213 +1,229 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757084AbYHMXps@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756671AbYHMXqx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757084AbYHMXps (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Aug 2008 19:45:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756122AbYHMXpf
+	id S1756671AbYHMXqx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Aug 2008 19:46:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753716AbYHMXqo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Aug 2008 19:45:35 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:41797
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1756023AbYHMXpd (ORCPT
+	Wed, 13 Aug 2008 19:46:44 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:36715 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753544AbYHMXqn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Aug 2008 19:45:33 -0400
-Date: Wed, 13 Aug 2008 16:45:34 -0700 (PDT)
-Message-Id: <20080813.164534.57604323.davem@davemloft.net>
-To: torvalds@linux-foundation.org
-CC: akpm@linux-foundation.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [GIT]: Networking
-From: David Miller <davem@davemloft.net>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Wed, 13 Aug 2008 19:46:43 -0400
+Date: Wed, 13 Aug 2008 16:45:30 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Rodolfo Giometti <giometti@enneenne.com>
+Cc: linux-kernel@vger.kernel.org, cbouatmailru@gmail.com, dwmw2@infradead.org,
+       giometti@linux.it
+Subject: Re: [PATCH 1/1] power: support for Texas Instruments BQ27x00
+ battery managers.
+Message-Id: <20080813164530.82528a4d.akpm@linux-foundation.org>
+In-Reply-To: <1217584435-7337-1-git-send-email-giometti@enneenne.com>
+References: <1217584435-7337-1-git-send-email-giometti@enneenne.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri,  1 Aug 2008 11:53:55 +0200
+Rodolfo Giometti <giometti@enneenne.com> wrote:
 
-We must always be getting better because we're always applying
-more and more fixes :-)
+> From: Rodolfo Giometti <giometti@linux.it>
+> 
+> These battery managers came in two different packages: one for I2C
+> busses (BQ27200) and one for HDQ busses (BQ27000).
+> 
+> This driver currently supports only the I2C chip version but the code
+> is designed in order to easily allow the HDQ chip version integration.
+> 
+>
+> ...
+>
+> +/* If the system has several batteries we need a different name for each
+> + * of them...
+> + */
+> +DEFINE_IDR(battery_id);
+> +DEFINE_MUTEX(battery_mutex);
 
-1) dev_deactivate probes for quiecence on the wrong qdisc, resulting
-   in crashes
+These should be static.
 
-2) pktgen can reference invalid TX queues, fix from Andrew Gallatin
+>
+> ...
+>
+> +static int bq27200_battery_probe(struct i2c_client *client,
+> +					const struct i2c_device_id *id)
+> +{
+> +	char *name;
+> +	struct bq27x00_device_info *di;
+> +	struct bq27x00_access_methods *bus;
+> +	int num, retval = 0;
+> +
+> +	/* Get new ID for the new battery device */
+> +	retval = idr_pre_get(&battery_id, GFP_KERNEL);
+> +	if (retval == 0)
+> +		return -ENOMEM;
+> +	mutex_lock(&battery_mutex);
+> +	retval = idr_get_new(&battery_id, client, &num);
+> +	mutex_unlock(&battery_mutex);
+> +	if (retval < 0)
+> +		return retval;
+> +
+> +	name = kmalloc(16, GFP_KERNEL);
+> +	if (!name) {
+> +		dev_err(&client->dev, "failed to allocate device name\n");
+> +		retval = -ENOMEM;
+> +		goto batt_failed_1;
+> +	}
+> +	sprintf(name, "bq27200-%d", num);
 
-3) IGMP net namespace crash fix from Daniel Lezcano.
+Use kasprintf()
 
-4) BNX2X driver bug fixes from Eilon Greenstein and co.
+> +	di = kzalloc(sizeof(*di), GFP_KERNEL);
+> +	if (!di) {
+> +		dev_err(&client->dev, "failed to allocate device info data\n");
+> +		retval = -ENOMEM;
+> +		goto batt_failed_2;
+> +	}
+> +	di->id = num;
+> +
 
-5) Missing DCCP socket option check from Arnaldo Carvalho de Melo.
+Please review:
 
-6) Fix double-lock deadlock in UDP encapsulation, from Herbert Xu.
+From: Andrew Morton <akpm@linux-foundation.org>
 
-7) Packet scheduler TC action fixes from Jamal Hadi Salim.
+ERROR: space prohibited before that ':' (ctx:WxE)
+#227: FILE: drivers/power/bq27x00_battery.c:175:
++	case POWER_SUPPLY_PROP_VOLTAGE_NOW :
+ 	                                   ^
 
-8) IPVS bug fixes from Simon Horman and Sven Wegener.
+ERROR: space prohibited before that ':' (ctx:WxE)
+#228: FILE: drivers/power/bq27x00_battery.c:176:
++	case POWER_SUPPLY_PROP_PRESENT :
+ 	                               ^
 
-9) Route dumping OOPS fix in ipv6 from Brian Haley.
+ERROR: space prohibited before that ':' (ctx:WxE)
+#235: FILE: drivers/power/bq27x00_battery.c:183:
++	case POWER_SUPPLY_PROP_CURRENT_NOW :
+ 	                                   ^
 
-10) TIPC uses internal byte swapping implementation routine, don't
-    do that.  From Andrew Morton.
+ERROR: space prohibited before that ':' (ctx:WxE)
+#240: FILE: drivers/power/bq27x00_battery.c:188:
++	case POWER_SUPPLY_PROP_CAPACITY :
+ 	                                ^
 
-11) CPU utilization when TX queue of device is full is excessive
-    due to a thinko in one of the TX multiqueue commits.
+ERROR: space prohibited before that ':' (ctx:WxE)
+#245: FILE: drivers/power/bq27x00_battery.c:193:
++	case POWER_SUPPLY_PROP_TEMP :
+ 	                            ^
 
-12) Ingress filters need to be findable via qdisc_lookup() just like
-    egress ones.  Also, filter attachment was referencing the wrong
-    qdisc, and therefore not working.  Based upon bug reports by
-    Stephen Hemminger.
+total: 5 errors, 0 warnings, 412 lines checked
 
-Please pull, thanks a lot.
+./patches/power-support-for-texas-instruments-bq27x00-battery-managers.patch has style problems, please review.  If any of these errors
+are false positives report them to the maintainer, see
+CHECKPATCH in MAINTAINERS.
 
-The following changes since commit 76aab2c1eae491a5d73ac83deec97dd28ebac584:
-  Jamal Hadi Salim (1):
-        pkt_sched: Fix actions referencing
+Please run checkpatch prior to sending patches
 
-are available in the git repository at:
+Cc: Anton Vorontsov <cbouatmailru@gmail.com>
+Cc: David Woodhouse <dwmw2@infradead.org>
+Cc: Rodolfo Giometti <giometti@linux.it>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
 
-  master.kernel.org:/pub/scm/linux/kernel/git/davem/net-2.6.git master
+ drivers/power/bq27x00_battery.c |   10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
 
-Andrew Gallatin (1):
-      pktgen: prevent pktgen from using bad tx queue
+diff -puN drivers/power/Kconfig~power-support-for-texas-instruments-bq27x00-battery-managers-checkpatch-fixes drivers/power/Kconfig
+diff -puN drivers/power/Makefile~power-support-for-texas-instruments-bq27x00-battery-managers-checkpatch-fixes drivers/power/Makefile
+diff -puN drivers/power/bq27x00_battery.c~power-support-for-texas-instruments-bq27x00-battery-managers-checkpatch-fixes drivers/power/bq27x00_battery.c
+--- a/drivers/power/bq27x00_battery.c~power-support-for-texas-instruments-bq27x00-battery-managers-checkpatch-fixes
++++ a/drivers/power/bq27x00_battery.c
+@@ -172,25 +172,25 @@ static int bq27x00_battery_get_property(
+ 	struct bq27x00_device_info *di = to_bq27x00_device_info(psy);
+ 
+ 	switch (psp) {
+-	case POWER_SUPPLY_PROP_VOLTAGE_NOW :
+-	case POWER_SUPPLY_PROP_PRESENT :
++	case POWER_SUPPLY_PROP_VOLTAGE_NOW:
++	case POWER_SUPPLY_PROP_PRESENT:
+ 		val->intval = bq27x00_battery_voltage(di);
+ 		if (psp == POWER_SUPPLY_PROP_PRESENT)
+ 			val->intval = val->intval <= 0 ? 0 : 1;
+ 
+ 		break;
+ 
+-	case POWER_SUPPLY_PROP_CURRENT_NOW :
++	case POWER_SUPPLY_PROP_CURRENT_NOW:
+ 		val->intval = bq27x00_battery_current(di);
+ 
+ 		break;
+ 
+-	case POWER_SUPPLY_PROP_CAPACITY :
++	case POWER_SUPPLY_PROP_CAPACITY:
+ 		val->intval = bq27x00_battery_rsoc(di);
+ 
+ 		break;
+ 
+-	case POWER_SUPPLY_PROP_TEMP :
++	case POWER_SUPPLY_PROP_TEMP:
+ 		val->intval = bq27x00_battery_temperature(di);
+ 
+ 		break;
+_
 
-Andrew Morton (1):
-      net/tipc/subscr.c: don't use ___constant_swab32
 
-Arnaldo Carvalho de Melo (1):
-      dccp: change L/R must have at least one byte in the dccpsf_val field
 
-Brian Haley (1):
-      ipv6: Fix OOPS, ip -f inet6 route get fec0::1, linux-2.6.26, ip6_route_output, rt6_fill_node+0x175
 
-Daniel Lezcano (1):
-      netns: Fix crash by making igmp per namespace
 
-David S. Miller (4):
-      pkt_sched: Fix ingress deletion and filter attachment.
-      Merge branch 'stealer/ipvs/for-davem' of git://git.stealer.net/linux-2.6
-      pkt_sched: Add queue stopped test back to qdisc_run().
-      pkt_sched: Fix queue quiescence testing in dev_deactivate().
 
-Eilon Greenstein (14):
-      bnx2x: FW (bootcode) interface fixes
-      bnx2x: Not dropping packets with L3/L4 checksum error
-      bnx2x: FW Internal Memory structure
-      bnx2x: HW attention lock
-      bnx2x: Memory allocation
-      bnx2x: PBA Table Page Alignment Workaround
-      bnx2x: WoL capability
-      bnx2x: Change GPIO for any port
-      bnx2x: 1G LED does not turn off
-      bnx2x: Driver info
-      bnx2x: Minor code improvements
-      bnx2x: Spelling mistakes
-      bnx2x: Checkpatch compliance
-      bnx2x: Version update
+From: Andrew Morton <akpm@linux-foundation.org>
 
-Gerrit Renker (1):
-      skbuff: Code readability NiT
+- make things static
 
-Herbert Xu (1):
-      udp: Drop socket lock for encapsulated packets
+- use kasprintf()
 
-Jamal Hadi Salim (3):
-      wext: Send name on events
-      net-sched: Fix actions flushing
-      net-sched: fix Action flushing return code
+Cc: Anton Vorontsov <cbouatmailru@gmail.com>
+Cc: David Woodhouse <dwmw2@infradead.org>
+Cc: Rodolfo Giometti <giometti@linux.it>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
 
-Jarek Poplawski (3):
-      pkt_sched: Add BH protection for qdisc_stab_lock.
-      pkt_sched: Fix oops in htb_delete.
-      pkt_sched: Protect gen estimators under est_lock.
+ drivers/power/bq27x00_battery.c |    7 +++----
+ 1 file changed, 3 insertions(+), 4 deletions(-)
 
-Jean-Christophe DUBOIS (1):
-      xfrm: remove unnecessary variable in xfrm_output_resume() 2nd try
+diff -puN drivers/power/Kconfig~power-support-for-texas-instruments-bq27x00-battery-managers-tweaks drivers/power/Kconfig
+diff -puN drivers/power/Makefile~power-support-for-texas-instruments-bq27x00-battery-managers-tweaks drivers/power/Makefile
+diff -puN drivers/power/bq27x00_battery.c~power-support-for-texas-instruments-bq27x00-battery-managers-tweaks drivers/power/bq27x00_battery.c
+--- a/drivers/power/bq27x00_battery.c~power-support-for-texas-instruments-bq27x00-battery-managers-tweaks
++++ a/drivers/power/bq27x00_battery.c
+@@ -40,8 +40,8 @@
+ /* If the system has several batteries we need a different name for each
+  * of them...
+  */
+-DEFINE_IDR(battery_id);
+-DEFINE_MUTEX(battery_mutex);
++static DEFINE_IDR(battery_id);
++static DEFINE_MUTEX(battery_mutex);
+ 
+ struct bq27x00_device_info;
+ struct bq27x00_access_methods {
+@@ -275,13 +275,12 @@ static int bq27200_battery_probe(struct 
+ 	if (retval < 0)
+ 		return retval;
+ 
+-	name = kmalloc(16, GFP_KERNEL);
++	name = kasprintf(GFP_KERNEL, "bq27200-%d", num);
+ 	if (!name) {
+ 		dev_err(&client->dev, "failed to allocate device name\n");
+ 		retval = -ENOMEM;
+ 		goto batt_failed_1;
+ 	}
+-	sprintf(name, "bq27200-%d", num);
+ 
+ 	di = kzalloc(sizeof(*di), GFP_KERNEL);
+ 	if (!di) {
+_
 
-Julien Brunel (1):
-      net/rxrpc: Use an IS_ERR test rather than a NULL test
-
-Rami Rosen (2):
-      ipv6: ip6_route.h cleanup.
-      ipv6: Kill unused ip6_prohibit_entry and ip6_blk_hole_entry declarations.
-
-Simon Horman (2):
-      ipvs: Explictly clear ip_vs_stats members
-      ipvs: add lvs-devel as a list contact
-
-Sven Wegener (9):
-      ipvs: Fix possible deadlock in sync code
-      ipvs: Fix possible deadlock in estimator code
-      ipvs: Use ARRAY_SIZE()
-      ipvs: Use list_empty() instead of open-coding the same functionality
-      ipvs: Initialize schedulers' struct list_head at compile time
-      ipvs: Annotate init functions with __init
-      ipvs: Mark net_vs_ctl_path const
-      ipvs: Embed estimator object into stats object
-      ipvs: No need to zero out ip_vs_stats during initialization
-
-Vladislav Zolotarov (2):
-      bnx2x: Load/Unload under traffic
-      bnx2x: No LRO without Rx checksum
-
-Yaniv Rosner (3):
-      bnx2x: Link order with external PHY
-      bnx2x: Pause settings
-      bnx2x: 8073 PHY changes
-
-Yitchak Gertner (6):
-      bnx2x: Statistics
-      bnx2x: HW lock mechanism
-      bnx2x: Self-test false positive
-      bnx2x: Delay in while loops
-      bnx2x: Clearing MAC addresses filters
-      bnx2x: Wrong structure size
-
- MAINTAINERS                     |    1 +
- drivers/net/bnx2x.h             |   87 ++--
- drivers/net/bnx2x_fw_defs.h     |  160 +++---
- drivers/net/bnx2x_hsi.h         |   16 +-
- drivers/net/bnx2x_init.h        |   26 +-
- drivers/net/bnx2x_init_values.h |  533 ++++++++---------
- drivers/net/bnx2x_link.c        | 1258 +++++++++++++++++++++++++--------------
- drivers/net/bnx2x_link.h        |   11 +-
- drivers/net/bnx2x_main.c        | 1212 +++++++++++++++++++++----------------
- drivers/net/bnx2x_reg.h         |  210 ++++---
- include/linux/skbuff.h          |    6 +-
- include/net/ip6_route.h         |    6 -
- include/net/ip_vs.h             |   32 +-
- include/net/pkt_sched.h         |    5 +-
- net/core/gen_estimator.c        |    9 +-
- net/core/pktgen.c               |   29 +
- net/dccp/proto.c                |    5 +
- net/ipv4/igmp.c                 |   71 +--
- net/ipv4/ipvs/ip_vs_app.c       |    2 +-
- net/ipv4/ipvs/ip_vs_conn.c      |    2 +-
- net/ipv4/ipvs/ip_vs_ctl.c       |   27 +-
- net/ipv4/ipvs/ip_vs_dh.c        |    2 +-
- net/ipv4/ipvs/ip_vs_est.c       |  116 ++---
- net/ipv4/ipvs/ip_vs_lblc.c      |    2 +-
- net/ipv4/ipvs/ip_vs_lblcr.c     |    2 +-
- net/ipv4/ipvs/ip_vs_lc.c        |    2 +-
- net/ipv4/ipvs/ip_vs_nq.c        |    2 +-
- net/ipv4/ipvs/ip_vs_proto.c     |    4 +-
- net/ipv4/ipvs/ip_vs_rr.c        |    2 +-
- net/ipv4/ipvs/ip_vs_sched.c     |    4 +-
- net/ipv4/ipvs/ip_vs_sed.c       |    2 +-
- net/ipv4/ipvs/ip_vs_sh.c        |    2 +-
- net/ipv4/ipvs/ip_vs_sync.c      |    4 +-
- net/ipv4/ipvs/ip_vs_wlc.c       |    2 +-
- net/ipv4/ipvs/ip_vs_wrr.c       |    2 +-
- net/ipv4/udp.c                  |    6 +-
- net/ipv6/route.c                |    3 +-
- net/ipv6/udp.c                  |    6 +-
- net/rxrpc/ar-accept.c           |    2 +-
- net/sched/act_api.c             |   13 +-
- net/sched/sch_api.c             |   50 +-
- net/sched/sch_generic.c         |   11 +-
- net/sched/sch_htb.c             |    3 +-
- net/tipc/subscr.c               |    2 +-
- net/wireless/wext.c             |    1 +
- net/xfrm/xfrm_output.c          |    5 +-
- 46 files changed, 2265 insertions(+), 1693 deletions(-)
