@@ -1,53 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756170AbYHMTxw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757218AbYHMTyQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756170AbYHMTxw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Aug 2008 15:53:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752003AbYHMTxo
+	id S1757218AbYHMTyQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Aug 2008 15:54:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755721AbYHMTx7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Aug 2008 15:53:44 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:39525 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751861AbYHMTxn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Aug 2008 15:53:43 -0400
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Steven Rostedt <srostedt@redhat.com>, Bruce Duncan <bwduncan@gmail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [git pull] ftrace for v2.6.27
-From: Andi Kleen <andi@firstfloor.org>
-References: <20080714142226.GA11412@elte.hu>
-	<200808130248.58216.bwduncan@gmail.com> <48A2F9AB.8000608@redhat.com>
-	<20080813151827.GA10819@elte.hu>
-Date: Wed, 13 Aug 2008 21:53:41 +0200
-In-Reply-To: <20080813151827.GA10819@elte.hu> (Ingo Molnar's message of "Wed, 13 Aug 2008 17:18:27 +0200")
-Message-ID: <873al81yka.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
+	Wed, 13 Aug 2008 15:53:59 -0400
+Received: from mx2.suse.de ([195.135.220.15]:53698 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755025AbYHMTx6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Aug 2008 15:53:58 -0400
+From: Andreas Schwab <schwab@suse.de>
+To: David Miller <davem@davemloft.net>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.27-rc3
+References: <alpine.LFD.1.10.0808121914270.3462@nehalem.linux-foundation.org>
+X-Yow: I'm ZIPPY the PINHEAD and I'm totally committed to the festive mode.
+Date: Wed, 13 Aug 2008 21:53:56 +0200
+In-Reply-To: <alpine.LFD.1.10.0808121914270.3462@nehalem.linux-foundation.org>
+	(Linus Torvalds's message of "Tue, 12 Aug 2008 19:33:16 -0700 (PDT)")
+Message-ID: <jefxp8ofmz.fsf@sykes.suse.de>
+User-Agent: Gnus/5.110009 (No Gnus v0.9) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar <mingo@elte.hu> writes:
->
-> try latest tip/master plus an USB debug key, then enable 
-> CONFIG_EARLY_PRINTK_DBGP=y in your .config on the host, add the 
-> earlyprintk=dbgp,keep boot parameter and reboot [and disable USB for 
-> good measure]. On the other host you connect to via an USB cable, enable 
-> USB_SERIAL_DEBUG=y and use /dev/ttyUSB0 with the serial terminal app of 
-> your choice.
->
-> that, as long as the USB ports are operational, gives a working serial 
-> console on just about any laptop.
+> David Miller (3):
+>       lockdep: fix combinatorial explosion in lock subgraph traversal
 
-Unfortunately the usb debug dongle cables are hard to get and
-expensive. A more available alternative would be to use firescope if
-your laptop has firewire, because firewire cables are widely
-available. The kernel supports early firewire since some time too, so
-it can be even used for early debugging. Another advantage is that
-firescope can even get data from a dead kernel as long as the firewire
-hardware is not disabled.
+lockdep_count_forward_deps is only defined if CONFIG_PROVE_LOCKING but
+used unconditionally in lockdep_proc.c.
 
-For details see Documentation/debugging-via-ohci1394.txt
+kernel/built-in.o: In function `.lockdep_stats_show':
+lockdep_proc.c:(.text+0x3fea8): undefined reference to `.lockdep_count_forward_deps'
+kernel/built-in.o: In function `.l_show':
+lockdep_proc.c:(.text+0x401f0): undefined reference to `.lockdep_count_forward_deps'
+lockdep_proc.c:(.text+0x40210): undefined reference to `.lockdep_count_backward_deps'
 
--Andi
+Andreas.
+
+-- 
+Andreas Schwab, SuSE Labs, schwab@suse.de
+SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
+PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
