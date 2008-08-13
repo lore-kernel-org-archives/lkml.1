@@ -1,207 +1,150 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754908AbYHMBR0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755281AbYHMBTB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754908AbYHMBR0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Aug 2008 21:17:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753352AbYHMBRQ
+	id S1755281AbYHMBTB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Aug 2008 21:19:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753468AbYHMBSx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Aug 2008 21:17:16 -0400
-Received: from web82101.mail.mud.yahoo.com ([209.191.84.214]:33306 "HELO
-	web82101.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753028AbYHMBRP (ORCPT
+	Tue, 12 Aug 2008 21:18:53 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:42181 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752289AbYHMBSw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Aug 2008 21:17:15 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=sbcglobal.net;
-  h=Received:X-Mailer:Date:From:Subject:To:Cc:MIME-Version:Content-Type:Message-ID;
-  b=Ni3ZPcg26Mqb9siqjCGsMDyHqgfWH/13KUgcl2GI3qTxzxE3SvtF5Yj1yuUFMV98yt8OveVQtRXMORqT61GVROAVOPeXlH2YkGwgPn2i+PxTR9EcyxOjZVycPQsUWxAj6NEgPcAnu7a0Rln7pY8TTqUx/b858Agkgm/9DFqI00Q=;
-X-Mailer: YahooMailRC/1042.40 YahooMailWebService/0.7.218
-Date: Tue, 12 Aug 2008 18:17:15 -0700 (PDT)
-From: David Witbrodt <dawitbro@sbcglobal.net>
-Subject: Re: HPET regression in 2.6.26 versus 2.6.25 -- experimental revert for 2.6.27 failed
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: linux-kernel@vger.kernel.org,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       netdev <netdev@vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <305173.54014.qm@web82101.mail.mud.yahoo.com>
+	Tue, 12 Aug 2008 21:18:52 -0400
+Date: Tue, 12 Aug 2008 18:16:53 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Greg KH <greg@kroah.com>
+Cc: jbaron@redhat.com, randy.dunlap@oracle.com, linux-kernel@vger.kernel.org,
+       joe@perches.com, nick@nick-andrew.net, Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: [PATCH 1/7] dynamic debug v2 - infrastructure
+Message-Id: <20080812181653.32d6f373.akpm@linux-foundation.org>
+In-Reply-To: <20080813010804.GA17446@kroah.com>
+References: <20080717070103.GA21961@kroah.com>
+	<20080717212040.GB13252@redhat.com>
+	<20080717223222.GA28016@kroah.com>
+	<20080808215153.GA16729@redhat.com>
+	<20080808193851.24210bc4.randy.dunlap@oracle.com>
+	<20080811173616.GC6103@redhat.com>
+	<20080811223309.GD9810@kroah.com>
+	<20080812194817.GD6056@redhat.com>
+	<20080812200908.GA444@kroah.com>
+	<20080812204619.GE6056@redhat.com>
+	<20080813010804.GA17446@kroah.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 12 Aug 2008 18:08:04 -0700
+Greg KH <greg@kroah.com> wrote:
+
+> On Tue, Aug 12, 2008 at 04:46:19PM -0400, Jason Baron wrote:
+> > On Tue, Aug 12, 2008 at 01:09:08PM -0700, Greg KH wrote:
+> > > So close, can I have a good changelog comment with the patch so people
+> > > know what it is when they look in the logs?
+> > > 
+> > > Care to resend it with that?
+> > > 
+> > 
+> > Base infrastructure to enable per-module debug messages.
+> 
+> Ah, so close...
+> 
+> With this patch, I get the following build error:
+> 
+>   CC [M]  drivers/usb/gadget/u_ether.o
+> drivers/usb/gadget/u_ether.c: In function ___gether_setup___:
+> drivers/usb/gadget/u_ether.c:787: error: ___KBUILD_MODNAME___ undeclared (first use in this function)
+> drivers/usb/gadget/u_ether.c:787: error: (Each undeclared identifier is reported only once
+> drivers/usb/gadget/u_ether.c:787: error: for each function it appears in.)
+> drivers/usb/gadget/u_ether.c:787: error: unknown field ___Usage___ specified in initializer
+> drivers/usb/gadget/u_ether.c:787: error: expected expression before ___.___ token
+> drivers/usb/gadget/u_ether.c:787: error: initializer element is not constant
+> drivers/usb/gadget/u_ether.c:787: error: (near initialization for ___descriptor.hash___)
+> drivers/usb/gadget/u_ether.c:787: error: ___Usage___ undeclared (first use in this function)
+> drivers/usb/gadget/u_ether.c:787: error: invalid operands to binary << (have ___long long int___ and ___char *___)
+> drivers/usb/gadget/u_ether.c:787: error: expected ___)___ before ___:___ token
+> drivers/usb/gadget/u_ether.c:787: error: invalid operands to binary & (have ___long long int___ and ___char *___)
+> drivers/usb/gadget/u_ether.c:787: error: invalid operands to binary << (have ___long long int___ and ___char *___)
+> drivers/usb/gadget/u_ether.c:787: error: expected ___)___ before ___:___ token
+> drivers/usb/gadget/u_ether.c:787: error: invalid operands to binary & (have ___long long int___ and ___char *___)
+> drivers/usb/gadget/u_ether.c:787: error: expected ___)___ before ___:___ token
+> drivers/usb/gadget/u_ether.c:787: warning: passing argument 4 of _____dynamic_dbg_enabled_helper___ makes integer from pointer without a cast
+> drivers/usb/gadget/u_ether.c:787: error: expected ___)___ before ___KBUILD_MODNAME___
+
+(lol at gcc crap)
+
+> drivers/usb/gadget/u_ether.c:787: warning: too few arguments for format
+
+argh, not that again.  We had this with a patch from Jesse a while
+back, which I fixed thusly:
+
+From: Andrew Morton <akpm@linux-foundation.org>
+
+alpha:
+
+CC [M]  drivers/usb/gadget/u_ether.o
+In file included from include/asm/dma-mapping.h:7,
+                 from include/linux/dma-mapping.h:52,
+                 from include/linux/dmaengine.h:29,
+                 from include/linux/skbuff.h:29,
+                 from include/linux/if_ether.h:114,
+                 from include/linux/etherdevice.h:27,
+                 from drivers/usb/gadget/u_ether.c:29:
+include/linux/pci.h: In function 'pci_register_driver':
+include/linux/pci.h:673: error: 'KBUILD_MODNAME' undeclared (first use in this function)
+include/linux/pci.h:673: error: (Each undeclared identifier is reported only once
+include/linux/pci.h:673: error: for each function it appears in.)
 
 
-> can you post /proc/iomem?
+Sam says:
 
-Gladly.
+The problem is that u_ether.o is used by two modules so when we build it
+KBUILD_MODNAME is not defined because kbuild does not know what value to
+use.
 
-I wasn't sure which kernel you would like me to use, so I chose a 
-sample of 3:
+And in pci.h we have the following inline:
 
-1.  linux-2.6.25 (from git) just before the commit causing the lockups
-2.  linux-2.6.26 (with "hpet=disabled")
-3.  Debian stock 2.6.26 ("linux-image-2.6.26-1-amd64", also with HPET
-disabled)
+static inline int __must_check pci_register_driver(struct pci_driver *driver)
+{
+        return __pci_register_driver(driver, THIS_MODULE, KBUILD_MODNAME);
+}
 
+And alpha uses dma-mapping.h to nullify a number of functions that seem to
+require something from pci.h.
 
-Using 2.6.25 at the commit before the one that caused lockups:
+Making it a macro seems to fix this.
 
-$ cat /proc/iomem
-00000000-0009f3ff : System RAM
-0009f400-0009ffff : reserved
-000f0000-000fffff : reserved
-00100000-77fdffff : System RAM
-  00200000-0056ca21 : Kernel code
-  0056ca22-006ce3d7 : Kernel data
-  00753000-0079a3c7 : Kernel bss
-77fe0000-77fe2fff : ACPI Non-volatile Storage
-77fe3000-77feffff : ACPI Tables
-77ff0000-77ffffff : reserved
-78000000-7fffffff : pnp 00:0d
-d8000000-dfffffff : PCI Bus #01
-  d8000000-dfffffff : 0000:01:05.0
-    d8000000-d8ffffff : uvesafb
-e0000000-efffffff : PCI MMCONFIG 0
-  e0000000-efffffff : reserved
-fdc00000-fdcfffff : PCI Bus #02
-  fdcff000-fdcff0ff : 0000:02:05.0
-    fdcff000-fdcff0ff : r8169
-fdd00000-fdefffff : PCI Bus #01
-  fdd00000-fddfffff : 0000:01:05.0
-  fdee0000-fdeeffff : 0000:01:05.0
-  fdefc000-fdefffff : 0000:01:05.2
-    fdefc000-fdefffff : ICH HD audio
-fdf00000-fdffffff : PCI Bus #02
-fe020000-fe023fff : 0000:00:14.2
-  fe020000-fe023fff : ICH HD audio
-fe029000-fe0290ff : 0000:00:13.5
-  fe029000-fe0290ff : ehci_hcd
-fe02a000-fe02afff : 0000:00:13.4
-  fe02a000-fe02afff : ohci_hcd
-fe02b000-fe02bfff : 0000:00:13.3
-  fe02b000-fe02bfff : ohci_hcd
-fe02c000-fe02cfff : 0000:00:13.2
-  fe02c000-fe02cfff : ohci_hcd
-fe02d000-fe02dfff : 0000:00:13.1
-  fe02d000-fe02dfff : ohci_hcd
-fe02e000-fe02efff : 0000:00:13.0
-  fe02e000-fe02efff : ohci_hcd
-fe02f000-fe02f3ff : 0000:00:12.0
-  fe02f000-fe02f3ff : ahci
-fec00000-fec00fff : IOAPIC 0
-  fec00000-fec00fff : pnp 00:0d
-fed00000-fed003ff : HPET 0
-  fed00000-fed003ff : 0000:00:14.0
-fee00000-fee00fff : Local APIC
-fff80000-fffeffff : pnp 00:0d
-ffff0000-ffffffff : pnp 00:0d
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: Sam Ravnborg <sam@ravnborg.org>
+Cc: Greg KH <greg@kroah.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
 
+ include/linux/pci.h |   10 ++++++----
+ 1 file changed, 6 insertions(+), 4 deletions(-)
 
-Using 2.6.26 (custom compiled) with "hpet=disabled"
+diff -puN include/linux/pci.h~pci-make-pci_register_driver-a-macro include/linux/pci.h
+--- a/include/linux/pci.h~pci-make-pci_register_driver-a-macro
++++ a/include/linux/pci.h
+@@ -680,10 +680,12 @@ void pci_enable_bridges(struct pci_bus *
+ /* Proper probing supporting hot-pluggable devices */
+ int __must_check __pci_register_driver(struct pci_driver *, struct module *,
+ 				       const char *mod_name);
+-static inline int __must_check pci_register_driver(struct pci_driver *driver)
+-{
+-	return __pci_register_driver(driver, THIS_MODULE, KBUILD_MODNAME);
+-}
++
++/*
++ * pci_register_driver must be a macro so that KBUILD_MODNAME can be expanded
++ */
++#define pci_register_driver(driver)		\
++	__pci_register_driver(driver, THIS_MODULE, KBUILD_MODNAME)
+ 
+ void pci_unregister_driver(struct pci_driver *dev);
+ void pci_remove_behind_bridge(struct pci_dev *dev);
+_
 
-00000000-0009f3ff : System RAM
-0009f400-0009ffff : reserved
-000f0000-000fffff : reserved
-00100000-77fdffff : System RAM
-  00200000-0057358d : Kernel code
-  0057358e-006d8e9f : Kernel data
-  0076e000-007b7447 : Kernel bss
-77fe0000-77fe2fff : ACPI Non-volatile Storage
-77fe3000-77feffff : ACPI Tables
-77ff0000-77ffffff : reserved
-78000000-7fffffff : pnp 00:0d
-80000000-800003ff : 0000:00:14.0
-d8000000-dfffffff : PCI Bus 0000:01
-  d8000000-dfffffff : 0000:01:05.0
-    d8000000-d8ffffff : uvesafb
-e0000000-efffffff : PCI MMCONFIG 0
-  e0000000-efffffff : reserved
-fdc00000-fdcfffff : PCI Bus 0000:02
-  fdcff000-fdcff0ff : 0000:02:05.0
-    fdcff000-fdcff0ff : r8169
-fdd00000-fdefffff : PCI Bus 0000:01
-  fdd00000-fddfffff : 0000:01:05.0
-  fdee0000-fdeeffff : 0000:01:05.0
-  fdefc000-fdefffff : 0000:01:05.2
-    fdefc000-fdefffff : ICH HD audio
-fdf00000-fdffffff : PCI Bus 0000:02
-  fdf00000-fdf1ffff : 0000:02:05.0
-fe020000-fe023fff : 0000:00:14.2
-  fe020000-fe023fff : ICH HD audio
-fe029000-fe0290ff : 0000:00:13.5
-  fe029000-fe0290ff : ehci_hcd
-fe02a000-fe02afff : 0000:00:13.4
-  fe02a000-fe02afff : ohci_hcd
-fe02b000-fe02bfff : 0000:00:13.3
-  fe02b000-fe02bfff : ohci_hcd
-fe02c000-fe02cfff : 0000:00:13.2
-  fe02c000-fe02cfff : ohci_hcd
-fe02d000-fe02dfff : 0000:00:13.1
-  fe02d000-fe02dfff : ohci_hcd
-fe02e000-fe02efff : 0000:00:13.0
-  fe02e000-fe02efff : ohci_hcd
-fe02f000-fe02f3ff : 0000:00:12.0
-  fe02f000-fe02f3ff : ahci
-fec00000-ffffffff : reserved
-  fec00000-fec00fff : IOAPIC 0
-  fed00000-fed003ff : HPET 0
-  fee00000-fee00fff : Local APIC
-
-
-Using Debian stock kernel
-
-00000000-0009f3ff : System RAM
-0009f400-0009ffff : reserved
-000f0000-000fffff : reserved
-00100000-77fdffff : System RAM
-  00200000-0042c443 : Kernel code
-  0042c444-0053a677 : Kernel data
-  005de000-00673317 : Kernel bss
-77fe0000-77fe2fff : ACPI Non-volatile Storage
-77fe3000-77feffff : ACPI Tables
-77ff0000-77ffffff : reserved
-78000000-7fffffff : pnp 00:0d
-80000000-800003ff : 0000:00:14.0
-d8000000-dfffffff : PCI Bus 0000:01
-  d8000000-dfffffff : 0000:01:05.0
-e0000000-efffffff : PCI MMCONFIG 0
-  e0000000-efffffff : reserved
-fdc00000-fdcfffff : PCI Bus 0000:02
-  fdcff000-fdcff0ff : 0000:02:05.0
-    fdcff000-fdcff0ff : r8169
-fdd00000-fdefffff : PCI Bus 0000:01
-  fdd00000-fddfffff : 0000:01:05.0
-  fdee0000-fdeeffff : 0000:01:05.0
-  fdefc000-fdefffff : 0000:01:05.2
-    fdefc000-fdefffff : ICH HD audio
-fdf00000-fdffffff : PCI Bus 0000:02
-  fdf00000-fdf1ffff : 0000:02:05.0
-fe020000-fe023fff : 0000:00:14.2
-  fe020000-fe023fff : ICH HD audio
-fe029000-fe0290ff : 0000:00:13.5
-  fe029000-fe0290ff : ehci_hcd
-fe02a000-fe02afff : 0000:00:13.4
-  fe02a000-fe02afff : ohci_hcd
-fe02b000-fe02bfff : 0000:00:13.3
-  fe02b000-fe02bfff : ohci_hcd
-fe02c000-fe02cfff : 0000:00:13.2
-  fe02c000-fe02cfff : ohci_hcd
-fe02d000-fe02dfff : 0000:00:13.1
-  fe02d000-fe02dfff : ohci_hcd
-fe02e000-fe02efff : 0000:00:13.0
-  fe02e000-fe02efff : ohci_hcd
-fe02f000-fe02f3ff : 0000:00:12.0
-  fe02f000-fe02f3ff : ahci
-fec00000-ffffffff : reserved
-  fec00000-fec00fff : IOAPIC 0
-  fed00000-fed003ff : HPET 0
-  fee00000-fee00fff : Local APIC
-
-
-Please let me know anything else I can provide, and which kernels you
-would like me to run to provide it.
-
-
-Dave W.
