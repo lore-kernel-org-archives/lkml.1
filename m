@@ -1,56 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754912AbYHMQFW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753735AbYHMQJg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754912AbYHMQFW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Aug 2008 12:05:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751164AbYHMQFH
+	id S1753735AbYHMQJg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Aug 2008 12:09:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751352AbYHMQJ2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Aug 2008 12:05:07 -0400
-Received: from wr-out-0506.google.com ([64.233.184.225]:19779 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751705AbYHMQFG (ORCPT
+	Wed, 13 Aug 2008 12:09:28 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:42521 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751116AbYHMQJ2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Aug 2008 12:05:06 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=SIyylueEsqbmxThqGBbMS+FLOhjIlIggUBOTHEsabXaRO9Iz0g0ftezWmbuq5BtkIA
-         HwYGfaW3FfsL+bH9pCtxzHfVf1j/xVxm12lbR1X32VpJfG0DeAGKVup+8gi8zwC+jMTU
-         4QqFOF+/s58Ey/lDt3/JUaBl1ehD98M0vFydQ=
-Message-ID: <86802c440808130905s360c9695jef64b6ed7746899@mail.gmail.com>
-Date: Wed, 13 Aug 2008 09:05:05 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "David Witbrodt" <dawitbro@sbcglobal.net>
-Subject: Re: HPET regression in 2.6.26 versus 2.6.25 -- experimental revert for 2.6.27 failed
-Cc: "Ingo Molnar" <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       "Peter Zijlstra" <peterz@infradead.org>,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>, netdev <netdev@vger.kernel.org>
-In-Reply-To: <108777.49875.qm@web82104.mail.mud.yahoo.com>
+	Wed, 13 Aug 2008 12:09:28 -0400
+Message-ID: <48A30642.4060709@zytor.com>
+Date: Wed, 13 Aug 2008 09:05:22 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Ulrich Drepper <drepper@redhat.com>
+CC: Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@infradead.org>,
+       akpm@linux-foundation.org, hugh@veritas.com, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, briangrant@google.com, cgd@google.com,
+       mbligh@google.com, Linus Torvalds <torvalds@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: pthread_create() slow for many threads; also time to revisit
+ 64b context switch optimization?
+References: <af8810200808121736q76640cc1kb814385072fe9b29@mail.gmail.com> <af8810200808121745h596c175bk348d0aaeeb9bcb45@mail.gmail.com> <20080813104445.GA24632@elte.hu> <20080813063533.444c650d@infradead.org> <48A2EE07.3040003@redhat.com> <20080813142529.GB21129@elte.hu> <48A2F157.7000303@redhat.com> <20080813151007.GA8780@elte.hu> <48A2FC17.9070302@redhat.com>
+In-Reply-To: <48A2FC17.9070302@redhat.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <108777.49875.qm@web82104.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 13, 2008 at 5:03 AM, David Witbrodt <dawitbro@sbcglobal.net> wrote:
->
->
->> please try attached patch with 2.6.27-rc3
->
-> Thx for the patch... and for providing it as an attachment.  My email
-> situation is less than optimal, and I am stuck using my ISP's web
-> interface for the present.
->
-> I used 'git apply --check <patchfilename>' first, and got no errors, so
-> I applied it, built, installed, and rebooted.
+Ulrich Drepper wrote:
+> -----BEGIN PGP SIGNED MESSAGE-----
+> Hash: SHA1
+> 
+> Ingo Molnar wrote:
+>> i find it pretty unacceptable these days that we limit any aspect of 
+>> pure 64-bit apps in any way to 4GB (or any other 32-bit-ish limit). 
+> 
+> Sure, but if we can pin-point the sub-archs for which it is the problem
+> then a flag to optionally request it is even easier to handle.  You'd
+> simply ignore the flag for anything but the P4 architecture.
+> 
+> I personally have no problem removing the whole thing because I have no
+> such machine running anymore.  But there are people out there who have.
+ >
 
-could apply with
-cat revert_*.;patch | patch -p1
+This could also be done entirely in glibc (thus removing the dependency 
+on the kernel): set the flag if and only if you detect a P4 CPU.  You 
+don't even need to enumerate all the CPUs in the system (which would be 
+more painful) if you make the CPUID test wide enough that it catches all 
+compatible CPUs.
 
-YH
+	-hpa
