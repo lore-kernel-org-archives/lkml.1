@@ -1,66 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754909AbYHMA7K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755288AbYHMA75@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754909AbYHMA7K (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Aug 2008 20:59:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753451AbYHMA65
+	id S1755288AbYHMA75 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Aug 2008 20:59:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753753AbYHMA7s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Aug 2008 20:58:57 -0400
-Received: from ipmail05.adl2.internode.on.net ([203.16.214.145]:64603 "EHLO
-	ipmail05.adl2.internode.on.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753252AbYHMA64 (ORCPT
+	Tue, 12 Aug 2008 20:59:48 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:59815
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752331AbYHMA7r (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Aug 2008 20:58:56 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApoEAO/OoUh5LAMb/2dsb2JhbAC4AYFS
-X-IronPort-AV: E=Sophos;i="4.32,198,1217773800"; 
-   d="scan'208";a="180704784"
-Date: Wed, 13 Aug 2008 10:58:52 +1000
-From: Dave Chinner <david@fromorbit.com>
-To: "Linda A. Walsh" <xfs@tlinx.org>
-Cc: xfs-oss <xfs@oss.sgi.com>, LKML <linux-kernel@vger.kernel.org>,
-       Eric Sandeen <sandeen@sandeen.net>
-Subject: Re: XFS Lock debugging noise or real problem?
-Message-ID: <20080813005852.GW6119@disturbed>
-Mail-Followup-To: "Linda A. Walsh" <xfs@tlinx.org>,
-	xfs-oss <xfs@oss.sgi.com>, LKML <linux-kernel@vger.kernel.org>,
-	Eric Sandeen <sandeen@sandeen.net>
-References: <48A093A7.40606@tlinx.org> <48A09CA9.9080705@sandeen.net> <48A0F686.2090700@tlinx.org> <48A0F9FC.1070805@sandeen.net> <48A20E9E.9090100@tlinx.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <48A20E9E.9090100@tlinx.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 12 Aug 2008 20:59:47 -0400
+Date: Tue, 12 Aug 2008 17:59:48 -0700 (PDT)
+Message-Id: <20080812.175948.214598056.davem@davemloft.net>
+To: mpatocka@redhat.com
+Cc: sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: stack overflow on Sparc64
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <Pine.LNX.4.64.0808122051240.31704@hs20-bc2-1.build.redhat.com>
+References: <20080811.233013.49328708.davem@davemloft.net>
+	<20080812.012201.164876122.davem@davemloft.net>
+	<Pine.LNX.4.64.0808122051240.31704@hs20-bc2-1.build.redhat.com>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 12, 2008 at 03:28:46PM -0700, Linda A. Walsh wrote:
-> Eric Sandeen wrote:
->>   ...
-> Is it also known, (and the same bug) when you get the lock warnings when  
-> doing
-> "xfs_restore", as well (dio_get_page and xfs_ilock)...
+From: Mikulas Patocka <mpatocka@redhat.com>
+Date: Tue, 12 Aug 2008 20:53:04 -0400 (EDT)
 
-That's the mm code calling fput() with the mmap_sem held. That's a
-problem in the VM code, which XFS can do nothing about. The normal
-I/O paths always lock the inode first, then (if a page fault occurs
-during copyin/out or we need to lock down pages for direct I/O) grab
-the mmap_sem at that point. This one could deadlock if you are mixing
-read/write with mmap on the same file in different threads of a
-multithreaded app. Unlikely, but possible, though it would
-only hang that app (not the rest of the machine).
+> On Tue, 12 Aug 2008, David Miller wrote:
+> 
+> > From: David Miller <davem@davemloft.net>
+> > Date: Mon, 11 Aug 2008 23:30:13 -0700 (PDT)
+> > 
+> > > The problem is that CONFIG_STACK_DEBUG doesn't understand
+> > > the IRQ stacks at all.
+> > > 
+> > > I'll see if I can tweak it to handle this.
+> > 
+> > This patch, on top of my original IRQSTACKS patch for
+> > sparc64, seems to get things working for me.
+> 
+> Thanks, the patch works.
 
-> The bugs with 'sort', & imap were both with xfs_ilock and  
-> shrink_icache_memory.
+Thanks for testing.  I'm engaged in a few activities right
+now related to this:
 
-Once again, a problem with the generic code inverting the normal
-lock order. This one cannot deadlock, though, because by definition
-any inode on the unused list is, well, unused and hence we can't be
-holding a reference to it...
+1) I'm making a final version of this irqstacks patch which
+   I'll get into Linus's tree and then submit to -stable.
 
-Cheers,
+2) I have a patch which I'm regression testing for gcc which
+   gets rid of the 16-byte secondary-reload stack slot.  This
+   gcc is emitting 176 byte default stack frames on sparc64.
 
-Dave.
--- 
-Dave Chinner
-david@fromorbit.com
+3) I'm talking with some folks familiar with the V9 ABI about
+   the mandatory incoming argument stack slots.  I think they
+   can be eliminated in all cases except functions taking
+   varargs.  If it cannot be done universally for some
+   reason, I'll add a -mkernel option that will eliminate
+   them.  This will emit 128 byte default stack frames when
+   possible.
+
+So in the end we should hopefully have 128 byte stack frames
+coming out of gcc and IRQ stacks in the kernel.
