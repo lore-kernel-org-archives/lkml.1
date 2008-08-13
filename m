@@ -1,74 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755248AbYHMDOu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755249AbYHMDWT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755248AbYHMDOu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Aug 2008 23:14:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753956AbYHMDOm
+	id S1755249AbYHMDWT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Aug 2008 23:22:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754176AbYHMDWH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Aug 2008 23:14:42 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:54188 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752240AbYHMDOl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Aug 2008 23:14:41 -0400
-Date: Tue, 12 Aug 2008 23:10:44 -0400
-From: Dave Jones <davej@redhat.com>
-To: Wim Van Sebroeck <wim@iguana.be>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [WATCHDOG] v2.6.27-rc patches
-Message-ID: <20080813031044.GA11258@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Wim Van Sebroeck <wim@iguana.be>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	LKML <linux-kernel@vger.kernel.org>,
-	Alan Cox <alan@lxorguk.ukuu.org.uk>
-References: <20080806202918.GA29386@infomag.infomag.iguana.be>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080806202918.GA29386@infomag.infomag.iguana.be>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 12 Aug 2008 23:22:07 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:38807 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754166AbYHMDWG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Aug 2008 23:22:06 -0400
+Date: Tue, 12 Aug 2008 20:21:27 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, Mingming Cao <cmm@us.ibm.com>
+Subject: Re: [PATCH] vmscan: set try_to_release_page's gfp_mask to 0
+Message-Id: <20080812202127.b88e8250.akpm@linux-foundation.org>
+In-Reply-To: <6.0.0.20.2.20080813111835.03d345b0@172.19.0.2>
+References: <6.0.0.20.2.20080813111835.03d345b0@172.19.0.2>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 06, 2008 at 10:29:18PM +0200, Wim Van Sebroeck wrote:
- > Hi Linus,
- > 
- > Please pull from 'master' branch of
- > 	git://git.kernel.org/pub/scm/linux/kernel/git/wim/linux-2.6-watchdog.git
- > or if master.kernel.org hasn't synced up yet:
- > 	master.kernel.org:/pub/scm/linux/kernel/git/wim/linux-2.6-watchdog.git
- > 
- > This will update the following files:
- > 
- > Author: Anton Vorontsov <avorontsov@ru.mvista.com>
- > Date:   Thu Jul 3 23:51:36 2008 -0700
- > 
- >     [WATCHDOG] mpc8xxx_wdt: add support for MPC8xx watchdogs
+On Wed, 13 Aug 2008 11:21:16 +0900 Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp> wrote:
 
-This is broken when built modular because this...
+> Hi.
+> 
+> shrink_page_list passes gfp_mask to try_to_release_page.
+> When shrink_page_list is called from kswapd or buddy system, gfp_mask is set
+> and (gfp_mask & __GFP_WAIT) and (gfp_mask & __GFP_FS) check is positive.
+> releasepage of jbd/jbd2(ext3/4, ocfs2) and XFS use this parameter. 
+> If try_to_free_page fails due to bh busy in jbd/jbd2, jbd/jbd2 lets a thread wait for 
+> committing transaction. I think this has big performance impacts for vmscan.
+> So I modified shrink_page_list not to pass gfp_mask to try_to_release_page
+> in ordered to improve vmscan performance.
+> 
+> Thanks.
+> 
+> Signed-off-by: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>
+> 
+> diff -Nrup linux-2.6.27-rc2.org/mm/vmscan.c linux-2.6.27-rc2.vmscan/mm/vmscan.c
+> --- linux-2.6.27-rc2.org/mm/vmscan.c	2008-08-11 14:33:24.000000000 +0900
+> +++ linux-2.6.27-rc2.vmscan/mm/vmscan.c	2008-08-12 18:57:05.000000000 +0900
+> @@ -614,7 +614,7 @@ static unsigned long shrink_page_list(st
+>  		* Otherwise, leave the page on the LRU so it is swappable.
+>  		*/
+>  		if (PagePrivate(page)) {
+> -			if (!try_to_release_page(page, sc->gfp_mask))
+> +			if (!try_to_release_page(page, 0))
+>  				goto activate_locked;
+>  			if (!mapping && page_count(page) == 1) {
+>  				unlock_page(page);
 
- > +}
- > +module_init(mpc8xxx_wdt_init_late);
+I think the change makes sense.
 
-and this ..
-
- > +arch_initcall(mpc8xxx_wdt_init);
-
-Can't be mixed.  You end up with two init_module invocations
-
-drivers/watchdog/mpc8xxx_wdt.c:304: error: redefinition of '__inittest'
-drivers/watchdog/mpc8xxx_wdt.c:298: error: previous definition of '__inittest' was here
-drivers/watchdog/mpc8xxx_wdt.c:304: error: redefinition of 'init_module'
-drivers/watchdog/mpc8xxx_wdt.c:298: error: previous definition of 'init_module' was here
-
-Given they both call different routines though, I'm not sure the right fix here.
-
-	Dave
+Has this change been shown to improve any workloads?  If so, please
+provide full information for the changelog.  If not, please mention
+this and explain why benefits were not demonstrable.  This information
+should _always_ be present in a "performance" patch's changelog!
 
 
--- 
-http://www.codemonkey.org.uk
+
+Probably a better fix would be to explicitly tell
+journal_try_to_free_buffers() when it need to block on journal commit,
+rather than (mis)interpreting the gfp_t in this fashion.  I assume the
+only caller who really cares is direct-io.  That would be quite a bit
+of churn, and the asynchronous behaviour perhaps makes sense _anyway_
+when called from page reclaim.
+
+otoh, there is a risk that this change will cause page reclaim to sit
+there burning huge amounts of CPU time and not achieving anything,
+because all it is doing is scanning over busy pages.  In that case,
+blocking behind a commit which would make those pages reclaimable is
+correct behaviour.  But given that the offending code in
+journal_try_to_free_buffers() has only been there for a few weeks, I
+guess this isn't a concern.
+
+
+Really, I think what this patch tells us is that 3f31fddf ("jbd: fix
+race between free buffer and commit transaction") was an unpleasant
+hack which had undesirable and unexpected side-effects.  I think - that
+depends upon your as-yet-undisclosed testing results?
+
+Perhaps we should revert 3f31fddf and have another think about how to
+fix the direct-io -EIO problem.  One option would be to hold our noses
+and add a new gfp_t flag for this specific purpose?
+
