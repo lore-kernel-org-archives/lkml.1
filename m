@@ -1,49 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755433AbYHMBCR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755365AbYHMBEr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755433AbYHMBCR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Aug 2008 21:02:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755663AbYHMBB7
+	id S1755365AbYHMBEr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Aug 2008 21:04:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753188AbYHMBEj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Aug 2008 21:01:59 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:50663
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1755625AbYHMBB5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Aug 2008 21:01:57 -0400
-Date: Tue, 12 Aug 2008 18:01:59 -0700 (PDT)
-Message-Id: <20080812.180159.168355809.davem@davemloft.net>
-To: akpm@linux-foundation.org
-Cc: harvey.harrison@gmail.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 18/22] sparc: use the new byteorder headers
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20080812180052.941c08f6.akpm@linux-foundation.org>
-References: <1218587234.30194.92.camel@brick>
-	<20080812.174617.81545692.davem@davemloft.net>
-	<20080812180052.941c08f6.akpm@linux-foundation.org>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Tue, 12 Aug 2008 21:04:39 -0400
+Received: from mga01.intel.com ([192.55.52.88]:18562 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751858AbYHMBEj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Aug 2008 21:04:39 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.32,198,1217833200"; 
+   d="scan'208";a="606287380"
+Subject: [PATCH] kexec jump: fix code size checking
+From: Huang Ying <ying.huang@intel.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>, Pavel Machek <pavel@ucw.cz>,
+       nigel@nigel.suspend2.net, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Vivek Goyal <vgoyal@redhat.com>, mingo@elte.hu,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org,
+       Kexec Mailing List <kexec@lists.infradead.org>
+Content-Type: text/plain
+Date: Wed, 13 Aug 2008 09:04:35 +0800
+Message-Id: <1218589475.24951.59.camel@caritas-dev.intel.com>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Andrew Morton <akpm@linux-foundation.org>
-Date: Tue, 12 Aug 2008 18:00:52 -0700
+Fix building issue when CONFIG_KEXEC=n. Thanks to Vivek Goyal for his
+reminding.
 
-> On Tue, 12 Aug 2008 17:46:17 -0700 (PDT)
-> David Miller <davem@davemloft.net> wrote:
-> 
-> > From: Harvey Harrison <harvey.harrison@gmail.com>
-> > Date: Tue, 12 Aug 2008 17:27:14 -0700
-> > 
-> > > Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
-> > 
-> > Acked-by: David S. Miller <davem@davemloft.net>
-> 
-> You should be able to apply this now, if desired.
+Signed-off-by: Huang Ying <ying.huang@intel.com>
 
-I would prefer if you merge it as I have a bunch of stuff
-already pending in my sparc-2.6 tree and I don't want to
-merge in Linus's tree just to apply this one. :-)
+---
+ include/asm-x86/kexec.h |    3 +++
+ 1 file changed, 3 insertions(+)
+
+--- a/include/asm-x86/kexec.h
++++ b/include/asm-x86/kexec.h
+@@ -43,6 +43,9 @@
+ 
+ #ifdef CONFIG_X86_32
+ # define KEXEC_CONTROL_CODE_MAX_SIZE	2048
++# ifndef CONFIG_KEXEC
++#  define kexec_control_code_size	0
++# endif
+ #endif
+ 
+ #ifndef __ASSEMBLY__
+
 
