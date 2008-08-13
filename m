@@ -1,30 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754672AbYHMAbf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755989AbYHMAbB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754672AbYHMAbf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Aug 2008 20:31:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753600AbYHMA1N
+	id S1755989AbYHMAbB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Aug 2008 20:31:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754962AbYHMA1M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Aug 2008 20:27:13 -0400
+	Tue, 12 Aug 2008 20:27:12 -0400
 Received: from wf-out-1314.google.com ([209.85.200.169]:49095 "EHLO
 	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754957AbYHMA1L (ORCPT
+	with ESMTP id S1754937AbYHMA1J (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Aug 2008 20:27:11 -0400
+	Tue, 12 Aug 2008 20:27:09 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=subject:from:to:cc:content-type:date:message-id:mime-version
          :x-mailer:content-transfer-encoding;
-        b=Z5bn90iD5d1nvDdRRqID9BXXUVjd1IVEL8qwbysfIzykDOpZjFfY1fVNqdWbpUjGMU
-         rCXCJDhhjAASmdmXaRLed96FbSgUTafT9tt8SVl2xyHey4ETHWL95rlc16CNVV3J6Rmx
-         5r6hRGL2Ivr3kYUUe+u4HKHqIA5k1H9pTRIqM=
-Subject: [PATCH 15/22] powerpc: use the new byteorder headers
+        b=qG0nNnvBp6v42gE9Kxy82np+ijKYbZuef8UdEcN358Kps5ZzO/tf4bQ/mHqeqo8SvB
+         YR+DpzrU4JLXUZd3mguedJpAnDocR1mlQOP8fLntf9PloW9DllM3NAme0e2qgJXuJ3UP
+         5z2WWoDbzzGH5pDaUCqwizBZhvCIKb0CKPC+M=
+Subject: [PATCH 14/22] parisc: use the new byteorder headers
 From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Paul Mackerras <paulus@samba.org>
+To: grundler <grundler@parisc-linux.org>
 Cc: Andrew Morton <akpm@linux-foundation.org>,
        LKML <linux-kernel@vger.kernel.org>
 Content-Type: text/plain
-Date: Tue, 12 Aug 2008 17:27:12 -0700
-Message-Id: <1218587232.30194.89.camel@brick>
+Date: Tue, 12 Aug 2008 17:27:11 -0700
+Message-Id: <1218587231.30194.87.camel@brick>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
@@ -34,109 +34,97 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
 ---
-The prerequisite patches have landed in Linus' tree now.
+The prerequisite patches have landed in Linus' tree now.  Fixed the endian
+problems you noticed (grant).
 
- arch/powerpc/include/asm/byteorder.h |   49 ++++++++++++---------------------
- 1 files changed, 18 insertions(+), 31 deletions(-)
+ include/asm-parisc/byteorder.h |   37 ++++++++++++-------------------------
+ 1 files changed, 12 insertions(+), 25 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/byteorder.h b/arch/powerpc/include/asm/byteorder.h
-index b377522..1d39300 100644
---- a/arch/powerpc/include/asm/byteorder.h
-+++ b/arch/powerpc/include/asm/byteorder.h
-@@ -11,36 +11,43 @@
+diff --git a/include/asm-parisc/byteorder.h b/include/asm-parisc/byteorder.h
+index db14831..83095c5 100644
+--- a/include/asm-parisc/byteorder.h
++++ b/include/asm-parisc/byteorder.h
+@@ -4,9 +4,10 @@
  #include <asm/types.h>
  #include <linux/compiler.h>
  
 -#ifdef __GNUC__
--#ifdef __KERNEL__
 +#define __BIG_ENDIAN
++#define __SWAB_64_THRU_32__
  
--static __inline__ __u16 ld_le16(const volatile __u16 *addr)
-+#ifndef __powerpc64__
-+# define __SWAB_64_THRU_32__
-+#endif
-+
-+static inline __u16 __arch_swab16p(const volatile __u16 *addr)
+-static __inline__ __attribute_const__ __u16 ___arch__swab16(__u16 x)
++static inline __attribute_const__ __u16 __arch_swab16(__u16 x)
  {
- 	__u16 val;
- 
- 	__asm__ __volatile__ ("lhbrx %0,0,%1" : "=r" (val) : "r" (addr), "m" (*addr));
- 	return val;
- }
-+#define __arch_swab16p __arch_swab16p
- 
--static __inline__ void st_le16(volatile __u16 *addr, const __u16 val)
-+static inline void __arch_swab16s(volatile __u16 *addr, const __u16 val)
- {
- 	__asm__ __volatile__ ("sthbrx %1,0,%2" : "=m" (*addr) : "r" (val), "r" (addr));
- }
-+#define __arch_swab16s __arch_swab16s
- 
--static __inline__ __u32 ld_le32(const volatile __u32 *addr)
-+static inline __u32 __arch_swab32p(const volatile __u32 *addr)
- {
- 	__u32 val;
- 
- 	__asm__ __volatile__ ("lwbrx %0,0,%1" : "=r" (val) : "r" (addr), "m" (*addr));
- 	return val;
- }
-+#define __arch_swab32p __arch_swab32p
- 
--static __inline__ void st_le32(volatile __u32 *addr, const __u32 val)
-+static inline void __arch_swab32s(volatile __u32 *addr, const __u32 val)
- {
- 	__asm__ __volatile__ ("stwbrx %1,0,%2" : "=m" (*addr) : "r" (val), "r" (addr));
- }
-+#define __arch_swab32s __arch_swab32s
- 
--static __inline__ __attribute_const__ __u16 ___arch__swab16(__u16 value)
-+static inline __attribute_const__ __u16 __arch_swab16(__u16 value)
- {
- 	__u16 result;
- 
-@@ -49,8 +56,9 @@ static __inline__ __attribute_const__ __u16 ___arch__swab16(__u16 value)
- 	    : "r" (value), "0" (value >> 8));
- 	return result;
+ 	__asm__("dep %0, 15, 8, %0\n\t"		/* deposit 00ab -> 0bab */
+ 		"shd %%r0, %0, 8, %0"		/* shift 000000ab -> 00ba */
+@@ -14,8 +15,9 @@ static __inline__ __attribute_const__ __u16 ___arch__swab16(__u16 x)
+ 		: "0" (x));
+ 	return x;
  }
 +#define __arch_swab16 __arch_swab16
  
--static __inline__ __attribute_const__ __u32 ___arch__swab32(__u32 value)
-+static inline __attribute_const__ __u32 __arch_swab32(__u32 value)
+-static __inline__ __attribute_const__ __u32 ___arch__swab24(__u32 x)
++static inline __attribute_const__ __u32 __arch_swab24(__u32 x)
  {
- 	__u32 result;
- 
-@@ -61,29 +69,8 @@ static __inline__ __attribute_const__ __u32 ___arch__swab32(__u32 value)
- 	    : "r" (value), "0" (value >> 24));
- 	return result;
+ 	__asm__("shd %0, %0, 8, %0\n\t"		/* shift xabcxabc -> cxab */
+ 		"dep %0, 15, 8, %0\n\t"		/* deposit cxab -> cbab */
+@@ -25,7 +27,7 @@ static __inline__ __attribute_const__ __u32 ___arch__swab24(__u32 x)
+ 	return x;
  }
+ 
+-static __inline__ __attribute_const__ __u32 ___arch__swab32(__u32 x)
++static inline __attribute_const__ __u32 __arch_swab32(__u32 x)
+ {
+ 	unsigned int temp;
+ 	__asm__("shd %0, %0, 16, %1\n\t"	/* shift abcdabcd -> cdab */
+@@ -35,7 +37,7 @@ static __inline__ __attribute_const__ __u32 ___arch__swab32(__u32 x)
+ 		: "0" (x));
+ 	return x;
+ }
+-
 +#define __arch_swab32 __arch_swab32
  
+ #if BITS_PER_LONG > 32
+ /*
+@@ -48,7 +50,8 @@ static __inline__ __attribute_const__ __u32 ___arch__swab32(__u32 x)
+ **      HSHR    67452301 -> *6*4*2*0 into %0
+ **      OR      %0 | %1  -> 76543210 into %0 (all done!)
+ */
+-static __inline__ __attribute_const__ __u64 ___arch__swab64(__u64 x) {
++static inline __attribute_const__ __u64 __arch_swab64(__u64 x)
++{
+ 	__u64 temp;
+ 	__asm__("permh,3210 %0, %0\n\t"
+ 		"hshl %0, 8, %1\n\t"
+@@ -58,25 +61,9 @@ static __inline__ __attribute_const__ __u64 ___arch__swab64(__u64 x) {
+ 		: "0" (x));
+ 	return x;
+ }
+-#define __arch__swab64(x) ___arch__swab64(x)
+-#define __BYTEORDER_HAS_U64__
+-#elif !defined(__STRICT_ANSI__)
+-static __inline__ __attribute_const__ __u64 ___arch__swab64(__u64 x)
+-{
+-	__u32 t1 = ___arch__swab32((__u32) x);
+-	__u32 t2 = ___arch__swab32((__u32) (x >> 32));
+-	return (((__u64) t1 << 32) | t2);
+-}
+-#define __arch__swab64(x) ___arch__swab64(x)
+-#define __BYTEORDER_HAS_U64__
+-#endif
+-
 -#define __arch__swab16(x) ___arch__swab16(x)
+-#define __arch__swab24(x) ___arch__swab24(x)
 -#define __arch__swab32(x) ___arch__swab32(x)
 -
--/* The same, but returns converted value from the location pointer by addr. */
--#define __arch__swab16p(addr) ld_le16(addr)
--#define __arch__swab32p(addr) ld_le32(addr)
--
--/* The same, but do the conversion in situ, ie. put the value back to addr. */
--#define __arch__swab16s(addr) st_le16(addr,*addr)
--#define __arch__swab32s(addr) st_le32(addr,*addr)
--
--#endif /* __KERNEL__ */
--
--#ifndef __STRICT_ANSI__
--#define __BYTEORDER_HAS_U64__
--#ifndef __powerpc64__
--#define __SWAB_64_THRU_32__
--#endif /* __powerpc64__ */
--#endif /* __STRICT_ANSI__ */
--
 -#endif /* __GNUC__ */
--
++#define __arch_swab64 __arch_swab64
++#endif /* BITS_PER_LONG > 32 */
+ 
 -#include <linux/byteorder/big_endian.h>
 +#include <linux/byteorder.h>
  
- #endif /* _ASM_POWERPC_BYTEORDER_H */
+ #endif /* _PARISC_BYTEORDER_H */
 -- 
 1.6.0.rc2.233.g3cb9d
 
