@@ -1,43 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754473AbYHMUvV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755041AbYHMUyS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754473AbYHMUvV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Aug 2008 16:51:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752394AbYHMUvJ
+	id S1755041AbYHMUyS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Aug 2008 16:54:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752315AbYHMUyF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Aug 2008 16:51:09 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:52504 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751832AbYHMUvI (ORCPT
+	Wed, 13 Aug 2008 16:54:05 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:50912 "EHLO
+	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751885AbYHMUyD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Aug 2008 16:51:08 -0400
-Date: Wed, 13 Aug 2008 21:33:48 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Alex Chiang <achiang@hp.com>
-Cc: alan@redhat.com, linux-kernel@vger.kernel.org
-Subject: Re: tty-kref-modcount oops in linux-next
-Message-ID: <20080813213348.68263ad7@lxorguk.ukuu.org.uk>
-In-Reply-To: <20080813203438.GT25902@ldl.fc.hp.com>
-References: <20080813203438.GT25902@ldl.fc.hp.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 13 Aug 2008 16:54:03 -0400
+Date: Wed, 13 Aug 2008 22:55:19 +0200
+From: Pavel Machek <pavel@suse.cz>
+To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Cc: Milan Broz <mbroz@redhat.com>, Andi Kleen <andi@firstfloor.org>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       ACPI mailing list <linux-acpi@vger.kernel.org>
+Subject: Re: 2.6.27-rc1: critical thermal shutdown on thinkpad x60
+Message-ID: <20080813205519.GF8861@elf.ucw.cz>
+References: <20080806090246.GA1572@elf.ucw.cz> <87bq046cht.fsf@basil.nowhere.org> <20080812094135.GA1565@elf.ucw.cz> <20080812105409.GA1366@one.firstfloor.org> <48A16EFC.1050401@redhat.com> <20080812112602.GA2948@elf.ucw.cz> <20080813201359.GA27546@khazad-dum.debian.net> <20080813202801.GC8861@elf.ucw.cz> <20080813204242.GC27546@khazad-dum.debian.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080813204242.GC27546@khazad-dum.debian.net>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 13 Aug 2008 14:34:38 -0600
-Alex Chiang <achiang@hp.com> wrote:
-
-> Hi Alan,
+> > > thinkpad-acpi will regard 128 and -128 as invalid sensors, because that's
+> > > how they are used in some BIOSes (and ECs).  We used to bother only with
+> > > -128, but Lenovo did something wierd in one of the EC firmwares and I had to
+> > > add +128 too.  That masks the "help, I am melting" reading.
+> > 
+> > It was simpler than that. I did not pass "fan_control=1" option.
+> > 
+> > (Actually... I do not think that option is needed. If fan control is
+> > known to work, it should be just enabled...)
 > 
-> Booting the latest linux-next kernel (20080812) on my HP rx6600
-> (ia64) results in an oops. This is a SLES10 userspace, but I
-> don't know if that matters.
+> I require explicit user permission to activate knobs that are that
+> dangerous, and actively frowned upon by the manufacturer.
 
-Thanks I pushed a few fixes into the ttydev tree today so hopefully they
-are fixed, if not drop me another email and we'll work through your case
-as well
+Well, it is not more dangerous than 2.6.26.2 (will overheat your
+thinkpad, causing critical shutdown). Plus, acpi fans are
+controllable/overridable by default from /proc, and 'echo "level 7" >
+fan' is not something you can do accidentally...
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
