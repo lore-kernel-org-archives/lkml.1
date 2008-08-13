@@ -1,97 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755542AbYHMSfA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757300AbYHMSfr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755542AbYHMSfA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Aug 2008 14:35:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751152AbYHMSew
+	id S1757300AbYHMSfr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Aug 2008 14:35:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751966AbYHMSfh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Aug 2008 14:34:52 -0400
-Received: from rtsoft3.corbina.net ([85.21.88.6]:61948 "EHLO
-	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1750970AbYHMSew (ORCPT
+	Wed, 13 Aug 2008 14:35:37 -0400
+Received: from mail-relay-03.mailcluster.net ([77.221.130.215]:52255 "EHLO
+	mail-relay-01.mailcluster.net" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751932AbYHMSfg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Aug 2008 14:34:52 -0400
-Date: Wed, 13 Aug 2008 22:34:50 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Dave Jones <davej@redhat.com>, Wim Van Sebroeck <wim@iguana.be>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Adrian Bunk <bunk@kernel.org>
-Subject: [PATCH v2] [WATCHDOG] mpc8xxx_wdt: fix modular build
-Message-ID: <20080813183450.GA2473@oksana.dev.rtsoft.ru>
-Reply-To: avorontsov@ru.mvista.com
-References: <20080806202918.GA29386@infomag.infomag.iguana.be> <20080813031044.GA11258@redhat.com>
+	Wed, 13 Aug 2008 14:35:36 -0400
+Message-ID: <48A32976.7060504@vlnb.net>
+Date: Wed, 13 Aug 2008 22:35:34 +0400
+From: Vladislav Bolkhovitin <vst@vlnb.net>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=windows-1251
-Content-Disposition: inline
-In-Reply-To: <20080813031044.GA11258@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: David Miller <davem@davemloft.net>
+CC: open-iscsi@googlegroups.com, rdreier@cisco.com, rick.jones2@hp.com,
+       jgarzik@pobox.com, Steve Wise <swise@opengridcomputing.com>,
+       Karen Xie <kxie@chelsio.com>, netdev@vger.kernel.org,
+       michaelc@cs.wisc.edu, daisyc@us.ibm.com, wenxiong@us.ibm.com,
+       bhua@us.ibm.com, Dimitrios Michailidis <dm@chelsio.com>,
+       Casey Leedom <leedom@chelsio.com>, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCH 1/1] cxgb3i: cxgb3 iSCSI initiator
+References: <adad4kfxm9v.fsf@cisco.com> <200808121457.11356.divy@chelsio.com> <20080812.150246.42068558.davem@davemloft.net> <200808121521.10101.divy@chelsio.com>
+In-Reply-To: <200808121521.10101.divy@chelsio.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch fixes following build error when mpc8xxx_wdt is selected to
-build as a module:
+Divy Le Ray wrote:
+> On Tuesday 12 August 2008 03:02:46 pm David Miller wrote:
+>> From: Divy Le Ray <divy@chelsio.com>
+>> Date: Tue, 12 Aug 2008 14:57:09 -0700
+>>
+>>> In any case, such a stateless solution is not yet designed, whereas
+>>> accelerated iSCSI is available now, from us and other companies.
+>> So, WHAT?!
+>>
+>> There are TOE pieces of crap out there too.
+> 
+> Well, there is demand for accerated iscsi out there, which is the driving 
+> reason of our driver submission. 
 
-drivers/watchdog/mpc8xxx_wdt.c:304: error: redefinition of '__inittest'
-drivers/watchdog/mpc8xxx_wdt.c:298: error: previous definition of '__inittest' was here
-drivers/watchdog/mpc8xxx_wdt.c:304: error: redefinition of 'init_module'
-drivers/watchdog/mpc8xxx_wdt.c:298: error: previous definition of 'init_module' was here
+I'm, as an iSCSI target developer, strongly voting for hardware iSCSI 
+offload. Having possibility of the direct data placement is a *HUGE* 
+performance gain.
 
-Reported-by: Dave Jones <davej@redhat.com>
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
----
+For example, according to measurements done by one iSCSI-SCST user in 
+system with iSCSI initiator and iSCSI target (with iSCSI-SCST 
+(http://scst.sourceforge.net/target_iscsi.html) running), both with 
+identical modern high speed hardware and 10GbE cards, the _INITIATOR_ is 
+the bottleneck for READs (data transfers from target to initiator). This 
+is because the target sends data in a zero-copy manner, so its CPU is 
+capable to deal with the load, but on the initiator there are additional 
+data copies from skb's to page cache and from page cache to application. 
+As the result, in the measurements initiator got near 100% CPU load and 
+only ~500MB/s throughput. Target had ~30% CPU load. For the opposite 
+direction (WRITEs), where there is no the application data copy on the 
+target, throughput was ~800MB/s with also near 100% CPU load, but in 
+this case on the target. The initiator ran Linux with open-iscsi. The 
+test was with real backstorage: target ran BLOCKIO (direct BIOs to/from 
+backstorage) with 3ware card. Locally on the target the backstorage was 
+able to provide 900+MB/s for READs and about 1GB/s for WRITEs. The 
+commands queue in both cases was sufficiently big to eliminate the link 
+and processing latencies (20-30 outstanding commands).
 
-CONFIG_8xxx_WDT_MODULE -> MODULE, per Adrian Bunk's comment.
-
- drivers/watchdog/mpc8xxx_wdt.c |   11 ++++++++++-
- 1 files changed, 10 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/watchdog/mpc8xxx_wdt.c b/drivers/watchdog/mpc8xxx_wdt.c
-index f209496..8e50bc4 100644
---- a/drivers/watchdog/mpc8xxx_wdt.c
-+++ b/drivers/watchdog/mpc8xxx_wdt.c
-@@ -48,6 +48,7 @@ struct mpc8xxx_wdt_type {
- };
- 
- static struct mpc8xxx_wdt __iomem *wd_base;
-+static int mpc8xxx_wdt_init_late(void);
- 
- static u16 timeout = 0xffff;
- module_param(timeout, ushort, 0);
-@@ -213,6 +214,12 @@ static int __devinit mpc8xxx_wdt_probe(struct of_device *ofdev,
- 	else
- 		timeout_sec = timeout / freq;
- 
-+#ifdef MODULE
-+	ret = mpc8xxx_wdt_init_late();
-+	if (ret)
-+		goto err_unmap;
-+#endif
-+
- 	pr_info("WDT driver for MPC8xxx initialized. mode:%s timeout=%d "
- 		"(%d seconds)\n", reset ? "reset" : "interrupt", timeout,
- 		timeout_sec);
-@@ -280,7 +287,7 @@ static struct of_platform_driver mpc8xxx_wdt_driver = {
-  * very early to start pinging the watchdog (misc devices are not yet
-  * available), and later module_init() just registers the misc device.
-  */
--static int __init mpc8xxx_wdt_init_late(void)
-+static int mpc8xxx_wdt_init_late(void)
- {
- 	int ret;
- 
-@@ -295,7 +302,9 @@ static int __init mpc8xxx_wdt_init_late(void)
- 	}
- 	return 0;
- }
-+#ifndef MODULE
- module_init(mpc8xxx_wdt_init_late);
-+#endif
- 
- static int __init mpc8xxx_wdt_init(void)
- {
--- 
-1.5.6.3
+Vlad
 
