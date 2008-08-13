@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755830AbYHMXpb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757084AbYHMXps@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755830AbYHMXpb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Aug 2008 19:45:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753211AbYHMXpU
+	id S1757084AbYHMXps (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Aug 2008 19:45:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756122AbYHMXpf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Aug 2008 19:45:20 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:41794
+	Wed, 13 Aug 2008 19:45:35 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:41797
 	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753153AbYHMXpS (ORCPT
+	by vger.kernel.org with ESMTP id S1756023AbYHMXpd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Aug 2008 19:45:18 -0400
-Date: Wed, 13 Aug 2008 16:45:20 -0700 (PDT)
-Message-Id: <20080813.164520.86944543.davem@davemloft.net>
+	Wed, 13 Aug 2008 19:45:33 -0400
+Date: Wed, 13 Aug 2008 16:45:34 -0700 (PDT)
+Message-Id: <20080813.164534.57604323.davem@davemloft.net>
 To: torvalds@linux-foundation.org
-CC: akpm@linux-foundation.org, sparclinux@vger.kernel.org,
+CC: akpm@linux-foundation.org, netdev@vger.kernel.org,
        linux-kernel@vger.kernel.org
-Subject: [GIT]: Sparc
+Subject: [GIT]: Networking
 From: David Miller <davem@davemloft.net>
 X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
@@ -26,51 +26,188 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Bug fixes:
+We must always be getting better because we're always applying
+more and more fixes :-)
 
-1) Fix build when MAGIC_SYSRQ is turned off.
+1) dev_deactivate probes for quiecence on the wrong qdisc, resulting
+   in crashes
 
-2) of_device.h header usage cleanups from Stephen Rothwell.
+2) pktgen can reference invalid TX queues, fix from Andrew Gallatin
 
-3) Implement IRQ stacks to deal with very real deep stack code path
-   situations, as reported by Mikulas Patocka.  Also, fix a recursion
-   bug in stack overflow detection.
+3) IGMP net namespace crash fix from Daniel Lezcano.
 
-Please pull, thanks a lot!
+4) BNX2X driver bug fixes from Eilon Greenstein and co.
 
-The following changes since commit 433c5f706856689be25928a99636e724fb3ea7cf:
-  David S. Miller (1):
-        sparc64: Fix end-of-stack checking in save_stack_trace().
+5) Missing DCCP socket option check from Arnaldo Carvalho de Melo.
+
+6) Fix double-lock deadlock in UDP encapsulation, from Herbert Xu.
+
+7) Packet scheduler TC action fixes from Jamal Hadi Salim.
+
+8) IPVS bug fixes from Simon Horman and Sven Wegener.
+
+9) Route dumping OOPS fix in ipv6 from Brian Haley.
+
+10) TIPC uses internal byte swapping implementation routine, don't
+    do that.  From Andrew Morton.
+
+11) CPU utilization when TX queue of device is full is excessive
+    due to a thinko in one of the TX multiqueue commits.
+
+12) Ingress filters need to be findable via qdisc_lookup() just like
+    egress ones.  Also, filter attachment was referencing the wrong
+    qdisc, and therefore not working.  Based upon bug reports by
+    Stephen Hemminger.
+
+Please pull, thanks a lot.
+
+The following changes since commit 76aab2c1eae491a5d73ac83deec97dd28ebac584:
+  Jamal Hadi Salim (1):
+        pkt_sched: Fix actions referencing
 
 are available in the git repository at:
 
-  master.kernel.org:/pub/scm/linux/kernel/git/davem/sparc-2.6.git master
+  master.kernel.org:/pub/scm/linux/kernel/git/davem/net-2.6.git master
 
-David S. Miller (3):
-      sparc64: Don't MAGIC_SYSRQ ifdef smp_fetch_global_regs and support code.
-      sparc64: Fix recursion in stack overflow detection handling.
-      sparc64: Implement IRQ stacks.
+Andrew Gallatin (1):
+      pktgen: prevent pktgen from using bad tx queue
 
-Stephen Rothwell (2):
-      sparc/drivers: use linux/of_device.h instead of asm/of_device.h
-      sparc: remove include of linux/of_device.h from asm/of_device.h
+Andrew Morton (1):
+      net/tipc/subscr.c: don't use ___constant_swab32
 
- arch/sparc/include/asm/irq_64.h     |    4 ++
- arch/sparc/include/asm/of_device.h  |    3 +-
- arch/sparc64/kernel/irq.c           |   52 +++++++++++++++++++++++++++++++
- arch/sparc64/kernel/kstack.h        |   58 +++++++++++++++++++++++++++++++++++
- arch/sparc64/kernel/process.c       |   27 ++++------------
- arch/sparc64/kernel/smp.c           |    4 --
- arch/sparc64/kernel/stacktrace.c    |   10 ++---
- arch/sparc64/kernel/traps.c         |    7 ++--
- arch/sparc64/lib/mcount.S           |   39 +++++++++++++++++++++--
- arch/sparc64/mm/init.c              |   11 ++++++
- arch/sparc64/mm/ultra.S             |    2 -
- drivers/input/serio/i8042-sparcio.h |    3 +-
- drivers/sbus/sbus.c                 |    2 +-
- drivers/serial/sunhv.c              |    2 +-
- drivers/serial/sunsab.c             |    2 +-
- drivers/serial/sunsu.c              |    2 +-
- drivers/serial/sunzilog.c           |    2 +-
- 17 files changed, 183 insertions(+), 47 deletions(-)
- create mode 100644 arch/sparc64/kernel/kstack.h
+Arnaldo Carvalho de Melo (1):
+      dccp: change L/R must have at least one byte in the dccpsf_val field
+
+Brian Haley (1):
+      ipv6: Fix OOPS, ip -f inet6 route get fec0::1, linux-2.6.26, ip6_route_output, rt6_fill_node+0x175
+
+Daniel Lezcano (1):
+      netns: Fix crash by making igmp per namespace
+
+David S. Miller (4):
+      pkt_sched: Fix ingress deletion and filter attachment.
+      Merge branch 'stealer/ipvs/for-davem' of git://git.stealer.net/linux-2.6
+      pkt_sched: Add queue stopped test back to qdisc_run().
+      pkt_sched: Fix queue quiescence testing in dev_deactivate().
+
+Eilon Greenstein (14):
+      bnx2x: FW (bootcode) interface fixes
+      bnx2x: Not dropping packets with L3/L4 checksum error
+      bnx2x: FW Internal Memory structure
+      bnx2x: HW attention lock
+      bnx2x: Memory allocation
+      bnx2x: PBA Table Page Alignment Workaround
+      bnx2x: WoL capability
+      bnx2x: Change GPIO for any port
+      bnx2x: 1G LED does not turn off
+      bnx2x: Driver info
+      bnx2x: Minor code improvements
+      bnx2x: Spelling mistakes
+      bnx2x: Checkpatch compliance
+      bnx2x: Version update
+
+Gerrit Renker (1):
+      skbuff: Code readability NiT
+
+Herbert Xu (1):
+      udp: Drop socket lock for encapsulated packets
+
+Jamal Hadi Salim (3):
+      wext: Send name on events
+      net-sched: Fix actions flushing
+      net-sched: fix Action flushing return code
+
+Jarek Poplawski (3):
+      pkt_sched: Add BH protection for qdisc_stab_lock.
+      pkt_sched: Fix oops in htb_delete.
+      pkt_sched: Protect gen estimators under est_lock.
+
+Jean-Christophe DUBOIS (1):
+      xfrm: remove unnecessary variable in xfrm_output_resume() 2nd try
+
+Julien Brunel (1):
+      net/rxrpc: Use an IS_ERR test rather than a NULL test
+
+Rami Rosen (2):
+      ipv6: ip6_route.h cleanup.
+      ipv6: Kill unused ip6_prohibit_entry and ip6_blk_hole_entry declarations.
+
+Simon Horman (2):
+      ipvs: Explictly clear ip_vs_stats members
+      ipvs: add lvs-devel as a list contact
+
+Sven Wegener (9):
+      ipvs: Fix possible deadlock in sync code
+      ipvs: Fix possible deadlock in estimator code
+      ipvs: Use ARRAY_SIZE()
+      ipvs: Use list_empty() instead of open-coding the same functionality
+      ipvs: Initialize schedulers' struct list_head at compile time
+      ipvs: Annotate init functions with __init
+      ipvs: Mark net_vs_ctl_path const
+      ipvs: Embed estimator object into stats object
+      ipvs: No need to zero out ip_vs_stats during initialization
+
+Vladislav Zolotarov (2):
+      bnx2x: Load/Unload under traffic
+      bnx2x: No LRO without Rx checksum
+
+Yaniv Rosner (3):
+      bnx2x: Link order with external PHY
+      bnx2x: Pause settings
+      bnx2x: 8073 PHY changes
+
+Yitchak Gertner (6):
+      bnx2x: Statistics
+      bnx2x: HW lock mechanism
+      bnx2x: Self-test false positive
+      bnx2x: Delay in while loops
+      bnx2x: Clearing MAC addresses filters
+      bnx2x: Wrong structure size
+
+ MAINTAINERS                     |    1 +
+ drivers/net/bnx2x.h             |   87 ++--
+ drivers/net/bnx2x_fw_defs.h     |  160 +++---
+ drivers/net/bnx2x_hsi.h         |   16 +-
+ drivers/net/bnx2x_init.h        |   26 +-
+ drivers/net/bnx2x_init_values.h |  533 ++++++++---------
+ drivers/net/bnx2x_link.c        | 1258 +++++++++++++++++++++++++--------------
+ drivers/net/bnx2x_link.h        |   11 +-
+ drivers/net/bnx2x_main.c        | 1212 +++++++++++++++++++++----------------
+ drivers/net/bnx2x_reg.h         |  210 ++++---
+ include/linux/skbuff.h          |    6 +-
+ include/net/ip6_route.h         |    6 -
+ include/net/ip_vs.h             |   32 +-
+ include/net/pkt_sched.h         |    5 +-
+ net/core/gen_estimator.c        |    9 +-
+ net/core/pktgen.c               |   29 +
+ net/dccp/proto.c                |    5 +
+ net/ipv4/igmp.c                 |   71 +--
+ net/ipv4/ipvs/ip_vs_app.c       |    2 +-
+ net/ipv4/ipvs/ip_vs_conn.c      |    2 +-
+ net/ipv4/ipvs/ip_vs_ctl.c       |   27 +-
+ net/ipv4/ipvs/ip_vs_dh.c        |    2 +-
+ net/ipv4/ipvs/ip_vs_est.c       |  116 ++---
+ net/ipv4/ipvs/ip_vs_lblc.c      |    2 +-
+ net/ipv4/ipvs/ip_vs_lblcr.c     |    2 +-
+ net/ipv4/ipvs/ip_vs_lc.c        |    2 +-
+ net/ipv4/ipvs/ip_vs_nq.c        |    2 +-
+ net/ipv4/ipvs/ip_vs_proto.c     |    4 +-
+ net/ipv4/ipvs/ip_vs_rr.c        |    2 +-
+ net/ipv4/ipvs/ip_vs_sched.c     |    4 +-
+ net/ipv4/ipvs/ip_vs_sed.c       |    2 +-
+ net/ipv4/ipvs/ip_vs_sh.c        |    2 +-
+ net/ipv4/ipvs/ip_vs_sync.c      |    4 +-
+ net/ipv4/ipvs/ip_vs_wlc.c       |    2 +-
+ net/ipv4/ipvs/ip_vs_wrr.c       |    2 +-
+ net/ipv4/udp.c                  |    6 +-
+ net/ipv6/route.c                |    3 +-
+ net/ipv6/udp.c                  |    6 +-
+ net/rxrpc/ar-accept.c           |    2 +-
+ net/sched/act_api.c             |   13 +-
+ net/sched/sch_api.c             |   50 +-
+ net/sched/sch_generic.c         |   11 +-
+ net/sched/sch_htb.c             |    3 +-
+ net/tipc/subscr.c               |    2 +-
+ net/wireless/wext.c             |    1 +
+ net/xfrm/xfrm_output.c          |    5 +-
+ 46 files changed, 2265 insertions(+), 1693 deletions(-)
