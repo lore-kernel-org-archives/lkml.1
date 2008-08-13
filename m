@@ -1,85 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753916AbYHMHGS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753847AbYHMHPU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753916AbYHMHGS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Aug 2008 03:06:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751600AbYHMHGG
+	id S1753847AbYHMHPU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Aug 2008 03:15:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751436AbYHMHPH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Aug 2008 03:06:06 -0400
-Received: from serv2.oss.ntt.co.jp ([222.151.198.100]:59486 "EHLO
-	serv2.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751487AbYHMHGF (ORCPT
+	Wed, 13 Aug 2008 03:15:07 -0400
+Received: from fms-01.valinux.co.jp ([210.128.90.1]:37768 "EHLO
+	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751487AbYHMHPG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Aug 2008 03:06:05 -0400
-Subject: Re: request->ioprio
-From: Fernando Luis =?ISO-8859-1?Q?V=E1zquez?= Cao 
-	<fernando@oss.ntt.co.jp>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
-       =?iso-2022-jp?Q?=1B=24B5H=40n=1B=28B_=1B=24BBs=3AH=1B=28B?= 
-	<yoshikawa.takuya@oss.ntt.co.jp>,
-       dpshah@google.com
-In-Reply-To: <200808070633.06112.rusty@rustcorp.com.au>
-References: <1218014196.4419.44.camel@sebastian.kern.oss.ntt.co.jp>
-	 <200808070633.06112.rusty@rustcorp.com.au>
-Content-Type: text/plain
-Organization: NTT Open Source Software Center
-Date: Wed, 13 Aug 2008 16:06:03 +0900
-Message-Id: <1218611163.8001.108.camel@sebastian.kern.oss.ntt.co.jp>
+	Wed, 13 Aug 2008 03:15:06 -0400
+To: a.p.zijlstra@chello.nl
+Cc: kamezawa.hiroyu@jp.fujitsu.com, linux-mm@kvack.org, menage@google.com,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH][RFC] dirty balancing for cgroups
+In-Reply-To: Your message of "Thu, 07 Aug 2008 15:36:08 +0200"
+	<1218116168.8625.38.camel@twins>
+References: <1218116168.8625.38.camel@twins>
+X-Mailer: Cue version 0.8 (080625-0732/takashi)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: Text/Plain; charset=us-ascii
+Message-Id: <20080813071505.930965A75@siro.lan>
+Date: Wed, 13 Aug 2008 16:15:05 +0900 (JST)
+From: yamamoto@valinux.co.jp (YAMAMOTO Takashi)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-08-07 at 06:33 +1000, Rusty Russell wrote: 
-> > Trying to implement i/o tracking all the way up to the page cache (so
-> > that cfq and the future cgroup-based I/O controllers can schedule
-> > buffered I/O properly) I noticed that struct request's ioprio is
-> > initialized but never used for I/O scheduling purposes. Indeed there
-> > seems to be one single user of this member: virtio_blk.
+hi,
+
+> > @@ -485,7 +502,10 @@ unsigned long mem_cgroup_isolate_pages(unsigned long nr_to_scan,
+> >  		if (PageUnevictable(page) ||
+> >  		    (PageActive(page) && !active) ||
+> >  		    (!PageActive(page) && active)) {
+> > -			__mem_cgroup_move_lists(pc, page_lru(page));
+> > +			if (try_lock_page_cgroup(page)) {
+> > +				__mem_cgroup_move_lists(pc, page_lru(page));
+> > +				unlock_page_cgroup(page);
+> > +			}
+> >  			continue;
+> >  		}
 > 
-> Hey, do I win a prize? :)
-I think you should! :)
+> This chunk seems unrelated and lost....
 
-> > Virtio uses 
-> > struct request's ioprio in the request() function of the virtio block
-> > driver, which just copies the ioprio value to the output header of
-> > virtblk_req.
+it's necessary to protect from mem_cgroup_{set,clear}_dirty
+which modify pc->flags without holding mz->lru_lock.
+
+> I presonally dislike the != 0, == 0 comparisons for bitmask operations,
+> they seem to make it harder to read somewhow. I prefer to write !(flags
+> & mask) and (flags & mask), instead.
 > 
-> Yes, we pass it through to the host, in the assumption they might want to use 
-> it to schedule our I/Os relative to each other.
-The reason I asked is that the the value of struct request's ioprio is
-never user which means it does not contain useful information.
-Schedulers such as CFQ that try to keep track of the io context of io
-requests (including ioprio) use struct request's elevator_private for
-that. For example, CFQ embeds the cfq_io_context there, which in turn
-contains struct io_context where the request's ioprio is actually
-stored. In other words, we have two ioprios per request: one which is a
-member of struct request and another is accessible through struct
-request's elavator_private. Unfortunately only the latter is used, which
-means that virtio_blk is not passing useful information to the backend
-driver.
+> I guess taste differs,...
 
-> I'm a little surprised noone else uses it, but I'm sure they will...
-> Rusty.
-I am not that sure unless we clean things up. Currently bios do not hold
-io context information which is the reason why struct request's ioprio
-does not contain useful information. To solve this issue it is necessary
-to track IO all the way up to the pagecache layer, which is precisely
-what the IO tracking project that has just started is attempting to
-achieve.
+yes, it seems different. :)
 
-Besides, I guess that accessing the io context information (such as
-ioprio) of a request through elevator-specific private structures is not
-something we want virtio_blk (or future users) to do. I think that we
-could replace struct request's ioprio with a pointer to io_context so
-that IO context information could be accessed in a consistent
-elevator-agnostic way. Another possible approach could be to keep
-struct request's ioprio synchronized with the IO context information in
-the private structures. We could even extend the elevator API to provide
-IO context information, but my feeling is that the first is the cleanest
-approach.
-
-What is your take on this?
-
+YAMAMOTO Takashi
