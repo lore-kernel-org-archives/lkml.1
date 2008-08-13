@@ -1,348 +1,400 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754146AbYHMKUj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755275AbYHMKVT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754146AbYHMKUj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Aug 2008 06:20:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751309AbYHMKU2
+	id S1755275AbYHMKVT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Aug 2008 06:21:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752749AbYHMKVB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Aug 2008 06:20:28 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:56909 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752580AbYHMKU0 (ORCPT
+	Wed, 13 Aug 2008 06:21:01 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:33786 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751309AbYHMKU7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Aug 2008 06:20:26 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Date: Wed, 13 Aug 2008 12:19:59 +0200 (CEST)
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: [PATCH update] ieee1394: sbp2: enforce s/g segment size limit
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-cc: grundler@google.com, linux1394-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-In-Reply-To: <20080813084514K.fujita.tomonori@lab.ntt.co.jp>
-Message-ID: <tkrat.a77de871a8213efc@s5r6.in-berlin.de>
-References: <20080809071744I.fujita.tomonori@lab.ntt.co.jp>
- <tkrat.8f7aa8cea95d423b@s5r6.in-berlin.de>
- <da824cf30808121004w1ea59dc9rd805e2ae4d9f47a7@mail.gmail.com>
- <20080813084514K.fujita.tomonori@lab.ntt.co.jp>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; CHARSET=us-ascii
-Content-Disposition: INLINE
+	Wed, 13 Aug 2008 06:20:59 -0400
+Date: Wed, 13 Aug 2008 11:03:16 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.27-rc3
+Message-ID: <20080813110316.1d9af655@lxorguk.ukuu.org.uk>
+In-Reply-To: <alpine.LFD.1.10.0808121914270.3462@nehalem.linux-foundation.org>
+References: <alpine.LFD.1.10.0808121914270.3462@nehalem.linux-foundation.org>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 13 Aug, FUJITA Tomonori wrote:
-> On Tue, 12 Aug 2008 10:04:14 -0700
-> "Grant Grundler" <grundler@google.com> wrote:
+On Tue, 12 Aug 2008 19:33:16 -0700 (PDT)
+Linus Torvalds <torvalds@linux-foundation.org> wrote:
+
 > 
->> On Sat, Aug 9, 2008 at 11:20 AM, Stefan Richter
->> <stefanr@s5r6.in-berlin.de> wrote:
->> >  drivers/ieee1394/sbp2.c |  106 +++++++++++++---------------------------
->> >  drivers/ieee1394/sbp2.h |   37 +++++--------
->> >  2 files changed, 52 insertions(+), 91 deletions(-)
->> ...
->> > +               for_each_sg(sg, sg, sg_count, i) {
->> > +                       len = sg_dma_len(sg);
->> > +                       if (len == 0)
->> > +                               continue;
->> >
->> > -               orb->misc |= ORB_SET_DATA_SIZE(sg_count);
->> > +                       pt[j].high = cpu_to_be32(len << 16);
->> > +                       pt[j].low = cpu_to_be32(sg_dma_address(sg));
->> > +                       j++;
->> > +               }
->> 
->> While this code will probably work correctly, I believe if the
->> sg_dma_len() returns 0, one has walked off the end of the
->> "bus address" list.
->>
->> pci_map_sg() returns how many DMA addr/len pairs are used
->> and that count could (should?) be used when pulling the
->> dma_len/addr pairs out of the sg list.
-> 
-> Yeah, from a quick look, seems that this patch wrongly handles
-> sg_count.
-> 
-> This patch sets scsi_sg_count(sc) to sg_count, right?
+> Things really _have_ calmed down, and hopefully we've also resolved a lot 
+> of the regressions in -rc3.
 
-Well, I keep the original scsi_sg_count to call dma_unmap_sg with it
-later.  According to Corbet/ Rubini/ Kroah-Hartman: LDD3, dma_unmap_sg
-is to be called with the number of s/g elements before DMA-mapping.
->From a quick look at some dma_unmap_sg implementations, this seems still
-to be the case; or it doesn't actually matter.
+Must admit it still seemed pretty broken to me. The firmware changes
+still seem to break if you cross build and then nfs make modules_install
+and a readonly mount "make modules_install" now fails. UDF mount appears
+to blow up on the spot.
 
-> for_each_sg is expected to be used with a return value of pci_map_sg.
-> 
-> Then this patch can simply do something like:
-> 
-> for_each_sg(sg, sg, sg_count, i) {
->         pt[i].high = cpu_to_be32(sg_dma_len(sg) << 16);
->         pt[i].low = cpu_to_be32(sg_dma_address(sg));
-> }
+The tty resize race turns out to be fun. The reason people are now seeing
+it bisects down to a scheduler change showing up the lack of locking
+going back forever.
 
-Thanks a lot for looking at this; here is my patch fixed.
+This is a bit of a big patch for -rc3 time so I don't know what you feel
+about it. Basically we turn it inside out - we make resize a tty method
+so that the driver takes its own locks first as you need to in this
+situation then can call back into the default helper.
 
- 
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: ieee1394: sbp2: enforce s/g segment size limit
+(If it looks ok let me know .. it'll also apply for testing versus -rc but
+ wants a final polish in that form)
 
-1. We don't need to round the SBP-2 segment size limit down to a
-   multiple of 4 kB (0xffff -> 0xf000).  It is only necessary to
-   ensure quadlet alignment (0xffff -> 0xfffc).
+--
 
-2. Use dma_set_max_seg_size() to tell the DMA mapping infrastructure
-   and the block IO layer about the restriction.  This way we can
-   remove the size checks and segment splitting in the queuecommand
-   path.
+tty: remove resize window special case
 
-   This assumes that no other code in the ieee1394 stack uses
-   dma_map_sg() with conflicting requirements.  It furthermore assumes
-   that the controller device's platform actually allows us to set the
-   segment size to our liking.  Assert the latter with a BUG_ON().
+From: Alan Cox <alan@redhat.com>
 
-3. Also use blk_queue_max_segment_size() to tell the block IO layer
-   about it.  It cannot know it because our scsi_add_host() does not
-   point to the FireWire controller's device.
+This moves it to being a tty operation. That removes special cases and now
+also means that resize can be picked up by um and other non vt consoles
+which may have a resize operation.
 
-We can also uniformly use dma_map_sg() for the single segment case just
-like for the multi segment case, to further simplify the code.
-
-Also clean up how the page table is converted to big endian.
-
-Thanks to Grant Grundler and FUJITA Tomonori for advice.
-
-Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Signed-off-by: Alan Cox <alan@redhat.com>
 ---
- drivers/ieee1394/sbp2.c |  100 ++++++++++++----------------------------
- drivers/ieee1394/sbp2.h |   37 ++++++--------
- 2 files changed, 46 insertions(+), 91 deletions(-)
 
-Index: linux/drivers/ieee1394/sbp2.h
-===================================================================
---- linux.orig/drivers/ieee1394/sbp2.h
-+++ linux/drivers/ieee1394/sbp2.h
-@@ -139,13 +139,10 @@ struct sbp2_logout_orb {
- 	u32 status_fifo_lo;
- } __attribute__((packed));
- 
--#define PAGE_TABLE_SET_SEGMENT_BASE_HI(v)	((v) & 0xffff)
--#define PAGE_TABLE_SET_SEGMENT_LENGTH(v)	(((v) & 0xffff) << 16)
--
- struct sbp2_unrestricted_page_table {
--	u32 length_segment_base_hi;
--	u32 segment_base_lo;
--} __attribute__((packed));
-+	__be32 high;
-+	__be32 low;
-+};
- 
- #define RESP_STATUS_REQUEST_COMPLETE		0x0
- #define RESP_STATUS_TRANSPORT_FAILURE		0x1
-@@ -216,15 +213,18 @@ struct sbp2_status_block {
- #define SBP2_UNIT_SPEC_ID_ENTRY			0x0000609e
- #define SBP2_SW_VERSION_ENTRY			0x00010483
- 
--
- /*
-- * SCSI specific definitions
-+ * The default maximum s/g segment size of a FireWire controller is
-+ * usually 0x10000, but SBP-2 only allows 0xffff. Since buffers have to
-+ * be quadlet-aligned, we set the length limit to 0xffff & ~3.
-  */
-+#define SBP2_MAX_SEG_SIZE			0xfffc
- 
--#define SBP2_MAX_SG_ELEMENT_LENGTH		0xf000
--/* There is no real limitation of the queue depth (i.e. length of the linked
-+/*
-+ * There is no real limitation of the queue depth (i.e. length of the linked
-  * list of command ORBs) at the target. The chosen depth is merely an
-- * implementation detail of the sbp2 driver. */
-+ * implementation detail of the sbp2 driver.
-+ */
- #define SBP2_MAX_CMDS				8
- 
- #define SBP2_SCSI_STATUS_GOOD			0x0
-@@ -240,12 +240,6 @@ struct sbp2_status_block {
-  * Representations of commands and devices
-  */
- 
--enum sbp2_dma_types {
--	CMD_DMA_NONE,
--	CMD_DMA_PAGE,
--	CMD_DMA_SINGLE
--};
--
- /* Per SCSI command */
- struct sbp2_command_info {
- 	struct list_head list;
-@@ -258,11 +252,10 @@ struct sbp2_command_info {
- 	struct sbp2_unrestricted_page_table
- 		scatter_gather_element[SG_ALL] __attribute__((aligned(8)));
- 	dma_addr_t sge_dma;
--	void *sge_buffer;
--	dma_addr_t cmd_dma;
--	enum sbp2_dma_types dma_type;
--	unsigned long dma_size;
--	enum dma_data_direction dma_dir;
-+
-+	struct scatterlist *sg_buffer;
-+	int sg_count;
-+	enum dma_data_direction sg_dir;
- };
- 
- /* Per FireWire host */
-Index: linux/drivers/ieee1394/sbp2.c
-===================================================================
---- linux.orig/drivers/ieee1394/sbp2.c
-+++ linux/drivers/ieee1394/sbp2.c
-@@ -656,23 +656,10 @@ static struct sbp2_command_info *sbp2uti
- static void sbp2util_mark_command_completed(struct sbp2_lu *lu,
- 					    struct sbp2_command_info *cmd)
- {
--	struct hpsb_host *host = lu->ud->ne->host;
--
--	if (cmd->cmd_dma) {
--		if (cmd->dma_type == CMD_DMA_SINGLE)
--			dma_unmap_single(host->device.parent, cmd->cmd_dma,
--					 cmd->dma_size, cmd->dma_dir);
--		else if (cmd->dma_type == CMD_DMA_PAGE)
--			dma_unmap_page(host->device.parent, cmd->cmd_dma,
--				       cmd->dma_size, cmd->dma_dir);
--		/* XXX: Check for CMD_DMA_NONE bug */
--		cmd->dma_type = CMD_DMA_NONE;
--		cmd->cmd_dma = 0;
--	}
--	if (cmd->sge_buffer) {
--		dma_unmap_sg(host->device.parent, cmd->sge_buffer,
--			     cmd->dma_size, cmd->dma_dir);
--		cmd->sge_buffer = NULL;
-+	if (cmd->sg_buffer) {
-+		dma_unmap_sg(lu->ud->ne->host->device.parent, cmd->sg_buffer,
-+			     cmd->sg_count, cmd->sg_dir);
-+		cmd->sg_buffer = NULL;
- 	}
- 	list_move_tail(&cmd->list, &lu->cmd_orb_completed);
+ drivers/char/tty_io.c      |   76 +++++++++++++++++++++--------------------
+ drivers/char/vt.c          |   82 +++++++++++++++++++++++++++++++++-----------
+ drivers/char/vt_ioctl.c    |    7 +++-
+ include/linux/tty.h        |    2 +
+ include/linux/tty_driver.h |   14 ++++++++
+ include/linux/vt_kern.h    |    1 -
+ 6 files changed, 124 insertions(+), 58 deletions(-)
+
+
+diff --git a/drivers/char/tty_io.c b/drivers/char/tty_io.c
+index 0e6866f..ddf5562 100644
+--- a/drivers/char/tty_io.c
++++ b/drivers/char/tty_io.c
+@@ -2496,45 +2496,25 @@ static int tiocgwinsz(struct tty_struct *tty, struct winsize __user *arg)
  }
-@@ -827,6 +814,10 @@ static struct sbp2_lu *sbp2_alloc_device
- #endif
- 	}
  
-+	if (dma_get_max_seg_size(hi->host->device.parent) > SBP2_MAX_SEG_SIZE)
-+		BUG_ON(dma_set_max_seg_size(hi->host->device.parent,
-+					    SBP2_MAX_SEG_SIZE));
-+
- 	/* Prevent unloading of the 1394 host */
- 	if (!try_module_get(hi->host->driver->owner)) {
- 		SBP2_ERR("failed to get a reference on 1394 host driver");
-@@ -1501,76 +1492,45 @@ static int sbp2_agent_reset(struct sbp2_
- static int sbp2_prep_command_orb_sg(struct sbp2_command_orb *orb,
- 				    struct sbp2_fwhost_info *hi,
- 				    struct sbp2_command_info *cmd,
--				    unsigned int scsi_use_sg,
-+				    unsigned int sg_count,
- 				    struct scatterlist *sg,
- 				    u32 orb_direction,
- 				    enum dma_data_direction dma_dir)
+ /**
+- *	tiocswinsz		-	implement window size set ioctl
+- *	@tty; tty
+- *	@arg: user buffer for result
++ *	tty_do_resize		-	resize event
++ *	@tty: tty being resized
++ *	@real_tty: real tty (if using a pty/tty pair)
++ *	@rows: rows (character)
++ *	@cols: cols (character)
+  *
+- *	Copies the user idea of the window size to the kernel. Traditionally
+- *	this is just advisory information but for the Linux console it
+- *	actually has driver level meaning and triggers a VC resize.
+- *
+- *	Locking:
+- *		Called function use the console_sem is used to ensure we do
+- *	not try and resize the console twice at once.
+- *		The tty->termios_mutex is used to ensure we don't double
+- *	resize and get confused. Lock order - tty->termios_mutex before
+- *	console sem
++ *	Update the termios variables and send the neccessary signals to
++ *	peform a terminal resize correctly
+  */
+ 
+-static int tiocswinsz(struct tty_struct *tty, struct tty_struct *real_tty,
+-	struct winsize __user *arg)
++int tty_do_resize(struct tty_struct *tty, struct tty_struct *real_tty,
++					struct winsize *ws)
  {
- 	struct device *dmadev = hi->host->device.parent;
-+	struct sbp2_unrestricted_page_table *pt;
-+	int i, n;
-+
-+	n = dma_map_sg(dmadev, sg, sg_count, dma_dir);
-+	if (n == 0)
-+		return -ENOMEM;
-+
-+	cmd->sg_buffer = sg;
-+	cmd->sg_count = sg_count;
-+	cmd->sg_dir = dma_dir;
+-	struct winsize tmp_ws;
+ 	struct pid *pgrp, *rpgrp;
+ 	unsigned long flags;
  
--	cmd->dma_dir = dma_dir;
- 	orb->data_descriptor_hi = ORB_SET_NODE_ID(hi->host->node_id);
- 	orb->misc |= ORB_SET_DIRECTION(orb_direction);
- 
- 	/* special case if only one element (and less than 64KB in size) */
--	if (scsi_use_sg == 1 && sg->length <= SBP2_MAX_SG_ELEMENT_LENGTH) {
+-	if (copy_from_user(&tmp_ws, arg, sizeof(*arg)))
+-		return -EFAULT;
 -
--		cmd->dma_size = sg->length;
--		cmd->dma_type = CMD_DMA_PAGE;
--		cmd->cmd_dma = dma_map_page(dmadev, sg_page(sg), sg->offset,
--					    cmd->dma_size, cmd->dma_dir);
--		if (dma_mapping_error(cmd->cmd_dma)) {
--			cmd->cmd_dma = 0;
--			return -ENOMEM;
+ 	mutex_lock(&tty->termios_mutex);
+-	if (!memcmp(&tmp_ws, &tty->winsize, sizeof(*arg)))
++	if (!memcmp(ws, &tty->winsize, sizeof(*ws)))
+ 		goto done;
+-
+-#ifdef CONFIG_VT
+-	if (tty->driver->type == TTY_DRIVER_TYPE_CONSOLE) {
+-		if (vc_lock_resize(tty->driver_data, tmp_ws.ws_col,
+-					tmp_ws.ws_row)) {
+-			mutex_unlock(&tty->termios_mutex);
+-			return -ENXIO;
 -		}
--
--		orb->data_descriptor_lo = cmd->cmd_dma;
--		orb->misc |= ORB_SET_DATA_SIZE(cmd->dma_size);
--
-+	if (n == 1) {
-+		orb->misc |= ORB_SET_DATA_SIZE(sg_dma_len(sg));
-+		orb->data_descriptor_lo = sg_dma_address(sg);
- 	} else {
--		struct sbp2_unrestricted_page_table *sg_element =
--						&cmd->scatter_gather_element[0];
--		u32 sg_count, sg_len;
--		dma_addr_t sg_addr;
--		int i, count = dma_map_sg(dmadev, sg, scsi_use_sg, dma_dir);
--
--		cmd->dma_size = scsi_use_sg;
--		cmd->sge_buffer = sg;
--
--		/* use page tables (s/g) */
--		orb->misc |= ORB_SET_PAGE_TABLE_PRESENT(0x1);
--		orb->data_descriptor_lo = cmd->sge_dma;
-+		pt = &cmd->scatter_gather_element[0];
+-	}
+-#endif
+ 	/* Get the PID values and reference them so we can
+ 	   avoid holding the tty ctrl lock while sending signals */
+ 	spin_lock_irqsave(&tty->ctrl_lock, flags);
+@@ -2550,14 +2530,42 @@ static int tiocswinsz(struct tty_struct *tty, struct tty_struct *real_tty,
+ 	put_pid(pgrp);
+ 	put_pid(rpgrp);
  
- 		dma_sync_single_for_cpu(dmadev, cmd->sge_dma,
- 					sizeof(cmd->scatter_gather_element),
- 					DMA_TO_DEVICE);
- 
--		/* loop through and fill out our SBP-2 page tables
--		 * (and split up anything too large) */
--		for (i = 0, sg_count = 0; i < count; i++, sg = sg_next(sg)) {
--			sg_len = sg_dma_len(sg);
--			sg_addr = sg_dma_address(sg);
--			while (sg_len) {
--				sg_element[sg_count].segment_base_lo = sg_addr;
--				if (sg_len > SBP2_MAX_SG_ELEMENT_LENGTH) {
--					sg_element[sg_count].length_segment_base_hi =
--						PAGE_TABLE_SET_SEGMENT_LENGTH(SBP2_MAX_SG_ELEMENT_LENGTH);
--					sg_addr += SBP2_MAX_SG_ELEMENT_LENGTH;
--					sg_len -= SBP2_MAX_SG_ELEMENT_LENGTH;
--				} else {
--					sg_element[sg_count].length_segment_base_hi =
--						PAGE_TABLE_SET_SEGMENT_LENGTH(sg_len);
--					sg_len = 0;
--				}
--				sg_count++;
--			}
-+		for_each_sg(sg, sg, n, i) {
-+			pt[i].high = cpu_to_be32(sg_dma_len(sg) << 16);
-+			pt[i].low = cpu_to_be32(sg_dma_address(sg));
- 		}
- 
--		orb->misc |= ORB_SET_DATA_SIZE(sg_count);
--
--		sbp2util_cpu_to_be32_buffer(sg_element,
--				(sizeof(struct sbp2_unrestricted_page_table)) *
--				sg_count);
-+		orb->misc |= ORB_SET_PAGE_TABLE_PRESENT(0x1) |
-+			     ORB_SET_DATA_SIZE(n);
-+		orb->data_descriptor_lo = cmd->sge_dma;
- 
- 		dma_sync_single_for_device(dmadev, cmd->sge_dma,
- 					   sizeof(cmd->scatter_gather_element),
-@@ -2037,6 +1997,8 @@ static int sbp2scsi_slave_configure(stru
- 		sdev->start_stop_pwr_cond = 1;
- 	if (lu->workarounds & SBP2_WORKAROUND_128K_MAX_TRANS)
- 		blk_queue_max_sectors(sdev->request_queue, 128 * 1024 / 512);
-+
-+	blk_queue_max_segment_size(sdev->request_queue, SBP2_MAX_SEG_SIZE);
+-	tty->winsize = tmp_ws;
+-	real_tty->winsize = tmp_ws;
++	tty->winsize = *ws;
++	real_tty->winsize = *ws;
+ done:
+ 	mutex_unlock(&tty->termios_mutex);
  	return 0;
  }
  
-
--- 
-Stefan Richter
--=====-==--- =--- -==-=
-http://arcgraph.de/sr/
-
+ /**
++ *	tiocswinsz		-	implement window size set ioctl
++ *	@tty; tty
++ *	@arg: user buffer for result
++ *
++ *	Copies the user idea of the window size to the kernel. Traditionally
++ *	this is just advisory information but for the Linux console it
++ *	actually has driver level meaning and triggers a VC resize.
++ *
++ *	Locking:
++ *		Driver dependant. The default do_resize method takes the
++ *	tty termios mutex and ctrl_lock. The console takes its own lock
++ *	then calls into the default method.
++ */
++
++static int tiocswinsz(struct tty_struct *tty, struct tty_struct *real_tty,
++	struct winsize __user *arg)
++{
++	struct winsize tmp_ws;
++	if (copy_from_user(&tmp_ws, arg, sizeof(*arg)))
++		return -EFAULT;
++
++	if (tty->ops->resize)
++		return tty->ops->resize(tty, real_tty, &tmp_ws);
++	else
++		return tty_do_resize(tty, real_tty, &tmp_ws);
++}
++
++/**
+  *	tioccons	-	allow admin to move logical console
+  *	@file: the file to become console
+  *
+diff --git a/drivers/char/vt.c b/drivers/char/vt.c
+index c09170c..05ca1c5 100644
+--- a/drivers/char/vt.c
++++ b/drivers/char/vt.c
+@@ -803,7 +803,25 @@ static inline int resize_screen(struct vc_data *vc, int width, int height,
+  */
+ #define VC_RESIZE_MAXCOL (32767)
+ #define VC_RESIZE_MAXROW (32767)
+-int vc_resize(struct vc_data *vc, unsigned int cols, unsigned int lines)
++
++/**
++ *	vc_do_resize	-	resizing method for the tty
++ *	@tty: tty being resized
++ *	@real_tty: real tty (different to tty if a pty/tty pair)
++ *	@vc: virtual console private data
++ *	@cols: columns
++ *	@lines: lines
++ *
++ *	Resize a virtual console, clipping according to the actual constraints.
++ *	If the caller passes a tty structure then update the termios winsize
++ *	information and perform any neccessary signal handling.
++ *
++ *	Caller must hold the console semaphore. Takes the termios mutex and
++ *	ctrl_lock of the tty IFF a tty is passed.
++ */
++
++static int vc_do_resize(struct tty_struct *tty, struct tty_struct *real_tty,
++		struct vc_data *vc, unsigned int cols, unsigned int lines)
+ {
+ 	unsigned long old_origin, new_origin, new_scr_end, rlth, rrem, err = 0;
+ 	unsigned int old_cols, old_rows, old_row_size, old_screen_size;
+@@ -907,24 +925,15 @@ int vc_resize(struct vc_data *vc, unsigned int cols, unsigned int lines)
+ 	gotoxy(vc, vc->vc_x, vc->vc_y);
+ 	save_cur(vc);
+ 
+-	if (vc->vc_tty) {
+-		struct winsize ws, *cws = &vc->vc_tty->winsize;
+-		struct pid *pgrp = NULL;
+-
++	if (tty) {
++		/* Rewrite the requested winsize data with the actual
++		   resulting sizes */
++		struct winsize ws;
+ 		memset(&ws, 0, sizeof(ws));
+ 		ws.ws_row = vc->vc_rows;
+ 		ws.ws_col = vc->vc_cols;
+ 		ws.ws_ypixel = vc->vc_scan_lines;
+-
+-		spin_lock_irq(&vc->vc_tty->ctrl_lock);
+-		if ((ws.ws_row != cws->ws_row || ws.ws_col != cws->ws_col))
+-			pgrp = get_pid(vc->vc_tty->pgrp);
+-		spin_unlock_irq(&vc->vc_tty->ctrl_lock);
+-		if (pgrp) {
+-			kill_pgrp(vc->vc_tty->pgrp, SIGWINCH, 1);
+-			put_pid(pgrp);
+-		}
+-		*cws = ws;
++		tty_do_resize(tty, real_tty, &ws);
+ 	}
+ 
+ 	if (CON_IS_VISIBLE(vc))
+@@ -932,14 +941,47 @@ int vc_resize(struct vc_data *vc, unsigned int cols, unsigned int lines)
+ 	return err;
+ }
+ 
+-int vc_lock_resize(struct vc_data *vc, unsigned int cols, unsigned int lines)
++/**
++ *	vc_resize		-	resize a VT
++ *	@vc: virtual console
++ *	@cols: columns
++ *	@rows: rows
++ *
++ *	Resize a virtual console as seen from the console end of things. We
++ *	use the common vc_do_resize methods to update the structures. The
++ *	caller must hold the console sem to protect console internals and
++ *	vc->vc_tty
++ */
++
++int vc_resize(struct vc_data *vc, unsigned int cols, unsigned int rows)
++{
++	return vc_do_resize(vc->vc_tty, vc->vc_tty, vc, cols, rows);
++}
++
++/**
++ *	vt_resize		-	resize a VT
++ *	@tty: tty to resize
++ *	@real_tty: tty if a pty/tty pair
++ *	@ws: winsize attributes
++ *
++ *	Resize a virtual terminal. This is called by the tty layer as we
++ *	register our own handler for resizing. The mutual helper does all
++ *	the actual work.
++ *
++ *	Takes the console sem and the called methods then take the tty
++ *	termios_mutex and the tty ctrl_lock in that order.
++ */
++
++int vt_resize(struct tty_struct *tty, struct tty_struct *real_tty,
++	struct winsize *ws)
+ {
+-	int rc;
++	struct vc_data *vc = tty->driver_data;
++	int ret;
+ 
+ 	acquire_console_sem();
+-	rc = vc_resize(vc, cols, lines);
++	ret = vc_do_resize(tty, real_tty, vc, ws->ws_col, ws->ws_row);
+ 	release_console_sem();
+-	return rc;
++	return ret;
+ }
+ 
+ void vc_deallocate(unsigned int currcons)
+@@ -2905,6 +2947,7 @@ static const struct tty_operations con_ops = {
+ 	.start = con_start,
+ 	.throttle = con_throttle,
+ 	.unthrottle = con_unthrottle,
++	.resize = vt_resize,
+ };
+ 
+ int __init vty_init(void)
+@@ -4059,7 +4102,6 @@ EXPORT_SYMBOL(default_blu);
+ EXPORT_SYMBOL(update_region);
+ EXPORT_SYMBOL(redraw_screen);
+ EXPORT_SYMBOL(vc_resize);
+-EXPORT_SYMBOL(vc_lock_resize);
+ EXPORT_SYMBOL(fg_console);
+ EXPORT_SYMBOL(console_blank_hook);
+ EXPORT_SYMBOL(console_blanked);
+diff --git a/drivers/char/vt_ioctl.c b/drivers/char/vt_ioctl.c
+index 86f8421..6fd078b 100644
+--- a/drivers/char/vt_ioctl.c
++++ b/drivers/char/vt_ioctl.c
+@@ -374,6 +374,7 @@ int vt_ioctl(struct tty_struct *tty, struct file * file,
+ 	void __user *up = (void __user *)arg;
+ 	int i, perm;
+ 	int ret = 0;
++	struct winsize ws;
+ 
+ 	console = vc->vc_num;
+ 
+@@ -949,14 +950,18 @@ int vt_ioctl(struct tty_struct *tty, struct file * file,
+ 		    get_user(cc, &vtsizes->v_cols))
+ 			ret = -EFAULT;
+ 		else {
++			acquire_console_sem();
+ 			for (i = 0; i < MAX_NR_CONSOLES; i++) {
+ 				vc = vc_cons[i].d;
+ 
+ 				if (vc) {
+ 					vc->vc_resize_user = 1;
+-					vc_lock_resize(vc_cons[i].d, cc, ll);
++					ws.ws_col = cc;
++					ws.ws_row = ll;
++					vc_resize(vc_cons[i].d, cc, ll);
+ 				}
+ 			}
++			release_console_sem();
+ 		}
+ 		break;
+ 	}
+diff --git a/include/linux/tty.h b/include/linux/tty.h
+index e3579cb..0cbec74 100644
+--- a/include/linux/tty.h
++++ b/include/linux/tty.h
+@@ -331,6 +331,8 @@ extern int tty_write_room(struct tty_struct *tty);
+ extern void tty_driver_flush_buffer(struct tty_struct *tty);
+ extern void tty_throttle(struct tty_struct *tty);
+ extern void tty_unthrottle(struct tty_struct *tty);
++extern int tty_do_resize(struct tty_struct *tty, struct tty_struct *real_tty,
++						struct winsize *ws);
+ 
+ extern int is_current_pgrp_orphaned(void);
+ extern struct pid *tty_get_pgrp(struct tty_struct *tty);
+diff --git a/include/linux/tty_driver.h b/include/linux/tty_driver.h
+index e1065ac..16d2794 100644
+--- a/include/linux/tty_driver.h
++++ b/include/linux/tty_driver.h
+@@ -168,6 +168,18 @@
+  *
+  *	Optional: If not provided then the write method is called under
+  *	the atomic write lock to keep it serialized with the ldisc.
++ *
++ * int (*resize)(struct tty_struct *tty, struct tty_struct *real_tty,
++ *				unsigned int rows, unsigned int cols);
++ *
++ *	Called when a termios request is issued which changes the
++ *	requested terminal geometry.
++ *
++ *	Optional: the default action is to update the termios structure
++ *	without error. This is usually the correct behaviour. Drivers should
++ *	not force errors here if they are not resizable objects (eg a serial
++ *	line). See tty_do_resize() if you need to wrap the standard method
++ *	in your own logic - the usual case.
+  */
+ 
+ #include <linux/fs.h>
+@@ -206,6 +218,8 @@ struct tty_operations {
+ 	int (*tiocmget)(struct tty_struct *tty, struct file *file);
+ 	int (*tiocmset)(struct tty_struct *tty, struct file *file,
+ 			unsigned int set, unsigned int clear);
++	int (*resize)(struct tty_struct *tty, struct tty_struct *real_tty,
++				struct winsize *ws);
+ #ifdef CONFIG_CONSOLE_POLL
+ 	int (*poll_init)(struct tty_driver *driver, int line, char *options);
+ 	int (*poll_get_char)(struct tty_driver *driver, int line);
+diff --git a/include/linux/vt_kern.h b/include/linux/vt_kern.h
+index 1c78d56..1cbd0a7 100644
+--- a/include/linux/vt_kern.h
++++ b/include/linux/vt_kern.h
+@@ -35,7 +35,6 @@ extern int fg_console, last_console, want_console;
+ int vc_allocate(unsigned int console);
+ int vc_cons_allocated(unsigned int console);
+ int vc_resize(struct vc_data *vc, unsigned int cols, unsigned int lines);
+-int vc_lock_resize(struct vc_data *vc, unsigned int cols, unsigned int lines);
+ void vc_deallocate(unsigned int console);
+ void reset_palette(struct vc_data *vc);
+ void do_blank_screen(int entering_gfx);
