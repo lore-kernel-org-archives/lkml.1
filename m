@@ -1,68 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756718AbYHMXI2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756712AbYHMXMs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756718AbYHMXI2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Aug 2008 19:08:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754291AbYHMXIU
+	id S1756712AbYHMXMs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Aug 2008 19:12:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754372AbYHMXMg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Aug 2008 19:08:20 -0400
-Received: from hpsmtp-eml17.kpnxchange.com ([213.75.38.117]:9955 "EHLO
-	hpsmtp-eml17.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753588AbYHMXIT (ORCPT
+	Wed, 13 Aug 2008 19:12:36 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:44615
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1754285AbYHMXMf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Aug 2008 19:08:19 -0400
-From: Frans Pop <elendil@planet.nl>
-To: linux-s390@vger.kernel.org
-Subject: Fwd: [Patch 2.6] s390 - Allow ECKD devices to be used with older controllers and emulation
-Date: Thu, 14 Aug 2008 01:07:59 +0200
-User-Agent: KMail/1.9.9
-Cc: Ivan Warren <ivan@vmfacility.fr>, linux-kernel@vger.kernel.org
-References: <489C9494.9070504@vmfacility.fr>
-In-reply-To: <489C9494.9070504@vmfacility.fr>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+	Wed, 13 Aug 2008 19:12:35 -0400
+Date: Wed, 13 Aug 2008 16:12:37 -0700 (PDT)
+Message-Id: <20080813.161237.10205799.davem@davemloft.net>
+To: rdreier@cisco.com
+Cc: rick.jones2@hp.com, jgarzik@pobox.com, swise@opengridcomputing.com,
+       divy@chelsio.com, kxie@chelsio.com, netdev@vger.kernel.org,
+       open-iscsi@googlegroups.com, michaelc@cs.wisc.edu, daisyc@us.ibm.com,
+       wenxiong@us.ibm.com, bhua@us.ibm.com, dm@chelsio.com,
+       leedom@chelsio.com, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCH 1/1] cxgb3i: cxgb3 iSCSI initiator
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <adatzdoiklo.fsf@cisco.com>
+References: <ada3al8k3l5.fsf@cisco.com>
+	<20080813.150831.193391799.davem@davemloft.net>
+	<adatzdoiklo.fsf@cisco.com>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200808140108.00375.elendil@planet.nl>
-X-OriginalArrivalTime: 13 Aug 2008 23:08:17.0530 (UTC) FILETIME=[789AE5A0:01C8FD99]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Forwarding to s390 kernel list as there have been no replies so far.
+From: Roland Dreier <rdreier@cisco.com>
+Date: Wed, 13 Aug 2008 16:03:15 -0700
 
-(Patch may have whitespace damage because of forward.)
+> OK, I admit you could make something work -- add hooks for the low-level
+> driver to ask the iSCSI initiator where PDU boundaries are so it can
+> resync when something is evicted from the flow cache, have the initiator
+> format its tags in a special way to encode placement data, etc, etc.
+> The scheme does bring to mind Alan's earlier comment about pigs and
+> propulsion, though.
 
-Ivan: You may want to read Documentation/SubmittingPatches in the kernel
-source tree.
+There would need to be _NO_ hooks into the iSCSI initiator at all.
 
---------------------------- Forwarded message ---------------------------
-Crowd,
+The card would land the block I/O data onto the necessary page boundaries
+and the iSCSI code would just be able to thus use the pages directly
+and as-is.
 
-Apologies if this is not formatted correctly, but I'm fairly new to this
-(submitting patches that is)..
+It would look perfectly like normal TCP receive traffic.  No hooks,
+no special cases, nothing like that.
 
-**************
-    s390 dasd ECKD drivers issues a Perform Subsystem Function / Prepare
-for Read SubSystem Data with a length of 16.
-    However, older hardware and documentation specifies a length of 12
-leading to a possible Incorrect Length indication.
-    This patch activates the SLI CCW flag in order to avoid reporting
-the Incorrect Length indication since it is possible that the DASD
-control unit may be expecting a length of 12, not 16.
-        -- Ivan Warren (ivan@vmfacility.fr)
+> In any case, as I said in the part of my email that you snipped, the
+> real issue is not designing hypothetical hardware, but deciding how to
+> support the Chelsio, Broadcom, etc hardware that exists today.
 
-diff --git a/drivers/s390/block/dasd_eckd.c b/drivers/s390/block/dasd_eckd.c index 773b3fe..c4e3935 100644
---- a/drivers/s390/block/dasd_eckd.c
-+++ b/drivers/s390/block/dasd_eckd.c
-@@ -810,6 +810,7 @@ static int dasd_eckd_read_features(struct dasd_device *device)
- 	ccw->cmd_code = DASD_ECKD_CCW_PSF;
- 	ccw->count = sizeof(struct dasd_psf_prssd_data);
- 	ccw->flags |= CCW_FLAG_CC;
-+	ccw->flags |= CCW_FLAG_SLI;
- 	ccw->cda = (__u32)(addr_t) prssdp;
- 
- 	/* Read Subsystem Data - feature codes */
-**************
+The same like we support TOE hardware that exists today.  That is, we
+don't.
 
---Ivan
+
