@@ -1,159 +1,348 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755574AbYHMKAj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754146AbYHMKUj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755574AbYHMKAj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Aug 2008 06:00:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752579AbYHMKAb
+	id S1754146AbYHMKUj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Aug 2008 06:20:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751309AbYHMKU2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Aug 2008 06:00:31 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:41602 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751362AbYHMKAa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Aug 2008 06:00:30 -0400
-Date: Wed, 13 Aug 2008 12:00:13 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Joerg Roedel <joro@8bytes.org>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, mingo@redhat.com, tglx@linutronix.de,
-       linux-kernel@vger.kernel.org
-Subject: Re: Setup code crashes my old 486 box
-Message-ID: <20080813100013.GD2214@elte.hu>
-References: <20080812224703.GV31439@8bytes.org> <48A2155B.1020904@zytor.com> <20080813080705.GW31439@8bytes.org>
+	Wed, 13 Aug 2008 06:20:28 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:56909 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752580AbYHMKU0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Aug 2008 06:20:26 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Date: Wed, 13 Aug 2008 12:19:59 +0200 (CEST)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: [PATCH update] ieee1394: sbp2: enforce s/g segment size limit
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+cc: grundler@google.com, linux1394-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+In-Reply-To: <20080813084514K.fujita.tomonori@lab.ntt.co.jp>
+Message-ID: <tkrat.a77de871a8213efc@s5r6.in-berlin.de>
+References: <20080809071744I.fujita.tomonori@lab.ntt.co.jp>
+ <tkrat.8f7aa8cea95d423b@s5r6.in-berlin.de>
+ <da824cf30808121004w1ea59dc9rd805e2ae4d9f47a7@mail.gmail.com>
+ <20080813084514K.fujita.tomonori@lab.ntt.co.jp>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080813080705.GW31439@8bytes.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-Disposition: INLINE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Joerg Roedel <joro@8bytes.org> wrote:
-
-> On Tue, Aug 12, 2008 at 03:57:31PM -0700, H. Peter Anvin wrote:
-> > Right in concept, but I dislike the implementation (duplication of the 
-> > CPU detect code we already have).  Could you try this patch and see if 
-> > it works for you?
+On 13 Aug, FUJITA Tomonori wrote:
+> On Tue, 12 Aug 2008 10:04:14 -0700
+> "Grant Grundler" <grundler@google.com> wrote:
 > 
-> Cool, with a small modification to fix a build error with it the
-> resulting kernel boots my machine. Thanks.
-> Would be cool to have this patch one merged soon :-)
-> Attached is your patch with my little build fix. It redefines a values
-> already defines in cpufeatures.h but I can't include that file in the
-> boot code so I simply redeclared it. Maybe there is a cleaner solution
-> for this.
+>> On Sat, Aug 9, 2008 at 11:20 AM, Stefan Richter
+>> <stefanr@s5r6.in-berlin.de> wrote:
+>> >  drivers/ieee1394/sbp2.c |  106 +++++++++++++---------------------------
+>> >  drivers/ieee1394/sbp2.h |   37 +++++--------
+>> >  2 files changed, 52 insertions(+), 91 deletions(-)
+>> ...
+>> > +               for_each_sg(sg, sg, sg_count, i) {
+>> > +                       len = sg_dma_len(sg);
+>> > +                       if (len == 0)
+>> > +                               continue;
+>> >
+>> > -               orb->misc |= ORB_SET_DATA_SIZE(sg_count);
+>> > +                       pt[j].high = cpu_to_be32(len << 16);
+>> > +                       pt[j].low = cpu_to_be32(sg_dma_address(sg));
+>> > +                       j++;
+>> > +               }
+>> 
+>> While this code will probably work correctly, I believe if the
+>> sg_dma_len() returns 0, one has walked off the end of the
+>> "bus address" list.
+>>
+>> pci_map_sg() returns how many DMA addr/len pairs are used
+>> and that count could (should?) be used when pulling the
+>> dma_len/addr pairs out of the sg list.
+> 
+> Yeah, from a quick look, seems that this patch wrongly handles
+> sg_count.
+> 
+> This patch sets scsi_sg_count(sc) to sg_count, right?
 
-thanks, i've commited the fix below to tip/x86/urgent - it should show 
-up in v2.6.27-rc4 and it might even be backportable to -stable. I've 
-added your Signed-off-by - is that ok with you?
+Well, I keep the original scsi_sg_count to call dma_unmap_sg with it
+later.  According to Corbet/ Rubini/ Kroah-Hartman: LDD3, dma_unmap_sg
+is to be called with the number of s/g elements before DMA-mapping.
+>From a quick look at some dma_unmap_sg implementations, this seems still
+to be the case; or it doesn't actually matter.
 
-	Ingo
+> for_each_sg is expected to be used with a return value of pci_map_sg.
+> 
+> Then this patch can simply do something like:
+> 
+> for_each_sg(sg, sg, sg_count, i) {
+>         pt[i].high = cpu_to_be32(sg_dma_len(sg) << 16);
+>         pt[i].low = cpu_to_be32(sg_dma_address(sg));
+> }
 
-------------->
->From 7b27718bdb1b70166383dec91391df5534d449ee Mon Sep 17 00:00:00 2001
-From: Joerg Roedel <joro@8bytes.org>
-Date: Wed, 13 Aug 2008 10:07:05 +0200
-Subject: [PATCH] x86: fix setup code crashes on my old 486 box
+Thanks a lot for looking at this; here is my patch fixed.
 
-yesterday I tried to reactivate my old 486 box and wanted to install a
-current Linux with latest kernel on it. But it turned out that the
-latest kernel does not boot because the machine crashes early in the
-setup code.
+ 
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: ieee1394: sbp2: enforce s/g segment size limit
 
-After some debugging it turned out that the problem is the query_ist()
-function. If this interrupt with that function is called the machine
-simply locks up. It looks like a BIOS bug. Looking for a workaround for
-this problem I wrote the attached patch. It checks for the CPUID
-instruction and if it is not implemented it does not call the speedstep
-BIOS function. As far as I know speedstep should be available since some
-Pentium earliest.
+1. We don't need to round the SBP-2 segment size limit down to a
+   multiple of 4 kB (0xffff -> 0xf000).  It is only necessary to
+   ensure quadlet alignment (0xffff -> 0xfffc).
 
-Alan Cox observed that it's available since the Pentium II, so cpuid
-levels 4 and 5 can be excluded altogether.
+2. Use dma_set_max_seg_size() to tell the DMA mapping infrastructure
+   and the block IO layer about the restriction.  This way we can
+   remove the size checks and segment splitting in the queuecommand
+   path.
 
-H. Peter Anvin cleaned up the code some more:
+   This assumes that no other code in the ieee1394 stack uses
+   dma_map_sg() with conflicting requirements.  It furthermore assumes
+   that the controller device's platform actually allows us to set the
+   segment size to our liking.  Assert the latter with a BUG_ON().
 
-> Right in concept, but I dislike the implementation (duplication of the
-> CPU detect code we already have).  Could you try this patch and see if
-> it works for you?
+3. Also use blk_queue_max_segment_size() to tell the block IO layer
+   about it.  It cannot know it because our scsi_add_host() does not
+   point to the FireWire controller's device.
 
-which, with a small modification to fix a build error with it the
-resulting kernel boots on my machine.
+We can also uniformly use dma_map_sg() for the single segment case just
+like for the multi segment case, to further simplify the code.
 
-Signed-off-by: Joerg Roedel <joro@8bytes.org>
-Signed-off-by: "H. Peter Anvin" <hpa@zytor.com>
-Cc: <stable@kernel.org>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Also clean up how the page table is converted to big endian.
+
+Thanks to Grant Grundler and FUJITA Tomonori for advice.
+
+Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
 ---
- arch/x86/boot/boot.h     |    8 ++++++++
- arch/x86/boot/cpucheck.c |    8 +-------
- arch/x86/boot/main.c     |    4 ++++
- 3 files changed, 13 insertions(+), 7 deletions(-)
+ drivers/ieee1394/sbp2.c |  100 ++++++++++++----------------------------
+ drivers/ieee1394/sbp2.h |   37 ++++++--------
+ 2 files changed, 46 insertions(+), 91 deletions(-)
 
-diff --git a/arch/x86/boot/boot.h b/arch/x86/boot/boot.h
-index a34b998..9d4b4b4 100644
---- a/arch/x86/boot/boot.h
-+++ b/arch/x86/boot/boot.h
-@@ -25,6 +25,8 @@
- #include <asm/boot.h>
- #include <asm/setup.h>
+Index: linux/drivers/ieee1394/sbp2.h
+===================================================================
+--- linux.orig/drivers/ieee1394/sbp2.h
++++ linux/drivers/ieee1394/sbp2.h
+@@ -139,13 +139,10 @@ struct sbp2_logout_orb {
+ 	u32 status_fifo_lo;
+ } __attribute__((packed));
  
-+#define NCAPINTS   8
-+
- /* Useful macros */
- #define BUILD_BUG_ON(condition) ((void)sizeof(char[1 - 2*!!(condition)]))
- 
-@@ -242,6 +244,12 @@ int cmdline_find_option(const char *option, char *buffer, int bufsize);
- int cmdline_find_option_bool(const char *option);
- 
- /* cpu.c, cpucheck.c */
-+struct cpu_features {
-+	int level;		/* Family, or 64 for x86-64 */
-+	int model;
-+	u32 flags[NCAPINTS];
+-#define PAGE_TABLE_SET_SEGMENT_BASE_HI(v)	((v) & 0xffff)
+-#define PAGE_TABLE_SET_SEGMENT_LENGTH(v)	(((v) & 0xffff) << 16)
+-
+ struct sbp2_unrestricted_page_table {
+-	u32 length_segment_base_hi;
+-	u32 segment_base_lo;
+-} __attribute__((packed));
++	__be32 high;
++	__be32 low;
 +};
-+extern struct cpu_features cpu;
- int check_cpu(int *cpu_level_ptr, int *req_level_ptr, u32 **err_flags_ptr);
- int validate_cpu(void);
  
-diff --git a/arch/x86/boot/cpucheck.c b/arch/x86/boot/cpucheck.c
-index 7804389..c1ce030 100644
---- a/arch/x86/boot/cpucheck.c
-+++ b/arch/x86/boot/cpucheck.c
-@@ -30,13 +30,7 @@
- #include <asm/required-features.h>
- #include <asm/msr-index.h>
+ #define RESP_STATUS_REQUEST_COMPLETE		0x0
+ #define RESP_STATUS_TRANSPORT_FAILURE		0x1
+@@ -216,15 +213,18 @@ struct sbp2_status_block {
+ #define SBP2_UNIT_SPEC_ID_ENTRY			0x0000609e
+ #define SBP2_SW_VERSION_ENTRY			0x00010483
  
--struct cpu_features {
--	int level;		/* Family, or 64 for x86-64 */
--	int model;
--	u32 flags[NCAPINTS];
+-
+ /*
+- * SCSI specific definitions
++ * The default maximum s/g segment size of a FireWire controller is
++ * usually 0x10000, but SBP-2 only allows 0xffff. Since buffers have to
++ * be quadlet-aligned, we set the length limit to 0xffff & ~3.
+  */
++#define SBP2_MAX_SEG_SIZE			0xfffc
+ 
+-#define SBP2_MAX_SG_ELEMENT_LENGTH		0xf000
+-/* There is no real limitation of the queue depth (i.e. length of the linked
++/*
++ * There is no real limitation of the queue depth (i.e. length of the linked
+  * list of command ORBs) at the target. The chosen depth is merely an
+- * implementation detail of the sbp2 driver. */
++ * implementation detail of the sbp2 driver.
++ */
+ #define SBP2_MAX_CMDS				8
+ 
+ #define SBP2_SCSI_STATUS_GOOD			0x0
+@@ -240,12 +240,6 @@ struct sbp2_status_block {
+  * Representations of commands and devices
+  */
+ 
+-enum sbp2_dma_types {
+-	CMD_DMA_NONE,
+-	CMD_DMA_PAGE,
+-	CMD_DMA_SINGLE
 -};
 -
--static struct cpu_features cpu;
-+struct cpu_features cpu;
- static u32 cpu_vendor[3];
- static u32 err_flags[NCAPINTS];
- 
-diff --git a/arch/x86/boot/main.c b/arch/x86/boot/main.c
-index 2296164..01aa64b 100644
---- a/arch/x86/boot/main.c
-+++ b/arch/x86/boot/main.c
-@@ -73,6 +73,10 @@ static void keyboard_set_repeat(void)
-  */
- static void query_ist(void)
- {
-+	/* Some 486 BIOSes apparently crash on this call */
-+	if (cpu.level < 6)
-+		return;
+ /* Per SCSI command */
+ struct sbp2_command_info {
+ 	struct list_head list;
+@@ -258,11 +252,10 @@ struct sbp2_command_info {
+ 	struct sbp2_unrestricted_page_table
+ 		scatter_gather_element[SG_ALL] __attribute__((aligned(8)));
+ 	dma_addr_t sge_dma;
+-	void *sge_buffer;
+-	dma_addr_t cmd_dma;
+-	enum sbp2_dma_types dma_type;
+-	unsigned long dma_size;
+-	enum dma_data_direction dma_dir;
 +
- 	asm("int $0x15"
- 	    : "=a" (boot_params.ist_info.signature),
- 	      "=b" (boot_params.ist_info.command),
++	struct scatterlist *sg_buffer;
++	int sg_count;
++	enum dma_data_direction sg_dir;
+ };
+ 
+ /* Per FireWire host */
+Index: linux/drivers/ieee1394/sbp2.c
+===================================================================
+--- linux.orig/drivers/ieee1394/sbp2.c
++++ linux/drivers/ieee1394/sbp2.c
+@@ -656,23 +656,10 @@ static struct sbp2_command_info *sbp2uti
+ static void sbp2util_mark_command_completed(struct sbp2_lu *lu,
+ 					    struct sbp2_command_info *cmd)
+ {
+-	struct hpsb_host *host = lu->ud->ne->host;
+-
+-	if (cmd->cmd_dma) {
+-		if (cmd->dma_type == CMD_DMA_SINGLE)
+-			dma_unmap_single(host->device.parent, cmd->cmd_dma,
+-					 cmd->dma_size, cmd->dma_dir);
+-		else if (cmd->dma_type == CMD_DMA_PAGE)
+-			dma_unmap_page(host->device.parent, cmd->cmd_dma,
+-				       cmd->dma_size, cmd->dma_dir);
+-		/* XXX: Check for CMD_DMA_NONE bug */
+-		cmd->dma_type = CMD_DMA_NONE;
+-		cmd->cmd_dma = 0;
+-	}
+-	if (cmd->sge_buffer) {
+-		dma_unmap_sg(host->device.parent, cmd->sge_buffer,
+-			     cmd->dma_size, cmd->dma_dir);
+-		cmd->sge_buffer = NULL;
++	if (cmd->sg_buffer) {
++		dma_unmap_sg(lu->ud->ne->host->device.parent, cmd->sg_buffer,
++			     cmd->sg_count, cmd->sg_dir);
++		cmd->sg_buffer = NULL;
+ 	}
+ 	list_move_tail(&cmd->list, &lu->cmd_orb_completed);
+ }
+@@ -827,6 +814,10 @@ static struct sbp2_lu *sbp2_alloc_device
+ #endif
+ 	}
+ 
++	if (dma_get_max_seg_size(hi->host->device.parent) > SBP2_MAX_SEG_SIZE)
++		BUG_ON(dma_set_max_seg_size(hi->host->device.parent,
++					    SBP2_MAX_SEG_SIZE));
++
+ 	/* Prevent unloading of the 1394 host */
+ 	if (!try_module_get(hi->host->driver->owner)) {
+ 		SBP2_ERR("failed to get a reference on 1394 host driver");
+@@ -1501,76 +1492,45 @@ static int sbp2_agent_reset(struct sbp2_
+ static int sbp2_prep_command_orb_sg(struct sbp2_command_orb *orb,
+ 				    struct sbp2_fwhost_info *hi,
+ 				    struct sbp2_command_info *cmd,
+-				    unsigned int scsi_use_sg,
++				    unsigned int sg_count,
+ 				    struct scatterlist *sg,
+ 				    u32 orb_direction,
+ 				    enum dma_data_direction dma_dir)
+ {
+ 	struct device *dmadev = hi->host->device.parent;
++	struct sbp2_unrestricted_page_table *pt;
++	int i, n;
++
++	n = dma_map_sg(dmadev, sg, sg_count, dma_dir);
++	if (n == 0)
++		return -ENOMEM;
++
++	cmd->sg_buffer = sg;
++	cmd->sg_count = sg_count;
++	cmd->sg_dir = dma_dir;
+ 
+-	cmd->dma_dir = dma_dir;
+ 	orb->data_descriptor_hi = ORB_SET_NODE_ID(hi->host->node_id);
+ 	orb->misc |= ORB_SET_DIRECTION(orb_direction);
+ 
+ 	/* special case if only one element (and less than 64KB in size) */
+-	if (scsi_use_sg == 1 && sg->length <= SBP2_MAX_SG_ELEMENT_LENGTH) {
+-
+-		cmd->dma_size = sg->length;
+-		cmd->dma_type = CMD_DMA_PAGE;
+-		cmd->cmd_dma = dma_map_page(dmadev, sg_page(sg), sg->offset,
+-					    cmd->dma_size, cmd->dma_dir);
+-		if (dma_mapping_error(cmd->cmd_dma)) {
+-			cmd->cmd_dma = 0;
+-			return -ENOMEM;
+-		}
+-
+-		orb->data_descriptor_lo = cmd->cmd_dma;
+-		orb->misc |= ORB_SET_DATA_SIZE(cmd->dma_size);
+-
++	if (n == 1) {
++		orb->misc |= ORB_SET_DATA_SIZE(sg_dma_len(sg));
++		orb->data_descriptor_lo = sg_dma_address(sg);
+ 	} else {
+-		struct sbp2_unrestricted_page_table *sg_element =
+-						&cmd->scatter_gather_element[0];
+-		u32 sg_count, sg_len;
+-		dma_addr_t sg_addr;
+-		int i, count = dma_map_sg(dmadev, sg, scsi_use_sg, dma_dir);
+-
+-		cmd->dma_size = scsi_use_sg;
+-		cmd->sge_buffer = sg;
+-
+-		/* use page tables (s/g) */
+-		orb->misc |= ORB_SET_PAGE_TABLE_PRESENT(0x1);
+-		orb->data_descriptor_lo = cmd->sge_dma;
++		pt = &cmd->scatter_gather_element[0];
+ 
+ 		dma_sync_single_for_cpu(dmadev, cmd->sge_dma,
+ 					sizeof(cmd->scatter_gather_element),
+ 					DMA_TO_DEVICE);
+ 
+-		/* loop through and fill out our SBP-2 page tables
+-		 * (and split up anything too large) */
+-		for (i = 0, sg_count = 0; i < count; i++, sg = sg_next(sg)) {
+-			sg_len = sg_dma_len(sg);
+-			sg_addr = sg_dma_address(sg);
+-			while (sg_len) {
+-				sg_element[sg_count].segment_base_lo = sg_addr;
+-				if (sg_len > SBP2_MAX_SG_ELEMENT_LENGTH) {
+-					sg_element[sg_count].length_segment_base_hi =
+-						PAGE_TABLE_SET_SEGMENT_LENGTH(SBP2_MAX_SG_ELEMENT_LENGTH);
+-					sg_addr += SBP2_MAX_SG_ELEMENT_LENGTH;
+-					sg_len -= SBP2_MAX_SG_ELEMENT_LENGTH;
+-				} else {
+-					sg_element[sg_count].length_segment_base_hi =
+-						PAGE_TABLE_SET_SEGMENT_LENGTH(sg_len);
+-					sg_len = 0;
+-				}
+-				sg_count++;
+-			}
++		for_each_sg(sg, sg, n, i) {
++			pt[i].high = cpu_to_be32(sg_dma_len(sg) << 16);
++			pt[i].low = cpu_to_be32(sg_dma_address(sg));
+ 		}
+ 
+-		orb->misc |= ORB_SET_DATA_SIZE(sg_count);
+-
+-		sbp2util_cpu_to_be32_buffer(sg_element,
+-				(sizeof(struct sbp2_unrestricted_page_table)) *
+-				sg_count);
++		orb->misc |= ORB_SET_PAGE_TABLE_PRESENT(0x1) |
++			     ORB_SET_DATA_SIZE(n);
++		orb->data_descriptor_lo = cmd->sge_dma;
+ 
+ 		dma_sync_single_for_device(dmadev, cmd->sge_dma,
+ 					   sizeof(cmd->scatter_gather_element),
+@@ -2037,6 +1997,8 @@ static int sbp2scsi_slave_configure(stru
+ 		sdev->start_stop_pwr_cond = 1;
+ 	if (lu->workarounds & SBP2_WORKAROUND_128K_MAX_TRANS)
+ 		blk_queue_max_sectors(sdev->request_queue, 128 * 1024 / 512);
++
++	blk_queue_max_segment_size(sdev->request_queue, SBP2_MAX_SEG_SIZE);
+ 	return 0;
+ }
+ 
+
+-- 
+Stefan Richter
+-=====-==--- =--- -==-=
+http://arcgraph.de/sr/
+
