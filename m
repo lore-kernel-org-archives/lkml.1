@@ -1,37 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756809AbYHMXEw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756718AbYHMXI2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756809AbYHMXEw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Aug 2008 19:04:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754301AbYHMXEn
+	id S1756718AbYHMXI2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Aug 2008 19:08:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754291AbYHMXIU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Aug 2008 19:04:43 -0400
-Received: from gw.goop.org ([64.81.55.164]:36602 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754263AbYHMXEn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Aug 2008 19:04:43 -0400
-Message-ID: <48A3686A.2080605@goop.org>
-Date: Wed, 13 Aug 2008 16:04:10 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	Wed, 13 Aug 2008 19:08:20 -0400
+Received: from hpsmtp-eml17.kpnxchange.com ([213.75.38.117]:9955 "EHLO
+	hpsmtp-eml17.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753588AbYHMXIT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Aug 2008 19:08:19 -0400
+From: Frans Pop <elendil@planet.nl>
+To: linux-s390@vger.kernel.org
+Subject: Fwd: [Patch 2.6] s390 - Allow ECKD devices to be used with older controllers and emulation
+Date: Thu, 14 Aug 2008 01:07:59 +0200
+User-Agent: KMail/1.9.9
+Cc: Ivan Warren <ivan@vmfacility.fr>, linux-kernel@vger.kernel.org
+References: <489C9494.9070504@vmfacility.fr>
+In-reply-To: <489C9494.9070504@vmfacility.fr>
 MIME-Version: 1.0
-To: Adrian Bunk <bunk@kernel.org>
-CC: Michael Krufky <mkrufky@linuxtv.org>, Pavel Machek <pavel@suse.cz>,
-       Tim Tassonis <timtas@cubic.ch>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: reiser4 for 2.6.27-rc1
-References: <4896F56D.7080503@cubic.ch> <20080813125807.GC6995@ucw.cz> <20080813131839.GB26351@cs181140183.pp.htv.fi> <37219a840808130624p3d4dca0bja2935d6f34beaf7e@mail.gmail.com> <20080813133457.GC26351@cs181140183.pp.htv.fi>
-In-Reply-To: <20080813133457.GC26351@cs181140183.pp.htv.fi>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200808140108.00375.elendil@planet.nl>
+X-OriginalArrivalTime: 13 Aug 2008 23:08:17.0530 (UTC) FILETIME=[789AE5A0:01C8FD99]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk wrote:
-> Other filesystems are usually not named after people, e.g. ext2 is not 
-> named cardfs2 and jffs2 is not named woodhousefs.
->   
+Forwarding to s390 kernel list as there have been no replies so far.
 
-Bring back xiafs!
+(Patch may have whitespace damage because of forward.)
 
-    J
+Ivan: You may want to read Documentation/SubmittingPatches in the kernel
+source tree.
+
+--------------------------- Forwarded message ---------------------------
+Crowd,
+
+Apologies if this is not formatted correctly, but I'm fairly new to this
+(submitting patches that is)..
+
+**************
+    s390 dasd ECKD drivers issues a Perform Subsystem Function / Prepare
+for Read SubSystem Data with a length of 16.
+    However, older hardware and documentation specifies a length of 12
+leading to a possible Incorrect Length indication.
+    This patch activates the SLI CCW flag in order to avoid reporting
+the Incorrect Length indication since it is possible that the DASD
+control unit may be expecting a length of 12, not 16.
+        -- Ivan Warren (ivan@vmfacility.fr)
+
+diff --git a/drivers/s390/block/dasd_eckd.c b/drivers/s390/block/dasd_eckd.c index 773b3fe..c4e3935 100644
+--- a/drivers/s390/block/dasd_eckd.c
++++ b/drivers/s390/block/dasd_eckd.c
+@@ -810,6 +810,7 @@ static int dasd_eckd_read_features(struct dasd_device *device)
+ 	ccw->cmd_code = DASD_ECKD_CCW_PSF;
+ 	ccw->count = sizeof(struct dasd_psf_prssd_data);
+ 	ccw->flags |= CCW_FLAG_CC;
++	ccw->flags |= CCW_FLAG_SLI;
+ 	ccw->cda = (__u32)(addr_t) prssdp;
+ 
+ 	/* Read Subsystem Data - feature codes */
+**************
+
+--Ivan
