@@ -1,53 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755218AbYHMUXd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753424AbYHMUYW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755218AbYHMUXd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Aug 2008 16:23:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752891AbYHMUXT
+	id S1753424AbYHMUYW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Aug 2008 16:24:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751098AbYHMUYL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Aug 2008 16:23:19 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:46026
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752675AbYHMUXS (ORCPT
+	Wed, 13 Aug 2008 16:24:11 -0400
+Received: from wbmler1.mail.xerox.com ([13.13.138.216]:50792 "EHLO
+	wbmler1.mail.xerox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750705AbYHMUYK convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Aug 2008 16:23:18 -0400
-Date: Wed, 13 Aug 2008 13:23:19 -0700 (PDT)
-Message-Id: <20080813.132319.175666454.davem@davemloft.net>
-To: vst@vlnb.net
-Cc: open-iscsi@googlegroups.com, rdreier@cisco.com, rick.jones2@hp.com,
-       jgarzik@pobox.com, swise@opengridcomputing.com, kxie@chelsio.com,
-       netdev@vger.kernel.org, michaelc@cs.wisc.edu, daisyc@us.ibm.com,
-       wenxiong@us.ibm.com, bhua@us.ibm.com, dm@chelsio.com,
-       leedom@chelsio.com, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC][PATCH 1/1] cxgb3i: cxgb3 iSCSI initiator
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <48A32976.7060504@vlnb.net>
-References: <20080812.150246.42068558.davem@davemloft.net>
-	<200808121521.10101.divy@chelsio.com>
-	<48A32976.7060504@vlnb.net>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Wed, 13 Aug 2008 16:24:10 -0400
+X-Greylist: delayed 1140 seconds by postgrey-1.27 at vger.kernel.org; Wed, 13 Aug 2008 16:24:10 EDT
+X-Xerox-Source-Ip: 13.151.210.15
+X-Xerox-Source-Name: usa7061gw002.na.xerox.net
+X-Xerox-Reported-Name: USA7061GW002.na.xerox.net
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [linux-pm] Power management for SCSI
+Date: Wed, 13 Aug 2008 16:03:57 -0400
+Message-ID: <556445368AFA1C438794ABDA8901891C094876DA@USA0300MS03.na.xerox.net>
+In-Reply-To: <Pine.LNX.4.44L0.0808131534440.13982-100000@iolanthe.rowland.org>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [linux-pm] Power management for SCSI
+Thread-Index: Acj9fgOinRSiEJBfQF+cb9OZZ6kalgAAH0HQ
+References: <200808131825.27303.oneukum@suse.de> <Pine.LNX.4.44L0.0808131534440.13982-100000@iolanthe.rowland.org>
+From: "Leisner, Martin" <Martin.Leisner@xerox.com>
+To: "Alan Stern" <stern@rowland.harvard.edu>,
+       "Oliver Neukum" <oneukum@suse.de>
+Cc: "Linux-pm mailing list" <linux-pm@lists.osdl.org>,
+       "kernel list" <linux-kernel@vger.kernel.org>, <teheo@novell.com>,
+       <James.Bottomley@hansenpartnership.com>, "Pavel Machek" <pavel@suse.cz>,
+       "Stefan Richter" <stefanr@s5r6.in-berlin.de>
+X-OriginalArrivalTime: 13 Aug 2008 20:03:59.0573 (UTC) FILETIME=[B98C9050:01C8FD7F]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Vladislav Bolkhovitin <vst@vlnb.net>
-Date: Wed, 13 Aug 2008 22:35:34 +0400
+Regarding these scsi suspend patches, there's a general
+problem to drop power on disk devices on a running system.
+I discussed it in:
 
-> This is because the target sends data in a zero-copy manner, so its
-> CPU is capable to deal with the load, but on the initiator there are
-> additional data copies from skb's to page cache and from page cache
-> to application.
+http://www.gossamer-threads.com/lists/linux/kernel/811598
 
-If you've actually been reading at all what I've been saying in this
-thread you'll see that I've described a method to do this copy
-avoidance in a completely stateless manner.
+We have a sequence:
+    a) stop further block requests
+    b) sync the disk (and sync the cache -- there was talk on and off
+       for several years about sync not realling syncing)
+    c) drop power on the disk
 
-You don't need to implement a TCP stack in the card in order to do
-data placement optimizations.  They can be done completely stateless.
+We tweak the ext3 mount timeout and the /proc/sys/vm settings to put
+the computer into laptop mode.
 
-Also, large portions of the cpu overhead are transactional costs,
-which are significantly reduced by existing technologies such as
-LRO.
+When a read comes along, we reverse the process...(or a forced write
+which generally won't happen).
+
+But we need to add patches to the device driver and the block layer to
+enable this...it seems useful if there was a more generic way to
+handle it...maybe registering a callback to reenable power and a
+mechanism
+to start the poweroff sequence...
+
+We've done this in 2.6.20, I wonder if there's any work along these
+lines in recent kernels (I'm going to look at 2.6.2[67]...)
+
+Marty
+
+>   -----Original Message-----
+>   From: linux-pm-bounces@lists.linux-foundation.org [mailto:linux-pm-
+>   bounces@lists.linux-foundation.org] On Behalf Of Alan Stern
+>   Sent: Wednesday, August 13, 2008 3:37 PM
+>   To: Oliver Neukum
+>   Cc: Linux-pm mailing list; kernel list; teheo@novell.com;
+>   James.Bottomley@hansenpartnership.com; Pavel Machek; Stefan Richter
+>   Subject: Re: [linux-pm] Power management for SCSI
+>   
+>   On Wed, 13 Aug 2008, Oliver Neukum wrote:
+>   
+>   > > In Alan's patch, SCSI calls scsi_host_template methods (if the
+LLD
+>   > > provides ones) to suspend and resume a Scsi_Host.  The LLD can
+use
+>   them
+>   > > to work with the underlying infrastructure to determine what can
+be
+>   done
+>   > > at that time.  I.e. are there other protocols or other
+initiator-
+>   like
+>   > > nodes sharing the link?  If yes or if "maybe yes", the
+>   infrastructure
+>   > > keeps the link up.  If not, it can move it into a low-power
+state.
+>   >
+>   > That is a parculiar way of viewing it. Alan's patch introduce
+runtime
+>   > pm attributes to the devices. Quoting:
+>   >
+>   
+>   With the original patch, you can't operate on the link independent
+from
+>   the devices.  But with the revised patch (whenever I manage to find
+>   time to write it!), you _will_ be able to.
+>   
+>   Alan Stern
+>   
+>   _______________________________________________
+>   linux-pm mailing list
+>   linux-pm@lists.linux-foundation.org
+>   https://lists.linux-foundation.org/mailman/listinfo/linux-pm
