@@ -1,57 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753847AbYHMHPU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754810AbYHMHQF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753847AbYHMHPU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Aug 2008 03:15:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751436AbYHMHPH
+	id S1754810AbYHMHQF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Aug 2008 03:16:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752277AbYHMHPx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Aug 2008 03:15:07 -0400
-Received: from fms-01.valinux.co.jp ([210.128.90.1]:37768 "EHLO
-	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751487AbYHMHPG (ORCPT
+	Wed, 13 Aug 2008 03:15:53 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:43119 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752157AbYHMHPw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Aug 2008 03:15:06 -0400
-To: a.p.zijlstra@chello.nl
-Cc: kamezawa.hiroyu@jp.fujitsu.com, linux-mm@kvack.org, menage@google.com,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH][RFC] dirty balancing for cgroups
-In-Reply-To: Your message of "Thu, 07 Aug 2008 15:36:08 +0200"
-	<1218116168.8625.38.camel@twins>
-References: <1218116168.8625.38.camel@twins>
-X-Mailer: Cue version 0.8 (080625-0732/takashi)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Message-Id: <20080813071505.930965A75@siro.lan>
-Date: Wed, 13 Aug 2008 16:15:05 +0900 (JST)
-From: yamamoto@valinux.co.jp (YAMAMOTO Takashi)
+	Wed, 13 Aug 2008 03:15:52 -0400
+Message-ID: <48A28953.6070609@cs.helsinki.fi>
+Date: Wed, 13 Aug 2008 10:12:19 +0300
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+User-Agent: Thunderbird 2.0.0.16 (Macintosh/20080707)
+MIME-Version: 1.0
+To: Christoph Lameter <cl@linux-foundation.org>
+CC: akpm@linux-foundation.org, Alexander Viro <viro@ftp.linux.org.uk>,
+       Christoph Hellwig <hch@infradead.org>,
+       Christoph Lameter <clameter@sgi.com>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, Mel Gorman <mel@skynet.ie>,
+       andi@firstfloor.org, Rik van Riel <riel@redhat.com>, mpm@selenic.com,
+       Dave Chinner <david@fromorbit.com>
+Subject: Re: [patch 18/19] dentries: Add constructor
+References: <20080811150616.207532384@quilx.com> <20080811150702.264510758@quilx.com>
+In-Reply-To: <20080811150702.264510758@quilx.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-hi,
-
-> > @@ -485,7 +502,10 @@ unsigned long mem_cgroup_isolate_pages(unsigned long nr_to_scan,
-> >  		if (PageUnevictable(page) ||
-> >  		    (PageActive(page) && !active) ||
-> >  		    (!PageActive(page) && active)) {
-> > -			__mem_cgroup_move_lists(pc, page_lru(page));
-> > +			if (try_lock_page_cgroup(page)) {
-> > +				__mem_cgroup_move_lists(pc, page_lru(page));
-> > +				unlock_page_cgroup(page);
-> > +			}
-> >  			continue;
-> >  		}
+Christoph Lameter wrote:
+> In order to support defragmentation on the dentry cache we need to have
+> a determined object state at all times. Without a constructor the object
+> would have a random state after allocation.
 > 
-> This chunk seems unrelated and lost....
+> So provide a constructor.
 
-it's necessary to protect from mem_cgroup_{set,clear}_dirty
-which modify pc->flags without holding mz->lru_lock.
-
-> I presonally dislike the != 0, == 0 comparisons for bitmask operations,
-> they seem to make it harder to read somewhow. I prefer to write !(flags
-> & mask) and (flags & mask), instead.
-> 
-> I guess taste differs,...
-
-yes, it seems different. :)
-
-YAMAMOTO Takashi
+I'm dropping these dentry patches for now because of boot-time oopses.
