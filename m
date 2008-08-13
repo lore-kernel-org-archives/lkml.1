@@ -1,62 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752883AbYHMEpC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753846AbYHMExp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752883AbYHMEpC (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Aug 2008 00:45:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751027AbYHMEox
+	id S1753846AbYHMExp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Aug 2008 00:53:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751351AbYHMExf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Aug 2008 00:44:53 -0400
-Received: from mga02.intel.com ([134.134.136.20]:58708 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750810AbYHMEox (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Aug 2008 00:44:53 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.32,199,1217833200"; 
-   d="scan'208";a="325764341"
-Subject: Re: [PATCH -v3 1/7] kexec jump: clean up #ifdef and comments
-From: Huang Ying <ying.huang@intel.com>
+	Wed, 13 Aug 2008 00:53:35 -0400
+Received: from out02.mta.xmission.com ([166.70.13.232]:55577 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751324AbYHMExe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Aug 2008 00:53:34 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>, Pavel Machek <pavel@ucw.cz>,
+Cc: Huang Ying <ying.huang@intel.com>, Pavel Machek <pavel@ucw.cz>,
        nigel@nigel.suspend2.net, "Rafael J. Wysocki" <rjw@sisk.pl>,
        Vivek Goyal <vgoyal@redhat.com>, mingo@elte.hu,
        Linus Torvalds <torvalds@linux-foundation.org>,
        linux-kernel@vger.kernel.org,
        Kexec Mailing List <kexec@lists.infradead.org>
-In-Reply-To: <20080812204900.db63deaa.akpm@linux-foundation.org>
 References: <1218510861.24951.40.camel@caritas-dev.intel.com>
-	 <20080812204900.db63deaa.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Wed, 13 Aug 2008 12:44:49 +0800
-Message-Id: <1218602689.24951.89.camel@caritas-dev.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	<20080812204900.db63deaa.akpm@linux-foundation.org>
+Date: Tue, 12 Aug 2008 21:47:22 -0700
+In-Reply-To: <20080812204900.db63deaa.akpm@linux-foundation.org> (Andrew
+	Morton's message of "Tue, 12 Aug 2008 20:49:00 -0700")
+Message-ID: <m1ej4tikrp.fsf@frodo.ebiederm.org>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-SA-Exim-Connect-IP: 24.130.11.59
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa03 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Combo: ;Andrew Morton <akpm@linux-foundation.org>
+X-Spam-Relay-Country: 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	* -0.7 BAYES_20 BODY: Bayesian spam probability is 5 to 20%
+	*      [score: 0.1491]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa03 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+Subject: Re: [PATCH -v3 1/7] kexec jump: clean up #ifdef and comments
+X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
+X-SA-Exim-Scanned: Yes (on mgr1.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-08-12 at 20:49 -0700, Andrew Morton wrote:
+Andrew Morton <akpm@linux-foundation.org> writes:
+
 > On Tue, 12 Aug 2008 11:14:21 +0800 Huang Ying <ying.huang@intel.com> wrote:
-> 
-> >  	xchg(&kexec_lock, 0);
-> 
+>
+>>  	xchg(&kexec_lock, 0);
+>
 > kernel/kexec.c: In function 'kernel_kexec':
 > kernel/kexec.c:1501: warning: value computed is not used
-> 
+
+A good question is why we are warned.
+
 > Is there any reason why we cannot use the more conventional
 > test_and_set_bit() etc, rather than this peculiarity?
-> 
+>
 > Or perhaps spin_trylock?
 
-Hi, Andrew,
+Totally odd.
 
-I think it is of no problem to replace xchg() with test_and_set_bit() or
-spin_trylock().
+Let me stop and take a look and see what has been changed.  The original
+code used a xchg based read copy update scheme, which was extremely
+compatible with a lot of goals.  The primary one being no blocking paths
+in a successful kexec, and minimal dependence on library functions.
 
-Hi, Eric,
+We need that minimal dependence to handle the kexec on panic case.
 
-Do you have some reason to use xchg() instead of others?
+That doesn't rule out something like test_and_set_bit.
 
-Best Regards,
-Huang Ying
-
-
+Eric
