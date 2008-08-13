@@ -1,46 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756237AbYHMOit@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756769AbYHMOjV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756237AbYHMOit (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Aug 2008 10:38:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753086AbYHMOik
+	id S1756769AbYHMOjV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Aug 2008 10:39:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753258AbYHMOjI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Aug 2008 10:38:40 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:59018 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750956AbYHMOik (ORCPT
+	Wed, 13 Aug 2008 10:39:08 -0400
+Received: from nf-out-0910.google.com ([64.233.182.190]:24985 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752986AbYHMOjF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Aug 2008 10:38:40 -0400
-Date: Wed, 13 Aug 2008 14:40:40 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Kenneth Goldman <kgoldman@us.ibm.com>
-Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org
-Subject: Re: [PATCH 1/4] integrity: TPM internel kernel interface
-Message-ID: <20080813144040.30d40ec5@lxorguk.ukuu.org.uk>
-In-Reply-To: <OFC8FDDFED.7F31F3B8-ON852574A4.004A3882-852574A4.004BA8FA@us.ibm.com>
-References: <20080812223636.1aff373a@lxorguk.ukuu.org.uk>
-	<OFC8FDDFED.7F31F3B8-ON852574A4.004A3882-852574A4.004BA8FA@us.ibm.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 13 Aug 2008 10:39:05 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding
+         :sender;
+        b=qjIDgHsvoaMw6CNB9+bui1mstel/xUzbBAyBm87igToAQTh3md/O7Mt2ceJUbDW76y
+         eFFbuUWg14mELOlQ55kTMmkfGfCcITlRkzrCvE4Hgz5jyb2OELx3SJhNimBkLB2vguI+
+         Wm9X/nAxptCGkKT5QPnMFeapIzmwQwX6UPPYQ=
+Message-ID: <48A2F204.2050407@tuffmail.co.uk>
+Date: Wed, 13 Aug 2008 15:39:00 +0100
+From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
+MIME-Version: 1.0
+To: Maximilian Engelhardt <maxi@daemonizer.de>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Alexey Starikovskiy <astarikovskiy@suse.de>, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, hmh@hmh.eng.br, stable@kernel.org
+Subject: Re: [PATCH] acpi: Avoid dropping rapid hotkey events (or other GPEs)
+ on Asus EeePC
+References: <487D23C3.5070301@student.cs.york.ac.uk> <20080813034628.0ef51866.akpm@linux-foundation.org> <48A2CAAA.7010405@tuffmail.co.uk> <200808131536.57705.maxi@daemonizer.de>
+In-Reply-To: <200808131536.57705.maxi@daemonizer.de>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> "goodies", the TCG technology does not protect against hardware
-> attacks such as replacing the TPM with a bogus device, replacing the
-> CRTM hardware, flashing the CRTM using a JTAG cable, lifting a TPM pin>
-> and asserting reset, using a JTAG cable to set breakpoints and alter
-> memory, etc.
-> 
-> For this use case, the attack model is a remote, software attack.  The>
-> user is not considered the attacker.
+Maximilian Engelhardt wrote:
+> On Wednesday 13 August 2008, Alan Jenkins wrote:
+>   
+>> [Dupe apology: CC'd to stable@kernel.org, with the right address this time]
+>>
+>> Andrew Morton wrote:
+>>     
+>>> On Wed, 13 Aug 2008 11:21:10 +0100 Alan Jenkins 
+>>>       
+> <alan-jenkins@tuffmail.co.uk> wrote:
+>   
+>>>> Andrew Morton wrote:
+>>>>         
+>>>>> Did this get fixed yet?
+>>>>>
+>>>>> I have an patch in -mm which I just restored (I had to tempdrop it
+>>>>> because the acpi tree was busted for some time).  But it seems to be
+>>>>> old.
+>>>>>
+>>>>> http://bugzilla.kernel.org/show_bug.cgi?id=10919 is marked "resolved"
+>>>>> but the reporter (Maximilian) seems to think otherwise.  2.6.26.x is,
+>>>>> afaik, still unfixed, as is 2.6.27-rc.
+>>>>>           
+>>>> That's correct.  I think this specific patch should go in 2.6.27 and
+>>>> 2.6.26-stable.  No objections have been raised so far.
+>>>>
+>>>> I still need this patch to make my brightness and volume control keys
+>>>> usable in 2.6.27-rc3.  (They auto-repeat fast enough to trigger the
+>>>> bug).  This is true even after applying the latest patches from bug
+>>>> 10919 (#25 + #27).
+>>>>         
+>>> Confusing.  Please send the patch which you think we should apply.
+>>>
+>>>       
+>>>> I think the 10919 fix makes it harder to reproduce, but it definitely
+>>>> still happens.  I guess this is because the polling-driven EC
+>>>> transactions add 1ms delays between each byte.  The slower timings leave
+>>>> a window where the buggy behaviour of my EC can make a difference.  (It
+>>>> has been seen to clear the "pending event" bit after a single event is
+>>>> read, despite having more events pending).
+>>>>
+>>>> There are more serious consequences of this bug.  After a while it can
+>>>> confuse the EC enough to cause lockups or reboots during boot, or after
+>>>> pressing a single hotkey.  This bad state is preserved over reboots,
+>>>> even into known good kernels.  Fortunately the badness clears when power
+>>>> is removed for a long enough period.  For a while I was worried that
+>>>> something had physically burnt out.
+>>>>         
+>>> Oh gad.  And there's no workaround?
+>>>       
+>> Sorry, that was confusing.
+>>
+>> The patch in currently in -mm _is_ the workaround for this damage.  It
+>> was not initially obvious just how important it was :-).  I've
+>> re-attached it as requested.
+>>
+>> 10919, "laggy hotkeys" is just what it says; ACPI EC events are slower
+>> because of polling.  It appears to be a more cosmetic issue which is
+>> orthogonal to the _dropping_ of events.
+>>
+>> Thanks
+>> Alan
+>>     
+>
+> This patch doesn't fix my problem (bug 10919), it only changes it a bit.
+> When I press the dimming key and hold it pressed the display should dim 
+> up/down step by step as long as I hold the key pressed (that's how it has 
+> always been).
+> I'm now running a 2.6.27-rc3 kernel with your patch applied and the display 
+> does dim as described below.
+> When I press the dimming key first the display brightness doesn't change at 
+> all, then it jumps multiple steps, stays there for a short while and again 
+> jumps some steps till it reaches the end of the dimming interval.
+> It looks like the key presses (assuming holding down the key does generate 
+> multiple key presses) get queued up, then all processed all at once, then 
+> again queued up...
+>
+> Maxi
+>   
+This is expected behaviour - I can explain it in detail if that helps. 
+I see the same on my laptop, though perhaps it is more annoying on yours.
 
-Surely if I can replace your TPM with alternative hardware then I can
-also replace it with virtualised software traps.
+The patch I've submitted here is not intended to fix #10919.  You said
+the patch at <http://bugzilla.kernel.org/show_bug.cgi?id=10919#c21>
+worked for you, and I think the approach there is the way forward for
+this "laggy" issue.  However I don't know if it will be ready for this
+kernel release.  I pointed out a cosmetic issue with it to Alexey but
+haven't heard anything since.
 
-[If there is a good document on this btw please just point me there
-instead and I'll go read further]
+Alan
