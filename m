@@ -1,26 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755505AbYHMJOn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755513AbYHMJQI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755505AbYHMJOn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Aug 2008 05:14:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752560AbYHMJOe
+	id S1755513AbYHMJQI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Aug 2008 05:16:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752560AbYHMJPz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Aug 2008 05:14:34 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:40073 "EHLO mx3.mail.elte.hu"
+	Wed, 13 Aug 2008 05:15:55 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:58633 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752412AbYHMJOe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Aug 2008 05:14:34 -0400
-Date: Wed, 13 Aug 2008 11:14:17 +0200
+	id S1751505AbYHMJPz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Aug 2008 05:15:55 -0400
+Date: Wed, 13 Aug 2008 11:15:36 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Andrew Morton <akpm@linux-foundation.org>
+To: Frans Meulenbroeks <fransmeulenbroeks@gmail.com>
 Cc: Shaohua Li <shaohua.li@intel.com>, lkml <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
        Arjan van de Ven <arjan@infradead.org>
 Subject: Re: [patch]fastboot: remove duplicate unpack_to_rootfs()
-Message-ID: <20080813091417.GH23417@elte.hu>
-References: <1218607669.3463.9.camel@sli10-desk.sh.intel.com> <20080813074503.GB398@elte.hu> <20080813075236.GA8052@elte.hu> <20080813010605.b4a55f9b.akpm@linux-foundation.org>
+Message-ID: <20080813091536.GI23417@elte.hu>
+References: <1218607669.3463.9.camel@sli10-desk.sh.intel.com> <20080813074503.GB398@elte.hu> <20080813075236.GA8052@elte.hu> <ac9c93b10808130111ua3d4630v63f7d3754d2ca12e@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080813010605.b4a55f9b.akpm@linux-foundation.org>
+In-Reply-To: <ac9c93b10808130111ua3d4630v63f7d3754d2ca12e@mail.gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -35,99 +36,47 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Andrew Morton <akpm@linux-foundation.org> wrote:
+* Frans Meulenbroeks <fransmeulenbroeks@gmail.com> wrote:
 
-> On Wed, 13 Aug 2008 09:52:36 +0200 Ingo Molnar <mingo@elte.hu> wrote:
+> 2008/8/13, Ingo Molnar <mingo@elte.hu>:
+> >
+> >  * Ingo Molnar <mingo@elte.hu> wrote:
+> >
+> >  > the dry_run variable is now unused in unpack_to_rootfs() and could be
+> >  > eliminated.
+> >
+> >  also, while we are materially touching init/initramfs.c, that file has
+> >  collected a few uglies in the past few years, checkpatch --file says:
+> >
+> >   total: 7 errors, 7 warnings, 3 checks, 562 lines checked
+> >
+> >  it has a few other problems as well that can be seen if you look at the
+> >  file. Unused macros:
+> >
+> >   /* Diagnostic functions (stubbed out) */
+> >   #define Assert(cond,msg)
+> >   #define Trace(x)
+> >   #define Tracev(x)
+> >   #define Tracevv(x)
+> >   #define Tracec(c,x)
+> >   #define Tracecv(c,x)
+> >
+> >   #define STATIC static
+> >   #define INIT __init
+> >
+> These are not really unused. A few lines later it reads:
 > 
-> > no-newline-before-return:
-> > 
-> >          kfree(header_buf);
-> >          return message;
-> >  }
+> #include "../src/inflate.c"
 > 
-> I accidentally delete those newlines when nobody is looking.  They 
-> don't seem worth the space they consume.
+> These macros are used within inflate.c
 
-yeah - for me it's case-dependent. My benchmark for it is absolutely 
-objective and easy to describe: i add a newline when it looks nicer and 
-more maintainable that way ;-)
+oh, i _knew_ i saw this zlib ugliness sometime in the past.
 
-> (what do we do with a function which has multiple `return's?)
+> (and perhaps the inclusion of inflate.c is not a good idea, maybe this 
+> should be in lib.a note that inflate.c is also included in 
+> init/do_mounts_rd.c; fortunately this is all init code (which is 
+> probably why include was used in the first place))
 
-i really didnt want to make a full scale style discussion out of this. 
-Lets ignore my suggestion. The valid case when i use a newline is for 
-example when the return obscures what happens:
-
-	if (something) {
-		do_one();
-		repeat_this();
-		return;
-	}
-
-as visually it's easy to miss the return - especially if the lines above 
-it look similar. So i use:
-
-	if (something) {
-		do_one();
-		repeat_this();
-
-		return;
-	}
-
-because way too often do i miss a stray return somewhere and 
-misunderstand the code flow of a function if it does not stand out, even 
-with syntax highlighting.
-
-Another case is when there's a long linear block of cleanup statements 
-followed by a return:
-
-        q->mode = mode;
-        strcpy(q->name, name);
-        q->next = NULL;
-        *p = q;
-        return NULL;
-}
-
-i usually add a newline:
-
-        q->mode = mode;
-        strcpy(q->name, name);
-        q->next = NULL;
-        *p = q;
-
-        return NULL;
-}
-
-as the 'return NULL' is a separate concept from the preceding 
-activities.
-
-So in this case it is not really because the return is specialy, this is 
-because i like to separate groups of statements per type of activity. So 
-i'd do the same if there were two groups of statements, i'd turn this:
-
-        q->mode = mode;
-        strcpy(q->name, name);
-        q->next = NULL;
-        *p = q;
-	other_stuff = 2;
-	some_other_stuff(other_stuff)
-
-into this:
-
-        q->mode = mode;
-        strcpy(q->name, name);
-        q->next = NULL;
-        *p = q;
-
-	other_stuff = 2;
-	some_other_stuff(other_stuff)
-
-to make sure the two groups of statements stand out. (Sometimes a pure 
-newline does a better job at inserting the right kind of visual 
-structure than a comment line.)
-
-but again ... these are nuances where reasonable people might disagree, 
-and i only made them because this topic lives, is developed and tested 
-in tip/fastboot at the moment.
+definitely. It's a different patch though.
 
 	Ingo
