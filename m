@@ -1,705 +1,161 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757427AbYHMTZX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755394AbYHMT3V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757427AbYHMTZX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Aug 2008 15:25:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756829AbYHMTYy
+	id S1755394AbYHMT3V (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Aug 2008 15:29:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751871AbYHMT3D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Aug 2008 15:24:54 -0400
-Received: from mail.queued.net ([207.210.101.209]:1728 "EHLO mail.queued.net"
+	Wed, 13 Aug 2008 15:29:03 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:55216 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756637AbYHMTYv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Aug 2008 15:24:51 -0400
-Date: Wed, 13 Aug 2008 15:24:59 -0400
-From: Andres Salomon <dilinger@queued.net>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 3/3] OLPC: touchpad driver (take 2)
-Message-ID: <20080813152459.4d6bb0cb@ephemeral>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.10; i486-pc-linux-gnu)
+	id S1751802AbYHMT3B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Aug 2008 15:29:01 -0400
+Date: Wed, 13 Aug 2008 15:05:33 -0400
+From: Jason Baron <jbaron@redhat.com>
+To: Greg KH <greg@kroah.com>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, joe@perches.com, nick@nick-andrew.net,
+       sam@ravnborg.org
+Subject: Re: [PATCH 1/7] dynamic debug v2 - infrastructure
+Message-ID: <20080813190533.GA6099@redhat.com>
+References: <20080717212040.GB13252@redhat.com> <20080717223222.GA28016@kroah.com> <20080808215153.GA16729@redhat.com> <20080808193851.24210bc4.randy.dunlap@oracle.com> <20080811173616.GC6103@redhat.com> <20080811223309.GD9810@kroah.com> <20080812194817.GD6056@redhat.com> <20080812200908.GA444@kroah.com> <20080812204619.GE6056@redhat.com> <20080813010804.GA17446@kroah.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20080813010804.GA17446@kroah.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Aug 12, 2008 at 06:08:04PM -0700, Greg KH wrote:
+> On Tue, Aug 12, 2008 at 04:46:19PM -0400, Jason Baron wrote:
+> > On Tue, Aug 12, 2008 at 01:09:08PM -0700, Greg KH wrote:
+> > > So close, can I have a good changelog comment with the patch so people
+> > > know what it is when they look in the logs?
+> > > 
+> > > Care to resend it with that?
+> > > 
+> > 
+> > Base infrastructure to enable per-module debug messages.
+> 
+> Ah, so close...
+> 
+> With this patch, I get the following build error:
+> 
+>   CC [M]  drivers/usb/gadget/u_ether.o
+> drivers/usb/gadget/u_ether.c: In function ‘gether_setup’:
+> drivers/usb/gadget/u_ether.c:787: error: ‘KBUILD_MODNAME’ undeclared (first use in this function)
+> drivers/usb/gadget/u_ether.c:787: error: (Each undeclared identifier is reported only once
+> drivers/usb/gadget/u_ether.c:787: error: for each function it appears in.)
+> drivers/usb/gadget/u_ether.c:787: error: unknown field ‘Usage’ specified in initializer
+> drivers/usb/gadget/u_ether.c:787: error: expected expression before ‘.’ token
+> drivers/usb/gadget/u_ether.c:787: error: initializer element is not constant
+> drivers/usb/gadget/u_ether.c:787: error: (near initialization for ‘descriptor.hash’)
+> drivers/usb/gadget/u_ether.c:787: error: ‘Usage’ undeclared (first use in this function)
+> drivers/usb/gadget/u_ether.c:787: error: invalid operands to binary << (have ‘long long int’ and ‘char *’)
+> drivers/usb/gadget/u_ether.c:787: error: expected ‘)’ before ‘:’ token
+> drivers/usb/gadget/u_ether.c:787: error: invalid operands to binary & (have ‘long long int’ and ‘char *’)
+> drivers/usb/gadget/u_ether.c:787: error: invalid operands to binary << (have ‘long long int’ and ‘char *’)
+> drivers/usb/gadget/u_ether.c:787: error: expected ‘)’ before ‘:’ token
+> drivers/usb/gadget/u_ether.c:787: error: invalid operands to binary & (have ‘long long int’ and ‘char *’)
+> drivers/usb/gadget/u_ether.c:787: error: expected ‘)’ before ‘:’ token
+> drivers/usb/gadget/u_ether.c:787: warning: passing argument 4 of ‘__dynamic_dbg_enabled_helper’ makes integer from pointer without a cast
+> drivers/usb/gadget/u_ether.c:787: error: expected ‘)’ before ‘KBUILD_MODNAME’
+> drivers/usb/gadget/u_ether.c:787: warning: too few arguments for format
+> make[1]: *** [drivers/usb/gadget/u_ether.o] Error 1
+> make: *** [_module_drivers/usb/gadget] Error 2
+> 
+> 
+> Did you try a simple 'make allmodconfig'?
+> 
+> Also, I cleaned it up a bit to make it pass checkpatch.pl and sparse,
+> doesn't anyone run these things anymore...
+> 
+> I've attached my fixed up version below.
+> 
+> Any ideas?
+> 
 
-This adds support for OLPC's touchpad.  It has lots of neat features,
-none of which are enabled because the hardware is too buggy.  Instead,
-we use it like a normal touchpad, but with a number of workarounds in
-place to deal with the frequent hardware spasms.  Humidity changes,
-sweat, tinfoil underwear, plugging in AC, drinks, evil felines.. All
-tend to cause the touchpad to freak out.
+I was working on an older kernel and so i didn't see this error.
 
-Stuff like this keeps me from getting bored.
+There seem to be a couple of issues here.
 
-We make use of psmouse_set_state and psmouse_queue_work quite a bit.
+First, KBUILD_MODNAME is not defined during the compile of  u_ether.c because
+it is included from multiple sources. It seems that when there are multiple 
+sources "modname" is set to a string of all the source names with spaces in 
+between. So something used in foo and bar looks like: "foo bar".  From 
+scripts/Makefile.lib:
 
-(also, extension renamed from olpc.c to hgpk.c)
+# Note: It's possible that one object gets potentially linked into more
+#       than one module. In that case KBUILD_MODNAME will be set to foo_bar,
+#       where foo and bar are the name of the modules.
+name-fix = $(subst $(comma),_,$(subst -,_,$1))
+basename_flags = -D"KBUILD_BASENAME=KBUILD_STR($(call name-fix,$(basetarget)))"
+modname_flags  = $(if $(filter 1,$(words $(modname))),\
+                 -D"KBUILD_MODNAME=KBUILD_STR($(call name-fix,$(modname)))")
+.
+.
+.
 
-Signed-off-by: Andres Salomon <dilinger@debian.org>
+
+So, the comment says that the KBUILD_MODNAME should be set to "foo_bar" if
+its included from multiple files...however, the modname_flags definition is not
+doing that. In fact, if there are multiple sources its simply setting a
+NULL modname_flag. This issue is independent of the patchset I posted, and
+probably is best fixed separately. A patch which resolves this issue:
+
+Signed-off-by: Jason Baron <jbaron@redhat.com>
+
 ---
- drivers/input/mouse/Kconfig        |   10 +
- drivers/input/mouse/Makefile       |    1 +
- drivers/input/mouse/hgpk.c         |  492 ++++++++++++++++++++++++++++++++++++
- drivers/input/mouse/hgpk.h         |   48 ++++
- drivers/input/mouse/psmouse-base.c |   23 ++-
- drivers/input/mouse/psmouse.h      |    2 +-
- 6 files changed, 574 insertions(+), 2 deletions(-)
- create mode 100644 drivers/input/mouse/hgpk.c
- create mode 100644 drivers/input/mouse/hgpk.h
+  
+diff --git a/scripts/Makefile.lib b/scripts/Makefile.lib
+index b4ca38a..639d5dc 100644
+--- a/scripts/Makefile.lib
++++ b/scripts/Makefile.lib
+@@ -94,7 +94,8 @@ obj-dirs	:= $(addprefix $(obj)/,$(obj-dirs))
+ name-fix = $(subst $(comma),_,$(subst -,_,$1))
+ basename_flags = -D"KBUILD_BASENAME=KBUILD_STR($(call name-fix,$(basetarget)))"
+ modname_flags  = $(if $(filter 1,$(words $(modname))),\
+-                 -D"KBUILD_MODNAME=KBUILD_STR($(call name-fix,$(modname)))")
++		 -D"KBUILD_MODNAME=KBUILD_STR($(call name-fix,$(modname)))",\
++		 -D"KBUILD_MODNAME=KBUILD_STR($(subst $(space),_,$(call name-fix,$(modname))))")
+ 
+ #hash values
+ ifdef CONFIG_DYNAMIC_PRINTK_DEBUG
 
-diff --git a/drivers/input/mouse/Kconfig b/drivers/input/mouse/Kconfig
-index 7bbea09..fff0253 100644
---- a/drivers/input/mouse/Kconfig
-+++ b/drivers/input/mouse/Kconfig
-@@ -96,6 +96,16 @@ config MOUSE_PS2_TOUCHKIT
+
+The second issue is then that the hash functions that i introduced don't like 
+these spaces either. So on top of the patch set i posted please add the patch
+below. The kernel should then compile. I tested this on the 'linux-next' tree,
+which did not boot on the system i was using, but i'm not sure it was related 
+to this change. 
+
+thanks,
+
+-Jason
+
+
+Signed-off-by: Jason Baron <jbaron@redhat.com>
+
+---
+
+
+diff --git a/scripts/Makefile.lib b/scripts/Makefile.lib
+index 639d5dc..3b5455b 100644
+--- a/scripts/Makefile.lib
++++ b/scripts/Makefile.lib
+@@ -99,8 +99,8 @@ modname_flags  = $(if $(filter 1,$(words $(modname))),\
  
- 	  If unsure, say N.
- 
-+config MOUSE_PS2_OLPC
-+	bool "OLPC PS/2 mouse protocol extension"
-+	depends on MOUSE_PS2 && OLPC
-+	help
-+	  Say Y here if you have an OLPC XO-1 laptop (with built-in
-+	  PS/2 touchpad/tablet device).  The manufacturer calls the
-+	  touchpad an HGPK.
-+
-+	  If unsure, say N.
-+
- config MOUSE_SERIAL
- 	tristate "Serial mouse"
- 	select SERIO
-diff --git a/drivers/input/mouse/Makefile b/drivers/input/mouse/Makefile
-index 9e6e363..799aa3f 100644
---- a/drivers/input/mouse/Makefile
-+++ b/drivers/input/mouse/Makefile
-@@ -24,3 +24,4 @@ psmouse-$(CONFIG_MOUSE_PS2_LOGIPS2PP)	+= logips2pp.o
- psmouse-$(CONFIG_MOUSE_PS2_LIFEBOOK)	+= lifebook.o
- psmouse-$(CONFIG_MOUSE_PS2_TRACKPOINT)	+= trackpoint.o
- psmouse-$(CONFIG_MOUSE_PS2_TOUCHKIT)	+= touchkit_ps2.o
-+psmouse-$(CONFIG_MOUSE_PS2_OLPC)	+= hgpk.o
-diff --git a/drivers/input/mouse/hgpk.c b/drivers/input/mouse/hgpk.c
-new file mode 100644
-index 0000000..ac7c2a8
---- /dev/null
-+++ b/drivers/input/mouse/hgpk.c
-@@ -0,0 +1,492 @@
-+/*
-+ * OLPC HGPK (XO-1) touchpad PS/2 mouse driver
-+ *
-+ * Copyright (c) 2006-2008 One Laptop Per Child
-+ * Authors:
-+ *   Zephaniah E. Hull
-+ *   Andres Salomon <dilinger@debian.org>
-+ *
-+ * This driver is partly based on the ALPS driver, which is:
-+ *
-+ * Copyright (c) 2003 Neil Brown <neilb@cse.unsw.edu.au>
-+ * Copyright (c) 2003-2005 Peter Osterlund <petero2@telia.com>
-+ * Copyright (c) 2004 Dmitry Torokhov <dtor@mail.ru>
-+ * Copyright (c) 2005 Vojtech Pavlik <vojtech@suse.cz>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ */
-+
-+/*
-+ * The spec from ALPS is available from
-+ * <http://wiki.laptop.org/go/Touch_Pad/Tablet>.  It refers to this
-+ * device as HGPK (Hybrid GS, PT, and Keymatrix).
-+ *
-+ * The earliest versions of the device had simultaneous reporting; that
-+ * was removed.  After that, the device used the Advanced Mode GS/PT streaming
-+ * stuff.  That turned out to be too buggy to support, so we've finally
-+ * switched to Mouse Mode (which utilizes only the center 1/3 of the touchpad).
-+ */
-+
-+#define DEBUG
-+#include <linux/input.h>
-+#include <linux/serio.h>
-+#include <linux/libps2.h>
-+#include <linux/delay.h>
-+#include <asm/olpc.h>
-+
-+#include "psmouse.h"
-+#include "hgpk.h"
-+
-+static int tpdebug;
-+module_param(tpdebug, int, 0644);
-+MODULE_PARM_DESC(tpdebug, "enable debugging, dumping packets to KERN_DEBUG.");
-+
-+static int recalib_delta = 100;
-+module_param(recalib_delta, int, 0644);
-+MODULE_PARM_DESC(recalib_delta,
-+	"packets containing a delta this large will cause a recalibration.");
-+
-+/*
-+ * When the touchpad gets ultra-sensitive, one can keep their finger 1/2"
-+ * above the pad and still have it send packets.  This causes a jump cursor
-+ * when one places their finger on the pad.  We can probably detect the
-+ * jump as we see a large deltas (>= 100px).  In mouse mode, I've been
-+ * unable to even come close to 100px deltas during normal usage, so I think
-+ * this threshold is safe.  If a large delta occurs, trigger a recalibration.
-+ */
-+static void hgpk_jumpy_hack(struct psmouse *psmouse, int x, int y)
-+{
-+	struct hgpk_data *priv = psmouse->private;
-+
-+	if (abs(x) > recalib_delta || abs(y) > recalib_delta) {
-+		hgpk_err(psmouse, ">%dpx jump detected (%d,%d)\n",
-+				recalib_delta, x, y);
-+		/* My car gets forty rods to the hogshead and that's the
-+		 * way I likes it! */
-+		psmouse_queue_work(psmouse, &priv->recalib_wq,
-+				msecs_to_jiffies(1000));
-+	}
-+}
-+
-+/*
-+ * We have no idea why this particular hardware bug occurs.  The touchpad
-+ * will randomly start spewing packets without anything touching the
-+ * pad.  This wouldn't necessarily be bad, but it's indicative of a
-+ * severely miscalibrated pad; attempting to use the touchpad while it's
-+ * spewing means the cursor will jump all over the place, and act "drunk".
-+ *
-+ * The packets that are spewed tend to all have deltas between -2 and 2, and
-+ * the cursor will move around without really going very far.  It will
-+ * tend to end up in the same location; if we tally up the changes over
-+ * 100 packets, we end up w/ a final delta of close to 0.  This happens
-+ * pretty regularly when the touchpad is spewing, and is pretty hard to
-+ * manually trigger (at least for *my* fingers).  So, it makes a perfect
-+ * scheme for detecting spews.
-+ */
-+static void hgpk_spewing_hack(struct psmouse *psmouse, int l, int r, int x,
-+		int y)
-+{
-+	struct hgpk_data *priv = psmouse->private;
-+	static int count;
-+	static int x_tally;
-+	static int y_tally;
-+
-+	/* ignore button press packets; many in a row could trigger
-+	 * a false-positive! */
-+	if (l || r)
-+		return;
-+
-+	count++;
-+	x_tally += x;
-+	y_tally += y;
-+	if (count > 100) {
-+		if (abs(x_tally) < 3 && abs(y_tally) < 3) {
-+			hgpk_dbg(psmouse, "packet spew detected (%d,%d). :(\n",
-+					x_tally, y_tally);
-+			psmouse_queue_work(psmouse, &priv->recalib_wq,
-+					msecs_to_jiffies(1000));
-+		}
-+		/* reset every 100 packets */
-+		count = 0;
-+		x_tally = 0;
-+		y_tally = 0;
-+	}
-+}
-+
-+/*
-+ * HGPK Mouse Mode format (standard mouse format, sans middle button)
-+ *
-+ * byte 0:	y-over	x-over	y-neg	x-neg	1	0	swr	swl
-+ * byte 1:	x7	x6	x5	x4	x3	x2	x1	x0
-+ * byte 2:	y7	y6	y5	y4	y3	y2	y1	y0
-+ *
-+ * swr/swl are the left/right buttons.
-+ * x-neg/y-neg are the x and y delta negative bits
-+ * x-over/y-over are the x and y overflow bits
-+ */
-+static int hgpk_validate_byte(unsigned char *packet)
-+{
-+	if (!(packet[0] & (1<<3)) || (packet[0] & (1<<2)))
-+		return -1;
-+
-+	return 0;
-+}
-+
-+static void hgpk_process_packet(struct psmouse *psmouse)
-+{
-+	struct input_dev *dev = psmouse->dev;
-+	unsigned char *packet = psmouse->packet;
-+	int x, y, left, right;
-+
-+	left = packet[0] & 1;
-+	right = (packet[0] >> 1) & 1;
-+
-+	x = packet[1] - ((packet[0] << 4) & 0x100);
-+	y = ((packet[0] << 3) & 0x100) - packet[2];
-+
-+	hgpk_jumpy_hack(psmouse, x, y);
-+	hgpk_spewing_hack(psmouse, left, right, x, y);
-+
-+	if (tpdebug)
-+		hgpk_dbg(psmouse, "l=%d r=%d x=%d y=%d\n", left, right, x, y);
-+
-+	input_report_key(dev, BTN_LEFT, left);
-+	input_report_key(dev, BTN_RIGHT, right);
-+
-+	input_report_rel(dev, REL_X, x);
-+	input_report_rel(dev, REL_Y, y);
-+
-+	input_sync(dev);
-+}
-+
-+static psmouse_ret_t hgpk_process_byte(struct psmouse *psmouse)
-+{
-+	struct hgpk_data *priv = psmouse->private;
-+
-+	if (hgpk_validate_byte(psmouse->packet)) {
-+		hgpk_dbg(psmouse, "%s: (%d) %02x %02x %02x\n",
-+				__func__, psmouse->pktcnt, psmouse->packet[0],
-+				psmouse->packet[1], psmouse->packet[2]);
-+		return PSMOUSE_BAD_DATA;
-+	}
-+
-+	if (psmouse->pktcnt >= psmouse->pktsize) {
-+		hgpk_process_packet(psmouse);
-+		return PSMOUSE_FULL_PACKET;
-+	}
-+
-+	if (priv->recalib_window) {
-+		if (time_before(jiffies, priv->recalib_window)) {
-+			/*
-+			 * ugh, got a packet inside our recalibration
-+			 * window, schedule another recalibration.
-+			 */
-+			hgpk_dbg(psmouse, "packet inside calibration window, queueing another recalibration\n");
-+			psmouse_queue_work(psmouse, &priv->recalib_wq,
-+					msecs_to_jiffies(1000));
-+		}
-+		priv->recalib_window = 0;
-+	}
-+
-+	return PSMOUSE_GOOD_DATA;
-+}
-+
-+static int hgpk_force_recalibrate(struct psmouse *psmouse)
-+{
-+	struct ps2dev *ps2dev = &psmouse->ps2dev;
-+	struct hgpk_data *priv = psmouse->private;
-+
-+	/* C-series touchpads added the recalibrate command */
-+	if (psmouse->model < HGPK_MODEL_C)
-+		return 0;
-+
-+	/* we don't want to race with the irq handler, nor with resyncs */
-+	psmouse_set_state(psmouse, PSMOUSE_INITIALIZING);
-+
-+	/* start by resetting the device */
-+	psmouse_reset(psmouse);
-+
-+	/* send the recalibrate request */
-+	if (ps2_command(ps2dev, NULL, 0xf5) ||
-+			ps2_command(ps2dev, NULL, 0xf5) ||
-+			ps2_command(ps2dev, NULL, 0xe6) ||
-+			ps2_command(ps2dev, NULL, 0xf5))
-+		return -1;
-+
-+
-+	/* according to ALPS, 150mS is required for recalibration */
-+	msleep(150);
-+
-+	/* XXX: If a finger is down during this delay, recalibration will
-+	 * detect capacitance incorrectly.  This is a hardware bug, and
-+	 * we don't have a good way to deal with it.  The 2s window stuff
-+	 * (below) is our best option for now.
-+	 */
-+
-+	if (ps2_command(ps2dev, NULL, PSMOUSE_CMD_ENABLE))
-+		return -1;
-+
-+	psmouse_set_state(psmouse, PSMOUSE_ACTIVATED);
-+
-+	/* After we recalibrate, we shouldn't get any packets for 2s.  If
-+	 * we do, it's likely that someone's finger was on the touchpad.
-+	 * If someone's finger *was* on the touchpad, it's probably
-+	 * miscalibrated.  So, we should schedule another recalibration
-+	 */
-+	priv->recalib_window = jiffies +  msecs_to_jiffies(2000);
-+
-+	return 0;
-+}
-+
-+/*
-+ * This kills power to the touchpad; according to ALPS, current consumption
-+ * goes down to 50uA after running this.  To turn power back on, we drive
-+ * MS-DAT low.
-+ */
-+static int hgpk_toggle_power(struct psmouse *psmouse, int enable)
-+{
-+	struct ps2dev *ps2dev = &psmouse->ps2dev;
-+	int timeo;
-+
-+	/* Added on D-series touchpads */
-+	if (psmouse->model < HGPK_MODEL_D)
-+		return 0;
-+
-+	if (enable) {
-+		psmouse_set_state(psmouse, PSMOUSE_INITIALIZING);
-+
-+		/*
-+		 * Sending a byte will drive MS-DAT low; this will wake up
-+		 * the controller.  Once we get an ACK back from it, it
-+		 * means we can continue with the touchpad re-init.  ALPS
-+		 * tells us that 1s should be long enough, so set that as
-+		 * the upper bound.
-+		 */
-+		for (timeo = 20; timeo > 0; timeo--) {
-+			if (!ps2_sendbyte(&psmouse->ps2dev,
-+					PSMOUSE_CMD_DISABLE, 20))
-+				break;
-+			msleep(50);
-+		}
-+
-+		psmouse_reset(psmouse);
-+
-+	} else {
-+		hgpk_dbg(psmouse, "Powering off touchpad.\n");
-+		psmouse_set_state(psmouse, PSMOUSE_IGNORE);
-+
-+		if (ps2_command(ps2dev, NULL, 0xec) ||
-+				ps2_command(ps2dev, NULL, 0xec) ||
-+				ps2_command(ps2dev, NULL, 0xea))
-+			return -1;
-+		/* probably won't see an ACK, the touchpad will be off */
-+		ps2_sendbyte(&psmouse->ps2dev, 0xec, 20);
-+	}
-+
-+	return 0;
-+}
-+
-+static int hgpk_poll(struct psmouse *psmouse)
-+{
-+	/* We can't poll, so always return failure. */
-+	return -1;
-+}
-+
-+static int hgpk_reconnect(struct psmouse *psmouse)
-+{
-+	if (olpc_board_at_least(olpc_board(0xb2)))
-+		if (psmouse->ps2dev.serio->dev.power.power_state.event !=
-+				PM_EVENT_ON)
-+			return 0;
-+
-+	psmouse_reset(psmouse);
-+	return 0;
-+}
-+
-+static ssize_t hgpk_show_powered(struct device *dev,
-+		struct device_attribute *attr, char *buf)
-+{
-+	struct serio *serio = to_serio_port(dev);
-+	struct psmouse *psmouse;
-+	struct hgpk_data *priv;
-+	int retval;
-+
-+	retval = serio_pin_driver(serio);
-+	if (retval)
-+		return retval;
-+
-+	psmouse = serio_get_drvdata(serio);
-+	priv = psmouse->private;
-+
-+	retval = sprintf(buf, "%d\n", priv->powered);
-+	serio_unpin_driver(serio);
-+	return retval;
-+}
-+
-+static ssize_t hgpk_set_powered(struct device *dev,
-+		struct device_attribute *attr, const char *buf, size_t count)
-+{
-+	struct serio *serio = to_serio_port(dev);
-+	struct psmouse *psmouse;
-+	struct hgpk_data *priv;
-+	unsigned long val;
-+	int retval;
-+
-+	if (*buf == '1')
-+		val = 1;
-+	else if (*buf == '0')
-+		val = 0;
-+	else
-+		return -EINVAL;
-+
-+	retval = serio_pin_driver(serio);
-+	if (retval)
-+		return retval;
-+
-+	psmouse = serio_get_drvdata(serio);
-+	priv = psmouse->private;
-+
-+	if (val == priv->powered)
-+		goto done;
-+
-+	/* hgpk_toggle_power will deal w/ state so we're not racing w/ irq */
-+	retval = hgpk_toggle_power(psmouse, val);
-+	if (!retval)
-+		priv->powered = val;
-+
-+done:
-+	serio_unpin_driver(serio);
-+	return retval ? retval : count;
-+}
-+
-+static DEVICE_ATTR(powered, S_IWUSR | S_IRUGO, hgpk_show_powered,
-+		hgpk_set_powered);
-+
-+static void hgpk_disconnect(struct psmouse *psmouse)
-+{
-+	struct hgpk_data *priv = psmouse->private;
-+
-+	device_remove_file(&psmouse->ps2dev.serio->dev, &dev_attr_powered);
-+	psmouse_reset(psmouse);
-+	flush_scheduled_work();
-+	kfree(priv);
-+}
-+
-+static void hgpk_recalib_work(struct work_struct *work)
-+{
-+	struct delayed_work *w = container_of(work, struct delayed_work, work);
-+	struct hgpk_data *priv = container_of(w, struct hgpk_data, recalib_wq);
-+	struct psmouse *psmouse = priv->psmouse;
-+
-+	hgpk_dbg(psmouse, "recalibrating touchpad..\n");
-+
-+	if (hgpk_force_recalibrate(psmouse))
-+		hgpk_err(psmouse, "recalibration failed!\n");
-+}
-+
-+static int hgpk_register(struct psmouse *psmouse)
-+{
-+	struct input_dev *dev = psmouse->dev;
-+	int err;
-+
-+	/* unset the things that psmouse-base sets which we don't have */
-+	clear_bit(BTN_MIDDLE, dev->keybit);
-+
-+	/* set the things we do have */
-+	set_bit(EV_KEY, dev->evbit);
-+	set_bit(EV_REL, dev->evbit);
-+
-+	set_bit(REL_X, dev->relbit);
-+	set_bit(REL_Y, dev->relbit);
-+
-+	set_bit(BTN_LEFT, dev->keybit);
-+	set_bit(BTN_RIGHT, dev->keybit);
-+
-+	/* register handlers */
-+	psmouse->protocol_handler = hgpk_process_byte;
-+	psmouse->poll = hgpk_poll;
-+	psmouse->disconnect = hgpk_disconnect;
-+	psmouse->reconnect = hgpk_reconnect;
-+	psmouse->pktsize = 3;
-+
-+	/* Disable the idle resync. */
-+	psmouse->resync_time = 0;
-+	/* Reset after a lot of bad bytes. */
-+	psmouse->resetafter = 1024;
-+
-+	err = device_create_file(&psmouse->ps2dev.serio->dev,
-+			&dev_attr_powered);
-+	if (err)
-+		hgpk_err(psmouse, "Failed to create sysfs attribute\n");
-+
-+	return err;
-+}
-+
-+int hgpk_init(struct psmouse *psmouse)
-+{
-+	struct hgpk_data *priv;
-+	int err = -ENOMEM;
-+
-+	priv = kzalloc(sizeof(struct hgpk_data), GFP_KERNEL);
-+	if (!priv)
-+		goto alloc_fail;
-+
-+	psmouse->private = priv;
-+	priv->psmouse = psmouse;
-+	priv->powered = 1;
-+	INIT_DELAYED_WORK(&priv->recalib_wq, hgpk_recalib_work);
-+
-+	err = psmouse_reset(psmouse);
-+	if (err)
-+		goto init_fail;
-+	err = hgpk_register(psmouse);
-+	if (err)
-+		goto init_fail;
-+
-+	return 0;
-+
-+init_fail:
-+	kfree(priv);
-+alloc_fail:
-+	return err;
-+}
-+
-+static enum hgpk_model_t hgpk_get_model(struct psmouse *psmouse)
-+{
-+	struct ps2dev *ps2dev = &psmouse->ps2dev;
-+	unsigned char param[3];
-+
-+	/* E7, E7, E7, E9 gets us a 3 byte identifier */
-+	if (ps2_command(ps2dev,  NULL, PSMOUSE_CMD_SETSCALE21) ||
-+			ps2_command(ps2dev,  NULL, PSMOUSE_CMD_SETSCALE21) ||
-+			ps2_command(ps2dev,  NULL, PSMOUSE_CMD_SETSCALE21) ||
-+			ps2_command(ps2dev, param, PSMOUSE_CMD_GETINFO))
-+		return -EIO;
-+
-+	hgpk_dbg(psmouse, "ID: %02x %02x %02x", param[0], param[1], param[2]);
-+
-+	/* HGPK signature: 0x67, 0x00, 0x<model> */
-+	if (param[0] != 0x67 || param[1] != 0x00)
-+		return -ENODEV;
-+
-+	hgpk_info(psmouse, "OLPC touchpad revision 0x%x\n", param[2]);
-+	return param[2];
-+}
-+
-+int hgpk_detect(struct psmouse *psmouse, int set_properties)
-+{
-+	int version;
-+
-+	version = hgpk_get_model(psmouse);
-+	if (version < 0)
-+		return version;
-+
-+	if (set_properties) {
-+		psmouse->vendor = "ALPS";
-+		psmouse->name = "HGPK";
-+		psmouse->model = version;
-+	}
-+	return 0;
-+}
-diff --git a/drivers/input/mouse/hgpk.h b/drivers/input/mouse/hgpk.h
-new file mode 100644
-index 0000000..2b1f074
---- /dev/null
-+++ b/drivers/input/mouse/hgpk.h
-@@ -0,0 +1,48 @@
-+/*
-+ * OLPC HGPK (XO-1) touchpad PS/2 mouse driver
-+ */
-+
-+#ifndef _HGPK_H
-+#define _HGPK_H
-+
-+enum hgpk_model_t {
-+	HGPK_MODEL_PREA = 0x0a,	/* pre-B1s */
-+	HGPK_MODEL_A = 0x14,	/* found on B1s, PT disabled in hardware */
-+	HGPK_MODEL_B = 0x28,	/* B2s, has capacitance issues */
-+	HGPK_MODEL_C = 0x3c,
-+	HGPK_MODEL_D = 0x50,	/* C1, mass production */
-+};
-+
-+struct hgpk_data {
-+	struct psmouse *psmouse;
-+	int powered;
-+	unsigned long recalib_window;
-+	struct delayed_work recalib_wq;
-+};
-+
-+#define hgpk_dbg(psmouse, format, arg...)		\
-+	dev_dbg(&(psmouse)->ps2dev.serio->dev, format, ## arg)
-+#define hgpk_err(psmouse, format, arg...)		\
-+	dev_err(&(psmouse)->ps2dev.serio->dev, format, ## arg)
-+#define hgpk_info(psmouse, format, arg...)		\
-+	dev_info(&(psmouse)->ps2dev.serio->dev, format, ## arg)
-+#define hgpk_warn(psmouse, format, arg...)		\
-+	dev_warn(&(psmouse)->ps2dev.serio->dev, format, ## arg)
-+#define hgpk_notice(psmouse, format, arg...)		\
-+	dev_notice(&(psmouse)->ps2dev.serio->dev, format, ## arg)
-+
-+#ifdef CONFIG_MOUSE_PS2_OLPC
-+int hgpk_detect(struct psmouse *psmouse, int set_properties);
-+int hgpk_init(struct psmouse *psmouse);
-+#else
-+static inline int hgpk_detect(struct psmouse *psmouse, int set_properties)
-+{
-+	return -ENODEV;
-+}
-+static inline int hgpk_init(struct psmouse *psmouse)
-+{
-+	return -ENODEV;
-+}
-+#endif
-+
-+#endif
-diff --git a/drivers/input/mouse/psmouse-base.c b/drivers/input/mouse/psmouse-base.c
-index 488ba95..2864678 100644
---- a/drivers/input/mouse/psmouse-base.c
-+++ b/drivers/input/mouse/psmouse-base.c
-@@ -25,6 +25,7 @@
- #include "synaptics.h"
- #include "logips2pp.h"
- #include "alps.h"
-+#include "hgpk.h"
- #include "lifebook.h"
- #include "trackpoint.h"
- #include "touchkit_ps2.h"
-@@ -636,8 +637,20 @@ static int psmouse_extensions(struct psmouse *psmouse,
- 		}
- 	}
- 
--	if (max_proto > PSMOUSE_IMEX) {
-+/*
-+ * Try OLPC HGPK touchpad.
-+ */
-+	if (max_proto > PSMOUSE_IMEX &&
-+			hgpk_detect(psmouse, set_properties) == 0) {
-+		if (!set_properties || hgpk_init(psmouse) == 0)
-+			return PSMOUSE_HGPK;
-+/*
-+ * Init failed, try basic relative protocols
-+ */
-+		max_proto = PSMOUSE_IMEX;
-+	}
- 
-+	if (max_proto > PSMOUSE_IMEX) {
- 		if (genius_detect(psmouse, set_properties) == 0)
- 			return PSMOUSE_GENPS;
- 
-@@ -768,6 +781,14 @@ static const struct psmouse_protocol psmouse_protocols[] = {
- 		.detect		= touchkit_ps2_detect,
- 	},
- #endif
-+#ifdef CONFIG_MOUSE_PS2_OLPC
-+	{
-+		.type		= PSMOUSE_HGPK,
-+		.name		= "OLPC HGPK",
-+		.alias		= "hgpk",
-+		.detect		= hgpk_detect,
-+	},
-+#endif
- 	{
- 		.type		= PSMOUSE_CORTRON,
- 		.name		= "CortronPS/2",
-diff --git a/drivers/input/mouse/psmouse.h b/drivers/input/mouse/psmouse.h
-index 48e0112..dfdc89d 100644
---- a/drivers/input/mouse/psmouse.h
-+++ b/drivers/input/mouse/psmouse.h
-@@ -89,6 +89,7 @@ enum psmouse_type {
- 	PSMOUSE_TRACKPOINT,
- 	PSMOUSE_TOUCHKIT_PS2,
- 	PSMOUSE_CORTRON,
-+	PSMOUSE_HGPK,
- 	PSMOUSE_AUTO		/* This one should always be last */
- };
- 
-@@ -99,7 +100,6 @@ int psmouse_reset(struct psmouse *psmouse);
- void psmouse_set_state(struct psmouse *psmouse, enum psmouse_state new_state);
- void psmouse_set_resolution(struct psmouse *psmouse, unsigned int resolution);
- 
--
- struct psmouse_attribute {
- 	struct device_attribute dattr;
- 	void *data;
--- 
-1.5.6.3
+ #hash values
+ ifdef CONFIG_DYNAMIC_PRINTK_DEBUG
+-debug_flags = -D"DEBUG_HASH=$(shell ./scripts/basic/hash djb2 $(@D)$(modname))"\
+-              -D"DEBUG_HASH2=$(shell ./scripts/basic/hash r5 $(@D)$(modname))"
++debug_flags = -D"DEBUG_HASH=$(shell ./scripts/basic/hash djb2 $(@D)$(subst $(space),_,$(modname)))"\
++              -D"DEBUG_HASH2=$(shell ./scripts/basic/hash r5 $(@D)$(subst $(space),_,$(modname)))"
+ else
+ debug_flags =
+ endif
+
+
 
