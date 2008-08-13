@@ -1,47 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756591AbYHMRKq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757282AbYHMRLA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756591AbYHMRKq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Aug 2008 13:10:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751087AbYHMRKg
+	id S1757282AbYHMRLA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Aug 2008 13:11:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753588AbYHMRKj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Aug 2008 13:10:36 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:39716 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751487AbYHMRKg (ORCPT
+	Wed, 13 Aug 2008 13:10:39 -0400
+Received: from yx-out-2324.google.com ([74.125.44.30]:19786 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753549AbYHMRKi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Aug 2008 13:10:36 -0400
-Date: Wed, 13 Aug 2008 10:09:32 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Ulrich Drepper <drepper@redhat.com>
-cc: Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@infradead.org>,
-       akpm@linux-foundation.org, hugh@veritas.com, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, briangrant@google.com, cgd@google.com,
-       mbligh@google.com, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: pthread_create() slow for many threads; also time to revisit
- 64b context switch optimization?
-In-Reply-To: <48A303EE.8070002@redhat.com>
-Message-ID: <alpine.LFD.1.10.0808131007530.3462@nehalem.linux-foundation.org>
-References: <af8810200808121736q76640cc1kb814385072fe9b29@mail.gmail.com> <af8810200808121745h596c175bk348d0aaeeb9bcb45@mail.gmail.com> <20080813104445.GA24632@elte.hu> <20080813063533.444c650d@infradead.org> <48A2EE07.3040003@redhat.com> <20080813142529.GB21129@elte.hu>
- <48A2F157.7000303@redhat.com> <20080813151007.GA8780@elte.hu> <48A2FC17.9070302@redhat.com> <20080813154043.GA11886@elte.hu> <48A303EE.8070002@redhat.com>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Wed, 13 Aug 2008 13:10:38 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=XNUdgtrHZQHfU5gmmUyGgQJS6tI69Jq3Wbfb4XrtHTsrQ+uznVyQcltdmA2FNh6P9d
+         Mo1Y8029rDXPM31jQeJGrG+HoryKppvOxmIU4Ij7LN4zKV7wKjncDVYz6FXOHgLL93xN
+         u+lAEfA4RXK4tg+YGWT2wiJq090qWyZPe6PEE=
+Message-ID: <b6a2187b0808131010u7481f663n94d8e005b9dac2d1@mail.gmail.com>
+Date: Thu, 14 Aug 2008 01:10:36 +0800
+From: "Jeff Chua" <jeff.chua.linux@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: 2.6.27rc1 cannot boot more than 8CPUs
+Cc: "Yinghai Lu" <yhlu.kernel@gmail.com>, "David Miller" <davem@davemloft.net>,
+       "Linux Kernel" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080813141629.GD19397@elte.hu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <Pine.LNX.4.64.0808061908100.12476@boston.corp.fedex.com>
+	 <20080813141629.GD19397@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Aug 13, 2008 at 10:16 PM, Ingo Molnar <mingo@elte.hu> wrote:
 
+> btw., could you please check that v2.6.27-rc3 (or later) kernels boot
+> fine (with about 8 cpus) even if you have genericarch/bigsmp disabled,
+> and do not silently hang as it happened on your box before?
 
-On Wed, 13 Aug 2008, Ulrich Drepper wrote:
-> 
-> The real problem is: what to do if somebody complains?
+With 16 CPUs, it still hangs, but now the console is showing the
+errors as intended.
+... but it is supposed to hang?
 
-Ulrich, I don't understand why you worry more about a _potential_ (and 
-fairly unlikely) complaint, than about a real one today.
+More than 8 CPUs detected - skipping them.
+Use CONFIG_X86_GENERICARCH and CONFIG_X86_BIGSMP.
+More than 8 CPUs detected - skipping them.
+Use CONFIG_X86_GENERICARCH and CONFIG_X86_BIGSMP.
+More than 8 CPUs detected - skipping them.
+Use CONFIG_X86_GENERICARCH and CONFIG_X86_BIGSMP.
+More than 8 CPUs detected - skipping them.
+Use CONFIG_X86_GENERICARCH and CONFIG_X86_BIGSMP.
+Booting processor 8/1 ip 6000
+Initializing CPU#8
+Calibrating delay using timer specific routine.. 3723.88 BogoMIPS (lpj=7447763)
+CPU: L1 I cache: 32Kb, L1 D cache: 32K
+CPU: L2 cache: 4096K
+CPU: Physical Processor ID: 0
+CPU: Processor Core ID: 1
+CPU8: Intel(8) Xeon(R) CPU        L7345  @ 1.86GHz stepping 0b
+checking TSC synchronization [CPU#0 -> CPU#8]: passed.
+*** HANGS HERE ***
 
-Thinking ahead may be good, but you take it to absolutely ridiculous 
-heights, to the point where you make potential problems be bigger than 
--actual- problems.
-
-		Linus
+Thanks,
+Jeff.
