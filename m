@@ -1,79 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754672AbYHMNwS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754765AbYHMNyI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754672AbYHMNwS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Aug 2008 09:52:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752282AbYHMNwH
+	id S1754765AbYHMNyI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Aug 2008 09:54:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751468AbYHMNx4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Aug 2008 09:52:07 -0400
-Received: from pmx1.sophos.com ([213.31.172.16]:35944 "EHLO pmx1.sophos.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752212AbYHMNwG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Aug 2008 09:52:06 -0400
-In-Reply-To: <20080813125638.GB6995@ucw.cz>
-To: Pavel Machek <pavel@suse.cz>
-Cc: Arjan van de Ven <arjan@infradead.org>, Adrian Bunk <bunk@kernel.org>,
-       davecb@sun.com, Greg KH <greg@kroah.com>,
-       "Press, Jonathan" <Jonathan.Press@ca.com>, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org, malware-list@lists.printk.net,
-       Mihai Don??u <mdontu@bitdefender.com>
-Subject: Re: [malware-list] [RFC 0/5] [TALPA] Intro to a linuxinterfaceforon access
- scanning
-MIME-Version: 1.0
-X-Mailer: Lotus Notes Release 7.0.2 September 26, 2006
-From: tvrtko.ursulin@sophos.com
-Date: Wed, 13 Aug 2008 14:52:01 +0100
-X-MIMETrack: S/MIME Sign by Notes Client on Tvrtko Ursulin/Dev/UK/Sophos(Release 7.0.2|September
- 26, 2006) at 13/08/2008 14:52:01,
-	Serialize by Notes Client on Tvrtko Ursulin/Dev/UK/Sophos(Release 7.0.2|September
- 26, 2006) at 13/08/2008 14:52:01,
-	Serialize complete at 13/08/2008 14:52:01,
-	S/MIME Sign failed at 13/08/2008 14:52:01: The cryptographic key was not
- found,
-	Serialize by Router on Mercury/Servers/Sophos(Release 7.0.3|September 26, 2007) at
- 13/08/2008 14:52:03,
-	Serialize complete at 13/08/2008 14:52:03
-Content-Type: text/plain; charset="US-ASCII"
-Message-Id: <20080813135207.CC08C3765BC@pmx1.sophos.com>
+	Wed, 13 Aug 2008 09:53:56 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:59267 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750796AbYHMNxz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Aug 2008 09:53:55 -0400
+Date: Wed, 13 Aug 2008 14:36:13 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: timtas@cubic.ch
+Cc: Michael Krufky <mkrufky@linuxtv.org>, Adrian Bunk <bunk@kernel.org>,
+       Pavel Machek <pavel@suse.cz>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: reiser4 for 2.6.27-rc1
+Message-ID: <20080813143613.61101a5e@lxorguk.ukuu.org.uk>
+In-Reply-To: <48A2E391.3080404@cubic.ch>
+References: <4896F56D.7080503@cubic.ch>
+	<20080813125807.GC6995@ucw.cz>
+	<20080813131839.GB26351@cs181140183.pp.htv.fi>
+	<37219a840808130624p3d4dca0bja2935d6f34beaf7e@mail.gmail.com>
+	<48A2E391.3080404@cubic.ch>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek wrote on 13/08/2008 13:56:38:
+> And yes, I think Hans lost his right to decide over the name because of 
+> what he has done. That is no disrespect for his work, only for him as 
+> person in general, and I do strongly disrespect him as a person.
 
-Big snip since I am really only curious about libmalware.so.
+So should ever reissue of a work by Gary Glitter have the name removed
+from the cover, every opera by Wagner have the name removed for his
+attitudes ?
 
-> Plus, proposed solution already has three unacceptable holes:
-> 
-> 1) it only catches known signatures
-> 2) write vs. read race mentioned above
+History is a one way street, and you might as well have the fs known the
+way it is so that people remember "reiser oh wasn't he the guy who.." -
+unless you are trying to market the fs I guess.
 
-Discussions about perfect, better or no security are in danger of becoming 
-boring.
-
-> 3) mmap problem
-> 
-> . Making sure all apps use libmalware.so is trivial compared to
-> solving 3).
-
-You haven't answered what exactly is this libmalware.so, since you are the 
-only one mentioning it? It would be interesting to learn how it solves the 
-mmap problem, provides perfect security so it is acceptable, handles the 
-kernel NFS server serving malicious files, caters for applications which 
-do not use it, is better (more secure) than the kernel solution, provides 
-reasonalbe performance and is easier to maintain for the community? To 
-list only some of the requirements which have been mentioned so far.
-
---
-Tvrtko A. Ursulin
-Senior Software Engineer, Sophos
-
-"Views and opinions expressed in this email are strictly those of the 
-author.
- The contents has not been reviewed or approved by Sophos."
-
-
-Sophos Plc, The Pentagon, Abingdon Science Park, Abingdon,
-OX14 3YP, United Kingdom.
-
-Company Reg No 2096520. VAT Reg No GB 348 3873 20.
-
+Alan
