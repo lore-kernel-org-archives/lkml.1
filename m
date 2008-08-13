@@ -1,63 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754829AbYHMUnG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755994AbYHMUnZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754829AbYHMUnG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Aug 2008 16:43:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752006AbYHMUmt
+	id S1755994AbYHMUnZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Aug 2008 16:43:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753211AbYHMUmw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Aug 2008 16:42:49 -0400
-Received: from out2.smtp.messagingengine.com ([66.111.4.26]:49229 "EHLO
-	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751654AbYHMUms (ORCPT
+	Wed, 13 Aug 2008 16:42:52 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:41415 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752980AbYHMUmv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Aug 2008 16:42:48 -0400
-X-Sasl-enc: KyrgSw/tPoekjuqZNWRTkDLO5SGyddLTI/DQlXTncZS2 1218660166
-Date: Wed, 13 Aug 2008 17:42:42 -0300
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Pavel Machek <pavel@suse.cz>
-Cc: Milan Broz <mbroz@redhat.com>, Andi Kleen <andi@firstfloor.org>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       ACPI mailing list <linux-acpi@vger.kernel.org>
-Subject: Re: 2.6.27-rc1: critical thermal shutdown on thinkpad x60
-Message-ID: <20080813204242.GC27546@khazad-dum.debian.net>
-References: <20080806090246.GA1572@elf.ucw.cz> <87bq046cht.fsf@basil.nowhere.org> <20080812094135.GA1565@elf.ucw.cz> <20080812105409.GA1366@one.firstfloor.org> <48A16EFC.1050401@redhat.com> <20080812112602.GA2948@elf.ucw.cz> <20080813201359.GA27546@khazad-dum.debian.net> <20080813202801.GC8861@elf.ucw.cz>
+	Wed, 13 Aug 2008 16:42:51 -0400
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Ulrich Drepper <drepper@redhat.com>,
+       Arjan van de Ven <arjan@infradead.org>, akpm@linux-foundation.org,
+       hugh@veritas.com, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       briangrant@google.com, cgd@google.com, mbligh@google.com,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: pthread_create() slow for many threads; also time to revisit 64b context switch optimization?
+From: Andi Kleen <andi@firstfloor.org>
+References: <af8810200808121736q76640cc1kb814385072fe9b29@mail.gmail.com>
+	<af8810200808121745h596c175bk348d0aaeeb9bcb45@mail.gmail.com>
+	<20080813104445.GA24632@elte.hu>
+	<20080813063533.444c650d@infradead.org> <48A2EE07.3040003@redhat.com>
+	<20080813142529.GB21129@elte.hu> <48A2F157.7000303@redhat.com>
+	<20080813151007.GA8780@elte.hu>
+Date: Wed, 13 Aug 2008 22:42:48 +0200
+In-Reply-To: <20080813151007.GA8780@elte.hu> (Ingo Molnar's message of "Wed, 13 Aug 2008 17:10:07 +0200")
+Message-ID: <87fxp8zlx3.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080813202801.GC8861@elf.ucw.cz>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
-	1CDB 0FE3
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 13 Aug 2008, Pavel Machek wrote:
-> On Wed 2008-08-13 17:13:59, Henrique de Moraes Holschuh wrote:
-> > On Tue, 12 Aug 2008, Pavel Machek wrote:
-> > > > Now, the CPU cores remains on 1.67GHz and fan is unable to cool them properly
-> > > > under heavy load (even if I set "level disengaged" through thinkpad fan control,
-> > > > temperature sensor shows after a while 128 C (probably not real temp,
-> > > > I expect some critical flag => and it properly switch off the
-> > > > system...)
-> > > 
-> > > How do you control fans? I could not get anything but -EINVAL from IBM
-> > > ACPI driver :-(.
-> > 
-> > thinkpad-acpi will regard 128 and -128 as invalid sensors, because that's
-> > how they are used in some BIOSes (and ECs).  We used to bother only with
-> > -128, but Lenovo did something wierd in one of the EC firmwares and I had to
-> > add +128 too.  That masks the "help, I am melting" reading.
-> 
-> It was simpler than that. I did not pass "fan_control=1" option.
-> 
-> (Actually... I do not think that option is needed. If fan control is
-> known to work, it should be just enabled...)
+Ingo Molnar <mingo@elte.hu> writes:
+>
+> i find it pretty unacceptable these days that we limit any aspect of 
+> pure 64-bit apps in any way to 4GB (or any other 32-bit-ish limit). 
 
-I require explicit user permission to activate knobs that are that
-dangerous, and actively frowned upon by the manufacturer.
+It's not limited to 2GB, there's a fallback to >4GB of course. Ok
+admittedly the fallback is slow, but it's there.
 
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+I would prefer to not slow down the P4s. There are **lots** of them in
+field. And they ran 64bit still quite well. Also back then I
+benchmarked on early K8 and it also made a difference there (but I
+admit I forgot the numbers)
+
+I think it would be better to fix the VM because there are
+other use cases of applications who prefer to allocate in a lower area.
+For example Java JVMs now widely use a technique called pointer
+compression where they dynamically adjust the pointer size based
+on how much memory the process uses. For that you have to get
+low memory in the 47bit VM too. The VM should deal with that gracefully.
+
+To be honest I always thought the linear search in the VMA list
+was a little dumb. I'm sure there are other cases where it hurts
+too. Perhaps this would be really an opportunity  to do something about it :)
+
+-Andi
