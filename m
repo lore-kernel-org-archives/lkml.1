@@ -1,47 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754077AbYHMF4f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754315AbYHMF6O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754077AbYHMF4f (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Aug 2008 01:56:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751846AbYHMF40
+	id S1754315AbYHMF6O (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Aug 2008 01:58:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752338AbYHMF57
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Aug 2008 01:56:26 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:40794 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751784AbYHMF40 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Aug 2008 01:56:26 -0400
-Date: Tue, 12 Aug 2008 22:56:12 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Harvey Harrison <harvey.harrison@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 19/22] x86: use the new byteorder headers
-Message-Id: <20080812225612.6742aaf0.akpm@linux-foundation.org>
-In-Reply-To: <1218587234.30194.93.camel@brick>
-References: <1218587234.30194.93.camel@brick>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 13 Aug 2008 01:57:59 -0400
+Received: from gw.goop.org ([64.81.55.164]:57683 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752281AbYHMF57 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Aug 2008 01:57:59 -0400
+Message-ID: <48A277CD.3060300@goop.org>
+Date: Tue, 12 Aug 2008 22:57:33 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+MIME-Version: 1.0
+To: Rusty Russell <rusty@rustcorp.com.au>
+CC: virtualization@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] stop_machine: wean Xen off stop_machine_run
+References: <200808131552.18942.rusty@rustcorp.com.au>
+In-Reply-To: <200808131552.18942.rusty@rustcorp.com.au>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Rusty Russell wrote:
+> This is the last use of (the deprecated) stop_machine_run in the tree.
+>   
 
-akpm2:/usr/src/25> make arch/x86/boot/memory.o
-  CHK     include/linux/version.h
-  CHK     include/linux/utsrelease.h
-  CC      arch/x86/kernel/asm-offsets.s
-  GEN     include/asm/asm-offsets.h
-  CALL    scripts/checksyscalls.sh
-  CC      arch/x86/boot/memory.o
-In file included from include/asm-generic/bitops/le.h:5,
-                 from include/asm-generic/bitops/ext2-non-atomic.h:4,
-                 from include/asm/bitops.h:451,
-                 from include/linux/bitops.h:17,
-                 from include/linux/kernel.h:15,
-                 from arch/x86/boot/memory.c:16:
-include/asm/byteorder.h: In function '__arch_swab64':
-include/asm/byteorder.h:47: warning: implicit declaration of function '___arch__swab32'
+OK, thanks.
 
-I'll drop them all.  Do you have a cross-compiler suite there?
+> Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+>   
+Acked-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+
+> diff -r 332ec042cb4d drivers/xen/manage.c
+> --- a/drivers/xen/manage.c	Wed Aug 13 10:48:27 2008 +1000
+> +++ b/drivers/xen/manage.c	Wed Aug 13 15:50:02 2008 +1000
+> @@ -102,7 +102,7 @@ static void do_suspend(void)
+>  	/* XXX use normal device tree? */
+>  	xenbus_suspend();
+>  
+> -	err = stop_machine_run(xen_suspend, &cancelled, 0);
+> +	err = stop_machine(xen_suspend, &cancelled, &cpumask_of_cpu(0));
+>  	if (err) {
+>  		printk(KERN_ERR "failed to start xen_suspend: %d\n", err);
+>  		goto out;
+>   
+
