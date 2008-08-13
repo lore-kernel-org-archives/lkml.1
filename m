@@ -1,60 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754733AbYHMISG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754061AbYHMIXZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754733AbYHMISG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Aug 2008 04:18:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752478AbYHMIRv
+	id S1754061AbYHMIXZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Aug 2008 04:23:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751634AbYHMIXM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Aug 2008 04:17:51 -0400
-Received: from saeurebad.de ([85.214.36.134]:33264 "EHLO saeurebad.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752477AbYHMIRu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Aug 2008 04:17:50 -0400
-From: Johannes Weiner <hannes@saeurebad.de>
-To: "Jan Beulich" <jbeulich@novell.com>
-Cc: <linux-kernel@vger.kernel.org>, <dhowells@redhat.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: [PATCH] Propagate new nonpanic bootmem macros to CONFIG_HAVE_ARCH_BOOTMEM_NODE
-References: <489721D1.76E4.0078.0@novell.com>
-Date: Wed, 13 Aug 2008 10:17:24 +0200
-In-Reply-To: <489721D1.76E4.0078.0@novell.com> (Jan Beulich's message of "Mon,
-	04 Aug 2008 14:35:45 +0100")
-Message-ID: <87skt99vmz.fsf@skyscraper.fehenstaub.lan>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	Wed, 13 Aug 2008 04:23:12 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:40429 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751487AbYHMIXL (ORCPT
+	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
+	Wed, 13 Aug 2008 04:23:11 -0400
+Message-ID: <48A29B78.4030600@sgi.com>
+Date: Wed, 13 Aug 2008 18:29:44 +1000
+From: Lachlan McIlroy <lachlan@sgi.com>
+Reply-To: lachlan@sgi.com
+User-Agent: Thunderbird 2.0.0.16 (X11/20080707)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       xfs@oss.sgi.com
+Subject: Re: [GIT PULL] XFS update for 2.6.27-rc4
+References: <20080813081147.8ECE258C52A8@chook.melbourne.sgi.com> <20080813011606.06f2c2da.akpm@linux-foundation.org>
+In-Reply-To: <20080813011606.06f2c2da.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit 74768ed833344b "page allocator: use no-panic variant of
-alloc_bootmem() in alloc_large_system_hash()" introduced two new
-_nopanic macros which are undefined for CONFIG_HAVE_ARCH_BOOTMEM_NODE.
+Andrew Morton wrote:
+> On Wed, 13 Aug 2008 18:11:47 +1000 lachlan@sgi.com (Lachlan McIlroy) wrote:
+> 
+>> The following changes since commit 30a2f3c60a84092c8084dfe788b710f8d0768cd4:
+>>   Linus Torvalds (1):
+>>         Linux 2.6.27-rc3
+>>
+>> are available in the git repository at:
+>>
+>>   git://oss.sgi.com:8090/xfs/linux-2.6 master
+> 
+> Who do I have to pay to get rid of these:
+> 
+> xfs-use-get_unaligned_-helpers.patch
+> xfs-clean-up-stale-references-to-semaphores.patch
+> xfs-replace-the-xfs-buf-iodone-semaphore-with-a-completion.patch
+> xfs-extend-completions-to-provide-xfs-object-flush-requirements.patch
+> xfs-replace-inode-flush-semaphore-with-a-completion.patch
+> xfs-replace-dquot-flush-semaphore-with-a-completion.patch
+> xfs-remove-the-sema_t-from-xfs.patch
+> 
+> and how much?
+You can pay me if you like.  All of those mods are in this git pull
+request so they will be in mainline soon enough.
 
-Signed-off-by: Johannes Weiner <hannes@saeurebad.de>
----
-
-These macros are a mess... :(
-
-diff --git a/include/asm-x86/mmzone_32.h b/include/asm-x86/mmzone_32.h
-index b2298a2..5862e64 100644
---- a/include/asm-x86/mmzone_32.h
-+++ b/include/asm-x86/mmzone_32.h
-@@ -97,10 +97,16 @@ static inline int pfn_valid(int pfn)
- 	reserve_bootmem_node(NODE_DATA(0), (addr), (size), (flags))
- #define alloc_bootmem(x) \
- 	__alloc_bootmem_node(NODE_DATA(0), (x), SMP_CACHE_BYTES, __pa(MAX_DMA_ADDRESS))
-+#define alloc_bootmem_nopanic(x) \
-+	__alloc_bootmem_node_nopanic(NODE_DATA(0), (x), SMP_CACHE_BYTES, \
-+				__pa(MAX_DMA_ADDRESS))
- #define alloc_bootmem_low(x) \
- 	__alloc_bootmem_node(NODE_DATA(0), (x), SMP_CACHE_BYTES, 0)
- #define alloc_bootmem_pages(x) \
- 	__alloc_bootmem_node(NODE_DATA(0), (x), PAGE_SIZE, __pa(MAX_DMA_ADDRESS))
-+#define alloc_bootmem_pages_nopanic(x) \
-+	__alloc_bootmem_node_nopanic(NODE_DATA(0), (x), PAGE_SIZE, \
-+				__pa(MAX_DMA_ADDRESS))
- #define alloc_bootmem_low_pages(x) \
- 	__alloc_bootmem_node(NODE_DATA(0), (x), PAGE_SIZE, 0)
- #define alloc_bootmem_node(pgdat, x)					\
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
