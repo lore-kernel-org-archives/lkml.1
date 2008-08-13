@@ -1,95 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755312AbYHMNqx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755683AbYHMNst@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755312AbYHMNqx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Aug 2008 09:46:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754154AbYHMNqn
+	id S1755683AbYHMNst (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Aug 2008 09:48:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751907AbYHMNsl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Aug 2008 09:46:43 -0400
-Received: from mail.hauppauge.com ([167.206.143.4]:3600 "EHLO
-	mail.hauppauge.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751182AbYHMNqm (ORCPT
+	Wed, 13 Aug 2008 09:48:41 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:54978 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751728AbYHMNsl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Aug 2008 09:46:42 -0400
-Message-ID: <48A2E59F.60103@linuxtv.org>
-Date: Wed, 13 Aug 2008 09:46:07 -0400
-From: Michael Krufky <mkrufky@linuxtv.org>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
-MIME-Version: 1.0
+	Wed, 13 Aug 2008 09:48:41 -0400
+Date: Wed, 13 Aug 2008 14:30:56 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
 To: Adrian Bunk <bunk@kernel.org>
-CC: Pavel Machek <pavel@suse.cz>, Tim Tassonis <timtas@cubic.ch>,
-       LKML <linux-kernel@vger.kernel.org>
+Cc: Michael Krufky <mkrufky@linuxtv.org>, Pavel Machek <pavel@suse.cz>,
+       Tim Tassonis <timtas@cubic.ch>, LKML <linux-kernel@vger.kernel.org>
 Subject: Re: reiser4 for 2.6.27-rc1
-References: <4896F56D.7080503@cubic.ch> <20080813125807.GC6995@ucw.cz> <20080813131839.GB26351@cs181140183.pp.htv.fi> <37219a840808130624p3d4dca0bja2935d6f34beaf7e@mail.gmail.com> <20080813133457.GC26351@cs181140183.pp.htv.fi>
+Message-ID: <20080813143056.7c363df6@lxorguk.ukuu.org.uk>
 In-Reply-To: <20080813133457.GC26351@cs181140183.pp.htv.fi>
-Content-Type: text/plain; charset=UTF-8
+References: <4896F56D.7080503@cubic.ch>
+	<20080813125807.GC6995@ucw.cz>
+	<20080813131839.GB26351@cs181140183.pp.htv.fi>
+	<37219a840808130624p3d4dca0bja2935d6f34beaf7e@mail.gmail.com>
+	<20080813133457.GC26351@cs181140183.pp.htv.fi>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk wrote:
-> On Wed, Aug 13, 2008 at 09:24:58AM -0400, Michael Krufky wrote:
->   
->> On Wed, Aug 13, 2008 at 9:18 AM, Adrian Bunk <bunk@kernel.org> wrote:
->>     
->>> On Wed, Aug 13, 2008 at 02:58:08PM +0200, Pavel Machek wrote:
->>>       
->>>> On Mon 2008-08-04 14:26:21, Tim Tassonis wrote:
->>>>         
->>>>>> Why is reiser4 still not in a vanilla kernel for
->>>>>> testing. I have had
->>>>>> to apply the reiser4 patches from -mm kernels to
->>>>>> vanilla based
->>>>>> patchset for over a year now. Reiser4 works fine, what
->>>>>> will it take to
->>>>>> get it included in vanilla? Here is a patch to add
->>>>>> reiser4 to
->>>>>> 2.6.27-rc1:
->>>>>>
->>>>>> http://zen-sources.org/files/reiser4-for-2.6.27-rc1.patch
->>>>>>
->>>>>> -Ryan
->>>>>>             
->>>>> A good thing for a start would be to rename the whole
->>>>> thing to something else, for obvious reasons.
->>>>>           
->>>> Whats wrong with reiser4 name?
->>>>
->>>>                                                       Pavel
->>>>                       (or am I feeding a troll?)
->>>>         
->>> Not wanting a new filesystem named after a convicted murderer is not
->>> a trollish suggestion.
->>>       
->> Regardless of the murder conviction, I still believe that the guy
->> should get credit for his work.
->>     
->
+> > Regardless of the murder conviction, I still believe that the guy
+> > should get credit for his work.
+> 
 > Other filesystems are usually not named after people, e.g. ext2 is not 
 > named cardfs2 and jffs2 is not named woodhousefs.
->
->   
->> Reiserfs is a name that we all know of, regardless of how current we
->> are with the news (although you'd have to be PRETTY far behind if you
->> don't know about the crime)
->>
->> The current reiserfs filesystems aren't being renamed -- are they??
->>
->> Does it really hurt to keep his name there?  I think it should just go as-is.
->>     
->
+
+Up to the author really isn't it. And dwmw2fs would be hard to pronounce.
+
+> > Does it really hurt to keep his name there?  I think it should just go as-is.
+> 
 > You can agree or disagree with Tim, but it's not a trollish suggestion.
 
-I agree -- it is not a trollish suggestion.  I just wanted to express my
-opinion.
+Not however a sensible one - Hans Reiser is the architect of reiser4
+regardless of what else he may be. Changing a label doesn't change that
+fact.
 
-I dont feel strongly either way, but since it was his work I felt that
-his naming should stand.
-
-Meanwhile, it's obvious that nobody will agree with that point.
-
-If we're going to change the name, why not add some sick humor and call
-it MurderFS?  That will really leave a mark on people.  :-P
-
-
--Mike
+Alan
