@@ -1,46 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754733AbYHMPeA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756104AbYHMPeX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754733AbYHMPeA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Aug 2008 11:34:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752588AbYHMPdw
+	id S1756104AbYHMPeX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Aug 2008 11:34:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752588AbYHMPeG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Aug 2008 11:33:52 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:41728 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752202AbYHMPdw (ORCPT
+	Wed, 13 Aug 2008 11:34:06 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:48258 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754957AbYHMPeF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Aug 2008 11:33:52 -0400
-Message-ID: <48A2FEC2.9000209@zytor.com>
-Date: Wed, 13 Aug 2008 08:33:22 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Joerg Roedel <joro@8bytes.org>
-CC: mingo@redhat.com, tglx@linutronix.de, linux-kernel@vger.kernel.org
-Subject: Re: Setup code crashes my old 486 box
-References: <20080812224703.GV31439@8bytes.org> <48A2155B.1020904@zytor.com> <20080813080705.GW31439@8bytes.org>
-In-Reply-To: <20080813080705.GW31439@8bytes.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Wed, 13 Aug 2008 11:34:05 -0400
+Subject: Re: [PATCH 4/6] Replace inode flush semaphore with a completion
+From: Daniel Walker <dwalker@mvista.com>
+To: Dave Chinner <david@fromorbit.com>
+Cc: xfs@oss.sgi.com, linux-kernel@vger.kernel.org, matthew@wil.cx
+In-Reply-To: <20080813075057.GZ6119@disturbed>
+References: <1214556284-4160-1-git-send-email-david@fromorbit.com>
+	 <1214556284-4160-5-git-send-email-david@fromorbit.com>
+	 <1218597077.6166.15.camel@dhcp32.mvista.com>
+	 <20080813075057.GZ6119@disturbed>
+Content-Type: text/plain; charset=utf-8
+Date: Wed, 13 Aug 2008 08:34:01 -0700
+Message-Id: <1218641641.6166.32.camel@dhcp32.mvista.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Joerg Roedel wrote:
-> On Tue, Aug 12, 2008 at 03:57:31PM -0700, H. Peter Anvin wrote:
->> Right in concept, but I dislike the implementation (duplication of the 
->> CPU detect code we already have).  Could you try this patch and see if 
->> it works for you?
-> 
-> Cool, with a small modification to fix a build error with it the
-> resulting kernel boots my machine. Thanks.
-> Would be cool to have this patch one merged soon :-)
-> Attached is your patch with my little build fix. It redefines a values
-> already defines in cpufeatures.h but I can't include that file in the
-> boot code so I simply redeclared it. Maybe there is a cleaner solution
-> for this.
-> 
+On Wed, 2008-08-13 at 17:50 +1000, Dave Chinner wrote:
 
-There is... let me cook it up and add Alan's correction.
+> Right now we have the case where no matter what type of flush
+> is done, the caller does not have to worry about unlocking
+> the flush lock - it will be done as part of the flush. You're
+> suggestion makes that conditional based on whether we did a
+> sync flush or not.
+> 
+> So, what happenѕ when you call:
+> 
+> xfs_iflush(ip, XFS_IFLUSH_DELWRI_ELSE_SYNC);
+> 
+> i.e. xfs_iflush() may do an delayed flush or a sync flush depending
+> on the current state of the inode. The caller has no idea what type
+> of flush was done, so will have no idea whether to unlock or not.
 
-	-hpa
+You wouldn't base the unlock on what iflush does, you would
+unconditionally unlock.
+
+> > And remove the unlocking from inside xfs_iflush(). Then use a flag to
+> > indicate that the flush is in progress, and a
+> > completion/wait_for_completion when another thread needs to wait on the
+> > flush to complete if it's an async flush.
+> 
+> And if it's a delayed flush? If we just wait for completion, we'll
+> have to wait for a long time before the xfsbufd times out the buffer
+> and pushes it to disk. This is important - the log AIL push code
+> does try-locks on the flush lock to determine if the inode is in a
+> delayed write state or not, and does an async buffer push inѕtead
+> of xfs_iflush() to get it to disk immediately.
+
+You wouldn't wait for completion of the flush unless the code really
+needed to wait. Seems like your indicating that waiting on the flush is
+rare. 
+
+> That is, there are three types of inode flushes (sync, async and
+> delwri) and the flush lock is used in different ways to determine
+> what action to take when writing back inodes. There's much more to
+> this 'flush lock' than just locking ;)
+
+What I was saying is instead of using the flush lock as an indicator,
+use some other non-lock based method.. A set of state flags protected by
+the iflush lock for instance ..
+
+Daniel
+
