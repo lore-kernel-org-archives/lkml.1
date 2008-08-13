@@ -1,117 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755487AbYHMBT1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754979AbYHMBWn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755487AbYHMBT1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Aug 2008 21:19:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754651AbYHMBTO
+	id S1754979AbYHMBWn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Aug 2008 21:22:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753609AbYHMBWf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Aug 2008 21:19:14 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:38787 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753468AbYHMBTM (ORCPT
+	Tue, 12 Aug 2008 21:22:35 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:56303
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1753465AbYHMBWe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Aug 2008 21:19:12 -0400
-Date: Wed, 13 Aug 2008 02:19:09 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [RFC] readdir mess
-Message-ID: <20080813011909.GA28946@ZenIV.linux.org.uk>
-References: <20080812062241.GQ28946@ZenIV.linux.org.uk> <87ej4u9nf5.fsf@devron.myhome.or.jp> <alpine.LFD.1.10.0808121009370.3462@nehalem.linux-foundation.org> <20080812181057.GR28946@ZenIV.linux.org.uk> <alpine.LFD.1.10.0808121316570.3462@nehalem.linux-foundation.org> <20080812203808.GV28946@ZenIV.linux.org.uk> <alpine.LFD.1.10.0808121351570.3462@nehalem.linux-foundation.org> <20080813000433.GZ28946@ZenIV.linux.org.uk> <alpine.LFD.1.10.0808121708160.3462@nehalem.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.10.0808121708160.3462@nehalem.linux-foundation.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Tue, 12 Aug 2008 21:22:34 -0400
+Date: Tue, 12 Aug 2008 18:22:35 -0700 (PDT)
+Message-Id: <20080812.182235.153778437.davem@davemloft.net>
+To: mpatocka@redhat.com
+Cc: sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: console handover badness
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <Pine.LNX.4.64.0808122053280.31704@hs20-bc2-1.build.redhat.com>
+References: <Pine.LNX.4.64.0806211542050.21474@engineering.redhat.com>
+	<20080811.233013.49328708.davem@davemloft.net>
+	<Pine.LNX.4.64.0808122053280.31704@hs20-bc2-1.build.redhat.com>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 12, 2008 at 05:28:28PM -0700, Linus Torvalds wrote:
+From: Mikulas Patocka <mpatocka@redhat.com>
+Date: Tue, 12 Aug 2008 21:11:53 -0400 (EDT)
+
 > 
 > 
-> On Wed, 13 Aug 2008, Al Viro wrote:
+> On Mon, 11 Aug 2008, David Miller wrote:
+> 
+> > From: Mikulas Patocka <mpatocka@redhat.com>
+> > Date: Sat, 21 Jun 2008 15:42:56 -0400 (EDT)
 > > 
-> > As for whether we want to bother...  I've looked through about half of the
-> > ->readdir instances.  We _do_ want to touch them, with cattle prod if nothing
-> > else.
+> > > On Fri, 20 Jun 2008, David Miller wrote:
+> > > 
+> > > > giving a try.
+> > > >
+> > > > sparc64: Implement support for IRQ stacks.
+> > > 
+> > > For me it doesn't work. Locked up after "console: colour dummy device 
+> > > 80x25".
+> > 
+> > Are you sure you didn't see a "Stack overflow" message on the
+> > screen? :-)
+> > 
+> > That's what I get when I try to boot with your provided
+> > kernel config.
 > 
-> The really sad part is that readdir() really is also the thing that should 
-> make us change locking. That i_mutex thing is fine and dandy for 
-> everything else, but for readdir() we really would be much better off with 
-> a rwsem - and only take it for reading.
-
-*cringe*
-
-I agree, but... there's another shitpile in the same area and there we are
-_really_ buggered - take a look at what ncpfs/smbfs/cifs/<parts of> procfs
-are pulling off with very odd attempts to dump stuff into dcache.
-
-That means manual equivalent of lookup and you _do_ want some exclusion for
-that.  If nothing else, you want to prevent multiple dentries for the same
-subdirectory...
-
-And rwsem for reading wouldn't help at all - readdir/readdir contention
-might be annoying, but it's readdir/lookup that really hurts.
-
-> Right now, readdir() is one of the most serialized parts of the whole 
-> kernel. Sad. And while it's a per-directory lock, there are directories 
-> that get much more reading than others, and this has been a small 
-> scalability issue (for samba and apache) for years.
-
-I know.  And things like exportfs use of vfs_readdir() are also rather
-painful.
- 
-> The reason ext2 is ok is that you long long ago fixed it to use the page 
-> cache. That got rid of a _lot_ of the crap, and made all the IO look like 
-> regular files (including read-ahead etc). Ext2 _used_ to be the same crap 
-> that ext3 is.
-
-I remember ;-)  However, f_version/i_version mess at that place simply an
-ancient crap - we *are* holding i_mutex and we are using generic_file_lseek().
-IOW, it simply hadn't been reviewed since then - or reviewers had been
-stunned into glazed-eyes mode by the entire thing.
- 
-> I so wish that ext3 could do the same thing, but no. I still think it 
-> should be possible, but the whole journalling is designed for buffer 
-> heads.
-
-Don't.  Get.  Me.  Started.   Hell, at least by now somebody had cleaned
-htree code into nearly readable form; maybe it might be doable...
-
-> > freevxfs: AFAICS simply bogus (grep for nblocks there).
-> > hfs:	at least missing checks for hfs_bnode_read() failure.  And I'm not
-> > 	at all sure that hfs_mac2asc() use is safe there.  BTW, open_dir_list
-> > 	handling appears to be odd - how the hell does decrementing ->f_pos
-> > 	help anything?  And hfs_dir_release() removes from list without any
-> > 	locks, so that's almost certainly racy as well.
-> > hfsplus: ditto
+> I think no, it just locked-up solid. There is a problem with console 
+> handover. See this dmesg that I get on boot.
 > 
-> I don't dispute at all that the readdir() thing is one of the weakest 
-> points of the whole VFS layer. And part of it is that there is no good 
-> caching helper for it at the VFS level, so we always end up having to do 
-> everything at the low-level filesystem level, and that invariably ends up 
-> being sh*t compared to the shared VFS routines.
+> Notice the lines:
+> (1) console handover: boot [earlyprom0] -> real [tty0]
+> and
+> (2) Console: switching to colour frame buffer device 128x48
+> 
+> At line (1), the kernel disables the PROM console. At line (2) it enables 
+> framebuffer. Between these lines, the kernel runs with no console at all. 
+> Everything that is printk'ed between these lines doesn't go to the screen.
 
-What _can_ a common helper do, anyway, when we are busy parsing an arseload of
-possibly corrupt data in whatever weird format fs insists upon?
+Yes, I know, this is such an incredible pain and it bothers
+me a lot as it makes diagnosing bugs that trigger in between
+these two points very difficult to diagnose.
 
-As for the locking...  I toyed with one idea for a while: instead of passing
-a callback and one of many completely different structs, how about a common
-*beginning* of a struct, with callback stored in it along with several
-common fields?  Namely,
-	* count of filldir calls already made
-	* pointer to file in question
-	* "are we done" flag
-And instead of calling filldir(buf, ...) ->readdir() would call one of several
-helpers:
-	* readdir_emit(buf, ...) - obvious
-	* readdir_relax(buf) - called in a spot convenient for dropping
-and retaking lock; returns whether we need to do revalidation.
-	* readdir_eof(buf) - end of directory
-	* maybe readdir_dot() and readdir_dotdot() - those are certainly
-common enough
+The VT layer should not register it's console until an upper level
+provider (such as an fbdev driver or the plain VGA console) really has
+their driver attached.
 
-That's the obvious flagday stuff, but since we need to give serious beating
-to most of the instances anyway...  Might as well consider something in
-that direction.
+> I hit already three crashes that happened between these lines and didn't 
+> generate any output: this one with interrupt stacks that you have just 
+> fixed,
+
+The interrupt stacks one would show up on the console, because it
+uses prom_printf() to use the firmware console directly.
+
+Actually, I bet it got printed, but you didn't see it, because
+the framebuffer driver changed the console palette, resulting in
+the pixels the PROM console writes being black on the black
+background :-/
+
+> CONFIG_LOCKDEP+CONFIG_DEBUG_PAGEALLOC crash that I will send you 
+> patch for, and then boot failure of 2.6.27-rc[12] because of bad memory 
+> migratetype. Is this migratetype crash a known problem? --- the problem is 
+> that starting with 2.6.27rc1, I'm getting crash with this backtrace:
+> __list_add
+> __free_pages_ok
+> __free_pages
+> __free_pages_bootmem
+> __free_all_bootmem
+> mem_init
+> start_kernel_tlb_fixup_code
+> --- the crash is due to migratetype == 5 in __free_one_page (inlined into 
+> __free_pages_ok) and because there are only 5 migratettypes, it attempts 
+> to add to a non-existent list.
+
+We have another report of this, thanks for grabbing the extra
+information.
+
+> The trace can be obtained if I disable console handover in kernel/printk. 
+> But it should really be somehow rewritten so that the kernel can write 
+> crashes during boot on console without extra patching --- the PROM console 
+> is disabled just before the framebuffer is registered and not too early.
+
+Another way to capture this is to remove the CON_BOOT thing from
+the prom console struct in arch/sparc64/kernel/setup.c
+
+I am probably going to make the old "-p" boot command line option do
+this dynamically.
