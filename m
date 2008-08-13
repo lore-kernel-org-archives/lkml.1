@@ -1,97 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754156AbYHMRVv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755554AbYHMRXv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754156AbYHMRVv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Aug 2008 13:21:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750899AbYHMRVn
+	id S1755554AbYHMRXv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Aug 2008 13:23:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751306AbYHMRXo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Aug 2008 13:21:43 -0400
-Received: from rtsoft3.corbina.net ([85.21.88.6]:61775 "EHLO
-	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1750782AbYHMRVm (ORCPT
+	Wed, 13 Aug 2008 13:23:44 -0400
+Received: from outbound-dub.frontbridge.com ([213.199.154.16]:65120 "EHLO
+	IE1EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750987AbYHMRXn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Aug 2008 13:21:42 -0400
-Date: Wed, 13 Aug 2008 21:21:40 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Dave Jones <davej@redhat.com>, Wim Van Sebroeck <wim@iguana.be>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH] [WATCHDOG] mpc8xxx_wdt: fix modular build
-Message-ID: <20080813172140.GA5095@oksana.dev.rtsoft.ru>
-Reply-To: avorontsov@ru.mvista.com
-References: <20080806202918.GA29386@infomag.infomag.iguana.be> <20080813031044.GA11258@redhat.com> <20080813122341.GA31815@oksana.dev.rtsoft.ru> <20080813143159.GD26351@cs181140183.pp.htv.fi>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=windows-1251
+	Wed, 13 Aug 2008 13:23:43 -0400
+X-BigFish: VPS-22(z21eWz936fQzz10d3izzz32i6bh61h)
+X-Spam-TCS-SCL: 0:0
+X-WSS-ID: 0K5JUYZ-01-IMZ-01
 Content-Disposition: inline
-In-Reply-To: <20080813143159.GD26351@cs181140183.pp.htv.fi>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+From: Mark Langsdorf <mark.langsdorf@amd.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH][retry 1] 2.6.27-rc2: invalidate caches before going into suspend
+Date: Wed, 13 Aug 2008 12:28:50 -0500
+User-Agent: KMail/1.9.9
+MIME-Version: 1.0
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-ID: <200808131228.50415.mark.langsdorf@amd.com>
+X-OriginalArrivalTime: 13 Aug 2008 17:23:31.0376 (UTC) FILETIME=[4EB24B00:01C8FD69]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 13, 2008 at 05:31:59PM +0300, Adrian Bunk wrote:
-> On Wed, Aug 13, 2008 at 04:23:41PM +0400, Anton Vorontsov wrote:
-> >...
-> > --- a/drivers/watchdog/mpc8xxx_wdt.c
-> > +++ b/drivers/watchdog/mpc8xxx_wdt.c
-> > @@ -48,6 +48,7 @@ struct mpc8xxx_wdt_type {
-> >  };
-> >  
-> >  static struct mpc8xxx_wdt __iomem *wd_base;
-> > +static int mpc8xxx_wdt_init_late(void);
-> >  
-> >  static u16 timeout = 0xffff;
-> >  module_param(timeout, ushort, 0);
-> > @@ -213,6 +214,12 @@ static int __devinit mpc8xxx_wdt_probe(struct of_device *ofdev,
-> >  	else
-> >  		timeout_sec = timeout / freq;
-> >  
-> > +#ifdef CONFIG_8xxx_WDT_MODULE
-> > +	ret = mpc8xxx_wdt_init_late();
-> > +	if (ret)
-> > +		goto err_unmap;
-> > +#endif
-> 
-> In mpc8xxx_wdt_probe()?
+When a CPU core is shut down, all of its caches need to be flushed
+to prevent stale data from causing errors if the core is resumed.
+Current Linux suspend code performs an assignment after the flush,
+which can add dirty data back to the cache.  On some AMD platforms,
+additional speculative reads have caused crashes on resume because
+of this dirty data.
 
-Yes.
+Relocate the cache flush to be the very last thing done before 
+halting.
 
-> Isn't mpc8xxx_wdt_init() the correct place?
 
-Not exactly. In case of non-modular build we rely on the fact
-that OF devices are populated before module_init(), so _probe
-is executed before _init_late.
+Signed-off-by: Mark Langsdorf <mark.langsdorf@amd.com>
+Acked-by: Mark Borden <mark.borden@amd.com>
+Acked-by: Michael Hohmuth <michael.hohmuth@amd.com>
 
-But with modules, we can do the right thing: just register the driver
-and await for the usual probe, then probe the wdt, and then register
-userspace interface. Yes, kind of complicated, but we really need
-this on 8xx.
+diff -r 1e74a821dd00 arch/x86/kernel/process_32.c
+--- a/arch/x86/kernel/process_32.c	Tue Aug 12 12:04:12 2008 -0500
++++ b/arch/x86/kernel/process_32.c	Wed Aug 13 07:03:35 2008 -0500
+@@ -95,7 +95,6 @@ static inline void play_dead(void)
+ {
+ 	/* This must be done before dead CPU ack */
+ 	cpu_exit_clear();
+-	wbinvd();
+ 	mb();
+ 	/* Ack it */
+ 	__get_cpu_var(cpu_state) = CPU_DEAD;
+@@ -104,6 +103,7 @@ static inline void play_dead(void)
+ 	 * With physical CPU hotplug, we should halt the cpu
+ 	 */
+ 	local_irq_disable();
++	wbinvd();
+ 	while (1)
+ 		halt();
+ }
+diff -r 1e74a821dd00 arch/x86/kernel/process_64.c
+--- a/arch/x86/kernel/process_64.c	Tue Aug 12 12:04:12 2008 -0500
++++ b/arch/x86/kernel/process_64.c	Wed Aug 13 07:03:54 2008 -0500
+@@ -93,12 +93,12 @@ static inline void play_dead(void)
+ static inline void play_dead(void)
+ {
+ 	idle_task_exit();
+-	wbinvd();
+ 	mb();
+ 	/* Ack it */
+ 	__get_cpu_var(cpu_state) = CPU_DEAD;
+ 
+ 	local_irq_disable();
++	wbinvd();
+ 	while (1)
+ 		halt();
+ }
 
-> >  	pr_info("WDT driver for MPC8xxx initialized. mode:%s timeout=%d "
-> >  		"(%d seconds)\n", reset ? "reset" : "interrupt", timeout,
-> >  		timeout_sec);
-> > @@ -280,7 +287,7 @@ static struct of_platform_driver mpc8xxx_wdt_driver = {
-> >   * very early to start pinging the watchdog (misc devices are not yet
-> >   * available), and later module_init() just registers the misc device.
-> >   */
-> > -static int __init mpc8xxx_wdt_init_late(void)
-> > +static int mpc8xxx_wdt_init_late(void)
-> >  {
-> >  	int ret;
-> >  
-> > @@ -295,7 +302,9 @@ static int __init mpc8xxx_wdt_init_late(void)
-> >  	}
-> >  	return 0;
-> >  }
-> > +#ifndef CONFIG_8xxx_WDT_MODULE
-> 
-> Your #ifdef is correct, but "#ifdef MODULE" would express this better.
-
-Thanks, will repost soon.
-
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
