@@ -1,73 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757300AbYHMSfr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756567AbYHMSiL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757300AbYHMSfr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Aug 2008 14:35:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751966AbYHMSfh
+	id S1756567AbYHMSiL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Aug 2008 14:38:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751748AbYHMSh5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Aug 2008 14:35:37 -0400
-Received: from mail-relay-03.mailcluster.net ([77.221.130.215]:52255 "EHLO
-	mail-relay-01.mailcluster.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751932AbYHMSfg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Aug 2008 14:35:36 -0400
-Message-ID: <48A32976.7060504@vlnb.net>
-Date: Wed, 13 Aug 2008 22:35:34 +0400
-From: Vladislav Bolkhovitin <vst@vlnb.net>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Wed, 13 Aug 2008 14:37:57 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:46920 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751447AbYHMSh4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Aug 2008 14:37:56 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Matt Helsley <matthltc@us.ibm.com>
+Subject: Re: [ProbableSpam]Re: [PATCH 2/5] Container Freezer: Make refrigerator always available
+Date: Wed, 13 Aug 2008 16:31:48 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Andrew Morton <akpm@linux-foundation.org>, Paul Menage <menage@google.com>,
+       Li Zefan <lizf@cn.fujitsu.com>,
+       Linux-Kernel <linux-kernel@vger.kernel.org>,
+       Linux Containers <containers@lists.linux-foundation.org>,
+       linux-pm@lists.linux-foundation.org, Cedric Le Goater <clg@fr.ibm.com>,
+       "Serge E. Hallyn" <serue@us.ibm.com>
+References: <20080811235323.872291138@us.ibm.com> <200808122249.27553.rjw@sisk.pl> <1218589300.19008.135.camel@localhost.localdomain>
+In-Reply-To: <1218589300.19008.135.camel@localhost.localdomain>
 MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: open-iscsi@googlegroups.com, rdreier@cisco.com, rick.jones2@hp.com,
-       jgarzik@pobox.com, Steve Wise <swise@opengridcomputing.com>,
-       Karen Xie <kxie@chelsio.com>, netdev@vger.kernel.org,
-       michaelc@cs.wisc.edu, daisyc@us.ibm.com, wenxiong@us.ibm.com,
-       bhua@us.ibm.com, Dimitrios Michailidis <dm@chelsio.com>,
-       Casey Leedom <leedom@chelsio.com>, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC][PATCH 1/1] cxgb3i: cxgb3 iSCSI initiator
-References: <adad4kfxm9v.fsf@cisco.com> <200808121457.11356.divy@chelsio.com> <20080812.150246.42068558.davem@davemloft.net> <200808121521.10101.divy@chelsio.com>
-In-Reply-To: <200808121521.10101.divy@chelsio.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200808131631.49889.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Divy Le Ray wrote:
-> On Tuesday 12 August 2008 03:02:46 pm David Miller wrote:
->> From: Divy Le Ray <divy@chelsio.com>
->> Date: Tue, 12 Aug 2008 14:57:09 -0700
->>
->>> In any case, such a stateless solution is not yet designed, whereas
->>> accelerated iSCSI is available now, from us and other companies.
->> So, WHAT?!
->>
->> There are TOE pieces of crap out there too.
+On Wednesday, 13 of August 2008, Matt Helsley wrote:
 > 
-> Well, there is demand for accerated iscsi out there, which is the driving 
-> reason of our driver submission. 
+> On Tue, 2008-08-12 at 22:49 +0200, Rafael J. Wysocki wrote:
+> > On Tuesday, 12 of August 2008, Matt Helsley wrote:
+> > > Now that the TIF_FREEZE flag is available in all architectures,
+> > > extract the refrigerator() and freeze_task() from kernel/power/process.c
+> > > and make it available to all.
+> > > 
+> > > The refrigerator() can now be used in a control group subsystem
+> > > implementing a control group freezer.
+> > > 
+> > > Signed-off-by: Cedric Le Goater <clg@fr.ibm.com>
+> > > Signed-off-by: Matt Helsley <matthltc@us.ibm.com>
+> > > Acked-by: Serge E. Hallyn <serue@us.ibm.com>
+> > > Tested-by: Matt Helsley <matthltc@us.ibm.com>
+> > 
+> > Your Signed-off-by implies your Tested-by (at least it should ;-)).
+> 
+> I wasn't sure that was always true so I added it just in case. I'll take
+> it out of any future postings.
+> 
+> > > ---
+> > [--snip--]
+> > > Index: linux-2.6.27-rc1-mm1/kernel/power/Kconfig
+> > > ===================================================================
+> > > --- linux-2.6.27-rc1-mm1.orig/kernel/power/Kconfig
+> > > +++ linux-2.6.27-rc1-mm1/kernel/power/Kconfig
+> > > @@ -85,6 +85,9 @@ config PM_SLEEP
+> > >  	depends on SUSPEND || HIBERNATION || XEN_SAVE_RESTORE
+> > >  	default y
+> > >  
+> > > +config FREEZER
+> > > +	def_bool PM_SLEEP
+> > > +
+> > 
+> > I'd still prefer this to go into a Kconfig in the parent directory (ie. where
+> > freezer.c and the Makefile building it are located).  Otherwise it's guaranteed
+> > to confuse someone.
+> 
+> 	I'm thinking of making a patch moving the cgroups config variables into
+> a kernel/Kconfig.cgroups file. Would moving config FREEZER to such a
+> file be satisfactory? Paul, what do you think?
 
-I'm, as an iSCSI target developer, strongly voting for hardware iSCSI 
-offload. Having possibility of the direct data placement is a *HUGE* 
-performance gain.
+Well, in fact FREEZER is not directly dependent on cgroups, as it can also
+depend on PM_SLEEP, even if cgroups are not used at all.
 
-For example, according to measurements done by one iSCSI-SCST user in 
-system with iSCSI initiator and iSCSI target (with iSCSI-SCST 
-(http://scst.sourceforge.net/target_iscsi.html) running), both with 
-identical modern high speed hardware and 10GbE cards, the _INITIATOR_ is 
-the bottleneck for READs (data transfers from target to initiator). This 
-is because the target sends data in a zero-copy manner, so its CPU is 
-capable to deal with the load, but on the initiator there are additional 
-data copies from skb's to page cache and from page cache to application. 
-As the result, in the measurements initiator got near 100% CPU load and 
-only ~500MB/s throughput. Target had ~30% CPU load. For the opposite 
-direction (WRITEs), where there is no the application data copy on the 
-target, throughput was ~800MB/s with also near 100% CPU load, but in 
-this case on the target. The initiator ran Linux with open-iscsi. The 
-test was with real backstorage: target ran BLOCKIO (direct BIOs to/from 
-backstorage) with 3ware card. Locally on the target the backstorage was 
-able to provide 900+MB/s for READs and about 1GB/s for WRITEs. The 
-commands queue in both cases was sufficiently big to eliminate the link 
-and processing latencies (20-30 outstanding commands).
+I would just add 'Kconfig.freezer' to 'kernel', put 'config FREEZER' in there
+and make it depend on whatever needs it.  Of course,
+'source "kernel/Kconfig.freezer"' would have to be added to top-level
+Kconfigs for all architectures, but please note that only a few architectures
+include 'kernel/power/Kconfig', so you'd have to change the top-level
+Kconfigs anyway.
 
-Vlad
+Alternatively, you can just add 'config FREEZER' directly to the top-level
+Kconfigs.
 
+Thanks,
+Rafael
