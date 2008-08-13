@@ -1,92 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756567AbYHMSiL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755312AbYHMSkf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756567AbYHMSiL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Aug 2008 14:38:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751748AbYHMSh5
+	id S1755312AbYHMSkf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Aug 2008 14:40:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750974AbYHMSk1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Aug 2008 14:37:57 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:46920 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751447AbYHMSh4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Aug 2008 14:37:56 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Matt Helsley <matthltc@us.ibm.com>
-Subject: Re: [ProbableSpam]Re: [PATCH 2/5] Container Freezer: Make refrigerator always available
-Date: Wed, 13 Aug 2008 16:31:48 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Andrew Morton <akpm@linux-foundation.org>, Paul Menage <menage@google.com>,
-       Li Zefan <lizf@cn.fujitsu.com>,
-       Linux-Kernel <linux-kernel@vger.kernel.org>,
-       Linux Containers <containers@lists.linux-foundation.org>,
-       linux-pm@lists.linux-foundation.org, Cedric Le Goater <clg@fr.ibm.com>,
-       "Serge E. Hallyn" <serue@us.ibm.com>
-References: <20080811235323.872291138@us.ibm.com> <200808122249.27553.rjw@sisk.pl> <1218589300.19008.135.camel@localhost.localdomain>
-In-Reply-To: <1218589300.19008.135.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+	Wed, 13 Aug 2008 14:40:27 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:48959 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750953AbYHMSk0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Aug 2008 14:40:26 -0400
+Date: Wed, 13 Aug 2008 20:41:42 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, Andi Kleen <andi@firstfloor.org>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, Roland McGrath <roland@redhat.com>,
+       Ulrich Drepper <drepper@redhat.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Gregory Haskins <ghaskins@novell.com>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       "Luis Claudio R. Goncalves" <lclaudio@uudg.org>,
+       Clark Williams <williams@redhat.com>
+Subject: Re: Efficient x86 and x86_64 NOP microbenchmarks
+Message-ID: <20080813184142.GM1366@one.firstfloor.org>
+References: <alpine.DEB.1.10.0808081432400.8922@gandalf.stny.rr.com> <20080808190506.GD11376@Krystal> <alpine.DEB.1.10.0808081750590.16691@gandalf.stny.rr.com> <87tzdv2g05.fsf@basil.nowhere.org> <alpine.DEB.1.10.0808082030500.1396@gandalf.stny.rr.com> <489CE90D.1040902@goop.org> <alpine.LFD.1.10.0808081750060.3462@nehalem.linux-foundation.org> <alpine.DEB.1.10.0808082113090.3707@gandalf.stny.rr.com> <20080813175213.GA8679@Krystal> <alpine.LFD.1.10.0808131119290.3462@nehalem.linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200808131631.49889.rjw@sisk.pl>
+In-Reply-To: <alpine.LFD.1.10.0808131119290.3462@nehalem.linux-foundation.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, 13 of August 2008, Matt Helsley wrote:
-> 
-> On Tue, 2008-08-12 at 22:49 +0200, Rafael J. Wysocki wrote:
-> > On Tuesday, 12 of August 2008, Matt Helsley wrote:
-> > > Now that the TIF_FREEZE flag is available in all architectures,
-> > > extract the refrigerator() and freeze_task() from kernel/power/process.c
-> > > and make it available to all.
-> > > 
-> > > The refrigerator() can now be used in a control group subsystem
-> > > implementing a control group freezer.
-> > > 
-> > > Signed-off-by: Cedric Le Goater <clg@fr.ibm.com>
-> > > Signed-off-by: Matt Helsley <matthltc@us.ibm.com>
-> > > Acked-by: Serge E. Hallyn <serue@us.ibm.com>
-> > > Tested-by: Matt Helsley <matthltc@us.ibm.com>
-> > 
-> > Your Signed-off-by implies your Tested-by (at least it should ;-)).
-> 
-> I wasn't sure that was always true so I added it just in case. I'll take
-> it out of any future postings.
-> 
-> > > ---
-> > [--snip--]
-> > > Index: linux-2.6.27-rc1-mm1/kernel/power/Kconfig
-> > > ===================================================================
-> > > --- linux-2.6.27-rc1-mm1.orig/kernel/power/Kconfig
-> > > +++ linux-2.6.27-rc1-mm1/kernel/power/Kconfig
-> > > @@ -85,6 +85,9 @@ config PM_SLEEP
-> > >  	depends on SUSPEND || HIBERNATION || XEN_SAVE_RESTORE
-> > >  	default y
-> > >  
-> > > +config FREEZER
-> > > +	def_bool PM_SLEEP
-> > > +
-> > 
-> > I'd still prefer this to go into a Kconfig in the parent directory (ie. where
-> > freezer.c and the Makefile building it are located).  Otherwise it's guaranteed
-> > to confuse someone.
-> 
-> 	I'm thinking of making a patch moving the cgroups config variables into
-> a kernel/Kconfig.cgroups file. Would moving config FREEZER to such a
-> file be satisfactory? Paul, what do you think?
+> So microbenchmarking this way will probably make some things look 
+> unrealistically good. 
 
-Well, in fact FREEZER is not directly dependent on cgroups, as it can also
-depend on PM_SLEEP, even if cgroups are not used at all.
+Must be careful to miss the big picture here.
 
-I would just add 'Kconfig.freezer' to 'kernel', put 'config FREEZER' in there
-and make it depend on whatever needs it.  Of course,
-'source "kernel/Kconfig.freezer"' would have to be added to top-level
-Kconfigs for all architectures, but please note that only a few architectures
-include 'kernel/power/Kconfig', so you'd have to change the top-level
-Kconfigs anyway.
+We have two assumptions here in this thread:
 
-Alternatively, you can just add 'config FREEZER' directly to the top-level
-Kconfigs.
+- Normal alternative() nops are relatively infrequent, typically
+in points with enough pipeline bubbles anyways, and it likely doesn't
+matter how they are encode. And also they don't have an issue
+with mult part instructions anyways because they're not patched
+at runtime, so always the best known can be used.
 
-Thanks,
-Rafael
+- The one case where nops are very frequent and matter and multipart
+is a problem is with ftrace noping out the call to mcount at runtime 
+because that happens on every function entry.
+Even there the overhead is not that big, but at least measurable 
+in kernel builds.
+
+Now the numbers have shown that just by not using frame pointer (
+-pg right now implies frame pointer) you can get more benefit 
+than what you lose from using non optimal nops.
+
+So for me the best strategy would be to get rid of the frame pointer
+and ignore the nops. This unfortunately would require going away
+from -pg and instead post process gcc output to insert "call mcount"
+manually. But the nice advantage of that is that you could actually 
+set up a custom table of callers built in a ELF section and with
+that you don't actually need the runtime patching (which is only
+done currently because there's no global table of mcount calls),
+but could do everything in stop_machine(). Without
+runtime patching you also don't need single part nops. 
+
+I think that would be the best option. I especially like it because
+it would prevent forcing frame pointer which seems to be costlier
+than any kinds of nosp.
+
+-Andi
+
