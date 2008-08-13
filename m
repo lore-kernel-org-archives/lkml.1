@@ -1,82 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757918AbYHMUOe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753849AbYHMUOu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757918AbYHMUOe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Aug 2008 16:14:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757494AbYHMUOR
+	id S1753849AbYHMUOu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Aug 2008 16:14:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757640AbYHMUOU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Aug 2008 16:14:17 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:57763 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757471AbYHMUOQ (ORCPT
+	Wed, 13 Aug 2008 16:14:20 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:35963 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757618AbYHMUOT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Aug 2008 16:14:16 -0400
-Date: Wed, 13 Aug 2008 22:15:32 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Steven Rostedt <srostedt@redhat.com>
-Cc: Andi Kleen <andi@firstfloor.org>, Thomas Gleixner <tglx@linutronix.de>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, Roland McGrath <roland@redhat.com>,
-       Ulrich Drepper <drepper@redhat.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Gregory Haskins <ghaskins@novell.com>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       "Luis Claudio R. Goncalves" <lclaudio@uudg.org>,
-       Clark Williams <williams@redhat.com>
-Subject: Re: Efficient x86 and x86_64 NOP microbenchmarks
-Message-ID: <20080813201532.GR1366@one.firstfloor.org>
-References: <20080813191926.GB15547@Krystal> <48A33D65.4020802@redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <48A33D65.4020802@redhat.com>
-User-Agent: Mutt/1.4.2.1i
+	Wed, 13 Aug 2008 16:14:19 -0400
+Date: Wed, 13 Aug 2008 13:13:13 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: ebiederm@xmission.com, ying.huang@intel.com, pavel@ucw.cz,
+       nigel@nigel.suspend2.net, rjw@sisk.pl, vgoyal@redhat.com, mingo@elte.hu,
+       linux-kernel@vger.kernel.org, kexec@lists.infradead.org
+Subject: Re: [PATCH] kexec jump: fix compiling warning on xchg(&kexec_lock,
+ 0) in kernel_kexec()
+In-Reply-To: <20080813130749.c406ab6c.akpm@linux-foundation.org>
+Message-ID: <alpine.LFD.1.10.0808131310450.3462@nehalem.linux-foundation.org>
+References: <1218618760.24951.137.camel@caritas-dev.intel.com> <alpine.LFD.1.10.0808130956360.3462@nehalem.linux-foundation.org> <m1r68shjhb.fsf@frodo.ebiederm.org> <20080813124406.21091eae.akpm@linux-foundation.org> <alpine.LFD.1.10.0808131247320.3462@nehalem.linux-foundation.org>
+ <20080813130749.c406ab6c.akpm@linux-foundation.org>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 13, 2008 at 04:00:37PM -0400, Steven Rostedt wrote:
-> >Now the numbers have shown that just by not using frame pointer (
-> >-pg right now implies frame pointer) you can get more benefit 
-> >than what you lose from using non optimal nops.
-> >  
+
+
+On Wed, 13 Aug 2008, Andrew Morton wrote:
+> > 
+> > Nope. That needs to be an "unsigned long".
 > 
-> No, I can easily make a patch that does not use frame pointers but still 
+> It is.
 
-Not without patching gcc. Try it. The patch is not very difficult and i did
-it here, but it needs a patch. 
+Gaah. I just misread the patch, sorry.
 
-> If we disable frame pointers, the noprint-parent option would be forced. 
+> Used a bitop to preserve the runtime checking in there.  spin_unlock()
+> doesn't return the previous lockedness.
 
-Actually you can get the parent without frame pointer if you just
-force gcc to emit mcount before touching the stack frame (and manual
-insertion pass would do that). Then parent is at 4(%esp)/8(%rsp)   
-Again teaching gcc that is not very difficult, but it needs a patch.
+Umm. spin_unlock does a lot more when you have lock debugging on, and 
+doesn't do useless crap when it isn't.
 
-> I would still require that the irqsoff tracer add frame pointers, just 
-> because knowing that the long latency of interrupts disabled happened at 
-> local_irq_save doesn't cut it ;-)
+> A bitop seems a better fit to me.  We never spin on that lock (it
+> always uses test_and_set), so why use a "spin"lock?
 
-Nope.
-> 
-> Anyway, who would want to run with frame pointers disabled? If you ever 
-> get a bug crash, the stack trace is pretty much useless.
+..because an atomic bitop is not the same as a lock.
 
-First that's not true (remember most production kernels run
-without frame pointers, also e.g. crash or systemtap know how to do proper 
-unwinding without slow frame pointers) and if you want it runtime also you 
-can always add the dwarf2 unwinder (like the opensuse kernel does) and get 
-better backtraces than you could ever get with frame pointers (that is 
-because e.g.  most assembler code doesn't even bother to set up frame 
-pointers, but it is all dwarf2 annotated) 
+The memory ordering guarantees are different. Yes, they are sufficient, 
+but that's because we've had to make them so to account for CRAP CODE that 
+uses bit operations as if they were locks.
 
-Also I must say the whole ftrace noping exercise is pretty pointless without
-avoiding frame pointers because it does save less than what you lose
-unconditionally from the "select FRAME_POINTER"
+Don't continue that. It's WRONG.
 
--Andi
+		Linus
