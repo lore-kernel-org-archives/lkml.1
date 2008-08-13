@@ -1,93 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757593AbYHMT3t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757649AbYHMTak@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757593AbYHMT3t (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Aug 2008 15:29:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756516AbYHMT30
+	id S1757649AbYHMTak (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Aug 2008 15:30:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752472AbYHMTaR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Aug 2008 15:29:26 -0400
-Received: from www.church-of-our-saviour.org ([69.25.196.31]:44488 "EHLO
-	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756345AbYHMT3Z (ORCPT
+	Wed, 13 Aug 2008 15:30:17 -0400
+Received: from tomts16.bellnexxia.net ([209.226.175.4]:36523 "EHLO
+	tomts16-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752426AbYHMTaP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Aug 2008 15:29:25 -0400
-Date: Wed, 13 Aug 2008 15:29:22 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Eric Paris <eparis@redhat.com>
-Cc: Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
-       malware-list@lists.printk.net, andi@firstfloor.org, riel@redhat.com,
-       greg@kroah.com, viro@ZenIV.linux.org.uk, alan@lxorguk.ukuu.org.uk,
-       peterz@infradead.org, hch@infradead.org
-Subject: Re: TALPA - a threat model?  well sorta.
-Message-ID: <20080813192922.GI8232@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Eric Paris <eparis@redhat.com>,
-	Arjan van de Ven <arjan@infradead.org>,
-	linux-kernel@vger.kernel.org, malware-list@lists.printk.net,
-	andi@firstfloor.org, riel@redhat.com, greg@kroah.com,
-	viro@ZenIV.linux.org.uk, alan@lxorguk.ukuu.org.uk,
-	peterz@infradead.org, hch@infradead.org
-References: <1218645375.3540.71.camel@localhost.localdomain> <20080813103951.1e3e5827@infradead.org> <20080813181549.GH8232@mit.edu> <1218654168.3540.115.camel@localhost.localdomain>
-MIME-Version: 1.0
+	Wed, 13 Aug 2008 15:30:15 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AjIFAPvQokhMRKxB/2dsb2JhbACBYLR3gVU
+Date: Wed, 13 Aug 2008 15:30:11 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, Roland McGrath <roland@redhat.com>,
+       Ulrich Drepper <drepper@redhat.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Gregory Haskins <ghaskins@novell.com>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       "Luis Claudio R. Goncalves" <lclaudio@uudg.org>,
+       Clark Williams <williams@redhat.com>
+Subject: Re: Efficient x86 and x86_64 NOP microbenchmarks
+Message-ID: <20080813193011.GC15547@Krystal>
+References: <20080808190506.GD11376@Krystal> <alpine.DEB.1.10.0808081750590.16691@gandalf.stny.rr.com> <87tzdv2g05.fsf@basil.nowhere.org> <alpine.DEB.1.10.0808082030500.1396@gandalf.stny.rr.com> <489CE90D.1040902@goop.org> <alpine.LFD.1.10.0808081750060.3462@nehalem.linux-foundation.org> <alpine.DEB.1.10.0808082113090.3707@gandalf.stny.rr.com> <20080813175213.GA8679@Krystal> <alpine.LFD.1.10.0808131119290.3462@nehalem.linux-foundation.org> <20080813184142.GM1366@one.firstfloor.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1218654168.3540.115.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+In-Reply-To: <20080813184142.GM1366@one.firstfloor.org>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 15:22:51 up 70 days, 3 min,  8 users,  load average: 0.44, 1.00,
+	1.52
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 13, 2008 at 03:02:48PM -0400, Eric Paris wrote:
-> I never suggested putting a scanner in kernel.  Sound like you want the
-> "allow don't cache" response from your userspace scanner while this is
-> going on.  The kernel doesn't need to be making decisions about when to
-> send events, nor should userspace tell the kernel not to send events.
-> Its up to whatever the scanner is to agree not to actually do any
-> scanning...
+* Andi Kleen (andi@firstfloor.org) wrote:
+> > So microbenchmarking this way will probably make some things look 
+> > unrealistically good. 
+> 
+> Must be careful to miss the big picture here.
+> 
+> We have two assumptions here in this thread:
+> 
+> - Normal alternative() nops are relatively infrequent, typically
+> in points with enough pipeline bubbles anyways, and it likely doesn't
+> matter how they are encode. And also they don't have an issue
+> with mult part instructions anyways because they're not patched
+> at runtime, so always the best known can be used.
+> 
+> - The one case where nops are very frequent and matter and multipart
+> is a problem is with ftrace noping out the call to mcount at runtime 
+> because that happens on every function entry.
+> Even there the overhead is not that big, but at least measurable 
+> in kernel builds.
+> 
+> Now the numbers have shown that just by not using frame pointer (
+> -pg right now implies frame pointer) you can get more benefit 
+> than what you lose from using non optimal nops.
+> 
+> So for me the best strategy would be to get rid of the frame pointer
+> and ignore the nops. This unfortunately would require going away
+> from -pg and instead post process gcc output to insert "call mcount"
+> manually. But the nice advantage of that is that you could actually 
+> set up a custom table of callers built in a ELF section and with
+> that you don't actually need the runtime patching (which is only
+> done currently because there's no global table of mcount calls),
+> but could do everything in stop_machine(). Without
+> runtime patching you also don't need single part nops. 
+> 
 
-And if the system isn't running a virus checker, but just a file
-indexer (ala tracker), it shouldn't go to userspace at all.  In that
-case all that is necessary is an asynchronous notification.
+I agree that if frame pointer brings a too big overhead, it should not
+be used.
 
-Also something else that is needed is support for multiple clients.
-(i.e., what happens if the user runs two virus checkers, or a virus
-checker plus a hierarchical storage manager driving a tape robot, or
-all of the above plus trackerd --- where some clients need to block
-open(2) access, and some do not need block open(2) --- and in the case
-of HSM, ordering becomes important; you want to retrieve the file from
-the tape robot first, *then* scan it using the virus checker.  :-)
+Sorry to ask, I feel I must be missing something, but I'm trying to
+figure out where you propose to add the "call mcount" ? In the caller or
+in the callee ?
 
-> No.  How in the heck can some out of kernel database store information
-> about what inodes have been scanned in any even slightly sane way?  And
-> people think the race between open and read is too large and you suggest
-> moving clean/dirty marking to a userspace database?  I MUCH prefer my
-> (and it sounds like arjan agrees) clean/dirty versioned flag in inode.
+In the caller, I guess it would replace the normal function call, call a
+trampoline which would jump to the normal code.
 
-Don't ask me; I think most AV checkers for linux are security theater
-and not very much use (other than making money for the AV company's
-shareholders) anyway.  I thought you were the one who wanted to record
-information about which version of the virus db a particular file had
-been scanned against.  The place where I can see this being useful is
-what happens you get a new virus DB, and so you need to start scanning
-all of the files in your 5TB enterprise file server --- and then the
-system crashes or it needs to be taken down for scheduled maintenance.
+In the callee, as what is currently done with -pg, the callee would have
+a call mcount at the beginning of the function.
 
-You want to have *some* off-line database for storing this
-information, since it would be silly to want to have the first thing
-that happens after a new virus DB gets downloaded is to interate over
-the entire filesystem, clearing a persistent the "clean" bit --- that
-would take *forever* on a 5TB filerserver; and what happens if you
-crash in the middle of clearing the "clean" bit..  And if the system
-gets shutdown in the middle of the scan, you need some way of
-remembering which inodes have been scanned using the "new" db, and
-which ones haven't yet been scanned via the new virus db.  All of this
-should be kept in userpsace, and is strictly speaking Not Our Problem.
+Or is it a different scheme I don't see ? I am trying to figure out how
+you happen to do all that without dynamic code modification and manage
+not to hurt performance.
 
-I'm just arguing that there should be absolutely *no* support in the
-kernel for solving this particular problem, since the question of
-whether a file has been scanned with a particular version of the virus
-DB is purely a userspace problem.
+Mathieu
 
-						- Ted
+> I think that would be the best option. I especially like it because
+> it would prevent forcing frame pointer which seems to be costlier
+> than any kinds of nosp.
+> 
+> -Andi
+> 
+
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
