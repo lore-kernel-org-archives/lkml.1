@@ -1,110 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753910AbYHMKpV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756093AbYHMKq5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753910AbYHMKpV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Aug 2008 06:45:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754945AbYHMKo5
+	id S1756093AbYHMKq5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Aug 2008 06:46:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753428AbYHMKqs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Aug 2008 06:44:57 -0400
-Received: from yx-out-2324.google.com ([74.125.44.28]:17875 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754289AbYHMKoz (ORCPT
+	Wed, 13 Aug 2008 06:46:48 -0400
+Received: from mail12.ca.com ([141.202.248.38]:12106 "EHLO mail12.ca.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753204AbYHMKqr convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Aug 2008 06:44:55 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=w+jf3+aOEuqP9/zQHNkvNScnlYnd81g4DijuqzuLobR2K/DJ59pjBE7ALylqki1eQ3
-         2dq5d5sAARyHhQNjNe4G6Mdu8sG2LIbLzVnEso1AcV3ygyexia1xvfbryBj4ihvhHbf+
-         g6UHA9Tn5+cH/qi8OkUedOG7mF2uAtD4IwrGQ=
-Message-ID: <e7d8f83e0808130344x29fcb9aja00ce3f64a95ef7b@mail.gmail.com>
-Date: Wed, 13 Aug 2008 20:44:54 +1000
-From: "Peter Dolding" <oiaohm@gmail.com>
-To: "Christoph Hellwig" <hch@infradead.org>
-Subject: Re: [PATCH 3/4] integrity: Linux Integrity Module(LIM)
-Cc: "Serge E. Hallyn" <serue@us.ibm.com>, "Mimi Zohar" <zohar@us.ibm.com>,
-       serue@linux.vnet.ibm.com, "James Morris" <jmorris@namei.org>,
-       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       "Randy Dunlap" <randy.dunlap@oracle.com>, safford@watson.ibm.com,
-       sailer@watson.ibm.com, "Stephen Smalley" <sds@tycho.nsa.gov>,
-       "Al Viro" <viro@zeniv.linux.org.uk>,
-       "Mimi Zohar" <zohar@linux.vnet.ibm.com>
-In-Reply-To: <20080812192925.GC18034@infradead.org>
+	Wed, 13 Aug 2008 06:46:47 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080808184349.999902616@linux.vnet.ibm.com>
-	 <1218221761.4444.13.camel@localhost.localdomain>
-	 <20080809185340.GC22905@infradead.org>
-	 <OF0AEBDCA2.1E27B823-ON852574A1.000FEE48-852574A1.004C3185@us.ibm.com>
-	 <20080811170255.GA2662@us.ibm.com>
-	 <OFAC0E3107.C68382CD-ON852574A2.0068E1AD-852574A2.00692623@us.ibm.com>
-	 <20080811195645.GA16685@us.ibm.com>
-	 <e7d8f83e0808120141s4a0561fdw4919ce6f74d211af@mail.gmail.com>
-	 <20080812192925.GC18034@infradead.org>
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [malware-list] [RFC 0/5] [TALPA] Intro to a linuxinterfaceforon access scanning
+Date: Wed, 13 Aug 2008 06:46:46 -0400
+Message-ID: <2629CC4E1D22A64593B02C43E855530304AE4BA4@USILMS12.ca.com>
+In-Reply-To: <20080813102802.GC27074@atrey.karlin.mff.cuni.cz>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [malware-list] [RFC 0/5] [TALPA] Intro to a linuxinterfaceforon access scanning
+Thread-Index: Acj9L0YNc6ty7Q1fQ5+AlHCBX5ds7gAALUkg
+References: <20080806105008.GF6477@cs181140183.pp.htv.fi> <200808070349.55882.mdontu@bitdefender.com> <20080806213904.37a33a58@infradead.org> <200808111645.48177.mdontu@bitdefender.com> <20080811065608.44687f65@infradead.org> <48A0649B.4010706@sun.com> <2629CC4E1D22A64593B02C43E855530304AE4B80@USILMS12.ca.com> <20080813102802.GC27074@atrey.karlin.mff.cuni.cz>
+From: "Press, Jonathan" <Jonathan.Press@ca.com>
+To: "Pavel Machek" <pavel@suse.cz>
+Cc: <davecb@sun.com>, "Arjan van de Ven" <arjan@infradead.org>,
+       "Mihai Don??u" <mdontu@bitdefender.com>,
+       "Adrian Bunk" <bunk@kernel.org>, <tvrtko.ursulin@sophos.com>,
+       "Greg KH" <greg@kroah.com>, <linux-kernel@vger.kernel.org>,
+       <linux-security-module@vger.kernel.org>,
+       <malware-list@lists.printk.net>
+X-OriginalArrivalTime: 13 Aug 2008 10:46:46.0528 (UTC) FILETIME=[E1E6C000:01C8FD31]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 13, 2008 at 5:29 AM, Christoph Hellwig <hch@infradead.org> wrote:
-> On Tue, Aug 12, 2008 at 06:41:16PM +1000, Peter Dolding wrote:
->> We really do need to get credentials patch in to common store all this
->> permission/secuirty data..  With a section for integrity related
->> entries.
->>
->> Anti-Virus Passes and fails, signed running programs support and so on.
->>
->> Lot of different things need ways of recording integrity status's.
->> Users also need to know if a application does not work is it TPM is it
->> Anti-virus is it lack of signature.
+> -----Original Message-----
+> From: Pavel Machek [mailto:pavel@suse.cz]
+> Sent: Wednesday, August 13, 2008 6:28 AM
+> To: Press, Jonathan
+> Cc: davecb@sun.com; Arjan van de Ven; Mihai Don??u; Adrian Bunk;
+> tvrtko.ursulin@sophos.com; Greg KH; linux-kernel@vger.kernel.org;
+linux-security-
+> module@vger.kernel.org; malware-list@lists.printk.net
+> Subject: Re: [malware-list] [RFC 0/5] [TALPA] Intro to a
+linuxinterfaceforon access
+> scanning
+> 
+> > I think everyone understands one side of the threat model, that is
+Linux machines
+> being carriers of infections aimed at other platforms.  There are many
+ways that
+> such infections can be stored, and many ways in which they can be
+communicated
+> to the target machines.  There are so many that it would not be
+effective or efficient
+> for each such transfer application to be able to handle its own
+malware scanning,
+> which is the short statement of why centralized AV protection with
+notification
+> assistance from the kernel is appropriate.
+> >
+> 
+> No.
+> 
+> Proposed kernel solution did not work -- there still was write
+> vs. read race. You are right that it is not ok for each application to
+> do its own malware scanning, but libmalware.so that handles the
+> scanning seems very reasonable.
+> 
+> And as applications _need_ to be modified for the write vs. read race
+> to be solved, libmalware.so looks like a way forward.
 >
-> Peter, please read up what the credentials patches do, or how struct
-> cred/ucred is used in SVR4 and BSD for the last 20 years.  It is useful,
-> but it's not going to help with any of the strange thigns the AV or
-> Integrity people are doing.
->
-The Issue I have.  By your answer you have not.   Credentials patch
-for Linux allows more than the BSD one does.  Linux one is a complete
-permission storage replacement.
+Pavel
 
-http://linux.derkeiler.com/Mailing-Lists/Kernel/2008-08/msg02682.html
+I am not sure what you are suggesting, and I may have missed the
+libmalware proposal (I don't see any mention of that specific idea in
+any other message).  However, just to be clear...  At no point did we
+suggest that the kernel would do any scanning.  What we have been
+interested in is a mechanism that can allow a scanning application to be
+notified by the kernel of specific i/o events, for those events to be
+blocked by the kernel until a user-space scan is done, and then the
+user-space scan sends back allow or deny, at which point the i/o event
+returns to the caller -- either success or error.  This is the only way
+that malware can be guaranteed of being detected when it is used (for
+local application purposes or for transmission to another platform) or
+created.  
 
-Note the file credentials one.  That is reused by FS Cache and it
-creates fake inodes.  So worst case event LIM blocks a valid file
-because its coming from cache.
+Also, a solution that requires applications to be modified will not
+work, because there is no way that we would be able to get ALL
+applications on the machines to be modified in the required ways.  If
+ANY applications are not so modified, then you have an unacceptable
+malware hole.  The only solution that really works is one that
+guarantees that all applications are involved, which is why the kernel
+has to be involved in some way.  It's the only centralized authority
+that can stick its nose into all of the required activities.
 
-"vfs_permission and file_permission are just small wrappers around
-inode_permission."  No longer both go to inote_permission after the
-credentials patch is in.   file_permission instead goes to credentials
-struct connected to the inode.  Most calls to inode_permission end up
-wrapped to the credentials struct.
+Whether the specific proposal currently on the table handles all the
+issues or not is to me a separate point.
 
-Basically by the way Linux Credentials patch is being done.
-inode_permission could completely cease to exist.    Completely
-replaced by the credentials structure.
 
-Each filesystem having its own cache is one reason why Linux
-Credentials Patch is being brought into live.   So a single cache can
-store all the need information of the OS and for the file system.
-Even better operate on filesystems lacking all the need permission
-structs using a userspace program to fill in some of the blanks.
-
-LSM's in Credentials can there own protected data sets since all
-alterations to Credentials by the user space deamon have to go past
-LSM for approval or rejection.  Linux Credentials only need a extra
-protected zone added to cover you LIM needs and AV needs to store
-data.
-
-In simple terms permissions stored in inodes is basically deprecated
-by Linux's Credentials patch.
-
-Sorting out the Credentials patch is kinda key.   Nothing you AV or
-Integrity people is strange to the Linux Credentials patch.   Without
-embracing requires more processing when pulling data from a common
-cache that has already been AV or Integrity scanned and maintained in
-that state.  Now its really designing the struct that should exist in
-Credentials.
-
-Peter Dolding
+Jon Press
