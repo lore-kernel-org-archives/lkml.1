@@ -1,91 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756956AbYHMQ7E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756380AbYHMRA7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756956AbYHMQ7E (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Aug 2008 12:59:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756847AbYHMQ6v
+	id S1756380AbYHMRA7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Aug 2008 13:00:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752662AbYHMRAv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Aug 2008 12:58:51 -0400
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:37815 "EHLO e3.ny.us.ibm.com"
+	Wed, 13 Aug 2008 13:00:51 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:44424 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756764AbYHMQ6t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Aug 2008 12:58:49 -0400
-In-Reply-To: <20080812231602.GB12838@kroah.com>
-References: <20080812193031.GD18034@infradead.org> <OF6C940C00.249617D7-ON852574A3.0071F8B0-852574A3.00732160@us.ibm.com> <20080812231602.GB12838@kroah.com>
-To: Greg KH <greg@kroah.com>
-Cc: Christoph Hellwig <hch@infradead.org>,
-       Kenneth Goldman <kgoldman@us.ibm.com>, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org,
-       linux-security-module-owner@vger.kernel.org
-MIME-Version: 1.0
-Subject: Re: [PATCH 1/4] integrity: TPM internel kernel interface
-X-KeepSent: 67E000CB:22C52D18-852574A4:005B9DAA;
- type=4; name=$KeepSent
-X-Mailer: Lotus Notes Release 8.0.1 February 07, 2008
-Message-ID: <OF67E000CB.22C52D18-ON852574A4.005B9DAA-852574A4.005D08CA@us.ibm.com>
-From: Mimi Zohar <zohar@us.ibm.com>
-Date: Wed, 13 Aug 2008 12:56:40 -0400
-X-MIMETrack: Serialize by Router on D01ML604/01/M/IBM(Build V85_M1_05262008|May 26, 2008) at
- 08/13/2008 12:56:40,
-	Serialize complete at 08/13/2008 12:56:40
-Content-Type: text/plain; charset="US-ASCII"
+	id S1752867AbYHMRAu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Aug 2008 13:00:50 -0400
+Subject: Re: TALPA - a threat model?  well sorta.
+From: Eric Paris <eparis@redhat.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: linux-kernel@vger.kernel.org, malware-list@lists.printk.net,
+       andi@firstfloor.org, riel@redhat.com, greg@kroah.com, tytso@mit.edu,
+       viro@ZenIV.linux.org.uk, arjan@infradead.org, peterz@infradead.org,
+       hch@infradead.org
+In-Reply-To: <20080813173722.13c9c306@lxorguk.ukuu.org.uk>
+References: <1218645375.3540.71.camel@localhost.localdomain>
+	 <20080813172437.3ed90b0d@lxorguk.ukuu.org.uk>
+	 <1218646065.3540.75.camel@localhost.localdomain>
+	 <20080813173722.13c9c306@lxorguk.ukuu.org.uk>
+Content-Type: text/plain
+Date: Wed, 13 Aug 2008 13:00:33 -0400
+Message-Id: <1218646833.3540.82.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-linux-security-module-owner@vger.kernel.org wrote on 08/12/2008 07:16:02 
-PM:
-
-> On Tue, Aug 12, 2008 at 04:57:31PM -0400, Kenneth Goldman wrote:
-> > Christoph Hellwig <hch@infradead.org> wrote on 08/12/2008 03:30:31 PM:
-> > 
-> > > On Mon, Aug 11, 2008 at 05:13:51PM -0400, Mimi Zohar wrote:
-> > > >
-> > > > I assume the concern here is that between looking up the chip and
-> > actually
-> > > >
-> > > > using the chip, the TPM chip is disabled/deactivated.  Based on
-> > > > discussions
-> > > > with Kenneth Goldman, the TCG main specification part2: 
-structures,
-> > > > require
-> > > > that even if the TPM is disabled/deactivated, the command to 
-extend the
-> > 
-> > > > PCR
-> > > > will succeed, but the command to read the PCR will fail with an
-> > > > appropriate
-> > > > error code.
-> > >
-> > > And what happens when the chip simply goes away due to a hotplug 
-action?
-> > > Or not even the actual chip goes away but just the chip driver and 
-you
-> > > now dereference freed memory?
-> > 
-> > Being a TCG/TPM person, I can only address the first question.  The
-> > intent is that the TPM is soldered to the planar/motherboard (the TCG
-> > uses the phrase "bound to the platform").  I can't imagine
-> > any manufacturer designing a pluggable TPM.  It would subvert PCR
-> > measurements and thus attestation, data sealing, etc.
+On Wed, 2008-08-13 at 17:37 +0100, Alan Cox wrote:
+> On Wed, 13 Aug 2008 12:47:45 -0400
+> Eric Paris <eparis@redhat.com> wrote:
 > 
-> Load up the fake-php hotplug pci driver and "soft" disconnect it from
-> the system :)
+> > On Wed, 2008-08-13 at 17:24 +0100, Alan Cox wrote:
+> > > > So, what is it that anti-malware companies do?  They scan files.  That's
+> > > > it. 
+> > > 
+> > > Good so lets instead have a discussion about making the file event
+> > > notification more scalable. That is the same thing I want for content
+> > > indexing. It is the same thing you want for certain kinds of smart
+> > > archiving, for on-line asynchronous backup and other stuff.
+> > > 
+> > > It ought to be a simple clean syscall interface.
+> > 
+> > Are you willing to make it blocking?  I'm not sure how to make what we
+> > have capable of assuring that the object you got a notification about is
+> > actually the object you are acting on.  Thoughts on how to accomplish
+> > that?  I'm here to code and I'm willing to throw all my work in the
+> > garbage if someone can show me how to actually do it better.
 > 
-> That was easy...
+> I don't think you need to be blocking if you passed up a file handle ?
+
+Without blocking and waiting how do you deny access?  Maybe I needed
+another thing they do.  "They do file scanning and deny access to bad
+files."
+
+async scanning on close/write is great.  but you need blocking/access
+control on open/read.....
+
+> 	fd = fileeventmumble(somestuff);
+> 	do_stuff
+> 	close(fd);
 > 
-> Note, just because you think your device is always going to be soldered
-> to the motherboard, doesn't mean it can't be disconnected at any point
-> in time with the kernel running.
->
-> Or the module could just be unloaded, that's also a very common thing to
-> have happen, right?
+> [taking care not to end up recursing as a result]
 
-This problem only affects the TPM internal kernel interface, if the TPM 
-driver is not built-in. For IMA, this is not an issue as the TPM driver 
-must be built-in in order to start collecting measurements as soon as 
-possible, which is at late_initcall().  I will resolve this problem for 
-the general internal kernel interface usage case.
+[you pointed out the whole point of process exclusions in the original
+work]
 
-Thanks!
-
-Mimi
