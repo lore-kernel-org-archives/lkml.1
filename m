@@ -1,55 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753380AbYHMHEG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754689AbYHMHE2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753380AbYHMHEG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Aug 2008 03:04:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751117AbYHMHDz
+	id S1754689AbYHMHE2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Aug 2008 03:04:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753780AbYHMHEP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Aug 2008 03:03:55 -0400
-Received: from PSYCHOSIS.MIT.EDU ([18.95.2.5]:59515 "EHLO psychosis.jim.sh"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750957AbYHMHDy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Aug 2008 03:03:54 -0400
-X-Greylist: delayed 609 seconds by postgrey-1.27 at vger.kernel.org; Wed, 13 Aug 2008 03:03:54 EDT
-Date: Wed, 13 Aug 2008 02:53:35 -0400
-From: Jim Paris <jim@jtan.com>
-To: ibm-acpi-devel@lists.sourceforge.net
-Cc: linux-kernel@vger.kernel.org
-Subject: rfkill vs. HAL, 2.6.27-rc3
-Message-ID: <20080813065335.GA7359@psychosis.jim.sh>
+	Wed, 13 Aug 2008 03:04:15 -0400
+Received: from yx-out-2324.google.com ([74.125.44.29]:13030 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753779AbYHMHEM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Aug 2008 03:04:12 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=iinfrK/TFgTTTr75tW8LAkH9+V7kORoXjEgYyCYiqt9ds5+Vy/Wsc7llPeZV7CuA0j
+         /KzADfXOe1q3AOlr4VVVX1y/q9qg7XzvBMKP3r1I3zGYWCvogweGkTHJPEKZHTjGkQdx
+         eEi1olA7vhqjy5qEO5kPxvT4nLKYIqs240oPs=
+Message-ID: <b3ece790808130004p4763b11fveaf4c8380c7c86f7@mail.gmail.com>
+Date: Wed, 13 Aug 2008 00:04:11 -0700
+From: "Tim Hockin" <thockin@hockin.org>
+To: "Rusty Russell" <rusty@rustcorp.com.au>
+Subject: Re: [patch 1/3] kmsg: Kernel message catalog macros.
+Cc: "Martin Schwidefsky" <schwidefsky@de.ibm.com>,
+       linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
+       lf_kernel_messages@lists.linux-foundation.org,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Michael Holzheu" <holzheu@de.ibm.com>,
+       "Gerrit Huizenga" <gh@us.ibm.com>,
+       "Greg Kroah-Hartman" <gregkh@suse.de>,
+       "Randy Dunlap" <randy.dunlap@oracle.com>, "Jan Kara" <jack@suse.cz>,
+       "Pavel Machek" <pavel@ucw.cz>, "Sam Ravnborg" <sam@ravnborg.org>,
+       "Joe Perches" <joe@perches.com>,
+       "=?UTF-8?Q?Jochen_Vo=C3=9F?=" <jochen.voss@googlemail.com>,
+       "Kunai Takashi" <kunai@linux-foundation.jp>,
+       "Tim Bird" <tim.bird@am.sony.com>
+In-Reply-To: <200808131433.02966.rusty@rustcorp.com.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+References: <20080730165656.118280544@de.ibm.com>
+	 <20080730171156.824640459@de.ibm.com>
+	 <200808131433.02966.rusty@rustcorp.com.au>
+X-Google-Sender-Auth: 90033b0d6c961018
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On my Thinkpad X61, I have lots of problems on 2.6.26.1 when toggling
-rfkill switches and buttons, including kernel crashes, so I'm trying
-out 2.6.27-rc3.  Rfkill seems much better behaved, but Network-manager
-is not very happy with it and no longer notices when the radio is
-killed.
+But there are a number of places that have different strings for the
+same meaning: "Can't" vs "can't" vs "can not" vs "failed to", etc.
 
-I think this is because it uses the HAL killswitch interface
-  org.freedesktop.Hal.Device.KillSwitch
-which calls the script
-  hal-system-killswitch-get-power
-which calls
-  hal-system-killswitch-get-power-linux
-which uses the binary
-  hal-ipw-killswitch-linux
-to check
-  /sys/class/net/wlan0/device/rf_kill.
+This is a big part of what hurts us - you end up with lots of loose
+regexes when parsing logs.
 
-But this file no longer exists.  It seems to have been renamed to 
-"/sys/class/net/wlan0/device/rfkill:rfkill2", which is extra annoying
-because it's not just a rename, now hal-ipw-killswitch-linux will have
-to find the "rfkill2" suffix.
+Tim
 
-Seems like a kernel regression if upgrading breaks user applications.
-Or does this sound like a HAL bug?  Or Network-manager?  Or..?
 
-(tracking a single bit of state is getting way too complex these
-days...)
 
--jim
+On Tue, Aug 12, 2008 at 9:33 PM, Rusty Russell <rusty@rustcorp.com.au> wrote:
+> On Thursday 31 July 2008 02:56:57 Martin Schwidefsky wrote:
+>> From: Michael Holzheu <holzheu@de.ibm.com>
+>> From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+>>
+>> Introduce a new family of printk macros which prefixes each kmsg message
+>> with a component name and allows to tag the printk with a message id.
+>
+> Can you hash the format string to generate the id?  6 hex digits should be
+> enough, and your tool can check for clashes.  As it's bad form to have
+> identical strings for different semantics anyway, this seems to make sense.
+>
+> Rusty.
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
