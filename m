@@ -1,89 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753696AbYHMMrW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754429AbYHMMuZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753696AbYHMMrW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Aug 2008 08:47:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753151AbYHMMrK
+	id S1754429AbYHMMuZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Aug 2008 08:50:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752616AbYHMMuM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Aug 2008 08:47:10 -0400
-Received: from outbound-wa4.frontbridge.com ([216.32.181.16]:4877 "EHLO
+	Wed, 13 Aug 2008 08:50:12 -0400
+Received: from outbound-wa4.frontbridge.com ([216.32.181.16]:17393 "EHLO
 	WA4EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753374AbYHMMrI (ORCPT
+	with ESMTP id S1752557AbYHMMuL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Aug 2008 08:47:08 -0400
-X-BigFish: VPS-23(zz1432R98dR1805M936fQ873fnzz10d3izz2f39iz32i6bh43j65h)
-X-Spam-TCS-SCL: 4:0
-X-WSS-ID: 0K5JI67-04-XE9-01
-Date: Wed, 13 Aug 2008 14:46:36 +0200
+	Wed, 13 Aug 2008 08:50:11 -0400
+X-BigFish: VPS-29(zz1418M1432R98dR1805M936fQ873fnzz10d3izzz32i6bh43j64h)
+X-Spam-TCS-SCL: 3:0
+X-FB-SS: 5,
+X-WSS-ID: 0K5JIBC-04-00X-01
+Date: Wed, 13 Aug 2008 14:49:00 +0200
 From: Joerg Roedel <joerg.roedel@amd.com>
 To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
 CC: mingo@redhat.com, tglx@linutronix.de, hpa@zytor.com,
        linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org,
        muli@il.ibm.com
-Subject: Re: [PATCH 1/7] x86: add alloc_coherent dma_ops callback to GART driver
-Message-ID: <20080813124636.GH14993@amd.com>
-References: <1218554657-16070-1-git-send-email-joerg.roedel@amd.com> <1218554657-16070-2-git-send-email-joerg.roedel@amd.com> <20080813094535T.fujita.tomonori@lab.ntt.co.jp>
+Subject: Re: [PATCH 2/7] x86: add free_coherent dma_ops callback to GART driver
+Message-ID: <20080813124900.GI14993@amd.com>
+References: <1218554657-16070-1-git-send-email-joerg.roedel@amd.com> <1218554657-16070-3-git-send-email-joerg.roedel@amd.com> <20080813093935G.fujita.tomonori@lab.ntt.co.jp>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Disposition: inline
-In-Reply-To: <20080813094535T.fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20080813093935G.fujita.tomonori@lab.ntt.co.jp>
 User-Agent: mutt-ng/devel-r804 (Linux)
-X-OriginalArrivalTime: 13 Aug 2008 12:46:37.0195 (UTC) FILETIME=[9FDF75B0:01C8FD42]
+X-OriginalArrivalTime: 13 Aug 2008 12:49:00.0641 (UTC) FILETIME=[F55F9510:01C8FD42]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 13, 2008 at 09:45:54AM +0900, FUJITA Tomonori wrote:
-> On Tue, 12 Aug 2008 17:24:11 +0200
+On Wed, Aug 13, 2008 at 09:45:53AM +0900, FUJITA Tomonori wrote:
+> On Tue, 12 Aug 2008 17:24:12 +0200
 > Joerg Roedel <joerg.roedel@amd.com> wrote:
 > 
 > > Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
 > > ---
-> >  arch/x86/kernel/pci-gart_64.c |   21 +++++++++++++++++++++
-> >  1 files changed, 21 insertions(+), 0 deletions(-)
+> >  arch/x86/kernel/pci-gart_64.c |   10 ++++++++++
+> >  1 files changed, 10 insertions(+), 0 deletions(-)
 > > 
 > > diff --git a/arch/x86/kernel/pci-gart_64.c b/arch/x86/kernel/pci-gart_64.c
-> > index cdab678..55cc388 100644
+> > index 55cc388..18db09b 100644
 > > --- a/arch/x86/kernel/pci-gart_64.c
 > > +++ b/arch/x86/kernel/pci-gart_64.c
-> > @@ -499,6 +499,26 @@ error:
-> >  	return 0;
-> >  }
-> >  
-> > +/* allocate and map a coherent mapping */
-> > +static void *
-> > +gart_alloc_coherent(struct device *dev, size_t size, dma_addr_t *dma_addr,
-> > +		    gfp_t flag)
-> > +{
-> > +	void *vaddr;
-> > +
-> > +	vaddr = (void *)__get_free_pages(flag, get_order(size));
-> > +	if (!vaddr)
-> > +		return NULL;
-> > +
-> > +	*dma_addr = gart_map_single(dev, __pa(vaddr), size, DMA_BIDIRECTIONAL);
-> > +	if (*dma_addr != bad_dma_address)
-> > +		return vaddr;
-> > +
-> > +	free_pages((unsigned long)vaddr, get_order(size));
-> > +
-> > +	return NULL;
-> > +}
-> > +
-> >  static int no_agp;
 > 
-> It would be better to return a size-aligned memory as DMA-mapping.txt
-> says (though I don't think that it doesn't matter much):
-> 
-> http://lkml.org/lkml/2008/8/8/555
+> It would be better to foil this to the first patch, I think. Any
+> reasonable reason to add alloc_coherent and free_coherent with two
+> separate patches?
 
-Agreed. I try to change the patchset so it returns size aligned dma
-addresses.
- 
-> I also think that x86 IOMMUs need to handle DMA_*BIT_MASK properly,
-> don't we?
+Yes possible. Its always a bit hard to split the patches correctly. Some
+maintainers prefer small patches and for others its split up too much
+then. If I am in doubt I often chose to split a patch.
 
-Shouldn't this be done by the IOMMUs using your iommu_area_alloc()
-function? Or do I misunderstand something?
+> I think that you can remove map_simple in gart (and please don't
+> forget to remove map_simple in struct dma_mapping_ops. I think only
+> GART uses that hook).
+
+Ok, I will check that and send a sperate patch.
 
 Joerg
 
