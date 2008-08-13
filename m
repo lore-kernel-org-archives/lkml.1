@@ -1,51 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754578AbYHMIQ5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754733AbYHMISG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754578AbYHMIQ5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Aug 2008 04:16:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752099AbYHMIQm
+	id S1754733AbYHMISG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Aug 2008 04:18:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752478AbYHMIRv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Aug 2008 04:16:42 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:55065 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752212AbYHMIQl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Aug 2008 04:16:41 -0400
-Date: Wed, 13 Aug 2008 01:16:06 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: lachlan@sgi.com (Lachlan McIlroy)
-Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       xfs@oss.sgi.com
-Subject: Re: [GIT PULL] XFS update for 2.6.27-rc4
-Message-Id: <20080813011606.06f2c2da.akpm@linux-foundation.org>
-In-Reply-To: <20080813081147.8ECE258C52A8@chook.melbourne.sgi.com>
-References: <20080813081147.8ECE258C52A8@chook.melbourne.sgi.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 13 Aug 2008 04:17:51 -0400
+Received: from saeurebad.de ([85.214.36.134]:33264 "EHLO saeurebad.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752477AbYHMIRu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Aug 2008 04:17:50 -0400
+From: Johannes Weiner <hannes@saeurebad.de>
+To: "Jan Beulich" <jbeulich@novell.com>
+Cc: <linux-kernel@vger.kernel.org>, <dhowells@redhat.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: [PATCH] Propagate new nonpanic bootmem macros to CONFIG_HAVE_ARCH_BOOTMEM_NODE
+References: <489721D1.76E4.0078.0@novell.com>
+Date: Wed, 13 Aug 2008 10:17:24 +0200
+In-Reply-To: <489721D1.76E4.0078.0@novell.com> (Jan Beulich's message of "Mon,
+	04 Aug 2008 14:35:45 +0100")
+Message-ID: <87skt99vmz.fsf@skyscraper.fehenstaub.lan>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 13 Aug 2008 18:11:47 +1000 lachlan@sgi.com (Lachlan McIlroy) wrote:
+Commit 74768ed833344b "page allocator: use no-panic variant of
+alloc_bootmem() in alloc_large_system_hash()" introduced two new
+_nopanic macros which are undefined for CONFIG_HAVE_ARCH_BOOTMEM_NODE.
 
-> The following changes since commit 30a2f3c60a84092c8084dfe788b710f8d0768cd4:
->   Linus Torvalds (1):
->         Linux 2.6.27-rc3
-> 
-> are available in the git repository at:
-> 
->   git://oss.sgi.com:8090/xfs/linux-2.6 master
+Signed-off-by: Johannes Weiner <hannes@saeurebad.de>
+---
 
-Who do I have to pay to get rid of these:
+These macros are a mess... :(
 
-xfs-use-get_unaligned_-helpers.patch
-xfs-clean-up-stale-references-to-semaphores.patch
-xfs-replace-the-xfs-buf-iodone-semaphore-with-a-completion.patch
-xfs-extend-completions-to-provide-xfs-object-flush-requirements.patch
-xfs-replace-inode-flush-semaphore-with-a-completion.patch
-xfs-replace-dquot-flush-semaphore-with-a-completion.patch
-xfs-remove-the-sema_t-from-xfs.patch
-
-and how much?
-
+diff --git a/include/asm-x86/mmzone_32.h b/include/asm-x86/mmzone_32.h
+index b2298a2..5862e64 100644
+--- a/include/asm-x86/mmzone_32.h
++++ b/include/asm-x86/mmzone_32.h
+@@ -97,10 +97,16 @@ static inline int pfn_valid(int pfn)
+ 	reserve_bootmem_node(NODE_DATA(0), (addr), (size), (flags))
+ #define alloc_bootmem(x) \
+ 	__alloc_bootmem_node(NODE_DATA(0), (x), SMP_CACHE_BYTES, __pa(MAX_DMA_ADDRESS))
++#define alloc_bootmem_nopanic(x) \
++	__alloc_bootmem_node_nopanic(NODE_DATA(0), (x), SMP_CACHE_BYTES, \
++				__pa(MAX_DMA_ADDRESS))
+ #define alloc_bootmem_low(x) \
+ 	__alloc_bootmem_node(NODE_DATA(0), (x), SMP_CACHE_BYTES, 0)
+ #define alloc_bootmem_pages(x) \
+ 	__alloc_bootmem_node(NODE_DATA(0), (x), PAGE_SIZE, __pa(MAX_DMA_ADDRESS))
++#define alloc_bootmem_pages_nopanic(x) \
++	__alloc_bootmem_node_nopanic(NODE_DATA(0), (x), PAGE_SIZE, \
++				__pa(MAX_DMA_ADDRESS))
+ #define alloc_bootmem_low_pages(x) \
+ 	__alloc_bootmem_node(NODE_DATA(0), (x), PAGE_SIZE, 0)
+ #define alloc_bootmem_node(pgdat, x)					\
