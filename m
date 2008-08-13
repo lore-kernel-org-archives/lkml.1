@@ -1,278 +1,510 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754901AbYHMPmw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756210AbYHMPnW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754901AbYHMPmw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Aug 2008 11:42:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751102AbYHMPmo
+	id S1756210AbYHMPnW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Aug 2008 11:43:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751852AbYHMPnH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Aug 2008 11:42:44 -0400
-Received: from 85.13.231.68.reverse.coreix.net ([85.13.231.68]:51566 "EHLO
-	hawk.ravencore.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750875AbYHMPmn (ORCPT
+	Wed, 13 Aug 2008 11:43:07 -0400
+Received: from tomts20-srv.bellnexxia.net ([209.226.175.74]:38339 "EHLO
+	tomts20-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751102AbYHMPnF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Aug 2008 11:42:43 -0400
-X-Greylist: delayed 1731 seconds by postgrey-1.27 at vger.kernel.org; Wed, 13 Aug 2008 11:42:42 EDT
-X-Spam-Flag: NO
-X-Spam-Score: -4.251
-Message-ID: <28113.65.116.116.6.1218640424.squirrel@webmail.ravencore.com>
-Date: Wed, 13 Aug 2008 09:13:44 -0600 (MDT)
-Subject: ELF format in bzImage backport to 2.6.24
-From: "Corey Henderson" <corman@cormander.com>
-To: linux-kernel@vger.kernel.org
-User-Agent: SquirrelMail/1.4.9a
-MIME-Version: 1.0
-Content-Type: multipart/mixed;boundary="----=_20080813091344_82472"
-X-Priority: 3 (Normal)
-Importance: Normal
+	Wed, 13 Aug 2008 11:43:05 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AjIFAOSdokhMRKxB/2dsb2JhbACBYLU2gVU
+Date: Wed, 13 Aug 2008 11:38:00 -0400
+From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, Andi Kleen <andi@firstfloor.org>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, Roland McGrath <roland@redhat.com>,
+       Ulrich Drepper <drepper@redhat.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Gregory Haskins <ghaskins@novell.com>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       "Luis Claudio R. Goncalves" <lclaudio@uudg.org>,
+       Clark Williams <williams@redhat.com>
+Subject: Re: [PATCH 0/5] ftrace: to kill a daemon
+Message-ID: <20080813153800.GF5853@Krystal>
+References: <20080808182104.GA11376@Krystal> <alpine.DEB.1.10.0808081432400.8922@gandalf.stny.rr.com> <20080808190506.GD11376@Krystal> <alpine.DEB.1.10.0808081750590.16691@gandalf.stny.rr.com> <87tzdv2g05.fsf@basil.nowhere.org> <alpine.DEB.1.10.0808082030500.1396@gandalf.stny.rr.com> <489CE90D.1040902@goop.org> <alpine.LFD.1.10.0808081750060.3462@nehalem.linux-foundation.org> <alpine.DEB.1.10.0808082113090.3707@gandalf.stny.rr.com> <20080813063126.GA12335@Krystal>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20080813063126.GA12335@Krystal>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 11:35:39 up 69 days, 20:16,  7 users,  load average: 0.34, 0.61,
+	0.54
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------=_20080813091344_82472
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
+* Mathieu Desnoyers (mathieu.desnoyers@polymtl.ca) wrote:
+> * Steven Rostedt (rostedt@goodmis.org) wrote:
+> > 
+> > On Fri, 8 Aug 2008, Linus Torvalds wrote:
+> > > 
+> > > 
+> > > On Fri, 8 Aug 2008, Jeremy Fitzhardinge wrote:
+> > > >
+> > > > Steven Rostedt wrote:
+> > > > > I wish we had a true 5 byte nop. 
+> > > > 
+> > > > 0x66 0x66 0x66 0x66 0x90
+> > > 
+> > > I don't think so. Multiple redundant prefixes can be really expensive on 
+> > > some uarchs.
+> > > 
+> > > A no-op that isn't cheap isn't a no-op at all, it's a slow-op.
+> > 
+> > 
+> > A quick meaningless benchmark showed a slight perfomance hit.
+> > 
+> 
+> Hi Steven,
+> 
+> I tried to run my own tests to see if I could get to know if these
+> numbers are actually meaningful at all. My results seems to show that
+> there is not any significant difference between the various
+> configurations, and actually that the only one tendency I see is that
+> the 2-bytes jump offset 0x03 would be slightly faster than the 3/2 nop
+> on Intel Xeon. But we would have to run these a bit more often to
+> confirm that I guess.
+> 
+> I am just trying to get a sense of whether we are really trying hard to
+> optimize something worthless in practice, and to me it looks like it.
+> But it could be the architecture I am using that brings these results.
+> 
+> Mathieu
+> 
+> Intel Xeon dual quad-core
+> Intel(R) Xeon(R) CPU           E5405  @ 2.00GHz
+> 
+> 3/2 nop used :
+> K8_NOP3 K8_NOP2
+> #define K8_NOP2 ".byte 0x66,0x90\n"
+> #define K8_NOP3 ".byte 0x66,0x66,0x90\n"
+> 
 
-Hello,
+Small correction : my architecture uses the P6_NOP5, which is an atomic
+5-bytes nop (just looked at the runtime output of find_nop_table()).
 
-If anyone is interested in booting a 2.6.24 kernel on both bare-metal and
-within xen using the same kernel image, I went ahead and back-ported Ian
-Campbell's commit to the 2.6.26 kernel to 2.6.24.7
+5: nopl 0x00(%eax,%eax,1)
+#define P6_NOP5 ".byte 0x0f,0x1f,0x44,0x00,0\n"
 
-The patch is attached. I also have Ian's backports to 2.6.25 (which is
-what I used to backport to 2.6.24) so if you're interested in obtaining
-those as well, let me know.
+But the results stands. Maybe I should try to force a test with a
+K8_NOP3 K8_NOP2 nop.
 
-If you wish to reply to this message, please CC me as I'm not a subscriber
-to the LKML.
+Mathieu
 
-Have a great day.
+> ** Summary **
+> 
+> Test A : make -j20 2.6.27-rc2 kernel (real time)
+>                                           Avg.      std.dev
+> Case 1 : ftrace not compiled-in.          1m9.76s   0.41s
+> Case 2 : 3/2 nops                         1m9.95s   0.36s
+> Case 3 : 2-bytes jump, offset 0x03        1m9.10s   0.40s
+> Case 4 : 5-bytes jump, offset 0x00        1m9.25s   0.34s
+> 
+> Test B : hackbench 15
+> 
+> Case 1 : ftrace not compiled-in.          0.349s    0.007s
+> Case 2 : 3/2 nops                         0.351s    0.014s
+> Case 3 : 2-bytes jump, offset 0x03        0.350s    0.007s
+> Case 4 : 5-bytes jump, offset 0x00        0.351s    0.010s
+> 
+> 
+> 
+> ** Detail **
+> 
+> * Test A
+> 
+> benchmark : make -j20 2.6.27-rc2 kernel
+> make clean; make -j20; make clean done before the tests to prime caches.
+> Same .config used.
+> 
+> 
+> Case 1 : ftrace not compiled-in.
+> 
+> real	1m9.980s
+> user	7m27.664s
+> sys	0m48.771s
+> 
+> real	1m9.330s
+> user	7m27.244s
+> sys	0m50.567s
+> 
+> real	1m9.393s
+> user	7m27.408s
+> sys	0m50.511s
+> 
+> real	1m9.674s
+> user	7m28.088s
+> sys	0m50.327s
+> 
+> real	1m10.441s
+> user	7m27.736s
+> sys	0m49.687s
+> 
+> real time
+> average : 1m9.76s
+> std. dev. : 0.41s
+> 
+> after a reboot with the same kernel :
+> 
+> real	1m8.758s
+> user	7m26.012s
+> sys	0m48.835s
+> 
+> real	1m11.035s
+> user	7m26.432s
+> sys	0m49.171s
+> 
+> real	1m9.834s
+> user	7m25.768s
+> sys	0m49.167s
+> 
+> 
+> Case 2 : 3/2 nops
+> 
+> real	1m9.713s
+> user	7m27.524s
+> sys	0m48.315s
+> 
+> real	1m9.481s
+> user	7m27.144s
+> sys	0m48.587s
+> 
+> real	1m10.565s
+> user	7m27.048s
+> sys	0m48.715s
+> 
+> real	1m10.008s
+> user	7m26.436s
+> sys	0m49.295s
+> 
+> real	1m9.982s
+> user	7m27.160s
+> sys	0m48.667s
+> 
+> real time
+> avg : 1m9.95s
+> std. dev. : 0.36s
+> 
+> 
+> Case 3 : 2-bytes jump, offset 0x03
+> 
+> real	1m9.158s
+> user	7m27.108s
+> sys	0m48.775s
+> 
+> real	1m9.159s
+> user	7m27.320s
+> sys	0m48.659s
+> 
+> real	1m8.390s
+> user	7m27.976s
+> sys	0m48.359s
+> 
+> real	1m9.143s
+> user	7m26.624s
+> sys	0m48.719s
+> 
+> real	1m9.642s
+> user	7m26.228s
+> sys	0m49.483s
+> 
+> real time
+> avg : 1m9.10s
+> std. dev. : 0.40s
+> 
+> one extra after reboot with same kernel :
+> 
+> real	1m8.855s
+> user	7m27.372s
+> sys	0m48.543s
+> 
+> 
+> Case 4 : 5-bytes jump, offset 0x00
+> 
+> real	1m9.173s
+> user	7m27.228s
+> sys	0m48.151s
+> 
+> real	1m9.735s
+> user	7m26.852s
+> sys	0m48.499s
+> 
+> real	1m9.502s
+> user	7m27.148s
+> sys	0m48.107s
+> 
+> real	1m8.727s
+> user	7m27.416s
+> sys	0m48.071s
+> 
+> real	1m9.115s
+> user	7m26.932s
+> sys	0m48.727s
+> 
+> real time
+> avg : 1m9.25s
+> std. dev. : 0.34s
+> 
+> 
+> * Test B
+> 
+> Hackbench
+> 
+> Case 1 : ftrace not compiled-in.
+> 
+> ./hackbench 15
+> Time: 0.358
+> ./hackbench 15
+> Time: 0.342
+> ./hackbench 15
+> Time: 0.354
+> ./hackbench 15
+> Time: 0.338
+> ./hackbench 15
+> Time: 0.347
+> 
+> Average : 0.349
+> std. dev. : 0.007
+> 
+> Case 2 : 3/2 nops
+> 
+> ./hackbench 15
+> Time: 0.328
+> ./hackbench 15
+> Time: 0.368
+> ./hackbench 15
+> Time: 0.351
+> ./hackbench 15
+> Time: 0.343
+> ./hackbench 15
+> Time: 0.366
+> 
+> Average : 0.351
+> std. dev. : 0.014
+> 
+> Case 3 : jmp 2 bytes
+> 
+> ./hackbench 15
+> Time: 0.346
+> ./hackbench 15
+> Time: 0.359
+> ./hackbench 15
+> Time: 0.356
+> ./hackbench 15
+> Time: 0.350
+> ./hackbench 15
+> Time: 0.340
+> 
+> Average : 0.350
+> std. dev. : 0.007
+> 
+> Case 3 : jmp 5 bytes
+> 
+> ./hackbench 15
+> Time: 0.346
+> ./hackbench 15
+> Time: 0.346
+> ./hackbench 15
+> Time: 0.364
+> ./hackbench 15
+> Time: 0.362
+> ./hackbench 15
+> Time: 0.338
+> 
+> Average : 0.351
+> std. dev. : 0.010
+> 
+> 
+> Hardware used :
+> 
+> processor	: 0
+> vendor_id	: GenuineIntel
+> cpu family	: 6
+> model		: 23
+> model name	: Intel(R) Xeon(R) CPU           E5405  @ 2.00GHz
+> stepping	: 6
+> cpu MHz		: 2000.114
+> cache size	: 6144 KB
+> physical id	: 0
+> siblings	: 4
+> core id		: 0
+> cpu cores	: 4
+> apicid		: 0
+> initial apicid	: 0
+> fpu		: yes
+> fpu_exception	: yes
+> cpuid level	: 10
+> wp		: yes
+> flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov
+> pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx lm
+> constant_tsc arch_perfmon pebs bts rep_good pni monitor ds_cpl vmx tm2 ssse3
+> cx16 xtpr dca sse4_1 lahf_lm
+> bogomips	: 4000.22
+> clflush size	: 64
+> cache_alignment	: 64
+> address sizes	: 38 bits physical, 48 bits virtual
+> power management:
+> 
+> (7 other similar cpus)
+> 
+> 
+> > Here's 10 runs of "hackbench 50" using the two part 5 byte nop:
+> > 
+> > run 1
+> > Time: 4.501
+> > run 2
+> > Time: 4.855
+> > run 3
+> > Time: 4.198
+> > run 4
+> > Time: 4.587
+> > run 5
+> > Time: 5.016
+> > run 6
+> > Time: 4.757
+> > run 7
+> > Time: 4.477
+> > run 8
+> > Time: 4.693
+> > run 9
+> > Time: 4.710
+> > run 10
+> > Time: 4.715
+> > avg = 4.6509
+> > 
+> > 
+> > And 10 runs using the above 5 byte nop:
+> > 
+> > run 1
+> > Time: 4.832
+> > run 2
+> > Time: 5.319
+> > run 3
+> > Time: 5.213
+> > run 4
+> > Time: 4.830
+> > run 5
+> > Time: 4.363
+> > run 6
+> > Time: 4.391
+> > run 7
+> > Time: 4.772
+> > run 8
+> > Time: 4.992
+> > run 9
+> > Time: 4.727
+> > run 10
+> > Time: 4.825
+> > avg = 4.8264
+> > 
+> > # cat /proc/cpuinfo
+> > processor	: 0
+> > vendor_id	: AuthenticAMD
+> > cpu family	: 15
+> > model		: 65
+> > model name	: Dual-Core AMD Opteron(tm) Processor 2220
+> > stepping	: 3
+> > cpu MHz		: 2799.992
+> > cache size	: 1024 KB
+> > physical id	: 0
+> > siblings	: 2
+> > core id		: 0
+> > cpu cores	: 2
+> > apicid		: 0
+> > initial apicid	: 0
+> > fdiv_bug	: no
+> > hlt_bug		: no
+> > f00f_bug	: no
+> > coma_bug	: no
+> > fpu		: yes
+> > fpu_exception	: yes
+> > cpuid level	: 1
+> > wp		: yes
+> > flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca 
+> > cmov pat pse36 clflush mmx fxsr sse sse2 ht syscall nx mmxext fxsr_opt 
+> > rdtscp lm 3dnowext 3dnow pni cx16 lahf_lm cmp_legacy svm extapic 
+> > cr8_legacy
+> > bogomips	: 5599.98
+> > clflush size	: 64
+> > power management: ts fid vid ttp tm stc
+> > 
+> > There's 4 of these.
+> > 
+> > Just to make sure, I ran the above nop test again:
+> > 
+> > [ this is reverse from the above runs ]
+> > 
+> > run 1
+> > Time: 4.723
+> > run 2
+> > Time: 5.080
+> > run 3
+> > Time: 4.521
+> > run 4
+> > Time: 4.841
+> > run 5
+> > Time: 4.696
+> > run 6
+> > Time: 4.946
+> > run 7
+> > Time: 4.754
+> > run 8
+> > Time: 4.717
+> > run 9
+> > Time: 4.905
+> > run 10
+> > Time: 4.814
+> > avg = 4.7997
+> > 
+> > And again the two part nop:
+> > 
+> > run 1
+> > Time: 4.434
+> > run 2
+> > Time: 4.496
+> > run 3
+> > Time: 4.801
+> > run 4
+> > Time: 4.714
+> > run 5
+> > Time: 4.631
+> > run 6
+> > Time: 5.178
+> > run 7
+> > Time: 4.728
+> > run 8
+> > Time: 4.920
+> > run 9
+> > Time: 4.898
+> > run 10
+> > Time: 4.770
+> > avg = 4.757
+> > 
+> > 
+> > This time it was close, but still seems to have some difference.
+> > 
+> > heh, perhaps it's just noise.
+> > 
+> > -- Steve
+> > 
+> 
+> -- 
+> Mathieu Desnoyers
+> OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
 
---
-Corey Henderson
-
-------=_20080813091344_82472
-Content-Type: application/octet-stream; name="bzImage-format-2.08.patch"
-Content-Transfer-Encoding: base64
-Content-Disposition: attachment; filename="bzImage-format-2.08.patch"
-
-ZGlmZiAtcnVOcCBsaW51eC0yLjYuMjQuNy9hcmNoL3g4Ni9ib290L2NvbXByZXNzZWQvbWlzY18z
-Mi5jIGxpbnV4LTIuNi4yNC43LW5ldy9hcmNoL3g4Ni9ib290L2NvbXByZXNzZWQvbWlzY18zMi5j
-Ci0tLSBsaW51eC0yLjYuMjQuNy9hcmNoL3g4Ni9ib290L2NvbXByZXNzZWQvbWlzY18zMi5jCTIw
-MDgtMDUtMDYgMTk6MjI6MzQuMDAwMDAwMDAwIC0wNDAwCisrKyBsaW51eC0yLjYuMjQuNy1uZXcv
-YXJjaC94ODYvYm9vdC9jb21wcmVzc2VkL21pc2NfMzIuYwkyMDA4LTA4LTEyIDE2OjQ5OjQ2LjAw
-MDAwMDAwMCAtMDQwMApAQCAtMTAsOSArMTAsMTIgQEAKICAqLwogCiAjdW5kZWYgQ09ORklHX1BB
-UkFWSVJUCisjZGVmaW5lIF9BU01fREVTQ19IXyAxCisKICNpbmNsdWRlIDxsaW51eC9saW5rYWdl
-Lmg+CiAjaW5jbHVkZSA8bGludXgvdm1hbGxvYy5oPgogI2luY2x1ZGUgPGxpbnV4L3NjcmVlbl9p
-bmZvLmg+CisjaW5jbHVkZSA8bGludXgvZWxmLmg+CiAjaW5jbHVkZSA8YXNtL2lvLmg+CiAjaW5j
-bHVkZSA8YXNtL3BhZ2UuaD4KICNpbmNsdWRlIDxhc20vYm9vdC5oPgpAQCAtMzQyLDYgKzM0NSw1
-NiBAQCBzdGF0aWMgdm9pZCBlcnJvcihjaGFyICp4KQogCXdoaWxlKDEpOwkvKiBIYWx0ICovCiB9
-CiAKK3N0YXRpYyB2b2lkIHBhcnNlX2VsZih2b2lkICpvdXRwdXQpCit7CisjaWZkZWYgQ09ORklH
-X1g4Nl82NAorCUVsZjY0X0VoZHIgZWhkcjsKKwlFbGY2NF9QaGRyICpwaGRycywgKnBoZHI7Cisj
-ZWxzZQorCUVsZjMyX0VoZHIgZWhkcjsKKwlFbGYzMl9QaGRyICpwaGRycywgKnBoZHI7CisjZW5k
-aWYKKwl2b2lkICpkZXN0OworCWludCBpOworCisJbWVtY3B5KCZlaGRyLCBvdXRwdXQsIHNpemVv
-ZihlaGRyKSk7CisJaWYoZWhkci5lX2lkZW50W0VJX01BRzBdICE9IEVMRk1BRzAgfHwKKwkgICBl
-aGRyLmVfaWRlbnRbRUlfTUFHMV0gIT0gRUxGTUFHMSB8fAorCSAgIGVoZHIuZV9pZGVudFtFSV9N
-QUcyXSAhPSBFTEZNQUcyIHx8CisJICAgZWhkci5lX2lkZW50W0VJX01BRzNdICE9IEVMRk1BRzMp
-CisJCXsKKwkJCWVycm9yKCJLZXJuZWwgaXMgbm90IGEgdmFsaWQgRUxGIGZpbGUiKTsKKwkJCXJl
-dHVybjsKKwkJfQorCisJcHV0c3RyKCJQYXJzaW5nIEVMRi4uLiAiKTsKKworCXBoZHJzID0gbWFs
-bG9jKHNpemVvZigqcGhkcnMpICogZWhkci5lX3BobnVtKTsKKwlpZiAoIXBoZHJzKQorCQllcnJv
-cigiRmFpbGVkIHRvIGFsbG9jYXRlIHNwYWNlIGZvciBwaGRycyIpOworCisJbWVtY3B5KHBoZHJz
-LCBvdXRwdXQgKyBlaGRyLmVfcGhvZmYsIHNpemVvZigqcGhkcnMpICogZWhkci5lX3BobnVtKTsK
-KworCWZvciAoaT0wOyBpPGVoZHIuZV9waG51bTsgaSsrKSB7CisJCXBoZHIgPSAmcGhkcnNbaV07
-CisKKwkJc3dpdGNoIChwaGRyLT5wX3R5cGUpIHsKKwkJY2FzZSBQVF9MT0FEOgorI2lmZGVmIENP
-TkZJR19SRUxPQ0FUQUJMRQorCQkJZGVzdCA9IG91dHB1dDsKKwkJCWRlc3QgKz0gKHBoZHItPnBf
-cGFkZHIgLSBMT0FEX1BIWVNJQ0FMX0FERFIpOworI2Vsc2UKKwkJCWRlc3QgPSAodm9pZCopKHBo
-ZHItPnBfcGFkZHIpOworI2VuZGlmCisJCQltZW1jcHkoZGVzdCwKKwkJCQkgICBvdXRwdXQgKyBw
-aGRyLT5wX29mZnNldCwKKwkJCQkgICBwaGRyLT5wX2ZpbGVzeik7CisJCQlicmVhazsKKwkJZGVm
-YXVsdDogLyogSWdub3JlIG90aGVyIFBUXyogKi8gYnJlYWs7CisJCX0KKwl9Cit9CisKIGFzbWxp
-bmthZ2Ugdm9pZCBkZWNvbXByZXNzX2tlcm5lbCh2b2lkICpybW9kZSwgdW5zaWduZWQgbG9uZyBl
-bmQsCiAJCQl1Y2ggKmlucHV0X2RhdGEsIHVuc2lnbmVkIGxvbmcgaW5wdXRfbGVuLCB1Y2ggKm91
-dHB1dCkKIHsKQEAgLTM3Nyw2ICs0MzAsNyBAQCBhc21saW5rYWdlIHZvaWQgZGVjb21wcmVzc19r
-ZXJuZWwodm9pZCAqCiAJbWFrZWNyYygpOwogCXB1dHN0cigiVW5jb21wcmVzc2luZyBMaW51eC4u
-LiAiKTsKIAlndW56aXAoKTsKKwlwYXJzZV9lbGYob3V0cHV0KTsKIAlwdXRzdHIoIk9rLCBib290
-aW5nIHRoZSBrZXJuZWwuXG4iKTsKIAlyZXR1cm47CiB9CmRpZmYgLXJ1TnAgbGludXgtMi42LjI0
-LjcvYXJjaC94ODYvYm9vdC9oZWFkZXIuUyBsaW51eC0yLjYuMjQuNy1uZXcvYXJjaC94ODYvYm9v
-dC9oZWFkZXIuUwotLS0gbGludXgtMi42LjI0LjcvYXJjaC94ODYvYm9vdC9oZWFkZXIuUwkyMDA4
-LTA1LTA2IDE5OjIyOjM0LjAwMDAwMDAwMCAtMDQwMAorKysgbGludXgtMi42LjI0LjctbmV3L2Fy
-Y2gveDg2L2Jvb3QvaGVhZGVyLlMJMjAwOC0wOC0xMiAxNjo1MToxNS4wMDAwMDAwMDAgLTA0MDAK
-QEAgLTIyLDYgKzIyLDcgQEAKICNpbmNsdWRlIDxhc20vcGFnZS5oPgogI2luY2x1ZGUgPGFzbS9z
-ZXR1cC5oPgogI2luY2x1ZGUgImJvb3QuaCIKKyNpbmNsdWRlICJvZmZzZXRzLmgiCiAKIFNFVFVQ
-U0VDVFMJPSA0CQkJLyogZGVmYXVsdCBuciBvZiBzZXR1cC1zZWN0b3JzICovCiBCT09UU0VHCQk9
-IDB4MDdDMAkJLyogb3JpZ2luYWwgYWRkcmVzcyBvZiBib290LXNlY3RvciAqLwpAQCAtMTE5LDcg
-KzEyMCw3IEBAIF9zdGFydDoKIAkjIFBhcnQgMiBvZiB0aGUgaGVhZGVyLCBmcm9tIHRoZSBvbGQg
-c2V0dXAuUwogCiAJCS5hc2NpaQkiSGRyUyIJCSMgaGVhZGVyIHNpZ25hdHVyZQotCQkud29yZAkw
-eDAyMDcJCSMgaGVhZGVyIHZlcnNpb24gbnVtYmVyICg+PSAweDAxMDUpCisJCS53b3JkCTB4MDIw
-OAkJIyBoZWFkZXIgdmVyc2lvbiBudW1iZXIgKD49IDB4MDEwNSkKIAkJCQkJIyBvciBlbHNlIG9s
-ZCBsb2FkbGluLTEuNSB3aWxsIGZhaWwpCiAJCS5nbG9ibCByZWFsbW9kZV9zd3RjaAogcmVhbG1v
-ZGVfc3d0Y2g6CS53b3JkCTAsIDAJCSMgZGVmYXVsdF9zd2l0Y2gsIFNFVFVQU0VHCkBAIC0yMjAs
-NiArMjIxLDkgQEAgaGFyZHdhcmVfc3ViYXJjaDoJLmxvbmcgMAkJCSMgc3ViYXJjaGl0ZQogCiBo
-YXJkd2FyZV9zdWJhcmNoX2RhdGE6CS5xdWFkIDAKIAorcGF5bG9hZF9vZmZzZXQ6CQkubG9uZyBp
-bnB1dF9kYXRhCitwYXlsb2FkX2xlbmd0aDoJCS5sb25nIGlucHV0X2RhdGFfZW5kLWlucHV0X2Rh
-dGEKKwogIyBFbmQgb2Ygc2V0dXAgaGVhZGVyICMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMj
-IyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjCiAKIAkuc2VjdGlvbiAiLmluaXR0ZXh0IiwgImF4Igpk
-aWZmIC1ydU5wIGxpbnV4LTIuNi4yNC43L2FyY2gveDg2L2Jvb3QvTWFrZWZpbGUgbGludXgtMi42
-LjI0LjctbmV3L2FyY2gveDg2L2Jvb3QvTWFrZWZpbGUKLS0tIGxpbnV4LTIuNi4yNC43L2FyY2gv
-eDg2L2Jvb3QvTWFrZWZpbGUJMjAwOC0wNS0wNiAxOToyMjozNC4wMDAwMDAwMDAgLTA0MDAKKysr
-IGxpbnV4LTIuNi4yNC43LW5ldy9hcmNoL3g4Ni9ib290L01ha2VmaWxlCTIwMDgtMDgtMTIgMTY6
-NDE6MzIuMDAwMDAwMDAwIC0wNDAwCkBAIC04NSw2ICs4NSwyMCBAQCAkKG9iaikvdm1saW51eC5i
-aW46ICQob2JqKS9jb21wcmVzc2VkL3ZtCiAKIFNFVFVQX09CSlMgPSAkKGFkZHByZWZpeCAkKG9i
-aikvLCQoc2V0dXAteSkpCiAKK3NlZC1vZmZzZXRzIDo9IC1lICdzL14wMCovMC8nIFwKKyAgICAg
-ICAgLWUgJ3MvXlwoWzAtOWEtZkEtRl0qXCkgLiBcKGlucHV0X2RhdGFcfGlucHV0X2RhdGFfZW5k
-XCkkJC9cI2RlZmluZSBcMiAweFwxL3AnCisKK3F1aWV0X2NtZF9vZmZzZXRzID0gT0ZGU0VUUyAk
-QAorICAgICAgY21kX29mZnNldHMgPSAkKE5NKSAkPCB8IHNlZCAtbiAkKHNlZC1vZmZzZXRzKSA+
-ICRACisKKyQob2JqKS9vZmZzZXRzLmg6ICQob2JqKS9jb21wcmVzc2VkL3ZtbGludXggRk9SQ0UK
-KwkkKGNhbGwgaWZfY2hhbmdlZCxvZmZzZXRzKQorCit0YXJnZXRzICs9IG9mZnNldHMuaAorCitB
-RkxBR1NfaGVhZGVyLm8gKz0gLUkkKG9iaikKKyQob2JqKS9oZWFkZXIubzogJChvYmopL29mZnNl
-dHMuaAorCiBMREZMQUdTX3NldHVwLmVsZgk6PSAtVAogJChvYmopL3NldHVwLmVsZjogJChzcmMp
-L3NldHVwLmxkICQoU0VUVVBfT0JKUykgRk9SQ0UKIAkkKGNhbGwgaWZfY2hhbmdlZCxsZCkKZGlm
-ZiAtcnVOcCBsaW51eC0yLjYuMjQuNy9hcmNoL3g4Ni9ib290L3Rvb2xzL2J1aWxkLmMgbGludXgt
-Mi42LjI0LjctbmV3L2FyY2gveDg2L2Jvb3QvdG9vbHMvYnVpbGQuYwotLS0gbGludXgtMi42LjI0
-LjcvYXJjaC94ODYvYm9vdC90b29scy9idWlsZC5jCTIwMDgtMDUtMDYgMTk6MjI6MzQuMDAwMDAw
-MDAwIC0wNDAwCisrKyBsaW51eC0yLjYuMjQuNy1uZXcvYXJjaC94ODYvYm9vdC90b29scy9idWls
-ZC5jCTIwMDgtMDgtMTIgMTY6NTA6NTQuMDAwMDAwMDAwIC0wNDAwCkBAIC01MCw2ICs1MCw3NSBA
-QCB0eXBlZGVmIHVuc2lnbmVkIGxvbmcgIHUzMjsKIHU4IGJ1ZltTRVRVUF9TRUNUX01BWCo1MTJd
-OwogaW50IGlzX2JpZ19rZXJuZWw7CiAKKy8qLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLSovCisKK3N0YXRpYyBjb25z
-dCB1MzIgY3JjdGFiMzJbXSA9IHsKKwkweDAwMDAwMDAwLCAweDc3MDczMDk2LCAweGVlMGU2MTJj
-LCAweDk5MDk1MWJhLCAweDA3NmRjNDE5LAorCTB4NzA2YWY0OGYsIDB4ZTk2M2E1MzUsIDB4OWU2
-NDk1YTMsIDB4MGVkYjg4MzIsIDB4NzlkY2I4YTQsCisJMHhlMGQ1ZTkxZSwgMHg5N2QyZDk4OCwg
-MHgwOWI2NGMyYiwgMHg3ZWIxN2NiZCwgMHhlN2I4MmQwNywKKwkweDkwYmYxZDkxLCAweDFkYjcx
-MDY0LCAweDZhYjAyMGYyLCAweGYzYjk3MTQ4LCAweDg0YmU0MWRlLAorCTB4MWFkYWQ0N2QsIDB4
-NmRkZGU0ZWIsIDB4ZjRkNGI1NTEsIDB4ODNkMzg1YzcsIDB4MTM2Yzk4NTYsCisJMHg2NDZiYThj
-MCwgMHhmZDYyZjk3YSwgMHg4YTY1YzllYywgMHgxNDAxNWM0ZiwgMHg2MzA2NmNkOSwKKwkweGZh
-MGYzZDYzLCAweDhkMDgwZGY1LCAweDNiNmUyMGM4LCAweDRjNjkxMDVlLCAweGQ1NjA0MWU0LAor
-CTB4YTI2NzcxNzIsIDB4M2MwM2U0ZDEsIDB4NGIwNGQ0NDcsIDB4ZDIwZDg1ZmQsIDB4YTUwYWI1
-NmIsCisJMHgzNWI1YThmYSwgMHg0MmIyOTg2YywgMHhkYmJiYzlkNiwgMHhhY2JjZjk0MCwgMHgz
-MmQ4NmNlMywKKwkweDQ1ZGY1Yzc1LCAweGRjZDYwZGNmLCAweGFiZDEzZDU5LCAweDI2ZDkzMGFj
-LCAweDUxZGUwMDNhLAorCTB4YzhkNzUxODAsIDB4YmZkMDYxMTYsIDB4MjFiNGY0YjUsIDB4NTZi
-M2M0MjMsIDB4Y2ZiYTk1OTksCisJMHhiOGJkYTUwZiwgMHgyODAyYjg5ZSwgMHg1ZjA1ODgwOCwg
-MHhjNjBjZDliMiwgMHhiMTBiZTkyNCwKKwkweDJmNmY3Yzg3LCAweDU4Njg0YzExLCAweGMxNjEx
-ZGFiLCAweGI2NjYyZDNkLCAweDc2ZGM0MTkwLAorCTB4MDFkYjcxMDYsIDB4OThkMjIwYmMsIDB4
-ZWZkNTEwMmEsIDB4NzFiMTg1ODksIDB4MDZiNmI1MWYsCisJMHg5ZmJmZTRhNSwgMHhlOGI4ZDQz
-MywgMHg3ODA3YzlhMiwgMHgwZjAwZjkzNCwgMHg5NjA5YTg4ZSwKKwkweGUxMGU5ODE4LCAweDdm
-NmEwZGJiLCAweDA4NmQzZDJkLCAweDkxNjQ2Yzk3LCAweGU2NjM1YzAxLAorCTB4NmI2YjUxZjQs
-IDB4MWM2YzYxNjIsIDB4ODU2NTMwZDgsIDB4ZjI2MjAwNGUsIDB4NmMwNjk1ZWQsCisJMHgxYjAx
-YTU3YiwgMHg4MjA4ZjRjMSwgMHhmNTBmYzQ1NywgMHg2NWIwZDljNiwgMHgxMmI3ZTk1MCwKKwkw
-eDhiYmViOGVhLCAweGZjYjk4ODdjLCAweDYyZGQxZGRmLCAweDE1ZGEyZDQ5LCAweDhjZDM3Y2Yz
-LAorCTB4ZmJkNDRjNjUsIDB4NGRiMjYxNTgsIDB4M2FiNTUxY2UsIDB4YTNiYzAwNzQsIDB4ZDRi
-YjMwZTIsCisJMHg0YWRmYTU0MSwgMHgzZGQ4OTVkNywgMHhhNGQxYzQ2ZCwgMHhkM2Q2ZjRmYiwg
-MHg0MzY5ZTk2YSwKKwkweDM0NmVkOWZjLCAweGFkNjc4ODQ2LCAweGRhNjBiOGQwLCAweDQ0MDQy
-ZDczLCAweDMzMDMxZGU1LAorCTB4YWEwYTRjNWYsIDB4ZGQwZDdjYzksIDB4NTAwNTcxM2MsIDB4
-MjcwMjQxYWEsIDB4YmUwYjEwMTAsCisJMHhjOTBjMjA4NiwgMHg1NzY4YjUyNSwgMHgyMDZmODVi
-MywgMHhiOTY2ZDQwOSwgMHhjZTYxZTQ5ZiwKKwkweDVlZGVmOTBlLCAweDI5ZDljOTk4LCAweGIw
-ZDA5ODIyLCAweGM3ZDdhOGI0LCAweDU5YjMzZDE3LAorCTB4MmViNDBkODEsIDB4YjdiZDVjM2Is
-IDB4YzBiYTZjYWQsIDB4ZWRiODgzMjAsIDB4OWFiZmIzYjYsCisJMHgwM2I2ZTIwYywgMHg3NGIx
-ZDI5YSwgMHhlYWQ1NDczOSwgMHg5ZGQyNzdhZiwgMHgwNGRiMjYxNSwKKwkweDczZGMxNjgzLCAw
-eGUzNjMwYjEyLCAweDk0NjQzYjg0LCAweDBkNmQ2YTNlLCAweDdhNmE1YWE4LAorCTB4ZTQwZWNm
-MGIsIDB4OTMwOWZmOWQsIDB4MGEwMGFlMjcsIDB4N2QwNzllYjEsIDB4ZjAwZjkzNDQsCisJMHg4
-NzA4YTNkMiwgMHgxZTAxZjI2OCwgMHg2OTA2YzJmZSwgMHhmNzYyNTc1ZCwgMHg4MDY1NjdjYiwK
-KwkweDE5NmMzNjcxLCAweDZlNmIwNmU3LCAweGZlZDQxYjc2LCAweDg5ZDMyYmUwLCAweDEwZGE3
-YTVhLAorCTB4NjdkZDRhY2MsIDB4ZjliOWRmNmYsIDB4OGViZWVmZjksIDB4MTdiN2JlNDMsIDB4
-NjBiMDhlZDUsCisJMHhkNmQ2YTNlOCwgMHhhMWQxOTM3ZSwgMHgzOGQ4YzJjNCwgMHg0ZmRmZjI1
-MiwgMHhkMWJiNjdmMSwKKwkweGE2YmM1NzY3LCAweDNmYjUwNmRkLCAweDQ4YjIzNjRiLCAweGQ4
-MGQyYmRhLCAweGFmMGExYjRjLAorCTB4MzYwMzRhZjYsIDB4NDEwNDdhNjAsIDB4ZGY2MGVmYzMs
-IDB4YTg2N2RmNTUsIDB4MzE2ZThlZWYsCisJMHg0NjY5YmU3OSwgMHhjYjYxYjM4YywgMHhiYzY2
-ODMxYSwgMHgyNTZmZDJhMCwgMHg1MjY4ZTIzNiwKKwkweGNjMGM3Nzk1LCAweGJiMGI0NzAzLCAw
-eDIyMDIxNmI5LCAweDU1MDUyNjJmLCAweGM1YmEzYmJlLAorCTB4YjJiZDBiMjgsIDB4MmJiNDVh
-OTIsIDB4NWNiMzZhMDQsIDB4YzJkN2ZmYTcsIDB4YjVkMGNmMzEsCisJMHgyY2Q5OWU4YiwgMHg1
-YmRlYWUxZCwgMHg5YjY0YzJiMCwgMHhlYzYzZjIyNiwgMHg3NTZhYTM5YywKKwkweDAyNmQ5MzBh
-LCAweDljMDkwNmE5LCAweGViMGUzNjNmLCAweDcyMDc2Nzg1LCAweDA1MDA1NzEzLAorCTB4OTVi
-ZjRhODIsIDB4ZTJiODdhMTQsIDB4N2JiMTJiYWUsIDB4MGNiNjFiMzgsIDB4OTJkMjhlOWIsCisJ
-MHhlNWQ1YmUwZCwgMHg3Y2RjZWZiNywgMHgwYmRiZGYyMSwgMHg4NmQzZDJkNCwgMHhmMWQ0ZTI0
-MiwKKwkweDY4ZGRiM2Y4LCAweDFmZGE4MzZlLCAweDgxYmUxNmNkLCAweGY2YjkyNjViLCAweDZm
-YjA3N2UxLAorCTB4MThiNzQ3NzcsIDB4ODgwODVhZTYsIDB4ZmYwZjZhNzAsIDB4NjYwNjNiY2Es
-IDB4MTEwMTBiNWMsCisJMHg4ZjY1OWVmZiwgMHhmODYyYWU2OSwgMHg2MTZiZmZkMywgMHgxNjZj
-Y2Y0NSwgMHhhMDBhZTI3OCwKKwkweGQ3MGRkMmVlLCAweDRlMDQ4MzU0LCAweDM5MDNiM2MyLCAw
-eGE3NjcyNjYxLCAweGQwNjAxNmY3LAorCTB4NDk2OTQ3NGQsIDB4M2U2ZTc3ZGIsIDB4YWVkMTZh
-NGEsIDB4ZDlkNjVhZGMsIDB4NDBkZjBiNjYsCisJMHgzN2Q4M2JmMCwgMHhhOWJjYWU1MywgMHhk
-ZWJiOWVjNSwgMHg0N2IyY2Y3ZiwgMHgzMGI1ZmZlOSwKKwkweGJkYmRmMjFjLCAweGNhYmFjMjhh
-LCAweDUzYjM5MzMwLCAweDI0YjRhM2E2LCAweGJhZDAzNjA1LAorCTB4Y2RkNzA2OTMsIDB4NTRk
-ZTU3MjksIDB4MjNkOTY3YmYsIDB4YjM2NjdhMmUsIDB4YzQ2MTRhYjgsCisJMHg1ZDY4MWIwMiwg
-MHgyYTZmMmI5NCwgMHhiNDBiYmUzNywgMHhjMzBjOGVhMSwgMHg1YTA1ZGYxYiwKKwkweDJkMDJl
-ZjhkCit9OworCitzdGF0aWMgdTMyIHBhcnRpYWxfY3JjMzJfb25lKHU4IGMsIHUzMiBjcmMpCit7
-CisJcmV0dXJuIGNyY3RhYjMyWyhjcmMgXiBjKSAmIDB4ZmZdIF4gKGNyYyA+PiA4KTsKK30KKwor
-c3RhdGljIHUzMiBwYXJ0aWFsX2NyYzMyKGNvbnN0IHU4ICpzLCBpbnQgbGVuLCB1MzIgY3JjKQor
-eworCXdoaWxlIChsZW4tLSkKKwkJY3JjID0gcGFydGlhbF9jcmMzMl9vbmUoKnMrKywgY3JjKTsK
-KwlyZXR1cm4gY3JjOworfQorCiBzdGF0aWMgdm9pZCBkaWUoY29uc3QgY2hhciAqIHN0ciwgLi4u
-KQogewogCXZhX2xpc3QgYXJnczsKQEAgLTc0LDYgKzE0Myw3IEBAIGludCBtYWluKGludCBhcmdj
-LCBjaGFyICoqIGFyZ3YpCiAJRklMRSAqZmlsZTsKIAlpbnQgZmQ7CiAJdm9pZCAqa2VybmVsOwor
-CXUzMiBjcmMgPSAweGZmZmZmZmZmVUw7CiAKIAlpZiAoYXJnYyA+IDIgJiYgIXN0cmNtcChhcmd2
-WzFdLCAiLWIiKSkKIAkgIHsKQEAgLTE0NCw3ICsyMTQsOCBAQCBpbnQgbWFpbihpbnQgYXJnYywg
-Y2hhciAqKiBhcmd2KQogCWtlcm5lbCA9IG1tYXAoTlVMTCwgc3osIFBST1RfUkVBRCwgTUFQX1NI
-QVJFRCwgZmQsIDApOwogCWlmIChrZXJuZWwgPT0gTUFQX0ZBSUxFRCkKIAkJZGllKCJVbmFibGUg
-dG8gbW1hcCAnJXMnOiAlbSIsIGFyZ3ZbMl0pOwotCXN5c19zaXplID0gKHN6ICsgMTUpIC8gMTY7
-CisJLyogTnVtYmVyIG9mIDE2LWJ5dGUgcGFyYWdyYXBocywgaW5jbHVkaW5nIHNwYWNlIGZvciBh
-IDQtYnl0ZSBDUkMgKi8KKwlzeXNfc2l6ZSA9IChzeiArIDE1ICsgNCkgLyAxNjsKIAlpZiAoIWlz
-X2JpZ19rZXJuZWwgJiYgc3lzX3NpemUgPiBERUZfU1lTU0laRSkKIAkJZGllKCJTeXN0ZW0gaXMg
-dG9vIGJpZy4gVHJ5IHVzaW5nIGJ6SW1hZ2Ugb3IgbW9kdWxlcy4iKTsKIApAQCAtMTU1LDEyICsy
-MjYsMjcgQEAgaW50IG1haW4oaW50IGFyZ2MsIGNoYXIgKiogYXJndikKIAlidWZbMHgxZjZdID0g
-c3lzX3NpemUgPj4gMTY7CiAJYnVmWzB4MWY3XSA9IHN5c19zaXplID4+IDI0OwogCisJY3JjID0g
-cGFydGlhbF9jcmMzMihidWYsIGksIGNyYyk7CiAJaWYgKGZ3cml0ZShidWYsIDEsIGksIHN0ZG91
-dCkgIT0gaSkKIAkJZGllKCJXcml0aW5nIHNldHVwIGZhaWxlZCIpOwogCiAJLyogQ29weSB0aGUg
-a2VybmVsIGNvZGUgKi8KKwljcmMgPSBwYXJ0aWFsX2NyYzMyKGtlcm5lbCwgc3osIGNyYyk7CiAJ
-aWYgKGZ3cml0ZShrZXJuZWwsIDEsIHN6LCBzdGRvdXQpICE9IHN6KQogCQlkaWUoIldyaXRpbmcg
-a2VybmVsIGZhaWxlZCIpOworCisJLyogQWRkIHBhZGRpbmcgbGVhdmluZyA0IGJ5dGVzIGZvciB0
-aGUgY2hlY2tzdW0gKi8KKwl3aGlsZSAoc3orKyA8IChzeXNfc2l6ZSoxNikgLSA0KSB7CisJCWNy
-YyA9IHBhcnRpYWxfY3JjMzJfb25lKCdcMCcsIGNyYyk7CisJCWlmIChmd3JpdGUoIlwwIiwgMSwg
-MSwgc3Rkb3V0KSAhPSAxKQorCQkJZGllKCJXcml0aW5nIHBhZGRpbmcgZmFpbGVkIik7CisJfQor
-CisJLyogV3JpdGUgdGhlIENSQyAqLworCWZwcmludGYoc3RkZXJyLCAiQ1JDICVseFxuIiwgY3Jj
-KTsKKwlpZiAoZndyaXRlKCZjcmMsIDEsIDQsIHN0ZG91dCkgIT0gNCkKKwkJZGllKCJXcml0aW5n
-IENSQyBmYWlsZWQiKTsKKwogCWNsb3NlKGZkKTsKIAogCS8qIEV2ZXJ5dGhpbmcgaXMgT0sgKi8K
-ZGlmZiAtcnVOcCBsaW51eC0yLjYuMjQuNy9Eb2N1bWVudGF0aW9uL2kzODYvYm9vdC50eHQgbGlu
-dXgtMi42LjI0LjctbmV3L0RvY3VtZW50YXRpb24vaTM4Ni9ib290LnR4dAotLS0gbGludXgtMi42
-LjI0LjcvRG9jdW1lbnRhdGlvbi9pMzg2L2Jvb3QudHh0CTIwMDgtMDUtMDYgMTk6MjI6MzQuMDAw
-MDAwMDAwIC0wNDAwCisrKyBsaW51eC0yLjYuMjQuNy1uZXcvRG9jdW1lbnRhdGlvbi9pMzg2L2Jv
-b3QudHh0CTIwMDgtMDgtMTIgMTY6NTE6MTUuMDAwMDAwMDAwIC0wNDAwCkBAIC0xNzAsNiArMTcw
-LDggQEAgT2Zmc2V0CVByb3RvCU5hbWUJCU1lYW5pbmcKIDAyMzgvNAkyLjA2KwljbWRsaW5lX3Np
-emUJTWF4aW11bSBzaXplIG9mIHRoZSBrZXJuZWwgY29tbWFuZCBsaW5lCiAwMjNDLzQJMi4wNysJ
-aGFyZHdhcmVfc3ViYXJjaCBIYXJkd2FyZSBzdWJhcmNoaXRlY3R1cmUKIDAyNDAvOAkyLjA3Kwlo
-YXJkd2FyZV9zdWJhcmNoX2RhdGEgU3ViYXJjaGl0ZWN0dXJlLXNwZWNpZmljIGRhdGEKKzAyNDgv
-NAkyLjA4KwlwYXlsb2FkX29mZnNldAlPZmZzZXQgb2Yga2VybmVsIHBheWxvYWQKKzAyNEMvNAky
-LjA4KwlwYXlsb2FkX2xlbmd0aAlMZW5ndGggb2Yga2VybmVsIHBheWxvYWQKIAogKDEpIEZvciBi
-YWNrd2FyZHMgY29tcGF0aWJpbGl0eSwgaWYgdGhlIHNldHVwX3NlY3RzIGZpZWxkIGNvbnRhaW5z
-IDAsIHRoZQogICAgIHJlYWwgdmFsdWUgaXMgNC4KQEAgLTUxMiw2ICs1MTQsMzIgQEAgUHJvdG9j
-b2w6CTIuMDcrCiAKICAgQSBwb2ludGVyIHRvIGRhdGEgdGhhdCBpcyBzcGVjaWZpYyB0byBoYXJk
-d2FyZSBzdWJhcmNoCiAKK0ZpZWxkIG5hbWU6CXBheWxvYWRfb2Zmc2V0CitUeXBlOgkJcmVhZAor
-T2Zmc2V0L3NpemU6CTB4MjQ4LzQKK1Byb3RvY29sOgkyLjA4KworCisgIElmIG5vbi16ZXJvIHRo
-ZW4gdGhpcyBmaWVsZCBjb250YWlucyB0aGUgb2Zmc2V0IGZyb20gdGhlIGVuZCBvZiB0aGUKKyAg
-cmVhbC1tb2RlIGNvZGUgdG8gdGhlIHBheWxvYWQuCisKKyAgVGhlIHBheWxvYWQgbWF5IGJlIGNv
-bXByZXNzZWQuIFRoZSBmb3JtYXQgb2YgYm90aCB0aGUgY29tcHJlc3NlZCBhbmQKKyAgdW5jb21w
-cmVzc2VkIGRhdGEgc2hvdWxkIGJlIGRldGVybWluZWQgdXNpbmcgdGhlIHN0YW5kYXJkIG1hZ2lj
-CisgIG51bWJlcnMuIEN1cnJlbnRseSBvbmx5IGd6aXAgY29tcHJlc3NlZCBFTEYgaXMgdXNlZC4K
-KyAgCitGaWVsZCBuYW1lOglwYXlsb2FkX2xlbmd0aAorVHlwZToJCXJlYWQKK09mZnNldC9zaXpl
-OgkweDI0Yy80CitQcm90b2NvbDoJMi4wOCsKKworICBUaGUgbGVuZ3RoIG9mIHRoZSBwYXlsb2Fk
-LgorCisqKioqIFRIRSBJTUFHRSBDSEVDS1NVTQorCitGcm9tIGJvb3QgcHJvdG9jb2wgdmVyc2lv
-biAyLjA4IG9ud2FyZHMgdGhlIENSQy0zMiBpcyBjYWxjdWxhdGVkIG92ZXIKK3RoZSBlbnRpcmUg
-ZmlsZSB1c2luZyB0aGUgY2hhcmFjdGVyaXN0aWMgcG9seW5vbWlhbCAweDA0QzExREI3IGFuZCBh
-bgoraW5pdGlhbCByZW1haW5kZXIgb2YgMHhmZmZmZmZmZi4gIFRoZSBjaGVja3N1bSBpcyBhcHBl
-bmRlZCB0byB0aGUKK2ZpbGU7IHRoZXJlZm9yZSB0aGUgQ1JDIG9mIHRoZSBmaWxlIHVwIHRvIHRo
-ZSBsaW1pdCBzcGVjaWZpZWQgaW4gdGhlCitzeXNzaXplIGZpZWxkIG9mIHRoZSBoZWFkZXIgaXMg
-YWx3YXlzIDAuCiAKICoqKiogVEhFIEtFUk5FTCBDT01NQU5EIExJTkUKIAotLS0gYS9hcmNoL3g4
-Ni9NYWtlZmlsZV8zMgkyMDA4LTA1LTA2IDE5OjIyOjM0LjAwMDAwMDAwMCAtMDQwMAorKysgYi9h
-cmNoL3g4Ni9NYWtlZmlsZV8zMgkyMDA4LTA4LTEyIDE3OjU3OjE1LjAwMDAwMDAwMCAtMDQwMApA
-QCAtMzEsNyArMzEsNiBAQAogZW5kaWYKIAogTERGTEFHUwkJOj0gLW0gZWxmX2kzODYKLU9CSkNP
-UFlGTEFHUwk6PSAtTyBiaW5hcnkgLVIgLm5vdGUgLVIgLmNvbW1lbnQgLVMKIGlmZGVmIENPTkZJ
-R19SRUxPQ0FUQUJMRQogTERGTEFHU192bWxpbnV4IDo9IC0tZW1pdC1yZWxvY3MKIGVuZGlmCi0t
-LSBhL2FyY2gveDg2L2Jvb3QvTWFrZWZpbGUJMjAwOC0wOC0xMyAwMDo1Nzo0Ni4wMDAwMDAwMDAg
-LTA0MDAKKysrIGIvYXJjaC94ODYvYm9vdC9NYWtlZmlsZQkyMDA4LTA4LTEyIDE3OjU4OjM0LjAw
-MDAwMDAwMCAtMDQwMApAQCAtODAsNiArODAsNyBAQAogCSQoY2FsbCBpZl9jaGFuZ2VkLGltYWdl
-KQogCUBlY2hvICdLZXJuZWw6ICRAIGlzIHJlYWR5JyAnICgjJ2BjYXQgLnZlcnNpb25gJyknCiAK
-K09CSkNPUFlGTEFHU192bWxpbnV4LmJpbiA6PSAtTyBiaW5hcnkgLVIgLm5vdGUgLVIgLmNvbW1l
-bnQgLVMKICQob2JqKS92bWxpbnV4LmJpbjogJChvYmopL2NvbXByZXNzZWQvdm1saW51eCBGT1JD
-RQogCSQoY2FsbCBpZl9jaGFuZ2VkLG9iamNvcHkpCiAKQEAgLTEwNCw3ICsxMDUsNiBAQAogCSQo
-Y2FsbCBpZl9jaGFuZ2VkLGxkKQogCiBPQkpDT1BZRkxBR1Nfc2V0dXAuYmluCTo9IC1PIGJpbmFy
-eQotCiAkKG9iaikvc2V0dXAuYmluOiAkKG9iaikvc2V0dXAuZWxmIEZPUkNFCiAJJChjYWxsIGlm
-X2NoYW5nZWQsb2JqY29weSkKIAotLS0gYS9hcmNoL3g4Ni9ib290L2NvbXByZXNzZWQvTWFrZWZp
-bGVfMzIJMjAwOC0wNS0wNiAxOToyMjozNC4wMDAwMDAwMDAgLTA0MDAKKysrIGIvYXJjaC94ODYv
-Ym9vdC9jb21wcmVzc2VkL01ha2VmaWxlXzMyCTIwMDgtMDgtMTIgMTg6MDE6NTguMDAwMDAwMDAw
-IC0wNDAwCkBAIC0xMSw3ICsxMSw3IEBACiBMREZMQUdTX3ZtbGludXggOj0gLVQKIGhvc3Rwcm9n
-cy15CTo9IHJlbG9jcwogCi1LQlVJTERfQ0ZMQUdTICA6PSAtbTMyIC1EX19LRVJORUxfXyAkKExJ
-TlVYX0lOQ0xVREUpIC1PMiBcCitLQlVJTERfQ0ZMQUdTICA6PSAtbTMyIC1EX19LRVJORUxfXyAk
-KExJTlVYX0lOQ0xVREUpIC1JaW5jbHVkZS9hc20vbWFjaC1nZW5lcmljLyAtTzIgXAogCSAgIC1m
-bm8tc3RyaWN0LWFsaWFzaW5nIC1mUElDIFwKIAkgICAkKGNhbGwgY2Mtb3B0aW9uLC1mZnJlZXN0
-YW5kaW5nKSBcCiAJICAgJChjYWxsIGNjLW9wdGlvbiwtZm5vLXN0YWNrLXByb3RlY3RvcikKQEAg
-LTIxLDYgKzIxLDcgQEAKIAkkKGNhbGwgaWZfY2hhbmdlZCxsZCkKIAlAOgogCitPQkpDT1BZRkxB
-R1Nfdm1saW51eC5iaW4gOj0gLVIgLmNvbW1lbnQgLVMKICQob2JqKS92bWxpbnV4LmJpbjogdm1s
-aW51eCBGT1JDRQogCSQoY2FsbCBpZl9jaGFuZ2VkLG9iamNvcHkpCiAK
-------=_20080813091344_82472--
-
-
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
