@@ -1,109 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755803AbYHMIkc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756057AbYHMIlJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755803AbYHMIkc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Aug 2008 04:40:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753352AbYHMIjV
+	id S1756057AbYHMIlJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Aug 2008 04:41:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755261AbYHMIjZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Aug 2008 04:39:21 -0400
-Received: from smtp.nokia.com ([192.100.122.230]:37090 "EHLO
+	Wed, 13 Aug 2008 04:39:25 -0400
+Received: from smtp.nokia.com ([192.100.122.230]:37111 "EHLO
 	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753030AbYHMIjU (ORCPT
+	with ESMTP id S1754300AbYHMIjY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Aug 2008 04:39:20 -0400
+	Wed, 13 Aug 2008 04:39:24 -0400
 From: Artem Bityutskiy <dedekind@infradead.org>
 To: linux-kernel@vger.kernel.org
 Cc: Adrian Hunter <ext-adrian.hunter@nokia.com>,
        Zoltan Sogor <weth@inf.u-szeged.hu>, Christoph Hellwig <hch@lst.de>
-Subject: [PATCH] UBIFS: make ubifs_ro_mode() not inline
-Date: Wed, 13 Aug 2008 13:17:37 +0300
-Message-Id: <1218622675-28853-9-git-send-email-dedekind@infradead.org>
+Subject: [PATCH] UBIFS: fix budgeting request alignment in xattr code
+Date: Wed, 13 Aug 2008 13:17:55 +0300
+Message-Id: <1218622675-28853-27-git-send-email-dedekind@infradead.org>
 X-Mailer: git-send-email 1.5.4.1
 In-Reply-To: <1218622675-28853-1-git-send-email-dedekind@infradead.org>
 References: <1218622675-28853-1-git-send-email-dedekind@infradead.org>
-X-OriginalArrivalTime: 13 Aug 2008 08:39:03.0284 (UTC) FILETIME=[0A408340:01C8FD20]
+X-OriginalArrivalTime: 13 Aug 2008 08:39:04.0644 (UTC) FILETIME=[0B100840:01C8FD20]
 X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Adrian Hunter <ext-adrian.hunter@nokia.com>
+From: Zoltan Sogor <weth@inf.u-szeged.hu>
 
-We use ubifs_ro_mode() quite a lot, and not in fast-path, so
-there is no reason to blow the code up by having it inlined.
-Also, we usually want R/O mode change to be seen to other
-CPUs as soon as possible, so when we make this a function
-call, we will automatically have a memory barrier.
+Data length has to be aligned in the budgeting request. Code
+in xattr.c did not do this.
 
-Signed-off-by: Adrian Hunter <ext-adrian.hunter@nokia.com>
+Signed-off-by: Zoltan Sogor <weth@inf.u-szeged.hu>
 Signed-off-by: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
 ---
- fs/ubifs/io.c    |   14 ++++++++++++++
- fs/ubifs/misc.h  |   14 --------------
- fs/ubifs/ubifs.h |    1 +
- 3 files changed, 15 insertions(+), 14 deletions(-)
+ fs/ubifs/xattr.c |   10 +++++-----
+ 1 files changed, 5 insertions(+), 5 deletions(-)
 
-diff --git a/fs/ubifs/io.c b/fs/ubifs/io.c
-index 3374f91..054363f 100644
---- a/fs/ubifs/io.c
-+++ b/fs/ubifs/io.c
-@@ -54,6 +54,20 @@
- #include "ubifs.h"
+diff --git a/fs/ubifs/xattr.c b/fs/ubifs/xattr.c
+index 39e831d..6f493de 100644
+--- a/fs/ubifs/xattr.c
++++ b/fs/ubifs/xattr.c
+@@ -103,8 +103,8 @@ static int create_xattr(struct ubifs_info *c, struct inode *host,
+ 	struct inode *inode;
+ 	struct ubifs_inode *ui, *host_ui = ubifs_inode(host);
+ 	struct ubifs_budget_req req = { .new_ino = 1, .new_dent = 1,
+-				.new_ino_d = size, .dirtied_ino = 1,
+-				.dirtied_ino_d = ALIGN(host_ui->data_len, 8)};
++				.new_ino_d = ALIGN(size, 8), .dirtied_ino = 1,
++				.dirtied_ino_d = ALIGN(host_ui->data_len, 8) };
  
- /**
-+ * ubifs_ro_mode - switch UBIFS to read read-only mode.
-+ * @c: UBIFS file-system description object
-+ * @err: error code which is the reason of switching to R/O mode
-+ */
-+void ubifs_ro_mode(struct ubifs_info *c, int err)
-+{
-+	if (!c->ro_media) {
-+		c->ro_media = 1;
-+		ubifs_warn("switched to read-only mode, error %d", err);
-+		dbg_dump_stack();
-+	}
-+}
-+
-+/**
-  * ubifs_check_node - check node.
-  * @c: UBIFS file-system description object
-  * @buf: node to check
-diff --git a/fs/ubifs/misc.h b/fs/ubifs/misc.h
-index 4beccfc..cd83ffc 100644
---- a/fs/ubifs/misc.h
-+++ b/fs/ubifs/misc.h
-@@ -80,20 +80,6 @@ static inline struct ubifs_inode *ubifs_inode(const struct inode *inode)
- }
+ 	if (host_ui->xattr_cnt >= MAX_XATTRS_PER_INODE)
+ 		return -ENOSPC;
+@@ -200,7 +200,7 @@ static int change_xattr(struct ubifs_info *c, struct inode *host,
+ 	struct ubifs_inode *host_ui = ubifs_inode(host);
+ 	struct ubifs_inode *ui = ubifs_inode(inode);
+ 	struct ubifs_budget_req req = { .dirtied_ino = 2,
+-				.dirtied_ino_d = size + host_ui->data_len };
++		.dirtied_ino_d = ALIGN(size, 8) + ALIGN(host_ui->data_len, 8) };
  
- /**
-- * ubifs_ro_mode - switch UBIFS to read read-only mode.
-- * @c: UBIFS file-system description object
-- * @err: error code which is the reason of switching to R/O mode
-- */
--static inline void ubifs_ro_mode(struct ubifs_info *c, int err)
--{
--	if (!c->ro_media) {
--		c->ro_media = 1;
--		ubifs_warn("switched to read-only mode, error %d", err);
--		dbg_dump_stack();
--	}
--}
--
--/**
-  * ubifs_compr_present - check if compressor was compiled in.
-  * @compr_type: compressor type to check
-  *
-diff --git a/fs/ubifs/ubifs.h b/fs/ubifs/ubifs.h
-index e4f89f2..c488d43 100644
---- a/fs/ubifs/ubifs.h
-+++ b/fs/ubifs/ubifs.h
-@@ -1346,6 +1346,7 @@ extern struct backing_dev_info ubifs_backing_dev_info;
- extern struct ubifs_compressor *ubifs_compressors[UBIFS_COMPR_TYPES_CNT];
+ 	ubifs_assert(ui->data_len == inode->i_size);
+ 	err = ubifs_budget_space(c, &req);
+@@ -497,8 +497,8 @@ static int remove_xattr(struct ubifs_info *c, struct inode *host,
+ 	int err;
+ 	struct ubifs_inode *host_ui = ubifs_inode(host);
+ 	struct ubifs_inode *ui = ubifs_inode(inode);
+-	struct ubifs_budget_req req = { .dirtied_ino = 1, .mod_dent = 1,
+-					.dirtied_ino_d = host_ui->data_len };
++	struct ubifs_budget_req req = { .dirtied_ino = 2, .mod_dent = 1,
++				.dirtied_ino_d = ALIGN(host_ui->data_len, 8) };
  
- /* io.c */
-+void ubifs_ro_mode(struct ubifs_info *c, int err);
- int ubifs_wbuf_write_nolock(struct ubifs_wbuf *wbuf, void *buf, int len);
- int ubifs_wbuf_seek_nolock(struct ubifs_wbuf *wbuf, int lnum, int offs,
- 			   int dtype);
+ 	ubifs_assert(ui->data_len == inode->i_size);
+ 
 -- 
 1.5.4.1
 
