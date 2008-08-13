@@ -1,48 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755847AbYHMJhi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755558AbYHMJiz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755847AbYHMJhi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Aug 2008 05:37:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755179AbYHMJh2
+	id S1755558AbYHMJiz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Aug 2008 05:38:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752873AbYHMJip
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Aug 2008 05:37:28 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:46671 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754838AbYHMJh0 (ORCPT
+	Wed, 13 Aug 2008 05:38:45 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:56090 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752470AbYHMJio (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Aug 2008 05:37:26 -0400
-Date: Wed, 13 Aug 2008 10:20:17 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "Javeed Shaikh" <syscrash2k@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: TIOCGWINSZ retuns old pty size after receiving SIGWINCH
-Message-ID: <20080813102017.5f5a579b@lxorguk.ukuu.org.uk>
-In-Reply-To: <12e8e7240808121658r3f7fb75cre6fb258959742ea3@mail.gmail.com>
-References: <12e8e7240808111951o19afce35h48b693a618bd6120@mail.gmail.com>
-	<12e8e7240808112103m21659d4fg3f30a139ae493473@mail.gmail.com>
-	<12e8e7240808121658r3f7fb75cre6fb258959742ea3@mail.gmail.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 13 Aug 2008 05:38:44 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <48A2AB8E.1090102@s5r6.in-berlin.de>
+Date: Wed, 13 Aug 2008 11:38:22 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.16) Gecko/20080722 SeaMonkey/1.1.11
+MIME-Version: 1.0
+To: Grant Grundler <grundler@google.com>
+CC: linux1394-devel@lists.sourceforge.net,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] firewire: fw-sbp2: enforce s/g segment size limit
+References: <489CB8D8.60908@s5r6.in-berlin.de>	 <20080809063159F.fujita.tomonori@lab.ntt.co.jp>	 <489CC17F.7000208@s5r6.in-berlin.de>	 <20080809071744I.fujita.tomonori@lab.ntt.co.jp>	 <tkrat.8f7aa8cea95d423b@s5r6.in-berlin.de>	 <tkrat.fa7d9c31f0c263fb@s5r6.in-berlin.de> <da824cf30808111252m1decf08fk7ce3405105e1ceef@mail.gmail.com>
+In-Reply-To: <da824cf30808111252m1decf08fk7ce3405105e1ceef@mail.gmail.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 12 Aug 2008 19:58:20 -0400
-"Javeed Shaikh" <syscrash2k@gmail.com> wrote:
+Grant Grundler wrote:
+> On Sat, Aug 9, 2008 at 11:21 AM, Stefan Richter
+>> -                       orb->page_table[j].low = cpu_to_be32(sg_addr);
+>> -                       orb->page_table[j].high = cpu_to_be32(l << 16);
+> 
+> I didn't check the rest of the driver - but it would be good if it
+> explicitly called dma_set_mask() or  pci_dma_set_mask() with a 32-bit
+> mask value. Most drivers assume 32-bit and that's why I point this
+> out.
 
-> I appear to have fixed it.
+I thought about this and currently think that I should not do this. 
+There is the API to set the mask, but there is no API to _decrease_ the 
+mask only.  The SBP-2 protocol driver should not set DMA_32BIT_MASK if 
+any other driver already set for example DMA_31BIT_MASK for whatever reason.
 
-You've moved the race.
+For now, this is no issue.  FireWire low-level drivers exist only for 
+controllers with 32 bit local bus addressing capability.  I am sure that 
+somebody will remember to modify the SBP-2 driver(s) if there will ever 
+be a controller type and a driver for it which can address more than 4 GB.
 
-> It seems that SIGWINCH was being fired off before the tty's size was
-> updated, as Ico hypothesized.
-
-There is what I believe to be a correct fix in the -next tree. It is a
-bit invasive for 2.6.27 given we are in the -rc tree but I could push the
-relevant pieces if the problem justifies the risk
-
-Alan
+On the other hand, we also currently have no reason to set a smaller 
+mask.  We recently discovered a chip bug which requires DMA_31BIT_MASK 
+for a special mode of data reception (only for cache-coherent DMA 
+though), but we now work around this chip bug by simply falling back to 
+an alternative mode.
+-- 
+Stefan Richter
+-=====-==--- =--- -==-=
+http://arcgraph.de/sr/
