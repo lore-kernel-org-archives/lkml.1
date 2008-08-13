@@ -1,30 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755617AbYHMA3p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753301AbYHMA33@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755617AbYHMA3p (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Aug 2008 20:29:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754758AbYHMA0u
+	id S1753301AbYHMA33 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Aug 2008 20:29:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754735AbYHMA0s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Aug 2008 20:26:50 -0400
+	Tue, 12 Aug 2008 20:26:48 -0400
 Received: from wf-out-1314.google.com ([209.85.200.169]:49095 "EHLO
 	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754746AbYHMA0t (ORCPT
+	with ESMTP id S1754711AbYHMA0r (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Aug 2008 20:26:49 -0400
+	Tue, 12 Aug 2008 20:26:47 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=subject:from:to:cc:content-type:date:message-id:mime-version
          :x-mailer:content-transfer-encoding;
-        b=VocxPRiVAZc6v7ckkkjdrkl1ekpSkytM9Gu+lRyDHtDP2IN52Qcgr6zlDx2tQa3tvh
-         sQ+20Sfs2OzYSTkceT1Ztw8mCk0hfcdho1LK9ZDzghDjtEoIduXeNnWzbzzv86/zGBB9
-         fK6pQiqGFEsFLojmh2CV6gZqyepzUZd3U4YBg=
-Subject: [PATCH 10/22] m68k: use the new byteorder headers
+        b=m/eaZxj5Xf9oFIm9IbXRBhbuQM1nVeElPH7GMeuJHF3MDoDzCN7s1GjCZ5cPopE/5P
+         vHw1Y2ZDqI2KS8tBBWqOqbGgyZTY5MymXhFGtM9vZwob4LUk0qhmbFQs95jTReQ48NSM
+         b0SZqn66a3n41nDBWJCK1pVhwzH8CpdMfxSIg=
+Subject: [PATCH 09/22] m32r: use the new byteorder headers
 From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>
 Content-Type: text/plain
-Date: Tue, 12 Aug 2008 17:26:40 -0700
-Message-Id: <1218587200.30194.83.camel@brick>
+Date: Tue, 12 Aug 2008 17:26:39 -0700
+Message-Id: <1218587199.30194.82.camel@brick>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
@@ -36,41 +35,37 @@ Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
 ---
 The prerequisite patches have landed in Linus' tree now.
 
- include/asm-m68k/byteorder.h |   16 +++++-----------
- 1 files changed, 5 insertions(+), 11 deletions(-)
+ include/asm-m32r/byteorder.h |   15 ++++++---------
+ 1 files changed, 6 insertions(+), 9 deletions(-)
 
-diff --git a/include/asm-m68k/byteorder.h b/include/asm-m68k/byteorder.h
-index 81d420b..b354acd 100644
---- a/include/asm-m68k/byteorder.h
-+++ b/include/asm-m68k/byteorder.h
-@@ -4,22 +4,16 @@
- #include <asm/types.h>
- #include <linux/compiler.h>
+diff --git a/include/asm-m32r/byteorder.h b/include/asm-m32r/byteorder.h
+index 10b2c1d..a99896f 100644
+--- a/include/asm-m32r/byteorder.h
++++ b/include/asm-m32r/byteorder.h
+@@ -1,17 +1,14 @@
+ #ifndef _ASM_M32R_BYTEORDER_H
+ #define _ASM_M32R_BYTEORDER_H
  
--#ifdef __GNUC__
-+#define __BIG_ENDIAN
-+#define __SWAB_64_THRU_32__
- 
--static __inline__ __attribute_const__ __u32 ___arch__swab32(__u32 val)
-+static inline __attribute_const__ __u32 __arch_swab32(__u32 val)
- {
- 	__asm__("rolw #8,%0; swap %0; rolw #8,%0" : "=d" (val) : "0" (val));
- 	return val;
- }
--#define __arch__swab32(x) ___arch__swab32(x)
-+#define __arch_swab32 __arch_swab32
- 
--#endif
+-#include <asm/types.h>
 -
--#if defined(__GNUC__) && !defined(__STRICT_ANSI__) || defined(__KERNEL__)
+-#if !defined(__STRICT_ANSI__) || defined(__KERNEL__)
 -#  define __BYTEORDER_HAS_U64__
 -#  define __SWAB_64_THRU_32__
 -#endif
 -
--#include <linux/byteorder/big_endian.h>
-+#include <linux/byteorder.h>
+ #if defined(__LITTLE_ENDIAN__)
+-#  include <linux/byteorder/little_endian.h>
++# define __LITTLE_ENDIAN
+ #else
+-#  include <linux/byteorder/big_endian.h>
++# define __BIG_ENDIAN
+ #endif
  
- #endif /* _M68K_BYTEORDER_H */
++#define __SWAB_64_THRU_32__
++
++#include <linux/byteorder.h>
++
+ #endif /* _ASM_M32R_BYTEORDER_H */
 -- 
 1.6.0.rc2.233.g3cb9d
 
