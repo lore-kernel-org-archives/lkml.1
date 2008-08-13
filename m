@@ -1,50 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757835AbYHMSmp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752672AbYHMSnD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757835AbYHMSmp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Aug 2008 14:42:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752403AbYHMSmJ
+	id S1752672AbYHMSnD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Aug 2008 14:43:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757673AbYHMSmc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Aug 2008 14:42:09 -0400
-Received: from mga11.intel.com ([192.55.52.93]:62295 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751763AbYHMSmI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Aug 2008 14:42:08 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.32,202,1217833200"; 
-   d="scan'208";a="606510938"
-Message-Id: <20080813183857.246823000@linux-os.sc.intel.com>
-References: <20080813183856.964126000@linux-os.sc.intel.com>
-User-Agent: quilt/0.46-1
-Date: Wed, 13 Aug 2008 11:38:15 -0700
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-To: mingo@elte.hu, hpa@zytor.com, tglx@linutronix.de
-Cc: linux-kernel@vger.kernel.org, Suresh Siddha <suresh.b.siddha@intel.com>
-Subject: [patch 3/3] x86, xsave: use BUG_ON() instead of BUILD_BUG_ON()
-Content-Disposition: inline; filename=modify_build_bug_on.patch
+	Wed, 13 Aug 2008 14:42:32 -0400
+Received: from casper.infradead.org ([85.118.1.10]:51166 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757654AbYHMSmb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Aug 2008 14:42:31 -0400
+Date: Wed, 13 Aug 2008 11:42:29 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Mark Langsdorf <mark.langsdorf@amd.com>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH](retry 2) Re: invalidate caches before going into
+ suspend
+Message-ID: <20080813114229.118be446@infradead.org>
+In-Reply-To: <200808131333.17850.mark.langsdorf@amd.com>
+References: <200808131141.18003.mark.langsdorf@amd.com>
+	<200808131230.07581.mark.langsdorf@amd.com>
+	<20080813175232.GA1127@elte.hu>
+	<200808131333.17850.mark.langsdorf@amd.com>
+Organization: Intel
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-All these structure sizes are runtime determined. So use a runtime
-bug check.
+On Wed, 13 Aug 2008 13:33:17 -0500
+Mark Langsdorf <mark.langsdorf@amd.com> wrote:
+> +	/* mask all interrupts, flush any and all caches, and halt */
+> +	if (cpu_has_clflush)
+> +		wbinvd_halt();
+> +	else
+> +		while (1)
+> +			halt();
+>  }
 
-Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
----
-
-Index: tip/arch/x86/kernel/xsave.c
-===================================================================
---- tip.orig/arch/x86/kernel/xsave.c	2008-08-11 15:44:33.000000000 -0700
-+++ tip/arch/x86/kernel/xsave.c	2008-08-11 15:45:09.000000000 -0700
-@@ -82,8 +82,7 @@
- 	if (!access_ok(VERIFY_WRITE, buf, sig_xstate_size))
- 		return -EACCES;
- 
--	BUILD_BUG_ON(sizeof(struct user_i387_struct) !=
--			sizeof(tsk->thread.xstate->fxsave));
-+	BUG_ON(sig_xstate_size < xstate_size);
- 
- 	if ((unsigned long)buf % 64)
- 		printk("save_i387_xstate: bad fpstate %p\n", buf);
+I like the asm version .. but this code makes me blink.
+when you HAVE clflush you do wbinvd.
+yeah I know it's correct but... it reads wonky ;)
+also.. can we move that check into the wbinvd_halt() itself, so that
+the callers don't need to care what is used to select it ?
 
 -- 
-
+If you want to reach me at my work email, use arjan@linux.intel.com
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
