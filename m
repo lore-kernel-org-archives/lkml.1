@@ -1,48 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755683AbYHMWVQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756102AbYHMWYc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755683AbYHMWVQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Aug 2008 18:21:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753258AbYHMWVA
+	id S1756102AbYHMWYc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Aug 2008 18:24:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752894AbYHMWYY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Aug 2008 18:21:00 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:39587 "EHLO smtp5.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752237AbYHMWU7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Aug 2008 18:20:59 -0400
-Date: Thu, 14 Aug 2008 01:19:07 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, chris@zankel.net
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [2.6 patch] xtensa: remove dead CONFIG_BLK_DEV_IDE code
-Message-ID: <20080813221907.GE7071@cs181140183.pp.htv.fi>
+	Wed, 13 Aug 2008 18:24:24 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:36725 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751654AbYHMWYX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Aug 2008 18:24:23 -0400
+Date: Wed, 13 Aug 2008 15:24:15 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.27-rc3
+In-Reply-To: <20080813110316.1d9af655@lxorguk.ukuu.org.uk>
+Message-ID: <alpine.LFD.1.10.0808131522330.3462@nehalem.linux-foundation.org>
+References: <alpine.LFD.1.10.0808121914270.3462@nehalem.linux-foundation.org> <20080813110316.1d9af655@lxorguk.ukuu.org.uk>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I don't know why this was there, but it was dead code.
 
-Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
----
-f2db4adb7a7f8fc0ea216fbc2d38a0c3802894ab 
-diff --git a/arch/xtensa/kernel/setup.c b/arch/xtensa/kernel/setup.c
-index a00359e..9606d2b 100644
---- a/arch/xtensa/kernel/setup.c
-+++ b/arch/xtensa/kernel/setup.c
-@@ -53,11 +53,6 @@ extern struct fd_ops no_fd_ops;
- struct fd_ops *fd_ops;
- #endif
- 
--#if defined(CONFIG_BLK_DEV_IDE) || defined(CONFIG_BLK_DEV_IDE_MODULE)
--extern struct ide_ops no_ide_ops;
--struct ide_ops *ide_ops;
--#endif
--
- extern struct rtc_ops no_rtc_ops;
- struct rtc_ops *rtc_ops;
- 
+On Wed, 13 Aug 2008, Alan Cox wrote:
+>
+> (If it looks ok let me know .. it'll also apply for testing versus -rc but
+>  wants a final polish in that form)
 
+Looks ok. It's biggish, but looks pretty straightforward, and a fair chunk 
+of it seems to be the comment changes/additions. So send some final 
+version over when the polish is done..
+
+		Linus
