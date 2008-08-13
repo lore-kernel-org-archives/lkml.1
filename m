@@ -1,61 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756057AbYHMONz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756545AbYHMOPA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756057AbYHMONz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Aug 2008 10:13:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752817AbYHMONk
+	id S1756545AbYHMOPA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Aug 2008 10:15:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756232AbYHMOOc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Aug 2008 10:13:40 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:36454 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752580AbYHMONj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Aug 2008 10:13:39 -0400
-Date: Wed, 13 Aug 2008 16:12:50 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Martin Bligh <mbligh@google.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Yinghai Lu <yhlu.kernel@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-acpi@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: Panic on boot for x86_64
-Message-ID: <20080813141250.GB19397@elte.hu>
-References: <33307c790808121251t79af0fajf44cebffa8938051@mail.gmail.com> <20080812131045.b89e98b1.akpm@linux-foundation.org> <86802c440808121313x26e46c00m9ec6cd73b3bdbf22@mail.gmail.com> <200808122223.29022.rjw@sisk.pl> <33307c790808121647j4feef841i23638dba40197648@mail.gmail.com>
+	Wed, 13 Aug 2008 10:14:32 -0400
+Received: from wa-out-1112.google.com ([209.85.146.179]:5123 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756210AbYHMOOb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Aug 2008 10:14:31 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=q4KX6Uo1LwNYbw2Uw7TKxyhDENOf0GEkCpekKutAJ+u65gN5C/S3G1q8Y865xJEna2
+         CEtHJl3VAyGQLQ1ZxpVGnVFu+hqk50YhgcfdRmiY1dfo/Ta11+CD69gsTDM1lKDe+NWf
+         JmHlwPYagaaV+qXVBbRBIuAJYxB35vEGFR9qs=
+Message-ID: <2f11576a0808130714k2cd031c4nd6eea3506831cac9@mail.gmail.com>
+Date: Wed, 13 Aug 2008 23:14:30 +0900
+From: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>
+To: "Christoph Lameter" <cl@linux-foundation.org>
+Subject: Re: No, really, stop trying to delete slab until you've finished making slub perform as well
+Cc: "Matthew Wilcox" <matthew@wil.cx>, "Pekka Enberg" <penberg@cs.helsinki.fi>,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, "Mel Gorman" <mel@skynet.ie>,
+       andi@firstfloor.org, "Rik van Riel" <riel@redhat.com>
+In-Reply-To: <48A2DD2C.3090602@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <33307c790808121647j4feef841i23638dba40197648@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+References: <20080805210125.A897.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	 <48986AC6.5030406@linux-foundation.org>
+	 <20080813194222.E77F.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	 <48A2DD2C.3090602@linux-foundation.org>
+X-Google-Sender-Auth: 30ae8c6dae6363e6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+>> :t-0000128               28739     128     1.3G  20984/20984/8  512 0  99   0 *
+>
+> Argh. Most slabs contain a single object. Probably due to the conflict resolution.
 
-* Martin Bligh <mbligh@google.com> wrote:
+agreed with the issue exist in lock contention code.
 
-> >> please try tip/master, or wait a while after linus pull fix from tip x86 fix.
-> >
-> > The fix is in the mainline already.
-> 
-> Still looks broken to me (rc2-git5)
-> 
-> http://test.kernel.org/results/IBM/188946/debug/console
-> 
-> It got in since yesterday?
 
-make sure you've got:
+> The obvious fix is to avoid allocating another slab on conflict but how will
+> this impact performance?
+>
+>
+> Index: linux-2.6/mm/slub.c
+> ===================================================================
+> --- linux-2.6.orig/mm/slub.c    2008-08-13 08:06:00.000000000 -0500
+> +++ linux-2.6/mm/slub.c 2008-08-13 08:07:59.000000000 -0500
+> @@ -1253,13 +1253,11 @@
+>  static inline int lock_and_freeze_slab(struct kmem_cache_node *n,
+>                                                        struct page *page)
+>  {
+> -       if (slab_trylock(page)) {
+> -               list_del(&page->lru);
+> -               n->nr_partial--;
+> -               __SetPageSlubFrozen(page);
+> -               return 1;
+> -       }
+> -       return 0;
+> +       slab_lock(page);
+> +       list_del(&page->lru);
+> +       n->nr_partial--;
+> +       __SetPageSlubFrozen(page);
+> +       return 1;
+>  }
 
-| commit 3c7569b284e1be55d086b61a70d9f545326f6d74
-| Author: Eric W. Biederman <ebiederm@xmission.com>
-| Date:   Sun Aug 10 00:35:50 2008 -0700
-|
-|    x86_64: restore the proper NR_IRQS define so larger systems work.
+I don't mesure it yet. I don't like this patch.
+maybe, it decrease other typical benchmark.
 
-is it still broken even with that applied?
+So, I think better way is
 
-	Ingo
+1. slab_trylock(), if success goto 10.
+2. check fragmentation ratio, if low goto 10
+3. slab_lock()
+10. return func
+
+I think this way doesn't cause performance regression.
+because high fragmentation cause defrag and compaction lately.
+So, prevent fragmentation often increase performance.
+
+Thought?
