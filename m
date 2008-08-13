@@ -1,143 +1,232 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753642AbYHLX6a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754580AbYHMAAg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753642AbYHLX6a (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Aug 2008 19:58:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752380AbYHLX6V
+	id S1754580AbYHMAAg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Aug 2008 20:00:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752668AbYHMAAQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Aug 2008 19:58:21 -0400
-Received: from rv-out-0506.google.com ([209.85.198.229]:34094 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751860AbYHLX6U (ORCPT
+	Tue, 12 Aug 2008 20:00:16 -0400
+Received: from web82108.mail.mud.yahoo.com ([209.191.84.221]:39691 "HELO
+	web82108.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752623AbYHMAAN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Aug 2008 19:58:20 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=PBvDhMVuBfmSaYW+IkRmLaYbQyIjol0yX00IRkyh1eyCd8pjxkureqEidsqSUX03Cn
-         oAIfkRu7kHxxvsv3LLICpndyABWfA2QbwA65MLFpjuuucbdry7Hbvw44rNOFsOJin9cW
-         cnwByAIYUrhpNTA1GyBJZovmk5ZzAOmVf3o38=
-Message-ID: <12e8e7240808121658r3f7fb75cre6fb258959742ea3@mail.gmail.com>
-Date: Tue, 12 Aug 2008 19:58:20 -0400
-From: "Javeed Shaikh" <syscrash2k@gmail.com>
+	Tue, 12 Aug 2008 20:00:13 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=sbcglobal.net;
+  h=Received:X-Mailer:Date:From:Subject:To:Cc:MIME-Version:Content-Type:Message-ID;
+  b=5tsYuhG1sOB/DimAzUUZPH9ep8N3vDSwPUlq5b+Yc6UNimQxglzBmqt+v/jqZ35/9lzTIwEe8wMiPN3U0ViYGMRjSmBmpNcH5UnQyMpuT1EYMOpVUlmFgrs/XAqW9qgPDjG4bFAC2dPFHFrPEXMf6cP+CVyUbP/1hVeMkBpn1UA=;
+X-Mailer: YahooMailRC/1042.40 YahooMailWebService/0.7.218
+Date: Tue, 12 Aug 2008 17:00:10 -0700 (PDT)
+From: David Witbrodt <dawitbro@sbcglobal.net>
+Subject: Re: HPET regression in 2.6.26 versus 2.6.25 -- experimental revert for 2.6.27 failed
 To: linux-kernel@vger.kernel.org
-Subject: Re: TIOCGWINSZ retuns old pty size after receiving SIGWINCH
-In-Reply-To: <12e8e7240808112103m21659d4fg3f30a139ae493473@mail.gmail.com>
+Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       Yinghai Lu <yhlu.kernel@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       netdev <netdev@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <12e8e7240808111951o19afce35h48b693a618bd6120@mail.gmail.com>
-	 <12e8e7240808112103m21659d4fg3f30a139ae493473@mail.gmail.com>
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <940473.79639.qm@web82108.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I appear to have fixed it.
+SUMMARY
 
-It seems that SIGWINCH was being fired off before the tty's size was
-updated, as Ico hypothesized.
+1.  Ran 'git remote update', then built kernels for origin/master
+(Linus' linux-2.6 tree) and tip/master.  Both froze.
 
-The patch follows.
-Please comment!
+2.  Attempted a revert against tip/master, but the files involved
+changed quite a bit.  I _was_ able to build the kernel successfully,
+but it froze.  There have simply been too many changes since Feb. 22
+for my naive approach to work.
 
-diff --git a/drivers/char/tty_io.c b/drivers/char/tty_io.c
-index 7501310..8e2fa3c 100644
---- a/drivers/char/tty_io.c
-+++ b/drivers/char/tty_io.c
-@@ -3021,6 +3021,9 @@ static int tiocswinsz(struct tty_struct *tty,
-struct tty_struct *real_tty,
- 	rpgrp = get_pid(real_tty->pgrp);
- 	spin_unlock_irqrestore(&tty->ctrl_lock, flags);
+3.  When the revert failed, I panicked:  I thought that I might
+truly have made a mistake with the original 'git bisect' process
+I carried out.  After retracing the last few iterations of the
+process -- building and checking the last 3 kernels -- I found
+that the information I posted here WAS correct:  the problem
+commit # was the one I had found the first time.
 
-+	tty->winsize = tmp_ws;
-+	real_tty->winsize = tmp_ws;
+4.  To see if I am totally incompetent, I used git to checkout the
+version of the sources at the problem commit, and then reverted
+those changes (same method used in step 2).  The kernel built
+and ran just fine:  no freeze, no need for "hpet=disabled".
+
+
+DETAILS
+
+Here is some git output showing the changes I made.  My approach was
+extremely naive, but since I have very little or no understanding of
+the code itself, no other approach was possible for me:
+
+====== BEGIN git OUTPUT ==========
+
+$ git show
+commit e10eb6518a3a08598344d477137cbdd25e85571d
+Merge: b4141ac... 45fc3c4...
+Author: Ingo Molnar <mingo@elte.hu>
+Date:   Tue Aug 12 19:43:39 2008 +0200
+
+    Merge branch 'linus'
+
+$ git diff
+diff --git a/arch/x86/kernel/e820.c b/arch/x86/kernel/e820.c
+index 9af8907..131d6f7 100644
+--- a/arch/x86/kernel/e820.c
++++ b/arch/x86/kernel/e820.c
+@@ -1267,7 +1267,9 @@ static inline const char *e820_type_to_string(int e820_type)
+ /*
+  * Mark e820 reserved areas as busy for the resource manager.
+  */
+-void __init e820_reserve_resources(void)
++/* void __init e820_reserve_resources(void) */
++void __init e820_reserve_resources(struct resource *code_resource,
++        struct resource *data_resource, struct resource *bss_resource)
+ {
+     int i;
+     struct resource *res;
+@@ -1287,7 +1289,22 @@ void __init e820_reserve_resources(void)
+         res->end = end;
+ 
+         res->flags = IORESOURCE_MEM | IORESOURCE_BUSY;
+-        insert_resource(&iomem_resource, res);
++        request_resource(&iomem_resource, res);
++        if (e820.map[i].type == E820_RAM) {
++            /*
++             * We don't know which RAM region contains kernel data,
++             * so we try it repeatedly and let the resource manager
++             * test it.
++             */
++            request_resource(res, code_resource);
++            request_resource(res, data_resource);
++            request_resource(res, bss_resource);
++#ifdef CONFIG_KEXEC
++            if (crashk_res.start != crashk_res.end)
++                request_resource(res, &crashk_res);
++#endif
++        }
++        /* insert_resource(&iomem_resource, res); */
+         res++;
+     }
+ 
+diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
+index 59f07e1..5972d13 100644
+--- a/arch/x86/kernel/setup.c
++++ b/arch/x86/kernel/setup.c
+@@ -517,7 +517,7 @@ static void __init reserve_crashkernel(void)
+ 
+     crashk_res.start = crash_base;
+     crashk_res.end   = crash_base + crash_size - 1;
+-    insert_resource(&iomem_resource, &crashk_res);
++    /* insert_resource(&iomem_resource, &crashk_res); */
+ }
+ #else
+ static void __init reserve_crashkernel(void)
+@@ -700,9 +700,9 @@ void __init setup_arch(char **cmdline_p)
+ #endif
+ 
+     /* after parse_early_param, so could debug it */
+-    insert_resource(&iomem_resource, &code_resource);
+-    insert_resource(&iomem_resource, &data_resource);
+-    insert_resource(&iomem_resource, &bss_resource);
++    /* insert_resource(&iomem_resource, &code_resource); */
++    /* insert_resource(&iomem_resource, &data_resource); */
++    /* insert_resource(&iomem_resource, &bss_resource); */
+ 
+     if (efi_enabled)
+         efi_init();
+@@ -865,7 +865,7 @@ void __init setup_arch(char **cmdline_p)
+ 
+     kvm_guest_init();
+ 
+-    e820_reserve_resources();
++    e820_reserve_resources(&code_resource, &data_resource, &bss_resource);
+     e820_mark_nosave_regions(max_low_pfn);
+ 
+ #ifdef CONFIG_X86_32
+diff --git a/include/asm-x86/e820.h b/include/asm-x86/e820.h
+index f52daf1..57f0c67 100644
+--- a/include/asm-x86/e820.h
++++ b/include/asm-x86/e820.h
+@@ -47,6 +47,8 @@
+ /* reserved RAM used by kernel itself */
+ #define E820_RESERVED_KERN        128
+ 
++#include <linux/ioport.h>
 +
- 	if (pgrp)
- 		kill_pgrp(pgrp, SIGWINCH, 1);
- 	if (rpgrp != pgrp && rpgrp)
-@@ -3029,8 +3032,6 @@ static int tiocswinsz(struct tty_struct *tty,
-struct tty_struct *real_tty,
- 	put_pid(pgrp);
- 	put_pid(rpgrp);
+ #ifndef __ASSEMBLY__
+ struct e820entry {
+     __u64 addr;    /* start of memory segment */
+@@ -120,7 +122,8 @@ extern void e820_register_active_regions(int nid, unsigned long start_pfn,
+                      unsigned long end_pfn);
+ extern u64 e820_hole_size(u64 start, u64 end);
+ extern void finish_e820_parsing(void);
+-extern void e820_reserve_resources(void);
++extern void e820_reserve_resources(struct resource *code_resource,
++        struct resource *data_resource, struct resource *bss_resource);
+ extern void setup_memory_map(void);
+ extern char *default_machine_specific_memory_setup(void);
+ extern char *machine_specific_memory_setup(void);
+====== END git OUTPUT ==========
 
--	tty->winsize = tmp_ws;
--	real_tty->winsize = tmp_ws;
- done:
- 	mutex_unlock(&tty->termios_mutex);
- 	return 0;
+
+The #include of linux/ioport.h was not part of the problem commit, but
+the changes since Feb. 22 were such that I was forced to add that line
+myself to make it possible to build.
+
+In many cases the lines near the changes in this attempted revert were
+quite different from those in the diff from the problem commit, so there
+was very little chance for me to succeed, I suspect.
 
 
-On Tue, Aug 12, 2008 at 12:03 AM, Javeed Shaikh <syscrash2k@gmail.com> wrote:
-> I spoke too soon. The problem still exists with my workaround on the
-> latest git kernel,
-> but it seems to be harder to reproduce.
->
-> On Mon, Aug 11, 2008 at 10:51 PM, Javeed Shaikh <syscrash2k@gmail.com> wrote:
->> Ico Doornekamp wrote:
->>> Hello,
->>>
->>> Recently my X terminals showed annoying behaviour where the application
->>> in the terminal was not resized properly to the actual size of the X
->>> terminal emulator window, resulting in a lot of misaligned text on the
->>> screen. Hunting the issue down from the windowmanager and the terminal
->>> emulator program, I suspect the problem might lie in the kernel. I'm
->>> running 2.6.26 on a dual core i386.
->>>
->>> What I see is this: the userspace application receives a SIGWINCH signal
->>> and acquires the terminal size usign the TIOCGWINSZ ioctl. It seems that
->>> in some cases the old instead of the new terminal size is returned.
->>> A small delay before the ioctl seems to 'fix' this behaviour.
->>>
->>> I noticed some changes involving locking in the the pty code in the last
->>> kernel verions, could one of these changes cause the above behaviour ? If
->>> so, wouldn't this affect much more users ?
->>>
->>> Ico
->>
->> Hi,
->>
->> I've been experiencing similar issues.
->> Here's a screenshot: http://omploader.org/vbzA1 .
->> Note how emacs is only taking up half of the terminal's total height.
->>
->> However, my diagnostics are different from yours. Sending SIGWINCH
->> (in this case, to emacs) fixes the issue, at least temporarily. However,
->> sending SIGWINCH to the shell process under which emacs is running
->> (using a negative PID, to specify the "process group") has no visible effect.
->> I believe the issue has to do with sending SIGWINCH to process groups,
->> though I do not have enough experience in this area to be sure.
->>
->> git-bisect tracked it down to this:
->> 46151122e0a2e80e5a6b2889f595e371fe2b600d is first bad commit
->> commit 46151122e0a2e80e5a6b2889f595e371fe2b600d
->> Author: Mike Galbraith <efault@gmx.de>
->> Date:   Thu May 8 17:00:42 2008 +0200
->>
->>    sched: fix weight calculations
->>
->> Starting at v2.6.26, I wasn't able to easily revert the commit. However,
->> the following "patch" seems to have alleviated the problem.
->>
->> === begin patch ===
->> diff --git a/kernel/sched_features.h b/kernel/sched_features.h
->> index 1c7283c..0e269ed 100644
->> --- a/kernel/sched_features.h
->> +++ b/kernel/sched_features.h
->> @@ -1,4 +1,4 @@
->> -SCHED_FEAT(NEW_FAIR_SLEEPERS, 1)
->> +SCHED_FEAT(NEW_FAIR_SLEEPERS, 0)
->>  SCHED_FEAT(WAKEUP_PREEMPT, 1)
->>  SCHED_FEAT(START_DEBIT, 1)
->>  SCHED_FEAT(AFFINE_WAKEUPS, 1)
->> === end patch ===
->>
->> This is merely a workaround, however.
->>
->> I was able to easily revert commit 46151122e0a2e80e5a6b2889f595e371fe2b600d on
->> the latest git version of the kernel. However, it did not alleviate the problem.
->>
->> As in v2.6.26, the above patch (disabling NEW_FAIR_SLEEPERS) seems to work well.
->>
->
+For my own peace of mind, I went back to the bisecting to verify that the
+commit I have previously identified was really correct.  Results:
+
+==========
+$ git checkout 1e934dda0c77c8ad13fdda02074f2cfcea118a56
+Previous HEAD position was e10eb65... Merge branch 'linus'
+Checking out files: 100% (17901/17901), done.
+HEAD is now at 1e934dd... x86: insert_resorce for lapic addr after e820_reserve_resources
+
+$ git bisect start
+$ git bisect bad
+$ git checkout 322850af8d93735f67b8ebf84bb1350639be3f34
+Previous HEAD position was 1e934dd... x86: insert_resorce for lapic addr after e820_reserve_resources
+HEAD is now at 322850a... x86: make amd quad core 8 socket system not be clustered_box, #2
+
+$ git bisect good
+Bisecting: 1 revisions left to test after this
+[3def3d6ddf43dbe20c00c3cbc38dfacc8586998f] x86: clean up e820_reserve_resources on 64-bit
+
+$ git bisect bad
+Bisecting: 0 revisions left to test after this
+[700efc1b9f6afe34caae231b87d129ad8ffb559f] x86: introduce kernel/head32.c
+dawitbro@fileserver:~/sandbox/git-kernel/linux-2.6$ git bisect good
+3def3d6ddf43dbe20c00c3cbc38dfacc8586998f is first bad commit
+commit 3def3d6ddf43dbe20c00c3cbc38dfacc8586998f
+Author: Yinghai Lu <Yinghai.Lu@Sun.COM>
+Date:   Fri Feb 22 17:07:16 2008 -0800
+
+    x86: clean up e820_reserve_resources on 64-bit
+    
+    e820_resource_resources could use insert_resource instead of request_resource
+    also move code_resource, data_resource, bss_resource, and crashk_res
+    out of e820_reserve_resources.
+    
+    Signed-off-by: Yinghai Lu <yinghai.lu@sun.com>
+    Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+:040000 040000 79fea1b27a7affdf269cd55f633d495d1cac9513 abcad2c76947ba30fa0c94e0a9dcabd5d8666d28 M    arch
+:040000 040000 5d0b70980ad3692c9fa75ab67a3a43f1aa7807ce a5714997f2337541581dee96f19b7fe86c7941dc M    include
+==========
+
+I cannot describe how much relief I felt upon seeing that.
+
+Since my main goal was to troubleshoot the Debian 2.6.26 stock kernel, my
+next experiments will be to see if I can get a reversion to work against
+any version in the 2.6.26-rc* line, and hopefully the 2.6.26 release 
+itself.
+
+
+DW
