@@ -1,54 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756589AbYHMObT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756741AbYHMOcT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756589AbYHMObT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Aug 2008 10:31:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754434AbYHMObG
+	id S1756741AbYHMOcT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Aug 2008 10:32:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753080AbYHMOcE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Aug 2008 10:31:06 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:55381 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1754095AbYHMObE (ORCPT
+	Wed, 13 Aug 2008 10:32:04 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:42012 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752583AbYHMOcD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Aug 2008 10:31:04 -0400
-Date: Wed, 13 Aug 2008 10:31:03 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Pavel Machek <pavel@suse.cz>
-cc: kernel list <linux-kernel@vger.kernel.org>,
-       Linux-pm mailing list <linux-pm@lists.osdl.org>,
-       <James.Bottomley@HansenPartnership.com>, <teheo@novell.com>,
-       <oneukum@suse.de>
-Subject: Re: Power management for SCSI
-In-Reply-To: <20080813095055.GA475@elf.ucw.cz>
-Message-ID: <Pine.LNX.4.44L0.0808131026320.2455-100000@iolanthe.rowland.org>
+	Wed, 13 Aug 2008 10:32:03 -0400
+Message-ID: <48A2F030.9080301@linux-foundation.org>
+Date: Wed, 13 Aug 2008 09:31:12 -0500
+From: Christoph Lameter <cl@linux-foundation.org>
+User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+CC: Matthew Wilcox <matthew@wil.cx>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, Mel Gorman <mel@skynet.ie>,
+       andi@firstfloor.org, Rik van Riel <riel@redhat.com>
+Subject: Re: No, really, stop trying to delete slab until you've finished
+ making slub perform as well
+References: <20080805210125.A897.KOSAKI.MOTOHIRO@jp.fujitsu.com>	 <48986AC6.5030406@linux-foundation.org>	 <20080813194222.E77F.KOSAKI.MOTOHIRO@jp.fujitsu.com>	 <48A2DD2C.3090602@linux-foundation.org> <2f11576a0808130714k2cd031c4nd6eea3506831cac9@mail.gmail.com>
+In-Reply-To: <2f11576a0808130714k2cd031c4nd6eea3506831cac9@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 13 Aug 2008, Pavel Machek wrote:
-
-> From: Alan Stern <stern@rowland.harvard.edu>
+KOSAKI Motohiro wrote:
 > 
-> Add support for autosuspend/autoresume. Lowlevel driver can use it to
-> spin the disk down and power down its SATA link, to turn off the USB
-> interface, etc.
-> 
-> Spinning down the disk is useful - saves ~0.5W here. Powering down
-> SATA controller is even better -- should save ~1W.
-> 
-> Now, I guess the patch will need to be split to small pieces for
-> merge... I tried to rearrange it so that the documentation and hooks
-> go before stuff that needs the hooks, and before Kconfig enabler. If
-> it looks reasonably good, I'll split it into smaller pieces.
+> I don't mesure it yet. I don't like this patch.
+> maybe, it decrease other typical benchmark.
 
-James had a number of objections to my original patch; you can read 
-them here:
+Yes but running with this patch would allow us to verify that we understand
+what is causing the problem. There are other solutions like skipping to the
+next partial slab on the list that could fix performance issues that the patch
+may cause. A test will give us:
 
-https://lists.linux-foundation.org/pipermail/linux-pm/2008-March/016849.html
+1. Confirmation that the memory use is caused by the trylock.
 
-I haven't had time yet to work on an improved version.
-
-Alan Stern
+2. Some performance numbers. If these show a regression then we have some
+markers that we can measure other solutions against.
 
