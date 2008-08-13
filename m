@@ -1,70 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756198AbYHMReI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756699AbYHMRfo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756198AbYHMReI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Aug 2008 13:34:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752338AbYHMRd4
+	id S1756699AbYHMRfo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Aug 2008 13:35:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751968AbYHMRfh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Aug 2008 13:33:56 -0400
-Received: from yw-out-2324.google.com ([74.125.46.31]:33576 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751583AbYHMRdz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Aug 2008 13:33:55 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=opbJg6QJg03c4I5OI58Qt3vjjuuPcJQJuD9w47B40K0I4HkfVPqqgWgUhG/W2N2/HB
-         9iISJmHV6kQ2WZ2uaP6pZIY7Y0TseIA4mnpRaZqZSHbEOiM5cHQ1Pm+6Ir7MkfdXyZoh
-         fusikzkax9n9Agp7zeJPAi6T3MeGES0tsKSTE=
-Message-ID: <b6a2187b0808131033m25a7e147x98235a48abd3eb3c@mail.gmail.com>
-Date: Thu, 14 Aug 2008 01:33:53 +0800
-From: "Jeff Chua" <jeff.chua.linux@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: 2.6.27rc1 cannot boot more than 8CPUs
-Cc: "Yinghai Lu" <yhlu.kernel@gmail.com>, "David Miller" <davem@davemloft.net>,
-       "Linux Kernel" <linux-kernel@vger.kernel.org>
-In-Reply-To: <b6a2187b0808131010u7481f663n94d8e005b9dac2d1@mail.gmail.com>
+	Wed, 13 Aug 2008 13:35:37 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:40399 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751934AbYHMRfg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Aug 2008 13:35:36 -0400
+Date: Wed, 13 Aug 2008 19:35:08 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Mark Langsdorf <mark.langsdorf@amd.com>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: invalidate caches before going into suspend
+Message-ID: <20080813173507.GA30911@elte.hu>
+References: <200808131141.18003.mark.langsdorf@amd.com> <20080813164728.GD5720@elte.hu> <48A31188.4050904@zytor.com> <20080813170133.GA16557@elte.hu> <48A319AB.9030707@zytor.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <Pine.LNX.4.64.0808061908100.12476@boston.corp.fedex.com>
-	 <20080813141629.GD19397@elte.hu>
-	 <b6a2187b0808131010u7481f663n94d8e005b9dac2d1@mail.gmail.com>
+In-Reply-To: <48A319AB.9030707@zytor.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 14, 2008 at 1:10 AM, Jeff Chua <jeff.chua.linux@gmail.com> wrote:
-> On Wed, Aug 13, 2008 at 10:16 PM, Ingo Molnar <mingo@elte.hu> wrote:
+
+* H. Peter Anvin <hpa@zytor.com> wrote:
+
+> Ingo Molnar wrote:
+>>>>
+>>> Spurious interrupt of what kind?  The only things that could come in  
+>>> would not be non-INT type interrupts, and those aren't affected by  
+>>> CLI.
+>>
+>> nothing should come in really at that point - but say IRQ#7 on older  
+>> platforms used to trigger at various points in time, even unprompted. 
+>> Or an APIC error interrupt in the last moment? All device irqs should  
+>> indeed be turned off at this stage, but since it costs us nothing to 
+>> add another cli, and because the failure mode is subtle memory 
+>> corruption, does it hurt to have it?
+>>
 >
->> btw., could you please check that v2.6.27-rc3 (or later) kernels boot
->> fine (with about 8 cpus) even if you have genericarch/bigsmp disabled,
->> and do not silently hang as it happened on your box before?
+> Not significantly, but I cannot for my life figure out how it could 
+> help.
 >
-> With 16 CPUs, it still hangs, but now the console is showing the
-> errors as intended.
-> ... but it is supposed to hang?
+> Either the interrupts will be blocked by the CLI already in effect, or 
+> the additional CLI will not help, either (in fact, it will just 
+> slightly increase the window for something like that to slip in.)
 
-I tried with just CONFIG_NR_CPUS=8 and this time it booted, but stange
-thing is I only see 2 CPUs! To be more precise, it's without both
-CONFIG_X86_GENERICARCH and CONFIG_X86_BIGSMP.
+ah, the main point i tried to make was to have the CLI _before_ the 
+WBINVD - which Mark's patch didnt do.
 
-And when I tried to enable the CPUs, it complained about:
+Note the original sequence:
 
-# cat cpu6/online
-0
-# echo 1 > cpu6/online
-More than 8 CPUs detected - skipping them.
-Use CONFIG_X86_GENERICARCH and CONFIG_X86_BIGSMP.
--bash: echo: write error: Input/output error
+        wbinvd();
+        mb();
+        /* Ack it */
+        __get_cpu_var(cpu_state) = CPU_DEAD;
 
-Prior to the patch, the system booted with all 8 CPUs.
+        /*
+         * With physical CPU hotplug, we should halt the cpu
+         */
+        local_irq_disable();
 
-Again, if I enable both CONFIG_X86_GENERICARCH and CONFIG_X86_BIGSMP,
-I get all 16 CPUs.
+and Mark's patched sequence:
 
-Thanks,
-Jeff.
+        wbinvd();
+        local_irq_disable();
+        while (1)
+                halt();
+ 
+both had wbinvd before the cli.
+
+in my suggestion the second cli doesnt matter indeed - a single one 
+suffices.
+
+	Ingo
