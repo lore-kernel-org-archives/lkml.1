@@ -1,66 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756181AbYHNK77@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756771AbYHNLEz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756181AbYHNK77 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Aug 2008 06:59:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752951AbYHNK7u
+	id S1756771AbYHNLEz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Aug 2008 07:04:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753889AbYHNLEq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Aug 2008 06:59:50 -0400
-Received: from yx-out-2324.google.com ([74.125.44.30]:41145 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752683AbYHNK7t (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Aug 2008 06:59:49 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=lZpVNvqSDT7HWixknccS/lA2WmHE0J7qf/2h37Rwo8XoKbQQU6LdvrKxPJo5yNTOmX
-         2RNc5WC+TYXZ3wEdnxBUEu05Knb1dSgTm4xZ5WdTp5msOYv3BrouX7Fi+sWbquVWymka
-         aoi4JgShvIH+0zID6uwMuXvaMUlbSd97WP43w=
-Message-ID: <bc64b4640808140359w3ece18edo7bc2beb894d9c7d2@mail.gmail.com>
-Date: Thu, 14 Aug 2008 14:59:43 +0400
-From: Dmitry <dbaryshkov@gmail.com>
-To: "Stephen Rothwell" <sfr@canb.auug.org.au>
-Subject: Re: Tree for linux-next
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20080814095756.a0152a27.sfr@canb.auug.org.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Thu, 14 Aug 2008 07:04:46 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:1258 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752683AbYHNLEp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Aug 2008 07:04:45 -0400
+Date: Wed, 13 Aug 2008 21:22:48 +0200
+From: Pavel Machek <pavel@suse.cz>
+To: Len Brown <lenb@kernel.org>
+Cc: Thomas Renninger <trenn@suse.de>, Arjan van de Ven <arjan@linux.intel.com>,
+       linux-acpi <linux-acpi@vger.kernel.org>,
+       "Moore, Robert" <robert.moore@intel.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andi Kleen <ak@linux.intel.com>,
+       Christian Kornacker <ckornacker@suse.de>
+Subject: Re: ACPI OSI disaster on latest HP laptops - critical temperature shutdowns
+Message-ID: <20080813192247.GF6995@ucw.cz>
+References: <200807241727.41715.trenn@suse.de> <alpine.LFD.1.10.0807261434380.2958@localhost.localdomain> <alpine.LFD.1.10.0808011701500.3011@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20080813161654.GA19599@doriath.ww600.siemens.net>
-	 <20080814095756.a0152a27.sfr@canb.auug.org.au>
+In-Reply-To: <alpine.LFD.1.10.0808011701500.3011@localhost.localdomain>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/8/14 Stephen Rothwell <sfr@canb.auug.org.au>:
-> Hi Dmitry,
->
-> On Wed, 13 Aug 2008 20:16:55 +0400 Dmitry Baryshkov <dbaryshkov@gmail.com> wrote:
->>
->> Please add a tree to linux-next. It contains some cleanup for Sharp
->> Zaurus PDA's. Since it contains a number of patches, it's preferable
->> to test it via linux-next, before commiting to Russell's/ALSA tree.
->
-> I assume you have already posted these changes somewhere and had them
-> reviewed and unit tested them, right?
->
->> The url to pull is git://github.com/lumag/linux-2.6.git#for-next
->
-> $ git ls-remote git://github.com/lumag/linux-2.6.git
-> fatal: protocol error: expected sha/ref, got '
-> *********'
->
-> Permission denied. Repository is not public.
->
-> *********'
+Hi!
 
-That's the github problem. I'll try to find another place to host this
-git and will send a request again.
-Sorry for the noise.
+> I ACK Thomas' suggestion to check for <= 0C for HOT,
+> PSV and ACx trip points.  While we don't have such a
+
+Hmm, I don't think that's good idea. 0Celsius is not special value.
+
+While having _CRT below 25Celsius would be quite strange (machine
+that can not run on room temperature?), I could imagine it (cryogenic
+cooling, cpu is overclocked, needs -10C to work).
+
+Machine with AC0 == -10C is very easy to imagine, OTOH. It is normal
+notebook that needs fans during normal temperatures, but does not need
+it if it is really cold.
+
+							Pavel
 
 -- 
-With best wishes
-Dmitry
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
