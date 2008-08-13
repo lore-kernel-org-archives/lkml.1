@@ -1,99 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756637AbYHMAeE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755905AbYHMAfg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756637AbYHMAeE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Aug 2008 20:34:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755146AbYHMA2e
+	id S1755905AbYHMAfg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Aug 2008 20:35:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753733AbYHMAf1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Aug 2008 20:28:34 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:38531 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755160AbYHMA2c (ORCPT
+	Tue, 12 Aug 2008 20:35:27 -0400
+Received: from mail-gx0-f16.google.com ([209.85.217.16]:42118 "EHLO
+	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752900AbYHMAf0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Aug 2008 20:28:32 -0400
-Date: Tue, 12 Aug 2008 17:28:28 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Al Viro <viro@ZenIV.linux.org.uk>
-cc: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [RFC] readdir mess
-In-Reply-To: <20080813000433.GZ28946@ZenIV.linux.org.uk>
-Message-ID: <alpine.LFD.1.10.0808121708160.3462@nehalem.linux-foundation.org>
-References: <20080812062241.GQ28946@ZenIV.linux.org.uk> <87ej4u9nf5.fsf@devron.myhome.or.jp> <alpine.LFD.1.10.0808121009370.3462@nehalem.linux-foundation.org> <20080812181057.GR28946@ZenIV.linux.org.uk> <alpine.LFD.1.10.0808121316570.3462@nehalem.linux-foundation.org>
- <20080812203808.GV28946@ZenIV.linux.org.uk> <alpine.LFD.1.10.0808121351570.3462@nehalem.linux-foundation.org> <20080813000433.GZ28946@ZenIV.linux.org.uk>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Tue, 12 Aug 2008 20:35:26 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=Z2BHm0hJB9OhRcIxet8RqKAobriSipQYZYCYpfBt3mG7B1Oq6CouWXHWsIDM66bTKI
+         H9YqKvLYWNgQcgOdv/9Y2vPIq5qtittZalu0IOmJqHWSG6nUANml4PXiTYhFKLI/kSda
+         +VMsRuthBy1ux3zhpJtLkmSD+IHlPruf/1EsM=
+Message-ID: <b3ece790808121735t21b4a629iaf6a968b30332d74@mail.gmail.com>
+Date: Tue, 12 Aug 2008 17:35:24 -0700
+From: "Tim Hockin" <thockin@hockin.org>
+To: "Martin Schwidefsky" <schwidefsky@de.ibm.com>
+Subject: Re: [patch 1/3] kmsg: Kernel message catalog macros.
+Cc: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
+       lf_kernel_messages@lists.linux-foundation.org,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Michael Holzheu" <holzheu@de.ibm.com>,
+       "Gerrit Huizenga" <gh@us.ibm.com>,
+       "Greg Kroah-Hartman" <gregkh@suse.de>,
+       "Randy Dunlap" <randy.dunlap@oracle.com>, "Jan Kara" <jack@suse.cz>,
+       "Pavel Machek" <pavel@ucw.cz>, "Sam Ravnborg" <sam@ravnborg.org>,
+       "Joe Perches" <joe@perches.com>,
+       "=?UTF-8?Q?Jochen_Vo=C3=9F?=" <jochen.voss@googlemail.com>,
+       "Kunai Takashi" <kunai@linux-foundation.jp>,
+       "Tim Bird" <tim.bird@am.sony.com>
+In-Reply-To: <20080730171156.824640459@de.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080730165656.118280544@de.ibm.com>
+	 <20080730171156.824640459@de.ibm.com>
+X-Google-Sender-Auth: 60b75bc54a4e7e10
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Jul 30, 2008 at 9:56 AM, Martin Schwidefsky
+<schwidefsky@de.ibm.com> wrote:
+> From: Michael Holzheu <holzheu@de.ibm.com>
+> From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+>
+> Introduce a new family of printk macros which prefixes each kmsg message
+> with a component name and allows to tag the printk with a message id.
+
+We've been talking about doing something like this, just this week.  AKPM
+pointed me at this thread.  Good timing. :)
+
+> +#define kmsg_dev_alert(id, dev, format, arg...) \
+> +    printk(__KMSG_CHECK(ALERT, id) KMSG_COMPONENT \
+> +        ": %s: " format, (dev)->bus_id , ## arg)
+
+Rather than the gcc-specific '## arg', shouldn't we use the standard C99
+form: '##__VA_ARGS__'  ?
+
+As a format, I would argue to leave out the spaces after colons, making
+the inevitable string splitting even easier.
+
+I don't care for the magic file-global KMSG_COMPONENT.  It just feels
+wrong.  In most cases, I want the prefix to be hierarchical.  For example,
+rather than "tg3" I want "net.tg3" or "netdev:tg3" or something.
+
+Further, We want to make a clearer denotation between "just another
+printk()" and these things, which are really "important events".  Maybe a
+global prefix that makes it easy to seperate them out?  Or a parallel
+"event" interface that logs to printk() and a netlink socket?
 
 
-On Wed, 13 Aug 2008, Al Viro wrote:
-> 
-> As for whether we want to bother...  I've looked through about half of the
-> ->readdir instances.  We _do_ want to touch them, with cattle prod if nothing
-> else.
-
-The really sad part is that readdir() really is also the thing that should 
-make us change locking. That i_mutex thing is fine and dandy for 
-everything else, but for readdir() we really would be much better off with 
-a rwsem - and only take it for reading.
-
-Right now, readdir() is one of the most serialized parts of the whole 
-kernel. Sad. And while it's a per-directory lock, there are directories 
-that get much more reading than others, and this has been a small 
-scalability issue (for samba and apache) for years.
-
-> 9p:	touching belief that f_pos can't be changed under us.
-> adfs:	ditto.
-
-The thing is, generic_file_llseek() takes i_mutex, exactly because of 
-issues like this. Of course, you have to ask for it (the _default_ llseek 
-does not do it), and you're right that 9p does not.
-
-Strangely enough, at least 9p _does_ use it for regular files. I'm not 
-sure how come it decided to do that, but whatever.
-
-> ext3:	take a look at comments around filldir call.  Yes, they are _that_
-> 	ancient, and so's the logics around revalidate.  ext2 is sane, but
-> 	that hadn't propagated.  Refuses to go through more than one block,
-> 	BTW.  Revalidation loop is buggered if we have corrupt data, while
-> 	we are at it.
-> ext4:	ditto
-
-The reason ext2 is ok is that you long long ago fixed it to use the page 
-cache. That got rid of a _lot_ of the crap, and made all the IO look like 
-regular files (including read-ahead etc). Ext2 _used_ to be the same crap 
-that ext3 is.
-
-I so wish that ext3 could do the same thing, but no. I still think it 
-should be possible, but the whole journalling is designed for buffer 
-heads.
-
-> freevxfs: AFAICS simply bogus (grep for nblocks there).
-> hfs:	at least missing checks for hfs_bnode_read() failure.  And I'm not
-> 	at all sure that hfs_mac2asc() use is safe there.  BTW, open_dir_list
-> 	handling appears to be odd - how the hell does decrementing ->f_pos
-> 	help anything?  And hfs_dir_release() removes from list without any
-> 	locks, so that's almost certainly racy as well.
-> hfsplus: ditto
-
-I don't dispute at all that the readdir() thing is one of the weakest 
-points of the whole VFS layer. And part of it is that there is no good 
-caching helper for it at the VFS level, so we always end up having to do 
-everything at the low-level filesystem level, and that invariably ends up 
-being sh*t compared to the shared VFS routines.
-
-I'm convinced that the reason we do well on most other filesystem accesses 
-is exactly the fact that a filesystem basically has to be crazy to try to 
-do their own version, and in many cases cannot really do it at all (eg you 
-can't really even avoid using the dcache or the page cache and actually 
-get any valid semantics).
-
-But readdir() is the _one_ operation where the low-level filesystem still 
-basically does it all itself. Which is why we can't fix locking, and why 
-even simple changes are hard because it's not just complex code, it's 
-complex code in 50+ filesystems with almost zero shared code!
-
-			Linus
+Tim
