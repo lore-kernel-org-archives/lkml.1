@@ -1,70 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756528AbYHMUTN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754265AbYHMUT3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756528AbYHMUTN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Aug 2008 16:19:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752461AbYHMUS7
+	id S1754265AbYHMUT3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Aug 2008 16:19:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756254AbYHMUTN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Aug 2008 16:18:59 -0400
-Received: from fg-out-1718.google.com ([72.14.220.157]:28492 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752155AbYHMUS6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Aug 2008 16:18:58 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=YqLAfAuXAq41O2Y3vItQ0LS5YeXxSTogspkbRrUboAXS8ANohYT9ZsCwULiRpxrBd3
-         CQPWPHqSVjYL4kBHcvP0R2sjuOLL1nbMMXvG8Goq4RzveFHob5nuP7tD6KubPrqWT6Jt
-         a1s2qq/HRJ7g/ydqXiUXyp4IGy0sLuRJS9exc=
-Message-ID: <64bb37e0808131318j81ba372t8a5f089e33f1dc32@mail.gmail.com>
-Date: Wed, 13 Aug 2008 22:18:56 +0200
-From: "Torsten Kaiser" <just.for.lkml@googlemail.com>
-To: "Linus Torvalds" <torvalds@linux-foundation.org>
-Subject: Re: Linux 2.6.27-rc3
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Mark Langsdorf" <mark.langsdorf@amd.com>
-In-Reply-To: <alpine.LFD.1.10.0808121914270.3462@nehalem.linux-foundation.org>
+	Wed, 13 Aug 2008 16:19:13 -0400
+Received: from mail.gmx.net ([213.165.64.20]:37052 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1755497AbYHMUTL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Aug 2008 16:19:11 -0400
+X-Authenticated: #20450766
+X-Provags-ID: V01U2FsdGVkX19/aPonNSt/APnx0CSEHG5KU1RJoEtHJtrKl4HXr5
+	MwAhIfcLGeHRed
+Date: Wed, 13 Aug 2008 22:19:08 +0200 (CEST)
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+To: John Kacur <jkacur@gmail.com>, Arnd Bergmann <arnd@arndb.de>
+cc: LKML <linux-kernel@vger.kernel.org>, Andy Whitcroft <apw@shadowen.org>,
+       rdunlap@xenotime.net, jschopp@austin.ibm.com
+Subject: Re: drop overzealous ERROR: do not initialise statics to 0 or NULL
+ from checkpatch.pl
+In-Reply-To: <200808131415.36851.arnd@arndb.de>
+Message-ID: <Pine.LNX.4.64.0808132216460.7713@axis700.grange>
+References: <520f0cf10808130339r5dd22e12w3477d6bddd545db1@mail.gmail.com>
+ <200808131415.36851.arnd@arndb.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <alpine.LFD.1.10.0808121914270.3462@nehalem.linux-foundation.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 13, 2008 at 4:33 AM, Linus Torvalds
-<torvalds@linux-foundation.org> wrote:
->
-> Things really _have_ calmed down, and hopefully we've also resolved a lot
-> of the regressions in -rc3.
+On Wed, 13 Aug 2008, John Kacur wrote:
 
-I found a new one in -rc3 vs. -rc2.
-Only one of my cpus seems to powered down by cpufreq, because the
-topology gets filled out wrong:
+> Could we drop this somewhat overzealous "ERROR: do not initialise
+> statics to 0 or NULL" from checkpatch.pl?
+> 
+> Reasoning:
+> 1. This is not part of Documentation/CodingStyle
+> 2. K&R 2nd.ed do it (pg 83, static int bufp = 0;) The purpose is to
+> remove access to the bufp from external routines, and to avoid name
+> conflict)
 
-correct with -rc2:
-#grep . /sys/devices/system/cpu/cpu*/cpufreq/affected_cpus
-/sys/devices/system/cpu/cpu0/cpufreq/affected_cpus:0 1
-/sys/devices/system/cpu/cpu1/cpufreq/affected_cpus:0 1
-/sys/devices/system/cpu/cpu2/cpufreq/affected_cpus:2 3
-/sys/devices/system/cpu/cpu3/cpufreq/affected_cpus:2 3
-(The system has 2 dual core Opterons)
+No, "static" "removes access to the bufp from external routines, and 
+avoids name conflict", not the initialization to 0.
 
-wrong with -rc3:
-#grep . /sys/devices/system/cpu/cpu*/cpufreq/affected_cpus
-/sys/devices/system/cpu/cpu0/cpufreq/affected_cpus:0 1
-/sys/devices/system/cpu/cpu1/cpufreq/affected_cpus:0 1
-/sys/devices/system/cpu/cpu2/cpufreq/affected_cpus:0 1
-/sys/devices/system/cpu/cpu3/cpufreq/affected_cpus:0 1
-
-I bisected this bug down to these commits:
-> Mark Langsdorf (2):
->      [CPUFREQ][1/2] whitespace fix for powernow-k8
->      [CPUFREQ][2/2] preregister support for powernow-k8
-
-HTH
-
-Torsten
+Thanks
+Guennadi
+---
+Guennadi Liakhovetski, Ph.D.
+Freelance Open-Source Software Developer
