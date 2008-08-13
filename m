@@ -1,48 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753203AbYHMFvd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753884AbYHMFwd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753203AbYHMFvd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Aug 2008 01:51:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751802AbYHMFvZ
+	id S1753884AbYHMFwd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Aug 2008 01:52:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751809AbYHMFw0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Aug 2008 01:51:25 -0400
-Received: from kirsty.vergenet.net ([202.4.237.240]:53968 "EHLO
-	kirsty.vergenet.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751784AbYHMFvZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Aug 2008 01:51:25 -0400
-Date: Wed, 13 Aug 2008 15:51:24 +1000
-From: Simon Horman <horms@verge.net.au>
-To: Huang Ying <ying.huang@intel.com>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>, Pavel Machek <pavel@ucw.cz>,
-       nigel@nigel.suspend2.net, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Vivek Goyal <vgoyal@redhat.com>, mingo@elte.hu,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Kexec Mailing List <kexec@lists.infradead.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] kexec jump: fix code size checking
-Message-ID: <20080813055122.GB30294@verge.net.au>
-References: <1218589475.24951.59.camel@caritas-dev.intel.com> <20080813024701.GA19201@verge.net.au> <1218596715.24951.69.camel@caritas-dev.intel.com> <m1d4kdk2fw.fsf@frodo.ebiederm.org> <1218604692.24951.92.camel@caritas-dev.intel.com>
+	Wed, 13 Aug 2008 01:52:26 -0400
+Received: from ozlabs.org ([203.10.76.45]:60851 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751468AbYHMFwZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Aug 2008 01:52:25 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: [PATCH] stop_machine: wean Xen off stop_machine_run
+Date: Wed, 13 Aug 2008 15:52:18 +1000
+User-Agent: KMail/1.9.9
+Cc: virtualization@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1218604692.24951.92.camel@caritas-dev.intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200808131552.18942.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 13, 2008 at 01:18:12PM +0800, Huang Ying wrote:
-> On Tue, 2008-08-12 at 20:40 -0700, Eric W. Biederman wrote:
-> [...]
-> > 4) Put the code is a special section .text.kexec? and have the linker
-> >    always do the size comparison and the computation of the section size.
-> > 
-> > The fewer conditionals we have the less likely something is to break.
-> 
-> Yes. This one is good. But I think current one is acceptable too.
+This is the last use of (the deprecated) stop_machine_run in the tree.
 
-If you really think that 1) is the best way
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
 
-Acked-by: Simon Horman <horms@verge.net.au>
-
+diff -r 332ec042cb4d drivers/xen/manage.c
+--- a/drivers/xen/manage.c	Wed Aug 13 10:48:27 2008 +1000
++++ b/drivers/xen/manage.c	Wed Aug 13 15:50:02 2008 +1000
+@@ -102,7 +102,7 @@ static void do_suspend(void)
+ 	/* XXX use normal device tree? */
+ 	xenbus_suspend();
+ 
+-	err = stop_machine_run(xen_suspend, &cancelled, 0);
++	err = stop_machine(xen_suspend, &cancelled, &cpumask_of_cpu(0));
+ 	if (err) {
+ 		printk(KERN_ERR "failed to start xen_suspend: %d\n", err);
+ 		goto out;
