@@ -1,75 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755917AbYHMHtU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755310AbYHMHvS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755917AbYHMHtU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Aug 2008 03:49:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755579AbYHMHs1
+	id S1755310AbYHMHvS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Aug 2008 03:51:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751369AbYHMHvF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Aug 2008 03:48:27 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:37137 "EHLO
-	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755521AbYHMHs0 (ORCPT
+	Wed, 13 Aug 2008 03:51:05 -0400
+Received: from ipmail05.adl2.internode.on.net ([203.16.214.145]:14240 "EHLO
+	ipmail05.adl2.internode.on.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751117AbYHMHvE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Aug 2008 03:48:26 -0400
-Date: Wed, 13 Aug 2008 09:39:28 +0200
-From: Pavel Machek <pavel@suse.cz>
-To: Milan Broz <mbroz@redhat.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Andi Kleen <andi@firstfloor.org>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       ACPI mailing list <linux-acpi@vger.kernel.org>,
-       Alexey Starikovskiy <astarikovskiy@suse.de>,
-       Thomas Renninger <trenn@suse.de>
-Subject: Re: 2.6.27-rc1: critical thermal shutdown on thinkpad x60
-	(bisected)
-Message-ID: <20080813073928.GB19877@elf.ucw.cz>
-References: <20080806090246.GA1572@elf.ucw.cz> <48A1779B.5020303@redhat.com> <20080812115530.GB8806@elf.ucw.cz> <200808121634.34634.rjw@sisk.pl> <48A1A4F6.9080706@redhat.com> <48A1B0CB.9050908@redhat.com>
+	Wed, 13 Aug 2008 03:51:04 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApoEANwtokh5LAMb/2dsb2JhbAC3CoFV
+X-IronPort-AV: E=Sophos;i="4.32,200,1217773800"; 
+   d="scan'208";a="181031853"
+Date: Wed, 13 Aug 2008 17:50:57 +1000
+From: Dave Chinner <david@fromorbit.com>
+To: Daniel Walker <dwalker@mvista.com>
+Cc: xfs@oss.sgi.com, linux-kernel@vger.kernel.org, matthew@wil.cx
+Subject: Re: [PATCH 4/6] Replace inode flush semaphore with a completion
+Message-ID: <20080813075057.GZ6119@disturbed>
+Mail-Followup-To: Daniel Walker <dwalker@mvista.com>, xfs@oss.sgi.com,
+	linux-kernel@vger.kernel.org, matthew@wil.cx
+References: <1214556284-4160-1-git-send-email-david@fromorbit.com> <1214556284-4160-5-git-send-email-david@fromorbit.com> <1218597077.6166.15.camel@dhcp32.mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <48A1B0CB.9050908@redhat.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1218597077.6166.15.camel@dhcp32.mvista.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue 2008-08-12 17:48:27, Milan Broz wrote:
+On Tue, Aug 12, 2008 at 08:11:17PM -0700, Daniel Walker wrote:
+> On Fri, 2008-06-27 at 18:44 +1000, Dave Chinner wrote:
+> > Use the new completion flush code to implement the inode
+> > flush lock. Removes one of the final users of semaphores
+> > in the XFS code base.
+> > 
+> > Version 2:
+> > o make flock functions static inlines
+> > o use new completion interfaces
 > 
-> >>>> yes. maybe some userspace tool controlling frequency is involved, no idea yet.
-> >>>> But it is 2.6.26 tree for sure.
-> >>>>         
-> >>> So it definitely is in 2.6.26.2, and it definitely is in 2.6.26?
-> >>>       
-> >
-> >
-> > The bug is _not_ in 2.6.26, it was introduced in 2.6.26.1.
-> >
-> > The problem is, that now the CPU frequency doesn't decrease at some
-> > temperature level and fan is unable to cool it properly.
-> >
-> > bisect on 2.6.26.y tree finished in this patch:
-> > (I expect similar patch in 2.6.27-rc)
-> >
-> > commit 04f496871e8af87a1e40c504371a206fd7389193
-> > Author: Thomas Renninger <trenn@suse.de>
-> > Date:   Wed Jul 30 18:20:10 2008 +0000
-> >
-> >   
-> and this seems to fix it for me:
-> --
-> 
-> Do not use unsigned int if there is test for negative number...
-> 
-> See drivers/acpi/processor_perflib.c
->   static unsigned int ignore_ppc = -1;
-> ...
->   if (event == CPUFREQ_START && ignore_ppc <= 0) {
->        ignore_ppc = 0;
-> ...
-> 
-> Signed-off-by: Milan Broz <mbroz@redhat.com>
+> I was looking over this lock in XFS .. The iflock/ifunlock seem to be
+> very much like mutexes in most of the calling locations.
 
-Tested-by: Pavel Machek <pavel@suse.cz>
+Semaphores, not mutexes. The unlock most commonly happens in a
+different context (i.e. I/O completion).
 
+> Where the lock
+> happens at the start, and the unlock happens when the function calls
+> bottom out. It seems like a better way to go would be to change from,
+> 
+> xfs_ilock(uqp, XFS_ILOCK_EXCL);
+> xfs_iflock(uqp);
+> error = xfs_iflush(uqp, XFS_IFLUSH_SYNC);
+> 
+> Where xfs_iflush eventually does the unlock to,
+> 
+> xfs_ilock(uqp, XFS_ILOCK_EXCL);
+> xfs_iflock(uqp);
+> error = xfs_iflush(uqp, XFS_IFLUSH_SYNC);
+> xfs_ifunlock(uqp);
+
+Firstly, sync flushes are rare. Async are common.
+
+Right now we have the case where no matter what type of flush
+is done, the caller does not have to worry about unlocking
+the flush lock - it will be done as part of the flush. You're
+suggestion makes that conditional based on whether we did a
+sync flush or not.
+
+So, what happenѕ when you call:
+
+xfs_iflush(ip, XFS_IFLUSH_DELWRI_ELSE_SYNC);
+
+i.e. xfs_iflush() may do an delayed flush or a sync flush depending
+on the current state of the inode. The caller has no idea what type
+of flush was done, so will have no idea whether to unlock or not.
+
+> And remove the unlocking from inside xfs_iflush(). Then use a flag to
+> indicate that the flush is in progress, and a
+> completion/wait_for_completion when another thread needs to wait on the
+> flush to complete if it's an async flush.
+
+And if it's a delayed flush? If we just wait for completion, we'll
+have to wait for a long time before the xfsbufd times out the buffer
+and pushes it to disk. This is important - the log AIL push code
+does try-locks on the flush lock to determine if the inode is in a
+delayed write state or not, and does an async buffer push inѕtead
+of xfs_iflush() to get it to disk immediately.
+
+That is, there are three types of inode flushes (sync, async and
+delwri) and the flush lock is used in different ways to determine
+what action to take when writing back inodes. There's much more to
+this 'flush lock' than just locking ;)
+
+> That seems vastly more complex than your current patch, but I think it
+> will be much cleaner ..
+
+Doesn't seem that way to me...
+
+Cheers,
+
+Dave.
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Dave Chinner
+david@fromorbit.com
