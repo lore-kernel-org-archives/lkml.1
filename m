@@ -1,123 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755501AbYHMUh1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755354AbYHMUit@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755501AbYHMUh1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Aug 2008 16:37:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752858AbYHMUhP
+	id S1755354AbYHMUit (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Aug 2008 16:38:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752590AbYHMUik
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Aug 2008 16:37:15 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:49989 "EHLO
-	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752671AbYHMUhO (ORCPT
+	Wed, 13 Aug 2008 16:38:40 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:57386 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752470AbYHMUik (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Aug 2008 16:37:14 -0400
-Date: Wed, 13 Aug 2008 22:38:31 +0200
-From: Pavel Machek <pavel@suse.cz>
-To: Mark Langsdorf <mark.langsdorf@amd.com>
-Cc: Greg KH <greg@kroah.com>, joachim.deguara@amd.com, tglx@linutronix.de,
-       mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 01/01][retry 2] x86: L3 cache index disable for 2.6.26
-Message-ID: <20080813203831.GE8861@elf.ucw.cz>
-References: <200807181603.52332.mark.langsdorf@amd.com> <20080812215659.GA12911@elf.ucw.cz> <20080812221201.GA3550@kroah.com> <200808131502.42611.mark.langsdorf@amd.com>
+	Wed, 13 Aug 2008 16:38:40 -0400
+Date: Wed, 13 Aug 2008 16:38:39 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: "Leisner, Martin" <Martin.Leisner@xerox.com>
+cc: Oliver Neukum <oneukum@suse.de>,
+       Linux-pm mailing list <linux-pm@lists.osdl.org>,
+       kernel list <linux-kernel@vger.kernel.org>, <teheo@novell.com>,
+       <James.Bottomley@hansenpartnership.com>, Pavel Machek <pavel@suse.cz>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: RE: [linux-pm] Power management for SCSI
+In-Reply-To: <556445368AFA1C438794ABDA8901891C094876DA@USA0300MS03.na.xerox.net>
+Message-ID: <Pine.LNX.4.44L0.0808131636400.2144-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200808131502.42611.mark.langsdorf@amd.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
-> diff -r e683983d4dd0 Documentation/ABI/testing/sysfs-devices-cache_disable
-> --- /dev/null	Thu Jan 01 00:00:00 1970 +0000
-> +++ b/Documentation/ABI/testing/sysfs-devices-cache_disable	Wed Aug 13 09:06:52 2008 -0500
-> @@ -0,0 +1,18 @@
-> +What:           /sys/devices/system/cpu/cpu*/cache/index*/cache_disable_X
-> +Date:           Augsust 2008
-> +KernelVersion:  2.6.27
-> +Contact:        osrc-kernel@elbe.amd.com
-> +Description:    These files exist in every cpu's cache index directories.
-> +		There are currently 2 cache_disable_# files in each 
-> +		directory.  Reading from these files on a supported
-> +		processor will return that cache disable index value
-> +		for that processor and node.  Writing to one of these
-> +		files will cause the specificed cache index to be disable.
+On Wed, 13 Aug 2008, Leisner, Martin wrote:
 
-disabled.
+> Regarding these scsi suspend patches, there's a general
+> problem to drop power on disk devices on a running system.
+> I discussed it in:
+> 
+> http://www.gossamer-threads.com/lists/linux/kernel/811598
 
-> +#if defined(CONFIG_PCI) && defined(CONFIG_K8_NB)
-> +#include <linux/pci.h>
-> +#include <asm/k8.h>
-> +static struct pci_dev *get_k8_northbridge(int node)
-> +{
-> +        return k8_northbridges[node];
-> +}
-> +#else
-> +static inline int pci_write_config_dword(struct pci_dev *dev, int where,
-> +                                         u32 val)
-> +{
-> +	return 0;
-> +}
+There's a much worse problem which that thread completely ignored:
 
-Spaces vs. tabs problem visible here. ... 
+When you turn off power to a disk device, to the system it looks like a 
+hot-unplug event.  Any mounted filesystems or memory mappings on that 
+disk will be lost.
 
-> +static ssize_t show_cache_disable(struct _cpuid4_info *this_leaf, char *buf,
-> +		unsigned int index)
-> +{
-> +        int node = cpu_to_node(first_cpu(this_leaf->shared_cpu_map));
-> +        struct pci_dev *dev = get_k8_northbridge(node);
-> +	unsigned int reg = 0;
-> +
-> +        if (!this_leaf->can_disable) 
-> +		return 0;
-> +
-> +	pci_read_config_dword(dev, 0x1BC + index * 4, &reg);
-> +        return sprintf(buf, "%x\n", reg);
-> +}
+Alan Stern
 
-...and getting serious here.
-
-
-> +#define SHOW_CACHE_DISABLE(index)					\
-> +static ssize_t                                                          \
-> +show_cache_disable_##index(struct _cpuid4_info *this_leaf, char *buf)	\
-> +{									\
-> +	return show_cache_disable(this_leaf, buf, index);		\
-> +}
-> +
-> +static ssize_t
-> +store_cache_disable(struct _cpuid4_info *this_leaf, const char *buf,
-> +		size_t count, unsigned int index)
-> +{
-> +        int node = cpu_to_node(first_cpu(this_leaf->shared_cpu_map));
-> +        struct pci_dev *dev = get_k8_northbridge(node);
-> +        ssize_t ret = 0;
-> +        unsigned int val;
-> +
-> +        if (!this_leaf->can_disable)
-> +                return 0;
-
-So if someone asks you to disable part of cache you can't disable, you
-return success?
-
-> +        if (strlen(buf) > 10)
-> +                return -EINVAL;
-> +
-> +        ret = sscanf(buf, "%x\n", &val);
-> +        if (ret != 1)
-> +                return -EINVAL;
-....
-> +        return strlen(buf);
-
-Is this safe to do? What if buf is not null-terminated?
-
-return count?
-
-Actually, the sscanf is problematic, too, right?
-
-
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
