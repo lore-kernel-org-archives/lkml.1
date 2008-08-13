@@ -1,30 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755460AbYHMA3H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755617AbYHMA3p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755460AbYHMA3H (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Aug 2008 20:29:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754718AbYHMA0r
+	id S1755617AbYHMA3p (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Aug 2008 20:29:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754758AbYHMA0u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Aug 2008 20:26:47 -0400
+	Tue, 12 Aug 2008 20:26:50 -0400
 Received: from wf-out-1314.google.com ([209.85.200.169]:49095 "EHLO
 	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754641AbYHMA0q (ORCPT
+	with ESMTP id S1754746AbYHMA0t (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Aug 2008 20:26:46 -0400
+	Tue, 12 Aug 2008 20:26:49 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=subject:from:to:cc:content-type:date:message-id:mime-version
          :x-mailer:content-transfer-encoding;
-        b=nhkWHMH4n4QswxKlGyXV6yKDq1bN1bn/Msee5nuaNnzTlU05b7LKEapZQf1XZoERRn
-         CMcdUbf6tmgD7Lpqf1HTxCfq8Tb24pL/MKvMKK0DMCxxS2rCev+CEb2s2YJ0VyI++Ffl
-         71SDQRO/i10mM3d644DuwLExxO++GC6yWAtzM=
-Subject: [PATCH 08/22] ia64: use the new byteorder headers
+        b=VocxPRiVAZc6v7ckkkjdrkl1ekpSkytM9Gu+lRyDHtDP2IN52Qcgr6zlDx2tQa3tvh
+         sQ+20Sfs2OzYSTkceT1Ztw8mCk0hfcdho1LK9ZDzghDjtEoIduXeNnWzbzzv86/zGBB9
+         fK6pQiqGFEsFLojmh2CV6gZqyepzUZd3U4YBg=
+Subject: [PATCH 10/22] m68k: use the new byteorder headers
 From: Harvey Harrison <harvey.harrison@gmail.com>
-To: "tony.luck" <tony.luck@intel.com>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
 Cc: Andrew Morton <akpm@linux-foundation.org>,
        LKML <linux-kernel@vger.kernel.org>
 Content-Type: text/plain
-Date: Tue, 12 Aug 2008 17:26:38 -0700
-Message-Id: <1218587198.30194.81.camel@brick>
+Date: Tue, 12 Aug 2008 17:26:40 -0700
+Message-Id: <1218587200.30194.83.camel@brick>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
@@ -36,58 +36,41 @@ Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
 ---
 The prerequisite patches have landed in Linus' tree now.
 
- arch/ia64/include/asm/byteorder.h |   26 +++++++++++---------------
- 1 files changed, 11 insertions(+), 15 deletions(-)
+ include/asm-m68k/byteorder.h |   16 +++++-----------
+ 1 files changed, 5 insertions(+), 11 deletions(-)
 
-diff --git a/arch/ia64/include/asm/byteorder.h b/arch/ia64/include/asm/byteorder.h
-index 69bd41d..fac99a2 100644
---- a/arch/ia64/include/asm/byteorder.h
-+++ b/arch/ia64/include/asm/byteorder.h
-@@ -10,33 +10,29 @@
- #include <asm/intrinsics.h>
+diff --git a/include/asm-m68k/byteorder.h b/include/asm-m68k/byteorder.h
+index 81d420b..b354acd 100644
+--- a/include/asm-m68k/byteorder.h
++++ b/include/asm-m68k/byteorder.h
+@@ -4,22 +4,16 @@
+ #include <asm/types.h>
  #include <linux/compiler.h>
  
--static __inline__ __attribute_const__ __u64
--__ia64_swab64 (__u64 x)
-+#define __LITTLE_ENDIAN
-+
-+static inline __attribute_const__ __u64 __arch_swab64(__u64 x)
- {
- 	__u64 result;
+-#ifdef __GNUC__
++#define __BIG_ENDIAN
++#define __SWAB_64_THRU_32__
  
- 	result = ia64_mux1(x, ia64_mux1_rev);
- 	return result;
- }
-+#define __arch_swab64 __arch_swab64
- 
--static __inline__ __attribute_const__ __u32
--__ia64_swab32 (__u32 x)
-+static inline __attribute_const__ __u32 __arch_swab32(__u32 x)
+-static __inline__ __attribute_const__ __u32 ___arch__swab32(__u32 val)
++static inline __attribute_const__ __u32 __arch_swab32(__u32 val)
  {
--	return __ia64_swab64(x) >> 32;
-+	return __arch_swab64(x) >> 32;
+ 	__asm__("rolw #8,%0; swap %0; rolw #8,%0" : "=d" (val) : "0" (val));
+ 	return val;
  }
+-#define __arch__swab32(x) ___arch__swab32(x)
 +#define __arch_swab32 __arch_swab32
  
--static __inline__ __attribute_const__ __u16
--__ia64_swab16(__u16 x)
-+static inline __attribute_const__ __u16 __arch_swab16(__u16 x)
- {
--	return __ia64_swab64(x) >> 48;
-+	return __arch_swab64(x) >> 48;
- }
-+#define __arch_swab16 __arch_swab16
- 
--#define __arch__swab64(x) __ia64_swab64(x)
--#define __arch__swab32(x) __ia64_swab32(x)
--#define __arch__swab16(x) __ia64_swab16(x)
+-#endif
 -
--#define __BYTEORDER_HAS_U64__
+-#if defined(__GNUC__) && !defined(__STRICT_ANSI__) || defined(__KERNEL__)
+-#  define __BYTEORDER_HAS_U64__
+-#  define __SWAB_64_THRU_32__
+-#endif
 -
--#include <linux/byteorder/little_endian.h>
+-#include <linux/byteorder/big_endian.h>
 +#include <linux/byteorder.h>
  
- #endif /* _ASM_IA64_BYTEORDER_H */
+ #endif /* _M68K_BYTEORDER_H */
 -- 
 1.6.0.rc2.233.g3cb9d
 
