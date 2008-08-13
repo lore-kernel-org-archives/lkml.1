@@ -1,79 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756630AbYHMTJm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756887AbYHMTKz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756630AbYHMTJm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Aug 2008 15:09:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752003AbYHMTJc
+	id S1756887AbYHMTKz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Aug 2008 15:10:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752289AbYHMTKr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Aug 2008 15:09:32 -0400
-Received: from aun.it.uu.se ([130.238.12.36]:62656 "EHLO aun.it.uu.se"
+	Wed, 13 Aug 2008 15:10:47 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:53275 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751768AbYHMTJb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Aug 2008 15:09:31 -0400
-Date: Wed, 13 Aug 2008 21:08:14 +0200 (MEST)
-Message-Id: <200808131908.m7DJ8EAp013777@harpo.it.uu.se>
-From: Mikael Pettersson <mikpe@it.uu.se>
-To: jeff@garzik.org
-Subject: [RESEND][PATCH 2.6.27-rc3] ixp4xx_eth: fix dma_mapping_error() compile errors
-Cc: khc@pm.waw.pl, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+	id S1752003AbYHMTKr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Aug 2008 15:10:47 -0400
+Date: Wed, 13 Aug 2008 14:02:20 -0500
+From: David Teigland <teigland@redhat.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: [GIT PULL] dlm fixes for 2.6.27-rc3
+Message-ID: <20080813190220.GC24628@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The arm ixp4xx_eth driver doesn't compile in 2.6.27-rc1:
+Linus,
 
-  CC [M]  drivers/net/arm/ixp4xx_eth.o
-drivers/net/arm/ixp4xx_eth.c: In function 'eth_poll':
-drivers/net/arm/ixp4xx_eth.c:554: warning: passing argument 1 of 'dma_mapping_error' makes pointer from integer without a cast
-drivers/net/arm/ixp4xx_eth.c:554: error: too few arguments to function 'dma_mapping_error'
-drivers/net/arm/ixp4xx_eth.c: In function 'eth_xmit':
-drivers/net/arm/ixp4xx_eth.c:701: warning: passing argument 1 of 'dma_mapping_error' makes pointer from integer without a cast
-drivers/net/arm/ixp4xx_eth.c:701: error: too few arguments to function 'dma_mapping_error'
-drivers/net/arm/ixp4xx_eth.c: In function 'init_queues':
-drivers/net/arm/ixp4xx_eth.c:886: warning: passing argument 1 of 'dma_mapping_error' makes pointer from integer without a cast
-drivers/net/arm/ixp4xx_eth.c:886: error: too few arguments to function 'dma_mapping_error'
-make[3]: *** [drivers/net/arm/ixp4xx_eth.o] Error 1
-make[2]: *** [drivers/net/arm] Error 2
-make[1]: *** [drivers/net] Error 2
-make: *** [drivers] Error 2
+Please pull two simple dlm fixes from:
 
-dma_mapping_error() changed in 2.6.27-rc1 to also take a device parameter,
-but nobody bothered updating ixp4xx_eth.c. Fixed by passing the appropriate
-device value in the dma_mapping_error() calls.
+ git://git.kernel.org/pub/scm/linux/kernel/git/teigland/dlm.git for-linus
 
-Tested on an ixp425 box.
+Thanks,
+Dave
 
-Signed-off-by: Mikael Pettersson <mikpe@it.uu.se>
-Acked-by: Krzysztof Halasa <khc@pm.waw.pl>
----
-First posted 2008-08-01. The bug is still present in 2.6.27-rc3.
+ fs/dlm/config.c |  203 +++++++++++++++++++++++++++++--------------------------
+ fs/dlm/user.c   |   10 ++-
+ 2 files changed, 114 insertions(+), 99 deletions(-)
 
-diff -rupN linux-2.6.27-rc3/drivers/net/arm/ixp4xx_eth.c linux-2.6.27-rc3.ixp4xx_eth-dma_mapping_error-fix/drivers/net/arm/ixp4xx_eth.c
---- linux-2.6.27-rc3/drivers/net/arm/ixp4xx_eth.c	2008-08-13 18:19:49.000000000 +0200
-+++ linux-2.6.27-rc3.ixp4xx_eth-dma_mapping_error-fix/drivers/net/arm/ixp4xx_eth.c	2008-08-13 19:16:36.000000000 +0200
-@@ -551,7 +551,7 @@ static int eth_poll(struct napi_struct *
- 		if ((skb = netdev_alloc_skb(dev, RX_BUFF_SIZE))) {
- 			phys = dma_map_single(&dev->dev, skb->data,
- 					      RX_BUFF_SIZE, DMA_FROM_DEVICE);
--			if (dma_mapping_error(phys)) {
-+			if (dma_mapping_error(&dev->dev, phys)) {
- 				dev_kfree_skb(skb);
- 				skb = NULL;
- 			}
-@@ -698,7 +698,7 @@ static int eth_xmit(struct sk_buff *skb,
- #endif
- 
- 	phys = dma_map_single(&dev->dev, mem, bytes, DMA_TO_DEVICE);
--	if (dma_mapping_error(phys)) {
-+	if (dma_mapping_error(&dev->dev, phys)) {
- #ifdef __ARMEB__
- 		dev_kfree_skb(skb);
- #else
-@@ -883,7 +883,7 @@ static int init_queues(struct port *port
- 		desc->buf_len = MAX_MRU;
- 		desc->data = dma_map_single(&port->netdev->dev, data,
- 					    RX_BUFF_SIZE, DMA_FROM_DEVICE);
--		if (dma_mapping_error(desc->data)) {
-+		if (dma_mapping_error(&port->netdev->dev, desc->data)) {
- 			free_buffer(buff);
- 			return -EIO;
- 		}
+
+commit 51409340d240dabe66adb49f645588c3a802d055
+Author: David Teigland <teigland@redhat.com>
+Date:   Thu Jul 31 09:31:53 2008 -0500
+
+    dlm: rename structs
+    
+    Add a dlm_ prefix to the struct names in config.c.  This resolves a
+    conflict with struct node in particular, when include/linux/node.h
+    happens to be included.
+    
+    Reported-by: Andrew Morton <akpm@linux-foundation.org>
+    Signed-off-by: David Teigland <teigland@redhat.com>
+
+commit cb980d9a3ec3d39e30e0a4c473df528c09e0dcf3
+Author: David Teigland <teigland@redhat.com>
+Date:   Tue Jul 29 15:21:19 2008 -0500
+
+    dlm: add missing kfrees
+    
+    A couple of unlikely error conditions were missing a kfree on the error
+    exit path.
+    
+    Reported-by: Juha Leppanen <juha_motorsportcom@luukku.com>
+    Signed-off-by: David Teigland <teigland@redhat.com>
