@@ -1,57 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755449AbYHMJ3Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754753AbYHMJcn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755449AbYHMJ3Y (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Aug 2008 05:29:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751860AbYHMJ3P
+	id S1754753AbYHMJcn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Aug 2008 05:32:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752411AbYHMJcb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Aug 2008 05:29:15 -0400
-Received: from out2.smtp.messagingengine.com ([66.111.4.26]:44416 "EHLO
-	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751505AbYHMJ3O (ORCPT
+	Wed, 13 Aug 2008 05:32:31 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:44551
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751860AbYHMJca (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Aug 2008 05:29:14 -0400
-X-Sasl-enc: 7Btda9jHmO+Ni/n9k6p2js9L/MSmouhcvtqVkVcgpCoP 1218619752
-Date: Wed, 13 Aug 2008 06:29:08 -0300
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Philip Langdale <philipl@overt.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Matthew Garrett <mjg59@srcf.ucam.org>,
-       toshiba_acpi@memebeam.org, Ivo van Doorn <ivdoorn@gmail.com>,
-       linux-wireless@vger.kernel.org
-Subject: Re: [PATCH 1/1] toshiba_acpi: Add support for bluetooth toggling
-	through rfkill (v2)
-Message-ID: <20080813092908.GA6806@khazad-dum.debian.net>
-References: <4894B1B4.6050003@overt.org> <20080803042613.GC6053@khazad-dum.debian.net> <48965716.6020508@overt.org> <20080805212416.GB21738@khazad-dum.debian.net> <489A7CCF.1090407@overt.org> <20080807134530.GB17062@khazad-dum.debian.net> <48A06BBC.7060007@overt.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <48A06BBC.7060007@overt.org>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
-	1CDB 0FE3
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 13 Aug 2008 05:32:30 -0400
+Date: Wed, 13 Aug 2008 02:32:31 -0700 (PDT)
+Message-Id: <20080813.023231.110118129.davem@davemloft.net>
+To: akpm@linux-foundation.org
+Cc: harvey.harrison@gmail.com, mingo@elte.hu, hpa@zytor.com,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       per.liden@ericsson.com, jon.maloy@ericsson.com,
+       allan.stephens@windriver.com
+Subject: Re: [PATCH] tipc: Use the appropriate swab helper rather than an
+ internal helper
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20080812212017.febf1392.akpm@linux-foundation.org>
+References: <20080812205422.4273d598.akpm@linux-foundation.org>
+	<1218600348.30194.105.camel@brick>
+	<20080812212017.febf1392.akpm@linux-foundation.org>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 11 Aug 2008, Philip Langdale wrote:
-> Henrique de Moraes Holschuh wrote:
->> Hmm?  UNBLOCKED means it is not being rfkilled.  Why is not working?  Put
->> some debug printks on your toggle_radio callback, that might help fix the
->> issue...
->
-> Well, what I see is this:
->
-> At modprobe, I get an explicit unblock request. When I modify 'state' in sysfs,
-> I see appropriate requests to soft block and unblock. When I activate the hardware
-> kill switch, the rfkill state goes to hard_block but no one calls toggle_radio
-> and when I release the kill switch, the state goes to soft_block and no one
-> calls toggle_radio.
+From: Andrew Morton <akpm@linux-foundation.org>
+Date: Tue, 12 Aug 2008 21:20:17 -0700
 
-Looks like either rfkill-input is inactive, or something is binding to the
-toshiba_acpi input device and setting it to exclusive mode (X evdev does
-this).
+> On Tue, 12 Aug 2008 21:05:47 -0700 Harvey Harrison <harvey.harrison@gmail.com> wrote:
+> 
+> > ___generally means I am an internal implementation detail, don't use
+> > me.
+> > 
+> > Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+> > ---
+> > Sorry for breaking the build Andrew, my testing has been with all the __constant
+> > versions in-tree removed.
+> > 
+> >  net/tipc/subscr.c |    2 +-
+> >  1 files changed, 1 insertions(+), 1 deletions(-)
+> > 
+> > diff --git a/net/tipc/subscr.c b/net/tipc/subscr.c
+> > index 0326d30..f5da05d 100644
+> > --- a/net/tipc/subscr.c
+> > +++ b/net/tipc/subscr.c
+> > @@ -85,7 +85,7 @@ static struct top_srv topsrv = { 0 };
+> >  
+> >  static u32 htohl(u32 in, int swap)
+> >  {
+> > -	return swap ? (u32)___constant_swab32(in) : in;
+> > +	return swap ? (u32)swab32(in) : in;
+> >  }
+> 
+> yes, that's what I did too, only I dropped the
+> seems-to-me-to-be-unneeded (u32) cast.
 
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+I've applied Andrew's patch.
