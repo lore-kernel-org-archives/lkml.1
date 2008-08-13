@@ -1,63 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756107AbYHMQS4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755312AbYHMQT5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756107AbYHMQS4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Aug 2008 12:18:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751116AbYHMQSq
+	id S1755312AbYHMQT5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Aug 2008 12:19:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752178AbYHMQTr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Aug 2008 12:18:46 -0400
-Received: from yx-out-2324.google.com ([74.125.44.28]:1317 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751705AbYHMQSo (ORCPT
+	Wed, 13 Aug 2008 12:19:47 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:46462 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751748AbYHMQTq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Aug 2008 12:18:44 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=TrTOYhXgTltU3salOTegLp0RtZuEBfuFGBuHTYXPGfr7NHFLEQwPXgxId5/ze1xGR+
-         VLM/kFrF12/zcZVTDuORqWtYooQK1WzX++IY+NoAOtRyS6CdPDnrc3p7dlgOA94iEfGb
-         gn0oNsvJtNIFrSaxwazlbeTa9hXXKsBuK9mdM=
-Message-ID: <b6a2187b0808130918n1642c063j6ac4832792fca468@mail.gmail.com>
-Date: Thu, 14 Aug 2008 00:18:43 +0800
-From: "Jeff Chua" <jeff.chua.linux@gmail.com>
-To: timtas@cubic.ch
-Subject: Re: reiser4 for 2.6.27-rc1
-Cc: "Ryan Hope" <rmh3093@gmail.com>, "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
-       "Michael Krufky" <mkrufky@linuxtv.org>, "Adrian Bunk" <bunk@kernel.org>,
-       "Pavel Machek" <pavel@suse.cz>, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <48A2FCA2.4040603@cubic.ch>
+	Wed, 13 Aug 2008 12:19:46 -0400
+Date: Wed, 13 Aug 2008 17:19:40 +0100
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Brad Boyer <flar@allandria.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [RFC] readdir mess
+Message-ID: <20080813161940.GB28946@ZenIV.linux.org.uk>
+References: <20080812062241.GQ28946@ZenIV.linux.org.uk> <87ej4u9nf5.fsf@devron.myhome.or.jp> <alpine.LFD.1.10.0808121009370.3462@nehalem.linux-foundation.org> <20080812181057.GR28946@ZenIV.linux.org.uk> <alpine.LFD.1.10.0808121316570.3462@nehalem.linux-foundation.org> <20080812203808.GV28946@ZenIV.linux.org.uk> <alpine.LFD.1.10.0808121351570.3462@nehalem.linux-foundation.org> <20080813000433.GZ28946@ZenIV.linux.org.uk> <20080813083635.GA5933@cynthia.pants.nu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <4896F56D.7080503@cubic.ch> <20080813125807.GC6995@ucw.cz>
-	 <20080813131839.GB26351@cs181140183.pp.htv.fi>
-	 <37219a840808130624p3d4dca0bja2935d6f34beaf7e@mail.gmail.com>
-	 <48A2E391.3080404@cubic.ch>
-	 <20080813143613.61101a5e@lxorguk.ukuu.org.uk>
-	 <48A2E8EA.2060704@cubic.ch>
-	 <48f7fe350808130759w18b887dcr1978ccf1c49d1c75@mail.gmail.com>
-	 <48A2FCA2.4040603@cubic.ch>
+In-Reply-To: <20080813083635.GA5933@cynthia.pants.nu>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 13, 2008 at 11:24 PM, Tim Tassonis <timtas@cubic.ch> wrote:
+On Wed, Aug 13, 2008 at 01:36:35AM -0700, Brad Boyer wrote:
+> On Wed, Aug 13, 2008 at 01:04:33AM +0100, Al Viro wrote:
+> > hfs:	at least missing checks for hfs_bnode_read() failure.  And I'm not
+> > 	at all sure that hfs_mac2asc() use is safe there.  BTW, open_dir_list
+> > 	handling appears to be odd - how the hell does decrementing ->f_pos
+> > 	help anything?  And hfs_dir_release() removes from list without any
+> > 	locks, so that's almost certainly racy as well.
+> > hfsplus: ditto
+> 
+> I don't work on this code anymore, but I wrote the original version which
+> makes me a bit curious about some of the critcism here. The function
+> hfs_bnode_read is declared void, so it doesn't return any errors. The
+> only thing inside it that I could even think of failing is kmap, but
+> I was under the impression that kmap would sleep until it could
+> complete. The actual disk read happens earlier and is saved in the
+> page cache as long as the bnode object exists.
 
-> I can very well live with reiser4 not making it into mainline, I never used
-> reiser3 (only once for two, and after a power outage rendered the fs
-> unusable and fsck did fsck all, I chose reliability over "performance") and
-> am quite happy with ext3 for years and btrfs looks promising, too.
+Argh... s/failure/arguments/; sorry about the braino.  Take a look at
+the call in the main loop.  entrylength comes from 16bit on-disk value
+(set in hfs_brec_goto()).  It's not checked anywhere for being too large,
+AFAICS.  And we proceed to do memcpy() to entry.  On stack, BTW.
 
-I'm one who think reiser3 is great, and can't wait to see reiser4 in
-the mainstream, so please don't just assume reiserfs is obsolete. It's
-very much usable and very stable. So, if you don't use it, please
-don't comment negatively on. And I am who is very appreciative of
-Hans's contribution to Linux giving it a great journaling filesystem
-to start with. Reiser4 may have tangent off track and annoyed many
-smart developers, but please give it a chance to make Linux even
-better.
+> Is there any reason that hfs_mac2asc would not be safe? I can't think
+> of any good way to avoid that call even if it is unsafe, since the
+> readdir will expect UTF8 strings rather than the mac (or UTF16 for
+> hfsplus) encoding found on disk.
 
-Thanks,
-Jeff.
+As for mac2asc...  Are multibyte encodings possible there?  If they are,
+you'd need to validate the first byte of CName as well - result of conversion
+will fit the strbuf, but that doesn't mean we do not overrun the source
+buffer...
+ 
+> The open_dir_list stuff is a little odd I admit, and I think you are
+> right about the locking issue in release. However, I feel like I should
+> explain the way hfs and hfsplus use f_pos on directories. The on-disk
+> format requires that the directory entries be sorted in order by
+> filename and does not allow any holes in the list. Because of this,
+> adding and removing entries will move all the items that are later
+> in the order to make room or eliminate the hole. The manipulation
+> of f_pos is intended to make it act more like a standard unix
+> filesystem where removing an item doesn't usually make a pending
+> readdir skip an unrelated item. The value of f_pos for a directory
+> is only incremented by one for each entry to make seeking work
+> in a more sane fashion.
+
+What happens if you repeatedly create and remove an entry with name below
+that of the place where readdir has stopped?  AFAICS, on each iteration
+f_pos will decrement...  I see that scanning of the list in hfs_cat_delete()
+and nowhere else; we don't have the matching increment of f_pos...
+
+> Because of this, an increment moves to the
+> next item and decrement moves to the previous one.
+> 
+> As a side note about the complexity of making hfs and hfsplus fit
+> into a unix model, there is just one file that contains the equivalent
+> of every directory and the entire inode table. Because of this, the
+> directory code is very synthetic. I tried to make it look as much as
+> possible like a normal unix filesystem, including making i_nlink on
+> the directory inodes reflect the number of child directories. It
+> makes for some code that is admittedly a little hard to follow.
+
+It's actually fairly readable, but AFAICS doesn't validate the on-disk
+data enough...  Sure, don't go around mounting corrupt filesystem images
+and all such, but getting buffer overruns on kernel stack is a bit over
+the top, IMO...
+
+[que the grsec pack popping out of latrines screaming "coverup" and demanding
+CVEs to be allocated]
