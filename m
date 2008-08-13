@@ -1,107 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752941AbYHMV1H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756132AbYHMV2L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752941AbYHMV1H (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Aug 2008 17:27:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752781AbYHMV0n
+	id S1756132AbYHMV2L (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Aug 2008 17:28:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752569AbYHMV1x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Aug 2008 17:26:43 -0400
-Received: from ug-out-1314.google.com ([66.249.92.169]:18786 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752539AbYHMV0j (ORCPT
+	Wed, 13 Aug 2008 17:27:53 -0400
+Received: from sj-iport-1.cisco.com ([171.71.176.70]:45063 "EHLO
+	sj-iport-1.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752426AbYHMV1w (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Aug 2008 17:26:39 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:mime-version:content-type
-         :content-transfer-encoding:content-disposition:message-id;
-        b=XniXueODd+omSKBU39ZOyleWYAmtZuc1IdHzcBMOzNsamoIXwYOeSytZ4M5vAolkQe
-         QeuzD6ij7uBKqDoDVC92iez67JEmEfEa+XGWHyfesO6za0iVAHl/h64LTe5uMNuOlDuM
-         ly2561X2soOpsR87rK5QCBSPhrqcMIp8WeMBk=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: linux-ide@vger.kernel.org
-Subject: [PATCH] ide: remove unnecessary MAX_HWIFS checks from ide-probe.c
-Date: Wed, 13 Aug 2008 23:23:50 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org
+	Wed, 13 Aug 2008 17:27:52 -0400
+X-IronPort-AV: E=Sophos;i="4.32,203,1217808000"; 
+   d="scan'208";a="65197287"
+From: Roland Dreier <rdreier@cisco.com>
+To: David Miller <davem@davemloft.net>
+Cc: rick.jones2@hp.com, jgarzik@pobox.com, swise@opengridcomputing.com,
+       divy@chelsio.com, kxie@chelsio.com, netdev@vger.kernel.org,
+       open-iscsi@googlegroups.com, michaelc@cs.wisc.edu, daisyc@us.ibm.com,
+       wenxiong@us.ibm.com, bhua@us.ibm.com, dm@chelsio.com,
+       leedom@chelsio.com, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCH 1/1] cxgb3i: cxgb3 iSCSI initiator
+References: <48A08145.6060703@hp.com>
+	<20080811.141254.165409473.davem@davemloft.net>
+	<adad4kfxm9v.fsf@cisco.com>
+	<20080811.145313.178992274.davem@davemloft.net>
+X-Message-Flag: Warning: May contain useful information
+Date: Wed, 13 Aug 2008 14:27:50 -0700
+In-Reply-To: <20080811.145313.178992274.davem@davemloft.net> (David Miller's
+	message of "Mon, 11 Aug 2008 14:53:13 -0700 (PDT)")
+Message-ID: <ada3al8k3l5.fsf@cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200808132323.50671.bzolnier@gmail.com>
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 13 Aug 2008 21:27:50.0754 (UTC) FILETIME=[705DDC20:01C8FD8B]
+Authentication-Results: sj-dkim-1; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim1004 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-MAX_HWIFS is now always equal to the number of IDE major numbers.
+ > > How can you place iSCSI data properly with only stateless offloads?
 
-Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
----
- drivers/ide/ide-probe.c |   25 +++++++++----------------
- 1 file changed, 9 insertions(+), 16 deletions(-)
+ > By teaching the stateless offload how to parse the iSCSI headers
+ > on the flow and place the data into pages at the correct offsets
+ > such that you can place the pages hanging off of the SKB directly
+ > into the page cache.
 
-Index: b/drivers/ide/ide-probe.c
-===================================================================
---- a/drivers/ide/ide-probe.c
-+++ b/drivers/ide/ide-probe.c
-@@ -847,7 +847,6 @@ static void ide_port_tune_devices(ide_hw
- 	}
- }
- 
--#if MAX_HWIFS > 1
- /*
-  * save_match() is used to simplify logic in init_irq() below.
-  *
-@@ -872,7 +871,6 @@ static void save_match(ide_hwif_t *hwif,
- 	if (!m || m->irq != hwif->irq) /* don't undo a prior perfect match */
- 		*match = new;
- }
--#endif /* MAX_HWIFS > 1 */
- 
- /*
-  * init request queue
-@@ -1029,7 +1027,7 @@ static int init_irq (ide_hwif_t *hwif)
- 
- 	mutex_lock(&ide_cfg_mtx);
- 	hwif->hwgroup = NULL;
--#if MAX_HWIFS > 1
-+
- 	/*
- 	 * Group up with any other hwifs that share our irq(s).
- 	 */
-@@ -1054,7 +1052,7 @@ static int init_irq (ide_hwif_t *hwif)
- 			}
- 		}
- 	}
--#endif /* MAX_HWIFS > 1 */
-+
- 	/*
- 	 * If we are still without a hwgroup, then form a new one
- 	 */
-@@ -1513,19 +1511,14 @@ static int ide_find_port_slot(const stru
- 	 * ports 0x1f0/0x170 (the ide0/ide1 defaults).
- 	 */
- 	mutex_lock(&ide_cfg_mtx);
--	if (MAX_HWIFS == 1) {
--		if (ide_indexes == 0 && i == 0)
--			idx = 1;
-+	if (bootable) {
-+		if ((ide_indexes | i) != (1 << MAX_HWIFS) - 1)
-+			idx = ffz(ide_indexes | i);
- 	} else {
--		if (bootable) {
--			if ((ide_indexes | i) != (1 << MAX_HWIFS) - 1)
--				idx = ffz(ide_indexes | i);
--		} else {
--			if ((ide_indexes | 3) != (1 << MAX_HWIFS) - 1)
--				idx = ffz(ide_indexes | 3);
--			else if ((ide_indexes & 3) != 3)
--				idx = ffz(ide_indexes);
--		}
-+		if ((ide_indexes | 3) != (1 << MAX_HWIFS) - 1)
-+			idx = ffz(ide_indexes | 3);
-+		else if ((ide_indexes & 3) != 3)
-+			idx = ffz(ide_indexes);
- 	}
- 	if (idx >= 0)
- 		ide_indexes |= (1 << idx);
+I don't see how this could work.  First, it seems that you have to let
+the adapter know which connections are iSCSI connections so that it
+knows when to try and parse iSCSI headers.  So you're already not
+totally stateless.  Then, since (AFAIK -- I'm not an expert on iSCSI and
+especially I'm not an expert on what common practice is for current
+implementations) the iSCSI PDUs can start at any offset in the TCP
+stream, I don't see how a stateless adapter can even find the PDU
+headers to parse -- there's not any way that I know of to recognize
+where a PDU boundary is without keeping track of the lengths of all the
+PDUs that go by (ie you need per-connection state).
+
+Even if the adapter could find the PDUs, I don't see how it could come
+up with the correct offset to place the data -- PDUs with response data
+just carry an opaque tag assigned by the iSCSI initiator.  Finally, if
+there are ways around all of those difficulties, we would still have to
+do major surgery to our block layer to cope with read requests that
+complete into random pages, rather than using a scatter list passed into
+the low-level driver.
+
+
+But I think all this argument is missing the point anyway.  The real
+issue is not hand-waving about what someone might build someday, but how
+we want to support iSCSI offload with the existing Chelsio, Broadcom,
+etc adapters.  The answer might be, "we don't," but I disagree with that
+choice because:
+
+ a. "No upstream support" really ends up being "enterprise distros and
+    customers end up using hacky out-of-tree drivers and blaming us."
+
+ b. It sends a bad message to vendors who put a lot of effort into
+    writing a clean, mergable driver and responding to review if the
+    answer is, "Sorry, your hardware is wrong so no driver for you."
+
+Maybe the answer is that we just add the iSCSI HBA drivers with no help
+from the networking stack, and ignore the port collision problem.  For
+iSCSI initiators, it's really not an issue: for a 4-tuple to collide,
+someone would have to use both offloaded and non-offloaded connections
+to the same target and be unlucky in the source port chosen.  It would
+be nice to be able to discuss solutions to port collisions, but it may
+be that this is too emotional an issue for that to be possible.
+
+ - R.
