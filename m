@@ -1,77 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755388AbYHMBw0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755085AbYHMB6y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755388AbYHMBw0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Aug 2008 21:52:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754020AbYHMBwR
+	id S1755085AbYHMB6y (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Aug 2008 21:58:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753844AbYHMB6m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Aug 2008 21:52:17 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:60696 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753842AbYHMBwQ (ORCPT
+	Tue, 12 Aug 2008 21:58:42 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:48907 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753510AbYHMB6l (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Aug 2008 21:52:16 -0400
-Date: Tue, 12 Aug 2008 18:51:42 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Al Viro <viro@ZenIV.linux.org.uk>
-cc: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [RFC] readdir mess
-In-Reply-To: <20080813011909.GA28946@ZenIV.linux.org.uk>
-Message-ID: <alpine.LFD.1.10.0808121841030.3462@nehalem.linux-foundation.org>
-References: <20080812062241.GQ28946@ZenIV.linux.org.uk> <87ej4u9nf5.fsf@devron.myhome.or.jp> <alpine.LFD.1.10.0808121009370.3462@nehalem.linux-foundation.org> <20080812181057.GR28946@ZenIV.linux.org.uk> <alpine.LFD.1.10.0808121316570.3462@nehalem.linux-foundation.org>
- <20080812203808.GV28946@ZenIV.linux.org.uk> <alpine.LFD.1.10.0808121351570.3462@nehalem.linux-foundation.org> <20080813000433.GZ28946@ZenIV.linux.org.uk> <alpine.LFD.1.10.0808121708160.3462@nehalem.linux-foundation.org>
- <20080813011909.GA28946@ZenIV.linux.org.uk>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 12 Aug 2008 21:58:41 -0400
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: divy@chelsio.com (Divy Le Ray)
+Subject: Re: [RFC][PATCH 1/1] cxgb3i: cxgb3 iSCSI initiator
+Cc: davem@davemloft.net, rdreier@cisco.com, rick.jones2@hp.com,
+       jgarzik@pobox.com, swise@opengridcomputing.com, kxie@chelsio.com,
+       netdev@vger.kernel.org, open-iscsi@googlegroups.com,
+       michaelc@cs.wisc.edu, daisyc@us.ibm.com, wenxiong@us.ibm.com,
+       bhua@us.ibm.com, dm@chelsio.com, leedom@chelsio.com,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
+Organization: Core
+In-Reply-To: <200808121521.10101.divy@chelsio.com>
+X-Newsgroups: apana.lists.os.linux.kernel,apana.lists.os.linux.netdev,apana.lists.os.linux.scsi
+User-Agent: tin/1.7.4-20040225 ("Benbecula") (UNIX) (Linux/2.6.17-rc4 (i686))
+Message-Id: <E1KT5cW-0007si-00@gondolin.me.apana.org.au>
+Date: Wed, 13 Aug 2008 11:57:52 +1000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Divy Le Ray <divy@chelsio.com> wrote:
+>
+> Herbert requested some benchmark numbers, I consequently obliged.
 
+Have you posted a hardware-accelerated iSCSI vs. LRO comparison?
 
-On Wed, 13 Aug 2008, Al Viro wrote:
-> 
-> What _can_ a common helper do, anyway, when we are busy parsing an arseload of
-> possibly corrupt data in whatever weird format fs insists upon?
-
-Well, the parsing has to be done by the low-level filesystem code, yes.
-
-However, the whole thing with races with "f_pos" and all the locking - 
-that's only because we see the filesystem "readdir" code as being the 
-primary source of data.
-
-Quite frankly, if we had a "readdir page cache", the low-level filesystem 
-would still have to parse the insane low-level data with corruption 
-issues, but we could make it totally independent of f_pos (because we 
-would never use in the _real_ file->f_pos - we would just populate the 
-cache), and the locking issues would be only a cold-cache issue, with the 
-hot-cache hopefully needing little locking at all.
-
-For an exmple of that: you did a good job with all the "seq_file" helpers, 
-which meant that the low-level "filesystem" ops didn't need to know 
-_anything_ about partial results etc, and it automatically did the right 
-thing wrt f_pos updates and lseek etc.
-
-I'm not saying that readdir() would use the _same_ model, but I do suspect 
-that a common format in between the disk format and the eventual readdir() 
-output, that also could be cached, might mitigate a lot of the problems.
-
-As to the issues with lookup() - yes, a lookup would need to get the lock 
-for writing, but only for the last entry, and only if O_CREAT is set. 
-There's nothing wrogn with concurrent read-only lookups, I think (apart 
-from having to protect the dentries from being duplicated, of course, but 
-that would be a per-dentry lock flag, not a directory lock, methinks).
-
-I dunno.
-
-That said, I think you are right that we could also just improve on the 
-current non-caching version with soem higher-level semantics. Including 
-flags like "yes, we've seen the end", so that we don't need to always call 
-into the low-level filesystem one extra time to see that final zero 
-return.
-
-So yes, instead of separate "filldir_t" and "void *data" things, having a 
-"struct filldir_t" with several fields in common might be worth it.
-
-			Linus
+Thanks,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
