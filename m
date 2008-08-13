@@ -1,53 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754543AbYHMOqA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755505AbYHMOqv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754543AbYHMOqA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Aug 2008 10:46:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751449AbYHMOpv
+	id S1755505AbYHMOqv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Aug 2008 10:46:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751449AbYHMOqm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Aug 2008 10:45:51 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:50515 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750957AbYHMOpu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Aug 2008 10:45:50 -0400
-Date: Wed, 13 Aug 2008 10:45:48 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Kenneth Goldman <kgoldman@us.ibm.com>, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org
-Subject: Re: [PATCH 1/4] integrity: TPM internel kernel interface
-Message-ID: <20080813144548.GA9157@infradead.org>
-References: <20080812223636.1aff373a@lxorguk.ukuu.org.uk> <OFC8FDDFED.7F31F3B8-ON852574A4.004A3882-852574A4.004BA8FA@us.ibm.com> <20080813144040.30d40ec5@lxorguk.ukuu.org.uk>
+	Wed, 13 Aug 2008 10:46:42 -0400
+Received: from mx2.suse.de ([195.135.220.15]:55676 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750973AbYHMOqm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Aug 2008 10:46:42 -0400
+From: Oliver Neukum <oneukum@suse.de>
+Organization: Novell
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: Power management for SCSI
+Date: Wed, 13 Aug 2008 16:47:42 +0200
+User-Agent: KMail/1.9.9
+Cc: Pavel Machek <pavel@suse.cz>, kernel list <linux-kernel@vger.kernel.org>,
+       "Linux-pm mailing list" <linux-pm@lists.osdl.org>,
+       James.Bottomley@hansenpartnership.com, teheo@novell.com
+References: <Pine.LNX.4.44L0.0808131026320.2455-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0808131026320.2455-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080813144040.30d40ec5@lxorguk.ukuu.org.uk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+Message-Id: <200808131647.43989.oneukum@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 13, 2008 at 02:40:40PM +0100, Alan Cox wrote:
-> > "goodies", the TCG technology does not protect against hardware
-> > attacks such as replacing the TPM with a bogus device, replacing the
-> > CRTM hardware, flashing the CRTM using a JTAG cable, lifting a TPM pin>
-> > and asserting reset, using a JTAG cable to set breakpoints and alter
-> > memory, etc.
-> > 
-> > For this use case, the attack model is a remote, software attack.  The>
-> > user is not considered the attacker.
+Am Mittwoch 13 August 2008 16:31:03 schrieb Alan Stern:
+> On Wed, 13 Aug 2008, Pavel Machek wrote:
 > 
-> Surely if I can replace your TPM with alternative hardware then I can
-> also replace it with virtualised software traps.
+> > From: Alan Stern <stern@rowland.harvard.edu>
+> > 
+> > Add support for autosuspend/autoresume. Lowlevel driver can use it to
+> > spin the disk down and power down its SATA link, to turn off the USB
+> > interface, etc.
+> > 
+> > Spinning down the disk is useful - saves ~0.5W here. Powering down
+> > SATA controller is even better -- should save ~1W.
+> > 
+> > Now, I guess the patch will need to be split to small pieces for
+> > merge... I tried to rearrange it so that the documentation and hooks
+> > go before stuff that needs the hooks, and before Kconfig enabler. If
+> > it looks reasonably good, I'll split it into smaller pieces.
+> 
+> James had a number of objections to my original patch; you can read 
+> them here:
+> 
+> https://lists.linux-foundation.org/pipermail/linux-pm/2008-March/016849.html
 
-Yes, which in fact is what most people working on TPM support use
-because the real hardware is just too slow :)
+Very well. I see a basic problem here. For USB it is necessary that child
+devices be suspended before anything higher up in the tree is suspended.
+SATA seems to be able to power down a link while the device is not suspended.
 
-> [If there is a good document on this btw please just point me there
-> instead and I'll go read further]
+In fact in true SCSI busses can be shared. So are we using the correct
+approach?
 
-I recommend this one:
-http://www.few.vu.nl/~srijith/publications/confs/sws07-final.pdf  :)
-
+	Regards
+		Oliver
