@@ -1,144 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754772AbYHMJ0W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755176AbYHMJ2V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754772AbYHMJ0W (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Aug 2008 05:26:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751868AbYHMJ0O
+	id S1755176AbYHMJ2V (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Aug 2008 05:28:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752470AbYHMJ2N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Aug 2008 05:26:14 -0400
-Received: from mga09.intel.com ([134.134.136.24]:31086 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751860AbYHMJ0N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Aug 2008 05:26:13 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.32,200,1217833200"; 
-   d="scan'208";a="428808889"
-From: "Li, Shaohua" <shaohua.li@intel.com>
-To: Ingo Molnar <mingo@elte.hu>
-CC: lkml <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>
-Date: Wed, 13 Aug 2008 17:26:01 +0800
-Subject: RE: [patch]fastboot: remove duplicate unpack_to_rootfs()
-Thread-Topic: [patch]fastboot: remove duplicate unpack_to_rootfs()
-Thread-Index: Acj9GIwMWA3hoU/gRLa6K50OPnaFUAADe4qw
-Message-ID: <76780B19A496DC4B80439008DAD7076C0CF55666@PDSMSX501.ccr.corp.intel.com>
-References: <1218607669.3463.9.camel@sli10-desk.sh.intel.com>
- <20080813074503.GB398@elte.hu>
-In-Reply-To: <20080813074503.GB398@elte.hu>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: yes
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: multipart/mixed;
-	boundary="_002_76780B19A496DC4B80439008DAD7076C0CF55666PDSMSX501ccrcor_"
-MIME-Version: 1.0
+	Wed, 13 Aug 2008 05:28:13 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:40978 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751386AbYHMJ2N (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Aug 2008 05:28:13 -0400
+Date: Wed, 13 Aug 2008 02:27:12 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Huang Ying <ying.huang@intel.com>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>, Pavel Machek <pavel@ucw.cz>,
+       nigel@nigel.suspend2.net, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Vivek Goyal <vgoyal@redhat.com>, mingo@elte.hu,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org,
+       Kexec Mailing List <kexec@lists.infradead.org>
+Subject: Re: [PATCH] kexec jump: fix compiling warning on xchg(&kexec_lock,
+ 0) in kernel_kexec()
+Message-Id: <20080813022712.4bea5fea.akpm@linux-foundation.org>
+In-Reply-To: <1218618760.24951.137.camel@caritas-dev.intel.com>
+References: <1218618760.24951.137.camel@caritas-dev.intel.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---_002_76780B19A496DC4B80439008DAD7076C0CF55666PDSMSX501ccrcor_
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+On Wed, 13 Aug 2008 17:12:40 +0800 Huang Ying <ying.huang@intel.com> wrote:
 
-
-
->-----Original Message-----
->From: Ingo Molnar [mailto:mingo@elte.hu]
->Sent: Wednesday, August 13, 2008 3:45 PM
->To: Li, Shaohua
->Cc: lkml; Andrew Morton; Arjan van de Ven
->Subject: Re: [patch]fastboot: remove duplicate unpack_to_rootfs()
+> Fix compiling warning on xchg(&kexec_lock, 0) in kernel_kexec().
 >
->
->* Shaohua Li <shaohua.li@intel.com> wrote:
->
->> we check if initrd is initramfs first and then do real unpack. The
->> check isn't required, we can directly do unpack. If initrd isn't
->> initramfs, we can remove garbage. In my laptop, this saves 0.1s boot
->> time. This penalizes non-initramfs case, but now initramfs is mostly
->> widely used.
-Updated patch. Sorry for the attachment, my email client is broken.
 
-Thanks,
-Shaohua
+Would prefer that thi code not use such a peculair idiom.  I don't
+believe that it needs to.
 
---_002_76780B19A496DC4B80439008DAD7076C0CF55666PDSMSX501ccrcor_
-Content-Type: application/octet-stream; name="initramfs.patch"
-Content-Description: initramfs.patch
-Content-Disposition: attachment; filename="initramfs.patch"; size=3902;
-	creation-date="Wed, 13 Aug 2008 17:24:46 GMT";
-	modification-date="Wed, 13 Aug 2008 17:33:37 GMT"
-Content-Transfer-Encoding: base64
+I guess that's a separate activity.
 
-d2UgY2hlY2sgaWYgaW5pdHJkIGlzIGluaXRyYW1mcyBmaXJzdCBhbmQgdGhlbiBkbyByZWFsIHVu
-cGFjay4gVGhlIGNoZWNrCmlzbid0IHJlcXVpcmVkLCB3ZSBjYW4gZGlyZWN0bHkgZG8gdW5wYWNr
-LiBJZiBpbml0cmQgaXNuJ3QgaW5pdHJhbWZzLCB3ZQpjYW4gcmVtb3ZlIGdhcmJhZ2UuIEluIG15
-IGxhcHRvcCwgdGhpcyBzYXZlcyAwLjFzIGJvb3QgdGltZS4gVGhpcwpwZW5hbGl6ZXMgbm9uLWlu
-aXRyYW1mcyBjYXNlLCBidXQgbm93IGluaXRyYW1mcyBpcyBtb3N0bHkgd2lkZWx5IHVzZWQuCgpT
-aWduZWQtb2ZmLWJ5OiBTaGFvaHVhIExpIDxzaGFvaHVhLmxpQGludGVsLmNvbT4KCmRpZmYgLS1n
-aXQgYS9pbml0L2luaXRyYW1mcy5jIGIvaW5pdC9pbml0cmFtZnMuYwppbmRleCA2NDRmYzAxLi5k
-YThkMDMwIDEwMDY0NAotLS0gYS9pbml0L2luaXRyYW1mcy5jCisrKyBiL2luaXQvaW5pdHJhbWZz
-LmMKQEAgLTUsNiArNSw3IEBACiAjaW5jbHVkZSA8bGludXgvZmNudGwuaD4KICNpbmNsdWRlIDxs
-aW51eC9kZWxheS5oPgogI2luY2x1ZGUgPGxpbnV4L3N0cmluZy5oPgorI2luY2x1ZGUgPGxpbnV4
-L2RpcmVudC5oPgogI2luY2x1ZGUgPGxpbnV4L3N5c2NhbGxzLmg+CiAKIHN0YXRpYyBfX2luaXRk
-YXRhIGNoYXIgKm1lc3NhZ2U7CkBAIC0xMjEsOCArMTIyLDYgQEAgc3RhdGljIF9faW5pdGRhdGEg
-Y2hhciAqdmljdGltOwogc3RhdGljIF9faW5pdGRhdGEgdW5zaWduZWQgY291bnQ7CiBzdGF0aWMg
-X19pbml0ZGF0YSBsb2ZmX3QgdGhpc19oZWFkZXIsIG5leHRfaGVhZGVyOwogCi1zdGF0aWMgX19p
-bml0ZGF0YSBpbnQgZHJ5X3J1bjsKLQogc3RhdGljIGlubGluZSB2b2lkIF9faW5pdCBlYXQodW5z
-aWduZWQgbikKIHsKIAl2aWN0aW0gKz0gbjsKQEAgLTE4MywxMCArMTgyLDYgQEAgc3RhdGljIGlu
-dCBfX2luaXQgZG9faGVhZGVyKHZvaWQpCiAJcGFyc2VfaGVhZGVyKGNvbGxlY3RlZCk7CiAJbmV4
-dF9oZWFkZXIgPSB0aGlzX2hlYWRlciArIE5fQUxJR04obmFtZV9sZW4pICsgYm9keV9sZW47CiAJ
-bmV4dF9oZWFkZXIgPSAobmV4dF9oZWFkZXIgKyAzKSAmIH4zOwotCWlmIChkcnlfcnVuKSB7Ci0J
-CXJlYWRfaW50byhuYW1lX2J1ZiwgTl9BTElHTihuYW1lX2xlbiksIEdvdE5hbWUpOwotCQlyZXR1
-cm4gMDsKLQl9CiAJc3RhdGUgPSBTa2lwSXQ7CiAJaWYgKG5hbWVfbGVuIDw9IDAgfHwgbmFtZV9s
-ZW4gPiBQQVRIX01BWCkKIAkJcmV0dXJuIDA7CkBAIC0yNTcsOCArMjUyLDYgQEAgc3RhdGljIGlu
-dCBfX2luaXQgZG9fbmFtZSh2b2lkKQogCQlmcmVlX2hhc2goKTsKIAkJcmV0dXJuIDA7CiAJfQot
-CWlmIChkcnlfcnVuKQotCQlyZXR1cm4gMDsKIAljbGVhbl9wYXRoKGNvbGxlY3RlZCwgbW9kZSk7
-CiAJaWYgKFNfSVNSRUcobW9kZSkpIHsKIAkJaW50IG1sID0gbWF5YmVfbGluaygpOwpAQCAtNDIz
-LDEwICs0MTYsOSBAQCBzdGF0aWMgdm9pZCBfX2luaXQgZmx1c2hfd2luZG93KHZvaWQpCiAJb3V0
-Y250ID0gMDsKIH0KIAotc3RhdGljIGNoYXIgKiBfX2luaXQgdW5wYWNrX3RvX3Jvb3RmcyhjaGFy
-ICpidWYsIHVuc2lnbmVkIGxlbiwgaW50IGNoZWNrX29ubHkpCitzdGF0aWMgY2hhciAqIF9faW5p
-dCB1bnBhY2tfdG9fcm9vdGZzKGNoYXIgKmJ1ZiwgdW5zaWduZWQgbGVuKQogewogCWludCB3cml0
-dGVuOwotCWRyeV9ydW4gPSBjaGVja19vbmx5OwogCWhlYWRlcl9idWYgPSBrbWFsbG9jKDExMCwg
-R0ZQX0tFUk5FTCk7CiAJc3ltbGlua19idWYgPSBrbWFsbG9jKFBBVEhfTUFYICsgTl9BTElHTihQ
-QVRIX01BWCkgKyAxLCBHRlBfS0VSTkVMKTsKIAluYW1lX2J1ZiA9IGttYWxsb2MoTl9BTElHTihQ
-QVRIX01BWCksIEdGUF9LRVJORUwpOwpAQCAtNTIwLDEwICs1MTIsNTcgQEAgc2tpcDoKIAlpbml0
-cmRfZW5kID0gMDsKIH0KIAorI2RlZmluZSBCVUZfU0laRSAxMDI0CitzdGF0aWMgdm9pZCBfX2lu
-aXQgY2xlYW5fcm9vdGZzKHZvaWQpCit7CisJaW50IGZkOworCXZvaWQgKmJ1ZjsKKwlzdHJ1Y3Qg
-bGludXhfZGlyZW50NjQgKmRpcnA7CisJaW50IGNvdW50OworCisJZmQgPSBzeXNfb3BlbigiLyIs
-IE9fUkRPTkxZLCAwKTsKKwlXQVJOX09OKGZkIDwgMCk7CisJaWYgKGZkIDwgMCkKKwkJcmV0dXJu
-OworCWJ1ZiA9IGt6YWxsb2MoQlVGX1NJWkUsIEdGUF9LRVJORUwpOworCVdBUk5fT04oIWJ1Zik7
-CisJaWYgKCFidWYpIHsKKwkJc3lzX2Nsb3NlKGZkKTsKKwkJcmV0dXJuOworCX0KKworCWRpcnAg
-PSBidWY7CisJY291bnQgPSBzeXNfZ2V0ZGVudHM2NChmZCwgZGlycCwgQlVGX1NJWkUpOworCXdo
-aWxlIChjb3VudCA+IDApIHsKKwkJd2hpbGUgKGNvdW50ID4gMCkgeworCQkJc3RydWN0IHN0YXQg
-c3Q7CisJCQlpbnQgcmV0OworCisJCQlyZXQgPSBzeXNfbmV3bHN0YXQoZGlycC0+ZF9uYW1lLCAm
-c3QpOworCQkJV0FSTl9PTl9PTkNFKHJldCk7CisJCQlpZiAoIXJldCkgeworCQkJCWlmIChTX0lT
-RElSKHN0LnN0X21vZGUpKQorCQkJCQlzeXNfcm1kaXIoZGlycC0+ZF9uYW1lKTsKKwkJCQllbHNl
-CisJCQkJCXN5c191bmxpbmsoZGlycC0+ZF9uYW1lKTsKKwkJCX0KKworCQkJY291bnQgLT0gZGly
-cC0+ZF9yZWNsZW47CisJCQlkaXJwID0gKHZvaWQgKilkaXJwICsgZGlycC0+ZF9yZWNsZW47CisJ
-CX0KKwkJZGlycCA9IGJ1ZjsKKwkJbWVtc2V0KGJ1ZiwgMCwgQlVGX1NJWkUpOworCQljb3VudCA9
-IHN5c19nZXRkZW50czY0KGZkLCBkaXJwLCBCVUZfU0laRSk7CisJfQorCisJc3lzX2Nsb3NlKGZk
-KTsKKwlrZnJlZShidWYpOworfQorCiBzdGF0aWMgaW50IF9faW5pdCBwb3B1bGF0ZV9yb290ZnMo
-dm9pZCkKIHsKIAljaGFyICplcnIgPSB1bnBhY2tfdG9fcm9vdGZzKF9faW5pdHJhbWZzX3N0YXJ0
-LAotCQkJIF9faW5pdHJhbWZzX2VuZCAtIF9faW5pdHJhbWZzX3N0YXJ0LCAwKTsKKwkJCSBfX2lu
-aXRyYW1mc19lbmQgLSBfX2luaXRyYW1mc19zdGFydCk7CiAJaWYgKGVycikKIAkJcGFuaWMoZXJy
-KTsKIAlpZiAoaW5pdHJkX3N0YXJ0KSB7CkBAIC01MzEsMTMgKzU3MCwxNSBAQCBzdGF0aWMgaW50
-IF9faW5pdCBwb3B1bGF0ZV9yb290ZnModm9pZCkKIAkJaW50IGZkOwogCQlwcmludGsoS0VSTl9J
-TkZPICJjaGVja2luZyBpZiBpbWFnZSBpcyBpbml0cmFtZnMuLi4iKTsKIAkJZXJyID0gdW5wYWNr
-X3RvX3Jvb3RmcygoY2hhciAqKWluaXRyZF9zdGFydCwKLQkJCWluaXRyZF9lbmQgLSBpbml0cmRf
-c3RhcnQsIDEpOworCQkJaW5pdHJkX2VuZCAtIGluaXRyZF9zdGFydCk7CiAJCWlmICghZXJyKSB7
-CiAJCQlwcmludGsoIiBpdCBpc1xuIik7Ci0JCQl1bnBhY2tfdG9fcm9vdGZzKChjaGFyICopaW5p
-dHJkX3N0YXJ0LAotCQkJCWluaXRyZF9lbmQgLSBpbml0cmRfc3RhcnQsIDApOwogCQkJZnJlZV9p
-bml0cmQoKTsKIAkJCXJldHVybiAwOworCQl9IGVsc2UgeworCQkJY2xlYW5fcm9vdGZzKCk7CisJ
-CQl1bnBhY2tfdG9fcm9vdGZzKF9faW5pdHJhbWZzX3N0YXJ0LAorCQkJCSBfX2luaXRyYW1mc19l
-bmQgLSBfX2luaXRyYW1mc19zdGFydCk7CiAJCX0KIAkJcHJpbnRrKCJpdCBpc24ndCAoJXMpOyBs
-b29rcyBsaWtlIGFuIGluaXRyZFxuIiwgZXJyKTsKIAkJZmQgPSBzeXNfb3BlbigiL2luaXRyZC5p
-bWFnZSIsIE9fV1JPTkxZfE9fQ1JFQVQsIDA3MDApOwpAQCAtNTUwLDcgKzU5MSw3IEBAIHN0YXRp
-YyBpbnQgX19pbml0IHBvcHVsYXRlX3Jvb3Rmcyh2b2lkKQogI2Vsc2UKIAkJcHJpbnRrKEtFUk5f
-SU5GTyAiVW5wYWNraW5nIGluaXRyYW1mcy4uLiIpOwogCQllcnIgPSB1bnBhY2tfdG9fcm9vdGZz
-KChjaGFyICopaW5pdHJkX3N0YXJ0LAotCQkJaW5pdHJkX2VuZCAtIGluaXRyZF9zdGFydCwgMCk7
-CisJCQlpbml0cmRfZW5kIC0gaW5pdHJkX3N0YXJ0KTsKIAkJaWYgKGVycikKIAkJCXBhbmljKGVy
-cik7CiAJCXByaW50aygiIGRvbmVcbiIpOwo=
+> 
+> ---
+>  kernel/kexec.c |    4 +++-
+>  1 file changed, 3 insertions(+), 1 deletion(-)
+> 
+> --- a/kernel/kexec.c
+> +++ b/kernel/kexec.c
+> @@ -1433,6 +1433,7 @@ module_init(crash_save_vmcoreinfo_init)
+>  int kernel_kexec(void)
+>  {
+>  	int error = 0;
+> +	int locked;
+>  
+>  	if (xchg(&kexec_lock, 1))
+>  		return -EBUSY;
+> @@ -1498,7 +1499,8 @@ int kernel_kexec(void)
+>  #endif
+>  
+>   Unlock:
+> -	xchg(&kexec_lock, 0);
+> +	locked = xchg(&kexec_lock, 0);
+> +	BUG_ON(!locked);
+>  
+>  	return error;
+>  }
+> 
 
---_002_76780B19A496DC4B80439008DAD7076C0CF55666PDSMSX501ccrcor_--
+Please always quote the compiler output in the changelog when fixing
+warnings and build errors.
+
+The patch is titled "kexec jump: ..." whereas this is just a plain old
+kexec fix, which is applicable to mainline.
+
+We don't need to create that local.  I queued this:
+
+
+
+Subject: kexec: fix compilation warning on xchg(&kexec_lock, 0) in kernel_kexec()
+From: Huang Ying <ying.huang@intel.com>
+
+kernel/kexec.c: In function 'kernel_kexec':
+kernel/kexec.c:1506: warning: value computed is not used
+
+Signed-off-by: Huang Ying <ying.huang@intel.com>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ kernel/kexec.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff -puN kernel/kexec.c~kexec-jump-fix-compiling-warning-on-xchgkexec_lock-0-in-kernel_kexec kernel/kexec.c
+--- a/kernel/kexec.c~kexec-jump-fix-compiling-warning-on-xchgkexec_lock-0-in-kernel_kexec
++++ a/kernel/kexec.c
+@@ -1503,7 +1503,8 @@ int kernel_kexec(void)
+ 	}
+ 
+  Unlock:
+-	xchg(&kexec_lock, 0);
++	if (!xchg(&kexec_lock, 0))
++		BUG();
+ 
+ 	return error;
+ }
+_
+
