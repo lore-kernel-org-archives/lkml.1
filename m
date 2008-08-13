@@ -1,89 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755906AbYHMKpA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756308AbYHMKps@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755906AbYHMKpA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Aug 2008 06:45:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753438AbYHMKos
+	id S1756308AbYHMKps (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Aug 2008 06:45:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753380AbYHMKpj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Aug 2008 06:44:48 -0400
-Received: from yx-out-2324.google.com ([74.125.44.28]:17875 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752978AbYHMKor (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Aug 2008 06:44:47 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=tYnDuJpr4jF/cTCMyPbSV1Zr2Y+oeHEy9j4JqoAqTn0lOVKMpUmRpI8zCY78/Iy0PX
-         UI0j0Fxecqs8F4EvkXnFo+DUBc62W2XYa1/gQzFIjGncgdXaYELIiDRyJs93WEYqg3H3
-         GU/9sJ3xi0WqRpadlRC+mDXg1bJu0U0N88K9s=
-Message-ID: <19f34abd0808130344h65e793eare83c0f41cb1cfb8a@mail.gmail.com>
-Date: Wed, 13 Aug 2008 12:44:46 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "David Miller" <davem@davemloft.net>
-Subject: Re: [RFC][PATCH] netconsole: avoid deadlock on printk from driver code
-Cc: adobriyan@gmail.com, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       jgarzik@pobox.com
-In-Reply-To: <20080813.032946.114949936.davem@davemloft.net>
+	Wed, 13 Aug 2008 06:45:39 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:37379 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754106AbYHMKpi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Aug 2008 06:45:38 -0400
+Date: Wed, 13 Aug 2008 12:44:45 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Pardo <pardo@google.com>
+Cc: akpm@linux-foundation.org, hugh@veritas.com, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, briangrant@google.com, cgd@google.com,
+       mbligh@google.com, Ulrich Drepper <drepper@redhat.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: pthread_create() slow for many threads; also time to revisit
+	64b context switch optimization?
+Message-ID: <20080813104445.GA24632@elte.hu>
+References: <af8810200808121736q76640cc1kb814385072fe9b29@mail.gmail.com> <af8810200808121745h596c175bk348d0aaeeb9bcb45@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20080813095324.GA15055@ben.ifi.uio.no>
-	 <20080813095942.GA9145@martell.zuzino.mipt.ru>
-	 <20080813.032946.114949936.davem@davemloft.net>
+In-Reply-To: <af8810200808121745h596c175bk348d0aaeeb9bcb45@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 13, 2008 at 12:29 PM, David Miller <davem@davemloft.net> wrote:
-> From: Alexey Dobriyan <adobriyan@gmail.com>
-> Date: Wed, 13 Aug 2008 13:59:43 +0400
->> > The least invasive fix is to detect that we're trying to re-enter the
->> > driver code. We provide a netdev_busy() function which can be used to
->> > determine whether a deadlock can occur if we try to transmit another
->> > packet.
->> >
->> > Note that this may lead to lost messages if the driver is active on
->> > another CPU while we try to use the same device for netconsole.
->>
->> This sucks.
->
-> It's also the wrong fix.
->
-> As a quicker and more palatable solution, print your link status
-> message in some kind of deferred context where you can have the
-> lock not held or similar.
 
-This is true, but it is very fragile. It fixes only one case (exactly
-the case that I saw), while there may be many more of the same nature.
+* Pardo <pardo@google.com> wrote:
 
-For your proposed fix to work in all cases, _all_ printks coming from
-rtl8139_tx_interrupt() must be printed in a different context. That
-includes, but is not necessarily limited to, these obvious cases:
+>  As example, in one case creating new threads goes from about 35,000 
+> cycles up to about 25,000,000 cycles -- which is under 100 threads per 
+> second. [...]
 
-        DPRINTK ("%s: Abnormal interrupt, status %8.8x.\n",
-                 dev->name, status);
+> Various things would address the slow pthread_create().  Choices 
+> include:
+>  - Be more platform-aware about when to use MAP_32BIT.
+>  - Abandon use of MAP_32BIT entirely, with worse performance on some machines.
+>  - Change the mmap() algorithm to be faster on allocation failure
+> (avoid a linear search of vmas).
 
-    printk(KERN_DEBUG "%s: Transmit error, Tx status %8.8x.\n",
+Sigh, unfortunately MAP_32BIT use in 64-bit apps for stacks was 
+apparently created without foresight about what would happen in the MM 
+when thread stacks exhaust 4GB.
 
-                printk (KERN_ERR "%s: PCI Bus error %4.4x.\n",
-                        dev->name, pci_cmd_status);
+The problem is that MAP_32BIT is used both as a performance hack for 
+64-bit apps and as an ABI compat mechanism for 32-bit apps. So we cannot 
+just start disregarding MAP_32BIT in the kernel - we'd break 32-bit 
+compat apps and/or compat 32-bit libraries.
 
-                printk (KERN_ERR "%s: Out-of-sync dirty pointer, %ld
-vs. %ld.\n",
+There are various other options to solve the (severe!) performance 
+breakdown:
 
-There must also be no BUG()s, WARN()s, other debugging facilities
-(spinlock debugging, lockdep, irqtrace, etc.) triggering which may
-call printk() inside the protected section. Can we really ensure this?
-For all drivers supporting netconsole?
+1- glibc could start not using MAP_32BIT for 64-bit thread stacks (the 
+   boxes where context-switching is slow probably do not matter all that 
+   much anymore - they were very slow at everything 64-bit anyway)
 
+     Pros: easiest solution.
+     Cons: slows down the affected machines and needs a new glibc.
 
-Vegard
+2- We could introduce a new MAP_64BIT_STACK flag which we could
+   propagate it into MAP_32BIT on those old CPUs. It would be 
+   disregarded on modern CPUs and thread stacks would be 64-bit.
 
--- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
+     Pros: cleanest solution.
+     Cons: needs both new glibc and new kernel to take advantage of.
+
+3- We could detect the first-4G-is-full condition and cache it. Problem
+   is, there will likely be small holes in it so it's rather hard to do 
+   it in a sane way. Also, every munmap() of a thread stack will 
+   invalidate this - triggering a slow linear search every now and then.
+
+     Pros: only needs a new kernel to take advantage of.
+     Cons: is the most complex and messiest solution with no clear 
+           benefit to other workloads. Also, does not 100% solve the 
+           performance problem and prolongues the 4GB stack threads 
+           hack.
+
+i'd go for 1) or 2).
+
+	Ingo
