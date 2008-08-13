@@ -1,51 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755767AbYHMO7e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754428AbYHMPGO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755767AbYHMO7e (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Aug 2008 10:59:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754512AbYHMO7Z
+	id S1754428AbYHMPGO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Aug 2008 11:06:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753053AbYHMPF5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Aug 2008 10:59:25 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:58153 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752491AbYHMO7Y (ORCPT
+	Wed, 13 Aug 2008 11:05:57 -0400
+Received: from yx-out-2324.google.com ([74.125.44.28]:38962 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752788AbYHMPF4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Aug 2008 10:59:24 -0400
-Date: Wed, 13 Aug 2008 10:59:23 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Oliver Neukum <oneukum@suse.de>
-cc: Pavel Machek <pavel@suse.cz>, kernel list <linux-kernel@vger.kernel.org>,
-       Linux-pm mailing list <linux-pm@lists.osdl.org>,
-       <James.Bottomley@hansenpartnership.com>, <teheo@novell.com>
-Subject: Re: Power management for SCSI
-In-Reply-To: <200808131647.43989.oneukum@suse.de>
-Message-ID: <Pine.LNX.4.44L0.0808131051330.2455-100000@iolanthe.rowland.org>
+	Wed, 13 Aug 2008 11:05:56 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=Uu8eyKNAJmPl0nb1qmoCYSjcngPEdl/HgKabpJrPWXcaVBsie5A3qewg7NPhFEjvvS
+         zRLCdMkUGxodefBNslwc0XzjuP9J/7Db/jUQL+uhJHv7/L01tSepq5U4pXVKzX9FQwbC
+         FVkCc47mfKKfh/J3UV24JTDlFKeIzJ11nU1K8=
+Message-ID: <2f11576a0808130805s6963e2a4mbb82ad7221cf80a2@mail.gmail.com>
+Date: Thu, 14 Aug 2008 00:05:54 +0900
+From: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>
+To: "Christoph Lameter" <cl@linux-foundation.org>
+Subject: Re: No, really, stop trying to delete slab until you've finished making slub perform as well
+Cc: "Matthew Wilcox" <matthew@wil.cx>, "Pekka Enberg" <penberg@cs.helsinki.fi>,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, "Mel Gorman" <mel@skynet.ie>,
+       andi@firstfloor.org, "Rik van Riel" <riel@redhat.com>
+In-Reply-To: <48A2F030.9080301@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080805210125.A897.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	 <48986AC6.5030406@linux-foundation.org>
+	 <20080813194222.E77F.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	 <48A2DD2C.3090602@linux-foundation.org>
+	 <2f11576a0808130714k2cd031c4nd6eea3506831cac9@mail.gmail.com>
+	 <48A2F030.9080301@linux-foundation.org>
+X-Google-Sender-Auth: f5578481b80f273b
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 13 Aug 2008, Oliver Neukum wrote:
+> Yes but running with this patch would allow us to verify that we understand
+> what is causing the problem. There are other solutions like skipping to the
+> next partial slab on the list that could fix performance issues that the patch
+> may cause. A test will give us:
+>
+> 1. Confirmation that the memory use is caused by the trylock.
+>
+> 2. Some performance numbers. If these show a regression then we have some
+> markers that we can measure other solutions against.
 
-> Very well. I see a basic problem here. For USB it is necessary that child
-> devices be suspended before anything higher up in the tree is suspended.
-> SATA seems to be able to power down a link while the device is not suspended.
+okey.
+I will confirm its patch at next week.
 
-Is the USB transport unique in its requirement that all the child
-devices must be suspended before the link can be powered down?  Maybe 
-that requirement should be made an explicit property of the transport 
-or the transport class.
+(unfortunately, my company don't business in rest this week)
 
-> In fact in true SCSI busses can be shared. So are we using the correct
-> approach?
-
-This is a good question.  Most USB mass-storage devices do not act as a
-true SCSI bus, but I believe there are a few non-standard ones that do
--- the USB device really contains a SCSI host and arbitrary SCSI
-targets can be attached to it.  For the moment, we should be safe
-enough using a model in which there are no other initiators on a
-USB-type SCSI transport, but it's something to keep in mind.
-
-Alan Stern
-
+Thanks.
