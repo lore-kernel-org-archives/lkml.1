@@ -1,66 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754753AbYHMJcn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754603AbYHMJhY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754753AbYHMJcn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Aug 2008 05:32:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752411AbYHMJcb
+	id S1754603AbYHMJhY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Aug 2008 05:37:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752621AbYHMJhK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Aug 2008 05:32:31 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:44551
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751860AbYHMJca (ORCPT
+	Wed, 13 Aug 2008 05:37:10 -0400
+Received: from n79.bullet.mail.sp1.yahoo.com ([98.136.44.39]:48207 "HELO
+	n79.bullet.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751809AbYHMJhJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Aug 2008 05:32:30 -0400
-Date: Wed, 13 Aug 2008 02:32:31 -0700 (PDT)
-Message-Id: <20080813.023231.110118129.davem@davemloft.net>
-To: akpm@linux-foundation.org
-Cc: harvey.harrison@gmail.com, mingo@elte.hu, hpa@zytor.com,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       per.liden@ericsson.com, jon.maloy@ericsson.com,
-       allan.stephens@windriver.com
-Subject: Re: [PATCH] tipc: Use the appropriate swab helper rather than an
- internal helper
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20080812212017.febf1392.akpm@linux-foundation.org>
-References: <20080812205422.4273d598.akpm@linux-foundation.org>
-	<1218600348.30194.105.camel@brick>
-	<20080812212017.febf1392.akpm@linux-foundation.org>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Wed, 13 Aug 2008 05:37:09 -0400
+X-Yahoo-Newman-Property: ymail-3
+X-Yahoo-Newman-Id: 823786.27655.bm@omp404.mail.sp1.yahoo.com
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=Received:X-Mailer:Date:From:Reply-To:Subject:To:MIME-Version:Content-Type:Message-ID;
+  b=TRaivWtiv6/KzaYotkOswQzW6mqcPtql3Xn461LQIfz9MPOqE3wNvsD5kTsWwQvhYmWD8anEx9eKkUwvIOmcT51QAc60U8WWuUZNhxZ8S4yWsr9s99k0ELesEc8PeyN/zVQT5E2UR5zSgHBXxXwWjllLGgjXt8ZUaS/LwcPYL3c=;
+X-Mailer: YahooMailWebService/0.7.218
+Date: Wed, 13 Aug 2008 02:37:07 -0700 (PDT)
+From: barry bouwsma <free_beer_for_all@yahoo.com>
+Reply-To: free_beer_for_all@yahoo.com
+Subject: Proposal: kernel config option for default UFS filesystem
+To: linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <618349.28606.qm@web46105.mail.sp1.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Andrew Morton <akpm@linux-foundation.org>
-Date: Tue, 12 Aug 2008 21:20:17 -0700
+Servus, Sportsfreunde!
 
-> On Tue, 12 Aug 2008 21:05:47 -0700 Harvey Harrison <harvey.harrison@gmail.com> wrote:
-> 
-> > ___generally means I am an internal implementation detail, don't use
-> > me.
-> > 
-> > Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
-> > ---
-> > Sorry for breaking the build Andrew, my testing has been with all the __constant
-> > versions in-tree removed.
-> > 
-> >  net/tipc/subscr.c |    2 +-
-> >  1 files changed, 1 insertions(+), 1 deletions(-)
-> > 
-> > diff --git a/net/tipc/subscr.c b/net/tipc/subscr.c
-> > index 0326d30..f5da05d 100644
-> > --- a/net/tipc/subscr.c
-> > +++ b/net/tipc/subscr.c
-> > @@ -85,7 +85,7 @@ static struct top_srv topsrv = { 0 };
-> >  
-> >  static u32 htohl(u32 in, int swap)
-> >  {
-> > -	return swap ? (u32)___constant_swab32(in) : in;
-> > +	return swap ? (u32)swab32(in) : in;
-> >  }
-> 
-> yes, that's what I did too, only I dropped the
-> seems-to-me-to-be-unneeded (u32) cast.
+I'm sharing my x86 machine with several flavours of BSDen, and
+thereby wishing to mount the UFS filesystems under Linux.
 
-I've applied Andrew's patch.
+Normally one has to specify the filesystem type, lest it otherwise
+default to `old', which is for me, not useful.  In my case, a 44bsd
+default would match all my filesystems used by NetBSD and FreeBSD.
+
+I've recently been running with a hack to Kconfig, which lets me
+select at config time, whether I wish to default to a different
+ufstype.  For me, with oldconfig, it spits out something like...
+
+UFS file system support (read only) (UFS_FS) [M/n/y/?] m
+  UFS file system write support (DANGEROUS) (UFS_FS_WRITE) [Y/n/?] y
+  UFS debugging (UFS_DEBUG) [N/y/?] n
+Default UFS filesystem type
+> 1. Old default (UFS_UFSTYPE_OLD)
+  2. Sun x86 (UFS_UFSTYPE_SUNx86)
+  3. Sun (UFS_UFSTYPE_SUN)
+  4. SunOS (UFS_UFSTYPE_SUNOS)
+  5. 44BSD (Free-, Net-, OpenBSD and friends) (UFS_UFSTYPE_44BSD) (NEW)
+  6. UFS2 as added to 44BSD systems (UFS_UFSTYPE_UFS2)
+  7. HP (UFS_UFSTYPE_HP)
+  8. NeXTStep CD (UFS_UFSTYPE_NEXTSTEP_CD)
+  9. NeXTStep (UFS_UFSTYPE_NEXTSTEP)
+  10. OpenStep (UFS_UFSTYPE_OPENSTEP)
+choice[1-10?]: 5
+
+Is this something worthy of further cluttering up the kernel config
+for my convenience, or not, given that there is no way presently to
+automagically determine the proper UFS filesystem type at mount?
+
+
+If it is, I'll post my hacks for ridicule and derision.
+
+
+thanks,
+barry bouwsma
+
+
+      
+
