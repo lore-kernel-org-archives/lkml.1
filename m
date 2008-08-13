@@ -1,42 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754145AbYHMGmT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754310AbYHMGr6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754145AbYHMGmT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Aug 2008 02:42:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752379AbYHMGmE
+	id S1754310AbYHMGr6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Aug 2008 02:47:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752379AbYHMGrv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Aug 2008 02:42:04 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:54425 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751925AbYHMGmC (ORCPT
+	Wed, 13 Aug 2008 02:47:51 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:34677 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751900AbYHMGru (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Aug 2008 02:42:02 -0400
-Message-ID: <48A28165.5010202@cs.helsinki.fi>
-Date: Wed, 13 Aug 2008 09:38:29 +0300
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-User-Agent: Thunderbird 2.0.0.16 (Macintosh/20080707)
-MIME-Version: 1.0
-To: Christoph Lameter <cl@linux-foundation.org>
-CC: akpm@linux-foundation.org, Christoph Lameter <clameter@sgi.com>,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       Mel Gorman <mel@skynet.ie>, andi@firstfloor.org,
-       Rik van Riel <riel@redhat.com>, mpm@selenic.com
-Subject: Re: [patch 15/19] Filesystem: XFS slab defragmentation
-References: <20080811150616.207532384@quilx.com> <20080811150659.051842926@quilx.com> <20080812002057.GH6119@disturbed> <48A136D7.4080505@cs.helsinki.fi> <48A1D4A0.2030109@linux-foundation.org>
-In-Reply-To: <48A1D4A0.2030109@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 13 Aug 2008 02:47:50 -0400
+Date: Tue, 12 Aug 2008 23:47:03 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Harvey Harrison <harvey.harrison@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 19/22] x86: use the new byteorder headers
+Message-Id: <20080812234703.4a9adbea.akpm@linux-foundation.org>
+In-Reply-To: <1218607635.30194.115.camel@brick>
+References: <1218587234.30194.93.camel@brick>
+	<20080812225612.6742aaf0.akpm@linux-foundation.org>
+	<20080812230205.680644a4.akpm@linux-foundation.org>
+	<1218607635.30194.115.camel@brick>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Lameter wrote:
-> Pekka Enberg wrote:
->>> Please update this patch as per my last comment.
->> Christoph, I'm dropping this patch from my tree.
-> 
-> Just apply this patch:
-> 
-> Subject: defrag/xfs: Move defrag setup directly after xfs_vnode_zone kmem
-> cache creation
+On Tue, 12 Aug 2008 23:07:15 -0700 Harvey Harrison <harvey.harrison@gmail.com> wrote:
 
-Applied, thanks!
+> On Tue, 2008-08-12 at 23:02 -0700, Andrew Morton wrote:
+> > On Tue, 12 Aug 2008 22:56:12 -0700 Andrew Morton <akpm@linux-foundation.org> wrote:
+> > 
+> > > I'll drop them all.
+> > 
+> > btw, I had to rework several of these patches because everyone is
+> > moving include/asm-arch/* into arch/include/asm/.  Patches against
+> > linux-next would be preferred please.
+> > 
+> 
+> Which arches? These were all against linux-next20080811.
+> 
+
+The ones which got changed in the past 24 hours I guess ;)
+
+avr32 and xtensa, I think.
+
+Ah, yes, I seem to have picked some trees which aren't in linux-next
+for whatever reason.  See mmotm's git-parisc.patch and git-xtensa.patch.
+
