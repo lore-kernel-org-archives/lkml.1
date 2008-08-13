@@ -1,232 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754580AbYHMAAg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754609AbYHMAEq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754580AbYHMAAg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Aug 2008 20:00:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752668AbYHMAAQ
+	id S1754609AbYHMAEq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Aug 2008 20:04:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752384AbYHMAEh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Aug 2008 20:00:16 -0400
-Received: from web82108.mail.mud.yahoo.com ([209.191.84.221]:39691 "HELO
-	web82108.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752623AbYHMAAN (ORCPT
+	Tue, 12 Aug 2008 20:04:37 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:49229 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751903AbYHMAEg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Aug 2008 20:00:13 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=sbcglobal.net;
-  h=Received:X-Mailer:Date:From:Subject:To:Cc:MIME-Version:Content-Type:Message-ID;
-  b=5tsYuhG1sOB/DimAzUUZPH9ep8N3vDSwPUlq5b+Yc6UNimQxglzBmqt+v/jqZ35/9lzTIwEe8wMiPN3U0ViYGMRjSmBmpNcH5UnQyMpuT1EYMOpVUlmFgrs/XAqW9qgPDjG4bFAC2dPFHFrPEXMf6cP+CVyUbP/1hVeMkBpn1UA=;
-X-Mailer: YahooMailRC/1042.40 YahooMailWebService/0.7.218
-Date: Tue, 12 Aug 2008 17:00:10 -0700 (PDT)
-From: David Witbrodt <dawitbro@sbcglobal.net>
-Subject: Re: HPET regression in 2.6.26 versus 2.6.25 -- experimental revert for 2.6.27 failed
-To: linux-kernel@vger.kernel.org
-Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       Yinghai Lu <yhlu.kernel@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       netdev <netdev@vger.kernel.org>
+	Tue, 12 Aug 2008 20:04:36 -0400
+Date: Wed, 13 Aug 2008 01:04:33 +0100
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [RFC] readdir mess
+Message-ID: <20080813000433.GZ28946@ZenIV.linux.org.uk>
+References: <20080812062241.GQ28946@ZenIV.linux.org.uk> <87ej4u9nf5.fsf@devron.myhome.or.jp> <alpine.LFD.1.10.0808121009370.3462@nehalem.linux-foundation.org> <20080812181057.GR28946@ZenIV.linux.org.uk> <alpine.LFD.1.10.0808121316570.3462@nehalem.linux-foundation.org> <20080812203808.GV28946@ZenIV.linux.org.uk> <alpine.LFD.1.10.0808121351570.3462@nehalem.linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <940473.79639.qm@web82108.mail.mud.yahoo.com>
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.1.10.0808121351570.3462@nehalem.linux-foundation.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-SUMMARY
+On Tue, Aug 12, 2008 at 02:04:25PM -0700, Linus Torvalds wrote:
 
-1.  Ran 'git remote update', then built kernels for origin/master
-(Linus' linux-2.6 tree) and tip/master.  Both froze.
+> But the actual _change_ I talked about would be to try to avoid using 
+> "buf.error" entirely, and just make all the (many, I know) filesystem 
+> readdir() functions return the callback value instead of 0. Which would 
+> mean that most of the users would be able to drop their "buf.error" use 
+> entirely, along with the ugly
+> 
+> 	if (error >= 0)
+> 		error = buf.error;
+> 
+> that I have in this patch.
 
-2.  Attempted a revert against tip/master, but the files involved
-changed quite a bit.  I _was_ able to build the kernel successfully,
-but it froze.  There have simply been too many changes since Feb. 22
-for my naive approach to work.
-
-3.  When the revert failed, I panicked:  I thought that I might
-truly have made a mistake with the original 'git bisect' process
-I carried out.  After retracing the last few iterations of the
-process -- building and checking the last 3 kernels -- I found
-that the information I posted here WAS correct:  the problem
-commit # was the one I had found the first time.
-
-4.  To see if I am totally incompetent, I used git to checkout the
-version of the sources at the problem commit, and then reverted
-those changes (same method used in step 2).  The kernel built
-and ran just fine:  no freeze, no need for "hpet=disabled".
-
-
-DETAILS
-
-Here is some git output showing the changes I made.  My approach was
-extremely naive, but since I have very little or no understanding of
-the code itself, no other approach was possible for me:
-
-====== BEGIN git OUTPUT ==========
-
-$ git show
-commit e10eb6518a3a08598344d477137cbdd25e85571d
-Merge: b4141ac... 45fc3c4...
-Author: Ingo Molnar <mingo@elte.hu>
-Date:   Tue Aug 12 19:43:39 2008 +0200
-
-    Merge branch 'linus'
-
-$ git diff
-diff --git a/arch/x86/kernel/e820.c b/arch/x86/kernel/e820.c
-index 9af8907..131d6f7 100644
---- a/arch/x86/kernel/e820.c
-+++ b/arch/x86/kernel/e820.c
-@@ -1267,7 +1267,9 @@ static inline const char *e820_type_to_string(int e820_type)
- /*
-  * Mark e820 reserved areas as busy for the resource manager.
-  */
--void __init e820_reserve_resources(void)
-+/* void __init e820_reserve_resources(void) */
-+void __init e820_reserve_resources(struct resource *code_resource,
-+        struct resource *data_resource, struct resource *bss_resource)
- {
-     int i;
-     struct resource *res;
-@@ -1287,7 +1289,22 @@ void __init e820_reserve_resources(void)
-         res->end = end;
+Careful; e.g. coda returns the number of entries read, _not_ 0.  So it'd
+take more than just "return what the callback had given us".
  
-         res->flags = IORESOURCE_MEM | IORESOURCE_BUSY;
--        insert_resource(&iomem_resource, res);
-+        request_resource(&iomem_resource, res);
-+        if (e820.map[i].type == E820_RAM) {
-+            /*
-+             * We don't know which RAM region contains kernel data,
-+             * so we try it repeatedly and let the resource manager
-+             * test it.
-+             */
-+            request_resource(res, code_resource);
-+            request_resource(res, data_resource);
-+            request_resource(res, bss_resource);
-+#ifdef CONFIG_KEXEC
-+            if (crashk_res.start != crashk_res.end)
-+                request_resource(res, &crashk_res);
-+#endif
-+        }
-+        /* insert_resource(&iomem_resource, res); */
-         res++;
-     }
- 
-diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
-index 59f07e1..5972d13 100644
---- a/arch/x86/kernel/setup.c
-+++ b/arch/x86/kernel/setup.c
-@@ -517,7 +517,7 @@ static void __init reserve_crashkernel(void)
- 
-     crashk_res.start = crash_base;
-     crashk_res.end   = crash_base + crash_size - 1;
--    insert_resource(&iomem_resource, &crashk_res);
-+    /* insert_resource(&iomem_resource, &crashk_res); */
- }
- #else
- static void __init reserve_crashkernel(void)
-@@ -700,9 +700,9 @@ void __init setup_arch(char **cmdline_p)
- #endif
- 
-     /* after parse_early_param, so could debug it */
--    insert_resource(&iomem_resource, &code_resource);
--    insert_resource(&iomem_resource, &data_resource);
--    insert_resource(&iomem_resource, &bss_resource);
-+    /* insert_resource(&iomem_resource, &code_resource); */
-+    /* insert_resource(&iomem_resource, &data_resource); */
-+    /* insert_resource(&iomem_resource, &bss_resource); */
- 
-     if (efi_enabled)
-         efi_init();
-@@ -865,7 +865,7 @@ void __init setup_arch(char **cmdline_p)
- 
-     kvm_guest_init();
- 
--    e820_reserve_resources();
-+    e820_reserve_resources(&code_resource, &data_resource, &bss_resource);
-     e820_mark_nosave_regions(max_low_pfn);
- 
- #ifdef CONFIG_X86_32
-diff --git a/include/asm-x86/e820.h b/include/asm-x86/e820.h
-index f52daf1..57f0c67 100644
---- a/include/asm-x86/e820.h
-+++ b/include/asm-x86/e820.h
-@@ -47,6 +47,8 @@
- /* reserved RAM used by kernel itself */
- #define E820_RESERVED_KERN        128
- 
-+#include <linux/ioport.h>
-+
- #ifndef __ASSEMBLY__
- struct e820entry {
-     __u64 addr;    /* start of memory segment */
-@@ -120,7 +122,8 @@ extern void e820_register_active_regions(int nid, unsigned long start_pfn,
-                      unsigned long end_pfn);
- extern u64 e820_hole_size(u64 start, u64 end);
- extern void finish_e820_parsing(void);
--extern void e820_reserve_resources(void);
-+extern void e820_reserve_resources(struct resource *code_resource,
-+        struct resource *data_resource, struct resource *bss_resource);
- extern void setup_memory_map(void);
- extern char *default_machine_specific_memory_setup(void);
- extern char *machine_specific_memory_setup(void);
-====== END git OUTPUT ==========
+FWIW, I'm more concerned about the other callers of vfs_readdir();
+getdents(2) will get tested on pretty much any fs, so if that breaks
+we'll know it (OK, short of ->readdir() doing something spectaculary
+stupid when given unusual arguments).
 
+_IF_ we are changing things in ->readdir() (and your "pass return value of
+filldir to caller of ->readdir()" certainly qualifies), we'd better make
+sure that old instances break visibly and immediately; preferably - at
+compile time.
 
-The #include of linux/ioport.h was not part of the problem commit, but
-the changes since Feb. 22 were such that I was forced to add that line
-myself to make it possible to build.
+As for whether we want to bother...  I've looked through about half of the
+->readdir instances.  We _do_ want to touch them, with cattle prod if nothing
+else.  And that's just a cursory look...
 
-In many cases the lines near the changes in this attempted revert were
-quite different from those in the diff from the problem commit, so there
-was very little chance for me to succeed, I suspect.
-
-
-For my own peace of mind, I went back to the bisecting to verify that the
-commit I have previously identified was really correct.  Results:
-
-==========
-$ git checkout 1e934dda0c77c8ad13fdda02074f2cfcea118a56
-Previous HEAD position was e10eb65... Merge branch 'linus'
-Checking out files: 100% (17901/17901), done.
-HEAD is now at 1e934dd... x86: insert_resorce for lapic addr after e820_reserve_resources
-
-$ git bisect start
-$ git bisect bad
-$ git checkout 322850af8d93735f67b8ebf84bb1350639be3f34
-Previous HEAD position was 1e934dd... x86: insert_resorce for lapic addr after e820_reserve_resources
-HEAD is now at 322850a... x86: make amd quad core 8 socket system not be clustered_box, #2
-
-$ git bisect good
-Bisecting: 1 revisions left to test after this
-[3def3d6ddf43dbe20c00c3cbc38dfacc8586998f] x86: clean up e820_reserve_resources on 64-bit
-
-$ git bisect bad
-Bisecting: 0 revisions left to test after this
-[700efc1b9f6afe34caae231b87d129ad8ffb559f] x86: introduce kernel/head32.c
-dawitbro@fileserver:~/sandbox/git-kernel/linux-2.6$ git bisect good
-3def3d6ddf43dbe20c00c3cbc38dfacc8586998f is first bad commit
-commit 3def3d6ddf43dbe20c00c3cbc38dfacc8586998f
-Author: Yinghai Lu <Yinghai.Lu@Sun.COM>
-Date:   Fri Feb 22 17:07:16 2008 -0800
-
-    x86: clean up e820_reserve_resources on 64-bit
-    
-    e820_resource_resources could use insert_resource instead of request_resource
-    also move code_resource, data_resource, bss_resource, and crashk_res
-    out of e820_reserve_resources.
-    
-    Signed-off-by: Yinghai Lu <yinghai.lu@sun.com>
-    Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-:040000 040000 79fea1b27a7affdf269cd55f633d495d1cac9513 abcad2c76947ba30fa0c94e0a9dcabd5d8666d28 M    arch
-:040000 040000 5d0b70980ad3692c9fa75ab67a3a43f1aa7807ce a5714997f2337541581dee96f19b7fe86c7941dc M    include
-==========
-
-I cannot describe how much relief I felt upon seeing that.
-
-Since my main goal was to troubleshoot the Debian 2.6.26 stock kernel, my
-next experiments will be to see if I can get a reversion to work against
-any version in the 2.6.26-rc* line, and hopefully the 2.6.26 release 
-itself.
-
-
-DW
+9p:	touching belief that f_pos can't be changed under us.
+adfs:	ditto.
+affs:	user-triggerable affs_warning() (just lseek to 0x10001 and you've
+	got it), plus fun race: default_lseek() sets ->f_pos before clearing
+	->f_version and we have no exclusion whatsoever (and then there is an
+	SMP ordering race).  Besides, it returns the number of entries read.
+autofs4:broken lseek (uses dcache_readdir() without the matching ->llseek)
+befs:	pulls out early (after one call of filldir, no matter
+	what), advances ->f_pos no matter what filldir returns.
+bfs:	fs-wide exclusion between ->readdir(), -EBADF(!) on invalid offset,
+	believes that ->f_pos can't change under it.
+cifs:	f_pos races
+coda:	returns fsck knows what (number of entries, mostly)
+cramfs:	blind assumption that on-disk data would be valid; entry crossing a
+	block boundary => fucked.
+ecryptfs: badly broken
+efs:	f_pos races (BKL doesn't help if you block), ignores the return value
+	filldir completely, fucked on corrupted data (it's a bit too late
+	to check that we have bogus offset of name in block after we'd already
+	accessed the contents).  Alignment issues, while we are at it (or
+	EFS_SLOTAT() is buggy).
+ext3:	take a look at comments around filldir call.  Yes, they are _that_
+	ancient, and so's the logics around revalidate.  ext2 is sane, but
+	that hadn't propagated.  Refuses to go through more than one block,
+	BTW.  Revalidation loop is buggered if we have corrupt data, while
+	we are at it.
+ext4:	ditto
+freevxfs: AFAICS simply bogus (grep for nblocks there).
+hfs:	at least missing checks for hfs_bnode_read() failure.  And I'm not
+	at all sure that hfs_mac2asc() use is safe there.  BTW, open_dir_list
+	handling appears to be odd - how the hell does decrementing ->f_pos
+	help anything?  And hfs_dir_release() removes from list without any
+	locks, so that's almost certainly racy as well.
+hfsplus: ditto
