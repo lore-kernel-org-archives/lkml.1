@@ -1,56 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755779AbYHMI4e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755364AbYHMJBU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755779AbYHMI4e (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Aug 2008 04:56:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753306AbYHMI40
+	id S1755364AbYHMJBU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Aug 2008 05:01:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752478AbYHMJBF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Aug 2008 04:56:26 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:47081 "EHLO mx3.mail.elte.hu"
+	Wed, 13 Aug 2008 05:01:05 -0400
+Received: from il.qumranet.com ([212.179.150.194]:58413 "EHLO il.qumranet.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753258AbYHMI4Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Aug 2008 04:56:25 -0400
-Date: Wed, 13 Aug 2008 10:55:09 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Jan Beulich <jbeulich@novell.com>
-Cc: Johannes Weiner <hannes@saeurebad.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>, dhowells@redhat.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Propagate new nonpanic bootmem macros to
-	CONFIG_HAVE_ARCH_BOOTMEM_NODE
-Message-ID: <20080813085509.GC23417@elte.hu>
-References: <87skt99vmz.fsf@skyscraper.fehenstaub.lan> <48A2B7BA.76E4.0078.0@novell.com>
+	id S1752380AbYHMJBF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Aug 2008 05:01:05 -0400
+Message-ID: <48A2A2CF.3050703@qumranet.com>
+Date: Wed, 13 Aug 2008 12:01:03 +0300
+From: Avi Kivity <avi@qumranet.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <48A2B7BA.76E4.0078.0@novell.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Johannes Weiner <hannes@saeurebad.de>
+CC: Max Krasnyansky <maxk@qualcomm.com>, LKML <linux-kernel@vger.kernel.org>,
+       andrea@qumranet.com, Peter Zijlstra <peterz@infradead.org>
+Subject: Re: Circular vma locking with kvm, seems to be mmu notifiers related
+References: <48A0D6A9.4030603@qualcomm.com> <48A29D0D.9010801@qumranet.com> <87od3x9u61.fsf@skyscraper.fehenstaub.lan>
+In-Reply-To: <87od3x9u61.fsf@skyscraper.fehenstaub.lan>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Johannes Weiner wrote:
+> Hi Avi,
+>
+> Avi Kivity <avi@qumranet.com> writes:
+>
+>   
+>> Max Krasnyansky wrote:
+>>     
+>>> Got this on the latest mainline git.
+>>> There are already a couple of lockdep/kvm threads. So maybe it's known.
+>>>
+>>> =============================================
+>>> [ INFO: possible recursive locking detected ]
+>>> 2.6.27-rc2 #36
+>>> ---------------------------------------------
+>>> qemu-system-x86/3445 is trying to acquire lock:
+>>>  (&anon_vma->lock){--..}, at: [<ffffffff8029f84d>] mm_take_all_locks+0x8d/0xf0
+>>>
+>>> but task is already holding lock:
+>>>  (&anon_vma->lock){--..}, at: [<ffffffff8029f84d>] mm_take_all_locks+0x8d/0xf0
+>>>
+>>>   
+>>>       
+>> Seems to be a false positive.  mmu_take_all_locks takes (surprise!)
+>> all anon_vma->locks belonging to an mm, and takes special care not to
+>> deadlock while doing this.
+>>
+>> We need to communicate this to lockdep somehow.
+>>     
+>
+> I think Peter already annotated this in
+> 454ed842d55740160334efc9ad56cfef54ed37bc .
+>
+>   
 
-* Jan Beulich <jbeulich@novell.com> wrote:
+Excellent, thanks for the info.
 
-> Sorry for not noticing this:
-> Acked-by: Jan Beulich <jbeulich@novell.com>
-> 
-> >>> Johannes Weiner <hannes@saeurebad.de> 13.08.08 10:17 >>>
-> Commit 74768ed833344b "page allocator: use no-panic variant of
-> alloc_bootmem() in alloc_large_system_hash()" introduced two new
-> _nopanic macros which are undefined for CONFIG_HAVE_ARCH_BOOTMEM_NODE.
-> 
-> Signed-off-by: Johannes Weiner <hannes@saeurebad.de>
+-- 
+error compiling committee.c: too many arguments to function
 
-btw., i dont think the fix is complete, a quick grep shows:
-
-  arch/avr32/Kconfig:config HAVE_ARCH_BOOTMEM_NODE
-
-	Ingo
