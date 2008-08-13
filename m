@@ -1,229 +1,194 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756671AbYHMXqx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757276AbYHMXrT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756671AbYHMXqx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Aug 2008 19:46:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753716AbYHMXqo
+	id S1757276AbYHMXrT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Aug 2008 19:47:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754884AbYHMXrD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Aug 2008 19:46:44 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:36715 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753544AbYHMXqn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Aug 2008 19:46:43 -0400
-Date: Wed, 13 Aug 2008 16:45:30 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Rodolfo Giometti <giometti@enneenne.com>
-Cc: linux-kernel@vger.kernel.org, cbouatmailru@gmail.com, dwmw2@infradead.org,
-       giometti@linux.it
-Subject: Re: [PATCH 1/1] power: support for Texas Instruments BQ27x00
- battery managers.
-Message-Id: <20080813164530.82528a4d.akpm@linux-foundation.org>
-In-Reply-To: <1217584435-7337-1-git-send-email-giometti@enneenne.com>
-References: <1217584435-7337-1-git-send-email-giometti@enneenne.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 13 Aug 2008 19:47:03 -0400
+Received: from tomts36-srv.bellnexxia.net ([209.226.175.93]:60990 "EHLO
+	tomts36-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753716AbYHMXrA convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Aug 2008 19:47:00 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AjIFACgOo0hMRKxB/2dsb2JhbACBYLU4gVU
+Date: Wed, 13 Aug 2008 19:41:56 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Andi Kleen <andi@firstfloor.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>
+Cc: Steven Rostedt <rostedt@goodmis.org>, Steven Rostedt <srostedt@redhat.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, Roland McGrath <roland@redhat.com>,
+       Ulrich Drepper <drepper@redhat.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Gregory Haskins <ghaskins@novell.com>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       "Luis Claudio R. Goncalves" <lclaudio@uudg.org>,
+       Clark Williams <williams@redhat.com>,
+       Christoph Lameter <cl@linux-foundation.org>
+Subject: [RFC PATCH] x86 alternatives : fix LOCK_PREFIX race with
+	preemptible kernel and CPU hotplug
+Message-ID: <20080813234156.GA25775@Krystal>
+References: <alpine.DEB.1.10.0808082030500.1396@gandalf.stny.rr.com> <489CE90D.1040902@goop.org> <alpine.LFD.1.10.0808081750060.3462@nehalem.linux-foundation.org> <alpine.DEB.1.10.0808082113090.3707@gandalf.stny.rr.com> <20080813175213.GA8679@Krystal> <alpine.LFD.1.10.0808131119290.3462@nehalem.linux-foundation.org> <20080813184142.GM1366@one.firstfloor.org> <20080813193011.GC15547@Krystal> <20080813193715.GQ1366@one.firstfloor.org> <20080813200119.GA18966@Krystal>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8BIT
+In-Reply-To: <20080813200119.GA18966@Krystal>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 19:37:16 up 70 days,  4:17,  7 users,  load average: 0.54, 0.60,
+	0.57
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri,  1 Aug 2008 11:53:55 +0200
-Rodolfo Giometti <giometti@enneenne.com> wrote:
+If a kernel thread is preempted in single-cpu mode right after the NOP (nop
+about to be turned into a lock prefix), then we CPU hotplug a CPU, and then the
+thread is scheduled back again, a SMP-unsafe atomic operation will be used on
+shared SMP variables, leading to corruption. No corruption would happen in the
+reverse case : going from SMP to UP is ok because we split a bit instruction
+into tiny pieces, which does not present this condition.
 
-> From: Rodolfo Giometti <giometti@linux.it>
-> 
-> These battery managers came in two different packages: one for I2C
-> busses (BQ27200) and one for HDQ busses (BQ27000).
-> 
-> This driver currently supports only the I2C chip version but the code
-> is designed in order to easily allow the HDQ chip version integration.
-> 
->
-> ...
->
-> +/* If the system has several batteries we need a different name for each
-> + * of them...
-> + */
-> +DEFINE_IDR(battery_id);
-> +DEFINE_MUTEX(battery_mutex);
+Changing the 0x90 (single-byte nop) currently used into a 0x3E DS segment
+override prefix should fix this issue. Since the default of the atomic
+instructions is to use the DS segment anyway, it should not affect the
+behavior.
 
-These should be static.
+** BIG FAT WARNING (tm) ** : this patch assumes that the 0x3E prefix will
+leave atomic operations as-is (thus assuming they normally touch data in the DS
+segment). Is there an obnoxious corner-case I would have missed ?
 
->
-> ...
->
-> +static int bq27200_battery_probe(struct i2c_client *client,
-> +					const struct i2c_device_id *id)
-> +{
-> +	char *name;
-> +	struct bq27x00_device_info *di;
-> +	struct bq27x00_access_methods *bus;
-> +	int num, retval = 0;
-> +
-> +	/* Get new ID for the new battery device */
-> +	retval = idr_pre_get(&battery_id, GFP_KERNEL);
-> +	if (retval == 0)
-> +		return -ENOMEM;
-> +	mutex_lock(&battery_mutex);
-> +	retval = idr_get_new(&battery_id, client, &num);
-> +	mutex_unlock(&battery_mutex);
-> +	if (retval < 0)
-> +		return retval;
-> +
-> +	name = kmalloc(16, GFP_KERNEL);
-> +	if (!name) {
-> +		dev_err(&client->dev, "failed to allocate device name\n");
-> +		retval = -ENOMEM;
-> +		goto batt_failed_1;
-> +	}
-> +	sprintf(name, "bq27200-%d", num);
+This source :
+AMD64 Architecture Programmer's Manual Volume 3: General-Purpose and System
+Instructions
+States
+"Instructions that Reference a Non-Stack Segment—If an instruction encoding
+references any base register other than rBP or rSP, or if an instruction
+contains an immediate offset, the default segment is the data segment (DS).
+These instructions can use the segment-override prefix to select one of the
+non-default segments, as shown in Table 1-5."
 
-Use kasprintf()
+Therefore, forcing the DS segment on the atomic operations, which already use
+the DS segment, should not change.
 
-> +	di = kzalloc(sizeof(*di), GFP_KERNEL);
-> +	if (!di) {
-> +		dev_err(&client->dev, "failed to allocate device info data\n");
-> +		retval = -ENOMEM;
-> +		goto batt_failed_2;
-> +	}
-> +	di->id = num;
-> +
+This source :
+http://wiki.osdev.org/X86_Instruction_Encoding
+States
+"In 64-bit the CS, SS, DS and ES segment overrides are ignored."
+(since it's a wiki, it would have to be confirmed, but at least the worse that
+happens is that the DS override is ignored)
 
-Please review:
+This patch applies to 2.6.27-rc2, but would also have to be applied to earlier
+kernels (2.6.26, 2.6.25, ...).
 
-From: Andrew Morton <akpm@linux-foundation.org>
+Performance impact of the fix : tests done on "xaddq" and "xaddl" shows it
+actually improves performances on Intel Xeon, AMD64, Pentium M. It does not
+change the performance on Pentium 3 and Pentium 4.
 
-ERROR: space prohibited before that ':' (ctx:WxE)
-#227: FILE: drivers/power/bq27x00_battery.c:175:
-+	case POWER_SUPPLY_PROP_VOLTAGE_NOW :
- 	                                   ^
+Xeon E5405 2.0GHz :
+NR_TESTS                                    10000000
+test empty cycles :                        162207948
+test test 1-byte nop xadd cycles :         170755422
+test test DS override prefix xadd cycles : 170000118 *
+test test LOCK xadd cycles :               472012134
 
-ERROR: space prohibited before that ':' (ctx:WxE)
-#228: FILE: drivers/power/bq27x00_battery.c:176:
-+	case POWER_SUPPLY_PROP_PRESENT :
- 	                               ^
+AMD64 2.0GHz :
+NR_TESTS                                    10000000
+test empty cycles :                        146674549
+test test 1-byte nop xadd cycles :         150273860
+test test DS override prefix xadd cycles : 149982382 *
+test test LOCK xadd cycles :               270000690
 
-ERROR: space prohibited before that ':' (ctx:WxE)
-#235: FILE: drivers/power/bq27x00_battery.c:183:
-+	case POWER_SUPPLY_PROP_CURRENT_NOW :
- 	                                   ^
+Pentium 4 3.0GHz
+NR_TESTS                                    10000000
+test empty cycles :                        290001195
+test test 1-byte nop xadd cycles :         310000560
+test test DS override prefix xadd cycles : 310000575 *
+test test LOCK xadd cycles :              1050103740
 
-ERROR: space prohibited before that ':' (ctx:WxE)
-#240: FILE: drivers/power/bq27x00_battery.c:188:
-+	case POWER_SUPPLY_PROP_CAPACITY :
- 	                                ^
+Pentium M 2.0GHz
+NR_TESTS 10000000
+test empty cycles :                        180000523
+test test 1-byte nop xadd cycles :         320000345
+test test DS override prefix xadd cycles : 310000374 *
+test test LOCK xadd cycles :               480000357
 
-ERROR: space prohibited before that ':' (ctx:WxE)
-#245: FILE: drivers/power/bq27x00_battery.c:193:
-+	case POWER_SUPPLY_PROP_TEMP :
- 	                            ^
+Pentium 3 550MHz
+NR_TESTS                                    10000000
+test empty cycles :                        510000231
+test test 1-byte nop xadd cycles :         620000128
+test test DS override prefix xadd cycles : 620000110 *
+test test LOCK xadd cycles :               800000088
 
-total: 5 errors, 0 warnings, 412 lines checked
+Speed test modules can be found at 
+http://ltt.polymtl.ca/svn/trunk/tests/kernel/test-prefix-speed-32.c
+http://ltt.polymtl.ca/svn/trunk/tests/kernel/test-prefix-speed.c
 
-./patches/power-support-for-texas-instruments-bq27x00-battery-managers.patch has style problems, please review.  If any of these errors
-are false positives report them to the maintainer, see
-CHECKPATCH in MAINTAINERS.
-
-Please run checkpatch prior to sending patches
-
-Cc: Anton Vorontsov <cbouatmailru@gmail.com>
-Cc: David Woodhouse <dwmw2@infradead.org>
-Cc: Rodolfo Giometti <giometti@linux.it>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: Andi Kleen <andi@firstfloor.org>
+CC: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Steven Rostedt <rostedt@goodmis.org>
+CC: Steven Rostedt <srostedt@redhat.com>
+CC: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: Ingo Molnar <mingo@elte.hu>
+CC: Thomas Gleixner <tglx@linutronix.de>
+CC: Peter Zijlstra <peterz@infradead.org>
+CC: Andrew Morton <akpm@linux-foundation.org>
+CC: David Miller <davem@davemloft.net>
+CC: Roland McGrath <roland@redhat.com>
+CC: Ulrich Drepper <drepper@redhat.com>
+CC: Rusty Russell <rusty@rustcorp.com.au>
+CC: Gregory Haskins <ghaskins@novell.com>
+CC: Arnaldo Carvalho de Melo <acme@redhat.com>
+CC: "Luis Claudio R. Goncalves" <lclaudio@uudg.org>
+CC: Clark Williams <williams@redhat.com>
+CC: Christoph Lameter <cl@linux-foundation.org>
 ---
+ arch/x86/kernel/alternative.c |    8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
- drivers/power/bq27x00_battery.c |   10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
-
-diff -puN drivers/power/Kconfig~power-support-for-texas-instruments-bq27x00-battery-managers-checkpatch-fixes drivers/power/Kconfig
-diff -puN drivers/power/Makefile~power-support-for-texas-instruments-bq27x00-battery-managers-checkpatch-fixes drivers/power/Makefile
-diff -puN drivers/power/bq27x00_battery.c~power-support-for-texas-instruments-bq27x00-battery-managers-checkpatch-fixes drivers/power/bq27x00_battery.c
---- a/drivers/power/bq27x00_battery.c~power-support-for-texas-instruments-bq27x00-battery-managers-checkpatch-fixes
-+++ a/drivers/power/bq27x00_battery.c
-@@ -172,25 +172,25 @@ static int bq27x00_battery_get_property(
- 	struct bq27x00_device_info *di = to_bq27x00_device_info(psy);
+Index: linux-2.6-lttng/arch/x86/kernel/alternative.c
+===================================================================
+--- linux-2.6-lttng.orig/arch/x86/kernel/alternative.c	2008-08-13 18:42:47.000000000 -0400
++++ linux-2.6-lttng/arch/x86/kernel/alternative.c	2008-08-13 18:54:36.000000000 -0400
+@@ -241,25 +241,25 @@ static void alternatives_smp_lock(u8 **s
+ 			continue;
+ 		if (*ptr > text_end)
+ 			continue;
+-		text_poke(*ptr, ((unsigned char []){0xf0}), 1); /* add lock prefix */
++		/* turn DS segment override prefix into lock prefix */
++		text_poke(*ptr, ((unsigned char []){0xf0}), 1);
+ 	};
+ }
  
- 	switch (psp) {
--	case POWER_SUPPLY_PROP_VOLTAGE_NOW :
--	case POWER_SUPPLY_PROP_PRESENT :
-+	case POWER_SUPPLY_PROP_VOLTAGE_NOW:
-+	case POWER_SUPPLY_PROP_PRESENT:
- 		val->intval = bq27x00_battery_voltage(di);
- 		if (psp == POWER_SUPPLY_PROP_PRESENT)
- 			val->intval = val->intval <= 0 ? 0 : 1;
+ static void alternatives_smp_unlock(u8 **start, u8 **end, u8 *text, u8 *text_end)
+ {
+ 	u8 **ptr;
+-	char insn[1];
  
- 		break;
+ 	if (noreplace_smp)
+ 		return;
  
--	case POWER_SUPPLY_PROP_CURRENT_NOW :
-+	case POWER_SUPPLY_PROP_CURRENT_NOW:
- 		val->intval = bq27x00_battery_current(di);
+-	add_nops(insn, 1);
+ 	for (ptr = start; ptr < end; ptr++) {
+ 		if (*ptr < text)
+ 			continue;
+ 		if (*ptr > text_end)
+ 			continue;
+-		text_poke(*ptr, insn, 1);
++		/* turn lock prefix into DS segment override prefix */
++		text_poke(*ptr, ((unsigned char []){0x3E}), 1);
+ 	};
+ }
  
- 		break;
- 
--	case POWER_SUPPLY_PROP_CAPACITY :
-+	case POWER_SUPPLY_PROP_CAPACITY:
- 		val->intval = bq27x00_battery_rsoc(di);
- 
- 		break;
- 
--	case POWER_SUPPLY_PROP_TEMP :
-+	case POWER_SUPPLY_PROP_TEMP:
- 		val->intval = bq27x00_battery_temperature(di);
- 
- 		break;
-_
-
-
-
-
-
-
-From: Andrew Morton <akpm@linux-foundation.org>
-
-- make things static
-
-- use kasprintf()
-
-Cc: Anton Vorontsov <cbouatmailru@gmail.com>
-Cc: David Woodhouse <dwmw2@infradead.org>
-Cc: Rodolfo Giometti <giometti@linux.it>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
----
-
- drivers/power/bq27x00_battery.c |    7 +++----
- 1 file changed, 3 insertions(+), 4 deletions(-)
-
-diff -puN drivers/power/Kconfig~power-support-for-texas-instruments-bq27x00-battery-managers-tweaks drivers/power/Kconfig
-diff -puN drivers/power/Makefile~power-support-for-texas-instruments-bq27x00-battery-managers-tweaks drivers/power/Makefile
-diff -puN drivers/power/bq27x00_battery.c~power-support-for-texas-instruments-bq27x00-battery-managers-tweaks drivers/power/bq27x00_battery.c
---- a/drivers/power/bq27x00_battery.c~power-support-for-texas-instruments-bq27x00-battery-managers-tweaks
-+++ a/drivers/power/bq27x00_battery.c
-@@ -40,8 +40,8 @@
- /* If the system has several batteries we need a different name for each
-  * of them...
-  */
--DEFINE_IDR(battery_id);
--DEFINE_MUTEX(battery_mutex);
-+static DEFINE_IDR(battery_id);
-+static DEFINE_MUTEX(battery_mutex);
- 
- struct bq27x00_device_info;
- struct bq27x00_access_methods {
-@@ -275,13 +275,12 @@ static int bq27200_battery_probe(struct 
- 	if (retval < 0)
- 		return retval;
- 
--	name = kmalloc(16, GFP_KERNEL);
-+	name = kasprintf(GFP_KERNEL, "bq27200-%d", num);
- 	if (!name) {
- 		dev_err(&client->dev, "failed to allocate device name\n");
- 		retval = -ENOMEM;
- 		goto batt_failed_1;
- 	}
--	sprintf(name, "bq27200-%d", num);
- 
- 	di = kzalloc(sizeof(*di), GFP_KERNEL);
- 	if (!di) {
-_
-
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
