@@ -1,48 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757731AbYHMTe7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757375AbYHMTgQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757731AbYHMTe7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Aug 2008 15:34:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752617AbYHMTeu
+	id S1757375AbYHMTgQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Aug 2008 15:36:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752262AbYHMTgA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Aug 2008 15:34:50 -0400
-Received: from yx-out-2324.google.com ([74.125.44.28]:7109 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752001AbYHMTet (ORCPT
+	Wed, 13 Aug 2008 15:36:00 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:36459 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751848AbYHMTgA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Aug 2008 15:34:49 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=Qz9wv7udoUAqwFSqnJweu6fy7voNa24+bOLIfqx37KRrUYkCdwQb2Ice++LKJynaP6
-         GRsDBL2t2lQXnZWxKSq1rXptTx5cW+Hu5Eu+47/9O7/56NtOXS1+5gIPuJMKV7saHbud
-         3/XeA9KlVu7nwu9/AOBH9NOPPJfiPCzem9I04=
-Message-ID: <84144f020808131234r2787b214hde3a723541c4c19b@mail.gmail.com>
-Date: Wed, 13 Aug 2008 22:34:47 +0300
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Randy Dunlap" <randy.dunlap@oracle.com>
-Subject: Re: [PATCH -next] slabinfo: fix printk formats
-Cc: lkml <linux-kernel@vger.kernel.org>, sfr <sfr@canb.auug.org.au>,
-       cl@linux-foundation.org, akpm <akpm@linux-foundation.org>
-In-Reply-To: <20080813105234.86bbc894.randy.dunlap@oracle.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Wed, 13 Aug 2008 15:36:00 -0400
+Date: Wed, 13 Aug 2008 21:37:15 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, Roland McGrath <roland@redhat.com>,
+       Ulrich Drepper <drepper@redhat.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Gregory Haskins <ghaskins@novell.com>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       "Luis Claudio R. Goncalves" <lclaudio@uudg.org>,
+       Clark Williams <williams@redhat.com>
+Subject: Re: Efficient x86 and x86_64 NOP microbenchmarks
+Message-ID: <20080813193715.GQ1366@one.firstfloor.org>
+References: <alpine.DEB.1.10.0808081750590.16691@gandalf.stny.rr.com> <87tzdv2g05.fsf@basil.nowhere.org> <alpine.DEB.1.10.0808082030500.1396@gandalf.stny.rr.com> <489CE90D.1040902@goop.org> <alpine.LFD.1.10.0808081750060.3462@nehalem.linux-foundation.org> <alpine.DEB.1.10.0808082113090.3707@gandalf.stny.rr.com> <20080813175213.GA8679@Krystal> <alpine.LFD.1.10.0808131119290.3462@nehalem.linux-foundation.org> <20080813184142.GM1366@one.firstfloor.org> <20080813193011.GC15547@Krystal>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20080813105234.86bbc894.randy.dunlap@oracle.com>
-X-Google-Sender-Auth: 1fe4a8270fbc5b0c
+In-Reply-To: <20080813193011.GC15547@Krystal>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Randy,
+> Sorry to ask, I feel I must be missing something, but I'm trying to
+> figure out where you propose to add the "call mcount" ? In the caller or
+> in the callee ?
 
-On Wed, Aug 13, 2008 at 8:52 PM, Randy Dunlap <randy.dunlap@oracle.com> wrote:
-> From: Randy Dunlap <randy.dunlap@oracle.com>
->
-> Fix slabinfo printk format warnings:
+callee like gcc. caller would be likely more bloated because
+there are more calls than functions. Also if it was at the 
+callee more code would be needed because the function currently
+executed couldn't be gotten from stack directly.
 
-s/printk/printf/ :-)
+> Or is it a different scheme I don't see ? I am trying to figure out how
+> you happen to do all that without dynamic code modification and manage
+> not to hurt performance.
 
-Applied, thanks!
+The dynamic code modification is only needed because there is no
+global table of the mcount call sites. So instead it discovers
+them at runtime, but that requires runtime save patching
+
+With a custom call scheme one could just build up a table of 
+call sites at link time using an ELF section and then when
+tracing is enabled/disabled always patch them all in one go
+in a stop_machine(). Then you wouldn't need parallel execution safe
+patching anymore and it doesn't matter what the nops look like.
+
+The other advantage is that it would allow getting rid of
+the frame pointer.
+
+-Andi
+
