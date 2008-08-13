@@ -1,35 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757543AbYHMTh2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757944AbYHMThl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757543AbYHMTh2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Aug 2008 15:37:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751871AbYHMThS
+	id S1757944AbYHMThl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Aug 2008 15:37:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754808AbYHMThX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Aug 2008 15:37:18 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:36469 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751848AbYHMThR (ORCPT
+	Wed, 13 Aug 2008 15:37:23 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:33292 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1754007AbYHMThW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Aug 2008 15:37:17 -0400
-To: 7v5w7go9ub0o <7v5w7go9ub0o@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: libmalware.so: Dazuko Linux/BSD On-Access scanning and control
-From: Andi Kleen <andi@firstfloor.org>
-References: <48A32CAC.1030605@gmail.com>
-Date: Wed, 13 Aug 2008 21:37:15 +0200
-In-Reply-To: <48A32CAC.1030605@gmail.com> (7v5w7go9ub0o@gmail.com's message of "Wed, 13 Aug 2008 14:49:16 -0400")
-Message-ID: <87bpzw1zbo.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
+	Wed, 13 Aug 2008 15:37:22 -0400
+Date: Wed, 13 Aug 2008 15:37:21 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Oliver Neukum <oneukum@suse.de>
+cc: Stefan Richter <stefanr@s5r6.in-berlin.de>, Pavel Machek <pavel@suse.cz>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Linux-pm mailing list <linux-pm@lists.osdl.org>,
+       <James.Bottomley@hansenpartnership.com>, <teheo@novell.com>
+Subject: Re: Power management for SCSI
+In-Reply-To: <200808131825.27303.oneukum@suse.de>
+Message-ID: <Pine.LNX.4.44L0.0808131534440.13982-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-7v5w7go9ub0o <7v5w7go9ub0o@gmail.com> writes:
+On Wed, 13 Aug 2008, Oliver Neukum wrote:
 
-> (FYI. Dazuko may have trailblazed some of the issues now under
-> discussion re: libmalware.so. It has worked well for me.
+> > In Alan's patch, SCSI calls scsi_host_template methods (if the LLD
+> > provides ones) to suspend and resume a Scsi_Host.  The LLD can use them
+> > to work with the underlying infrastructure to determine what can be done
+> > at that time.  I.e. are there other protocols or other initiator-like
+> > nodes sharing the link?  If yes or if "maybe yes", the infrastructure
+> > keeps the link up.  If not, it can move it into a low-power state.
+> 
+> That is a parculiar way of viewing it. Alan's patch introduce runtime
+> pm attributes to the devices. Quoting:
+> 
+> 
+> +/**
+> + * scsi_suspend_sdev - suspend a SCSI device
+> + * @sdev: the scsi_device to suspend
+> + * @msg: Power Management message describing this state transition
+> + *
+> + * SCSI devices can't actually be suspended in a literal sense,
+> + * because SCSI doesn't have any notion of power management.  Instead
+> + * this routine drains the request queue and calls the ULD's suspend
+> + * method to flush caches, spin-down drives, and so on.
+> + *
+> + * If the suspend succeeds, we call scsi_autosuspend_host to decrement
+> + * the host's count of unsuspended devices and invoke the LLD's suspend
+> + * method.
+> 
+> So you cannot operate on the link independent from the devices.
 
-Against what exactly did it protect you? Please give a concrete example.
+With the original patch, you can't operate on the link independent from 
+the devices.  But with the revised patch (whenever I manage to find 
+time to write it!), you _will_ be able to.
 
--Andi
+Alan Stern
+
