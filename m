@@ -1,87 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757296AbYHMSQd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754264AbYHMSRE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757296AbYHMSQd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Aug 2008 14:16:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752001AbYHMSQC
+	id S1754264AbYHMSRE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Aug 2008 14:17:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752956AbYHMSQs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Aug 2008 14:16:02 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:49503 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751019AbYHMSQB (ORCPT
+	Wed, 13 Aug 2008 14:16:48 -0400
+Received: from casper.infradead.org ([85.118.1.10]:36784 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757442AbYHMSQr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Aug 2008 14:16:01 -0400
-Date: Wed, 13 Aug 2008 20:17:14 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Eric Paris <eparis@redhat.com>
-Cc: linux-kernel@vger.kernel.org, malware-list@lists.printk.net,
-       andi@firstfloor.org, riel@redhat.com, greg@kroah.com, tytso@mit.edu,
-       viro@ZenIV.linux.org.uk, arjan@infradead.org, alan@lxorguk.ukuu.org.uk,
-       peterz@infradead.org, hch@infradead.org
-Subject: Re: TALPA - a threat model?  well sorta.
-Message-ID: <20080813181714.GL1366@one.firstfloor.org>
-References: <1218645375.3540.71.camel@localhost.localdomain>
+	Wed, 13 Aug 2008 14:16:47 -0400
+Date: Wed, 13 Aug 2008 11:16:35 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Ulrich Drepper <drepper@redhat.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, akpm@linux-foundation.org,
+       hugh@veritas.com, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       briangrant@google.com, cgd@google.com, mbligh@google.com,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: pthread_create() slow for many threads; also time to revisit
+ 64b context switch optimization?
+Message-ID: <20080813111635.657febc0@infradead.org>
+In-Reply-To: <48A3222D.2060809@redhat.com>
+References: <af8810200808121736q76640cc1kb814385072fe9b29@mail.gmail.com>
+	<af8810200808121745h596c175bk348d0aaeeb9bcb45@mail.gmail.com>
+	<20080813104445.GA24632@elte.hu>
+	<20080813063533.444c650d@infradead.org>
+	<48A2EE07.3040003@redhat.com>
+	<20080813142529.GB21129@elte.hu>
+	<48A2F157.7000303@redhat.com>
+	<20080813151007.GA8780@elte.hu>
+	<48A2FC17.9070302@redhat.com>
+	<20080813154043.GA11886@elte.hu>
+	<48A303EE.8070002@redhat.com>
+	<alpine.LFD.1.10.0808131007530.3462@nehalem.linux-foundation.org>
+	<48A3222D.2060809@redhat.com>
+Organization: Intel
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1218645375.3540.71.camel@localhost.localdomain>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 13, 2008 at 12:36:15PM -0400, Eric Paris wrote:
+On Wed, 13 Aug 2008 11:04:29 -0700
+Ulrich Drepper <drepper@redhat.com> wrote:
 
-I miss a clear answer to the question: is this 
-supposed to protect against malware injected as root or not?
+> -----BEGIN PGP SIGNED MESSAGE-----
+> Hash: SHA1
+> 
+> Linus Torvalds wrote:
+> > Ulrich, I don't understand why you worry more about a _potential_
+> > (and fairly unlikely) complaint, than about a real one today.
+> 
+> Of course I care.  All I try to do is to prevent going from one
+> extreme (all focus on P4s) to the other (ignore P4s completely).
 
-Assuming it wants to protect against root:
+(fwiw as far as I know this is only about early 64 bit P4s, not later
+generations)
+> 
+> Even ignoring this one case here, I think it's in any case useful for
+> userlevel to tell the kernel that an anonymous memory region is needed
+> for a stack.  This might allow better optimizations and/or security
+> implementations.
 
-> think we hear claim more grandious things.  But from what I've seen they
-> aren't the real deal.  Most of the security model descriptions that
-> people on list want actually are framed under the belief that these
-> products need to or attempt to completely block some class of attacks.
-> They don't.  If you think they do you need to fix your frame of
-> reference.  The only class of attacks this interface is supposed to
-> address is those that can be found by scanning files.  This is NOT an
-> LSM. 
+yeah maybe we should also tell it we expect it to be used downwards.
+Oh wait.. MAP_GROWSDOWN ?
 
-But you need some LSM like protections to be able to protect the file
-scanner? Like the block device or kernel memory protection.
-
-> The real goal is to get files into to some userspace scanner and let
-> them do whatever they want.  Remember, this isn't a new LSM.  The goal
-> isn't to provide perfect security.  The goal isn't to stop already
-> running malicious programs.  The one and only goal is to scan files.  We
-> should not be considering timing attacks, we should not be considering
-> processes actively trying to get around the system for small periods of
-> time.  We should certainly not be considering root processes being able
-> to sneak things by.  
-
-This means you need significant LSM components simply to protect
-the integrity of the file scanner against root. It's even 
-unclear it's possible in the general case (e.g. X server doing
-arbitary DMA and no IOMMU -- how do you protect the file scanner?)
-
-> The idea is that a file exists on disk and we want
-> some userspace program to give a best effort at scanning it.  Yes, we
-
-Ok so you're implying it's ok to not protect against root?
-
-In the later case that means that you don't have to scan anything
-that only root can touch and you can trust file permissions,
-which makes a lot of things easier.
-
-I would suggest again to clarify this important point first. It has
-significant impact on the whole design.
-
-Personally I would think not protecting against root would be quite
-limiting (e.g. it would mean that e.g. if some worm trojans rpms
-people download then they wouldn't be caught because rpms are
-installed as root), but on the other hand if you protect against
-root you need most of selinux/aa/other lsm functionality simply
-to guarantee the integrity of the scanner.  Also it has impact
-on some apps, e.g. X server running as root would be usually out due to
-the arbitary DMA issue. Also protect block devices could theoretically
-have significant impact on some sysadmin tasks.
-
--Andi
+-- 
+If you want to reach me at my work email, use arjan@linux.intel.com
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
