@@ -1,73 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752638AbYHMVYO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756495AbYHMVYk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752638AbYHMVYO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Aug 2008 17:24:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752499AbYHMVX7
+	id S1756495AbYHMVYk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Aug 2008 17:24:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752726AbYHMVYa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Aug 2008 17:23:59 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:37025 "EHLO smtp5.pp.htv.fi"
+	Wed, 13 Aug 2008 17:24:30 -0400
+Received: from mail13.ca.com ([141.202.248.42]:40414 "EHLO mail13.ca.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751693AbYHMVX6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Aug 2008 17:23:58 -0400
-Date: Thu, 14 Aug 2008 00:22:06 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Vegard Nossum <vegard.nossum@gmail.com>
-Subject: Re: [2.6.27 patch] #error for gcc 4.1.{0,1}
-Message-ID: <20080813212206.GB7071@cs181140183.pp.htv.fi>
-References: <20080813204445.GA7071@cs181140183.pp.htv.fi> <20080813135749.b9985fcc.akpm@linux-foundation.org>
+	id S1752499AbYHMVY3 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Aug 2008 17:24:29 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20080813135749.b9985fcc.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [malware-list] TALPA - a threat model?  well sorta.
+Date: Wed, 13 Aug 2008 17:24:28 -0400
+Message-ID: <2629CC4E1D22A64593B02C43E855530304AE4BC2@USILMS12.ca.com>
+In-Reply-To: <20080813205906.559d3f37@lxorguk.ukuu.org.uk>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [malware-list] TALPA - a threat model?  well sorta.
+Thread-Index: Acj9gYK+BBaa6rzKQEiZpMYM5g7Z7QACM1sg
+References: <1218645375.3540.71.camel@localhost.localdomain><20080813172437.3ed90b0d@lxorguk.ukuu.org.uk><1218646065.3540.75.camel@localhost.localdomain><20080813173722.13c9c306@lxorguk.ukuu.org.uk><1218646833.3540.82.camel@localhost.localdomain> <20080813205906.559d3f37@lxorguk.ukuu.org.uk>
+From: "Press, Jonathan" <Jonathan.Press@ca.com>
+To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>, "Eric Paris" <eparis@redhat.com>
+Cc: <peterz@infradead.org>, <linux-kernel@vger.kernel.org>,
+       <malware-list@lists.printk.net>, <hch@infradead.org>,
+       <andi@firstfloor.org>, <viro@ZenIV.linux.org.uk>, <arjan@infradead.org>
+X-OriginalArrivalTime: 13 Aug 2008 21:24:28.0530 (UTC) FILETIME=[F7D4ED20:01C8FD8A]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 13, 2008 at 01:57:49PM -0700, Andrew Morton wrote:
-> On Wed, 13 Aug 2008 23:44:45 +0300
-> Adrian Bunk <bunk@kernel.org> wrote:
+> -----Original Message-----
+> From: malware-list-bounces@dmesg.printk.net [mailto:malware-list-
+> bounces@dmesg.printk.net] On Behalf Of Alan Cox
+> Sent: Wednesday, August 13, 2008 3:59 PM
+> To: Eric Paris
+> Cc: peterz@infradead.org; linux-kernel@vger.kernel.org; malware-
+> list@lists.printk.net; hch@infradead.org; andi@firstfloor.org;
+> viro@ZenIV.linux.org.uk; arjan@infradead.org
+> Subject: Re: [malware-list] TALPA - a threat model? well sorta.
 > 
-> > gcc 4.1.0 and 4.1.1 are known to miscompile the kernel:
-> >   http://gcc.gnu.org/bugzilla/show_bug.cgi?id=27781
-> > 
-> > Usage of weak functions has become a common pattern in the kernel, and 
-> > usages get added in each kernel version increasing the probability of 
-> > bugs with each kernel release.
-> > 
-> > This miscompilation of weak functions can result in subtle runtime 
-> > errors.
-> > 
-> > #error for gcc 4.1.0 and 4.1.1 to prevent users from running into
-> > this bug.
-> > 
-> > Note:
-> > We already printed a #warning for gcc 4.1.0 due to a different bug.
+> > > I don't think you need to be blocking if you passed up a file
+handle ?
+> >
+> > Without blocking and waiting how do you deny access?  Maybe I needed
+> > another thing they do.  "They do file scanning and deny access to
+bad
+> > files."
 > 
-> I've been hiding from this because it would wreck a lot of my
-> cross-compilers, which quite a few other people are using as well.
+> Denying access is easy enough - chmod it or set an SELinux label on
+it.
 
-We are talking about runtime breakages, with new breakages added in each 
-kernel release.
+I may be missing something about your suggestion, but I don't see how
+this would work.  Who does the chmod?
 
-Which is not nice for users.
+Here's a sequence:
 
-And my patch is the result of developers spending time on debugging and 
-working around a real-life bug caused by this compiler bug.
+- Application opens file
+- AV scanner notified in some way without blocking
+- Application reads file into memory
+- AV scanner determines file is infected.
+- AV scanner chmod's file -- oops, too late.
+- Application sends file over the wire to another machine with a more
+vulnerable OS
 
-If you insist on keeping your 4.1.0 compilers I can prepare a patch that 
-removes the fatal __weak usages.
+How would this be prevented?
 
-> Vegard, save us!
 
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+Jon Press
