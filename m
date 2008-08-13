@@ -1,51 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758092AbYHMURt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756528AbYHMUTN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758092AbYHMURt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Aug 2008 16:17:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753744AbYHMURj
+	id S1756528AbYHMUTN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Aug 2008 16:19:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752461AbYHMUS7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Aug 2008 16:17:39 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:57774 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751388AbYHMURj (ORCPT
+	Wed, 13 Aug 2008 16:18:59 -0400
+Received: from fg-out-1718.google.com ([72.14.220.157]:28492 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752155AbYHMUS6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Aug 2008 16:17:39 -0400
-To: Milan Plzik <milan.plzik@gmail.com>
-Cc: linux-kernel@vger.kernel.org, tglx@linutronix.de
-Subject: Re: Timer unstability on when using C2 and deeper sleep states (Dell Latitude XT)
-From: Andi Kleen <andi@firstfloor.org>
-References: <1218566008.13866.41.camel@localhost>
-	<1218625125.4304.7.camel@localhost>
-Date: Wed, 13 Aug 2008 22:17:36 +0200
-In-Reply-To: <1218625125.4304.7.camel@localhost> (Milan Plzik's message of "Wed, 13 Aug 2008 12:58:45 +0200")
-Message-ID: <87proczn33.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
+	Wed, 13 Aug 2008 16:18:58 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=YqLAfAuXAq41O2Y3vItQ0LS5YeXxSTogspkbRrUboAXS8ANohYT9ZsCwULiRpxrBd3
+         CQPWPHqSVjYL4kBHcvP0R2sjuOLL1nbMMXvG8Goq4RzveFHob5nuP7tD6KubPrqWT6Jt
+         a1s2qq/HRJ7g/ydqXiUXyp4IGy0sLuRJS9exc=
+Message-ID: <64bb37e0808131318j81ba372t8a5f089e33f1dc32@mail.gmail.com>
+Date: Wed, 13 Aug 2008 22:18:56 +0200
+From: "Torsten Kaiser" <just.for.lkml@googlemail.com>
+To: "Linus Torvalds" <torvalds@linux-foundation.org>
+Subject: Re: Linux 2.6.27-rc3
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Mark Langsdorf" <mark.langsdorf@amd.com>
+In-Reply-To: <alpine.LFD.1.10.0808121914270.3462@nehalem.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <alpine.LFD.1.10.0808121914270.3462@nehalem.linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Milan Plzik <milan.plzik@gmail.com> writes:
-
->   I apologize for replying on my own mail (and also for top-posting, but
-> this information is global update, not exactly fitting any of topics
-> mentioned below).
+On Wed, Aug 13, 2008 at 4:33 AM, Linus Torvalds
+<torvalds@linux-foundation.org> wrote:
 >
->   After playing for a longer while I found out that the system ends
-> sometimes in state where, in order to do anything useful, I need to
-> press keys on keyboard. 
+> Things really _have_ calmed down, and hopefully we've also resolved a lot
+> of the regressions in -rc3.
 
-This usually means it is using the wrong timer in a deeper idle state.
-Some idle states cannot be woken up by e.g. the APIC timer and then
-you get that effect: you only make progress when you wake up the 
-CPU in some other way like pressing a key. Then on wake up the
-timers get processed.
+I found a new one in -rc3 vs. -rc2.
+Only one of my cpus seems to powered down by cpufreq, because the
+topology gets filled out wrong:
 
-This is usually a bug in the kernel timer selection. It should be chosing
-a timer that always wakes up from the deepest idle state used.
+correct with -rc2:
+#grep . /sys/devices/system/cpu/cpu*/cpufreq/affected_cpus
+/sys/devices/system/cpu/cpu0/cpufreq/affected_cpus:0 1
+/sys/devices/system/cpu/cpu1/cpufreq/affected_cpus:0 1
+/sys/devices/system/cpu/cpu2/cpufreq/affected_cpus:2 3
+/sys/devices/system/cpu/cpu3/cpufreq/affected_cpus:2 3
+(The system has 2 dual core Opterons)
 
-You should post the full boot log
+wrong with -rc3:
+#grep . /sys/devices/system/cpu/cpu*/cpufreq/affected_cpus
+/sys/devices/system/cpu/cpu0/cpufreq/affected_cpus:0 1
+/sys/devices/system/cpu/cpu1/cpufreq/affected_cpus:0 1
+/sys/devices/system/cpu/cpu2/cpufreq/affected_cpus:0 1
+/sys/devices/system/cpu/cpu3/cpufreq/affected_cpus:0 1
 
--Andi
+I bisected this bug down to these commits:
+> Mark Langsdorf (2):
+>      [CPUFREQ][1/2] whitespace fix for powernow-k8
+>      [CPUFREQ][2/2] preregister support for powernow-k8
 
+HTH
+
+Torsten
