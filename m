@@ -1,102 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754750AbYHMAxT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753636AbYHMAxt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754750AbYHMAxT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Aug 2008 20:53:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752338AbYHMAxI
+	id S1753636AbYHMAxt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Aug 2008 20:53:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752749AbYHMAxk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Aug 2008 20:53:08 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:41553 "EHLO mx1.redhat.com"
+	Tue, 12 Aug 2008 20:53:40 -0400
+Received: from sh.osrg.net ([192.16.179.4]:47475 "EHLO sh.osrg.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751664AbYHMAxG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Aug 2008 20:53:06 -0400
-Date: Tue, 12 Aug 2008 20:53:04 -0400 (EDT)
-From: Mikulas Patocka <mpatocka@redhat.com>
-X-X-Sender: mpatocka@hs20-bc2-1.build.redhat.com
-To: David Miller <davem@davemloft.net>
-cc: sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: stack overflow on Sparc64
-In-Reply-To: <20080812.012201.164876122.davem@davemloft.net>
-Message-ID: <Pine.LNX.4.64.0808122051240.31704@hs20-bc2-1.build.redhat.com>
-References: <20080620.215139.218732028.davem@davemloft.net>
- <Pine.LNX.4.64.0806211542050.21474@engineering.redhat.com>
- <20080811.233013.49328708.davem@davemloft.net> <20080812.012201.164876122.davem@davemloft.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S1752165AbYHMAxk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Aug 2008 20:53:40 -0400
+Date: Wed, 13 Aug 2008 09:51:59 +0900
+To: joerg.roedel@amd.com
+Cc: mingo@redhat.com, tglx@linutronix.de, hpa@zytor.com,
+       linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org,
+       muli@il.ibm.com
+Subject: Re: [PATCH 0/7] x86 dma_*_coherent rework patchset
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <1218554657-16070-1-git-send-email-joerg.roedel@amd.com>
+References: <1218554657-16070-1-git-send-email-joerg.roedel@amd.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20080813095223R.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 12 Aug 2008 17:24:10 +0200
+Joerg Roedel <joerg.roedel@amd.com> wrote:
 
-
-On Tue, 12 Aug 2008, David Miller wrote:
-
-> From: David Miller <davem@davemloft.net>
-> Date: Mon, 11 Aug 2008 23:30:13 -0700 (PDT)
+> Hi,
 > 
-> > The problem is that CONFIG_STACK_DEBUG doesn't understand
-> > the IRQ stacks at all.
-> > 
-> > I'll see if I can tweak it to handle this.
+> this patchset reworks the dma_*_coherent functions in the DMA layer for the x86
+> architecture. The patch series extends the existing DMA backends with missing
+> *coherent callbacks and simplifies the generic function to basically only call
+> the registered backend. This allows future optimizations in hardware specific
+> IOMMU implementations.
+> The code ist tested on AMD64 with AMD IOMMU and GART as well as on my old 486
+> box. It is not yet tested on a Calgary IOMMU system.
 > 
-> This patch, on top of my original IRQSTACKS patch for
-> sparc64, seems to get things working for me.
-
-Thanks, the patch works.
-
-Mikulas
-
-> diff --git a/arch/sparc64/lib/mcount.S b/arch/sparc64/lib/mcount.S
-> index 9e4534b..24e6a3c 100644
-> --- a/arch/sparc64/lib/mcount.S
-> +++ b/arch/sparc64/lib/mcount.S
-> @@ -45,11 +45,47 @@ _mcount:
->  	sub		%g3, STACK_BIAS, %g3
->  	cmp		%sp, %g3
->  	bg,pt		%xcc, 1f
-> -	 sethi		%hi(panicstring), %g3
-> +	 nop
-> +#ifdef CONFIG_IRQSTACKS
-> +	lduh		[%g6 + TI_CPU], %g1
-> +	sethi		%hi(hardirq_stack), %g3
-> +	or		%g3, %lo(hardirq_stack), %g3
-> +	sllx		%g1, 3, %g1
-> +	ldx		[%g3 + %g1], %g7
-> +	sub		%g7, STACK_BIAS, %g7
-> +	cmp		%sp, %g7
-> +	bleu,pt		%xcc, 2f
-> +	 sethi		%hi(THREAD_SIZE), %g3
-> +	add		%g7, %g3, %g7
-> +	cmp		%sp, %g7
-> +	blu,pn		%xcc, 1f
-> +2:	 sethi		%hi(softirq_stack), %g3
-> +	or		%g3, %lo(softirq_stack), %g3
-> +	ldx		[%g3 + %g1], %g7
-> +	cmp		%sp, %g7
-> +	bleu,pt		%xcc, 2f
-> +	 sethi		%hi(THREAD_SIZE), %g3
-> +	add		%g7, %g3, %g7
-> +	cmp		%sp, %g7
-> +	blu,pn		%xcc, 1f
-> +	 nop
-> +#endif
-> +	/* If we are already on panic stack, don't hop onto it
-> +	 * again, we are already trying to output the stack overflow
-> +	 * message.
-> +	 */
->  	sethi		%hi(ovstack), %g7		! cant move to panic stack fast enough
->  	 or		%g7, %lo(ovstack), %g7
-> -	add		%g7, OVSTACKSIZE, %g7
-> +	add		%g7, OVSTACKSIZE, %g3
-> +	sub		%g3, STACK_BIAS - 192, %g3
->  	sub		%g7, STACK_BIAS, %g7
-> +	cmp		%sp, %g7
-> +	blu,pn		%xcc, 2f
-> +	 cmp		%sp, %g3
-> +	bleu,pn		%xcc, 1f
-> +	 nop
-> +2:	mov		%g3, %sp
-> +	sethi		%hi(panicstring), %g3
->  	mov		%g7, %sp
->  	call		prom_printf
->  	 or		%g3, %lo(panicstring), %o0
+> Joerg
 > 
+> git diff --stat tip/master:
+> 
+>  arch/x86/kernel/amd_iommu.c      |    2 -
+>  arch/x86/kernel/pci-calgary_64.c |   14 +++++
+>  arch/x86/kernel/pci-dma.c        |  116 +++----------------------------------
+>  arch/x86/kernel/pci-gart_64.c    |   31 ++++++++++
+>  arch/x86/kernel/pci-nommu.c      |   45 +++++++++++++++
+>  5 files changed, 100 insertions(+), 108 deletions(-)
+
+Really nice. I think that this is how other architectures that support
+multiple IOMMUs handle dma operations, and this is the right thing for
+x86 too.
