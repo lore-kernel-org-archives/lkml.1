@@ -1,110 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755176AbYHMJ2V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755449AbYHMJ3Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755176AbYHMJ2V (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Aug 2008 05:28:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752470AbYHMJ2N
+	id S1755449AbYHMJ3Y (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Aug 2008 05:29:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751860AbYHMJ3P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Aug 2008 05:28:13 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:40978 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751386AbYHMJ2N (ORCPT
+	Wed, 13 Aug 2008 05:29:15 -0400
+Received: from out2.smtp.messagingengine.com ([66.111.4.26]:44416 "EHLO
+	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751505AbYHMJ3O (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Aug 2008 05:28:13 -0400
-Date: Wed, 13 Aug 2008 02:27:12 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Huang Ying <ying.huang@intel.com>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>, Pavel Machek <pavel@ucw.cz>,
-       nigel@nigel.suspend2.net, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Vivek Goyal <vgoyal@redhat.com>, mingo@elte.hu,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org,
-       Kexec Mailing List <kexec@lists.infradead.org>
-Subject: Re: [PATCH] kexec jump: fix compiling warning on xchg(&kexec_lock,
- 0) in kernel_kexec()
-Message-Id: <20080813022712.4bea5fea.akpm@linux-foundation.org>
-In-Reply-To: <1218618760.24951.137.camel@caritas-dev.intel.com>
-References: <1218618760.24951.137.camel@caritas-dev.intel.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 13 Aug 2008 05:29:14 -0400
+X-Sasl-enc: 7Btda9jHmO+Ni/n9k6p2js9L/MSmouhcvtqVkVcgpCoP 1218619752
+Date: Wed, 13 Aug 2008 06:29:08 -0300
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Philip Langdale <philipl@overt.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Matthew Garrett <mjg59@srcf.ucam.org>,
+       toshiba_acpi@memebeam.org, Ivo van Doorn <ivdoorn@gmail.com>,
+       linux-wireless@vger.kernel.org
+Subject: Re: [PATCH 1/1] toshiba_acpi: Add support for bluetooth toggling
+	through rfkill (v2)
+Message-ID: <20080813092908.GA6806@khazad-dum.debian.net>
+References: <4894B1B4.6050003@overt.org> <20080803042613.GC6053@khazad-dum.debian.net> <48965716.6020508@overt.org> <20080805212416.GB21738@khazad-dum.debian.net> <489A7CCF.1090407@overt.org> <20080807134530.GB17062@khazad-dum.debian.net> <48A06BBC.7060007@overt.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48A06BBC.7060007@overt.org>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+	1CDB 0FE3
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 13 Aug 2008 17:12:40 +0800 Huang Ying <ying.huang@intel.com> wrote:
-
-> Fix compiling warning on xchg(&kexec_lock, 0) in kernel_kexec().
+On Mon, 11 Aug 2008, Philip Langdale wrote:
+> Henrique de Moraes Holschuh wrote:
+>> Hmm?  UNBLOCKED means it is not being rfkilled.  Why is not working?  Put
+>> some debug printks on your toggle_radio callback, that might help fix the
+>> issue...
 >
+> Well, what I see is this:
+>
+> At modprobe, I get an explicit unblock request. When I modify 'state' in sysfs,
+> I see appropriate requests to soft block and unblock. When I activate the hardware
+> kill switch, the rfkill state goes to hard_block but no one calls toggle_radio
+> and when I release the kill switch, the state goes to soft_block and no one
+> calls toggle_radio.
 
-Would prefer that thi code not use such a peculair idiom.  I don't
-believe that it needs to.
+Looks like either rfkill-input is inactive, or something is binding to the
+toshiba_acpi input device and setting it to exclusive mode (X evdev does
+this).
 
-I guess that's a separate activity.
-
-> 
-> ---
->  kernel/kexec.c |    4 +++-
->  1 file changed, 3 insertions(+), 1 deletion(-)
-> 
-> --- a/kernel/kexec.c
-> +++ b/kernel/kexec.c
-> @@ -1433,6 +1433,7 @@ module_init(crash_save_vmcoreinfo_init)
->  int kernel_kexec(void)
->  {
->  	int error = 0;
-> +	int locked;
->  
->  	if (xchg(&kexec_lock, 1))
->  		return -EBUSY;
-> @@ -1498,7 +1499,8 @@ int kernel_kexec(void)
->  #endif
->  
->   Unlock:
-> -	xchg(&kexec_lock, 0);
-> +	locked = xchg(&kexec_lock, 0);
-> +	BUG_ON(!locked);
->  
->  	return error;
->  }
-> 
-
-Please always quote the compiler output in the changelog when fixing
-warnings and build errors.
-
-The patch is titled "kexec jump: ..." whereas this is just a plain old
-kexec fix, which is applicable to mainline.
-
-We don't need to create that local.  I queued this:
-
-
-
-Subject: kexec: fix compilation warning on xchg(&kexec_lock, 0) in kernel_kexec()
-From: Huang Ying <ying.huang@intel.com>
-
-kernel/kexec.c: In function 'kernel_kexec':
-kernel/kexec.c:1506: warning: value computed is not used
-
-Signed-off-by: Huang Ying <ying.huang@intel.com>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
----
-
- kernel/kexec.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
-
-diff -puN kernel/kexec.c~kexec-jump-fix-compiling-warning-on-xchgkexec_lock-0-in-kernel_kexec kernel/kexec.c
---- a/kernel/kexec.c~kexec-jump-fix-compiling-warning-on-xchgkexec_lock-0-in-kernel_kexec
-+++ a/kernel/kexec.c
-@@ -1503,7 +1503,8 @@ int kernel_kexec(void)
- 	}
- 
-  Unlock:
--	xchg(&kexec_lock, 0);
-+	if (!xchg(&kexec_lock, 0))
-+		BUG();
- 
- 	return error;
- }
-_
-
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
