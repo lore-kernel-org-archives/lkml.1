@@ -1,46 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755734AbYHMN0K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756058AbYHMN0Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755734AbYHMN0K (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Aug 2008 09:26:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752582AbYHMNZ5
+	id S1756058AbYHMN0Z (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Aug 2008 09:26:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755565AbYHMN0I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Aug 2008 09:25:57 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:40961 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752557AbYHMNZ4 (ORCPT
+	Wed, 13 Aug 2008 09:26:08 -0400
+Received: from g1t0027.austin.hp.com ([15.216.28.34]:28435 "EHLO
+	g1t0027.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755536AbYHMN0H (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Aug 2008 09:25:56 -0400
-Date: Wed, 13 Aug 2008 14:08:11 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Takashi Iwai <tiwai@suse.de>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: linux-next: Tree for August 13
-Message-ID: <20080813140811.030bb766@lxorguk.ukuu.org.uk>
-In-Reply-To: <s5h7ial9nvm.wl%tiwai@suse.de>
-References: <20080813172452.14b0775c.sfr@canb.auug.org.au>
-	<s5h7ial9nvm.wl%tiwai@suse.de>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 13 Aug 2008 09:26:07 -0400
+Date: Wed, 13 Aug 2008 07:26:06 -0600
+From: Alex Chiang <achiang@hp.com>
+To: David Howells <dhowells@redhat.com>
+Cc: jmorris@namei.org, serue@us.ibm.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] CRED: Fixup credentials build breakage
+Message-ID: <20080813132606.GA10529@ldl.fc.hp.com>
+Mail-Followup-To: Alex Chiang <achiang@hp.com>,
+	David Howells <dhowells@redhat.com>, jmorris@namei.org,
+	serue@us.ibm.com, linux-kernel@vger.kernel.org
+References: <20080813053427.GA5248@ldl.fc.hp.com> <15419.1218626809@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <15419.1218626809@redhat.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> When re-starting X, it complains that it cannot change to VT7.
-> Via strace, 
+* David Howells <dhowells@redhat.com>:
+> Alex Chiang <achiang@hp.com> wrote:
+> 
+> > A recent patch titled:
+> > 
+> > 	CRED: Separate task security context from task_struct
+> > 	
+> > removed task security context from task_struct, but did not
+> > update all locations to use the new struct cred that was
+> > introduced.
+> > 
+> > The change to task_struct broke perfmon and ia32 syscalls on
+> > ia64.  This patch fixes the build.
+> 
+> I've submitted a patch to fix this.
 
-Does this fix it
+Thanks, clearly your patch is correct and mine was not. I was
+just trying to get my build going again. I can apply yours by
+hand to my own tree here to get going.
 
-@@ -838,6 +839,7 @@ static int copy_signal(unsigned long clone_flags, struct task_struct *tsk)
- void __cleanup_signal(struct signal_struct *sig)
- {
- 	exit_thread_group_keys(sig);
-+	tty_kref_put(sig->tty);
- 	kmem_cache_free(signal_cachep, sig);
- }
- 
+> > All things considered, I'd prefer to see this patch folded
+> > into 7931c65268777ed10cab22486de149d742a1f269 so we can keep
+> > bisectability. Would that be possible, given that these
+> > changes are "only" in linux-next and haven't hit Linus's tree
+> > yet?
+> 
+> Probably.  I'll have to talk to Stephen about how to do this.
+> I can't maintain my patches on top of linux-next now:-/
+
+Ok, I still think this would be a good idea, so if it's possible,
+that would be great.
+
+Thanks,
+
+/ac
+
