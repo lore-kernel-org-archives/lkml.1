@@ -1,93 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757067AbYHMOeA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755967AbYHMOg5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757067AbYHMOeA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Aug 2008 10:34:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753427AbYHMOdv
+	id S1755967AbYHMOg5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Aug 2008 10:36:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753225AbYHMOgs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Aug 2008 10:33:51 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:39410 "EHLO smtp5.pp.htv.fi"
+	Wed, 13 Aug 2008 10:36:48 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:56971 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753124AbYHMOdu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Aug 2008 10:33:50 -0400
-Date: Wed, 13 Aug 2008 17:31:59 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-Cc: Dave Jones <davej@redhat.com>, Wim Van Sebroeck <wim@iguana.be>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH] [WATCHDOG] mpc8xxx_wdt: fix modular build
-Message-ID: <20080813143159.GD26351@cs181140183.pp.htv.fi>
-References: <20080806202918.GA29386@infomag.infomag.iguana.be> <20080813031044.GA11258@redhat.com> <20080813122341.GA31815@oksana.dev.rtsoft.ru>
+	id S1751443AbYHMOgr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Aug 2008 10:36:47 -0400
+Message-ID: <48A2F157.7000303@redhat.com>
+Date: Wed, 13 Aug 2008 07:36:07 -0700
+From: Ulrich Drepper <drepper@redhat.com>
+Organization: Red Hat, Inc.
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20080813122341.GA31815@oksana.dev.rtsoft.ru>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Ingo Molnar <mingo@elte.hu>
+CC: Arjan van de Ven <arjan@infradead.org>, akpm@linux-foundation.org,
+       hugh@veritas.com, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       briangrant@google.com, cgd@google.com, mbligh@google.com,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: pthread_create() slow for many threads; also time to revisit
+ 64b context switch optimization?
+References: <af8810200808121736q76640cc1kb814385072fe9b29@mail.gmail.com> <af8810200808121745h596c175bk348d0aaeeb9bcb45@mail.gmail.com> <20080813104445.GA24632@elte.hu> <20080813063533.444c650d@infradead.org> <48A2EE07.3040003@redhat.com> <20080813142529.GB21129@elte.hu>
+In-Reply-To: <20080813142529.GB21129@elte.hu>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 13, 2008 at 04:23:41PM +0400, Anton Vorontsov wrote:
->...
-> --- a/drivers/watchdog/mpc8xxx_wdt.c
-> +++ b/drivers/watchdog/mpc8xxx_wdt.c
-> @@ -48,6 +48,7 @@ struct mpc8xxx_wdt_type {
->  };
->  
->  static struct mpc8xxx_wdt __iomem *wd_base;
-> +static int mpc8xxx_wdt_init_late(void);
->  
->  static u16 timeout = 0xffff;
->  module_param(timeout, ushort, 0);
-> @@ -213,6 +214,12 @@ static int __devinit mpc8xxx_wdt_probe(struct of_device *ofdev,
->  	else
->  		timeout_sec = timeout / freq;
->  
-> +#ifdef CONFIG_8xxx_WDT_MODULE
-> +	ret = mpc8xxx_wdt_init_late();
-> +	if (ret)
-> +		goto err_unmap;
-> +#endif
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-In mpc8xxx_wdt_probe()?
+Ingo Molnar wrote:
+> not sure exactly what numbers you mean, but there are lots of numbers in 
+> the first mail, attached below. For example:
 
-Isn't mpc8xxx_wdt_init() the correct place?
+I mean numbers indicating that it doesn't hurt performance on any of
+today's machines.  If there are machines where it makes a difference
+then we need the flag to indicate the _preference_ for a low stack, as
+opposed to indicating a _requirement_.
 
->  	pr_info("WDT driver for MPC8xxx initialized. mode:%s timeout=%d "
->  		"(%d seconds)\n", reset ? "reset" : "interrupt", timeout,
->  		timeout_sec);
-> @@ -280,7 +287,7 @@ static struct of_platform_driver mpc8xxx_wdt_driver = {
->   * very early to start pinging the watchdog (misc devices are not yet
->   * available), and later module_init() just registers the misc device.
->   */
-> -static int __init mpc8xxx_wdt_init_late(void)
-> +static int mpc8xxx_wdt_init_late(void)
->  {
->  	int ret;
->  
-> @@ -295,7 +302,9 @@ static int __init mpc8xxx_wdt_init_late(void)
->  	}
->  	return 0;
->  }
-> +#ifndef CONFIG_8xxx_WDT_MODULE
+- --
+➧ Ulrich Drepper ➧ Red Hat, Inc. ➧ 444 Castro St ➧ Mountain View, CA ❖
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-Your #ifdef is correct, but "#ifdef MODULE" would express this better.
-
->  module_init(mpc8xxx_wdt_init_late);
-> +#endif
->  
->  static int __init mpc8xxx_wdt_init(void)
->  {
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+iEYEARECAAYFAkii8VcACgkQ2ijCOnn/RHTiLQCfcZ9xJHMi0Jv59l700ZNJUoi6
+aEcAn370XuGhs1u1YeD2Gqq35zQnKh26
+=rC0v
+-----END PGP SIGNATURE-----
