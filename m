@@ -1,64 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755794AbYHMNUp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755278AbYHMNWy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755794AbYHMNUp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Aug 2008 09:20:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753925AbYHMNUa
+	id S1755278AbYHMNWy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Aug 2008 09:22:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752785AbYHMNWq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Aug 2008 09:20:30 -0400
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:59134 "EHLO smtp4.pp.htv.fi"
+	Wed, 13 Aug 2008 09:22:46 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:45802 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753830AbYHMNUa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Aug 2008 09:20:30 -0400
-Date: Wed, 13 Aug 2008 16:18:39 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Pavel Machek <pavel@suse.cz>
-Cc: Tim Tassonis <timtas@cubic.ch>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: reiser4 for 2.6.27-rc1
-Message-ID: <20080813131839.GB26351@cs181140183.pp.htv.fi>
-References: <4896F56D.7080503@cubic.ch> <20080813125807.GC6995@ucw.cz>
+	id S1752719AbYHMNWp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Aug 2008 09:22:45 -0400
+Date: Wed, 13 Aug 2008 09:21:41 -0400
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Huang Ying <ying.huang@intel.com>
+Cc: Simon Horman <horms@verge.net.au>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Pavel Machek <pavel@ucw.cz>, nigel@nigel.suspend2.net,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Kexec Mailing List <kexec@lists.infradead.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] kexec jump: fix code size checking
+Message-ID: <20080813132141.GC3957@redhat.com>
+References: <1218589475.24951.59.camel@caritas-dev.intel.com> <20080813024701.GA19201@verge.net.au> <1218596715.24951.69.camel@caritas-dev.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080813125807.GC6995@ucw.cz>
+In-Reply-To: <1218596715.24951.69.camel@caritas-dev.intel.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 13, 2008 at 02:58:08PM +0200, Pavel Machek wrote:
-> On Mon 2008-08-04 14:26:21, Tim Tassonis wrote:
-> > >Why is reiser4 still not in a vanilla kernel for 
-> > >testing. I have had
-> > >to apply the reiser4 patches from -mm kernels to 
-> > >vanilla based
-> > >patchset for over a year now. Reiser4 works fine, what 
-> > >will it take to
-> > >get it included in vanilla? Here is a patch to add 
-> > >reiser4 to
-> > >2.6.27-rc1:
-> > >
-> > >http://zen-sources.org/files/reiser4-for-2.6.27-rc1.patch
-> > >
-> > >-Ryan
+On Wed, Aug 13, 2008 at 11:05:15AM +0800, Huang Ying wrote:
+> On Wed, 2008-08-13 at 12:47 +1000, Simon Horman wrote:
+> > On Wed, Aug 13, 2008 at 09:04:35AM +0800, Huang Ying wrote:
+> > > Fix building issue when CONFIG_KEXEC=n. Thanks to Vivek Goyal for his
+> > > reminding.
+> > > 
+> > > Signed-off-by: Huang Ying <ying.huang@intel.com>
+> > > 
+> > > ---
+> > >  include/asm-x86/kexec.h |    3 +++
+> > >  1 file changed, 3 insertions(+)
+> > > 
+> > > --- a/include/asm-x86/kexec.h
+> > > +++ b/include/asm-x86/kexec.h
+> > > @@ -43,6 +43,9 @@
+> > >  
+> > >  #ifdef CONFIG_X86_32
+> > >  # define KEXEC_CONTROL_CODE_MAX_SIZE	2048
+> > > +# ifndef CONFIG_KEXEC
+> > > +#  define kexec_control_code_size	0
+> > > +# endif
+> > >  #endif
+> > >  
+> > >  #ifndef __ASSEMBLY__
 > > 
-> > A good thing for a start would be to rename the whole 
-> > thing to something else, for obvious reasons.
+> > Is it impossible to skip the linker check in the !CONFIG_KEXEC case?
 > 
-> Whats wrong with reiser4 name?
+> It is possible. I think there are several ways to do that.
 > 
-> 							Pavel
-> 			(or am I feeding a troll?)
+> 1) use #ifdef in vmlinux_32.lds.S, such as:
+> 
+> #ifdef CONFIG_KEXEC
+> ASSERT(kexec_control_code_size <= KEXEC_CONTROL_CODE_MAX_SIZE,
+>        "kexec control code size is too big")
+> #endif
+> 
+> 2) #define a macro for kexec check ld script in asm/kexec.h, such as:
+> 
+> #define LD_CHECK_KEXEC()	ASSERT(kexec_control_code_size <= KEXEC_CONTROL_CODE_MAX_SIZE, \
+> 				       "kexec control code size is too big")
+> 
+> and use that in vmlinux_32.lds.S.
+> 
+> 3) #define kexec_control_code_size 0. So that the check can be passed
+> always. And, code size = 0 is reasonable for no code (CONFIG_KEXEC=n).
+> 
+> 
+> I think 3) is better. What do you think about?
+> 
 
-Not wanting a new filesystem named after a convicted murderer is not 
-a trollish suggestion.
+I think 1) is good enough.
 
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+Thanks
+Vivek
