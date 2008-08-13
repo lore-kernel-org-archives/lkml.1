@@ -1,57 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755304AbYHMPXb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756242AbYHMPX6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755304AbYHMPXb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Aug 2008 11:23:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752202AbYHMPXX
+	id S1756242AbYHMPX6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Aug 2008 11:23:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753510AbYHMPXu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Aug 2008 11:23:23 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:45254 "EHLO mx1.redhat.com"
+	Wed, 13 Aug 2008 11:23:50 -0400
+Received: from mail.suse.de ([195.135.220.2]:44092 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752155AbYHMPXX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Aug 2008 11:23:23 -0400
-Message-ID: <48A2FC17.9070302@redhat.com>
-Date: Wed, 13 Aug 2008 08:21:59 -0700
-From: Ulrich Drepper <drepper@redhat.com>
-Organization: Red Hat, Inc.
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	id S1752155AbYHMPXt convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Aug 2008 11:23:49 -0400
+From: Oliver Neukum <oneukum@suse.de>
+Organization: Novell
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: Power management for SCSI
+Date: Wed, 13 Aug 2008 17:24:51 +0200
+User-Agent: KMail/1.9.9
+Cc: Pavel Machek <pavel@suse.cz>, kernel list <linux-kernel@vger.kernel.org>,
+       "Linux-pm mailing list" <linux-pm@lists.osdl.org>,
+       James.Bottomley@hansenpartnership.com, teheo@novell.com
+References: <Pine.LNX.4.44L0.0808131051330.2455-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0808131051330.2455-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Arjan van de Ven <arjan@infradead.org>, akpm@linux-foundation.org,
-       hugh@veritas.com, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       briangrant@google.com, cgd@google.com, mbligh@google.com,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: pthread_create() slow for many threads; also time to revisit
- 64b context switch optimization?
-References: <af8810200808121736q76640cc1kb814385072fe9b29@mail.gmail.com> <af8810200808121745h596c175bk348d0aaeeb9bcb45@mail.gmail.com> <20080813104445.GA24632@elte.hu> <20080813063533.444c650d@infradead.org> <48A2EE07.3040003@redhat.com> <20080813142529.GB21129@elte.hu> <48A2F157.7000303@redhat.com> <20080813151007.GA8780@elte.hu>
-In-Reply-To: <20080813151007.GA8780@elte.hu>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200808131724.52461.oneukum@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+Am Mittwoch 13 August 2008 16:59:23 schrieb Alan Stern:
+> This is a good question. �Most USB mass-storage devices do not act as a
+> true SCSI bus, but I believe there are a few non-standard ones that do
+> -- the USB device really contains a SCSI host and arbitrary SCSI
 
-Ingo Molnar wrote:
-> i find it pretty unacceptable these days that we limit any aspect of 
-> pure 64-bit apps in any way to 4GB (or any other 32-bit-ish limit). 
+OK, but does it make sense to have SCSI autosuspend? Or should autosuspend
+operate on the bus the _host_ is connected to (usb, pci, ...)?
 
-Sure, but if we can pin-point the sub-archs for which it is the problem
-then a flag to optionally request it is even easier to handle.  You'd
-simply ignore the flag for anything but the P4 architecture.
+	Regards
+		Oliver
 
-I personally have no problem removing the whole thing because I have no
-such machine running anymore.  But there are people out there who have.
-
-- --
-➧ Ulrich Drepper ➧ Red Hat, Inc. ➧ 444 Castro St ➧ Mountain View, CA ❖
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkii/BcACgkQ2ijCOnn/RHQ8FACfZFV+WaBmS6UNqZZ/xDfV/Z7z
-gIAAoJSmbauchdaIVIebz8N2rPrszAMF
-=WAzJ
------END PGP SIGNATURE-----
