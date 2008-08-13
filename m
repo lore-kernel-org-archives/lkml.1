@@ -1,115 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753424AbYHMUYW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754047AbYHMUXr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753424AbYHMUYW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Aug 2008 16:24:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751098AbYHMUYL
+	id S1754047AbYHMUXr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Aug 2008 16:23:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753706AbYHMUXY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Aug 2008 16:24:11 -0400
-Received: from wbmler1.mail.xerox.com ([13.13.138.216]:50792 "EHLO
-	wbmler1.mail.xerox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750705AbYHMUYK convert rfc822-to-8bit (ORCPT
+	Wed, 13 Aug 2008 16:23:24 -0400
+Received: from outbound-sin.frontbridge.com ([207.46.51.80]:26121 "EHLO
+	SG2EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752675AbYHMUXU convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Aug 2008 16:24:10 -0400
-X-Greylist: delayed 1140 seconds by postgrey-1.27 at vger.kernel.org; Wed, 13 Aug 2008 16:24:10 EDT
-X-Xerox-Source-Ip: 13.151.210.15
-X-Xerox-Source-Name: usa7061gw002.na.xerox.net
-X-Xerox-Reported-Name: USA7061GW002.na.xerox.net
+	Wed, 13 Aug 2008 16:23:20 -0400
+X-BigFish: VPS-59(z21eWz1432R98dR1805M936fQ1433M9371Pzzzzz32i6bh43j61h)
+X-Spam-TCS-SCL: 0:0
+X-WSS-ID: 0K5K3AB-02-NHD-01
 X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+Content-Class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 8BIT
-Subject: RE: [linux-pm] Power management for SCSI
-Date: Wed, 13 Aug 2008 16:03:57 -0400
-Message-ID: <556445368AFA1C438794ABDA8901891C094876DA@USA0300MS03.na.xerox.net>
-In-Reply-To: <Pine.LNX.4.44L0.0808131534440.13982-100000@iolanthe.rowland.org>
+Subject: RE: Linux 2.6.27-rc3
+Date: Wed, 13 Aug 2008 15:23:09 -0500
+Message-ID: <6453C3CB8E2B3646B0D020C112613273C5AC6C@sausexmb4.amd.com>
+In-Reply-To: <64bb37e0808131318j81ba372t8a5f089e33f1dc32@mail.gmail.com>
 X-MS-Has-Attach: 
 X-MS-TNEF-Correlator: 
-Thread-Topic: [linux-pm] Power management for SCSI
-Thread-Index: Acj9fgOinRSiEJBfQF+cb9OZZ6kalgAAH0HQ
-References: <200808131825.27303.oneukum@suse.de> <Pine.LNX.4.44L0.0808131534440.13982-100000@iolanthe.rowland.org>
-From: "Leisner, Martin" <Martin.Leisner@xerox.com>
-To: "Alan Stern" <stern@rowland.harvard.edu>,
-       "Oliver Neukum" <oneukum@suse.de>
-Cc: "Linux-pm mailing list" <linux-pm@lists.osdl.org>,
-       "kernel list" <linux-kernel@vger.kernel.org>, <teheo@novell.com>,
-       <James.Bottomley@hansenpartnership.com>, "Pavel Machek" <pavel@suse.cz>,
-       "Stefan Richter" <stefanr@s5r6.in-berlin.de>
-X-OriginalArrivalTime: 13 Aug 2008 20:03:59.0573 (UTC) FILETIME=[B98C9050:01C8FD7F]
+Thread-Topic: Linux 2.6.27-rc3
+Thread-Index: Acj9geBu5IGm5vaFT2eumL2CqlqgqgAAC49Q
+References: <alpine.LFD.1.10.0808121914270.3462@nehalem.linux-foundation.org> <64bb37e0808131318j81ba372t8a5f089e33f1dc32@mail.gmail.com>
+From: "Langsdorf, Mark" <mark.langsdorf@amd.com>
+To: "Torsten Kaiser" <just.for.lkml@googlemail.com>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>
+CC: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 13 Aug 2008 20:23:10.0547 (UTC) FILETIME=[67954230:01C8FD82]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Regarding these scsi suspend patches, there's a general
-problem to drop power on disk devices on a running system.
-I discussed it in:
+> On Wed, Aug 13, 2008 at 4:33 AM, Linus Torvalds
+> <torvalds@linux-foundation.org> wrote:
+> >
+> > Things really _have_ calmed down, and hopefully we've also 
+> resolved a lot
+> > of the regressions in -rc3.
+> 
+> I found a new one in -rc3 vs. -rc2.
+> Only one of my cpus seems to powered down by cpufreq, because the
+> topology gets filled out wrong:
+> 
+> correct with -rc2:
+> #grep . /sys/devices/system/cpu/cpu*/cpufreq/affected_cpus
+> /sys/devices/system/cpu/cpu0/cpufreq/affected_cpus:0 1
+> /sys/devices/system/cpu/cpu1/cpufreq/affected_cpus:0 1
+> /sys/devices/system/cpu/cpu2/cpufreq/affected_cpus:2 3
+> /sys/devices/system/cpu/cpu3/cpufreq/affected_cpus:2 3
+> (The system has 2 dual core Opterons)
+> 
+> wrong with -rc3:
+> #grep . /sys/devices/system/cpu/cpu*/cpufreq/affected_cpus
+> /sys/devices/system/cpu/cpu0/cpufreq/affected_cpus:0 1
+> /sys/devices/system/cpu/cpu1/cpufreq/affected_cpus:0 1
+> /sys/devices/system/cpu/cpu2/cpufreq/affected_cpus:0 1
+> /sys/devices/system/cpu/cpu3/cpufreq/affected_cpus:0 1
+> 
+> I bisected this bug down to these commits:
+> > Mark Langsdorf (2):
+> >      [CPUFREQ][1/2] whitespace fix for powernow-k8
+> >      [CPUFREQ][2/2] preregister support for powernow-k8
 
-http://www.gossamer-threads.com/lists/linux/kernel/811598
+Well, that patch is likely going to get reverted because
+it's causing a crash on Rafael's test box.
 
-We have a sequence:
-    a) stop further block requests
-    b) sync the disk (and sync the cache -- there was talk on and off
-       for several years about sync not realling syncing)
-    c) drop power on the disk
+But before that happens, could you send me the disassembled
+dump of your ACPI objects?  Iti's possible the code is wrong,
+but it's also possible that your BIOS is passing a broken
+_PSD.
 
-We tweak the ext3 mount timeout and the /proc/sys/vm settings to put
-the computer into laptop mode.
+-Mark Langsdorf
+Operating System Research Center
+AMD
 
-When a read comes along, we reverse the process...(or a forced write
-which generally won't happen).
-
-But we need to add patches to the device driver and the block layer to
-enable this...it seems useful if there was a more generic way to
-handle it...maybe registering a callback to reenable power and a
-mechanism
-to start the poweroff sequence...
-
-We've done this in 2.6.20, I wonder if there's any work along these
-lines in recent kernels (I'm going to look at 2.6.2[67]...)
-
-Marty
-
->   -----Original Message-----
->   From: linux-pm-bounces@lists.linux-foundation.org [mailto:linux-pm-
->   bounces@lists.linux-foundation.org] On Behalf Of Alan Stern
->   Sent: Wednesday, August 13, 2008 3:37 PM
->   To: Oliver Neukum
->   Cc: Linux-pm mailing list; kernel list; teheo@novell.com;
->   James.Bottomley@hansenpartnership.com; Pavel Machek; Stefan Richter
->   Subject: Re: [linux-pm] Power management for SCSI
->   
->   On Wed, 13 Aug 2008, Oliver Neukum wrote:
->   
->   > > In Alan's patch, SCSI calls scsi_host_template methods (if the
-LLD
->   > > provides ones) to suspend and resume a Scsi_Host.  The LLD can
-use
->   them
->   > > to work with the underlying infrastructure to determine what can
-be
->   done
->   > > at that time.  I.e. are there other protocols or other
-initiator-
->   like
->   > > nodes sharing the link?  If yes or if "maybe yes", the
->   infrastructure
->   > > keeps the link up.  If not, it can move it into a low-power
-state.
->   >
->   > That is a parculiar way of viewing it. Alan's patch introduce
-runtime
->   > pm attributes to the devices. Quoting:
->   >
->   
->   With the original patch, you can't operate on the link independent
-from
->   the devices.  But with the revised patch (whenever I manage to find
->   time to write it!), you _will_ be able to.
->   
->   Alan Stern
->   
->   _______________________________________________
->   linux-pm mailing list
->   linux-pm@lists.linux-foundation.org
->   https://lists.linux-foundation.org/mailman/listinfo/linux-pm
