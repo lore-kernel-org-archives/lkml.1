@@ -1,55 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755290AbYHMWjd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754952AbYHMWu6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755290AbYHMWjd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Aug 2008 18:39:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753420AbYHMWjX
+	id S1754952AbYHMWu6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Aug 2008 18:50:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753452AbYHMWut
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Aug 2008 18:39:23 -0400
-Received: from e33.co.us.ibm.com ([32.97.110.151]:44648 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752411AbYHMWjW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Aug 2008 18:39:22 -0400
-Date: Wed, 13 Aug 2008 15:40:15 -0700
-From: "Darrick J. Wong" <djwong@us.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       lm-sensors <lm-sensors@lm-sensors.org>
-Subject: [PATCH] ibmaem: Prevent infinite probing loop on x3650 M2 systems
-Message-ID: <20080813224015.GA28450@tree.beaverton.ibm.com>
-Reply-To: djwong@us.ibm.com
+	Wed, 13 Aug 2008 18:50:49 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:59156 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752894AbYHMWut (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Aug 2008 18:50:49 -0400
+Date: Wed, 13 Aug 2008 18:49:56 -0400
+From: jbaron@redhat.com
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Greg KH <greg@kroah.com>, Andrew Morton <akpm@linux-foundation.org>,
+       randy.dunlap@oracle.com, linux-kernel@vger.kernel.org, joe@perches.com,
+       nick@nick-andrew.net
+Subject: Re: [PATCH 1/7] dynamic debug v2 - infrastructure
+Message-ID: <20080813224955.GA3254@redhat.com>
+References: <20080808193851.24210bc4.randy.dunlap@oracle.com> <20080811173616.GC6103@redhat.com> <20080811223309.GD9810@kroah.com> <20080812194817.GD6056@redhat.com> <20080812200908.GA444@kroah.com> <20080812204619.GE6056@redhat.com> <20080813010804.GA17446@kroah.com> <20080812181653.32d6f373.akpm@linux-foundation.org> <20080813033859.GA9443@kroah.com> <20080813200047.GA2053@uranus.ravnborg.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <20080813200047.GA2053@uranus.ravnborg.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On older machines, probing for a nonexistent AEM interface returned an IPMI
-error; when we saw this, we'd stop probing.  On the x3650 M2 and (presumably)
-later, we are returned a value indicating success and a buffer full of garbage
-or zeroes.  This causes the probe function to run in an infinite loop.  To fix
-this, we add one last check--if the interface number we're looking for is
-higher than the number of interfaces that AEM claims to have, stop probing.
+On Wed, Aug 13, 2008 at 10:00:47PM +0200, Sam Ravnborg wrote:
+> On Tue, Aug 12, 2008 at 08:38:59PM -0700, Greg KH wrote:
+> > On Tue, Aug 12, 2008 at 06:16:53PM -0700, Andrew Morton wrote:
+> > > On Tue, 12 Aug 2008 18:08:04 -0700
+> > > Greg KH <greg@kroah.com> wrote:
+> > > 
+> > > > On Tue, Aug 12, 2008 at 04:46:19PM -0400, Jason Baron wrote:
+> > > > > On Tue, Aug 12, 2008 at 01:09:08PM -0700, Greg KH wrote:
+> > > > > > So close, can I have a good changelog comment with the patch so people
+> > > > > > know what it is when they look in the logs?
+> > > > > > 
+> > > > > > Care to resend it with that?
+> > > > > > 
+> > > > > 
+> > > > > Base infrastructure to enable per-module debug messages.
+> > > > 
+> > > > Ah, so close...
+> > > > 
+> > > > With this patch, I get the following build error:
+> > > > 
+> > > >   CC [M]  drivers/usb/gadget/u_ether.o
+> > > > drivers/usb/gadget/u_ether.c: In function ___gether_setup___:
+> > > > drivers/usb/gadget/u_ether.c:787: error: ___KBUILD_MODNAME___ undeclared (first use in this function)
+> > > > drivers/usb/gadget/u_ether.c:787: error: (Each undeclared identifier is reported only once
+> > > > drivers/usb/gadget/u_ether.c:787: error: for each function it appears in.)
+> > > > drivers/usb/gadget/u_ether.c:787: error: unknown field ___Usage___ specified in initializer
+> > > > drivers/usb/gadget/u_ether.c:787: error: expected expression before ___.___ token
+> > > > drivers/usb/gadget/u_ether.c:787: error: initializer element is not constant
+> > > > drivers/usb/gadget/u_ether.c:787: error: (near initialization for ___descriptor.hash___)
+> > > > drivers/usb/gadget/u_ether.c:787: error: ___Usage___ undeclared (first use in this function)
+> > > > drivers/usb/gadget/u_ether.c:787: error: invalid operands to binary << (have ___long long int___ and ___char *___)
+> > > > drivers/usb/gadget/u_ether.c:787: error: expected ___)___ before ___:___ token
+> > > > drivers/usb/gadget/u_ether.c:787: error: invalid operands to binary & (have ___long long int___ and ___char *___)
+> > > > drivers/usb/gadget/u_ether.c:787: error: invalid operands to binary << (have ___long long int___ and ___char *___)
+> > > > drivers/usb/gadget/u_ether.c:787: error: expected ___)___ before ___:___ token
+> > > > drivers/usb/gadget/u_ether.c:787: error: invalid operands to binary & (have ___long long int___ and ___char *___)
+> > > > drivers/usb/gadget/u_ether.c:787: error: expected ___)___ before ___:___ token
+> > > > drivers/usb/gadget/u_ether.c:787: warning: passing argument 4 of _____dynamic_dbg_enabled_helper___ makes integer from pointer without a cast
+> > > > drivers/usb/gadget/u_ether.c:787: error: expected ___)___ before ___KBUILD_MODNAME___
+> > > 
+> > > (lol at gcc crap)
+> > > 
+> > > > drivers/usb/gadget/u_ether.c:787: warning: too few arguments for format
+> > > 
+> > > argh, not that again.  We had this with a patch from Jesse a while
+> > > back, which I fixed thusly:
+> > 
+> > <patch moving KBUILD_MODNAME from a inline function to a macro snipped>
+> > 
+> > Yeah, I remember that too, but in this case, KBUILD_MODNAME is being
+> > used in a macro, not an inline function, the exact opposite.
+> > 
+> > Sam, any ideas here?  I'll bounce the original patch at you if you
+> > missed it last time.
+> 
+> I have not looked into the particular error but what happens is
+> that u_ether.o is used by more than one module so kbuild does
+> not know what value to assign the KBUILD_MODNAME and therefore
+> decide not to assign KBUILD_MODNAME at all.
+> 
+> And because any usage of KBUILD_MODNAME is anyway flawed in u_ether.c
+> as we do not know for what module it is being used it makes sense for
+> kbuild to do so.
+> 
+> The above error happens because u_ether.c uses something that require KBUILD_MODNAME
+> to be define.
+> So the correct fix is to avid usage of this macro in the source.
+> 
+> Note: The old error Andrew mentions was caused by alpha indirectly
+> pulling in a inline function that used KBUILD_MODNAME - something
+> that did not happen on the other architectures.
+> 
+> 	Sam
 
-Signed-off-by: Darrick J. Wong <djwong@us.ibm.com>
----
 
- drivers/hwmon/ibmaem.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+the comment above KBUILD_MODNAME from scripts/Makefile.lib says:
 
-diff --git a/drivers/hwmon/ibmaem.c b/drivers/hwmon/ibmaem.c
-index c1ee7dd..0f70dc2 100644
---- a/drivers/hwmon/ibmaem.c
-+++ b/drivers/hwmon/ibmaem.c
-@@ -682,7 +682,8 @@ static int aem_find_aem2(struct aem_ipmi_data *data,
- 		return -ETIMEDOUT;
- 
- 	if (data->rx_result || data->rx_msg_len != sizeof(*fi_resp) ||
--	    memcmp(&fi_resp->id, &system_x_id, sizeof(system_x_id)))
-+	    memcmp(&fi_resp->id, &system_x_id, sizeof(system_x_id)) ||
-+	    fi_resp->num_instances <= instance_num)
- 		return -ENOENT;
- 
- 	return 0;
+# Note: It's possible that one object gets potentially linked into more
+#       than one module. In that case KBUILD_MODNAME will be set to
+#       foo_bar,
+#       where foo and bar are the name of the modules.
+
+That seems like a reasonable behavior to me...but that is not what the
+code is doing...so at the very least the comment is wrong.
+
+thanks,
+
+-Jason
+
