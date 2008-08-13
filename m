@@ -1,59 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753849AbYHMUOu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758033AbYHMUPn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753849AbYHMUOu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Aug 2008 16:14:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757640AbYHMUOU
+	id S1758033AbYHMUPn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Aug 2008 16:15:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752380AbYHMUPf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Aug 2008 16:14:20 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:35963 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757618AbYHMUOT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Aug 2008 16:14:19 -0400
-Date: Wed, 13 Aug 2008 13:13:13 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: ebiederm@xmission.com, ying.huang@intel.com, pavel@ucw.cz,
-       nigel@nigel.suspend2.net, rjw@sisk.pl, vgoyal@redhat.com, mingo@elte.hu,
-       linux-kernel@vger.kernel.org, kexec@lists.infradead.org
+	Wed, 13 Aug 2008 16:15:35 -0400
+Received: from mail-out2.uio.no ([129.240.10.58]:40329 "EHLO mail-out2.uio.no"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750989AbYHMUPe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Aug 2008 16:15:34 -0400
 Subject: Re: [PATCH] kexec jump: fix compiling warning on xchg(&kexec_lock,
- 0) in kernel_kexec()
-In-Reply-To: <20080813130749.c406ab6c.akpm@linux-foundation.org>
-Message-ID: <alpine.LFD.1.10.0808131310450.3462@nehalem.linux-foundation.org>
-References: <1218618760.24951.137.camel@caritas-dev.intel.com> <alpine.LFD.1.10.0808130956360.3462@nehalem.linux-foundation.org> <m1r68shjhb.fsf@frodo.ebiederm.org> <20080813124406.21091eae.akpm@linux-foundation.org> <alpine.LFD.1.10.0808131247320.3462@nehalem.linux-foundation.org>
- <20080813130749.c406ab6c.akpm@linux-foundation.org>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	0) in kernel_kexec()
+From: Trond Myklebust <trond.myklebust@fys.uio.no>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>, torvalds@linux-foundation.org,
+       ying.huang@intel.com, pavel@ucw.cz, nigel@nigel.suspend2.net,
+       rjw@sisk.pl, vgoyal@redhat.com, mingo@elte.hu,
+       linux-kernel@vger.kernel.org, kexec@lists.infradead.org
+In-Reply-To: <20080813124406.21091eae.akpm@linux-foundation.org>
+References: <1218618760.24951.137.camel@caritas-dev.intel.com>
+	 <alpine.LFD.1.10.0808130956360.3462@nehalem.linux-foundation.org>
+	 <m1r68shjhb.fsf@frodo.ebiederm.org>
+	 <20080813124406.21091eae.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Wed, 13 Aug 2008 16:15:04 -0400
+Message-Id: <1218658504.9042.61.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
+X-UiO-Resend: resent
+X-UiO-Spam-info: not spam, SpamAssassin (score=-5.0, required=5.0, autolearn=disabled, UIO_MAIL_IS_INTERNAL=-5, uiobl=NO, uiouri=NO)
+X-UiO-Scanned: 31F7882AC4B57658FB10F4EB1D6418552B98C371
+X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: -49 maxlevel 200 minaction 2 bait 0 mail/h: 163 total 9497782 max/h 8345 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 2008-08-13 at 12:44 -0700, Andrew Morton wrote:
 
+> - Is xchg() guaranteed to be atomic?  That's what atomic_xchg() is for.
 
-On Wed, 13 Aug 2008, Andrew Morton wrote:
-> > 
-> > Nope. That needs to be an "unsigned long".
-> 
-> It is.
+Yes, xchg() is guaranteed to be atomic. atomic_xchg() applies only to
+the atomic_t type, and is almost always #defined to xchg().
 
-Gaah. I just misread the patch, sorry.
+> - xchg() isn't guaranteed to exist on all architectures.  atomic_xchg() is.
 
-> Used a bitop to preserve the runtime checking in there.  spin_unlock()
-> doesn't return the previous lockedness.
+You appear to be confusing xchg() with cmpxchg(). AFAIK, xchg() exists
+on all architectures, and is used in several instances of generic code.
+It is particularly extensively used in the networking layer.
 
-Umm. spin_unlock does a lot more when you have lock debugging on, and 
-doesn't do useless crap when it isn't.
+Trond
 
-> A bitop seems a better fit to me.  We never spin on that lock (it
-> always uses test_and_set), so why use a "spin"lock?
-
-..because an atomic bitop is not the same as a lock.
-
-The memory ordering guarantees are different. Yes, they are sufficient, 
-but that's because we've had to make them so to account for CRAP CODE that 
-uses bit operations as if they were locks.
-
-Don't continue that. It's WRONG.
-
-		Linus
