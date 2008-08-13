@@ -1,50 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754543AbYHMRSY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754156AbYHMRVv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754543AbYHMRSY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Aug 2008 13:18:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750983AbYHMRSQ
+	id S1754156AbYHMRVv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Aug 2008 13:21:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750899AbYHMRVn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Aug 2008 13:18:16 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:52813 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750869AbYHMRSP (ORCPT
+	Wed, 13 Aug 2008 13:21:43 -0400
+Received: from rtsoft3.corbina.net ([85.21.88.6]:61775 "EHLO
+	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1750782AbYHMRVm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Aug 2008 13:18:15 -0400
-Date: Wed, 13 Aug 2008 10:17:26 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Mark Langsdorf <mark.langsdorf@amd.com>
-cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: invalidate caches before going into suspend
-In-Reply-To: <200808131209.57534.mark.langsdorf@amd.com>
-Message-ID: <alpine.LFD.1.10.0808131011050.3462@nehalem.linux-foundation.org>
-References: <200808131141.18003.mark.langsdorf@amd.com> <20080813164728.GD5720@elte.hu> <200808131209.57534.mark.langsdorf@amd.com>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Wed, 13 Aug 2008 13:21:42 -0400
+Date: Wed, 13 Aug 2008 21:21:40 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Dave Jones <davej@redhat.com>, Wim Van Sebroeck <wim@iguana.be>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH] [WATCHDOG] mpc8xxx_wdt: fix modular build
+Message-ID: <20080813172140.GA5095@oksana.dev.rtsoft.ru>
+Reply-To: avorontsov@ru.mvista.com
+References: <20080806202918.GA29386@infomag.infomag.iguana.be> <20080813031044.GA11258@redhat.com> <20080813122341.GA31815@oksana.dev.rtsoft.ru> <20080813143159.GD26351@cs181140183.pp.htv.fi>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=windows-1251
+Content-Disposition: inline
+In-Reply-To: <20080813143159.GD26351@cs181140183.pp.htv.fi>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Wed, 13 Aug 2008, Mark Langsdorf wrote:
+On Wed, Aug 13, 2008 at 05:31:59PM +0300, Adrian Bunk wrote:
+> On Wed, Aug 13, 2008 at 04:23:41PM +0400, Anton Vorontsov wrote:
+> >...
+> > --- a/drivers/watchdog/mpc8xxx_wdt.c
+> > +++ b/drivers/watchdog/mpc8xxx_wdt.c
+> > @@ -48,6 +48,7 @@ struct mpc8xxx_wdt_type {
+> >  };
+> >  
+> >  static struct mpc8xxx_wdt __iomem *wd_base;
+> > +static int mpc8xxx_wdt_init_late(void);
+> >  
+> >  static u16 timeout = 0xffff;
+> >  module_param(timeout, ushort, 0);
+> > @@ -213,6 +214,12 @@ static int __devinit mpc8xxx_wdt_probe(struct of_device *ofdev,
+> >  	else
+> >  		timeout_sec = timeout / freq;
+> >  
+> > +#ifdef CONFIG_8xxx_WDT_MODULE
+> > +	ret = mpc8xxx_wdt_init_late();
+> > +	if (ret)
+> > +		goto err_unmap;
+> > +#endif
 > 
-> I don't think it's necessary.  I can submit a delta patch later if you
-> think it's really necessary.
+> In mpc8xxx_wdt_probe()?
 
-Why not at least move it to after the local_irq_disable()?
+Yes.
 
-That local_irq_disable() will do tons of writes if you have 
-lockdep enabled, it calls trace_hardirqs_off() etc. Maybe they don't end 
-up ever mattering, but wouldn't it make much more sense to just move the 
-wbinvd down to just before the
+> Isn't mpc8xxx_wdt_init() the correct place?
 
-	while (1)
-		halt();
+Not exactly. In case of non-modular build we rely on the fact
+that OF devices are populated before module_init(), so _probe
+is executed before _init_late.
 
-which is also likely to make sure that the compiler won't do anything at 
-all because everything is dead at that point with no function calls etc 
-happening.
+But with modules, we can do the right thing: just register the driver
+and await for the usual probe, then probe the wdt, and then register
+userspace interface. Yes, kind of complicated, but we really need
+this on 8xx.
 
-			Linus
+> >  	pr_info("WDT driver for MPC8xxx initialized. mode:%s timeout=%d "
+> >  		"(%d seconds)\n", reset ? "reset" : "interrupt", timeout,
+> >  		timeout_sec);
+> > @@ -280,7 +287,7 @@ static struct of_platform_driver mpc8xxx_wdt_driver = {
+> >   * very early to start pinging the watchdog (misc devices are not yet
+> >   * available), and later module_init() just registers the misc device.
+> >   */
+> > -static int __init mpc8xxx_wdt_init_late(void)
+> > +static int mpc8xxx_wdt_init_late(void)
+> >  {
+> >  	int ret;
+> >  
+> > @@ -295,7 +302,9 @@ static int __init mpc8xxx_wdt_init_late(void)
+> >  	}
+> >  	return 0;
+> >  }
+> > +#ifndef CONFIG_8xxx_WDT_MODULE
+> 
+> Your #ifdef is correct, but "#ifdef MODULE" would express this better.
+
+Thanks, will repost soon.
+
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
