@@ -1,135 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754109AbYHMMXw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753828AbYHMMoX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754109AbYHMMXw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Aug 2008 08:23:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751993AbYHMMXo
+	id S1753828AbYHMMoX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Aug 2008 08:44:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752543AbYHMMoM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Aug 2008 08:23:44 -0400
-Received: from rtsoft3.corbina.net ([85.21.88.6]:60962 "EHLO
-	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751885AbYHMMXn (ORCPT
+	Wed, 13 Aug 2008 08:44:12 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:51717 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752338AbYHMMoL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Aug 2008 08:23:43 -0400
-Date: Wed, 13 Aug 2008 16:23:41 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Dave Jones <davej@redhat.com>, Wim Van Sebroeck <wim@iguana.be>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
+	Wed, 13 Aug 2008 08:44:11 -0400
+Subject: Re: [PATCH 11/7] Kill REQ_TYPE_FLUSH
+From: David Woodhouse <dwmw2@infradead.org>
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Cc: Jens Axboe <jens.axboe@oracle.com>,
        Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: [PATCH] [WATCHDOG] mpc8xxx_wdt: fix modular build
-Message-ID: <20080813122341.GA31815@oksana.dev.rtsoft.ru>
-Reply-To: avorontsov@ru.mvista.com
-References: <20080806202918.GA29386@infomag.infomag.iguana.be> <20080813031044.GA11258@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=windows-1251
-Content-Disposition: inline
-In-Reply-To: <20080813031044.GA11258@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+       Ric Wheeler <ricwheeler@gmail.com>, linux-fsdevel@vger.kernel.org,
+       gilad@codefidence.com, matthew@wil.cx,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.64.0808131355170.27994@vixen.sonytel.be>
+References: <1218299181.26926.88.camel@pmac.infradead.org>
+	 <1218627594.2977.273.camel@pmac.infradead.org>
+	 <Pine.LNX.4.64.0808131355170.27994@vixen.sonytel.be>
+Content-Type: text/plain
+Date: Wed, 13 Aug 2008 13:43:22 +0100
+Message-Id: <1218631402.2977.288.camel@pmac.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch fixes following build error when mpc8xxx_wdt is selected to
-build as a module:
+On Wed, 2008-08-13 at 13:58 +0200, Geert Uytterhoeven wrote:
+> Note that REQ_LB_OP_FLUSH is also never used.
 
-drivers/watchdog/mpc8xxx_wdt.c:304: error: redefinition of '__inittest'
-drivers/watchdog/mpc8xxx_wdt.c:298: error: previous definition of '__inittest' was here
-drivers/watchdog/mpc8xxx_wdt.c:304: error: redefinition of 'init_module'
-drivers/watchdog/mpc8xxx_wdt.c:298: error: previous definition of 'init_module' was here
+That can be fixed...
 
-Reported-by: Dave Jones <davej@redhat.com>
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
----
-
-On Tue, Aug 12, 2008 at 11:10:44PM -0400, Dave Jones wrote:
-> On Wed, Aug 06, 2008 at 10:29:18PM +0200, Wim Van Sebroeck wrote:
->  > Hi Linus,
->  > 
->  > Please pull from 'master' branch of
->  > 	git://git.kernel.org/pub/scm/linux/kernel/git/wim/linux-2.6-watchdog.git
->  > or if master.kernel.org hasn't synced up yet:
->  > 	master.kernel.org:/pub/scm/linux/kernel/git/wim/linux-2.6-watchdog.git
->  > 
->  > This will update the following files:
->  > 
->  > Author: Anton Vorontsov <avorontsov@ru.mvista.com>
->  > Date:   Thu Jul 3 23:51:36 2008 -0700
->  > 
->  >     [WATCHDOG] mpc8xxx_wdt: add support for MPC8xx watchdogs
-> 
-> This is broken when built modular because this...
-> 
->  > +}
->  > +module_init(mpc8xxx_wdt_init_late);
-> 
-> and this ..
-> 
->  > +arch_initcall(mpc8xxx_wdt_init);
-> 
-> Can't be mixed.  You end up with two init_module invocations
-> 
-> drivers/watchdog/mpc8xxx_wdt.c:304: error: redefinition of '__inittest'
-> drivers/watchdog/mpc8xxx_wdt.c:298: error: previous definition of '__inittest' was here
-> drivers/watchdog/mpc8xxx_wdt.c:304: error: redefinition of 'init_module'
-> drivers/watchdog/mpc8xxx_wdt.c:298: error: previous definition of 'init_module' was here
-> 
-> Given they both call different routines though, I'm not sure the right fix here.
-
-Thanks for noticing!
-
-Unfortunately I don't see any elegant way to fix this. In the long term,
-it would be great if we could work with misc (thus watchdog) subsystem at
-arch_initcall() time (yes, we need this early on 8xx). Until this happen,
-I think this patch is the best fix we can do.
-
- drivers/watchdog/mpc8xxx_wdt.c |   11 ++++++++++-
- 1 files changed, 10 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/watchdog/mpc8xxx_wdt.c b/drivers/watchdog/mpc8xxx_wdt.c
-index f209496..8e50bc4 100644
---- a/drivers/watchdog/mpc8xxx_wdt.c
-+++ b/drivers/watchdog/mpc8xxx_wdt.c
-@@ -48,6 +48,7 @@ struct mpc8xxx_wdt_type {
+diff --git a/drivers/mtd/mtd_blkdevs.c b/drivers/mtd/mtd_blkdevs.c
+index 681d5ac..8663f3f 100644
+--- a/drivers/mtd/mtd_blkdevs.c
++++ b/drivers/mtd/mtd_blkdevs.c
+@@ -32,6 +32,13 @@ struct mtd_blkcore_priv {
+ 	spinlock_t queue_lock;
  };
  
- static struct mpc8xxx_wdt __iomem *wd_base;
-+static int mpc8xxx_wdt_init_late(void);
- 
- static u16 timeout = 0xffff;
- module_param(timeout, ushort, 0);
-@@ -213,6 +214,12 @@ static int __devinit mpc8xxx_wdt_probe(struct of_device *ofdev,
- 	else
- 		timeout_sec = timeout / freq;
- 
-+#ifdef CONFIG_8xxx_WDT_MODULE
-+	ret = mpc8xxx_wdt_init_late();
-+	if (ret)
-+		goto err_unmap;
-+#endif
++static void blktrans_prepare_flush(struct request_queue *q,
++				   struct request *req)
++{
++	req->cmd_type = REQ_TYPE_LINUX_BLOCK;
++	req->cmd[0] = REQ_LB_OP_FLUSH;
++}
 +
- 	pr_info("WDT driver for MPC8xxx initialized. mode:%s timeout=%d "
- 		"(%d seconds)\n", reset ? "reset" : "interrupt", timeout,
- 		timeout_sec);
-@@ -280,7 +287,7 @@ static struct of_platform_driver mpc8xxx_wdt_driver = {
-  * very early to start pinging the watchdog (misc devices are not yet
-  * available), and later module_init() just registers the misc device.
+ static int blktrans_discard_request(struct request_queue *q,
+ 				    struct request *req)
+ {
+@@ -53,6 +60,14 @@ static int do_blktrans_request(struct mtd_blktrans_ops *tr,
+ 	buf = req->buffer;
+ 
+ 	if (req->cmd_type == REQ_TYPE_LINUX_BLOCK &&
++	    req->cmd[0] == REQ_LB_OP_FLUSH) {
++		if (tr->flush)
++			return !tr->flush(dev);
++		else
++			return 1;
++	}
++
++	if (req->cmd_type == REQ_TYPE_LINUX_BLOCK &&
+ 	    req->cmd[0] == REQ_LB_OP_DISCARD)
+ 		return !tr->discard(dev, block, nsect);
+ 
+@@ -383,6 +398,9 @@ int register_mtd_blktrans(struct mtd_blktrans_ops *tr)
+ 		blk_queue_set_discard(tr->blkcore_priv->rq,
+ 				      blktrans_discard_request);
+ 
++	blk_queue_ordered(tr->blkcore_priv->rq, QUEUE_ORDERED_DRAIN_FLUSH,
++			  blktrans_prepare_flush);
++
+ 	tr->blkshift = ffs(tr->blksize) - 1;
+ 
+ 	tr->blkcore_priv->thread = kthread_run(mtd_blktrans_thread, tr,
+
+
+>  Actually its definition in include/linux/blkdev.h has:
+> 
+> | enum {
+> |       /*
+> |        * just examples for now
+>            ^^^^^^^^^^^^^^^^^^^^^
+> |        */
+> |       REQ_LB_OP_EJECT = 0x40,         /* eject request */
+> |       REQ_LB_OP_FLUSH = 0x41,         /* flush device */
+> | };
+> 
+> which makes me a bit reluctant to make this change.
+
+That can be fixed too...
+
+diff --git a/include/linux/blkdev.h b/include/linux/blkdev.h
+index 293a71a..7ef582f 100644
+--- a/include/linux/blkdev.h
++++ b/include/linux/blkdev.h
+@@ -76,11 +75,8 @@ enum rq_cmd_type_bits {
+  *
   */
--static int __init mpc8xxx_wdt_init_late(void)
-+static int mpc8xxx_wdt_init_late(void)
- {
- 	int ret;
+ enum {
+-	/*
+-	 * just examples for now
+-	 */
+ 	REQ_LB_OP_EJECT	= 0x40,		/* eject request */
+-	REQ_LB_OP_FLUSH = 0x41,		/* flush device */
++	REQ_LB_OP_FLUSH = 0x41,		/* flush request */
+ 	REQ_LB_OP_DISCARD = 0x42,	/* discard sectors */
+ };
  
-@@ -295,7 +302,9 @@ static int __init mpc8xxx_wdt_init_late(void)
- 	}
- 	return 0;
- }
-+#ifndef CONFIG_8xxx_WDT_MODULE
- module_init(mpc8xxx_wdt_init_late);
-+#endif
- 
- static int __init mpc8xxx_wdt_init(void)
- {
+
+> BTW, how to test all this flushing behavior, if there are no real
+> users?
+
+btrfs uses it.
+
 -- 
-1.5.6.3
+David Woodhouse                            Open Source Technology Centre
+David.Woodhouse@intel.com                              Intel Corporation
+
+
 
