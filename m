@@ -1,59 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755034AbYHMHk1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753235AbYHMHkl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755034AbYHMHk1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Aug 2008 03:40:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752262AbYHMHkN
+	id S1753235AbYHMHkl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Aug 2008 03:40:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755058AbYHMHk1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Aug 2008 03:40:13 -0400
-Received: from main.gmane.org ([80.91.229.2]:50908 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752157AbYHMHkM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Aug 2008 03:40:12 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Daniel Ng <daniel_ng11@lycos.com>
-Subject: Multicast socket behaviour?
-Date: Wed, 13 Aug 2008 07:39:37 +0000 (UTC)
-Message-ID: <loom.20080813T072943-582@post.gmane.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 13 Aug 2008 03:40:27 -0400
+Received: from wf-out-1314.google.com ([209.85.200.175]:47453 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754968AbYHMHkZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Aug 2008 03:40:25 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=txuMGgoTnWzuXwEXWjFIIx1WlPAF50dehgLFOOu+cdyxOa8FpHmmvZP+at5zMZ7/Xo
+         kdz47TImJoBOwqIShqkzk2DNxSwt6/lr2UcZ8tjKsfPfNj0y0BT7OMS/+OC8C9NpuRgw
+         Rmjs5MamThXwDViB2KiTBwjvMkB03v008M9Rc=
+Message-ID: <8db1092f0808130040u25876f45gbb4fa641959f5110@mail.gmail.com>
+Date: Wed, 13 Aug 2008 09:40:24 +0200
+From: "Maciej Rutecki" <maciej.rutecki@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [2.6.26.*] boot problem (ahci/irq related?)
+Cc: "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
+       "Yinghai Lu" <yhlu.kernel@gmail.com>, "Ingo Molnar" <mingo@elte.hu>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       linux-ide@vger.kernel.org, "Jeff Garzik" <jgarzik@pobox.com>,
+       tj@kernel.org, andi@firstfloor.org,
+       "Thomas Gleixner" <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       "Jesse Barnes" <jbarnes@virtuousgeek.org>
+In-Reply-To: <200808121645.37539.rjw@sisk.pl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: main.gmane.org
-User-Agent: Loom/3.14 (http://gmane.org/)
-X-Loom-IP: 124.190.96.129 (Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1; .NET CLR 1.1.4322; .NET CLR 2.0.50727))
+Content-Disposition: inline
+References: <8db1092f0808111312x3baf819bxbb05030c05693065@mail.gmail.com>
+	 <20080812081632.303de380@lxorguk.ukuu.org.uk>
+	 <8db1092f0808120107k1f8a65f4sf406fa3a89125870@mail.gmail.com>
+	 <200808121645.37539.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+I remove this options (2.6.27-rc2:
+CONFIG_IDE, CONFIG_ATA_PIIX, CONFIG_ATA_SFF
 
-The below C code registers the socket with the multicast group 'HELLO_GROUP':
+from libata only I have CONFIG_ATA_ACPI and CONFIG_SATA_AHCI
 
-    mreq.imr_multiaddr.s_addr=inet_addr(HELLO_GROUP);
-    mreq.imr_address.s_addr=htonl(INADDR_ANY);
+boot dies on:
 
-    mreq.imr_ifindex = if_nametoindex("ppp1");
+[...]
+ACPI: PCI Interrupt 0000:00:1f.2[B] -> GSI 17 (level, low) -> IRQ 17
+ahci 0000:00:1f.2: AHCI 0001.0100 32 slots 4 ports 1.5 Gbps 0x1 impl SATA mode
+ahci 0000:00:1f.2: flags: 64bit ncq ilck stag pm led clo pmp pio slum part
+PCI: Setting latency timer of device 0000:00:1f.2 to 64
+scsi0 : ahci
+scsi1 : ahci
+scsi2 : ahci
+scsi3 : ahci
+ata1: SATA max UDMA/133 irq_stat 0x00000040, connection status changed irq 220
+ata2: DUMMY
+ata3: DUMMY
+ata4: DUMMY
 
-    if (setsockopt(fd,IPPROTO_IP,IP_ADD_MEMBERSHIP,&mreq,sizeof(mreq)) < 0) {
-        perror("setsockopt");
-        exit(1);
-    }
+after should be:
+ata1: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
+ata1.00: ACPI cmd f5/00:00:00:00:00:a0 filtered out
+ata1.00: ACPI cmd b1/c1:00:00:00:00:a0 filtered out
+ata1.00: ACPI cmd c6/00:10:00:00:00:a0 succeeded
+ata1.00: ACPI cmd ef/10:03:00:00:00:a0 filtered out
+[...]
 
-I understand that if 'INADDR_ANY' is used, it is up to the kernel to decide 
-what action to take.
-
->From my experiments, it seems that the interface corresponding to the 
-highest '224.0.0.0' entry in the routing table is used.
-
-Would someone please explain why this is so? 
-
-How difficult would it be to have the kernel join the HELLO_GROUP on *all* 
-available multicast-capable interfaces? Why isn't this currently implemented?
-
-I'm using 2.6.14.
-
-Cheers,
-Daniel
-
-
+-- 
+Maciek
