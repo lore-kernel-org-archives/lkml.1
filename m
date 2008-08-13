@@ -1,70 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757375AbYHMTgQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757543AbYHMTh2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757375AbYHMTgQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Aug 2008 15:36:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752262AbYHMTgA
+	id S1757543AbYHMTh2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Aug 2008 15:37:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751871AbYHMThS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Aug 2008 15:36:00 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:36459 "EHLO
+	Wed, 13 Aug 2008 15:37:18 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:36469 "EHLO
 	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751848AbYHMTgA (ORCPT
+	with ESMTP id S1751848AbYHMThR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Aug 2008 15:36:00 -0400
-Date: Wed, 13 Aug 2008 21:37:15 +0200
+	Wed, 13 Aug 2008 15:37:17 -0400
+To: 7v5w7go9ub0o <7v5w7go9ub0o@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: libmalware.so: Dazuko Linux/BSD On-Access scanning and control
 From: Andi Kleen <andi@firstfloor.org>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, Roland McGrath <roland@redhat.com>,
-       Ulrich Drepper <drepper@redhat.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Gregory Haskins <ghaskins@novell.com>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       "Luis Claudio R. Goncalves" <lclaudio@uudg.org>,
-       Clark Williams <williams@redhat.com>
-Subject: Re: Efficient x86 and x86_64 NOP microbenchmarks
-Message-ID: <20080813193715.GQ1366@one.firstfloor.org>
-References: <alpine.DEB.1.10.0808081750590.16691@gandalf.stny.rr.com> <87tzdv2g05.fsf@basil.nowhere.org> <alpine.DEB.1.10.0808082030500.1396@gandalf.stny.rr.com> <489CE90D.1040902@goop.org> <alpine.LFD.1.10.0808081750060.3462@nehalem.linux-foundation.org> <alpine.DEB.1.10.0808082113090.3707@gandalf.stny.rr.com> <20080813175213.GA8679@Krystal> <alpine.LFD.1.10.0808131119290.3462@nehalem.linux-foundation.org> <20080813184142.GM1366@one.firstfloor.org> <20080813193011.GC15547@Krystal>
-Mime-Version: 1.0
+References: <48A32CAC.1030605@gmail.com>
+Date: Wed, 13 Aug 2008 21:37:15 +0200
+In-Reply-To: <48A32CAC.1030605@gmail.com> (7v5w7go9ub0o@gmail.com's message of "Wed, 13 Aug 2008 14:49:16 -0400")
+Message-ID: <87bpzw1zbo.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080813193011.GC15547@Krystal>
-User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Sorry to ask, I feel I must be missing something, but I'm trying to
-> figure out where you propose to add the "call mcount" ? In the caller or
-> in the callee ?
+7v5w7go9ub0o <7v5w7go9ub0o@gmail.com> writes:
 
-callee like gcc. caller would be likely more bloated because
-there are more calls than functions. Also if it was at the 
-callee more code would be needed because the function currently
-executed couldn't be gotten from stack directly.
+> (FYI. Dazuko may have trailblazed some of the issues now under
+> discussion re: libmalware.so. It has worked well for me.
 
-> Or is it a different scheme I don't see ? I am trying to figure out how
-> you happen to do all that without dynamic code modification and manage
-> not to hurt performance.
-
-The dynamic code modification is only needed because there is no
-global table of the mcount call sites. So instead it discovers
-them at runtime, but that requires runtime save patching
-
-With a custom call scheme one could just build up a table of 
-call sites at link time using an ELF section and then when
-tracing is enabled/disabled always patch them all in one go
-in a stop_machine(). Then you wouldn't need parallel execution safe
-patching anymore and it doesn't matter what the nops look like.
-
-The other advantage is that it would allow getting rid of
-the frame pointer.
+Against what exactly did it protect you? Please give a concrete example.
 
 -Andi
-
