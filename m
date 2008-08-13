@@ -1,55 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756989AbYHMItW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756785AbYHMItv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756989AbYHMItW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Aug 2008 04:49:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756995AbYHMIsr
+	id S1756785AbYHMItv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Aug 2008 04:49:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753080AbYHMIth
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Aug 2008 04:48:47 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:41047 "EHLO mx2.mail.elte.hu"
+	Wed, 13 Aug 2008 04:49:37 -0400
+Received: from saeurebad.de ([85.214.36.134]:33524 "EHLO saeurebad.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756972AbYHMIsp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Aug 2008 04:48:45 -0400
-Date: Wed, 13 Aug 2008 10:48:19 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Johannes Weiner <hannes@saeurebad.de>
-Cc: Jan Beulich <jbeulich@novell.com>, linux-kernel@vger.kernel.org,
-       dhowells@redhat.com, Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH] Propagate new nonpanic bootmem macros to
-	CONFIG_HAVE_ARCH_BOOTMEM_NODE
-Message-ID: <20080813084819.GA23417@elte.hu>
-References: <489721D1.76E4.0078.0@novell.com> <87skt99vmz.fsf@skyscraper.fehenstaub.lan>
+	id S1754470AbYHMItg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Aug 2008 04:49:36 -0400
+From: Johannes Weiner <hannes@saeurebad.de>
+To: Avi Kivity <avi@qumranet.com>
+Cc: Max Krasnyansky <maxk@qualcomm.com>, LKML <linux-kernel@vger.kernel.org>,
+       andrea@qumranet.com, Peter Zijlstra <peterz@infradead.org>
+Subject: Re: Circular vma locking with kvm, seems to be mmu notifiers related
+References: <48A0D6A9.4030603@qualcomm.com> <48A29D0D.9010801@qumranet.com>
+Date: Wed, 13 Aug 2008 10:49:10 +0200
+In-Reply-To: <48A29D0D.9010801@qumranet.com> (Avi Kivity's message of "Wed, 13
+	Aug 2008 11:36:29 +0300")
+Message-ID: <87od3x9u61.fsf@skyscraper.fehenstaub.lan>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <87skt99vmz.fsf@skyscraper.fehenstaub.lan>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: text/plain; charset=us-ascii
+X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Avi,
 
-* Johannes Weiner <hannes@saeurebad.de> wrote:
+Avi Kivity <avi@qumranet.com> writes:
 
-> Commit 74768ed833344b "page allocator: use no-panic variant of 
-> alloc_bootmem() in alloc_large_system_hash()" introduced two new 
-> _nopanic macros which are undefined for CONFIG_HAVE_ARCH_BOOTMEM_NODE.
+> Max Krasnyansky wrote:
+>> Got this on the latest mainline git.
+>> There are already a couple of lockdep/kvm threads. So maybe it's known.
+>>
+>> =============================================
+>> [ INFO: possible recursive locking detected ]
+>> 2.6.27-rc2 #36
+>> ---------------------------------------------
+>> qemu-system-x86/3445 is trying to acquire lock:
+>>  (&anon_vma->lock){--..}, at: [<ffffffff8029f84d>] mm_take_all_locks+0x8d/0xf0
+>>
+>> but task is already holding lock:
+>>  (&anon_vma->lock){--..}, at: [<ffffffff8029f84d>] mm_take_all_locks+0x8d/0xf0
+>>
+>>   
+>
+> Seems to be a false positive.  mmu_take_all_locks takes (surprise!)
+> all anon_vma->locks belonging to an mm, and takes special care not to
+> deadlock while doing this.
+>
+> We need to communicate this to lockdep somehow.
 
-the above bootmem commit from yesterday broke the -rc3 32-bit NUMA 
-build:
+I think Peter already annotated this in
+454ed842d55740160334efc9ad56cfef54ed37bc .
 
- mm/page_alloc.c: In function ‘alloc_large_system_hash':
- mm/page_alloc.c:4440: error: implicit declaration of function ‘alloc_bootmem_nopanic'
- mm/page_alloc.c:4440: warning: assignment makes pointer from integer without a cast
-
-i have queued your fix up in tip/x86/urgent, thanks Johannes.
-
-	Ingo
+	Hannes
