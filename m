@@ -1,72 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755381AbYHMDr1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755456AbYHMDs5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755381AbYHMDr1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Aug 2008 23:47:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754283AbYHMDrU
+	id S1755456AbYHMDs5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Aug 2008 23:48:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753992AbYHMDsu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Aug 2008 23:47:20 -0400
-Received: from e34.co.us.ibm.com ([32.97.110.152]:53500 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753359AbYHMDrT (ORCPT
+	Tue, 12 Aug 2008 23:48:50 -0400
+Received: from wa-out-1112.google.com ([209.85.146.178]:8406 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753359AbYHMDst (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Aug 2008 23:47:19 -0400
-Date: Tue, 12 Aug 2008 20:47:10 -0700 (Pacific Daylight Time)
-From: Vivek Kashyap <kashyapv@us.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Matt Helsley <matthltc@us.ibm.com>, containers@lists.linux-foundation.org,
-       lizf@cn.fujitsu.com, linux-kernel@vger.kernel.org, menage@google.com,
-       linux-pm@lists.linux-foundation.org
-Subject: Re: [linux-pm] [PATCH 0/5] Container Freezer v6: Reuse Suspend
- Freezer
-In-Reply-To: <20080812154429.c5377bd0.akpm@linux-foundation.org>
-Message-ID: <Pine.WNT.4.64.0808121927320.5336@IBM-8DE7FFDE2AB>
-References: <20080811235323.872291138@us.ibm.com>
- <20080812154429.c5377bd0.akpm@linux-foundation.org>
-X-X-Sender: kashyapv@imap.linux.ibm.com
+	Tue, 12 Aug 2008 23:48:49 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=ua8TiL9j4A9RusH0w6D9LymA/WVWToKdX/30Xr3A0axRCMnc3+ulQY/ushTNVXsr4M
+         Ectj+hZ/tfadkoDHxOFjYONOsj0XNduuibuLvNKEljdO1xCdrttwTR9nenx8x+oKlpNq
+         7hITxdmq5jqqYhGCPz4igu/2JuIXnwaUK1Ff8=
+Message-ID: <eada2a070808122048s151d2ea5hb92fc654f4751c44@mail.gmail.com>
+Date: Tue, 12 Aug 2008 20:48:49 -0700
+From: "Tim Pepper" <tpepper@gmail.com>
+To: "Peter Zijlstra" <a.p.zijlstra@chello.nl>
+Subject: Re: [RFC][PATCH 1/7] lockdep: Fix combinatorial explosion in lock subgraph traversal.
+Cc: "David Miller" <davem@davemloft.net>, torvalds@linux-foundation.org,
+       jeremy@goop.org, hugh@veritas.com, mingo@elte.hu,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       davej@redhat.com
+In-Reply-To: <1217925973.3589.108.camel@twins>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080804130317.994042639@chello.nl>
+	 <20080804131011.749503624@chello.nl>
+	 <20080805.013445.30774221.davem@davemloft.net>
+	 <1217925973.3589.108.camel@twins>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 12 Aug 2008, Andrew Morton wrote:
-
-> On Mon, 11 Aug 2008 16:53:23 -0700
-> Matt Helsley <matthltc@us.ibm.com> wrote:
+On Tue, Aug 5, 2008 at 1:46 AM, Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+> On Tue, 2008-08-05 at 01:34 -0700, David Miller wrote:
+>> See:
+>>
+>> http://marc.info/?l=linux-kernel&m=121758260130275&w=2
 >
->> This patch series introduces a cgroup subsystem that utilizes the swsusp
->> freezer to freeze a group of tasks. It's immediately useful for batch job
->> management scripts. It should also be useful in the future for implementing
->> container checkpoint/restart.
+> Probably missed that, thanks for reminding me.
 >
-> I don't think that this provides anything like sufficient detail to justify
-> merging a whole bunch of stuff into Linux.
+> Andrew, please pick up:
 >
-> What does "It's immediately useful for batch job management scripts."
-> mean?  How is it useful?  Examples?  Why would an operator want this
-> feature, and how would it be used?  _much_ more information is needed!
-
-A batch-manager/job scheduler (such as loadleveler) must at times stop all 
-tasks associated with a workload being run in a container. The workload may 
-constitute of multiple tasks - some of which are in different sessions. 
-A signal (STOP/CONT) to the Containers 'init' wont be transmitted to all 
-the tasks in the Container. The 'freezer' mechanism allows this control
-to be implemented in a clean way.
-
-Vivek
+> ---
+> From: Ingo Molnar <mingo@elte.hu>
+> Date: Fri, 1 Aug 2008 11:23:50 +0200
+> Subject: [PATCH] lockdep: build fix
 >
-> Once we've actually found out what this work is useful for, we can move
-> onto identification of and discussion of alternatives.  One would be "why not
-> use plain old SIGSTOP?"  Another alternative is, of course "that's not useful
-> enough to justify merging the code".  But we don't know yet, coz you didn't
-> tell us.
-> _______________________________________________
-> linux-pm mailing list
-> linux-pm@lists.linux-foundation.org
-> https://lists.linux-foundation.org/mailman/listinfo/linux-pm
+> fix:
+>
+>  kernel/built-in.o: In function `lockdep_stats_show':
+>  lockdep_proc.c:(.text+0x3cb2f): undefined reference to `lockdep_count_forward_deps'
+>  kernel/built-in.o: In function `l_show':
+>  lockdep_proc.c:(.text+0x3d02b): undefined reference to `lockdep_count_forward_deps'
+>  lockdep_proc.c:(.text+0x3d047): undefined reference to `lockdep_count_backward_deps'
+>
+> Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> ---
+>  kernel/lockdep_internals.h |   13 +++++++++++++
+>  1 files changed, 13 insertions(+), 0 deletions(-)
+>
+> diff --git a/kernel/lockdep_internals.h b/kernel/lockdep_internals.h
+> index 68d44ec..f5c6a14 100644
+> --- a/kernel/lockdep_internals.h
+> +++ b/kernel/lockdep_internals.h
+> @@ -53,8 +53,21 @@ extern unsigned int nr_process_chains;
+>  extern unsigned int max_lockdep_depth;
+>  extern unsigned int max_recursion_depth;
+>
+> +#ifdef CONFIG_PROVE_LOCKING
+>  extern unsigned long lockdep_count_forward_deps(struct lock_class *);
+>  extern unsigned long lockdep_count_backward_deps(struct lock_class *);
+> +#else
+> +static inline unsigned long
+> +lockdep_count_forward_deps(struct lock_class *class)
+> +{
+> +       return 0;
+> +}
+> +static inline unsigned long
+> +lockdep_count_backward_deps(struct lock_class *class)
+> +{
+> +       return 0;
+> +}
+> +#endif
+>
+>  #ifdef CONFIG_DEBUG_LOCKDEP
+>  /*
+>
 >
 
-__
 
-Vivek Kashyap
-Linux Technology Center, IBM
+Looks like this is needed for 2.6.27-rc3 to build here.  Also noted,
+regardless of the patch:
+
+kernel/lockdep.c:580: warning: 'print_lock_dependencies' defined but not used
+
+
+
+Tim
