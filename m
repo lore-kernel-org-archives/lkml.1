@@ -1,135 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757176AbYHMIqz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757240AbYHMIrm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757176AbYHMIqz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Aug 2008 04:46:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755700AbYHMIjq
+	id S1757240AbYHMIrm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Aug 2008 04:47:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755767AbYHMIju
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Aug 2008 04:39:46 -0400
-Received: from smtp.nokia.com ([192.100.122.230]:37213 "EHLO
-	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755673AbYHMIjo (ORCPT
+	Wed, 13 Aug 2008 04:39:50 -0400
+Received: from smtp.nokia.com ([192.100.122.233]:46405 "EHLO
+	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755721AbYHMIjs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Aug 2008 04:39:44 -0400
+	Wed, 13 Aug 2008 04:39:48 -0400
 From: Artem Bityutskiy <dedekind@infradead.org>
 To: linux-kernel@vger.kernel.org
 Cc: Adrian Hunter <ext-adrian.hunter@nokia.com>,
        Zoltan Sogor <weth@inf.u-szeged.hu>, Christoph Hellwig <hch@lst.de>
-Subject: [PATCH] UBIFS: remove another unneeded function parameter
-Date: Wed, 13 Aug 2008 13:17:40 +0300
-Message-Id: <1218622675-28853-12-git-send-email-dedekind@infradead.org>
+Subject: [PATCH] UBIFS: correct spelling of "thrice".
+Date: Wed, 13 Aug 2008 13:17:52 +0300
+Message-Id: <1218622675-28853-24-git-send-email-dedekind@infradead.org>
 X-Mailer: git-send-email 1.5.4.1
 In-Reply-To: <1218622675-28853-1-git-send-email-dedekind@infradead.org>
 References: <1218622675-28853-1-git-send-email-dedekind@infradead.org>
-X-OriginalArrivalTime: 13 Aug 2008 08:39:03.0394 (UTC) FILETIME=[0A514C20:01C8FD20]
+X-OriginalArrivalTime: 13 Aug 2008 08:39:04.0519 (UTC) FILETIME=[0AFCF570:01C8FD20]
 X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
+From: Adrian Hunter <ext-adrian.hunter@nokia.com>
 
-The 'last_reference' parameter of 'pack_inode()' is not really
-needed because 'inode->i_nlink' may be tested instead. Zap it.
-
-Signed-off-by: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
+Signed-off-by: Adrian Hunter <ext-adrian.hunter@nokia.com>
 ---
- fs/ubifs/journal.c |   30 ++++++++++++++----------------
- 1 files changed, 14 insertions(+), 16 deletions(-)
+ fs/ubifs/budget.c |    4 ++--
+ fs/ubifs/find.c   |    2 +-
+ 2 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/fs/ubifs/journal.c b/fs/ubifs/journal.c
-index 666ad82..3bc3fc9 100644
---- a/fs/ubifs/journal.c
-+++ b/fs/ubifs/journal.c
-@@ -447,13 +447,11 @@ static int get_dent_type(int mode)
-  * @ino: buffer in which to pack inode node
-  * @inode: inode to pack
-  * @last: indicates the last node of the group
-- * @last_reference: non-zero if this is a deletion inode
-  */
- static void pack_inode(struct ubifs_info *c, struct ubifs_ino_node *ino,
--		       const struct inode *inode, int last,
--		       int last_reference)
-+		       const struct inode *inode, int last)
- {
--	int data_len = 0;
-+	int data_len = 0, last_reference = !inode->i_nlink;
- 	struct ubifs_inode *ui = ubifs_inode(inode);
+diff --git a/fs/ubifs/budget.c b/fs/ubifs/budget.c
+index 323d83a..1540981 100644
+--- a/fs/ubifs/budget.c
++++ b/fs/ubifs/budget.c
+@@ -263,7 +263,7 @@ int ubifs_calc_min_idx_lebs(struct ubifs_info *c)
  
- 	ino->ch.node_type = UBIFS_INO_NODE;
-@@ -596,9 +594,9 @@ int ubifs_jnl_update(struct ubifs_info *c, const struct inode *dir,
- 	ubifs_prep_grp_node(c, dent, dlen, 0);
+ 	idx_size = c->old_idx_sz + c->budg_idx_growth + c->budg_uncommitted_idx;
  
- 	ino = (void *)dent + aligned_dlen;
--	pack_inode(c, ino, inode, 0, last_reference);
-+	pack_inode(c, ino, inode, 0);
- 	ino = (void *)ino + aligned_ilen;
--	pack_inode(c, ino, dir, 1, 0);
-+	pack_inode(c, ino, dir, 1);
+-	/* And make sure we have trice the index size of space reserved */
++	/* And make sure we have thrice the index size of space reserved */
+ 	idx_size = idx_size + (idx_size << 1);
  
- 	if (last_reference) {
- 		err = ubifs_add_orphan(c, inode->i_ino);
-@@ -781,7 +779,7 @@ int ubifs_jnl_write_inode(struct ubifs_info *c, const struct inode *inode)
- 	if (err)
- 		goto out_free;
- 
--	pack_inode(c, ino, inode, 1, last_reference);
-+	pack_inode(c, ino, inode, 1);
- 	err = write_head(c, BASEHD, ino, len, &lnum, &offs, sync);
- 	if (err)
- 		goto out_release;
-@@ -912,16 +910,16 @@ int ubifs_jnl_rename(struct ubifs_info *c, const struct inode *old_dir,
- 
- 	p = (void *)dent2 + aligned_dlen2;
- 	if (new_inode) {
--		pack_inode(c, p, new_inode, 0, last_reference);
-+		pack_inode(c, p, new_inode, 0);
- 		p += ALIGN(ilen, 8);
- 	}
- 
- 	if (!move)
--		pack_inode(c, p, old_dir, 1, 0);
-+		pack_inode(c, p, old_dir, 1);
- 	else {
--		pack_inode(c, p, old_dir, 0, 0);
-+		pack_inode(c, p, old_dir, 0);
- 		p += ALIGN(plen, 8);
--		pack_inode(c, p, new_dir, 1, 0);
-+		pack_inode(c, p, new_dir, 1);
- 	}
- 
- 	if (last_reference) {
-@@ -1126,7 +1124,7 @@ int ubifs_jnl_truncate(struct ubifs_info *c, const struct inode *inode,
- 	if (err)
- 		goto out_free;
- 
--	pack_inode(c, ino, inode, 0, 0);
-+	pack_inode(c, ino, inode, 0);
- 	ubifs_prep_grp_node(c, trun, UBIFS_TRUN_NODE_SZ, dlen ? 0 : 1);
- 	if (dlen)
- 		ubifs_prep_grp_node(c, dn, dlen, 1);
-@@ -1246,9 +1244,9 @@ int ubifs_jnl_delete_xattr(struct ubifs_info *c, const struct inode *host,
- 	ubifs_prep_grp_node(c, xent, xlen, 0);
- 
- 	ino = (void *)xent + aligned_xlen;
--	pack_inode(c, ino, inode, 0, 1);
-+	pack_inode(c, ino, inode, 0);
- 	ino = (void *)ino + UBIFS_INO_NODE_SZ;
--	pack_inode(c, ino, host, 1, 0);
-+	pack_inode(c, ino, host, 1);
- 
- 	err = write_head(c, BASEHD, xent, len, &lnum, &xent_offs, sync);
- 	if (!sync && !err)
-@@ -1339,8 +1337,8 @@ int ubifs_jnl_change_xattr(struct ubifs_info *c, const struct inode *inode,
- 	if (err)
- 		goto out_free;
- 
--	pack_inode(c, ino, host, 0, 0);
--	pack_inode(c, (void *)ino + aligned_len1, inode, 1, 0);
-+	pack_inode(c, ino, host, 0);
-+	pack_inode(c, (void *)ino + aligned_len1, inode, 1);
- 
- 	err = write_head(c, BASEHD, ino, aligned_len, &lnum, &offs, 0);
- 	if (!sync && !err) {
+ 	/*
+@@ -388,7 +388,7 @@ static int can_use_rp(struct ubifs_info *c)
+  * This function makes sure UBIFS has enough free eraseblocks for index growth
+  * and data.
+  *
+- * When budgeting index space, UBIFS reserves trice as more LEBs as the index
++ * When budgeting index space, UBIFS reserves thrice as many LEBs as the index
+  * would take if it was consolidated and written to the flash. This guarantees
+  * that the "in-the-gaps" commit method always succeeds and UBIFS will always
+  * be able to commit dirty index. So this function basically adds amount of
+diff --git a/fs/ubifs/find.c b/fs/ubifs/find.c
+index c70c767..adee7b5 100644
+--- a/fs/ubifs/find.c
++++ b/fs/ubifs/find.c
+@@ -290,7 +290,7 @@ int ubifs_find_dirty_leb(struct ubifs_info *c, struct ubifs_lprops *ret_lp,
+ 		idx_lp = idx_heap->arr[0];
+ 		sum = idx_lp->free + idx_lp->dirty;
+ 		/*
+-		 * Since we reserve trice as more space for the index than it
++		 * Since we reserve thrice as much space for the index than it
+ 		 * actually takes, it does not make sense to pick indexing LEBs
+ 		 * with less than, say, half LEB of dirty space. May be half is
+ 		 * not the optimal boundary - this should be tested and
 -- 
 1.5.4.1
 
