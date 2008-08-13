@@ -1,55 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756166AbYHMVpq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754078AbYHMV7a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756166AbYHMVpq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Aug 2008 17:45:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751655AbYHMVpf
+	id S1754078AbYHMV7a (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Aug 2008 17:59:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752684AbYHMV7V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Aug 2008 17:45:35 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:35033 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752539AbYHMVpe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Aug 2008 17:45:34 -0400
-Date: Wed, 13 Aug 2008 23:46:50 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Andi Kleen <andi@firstfloor.org>, mingo@elte.hu, drepper@redhat.com,
-       arjan@infradead.org, hugh@veritas.com, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, briangrant@google.com, cgd@google.com,
-       mbligh@google.com, torvalds@linux-foundation.org, tglx@linutronix.de,
-       hpa@zytor.com
-Subject: Re: pthread_create() slow for many threads; also time to revisit 64b context switch optimization?
-Message-ID: <20080813214650.GS1366@one.firstfloor.org>
-References: <af8810200808121736q76640cc1kb814385072fe9b29@mail.gmail.com> <af8810200808121745h596c175bk348d0aaeeb9bcb45@mail.gmail.com> <20080813104445.GA24632@elte.hu> <20080813063533.444c650d@infradead.org> <48A2EE07.3040003@redhat.com> <20080813142529.GB21129@elte.hu> <48A2F157.7000303@redhat.com> <20080813151007.GA8780@elte.hu> <87fxp8zlx3.fsf@basil.nowhere.org> <20080813135633.dcb8d602.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 13 Aug 2008 17:59:21 -0400
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:51360 "EHLO smtp6.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752647AbYHMV7V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Aug 2008 17:59:21 -0400
+Date: Thu, 14 Aug 2008 00:57:28 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Dave Airlie <airlied@linux.ie>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>,
+       lkml <linux-kernel@vger.kernel.org>, akpm <akpm@linux-foundation.org>
+Subject: [RFC: -next patch] don't allow FB_SIS=m, DRM_SIS=y
+Message-ID: <20080813215728.GD7071@cs181140183.pp.htv.fi>
+References: <20080807083228.0fc40405.randy.dunlap@oracle.com> <alpine.DEB.0.82.0808080008050.13875@skynet.skynet.ie> <20080807175552.67d5385d.randy.dunlap@oracle.com> <alpine.DEB.0.82.0808080309270.13875@skynet.skynet.ie> <20080812125906.GC13910@cs181140183.pp.htv.fi> <alpine.DEB.0.82.0808122236130.13090@skynet.skynet.ie>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20080813135633.dcb8d602.akpm@linux-foundation.org>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <alpine.DEB.0.82.0808122236130.13090@skynet.skynet.ie>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Yes, the free_area_cache is always going to have failure modes - I
-> think we've been kind of waiting for it to explode.
+On Tue, Aug 12, 2008 at 10:37:00PM +0100, Dave Airlie wrote:
 > 
-> I do think that we need an O(log(n)) search in there.  It could still
-> be on the fallback path, so we retain the mostly-O(1) benefits of
-> free_area_cache.
+> > > 
+> > > Maybe the other way around, I don't want DRM_SIS influencing whether 
+> > > FB_SIS is on or off, if the user wants sisfb on, then when they select it, 
+> > > DRM_SIS should be built in the same way. But if sisfb isn't selected by 
+> > > the user, then selecting DRM_SIS shouldn't enable it.
+> > 
+> > If FB_SIS=m, should DRM_SIS=y be allowed or should in this case DRM_SIS 
+> > be restricted to n/m?
+> 
+> Probably not. if FB_SIS is selected at all, DRM_SIS should match it, if 
+> FB_SIS isn't selected, DRM_SIS should not select it.
 
-The standard dumb way to do that would be to have two parallel trees, one to 
-index free space (similar to e.g. the free space btrees in XFS) and the 
-other to index the objects (like today). That would increase the constant 
-factor somewhat by bloating the VMAs, increasing cache overhead etc, and
-also would be more brute force than elegant.   But it would be simple
-and straight forward.
+I assume FB_SIS=y, DRM_SIS=m should still be possible?
 
-Perhaps the combined data structure experience of linux-kernel can come
-up with something better and some data structure that allows to look
-up both efficiently?
+If this assumption is correct the fix is below.
 
-This would be also an opportunity to reevaluate rbtrees for the object
-index. One drawback of them is that they are not really optimized to be 
-cache friendly because their nodes are too small.
+> Dave.
 
--Andi
+cu
+Adrian
+
+
+<--  snip  -->
+
+
+FB_SIS=m, DRM_SIS=y is not a legal configuration.
+
+Reported-by: Randy Dunlap <randy.dunlap@oracle.com>
+Signed-off-by: Adrian Bunk <bunk@kernel.org>
+
+---
+c303119b9561e13be97f3d4b0d7eaa6930fc21d8 
+diff --git a/drivers/gpu/drm/Kconfig b/drivers/gpu/drm/Kconfig
+index 610d6fd..bf9003e 100644
+--- a/drivers/gpu/drm/Kconfig
++++ b/drivers/gpu/drm/Kconfig
+@@ -87,6 +87,7 @@ config DRM_MGA
+ config DRM_SIS
+ 	tristate "SiS video cards"
+ 	depends on DRM && AGP
++	depends on FB_SIS || FB_SIS=n
+ 	help
+ 	  Choose this option if you have a SiS 630 or compatible video
+           chipset. If M is selected the module will be called sis. AGP
+
