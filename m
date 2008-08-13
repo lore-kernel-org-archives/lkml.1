@@ -1,53 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758033AbYHMUPn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753866AbYHMUQU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758033AbYHMUPn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Aug 2008 16:15:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752380AbYHMUPf
+	id S1753866AbYHMUQU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Aug 2008 16:16:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751388AbYHMUQJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Aug 2008 16:15:35 -0400
-Received: from mail-out2.uio.no ([129.240.10.58]:40329 "EHLO mail-out2.uio.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750989AbYHMUPe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Aug 2008 16:15:34 -0400
-Subject: Re: [PATCH] kexec jump: fix compiling warning on xchg(&kexec_lock,
-	0) in kernel_kexec()
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>, torvalds@linux-foundation.org,
-       ying.huang@intel.com, pavel@ucw.cz, nigel@nigel.suspend2.net,
-       rjw@sisk.pl, vgoyal@redhat.com, mingo@elte.hu,
-       linux-kernel@vger.kernel.org, kexec@lists.infradead.org
-In-Reply-To: <20080813124406.21091eae.akpm@linux-foundation.org>
-References: <1218618760.24951.137.camel@caritas-dev.intel.com>
-	 <alpine.LFD.1.10.0808130956360.3462@nehalem.linux-foundation.org>
-	 <m1r68shjhb.fsf@frodo.ebiederm.org>
-	 <20080813124406.21091eae.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Wed, 13 Aug 2008 16:15:04 -0400
-Message-Id: <1218658504.9042.61.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
-X-UiO-Resend: resent
-X-UiO-Spam-info: not spam, SpamAssassin (score=-5.0, required=5.0, autolearn=disabled, UIO_MAIL_IS_INTERNAL=-5, uiobl=NO, uiouri=NO)
-X-UiO-Scanned: 31F7882AC4B57658FB10F4EB1D6418552B98C371
-X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: -49 maxlevel 200 minaction 2 bait 0 mail/h: 163 total 9497782 max/h 8345 blacklist 0 greylist 0 ratelimit 0
+	Wed, 13 Aug 2008 16:16:09 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:39641 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752380AbYHMUQG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Aug 2008 16:16:06 -0400
+Date: Wed, 13 Aug 2008 16:16:05 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+cc: Oliver Neukum <oneukum@suse.de>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Pavel Machek <pavel@suse.cz>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Linux-pm mailing list <linux-pm@lists.osdl.org>, <teheo@novell.com>
+Subject: Re: Power management for SCSI
+In-Reply-To: <1218656526.3237.7.camel@localhost.localdomain>
+Message-ID: <Pine.LNX.4.44L0.0808131613400.13982-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-08-13 at 12:44 -0700, Andrew Morton wrote:
+On Wed, 13 Aug 2008, James Bottomley wrote:
 
-> - Is xchg() guaranteed to be atomic?  That's what atomic_xchg() is for.
+> > With the original patch, you can't operate on the link independent from 
+> > the devices.  But with the revised patch (whenever I manage to find 
+> > time to write it!), you _will_ be able to.
+> 
+> That sounds great .. if you link it through the transport class, that
+> can implement the policy you want (as in power all devices down before
+> the link for USB, but just power down the link for SAS/SATA).
 
-Yes, xchg() is guaranteed to be atomic. atomic_xchg() applies only to
-the atomic_t type, and is almost always #defined to xchg().
+Assuming we have a transport class for USB/Firewire!  That's the reason
+I proposed adding such a thing.
 
-> - xchg() isn't guaranteed to exist on all architectures.  atomic_xchg() is.
-
-You appear to be confusing xchg() with cmpxchg(). AFAIK, xchg() exists
-on all architectures, and is used in several instances of generic code.
-It is particularly extensively used in the networking layer.
-
-Trond
+Alan Stern
 
