@@ -1,381 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755311AbYHMCin@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754767AbYHMCrS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755311AbYHMCin (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Aug 2008 22:38:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753916AbYHMCie
+	id S1754767AbYHMCrS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Aug 2008 22:47:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752993AbYHMCrI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Aug 2008 22:38:34 -0400
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:42217 "EHLO e6.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753762AbYHMCid (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Aug 2008 22:38:33 -0400
-Subject: Re: [PATCH 3/5] Container Freezer: Implement freezer cgroup
-	subsystem
-From: Matt Helsley <matthltc@us.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: rjw@sisk.pl, menage@google.com, lizf@cn.fujitsu.com,
-       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       linux-pm@lists.linux-foundation.org, clg@fr.ibm.com, serue@us.ibm.com
-In-Reply-To: <20080812155610.f4d40bb1.akpm@linux-foundation.org>
-References: <20080811235323.872291138@us.ibm.com>
-	 <20080811235325.121356317@us.ibm.com>
-	 <20080812155610.f4d40bb1.akpm@linux-foundation.org>
-Content-Type: text/plain
-Organization: IBM Linux Technology Center
-Date: Tue, 12 Aug 2008 19:38:08 -0700
-Message-Id: <1218595088.19008.176.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.2 
-Content-Transfer-Encoding: 7bit
+	Tue, 12 Aug 2008 22:47:08 -0400
+Received: from kirsty.vergenet.net ([202.4.237.240]:48987 "EHLO
+	kirsty.vergenet.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752165AbYHMCrH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Aug 2008 22:47:07 -0400
+Date: Wed, 13 Aug 2008 12:47:04 +1000
+From: Simon Horman <horms@verge.net.au>
+To: Huang Ying <ying.huang@intel.com>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>, Pavel Machek <pavel@ucw.cz>,
+       nigel@nigel.suspend2.net, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Vivek Goyal <vgoyal@redhat.com>, mingo@elte.hu,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Kexec Mailing List <kexec@lists.infradead.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] kexec jump: fix code size checking
+Message-ID: <20080813024701.GA19201@verge.net.au>
+References: <1218589475.24951.59.camel@caritas-dev.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1218589475.24951.59.camel@caritas-dev.intel.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Tue, 2008-08-12 at 15:56 -0700, Andrew Morton wrote:
-> On Mon, 11 Aug 2008 16:53:26 -0700
-> Matt Helsley <matthltc@us.ibm.com> wrote:
+On Wed, Aug 13, 2008 at 09:04:35AM +0800, Huang Ying wrote:
+> Fix building issue when CONFIG_KEXEC=n. Thanks to Vivek Goyal for his
+> reminding.
 > 
-> > This patch implements a new freezer subsystem in the control groups framework.
-> > It provides a way to stop and resume execution of all tasks in a cgroup by
-> > writing in the cgroup filesystem.
-> > 
-> > The freezer subsystem in the container filesystem defines a file named
-> > freezer.state. Writing "FROZEN" to the state file will freeze all tasks in the
-> > cgroup. Subsequently writing "RUNNING" will unfreeze the tasks in the cgroup.
-> > Reading will return the current state.
-> > 
-> > * Examples of usage :
-> > 
-> >    # mkdir /containers/freezer
-> >    # mount -t cgroup -ofreezer freezer  /containers
-> >    # mkdir /containers/0
-> >    # echo $some_pid > /containers/0/tasks
-> > 
-> > to get status of the freezer subsystem :
-> > 
-> >    # cat /containers/0/freezer.state
-> >    RUNNING
-> > 
-> > to freeze all tasks in the container :
-> > 
-> >    # echo FROZEN > /containers/0/freezer.state
-> >    # cat /containers/0/freezer.state
-> >    FREEZING
-> >    # cat /containers/0/freezer.state
-> >    FROZEN
-> > 
-> > to unfreeze all tasks in the container :
-> > 
-> >    # echo RUNNING > /containers/0/freezer.state
-> >    # cat /containers/0/freezer.state
-> >    RUNNING
-> > 
-> > This is the basic mechanism which should do the right thing for user space task
-> > in a simple scenario.
-> > 
-> > It's important to note that freezing can be incomplete. In that case we return
-> > EBUSY. This means that some tasks in the cgroup are busy doing something that
-> > prevents us from completely freezing the cgroup at this time. After EBUSY,
-> > the cgroup will remain partially frozen -- reflected by freezer.state reporting
-> > "FREEZING" when read. The state will remain "FREEZING" until one of these
-> > things happens:
-> > 
-> > 	1) Userspace cancels the freezing operation by writing "RUNNING" to
-> > 		the freezer.state file
-> > 	2) Userspace retries the freezing operation by writing "FROZEN" to
-> > 		the freezer.state file (writing "FREEZING" is not legal
-> > 		and returns EIO)
-> > 	3) The tasks that blocked the cgroup from entering the "FROZEN"
-> > 		state disappear from the cgroup's set of tasks.
-> > 
-> > ...
+> Signed-off-by: Huang Ying <ying.huang@intel.com>
 > 
-> Is a Documentation/ update planned?  Documentation/cgroups.txt might be
-> the place, or not.
-
-I'll post a patch for that.
-
-> > +
-> > +#ifdef CONFIG_CGROUP_FREEZER
-> > +SUBSYS(freezer)
-> > +#endif
-> > +
-> > +/* */
-> > Index: linux-2.6.27-rc1-mm1/include/linux/freezer.h
-> > ===================================================================
-> > --- linux-2.6.27-rc1-mm1.orig/include/linux/freezer.h
-> > +++ linux-2.6.27-rc1-mm1/include/linux/freezer.h
-> > @@ -47,22 +47,30 @@ static inline bool should_send_signal(st
-> >  /*
-> >   * Wake up a frozen process
-> >   *
-> > - * task_lock() is taken to prevent the race with refrigerator() which may
-> > + * task_lock() is needed to prevent the race with refrigerator() which may
-> >   * occur if the freezing of tasks fails.  Namely, without the lock, if the
-> >   * freezing of tasks failed, thaw_tasks() might have run before a task in
-> >   * refrigerator() could call frozen_process(), in which case the task would be
-> >   * frozen and no one would thaw it.
-> >   */
-> > -static inline int thaw_process(struct task_struct *p)
-> > +static inline int __thaw_process(struct task_struct *p)
-> >  {
-> > -	task_lock(p);
-> >  	if (frozen(p)) {
-> >  		p->flags &= ~PF_FROZEN;
-> > +		return 1;
-> > +	}
-> > +	clear_freeze_flag(p);
-> > +	return 0;
-> > +}
-> > +
-> > +static inline int thaw_process(struct task_struct *p)
-> > +{
-> > +	task_lock(p);
-> > +	if (__thaw_process(p) == 1) {
-> >  		task_unlock(p);
-> >  		wake_up_process(p);
-> >  		return 1;
-> >  	}
-> > -	clear_freeze_flag(p);
-> >  	task_unlock(p);
-> >  	return 0;
-> >  }
+> ---
+>  include/asm-x86/kexec.h |    3 +++
+>  1 file changed, 3 insertions(+)
 > 
-> I wonder why these are inlined.
+> --- a/include/asm-x86/kexec.h
+> +++ b/include/asm-x86/kexec.h
+> @@ -43,6 +43,9 @@
+>  
+>  #ifdef CONFIG_X86_32
+>  # define KEXEC_CONTROL_CODE_MAX_SIZE	2048
+> +# ifndef CONFIG_KEXEC
+> +#  define kexec_control_code_size	0
+> +# endif
+>  #endif
+>  
+>  #ifndef __ASSEMBLY__
 
-I wanted the changes to be obvious. I think uninlining this would be a
-separate improvement. I'll post a patch uninlining these.
-
-> > @@ -83,6 +91,12 @@ static inline int try_to_freeze(void)
-> >  extern bool freeze_task(struct task_struct *p, bool sig_only);
-> >  extern void cancel_freezing(struct task_struct *p);
-> >  
-> > +#ifdef CONFIG_CGROUP_FREEZER
-> > +extern int cgroup_frozen(struct task_struct *task);
-> > +#else /* !CONFIG_CGROUP_FREEZER */
-> > +static inline int cgroup_frozen(struct task_struct *task) { return 0; }
-> > +#endif /* !CONFIG_CGROUP_FREEZER */
-> > +
-> >  /*
-> >   * The PF_FREEZER_SKIP flag should be set by a vfork parent right before it
-> >   * calls wait_for_completion(&vfork) and reset right after it returns from this
-> > Index: linux-2.6.27-rc1-mm1/init/Kconfig
-> > ===================================================================
-> > --- linux-2.6.27-rc1-mm1.orig/init/Kconfig
-> > +++ linux-2.6.27-rc1-mm1/init/Kconfig
-> > @@ -299,6 +299,13 @@ config CGROUP_NS
-> >            for instance virtual servers and checkpoint/restart
-> >            jobs.
-> >  
-> > +config CGROUP_FREEZER
-> > +        bool "control group freezer subsystem"
-> > +        depends on CGROUPS
-> 
-> Should it depend on FREEZER also?
->
-> oh,
-> 
-> > --- linux-2.6.27-rc1-mm1.orig/kernel/power/Kconfig
-> > +++ linux-2.6.27-rc1-mm1/kernel/power/Kconfig
-> > @@ -86,7 +86,7 @@ config PM_SLEEP
-> >  	default y
-> >  
-> >  config FREEZER
-> > -	def_bool PM_SLEEP
-> > +	def_bool PM_SLEEP || CGROUP_FREEZER
-> >  
-> 
-> we did it that way.  Spose that makes sense.
-
-	I did consider a few alternatives for this. Makefile and cpp didn't
-seem as nice as this. "select" didn't fit. Using "depends on" does
-directly translate the build dependency. However I didn't think it would
-be clear to everyone configuring a kernel that they had to enable
-"FREEZER" before they could get PM_SLEEP or CGROUP_FREEZER.
-
-	Also, Rafael has asked to see this in a kernel/Kconfig file instead
-(see his reply to patch 2).
-
-> > +        help
-> > +          Provides a way to freeze and unfreeze all tasks in a
-> > +	  cgroup.
-> > +
-> >  config CGROUP_DEVICE
-> >  	bool "Device controller for cgroups"
-> >  	depends on CGROUPS && EXPERIMENTAL
-> > Index: linux-2.6.27-rc1-mm1/kernel/Makefile
-> > ===================================================================
-> > --- linux-2.6.27-rc1-mm1.orig/kernel/Makefile
-> > +++ linux-2.6.27-rc1-mm1/kernel/Makefile
-> > @@ -54,6 +54,7 @@ obj-$(CONFIG_KEXEC) += kexec.o
-> >  obj-$(CONFIG_COMPAT) += compat.o
-> >  obj-$(CONFIG_CGROUPS) += cgroup.o
-> >  obj-$(CONFIG_CGROUP_DEBUG) += cgroup_debug.o
-> > +obj-$(CONFIG_CGROUP_FREEZER) += cgroup_freezer.o
-> >  obj-$(CONFIG_CPUSETS) += cpuset.o
-> >  obj-$(CONFIG_CGROUP_NS) += ns_cgroup.o
-> >  obj-$(CONFIG_UTS_NS) += utsname.o
-> > Index: linux-2.6.27-rc1-mm1/kernel/cgroup_freezer.c
-> > ===================================================================
-> > --- /dev/null
-> > +++ linux-2.6.27-rc1-mm1/kernel/cgroup_freezer.c
-> > @@ -0,0 +1,366 @@
-> > +/*
-> > + * cgroup_freezer.c -  control group freezer subsystem
-> > + *
-> > + * Copyright IBM Corporation, 2007
-> > + *
-> > + * Author : Cedric Le Goater <clg@fr.ibm.com>
-> > + *
-> > + * This program is free software; you can redistribute it and/or modify it
-> > + * under the terms of version 2.1 of the GNU Lesser General Public License
-> > + * as published by the Free Software Foundation.
-> > + *
-> > + * This program is distributed in the hope that it would be useful, but
-> > + * WITHOUT ANY WARRANTY; without even the implied warranty of
-> > + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-> > + */
-> > +
-> > +#include <linux/module.h>
-> > +#include <linux/cgroup.h>
-> > +#include <linux/fs.h>
-> > +#include <linux/uaccess.h>
-> > +#include <linux/freezer.h>
-> > +#include <linux/seq_file.h>
-> > +
-> > +enum freezer_state {
-> > +	STATE_RUNNING = 0,
-> 
-> That's a pretty vanilla-sounding identifier.  Let's hope this file
-> never ends up including drivers/net/sfc/net_driver.h by some means. 
-> That's rather unlikely, but someone could easily choose to implement a
-> new STATE_RUNNING somewhere else.
-
-Good point. Do CGROUP_THAWED, CGROUP_FREEZING, CGROUP_FROZEN make
-sensible substitutions?
-
-> > +	STATE_FREEZING,
-> > +	STATE_FROZEN,
-> > +};
-> > +
-> > +struct freezer {
-> > +	struct cgroup_subsys_state css;
-> > +	enum freezer_state state;
-> > +	spinlock_t lock; /* protects _writes_ to state */
-> > +};
-> > +
-> > +static inline struct freezer *cgroup_freezer(
-> > +		struct cgroup *cgroup)
-> > +{
-> > +	return container_of(
-> > +		cgroup_subsys_state(cgroup, freezer_subsys_id),
-> > +		struct freezer, css);
-> > +}
-> > +
-> > +static inline struct freezer *task_freezer(struct task_struct *task)
-> > +{
-> > +	return container_of(task_subsys_state(task, freezer_subsys_id),
-> > +			    struct freezer, css);
-> > +}
-> > +
-> > +int cgroup_frozen(struct task_struct *task)
-> > +{
-> > +	struct freezer *freezer;
-> > +	enum freezer_state state;
-> > +
-> > +	task_lock(task);
-> > +	freezer = task_freezer(task);
-> > +	state = freezer->state;
-> > +	task_unlock(task);
-> > +
-> > +	return state == STATE_FROZEN;
-> > +}
-> > +
-> > +/*
-> > + * Buffer size for freezer state is limited by cgroups write_string()
-> > + * interface. See cgroups code for the current size.
-> > + */
-> 
-> Is this comment in the correct place?
-
-I think so. Perhaps I should have more clearly connected it with
-freezer_state_strs. How about:
-
-/*
- * cgroups_write_string() limits the size of these strings to
- * CGROUP_LOCAL_BUFFER_SIZE
- */
-
-> > +static const char *freezer_state_strs[] = {
-> > +	"RUNNING",
-> > +	"FREEZING",
-> > +	"FROZEN",
-> > +};
-> > +
-> >
-> > ...
-> >
-> > +
-> > +/*
-> > + * caller must hold freezer->lock
-> > + */
-> > +static void check_if_frozen(struct cgroup *cgroup,
-> > +			     struct freezer *freezer)
-> 
-> check_if_frozen() is an unfortunate name, I suspect.  Normally one
-> would expect a check_foo() to return a bool and have no side-effects.
-> 
-> Perhaps some comments explaining what it does would help.
-
-OK. I'll try to think up a better name and if that's not sufficiently
-explanatory I'll add a comment explaining what it should do.
-
-> > +{
-> > +	struct cgroup_iter it;
-> > +	struct task_struct *task;
-> > +	unsigned int nfrozen = 0, ntotal = 0;
-> > +
-> > +	cgroup_iter_start(cgroup, &it);
-> > +	while ((task = cgroup_iter_next(cgroup, &it))) {
-> > +		ntotal++;
-> > +		/*
-> > +		 * Task is frozen or will freeze immediately when next it gets
-> > +		 * woken
-> > +		 */
-> > +		if (frozen(task) ||
-> > +		    (task_is_stopped_or_traced(task) && freezing(task)))
-> > +			nfrozen++;
-> > +	}
-> > +
-> > +	/*
-> > +	 * Transition to FROZEN when no new tasks can be added ensures
-> > +	 * that we never exist in the FROZEN state while there are unfrozen
-> > +	 * tasks.
-> > +	 */
-> > +	if (nfrozen == ntotal)
-> > +		freezer->state = STATE_FROZEN;
-> > +	cgroup_iter_end(cgroup, &it);
-> > +}
-> > +
-> >
-> > ...
-> >
-> > +static int freezer_write(struct cgroup *cgroup,
-> > +			 struct cftype *cft,
-> > +			 const char *buffer)
-> > +{
-> > +	int retval;
-> > +	enum freezer_state goal_state;
-> > +
-> > +	if (strcmp(buffer, freezer_state_strs[STATE_RUNNING]) == 0)
-> 
-> Did some higher-level code take care of removing the trailing \n?
-
-Yes. cgroup_write_string() in kernel/cgroup.c does strstrip(buffer)
-
-Thanks for the review!
-
-Cheers,
-	-Matt Helsley
+Is it impossible to skip the linker check in the !CONFIG_KEXEC case?
 
