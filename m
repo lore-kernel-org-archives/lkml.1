@@ -1,101 +1,156 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754302AbYHMU0E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755165AbYHMU03@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754302AbYHMU0E (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Aug 2008 16:26:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751861AbYHMUZy
+	id S1755165AbYHMU03 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Aug 2008 16:26:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752847AbYHMU0T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Aug 2008 16:25:54 -0400
-Received: from smtpout3.tre.se ([80.251.192.228]:23487 "EHLO smtpout3.tre.se"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751098AbYHMUZx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Aug 2008 16:25:53 -0400
-Date: Wed, 13 Aug 2008 22:00:47 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Greg KH <greg@kroah.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, jbaron@redhat.com,
-       randy.dunlap@oracle.com, linux-kernel@vger.kernel.org, joe@perches.com,
-       nick@nick-andrew.net
-Subject: Re: [PATCH 1/7] dynamic debug v2 - infrastructure
-Message-ID: <20080813200047.GA2053@uranus.ravnborg.org>
-References: <20080808215153.GA16729@redhat.com> <20080808193851.24210bc4.randy.dunlap@oracle.com> <20080811173616.GC6103@redhat.com> <20080811223309.GD9810@kroah.com> <20080812194817.GD6056@redhat.com> <20080812200908.GA444@kroah.com> <20080812204619.GE6056@redhat.com> <20080813010804.GA17446@kroah.com> <20080812181653.32d6f373.akpm@linux-foundation.org> <20080813033859.GA9443@kroah.com>
+	Wed, 13 Aug 2008 16:26:19 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:49406 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751861AbYHMU0S (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Aug 2008 16:26:18 -0400
+Date: Wed, 13 Aug 2008 13:25:35 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: ebiederm@xmission.com, ying.huang@intel.com, pavel@ucw.cz,
+       nigel@nigel.suspend2.net, rjw@sisk.pl, vgoyal@redhat.com, mingo@elte.hu,
+       linux-kernel@vger.kernel.org, kexec@lists.infradead.org
+Subject: Re: [PATCH] kexec jump: fix compiling warning on xchg(&kexec_lock,
+ 0) in kernel_kexec()
+Message-Id: <20080813132535.6cd4bab6.akpm@linux-foundation.org>
+In-Reply-To: <alpine.LFD.1.10.0808131310450.3462@nehalem.linux-foundation.org>
+References: <1218618760.24951.137.camel@caritas-dev.intel.com>
+	<alpine.LFD.1.10.0808130956360.3462@nehalem.linux-foundation.org>
+	<m1r68shjhb.fsf@frodo.ebiederm.org>
+	<20080813124406.21091eae.akpm@linux-foundation.org>
+	<alpine.LFD.1.10.0808131247320.3462@nehalem.linux-foundation.org>
+	<20080813130749.c406ab6c.akpm@linux-foundation.org>
+	<alpine.LFD.1.10.0808131310450.3462@nehalem.linux-foundation.org>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080813033859.GA9443@kroah.com>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 12, 2008 at 08:38:59PM -0700, Greg KH wrote:
-> On Tue, Aug 12, 2008 at 06:16:53PM -0700, Andrew Morton wrote:
-> > On Tue, 12 Aug 2008 18:08:04 -0700
-> > Greg KH <greg@kroah.com> wrote:
-> > 
-> > > On Tue, Aug 12, 2008 at 04:46:19PM -0400, Jason Baron wrote:
-> > > > On Tue, Aug 12, 2008 at 01:09:08PM -0700, Greg KH wrote:
-> > > > > So close, can I have a good changelog comment with the patch so people
-> > > > > know what it is when they look in the logs?
-> > > > > 
-> > > > > Care to resend it with that?
-> > > > > 
-> > > > 
-> > > > Base infrastructure to enable per-module debug messages.
-> > > 
-> > > Ah, so close...
-> > > 
-> > > With this patch, I get the following build error:
-> > > 
-> > >   CC [M]  drivers/usb/gadget/u_ether.o
-> > > drivers/usb/gadget/u_ether.c: In function ___gether_setup___:
-> > > drivers/usb/gadget/u_ether.c:787: error: ___KBUILD_MODNAME___ undeclared (first use in this function)
-> > > drivers/usb/gadget/u_ether.c:787: error: (Each undeclared identifier is reported only once
-> > > drivers/usb/gadget/u_ether.c:787: error: for each function it appears in.)
-> > > drivers/usb/gadget/u_ether.c:787: error: unknown field ___Usage___ specified in initializer
-> > > drivers/usb/gadget/u_ether.c:787: error: expected expression before ___.___ token
-> > > drivers/usb/gadget/u_ether.c:787: error: initializer element is not constant
-> > > drivers/usb/gadget/u_ether.c:787: error: (near initialization for ___descriptor.hash___)
-> > > drivers/usb/gadget/u_ether.c:787: error: ___Usage___ undeclared (first use in this function)
-> > > drivers/usb/gadget/u_ether.c:787: error: invalid operands to binary << (have ___long long int___ and ___char *___)
-> > > drivers/usb/gadget/u_ether.c:787: error: expected ___)___ before ___:___ token
-> > > drivers/usb/gadget/u_ether.c:787: error: invalid operands to binary & (have ___long long int___ and ___char *___)
-> > > drivers/usb/gadget/u_ether.c:787: error: invalid operands to binary << (have ___long long int___ and ___char *___)
-> > > drivers/usb/gadget/u_ether.c:787: error: expected ___)___ before ___:___ token
-> > > drivers/usb/gadget/u_ether.c:787: error: invalid operands to binary & (have ___long long int___ and ___char *___)
-> > > drivers/usb/gadget/u_ether.c:787: error: expected ___)___ before ___:___ token
-> > > drivers/usb/gadget/u_ether.c:787: warning: passing argument 4 of _____dynamic_dbg_enabled_helper___ makes integer from pointer without a cast
-> > > drivers/usb/gadget/u_ether.c:787: error: expected ___)___ before ___KBUILD_MODNAME___
-> > 
-> > (lol at gcc crap)
-> > 
-> > > drivers/usb/gadget/u_ether.c:787: warning: too few arguments for format
-> > 
-> > argh, not that again.  We had this with a patch from Jesse a while
-> > back, which I fixed thusly:
+On Wed, 13 Aug 2008 13:13:13 -0700 (PDT)
+Linus Torvalds <torvalds@linux-foundation.org> wrote:
+
+> > Used a bitop to preserve the runtime checking in there.  spin_unlock()
+> > doesn't return the previous lockedness.
 > 
-> <patch moving KBUILD_MODNAME from a inline function to a macro snipped>
+> Umm. spin_unlock does a lot more when you have lock debugging on, and 
+> doesn't do useless crap when it isn't.
 > 
-> Yeah, I remember that too, but in this case, KBUILD_MODNAME is being
-> used in a macro, not an inline function, the exact opposite.
+> > A bitop seems a better fit to me.  We never spin on that lock (it
+> > always uses test_and_set), so why use a "spin"lock?
 > 
-> Sam, any ideas here?  I'll bounce the original patch at you if you
-> missed it last time.
+> ..because an atomic bitop is not the same as a lock.
+> 
+> The memory ordering guarantees are different. Yes, they are sufficient, 
+> but that's because we've had to make them so to account for CRAP CODE that 
+> uses bit operations as if they were locks.
+> 
+> Don't continue that. It's WRONG.
 
-I have not looked into the particular error but what happens is
-that u_ether.o is used by more than one module so kbuild does
-not know what value to assign the KBUILD_MODNAME and therefore
-decide not to assign KBUILD_MODNAME at all.
+#2:
 
-And because any usage of KBUILD_MODNAME is anyway flawed in u_ether.c
-as we do not know for what module it is being used it makes sense for
-kbuild to do so.
+(The xchg(kexec_crash_image) stuff is still in there)
 
-The above error happens because u_ether.c uses something that require KBUILD_MODNAME
-to be define.
-So the correct fix is to avid usage of this macro in the source.
+--- a/kernel/kexec.c~kexec-use-a-bitop-for-locking-rather-than-xchg
++++ a/kernel/kexec.c
+@@ -924,19 +924,14 @@ static int kimage_load_segment(struct ki
+  */
+ struct kimage *kexec_image;
+ struct kimage *kexec_crash_image;
+-/*
+- * A home grown binary mutex.
+- * Nothing can wait so this mutex is safe to use
+- * in interrupt context :)
+- */
+-static int kexec_lock;
++
++static DEFINE_SPINLOCK(kexec_lock);
+ 
+ asmlinkage long sys_kexec_load(unsigned long entry, unsigned long nr_segments,
+ 				struct kexec_segment __user *segments,
+ 				unsigned long flags)
+ {
+ 	struct kimage **dest_image, *image;
+-	int locked;
+ 	int result;
+ 
+ 	/* We only trust the superuser with rebooting the system. */
+@@ -972,8 +967,7 @@ asmlinkage long sys_kexec_load(unsigned 
+ 	 *
+ 	 * KISS: always take the mutex.
+ 	 */
+-	locked = xchg(&kexec_lock, 1);
+-	if (locked)
++	if (!spin_trylock(&kexec_lock))
+ 		return -EBUSY;
+ 
+ 	dest_image = &kexec_image;
+@@ -1015,8 +1009,7 @@ asmlinkage long sys_kexec_load(unsigned 
+ 	image = xchg(dest_image, image);
+ 
+ out:
+-	locked = xchg(&kexec_lock, 0); /* Release the mutex */
+-	BUG_ON(!locked);
++	spin_unlock(&kexec_lock);
+ 	kimage_free(image);
+ 
+ 	return result;
+@@ -1063,9 +1056,6 @@ asmlinkage long compat_sys_kexec_load(un
+ 
+ void crash_kexec(struct pt_regs *regs)
+ {
+-	int locked;
+-
+-
+ 	/* Take the kexec_lock here to prevent sys_kexec_load
+ 	 * running on one cpu from replacing the crash kernel
+ 	 * we are using after a panic on a different cpu.
+@@ -1074,8 +1064,7 @@ void crash_kexec(struct pt_regs *regs)
+ 	 * of memory the xchg(&kexec_crash_image) would be
+ 	 * sufficient.  But since I reuse the memory...
+ 	 */
+-	locked = xchg(&kexec_lock, 1);
+-	if (!locked) {
++	if (spin_trylock(&kexec_lock)) {
+ 		if (kexec_crash_image) {
+ 			struct pt_regs fixed_regs;
+ 			crash_setup_regs(&fixed_regs, regs);
+@@ -1083,8 +1072,7 @@ void crash_kexec(struct pt_regs *regs)
+ 			machine_crash_shutdown(&fixed_regs);
+ 			machine_kexec(kexec_crash_image);
+ 		}
+-		locked = xchg(&kexec_lock, 0);
+-		BUG_ON(!locked);
++		spin_unlock(&kexec_lock);
+ 	}
+ }
+ 
+@@ -1434,7 +1422,7 @@ int kernel_kexec(void)
+ {
+ 	int error = 0;
+ 
+-	if (xchg(&kexec_lock, 1))
++	if (!spin_trylock(&kexec_lock))
+ 		return -EBUSY;
+ 	if (!kexec_image) {
+ 		error = -EINVAL;
+@@ -1498,8 +1486,6 @@ int kernel_kexec(void)
+ #endif
+ 
+  Unlock:
+-	if (!xchg(&kexec_lock, 0))
+-		BUG();
+-
++	spin_unlock(&kexec_lock);
+ 	return error;
+ }
+_
 
-Note: The old error Andrew mentions was caused by alpha indirectly
-pulling in a inline function that used KBUILD_MODNAME - something
-that did not happen on the other architectures.
-
-	Sam
