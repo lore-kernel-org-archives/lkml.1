@@ -1,45 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754750AbYHMF7e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754592AbYHMGBb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754750AbYHMF7e (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Aug 2008 01:59:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751868AbYHMF7Y
+	id S1754592AbYHMGBb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Aug 2008 02:01:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751868AbYHMGBY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Aug 2008 01:59:24 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:35147
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1754556AbYHMF7X (ORCPT
+	Wed, 13 Aug 2008 02:01:24 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:55355 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751784AbYHMGBX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Aug 2008 01:59:23 -0400
-Date: Tue, 12 Aug 2008 22:59:24 -0700 (PDT)
-Message-Id: <20080812.225924.62357936.davem@davemloft.net>
-To: akpm@linux-foundation.org
-Cc: harvey.harrison@gmail.com, mingo@elte.hu, hpa@zytor.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 19/22] x86: use the new byteorder headers
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20080812225612.6742aaf0.akpm@linux-foundation.org>
-References: <1218587234.30194.93.camel@brick>
-	<20080812225612.6742aaf0.akpm@linux-foundation.org>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Wed, 13 Aug 2008 02:01:23 -0400
+Message-ID: <48A278AE.1070800@zytor.com>
+Date: Tue, 12 Aug 2008 23:01:18 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Chris Adams <cmadams@hiwaay.net>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: AGP aperture beyond 4GB not valid?
+References: <20080813013255.GD633804@hiwaay.net>
+In-Reply-To: <20080813013255.GD633804@hiwaay.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Andrew Morton <akpm@linux-foundation.org>
-Date: Tue, 12 Aug 2008 22:56:12 -0700
+Chris Adams wrote:
+> 
+> Checking aperture...
+> Node 0: aperture @ 1006000000 size 32 MB
+> Aperture beyond 4GB. Ignoring.
+> No AGP bridge found
+> Your BIOS doesn't leave a aperture memory hole
+> Please enable the IOMMU option in the BIOS setup
+> This costs you 64 MB of RAM
+> Mapping aperture over 65536 KB of RAM @ c000000
+> PM: Registered nosave memory: 000000000c000000 - 0000000010000000
+> 
+> 
+> My BIOS doesn't have an IOMMU option (latest BIOS available for the
+> mboard).  However, it appears that an aperture is allocated but the
+> kernel then ignores it due to where it is placed.  Why?
+> 
 
-> I'll drop them all.  Do you have a cross-compiler suite there?
+You can't use it as an IOMMU to handle 32-bit devices, since it's above 
+the 32-bit addressible region.  Hence the kernel doesn't use it.
 
-I think Harvey needs a mentor which can help him learn how to properly
-build validate his patches before he submits them, and how to not mix
-things up by, for example, validating the build with patches applied
-that won't be submitted etc.
-
-Every time I integrate these byteorder patches directly for networking
-or sparc, it tends to be a build regression nightmare.
-
-I think Andrew has hit 3 already with this patch series, quite an
-accomplishment.  :-/
+	-hpa
