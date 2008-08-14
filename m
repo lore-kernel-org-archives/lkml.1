@@ -1,125 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754689AbYHNAU3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757618AbYHNAVF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754689AbYHNAU3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Aug 2008 20:20:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753564AbYHNAUL
+	id S1757618AbYHNAVF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Aug 2008 20:21:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753564AbYHNAUy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Aug 2008 20:20:11 -0400
-Received: from main.gmane.org ([80.91.229.2]:36010 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754139AbYHNAUJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Aug 2008 20:20:09 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: 7v5w7go9ub0o <7v5w7go9ub0o@gmail.com>
-Subject: Re: TALPA - a threat model?  well sorta.
-Date: Wed, 13 Aug 2008 20:14:06 -0400
-Message-ID: <g7vtch$8v2$1@ger.gmane.org>
-References: <1218645375.3540.71.camel@localhost.localdomain>
+	Wed, 13 Aug 2008 20:20:54 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:55712 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751352AbYHNAUx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Aug 2008 20:20:53 -0400
+Date: Wed, 13 Aug 2008 17:20:41 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Greg KH <greg@kroah.com>
+Cc: kay.sievers@vrfy.org, bugme-daemon@bugzilla.kernel.org,
+       linux-kernel@vger.kernel.org, genanr@emsphone.com
+Subject: Re: [Bugme-new] [Bug 11323] New: /proc/diskstats does not contain
+ all disk devices
+Message-Id: <20080813172041.9c59167d.akpm@linux-foundation.org>
+In-Reply-To: <20080813235112.GC32154@kroah.com>
+References: <bug-11323-10286@http.bugzilla.kernel.org/>
+	<20080813130158.c94c370d.akpm@linux-foundation.org>
+	<20080813235112.GC32154@kroah.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: uugg.de
-User-Agent: Thunderbird 2.0.0.16 (X11/20080707)
-In-Reply-To: <1218645375.3540.71.camel@localhost.localdomain>
-Cc: malware-list@lists.printk.net
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(this was posted in linux.kernel, before I realized there was a 
-linux.kernel.malware.    Hope it helps your discussion)
+On Wed, 13 Aug 2008 16:51:12 -0700
+Greg KH <greg@kroah.com> wrote:
 
-(FYI. Dazuko may have trailblazed some of the issues now under
-discussion re: libmalware.so. It has worked well for me. It used to be
-an LKM, it is now a source patch. It is used in a number of commercial
-products)
+> On Wed, Aug 13, 2008 at 01:01:58PM -0700, Andrew Morton wrote:
+> > > Problem Description: /proc/diskstats does not contain all the block devices it
+> > > should. /sys/block has all the devices, but /proc/diskstats does not.
+> > > 
+> > > Steps to reproduce: boot a system with >9 (10?) disk devices (24 block
+> > > devices?)
+> > 
+> > The below would be a prime suspect.
+> > 
+> > Unfortunately a simple revert results in an uncompilable kernel.
+> > 
+> > 
+> > (It drives me up the wall and across the ceiling how the patch has a
+> > commit "date" of three months prior to the 2.6.26 release, however it
+> > wasn't present in 2.6.26.  What a dumb feature.  How do I make it stop
+> > doing this?  gitk kind of gets it right, but isn't useful across DSL)
+> 
+> $ git show --pretty=fuller 27f302519148f311307637d4c9a6d0fd87d07e4c
 
+<writes a script>
 
-<http://dazuko.dnsalias.org/wiki/index.php/Main_Page>
+> commit 27f302519148f311307637d4c9a6d0fd87d07e4c
+> Author:     Greg Kroah-Hartman <gregkh@suse.de>
+> AuthorDate: Thu May 22 17:21:08 2008 -0400
+> Commit:     Greg Kroah-Hartman <gregkh@suse.de>
+> CommitDate: Mon Jul 21 21:54:49 2008 -0700
+> 
+> There is a commit date, and the date the patch was written.  Both are
+> preserved in git.
+> 
+> And even if it was committed to a branch before 2.6.26 was released, and
+> then pulled in, that's fine, it's distributed development :)
 
-"A Virtual Device Driver to Allow Online File Access Control
+It's useless.  I have never ever ever ever wanted to know when random
+person X committed a patch to some local tree.  The overwhelmingly most
+common question is "when did that go into Linux".  Sigh.
 
-A common interface is needed, which allows userland applications to
-perform online file access control. Dazuko aims to provide that interface."
+> $ git describe --contains 27f302519148f311307637d4c9a6d0fd87d07e4c
+> v2.6.27-rc1~866^2~40
+> 
+> showing it first showed up on 2.6.27-rc1.
 
-FWIW, I'm not associated with Dazuko or Antivir; I've been happily using
-Dazuko with AntiVir for a year or so.
+Spose that works.  My usual recourse is searching the commits list,
+which has useful-to-humans ordering information.
 
-1. AntiVir includes numerous Linux signatures as well as Windows. So I
-scan both 'ix downloads, as well as the process of compiling new software.
+Is the date at which it went into mainline recorded?
 
-2. Other AntiMalwares are using Dazuko, though many are scanning for
-Windows malware only.
+> Anyway, I don't have any systems with such a large number of devices to
+> test with.
 
-3. The AntiVir/Dazuko combination with full heuristics has blocked
-access to clearly dangerous JS scripts in my browser cache.
+I suppose that partitioning a junk disk with lots of little partitions
+will show it.  parted wants to go stupid on me though.
 
-4. IMHO, what is needed is a Dazuko or libmalware/Integrity database
-link. If an md5 of an executable or script is new or has changed, access
-is blocked 'til a response to a popup is given. Access can be blocked;
-one-time allowed; or permanently allowed, in which case the md5 is updated.
-
-Hope This Helps.
-
-<next msg>
-
-
-Andi Kleen wrote:
- > 7v5w7go9ub0o <7v5w7go9ub0o@gmail.com> writes:
- >
- >> (FYI. Dazuko may have trailblazed some of the issues now under
- >> discussion re: libmalware.so. It has worked well for me.
- >
- > Against what exactly did it protect you? Please give a concrete example.
- >
- > -Andi
- >
-
-1. This came in a few minutes ago:
-
-Aug 13 14:56:31 tux antivir[6381]: AntiVir ALERT: [EML/FakeLink.F]
-/jail/tbird/root/.thunderbird/0r2957kg.default/Mail/L
-ocal Folders/Junk.XXX <<< Contains detection pattern of EML/FakeLink.F
-in EML form
-
-2. I have not retained the logs of "suspicious scripts" in my browser,
-but have come across perhaps 4 blocked scripts within the last month.
-Admittedly at dodgy sites.
-
-XSS attacks are platform independent, and are a significant concern.
-
-
-Please note that when I say it has worked well for me, I am not saying
-that it has saved my bacon! :-)
-
-1. I am referring to the mechanics of having the Kernel/userland app
-stop processing when it finds a malware signature or heuristic detection.
-
-2. Am also referring to the totally manageable (IMHO) overhead.
-
-I've mentioned my experience with Dazuko/antivir only because it may be
-useful to the ongoing discussion about the nature of libmalware.so.
-
-3. I am frankly waiting for a bug to get into my upstream distribution
-chain - through a hijacking or some wonderful DNS prank - at which point
-I ..hope.. a signature or heuristic will block my root-enabled make install.
-
-4. Again, my hope for libmalware.so/dazuko is a realtime
-integrity-management link.
-
-<end posts>
-
-HTH
-
-p.s. The question has developed, should this monitor root activities. 
-IMHO, the answer is a definite YES!  We are most vulnerable during 
-software updating; AntiMailware signatures may stop the compilation or 
-installation of a Trojan - by root.
-
-
-
-
-
+>  Running git-bisect should narrow the problem down, you can't
+> just revert this patch as later-on patches relied on it, as you found
+> out...
+> 
+> Also, what is the output of these files, what exactly is missing?
 
