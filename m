@@ -1,64 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755423AbYHNPGU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756014AbYHNPHe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755423AbYHNPGU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Aug 2008 11:06:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751489AbYHNPGM
+	id S1756014AbYHNPHe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Aug 2008 11:07:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751518AbYHNPH0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Aug 2008 11:06:12 -0400
-Received: from saeurebad.de ([85.214.36.134]:43506 "EHLO saeurebad.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751445AbYHNPGL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Aug 2008 11:06:11 -0400
-From: Johannes Weiner <hannes@saeurebad.de>
-To: jmerkey@wolfmountaingroup.com
-Cc: "Pekka Enberg" <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org,
-       "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [PATCH 2.6.27-rc3 26/29] mdb: export task_curr
-References: <200808140614.m7E6EcDS006264@wolfmountaingroup.com>
-	<84144f020808140139v691e6590idd79995168af4e9e@mail.gmail.com>
-	<44303.166.70.238.45.1218724556.squirrel@webmail.wolfmountaingroup.com>
-Date: Thu, 14 Aug 2008 17:05:47 +0200
-In-Reply-To: <44303.166.70.238.45.1218724556.squirrel@webmail.wolfmountaingroup.com>
-	(jmerkey@wolfmountaingroup.com's message of "Thu, 14 Aug 2008 08:35:56
-	-0600 (MDT)")
-Message-ID: <87y72z63hw.fsf@skyscraper.fehenstaub.lan>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
+	Thu, 14 Aug 2008 11:07:26 -0400
+Received: from mtagate2.de.ibm.com ([195.212.29.151]:26134 "EHLO
+	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751489AbYHNPHZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Aug 2008 11:07:25 -0400
+Subject: Re: Fwd: [Patch 2.6] s390 - Allow ECKD devices to be used with
+	older controllers and emulation
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Reply-To: schwidefsky@de.ibm.com
+To: Frans Pop <elendil@planet.nl>
+Cc: linux-s390@vger.kernel.org, Ivan Warren <ivan@vmfacility.fr>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <200808140108.00375.elendil@planet.nl>
+References: <489C9494.9070504@vmfacility.fr>
+	 <200808140108.00375.elendil@planet.nl>
+Content-Type: text/plain
+Organization: IBM Corporation
+Date: Thu, 14 Aug 2008 17:07:06 +0200
+Message-Id: <1218726426.25578.0.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-jmerkey@wolfmountaingroup.com writes:
+On Thu, 2008-08-14 at 01:07 +0200, Frans Pop wrote:
+>     s390 dasd ECKD drivers issues a Perform Subsystem Function / Prepare
+> for Read SubSystem Data with a length of 16.
+>     However, older hardware and documentation specifies a length of 12
+> leading to a possible Incorrect Length indication.
+>     This patch activates the SLI CCW flag in order to avoid reporting
+> the Incorrect Length indication since it is possible that the DASD
+> control unit may be expecting a length of 12, not 16.
+>         -- Ivan Warren (ivan@vmfacility.fr)
+> 
+> diff --git a/drivers/s390/block/dasd_eckd.c b/drivers/s390/block/dasd_eckd.c index 773b3fe..c4e3935 100644
+> --- a/drivers/s390/block/dasd_eckd.c
+> +++ b/drivers/s390/block/dasd_eckd.c
+> @@ -810,6 +810,7 @@ static int dasd_eckd_read_features(struct dasd_device *device)
+>         ccw->cmd_code = DASD_ECKD_CCW_PSF;
+>         ccw->count = sizeof(struct dasd_psf_prssd_data);
+>         ccw->flags |= CCW_FLAG_CC;
+> +       ccw->flags |= CCW_FLAG_SLI;
+>         ccw->cda = (__u32)(addr_t) prssdp;
+> 
+>         /* Read Subsystem Data - feature codes */
 
->> On Thu, Aug 14, 2008 at 9:14 AM,  <jmerkey@wolfmountaingroup.com> wrote:
->>> export the task_curr function to the module based kernel debugger to
->>> enable
->>> process back tracing and state display.
->>>
->>> Signed-off-by: Jeffrey Vernon Merkey (jmerkey@wolfmountaingroup.com)
->>>
->>> --- a/kernel/sched.c    2008-08-13 14:22:32.000000000 -0600
->>> +++ b/kernel/sched.c    2008-08-13 11:56:03.000000000 -0600
->>> @@ -1736,6 +1736,9 @@
->>>  {
->>>        return cpu_curr(task_cpu(p)) == p;
->>>  }
->>> +#if defined(CONFIG_MDB_MODULE)
->>> +EXPORT_SYMBOL_GPL(task_curr);
->>> +#endif
->>
->> We usually don't export symbols conditionally, especially in core kernel
->> code.
->>
->
-> Well,then please suggest how a kernel debugger can be module based and still
-> be able to get this information some other way that's generic and minimal
-> impact.
+That makes sense, can I get a signed-off-by for the patch please?
 
-EXPORT_SYMBOL_GPL(task_curr);
+-- 
+blue skies,
+  Martin.
 
-Without the #if's.  Just export it.
+"Reality continues to ruin my life." - Calvin.
 
-	Hannes
+
