@@ -1,19 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760736AbYHNTuh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760878AbYHNTvR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760736AbYHNTuh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Aug 2008 15:50:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756771AbYHNTtL
+	id S1760878AbYHNTvR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Aug 2008 15:51:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757441AbYHNTtN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Aug 2008 15:49:11 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:51486 "EHLO
+	Thu, 14 Aug 2008 15:49:13 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:45221 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753868AbYHNTtE (ORCPT
+	with ESMTP id S1754015AbYHNTtH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Aug 2008 15:49:04 -0400
-Message-Id: <20080814194859.634951545@goodmis.org>
-References: <20080814194506.233473381@goodmis.org>
+	Thu, 14 Aug 2008 15:49:07 -0400
+Message-Id: <20080814194506.233473381@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Thu, 14 Aug 2008 15:45:08 -0400
+Date: Thu, 14 Aug 2008 15:45:06 -0400
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
@@ -31,275 +30,181 @@ Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
        Clark Williams <williams@redhat.com>, Bruce Duncan <bwduncan@gmail.com>,
        Marcin Slusarz <marcin.slusarz@gmail.com>,
        Steven Rostedt <srostedt@redhat.com>
-Subject: [PATCH v2 2/6] ftrace: mcount call site on boot nops core
-Content-Disposition: inline; filename=ftrace-convert-recorded-mcount.patch
+Subject: [PATCH v2 0/6] ftrace: to kill a daemon (small updates)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is the infrastructure to the converting the mcount call sites
-recorded by the __mcount_loc section into nops on boot. It also allows
-for using these sites to enable tracing as normal. When the __mcount_loc
-section is used, the "ftraced" kernel thread is disabled.
 
-This uses the current infrastructure to record the mcount call sites
-as well as convert them to nops. The mcount function is kept as a stub
-on boot up and not converted to the ftrace_record_ip function. We use the
-ftrace_record_ip to only record from the table.
+[
+  Changes since v1:
 
-This patch does not handle modules. That comes with a later patch.
+    regex fix in x86_64 recordmcount.pl. Now it can handle all
+      mcount+0x... mcount-0x... and mcount, where as the original
+      only handled mcount+0x...
 
-Signed-off-by: Steven Rostedt <srostedt@redhat.com>
----
- include/asm-x86/ftrace.h |   10 +++
- include/linux/ftrace.h   |    6 +
- init/main.c              |    3 
- kernel/trace/ftrace.c    |  148 +++++++++++++++++++++++++++++++++--------------
- 4 files changed, 124 insertions(+), 43 deletions(-)
+    Made mcount on start-up to simply return. The current mcount
+      is set up to be replaced with a call to ftrace_record_ip.
+      This is no longer necessary.
 
-Index: linux-tip.git/include/asm-x86/ftrace.h
-===================================================================
---- linux-tip.git.orig/include/asm-x86/ftrace.h	2008-08-14 13:55:12.000000000 -0400
-+++ linux-tip.git/include/asm-x86/ftrace.h	2008-08-14 13:59:19.000000000 -0400
-@@ -7,6 +7,16 @@
- 
- #ifndef __ASSEMBLY__
- extern void mcount(void);
-+
-+static inline unsigned long ftrace_call_adjust(unsigned long addr)
-+{
-+	/*
-+	 * call mcount is "e8 <4 byte offset>"
-+	 * The addr points to the 4 byte offset and the caller of this
-+	 * function wants the pointer to e8. Simply subtract one.
-+	 */
-+	return addr - 1;
-+}
- #endif
- 
- #endif /* CONFIG_FTRACE */
-Index: linux-tip.git/include/linux/ftrace.h
-===================================================================
---- linux-tip.git.orig/include/linux/ftrace.h	2008-08-14 13:55:12.000000000 -0400
-+++ linux-tip.git/include/linux/ftrace.h	2008-08-14 13:59:19.000000000 -0400
-@@ -141,4 +141,10 @@ static inline void
- ftrace_special(unsigned long arg1, unsigned long arg2, unsigned long arg3) { }
- #endif
- 
-+#ifdef CONFIG_FTRACE_MCOUNT_RECORD
-+extern void ftrace_init(void);
-+#else
-+static inline void ftrace_init(void) { }
-+#endif
-+
- #endif /* _LINUX_FTRACE_H */
-Index: linux-tip.git/init/main.c
-===================================================================
---- linux-tip.git.orig/init/main.c	2008-08-14 13:55:13.000000000 -0400
-+++ linux-tip.git/init/main.c	2008-08-14 13:59:19.000000000 -0400
-@@ -62,6 +62,7 @@
- #include <linux/signal.h>
- #include <linux/idr.h>
- #include <linux/kmemcheck.h>
-+#include <linux/ftrace.h>
- 
- #include <asm/io.h>
- #include <asm/bugs.h>
-@@ -820,6 +821,8 @@ asmlinkage void __init start_kernel(void
- 
- 	acpi_early_init(); /* before LAPIC and SMP init */
- 
-+	ftrace_init();
-+
- 	/* Do the rest non-__init'ed, we're now alive */
- 	rest_init();
- }
-Index: linux-tip.git/kernel/trace/ftrace.c
-===================================================================
---- linux-tip.git.orig/kernel/trace/ftrace.c	2008-08-14 13:55:13.000000000 -0400
-+++ linux-tip.git/kernel/trace/ftrace.c	2008-08-14 13:59:19.000000000 -0400
-@@ -799,47 +799,7 @@ static int ftrace_update_code(void)
- 	return 1;
- }
- 
--static int ftraced(void *ignore)
--{
--	unsigned long usecs;
--
--	while (!kthread_should_stop()) {
--
--		set_current_state(TASK_INTERRUPTIBLE);
--
--		/* check once a second */
--		schedule_timeout(HZ);
--
--		if (unlikely(ftrace_disabled))
--			continue;
--
--		mutex_lock(&ftrace_sysctl_lock);
--		mutex_lock(&ftraced_lock);
--		if (!ftraced_suspend && !ftraced_stop &&
--		    ftrace_update_code()) {
--			usecs = nsecs_to_usecs(ftrace_update_time);
--			if (ftrace_update_tot_cnt > 100000) {
--				ftrace_update_tot_cnt = 0;
--				pr_info("hm, dftrace overflow: %lu change%s"
--					" (%lu total) in %lu usec%s\n",
--					ftrace_update_cnt,
--					ftrace_update_cnt != 1 ? "s" : "",
--					ftrace_update_tot_cnt,
--					usecs, usecs != 1 ? "s" : "");
--				ftrace_disabled = 1;
--				WARN_ON_ONCE(1);
--			}
--		}
--		mutex_unlock(&ftraced_lock);
--		mutex_unlock(&ftrace_sysctl_lock);
--
--		ftrace_shutdown_replenish();
--	}
--	__set_current_state(TASK_RUNNING);
--	return 0;
--}
--
--static int __init ftrace_dyn_table_alloc(void)
-+static int __init ftrace_dyn_table_alloc(unsigned long num_to_init)
- {
- 	struct ftrace_page *pg;
- 	int cnt;
-@@ -866,7 +826,9 @@ static int __init ftrace_dyn_table_alloc
- 
- 	pg = ftrace_pages = ftrace_pages_start;
- 
--	cnt = NR_TO_INIT / ENTRIES_PER_PAGE;
-+	cnt = num_to_init / ENTRIES_PER_PAGE;
-+	pr_info("ftrace: allocating %ld hash entries in %d pages\n",
-+		num_to_init, cnt);
- 
- 	for (i = 0; i < cnt; i++) {
- 		pg->next = (void *)get_zeroed_page(GFP_KERNEL);
-@@ -1563,6 +1525,104 @@ static __init int ftrace_init_debugfs(vo
- 
- fs_initcall(ftrace_init_debugfs);
- 
-+#ifdef CONFIG_FTRACE_MCOUNT_RECORD
-+static int ftrace_convert_nops(unsigned long *start,
-+			       unsigned long *end)
-+{
-+	unsigned long *p;
-+	unsigned long addr;
-+	unsigned long flags;
-+
-+	p = start;
-+	while (p < end) {
-+		addr = ftrace_call_adjust(*p++);
-+		ftrace_record_ip(addr);
-+		ftrace_shutdown_replenish();
-+	}
-+
-+	/* p is ignored */
-+	local_irq_save(flags);
-+	__ftrace_update_code(p);
-+	local_irq_restore(flags);
-+
-+	return 0;
-+}
-+
-+extern unsigned long __start_mcount_loc[];
-+extern unsigned long __stop_mcount_loc[];
-+
-+void __init ftrace_init(void)
-+{
-+	unsigned long count, addr, flags;
-+	int ret;
-+
-+	/* Keep the ftrace pointer to the stub */
-+	addr = (unsigned long)ftrace_stub;
-+
-+	local_irq_save(flags);
-+	ftrace_dyn_arch_init(&addr);
-+	local_irq_restore(flags);
-+
-+	/* ftrace_dyn_arch_init places the return code in addr */
-+	if (addr)
-+		goto failed;
-+
-+	count = __stop_mcount_loc - __start_mcount_loc;
-+
-+	ret = ftrace_dyn_table_alloc(count);
-+	if (ret)
-+		goto failed;
-+
-+	last_ftrace_enabled = ftrace_enabled = 1;
-+
-+	ret = ftrace_convert_nops(__start_mcount_loc,
-+				  __stop_mcount_loc);
-+
-+	return;
-+ failed:
-+	ftrace_disabled = 1;
-+}
-+#else /* CONFIG_FTRACE_MCOUNT_RECORD */
-+static int ftraced(void *ignore)
-+{
-+	unsigned long usecs;
-+
-+	while (!kthread_should_stop()) {
-+
-+		set_current_state(TASK_INTERRUPTIBLE);
-+
-+		/* check once a second */
-+		schedule_timeout(HZ);
-+
-+		if (unlikely(ftrace_disabled))
-+			continue;
-+
-+		mutex_lock(&ftrace_sysctl_lock);
-+		mutex_lock(&ftraced_lock);
-+		if (!ftraced_suspend && !ftraced_stop &&
-+		    ftrace_update_code()) {
-+			usecs = nsecs_to_usecs(ftrace_update_time);
-+			if (ftrace_update_tot_cnt > 100000) {
-+				ftrace_update_tot_cnt = 0;
-+				pr_info("hm, dftrace overflow: %lu change%s"
-+					" (%lu total) in %lu usec%s\n",
-+					ftrace_update_cnt,
-+					ftrace_update_cnt != 1 ? "s" : "",
-+					ftrace_update_tot_cnt,
-+					usecs, usecs != 1 ? "s" : "");
-+				ftrace_disabled = 1;
-+				WARN_ON_ONCE(1);
-+			}
-+		}
-+		mutex_unlock(&ftraced_lock);
-+		mutex_unlock(&ftrace_sysctl_lock);
-+
-+		ftrace_shutdown_replenish();
-+	}
-+	__set_current_state(TASK_RUNNING);
-+	return 0;
-+}
-+
- static int __init ftrace_dynamic_init(void)
- {
- 	struct task_struct *p;
-@@ -1579,7 +1639,7 @@ static int __init ftrace_dynamic_init(vo
- 		goto failed;
- 	}
- 
--	ret = ftrace_dyn_table_alloc();
-+	ret = ftrace_dyn_table_alloc(NR_TO_INIT);
- 	if (ret)
- 		goto failed;
- 
-@@ -1600,6 +1660,8 @@ static int __init ftrace_dynamic_init(vo
- }
- 
- core_initcall(ftrace_dynamic_init);
-+#endif /* CONFIG_FTRACE_MCOUNT_RECORD */
-+
- #else
- # define ftrace_startup()		do { } while (0)
- # define ftrace_shutdown()		do { } while (0)
+  Note: This patch series is focusing on how calls to mcount in
+    the kernel are converted to nops. It does not address what
+    kind of nop is used. That is a different topic, and should
+    be in a different patch series.
 
--- 
+  Note 2: I have found that the changes here are more stable than
+    the current daemon method, and these patches should be used.
+    It also solves the resume from suspend to ram bug that was
+    reported:
+
+      http://lkml.org/lkml/2008/8/12/234
+       and
+      http://lkml.org/lkml/2008/8/12/451
+
+  Note 3: I have already ported this to PowerPC64, but I am waiting
+    for this to be accepted first before submitting those changes.
+]
+
+One of the things that bothered me about the latest ftrace code was
+this annoying daemon that would wake up once a second to see if it
+had work to do. If it did not, it would go to sleep, otherwise it would
+do its work and then go to sleep.
+
+You see, the reason for this is that for ftrace to maintain performance
+when configured in but disabled, it would need to change all the
+locations that called "mcount" (enabled with the gcc -pg option) into
+nops.  The "-pg" option in gcc sets up a function profiler to call this
+function called "mcount". If you simply have "mcount" return, it will
+still add 15 to 18% overhead in performance. Changing all the calls to
+nops moved the overhead into noise.
+
+To get rid of this, I had the mcount code record the location that called
+it. Later, the "ftraced" daemon would wake up and look to see if
+any new functions were recorded. If so, it would call kstop_machine
+and convert the calls to "nops". We needed kstop_machine because bad
+things happen on SMP if you modify code that happens to be in the
+instruction cache of another CPU.
+
+This "ftraced" kernel thread would be a happy little worker, but it caused
+some pains. One, is that it woke up once a second, and Ted Tso got mad
+at me because it would show up on PowerTop. I could easily make the
+default 5 seconds, and even have it runtime configurable, with a trivial
+patch. I have not got around to doing that yet.
+
+The other annoying thing, and this one bothers me the most, is that we
+can not have this enabled on a production -rt kernel.  The latency caused
+by the kstop_machine when doing work is lost in the noise on a non-rt
+kernel, but it can be up to 800 microseconds, and that would kill
+the -rt kernel.  The reason this bothered me the most, is that -rt is
+where it came from, and ftraced was not treating its motherland very well.
+
+Along came Gregory Haskins, who was bickering about having ftrace enabled
+on a production -rt kernel. I told him the reasons that this would be bad
+and then he started thinking out loud, and suggesting wild ideas, like
+patching gcc!
+
+Since I have recently seen "The Dark Knight", Gregory's comments put me
+into an "evil" mood.  I then thought of the idea about using the
+relocation entries of the mcount call sites, in a prelinked object file,
+and create a separate section with a list of these sites. On boot up,
+record them and change them into nops.
+
+That's it! No kstop_machine for turning them into nops. We would only need
+stop_machine to enable or disable tracing, but a user not tracing will not have
+to deal with this annoying "ftraced" kernel thread waking up every second
+or ever running kstop_machine.
+
+What's more, this means we can enable it on a production -rt kernel!
+
+Now, this was no easy task. We needed to add a section to every object
+file with a list of pointers to the call sites to mcount. The idea I came
+up with was to make a tmp.s file for every object just after it is compiled.
+This tmp.s would then be compiled and relinked into the original object.
+The tmp.s file would have something like:
+
+  .section __mcount_loc,"a",@progbits
+  .quad location_of_mcount1
+  .quad location_of_mcount2
+  (etc)
+
+By running objdump on the object file we can find the offsets into the
+sections that the functions are called.
+
+For example, looking at hrtimer.o:
+
+Disassembly of section .text:
+
+0000000000000000 <hrtimer_init_sleeper>:
+       0:       55                      push   %rbp
+       1:       48 89 e5                mov    %rsp,%rbp
+       4:       e8 00 00 00 00          callq  9 <hrtimer_init_sleeper+0x9>
+                        5: R_X86_64_PC32        mcount+0xfffffffffffffffc
+[...]
+
+the '5' in the '5: R_X86_64_PC32' is the offset that the mcount relocation
+is to be done for the call site. This offset is from the .text section,
+and not necessarily, from the function. If we look further we see:
+
+000000000000001e <ktime_add_safe>:
+      1e:       55                      push   %rbp
+      1f:       48 89 e5                mov    %rsp,%rbp
+      22:       e8 00 00 00 00          callq  27 <ktime_add_safe+0x9>
+                        23: R_X86_64_PC32       mcount+0xfffffffffffffffc
+
+
+This mcount call site is 0x23 from the .text section, and obviously
+not from the ktime_add_safe.
+
+If we make a tmp.s that has the following:
+
+  .section __mcount_loc,"a",@progbits
+  .quad hrtimer_init_sleeper + 0x5
+  .quad hrtimer_init_sleeper + 0x23
+
+We have a section with the locations of these two call sites. After the final
+linking, they will point to the actual address used.
+
+All that would need to be done is:
+
+gcc -c tmp.s -o tmp.o
+ld -r tmp.o hrtimer.o -o tmp_hrtime.o
+mv tmp_hrtimer.o hrtimer.o
+
+Easy as that! Not quite.  What happens if that first function in the
+section is a static function? That is, the symbol for the function
+is local to the object. If for some reason hrtimer_init_sleeper is static,
+the tmp_hrtimer.o would have two symbols for hrtimer_init_sleeper.
+One local and one global.
+
+But we can be even more evil with this idea. We can do crazy things
+with objcopy to solve it for us.
+
+  objcopy --globalize-symbol hrtimer_init_sleeper hrtimer.o tmp_hrtimer.o
+
+Now the hrtimer_init_sleeper would be global for linking.
+
+  ld -r tmp_hrtimer.o tmp.o -o tmp2_hrtimer.o
+
+Now the tmp.o could use the same global hrtimer_init_sleeper symbol.
+But we have tmp2_hritmer.o that has the tmp.o and tmp_hrtimer.o symbols,
+but we cant just blindly convert local symbols to globals.
+
+The solution is simply put it back to local.
+
+  objcopy --localize-symbol hrtimer_init_sleeper tmp2_hrtimer.o hrtimer.o
+
+Now our hrtimer.o file has our __mcount_loc section and the
+reference to hrtimer_init_sleeper will be resolved.
+
+This is a bit complex to do in shell scripting and Makefiles, so I wrote
+a well documented recordmcount.pl perl script, that will do the above
+all in one place.
+
+With this new update, we can work to kill that kernel thread "ftraced"!
+
+This patch set ports to x86_64 and i386, the other archs will still use
+the daemon until they are converted over.
+
+I tested this on both x86_64 and i386 with and without CONFIG_RELOCATE
+set.
+
