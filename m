@@ -1,31 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753921AbYHNN7p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754414AbYHNOAA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753921AbYHNN7p (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Aug 2008 09:59:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755422AbYHNN7W
+	id S1754414AbYHNOAA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Aug 2008 10:00:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756332AbYHNN7q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Aug 2008 09:59:22 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:40503 "EHLO
+	Thu, 14 Aug 2008 09:59:46 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:40508 "EHLO
 	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751152AbYHNN7U (ORCPT
+	with ESMTP id S1751272AbYHNN7p (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Aug 2008 09:59:20 -0400
-Date: Thu, 14 Aug 2008 14:54:10 +0200
+	Thu, 14 Aug 2008 09:59:45 -0400
+Date: Thu, 14 Aug 2008 15:08:12 +0200
 From: Pavel Machek <pavel@suse.cz>
-To: tvrtko.ursulin@sophos.com
-Cc: Arjan van de Ven <arjan@infradead.org>, Adrian Bunk <bunk@kernel.org>,
-       davecb@sun.com, Greg KH <greg@kroah.com>,
-       "Press, Jonathan" <Jonathan.Press@ca.com>, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org, malware-list@lists.printk.net,
-       Mihai Don??u <mdontu@bitdefender.com>
-Subject: Re: [malware-list] [RFC 0/5] [TALPA] Intro to a
-	linuxinterfaceforon access scanning
-Message-ID: <20080814125410.GA2262@elf.ucw.cz>
-References: <20080813125638.GB6995@ucw.cz> <20080813135207.CC08C3765BC@pmx1.sophos.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: kernel list <linux-kernel@vger.kernel.org>,
+       Linux-pm mailing list <linux-pm@lists.osdl.org>,
+       James.Bottomley@HansenPartnership.com, teheo@novell.com,
+       oneukum@suse.de
+Subject: Re: Power management for SCSI
+Message-ID: <20080814130812.GC2262@elf.ucw.cz>
+References: <20080813095055.GA475@elf.ucw.cz> <Pine.LNX.4.44L0.0808131026320.2455-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080813135207.CC08C3765BC@pmx1.sophos.com>
+In-Reply-To: <Pine.LNX.4.44L0.0808131026320.2455-100000@iolanthe.rowland.org>
 X-Warning: Reading this can be dangerous to your mental health.
 User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -34,53 +32,67 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Hi!
 
-Okay, so goal of libmalware.so is to "not allow data in the black list
-to pass through Linux server". Threat model is windows machines trying
-to copy infected files through the server. Viruses are not expected to
-have shell access to either root or normal users on the server.
-
-> Big snip since I am really only curious about libmalware.so.
-> 
-> > Plus, proposed solution already has three unacceptable holes:
+> > Add support for autosuspend/autoresume. Lowlevel driver can use it to
+> > spin the disk down and power down its SATA link, to turn off the USB
+> > interface, etc.
 > > 
-> > 1) it only catches known signatures
-> > 2) write vs. read race mentioned above
-> 
-> Discussions about perfect, better or no security are in danger of becoming 
-> boring.
-> 
-> > 3) mmap problem
+> > Spinning down the disk is useful - saves ~0.5W here. Powering down
+> > SATA controller is even better -- should save ~1W.
 > > 
-> > . Making sure all apps use libmalware.so is trivial compared to
-> > solving 3).
+> > Now, I guess the patch will need to be split to small pieces for
+> > merge... I tried to rearrange it so that the documentation and hooks
+> > go before stuff that needs the hooks, and before Kconfig enabler. If
+> > it looks reasonably good, I'll split it into smaller pieces.
 > 
-> You haven't answered what exactly is this libmalware.so, since you are the 
-> only one mentioning it? It would be interesting to learn how it solves the 
-> mmap problem, provides perfect security so it is acceptable, handles the 
-> kernel NFS server serving malicious files, caters for applications which 
-> do not use it, is better (more secure) than the kernel solution, provides 
-> reasonalbe performance and is easier to maintain for the community? To 
-> list only some of the requirements which have been mentioned so far.
+> James had a number of objections to my original patch; you can read 
+> them here:
+> 
+> https://lists.linux-foundation.org/pipermail/linux-pm/2008-March/016849.html
+> 
+> I haven't had time yet to work on an improved version.
 
-mmap problem: libmalware.so would not offer mmap() to applications (or
-maybe it would do copy of the file, then allow mmap on the copy).
+Ok, I see, "its done at the wrong level" sounds pretty serious.
 
-kernel NFS server is not handled; don't use it for serving Windows
-clients. Not that you need performance for that, anyway.
+First the general comments/questions:
 
-Obviously libmalware.so will not help applications not using it. With
-distributions, that's not a problem.
+#
+#1. It's done at the wrong level: suspend "device" is actually a target
+#function.  There's no way on a multi-lun device we want to keep the
+#flags and last_busy anywhere but in the target
 
-Unlike kernel solution, it does not contain races with read/write/mmap
--- untrusted files access is made through methods that can be safe.
+So... if there's one device with Lun0==cdrom1 and Lun1==cdrom2, it is a
+single target, and we want to keep flags/last busy common to all that?
 
-You can query helper daemon for cache info; that should provide good
-enough performance.
+What is good data structure to add? I see scsi_tgt*.h, but it is very
+short, and there does not seem to be good structure to hook into.
 
-I never claimed it is easier to maintain than kernel solution; but
-unlike kernel solution it actually _works_, 100% of time, for apps
-using it.
+#2. As you say in the comment, the thing we're trying to power down is
+#the link.  In most SCSI implementations, the link has a rather complex
+#relationship to the target, what we want to do in
+#periodic_autosuspend_scan() is run over the devices on each link, and
+#if
+#they're not busy suspend the link?  What's probably needed is a set of
+#adjunct helpers for the transport classes to do this.
+
+So the host suspend/resume stuff should go into struct
+scsi_transport_template?
+
+#3. The link power down is much faster than device spin down ... in
+#your
+#patch these two things seem to be coupled ... we really need to keep
+#them separate.
+#
+
+ACK.
+
+#4. The entanglement with error handling is incredibly problematic
+#(since
+#eh is a nastily complex state machine in its own right).  What do
+#transports that use eh_strategy_handler do about all of this?
+
+/me scared...
 								Pavel
+
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
