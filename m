@@ -1,46 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757720AbYHNVQp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758699AbYHNVTX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757720AbYHNVQp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Aug 2008 17:16:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752845AbYHNVQf
+	id S1758699AbYHNVTX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Aug 2008 17:19:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753618AbYHNVTO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Aug 2008 17:16:35 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:58297 "EHLO
+	Thu, 14 Aug 2008 17:19:14 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:38759 "EHLO
 	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752467AbYHNVQe (ORCPT
+	with ESMTP id S1752858AbYHNVTN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Aug 2008 17:16:34 -0400
-Date: Thu, 14 Aug 2008 23:17:56 +0200
+	Thu, 14 Aug 2008 17:19:13 -0400
+Date: Thu, 14 Aug 2008 23:20:36 +0200
 From: Andi Kleen <andi@firstfloor.org>
-To: Chris Mason <chris.mason@oracle.com>
-Cc: Andi Kleen <andi@firstfloor.org>, Peter Zijlstra <peterz@infradead.org>,
-       linux-btrfs <linux-btrfs@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>
-Subject: Re: Btrfs v0.16 released
-Message-ID: <20080814211756.GC13814@one.firstfloor.org>
-References: <1217962876.15342.33.camel@think.oraclecorp.com> <1218100464.8625.9.camel@twins> <1218105597.15342.189.camel@think.oraclecorp.com> <877ias66v4.fsf@basil.nowhere.org> <1218221293.15342.263.camel@think.oraclecorp.com> <1218747656.15342.439.camel@think.oraclecorp.com>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: Ingo Molnar <mingo@elte.hu>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       Harvey Harrison <harvey.harrison@gmail.com>,
+       Andi Kleen <andi@firstfloor.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Steven Rostedt <srostedt@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, Roland McGrath <roland@redhat.com>,
+       Ulrich Drepper <drepper@redhat.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Gregory Haskins <ghaskins@novell.com>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       "Luis Claudio R. Goncalves" <lclaudio@uudg.org>,
+       Clark Williams <williams@redhat.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH] x86 alternatives : fix LOCK_PREFIX race with preemptible kernel and CPU hotplug
+Message-ID: <20080814212036.GD13814@one.firstfloor.org>
+References: <20080814205815.GA14076@Krystal>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1218747656.15342.439.camel@think.oraclecorp.com>
+In-Reply-To: <20080814205815.GA14076@Krystal>
 User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 14, 2008 at 05:00:56PM -0400, Chris Mason wrote:
-> Btrfs defaults                  57.41 MB/s
-> Btrfs dup no csum               74.59 MB/s 
+> So, unless these calculus are completely bogus, the difference between the nop
+> and the DS case seems not to be statistically significant.
 
-With duplications checksums seem to be quite costly (CPU bound?)
+My understanding was that the nops only make a measurable difference in the 
+-pg/mcount/ftrace patched out case where every function call starts with a 5
+byte nop.
 
-> Btrfs no duplication            76.83 MB/s
-> Btrfs no dup no csum no inline  76.85 MB/s
-
-But without duplication they are basically free here at least
-in IO rate. Seems odd?
-
-Does it compute them twice in the duplication case perhaps?
+Presumably function calls are much more common than lock prefix operations.
 
 -Andi
