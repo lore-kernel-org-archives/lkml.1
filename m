@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757548AbYHNRFj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757752AbYHNRG3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757548AbYHNRFj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Aug 2008 13:05:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752638AbYHNRF2
+	id S1757752AbYHNRG3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Aug 2008 13:06:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752029AbYHNRGV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Aug 2008 13:05:28 -0400
-Received: from gw.goop.org ([64.81.55.164]:40596 "EHLO mail.goop.org"
+	Thu, 14 Aug 2008 13:06:21 -0400
+Received: from gw.goop.org ([64.81.55.164]:40632 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751589AbYHNRF0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Aug 2008 13:05:26 -0400
-Message-ID: <48A465BA.5050406@goop.org>
-Date: Thu, 14 Aug 2008 10:04:58 -0700
+	id S1752223AbYHNRGU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Aug 2008 13:06:20 -0400
+Message-ID: <48A465F2.8000701@goop.org>
+Date: Thu, 14 Aug 2008 10:05:54 -0700
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
@@ -33,8 +33,8 @@ CC: "H. Peter Anvin" <hpa@zytor.com>, Andi Kleen <andi@firstfloor.org>,
        Christoph Lameter <cl@linux-foundation.org>
 Subject: Re: [RFC PATCH] x86 alternatives : fix LOCK_PREFIX race with	preemptible
  kernel and CPU hotplug
-References: <alpine.LFD.1.10.0808131119290.3462@nehalem.linux-foundation.org> <20080813184142.GM1366@one.firstfloor.org> <20080813193011.GC15547@Krystal> <20080813193715.GQ1366@one.firstfloor.org> <20080813200119.GA18966@Krystal> <20080813234156.GA25775@Krystal> <48A375E3.9090609@zytor.com> <48A388CE.2020404@goop.org> <20080814014944.GA31883@Krystal> <48A3A806.8060509@goop.org> <20080814151805.GA29507@Krystal>
-In-Reply-To: <20080814151805.GA29507@Krystal>
+References: <20080813193011.GC15547@Krystal> <20080813193715.GQ1366@one.firstfloor.org> <20080813200119.GA18966@Krystal> <20080813234156.GA25775@Krystal> <48A375E3.9090609@zytor.com> <48A388CE.2020404@goop.org> <20080814014944.GA31883@Krystal> <48A3A806.8060509@goop.org> <20080814151805.GA29507@Krystal> <48A459B1.2070601@zytor.com> <20080814165802.GC517@Krystal>
+In-Reply-To: <20080814165802.GC517@Krystal>
 X-Enigmail-Version: 0.95.6
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
@@ -43,41 +43,32 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Mathieu Desnoyers wrote:
-> I can't argue about the benefit of using VM CPU pinning to manage
-> resources because I don't use it myself, but I ran some tests out of
-> curiosity to find if uncontended locks were that cheap, and it turns out
-> they aren't. Here are the results :
+> * H. Peter Anvin (hpa@zytor.com) wrote:
+>   
+>> Mathieu Desnoyers wrote:
+>>     
+>>> I can't argue about the benefit of using VM CPU pinning to manage
+>>> resources because I don't use it myself, but I ran some tests out of
+>>> curiosity to find if uncontended locks were that cheap, and it turns out
+>>> they aren't. Here are the results :
+>>> Xeon 2.0GHz
+>>> Summary
+>>> make -j1 kernel/      33.94 +/- 0.07         34.91 +/- 0.27      2.8 %
+>>> hackbench 50           2.99 +/- 0.01          3.74 +/- 0.01     25.1 %
+>>> 1 CPU, replace smp lock prefixes with DS segment selector prefixes
+>>> 1 CPU, noreplace-smp
+>>>       
+>> For reference, could you also compare replace smp lock with NOPs?
+>>
+>> 	-hpa
+>>     
+>
+> Sure, here are the updated tables. Basically, they show no significant
+> difference between the NOP and the DS segment selector prefix
+> approaches.
 >   
 
-OK, let me clarify my point a bit.  If you've got a kernel which is 
-switching between UP and SMP on a regular basis, you're going to be 
-taking the hit for the locked instructions whenever you're in the SMP 
-state anyway.  It's only going to be a workload where you're mostly UP 
-with occasional excursions into being SMP that patching out the lock 
-prefixes is actually going to make a difference. 
-
-And that just doesn't seem like a very likely use-case to me.  Certainly 
-I don't think it would ever happen on a physical machine.  And it 
-doesn't seem all that likely on a virtual machine either. Certainly 
-resources are more dynamic in a virtual environment, but I think there's 
-a fairly good chance that the domain knows from the outset whether it's 
-going to be UP or SMP, or does the UP->SMP transition once.
-
-(That said, the XenServer product does precisely what I say is unusual: 
-the dom0 kernel hotplugs all the cpus so it can do ucode updates, etc, 
-and then unplugs all but one...)
-
-> Xeon 2.0GHz
->
->
-> Summary
->
->                   no lock prefix (s)   with lock prefix (s)    Speedup
-> make -j1 kernel/      33.94 +/- 0.07         34.91 +/- 0.27      2.8 %
-> hackbench 50           2.99 +/- 0.01          3.74 +/- 0.01     25.1 %
->   
-
-Yeah, that's more severe than I would have expected.  Perhaps I have AMD 
-numbers in my head.
+BTW, are you changing the initial prefix to DS too?  Ie, are you doing a 
+nop->lock->ds transition, or ds->lock->ds?
 
     J
