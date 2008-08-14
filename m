@@ -1,60 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758637AbYHNPRZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758397AbYHNPSj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758637AbYHNPRZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Aug 2008 11:17:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751852AbYHNPRR
+	id S1758397AbYHNPSj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Aug 2008 11:18:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754824AbYHNPSb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Aug 2008 11:17:17 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:47252 "EHLO
-	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751368AbYHNPRQ (ORCPT
+	Thu, 14 Aug 2008 11:18:31 -0400
+Received: from brmea-mail-4.Sun.COM ([192.18.98.36]:42568 "EHLO
+	brmea-mail-4.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754047AbYHNPSa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Aug 2008 11:17:16 -0400
-Date: Thu, 14 Aug 2008 17:18:33 +0200
-From: Pavel Machek <pavel@suse.cz>
-To: Andrew Morton <akpm@osdl.org>, kernel list <linux-kernel@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Trivial patch monkey <trivial@kernel.org>
-Subject: PM_TRACE is no longer experimental
-Message-ID: <20080814151833.GA23300@elf.ucw.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Thu, 14 Aug 2008 11:18:30 -0400
+Date: Thu, 14 Aug 2008 07:18:13 -0400
+From: David Collier-Brown <davecb@sun.com>
+Subject: Re: RFC: I/O bandwidth controller
+In-reply-to: <48A18854.9020000@gmail.com>
+To: righi.andrea@gmail.com
+Cc: Hirokazu Takahashi <taka@valinux.co.jp>, baramsori72@gmail.com,
+       balbir@linux.vnet.ibm.com, xen-devel@lists.xensource.com,
+       Satoshi UCHIDA <s-uchida@ap.jp.nec.com>,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       virtualization@lists.linux-foundation.org, dm-devel@redhat.com,
+       agk@sourceware.org, dave@linux.vnet.ibm.com, ngupta@google.com
+Reply-to: davecb@sun.com
+Message-id: <48A41475.4070108@sun.com>
+MIME-version: 1.0
+Content-type: text/plain; format=flowed; charset=us-ascii
+Content-transfer-encoding: 7BIT
+X-Accept-Language: en-us, en
+References: <1218117578.11703.81.camel@sebastian.kern.oss.ntt.co.jp>
+ <48A0A689.40908@gmail.com> <loom.20080812T071504-212@post.gmane.org>
+ <20080812.201025.57762305.taka@valinux.co.jp> <48A18854.9020000@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; SunOS sun4u; en-US; rv:1.7) Gecko/20041221
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-PM_TRACE is stable for quite long. I don't think it needs to depend on
-experimental.
+Andrea Righi wrote:
+> A more complicated issue is how to evaluate the total IO bandwidth of a
+> generic device. We can use some kind of averaging/prediction, but
+> basically it would be inaccurate due to the mechanic of disks (head
+> seeks, but also caching, buffering mechanisms implemented directly into
+> the device, etc.). It's a hard problem. And the same problem exists also
+> for proportional bandwidth as well, in terms of IO rate predictability I
+> mean.
 
-Signed-off-by: Pavel Machek <pavel@suse.cz>
+  Actually it's a little-known easy problem.
 
----
-commit 710f4e9070c453e743fcfa1a6017075026c4967b
-tree 7f3fe656004f2d21b6a9cbe1264f9f2236572456
-parent ea977ecb4f994b0dc2e09cab3dbba87aad030d99
-author Pavel <pavel@amd.ucw.cz> Thu, 14 Aug 2008 17:18:07 +0200
-committer Pavel <pavel@amd.ucw.cz> Thu, 14 Aug 2008 17:18:07 +0200
+  The capacity planning community does it all the time, but then describes
+it in terms that are only interesting (intelligible?) to an enthusiastic
+amateur mathematician (;-))
 
- kernel/power/Kconfig |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+  One finds the point, called N*, at which the throughput flattens
+out and and the response time starts to grow without bounds, and
+calls that level the maximum.
 
-diff --git a/kernel/power/Kconfig b/kernel/power/Kconfig
-index dcd165f..1800674 100644
---- a/kernel/power/Kconfig
-+++ b/kernel/power/Kconfig
-@@ -36,7 +36,7 @@ config PM_VERBOSE
- 
- config CAN_PM_TRACE
- 	def_bool y
--	depends on PM_DEBUG && PM_SLEEP && EXPERIMENTAL
-+	depends on PM_DEBUG && PM_SLEEP
- 
- config PM_TRACE
- 	bool
+  In practice, one does an easier variant.  One sets a response-time 
+limit and throttles *everyone* proportionally when th disk starts to 
+regularly degrade beyond the limit.  Interestingly, because we're 
+slowing the application to prevent slowing the disks, the value we 
+pick needn't be terribly precise.  It also doesn't require any pre-
+knowledge about the disks.
 
+  Send me a note if you want to discuss this in more detail.
+
+--dave
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+David Collier-Brown            | Always do right. This will gratify
+Sun Microsystems, Toronto      | some people and astonish the rest
+davecb@sun.com                 |                      -- Mark Twain
+cell: (647) 833-9377, bridge: (877) 385-4099 code: 506 9191#
