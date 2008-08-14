@@ -1,28 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758066AbYHNI3p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758058AbYHNIaA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758066AbYHNI3p (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Aug 2008 04:29:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757553AbYHNI3Q
+	id S1758058AbYHNIaA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Aug 2008 04:30:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752583AbYHNI3k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Aug 2008 04:29:16 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:41429 "EHLO mail.dvmed.net"
+	Thu, 14 Aug 2008 04:29:40 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:41439 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757510AbYHNI3N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Aug 2008 04:29:13 -0400
-Message-ID: <48A3ECD3.3080001@garzik.org>
-Date: Thu, 14 Aug 2008 04:29:07 -0400
+	id S1757997AbYHNI3i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Aug 2008 04:29:38 -0400
+Message-ID: <48A3ECDA.4090208@garzik.org>
+Date: Thu, 14 Aug 2008 04:29:14 -0400
 From: Jeff Garzik <jeff@garzik.org>
 User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-CC: Stephen Hemminger <stephen.hemminger@vyatta.com>, netdev@vger.kernel.org,
-       Stephen Hemminger <shemminger@vyatta.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] sky2: Fix suspend/hibernation/shutdown regression with
- WOL enabled (rev. 2)
-References: <200808092332.29596.rjw@sisk.pl> <20080809235711.12c2f331@extreme> <200808101414.35626.rjw@sisk.pl> <200808101930.29574.rjw@sisk.pl>
-In-Reply-To: <200808101930.29574.rjw@sisk.pl>
+To: Robert Fitzsimons <robfitz@273k.net>
+CC: Stephen Hemminger <shemminger@vyatta.com>,
+       Jeff Garzik <jgarzik@redhat.com>, David Miller <davem@davemloft.net>,
+       Samuel Chessman <chessman@tux.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] tlan: Fix two regressions introduced by 64bit conversion.
+References: <20080809165402.GA3726@localhost>
+In-Reply-To: <20080809165402.GA3726@localhost>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 X-Spam-Score: -4.4 (----)
@@ -32,59 +30,46 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafael J. Wysocki wrote:
-> On Sunday, 10 of August 2008, Rafael J. Wysocki wrote:
->> On Sunday, 10 of August 2008, Stephen Hemminger wrote:
->>> On Sat, 9 Aug 2008 23:32:28 +0200
->>> "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
->>>
-> [--snip--]
->>> The problem is not unique to your chip version,
->> Well, that's the part I wasn't sure of.
->>
->>> so patching out the power down is not the correct solution.
->> Sure.
+Robert Fitzsimons wrote:
+> Two regressions were introduced by the recent tlan: 64bit conversion
+> commit (93e16847c9db0093065c98063cfc639cdfccf19a).  The first in
+> TLan_GetSKB caused a NULL pointer dereference.  With the second causing
+> the link to fail to come up.
 > 
-> But, shouldn't we switch to page 2 before selecting PHY_MARV_PHY_CTRL?  Things
-> work correctly if this is done (patch below).
-> 
-> Thanks,
-> Rafael
-> 
-> 
+> Signed-off-by: Robert Fitzsimons <robfitz@273k.net>
 > ---
-> On my test box with the Asus M3A32-MVP main board there is a
-> regression from 2.6.26 related to suspend, hibernation and
-> shutdown.  Namely, if Wake-on-LAN is enabled with
-> 'ethtool -s eth0 wol g', the box hangs solid during all of these
-> operations, while executing either sky2_suspend(), or
-> sky2_shutdown().  This patch fixes it for me.
+>  drivers/net/tlan.c |    8 ++++----
+>  1 files changed, 4 insertions(+), 4 deletions(-)
 > 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> ---
->  drivers/net/sky2.c |    7 ++++++-
->  1 file changed, 6 insertions(+), 1 deletion(-)
-> 
-> Index: linux-2.6/drivers/net/sky2.c
-> ===================================================================
-> --- linux-2.6.orig/drivers/net/sky2.c
-> +++ linux-2.6/drivers/net/sky2.c
-> @@ -666,11 +666,16 @@ static void sky2_phy_power_down(struct s
+> diff --git a/drivers/net/tlan.c b/drivers/net/tlan.c
+> index 85246ed..ec871f6 100644
+> --- a/drivers/net/tlan.c
+> +++ b/drivers/net/tlan.c
+> @@ -360,8 +360,8 @@ TLan_GetSKB( const struct tlan_list_tag *tag)
+>  {
+>  	unsigned long addr;
 >  
->  	if (hw->chip_id != CHIP_ID_YUKON_EC) {
->  		if (hw->chip_id == CHIP_ID_YUKON_EC_U) {
-> -			ctrl = gm_phy_read(hw, port, PHY_MARV_PHY_CTRL);
-> +			/* select page 2 to access MAC control register */
-> +			gm_phy_write(hw, port, PHY_MARV_EXT_ADR, 2);
+> -	addr = tag->buffer[8].address;
+> -	addr |= (tag->buffer[9].address << 16) << 16;
+> +	addr = tag->buffer[9].address;
+> +	addr |= (tag->buffer[8].address << 16) << 16;
+>  	return (struct sk_buff *) addr;
+>  }
 >  
-> +			ctrl = gm_phy_read(hw, port, PHY_MARV_PHY_CTRL);
->  			/* enable Power Down */
->  			ctrl |= PHY_M_PC_POW_D_ENA;
->  			gm_phy_write(hw, port, PHY_MARV_PHY_CTRL, ctrl);
-> +
-> +			/* set page register back to 0 */
-> +			gm_phy_write(hw, port, PHY_MARV_EXT_ADR, 0);
->  		}
+> @@ -1984,7 +1984,6 @@ static void TLan_ResetLists( struct net_device *dev )
+>  	TLanList	*list;
+>  	dma_addr_t	list_phys;
+>  	struct sk_buff	*skb;
+> -	void		*t = NULL;
+>  
+>  	priv->txHead = 0;
+>  	priv->txTail = 0;
+> @@ -2022,7 +2021,8 @@ static void TLan_ResetLists( struct net_device *dev )
+>  			}
+>  
+>  			skb_reserve( skb, NET_IP_ALIGN );
+> -			list->buffer[0].address = pci_map_single(priv->pciDev, t,
+> +			list->buffer[0].address = pci_map_single(priv->pciDev,
 
 applied
 
