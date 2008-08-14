@@ -1,74 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757752AbYHNRG3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756157AbYHNRHk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757752AbYHNRG3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Aug 2008 13:06:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752029AbYHNRGV
+	id S1756157AbYHNRHk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Aug 2008 13:07:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752145AbYHNRHc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Aug 2008 13:06:21 -0400
-Received: from gw.goop.org ([64.81.55.164]:40632 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752223AbYHNRGU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Aug 2008 13:06:20 -0400
-Message-ID: <48A465F2.8000701@goop.org>
-Date: Thu, 14 Aug 2008 10:05:54 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	Thu, 14 Aug 2008 13:07:32 -0400
+Received: from eagle.jhcloos.com ([207.210.242.212]:3207 "EHLO
+	eagle.jhcloos.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752105AbYHNRHb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Aug 2008 13:07:31 -0400
+X-Greylist: delayed 633 seconds by postgrey-1.27 at vger.kernel.org; Thu, 14 Aug 2008 13:07:31 EDT
+From: James Cloos <cloos@jhcloos.com>
+To: linux-kernel@vger.kernel.org
+Cc: David Woodhouse <dwmw2@infradead.org>
+Subject: Would it be better for git-commits-head to have -M -C diffs?
+User-Agent: Gnus/5.110011 (No Gnus v0.11) Emacs/23.0.60 (gnu/linux)
+Face: iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABHNCSVQICAgIfAhkiAAAAI1J
+ REFUOE+lU9ESgCAIg64P1y+ngUdxhl5H8wFbbM0OmUiEhKkCYaZThXCo6KE5sCbA1DDX3genvO4d
+ eBQgEMaM5qy6uWk4SfBYfdu9jvBN9nSVDOKRtwb+I3epboOsOX5pZbJNsBJFvmQQ05YMfieIBnYX
+ FK2N6dOawd97r/e8RjkTLzmMsiVgrAoEugtviCM3v2WzjgAAAABJRU5ErkJggg==
+Copyright: Copyright 2008 James Cloos
+OpenPGP: ED7DAEA6; url=http://jhcloos.com/public_key/0xED7DAEA6.asc
+OpenPGP-Fingerprint: E9E9 F828 61A4 6EA9 0F2B  63E7 997A 9F17 ED7D AEA6
+Date: Thu, 14 Aug 2008 12:56:18 -0400
+Message-ID: <m3ljyzsfg6.fsf@lugabout.jhcloos.org>
 MIME-Version: 1.0
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: "H. Peter Anvin" <hpa@zytor.com>, Andi Kleen <andi@firstfloor.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
-       Steven Rostedt <srostedt@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, Roland McGrath <roland@redhat.com>,
-       Ulrich Drepper <drepper@redhat.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Gregory Haskins <ghaskins@novell.com>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       "Luis Claudio R. Goncalves" <lclaudio@uudg.org>,
-       Clark Williams <williams@redhat.com>,
-       Christoph Lameter <cl@linux-foundation.org>
-Subject: Re: [RFC PATCH] x86 alternatives : fix LOCK_PREFIX race with	preemptible
- kernel and CPU hotplug
-References: <20080813193011.GC15547@Krystal> <20080813193715.GQ1366@one.firstfloor.org> <20080813200119.GA18966@Krystal> <20080813234156.GA25775@Krystal> <48A375E3.9090609@zytor.com> <48A388CE.2020404@goop.org> <20080814014944.GA31883@Krystal> <48A3A806.8060509@goop.org> <20080814151805.GA29507@Krystal> <48A459B1.2070601@zytor.com> <20080814165802.GC517@Krystal>
-In-Reply-To: <20080814165802.GC517@Krystal>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+X-Hashcash: 1:23:080814:linux-kernel@vger.kernel.org::fvJXZg9WYE5BycT2:000000000000000000000000000000000aYdA
+X-Hashcash: 1:23:080814:dwmw2@infradead.org::c0ewPTr3GiWL6Sdj:0000000000000000000000000000000000000000008PWG
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mathieu Desnoyers wrote:
-> * H. Peter Anvin (hpa@zytor.com) wrote:
->   
->> Mathieu Desnoyers wrote:
->>     
->>> I can't argue about the benefit of using VM CPU pinning to manage
->>> resources because I don't use it myself, but I ran some tests out of
->>> curiosity to find if uncontended locks were that cheap, and it turns out
->>> they aren't. Here are the results :
->>> Xeon 2.0GHz
->>> Summary
->>> make -j1 kernel/      33.94 +/- 0.07         34.91 +/- 0.27      2.8 %
->>> hackbench 50           2.99 +/- 0.01          3.74 +/- 0.01     25.1 %
->>> 1 CPU, replace smp lock prefixes with DS segment selector prefixes
->>> 1 CPU, noreplace-smp
->>>       
->> For reference, could you also compare replace smp lock with NOPs?
->>
->> 	-hpa
->>     
->
-> Sure, here are the updated tables. Basically, they show no significant
-> difference between the NOP and the DS segment selector prefix
-> approaches.
->   
+Would anyone else prefer to see the posts on the commits list use git's
+copy and move detection?
 
-BTW, are you changing the initial prefix to DS too?  Ie, are you doing a 
-nop->lock->ds transition, or ds->lock->ds?
+Git show (used by the feed-mail-list script) does support -M and -C.
 
-    J
+It does affect the stat section.  The recent commit 758db3f21187 would
+have had its stat changed from looking like:
+
+ arch/h8300/include/asm/Kbuild              |    1 +
+ arch/h8300/include/asm/a.out.h             |   20 ++
+ arch/h8300/include/asm/atomic.h            |  144 +++++++++++
+                        .
+                        .
+                        .
+ include/asm-h8300/Kbuild                   |    1 -
+ include/asm-h8300/a.out.h                  |   20 --
+ include/asm-h8300/atomic.h                 |  144 -----------
+                        .
+                        .
+                        .
+
+to looking like:
+
+ .../asm-h8300 => arch/h8300/include/asm}/Kbuild    |    0 
+ .../asm-h8300 => arch/h8300/include/asm}/a.out.h   |    0 
+ .../asm-h8300 => arch/h8300/include/asm}/atomic.h  |    0 
+ .../asm-h8300 => arch/h8300/include/asm}/auxvec.h  |    0 
+ .../asm-h8300 => arch/h8300/include/asm}/bitops.h  |    0 
+ .../h8300/include/asm}/bootinfo.h                  |    0 
+                        .
+                        .
+                        .
+
+but would have been 512 lines and 24271 octets instead of 10623 lines
+and 291634 octets.
+
+I think it would also be useful were the From: header of each message
+set to the commit's Author.  I run each commit through a script to do
+that locally, but the archives would also benefit from that.
+
+-JimC
+-- 
+James Cloos <cloos@jhcloos.com>         OpenPGP: 1024D/ED7DAEA6
