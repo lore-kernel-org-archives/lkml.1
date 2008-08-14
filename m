@@ -1,99 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757760AbYHNLFk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757200AbYHNLIa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757760AbYHNLFk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Aug 2008 07:05:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756084AbYHNLEy
+	id S1757200AbYHNLIa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Aug 2008 07:08:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754167AbYHNLIW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Aug 2008 07:04:54 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:1267 "EHLO spitz.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753793AbYHNLEx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Aug 2008 07:04:53 -0400
-Date: Thu, 14 Aug 2008 07:32:35 +0200
-From: Pavel Machek <pavel@suse.cz>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: pm list <linux-pm@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [linux-pm] [RFC][PATCH] PM: Rework disabling of user mode helpers during suspend/hibernation
-Message-ID: <20080814053235.GG6995@ucw.cz>
-References: <200808080019.37057.rjw@sisk.pl>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200808080019.37057.rjw@sisk.pl>
-User-Agent: Mutt/1.5.9i
+	Thu, 14 Aug 2008 07:08:22 -0400
+Received: from serv2.oss.ntt.co.jp ([222.151.198.100]:54200 "EHLO
+	serv2.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753493AbYHNLIU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Aug 2008 07:08:20 -0400
+Message-ID: <48A41220.8030203@oss.ntt.co.jp>
+Date: Thu, 14 Aug 2008 20:08:16 +0900
+From: NAKANO Hiroaki <nakano.hiroaki@oss.ntt.co.jp>
+User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
+MIME-Version: 1.0
+To: Trond.Myklebust@netapp.com
+CC: bfields@fieldses.org, neilb@suse.de, linux-nfs@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH]lockd: fix handling of grace period after long periods of
+ inactivity
+Content-Type: text/plain; charset=ISO-2022-JP
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+lockd uses time_before() to determine whether the grace period has
+expired. This would seem to be enough to avoid timer wrap-around issues,
+but, unfortunately, that is not the case. The time_* family of
+comparison functions can be safely used to compare jiffies relatively
+close in time, but they stop working after approximately LONG_MAX/2
+ticks. nfsd can suffer this problem because the time_before() comparison
+in lockd() is not performed until the first request comes in, which
+means that if there is no lockd traffic for more than LONG_MAX/2 ticks
+we are screwed.
 
-> PM: Rework disabling of user mode helpers during suspend/hibernation
-> 
-> We currently use a PM notifier to disable user mode helpers before
-> suspend and hibernation and to re-enable them during the resume.
-> However, this is not an ideal solution, because if any drivers want
-> to upolad firmware into memory before suspend, they have to use a
-> PM notifier for this purpose and there is not guarantee that the
-> ordering of PM notifiers will be as expected (ie. the notifier that
-> disables user mode helpers has to be run after the driver's notifier
-> used for uploading the firmware).
-> 
-> For this reason, it seems better to move the disabling and enabling
-> of user mode helpers to separate functions that will be called by the
-> PM core as necessary.
-> 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+The implication of this is that once time_before() starts misbehaving
+any attempt from a NFS client to execute fcntl() will be received with a
+NLM_LCK_DENIED_GRACE_PERIOD message for 25 days (assuming HZ=1000). In
+other words, the 50 seconds grace period could turn into a grace period
+of 50 days or more.
 
-ACK.
+This patch corrects this behavior by implementing grace period with a
+(retriggerable) timer.
 
-> Index: linux-2.6/include/linux/kmod.h
-> ===================================================================
-> --- linux-2.6.orig/include/linux/kmod.h
-> +++ linux-2.6/include/linux/kmod.h
-> @@ -99,4 +99,9 @@ struct file;
->  extern int call_usermodehelper_pipe(char *path, char *argv[], char *envp[],
->  				    struct file **filp);
->  
-> +#ifdef CONFIG_PM_SLEEP
-> +extern int usermodehelper_disable(void);
-> +extern void usermodehelper_enable(void);
-> +#endif
+Note: This bug was analyzed independently by Oda-san <oda@valinux.co.jp>
+and myself.
 
-No #ifdef needed for prototypes?
+Signed-off-by: Nakano Hiroaki <nakano.hiroaki@oss.ntt.co.jp>
+---
 
+diff -Nrup linux-2.6.27-rc3/fs/lockd/svc.c b/fs/lockd/svc.c
+--- linux-2.6.27-rc3/fs/lockd/svc.c	2008-08-14 16:54:24.000000000 +0900
++++ b/fs/lockd/svc.c	2008-08-14 17:04:15.000000000 +0900
+@@ -53,6 +53,7 @@ static struct task_struct	*nlmsvc_task;
+ static struct svc_rqst		*nlmsvc_rqst;
+ int				nlmsvc_grace_period;
+ unsigned long			nlmsvc_timeout;
++static struct timer_list        nlm_period_timer;
 
->  #endif /* __LINUX_KMOD_H__ */
-> Index: linux-2.6/kernel/power/main.c
-> ===================================================================
-> --- linux-2.6.orig/kernel/power/main.c
-> +++ linux-2.6/kernel/power/main.c
-> @@ -21,6 +21,7 @@
->  #include <linux/freezer.h>
->  #include <linux/vmstat.h>
->  #include <linux/syscalls.h>
-> +#include <linux/kmod.h>
->  
->  #include "power.h"
->  
-> @@ -236,6 +237,10 @@ static int suspend_prepare(void)
->  	if (error)
->  		goto Finish;
->  
-> +	error = usermodehelper_disable();
-> +	if (error)
-> +		goto Finish;
-> +
->  	if (suspend_freeze_processes()) {
->  		error = -EAGAIN;
->  		goto Thaw;
+ /*
+  * These can be set at insmod time (useful for NFS as root filesystem),
+@@ -141,6 +142,12 @@ lockd(void *vrqstp)
 
-Could this be moved into suspend_freeze_processes? It is related
-(usermode helper is disabled when no userland), and you will not have
-to call it from 3 places...?
+ 	grace_period_expire = set_grace_period();
 
-						Pavel
++	init_timer(&nlm_period_timer);
++	nlm_period_timer.function = clear_grace_period;
++	nlm_period_timer.expires = grace_period_expire;
++
++	add_timer(&nlm_period_timer);
++
+ 	/*
+ 	 * The main request loop. We don't terminate until the last
+ 	 * NFS mount or NFS daemon has gone away.
+@@ -154,6 +161,7 @@ lockd(void *vrqstp)
+ 			if (nlmsvc_ops) {
+ 				nlmsvc_invalidate_all();
+ 				grace_period_expire = set_grace_period();
++				mod_timer(&nlm_period_timer, grace_period_expire);
+ 			}
+ 			continue;
+ 		}
+@@ -164,10 +172,8 @@ lockd(void *vrqstp)
+ 		 * (Theoretically, there shouldn't even be blocked locks
+ 		 * during grace period).
+ 		 */
+-		if (!nlmsvc_grace_period) {
++		if (!nlmsvc_grace_period)
+ 			timeout = nlmsvc_retry_blocked();
+-		} else if (time_before(grace_period_expire, jiffies))
+-			clear_grace_period();
+
+ 		/*
+ 		 * Find a socket with data available and call its
+@@ -195,6 +201,7 @@ lockd(void *vrqstp)
+ 		svc_process(rqstp);
+ 	}
+ 	flush_signals(current);
++	del_timer(&nlm_period_timer);
+ 	if (nlmsvc_ops)
+ 		nlmsvc_invalidate_all();
+ 	nlm_shutdown_hosts();
+
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+(NAKANO, Hiroaki) <nakano.hiroaki@oss.ntt.co.jp>
+
