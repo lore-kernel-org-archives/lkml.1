@@ -1,109 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757200AbYHNLIa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757297AbYHNLKu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757200AbYHNLIa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Aug 2008 07:08:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754167AbYHNLIW
+	id S1757297AbYHNLKu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Aug 2008 07:10:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754275AbYHNLKm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Aug 2008 07:08:22 -0400
-Received: from serv2.oss.ntt.co.jp ([222.151.198.100]:54200 "EHLO
-	serv2.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753493AbYHNLIU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Aug 2008 07:08:20 -0400
-Message-ID: <48A41220.8030203@oss.ntt.co.jp>
-Date: Thu, 14 Aug 2008 20:08:16 +0900
-From: NAKANO Hiroaki <nakano.hiroaki@oss.ntt.co.jp>
-User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
+	Thu, 14 Aug 2008 07:10:42 -0400
+Received: from minas.ics.muni.cz ([147.251.4.40]:46570 "EHLO minas.ics.muni.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753571AbYHNLKm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Aug 2008 07:10:42 -0400
+Date: Thu, 14 Aug 2008 13:10:22 +0200
+From: Lukas Hejtmanek <xhejtman@ics.muni.cz>
+To: Soeren Sandmann <sandmann@daimi.au.dk>
+Cc: linux-kernel@vger.kernel.org, mingo@redhat.com
+Subject: Re: sysprof in 2.6.27 kernel
+Message-ID: <20080814111022.GC4674@ics.muni.cz>
+References: <20080813083953.GF19333@ics.muni.cz> <ye8myjg7b4r.fsf@camel10.daimi.au.dk>
 MIME-Version: 1.0
-To: Trond.Myklebust@netapp.com
-CC: bfields@fieldses.org, neilb@suse.de, linux-nfs@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH]lockd: fix handling of grace period after long periods of
- inactivity
-Content-Type: text/plain; charset=ISO-2022-JP
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-2
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <ye8myjg7b4r.fsf@camel10.daimi.au.dk>
+X-echelon: NSA, CIA, CI5, MI5, FBI, KGB, BIS, Plutonium, Bin Laden, bomb
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Muni-Spam-TestIP: 147.251.54.96
+X-Muni-Envelope-From: xhejtman@anubis.ics.muni.cz
+X-Muni-Virus-Test: Clean
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (minas.ics.muni.cz [147.251.4.35]); Thu, 14 Aug 2008 13:10:24 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-lockd uses time_before() to determine whether the grace period has
-expired. This would seem to be enough to avoid timer wrap-around issues,
-but, unfortunately, that is not the case. The time_* family of
-comparison functions can be safely used to compare jiffies relatively
-close in time, but they stop working after approximately LONG_MAX/2
-ticks. nfsd can suffer this problem because the time_before() comparison
-in lockd() is not performed until the first request comes in, which
-means that if there is no lockd traffic for more than LONG_MAX/2 ticks
-we are screwed.
+On Thu, Aug 14, 2008 at 01:23:16AM +0200, Soeren Sandmann wrote:
+> It's somewhat rough still. If you try it out, I will be interested in
+> any feedback you have.
 
-The implication of this is that once time_before() starts misbehaving
-any attempt from a NFS client to execute fcntl() will be received with a
-NLM_LCK_DENIED_GRACE_PERIOD message for 25 days (assuming HZ=1000). In
-other words, the 50 seconds grace period could turn into a grace period
-of 50 days or more.
-
-This patch corrects this behavior by implementing grace period with a
-(retriggerable) timer.
-
-Note: This bug was analyzed independently by Oda-san <oda@valinux.co.jp>
-and myself.
-
-Signed-off-by: Nakano Hiroaki <nakano.hiroaki@oss.ntt.co.jp>
----
-
-diff -Nrup linux-2.6.27-rc3/fs/lockd/svc.c b/fs/lockd/svc.c
---- linux-2.6.27-rc3/fs/lockd/svc.c	2008-08-14 16:54:24.000000000 +0900
-+++ b/fs/lockd/svc.c	2008-08-14 17:04:15.000000000 +0900
-@@ -53,6 +53,7 @@ static struct task_struct	*nlmsvc_task;
- static struct svc_rqst		*nlmsvc_rqst;
- int				nlmsvc_grace_period;
- unsigned long			nlmsvc_timeout;
-+static struct timer_list        nlm_period_timer;
-
- /*
-  * These can be set at insmod time (useful for NFS as root filesystem),
-@@ -141,6 +142,12 @@ lockd(void *vrqstp)
-
- 	grace_period_expire = set_grace_period();
-
-+	init_timer(&nlm_period_timer);
-+	nlm_period_timer.function = clear_grace_period;
-+	nlm_period_timer.expires = grace_period_expire;
-+
-+	add_timer(&nlm_period_timer);
-+
- 	/*
- 	 * The main request loop. We don't terminate until the last
- 	 * NFS mount or NFS daemon has gone away.
-@@ -154,6 +161,7 @@ lockd(void *vrqstp)
- 			if (nlmsvc_ops) {
- 				nlmsvc_invalidate_all();
- 				grace_period_expire = set_grace_period();
-+				mod_timer(&nlm_period_timer, grace_period_expire);
- 			}
- 			continue;
- 		}
-@@ -164,10 +172,8 @@ lockd(void *vrqstp)
- 		 * (Theoretically, there shouldn't even be blocked locks
- 		 * during grace period).
- 		 */
--		if (!nlmsvc_grace_period) {
-+		if (!nlmsvc_grace_period)
- 			timeout = nlmsvc_retry_blocked();
--		} else if (time_before(grace_period_expire, jiffies))
--			clear_grace_period();
-
- 		/*
- 		 * Find a socket with data available and call its
-@@ -195,6 +201,7 @@ lockd(void *vrqstp)
- 		svc_process(rqstp);
- 	}
- 	flush_signals(current);
-+	del_timer(&nlm_period_timer);
- 	if (nlmsvc_ops)
- 		nlmsvc_invalidate_all();
- 	nlm_shutdown_hosts();
+another feedback. I got No map at all processes even at those I got debug info
+installed.
 
 -- 
-(NAKANO, Hiroaki) <nakano.hiroaki@oss.ntt.co.jp>
-
+Luká¹ Hejtmánek
