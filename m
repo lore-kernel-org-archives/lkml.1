@@ -1,68 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759674AbYHNR4b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759912AbYHNR5K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759674AbYHNR4b (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Aug 2008 13:56:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759242AbYHNRzh
+	id S1759912AbYHNR5K (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Aug 2008 13:57:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759438AbYHNRzr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Aug 2008 13:55:37 -0400
-Received: from outbound-sin.frontbridge.com ([207.46.51.80]:31805 "EHLO
-	SG2EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759162AbYHNRzg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Aug 2008 13:55:36 -0400
-X-BigFish: VPS4(zzzz10d3izzz32i43j61h)
-X-Spam-TCS-SCL: 0:0
-X-WSS-ID: 0K5LR46-03-ZTG-01
-From: Joerg Roedel <joerg.roedel@amd.com>
-To: mingo@redhat.com, tglx@linutronix.de, hpa@zytor.com
-CC: linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org,
-       Joerg Roedel <joerg.roedel@amd.com>
-Subject: [PATCH 4/4] AMD IOMMU: initialize dma_ops after sysfs registration
-Date: Thu, 14 Aug 2008 19:55:18 +0200
-Message-ID: <1218736518-25301-5-git-send-email-joerg.roedel@amd.com>
-X-Mailer: git-send-email 1.5.3.7
-In-Reply-To: <1218736518-25301-1-git-send-email-joerg.roedel@amd.com>
-References: <1218736518-25301-1-git-send-email-joerg.roedel@amd.com>
-X-OriginalArrivalTime: 14 Aug 2008 17:55:18.0645 (UTC) FILETIME=[E9EE3250:01C8FE36]
+	Thu, 14 Aug 2008 13:55:47 -0400
+Received: from orca.ele.uri.edu ([131.128.51.63]:55746 "EHLO orca.ele.uri.edu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759421AbYHNRzq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Aug 2008 13:55:46 -0400
+Date: Thu, 14 Aug 2008 13:55:32 -0400
+From: Will Simoneau <simoneau@ele.uri.edu>
+To: Tomas Winkler <tomasw@gmail.com>
+Cc: linux-wireless <linux-wireless@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       ipw3945-devel@lists.sourceforge.net, Zhu Yi <yi.zhu@intel.com>
+Subject: Re: [ANNOUNCE] Wifi Link 5300 and 5100 Series
+Message-ID: <20080814175532.GB30317@ele.uri.edu>
+References: <1ba2fa240808131411o638311f1m2e2daa6ef62057b1@mail.gmail.com> <20080814062604.GA16234@ele.uri.edu> <1ba2fa240808140515r92a3ec7i90ea6c03e2adb7ee@mail.gmail.com> <1ba2fa240808140603p3b4a47e4k4a0b98e5bf145b57@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="E/DnYTRukya0zdZ1"
+Content-Disposition: inline
+In-Reply-To: <1ba2fa240808140603p3b4a47e4k4a0b98e5bf145b57@mail.gmail.com>
+User-Agent: Mutt/1.5.16 [Linux 2.6.27-rc2-wl x86_64]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-If sysfs registration fails all memory used by IOMMU is freed. This happens
-after dma_ops initialization and the functions will access the freed memory
-then. Fix this by initializing dma_ops after the sysfs registration.
 
-Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
----
- arch/x86/kernel/amd_iommu_init.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
+--E/DnYTRukya0zdZ1
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-diff --git a/arch/x86/kernel/amd_iommu_init.c b/arch/x86/kernel/amd_iommu_init.c
-index ceba338..a69cc0f 100644
---- a/arch/x86/kernel/amd_iommu_init.c
-+++ b/arch/x86/kernel/amd_iommu_init.c
-@@ -972,15 +972,15 @@ int __init amd_iommu_init(void)
- 	if (acpi_table_parse("IVRS", init_memory_definitions) != 0)
- 		goto free;
- 
--	ret = amd_iommu_init_dma_ops();
-+	ret = sysdev_class_register(&amd_iommu_sysdev_class);
- 	if (ret)
- 		goto free;
- 
--	ret = sysdev_class_register(&amd_iommu_sysdev_class);
-+	ret = sysdev_register(&device_amd_iommu);
- 	if (ret)
- 		goto free;
- 
--	ret = sysdev_register(&device_amd_iommu);
-+	ret = amd_iommu_init_dma_ops();
- 	if (ret)
- 		goto free;
- 
--- 
-1.5.3.7
+On 16:03 Thu 14 Aug     , Tomas Winkler wrote:
+> On Thu, Aug 14, 2008 at 3:15 PM, Tomas Winkler <tomasw@gmail.com> wrote:
+> > On Thu, Aug 14, 2008 at 9:26 AM, Will Simoneau <simoneau@ele.uri.edu> w=
+rote:
+> >> On 00:11 Thu 14 Aug     , Tomas Winkler wrote:
+> >>> Intel would like to announce Linux support  for Wifi Link 5000 and
+> >>> 5100 Series Adapters under iwlwifi driver (iwlagn.ko)
+> >>>
+> >> ...
+> >>> The best known working driver can be located in iwl500 branch of
+> >>> iwlwifi-2.6.git
+> >>> git://git.kernel.org/pub/scm/linux/kernel/git/iwlwifi/iwlwifi-2.6.git=
+ iwl5000
+> >>
+> >> This is great news to me - my new Sager laptop has a 5300 card. Howeve=
+r,
+> >> it doesn't seem to work:
+> >>
+>=20
+> Can you send me the exact laptop type?
+> Thanks
 
+It's a Sager NP5796 (Clevo M570TU).
 
+--E/DnYTRukya0zdZ1
+Content-Type: application/pgp-signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+
+iEYEARECAAYFAkikcZQACgkQLYBaX8VDLLVP0ACfd/yB4xwDCI4CRYn7pNrkqSYd
+i8YAn2/0Axw1PzkBfv6YkkETEvNsuKdx
+=CbyG
+-----END PGP SIGNATURE-----
+
+--E/DnYTRukya0zdZ1--
