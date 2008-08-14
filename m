@@ -1,98 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754414AbYHNOAA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759575AbYHNOBA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754414AbYHNOAA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Aug 2008 10:00:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756332AbYHNN7q
+	id S1759575AbYHNOBA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Aug 2008 10:01:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754874AbYHNOAv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Aug 2008 09:59:46 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:40508 "EHLO
-	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751272AbYHNN7p (ORCPT
+	Thu, 14 Aug 2008 10:00:51 -0400
+Received: from casper.infradead.org ([85.118.1.10]:43487 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753999AbYHNOAu convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Aug 2008 09:59:45 -0400
-Date: Thu, 14 Aug 2008 15:08:12 +0200
-From: Pavel Machek <pavel@suse.cz>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: kernel list <linux-kernel@vger.kernel.org>,
-       Linux-pm mailing list <linux-pm@lists.osdl.org>,
-       James.Bottomley@HansenPartnership.com, teheo@novell.com,
-       oneukum@suse.de
-Subject: Re: Power management for SCSI
-Message-ID: <20080814130812.GC2262@elf.ucw.cz>
-References: <20080813095055.GA475@elf.ucw.cz> <Pine.LNX.4.44L0.0808131026320.2455-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.0808131026320.2455-100000@iolanthe.rowland.org>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Thu, 14 Aug 2008 10:00:50 -0400
+Date: Thu, 14 Aug 2008 07:00:55 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Mark Langsdorf <mark.langsdorf@amd.com>
+Cc: "Ingo Molnar" <mingo@elte.hu>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
+       "Thomas Gleixner" <tglx@linutronix.de>
+Subject: Re: [PATCH](retry 3) invalidate caches before going into suspend
+Message-ID: <20080814070055.0a47393d@infradead.org>
+In-Reply-To: <200808140845.05160.mark.langsdorf@amd.com>
+References: <200808131141.18003.mark.langsdorf@amd.com>
+	<6453C3CB8E2B3646B0D020C112613273C5AC6B@sausexmb4.amd.com>
+	<20080813143206.07550498@infradead.org>
+	<200808140845.05160.mark.langsdorf@amd.com>
+Organization: Intel
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Thu, 14 Aug 2008 08:45:04 -0500
+Mark Langsdorf <mark.langsdorf@amd.com> wrote:
 
-> > Add support for autosuspend/autoresume. Lowlevel driver can use it to
-> > spin the disk down and power down its SATA link, to turn off the USB
-> > interface, etc.
-> > 
-> > Spinning down the disk is useful - saves ~0.5W here. Powering down
-> > SATA controller is even better -- should save ~1W.
-> > 
-> > Now, I guess the patch will need to be split to small pieces for
-> > merge... I tried to rearrange it so that the documentation and hooks
-> > go before stuff that needs the hooks, and before Kconfig enabler. If
-> > it looks reasonably good, I'll split it into smaller pieces.
+> When a CPU core is shut down, all of its caches need to be flushed
+> to prevent stale data from causing errors if the core is resumed.
+> Current Linux suspend code performs an assignment after the flush,
+> which can add dirty data back to the cache.  On some AMD platforms,
+> additional speculative reads have caused crashes on resume because
+> of this dirty data.
 > 
-> James had a number of objections to my original patch; you can read 
-> them here:
-> 
-> https://lists.linux-foundation.org/pipermail/linux-pm/2008-March/016849.html
-> 
-> I haven't had time yet to work on an improved version.
+> Relocate the cache flush to be the very last thing done before 
+> halting.  Tie into an assembly line so the compile will not
+> reorder it.  Add some documentation explaining what is going
+> on and why we're doing this.
 
-Ok, I see, "its done at the wrong level" sounds pretty serious.
 
-First the general comments/questions:
+looks good to me
 
-#
-#1. It's done at the wrong level: suspend "device" is actually a target
-#function.  There's no way on a multi-lun device we want to keep the
-#flags and last_busy anywhere but in the target
+Acked-by: Arjan van de Ven <arjan@linux.intel.com>
 
-So... if there's one device with Lun0==cdrom1 and Lun1==cdrom2, it is a
-single target, and we want to keep flags/last busy common to all that?
-
-What is good data structure to add? I see scsi_tgt*.h, but it is very
-short, and there does not seem to be good structure to hook into.
-
-#2. As you say in the comment, the thing we're trying to power down is
-#the link.  In most SCSI implementations, the link has a rather complex
-#relationship to the target, what we want to do in
-#periodic_autosuspend_scan() is run over the devices on each link, and
-#if
-#they're not busy suspend the link?  What's probably needed is a set of
-#adjunct helpers for the transport classes to do this.
-
-So the host suspend/resume stuff should go into struct
-scsi_transport_template?
-
-#3. The link power down is much faster than device spin down ... in
-#your
-#patch these two things seem to be coupled ... we really need to keep
-#them separate.
-#
-
-ACK.
-
-#4. The entanglement with error handling is incredibly problematic
-#(since
-#eh is a nastily complex state machine in its own right).  What do
-#transports that use eh_strategy_handler do about all of this?
-
-/me scared...
-								Pavel
 
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+If you want to reach me at my work email, use arjan@linux.intel.com
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
