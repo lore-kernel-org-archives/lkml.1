@@ -1,104 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757424AbYHNATz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754689AbYHNAU3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757424AbYHNATz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Aug 2008 20:19:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754275AbYHNATq
+	id S1754689AbYHNAU3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Aug 2008 20:20:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753564AbYHNAUL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Aug 2008 20:19:46 -0400
-Received: from ipmail05.adl2.internode.on.net ([203.16.214.145]:29374 "EHLO
-	ipmail05.adl2.internode.on.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754249AbYHNATp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Aug 2008 20:19:45 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AiADAOQVo0h5LAMbiGdsb2JhbACRcwEBAQ8gpHmBVQ
-X-IronPort-AV: E=Sophos;i="4.32,204,1217773800"; 
-   d="scan'208";a="181591993"
-Date: Thu, 14 Aug 2008 10:19:38 +1000
-From: Dave Chinner <david@fromorbit.com>
-To: Daniel Walker <dwalker@mvista.com>
-Cc: xfs@oss.sgi.com, linux-kernel@vger.kernel.org, matthew@wil.cx
-Subject: Re: [PATCH 4/6] Replace inode flush semaphore with a completion
-Message-ID: <20080814001938.GC6119@disturbed>
-Mail-Followup-To: Daniel Walker <dwalker@mvista.com>, xfs@oss.sgi.com,
-	linux-kernel@vger.kernel.org, matthew@wil.cx
-References: <1214556284-4160-1-git-send-email-david@fromorbit.com> <1214556284-4160-5-git-send-email-david@fromorbit.com> <1218597077.6166.15.camel@dhcp32.mvista.com> <20080813075057.GZ6119@disturbed> <1218641641.6166.32.camel@dhcp32.mvista.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1218641641.6166.32.camel@dhcp32.mvista.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 13 Aug 2008 20:20:11 -0400
+Received: from main.gmane.org ([80.91.229.2]:36010 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754139AbYHNAUJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Aug 2008 20:20:09 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: 7v5w7go9ub0o <7v5w7go9ub0o@gmail.com>
+Subject: Re: TALPA - a threat model?  well sorta.
+Date: Wed, 13 Aug 2008 20:14:06 -0400
+Message-ID: <g7vtch$8v2$1@ger.gmane.org>
+References: <1218645375.3540.71.camel@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: uugg.de
+User-Agent: Thunderbird 2.0.0.16 (X11/20080707)
+In-Reply-To: <1218645375.3540.71.camel@localhost.localdomain>
+Cc: malware-list@lists.printk.net
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 13, 2008 at 08:34:01AM -0700, Daniel Walker wrote:
-> On Wed, 2008-08-13 at 17:50 +1000, Dave Chinner wrote:
-> 
-> > Right now we have the case where no matter what type of flush
-> > is done, the caller does not have to worry about unlocking
-> > the flush lock - it will be done as part of the flush. You're
-> > suggestion makes that conditional based on whether we did a
-> > sync flush or not.
-> > 
-> > So, what happenѕ when you call:
-> > 
-> > xfs_iflush(ip, XFS_IFLUSH_DELWRI_ELSE_SYNC);
-> > 
-> > i.e. xfs_iflush() may do an delayed flush or a sync flush depending
-> > on the current state of the inode. The caller has no idea what type
-> > of flush was done, so will have no idea whether to unlock or not.
-> 
-> You wouldn't base the unlock on what iflush does, you would
-> unconditionally unlock.
+(this was posted in linux.kernel, before I realized there was a 
+linux.kernel.malware.    Hope it helps your discussion)
 
-It's not really a flush lock at that point - it's a state lock.
-We've already got one of those, and a set of state flags that it
-protects.
+(FYI. Dazuko may have trailblazed some of the issues now under
+discussion re: libmalware.so. It has worked well for me. It used to be
+an LKM, it is now a source patch. It is used in a number of commercial
+products)
 
-Basically you're suggesting that we keep external state to the
-completion that tracks whether a completion is in progress
-or not. You can't use a mutex like you suggested to protect
-state because you can't hold it while doing a wait_for_completion()
-and then use it to clear the state flag before calling complete().
-We can use the internal inode state flags and lock to keep
-track of this. i.e:
 
-xfs_iflock(
-	xfs_inode_t	*ip)
-{
-	xfs_iflags_set(ip, XFS_IFLUSH_INPROGRESS);
-	wait_for_completion(ip->i_flush_wq);
-}
+<http://dazuko.dnsalias.org/wiki/index.php/Main_Page>
 
-xfs_iflock_nowait(
-	xfs_inode_t	*ip)
-{
-	if (xfs_iflags_test(ip, XFS_IFLUSH_INPROGRESS))
-		return 1;
-	xfs_iflags_set(ip, XFS_IFLUSH_INPROGRESS);
-	wait_for_completion(ip->i_flush_wq);
-	return 0;
-}
+"A Virtual Device Driver to Allow Online File Access Control
 
-xfs_ifunlock(
-	xfs_inode_t	*ip)
-{
-	xfs_iflags_clear(ip, XFS_IFLUSH_INPROGRESS);
-	complete(ip->i_flush_wq);
-}
+A common interface is needed, which allows userland applications to
+perform online file access control. Dazuko aims to provide that interface."
 
-*However*, given that we already have this exact state in the
-completion itself, I see little reason for adding the additional
-locking overhead and the complexity of race conditions of keeping
-this state coherent with the completion. Modifying the completion
-API slightly to export this state is the simplest, easiest solution
-to the problem....
+FWIW, I'm not associated with Dazuko or Antivir; I've been happily using
+Dazuko with AntiVir for a year or so.
 
-Cheers,
+1. AntiVir includes numerous Linux signatures as well as Windows. So I
+scan both 'ix downloads, as well as the process of compiling new software.
 
-Dave.
--- 
-Dave Chinner
-david@fromorbit.com
+2. Other AntiMalwares are using Dazuko, though many are scanning for
+Windows malware only.
+
+3. The AntiVir/Dazuko combination with full heuristics has blocked
+access to clearly dangerous JS scripts in my browser cache.
+
+4. IMHO, what is needed is a Dazuko or libmalware/Integrity database
+link. If an md5 of an executable or script is new or has changed, access
+is blocked 'til a response to a popup is given. Access can be blocked;
+one-time allowed; or permanently allowed, in which case the md5 is updated.
+
+Hope This Helps.
+
+<next msg>
+
+
+Andi Kleen wrote:
+ > 7v5w7go9ub0o <7v5w7go9ub0o@gmail.com> writes:
+ >
+ >> (FYI. Dazuko may have trailblazed some of the issues now under
+ >> discussion re: libmalware.so. It has worked well for me.
+ >
+ > Against what exactly did it protect you? Please give a concrete example.
+ >
+ > -Andi
+ >
+
+1. This came in a few minutes ago:
+
+Aug 13 14:56:31 tux antivir[6381]: AntiVir ALERT: [EML/FakeLink.F]
+/jail/tbird/root/.thunderbird/0r2957kg.default/Mail/L
+ocal Folders/Junk.XXX <<< Contains detection pattern of EML/FakeLink.F
+in EML form
+
+2. I have not retained the logs of "suspicious scripts" in my browser,
+but have come across perhaps 4 blocked scripts within the last month.
+Admittedly at dodgy sites.
+
+XSS attacks are platform independent, and are a significant concern.
+
+
+Please note that when I say it has worked well for me, I am not saying
+that it has saved my bacon! :-)
+
+1. I am referring to the mechanics of having the Kernel/userland app
+stop processing when it finds a malware signature or heuristic detection.
+
+2. Am also referring to the totally manageable (IMHO) overhead.
+
+I've mentioned my experience with Dazuko/antivir only because it may be
+useful to the ongoing discussion about the nature of libmalware.so.
+
+3. I am frankly waiting for a bug to get into my upstream distribution
+chain - through a hijacking or some wonderful DNS prank - at which point
+I ..hope.. a signature or heuristic will block my root-enabled make install.
+
+4. Again, my hope for libmalware.so/dazuko is a realtime
+integrity-management link.
+
+<end posts>
+
+HTH
+
+p.s. The question has developed, should this monitor root activities. 
+IMHO, the answer is a definite YES!  We are most vulnerable during 
+software updating; AntiMailware signatures may stop the compilation or 
+installation of a Trojan - by root.
+
+
+
+
+
+
