@@ -1,39 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759837AbYHNToT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760242AbYHNToy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759837AbYHNToT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Aug 2008 15:44:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753676AbYHNToK
+	id S1760242AbYHNToy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Aug 2008 15:44:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753299AbYHNToq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Aug 2008 15:44:10 -0400
-Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:51359 "EHLO
-	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753324AbYHNToJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Aug 2008 15:44:09 -0400
-Date: Thu, 14 Aug 2008 15:44:08 -0400
-To: Ryan Hope <rmh3093@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Help writing kernel module...
-Message-ID: <20080814194408.GH12474@csclub.uwaterloo.ca>
-References: <48f7fe350808141100h3f368a53kb371e4cefea3e70@mail.gmail.com> <20080814180207.GC12476@csclub.uwaterloo.ca> <48f7fe350808141201y24669c8foee0bea867fe612b3@mail.gmail.com>
+	Thu, 14 Aug 2008 15:44:46 -0400
+Received: from kirk.serum.com.pl ([213.77.9.205]:61996 "EHLO serum.com.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752566AbYHNTop (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Aug 2008 15:44:45 -0400
+Date: Thu, 14 Aug 2008 20:44:06 +0100 (BST)
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+To: Cyrill Gorcunov <gorcunov@gmail.com>
+cc: mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com, yhlu.kernel@gmail.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 8/8] x86: apic - unify init_bsp_APIC
+In-Reply-To: <20080814184652.475361864@gmail.com>
+Message-ID: <Pine.LNX.4.55.0808142043150.7213@cliff.in.clinika.pl>
+References: <20080814183428.550709025@gmail.com> <20080814184652.475361864@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <48f7fe350808141201y24669c8foee0bea867fe612b3@mail.gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 14, 2008 at 03:01:56PM -0400, Ryan Hope wrote:
-> what about if I want to determine if a module is loaded?
+On Thu, 1 Jan 1970, Cyrill Gorcunov wrote:
 
-Don't know.  Of course really why would you care if a module of a
-certain name is loaded.  You should only care that a module providing
-the function you want is loaded.
+> @@ -962,7 +962,8 @@ void __init init_bsp_APIC(void)
+>  	 */
+>  	apic_write(APIC_LVT0, APIC_DM_EXTINT);
+>  	value = APIC_DM_NMI;
+> -	if (!lapic_is_integrated())		/* 82489DX */
+> +	/* discrete on 82489DX */
+> +	if (!lapic_is_integrated())
+>  		value |= APIC_LVT_LEVEL_TRIGGER;
+>  	apic_write(APIC_LVT1, value);
+>  }
 
-Perhaps you need to explain what you are trying to do.
+ Please elaborate.
 
--- 
-Len Sorensen
+  Maciej
