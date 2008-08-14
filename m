@@ -1,73 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758225AbYHNMjw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754369AbYHNMrV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758225AbYHNMjw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Aug 2008 08:39:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752923AbYHNMjo
+	id S1754369AbYHNMrV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Aug 2008 08:47:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753656AbYHNMrN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Aug 2008 08:39:44 -0400
-Received: from server.drzeus.cx ([85.8.24.28]:52938 "EHLO smtp.drzeus.cx"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752478AbYHNMjo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Aug 2008 08:39:44 -0400
-Date: Thu, 14 Aug 2008 14:39:35 +0200
-From: Pierre Ossman <drzeus-list@drzeus.cx>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Alex Dubov <oakad@yahoo.com>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: can block drivers get non-fs requests?
-Message-ID: <20080814143935.7033631e@mjolnir.drzeus.cx>
-In-Reply-To: <20080814114209.GB20055@kernel.dk>
-References: <20080814133810.746751cf@mjolnir.drzeus.cx>
-	<20080814114209.GB20055@kernel.dk>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.13.6; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=PGP-SHA1; boundary="=_freyr.drzeus.cx-24950-1218717582-0001-2"
+	Thu, 14 Aug 2008 08:47:13 -0400
+Received: from extu-mxob-1.symantec.com ([216.10.194.28]:36360 "EHLO
+	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753240AbYHNMrM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Aug 2008 08:47:12 -0400
+Date: Thu, 14 Aug 2008 13:47:17 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.site
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+cc: Nick Piggin <npiggin@suse.de>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [rfc][patch] mm: dirty page accounting race fix
+In-Reply-To: <1218716318.10800.209.camel@twins>
+Message-ID: <Pine.LNX.4.64.0808141328090.11013@blonde.site>
+References: <20080814094537.GA741@wotan.suse.de>  <Pine.LNX.4.64.0808141210200.4398@blonde.site>
+ <1218716318.10800.209.camel@twins>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
+On Thu, 14 Aug 2008, Peter Zijlstra wrote:
+> On Thu, 2008-08-14 at 12:55 +0100, Hugh Dickins wrote:
+> 
+> > But I got a bit distracted: mprotect's change_pte_range is
+> > traditionally where the pte_modify operation has been split up into
+> > stages on some arches, that really can be restricting permissions
+> > and needs to tread carefully.  Now I go to look there, I see its
+> > 		/*
+> > 		 * Avoid taking write faults for pages we know to be
+> > 		 * dirty.
+> > 		 */
+> > 		if (dirty_accountable && pte_dirty(ptent))
+> > 			ptent = pte_mkwrite(ptent);
+> > 
+> > and get rather worried: isn't that likely to be giving write permission
+> > to a pte in a vma we are precisely taking write permission away from?
+> 
+> Exactly, we do that because the page is already dirty, therefore we do
+> not need to trap on write to mark it dirty - at least, that was the idea
+> behind this optimization.
 
---=_freyr.drzeus.cx-24950-1218717582-0001-2
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+I realized that was the intended optimization, what I'd missed is that
+dirty_accountable can only be true there if (vma->vm_flags & VM_WRITE):
+that's checked in vma_wants_writenotify(), which is how dirty_accountable
+gets to be set.
 
-On Thu, 14 Aug 2008 13:42:09 +0200
-Jens Axboe <jens.axboe@oracle.com> wrote:
+So those lines are okay, panic over, phew.
 
->=20
-> You should check in the driver whether the request type is supported. So
-> if you can only handle fs requests, you should do a check for
-> !blk_fs_request() after elv_next_request() and call
-> end_(de)queued_request() appropriately.
->=20
-
-So killing off the request with -EOPNOTSUPP is preferred over having a
-prepare function and stopping it there?
-
-Rgds
---=20
-     -- Pierre Ossman
-
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  rdesktop, core developer          http://www.rdesktop.org
-
-  WARNING: This correspondence is being monitored by the
-  Swedish government. Make sure your server uses encryption
-  for SMTP traffic and consider using PGP for end-to-end
-  encryption.
-
---=_freyr.drzeus.cx-24950-1218717582-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-
-iEYEARECAAYFAkikJ4wACgkQ7b8eESbyJLgILACdG7TKmip+do3TKfQkJULydUYk
-7DUAnjOhcLXaWJ0CpweB5WO6V78N30NB
-=EKTL
------END PGP SIGNATURE-----
-
---=_freyr.drzeus.cx-24950-1218717582-0001-2--
+Hugh
