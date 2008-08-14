@@ -1,40 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758246AbYHNGp2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758403AbYHNGo5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758246AbYHNGp2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Aug 2008 02:45:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755387AbYHNGig
+	id S1758403AbYHNGo5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Aug 2008 02:44:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755355AbYHNGif
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Aug 2008 02:38:36 -0400
-Received: from 166-70-238-42.ip.xmission.com ([166.70.238.42]:38162 "EHLO
+	Thu, 14 Aug 2008 02:38:35 -0400
+Received: from 166-70-238-42.ip.xmission.com ([166.70.238.42]:38161 "EHLO
 	ns1.wolfmountaingroup.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752499AbYHNGiE (ORCPT
+	with ESMTP id S1752471AbYHNGiC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Aug 2008 02:38:04 -0400
+	Thu, 14 Aug 2008 02:38:02 -0400
 Date: Thu, 14 Aug 2008 00:14:38 -0600
 From: jmerkey@wolfmountaingroup.com
-Message-Id: <200808140614.m7E6EcU5006265@wolfmountaingroup.com>
+Message-Id: <200808140614.m7E6EcPp006263@wolfmountaingroup.com>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 2.6.27-rc3 27/29] mdb: export the clocksource nmi watchdog 
+Subject: [PATCH 2.6.27-rc3 25/29] mdb: add a notify_die handler to panic.c
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-export the clocksource nmi watchdog for the module based kernel debugger.
-This function is called to prevent watchdog events while the debugger 
-has processors in suspended states during active debugging sessions.
+add a notify_die handler to hook the panic entry point prior to 
+Linux "execve"-ing another kernel for crash analysis.
 
 
 Signed-off-by: Jeffrey Vernon Merkey (jmerkey@wolfmountaingroup.com)
 
---- a/kernel/time/clocksource.c	2008-08-13 14:22:32.000000000 -0600
-+++ b/kernel/time/clocksource.c	2008-08-13 11:56:03.000000000 -0600
-@@ -242,6 +242,9 @@
- {
- 	clocksource_resume_watchdog();
- }
-+#if defined(CONFIG_MDB_MODULE)
-+EXPORT_SYMBOL_GPL(clocksource_touch_watchdog);
-+#endif
+--- a/kernel/panic.c	2008-08-13 14:22:32.000000000 -0600
++++ b/kernel/panic.c	2008-08-13 11:56:03.000000000 -0600
+@@ -21,6 +21,8 @@
+ #include <linux/debug_locks.h>
+ #include <linux/random.h>
+ #include <linux/kallsyms.h>
++#include <linux/kdebug.h>
++
  
- /**
-  * clocksource_get_next - Returns the selected clocksource
+ int panic_on_oops;
+ int tainted;
+@@ -82,6 +84,13 @@
+ 	printk(KERN_EMERG "Kernel panic - not syncing: %s\n",buf);
+ 	bust_spinlocks(0);
+ 
++        /* call the notify_die handler for any resident debuggers which
++        * may be active and pass the message string.   On a software
++        * fault return at least some sort of regs for a remote debugger
++        * to look at.
++        */
++	notify_die(DIE_PANIC, buf, get_irq_regs(), 0, 0, 0);
++
+ 	/*
+ 	 * If we have crashed and we have a crash kernel loaded let it handle
+ 	 * everything else.
