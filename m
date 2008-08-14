@@ -1,88 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754535AbYHNXfI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754106AbYHNXlQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754535AbYHNXfI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Aug 2008 19:35:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751272AbYHNXe4
+	id S1754106AbYHNXlQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Aug 2008 19:41:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751900AbYHNXlE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Aug 2008 19:34:56 -0400
-Received: from www.church-of-our-saviour.org ([69.25.196.31]:55578 "EHLO
-	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750875AbYHNXez (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Aug 2008 19:34:55 -0400
-Date: Thu, 14 Aug 2008 19:34:30 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: "J. Bruce Fields" <bfields@fieldses.org>
-Cc: Christoph Hellwig <hch@infradead.org>, Eric Paris <eparis@redhat.com>,
-       tvrtko.ursulin@sophos.com, alan@lxorguk.ukuu.org.uk,
-       andi@firstfloor.org, Arjan van de Ven <arjan@infradead.org>,
-       linux-kernel@vger.kernel.org, malware-list@lists.printk.net,
-       malware-list-bounces@dmesg.printk.net, peterz@infradead.org,
-       viro@ZenIV.linux.org.uk
-Subject: Re: [malware-list] TALPA - a threat model?  well sorta.
-Message-ID: <20080814233430.GC13048@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	"J. Bruce Fields" <bfields@fieldses.org>,
-	Christoph Hellwig <hch@infradead.org>,
-	Eric Paris <eparis@redhat.com>, tvrtko.ursulin@sophos.com,
-	alan@lxorguk.ukuu.org.uk, andi@firstfloor.org,
-	Arjan van de Ven <arjan@infradead.org>,
-	linux-kernel@vger.kernel.org, malware-list@lists.printk.net,
-	malware-list-bounces@dmesg.printk.net, peterz@infradead.org,
-	viro@ZenIV.linux.org.uk
-References: <20080814093103.6CD102FE8B4@pmx1.sophos.com> <20080814132455.GE6469@mit.edu> <1218721713.3540.125.camel@localhost.localdomain> <20080814155028.GB8256@mit.edu> <1218734985.9375.5.camel@paris.rdu.redhat.com> <20080814191726.GG22488@mit.edu> <20080814193408.GA10236@infradead.org> <20080814194111.GH22488@mit.edu> <20080814202039.GA4509@infradead.org> <20080814212109.GM23859@fieldses.org>
+	Thu, 14 Aug 2008 19:41:04 -0400
+Received: from saeurebad.de ([85.214.36.134]:46712 "EHLO saeurebad.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751832AbYHNXlC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Aug 2008 19:41:02 -0400
+From: Johannes Weiner <hannes@saeurebad.de>
+To: Mikulas Patocka <mpatocka@redhat.com>
+Cc: David Miller <davem@davemloft.net>, sparclinux@vger.kernel.org,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       torvalds@linux-foundation.org
+Subject: Re: Bootmem allocator broken
+References: <Pine.LNX.4.64.0808122053280.31704@hs20-bc2-1.build.redhat.com>
+	<20080812.184052.193693538.davem@davemloft.net>
+	<Pine.LNX.4.64.0808130845290.8416@hs20-bc2-1.build.redhat.com>
+	<20080813.202559.193705172.davem@davemloft.net>
+	<Pine.LNX.4.64.0808141855500.15262@hs20-bc2-1.build.redhat.com>
+Date: Fri, 15 Aug 2008 01:40:38 +0200
+In-Reply-To: <Pine.LNX.4.64.0808141855500.15262@hs20-bc2-1.build.redhat.com>
+	(Mikulas Patocka's message of "Thu, 14 Aug 2008 19:11:19 -0400 (EDT)")
+Message-ID: <8763q3xj0p.fsf@skyscraper.fehenstaub.lan>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080814212109.GM23859@fieldses.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 14, 2008 at 05:21:09PM -0400, J. Bruce Fields wrote:
-> > I have not yet seen code actually using it at all, neither in mainline
-> > nor on one of the many nfs development lists.
-> 
-> Oops, I'd love to, and it should be very easy.  How do I find out if
-> i_version is supported on a given superblock?
+Hi Mikulas,
 
-We don't have a way of exporting this fact at the moment.  I assume
-the best way would be to add a flag in struct super.
+Mikulas Patocka <mpatocka@redhat.com> writes:
 
-> There's nothing particularly "advanced" about this, by the way--this is
-> a very minor variation on the caching model that nfs has always had, and
-> our nfsv4 server is currently pretty broken without it.
+> Examining the problem further, it turned out that Johannes Weiner 
+> committed new bootmem allocator to 2.6.27-rc1 and the allocator is broken.
+>
+> This is the minimal sequence that jams the allocator:
+>
+> void *p, *q, *r;
+> p = alloc_bootmem(PAGE_SIZE);
+> q = alloc_bootmem(64);
+> free_bootmem(p, PAGE_SIZE);
+> p = alloc_bootmem(PAGE_SIZE);
+> r = alloc_bootmem(64);
+>
+> --- after this sequence (assuming that the allocator was empty or 
+> page-aligned before), pointer "q" will be equal to pointer "r".
+>
+> What's hapenning inside the allocator:
+> p = alloc_bootmem(PAGE_SIZE);
+> in allocator: last_end_off == PAGE_SIZE, bitmap contains bits 10000...
+> q = alloc_bootmem(64);
+> in allocator: last_end_off == PAGE_SIZE + 64, bitmap contains 11000...
+> free_bootmem(p, PAGE_SIZE);
+> in allocator: last_end_off == PAGE_SIZE + 64, bitmap contains 01000...
+> p = alloc_bootmem(PAGE_SIZE);
+> in allocator: last_end_off == PAGE_SIZE, bitmap contains 11000...
+> r = alloc_bootmem(64);
+> and now:
+> it finds bit "2", as a place where to allocate (sidx)
+> it hits the condition
+> if (bdata->last_end_off && PFN_DOWN(bdata->last_end_off) + 1 == sidx))
+> start_off = ALIGN(bdata->last_end_off, align);
+> --- you can see that the condition is true, so it assigns start_off = 
+> ALIGN(bdata->last_end_off, align); --- that is PAGE_SIZE --- and allocates 
+> over already allocated block.
+>
+> This patch fixes it (kernels 2.6.27-rc2 and 2.6.27-rc3 boot ok after the 
+> patch). Johannes, please review the patch and submit it to Linus.
+>
+> With the patch it tries to continue at the end of previous allocation only 
+> if the previous allocation ended in the middle of the page.
 
-Well, if you're willing to try it out, as I've mentioned on my
-blog[1][2], ext4 is working pretty well on my laptop --- I'm running
-it as my primary filesystem.  There are a few problems with ext3
-filesystems converted to use ext4, as opposed to starting afresh via
-"mke2fs -t ext4dev /dev/hdXX" that we've just found in the past week
-(and fixed within a day or two, although they haven't been pushed to
-Linus yet), but overall, it's been pretty stable.
+Yes, taking last_end_off into account when it's page-aligned is bogus as
+the whole merging thing is about partial pages.
 
-So this would be a good time for someone who is familiar wiht NFSv4 to
-try it out and let us know if the i_version support is as you would
-like in ext4 --- we're in the bugfixing/stablization phase right now,
-so this would be an ideal time to get that feedback.  For more
-information, on how to get started, please see:
+Cool spot and nice fix!
 
-http://ext4.wiki.kernel.org/index.php/Ext4_Howto
+> Signed-off-by: Mikulas Patocka <mpatocka@redhat.com>
 
-for instructions, and mount the filesystem with the "-o i_version"
-mount option.
+Acked-by: Johannes Weiner <hannes@saeurebad.de>
 
-> Actually, it's pretty broken even on nfsv2/v3 for filesystems with poor
-> time resolution.
+	Hannes
 
-And that's fixed in ext4 as well....
-
-						- Ted
-
-[1] http://thunk.org/tytso/blog/2008/06/30/ext4-is-now-the-primary-filesystem-on-my-laptop/
-[2] http://thunk.org/tytso/blog/2008/08/08/fast-ext4-fsck-times/
-
+> ---
+>  mm/bootmem.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> Index: linux-2.6.27-rc2-orig/mm/bootmem.c
+> ===================================================================
+> --- linux-2.6.27-rc2-orig.orig/mm/bootmem.c	2008-08-15 00:10:38.000000000 +0200
+> +++ linux-2.6.27-rc2-orig/mm/bootmem.c	2008-08-15 00:10:53.000000000 +0200
+> @@ -473,7 +473,7 @@ find_block:
+>  				goto find_block;
+>  			}
+>  
+> -		if (bdata->last_end_off &&
+> +		if (bdata->last_end_off & (PAGE_SIZE - 1) &&
+>  				PFN_DOWN(bdata->last_end_off) + 1 == sidx)
+>  			start_off = ALIGN(bdata->last_end_off, align);
+>  		else
