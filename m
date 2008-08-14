@@ -1,60 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754581AbYHOABU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755305AbYHOAD4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754581AbYHOABU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Aug 2008 20:01:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751424AbYHOABM
+	id S1755305AbYHOAD4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Aug 2008 20:03:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751654AbYHOADs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Aug 2008 20:01:12 -0400
-Received: from extu-mxob-2.symantec.com ([216.10.194.135]:59801 "EHLO
-	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751379AbYHOABL (ORCPT
+	Thu, 14 Aug 2008 20:03:48 -0400
+Received: from out02.mta.xmission.com ([166.70.13.232]:56330 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751490AbYHOADr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Aug 2008 20:01:11 -0400
-Date: Fri, 15 Aug 2008 01:00:54 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.site
-To: Johannes Weiner <hannes@saeurebad.de>
-cc: Jeremy Fitzhardinge <jeremy@goop.org>, Ian Campbell <ijc@hellion.org.uk>,
-       linux-kernel@vger.kernel.org, Kel Modderman <kel@otaku42.de>,
-       Markus Armbruster <armbru@redhat.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: kernel BUG at lib/radix-tree.c:473!
-In-Reply-To: <871w0r5gw8.fsf@skyscraper.fehenstaub.lan>
-Message-ID: <Pine.LNX.4.64.0808150049110.17216@blonde.site>
-References: <1218697362.26014.9.camel@localhost.localdomain>
- <Pine.LNX.4.64.0808141347480.11013@blonde.site> <48A48879.2000309@goop.org>
- <Pine.LNX.4.64.0808142104080.29719@blonde.site> <48A4AC01.7040402@goop.org>
- <871w0r5gw8.fsf@skyscraper.fehenstaub.lan>
+	Thu, 14 Aug 2008 20:03:47 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: "Yinghai Lu" <yhlu.kernel@gmail.com>
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org,
+       "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
+       "Andrew Morton" <akpm@linux-foundation.org>
+References: <1218705441-21838-1-git-send-email-yhlu.kernel@gmail.com>
+	<20080814132638.GA18743@elte.hu>
+	<86802c440808141201o2c66236cwbc5ce37f9675504d@mail.gmail.com>
+	<m1ljyzcqg4.fsf@frodo.ebiederm.org>
+	<86802c440808141342k6cb0dc59ud067018b0a171232@mail.gmail.com>
+Date: Thu, 14 Aug 2008 16:55:32 -0700
+In-Reply-To: <86802c440808141342k6cb0dc59ud067018b0a171232@mail.gmail.com>
+	(Yinghai Lu's message of "Thu, 14 Aug 2008 13:42:48 -0700")
+Message-ID: <m17iajb18r.fsf@frodo.ebiederm.org>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+X-SA-Exim-Connect-IP: 24.130.11.59
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa01 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Combo: ;"Yinghai Lu" <yhlu.kernel@gmail.com>
+X-Spam-Relay-Country: 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	* -1.1 BAYES_05 BODY: Bayesian spam probability is 1 to 5%
+	*      [score: 0.0306]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa01 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+Subject: Re: [PATCH 00/53] dyn_array/nr_irqs/sparse_irq support v10
+X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
+X-SA-Exim-Scanned: Yes (on mgr1.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 15 Aug 2008, Johannes Weiner wrote:
-> Jeremy Fitzhardinge <jeremy@goop.org> writes:
-> > Hugh Dickins wrote:
-> >
-> >> An additional useful input would be: what happens if you replace
-> >> that /dev/fb0 by a symlink /dev/fb0 pointing to an fb0 device node in
-> >> one of your disk filesystems?  I rather expect that to cause the same
-> >> trouble, which would argue that the driver is wrong and shmem right.
-> >
-> > I don't follow. Do you mean make /dev/fb0 a plain file on a
-> > filesystem?  Or make it a disk device node?  Something else?
-> 
-> Creating a device node on a different filesystem to see if the driver
-> only worked with the safe shmem set_page_dirty and now breaks due to
-> exposure to the generic version.  Or if the driver works with the
-> generic version through other mappings and the shmem code screws it up
-> somewhere else.
+"Yinghai Lu" <yhlu.kernel@gmail.com> writes:
 
-Yes, that's it.  I think it was ext2 I referred to, when I worried
-about this when making the change to tmpfs; and my reading of it
-was that ext2 left a device node's a_ops unset, as I was changing
-tmpfs to do.  (Looking at it again, ext2 doesn't even specify its
-.set_page_dirty, so even if it had assigned an a_ops, it wouldn't
-have avoided the default behaviour.)  But I'd like to hear what
-actually happens in practice, rather than relying on my reading.
+> On Thu, Aug 14, 2008 at 1:05 PM, Eric W. Biederman
 
-Hugh
+
+>> What I wound up using in my tree is a little different.
+>>
+>> I introduced an opaque/empty structure: struct irq to be used in places
+>> where we need pointers instead of an integer irq number in the interfaces.
+>>
+>> I have a version of the genirq api that works on struct irq instead of
+>> unsigned int irq.
+>>
+>> I have functions:
+>> struct irq * to_irq(unsigned int nr);
+>> struct irq_desc *to_idesc(struct irq *);
+>> unsigned int irq_nr(struct irq *irq);
+>
+> struct irq {
+>   unsigned int nr;
+>   struct irq_desc *idesc;
+> }
+
+I did:
+  struct irq_desc {
+  	struct irq irq;
+        ....
+  }
+  Then to_idesc is just a container_of call.  Or simply a type cast but
+  that is rude.
+
+Having nr be a field in struct irq is possibly valid.
+
+When last we talked about the design Linus was emphatic that what gets
+exposed to drivers be an opaque token.  When I looked for 99%+ of the
+arch code we can use that same opaque token.  irq_desc is something
+we don't really care about except in do_IRQ().
+
+So I guess the truly important thing is that struct irq is not
+ultimately available in a usable form to drivers.
+
+We seem to give drivers access to everything when they include interrupt.h
+So I'm not certain how strict we can succeed in being still is a good goal
+to aim for.
+
+>> Is there any reason why the migration path for architectures can not be:
+>> Until they are converted:
+>> #define NR_IRQS and use the irq_desc array.
+>>
+>> If they are just using a dynamically allocated array.
+>> #define NR_IRQS nr_irqs
+>>
+>> Once we kill the array entirely.
+>> #undef NR_IRQS or
+>> #define NR_IRQS 0xfffff000
+> why not use -1U here?
+
+So that negative error codes continue not to be valid irqs.
+
+In most places irq is an unsigned int so it may safely be used to index irq_desc.
+In other paces people are sloppier and used a signed value so they can return
+negative error values.   create_irq() on x86 is one of those places.  There
+is also platform_get_irq.  and possibly a few others.
+
+Eric
+
