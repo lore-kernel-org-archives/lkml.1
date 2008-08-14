@@ -1,78 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756157AbYHNRHk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758257AbYHNRIL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756157AbYHNRHk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Aug 2008 13:07:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752145AbYHNRHc
+	id S1758257AbYHNRIL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Aug 2008 13:08:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752930AbYHNRHz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Aug 2008 13:07:32 -0400
-Received: from eagle.jhcloos.com ([207.210.242.212]:3207 "EHLO
-	eagle.jhcloos.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752105AbYHNRHb (ORCPT
+	Thu, 14 Aug 2008 13:07:55 -0400
+Received: from mtagate8.de.ibm.com ([195.212.29.157]:50774 "EHLO
+	mtagate8.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752145AbYHNRHy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Aug 2008 13:07:31 -0400
-X-Greylist: delayed 633 seconds by postgrey-1.27 at vger.kernel.org; Thu, 14 Aug 2008 13:07:31 EDT
-From: James Cloos <cloos@jhcloos.com>
-To: linux-kernel@vger.kernel.org
-Cc: David Woodhouse <dwmw2@infradead.org>
-Subject: Would it be better for git-commits-head to have -M -C diffs?
-User-Agent: Gnus/5.110011 (No Gnus v0.11) Emacs/23.0.60 (gnu/linux)
-Face: iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABHNCSVQICAgIfAhkiAAAAI1J
- REFUOE+lU9ESgCAIg64P1y+ngUdxhl5H8wFbbM0OmUiEhKkCYaZThXCo6KE5sCbA1DDX3genvO4d
- eBQgEMaM5qy6uWk4SfBYfdu9jvBN9nSVDOKRtwb+I3epboOsOX5pZbJNsBJFvmQQ05YMfieIBnYX
- FK2N6dOawd97r/e8RjkTLzmMsiVgrAoEugtviCM3v2WzjgAAAABJRU5ErkJggg==
-Copyright: Copyright 2008 James Cloos
-OpenPGP: ED7DAEA6; url=http://jhcloos.com/public_key/0xED7DAEA6.asc
-OpenPGP-Fingerprint: E9E9 F828 61A4 6EA9 0F2B  63E7 997A 9F17 ED7D AEA6
-Date: Thu, 14 Aug 2008 12:56:18 -0400
-Message-ID: <m3ljyzsfg6.fsf@lugabout.jhcloos.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Hashcash: 1:23:080814:linux-kernel@vger.kernel.org::fvJXZg9WYE5BycT2:000000000000000000000000000000000aYdA
-X-Hashcash: 1:23:080814:dwmw2@infradead.org::c0ewPTr3GiWL6Sdj:0000000000000000000000000000000000000000008PWG
+	Thu, 14 Aug 2008 13:07:54 -0400
+Subject: Re: [patch 1/3] kmsg: Kernel message catalog macros.
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Reply-To: schwidefsky@de.ibm.com
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
+       lf_kernel_messages@lists.linux-foundation.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Michael Holzheu <holzheu@de.ibm.com>, Gerrit Huizenga <gh@us.ibm.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Randy Dunlap <randy.dunlap@oracle.com>, Jan Kara <jack@suse.cz>,
+       Pavel Machek <pavel@ucw.cz>, Sam Ravnborg <sam@ravnborg.org>,
+       Joe Perches <joe@perches.com>,
+       Jochen =?ISO-8859-1?Q?Vo=DF?= <jochen.voss@googlemail.com>,
+       Kunai Takashi <kunai@linux-foundation.jp>,
+       Tim Bird <tim.bird@am.sony.com>
+In-Reply-To: <200808131433.02966.rusty@rustcorp.com.au>
+References: <20080730165656.118280544@de.ibm.com>
+	 <20080730171156.824640459@de.ibm.com>
+	 <200808131433.02966.rusty@rustcorp.com.au>
+Content-Type: text/plain
+Organization: IBM Corporation
+Date: Thu, 14 Aug 2008 19:07:03 +0200
+Message-Id: <1218733623.2651.14.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Would anyone else prefer to see the posts on the commits list use git's
-copy and move detection?
+On Wed, 2008-08-13 at 14:33 +1000, Rusty Russell wrote:
+> On Thursday 31 July 2008 02:56:57 Martin Schwidefsky wrote:
+> > From: Michael Holzheu <holzheu@de.ibm.com>
+> > From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+> >
+> > Introduce a new family of printk macros which prefixes each kmsg message
+> > with a component name and allows to tag the printk with a message id.
+> 
+> Can you hash the format string to generate the id?  6 hex digits should be 
+> enough, and your tool can check for clashes.  As it's bad form to have 
+> identical strings for different semantics anyway, this seems to make sense.
 
-Git show (used by the feed-mail-list script) does support -M and -C.
+First, how do you do that with the C preprocessor? Second the kmsg-doc
+script will check that the message format strings match if a kmsg with a
+specific id is used in multiple locations.
 
-It does affect the stat section.  The recent commit 758db3f21187 would
-have had its stat changed from looking like:
-
- arch/h8300/include/asm/Kbuild              |    1 +
- arch/h8300/include/asm/a.out.h             |   20 ++
- arch/h8300/include/asm/atomic.h            |  144 +++++++++++
-                        .
-                        .
-                        .
- include/asm-h8300/Kbuild                   |    1 -
- include/asm-h8300/a.out.h                  |   20 --
- include/asm-h8300/atomic.h                 |  144 -----------
-                        .
-                        .
-                        .
-
-to looking like:
-
- .../asm-h8300 => arch/h8300/include/asm}/Kbuild    |    0 
- .../asm-h8300 => arch/h8300/include/asm}/a.out.h   |    0 
- .../asm-h8300 => arch/h8300/include/asm}/atomic.h  |    0 
- .../asm-h8300 => arch/h8300/include/asm}/auxvec.h  |    0 
- .../asm-h8300 => arch/h8300/include/asm}/bitops.h  |    0 
- .../h8300/include/asm}/bootinfo.h                  |    0 
-                        .
-                        .
-                        .
-
-but would have been 512 lines and 24271 octets instead of 10623 lines
-and 291634 octets.
-
-I think it would also be useful were the From: header of each message
-set to the commit's Author.  I run each commit through a script to do
-that locally, but the archives would also benefit from that.
-
--JimC
 -- 
-James Cloos <cloos@jhcloos.com>         OpenPGP: 1024D/ED7DAEA6
+blue skies,
+  Martin.
+
+"Reality continues to ruin my life." - Calvin.
+
+
