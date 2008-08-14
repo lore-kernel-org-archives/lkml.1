@@ -1,81 +1,209 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759268AbYHNSLu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756589AbYHNSV6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759268AbYHNSLu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Aug 2008 14:11:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751903AbYHNSLj
+	id S1756589AbYHNSV6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Aug 2008 14:21:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752001AbYHNSVu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Aug 2008 14:11:39 -0400
-Received: from web82105.mail.mud.yahoo.com ([209.191.84.218]:43655 "HELO
-	web82105.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751798AbYHNSLi (ORCPT
+	Thu, 14 Aug 2008 14:21:50 -0400
+Received: from wolverine02.qualcomm.com ([199.106.114.251]:17639 "EHLO
+	wolverine02.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751903AbYHNSVs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Aug 2008 14:11:38 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=sbcglobal.net;
-  h=Received:X-Mailer:Date:From:Subject:To:Cc:MIME-Version:Content-Type:Message-ID;
-  b=3O09Wb1wj55UMMnZwULgcmzTMboGaPGNVYScOwrJ0EYT4IPEFGLrW64WO0+RNcSR8MSHZ4GIOqYtbBVyixx91GIspxHnhXBvSWK1aZSPJSXgQPc0OQJ1qwcyYIo7pd7KIO/vRWW06xWsm0vsB8haei9s7RF+pupC4bBzNPlBQ6E=;
-X-Mailer: YahooMailRC/1042.40 YahooMailWebService/0.7.218
-Date: Thu, 14 Aug 2008 11:11:37 -0700 (PDT)
-From: David Witbrodt <dawitbro@sbcglobal.net>
-Subject: Re: HPET regression in 2.6.26 versus 2.6.25 -- revert for 2.6.26-rc1 failed
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: Bill Fink <billfink@mindspring.com>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       netdev <netdev@vger.kernel.org>
+	Thu, 14 Aug 2008 14:21:48 -0400
+X-IronPort-AV: E=McAfee;i="5200,2160,5361"; a="5545570"
+Message-ID: <48A477B8.9090704@qualcomm.com>
+Date: Thu, 14 Aug 2008 11:21:44 -0700
+From: Max Krasnyansky <maxk@qualcomm.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <798351.12728.qm@web82105.mail.mud.yahoo.com>
+To: Ingo Molnar <mingo@elte.hu>
+CC: Paul Jackson <pj@sgi.com>, linux-kernel@vger.kernel.org, menage@google.com,
+       a.p.zijlstra@chello.nl, vegard.nossum@gmail.com,
+       Dmitry Torokhov <dtor@mail.ru>
+Subject: Re: [PATCH] cpuset: Rework sched domains and CPU hotplug handling
+ (take 4)
+References: <1218490433-10576-1-git-send-email-maxk@qualcomm.com> <20080811183122.acd25489.pj@sgi.com> <20080814092424.GB18771@elte.hu> <20080814111633.GA2614@elte.hu>
+In-Reply-To: <20080814111633.GA2614@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-> can you try enable kexec and kdump in you .config.
+Ingo Molnar wrote:
+> * Ingo Molnar <mingo@elte.hu> wrote:
 > 
-> it should works. my .config have config_kexec
-
-First, I apologize.  I see that you were assuming I had KEXEC enabled when you
-gave me the patch against 2.6.27-rc3.  I have only posted parts of my custom
-.config to LKML, thinking that posting the whole thing was not appropriate.
-
-Did you mean CRASH_DUMP instead of "kdump" above?
-
-[N] kexec system call    (CONFIG_KEXEC)  (bool)  (Help)
-[N] kernel crash dumps (EXPERIMENTAL)    (CONFIG_CRASH_DUMP)  (bool)  (Help)
-
-My custom .config has both of these disabled -- either because they default
-to "N" when running 'make oldconfig', or because I read the help text with
-those options and decided I would not be using those features.
-
-
-> > Some experiments I did last night may render these questions moot, though.
-> > My problem is very specific to the hardware on two of my machines, and it
-> > has something to do with setting up the system resources that
-> > insert_resource() touches.
+>> * Paul Jackson <pj@sgi.com> wrote:
+>>
+>>>   Acked-by: Paul Jackson <pj@sgi.com>
+>>>
+>>> ... based on code reading and comparing with the
+>>> previous version - looks good.  Nice work, Max.
+>>> Thanks.
+>> applied to tip/sched/cpuset, thanks. (will show up in tip/sched/urgent 
+>> as well soon, for v2.6.27 merging.)
 > 
-> please try to bisect on current tree. and every time apply the revert patch...
+> FYI, this new lockdep warning showed up in -tip testing, after i added 
+> this patch.
 
-I will try your patch against 2.6.27-rc3 again, with KEXEC and CRASH_DUMP 
-enabled, when I get home from work.  I still have not retried using 'patch'
-instead of 'git apply', though I am sure that 'git apply' worked just fine.
+Hmm, unless I'm missing something this one is unrelated. There are no cpu
+hotplug, sched or cpusets paths in the trace besides cpu_maps_update_begin().
+But that one is taken in the regular destroy_workqueue() path.
 
-I was trying other experiments last night, and have posted the results of
-those already -- and I'm guessing that your 2.6.27-rc3 patch will not work
-unless it factors in what I discovered there.  (But I will do all of these
-changes that you asked, as well.)
+The issues is polldev_mutex and cpu_add_remove_lock nesting. I bet you can
+trigger that without cpusets. CC'ing Dmitry Torokhov.
 
-I do not know how to bisect with your patch if I have a "bad" but no "good"
-to start with.  Can you explain how I should proceed when I _do_ get home?
-(I can just enabled those config options and try the patch again, but I am
-confused about the bisect you are asking me to perform.)
+btw It seems to be triggered when X closes polled input device.
+There aren't that many of them
+   $ git grep input_register_polled_device | wc -l
+   16
+What do you have hooked up to the test box ?
 
-Does my other post, about trying to revert those February commits, mean
-anything?
+Max
 
 
-Thanks,
-Dave W.
+> [   59.750200] =======================================================
+> [   59.750200] [ INFO: possible circular locking dependency detected ]
+> [   59.750200] 2.6.27-rc3-tip-00076-g75f9a29-dirty #1
+> [   59.750200] -------------------------------------------------------
+> [   59.750200] Xorg/6623 is trying to acquire lock:
+> [   59.750200]  (cpu_add_remove_lock){--..}, at: [<c0147dae>] cpu_maps_update_begin+0x14/0x16
+> [   59.750200] 
+> [   59.750200] but task is already holding lock:
+> [   59.750200]  (polldev_mutex){--..}, at: [<c07eb66f>] input_close_polled_device+0x22/0x47
+> [   59.750200] 
+> [   59.750200] which lock already depends on the new lock.
+> [   59.750200] 
+> [   59.750200] 
+> [   59.750200] the existing dependency chain (in reverse order) is:
+> [   59.750200] 
+> [   59.750200] -> #5 (polldev_mutex){--..}:
+> [   59.750200]        [<c01632e3>] __lock_acquire+0x848/0x9ab
+> [   59.750200]        [<c01634b6>] lock_acquire+0x70/0x97
+> [   59.750200]        [<c09eaf41>] __mutex_lock_common+0x8a/0x278
+> [   59.750200]        [<c09eb15d>] mutex_lock_interruptible_nested+0x2e/0x35
+> [   59.750200]        [<c07eb745>] input_open_polled_device+0x1c/0xa3
+> [   59.750200]        [<c07e8f84>] input_open_device+0x5a/0x86
+> [   59.750200]        [<c07eded0>] evdev_open+0x103/0x14e
+> [   59.750200]        [<c07ea620>] input_open_file+0x44/0x60
+> [   59.750200]        [<c019ff1c>] chrdev_open+0x106/0x11d
+> [   59.750200]        [<c019c269>] __dentry_open+0x119/0x1f0
+> [   59.750200]        [<c019c364>] nameidata_to_filp+0x24/0x38
+> [   59.750200]        [<c01a6952>] do_filp_open+0x309/0x5b2
+> [   59.750200]        [<c019c04e>] do_sys_open+0x47/0xc1
+> [   59.750200]        [<c019c114>] sys_open+0x23/0x2b
+> [   59.750200]        [<c011bb2f>] sysenter_do_call+0x12/0x43
+> [   59.750200]        [<ffffffff>] 0xffffffff
+> [   59.750200] 
+> [   59.750200] -> #4 (&dev->mutex){--..}:
+> [   59.750200]        [<c01632e3>] __lock_acquire+0x848/0x9ab
+> [   59.750200]        [<c01634b6>] lock_acquire+0x70/0x97
+> [   59.750200]        [<c09eaf41>] __mutex_lock_common+0x8a/0x278
+> [   59.750200]        [<c09eb15d>] mutex_lock_interruptible_nested+0x2e/0x35
+> [   59.750200]        [<c07ea402>] input_register_handle+0x26/0x80
+> [   59.750200]        [<c0424336>] kbd_connect+0x6c/0x95
+> [   59.750200]        [<c07e8a46>] input_attach_handler+0x38/0x6b
+> [   59.750200]        [<c07ea4d7>] input_register_handler+0x7b/0xaf
+> [   59.750200]        [<c0f63917>] kbd_init+0x6b/0x87
+> [   59.750200]        [<c0f63a40>] vty_init+0xd3/0xdc
+> [   59.750200]        [<c0f63405>] tty_init+0x198/0x19c
+> [   59.750200]        [<c0101139>] do_one_initcall+0x42/0x133
+> [   59.750200]        [<c0f3f610>] kernel_init+0x17b/0x1e2
+> [   59.750200]        [<c011c85f>] kernel_thread_helper+0x7/0x10
+> [   59.750200]        [<ffffffff>] 0xffffffff
+> [   59.750200] 
+> [   59.750200] -> #3 (input_mutex){--..}:
+> [   59.750200]        [<c01632e3>] __lock_acquire+0x848/0x9ab
+> [   59.750200]        [<c01634b6>] lock_acquire+0x70/0x97
+> [   59.750200]        [<c09eaf41>] __mutex_lock_common+0x8a/0x278
+> [   59.750200]        [<c09eb15d>] mutex_lock_interruptible_nested+0x2e/0x35
+> [   59.750200]        [<c07ea2da>] input_register_device+0xff/0x171
+> [   59.750200]        [<c04080cd>] acpi_button_add+0x320/0x421
+> [   59.750200]        [<c040634f>] acpi_device_probe+0x3f/0x8d
+> [   59.750200]        [<c048e8fa>] driver_probe_device+0xc3/0x156
+> [   59.750200]        [<c048e9cf>] __driver_attach+0x42/0x64
+> [   59.750200]        [<c048e22f>] bus_for_each_dev+0x43/0x65
+> [   59.750200]        [<c048e713>] driver_attach+0x19/0x1b
+> [   59.750200]        [<c048dc2d>] bus_add_driver+0xaf/0x1b5
+> [   59.750200]        [<c048eb72>] driver_register+0x76/0xd2
+> [   59.750200]        [<c040665e>] acpi_bus_register_driver+0x3f/0x41
+> [   59.750200]        [<c0f61672>] acpi_button_init+0x37/0x56
+> [   59.750200]        [<c0101139>] do_one_initcall+0x42/0x133
+> [   59.750200]        [<c0f3f230>] do_async_initcalls+0x1f/0x2f
+> [   59.750200]        [<c015475f>] run_workqueue+0xb7/0x189
+> [   59.750200]        [<c01551ab>] worker_thread+0xbb/0xc7
+> [   59.750200]        [<c015764d>] kthread+0x40/0x67
+> [   59.750200]        [<c011c85f>] kernel_thread_helper+0x7/0x10
+> [   59.750200]        [<ffffffff>] 0xffffffff
+> [   59.750200] 
+> [   59.750200] -> #2 (async_work){--..}:
+> [   59.750200]        [<c01632e3>] __lock_acquire+0x848/0x9ab
+> [   59.750200]        [<c01634b6>] lock_acquire+0x70/0x97
+> [   59.750200]        [<c015475a>] run_workqueue+0xb2/0x189
+> [   59.750200]        [<c01551ab>] worker_thread+0xbb/0xc7
+> [   59.750200]        [<c015764d>] kthread+0x40/0x67
+> [   59.750200]        [<c011c85f>] kernel_thread_helper+0x7/0x10
+> [   59.750200]        [<ffffffff>] 0xffffffff
+> [   59.750200] 
+> [   59.750200] -> #1 (kasyncinit){--..}:
+> [   59.750200]        [<c01632e3>] __lock_acquire+0x848/0x9ab
+> [   59.750200]        [<c01634b6>] lock_acquire+0x70/0x97
+> [   59.750200]        [<c015499a>] cleanup_workqueue_thread+0x2b/0x5e
+> [   59.750200]        [<c0154a40>] destroy_workqueue+0x61/0x89
+> [   59.750200]        [<c0f3f634>] kernel_init+0x19f/0x1e2
+> [   59.750200]        [<c011c85f>] kernel_thread_helper+0x7/0x10
+> [   59.750200]        [<ffffffff>] 0xffffffff
+> [   59.750200] 
+> [   59.750200] -> #0 (cpu_add_remove_lock){--..}:
+> [   59.750200]        [<c01631b4>] __lock_acquire+0x719/0x9ab
+> [   59.750200]        [<c01634b6>] lock_acquire+0x70/0x97
+> [   59.750200]        [<c09eaf41>] __mutex_lock_common+0x8a/0x278
+> [   59.750200]        [<c09eb1c7>] mutex_lock_nested+0x2e/0x36
+> [   59.750200]        [<c0147dae>] cpu_maps_update_begin+0x14/0x16
+> [   59.750200]        [<c0154a05>] destroy_workqueue+0x26/0x89
+> [   59.750200]        [<c07eb688>] input_close_polled_device+0x3b/0x47
+> [   59.750200]        [<c07e9056>] input_close_device+0x45/0x61
+> [   59.750200]        [<c07edd49>] evdev_release+0x7f/0x99
+> [   59.750200]        [<c019e7d9>] __fput+0xb3/0x135
+> [   59.750200]        [<c019eb5f>] fput+0x1c/0x21
+> [   59.750200]        [<c019bffd>] filp_close+0x4c/0x56
+> [   59.750200]        [<c019d1d6>] sys_close+0x6d/0xa6
+> [   59.750200]        [<c011bb2f>] sysenter_do_call+0x12/0x43
+> [   59.750200]        [<ffffffff>] 0xffffffff
+> [   59.750200] 
+> [   59.750200] other info that might help us debug this:
+> [   59.750200] 
+> [   59.750200] 3 locks held by Xorg/6623:
+> [   59.750200]  #0:  (&evdev->mutex){--..}, at: [<c07edd31>] evdev_release+0x67/0x99
+> [   59.750200]  #1:  (&dev->mutex){--..}, at: [<c07e9030>] input_close_device+0x1f/0x61
+> [   59.750200]  #2:  (polldev_mutex){--..}, at: [<c07eb66f>] input_close_polled_device+0x22/0x47
+> [   59.750200] 
+> [   59.750200] stack backtrace:
+> [   59.750200] Pid: 6623, comm: Xorg Not tainted 2.6.27-rc3-tip-00076-g75f9a29-dirty #1
+> [   59.750200]  [<c016189b>] print_circular_bug_tail+0x5d/0x68
+> [   59.750200]  [<c01631b4>] __lock_acquire+0x719/0x9ab
+> [   59.750200]  [<c01634b6>] lock_acquire+0x70/0x97
+> [   59.750200]  [<c0147dae>] ? cpu_maps_update_begin+0x14/0x16
+> [   59.750200]  [<c09eaf41>] __mutex_lock_common+0x8a/0x278
+> [   59.750200]  [<c0147dae>] ? cpu_maps_update_begin+0x14/0x16
+> [   59.750200]  [<c016261e>] ? trace_hardirqs_on_caller+0x94/0xcd
+> [   59.750200]  [<c09eb1c7>] mutex_lock_nested+0x2e/0x36
+> [   59.750200]  [<c0147dae>] ? cpu_maps_update_begin+0x14/0x16
+> [   59.750200]  [<c0147dae>] cpu_maps_update_begin+0x14/0x16
+> [   59.750200]  [<c0154a05>] destroy_workqueue+0x26/0x89
+> [   59.750200]  [<c07eb688>] input_close_polled_device+0x3b/0x47
+> [   59.750200]  [<c07e9056>] input_close_device+0x45/0x61
+> [   59.750200]  [<c07edd49>] evdev_release+0x7f/0x99
+> [   59.750200]  [<c019e7d9>] __fput+0xb3/0x135
+> [   59.750200]  [<c019eb5f>] fput+0x1c/0x21
+> [   59.750200]  [<c019bffd>] filp_close+0x4c/0x56
+> [   59.750200]  [<c019d1d6>] sys_close+0x6d/0xa6
+> [   59.750200]  [<c011bb2f>] sysenter_do_call+0x12/0x43
+> [   59.750200]  [<c0110000>] ? x86_decode_insn+0x46e/0x942
+> [   59.750200]  =======================
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
