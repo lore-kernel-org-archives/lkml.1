@@ -1,50 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754105AbYHNOtR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753893AbYHNOz1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754105AbYHNOtR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Aug 2008 10:49:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750738AbYHNOtJ
+	id S1753893AbYHNOz1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Aug 2008 10:55:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750980AbYHNOzT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Aug 2008 10:49:09 -0400
-Received: from brmea-mail-3.Sun.COM ([192.18.98.34]:59563 "EHLO
-	brmea-mail-3.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750753AbYHNOtI (ORCPT
+	Thu, 14 Aug 2008 10:55:19 -0400
+Received: from casper.infradead.org ([85.118.1.10]:55482 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750875AbYHNOzS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Aug 2008 10:49:08 -0400
-Date: Thu, 14 Aug 2008 06:48:51 -0400
-From: David Collier-Brown <davecb@sun.com>
-Subject: Re: [malware-list] [RFC 0/5] [TALPA] Intro to a linuxinterfaceforon
- access scanning
-In-reply-to: <g7qccj$6m0$1@taverner.cs.berkeley.edu>
-To: David Wagner <daw-news@cs.berkeley.edu>
-Cc: linux-kernel@vger.kernel.org
-Reply-to: davecb@sun.com
-Message-id: <48A40D93.2080408@sun.com>
-MIME-version: 1.0
-Content-type: text/plain; format=flowed; charset=us-ascii
-Content-transfer-encoding: 7BIT
-X-Accept-Language: en-us, en
-References: <20080806105008.GF6477@cs181140183.pp.htv.fi>
- <200808111645.48177.mdontu@bitdefender.com>
- <20080811065608.44687f65@infradead.org> <48A0649B.4010706@sun.com>
- <g7qccj$6m0$1@taverner.cs.berkeley.edu>
-User-Agent: Mozilla/5.0 (X11; U; SunOS sun4u; en-US; rv:1.7) Gecko/20041221
+	Thu, 14 Aug 2008 10:55:18 -0400
+Date: Thu, 14 Aug 2008 07:53:48 -0700
+From: Greg KH <greg@kroah.com>
+To: Jason Baron <jbaron@redhat.com>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, joe@perches.com, nick@nick-andrew.net
+Subject: Re: [PATCH 1/7] dynamic debug v2 - infrastructure
+Message-ID: <20080814145348.GA25422@kroah.com>
+References: <20080717070103.GA21961@kroah.com> <20080717212040.GB13252@redhat.com> <20080717223222.GA28016@kroah.com> <20080808215153.GA16729@redhat.com> <20080808193851.24210bc4.randy.dunlap@oracle.com> <20080811173616.GC6103@redhat.com> <20080811223309.GD9810@kroah.com> <20080812194817.GD6056@redhat.com> <20080812200908.GA444@kroah.com> <20080812204619.GE6056@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080812204619.GE6056@redhat.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sidebar again...
+On Tue, Aug 12, 2008 at 04:46:19PM -0400, Jason Baron wrote:
+> On Tue, Aug 12, 2008 at 01:09:08PM -0700, Greg KH wrote:
+> > So close, can I have a good changelog comment with the patch so people
+> > know what it is when they look in the logs?
+> > 
+> > Care to resend it with that?
+> > 
+> 
+> Base infrastructure to enable per-module debug messages.
 
-David Wagner wrote:
-> 3. Let me point out that you snipped a key line from Arjan van
-> de Ven's email:
->   Answering Ted's questions would be a really good start...
+<snip>
 
-Alas, I don't remember what Ted's question was, so I tried to see
-if I could start a discussion about the most general one (;-))
+Ok, I got the build problem with the usb-gadget drivers all worked out
+now, and added this to my driver-core tree.
 
---dave (not an AV guy) c-b
--- 
-David Collier-Brown            | Always do right. This will gratify
-Sun Microsystems, Toronto      | some people and astonish the rest
-davecb@sun.com                 |                      -- Mark Twain
-cell: (647) 833-9377, bridge: (877) 385-4099 code: 506 9191#
+Very nice stuff, again, thanks for doing this.  I'll work to clean up
+the USB drivers to all rely on this and not their separate
+CONFIG_USB_DEBUG option.
+
+Also, would it make sense to add a patch like the one below to this
+code?  It might be nice to know when each module's debugging value is
+manually changed by the user for the log files.
+
+If you like it, I can merge it in the main patch.
+
+thanks,
+
+greg k-h
+
+---
+ lib/dynamic_printk.c |    6 ++++++
+ 1 file changed, 6 insertions(+)
+
+--- a/lib/dynamic_printk.c
++++ b/lib/dynamic_printk.c
+@@ -288,6 +288,9 @@ static ssize_t pr_debug_write(struct fil
+ 					num_enabled++;
+ 					dynamic_enabled = DYNAMIC_ENABLED_SOME;
+ 					err = 0;
++					printk(KERN_DEBUG
++					       "debugging enabled for module %s",
++					       elem->name);
+ 				} else if (!value && (elem->enable == 1)) {
+ 					elem->enable = 0;
+ 					num_enabled--;
+@@ -304,6 +307,9 @@ static ssize_t pr_debug_write(struct fil
+ 						dynamic_enabled =
+ 							DYNAMIC_ENABLED_NONE;
+ 					err = 0;
++					printk(KERN_DEBUG
++					       "debugging disabled for module "
++					       "%s", elem->name);
+ 				}
+ 			}
+ 		}
