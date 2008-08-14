@@ -1,78 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757984AbYHNIlx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754747AbYHNInM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757984AbYHNIlx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Aug 2008 04:41:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751486AbYHNIlo
+	id S1754747AbYHNInM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Aug 2008 04:43:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752298AbYHNIm6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Aug 2008 04:41:44 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:46715 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754006AbYHNIln (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Aug 2008 04:41:43 -0400
-Date: Thu, 14 Aug 2008 10:41:29 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: crane cai <crane.cai@amd.com>
-Cc: vojtech@suse.cz, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       XiaoGang Zheng <gang.zheng@amd.com>
-Subject: Re: [PATCH] HPET: Workaround for a BIOS workaround on AMD SB700
-	platform
-Message-ID: <20080814084129.GA1650@elte.hu>
-References: <1218683616.20466.13.camel@crane-laptop>
+	Thu, 14 Aug 2008 04:42:58 -0400
+Received: from nf-out-0910.google.com ([64.233.182.189]:18216 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751780AbYHNIm4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Aug 2008 04:42:56 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=JAxQHlGZdYL/2vlU/iEwG6N1kCe5WitGzfKTsHE+TkVAuuGY4WuBObOtTosU4+zf0G
+         yfYmF8iA6WVkU1gwagHlh3HpNzyEioI2XTia94wY0WZKQFrfAlR4j6riCou7gHtgKOl4
+         PJqehNPHo68h0gHvtoziI3QApLlBHGdvMdceI=
+Message-ID: <520f0cf10808140142m387f59faka4287aef7d18a7ae@mail.gmail.com>
+Date: Thu, 14 Aug 2008 10:42:55 +0200
+From: "John Kacur" <jkacur@gmail.com>
+To: "Guennadi Liakhovetski" <g.liakhovetski@gmx.de>
+Subject: Re: drop overzealous ERROR: do not initialise statics to 0 or NULL from checkpatch.pl
+Cc: "Arnd Bergmann" <arnd@arndb.de>, LKML <linux-kernel@vger.kernel.org>,
+       "Andy Whitcroft" <apw@shadowen.org>, rdunlap@xenotime.net,
+       jschopp@austin.ibm.com
+In-Reply-To: <Pine.LNX.4.64.0808132216460.7713@axis700.grange>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1218683616.20466.13.camel@crane-laptop>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+References: <520f0cf10808130339r5dd22e12w3477d6bddd545db1@mail.gmail.com>
+	 <200808131415.36851.arnd@arndb.de>
+	 <Pine.LNX.4.64.0808132216460.7713@axis700.grange>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* crane cai <crane.cai@amd.com> wrote:
-
-> >From 9bd2f534f986768f1944e626e37af1c323e47dbb Mon Sep 17 00:00:00 2001
-> From: Crane Cai <crane.cai@amd.com>
-> Date: Thu, 14 Aug 2008 10:31:01 +0800
-> Subject: [PATCH] HPET: Workaround for a BIOS workaround on AMD SB700 platform
-> 
-> On the AMD SB700 southbridge, between the revisions 0x30 to 0x3a, when 
-> its spread-spectrum frequency modulation feature is enabled, the base 
-> frequency used by the HPET will not be running on average slower than 
-> nominal 14.318 MHz.
+On Wed, Aug 13, 2008 at 10:19 PM, Guennadi Liakhovetski
+<g.liakhovetski@gmx.de> wrote:
+> On Wed, 13 Aug 2008, John Kacur wrote:
 >
-> Since there is no provision in the OS for HPET to work with properly 
-> with slower frequency, the BIOS on this platform uses SMM to emulate 
-> accesses to the HPET config register to supply a corrected base 
-> frequency to compensate for it.
+>> Could we drop this somewhat overzealous "ERROR: do not initialise
+>> statics to 0 or NULL" from checkpatch.pl?
+>>
+>> Reasoning:
+>> 1. This is not part of Documentation/CodingStyle
+>> 2. K&R 2nd.ed do it (pg 83, static int bufp = 0;) The purpose is to
+>> remove access to the bufp from external routines, and to avoid name
+>> conflict)
 >
-> However, due to the implementation of the SMM BIOS code, there is a 
-> time window after the first access to the HPET, which triggers 
-> initialization of the SMM code, in which the HPET isn't available. 
-> Thus it's necessary to wait until the HPET emulation is ready, and 
-> this is what the patch does on the affected machines.
+> No, "static" "removes access to the bufp from external routines, and
+> avoids name conflict", not the initialization to 0.
+>
 
-nice fix! I've applied it to tip/x86/urgent as the quirk is limited to 
-this platform so it should be safe for v2.6.27 as well.
-
-Exactly what kind of failure mode have you seen without the quirk? Do we 
-read out the wrong values and thus hpet_clocksource_register() is 
-calibrated incorrectly and you can get non-functional high-res timers? 
-Have you seen hangs/crashes due to that, or incorrect timings?
-
-> Signed-off-by: XiaoGang Zheng <gang.zheng@amd.com>
-> Signed-off-by: Crane Cai <crane.cai@amd.com>
-
-A quick question: the signoff order indicates that the patch has been 
-authored by XiaoGang Zheng. Or is the reverse order intended? (you wrote 
-the patch and XiaoGang Zheng processed it further)
-
-	Ingo
+That is true, but the point is that even the folks who invented the
+language don't have a problem with making the initialization explicit.
+I'm not even trying to argue that folks should do it one way or the
+other, I'm just saying it is unimportant, so let's drop it from
+checkpatch.pl and save ourselves a lot of pointless code churn.
+btw, see pg 94 of "The Practice of Programming" where the masters also
+explicitly initialize statics.
