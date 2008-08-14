@@ -1,80 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756157AbYHNHRP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757090AbYHNHTR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756157AbYHNHRP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Aug 2008 03:17:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752065AbYHNHQ7
+	id S1757090AbYHNHTR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Aug 2008 03:19:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752253AbYHNHTA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Aug 2008 03:16:59 -0400
-Received: from rv-out-0506.google.com ([209.85.198.236]:33598 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751527AbYHNHQ7 (ORCPT
+	Thu, 14 Aug 2008 03:19:00 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:36674 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752166AbYHNHS7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Aug 2008 03:16:59 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=TI0hMVPYtNR/2BQsam5qJNA7klV0wq4wsY263Exwu455oCDzbuxtYKRWRSrV8bQH3q
-         tp3JMYv/fPEq4efjGtx0vFQKZ1B3Z8ADxpdfKtlaKXbSItOKl6KSoWLqhqYMw08ptTh9
-         DiGoRJQ45EQRoaUggiewWarttCaxHWUXQWOvc=
-Message-ID: <b6a2187b0808140016m63c7d9d9s960014ec5cd9f3c5@mail.gmail.com>
-Date: Thu, 14 Aug 2008 15:16:58 +0800
-From: "Jeff Chua" <jeff.chua.linux@gmail.com>
-To: "Yinghai Lu" <yhlu.kernel@gmail.com>
-Subject: Re: 2.6.27rc1 cannot boot more than 8CPUs
-Cc: "Ingo Molnar" <mingo@elte.hu>, "David Miller" <davem@davemloft.net>,
-       "Linux Kernel" <linux-kernel@vger.kernel.org>
-In-Reply-To: <86802c440808131133o133e1dfftdfcc076a1100afb6@mail.gmail.com>
+	Thu, 14 Aug 2008 03:18:59 -0400
+Message-ID: <48A3DBAC.6010109@cs.helsinki.fi>
+Date: Thu, 14 Aug 2008 10:15:56 +0300
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+User-Agent: Thunderbird 2.0.0.16 (Macintosh/20080707)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Christoph Lameter <cl@linux-foundation.org>
+CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       KOSAKI Motohiro <m-kosaki@ceres.dti.ne.jp>,
+       Matthew Wilcox <matthew@wil.cx>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       Mel Gorman <mel@skynet.ie>, andi@firstfloor.org,
+       Rik van Riel <riel@redhat.com>
+Subject: Re: No, really, stop trying to delete slab until you've finished
+ making slub perform as well
+References: <20080805210125.A897.KOSAKI.MOTOHIRO@jp.fujitsu.com> <48986AC6.5030406@linux-foundation.org> <20080813194222.E77F.KOSAKI.MOTOHIRO@jp.fujitsu.com> <48A2DD2C.3090602@linux-foundation.org>
+In-Reply-To: <48A2DD2C.3090602@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <Pine.LNX.4.64.0808061908100.12476@boston.corp.fedex.com>
-	 <20080813141629.GD19397@elte.hu>
-	 <b6a2187b0808131010u7481f663n94d8e005b9dac2d1@mail.gmail.com>
-	 <b6a2187b0808131033m25a7e147x98235a48abd3eb3c@mail.gmail.com>
-	 <20080813173940.GA32214@elte.hu>
-	 <86802c440808131046s4df84ba9va12d45897cf6affa@mail.gmail.com>
-	 <86802c440808131133o133e1dfftdfcc076a1100afb6@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 14, 2008 at 2:33 AM, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+Hi Christoph,
 
->>>> > With 16 CPUs, it still hangs, but now the console is showing the
->>>> > errors as intended.
->>>> > ... but it is supposed to hang?
+Christoph Lameter wrote:
+> The obvious fix is to avoid allocating another slab on conflict but how will
+> this impact performance?
+> 
+> 
+> Index: linux-2.6/mm/slub.c
+> ===================================================================
+> --- linux-2.6.orig/mm/slub.c	2008-08-13 08:06:00.000000000 -0500
+> +++ linux-2.6/mm/slub.c	2008-08-13 08:07:59.000000000 -0500
+> @@ -1253,13 +1253,11 @@
+>  static inline int lock_and_freeze_slab(struct kmem_cache_node *n,
+>  							struct page *page)
+>  {
+> -	if (slab_trylock(page)) {
+> -		list_del(&page->lru);
+> -		n->nr_partial--;
+> -		__SetPageSlubFrozen(page);
+> -		return 1;
+> -	}
+> -	return 0;
+> +	slab_lock(page);
+> +	list_del(&page->lru);
+> +	n->nr_partial--;
+> +	__SetPageSlubFrozen(page);
+> +	return 1;
+>  }
 
-> please check the attached patch. it should fix the new regression and
-> will not hang.
+This patch hard locks  on my 2-way 64-bit x86 machine (sysrq doesn't 
+respond) when I run hackbench.
 
-Ok, booted up and not hanged, but those messages below don't show up
-anywhere. I've tested with CONFIG_NR_CPUS=16 and 8 as well. Just got 8
-cpus
-
-More than 8 CPUs detected - skipping them.
-Use CONFIG_X86_GENERICARCH and CONFIG_X86_BIGSMP.
-
-# cat /sys/devices/system/cpu/possible
-0-7
-
-CONFIG_X86_32=y
-CONFIG_X86_PC=y
-
-
-Looks like it's not going into this condition
-+        if (def_to_bigsmp && nr_cpu_ids > 8) {
-
-
-Shall this be put back so that it'll show the message?
--       if (def_to_bigsmp && apicid > 8) {
--               printk(KERN_WARNING
--                       "More than 8 CPUs detected - skipping them.\n"
--                       "Use CONFIG_X86_GENERICARCH and CONFIG_X86_BIGSMP.\n");
--       }
-
-
-Thanks,
-Jeff.
