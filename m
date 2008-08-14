@@ -1,106 +1,223 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754927AbYHNWvY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756079AbYHNWvt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754927AbYHNWvY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Aug 2008 18:51:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751863AbYHNWvO
+	id S1756079AbYHNWvt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Aug 2008 18:51:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752123AbYHNWvi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Aug 2008 18:51:14 -0400
-Received: from nf-out-0910.google.com ([64.233.182.184]:61964 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751424AbYHNWvN (ORCPT
+	Thu, 14 Aug 2008 18:51:38 -0400
+Received: from ipmail05.adl2.internode.on.net ([203.16.214.145]:30088 "EHLO
+	ipmail05.adl2.internode.on.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751863AbYHNWvh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Aug 2008 18:51:13 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:references;
-        b=h2b7XEFvQuZnkP9cKTUCFzwuQAqh3JOrahQg9rPmCxAUotdYA8A9LNjmywgJYlG+zL
-         FRzEZKfYO1VRUZlIL1XjaNV2USH3vVrob5G3re2LCfRn7LJX2y5j1NxU/4SGU+8/T9Fu
-         0Xc77ExnewqNZvt5YZ6eUHvegL/HY0jRyrDU8=
-Message-ID: <520f0cf10808141551k283aecb8y647d0f5ae321b81f@mail.gmail.com>
-Date: Fri, 15 Aug 2008 00:51:11 +0200
-From: "John Kacur" <jkacur@gmail.com>
-To: "Peter Zijlstra" <peterz@infradead.org>
-Subject: Re: [PATCH RFC] pm_qos_requirement might sleep
-Cc: mgross@linux.intel.com, LKML <linux-kernel@vger.kernel.org>,
-       rt-users <linux-rt-users@vger.kernel.org>,
-       "Steven Rostedt" <rostedt@goodmis.org>, "Ingo Molnar" <mingo@elte.hu>,
-       "Thomas Gleixner" <tglx@linutronix.de>, arjan <arjan@infradead.org>
-In-Reply-To: <1218736137.10800.234.camel@twins>
+	Thu, 14 Aug 2008 18:51:37 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ar4DABhSpEh5LAMbiGdsb2JhbACSAAEBAQ8gpFyBVQ
+X-IronPort-AV: E=Sophos;i="4.32,211,1217773800"; 
+   d="scan'208";a="182423267"
+Date: Fri, 15 Aug 2008 08:51:30 +1000
+From: Dave Chinner <david@fromorbit.com>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Lachlan McIlroy <lachlan@sgi.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       xfs@oss.sgi.com, Andrew Morton <akpm@linux-foundation.org>,
+       Linux/m68k <linux-m68k@vger.kernel.org>
+Subject: Re: [GIT PULL] XFS update for 2.6.27-rc4
+Message-ID: <20080814225130.GB19760@disturbed>
+Mail-Followup-To: Geert Uytterhoeven <geert@linux-m68k.org>,
+	Lachlan McIlroy <lachlan@sgi.com>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Linux Kernel Development <linux-kernel@vger.kernel.org>,
+	xfs@oss.sgi.com, Andrew Morton <akpm@linux-foundation.org>,
+	Linux/m68k <linux-m68k@vger.kernel.org>
+References: <20080813081147.8ECE258C52A8@chook.melbourne.sgi.com> <Pine.LNX.4.64.0808141738410.27466@anakin>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; 
-	boundary="----=_Part_67904_18048146.1218754271922"
-References: <520f0cf10808041352h78bd4319x1802f018aeffe6dc@mail.gmail.com>
-	 <1217921101.3589.98.camel@twins>
-	 <20080805204901.GA31132@linux.intel.com>
-	 <1217970588.29415.36.camel@lappy.programming.kicks-ass.net>
-	 <520f0cf10808051518h1459d353r8de78e98f79ec57c@mail.gmail.com>
-	 <20080812224926.GA20652@linux.intel.com>
-	 <520f0cf10808130124o301b6691ra37ac9007120b9df@mail.gmail.com>
-	 <20080814155241.GA31050@linux.intel.com>
-	 <1218736137.10800.234.camel@twins>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0808141738410.27466@anakin>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------=_Part_67904_18048146.1218754271922
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+On Thu, Aug 14, 2008 at 05:45:18PM +0200, Geert Uytterhoeven wrote:
+> On Wed, 13 Aug 2008, Lachlan McIlroy wrote:
+> > The following changes since commit 30a2f3c60a84092c8084dfe788b710f8d0768cd4:
+> >   Linus Torvalds (1):
+> >         Linux 2.6.27-rc3
+> > 
+> > are available in the git repository at:
+> > 
+> >   git://oss.sgi.com:8090/xfs/linux-2.6 master
+> > 
+> > David Chinner (12):
+> >       [XFS] extend completions to provide XFS object flush requirements
+> 
+> This change (commit 39d2f1ab2a36ac527a6c41cfe689f50c239eaca3) seems to
+> have broken the m68k build:
+> 
+> |   CC      arch/m68k/kernel/asm-offsets.s
+> | In file included from linux/include/linux/mm_types.h:12,
+> |                  from linux/include/linux/sched.h:61,
+> |                  from linux/arch/m68k/kernel/asm-offsets.c:12:
+> | linux/include/linux/completion.h: In function 'try_wait_for_completion':
+> | linux/include/linux/completion.h:80: error: dereferencing pointer to incomplete type
+> | linux/include/linux/completion.h: In function 'completion_done':
+> | linux/include/linux/completion.h:99: error: dereferencing pointer to incomplete type
+> | make[3]: *** [arch/m68k/kernel/asm-offsets.s] Error 1
+> | make[2]: *** [prepare0] Error 2
+> | make[1]: *** [sub-make] Error 2
+> 
+> (cfr. http://kisskb.ellerman.id.au/kisskb/buildresult/42080/)
+> 
+> Apparently there was not sufficient time between entering linux-next and
+> Linus' tree to notice this breakage before, while the original patch was already
+> posted on July 11...
 
-On Thu, Aug 14, 2008 at 7:48 PM, Peter Zijlstra <peterz@infradead.org> wrote:
-> On Thu, 2008-08-14 at 08:52 -0700, mark gross wrote:
->
->> Keeping a lock around the different "target_value"s may not be so
->> important.  Its just a 32bit scaler value, and perhaps we can make it an
->> atomic type?  That way we loose the raw_spinlock.
->
-> My suggestion was to keep the locking for the write side - so as to
-> avoid stuff stomping on one another, but drop the read side as:
->
->  spin_lock
->  foo = var;
->  spin_unlock
->  return foo;
->
-> is kinda useless, it doesn't actually serialize against the usage of
-> foo, that is, once it gets used, var might already have acquired a new
-> value.
->
-> The only thing it would protect is reading var, but since that is a
-> machine sized read, its atomic anyway (assuming its naturally aligned).
->
-> So no need for atomic_t (its read-side is just a read too), just drop
-> the whole lock usage from pq_qos_requirement().
->
+It spent the time between then and now in the -mm tree. Seems
+like nobody is building m68k out of -mm.
 
-Thanks Peter.
+I'm out for the next 3 days, but it seems to me that the easiest fix
+is to move that code out of the header (i.e. uninline them) so the
+patch below is only compile tested on x86_64 - I've got to go load a
+trailer and get moving...
 
-Mark, is the following patch ok with you? This should be applied to
-mainline, and then after that no special patches are necessary for
-real-time.
+Cheers,
 
-Thanks
+Dave.
+-- 
+Dave Chinner
+david@fromorbit.com
 
-John Kacur
 
-------=_Part_67904_18048146.1218754271922
-Content-Type: text/x-patch; name=pm_qos_requirement_lock.patch
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_fjvvq7q70
-Content-Disposition: attachment; filename=pm_qos_requirement_lock.patch
+Completions: Un-inline try_wait_for_completion and completion_done
 
-U3ViamVjdDogUmVtb3ZlIHVubmVjZXNzYXJ5IGxvY2sgaW4gcG1fcW9zX3JlcXVpcmVtZW50CgpT
-aWduZWQtb2ZmLWJ5OiBKb2huIEthY3VyIDxqa2FjdXIgYXQgZ21haWwgZG90IGNvbT4KCkluZGV4
-OiBsaW51eC0yLjYva2VybmVsL3BtX3Fvc19wYXJhbXMuYwo9PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09Ci0tLSBsaW51eC0y
-LjYub3JpZy9rZXJuZWwvcG1fcW9zX3BhcmFtcy5jCisrKyBsaW51eC0yLjYva2VybmVsL3BtX3Fv
-c19wYXJhbXMuYwpAQCAtMTkzLDE0ICsxOTMsNyBAQCBzdGF0aWMgaW50IGZpbmRfcG1fcW9zX29i
-amVjdF9ieV9taW5vcihpCiAgKi8KIGludCBwbV9xb3NfcmVxdWlyZW1lbnQoaW50IHBtX3Fvc19j
-bGFzcykKIHsKLQlpbnQgcmV0X3ZhbDsKLQl1bnNpZ25lZCBsb25nIGZsYWdzOwotCi0Jc3Bpbl9s
-b2NrX2lycXNhdmUoJnBtX3Fvc19sb2NrLCBmbGFncyk7Ci0JcmV0X3ZhbCA9IHBtX3Fvc19hcnJh
-eVtwbV9xb3NfY2xhc3NdLT50YXJnZXRfdmFsdWU7Ci0Jc3Bpbl91bmxvY2tfaXJxcmVzdG9yZSgm
-cG1fcW9zX2xvY2ssIGZsYWdzKTsKLQotCXJldHVybiByZXRfdmFsOworCXJldHVybiBwbV9xb3Nf
-YXJyYXlbcG1fcW9zX2NsYXNzXS0+dGFyZ2V0X3ZhbHVlOwogfQogRVhQT1JUX1NZTUJPTF9HUEwo
-cG1fcW9zX3JlcXVpcmVtZW50KTsKIAo=
-------=_Part_67904_18048146.1218754271922--
+m68k fails to build with these functions inlined in completion.h.
+Move them out of line into sched.c and export them to avoid this
+problem.
+
+Signed-off-by: Dave Chinner <david@fromorbit.com>
+---
+ include/linux/completion.h |   46 +------------------------------------------
+ kernel/sched.c             |   46 ++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 48 insertions(+), 44 deletions(-)
+
+diff --git a/include/linux/completion.h b/include/linux/completion.h
+index 57faa60..02ef883 100644
+--- a/include/linux/completion.h
++++ b/include/linux/completion.h
+@@ -49,6 +49,8 @@ extern unsigned long wait_for_completion_timeout(struct completion *x,
+ 						   unsigned long timeout);
+ extern unsigned long wait_for_completion_interruptible_timeout(
+ 			struct completion *x, unsigned long timeout);
++extern bool try_wait_for_completion(struct completion *x);
++extern bool completion_done(struct completion *x);
+ 
+ extern void complete(struct completion *);
+ extern void complete_all(struct completion *);
+@@ -56,48 +58,4 @@ extern void complete_all(struct completion *);
+ #define INIT_COMPLETION(x)	((x).done = 0)
+ 
+ 
+-/**
+- *	try_wait_for_completion - try to decrement a completion without blocking
+- *	@x:	completion structure
+- *
+- *	Returns: 0 if a decrement cannot be done without blocking
+- *		 1 if a decrement succeeded.
+- *
+- *	If a completion is being used as a counting completion,
+- *	attempt to decrement the counter without blocking. This
+- *	enables us to avoid waiting if the resource the completion
+- *	is protecting is not available.
+- */
+-static inline bool try_wait_for_completion(struct completion *x)
+-{
+-	int ret = 1;
+-
+-	spin_lock_irq(&x->wait.lock);
+-	if (!x->done)
+-		ret = 0;
+-	else
+-		x->done--;
+-	spin_unlock_irq(&x->wait.lock);
+-	return ret;
+-}
+-
+-/**
+- *	completion_done - Test to see if a completion has any waiters
+- *	@x:	completion structure
+- *
+- *	Returns: 0 if there are waiters (wait_for_completion() in progress)
+- *		 1 if there are no waiters.
+- *
+- */
+-static inline bool completion_done(struct completion *x)
+-{
+-	int ret = 1;
+-
+-	spin_lock_irq(&x->wait.lock);
+-	if (!x->done)
+-		ret = 0;
+-	spin_unlock_irq(&x->wait.lock);
+-	return ret;
+-}
+-
+ #endif
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 04160d2..d3af81a 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -4663,6 +4663,52 @@ int __sched wait_for_completion_killable(struct completion *x)
+ }
+ EXPORT_SYMBOL(wait_for_completion_killable);
+ 
++/**
++ *	try_wait_for_completion - try to decrement a completion without blocking
++ *	@x:	completion structure
++ *
++ *	Returns: 0 if a decrement cannot be done without blocking
++ *		 1 if a decrement succeeded.
++ *
++ *	If a completion is being used as a counting completion,
++ *	attempt to decrement the counter without blocking. This
++ *	enables us to avoid waiting if the resource the completion
++ *	is protecting is not available.
++ */
++bool try_wait_for_completion(struct completion *x)
++{
++	int ret = 1;
++
++	spin_lock_irq(&x->wait.lock);
++	if (!x->done)
++		ret = 0;
++	else
++		x->done--;
++	spin_unlock_irq(&x->wait.lock);
++	return ret;
++}
++EXPORT_SYMBOL(try_wait_for_completion);
++
++/**
++ *	completion_done - Test to see if a completion has any waiters
++ *	@x:	completion structure
++ *
++ *	Returns: 0 if there are waiters (wait_for_completion() in progress)
++ *		 1 if there are no waiters.
++ *
++ */
++bool completion_done(struct completion *x)
++{
++	int ret = 1;
++
++	spin_lock_irq(&x->wait.lock);
++	if (!x->done)
++		ret = 0;
++	spin_unlock_irq(&x->wait.lock);
++	return ret;
++}
++EXPORT_SYMBOL(completion_done);
++
+ static long __sched
+ sleep_on_common(wait_queue_head_t *q, int state, long timeout)
+ {
