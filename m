@@ -1,129 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753955AbYHNXLf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755257AbYHNXOb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753955AbYHNXLf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Aug 2008 19:11:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751390AbYHNXLZ
+	id S1755257AbYHNXOb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Aug 2008 19:14:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751424AbYHNXOX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Aug 2008 19:11:25 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:36750 "EHLO mx1.redhat.com"
+	Thu, 14 Aug 2008 19:14:23 -0400
+Received: from saeurebad.de ([85.214.36.134]:46596 "EHLO saeurebad.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751288AbYHNXLY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Aug 2008 19:11:24 -0400
-Date: Thu, 14 Aug 2008 19:11:19 -0400 (EDT)
-From: Mikulas Patocka <mpatocka@redhat.com>
-X-X-Sender: mpatocka@hs20-bc2-1.build.redhat.com
-To: David Miller <davem@davemloft.net>, Johannes Weiner <hannes@saeurebad.de>
-cc: sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Bootmem allocator broken [was: console handover badness]
-In-Reply-To: <20080813.202559.193705172.davem@davemloft.net>
-Message-ID: <Pine.LNX.4.64.0808141855500.15262@hs20-bc2-1.build.redhat.com>
-References: <Pine.LNX.4.64.0808122053280.31704@hs20-bc2-1.build.redhat.com>
- <20080812.184052.193693538.davem@davemloft.net>
- <Pine.LNX.4.64.0808130845290.8416@hs20-bc2-1.build.redhat.com>
- <20080813.202559.193705172.davem@davemloft.net>
+	id S1751390AbYHNXOX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Aug 2008 19:14:23 -0400
+From: Johannes Weiner <hannes@saeurebad.de>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Hugh Dickins <hugh@veritas.com>, Ian Campbell <ijc@hellion.org.uk>,
+       linux-kernel@vger.kernel.org, Kel Modderman <kel@otaku42.de>,
+       Markus Armbruster <armbru@redhat.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: kernel BUG at lib/radix-tree.c:473!
+References: <1218697362.26014.9.camel@localhost.localdomain>
+	<Pine.LNX.4.64.0808141347480.11013@blonde.site>
+	<48A48879.2000309@goop.org>
+	<Pine.LNX.4.64.0808142104080.29719@blonde.site>
+	<48A4AC01.7040402@goop.org>
+Date: Fri, 15 Aug 2008 01:13:59 +0200
+In-Reply-To: <48A4AC01.7040402@goop.org> (Jeremy Fitzhardinge's message of
+	"Thu, 14 Aug 2008 15:04:49 -0700")
+Message-ID: <871w0r5gw8.fsf@skyscraper.fehenstaub.lan>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
+Jeremy Fitzhardinge <jeremy@goop.org> writes:
 
-On Wed, 13 Aug 2008, David Miller wrote:
+> Hugh Dickins wrote:
+>> As you can see, I'm still groping towards the right answer.
+>> The driver probably needs to provide its own backing_dev_info
+>> (or point to a suitable default), and its own address_space_ops,
+>> and perhaps more (there should be examples elsewhere).  But whether
+>> it is actually wrong, or whether I was wrong to mess it up, I've
+>> not yet decided.
+>>   
+>
+> My understanding is that the driver is doing something a bit clever:
+> it uses the page dirty flags to determine which parts of the
+> framebuffer have been written to, and uses that information to
+> minimize the amount of stuff that needs to be copied out.  The writes
+> to the pages are not expected to generate actual page faults.
+>
+> But I haven't really looked at it closely, and I'm not at all familiar
+> with the vm at this layer.  I'm not sure how it actually allocates the
+> framebuffer memory for example (vmalloc?  incrementally on faults?).
+> I'm hoping Markus will leap in, since wrote this stuff.  Or, gasp,
+> I'll read the code myself.
+>
+>> An additional useful input would be: what happens if you replace
+>> that /dev/fb0 by a symlink /dev/fb0 pointing to an fb0 device node in
+>> one of your disk filesystems?  I rather expect that to cause the same
+>> trouble, which would argue that the driver is wrong and shmem right.
+>>   
+>
+> I don't follow. Do you mean make /dev/fb0 a plain file on a
+> filesystem?  Or make it a disk device node?  Something else?
 
-> From: Mikulas Patocka <mpatocka@redhat.com>
-> Date: Wed, 13 Aug 2008 08:46:37 -0400 (EDT)
-> 
-> > On Tue, 12 Aug 2008, David Miller wrote:
-> > 
-> > > Mikulas can you send me the .config you're using in 2.6.27 to trigger
-> > > this?
-> > > 
-> > > Thanks.
-> > 
-> > Here it is. The computer is Ultra 5 with 512MB RAM.
-> 
-> Thanks, I've tried a lot of things to try and reproduce this myself but to
-> no avail.
-> 
-> Let's try to track down exactly where the corruption happens.  Please try
-> the debug patch below on your box.  It will spit out a message something
-> like:
-> 
-> [    0.000000] BUG: Bogus migrate type 5
-> [    0.000000] BUG: Usemap for section 0 corrupted at sparse_init+0x17c/0x218[mm/sparse.c:498]
-> 
-> The theory is that some other piece of code is either not allocating a large
-> enough buffer or overwriting past the end of a validly sized other buffer
-> for some reason, and thus clobbering this pageblock flags bitmap.
-> 
-> Wherever this debugging check first triggers should give us some idea
-> of who the culprit might be.
+Creating a device node on a different filesystem to see if the driver
+only worked with the safe shmem set_page_dirty and now breaks due to
+exposure to the generic version.  Or if the driver works with the
+generic version through other mappings and the shmem code screws it up
+somewhere else.
 
-Hi
-
-So I tried the patch and found out that the corruption happens in 
-setup_command_line --- the first strcpy call corrupted the migratetype 
-map.
-
-Examining the problem further, it turned out that Johannes Weiner 
-committed new bootmem allocator to 2.6.27-rc1 and the allocator is broken.
-
-This is the minimal sequence that jams the allocator:
-
-void *p, *q, *r;
-p = alloc_bootmem(PAGE_SIZE);
-q = alloc_bootmem(64);
-free_bootmem(p, PAGE_SIZE);
-p = alloc_bootmem(PAGE_SIZE);
-r = alloc_bootmem(64);
-
---- after this sequence (assuming that the allocator was empty or 
-page-aligned before), pointer "q" will be equal to pointer "r".
-
-What's hapenning inside the allocator:
-p = alloc_bootmem(PAGE_SIZE);
-in allocator: last_end_off == PAGE_SIZE, bitmap contains bits 10000...
-q = alloc_bootmem(64);
-in allocator: last_end_off == PAGE_SIZE + 64, bitmap contains 11000...
-free_bootmem(p, PAGE_SIZE);
-in allocator: last_end_off == PAGE_SIZE + 64, bitmap contains 01000...
-p = alloc_bootmem(PAGE_SIZE);
-in allocator: last_end_off == PAGE_SIZE, bitmap contains 11000...
-r = alloc_bootmem(64);
-and now:
-it finds bit "2", as a place where to allocate (sidx)
-it hits the condition
-if (bdata->last_end_off && PFN_DOWN(bdata->last_end_off) + 1 == sidx))
-start_off = ALIGN(bdata->last_end_off, align);
---- you can see that the condition is true, so it assigns start_off = 
-ALIGN(bdata->last_end_off, align); --- that is PAGE_SIZE --- and allocates 
-over already allocated block.
-
-This patch fixes it (kernels 2.6.27-rc2 and 2.6.27-rc3 boot ok after the 
-patch). Johannes, please review the patch and submit it to Linus.
-
-With the patch it tries to continue at the end of previous allocation only 
-if the previous allocation ended in the middle of the page.
-
-Signed-off-by: Mikulas Patocka <mpatocka@redhat.com>
-
----
- mm/bootmem.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-Index: linux-2.6.27-rc2-orig/mm/bootmem.c
-===================================================================
---- linux-2.6.27-rc2-orig.orig/mm/bootmem.c	2008-08-15 00:10:38.000000000 +0200
-+++ linux-2.6.27-rc2-orig/mm/bootmem.c	2008-08-15 00:10:53.000000000 +0200
-@@ -473,7 +473,7 @@ find_block:
- 				goto find_block;
- 			}
- 
--		if (bdata->last_end_off &&
-+		if (bdata->last_end_off & (PAGE_SIZE - 1) &&
- 				PFN_DOWN(bdata->last_end_off) + 1 == sidx)
- 			start_off = ALIGN(bdata->last_end_off, align);
- 		else
-
-
+	Hannes
