@@ -1,56 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754076AbYHNE04@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754417AbYHNEmo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754076AbYHNE04 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Aug 2008 00:26:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750735AbYHNE0s
+	id S1754417AbYHNEmo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Aug 2008 00:42:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751166AbYHNEmh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Aug 2008 00:26:48 -0400
-Received: from serv2.oss.ntt.co.jp ([222.151.198.100]:41365 "EHLO
-	serv2.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750711AbYHNE0s (ORCPT
+	Thu, 14 Aug 2008 00:42:37 -0400
+Received: from ozlabs.org ([203.10.76.45]:55121 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751156AbYHNEmg convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Aug 2008 00:26:48 -0400
-Subject: Re: request->ioprio
-From: Fernando Luis =?ISO-8859-1?Q?V=E1zquez?= Cao 
+	Thu, 14 Aug 2008 00:42:36 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Fernando Luis =?utf-8?q?V=C3=A1zquez_Cao?= 
 	<fernando@oss.ntt.co.jp>
-To: Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [PATCH] virtio_blk: use a wrapper function to access io context information of IO requests
+Date: Thu, 14 Aug 2008 14:42:09 +1000
+User-Agent: KMail/1.9.9
 Cc: Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
-       =?UTF-8?Q?=E5=90=89=E5=B7=9D_=E6=8B=93=E5=93=89?= 
+       =?utf-8?q?=E5=90=89=E5=B7=9D_=E6=8B=93=E5=93=89?= 
 	<yoshikawa.takuya@oss.ntt.co.jp>,
        dpshah@google.com
-In-Reply-To: <200808141216.33688.rusty@rustcorp.com.au>
-References: <1218014196.4419.44.camel@sebastian.kern.oss.ntt.co.jp>
-	 <200808070633.06112.rusty@rustcorp.com.au>
-	 <1218611163.8001.108.camel@sebastian.kern.oss.ntt.co.jp>
-	 <200808141216.33688.rusty@rustcorp.com.au>
-Content-Type: text/plain; charset=UTF-8
-Organization: NTT Open Source Software Center
-Date: Thu, 14 Aug 2008 13:26:46 +0900
-Message-Id: <1218688006.30624.9.camel@sebastian.kern.oss.ntt.co.jp>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 8bit
+References: <1218014196.4419.44.camel@sebastian.kern.oss.ntt.co.jp> <1218611163.8001.108.camel@sebastian.kern.oss.ntt.co.jp> <1218615271.16667.38.camel@sebastian.kern.oss.ntt.co.jp>
+In-Reply-To: <1218615271.16667.38.camel@sebastian.kern.oss.ntt.co.jp>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200808141442.09633.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-08-14 at 12:16 +1000, Rusty Russell wrote:
-> On Wednesday 13 August 2008 17:06:03 Fernando Luis Vázquez Cao wrote:
-> > Besides, I guess that accessing the io context information (such as
-> > ioprio) of a request through elevator-specific private structures is not
-> > something we want virtio_blk (or future users) to do.
-> 
-> The only semantic I assumed was "higher is better".  The server (ie. host) can 
-> really only use the information to schedule between I/Os for that particular 
-> guest anyway.
-> 
-> But it sounds like I should be passing "0" in there unconditionally until the 
-> kernel semantics are sorted out and I can do something more intelligent?  I 
-> haven't checked, but I assume that's actually what's happening at the moment 
-> (the field is zero)?
-Yes, with the current implementation the field is always zero, but
-things might change. Instead of passing 0 unconditionally I think we
-could use a function that extracts/calculates the ioprio of requests.
-The patch I sent you yesterday is the first step in that direction. Is
-this a valid approach for you?
+On Wednesday 13 August 2008 18:14:31 Fernando Luis Vázquez Cao wrote:
+> Rusty, Jens
+>
+> What do you think about the patch below? Does it make sense?
 
+Yes.  Obviously it makes more sense for Jens to queue this so:
+
+Acked-by: Rusty Russell <rusty@rustcorp.com.au>
+
+Thanks!
+Rusty.
