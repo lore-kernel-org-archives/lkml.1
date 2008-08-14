@@ -1,89 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758503AbYHNM2L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758183AbYHNMed@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758503AbYHNM2L (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Aug 2008 08:28:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752866AbYHNM15
+	id S1758183AbYHNMed (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Aug 2008 08:34:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752423AbYHNMeY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Aug 2008 08:27:57 -0400
-Received: from pmx1.sophos.com ([213.31.172.16]:42342 "EHLO pmx1.sophos.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752171AbYHNM15 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Aug 2008 08:27:57 -0400
-In-Reply-To: <2629CC4E1D22A64593B02C43E855530304AE4BCB@USILMS12.ca.com>
+	Thu, 14 Aug 2008 08:34:24 -0400
+Received: from ns.bitdefender.com ([91.199.104.10]:52911 "EHLO
+	mail.bitdefender.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752171AbYHNMeX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Aug 2008 08:34:23 -0400
+From: Mihai =?utf-8?q?Don=C8=9Bu?= <mdontu@bitdefender.com>
+Organization: BitDefender
 To: "Press, Jonathan" <Jonathan.Press@ca.com>
-Cc: alan@lxorguk.ukuu.org.uk, andi@firstfloor.org,
-       "Arjan van de Ven" <arjan@infradead.org>, hch@infradead.org,
-       linux-kernel@vger.kernel.org, linux-kernel-owner@vger.kernel.org,
-       malware-list@lists.printk.net, malware-list-bounces@dmesg.printk.net,
-       peterz@infradead.org, "Theodore Tso" <tytso@mit.edu>,
-       viro@ZenIV.linux.org.uk
-Subject: RE: [malware-list] TALPA - a threat model?  well sorta.
+Subject: Re: [malware-list] TALPA - a threat model?  well sorta.
+Date: Thu, 14 Aug 2008 15:34:15 +0300
+User-Agent: KMail/1.9.9
+Cc: "Andi Kleen" <andi@firstfloor.org>, peterz@infradead.org,
+       linux-kernel@vger.kernel.org, malware-list@lists.printk.net,
+       hch@infradead.org, viro@zeniv.linux.org.uk, alan@lxorguk.ukuu.org.uk,
+       arjan@infradead.org
+References: <1218645375.3540.71.camel@localhost.localdomain> <200808140318.00740.mihai.dontu@gmail.com> <2629CC4E1D22A64593B02C43E855530304AE4BCA@USILMS12.ca.com>
+In-Reply-To: <2629CC4E1D22A64593B02C43E855530304AE4BCA@USILMS12.ca.com>
 MIME-Version: 1.0
-X-Mailer: Lotus Notes Release 7.0.2 September 26, 2006
-From: tvrtko.ursulin@sophos.com
-Date: Thu, 14 Aug 2008 13:27:54 +0100
-X-MIMETrack: S/MIME Sign by Notes Client on Tvrtko Ursulin/Dev/UK/Sophos(Release 7.0.2|September
- 26, 2006) at 14/08/2008 13:27:54,
-	Serialize by Notes Client on Tvrtko Ursulin/Dev/UK/Sophos(Release 7.0.2|September
- 26, 2006) at 14/08/2008 13:27:54,
-	Serialize complete at 14/08/2008 13:27:54,
-	S/MIME Sign failed at 14/08/2008 13:27:54: The cryptographic key was not
- found,
-	Serialize by Router on Mercury/Servers/Sophos(Release 7.0.3|September 26, 2007) at
- 14/08/2008 13:27:55,
-	Serialize complete at 14/08/2008 13:27:55
-Content-Type: text/plain; charset="US-ASCII"
-Message-Id: <20080814122800.45BA42FE810@pmx1.sophos.com>
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Content-Disposition: inline
+Message-Id: <200808141534.16200.mdontu@bitdefender.com>
+X-BitDefender-Scanner: Clean, Agent: BitDefender qmail 3.0.0 on
+ mail.bitdefender.com, sigver: 7.20508
+X-BitDefender-Spam: No (0)
+X-BitDefender-SpamStamp: v1, build 2.6.17.51688, bayes score: 500(0),
+ pbayes score: 0(0), neunet score: 0(0), flags: [VALID_REPLY], total:
+ 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jonathan Press wrote on 14/08/2008 13:03:40:
+On Thursday 14 August 2008, Press, Jonathan wrote:
+> > On Wednesday 13 August 2008, Andi Kleen wrote:
+> > > On Wed, Aug 13, 2008 at 12:36:15PM -0400, Eric Paris wrote:
+> > >
+> > > I miss a clear answer to the question: is this
+> > > supposed to protect against malware injected as root or not?
+> >
+> > I honestly don't think we should worry about root. Sure, if the AV
+> > scanner happens to catch something (as a consequence of it's
+> > implementation), then very well. But designing an antimalware solution
+> > which assumes the root is compromised will throw us into security talks
+> > for years and I don't think we'll live to hear the end of them.
+> >
+> > We should focus on the regular users and fix (if needed) the current
+> > userland apps (ie. the ones that need root access to do their job). For
+> > anymore than that we'll need a super user that supervises root. And then
+> > another one.
+>
+> I think that some people are missing the important point of Eric's recent
+> original statement of the "threat model".  Whether we move further in the
+> direction of other security protections or not, we are currently talking
+> about providing a mechanism for basic AV product to do their job, and the
+> job we are talking about is scanning files when they are about to be used
+> and might cause harm, or have just been created and we want to make sure
+> they are OK.  That is, the AV products that we are talking about in this
+> context don't do anything else other than scan files.
 
-> > Hm, maybe by implementing a facility with which a client can register
-> it's
-> > interface usage intent? Something like:
-> > 
-> > register(I_HAVE_NO_INTEREST_IN_CONTENT);
-> > register(I_WANT_TO_EXAMINE_CONTENT);
-> > 
-> > All former ones would run first because they only want to have the
-> > opportunity to block and do something unrelated to file content (like
-> > HSMs), and later group would be ran last since they want to examine
-> the
-> > content.
-> > 
-> > Ordering inside those two groups is not important because I don't see
-> how
-> > a model other than restrictive can make sense with content security
-> > scanning.
-> 
-> I'm not sure I understand why "interest in content" means not blocking,
-> and vice versa.  However, I think this is a good idea if made more
-> explicit, i.e.:
+I see. Well, as long as everyone sticks to _just_ the file scan. To be honest, 
+the only immediate use of the patch that is/was in question, is a "natural" 
+scanner for file servers (Samba, NFS etc). 7v5w7go9ub0o, however, might have 
+some more ideas. :)
 
-Small misunderstanding because both would block. If you go back to Ted's 
-original post I was replying to, he was worried about how would 
-anti-malware scanning interact with HSM since both may end up using the 
-same interface. HSM, as far as I understand it, needs to block on open and 
-"plant" the right file in place, while anti-malware also needs to block 
-and examine the right content. That is why ordering matters, anti-malware 
-needs to run after the content is put in place. And that is what my idea 
-solves (slight overstatement since I spent only seconds on it) by 
-separating them in two groups of clients. First which has no interest in 
-content and second which does.
+I admit and I apologize, I got pretty worked up when people started asking 
+questions like: "how do we protect the file scanner", when the answer should 
+have been obvious: the way we protect any other daemon (service) today, by 
+means of chmod/chown.
 
---
-Tvrtko A. Ursulin
-Senior Software Engineer, Sophos
+> With that in mind, there is no difference between scanning files being
+> accessed/executed/created by root and the same for any other users.  And in
+> fact, to the extent that we claim at all to have a somewhat complete
+> protection in that realm, excluding root will completely blow that protect
+> out of the water and make it essentially useless.
+>
+> > I think we need to define the 'desktop user' and provide a decent
+> > protection mechanism for his common activities (edit documents, listen
+> > music, navigate the web, see movies, run scripts which change the IM
+> > status etc). For the rest, there are two possibilities:
+> >
+> >     1. education (_extremely_ important);
+>
+> It's like abstinence education...it sounds good, at least to some, but it
+> doesn't work.  In a way, that's the whole point.  There are millions of
+> users.  It doesn't take many who missed the class to create an outbreak
+> that does real damage.  It goes back to the medical analogy.  Do you spray
+> the swamps for the mosquitoes that carry Eastern Equine Encephalitis, or do
+> you knock on everyone's door and tell them not to go near the swamps, and
+> hope that everyone's home when you're in their neighborhood?
+>
+> > I don't think there will ever be an AV product using the marketing line:
+> > "it allows you to run your favorite rootkit and enjoy the pretty text it
+> > shows, with no worries".
+>
+> You are right...  Complete rootkit protection is a whole other area not
+> fundamentally addressed by a scan.  So let's not create a straw man about
+> the things we don't claim to do and then knock the products because we
+> don't do them.
 
-"Views and opinions expressed in this email are strictly those of the 
-author.
- The contents has not been reviewed or approved by Sophos."
- 
-
-Sophos Plc, The Pentagon, Abingdon Science Park, Abingdon,
-OX14 3YP, United Kingdom.
-
-Company Reg No 2096520. VAT Reg No GB 348 3873 20.
-
+-- 
+Mihai Donțu
+Again, this mail == my own opinion
