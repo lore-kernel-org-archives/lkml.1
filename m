@@ -1,56 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759671AbYHNTVU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760237AbYHNTVd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759671AbYHNTVU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Aug 2008 15:21:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752701AbYHNTVL
+	id S1760237AbYHNTVd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Aug 2008 15:21:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759575AbYHNTVT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Aug 2008 15:21:11 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:51235 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752845AbYHNTVK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Aug 2008 15:21:10 -0400
-Subject: Re: [malware-list] TALPA - a threat model?  well sorta.
-From: Eric Paris <eparis@redhat.com>
-To: Theodore Tso <tytso@mit.edu>
-Cc: tvrtko.ursulin@sophos.com, alan@lxorguk.ukuu.org.uk, andi@firstfloor.org,
-       Arjan van de Ven <arjan@infradead.org>, hch@infradead.org,
-       linux-kernel@vger.kernel.org, malware-list@lists.printk.net,
-       malware-list-bounces@dmesg.printk.net, peterz@infradead.org,
-       viro@ZenIV.linux.org.uk
-In-Reply-To: <20080814191726.GG22488@mit.edu>
-References: <20080813192922.GI8232@mit.edu>
-	 <20080814093103.6CD102FE8B4@pmx1.sophos.com>
-	 <20080814132455.GE6469@mit.edu>
-	 <1218721713.3540.125.camel@localhost.localdomain>
-	 <20080814155028.GB8256@mit.edu>
-	 <1218734985.9375.5.camel@paris.rdu.redhat.com>
-	 <20080814191726.GG22488@mit.edu>
-Content-Type: text/plain
-Date: Thu, 14 Aug 2008 15:20:44 -0400
-Message-Id: <1218741644.16613.3.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+	Thu, 14 Aug 2008 15:21:19 -0400
+Received: from g1t0026.austin.hp.com ([15.216.28.33]:12193 "EHLO
+	g1t0026.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759462AbYHNTVS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Aug 2008 15:21:18 -0400
+Message-ID: <48A485A8.8010803@hp.com>
+Date: Thu, 14 Aug 2008 15:21:12 -0400
+From: "Alan D. Brunelle" <Alan.Brunelle@hp.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
+MIME-Version: 1.0
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Linux 2.6.27-rc3: kernel BUG at mm/vmalloc.c - bisected
+References: <48A36838.3050309@hp.com> <200808141814.43484.rjw@sisk.pl>
+In-Reply-To: <200808141814.43484.rjw@sisk.pl>
+Content-Type: text/plain; charset=ISO-8859-15
 Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-08-14 at 15:17 -0400, Theodore Tso wrote:
-> On Thu, Aug 14, 2008 at 01:29:45PM -0400, Eric Paris wrote:
-> > 
-> > is i_version an on disk think?  didn't realize that and just assumed it
-> > was in in core thing.  I wouldn't have an issue sending i_version to the
-> > userspace scanner for them to use as they like.
-> > 
+Rafael J. Wysocki wrote:
+> On Thursday, 14 of August 2008, Alan D. Brunelle wrote:
+>> I ran into this trying 2.6.27-rc3 today:
+>>
+>> [6.461876] kernel BUG at mm/vmalloc.c:217!
+>>
+>> (full boot log attached)
+>>
+>> I bisected it to:
+>>
+>> git-bisect bad 1c89ac55017f982355c7761e1c912c88c941483d
+>>
+>> which is:
+>>
+>> commit 1c89ac55017f982355c7761e1c912c88c941483d
+>> Merge: 88fa08f... b1b135c...
+>> Author: Linus Torvalds <torvalds@linux-foundation.org>
+>> Date:   Tue Aug 12 08:40:19 2008 -0700
+>>
+>>     Merge
+>> git://git.kernel.org/pub/scm/linux/kernel/git/rusty/linux-2.6-for-linus
 > 
-> It's on-disk for some filesystems, in order to support NFsv4 advanced
-> caching semantics (which means i_version has to survive a reboot,
-> which means it has to be on disk).  It is *not* on disk for ext3,
-> although it is for ext4.
+> This is a merge commit that introduced several changes into the
+> kernel.  It would be helpful to search through these changes.
 
-Is there some pragmatic way in kernel to know if the inode I have
-corresponds to a persistent or in core only inode?  I'll poke around
-myself and look.
+I came in this morning, and did a 'git bisect reset' and 'git pull'
+built, and everything booted fine. I don't know if some fix came in for
+something else, or if the problem got "hidden" (some sort of timing
+thing, so the problem still lurks). If you feel it's important to track
+this down, if you could give me instructions on how to break apart that
+one merge, I could then try individual kernels from there...
 
--Eris
-
+Thanks,
+Alan
