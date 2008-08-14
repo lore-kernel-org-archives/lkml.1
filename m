@@ -1,72 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754741AbYHNPpc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756739AbYHNPpo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754741AbYHNPpc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Aug 2008 11:45:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751182AbYHNPpW
+	id S1756739AbYHNPpo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Aug 2008 11:45:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751930AbYHNPpZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Aug 2008 11:45:22 -0400
-Received: from edna.telenet-ops.be ([195.130.132.58]:54148 "EHLO
-	edna.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751117AbYHNPpV (ORCPT
+	Thu, 14 Aug 2008 11:45:25 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:33291 "EHLO
+	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751784AbYHNPpZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Aug 2008 11:45:21 -0400
-Date: Thu, 14 Aug 2008 17:45:18 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Lachlan McIlroy <lachlan@sgi.com>, David Chinner <david@fromorbit.com>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       xfs@oss.sgi.com, Andrew Morton <akpm@linux-foundation.org>,
-       Linux/m68k <linux-m68k@vger.kernel.org>
-Subject: Re: [GIT PULL] XFS update for 2.6.27-rc4
-In-Reply-To: <20080813081147.8ECE258C52A8@chook.melbourne.sgi.com>
-Message-ID: <Pine.LNX.4.64.0808141738410.27466@anakin>
-References: <20080813081147.8ECE258C52A8@chook.melbourne.sgi.com>
+	Thu, 14 Aug 2008 11:45:25 -0400
+Date: Thu, 14 Aug 2008 17:46:05 +0200
+From: Pavel Machek <pavel@suse.cz>
+To: "Langsdorf, Mark" <mark.langsdorf@amd.com>
+Cc: Greg KH <greg@kroah.com>, "Deguara, Joachim" <joachim.deguara@amd.com>,
+       gregkh@ucw.cz, tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 01/01][retry 3] x86: L3 cache index disable for 2.6.26
+Message-ID: <20080814154605.GB27141@elf.ucw.cz>
+References: <200807181603.52332.mark.langsdorf@amd.com> <200808131502.42611.mark.langsdorf@amd.com> <20080813234503.GA32154@kroah.com> <200808140843.44090.mark.langsdorf@amd.com> <20080814134457.GD2262@elf.ucw.cz> <6453C3CB8E2B3646B0D020C112613273C5AC6D@sausexmb4.amd.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <6453C3CB8E2B3646B0D020C112613273C5AC6D@sausexmb4.amd.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 13 Aug 2008, Lachlan McIlroy wrote:
-> The following changes since commit 30a2f3c60a84092c8084dfe788b710f8d0768cd4:
->   Linus Torvalds (1):
->         Linux 2.6.27-rc3
+Hi!
+
+> > > +        val |= 0xc0000000;
+> > > +        pci_write_config_dword(dev, 0x1BC + index * 4, val 
+> > & ~0x40000000);
+> > > +        wbinvd();
+> > > +        pci_write_config_dword(dev, 0x1BC + index * 4, val);
+> > 
+> > Should it do if capable() test before doing such stuff?
 > 
-> are available in the git repository at:
-> 
->   git://oss.sgi.com:8090/xfs/linux-2.6 master
-> 
-> David Chinner (12):
->       [XFS] extend completions to provide XFS object flush requirements
+> I don't think so.  If it got this far, it is an AMD processor
+> from family 0x10 or later, so it has wbinvd().
 
-This change (commit 39d2f1ab2a36ac527a6c41cfe689f50c239eaca3) seems to
-have broken the m68k build:
-
-|   CC      arch/m68k/kernel/asm-offsets.s
-| In file included from linux/include/linux/mm_types.h:12,
-|                  from linux/include/linux/sched.h:61,
-|                  from linux/arch/m68k/kernel/asm-offsets.c:12:
-| linux/include/linux/completion.h: In function 'try_wait_for_completion':
-| linux/include/linux/completion.h:80: error: dereferencing pointer to incomplete type
-| linux/include/linux/completion.h: In function 'completion_done':
-| linux/include/linux/completion.h:99: error: dereferencing pointer to incomplete type
-| make[3]: *** [arch/m68k/kernel/asm-offsets.s] Error 1
-| make[2]: *** [prepare0] Error 2
-| make[1]: *** [sub-make] Error 2
-
-(cfr. http://kisskb.ellerman.id.au/kisskb/buildresult/42080/)
-
-Apparently there was not sufficient time between entering linux-next and
-Linus' tree to notice this breakage before, while the original patch was already
-posted on July 11...
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+No, I meant we should check for permissions. Filesystem permissions
+are traditionaly not enough for stuff like this. if
+(capable(CAP_ADMIN)) or something?
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
