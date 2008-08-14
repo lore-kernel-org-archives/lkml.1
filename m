@@ -1,30 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756771AbYHNLEz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754655AbYHNLFU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756771AbYHNLEz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Aug 2008 07:04:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753889AbYHNLEq
+	id S1754655AbYHNLFU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Aug 2008 07:05:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754378AbYHNLEs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Aug 2008 07:04:46 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:1258 "EHLO spitz.ucw.cz"
+	Thu, 14 Aug 2008 07:04:48 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:1265 "EHLO spitz.ucw.cz"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752683AbYHNLEp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Aug 2008 07:04:45 -0400
-Date: Wed, 13 Aug 2008 21:22:48 +0200
+	id S1753732AbYHNLEr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Aug 2008 07:04:47 -0400
+Date: Thu, 14 Aug 2008 07:53:02 +0200
 From: Pavel Machek <pavel@suse.cz>
-To: Len Brown <lenb@kernel.org>
-Cc: Thomas Renninger <trenn@suse.de>, Arjan van de Ven <arjan@linux.intel.com>,
-       linux-acpi <linux-acpi@vger.kernel.org>,
-       "Moore, Robert" <robert.moore@intel.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andi Kleen <ak@linux.intel.com>,
-       Christian Kornacker <ckornacker@suse.de>
-Subject: Re: ACPI OSI disaster on latest HP laptops - critical temperature shutdowns
-Message-ID: <20080813192247.GF6995@ucw.cz>
-References: <200807241727.41715.trenn@suse.de> <alpine.LFD.1.10.0807261434380.2958@localhost.localdomain> <alpine.LFD.1.10.0808011701500.3011@localhost.localdomain>
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+Cc: Dave Hansen <dave@linux.vnet.ibm.com>, Arnd Bergmann <arnd@arndb.de>,
+       containers@lists.linux-foundation.org, Theodore Tso <tytso@mit.edu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCH 1/4] checkpoint-restart: general infrastructure
+Message-ID: <20080814055301.GH6995@ucw.cz>
+References: <20080807224033.FFB3A2C1@kernel> <200808081146.54834.arnd@arndb.de> <1218221451.19082.36.camel@nimitz> <200808090013.41999.arnd@arndb.de> <1218234411.19082.58.camel@nimitz> <20080811150703.GA25930@us.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.10.0808011701500.3011@localhost.localdomain>
+In-Reply-To: <20080811150703.GA25930@us.ibm.com>
 User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -32,20 +29,34 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Hi!
 
-> I ACK Thomas' suggestion to check for <= 0C for HOT,
-> PSV and ACx trip points.  While we don't have such a
+> > > > I have to wonder if this is just a symptom of us trying to do this the
+> > > > wrong way.  We're trying to talk the kernel into writing internal gunk
+> > > > into a FD.  You're right, it is like a splice where one end of the pipe
+> > > > is in the kernel.
+> > > > 
+> > > > Any thoughts on a better way to do this?  
+> > > 
+> > > Maybe you can invert the logic and let the new syscalls create a file
+> > > descriptor, and then have user space read or splice the checkpoint
+> > > data from it, and restore it by writing to the file descriptor.
+> > > It's probably easy to do using anon_inode_getfd() and would solve this
+> > > problem, but at the same time make checkpointing the current thread
+> > > hard if not impossible.
+> > 
+> > Yeah, it does seem kinda backwards.  But, instead of even having to
+> > worry about the anon_inode stuff, why don't we just put it in a fs like
+> > everything else?  checkpointfs!
+> 
+> One reason is that I suspect that stops us from being able to send that
+> data straight to a pipe to compress and/or send on the network, without
+> hitting local disk.  Though if the checkpointfs was ram-based maybe not?
+> 
+> As Oren has pointed out before, passing in an fd means we can pass a
+> socket into the syscall.
 
-Hmm, I don't think that's good idea. 0Celsius is not special value.
-
-While having _CRT below 25Celsius would be quite strange (machine
-that can not run on room temperature?), I could imagine it (cryogenic
-cooling, cpu is overclocked, needs -10C to work).
-
-Machine with AC0 == -10C is very easy to imagine, OTOH. It is normal
-notebook that needs fans during normal temperatures, but does not need
-it if it is really cold.
-
-							Pavel
+If you do pass a socket, will it handle blocking correctly? Getting
+deadlocked task would be bad. What happens if I try to snapshot into
+/proc/self/fd/0 ? Or maybe restore from /proc/cmdline?
 
 -- 
 (english) http://www.livejournal.com/~pavelmachek
