@@ -1,66 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759338AbYHNRt1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753921AbYHNRtr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759338AbYHNRt1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Aug 2008 13:49:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755321AbYHNRtG
+	id S1753921AbYHNRtr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Aug 2008 13:49:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752952AbYHNRtf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Aug 2008 13:49:06 -0400
-Received: from extu-mxob-2.symantec.com ([216.10.194.135]:34652 "EHLO
-	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754380AbYHNRtF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Aug 2008 13:49:05 -0400
-Date: Thu, 14 Aug 2008 18:42:33 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.site
-To: Ian Campbell <ijc@hellion.org.uk>
-cc: linux-kernel@vger.kernel.org, Jeremy Fitzhardinge <jeremy@goop.org>,
-       Kel Modderman <kel@otaku42.de>, Markus Armbruster <armbru@redhat.com>
-Subject: Re: kernel BUG at lib/radix-tree.c:473!
-In-Reply-To: <1218725794.29410.17.camel@zakaz.uk.xensource.com>
-Message-ID: <Pine.LNX.4.64.0808141831370.9951@blonde.site>
-References: <1218697362.26014.9.camel@localhost.localdomain> 
- <Pine.LNX.4.64.0808141347480.11013@blonde.site> <1218725794.29410.17.camel@zakaz.uk.xensource.com>
+	Thu, 14 Aug 2008 13:49:35 -0400
+Received: from gw.goop.org ([64.81.55.164]:50396 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752577AbYHNRte (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Aug 2008 13:49:34 -0400
+Message-ID: <48A4700F.6030806@goop.org>
+Date: Thu, 14 Aug 2008 10:49:03 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: "H. Peter Anvin" <hpa@zytor.com>, Andi Kleen <andi@firstfloor.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       Steven Rostedt <srostedt@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, Roland McGrath <roland@redhat.com>,
+       Ulrich Drepper <drepper@redhat.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Gregory Haskins <ghaskins@novell.com>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       "Luis Claudio R. Goncalves" <lclaudio@uudg.org>,
+       Clark Williams <williams@redhat.com>,
+       Christoph Lameter <cl@linux-foundation.org>
+Subject: Re: [RFC PATCH] x86 alternatives : fix LOCK_PREFIX race with	preemptible
+ kernel and CPU hotplug
+References: <20080813193715.GQ1366@one.firstfloor.org> <20080813200119.GA18966@Krystal> <20080813234156.GA25775@Krystal> <48A375E3.9090609@zytor.com> <48A388CE.2020404@goop.org> <20080814014944.GA31883@Krystal> <48A3A806.8060509@goop.org> <20080814151805.GA29507@Krystal> <48A465BA.5050406@goop.org> <48A468F5.4050308@zytor.com> <20080814174612.GB4697@Krystal>
+In-Reply-To: <20080814174612.GB4697@Krystal>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 14 Aug 2008, Ian Campbell wrote:
-> On Thu, 2008-08-14 at 14:06 +0100, Hugh Dickins wrote:
-> > On Thu, 14 Aug 2008, Ian Campbell wrote:
-> > > Jeremy first noticed this
-> > > http://marc.info/?l=linux-kernel&m=121783008503477&w=2
-> > > 
-> > > I've bisected it down to:
-> > > commit 14fcc23fdc78e9d32372553ccf21758a9bd56fa1
-> > > Author: Hugh Dickins <hugh@veritas.com>
-> > > Date:   Mon Jul 28 15:46:19 2008 -0700
-> > > 
-> > >     tmpfs: fix kernel BUG in shmem_delete_inode
-> 
-> > In both cases it's handling a page fault: I'm curious as to what kind
-> > of vma this fault is occurring on.  Could you devise a way of getting
-> > us /proc/<pid>/maps output, together with the faulting address, when
-> > it hits one of these BUGs?  Or should I try to put together a patch
-> > for that?
-> 
-> I'll have a go but I'm just about to go away for a long weekend so it
-> might be next week unless I get to it tonight. Any pointers on how to go
-> about it would be appreciated though...
+Mathieu Desnoyers wrote:
+> Here are the specs. It's a brand new 64bits dual quad-core (Christmas in
+> August) :-) None of the specs seems to talk about neither Core2 or
+> Pentium 4 though. Those appellations seems to hold for desktop
+> processors, not server processors...
+>   
 
-No, have a good break and come back to it next week.  Whatever I suggest
-in a rush will at first give you more oopses than you started out with,
-back and forth, then it'll give us some info but not enough, back and
-forth... no.  I'd rather spend the time trying to work out a hypothesis
-from my end: it's always easier to devise an info patch once you have
-a hypothesis to test, right now it makes no sense to me at all.
+Is it a Dell thingy?  Turns out my main test box has exactly the same 
+processor.
 
-My starting point will be, prior to my tmpfs patch the faulting page
-had a .set_page_dirty that kept it out of trouble, with that change
-of ops now it hasn't; but what kind of page it actually is, a shmem
-page (because the ops change affected it) that isn't a shmem page
-(because it doesn't have the ops), I don't grasp yet.
-
-Hugh
+    J
