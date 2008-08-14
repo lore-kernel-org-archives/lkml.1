@@ -1,81 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756518AbYHNLia@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757505AbYHNLkc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756518AbYHNLia (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Aug 2008 07:38:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753656AbYHNLiV
+	id S1757505AbYHNLkc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Aug 2008 07:40:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754175AbYHNLkY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Aug 2008 07:38:21 -0400
-Received: from server.drzeus.cx ([85.8.24.28]:40653 "EHLO smtp.drzeus.cx"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752556AbYHNLiU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Aug 2008 07:38:20 -0400
-Date: Thu, 14 Aug 2008 13:38:10 +0200
-From: Pierre Ossman <drzeus-list@drzeus.cx>
-To: Jens Axboe <axboe@kernel.dk>
-Cc: Alex Dubov <oakad@yahoo.com>, LKML <linux-kernel@vger.kernel.org>
-Subject: can block drivers get non-fs requests?
-Message-ID: <20080814133810.746751cf@mjolnir.drzeus.cx>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.13.6; i386-redhat-linux-gnu)
+	Thu, 14 Aug 2008 07:40:24 -0400
+Received: from gv-out-0910.google.com ([216.239.58.184]:26710 "EHLO
+	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753889AbYHNLkX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Aug 2008 07:40:23 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=aN2ycBGuSfsM36zhqmxd1tXZCBdz2UdTWqbzfuH7T/CethVZOxtFFjqPiHGXpTvs6q
+         XrMCy5rZ+Qc3AmUKklOYcTdsOEn2azRBodgMmyGz/Zr734KaWNBWv4YIzn+LdIQgxDpV
+         RlRBAJhYu5Gc+uATGR7/hRqBYy6a0ay9ITFZ4=
+Subject: RE: Possible CPU_IDLE bug [WAS: Re: Timer unstability on when
+	using C2 and deeper sleep states (Dell Latitude XT)]
+From: Milan Plzik <milan.plzik@gmail.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       Venkatesh <venkatesh.pallipadi@intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <alpine.LFD.1.10.0808141100100.3243@apollo.tec.linutronix.de>
+References: <1218566008.13866.41.camel@localhost>
+	 <1218625125.4304.7.camel@localhost> <1218636980.5250.12.camel@localhost>
+	 <7E82351C108FA840AB1866AC776AEC460945BB44@orsmsx505.amr.corp.intel.com>
+	 <1218658873.4336.15.camel@localhost>
+	 <7E82351C108FA840AB1866AC776AEC460945BFF2@orsmsx505.amr.corp.intel.com>
+	 <1218701151.4285.9.camel@localhost>
+	 <alpine.LFD.1.10.0808141100100.3243@apollo.tec.linutronix.de>
+Content-Type: text/plain; charset=utf-8
+Date: Thu, 14 Aug 2008 13:40:14 +0200
+Message-Id: <1218714014.7111.7.camel@localhost>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=PGP-SHA1; boundary="=_freyr.drzeus.cx-24507-1218713898-0001-2"
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
+On Št, 2008-08-14 at 11:00 +0200, Thomas Gleixner wrote:
+> On Thu, 14 Aug 2008, Milan Plzik wrote:
+> >   I tried it just now, is performs a bit better than 2.6.26 (e.g. I
+> > don't get that "press any key unless nothing happens" states), even
+> > reports a bit more reasonable values of wakeups, but the system
+> > sometimes becomes rather slow (e.g. when playing video). I was not able
+> > to compile fglrx driver, so I had to change it to radeon one. And also,
+> > the number of wakeups reported is not very convincing, though, it
+> > changes from 300 to 600 (which is ~ two times the sum of wakeups)
+> > without any reason, and sometimes goes even higher.
+> > 
+> >   I tried to use nolapic_timer option, but it didn't help.
+> 
+> Can you please try "hpet=disable" on the kernel command line ?
 
---=_freyr.drzeus.cx-24507-1218713898-0001-2
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+  Looks like this has helped; after cold reboot hpet=disable seems to
+help the system to run properly (on 2.6.26 kernel). I wonder what could
+cause these problems. In the meanwhile I learned that this machine
+doesn't do proper cleanup during reboot -- it seems that state before
+reboot affects the state after reboot, so I should probably do some
+re-testing with cold reboot after each attempt. I guess I tried
+hpet=disable some time ago and after quick reboot it did not work
+properly.
 
-Hi Jens,
+> 
+> Thanks,
+> 	tglx
 
-There is one part of the block layer I'm having trouble completely
-understanding (well there are loads really, but right now there's one in
-particular :)):
+  Thank you,
+	Milan
 
-Do block drivers need to watch out for requests that aren't "normal"
-reads and writes? The MMC block driver has a funky prepare function
-that checks for FS and PC requests and discards anything else. I
-believe this is wrong in two regards:
-
-a) PC requests seem to be prepared SCSI cmds, and the MMC driver just
-expects normal transfer requests. Therefore, such requests should not
-be accepted by this driver.
-
-b) The block layer won't throw weird stuff at us unless explicitly told
-so. I.e. a normal block queue will only produce normal FS requests.
-
-Please educate the masses. :)
-
-(I've cc:d Alex as he copied the MMC block driver for the MemoryStick
-code, so he's probably also interested in this)
-
-Rgds
-
---=20
-     -- Pierre Ossman
-
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  rdesktop, core developer          http://www.rdesktop.org
-
-  WARNING: This correspondence is being monitored by the
-  Swedish government. Make sure your server uses encryption
-  for SMTP traffic and consider using PGP for end-to-end
-  encryption.
-
---=_freyr.drzeus.cx-24507-1218713898-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-
-iEYEARECAAYFAkikGSgACgkQ7b8eESbyJLhvfACg/EkBIlJ9aqNnZoEbIlhfGZy2
-L/AAnivJ8TRX5iXes2aO1S2dBUt8jYBu
-=xV5r
------END PGP SIGNATURE-----
-
---=_freyr.drzeus.cx-24507-1218713898-0001-2--
