@@ -1,26 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758190AbYHNIpX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758354AbYHNIp4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758190AbYHNIpX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Aug 2008 04:45:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753779AbYHNIpE
+	id S1758354AbYHNIp4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Aug 2008 04:45:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754644AbYHNIpj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Aug 2008 04:45:04 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:36254 "EHLO mail.dvmed.net"
+	Thu, 14 Aug 2008 04:45:39 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:36284 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754922AbYHNIpB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Aug 2008 04:45:01 -0400
-Message-ID: <48A3F07E.8000808@garzik.org>
-Date: Thu, 14 Aug 2008 04:44:46 -0400
-From: Jeff Garzik <jeff@garzik.org>
+	id S1753779AbYHNIph (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Aug 2008 04:45:37 -0400
+Message-ID: <48A3F0AA.3080806@pobox.com>
+Date: Thu, 14 Aug 2008 04:45:30 -0400
+From: Jeff Garzik <jgarzik@pobox.com>
 User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-To: roel kluin <roel.kluin@gmail.com>
-CC: jie.yang@atheros.com, jgarzik@redhat.com, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH?] atl1e: WAKE_MCAST 2x. 1st WAKE_UCAST?
-References: <489B21CA.7010508@gmail.com>
-In-Reply-To: <489B21CA.7010508@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Adrian Bunk <bunk@kernel.org>
+CC: Jie Yang <jie.yang@atheros.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [2.6 patch] uninline atl1e_setup_mac_ctrl()
+References: <20080808183334.GZ14495@cs181140183.pp.htv.fi>
+In-Reply-To: <20080808183334.GZ14495@cs181140183.pp.htv.fi>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 X-Spam-Score: -4.4 (----)
 X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
@@ -29,24 +30,29 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-roel kluin wrote:
-> untested, is it right?
-> ---
-> WAKE_MCAST bit tested twice, test WAKE_UCAST first.
+Adrian Bunk wrote:
+> There doesn't seem to be a compelling reason why atl1e_setup_mac_ctrl() 
+> is marked as "inline":
 > 
-> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
-> diff --git a/drivers/net/atl1e/atl1e_ethtool.c b/drivers/net/atl1e/atl1e_ethtool.c
-> index cdc3b85..619c658 100644
-> --- a/drivers/net/atl1e/atl1e_ethtool.c
-> +++ b/drivers/net/atl1e/atl1e_ethtool.c
-> @@ -355,7 +355,7 @@ static int atl1e_set_wol(struct net_device *netdev, struct ethtool_wolinfo *wol)
->  	struct atl1e_adapter *adapter = netdev_priv(netdev);
->  
->  	if (wol->wolopts & (WAKE_ARP | WAKE_MAGICSECURE |
-> -			    WAKE_MCAST | WAKE_BCAST | WAKE_MCAST))
-> +			    WAKE_UCAST | WAKE_MCAST | WAKE_BCAST))
->  		return -EOPNOTSUPP;
->  	/* these settings will always override what we currently have */
+> It's not used in any place where speed would matter much, and as long as 
+> it has only one caller non-ancient gcc versions anyway inline it 
+> automatically.
+> 
+> This patch fixes the following compile error with gcc 3.4:
+> 
+> <--  snip  -->
+> 
+> ...
+>   CC      drivers/net/atl1e/atl1e_main.o
+> atl1e_main.c: In function `atl1e_check_link':
+> atl1e_main.c:50: sorry, unimplemented: inlining failed in call to 
+> atl1e_main.c:196: sorry, unimplemented: called from here
+> make[4]: *** [drivers/net/atl1e/atl1e_main.o] Error 1
+> 
+> <--  snip  -->
+> 
+> Reported-by: Adrian Bunk <bunk@kernel.org>
+> Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 applied
 
