@@ -1,82 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756725AbYHNRe2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758827AbYHNRfe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756725AbYHNRe2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Aug 2008 13:34:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751286AbYHNReU
+	id S1758827AbYHNRfe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Aug 2008 13:35:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751722AbYHNRfZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Aug 2008 13:34:20 -0400
-Received: from mail-gx0-f16.google.com ([209.85.217.16]:40584 "EHLO
-	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750735AbYHNReT (ORCPT
+	Thu, 14 Aug 2008 13:35:25 -0400
+Received: from tomts25-srv.bellnexxia.net ([209.226.175.188]:38996 "EHLO
+	tomts25-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750738AbYHNRfZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Aug 2008 13:34:19 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=Db9VHhxCYaXlBGzBd2McXnM4LvuHu3ZRwIv1nW4zNw1vTlJTd/hF3BkqeNa7rHFQbn
-         HAtadkUOO25xIxrem0INSaDZPDhv/8vZ30IA4Ln0SuSestiDvpQCkFhKgFFiSsxyPE9r
-         WnSVwjItSwFVbLDP0BumlGMrWErv/h+VTxSzM=
-Message-ID: <86802c440808141034g15542e2i1bdaf4615264df98@mail.gmail.com>
-Date: Thu, 14 Aug 2008 10:34:18 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [PATCH] irq: sparse irqs, fix #3
-Cc: "Thomas Gleixner" <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       linux-kernel@vger.kernel.org, "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>
-In-Reply-To: <20080814140733.GA31829@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 14 Aug 2008 13:35:25 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AswEAHYGpEhMRKxB/2dsb2JhbACBYrUmgVU
+Date: Thu, 14 Aug 2008 13:30:21 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Andi Kleen <andi@firstfloor.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       Steven Rostedt <srostedt@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, Roland McGrath <roland@redhat.com>,
+       Ulrich Drepper <drepper@redhat.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Gregory Haskins <ghaskins@novell.com>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       "Luis Claudio R. Goncalves" <lclaudio@uudg.org>,
+       Clark Williams <williams@redhat.com>,
+       Christoph Lameter <cl@linux-foundation.org>
+Subject: Re: [RFC PATCH] x86 alternatives : fix LOCK_PREFIX race with
+	preemptible kernel and CPU hotplug
+Message-ID: <20080814173021.GA4697@Krystal>
+References: <20080813200119.GA18966@Krystal> <20080813234156.GA25775@Krystal> <48A375E3.9090609@zytor.com> <48A388CE.2020404@goop.org> <20080814014944.GA31883@Krystal> <48A3A806.8060509@goop.org> <20080814151805.GA29507@Krystal> <48A459B1.2070601@zytor.com> <20080814165802.GC517@Krystal> <48A465F2.8000701@goop.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <1218705441-21838-1-git-send-email-yhlu.kernel@gmail.com>
-	 <20080814132638.GA18743@elte.hu> <20080814140733.GA31829@elte.hu>
+In-Reply-To: <48A465F2.8000701@goop.org>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 13:26:41 up 70 days, 22:07,  7 users,  load average: 0.67, 0.91,
+	0.83
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 14, 2008 at 7:07 AM, Ingo Molnar <mingo@elte.hu> wrote:
+* Jeremy Fitzhardinge (jeremy@goop.org) wrote:
+> Mathieu Desnoyers wrote:
+>> * H. Peter Anvin (hpa@zytor.com) wrote:
+>>   
+>>> Mathieu Desnoyers wrote:
+>>>     
+>>>> I can't argue about the benefit of using VM CPU pinning to manage
+>>>> resources because I don't use it myself, but I ran some tests out of
+>>>> curiosity to find if uncontended locks were that cheap, and it turns out
+>>>> they aren't. Here are the results :
+>>>> Xeon 2.0GHz
+>>>> Summary
+>>>> make -j1 kernel/      33.94 +/- 0.07         34.91 +/- 0.27      2.8 %
+>>>> hackbench 50           2.99 +/- 0.01          3.74 +/- 0.01     25.1 %
+>>>> 1 CPU, replace smp lock prefixes with DS segment selector prefixes
+>>>> 1 CPU, noreplace-smp
+>>>>       
+>>> For reference, could you also compare replace smp lock with NOPs?
+>>>
+>>> 	-hpa
+>>>     
+>>
+>> Sure, here are the updated tables. Basically, they show no significant
+>> difference between the NOP and the DS segment selector prefix
+>> approaches.
+>>   
 >
-> From 1b53f0444df394e4448ba56694f0bc4dda2bece0 Mon Sep 17 00:00:00 2001
-> From: Ingo Molnar <mingo@elte.hu>
-> Date: Thu, 14 Aug 2008 16:07:04 +0200
-> Subject: [PATCH] irq: sparse irqs, fix #3
+> BTW, are you changing the initial prefix to DS too?  Ie, are you doing a 
+> nop->lock->ds transition, or ds->lock->ds?
 >
-> fix non-APIC UP build:
->
->  arch/x86/kernel/built-in.o: In function `setup_arch':
->  : undefined reference to `pin_map_size'
->  arch/x86/kernel/built-in.o: In function `setup_arch':
->  : undefined reference to `first_free_entry'
->
-> Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> ---
->  arch/x86/kernel/setup.c |    2 ++
->  1 files changed, 2 insertions(+), 0 deletions(-)
->
-> diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
-> index 24e984e..8318a35 100644
-> --- a/arch/x86/kernel/setup.c
-> +++ b/arch/x86/kernel/setup.c
-> @@ -863,8 +863,10 @@ void __init setup_arch(char **cmdline_p)
->                nr_irqs = 32 * nr_cpu_ids + 224;
->        init_cpu_to_node();
->  #endif
-> +#ifdef CONFIG_X86_LOCAL_APIC
->        pin_map_size = nr_irqs * 2;
->        first_free_entry = nr_irqs;
-> +#endif
->
->        init_apic_mappings();
->        ioapic_init_mappings();
->
+>    J
 
-we don't need pin_map_size and first_free_entry after 64 and 32 bit
-all put irq_2_pin in irq_cfg.
+Yeah, I thought about this case yesterday, good thing you ask.
 
-need to remove them.
+include/asm-x86/alternative.h defines LOCK_PREFIX as :
 
-YH
+#define LOCK_PREFIX \
+                ".section .smp_locks,\"a\"\n"   \
+                _ASM_ALIGN "\n"                 \
+                _ASM_PTR "661f\n" /* address */ \
+                ".previous\n"                   \
+                "661:\n\tlock; "
+
+So we have the locked instructions built into the kernel, not the nop'd
+one. Therefore, the only transition I am doing for my benchmarks is :
+
+lock->ds
+
+but I tried to switch back to SMP and it worked fine.
+
+Mathieu
+
+
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
