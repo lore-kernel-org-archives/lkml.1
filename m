@@ -1,46 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759595AbYHNT2G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759951AbYHNTaX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759595AbYHNT2G (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Aug 2008 15:28:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754424AbYHNT1z
+	id S1759951AbYHNTaX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Aug 2008 15:30:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753765AbYHNTaL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Aug 2008 15:27:55 -0400
-Received: from verein.lst.de ([213.95.11.210]:44349 "EHLO verein.lst.de"
+	Thu, 14 Aug 2008 15:30:11 -0400
+Received: from gw.goop.org ([64.81.55.164]:51163 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754142AbYHNT1y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Aug 2008 15:27:54 -0400
-Date: Thu, 14 Aug 2008 21:27:39 +0200
-From: Christoph Hellwig <hch@lst.de>
-To: Artem Bityutskiy <dedekind@infradead.org>
-Cc: linux-kernel@vger.kernel.org, Adrian Hunter <ext-adrian.hunter@nokia.com>,
-       Zoltan Sogor <weth@inf.u-szeged.hu>, Christoph Hellwig <hch@lst.de>
-Subject: Re: UBIFS updates for 2.6.27
-Message-ID: <20080814192739.GA15950@lst.de>
-References: <1218622675-28853-1-git-send-email-dedekind@infradead.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1218622675-28853-1-git-send-email-dedekind@infradead.org>
-User-Agent: Mutt/1.3.28i
-X-Spam-Score: -0.001 () BAYES_44
+	id S1753486AbYHNTaJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Aug 2008 15:30:09 -0400
+Message-ID: <48A487A6.9060501@goop.org>
+Date: Thu, 14 Aug 2008 12:29:42 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+MIME-Version: 1.0
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: "H. Peter Anvin" <hpa@zytor.com>, Andi Kleen <andi@firstfloor.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       Steven Rostedt <srostedt@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, Roland McGrath <roland@redhat.com>,
+       Ulrich Drepper <drepper@redhat.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Gregory Haskins <ghaskins@novell.com>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       "Luis Claudio R. Goncalves" <lclaudio@uudg.org>,
+       Clark Williams <williams@redhat.com>,
+       Christoph Lameter <cl@linux-foundation.org>
+Subject: Re: [RFC PATCH] x86 alternatives : fix LOCK_PREFIX race with	preemptible
+ kernel and CPU hotplug
+References: <48A388CE.2020404@goop.org> <20080814014944.GA31883@Krystal> <48A3A806.8060509@goop.org> <20080814151805.GA29507@Krystal> <48A459B1.2070601@zytor.com> <20080814165802.GC517@Krystal> <48A465F2.8000701@goop.org> <20080814173021.GA4697@Krystal> <48A46EC2.1010301@goop.org> <48A47B83.3090408@zytor.com> <20080814185338.GB7896@Krystal>
+In-Reply-To: <20080814185338.GB7896@Krystal>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 13, 2008 at 01:17:29PM +0300, Artem Bityutskiy wrote:
-> Hi,
-> 
-> Christoph asked me to send UBIFS patches here before I put them
-> to Linux next.
-> 
-> The following are patches we plan to send to Linus before 2.6.27
-> is out. Some of the patches are not fixes, but because UBIFS is
-> new and 2.6.27 will be its first release, we think it is OK to
-> merge "non-fix" patches for UBIFS as an exception.
-> 
-> Christoph, I do not send NFS patch for now because I'd like to
-> work on it some more, taking into account your suggestions.
+Mathieu Desnoyers wrote:
+> So should I wait a bit for more comments or straightforwardly submit
+> this as a patch rather than RFC ?
+>   
 
-Ok.  The other patch looks good to me from a quick glance.  BTW,
--fsdevel might be a better list than lkml for fs patches review.
+Looks like all the relevant people have reviewed it now, so I don't 
+think there's much more to say.
 
+    J
