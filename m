@@ -1,25 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755048AbYHNI3c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758066AbYHNI3p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755048AbYHNI3c (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Aug 2008 04:29:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755685AbYHNI3I
+	id S1758066AbYHNI3p (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Aug 2008 04:29:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757553AbYHNI3Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Aug 2008 04:29:08 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:41420 "EHLO mail.dvmed.net"
+	Thu, 14 Aug 2008 04:29:16 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:41429 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756076AbYHNI3G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Aug 2008 04:29:06 -0400
-Message-ID: <48A3ECCB.4070500@garzik.org>
-Date: Thu, 14 Aug 2008 04:28:59 -0400
+	id S1757510AbYHNI3N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Aug 2008 04:29:13 -0400
+Message-ID: <48A3ECD3.3080001@garzik.org>
+Date: Thu, 14 Aug 2008 04:29:07 -0400
 From: Jeff Garzik <jeff@garzik.org>
 User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-To: Vegard Nossum <vegard.nossum@gmail.com>
-CC: Jeff Garzik <jgarzik@redhat.com>, Julia Lawall <julia@diku.dk>,
-       Alexey Dobriyan <adobriyan@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] au1000_eth: use 'unsigned long' for irqflags
-References: <20080810134252.GA19751@localhost.localdomain>
-In-Reply-To: <20080810134252.GA19751@localhost.localdomain>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Stephen Hemminger <stephen.hemminger@vyatta.com>, netdev@vger.kernel.org,
+       Stephen Hemminger <shemminger@vyatta.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] sky2: Fix suspend/hibernation/shutdown regression with
+ WOL enabled (rev. 2)
+References: <200808092332.29596.rjw@sisk.pl> <20080809235711.12c2f331@extreme> <200808101414.35626.rjw@sisk.pl> <200808101930.29574.rjw@sisk.pl>
+In-Reply-To: <200808101930.29574.rjw@sisk.pl>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 X-Spam-Score: -4.4 (----)
@@ -29,34 +32,59 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vegard Nossum wrote:
->>From a0d915d5e99e752389093b3e1d6cae5ab5438392 Mon Sep 17 00:00:00 2001
-> From: Vegard Nossum <vegard.nossum@gmail.com>
-> Date: Wed, 6 Aug 2008 14:12:11 +0200
-> Subject: [PATCH] au1000_eth: use 'unsigned long' for irqflags
+Rafael J. Wysocki wrote:
+> On Sunday, 10 of August 2008, Rafael J. Wysocki wrote:
+>> On Sunday, 10 of August 2008, Stephen Hemminger wrote:
+>>> On Sat, 9 Aug 2008 23:32:28 +0200
+>>> "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+>>>
+> [--snip--]
+>>> The problem is not unique to your chip version,
+>> Well, that's the part I wasn't sure of.
+>>
+>>> so patching out the power down is not the correct solution.
+>> Sure.
 > 
-> The patch was generated using the Coccinelle semantic patch framework.
+> But, shouldn't we switch to page 2 before selecting PHY_MARV_PHY_CTRL?  Things
+> work correctly if this is done (patch below).
 > 
-> Cc: Julia Lawall <julia@diku.dk>
-> Cc: Alexey Dobriyan <adobriyan@gmail.com>
-> Cc: Jeff Garzik <jgarzik@redhat.com>
-> Signed-off-by: Vegard Nossum <vegard.nossum@gmail.com>
+> Thanks,
+> Rafael
+> 
+> 
 > ---
->  drivers/net/au1000_eth.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
+> On my test box with the Asus M3A32-MVP main board there is a
+> regression from 2.6.26 related to suspend, hibernation and
+> shutdown.  Namely, if Wake-on-LAN is enabled with
+> 'ethtool -s eth0 wol g', the box hangs solid during all of these
+> operations, while executing either sky2_suspend(), or
+> sky2_shutdown().  This patch fixes it for me.
 > 
-> diff --git a/drivers/net/au1000_eth.c b/drivers/net/au1000_eth.c
-> index cb8be49..5ee1b05 100644
-> --- a/drivers/net/au1000_eth.c
-> +++ b/drivers/net/au1000_eth.c
-> @@ -807,7 +807,7 @@ err_out:
->  static int au1000_init(struct net_device *dev)
->  {
->  	struct au1000_private *aup = (struct au1000_private *) dev->priv;
-> -	u32 flags;
-> +	unsigned long flags;
->  	int i;
->  	u32 control;
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> ---
+>  drivers/net/sky2.c |    7 ++++++-
+>  1 file changed, 6 insertions(+), 1 deletion(-)
+> 
+> Index: linux-2.6/drivers/net/sky2.c
+> ===================================================================
+> --- linux-2.6.orig/drivers/net/sky2.c
+> +++ linux-2.6/drivers/net/sky2.c
+> @@ -666,11 +666,16 @@ static void sky2_phy_power_down(struct s
+>  
+>  	if (hw->chip_id != CHIP_ID_YUKON_EC) {
+>  		if (hw->chip_id == CHIP_ID_YUKON_EC_U) {
+> -			ctrl = gm_phy_read(hw, port, PHY_MARV_PHY_CTRL);
+> +			/* select page 2 to access MAC control register */
+> +			gm_phy_write(hw, port, PHY_MARV_EXT_ADR, 2);
+>  
+> +			ctrl = gm_phy_read(hw, port, PHY_MARV_PHY_CTRL);
+>  			/* enable Power Down */
+>  			ctrl |= PHY_M_PC_POW_D_ENA;
+>  			gm_phy_write(hw, port, PHY_MARV_PHY_CTRL, ctrl);
+> +
+> +			/* set page register back to 0 */
+> +			gm_phy_write(hw, port, PHY_MARV_EXT_ADR, 0);
+>  		}
 
 applied
 
