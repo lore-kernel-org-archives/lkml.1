@@ -1,87 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758429AbYHNRaZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758569AbYHNRb4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758429AbYHNRaZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Aug 2008 13:30:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751460AbYHNRaO
+	id S1758569AbYHNRb4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Aug 2008 13:31:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751460AbYHNRbs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Aug 2008 13:30:14 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:41183 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750738AbYHNRaM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Aug 2008 13:30:12 -0400
-Subject: Re: [malware-list] TALPA - a threat model?  well sorta.
-From: Eric Paris <eparis@redhat.com>
-To: Theodore Tso <tytso@mit.edu>
-Cc: tvrtko.ursulin@sophos.com, alan@lxorguk.ukuu.org.uk, andi@firstfloor.org,
-       Arjan van de Ven <arjan@infradead.org>, hch@infradead.org,
-       linux-kernel@vger.kernel.org, malware-list@lists.printk.net,
-       malware-list-bounces@dmesg.printk.net, peterz@infradead.org,
-       viro@ZenIV.linux.org.uk
-In-Reply-To: <20080814155028.GB8256@mit.edu>
-References: <20080813192922.GI8232@mit.edu>
-	 <20080814093103.6CD102FE8B4@pmx1.sophos.com>
-	 <20080814132455.GE6469@mit.edu>
-	 <1218721713.3540.125.camel@localhost.localdomain>
-	 <20080814155028.GB8256@mit.edu>
-Content-Type: text/plain
-Date: Thu, 14 Aug 2008 13:29:45 -0400
-Message-Id: <1218734985.9375.5.camel@paris.rdu.redhat.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-8.el5_2.2) 
+	Thu, 14 Aug 2008 13:31:48 -0400
+Received: from mail-gx0-f16.google.com ([209.85.217.16]:32868 "EHLO
+	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751019AbYHNRbr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Aug 2008 13:31:47 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=MxJWt4w0KfaZhlvDA19B/0MM47ZK2nzlSKxqHk2jeEsWDgKYAaRU2eXtjrrHqt+CsV
+         by3OqOqWckt8UTXNkMC9q87NOiqIDDbAoPGOIw2f9W8Ep6ReAo4R76KmNNJkk/VT7Xqg
+         /Jp32QCewqOqnTYAucbPHgI1FyARYO0NenJ40=
+Message-ID: <86802c440808141031p2712976cqe2c34d3b986ad810@mail.gmail.com>
+Date: Thu, 14 Aug 2008 10:31:45 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Alexander Huemer" <alexander.huemer@sbg.ac.at>
+Subject: Re: 2.6.27-rc1 mtrr fixes do not work
+Cc: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "Andi Kleen" <andi@firstfloor.org>
+In-Reply-To: <48A43CB5.8010709@sbg.ac.at>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <4899AF8E.20105@sbg.ac.at>
+	 <7E82351C108FA840AB1866AC776AEC46092119D3@orsmsx505.amr.corp.intel.com>
+	 <86802c440808071323o3021a90rae51223187bfd47b@mail.gmail.com>
+	 <86802c440808071326m21cff146s3fb5e6118a58a2ca@mail.gmail.com>
+	 <489B73B7.4090705@sbg.ac.at>
+	 <86802c440808071616o23dde07atd694b45375f9d6ac@mail.gmail.com>
+	 <86802c440808071617i1344e595wb9cc7c2bf75a5b3f@mail.gmail.com>
+	 <489B85A3.7030500@sbg.ac.at>
+	 <86802c440808071658yd120d04y370859dcf5a7b759@mail.gmail.com>
+	 <48A43CB5.8010709@sbg.ac.at>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Aug 14, 2008 at 7:09 AM, Alexander Huemer
+<alexander.huemer@sbg.ac.at> wrote:
+> Yinghai Lu wrote:
+>>
+>> On Thu, Aug 7, 2008 at 4:30 PM, Alexander Huemer
+>> <alexander.huemer@sbg.ac.at> wrote:
+>>
+>>>
+>>> Yinghai Lu wrote:
+>>>
+>>
+>>
+>>>>>
+>>>>> can you put "debug" in command line too?
+>>>>>
+>>>>>
+>>>>
+>>>> without mtrr_chunk_size etc in command line...please
+>>>>
+>>>>
+>>>
+>>> http://xx.vu/~ahuemer/dmesg_3.txt
+>>>
+>>>
+>>
+>> do you have
+>> CONFIG_MTRR=y
+>> CONFIG_MTRR_SANITIZER=y
+>> CONFIG_MTRR_SANITIZER_ENABLE_DEFAULT=1
+>> CONFIG_MTRR_SANITIZER_SPARE_REG_NR_DEFAULT=1
+>>
+>> in your .config?
+>>
+>> YH
+>>
+>
+> 2.6.27_rc3 does not solve the problem either.
+> what can i do to help?
 
-On Thu, 2008-08-14 at 11:50 -0400, Theodore Tso wrote:
-> On Thu, Aug 14, 2008 at 09:48:33AM -0400, Eric Paris wrote:
-> > 
-> > There needs to be a way to say that an inode in cache needs to be
-> > rescanned.  3 states this flag can be.  Clean, Dirty, Infected.  The
-> > current talpa solution involves a global monotomically increasing
-> > counter every time you change virus defs or make some "interesting"
-> > change.  If global == inode flag we are clean.  If global == negative
-> > inode flag we are infected.  if global > inode flag we are dirty and
-> > need a scan.
-> 
-> "Infected" just means to instantly return an error when the file is
-> opened or if an already opened file descriptor is read or mmap'ed,
-> right?  If file is already mmaped(), what's the plan?  Send a kill -9
-> to the process, even if it ends up kill off an emacs or openoffice
-> process?
+please send out you config
 
-We don't have a revocation mechanism in linux and this isn't about
-adding one.  Your trying to turn this into something it isn't.  If you
-have it opened and mmap'd you've got that file for as long as you want.
-I've already said that given Arjan's belief that we can move it
-read/write instead of open/close we are moving the open->read race to a
-mmap->fault race.  It isn't perfect at stopping bad data flow, but its
-darn sure a lot better than nothing.
-> 
-> > > That seems fair; if it turns out there is an AV product that wants to
-> > > optimize this a bit further, as long as we provide a persistent inode
-> > > version/generation number, they can always do their own persistent
-> > > database in userspace.
-> > 
-> > exporting i_version might be useful for better userspace caching,
-> > although I've yet to see any reasonable description of how a userspace
-> > database can map between data on disk and what they have in userspace.
-> > How can a userspace process, given 2 file descriptors know they are
-> > actually the same thing on disk?
-> > 
-> 
-> If a userspace database knows that inode X, i_version Y was checked a
-> day ago, and inode X still has i_version Y, even if that inode has
-> been evicted from memory, the contents will be the same absent root
-> messing about with direct access to the block device.  If there was an
-> intervening boot, the someone could remove the disk, edit the disk
-> block directly -- but that person could also add a backdoor to the
-> kernel while they were at it.
-
-is i_version an on disk think?  didn't realize that and just assumed it
-was in in core thing.  I wouldn't have an issue sending i_version to the
-userspace scanner for them to use as they like.
-
--Eric
-
+YH
