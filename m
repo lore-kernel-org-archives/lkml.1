@@ -1,83 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758667AbYHNMtS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756653AbYHNNCS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758667AbYHNMtS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Aug 2008 08:49:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753732AbYHNMtI
+	id S1756653AbYHNNCS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Aug 2008 09:02:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751443AbYHNNCF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Aug 2008 08:49:08 -0400
-Received: from viefep18-int.chello.at ([213.46.255.22]:62372 "EHLO
-	viefep19-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753622AbYHNMtH (ORCPT
+	Thu, 14 Aug 2008 09:02:05 -0400
+Received: from moutng.kundenserver.de ([212.227.126.187]:60825 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751466AbYHNNCE convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Aug 2008 08:49:07 -0400
-X-SourceIP: 80.57.229.25
-Subject: Re: [rfc][patch] mm: dirty page accounting race fix
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Hugh Dickins <hugh@veritas.com>
-Cc: Nick Piggin <npiggin@suse.de>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.64.0808141210200.4398@blonde.site>
-References: <20080814094537.GA741@wotan.suse.de>
-	 <Pine.LNX.4.64.0808141210200.4398@blonde.site>
-Content-Type: text/plain
-Date: Thu, 14 Aug 2008 14:49:09 +0200
-Message-Id: <1218718149.10800.224.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 14 Aug 2008 09:02:04 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: TALPA - a threat model?  well sorta.
+Date: Thu, 14 Aug 2008 15:00:59 +0200
+User-Agent: KMail/1.9.9
+Cc: Eric Paris <eparis@redhat.com>, linux-kernel@vger.kernel.org,
+       malware-list@lists.printk.net, andi@firstfloor.org, riel@redhat.com,
+       greg@kroah.com, tytso@mit.edu, viro@zeniv.linux.org.uk,
+       arjan@infradead.org, peterz@infradead.org, hch@infradead.org
+References: <1218645375.3540.71.camel@localhost.localdomain> <20080813172437.3ed90b0d@lxorguk.ukuu.org.uk>
+In-Reply-To: <20080813172437.3ed90b0d@lxorguk.ukuu.org.uk>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200808141501.00613.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1+z+3Im05BrL6UXfDUyLj2PhgK1xMCgxNo8JlU
+ 7Jhi0UWoFeztrU0zPr/0HKpt6nQr5jq3jrPqSc91Z89a55UVYX
+ v8zca6nvdgXM8ewJt4oPA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-08-14 at 12:55 +0100, Hugh Dickins wrote:
+On Wednesday 13 August 2008, Alan Cox wrote:
+> > So, what is it that anti-malware companies do?  They scan files.  That's
+> > it. 
+> 
+> Good so lets instead have a discussion about making the file event
+> notification more scalable. That is the same thing I want for content
+> indexing. It is the same thing you want for certain kinds of smart
+> archiving, for on-line asynchronous backup and other stuff.
+> 
+> It ought to be a simple clean syscall interface.
 
-> Am I confused, or is your "do_wp_page calls ptep_clear_flush_notify"
-> example a very bad one?  The page it's dealing with there doesn't
-> go back into the page table (its COW does), and the dirty_accounting
-> case doesn't even get down there, it's dealt with in the reuse case
-> above, which uses ptep_set_access_flags. 
+In this case, it seems to be the same kind of requirement that lead to
+dnotify and inotify, right?
 
-Also, the new page is only added to the rmap _after_ it has been
-installed. So page_mkclean() will never get to it to see the empty pte.
+So in order to get the third notification syscall interface right, the
+obvious questions are:
 
->  Now, I think that one may
-> well behave as you suggest on some arches (though it's extending
-> permissions not restricting them, so maybe not); but please check
-> that out and improve your example.
+1. How do you make it cleaner than inotify?
+2. How do you make it more scalable than inotify?
+3. Do you need it to do anything that inotify doesn't do, beyond 1. and 2.?
 
-Another case I just looked at is if ptep_clear_flush_young() actually
-does the clear bit. But the few arches (x86_64, ppc64) that I looked at
-don't seem to do so.
-
-If someone would, you could hit this race.
-
-/me continues searching for a convincing candidate..
-
-> Even if it does, it's not clear to me that your fix is the answer.
-> That may well be because the whole of dirty page accounting grew too
-> subtle for me! 
-
-    CPU1                      CPU2
-
-    lock(pte_lock)
-    ptep_clear_flush(ptep)
-                            page_mkclean()
-                              page_check_address()
-                                !pte_present(ptep)
-                                   return NULL
-    ptep_set(ptep, new_pte);
-    unlock(pte_lock)
-
-Now, if page_check_address() doesn't return prematurely, but is forced
-to take the pte_lock, we won't see that hole and will not skip the page.
-
-> But holding the page table lock on one pte of the
-> page doesn't guarantee much about the integrity of the whole dance:
-> do_wp_page does its set_page_dirty_balance for this case, you'd
-> need to spell out the bad sequence more to convince me.
- 
-Now you're confusing me... are you saying ptes can be changed from under
-your feet even while holding the pte_lock?
-
-
+	Arnd <><
