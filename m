@@ -1,160 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756696AbYHNK1W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755982AbYHNKgs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756696AbYHNK1W (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Aug 2008 06:27:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753235AbYHNK1N
+	id S1755982AbYHNKgs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Aug 2008 06:36:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752150AbYHNKgh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Aug 2008 06:27:13 -0400
-Received: from viefep11-int.chello.at ([62.179.121.31]:64421 "EHLO
-	viefep11-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752450AbYHNK1N (ORCPT
+	Thu, 14 Aug 2008 06:36:37 -0400
+Received: from mail-gx0-f16.google.com ([209.85.217.16]:33597 "EHLO
+	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752009AbYHNKgg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Aug 2008 06:27:13 -0400
-Subject: Re: [rfc][patch] mm: dirty page accounting race fix
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Linux Memory Management List <linux-mm@kvack.org>,
-       Hugh Dickins <hugh@veritas.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080814094537.GA741@wotan.suse.de>
-References: <20080814094537.GA741@wotan.suse.de>
-Content-Type: text/plain
-Date: Thu, 14 Aug 2008 12:27:08 +0200
-Message-Id: <1218709628.10800.204.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Thu, 14 Aug 2008 06:36:36 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=FfBk35c0+ghm5AqQ7WnwyQ9IBJFk2soEL0jGSzd+YWGGKB8Z2VvOJ44G9puvKfAINA
+         gcflwiqdLQxR8m8IXIsUOanZ2FIZUIiCY05mu/WLV2WDWhmR/sUeaRGwX4CZpO+UC0pr
+         zNZe9t9gq0QXJscESmivX5f6HagVJDZ993TRI=
+Message-ID: <86802c440808140336k3558dfbew308ac7d7bdb23c@mail.gmail.com>
+Date: Thu, 14 Aug 2008 03:36:35 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Bill Fink" <billfink@mindspring.com>
+Subject: Re: HPET regression in 2.6.26 versus 2.6.25 -- revert for 2.6.26-rc1 failed
+Cc: "David Witbrodt" <dawitbro@sbcglobal.net>, linux-kernel@vger.kernel.org,
+       "Ingo Molnar" <mingo@elte.hu>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       "Peter Zijlstra" <peterz@infradead.org>,
+       "Thomas Gleixner" <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>, netdev <netdev@vger.kernel.org>
+In-Reply-To: <20080814060433.684c4fe5.billfink@mindspring.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <737832.54450.qm@web82101.mail.mud.yahoo.com>
+	 <20080814060433.684c4fe5.billfink@mindspring.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-08-14 at 11:45 +0200, Nick Piggin wrote:
-> Hi,
-> 
-> Wonder if you would be kind enough to verify this? It solves my issues (well
-> still running after several hours wheras it previously would lock up in a
-> few seconds).
-> 
-> Thanks,
-> Nick
+On Thu, Aug 14, 2008 at 3:04 AM, Bill Fink <billfink@mindspring.com> wrote:
+> Hi David,
+>
+> On Wed, 13 Aug 2008, David Witbrodt wrote:
+>
+>> [Yinghai, please note that I did not request a patch to revert the
+>> problem commit.  I was merely experimenting -- on my own time, so
+>> you folks would not have to bother -- to see if I could make it
+>> work.  I should have made that more clear!  Having said that, I am
+>> glad to test changes of any kind on my machine:  reverts, code for
+>> debugging or info, experiments, etc.]
+>
+> I'm not sure Yinghai's revert patch is completely equivalent to
+> a revert of the original problematic commit, by a side-by-side
+> comparison of the original commit with his recent revert patch,
+> but then I don't really know that code at all.
+>
+> In the original code there was a section (in e820_reserve_resources()):
+>
+> #ifdef CONFIG_KEXEC
+>                   if (crashk_res.start != crashk_res.end)
+>                           request_resource(res, &crashk_res);
+> #endif
+>
+> If you don't have CONFIG_KEXEC defined in your .config, which is
+> probably the case, then you would never request a crashk_res resource.
+> But in the code after the original commit, it unconditionally calls
+> (in reserve_crashkernel()):
+>
+>           crashk_res.start = crash_base;
+>           crashk_res.end   = crash_base + crash_size - 1;
+>           insert_resource(&iomem_resource, &crashk_res);
+>
+> And after Yinghai's revert patch it still does (in reserve_crashkernel()):
+>
+>        crashk_res.start = crash_base;
+>        crashk_res.end   = crash_base + crash_size - 1;
+>        crashk_res_ptr = &crashk_res;
+>
+> and (in setup_arch()):
+>
+>        num_res = 3;
+>        if (crashk_res_ptr) {
+>                res_kernel[num_res] = crashk_res_ptr;
+>                num_res++;
+>        }
+>        e820_reserve_resources(res_kernel, num_res);
+>
+> then (in e820_reserve_resources()):
+>
+>                        for (j = 0; j < nr_res_k; j++) {
+>                                if (!res_kernel[j])
+>                                        continue;
+>                                request_resource(res, res_kernel[j]);
+>                        }
+>
+> which for j == 3 is:
+>
+>        request_resource(res, &crashk_res);
+>
+> Now it would appear that the new:
+>
+>        insert_resource(&iomem_resource, &crashk_res);
+>
+> or new:
+>
+>        request_resource(res, &crashk_res);
+>
+> should be noops.  But if for any reason crash_size is not zero,
+> then there could be a difference.  I have no idea if this is at all
+> significant, but I thought I'd point it out just in case.
 
-s/synch/sync/ ?
+why oops ?
+if not valid crash kernel size etc is input, crashk_res_ptr will be null
 
-Indeed, that does look like a hole, and the proposed fix seems sane.
+>        if (crashk_res_ptr) {
+>                res_kernel[num_res] = crashk_res_ptr;
+>                num_res++;
+>        }
 
-Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+it that is not appended to res_kernel...
 
-> ---
-> There is a race with dirty page accounting where a page may not properly
-> be accounted for.
-> 
-> clear_page_dirty_for_io() calls page_mkclean; then TestClearPageDirty.
-> 
-> page_mkclean walks the rmaps for that page, and for each one it cleans and
-> write protects the pte if it was dirty. It uses page_check_address to find the
-> pte. That function has a shortcut to avoid the ptl if the pte is not
-> present. Unfortunately, the pte can be switched to not-present then back to
-> present by other code while holding the page table lock -- this should not
-> be a signal for page_mkclean to ignore that pte, because it may be dirty.
-> 
-> For example, do_wp_page calls ptep_clear_flush_notify before marking the
-> pte writable and dirty. do_wp_page does subsequently set the page dirty, but
-> that can happen before clear_page_dirty_for_io() calls TestClearPageDirty.
-> There may also be other code which does similar things, and/or architectures
-> which implement other pte manipulation functions using a clear-set sequence,
-> I haven't looked thoroughly. But it should be fixed.
-> 
-> The consequence of the bug is loss of data integrity (msync) of dirty page
-> accounting accuracy. XIP's __xip_unmap is probably also unreliable, which
-> can lead to data corruption.
-> 
-> Fix this by always taking ptl to check the pte in page_check_address.
-> 
-> It's possible to retain this optimization for page_referenced and
-> try_to_unmap.
-> 
-> Signed-off-by: Nick Piggin <npiggin@suse.de>
-> ---
-> Index: linux-2.6/include/linux/rmap.h
-> ===================================================================
-> --- linux-2.6.orig/include/linux/rmap.h
-> +++ linux-2.6/include/linux/rmap.h
-> @@ -102,7 +102,7 @@ int try_to_unmap(struct page *, int igno
->   * Called from mm/filemap_xip.c to unmap empty zero page
->   */
->  pte_t *page_check_address(struct page *, struct mm_struct *,
-> -				unsigned long, spinlock_t **);
-> +				unsigned long, spinlock_t **, int);
->  
->  /*
->   * Used by swapoff to help locate where page is expected in vma.
-> Index: linux-2.6/mm/filemap_xip.c
-> ===================================================================
-> --- linux-2.6.orig/mm/filemap_xip.c
-> +++ linux-2.6/mm/filemap_xip.c
-> @@ -185,7 +185,7 @@ __xip_unmap (struct address_space * mapp
->  		address = vma->vm_start +
->  			((pgoff - vma->vm_pgoff) << PAGE_SHIFT);
->  		BUG_ON(address < vma->vm_start || address >= vma->vm_end);
-> -		pte = page_check_address(page, mm, address, &ptl);
-> +		pte = page_check_address(page, mm, address, &ptl, 1);
->  		if (pte) {
->  			/* Nuke the page table entry. */
->  			flush_cache_page(vma, address, pte_pfn(*pte));
-> Index: linux-2.6/mm/rmap.c
-> ===================================================================
-> --- linux-2.6.orig/mm/rmap.c
-> +++ linux-2.6/mm/rmap.c
-> @@ -224,10 +224,14 @@ unsigned long page_address_in_vma(struct
->  /*
->   * Check that @page is mapped at @address into @mm.
->   *
-> + * If @synch is false, page_check_address may perform a racy check to avoid
-> + * the page table lock when the pte is not present (helpful when reclaiming
-> + * highly shared pages).
-> + *
->   * On success returns with pte mapped and locked.
->   */
->  pte_t *page_check_address(struct page *page, struct mm_struct *mm,
-> -			  unsigned long address, spinlock_t **ptlp)
-> +			  unsigned long address, spinlock_t **ptlp, int synch)
->  {
->  	pgd_t *pgd;
->  	pud_t *pud;
-> @@ -249,7 +253,7 @@ pte_t *page_check_address(struct page *p
->  
->  	pte = pte_offset_map(pmd, address);
->  	/* Make a quick check before getting the lock */
-> -	if (!pte_present(*pte)) {
-> +	if (!synch && !pte_present(*pte)) {
->  		pte_unmap(pte);
->  		return NULL;
->  	}
-> @@ -281,7 +285,7 @@ static int page_referenced_one(struct pa
->  	if (address == -EFAULT)
->  		goto out;
->  
-> -	pte = page_check_address(page, mm, address, &ptl);
-> +	pte = page_check_address(page, mm, address, &ptl, 0);
->  	if (!pte)
->  		goto out;
->  
-> @@ -450,7 +454,7 @@ static int page_mkclean_one(struct page 
->  	if (address == -EFAULT)
->  		goto out;
->  
-> -	pte = page_check_address(page, mm, address, &ptl);
-> +	pte = page_check_address(page, mm, address, &ptl, 1);
->  	if (!pte)
->  		goto out;
->  
-> @@ -697,7 +701,7 @@ static int try_to_unmap_one(struct page 
->  	if (address == -EFAULT)
->  		goto out;
->  
-> -	pte = page_check_address(page, mm, address, &ptl);
-> +	pte = page_check_address(page, mm, address, &ptl, 0);
->  	if (!pte)
->  		goto out;
->  
-
+YH
