@@ -1,209 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756589AbYHNSV6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758511AbYHNSYX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756589AbYHNSV6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Aug 2008 14:21:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752001AbYHNSVu
+	id S1758511AbYHNSYX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Aug 2008 14:24:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752437AbYHNSYJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Aug 2008 14:21:50 -0400
-Received: from wolverine02.qualcomm.com ([199.106.114.251]:17639 "EHLO
-	wolverine02.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751903AbYHNSVs (ORCPT
+	Thu, 14 Aug 2008 14:24:09 -0400
+Received: from mail-relay-04.mailcluster.net ([77.221.130.216]:48639 "EHLO
+	mail-relay-02.mailcluster.net" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752105AbYHNSYH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Aug 2008 14:21:48 -0400
-X-IronPort-AV: E=McAfee;i="5200,2160,5361"; a="5545570"
-Message-ID: <48A477B8.9090704@qualcomm.com>
-Date: Thu, 14 Aug 2008 11:21:44 -0700
-From: Max Krasnyansky <maxk@qualcomm.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Thu, 14 Aug 2008 14:24:07 -0400
+Message-ID: <48A4784B.7030500@vlnb.net>
+Date: Thu, 14 Aug 2008 22:24:11 +0400
+From: Vladislav Bolkhovitin <vst@vlnb.net>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Paul Jackson <pj@sgi.com>, linux-kernel@vger.kernel.org, menage@google.com,
-       a.p.zijlstra@chello.nl, vegard.nossum@gmail.com,
-       Dmitry Torokhov <dtor@mail.ru>
-Subject: Re: [PATCH] cpuset: Rework sched domains and CPU hotplug handling
- (take 4)
-References: <1218490433-10576-1-git-send-email-maxk@qualcomm.com> <20080811183122.acd25489.pj@sgi.com> <20080814092424.GB18771@elte.hu> <20080814111633.GA2614@elte.hu>
-In-Reply-To: <20080814111633.GA2614@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Jeff Garzik <jgarzik@pobox.com>
+CC: David Miller <davem@davemloft.net>, open-iscsi@googlegroups.com,
+       rdreier@cisco.com, rick.jones2@hp.com,
+       Steve Wise <swise@opengridcomputing.com>, Karen Xie <kxie@chelsio.com>,
+       netdev@vger.kernel.org, michaelc@cs.wisc.edu, daisyc@us.ibm.com,
+       wenxiong@us.ibm.com, bhua@us.ibm.com,
+       Dimitrios Michailidis <dm@chelsio.com>,
+       Casey Leedom <leedom@chelsio.com>, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCH 1/1] cxgb3i: cxgb3 iSCSI initiator
+References: <adad4kfxm9v.fsf@cisco.com> <200808121457.11356.divy@chelsio.com> <20080812.150246.42068558.davem@davemloft.net> <200808121521.10101.divy@chelsio.com> <48A32976.7060504@vlnb.net> <48A33633.20800@pobox.com>
+In-Reply-To: <48A33633.20800@pobox.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Ingo Molnar <mingo@elte.hu> wrote:
+Jeff Garzik wrote:
+> Vladislav Bolkhovitin wrote:
+>> Divy Le Ray wrote:
+>>> On Tuesday 12 August 2008 03:02:46 pm David Miller wrote:
+>>>> From: Divy Le Ray <divy@chelsio.com>
+>>>> Date: Tue, 12 Aug 2008 14:57:09 -0700
+>>>>
+>>>>> In any case, such a stateless solution is not yet designed, whereas
+>>>>> accelerated iSCSI is available now, from us and other companies.
+>>>> So, WHAT?!
+>>>>
+>>>> There are TOE pieces of crap out there too.
+>>> Well, there is demand for accerated iscsi out there, which is the 
+>>> driving reason of our driver submission. 
+>> I'm, as an iSCSI target developer, strongly voting for hardware iSCSI 
+>> offload. Having possibility of the direct data placement is a *HUGE* 
+>> performance gain.
 > 
->> * Paul Jackson <pj@sgi.com> wrote:
->>
->>>   Acked-by: Paul Jackson <pj@sgi.com>
->>>
->>> ... based on code reading and comparing with the
->>> previous version - looks good.  Nice work, Max.
->>> Thanks.
->> applied to tip/sched/cpuset, thanks. (will show up in tip/sched/urgent 
->> as well soon, for v2.6.27 merging.)
+> Well, two responses here:
 > 
-> FYI, this new lockdep warning showed up in -tip testing, after i added 
-> this patch.
-
-Hmm, unless I'm missing something this one is unrelated. There are no cpu
-hotplug, sched or cpusets paths in the trace besides cpu_maps_update_begin().
-But that one is taken in the regular destroy_workqueue() path.
-
-The issues is polldev_mutex and cpu_add_remove_lock nesting. I bet you can
-trigger that without cpusets. CC'ing Dmitry Torokhov.
-
-btw It seems to be triggered when X closes polled input device.
-There aren't that many of them
-   $ git grep input_register_polled_device | wc -l
-   16
-What do you have hooked up to the test box ?
-
-Max
-
-
-> [   59.750200] =======================================================
-> [   59.750200] [ INFO: possible circular locking dependency detected ]
-> [   59.750200] 2.6.27-rc3-tip-00076-g75f9a29-dirty #1
-> [   59.750200] -------------------------------------------------------
-> [   59.750200] Xorg/6623 is trying to acquire lock:
-> [   59.750200]  (cpu_add_remove_lock){--..}, at: [<c0147dae>] cpu_maps_update_begin+0x14/0x16
-> [   59.750200] 
-> [   59.750200] but task is already holding lock:
-> [   59.750200]  (polldev_mutex){--..}, at: [<c07eb66f>] input_close_polled_device+0x22/0x47
-> [   59.750200] 
-> [   59.750200] which lock already depends on the new lock.
-> [   59.750200] 
-> [   59.750200] 
-> [   59.750200] the existing dependency chain (in reverse order) is:
-> [   59.750200] 
-> [   59.750200] -> #5 (polldev_mutex){--..}:
-> [   59.750200]        [<c01632e3>] __lock_acquire+0x848/0x9ab
-> [   59.750200]        [<c01634b6>] lock_acquire+0x70/0x97
-> [   59.750200]        [<c09eaf41>] __mutex_lock_common+0x8a/0x278
-> [   59.750200]        [<c09eb15d>] mutex_lock_interruptible_nested+0x2e/0x35
-> [   59.750200]        [<c07eb745>] input_open_polled_device+0x1c/0xa3
-> [   59.750200]        [<c07e8f84>] input_open_device+0x5a/0x86
-> [   59.750200]        [<c07eded0>] evdev_open+0x103/0x14e
-> [   59.750200]        [<c07ea620>] input_open_file+0x44/0x60
-> [   59.750200]        [<c019ff1c>] chrdev_open+0x106/0x11d
-> [   59.750200]        [<c019c269>] __dentry_open+0x119/0x1f0
-> [   59.750200]        [<c019c364>] nameidata_to_filp+0x24/0x38
-> [   59.750200]        [<c01a6952>] do_filp_open+0x309/0x5b2
-> [   59.750200]        [<c019c04e>] do_sys_open+0x47/0xc1
-> [   59.750200]        [<c019c114>] sys_open+0x23/0x2b
-> [   59.750200]        [<c011bb2f>] sysenter_do_call+0x12/0x43
-> [   59.750200]        [<ffffffff>] 0xffffffff
-> [   59.750200] 
-> [   59.750200] -> #4 (&dev->mutex){--..}:
-> [   59.750200]        [<c01632e3>] __lock_acquire+0x848/0x9ab
-> [   59.750200]        [<c01634b6>] lock_acquire+0x70/0x97
-> [   59.750200]        [<c09eaf41>] __mutex_lock_common+0x8a/0x278
-> [   59.750200]        [<c09eb15d>] mutex_lock_interruptible_nested+0x2e/0x35
-> [   59.750200]        [<c07ea402>] input_register_handle+0x26/0x80
-> [   59.750200]        [<c0424336>] kbd_connect+0x6c/0x95
-> [   59.750200]        [<c07e8a46>] input_attach_handler+0x38/0x6b
-> [   59.750200]        [<c07ea4d7>] input_register_handler+0x7b/0xaf
-> [   59.750200]        [<c0f63917>] kbd_init+0x6b/0x87
-> [   59.750200]        [<c0f63a40>] vty_init+0xd3/0xdc
-> [   59.750200]        [<c0f63405>] tty_init+0x198/0x19c
-> [   59.750200]        [<c0101139>] do_one_initcall+0x42/0x133
-> [   59.750200]        [<c0f3f610>] kernel_init+0x17b/0x1e2
-> [   59.750200]        [<c011c85f>] kernel_thread_helper+0x7/0x10
-> [   59.750200]        [<ffffffff>] 0xffffffff
-> [   59.750200] 
-> [   59.750200] -> #3 (input_mutex){--..}:
-> [   59.750200]        [<c01632e3>] __lock_acquire+0x848/0x9ab
-> [   59.750200]        [<c01634b6>] lock_acquire+0x70/0x97
-> [   59.750200]        [<c09eaf41>] __mutex_lock_common+0x8a/0x278
-> [   59.750200]        [<c09eb15d>] mutex_lock_interruptible_nested+0x2e/0x35
-> [   59.750200]        [<c07ea2da>] input_register_device+0xff/0x171
-> [   59.750200]        [<c04080cd>] acpi_button_add+0x320/0x421
-> [   59.750200]        [<c040634f>] acpi_device_probe+0x3f/0x8d
-> [   59.750200]        [<c048e8fa>] driver_probe_device+0xc3/0x156
-> [   59.750200]        [<c048e9cf>] __driver_attach+0x42/0x64
-> [   59.750200]        [<c048e22f>] bus_for_each_dev+0x43/0x65
-> [   59.750200]        [<c048e713>] driver_attach+0x19/0x1b
-> [   59.750200]        [<c048dc2d>] bus_add_driver+0xaf/0x1b5
-> [   59.750200]        [<c048eb72>] driver_register+0x76/0xd2
-> [   59.750200]        [<c040665e>] acpi_bus_register_driver+0x3f/0x41
-> [   59.750200]        [<c0f61672>] acpi_button_init+0x37/0x56
-> [   59.750200]        [<c0101139>] do_one_initcall+0x42/0x133
-> [   59.750200]        [<c0f3f230>] do_async_initcalls+0x1f/0x2f
-> [   59.750200]        [<c015475f>] run_workqueue+0xb7/0x189
-> [   59.750200]        [<c01551ab>] worker_thread+0xbb/0xc7
-> [   59.750200]        [<c015764d>] kthread+0x40/0x67
-> [   59.750200]        [<c011c85f>] kernel_thread_helper+0x7/0x10
-> [   59.750200]        [<ffffffff>] 0xffffffff
-> [   59.750200] 
-> [   59.750200] -> #2 (async_work){--..}:
-> [   59.750200]        [<c01632e3>] __lock_acquire+0x848/0x9ab
-> [   59.750200]        [<c01634b6>] lock_acquire+0x70/0x97
-> [   59.750200]        [<c015475a>] run_workqueue+0xb2/0x189
-> [   59.750200]        [<c01551ab>] worker_thread+0xbb/0xc7
-> [   59.750200]        [<c015764d>] kthread+0x40/0x67
-> [   59.750200]        [<c011c85f>] kernel_thread_helper+0x7/0x10
-> [   59.750200]        [<ffffffff>] 0xffffffff
-> [   59.750200] 
-> [   59.750200] -> #1 (kasyncinit){--..}:
-> [   59.750200]        [<c01632e3>] __lock_acquire+0x848/0x9ab
-> [   59.750200]        [<c01634b6>] lock_acquire+0x70/0x97
-> [   59.750200]        [<c015499a>] cleanup_workqueue_thread+0x2b/0x5e
-> [   59.750200]        [<c0154a40>] destroy_workqueue+0x61/0x89
-> [   59.750200]        [<c0f3f634>] kernel_init+0x19f/0x1e2
-> [   59.750200]        [<c011c85f>] kernel_thread_helper+0x7/0x10
-> [   59.750200]        [<ffffffff>] 0xffffffff
-> [   59.750200] 
-> [   59.750200] -> #0 (cpu_add_remove_lock){--..}:
-> [   59.750200]        [<c01631b4>] __lock_acquire+0x719/0x9ab
-> [   59.750200]        [<c01634b6>] lock_acquire+0x70/0x97
-> [   59.750200]        [<c09eaf41>] __mutex_lock_common+0x8a/0x278
-> [   59.750200]        [<c09eb1c7>] mutex_lock_nested+0x2e/0x36
-> [   59.750200]        [<c0147dae>] cpu_maps_update_begin+0x14/0x16
-> [   59.750200]        [<c0154a05>] destroy_workqueue+0x26/0x89
-> [   59.750200]        [<c07eb688>] input_close_polled_device+0x3b/0x47
-> [   59.750200]        [<c07e9056>] input_close_device+0x45/0x61
-> [   59.750200]        [<c07edd49>] evdev_release+0x7f/0x99
-> [   59.750200]        [<c019e7d9>] __fput+0xb3/0x135
-> [   59.750200]        [<c019eb5f>] fput+0x1c/0x21
-> [   59.750200]        [<c019bffd>] filp_close+0x4c/0x56
-> [   59.750200]        [<c019d1d6>] sys_close+0x6d/0xa6
-> [   59.750200]        [<c011bb2f>] sysenter_do_call+0x12/0x43
-> [   59.750200]        [<ffffffff>] 0xffffffff
-> [   59.750200] 
-> [   59.750200] other info that might help us debug this:
-> [   59.750200] 
-> [   59.750200] 3 locks held by Xorg/6623:
-> [   59.750200]  #0:  (&evdev->mutex){--..}, at: [<c07edd31>] evdev_release+0x67/0x99
-> [   59.750200]  #1:  (&dev->mutex){--..}, at: [<c07e9030>] input_close_device+0x1f/0x61
-> [   59.750200]  #2:  (polldev_mutex){--..}, at: [<c07eb66f>] input_close_polled_device+0x22/0x47
-> [   59.750200] 
-> [   59.750200] stack backtrace:
-> [   59.750200] Pid: 6623, comm: Xorg Not tainted 2.6.27-rc3-tip-00076-g75f9a29-dirty #1
-> [   59.750200]  [<c016189b>] print_circular_bug_tail+0x5d/0x68
-> [   59.750200]  [<c01631b4>] __lock_acquire+0x719/0x9ab
-> [   59.750200]  [<c01634b6>] lock_acquire+0x70/0x97
-> [   59.750200]  [<c0147dae>] ? cpu_maps_update_begin+0x14/0x16
-> [   59.750200]  [<c09eaf41>] __mutex_lock_common+0x8a/0x278
-> [   59.750200]  [<c0147dae>] ? cpu_maps_update_begin+0x14/0x16
-> [   59.750200]  [<c016261e>] ? trace_hardirqs_on_caller+0x94/0xcd
-> [   59.750200]  [<c09eb1c7>] mutex_lock_nested+0x2e/0x36
-> [   59.750200]  [<c0147dae>] ? cpu_maps_update_begin+0x14/0x16
-> [   59.750200]  [<c0147dae>] cpu_maps_update_begin+0x14/0x16
-> [   59.750200]  [<c0154a05>] destroy_workqueue+0x26/0x89
-> [   59.750200]  [<c07eb688>] input_close_polled_device+0x3b/0x47
-> [   59.750200]  [<c07e9056>] input_close_device+0x45/0x61
-> [   59.750200]  [<c07edd49>] evdev_release+0x7f/0x99
-> [   59.750200]  [<c019e7d9>] __fput+0xb3/0x135
-> [   59.750200]  [<c019eb5f>] fput+0x1c/0x21
-> [   59.750200]  [<c019bffd>] filp_close+0x4c/0x56
-> [   59.750200]  [<c019d1d6>] sys_close+0x6d/0xa6
-> [   59.750200]  [<c011bb2f>] sysenter_do_call+0x12/0x43
-> [   59.750200]  [<c0110000>] ? x86_decode_insn+0x46e/0x942
-> [   59.750200]  =======================
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> * no one is arguing against hardware iSCSI offload.  Rather, it is a 
+> problem with a specific implementation, one that falsely assumes two 
+> independent TCP stacks can co-exist peacefully on the same IP address 
+> and MAC.
 > 
+> * direct data placement is possible without offloading the entire TCP 
+> stack onto a firmware/chip.
+> 
+> There is plenty of room for hardware iSCSI offload...
+
+Sure, nobody is arguing against that. My points are:
+
+1. All those are things not for near future. I don't think it can be 
+implemented earlier than in a year time, but there is a huge demand for 
+high speed and low CPU overhead iSCSI _now_. Nobody's satisfied by the 
+fact that with the latest high end hardware he can saturate 10GbE link 
+on only less than 50%(!). Additionally, for me, as an iSCSI target 
+developer, it looks especially annoying that hardware requirements for 
+_clients_ (initiators) are significantly higher than for _server_ 
+(target). This situation for me looks as a nonsense.
+
+2. I believe, that iSCSI/TCP pair is sufficiently heavy weighted 
+protocol to be completely offloaded to hardware. All partial offloads 
+will never make it comparably efficient. It still would consume a lot of 
+CPU. For example, consider digests. Even if they computed by new CRC32C 
+instruction, the computation still would need a chunk of CPU power. I 
+think, at least as much as to copy the computed block to new location. 
+Can we save it? Sure, with hardware offload. The additional CPU load can 
+be acceptable if only data are transferred and there are no other 
+activities, but in real life this is quite rare. Consider, for instance, 
+a VPS server, like VMware. It always lacks CPU power and 30% CPU load 
+during data transfers makes a huge difference. Another example is a 
+target doing some processing of transferred data, like encryption or 
+de-duplication.
+
+Note, I'm not advocating this particular cxgb3 driver. I have not 
+examined it closely enough and don't have sufficient knowledge about the 
+hardware to judge it. But I'm advocating the concept of full offload 
+HBAs, because they provide a real gain, which IMHO can't be reached by 
+any partial offloads.
+
+Actually, in the Fibre Channel world from the very beginning the entire 
+FC protocol has been implemented on hardware and everybody have been 
+happy with that. Now FCoE is coming, which means that Linux kernel is 
+going to have implemented in software a big chunk of FC protocol. Then, 
+hopefully, nobody would declare all existing FC cards as a crap and 
+force FC vendors redesign their hardware to use Linux FC implementation 
+and make partial offloads for it? ;) Instead, several implementations 
+would live in a peace. The situation is the same with iSCSI. What we 
+need is only to find an acceptable way for two TCP implementations to 
+coexist. Then iSCSI on 10GbE hardware would have good chances to 
+outperform 8Gbps FC in both performance and CPU efficiency.
+
+Vlad
+
