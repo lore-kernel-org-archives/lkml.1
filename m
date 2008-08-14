@@ -1,54 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758125AbYHNPQp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758637AbYHNPRZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758125AbYHNPQp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Aug 2008 11:16:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755301AbYHNPQg
+	id S1758637AbYHNPRZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Aug 2008 11:17:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751852AbYHNPRR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Aug 2008 11:16:36 -0400
-Received: from e31.co.us.ibm.com ([32.97.110.149]:35326 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751706AbYHNPQg (ORCPT
+	Thu, 14 Aug 2008 11:17:17 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:47252 "EHLO
+	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751368AbYHNPRQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Aug 2008 11:16:36 -0400
-Subject: Re: [Devel] Re: [RFC][PATCH 1/4] checkpoint-restart:
-	general	infrastructure
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-To: Pavel Emelyanov <xemul@openvz.org>
-Cc: Oren Laadan <orenl@cs.columbia.edu>, containers@lists.linux-foundation.org,
-       Theodore Tso <tytso@mit.edu>, linux-kernel@vger.kernel.org,
-       Arnd Bergmann <arnd@arndb.de>
-In-Reply-To: <48A3E81C.6010008@openvz.org>
-References: <20080807224033.FFB3A2C1@kernel>
-	 <20080807224034.735B1F84@kernel>	<200808081146.54834.arnd@arndb.de>
-	 <1218221451.19082.36.camel@nimitz> <489CB3CA.6050304@cs.columbia.edu>
-	 <48A3E81C.6010008@openvz.org>
-Content-Type: text/plain
-Date: Thu, 14 Aug 2008 08:16:17 -0700
-Message-Id: <1218726977.23641.6.camel@nimitz>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
-Content-Transfer-Encoding: 7bit
+	Thu, 14 Aug 2008 11:17:16 -0400
+Date: Thu, 14 Aug 2008 17:18:33 +0200
+From: Pavel Machek <pavel@suse.cz>
+To: Andrew Morton <akpm@osdl.org>, kernel list <linux-kernel@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Trivial patch monkey <trivial@kernel.org>
+Subject: PM_TRACE is no longer experimental
+Message-ID: <20080814151833.GA23300@elf.ucw.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-08-14 at 12:09 +0400, Pavel Emelyanov wrote:
-> E.g. consider we are saving a container image on ipv6 node and trying 
-> to restore from it on the one without the ipv6. In that case we *may*
-> have some object of for example CKPT_IPV6_IFA type of CLPT_IPV6_SOCK_INFO
-> and fail the restoration process when finding such in an input file. But 
-> what we should *not* do is to write any information about whether we had
-> the CONFIG_IPV6 turned on on the dumping side and check for this on the
-> restoring side.
+PM_TRACE is stable for quite long. I don't think it needs to depend on
+experimental.
 
-The only problem I can see with this is that you lose efficiency,
-especially when you have to build your checkpoint image with lots of
-things that are config-specific.
+Signed-off-by: Pavel Machek <pavel@suse.cz>
 
-The approach sounds like a good one in theory, but I'm a bit skeptical
-that we could stick to it in practice, in a mainline kernel where there
-are billions of config options.  It is definitely something to strive
-for, though.  Good point!
+---
+commit 710f4e9070c453e743fcfa1a6017075026c4967b
+tree 7f3fe656004f2d21b6a9cbe1264f9f2236572456
+parent ea977ecb4f994b0dc2e09cab3dbba87aad030d99
+author Pavel <pavel@amd.ucw.cz> Thu, 14 Aug 2008 17:18:07 +0200
+committer Pavel <pavel@amd.ucw.cz> Thu, 14 Aug 2008 17:18:07 +0200
 
--- Dave
+ kernel/power/Kconfig |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
+diff --git a/kernel/power/Kconfig b/kernel/power/Kconfig
+index dcd165f..1800674 100644
+--- a/kernel/power/Kconfig
++++ b/kernel/power/Kconfig
+@@ -36,7 +36,7 @@ config PM_VERBOSE
+ 
+ config CAN_PM_TRACE
+ 	def_bool y
+-	depends on PM_DEBUG && PM_SLEEP && EXPERIMENTAL
++	depends on PM_DEBUG && PM_SLEEP
+ 
+ config PM_TRACE
+ 	bool
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
