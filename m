@@ -1,53 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757367AbYHNAVZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755742AbYHNAa2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757367AbYHNAVZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Aug 2008 20:21:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756254AbYHNAVN
+	id S1755742AbYHNAa2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Aug 2008 20:30:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753274AbYHNAaS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Aug 2008 20:21:13 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:44873
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753564AbYHNAVM (ORCPT
+	Wed, 13 Aug 2008 20:30:18 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:55553 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752981AbYHNAaR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Aug 2008 20:21:12 -0400
-Date: Wed, 13 Aug 2008 17:21:13 -0700 (PDT)
-Message-Id: <20080813.172113.161885391.davem@davemloft.net>
-To: torvalds@linux-foundation.org
-Cc: akpm@linux-foundation.org, sparclinux@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [GIT]: Sparc
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20080813.164520.86944543.davem@davemloft.net>
-References: <20080813.164520.86944543.davem@davemloft.net>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Wed, 13 Aug 2008 20:30:17 -0400
+Date: Wed, 13 Aug 2008 17:23:05 -0700
+From: Greg KH <greg@kroah.com>
+To: Marcin Obara <marcin_obara@users.sourceforge.net>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Intel Management Engine Interface
+Message-ID: <20080814002305.GA7359@kroah.com>
+References: <alpine.DEB.1.00.0807180742560.7868@ip-195-3-221-75.vnet.pl> <alpine.DEB.1.00.0807181938180.12442@ip-195-3-221-75.vnet.pl> <alpine.DEB.1.00.0807182122460.24146@ip-195-3-221-75.vnet.pl> <alpine.DEB.1.00.0807182229070.30162@ip-195-3-221-75.vnet.pl> <alpine.DEB.1.00.0807231958130.20791@ip-195-3-221-75.vnet.pl> <alpine.DEB.1.00.0808112115140.6724@ip-195-3-221-75.vnet.pl> <20080813005835.GE22793@kroah.com> <ea8d860a0808130016w646307few3cc6385caf9b1ec7@mail.gmail.com> <20080813181850.GD4886@kroah.com> <ea8d860a0808131248g31ffb10g37b14dc8af89038c@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <ea8d860a0808131248g31ffb10g37b14dc8af89038c@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: David Miller <davem@davemloft.net>
-Date: Wed, 13 Aug 2008 16:45:20 -0700 (PDT)
+On Wed, Aug 13, 2008 at 08:48:19PM +0100, Marcin Obara wrote:
+> 2008/8/13 Greg KH <greg@kroah.com>:
+> >> GET_VERSION is called frequently
+> >
+> > Why?  Shouldn't it only be called once?
+> Once per connection. But you can have many clients connecting.
 
-> 3) Implement IRQ stacks to deal with very real deep stack code path
->    situations, as reported by Mikulas Patocka.  Also, fix a recursion
->    bug in stack overflow detection.
+Is that a real issue?
 
-While further testing I noticed a bug which I've pushed into the
-tree, please repull to fetch it if you haven't already, thanks!
+> >> With ioctl - only one file handle is used, and userspace client logic
+> >> is simpler.
+> >
+> > But the kernel is messier and we are trying to not add any more ioctls
+> > to it.  Especially for trivial things like the version number of the
+> > hardware device.
+> It's rather protocol version (=running software version) supported by
+> hardware device.
+> Hmmm, I just didn't know that there is something wrong with ioctls.
 
-The following changes since commit 4f70f7a91bffdcc39f088748dc678953eb9a3fbd:
-  David S. Miller (1):
-        sparc64: Implement IRQ stacks.
+There always have been :)
 
-are available in the git repository at:
+> >> Normal flow looks like:
+> >>
+> >> open
+> >> ioctl(GET_VERSION)
+> >
+> > Great, do an additional open/read/close here for the version, I think
+> > you will find it pretty trivial to do :)
+> Right, it's trivial.... but will make userspace source code messier and bigger.
+> 
+> Btw. I know we have powerful CPUs... but small wasting resources is
+> still wasting resources... so we still need new CPUs :-).
 
-  master.kernel.org:/pub/scm/linux/kernel/git/davem/sparc-2.6.git master
+So you keep your employer in business :)
 
-David S. Miller (1):
-      sparc64: Handle stack trace attempts before irqstacks are setup.
+Seriously, an ioctl for a hardware version number is total overkill
+here.  Your other ioctls are also suspect, please repost with the
+description of why they are all needed, with documentation about the
+user/kernel interface you have created here.
 
- arch/sparc64/kernel/kstack.h     |   38 ++++++++++++++++++++------------------
- arch/sparc64/kernel/stacktrace.c |    3 +--
- 2 files changed, 21 insertions(+), 20 deletions(-)
+thanks,
+
+greg k-h
