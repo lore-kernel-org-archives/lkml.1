@@ -1,84 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759566AbYHNSJ4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759268AbYHNSLu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759566AbYHNSJ4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Aug 2008 14:09:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752577AbYHNSJr
+	id S1759268AbYHNSLu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Aug 2008 14:11:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751903AbYHNSLj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Aug 2008 14:09:47 -0400
-Received: from tomts25.bellnexxia.net ([209.226.175.188]:41475 "EHLO
-	tomts25-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752321AbYHNSJq (ORCPT
+	Thu, 14 Aug 2008 14:11:39 -0400
+Received: from web82105.mail.mud.yahoo.com ([209.191.84.218]:43655 "HELO
+	web82105.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751798AbYHNSLi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Aug 2008 14:09:46 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AswEAGQNpEhMRKxB/2dsb2JhbACBYrUigVU
-Date: Thu, 14 Aug 2008 14:09:43 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Andi Kleen <andi@firstfloor.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
-       Steven Rostedt <srostedt@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
+	Thu, 14 Aug 2008 14:11:38 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=sbcglobal.net;
+  h=Received:X-Mailer:Date:From:Subject:To:Cc:MIME-Version:Content-Type:Message-ID;
+  b=3O09Wb1wj55UMMnZwULgcmzTMboGaPGNVYScOwrJ0EYT4IPEFGLrW64WO0+RNcSR8MSHZ4GIOqYtbBVyixx91GIspxHnhXBvSWK1aZSPJSXgQPc0OQJ1qwcyYIo7pd7KIO/vRWW06xWsm0vsB8haei9s7RF+pupC4bBzNPlBQ6E=;
+X-Mailer: YahooMailRC/1042.40 YahooMailWebService/0.7.218
+Date: Thu, 14 Aug 2008 11:11:37 -0700 (PDT)
+From: David Witbrodt <dawitbro@sbcglobal.net>
+Subject: Re: HPET regression in 2.6.26 versus 2.6.25 -- revert for 2.6.26-rc1 failed
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: Bill Fink <billfink@mindspring.com>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
        Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, Roland McGrath <roland@redhat.com>,
-       Ulrich Drepper <drepper@redhat.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Gregory Haskins <ghaskins@novell.com>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       "Luis Claudio R. Goncalves" <lclaudio@uudg.org>,
-       Clark Williams <williams@redhat.com>,
-       Christoph Lameter <cl@linux-foundation.org>
-Subject: Re: [RFC PATCH] x86 alternatives : fix LOCK_PREFIX race with
-	preemptible kernel and CPU hotplug
-Message-ID: <20080814180943.GD4697@Krystal>
-References: <20080813200119.GA18966@Krystal> <20080813234156.GA25775@Krystal> <48A375E3.9090609@zytor.com> <48A388CE.2020404@goop.org> <20080814014944.GA31883@Krystal> <48A3A806.8060509@goop.org> <20080814151805.GA29507@Krystal> <48A459B1.2070601@zytor.com> <20080814165802.GC517@Krystal> <48A46897.4040900@zytor.com>
-Mime-Version: 1.0
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       netdev <netdev@vger.kernel.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <48A46897.4040900@zytor.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 13:57:20 up 70 days, 22:37,  7 users,  load average: 0.18, 0.68,
-	0.71
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Message-ID: <798351.12728.qm@web82105.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* H. Peter Anvin (hpa@zytor.com) wrote:
-> Mathieu Desnoyers wrote:
->> Sure, here are the updated tables. Basically, they show no significant
->> difference between the NOP and the DS segment selector prefix
->> approaches.
->
-> Actually, unless I have blown my T-test completely, they show with a 80% 
-> and 74% confidence (respective for the two benchmarks) that the DS case is 
-> slightly *better* (0.26% and 0.20% better, respective), which makes it a 
-> no-brainer.  Doing around 10 runs of each is likely to confirm this 
-> conclusion by pushing it into the 90+% interval.
->
 
-Yes, I think you are right.
 
-> Note that since the difference is so small, and so can also be due to some 
-> kind of systematic error (lower ambient temperature during the DS run 
-> making the disk drive slightly faster, what have you.)
->
+> can you try enable kexec and kdump in you .config.
+> 
+> it should works. my .config have config_kexec
 
-I doubt it, because I made a "cache priming" run before the tests, which
-made sure the data was all populated in memory. But yeah, having
-different cpu clock calibration values/cpu clock frequency between
-reboots could also cause that kind of difference.
+First, I apologize.  I see that you were assuming I had KEXEC enabled when you
+gave me the patch against 2.6.27-rc3.  I have only posted parts of my custom
+.config to LKML, thinking that posting the whole thing was not appropriate.
 
-Mathieu
+Did you mean CRASH_DUMP instead of "kdump" above?
 
-> 	-hpa
+[N] kexec system call    (CONFIG_KEXEC)  (bool)  (Help)
+[N] kernel crash dumps (EXPERIMENTAL)    (CONFIG_CRASH_DUMP)  (bool)  (Help)
 
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+My custom .config has both of these disabled -- either because they default
+to "N" when running 'make oldconfig', or because I read the help text with
+those options and decided I would not be using those features.
+
+
+> > Some experiments I did last night may render these questions moot, though.
+> > My problem is very specific to the hardware on two of my machines, and it
+> > has something to do with setting up the system resources that
+> > insert_resource() touches.
+> 
+> please try to bisect on current tree. and every time apply the revert patch...
+
+I will try your patch against 2.6.27-rc3 again, with KEXEC and CRASH_DUMP 
+enabled, when I get home from work.  I still have not retried using 'patch'
+instead of 'git apply', though I am sure that 'git apply' worked just fine.
+
+I was trying other experiments last night, and have posted the results of
+those already -- and I'm guessing that your 2.6.27-rc3 patch will not work
+unless it factors in what I discovered there.  (But I will do all of these
+changes that you asked, as well.)
+
+I do not know how to bisect with your patch if I have a "bad" but no "good"
+to start with.  Can you explain how I should proceed when I _do_ get home?
+(I can just enabled those config options and try the patch again, but I am
+confused about the bisect you are asking me to perform.)
+
+Does my other post, about trying to revert those February commits, mean
+anything?
+
+
+Thanks,
+Dave W.
