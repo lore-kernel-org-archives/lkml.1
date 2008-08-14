@@ -1,75 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757505AbYHNLkc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757745AbYHNLmU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757505AbYHNLkc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Aug 2008 07:40:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754175AbYHNLkY
+	id S1757745AbYHNLmU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Aug 2008 07:42:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754175AbYHNLmN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Aug 2008 07:40:24 -0400
-Received: from gv-out-0910.google.com ([216.239.58.184]:26710 "EHLO
-	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753889AbYHNLkX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Aug 2008 07:40:23 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=aN2ycBGuSfsM36zhqmxd1tXZCBdz2UdTWqbzfuH7T/CethVZOxtFFjqPiHGXpTvs6q
-         XrMCy5rZ+Qc3AmUKklOYcTdsOEn2azRBodgMmyGz/Zr734KaWNBWv4YIzn+LdIQgxDpV
-         RlRBAJhYu5Gc+uATGR7/hRqBYy6a0ay9ITFZ4=
-Subject: RE: Possible CPU_IDLE bug [WAS: Re: Timer unstability on when
-	using C2 and deeper sleep states (Dell Latitude XT)]
-From: Milan Plzik <milan.plzik@gmail.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       Venkatesh <venkatesh.pallipadi@intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-In-Reply-To: <alpine.LFD.1.10.0808141100100.3243@apollo.tec.linutronix.de>
-References: <1218566008.13866.41.camel@localhost>
-	 <1218625125.4304.7.camel@localhost> <1218636980.5250.12.camel@localhost>
-	 <7E82351C108FA840AB1866AC776AEC460945BB44@orsmsx505.amr.corp.intel.com>
-	 <1218658873.4336.15.camel@localhost>
-	 <7E82351C108FA840AB1866AC776AEC460945BFF2@orsmsx505.amr.corp.intel.com>
-	 <1218701151.4285.9.camel@localhost>
-	 <alpine.LFD.1.10.0808141100100.3243@apollo.tec.linutronix.de>
-Content-Type: text/plain; charset=utf-8
-Date: Thu, 14 Aug 2008 13:40:14 +0200
-Message-Id: <1218714014.7111.7.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 8bit
+	Thu, 14 Aug 2008 07:42:13 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:15877 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752663AbYHNLmM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Aug 2008 07:42:12 -0400
+Date: Thu, 14 Aug 2008 13:42:09 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Pierre Ossman <drzeus-list@drzeus.cx>
+Cc: Alex Dubov <oakad@yahoo.com>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: can block drivers get non-fs requests?
+Message-ID: <20080814114209.GB20055@kernel.dk>
+References: <20080814133810.746751cf@mjolnir.drzeus.cx>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080814133810.746751cf@mjolnir.drzeus.cx>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Št, 2008-08-14 at 11:00 +0200, Thomas Gleixner wrote:
-> On Thu, 14 Aug 2008, Milan Plzik wrote:
-> >   I tried it just now, is performs a bit better than 2.6.26 (e.g. I
-> > don't get that "press any key unless nothing happens" states), even
-> > reports a bit more reasonable values of wakeups, but the system
-> > sometimes becomes rather slow (e.g. when playing video). I was not able
-> > to compile fglrx driver, so I had to change it to radeon one. And also,
-> > the number of wakeups reported is not very convincing, though, it
-> > changes from 300 to 600 (which is ~ two times the sum of wakeups)
-> > without any reason, and sometimes goes even higher.
-> > 
-> >   I tried to use nolapic_timer option, but it didn't help.
+On Thu, Aug 14 2008, Pierre Ossman wrote:
+> Hi Jens,
 > 
-> Can you please try "hpet=disable" on the kernel command line ?
-
-  Looks like this has helped; after cold reboot hpet=disable seems to
-help the system to run properly (on 2.6.26 kernel). I wonder what could
-cause these problems. In the meanwhile I learned that this machine
-doesn't do proper cleanup during reboot -- it seems that state before
-reboot affects the state after reboot, so I should probably do some
-re-testing with cold reboot after each attempt. I guess I tried
-hpet=disable some time ago and after quick reboot it did not work
-properly.
-
+> There is one part of the block layer I'm having trouble completely
+> understanding (well there are loads really, but right now there's one in
+> particular :)):
 > 
-> Thanks,
-> 	tglx
+> Do block drivers need to watch out for requests that aren't "normal"
+> reads and writes? The MMC block driver has a funky prepare function
+> that checks for FS and PC requests and discards anything else. I
+> believe this is wrong in two regards:
 
-  Thank you,
-	Milan
+You should check in the driver whether the request type is supported. So
+if you can only handle fs requests, you should do a check for
+!blk_fs_request() after elv_next_request() and call
+end_(de)queued_request() appropriately.
+
+> a) PC requests seem to be prepared SCSI cmds, and the MMC driver just
+> expects normal transfer requests. Therefore, such requests should not
+> be accepted by this driver.
+
+Yes, that is correct. A PC request is essentially a SCSI command sent
+directly.
+
+> b) The block layer won't throw weird stuff at us unless explicitly told
+> so. I.e. a normal block queue will only produce normal FS requests.
+
+Normal IO activity will only produce fs requests. However, if someone
+uses eg SG_IO on your block device, you will be sent pc requests. There
+are no checks for this, it is left to the driver.
+
+-- 
+Jens Axboe
 
