@@ -1,88 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754803AbYHNB7K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755178AbYHNCFe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754803AbYHNB7K (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Aug 2008 21:59:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751565AbYHNB6x
+	id S1755178AbYHNCFe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Aug 2008 22:05:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751784AbYHNCFV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Aug 2008 21:58:53 -0400
-Received: from mail.es335.com ([67.65.19.105]:22759 "EHLO mail.es335.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751286AbYHNB6w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Aug 2008 21:58:52 -0400
-Message-ID: <48A389DB.9050002@opengridcomputing.com>
-Date: Wed, 13 Aug 2008 20:26:51 -0500
-From: Tom Tucker <tom@opengridcomputing.com>
-User-Agent: Thunderbird 2.0.0.16 (Macintosh/20080707)
-MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: rdreier@cisco.com, rick.jones2@hp.com, jgarzik@pobox.com,
-       swise@opengridcomputing.com, divy@chelsio.com, kxie@chelsio.com,
+	Wed, 13 Aug 2008 22:05:21 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:44281
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751164AbYHNCFT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Aug 2008 22:05:19 -0400
+Date: Wed, 13 Aug 2008 19:05:21 -0700 (PDT)
+Message-Id: <20080813.190521.224523380.davem@davemloft.net>
+To: swise@opengridcomputing.com
+Cc: tom@opengridcomputing.com, rdreier@cisco.com, rick.jones2@hp.com,
+       jgarzik@pobox.com, divy@chelsio.com, kxie@chelsio.com,
        netdev@vger.kernel.org, open-iscsi@googlegroups.com,
        michaelc@cs.wisc.edu, daisyc@us.ibm.com, wenxiong@us.ibm.com,
        bhua@us.ibm.com, dm@chelsio.com, leedom@chelsio.com,
        linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
 Subject: Re: [RFC][PATCH 1/1] cxgb3i: cxgb3 iSCSI initiator
-References: <ada3al8k3l5.fsf@cisco.com>	<20080813.150831.193391799.davem@davemloft.net>	<adatzdoiklo.fsf@cisco.com> <20080813.161237.10205799.davem@davemloft.net>
-In-Reply-To: <20080813.161237.10205799.davem@davemloft.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <48A38FEF.6090500@opengridcomputing.com>
+References: <48A389DB.9050002@opengridcomputing.com>
+	<20080813.183755.72334968.davem@davemloft.net>
+	<48A38FEF.6090500@opengridcomputing.com>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller wrote:
-> From: Roland Dreier <rdreier@cisco.com>
-> Date: Wed, 13 Aug 2008 16:03:15 -0700
->
->   
->> OK, I admit you could make something work -- add hooks for the low-level
->> driver to ask the iSCSI initiator where PDU boundaries are so it can
->> resync when something is evicted from the flow cache, have the initiator
->> format its tags in a special way to encode placement data, etc, etc.
->> The scheme does bring to mind Alan's earlier comment about pigs and
->> propulsion, though.
->>     
->
-> There would need to be _NO_ hooks into the iSCSI initiator at all.
->
-> The card would land the block I/O data onto the necessary page boundaries
-> and the iSCSI code would just be able to thus use the pages directly
-> and as-is.
->
-> It would look perfectly like normal TCP receive traffic.  No hooks,
-> no special cases, nothing like that.
->
->   
->> In any case, as I said in the part of my email that you snipped, the
->> real issue is not designing hypothetical hardware, but deciding how to
->> support the Chelsio, Broadcom, etc hardware that exists today.
->>     
->
-> The same like we support TOE hardware that exists today.  That is, we
-> don't.
->
->   
-Is there any chance your could discuss exactly how a stateless adapter 
-can determine if a network segment
-is in-order, next expected, minus productive ack, paws compliant, etc... 
-without TCP state?
+From: Steve Wise <swise@opengridcomputing.com>
+Date: Wed, 13 Aug 2008 20:52:47 -0500
 
-I get how you can optimize "flows", but "flows" are a fancy name for a 
-key (typically the four-tuple) that looks into a TCAM  to get the 
-"information" necessary to do header prediction.
+> How do you envision programming such a device?
 
-Can you explain how this "information" somehow doesn't qualify as 
-"state". Doesn't the next expected sequence number at the very least 
-need to be updated? una? etc...?
+There should be no special programming.
 
-Could you also include the "non-state-full" information necessary to do 
-iSCSI header digest validation, data placement, and marker removal? 
+> It will need TCP and iSCSI state to have any chance of doing useful
+> and productive placement of data.
 
-Thanks,
-Tom
-> --
-> To unsubscribe from this list: send the line "unsubscribe netdev" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->   
+The card can see the entire TCP stream, it doesn't need anything
+more than that.  It can parse every packet header, see what kind
+of data transfer is being requested or responded to, etc.
 
+Look, I'm not going to design this whole friggin' thing for you guys.
+
+I've stated clearly what the base requirement is, which is that the
+packet is fully processed by the networking stack and that the card
+merely does data placement optimizations that the stack can completely
+ignore if it wants to.
+
+You have an entire engine in there that can interpret an iSCSI
+transport stream, you have the logic to do these kinds of things,
+and it can be done without managing the connection on the card.
