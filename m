@@ -1,91 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754636AbYHNTJZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759695AbYHNTKV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754636AbYHNTJZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Aug 2008 15:09:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754050AbYHNTI5
+	id S1759695AbYHNTKV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Aug 2008 15:10:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753410AbYHNTKG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Aug 2008 15:08:57 -0400
-Received: from smtp1.stealer.net ([88.198.224.204]:46837 "EHLO
-	smtp1.stealer.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752499AbYHNTI4 (ORCPT
+	Thu, 14 Aug 2008 15:10:06 -0400
+Received: from py-out-1112.google.com ([64.233.166.177]:46140 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752178AbYHNTKE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Aug 2008 15:08:56 -0400
-Date: Thu, 14 Aug 2008 21:08:46 +0200 (CEST)
-From: Sven Wegener <sven.wegener@stealer.net>
-To: Frans Pop <elendil@planet.nl>
-cc: linux-kernel@vger.kernel.org,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [regression?] [resend] Memory zone info seems incomplete in
- boottime dmesg output
-In-Reply-To: <200808142042.24606.elendil@planet.nl>
-Message-ID: <alpine.LNX.1.10.0808142057520.12259@titan.stealer.net>
-References: <200808142042.24606.elendil@planet.nl>
-User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
-Organization: STEALER.net
+	Thu, 14 Aug 2008 15:10:04 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=feNEK3nxn7WmUm54XDQx6aZA8AL4KS7Jd8t5oyLdXXwC+MiIPkQjun+bKayCdJ+Lc2
+         uN3V5dOEmsSSRUvET9YsIpaNrH7sf+M67fuZKKPDuEUSfFc/NtCu62+As1TRVbc4Q6ct
+         GyaUVYVR0fkKB47PqpeBU6s+ttdyD3BPcFvrg=
+Message-ID: <6278d2220808141210p3c612feen6fe779bc84a4ae78@mail.gmail.com>
+Date: Thu, 14 Aug 2008 20:10:03 +0100
+From: "Daniel J Blueman" <daniel.blueman@gmail.com>
+To: "Takashi Iwai" <tiwai@suse.de>
+Subject: Re: ALC883 recording troubles...
+Cc: "Vegard Nossum" <vegard.nossum@gmail.com>,
+       "Romano Giannetti" <romano@dea.icai.upcomillas.es>,
+       "Linux Kernel" <linux-kernel@vger.kernel.org>
+In-Reply-To: <6278d2220806280329j2f77c52dp8fbae78420c136c1@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Score: -0.6
-X-Spam-Bar: /
-X-Spam-Report: Scanned by SpamAssassin 3.2.1-gr1 2007-05-02 on smtp1.stealer.net at Thu, 14 Aug 2008 19:08:54 +0000
-	Bayes: 0.1342 Tokens: new, 187; hammy, 2; neutral, 4; spammy, 0.
-	AutoLearn: no
-	*  0.1 RDNS_NONE Delivered to trusted network by a host with no rDNS
-	* -0.7 BAYES_20 BODY: Bayesian spam probability is 5 to 20%
-	*      [score: 0.1342]
-X-Spam-Signature: 3491b8133ae53e4bee62734a00ca923fdc0cbee8
-X-DomainKey-Status: no signature
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <6278d2220806091259t47c9b070v269da0f5855ef014@mail.gmail.com>
+	 <s5habhtesoq.wl%tiwai@suse.de>
+	 <6278d2220806111200g4f802885wfc5f0fd6c0405efb@mail.gmail.com>
+	 <s5hiqwf0vyr.wl%tiwai@suse.de>
+	 <6278d2220806271705v5bd5fec3l86c3560283063092@mail.gmail.com>
+	 <19f34abd0806280311s115062e6vc6d0f304cb744934@mail.gmail.com>
+	 <6278d2220806280329j2f77c52dp8fbae78420c136c1@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 14 Aug 2008, Frans Pop wrote:
+Hi Takashi,
 
-> With 2.6.26 I get:
-> <snip>
-> Zone PFN ranges:
->   DMA             0 ->     4096
->   DMA32        4096 ->  1048576
->   Normal    1048576 ->  1048576
-> Movable zone start PFN for each node
-> early_node_map[4] active PFN ranges
->     0:        0 ->      159
->     0:      256 ->   521844
->     0:   521961 ->   521964
->     0:   521983 ->   521984
-> On node 0 totalpages: 521751
->   DMA zone: 56 pages used for memmap
->   DMA zone: 1271 pages reserved
->   DMA zone: 2672 pages, LIFO batch:0
->   DMA32 zone: 7081 pages used for memmap
->   DMA32 zone: 510671 pages, LIFO batch:31
->   Normal zone: 0 pages used for memmap
->   Movable zone: 0 pages used for memmap
-> </snip>
-> 
-> With 2.6.27-rc1 I only get pages listed for 2 zones (bottom part):
-> <snip>
-> Zone PFN ranges:
->   DMA      0x00000000 -> 0x00001000
->   DMA32    0x00001000 -> 0x00100000
->   Normal   0x00100000 -> 0x00100000
-> Movable zone start PFN for each node
-> early_node_map[4] active PFN ranges
->     0: 0x00000000 -> 0x0000009f
->     0: 0x00000100 -> 0x0007f674
->     0: 0x0007f6e9 -> 0x0007f6ec
->     0: 0x0007f6ff -> 0x0007f700
-> On node 0 totalpages: 521751
->   DMA zone: 2072 pages, LIFO batch:0
->   DMA32 zone: 506625 pages, LIFO batch:31
-> </snip>
-> 
-> Note that totalpages is the same and that for 2.6.26 the sum of pages for 
-> all listed zones is equal to totalpages. Seems we've lost useful info 
-> here.
+I am still finding this recording +ve saturation on my ALC883 Intel
+HDA sound device with 2.6.27-rc3 (ie ALSA 1.0.17 drivers) and ALSA
+1.0.16-1 libraries on Ubuntu Intrepid.
 
-Could you make sure DEBUG_MEMORY_INIT is activated (it should, if you've 
-not chosen the embedded feature) and boot with mminit_loglevel=3 and see 
-if you get the ouput you want.
+The previous workaround still 'gets us out of jail':
 
-Sven
+# ./hda-verb /dev/snd/hwC0D0 0x23 SET_AMP_GAIN_MUTE 0x7180
+nid = 0x23, verb = 0x300, param = 0x7180
+value = 0x0
+
+Note, we see this message "hda_codec: Unknown model for ALC883, trying
+auto-probe from BIOS..." as before on this Asus P5E-VM HDMI
+motherboard with current BIOS.
+
+How can we improve the situation, as out the box, the front/rear mic
+inputs are (still) useless?
+
+Many thanks,
+  Daniel
+
+On Sat, Jun 28, 2008 at 11:29 AM, Daniel J Blueman
+<daniel.blueman@gmail.com> wrote:
+> On Sat, Jun 28, 2008 at 11:11 AM, Vegard Nossum <vegard.nossum@gmail.com> wrote:
+>> On Sat, Jun 28, 2008 at 2:05 AM, Daniel J Blueman
+>> <daniel.blueman@gmail.com> wrote:
+>>> As the mic is working fine, but with this variable DC offset, it felt
+>>> like something needed tweaking in the mixer (summation) node. I
+>>> understand more about the node connectivity now, and found muting the
+>>> front mic mixer input and setting LR gain to 0 at mixer node 23h
+>>> addresses the issue:
+>>>
+>>> (from page 42 at ftp://66.104.77.130/pc/audio/ALC883_DataSheet_1.3.pdf)
+>>>
+>>> # ./hda-verb /dev/snd/hwC0D0 0x23 SET_AMP_GAIN_MUTE 0x7180
+>>>
+>>
+>> Are you saying that this fixes the problem completely for you?
+>
+> Yes, this addresses the problem squarely. The front mix mixer input is
+> adding this offset, looks like they have a capacitor between a
+> reference voltage and the pin or something, so it floats up.
+>
+>>> Vegard - your HD bus enumeration looks similar and I'd bet the vendor
+>>> followed the same Realtek application note, so can you give this a
+>>> shot too? If not, try mixer node 20h.
+>>>
+>>
+>> I agree. Thanks for the link, I found ALC268 now as well, and I am
+>> experimenting...
+>>
+>> I think 23h is [in]correct -- this is the one with caps f00040h for me too.
+>>
+>> But neither of them had any effect at all.
+>
+> OK, I'll take another look at the debug output you posted; I forgot
+> you aren't using the ALC883.
+-- 
+Daniel J Blueman
