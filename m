@@ -1,34 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758009AbYHNGl6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758067AbYHNGmx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758009AbYHNGl6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Aug 2008 02:41:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755210AbYHNGiW
+	id S1758067AbYHNGmx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Aug 2008 02:42:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752294AbYHNGiZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Aug 2008 02:38:22 -0400
-Received: from 166-70-238-42.ip.xmission.com ([166.70.238.42]:38143 "EHLO
+	Thu, 14 Aug 2008 02:38:25 -0400
+Received: from 166-70-238-42.ip.xmission.com ([166.70.238.42]:38144 "EHLO
 	ns1.wolfmountaingroup.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751331AbYHNGh4 (ORCPT
+	with ESMTP id S1751993AbYHNGh4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 14 Aug 2008 02:37:56 -0400
 Date: Thu, 14 Aug 2008 00:14:37 -0600
 From: jmerkey@wolfmountaingroup.com
-Message-Id: <200808140614.m7E6EbXC006245@wolfmountaingroup.com>
+Message-Id: <200808140614.m7E6EbG2006246@wolfmountaingroup.com>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 2.6.27-rc3 12/29] mdb: add alternate debugger, accelerator, and keystroke command registry
+Subject: [PATCH 2.6.27-rc3 13/29] mdb: add includes and external function prototypes debugger registry
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-added the command registry for registering debugger and accelerator 
-keystroke commands.  corrected a large number of checkpatch.pl 
-reported issues.
+added includes and external function prototypes debugger registry
 
 
 Signed-off-by: Jeffrey Vernon Merkey (jmerkey@wolfmountaingroup.com)
 
---- a/debug/mdb/mdb-list.c	1969-12-31 17:00:00.000000000 -0700
-+++ b/debug/mdb/mdb-list.c	2008-08-13 11:56:03.000000000 -0600
-@@ -0,0 +1,628 @@
+--- a/debug/mdb/mdb-list.h	1969-12-31 17:00:00.000000000 -0700
++++ b/debug/mdb/mdb-list.h	2008-08-13 11:56:03.000000000 -0600
+@@ -0,0 +1,83 @@
 +
 +/***************************************************************************
 +*
@@ -63,597 +61,52 @@ Signed-off-by: Jeffrey Vernon Merkey (jmerkey@wolfmountaingroup.com)
 +*
 +***************************************************************************/
 +
-+#include <linux/version.h>
-+#include <linux/types.h>
-+#include <linux/sched.h>
-+#include <linux/module.h>
-+#include <linux/moduleparam.h>
-+#include <linux/kernel.h>
-+#include <linux/mm.h>
-+#include <linux/string.h>
-+#include <linux/stat.h>
-+#include <linux/errno.h>
-+#include <linux/fcntl.h>
-+#include <linux/slab.h>
-+#include <linux/vmalloc.h>
-+#include <linux/genhd.h>
-+#include <linux/hdreg.h>
-+#include <linux/fs.h>
-+#include <linux/major.h>
-+#include <linux/mm.h>
-+#include <linux/cdrom.h>
-+#include <linux/pagemap.h>
-+#include <linux/swap.h>
-+#include <linux/smp.h>
-+#include <linux/smp_lock.h>
-+#include <linux/ctype.h>
-+#include <linux/keyboard.h>
-+#include <linux/console.h>
-+#include <linux/serial_reg.h>
-+#include <linux/uaccess.h>
-+#include <asm/system.h>
-+#include <asm/segment.h>
-+#include <asm/atomic.h>
-+#include <asm/msr.h>
-+#include <linux/io.h>
++#ifndef _MDB_LIST
++#define _MDB_LIST
 +
-+#ifdef CONFIG_SMP
-+#include <mach_apic.h>
-+#include <mach_ipi.h>
-+#endif
-+
-+#define __KERNEL_SYSCALLS__
-+#include <linux/unistd.h>
-+#include <linux/kallsyms.h>
-+
-+#include "mdb.h"
-+#include "mdb-ia32.h"
-+#include "mdb-list.h"
-+#include "mdb-ia32-proc.h"
-+#include "mdb-base.h"
-+#include "mdb-proc.h"
-+#include "mdb-os.h"
-+#include "mdb-keyboard.h"
-+
-+#ifdef MDB_ATOMIC
-+static spinlock_t accelLock = SPIN_LOCK_UNLOCKED;
-+static long accelflags;
-+#endif
-+
-+ACCELERATOR *accelHead;
-+ACCELERATOR *accelTail;
-+
-+unsigned long AccelRoutine(unsigned long key, void *p)
++typedef struct _ACCELERATOR
 +{
-+    register ACCELERATOR *accel;
-+    unsigned long retCode;
++    struct _ACCELERATOR *accelNext;
++    struct _ACCELERATOR *accelPrior;
++    unsigned long (*accelRoutine)(unsigned long key, void *p, struct _ACCELERATOR *parser);
++    unsigned long (*accelRoutineHelp)(unsigned long key, struct _ACCELERATOR *parser);
++    unsigned long accelFlags;
++    unsigned long key;
++    unsigned long supervisorCommand;
++    unsigned char *shortHelp;
++} ACCELERATOR;
 +
-+    accel = accelHead;
-+    while (accel)
-+    {
-+       if (accel->accelFlags && accel->accelRoutine && accel->key == key)
-+       {
-+	  retCode = (accel->accelRoutine)(key, p, accel);
-+	  return retCode;
-+       }
-+       accel = accel->accelNext;
-+    }
-+    return 0;
-+}
-+
-+void ShowDebuggerAccelerators(void)
++typedef struct _ALT_DEBUGGER
 +{
-+   register ACCELERATOR *accel;
++    struct _ALT_DEBUGGER *altDebugNext;
++    struct _ALT_DEBUGGER *altDebugPrior;
++    int (*AlternateDebugger)(int reason, int error, void *frame);
++} ALT_DEBUGGER;
 +
-+   DBGPrint("\nDebugger Keystroke Accelerator(s)\n");
++extern int AlternateDebuggerRoutine(int reason, int error, void *frame);
++extern unsigned long AddAlternateDebugger(ALT_DEBUGGER *Debugger);
++extern unsigned long RemoveAlternateDebugger(ALT_DEBUGGER *Debugger);
 +
-+   accel = accelHead;
-+   while (accel)
-+   {
-+      if (accel->shortHelp)
-+         if (DBGPrint("%s\n", accel->shortHelp)) return;
-+      accel = accel->accelNext;
-+   }
-+   return;
-+}
++typedef struct _DEBUGGER_PARSER {
++    struct _DEBUGGER_PARSER *debugNext;
++    struct _DEBUGGER_PARSER *debugPrior;
++    unsigned long (*DebugCommandParser)(unsigned char *commandLine,
++			       StackFrame *stackFrame, unsigned long Exception,
++			       struct _DEBUGGER_PARSER *parser);
++    unsigned long (*DebugCommandParserHelp)(unsigned char *commandLine,
++				   struct _DEBUGGER_PARSER *parser);
++    unsigned long parserFlags;
++    unsigned char *debugCommandName;
++    unsigned long debugCommandNameLength;
++    unsigned long supervisorCommand;
++    unsigned char *shortHelp;
++    unsigned long controlTransfer;
++} DEBUGGER_PARSER;
 +
-+unsigned long IsAccelerator(unsigned long key)
-+{
-+    register ACCELERATOR *accel;
++extern unsigned long DebuggerParserRoutine(unsigned char *command, unsigned char *commandLine,
++			   StackFrame *stackFrame, unsigned long Exception);
++extern unsigned long DebuggerParserHelpRoutine(unsigned char *command, unsigned char *commandLine);
++extern unsigned long AddDebuggerCommandParser(DEBUGGER_PARSER *parser);
++extern unsigned long RemoveDebuggerCommandParser(DEBUGGER_PARSER *parser);
 +
-+    accel = accelHead;
-+    while (accel)
-+    {
-+       if (accel->accelFlags && accel->accelRoutine && accel->key == key)
-+       {
-+	  return 1;
-+       }
-+       accel = accel->accelNext;
-+    }
-+    return 0;
-+}
-+
-+unsigned long AccelHelpRoutine(unsigned long key)
-+{
-+    register ACCELERATOR *accel;
-+
-+    accel = accelHead;
-+    if (key)  /* if we were passed a command string */
-+    {
-+       while (accel)
-+       {
-+	  if (accel->accelFlags && accel->key == key)
-+	  {
-+	     if (accel->accelRoutineHelp)
-+	     {
-+		DBGPrint("Accelerator %08X\n", (unsigned)accel->key);
-+		(accel->accelRoutineHelp)(key, accel);
-+		return 1;
-+	     }
-+	     DBGPrint("Accelerator %08X\n", (unsigned)accel->key);
-+	     return 1;
-+	  }
-+	  accel = accel->accelNext;
-+       }
-+       DBGPrint("Help for Accelerator [%08X] not found\n", (unsigned)key);
-+       return 1;
-+    }
-+    else
-+    {
-+       DBGPrint("Accelerator(s)\n");
-+       while (accel)
-+       {
-+	  if (accel->accelFlags && accel->key && !accel->supervisorCommand)
-+	     DBGPrint("%08X         - %s\n",
-+                      (unsigned)accel->key, accel->shortHelp);
-+	  accel = accel->accelNext;
-+       }
-+    }
-+    return 0;
-+}
-+
-+ACCELERATOR *insertAccel(ACCELERATOR *i, ACCELERATOR *top)
-+{
-+    ACCELERATOR *old, *p;
-+
-+    if (!accelTail)
-+    {
-+       i->accelNext = i->accelPrior = NULL;
-+       accelTail = i;
-+       return i;
-+    }
-+    p = top;
-+    old = NULL;
-+    while (p)
-+    {
-+       if (p->key < i->key)
-+       {
-+	  old = p;
-+	  p = p->accelNext;
-+       }
-+       else
-+       {
-+	  if (p->accelPrior)
-+	  {
-+	     p->accelPrior->accelNext = i;
-+	     i->accelNext = p;
-+	     i->accelPrior = p->accelPrior;
-+	     p->accelPrior = i;
-+	     return top;
-+	  }
-+	  i->accelNext = p;
-+	  i->accelPrior = NULL;
-+	  p->accelPrior = i;
-+	  return i;
-+       }
-+    }
-+    old->accelNext = i;
-+    i->accelNext = NULL;
-+    i->accelPrior = old;
-+    accelTail = i;
-+    return accelHead;
-+
-+}
-+
-+unsigned long AddAccelRoutine(ACCELERATOR *newAccel)
-+{
-+    register ACCELERATOR *accel;
-+
-+#ifdef MDB_ATOMIC
-+    spin_lock_irqsave(&accelLock, accelflags);
 +#endif
-+    accel = accelHead;
-+    while (accel)
-+    {
-+       if (accel == newAccel || accel->key == newAccel->key)
-+       {
-+#ifdef MDB_ATOMIC
-+	  spin_unlock_irqrestore(&accelLock, accelflags);
-+#endif
-+	  return 1;
-+       }
-+       accel = accel->accelNext;
-+    }
-+    newAccel->accelFlags = -1;
-+    accelHead = insertAccel(newAccel, accelHead);
-+
-+#ifdef MDB_ATOMIC
-+    spin_unlock_irqrestore(&accelLock, accelflags);
-+#endif
-+    return 0;
-+}
-+
-+unsigned long RemoveAccelRoutine(ACCELERATOR *newAccel)
-+{
-+    register ACCELERATOR *accel;
-+
-+#ifdef MDB_ATOMIC
-+    spin_lock_irqsave(&accelLock, accelflags);
-+#endif
-+    accel = accelHead;
-+    while (accel)
-+    {
-+       if (accel == newAccel)   /* found, remove from list */
-+       {
-+	  if (accelHead == newAccel)
-+	  {
-+	     accelHead = (void *) newAccel->accelNext;
-+	     if (accelHead)
-+		accelHead->accelPrior = NULL;
-+	     else
-+		accelTail = NULL;
-+	  }
-+	  else
-+	  {
-+	     newAccel->accelPrior->accelNext = newAccel->accelNext;
-+	     if (newAccel != accelTail)
-+		newAccel->accelNext->accelPrior = newAccel->accelPrior;
-+	     else
-+		accelTail = newAccel->accelPrior;
-+	  }
-+	  newAccel->accelNext = newAccel->accelPrior = 0;
-+	  newAccel->accelFlags = 0;
-+
-+#ifdef MDB_ATOMIC
-+	  spin_unlock_irqrestore(&accelLock, accelflags);
-+#endif
-+	  return 0;
-+       }
-+       accel = accel->accelNext;
-+    }
-+
-+#ifdef MDB_ATOMIC
-+    spin_unlock_irqrestore(&accelLock, accelflags);
-+#endif
-+    return -1;
-+}
-+
-+#ifdef MDB_ATOMIC
-+static spinlock_t altDebugLock = SPIN_LOCK_UNLOCKED;
-+static long altflags;
-+#endif
-+
-+ALT_DEBUGGER *altDebugHead;
-+ALT_DEBUGGER *altDebugTail;
-+
-+int AlternateDebuggerRoutine(int reason, int error, void *frame)
-+{
-+    register ALT_DEBUGGER *altDebug;
-+    register unsigned long retCode;
-+    unsigned long state;
-+
-+    state = save_flags();
-+    altDebug = altDebugHead;
-+    while (altDebug)
-+    {
-+       if (altDebug->AlternateDebugger)
-+       {
-+	  retCode = (altDebug->AlternateDebugger)(reason, error, frame);
-+	  if (retCode)
-+          {
-+             restore_flags(state);
-+	     return retCode;
-+          }
-+       }
-+       altDebug = altDebug->altDebugNext;
-+    }
-+    restore_flags(state);
-+    return 0;
-+}
-+
-+unsigned long AddAlternateDebugger(ALT_DEBUGGER *Debugger)
-+{
-+    register ALT_DEBUGGER *altDebug;
-+
-+#ifdef MDB_ATOMIC
-+    spin_lock_irqsave(&altDebugLock, altflags);
-+#endif
-+    altDebug = altDebugHead;
-+    while (altDebug)
-+    {
-+       if (altDebug == Debugger)
-+       {
-+#ifdef MDB_ATOMIC
-+	  spin_unlock_irqrestore(&altDebugLock, altflags);
-+#endif
-+	  return 1;
-+       }
-+       altDebug = altDebug->altDebugNext;
-+    }
-+    if (!altDebugHead)
-+    {
-+       altDebugHead = Debugger;
-+       altDebugTail = Debugger;
-+       Debugger->altDebugNext = 0;
-+       Debugger->altDebugPrior = 0;
-+    }
-+    else
-+    {
-+       altDebugTail->altDebugNext = Debugger;
-+       Debugger->altDebugNext = 0;
-+       Debugger->altDebugPrior = altDebugTail;
-+       altDebugTail = Debugger;
-+    }
-+
-+#ifdef MDB_ATOMIC
-+    spin_unlock_irqrestore(&altDebugLock, altflags);
-+#endif
-+    return 0;
-+}
-+
-+unsigned long RemoveAlternateDebugger(ALT_DEBUGGER *Debugger)
-+{
-+    register ALT_DEBUGGER *altDebug;
-+
-+#ifdef MDB_ATOMIC
-+    spin_lock_irqsave(&altDebugLock, altflags);
-+#endif
-+    altDebug = altDebugHead;
-+    while (altDebug)
-+    {
-+       if (altDebug == Debugger)   /* found, remove from list */
-+       {
-+	  if (altDebugHead == Debugger)
-+	  {
-+	     altDebugHead = (void *) Debugger->altDebugNext;
-+	     if (altDebugHead)
-+		altDebugHead->altDebugPrior = NULL;
-+	     else
-+		altDebugTail = NULL;
-+	  }
-+	  else
-+	  {
-+	     Debugger->altDebugPrior->altDebugNext = Debugger->altDebugNext;
-+	     if (Debugger != altDebugTail)
-+		Debugger->altDebugNext->altDebugPrior = Debugger->altDebugPrior;
-+	     else
-+		altDebugTail = Debugger->altDebugPrior;
-+	  }
-+	  Debugger->altDebugNext = Debugger->altDebugPrior = 0;
-+
-+#ifdef MDB_ATOMIC
-+          spin_unlock_irqrestore(&altDebugLock, altflags);
-+#endif
-+	  return 0;
-+       }
-+       altDebug = altDebug->altDebugNext;
-+    }
-+#ifdef MDB_ATOMIC
-+    spin_unlock_irqrestore(&altDebugLock, altflags);
-+#endif
-+    return -1;
-+}
-+
-+#ifdef MDB_ATOMIC
-+static spinlock_t debugParserLock = SPIN_LOCK_UNLOCKED;
-+static long parserflags;
-+#endif
-+
-+DEBUGGER_PARSER *debugParserHead;
-+DEBUGGER_PARSER *debugParserTail;
-+
-+unsigned long DebuggerParserRoutine(unsigned char *command, unsigned char *commandLine,
-+			    StackFrame *stackFrame, unsigned long Exception)
-+{
-+    register DEBUGGER_PARSER *debugParser;
-+    register unsigned long retCode, valid = 0;
-+    register unsigned char *p;
-+
-+    p = commandLine;
-+    if (!p)
-+       return 0;
-+
-+    /* if a passed string is just whitespace, return error */
-+    while (*p)
-+    {
-+       if ((*p != ' ') && (*p != '\n') && (*p != '\r'))
-+       {
-+          valid = 1;
-+          break;
-+       }
-+       p++;
-+    }
-+    if (!valid)
-+       return 0;
-+
-+    debugParser = debugParserHead;
-+    while (debugParser)
-+    {
-+       if (debugParser->parserFlags && debugParser->DebugCommandParser &&
-+	   strlen(debugParser->debugCommandName) == strlen(command) &&
-+	   (!strcmp(debugParser->debugCommandName, UpcaseString(command))))
-+       {
-+	  retCode = (debugParser->DebugCommandParser)(commandLine, stackFrame,
-+						      Exception, debugParser);
-+	  if (retCode)
-+	     return retCode;
-+       }
-+       debugParser = debugParser->debugNext;
-+    }
-+    DBGPrint("unknown mdb command -> %s\n", command);
-+    return 0;
-+}
-+
-+unsigned long DebuggerParserHelpRoutine(unsigned char *command, unsigned char *commandLine)
-+{
-+    extern void ShowDebuggerAccelerators(void);
-+    register DEBUGGER_PARSER *debugParser;
-+
-+    debugParser = debugParserHead;
-+    if (*command)  /* if we were passed a command string */
-+    {
-+       while (debugParser)
-+       {
-+	  if (debugParser->parserFlags &&
-+	      strlen(debugParser->debugCommandName) == strlen(command) &&
-+	      !strcmp(debugParser->debugCommandName, UpcaseString(command)))
-+	  {
-+	     if (debugParser->DebugCommandParserHelp)
-+	     {
-+		DBGPrint("Help for Command %s\n",
-+                         debugParser->debugCommandName);
-+		(debugParser->DebugCommandParserHelp)(commandLine, debugParser);
-+		return 1;
-+	     }
-+	     DBGPrint("Help for Command %s\n", debugParser->debugCommandName);
-+	     return 1;
-+	  }
-+	  debugParser = debugParser->debugNext;
-+       }
-+       DBGPrint("Help for Command [%s] not found\n", command);
-+       return 1;
-+    }
-+    else
-+    {
-+       DBGPrint("Debugger Command(s)\n");
-+       while (debugParser)
-+       {
-+	  if (debugParser->parserFlags && debugParser->debugCommandName &&
-+	      !debugParser->supervisorCommand)
-+	     if (DBGPrint("%15s    - %s\n", debugParser->debugCommandName,
-+                      debugParser->shortHelp)) return 0;
-+	  debugParser = debugParser->debugNext;
-+       }
-+       ShowDebuggerAccelerators();
-+    }
-+    return 0;
-+}
-+
-+DEBUGGER_PARSER *insertDebuggerParser(DEBUGGER_PARSER *i, DEBUGGER_PARSER *top)
-+{
-+    DEBUGGER_PARSER *old, *p;
-+
-+    if (!debugParserTail)
-+    {
-+       i->debugNext = i->debugPrior = NULL;
-+       debugParserTail = i;
-+       return i;
-+    }
-+    p = top;
-+    old = NULL;
-+    while (p)
-+    {
-+       if (strcmp(p->debugCommandName, i->debugCommandName) < 0)
-+       {
-+	  old = p;
-+	  p = p->debugNext;
-+       }
-+       else
-+       {
-+	  if (p->debugPrior)
-+	  {
-+	     p->debugPrior->debugNext = i;
-+	     i->debugNext = p;
-+	     i->debugPrior = p->debugPrior;
-+	     p->debugPrior = i;
-+	     return top;
-+	  }
-+	  i->debugNext = p;
-+	  i->debugPrior = NULL;
-+	  p->debugPrior = i;
-+	  return i;
-+       }
-+    }
-+    old->debugNext = i;
-+    i->debugNext = NULL;
-+    i->debugPrior = old;
-+    debugParserTail = i;
-+    return debugParserHead;
-+
-+}
-+
-+unsigned long AddDebuggerCommandParser(DEBUGGER_PARSER *parser)
-+{
-+    register DEBUGGER_PARSER *debugParser;
-+
-+#ifdef MDB_ATOMIC
-+    spin_lock_irqsave(&debugParserLock, parserflags);
-+#endif
-+    debugParser = debugParserHead;
-+    while (debugParser)
-+    {
-+       if (debugParser == parser ||
-+	  (strlen(parser->debugCommandName) == strlen(debugParser->debugCommandName) &&
-+	  (!strcmp(parser->debugCommandName, debugParser->debugCommandName))))
-+       {
-+#ifdef MDB_ATOMIC
-+	  spin_unlock_irqrestore(&debugParserLock, parserflags);
-+#endif
-+	  return 1;
-+       }
-+       debugParser = debugParser->debugNext;
-+    }
-+    parser->parserFlags = -1;
-+    parser->debugCommandNameLength = strlen(parser->debugCommandName);
-+
-+    debugParserHead = insertDebuggerParser(parser, debugParserHead);
-+
-+#ifdef MDB_ATOMIC
-+    spin_unlock_irqrestore(&debugParserLock, parserflags);
-+#endif
-+    return 0;
-+}
-+
-+unsigned long RemoveDebuggerCommandParser(DEBUGGER_PARSER *parser)
-+{
-+    register DEBUGGER_PARSER *debugParser;
-+
-+#ifdef MDB_ATOMIC
-+    spin_lock_irqsave(&debugParserLock, parserflags);
-+#endif
-+    debugParser = debugParserHead;
-+    while (debugParser)
-+    {
-+       if (debugParser == parser)   /* found, remove from list */
-+       {
-+	  if (debugParserHead == parser)
-+	  {
-+	     debugParserHead = (void *) parser->debugNext;
-+	     if (debugParserHead)
-+		debugParserHead->debugPrior = NULL;
-+	     else
-+		debugParserTail = NULL;
-+	  }
-+	  else
-+	  {
-+	     parser->debugPrior->debugNext = parser->debugNext;
-+	     if (parser != debugParserTail)
-+		parser->debugNext->debugPrior = parser->debugPrior;
-+	     else
-+		debugParserTail = parser->debugPrior;
-+	  }
-+	  parser->debugNext = parser->debugPrior = 0;
-+	  parser->parserFlags = 0;
-+
-+#ifdef MDB_ATOMIC
-+	  spin_unlock_irqrestore(&debugParserLock, parserflags);
-+#endif
-+	  return 0;
-+       }
-+       debugParser = debugParser->debugNext;
-+    }
-+#ifdef MDB_ATOMIC
-+    spin_unlock_irqrestore(&debugParserLock, parserflags);
-+#endif
-+    return -1;
-+}
