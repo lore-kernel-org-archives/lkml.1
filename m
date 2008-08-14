@@ -1,81 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757160AbYHNPPk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758125AbYHNPQp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757160AbYHNPPk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Aug 2008 11:15:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752600AbYHNPPc
+	id S1758125AbYHNPQp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Aug 2008 11:16:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755301AbYHNPQg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Aug 2008 11:15:32 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:47247 "EHLO
-	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752461AbYHNPPb (ORCPT
+	Thu, 14 Aug 2008 11:16:36 -0400
+Received: from e31.co.us.ibm.com ([32.97.110.149]:35326 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751706AbYHNPQg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Aug 2008 11:15:31 -0400
-Date: Thu, 14 Aug 2008 17:16:50 +0200
-From: Pavel Machek <pavel@suse.cz>
-To: kernel list <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
-       Ingo Molnar <mingo@elte.hu>, Trivial patch monkey <trivial@kernel.org>
-Subject: arch/x86/Kconfig: clean up, experimental adjustement
-Message-ID: <20080814151650.GA23106@elf.ucw.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Thu, 14 Aug 2008 11:16:36 -0400
+Subject: Re: [Devel] Re: [RFC][PATCH 1/4] checkpoint-restart:
+	general	infrastructure
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: Pavel Emelyanov <xemul@openvz.org>
+Cc: Oren Laadan <orenl@cs.columbia.edu>, containers@lists.linux-foundation.org,
+       Theodore Tso <tytso@mit.edu>, linux-kernel@vger.kernel.org,
+       Arnd Bergmann <arnd@arndb.de>
+In-Reply-To: <48A3E81C.6010008@openvz.org>
+References: <20080807224033.FFB3A2C1@kernel>
+	 <20080807224034.735B1F84@kernel>	<200808081146.54834.arnd@arndb.de>
+	 <1218221451.19082.36.camel@nimitz> <489CB3CA.6050304@cs.columbia.edu>
+	 <48A3E81C.6010008@openvz.org>
+Content-Type: text/plain
+Date: Thu, 14 Aug 2008 08:16:17 -0700
+Message-Id: <1218726977.23641.6.camel@nimitz>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 2008-08-14 at 12:09 +0400, Pavel Emelyanov wrote:
+> E.g. consider we are saving a container image on ipv6 node and trying 
+> to restore from it on the one without the ipv6. In that case we *may*
+> have some object of for example CKPT_IPV6_IFA type of CLPT_IPV6_SOCK_INFO
+> and fail the restoration process when finding such in an input file. But 
+> what we should *not* do is to write any information about whether we had
+> the CONFIG_IPV6 turned on on the dumping side and check for this on the
+> restoring side.
 
-Adjust experimental tags in Kconfig, update config to notice that
-i386/x86_64 is now single architecture.
+The only problem I can see with this is that you lose efficiency,
+especially when you have to build your checkpoint image with lots of
+things that are config-specific.
 
-Signed-off-by: Pavel Machek <pavel@suse.cz>
+The approach sounds like a good one in theory, but I'm a bit skeptical
+that we could stick to it in practice, in a mainline kernel where there
+are billions of config options.  It is definitely something to strive
+for, though.  Good point!
 
----
-commit ea977ecb4f994b0dc2e09cab3dbba87aad030d99
-tree 95db6fca54f0aa0bbe0e9cb7f83e87b56c004413
-parent a1d270d84974135ba67bc83fd6498bd580ada373
-author Pavel <pavel@amd.ucw.cz> Thu, 14 Aug 2008 17:15:59 +0200
-committer Pavel <pavel@amd.ucw.cz> Thu, 14 Aug 2008 17:15:59 +0200
+-- Dave
 
- arch/x86/Kconfig |    8 ++++----
- 1 files changed, 4 insertions(+), 4 deletions(-)
-
-diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index d598250..7026ee0 100644
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -950,9 +950,9 @@ config NUMA
- 	  local memory controller of the CPU and add some more
- 	  NUMA awareness to the kernel.
- 
--	  For i386 this is currently highly experimental and should be only
-+	  For 32-bit this is currently highly experimental and should be only
- 	  used for kernel development. It might also cause boot failures.
--	  For x86_64 this is recommended on all multiprocessor Opteron systems.
-+	  For 64-bit this is recommended on all multiprocessor Opteron systems.
- 	  If the system is EM64T, you should say N unless your system is
- 	  EM64T NUMA.
- 
-@@ -1219,7 +1219,7 @@ config SECCOMP
- 	  If unsure, say Y. Only embedded should say N here.
- 
- config CC_STACKPROTECTOR
--	bool "Enable -fstack-protector buffer overflow detection (EXPERIMENTAL)"
-+	bool "Enable -fstack-protector buffer overflow detection (BROKEN)"
- 	depends on X86_64 && EXPERIMENTAL && BROKEN
- 	help
-          This option turns on the -fstack-protector GCC feature. This
-@@ -1262,7 +1262,7 @@ config KEXEC
- 	  strongly in flux, so no good recommendation can be made.
- 
- config CRASH_DUMP
--	bool "kernel crash dumps (EXPERIMENTAL)"
-+	bool "kernel crash dumps"
- 	depends on X86_64 || (X86_32 && HIGHMEM)
- 	help
- 	  Generate crash dump after being started by kexec.
-
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
