@@ -1,85 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754581AbYHNWZH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755502AbYHNWZo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754581AbYHNWZH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Aug 2008 18:25:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751872AbYHNWY4
+	id S1755502AbYHNWZo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Aug 2008 18:25:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751872AbYHNWZd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Aug 2008 18:24:56 -0400
-Received: from smtp117.sbc.mail.sp1.yahoo.com ([69.147.64.90]:24526 "HELO
-	smtp117.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750822AbYHNWY4 (ORCPT
+	Thu, 14 Aug 2008 18:25:33 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:42265 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752113AbYHNWZd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Aug 2008 18:24:56 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=fB3jD87IrK2xBabdL10iHYF3nnBpnnFYsbBEyHbLDYSMhc5FLMvMsBdIjUoSroWgkFxKwwKl+dXqSWLPbVPLurBHGCNUpLRLs9dJvieNRCVeFSpIWyWvHMeiAcDSW8T++FneHaynqD/Gpr9mgPXZZOqvuyXhacPIyX/EKh4ke4E=  ;
-X-YMail-OSG: SYZvQawVM1nXJ9xClzGtdT3P2411TLDCpwPwMUkHwvQ1cbB2rgmnaP0iXIsAyzGlLn5mjHq5GKTdfQXY7eeBefSGFhw6zBB_4gqY7rTZPYJHzFtxtCUQuzxTI6kjMKXKSuo-
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Dmitry Baryshkov <dbaryshkov@gmail.com>
-Subject: Re: [PATCH] gpiolib: dump correct irq trigger type
-Date: Thu, 14 Aug 2008 15:24:53 -0700
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org
-References: <1217770206-6193-1-git-send-email-dbaryshkov@gmail.com>
-In-Reply-To: <1217770206-6193-1-git-send-email-dbaryshkov@gmail.com>
+	Thu, 14 Aug 2008 18:25:33 -0400
+Date: Thu, 14 Aug 2008 18:25:28 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Oliver Neukum <oneukum@suse.de>
+cc: Pavel Machek <pavel@suse.cz>, <linux-pm@lists.linux-foundation.org>,
+       <James.Bottomley@hansenpartnership.com>,
+       Linux-pm mailing list <linux-pm@lists.osdl.org>,
+       kernel list <linux-kernel@vger.kernel.org>, <teheo@novell.com>
+Subject: Re: [linux-pm] Power management for SCSI
+In-Reply-To: <200808142343.56505.oneukum@suse.de>
+Message-ID: <Pine.LNX.4.44L0.0808141819470.2148-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200808141524.53853.david-b@pacbell.net>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 03 August 2008, Dmitry Baryshkov wrote:
-> Use desc->action->flags for dumping irq flags, it is populated with
-> correct trigger type.
+On Thu, 14 Aug 2008, Oliver Neukum wrote:
 
-I'll NAK this ... the trigger type is actually a bit problematic,
-it hasn't previously been maintained *anywhere* except possibly as
-platform-specific code.  And if it were maintained, desc->status
-would be the right place:  the flags for each action would otherwise
-need to be updated.
+> The core problem is that you insist on a rigid bottom-to-top flow of
+> autosuspensions. That's good for systems like USB and PCI which
+> are trees for PM purposes. It makes no sense for true busses with
+> equal members on the bus.
 
-However, given recent cleanups in handling of genirq triggering
-I think it's time for me to submit a patch to correct that little
-oversight.
+My framework is tree-oriented because it's based on the driver model, 
+which uses a tree of devices.
 
-- Dave
+Even on a true bus, the members can't be entirely equal -- one of them 
+has to be closer to the CPU than the others are.  If that one member is 
+in a low-power state then the CPU can't communicate with anything on 
+the bus, unlike when one of the other members is in a low-power state.
 
+(I suppose in theory there could be a situation in which the CPU has
+direct communication with a bunch of devices, which can also
+communicate among themselves over some other bus.  In such a situation
+we would represent the devices as members of separate branches in the
+device tree, so that suspending one would have no impact on suspending
+the others.  The presence of the interconnecting bus would be ignored.)
 
-> Signed-off-by: Dmitry Baryshkov <dbaryshkov@gmail.com>
-> Cc: David Brownell <dbrownell@users.sourceforge.net>
-> ---
->  drivers/gpio/gpiolib.c |    3 ++-
->  1 files changed, 2 insertions(+), 1 deletions(-)
-> 
-> diff --git a/drivers/gpio/gpiolib.c b/drivers/gpio/gpiolib.c
-> index beaf6b3..a35d19d 100644
-> --- a/drivers/gpio/gpiolib.c
-> +++ b/drivers/gpio/gpiolib.c
-> @@ -2,6 +2,7 @@
->  #include <linux/module.h>
->  #include <linux/irq.h>
->  #include <linux/spinlock.h>
-> +#include <linux/interrupt.h>
->  
->  #include <asm/gpio.h>
->  
-> @@ -570,7 +571,7 @@ static void gpiolib_dbg_show(struct seq_file *s, struct gpio_chip *chip)
->  			if (irq >= 0 && desc->action) {
->  				char *trigger;
->  
-> -				switch (desc->status & IRQ_TYPE_SENSE_MASK) {
-> +				switch (desc->action->flags & IRQ_TYPE_SENSE_MASK) {
->  				case IRQ_TYPE_NONE:
->  					trigger = "(default)";
->  					break;
-> -- 
-> 1.5.6.3
-> 
-
+Alan Stern
 
