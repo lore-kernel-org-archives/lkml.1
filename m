@@ -1,54 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755775AbYHNG7R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755335AbYHNHMc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755775AbYHNG7R (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Aug 2008 02:59:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751946AbYHNG67
+	id S1755335AbYHNHMc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Aug 2008 03:12:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752035AbYHNHMX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Aug 2008 02:58:59 -0400
-Received: from usul.saidi.cx ([204.11.33.34]:50282 "EHLO usul.overt.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751682AbYHNG66 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Aug 2008 02:58:58 -0400
-Message-ID: <48A3D7A0.7010704@overt.org>
-Date: Wed, 13 Aug 2008 23:58:40 -0700
-From: Philip Langdale <philipl@overt.org>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080707)
+	Thu, 14 Aug 2008 03:12:23 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:39684 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751527AbYHNHMW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Aug 2008 03:12:22 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Date: Thu, 14 Aug 2008 09:12:01 +0200 (CEST)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: Re: [PATCH update] ieee1394: sbp2: enforce s/g segment size limit
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+cc: grundler@google.com, linux1394-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+In-Reply-To: <20080814095549S.fujita.tomonori@lab.ntt.co.jp>
+Message-ID: <tkrat.84add1a51a966d30@s5r6.in-berlin.de>
+References: <da824cf30808121004w1ea59dc9rd805e2ae4d9f47a7@mail.gmail.com>
+ <20080813084514K.fujita.tomonori@lab.ntt.co.jp>
+ <tkrat.a77de871a8213efc@s5r6.in-berlin.de>
+ <20080814095549S.fujita.tomonori@lab.ntt.co.jp>
 MIME-Version: 1.0
-To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-CC: LKML <linux-kernel@vger.kernel.org>, Matthew Garrett <mjg59@srcf.ucam.org>,
-       toshiba_acpi@memebeam.org, Ivo van Doorn <ivdoorn@gmail.com>,
-       linux-wireless@vger.kernel.org
-Subject: Re: [PATCH 1/1] toshiba_acpi: Add support for bluetooth toggling
- through rfkill (v2)
-References: <4894B1B4.6050003@overt.org> <20080803042613.GC6053@khazad-dum.debian.net> <48965716.6020508@overt.org> <20080805212416.GB21738@khazad-dum.debian.net> <489A7CCF.1090407@overt.org> <20080807134530.GB17062@khazad-dum.debian.net> <48A06BBC.7060007@overt.org> <20080813092908.GA6806@khazad-dum.debian.net>
-In-Reply-To: <20080813092908.GA6806@khazad-dum.debian.net>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-SA-Do-Not-RunX1: Yes
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-Disposition: INLINE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Henrique de Moraes Holschuh wrote:
+On 14 Aug, FUJITA Tomonori wrote:
+> On Wed, 13 Aug 2008 12:19:59 +0200 (CEST)
+> Stefan Richter <stefanr@s5r6.in-berlin.de> wrote:
+>> I keep the original scsi_sg_count to call dma_unmap_sg with it
+>> later.
 > 
-> Looks like either rfkill-input is inactive, or something is binding to the
-> toshiba_acpi input device and setting it to exclusive mode (X evdev does
-> this).
+> You need to keep it? You can access to it via scsi_sg_count when
+> calling dma_unmap_sg? Seems that firewire code does.
 
-Almost. Turns out there were two problems:
+Yes, I can easily do it this way; fixed below.
 
-1) I was setting SW_RFKILL_ALL as a keybit instead of an swbit - so no
-events reported. Whoops. :-)
+[...nents in dma_unmap_sg...]
+> This is from Documentation/DMA-mapping.txt
 
-2) Maybe this shouldn't surprise me, but the expected switch semantics
-are that '1' means radios are on and 0 means they are killed - I thought
-it was the other way round.
+Right.  How did I forget about that?
 
-Now, when I release the kill switch, rfkill-input does indeed turn the
-radio on. Great. The remaining problem is that rfkill-input is setting
-it to soft-blocked when the switch is registered. I'm not sure why it's
-deciding to do that. Anyway, I'm almost there. Thanks.
 
---phil
+
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: ieee1394: sbp2: remove redundant struct members
+
+Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+---
+ drivers/ieee1394/sbp2.c |   14 +++++---------
+ drivers/ieee1394/sbp2.h |    4 ----
+ 2 files changed, 5 insertions(+), 13 deletions(-)
+
+Index: linux/drivers/ieee1394/sbp2.c
+===================================================================
+--- linux.orig/drivers/ieee1394/sbp2.c
++++ linux/drivers/ieee1394/sbp2.c
+@@ -656,11 +656,11 @@ static struct sbp2_command_info *sbp2uti
+ static void sbp2util_mark_command_completed(struct sbp2_lu *lu,
+ 					    struct sbp2_command_info *cmd)
+ {
+-	if (cmd->sg_buffer) {
+-		dma_unmap_sg(lu->ud->ne->host->device.parent, cmd->sg_buffer,
+-			     cmd->sg_count, cmd->sg_dir);
+-		cmd->sg_buffer = NULL;
+-	}
++	if (scsi_sg_count(cmd->Current_SCpnt) > 0)
++		dma_unmap_sg(lu->ud->ne->host->device.parent,
++			     scsi_sglist(cmd->Current_SCpnt),
++			     scsi_sg_count(cmd->Current_SCpnt),
++			     cmd->Current_SCpnt->sc_data_direction);
+ 	list_move_tail(&cmd->list, &lu->cmd_orb_completed);
+ }
+ 
+@@ -1505,10 +1505,6 @@ static int sbp2_prep_command_orb_sg(stru
+ 	if (n == 0)
+ 		return -ENOMEM;
+ 
+-	cmd->sg_buffer = sg;
+-	cmd->sg_count = sg_count;
+-	cmd->sg_dir = dma_dir;
+-
+ 	orb->data_descriptor_hi = ORB_SET_NODE_ID(hi->host->node_id);
+ 	orb->misc |= ORB_SET_DIRECTION(orb_direction);
+ 
+Index: linux/drivers/ieee1394/sbp2.h
+===================================================================
+--- linux.orig/drivers/ieee1394/sbp2.h
++++ linux/drivers/ieee1394/sbp2.h
+@@ -252,10 +252,6 @@ struct sbp2_command_info {
+ 	struct sbp2_unrestricted_page_table
+ 		scatter_gather_element[SG_ALL] __attribute__((aligned(8)));
+ 	dma_addr_t sge_dma;
+-
+-	struct scatterlist *sg_buffer;
+-	int sg_count;
+-	enum dma_data_direction sg_dir;
+ };
+ 
+ /* Per FireWire host */
+
+
+-- 
+Stefan Richter
+-=====-==--- =--- -===-
+http://arcgraph.de/sr/
 
