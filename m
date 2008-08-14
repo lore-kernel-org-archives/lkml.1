@@ -1,72 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757384AbYHMX6T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756332AbYHNAJT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757384AbYHMX6T (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Aug 2008 19:58:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753564AbYHMX6I
+	id S1756332AbYHNAJT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Aug 2008 20:09:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752865AbYHNAJG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Aug 2008 19:58:08 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:53239 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753211AbYHMX6G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Aug 2008 19:58:06 -0400
-Date: Thu, 14 Aug 2008 09:57:56 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Dmitry Baryshkov <dbaryshkov@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Tree for linux-next
-Message-Id: <20080814095756.a0152a27.sfr@canb.auug.org.au>
-In-Reply-To: <20080813161654.GA19599@doriath.ww600.siemens.net>
-References: <20080813161654.GA19599@doriath.ww600.siemens.net>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Thu__14_Aug_2008_09_57_56_+1000_=bso=ZRoM+rdwhZI"
+	Wed, 13 Aug 2008 20:09:06 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:36699 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752573AbYHNAJF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Aug 2008 20:09:05 -0400
+Message-ID: <48A375E3.9090609@zytor.com>
+Date: Wed, 13 Aug 2008 17:01:39 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: Andi Kleen <andi@firstfloor.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       Steven Rostedt <srostedt@redhat.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, Roland McGrath <roland@redhat.com>,
+       Ulrich Drepper <drepper@redhat.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Gregory Haskins <ghaskins@novell.com>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       "Luis Claudio R. Goncalves" <lclaudio@uudg.org>,
+       Clark Williams <williams@redhat.com>,
+       Christoph Lameter <cl@linux-foundation.org>
+Subject: Re: [RFC PATCH] x86 alternatives : fix LOCK_PREFIX race with	preemptible
+ kernel and CPU hotplug
+References: <alpine.DEB.1.10.0808082030500.1396@gandalf.stny.rr.com> <489CE90D.1040902@goop.org> <alpine.LFD.1.10.0808081750060.3462@nehalem.linux-foundation.org> <alpine.DEB.1.10.0808082113090.3707@gandalf.stny.rr.com> <20080813175213.GA8679@Krystal> <alpine.LFD.1.10.0808131119290.3462@nehalem.linux-foundation.org> <20080813184142.GM1366@one.firstfloor.org> <20080813193011.GC15547@Krystal> <20080813193715.GQ1366@one.firstfloor.org> <20080813200119.GA18966@Krystal> <20080813234156.GA25775@Krystal>
+In-Reply-To: <20080813234156.GA25775@Krystal>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Thu__14_Aug_2008_09_57_56_+1000_=bso=ZRoM+rdwhZI
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Mathieu Desnoyers wrote:
+> If a kernel thread is preempted in single-cpu mode right after the NOP (nop
+> about to be turned into a lock prefix), then we CPU hotplug a CPU, and then the
+> thread is scheduled back again, a SMP-unsafe atomic operation will be used on
+> shared SMP variables, leading to corruption. No corruption would happen in the
+> reverse case : going from SMP to UP is ok because we split a bit instruction
+> into tiny pieces, which does not present this condition.
+> 
+> Changing the 0x90 (single-byte nop) currently used into a 0x3E DS segment
+> override prefix should fix this issue. Since the default of the atomic
+> instructions is to use the DS segment anyway, it should not affect the
+> behavior.
 
-Hi Dmitry,
+I believe this should be okay.  In 32-bit mode some of the security and 
+hypervisor frameworks want to set segment limits, but I don't believe 
+they ever would set DS and SS inconsistently, or that we'd handle a #GP 
+versus an #SS differently (segment violations on the stack segment are 
+#SS, not #GP.)  To be 100% sure we'd have to pick apart the modr/m byte 
+to figure out what the base register is but I think that's total overkill.
 
-On Wed, 13 Aug 2008 20:16:55 +0400 Dmitry Baryshkov <dbaryshkov@gmail.com> =
-wrote:
->
-> Please add a tree to linux-next. It contains some cleanup for Sharp
-> Zaurus PDA's. Since it contains a number of patches, it's preferable
-> to test it via linux-next, before commiting to Russell's/ALSA tree.
+I have a vague notion that DS: prefixes came with a penalty on older 
+CPUs, so we may want to do this only when CPU hotplug is enabled, to 
+avoid penalizing older embedded systems.
 
-I assume you have already posted these changes somewhere and had them
-reviewed and unit tested them, right?
-
-> The url to pull is git://github.com/lumag/linux-2.6.git#for-next
-
-$ git ls-remote git://github.com/lumag/linux-2.6.git
-fatal: protocol error: expected sha/ref, got '
-*********'
-
-Permission denied. Repository is not public.
-
-*********'
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Thu__14_Aug_2008_09_57_56_+1000_=bso=ZRoM+rdwhZI
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkijdQQACgkQjjKRsyhoI8w6EACfenZIr5CLYLo4jV1BX3DTWCXQ
-o00AoK2/234Dy68Fd06+gksT8DiTdJAi
-=LI6W
------END PGP SIGNATURE-----
-
---Signature=_Thu__14_Aug_2008_09_57_56_+1000_=bso=ZRoM+rdwhZI--
+	-hpa
