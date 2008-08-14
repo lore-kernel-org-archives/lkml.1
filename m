@@ -1,149 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757589AbYHNJps@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758251AbYHNJrO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757589AbYHNJps (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Aug 2008 05:45:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751780AbYHNJpj
+	id S1758251AbYHNJrO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Aug 2008 05:47:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751780AbYHNJq7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Aug 2008 05:45:39 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:32845 "EHLO mx2.suse.de"
+	Thu, 14 Aug 2008 05:46:59 -0400
+Received: from pmx1.sophos.com ([213.31.172.16]:58138 "EHLO pmx1.sophos.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752150AbYHNJpj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Aug 2008 05:45:39 -0400
-Date: Thu, 14 Aug 2008 11:45:37 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Linux Memory Management List <linux-mm@kvack.org>,
-       Hugh Dickins <hugh@veritas.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [rfc][patch] mm: dirty page accounting race fix
-Message-ID: <20080814094537.GA741@wotan.suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.9i
+	id S1751886AbYHNJq6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Aug 2008 05:46:58 -0400
+In-Reply-To: <1218653864.3540.109.camel@localhost.localdomain>
+To: Eric Paris <eparis@redhat.com>
+Cc: alan@lxorguk.ukuu.org.uk, andi@firstfloor.org,
+       Arjan van de Ven <arjan@infradead.org>, hch@infradead.org,
+       linux-kernel@vger.kernel.org, malware-list@lists.printk.net,
+       malware-list-bounces@dmesg.printk.net, peterz@infradead.org,
+       viro@ZenIV.linux.org.uk
+Subject: Re: [malware-list] TALPA - a threat model?  well sorta.
+MIME-Version: 1.0
+X-Mailer: Lotus Notes Release 7.0.2 September 26, 2006
+From: tvrtko.ursulin@sophos.com
+Date: Thu, 14 Aug 2008 10:46:55 +0100
+X-MIMETrack: S/MIME Sign by Notes Client on Tvrtko Ursulin/Dev/UK/Sophos(Release 7.0.2|September
+ 26, 2006) at 14/08/2008 10:46:55,
+	Serialize by Notes Client on Tvrtko Ursulin/Dev/UK/Sophos(Release 7.0.2|September
+ 26, 2006) at 14/08/2008 10:46:55,
+	Serialize complete at 14/08/2008 10:46:55,
+	S/MIME Sign failed at 14/08/2008 10:46:55: The cryptographic key was not
+ found,
+	Serialize by Router on Mercury/Servers/Sophos(Release 7.0.3|September 26, 2007) at
+ 14/08/2008 10:46:56,
+	Serialize complete at 14/08/2008 10:46:56
+Content-Type: text/plain; charset="US-ASCII"
+Message-Id: <20080814094701.A65372FE89E@pmx1.sophos.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Eric Paris wrote on 13/08/2008 19:57:44:
 
-Wonder if you would be kind enough to verify this? It solves my issues (well
-still running after several hours wheras it previously would lock up in a
-few seconds).
+> > It's clear from the protection model that you described that on 'read'
+> > you want to wait until the scan is done before you give the data to 
+the
+> > process asking for it... and that's totally reasonable: "Do not give
+> > out bad data" is a very clear line in terms of security.
+> > 
+> > for the "dirty" case it gets muddy. You clearly want to scan "some
+> > time" after the write, from the principle of getting rid of malware
+> > that's on the disk, but it's unclear if this HAS to be synchronous.
+> > (obviously, synchronous behavior hurts performance bigtime so lets do
+> > as little as we can of that without hurting the protection).
+> > One advantage of doing the dirty case async (and a little time 
+delayed)
+> > is that repeated writes will get lumped up into one scan in practice,
+> > saving a ton of performance.
+> > (scan-on-close is just another way of implementing "delay the dirty
+> > scan").
+> > Based on Alans comments, to me this sounds like we should have an
+> > efficient mechanism to notify userspace of "dirty events"; this is not
+> > virus scan specific in any way or form. And this mechanism likely will
+> > need to allow multiple subscribers.
+> 
+> I'm certainly willing to go down the inotify'ish path for async
+> notification of 'dirty' inodes instead of implement my own async
+> mechanism if I can find a way to do it.
 
-Thanks,
-Nick
+Do I understand correctly that everyone agrees scanning whenever an inode 
+gets dirty would be a terrible thing for performance? 
 
----
-There is a race with dirty page accounting where a page may not properly
-be accounted for.
+Another thing we have here is that malware could not be neccessariliy 
+identified until the very last write (one example where it will always be 
+the case are PDF files (I think)).
 
-clear_page_dirty_for_io() calls page_mkclean; then TestClearPageDirty.
+So the whole question is at which point should be performing an async 
+scan. Close seems like a natural point which should be ideal for majority 
+of applications, I don't see how any time-based lumping/delaying scheme 
+can be better than close?
 
-page_mkclean walks the rmaps for that page, and for each one it cleans and
-write protects the pte if it was dirty. It uses page_check_address to find the
-pte. That function has a shortcut to avoid the ptl if the pte is not
-present. Unfortunately, the pte can be switched to not-present then back to
-present by other code while holding the page table lock -- this should not
-be a signal for page_mkclean to ignore that pte, because it may be dirty.
+> > for the open() case, I would argue that you don't need synchronous
+> > behavior as long as the read() case is synchronous. I can imagine that
+> > open() kicks off an async scan, and if it's done by the time the first
+> > read() happens, no blocking at all happens.
+> 
+> An interesting addition.  Trying to keep these queues of events gets
+> much more complex, but if people really think the open to read race is
+> that important I've always said it wasn't impossible to close.
 
-For example, do_wp_page calls ptep_clear_flush_notify before marking the
-pte writable and dirty. do_wp_page does subsequently set the page dirty, but
-that can happen before clear_page_dirty_for_io() calls TestClearPageDirty.
-There may also be other code which does similar things, and/or architectures
-which implement other pte manipulation functions using a clear-set sequence,
-I haven't looked thoroughly. But it should be fixed.
+This really sounds pretty interesting. Not necessariliy so much as a 
+performance optimisation, because I am not sure there are so many programs 
+where first read comes long after the first open, but as closing the 
+open-read race. 
 
-The consequence of the bug is loss of data integrity (msync) of dirty page
-accounting accuracy. XIP's __xip_unmap is probably also unreliable, which
-can lead to data corruption.
-
-Fix this by always taking ptl to check the pte in page_check_address.
-
-It's possible to retain this optimization for page_referenced and
-try_to_unmap.
-
-Signed-off-by: Nick Piggin <npiggin@suse.de>
----
-Index: linux-2.6/include/linux/rmap.h
-===================================================================
---- linux-2.6.orig/include/linux/rmap.h
-+++ linux-2.6/include/linux/rmap.h
-@@ -102,7 +102,7 @@ int try_to_unmap(struct page *, int igno
-  * Called from mm/filemap_xip.c to unmap empty zero page
-  */
- pte_t *page_check_address(struct page *, struct mm_struct *,
--				unsigned long, spinlock_t **);
-+				unsigned long, spinlock_t **, int);
+Could the implementation be not so complicated after all? If we generated 
+the same (roughly) event on reads and pass it for scanning if cache has 
+been invalidated in the mean time? The only thing is this could be a big 
+performance hit so some benchmarking might be in order depending on which 
+the read hook could be made run-time optional.
  
- /*
-  * Used by swapoff to help locate where page is expected in vma.
-Index: linux-2.6/mm/filemap_xip.c
-===================================================================
---- linux-2.6.orig/mm/filemap_xip.c
-+++ linux-2.6/mm/filemap_xip.c
-@@ -185,7 +185,7 @@ __xip_unmap (struct address_space * mapp
- 		address = vma->vm_start +
- 			((pgoff - vma->vm_pgoff) << PAGE_SHIFT);
- 		BUG_ON(address < vma->vm_start || address >= vma->vm_end);
--		pte = page_check_address(page, mm, address, &ptl);
-+		pte = page_check_address(page, mm, address, &ptl, 1);
- 		if (pte) {
- 			/* Nuke the page table entry. */
- 			flush_cache_page(vma, address, pte_pfn(*pte));
-Index: linux-2.6/mm/rmap.c
-===================================================================
---- linux-2.6.orig/mm/rmap.c
-+++ linux-2.6/mm/rmap.c
-@@ -224,10 +224,14 @@ unsigned long page_address_in_vma(struct
- /*
-  * Check that @page is mapped at @address into @mm.
-  *
-+ * If @synch is false, page_check_address may perform a racy check to avoid
-+ * the page table lock when the pte is not present (helpful when reclaiming
-+ * highly shared pages).
-+ *
-  * On success returns with pte mapped and locked.
-  */
- pte_t *page_check_address(struct page *page, struct mm_struct *mm,
--			  unsigned long address, spinlock_t **ptlp)
-+			  unsigned long address, spinlock_t **ptlp, int synch)
- {
- 	pgd_t *pgd;
- 	pud_t *pud;
-@@ -249,7 +253,7 @@ pte_t *page_check_address(struct page *p
+--
+Tvrtko A. Ursulin
+Senior Software Engineer, Sophos
+
+"Views and opinions expressed in this email are strictly those of the 
+author.
+ The contents has not been reviewed or approved by Sophos."
  
- 	pte = pte_offset_map(pmd, address);
- 	/* Make a quick check before getting the lock */
--	if (!pte_present(*pte)) {
-+	if (!synch && !pte_present(*pte)) {
- 		pte_unmap(pte);
- 		return NULL;
- 	}
-@@ -281,7 +285,7 @@ static int page_referenced_one(struct pa
- 	if (address == -EFAULT)
- 		goto out;
- 
--	pte = page_check_address(page, mm, address, &ptl);
-+	pte = page_check_address(page, mm, address, &ptl, 0);
- 	if (!pte)
- 		goto out;
- 
-@@ -450,7 +454,7 @@ static int page_mkclean_one(struct page 
- 	if (address == -EFAULT)
- 		goto out;
- 
--	pte = page_check_address(page, mm, address, &ptl);
-+	pte = page_check_address(page, mm, address, &ptl, 1);
- 	if (!pte)
- 		goto out;
- 
-@@ -697,7 +701,7 @@ static int try_to_unmap_one(struct page 
- 	if (address == -EFAULT)
- 		goto out;
- 
--	pte = page_check_address(page, mm, address, &ptl);
-+	pte = page_check_address(page, mm, address, &ptl, 0);
- 	if (!pte)
- 		goto out;
- 
+
+Sophos Plc, The Pentagon, Abingdon Science Park, Abingdon,
+OX14 3YP, United Kingdom.
+
+Company Reg No 2096520. VAT Reg No GB 348 3873 20.
+
