@@ -1,101 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759907AbYHNSyz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758493AbYHNTBr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759907AbYHNSyz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Aug 2008 14:54:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752638AbYHNSyr
+	id S1758493AbYHNTBr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Aug 2008 15:01:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752638AbYHNTBi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Aug 2008 14:54:47 -0400
-Received: from smtprelay06.ispgateway.de ([80.67.18.44]:44356 "EHLO
-	smtprelay06.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752178AbYHNSyr (ORCPT
+	Thu, 14 Aug 2008 15:01:38 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:47553 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752397AbYHNTBh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Aug 2008 14:54:47 -0400
-From: Ingo Oeser <ioe-lkml@rameria.de>
-To: Jan Kara <jack@suse.cz>
-Subject: Re: [PATCH REVIEW] udf: Fix lock inversion between iprune_mutex and alloc_mutex
-Date: Thu, 14 Aug 2008 20:48:10 +0200
-User-Agent: KMail/1.9.9
-Cc: LKML <linux-kernel@vger.kernel.org>
-References: <12187361983539-git-send-email-jack@suse.cz>
-In-Reply-To: <12187361983539-git-send-email-jack@suse.cz>
+	Thu, 14 Aug 2008 15:01:37 -0400
+Message-ID: <48A48086.3010603@novell.com>
+Date: Thu, 14 Aug 2008 14:59:18 -0400
+From: Gregory Haskins <ghaskins@novell.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080720)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200808142048.10966.ioe-lkml@rameria.de>
-X-Df-Sender: 849595
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: Jeremy Fitzhardinge <jeremy@goop.org>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andi Kleen <andi@firstfloor.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       Steven Rostedt <srostedt@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, Roland McGrath <roland@redhat.com>,
+       Ulrich Drepper <drepper@redhat.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       "Luis Claudio R. Goncalves" <lclaudio@uudg.org>,
+       Clark Williams <williams@redhat.com>,
+       Christoph Lameter <cl@linux-foundation.org>
+Subject: Re: [RFC PATCH] x86 alternatives : fix LOCK_PREFIX race with	preemptible
+ kernel and CPU hotplug
+References: <20080813234156.GA25775@Krystal> <48A375E3.9090609@zytor.com> <48A388CE.2020404@goop.org> <20080814014944.GA31883@Krystal> <48A3A806.8060509@goop.org> <20080814151805.GA29507@Krystal> <48A465BA.5050406@goop.org> <48A468F5.4050308@zytor.com> <20080814174612.GB4697@Krystal> <48A4700F.6030806@goop.org> <20080814175523.GC4697@Krystal>
+In-Reply-To: <20080814175523.GC4697@Krystal>
+X-Enigmail-Version: 0.95.6
+OpenPGP: id=D8195319
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig145659043AE931B7E708CB0D"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jan,
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig145659043AE931B7E708CB0D
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: quoted-printable
 
-On Thursday 14 August 2008, Jan Kara wrote:
-> A memory allocation inside alloc_mutex must not recurse back
-> into the filesystem itself because that leads to lock inversion
-> between iprune_mutex and alloc_mutex (and thus to deadlocks - see
-> traces below). Make allocations inside alloc_mutex use GFP_NOFS
-> to avoid this problem.
+Mathieu Desnoyers wrote:
+> * Jeremy Fitzhardinge (jeremy@goop.org) wrote:
+>  =20
+>> Mathieu Desnoyers wrote:
+>>    =20
+>>> Here are the specs. It's a brand new 64bits dual quad-core (Christmas=
+ in
+>>> August) :-) None of the specs seems to talk about neither Core2 or
+>>> Pentium 4 though. Those appellations seems to hold for desktop
+>>> processors, not server processors...
+>>>  =20
+>>>      =20
+>> Is it a Dell thingy?  Turns out my main test box has exactly the same =
 
-What about moving the allocation before taking the mutex?
-That way, we even reduce the lock contention and simplify the failure path.
+>> processor.
+>>
+>>    J
+>>    =20
+>
+> Nope, it's a custom-made machine from a company in the Montreal area. I=
+t
+> has a Supermicro X7DAL-E motherboard and, well, I got 16GB of ram in it=
+=2E
+> Pretty useful to take large traces.
+>
+> Mathieu
+>
+>
+>  =20
 
-Signed-off-by: Ingo Oeser <ioe-lkml@rameria.de>
+FWIW, I think its a Harpertown:
 
-diff --git a/fs/udf/ialloc.c b/fs/udf/ialloc.c
-index eb9cfa2..76446eb 100644
---- a/fs/udf/ialloc.c
-+++ b/fs/udf/ialloc.c
-@@ -90,6 +90,25 @@ struct inode *udf_new_inode(struct inode *dir, int mode, int *err)
- 		return NULL;
- 	}
- 
-+	if (UDF_QUERY_FLAG(inode->i_sb, UDF_FLAG_USE_EXTENDED_FE)) {
-+		iinfo->i_efe = 1;
-+		if (UDF_VERS_USE_EXTENDED_FE > sbi->s_udfrev)
-+			sbi->s_udfrev = UDF_VERS_USE_EXTENDED_FE;
-+		iinfo->i_ext.i_data = kzalloc(inode->i_sb->s_blocksize -
-+					    sizeof(struct extendedFileEntry),
-+					    GFP_KERNEL);
-+	} else {
-+		iinfo->i_efe = 0;
-+		iinfo->i_ext.i_data = kzalloc(inode->i_sb->s_blocksize -
-+					    sizeof(struct fileEntry),
-+					    GFP_KERNEL);
-+	}
-+	if (!iinfo->i_ext.i_data) {
-+		iput(inode);
-+		*err = -ENOMEM;
-+		return NULL;
-+	}
-+
- 	mutex_lock(&sbi->s_alloc_mutex);
- 	if (sbi->s_lvid_bh) {
- 		struct logicalVolIntegrityDesc *lvid =
-@@ -129,25 +148,6 @@ struct inode *udf_new_inode(struct inode *dir, int mode, int *err)
- 	iinfo->i_lenEAttr = 0;
- 	iinfo->i_lenAlloc = 0;
- 	iinfo->i_use = 0;
--	if (UDF_QUERY_FLAG(inode->i_sb, UDF_FLAG_USE_EXTENDED_FE)) {
--		iinfo->i_efe = 1;
--		if (UDF_VERS_USE_EXTENDED_FE > sbi->s_udfrev)
--			sbi->s_udfrev = UDF_VERS_USE_EXTENDED_FE;
--		iinfo->i_ext.i_data = kzalloc(inode->i_sb->s_blocksize -
--					    sizeof(struct extendedFileEntry),
--					    GFP_KERNEL);
--	} else {
--		iinfo->i_efe = 0;
--		iinfo->i_ext.i_data = kzalloc(inode->i_sb->s_blocksize -
--					    sizeof(struct fileEntry),
--					    GFP_KERNEL);
--	}
--	if (!iinfo->i_ext.i_data) {
--		iput(inode);
--		*err = -ENOMEM;
--		mutex_unlock(&sbi->s_alloc_mutex);
--		return NULL;
--	}
- 	if (UDF_QUERY_FLAG(inode->i_sb, UDF_FLAG_USE_AD_IN_ICB))
- 		iinfo->i_alloc_type = ICBTAG_FLAG_AD_IN_ICB;
- 	else if (UDF_QUERY_FLAG(inode->i_sb, UDF_FLAG_USE_SHORT_AD))
+http://processorfinder.intel.com/details.aspx?sSpec=3DSLAP2
+
+-Greg
+
+
+--------------enig145659043AE931B7E708CB0D
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
+
+iEYEARECAAYFAkikgIcACgkQlOSOBdgZUxlYzgCeIMS/sQO3cVv7dsRNPCKpdbF3
+vSMAnAzIQ3PZstR4vqP0y9O3tTh37N4z
+=phXK
+-----END PGP SIGNATURE-----
+
+--------------enig145659043AE931B7E708CB0D--
