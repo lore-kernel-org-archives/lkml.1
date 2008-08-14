@@ -1,79 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758773AbYHNMDv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756929AbYHNMP4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758773AbYHNMDv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Aug 2008 08:03:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753889AbYHNMDm
+	id S1756929AbYHNMP4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Aug 2008 08:15:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752534AbYHNMPr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Aug 2008 08:03:42 -0400
-Received: from mail13.ca.com ([141.202.248.42]:5479 "EHLO mail13.ca.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754275AbYHNMDl convert rfc822-to-8bit (ORCPT
+	Thu, 14 Aug 2008 08:15:47 -0400
+Received: from mailrelay005.isp.belgacom.be ([195.238.6.171]:20330 "EHLO
+	mailrelay005.isp.belgacom.be" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752423AbYHNMPq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Aug 2008 08:03:41 -0400
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Thu, 14 Aug 2008 08:15:46 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AqgEABy/o0jCTsYx/2dsb2JhbACBYrRFgVU
+From: Laurent Pinchart <laurentp@cse-semaphore.com>
+Organization: CSE Semaphore
+To: linuxppc-dev@ozlabs.org, avorontsov@ru.mvista.com
+Subject: Re: [PATCH 0/3] Patches to support QE USB Host Controller
+Date: Thu, 14 Aug 2008 14:15:37 +0200
+User-Agent: KMail/1.9.9
+Cc: "Greg Kroah-Hartman" <greg@kroah.com>, linux-usb@vger.kernel.org,
+       David Brownell <dbrownell@users.sourceforge.net>,
+       Li Yang <leoli@freescale.com>, linux-kernel@vger.kernel.org,
+       Timur Tabi <timur@freescale.com>
+References: <20080808161717.GA19095@polina.dev.rtsoft.ru>
+In-Reply-To: <20080808161717.GA19095@polina.dev.rtsoft.ru>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [malware-list] TALPA - a threat model?  well sorta.
-Date: Thu, 14 Aug 2008 08:03:40 -0400
-Message-ID: <2629CC4E1D22A64593B02C43E855530304AE4BCB@USILMS12.ca.com>
-In-Reply-To: <20080814093103.6CD102FE8B4@pmx1.sophos.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [malware-list] TALPA - a threat model?  well sorta.
-Thread-Index: Acj98IxSTfagrVLVT+yfstb5VMlIZQAFNn8Q
-References: <20080813192922.GI8232@mit.edu> <20080814093103.6CD102FE8B4@pmx1.sophos.com>
-From: "Press, Jonathan" <Jonathan.Press@ca.com>
-To: <tvrtko.ursulin@sophos.com>, "Theodore Tso" <tytso@mit.edu>
-Cc: <peterz@infradead.org>, <linux-kernel@vger.kernel.org>,
-       <malware-list@lists.printk.net>, <hch@infradead.org>,
-       <viro@ZenIV.linux.org.uk>, <andi@firstfloor.org>,
-       <malware-list-bounces@dmesg.printk.net>, <alan@lxorguk.ukuu.org.uk>,
-       "Arjan van de Ven" <arjan@infradead.org>
-X-OriginalArrivalTime: 14 Aug 2008 12:03:40.0699 (UTC) FILETIME=[CA931EB0:01C8FE05]
+Content-Type: multipart/signed;
+  boundary="nextPart15632004.JyQgAgK3b9";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200808141415.42109.laurentp@cse-semaphore.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> -----Original Message-----
-> From: malware-list-bounces@dmesg.printk.net [mailto:malware-list-
-> bounces@dmesg.printk.net] On Behalf Of tvrtko.ursulin@sophos.com
-> Sent: Thursday, August 14, 2008 5:31 AM
-> To: Theodore Tso
-> Cc: peterz@infradead.org; linux-kernel@vger.kernel.org; malware-
-> list@lists.printk.net; hch@infradead.org; viro@ZenIV.linux.org.uk;
-> andi@firstfloor.org; malware-list-bounces@dmesg.printk.net;
-> alan@lxorguk.ukuu.org.uk; Arjan van de Ven
-> Subject: Re: [malware-list] TALPA - a threat model? well sorta.
+--nextPart15632004.JyQgAgK3b9
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
- 
-> Hm, maybe by implementing a facility with which a client can register
-it's
-> interface usage intent? Something like:
-> 
-> register(I_HAVE_NO_INTEREST_IN_CONTENT);
-> register(I_WANT_TO_EXAMINE_CONTENT);
-> 
-> All former ones would run first because they only want to have the
-> opportunity to block and do something unrelated to file content (like
-> HSMs), and later group would be ran last since they want to examine
-the
-> content.
-> 
-> Ordering inside those two groups is not important because I don't see
-how
-> a model other than restrictive can make sense with content security
-> scanning.
+On Friday 08 August 2008, Anton Vorontsov wrote:
+> Hi all,
+>=20
+> Most patches that were needed to support QE USB Host were merged during
+> 2.6.27 merge window, and only three more patches left over. Here they
+> are.
+>=20
+> David, could you bear with gpio_to_chip() exported function, just as
+> a stopgap for a proper api?
 
-I'm not sure I understand why "interest in content" means not blocking,
-and vice versa.  However, I think this is a good idea if made more
-explicit, i.e.:
+I need gpio_to_chip() (or another 'proper API') as well for RTS/CTS based f=
+low control in the CPM/CPM2 UART driver.
 
-> register(BLOCK);
-> register(DON'T_BLOCK);
+Best regards,
 
+=2D-=20
+Laurent Pinchart
+CSE Semaphore Belgium
 
-Jon Press
+Chaussee de Bruxelles, 732A
+B-1410 Waterloo
+Belgium
 
+T +32 (2) 387 42 59
+=46 +32 (2) 387 42 75
+
+--nextPart15632004.JyQgAgK3b9
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+
+iEYEABECAAYFAkikIe4ACgkQ8y9gWxC9vpcmlACdE3MeY089shx+6b/k46phPYCA
+LYIAoJ92hIim9i81dEaH+Q9m3raFDGRX
+=tyOo
+-----END PGP SIGNATURE-----
+
+--nextPart15632004.JyQgAgK3b9--
