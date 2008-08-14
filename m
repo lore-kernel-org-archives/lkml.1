@@ -1,47 +1,434 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758907AbYHNUsx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757372AbYHNU63@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758907AbYHNUsx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Aug 2008 16:48:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753761AbYHNUso
+	id S1757372AbYHNU63 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Aug 2008 16:58:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753700AbYHNU6U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Aug 2008 16:48:44 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:41023 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753700AbYHNUso (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Aug 2008 16:48:44 -0400
-Date: Thu, 14 Aug 2008 21:30:53 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Ulrich Drepper <drepper@redhat.com>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org
-Subject: Re: [PATCH] MAP_GROWSUP & MAP_GROWSDOWN removal
-Message-ID: <20080814213053.0db0c59f@lxorguk.ukuu.org.uk>
-In-Reply-To: <200808141519.m7EFJX9Z009294@devserv.devel.redhat.com>
-References: <200808141519.m7EFJX9Z009294@devserv.devel.redhat.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 14 Aug 2008 16:58:20 -0400
+Received: from tomts20.bellnexxia.net ([209.226.175.74]:54635 "EHLO
+	tomts20-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753618AbYHNU6T convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Aug 2008 16:58:19 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AswEAEk0pEhMRKxB/2dsb2JhbACBYrU2gVU
+Date: Thu, 14 Aug 2008 16:58:15 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
+       Harvey Harrison <harvey.harrison@gmail.com>,
+       Andi Kleen <andi@firstfloor.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Steven Rostedt <srostedt@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, Roland McGrath <roland@redhat.com>,
+       Ulrich Drepper <drepper@redhat.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Gregory Haskins <ghaskins@novell.com>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       "Luis Claudio R. Goncalves" <lclaudio@uudg.org>,
+       Clark Williams <williams@redhat.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: [PATCH] x86 alternatives : fix LOCK_PREFIX race with preemptible
+	kernel and CPU hotplug
+Message-ID: <20080814205815.GA14076@Krystal>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8BIT
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 16:53:59 up 71 days,  1:34,  7 users,  load average: 0.38, 0.62,
+	0.58
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> What is proposed here is to remove the flags real soon (2.6.29, as indicated
-> below).  If this patch is accepted I will immediately remove the flags
-> from the glibc headers.
+If a kernel thread is preempted in single-cpu mode right after the NOP (nop
+about to be turned into a lock prefix), then we CPU hotplug a CPU, and then the
+thread is scheduled back again, a SMP-unsafe atomic operation will be used on
+shared SMP variables, leading to corruption. No corruption would happen in the
+reverse case : going from SMP to UP is ok because we split a bit instruction
+into tiny pieces, which does not present this condition.
 
-The functionality is used by the kernel internally anyway so there is no
-point removing it as it has no cost at all.
+Changing the 0x90 (single-byte nop) currently used into a 0x3E DS segment
+override prefix should fix this issue. Since the default of the atomic
+instructions is to use the DS segment anyway, it should not affect the
+behavior.
 
-You can equally call "reboot" by mistake or strcpy with wrong parameters.
-The interface is also part of our historic ABI/API so shouldn't just get
-booted out.
+This patch assumes that the 0x3E prefix will leave atomic operations as-is (thus
+assuming they normally touch data in the DS segment). Since there seem to be no
+obvious ill-use of other segment override prefixes for atomic operations, it
+should be safe. It can be verified with a quick
 
-You might not like it, and it might not be very useful but thats true of
-stuff like readahead() as well.
+grep -r LOCK_PREFIX include/asm-x86/
+grep -A 1 -r LOCK_PREFIX arch/x86/
 
-Alan
+Taken from 
+
+This source :
+AMD64 Architecture Programmer's Manual Volume 3: General-Purpose and System
+Instructions
+States
+"Instructions that Reference a Non-Stack Segment—If an instruction encoding
+references any base register other than rBP or rSP, or if an instruction
+contains an immediate offset, the default segment is the data segment (DS).
+These instructions can use the segment-override prefix to select one of the
+non-default segments, as shown in Table 1-5."
+
+Therefore, forcing the DS segment on the atomic operations, which already use
+the DS segment, should not change.
+
+This source :
+http://wiki.osdev.org/X86_Instruction_Encoding
+States
+"In 64-bit the CS, SS, DS and ES segment overrides are ignored."
+
+Confirmed by "AMD 64-Bit Technology" A.7
+http://www.amd.com/us-en/assets/content_type/white_papers_and_tech_docs/x86-64_overview.pdf
+
+"In 64-bit mode, the DS, ES, SS and CS segment-override prefixes have no effect.
+These four prefixes are no longer treated as segment-override prefixes in the
+context of multipleprefix rules. Instead, they are treated as null prefixes."
+
+This patch applies to 2.6.27-rc2, but would also have to be applied to earlier
+kernels (2.6.26, 2.6.25, ...).
+
+Performance impact of the fix : tests done on "xaddq" and "xaddl" shows it
+actually improves performances on Intel Xeon, AMD64, Pentium M. It does not
+change the performance on Pentium II, Pentium 3 and Pentium 4.
+
+Xeon E5405 2.0GHz :
+NR_TESTS                                    10000000
+test empty cycles :                        162207948
+test test 1-byte nop xadd cycles :         170755422
+test test DS override prefix xadd cycles : 170000118 *
+test test LOCK xadd cycles :               472012134
+
+AMD64 2.0GHz :
+NR_TESTS                                    10000000
+test empty cycles :                        146674549
+test test 1-byte nop xadd cycles :         150273860
+test test DS override prefix xadd cycles : 149982382 *
+test test LOCK xadd cycles :               270000690
+
+Pentium 4 3.0GHz
+NR_TESTS                                    10000000
+test empty cycles :                        290001195
+test test 1-byte nop xadd cycles :         310000560
+test test DS override prefix xadd cycles : 310000575 *
+test test LOCK xadd cycles :              1050103740
+
+Pentium M 2.0GHz
+NR_TESTS 10000000
+test empty cycles :                        180000523
+test test 1-byte nop xadd cycles :         320000345
+test test DS override prefix xadd cycles : 310000374 *
+test test LOCK xadd cycles :               480000357
+
+Pentium 3 550MHz
+NR_TESTS                                    10000000
+test empty cycles :                        510000231
+test test 1-byte nop xadd cycles :         620000128
+test test DS override prefix xadd cycles : 620000110 *
+test test LOCK xadd cycles :               800000088
+
+Pentium II 350MHz
+NR_TESTS                                    10000000
+test empty cycles :                        200833494
+test test 1-byte nop xadd cycles :         340000130
+test test DS override prefix xadd cycles : 340000126 *
+test test LOCK xadd cycles :               530000078
+
+
+Speed test modules can be found at 
+http://ltt.polymtl.ca/svn/trunk/tests/kernel/test-prefix-speed-32.c
+http://ltt.polymtl.ca/svn/trunk/tests/kernel/test-prefix-speed.c
+
+
+
+Macro-benchmarks
+
+2.0GHz E5405 Core 2 dual Quad-Core Xeon
+
+Summary
+
+
+* replace smp lock prefixes with DS segment selector prefixes
+                  no lock prefix (s)   with lock prefix (s)    Speedup
+make -j1 kernel/      33.94 +/- 0.07         34.91 +/- 0.27      2.8 %
+hackbench 50           2.99 +/- 0.01          3.74 +/- 0.01     25.1 %
+
+
+* replace smp lock prefixes with 0x90 nops
+                  no lock prefix (s)   with lock prefix (s)    Speedup
+make -j1 kernel/      34.16 +/- 0.32         34.91 +/- 0.27      2.2 %
+hackbench 50           3.00 +/- 0.01          3.74 +/- 0.01     24.7 %
+
+
+
+Detail :
+
+
+1 CPU, replace smp lock prefixes with DS segment selector prefixes
+
+make -j1 kernel/
+
+real	0m34.067s
+user	0m30.630s
+sys	0m2.980s
+
+real	0m33.867s
+user	0m30.582s
+sys	0m3.024s
+
+real	0m33.939s
+user	0m30.738s
+sys	0m2.876s
+
+real	0m33.913s
+user	0m30.806s
+sys	0m2.808s
+
+avg : 33.94s
+std. dev. : 0.07s
+
+hackbench 50
+
+Time: 2.978
+Time: 2.982
+Time: 3.010
+Time: 2.984
+Time: 2.982
+
+avg : 2.99
+std. dev. : 0.01
+
+
+
+1 CPU, noreplace-smp
+
+make -j1 kernel/
+
+real	0m35.326s
+user	0m30.630s
+sys	0m3.260s
+
+real	0m34.325s
+user	0m30.802s
+sys	0m3.084s
+
+real	0m35.568s
+user	0m30.722s
+sys	0m3.168s
+
+real	0m34.435s
+user	0m30.886s
+sys	0m2.996s
+
+avg.: 34.91s
+std. dev. : 0.27s
+
+hackbench 50
+
+Time: 3.733
+Time: 3.750
+Time: 3.761
+Time: 3.737
+Time: 3.741
+
+avg : 3.74
+std. dev. : 0.01
+
+
+
+1 CPU, replace smp lock prefixes with 0x90 nops
+
+make -j1 kernel/
+
+real	0m34.139s
+user	0m30.782s
+sys	0m2.820s
+
+real	0m34.010s
+user	0m30.630s
+sys	0m2.976s
+
+real	0m34.777s
+user	0m30.658s
+sys	0m2.916s
+
+real	0m33.924s
+user	0m30.634s
+sys	0m2.924s
+
+real	0m33.962s
+user	0m30.774s
+sys	0m2.800s
+
+real	0m34.141s
+user	0m30.770s
+sys	0m2.828s
+
+
+avg : 34.16
+std. dev. : 0.32
+
+
+hackbench 50
+
+Time: 2.999
+Time: 2.994
+Time: 3.004
+Time: 2.991
+Time: 2.988
+
+avg : 3.00
+std. dev. : 0.01
+
+I did more runs (20 runs of each) to compare the nop case to the DS
+prefix case. Results in seconds. They actually does not seems to show a
+significant difference.
+
+NOP
+
+34.155
+33.955
+34.012
+35.299
+35.679
+34.141
+33.995
+35.016
+34.254
+33.957
+33.957
+34.008
+35.013
+34.494
+33.893
+34.295
+34.314
+34.854
+33.991
+34.132
+
+DS
+
+34.080
+34.304
+34.374
+35.095
+34.291
+34.135
+33.940
+34.208
+35.276
+34.288
+33.861
+33.898
+34.610
+34.709
+33.851
+34.256
+35.161
+34.283
+33.865
+35.078
+
+
+Used http://www.graphpad.com/quickcalcs/ttest1.cfm?Format=C to do the
+T-test (yeah, I'm lazy) :
+
+ Group      Group One (DS prefix)       Group Two (nops)
+ Mean                    34.37815               34.37070
+ SD                       0.46108                0.51905
+ SEM                      0.10310                0.11606
+ N                             20                     20
+
+P value and statistical significance:
+  The two-tailed P value equals 0.9620
+  By conventional criteria, this difference is considered to be not statistically significant.
+
+Confidence interval:
+  The mean of Group One minus Group Two equals 0.00745
+  95% confidence interval of this difference: From -0.30682 to 0.32172
+
+Intermediate values used in calculations:
+  t = 0.0480
+  df = 38
+  standard error of difference = 0.155
+
+
+So, unless these calculus are completely bogus, the difference between the nop
+and the DS case seems not to be statistically significant.
+
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Acked-by: H. Peter Anvin <hpa@zytor.com>
+CC: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: Roland McGrath <roland@redhat.com>
+CC: Ingo Molnar <mingo@elte.hu>
+Cc: Steven Rostedt <rostedt@goodmis.org>
+CC: Steven Rostedt <srostedt@redhat.com>
+CC: Thomas Gleixner <tglx@linutronix.de>
+CC: Peter Zijlstra <peterz@infradead.org>
+CC: Andrew Morton <akpm@linux-foundation.org>
+CC: David Miller <davem@davemloft.net>
+CC: Ulrich Drepper <drepper@redhat.com>
+CC: Rusty Russell <rusty@rustcorp.com.au>
+CC: Gregory Haskins <ghaskins@novell.com>
+CC: Arnaldo Carvalho de Melo <acme@redhat.com>
+CC: "Luis Claudio R. Goncalves" <lclaudio@uudg.org>
+CC: Clark Williams <williams@redhat.com>
+CC: Christoph Lameter <cl@linux-foundation.org>
+CC: Andi Kleen <andi@firstfloor.org>
+CC: Harvey Harrison <harvey.harrison@gmail.com>
+---
+ arch/x86/kernel/alternative.c |    8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+Index: linux-2.6-lttng/arch/x86/kernel/alternative.c
+===================================================================
+--- linux-2.6-lttng.orig/arch/x86/kernel/alternative.c	2008-08-13 18:42:47.000000000 -0400
++++ linux-2.6-lttng/arch/x86/kernel/alternative.c	2008-08-13 18:54:36.000000000 -0400
+@@ -241,25 +241,25 @@ static void alternatives_smp_lock(u8 **s
+ 			continue;
+ 		if (*ptr > text_end)
+ 			continue;
+-		text_poke(*ptr, ((unsigned char []){0xf0}), 1); /* add lock prefix */
++		/* turn DS segment override prefix into lock prefix */
++		text_poke(*ptr, ((unsigned char []){0xf0}), 1);
+ 	};
+ }
+ 
+ static void alternatives_smp_unlock(u8 **start, u8 **end, u8 *text, u8 *text_end)
+ {
+ 	u8 **ptr;
+-	char insn[1];
+ 
+ 	if (noreplace_smp)
+ 		return;
+ 
+-	add_nops(insn, 1);
+ 	for (ptr = start; ptr < end; ptr++) {
+ 		if (*ptr < text)
+ 			continue;
+ 		if (*ptr > text_end)
+ 			continue;
+-		text_poke(*ptr, insn, 1);
++		/* turn lock prefix into DS segment override prefix */
++		text_poke(*ptr, ((unsigned char []){0x3E}), 1);
+ 	};
+ }
+ 
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
