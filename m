@@ -1,92 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758957AbYHNNN0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758420AbYHNNU2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758957AbYHNNN0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Aug 2008 09:13:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753794AbYHNNNS
+	id S1758420AbYHNNU2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Aug 2008 09:20:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752569AbYHNNUT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Aug 2008 09:13:18 -0400
-Received: from fg-out-1718.google.com ([72.14.220.157]:15529 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751778AbYHNNNR convert rfc822-to-8bit (ORCPT
+	Thu, 14 Aug 2008 09:20:19 -0400
+Received: from extu-mxob-1.symantec.com ([216.10.194.28]:38436 "EHLO
+	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751767AbYHNNUR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Aug 2008 09:13:17 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=X9ubQe3+V4N2fBL2nxxouxj9RRCrkp2+tYl6eZQNnkQzElAv+YQpZT754lOnr2sNzc
-         eqvQgqNbvY7T07v7GVoIXEB64pAL02QnA6q8d75WeAJoMvP1wBvrOdrxUgKSRKVKSnnA
-         mkk6YLuOxqOYTtBm8asjAtE6XF1flre0NjoGc=
-Message-ID: <c62985530808140613n787572d5s3acb1a529285f8f@mail.gmail.com>
-Date: Thu, 14 Aug 2008 14:13:16 +0100
-From: "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>
-To: mingo@elte.hu, srostedt@redhat.com
-Subject: Re: [PATCH] trace: Fix some mistakes in error messages
-Cc: "Linux Kernel" <linux-kernel@vger.kernel.org>
-In-Reply-To: <48A0B7ED.2010705@gmail.com>
+	Thu, 14 Aug 2008 09:20:17 -0400
+Date: Thu, 14 Aug 2008 14:20:37 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.site
+To: Nick Piggin <npiggin@suse.de>
+cc: Linux Memory Management List <linux-mm@kvack.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [rfc][patch] mm: dirty page accounting race fix
+In-Reply-To: <20080814123546.GA29727@wotan.suse.de>
+Message-ID: <Pine.LNX.4.64.0808141410490.14452@blonde.site>
+References: <20080814094537.GA741@wotan.suse.de> <Pine.LNX.4.64.0808141210200.4398@blonde.site>
+ <20080814123546.GA29727@wotan.suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-References: <48A0B7ED.2010705@gmail.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/8/11 Frédéric Weisbecker <fweisbec@gmail.com>
->
-> This patch fixes some mistakes on the tracer in warning messages when debugfs fails to create tracing files.
-> Kernel version: 2.6.27-rc1
->
-> Regards.
->
-> Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-> ---
-> diff -rup a/kernel/trace/trace.c b/kernel/trace/trace.c
-> --- a/kernel/trace/trace.c    2008-08-11 22:44:25.000000000 +0200
-> +++ b/kernel/trace/trace.c    2008-08-11 23:10:39.000000000 +0200
-> @@ -2881,12 +2881,12 @@ static __init void tracer_init_debugfs(v
->    entry = debugfs_create_file("available_tracers", 0444, d_tracer,
->                    &global_trace, &show_traces_fops);
->    if (!entry)
-> -        pr_warning("Could not create debugfs 'trace' entry\n");
-> +        pr_warning("Could not create debugfs 'available_tracers' entry\n");
->
->    entry = debugfs_create_file("current_tracer", 0444, d_tracer,
->                    &global_trace, &set_tracer_fops);
->    if (!entry)
-> -        pr_warning("Could not create debugfs 'trace' entry\n");
-> +        pr_warning("Could not create debugfs 'current_tracer' entry\n");
->
->    entry = debugfs_create_file("tracing_max_latency", 0644, d_tracer,
->                    &tracing_max_latency,
-> @@ -2899,7 +2899,7 @@ static __init void tracer_init_debugfs(v
->                    &tracing_thresh, &tracing_max_lat_fops);
->    if (!entry)
->        pr_warning("Could not create debugfs "
-> -               "'tracing_threash' entry\n");
-> +               "'tracing_thresh' entry\n");
->    entry = debugfs_create_file("README", 0644, d_tracer,
->                    NULL, &tracing_readme_fops);
->    if (!entry)
-> @@ -2909,13 +2909,13 @@ static __init void tracer_init_debugfs(v
->                    NULL, &tracing_pipe_fops);
->    if (!entry)
->        pr_warning("Could not create debugfs "
-> -               "'tracing_threash' entry\n");
-> +               "'trace_pipe' entry\n");
->
->    entry = debugfs_create_file("trace_entries", 0644, d_tracer,
->                    &global_trace, &tracing_entries_fops);
->    if (!entry)
->        pr_warning("Could not create debugfs "
-> -               "'tracing_threash' entry\n");
-> +               "'trace_entries' entry\n");
->
-> #ifdef CONFIG_DYNAMIC_FTRACE
->    entry = debugfs_create_file("dyn_ftrace_total_info", 0444, d_tracer,
+On Thu, 14 Aug 2008, Nick Piggin wrote:
+> On Thu, Aug 14, 2008 at 12:55:46PM +0100, Hugh Dickins wrote:
+> 
+> Maybe I've found another one: ppc64's set_pte_at seems to clear
+> the pte, and lots of pte accessors are implemented with set_pte_at.
+> mprotect's modify_prot_commit for example.
+> 
+> Even if I'm wrong and we happen to be safe everywhere, it seems
+> really fragile to ask that no architectures ever allow transient
+> !pte_present in cases  where it matters, and no generic code
+> emit the wrong sequence either. Or is there some reason I'm missing
+> that makes this more robust?
 
+I agree completely that should be allowed (within pagetable lock)
+and is sometimes essential, mprotect being the classic example.
 
-I said my kernel version was 2.6.27-rc1 but in fact it still applies
-on last git tree.
+So I'll try to think through your case later on, focussing on
+mprotect instead, and report back once I've pictured it.
+
+> Hmm, vma_wants_writenotify is only true if VM_WRITE, and in that
+> case we might be OK?
+
+Yes, that's what I'd missed: with that worry out of the way,
+I should think a bit clearer.
+
+Hugh
