@@ -1,159 +1,199 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758553AbYHNPvN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757069AbYHNPwg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758553AbYHNPvN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Aug 2008 11:51:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752672AbYHNPu5
+	id S1757069AbYHNPwg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Aug 2008 11:52:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751493AbYHNPw1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Aug 2008 11:50:57 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:54779 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757792AbYHNPuz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Aug 2008 11:50:55 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Mark Langsdorf <mark.langsdorf@amd.com>, Andi Kleen <andi@firstfloor.org>
-Subject: Re: Warning in during hotplug on 2.6.27-rc2-git5
-Date: Thu, 14 Aug 2008 17:53:57 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: linux-kernel@vger.kernel.org, Greg KH <greg@kroah.com>,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>
-References: <200808121700.20369.mark.langsdorf@amd.com>
-In-Reply-To: <200808121700.20369.mark.langsdorf@amd.com>
+	Thu, 14 Aug 2008 11:52:27 -0400
+Received: from mga10.intel.com ([192.55.52.92]:39508 "EHLO
+	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751410AbYHNPwZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Aug 2008 11:52:25 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.32,210,1217833200"; 
+   d="scan'208";a="370692185"
+Date: Thu, 14 Aug 2008 08:52:41 -0700
+From: mark gross <mgross@linux.intel.com>
+To: John Kacur <jkacur@gmail.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>,
+       rt-users <linux-rt-users@vger.kernel.org>,
+       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, arjan <arjan@infradead.org>
+Subject: Re: [PATCH RFC] pm_qos_requirement might sleep
+Message-ID: <20080814155241.GA31050@linux.intel.com>
+Reply-To: mgross@linux.intel.com
+References: <520f0cf10808041352h78bd4319x1802f018aeffe6dc@mail.gmail.com> <1217921101.3589.98.camel@twins> <20080805204901.GA31132@linux.intel.com> <1217970588.29415.36.camel@lappy.programming.kicks-ass.net> <520f0cf10808051518h1459d353r8de78e98f79ec57c@mail.gmail.com> <20080812224926.GA20652@linux.intel.com> <520f0cf10808130124o301b6691ra37ac9007120b9df@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200808141753.58547.rjw@sisk.pl>
+In-Reply-To: <520f0cf10808130124o301b6691ra37ac9007120b9df@mail.gmail.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, 13 of August 2008, Mark Langsdorf wrote:
-> I'm seeing the following error message when I hotunplug and replug
-> a cpu in 2.6.27-rc2-git5.  The system becomes unstable almost
-> immediately afterwards.
+On Wed, Aug 13, 2008 at 10:24:54AM +0200, John Kacur wrote:
+> On Wed, Aug 13, 2008 at 12:49 AM, mark gross <mgross@linux.intel.com> wrote:
+> > On Wed, Aug 06, 2008 at 12:18:08AM +0200, John Kacur wrote:
+> >> On Tue, Aug 5, 2008 at 11:09 PM, Peter Zijlstra <peterz@infradead.org> wrote:
+> >> > On Tue, 2008-08-05 at 13:49 -0700, mark gross wrote:
+> >> >> On Tue, Aug 05, 2008 at 09:25:01AM +0200, Peter Zijlstra wrote:
+> >> >> > On Mon, 2008-08-04 at 22:52 +0200, John Kacur wrote:
+> >> >> > > Even after applying some fixes posted by Chirag and Peter Z, I'm still
+> >> >> > > getting some messages in my log like this
+> >> >> >
+> >> >> > > BUG: sleeping function called from invalid context swapper(0) at
+> >> >> > > kernel/rtmutex.c:743
+> >> >> > > in_atomic():1 [00000001], irqs_disabled():1
+> >> >> > > Pid: 0, comm: swapper Tainted: G        W 2.6.26.1-rt1.jk #2
+> >> >> > >
+> >> >> > > Call Trace:
+> >> >> > >  [<ffffffff802305d3>] __might_sleep+0x12d/0x132
+> >> >> > >  [<ffffffff8046cdbe>] __rt_spin_lock+0x34/0x7d
+> >> >> > >  [<ffffffff8046ce15>] rt_spin_lock+0xe/0x10
+> >> >> > >  [<ffffffff802532e5>] pm_qos_requirement+0x1f/0x3c
+> >> >> > >  [<ffffffff803e1b7f>] menu_select+0x7b/0x9c
+> >> >> > >  [<ffffffff8020b1be>] ? default_idle+0x0/0x5a
+> >> >> > >  [<ffffffff8020b1be>] ? default_idle+0x0/0x5a
+> >> >> > >  [<ffffffff803e0b4b>] cpuidle_idle_call+0x68/0xd8
+> >> >> > >  [<ffffffff803e0ae3>] ? cpuidle_idle_call+0x0/0xd8
+> >> >> > >  [<ffffffff8020b1be>] ? default_idle+0x0/0x5a
+> >> >> > >  [<ffffffff8020b333>] cpu_idle+0xb2/0x12d
+> >> >> > >  [<ffffffff80466af0>] start_secondary+0x186/0x18b
+> >> >> > >
+> >> >> > > ---------------------------
+> >> >> > > | preempt count: 00000001 ]
 
-Hm, it seems that MCE is involved somehow.  Andi, can you have a look at this,
-please?
+snip
+
+> >> +     spin_unlock_irqrestore(&pm_qos_rawlock, flags);
+> >>
+> >>       return ret_val;
+> >>  }
+> >
+> > As long as RAW_SPINLOCK compiles to a normal spinlock for non-RT premept
+> > kernels I'm don't see a problem, as the change is almost a no-op for
+> > non-RT kernels.
+> 
+> Correct, kernels with the rt patch that are configured to be non-rt
+> change the raw_spinlock to a normal spinlock. This patch still applies
+> to rt kernels only.
+ 
+I was confused about this point, as I thought I saw raw_spinlock defined
+in the mainline tree.
 
 
-> ------------[ cut here ]------------
-> WARNING: at fs/sysfs/dir.c:463 sysfs_add_one+0x33/0x39()
-> sysfs: duplicate filename 'machinecheck4' can not be created
-> Modules linked in: cpufreq_ondemand cpufreq_userspace cpufreq_powersave powernow_k8 freq_table sr_mod af_packet button battery ac loop dm_mod usb_storage usbhid ff_memless tg3 libphy ide_pci_generic shpchp ehci_hcd i2c_piix4 i2c_core pci_hotplug ohci_hcd usbcore ide_cd_mod cdrom floppy mptctl ext3 jbd edd fan thermal processor mptsas mptscsih mptbase scsi_transport_sas sg sata_svw libata dock serverworks sd_mod scsi_mod ide_disk ide_core
-> Pid: 4838, comm: bash Not tainted 2.6.27-rc2-git5-pn_test #2
+> >
+> > Signed-off-by: mark gross <mgross@linux.intel.com>
+> >
+> > Should I send an updated patch that includes a change to the comment
+> > block regarding the locking design after this patch or instead of it?
+> >
 > 
-> Call Trace:
->  [<ffffffff8023194f>] warn_slowpath+0xb4/0xde
->  [<ffffffff80304cf7>] rb_insert_color+0x61/0xda
->  [<ffffffff80304cf7>] rb_insert_color+0x61/0xda
->  [<ffffffff80306c27>] vsnprintf+0x568/0x5b1
->  [<ffffffff80226c3f>] hrtick_start_fair+0x10d/0x171
->  [<ffffffff80301b45>] idr_get_empty_slot+0x164/0x243
->  [<ffffffff80301d1a>] ida_get_new_above+0xf6/0x182
->  [<ffffffff802a038a>] find_inode+0x28/0x6d
->  [<ffffffff802d272c>] sysfs_ilookup_test+0x0/0xf
->  [<ffffffff802d2928>] sysfs_find_dirent+0x1b/0x2f
->  [<ffffffff802d29de>] sysfs_add_one+0x33/0x39
->  [<ffffffff802d2ee3>] create_dir+0x4f/0x87
->  [<ffffffff802d2f50>] sysfs_create_dir+0x35/0x4a
->  [<ffffffff80302757>] kobject_get+0x12/0x17
->  [<ffffffff80302890>] kobject_add_internal+0xcf/0x18a
->  [<ffffffff80302a66>] kobject_init_and_add+0x5b/0x68
->  [<ffffffff8022d5ab>] set_cpus_allowed_ptr+0x119/0x126
->  [<ffffffff8038397a>] sysdev_register+0x5a/0xb5
->  [<ffffffff804172df>] mce_create_device+0xb4/0x156
->  [<ffffffff804173ac>] mce_cpu_callback+0x2b/0x9b
->  [<ffffffff8041fb7d>] notifier_call_chain+0x29/0x4c
->  [<ffffffff8041a2e7>] _cpu_up+0xc8/0x102
->  [<ffffffff8041a375>] cpu_up+0x54/0x77
->  [<ffffffff8040ffee>] store_online+0x43/0x67
->  [<ffffffff802d20a1>] sysfs_write_file+0xd2/0x110
->  [<ffffffff8028f1a5>] vfs_write+0xad/0x156
->  [<ffffffff8028f692>] sys_write+0x45/0x6e
->  [<ffffffff8020bdeb>] system_call_fastpath+0x16/0x1b
+> I've updated my patch to include changes to the comment block about
+> the locking design. I've also added your Signed-off-by line . (Maybe
+> Acked-by: would be more appropriate?)
+
+thanks, 
+
+Ok, see below for Acked-by: line.
+
 > 
-> ---[ end trace 48036b92036180e0 ]---
-> kobject_add_internal failed for machinecheck4 with -EEXIST, don't try to register things with the same name in the same directory.
-> Pid: 4838, comm: bash Tainted: G        W 2.6.27-rc2-git5-pn_test #2
-> 
-> Call Trace:
->  [<ffffffff8030290c>] kobject_add_internal+0x14b/0x18a
->  [<ffffffff80302a66>] kobject_init_and_add+0x5b/0x68
->  [<ffffffff8022d5ab>] set_cpus_allowed_ptr+0x119/0x126
->  [<ffffffff8038397a>] sysdev_register+0x5a/0xb5
->  [<ffffffff804172df>] mce_create_device+0xb4/0x156
->  [<ffffffff804173ac>] mce_cpu_callback+0x2b/0x9b
->  [<ffffffff8041fb7d>] notifier_call_chain+0x29/0x4c
->  [<ffffffff8041a2e7>] _cpu_up+0xc8/0x102
->  [<ffffffff8041a375>] cpu_up+0x54/0x77
->  [<ffffffff8040ffee>] store_online+0x43/0x67
->  [<ffffffff802d20a1>] sysfs_write_file+0xd2/0x110
->  [<ffffffff8028f1a5>] vfs_write+0xad/0x156
->  [<ffffffff8028f692>] sys_write+0x45/0x6e
->  [<ffffffff8020bdeb>] system_call_fastpath+0x16/0x1b
-> 
-> BUG: unable to handle kernel NULL pointer dereference at 0000000000000038
-> IP: [<ffffffff802d2a11>] sysfs_addrm_start+0x2d/0x99
-> PGD 22a87c067 PUD 22c9ef067 PMD 0 
-> Oops: 0000 [1] SMP 
-> CPU 1 
-> Modules linked in: cpufreq_ondemand cpufreq_userspace cpufreq_powersave powernow_k8 freq_table sr_mod af_packet button battery ac loop dm_mod usb_storage usbhid ff_memless tg3 libphy ide_pci_generic shpchp ehci_hcd i2c_piix4 i2c_core pci_hotplug ohci_hcd usbcore ide_cd_mod cdrom floppy mptctl ext3 jbd edd fan thermal processor mptsas mptscsih mptbase scsi_transport_sas sg sata_svw libata dock serverworks sd_mod scsi_mod ide_disk ide_core
-> Pid: 4838, comm: bash Tainted: G        W 2.6.27-rc2-git5-pn_test #2
-> RIP: 0010:[<ffffffff802d2a11>]  [<ffffffff802d2a11>] sysfs_addrm_start+0x2d/0x99
-> RSP: 0018:ffff88022d0dbb38  EFLAGS: 00010246
-> RAX: ffff880028047710 RBX: 0000000000000000 RCX: 0000000000000000
-> RDX: 00000acb2c4dfcc0 RSI: 0000000000000000 RDI: ffff88022fc3b000
-> RBP: ffff88022d0dbb58 R08: 0000000000000080 R09: ffff88022d0dba58
-> R10: ffff880028047710 R11: 00000acb2c4dfcc0 R12: 00000000fffffff4
-> R13: 0000000000000000 R14: ffff88022d0dbbb0 R15: 0000000000000004
-> FS:  00007f106d7496d0(0000) GS:ffff88022f0938c0(0000) knlGS:0000000000000000
-> CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
-> CR2: 0000000000000038 CR3: 000000022c8d0000 CR4: 00000000000006e0
-> DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-> DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-> Process bash (pid: 4838, threadinfo ffff88022d0da000, task ffff88022d6b4d90)
-> Stack:  00000000fffffff4 ffff88022e3dfc80 ffff88022dc0c870 ffffffff802d2ed8
->  0000000000000000 0000000000000000 0000000000000000 0000000000000000
->  ffff88022e3dfc80 ffff88022d0dbd18 00000000fffffffe 0000000000000004
-> Call Trace:
->  [<ffffffff802d2ed8>] ? create_dir+0x44/0x87
->  [<ffffffff802d2f50>] ? sysfs_create_dir+0x35/0x4a
->  [<ffffffff80302757>] ? kobject_get+0x12/0x17
->  [<ffffffff80302890>] ? kobject_add_internal+0xcf/0x18a
->  [<ffffffff80302d57>] ? kobject_add+0x74/0x7c
->  [<ffffffff8041bfc5>] ? thread_return+0x3e/0xa3
->  [<ffffffff8030254e>] ? kobject_init_internal+0x12/0x2c
->  [<ffffffff803025c6>] ? kobject_init+0x41/0x69
->  [<ffffffff80302619>] ? kobject_create+0x2b/0x30
->  [<ffffffff80302d8d>] ? kobject_create_and_add+0x2e/0x5b
->  [<ffffffff804178c3>] ? threshold_create_device+0x1aa/0x32a
->  [<ffffffff80417aa2>] ? threshold_cpu_callback+0x5f/0x2ca
->  [<ffffffff804172df>] ? mce_create_device+0xb4/0x156
->  [<ffffffff8041fb7d>] ? notifier_call_chain+0x29/0x4c
->  [<ffffffff8041a2e7>] ? _cpu_up+0xc8/0x102
->  [<ffffffff8041a375>] ? cpu_up+0x54/0x77
->  [<ffffffff8040ffee>] ? store_online+0x43/0x67
->  [<ffffffff802d20a1>] ? sysfs_write_file+0xd2/0x110
->  [<ffffffff8028f1a5>] ? vfs_write+0xad/0x156
->  [<ffffffff8028f692>] ? sys_write+0x45/0x6e
->  [<ffffffff8020bdeb>] ? system_call_fastpath+0x16/0x1b
-> 
-> 
-> Code: c0 b9 08 00 00 00 fc 53 48 89 fd 48 89 f3 48 83 ec 08 f3 ab 48 89 75 00 48 c7 c7 e0 e7 51 80 e8 c2 9c 14 00 48 8b 3d 57 45 37 00 <48> 8b 73 38 48 89 d9 48 c7 c2 2c 27 2d 80 e8 1e db fc ff 48 85 
-> RIP  [<ffffffff802d2a11>] sysfs_addrm_start+0x2d/0x99
->  RSP <ffff88022d0dbb38>
-> CR2: 0000000000000038
-> ---[ end trace 48036b92036180e0 ]---
-> 
-> 
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+> Now that I've separated locking of the target value from the other
+> locks, Peter's question still remains. Could the lock protecting
+> target be dropped from mainline which would allow us to drop this
+> patch altogether from rt? For now the safe thing to do is keep it
+> protected, but could you explain why it is needed? (it may very well
+> be)
 > 
 
+This code is doing list deletions, insertions and walks / element
+updates in a multi threaded environment where many processes on many
+CPU's can be adding removing and updating PM_QOS request, a lot (tm).
+
+So I think I still need to locking for the list walking and list element
+updating code on face value.  I'm not supper good with lists, perhaps
+there is a trick to protecting the lists better than the way I'm doing
+it. 
+
+Keeping a lock around the different "target_value"s may not be so
+important.  Its just a 32bit scaler value, and perhaps we can make it an
+atomic type?  That way we loose the raw_spinlock.
+
+Acked-by: mark gross <mgross@linux.intel.com>
+
+> Thank You.
+> (updated patch attached)
+
+> pm_qos_requirement-fix
+> Add a raw_spinlock_t for target. target is modified in pm_qos_requirement
+> called by idle so it cannot be allowed to sleep.
+> 
+> Signed-off-by: John Kacur <jkacur at gmail dot com>
+> Signed-off-by: mark gross <mgross@linux.intel.com>
+> 
+> Index: linux-2.6.26.1-rt1.jk/kernel/pm_qos_params.c
+> ===================================================================
+> --- linux-2.6.26.1-rt1.jk.orig/kernel/pm_qos_params.c
+> +++ linux-2.6.26.1-rt1.jk/kernel/pm_qos_params.c
+> @@ -42,9 +42,10 @@
+>  #include <linux/uaccess.h>
+>  
+>  /*
+> - * locking rule: all changes to target_value or requirements or notifiers lists
+> + * locking rule: all changes to requirements or notifiers lists
+>   * or pm_qos_object list and pm_qos_objects need to happen with pm_qos_lock
+> - * held, taken with _irqsave.  One lock to rule them all
+> + * held, taken with _irqsave. target is locked by pm_qos_rawlock because it
+> + * is modified in pm_qos_requirement called from idle and cannot sleep.
+
+Actually, the target is only getting read by CPUIDLE from idle.  It
+shouldn't get changed from the idle context.
+
+--mgross
+
+>   */
+>  struct requirement_list {
+>  	struct list_head list;
+> @@ -111,6 +112,7 @@ static struct pm_qos_object *pm_qos_arra
+>  };
+>  
+>  static DEFINE_SPINLOCK(pm_qos_lock);
+> +static DEFINE_RAW_SPINLOCK(pm_qos_rawlock);
+>  
+>  static ssize_t pm_qos_power_write(struct file *filp, const char __user *buf,
+>  		size_t count, loff_t *f_pos);
+> @@ -149,13 +151,15 @@ static void update_target(int target)
+>  		extreme_value = pm_qos_array[target]->comparitor(
+>  				extreme_value, node->value);
+>  	}
+> +	spin_unlock_irqrestore(&pm_qos_lock, flags);
+> +	spin_lock_irqsave(&pm_qos_rawlock, flags);
+>  	if (pm_qos_array[target]->target_value != extreme_value) {
+>  		call_notifier = 1;
+>  		pm_qos_array[target]->target_value = extreme_value;
+>  		pr_debug(KERN_ERR "new target for qos %d is %d\n", target,
+>  			pm_qos_array[target]->target_value);
+>  	}
+> -	spin_unlock_irqrestore(&pm_qos_lock, flags);
+> +	spin_unlock_irqrestore(&pm_qos_rawlock, flags);
+>  
+>  	if (call_notifier)
+>  		blocking_notifier_call_chain(pm_qos_array[target]->notifiers,
+> @@ -195,9 +199,12 @@ int pm_qos_requirement(int pm_qos_class)
+>  	int ret_val;
+>  	unsigned long flags;
+>  
+> -	spin_lock_irqsave(&pm_qos_lock, flags);
+> +	/*
+> +	 * pm_qos_requirement is called from idle, so it cannot sleep
+> +	 */
+> +	spin_lock_irqsave(&pm_qos_rawlock, flags);
+>  	ret_val = pm_qos_array[pm_qos_class]->target_value;
+> -	spin_unlock_irqrestore(&pm_qos_lock, flags);
+> +	spin_unlock_irqrestore(&pm_qos_rawlock, flags);
+>  
+>  	return ret_val;
+>  }
 
