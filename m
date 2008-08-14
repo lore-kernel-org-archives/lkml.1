@@ -1,65 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755677AbYHNXln@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754695AbYHNXpU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755677AbYHNXln (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Aug 2008 19:41:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752119AbYHNXld
+	id S1754695AbYHNXpU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Aug 2008 19:45:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751817AbYHNXpG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Aug 2008 19:41:33 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:48455 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751950AbYHNXlc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Aug 2008 19:41:32 -0400
-Message-ID: <48A4C25E.2060405@redhat.com>
-Date: Thu, 14 Aug 2008 19:40:14 -0400
-From: Steven Rostedt <srostedt@redhat.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20071019)
+	Thu, 14 Aug 2008 19:45:06 -0400
+Received: from www.church-of-our-saviour.org ([69.25.196.31]:40873 "EHLO
+	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751799AbYHNXpD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Aug 2008 19:45:03 -0400
+Date: Thu, 14 Aug 2008 19:44:59 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Chris Mason <chris.mason@oracle.com>
+Cc: Andi Kleen <andi@firstfloor.org>, Peter Zijlstra <peterz@infradead.org>,
+       linux-btrfs <linux-btrfs@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>
+Subject: Re: Btrfs v0.16 released
+Message-ID: <20080814234458.GD13048@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Chris Mason <chris.mason@oracle.com>,
+	Andi Kleen <andi@firstfloor.org>,
+	Peter Zijlstra <peterz@infradead.org>,
+	linux-btrfs <linux-btrfs@vger.kernel.org>,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	linux-fsdevel <linux-fsdevel@vger.kernel.org>
+References: <1217962876.15342.33.camel@think.oraclecorp.com> <1218100464.8625.9.camel@twins> <1218105597.15342.189.camel@think.oraclecorp.com> <877ias66v4.fsf@basil.nowhere.org> <1218221293.15342.263.camel@think.oraclecorp.com> <1218747656.15342.439.camel@think.oraclecorp.com>
 MIME-Version: 1.0
-To: Rusty Russell <rusty@rustcorp.com.au>
-CC: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       David Miller <davem@davemloft.net>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Roland McGrath <roland@redhat.com>, Ulrich Drepper <drepper@redhat.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Gregory Haskins <ghaskins@novell.com>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       "Luis Claudio R. Goncalves" <lclaudio@uudg.org>,
-       Clark Williams <williams@redhat.com>, Bruce Duncan <bwduncan@gmail.com>,
-       Marcin Slusarz <marcin.slusarz@gmail.com>
-Subject: Re: [PATCH v2 3/6] ftrace: enable mcount recording for modules
-References: <20080814194506.233473381@goodmis.org> <20080814194859.811269740@goodmis.org> <200808150926.08200.rusty@rustcorp.com.au>
-In-Reply-To: <200808150926.08200.rusty@rustcorp.com.au>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1218747656.15342.439.camel@think.oraclecorp.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rusty Russell wrote:
-> On Friday 15 August 2008 05:45:09 Steven Rostedt wrote:
->   
->> This patch enables the loading of the __mcount_section of modules and
->> changing all the callers of mcount into nops.
->>     
-> ...
->   
->> +	if (mcountindex) {
->> +		void *mseg = (void *)sechdrs[mcountindex].sh_addr;
->> +		ftrace_init_module(mseg, mseg + sechdrs[mcountindex].sh_size);
->>     
->
-> You don't actually need the if.  The size of section 0 is 0.
->   
+> I spent a bunch of time hammering on different ways to fix this without
+> increasing nr_requests, and it was a mixture of needing better tuning in
+> btrfs and needing to init mapping->writeback_index on inode allocation.
+> 
+> So, today's numbers for creating 30 kernel trees in sequence:
+> 
+> Btrfs defaults                  57.41 MB/s
+> Btrfs dup no csum               74.59 MB/s 
+> Btrfs no duplication            76.83 MB/s
+> Btrfs no dup no csum no inline  76.85 MB/s
 
-Thanks,
+What sort of script are you using?  Basically something like this?
 
-But I find the if is a bit more clear. It may confuse code reviewers if 
-we expect them to know that sechdrs[0].sh_size is zero. This isn't a hot 
-path.
+for i in `seq 1 30` do
+    mkdir $i; cd $i
+    tar xjf /usr/src/linux-2.6.28.tar.bz2
+    cd ..
+done
 
--- Steve
-
-
+						- Ted
