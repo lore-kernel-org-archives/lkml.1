@@ -1,112 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755228AbYHNKEy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755522AbYHNKK1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755228AbYHNKEy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Aug 2008 06:04:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752557AbYHNKEo
+	id S1755522AbYHNKK1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Aug 2008 06:10:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752450AbYHNKKS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Aug 2008 06:04:44 -0400
-Received: from elasmtp-curtail.atl.sa.earthlink.net ([209.86.89.64]:57705 "EHLO
-	elasmtp-curtail.atl.sa.earthlink.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752423AbYHNKEm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Aug 2008 06:04:42 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=dk20050327; d=mindspring.com;
-  b=l1Prrx9tBRpa/PnJn3f5qsCERONXDsHy4TY+EzIq+qEFBkC8qOO5dS/dq4hilHN5;
-  h=Received:Date:From:To:Cc:Subject:Message-Id:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-ELNK-Trace:X-Originating-IP;
-Date: Thu, 14 Aug 2008 06:04:33 -0400
-From: Bill Fink <billfink@mindspring.com>
-To: David Witbrodt <dawitbro@sbcglobal.net>
-Cc: Yinghai Lu <yhlu.kernel@gmail.com>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       netdev <netdev@vger.kernel.org>
-Subject: Re: HPET regression in 2.6.26 versus 2.6.25 -- revert for
- 2.6.26-rc1 failed
-Message-Id: <20080814060433.684c4fe5.billfink@mindspring.com>
-In-Reply-To: <737832.54450.qm@web82101.mail.mud.yahoo.com>
-References: <737832.54450.qm@web82101.mail.mud.yahoo.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.8.6; powerpc-yellowdog-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-ELNK-Trace: c598f748b88b6fd49c7f779228e2f6aeda0071232e20db4d4292959c979c94407af20afd57170030350badd9bab72f9c350badd9bab72f9c350badd9bab72f9c
-X-Originating-IP: 96.234.158.88
+	Thu, 14 Aug 2008 06:10:18 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:35172 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752150AbYHNKKR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Aug 2008 06:10:17 -0400
+Date: Thu, 14 Aug 2008 11:10:14 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: rmk@arm.linux.org.uk
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] Skip memory holes in FLATMEM when reading /proc/pagetypeinfo
+Message-ID: <20080814101014.GC6480@csn.ul.ie>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi David,
+Hi Russell,
 
-On Wed, 13 Aug 2008, David Witbrodt wrote:
+Attached is what is arguably an ARM-patch rather than an mm patch. I tried
+subscribing to the ARM mailing list to post there but no luck so far. If
+you are not the right person to send this to, point me elsewhere. Thanks
 
-> [Yinghai, please note that I did not request a patch to revert the
-> problem commit.  I was merely experimenting -- on my own time, so
-> you folks would not have to bother -- to see if I could make it
-> work.  I should have made that more clear!  Having said that, I am
-> glad to test changes of any kind on my machine:  reverts, code for
-> debugging or info, experiments, etc.]
+====
 
-I'm not sure Yinghai's revert patch is completely equivalent to
-a revert of the original problematic commit, by a side-by-side
-comparison of the original commit with his recent revert patch,
-but then I don't really know that code at all.
+Ordinarily, memory holes in flatmem still have a valid memmap and is safe
+to use. However, an architecture (ARM) frees up the memmap backing memory
+holes on the assumption it is never used. /proc/pagetypeinfo reads the
+whole range of pages in a zone believing that the memmap is valid and that
+pfn_valid will return false if it is not. On ARM, freeing the memmap breaks
+the page->zone linkages even though pfn_valid() returns true and the kernel
+can oops shortly afterwards due to accessing a bogus struct zone *.
 
-In the original code there was a section (in e820_reserve_resources()):
+This patch lets architectures say when FLATMEM can have holes in the
+memmap. Rather than an expensive check for valid memory, /proc/pagetypeinfo
+will confirm that the page linkages are still valid by checking page->zone
+is still the expected zone. The lookup of page_zone is safe as there is a
+limited range of memory that is accessed when calling page_zone.  Even if
+page_zone happens to return the correct zone, the impact is that the counters
+in /proc/pagetypeinfo are slightly off but fragmentation monitoring is
+unlikely to be relevant on an embedded system.
 
-#ifdef CONFIG_KEXEC
-		   if (crashk_res.start != crashk_res.end)
-			   request_resource(res, &crashk_res);
-#endif
+Reported-by: H Hartley Sweeten <hsweeten@visionengravers.com>
+Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+Tested-by: H Hartley Sweeten <hsweeten@visionengravers.com>
 
-If you don't have CONFIG_KEXEC defined in your .config, which is
-probably the case, then you would never request a crashk_res resource.
-But in the code after the original commit, it unconditionally calls
-(in reserve_crashkernel()):
-
-	   crashk_res.start = crash_base;
-	   crashk_res.end   = crash_base + crash_size - 1;
-	   insert_resource(&iomem_resource, &crashk_res);
-
-And after Yinghai's revert patch it still does (in reserve_crashkernel()):
-
-        crashk_res.start = crash_base;
-        crashk_res.end   = crash_base + crash_size - 1;
-        crashk_res_ptr = &crashk_res;
-
-and (in setup_arch()):
-
-	num_res = 3;
-	if (crashk_res_ptr) {
-		res_kernel[num_res] = crashk_res_ptr;
-		num_res++;
-	}
-	e820_reserve_resources(res_kernel, num_res);
-
-then (in e820_reserve_resources()):
-
-			for (j = 0; j < nr_res_k; j++) {
-				if (!res_kernel[j])
-					continue;
-				request_resource(res, res_kernel[j]);
-			}
-
-which for j == 3 is:
-
-	request_resource(res, &crashk_res);
-
-Now it would appear that the new:
-
-	insert_resource(&iomem_resource, &crashk_res);
-
-or new:
-
-	request_resource(res, &crashk_res);
-
-should be noops.  But if for any reason crash_size is not zero,
-then there could be a difference.  I have no idea if this is at all
-significant, but I thought I'd point it out just in case.
-
-						-Bill
+diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
+index 4b8acd2..70dba16 100644
+--- a/arch/arm/Kconfig
++++ b/arch/arm/Kconfig
+@@ -810,6 +810,11 @@ config OABI_COMPAT
+ 	  UNPREDICTABLE (in fact it can be predicted that it won't work
+ 	  at all). If in doubt say Y.
+ 
++config ARCH_FLATMEM_HAS_HOLES
++	bool
++	default y
++	depends on FLATMEM
++
+ config ARCH_DISCONTIGMEM_ENABLE
+ 	bool
+ 	default (ARCH_LH7A40X && !LH7A40X_CONTIGMEM)
+diff --git a/mm/vmstat.c b/mm/vmstat.c
+index b0d08e6..98aa882 100644
+--- a/mm/vmstat.c
++++ b/mm/vmstat.c
+@@ -516,9 +516,26 @@ static void pagetypeinfo_showblockcount_print(struct seq_file *m,
+ 			continue;
+ 
+ 		page = pfn_to_page(pfn);
++#ifdef CONFIG_ARCH_FLATMEM_HAS_HOLES
++		/*
++		 * Ordinarily, memory holes in flatmem still have a valid
++		 * memmap for the PFN range. However, an architecture for
++		 * embedded systems (e.g. ARM) can free up the memmap backing
++		 * holes to save memory on the assumption the memmap is
++		 * never used. The page_zone linkages are then broken even
++		 * though pfn_valid() returns true. Skip the page if the
++		 * linkages are broken. Even if this test passed, the impact
++		 * is that the counters for the movable type are off but
++		 * fragmentation monitoring is likely meaningless on small
++		 * systems.
++		 */
++		if (page_zone(page) != zone)
++			continue;
++#endif
+ 		mtype = get_pageblock_migratetype(page);
+ 
+-		count[mtype]++;
++		if (mtype < MIGRATE_TYPES)
++			count[mtype]++;
+ 	}
+ 
+ 	/* Print counts */
