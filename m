@@ -1,55 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756859AbYHNCHV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757152AbYHNCI6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756859AbYHNCHV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Aug 2008 22:07:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752154AbYHNCHG
+	id S1757152AbYHNCI6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Aug 2008 22:08:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751925AbYHNCIu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Aug 2008 22:07:06 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:44294
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751934AbYHNCHF (ORCPT
+	Wed, 13 Aug 2008 22:08:50 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:50839 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751848AbYHNCIt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Aug 2008 22:07:05 -0400
-Date: Wed, 13 Aug 2008 19:07:06 -0700 (PDT)
-Message-Id: <20080813.190706.251724821.davem@davemloft.net>
-To: tom@opengridcomputing.com
-Cc: rdreier@cisco.com, rick.jones2@hp.com, jgarzik@pobox.com,
-       swise@opengridcomputing.com, divy@chelsio.com, kxie@chelsio.com,
-       netdev@vger.kernel.org, open-iscsi@googlegroups.com,
-       michaelc@cs.wisc.edu, daisyc@us.ibm.com, wenxiong@us.ibm.com,
-       bhua@us.ibm.com, dm@chelsio.com, leedom@chelsio.com,
-       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [RFC][PATCH 1/1] cxgb3i: cxgb3 iSCSI initiator
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <48A390F4.5080101@opengridcomputing.com>
-References: <48A389DB.9050002@opengridcomputing.com>
-	<20080813.183755.72334968.davem@davemloft.net>
-	<48A390F4.5080101@opengridcomputing.com>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Wed, 13 Aug 2008 22:08:49 -0400
+Date: Wed, 13 Aug 2008 19:03:40 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Peter Oruba <peter.oruba@amd.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Tigran Aivazian <tigran@aivazian.fsnet.co.uk>,
+       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [patch 1/2] [PATCH 1/2] x86: Microcode patch loader style
+ corrections
+Message-Id: <20080813190340.46927c18.akpm@linux-foundation.org>
+In-Reply-To: <20080801104754.303635665@amd.com>
+References: <20080801104644.788786464@amd.com>
+	<20080801104754.303635665@amd.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Tom Tucker <tom@opengridcomputing.com>
-Date: Wed, 13 Aug 2008 20:57:08 -0500
+On Fri, 1 Aug 2008 12:46:45 +0200 Peter Oruba <peter.oruba@amd.com> wrote:
 
-> I'm not trying to be pedantic here but let me try and restate what I 
-> think you said above:
-> 
-> - The "header" traverses the real networking stack
-> - The "payload" is placed either by by the hardware if possible or by 
-> the native stack if on the exception path
-> - The "header" may aggregate multiple  PDU (RSO)
-> - Data ready indications are controlled entirely by the software/real 
-> networking stack
+> Style corrections to main microcode module.
 
-SKB's can be paged, in fact many devices already work by chopping
-up lists of pages that the driver gives to the card.  NIU is one
-of several examples.
+Needed a few fixups to apply against linux-next.
 
-The only difference between what a device like NIU is doing now and
-what I propose is smart determination of at what offset and into
-which buffers to do the demarcation.
+While we're there, let's spell "matching" correctly.
+
+--- a/arch/x86/kernel/microcode.c~x86-microcode-patch-loader-style-corrections-fix
++++ a/arch/x86/kernel/microcode.c
+@@ -264,7 +264,7 @@ static int microcode_sanity_check(void *
+  * return 1 - found update
+  * return < 0 - error
+  */
+-static int get_maching_microcode(void *mc, int cpu)
++static int get_matching_microcode(void *mc, int cpu)
+ {
+ 	struct ucode_cpu_info *uci = ucode_cpu_info + cpu;
+ 	microcode_header_t *mc_header = mc;
+@@ -405,7 +405,7 @@ static int do_microcode_update(void)
+ 			if (!uci->valid)
+ 				continue;
+ 			set_cpus_allowed_ptr(current, &cpumask_of_cpu(cpu));
+-			error = get_maching_microcode(new_mc, cpu);
++			error = get_matching_microcode(new_mc, cpu);
+ 			if (error < 0)
+ 				goto out;
+ 			if (error == 1)
+@@ -549,7 +549,7 @@ static int cpu_request_microcode(int cpu
+ 		error = microcode_sanity_check(mc);
+ 		if (error)
+ 			break;
+-		error = get_maching_microcode(mc, cpu);
++		error = get_matching_microcode(mc, cpu);
+ 		if (error < 0)
+ 			break;
+ 		/*
+_
+
