@@ -1,71 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755742AbYHNAa2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757461AbYHNAaw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755742AbYHNAa2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Aug 2008 20:30:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753274AbYHNAaS
+	id S1757461AbYHNAaw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Aug 2008 20:30:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756534AbYHNAam
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Aug 2008 20:30:18 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:55553 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752981AbYHNAaR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Aug 2008 20:30:17 -0400
-Date: Wed, 13 Aug 2008 17:23:05 -0700
-From: Greg KH <greg@kroah.com>
-To: Marcin Obara <marcin_obara@users.sourceforge.net>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Intel Management Engine Interface
-Message-ID: <20080814002305.GA7359@kroah.com>
-References: <alpine.DEB.1.00.0807180742560.7868@ip-195-3-221-75.vnet.pl> <alpine.DEB.1.00.0807181938180.12442@ip-195-3-221-75.vnet.pl> <alpine.DEB.1.00.0807182122460.24146@ip-195-3-221-75.vnet.pl> <alpine.DEB.1.00.0807182229070.30162@ip-195-3-221-75.vnet.pl> <alpine.DEB.1.00.0807231958130.20791@ip-195-3-221-75.vnet.pl> <alpine.DEB.1.00.0808112115140.6724@ip-195-3-221-75.vnet.pl> <20080813005835.GE22793@kroah.com> <ea8d860a0808130016w646307few3cc6385caf9b1ec7@mail.gmail.com> <20080813181850.GD4886@kroah.com> <ea8d860a0808131248g31ffb10g37b14dc8af89038c@mail.gmail.com>
+	Wed, 13 Aug 2008 20:30:42 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:35504 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753560AbYHNAal (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Aug 2008 20:30:41 -0400
+Date: Thu, 14 Aug 2008 02:30:37 +0200
+From: Karel Zak <kzak@redhat.com>
+To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       util-linux-ng@vger.kernel.org
+Subject: [ANNOUNCE] util-linux-ng v2.14.1-rc1
+Message-ID: <20080814003037.GA31734@nb.net.home>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <ea8d860a0808131248g31ffb10g37b14dc8af89038c@mail.gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 13, 2008 at 08:48:19PM +0100, Marcin Obara wrote:
-> 2008/8/13 Greg KH <greg@kroah.com>:
-> >> GET_VERSION is called frequently
-> >
-> > Why?  Shouldn't it only be called once?
-> Once per connection. But you can have many clients connecting.
 
-Is that a real issue?
+The first util-linux-ng 2.14.1 release candidate is available at
 
-> >> With ioctl - only one file handle is used, and userspace client logic
-> >> is simpler.
-> >
-> > But the kernel is messier and we are trying to not add any more ioctls
-> > to it.  Especially for trivial things like the version number of the
-> > hardware device.
-> It's rather protocol version (=running software version) supported by
-> hardware device.
-> Hmmm, I just didn't know that there is something wrong with ioctls.
+    ftp://ftp.kernel.org/pub/linux/utils/util-linux-ng/
 
-There always have been :)
+(Note that 2.14.1 is stable maintenance release.)
 
-> >> Normal flow looks like:
-> >>
-> >> open
-> >> ioctl(GET_VERSION)
-> >
-> > Great, do an additional open/read/close here for the version, I think
-> > you will find it pretty trivial to do :)
-> Right, it's trivial.... but will make userspace source code messier and bigger.
-> 
-> Btw. I know we have powerful CPUs... but small wasting resources is
-> still wasting resources... so we still need new CPUs :-).
+Feedback and bug reports, as always, are welcomed.
 
-So you keep your employer in business :)
 
-Seriously, an ioctl for a hardware version number is total overkill
-here.  Your other ioctls are also suspect, please repost with the
-description of why they are all needed, with documentation about the
-user/kernel interface you have created here.
+	Karel
 
-thanks,
 
-greg k-h
+
+Util-linux-ng 2.14.1 Release Notes
+==================================
+
+ChangeLog between v2.14 and v2.14.1
+-----------------------------------
+
+ For more details see ChangeLog files at:
+ ftp://ftp.kernel.org/pub/linux/utils/util-linux-ng/v2.14/
+
+build-sys:
+   - cleanup sys-utils/Makefile.am  [Karel Zak]
+   - fix dmesg.1 installation  [Karel Zak]
+   - tgets is not in ncurses but in tinfo  [Arkadiusz Miskiewicz]
+docs:
+   - update AUTHORS file  [Karel Zak]
+hwclock:
+   - omit warning about drift if --noadjfile given  [Matthias Koenig]
+   - unshadow a diagnostic printf  [Kalev Soikonen]
+mount:
+   - add docs about utf8=0 for vfat  [Karel Zak]
+   - add fallback for versionsort()  [Karel Zak]
+   - add info about tz=UTC option for FAT to mount.8  [Karel Zak]
+   - add norealtime to mount.8  [Karel Zak]
+po:
+   - merge changes  [Karel Zak]
+   - update cs.po (from translationproject.org)  [Petr Pisar]
+   - update nl.po (from translationproject.org)  [Benno Schulenberg]
+rtcwake:
+   - cleanup return codes  [Karel Zak]
+   - prefer RTC_WKALM_SET over RTC_ALM_SET  [Gabriel Burt]
+scriptreplay:
+   - new implementation is out-of-sync  [Karel Zak]
+selinux:
+   - is_selinux_enabled() returns 0, 1 and -1  [Karel Zak]
+sfdisk:
+   - print version should end with a newline  [Denis ChengRq]
+umount:
+   - improve "-d" option for autoclear loops  [Karel Zak]
+write:
+   - doesn't check for tty group  [Karel Zak]
+
+-- 
+ Karel Zak  <kzak@redhat.com>
