@@ -1,141 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758143AbYHNTHS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759439AbYHNTJI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758143AbYHNTHS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Aug 2008 15:07:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752803AbYHNTHG
+	id S1759439AbYHNTJI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Aug 2008 15:09:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752803AbYHNTIz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Aug 2008 15:07:06 -0400
-Received: from mail.fieldses.org ([66.93.2.214]:56979 "EHLO fieldses.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752732AbYHNTHF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Aug 2008 15:07:05 -0400
-Date: Thu, 14 Aug 2008 15:06:52 -0400
-To: NAKANO Hiroaki <nakano.hiroaki@oss.ntt.co.jp>
-Cc: Trond.Myklebust@netapp.com, neilb@suse.de, linux-nfs@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH]lockd: fix handling of grace period after long periods
-	of inactivity
-Message-ID: <20080814190652.GE23859@fieldses.org>
-References: <48A41220.8030203@oss.ntt.co.jp>
+	Thu, 14 Aug 2008 15:08:55 -0400
+Received: from extu-mxob-1.symantec.com ([216.10.194.28]:38643 "EHLO
+	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752467AbYHNTIy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Aug 2008 15:08:54 -0400
+Date: Thu, 14 Aug 2008 20:09:11 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.site
+To: Nick Piggin <npiggin@suse.de>
+cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [rfc][patch] mm: dirty page accounting race fix
+In-Reply-To: <20080814135204.GB29727@wotan.suse.de>
+Message-ID: <Pine.LNX.4.64.0808141957440.21555@blonde.site>
+References: <20080814094537.GA741@wotan.suse.de> <Pine.LNX.4.64.0808141210200.4398@blonde.site>
+ <1218718149.10800.224.camel@twins> <Pine.LNX.4.64.0808141421550.14452@blonde.site>
+ <20080814135204.GB29727@wotan.suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <48A41220.8030203@oss.ntt.co.jp>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-From: "J. Bruce Fields" <bfields@fieldses.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 14, 2008 at 08:08:16PM +0900, NAKANO Hiroaki wrote:
-> lockd uses time_before() to determine whether the grace period has
-> expired. This would seem to be enough to avoid timer wrap-around issues,
-> but, unfortunately, that is not the case. The time_* family of
-> comparison functions can be safely used to compare jiffies relatively
-> close in time, but they stop working after approximately LONG_MAX/2
-> ticks. nfsd can suffer this problem because the time_before() comparison
-> in lockd() is not performed until the first request comes in, which
-> means that if there is no lockd traffic for more than LONG_MAX/2 ticks
-> we are screwed.
+On Thu, 14 Aug 2008, Nick Piggin wrote:
 > 
-> The implication of this is that once time_before() starts misbehaving
-> any attempt from a NFS client to execute fcntl() will be received with a
-> NLM_LCK_DENIED_GRACE_PERIOD message for 25 days (assuming HZ=1000). In
-> other words, the 50 seconds grace period could turn into a grace period
-> of 50 days or more.
+> If I may...
+
+You're very welcome...
+
+> perhaps I didn't explain the race well enough. I'll try to
+> shed further light on it (or prove myself wrong):
 > 
-> This patch corrects this behavior by implementing grace period with a
-> (retriggerable) timer.
+> It is true that there are other ptes, and any of those others at any
+> time may be modified when we don't hold their particular ptl.
 > 
-> Note: This bug was analyzed independently by Oda-san <oda@valinux.co.jp>
-> and myself.
+> But after we clean them, they'll require a page fault to dirty them again,
+> and we're blocking out page faults (effectively -- see the comments in
+> clear_page_dirty_for_io and wait_on_page_locked in do_wp_page) by holding
+> the page lock over the call to clear_page_dirty_for_io.
 
-Good catch!  Did you actually run across this in practice?  I would've
-thought it relatively unusual to have a lockd that didn't receive its
-first lock request until 25 days after startup.
+Yes, that's the part of the protocol I was forgetting.  Not exactly
+relevant to the mprotect case where your hole opens up, but exactly
+the part of it that synchronizes all the ptes with the struct page,
+which was worrying me there.
 
-I've actually had a patch that does roughly the same thing for a while
-at:
-
-	git://linux-nfs.org/~bfields/linux.git failover
-
-3ff893a7.. "lockd: don't depend on lockd main loop to end grace" but
-hadn't submitted it since I didn't see the bug you found.  (I had other
-reasons I wanted to do this).  Difference that I can see off-hand:
-
-	- I used schedule_delayed_work instead of a timer.
-	- I forgot to delete the thing before exiting!
-
-So I think my solution has a bug that yours doesn't.  (I don't see what
-would stop the module being removed before my work gets scheduled.)
-
-I still have a mild preference for a work struct just in case we end up
-wanting to do something slightly more complicated to end the grace
-period, but I don't really have anything in mind.
-
---b.
+I really ought to read all those private messages to Virginia.
+Who is she?  A friend of Paige McWright, perhaps?
 
 > 
-> Signed-off-by: Nakano Hiroaki <nakano.hiroaki@oss.ntt.co.jp>
-> ---
+> So if we find and clean a dirty/writable pte, we guarantee it won't get
+> to the set_page_dirty part of the fault handler until clear_page_dirty_for_io
+> has done its TestClearPageDirty.
 > 
-> diff -Nrup linux-2.6.27-rc3/fs/lockd/svc.c b/fs/lockd/svc.c
-> --- linux-2.6.27-rc3/fs/lockd/svc.c	2008-08-14 16:54:24.000000000 +0900
-> +++ b/fs/lockd/svc.c	2008-08-14 17:04:15.000000000 +0900
-> @@ -53,6 +53,7 @@ static struct task_struct	*nlmsvc_task;
->  static struct svc_rqst		*nlmsvc_rqst;
->  int				nlmsvc_grace_period;
->  unsigned long			nlmsvc_timeout;
-> +static struct timer_list        nlm_period_timer;
+> The problem is in the transiently-cleared-but-actually-dirty ptes that may
+> be seen if not holding ptl will not be made readonly at all.
+> TestClearPageDirty will clean the page, but we've still got a dirty pte.
+
+Yes.  The pte is still marked dirty and writable (after briefly being
+absent) and the page may be modified by userspace without entering the
+accounting; it will eventually get picked up and written out, but if
+we're taking the accounting seriously we ought to fix the hole.
+
 > 
->  /*
->   * These can be set at insmod time (useful for NFS as root filesystem),
-> @@ -141,6 +142,12 @@ lockd(void *vrqstp)
-> 
->  	grace_period_expire = set_grace_period();
-> 
-> +	init_timer(&nlm_period_timer);
-> +	nlm_period_timer.function = clear_grace_period;
-> +	nlm_period_timer.expires = grace_period_expire;
-> +
-> +	add_timer(&nlm_period_timer);
-> +
->  	/*
->  	 * The main request loop. We don't terminate until the last
->  	 * NFS mount or NFS daemon has gone away.
-> @@ -154,6 +161,7 @@ lockd(void *vrqstp)
->  			if (nlmsvc_ops) {
->  				nlmsvc_invalidate_all();
->  				grace_period_expire = set_grace_period();
-> +				mod_timer(&nlm_period_timer, grace_period_expire);
->  			}
->  			continue;
->  		}
-> @@ -164,10 +172,8 @@ lockd(void *vrqstp)
->  		 * (Theoretically, there shouldn't even be blocked locks
->  		 * during grace period).
->  		 */
-> -		if (!nlmsvc_grace_period) {
-> +		if (!nlmsvc_grace_period)
->  			timeout = nlmsvc_retry_blocked();
-> -		} else if (time_before(grace_period_expire, jiffies))
-> -			clear_grace_period();
-> 
->  		/*
->  		 * Find a socket with data available and call its
-> @@ -195,6 +201,7 @@ lockd(void *vrqstp)
->  		svc_process(rqstp);
->  	}
->  	flush_signals(current);
-> +	del_timer(&nlm_period_timer);
->  	if (nlmsvc_ops)
->  		nlmsvc_invalidate_all();
->  	nlm_shutdown_hosts();
-> 
-> -- 
-> (NAKANO, Hiroaki) <nakano.hiroaki@oss.ntt.co.jp>
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-nfs" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> HTH
+
+Very much so: thank you.
+
+Hugh
