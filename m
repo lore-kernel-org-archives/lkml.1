@@ -1,53 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755378AbYHNQHB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755234AbYHNQL7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755378AbYHNQHB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Aug 2008 12:07:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751466AbYHNQGw
+	id S1755234AbYHNQL7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Aug 2008 12:11:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751493AbYHNQLv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Aug 2008 12:06:52 -0400
-Received: from outbound-wa4.frontbridge.com ([216.32.181.16]:46949 "EHLO
-	WA4EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751182AbYHNQGv convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Aug 2008 12:06:51 -0400
-X-BigFish: VPS-48(z21eWz1432R98dR1805M936fQzzzzz32i6bh61h)
-X-Spam-TCS-SCL: 0:0
-X-WSS-ID: 0K5LM2Z-01-ZBS-01
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-Class: urn:content-classes:message
+	Thu, 14 Aug 2008 12:11:51 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:54907 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751466AbYHNQLu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Aug 2008 12:11:50 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: "Alan D. Brunelle" <Alan.Brunelle@hp.com>
+Subject: Re: Linux 2.6.27-rc3: kernel BUG at mm/vmalloc.c - bisected
+Date: Thu, 14 Aug 2008 18:14:42 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <48A36838.3050309@hp.com>
+In-Reply-To: <48A36838.3050309@hp.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: Warning in during hotplug on 2.6.27-rc2-git5
-Date: Thu, 14 Aug 2008 11:06:42 -0500
-Message-ID: <6453C3CB8E2B3646B0D020C112613273C5AC6F@sausexmb4.amd.com>
-In-Reply-To: <200808141753.58547.rjw@sisk.pl>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: Warning in during hotplug on 2.6.27-rc2-git5
-Thread-Index: Acj+JZkqLFz8PjxaQdqhSCwpkepxHgAAhLdw
-References: <200808121700.20369.mark.langsdorf@amd.com> <200808141753.58547.rjw@sisk.pl>
-From: "Langsdorf, Mark" <mark.langsdorf@amd.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>, "Andi Kleen" <andi@firstfloor.org>
-CC: <linux-kernel@vger.kernel.org>, "Greg KH" <greg@kroah.com>,
-       "Ingo Molnar" <mingo@elte.hu>,
-       "Andrew Morton" <akpm@linux-foundation.org>
-X-OriginalArrivalTime: 14 Aug 2008 16:06:43.0151 (UTC) FILETIME=[BE64B5F0:01C8FE27]
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200808141814.43484.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Wednesday, 13 of August 2008, Mark Langsdorf wrote:
-> > I'm seeing the following error message when I hotunplug and replug
-> > a cpu in 2.6.27-rc2-git5.  The system becomes unstable almost
-> > immediately afterwards.
+On Thursday, 14 of August 2008, Alan D. Brunelle wrote:
+> I ran into this trying 2.6.27-rc3 today:
 > 
-> Hm, it seems that MCE is involved somehow.  Andi, can you 
-> have a look at this, please?
+> [6.461876] kernel BUG at mm/vmalloc.c:217!
+> 
+> (full boot log attached)
+> 
+> I bisected it to:
+> 
+> git-bisect bad 1c89ac55017f982355c7761e1c912c88c941483d
+> 
+> which is:
+> 
+> commit 1c89ac55017f982355c7761e1c912c88c941483d
+> Merge: 88fa08f... b1b135c...
+> Author: Linus Torvalds <torvalds@linux-foundation.org>
+> Date:   Tue Aug 12 08:40:19 2008 -0700
+> 
+>     Merge
+> git://git.kernel.org/pub/scm/linux/kernel/git/rusty/linux-2.6-for-linus
 
-Disabling MCE did eliminate the error message.
+This is a merge commit that introduced several changes into the
+kernel.  It would be helpful to search through these changes.
 
--Mark Langsdorf
-Operating System Research Center
-AMD
+>     *
+> git://git.kernel.org/pub/scm/linux/kernel/git/rusty/linux-2.6-for-linus:
+>       fix spinlock recursion in hvc_console
+>       stop_machine: remove unused variable
+>       modules: extend initcall_debug functionality to the module loader
+>       export virtio_rng.h
+>       lguest: use get_user_pages_fast() instead of get_user_pages()
+>       mm: Make generic weak get_user_pages_fast and EXPORT_GPL it
+>       lguest: don't set MAC address for guest unless specified
+> 
+> Backing out to the previous commit boots just fine. I've attached the
+> boot.log, config file, lspci.txt and git-bisect-log. If there is
+> anything else I can do, I'd be happy to oblige, but I'm checking out
+> right now. I'll check in tomorrow morning (Eastern USA).
 
+Thanks,
+Rafael
