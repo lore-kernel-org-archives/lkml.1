@@ -1,129 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758642AbYHNRNy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759017AbYHNROT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758642AbYHNRNy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Aug 2008 13:13:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751575AbYHNRNn
+	id S1759017AbYHNROT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Aug 2008 13:14:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753219AbYHNROF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Aug 2008 13:13:43 -0400
-Received: from out02.mta.xmission.com ([166.70.13.232]:37001 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751019AbYHNRNl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Aug 2008 13:13:41 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Yinghai Lu <yhlu.kernel@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       linux-kernel@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
-References: <1218705441-21838-1-git-send-email-yhlu.kernel@gmail.com>
-	<20080814132638.GA18743@elte.hu> <20080814133652.GA10972@elte.hu>
-	<20080814093326.1d8d0a88.akpm@linux-foundation.org>
-Date: Thu, 14 Aug 2008 10:03:07 -0700
-In-Reply-To: <20080814093326.1d8d0a88.akpm@linux-foundation.org> (Andrew
-	Morton's message of "Thu, 14 Aug 2008 09:33:26 -0700")
-Message-ID: <m1abffh6lw.fsf@frodo.ebiederm.org>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Thu, 14 Aug 2008 13:14:05 -0400
+Received: from Powered.by.Root24.eu ([81.169.180.23]:38620 "EHLO Root24.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751575AbYHNROE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Aug 2008 13:14:04 -0400
+X-Greylist: delayed 440 seconds by postgrey-1.27 at vger.kernel.org; Thu, 14 Aug 2008 13:14:03 EDT
+Message-ID: <48A46618.4060306@ionic.de>
+Date: Thu, 14 Aug 2008 19:06:32 +0200
+From: Mihai Moldovan <ionic@ionic.de>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-SA-Exim-Connect-IP: 24.130.11.59
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa03 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;Andrew Morton <akpm@linux-foundation.org>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -1.1 BAYES_05 BODY: Bayesian spam probability is 1 to 5%
-	*      [score: 0.0261]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa03 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-Subject: Re: [PATCH] irq: sparse irqs, fix #2
-X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
-X-SA-Exim-Scanned: Yes (on mgr1.xmission.com)
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: [PROBLEM] Kernel crashes with 2.6.25-rc1 and above
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton <akpm@linux-foundation.org> writes:
+Dear Kernel Hackers,
 
-> On Thu, 14 Aug 2008 15:36:52 +0200 Ingo Molnar <mingo@elte.hu> wrote:
->
->> +static inline cpumask_t vector_allocation_domain(int cpu)
->> +{
->> +        /* Careful. Some cpus do not strictly honor the set of cpus
->> +         * specified in the interrupt destination when using lowest
->> +         * priority interrupt delivery mode.
->> +         *
->> +         * In particular there was a hyperthreading cpu observed to
->> +         * deliver interrupts to the wrong hyperthread when only one
->> +         * hyperthread was specified in the interrupt desitination.
->> +         */
->> +        cpumask_t domain = { { [0] = APIC_ALL_CPUS, } };
->> +        return domain;
->> +}
->
-> I haven't looked at callers of this, but...
->
-> Does it need to be allocated on the stack?  Local cpumask_t's are a
-> size problem.  Can we build this in .rodata at compile time instead?
->
-> Is this the caller?
+as indicated in the Subject line, I've got some sort of problem. All 
+Kernel above (and equal) 2.6.25-rc1 are crashing on my Notebook after a 
+*random* time, thus preventing me of using them.
 
-Yes.
+When I first noticed that problem, I tried to get some usable result by 
+bisecting the Kernel, but after 2 weeks of bisecting only, I've given up.
 
->
-> +	for_each_cpu_mask(cpu, mask) {
-> +		cpumask_t domain, new_mask;
-> +		int new_cpu;
-> +		int vector;
-> +
-> +		domain = vector_allocation_domain(cpu);
-> +		cpus_and(new_mask, domain, cpu_online_map);
->
-> If so we could perhaps do
->
->
-> static noinline const cpumask_t *vector_allocation_domain(int cpu)
-> {
->         /* Careful. Some cpus do not strictly honor the set of cpus
->          * specified in the interrupt destination when using lowest
->          * priority interrupt delivery mode.
->          *
->          * In particular there was a hyperthreading cpu observed to
->          * deliver interrupts to the wrong hyperthread when only one
->          * hyperthread was specified in the interrupt desitination.
->          */
->         static const cpumask_t domain = { { [0] = APIC_ALL_CPUS, } };
->         return &domain;
-> }
->
->
-> ...
->
-> +	for_each_cpu_mask(cpu, mask) {
-> +		cpumask_t domain, new_mask;
-> +		int new_cpu;
-> +		int vector;
-> +
-> +		__cpus_and(new_mask, vector_allocation_domain(cpu),
-> +				&cpu_online_map);
->
-> otoh, perhaps this new function is one implementation of
-> genapic.vector_allocation_domain(), in which case the inlining was
-> unneeded and misleading.
+My machine locks up after a random amount of uptime, and this is a real 
+problem. Before bisecting, I thought that this time would be at most 30 
+minutes (and in fact, newer Kernels seem to crash more rapid than older 
+ones), but while bisecting, I've come across the phenomena, that it 
+might take as well 2 or 4 hours for the box to crash. This in fact 
+means, that all my bisecting efforts are for the nuts, because I might 
+have marked versions as good, while they indeed were "bad" (I've marked 
+all Kernels "good" which still worked after 1 hour uptime, later I 
+changed to 2 hours, but I still...)
 
-Likely.  Why these things live in header files...
+All in all, the problem is that I cannot really say whether a version is 
+good or bad, but after letting the box run for x hours... and x is 
+undefined. It might be a safe thing to let  the box run 24 hours for 
+each Kernel  and then mark the version as good or bad, but given that I 
+will have to test 13 or more Kernels this will make 2 weeks of testing 
+Kernels only, and I hope you can bear with me, this is really a lot of time.
 
-> I give up.  Have a little think about the stack bloat, please.
->
-> btw, whoever wrote that function is in need of a tab key.
+Now, describing what happens is simple: the machine will totally lock 
+itself. No input or output is working anymore, the Kernel will not 
+respond to SysRq presses and also not respond to ping anymore. Due to 
+this fact, also no panic message is logged and honestly, I have not seen 
+any this whole time either.
 
-Unfortunate gradual accreation of functionality.
+I really am confused about this.
 
-vector_allocation_domain could perhaps be better named.  Round up
-this cpu to the set of cpus I need to allocate a vector on.
+The only messages I could get were "Hangcheck: hangcheck value past 
+margin!", "rtc: lost y interrupts" (y is quite random as well) and this 
+one, when running hwclock:
 
-Eric
+------------[ cut here ]------------
+WARNING: at kernel/lockdep.c:2033 trace_hardirqs_on+0x9b/0x10d()
+Modules linked in: irtty_sir sir_dev ipw2200 yenta_socket rsrc_nonstatic 
+pcmcia_core tifm_7xx1 tifm_core sky2
+Pid: 2704, comm: hwclock Not tainted 
+2.6.24-uvesafb-tuxonice-squashFS3.2-04814-gd2e626f #1
+ [<c01205ec>] warn_on_slowpath+0x41/0x51
+ [<c010b376>] ? save_stack_address+0x0/0x28
+ [<c013a2e1>] ? check_usage_forwards+0x19/0x3b
+ [<c013b726>] ? __lock_acquire+0xac2/0xb0a
+ [<c03942db>] ? ata_qc_complete+0x115/0x128
+ [<c0108c60>] ? native_sched_clock+0x8b/0x9f
+ [<c0138b89>] ? put_lock_stats+0xd/0x21
+ [<c05362ec>] ? _spin_unlock_irq+0x22/0x42
+ [<c013a83f>] trace_hardirqs_on+0x9b/0x10d
+ [<c05362ec>] _spin_unlock_irq+0x22/0x42
+ [<c0114829>] hpet_rtc_interrupt+0xdf/0x290
+ [<c01509d8>] handle_IRQ_event+0x1a/0x46
+ [<c0151832>] handle_edge_irq+0xbe/0xff
+ [<c0151774>] ? handle_edge_irq+0x0/0xff
+ [<c0106f09>] do_IRQ+0xab/0xd4
+ [<c010555a>] common_interrupt+0x2e/0x34
+ =======================
+---[ end trace 3f0a8d3fa0ba549b ]---
 
 
+I *suspect* that the RTC subsystem _might_ be related to my problem, 
+because all those warning messages came up with at some point of 2.6.24 
+first, but I cannot really state that they are the evil making my 
+machine crash.
 
+At this point, I am out of ideas and hope that some experienced person 
+can help me.
+
+Best regards,
+
+
+Mihai
