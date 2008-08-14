@@ -1,88 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758844AbYHNRQc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757860AbYHNRSN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758844AbYHNRQc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Aug 2008 13:16:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751309AbYHNRQW
+	id S1757860AbYHNRSN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Aug 2008 13:18:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751379AbYHNRR6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Aug 2008 13:16:22 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:44647 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752145AbYHNRQW (ORCPT
+	Thu, 14 Aug 2008 13:17:58 -0400
+Received: from smtp-vbr14.xs4all.nl ([194.109.24.34]:2141 "EHLO
+	smtp-vbr14.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750738AbYHNRR4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Aug 2008 13:16:22 -0400
-Date: Thu, 14 Aug 2008 10:15:41 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: James Cloos <cloos@jhcloos.com>
-Cc: linux-kernel@vger.kernel.org, David Woodhouse <dwmw2@infradead.org>
-Subject: Re: Would it be better for git-commits-head to have -M -C diffs?
-Message-Id: <20080814101541.905ccc8f.randy.dunlap@oracle.com>
-In-Reply-To: <m3ljyzsfg6.fsf@lugabout.jhcloos.org>
-References: <m3ljyzsfg6.fsf@lugabout.jhcloos.org>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 14 Aug 2008 13:17:56 -0400
+Message-ID: <48A468C2.2010100@xs4all.nl>
+Date: Thu, 14 Aug 2008 19:17:54 +0200
+From: Udo van den Heuvel <udovdh@xs4all.nl>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+MIME-Version: 1.0
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.25 hald trace?
+References: <4821DDB8.8040804@xs4all.nl>
+In-Reply-To: <4821DDB8.8040804@xs4all.nl>
+X-Enigmail-Version: 0.95.2
+OpenPGP: id=8300CC02
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 14 Aug 2008 12:56:18 -0400 James Cloos wrote:
+Hello,
 
-> Would anyone else prefer to see the posts on the commits list use git's
-> copy and move detection?
+Udo van den Heuvel wrote:
+> I found multiple sets of the type off logging that is below this text.
+> This is on my VIA Epia EN12000 running Fedora 8 and a custom 2.6.25 kernel.
+
+2.6.26 now..
+
+> What is the trace good for?
+> hald is polling an empty CD/DVD drive.
+> Is this a bug? Or a feature? Normal?
+> Is hald the cause?
+> Or something besides hald?
+> How can I fix it?
 > 
-> Git show (used by the feed-mail-list script) does support -M and -C.
-> 
-> It does affect the stat section.  The recent commit 758db3f21187 would
-> have had its stat changed from looking like:
-> 
->  arch/h8300/include/asm/Kbuild              |    1 +
->  arch/h8300/include/asm/a.out.h             |   20 ++
->  arch/h8300/include/asm/atomic.h            |  144 +++++++++++
->                         .
->                         .
->                         .
->  include/asm-h8300/Kbuild                   |    1 -
->  include/asm-h8300/a.out.h                  |   20 --
->  include/asm-h8300/atomic.h                 |  144 -----------
->                         .
->                         .
->                         .
-> 
-> to looking like:
-> 
->  .../asm-h8300 => arch/h8300/include/asm}/Kbuild    |    0 
->  .../asm-h8300 => arch/h8300/include/asm}/a.out.h   |    0 
->  .../asm-h8300 => arch/h8300/include/asm}/atomic.h  |    0 
->  .../asm-h8300 => arch/h8300/include/asm}/auxvec.h  |    0 
->  .../asm-h8300 => arch/h8300/include/asm}/bitops.h  |    0 
->  .../h8300/include/asm}/bootinfo.h                  |    0 
->                         .
->                         .
->                         .
-> 
-> but would have been 512 lines and 24271 octets instead of 10623 lines
-> and 291634 octets.
-> 
-> I think it would also be useful were the From: header of each message
-> set to the commit's Author.  I run each commit through a script to do
-> that locally, but the archives would also benefit from that.
+> Please let us know.
+
+Aug 14 19:11:01 recorder kernel: INFO: task hald-addon-stor:1522 blocked
+for more than 120 seconds.
+Aug 14 19:11:01 recorder kernel: "echo 0 >
+/proc/sys/kernel/hung_task_timeout_secs" disables this message.
+Aug 14 19:11:01 recorder kernel: hald-addon-st D c04581d8     0  1522   1475
+Aug 14 19:11:01 recorder kernel:       ef83bbb4 00000086 0000000c
+c04581d8 00000246 f6df6e40 f6df6fa8 f6df6fa8
+Aug 14 19:11:01 recorder kernel:       00000004 c025c709 ef83bc2c
+7fffffff ef83bc14 ef83bc20 c0306dd6 ef83bca4
+Aug 14 19:11:01 recorder kernel:       c0253f15 ffffffff f7b5bb40
+c04581d8 00000000 00000096 ffffffff f7b5bb40
+Aug 14 19:11:01 recorder kernel: Call Trace:
+Aug 14 19:11:01 recorder kernel: [<c025c709>]
+cdrom_start_packet_command+0xb6/0xbd
+Aug 14 19:11:01 recorder kernel: [<c0306dd6>] schedule_timeout+0x14/0xaf
+Aug 14 19:11:01 recorder kernel: [<c0253f15>] ide_do_request+0x605/0x813
+Aug 14 19:11:01 recorder kernel: [<c0306cdb>] wait_for_common+0xb6/0x11d
+Aug 14 19:11:01 recorder kernel: [<c011444b>] default_wake_function+0x0/0xc
+Aug 14 19:11:01 recorder kernel: [<c02541ec>] ide_do_drive_cmd+0xc9/0xe5
+Aug 14 19:11:01 recorder kernel: [<c025cd1c>] ide_cd_queue_pc+0x35/0xa1
+Aug 14 19:11:01 recorder kernel: [<c025cd1c>] ide_cd_queue_pc+0x35/0xa1
+Aug 14 19:11:01 recorder kernel: [<c025cd1c>] ide_cd_queue_pc+0x35/0xa1
+Aug 14 19:11:01 recorder kernel: [<c0306cdb>] wait_for_common+0xb6/0x11d
+Aug 14 19:11:01 recorder kernel: [<c01db796>] __blk_put_request+0x1d/0x70
+Aug 14 19:11:01 recorder kernel: [<c025dafe>] cdrom_read_tocentry+0xbf/0xca
+Aug 14 19:11:01 recorder kernel: [<c01dddd1>] blk_end_sync_rq+0x0/0x23
+Aug 14 19:11:01 recorder kernel: [<c025dc6b>] ide_cd_read_toc+0xf1/0x3f8
+Aug 14 19:11:01 recorder kernel: [<c025e4fc>]
+idecd_revalidate_disk+0x10/0x18
+Aug 14 19:11:01 recorder kernel: [<c01754b2>] __invalidate_device+0x2e/0x34
+Aug 14 19:11:01 recorder kernel: [<c01754f1>] check_disk_change+0x39/0x5c
+Aug 14 19:11:01 recorder kernel: [<c0280718>] cdrom_open+0x879/0x8c9
+Aug 14 19:11:01 recorder kernel: [<c015adeb>] do_lookup+0x53/0x145
+Aug 14 19:11:01 recorder kernel: [<c01e353f>] kobject_get+0xf/0x13
+Aug 14 19:11:01 recorder kernel: [<c01df7be>] get_disk+0x53/0x6a
+Aug 14 19:11:01 recorder kernel: [<c01df7dc>] exact_lock+0x7/0xd
+Aug 14 19:11:01 recorder kernel: [<c023cfac>] kobj_lookup+0x108/0x134
+Aug 14 19:11:01 recorder kernel: [<c025c63f>] idecd_open+0x4f/0x63
+Aug 14 19:11:01 recorder kernel: [<c0175c20>] do_open+0x84/0x23c
+Aug 14 19:11:01 recorder kernel: [<c0175dd8>] blkdev_open+0x0/0x4d
+Aug 14 19:11:01 recorder kernel: [<c0175dfd>] blkdev_open+0x25/0x4d
+Aug 14 19:11:01 recorder kernel: [<c01533c6>] __dentry_open+0x129/0x211
+Aug 14 19:11:01 recorder kernel: [<c015352b>] nameidata_to_filp+0x1c/0x2c
+Aug 14 19:11:01 recorder kernel: [<c015dee4>] do_filp_open+0x319/0x6d6
+Aug 14 19:11:01 recorder kernel: [<c012a6e7>] ktime_get+0xf/0x2b
+Aug 14 19:11:01 recorder kernel: [<c027d682>] cdrom_release+0x179/0x1ae
+Aug 14 19:11:01 recorder kernel: [<c0113356>] hrtick_start_fair+0xd0/0x11a
+Aug 14 19:11:01 recorder kernel: [<c012bf6a>] getnstimeofday+0x32/0xb8
+Aug 14 19:11:01 recorder kernel: [<c0153116>] get_unused_fd_flags+0x5e/0xc9
+Aug 14 19:11:01 recorder kernel: [<c01531be>] do_sys_open+0x3d/0xb6
+Aug 14 19:11:01 recorder kernel: [<c015327b>] sys_open+0x1e/0x23
+Aug 14 19:11:01 recorder kernel: [<c0102ad1>] sysenter_past_esp+0x6a/0x99
+Aug 14 19:11:01 recorder kernel: [<c0174332>] bio_fs_destructor+0x0/0xb
+Aug 14 19:11:01 recorder kernel: =======================
 
 
-or the git-commits list could use what Linus has requested to be used
-in pull requests:
-
-Please use "git diff -M --stat --summary" to generate the diffstat:
-the -M enables rename detection, and the summary enables a summary of
-new/deleted or renamed files.
-
-
----
-~Randy
-Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
-http://linuxplumbersconf.org/
+Kind regards,
+Udo
