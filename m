@@ -1,86 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753183AbYHNOqH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754824AbYHNOqv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753183AbYHNOqH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Aug 2008 10:46:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751182AbYHNOp7
+	id S1754824AbYHNOqv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Aug 2008 10:46:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751680AbYHNOql
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Aug 2008 10:45:59 -0400
-Received: from mailrelay005.isp.belgacom.be ([195.238.6.171]:63396 "EHLO
-	mailrelay005.isp.belgacom.be" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750888AbYHNOp6 (ORCPT
+	Thu, 14 Aug 2008 10:46:41 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:56983 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751182AbYHNOqk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Aug 2008 10:45:58 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AswEAEXio0jCTsYx/2dsb2JhbACBYrRfgVU
-From: Laurent Pinchart <laurentp@cse-semaphore.com>
-Organization: CSE Semaphore
-To: avorontsov@ru.mvista.com
-Subject: Re: [PATCH 1/3] gpiolib: make gpio_to_chip() public
-Date: Thu, 14 Aug 2008 16:45:52 +0200
-User-Agent: KMail/1.9.9
-Cc: linuxppc-dev@ozlabs.org, "Greg Kroah-Hartman" <greg@kroah.com>,
-       linux-usb@vger.kernel.org,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       Li Yang <leoli@freescale.com>, linux-kernel@vger.kernel.org,
-       Timur Tabi <timur@freescale.com>
-References: <20080808161717.GA19095@polina.dev.rtsoft.ru> <200808141604.22287.laurentp@cse-semaphore.com> <20080814141428.GA32296@oksana.dev.rtsoft.ru>
-In-Reply-To: <20080814141428.GA32296@oksana.dev.rtsoft.ru>
+	Thu, 14 Aug 2008 10:46:40 -0400
+Message-ID: <48A444FC.8090908@linux-foundation.org>
+Date: Thu, 14 Aug 2008 09:45:16 -0500
+From: Christoph Lameter <cl@linux-foundation.org>
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart1427864.eYTl2Dx6rT";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       KOSAKI Motohiro <m-kosaki@ceres.dti.ne.jp>,
+       Matthew Wilcox <matthew@wil.cx>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       Mel Gorman <mel@skynet.ie>, andi@firstfloor.org,
+       Rik van Riel <riel@redhat.com>
+Subject: Re: No, really, stop trying to delete slab until you've finished
+ making slub perform as well
+References: <20080805210125.A897.KOSAKI.MOTOHIRO@jp.fujitsu.com> <48986AC6.5030406@linux-foundation.org> <20080813194222.E77F.KOSAKI.MOTOHIRO@jp.fujitsu.com> <48A2DD2C.3090602@linux-foundation.org> <48A3DBAC.6010109@cs.helsinki.fi>
+In-Reply-To: <48A3DBAC.6010109@cs.helsinki.fi>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <200808141645.56418.laurentp@cse-semaphore.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart1427864.eYTl2Dx6rT
-Content-Type: text/plain;
-  charset="windows-1251"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+Pekka Enberg wrote:
+> This patch hard locks  on my 2-way 64-bit x86 machine (sysrq doesn't 
+> respond) when I run hackbench.
+Hmmm.. Then the issue may be different than we thought. Lock may be 
+taken recursively in some situations.
+Can you enable lockdep?
 
-On Thursday 14 August 2008, Anton Vorontsov wrote:
-> On Thu, Aug 14, 2008 at 04:04:18PM +0200, Laurent Pinchart wrote:
-> > On Friday 08 August 2008, Anton Vorontsov wrote:
-> > > We'll need this function to write platform-specific hooks to deal
-> > > with pin's dedicated functions. Quite obviously this will work only
-> > > for the platforms with 1-to-1 GPIO to PIN mapping.
-> > >=20
-> > > This is stopgap solution till we think out and implement a proper
-> > > api (pinlib?).
-> >=20
-> > How do you support reverting the GPIO mode to non-dedicated ?
->=20
-> As we always do with the GPIO API: gpio_direction_*() calls.
 
-So the proper sequence to configure a pin in dedicated mode is to set the d=
-irection first (which will unset the dedicated mode bit) and then set dedic=
-ated mode (which will not touch the direction bit) ?
-
-=2D-=20
-Laurent Pinchart
-CSE Semaphore Belgium
-
-Chaussee de Bruxelles, 732A
-B-1410 Waterloo
-Belgium
-
-T +32 (2) 387 42 59
-=46 +32 (2) 387 42 75
-
---nextPart1427864.eYTl2Dx6rT
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-
-iEYEABECAAYFAkikRSQACgkQ8y9gWxC9vpfKrACgxwIOgShMPlS42X8wUSXenXh4
-T0MAnAg8qU96gLqeiLaphE/gzQ+K7LqC
-=r5Er
------END PGP SIGNATURE-----
-
---nextPart1427864.eYTl2Dx6rT--
