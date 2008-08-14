@@ -1,106 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758892AbYHNMf6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758225AbYHNMjw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758892AbYHNMf6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Aug 2008 08:35:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754706AbYHNMfs
+	id S1758225AbYHNMjw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Aug 2008 08:39:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752923AbYHNMjo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Aug 2008 08:35:48 -0400
-Received: from mx1.suse.de ([195.135.220.2]:52612 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754509AbYHNMfr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Aug 2008 08:35:47 -0400
-Date: Thu, 14 Aug 2008 14:35:46 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Hugh Dickins <hugh@veritas.com>
-Cc: Linux Memory Management List <linux-mm@kvack.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [rfc][patch] mm: dirty page accounting race fix
-Message-ID: <20080814123546.GA29727@wotan.suse.de>
-References: <20080814094537.GA741@wotan.suse.de> <Pine.LNX.4.64.0808141210200.4398@blonde.site>
+	Thu, 14 Aug 2008 08:39:44 -0400
+Received: from server.drzeus.cx ([85.8.24.28]:52938 "EHLO smtp.drzeus.cx"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752478AbYHNMjo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Aug 2008 08:39:44 -0400
+Date: Thu, 14 Aug 2008 14:39:35 +0200
+From: Pierre Ossman <drzeus-list@drzeus.cx>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Alex Dubov <oakad@yahoo.com>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: can block drivers get non-fs requests?
+Message-ID: <20080814143935.7033631e@mjolnir.drzeus.cx>
+In-Reply-To: <20080814114209.GB20055@kernel.dk>
+References: <20080814133810.746751cf@mjolnir.drzeus.cx>
+	<20080814114209.GB20055@kernel.dk>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.13.6; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0808141210200.4398@blonde.site>
-User-Agent: Mutt/1.5.9i
+Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=PGP-SHA1; boundary="=_freyr.drzeus.cx-24950-1218717582-0001-2"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 14, 2008 at 12:55:46PM +0100, Hugh Dickins wrote:
-> On Thu, 14 Aug 2008, Nick Piggin wrote:
+This is a MIME-formatted message.  If you see this text it means that your
+E-mail software does not support MIME-formatted messages.
 
-> > -	pte = page_check_address(page, mm, address, &ptl);
-> > +	pte = page_check_address(page, mm, address, &ptl, 0);
-> >  	if (!pte)
-> >  		goto out;
-> >  
-> > 
-> 
-> I'm not against this if it really turns out to be the answer,
-> it's simple enough and it sounds like a very good find; but
-> I'm still not convinced that you've got to the bottom of it.
-> 
-> Am I confused, or is your "do_wp_page calls ptep_clear_flush_notify"
-> example a very bad one?  The page it's dealing with there doesn't
-> go back into the page table (its COW does), and the dirty_accounting
-> case doesn't even get down there, it's dealt with in the reuse case
-> above, which uses ptep_set_access_flags.  Now, I think that one may
+--=_freyr.drzeus.cx-24950-1218717582-0001-2
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-Oh you're right definitely. Thanks.
+On Thu, 14 Aug 2008 13:42:09 +0200
+Jens Axboe <jens.axboe@oracle.com> wrote:
 
-Actually, the bug I am running into is not with a vanilla kernel...
-I am making several of my own required changes to solve other races
-I need to plug, so I'm sorry the changelog might be misleading...
-I have not actually reproduced a problem with the vanilla kernel.
+>=20
+> You should check in the driver whether the request type is supported. So
+> if you can only handle fs requests, you should do a check for
+> !blk_fs_request() after elv_next_request() and call
+> end_(de)queued_request() appropriately.
+>=20
 
+So killing off the request with -EOPNOTSUPP is preferred over having a
+prepare function and stopping it there?
 
-> well behave as you suggest on some arches (though it's extending
-> permissions not restricting them, so maybe not); but please check
-> that out and improve your example.
-> 
-> Even if it does, it's not clear to me that your fix is the answer.
-> That may well be because the whole of dirty page accounting grew too
-> subtle for me!  But holding the page table lock on one pte of the
-> page doesn't guarantee much about the integrity of the whole dance:
-> do_wp_page does its set_page_dirty_balance for this case, you'd
-> need to spell out the bad sequence more to convince me.
- 
+Rgds
+--=20
+     -- Pierre Ossman
 
-Hmm, no even in that case I think we get away with it because of
-the wait_on_page_locked which ensures clearing the page dirty
-bit before do_wp_page sets the page dirty...
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  rdesktop, core developer          http://www.rdesktop.org
 
+  WARNING: This correspondence is being monitored by the
+  Swedish government. Make sure your server uses encryption
+  for SMTP traffic and consider using PGP for end-to-end
+  encryption.
 
+--=_freyr.drzeus.cx-24950-1218717582-0001-2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename=signature.asc
 
-> Sorry, that may be a lot of work, to get it through my skull!
-> And I may be lazily asking you to do my thinking for me.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
 
-Maybe I've found another one: ppc64's set_pte_at seems to clear
-the pte, and lots of pte accessors are implemented with set_pte_at.
-mprotect's modify_prot_commit for example.
+iEYEARECAAYFAkikJ4wACgkQ7b8eESbyJLgILACdG7TKmip+do3TKfQkJULydUYk
+7DUAnjOhcLXaWJ0CpweB5WO6V78N30NB
+=EKTL
+-----END PGP SIGNATURE-----
 
-Even if I'm wrong and we happen to be safe everywhere, it seems
-really fragile to ask that no architectures ever allow transient
-!pte_present in cases  where it matters, and no generic code
-emit the wrong sequence either. Or is there some reason I'm missing
-that makes this more robust?
-
-
-> But I got a bit distracted: mprotect's change_pte_range is
-> traditionally where the pte_modify operation has been split up into
-> stages on some arches, that really can be restricting permissions
-> and needs to tread carefully.  Now I go to look there, I see its
-> 		/*
-> 		 * Avoid taking write faults for pages we know to be
-> 		 * dirty.
-> 		 */
-> 		if (dirty_accountable && pte_dirty(ptent))
-> 			ptent = pte_mkwrite(ptent);
-> 
-> and get rather worried: isn't that likely to be giving write permission
-> to a pte in a vma we are precisely taking write permission away from?
-> That's a different issue, of course; but perhaps it's even relevant.
-
-Hmm, vma_wants_writenotify is only true if VM_WRITE, and in that
-case we might be OK?
+--=_freyr.drzeus.cx-24950-1218717582-0001-2--
