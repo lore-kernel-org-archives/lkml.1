@@ -1,30 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756525AbYHNUVR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757562AbYHNUVm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756525AbYHNUVR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Aug 2008 16:21:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752600AbYHNUVE
+	id S1757562AbYHNUVm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Aug 2008 16:21:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752600AbYHNUVc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Aug 2008 16:21:04 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:37526 "EHLO
+	Thu, 14 Aug 2008 16:21:32 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:37548 "EHLO
 	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752500AbYHNUVD (ORCPT
+	with ESMTP id S1756759AbYHNUVb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Aug 2008 16:21:03 -0400
-Date: Thu, 14 Aug 2008 16:20:39 -0400
+	Thu, 14 Aug 2008 16:21:31 -0400
+Date: Thu, 14 Aug 2008 16:21:30 -0400
 From: Christoph Hellwig <hch@infradead.org>
-To: Theodore Tso <tytso@mit.edu>, Christoph Hellwig <hch@infradead.org>,
-       Eric Paris <eparis@redhat.com>, tvrtko.ursulin@sophos.com,
-       alan@lxorguk.ukuu.org.uk, andi@firstfloor.org,
-       Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
-       malware-list@lists.printk.net, malware-list-bounces@dmesg.printk.net,
-       peterz@infradead.org, viro@ZenIV.linux.org.uk
-Subject: Re: [malware-list] TALPA - a threat model?  well sorta.
-Message-ID: <20080814202039.GA4509@infradead.org>
-References: <20080813192922.GI8232@mit.edu> <20080814093103.6CD102FE8B4@pmx1.sophos.com> <20080814132455.GE6469@mit.edu> <1218721713.3540.125.camel@localhost.localdomain> <20080814155028.GB8256@mit.edu> <1218734985.9375.5.camel@paris.rdu.redhat.com> <20080814191726.GG22488@mit.edu> <20080814193408.GA10236@infradead.org> <20080814194111.GH22488@mit.edu>
+To: Daniel J Blueman <daniel.blueman@gmail.com>
+Cc: Lachlan McIlroy <lachlan@sgi.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [2.6.27-rc3] XFS logbsize/logbufs option problem...
+Message-ID: <20080814202130.GB4509@infradead.org>
+References: <6278d2220808141255g75618548qa7381e5569805646@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080814194111.GH22488@mit.edu>
+In-Reply-To: <6278d2220808141255g75618548qa7381e5569805646@mail.gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
 	See http://www.infradead.org/rpr.html
@@ -32,17 +29,17 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 14, 2008 at 03:41:11PM -0400, Theodore Tso wrote:
-> We do need a standardized way of enabling it (since it does cost you
-> something in performance, so not everyone will want it on), and a
-> standardized way of reading i_version out to userspace.  Maybe a mount
-> option is the right way to do it, maybe not.
+On Thu, Aug 14, 2008 at 08:55:31PM +0100, Daniel J Blueman wrote:
+> When the logbsize (eg =256k) or logbufs (eg =8) XFS mount options are
+> present in /etc/fstab, the filesystem fails to mount r/w with
+> 2.6.27-rc3, so stays read-only.
 > 
-> We may want to take this to the linux-fs list and try to get
-> agreements on these points; the main reason why it's not enabled by
-> default in ext4 is because the NFSv4 advanced caching code is in
-> common use (is it even in mainline)?
+> This seems to be a regression over 2.6.27-rc1 (didn't check -rc2). I'm
+> testing on Ubuntu Intrepid x86-64, thus filesystem was constructed
+> with xfsprogs 2.9.8-1.
+> 
+> Have you seen encountered this issue at all?
 
-I have not yet seen code actually using it at all, neither in mainline
-nor on one of the many nfs development lists.
+Yes, this is a known issues, and I have a patch for it that I'm about
+to resubmit after fixing up some comments.
 
