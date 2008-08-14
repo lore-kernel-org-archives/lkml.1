@@ -1,54 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755367AbYHNX11@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753743AbYHNXdH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755367AbYHNX11 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Aug 2008 19:27:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752113AbYHNX1R
+	id S1753743AbYHNXdH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Aug 2008 19:33:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751670AbYHNXc4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Aug 2008 19:27:17 -0400
-Received: from ozlabs.org ([203.10.76.45]:45432 "EHLO ozlabs.org"
+	Thu, 14 Aug 2008 19:32:56 -0400
+Received: from ozlabs.org ([203.10.76.45]:40977 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751900AbYHNX1Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Aug 2008 19:27:16 -0400
+	id S1750999AbYHNXc4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Aug 2008 19:32:56 -0400
 From: Rusty Russell <rusty@rustcorp.com.au>
-To: Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [PATCH v2 3/6] ftrace: enable mcount recording for modules
-Date: Fri, 15 Aug 2008 09:26:07 +1000
+To: Greg KH <greg@kroah.com>
+Subject: Re: Core kernel parameters and /sys/parameters?
+Date: Fri, 15 Aug 2008 09:32:43 +1000
 User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       David Miller <davem@davemloft.net>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Roland McGrath <roland@redhat.com>, Ulrich Drepper <drepper@redhat.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Gregory Haskins <ghaskins@novell.com>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       "Luis Claudio R. Goncalves" <lclaudio@uudg.org>,
-       Clark Williams <williams@redhat.com>, Bruce Duncan <bwduncan@gmail.com>,
-       Marcin Slusarz <marcin.slusarz@gmail.com>,
-       Steven Rostedt <srostedt@redhat.com>
-References: <20080814194506.233473381@goodmis.org> <20080814194859.811269740@goodmis.org>
-In-Reply-To: <20080814194859.811269740@goodmis.org>
+Cc: arjan@linux.intel.com, linux-kernel@vger.kernel.org
+References: <200807311359.02561.rusty@rustcorp.com.au> <20080814222522.GO30057@kroah.com>
+In-Reply-To: <20080814222522.GO30057@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="utf-8"
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200808150926.08200.rusty@rustcorp.com.au>
+Message-Id: <200808150932.44204.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 15 August 2008 05:45:09 Steven Rostedt wrote:
-> This patch enables the loading of the __mcount_section of modules and
-> changing all the callers of mcount into nops.
-...
-> +	if (mcountindex) {
-> +		void *mseg = (void *)sechdrs[mcountindex].sh_addr;
-> +		ftrace_init_module(mseg, mseg + sechdrs[mcountindex].sh_size);
+On Friday 15 August 2008 08:25:22 Greg KH wrote:
+> On Thu, Jul 31, 2008 at 01:59:02PM +1000, Rusty Russell wrote:
+> > Hi Greg,
+> >
+> >    Was looking at implementing "core_param" for things like
+> > "initcall_debug" (ie. params with no prefix), and wanted to put them in
+> > sysfs of course.  I hacked in a new "kernel" dir, but
+> > /sys/module/kernel/parameters/ is a bit of an odd place for it to end up
+> > in.
+> >
+> >    I noticed this comment in params.c:
+> >
+> >  * /sys/module/[mod->name]/parameters to /sys/parameters/[mod->name]/
+> >
+> > I like the idea of /sys/parameters/ much better (perhaps even with core
+> > parameters at the top level).  Is this obsolete?  Planned?
+>
+> Did I write that comment?  I sure don't remember it, sorry :)
+>
+> I don't have any plans on changing this, but I do know people use the
+> /sys/module/MODULE_NAME/parameters interface today, why change it?
 
-You don't actually need the if.  The size of section 0 is 0.
+Well mainly that many of them aren't modules, so if a change was planned for 
+some other reason I'd support it.
 
+And as I said, having core parameters (ie. converting things which are current 
+__setup) appear in /sys/module/kernel/parameters/ is a bit strange.
+
+Cheers,
 Rusty.
