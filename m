@@ -1,84 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756504AbYHNWZ7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755084AbYHNW2V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756504AbYHNWZ7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Aug 2008 18:25:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755318AbYHNWZk
+	id S1755084AbYHNW2V (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Aug 2008 18:28:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752282AbYHNW2N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Aug 2008 18:25:40 -0400
-Received: from web82105.mail.mud.yahoo.com ([209.191.84.218]:34565 "HELO
-	web82105.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1755215AbYHNWZj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Aug 2008 18:25:39 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=sbcglobal.net;
-  h=Received:X-Mailer:Date:From:Subject:To:Cc:MIME-Version:Content-Type:Message-ID;
-  b=slVSoFalO6n6hadpZUl++S3ICZiW3Ts1aeTF0ydFyw93g6uccPZkFTQgUST5RyCv/qdF8g18yG+G9dKy73eVAHqgholOv1OXilBQyq9+jAl6H8JCipSK/rKtRYk16SrhNaPTxmsrrb/QEbb4aqU9w5n/Uf5J6Tl23rRA0qwYTe4=;
-X-Mailer: YahooMailRC/1042.40 YahooMailWebService/0.7.218
-Date: Thu, 14 Aug 2008 15:25:38 -0700 (PDT)
-From: David Witbrodt <dawitbro@sbcglobal.net>
-Subject: Re: HPET regression in 2.6.26 versus 2.6.25 -- revert for 2.6.26-rc1 failed
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: Bill Fink <billfink@mindspring.com>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       netdev <netdev@vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <798277.39371.qm@web82105.mail.mud.yahoo.com>
+	Thu, 14 Aug 2008 18:28:13 -0400
+Received: from gate.crashing.org ([63.228.1.57]:35880 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752212AbYHNW2N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Aug 2008 18:28:13 -0400
+Subject: Re: [PATCH 2.6.27] [POWERPC] Invalidate all TLB entries in a
+	specified range
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: Rocky Craig <rocky.craig@hp.com>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <48A42F1A.6080903@hp.com>
+References: <48A42F1A.6080903@hp.com>
+Content-Type: text/plain
+Date: Fri, 15 Aug 2008 08:28:01 +1000
+Message-Id: <1218752881.8041.261.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 2008-08-14 at 07:11 -0600, Rocky Craig wrote:
+> From: Rocky Craig <rocky.craig@hp.com>
+> 
+> The apparent intent of "flush_tlbs" is to invalidate TLB entries that
+> might match in the address range 0 to 0x00400000.  A loop counter is 
+> set up at the high value and decremented by page size.  However, the 
+> loop is only done once as the sense of the conditional branch at the
+> loop end does not match the setup/decrement.
+> 
+> Signed-off-by: Rocky Craig <rocky.craig@hp.com>
+> ---
+> 
+> Source is from 2.6.27 development, but the bug appears as far back as 2.4.0.
+> The small user-space program below demonstrates the loop behavior.  It was
+> compiled via crosstool gcc 3.4.5 / glibc 2.3.6 for an MPC8347 target.
 
+Heh nice, that's a bug as old as the port I would say :-)
 
-> > I do not know how to bisect with your patch if I have a 
-> > "bad" but no "good" to start with.  Can you explain how
-> > I should proceed when I _do_ get home?  (I can just enabled
-> > those config options and try the patch again, but I am
-> > confused about the bisect you are asking me to perform.)
-> >
-> just like the old way doing git-bisect, but before compiling, apply
-> the batch, and before git-bisect good or bad, revert the patch.
-
-Let's say I start with this:
-
-1.  'git checkout v2.6.27-rc3'
-2.  [apply patch]
-3.  build kernel + reboot
-
-If the kernel locks up, you want me to:
-
-4.  [un-apply the patch]
-5.  'git bisect start'
-6.  'git bisect bad'
-
-Of course, we both hope that the kernel will NOT lock up,
-but let's say it does.  My confusion is the what step to take
-next.  To use 'git bisect' I have to select the next kernel
-version manually until I find a "good" and "bad" version...
-then git can automatically do its bisecting process.
-
-I assume you would want me to choose a previous kernel
-version, like "v2.6.27-rc2".  If I keep getting "bad"
-kernels, do you want me to just keep using earlier
-versions... until the patch will no longer apply?
-
-I must have misunderstood the git man pages:  I thought
-that the purpose of bisecting was to find a commit that
-caused a problem, which presumes that you already know
-a version of the kernel which works and a version which
-does not work.  Have I misunderstood?
-
-
-Dave W.
-
-PS:  My apologies if I seem obtuse.  Before this LKML
-thread, I had only used git once -- and only to do
-a checkout... no higher functionality like bisecting,
-branching, merging, etc.  I am learning quickly, but
-frankly I am baffled about how to do what you are 
-asking!
+Ben.
+ 
+> int main()
+> {
+> 	long endval;				// 16(r31)
+> 
+> 	__asm__ __volatile__(
+> 		"	lis 10,0x40\n"
+> 		"1:	addic. 10,10,-0x1000\n"
+> 		"	bgt 1b\n"
+> 		"	stw 10,16(31)\n");	// endval
+> 
+> 	printf("end value = 0x%08lx\n", endval);
+> }
+> 
+> This might win the prize for "Smallest actual code patch ever".
+> 
+> --- a/arch/powerpc/kernel/head_32.S.orig	2008-07-24 19:25:09.000000000 -0600
+> +++ a/arch/powerpc/kernel/head_32.S	2008-07-24 19:25:22.000000000 -0600
+> @@ -1155,7 +1155,7 @@ flush_tlbs:
+>  	lis	r10, 0x40
+>  1:	addic.	r10, r10, -0x1000
+>  	tlbie	r10
+> -	blt	1b
+> +	bgt	1b
+>  	sync
+>  	blr
+>  
+> 
+> 
 
