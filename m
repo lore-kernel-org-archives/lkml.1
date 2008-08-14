@@ -1,27 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758478AbYHNIqe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757539AbYHNI5U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758478AbYHNIqe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Aug 2008 04:46:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752462AbYHNIqV
+	id S1757539AbYHNI5U (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Aug 2008 04:57:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754041AbYHNI5H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Aug 2008 04:46:21 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:59712 "EHLO mx3.mail.elte.hu"
+	Thu, 14 Aug 2008 04:57:07 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:40616 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754644AbYHNIqV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Aug 2008 04:46:21 -0400
-Date: Thu, 14 Aug 2008 10:46:06 +0200
+	id S1753203AbYHNI5E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Aug 2008 04:57:04 -0400
+Date: Thu, 14 Aug 2008 10:56:47 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Fix the race between walk_tg_tree and
-	sched_create_group
-Message-ID: <20080814084606.GB1650@elte.hu>
-References: <1912924600.25608.298.camel@ymzhang> <1218702968.10800.199.camel@twins>
+To: Suresh Siddha <suresh.b.siddha@intel.com>
+Cc: hpa@zytor.com, tglx@linutronix.de, linux-kernel@vger.kernel.org
+Subject: Re: [patch 3/3] x86, xsave: use BUG_ON() instead of BUILD_BUG_ON()
+Message-ID: <20080814085647.GE1650@elte.hu>
+References: <20080813183856.964126000@linux-os.sc.intel.com> <20080813183857.246823000@linux-os.sc.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1218702968.10800.199.camel@twins>
+In-Reply-To: <20080813183857.246823000@linux-os.sc.intel.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -36,23 +34,17 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+* Suresh Siddha <suresh.b.siddha@intel.com> wrote:
 
-> On Wed, 2030-08-14 at 15:56 +0800, Zhang, Yanmin wrote:
-> > With 2.6.27-rc3, I hit a kernel panic when running volanoMark on my
-> > new x86_64 machine. I also hit it with other 2.6.27-rc kernels.
-> > See below log.
-> > 
-> > Basically, function walk_tg_tree and sched_create_group have a race between
-> > accessing and initiating tg->children. Below patch fixes it by moving 
-> > tg->children initiation to the front of linking tg->siblings to parent->children.
-> > 
-> > Signed-off-by: Zhang Yanmin <yanmin_zhang@linux.intel.com>
-> 
-> Nice catch
-> 
-> Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> All these structure sizes are runtime determined. So use a runtime bug 
+> check.
 
-applied to tip/sched/urgent - thanks.
+applied these patches to tip/x86/xsave:
+
+ f65bc21: x86, xsave: use BUG_ON() instead of BUILD_BUG_ON()
+ ed40595: x86, xsave: clear the user buffer before doing fxsave/xsave
+ ee2b92a: x86, xsave: remove the redundant access_ok() in setup_rt_frame()
+
+thanks Suresh.
 
 	Ingo
