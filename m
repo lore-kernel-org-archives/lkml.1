@@ -1,38 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752499AbYHNGmc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757532AbYHNGlk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752499AbYHNGmc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Aug 2008 02:42:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755252AbYHNGiY
+	id S1757532AbYHNGlk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Aug 2008 02:41:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755179AbYHNGiT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Aug 2008 02:38:24 -0400
-Received: from 166-70-238-42.ip.xmission.com ([166.70.238.42]:38156 "EHLO
+	Thu, 14 Aug 2008 02:38:19 -0400
+Received: from 166-70-238-42.ip.xmission.com ([166.70.238.42]:38138 "EHLO
 	ns1.wolfmountaingroup.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752153AbYHNGh5 (ORCPT
+	with ESMTP id S1751966AbYHNGh4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Aug 2008 02:37:57 -0400
-Date: Thu, 14 Aug 2008 00:14:38 -0600
+	Thu, 14 Aug 2008 02:37:56 -0400
+Date: Thu, 14 Aug 2008 00:14:37 -0600
 From: jmerkey@wolfmountaingroup.com
-Message-Id: <200808140614.m7E6EcAu006248@wolfmountaingroup.com>
+Message-Id: <200808140614.m7E6EbfZ006244@wolfmountaingroup.com>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 2.6.27-rc3 15/29] mdb: notify_die fixes/add SSB support
+Subject: [PATCH 2.6.27-rc3 11/29] mdb: add includes and external defines for keyboard specific code
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-added complete notify_die states and state support for SSB command.
+added includes and external defines for keyboard specific code
 
 
 Signed-off-by: Jeffrey Vernon Merkey (jmerkey@wolfmountaingroup.com)
 
---- a/debug/mdb/mdb-main.c	1969-12-31 17:00:00.000000000 -0700
-+++ b/debug/mdb/mdb-main.c	2008-08-13 11:56:03.000000000 -0600
-@@ -0,0 +1,648 @@
+--- a/debug/mdb/mdb-keyboard.h	1969-12-31 17:00:00.000000000 -0700
++++ b/debug/mdb/mdb-keyboard.h	2008-08-13 11:56:03.000000000 -0600
+@@ -0,0 +1,137 @@
++
 +
 +/***************************************************************************
 +*
-+*   Copyright (c) 1997, 2008 Jeff V. Merkey  All Rights Reserved.
++*   Copyright (c) 2008 Jeff V. Merkey  All Rights Reserved.
 +*   1058 East 50 South
-+*   Lindon, Utah  84042
++*   Lindon, Utah 84042
 +*   jmerkey@wolfmountaingroup.com
 +*
 +*   This program is free software; you can redistribute it and/or modify it
@@ -52,626 +53,114 @@ Signed-off-by: Jeffrey Vernon Merkey (jmerkey@wolfmountaingroup.com)
 +*   You are required to respect the rights of the Copyright holders
 +*   named within this code.
 +*
-+*   jmerkey@utah-nac.org is the official maintainer of
++*   jmerkey@wolfmountaingroup.com is the official maintainer of
 +*   this code.  You are encouraged to report any bugs, problems, fixes,
-+*   suggestions, and comments about this software to jmerkey@utah-nac.org
-+*   or linux-kernel@vger.kernel.org.  New releases, patches, bug fixes, and
-+*   technical documentation can be found at www.kernel.org.  I will
-+*   periodically post new releases of this software to www.kernel.org
-+*   that contain bug fixes and enhanced capabilities.
-+*
++*   suggestions, and comments about this software.
 +*
 +*   AUTHOR   :  Jeff V. Merkey
 +*   DESCRIP  :  Merkey's Linux Debugger
 +*
 +***************************************************************************/
 +
-+#include <linux/version.h>
-+#include <linux/types.h>
-+#include <linux/sched.h>
-+#include <linux/module.h>
-+#include <linux/moduleparam.h>
-+#include <linux/kernel.h>
-+#include <linux/mm.h>
-+#include <linux/string.h>
-+#include <linux/stat.h>
-+#include <linux/errno.h>
-+#include <linux/fcntl.h>
-+#include <linux/slab.h>
-+#include <linux/vmalloc.h>
-+#include <linux/genhd.h>
-+#include <linux/hdreg.h>
-+#include <linux/fs.h>
-+#include <linux/major.h>
-+#include <linux/mm.h>
-+#include <linux/cdrom.h>
-+#include <linux/pagemap.h>
-+#include <linux/swap.h>
-+#include <linux/smp.h>
-+#include <linux/smp_lock.h>
-+#include <linux/ctype.h>
-+#include <linux/keyboard.h>
-+#include <linux/console.h>
-+#include <linux/serial_reg.h>
-+#include <linux/uaccess.h>
-+#include <asm/system.h>
-+#include <asm/segment.h>
-+#include <asm/atomic.h>
-+#include <asm/msr.h>
-+#include <linux/io.h>
-+#include <linux/kdebug.h>
-+#include <linux/notifier.h>
-+
-+#ifdef CONFIG_SMP
-+#include <mach_apic.h>
-+#include <mach_ipi.h>
-+#endif
-+
-+#define __KERNEL_SYSCALLS__
-+#include <linux/unistd.h>
-+#include <linux/kallsyms.h>
-+
-+#include "mdb.h"
-+#include "mdb-ia32.h"
-+#include "mdb-list.h"
-+#include "mdb-ia32-proc.h"
-+#include "mdb-base.h"
-+#include "mdb-proc.h"
-+#include "mdb-os.h"
-+#include "mdb-keyboard.h"
-+
-+extern void MDBInitializeDebugger(void);
-+extern void MDBClearDebuggerState(void);
-+
-+unsigned long TotalSystemMemory;
-+unsigned long HistoryPointer;
-+unsigned char HistoryBuffer[16][256]; 
-+                              /* remember non-repeating commands */
-+unsigned char delim_table[256];
-+unsigned char workBuffer[256];
-+unsigned char verbBuffer[100];
-+void set_delimiter(unsigned char c) {  delim_table[c & 0xFF] = 1;  }
-+StackFrame CurrentStackFrame[MAX_PROCESSORS];
-+atomic_t inmdb = { 0 };
-+unsigned char *mdb_oops;
-+unsigned char *last_mdb_oops;
-+
-+void SaveLastCommandInfo(unsigned long processor)
-+{
-+    register int i;
-+
-+    repeatCommand = 0;
-+    lastCommand = toupper(debugCommand[0]);
-+    lastDisplayLength = displayLength;
-+    atomic_set(&focusActive, 0);
-+    atomic_set(&traceProcessors[processor], 0);
-+
-+    for (i=0; (i < 80) && (debugCommand[i]); i++)
-+    {
-+       if ((debugCommand[i] == '\n') || (debugCommand[i] == '\r'))
-+          lastDebugCommand[i] = '\0';
-+       else
-+          lastDebugCommand[i] = debugCommand[i];
-+    }
-+    lastDebugCommand[i] = '\0';
-+
-+    return;
-+}
-+
-+int mdb(int reason, int error, void *frame)
-+{
-+    register unsigned long retCode = 0, processor = get_processor_id();
-+    extern void ReadStackFrame(void *, StackFrame *, unsigned long);
-+    extern void WriteStackFrame(void *, StackFrame *, unsigned long);
-+    unsigned long state;
-+#ifdef CONFIG_MDB_CONSOLE_REDIRECTION
-+    extern int kmsg_redirect;
-+    int kmsg_redirect_save;
-+#endif
-+
-+    retCode = AlternateDebuggerRoutine(reason, error, frame);
-+    if (retCode)
-+       return retCode;
-+
-+    preempt_disable();
-+#ifdef CONFIG_MDB_CONSOLE_REDIRECTION
-+    kmsg_redirect_save = kmsg_redirect;
-+    kmsg_redirect = 0;
-+#endif
-+
-+    last_mdb_oops = NULL;
-+    if (mdb_oops)
-+    {
-+       last_mdb_oops = mdb_oops;
-+       mdb_oops = NULL;
-+    }
-+    atomic_inc(&inmdb);
-+    state = save_flags();
-+    memset(&CurrentStackFrame[processor], 0, sizeof(StackFrame));
-+    ReadStackFrame(frame, &CurrentStackFrame[processor], processor);
-+    CurrentStackFrame[processor].tReserved[2] = (unsigned long)frame;
-+    retCode = debugger_entry(reason, &CurrentStackFrame[processor],
-+                             processor);
-+    WriteStackFrame(frame, &CurrentStackFrame[processor], processor);
-+
-+    restore_flags(state);
-+    atomic_dec(&inmdb);
-+
-+#ifdef CONFIG_MDB_CONSOLE_REDIRECTION
-+    kmsg_redirect = kmsg_redirect_save;
-+#endif
-+    preempt_enable();
-+
-+    return retCode;
-+}
-+
-+static inline void out_chars(int c, unsigned char ch)
-+{
-+    register int i;
-+
-+    for (i=0; i < c; i++)
-+       DBGPrint("%c", ch);
-+    return;
-+}
-+
-+static inline void out_copy_chars_limit(int c, unsigned char ch,
-+                                        unsigned char *s, int limit)
-+{
-+    register int i;
-+
-+    for (i=0; (i < c) && (i < limit); i++)
-+       s[i] = ch;
-+    s[i] = '\0';
-+    DBGPrint("%s", s);
-+    return;
-+}
-+
-+static inline void out_buffer_chars_limit(unsigned char *s, int limit)
-+{
-+    register int i;
-+
-+    for (i=0; (i < strlen(s)) && (i < limit); i++)
-+       DBGPrint("%c", s[i]);
-+    return;
-+}
-+
-+static inline void out_buffer_chars_limit_index(unsigned char *s, int limit,
-+                                                int index)
-+{
-+    register int i;
-+
-+    for (i=0; (i < limit) && (s[i]); i++)
-+       DBGPrint("%c", s[index + i]);
-+    return;
-+}
-+
-+static inline void out_string(unsigned char *s)
-+{
-+    DBGPrint("%s", s);
-+    return;
-+}
-+
-+static inline void out_char(unsigned char ch)
-+{
-+    DBGPrint("%c", ch);
-+    return;
-+}
-+
-+unsigned long ScreenInputFromKeyboard(unsigned char *buf,
-+                                      unsigned long buf_index,
-+                                      unsigned long max_index)
-+{
-+    register unsigned long key;
-+    register unsigned char *p;
-+    register int i, r, temp;
-+    register unsigned long orig_index, HistoryIndex;
-+    extern unsigned long IsAccelerator(unsigned long);
-+
-+    if (buf_index > max_index)
-+       return 0;
-+
-+    if (!max_index)
-+       return 0;
-+
-+    orig_index = buf_index;
-+
-+    p = (unsigned char *)((unsigned long)buf + (unsigned long)buf_index);
-+    for (i=0; i < (max_index - buf_index); i++)
-+       *p++ = '\0';
-+
-+    HistoryIndex = HistoryPointer;
-+    while (1)
-+    {
-+       key = mdb_getkey();
-+
-+       if ((IsAccelerator(key)) && (key != 13))
-+	  return key;
-+
-+       switch (key)
-+       {
-+	  case 8: /* backspace */
-+	     if (buf_index)
-+	     {
-+                register int delta;
-+
-+		buf_index--;
-+		out_string("\b \b");
-+
-+                delta = strlen(buf) - buf_index;
-+                out_chars(delta, ' ');
-+                out_chars(delta, '\b');
-+
-+	        p = (unsigned char *) &buf[buf_index];
-+	        temp = buf_index;
-+	        p++;
-+	        while ((*p) && (temp < max_index))
-+		   buf[temp++] = *p++;
-+	        buf[temp] = '\0';
-+
-+                delta = strlen(buf) - buf_index;
-+                out_buffer_chars_limit_index(buf, delta, buf_index);
-+                out_chars(delta, '\b');
-+	     }
-+	     break;
-+
-+	  case K_P7: /* home */
-+             {
-+                unsigned char *s = &workBuffer[0];
-+
-+                out_copy_chars_limit(buf_index, '\b', s, 255);
-+	        buf_index = orig_index;
-+             }
-+	     break;
-+
-+	  case K_P1: /* end */
-+             {
-+                unsigned char *s = &workBuffer[0];
-+
-+                out_copy_chars_limit(buf_index, '\b', s, 255);
-+                out_buffer_chars_limit(buf, 255);
-+	        buf_index = strlen(buf);
-+             }
-+	     break;
-+
-+	  case K_P4: /* left arrow */
-+	     if (buf_index)
-+	     {
-+		buf_index--;
-+		out_string("\b");
-+	     }
-+	     break;
-+
-+	  case K_P6: /* right arrow */
-+	     if (buf_index < strlen(buf))
-+	     {
-+                out_char(buf[buf_index]);
-+		buf_index++;
-+	     }
-+	     break;
-+
-+	  case K_PDOT:
-+             {
-+                register int delta;
-+
-+                delta = strlen(buf) - buf_index;
-+
-+                out_chars(delta, ' ');
-+                out_chars(delta, '\b');
-+
-+	        p = (unsigned char *) &buf[buf_index];
-+	        temp = buf_index;
-+	        p++;
-+	        while ((*p) && (temp < max_index))
-+		   buf[temp++] = *p++;
-+	        buf[temp] = '\0';
-+
-+                delta = strlen(buf) - buf_index;
-+                out_buffer_chars_limit_index(buf, delta, buf_index);
-+                out_chars(delta, '\b');
-+             }
-+	     break;
-+
-+	  case 13:  /* enter */
-+	     if (strncmp(HistoryBuffer[(HistoryPointer - 1) & 0xF], buf,
-+                         strlen(buf)) || (strlen(buf) !=
-+                         strlen(HistoryBuffer[(HistoryPointer - 1) & 0xF])))
-+	     {
-+		for (r=0; r < max_index; r++)
-+		{
-+		   if (buf[0])
-+		      HistoryBuffer[HistoryPointer & 0xF][r] = buf[r];
-+		}
-+		if (buf[0])
-+		   HistoryPointer++;
-+	     }
-+	     return 13;
-+
-+	  case K_P8: /* up arrow */
-+	     if (HistoryBuffer[(HistoryIndex - 1) & 0xF][0])
-+	     {
-+                unsigned char *s = &workBuffer[0];
-+
-+                out_copy_chars_limit(buf_index, '\b', s, 255);
-+                out_copy_chars_limit(buf_index, ' ', s, 255);
-+                out_copy_chars_limit(buf_index, '\b', s, 255);
-+
-+		HistoryIndex--;
-+
-+		for (r=0; r < max_index; r++)
-+		   buf[r] = HistoryBuffer[HistoryIndex & 0xF][r];
-+		buf_index = strlen(buf);
-+
-+                out_string(buf);
-+	     }
-+	     break;
-+
-+	  case K_P2: /* down arrow */
-+	     if (HistoryBuffer[HistoryIndex & 0xF][0])
-+	     {
-+                unsigned char *s = &workBuffer[0];
-+
-+                out_copy_chars_limit(buf_index, '\b', s, 255);
-+                out_copy_chars_limit(buf_index, ' ', s, 255);
-+                out_copy_chars_limit(buf_index, '\b', s, 255);
-+
-+		HistoryIndex++;
-+
-+		for (r=0; r < max_index; r++)
-+		   buf[r] = HistoryBuffer[HistoryIndex & 0xF][r];
-+		buf_index = strlen(buf);
-+
-+                out_string(buf);
-+	     }
-+	     break;
-+
-+	  default:
-+	     if ((key > 0x7E) || (key < ' '))  /* if above or below text */
-+		break;
-+	     else
-+	     {
-+	        if (strlen(buf) < max_index)
-+		{
-+                   register int delta;
-+
-+		   for (i=max_index; i > buf_index; i--)
-+		      buf[i] = buf[i-1];
-+		   buf[buf_index] = (unsigned char)key;
-+		   if (buf_index < max_index)
-+		      buf_index++;
-+
-+                   delta = strlen(buf) - buf_index;
-+                   out_buffer_chars_limit_index(buf, delta, buf_index);
-+                   out_chars(delta, '\b');
-+		}
-+             }
-+	     break;
-+       }
-+    }
-+}
-+
-+unsigned long debugger_command_entry(unsigned long processor, 
-+                                     unsigned long Exception,
-+			             StackFrame *stackFrame)
-+{
-+    register unsigned char *verb, *pp, *vp;
-+    register unsigned long count, retCode, key;
-+    extern unsigned long reason_toggle;
-+    extern void displayRegisters(StackFrame *, unsigned long);
-+
-+    if (Exception > 22)
-+       Exception = 20;
-+
-+    lastUnasmAddress = (unsigned long) GetIP(stackFrame);
-+    lastLinkAddress = lastDumpAddress = 
-+                      (unsigned char *) GetStackAddress(stackFrame);
-+    lastDisplayLength = displayLength = 20;
-+    lastCommandEntry = lastCommand;
-+    nextline = 0;
-+    pause_mode = 0;
-+
-+    if (!ssbmode)
-+    {
-+       if (reason_toggle && !ConsoleDisplayBreakReason(stackFrame, 
-+           Exception, processor, lastCommand))
-+          return 0;
-+       displayRegisters(stackFrame, processor);
-+    }
-+    nextUnasmAddress = disassemble(stackFrame, lastUnasmAddress, 1, 1);
-+    ClearTempBreakpoints();
-+    if (SSBUpdate(stackFrame, processor) == -1)
-+       return 0;
-+
-+    while (1)
-+    {
-+       pause_mode = 1;
-+       nextline = 0;
-+       DBGPrint("(%i)> ", (int)processor);
-+
-+       SaveLastCommandInfo(processor);
-+       key = ScreenInputFromKeyboard((unsigned char *)&debugCommand[0], 0, 80);
-+       if (key)
-+       {
-+          extern unsigned long AccelRoutine(unsigned long key, void *p);
-+
-+          retCode = AccelRoutine(key, stackFrame);
-+          switch (retCode)
-+          {
-+             case 0:
-+                break;
-+
-+             case -1:
-+	        return retCode;
-+
-+             default:
-+                DBGPrint("\n");
-+                continue;
-+          }
-+       }
-+
-+       if (*debugCommand)
-+       {
-+          count = 0;
-+          pp = (unsigned char *)debugCommand;
-+          vp = verb = &verbBuffer[0];
-+          while (*pp && *pp == ' ' && count++ < 80)
-+	     pp++;
-+
-+          while (*pp && *pp != ' ' && *pp != '=' && count++ < 80)
-+	     *vp++ = *pp++;
-+          *vp = '\0';
-+
-+          while (*pp && *pp == ' ' && count++ < 80)
-+	     pp++;
-+
-+          retCode = DebuggerParserRoutine(verb, (unsigned char *)debugCommand,
-+                                          stackFrame, Exception);
-+          switch (retCode)
-+          {
-+             case -1:
-+	       return retCode;
-+          }
-+       }
-+    }
-+}
-+
-+unsigned char *kdebug_state[]=
-+{
-+    "",
-+    "DIE_OOPS",
-+    "DIE_INT3",
-+    "DIE_DEBUG",
-+    "DIE_PANIC",
-+    "DIE_NMI",
-+    "DIE_DIE",
-+    "DIE_NMIWATCHDOG",
-+    "DIE_KERNELDEBUG",
-+    "DIE_TRAP",
-+    "DIE_GPF",
-+    "DIE_CALL",
-+    "DIE_NMI_IPI",
-+    "DIE_PAGE_FAULT",
-+    "DIE_NMIUNKNOWN",
-+};
-+int kdebug_state_size = sizeof(kdebug_state) / sizeof(unsigned char *);
-+
-+static int mdb_notify(struct notifier_block *nb, unsigned long reason,
-+                      void *data)
-+{
-+    register struct die_args *args = (struct die_args *)data;
-+    register int err = 0;
-+#if MDB_DEBUG_DEBUGGER
-+    register unsigned long p = get_processor_id();
-+
-+    DBGPrint("%i: notify reason:%lu %s\n", 
-+             (int)p, reason, kdebug_state[reason % kdebug_state_size]);
-+#endif
-+    if (args)
-+    {
-+       switch (reason)
-+       {
-+          case DIE_OOPS:
-+          case DIE_PANIC:
-+          case DIE_DIE:
-+             mdb_oops = (unsigned char *)args->str;
-+             err = mdb(SOFTWARE_EXCEPTION, args->err, args->regs);
-+             break;
-+
-+	  case DIE_INT3:
-+             err = mdb(BREAKPOINT_EXCEPTION, args->err, args->regs);
-+             break;
-+
-+          case DIE_DEBUG:
-+             err = mdb(DEBUGGER_EXCEPTION, args->err, args->regs);
-+             break;
-+
-+          case DIE_NMI:
-+          case DIE_NMIWATCHDOG:
-+          case DIE_NMIUNKNOWN:
-+          case DIE_NMI_IPI:
-+             err = mdb(NMI_EXCEPTION, args->err, args->regs);
-+             break;
-+
-+          case DIE_KERNELDEBUG:
-+             err = mdb(KEYBOARD_ENTRY, args->err, args->regs);
-+             break;
-+
-+          case DIE_GPF:
-+             err = mdb(GENERAL_PROTECTION, args->err, args->regs);
-+             break;
-+
-+          case DIE_PAGE_FAULT:
-+             err = mdb(PAGE_FAULT_EXCEPTION, args->err, args->regs);
-+             break;
-+
-+          default:
-+             break;
-+       }
-+    }
-+    return (err ? NOTIFY_STOP : 0);
-+}
-+
-+static struct notifier_block mdb_notifier =
-+{
-+    .notifier_call = mdb_notify,
-+    .priority = 0x7FFFFFFF,
-+};
-+
-+static int __init mdb_init_module(void)
-+{
-+    register int i;
-+    register int ret = 0;
-+
-+    /* return if debugger already initialized */
-+    if (debuggerInitialized)
-+       return 0;
-+
-+    MDBInitializeDebugger();
-+
-+    ret = register_die_notifier(&mdb_notifier);
-+    if (ret)
-+    {
-+       MDBClearDebuggerState();
-+       return ret;
-+    }
-+
-+    /* initialize delimiter lookup table */
-+    for (i=0; i < 256; i++)
-+        delim_table[i] = '\0';
-+
-+    set_delimiter('\0');
-+    set_delimiter('\n');
-+    set_delimiter('\r');
-+    set_delimiter('[');
-+    set_delimiter(']');
-+    set_delimiter('<');
-+    set_delimiter('>');
-+    set_delimiter('(');
-+    set_delimiter(')');
-+    set_delimiter('|');
-+    set_delimiter('&');
-+    set_delimiter('=');
-+    set_delimiter('*');
-+    set_delimiter('+');
-+    set_delimiter('-');
-+    set_delimiter('/');
-+    set_delimiter('%');
-+    set_delimiter('~');
-+    set_delimiter('^');
-+    set_delimiter('!');
-+    set_delimiter(' ');
-+
-+    return 0;
-+}
-+
-+static void __exit mdb_exit_module(void)
-+{
-+    unregister_die_notifier(&mdb_notifier);
-+    MDBClearDebuggerState();
-+    return;
-+}
-+
-+module_init(mdb_init_module);
-+module_exit(mdb_exit_module);
-+
-+MODULE_DESCRIPTION("Merkey's Kernel Debugger");
-+MODULE_LICENSE("GPL");
++#undef KBD_REPORT_ERR			/* Report keyboard errors */
++#define KBD_REPORT_UNKN			/* Report unknown scan codes */
++#define KBD_REPORT_TIMEOUTS		/* Report keyboard timeouts */
++#undef KBD_IS_FOCUS_9000		/* We have the brain-damaged FOCUS-9000 keyboard */
++#undef INITIALIZE_MOUSE			/* Define if your PS/2 mouse needs initialization. */
++
++
++#define KBD_INIT_TIMEOUT 1000		/* Timeout in ms for initializing the keyboard */
++#define KBC_TIMEOUT 250			/* Timeout in ms for sending to keyboard controller */
++#define KBD_TIMEOUT 1000		/* Timeout in ms for keyboard command acknowledge */
++
++/*
++ *	Keyboard Controller Registers on normal PCs.
++ */
++
++#define KBD_STATUS_REG		0x64	/* Status register (R) */
++#define KBD_CNTL_REG		0x64	/* Controller command register (W) */
++#define KBD_DATA_REG		0x60	/* Keyboard data register (R/W) */
++
++/*
++ *	Keyboard Controller Commands
++ */
++
++#define KBD_CCMD_READ_MODE	0x20	/* Read mode bits */
++#define KBD_CCMD_WRITE_MODE	0x60	/* Write mode bits */
++#define KBD_CCMD_GET_VERSION	0xA1	/* Get controller version */
++#define KBD_CCMD_MOUSE_DISABLE	0xA7	/* Disable mouse interface */
++#define KBD_CCMD_MOUSE_ENABLE	0xA8	/* Enable mouse interface */
++#define KBD_CCMD_TEST_MOUSE	0xA9	/* Mouse interface test */
++#define KBD_CCMD_SELF_TEST	0xAA	/* Controller self test */
++#define KBD_CCMD_KBD_TEST	0xAB	/* Keyboard interface test */
++#define KBD_CCMD_KBD_DISABLE	0xAD	/* Keyboard interface disable */
++#define KBD_CCMD_KBD_ENABLE	0xAE	/* Keyboard interface enable */
++#define KBD_CCMD_WRITE_AUX_OBUF	0xD3    /* Write to output buffer as if
++					   initiated by the auxiliary device */
++#define KBD_CCMD_WRITE_MOUSE	0xD4	/* Write the following byte to the mouse */
++
++/*
++ *	Keyboard Commands
++ */
++
++#define KBD_CMD_SET_LEDS	0xED	/* Set keyboard leds */
++#define KBD_CMD_SET_RATE	0xF3	/* Set typematic rate */
++#define KBD_CMD_ENABLE		0xF4	/* Enable scanning */
++#define KBD_CMD_DISABLE		0xF5	/* Disable scanning */
++#define KBD_CMD_RESET		0xFF	/* Reset */
++
++/*
++ *	Keyboard Replies
++ */
++
++#define KBD_REPLY_POR		0xAA	/* Power on reset */
++#define KBD_REPLY_ACK		0xFA	/* Command ACK */
++#define KBD_REPLY_RESEND	0xFE	/* Command NACK, send the cmd again */
++
++/*
++ *	Status Register Bits
++ */
++
++#define KBD_STAT_OBF		0x01	/* Keyboard output buffer full */
++#define KBD_STAT_IBF		0x02	/* Keyboard input buffer full */
++#define KBD_STAT_SELFTEST	0x04	/* Self test successful */
++#define KBD_STAT_CMD		0x08	/* Last write was a command write (0=data) */
++#define KBD_STAT_UNLOCKED	0x10	/* Zero if keyboard locked */
++#define KBD_STAT_MOUSE_OBF	0x20	/* Mouse output buffer full */
++#define KBD_STAT_GTO		0x40	/* General receive/xmit timeout */
++#define KBD_STAT_PERR		0x80	/* Parity error */
++
++#define AUX_STAT_OBF (KBD_STAT_OBF | KBD_STAT_MOUSE_OBF)
++
++/*
++ *	Controller Mode Register Bits
++ */
++
++#define KBD_MODE_KBD_INT	0x01	/* Keyboard data generate IRQ1 */
++#define KBD_MODE_MOUSE_INT	0x02	/* Mouse data generate IRQ12 */
++#define KBD_MODE_SYS		0x04	/* The system flag (?) */
++#define KBD_MODE_NO_KEYLOCK	0x08	/* The keylock doesn't affect the keyboard if set */
++#define KBD_MODE_DISABLE_KBD	0x10	/* Disable keyboard interface */
++#define KBD_MODE_DISABLE_MOUSE	0x20	/* Disable mouse interface */
++#define KBD_MODE_KCC		0x40	/* Scan code conversion to PC format */
++#define KBD_MODE_RFU		0x80
++
++/*
++ *	Mouse Commands
++ */
++
++#define AUX_SET_RES		0xE8	/* Set resolution */
++#define AUX_SET_SCALE11		0xE6	/* Set 1:1 scaling */
++#define AUX_SET_SCALE21		0xE7	/* Set 2:1 scaling */
++#define AUX_GET_SCALE		0xE9	/* Get scaling factor */
++#define AUX_SET_STREAM		0xEA	/* Set stream mode */
++#define AUX_SET_SAMPLE		0xF3	/* Set sample rate */
++#define AUX_ENABLE_DEV		0xF4	/* Enable aux device */
++#define AUX_DISABLE_DEV		0xF5	/* Disable aux device */
++#define AUX_RESET		0xFF	/* Reset aux device */
++#define AUX_ACK			0xFA	/* Command byte ACK. */
++
++#define AUX_BUF_SIZE		2048	/* This might be better divisible by
++					   three to make overruns stay in sync
++					   but then the read function would need
++					   a lock etc - ick */
