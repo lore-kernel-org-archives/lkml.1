@@ -1,70 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759286AbYHNQb6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759254AbYHNQdk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759286AbYHNQb6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Aug 2008 12:31:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758972AbYHNQbn
+	id S1759254AbYHNQdk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Aug 2008 12:33:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752461AbYHNQdc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Aug 2008 12:31:43 -0400
-Received: from smtp.wellnetcz.com ([212.24.148.102]:39856 "EHLO
-	smtp.wellnetcz.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758454AbYHNQbn (ORCPT
+	Thu, 14 Aug 2008 12:33:32 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:55398 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752166AbYHNQdb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Aug 2008 12:31:43 -0400
-From: Jiri Slaby <jirislaby@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org,
-       Jiri Slaby <jirislaby@gmail.com>, R.E.Wolff@BitWizard.nl
-Subject: [PATCH 3/3] Char: sx, remove bogus iomap
-Date: Thu, 14 Aug 2008 18:25:54 +0200
-Message-Id: <1218731154-32692-3-git-send-email-jirislaby@gmail.com>
-X-Mailer: git-send-email 1.5.6.5
-In-Reply-To: <1218731154-32692-2-git-send-email-jirislaby@gmail.com>
-References: <1218731154-32692-1-git-send-email-jirislaby@gmail.com>
- <1218731154-32692-2-git-send-email-jirislaby@gmail.com>
+	Thu, 14 Aug 2008 12:33:31 -0400
+Date: Thu, 14 Aug 2008 18:34:50 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Mark Langsdorf <mark.langsdorf@amd.com>, Andi Kleen <andi@firstfloor.org>,
+       linux-kernel@vger.kernel.org, Greg KH <greg@kroah.com>,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Warning in during hotplug on 2.6.27-rc2-git5
+Message-ID: <20080814163450.GA13814@one.firstfloor.org>
+References: <200808121700.20369.mark.langsdorf@amd.com> <200808141753.58547.rjw@sisk.pl>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200808141753.58547.rjw@sisk.pl>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-readl/writel are not expected to accept iomap return value. Replace
-bogus mapping by standard ioremap.
+On Thu, Aug 14, 2008 at 05:53:57PM +0200, Rafael J. Wysocki wrote:
+> On Wednesday, 13 of August 2008, Mark Langsdorf wrote:
+> > I'm seeing the following error message when I hotunplug and replug
+> > a cpu in 2.6.27-rc2-git5.  The system becomes unstable almost
+> > immediately afterwards.
+> 
+> Hm, it seems that MCE is involved somehow.  Andi, can you have a look at this,
+> please?
 
-Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
-Cc: R.E.Wolff@BitWizard.nl
----
- drivers/char/sx.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
+FWIW the mce code here actually hasn't changed for a long time.
 
-diff --git a/drivers/char/sx.c b/drivers/char/sx.c
-index 5b8d7a1..ba4e862 100644
---- a/drivers/char/sx.c
-+++ b/drivers/char/sx.c
-@@ -2504,7 +2504,7 @@ static void __devexit sx_remove_card(struct sx_board *board,
- 		del_timer(&board->timer);
- 		if (pdev) {
- #ifdef CONFIG_PCI
--			pci_iounmap(pdev, board->base2);
-+			iounmap(board->base2);
- 			pci_release_region(pdev, IS_CF_BOARD(board) ? 3 : 2);
- #endif
- 		} else {
-@@ -2677,7 +2677,7 @@ static int __devinit sx_pci_probe(struct pci_dev *pdev,
- 	}
- 	board->hw_base = pci_resource_start(pdev, reg);
- 	board->base2 =
--	board->base = pci_iomap(pdev, reg, WINDOW_LEN(board));
-+	board->base = ioremap_nocache(board->hw_base, WINDOW_LEN(board));
- 	if (!board->base) {
- 		dev_err(&pdev->dev, "ioremap failed\n");
- 		goto err_reg;
-@@ -2703,7 +2703,7 @@ static int __devinit sx_pci_probe(struct pci_dev *pdev,
- 
- 	return 0;
- err_unmap:
--	pci_iounmap(pdev, board->base2);
-+	iounmap(board->base2);
- err_reg:
- 	pci_release_region(pdev, reg);
- err_flag:
--- 
-1.5.6.5
 
+> > ------------[ cut here ]------------
+> > WARNING: at fs/sysfs/dir.c:463 sysfs_add_one+0x33/0x39()
+> > sysfs: duplicate filename 'machinecheck4' can not be created
+
+The only way I could see that happening if CPU_DEAD/CPU_ONLINE
+is not properly balanced.
+
+-Andi
