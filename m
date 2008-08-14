@@ -1,79 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759877AbYHNSxx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759907AbYHNSyz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759877AbYHNSxx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Aug 2008 14:53:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752638AbYHNSxo
+	id S1759907AbYHNSyz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Aug 2008 14:54:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752638AbYHNSyr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Aug 2008 14:53:44 -0400
-Received: from tomts43.bellnexxia.net ([209.226.175.110]:37140 "EHLO
-	tomts43-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751286AbYHNSxn (ORCPT
+	Thu, 14 Aug 2008 14:54:47 -0400
+Received: from smtprelay06.ispgateway.de ([80.67.18.44]:44356 "EHLO
+	smtprelay06.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752178AbYHNSyr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Aug 2008 14:53:43 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AswEAJMZpEhMRKxB/2dsb2JhbACBYrVJgVU
-Date: Thu, 14 Aug 2008 14:53:38 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Andi Kleen <andi@firstfloor.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
-       Steven Rostedt <srostedt@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, Roland McGrath <roland@redhat.com>,
-       Ulrich Drepper <drepper@redhat.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Gregory Haskins <ghaskins@novell.com>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       "Luis Claudio R. Goncalves" <lclaudio@uudg.org>,
-       Clark Williams <williams@redhat.com>,
-       Christoph Lameter <cl@linux-foundation.org>
-Subject: Re: [RFC PATCH] x86 alternatives : fix LOCK_PREFIX race with
-	preemptible kernel and CPU hotplug
-Message-ID: <20080814185338.GB7896@Krystal>
-References: <48A388CE.2020404@goop.org> <20080814014944.GA31883@Krystal> <48A3A806.8060509@goop.org> <20080814151805.GA29507@Krystal> <48A459B1.2070601@zytor.com> <20080814165802.GC517@Krystal> <48A465F2.8000701@goop.org> <20080814173021.GA4697@Krystal> <48A46EC2.1010301@goop.org> <48A47B83.3090408@zytor.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 14 Aug 2008 14:54:47 -0400
+From: Ingo Oeser <ioe-lkml@rameria.de>
+To: Jan Kara <jack@suse.cz>
+Subject: Re: [PATCH REVIEW] udf: Fix lock inversion between iprune_mutex and alloc_mutex
+Date: Thu, 14 Aug 2008 20:48:10 +0200
+User-Agent: KMail/1.9.9
+Cc: LKML <linux-kernel@vger.kernel.org>
+References: <12187361983539-git-send-email-jack@suse.cz>
+In-Reply-To: <12187361983539-git-send-email-jack@suse.cz>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <48A47B83.3090408@zytor.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 14:52:58 up 70 days, 23:33,  7 users,  load average: 3.80, 1.82,
-	1.12
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Message-Id: <200808142048.10966.ioe-lkml@rameria.de>
+X-Df-Sender: 849595
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* H. Peter Anvin (hpa@zytor.com) wrote:
-> Jeremy Fitzhardinge wrote:
->> Ah, OK.  I'd thought we started unlocked, but given that I've just been 
->> disassembling the kernel and looking at the lock prefixes, that's a bit of 
->> a braino on my part.
->> BTW, using the ds prefix allows us to undo the hack of dealing with locked 
->> instructions with exception handlers.  There was a bug where if we do 
->> lock->nop, then the address of a faulting instruction changes, so we need 
->> exception records for both the locked and unlocked forms.  Using ds means 
->> the instruction size doesn't change, so we only need one exception record. 
->>  I don't remember off hand where that happens.
->
-> Using %ds: rather than nop really seems to solve a whole lot of problems, 
-> and might even be faster to boot.  It really sounds like a no-brainer.
->
-> 	-hpa
+Hi Jan,
 
-So should I wait a bit for more comments or straightforwardly submit
-this as a patch rather than RFC ?
+On Thursday 14 August 2008, Jan Kara wrote:
+> A memory allocation inside alloc_mutex must not recurse back
+> into the filesystem itself because that leads to lock inversion
+> between iprune_mutex and alloc_mutex (and thus to deadlocks - see
+> traces below). Make allocations inside alloc_mutex use GFP_NOFS
+> to avoid this problem.
 
-Mathieu
+What about moving the allocation before taking the mutex?
+That way, we even reduce the lock contention and simplify the failure path.
 
+Signed-off-by: Ingo Oeser <ioe-lkml@rameria.de>
 
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+diff --git a/fs/udf/ialloc.c b/fs/udf/ialloc.c
+index eb9cfa2..76446eb 100644
+--- a/fs/udf/ialloc.c
++++ b/fs/udf/ialloc.c
+@@ -90,6 +90,25 @@ struct inode *udf_new_inode(struct inode *dir, int mode, int *err)
+ 		return NULL;
+ 	}
+ 
++	if (UDF_QUERY_FLAG(inode->i_sb, UDF_FLAG_USE_EXTENDED_FE)) {
++		iinfo->i_efe = 1;
++		if (UDF_VERS_USE_EXTENDED_FE > sbi->s_udfrev)
++			sbi->s_udfrev = UDF_VERS_USE_EXTENDED_FE;
++		iinfo->i_ext.i_data = kzalloc(inode->i_sb->s_blocksize -
++					    sizeof(struct extendedFileEntry),
++					    GFP_KERNEL);
++	} else {
++		iinfo->i_efe = 0;
++		iinfo->i_ext.i_data = kzalloc(inode->i_sb->s_blocksize -
++					    sizeof(struct fileEntry),
++					    GFP_KERNEL);
++	}
++	if (!iinfo->i_ext.i_data) {
++		iput(inode);
++		*err = -ENOMEM;
++		return NULL;
++	}
++
+ 	mutex_lock(&sbi->s_alloc_mutex);
+ 	if (sbi->s_lvid_bh) {
+ 		struct logicalVolIntegrityDesc *lvid =
+@@ -129,25 +148,6 @@ struct inode *udf_new_inode(struct inode *dir, int mode, int *err)
+ 	iinfo->i_lenEAttr = 0;
+ 	iinfo->i_lenAlloc = 0;
+ 	iinfo->i_use = 0;
+-	if (UDF_QUERY_FLAG(inode->i_sb, UDF_FLAG_USE_EXTENDED_FE)) {
+-		iinfo->i_efe = 1;
+-		if (UDF_VERS_USE_EXTENDED_FE > sbi->s_udfrev)
+-			sbi->s_udfrev = UDF_VERS_USE_EXTENDED_FE;
+-		iinfo->i_ext.i_data = kzalloc(inode->i_sb->s_blocksize -
+-					    sizeof(struct extendedFileEntry),
+-					    GFP_KERNEL);
+-	} else {
+-		iinfo->i_efe = 0;
+-		iinfo->i_ext.i_data = kzalloc(inode->i_sb->s_blocksize -
+-					    sizeof(struct fileEntry),
+-					    GFP_KERNEL);
+-	}
+-	if (!iinfo->i_ext.i_data) {
+-		iput(inode);
+-		*err = -ENOMEM;
+-		mutex_unlock(&sbi->s_alloc_mutex);
+-		return NULL;
+-	}
+ 	if (UDF_QUERY_FLAG(inode->i_sb, UDF_FLAG_USE_AD_IN_ICB))
+ 		iinfo->i_alloc_type = ICBTAG_FLAG_AD_IN_ICB;
+ 	else if (UDF_QUERY_FLAG(inode->i_sb, UDF_FLAG_USE_SHORT_AD))
