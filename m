@@ -1,90 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758569AbYHNRb4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756725AbYHNRe2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758569AbYHNRb4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Aug 2008 13:31:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751460AbYHNRbs
+	id S1756725AbYHNRe2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Aug 2008 13:34:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751286AbYHNReU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Aug 2008 13:31:48 -0400
-Received: from mail-gx0-f16.google.com ([209.85.217.16]:32868 "EHLO
+	Thu, 14 Aug 2008 13:34:20 -0400
+Received: from mail-gx0-f16.google.com ([209.85.217.16]:40584 "EHLO
 	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751019AbYHNRbr (ORCPT
+	with ESMTP id S1750735AbYHNReT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Aug 2008 13:31:47 -0400
+	Thu, 14 Aug 2008 13:34:19 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
          :content-type:content-transfer-encoding:content-disposition
          :references;
-        b=MxJWt4w0KfaZhlvDA19B/0MM47ZK2nzlSKxqHk2jeEsWDgKYAaRU2eXtjrrHqt+CsV
-         by3OqOqWckt8UTXNkMC9q87NOiqIDDbAoPGOIw2f9W8Ep6ReAo4R76KmNNJkk/VT7Xqg
-         /Jp32QCewqOqnTYAucbPHgI1FyARYO0NenJ40=
-Message-ID: <86802c440808141031p2712976cqe2c34d3b986ad810@mail.gmail.com>
-Date: Thu, 14 Aug 2008 10:31:45 -0700
+        b=Db9VHhxCYaXlBGzBd2McXnM4LvuHu3ZRwIv1nW4zNw1vTlJTd/hF3BkqeNa7rHFQbn
+         HAtadkUOO25xIxrem0INSaDZPDhv/8vZ30IA4Ln0SuSestiDvpQCkFhKgFFiSsxyPE9r
+         WnSVwjItSwFVbLDP0BumlGMrWErv/h+VTxSzM=
+Message-ID: <86802c440808141034g15542e2i1bdaf4615264df98@mail.gmail.com>
+Date: Thu, 14 Aug 2008 10:34:18 -0700
 From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Alexander Huemer" <alexander.huemer@sbg.ac.at>
-Subject: Re: 2.6.27-rc1 mtrr fixes do not work
-Cc: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Andi Kleen" <andi@firstfloor.org>
-In-Reply-To: <48A43CB5.8010709@sbg.ac.at>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [PATCH] irq: sparse irqs, fix #3
+Cc: "Thomas Gleixner" <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       linux-kernel@vger.kernel.org, "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>
+In-Reply-To: <20080814140733.GA31829@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <4899AF8E.20105@sbg.ac.at>
-	 <7E82351C108FA840AB1866AC776AEC46092119D3@orsmsx505.amr.corp.intel.com>
-	 <86802c440808071323o3021a90rae51223187bfd47b@mail.gmail.com>
-	 <86802c440808071326m21cff146s3fb5e6118a58a2ca@mail.gmail.com>
-	 <489B73B7.4090705@sbg.ac.at>
-	 <86802c440808071616o23dde07atd694b45375f9d6ac@mail.gmail.com>
-	 <86802c440808071617i1344e595wb9cc7c2bf75a5b3f@mail.gmail.com>
-	 <489B85A3.7030500@sbg.ac.at>
-	 <86802c440808071658yd120d04y370859dcf5a7b759@mail.gmail.com>
-	 <48A43CB5.8010709@sbg.ac.at>
+References: <1218705441-21838-1-git-send-email-yhlu.kernel@gmail.com>
+	 <20080814132638.GA18743@elte.hu> <20080814140733.GA31829@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 14, 2008 at 7:09 AM, Alexander Huemer
-<alexander.huemer@sbg.ac.at> wrote:
-> Yinghai Lu wrote:
->>
->> On Thu, Aug 7, 2008 at 4:30 PM, Alexander Huemer
->> <alexander.huemer@sbg.ac.at> wrote:
->>
->>>
->>> Yinghai Lu wrote:
->>>
->>
->>
->>>>>
->>>>> can you put "debug" in command line too?
->>>>>
->>>>>
->>>>
->>>> without mtrr_chunk_size etc in command line...please
->>>>
->>>>
->>>
->>> http://xx.vu/~ahuemer/dmesg_3.txt
->>>
->>>
->>
->> do you have
->> CONFIG_MTRR=y
->> CONFIG_MTRR_SANITIZER=y
->> CONFIG_MTRR_SANITIZER_ENABLE_DEFAULT=1
->> CONFIG_MTRR_SANITIZER_SPARE_REG_NR_DEFAULT=1
->>
->> in your .config?
->>
->> YH
->>
+On Thu, Aug 14, 2008 at 7:07 AM, Ingo Molnar <mingo@elte.hu> wrote:
 >
-> 2.6.27_rc3 does not solve the problem either.
-> what can i do to help?
+> From 1b53f0444df394e4448ba56694f0bc4dda2bece0 Mon Sep 17 00:00:00 2001
+> From: Ingo Molnar <mingo@elte.hu>
+> Date: Thu, 14 Aug 2008 16:07:04 +0200
+> Subject: [PATCH] irq: sparse irqs, fix #3
+>
+> fix non-APIC UP build:
+>
+>  arch/x86/kernel/built-in.o: In function `setup_arch':
+>  : undefined reference to `pin_map_size'
+>  arch/x86/kernel/built-in.o: In function `setup_arch':
+>  : undefined reference to `first_free_entry'
+>
+> Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> ---
+>  arch/x86/kernel/setup.c |    2 ++
+>  1 files changed, 2 insertions(+), 0 deletions(-)
+>
+> diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
+> index 24e984e..8318a35 100644
+> --- a/arch/x86/kernel/setup.c
+> +++ b/arch/x86/kernel/setup.c
+> @@ -863,8 +863,10 @@ void __init setup_arch(char **cmdline_p)
+>                nr_irqs = 32 * nr_cpu_ids + 224;
+>        init_cpu_to_node();
+>  #endif
+> +#ifdef CONFIG_X86_LOCAL_APIC
+>        pin_map_size = nr_irqs * 2;
+>        first_free_entry = nr_irqs;
+> +#endif
+>
+>        init_apic_mappings();
+>        ioapic_init_mappings();
+>
 
-please send out you config
+we don't need pin_map_size and first_free_entry after 64 and 32 bit
+all put irq_2_pin in irq_cfg.
+
+need to remove them.
 
 YH
