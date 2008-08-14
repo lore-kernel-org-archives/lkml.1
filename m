@@ -1,74 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755992AbYHNURo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756525AbYHNUVR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755992AbYHNURo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Aug 2008 16:17:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752883AbYHNURg
+	id S1756525AbYHNUVR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Aug 2008 16:21:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752600AbYHNUVE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Aug 2008 16:17:36 -0400
-Received: from smtp.wellnetcz.com ([212.24.148.102]:37127 "EHLO
-	smtp.wellnetcz.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752394AbYHNURf (ORCPT
+	Thu, 14 Aug 2008 16:21:04 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:37526 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752500AbYHNUVD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Aug 2008 16:17:35 -0400
-From: Jiri Slaby <jirislaby@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: containers@lists.linux-foundation.org, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, Jiri Slaby <jirislaby@gmail.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>
-Subject: [PATCH 1/1] mm_owner: fix cgroup null dereference
-Date: Thu, 14 Aug 2008 22:16:53 +0200
-Message-Id: <1218745013-9537-1-git-send-email-jirislaby@gmail.com>
-X-Mailer: git-send-email 1.5.6.5
+	Thu, 14 Aug 2008 16:21:03 -0400
+Date: Thu, 14 Aug 2008 16:20:39 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Theodore Tso <tytso@mit.edu>, Christoph Hellwig <hch@infradead.org>,
+       Eric Paris <eparis@redhat.com>, tvrtko.ursulin@sophos.com,
+       alan@lxorguk.ukuu.org.uk, andi@firstfloor.org,
+       Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
+       malware-list@lists.printk.net, malware-list-bounces@dmesg.printk.net,
+       peterz@infradead.org, viro@ZenIV.linux.org.uk
+Subject: Re: [malware-list] TALPA - a threat model?  well sorta.
+Message-ID: <20080814202039.GA4509@infradead.org>
+References: <20080813192922.GI8232@mit.edu> <20080814093103.6CD102FE8B4@pmx1.sophos.com> <20080814132455.GE6469@mit.edu> <1218721713.3540.125.camel@localhost.localdomain> <20080814155028.GB8256@mit.edu> <1218734985.9375.5.camel@paris.rdu.redhat.com> <20080814191726.GG22488@mit.edu> <20080814193408.GA10236@infradead.org> <20080814194111.GH22488@mit.edu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080814194111.GH22488@mit.edu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Thu, Aug 14, 2008 at 03:41:11PM -0400, Theodore Tso wrote:
+> We do need a standardized way of enabling it (since it does cost you
+> something in performance, so not everyone will want it on), and a
+> standardized way of reading i_version out to userspace.  Maybe a mount
+> option is the right way to do it, maybe not.
+> 
+> We may want to take this to the linux-fs list and try to get
+> agreements on these points; the main reason why it's not enabled by
+> default in ext4 is because the NFSv4 advanced caching code is in
+> common use (is it even in mainline)?
 
-found this in mmotm, a fix for
-mm-owner-fix-race-between-swap-and-exit.patch
-
---
-
-mm->owner is set to NULL prior to calling cgroup_mm_owner_callbacks,
-but it should be set after that to not pass NULL pointer as the old
-owner which otherwise results in an oops (shortened):
-
-BUG: unable to handle kernel NULL pointer dereference at 0000000000000580
-Oops: 0000 [1] SMP
-Pid: 3396, comm: nscd Tainted: G        W 2.6.27-rc3-mm1_64 #439
-RIP: 0010:[<ffffffff8027035a>]  [<ffffffff8027035a>] cgroup_mm_owner_callbacks+0x3a/0x90
-RAX: 0000000000000000 RBX: ffffffff80589720 RCX: ffff880079f503e8
-RDX: 0000000000000000 RSI: 0000000000000000 RDI: ffffffff806c36e0
-RBP: ffff880078291bd8 R08: ffff880078290000 R09: 0000000000000000
-R10: 0000000000000001 R11: 0000000000000000 R12: 0000000000000000
-R13: 0000000000000000 R14: 0000000000000000 R15: ffff8800787f8e20
-Call Trace:
- [<ffffffff8023d42a>] mm_update_next_owner+0x1ca/0x240
- [<ffffffff8023d5aa>] exit_mm+0x10a/0x150
- [<ffffffff8023f1fc>] do_exit+0x1dc/0x940
-Code: 89 fe 41 55 49 89 f5 41 54 53 74 68 48 c7 c3 20 97 58 80 45 31 e4 0f 1f 00 48 8b 3b 4d 85 ed 48 63 47 58 48 8d 14 c5 00 00 00 00 <49> 8b 86 80 05 00 00 48 8d 44 10 38 48 8b 00 48 8b 30 74 12 49
-
-Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
-Cc: Balbir Singh <balbir@linux.vnet.ibm.com>
----
- kernel/exit.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/kernel/exit.c b/kernel/exit.c
-index 3f47470..3a2a42a 100644
---- a/kernel/exit.c
-+++ b/kernel/exit.c
-@@ -637,8 +637,8 @@ retry:
- 	 * the callback and take action
- 	 */
- 	down_write(&mm->mmap_sem);
--	mm->owner = NULL;
- 	cgroup_mm_owner_callbacks(mm->owner, NULL);
-+	mm->owner = NULL;
- 	up_write(&mm->mmap_sem);
- 	return;
- 
--- 
-1.5.6.5
+I have not yet seen code actually using it at all, neither in mainline
+nor on one of the many nfs development lists.
 
