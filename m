@@ -1,56 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759215AbYHNNvm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759284AbYHNNwU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759215AbYHNNvm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Aug 2008 09:51:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752223AbYHNNve
+	id S1759284AbYHNNwU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Aug 2008 09:52:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752223AbYHNNwH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Aug 2008 09:51:34 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:35658 "EHLO mx3.mail.elte.hu"
+	Thu, 14 Aug 2008 09:52:07 -0400
+Received: from ns2.suse.de ([195.135.220.15]:57593 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751466AbYHNNve (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Aug 2008 09:51:34 -0400
-Date: Thu, 14 Aug 2008 15:51:22 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Alex Nixon <alex.nixon@citrix.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] sched: fix rt-bandwidth hotplug race
-Message-ID: <20080814135122.GB14333@elte.hu>
-References: <1218721740.10800.230.camel@twins>
-MIME-Version: 1.0
+	id S1752476AbYHNNwG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Aug 2008 09:52:06 -0400
+Date: Thu, 14 Aug 2008 15:52:05 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Hugh Dickins <hugh@veritas.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [rfc][patch] mm: dirty page accounting race fix
+Message-ID: <20080814135204.GB29727@wotan.suse.de>
+References: <20080814094537.GA741@wotan.suse.de> <Pine.LNX.4.64.0808141210200.4398@blonde.site> <1218718149.10800.224.camel@twins> <Pine.LNX.4.64.0808141421550.14452@blonde.site>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1218721740.10800.230.camel@twins>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <Pine.LNX.4.64.0808141421550.14452@blonde.site>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Peter Zijlstra <peterz@infradead.org> wrote:
-
-> Subject: sched: fix rt-bandwidth hotplug race
-> From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> Date: Thu Aug 14 15:42:44 CEST 2008
+On Thu, Aug 14, 2008 at 02:39:02PM +0100, Hugh Dickins wrote:
+> On Thu, 14 Aug 2008, Peter Zijlstra wrote:
+> > On Thu, 2008-08-14 at 12:55 +0100, Hugh Dickins wrote:
+> > 
+> > > But holding the page table lock on one pte of the
+> > > page doesn't guarantee much about the integrity of the whole dance:
+> > > do_wp_page does its set_page_dirty_balance for this case, you'd
+> > > need to spell out the bad sequence more to convince me.
+> >  
+> > Now you're confusing me... are you saying ptes can be changed from under
+> > your feet even while holding the pte_lock?
 > 
-> When we hot-unplug a cpu and rebuild the sched-domain, all cpus will be
-> detatched. Alex observed the case where a runqueue was stealing bandwidth
-> from an already disabled runqueue to satisfy its own needs.
+> Well, yes, dirty and accessed can be changed from another thread in
+> userspace while we hold pt lock in the kernel.  (But dirty could only
+> be changed if the pte is writable, and in dirty balancing cases that
+> should be being prevented.)
 > 
-> Stop this by skipping over already disabled runqueues.
-> 
-> Reported-by: Alex Nixon <alex.nixon@citrix.com>
-> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> Tested-by: Alex Nixon <alex.nixon@citrix.com>
+> But no, that isn't what I was thinking of.  pt lock better be enough
+> to secure against kernel modifications to the pte.  I was just thinking
+> there are (potentially) all those other ptes of the page, and this pte
+> may be modified the next instant, it wasn't obvious to me that missing
+> the one is so terrible.
 
-applied to tip/sched/urgent - thanks!
+If I may... perhaps I didn't explain the race well enough. I'll try to
+shed further light on it (or prove myself wrong):
 
-	Ingo
+It is true that there are other ptes, and any of those others at any
+time may be modified when we don't hold their particular ptl.
+
+But after we clean them, they'll require a page fault to dirty them again,
+and we're blocking out page faults (effectively -- see the comments in
+clear_page_dirty_for_io and wait_on_page_locked in do_wp_page) by holding
+the page lock over the call to clear_page_dirty_for_io.
+
+So if we find and clean a dirty/writable pte, we guarantee it won't get
+to the set_page_dirty part of the fault handler until clear_page_dirty_for_io
+has done its TestClearPageDirty.
+
+The problem is in the transiently-cleared-but-actually-dirty ptes that may
+be seen if not holding ptl will not be made readonly at all. TestClearPageDirty
+will clean the page, but we've still got a dirty pte.
+
+HTH
