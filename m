@@ -1,71 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758679AbYHNU00@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757035AbYHNUbh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758679AbYHNU00 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Aug 2008 16:26:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752730AbYHNU0O
+	id S1757035AbYHNUbh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Aug 2008 16:31:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752654AbYHNUb2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Aug 2008 16:26:14 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:56150 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752393AbYHNU0N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Aug 2008 16:26:13 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: "Alan D. Brunelle" <Alan.Brunelle@hp.com>
-Subject: Re: Linux 2.6.27-rc3: kernel BUG at mm/vmalloc.c - bisected
-Date: Thu, 14 Aug 2008 22:29:28 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+	Thu, 14 Aug 2008 16:31:28 -0400
+Received: from tomts20-srv.bellnexxia.net ([209.226.175.74]:52538 "EHLO
+	tomts20-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752046AbYHNUb1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Aug 2008 16:31:27 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AswEAJQwpEhMRKxB/2dsb2JhbACBYrU1gVU
+Date: Thu, 14 Aug 2008 16:31:22 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Jeremy Fitzhardinge <jeremy@goop.org>,
+       Harvey Harrison <harvey.harrison@gmail.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Andi Kleen <andi@firstfloor.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       Steven Rostedt <srostedt@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, Roland McGrath <roland@redhat.com>,
+       Ulrich Drepper <drepper@redhat.com>,
        Rusty Russell <rusty@rustcorp.com.au>,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <48A36838.3050309@hp.com> <200808141814.43484.rjw@sisk.pl> <48A485A8.8010803@hp.com>
-In-Reply-To: <48A485A8.8010803@hp.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+       Gregory Haskins <ghaskins@novell.com>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       "Luis Claudio R. Goncalves" <lclaudio@uudg.org>,
+       Clark Williams <williams@redhat.com>,
+       Christoph Lameter <cl@linux-foundation.org>
+Subject: Re: [RFC PATCH] x86 alternatives : fix LOCK_PREFIX race with
+	preemptible kernel and CPU hotplug
+Message-ID: <20080814203122.GC7896@Krystal>
+References: <48A3A806.8060509@goop.org> <20080814151805.GA29507@Krystal> <48A459B1.2070601@zytor.com> <20080814165802.GC517@Krystal> <48A465F2.8000701@goop.org> <20080814173021.GA4697@Krystal> <48A46EC2.1010301@goop.org> <48A47B83.3090408@zytor.com> <20080814185338.GB7896@Krystal> <48A487A6.9060501@goop.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200808142229.28624.rjw@sisk.pl>
+In-Reply-To: <48A487A6.9060501@goop.org>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 16:24:23 up 71 days,  1:04,  8 users,  load average: 1.24, 0.88,
+	0.70
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, 14 of August 2008, Alan D. Brunelle wrote:
-> Rafael J. Wysocki wrote:
-> > On Thursday, 14 of August 2008, Alan D. Brunelle wrote:
-> >> I ran into this trying 2.6.27-rc3 today:
-> >>
-> >> [6.461876] kernel BUG at mm/vmalloc.c:217!
-> >>
-> >> (full boot log attached)
-> >>
-> >> I bisected it to:
-> >>
-> >> git-bisect bad 1c89ac55017f982355c7761e1c912c88c941483d
-> >>
-> >> which is:
-> >>
-> >> commit 1c89ac55017f982355c7761e1c912c88c941483d
-> >> Merge: 88fa08f... b1b135c...
-> >> Author: Linus Torvalds <torvalds@linux-foundation.org>
-> >> Date:   Tue Aug 12 08:40:19 2008 -0700
-> >>
-> >>     Merge
-> >> git://git.kernel.org/pub/scm/linux/kernel/git/rusty/linux-2.6-for-linus
-> > 
-> > This is a merge commit that introduced several changes into the
-> > kernel.  It would be helpful to search through these changes.
-> 
-> I came in this morning, and did a 'git bisect reset' and 'git pull'
-> built, and everything booted fine. I don't know if some fix came in for
-> something else, or if the problem got "hidden" (some sort of timing
-> thing, so the problem still lurks). If you feel it's important to track
-> this down, if you could give me instructions on how to break apart that
-> one merge, I could then try individual kernels from there...
+* Jeremy Fitzhardinge (jeremy@goop.org) wrote:
+> Mathieu Desnoyers wrote:
+>> So should I wait a bit for more comments or straightforwardly submit
+>> this as a patch rather than RFC ?
+>>   
+>
+> Looks like all the relevant people have reviewed it now, so I don't think 
+> there's much more to say.
+>
+>    J
 
-I have created a Bugzilla entry at
-http://bugzilla.kernel.org/show_bug.cgi?id=11342
-for this problem.  I'll close it now, but please reopen if if the problem
-reappears.
+I'm just worried about this comment from Harvey Harrison :
 
-Thanks,
-Rafael
+arch/x86/mm/fault.c : is_prefetch()
+
+                         * Values 0x26,0x2E,0x36,0x3E are valid x86 prefixes.
+                         * In X86_64 long mode, the CPU will signal invalid
+                         * opcode if some of these prefixes are present so
+                         * X86_64 will never get here anyway
+                         */
+
+This comment refers to :
+
+0x26 : ES segment override prefix
+0x2E : CS segment override prefix
+0x36 : SS segment override prefix
+0x3E : DS segment override prefix
+
+AMD documentation seems to indicate that these prefix will be null, not
+that the cpu would signal "invalid opcodes" :
+
+"AMD 64-Bit Technology" A.7
+http://www.amd.com/us-en/assets/content_type/white_papers_and_tech_docs/x86-64_overview.pdf
+
+"In 64-bit mode, the DS, ES, SS and CS segment-override prefixes have no effect.
+These four prefixes are no longer treated as segment-override prefixes in the
+context of multipleprefix rules. Instead, they are treated as null prefixes."
+
+Intel does not seem to state anything particular about these prefixes
+for the 64-bit mode.
+
+So, is this comment misleading, or is it using the term "invalid opcode"
+in a way that does not imply generating a fault ?
+
+Mathieu
+
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
