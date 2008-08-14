@@ -1,42 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754824AbYHNOqv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754105AbYHNOtR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754824AbYHNOqv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Aug 2008 10:46:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751680AbYHNOql
+	id S1754105AbYHNOtR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Aug 2008 10:49:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750738AbYHNOtJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Aug 2008 10:46:41 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:56983 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751182AbYHNOqk (ORCPT
+	Thu, 14 Aug 2008 10:49:09 -0400
+Received: from brmea-mail-3.Sun.COM ([192.18.98.34]:59563 "EHLO
+	brmea-mail-3.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750753AbYHNOtI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Aug 2008 10:46:40 -0400
-Message-ID: <48A444FC.8090908@linux-foundation.org>
-Date: Thu, 14 Aug 2008 09:45:16 -0500
-From: Christoph Lameter <cl@linux-foundation.org>
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
-MIME-Version: 1.0
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       KOSAKI Motohiro <m-kosaki@ceres.dti.ne.jp>,
-       Matthew Wilcox <matthew@wil.cx>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       Mel Gorman <mel@skynet.ie>, andi@firstfloor.org,
-       Rik van Riel <riel@redhat.com>
-Subject: Re: No, really, stop trying to delete slab until you've finished
- making slub perform as well
-References: <20080805210125.A897.KOSAKI.MOTOHIRO@jp.fujitsu.com> <48986AC6.5030406@linux-foundation.org> <20080813194222.E77F.KOSAKI.MOTOHIRO@jp.fujitsu.com> <48A2DD2C.3090602@linux-foundation.org> <48A3DBAC.6010109@cs.helsinki.fi>
-In-Reply-To: <48A3DBAC.6010109@cs.helsinki.fi>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Thu, 14 Aug 2008 10:49:08 -0400
+Date: Thu, 14 Aug 2008 06:48:51 -0400
+From: David Collier-Brown <davecb@sun.com>
+Subject: Re: [malware-list] [RFC 0/5] [TALPA] Intro to a linuxinterfaceforon
+ access scanning
+In-reply-to: <g7qccj$6m0$1@taverner.cs.berkeley.edu>
+To: David Wagner <daw-news@cs.berkeley.edu>
+Cc: linux-kernel@vger.kernel.org
+Reply-to: davecb@sun.com
+Message-id: <48A40D93.2080408@sun.com>
+MIME-version: 1.0
+Content-type: text/plain; format=flowed; charset=us-ascii
+Content-transfer-encoding: 7BIT
+X-Accept-Language: en-us, en
+References: <20080806105008.GF6477@cs181140183.pp.htv.fi>
+ <200808111645.48177.mdontu@bitdefender.com>
+ <20080811065608.44687f65@infradead.org> <48A0649B.4010706@sun.com>
+ <g7qccj$6m0$1@taverner.cs.berkeley.edu>
+User-Agent: Mozilla/5.0 (X11; U; SunOS sun4u; en-US; rv:1.7) Gecko/20041221
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pekka Enberg wrote:
-> This patch hard locks  on my 2-way 64-bit x86 machine (sysrq doesn't 
-> respond) when I run hackbench.
-Hmmm.. Then the issue may be different than we thought. Lock may be 
-taken recursively in some situations.
-Can you enable lockdep?
+Sidebar again...
 
+David Wagner wrote:
+> 3. Let me point out that you snipped a key line from Arjan van
+> de Ven's email:
+>   Answering Ted's questions would be a really good start...
 
+Alas, I don't remember what Ted's question was, so I tried to see
+if I could start a discussion about the most general one (;-))
+
+--dave (not an AV guy) c-b
+-- 
+David Collier-Brown            | Always do right. This will gratify
+Sun Microsystems, Toronto      | some people and astonish the rest
+davecb@sun.com                 |                      -- Mark Twain
+cell: (647) 833-9377, bridge: (877) 385-4099 code: 506 9191#
