@@ -1,53 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754580AbYHNVnH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753880AbYHNVrT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754580AbYHNVnH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Aug 2008 17:43:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751352AbYHNVm4
+	id S1753880AbYHNVrT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Aug 2008 17:47:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751332AbYHNVrI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Aug 2008 17:42:56 -0400
-Received: from ns1.suse.de ([195.135.220.2]:60757 "EHLO mx1.suse.de"
+	Thu, 14 Aug 2008 17:47:08 -0400
+Received: from gw.goop.org ([64.81.55.164]:39971 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751019AbYHNVmz convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Aug 2008 17:42:55 -0400
-From: Oliver Neukum <oneukum@suse.de>
-Organization: Novell
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [linux-pm] Power management for SCSI
-Date: Thu, 14 Aug 2008 23:43:55 +0200
-User-Agent: KMail/1.9.9
-Cc: Pavel Machek <pavel@suse.cz>, linux-pm@lists.linux-foundation.org,
-       James.Bottomley@hansenpartnership.com,
-       "Linux-pm mailing list" <linux-pm@lists.osdl.org>,
-       kernel list <linux-kernel@vger.kernel.org>, teheo@novell.com
-References: <Pine.LNX.4.44L0.0808141141570.2846-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0808141141570.2846-100000@iolanthe.rowland.org>
+	id S1751324AbYHNVrH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Aug 2008 17:47:07 -0400
+Message-ID: <48A4A7B4.3060008@goop.org>
+Date: Thu, 14 Aug 2008 14:46:28 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200808142343.56505.oneukum@suse.de>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: Harvey Harrison <harvey.harrison@gmail.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Andi Kleen <andi@firstfloor.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       Steven Rostedt <srostedt@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, Roland McGrath <roland@redhat.com>,
+       Ulrich Drepper <drepper@redhat.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Gregory Haskins <ghaskins@novell.com>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       "Luis Claudio R. Goncalves" <lclaudio@uudg.org>,
+       Clark Williams <williams@redhat.com>,
+       Christoph Lameter <cl@linux-foundation.org>
+Subject: Re: [RFC PATCH] x86 alternatives : fix LOCK_PREFIX race with	preemptible
+ kernel and CPU hotplug
+References: <48A3A806.8060509@goop.org> <20080814151805.GA29507@Krystal> <48A459B1.2070601@zytor.com> <20080814165802.GC517@Krystal> <48A465F2.8000701@goop.org> <20080814173021.GA4697@Krystal> <48A46EC2.1010301@goop.org> <48A47B83.3090408@zytor.com> <20080814185338.GB7896@Krystal> <48A487A6.9060501@goop.org> <20080814203122.GC7896@Krystal>
+In-Reply-To: <20080814203122.GC7896@Krystal>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Donnerstag 14 August 2008 17:47:02 schrieb Alan Stern:
-> > I don't really argue against flushing the caches. But I cannot that this would
-> > demand that we should implement autopsuspend for SCSI. It seems like
-> > overengineering to me.
-> 
-> Think of it in two parts: idle-timeout detection and autosuspend.  
-> Presumably you don't object to the idle-timeout detection (which is 
-> needed for powering down links in general), and you don't argue against 
-> the cache-flushing part of autosuspend.  Taken together, that's about 
-> 90% of my proposal.  So what is the objectionable 10%?
+Mathieu Desnoyers wrote:
+> I'm just worried about this comment from Harvey Harrison :
+>
+> arch/x86/mm/fault.c : is_prefetch()
+>
+>                          * Values 0x26,0x2E,0x36,0x3E are valid x86 prefixes.
+>                          * In X86_64 long mode, the CPU will signal invalid
+>                          * opcode if some of these prefixes are present so
+>                          * X86_64 will never get here anyway
+>   
 
-The core problem is that you insist on a rigid bottom-to-top flow of
-autosuspensions. That's good for systems like USB and PCI which
-are trees for PM purposes. It makes no sense for true busses with
-equal members on the bus.
+I would say that comment is wrong.  But we'd never put a lock prefix on 
+a prefetch, so you won't be added a ds prefix either.
 
-	Regards
-		Oliver
-
+    J
