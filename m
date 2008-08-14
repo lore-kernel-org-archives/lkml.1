@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755255AbYHNBxM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755679AbYHNB5Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755255AbYHNBxM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Aug 2008 21:53:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751479AbYHNBwy
+	id S1755679AbYHNB5Y (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Aug 2008 21:57:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751934AbYHNB5L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Aug 2008 21:52:54 -0400
-Received: from smtp.opengridcomputing.com ([209.198.142.2]:54489 "EHLO
-	smtp.opengridcomputing.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751137AbYHNBwx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Aug 2008 21:52:53 -0400
-Message-ID: <48A38FEF.6090500@opengridcomputing.com>
-Date: Wed, 13 Aug 2008 20:52:47 -0500
-From: Steve Wise <swise@opengridcomputing.com>
-User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
+	Wed, 13 Aug 2008 21:57:11 -0400
+Received: from mail.es335.com ([67.65.19.105]:22749 "EHLO mail.es335.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751835AbYHNB5K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Aug 2008 21:57:10 -0400
+X-Greylist: delayed 1817 seconds by postgrey-1.27 at vger.kernel.org; Wed, 13 Aug 2008 21:57:09 EDT
+Message-ID: <48A390F4.5080101@opengridcomputing.com>
+Date: Wed, 13 Aug 2008 20:57:08 -0500
+From: Tom Tucker <tom@opengridcomputing.com>
+User-Agent: Thunderbird 2.0.0.16 (Macintosh/20080707)
 MIME-Version: 1.0
 To: David Miller <davem@davemloft.net>
-CC: tom@opengridcomputing.com, rdreier@cisco.com, rick.jones2@hp.com,
-       jgarzik@pobox.com, divy@chelsio.com, kxie@chelsio.com,
+CC: rdreier@cisco.com, rick.jones2@hp.com, jgarzik@pobox.com,
+       swise@opengridcomputing.com, divy@chelsio.com, kxie@chelsio.com,
        netdev@vger.kernel.org, open-iscsi@googlegroups.com,
        michaelc@cs.wisc.edu, daisyc@us.ibm.com, wenxiong@us.ibm.com,
        bhua@us.ibm.com, dm@chelsio.com, leedom@chelsio.com,
@@ -49,12 +49,23 @@ David Miller wrote:
 >
 > The data placement is a side effect that the networking stack can
 > completely ignore if it chooses to.
+> --
+> To unsubscribe from this list: send the line "unsubscribe netdev" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 >   
-How do you envision programming such a device?  It will need TCP and 
-iSCSI state to have any chance of doing useful and productive placement 
-of data.  The smarts about the iSCSI stateless offload hw will be in the 
-device driver, probably the iscsi device driver.  How will it gather the 
-information from the TCP stack to insert the correct state for a flow 
-into the hw cache?
+Ok. Maybe we're getting somewhere here ... or at least I am :-)
 
+I'm not trying to be pedantic here but let me try and restate what I 
+think you said above:
+
+- The "header" traverses the real networking stack
+- The "payload" is placed either by by the hardware if possible or by 
+the native stack if on the exception path
+- The "header" may aggregate multiple  PDU (RSO)
+- Data ready indications are controlled entirely by the software/real 
+networking stack
+
+Thanks,
+Tom
 
