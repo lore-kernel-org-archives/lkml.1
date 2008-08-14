@@ -1,71 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755962AbYHNWeV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754806AbYHNWiO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755962AbYHNWeV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Aug 2008 18:34:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751352AbYHNWeL
+	id S1754806AbYHNWiO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Aug 2008 18:38:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751490AbYHNWh6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Aug 2008 18:34:11 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:40087 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751019AbYHNWeK (ORCPT
+	Thu, 14 Aug 2008 18:37:58 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:55489 "EHLO
+	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751410AbYHNWh5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Aug 2008 18:34:10 -0400
-Message-ID: <48A4B132.80501@zytor.com>
-Date: Thu, 14 Aug 2008 15:26:58 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Thu, 14 Aug 2008 18:37:57 -0400
+Date: Fri, 15 Aug 2008 00:39:18 +0200
+From: Pavel Machek <pavel@suse.cz>
+To: "Press, Jonathan" <Jonathan.Press@ca.com>
+Cc: tvrtko.ursulin@sophos.com, Arjan van de Ven <arjan@infradead.org>,
+       Adrian Bunk <bunk@kernel.org>, davecb@sun.com, Greg KH <greg@kroah.com>,
+       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       malware-list@lists.printk.net, Mihai Don??u <mdontu@bitdefender.com>
+Subject: Re: [malware-list] [RFC 0/5] [TALPA] Intro to alinuxinterfaceforon
+	access scanning
+Message-ID: <20080814223918.GC6370@elf.ucw.cz>
+References: <20080813125638.GB6995@ucw.cz> <20080813135207.CC08C3765BC@pmx1.sophos.com> <20080814125410.GA2262@elf.ucw.cz> <2629CC4E1D22A64593B02C43E855530304AE4BE3@USILMS12.ca.com>
 MIME-Version: 1.0
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Harvey Harrison <harvey.harrison@gmail.com>,
-       Andi Kleen <andi@firstfloor.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
-       Steven Rostedt <srostedt@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, Roland McGrath <roland@redhat.com>,
-       Ulrich Drepper <drepper@redhat.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Gregory Haskins <ghaskins@novell.com>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       "Luis Claudio R. Goncalves" <lclaudio@uudg.org>,
-       Clark Williams <williams@redhat.com>,
-       Christoph Lameter <cl@linux-foundation.org>
-Subject: Re: [RFC PATCH] x86 alternatives : fix LOCK_PREFIX race with	preemptible
- kernel and CPU hotplug
-References: <48A3A806.8060509@goop.org> <20080814151805.GA29507@Krystal> <48A459B1.2070601@zytor.com> <20080814165802.GC517@Krystal> <48A465F2.8000701@goop.org> <20080814173021.GA4697@Krystal> <48A46EC2.1010301@goop.org> <48A47B83.3090408@zytor.com> <20080814185338.GB7896@Krystal> <48A487A6.9060501@goop.org> <20080814203122.GC7896@Krystal> <48A4A7B4.3060008@goop.org>
-In-Reply-To: <48A4A7B4.3060008@goop.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <2629CC4E1D22A64593B02C43E855530304AE4BE3@USILMS12.ca.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge wrote:
-> Mathieu Desnoyers wrote:
->> I'm just worried about this comment from Harvey Harrison :
->>
->> arch/x86/mm/fault.c : is_prefetch()
->>
->>                          * Values 0x26,0x2E,0x36,0x3E are valid x86 
->> prefixes.
->>                          * In X86_64 long mode, the CPU will signal 
->> invalid
->>                          * opcode if some of these prefixes are 
->> present so
->>                          * X86_64 will never get here anyway
->>   
+Hi!
+
+> > Okay, so goal of libmalware.so is to "not allow data in the black list
+> > to pass through Linux server". Threat model is windows machines trying
+> > to copy infected files through the server. 
 > 
-> I would say that comment is wrong.  But we'd never put a lock prefix on 
-> a prefetch, so you won't be added a ds prefix either.
+> That's only part of the threat model.
+
+Yes, that's the part libmalware.so proposal solves. Given scary number
+of 0 Linux viruses in wild, it seems to solve the problem pretty well.
+
+> > it actually _works_, 100% of time, for apps using it.
 > 
+> Again that's a big condition.
 
-Locking prefetches is definitely wrong :)
-
-I don't know if the comment is correct; I've certainly never heard of 
-that myself.
-
-	-hpa
+Yep, so... why don't you propose something better? I'm pretty sure
+100% reliable scanning is impossible without modifying applications,
+but hey, you can prove me wrong.
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
