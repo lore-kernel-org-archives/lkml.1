@@ -1,56 +1,186 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755592AbYHNH6T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756204AbYHNIG1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755592AbYHNH6T (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Aug 2008 03:58:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752462AbYHNH6K
+	id S1756204AbYHNIG1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Aug 2008 04:06:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752464AbYHNIGM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Aug 2008 03:58:10 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:12546 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752042AbYHNH6J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Aug 2008 03:58:09 -0400
-Date: Thu, 14 Aug 2008 09:58:03 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Fernando Luis =?iso-8859-1?Q?V=E1zquez?= Cao 
-	<fernando@oss.ntt.co.jp>
-Cc: Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org,
-       ?????? ?????? <yoshikawa.takuya@oss.ntt.co.jp>, dpshah@google.com
-Subject: Re: [PATCH] virtio_blk: use a wrapper function to access io context  information of IO requests
-Message-ID: <20080814075802.GI20055@kernel.dk>
-References: <1218014196.4419.44.camel@sebastian.kern.oss.ntt.co.jp> <1218611163.8001.108.camel@sebastian.kern.oss.ntt.co.jp> <1218615271.16667.38.camel@sebastian.kern.oss.ntt.co.jp> <200808141442.09633.rusty@rustcorp.com.au> <1218691031.31285.20.camel@sebastian.kern.oss.ntt.co.jp> <1218691323.31285.31.camel@sebastian.kern.oss.ntt.co.jp>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1218691323.31285.31.camel@sebastian.kern.oss.ntt.co.jp>
+	Thu, 14 Aug 2008 04:06:12 -0400
+Received: from gv-out-0910.google.com ([216.239.58.190]:14704 "EHLO
+	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752357AbYHNIGJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Aug 2008 04:06:09 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=j+yK55VCDG13r3vv0L8XNqtIPjkPMHEYx8NURZnSdZP+7PCrfmouOqeLw+eOpJKoVs
+         yxEWnXnEBpk5bESzJcgIQHjvNbxfuki+Qrsva1+Uh/2Lsfmi5qdCcSikHQs0YSMZoVtg
+         3uvdZMmta4sQ57oSomcZvR2wfSyQ98FkTa2h8=
+Subject: RE: Possible CPU_IDLE bug [WAS: Re: Timer unstability on
+	when	using C2	and deeper sleep states (Dell Latitude XT)]
+From: Milan Plzik <milan.plzik@gmail.com>
+To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "tglx@linutronix.de" <tglx@linutronix.de>
+In-Reply-To: <7E82351C108FA840AB1866AC776AEC460945BFF2@orsmsx505.amr.corp.intel.com>
+References: <1218566008.13866.41.camel@localhost>
+	 <1218625125.4304.7.camel@localhost> <1218636980.5250.12.camel@localhost>
+	 <7E82351C108FA840AB1866AC776AEC460945BB44@orsmsx505.amr.corp.intel.com>
+	 <1218658873.4336.15.camel@localhost>
+	 <7E82351C108FA840AB1866AC776AEC460945BFF2@orsmsx505.amr.corp.intel.com>
+Content-Type: text/plain
+Date: Thu, 14 Aug 2008 10:05:51 +0200
+Message-Id: <1218701151.4285.9.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 14 2008, Fernando Luis Vázquez Cao wrote:
-> struct request has an ioprio member but it is never updated because
-> currently bios do not hold io context information. The implication of
-> this is that virtio_blk ends up passing useless information to the
-> backend driver.
+On St, 2008-08-13 at 14:22 -0700, Pallipadi, Venkatesh wrote:
 > 
-> That said, some IO schedulers such as CFQ do store io context
-> information in struct request, but use private members for that, which
-> means that that information cannot be directly accessed in a IO
-> scheduler-independent way.
+> >-----Original Message-----
+> >From: Milan Plzik [mailto:milan.plzik@gmail.com]
+> >Sent: Wednesday, August 13, 2008 1:21 PM
+> >To: Pallipadi, Venkatesh
+> >Cc: linux-kernel@vger.kernel.org
+> >Subject: RE: Possible CPU_IDLE bug [WAS: Re: Timer unstability
+> >on when using C2 and deeper sleep states (Dell Latitude XT)]
+> >
+> >On St, 2008-08-13 at 11:14 -0700, Pallipadi, Venkatesh wrote:
+> >>
+> >> >-----Original Message-----
+> >> >From: linux-kernel-owner@vger.kernel.org
+> >> >[mailto:linux-kernel-owner@vger.kernel.org] On Behalf Of Milan Plzik
+> >> >Sent: Wednesday, August 13, 2008 7:16 AM
+> >> >To: linux-kernel@vger.kernel.org
+> >> >Subject: Possible CPU_IDLE bug [WAS: Re: Timer unstability on
+> >> >when using C2 and deeper sleep states (Dell Latitude XT)]
+> >> >
+> >> >  Hello again,
+> >> >
+> >> >On St, 2008-08-13 at 12:58 +0200, Milan Plzik wrote:
+> >> >> I apologize for replying on my own mail (and also for
+> >> >top-posting, but
+> >> >> this information is global update, not exactly fitting
+> >any of topics
+> >> >> mentioned below).
+> >> >>
+> >> >>   After playing for a longer while I found out that the
+> >system ends
+> >> >> sometimes in state where, in order to do anything useful,
+> >I need to
+> >> >> press keys on keyboard. Otherwise, the system just stalls and does
+> >> >> nothing. I have no idea why does this happen (especially
+> >when I know
+> >> >> that OHCI or wireless network adapter produce fair amount of
+> >> >> interrupts). My /proc/interrupts is below. Just for the record,
+> >> >> chipset
+> >> >> on board is ATI RS600 with (apparently from lspci) ATI SB600
+> >> >> southbridge.
+> >> >
+> >> >  it looks like this problem disappears if CONFIG_CPU_IDLE option is
+> >> >disabled, system seems to be stable for more than one hour. This
+> >> >suggests that something may be wrong with the CPU_IDLE
+> >code. I can not
+> >> >spend much more time by debugging the kernel, but if anyone has an
+> >> >suggestion about what to fix, I will gladly test it.
+> >> >
+> >> >  Best regards,
+> >> >        Milan Plzik
+> >>
+> >> It may not be a problem with cpuidle code per se. We have
+> >had issues earlier like this one
+> >>
+> >> http://bugzilla.kernel.org/show_bug.cgi?id=10011
+> >>
+> >> Cpuidle tries to go to C3 state aggressively and thus may be
+> >indirectly causing the problem with graphics hardware or
+> >something like that.
+> >>
+> >> From Dave's comment in the above bugzilla:
+> >> can you try with Option "DRI" "Off" in your xorg.conf
+> >>
+> >> Does that change anything?
+> >
+> >  The DRI flag itself seems to have little to no effect on
+> >what actually
+> >happens. I noticed that the problems are really visible with
+> >CONFIG_HZ_1000 and no preemption, other settings seem to blur the
+> >problem a little (but it seems to be still there). I did some
+> >additional
+> >testing, below are the results. Testing programs were: powertop (ran
+> >immediately after booting), X server startup and starting mplayer with
+> >some videos.
+> >
+> >1) plain boot witho processor.max_cstate not set, DRI off:
+> >  (boot process seemed to stall here and there)
+> >  a) powertop on console (before running X server) returns bogus
+> >numbers, like 20000 wakeups/sec.
+> >  b) starting X server -- succeeds, but only after tapping keys on
+> >keyboard, otherwise seems to stall.
+> >  c) mplayer seems to get stuck here and there, keypresses help and it
+> >is able to play a little more of the video for a while.
+> >  d) additional observation: keyboard autorepeat stopped (mostly)
+> >working, though it was enabled in both X server and console
+> >
+> >2) processor.max_cstate=2, DRI off
+> >  a) powertop on console starts giving rational numbers, such as 300
+> >wakeups/sec
+> >  b) X server seems to start correctly
+> >  c) mplayer seems to play files for a while, then it starts flickering
+> >as if it wasn't able to keep up with speed; at the same time powertop
+> >reports 90% of time spent in C2
+> >
+> >2a) processor.max_cstate=2, DRI on (just changed X server configuration
+> >without reboot)
+> >  video playback seems to be more stable, but that might be just GPU
+> >acceleration
+> >
+> >3) processor.max_cstate=2, DRI on after cold reboot
+> >  symptoms like with attempt 1), but powertop returns correct numbers
+> >
+> >4) processor.max_cstate=1, DRI on
+> >  in this state I'm writing this e-mail and so far seems to be
+> >stable :)
+> >
+> ><guess>
+> >  I can just guess what causes these problems... . 1) might seem like
+> >improper timer setup after resuming from C3 (at least that
+> >would explain
+> >that weird powertop numbers).
+> >
+> >  The issue with keyboard needing to be pressed seems more like some
+> >race condition, when sometimes the interrupts are not properly enabled
+> >-- sometimes it works, sometimes not.
+> ></guess>
+> >
+> >  I hope these results will help at least a little. If something other
+> >is neccessary, I'll try to do it ASAP.
+> >
 > 
-> This patch adds a function to obtain the ioprio of a request. We should
-> avoid accessing ioprio directly and use this function instead, so that
-> its users do not have to care about future changes in block layer
-> structures or what the currently active IO controller is.
+> Were all these tests with 2.6.26? Can you try with 2.6.27-rc3?
 > 
-> This patch does not introduce any functional changes but paves the way
-> for future clean-ups and enhancements.
-> 
-> Signed-off-by: Fernando Luis Vazquez Cao <fernando@oss.ntt.co.jp>
-> Acked-by: Rusty Russell <rusty@rustcorp.com.au>
+> There is one bugfix patch that, IIRC, went in after 2.6.26.
+> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=b8f8c3cf0a4ac0632ec3f0e15e9dc0c29de917af
 
-Fine with me, applied.
+  I tried it just now, is performs a bit better than 2.6.26 (e.g. I
+don't get that "press any key unless nothing happens" states), even
+reports a bit more reasonable values of wakeups, but the system
+sometimes becomes rather slow (e.g. when playing video). I was not able
+to compile fglrx driver, so I had to change it to radeon one. And also,
+the number of wakeups reported is not very convincing, though, it
+changes from 300 to 600 (which is ~ two times the sum of wakeups)
+without any reason, and sometimes goes even higher.
 
--- 
-Jens Axboe
+  I tried to use nolapic_timer option, but it didn't help.
+
+> 
+> Thanks,
+> Venki
+
+  Thank you,
+	Milan
 
