@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757537AbYHNI3O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755048AbYHNI3c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757537AbYHNI3O (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Aug 2008 04:29:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754041AbYHNI2z
+	id S1755048AbYHNI3c (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Aug 2008 04:29:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755685AbYHNI3I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Aug 2008 04:28:55 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:41411 "EHLO mail.dvmed.net"
+	Thu, 14 Aug 2008 04:29:08 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:41420 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754006AbYHNI2y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Aug 2008 04:28:54 -0400
-Message-ID: <48A3ECBE.9050909@garzik.org>
-Date: Thu, 14 Aug 2008 04:28:46 -0400
+	id S1756076AbYHNI3G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Aug 2008 04:29:06 -0400
+Message-ID: <48A3ECCB.4070500@garzik.org>
+Date: Thu, 14 Aug 2008 04:28:59 -0400
 From: Jeff Garzik <jeff@garzik.org>
 User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-To: Mikael Pettersson <mikpe@it.uu.se>
-CC: khc@pm.waw.pl, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [RESEND][PATCH 2.6.27-rc3] ixp4xx_eth: fix dma_mapping_error()
- compile errors
-References: <200808131908.m7DJ8EAp013777@harpo.it.uu.se>
-In-Reply-To: <200808131908.m7DJ8EAp013777@harpo.it.uu.se>
+To: Vegard Nossum <vegard.nossum@gmail.com>
+CC: Jeff Garzik <jgarzik@redhat.com>, Julia Lawall <julia@diku.dk>,
+       Alexey Dobriyan <adobriyan@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] au1000_eth: use 'unsigned long' for irqflags
+References: <20080810134252.GA19751@localhost.localdomain>
+In-Reply-To: <20080810134252.GA19751@localhost.localdomain>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 X-Spam-Score: -4.4 (----)
@@ -29,33 +29,34 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mikael Pettersson wrote:
-> The arm ixp4xx_eth driver doesn't compile in 2.6.27-rc1:
+Vegard Nossum wrote:
+>>From a0d915d5e99e752389093b3e1d6cae5ab5438392 Mon Sep 17 00:00:00 2001
+> From: Vegard Nossum <vegard.nossum@gmail.com>
+> Date: Wed, 6 Aug 2008 14:12:11 +0200
+> Subject: [PATCH] au1000_eth: use 'unsigned long' for irqflags
 > 
->   CC [M]  drivers/net/arm/ixp4xx_eth.o
-> drivers/net/arm/ixp4xx_eth.c: In function 'eth_poll':
-> drivers/net/arm/ixp4xx_eth.c:554: warning: passing argument 1 of 'dma_mapping_error' makes pointer from integer without a cast
-> drivers/net/arm/ixp4xx_eth.c:554: error: too few arguments to function 'dma_mapping_error'
-> drivers/net/arm/ixp4xx_eth.c: In function 'eth_xmit':
-> drivers/net/arm/ixp4xx_eth.c:701: warning: passing argument 1 of 'dma_mapping_error' makes pointer from integer without a cast
-> drivers/net/arm/ixp4xx_eth.c:701: error: too few arguments to function 'dma_mapping_error'
-> drivers/net/arm/ixp4xx_eth.c: In function 'init_queues':
-> drivers/net/arm/ixp4xx_eth.c:886: warning: passing argument 1 of 'dma_mapping_error' makes pointer from integer without a cast
-> drivers/net/arm/ixp4xx_eth.c:886: error: too few arguments to function 'dma_mapping_error'
-> make[3]: *** [drivers/net/arm/ixp4xx_eth.o] Error 1
-> make[2]: *** [drivers/net/arm] Error 2
-> make[1]: *** [drivers/net] Error 2
-> make: *** [drivers] Error 2
+> The patch was generated using the Coccinelle semantic patch framework.
 > 
-> dma_mapping_error() changed in 2.6.27-rc1 to also take a device parameter,
-> but nobody bothered updating ixp4xx_eth.c. Fixed by passing the appropriate
-> device value in the dma_mapping_error() calls.
-> 
-> Tested on an ixp425 box.
-> 
-> Signed-off-by: Mikael Pettersson <mikpe@it.uu.se>
-> Acked-by: Krzysztof Halasa <khc@pm.waw.pl>
+> Cc: Julia Lawall <julia@diku.dk>
+> Cc: Alexey Dobriyan <adobriyan@gmail.com>
+> Cc: Jeff Garzik <jgarzik@redhat.com>
+> Signed-off-by: Vegard Nossum <vegard.nossum@gmail.com>
 > ---
+>  drivers/net/au1000_eth.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/drivers/net/au1000_eth.c b/drivers/net/au1000_eth.c
+> index cb8be49..5ee1b05 100644
+> --- a/drivers/net/au1000_eth.c
+> +++ b/drivers/net/au1000_eth.c
+> @@ -807,7 +807,7 @@ err_out:
+>  static int au1000_init(struct net_device *dev)
+>  {
+>  	struct au1000_private *aup = (struct au1000_private *) dev->priv;
+> -	u32 flags;
+> +	unsigned long flags;
+>  	int i;
+>  	u32 control;
 
 applied
 
