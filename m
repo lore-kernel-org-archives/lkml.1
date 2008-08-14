@@ -1,53 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758257AbYHNMSo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758532AbYHNMUz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758257AbYHNMSo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Aug 2008 08:18:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754349AbYHNMSf
+	id S1758532AbYHNMUz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Aug 2008 08:20:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752785AbYHNMUp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Aug 2008 08:18:35 -0400
-Received: from viefep11-int.chello.at ([62.179.121.31]:58524 "EHLO
-	viefep11-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754225AbYHNMSe (ORCPT
+	Thu, 14 Aug 2008 08:20:45 -0400
+Received: from web82101.mail.mud.yahoo.com ([209.191.84.214]:23865 "HELO
+	web82101.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751903AbYHNMUo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Aug 2008 08:18:34 -0400
-Subject: Re: [rfc][patch] mm: dirty page accounting race fix
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Hugh Dickins <hugh@veritas.com>
-Cc: Nick Piggin <npiggin@suse.de>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.64.0808141210200.4398@blonde.site>
-References: <20080814094537.GA741@wotan.suse.de>
-	 <Pine.LNX.4.64.0808141210200.4398@blonde.site>
-Content-Type: text/plain
-Date: Thu, 14 Aug 2008 14:18:38 +0200
-Message-Id: <1218716318.10800.209.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 14 Aug 2008 08:20:44 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=sbcglobal.net;
+  h=Received:X-Mailer:Date:From:Subject:To:Cc:MIME-Version:Content-Type:Message-ID;
+  b=mQQt8rwD3J4h3tnyYizDaPiTu83O5DIXuTURaXAkUEl0BQh0grnstsrSzOQXOJvWSHwWZ0J5RLGeLM5Eoa31Ev4si0ullRchx3YGgFzmyfy4y5sMzHF03zW08eH/lsEDr7cHni0xzzNn1zxAnXBdGVKI7ht42BEt6//MXuLShkk=;
+X-Mailer: YahooMailRC/1042.40 YahooMailWebService/0.7.218
+Date: Thu, 14 Aug 2008 05:20:43 -0700 (PDT)
+From: David Witbrodt <dawitbro@sbcglobal.net>
+Subject: Re: HPET regression in 2.6.26 versus 2.6.25 -- why Yinghai's revert may have failed
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       netdev <netdev@vger.kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <990549.89300.qm@web82101.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-08-14 at 12:55 +0100, Hugh Dickins wrote:
 
-> But I got a bit distracted: mprotect's change_pte_range is
-> traditionally where the pte_modify operation has been split up into
-> stages on some arches, that really can be restricting permissions
-> and needs to tread carefully.  Now I go to look there, I see its
-> 		/*
-> 		 * Avoid taking write faults for pages we know to be
-> 		 * dirty.
-> 		 */
-> 		if (dirty_accountable && pte_dirty(ptent))
-> 			ptent = pte_mkwrite(ptent);
+
+> > I used 'git apply --check ' first, and got no errors, so
+> > I applied it, built, installed, and rebooted.
 > 
-> and get rather worried: isn't that likely to be giving write permission
-> to a pte in a vma we are precisely taking write permission away from?
+> that patch revert to use request_resource, so there is some other problem
+> 
+> YH
 
-Exactly, we do that because the page is already dirty, therefore we do
-not need to trap on write to mark it dirty - at least, that was the idea
-behind this optimization.
+I finished experimenting last night with trying to find the last commit
+in the gittree that would let me revert the problem successfully...
+and I got completely raped.
+
+The bisecting took me all the way back to the first commit introducing
+the problem on these motherboards:  3def3d6d...
+
+Considering these 3 consecutive commits (according to 'git log')from late
+Feb. 2008, between kernel versions 2.6.25 and 2.6.26-rc1:
+---------------------------------------------------------
+
+700efc1b...:  the last kernel I can build and run just fine.
+
+3def3d6d...:  this one builds, but locks up in inet_init() once the sequence
+of function calls reaches synchronize_rcu().  Reverting here works, but is
+trivial and silly, just reproducing 700efc1b...
+
+1e934dda...:  attempting to revert the changes from 3def3d6d... (just one
+commit before!) already fails.
+---------------------------------------------------------
+
+This last commit has an effect on my machine that prevents attempts to
+revert 3def3d6d... from working as intended.  This may explain why
+Yinghai's patch providing the revert for 2.6.27-rc3 did not work.
+(Hopefully none of the other changes between Feb. and Aug. would also keep
+the revert from working, but I wouldn't bet my life on it....)
+
+The 3d... and 1e... commits are quite small, touching only 4 files total,
+and both commits involve calls to insert_resource().  Something on my 2
+problem machines is behaving badly in this area.
+
+Reminder:  disabling HPET with "hpet=disable" allows any kernel with the
+lockup problem to boot just fine.
+
+Further note: Before my first LKML post about this problem, I had also 
+tried turning off all CONFIG_HPET* features that I could reach via 
+'make menuconfig', but that did not work and I still had to use 
+"hpet=disable" to get the kernel to boot.
 
 
+SUGGESTION
 
+When my kernels lock up, it is always a chain of calls beginning with
+inet_init() and ending up here (in net/core/dev.c):
+
+void synchronize_net(void)
+{
+    might_sleep();
+    synchronize_rcu();
+}
+
+If anyone wants to print diagnostic info before my kernel locks up, this 
+would be a really good place to do it (so that it doesn't scroll away
+before I can write it down):
+
+void synchronize_net(void)
+{
+    might_sleep();
+    /* Insert printk's or diagnostic function here */
+    synchronize_rcu();
+}
+
+
+Thanks,
+Dave W.
