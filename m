@@ -1,45 +1,287 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758127AbYHNJBT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758204AbYHNJDe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758127AbYHNJBT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Aug 2008 05:01:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754074AbYHNJBI
+	id S1758204AbYHNJDe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Aug 2008 05:03:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754242AbYHNJD0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Aug 2008 05:01:08 -0400
-Received: from www.tglx.de ([62.245.132.106]:60936 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754041AbYHNJBH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Aug 2008 05:01:07 -0400
-Date: Thu, 14 Aug 2008 11:00:58 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Milan Plzik <milan.plzik@gmail.com>
-cc: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: RE: Possible CPU_IDLE bug [WAS: Re: Timer unstability on when using
- C2 and deeper sleep states (Dell Latitude XT)]
-In-Reply-To: <1218701151.4285.9.camel@localhost>
-Message-ID: <alpine.LFD.1.10.0808141100100.3243@apollo.tec.linutronix.de>
-References: <1218566008.13866.41.camel@localhost>  <1218625125.4304.7.camel@localhost> <1218636980.5250.12.camel@localhost>  <7E82351C108FA840AB1866AC776AEC460945BB44@orsmsx505.amr.corp.intel.com>  <1218658873.4336.15.camel@localhost> 
- <7E82351C108FA840AB1866AC776AEC460945BFF2@orsmsx505.amr.corp.intel.com> <1218701151.4285.9.camel@localhost>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Thu, 14 Aug 2008 05:03:26 -0400
+Received: from 215.47.DSNET ([211.144.215.47]:53952 "EHLO
+	cnshjsmin03.cn.alcatel-lucent.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1754006AbYHNJDZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Aug 2008 05:03:25 -0400
+X-AuditID: ac189297-ad823bb000000f94-bb-48a40185d5c0
+Message-ID: <48A3F483.1070109@alcatel-lucent.com>
+Date: Thu, 14 Aug 2008 17:01:55 +0800
+From: gshan <gshan@alcatel-lucent.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: linux-kernel@vger.kernel.org
+Subject: strange response from shell after issuing command "resize"
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 14 Aug 2008 09:01:41.0190 (UTC) FILETIME=[5E0A4660:01C8FDEC]
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 14 Aug 2008, Milan Plzik wrote:
->   I tried it just now, is performs a bit better than 2.6.26 (e.g. I
-> don't get that "press any key unless nothing happens" states), even
-> reports a bit more reasonable values of wakeups, but the system
-> sometimes becomes rather slow (e.g. when playing video). I was not able
-> to compile fglrx driver, so I had to change it to radeon one. And also,
-> the number of wakeups reported is not very convincing, though, it
-> changes from 300 to 600 (which is ~ two times the sum of wakeups)
-> without any reason, and sometimes goes even higher.
-> 
->   I tried to use nolapic_timer option, but it didn't help.
+After I issued command "resize" to shell which is running on one of 
+serial port, it
+doesn't output shell prompt any more, but echo what I inputed. It seems 
+that shell
+don't know how to end one input line when this issue happened. Anybody 
+has ideas?
 
-Can you please try "hpet=disable" on the kernel command line ?
+
+aaa@(none):~$ resize
+COLUMNS=125;
+LINES=39;
+export COLUMNS LINES;
+ <entery key input>
+ <enter char output>
+ <entery key input>
+ <enter char output>
+ <entery key input>
+ <enter char output>
+ <entery key input>
+ <enter char output>
+  :
+  :
+
+===tty setings before I issued "resize"====
+
+root@(none):~# stty -a < /dev/ttySC1 | tr ' ' '\n'
+speed
+9600
+baud;
+rows
+0;
+columns
+0;
+line
+=
+0;
+intr
+=
+^C;
+quit
+=
+^\;
+erase
+=
+^?;
+kill
+=
+^U;
+eof
+=
+^D;
+eol
+=
+<undef>;
+eol2
+=
+<undef>;
+swtch
+=
+<undef>;
+start
+=
+^Q;
+stop
+=
+^S;
+susp
+=
+^Z;
+rprnt
+=
+^R;
+werase
+=
+^W;
+lnext
+=
+<undef>;
+flush
+=
+^U;
+min
+=
+1;
+time
+=
+0;
+-parenb
+-parodd
+cs8
+hupcl
+-cstopb
+cread
+clocal
+-crtscts
+-ignbrk
+-brkint
+-ignpar
+-parmrk
+-inpck
+-istrip
+-inlcr
+-igncr
+-icrnl
+ixon
+ixoff
+-iuclc
+-ixany
+-imaxbel
+-iutf8
+opost
+-olcuc
+-ocrnl
+onlcr
+-onocr
+-onlret
+-ofill
+-ofdel
+nl0
+cr0
+tab0
+bs0
+vt0
+ff0
+isig
+-icanon
+-iexten
+-echo
+echoe
+echok
+-echonl
+-noflsh
+-xcase
+-tostop
+-echoprt
+-echoctl
+echoke
+
+===tty setttings after I issued "resize"===
+root@(none):~# stty -a < /dev/ttySC1 | tr ' ' '\n'
+speed
+9600
+baud;
+rows
+39;
+columns
+125;
+line
+=
+0;
+intr
+=
+^C;
+quit
+=
+^\;
+erase
+=
+^?;
+kill
+=
+^U;
+eof
+=
+^D;
+eol
+=
+<undef>;
+eol2
+=
+<undef>;
+swtch
+=
+<undef>;
+start
+=
+^Q;
+stop
+=
+^S;
+susp
+=
+^Z;
+rprnt
+=
+^R;
+werase
+=
+^W;
+lnext
+=
+^V;
+flush
+=
+^U;
+min
+=
+1;
+time
+=
+0;
+-parenb
+-parodd
+cs8
+hupcl
+-cstopb
+cread
+clocal
+-crtscts
+-ignbrk
+-brkint
+-ignpar
+-parmrk
+-inpck
+-istrip
+-inlcr
+-igncr
+icrnl
+ixon
+ixoff
+-iuclc
+-ixany
+-imaxbel
+-iutf8
+opost
+-olcuc
+-ocrnl
+onlcr
+-onocr
+-onlret
+-ofill
+-ofdel
+nl0
+cr0
+tab0
+bs0
+vt0
+ff0
+isig
+icanon
+-iexten
+echo
+echoe
+echok
+-echonl
+-noflsh
+-xcase
+-tostop
+-echoprt
+-echoctl
+echoke
 
 Thanks,
-	tglx
+Gavin
+
+
+
+
+
