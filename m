@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760265AbYHNTuG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760579AbYHNTts@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760265AbYHNTuG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Aug 2008 15:50:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756544AbYHNTtJ
+	id S1760579AbYHNTts (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Aug 2008 15:49:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755525AbYHNTtH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Aug 2008 15:49:09 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:56159 "EHLO
+	Thu, 14 Aug 2008 15:49:07 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:50603 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753765AbYHNTtE (ORCPT
+	with ESMTP id S1753799AbYHNTtE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 14 Aug 2008 15:49:04 -0400
-Message-Id: <20080814194859.430759334@goodmis.org>
+Message-Id: <20080814194900.367467310@goodmis.org>
 References: <20080814194506.233473381@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Thu, 14 Aug 2008 15:45:07 -0400
+Date: Thu, 14 Aug 2008 15:45:12 -0400
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
@@ -31,514 +31,112 @@ Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
        Clark Williams <williams@redhat.com>, Bruce Duncan <bwduncan@gmail.com>,
        Marcin Slusarz <marcin.slusarz@gmail.com>,
        Steven Rostedt <srostedt@redhat.com>
-Subject: [PATCH v2 1/6] ftrace: create __mcount_loc section
-Content-Disposition: inline; filename=ftrace-record-mcount.patch
+Subject: [PATCH v2 6/6] ftrace: x86 mcount stub
+Content-Disposition: inline; filename=ftrace-x86-mcount-stub.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[
- Note: after this patch is applied, you need to run:
+x86 now sets up the mcount locations through the build and no longer
+needs to record the ip when the function is executed. This patch changes
+the initial mcount to simply return. There's no need to do any other work.
+If the ftrace start up test fails, the original mcount will be what everything
+will use, so having this as fast as possible is a good thing.
 
-   chmod +x scripts/recordmcount.pl
-]
-
-
-This patch creates a section in the kernel called "__mcount_loc".
-This will hold a list of pointers to the mcount relocation for
-each call site of mcount.
-
-For example:
-
-objdump -dr init/main.o
-[...]
-Disassembly of section .text:
-
-0000000000000000 <do_one_initcall>:
-   0:   55                      push   %rbp
-[...]
-000000000000017b <init_post>:
- 17b:   55                      push   %rbp
- 17c:   48 89 e5                mov    %rsp,%rbp
- 17f:   53                      push   %rbx
- 180:   48 83 ec 08             sub    $0x8,%rsp
- 184:   e8 00 00 00 00          callq  189 <init_post+0xe>
-                        185: R_X86_64_PC32      mcount+0xfffffffffffffffc
-[...]
-
-We will add a section to point to each function call.
-
-   .section __mcount_loc,"a",@progbits
-[...]
-   .quad .text + 0x185
-[...]
-
-The offset to of the mcount call site in init_post is an offset from
-the start of the section, and not the start of the function init_post.
-The mcount relocation is at the call site 0x185 from the start of the
-.text section.
-
-  .text + 0x185  == init_post + 0xa
-
-We need a way to add this __mcount_loc section in a way that we do not
-lose the relocations after final link.  The .text section here will
-be attached to all other .text sections after final link and the
-offsets will be meaningless.  We need to keep track of where these
-.text sections are.
-
-To do this, we use the start of the first function in the section.
-do_one_initcall.  We can make a tmp.s file with this function as a reference
-to the start of the .text section.
-
-   .section __mcount_loc,"a",@progbits
-[...]
-   .quad do_one_initcall + 0x185
-[...]
-
-Then we can compile the tmp.s into a tmp.o
-
-  gcc -c tmp.s -o tmp.o
-
-And link it into back into main.o.
-
-  ld -r main.o tmp.o -o tmp_main.o
-  mv tmp_main.o main.o
-
-But we have a problem.  What happens if the first function in a section
-is not exported, and is a static function. The linker will not let
-the tmp.o use it.  This case exists in main.o as well.
-
-Disassembly of section .init.text:
-
-0000000000000000 <set_reset_devices>:
-   0:   55                      push   %rbp
-   1:   48 89 e5                mov    %rsp,%rbp
-   4:   e8 00 00 00 00          callq  9 <set_reset_devices+0x9>
-                        5: R_X86_64_PC32        mcount+0xfffffffffffffffc
-
-The first function in .init.text is a static function.
-
-#  nm init/main.o | grep set_reset_devices
-00000000000000a8 t __setup_set_reset_devices
-000000000000105f t __setup_str_set_reset_devices
-0000000000000000 t set_reset_devices
-
-The lowercase 't' means that set_reset_devices is local and is not exported.
-If we simply try to link the tmp.o with the set_reset_devices we end
-up with two symbols: one local and one global.
-
-# cat tmp.s
- .section __mcount_loc,"a",@progbits
- .quad set_reset_devices + 0x10
-
-# gcc -c tmp.s -o tmp.o
-# ld -r main.o tmp.o -o tmp_main.o
-# nm tmp_main.o | grep set_reset_devices
-00000000000000a8 t __setup_set_reset_devices
-000000000000105f t __setup_str_set_reset_devices
-0000000000000000 t set_reset_devices
-                 U set_reset_devices
-
-We still have an undefined reference to set_reset_devices, and if we try
-to compile the kernel, we will end up with an undefined reference to
-set_reset_devices, or even worst, it could be exported someplace else,
-and then we will have a reference to the wrong location.
-
-To handle this case, we make an intermediate step using objcopy.
-We convert set_reset_devices into a global exported symbol before linking
-it with tmp.o and set it back afterwards.
-
-# objcopy --globalize-symbol set_reset_devices main.o tmp_main.o
-# nm tmp_main.o | grep set_reset_devices
-00000000000000a8 t __setup_set_reset_devices
-000000000000105f t __setup_str_set_reset_devices
-0000000000000000 T set_reset_devices
-
-# ld -r tmp_main.o tmp.o -o tmp2_main.o
-# nm tmp2_main.o | grep set_reset_devices
-00000000000000a8 t __setup_set_reset_devices
-000000000000105f t __setup_str_set_reset_devices
-0000000000000000 T set_reset_devices
-
-# objcopy --localize-symbol set_reset_devices tmp2_main.o main.o
-# nm main.o | grep set_reset_devices
-00000000000000a8 t __setup_set_reset_devices
-000000000000105f t __setup_str_set_reset_devices
-0000000000000000 t set_reset_devices
-
-Now we have a section in main.o called __mcount_loc that we can place
-somewhere in the kernel using vmlinux.ld.S and access it to convert
-all these locations that call mcount into nops before starting SMP
-and thus, eliminating the need to do this with kstop_machine.
-
-Note, A well documented perl script (scripts/recordmcount.pl) is used
-to do all this in one location.
 
 Signed-off-by: Steven Rostedt <srostedt@redhat.com>
 ---
- include/asm-generic/vmlinux.lds.h |    8 +
- kernel/trace/Kconfig              |    8 +
- scripts/Makefile.build            |    6 
- scripts/recordmcount.pl           |  280 ++++++++++++++++++++++++++++++++++++++
- 4 files changed, 302 insertions(+)
+ arch/x86/kernel/entry_32.S |   14 --------------
+ arch/x86/kernel/entry_64.S |   26 --------------------------
+ arch/x86/kernel/ftrace.c   |   14 ++------------
+ 3 files changed, 2 insertions(+), 52 deletions(-)
 
-Index: linux-tip.git/include/asm-generic/vmlinux.lds.h
+Index: linux-tip.git/arch/x86/kernel/entry_32.S
 ===================================================================
---- linux-tip.git.orig/include/asm-generic/vmlinux.lds.h	2008-08-14 13:55:11.000000000 -0400
-+++ linux-tip.git/include/asm-generic/vmlinux.lds.h	2008-08-14 13:57:06.000000000 -0400
-@@ -37,6 +37,13 @@
- #define MEM_DISCARD(sec) *(.mem##sec)
- #endif
+--- linux-tip.git.orig/arch/x86/kernel/entry_32.S	2008-08-14 13:55:03.000000000 -0400
++++ linux-tip.git/arch/x86/kernel/entry_32.S	2008-08-14 14:06:00.000000000 -0400
+@@ -1189,20 +1189,6 @@ ENDPROC(xen_failsafe_callback)
+ #ifdef CONFIG_DYNAMIC_FTRACE
  
-+#ifdef CONFIG_FTRACE_MCOUNT_RECORD
-+#define MCOUNT_REC()	VMLINUX_SYMBOL(__start_mcount_loc) = .; \
-+			*(__mcount_loc)				\
-+			VMLINUX_SYMBOL(__stop_mcount_loc) = .;
-+#else
-+#define MCOUNT_REC()
-+#endif
+ ENTRY(mcount)
+-	pushl %eax
+-	pushl %ecx
+-	pushl %edx
+-	movl 0xc(%esp), %eax
+-	subl $MCOUNT_INSN_SIZE, %eax
+-
+-.globl mcount_call
+-mcount_call:
+-	call ftrace_stub
+-
+-	popl %edx
+-	popl %ecx
+-	popl %eax
+-
+ 	ret
+ END(mcount)
  
- /* .data section */
- #define DATA_DATA							\
-@@ -192,6 +199,7 @@
- 	/* __*init sections */						\
- 	__init_rodata : AT(ADDR(__init_rodata) - LOAD_OFFSET) {		\
- 		*(.ref.rodata)						\
-+		MCOUNT_REC()						\
- 		DEV_KEEP(init.rodata)					\
- 		DEV_KEEP(exit.rodata)					\
- 		CPU_KEEP(init.rodata)					\
-Index: linux-tip.git/scripts/Makefile.build
+Index: linux-tip.git/arch/x86/kernel/entry_64.S
 ===================================================================
---- linux-tip.git.orig/scripts/Makefile.build	2008-08-14 13:55:16.000000000 -0400
-+++ linux-tip.git/scripts/Makefile.build	2008-08-14 13:57:06.000000000 -0400
-@@ -198,10 +198,16 @@ cmd_modversions =							\
- 	fi;
- endif
+--- linux-tip.git.orig/arch/x86/kernel/entry_64.S	2008-08-14 13:55:03.000000000 -0400
++++ linux-tip.git/arch/x86/kernel/entry_64.S	2008-08-14 14:06:10.000000000 -0400
+@@ -64,32 +64,6 @@
+ #ifdef CONFIG_FTRACE
+ #ifdef CONFIG_DYNAMIC_FTRACE
+ ENTRY(mcount)
+-
+-	subq $0x38, %rsp
+-	movq %rax, (%rsp)
+-	movq %rcx, 8(%rsp)
+-	movq %rdx, 16(%rsp)
+-	movq %rsi, 24(%rsp)
+-	movq %rdi, 32(%rsp)
+-	movq %r8, 40(%rsp)
+-	movq %r9, 48(%rsp)
+-
+-	movq 0x38(%rsp), %rdi
+-	subq $MCOUNT_INSN_SIZE, %rdi
+-
+-.globl mcount_call
+-mcount_call:
+-	call ftrace_stub
+-
+-	movq 48(%rsp), %r9
+-	movq 40(%rsp), %r8
+-	movq 32(%rsp), %rdi
+-	movq 24(%rsp), %rsi
+-	movq 16(%rsp), %rdx
+-	movq 8(%rsp), %rcx
+-	movq (%rsp), %rax
+-	addq $0x38, %rsp
+-
+ 	retq
+ END(mcount)
  
-+ifdef CONFIG_FTRACE_MCOUNT_RECORD
-+cmd_record_mcount = scripts/recordmcount.pl "$(ARCH)" \
-+	"$(OBJDUMP)" "$(OBJCOPY)" "$(CC)" "$(LD)" "$(NM)" "$(RM)" "$(MV)" "$(@)";
-+endif
-+
- define rule_cc_o_c
- 	$(call echo-cmd,checksrc) $(cmd_checksrc)			  \
- 	$(call echo-cmd,cc_o_c) $(cmd_cc_o_c);				  \
- 	$(cmd_modversions)						  \
-+	$(cmd_record_mcount)						  \
- 	scripts/basic/fixdep $(depfile) $@ '$(call make-cmd,cc_o_c)' >    \
- 	                                              $(dot-target).tmp;  \
- 	rm -f $(depfile);						  \
-Index: linux-tip.git/scripts/recordmcount.pl
+Index: linux-tip.git/arch/x86/kernel/ftrace.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-tip.git/scripts/recordmcount.pl	2008-08-14 13:57:39.000000000 -0400
-@@ -0,0 +1,280 @@
-+#!/usr/bin/perl -w
-+# (c) 2008, Steven Rostedt <srostedt@redhat.com>
-+# Licensed under the terms of the GNU GPL License version 2
-+#
-+# recordmcount.pl - makes a section called __mcount_loc that holds
-+#                   all the offsets to the calls to mcount.
-+#
-+#
-+# What we want to end up with is a section in vmlinux called
-+# __mcount_loc that contains a list of pointers to all the
-+# call sites in the kernel that call mcount. Later on boot up, the kernel
-+# will read this list, save the locations and turn them into nops.
-+# When tracing or profiling is later enabled, these locations will then
-+# be converted back to pointers to some function.
-+#
-+# This is no easy feat. This script is called just after the original
-+# object is compiled and before it is linked.
-+#
-+# The references to the call sites are offsets from the section of text
-+# that the call site is in. Hence, all functions in a section that
-+# has a call site to mcount, will have the offset from the beginning of
-+# the section and not the beginning of the function.
-+#
-+# The trick is to find a way to record the beginning of the section.
-+# The way we do this is to look at the first function in the section
-+# which will also be the location of that section after final link.
-+# e.g.
-+#
-+#  .section ".text.sched"
-+#  .globl my_func
-+#  my_func:
-+#        [...]
-+#        call mcount  (offset: 0x5)
-+#        [...]
-+#        ret
-+#  other_func:
-+#        [...]
-+#        call mcount (offset: 0x1b)
-+#        [...]
-+#
-+# Both relocation offsets for the mcounts in the above example will be
-+# offset from .text.sched. If we make another file called tmp.s with:
-+#
-+#  .section __mcount_loc
-+#  .quad  my_func + 0x5
-+#  .quad  my_func + 0x1b
-+#
-+# We can then compile this tmp.s into tmp.o, and link it to the original
-+# object.
-+#
-+# But this gets hard if my_func is not globl (a static function).
-+# In such a case we have:
-+#
-+#  .section ".text.sched"
-+#  my_func:
-+#        [...]
-+#        call mcount  (offset: 0x5)
-+#        [...]
-+#        ret
-+#  .globl my_func
-+#  other_func:
-+#        [...]
-+#        call mcount (offset: 0x1b)
-+#        [...]
-+#
-+# If we make the tmp.s the same as above, when we link together with
-+# the original object, we will end up with two symbols for my_func:
-+# one local, one global.  After final compile, we will end up with
-+# an undefined reference to my_func.
-+#
-+# Since local objects can reference local variables, we need to find
-+# a way to make tmp.o reference the local objects of the original object
-+# file after it is linked together. To do this, we convert the my_func
-+# into a global symbol before linking tmp.o. Then after we link tmp.o
-+# we will only have a single symbol for my_func that is global.
-+# We can convert my_func back into a local symbol and we are done.
-+#
-+# Here are the steps we take:
-+#
-+# 1) Record all the local symbols by using 'nm'
-+# 2) Use objdump to find all the call site offsets and sections for
-+#    mcount.
-+# 3) Compile the list into its own object.
-+# 4) Do we have to deal with local functions? If not, go to step 8.
-+# 5) Make an object that converts these local functions to global symbols
-+#    with objcopy.
-+# 6) Link together this new object with the list object.
-+# 7) Convert the local functions back to local symbols and rename
-+#    the result as the original object.
-+#    End.
-+# 8) Link the object with the list object.
-+# 9) Move the result back to the original object.
-+#    End.
-+#
-+
-+use strict;
-+
-+my $P = $0;
-+$P =~ s@.*/@@g;
-+
-+my $V = '0.1';
-+
-+if ($#ARGV < 6) {
-+	print "usage: $P arch objdump objcopy cc ld nm rm mv inputfile\n";
-+	print "version: $V\n";
-+	exit(1);
-+}
-+
-+my ($arch, $objdump, $objcopy, $cc, $ld, $nm, $rm, $mv, $inputfile) = @ARGV;
-+
-+$objdump = "objdump" if ((length $objdump) == 0);
-+$objcopy = "objcopy" if ((length $objcopy) == 0);
-+$cc = "gcc" if ((length $cc) == 0);
-+$ld = "ld" if ((length $ld) == 0);
-+$nm = "nm" if ((length $nm) == 0);
-+$rm = "rm" if ((length $rm) == 0);
-+$mv = "mv" if ((length $mv) == 0);
-+
-+#print STDERR "running: $P '$arch' '$objdump' '$objcopy' '$cc' '$ld' " .
-+#    "'$nm' '$rm' '$mv' '$inputfile'\n";
-+
-+my %locals;
-+my %convert;
-+
-+my $type;
-+my $section_regex;	# Find the start of a section
-+my $function_regex;	# Find the name of a function (return func name)
-+my $mcount_regex;	# Find the call site to mcount (return offset)
-+
-+if ($arch eq "x86_64") {
-+    $section_regex = "Disassembly of section";
-+    $function_regex = "<(.*?)>:";
-+    $mcount_regex = "^\\s*([0-9a-fA-F]+):.*\\smcount([+-]0x[0-9a-zA-Z]+)?\$";
-+    $type = ".quad";
-+} elsif ($arch eq "i386") {
-+    $section_regex = "Disassembly of section";
-+    $function_regex = "<(.*?)>:";
-+    $mcount_regex = "^\\s*([0-9a-fA-F]+):.*\\smcount\$";
-+    $type = ".long";
-+} else {
-+    die "Arch $arch is not supported with CONFIG_FTRACE_MCOUNT_RECORD";
-+}
-+
-+my $text_found = 0;
-+my $read_function = 0;
-+my $opened = 0;
-+my $text = "";
-+my $mcount_section = "__mcount_loc";
-+
-+my $dirname;
-+my $filename;
-+my $prefix;
-+my $ext;
-+
-+if ($inputfile =~ m,^(.*)/([^/]*)$,) {
-+    $dirname = $1;
-+    $filename = $2;
-+} else {
-+    $dirname = ".";
-+    $filename = $inputfile;
-+}
-+
-+if ($filename =~ m,^(.*)(\.\S),) {
-+    $prefix = $1;
-+    $ext = $2;
-+} else {
-+    $prefix = $filename;
-+    $ext = "";
-+}
-+
-+my $mcount_s = $dirname . "/.tmp_mc_" . $prefix . ".s";
-+my $mcount_o = $dirname . "/.tmp_mc_" . $prefix . ".o";
-+
-+#
-+# Step 1: find all the local symbols (static functions).
-+#
-+open (IN, "$nm $inputfile|") || die "error running $nm";
-+while (<IN>) {
-+    if (/^[0-9a-fA-F]+\s+t\s+(\S+)/) {
-+	$locals{$1} = 1;
-+    }
-+}
-+close(IN);
-+
-+#
-+# Step 2: find the sections and mcount call sites
-+#
-+open(IN, "$objdump -dr $inputfile|") || die "error running $objdump";
-+
-+while (<IN>) {
-+    # is it a section?
-+    if (/$section_regex/) {
-+	$read_function = 1;
-+	$text_found = 0;
-+    # section found, now is this a start of a function?
-+    } elsif ($read_function && /$function_regex/) {
-+	$read_function = 0;
-+	$text_found = 1;
-+	$text = $1;
-+	# is this function static? If so, note this fact.
-+	if (defined $locals{$text}) {
-+	    $convert{$text} = 1;
-+	}
-+    # is this a call site to mcount? If so, print the offset from the section
-+    } elsif ($text_found && /$mcount_regex/) {
-+	if (!$opened) {
-+	    open(FILE, ">$mcount_s") || die "can't create $mcount_s\n";
-+	    $opened = 1;
-+	    print FILE "\t.section $mcount_section,\"a\",\@progbits\n";
-+	}
-+	print FILE "\t$type $text + 0x$1\n";
-+    }
-+}
-+
-+# If we did not find any mcount callers, we are done (do nothing).
-+if (!$opened) {
-+    exit(0);
-+}
-+
-+close(FILE);
-+
-+#
-+# Step 3: Compile the file that holds the list of call sites to mcount.
-+#
-+`$cc -o $mcount_o -c $mcount_s`;
-+
-+my @converts = keys %convert;
-+
-+#
-+# Step 4: Do we have sections that started with local functions?
-+#
-+if ($#converts >= 0) {
-+    my $globallist = "";
-+    my $locallist = "";
-+
-+    foreach my $con (@converts) {
-+	$globallist .= " --globalize-symbol $con";
-+	$locallist .= " --localize-symbol $con";
-+    }
-+
-+    my $globalobj = $dirname . "/.tmp_gl_" . $filename;
-+    my $globalmix = $dirname . "/.tmp_mx_" . $filename;
-+
-+    #
-+    # Step 5: set up each local function as a global
-+    #
-+    `$objcopy $globallist $inputfile $globalobj`;
-+
-+    #
-+    # Step 6: Link the global version to our list.
-+    #
-+    `$ld -r $globalobj $mcount_o -o $globalmix`;
-+
-+    #
-+    # Step 7: Convert the local functions back into local symbols
-+    #
-+    `$objcopy $locallist $globalmix $inputfile`;
-+
-+    # Remove the temp files
-+    `$rm $globalobj $globalmix`;
-+
-+} else {
-+
-+    my $mix = $dirname . "/.tmp_mx_" . $filename;
-+
-+    #
-+    # Step 8: Link the object with our list of call sites object.
-+    #
-+    `$ld -r $inputfile $mcount_o -o $mix`;
-+
-+    #
-+    # Step 9: Move the result back to the original object.
-+    #
-+    `$mv $mix $inputfile`;
-+}
-+
-+# Clean up the temp files
-+`$rm $mcount_o $mcount_s`;
-+
-+exit(0);
-Index: linux-tip.git/kernel/trace/Kconfig
-===================================================================
---- linux-tip.git.orig/kernel/trace/Kconfig	2008-08-14 13:55:13.000000000 -0400
-+++ linux-tip.git/kernel/trace/Kconfig	2008-08-14 13:57:06.000000000 -0400
-@@ -7,6 +7,9 @@ config HAVE_FTRACE
- config HAVE_DYNAMIC_FTRACE
- 	bool
+--- linux-tip.git.orig/arch/x86/kernel/ftrace.c	2008-08-14 13:55:03.000000000 -0400
++++ linux-tip.git/arch/x86/kernel/ftrace.c	2008-08-14 14:18:21.000000000 -0400
+@@ -112,18 +112,8 @@ notrace int ftrace_update_ftrace_func(ft
  
-+config HAVE_FTRACE_MCOUNT_RECORD
-+	bool
-+
- config TRACER_MAX_TRACE
- 	bool
- 
-@@ -122,6 +125,11 @@ config DYNAMIC_FTRACE
- 	 were made. If so, it runs stop_machine (stops all CPUS)
- 	 and modifies the code to jump over the call to ftrace.
- 
-+config FTRACE_MCOUNT_RECORD
-+	def_bool y
-+	depends on DYNAMIC_FTRACE
-+	depends on HAVE_FTRACE_MCOUNT_RECORD
-+
- config FTRACE_SELFTEST
- 	bool
+ notrace int ftrace_mcount_set(unsigned long *data)
+ {
+-	unsigned long ip = (long)(&mcount_call);
+-	unsigned long *addr = data;
+-	unsigned char old[MCOUNT_INSN_SIZE], *new;
+-
+-	/*
+-	 * Replace the mcount stub with a pointer to the
+-	 * ip recorder function.
+-	 */
+-	memcpy(old, &mcount_call, MCOUNT_INSN_SIZE);
+-	new = ftrace_call_replace(ip, *addr);
+-	*addr = ftrace_modify_code(ip, old, new);
+-
++	/* mcount is initialized as a nop */
++	*data = 0;
+ 	return 0;
+ }
  
 
 -- 
