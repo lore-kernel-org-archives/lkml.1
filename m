@@ -1,373 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758850AbYHNMXo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758503AbYHNM2L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758850AbYHNMXo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Aug 2008 08:23:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754349AbYHNMXg
+	id S1758503AbYHNM2L (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Aug 2008 08:28:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752866AbYHNM15
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Aug 2008 08:23:36 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:60979 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754225AbYHNMXf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Aug 2008 08:23:35 -0400
-Date: Thu, 14 Aug 2008 22:23:31 +1000
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Neil Horman <nhorman@tuxdriver.com>
-Cc: linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org,
-       davem@davemloft.net
-Subject: crypto: skcipher - Use RNG interface instead of get_random_bytes
-Message-ID: <20080814122331.GA21061@gondor.apana.org.au>
-References: <20080811202607.GA11527@hmsreliant.think-freely.org> <20080814115137.GA5721@gondor.apana.org.au>
+	Thu, 14 Aug 2008 08:27:57 -0400
+Received: from pmx1.sophos.com ([213.31.172.16]:42342 "EHLO pmx1.sophos.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752171AbYHNM15 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Aug 2008 08:27:57 -0400
+In-Reply-To: <2629CC4E1D22A64593B02C43E855530304AE4BCB@USILMS12.ca.com>
+To: "Press, Jonathan" <Jonathan.Press@ca.com>
+Cc: alan@lxorguk.ukuu.org.uk, andi@firstfloor.org,
+       "Arjan van de Ven" <arjan@infradead.org>, hch@infradead.org,
+       linux-kernel@vger.kernel.org, linux-kernel-owner@vger.kernel.org,
+       malware-list@lists.printk.net, malware-list-bounces@dmesg.printk.net,
+       peterz@infradead.org, "Theodore Tso" <tytso@mit.edu>,
+       viro@ZenIV.linux.org.uk
+Subject: RE: [malware-list] TALPA - a threat model?  well sorta.
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080814115137.GA5721@gondor.apana.org.au>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+X-Mailer: Lotus Notes Release 7.0.2 September 26, 2006
+From: tvrtko.ursulin@sophos.com
+Date: Thu, 14 Aug 2008 13:27:54 +0100
+X-MIMETrack: S/MIME Sign by Notes Client on Tvrtko Ursulin/Dev/UK/Sophos(Release 7.0.2|September
+ 26, 2006) at 14/08/2008 13:27:54,
+	Serialize by Notes Client on Tvrtko Ursulin/Dev/UK/Sophos(Release 7.0.2|September
+ 26, 2006) at 14/08/2008 13:27:54,
+	Serialize complete at 14/08/2008 13:27:54,
+	S/MIME Sign failed at 14/08/2008 13:27:54: The cryptographic key was not
+ found,
+	Serialize by Router on Mercury/Servers/Sophos(Release 7.0.3|September 26, 2007) at
+ 14/08/2008 13:27:55,
+	Serialize complete at 14/08/2008 13:27:55
+Content-Type: text/plain; charset="US-ASCII"
+Message-Id: <20080814122800.45BA42FE810@pmx1.sophos.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 14, 2008 at 09:51:37PM +1000, Herbert Xu wrote:
->
-> Here is the final result against cryptodev-2.6.  Let me know if
-> you're OK with it and I'll push it out.
+Jonathan Press wrote on 14/08/2008 13:03:40:
 
-And here is the IV generator patch on top.
+> > Hm, maybe by implementing a facility with which a client can register
+> it's
+> > interface usage intent? Something like:
+> > 
+> > register(I_HAVE_NO_INTEREST_IN_CONTENT);
+> > register(I_WANT_TO_EXAMINE_CONTENT);
+> > 
+> > All former ones would run first because they only want to have the
+> > opportunity to block and do something unrelated to file content (like
+> > HSMs), and later group would be ran last since they want to examine
+> the
+> > content.
+> > 
+> > Ordering inside those two groups is not important because I don't see
+> how
+> > a model other than restrictive can make sense with content security
+> > scanning.
+> 
+> I'm not sure I understand why "interest in content" means not blocking,
+> and vice versa.  However, I think this is a good idea if made more
+> explicit, i.e.:
 
-Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+Small misunderstanding because both would block. If you go back to Ted's 
+original post I was replying to, he was worried about how would 
+anti-malware scanning interact with HSM since both may end up using the 
+same interface. HSM, as far as I understand it, needs to block on open and 
+"plant" the right file in place, while anti-malware also needs to block 
+and examine the right content. That is why ordering matters, anti-malware 
+needs to run after the content is put in place. And that is what my idea 
+solves (slight overstatement since I spent only seconds on it) by 
+separating them in two groups of clients. First which has no interest in 
+content and second which does.
+
 --
-commit 560a63d94d36641c83a8f533ed87bab95f6298bb
-Author: Herbert Xu <herbert@gondor.apana.org.au>
-Date:   Thu Aug 14 22:21:31 2008 +1000
+Tvrtko A. Ursulin
+Senior Software Engineer, Sophos
 
-    crypto: skcipher - Use RNG interface instead of get_random_bytes
-    
-    This patch makes the IV generators use the new RNG interface so
-    that the user can pick an RNG other than the default get_random_bytes.
-    
-    Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
+"Views and opinions expressed in this email are strictly those of the 
+author.
+ The contents has not been reviewed or approved by Sophos."
+ 
 
-diff --git a/crypto/Kconfig b/crypto/Kconfig
-index b00860f..a985065 100644
---- a/crypto/Kconfig
-+++ b/crypto/Kconfig
-@@ -33,6 +33,7 @@ config CRYPTO_AEAD
- config CRYPTO_BLKCIPHER
- 	tristate
- 	select CRYPTO_ALGAPI
-+	select CRYPTO_RNG
- 
- config CRYPTO_HASH
- 	tristate
-@@ -117,6 +118,7 @@ config CRYPTO_SEQIV
- 	tristate "Sequence Number IV Generator"
- 	select CRYPTO_AEAD
- 	select CRYPTO_BLKCIPHER
-+	select CRYPTO_RNG
- 	help
- 	  This IV generator generates an IV based on a sequence number by
- 	  xoring it with a salt.  This algorithm is mainly useful for CTR
-diff --git a/crypto/chainiv.c b/crypto/chainiv.c
-index 9affade..330b5e4 100644
---- a/crypto/chainiv.c
-+++ b/crypto/chainiv.c
-@@ -14,11 +14,11 @@
-  */
- 
- #include <crypto/internal/skcipher.h>
-+#include <crypto/rng.h>
- #include <linux/err.h>
- #include <linux/init.h>
- #include <linux/kernel.h>
- #include <linux/module.h>
--#include <linux/random.h>
- #include <linux/spinlock.h>
- #include <linux/string.h>
- #include <linux/workqueue.h>
-@@ -44,6 +44,8 @@ struct async_chainiv_ctx {
- 	char iv[];
- };
- 
-+static struct crypto_rng *rng;
-+
- static int chainiv_givencrypt(struct skcipher_givcrypt_request *req)
- {
- 	struct crypto_ablkcipher *geniv = skcipher_givcrypt_reqtfm(req);
-@@ -83,6 +85,7 @@ static int chainiv_givencrypt_first(struct skcipher_givcrypt_request *req)
- {
- 	struct crypto_ablkcipher *geniv = skcipher_givcrypt_reqtfm(req);
- 	struct chainiv_ctx *ctx = crypto_ablkcipher_ctx(geniv);
-+	int err = 0;
- 
- 	spin_lock_bh(&ctx->lock);
- 	if (crypto_ablkcipher_crt(geniv)->givencrypt !=
-@@ -90,11 +93,15 @@ static int chainiv_givencrypt_first(struct skcipher_givcrypt_request *req)
- 		goto unlock;
- 
- 	crypto_ablkcipher_crt(geniv)->givencrypt = chainiv_givencrypt;
--	get_random_bytes(ctx->iv, crypto_ablkcipher_ivsize(geniv));
-+	err = crypto_rng_get_bytes(rng, ctx->iv,
-+				   crypto_ablkcipher_ivsize(geniv));
- 
- unlock:
- 	spin_unlock_bh(&ctx->lock);
- 
-+	if (err)
-+		return err;
-+
- 	return chainiv_givencrypt(req);
- }
- 
-@@ -203,6 +210,7 @@ static int async_chainiv_givencrypt_first(struct skcipher_givcrypt_request *req)
- {
- 	struct crypto_ablkcipher *geniv = skcipher_givcrypt_reqtfm(req);
- 	struct async_chainiv_ctx *ctx = crypto_ablkcipher_ctx(geniv);
-+	int err = 0;
- 
- 	if (test_and_set_bit(CHAINIV_STATE_INUSE, &ctx->state))
- 		goto out;
-@@ -212,11 +220,15 @@ static int async_chainiv_givencrypt_first(struct skcipher_givcrypt_request *req)
- 		goto unlock;
- 
- 	crypto_ablkcipher_crt(geniv)->givencrypt = async_chainiv_givencrypt;
--	get_random_bytes(ctx->iv, crypto_ablkcipher_ivsize(geniv));
-+	err = crypto_rng_get_bytes(rng, ctx->iv,
-+				   crypto_ablkcipher_ivsize(geniv));
- 
- unlock:
- 	clear_bit(CHAINIV_STATE_INUSE, &ctx->state);
- 
-+	if (err)
-+		return err;
-+
- out:
- 	return async_chainiv_givencrypt(req);
- }
-@@ -322,10 +334,30 @@ static struct crypto_template chainiv_tmpl = {
- 
- int __init chainiv_module_init(void)
- {
--	return crypto_register_template(&chainiv_tmpl);
-+	int err;
-+
-+	rng = crypto_alloc_rng("stdrng", 0, 0);
-+	if (IS_ERR(rng))
-+		return PTR_ERR(rng);
-+
-+	err = crypto_rng_reset(rng, NULL, crypto_rng_seedsize(rng));
-+	if (err)
-+		goto free_rng;
-+
-+	err = crypto_register_template(&chainiv_tmpl);
-+	if (err)
-+		goto free_rng;
-+
-+out:
-+	return err;
-+
-+free_rng:
-+	crypto_free_rng(rng);
-+	goto out;
- }
- 
- void chainiv_module_exit(void)
- {
- 	crypto_unregister_template(&chainiv_tmpl);
-+	crypto_free_rng(rng);
- }
-diff --git a/crypto/eseqiv.c b/crypto/eseqiv.c
-index 881d309..b450943 100644
---- a/crypto/eseqiv.c
-+++ b/crypto/eseqiv.c
-@@ -16,13 +16,13 @@
-  */
- 
- #include <crypto/internal/skcipher.h>
-+#include <crypto/rng.h>
- #include <crypto/scatterwalk.h>
- #include <linux/err.h>
- #include <linux/init.h>
- #include <linux/kernel.h>
- #include <linux/mm.h>
- #include <linux/module.h>
--#include <linux/random.h>
- #include <linux/scatterlist.h>
- #include <linux/spinlock.h>
- #include <linux/string.h>
-@@ -39,6 +39,8 @@ struct eseqiv_ctx {
- 	char salt[];
- };
- 
-+static struct crypto_rng *rng;
-+
- static void eseqiv_complete2(struct skcipher_givcrypt_request *req)
- {
- 	struct crypto_ablkcipher *geniv = skcipher_givcrypt_reqtfm(req);
-@@ -163,17 +165,22 @@ static int eseqiv_givencrypt_first(struct skcipher_givcrypt_request *req)
- {
- 	struct crypto_ablkcipher *geniv = skcipher_givcrypt_reqtfm(req);
- 	struct eseqiv_ctx *ctx = crypto_ablkcipher_ctx(geniv);
-+	int err = 0;
- 
- 	spin_lock_bh(&ctx->lock);
- 	if (crypto_ablkcipher_crt(geniv)->givencrypt != eseqiv_givencrypt_first)
- 		goto unlock;
- 
- 	crypto_ablkcipher_crt(geniv)->givencrypt = eseqiv_givencrypt;
--	get_random_bytes(ctx->salt, crypto_ablkcipher_ivsize(geniv));
-+	err = crypto_rng_get_bytes(rng, ctx->salt,
-+				   crypto_ablkcipher_ivsize(geniv));
- 
- unlock:
- 	spin_unlock_bh(&ctx->lock);
- 
-+	if (err)
-+		return err;
-+
- 	return eseqiv_givencrypt(req);
- }
- 
-@@ -250,10 +257,30 @@ static struct crypto_template eseqiv_tmpl = {
- 
- int __init eseqiv_module_init(void)
- {
--	return crypto_register_template(&eseqiv_tmpl);
-+	int err;
-+
-+	rng = crypto_alloc_rng("stdrng", 0, 0);
-+	if (IS_ERR(rng))
-+		return PTR_ERR(rng);
-+
-+	err = crypto_rng_reset(rng, NULL, crypto_rng_seedsize(rng));
-+	if (err)
-+		goto free_rng;
-+
-+	err = crypto_register_template(&eseqiv_tmpl);
-+	if (err)
-+		goto free_rng;
-+
-+out:
-+	return err;
-+
-+free_rng:
-+	crypto_free_rng(rng);
-+	goto out;
- }
- 
- void __exit eseqiv_module_exit(void)
- {
- 	crypto_unregister_template(&eseqiv_tmpl);
-+	crypto_free_rng(rng);
- }
-diff --git a/crypto/seqiv.c b/crypto/seqiv.c
-index b903aab..1b95c0e 100644
---- a/crypto/seqiv.c
-+++ b/crypto/seqiv.c
-@@ -15,11 +15,11 @@
- 
- #include <crypto/internal/aead.h>
- #include <crypto/internal/skcipher.h>
-+#include <crypto/rng.h>
- #include <linux/err.h>
- #include <linux/init.h>
- #include <linux/kernel.h>
- #include <linux/module.h>
--#include <linux/random.h>
- #include <linux/spinlock.h>
- #include <linux/string.h>
- 
-@@ -28,6 +28,8 @@ struct seqiv_ctx {
- 	u8 salt[] __attribute__ ((aligned(__alignof__(u32))));
- };
- 
-+static struct crypto_rng *rng;
-+
- static void seqiv_complete2(struct skcipher_givcrypt_request *req, int err)
- {
- 	struct ablkcipher_request *subreq = skcipher_givcrypt_reqctx(req);
-@@ -189,17 +191,22 @@ static int seqiv_givencrypt_first(struct skcipher_givcrypt_request *req)
- {
- 	struct crypto_ablkcipher *geniv = skcipher_givcrypt_reqtfm(req);
- 	struct seqiv_ctx *ctx = crypto_ablkcipher_ctx(geniv);
-+	int err = 0;
- 
- 	spin_lock_bh(&ctx->lock);
- 	if (crypto_ablkcipher_crt(geniv)->givencrypt != seqiv_givencrypt_first)
- 		goto unlock;
- 
- 	crypto_ablkcipher_crt(geniv)->givencrypt = seqiv_givencrypt;
--	get_random_bytes(ctx->salt, crypto_ablkcipher_ivsize(geniv));
-+	err = crypto_rng_get_bytes(rng, ctx->salt,
-+				   crypto_ablkcipher_ivsize(geniv));
- 
- unlock:
- 	spin_unlock_bh(&ctx->lock);
- 
-+	if (err)
-+		return err;
-+
- 	return seqiv_givencrypt(req);
- }
- 
-@@ -207,17 +214,21 @@ static int seqiv_aead_givencrypt_first(struct aead_givcrypt_request *req)
- {
- 	struct crypto_aead *geniv = aead_givcrypt_reqtfm(req);
- 	struct seqiv_ctx *ctx = crypto_aead_ctx(geniv);
-+	int err = 0;
- 
- 	spin_lock_bh(&ctx->lock);
- 	if (crypto_aead_crt(geniv)->givencrypt != seqiv_aead_givencrypt_first)
- 		goto unlock;
- 
- 	crypto_aead_crt(geniv)->givencrypt = seqiv_aead_givencrypt;
--	get_random_bytes(ctx->salt, crypto_aead_ivsize(geniv));
-+	err = crypto_rng_get_bytes(rng, ctx->salt, crypto_aead_ivsize(geniv));
- 
- unlock:
- 	spin_unlock_bh(&ctx->lock);
- 
-+	if (err)
-+		return err;
-+
- 	return seqiv_aead_givencrypt(req);
- }
- 
-@@ -330,12 +341,32 @@ static struct crypto_template seqiv_tmpl = {
- 
- static int __init seqiv_module_init(void)
- {
--	return crypto_register_template(&seqiv_tmpl);
-+	int err;
-+
-+	rng = crypto_alloc_rng("stdrng", 0, 0);
-+	if (IS_ERR(rng))
-+		return PTR_ERR(rng);
-+
-+	err = crypto_rng_reset(rng, NULL, crypto_rng_seedsize(rng));
-+	if (err)
-+		goto free_rng;
-+
-+	err = crypto_register_template(&seqiv_tmpl);
-+	if (err)
-+		goto free_rng;
-+
-+out:
-+	return err;
-+
-+free_rng:
-+	crypto_free_rng(rng);
-+	goto out;
- }
- 
- static void __exit seqiv_module_exit(void)
- {
- 	crypto_unregister_template(&seqiv_tmpl);
-+	crypto_free_rng(rng);
- }
- 
- module_init(seqiv_module_init);
+Sophos Plc, The Pentagon, Abingdon Science Park, Abingdon,
+OX14 3YP, United Kingdom.
+
+Company Reg No 2096520. VAT Reg No GB 348 3873 20.
+
