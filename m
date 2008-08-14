@@ -1,102 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757200AbYHNP5k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755378AbYHNQHB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757200AbYHNP5k (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Aug 2008 11:57:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751368AbYHNP5c
+	id S1755378AbYHNQHB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Aug 2008 12:07:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751466AbYHNQGw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Aug 2008 11:57:32 -0400
-Received: from casper.infradead.org ([85.118.1.10]:38359 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751351AbYHNP5b (ORCPT
+	Thu, 14 Aug 2008 12:06:52 -0400
+Received: from outbound-wa4.frontbridge.com ([216.32.181.16]:46949 "EHLO
+	WA4EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751182AbYHNQGv convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Aug 2008 11:57:31 -0400
-Date: Thu, 14 Aug 2008 08:57:40 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Eric Paris <eparis@redhat.com>
-Cc: linux-kernel@vger.kernel.org, malware-list@lists.printk.net,
-       andi@firstfloor.org, riel@redhat.com, greg@kroah.com, tytso@mit.edu,
-       viro@ZenIV.linux.org.uk, alan@lxorguk.ukuu.org.uk, peterz@infradead.org,
-       hch@infradead.org
-Subject: Re: TALPA - a threat model?  well sorta.
-Message-ID: <20080814085740.35b32633@infradead.org>
-In-Reply-To: <1218723133.3540.137.camel@localhost.localdomain>
-References: <1218645375.3540.71.camel@localhost.localdomain>
-	<20080813103951.1e3e5827@infradead.org>
-	<1218653864.3540.109.camel@localhost.localdomain>
-	<20080813143908.38796217@infradead.org>
-	<1218723133.3540.137.camel@localhost.localdomain>
-Organization: Intel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Thu, 14 Aug 2008 12:06:51 -0400
+X-BigFish: VPS-48(z21eWz1432R98dR1805M936fQzzzzz32i6bh61h)
+X-Spam-TCS-SCL: 0:0
+X-WSS-ID: 0K5LM2Z-01-ZBS-01
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-Class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: Warning in during hotplug on 2.6.27-rc2-git5
+Date: Thu, 14 Aug 2008 11:06:42 -0500
+Message-ID: <6453C3CB8E2B3646B0D020C112613273C5AC6F@sausexmb4.amd.com>
+In-Reply-To: <200808141753.58547.rjw@sisk.pl>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: Warning in during hotplug on 2.6.27-rc2-git5
+Thread-Index: Acj+JZkqLFz8PjxaQdqhSCwpkepxHgAAhLdw
+References: <200808121700.20369.mark.langsdorf@amd.com> <200808141753.58547.rjw@sisk.pl>
+From: "Langsdorf, Mark" <mark.langsdorf@amd.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>, "Andi Kleen" <andi@firstfloor.org>
+CC: <linux-kernel@vger.kernel.org>, "Greg KH" <greg@kroah.com>,
+       "Ingo Molnar" <mingo@elte.hu>,
+       "Andrew Morton" <akpm@linux-foundation.org>
+X-OriginalArrivalTime: 14 Aug 2008 16:06:43.0151 (UTC) FILETIME=[BE64B5F0:01C8FE27]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 14 Aug 2008 10:12:13 -0400
-Eric Paris <eparis@redhat.com> wrote:
-
-> On Wed, 2008-08-13 at 14:39 -0700, Arjan van de Ven wrote:
-> > On Wed, 13 Aug 2008 14:57:44 -0400
-> > Eric Paris <eparis@redhat.com> wrote:
-> > 
-> > > > for the open() case, I would argue that you don't need
-> > > > synchronous behavior as long as the read() case is synchronous.
-> > > > I can imagine that open() kicks off an async scan, and if it's
-> > > > done by the time the first read() happens, no blocking at all
-> > > > happens.
-> > > 
-> > > An interesting addition.  Trying to keep these queues of events
-> > > gets much more complex, but if people really think the open to
-> > > read race is that important I've always said it wasn't impossible
-> > > to close.
-> > 
-> > it's not "just" about open-to-read race.
-> > it's about open being non-blocking, and if read is not immediate,
-> > never hitting the latency at all.
-> > 
-> > The real point is that "read" is the actual point  you want to
-> > intercept, not "open" (you even wrote that in your description).. so
-> > why not just do that ?
-> >  The open case then is just a performance optimization.
+> On Wednesday, 13 of August 2008, Mark Langsdorf wrote:
+> > I'm seeing the following error message when I hotunplug and replug
+> > a cpu in 2.6.27-rc2-git5.  The system becomes unstable almost
+> > immediately afterwards.
 > 
-> I've been thinking about this more over night.  I really like the idea
-> for perf reasons but I'm scared of programs not expecting and thus
-> poorly handling -EACCESS from read.  Every program ever is going to
-> expect that back from open, but once you have the fd open its not
-> common.  
+> Hm, it seems that MCE is involved somehow.  Andi, can you 
+> have a look at this, please?
 
-you could stretch things and report -EIO.
+Disabling MCE did eliminate the error message.
 
-> 
-> The idea of multiple concurrent outstanding async notifications is
-> going to be much more difficult to code, but hey, who am I to
+-Mark Langsdorf
+Operating System Research Center
+AMD
 
-well... do you really need a response?
-you could just write it to a netlink socket...
-
-> complain.  We could have outstanding async scanning requests for any
-> number of writes, any number of closes, and any number of opens all
-> at the same time.  The current interface believes that every request
-> out requires a response but this type of interface basically requires
-> some sort of coalescing.
-
-or fire-and-forget.
-> 
-> Would you be opposed to a first patch round that did blocking
-> enforcement on open like we have today and do sync scanning (blocking
-> or return EWOULDBLOCK) on read if needed due to concurrent writes?
-
-I think we need to sort the interface issue on this for sure, and
-probably from the start...
-
-> 
-
-
--- 
-If you want to reach me at my work email, use arjan@linux.intel.com
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
