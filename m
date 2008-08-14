@@ -1,106 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756758AbYHNAlR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756725AbYHNApn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756758AbYHNAlR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Aug 2008 20:41:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753564AbYHNAlH
+	id S1756725AbYHNApn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Aug 2008 20:45:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751565AbYHNApg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Aug 2008 20:41:07 -0400
-Received: from ipmail05.adl2.internode.on.net ([203.16.214.145]:2709 "EHLO
-	ipmail05.adl2.internode.on.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752981AbYHNAlG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Aug 2008 20:41:06 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AiADAGcZo0h5LAMbiGdsb2JhbACRcwEBAQ8gpHGBVQ
-X-IronPort-AV: E=Sophos;i="4.32,204,1217773800"; 
-   d="scan'208";a="181607977"
-Date: Thu, 14 Aug 2008 10:41:01 +1000
-From: Dave Chinner <david@fromorbit.com>
-To: Linda Walsh <xfs@tlinx.org>
-Cc: xfs-oss <xfs@oss.sgi.com>, LKML <linux-kernel@vger.kernel.org>,
-       Eric Sandeen <sandeen@sandeen.net>
-Subject: Re: XFS Lock debugging noise or real problem?
-Message-ID: <20080814004101.GE6119@disturbed>
-Mail-Followup-To: Linda Walsh <xfs@tlinx.org>, xfs-oss <xfs@oss.sgi.com>,
-	LKML <linux-kernel@vger.kernel.org>,
-	Eric Sandeen <sandeen@sandeen.net>
-References: <48A093A7.40606@tlinx.org> <48A09CA9.9080705@sandeen.net> <48A0F686.2090700@tlinx.org> <48A0F9FC.1070805@sandeen.net> <48A20E9E.9090100@tlinx.org> <20080813005852.GW6119@disturbed> <48A35A99.1080300@tlinx.org>
+	Wed, 13 Aug 2008 20:45:36 -0400
+Received: from gw.goop.org ([64.81.55.164]:46466 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751468AbYHNApf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Aug 2008 20:45:35 -0400
+Message-ID: <48A38013.5020307@goop.org>
+Date: Wed, 13 Aug 2008 17:45:07 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <48A35A99.1080300@tlinx.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+CC: Theodore Tso <tytso@mit.edu>, Pavel Machek <pavel@suse.cz>,
+       kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.26: thinkpad x60 is cooled passively
+References: <20080813080618.GA16061@elf.ucw.cz> <20080813152431.GD8232@mit.edu> <20080813203137.GB27546@khazad-dum.debian.net>
+In-Reply-To: <20080813203137.GB27546@khazad-dum.debian.net>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 13, 2008 at 03:05:13PM -0700, Linda Walsh wrote:
-> Dave Chinner wrote:
->> Once again,
->> "a problem with the generic code inverting the normal lock order".
->>
->> This one cannot deadlock, though, because by definition
->> any inode on the unused list is, well, unused and hence we can't be
->> holding a reference to it...
-> ----
+Henrique de Moraes Holschuh wrote:
+> ThinkPad fans have a overdesign range of about 2x, they almost never stop
+> because they're too old.  Clogged in dirt, on the other hand... a clogged
+> fan often spins FASTER and cools less.
 >
-> 	This is great, maybe...but what do you mean by "generic"?
-
-generic code == non-filesystem specific kernel code that interfaces
-with the filesystem code.
-
-> 	Is this generic in the FS layer such that we'd see
-> this with all FS types?
-
-Any filesystem that does memory allocation with the same type of
-lock held that it might take when reclaiming a inode.
-
-This is a problem where we go:
-
-	XFS: lock inode
-	XFS: allocate memory
-	  VM: free some memory
-	    VM: shrink slab
-	      VM: prune inode cache (takes iprune_mutex)
-	        XFS: lock inode
-
-i.e. the VM recurses back into the filesystem and lockdep sees
-a different lock ordering.
-
-> I'd *like* to keep lock provability 'on' -- but I don't want
-> to waste people's time chasing after non-problems and so far I've
-> seen at least 3 different locking sequences that all appear to be
-> harmless.
+> Want to see how much your fan has as far as a safety margin goes? use
+> thinkpad-acpi to measure RPMs in level 7 and also when you switch PWM off
+> (i.e. set it to 100% duty cycle).  Mine gets faster by 1500RPM or so that
+> reflects the extra torque the EC can apply to get the fan to run at the
+> speed it wants it to.
 >
-> 	The problem with false positives is that it will either force
-> the user to ignore (or turn off) the validation code, or generate
-> periodic noise when these things arise...
+> But the thermal sink interface to the CPU and GPU are sometimes crap [when
+> compared with the quality of the rest of the machine].  Open it, remove the
+> crap, and replace it with a very high quality compound.  Dependin on
+> ThinkPad model, you also need to repair thermal sink design defects to make
+> it fit properly (read: press really tightly) on all chips.
 
-Basically we've been told by the lockdep folk that the best way
-to avoid these false positives is to effectively turn off lockdep
-for all places where the inode is locked in the inode reclaim path.
-That means lockdep would be mostly useless for XFS - I'd prefer to get
-false positives reported than miss a rare case where it's really
-telling the truth.
+Yes, this seems like a widespread and chronic problem with these little 
+Thinkpads.  I've had both an X31 and X60 go bad this way, and a friend 
+has had his X60 fail twice.  A pity given how nice the rest of the 
+machine is.
 
-I've asked the lockdep ppl to treat stuff like memory reclaim and
-the iprune_mutex specially because of this recursive calling nature
-of memory reclaim, but so far nothing has happened....
+    J
 
-FWIW, I think that recent changes have resulted in the xfs_fsr case
-(swap_extents) being annotated properly so that one should go
-away.
-
-> 	Isn't it generally considered pretty 'bad' to generate so many
-> false positives -- or is lock-proving only for for "lock debugging" --
-> and not to be used except on development or test systems?
-
-Well, any debugging code is really designed for test and dev systems,
-not for production systems.....
-
-Cheers,
-
-Dave.
--- 
-Dave Chinner
-david@fromorbit.com
