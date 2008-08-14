@@ -1,115 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758349AbYHOMWr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758462AbYHOMYA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758349AbYHOMWr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Aug 2008 08:22:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750891AbYHOMWi
+	id S1758462AbYHOMYA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Aug 2008 08:24:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752981AbYHOMXv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Aug 2008 08:22:38 -0400
-Received: from web82103.mail.mud.yahoo.com ([209.191.84.216]:26259 "HELO
-	web82103.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753399AbYHOMWh (ORCPT
+	Fri, 15 Aug 2008 08:23:51 -0400
+Received: from oxygen.pond.sub.org ([88.198.11.5]:46098 "EHLO
+	oxygen.pond.sub.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750891AbYHOMXu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Aug 2008 08:22:37 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=sbcglobal.net;
-  h=Received:X-Mailer:Date:From:Subject:To:Cc:MIME-Version:Content-Type:Message-ID;
-  b=y9KTKKjnM6/dOf8D4qVlpw/hpQIL3tkQ9xdc9CSE2qbi3JurnNpErWKTU14ZEW/eUXJpHKps2OUpmcOPssSn1YdDuAsTVrD66OZ9iOmstpUxJkk8iV28c5sGvrUcvsZACZ2qra+5YU1PVgOM1y95upS3IW2suwGn3BOh3BQOuQk=;
-X-Mailer: YahooMailRC/1042.40 YahooMailWebService/0.7.218
-Date: Fri, 15 Aug 2008 05:22:36 -0700 (PDT)
-From: David Witbrodt <dawitbro@sbcglobal.net>
-Subject: Re: HPET regression in 2.6.26 versus 2.6.25 -- retried 2.6.27-rc3 patch (and patch method)
-To: Mike Galbraith <efault@gmx.de>
-Cc: Yinghai Lu <yhlu.kernel@gmail.com>, linux-kernel@vger.kernel.org
-MIME-Version: 1.0
+	Fri, 15 Aug 2008 08:23:50 -0400
+X-Greylist: delayed 1242 seconds by postgrey-1.27 at vger.kernel.org; Fri, 15 Aug 2008 08:23:50 EDT
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Hugh Dickins <hugh@veritas.com>, Ian Campbell <ijc@hellion.org.uk>,
+       linux-kernel@vger.kernel.org, Kel Modderman <kel@otaku42.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Jaya Kumar <jayakumar.lkml@gmail.com>
+Subject: Re: kernel BUG at lib/radix-tree.c:473!
+References: <1218697362.26014.9.camel@localhost.localdomain>
+	<Pine.LNX.4.64.0808141347480.11013@blonde.site>
+	<48A48879.2000309@goop.org>
+	<Pine.LNX.4.64.0808142104080.29719@blonde.site>
+	<48A4AC01.7040402@goop.org>
+From: Markus Armbruster <armbru@redhat.com>
+Date: Thu, 14 Aug 2008 18:48:36 -0400
+In-Reply-To: <48A4AC01.7040402@goop.org> (Jeremy Fitzhardinge's message of "Thu\, 14 Aug 2008 15\:04\:49 -0700")
+Message-ID: <m33al7ciwr.fsf@crossbow.pond.sub.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <879500.36987.qm@web82103.mail.mud.yahoo.com>
+MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Jeremy Fitzhardinge <jeremy@goop.org> writes:
+
+> Hugh Dickins wrote:
+>> As you can see, I'm still groping towards the right answer.
+>> The driver probably needs to provide its own backing_dev_info
+>> (or point to a suitable default), and its own address_space_ops,
+>> and perhaps more (there should be examples elsewhere).  But whether
+>> it is actually wrong, or whether I was wrong to mess it up, I've
+>> not yet decided.
+>>   
+>
+> My understanding is that the driver is doing something a bit clever:
+> it uses the page dirty flags to determine which parts of the
+> framebuffer have been written to, and uses that information to
+> minimize the amount of stuff that needs to be copied out.  The writes
+
+Yes.
+
+> to the pages are not expected to generate actual page faults.
+>
+> But I haven't really looked at it closely, and I'm not at all familiar
+> with the vm at this layer.  I'm not sure how it actually allocates the
+> framebuffer memory for example (vmalloc?  incrementally on faults?).
+
+vmalloc()
+
+> I'm hoping Markus will leap in, since wrote this stuff.  Or, gasp,
+> I'll read the code myself.
+
+The actual cleverness is in fb_defio[*], which was written by Jaya
+Kumar (cc'ed).  I merely ripped out the old, somewhat racy cleverness
+I inherited from Anthony Liguori (which you can still admire in Xen's
+2.6.18 kernel), and switched over to use fb_defio instead.  Because
+one instance of clever code is enough.
+
+My understanding of fb_defio's inner workings is rather limited I
+fear.  I'm just using it.
+
+Jaya, could you help?
+
+[...]
 
 
-> From: Mike Galbraith <efault@gmx.de>
-
-> > Because of this, I would conclude that your patch for 2.6.27-rc3 was
-> > doomed before you began, and we should look more carefully at the
-> > commits from February instead of trying to revert at the 2.6.27 HEAD.
-
-> I've only followed this thread casually, but I suspect that Yinghai is
-> trying to determine whether or not 3def3d6d is in fact causing your
-> regression directly, or whether it is interacting with other changes.
-
-Yes, Yinghai's first response when I tried his 2.6.27-rc3 patch and the 
-kernel still locked was "there is some other problem" (besides the changes
-in 3def3d6d).
-
-You may have misunderstood my meaning:  I was only saying that a further
-experiment of mine showed that 3def3d6d... alone is not the problem, so
-that trying to undo the changes from that commit all the way up near the
-git HEAD was unlikely to work.  I did not mean that his patch was a bad
-idea, or that it should not have been tried.  When Yinghai created that 
-patch, I had not yet done that experiment.  I was just offering an 
-explanation for why the patch did not succeed.
-
-
-> What _could_ be happening is that 3def3d6d itself isn't directly causing
-> your problem, rather interacting with earlier changes such that you see
-> the problem as soon as 3def3d6d hit.
-
-I am convinced this is the case, as a result of a bisection I performed
-Wednesday night -- where I tried to revert the 3def3d6d changes alone in
-kernel revisions much closer to that commit, only to discover that the
-very next commit after 3def3d6d actually prevented the revert from working!
-
-
-> Such cases can/do happen, and can cause much confusion.  To find such a
-> problem without actually troubleshooting it (if such a thing is
-> happening in your case), you'd have to work backward, ie apply 3def3d6d
-> to earlier kernels and test.  If you find one earlier than 3def3d6d
-> which works with 3def3d6d applied, you can be pretty sure that what
-> you've got is a nasty interaction.  At that point, you'd start your
-> bisection _with virgin source_ via git bisect good "the point that
-> worked _with_ 3def3d6d applied", and git bisect bad any later point that
-> failed.  During each and every bisection point, you'd have to apply
-> 3def3d6d before testing (fixing any rejects), and _before_ saying git
-> bisect good/bad after building/testing, you must revert it first so git
-> bisect can proceed without encountering conflicts.
-
-Thank you *very* much for this suggestion, Mike!  I am an "end user," not
-a developer, so I never would have thought of this.
-
-Your explanation of how to carry out this bisect process is very much like
-the process I used on Wednesday night.  The only difference is that I 
-manually edited the 3 files involved at each step, instead of trying to
-patch using the 3def3d6d diff.  I can see that your way would have been
-much easier, as long as I am careful to watch for rejected patches.
-
-I have to go to work for a few hours, but should be able to put a lot of
-time in on this method later today.  Much thanks!
-
-
-> Before attempting any of that, you'd want to make damn sure that the
-> simpler path (forward) is in fact good with the suspect commit fully
-> reverted.  If the kernel with full revert does not work, and symptom
-> does not change an any way (very important), it's not 3def3d6d directly.
-> The patch forward then becomes git bisect start, git bisect good
-> 3def3d6d, revert/restore 3def3d6d as above at each and every bisection
-> interval until done.
-
-Ahh, this is the experiment I performed Wednesday night.  The results:
-3def3d6d is not the true cause.  Beginning with 3def3d6d..., it looks
-like anything that touches insert_resource() causes kernels to lock up
-on my two ECS AMD690GM-M2 mboards, but not on my other machine (or your
-machine, or anyone else's machine....).
-
-
-> Even if the kernel with full revert does work, it _can_ still be an
-> interaction involving multiple changes.  Such interaction problems don't
-> pop up often, and can be a real pain to dig out, so I hope it turns out
-> to be something straight forward... and I just wasted all those words.
-
-No such luck.  Can you say, "Preparation H"?  (I know I can....)
-
-
-Thanks Mike,
-Dave W.
+[*] Documentation/fb/deferred_io.txt drivers/video/fb_defio.c
