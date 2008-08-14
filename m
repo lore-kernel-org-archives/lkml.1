@@ -1,55 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757888AbYHNIik@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758170AbYHNIjS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757888AbYHNIik (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Aug 2008 04:38:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752583AbYHNIic
+	id S1758170AbYHNIjS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Aug 2008 04:39:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754785AbYHNIjC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Aug 2008 04:38:32 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:2712 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752298AbYHNIib (ORCPT
+	Thu, 14 Aug 2008 04:39:02 -0400
+Received: from rv-out-0506.google.com ([209.85.198.238]:42011 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752583AbYHNIjA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Aug 2008 04:38:31 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=Bkl28mtYyLtaikIM2k3lSlvu2e+z5UnvD1DLhGhv68Pgrb+BK27jTgeQ3d/HjTd6T
-	5RYPdd5CplMX1g7RmbTMA==
-Message-ID: <6599ad830808140138u15f516fdpace0ba455406efd4@mail.gmail.com>
-Date: Thu, 14 Aug 2008 01:38:17 -0700
-From: "Paul Menage" <menage@google.com>
-To: "Peter Zijlstra" <a.p.zijlstra@chello.nl>
-Subject: Re: [PATCH][RFC] dirty balancing for cgroups
-Cc: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>,
-       "YAMAMOTO Takashi" <yamamoto@valinux.co.jp>, linux-mm@kvack.org,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-In-Reply-To: <1216043344.12595.89.camel@twins>
+	Thu, 14 Aug 2008 04:39:00 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=YUzz6RDweFvhO+P4HJiLQloQF2GqlUl4LpvpFasoavF0h1kwV99nbSTC6fuflGLELq
+         EmBRuApD1zdiAEAgaGSwbkDma8vF3GWkD32NrRlicHYyjBm/i03Re+4TVEm7STOyZtgx
+         UUelSZP0isxoQ3yFZDqfcNvMCMEdcpgE/lDOA=
+Message-ID: <84144f020808140139v691e6590idd79995168af4e9e@mail.gmail.com>
+Date: Thu, 14 Aug 2008 11:39:00 +0300
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: jmerkey@wolfmountaingroup.com
+Subject: Re: [PATCH 2.6.27-rc3 26/29] mdb: export task_curr
+Cc: linux-kernel@vger.kernel.org, "Ingo Molnar" <mingo@elte.hu>
+In-Reply-To: <200808140614.m7E6EcDS006264@wolfmountaingroup.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20080711141511.515e69a5.kamezawa.hiroyu@jp.fujitsu.com>
-	 <20080711055926.9AF4F5A03@siro.lan>
-	 <20080711161349.c5831081.kamezawa.hiroyu@jp.fujitsu.com>
-	 <1216043344.12595.89.camel@twins>
+References: <200808140614.m7E6EcDS006264@wolfmountaingroup.com>
+X-Google-Sender-Auth: 4fae3270686d34fa
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 14, 2008 at 6:49 AM, Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+On Thu, Aug 14, 2008 at 9:14 AM,  <jmerkey@wolfmountaingroup.com> wrote:
+> export the task_curr function to the module based kernel debugger to enable
+> process back tracing and state display.
 >
-> The dirty page limit avoids deadlocks under certain situations, the per
-> BDI dirty limit avoids even mode deadlocks by providing isolation
-> between BDIs.
+> Signed-off-by: Jeffrey Vernon Merkey (jmerkey@wolfmountaingroup.com)
 >
+> --- a/kernel/sched.c    2008-08-13 14:22:32.000000000 -0600
+> +++ b/kernel/sched.c    2008-08-13 11:56:03.000000000 -0600
+> @@ -1736,6 +1736,9 @@
+>  {
+>        return cpu_curr(task_cpu(p)) == p;
+>  }
+> +#if defined(CONFIG_MDB_MODULE)
+> +EXPORT_SYMBOL_GPL(task_curr);
+> +#endif
 
-As well as deadlocks, in the case of cgroups a big advantage of dirty
-limits is that it makes it easier to "loan" memory to groups above and
-beyond what they have been guaranteed. As long as we limit the
-dirty/locked memory for a cgroup to its guarantee, and require any
-extra memory to be clean and unlocked, then we can reclaim it in a
-hurry if another cgroup (that had been guaranteed that memory) needs
-it.
-
-Paul
+We usually don't export symbols conditionally, especially in core kernel code.
