@@ -1,86 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755603AbYHOFch@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756636AbYHOFdW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755603AbYHOFch (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Aug 2008 01:32:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750920AbYHOFcZ
+	id S1756636AbYHOFdW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Aug 2008 01:33:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750982AbYHOFdN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Aug 2008 01:32:25 -0400
-Received: from DELFT.AURA.CS.CMU.EDU ([128.2.206.88]:48655 "EHLO
-	delft.aura.cs.cmu.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750867AbYHOFcY (ORCPT
+	Fri, 15 Aug 2008 01:33:13 -0400
+Received: from yx-out-2324.google.com ([74.125.44.28]:6408 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750790AbYHOFdL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Aug 2008 01:32:24 -0400
-X-Greylist: delayed 1546 seconds by postgrey-1.27 at vger.kernel.org; Fri, 15 Aug 2008 01:32:24 EDT
-Date: Fri, 15 Aug 2008 01:06:13 -0400
-From: Jan Harkes <jaharkes@cs.cmu.edu>
-To: Al Viro <viro@ZenIV.linux.org.uk>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [RFC] readdir mess
-Message-ID: <20080815050613.GJ4422@cs.cmu.edu>
-Mail-Followup-To: Al Viro <viro@ZenIV.linux.org.uk>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20080812062241.GQ28946@ZenIV.linux.org.uk> <87ej4u9nf5.fsf@devron.myhome.or.jp> <alpine.LFD.1.10.0808121009370.3462@nehalem.linux-foundation.org> <20080812181057.GR28946@ZenIV.linux.org.uk> <alpine.LFD.1.10.0808121316570.3462@nehalem.linux-foundation.org> <20080812203808.GV28946@ZenIV.linux.org.uk> <alpine.LFD.1.10.0808121351570.3462@nehalem.linux-foundation.org> <20080813000433.GZ28946@ZenIV.linux.org.uk>
+	Fri, 15 Aug 2008 01:33:11 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=IPI+zs+Chy5BJkTbJIDXvDj2j6xUBxZF7E2uPCkfU9AnxKe4c+Kih1Dv+kGpJD+6un
+         K7o0RkJPo+eFfy2vSeMp91YkPLbnYQ1K+siLgy7Zku9nAb/cTfb/KsSBuFNpesBqBfPK
+         ul7ZFDLBKyqXRSJ/kH1lU8HAXlky8iMMBRcoc=
+Message-ID: <b3ece790808142233y3150b4d1sfeaa0342dbac31a6@mail.gmail.com>
+Date: Thu, 14 Aug 2008 22:33:10 -0700
+From: "Tim Hockin" <thockin@hockin.org>
+To: "Greg KH" <gregkh@suse.de>
+Subject: Re: [patch 1/3] kmsg: Kernel message catalog macros.
+Cc: "Joe Perches" <joe@perches.com>, schwidefsky@de.ibm.com,
+       linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
+       lf_kernel_messages@lists.linux-foundation.org,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Michael Holzheu" <holzheu@de.ibm.com>,
+       "Gerrit Huizenga" <gh@us.ibm.com>,
+       "Randy Dunlap" <randy.dunlap@oracle.com>, "Jan Kara" <jack@suse.cz>,
+       "Pavel Machek" <pavel@ucw.cz>, "Sam Ravnborg" <sam@ravnborg.org>,
+       "=?UTF-8?Q?Jochen_Vo=C3=9F?=" <jochen.voss@googlemail.com>,
+       "Kunai Takashi" <kunai@linux-foundation.jp>,
+       "Tim Bird" <tim.bird@am.sony.com>
+In-Reply-To: <20080815034419.GB803@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080813000433.GZ28946@ZenIV.linux.org.uk>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+References: <20080730165656.118280544@de.ibm.com>
+	 <20080730171156.824640459@de.ibm.com>
+	 <b3ece790808121735t21b4a629iaf6a968b30332d74@mail.gmail.com>
+	 <1218733457.2651.11.camel@localhost>
+	 <b3ece790808141150s3770531bsc88ec387e0f840d3@mail.gmail.com>
+	 <1218769739.24527.76.camel@localhost> <20080815034419.GB803@suse.de>
+X-Google-Sender-Auth: 8718f3a80fad7695
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 13, 2008 at 01:04:33AM +0100, Al Viro wrote:
-> coda:	returns fsck knows what (number of entries, mostly)
+On Thu, Aug 14, 2008 at 8:44 PM, Greg KH <gregkh@suse.de> wrote:
+>
+> What is wrong with what we have already agreed to standardise on here
+> people?  dev_printk() for devices!  It uniquely shows the device, what
+> driver is bound to it (if any), the bus id, and everything else.
 
-Not sure either and I was the one that sent the patch that introduced
-that. My closest guess would be that I looked too long at a getdents(2)
-manpage, but then again it doesn't really match that either.
+Part of the problem, imho, is the "if any" part.  But I am more than happy to
+build on existing solutions.  All the world is not a dev, though.  I'd like to
+be able to report something like an OOM kill in (roughly) the same way as an
+ATA error, and I want (though could be talked out of) a way to tell these
+"events" (for lack of a better word) apart from plain-old-printk()s.
 
-Signed-off-by: Jan Harkes <jaharkes@cs.cmu.edu>
----
-
-If I understood your description, then the following would be the
-correct fix. We return 0 as long as we managed to read some entries, and
-any non-zero return value from filldir otherwise.
-
-diff --git a/fs/coda/dir.c b/fs/coda/dir.c
-index c591622..6026b91 100644
---- a/fs/coda/dir.c
-+++ b/fs/coda/dir.c
-@@ -513,14 +513,14 @@ static int coda_venus_readdir(struct file *coda_file, void *buf,
- 
- 	if (coda_file->f_pos == 0) {
- 		ret = filldir(buf, ".", 1, 0, de->d_inode->i_ino, DT_DIR);
--		if (ret < 0)
-+		if (ret != 0)
- 			goto out;
- 		result++;
- 		coda_file->f_pos++;
- 	}
- 	if (coda_file->f_pos == 1) {
- 		ret = filldir(buf, "..", 2, 1, de->d_parent->d_inode->i_ino, DT_DIR);
--		if (ret < 0)
-+		if (ret != 0)
- 			goto out;
- 		result++;
- 		coda_file->f_pos++;
-@@ -572,7 +572,7 @@ static int coda_venus_readdir(struct file *coda_file, void *buf,
- 			ret = filldir(buf, name.name, name.len,
- 				      coda_file->f_pos, ino, type);
- 			/* failure means no space for filling in this round */
--			if (ret < 0) break;
-+			if (ret != 0) break;
- 			result++;
- 		}
- 		/* we'll always have progress because d_reclen is unsigned and
-@@ -581,7 +581,7 @@ static int coda_venus_readdir(struct file *coda_file, void *buf,
- 	}
- out:
- 	kfree(vdir);
--	return result ? result : ret;
-+	return result ? 0 : ret;
- }
- 
- /* called when a cache lookup succeeds */
+Tim
