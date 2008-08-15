@@ -1,77 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758426AbYHOR4Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760030AbYHOSBV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758426AbYHOR4Z (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Aug 2008 13:56:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756484AbYHOR4R
+	id S1760030AbYHOSBV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Aug 2008 14:01:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755089AbYHOSBK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Aug 2008 13:56:17 -0400
-Received: from www.church-of-our-saviour.ORG ([69.25.196.31]:56714 "EHLO
-	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755248AbYHOR4Q (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Aug 2008 13:56:16 -0400
-Date: Fri, 15 Aug 2008 13:04:41 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: douglas.leeder@sophos.com
-Cc: "Press, Jonathan" <Jonathan.Press@ca.com>, alan@lxorguk.ukuu.org.uk,
-       andi@firstfloor.org, Arjan van de Ven <arjan@infradead.org>,
-       hch@infradead.org, Helge Hafting <helge.hafting@aitel.hist.no>,
-       linux-kernel@vger.kernel.org, malware-list@lists.printk.net,
-       Peter Zijlstra <peterz@infradead.org>, viro@ZenIV.linux.org.uk
-Subject: Re: [malware-list] TALPA - a threat model?  well sorta.
-Message-ID: <20080815170441.GA22395@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>, douglas.leeder@sophos.com,
-	"Press, Jonathan" <Jonathan.Press@ca.com>, alan@lxorguk.ukuu.org.uk,
-	andi@firstfloor.org, Arjan van de Ven <arjan@infradead.org>,
-	hch@infradead.org, Helge Hafting <helge.hafting@aitel.hist.no>,
-	linux-kernel@vger.kernel.org, malware-list@lists.printk.net,
-	Peter Zijlstra <peterz@infradead.org>, viro@ZenIV.linux.org.uk
-References: <2629CC4E1D22A64593B02C43E855530304AE4BF6@USILMS12.ca.com> <20080815131820.053BF31679D@pmx1.sophos.com>
+	Fri, 15 Aug 2008 14:01:10 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:46539 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755160AbYHOSBJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Aug 2008 14:01:09 -0400
+Date: Fri, 15 Aug 2008 20:00:48 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: prarit@redhat.com, jbarnes@virtuousgeek.org, joro@8bytes.org,
+       linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org
+Subject: Re: [PATCH]: PCI: GART iommu alignment fixes [v2]
+Message-ID: <20080815180048.GA26844@elte.hu>
+References: <4899B611.4070408@redhat.com> <200808071003.47326.jbarnes@virtuousgeek.org> <489B33D4.1080107@redhat.com> <20080809125116H.fujita.tomonori@lab.ntt.co.jp> <20080815161629.GL27955@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080815131820.053BF31679D@pmx1.sophos.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+In-Reply-To: <20080815161629.GL27955@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 15, 2008 at 02:18:12PM +0100, douglas.leeder@sophos.com wrote:
-> > - New infection makes it onto the machine before the signatures have
-> > caught up with it.  This also happens.  There is an ongoing PR race
-> > among AV vendors about who was faster on the draw to get out signatures
-> > to detect some new malware.  The fact that this race exists reflects
-> > that reality that there is some window during which new malware will
-> > make it onto some number of machines before the scanners catch up.
 
-Let's go back to the threat model.  The Threat Model which Eric Paris
-has suggested is that we are only trying to solve the Scanning
-Problem.  Just Scanning.
+* Ingo Molnar <mingo@elte.hu> wrote:
 
-That implies if the malware has been written to the disk, we will
-catch it once AV catching is turned on and the user attempts to run or
-otherwise access the file with the bad content.  However, if the
-malware starts running, then regardless of whether the malware is
-running with user privileges, or manages to get root privileges via
-some buffer overflow that wasn't caught via
-LSM/SELinux/AppAmor/whatever, this is out of scope of Eric's proposal.
+> 
+> * FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
+> 
+> > From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+> > Subject: [PATCH] x86 gart: allocate size-aligned address for alloc_coherent
+> > 
+> > This fixes GART to return a properly aligned address as
+> > DMA-mapping.txt defines.
+> 
+> applied to tip/x86/gart, thanks! Any v2.6.27-urgency of this patch?
 
-Are we agreed on that?  There may be other components of the solution
-such as LSM, SELinux, etc., that will very likely be useful in
-protecting the system once the malware starts running.  But I thought
-Eric's proposal proposed excluding that from the Threat Model for the
-purposes of the interface we are trying to solve.  If that's not true,
-let's deal with it now.
+hm, -tip testing has found that this patch causes a hard hang during 
+bootup:
 
-> Not to mention removable media - it might be old hat, but infected/malware
-> files can come in on floppies, CDs or USB flash discs careless left on the
-> pavement outside an office.
+ initcall ali_init+0x0/0x1b returned 0 after 3 msecs
+ calling  amd_init+0x0/0x1b
+ bus: 'pci': add driver pata_amd
+ bus: 'pci': driver_probe_device: matched device 0000:00:06.0 with driver pata_amd
+ bus: 'pci': really_probe: probing driver pata_amd with device 0000:00:06.0
+ pata_amd 0000:00:06.0: version 0.3.10
+ pata_amd 0000:00:06.0: setting latency timer to 64
+ [hard hang]
 
-That's not a problem given the scanning model proposed by Eric; when
-you insert removable media, it will get scanned when it is first
-accessed.
+should have continued with:
 
-	  	    	     	     	     - Ted
+ scsi0 : pata_amd
+ device: 'host0': device_add
+ device: 'host0': device_add
+ scsi1 : pata_amd
+ [... etc. ... ]
+
+on an AMD X2 testsystem. (Asus board) Can send more info on request. 
+Config is:
+
+  http://redhat.com/~mingo/misc/config-Fri_Aug_15_18_30_56_CEST_2008.bad
+
+Any idea why that is so? Apparently the alignment change wasnt as benign 
+as assumed.
+
+	Ingo
