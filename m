@@ -1,67 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759751AbYHOQVT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760255AbYHOQWq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759751AbYHOQVT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Aug 2008 12:21:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754711AbYHOQVL
+	id S1760255AbYHOQWq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Aug 2008 12:22:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754711AbYHOQWj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Aug 2008 12:21:11 -0400
-Received: from smtp02.citrix.com ([66.165.176.63]:31196 "EHLO
-	SMTP02.CITRIX.COM" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753574AbYHOQVL (ORCPT
+	Fri, 15 Aug 2008 12:22:39 -0400
+Received: from 166-70-238-42.ip.xmission.com ([166.70.238.42]:48244 "EHLO
+	ns1.wolfmountaingroup.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753966AbYHOQWi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Aug 2008 12:21:11 -0400
-X-IronPort-AV: E=Sophos;i="4.32,216,1217822400"; 
-   d="scan'208";a="16056973"
-Message-ID: <48A5ACFA.7040906@citrix.com>
-Date: Fri, 15 Aug 2008 17:21:14 +0100
-From: Alex Nixon <alex.nixon@citrix.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
+	Fri, 15 Aug 2008 12:22:38 -0400
+Message-ID: <1763.69.2.248.210.1218815934.squirrel@webmail.wolfmountaingroup.com>
+In-Reply-To: <20080815122510.GF20442@elte.hu>
+References: <200808140614.m7E6EcDS006264@wolfmountaingroup.com>
+    <84144f020808140139v691e6590idd79995168af4e9e@mail.gmail.com>
+    <44303.166.70.238.45.1218724556.squirrel@webmail.wolfmountaingroup.com>
+    <20080815122510.GF20442@elte.hu>
+Date: Fri, 15 Aug 2008 09:58:54 -0600 (MDT)
+Subject: Re: [PATCH 2.6.27-rc3 26/29] mdb: export task_curr
+From: jmerkey@wolfmountaingroup.com
+To: "Ingo Molnar" <mingo@elte.hu>
+Cc: jmerkey@wolfmountaingroup.com, "Pekka Enberg" <penberg@cs.helsinki.fi>,
+       linux-kernel@vger.kernel.org, jason.wessel@windriver.com
+User-Agent: SquirrelMail/1.4.6
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Jeremy Fitzhardinge <Jeremy.Fitzhardinge@citrix.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH] change init_gdt to update the gdt via write_gdt, rather than
- a direct write.
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 15 Aug 2008 16:21:05.0289 (UTC) FILETIME=[EAAE4790:01C8FEF2]
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Alex Nixon <alex.nixon@citrix.com>
-Date: Fri, 15 Aug 2008 11:21:56 +0100
-Subject: [PATCH] change init_gdt to update the gdt via write_gdt, rather than a direct write.
+>
+> * jmerkey@wolfmountaingroup.com <jmerkey@wolfmountaingroup.com> wrote:
+>
+>> > On Thu, Aug 14, 2008 at 9:14 AM,  <jmerkey@wolfmountaingroup.com>
+>> wrote:
+>> >> export the task_curr function to the module based kernel debugger to
+>> >> enable
+>> >> process back tracing and state display.
+>> >>
+>> >> Signed-off-by: Jeffrey Vernon Merkey (jmerkey@wolfmountaingroup.com)
+>> >>
+>> >> --- a/kernel/sched.c    2008-08-13 14:22:32.000000000 -0600
+>> >> +++ b/kernel/sched.c    2008-08-13 11:56:03.000000000 -0600
+>> >> @@ -1736,6 +1736,9 @@
+>> >>  {
+>> >>        return cpu_curr(task_cpu(p)) == p;
+>> >>  }
+>> >> +#if defined(CONFIG_MDB_MODULE)
+>> >> +EXPORT_SYMBOL_GPL(task_curr);
+>> >> +#endif
+>> >
+>> > We usually don't export symbols conditionally, especially in core
+>> kernel
+>> > code.
+>> >
+>>
+>> Well,then please suggest how a kernel debugger can be module based and
+>> still be able to get this information some other way that's generic
+>> and minimal impact.
+>
+> FYI, there's a built-in kernel debugger in the upstream kernel already:
+> kernel/kgdb.c - and it does not need that export.
+>
+> So if you are interested in kernel debuggers i'd suggest to work with
+> the KGDB folks to extend it with whatever feature-set is missing.
+>
+> They are friendly, very easy to work with and are open to the
+> thousands-of-years-old scientific method of not duplicating effort,
+> working together, going forward gradually, etc.
+>
+> 	Ingo
+>
 
-By writing directly, a memory access violation can occur whilst hotplugging a CPU if the entry was previously marked read-only.
+Sorry, but I have my own path and direction, and its not as a tin can on a
+strong tied to the tail of kdb or kgdb.    Again, it matters not what's in
+Linus' tree or not, but whether this is useful to others and they use it. 
+>From what I have seen based on the non-stop downloads from my FTP server,
+its needed for certain classes of users -- me included.  I will continue
+to enhance it, release it, and move it forward.
 
-Signed-off-by: Alex Nixon <alex.nixon@citrix.com>
----
- arch/x86/kernel/smpcommon.c |    8 ++++----
- 1 files changed, 4 insertions(+), 4 deletions(-)
+kdb and kgdb can go their way.  I'm certain my code is being reviewed as
+we speak and if its useful to them, so much the better.
 
-diff --git a/arch/x86/kernel/smpcommon.c b/arch/x86/kernel/smpcommon.c
-index 99941b3..29f8bf0 100644
---- a/arch/x86/kernel/smpcommon.c
-+++ b/arch/x86/kernel/smpcommon.c
-@@ -13,13 +13,13 @@ EXPORT_PER_CPU_SYMBOL(this_cpu_off);
-    secondary which will soon come up. */
- __cpuinit void init_gdt(int cpu)
- {
--	struct desc_struct *gdt = get_cpu_gdt_table(cpu);
-+	struct desc_struct gdt;
- 
--	pack_descriptor(&gdt[GDT_ENTRY_PERCPU],
--			__per_cpu_offset[cpu], 0xFFFFF,
-+	pack_descriptor(&gdt, __per_cpu_offset[cpu], 0xFFFFF,
- 			0x2 | DESCTYPE_S, 0x8);
-+	gdt.s = 1;
- 
--	gdt[GDT_ENTRY_PERCPU].s = 1;
-+	write_gdt_entry(get_cpu_gdt_table(cpu), GDT_ENTRY_PERCPU, &gdt, DESCTYPE_S);
- 
- 	per_cpu(this_cpu_off, cpu) = __per_cpu_offset[cpu];
- 	per_cpu(cpu_number, cpu) = cpu;
--- 
-1.5.4.3
+Jeff
+
+
+
+
+
 
