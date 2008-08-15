@@ -1,79 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758887AbYHON1u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759081AbYHON3A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758887AbYHON1u (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Aug 2008 09:27:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754883AbYHON1S
+	id S1759081AbYHON3A (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Aug 2008 09:29:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753979AbYHON2t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Aug 2008 09:27:18 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:52611 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754677AbYHON1R (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Aug 2008 09:27:17 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Marcin Obara <marcin_obara@users.sourceforge.net>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Marcel Selhorst <tpm@selhorst.net>,
-       Kylene Jo Hall <kjhall@us.ibm.com>, tpmdd-devel@lists.sourceforge.net
-Subject: [PATCH v2] 2.6.27-rc3-mmotm  tpm-correct-tpm-timeouts-to-jiffies-conversion-d820-fix.patch
-From: Valdis.Kletnieks@vt.edu
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1218794163_6209P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Fri, 15 Aug 2008 05:56:03 -0400
-Message-ID: <11547.1218794163@turing-police.cc.vt.edu>
+	Fri, 15 Aug 2008 09:28:49 -0400
+Received: from pmx1.sophos.com ([213.31.172.16]:43606 "EHLO pmx1.sophos.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753841AbYHON2s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Aug 2008 09:28:48 -0400
+In-Reply-To: <20080815132227.6BF0431678F@pmx1.sophos.com>
+Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       malware-list@lists.printk.net, malware-list-bounces@dmesg.printk.net,
+       Theodore Tso <tytso@mit.edu>
+Subject: Re: [malware-list] [RFC 0/5] [TALPA] Intro	to	alinuxinterfaceforonaccess
+ scanning
+MIME-Version: 1.0
+X-Mailer: Lotus Notes Release 7.0.2 September 26, 2006
+From: douglas.leeder@sophos.com
+Date: Fri, 15 Aug 2008 14:28:52 +0100
+X-MIMETrack: Serialize by Router on Mercury/Servers/Sophos(Release 7.0.3|September 26, 2007) at
+ 15/08/2008 14:28:47,
+	Serialize complete at 15/08/2008 14:28:47
+Content-Type: text/plain; charset="US-ASCII"
+Message-Id: <20080815132852.4060D376568@pmx1.sophos.com>
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1218794163_6209P
-Content-Type: text/plain; charset=us-ascii
+malware-list-bounces@dmesg.printk.net wrote on 2008-08-15 14:22:27:
 
-Patch tpm-correct-tpm-timeouts-to-jiffies-conversion reveals a bug in the
-Broadcom BCM0102 TPM chipset used in the Dell Latitude D820 - although most of
-the timeouts are returned in usecs as per the spec, one is apparently returned
-in msecs, which results in a too-small value leading to a timeout when the code
-treats it as usecs.  To prevent a regression, we check for the known too-short
-value and adjust it to a value that makes things work.
+> malware-list-bounces@dmesg.printk.net wrote on 2008-08-15 14:16:21:
+> 
+> > On Fri, Aug 15, 2008 at 08:57:48AM -0400, Press, Jonathan wrote:
+> > > That may just be a question of terminology.  If the bits are 
+construed
+> > > not as clean/dirty/infected, but as "I care about this file" vs. "I
+> > > don't care about this file" then the rubber gloves come off.
+> > 
+> > Sure, as long as we're very clear about the semantics of the bits.  If
+> > the bits are not persistent, but which get dropped if the inode is
+> > every evicted from memory, and it's considered OK, or even desirable,
+> > to rescan the file when it is brought back into memory, that may be
+> > acceptable to the rubber gloves folks (make people go through lots
+> > superflous of security scans, even when they are transfering betewen
+> > flights --- security is always more important than passengers'
+> > convenience!), but perhaps not to other applications such as file
+> > indexers, who would view rescanning files that have already been
+> > scanned, and not have been modified, as a waste of time, battery, CPU
+> > and disk bandwidth, etc.
+> > 
+> > As I understand it, the TALPA proposal had non-persistent
+> > clean/dirty/infected bits.
+> > 
+> >                   - Ted
+> 
+> Yes the current proposal has temporary markers in the in-memory 
+> representation if inodes.
+> 
+> This is a problem for current anti-malware scanning, as virus data 
+updates 
+> come every few hours
+> (at which point the entire clean/infected state has to be cleared), so 
+the 
+> loss after a reboot is 
+> limited.
 
-Version 2: Clarify comment somewhat, fix if statement to properly deal with
-variant HZ values.
+Of course I mean't NOT a problem...
 
-Signed-off-by: Valdis Kletnieks <valdis.kletnieks@vt.edu>
-cc: Marcin Obara <marcin_obara@users.sourceforge.net>
-
-Index: linux-2.6.27-rc3-mmotm0814/drivers/char/tpm/tpm.c
-===================================================================
---- linux-2.6.27-rc3-mmotm0814.orig/drivers/char/tpm/tpm.c	2008-08-15 02:19:58.000000000 -0400
-+++ linux-2.6.27-rc3-mmotm0814/drivers/char/tpm/tpm.c	2008-08-15 05:44:48.000000000 -0400
-@@ -557,6 +557,13 @@
- 	    usecs_to_jiffies(be32_to_cpu
- 			     (*((__be32 *) (data +
- 					    TPM_GET_CAP_RET_UINT32_1_IDX))));
-+	/* The Broadcom BCM0102 chipset in a Dell Latitude D820 gets the above
-+	 * value wrong and apparently reports msecs rather than usecs. So we
-+	 * fix up the resulting too-small TPM_SHORT value to make things work.
-+	 */
-+	if (chip->vendor.duration[TPM_SHORT] < (HZ/100))
-+		chip->vendor.duration[TPM_SHORT] = HZ;
-+
- 	chip->vendor.duration[TPM_MEDIUM] =
- 	    usecs_to_jiffies(be32_to_cpu
- 			     (*((__be32 *) (data +
+-- 
+Douglas Leeder
 
 
---==_Exmh_1218794163_6209P
-Content-Type: application/pgp-signature
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
+Sophos Plc, The Pentagon, Abingdon Science Park, Abingdon,
+OX14 3YP, United Kingdom.
 
-iD8DBQFIpVKzcC3lWbTT17ARAmYzAKD0oQRew4taCDC0SxKzHe+1qLm2wgCghSHz
-5mByzJslPQYCV5jlNmt5RYc=
-=/YD6
------END PGP SIGNATURE-----
+Company Reg No 2096520. VAT Reg No GB 348 3873 20.
 
---==_Exmh_1218794163_6209P--
