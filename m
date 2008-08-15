@@ -1,202 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757320AbYHODBv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756071AbYHODGe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757320AbYHODBv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Aug 2008 23:01:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752798AbYHODAv
+	id S1756071AbYHODGe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Aug 2008 23:06:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752545AbYHODGZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Aug 2008 23:00:51 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:33400 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752622AbYHODAt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Aug 2008 23:00:49 -0400
-Message-Id: <20080815030047.548192730@goodmis.org>
-References: <20080815024716.480118113@goodmis.org>
-User-Agent: quilt/0.46-1
-Date: Thu, 14 Aug 2008 22:47:19 -0400
-From: Steven Rostedt <rostedt@goodmis.org>
-To: linux-kernel@vger.kernel.org
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       David Miller <davem@davemloft.net>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Gregory Haskins <ghaskins@novell.com>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       "Luis Claudio R. Goncalves" <lclaudio@uudg.org>,
-       Clark Williams <williams@redhat.com>, srostedt@redhat.com,
-       rusty@rustcorp.com.au
-Subject: [PATCH 3/3] ftrace: remove old pointers to mcount
-Content-Disposition: inline; filename=ftrace-release-mcount-recs-by-addr.patch
+	Thu, 14 Aug 2008 23:06:25 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:55333 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752347AbYHODGY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Aug 2008 23:06:24 -0400
+Subject: Re: [malware-list] [RFC 0/5] [TALPA] Intro to
+	alinuxinterfaceforon	access scanning
+From: Eric Paris <eparis@redhat.com>
+To: Theodore Tso <tytso@mit.edu>
+Cc: Rik van Riel <riel@redhat.com>, davecb@sun.com,
+       linux-security-module@vger.kernel.org, Adrian Bunk <bunk@kernel.org>,
+       Mihai Don??u <mdontu@bitdefender.com>, linux-kernel@vger.kernel.org,
+       malware-list@lists.printk.net, Pavel Machek <pavel@suse.cz>,
+       Arjan van de Ven <arjan@infradead.org>
+In-Reply-To: <20080815004335.GF13048@mit.edu>
+References: <20080813125638.GB6995@ucw.cz>
+	 <20080813135207.CC08C3765BC@pmx1.sophos.com>
+	 <20080814125410.GA2262@elf.ucw.cz>
+	 <2629CC4E1D22A64593B02C43E855530304AE4BE3@USILMS12.ca.com>
+	 <20080814223918.GC6370@elf.ucw.cz>
+	 <20080814200005.6b363716@bree.surriel.com> <20080815004335.GF13048@mit.edu>
+Content-Type: text/plain
+Date: Thu, 14 Aug 2008 23:00:09 -0400
+Message-Id: <1218769209.16613.31.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When a mcount pointer is recorded into a table, it is used to add or
-remove calls to mcount (replacing them with nops). If the code is removed
-via removing a module, the pointers still exist.  At modifying the code
-a check is always made to make sure the code being replaced is the code
-expected. In-other-words, the code being replaced is compared to what
-it is expected to be before being replaced.
+On Thu, 2008-08-14 at 20:43 -0400, Theodore Tso wrote:
+> On Thu, Aug 14, 2008 at 08:00:05PM -0400, Rik van Riel wrote:
+> > > Yes, that's the part libmalware.so proposal solves. Given scary number
+> > > of 0 Linux viruses in wild, it seems to solve the problem pretty well.
+> > 
+> > If you're trolling, you're not being very good at it.
+> > 
+> > Just because you cannot easily infect a Linux system from a
+> > user application does not mean malware cannot do all kinds
+> > of damage with user privileges.  Think of a key sniffer (using
+> > the same interface that the X screensavers use) or a spam bot
+> > running with user privileges.
+> 
+> But Pavel is raising a good question.  In Eric's proposed threat
+> model, he claimed the only thing that he was trying to solve was
+> "scanning".  Just file scanning.  That implies no root privileges, but
+> it also implied that he wasn't worried about malware running with user
+> privileges, either.  Presumbly, that would be caught and stopped by
+> the file scanner before the malware had a chance to run; that is the
+> execve(2) system call would also be blocked until the executable was
+> scanned.
+> 
+> So if that is the threat model, then the only thing libmalware.so
+> doesn't solve is knfsd access, and it should be evaluated on that
+> basis.  If the threat model *does* include malware which is **not**
+> caught by the AV scanner, and is running with user privileges, then
+> there are a whole host of other attacks that we have to worry about.
+> So let's be real clear, up front, what the threat model is, and avoid
+> changing the model around to rule out solutions that don't fit the
+> initially preconceived one.  That's how you get to the TSA
+> confiscating water bottles in airport security lines.
 
-There is a very small chance that the code being replaced just happens
-to look like code that calls mcount (very small since the call to mcount
-is relative). To remove this chance, this patch adds ftrace_release to
-allow module unloading to remove the pointers to mcount within the module.
+No, I'm not claiming to protect against running processes.  I'll leave
+that for SELinux.
 
-Another change for init calls is made to not trace calls marked with
-__init. The tracing can not be started until after init is done anyway.
+I haven't seen this supposed libmalware.so so take anything I say with a
+grain of sand.  But I take it that the solutions to the problems are
+'don't do that.'
 
-[
-  Rusty, I decided to remove the if statement for you ;-)
-]
+aka malware is allowed to flow freely across linux nfs servers.  Great,
+I'm sure corperate IT organizations are going to love knowing there
+isn't a darn thing they can do to protect their nfs server from being
+storage grounds other than hope they can control all of the border.
 
-CC: rusty@rustcorp.com.au
-Signed-off-by: Steven Rostedt <srostedt@redhat.com>
----
- include/linux/ftrace.h |    2 ++
- include/linux/init.h   |    2 +-
- kernel/module.c        |   12 ++++++++----
- kernel/trace/ftrace.c  |   32 ++++++++++++++++++++++++++++++--
- 4 files changed, 41 insertions(+), 7 deletions(-)
+And I still don't get this 'mmap problem' that I don't solve that
+libmalware magically solves.  What?  don't use mmap?  I certainly hope
+not.
 
-Index: linux-tip.git/include/linux/ftrace.h
-===================================================================
---- linux-tip.git.orig/include/linux/ftrace.h	2008-08-14 22:42:59.000000000 -0400
-+++ linux-tip.git/include/linux/ftrace.h	2008-08-14 22:43:33.000000000 -0400
-@@ -144,10 +144,12 @@ ftrace_special(unsigned long arg1, unsig
- #ifdef CONFIG_FTRACE_MCOUNT_RECORD
- extern void ftrace_init(void);
- extern void ftrace_init_module(unsigned long *start, unsigned long *end);
-+extern void ftrace_release(void *start, unsigned long size);
- #else
- static inline void ftrace_init(void) { }
- static inline void
- ftrace_init_module(unsigned long *start, unsigned long *end) { }
-+static inline void ftrace_release(void *start, unsigned long size) { }
- #endif
- 
- #endif /* _LINUX_FTRACE_H */
-Index: linux-tip.git/kernel/module.c
-===================================================================
---- linux-tip.git.orig/kernel/module.c	2008-08-14 22:42:59.000000000 -0400
-+++ linux-tip.git/kernel/module.c	2008-08-14 22:43:33.000000000 -0400
-@@ -1432,6 +1432,9 @@ static void free_module(struct module *m
- 	/* Module unload stuff */
- 	module_unload_free(mod);
- 
-+	/* release any pointers to mcount in this module */
-+	ftrace_release(mod->module_core, mod->core_size);
-+
- 	/* This may be NULL, but that's OK */
- 	module_free(mod, mod->module_init);
- 	kfree(mod->args);
-@@ -1840,6 +1843,7 @@ static struct module *load_module(void _
- 	struct module *mod;
- 	long err = 0;
- 	void *percpu = NULL, *ptr = NULL; /* Stops spurious gcc warning */
-+	void *mseg;
- 	struct exception_table_entry *extable;
- 	mm_segment_t old_fs;
- 
-@@ -2191,10 +2195,9 @@ static struct module *load_module(void _
- #endif
- 	}
- 
--	if (mcountindex) {
--		void *mseg = (void *)sechdrs[mcountindex].sh_addr;
--		ftrace_init_module(mseg, mseg + sechdrs[mcountindex].sh_size);
--	}
-+	/* sechdrs[0].sh_size is always zero */
-+	mseg = (void *)sechdrs[mcountindex].sh_addr;
-+	ftrace_init_module(mseg, mseg + sechdrs[mcountindex].sh_size);
- 
- 	err = module_finalize(hdr, sechdrs, mod);
- 	if (err < 0)
-@@ -2265,6 +2268,7 @@ static struct module *load_module(void _
-  cleanup:
- 	kobject_del(&mod->mkobj.kobj);
- 	kobject_put(&mod->mkobj.kobj);
-+	ftrace_release(mod->module_core, mod->core_size);
-  free_unload:
- 	module_unload_free(mod);
- 	module_free(mod, mod->module_init);
-Index: linux-tip.git/kernel/trace/ftrace.c
-===================================================================
---- linux-tip.git.orig/kernel/trace/ftrace.c	2008-08-14 22:43:03.000000000 -0400
-+++ linux-tip.git/kernel/trace/ftrace.c	2008-08-14 22:43:33.000000000 -0400
-@@ -294,13 +294,37 @@ static inline void ftrace_del_hash(struc
- 
- static void ftrace_free_rec(struct dyn_ftrace *rec)
- {
--	/* no locking, only called from kstop_machine */
--
- 	rec->ip = (unsigned long)ftrace_free_records;
- 	ftrace_free_records = rec;
- 	rec->flags |= FTRACE_FL_FREE;
- }
- 
-+void ftrace_release(void *start, unsigned long size)
-+{
-+	struct dyn_ftrace *rec;
-+	struct ftrace_page *pg;
-+	unsigned long s = (unsigned long)start;
-+	unsigned long e = s + size;
-+	int i;
-+
-+	if (!start)
-+		return;
-+
-+	/* No interrupt should call this */
-+	spin_lock(&ftrace_lock);
-+
-+	for (pg = ftrace_pages_start; pg; pg = pg->next) {
-+		for (i = 0; i < pg->index; i++) {
-+			rec = &pg->records[i];
-+
-+			if ((rec->ip >= s) && (rec->ip < e))
-+				ftrace_free_rec(rec);
-+		}
-+	}
-+	spin_unlock(&ftrace_lock);
-+
-+}
-+
- static struct dyn_ftrace *ftrace_alloc_dyn_node(unsigned long ip)
- {
- 	struct dyn_ftrace *rec;
-@@ -1534,7 +1558,9 @@ static int ftrace_convert_nops(unsigned 
- 	p = start;
- 	while (p < end) {
- 		addr = ftrace_call_adjust(*p++);
-+		spin_lock(&ftrace_lock);
- 		ftrace_record_ip(addr);
-+		spin_unlock(&ftrace_lock);
- 		ftrace_shutdown_replenish();
- 	}
- 
-@@ -1548,6 +1574,8 @@ static int ftrace_convert_nops(unsigned 
- 
- void ftrace_init_module(unsigned long *start, unsigned long *end)
- {
-+	if (start == end)
-+		return;
- 	ftrace_convert_nops(start, end);
- }
- 
-Index: linux-tip.git/include/linux/init.h
-===================================================================
---- linux-tip.git.orig/include/linux/init.h	2008-08-14 22:42:59.000000000 -0400
-+++ linux-tip.git/include/linux/init.h	2008-08-14 22:43:33.000000000 -0400
-@@ -40,7 +40,7 @@
- 
- /* These are for everybody (although not all archs will actually
-    discard it in modules) */
--#define __init		__section(.init.text) __cold
-+#define __init		__section(.init.text) __cold notrace
- #define __initdata	__section(.init.data)
- #define __initconst	__section(.init.rodata)
- #define __exitdata	__section(.exit.data)
+Are we seriously considering that the right thing to do is to try to
+push malware scanning to every project on sourceforge?  At least putting
+a solution inside glibc wasn't completely insane, I just think for
+numerous reasons we've seen on list for the last 2 weeks not a better
+idea.  In any case, having an application have to make special calls to
+handle 'untrusted' data is basically like turning the keys to the castle
+over on every exploit.  No, I might not make promises about subverted
+applications, but that doesn't mean I have to just open all the doors.
+And anything that requires explicit application help is just that.  Talk
+about theater.
 
--- 
+-Eric
+
