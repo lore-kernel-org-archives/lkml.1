@@ -1,109 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753647AbYHOFXY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754831AbYHOF3K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753647AbYHOFXY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Aug 2008 01:23:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750870AbYHOFXO
+	id S1754831AbYHOF3K (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Aug 2008 01:29:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751119AbYHOF24
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Aug 2008 01:23:14 -0400
-Received: from mail.lang.hm ([64.81.33.126]:42015 "EHLO bifrost.lang.hm"
+	Fri, 15 Aug 2008 01:28:56 -0400
+Received: from mail.lang.hm ([64.81.33.126]:37736 "EHLO bifrost.lang.hm"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750790AbYHOFXN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Aug 2008 01:23:13 -0400
-Date: Thu, 14 Aug 2008 22:22:45 -0700 (PDT)
+	id S1751113AbYHOF2z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Aug 2008 01:28:55 -0400
+Date: Thu, 14 Aug 2008 22:28:25 -0700 (PDT)
 From: david@lang.hm
 X-X-Sender: dlang@asgard.lang.hm
-To: Eric Paris <eparis@redhat.com>
-cc: Theodore Tso <tytso@mit.edu>, Rik van Riel <riel@redhat.com>,
-       davecb@sun.com, linux-security-module@vger.kernel.org,
-       Adrian Bunk <bunk@kernel.org>, Mihai Don??u <mdontu@bitdefender.com>,
-       linux-kernel@vger.kernel.org, malware-list@lists.printk.net,
-       Pavel Machek <pavel@suse.cz>, Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [malware-list] [RFC 0/5] [TALPA] Intro to	alinuxinterfaceforon
- access scanning
-In-Reply-To: <1218769209.16613.31.camel@localhost.localdomain>
-Message-ID: <alpine.DEB.1.10.0808142212430.12859@asgard.lang.hm>
-References: <20080813125638.GB6995@ucw.cz>  <20080813135207.CC08C3765BC@pmx1.sophos.com>  <20080814125410.GA2262@elf.ucw.cz>  <2629CC4E1D22A64593B02C43E855530304AE4BE3@USILMS12.ca.com>  <20080814223918.GC6370@elf.ucw.cz>  <20080814200005.6b363716@bree.surriel.com>
- <20080815004335.GF13048@mit.edu> <1218769209.16613.31.camel@localhost.localdomain>
+To: Johannes Weiner <hannes@saeurebad.de>
+cc: Arjan van de Ven <arjan@infradead.org>, Theodore Tso <tytso@mit.edu>,
+       Christoph Hellwig <hch@infradead.org>, Eric Paris <eparis@redhat.com>,
+       tvrtko.ursulin@sophos.com, alan@lxorguk.ukuu.org.uk,
+       andi@firstfloor.org, linux-kernel@vger.kernel.org,
+       malware-list@lists.printk.net, malware-list-bounces@dmesg.printk.net,
+       peterz@infradead.org, viro@ZenIV.linux.org.uk
+Subject: Re: [malware-list] TALPA - a threat model?  well sorta.
+In-Reply-To: <87r68qx3mv.fsf@skyscraper.fehenstaub.lan>
+Message-ID: <alpine.DEB.1.10.0808142223290.12859@asgard.lang.hm>
+References: <20080813192922.GI8232@mit.edu> <20080814093103.6CD102FE8B4@pmx1.sophos.com> <20080814132455.GE6469@mit.edu> <1218721713.3540.125.camel@localhost.localdomain> <20080814155028.GB8256@mit.edu> <1218734985.9375.5.camel@paris.rdu.redhat.com>
+ <20080814191726.GG22488@mit.edu> <20080814193408.GA10236@infradead.org> <20080814194111.GH22488@mit.edu> <alpine.DEB.1.10.0808141837430.13400@asgard.lang.hm> <20080815020400.GG13048@mit.edu> <20080814204134.23c88f6c@infradead.org>
+ <alpine.DEB.1.10.0808142149030.12859@asgard.lang.hm> <87r68qx3mv.fsf@skyscraper.fehenstaub.lan>
 User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 14 Aug 2008, Eric Paris wrote:
+On Fri, 15 Aug 2008, Johannes Weiner wrote:
 
->> But Pavel is raising a good question.  In Eric's proposed threat
->> model, he claimed the only thing that he was trying to solve was
->> "scanning".  Just file scanning.  That implies no root privileges, but
->> it also implied that he wasn't worried about malware running with user
->> privileges, either.  Presumbly, that would be caught and stopped by
->> the file scanner before the malware had a chance to run; that is the
->> execve(2) system call would also be blocked until the executable was
->> scanned.
+> Hi,
+>
+> david@lang.hm writes:
+>
+>> On Thu, 14 Aug 2008, Arjan van de Ven wrote:
 >>
->> So if that is the threat model, then the only thing libmalware.so
->> doesn't solve is knfsd access, and it should be evaluated on that
->> basis.  If the threat model *does* include malware which is **not**
->> caught by the AV scanner, and is running with user privileges, then
->> there are a whole host of other attacks that we have to worry about.
->> So let's be real clear, up front, what the threat model is, and avoid
->> changing the model around to rule out solutions that don't fit the
->> initially preconceived one.  That's how you get to the TSA
->> confiscating water bottles in airport security lines.
+>>> On Thu, 14 Aug 2008 22:04:00 -0400
+>>> Theodore Tso <tytso@mit.edu> wrote:
+>>>
+>>>> On Thu, Aug 14, 2008 at 06:44:33PM -0700, david@lang.hm wrote:
+>>>>> could you do something like defining a namespace inside posix
+>>>>> attributes and then setting up a mechanism in the kernel to alert
+>>>>> if the attributes change (with the entire namespace getting cleared
+>>>>> if the file gets dirtied)?
+>>>>
+>>>> According to Eric Paris the clean/dirty state is only stored in
+>>>> memory.  We could use the extended attribute interface as a way of not
+>>>> defining a new system call, or some other interface, but I'm not sure
+>>>> it's such a great match given that the extended attributes interface
+>>>> are designed for persistent data.
+>>>>
+>>>> I agree that doesn't actually work very well for the tracker use case,
+>>>> where you the clean/dirty bit to be persistent (in case the tracker is
+>>>> disabled due to the fact you are running on battery, for example, and
+>>>> then you reboot).
+>>>>
+>>>
+>>> but we need a "give me all dirty files" solution, not a "is this file
+>>> dirty" solution.
+>>>
+>>> I do not want a virus scanner to constantly have to poll the whole fs
+>>> for dirty files ;-)
+>>
+>> I'm not sure.
+>>
+>> there are two situations (with the transition between them)
+>>
+>> 1. unscanned system, we want to do everything. (this happens
+>> immediatly after a new signature file is deployed)
+>>
+>> here you do just want to filter out the files that have been scanned
+>> from the list of everything, and you probably want to check at the
+>> time of scanning the file in case it was opened (and scanned) in the
+>> meantime.
+>>
+>> 2. mostly scanned system, we only want to scan files that have been
+>> dirtied.
+>>
+>> here you don't need to scan everything, you only need to scan in two cases
+>>
+>> 2a. the file was dirtied (you learn about it and add it to the queue
+>> of files to scan when you get around to it)
+>>
+>> 2b. an unscanned file is opened (the library detects that the file was
+>> not marked approved by all the current scanners, so it invokes the
+>> scanners on this file before completing the open, or copy for mmap, or
+>> whatever)
 >
-> No, I'm not claiming to protect against running processes.  I'll leave
-> that for SELinux.
+> 2b could also be used as a general lazy scanning mechanism, no?  If
+> there is a new signature or the file is dirty or unknown, scan it.
+> Always.
 >
-> I haven't seen this supposed libmalware.so so take anything I say with a
-> grain of sand.  But I take it that the solutions to the problems are
-> 'don't do that.'
+> So this should all just be one case, no?
 
-libmalware.so is shorthand for 'have a userspace library do the scanning 
-and handle the open'
+this depends on the policy in userspace.
 
-> aka malware is allowed to flow freely across linux nfs servers.  Great,
-> I'm sure corperate IT organizations are going to love knowing there
-> isn't a darn thing they can do to protect their nfs server from being
-> storage grounds other than hope they can control all of the border.
+you could:
 
-nfs isn't secure anyway so you better control the border.
+1. plan on doing all scanning as files are opened (this is going to be 
+noticable to users)
 
-it's only the kernel nfs daemon that won't use the library, so the answer 
-is don't use that daemon. I beleive that there is a FUSE NFS option, or if 
-nothing else, mount a filesystem with FUSE (linked against libmalware.so) 
-and then export the result vi knfsd.
+2. run the background scanner continuously as a low priority (as 
+soon as you finish one scan, do the next)
 
-> And I still don't get this 'mmap problem' that I don't solve that
-> libmalware magically solves.  What?  don't use mmap?  I certainly hope
-> not.
+3. do one background scan when you get a new signature, and after you 
+complete that only scan files that change.
 
-libmalware can intercept the mmap call and decide to either prohibit it, 
-copy the file so that the program is operating from it's own copy, or do 
-something else (all dependant on policy, as defined in userspace for this 
-library)
+and probably others
 
-> Are we seriously considering that the right thing to do is to try to
-> push malware scanning to every project on sourceforge?  At least putting
-> a solution inside glibc wasn't completely insane, I just think for
-> numerous reasons we've seen on list for the last 2 weeks not a better
-> idea.  In any case, having an application have to make special calls to
-> handle 'untrusted' data is basically like turning the keys to the castle
-> over on every exploit.  No, I might not make promises about subverted
-> applications, but that doesn't mean I have to just open all the doors.
-> And anything that requires explicit application help is just that.  Talk
-> about theater.
+#3 has the advantage that the only time a user will hit a delay when 
+opening a file is if the file was just recently modified and the scanner 
+daemon(s) haven't had a chance to scan it yet.
 
-libmalware.so and a modified glibc are not mutually exclusive. you distros 
-could offer versions of glibc that include libmalware.
-
-again, libmalware.so is not referring to any specific body of code, it's 
-referring to the concept that the handling of open/mmap/read/etc and 
-scanning is done via a userspace library rather then by the kernel. if 
-everyone can agree on that concept then hashing out the details of _which_ 
-library it gets put in is a smaller detail.
-
-this isn't designed to require every app that wants this protection to 
-have to change it's code.
-
-David lang
+David Lang
