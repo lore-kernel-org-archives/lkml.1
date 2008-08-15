@@ -1,111 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752953AbYHOFFf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753753AbYHOFL1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752953AbYHOFFf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Aug 2008 01:05:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750791AbYHOFF0
+	id S1753753AbYHOFL1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Aug 2008 01:11:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750791AbYHOFLS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Aug 2008 01:05:26 -0400
-Received: from mail.lang.hm ([64.81.33.126]:56890 "EHLO bifrost.lang.hm"
+	Fri, 15 Aug 2008 01:11:18 -0400
+Received: from jade.aracnet.com ([216.99.193.136]:37609 "EHLO jade.aracnet.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750790AbYHOFFZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Aug 2008 01:05:25 -0400
-Date: Thu, 14 Aug 2008 22:05:15 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Arjan van de Ven <arjan@infradead.org>
-cc: Theodore Tso <tytso@mit.edu>, Christoph Hellwig <hch@infradead.org>,
-       Eric Paris <eparis@redhat.com>, tvrtko.ursulin@sophos.com,
-       alan@lxorguk.ukuu.org.uk, andi@firstfloor.org,
-       linux-kernel@vger.kernel.org, malware-list@lists.printk.net,
-       malware-list-bounces@dmesg.printk.net, peterz@infradead.org,
-       viro@ZenIV.linux.org.uk
-Subject: Re: [malware-list] TALPA - a threat model?  well sorta.
-In-Reply-To: <20080814204134.23c88f6c@infradead.org>
-Message-ID: <alpine.DEB.1.10.0808142149030.12859@asgard.lang.hm>
-References: <20080813192922.GI8232@mit.edu> <20080814093103.6CD102FE8B4@pmx1.sophos.com> <20080814132455.GE6469@mit.edu> <1218721713.3540.125.camel@localhost.localdomain> <20080814155028.GB8256@mit.edu> <1218734985.9375.5.camel@paris.rdu.redhat.com>
- <20080814191726.GG22488@mit.edu> <20080814193408.GA10236@infradead.org> <20080814194111.GH22488@mit.edu> <alpine.DEB.1.10.0808141837430.13400@asgard.lang.hm> <20080815020400.GG13048@mit.edu> <20080814204134.23c88f6c@infradead.org>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	id S1750790AbYHOFLR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Aug 2008 01:11:17 -0400
+Message-ID: <48A50FBF.40500@BitWagon.com>
+Date: Thu, 14 Aug 2008 22:10:23 -0700
+From: John Reiser <jreiser@BitWagon.com>
+Organization: -
+User-Agent: Mozilla Thunderbird 1.0.8-1.1.fc4 (X11/20060501)
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+To: Ulrich Drepper <drepper@redhat.com>
+CC: Linux Kernel <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: AT_EXECFN not useful
+References: <48A46831.7030606@redhat.com>
+In-Reply-To: <48A46831.7030606@redhat.com>
+X-Enigmail-Version: 0.92.0.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 14 Aug 2008, Arjan van de Ven wrote:
+Ulrich Drepper wrote:
+> I've just removed the support for AT_EXECFN again from glibc.  The
+> information isn't useful because the path name isn't normalized.  I.e.,
+> it's not the actual binary path if symlinks are followed during the
+> resolution.  This makes it unusable for the $ORIGIN handling.
 
-> On Thu, 14 Aug 2008 22:04:00 -0400
-> Theodore Tso <tytso@mit.edu> wrote:
->
->> On Thu, Aug 14, 2008 at 06:44:33PM -0700, david@lang.hm wrote:
->>> could you do something like defining a namespace inside posix
->>> attributes and then setting up a mechanism in the kernel to alert
->>> if the attributes change (with the entire namespace getting cleared
->>> if the file gets dirtied)?
->>
->> According to Eric Paris the clean/dirty state is only stored in
->> memory.  We could use the extended attribute interface as a way of not
->> defining a new system call, or some other interface, but I'm not sure
->> it's such a great match given that the extended attributes interface
->> are designed for persistent data.
->>
->> I agree that doesn't actually work very well for the tracker use case,
->> where you the clean/dirty bit to be persistent (in case the tracker is
->> disabled due to the fact you are running on battery, for example, and
->> then you reboot).
->>
->
-> but we need a "give me all dirty files" solution, not a "is this file
-> dirty" solution.
->
-> I do not want a virus scanner to constantly have to poll the whole fs
-> for dirty files ;-)
+AT_EXECFN does provide one actual path, namely the one that was passed
+to namei.  This path works for some uses and some cases, including some
+uses and some cases of $ORIGIN.  The path which sometimes is revealed
+by readlink("/proc/self/exe",) also works for some uses and some cases,
+including some uses and some cases of $ORIGIN.  Neither /proc/self/exe
+nor AT_EXECFN works for all uses and all cases.
 
-I'm not sure.
+> This is on top of the problem with relative paths.
 
-there are two situations (with the transition between them)
+Please provide a statement or citation which describes "the problem with
+relative paths."
 
-1. unscanned system, we want to do everything. (this happens immediatly 
-after a new signature file is deployed)
+> Unless somebody has another use case where this is useful I suggest
+> removing AT_EXECFN support again.  It's just superfluous work and memory
+> use.
 
-here you do just want to filter out the files that have been scanned from 
-the list of everything, and you probably want to check at the time of 
-scanning the file in case it was opened (and scanned) in the meantime.
+AT_EXECFN is useful when readlink("/proc/self/exe",) disappears
+yet the actual pathname that was passed to execve() still is accessible.
+Users of the UPX program compressor (http://upx.sourceforge.net) have
+asked for such a feature several times.  The UPX runtime decompressor
+creates an address space which is difficult to distinguish from
+the address space which would result from an execve() of the original,
+uncompressed file.  In particular, the UPX runtime decompressor unmaps
+all pages of the compressed file, which triggers the removal of the /proc/self/exe
+symlink.  As a palliative, UPX records readlink("/proc/self/exe",) in an environment
+variable.  If the UPX decompressor is not the first to run after execve(),
+then this palliative can fail in the same way.
 
-2. mostly scanned system, we only want to scan files that have been 
-dirtied.
+One time-honored use of "the path that was specified to execve"
+is to lookup the debug symbol table for the current main program
+(for example in catching SIGSEGV and filing an automatic bug report with
+traceback information) under some time-honored schemes for static binding.
+Another use is to consult a default static database which has been appended
+to the executable itself (usually with an index near the end of the file.)
+Although such usage can be defeated, nevertheless in practice many installations,
+applications, and users successfully avoid the problems.  In particular,
+uses which do not depend on visiting other directories often work just fine.
 
-here you don't need to scan everything, you only need to scan in two cases
+AT_EXECFN is useful in documenting the kernel's actual behavior of
+putting the pathname argument to execve() into the new address space.
+Having a designated slot in the the aux vector also provides a convenient
+place for a virtualizer to adjust and communicate this path in ways that
+are appropriate to the virtualization.
 
-2a. the file was dirtied (you learn about it and add it to the queue of 
-files to scan when you get around to it)
+> Of course I wouldn't object to a real implementation which always gives
+> me the full, normalized path name of the executable...
 
-2b. an unscanned file is opened (the library detects that the file was not 
-marked approved by all the current scanners, so it invokes the scanners on 
-this file before completing the open, or copy for mmap, or whatever)
+Multiple hard links create multiple normalized path names, possibly including
+paths that have the same endpoints but which differ in arc length.  Which
+of these multiple paths is to be blessed as "the full, normalized path"?
 
+The case of mounting another filesystem on top of an intermediate directory
+in "the path to the executable" may cause there to be zero "full, normalized
+path name"s to the current main executable.
+Depending on the relationship of mount point, working directory, pathname to
+execve, and the text which surrounds $ORIGIN, then a simplistic method of
+textual select+concatenate may succeed despite the failure of a method
+involving detailed normalization.
 
+These cases illustrate that there can be problems in asking for too much
+when dealing with $ORIGIN.  AT_EXECFN provides some actual historical data
+that may be useful as a hint, especially when the kernel drops the
+/proc/self/exe symbolic link.  This hint is enough for some current use cases.
 
-In the first case the attributes work "don't bother scanning me".
-
-In the second case they also work (becouse you aren't trying to scan 
-everything)
-
-
-the only time there is a headache is in the transition between them when 
-you have scanned a lot of the system, but not all of it, and the machine 
-was rebooted so you lost track of what you had scanned.
-
-it shouldn't be too hard to deal with this. even if you never resume the 
-scan you are still safe (becouse of the scan-on-open), but it's also 
-possible to either do a find f(or equivalent) or files without the 
-attribute and store the results (similar to updatedb) and then updating 
-the file to mark the files as being scanned (update in place, change the 
-first character or something to be fairly crash safe). after the full list 
-of files has been scanned shift to the second mode.
-
-the sweep scan should be a background task, possibly disabled when on 
-battery power.
-
-why would this not satisfy the requirements?
-
-David Lang
+-- 
+John Reiser, jreiser@BitWagon.com
