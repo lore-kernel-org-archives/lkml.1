@@ -1,49 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761284AbYHOTDh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761166AbYHOTE4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761284AbYHOTDh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Aug 2008 15:03:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758886AbYHOTD3
+	id S1761166AbYHOTE4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Aug 2008 15:04:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758352AbYHOTEs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Aug 2008 15:03:29 -0400
-Received: from wr-out-0506.google.com ([64.233.184.239]:42708 "EHLO
+	Fri, 15 Aug 2008 15:04:48 -0400
+Received: from wr-out-0506.google.com ([64.233.184.230]:40065 "EHLO
 	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758831AbYHOTD2 (ORCPT
+	with ESMTP id S1758085AbYHOTEr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Aug 2008 15:03:28 -0400
+	Fri, 15 Aug 2008 15:04:47 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=date:from:to:cc:subject:message-id:references:mime-version
          :content-type:content-disposition:in-reply-to:user-agent;
-        b=Yo78nGC6noaRdhWqW89HXSnCrF7mYas8RFXD/TPimc72MMRckR8ohwZWxnWkvxKPOG
-         jdcvlxMgb72WrQCpTo58IrtvDU9zejXtAvJFZMgYMd8YHxwj4O6wJ9ly496+qxD6ovHx
-         JB+nZS3UrNT4oie614mk/gfYRaUt6NoNTni/A=
-Date: Fri, 15 Aug 2008 15:03:23 -0400
+        b=TGBKLBsF1b/kLYZJcCnCv/hC2rqGXg2y1+mYR7VbxVS6MwLa8dpBvqPKkzWYXTN+62
+         HWden53nr17opitRJND6EJ+M2w4u1CskRguPLzLm0TPBTwGJlwCXMOxSudkopAwOtNdA
+         KuM1hrHyJhyhG7WIxvnhApt7BV90SRgt1XL50=
+Date: Fri, 15 Aug 2008 15:04:44 -0400
 From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Bryan Wu <cooloney@kernel.org>
-Cc: linux-input@vger.kernel.org, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org,
-       Michael Hennerich <michael.hennerich@analog.com>
-Subject: Re: [PATCH 1/1] Input/keyboard: add uctional power management
-	support to Blackfin BF54x keypad driver
-Message-ID: <20080815150301.ZZRA012@mailhub.coreip.homeip.net>
-References: <1218790959-12694-1-git-send-email-cooloney@kernel.org>
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Make Dell keyboard repeat quirk apply to a wider range
+	of hardware
+Message-ID: <20080815150420.ZZRA012@mailhub.coreip.homeip.net>
+References: <20080814033255.GA21721@srcf.ucam.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1218790959-12694-1-git-send-email-cooloney@kernel.org>
+In-Reply-To: <20080814033255.GA21721@srcf.ucam.org>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 15, 2008 at 05:02:39PM +0800, Bryan Wu wrote:
-> From: Michael Hennerich <michael.hennerich@analog.com>
+On Thu, Aug 14, 2008 at 04:32:55AM +0100, Matthew Garrett wrote:
+> Dell laptops fail to send key up events for several of their special 
+> keys. There's an existing quirk in the kernel to handle this, but it's 
+> limited to the Latitude range. This patch extends it to cover all 
+> portable Dells.
 > 
-> Fix Bug: does nor properply resume after suspend mem
-> Fix for PM_SUSPEND_MEM: Save and restore peripheral base registers
+> Signed-off-by: Matthew Garrett <mjg@redhat.com>
 > 
 
-Applied to 'next', thank you.
+Applied to 'next', thank you Matthew.
 
 -- 
 Dmitry
