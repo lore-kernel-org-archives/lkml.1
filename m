@@ -1,90 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755270AbYHOKoa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754831AbYHOKzZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755270AbYHOKoa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Aug 2008 06:44:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752331AbYHOKoW
+	id S1754831AbYHOKzZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Aug 2008 06:55:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752852AbYHOKzN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Aug 2008 06:44:22 -0400
-Received: from pmx1.sophos.com ([213.31.172.16]:58898 "EHLO pmx1.sophos.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751949AbYHOKoV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Aug 2008 06:44:21 -0400
-In-Reply-To: <48A55574.9070508@aitel.hist.no>
-To: Helge Hafting <helge.hafting@aitel.hist.no>
-Cc: alan@lxorguk.ukuu.org.uk, andi@firstfloor.org,
-       Arjan van de Ven <arjan@infradead.org>, Eric Paris <eparis@redhat.com>,
-       greg@kroah.com, hch@infradead.org, linux-kernel@vger.kernel.org,
-       linux-kernel-owner@vger.kernel.org, malware-list@lists.printk.net,
-       peterz@infradead.org, riel@redhat.com, tytso@mit.edu,
-       viro@ZenIV.linux.org.uk
-Subject: Re: TALPA - a threat model?  well sorta.
-MIME-Version: 1.0
-X-Mailer: Lotus Notes Release 7.0.2 September 26, 2006
-From: tvrtko.ursulin@sophos.com
-Date: Fri, 15 Aug 2008 11:44:16 +0100
-X-MIMETrack: S/MIME Sign by Notes Client on Tvrtko Ursulin/Dev/UK/Sophos(Release 7.0.2|September
- 26, 2006) at 15/08/2008 11:44:16,
-	Serialize by Notes Client on Tvrtko Ursulin/Dev/UK/Sophos(Release 7.0.2|September
- 26, 2006) at 15/08/2008 11:44:16,
-	Serialize complete at 15/08/2008 11:44:16,
-	S/MIME Sign failed at 15/08/2008 11:44:16: The cryptographic key was not
- found,
-	Serialize by Router on Mercury/Servers/Sophos(Release 7.0.3|September 26, 2007) at
- 15/08/2008 11:44:17,
-	Serialize complete at 15/08/2008 11:44:17
-Content-Type: text/plain; charset="US-ASCII"
-Message-Id: <20080815104422.9D8812FE93F@pmx1.sophos.com>
+	Fri, 15 Aug 2008 06:55:13 -0400
+Received: from s200aog17.obsmtp.com ([207.126.144.131]:57503 "EHLO
+	s200aog17.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752662AbYHOKzL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Aug 2008 06:55:11 -0400
+X-Greylist: delayed 1237 seconds by postgrey-1.27 at vger.kernel.org; Fri, 15 Aug 2008 06:55:11 EDT
+Message-Id: <200808151034.CKM57557@mail1.bri.st.com>
+To: perex@perex.cz
+Cc: linux-kernel@vger.kernel.org, trivial@kernel.org
+From: Daniel THOMPSON <daniel.thompson@st.com>
+Date: Fri, 15 Aug 2008 10:53:38 +0100
+Subject: [PATCH] sound: Fix esoteric double free in the dummy sound driver.
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Helge Hafting wrote on 15/08/2008 11:07:48:
+The dummy driver uses runtime->private_free but still frees
+its pcm structures on error paths.
 
-> It seems to me that this "scan on file open" business is the
-> wrong way to do things - because it reduces performance.
+This is esoteric because the error paths in question are
+unreachable. Thus the bug is only a problem when someone
+copies this code into other drivers.
 
-It can never be free - what ever you do it has to happen some time and 
-that can and will clash with something else. So your reason why it is 
-wrong is a bit to simplistic.
+Signed-off-by: Daniel R Thompson <daniel.thompson@st.com>
+---
+ sound/drivers/dummy.c |   10 ++++------
+ 1 files changed, 4 insertions(+), 6 deletions(-)
 
-> If you scan on file open, then your security sw is too late and
-> getting in the way.
->
-> It is better to scan in advance. Most machines has lots of idle time.
-> Use that time to scan in advance, and mark the files as "clean".
-> 
-> A "clean" file can be opened without further checking anytime - giving
-> normal high performance.  A file that gets written to becomes "dirty"
-> until checked again. Some mechanism for making a clean copy of a
-> clean file might help avoid excessive "dirtying".
->
-> "Scan on open" might still be useful for cases when the system
-> haven't kept up with writing, but please don't aim to have
-> this be the _primary_ mode of scanning. A file server
-> where most of the stuff is pre-scanned will likely perform much better
-> than  one scanning everything on open.
-
-The first thing you have to make clear is whether in your vision inode 
-clean-dirty-unknown status is persistent or not? But in any case I think 
-you are making a problem where there isn't one, think about it a bit.
-
-But the idea about the ability to make a clean copy is interesting. So we 
-would need a copy done without userspace intervention and preserving the 
-inode cache status alongside it. Maybe splice or tee could easily do it? 
-Although I am not sure how often copying would happen and whether this 
-would be such a gain.
-
---
-Tvrtko A. Ursulin
-Senior Software Engineer, Sophos
-
-"Views and opinions expressed in this email are strictly those of the 
-author.
- The contents has not been reviewed or approved by Sophos."
+diff --git a/sound/drivers/dummy.c b/sound/drivers/dummy.c
+index 4e4c69e..90fc1ce 100644
+--- a/sound/drivers/dummy.c
++++ b/sound/drivers/dummy.c
+@@ -354,6 +354,7 @@ static int snd_card_dummy_playback_open(struct snd_pcm_substream *substream)
+ 	if ((dpcm = new_pcm_stream(substream)) == NULL)
+ 		return -ENOMEM;
+ 	runtime->private_data = dpcm;
++	/* makes the infrastructure responsible for freeing dpcm */
+ 	runtime->private_free = snd_card_dummy_runtime_free;
+ 	runtime->hw = snd_card_dummy_playback;
+ 	if (substream->pcm->device & 1) {
+@@ -362,10 +363,8 @@ static int snd_card_dummy_playback_open(struct snd_pcm_substream *substream)
+ 	}
+ 	if (substream->pcm->device & 2)
+ 		runtime->hw.info &= ~(SNDRV_PCM_INFO_MMAP|SNDRV_PCM_INFO_MMAP_VALID);
+-	if ((err = add_playback_constraints(runtime)) < 0) {
+-		kfree(dpcm);
++	if ((err = add_playback_constraints(runtime)) < 0)
+ 		return err;
+-	}
  
-
-Sophos Plc, The Pentagon, Abingdon Science Park, Abingdon,
-OX14 3YP, United Kingdom.
-
-Company Reg No 2096520. VAT Reg No GB 348 3873 20.
+ 	return 0;
+ }
+@@ -379,6 +378,7 @@ static int snd_card_dummy_capture_open(struct snd_pcm_substream *substream)
+ 	if ((dpcm = new_pcm_stream(substream)) == NULL)
+ 		return -ENOMEM;
+ 	runtime->private_data = dpcm;
++	/* makes the infrastructure responsible for freeing dpcm */
+ 	runtime->private_free = snd_card_dummy_runtime_free;
+ 	runtime->hw = snd_card_dummy_capture;
+ 	if (substream->pcm->device == 1) {
+@@ -387,10 +387,8 @@ static int snd_card_dummy_capture_open(struct snd_pcm_substream *substream)
+ 	}
+ 	if (substream->pcm->device & 2)
+ 		runtime->hw.info &= ~(SNDRV_PCM_INFO_MMAP|SNDRV_PCM_INFO_MMAP_VALID);
+-	if ((err = add_capture_constraints(runtime)) < 0) {
+-		kfree(dpcm);
++	if ((err = add_capture_constraints(runtime)) < 0)
+ 		return err;
+-	}
+ 
+ 	return 0;
+ }
+-- 
+1.5.5.1
 
