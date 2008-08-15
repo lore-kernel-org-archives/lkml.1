@@ -1,165 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758511AbYHOMUv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758349AbYHOMWr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758511AbYHOMUv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Aug 2008 08:20:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757330AbYHOMTN
+	id S1758349AbYHOMWr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Aug 2008 08:22:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750891AbYHOMWi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Aug 2008 08:19:13 -0400
-Received: from 75-130-108-43.dhcp.oxfr.ma.charter.com ([75.130.108.43]:53213
-	"EHLO dev.haskins.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753382AbYHOMSz (ORCPT
+	Fri, 15 Aug 2008 08:22:38 -0400
+Received: from web82103.mail.mud.yahoo.com ([209.191.84.216]:26259 "HELO
+	web82103.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753399AbYHOMWh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Aug 2008 08:18:55 -0400
-From: Gregory Haskins <ghaskins@novell.com>
-Subject: [PATCH RT RFC v2 3/8] sched: rework task reference counting to work
-	with the pi infrastructure
-To: mingo@elte.hu, paulmck@linux.vnet.ibm.com, peterz@infradead.org,
-       tglx@linutronix.de, rostedt@goodmis.org
-Cc: linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org,
-       gregory.haskins@gmail.com, David.Holmes@sun.com
-Date: Fri, 15 Aug 2008 08:08:26 -0400
-Message-ID: <20080815120825.24722.53600.stgit@dev.haskins.net>
-In-Reply-To: <20080815120722.24722.66516.stgit@dev.haskins.net>
-References: <20080815120722.24722.66516.stgit@dev.haskins.net>
-User-Agent: StGIT/0.14.2
+	Fri, 15 Aug 2008 08:22:37 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=sbcglobal.net;
+  h=Received:X-Mailer:Date:From:Subject:To:Cc:MIME-Version:Content-Type:Message-ID;
+  b=y9KTKKjnM6/dOf8D4qVlpw/hpQIL3tkQ9xdc9CSE2qbi3JurnNpErWKTU14ZEW/eUXJpHKps2OUpmcOPssSn1YdDuAsTVrD66OZ9iOmstpUxJkk8iV28c5sGvrUcvsZACZ2qra+5YU1PVgOM1y95upS3IW2suwGn3BOh3BQOuQk=;
+X-Mailer: YahooMailRC/1042.40 YahooMailWebService/0.7.218
+Date: Fri, 15 Aug 2008 05:22:36 -0700 (PDT)
+From: David Witbrodt <dawitbro@sbcglobal.net>
+Subject: Re: HPET regression in 2.6.26 versus 2.6.25 -- retried 2.6.27-rc3 patch (and patch method)
+To: Mike Galbraith <efault@gmx.de>
+Cc: Yinghai Lu <yhlu.kernel@gmail.com>, linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <879500.36987.qm@web82103.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Gregory Haskins <ghaskins@novell.com>
----
 
- include/linux/sched.h |    5 +++--
- kernel/fork.c         |   32 +++++++++++++++-----------------
- kernel/sched.c        |   23 +++++++++++++++++++++++
- 3 files changed, 41 insertions(+), 19 deletions(-)
 
-diff --git a/include/linux/sched.h b/include/linux/sched.h
-index 63ddd1f..9132b42 100644
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -1305,6 +1305,8 @@ struct task_struct {
- 		struct pi_node node;
- 		struct pi_sink snk;  /* registered to 'this' to get updates */
- 		int prio;
-+		struct rcu_head rcu; /* for destruction cleanup */
-+
- 	} pi;
- 
- #ifdef CONFIG_RT_MUTEXES
-@@ -1633,12 +1635,11 @@ static inline void put_task_struct(struct task_struct *t)
- 		call_rcu(&t->rcu, __put_task_struct_cb);
- }
- #else
--extern void __put_task_struct(struct task_struct *t);
- 
- static inline void put_task_struct(struct task_struct *t)
- {
- 	if (atomic_dec_and_test(&t->usage))
--		__put_task_struct(t);
-+		pi_dropref(&t->pi.node, 0);
- }
- #endif
- 
-diff --git a/kernel/fork.c b/kernel/fork.c
-index 399a0d0..399a0a9 100644
---- a/kernel/fork.c
-+++ b/kernel/fork.c
-@@ -130,39 +130,37 @@ void free_task(struct task_struct *tsk)
- }
- EXPORT_SYMBOL(free_task);
- 
--#ifdef CONFIG_PREEMPT_RT
--void __put_task_struct_cb(struct rcu_head *rhp)
-+void prepare_free_task(struct task_struct *tsk)
- {
--	struct task_struct *tsk = container_of(rhp, struct task_struct, rcu);
--
- 	BUG_ON(atomic_read(&tsk->usage));
--	WARN_ON(!tsk->exit_state);
- 	WARN_ON(tsk == current);
- 
-+#ifdef CONFIG_PREEMPT_RT
-+	WARN_ON(!tsk->exit_state);
-+#else
-+	WARN_ON(!(tsk->exit_state & (EXIT_DEAD | EXIT_ZOMBIE)));
-+#endif
-+
- 	security_task_free(tsk);
- 	free_uid(tsk->user);
- 	put_group_info(tsk->group_info);
-+
-+#ifdef CONFIG_PREEMPT_RT
- 	delayacct_tsk_free(tsk);
-+#endif
- 
- 	if (!profile_handoff_task(tsk))
- 		free_task(tsk);
- }
- 
--#else
--
--void __put_task_struct(struct task_struct *tsk)
-+#ifdef CONFIG_PREEMPT_RT
-+void __put_task_struct_cb(struct rcu_head *rhp)
- {
--	WARN_ON(!(tsk->exit_state & (EXIT_DEAD | EXIT_ZOMBIE)));
--	BUG_ON(atomic_read(&tsk->usage));
--	WARN_ON(tsk == current);
--
--	security_task_free(tsk);
--	free_uid(tsk->user);
--	put_group_info(tsk->group_info);
-+	struct task_struct *tsk = container_of(rhp, struct task_struct, rcu);
- 
--	if (!profile_handoff_task(tsk))
--		free_task(tsk);
-+	pi_dropref(&tsk->pi.node, 0);
- }
-+
- #endif
- 
- /*
-diff --git a/kernel/sched.c b/kernel/sched.c
-index c129b10..729139d 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -2370,11 +2370,34 @@ task_pi_boost_cb(struct pi_sink *snk, struct pi_source *src,
- 	return 0;
- }
- 
-+extern void prepare_free_task(struct task_struct *tsk);
-+
-+static void task_pi_free_rcu(struct rcu_head *rhp)
-+{
-+	struct task_struct *tsk = container_of(rhp, struct task_struct, pi.rcu);
-+
-+	prepare_free_task(tsk);
-+}
-+
-+/*
-+ * This function is invoked whenever the last references to a task have
-+ * been dropped, and we should free the memory on the next rcu grace period
-+ */
-+static int task_pi_free_cb(struct pi_sink *snk, unsigned int flags)
-+{
-+	struct task_struct *p = container_of(snk, struct task_struct, pi.snk);
-+
-+	call_rcu(&p->pi.rcu, task_pi_free_rcu);
-+
-+	return 0;
-+}
-+
- static int task_pi_update_cb(struct pi_sink *snk, unsigned int flags);
- 
- static struct pi_sink task_pi_sink = {
-     .boost = task_pi_boost_cb,
-     .update = task_pi_update_cb,
-+    .free = task_pi_free_cb,
- };
- 
- static inline void
+> From: Mike Galbraith <efault@gmx.de>
 
+> > Because of this, I would conclude that your patch for 2.6.27-rc3 was
+> > doomed before you began, and we should look more carefully at the
+> > commits from February instead of trying to revert at the 2.6.27 HEAD.
+
+> I've only followed this thread casually, but I suspect that Yinghai is
+> trying to determine whether or not 3def3d6d is in fact causing your
+> regression directly, or whether it is interacting with other changes.
+
+Yes, Yinghai's first response when I tried his 2.6.27-rc3 patch and the 
+kernel still locked was "there is some other problem" (besides the changes
+in 3def3d6d).
+
+You may have misunderstood my meaning:  I was only saying that a further
+experiment of mine showed that 3def3d6d... alone is not the problem, so
+that trying to undo the changes from that commit all the way up near the
+git HEAD was unlikely to work.  I did not mean that his patch was a bad
+idea, or that it should not have been tried.  When Yinghai created that 
+patch, I had not yet done that experiment.  I was just offering an 
+explanation for why the patch did not succeed.
+
+
+> What _could_ be happening is that 3def3d6d itself isn't directly causing
+> your problem, rather interacting with earlier changes such that you see
+> the problem as soon as 3def3d6d hit.
+
+I am convinced this is the case, as a result of a bisection I performed
+Wednesday night -- where I tried to revert the 3def3d6d changes alone in
+kernel revisions much closer to that commit, only to discover that the
+very next commit after 3def3d6d actually prevented the revert from working!
+
+
+> Such cases can/do happen, and can cause much confusion.  To find such a
+> problem without actually troubleshooting it (if such a thing is
+> happening in your case), you'd have to work backward, ie apply 3def3d6d
+> to earlier kernels and test.  If you find one earlier than 3def3d6d
+> which works with 3def3d6d applied, you can be pretty sure that what
+> you've got is a nasty interaction.  At that point, you'd start your
+> bisection _with virgin source_ via git bisect good "the point that
+> worked _with_ 3def3d6d applied", and git bisect bad any later point that
+> failed.  During each and every bisection point, you'd have to apply
+> 3def3d6d before testing (fixing any rejects), and _before_ saying git
+> bisect good/bad after building/testing, you must revert it first so git
+> bisect can proceed without encountering conflicts.
+
+Thank you *very* much for this suggestion, Mike!  I am an "end user," not
+a developer, so I never would have thought of this.
+
+Your explanation of how to carry out this bisect process is very much like
+the process I used on Wednesday night.  The only difference is that I 
+manually edited the 3 files involved at each step, instead of trying to
+patch using the 3def3d6d diff.  I can see that your way would have been
+much easier, as long as I am careful to watch for rejected patches.
+
+I have to go to work for a few hours, but should be able to put a lot of
+time in on this method later today.  Much thanks!
+
+
+> Before attempting any of that, you'd want to make damn sure that the
+> simpler path (forward) is in fact good with the suspect commit fully
+> reverted.  If the kernel with full revert does not work, and symptom
+> does not change an any way (very important), it's not 3def3d6d directly.
+> The patch forward then becomes git bisect start, git bisect good
+> 3def3d6d, revert/restore 3def3d6d as above at each and every bisection
+> interval until done.
+
+Ahh, this is the experiment I performed Wednesday night.  The results:
+3def3d6d is not the true cause.  Beginning with 3def3d6d..., it looks
+like anything that touches insert_resource() causes kernels to lock up
+on my two ECS AMD690GM-M2 mboards, but not on my other machine (or your
+machine, or anyone else's machine....).
+
+
+> Even if the kernel with full revert does work, it _can_ still be an
+> interaction involving multiple changes.  Such interaction problems don't
+> pop up often, and can be a real pain to dig out, so I hope it turns out
+> to be something straight forward... and I just wasted all those words.
+
+No such luck.  Can you say, "Preparation H"?  (I know I can....)
+
+
+Thanks Mike,
+Dave W.
