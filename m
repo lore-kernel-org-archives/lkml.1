@@ -1,73 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757383AbYHOORJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758183AbYHOOTV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757383AbYHOORJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Aug 2008 10:17:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753514AbYHOOQ4
+	id S1758183AbYHOOTV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Aug 2008 10:19:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753689AbYHOOTM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Aug 2008 10:16:56 -0400
-Received: from mtagate7.de.ibm.com ([195.212.29.156]:55079 "EHLO
-	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753333AbYHOOQz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Aug 2008 10:16:55 -0400
-Message-ID: <48A58F9A.8070301@linux.vnet.ibm.com>
-Date: Fri, 15 Aug 2008 16:15:54 +0200
-From: Stefan Weinhuber <wein@linux.vnet.ibm.com>
-User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
+	Fri, 15 Aug 2008 10:19:12 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:42304 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752974AbYHOOTL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Aug 2008 10:19:11 -0400
+Date: Fri, 15 Aug 2008 16:18:55 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
+Cc: linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org,
+       tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com,
+       michael@free-electrons.com
+Subject: Re: [PATCH 1/1] [x86] Configuration options to compile out x86 CPU
+	support code
+Message-ID: <20080815141855.GB12954@elte.hu>
+References: <1217929519-10527-1-git-send-email-thomas.petazzoni@free-electrons.com>
 MIME-Version: 1.0
-To: Ivan Warren <ivan@vmfacility.fr>
-CC: schwidefsky@de.ibm.com, elendil@planet.nl, linux-s390@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] S390 : Set SLI on PSF/PRSSD on Dasd ECKD initialisation
-References: <1218726426.25578.0.camel@localhost> <1218738411-21828-1-git-send-email-ivan@vmfacility.fr>
-In-Reply-To: <1218738411-21828-1-git-send-email-ivan@vmfacility.fr>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1217929519-10527-1-git-send-email-thomas.petazzoni@free-electrons.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ivan Warren wrote:
->     s390 Dasd ECKD Driver issues a Perform Subsystem Function/Prepare
->     for Read Subsystem Data with a length of 16.
->     However, some hardware (namely 3990/9390 and some version of ESS)
->     only take 12 bytes and therefore, an Incorrect Length indication is
->     returned, breaking CCW Command Chaining and leads to a failure to
->     initialize the DASD. This patch sets the SLI CCW bit to prevent an
->     incorrect length indication to be reported when the control unit
->     expects a length of 12 instead of 16.
 
-Hi Ivan,
+* Thomas Petazzoni <thomas.petazzoni@free-electrons.com> wrote:
 
-while I agree that your patch is technically correct, I think I'd
-rather like to fix the problematic data length instead of making
-the storage server ignore it. There is no need for the
-dasd_psf_prssd_data structure to be 16 bytes long as it is only used
-for suborders that require 12 bytes. The current layout of that
-structure was probably just a mistake. If we ever go to use a
-suborder that requires more data, we should either define a further
-structure specific to that purpose or find some other way to make
-sure that each suborder is called with the appropriate data length.
+> This patch adds some configuration options that allow to compile out 
+> CPU vendor-specific code in x86 kernels (in arch/x86/kernel/cpu). The 
+> new configuration options are only visible when CONFIG_EMBEDDED is 
+> selected, as they are mostly interesting for space savings reasons.
+> 
+> An example of size saving, on x86 with only Intel CPU support:
+> 
+>    text	   data	    bss	    dec	    hex	filename
+> 1125479	 118760	 212992	1457231	 163c4f	vmlinux.old
+> 1121355	 116536	 212992	1450883	 162383	vmlinux
+>   -4124   -2224       0   -6348   -18CC +/-
+> 
+> However, I'm not exactly sure that the Kconfig wording is correct with 
+> regard to !64BIT / 64BIT.
 
-The following patch works fine on current hardware. Can you please
-verify that it indeed fixes your problem as well?
+applied to tip/x86/cpu, thanks Thomas. (I've done a trivial cleanup: 
+converted the macro to an inline.)
 
-Signed-off-by: Stefan Weinhuber <wein@de.ibm.com>
----
- drivers/s390/block/dasd_eckd.h |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Peter, do you like this version of the patch or would you like further 
+improvements?
 
-Index: linux-2.6.26/drivers/s390/block/dasd_eckd.h
-===================================================================
---- linux-2.6.26.orig/drivers/s390/block/dasd_eckd.h
-+++ linux-2.6.26/drivers/s390/block/dasd_eckd.h
-@@ -379,7 +379,7 @@ struct dasd_psf_prssd_data {
- 	unsigned char flags;
- 	unsigned char reserved[4];
- 	unsigned char suborder;
--	unsigned char varies[9];
-+	unsigned char varies[5];
- } __attribute__ ((packed));
- 
- /*
-
+	Ingo
