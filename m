@@ -1,79 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760030AbYHOSBV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759554AbYHOSHf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760030AbYHOSBV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Aug 2008 14:01:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755089AbYHOSBK
+	id S1759554AbYHOSHf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Aug 2008 14:07:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755079AbYHOSH0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Aug 2008 14:01:10 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:46539 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755160AbYHOSBJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Aug 2008 14:01:09 -0400
-Date: Fri, 15 Aug 2008 20:00:48 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: prarit@redhat.com, jbarnes@virtuousgeek.org, joro@8bytes.org,
-       linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org
-Subject: Re: [PATCH]: PCI: GART iommu alignment fixes [v2]
-Message-ID: <20080815180048.GA26844@elte.hu>
-References: <4899B611.4070408@redhat.com> <200808071003.47326.jbarnes@virtuousgeek.org> <489B33D4.1080107@redhat.com> <20080809125116H.fujita.tomonori@lab.ntt.co.jp> <20080815161629.GL27955@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080815161629.GL27955@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Fri, 15 Aug 2008 14:07:26 -0400
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:58114 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753571AbYHOSH0 (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Aug 2008 14:07:26 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: david@lang.hm
+Cc: "Press, Jonathan" <Jonathan.Press@ca.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Helge Hafting <helge.hafting@aitel.hist.no>,
+       linux-kernel@vger.kernel.org, malware-list@lists.printk.net,
+       hch@infradead.org, andi@firstfloor.org, viro@ZenIV.linux.org.uk,
+       alan@lxorguk.ukuu.org.uk, Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [malware-list] TALPA - a threat model? well sorta.
+In-Reply-To: Your message of "Fri, 15 Aug 2008 10:47:15 PDT."
+             <alpine.DEB.1.10.0808151042500.15109@asgard.lang.hm>
+From: Valdis.Kletnieks@vt.edu
+References: <1218645375.3540.71.camel@localhost.localdomain> <20080813103951.1e3e5827@infradead.org> <1218653864.3540.109.camel@localhost.localdomain> <20080813143908.38796217@infradead.org> <1218723133.3540.137.camel@localhost.localdomain> <48A55574.9070508@aitel.hist.no> <1218796645.10800.242.camel@twins> <2629CC4E1D22A64593B02C43E855530304AE4BF6@USILMS12.ca.com> <alpine.DEB.1.10.0808150924260.15109@asgard.lang.hm> <2629CC4E1D22A64593B02C43E855530304AE4C0C@USILMS12.ca.com> <alpine.DEB.1.10.0808151032121.15109@asgard.lang.hm> <2629CC4E1D22A64593B02C43E855530304AE4C12@USILMS12.ca.com>
+            <alpine.DEB.1.10.0808151042500.15109@asgard.lang.hm>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1218823607_3568P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7bit
+Date: Fri, 15 Aug 2008 14:06:47 -0400
+Message-ID: <22811.1218823607@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--==_Exmh_1218823607_3568P
+Content-Type: text/plain; charset=us-ascii
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+On Fri, 15 Aug 2008 10:47:15 PDT, david@lang.hm said:
 
-> 
-> * FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
-> 
-> > From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-> > Subject: [PATCH] x86 gart: allocate size-aligned address for alloc_coherent
-> > 
-> > This fixes GART to return a properly aligned address as
-> > DMA-mapping.txt defines.
-> 
-> applied to tip/x86/gart, thanks! Any v2.6.27-urgency of this patch?
+> in any case the vunerability is limited as the next time the signatures 
+> are updated the files would get scanned again, so I don't think it's a big 
+> problem in practice.
 
-hm, -tip testing has found that this patch causes a hard hang during 
-bootup:
+This problem is actually identical to "new file scanned, but you don't have
+the signature available yet so malware isn't detected".
 
- initcall ali_init+0x0/0x1b returned 0 after 3 msecs
- calling  amd_init+0x0/0x1b
- bus: 'pci': add driver pata_amd
- bus: 'pci': driver_probe_device: matched device 0000:00:06.0 with driver pata_amd
- bus: 'pci': really_probe: probing driver pata_amd with device 0000:00:06.0
- pata_amd 0000:00:06.0: version 0.3.10
- pata_amd 0000:00:06.0: setting latency timer to 64
- [hard hang]
+Those of us who have seen large mail servers pile up queues in the 10s of
+millions in the 45 minutes between when the worm went critical-mass and when
+we got a signature might disagree on it not being a big problem in practice.
 
-should have continued with:
+Of course, if that's considered "outside" the threat model, somebody better
+start writing down exactly what small corner of threat model this is actually
+helping against...
 
- scsi0 : pata_amd
- device: 'host0': device_add
- device: 'host0': device_add
- scsi1 : pata_amd
- [... etc. ... ]
 
-on an AMD X2 testsystem. (Asus board) Can send more info on request. 
-Config is:
+--==_Exmh_1218823607_3568P
+Content-Type: application/pgp-signature
 
-  http://redhat.com/~mingo/misc/config-Fri_Aug_15_18_30_56_CEST_2008.bad
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
 
-Any idea why that is so? Apparently the alignment change wasnt as benign 
-as assumed.
+iD8DBQFIpcW3cC3lWbTT17ARAnjyAJ9tM3fBh2x53Fbt9QCCd3usUqyfeQCdFcTY
+aiFFSXounw769JwRTCsh4M4=
+=f2zq
+-----END PGP SIGNATURE-----
 
-	Ingo
+--==_Exmh_1218823607_3568P--
