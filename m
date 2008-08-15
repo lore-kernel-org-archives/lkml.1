@@ -1,52 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759576AbYHOOrq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759768AbYHOOtb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759576AbYHOOrq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Aug 2008 10:47:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752165AbYHOOri
+	id S1759768AbYHOOtb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Aug 2008 10:49:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753605AbYHOOtX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Aug 2008 10:47:38 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:59599 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751407AbYHOOrh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Aug 2008 10:47:37 -0400
-Date: Fri, 15 Aug 2008 16:47:21 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Cyrill Gorcunov <gorcunov@gmail.com>
-Cc: "Maciej W. Rozycki" <macro@linux-mips.org>, tglx@linutronix.de,
-       hpa@zytor.com, yhlu.kernel@gmail.com, linux-kernel@vger.kernel.org
-Subject: Re: [patch 8/8] x86: apic - unify init_bsp_APIC
-Message-ID: <20080815144721.GK12954@elte.hu>
-References: <20080814183428.550709025@gmail.com> <20080814184652.475361864@gmail.com> <Pine.LNX.4.55.0808142043150.7213@cliff.in.clinika.pl> <aa79d98a0808142341k6a074c8fh41e44a9f23c14f0a@mail.gmail.com> <20080815115147.GA32726@elte.hu> <Pine.LNX.4.55.0808151303410.11843@cliff.in.clinika.pl> <20080815134801.GA14103@elte.hu> <20080815144509.GA7178@lenovo>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080815144509.GA7178@lenovo>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Fri, 15 Aug 2008 10:49:23 -0400
+Received: from mercury.realtime.net ([205.238.132.86]:46180 "EHLO
+	ruth.realtime.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753141AbYHOOtW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Aug 2008 10:49:22 -0400
+In-Reply-To: <20080814221214.GG30057@kroah.com>
+References: <for-27-patch1-0@bga.com> <for-27-patch9@bga.com> <20080712041137.GA5933@kroah.com> <e6b3109a0ab047bea58ceecb8734761d@bga.com> <0a67ecbf69649dce778db1b463e59c3a@bga.com> <ad61f8387a737bc410e9d6dc3a8a5b63@bga.com> <20080717070759.GE22090@kroah.com> <20080806093118.05396ad4@hyperion.delvare> <20080814221214.GG30057@kroah.com>
+Mime-Version: 1.0 (Apple Message framework v624)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <a12d8dc5899dc8d07e0182576941a82a@bga.com>
+Content-Transfer-Encoding: 7bit
+Cc: Michael Ellerman <michael@ellerman.id.au>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-pci@vger.kernel.org,
+       Jean Delvare <khali@linux-fr.org>
+From: Milton Miller <miltonm@bga.com>
+Subject: Re: [PATCH/RFC] pci: dynids.use_driver_data considered harmful
+Date: Fri, 15 Aug 2008 09:50:07 -0500
+To: Greg KH <greg@kroah.com>
+X-Mailer: Apple Mail (2.624)
+X-Originating-IP: 216.126.174.51
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Cyrill Gorcunov <gorcunov@gmail.com> wrote:
+On Aug 14, 2008, at 5:12 PM, Greg KH wrote:
 
-> And Maciej - you're so right - if someone will take a look on the 
-> apic_64.c code now he will be quite wondered what lapic_is_integrated 
-> is doing in 64bit code.
-> 
-> Ingo, I don't know but maybe you should drop the patches I sent since 
-> they could (espec the snippet Maciej pointed to) confuse code reader 
-> (sine merging process is not completed yet). Sorry for incovenience 
-> and thanks again for review!
+> On Wed, Aug 06, 2008 at 09:31:18AM +0200, Jean Delvare wrote:
+>> Hi Greg,
+>>
+>> On Thu, 17 Jul 2008 00:07:59 -0700, Greg KH wrote:
+>>> On Wed, Jul 16, 2008 at 05:18:18AM -0500, Milton Miller wrote:
+>>>>
+>>>> Greg,
+>>>>
+>>>> Please respond to this email and explain why the patch
+>>>>
+>>>> pci: dynids.use_driver_data considered harmful
+>>>>
+>>>> http://www.ussg.iu.edu/hypermail/linux/kernel/0807.1/index.html#2188
+>>>>
+>>>> should not be applied.   I am not arguing the correctness of
+>>>> the removed code, rather its utility and benefit to the linux
+>>>> community.
+>>>
+>>> (...)  I'll try to get
+>>> to this by Monday, but my original point still stands, this was
+>>> implemented for a reason,
+>>
+>> Not a good enough argument, sorry. There have been many cases in the
+>> past where code has been withdrawn after some times because we
+>> realized that we got it wrong in the first place.
+>
+> Fair enough :)
+>
+>> So, please explain what the current code is good for. Honestly, my
+>> initial reaction to Milton's proposal was "what an idiot, this flag is
+>> there for an obvious safety reason and we don't want to remove it" but
+>> after reading both his arguments and the code, I found that I have
+>> nothing to backup my claim. If you do, please let us know your
+>> technical reasons.
+>
+> The technical reason was that this flag was needed to let some drivers
+> work properly with the new_id file, right?
+>
+> If the flag goes away, they break from what I can tell.
 
-no problem with having such temporary state at all - and we want to test 
-things out as well.
+That is not a detailed technical argument, its an  assumption.
 
-	Ingo
+>
+>>>                           saying that not enough drivers use it 
+>>> properly
+>>> does not make the need for it to go away.  It is required for them, 
+>>> so
+>>> perhaps the other 419 drivers also need to have the flag set.  That's
+>>> pretty trivial to do, right?
+>>
+>> If you are suggesting to blindly set the flag to all PCI drivers (or
+>> even just all the ones which make use of the driver_data field -
+>> doesn't make a difference), this simply shows how useless this flag 
+>> is.
+>> If you don't, then one would have to check the code of all drivers and
+>> add validation code for the driver_data value; but then this no longer
+>> falls into the "trivial" category.
+>
+> It's pretty "trivial" to look to see if the field is set in the pci_id
+> structure, that should be all that is needed, right?
+
+
+So please identify at least one such driver where the only correct 
+answer is 0.  I even made it easy for you, i identified which drivers 
+set dynamic_id and how.  I identified specific drivers where its the 
+wrong answer.
+
+So:  If you are arguing the code is still needed, please identify  at 
+least one case that it is correct.  (Oh, I don't buy that if 0 is safe 
+but 1 is equally safe, that the existing code is correct).
+
+milton
+
