@@ -1,60 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758183AbYHOWvJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758856AbYHOWxP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758183AbYHOWvJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Aug 2008 18:51:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752222AbYHOWu4
+	id S1758856AbYHOWxP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Aug 2008 18:53:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752222AbYHOWw5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Aug 2008 18:50:56 -0400
-Received: from gw.goop.org ([64.81.55.164]:42528 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752121AbYHOWuz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Aug 2008 18:50:55 -0400
-Message-ID: <48A6082E.70405@goop.org>
-Date: Fri, 15 Aug 2008 15:50:22 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
-MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Roland McGrath <roland@redhat.com>, Ulrich Drepper <drepper@redhat.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Gregory Haskins <ghaskins@novell.com>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       "Luis Claudio R. Goncalves" <lclaudio@uudg.org>,
-       Clark Williams <williams@redhat.com>, srostedt@redhat.com
-Subject: Re: [PATCH] ftrace: use only 5 byte nops for x86
-References: <alpine.DEB.1.10.0808141755030.2911@gandalf.stny.rr.com> <48A4C491.4050301@goop.org> <20080815092231.GB22209@elte.hu> <48A6037B.6030202@zytor.com> <alpine.LFD.1.10.0808151542330.3324@nehalem.linux-foundation.org>
-In-Reply-To: <alpine.LFD.1.10.0808151542330.3324@nehalem.linux-foundation.org>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 15 Aug 2008 18:52:57 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:46727 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752121AbYHOWw5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Aug 2008 18:52:57 -0400
+Date: Fri, 15 Aug 2008 15:52:20 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+Cc: viro@ZenIV.linux.org.uk, djohnson@sw.starentnetworks.com,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       stable@kernel.org
+Subject: Re: cramfs and named-pipe
+Message-Id: <20080815155220.91ec8201.akpm@linux-foundation.org>
+In-Reply-To: <20080805.120909.139657748.nemoto@toshiba-tops.co.jp>
+References: <20080804.182143.218269280.nemoto@toshiba-tops.co.jp>
+	<20080804100347.GU28946@ZenIV.linux.org.uk>
+	<20080805.120909.139657748.nemoto@toshiba-tops.co.jp>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
-> I also suspect that we'd really be much better off just fixing the generic 
-> NOP tables for the 5-byte nop. As far as I could tell, from all the 
-> numbers that have been posted, absolutely _none_ show that there is any 
-> point at all to the 2-instruction 3/2-byte sequence.
->
-> So instead of having a magic special ftrace-only thing, why not just do it 
-> right, and fix the generic 5-byte nop sequence?
->   
+On Tue, 05 Aug 2008 12:09:09 +0900 (JST)
+Atsushi Nemoto <anemo@mba.ocn.ne.jp> wrote:
 
-Well, there's two distinct issues here.  There's the need for a
-single-instruction 5 byte nop, and the need for efficient nops.  It so
-happens in this case that they're the same thing.  But in general, the
-generic nop interface is intended to return the most efficient nop, not
-an atomic nop (or with any other properties).  To handle it generically,
-we'd either need to redefine the meaning of the existing nop-padding
-interface, or add an "atomic nop" interface.
+> On Mon, 4 Aug 2008 11:03:47 +0100, Al Viro <viro@ZenIV.linux.org.uk> wrote:
+> > Eeek...  I'd rather not play these games with directories and devices nodes
+> > as well.  Rationale for the original patch simply doesn't apply for those.
+> > 
+> > IOW, I think it would be much saner if we did the following: make ..._test()
+> > refuse to merge inodes with ->i_ino == 1, take inode setup back to
+> > get_cramfs_inode() and make ->drop_inode() evict ones with ->i_ino == 1
+> > immediately.  Comments?
+> > 
+> > Patch below is completely untested; it builds, but that's it.
+> 
+> Thanks, your patch works well for me.  But it looks a bit large for
+> stable tree (100 line rule).
+> 
+> With current code, I think no problem on empty directories and device
+> nodes.  So how about fixing only FIFO case first (and send it to
+> stable tree) and then go to your patch?
+> 
 
-    J
+Nothing seems to have happened.  Al, do you think your (now tested) patch
+is good for 2.6.27 and 2.6.26.x?  And, it seems, 2.6.25.x.  (All the way
+down to 2.6.14.x!)
