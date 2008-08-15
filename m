@@ -1,81 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759081AbYHON3A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759225AbYHON3Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759081AbYHON3A (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Aug 2008 09:29:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753979AbYHON2t
+	id S1759225AbYHON3Z (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Aug 2008 09:29:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758768AbYHON27
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Aug 2008 09:28:49 -0400
-Received: from pmx1.sophos.com ([213.31.172.16]:43606 "EHLO pmx1.sophos.com"
+	Fri, 15 Aug 2008 09:28:59 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:59681 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753841AbYHON2s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Aug 2008 09:28:48 -0400
-In-Reply-To: <20080815132227.6BF0431678F@pmx1.sophos.com>
-Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       malware-list@lists.printk.net, malware-list-bounces@dmesg.printk.net,
-       Theodore Tso <tytso@mit.edu>
-Subject: Re: [malware-list] [RFC 0/5] [TALPA] Intro	to	alinuxinterfaceforonaccess
- scanning
+	id S1758899AbYHON25 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Aug 2008 09:28:57 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Stephen Hemminger <shemminger@vyatta.com>
+Subject: Re: [PATCH 2/3] Adapt the sky2 driver to the reworked PCI PM
+Date: Fri, 15 Aug 2008 15:32:13 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: netdev@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Jeff Garzik <jeff@garzik.org>, Jesse Barnes <jbarnes@virtuousgeek.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       "Brandeburg, Jesse" <jesse.brandeburg@intel.com>,
+       Stephen Hemminger <stephen.hemminger@vyatta.com>
+References: <200808142335.56644.rjw@sisk.pl> <20080814152318.625f8609@extreme> <200808151501.58315.rjw@sisk.pl>
+In-Reply-To: <200808151501.58315.rjw@sisk.pl>
 MIME-Version: 1.0
-X-Mailer: Lotus Notes Release 7.0.2 September 26, 2006
-From: douglas.leeder@sophos.com
-Date: Fri, 15 Aug 2008 14:28:52 +0100
-X-MIMETrack: Serialize by Router on Mercury/Servers/Sophos(Release 7.0.3|September 26, 2007) at
- 15/08/2008 14:28:47,
-	Serialize complete at 15/08/2008 14:28:47
-Content-Type: text/plain; charset="US-ASCII"
-Message-Id: <20080815132852.4060D376568@pmx1.sophos.com>
-To: unlisted-recipients:; (no To-header on input)
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200808151532.14327.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-malware-list-bounces@dmesg.printk.net wrote on 2008-08-15 14:22:27:
-
-> malware-list-bounces@dmesg.printk.net wrote on 2008-08-15 14:16:21:
-> 
-> > On Fri, Aug 15, 2008 at 08:57:48AM -0400, Press, Jonathan wrote:
-> > > That may just be a question of terminology.  If the bits are 
-construed
-> > > not as clean/dirty/infected, but as "I care about this file" vs. "I
-> > > don't care about this file" then the rubber gloves come off.
+On Friday, 15 of August 2008, Rafael J. Wysocki wrote:
+> On Friday, 15 of August 2008, Stephen Hemminger wrote:
+> > On Thu, 14 Aug 2008 23:38:17 +0200
+> > "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
 > > 
-> > Sure, as long as we're very clear about the semantics of the bits.  If
-> > the bits are not persistent, but which get dropped if the inode is
-> > every evicted from memory, and it's considered OK, or even desirable,
-> > to rescan the file when it is brought back into memory, that may be
-> > acceptable to the rubber gloves folks (make people go through lots
-> > superflous of security scans, even when they are transfering betewen
-> > flights --- security is always more important than passengers'
-> > convenience!), but perhaps not to other applications such as file
-> > indexers, who would view rescanning files that have already been
-> > scanned, and not have been modified, as a waste of time, battery, CPU
-> > and disk bandwidth, etc.
+> > > Adapt the sky2 driver to the reworked PCI PM
+> > > 
+> > > * Use device_set_wakeup_enable() and friends as needed
+> > > * Remove an open-coded reference to the standard PCI PM registers
+> > > * Use pci_prepare_to_sleep() and pci_back_from_sleep() in the
+> > >   ->suspend() and ->resume() callbacks
+> > > * Use the observation that it is sufficient to call pci_enable_wake()
+> > >   once, unless it fails
+> > > 
+> > > Tested on Asus M3A32-MVP (Yukon-2 EC Ultra rev 3).
+> > > 
+> > > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> > > ---
+> > >  drivers/net/sky2.c |   34 ++++++++++------------------------
+> > >  1 file changed, 10 insertions(+), 24 deletions(-)
+> > > 
+> > > Index: linux-2.6/drivers/net/sky2.c
+> > > ===================================================================
+> > > --- linux-2.6.orig/drivers/net/sky2.c
+> > > +++ linux-2.6/drivers/net/sky2.c
+> > > @@ -3035,7 +3035,8 @@ static int sky2_set_wol(struct net_devic
+> > >  	struct sky2_port *sky2 = netdev_priv(dev);
+> > >  	struct sky2_hw *hw = sky2->hw;
+> > >  
+> > > -	if (wol->wolopts & ~sky2_wol_supported(sky2->hw))
+> > > +	if ((wol->wolopts & ~sky2_wol_supported(sky2->hw))
+> > > +	    || !device_can_wakeup(&hw->pdev->dev))
+> > >  		return -EOPNOTSUPP;
+> > >  
 > > 
-> > As I understand it, the TALPA proposal had non-persistent
-> > clean/dirty/infected bits.
-> > 
-> >                   - Ted
+> > There was a regression in earlier releases caused because some BIOS's
+> > are wrong, and device can wakeup.
 > 
-> Yes the current proposal has temporary markers in the in-memory 
-> representation if inodes.
+> device_can_wakeup() returns 'true' if the device is capable of generating PME#
+> from at least one low power state (this is determined on the basis of the
+> contents of the device's PCI PM registers - please have a look at
+> drivers/pci/pci_pm_init() for details) or if ACPI tells us it can wake up.
+> IOW, the BIOSes opinion doesn't matter if we find that the device is capable of
+> generating PME#, so the regression must have been related to something else.
+> I'm very interested in the details, if available.
 > 
-> This is a problem for current anti-malware scanning, as virus data 
-updates 
-> come every few hours
-> (at which point the entire clean/infected state has to be cleared), so 
-the 
-> loss after a reboot is 
-> limited.
+> Of course, since we rely on the ability of the device to generate PME# and
+> device_can_wakeup() returning 'false' means that the device cannot generate
+> PME# from any state, it's reasonable to check it IMO.
 
-Of course I mean't NOT a problem...
+BTW, if device_can_wakeup(&pdev->dev) returns 'false',
+pci_enable_wake(pdev, state, true) will fail for any 'state', so the wake-up
+won't work regardless of the change above.
 
--- 
-Douglas Leeder
-
-
-
-Sophos Plc, The Pentagon, Abingdon Science Park, Abingdon,
-OX14 3YP, United Kingdom.
-
-Company Reg No 2096520. VAT Reg No GB 348 3873 20.
-
+Thanks,
+Rafael
