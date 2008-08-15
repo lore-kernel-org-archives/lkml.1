@@ -1,57 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758856AbYHOWxP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759394AbYHOWyT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758856AbYHOWxP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Aug 2008 18:53:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752222AbYHOWw5
+	id S1759394AbYHOWyT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Aug 2008 18:54:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752648AbYHOWyJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Aug 2008 18:52:57 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:46727 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752121AbYHOWw5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Aug 2008 18:52:57 -0400
-Date: Fri, 15 Aug 2008 15:52:20 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-Cc: viro@ZenIV.linux.org.uk, djohnson@sw.starentnetworks.com,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       stable@kernel.org
-Subject: Re: cramfs and named-pipe
-Message-Id: <20080815155220.91ec8201.akpm@linux-foundation.org>
-In-Reply-To: <20080805.120909.139657748.nemoto@toshiba-tops.co.jp>
-References: <20080804.182143.218269280.nemoto@toshiba-tops.co.jp>
-	<20080804100347.GU28946@ZenIV.linux.org.uk>
-	<20080805.120909.139657748.nemoto@toshiba-tops.co.jp>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 15 Aug 2008 18:54:09 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:59544 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752222AbYHOWyI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Aug 2008 18:54:08 -0400
+Date: Sat, 16 Aug 2008 00:53:56 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: PATCH] debug: add notifier chain debugging
+Message-ID: <20080815225356.GA25538@elte.hu>
+References: <20080815152938.4bc9d48c@infradead.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080815152938.4bc9d48c@infradead.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 05 Aug 2008 12:09:09 +0900 (JST)
-Atsushi Nemoto <anemo@mba.ocn.ne.jp> wrote:
 
-> On Mon, 4 Aug 2008 11:03:47 +0100, Al Viro <viro@ZenIV.linux.org.uk> wrote:
-> > Eeek...  I'd rather not play these games with directories and devices nodes
-> > as well.  Rationale for the original patch simply doesn't apply for those.
-> > 
-> > IOW, I think it would be much saner if we did the following: make ..._test()
-> > refuse to merge inodes with ->i_ino == 1, take inode setup back to
-> > get_cramfs_inode() and make ->drop_inode() evict ones with ->i_ino == 1
-> > immediately.  Comments?
-> > 
-> > Patch below is completely untested; it builds, but that's it.
-> 
-> Thanks, your patch works well for me.  But it looks a bit large for
-> stable tree (100 line rule).
-> 
-> With current code, I think no problem on empty directories and device
-> nodes.  So how about fixing only FIFO case first (and send it to
-> stable tree) and then go to your patch?
-> 
+* Arjan van de Ven <arjan@infradead.org> wrote:
 
-Nothing seems to have happened.  Al, do you think your (now tested) patch
-is good for 2.6.27 and 2.6.26.x?  And, it seems, 2.6.25.x.  (All the way
-down to 2.6.14.x!)
+> From: Arjan van de Ven <arjan@linux.intel.com>
+> Subject: [PATCH] debug: add notifier chain debugging
+> 
+> during some development we suspected a case where we left something in 
+> a notifier chain that was from a module that was unloaded already... 
+> and that sort of thing is rather hard to track down.
+> 
+> This patch adds a very simple sanity check (which isn't all that 
+> expensive) to make sure the notifier we're about to call is actually 
+> from either the kernel itself of from a still-loaded module, avoiding 
+> a hard-to-chase-down crash.
+
+applied for testing, thanks Arjan.
+
+	Ingo
