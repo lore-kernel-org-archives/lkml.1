@@ -1,63 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754275AbYHOUCc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758301AbYHOUDR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754275AbYHOUCc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Aug 2008 16:02:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751062AbYHOUCY
+	id S1758301AbYHOUDR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Aug 2008 16:03:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751062AbYHOUDE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Aug 2008 16:02:24 -0400
-Received: from outbound-sin.frontbridge.com ([207.46.51.80]:43257 "EHLO
-	SG2EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750958AbYHOUCX convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Aug 2008 16:02:23 -0400
-X-BigFish: VPS-45(z21eWz1432R936eQ1805M936fQzzzzz32i6bh43j64h)
-X-Spam-TCS-SCL: 3:0
-X-WSS-ID: 0K5NRNF-01-5JN-01
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-Class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH 01/01][retry 5] x86: L3 cache index disable for 2.6.26
-Date: Fri, 15 Aug 2008 15:02:12 -0500
-Message-ID: <6453C3CB8E2B3646B0D020C112613273C5AC79@sausexmb4.amd.com>
-In-Reply-To: <20080815195712.GC25185@elte.hu>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH 01/01][retry 5] x86: L3 cache index disable for 2.6.26
-Thread-Index: Acj/EUJlVv8FYXMFRQKBDda25u1TwwAAFtYg
-References: <200807181603.52332.mark.langsdorf@amd.com> <200808141148.38108.mark.langsdorf@amd.com> <20080814171042.GA26985@kroah.com> <200808141332.53538.mark.langsdorf@amd.com> <20080815164213.GA29956@elte.hu> <6453C3CB8E2B3646B0D020C112613273C5AC78@sausexmb4.amd.com> <20080815195712.GC25185@elte.hu>
-From: "Langsdorf, Mark" <mark.langsdorf@amd.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-CC: "Greg KH" <greg@kroah.com>, "Pavel Machek" <pavel@suse.cz>,
-       "Deguara, Joachim" <joachim.deguara@amd.com>, <gregkh@ucw.cz>,
-       <tglx@linutronix.de>, <mingo@redhat.com>, <hpa@zytor.com>,
-       <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 15 Aug 2008 20:02:13.0421 (UTC) FILETIME=[CF1A8DD0:01C8FF11]
+	Fri, 15 Aug 2008 16:03:04 -0400
+Received: from smtpout3.tre.se ([80.251.192.228]:28171 "EHLO smtpout3.tre.se"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750958AbYHOUDC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Aug 2008 16:03:02 -0400
+Date: Fri, 15 Aug 2008 22:02:30 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       David Miller <davem@davemloft.net>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Gregory Haskins <ghaskins@novell.com>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       "Luis Claudio R. Goncalves" <lclaudio@uudg.org>,
+       Clark Williams <williams@redhat.com>, srostedt@redhat.com
+Subject: Re: [PATCH 0/3] ftrace: handle kernel code remove
+Message-ID: <20080815200230.GA18516@uranus.ravnborg.org>
+References: <20080815024716.480118113@goodmis.org> <20080815092844.GD22209@elte.hu> <20080815093851.GB9312@elte.hu> <20080815094827.GA21766@elte.hu> <20080815100600.GA29180@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080815100600.GA29180@elte.hu>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > >  Author: Mark Langsdorf <mark.langsdorf@amd.com>
-> > >  Date:   Tue Jul 22 13:06:02 2008 -0500
-> > > 
-> > >     x86: L3 cache index disable for 2.6.26
-> > > 
-> > > could you please send a delta patch against tip/master?
-> > > 
-> > >    http://people.redhat.com/mingo/tip.git/README
-> > 
-> > tip/master looks likes it has the version 5 of my patch
-> > in it already.  Am I missing something?
+On Fri, Aug 15, 2008 at 12:06:00PM +0200, Ingo Molnar wrote:
 > 
-> ok, that's good - that's the latest, right?
+> * Ingo Molnar <mingo@elte.hu> wrote:
+> 
+> > >   http://redhat.com/~mingo/misc/config-Fri_Aug_15_11_34_53_CEST_2008.bad
+> > 
+> > the problem is that i'm building a 32-bit kernel on a 64-bit host, and 
+> > the scripts/recordmcount.pl script does not create the temporary 
+> > object files in the proper (32-bit) output ELF format.
+> 
+> the crude hack below got me going for now - but this needs a proper 
+> solution.
 
-Yes.  Single inline function with asm instructions and 
-a documented clflush check in asm/processor.h and the 
-call to wbinvd_halt() in both processor_32.c and 
-processor_64.h.  It looks like we're done here.
+recordmount.pl should use the already define environment variables:
+$CC + $CFLAGS
+$LD + $LDFLAGS
+$OBJCOPY, $OBJCOPYFLAGS
+$OBJDUMP
 
--Mark Langsdorf
-Operating System Research Center
-AMD
+We need to set $OBJCOPYFLAFS to a sensible variable in arch/x86/Makefile
+And we should introduce $OBJDUMPFLAGS too.
 
+This would solve all the problems - no?
+
+I am limited in time atm - so relying on one of you to create the patch
+and do some testing.
+
+	Sam
