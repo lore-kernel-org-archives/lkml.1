@@ -1,65 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756636AbYHOFdW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756477AbYHOFeA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756636AbYHOFdW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Aug 2008 01:33:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750982AbYHOFdN
+	id S1756477AbYHOFeA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Aug 2008 01:34:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750982AbYHOFdv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Aug 2008 01:33:13 -0400
-Received: from yx-out-2324.google.com ([74.125.44.28]:6408 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750790AbYHOFdL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Aug 2008 01:33:11 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=IPI+zs+Chy5BJkTbJIDXvDj2j6xUBxZF7E2uPCkfU9AnxKe4c+Kih1Dv+kGpJD+6un
-         K7o0RkJPo+eFfy2vSeMp91YkPLbnYQ1K+siLgy7Zku9nAb/cTfb/KsSBuFNpesBqBfPK
-         ul7ZFDLBKyqXRSJ/kH1lU8HAXlky8iMMBRcoc=
-Message-ID: <b3ece790808142233y3150b4d1sfeaa0342dbac31a6@mail.gmail.com>
-Date: Thu, 14 Aug 2008 22:33:10 -0700
-From: "Tim Hockin" <thockin@hockin.org>
-To: "Greg KH" <gregkh@suse.de>
-Subject: Re: [patch 1/3] kmsg: Kernel message catalog macros.
-Cc: "Joe Perches" <joe@perches.com>, schwidefsky@de.ibm.com,
-       linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
-       lf_kernel_messages@lists.linux-foundation.org,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Michael Holzheu" <holzheu@de.ibm.com>,
-       "Gerrit Huizenga" <gh@us.ibm.com>,
-       "Randy Dunlap" <randy.dunlap@oracle.com>, "Jan Kara" <jack@suse.cz>,
-       "Pavel Machek" <pavel@ucw.cz>, "Sam Ravnborg" <sam@ravnborg.org>,
-       "=?UTF-8?Q?Jochen_Vo=C3=9F?=" <jochen.voss@googlemail.com>,
-       "Kunai Takashi" <kunai@linux-foundation.jp>,
-       "Tim Bird" <tim.bird@am.sony.com>
-In-Reply-To: <20080815034419.GB803@suse.de>
+	Fri, 15 Aug 2008 01:33:51 -0400
+Received: from mail.lang.hm ([64.81.33.126]:54946 "EHLO bifrost.lang.hm"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750790AbYHOFdu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Aug 2008 01:33:50 -0400
+Date: Thu, 14 Aug 2008 22:33:30 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Eric Paris <eparis@redhat.com>
+cc: Theodore Tso <tytso@mit.edu>, Rik van Riel <riel@redhat.com>,
+       davecb@sun.com, linux-security-module@vger.kernel.org,
+       Adrian Bunk <bunk@kernel.org>, Mihai Don??u <mdontu@bitdefender.com>,
+       linux-kernel@vger.kernel.org, malware-list@lists.printk.net,
+       Pavel Machek <pavel@suse.cz>, Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [malware-list] [RFC 0/5] [TALPA] Intro to	alinuxinterfaceforon
+ access scanning
+In-Reply-To: <alpine.DEB.1.10.0808142212430.12859@asgard.lang.hm>
+Message-ID: <alpine.DEB.1.10.0808142228450.12859@asgard.lang.hm>
+References: <20080813125638.GB6995@ucw.cz>  <20080813135207.CC08C3765BC@pmx1.sophos.com>  <20080814125410.GA2262@elf.ucw.cz>  <2629CC4E1D22A64593B02C43E855530304AE4BE3@USILMS12.ca.com>  <20080814223918.GC6370@elf.ucw.cz>  <20080814200005.6b363716@bree.surriel.com>
+ <20080815004335.GF13048@mit.edu> <1218769209.16613.31.camel@localhost.localdomain> <alpine.DEB.1.10.0808142212430.12859@asgard.lang.hm>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080730165656.118280544@de.ibm.com>
-	 <20080730171156.824640459@de.ibm.com>
-	 <b3ece790808121735t21b4a629iaf6a968b30332d74@mail.gmail.com>
-	 <1218733457.2651.11.camel@localhost>
-	 <b3ece790808141150s3770531bsc88ec387e0f840d3@mail.gmail.com>
-	 <1218769739.24527.76.camel@localhost> <20080815034419.GB803@suse.de>
-X-Google-Sender-Auth: 8718f3a80fad7695
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 14, 2008 at 8:44 PM, Greg KH <gregkh@suse.de> wrote:
->
-> What is wrong with what we have already agreed to standardise on here
-> people?  dev_printk() for devices!  It uniquely shows the device, what
-> driver is bound to it (if any), the bus id, and everything else.
+On Thu, 14 Aug 2008, david@lang.hm wrote:
 
-Part of the problem, imho, is the "if any" part.  But I am more than happy to
-build on existing solutions.  All the world is not a dev, though.  I'd like to
-be able to report something like an OOM kill in (roughly) the same way as an
-ATA error, and I want (though could be talked out of) a way to tell these
-"events" (for lack of a better word) apart from plain-old-printk()s.
+> again, libmalware.so is not referring to any specific body of code, it's 
+> referring to the concept that the handling of open/mmap/read/etc and scanning 
+> is done via a userspace library rather then by the kernel. if everyone can 
+> agree on that concept then hashing out the details of _which_ library it gets 
+> put in is a smaller detail.
 
-Tim
+one reason to layer scanners is that you could have one that just checks 
+to see if the file was deployed from a OS package, if it was (and still 
+has the same hash as the package manager thinks it should have) it sets a 
+flag that other scanners could look for (if they see it they can skip 
+scanning the file)
+
+David Lang
