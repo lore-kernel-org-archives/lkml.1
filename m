@@ -1,58 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760550AbYHORdv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759744AbYHORh5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760550AbYHORdv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Aug 2008 13:33:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753722AbYHORdm
+	id S1759744AbYHORh5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Aug 2008 13:37:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754270AbYHORht
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Aug 2008 13:33:42 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:41565 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753952AbYHORdl (ORCPT
+	Fri, 15 Aug 2008 13:37:49 -0400
+Received: from 166-70-238-42.ip.xmission.com ([166.70.238.42]:42720 "EHLO
+	ns1.wolfmountaingroup.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753106AbYHORhs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Aug 2008 13:33:41 -0400
-Date: Fri, 15 Aug 2008 10:31:51 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-cc: Ingo Molnar <mingo@elte.hu>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       Harvey Harrison <harvey.harrison@gmail.com>,
-       Andi Kleen <andi@firstfloor.org>, Steven Rostedt <rostedt@goodmis.org>,
-       Steven Rostedt <srostedt@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, Roland McGrath <roland@redhat.com>,
-       Ulrich Drepper <drepper@redhat.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Gregory Haskins <ghaskins@novell.com>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       "Luis Claudio R. Goncalves" <lclaudio@uudg.org>,
-       Clark Williams <williams@redhat.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH] x86 : spinlock use LOCK_PREFIX
-In-Reply-To: <20080815165659.GD21138@Krystal>
-Message-ID: <alpine.LFD.1.10.0808151031310.3324@nehalem.linux-foundation.org>
-References: <20080814205815.GA14076@Krystal> <alpine.LFD.1.10.0808150854140.3324@nehalem.linux-foundation.org> <20080815165659.GD21138@Krystal>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Fri, 15 Aug 2008 13:37:48 -0400
+Message-ID: <1734.69.2.248.210.1218820443.squirrel@webmail.wolfmountaingroup.com>
+In-Reply-To: <1151.69.2.248.210.1218817564.squirrel@webmail.wolfmountaingroup.com>
+References: <200808140614.m7E6EcDS006264@wolfmountaingroup.com>   
+    <84144f020808140139v691e6590idd79995168af4e9e@mail.gmail.com>   
+    <44303.166.70.238.45.1218724556.squirrel@webmail.wolfmountaingroup.com>
+       <20080815122510.GF20442@elte.hu>   
+    <1763.69.2.248.210.1218815934.squirrel@webmail.wolfmountaingroup.com>  
+     <20080815163916.GB16560@elte.hu>
+    <1151.69.2.248.210.1218817564.squirrel@webmail.wolfmountaingroup.com>
+Date: Fri, 15 Aug 2008 11:14:03 -0600 (MDT)
+Subject: Re: [PATCH 2.6.27-rc3 26/29] mdb: export task_curr
+From: jmerkey@wolfmountaingroup.com
+To: jmerkey@wolfmountaingroup.com
+Cc: "Ingo Molnar" <mingo@elte.hu>, jmerkey@wolfmountaingroup.com,
+       "Pekka Enberg" <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org,
+       jason.wessel@windriver.com
+User-Agent: SquirrelMail/1.4.6
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+>>
+>> * jmerkey@wolfmountaingroup.com <jmerkey@wolfmountaingroup.com> wrote:
+>>
+>>> >
+>>> > * jmerkey@wolfmountaingroup.com <jmerkey@wolfmountaingroup.com>
+>>> wrote:
+>>> >
+>>> >> > On Thu, Aug 14, 2008 at 9:14 AM,  <jmerkey@wolfmountaingroup.com>
+>>> >> wrote:
+>>> >> >> export the task_curr function to the module based kernel debugger
+>>> to
+>>> >> >> enable
+>>> >> >> process back tracing and state display.
+>>> >> >>
+>>> >> >> Signed-off-by: Jeffrey Vernon Merkey
+>>> (jmerkey@wolfmountaingroup.com)
+>>> >> >>
+>>> >> >> --- a/kernel/sched.c    2008-08-13 14:22:32.000000000 -0600
+>>> >> >> +++ b/kernel/sched.c    2008-08-13 11:56:03.000000000 -0600
+>>> >> >> @@ -1736,6 +1736,9 @@
+>>> >> >>  {
+>>> >> >>        return cpu_curr(task_cpu(p)) == p;
+>>> >> >>  }
+>>> >> >> +#if defined(CONFIG_MDB_MODULE)
+>>> >> >> +EXPORT_SYMBOL_GPL(task_curr);
+>>> >> >> +#endif
+>>> >> >
+>>> >> > We usually don't export symbols conditionally, especially in core
+>>> >> kernel
+>>> >> > code.
+>>> >> >
+>>> >>
+>>> >> Well,then please suggest how a kernel debugger can be module based
+>>> and
+>>> >> still be able to get this information some other way that's generic
+>>> >> and minimal impact.
+>>> >
+>>> > FYI, there's a built-in kernel debugger in the upstream kernel
+>>> already:
+>>> > kernel/kgdb.c - and it does not need that export.
+>>> >
+>>> > So if you are interested in kernel debuggers i'd suggest to work with
+>>> > the KGDB folks to extend it with whatever feature-set is missing.
+>>> >
+>>> > They are friendly, very easy to work with and are open to the
+>>> > thousands-of-years-old scientific method of not duplicating effort,
+>>> > working together, going forward gradually, etc.
+>>> >
+>>> > 	Ingo
+>>> >
+>>>
+>>> Sorry, but I have my own path and direction, [...]
+>>
+>> doing things alone is your unalienable personal right, and since thus
+>> you apparently didnt intend your patch to be included in the Linux
+>> kernel that's as far as my interest in this as a maintainer goes.
+>>
+>> Thanks,
+>>
+>> 	Ingo
+>>
 
 
-On Fri, 15 Aug 2008, Mathieu Desnoyers wrote:
-> 
-> Unless there a rationale for this, I think these be changed to LOCK_PREFIX
-> too.
-> 
-> grep "lock ;" include/asm-x86/spinlock.h
->          "lock ; cmpxchgw %w1,%2\n\t"
->   asm volatile("lock ; xaddl %0, %1\n"
->          "lock ; cmpxchgl %1,%2\n\t"
+I removed the export from this file and will resubmit the patch series. 
+This will remove you from the decision list for this patch series.  What
+other files do you claim to maintain so I can make certain remove them
+from my patches?
 
-Ack.
+I can get the variable some other way.
 
-		Linus
+:-)
+
+Thanks
+
+Jeff
+
+
+
+
