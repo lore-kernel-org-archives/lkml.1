@@ -1,85 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757418AbYHONCT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757857AbYHONEF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757418AbYHONCT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Aug 2008 09:02:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753016AbYHONCG
+	id S1757857AbYHONEF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Aug 2008 09:04:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753106AbYHONDw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Aug 2008 09:02:06 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:29017 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750891AbYHONCD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Aug 2008 09:02:03 -0400
-Subject: Re: Btrfs v0.16 released
-From: Chris Mason <chris.mason@oracle.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Peter Zijlstra <peterz@infradead.org>,
-       linux-btrfs <linux-btrfs@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>
-In-Reply-To: <20080815013934.GE19125@one.firstfloor.org>
-References: <1217962876.15342.33.camel@think.oraclecorp.com>
-	 <1218100464.8625.9.camel@twins>
-	 <1218105597.15342.189.camel@think.oraclecorp.com>
-	 <877ias66v4.fsf@basil.nowhere.org>
-	 <1218221293.15342.263.camel@think.oraclecorp.com>
-	 <1218747656.15342.439.camel@think.oraclecorp.com>
-	 <20080814211756.GC13814@one.firstfloor.org>
-	 <1218763554.15342.460.camel@think.oraclecorp.com>
-	 <20080815013934.GE19125@one.firstfloor.org>
-Content-Type: text/plain
-Date: Fri, 15 Aug 2008 09:00:56 -0400
-Message-Id: <1218805256.15342.484.camel@think.oraclecorp.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
+	Fri, 15 Aug 2008 09:03:52 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:59571 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753016AbYHONDv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Aug 2008 09:03:51 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Stephen Hemminger <shemminger@vyatta.com>
+Subject: Re: [PATCH 2/3] Adapt the sky2 driver to the reworked PCI PM
+Date: Fri, 15 Aug 2008 15:07:10 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: netdev@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Jeff Garzik <jeff@garzik.org>, Jesse Barnes <jbarnes@virtuousgeek.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       "Brandeburg, Jesse" <jesse.brandeburg@intel.com>,
+       Stephen Hemminger <stephen.hemminger@vyatta.com>
+References: <200808142335.56644.rjw@sisk.pl> <20080814152318.625f8609@extreme> <200808151501.58315.rjw@sisk.pl>
+In-Reply-To: <200808151501.58315.rjw@sisk.pl>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Disposition: inline
+Message-Id: <200808151507.11580.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-08-15 at 03:39 +0200, Andi Kleen wrote:
-> > The async worker threads should be spreading the load across CPUs pretty
-> > well, and even a single CPU could keep up with 100MB/s checksumming.
-> > But, the async worker threads do randomize the IO somewhat because the
-> > IO goes from pdflush -> one worker thread per CPU -> submit_bio.  So,
-> > maybe that 3rd thread is more than the drive can handle?
-> 
-> You have more threads with duplication? 
-> 
-
-It was a very confusing use of the word thread.  I have the same number
-of kernel threads running, but the single spindle on the drive has to
-deal with 3 different streams of writes.  The seeks/sec portion of the
-graph shows a big enough increase in seeks on the duplication run to
-explain the performance.
-
-> > btrfsck tells me the total size of the btree is only 20MB larger with
-> > checksumming on.
+On Friday, 15 of August 2008, Rafael J. Wysocki wrote:
+> On Friday, 15 of August 2008, Stephen Hemminger wrote:
+> > On Thu, 14 Aug 2008 23:38:17 +0200
+> > "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
 > > 
-> > > > Btrfs no duplication            76.83 MB/s
-> > > > Btrfs no dup no csum no inline  76.85 MB/s
+> > > Adapt the sky2 driver to the reworked PCI PM
 > > > 
-> > > But without duplication they are basically free here at least
-> > > in IO rate. Seems odd?
+> > > * Use device_set_wakeup_enable() and friends as needed
+> > > * Remove an open-coded reference to the standard PCI PM registers
+> > > * Use pci_prepare_to_sleep() and pci_back_from_sleep() in the
+> > >   ->suspend() and ->resume() callbacks
+> > > * Use the observation that it is sufficient to call pci_enable_wake()
+> > >   once, unless it fails
 > > > 
-> > > Does it compute them twice in the duplication case perhaps?
+> > > Tested on Asus M3A32-MVP (Yukon-2 EC Ultra rev 3).
 > > > 
+> > > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> > > ---
+> > >  drivers/net/sky2.c |   34 ++++++++++------------------------
+> > >  1 file changed, 10 insertions(+), 24 deletions(-)
+> > > 
+> > > Index: linux-2.6/drivers/net/sky2.c
+> > > ===================================================================
+> > > --- linux-2.6.orig/drivers/net/sky2.c
+> > > +++ linux-2.6/drivers/net/sky2.c
+> > > @@ -3035,7 +3035,8 @@ static int sky2_set_wol(struct net_devic
+> > >  	struct sky2_port *sky2 = netdev_priv(dev);
+> > >  	struct sky2_hw *hw = sky2->hw;
+> > >  
+> > > -	if (wol->wolopts & ~sky2_wol_supported(sky2->hw))
+> > > +	if ((wol->wolopts & ~sky2_wol_supported(sky2->hw))
+> > > +	    || !device_can_wakeup(&hw->pdev->dev))
+> > >  		return -EOPNOTSUPP;
+> > >  
 > > 
-> > The duplication happens lower down in the stack, they only get done
-> > once.
+> > There was a regression in earlier releases caused because some BIOS's
+> > are wrong, and device can wakeup.
 > 
-> Ok was just speculation. The big difference still seems odd.
+> device_can_wakeup() returns 'true' if the device is capable of generating PME#
+> from at least one low power state (this is determined on the basis of the
+> contents of the device's PCI PM registers - please have a look at
+> drivers/pci/pci_pm_init() for details) or if ACPI tells us it can wake up.
 
-It does, I'll give the test a shot on other hardware too.  To be honest
-I'm pretty happy at matching ext4 with duplication on.  The graph shows
-even writeback and the times from each iteration are fairly consistent.
-
-Ext3 and XFS score somewhere between 10-15MB/s on the same test...
-
--chris
-
-
+drivers/pci/pci.c:pci_pm_init(), sorry.
