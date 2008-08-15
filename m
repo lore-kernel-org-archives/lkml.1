@@ -1,117 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759744AbYHORh5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760479AbYHORkY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759744AbYHORh5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Aug 2008 13:37:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754270AbYHORht
+	id S1760479AbYHORkY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Aug 2008 13:40:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753966AbYHORkL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Aug 2008 13:37:49 -0400
-Received: from 166-70-238-42.ip.xmission.com ([166.70.238.42]:42720 "EHLO
-	ns1.wolfmountaingroup.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753106AbYHORhs (ORCPT
+	Fri, 15 Aug 2008 13:40:11 -0400
+Received: from mail12.ca.com ([141.202.248.38]:20869 "EHLO mail12.ca.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753937AbYHORkK convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Aug 2008 13:37:48 -0400
-Message-ID: <1734.69.2.248.210.1218820443.squirrel@webmail.wolfmountaingroup.com>
-In-Reply-To: <1151.69.2.248.210.1218817564.squirrel@webmail.wolfmountaingroup.com>
-References: <200808140614.m7E6EcDS006264@wolfmountaingroup.com>   
-    <84144f020808140139v691e6590idd79995168af4e9e@mail.gmail.com>   
-    <44303.166.70.238.45.1218724556.squirrel@webmail.wolfmountaingroup.com>
-       <20080815122510.GF20442@elte.hu>   
-    <1763.69.2.248.210.1218815934.squirrel@webmail.wolfmountaingroup.com>  
-     <20080815163916.GB16560@elte.hu>
-    <1151.69.2.248.210.1218817564.squirrel@webmail.wolfmountaingroup.com>
-Date: Fri, 15 Aug 2008 11:14:03 -0600 (MDT)
-Subject: Re: [PATCH 2.6.27-rc3 26/29] mdb: export task_curr
-From: jmerkey@wolfmountaingroup.com
-To: jmerkey@wolfmountaingroup.com
-Cc: "Ingo Molnar" <mingo@elte.hu>, jmerkey@wolfmountaingroup.com,
-       "Pekka Enberg" <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org,
-       jason.wessel@windriver.com
-User-Agent: SquirrelMail/1.4.6
+	Fri, 15 Aug 2008 13:40:10 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [malware-list] TALPA - a threat model?  well sorta.
+Date: Fri, 15 Aug 2008 13:40:09 -0400
+Message-ID: <2629CC4E1D22A64593B02C43E855530304AE4C12@USILMS12.ca.com>
+In-Reply-To: <alpine.DEB.1.10.0808151032121.15109@asgard.lang.hm>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [malware-list] TALPA - a threat model?  well sorta.
+Thread-Index: Acj+/OSHPeHpqulKRsyriu2rE93OJwAACD9w
+References: <1218645375.3540.71.camel@localhost.localdomain><20080813103951.1e3e5827@infradead.org><1218653864.3540.109.camel@localhost.localdomain><20080813143908.38796217@infradead.org><1218723133.3540.137.camel@localhost.localdomain><48A55574.9070508@aitel.hist.no> <1218796645.10800.242.camel@twins> <2629CC4E1D22A64593B02C43E855530304AE4BF6@USILMS12.ca.com> <alpine.DEB.1.10.0808150924260.15109@asgard.lang.hm> <2629CC4E1D22A64593B02C43E855530304AE4C0C@USILMS12.ca.com> <alpine.DEB.1.10.0808151032121.15109@asgard.lang.hm>
+From: "Press, Jonathan" <Jonathan.Press@ca.com>
+To: <david@lang.hm>
+Cc: "Peter Zijlstra" <peterz@infradead.org>,
+       "Helge Hafting" <helge.hafting@aitel.hist.no>,
+       <linux-kernel@vger.kernel.org>, <malware-list@lists.printk.net>,
+       <hch@infradead.org>, <andi@firstfloor.org>, <viro@ZenIV.linux.org.uk>,
+       <alan@lxorguk.ukuu.org.uk>, "Arjan van de Ven" <arjan@infradead.org>
+X-OriginalArrivalTime: 15 Aug 2008 17:40:09.0556 (UTC) FILETIME=[F67BF940:01C8FEFD]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>
->> * jmerkey@wolfmountaingroup.com <jmerkey@wolfmountaingroup.com> wrote:
->>
->>> >
->>> > * jmerkey@wolfmountaingroup.com <jmerkey@wolfmountaingroup.com>
->>> wrote:
->>> >
->>> >> > On Thu, Aug 14, 2008 at 9:14 AM,  <jmerkey@wolfmountaingroup.com>
->>> >> wrote:
->>> >> >> export the task_curr function to the module based kernel debugger
->>> to
->>> >> >> enable
->>> >> >> process back tracing and state display.
->>> >> >>
->>> >> >> Signed-off-by: Jeffrey Vernon Merkey
->>> (jmerkey@wolfmountaingroup.com)
->>> >> >>
->>> >> >> --- a/kernel/sched.c    2008-08-13 14:22:32.000000000 -0600
->>> >> >> +++ b/kernel/sched.c    2008-08-13 11:56:03.000000000 -0600
->>> >> >> @@ -1736,6 +1736,9 @@
->>> >> >>  {
->>> >> >>        return cpu_curr(task_cpu(p)) == p;
->>> >> >>  }
->>> >> >> +#if defined(CONFIG_MDB_MODULE)
->>> >> >> +EXPORT_SYMBOL_GPL(task_curr);
->>> >> >> +#endif
->>> >> >
->>> >> > We usually don't export symbols conditionally, especially in core
->>> >> kernel
->>> >> > code.
->>> >> >
->>> >>
->>> >> Well,then please suggest how a kernel debugger can be module based
->>> and
->>> >> still be able to get this information some other way that's generic
->>> >> and minimal impact.
->>> >
->>> > FYI, there's a built-in kernel debugger in the upstream kernel
->>> already:
->>> > kernel/kgdb.c - and it does not need that export.
->>> >
->>> > So if you are interested in kernel debuggers i'd suggest to work with
->>> > the KGDB folks to extend it with whatever feature-set is missing.
->>> >
->>> > They are friendly, very easy to work with and are open to the
->>> > thousands-of-years-old scientific method of not duplicating effort,
->>> > working together, going forward gradually, etc.
->>> >
->>> > 	Ingo
->>> >
->>>
->>> Sorry, but I have my own path and direction, [...]
->>
->> doing things alone is your unalienable personal right, and since thus
->> you apparently didnt intend your patch to be included in the Linux
->> kernel that's as far as my interest in this as a maintainer goes.
->>
->> Thanks,
->>
->> 	Ingo
->>
+> -----Original Message-----
+> From: david@lang.hm [mailto:david@lang.hm]
+> Sent: Friday, August 15, 2008 1:33 PM
+> To: Press, Jonathan
+> Cc: Peter Zijlstra; Helge Hafting; linux-kernel@vger.kernel.org;
+malware-
+> list@lists.printk.net; hch@infradead.org; andi@firstfloor.org;
+> viro@ZenIV.linux.org.uk; alan@lxorguk.ukuu.org.uk; Arjan van de Ven
+> Subject: RE: [malware-list] TALPA - a threat model? well sorta.
+> 
+> On Fri, 15 Aug 2008, Press, Jonathan wrote:
+> 
+> >> -----Original Message-----
+> >> From: david@lang.hm [mailto:david@lang.hm]
+> >>> The problem is that you have to account for the cases where the
+malware
+> >>> made it onto the system even if you were trying to catch it ahead
+of
+> >>> time.  For example:
+> >>>
+> >>> - Administrator turns off or reduces AV protection for some reason
+for
+> >>> some period of time.  It happens all the time.
+> >>
+> >> according to the threat model actions of the administrator do not
+matter.
+> >
+> > Sorry, I don't know what you mean.
+> 
+> the threat model that was posted two days ago in the initial message
+of
+> this thread specificly stated that actions of root are not something
+that
+> this is trying to defend against.
+
+I think you may have missed the point of any such statement.
+
+Just to clarify...
+
+The model does not exclude root-owned processes from the notification
+and scanning sequence.  If root attempts to execute a file, that file
+would be scanned before the execution is allowed.  If a root-owned
+process attempts to open a file, that access would be blocked until the
+file is scanned.  If a root-owned process closes a file that has been
+written to, that file would be scanned.
+
+In addition, to generalize from the incorrect idea that the actions of
+root are not being defended against to the idea that the possible
+impacts of an administrator's actions in configuring an application
+should not be accounted for at all in our thinking doesn't make sense to
+me anyway.
 
 
-I removed the export from this file and will resubmit the patch series. 
-This will remove you from the decision list for this patch series.  What
-other files do you claim to maintain so I can make certain remove them
-from my patches?
-
-I can get the variable some other way.
-
-:-)
-
-Thanks
-
-Jeff
-
+Jon Press
 
 
 
