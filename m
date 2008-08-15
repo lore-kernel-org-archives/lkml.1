@@ -1,75 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761002AbYHORrZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760155AbYHORzM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761002AbYHORrZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Aug 2008 13:47:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760823AbYHORrP
+	id S1760155AbYHORzM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Aug 2008 13:55:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755180AbYHORy5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Aug 2008 13:47:15 -0400
-Received: from outbound-mail-02.bluehost.com ([69.89.21.12]:52433 "HELO
-	outbound-mail-02.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754449AbYHORrO (ORCPT
+	Fri, 15 Aug 2008 13:54:57 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:10512 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754583AbYHORy4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Aug 2008 13:47:14 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
-	b=awwnMR6aL17y72efeSpEYB2eNEH2MH1exAU+db3DlTzuvH5qMeXMREapb1H0ZkCcBakTs6JFC41fSOS2bf2Sjgqb9f+TsbzYdIN0/5yIc7jPCJJhvCllLEPUTU4ZL2Oj;
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Jean Delvare <khali@linux-fr.org>
-Subject: Re: [PATCH/RFC] pci: dynids.use_driver_data considered harmful
-Date: Fri, 15 Aug 2008 10:46:59 -0700
-User-Agent: KMail/1.9.9
-Cc: Greg KH <greg@kroah.com>, Milton Miller <miltonm@bga.com>,
-       Michael Ellerman <michael@ellerman.id.au>,
+	Fri, 15 Aug 2008 13:54:56 -0400
+Subject: Re: Btrfs v0.16 released
+From: Chris Mason <chris.mason@oracle.com>
+To: Theodore Tso <tytso@mit.edu>
+Cc: Andi Kleen <andi@firstfloor.org>, Peter Zijlstra <peterz@infradead.org>,
+       linux-btrfs <linux-btrfs@vger.kernel.org>,
        linux-kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-pci@vger.kernel.org
-References: <for-27-patch1-0@bga.com> <20080814221214.GG30057@kroah.com> <20080815175014.2e005377@hyperion.delvare>
-In-Reply-To: <20080815175014.2e005377@hyperion.delvare>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>
+In-Reply-To: <20080815134545.GM13048@mit.edu>
+References: <1217962876.15342.33.camel@think.oraclecorp.com>
+	 <1218100464.8625.9.camel@twins>
+	 <1218105597.15342.189.camel@think.oraclecorp.com>
+	 <877ias66v4.fsf@basil.nowhere.org>
+	 <1218221293.15342.263.camel@think.oraclecorp.com>
+	 <1218747656.15342.439.camel@think.oraclecorp.com>
+	 <20080814234458.GD13048@mit.edu>
+	 <1218762627.15342.447.camel@think.oraclecorp.com>
+	 <1218804361.15342.470.camel@think.oraclecorp.com>
+	 <20080815134545.GM13048@mit.edu>
+Content-Type: text/plain
+Date: Fri, 15 Aug 2008 13:52:52 -0400
+Message-Id: <1218822772.15342.503.camel@think.oraclecorp.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200808151046.59590.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > It's pretty "trivial" to look to see if the field is set in the pci_id
-> > structure, that should be all that is needed, right?
->
-> Well... If you consider that all drivers using the driver_data field
-> should have the dynids.use_driver_data flag set unconditionally and
-> without looking at the code, then in fact you agree with Milton and
-> myself that this flag should be dropped. The whole point of the flag,
-> if my guess is correct, was to hint the developer that he/she should
-> double check his/her code before setting the flag. If you set it for
-> all these drivers, then all it does is preventing users from passing a
-> driver_data value to drivers which do _not_ use the driver_data... but
-> doing that has zero effect at the moment, so that wouldn't actually be
-> any different from dropping dynids.use_driver_data altogether.
->
-> So I have to reiterate my support to Milton's idea of dropping
-> the dynids.use_driver_data flag. It does more harm than good.
+On Fri, 2008-08-15 at 09:45 -0400, Theodore Tso wrote:
+> On Fri, Aug 15, 2008 at 08:46:01AM -0400, Chris Mason wrote:
+> > Whoops the link above is wrong, try:
+> > 
+> > http://oss.oracle.com/~mason/compilebench
+> 
+> Thanks, I figured it out.
+> 
+> > It is worth noting that the end throughput doesn't matter quite as much
+> > as the writeback pattern.  Ext4 is pretty solid on this test, with very
+> > consistent results.
+> 
+> There were two reasons why I wanted to play with compilebench.  The
+> first is we have a fragmentation problem with delayed allocation and
+> small files getting forced out due to memory pressure, that we've been
+> working for the past week. 
 
-Yeah it doesn't seem to be very heavily used at this point. :)
+Have you tried this one:
 
-I see around 400 uses of id->driver_data right now, and only 2 of 
-use_driver_data.  If we remove the use_driver_data field, drivers (except for 
-the 2 using the field) will start to see whatever values userspace passes to 
-them rather than 0, and at least in some of the few cases I looked at that 
-could cause breakage due to out of bounds references.
+http://article.gmane.org/gmane.linux.file-systems/25560
 
-So I think your point about dynamic IDs in general is a good one; this flag 
-really does look like an "audit was done" bit, but doesn't go as far is it 
-should.
+This bug should cause fragmentation on small files getting forced out
+due to memory pressure in ext4.  But, I wasn't able to really
+demonstrate it with ext4 on my machine.
 
-The patch you posted to forbid dynamic binding unless use_driver_data is iset 
-is probably the safest thing to do, given that drivers that *don't* set 
-use_driver_data look like they might misbehave even with a driver_data value 
-of 0...
+-chris
 
-What do you think, Greg?  Convinced yet? :)
 
-Thanks,
-Jesse
+
