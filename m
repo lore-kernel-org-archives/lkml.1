@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757549AbYHOIvq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757912AbYHOIwV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757549AbYHOIvq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Aug 2008 04:51:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753761AbYHOIvi
+	id S1757912AbYHOIwV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Aug 2008 04:52:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753011AbYHOIwN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Aug 2008 04:51:38 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:60718 "EHLO mx3.mail.elte.hu"
+	Fri, 15 Aug 2008 04:52:13 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:60801 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753472AbYHOIvh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Aug 2008 04:51:37 -0400
-Date: Fri, 15 Aug 2008 10:51:20 +0200
+	id S1750790AbYHOIwM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Aug 2008 04:52:12 -0400
+Date: Fri, 15 Aug 2008 10:51:56 +0200
 From: Ingo Molnar <mingo@elte.hu>
 To: Yinghai Lu <yhlu.kernel@gmail.com>
 Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
        "Eric W. Biederman" <ebiederm@xmission.com>,
        Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 00/07] dyn_array/nr_irqs/sparse_irq support v10 - fix
-Message-ID: <20080815085120.GA18748@elte.hu>
-References: <1218766832-20476-1-git-send-email-yhlu.kernel@gmail.com> <20080815082735.GC4776@elte.hu> <86802c440808150134x5bf005fmdcb0f557422af365@mail.gmail.com>
+Subject: Re: [PATCH 3/7] x86: make 32bit support per_cpu vector fix #1
+Message-ID: <20080815085156.GB18748@elte.hu>
+References: <1218766832-20476-1-git-send-email-yhlu.kernel@gmail.com> <1218766832-20476-2-git-send-email-yhlu.kernel@gmail.com> <1218766832-20476-3-git-send-email-yhlu.kernel@gmail.com> <1218766832-20476-4-git-send-email-yhlu.kernel@gmail.com> <20080815082147.GB4776@elte.hu> <86802c440808150129v6474bf66mc329c46129c24e3c@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <86802c440808150134x5bf005fmdcb0f557422af365@mail.gmail.com>
+In-Reply-To: <86802c440808150129v6474bf66mc329c46129c24e3c@mail.gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -38,48 +38,25 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 * Yinghai Lu <yhlu.kernel@gmail.com> wrote:
 
-> On Fri, Aug 15, 2008 at 1:27 AM, Ingo Molnar <mingo@elte.hu> wrote:
+> On Fri, Aug 15, 2008 at 1:21 AM, Ingo Molnar <mingo@elte.hu> wrote:
 > >
 > > * Yinghai Lu <yhlu.kernel@gmail.com> wrote:
 > >
-> >>       fix the 32bit with bigsmp
-> >>       fix 64 bit with irq migration
-> >>       ordering functions in io_apic_xx.c
-> >>
-> >>
-> >> to do:
-> >>     merge io_apic_xx.c
+> >> +#ifdef CONFIG_SMP
+> >> +        return cpu_online_map;
+> >> +#else
+> >> +        return cpumask_of_cpu(0);
+> >> +#endif
 > >
-> > applied to tip/irq/sparseirq - thanks Yinghai, great work!
-> >
-> > What do you think about Eric's abstraction suggestion, that irq_desc's
-> > structure should be hidden from all but kernel/irq/* code. I think
-> > that's a sane suggestion. We do it in mm/slab.c too: no external code
-> > knows the structure of 'struct kmem_cache'.
+> > unrelated sidenote - shouldnt the scheduler define cpu_online_map to
+> > cpumask_of_cpu(0) on UP, to avoid such ugly #ifdefs?
 > 
-> current arch code use irq_desc directly..., if need to irq_desc to 
-> them, need to provide set_irq(..., ...)
+> copy that from mach_default...
 
-that's ok - we can do include/linux/irq_desc.h that isnt generally 
-included by drivers via interrupt.h. Then later on we can eliminate that 
-include file altogether.
+sure, that's the right approach - preserve existing code to reduce risk.
 
-here's the current field usage histogram:
+> should double check if cpu_online_map is cpu_mask_of_cpu(0) if !CONFIG_SMP
 
-      3 desc->action
-      3 desc->depth
-      9 desc->affinity
-     15 desc->chip
-     22 desc->status
-
-desc->status: mostly IRQ_MOVE_PENDING related. irq-balancing code should 
-be abstracted into kernel/irq/* perhaps?
-
-desc->action / desc->depth / desc->action: i dont think those should be 
-accessed by genirq arch irq code.
-
-desc->chip: there's a get_irq_chip() method already. irq_chip is 
-something that obviously is known to architecture code - it's the irq 
-controller 'driver' that the architecture code provides.
+yeah. Separate clean-up patch i think.
 
 	Ingo
