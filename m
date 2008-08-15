@@ -1,49 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754810AbYHOHKy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755811AbYHOHPb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754810AbYHOHKy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Aug 2008 03:10:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751711AbYHOHKp
+	id S1755811AbYHOHPb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Aug 2008 03:15:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751849AbYHOHPX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Aug 2008 03:10:45 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:1460 "EHLO spitz.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751635AbYHOHKp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Aug 2008 03:10:45 -0400
-Date: Thu, 14 Aug 2008 13:12:10 +0200
-From: Pavel Machek <pavel@suse.cz>
-To: Kenneth Goldman <kgoldman@us.ibm.com>
-Cc: Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org, Mimi Zohar <zohar@us.ibm.com>
-Subject: Re: [PATCH 1/4] integrity: TPM internel kernel interface
-Message-ID: <20080814111210.GI6995@ucw.cz>
-References: <20080812193031.GD18034@infradead.org> <OF6C940C00.249617D7-ON852574A3.0071F8B0-852574A3.00732160@us.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 15 Aug 2008 03:15:23 -0400
+Received: from mx1.suse.de ([195.135.220.2]:54236 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750953AbYHOHPW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Aug 2008 03:15:22 -0400
+From: Oliver Neukum <oneukum@suse.de>
+Organization: Novell
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [linux-pm] Power management for SCSI
+Date: Fri, 15 Aug 2008 09:16:23 +0200
+User-Agent: KMail/1.9.9
+Cc: Pavel Machek <pavel@suse.cz>, linux-pm@lists.linux-foundation.org,
+       James.Bottomley@hansenpartnership.com,
+       "Linux-pm mailing list" <linux-pm@lists.osdl.org>,
+       kernel list <linux-kernel@vger.kernel.org>, teheo@novell.com
+References: <Pine.LNX.4.44L0.0808141819470.2148-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0808141819470.2148-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <OF6C940C00.249617D7-ON852574A3.0071F8B0-852574A3.00732160@us.ibm.com>
-User-Agent: Mutt/1.5.9i
+Message-Id: <200808150916.24258.oneukum@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
-
-> > And what happens when the chip simply goes away due to a hotplug action?
-> > Or not even the actual chip goes away but just the chip driver and you
-> > now dereference freed memory?
+Am Freitag 15 August 2008 00:25:28 schrieb Alan Stern:
+> On Thu, 14 Aug 2008, Oliver Neukum wrote:
 > 
-> Being a TCG/TPM person, I can only address the first question.  The
-> intent is that the TPM is soldered to the planar/motherboard (the TCG
-> uses the phrase "bound to the platform").  I can't imagine
-> any manufacturer designing a pluggable TPM.  It would subvert PCR
+> > The core problem is that you insist on a rigid bottom-to-top flow of
+> > autosuspensions. That's good for systems like USB and PCI which
+> > are trees for PM purposes. It makes no sense for true busses with
+> > equal members on the bus.
+> 
+> My framework is tree-oriented because it's based on the driver model, 
+> which uses a tree of devices.
 
-Only 2 TPMs I've seen were on pluggable modules... which was fortunate
-because they slowed down boot by 5+ minutes, and broke it completely
-in other cases. Nickname 'kurvitko' (aka useless trash that breaks
-stuff). They are currently lying under my table, disconnected.
+Which uses a tree because PCI and USB are.
 
-(OTOH they were not on PCI, but on some low-count pin header).
-							Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+> Even on a true bus, the members can't be entirely equal -- one of them 
+> has to be closer to the CPU than the others are.  If that one member is 
+> in a low-power state then the CPU can't communicate with anything on 
+> the bus, unlike when one of the other members is in a low-power state.
+
+Yes, that means under some circumstances you cannot suspend the
+member closest to the CPU, but under others you can. In a tree this question
+is very simply answered, on a bus you will actually need to compute whether
+you need the connection to the bus.
+
+It is true that you won't need the bus if all other members on the bus have
+been suspended, but that's not very good because physically spinning
+down and up a disk is a very expensive operation, while suspending a host
+adapter can be trivial.
+
+	Regards
+		Oliver
