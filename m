@@ -1,63 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757460AbYHOWZQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757792AbYHOW3g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757460AbYHOWZQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Aug 2008 18:25:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753550AbYHOWZE
+	id S1757792AbYHOW3g (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Aug 2008 18:29:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752143AbYHOW32
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Aug 2008 18:25:04 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:41685
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753468AbYHOWZB (ORCPT
+	Fri, 15 Aug 2008 18:29:28 -0400
+Received: from casper.infradead.org ([85.118.1.10]:40178 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751600AbYHOW31 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Aug 2008 18:25:01 -0400
-Date: Fri, 15 Aug 2008 15:25:01 -0700 (PDT)
-Message-Id: <20080815.152501.193746275.davem@davemloft.net>
-To: michael@ellerman.id.au
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: bug in lmb_enforce_memory_limit()
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1218713213.10673.17.camel@localhost>
-References: <20080814.012004.193702132.davem@davemloft.net>
-	<1218713213.10673.17.camel@localhost>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Fri, 15 Aug 2008 18:29:27 -0400
+Date: Fri, 15 Aug 2008 15:29:38 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: linux-kernel@vger.kernel.org
+Cc: mingo@elte.hu
+Subject: PATCH] debug: add notifier chain debugging
+Message-ID: <20080815152938.4bc9d48c@infradead.org>
+Organization: Intel
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Michael Ellerman <michael@ellerman.id.au>
-Date: Thu, 14 Aug 2008 21:26:53 +1000
+From: Arjan van de Ven <arjan@linux.intel.com>
+Subject: [PATCH] debug: add notifier chain debugging
 
-> Perhaps after the first loop we should set memory_limit to equal
-> lmb_end_of_DRAM(), then the second loop should work as it is.
+during some development we suspected a case where we left something
+in a notifier chain that was from a module that was unloaded already...
+and that sort of thing is rather hard to track down.
 
-Sounds great.  Mind if I push the following to Linus?
+This patch adds a very simple sanity check (which isn't all that
+expensive) to make sure the notifier we're about to call is
+actually from either the kernel itself of from a still-loaded
+module, avoiding a hard-to-chase-down crash.
 
-lmb: Fix reserved region handling in lmb_enforce_memory_limit().
+Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
+---
+ kernel/notifier.c |   16 ++++++++++++++++
+ lib/Kconfig.debug |   10 ++++++++++
+ 2 files changed, 26 insertions(+), 0 deletions(-)
 
-The idea of the implementation of this fix is from Michael Ellerman.
-
-This function has two loops, but they each interpret the memory_limit
-value differently.  The first loop interprets it as a "size limit"
-whereas the second loop interprets it as an "address limit".
-
-Before the second loop runs, reset memory_limit to lmb_end_of_DRAM()
-so that it all works out.
-
-Signed-off-by: David S. Miller <davem@davemloft.net>
-
-diff --git a/lib/lmb.c b/lib/lmb.c
-index 5d7b928..97e5470 100644
---- a/lib/lmb.c
-+++ b/lib/lmb.c
-@@ -462,6 +462,8 @@ void __init lmb_enforce_memory_limit(u64 memory_limit)
- 	if (lmb.memory.region[0].size < lmb.rmo_size)
- 		lmb.rmo_size = lmb.memory.region[0].size;
+diff --git a/kernel/notifier.c b/kernel/notifier.c
+index 823be11..143fdd7 100644
+--- a/kernel/notifier.c
++++ b/kernel/notifier.c
+@@ -21,6 +21,10 @@ BLOCKING_NOTIFIER_HEAD(reboot_notifier_list);
+ static int notifier_chain_register(struct notifier_block **nl,
+ 		struct notifier_block *n)
+ {
++	if (!kernel_text_address((unsigned long)n->notifier_call)) {
++		WARN(1, "Invalid notifier registered!");
++		return 0;
++	}
+ 	while ((*nl) != NULL) {
+ 		if (n->priority > (*nl)->priority)
+ 			break;
+@@ -34,6 +38,10 @@ static int notifier_chain_register(struct notifier_block **nl,
+ static int notifier_chain_cond_register(struct notifier_block **nl,
+ 		struct notifier_block *n)
+ {
++	if (!kernel_text_address((unsigned long)n->notifier_call)) {
++		WARN(1, "Invalid notifier registered!");
++		return 0;
++	}
+ 	while ((*nl) != NULL) {
+ 		if ((*nl) == n)
+ 			return 0;
+@@ -82,6 +90,14 @@ static int __kprobes notifier_call_chain(struct notifier_block **nl,
  
-+	memory_limit = lmb_end_of_DRAM();
+ 	while (nb && nr_to_call) {
+ 		next_nb = rcu_dereference(nb->next);
 +
- 	/* And truncate any reserves above the limit also. */
- 	for (i = 0; i < lmb.reserved.cnt; i++) {
- 		p = &lmb.reserved.region[i];
++#ifdef CONFIG_DEBUG_NOTIFIERS
++		if (!kernel_text_address((unsigned long)nb->notifier_call)) {
++			WARN(1, "Invalid notifier called!");
++			nb = next_nb;
++			continue;
++		}
++#endif
+ 		ret = nb->notifier_call(nb, val, v);
+ 
+ 		if (nr_calls)
+diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
+index 800ac84..f4bb36e 100644
+--- a/lib/Kconfig.debug
++++ b/lib/Kconfig.debug
+@@ -536,6 +536,16 @@ config DEBUG_SG
+ 
+ 	  If unsure, say N.
+ 
++config DEBUG_NOTIFIERS
++	bool "Debug notifier call chains"
++	depends on DEBUG_KERNEL
++	help
++	  Enable this to turn on sanity checking for notifier call chains.
++	  This is most useful for kernel developers to make sure that
++	  modules properly unregister themselves from notifier chains.
++	  This is a relatively cheap check but if you care about maximum
++	  performance, say N.
++
+ config FRAME_POINTER
+ 	bool "Compile the kernel with frame pointers"
+ 	depends on DEBUG_KERNEL && \
+-- 
+1.5.5.1
+
