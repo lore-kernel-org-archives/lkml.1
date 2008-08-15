@@ -1,268 +1,290 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757326AbYHOIkv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757321AbYHOIrZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757326AbYHOIkv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Aug 2008 04:40:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753141AbYHOIkn
+	id S1757321AbYHOIrZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Aug 2008 04:47:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753313AbYHOIrR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Aug 2008 04:40:43 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:50104 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753011AbYHOIkl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Aug 2008 04:40:41 -0400
-Date: Fri, 15 Aug 2008 18:40:32 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: linux-next@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: linux-next: Tree for August 15
-Message-Id: <20080815184032.3acd8032.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Fri__15_Aug_2008_18_40_32_+1000_fxVuH2YUju1ndoy3"
+	Fri, 15 Aug 2008 04:47:17 -0400
+Received: from nwd2mail10.analog.com ([137.71.25.55]:56897 "EHLO
+	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753306AbYHOIrQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Aug 2008 04:47:16 -0400
+X-IronPort-AV: E=Sophos;i="4.32,214,1217822400"; 
+   d="scan'208";a="73536677"
+From: Bryan Wu <cooloney@kernel.org>
+To: alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org
+Cc: Harvey Harrison <harvey.harrison@gmail.com>,
+       Bryan Wu <cooloney@kernel.org>
+Subject: [PATCH 1/1] Blackfin SPORTS UART Drvier: __FUNCTION__ is gcc-specific, use __func__
+Date: Fri, 15 Aug 2008 16:40:01 +0800
+Message-Id: <1218789601-10443-1-git-send-email-cooloney@kernel.org>
+X-Mailer: git-send-email 1.5.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Fri__15_Aug_2008_18_40_32_+1000_fxVuH2YUju1ndoy3
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+From: Harvey Harrison <harvey.harrison@gmail.com>
 
-Hi all,
+Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+Signed-off-by: Bryan Wu <cooloney@kernel.org>
+---
+ drivers/serial/bfin_sport_uart.c |   60 +++++++++++++++++++-------------------
+ 1 files changed, 30 insertions(+), 30 deletions(-)
 
-Changes since next-20080814:
-
-New trees: oprofile and fastboot.
-
-The tip-core tree lost its conflict.
-
-The cpus4096 tree lost its conflict.
-
-The ftrace tree gained a conflict against the driver-core tree and a
-build failure required the revert of a commit.
-
-The stackprotector tree gained a conflict against the ftrace tree.
-
-The x86 tree gained a conflict against the stackprotector tree but lost
-two conflicts and a build fix patch.
-
-The kvm tree gained a conflict against the x86 tree.
-
-The test tree gained a conflict against the sched tree.
-
-The kmemcheck tree gained two conflicts against the x86 tree.
-
-The hdlc tree lost its build fix patch.
-
-The creds tree gained a conflict against the ftrace tree (and several
-against Linus' tree - but they were expected).
-
-The fastboot tree gained a conflist against the driver-core tree.
-
-I have also applied the following patches for known problems:
-
-	Add cuImage.mpc866ads to the bootwrapper as a cuboot-8xx target
-	ath9k: work around gcc ICE again
-	driver-core: don't export static functions
-
-----------------------------------------------------------------------------
-
-I have created today's linux-next tree at
-git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
-(patches at
-http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/).  If you
-are tracking the linux-next tree using git, you should not use "git pull"
-to do so as that will try to merge the new linux-next release with the
-old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
-(see below).
-
-You can see which trees have been included by looking in the Next/Trees
-file in the source.  There are also quilt-import.log and merge.log files
-in the Next directory.  Between each merge, the tree was built with
-a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
-final fixups, it is also built with powerpc allnoconfig,
-44x_defconfig and allyesconfig and i386, sparc and sparc64 defconfig.
-
-Below is a summary of the state of the merge.
-
-We are up to 110 trees (counting Linus' and 14 trees of patches pending for
-Linus' tree), more are welcome (even if they are currently empty).
-Thanks to those who have contributed, and to those who haven't, please do.
-
-Status of my local build tests will be at
-http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
-advice about cross compilers/configs that work, we are always open to add
-more builds.
-
-Thanks to Jan Dittmer for adding the linux-next tree to his build tests
-at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
-Dunlap for doing many randconfig builds.
-
-There is a wiki covering stuff to do with linux-next at
-http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
-$ git checkout master
-$ git reset --hard stable
-Merging origin/master
-Merging powerpc-merge/merge
-Merging scsi-rc-fixes/master
-Merging net-current/master
-Merging sparc-current/master
-Merging sound-current/for-linus
-Merging arm-current/master
-CONFLICT (content): Merge conflict in drivers/watchdog/at91rm9200_wdt.c
-Merging pci-current/for-linus
-Merging wireless-current/master
-Merging kbuild-current/master
-Merging quilt/driver-core.current
-Merging quilt/usb.current
-Merging cpufreq-current/fixes
-Merging input-current/for-linus
-Merging md-current/for-2.6.26
-Merging dwmw2/master
-Merging quilt/driver-core
-Merging quilt/usb
-Merging tip-core/auto-core-next
-Merging cpus4096/auto-cpus4096-next
-Merging ftrace/auto-ftrace-next
-CONFLICT (content): Merge conflict in kernel/module.c
-Created commit b82f4d2: Revert "ftrace: do not trace NMI contexts"
-Merging genirq/auto-genirq-next
-Merging safe-poison-pointers/auto-safe-poison-pointers-next
-Merging sched/auto-sched-next
-Merging stackprotector/auto-stackprotector-next
-CONFLICT (content): Merge conflict in kernel/fork.c
-Merging timers/auto-timers-next
-Merging x86/auto-x86-next
-CONFLICT (content): Merge conflict in include/asm-x86/pda.h
-Merging pci/linux-next
-Merging quilt/device-mapper
-Merging hid/mm
-Merging quilt/i2c
-Merging quilt/jdelvare-hwmon
-Merging quilt/kernel-doc
-Merging avr32/avr32-arch
-Merging v4l-dvb/stable
-Merging s390/features
-Merging sh/master
-Merging jfs/next
-Merging kbuild/master
-Merging quilt/ide
-Merging libata/NEXT
-Merging nfs/linux-next
-Merging xfs/master
-Merging infiniband/for-next
-Merging acpi/test
-Applying acpi: missing status declaration in acer-wmi.c
-Merging blackfin/for-linus
-Merging nfsd/nfsd-next
-Merging ieee1394/for-next
-Merging ubi/linux-next
-Merging kvm/master
-CONFLICT (content): Merge conflict in include/asm-x86/kvm.h
-Merging dlm/next
-Merging scsi/master
-Merging ia64/test
-Merging tests/master
-CONFLICT (content): Merge conflict in lib/Kconfig.debug
-Merging ocfs2/linux-next
-Merging quilt/m68k
-Merging powerpc/powerpc-next
-Merging ext4/next
-Merging 4xx/next
-Merging async_tx/next
-Merging udf/for_next
-Merging net/master
-Merging sparc/master
-Merging galak/powerpc-next
-Merging mtd/master
-Merging wireless/master
-Merging crypto/master
-CONFLICT (content): Merge conflict in include/asm-x86/cpufeature.h
-Merging vfs/for-next
-CONFLICT (content): Merge conflict in fs/nfsd/export.c
-CONFLICT (content): Merge conflict in fs/xfs/linux-2.6/xfs_export.c
-CONFLICT (content): Merge conflict in fs/xfs/linux-2.6/xfs_iops.c
-Merging sound/for-next
-Merging arm/devel
-Merging cpufreq/next
-Merging v9fs/for-next
-Merging quilt/rr
-Merging cifs/master
-Merging mmc/next
-Merging gfs2/master
-Merging input/next
-Merging semaphore/semaphore
-Merging semaphore-removal/semaphore-removal
-Merging bkl-removal/bkl-removal
-Merging trivial/next
-CONFLICT (content): Merge conflict in Documentation/edac.txt
-CONFLICT (content): Merge conflict in include/linux/securebits.h
-Merging ubifs/linux-next
-Merging lsm/for-next
-Merging block/for-next
-Merging embedded/master
-Merging firmware/master
-CONFLICT (content): Merge conflict in drivers/media/dvb/ttpci/Kconfig
-CONFLICT (content): Merge conflict in drivers/media/dvb/ttpci/Makefile
-Merging pcmcia/master
-Merging battery/master
-Merging leds/for-mm
-Merging backlight/for-mm
-Merging kgdb/kgdb-next
-Merging slab/for-next
-Merging m68knommu/for-next
-Merging uclinux/for-next
-Merging md/for-next
-Merging cris/for-next
-Merging kmemcheck/auto-kmemcheck-next
-CONFLICT (content): Merge conflict in MAINTAINERS
-CONFLICT (content): Merge conflict in arch/x86/kernel/process_64.c
-CONFLICT (content): Merge conflict in arch/x86/kernel/traps_64.c
-CONFLICT (content): Merge conflict in mm/Makefile
-CONFLICT (content): Merge conflict in mm/slab.c
-Merging generic-ipi/auto-generic-ipi-next
-Merging mips/mips-for-linux-next
-Merging mfd/for-next
-Merging hdlc/hdlc-next
-Merging drm/drm-next
-Merging voltage/reg-for-linus
-Merging security-testing/next
-Merging lblnet/master
-Merging quilt/ttydev
-CONFLICT (content): Merge conflict in drivers/net/usb/hso.c
-CONFLICT (content): Merge conflict in drivers/usb/class/cdc-acm.c
-Merging agp/agp-next
-Merging creds/next-creds
-CONFLICT (content): Merge conflict in fs/namespace.c
-CONFLICT (content): Merge conflict in fs/nfsd/nfs4recover.c
-CONFLICT (content): Merge conflict in fs/xfs/linux-2.6/xfs_linux.h
-CONFLICT (content): Merge conflict in fs/xfs/xfs_inode.c
-CONFLICT (content): Merge conflict in fs/xfs/xfs_vnodeops.c
-CONFLICT (add/add): Merge conflict in include/linux/cred.h
-CONFLICT (content): Merge conflict in kernel/exit.c
-CONFLICT (content): Merge conflict in kernel/fork.c
-Merging oprofile/auto-oprofile-next
-Merging fastboot/auto-fastboot-next
-CONFLICT (content): Merge conflict in include/linux/init.h
-Applying Add cuImage.mpc866ads to the bootwrapper as a cuboot-8xx target
-Applying ath9k: work around gcc ICE again
-Applying driver-core: don't export static functions
-
---Signature=_Fri__15_Aug_2008_18_40_32_+1000_fxVuH2YUju1ndoy3
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkilQQAACgkQjjKRsyhoI8x3IQCgtwYrzvTYIjlmxE10Go0ZGljZ
-So0An1C7a7Tot35nBV3uTgXGfwqq8vGY
-=eNI9
------END PGP SIGNATURE-----
-
---Signature=_Fri__15_Aug_2008_18_40_32_+1000_fxVuH2YUju1ndoy3--
+diff --git a/drivers/serial/bfin_sport_uart.c b/drivers/serial/bfin_sport_uart.c
+index dd8564d..529c0ff 100644
+--- a/drivers/serial/bfin_sport_uart.c
++++ b/drivers/serial/bfin_sport_uart.c
+@@ -99,7 +99,7 @@ static void sport_stop_tx(struct uart_port *port);
+ 
+ static inline void tx_one_byte(struct sport_uart_port *up, unsigned int value)
+ {
+-	pr_debug("%s value:%x\n", __FUNCTION__, value);
++	pr_debug("%s value:%x\n", __func__, value);
+ 	/* Place a Start and Stop bit */
+ 	__asm__ volatile (
+ 		"R2 = b#01111111100;\n\t"
+@@ -110,7 +110,7 @@ static inline void tx_one_byte(struct sport_uart_port *up, unsigned int value)
+ 		:"=r"(value)
+ 		:"0"(value)
+ 		:"R2", "R3");
+-	pr_debug("%s value:%x\n", __FUNCTION__, value);
++	pr_debug("%s value:%x\n", __func__, value);
+ 
+ 	SPORT_PUT_TX(up, value);
+ }
+@@ -120,7 +120,7 @@ static inline unsigned int rx_one_byte(struct sport_uart_port *up)
+ 	unsigned int value, extract;
+ 
+ 	value = SPORT_GET_RX32(up);
+-	pr_debug("%s value:%x\n", __FUNCTION__, value);
++	pr_debug("%s value:%x\n", __func__, value);
+ 
+ 	/* Extract 8 bits data */
+ 	__asm__ volatile (
+@@ -151,12 +151,12 @@ static int sport_uart_setup(struct sport_uart_port *up, int sclk, int baud_rate)
+ 	/* Set TCR1 and TCR2 */
+ 	SPORT_PUT_TCR1(up, (LTFS | ITFS | TFSR | TLSBIT | ITCLK));
+ 	SPORT_PUT_TCR2(up, 10);
+-	pr_debug("%s TCR1:%x, TCR2:%x\n", __FUNCTION__, SPORT_GET_TCR1(up), SPORT_GET_TCR2(up));
++	pr_debug("%s TCR1:%x, TCR2:%x\n", __func__, SPORT_GET_TCR1(up), SPORT_GET_TCR2(up));
+ 
+ 	/* Set RCR1 and RCR2 */
+ 	SPORT_PUT_RCR1(up, (RCKFE | LARFS | LRFS | RFSR | IRCLK));
+ 	SPORT_PUT_RCR2(up, 28);
+-	pr_debug("%s RCR1:%x, RCR2:%x\n", __FUNCTION__, SPORT_GET_RCR1(up), SPORT_GET_RCR2(up));
++	pr_debug("%s RCR1:%x, RCR2:%x\n", __func__, SPORT_GET_RCR1(up), SPORT_GET_RCR2(up));
+ 
+ 	tclkdiv = sclk/(2 * baud_rate) - 1;
+ 	tfsdiv = 12;
+@@ -166,7 +166,7 @@ static int sport_uart_setup(struct sport_uart_port *up, int sclk, int baud_rate)
+ 	SPORT_PUT_RCLKDIV(up, rclkdiv);
+ 	SSYNC();
+ 	pr_debug("%s sclk:%d, baud_rate:%d, tclkdiv:%d, tfsdiv:%d, rclkdiv:%d\n",
+-			__FUNCTION__, sclk, baud_rate, tclkdiv, tfsdiv, rclkdiv);
++			__func__, sclk, baud_rate, tclkdiv, tfsdiv, rclkdiv);
+ 
+ 	return 0;
+ }
+@@ -231,7 +231,7 @@ static int sport_startup(struct uart_port *port)
+ 	char buffer[20];
+ 	int retval;
+ 
+-	pr_debug("%s enter\n", __FUNCTION__);
++	pr_debug("%s enter\n", __func__);
+ 	memset(buffer, 20, '\0');
+ 	snprintf(buffer, 20, "%s rx", up->name);
+ 	retval = request_irq(up->rx_irq, sport_uart_rx_irq, IRQF_SAMPLE_RANDOM, buffer, up);
+@@ -320,7 +320,7 @@ static unsigned int sport_tx_empty(struct uart_port *port)
+ 	unsigned int stat;
+ 
+ 	stat = SPORT_GET_STAT(up);
+-	pr_debug("%s stat:%04x\n", __FUNCTION__, stat);
++	pr_debug("%s stat:%04x\n", __func__, stat);
+ 	if (stat & TXHRE) {
+ 		return TIOCSER_TEMT;
+ 	} else
+@@ -329,13 +329,13 @@ static unsigned int sport_tx_empty(struct uart_port *port)
+ 
+ static unsigned int sport_get_mctrl(struct uart_port *port)
+ {
+-	pr_debug("%s enter\n", __FUNCTION__);
++	pr_debug("%s enter\n", __func__);
+ 	return (TIOCM_CTS | TIOCM_CD | TIOCM_DSR);
+ }
+ 
+ static void sport_set_mctrl(struct uart_port *port, unsigned int mctrl)
+ {
+-	pr_debug("%s enter\n", __FUNCTION__);
++	pr_debug("%s enter\n", __func__);
+ }
+ 
+ static void sport_stop_tx(struct uart_port *port)
+@@ -343,7 +343,7 @@ static void sport_stop_tx(struct uart_port *port)
+ 	struct sport_uart_port *up = (struct sport_uart_port *)port;
+ 	unsigned int stat;
+ 
+-	pr_debug("%s enter\n", __FUNCTION__);
++	pr_debug("%s enter\n", __func__);
+ 
+ 	stat = SPORT_GET_STAT(up);
+ 	while(!(stat & TXHRE)) {
+@@ -366,21 +366,21 @@ static void sport_start_tx(struct uart_port *port)
+ {
+ 	struct sport_uart_port *up = (struct sport_uart_port *)port;
+ 
+-	pr_debug("%s enter\n", __FUNCTION__);
++	pr_debug("%s enter\n", __func__);
+ 	/* Write data into SPORT FIFO before enable SPROT to transmit */
+ 	sport_uart_tx_chars(up);
+ 
+ 	/* Enable transmit, then an interrupt will generated */
+ 	SPORT_PUT_TCR1(up, (SPORT_GET_TCR1(up) | TSPEN));
+ 	SSYNC();
+-	pr_debug("%s exit\n", __FUNCTION__);
++	pr_debug("%s exit\n", __func__);
+ }
+ 
+ static void sport_stop_rx(struct uart_port *port)
+ {
+ 	struct sport_uart_port *up = (struct sport_uart_port *)port;
+ 
+-	pr_debug("%s enter\n", __FUNCTION__);
++	pr_debug("%s enter\n", __func__);
+ 	/* Disable sport to stop rx */
+ 	SPORT_PUT_RCR1(up, (SPORT_GET_RCR1(up) & ~RSPEN));
+ 	SSYNC();
+@@ -388,19 +388,19 @@ static void sport_stop_rx(struct uart_port *port)
+ 
+ static void sport_enable_ms(struct uart_port *port)
+ {
+-	pr_debug("%s enter\n", __FUNCTION__);
++	pr_debug("%s enter\n", __func__);
+ }
+ 
+ static void sport_break_ctl(struct uart_port *port, int break_state)
+ {
+-	pr_debug("%s enter\n", __FUNCTION__);
++	pr_debug("%s enter\n", __func__);
+ }
+ 
+ static void sport_shutdown(struct uart_port *port)
+ {
+ 	struct sport_uart_port *up = (struct sport_uart_port *)port;
+ 
+-	pr_debug("%s enter\n", __FUNCTION__);
++	pr_debug("%s enter\n", __func__);
+ 
+ 	/* Disable sport */
+ 	SPORT_PUT_TCR1(up, (SPORT_GET_TCR1(up) & ~TSPEN));
+@@ -421,7 +421,7 @@ static void sport_shutdown(struct uart_port *port)
+ static void sport_set_termios(struct uart_port *port,
+ 		struct termios *termios, struct termios *old)
+ {
+-	pr_debug("%s enter, c_cflag:%08x\n", __FUNCTION__, termios->c_cflag);
++	pr_debug("%s enter, c_cflag:%08x\n", __func__, termios->c_cflag);
+ 	uart_update_timeout(port, CS8 ,port->uartclk);
+ }
+ 
+@@ -429,18 +429,18 @@ static const char *sport_type(struct uart_port *port)
+ {
+ 	struct sport_uart_port *up = (struct sport_uart_port *)port;
+ 
+-	pr_debug("%s enter\n", __FUNCTION__);
++	pr_debug("%s enter\n", __func__);
+ 	return up->name;
+ }
+ 
+ static void sport_release_port(struct uart_port *port)
+ {
+-	pr_debug("%s enter\n", __FUNCTION__);
++	pr_debug("%s enter\n", __func__);
+ }
+ 
+ static int sport_request_port(struct uart_port *port)
+ {
+-	pr_debug("%s enter\n", __FUNCTION__);
++	pr_debug("%s enter\n", __func__);
+ 	return 0;
+ }
+ 
+@@ -448,13 +448,13 @@ static void sport_config_port(struct uart_port *port, int flags)
+ {
+ 	struct sport_uart_port *up = (struct sport_uart_port *)port;
+ 
+-	pr_debug("%s enter\n", __FUNCTION__);
++	pr_debug("%s enter\n", __func__);
+ 	up->port.type = PORT_BFIN_SPORT;
+ }
+ 
+ static int sport_verify_port(struct uart_port *port, struct serial_struct *ser)
+ {
+-	pr_debug("%s enter\n", __FUNCTION__);
++	pr_debug("%s enter\n", __func__);
+ 	return 0;
+ }
+ 
+@@ -527,7 +527,7 @@ static int sport_uart_suspend(struct platform_device *dev, pm_message_t state)
+ {
+ 	struct sport_uart_port *sport = platform_get_drvdata(dev);
+ 
+-	pr_debug("%s enter\n", __FUNCTION__);
++	pr_debug("%s enter\n", __func__);
+ 	if (sport)
+ 		uart_suspend_port(&sport_uart_reg, &sport->port);
+ 
+@@ -538,7 +538,7 @@ static int sport_uart_resume(struct platform_device *dev)
+ {
+ 	struct sport_uart_port *sport = platform_get_drvdata(dev);
+ 
+-	pr_debug("%s enter\n", __FUNCTION__);
++	pr_debug("%s enter\n", __func__);
+ 	if (sport)
+ 		uart_resume_port(&sport_uart_reg, &sport->port);
+ 
+@@ -547,7 +547,7 @@ static int sport_uart_resume(struct platform_device *dev)
+ 
+ static int sport_uart_probe(struct platform_device *dev)
+ {
+-	pr_debug("%s enter\n", __FUNCTION__);
++	pr_debug("%s enter\n", __func__);
+ 	sport_uart_ports[dev->id].port.dev = &dev->dev;
+ 	uart_add_one_port(&sport_uart_reg, &sport_uart_ports[dev->id].port);
+ 	platform_set_drvdata(dev, &sport_uart_ports[dev->id]);
+@@ -559,7 +559,7 @@ static int sport_uart_remove(struct platform_device *dev)
+ {
+ 	struct sport_uart_port *sport = platform_get_drvdata(dev);
+ 
+-	pr_debug("%s enter\n", __FUNCTION__);
++	pr_debug("%s enter\n", __func__);
+ 	platform_set_drvdata(dev, NULL);
+ 
+ 	if (sport)
+@@ -582,7 +582,7 @@ static int __init sport_uart_init(void)
+ {
+ 	int ret;
+ 
+-	pr_debug("%s enter\n", __FUNCTION__);
++	pr_debug("%s enter\n", __func__);
+ 	ret = uart_register_driver(&sport_uart_reg);
+ 	if (ret != 0) {
+ 		printk(KERN_ERR "Failed to register %s:%d\n",
+@@ -597,13 +597,13 @@ static int __init sport_uart_init(void)
+ 	}
+ 
+ 
+-	pr_debug("%s exit\n", __FUNCTION__);
++	pr_debug("%s exit\n", __func__);
+ 	return ret;
+ }
+ 
+ static void __exit sport_uart_exit(void)
+ {
+-	pr_debug("%s enter\n", __FUNCTION__);
++	pr_debug("%s enter\n", __func__);
+ 	platform_driver_unregister(&sport_uart_driver);
+ 	uart_unregister_driver(&sport_uart_reg);
+ }
+-- 
+1.5.6
