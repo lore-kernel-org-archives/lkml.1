@@ -1,495 +1,268 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757499AbYHOIhW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757326AbYHOIkv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757499AbYHOIhW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Aug 2008 04:37:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752847AbYHOIhJ
+	id S1757326AbYHOIkv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Aug 2008 04:40:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753141AbYHOIkn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Aug 2008 04:37:09 -0400
-Received: from nwd2mail11.analog.com ([137.71.25.57]:46438 "EHLO
-	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751407AbYHOIhG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Aug 2008 04:37:06 -0400
-X-IronPort-AV: E=Sophos;i="4.32,214,1217822400"; 
-   d="scan'208";a="58086301"
-From: Bryan Wu <cooloney@kernel.org>
-To: dwmw2@infradead.org
-Cc: linux-mtd@lists.infradead.org, linux-kernel@vger.kernel.org,
-       Mike Frysinger <vapier.adi@gmail.com>, Bryan Wu <cooloney@kernel.org>
-Subject: [PATCH 1/1] MTD Maps: initial driver for using gpios to assist in addressing of parallel flash as is on the tinyboards
-Date: Fri, 15 Aug 2008 16:37:01 +0800
-Message-Id: <1218789421-9995-1-git-send-email-cooloney@kernel.org>
-X-Mailer: git-send-email 1.5.6
+	Fri, 15 Aug 2008 04:40:43 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:50104 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753011AbYHOIkl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Aug 2008 04:40:41 -0400
+Date: Fri, 15 Aug 2008 18:40:32 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: linux-next@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: linux-next: Tree for August 15
+Message-Id: <20080815184032.3acd8032.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Fri__15_Aug_2008_18_40_32_+1000_fxVuH2YUju1ndoy3"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Mike Frysinger <vapier.adi@gmail.com>
+--Signature=_Fri__15_Aug_2008_18_40_32_+1000_fxVuH2YUju1ndoy3
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-extend driver to handle arbitrary number of gpios
+Hi all,
 
-Signed-off-by: Mike Frysinger <vapier.adi@gmail.com>
-Signed-off-by: Bryan Wu <cooloney@kernel.org>
----
- drivers/mtd/maps/Kconfig           |    9 +
- drivers/mtd/maps/Makefile          |    1 +
- drivers/mtd/maps/gpio-addr-flash.c |  419 ++++++++++++++++++++++++++++++++++++
- 3 files changed, 429 insertions(+), 0 deletions(-)
- create mode 100644 drivers/mtd/maps/gpio-addr-flash.c
+Changes since next-20080814:
 
-diff --git a/drivers/mtd/maps/Kconfig b/drivers/mtd/maps/Kconfig
-index 50bb046..76f05ad 100644
---- a/drivers/mtd/maps/Kconfig
-+++ b/drivers/mtd/maps/Kconfig
-@@ -520,6 +520,15 @@ config MTD_BFIN_ASYNC
- 
- 	  If compiled as a module, it will be called bfin-async-flash.
- 
-+config MTD_GPIO_ADDR
-+	tristate "GPIO-assisted Flash Chip Support"
-+	select MTD_PARTITIONS
-+	help
-+	  Map driver which allows flashes to be partially physically addressed
-+	  and assisted by GPIOs.
-+
-+	  If compiled as a module, it will be called gpio-addr-flash.
-+
- config MTD_UCLINUX
- 	tristate "Generic uClinux RAM/ROM filesystem support"
- 	depends on MTD_PARTITIONS && MTD_RAM && !MMU
-diff --git a/drivers/mtd/maps/Makefile b/drivers/mtd/maps/Makefile
-index 6cda6df..fdfaa5e 100644
---- a/drivers/mtd/maps/Makefile
-+++ b/drivers/mtd/maps/Makefile
-@@ -65,3 +65,4 @@ obj-$(CONFIG_MTD_PLATRAM)	+= plat-ram.o
- obj-$(CONFIG_MTD_OMAP_NOR)	+= omap_nor.o
- obj-$(CONFIG_MTD_INTEL_VR_NOR)	+= intel_vr_nor.o
- obj-$(CONFIG_MTD_BFIN_ASYNC)	+= bfin-async-flash.o
-+obj-$(CONFIG_MTD_GPIO_ADDR)	+= gpio-addr-flash.o
-diff --git a/drivers/mtd/maps/gpio-addr-flash.c b/drivers/mtd/maps/gpio-addr-flash.c
-new file mode 100644
-index 0000000..eae74d4
---- /dev/null
-+++ b/drivers/mtd/maps/gpio-addr-flash.c
-@@ -0,0 +1,419 @@
-+/*
-+ * drivers/mtd/maps/gpio-addr-flash.c
-+ *
-+ * Handle the case where a flash device is mostly addressed using physical
-+ * line and supplemented by GPIOs.  This way you can hook up say a 8meg flash
-+ * to a 2meg memory range and use the GPIOs to select a particular range.
-+ *
-+ * Copyright 2000 Nicolas Pitre <nico@cam.org>
-+ * Copyright 2005-2008 Analog Devices Inc.
-+ *
-+ * Enter bugs at http://blackfin.uclinux.org/
-+ *
-+ * Licensed under the GPL-2 or later.
-+ */
-+
-+#include <linux/init.h>
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/mtd/mtd.h>
-+#include <linux/mtd/map.h>
-+#include <linux/mtd/partitions.h>
-+#include <linux/mtd/physmap.h>
-+#include <linux/platform_device.h>
-+#include <linux/types.h>
-+
-+#include <asm/gpio.h>
-+#include <asm/io.h>
-+
-+#define pr_devinit(fmt, args...) ({ static const __devinitconst char __fmt[] = fmt; printk(__fmt, ## args); })
-+
-+#define DRIVER_NAME "gpio-addr-flash"
-+
-+struct async_state {
-+	struct mtd_info *mtd;
-+	struct map_info map;
-+	size_t gpio_count;
-+	unsigned *gpio_addrs;
-+	unsigned long win_size;
-+};
-+
-+static void gf_set_gpios(struct async_state *state, unsigned long ofs)
-+{
-+	size_t i;
-+	for (i = 0; i < state->gpio_count; ++i)
-+		gpio_set_value(state->gpio_addrs[i], !!((ofs / state->win_size) & (1 << i)));
-+}
-+
-+static map_word gf_read(struct map_info *map, unsigned long ofs)
-+{
-+	struct async_state *state = (struct async_state *)map->map_priv_1;
-+	u16 word;
-+	map_word test;
-+
-+	gf_set_gpios(state, ofs);
-+
-+	word = readw(map->virt + (ofs % state->win_size));
-+	test.x[0] = word;
-+	return test;
-+}
-+
-+static void gf_copy_from(struct map_info *map, void *to, unsigned long from, ssize_t len)
-+{
-+	struct async_state *state = (struct async_state *)map->map_priv_1;
-+
-+	gf_set_gpios(state, from);
-+
-+	/* BUG if operation crosss the win_size */
-+	BUG_ON(!((from + len) % state->win_size <= (from + len)));
-+
-+	/* operation does not cross the win_size, so one shot it */
-+	memcpy_fromio(to, map->virt + (from % state->win_size), len);
-+}
-+
-+static void gf_write(struct map_info *map, map_word d1, unsigned long ofs)
-+{
-+	struct async_state *state = (struct async_state *)map->map_priv_1;
-+	u16 d;
-+
-+	gf_set_gpios(state, ofs);
-+
-+	d = d1.x[0];
-+	writew(d, map->virt + (ofs % state->win_size));
-+}
-+
-+static void gf_copy_to(struct map_info *map, unsigned long to, const void *from, ssize_t len)
-+{
-+	struct async_state *state = (struct async_state *)map->map_priv_1;
-+
-+	gf_set_gpios(state, to);
-+
-+	/* BUG if operation crosss the win_size */
-+	BUG_ON(!((to + len) % state->win_size <= (to + len)));
-+
-+	/* operation does not cross the win_size, so one shot it */
-+	memcpy_toio(map->virt + (to % state->win_size), from, len);
-+}
-+
-+#ifdef CONFIG_MTD_PARTITIONS
-+static const char *part_probe_types[] = { "cmdlinepart", "RedBoot", NULL };
-+#endif
-+
-+static int __devinit gpio_flash_probe(struct platform_device *pdev)
-+{
-+	int ret;
-+	size_t i;
-+	struct physmap_flash_data *pdata = pdev->dev.platform_data;
-+	struct resource *memory = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-+	struct resource *gpios = platform_get_resource(pdev, IORESOURCE_IRQ, 0);
-+	struct async_state *state;
-+
-+	state = kzalloc(sizeof(*state) + sizeof(unsigned) * gpios->end, GFP_KERNEL);
-+	if (!state)
-+		return -ENOMEM;
-+
-+	state->gpio_count     = gpios->end;
-+	state->gpio_addrs     = (void *)(state + 1);
-+	state->win_size       = memory->end - memory->start + 1;
-+	memcpy(state->gpio_addrs, (void *)gpios->start, sizeof(unsigned) * state->gpio_count);
-+
-+	state->map.name       = DRIVER_NAME;
-+	state->map.read       = gf_read;
-+	state->map.copy_from  = gf_copy_from;
-+	state->map.write      = gf_write;
-+	state->map.copy_to    = gf_copy_to;
-+	state->map.bankwidth  = pdata->width;
-+	state->map.size       = state->win_size * (1 << state->gpio_count);
-+	state->map.virt       = (void __iomem *)memory->start;
-+	state->map.phys       = memory->start;
-+	state->map.map_priv_1 = (unsigned long)state;
-+
-+	platform_set_drvdata(pdev, state);
-+
-+	for (i = 0; i < state->gpio_count; ++i) {
-+		if (gpio_request(state->gpio_addrs[i], DRIVER_NAME)) {
-+			pr_devinit(KERN_ERR DRIVER_NAME ": Failed to request gpio %d\n", state->gpio_addrs[i]);
-+			while (i--)
-+				gpio_free(state->gpio_addrs[i]);
-+			kfree(state);
-+			return -EBUSY;
-+		}
-+		gpio_direction_output(state->gpio_addrs[i], 0);
-+	}
-+
-+	pr_devinit(KERN_NOTICE DRIVER_NAME ": probing %d-bit flash bus\n", state->map.bankwidth * 8);
-+	state->mtd = do_map_probe(memory->name, &state->map);
-+	if (!state->mtd) {
-+		for (i = 0; i < state->gpio_count; ++i)
-+			gpio_free(state->gpio_addrs[i]);
-+		kfree(state);
-+		return -ENXIO;
-+	}
-+
-+#ifdef CONFIG_MTD_PARTITIONS
-+	ret = parse_mtd_partitions(state->mtd, part_probe_types, &pdata->parts, 0);
-+	if (ret > 0) {
-+		pr_devinit(KERN_NOTICE DRIVER_NAME ": Using commandline partition definition\n");
-+		add_mtd_partitions(state->mtd, pdata->parts, ret);
-+
-+	} else if (pdata->nr_parts) {
-+		pr_devinit(KERN_NOTICE DRIVER_NAME ": Using board partition definition\n");
-+		add_mtd_partitions(state->mtd, pdata->parts, pdata->nr_parts);
-+
-+	} else
-+#endif
-+	{
-+		pr_devinit(KERN_NOTICE DRIVER_NAME ": no partition info available, registering whole flash at once\n");
-+		add_mtd_device(state->mtd);
-+	}
-+
-+	return 0;
-+}
-+
-+static int __devexit gpio_flash_remove(struct platform_device *pdev)
-+{
-+	struct async_state *state = platform_get_drvdata(pdev);
-+	size_t i;
-+	for (i = 0; i < state->gpio_count; ++i)
-+		gpio_free(state->gpio_addrs[i]);
-+#ifdef CONFIG_MTD_PARTITIONS
-+	del_mtd_partitions(state->mtd);
-+#endif
-+	map_destroy(state->mtd);
-+	kfree(state);
-+	return 0;
-+}
-+
-+static struct platform_driver gpio_flash_driver = {
-+	.probe		= gpio_flash_probe,
-+	.remove		= __devexit_p(gpio_flash_remove),
-+	.driver		= {
-+		.name	= DRIVER_NAME,
-+	},
-+};
-+
-+static int __init gpio_flash_init(void)
-+{
-+	return platform_driver_register(&gpio_flash_driver);
-+}
-+module_init(gpio_flash_init);
-+
-+static void __exit gpio_flash_exit(void)
-+{
-+	platform_driver_unregister(&gpio_flash_driver);
-+}
-+module_exit(gpio_flash_exit);
-+
-+MODULE_AUTHOR("Mike Frysinger <vapier@gentoo.org>");
-+MODULE_DESCRIPTION("MTD map driver for flashes addressed physically and with gpios");
-+MODULE_LICENSE("GPL");
-+/*
-+ * drivers/mtd/maps/gpio-addr-flash.c
-+ *
-+ * Handle the case where a flash device is mostly addressed using physical
-+ * line and supplemented by GPIOs.  This way you can hook up say a 8meg flash
-+ * to a 2meg memory range and use the GPIOs to select a particular range.
-+ *
-+ * Copyright 2000 Nicolas Pitre <nico@cam.org>
-+ * Copyright 2005-2008 Analog Devices Inc.
-+ *
-+ * Enter bugs at http://blackfin.uclinux.org/
-+ *
-+ * Licensed under the GPL-2 or later.
-+ */
-+
-+#include <linux/init.h>
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/mtd/mtd.h>
-+#include <linux/mtd/map.h>
-+#include <linux/mtd/partitions.h>
-+#include <linux/mtd/physmap.h>
-+#include <linux/platform_device.h>
-+#include <linux/types.h>
-+
-+#include <asm/gpio.h>
-+#include <asm/io.h>
-+
-+#define stamp(fmt, args...) pr_debug("%s:%i: " fmt "\n", __func__, __LINE__, ## args)
-+#define stampit() stamp("here i am")
-+#define pr_devinit(fmt, args...) ({ static const __devinitconst char __fmt[] = fmt; printk(__fmt, ## args); })
-+
-+#define DRIVER_NAME "gpio-addr-flash"
-+
-+struct async_state {
-+	struct mtd_info *mtd;
-+	struct map_info map;
-+	unsigned gpio_addr;
-+	unsigned long boundary;
-+};
-+
-+static map_word gf_read(struct map_info *map, unsigned long ofs)
-+{
-+	struct async_state *state = (struct async_state *)map->map_priv_1;
-+	u16 word;
-+	map_word test;
-+
-+	stamp("gpio: %i, ofs = %lx", !!(ofs >= state->boundary), ofs);
-+
-+	gpio_set_value(state->gpio_addr, !!(ofs >= state->boundary));
-+
-+	word = readw(map->virt + (ofs % state->boundary));
-+
-+	test.x[0] = word;
-+	return test;
-+}
-+
-+static void gf_copy_from(struct map_info *map, void *to, unsigned long from, ssize_t len)
-+{
-+	struct async_state *state = (struct async_state *)map->map_priv_1;
-+
-+	stamp("gpio: %i, to = %p, from = %lx, len = %lx", !!(from >= state->boundary), to, from, len);
-+
-+	gpio_set_value(state->gpio_addr, !!(from >= state->boundary));
-+
-+	if ((from + len) % state->boundary <= (from + len)) {
-+		/* operation does not cross the boundary, so one shot it */
-+		memcpy(to, map->virt + (from % state->boundary), len);
-+	} else {
-+		/* operation does cross the boundary, so break it up */
-+		stamp("two shot");
-+		memcpy(to, map->virt + from, state->boundary - from);
-+		gpio_set_value(state->gpio_addr, 1);
-+		memcpy(to, map->virt + state->boundary, (from + len) % state->boundary);
-+	}
-+}
-+
-+static void gf_write(struct map_info *map, map_word d1, unsigned long ofs)
-+{
-+	struct async_state *state = (struct async_state *)map->map_priv_1;
-+	u16 d;
-+
-+	stamp("gpio: %i, ofs = %lx", !!(ofs >= state->boundary), ofs);
-+
-+	d = d1.x[0];
-+
-+	gpio_set_value(state->gpio_addr, !!(ofs >= state->boundary));
-+
-+	writew(d, map->virt + (ofs % state->boundary));
-+}
-+
-+static void gf_copy_to(struct map_info *map, unsigned long to, const void *from, ssize_t len)
-+{
-+	struct async_state *state = (struct async_state *)map->map_priv_1;
-+
-+	stamp("gpio: %i, to = %lx, from = %p, len = %lx", !!(to >= state->boundary), to, from, len);
-+
-+	gpio_set_value(state->gpio_addr, !!(to >= state->boundary));
-+
-+	if ((to + len) % state->boundary <= (to + len)) {
-+		/* operation does not cross the boundary, so one shot it */
-+		memcpy(map->virt + (to % state->boundary), from, len);
-+	} else {
-+		/* operation does cross the boundary, so break it up */
-+		stamp("two shot");
-+		memcpy(map->virt + to, from, state->boundary - to);
-+		gpio_set_value(state->gpio_addr, 1);
-+		memcpy(map->virt + state->boundary, from, (to + len) % state->boundary);
-+	}
-+}
-+
-+#ifdef CONFIG_MTD_PARTITIONS
-+static const char *part_probe_types[] = { "cmdlinepart", "RedBoot", NULL };
-+#endif
-+
-+static int __devinit gpio_flash_probe(struct platform_device *pdev)
-+{
-+	int ret;
-+	struct physmap_flash_data *pdata = pdev->dev.platform_data;
-+	struct resource *memory = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-+	struct async_state *state;
-+
-+	state = kzalloc(sizeof(*state), GFP_KERNEL);
-+	if (!state)
-+		return -ENOMEM;
-+	platform_set_drvdata(pdev, state);
-+
-+	state->map.name       = DRIVER_NAME;
-+	state->map.read       = gf_read;
-+	state->map.copy_from  = gf_copy_from;
-+	state->map.write      = gf_write;
-+	state->map.copy_to    = gf_copy_to;
-+	state->map.bankwidth  = pdata->width;
-+	state->map.size       = (memory->end - memory->start + 1) * 2;
-+	state->map.virt       = (void __iomem *)memory->start;
-+	state->map.phys       = memory->start;
-+	state->map.map_priv_1 = (unsigned long)state;
-+	state->gpio_addr      = platform_get_irq(pdev, 0);
-+	state->boundary       = memory->end - memory->start + 1;
-+
-+	if (gpio_request(state->gpio_addr, DRIVER_NAME)) {
-+		pr_devinit(KERN_ERR DRIVER_NAME ": Failed to request gpio %d\n", state->gpio_addr);
-+		kfree(state);
-+		return -EBUSY;
-+	}
-+	gpio_direction_output(state->gpio_addr, 0);
-+
-+	pr_devinit(KERN_NOTICE DRIVER_NAME ": probing %d-bit flash bus\n", state->map.bankwidth * 8);
-+	state->mtd = do_map_probe(memory->name, &state->map);
-+	if (!state->mtd) {
-+		gpio_free(state->gpio_addr);
-+		kfree(state);
-+		return -ENXIO;
-+	}
-+
-+#ifdef CONFIG_MTD_PARTITIONS
-+	ret = parse_mtd_partitions(state->mtd, part_probe_types, &pdata->parts, 0);
-+	if (ret > 0) {
-+		pr_devinit(KERN_NOTICE DRIVER_NAME ": Using commandline partition definition\n");
-+		add_mtd_partitions(state->mtd, pdata->parts, ret);
-+
-+	} else if (pdata->nr_parts) {
-+		pr_devinit(KERN_NOTICE DRIVER_NAME ": Using board partition definition\n");
-+		add_mtd_partitions(state->mtd, pdata->parts, pdata->nr_parts);
-+
-+	} else
-+#endif
-+	{
-+		pr_devinit(KERN_NOTICE DRIVER_NAME ": no partition info available, registering whole flash at once\n");
-+		add_mtd_device(state->mtd);
-+	}
-+
-+	return 0;
-+}
-+
-+static int __devexit gpio_flash_remove(struct platform_device *pdev)
-+{
-+	struct async_state *state = platform_get_drvdata(pdev);
-+	gpio_free(state->gpio_addr);
-+#ifdef CONFIG_MTD_PARTITIONS
-+	del_mtd_partitions(state->mtd);
-+#endif
-+	map_destroy(state->mtd);
-+	kfree(state);
-+	return 0;
-+}
-+
-+static struct platform_driver gpio_flash_driver = {
-+	.probe		= gpio_flash_probe,
-+	.remove		= __devexit_p(gpio_flash_remove),
-+	.driver		= {
-+		.name	= DRIVER_NAME,
-+	},
-+};
-+
-+static int __init gpio_flash_init(void)
-+{
-+	return platform_driver_register(&gpio_flash_driver);
-+}
-+module_init(gpio_flash_init);
-+
-+static void __exit gpio_flash_exit(void)
-+{
-+	platform_driver_unregister(&gpio_flash_driver);
-+}
-+module_exit(gpio_flash_exit);
-+
-+MODULE_AUTHOR("Mike Frysinger <vapier@gentoo.org>");
-+MODULE_DESCRIPTION("MTD map driver for flashes addressed physically and with gpios");
-+MODULE_LICENSE("GPL");
--- 
-1.5.6
+New trees: oprofile and fastboot.
+
+The tip-core tree lost its conflict.
+
+The cpus4096 tree lost its conflict.
+
+The ftrace tree gained a conflict against the driver-core tree and a
+build failure required the revert of a commit.
+
+The stackprotector tree gained a conflict against the ftrace tree.
+
+The x86 tree gained a conflict against the stackprotector tree but lost
+two conflicts and a build fix patch.
+
+The kvm tree gained a conflict against the x86 tree.
+
+The test tree gained a conflict against the sched tree.
+
+The kmemcheck tree gained two conflicts against the x86 tree.
+
+The hdlc tree lost its build fix patch.
+
+The creds tree gained a conflict against the ftrace tree (and several
+against Linus' tree - but they were expected).
+
+The fastboot tree gained a conflist against the driver-core tree.
+
+I have also applied the following patches for known problems:
+
+	Add cuImage.mpc866ads to the bootwrapper as a cuboot-8xx target
+	ath9k: work around gcc ICE again
+	driver-core: don't export static functions
+
+----------------------------------------------------------------------------
+
+I have created today's linux-next tree at
+git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
+(patches at
+http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/).  If you
+are tracking the linux-next tree using git, you should not use "git pull"
+to do so as that will try to merge the new linux-next release with the
+old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
+(see below).
+
+You can see which trees have been included by looking in the Next/Trees
+file in the source.  There are also quilt-import.log and merge.log files
+in the Next directory.  Between each merge, the tree was built with
+a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
+final fixups, it is also built with powerpc allnoconfig,
+44x_defconfig and allyesconfig and i386, sparc and sparc64 defconfig.
+
+Below is a summary of the state of the merge.
+
+We are up to 110 trees (counting Linus' and 14 trees of patches pending for
+Linus' tree), more are welcome (even if they are currently empty).
+Thanks to those who have contributed, and to those who haven't, please do.
+
+Status of my local build tests will be at
+http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
+advice about cross compilers/configs that work, we are always open to add
+more builds.
+
+Thanks to Jan Dittmer for adding the linux-next tree to his build tests
+at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
+Dunlap for doing many randconfig builds.
+
+There is a wiki covering stuff to do with linux-next at
+http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+$ git checkout master
+$ git reset --hard stable
+Merging origin/master
+Merging powerpc-merge/merge
+Merging scsi-rc-fixes/master
+Merging net-current/master
+Merging sparc-current/master
+Merging sound-current/for-linus
+Merging arm-current/master
+CONFLICT (content): Merge conflict in drivers/watchdog/at91rm9200_wdt.c
+Merging pci-current/for-linus
+Merging wireless-current/master
+Merging kbuild-current/master
+Merging quilt/driver-core.current
+Merging quilt/usb.current
+Merging cpufreq-current/fixes
+Merging input-current/for-linus
+Merging md-current/for-2.6.26
+Merging dwmw2/master
+Merging quilt/driver-core
+Merging quilt/usb
+Merging tip-core/auto-core-next
+Merging cpus4096/auto-cpus4096-next
+Merging ftrace/auto-ftrace-next
+CONFLICT (content): Merge conflict in kernel/module.c
+Created commit b82f4d2: Revert "ftrace: do not trace NMI contexts"
+Merging genirq/auto-genirq-next
+Merging safe-poison-pointers/auto-safe-poison-pointers-next
+Merging sched/auto-sched-next
+Merging stackprotector/auto-stackprotector-next
+CONFLICT (content): Merge conflict in kernel/fork.c
+Merging timers/auto-timers-next
+Merging x86/auto-x86-next
+CONFLICT (content): Merge conflict in include/asm-x86/pda.h
+Merging pci/linux-next
+Merging quilt/device-mapper
+Merging hid/mm
+Merging quilt/i2c
+Merging quilt/jdelvare-hwmon
+Merging quilt/kernel-doc
+Merging avr32/avr32-arch
+Merging v4l-dvb/stable
+Merging s390/features
+Merging sh/master
+Merging jfs/next
+Merging kbuild/master
+Merging quilt/ide
+Merging libata/NEXT
+Merging nfs/linux-next
+Merging xfs/master
+Merging infiniband/for-next
+Merging acpi/test
+Applying acpi: missing status declaration in acer-wmi.c
+Merging blackfin/for-linus
+Merging nfsd/nfsd-next
+Merging ieee1394/for-next
+Merging ubi/linux-next
+Merging kvm/master
+CONFLICT (content): Merge conflict in include/asm-x86/kvm.h
+Merging dlm/next
+Merging scsi/master
+Merging ia64/test
+Merging tests/master
+CONFLICT (content): Merge conflict in lib/Kconfig.debug
+Merging ocfs2/linux-next
+Merging quilt/m68k
+Merging powerpc/powerpc-next
+Merging ext4/next
+Merging 4xx/next
+Merging async_tx/next
+Merging udf/for_next
+Merging net/master
+Merging sparc/master
+Merging galak/powerpc-next
+Merging mtd/master
+Merging wireless/master
+Merging crypto/master
+CONFLICT (content): Merge conflict in include/asm-x86/cpufeature.h
+Merging vfs/for-next
+CONFLICT (content): Merge conflict in fs/nfsd/export.c
+CONFLICT (content): Merge conflict in fs/xfs/linux-2.6/xfs_export.c
+CONFLICT (content): Merge conflict in fs/xfs/linux-2.6/xfs_iops.c
+Merging sound/for-next
+Merging arm/devel
+Merging cpufreq/next
+Merging v9fs/for-next
+Merging quilt/rr
+Merging cifs/master
+Merging mmc/next
+Merging gfs2/master
+Merging input/next
+Merging semaphore/semaphore
+Merging semaphore-removal/semaphore-removal
+Merging bkl-removal/bkl-removal
+Merging trivial/next
+CONFLICT (content): Merge conflict in Documentation/edac.txt
+CONFLICT (content): Merge conflict in include/linux/securebits.h
+Merging ubifs/linux-next
+Merging lsm/for-next
+Merging block/for-next
+Merging embedded/master
+Merging firmware/master
+CONFLICT (content): Merge conflict in drivers/media/dvb/ttpci/Kconfig
+CONFLICT (content): Merge conflict in drivers/media/dvb/ttpci/Makefile
+Merging pcmcia/master
+Merging battery/master
+Merging leds/for-mm
+Merging backlight/for-mm
+Merging kgdb/kgdb-next
+Merging slab/for-next
+Merging m68knommu/for-next
+Merging uclinux/for-next
+Merging md/for-next
+Merging cris/for-next
+Merging kmemcheck/auto-kmemcheck-next
+CONFLICT (content): Merge conflict in MAINTAINERS
+CONFLICT (content): Merge conflict in arch/x86/kernel/process_64.c
+CONFLICT (content): Merge conflict in arch/x86/kernel/traps_64.c
+CONFLICT (content): Merge conflict in mm/Makefile
+CONFLICT (content): Merge conflict in mm/slab.c
+Merging generic-ipi/auto-generic-ipi-next
+Merging mips/mips-for-linux-next
+Merging mfd/for-next
+Merging hdlc/hdlc-next
+Merging drm/drm-next
+Merging voltage/reg-for-linus
+Merging security-testing/next
+Merging lblnet/master
+Merging quilt/ttydev
+CONFLICT (content): Merge conflict in drivers/net/usb/hso.c
+CONFLICT (content): Merge conflict in drivers/usb/class/cdc-acm.c
+Merging agp/agp-next
+Merging creds/next-creds
+CONFLICT (content): Merge conflict in fs/namespace.c
+CONFLICT (content): Merge conflict in fs/nfsd/nfs4recover.c
+CONFLICT (content): Merge conflict in fs/xfs/linux-2.6/xfs_linux.h
+CONFLICT (content): Merge conflict in fs/xfs/xfs_inode.c
+CONFLICT (content): Merge conflict in fs/xfs/xfs_vnodeops.c
+CONFLICT (add/add): Merge conflict in include/linux/cred.h
+CONFLICT (content): Merge conflict in kernel/exit.c
+CONFLICT (content): Merge conflict in kernel/fork.c
+Merging oprofile/auto-oprofile-next
+Merging fastboot/auto-fastboot-next
+CONFLICT (content): Merge conflict in include/linux/init.h
+Applying Add cuImage.mpc866ads to the bootwrapper as a cuboot-8xx target
+Applying ath9k: work around gcc ICE again
+Applying driver-core: don't export static functions
+
+--Signature=_Fri__15_Aug_2008_18_40_32_+1000_fxVuH2YUju1ndoy3
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkilQQAACgkQjjKRsyhoI8x3IQCgtwYrzvTYIjlmxE10Go0ZGljZ
+So0An1C7a7Tot35nBV3uTgXGfwqq8vGY
+=eNI9
+-----END PGP SIGNATURE-----
+
+--Signature=_Fri__15_Aug_2008_18_40_32_+1000_fxVuH2YUju1ndoy3--
