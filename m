@@ -1,58 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760724AbYHOSLq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759428AbYHOSRd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760724AbYHOSLq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Aug 2008 14:11:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754211AbYHOSLh
+	id S1759428AbYHOSRd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Aug 2008 14:17:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754323AbYHOSRY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Aug 2008 14:11:37 -0400
-Received: from rv-out-0506.google.com ([209.85.198.227]:5052 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755089AbYHOSLh (ORCPT
+	Fri, 15 Aug 2008 14:17:24 -0400
+Received: from mail13.ca.com ([141.202.248.42]:26962 "EHLO mail13.ca.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754211AbYHOSRY convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Aug 2008 14:11:37 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=F3+9F8MQ+XY8vUT6eYImBTyJ1ufbdEhnYOUW4eUhcFV7/vv3wYtQ/8MevjewBQXSfz
-         5YReVP91Ciuzg65xXZk/XZ+Ljh6H63GQXk7/uK32OFR1pakGPfrSG/soiWfdeRmA9/Vp
-         giCzhxiYFO8fN/7kH5ZywX9ezG/yV+gyTFl5E=
-Message-ID: <b6c5339f0808151111l4ba07c6esa7bb784a2f059bf2@mail.gmail.com>
-Date: Fri, 15 Aug 2008 14:11:36 -0400
-From: "Bob Copeland" <me@bobcopeland.com>
-To: "Jaco Kroon" <jaco@kroon.co.za>
-Subject: Re: [ath5k-devel] ath5k on the Acer Aspire One
-Cc: "ath5k-devel@lists.ath5k.org" <ath5k-devel@venema.h4ckr.net>,
-       "=?ISO-8859-1?Q?\"J.A._Magall=F3n\"?=" <jamagallon@ono.com>,
-       Linux-Kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <48A5B093.5060102@kroon.co.za>
+	Fri, 15 Aug 2008 14:17:24 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080815015131.39bb20ef@werewolf.home>
-	 <200808150228.50473.elendil@planet.nl>
-	 <20080815102151.4859f1ea@werewolf.home>
-	 <b6c5339f0808150639h204234e0pbffcc09bbb43203@mail.gmail.com>
-	 <48A5B093.5060102@kroon.co.za>
-X-Google-Sender-Auth: a89d0a04242d0a06
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [malware-list] TALPA - a threat model?  well sorta.
+Date: Fri, 15 Aug 2008 14:17:23 -0400
+Message-ID: <2629CC4E1D22A64593B02C43E855530304AE4C15@USILMS12.ca.com>
+In-Reply-To: <alpine.DEB.1.10.0808151042500.15109@asgard.lang.hm>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [malware-list] TALPA - a threat model?  well sorta.
+Thread-Index: Acj+/uDtvXDWBGBSSQ+J+D3lUfmXigAA5eng
+References: <1218645375.3540.71.camel@localhost.localdomain><20080813103951.1e3e5827@infradead.org><1218653864.3540.109.camel@localhost.localdomain><20080813143908.38796217@infradead.org><1218723133.3540.137.camel@localhost.localdomain><48A55574.9070508@aitel.hist.no> <1218796645.10800.242.camel@twins> <2629CC4E1D22A64593B02C43E855530304AE4BF6@USILMS12.ca.com> <alpine.DEB.1.10.0808150924260.15109@asgard.lang.hm> <2629CC4E1D22A64593B02C43E855530304AE4C0C@USILMS12.ca.com> <alpine.DEB.1.10.0808151032121.15109@asgard.lang.hm> <2629CC4E1D22A64593B02C43E855530304AE4C12@USILMS12.ca.com> <alpine.DEB.1.10.0808151042500.15109@asgard.lang.hm>
+From: "Press, Jonathan" <Jonathan.Press@ca.com>
+To: <david@lang.hm>
+Cc: "Peter Zijlstra" <peterz@infradead.org>,
+       "Helge Hafting" <helge.hafting@aitel.hist.no>,
+       <linux-kernel@vger.kernel.org>, <malware-list@lists.printk.net>,
+       <hch@infradead.org>, <andi@firstfloor.org>, <viro@ZenIV.linux.org.uk>,
+       <alan@lxorguk.ukuu.org.uk>, "Arjan van de Ven" <arjan@infradead.org>
+X-OriginalArrivalTime: 15 Aug 2008 18:17:23.0370 (UTC) FILETIME=[29F0F0A0:01C8FF03]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 15, 2008 at 12:36 PM, Jaco Kroon <jaco@kroon.co.za> wrote:
->
-> Is this using WPA-PSK or WPA-EAP?  I know my card works with PSK but I'm
-> seeing similar results with EAP.  Haven't had time to properly analyze
-> the problem yet and my AP is in the office for the weekend.
+> -----Original Message-----
+> From: david@lang.hm [mailto:david@lang.hm]
+> Sent: Friday, August 15, 2008 1:47 PM
+> To: Press, Jonathan
+> Cc: Peter Zijlstra; Helge Hafting; linux-kernel@vger.kernel.org;
+malware-
+> list@lists.printk.net; hch@infradead.org; andi@firstfloor.org;
+> viro@ZenIV.linux.org.uk; alan@lxorguk.ukuu.org.uk; Arjan van de Ven
+> Subject: RE: [malware-list] TALPA - a threat model? well sorta.
+> 
+> On Fri, 15 Aug 2008, Press, Jonathan wrote:
+> > In addition, to generalize from the incorrect idea that the actions
+of
+> > root are not being defended against to the idea that the possible
+> > impacts of an administrator's actions in configuring an application
+> > should not be accounted for at all in our thinking doesn't make
+sense to
+> > me anyway.
+> 
+> questions had been raised about how this model could defend against
+all
+> the tricky things that root can do, the answer was that they are not
+> trying to defend against root doing tricky things.
+> 
+> turning off the scanner, letting things get infected, and turning it
+back
+> on would fall in the same catagory as marking a file that the scanner
+> marked as bad as sucessfully scanned.
 
-PSK.  I'll claim ignorance on EAP though I don't know why it wouldn't work.
-The change I was thinking of in 2.6.26 was related to some packets not being
-decrypted properly (http://marc.info/?l=linux-wireless&m=121064141521711).
-There was also this one related to association failures around .27-rc1:
-http://marc.info/?l=linux-wireless&m=121732394028001.
+Well, I agree that there are things you can't prevent, that's for sure.
+But the point is to build the "threat model" and application
+functionality around the idea that IF they happen, you want to be able
+to plug the resulting holes as well as you can.  You can't simply close
+your eyes to the possibility.
 
-Let us know what you find out.
--- 
-Bob Copeland %% www.bobcopeland.com
+
+Jon Press
