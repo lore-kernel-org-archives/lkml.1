@@ -1,96 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760479AbYHORkY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760483AbYHORnH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760479AbYHORkY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Aug 2008 13:40:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753966AbYHORkL
+	id S1760483AbYHORnH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Aug 2008 13:43:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755127AbYHORmz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Aug 2008 13:40:11 -0400
-Received: from mail12.ca.com ([141.202.248.38]:20869 "EHLO mail12.ca.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753937AbYHORkK convert rfc822-to-8bit (ORCPT
+	Fri, 15 Aug 2008 13:42:55 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:39330 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754270AbYHORmy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Aug 2008 13:40:10 -0400
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Fri, 15 Aug 2008 13:42:54 -0400
+Date: Fri, 15 Aug 2008 19:42:49 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: x86@kernel.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
+Cc: venki.pallipadi@intel.com, suresh.b.siddha@intel.com
+Subject: Please pull ioremap fix
+Message-ID: <20080815174249.GA22026@basil.nowhere.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [malware-list] TALPA - a threat model?  well sorta.
-Date: Fri, 15 Aug 2008 13:40:09 -0400
-Message-ID: <2629CC4E1D22A64593B02C43E855530304AE4C12@USILMS12.ca.com>
-In-Reply-To: <alpine.DEB.1.10.0808151032121.15109@asgard.lang.hm>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [malware-list] TALPA - a threat model?  well sorta.
-Thread-Index: Acj+/OSHPeHpqulKRsyriu2rE93OJwAACD9w
-References: <1218645375.3540.71.camel@localhost.localdomain><20080813103951.1e3e5827@infradead.org><1218653864.3540.109.camel@localhost.localdomain><20080813143908.38796217@infradead.org><1218723133.3540.137.camel@localhost.localdomain><48A55574.9070508@aitel.hist.no> <1218796645.10800.242.camel@twins> <2629CC4E1D22A64593B02C43E855530304AE4BF6@USILMS12.ca.com> <alpine.DEB.1.10.0808150924260.15109@asgard.lang.hm> <2629CC4E1D22A64593B02C43E855530304AE4C0C@USILMS12.ca.com> <alpine.DEB.1.10.0808151032121.15109@asgard.lang.hm>
-From: "Press, Jonathan" <Jonathan.Press@ca.com>
-To: <david@lang.hm>
-Cc: "Peter Zijlstra" <peterz@infradead.org>,
-       "Helge Hafting" <helge.hafting@aitel.hist.no>,
-       <linux-kernel@vger.kernel.org>, <malware-list@lists.printk.net>,
-       <hch@infradead.org>, <andi@firstfloor.org>, <viro@ZenIV.linux.org.uk>,
-       <alan@lxorguk.ukuu.org.uk>, "Arjan van de Ven" <arjan@infradead.org>
-X-OriginalArrivalTime: 15 Aug 2008 17:40:09.0556 (UTC) FILETIME=[F67BF940:01C8FEFD]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> -----Original Message-----
-> From: david@lang.hm [mailto:david@lang.hm]
-> Sent: Friday, August 15, 2008 1:33 PM
-> To: Press, Jonathan
-> Cc: Peter Zijlstra; Helge Hafting; linux-kernel@vger.kernel.org;
-malware-
-> list@lists.printk.net; hch@infradead.org; andi@firstfloor.org;
-> viro@ZenIV.linux.org.uk; alan@lxorguk.ukuu.org.uk; Arjan van de Ven
-> Subject: RE: [malware-list] TALPA - a threat model? well sorta.
-> 
-> On Fri, 15 Aug 2008, Press, Jonathan wrote:
-> 
-> >> -----Original Message-----
-> >> From: david@lang.hm [mailto:david@lang.hm]
-> >>> The problem is that you have to account for the cases where the
-malware
-> >>> made it onto the system even if you were trying to catch it ahead
-of
-> >>> time.  For example:
-> >>>
-> >>> - Administrator turns off or reduces AV protection for some reason
-for
-> >>> some period of time.  It happens all the time.
-> >>
-> >> according to the threat model actions of the administrator do not
-matter.
-> >
-> > Sorry, I don't know what you mean.
-> 
-> the threat model that was posted two days ago in the initial message
-of
-> this thread specificly stated that actions of root are not something
-that
-> this is trying to defend against.
 
-I think you may have missed the point of any such statement.
+ACPI exposed a off by one bug in the PAT/ioremap changes. Please
+pull the fix from the ACPI tree. This fixes
+http://bugzilla.kernel.org/show_bug.cgi?id=11346
 
-Just to clarify...
+  git://git.kernel.org/pub/scm/linux/kernel/git/ak/linux-acpi-2.6 ioremap
 
-The model does not exclude root-owned processes from the notification
-and scanning sequence.  If root attempts to execute a file, that file
-would be scanned before the execution is allowed.  If a root-owned
-process attempts to open a file, that access would be blocked until the
-file is scanned.  If a root-owned process closes a file that has been
-written to, that file would be scanned.
+Andi Kleen (1):
+      x86: Fix ioremap off by one BUG
 
-In addition, to generalize from the incorrect idea that the actions of
-root are not being defended against to the idea that the possible
-impacts of an administrator's actions in configuring an application
-should not be accounted for at all in our thinking doesn't make sense to
-me anyway.
-
-
-Jon Press
-
-
-
+ arch/x86/mm/ioremap.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
