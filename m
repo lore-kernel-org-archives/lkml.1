@@ -1,61 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757420AbYHOIaL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757040AbYHOIdz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757420AbYHOIaL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Aug 2008 04:30:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753468AbYHOI34
+	id S1757040AbYHOIdz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Aug 2008 04:33:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753428AbYHOIdr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Aug 2008 04:29:56 -0400
-Received: from yx-out-2324.google.com ([74.125.44.30]:51422 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753011AbYHOI3z (ORCPT
+	Fri, 15 Aug 2008 04:33:47 -0400
+Received: from smtp02.mtn.co.za ([196.11.240.34]:3906 "EHLO smtp02.mtn.co.za"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753071AbYHOIdr convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Aug 2008 04:29:55 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=O03aGiHgfQLz4h8HofODCFSRWGIy2+28hwqmcdl4GDfAeROTnk4b4IV0Wr56ArdqWN
-         RtrPnaUTL7pw+oFoK13QvG+qbJ+0bL6pTF5raJdwlOD7ecYzIiiGvz97LazuRWeed3jv
-         XWRJ9B9qfar37r8lonfImc0PB2vUi2dGwp29Y=
-Message-ID: <86802c440808150129v6474bf66mc329c46129c24e3c@mail.gmail.com>
-Date: Fri, 15 Aug 2008 01:29:54 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [PATCH 3/7] x86: make 32bit support per_cpu vector fix #1
-Cc: "Thomas Gleixner" <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20080815082147.GB4776@elte.hu>
+	Fri, 15 Aug 2008 04:33:47 -0400
+X-Greylist: delayed 617 seconds by postgrey-1.27 at vger.kernel.org; Fri, 15 Aug 2008 04:33:46 EDT
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1218766832-20476-1-git-send-email-yhlu.kernel@gmail.com>
-	 <1218766832-20476-2-git-send-email-yhlu.kernel@gmail.com>
-	 <1218766832-20476-3-git-send-email-yhlu.kernel@gmail.com>
-	 <1218766832-20476-4-git-send-email-yhlu.kernel@gmail.com>
-	 <20080815082147.GB4776@elte.hu>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: POSIX_FADV_DONTNEED
+Date: Fri, 15 Aug 2008 10:23:15 +0200
+Message-ID: <70D00C33FCD1FD4A860DEAC228277C0C048425ED@MTNMAIL1.mtn.co.za>
+In-Reply-To: <20080814091521.e4d9be53.akpm@linux-foundation.org>
+Thread-Topic: POSIX_FADV_DONTNEED
+thread-index: Acj+KQkQ2wOH282MRleeuO5ISrqangAhsEmA
+References: <70D00C33FCD1FD4A860DEAC228277C0C048425D1@MTNMAIL1.mtn.co.za><20080814021703.355b2a76.akpm@linux-foundation.org><70D00C33FCD1FD4A860DEAC228277C0C048425EA@MTNMAIL1.mtn.co.za> <20080814091521.e4d9be53.akpm@linux-foundation.org>
+From: "Trevor Woollacott [ MTN - Innovation Centre ]" <Woolla_T@mtn.co.za>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Cc: <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 15 Aug 2008 08:23:25.0686 (UTC) FILETIME=[3039E960:01C8FEB0]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 15, 2008 at 1:21 AM, Ingo Molnar <mingo@elte.hu> wrote:
->
-> * Yinghai Lu <yhlu.kernel@gmail.com> wrote:
->
->> +#ifdef CONFIG_SMP
->> +        return cpu_online_map;
->> +#else
->> +        return cpumask_of_cpu(0);
->> +#endif
->
-> unrelated sidenote - shouldnt the scheduler define cpu_online_map to
-> cpumask_of_cpu(0) on UP, to avoid such ugly #ifdefs?
 
-copy that from mach_default...
+> On Thu, 14 Aug 2008 12:26:28 +0200 "Trevor Woollacott [ MTN -
+Innovation Centre ]" <Woolla_T@mtn.co.za> wrote:
+>
+> > 
+> > > On Fri, 1 Aug 2008 17:05:39 +0200 "Trevor Woollacott [ MTN - 
+> > > Innovation Centre ]" <Woolla_T@mtn.co.za> wrote:
+> 
+> (please don't top-post).
+> 
+> > > > 
+> > > > Hi all
+> > > > 
+> > > > Does anyone know if posix_fadvise() with POSIX_FADV_DONTNEED is 
+> > > > blocking/unblocking?
+> > > 
+> > > It tries to be nonblocking and will mostly succeed in that.  It 
+> > > might occasionally block on a metadata read or journal congestion 
+> > > or something, so it isn't guaranteed.
+> > >
+> >
+> > Thanks for the response Andrew. Is there a way to check when the 
+> > cached data has been freed after fadvise has been called?
+> > 
+>
+> I assume you meant "whether", not "when".
+>
+> Not directly.  I believe that the best way of obtaining that 
+> information remains mmap()ing the file then querying the presence of 
+> pages via mincore().
 
-should double check if cpu_online_map is cpu_mask_of_cpu(0) if !CONFIG_SMP
+Thanks for the advice
 
-YH
+NOTE: This e-mail message is subject to the MTN Group disclaimer see http://www.mtn.co.za/default.aspx?pid=34411 
