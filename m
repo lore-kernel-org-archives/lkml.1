@@ -1,78 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758689AbYHON1h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759023AbYHON2Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758689AbYHON1h (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Aug 2008 09:27:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753999AbYHON1N
+	id S1759023AbYHON2Q (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Aug 2008 09:28:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758556AbYHON1c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Aug 2008 09:27:13 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:50153 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753764AbYHON1M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Aug 2008 09:27:12 -0400
-Date: Fri, 15 Aug 2008 15:26:46 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: David Witbrodt <dawitbro@sbcglobal.net>
-Cc: Yinghai Lu <yhlu.kernel@gmail.com>, linux-kernel@vger.kernel.org,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       netdev <netdev@vger.kernel.org>
-Subject: Re: HPET regression in 2.6.26 versus 2.6.25 -- question about NMI
-	watchdog
-Message-ID: <20080815132646.GF30597@elte.hu>
-References: <445817.22956.qm@web82101.mail.mud.yahoo.com>
+	Fri, 15 Aug 2008 09:27:32 -0400
+Received: from mail-gx0-f16.google.com ([209.85.217.16]:45844 "EHLO
+	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758422AbYHON13 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Aug 2008 09:27:29 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=SmYKJjo6Ds9gdS0jbQBujrdb9/v7ct1VM4+E4nIG+FW9p6NCT811r9WWpDJ8SSdcrP
+         kSmWg5XVSo0hV/aJNMJXHMsgOYR2xKycsKdJs1VT0e/cZ+1oB/zyEYY6VQ+h3st0kLgZ
+         63ax+yVp5Yeu39E0wWkNJhNK5lw4Har4zUqQc=
+Message-ID: <e7d8f83e0808150627m7a5c8738n8ac42d77c45eea76@mail.gmail.com>
+Date: Fri, 15 Aug 2008 23:27:27 +1000
+From: "Peter Dolding" <oiaohm@gmail.com>
+To: rmeijer@xs4all.nl
+Subject: Re: [malware-list] [RFC 0/5] [TALPA] Intro to alinuxinterfaceforon access scanning
+Cc: "Alan Cox" <alan@lxorguk.ukuu.org.uk>, capibara@xs4all.nl, david@lang.hm,
+       "Eric Paris" <eparis@redhat.com>, "Theodore Tso" <tytso@mit.edu>,
+       "Rik van Riel" <riel@redhat.com>, davecb@sun.com,
+       linux-security-module@vger.kernel.org, "Adrian Bunk" <bunk@kernel.org>,
+       "Mihai Don??u" <mdontu@bitdefender.com>, linux-kernel@vger.kernel.org,
+       malware-list@lists.printk.net, "Pavel Machek" <pavel@suse.cz>,
+       "Arjan van de Ven" <arjan@infradead.org>
+In-Reply-To: <18129.82.95.100.23.1218802937.squirrel@webmail.xs4all.nl>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="zhXaljGHf11kAtnf"
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <445817.22956.qm@web82101.mail.mud.yahoo.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+References: <18129.82.95.100.23.1218802937.squirrel@webmail.xs4all.nl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Aug 15, 2008 at 10:22 PM, Rob Meijer <capibara@xs4all.nl> wrote:
+> On Fri, August 15, 2008 13:02, Alan Cox wrote:
+>>> The package manager approach is interesting in that it marks 'trusted',
+>>> and is thus permissive rather than restrictive. Maybe it would be
+>>> possible
+>>> to extend on this and simply define a set of currently unprivileged
+>>> access
+>>> as privileged for untrusted applications. That way you could allow
+>>> untrusted software to run without risk, even if that untrusted software
+>>> turns out to be malware. That is, it may be possible to solve the
+>>> malware
+>>> problem in a much more fundamental way here by just allowing malware to
+>>> run without the need to know if it is malware, just by running untrusted
+>>> software with reduced privileges.
+>>>
+>>
+>> Its called SELinux and SELinux can already do this sort of stuff,
+>> including things like "only rpm may create files you are permitted to
+>> execute"
+>
+> This "permitted to execute" is what I feel is the wrong aproach with
+> respect to malware. If you simply allow everything to 'execute', I think
+> that untrusted programs may still be used for usefull things, but without
+> the potential do do malice. If you start from the point where everything
+> both trusted and untrusted  is permitted to be executed, you could make it
+> the job of SELinux or any other LSM to make untrusted code run without
+> doing malice, but with the possibility to still run and do usefull non
+> malicious  stuff. This might require some aditional hooks in LSM though I
+> could imagine.
+>
+> To take this one step further, it might be usefull to see what kernel/LSM
+> changes would be needed to allow SELinux and/or possibly better yet,
+> AppArmor, to work with some powerbox style UI component in order to both
+> allow and force untrusted programs to run with least authority and still
+> do usefull stuff.
+>
+> I feel the Polaris/Capdesk/Plash approach to untrusted code is much more
+> prommising than the "don't run" approach used by regular AV products.
+> Making such an approach integrate with LSM's would IMHO be a much more
+> fundamental approach to malware.
+>
+They way I look at this.   Most users complain that creating profiles
+for applications is too complex.
 
---zhXaljGHf11kAtnf
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Lets look for where a system that deals with the same kind of issue.
+Its in the firewall with ipset http://ipset.netfilter.org/.
 
+You have a set of rules to do things assigned in the firewall.   With
+secuirty this would be the LSM.  User gets to choose from a predefined
+list for applications without profiles.
 
-* David Witbrodt <dawitbro@sbcglobal.net> wrote:
+Lets look at some basics here.  Firefox and most internet applications
+don't need to edit everything in the user account.   If some link
+could be designed into LSM for user to once off approve actions
+outside filesystem permissions from the grouping.  Malware reading and
+writing stuff would be a lot harder.
 
-> Quick question: a quick browse of 'Documentation/nmi_watchdog.txt' 
-> suggests that I should use "nmi_watchdog=1", since I have SMP (CPU = 
-> Athlon 64 X2, with CONFIG_SMP=y).  Should I follow your suggestion 
-> later, or follow the recommendation of the 'nmi_watchdog.txt' doc?
+Major problem everyone keeps on missing.  TALPA is only operating with
+part of the full information about the file.    When file systems go
+from native file system to inodes currently the permissions on the
+native file system are translated to what linux supports and any that
+don't fit is disregarded.   Due to that difference each file system
+has its own cache and holes on the file system where viruses could
+hide data for other OS's on the system.  So TALPA might save Linux
+only to see another OS on the system infected.   Worst case is if the
+other OS infected could come back and alter Linux disabling the virus
+scanner and reinfecting Linux.
 
-you could try both, starting with nmi_watchdog=2 - and trying 
-nmi_watchdog=1 if that doesnt work. The problem with nmi_watchdog=1 is 
-that it disables high-res timers. (because it has to - it piggy-backs on 
-the back of a periodic timer interrupt)
+TALPA from its current location is partly blind same with most other
+anti-virus and malware scanner running on linux.   Unfortunately to
+remove this blindness is rework the file system interface layer.
+Single cache for all file system drivers with TALPA embeded where it
+can scan everything about a file so when its clean its truly clean.
+Also for desktop users being able to see the permissions on there
+removable media to make sure they are correct would be a god send.
 
-you might even want to test the NMI watchdog with an intentional 
-user-space hard lockup - with the attached lockupcli.c program. 
-(Warning: if you run it as root it will really lock up your box hard. 
-Run it from a VGA text mode console to see any console messages.)
+This is a flaw that people from most other OS's would not think about.
+  Since Linux is one of the rare places it exists. LIM and HIDS are
+also effected by this blindness.   A hids scanning file systems under
+Linux can report that everything is fine when the damage is
+permissions that Linux is not translating.  We have a black hole of
+thrown away data that cannot be simply scanned.
 
-	Ingo
+Long term performance also comes into play.   Current system we have a
+few too many caches to ever think about making the file system cache
+lock less.   Its blinding and a future bottle neck.
 
---zhXaljGHf11kAtnf
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: attachment; filename="lockupcli.c"
+Suppose this defect has been there so long people are thinking of it as normal.
 
-
-main ()
-{
-	iopl(3);
-	for (;;) asm("cli");
-}
-
-
---zhXaljGHf11kAtnf--
+Peter Dolding
