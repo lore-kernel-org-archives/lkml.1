@@ -1,36 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758791AbYHOODR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756049AbYHOODd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758791AbYHOODR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Aug 2008 10:03:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753647AbYHOOC7
+	id S1756049AbYHOODd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Aug 2008 10:03:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758909AbYHOODW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Aug 2008 10:02:59 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:52845 "EHLO mx1.redhat.com"
+	Fri, 15 Aug 2008 10:03:22 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:32874 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753399AbYHOOC7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Aug 2008 10:02:59 -0400
-Date: Fri, 15 Aug 2008 10:02:49 -0400
-From: Aristeu Rozanski <arozansk@redhat.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, jvillalo@redhat.com
-Subject: Re: [PATCH] NMI: fix watchdog failure message
-Message-ID: <20080815140249.GV7154@redhat.com>
-References: <20080814203133.GS7154@redhat.com> <20080815115928.GD32726@elte.hu> <20080815121614.GT7154@redhat.com> <20080815123610.GU7154@redhat.com> <20080815133628.GA9243@elte.hu>
-Mime-Version: 1.0
+	id S1753868AbYHOODV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Aug 2008 10:03:21 -0400
+Date: Fri, 15 Aug 2008 16:03:00 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Tim Bird <tim.bird@am.sony.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>,
+       linux kernel <linux-kernel@vger.kernel.org>,
+       linux-embedded <linux-embedded@vger.kernel.org>,
+       Matt Mackall <mpm@selenic.com>, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH] bootup: Add built-in kernel command line for x86 (v2)
+Message-ID: <20080815140300.GC14103@elte.hu>
+References: <489A1844.3090502@am.sony.com> <20080811191012.GA16553@elte.hu> <48A091B7.6050601@zytor.com> <48A1EA04.7090102@am.sony.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080815133628.GA9243@elte.hu>
-User-Agent: Mutt/1.4.2.2i
+In-Reply-To: <48A1EA04.7090102@am.sony.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> applied to tip/x86/urgent, thanks Aristeu.
+
+* Tim Bird <tim.bird@am.sony.com> wrote:
+
+> Allow x86 to support a built-in kernel command line.  The built-in 
+> command line can override the one provided by the boot loader, for 
+> those cases where the boot loader is broken or it is difficult to 
+> change the command line in the the boot loader.
 > 
-> I've also done the cleanup below - those ugly linebreaks are gone this 
-> way as well.
-a lot better. thanks Ingo
+> Signed-off-by: Tim Bird <tim.bird@am.sony.com>
 
--- 
-Aristeu
+applied to tip/x86/commandline for v2.6.28 merging - thanks Tim!
 
+	Ingo
