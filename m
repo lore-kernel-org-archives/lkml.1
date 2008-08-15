@@ -1,63 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755811AbYHOHPb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756364AbYHOHR5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755811AbYHOHPb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Aug 2008 03:15:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751849AbYHOHPX
+	id S1756364AbYHOHR5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Aug 2008 03:17:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751975AbYHOHRp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Aug 2008 03:15:23 -0400
-Received: from mx1.suse.de ([195.135.220.2]:54236 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750953AbYHOHPW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Aug 2008 03:15:22 -0400
-From: Oliver Neukum <oneukum@suse.de>
-Organization: Novell
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [linux-pm] Power management for SCSI
-Date: Fri, 15 Aug 2008 09:16:23 +0200
-User-Agent: KMail/1.9.9
-Cc: Pavel Machek <pavel@suse.cz>, linux-pm@lists.linux-foundation.org,
-       James.Bottomley@hansenpartnership.com,
-       "Linux-pm mailing list" <linux-pm@lists.osdl.org>,
-       kernel list <linux-kernel@vger.kernel.org>, teheo@novell.com
-References: <Pine.LNX.4.44L0.0808141819470.2148-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0808141819470.2148-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Fri, 15 Aug 2008 03:17:45 -0400
+Received: from elasmtp-spurfowl.atl.sa.earthlink.net ([209.86.89.66]:35211
+	"EHLO elasmtp-spurfowl.atl.sa.earthlink.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751924AbYHOHRo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Aug 2008 03:17:44 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=dk20050327; d=mindspring.com;
+  b=YoUOs6Ll+WxaKxf6dCP3vBCTQ4KshA1mNdYNQ4R4f01PmAuCuChcRAHcFySkAQ+M;
+  h=Received:Date:From:To:Cc:Subject:Message-Id:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-ELNK-Trace:X-Originating-IP;
+Date: Fri, 15 Aug 2008 03:17:36 -0400
+From: Bill Fink <billfink@mindspring.com>
+To: "Yinghai Lu" <yhlu.kernel@gmail.com>
+Cc: "David Witbrodt" <dawitbro@sbcglobal.net>, linux-kernel@vger.kernel.org,
+       "Ingo Molnar" <mingo@elte.hu>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       "Peter Zijlstra" <peterz@infradead.org>,
+       "Thomas Gleixner" <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>, netdev <netdev@vger.kernel.org>
+Subject: Re: HPET regression in 2.6.26 versus 2.6.25 -- revert for
+ 2.6.26-rc1 failed
+Message-Id: <20080815031736.2f48ab7a.billfink@mindspring.com>
+In-Reply-To: <86802c440808140336k3558dfbew308ac7d7bdb23c@mail.gmail.com>
+References: <737832.54450.qm@web82101.mail.mud.yahoo.com>
+	<20080814060433.684c4fe5.billfink@mindspring.com>
+	<86802c440808140336k3558dfbew308ac7d7bdb23c@mail.gmail.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.8.6; powerpc-yellowdog-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200808150916.24258.oneukum@suse.de>
+X-ELNK-Trace: c598f748b88b6fd49c7f779228e2f6aeda0071232e20db4d380f7f47a431b41368f6bec8c0f8a28a350badd9bab72f9c350badd9bab72f9c350badd9bab72f9c
+X-Originating-IP: 96.234.158.88
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Freitag 15 August 2008 00:25:28 schrieb Alan Stern:
-> On Thu, 14 Aug 2008, Oliver Neukum wrote:
+On Thu, 14 Aug 2008, Yinghai Lu wrote:
+
+> On Thu, Aug 14, 2008 at 3:04 AM, Bill Fink <billfink@mindspring.com> wrote:
+> > Hi David,
+> >
+> > On Wed, 13 Aug 2008, David Witbrodt wrote:
+> >
+> >> [Yinghai, please note that I did not request a patch to revert the
+> >> problem commit.  I was merely experimenting -- on my own time, so
+> >> you folks would not have to bother -- to see if I could make it
+> >> work.  I should have made that more clear!  Having said that, I am
+> >> glad to test changes of any kind on my machine:  reverts, code for
+> >> debugging or info, experiments, etc.]
+> >
+> > I'm not sure Yinghai's revert patch is completely equivalent to
+> > a revert of the original problematic commit, by a side-by-side
+> > comparison of the original commit with his recent revert patch,
+> > but then I don't really know that code at all.
+> >
+> > In the original code there was a section (in e820_reserve_resources()):
+> >
+> > #ifdef CONFIG_KEXEC
+> >                   if (crashk_res.start != crashk_res.end)
+> >                           request_resource(res, &crashk_res);
+> > #endif
+> >
+> > If you don't have CONFIG_KEXEC defined in your .config, which is
+> > probably the case, then you would never request a crashk_res resource.
+> > But in the code after the original commit, it unconditionally calls
+> > (in reserve_crashkernel()):
+> >
+> >           crashk_res.start = crash_base;
+> >           crashk_res.end   = crash_base + crash_size - 1;
+> >           insert_resource(&iomem_resource, &crashk_res);
+> >
+> > And after Yinghai's revert patch it still does (in reserve_crashkernel()):
+> >
+> >        crashk_res.start = crash_base;
+> >        crashk_res.end   = crash_base + crash_size - 1;
+> >        crashk_res_ptr = &crashk_res;
+> >
+> > and (in setup_arch()):
+> >
+> >        num_res = 3;
+> >        if (crashk_res_ptr) {
+> >                res_kernel[num_res] = crashk_res_ptr;
+> >                num_res++;
+> >        }
+> >        e820_reserve_resources(res_kernel, num_res);
+> >
+> > then (in e820_reserve_resources()):
+> >
+> >                        for (j = 0; j < nr_res_k; j++) {
+> >                                if (!res_kernel[j])
+> >                                        continue;
+> >                                request_resource(res, res_kernel[j]);
+> >                        }
+> >
+> > which for j == 3 is:
+> >
+> >        request_resource(res, &crashk_res);
+> >
+> > Now it would appear that the new:
+> >
+> >        insert_resource(&iomem_resource, &crashk_res);
+> >
+> > or new:
+> >
+> >        request_resource(res, &crashk_res);
+> >
+> > should be noops.  But if for any reason crash_size is not zero,
+> > then there could be a difference.  I have no idea if this is at all
+> > significant, but I thought I'd point it out just in case.
 > 
-> > The core problem is that you insist on a rigid bottom-to-top flow of
-> > autosuspensions. That's good for systems like USB and PCI which
-> > are trees for PM purposes. It makes no sense for true busses with
-> > equal members on the bus.
+> why oops ?
+> if not valid crash kernel size etc is input, crashk_res_ptr will be null
 > 
-> My framework is tree-oriented because it's based on the driver model, 
-> which uses a tree of devices.
+> >        if (crashk_res_ptr) {
+> >                res_kernel[num_res] = crashk_res_ptr;
+> >                num_res++;
+> >        }
+> 
+> it that is not appended to res_kernel...
 
-Which uses a tree because PCI and USB are.
+You're right.  Looking just at the diffs, I didn't realize that all
+of reserve_crashkernel() is inside "#ifdef CONFIG_KEXEC" and thus
+crashk_res_ptr is probably null in David's kernel.  Unless of course,
+in the unlikey event that the memory location for crashk_res_ptr was
+being corrupted somehow.
 
-> Even on a true bus, the members can't be entirely equal -- one of them 
-> has to be closer to the CPU than the others are.  If that one member is 
-> in a low-power state then the CPU can't communicate with anything on 
-> the bus, unlike when one of the other members is in a low-power state.
-
-Yes, that means under some circumstances you cannot suspend the
-member closest to the CPU, but under others you can. In a tree this question
-is very simply answered, on a bus you will actually need to compute whether
-you need the connection to the bus.
-
-It is true that you won't need the bus if all other members on the bus have
-been suspended, but that's not very good because physically spinning
-down and up a disk is a very expensive operation, while suspending a host
-adapter can be trivial.
-
-	Regards
-		Oliver
+						-Bill
