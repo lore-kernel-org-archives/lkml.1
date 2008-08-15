@@ -1,47 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757769AbYHONAE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757418AbYHONCT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757769AbYHONAE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Aug 2008 09:00:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753794AbYHOM7v
+	id S1757418AbYHONCT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Aug 2008 09:02:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753016AbYHONCG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Aug 2008 08:59:51 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:38184 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753399AbYHOM7u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Aug 2008 08:59:50 -0400
-Date: Fri, 15 Aug 2008 14:59:37 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>
-Cc: mingo@redhat.com, srostedt@redhat.com,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] trace: Fix some mistakes in error messages
-Message-ID: <20080815125937.GB30597@elte.hu>
-References: <48A0B82B.7090200@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <48A0B82B.7090200@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Fri, 15 Aug 2008 09:02:06 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:29017 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750891AbYHONCD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Aug 2008 09:02:03 -0400
+Subject: Re: Btrfs v0.16 released
+From: Chris Mason <chris.mason@oracle.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+       linux-btrfs <linux-btrfs@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>
+In-Reply-To: <20080815013934.GE19125@one.firstfloor.org>
+References: <1217962876.15342.33.camel@think.oraclecorp.com>
+	 <1218100464.8625.9.camel@twins>
+	 <1218105597.15342.189.camel@think.oraclecorp.com>
+	 <877ias66v4.fsf@basil.nowhere.org>
+	 <1218221293.15342.263.camel@think.oraclecorp.com>
+	 <1218747656.15342.439.camel@think.oraclecorp.com>
+	 <20080814211756.GC13814@one.firstfloor.org>
+	 <1218763554.15342.460.camel@think.oraclecorp.com>
+	 <20080815013934.GE19125@one.firstfloor.org>
+Content-Type: text/plain
+Date: Fri, 15 Aug 2008 09:00:56 -0400
+Message-Id: <1218805256.15342.484.camel@think.oraclecorp.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 2008-08-15 at 03:39 +0200, Andi Kleen wrote:
+> > The async worker threads should be spreading the load across CPUs pretty
+> > well, and even a single CPU could keep up with 100MB/s checksumming.
+> > But, the async worker threads do randomize the IO somewhat because the
+> > IO goes from pdflush -> one worker thread per CPU -> submit_bio.  So,
+> > maybe that 3rd thread is more than the drive can handle?
+> 
+> You have more threads with duplication? 
+> 
 
-* Frédéric Weisbecker <fweisbec@gmail.com> wrote:
+It was a very confusing use of the word thread.  I have the same number
+of kernel threads running, but the single spindle on the drive has to
+deal with 3 different streams of writes.  The seeks/sec portion of the
+graph shows a big enough increase in seeks on the duplication run to
+explain the performance.
 
-> This patch fixes some mistakes on the tracer in warning messages when 
-> debugfs fails to create tracing files. Kernel version: 2.6.27-rc1
+> > btrfsck tells me the total size of the btree is only 20MB larger with
+> > checksumming on.
+> > 
+> > > > Btrfs no duplication            76.83 MB/s
+> > > > Btrfs no dup no csum no inline  76.85 MB/s
+> > > 
+> > > But without duplication they are basically free here at least
+> > > in IO rate. Seems odd?
+> > > 
+> > > Does it compute them twice in the duplication case perhaps?
+> > > 
+> > 
+> > The duplication happens lower down in the stack, they only get done
+> > once.
+> 
+> Ok was just speculation. The big difference still seems odd.
 
-hm, the patch is nice, but it is whitespace damaged. Please resend along 
-the lines of Documentation/email-clients.txt, or as an attachment.
+It does, I'll give the test a shot on other hardware too.  To be honest
+I'm pretty happy at matching ext4 with duplication on.  The graph shows
+even writeback and the times from each iteration are fairly consistent.
 
-	Ingo
+Ext3 and XFS score somewhere between 10-15MB/s on the same test...
+
+-chris
+
+
