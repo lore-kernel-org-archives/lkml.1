@@ -1,136 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757663AbYHOCXk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756577AbYHOCZL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757663AbYHOCXk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Aug 2008 22:23:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755955AbYHOCVg
+	id S1756577AbYHOCZL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Aug 2008 22:25:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752754AbYHOCY6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Aug 2008 22:21:36 -0400
-Received: from rv-out-0506.google.com ([209.85.198.238]:58827 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755867AbYHOCVe (ORCPT
+	Thu, 14 Aug 2008 22:24:58 -0400
+Received: from yx-out-2324.google.com ([74.125.44.29]:16511 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752347AbYHOCY5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Aug 2008 22:21:34 -0400
+	Thu, 14 Aug 2008 22:24:57 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=ffsjTaYAze1seZEwA1W2j/RuB4xjCEcGoYAGTJHMV4z3cJVZOiG8bjACfR7Axl2moy
-         VGFtu5YIPoIubU02LrBw3Qw5Pn038a2aLFrL25bP1I590oNpL+dHYHnI2daxHJDzNdSy
-         Nsb7hXz81X2JfyzcRuyrWyahmoFrBGAVERmEs=
-From: Yinghai Lu <yhlu.kernel@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Yinghai Lu <yhlu.kernel@gmail.com>
-Subject: [PATCH 7/7] x86: ordering functions in io_apic_64.c
-Date: Thu, 14 Aug 2008 19:20:32 -0700
-Message-Id: <1218766832-20476-8-git-send-email-yhlu.kernel@gmail.com>
-X-Mailer: git-send-email 1.5.4.5
-In-Reply-To: <1218766832-20476-7-git-send-email-yhlu.kernel@gmail.com>
-References: <no>
- <1218766832-20476-1-git-send-email-yhlu.kernel@gmail.com>
- <1218766832-20476-2-git-send-email-yhlu.kernel@gmail.com>
- <1218766832-20476-3-git-send-email-yhlu.kernel@gmail.com>
- <1218766832-20476-4-git-send-email-yhlu.kernel@gmail.com>
- <1218766832-20476-5-git-send-email-yhlu.kernel@gmail.com>
- <1218766832-20476-6-git-send-email-yhlu.kernel@gmail.com>
- <1218766832-20476-7-git-send-email-yhlu.kernel@gmail.com>
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=fboQHs+6H+eO3oVP0NpGoA49jarthI/DyKmZT1inrzqgVGIvW/FlVtFep76W9yDete
+         09gaw993aLCAkCMNT1Ez7XsOSOrA3RwrV/1wwhJ8obK4HKXlTBrWDjzYqDfqfiVeIRl/
+         kZzLiaCOwoiu2EgebhCORFeoxHtgf2s9dj/sw=
+Date: Thu, 14 Aug 2008 22:24:53 -0400
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Neil Brown <neilb@suse.de>
+Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH/RFC]  Resolve 2 year old issue with different demands
+	on EVIOCGRAB
+Message-ID: <20080815022453.GA9438@anvil.corenet.prv>
+References: <18596.58273.713075.332009@notabene.brown>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <18596.58273.713075.332009@notabene.brown>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-try to make functions in the same order
+Hi Neil,
 
-Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
----
- arch/x86/kernel/io_apic_64.c |   67 ++++++++++++++++++++---------------------
- 1 files changed, 33 insertions(+), 34 deletions(-)
+On Fri, Aug 15, 2008 at 12:02:09PM +1000, Neil Brown wrote:
+> 
+> I'll let the comments in the patch below to most of the talking.
+> This came up because I wanted to use EVIOCGRAB in some code on an
+> Openmoko Freerunner, and found that EVIOCGRAG does different things on
+> that kernel to elsewhere.  I looked into why, and found that there was
+> a good reason but that the issues hadn't been completely resolved.  I
+> hope to help resolve the issues so that EVIOCGRAB can behave the same
+> everywhere, and still meet everybody's needs.
+> 
+> I would have Cc:ed to Magnus Vigerlof who wrote the original patch on
+> which this is based, but his Email address doesn't appear in lkml.org.
+> 
 
-diff --git a/arch/x86/kernel/io_apic_64.c b/arch/x86/kernel/io_apic_64.c
-index e4f03cc..a14c29e 100644
---- a/arch/x86/kernel/io_apic_64.c
-+++ b/arch/x86/kernel/io_apic_64.c
-@@ -409,40 +409,6 @@ static bool io_apic_level_ack_pending(unsigned int irq)
- 	return false;
- }
- 
--/*
-- * Synchronize the IO-APIC and the CPU by doing
-- * a dummy read from the IO-APIC
-- */
--static inline void io_apic_sync(unsigned int apic)
--{
--	struct io_apic __iomem *io_apic = io_apic_base(apic);
--	readl(&io_apic->data);
--}
--
--#define __DO_ACTION(R, ACTION, FINAL)					\
--									\
--{									\
--	int pin;							\
--	struct irq_cfg *cfg;						\
--	struct irq_pin_list *entry;					\
--									\
--	cfg = irq_cfg(irq);						\
--	entry = cfg->irq_2_pin;						\
--	for (;;) {							\
--		unsigned int reg;					\
--		if (!entry)						\
--			break;						\
--		pin = entry->pin;					\
--		reg = io_apic_read(entry->apic, 0x10 + R + pin*2);	\
--		reg ACTION;						\
--		io_apic_modify(entry->apic, reg);			\
--		FINAL;							\
--		if (!entry->next)					\
--			break;						\
--		entry = entry->next;					\
--	}								\
--}
--
- union entry_union {
- 	struct { u32 w1, w2; };
- 	struct IO_APIC_route_entry entry;
-@@ -625,6 +591,39 @@ static void __init replace_pin_at_irq(unsigned int irq,
- 		add_pin_to_irq(irq, newapic, newpin);
- }
- 
-+/*
-+ * Synchronize the IO-APIC and the CPU by doing
-+ * a dummy read from the IO-APIC
-+ */
-+static inline void io_apic_sync(unsigned int apic)
-+{
-+	struct io_apic __iomem *io_apic = io_apic_base(apic);
-+	readl(&io_apic->data);
-+}
-+
-+#define __DO_ACTION(R, ACTION, FINAL)					\
-+									\
-+{									\
-+	int pin;							\
-+	struct irq_cfg *cfg;						\
-+	struct irq_pin_list *entry;					\
-+									\
-+	cfg = irq_cfg(irq);						\
-+	entry = cfg->irq_2_pin;						\
-+	for (;;) {							\
-+		unsigned int reg;					\
-+		if (!entry)						\
-+			break;						\
-+		pin = entry->pin;					\
-+		reg = io_apic_read(entry->apic, 0x10 + R + pin*2);	\
-+		reg ACTION;						\
-+		io_apic_modify(entry->apic, reg);			\
-+		FINAL;							\
-+		if (!entry->next)					\
-+			break;						\
-+		entry = entry->next;					\
-+	}								\
-+}
- 
- #define DO_ACTION(name,R,ACTION, FINAL)					\
- 									\
+I don't think this is a viable solution - there are other "good"
+handlers beisdes evdev, such as rfkill-input, which will still get
+disabled by the "lightweight" grabs.
+
+Overall I think it is application's responsibility to not use
+multiplexing devices if they use evdev, bit I can consider adding a new
+interface (maybe another ioctl) that would disable event delivery though
+certain interfaces for a device.
+
 -- 
-1.5.4.5
-
+Dmitry
