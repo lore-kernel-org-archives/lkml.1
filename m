@@ -1,82 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758343AbYHOMuY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758664AbYHOMvR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758343AbYHOMuY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Aug 2008 08:50:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754354AbYHOMuH
+	id S1758664AbYHOMvR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Aug 2008 08:51:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753535AbYHOMvB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Aug 2008 08:50:07 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:33050 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754299AbYHOMuG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Aug 2008 08:50:06 -0400
-Date: Fri, 15 Aug 2008 14:49:38 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Huang Ying <ying.huang@intel.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Pavel Machek <pavel@ucw.cz>, nigel@nigel.suspend2.net,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
+	Fri, 15 Aug 2008 08:51:01 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:61698 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753722AbYHOMvA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Aug 2008 08:51:00 -0400
+Date: Fri, 15 Aug 2008 08:50:57 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Marcin Slusarz <marcin.slusarz@gmail.com>
+cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Vivek Goyal <vgoyal@redhat.com>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org,
-       Kexec Mailing List <kexec@lists.infradead.org>
-Subject: Re: [PATCH -v3 6/7] kexec jump: __ftrace_enabled_save/restore
-Message-ID: <20080815124938.GB24663@elte.hu>
-References: <1218510876.24951.45.camel@caritas-dev.intel.com>
+       David Miller <davem@davemloft.net>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Roland McGrath <roland@redhat.com>, Ulrich Drepper <drepper@redhat.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Gregory Haskins <ghaskins@novell.com>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       "Luis Claudio R. Goncalves" <lclaudio@uudg.org>,
+       Clark Williams <williams@redhat.com>, Bruce Duncan <bwduncan@gmail.com>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [PATCH v2 0/6] ftrace: to kill a daemon (small updates)
+In-Reply-To: <20080815123624.GC5285@joi>
+Message-ID: <alpine.DEB.1.10.0808150840410.1065@gandalf.stny.rr.com>
+References: <20080814194506.233473381@goodmis.org> <20080815123624.GC5285@joi>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1218510876.24951.45.camel@caritas-dev.intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Huang Ying <ying.huang@intel.com> wrote:
+On Fri, 15 Aug 2008, Marcin Slusarz wrote:
 
-> +/* Ftrace disable/restore without lock. Some synchronization mechanism
-> + * must be used to prevent ftrace_enabled to be changed between
-> + * disable/restore. */
+> On Thu, Aug 14, 2008 at 03:45:06PM -0400, Steven Rostedt wrote:
+> >   Note 2: I have found that the changes here are more stable than
+> >     the current daemon method, and these patches should be used.
+> >     It also solves the resume from suspend to ram bug that was
+> >     reported:
+> > 
+> >       http://lkml.org/lkml/2008/8/12/234
+> >        and
+> >       http://lkml.org/lkml/2008/8/12/451
+> 
+> I don't remember testing any patch for my bug... ;)
+> 
+> For which tree this patchset is?
+> I tried to apply it on rc3, rc3+tip/tip and rc3+tip/master and all failed.
+> 
 
-use the proper comment style please:
+Ah, Bruce reported the same error, and said this patch series fixed it. 
+I assumed that this would fix your bug too. But if it does not, then I
+need to look deeper into what you are reporting.
 
-/*
- *
- */
+Could you recheck-out the latest tip/master and see if it works for you.
 
-> +static inline int __ftrace_enabled_save(void)
-> +{
-> +#ifdef CONFIG_FTRACE
-> +	int saved_ftrace_enabled = ftrace_enabled;
-> +	ftrace_enabled = 0;
-> +	return saved_ftrace_enabled;
-> +#else
-> +	return 0;
-> +#endif
-> +}
-> +
-> +static inline void __ftrace_enabled_restore(int enabled)
-> +{
-> +#ifdef CONFIG_FTRACE
-> +	ftrace_enabled = enabled;
-> +#endif
-> +}
+Thanks,
 
-hm, what is this used for?
+-- Steve
 
-also, instead of such an ugly inline, why not create a proper 
-kernel/trace/* function for this. That would also give it access to all 
-the proper locking mechanisms - instead of relying on some extral 
-mechanism.
-
-	Ingo
