@@ -1,954 +1,486 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757716AbYHOMTb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757566AbYHOMUE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757716AbYHOMTb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Aug 2008 08:19:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753829AbYHOMTA
+	id S1757566AbYHOMUE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Aug 2008 08:20:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756784AbYHOMTH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Aug 2008 08:19:00 -0400
-Received: from 75-130-108-43.dhcp.oxfr.ma.charter.com ([75.130.108.43]:53184
+	Fri, 15 Aug 2008 08:19:07 -0400
+Received: from 75-130-108-43.dhcp.oxfr.ma.charter.com ([75.130.108.43]:53185
 	"EHLO dev.haskins.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751483AbYHOMSy (ORCPT
+	with ESMTP id S1753183AbYHOMSy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 15 Aug 2008 08:18:54 -0400
 From: Gregory Haskins <ghaskins@novell.com>
-Subject: [PATCH RT RFC v2 1/8] add generalized priority-inheritance interface
+Subject: [PATCH RT RFC v2 8/8] rtmutex: pi-boost locks as late as possible
 To: mingo@elte.hu, paulmck@linux.vnet.ibm.com, peterz@infradead.org,
        tglx@linutronix.de, rostedt@goodmis.org
 Cc: linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org,
        gregory.haskins@gmail.com, David.Holmes@sun.com
-Date: Fri, 15 Aug 2008 08:08:15 -0400
-Message-ID: <20080815120815.24722.80889.stgit@dev.haskins.net>
+Date: Fri, 15 Aug 2008 08:08:52 -0400
+Message-ID: <20080815120852.24722.98421.stgit@dev.haskins.net>
 In-Reply-To: <20080815120722.24722.66516.stgit@dev.haskins.net>
 References: <20080815120722.24722.66516.stgit@dev.haskins.net>
 User-Agent: StGIT/0.14.2
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The kernel currently addresses priority-inversion through priority-
-inheritence.  However, all of the priority-inheritence logic is
-integrated into the Real-Time Mutex infrastructure.  This causes a few
-problems:
+PREEMPT_RT replaces most spinlock_t instances with a preemptible
+real-time lock that supports priority inheritance.  An uncontended
+(fastpath) acquisition of this lock has no more overhead than
+its non-rt spinlock_t counterpart.  However, the contended case
+has considerably more overhead so that the lock can maintain
+proper priority queue order and support pi-boosting of the lock
+owner, yet remaining fully preemptible.
 
- 1) This tightly coupled relationship makes it difficult to extend to
-    other areas of the kernel (for instance, pi-aware wait-queues may
-    be desirable).
- 2) Enhancing the rtmutex infrastructure becomes challenging because
-    there is no seperation between the locking code, and the pi-code.
+Instrumentation shows that the majority of acquisitions under most
+workloads falls either into the fastpath category, or the adaptive
+spin category within the slowpath.  The necessity to pi-boost a
+lock-owner should be sufficiently rare, yet the slow-path path
+blindly incurs this overhead in 100% of contentions.
 
-This patch aims to rectify these shortcomings by designing a stand-alone
-pi framework which can then be used to replace the rtmutex-specific
-version.  The goal of this framework is to provide similar functionality
-to the existing subsystem, but with sole focus on PI and the
-relationships between objects that can boost priority, and the objects
-that get boosted.
+Therefore, this patch intends to capitalize on this observation
+in order to reduce overhead and improve acquisition throughput.
+It is important to note that real-time latency is still treated
+as a higher order constraint than throughput, so the full
+pi-protocol is observed using new carefully constructed rules
+around the old concepts.
 
-We introduce the concept of a "pi_source" and a "pi_sink", where, as the
-name suggests provides the basic relationship of a priority source, and
-its boosted target.  A pi_source acts as a reference to some arbitrary
-source of priority, and a pi_sink can be boosted (or deboosted) by
-a pi_source.  For more details, please read the library documentation.
+1) We check the priority of the owner relative to the waiter on
+   each spin of the lock (if we are not boosted already).  If the
+   owner's effective priority is logically less than the waiters
+   priority, we must boost them.
 
-There are currently no users of this inteface.
+2) We check the priority of ourselves against our current queue
+   position on the waiters-list (if we are not boosted already).
+   If our priority was changed, we need to re-queue ourselves to
+   update our position.
+
+3) We break out of the adaptive-spin if either of the above
+   conditions (1), (2) change so that we can re-evaluate the
+   lock conditions.
+
+4) We must enter pi-boost mode if, at any time, we decide to
+   voluntarily preempt since we are losing our ability to
+   dynamically process the conditions above.
+
+Note: We still fully support priority inheritance with this
+protocol, even if we defer the low-level calls to adjust priority.
+The difference is really in terms of being a pro-active protocol
+(boost on entry), verses a reactive protocol (boost when
+necessary).  The upside to the latter is that we don't take a
+penalty for pi when it is not necessary (which is most of the time)
+The downside is that we technically leave the owner exposed to
+getting preempted (should it get asynchronously deprioritized), even
+if our waiter is the highest priority task in the system.  When this
+happens, the owner would be immediately boosted (because we would
+hit the "oncpu" condition, and subsequently follow the voluntary
+preempt path which boosts the owner).  Therefore, inversion is
+correctly prevented, but we have the extra latency of the
+preempt/boost/wakeup that could have been avoided in the proactive
+model.
+
+However, the design of the algorithm described above constrains the
+probability of this phenomenon occurring to setscheduler()
+operations. Since rt-locks do not support being interrupted by
+signals or timeouts, waiters only depart via the acquisition path.
+And while acquisitions do deboost the owner, the owner also
+changes simultaneously, rending the deboost moot relative to the
+other waiters.
+
+What this all means is that the downside to this implementation is
+that a high-priority waiter *may* see an extra latency (equivalent
+to roughly two wake-ups) if the owner has its priority reduced via
+setscheduler() while it holds the lock.  The penalty is
+deterministic, arguably small enough, and sufficiently rare that I
+do not believe it should be an issue.
+
+Note: If the concept of other exit paths are ever introduced in the
+future, simply adapting the condition to look at owner->normal_prio
+instead of owner->prio should once again constrain the limitation
+to setscheduler().
+
+Special thanks to Peter Morreale for suggesting the optimization to
+only consider skipping the boost if the owner is >= to current.
 
 Signed-off-by: Gregory Haskins <ghaskins@novell.com>
+CC: Peter Morreale <pmorreale@novell.com>
 ---
 
- Documentation/libpi.txt |   59 +++++
- include/linux/pi.h      |  278 +++++++++++++++++++++++++
- lib/Makefile            |    3 
- lib/pi.c                |  516 +++++++++++++++++++++++++++++++++++++++++++++++
- 4 files changed, 855 insertions(+), 1 deletions(-)
- create mode 100644 Documentation/libpi.txt
- create mode 100644 include/linux/pi.h
- create mode 100644 lib/pi.c
+ include/linux/rtmutex.h |    1 
+ kernel/rtmutex.c        |  195 ++++++++++++++++++++++++++++++++++++-----------
+ kernel/rtmutex_common.h |    1 
+ 3 files changed, 153 insertions(+), 44 deletions(-)
 
-diff --git a/Documentation/libpi.txt b/Documentation/libpi.txt
-new file mode 100644
-index 0000000..197b21a
---- /dev/null
-+++ b/Documentation/libpi.txt
-@@ -0,0 +1,59 @@
-+﻿lib/pi.c - Priority Inheritance library
-+
-+Sources and sinks:
-+------------
-+
-+This library introduces the basic concept of a "pi_source" and a "pi_sink", where, as the name suggests provides the basic relationship of a priority source, and its boosted target.
-+
-+A pi_source is simply a reference to some arbitrary priority value that may range from 0 (highest prio), to MAX_PRIO (currently 140, lowest prio).  A pi_source calls pi_sink.boost() whenever it wishes to boost the sink to (at least minimally) the priority value that the source represents.  It uses pi_sink.boost() for both the initial boosting, or for any subsequent refreshes to the value (even if the value is decreasing in logical priority).  The policy of the sink will dictate what happens as a result of that boost.  Likewise, a pi_source calls pi_sink.deboost() to stop contributing to the sink's minimum priority.
-+
-+It is important to note that a source is a reference to a priority value, not a value itself.  This is one of the concepts that allows the interface to be idempotent, which is important for properly updating a chain of sources and sinks in the proper order.  If we passed the priority on the stack, the order in which the system executes could allow the actual value that is set to race.
-+
-+Nodes:
-+
-+A pi_node is a convenience object which is simultaneously a source and a sink.  As its name suggests, it would typically be deployed as a node in a pi-chain.  Other pi_sources can boost a node via its pi_sink.boost() interface.  Likewise, a node can boost a fixed number of sinks via the node.add_sink() interface.
-+
-+Generally speaking, a node takes care of many common operations associated with being a “link in the chain”, such as:
-+
-+	1) determining the current priority of the node based on the (logically) highest priority source that is boosting the node.
-+	2) boosting/deboosting upstream sinks whenever the node locally changes priority.
-+	3) taking care to avoid deadlock during a chain update.
-+
-+Design details:
-+
-+Destruction:
-+
-+The pi-library objects are designed to be implicitly-destructable (meaning they do not require an explicit “free()” operation when they are not used anymore).  This is important considering their intended use (spinlock_t's which are also implicitly-destructable).  As such, any allocations needed for operation must come from internal structure storage as there will be no opportunity to free it later.
-+
-+Multiple sinks per Node:
-+
-+We allow multiple sinks to be associated with a node.  This is a slight departure from the previous implementation which had the notion of only a single sink (i.e. “task->pi_blocked_on”).  The reason why we added the ability to add more than one sink was not to change the default chaining model (I.e. multiple boost targets), but rather to add a flexible notification mechanism that is peripheral to the chain, which are informally called “leaf sinks”.
-+
-+Leaf-sinks are boostable objects that do not perpetuate a chain per se.  Rather, they act as endpoints to a priority boosting.  Ultimately, every chain ends with a leaf-sink, which presumably will act on the new priority information.  However, there may be any number of leaf-sinks along a chain as well.  Each one will act on its localized priority in its own implementation specific way.  For instance, a task_struct pi-leaf may change the priority of the task and reschedule it if necessary.  Whereas an rwlock leaf-sink may boost a list of reader-owners.
-+
-+The following diagram depicts an example relationship (warning: cheesy ascii art)
-+
-+                   ---------       ---------
-+                   | leaf  |       | leaf  |
-+                   ---------       ---------
-+                  /	          /	    
-+     ---------   / ----------    / ---------     ---------
-+  ->-| node  |->---| node   |-->---| node  |->---| leaf  |
-+     ---------     ----------      ---------     ---------
-+
-+The reason why this was done was to unify the notion of a “sink” to a single interface, rather than having something like task->pi_blocks_on and a separate callback for the leaf action.  Instead, any downstream object can be represented by a sink, and the implementation details are hidden (e.g. im a task, im a lock, im a node, im a work-item, im a wait-queue, etc).
-+
-+Sinkrefs:
-+
-+Each pi_sink.boost() operation is represented by a unique pi_source to properly facilitate a one node to many source relationship.  Therefore, if a pi_node is to act as aggregator to multiple sinks, it implicitly must have one internal pi_source object for every sink that is added (via node.add_sink().  This pi_source object has to be internally managed for the lifetime of the sink reference.
-+
-+Recall that due to the implicit-destruction requirement above, and the fact that we will typically be executing in a preempt-disabled region, we have to be very careful about how we allocate references to those sinks.  More on that next.  But long story short we limit the number of sinks to MAX_PI_DEPENDENDICES (currently 5).
-+
-+Locking:
-+
-+(work in progress....)
-+
-+
-+
-+
-+
-diff --git a/include/linux/pi.h b/include/linux/pi.h
-new file mode 100644
-index 0000000..d839d4f
---- /dev/null
-+++ b/include/linux/pi.h
-@@ -0,0 +1,278 @@
-+/*
-+ * see Documentation/libpi.txt for details
-+ */
-+
-+#ifndef _LINUX_PI_H
-+#define _LINUX_PI_H
-+
-+#include <linux/list.h>
-+#include <linux/plist.h>
-+#include <asm/atomic.h>
-+
-+#define MAX_PI_DEPENDENCIES 5
-+
-+struct pi_source {
-+	struct plist_node  list;
-+	int               *prio;
-+	int                boosted;
-+};
-+
-+
-+#define PI_FLAG_DEFER_UPDATE     (1 << 0)
-+#define PI_FLAG_ALREADY_BOOSTED  (1 << 1)
-+#define PI_FLAG_NO_DROPREF       (1 << 2)
-+
-+struct pi_sink {
-+	atomic_t refs;
-+	int (*boost)(struct pi_sink *snk, struct pi_source *src,
-+		     unsigned int flags);
-+	int (*deboost)(struct pi_sink *snk, struct pi_source *src,
-+		       unsigned int flags);
-+	int (*update)(struct pi_sink *snk,
-+		      unsigned int flags);
-+	int (*free)(struct pi_sink *snk,
-+		      unsigned int flags);
-+};
-+
-+enum pi_state {
-+	pi_state_boost,
-+	pi_state_boosted,
-+	pi_state_deboost,
-+	pi_state_free,
-+};
-+
-+/*
-+ * NOTE: PI must always use a true (e.g. raw) spinlock, since it is used by
-+ * rtmutex infrastructure.
-+ */
-+
-+struct pi_sinkref {
-+	raw_spinlock_t         lock;
-+	struct list_head       list;
-+	enum pi_state          state;
-+	struct pi_sink        *snk;
-+	struct pi_source       src;
-+	atomic_t               refs;
-+	int                    prio;
-+};
-+
-+struct pi_sinkref_pool {
-+	struct list_head       free;
-+	struct pi_sinkref      data[MAX_PI_DEPENDENCIES];
-+	int                    count;
-+};
-+
-+struct pi_node {
-+	raw_spinlock_t         lock;
-+	int                    prio;
-+	struct pi_sink         snk;
-+	struct pi_sinkref_pool sinkref_pool;
-+	struct list_head       snks;
-+	struct plist_head      srcs;
-+};
-+
-+/**
-+ * pi_node_init - initialize a pi_node before use
-+ * @node: a node context
-+ */
-+extern void pi_node_init(struct pi_node *node);
-+
-+/**
-+ * pi_add_sink - add a sink as an downstream object
-+ * @node: the node context
-+ * @snk: the sink context to add to the node
-+ * @flags: optional flags to modify behavior
-+ *   PI_FLAG_DEFER_UPDATE    - Do not perform sync update
-+ *   PI_FLAG_ALREADY_BOOSTED - Do not perform initial boosting
-+ *
-+ * This function registers a sink to get notified whenever the
-+ * node changes priority.
-+ *
-+ * Note: By default, this function will schedule the newly added sink
-+ * to get an inital boost notification on the next update (even
-+ * without the presence of a priority transition).  However, if the
-+ * ALREADY_BOOSTED flag is specified, the sink is initially marked as
-+ * BOOSTED and will only get notified if the node changes priority
-+ * in the future.
-+ *
-+ * Note: By default, this function will synchronously update the
-+ * chain unless the DEFER_UPDATE flag is specified.
-+ *
-+ * Returns: (int)
-+ *   0 = success
-+ *   any other value = failure
-+ */
-+extern int pi_add_sink(struct pi_node *node, struct pi_sink *snk,
-+		       unsigned int flags);
-+
-+/**
-+ * pi_del_sink - del a sink from the current downstream objects
-+ * @node: the node context
-+ * @snk: the sink context to delete from the node
-+ * @flags: optional flags to modify behavior
-+ *   PI_FLAG_DEFER_UPDATE    - Do not perform sync update
-+ *
-+ * This function unregisters a sink from the node.
-+ *
-+ * Note: The sink will not actually become fully deboosted until
-+ * a call to node.update() successfully returns.
-+ *
-+ * Note: By default, this function will synchronously update the
-+ * chain unless the DEFER_UPDATE flag is specified.
-+ *
-+ * Returns: (int)
-+ *   0 = success
-+ *   any other value = failure
-+ */
-+extern int pi_del_sink(struct pi_node *node, struct pi_sink *snk,
-+		       unsigned int flags);
-+
-+/**
-+ * pi_source_init - initialize a pi_source before use
-+ * @src: a src context
-+ * @prio: pointer to a priority value
-+ *
-+ * A pointer to a priority value is used so that boost and update
-+ * are fully idempotent.
-+ */
-+static inline void
-+pi_source_init(struct pi_source *src, int *prio)
-+{
-+	plist_node_init(&src->list, *prio);
-+	src->prio = prio;
-+	src->boosted = 0;
-+}
-+
-+/**
-+ * pi_boost - boost a node with a pi_source
-+ * @node: the node context
-+ * @src: the src context to boost the node with
-+ * @flags: optional flags to modify behavior
-+ *   PI_FLAG_DEFER_UPDATE    - Do not perform sync update
-+ *
-+ * This function registers a priority source with the node, possibly
-+ * boosting its value if the new source is the highest registered source.
-+ *
-+ * This function is used to both initially register a source, as well as
-+ * to notify the node if the value changes in the future (even if the
-+ * priority is decreasing).
-+ *
-+ * Note: By default, this function will synchronously update the
-+ * chain unless the DEFER_UPDATE flag is specified.
-+ *
-+ * Returns: (int)
-+ *   0 = success
-+ *   any other value = failure
-+ */
-+static inline int
-+pi_boost(struct pi_node *node, struct pi_source *src, unsigned int flags)
-+{
-+	struct pi_sink *snk = &node->snk;
-+
-+	if (snk->boost)
-+		return snk->boost(snk, src, flags);
-+
-+	return 0;
-+}
-+
-+/**
-+ * pi_deboost - deboost a pi_source from a node
-+ * @node: the node context
-+ * @src: the src context to boost the node with
-+ * @flags: optional flags to modify behavior
-+ *   PI_FLAG_DEFER_UPDATE    - Do not perform sync update
-+ *
-+ * This function unregisters a priority source from the node, possibly
-+ * deboosting its value if the departing source was the highest
-+ * registered source.
-+ *
-+ * Note: By default, this function will synchronously update the
-+ * chain unless the DEFER_UPDATE flag is specified.
-+ *
-+ * Returns: (int)
-+ *   0 = success
-+ *   any other value = failure
-+ */
-+static inline int
-+pi_deboost(struct pi_node *node, struct pi_source *src, unsigned int flags)
-+{
-+	struct pi_sink *snk = &node->snk;
-+
-+	if (snk->deboost)
-+		return snk->deboost(snk, src, flags);
-+
-+	return 0;
-+}
-+
-+/**
-+ * pi_update - force a manual chain update
-+ * @node: the node context
-+ * @flags: optional flags to modify behavior.  Reserved, must be 0.
-+ *
-+ * This function will push any priority changes (as a result of
-+ * boost/deboost or add_sink/del_sink) down through the chain.
-+ * If no changes are necessary, this function is a no-op.
-+ *
-+ * Returns: (int)
-+ *   0 = success
-+ *   any other value = failure
-+ */
-+static inline int
-+pi_update(struct pi_node *node, unsigned int flags)
-+{
-+	struct pi_sink *snk = &node->snk;
-+
-+	if (snk->update)
-+		return snk->update(snk, flags);
-+
-+	return 0;
-+}
-+
-+/**
-+ * pi_sink_dropref - down the reference count, freeing the sink if 0
-+ * @node: the node context
-+ * @flags: optional flags to modify behavior.  Reserved, must be 0.
-+ *
-+ * Returns: none
-+ */
-+static inline void
-+pi_sink_dropref(struct pi_sink *snk, unsigned int flags)
-+{
-+	if (atomic_dec_and_test(&snk->refs)) {
-+		if (snk->free)
-+			snk->free(snk, flags);
-+	}
-+}
-+
-+
-+/**
-+ * pi_addref - up the reference count
-+ * @node: the node context
-+ * @flags: optional flags to modify behavior.  Reserved, must be 0.
-+ *
-+ * Returns: none
-+ */
-+static inline void
-+pi_addref(struct pi_node *node, unsigned int flags)
-+{
-+	struct pi_sink *snk = &node->snk;
-+
-+	atomic_inc(&snk->refs);
-+}
-+
-+/**
-+ * pi_dropref - down the reference count, freeing the node if 0
-+ * @node: the node context
-+ * @flags: optional flags to modify behavior.  Reserved, must be 0.
-+ *
-+ * Returns: none
-+ */
-+static inline void
-+pi_dropref(struct pi_node *node, unsigned int flags)
-+{
-+	struct pi_sink *snk = &node->snk;
-+
-+	pi_sink_dropref(snk, flags);
-+}
-+
-+#endif /* _LINUX_PI_H */
-diff --git a/lib/Makefile b/lib/Makefile
-index 5187924..df81ad7 100644
---- a/lib/Makefile
-+++ b/lib/Makefile
-@@ -23,7 +23,8 @@ lib-$(CONFIG_SMP) += cpumask.o
- lib-y	+= kobject.o kref.o klist.o
+diff --git a/include/linux/rtmutex.h b/include/linux/rtmutex.h
+index d984244..1d98107 100644
+--- a/include/linux/rtmutex.h
++++ b/include/linux/rtmutex.h
+@@ -33,6 +33,7 @@ struct rt_mutex {
+ 		struct pi_node   node;
+ 		struct pi_sink   snk;
+ 		int              prio;
++		int              boosters;
+ 	} pi;
+ #ifdef CONFIG_DEBUG_RT_MUTEXES
+ 	int			save_state;
+diff --git a/kernel/rtmutex.c b/kernel/rtmutex.c
+index 0f64298..de213ac 100644
+--- a/kernel/rtmutex.c
++++ b/kernel/rtmutex.c
+@@ -76,14 +76,15 @@ rt_mutex_set_owner(struct rt_mutex *lock, struct task_struct *owner,
+ {
+ 	unsigned long val = (unsigned long)owner | mask;
  
- obj-y += div64.o sort.o parser.o halfmd4.o debug_locks.o random32.o \
--	 bust_spinlocks.o hexdump.o kasprintf.o bitmap.o scatterlist.o
-+	 bust_spinlocks.o hexdump.o kasprintf.o bitmap.o scatterlist.o \
-+	 pi.o
+-	if (rt_mutex_has_waiters(lock)) {
++	if (lock->pi.boosters) {
+ 		struct task_struct *prev_owner = rt_mutex_owner(lock);
  
- ifeq ($(CONFIG_DEBUG_KOBJECT),y)
- CFLAGS_kobject.o += -DDEBUG
-diff --git a/lib/pi.c b/lib/pi.c
-new file mode 100644
-index 0000000..46736e4
---- /dev/null
-+++ b/lib/pi.c
-@@ -0,0 +1,516 @@
-+/*
-+ *  lib/pi.c
-+ *
-+ *  Priority-Inheritance library
-+ *
-+ *  Copyright (C) 2008 Novell
-+ *
-+ *  Author: Gregory Haskins <ghaskins@novell.com>
-+ *
-+ *  This code provides a generic framework for preventing priority
-+ *  inversion by means of priority-inheritance. (see Documentation/libpi.txt
-+ *  for details)
-+ *
-+ *  This library is free software; you can redistribute it and/or
-+ *  modify it under the terms of the GNU General Public License
-+ *  as published by the Free Software Foundation; version 2
-+ *  of the License.
-+ */
-+
-+#include <linux/sched.h>
-+#include <linux/module.h>
-+#include <linux/pi.h>
-+
-+/*
-+ *-----------------------------------------------------------
-+ * pi_sinkref_pool
-+ *-----------------------------------------------------------
-+ */
-+
-+static void
-+pi_sinkref_pool_init(struct pi_sinkref_pool *pool)
-+{
-+	int i;
-+
-+	INIT_LIST_HEAD(&pool->free);
-+	pool->count = 0;
-+
-+	for (i = 0; i < MAX_PI_DEPENDENCIES; ++i) {
-+		struct pi_sinkref *sinkref = &pool->data[i];
-+
-+		memset(sinkref, 0, sizeof(*sinkref));
-+		INIT_LIST_HEAD(&sinkref->list);
-+		list_add_tail(&sinkref->list, &pool->free);
-+		pool->count++;
+ 		rtmutex_pi_owner(lock, prev_owner, 0);
+ 		rtmutex_pi_owner(lock, owner, 1);
 +	}
-+}
-+
-+static struct pi_sinkref *
-+pi_sinkref_alloc(struct pi_sinkref_pool *pool)
+ 
++	if (rt_mutex_has_waiters(lock))
+ 		val |= RT_MUTEX_HAS_WAITERS;
+-	}
+ 
+ 	lock->owner = (struct task_struct *)val;
+ }
+@@ -177,7 +178,7 @@ static inline int rtmutex_pi_update(struct pi_sink *snk,
+ 
+ 	spin_lock_irqsave(&lock->wait_lock, iflags);
+ 
+-	if (rt_mutex_has_waiters(lock)) {
++	if (lock->pi.boosters) {
+ 		owner = rt_mutex_owner(lock);
+ 
+ 		if (owner && owner != RT_RW_READER) {
+@@ -206,6 +207,7 @@ static void init_pi(struct rt_mutex *lock)
+ 	pi_node_init(&lock->pi.node);
+ 
+ 	lock->pi.prio = MAX_PRIO;
++	lock->pi.boosters = 0;
+ 	pi_source_init(&lock->pi.src, &lock->pi.prio);
+ 	lock->pi.snk = rtmutex_pi_snk;
+ 
+@@ -303,6 +305,16 @@ static inline int try_to_take_rt_mutex(struct rt_mutex *lock)
+ 	return do_try_to_take_rt_mutex(lock, STEAL_NORMAL);
+ }
+ 
++static inline void requeue_waiter(struct rt_mutex *lock,
++				  struct rt_mutex_waiter *waiter)
 +{
-+	struct pi_sinkref *sinkref;
++	BUG_ON(!waiter->task);
 +
-+	BUG_ON(!pool->count);
-+
-+	if (list_empty(&pool->free))
-+		return NULL;
-+
-+	sinkref = list_first_entry(&pool->free, struct pi_sinkref, list);
-+	list_del(&sinkref->list);
-+	memset(sinkref, 0, sizeof(*sinkref));
-+	pool->count--;
-+
-+	return sinkref;
++	plist_del(&waiter->list_entry, &lock->wait_list);
++	plist_node_init(&waiter->list_entry, waiter->pi.prio);
++	plist_add(&waiter->list_entry, &lock->wait_list);
 +}
 +
-+static void
-+pi_sinkref_free(struct pi_sinkref_pool *pool,
-+		  struct pi_sinkref *sinkref)
-+{
-+	list_add_tail(&sinkref->list, &pool->free);
-+	pool->count++;
-+}
-+
-+/*
-+ *-----------------------------------------------------------
-+ * pi_sinkref
-+ *-----------------------------------------------------------
+ /*
+  * These callbacks are invoked whenever a waiter has changed priority.
+  * So we should requeue it within the lock->wait_list
+@@ -343,11 +355,8 @@ static inline int rtmutex_waiter_pi_update(struct pi_sink *snk,
+ 	 * pi list.  Therefore, if waiter->pi.prio has changed since we
+ 	 * queued ourselves, requeue it.
+ 	 */
+-	if (waiter->task && waiter->list_entry.prio != waiter->pi.prio) {
+-		plist_del(&waiter->list_entry, &lock->wait_list);
+-		plist_node_init(&waiter->list_entry, waiter->pi.prio);
+-		plist_add(&waiter->list_entry, &lock->wait_list);
+-	}
++	if (waiter->task && waiter->list_entry.prio != waiter->pi.prio)
++		requeue_waiter(lock, waiter);
+ 
+ 	spin_unlock_irqrestore(&lock->wait_lock, iflags);
+ 
+@@ -359,20 +368,9 @@ static struct pi_sink rtmutex_waiter_pi_snk = {
+     .update = rtmutex_waiter_pi_update,
+ };
+ 
+-/*
+- * This must be called with lock->wait_lock held.
+- */
+-static int add_waiter(struct rt_mutex *lock,
+-		      struct rt_mutex_waiter *waiter,
+-		      unsigned long *flags)
++static void boost_lock(struct rt_mutex *lock,
++		       struct rt_mutex_waiter *waiter)
+ {
+-	int has_waiters = rt_mutex_has_waiters(lock);
+-
+-	waiter->task = current;
+-	waiter->lock = lock;
+-	waiter->pi.prio = current->prio;
+-	plist_node_init(&waiter->list_entry, waiter->pi.prio);
+-	plist_add(&waiter->list_entry, &lock->wait_list);
+ 	waiter->pi.snk = rtmutex_waiter_pi_snk;
+ 
+ 	/*
+@@ -397,35 +395,28 @@ static int add_waiter(struct rt_mutex *lock,
+ 	 * If we previously had no waiters, we are transitioning to
+ 	 * a mode where we need to boost the owner
+ 	 */
+-	if (!has_waiters) {
++	if (!lock->pi.boosters) {
+ 		struct task_struct *owner = rt_mutex_owner(lock);
+ 		rtmutex_pi_owner(lock, owner, 1);
+ 	}
+ 
+-	spin_unlock_irqrestore(&lock->wait_lock, *flags);
+-	task_pi_update(current, 0);
+-	spin_lock_irqsave(&lock->wait_lock, *flags);
+-
+-	return 0;
++	lock->pi.boosters++;
++	waiter->pi.boosted = 1;
+ }
+ 
+-/*
+- * Remove a waiter from a lock
+- *
+- * Must be called with lock->wait_lock held
+- */
+-static void remove_waiter(struct rt_mutex *lock,
+-			  struct rt_mutex_waiter *waiter)
++static void deboost_lock(struct rt_mutex *lock,
++			 struct rt_mutex_waiter *waiter,
++			 struct task_struct *p)
+ {
+-	struct task_struct *p = waiter->task;
++	BUG_ON(!waiter->pi.boosted);
+ 
+-	plist_del(&waiter->list_entry, &lock->wait_list);
+-	waiter->task = NULL;
++	waiter->pi.boosted = 0;
++	lock->pi.boosters--;
+ 
+ 	/*
+ 	 * We can stop boosting the owner if there are no more waiters
+ 	 */
+-	if (!rt_mutex_has_waiters(lock)) {
++	if (!lock->pi.boosters) {
+ 		struct task_struct *owner = rt_mutex_owner(lock);
+ 		rtmutex_pi_owner(lock, owner, 0);
+ 	}
+@@ -446,6 +437,51 @@ static void remove_waiter(struct rt_mutex *lock,
+ }
+ 
+ /*
++ * This must be called with lock->wait_lock held.
 + */
-+
-+static inline void
-+_pi_sink_addref(struct pi_sinkref *sinkref)
++static void _add_waiter(struct rt_mutex *lock,
++			struct rt_mutex_waiter *waiter)
 +{
-+	atomic_inc(&sinkref->snk->refs);
-+	atomic_inc(&sinkref->refs);
++	waiter->task = current;
++	waiter->lock = lock;
++	waiter->pi.prio = current->prio;
++	plist_node_init(&waiter->list_entry, waiter->pi.prio);
++	plist_add(&waiter->list_entry, &lock->wait_list);
 +}
 +
-+static inline void
-+_pi_sink_dropref_local(struct pi_node *node, struct pi_sinkref *sinkref)
++static int add_waiter(struct rt_mutex *lock,
++		      struct rt_mutex_waiter *waiter,
++		      unsigned long *flags)
 +{
-+	if (atomic_dec_and_lock(&sinkref->refs, &node->lock)) {
-+		list_del(&sinkref->list);
-+		pi_sinkref_free(&node->sinkref_pool, sinkref);
-+		spin_unlock(&node->lock);
-+	}
-+}
++	_add_waiter(lock, waiter);
 +
-+static inline void
-+_pi_sink_dropref_all(struct pi_node *node, struct pi_sinkref *sinkref)
-+{
-+	struct pi_sink *snk = sinkref->snk;
++	boost_lock(lock, waiter);
 +
-+	_pi_sink_dropref_local(node, sinkref);
-+	pi_sink_dropref(snk, 0);
-+}
++	spin_unlock_irqrestore(&lock->wait_lock, *flags);
++	task_pi_update(current, 0);
++	spin_lock_irqsave(&lock->wait_lock, *flags);
 +
-+/*
-+ *-----------------------------------------------------------
-+ * pi_node
-+ *-----------------------------------------------------------
-+ */
-+
-+static struct pi_node *node_of(struct pi_sink *snk)
-+{
-+	return container_of(snk, struct pi_node, snk);
-+}
-+
-+static inline void
-+__pi_update_prio(struct pi_node *node)
-+{
-+	if (!plist_head_empty(&node->srcs))
-+		node->prio = plist_first(&node->srcs)->prio;
-+	else
-+		node->prio = MAX_PRIO;
-+}
-+
-+static inline void
-+__pi_boost(struct pi_node *node, struct pi_source *src)
-+{
-+	BUG_ON(src->boosted);
-+
-+	plist_node_init(&src->list, *src->prio);
-+	plist_add(&src->list, &node->srcs);
-+	src->boosted = 1;
-+
-+	__pi_update_prio(node);
-+}
-+
-+static inline void
-+__pi_deboost(struct pi_node *node, struct pi_source *src)
-+{
-+	BUG_ON(!src->boosted);
-+
-+	plist_del(&src->list, &node->srcs);
-+	src->boosted = 0;
-+
-+	__pi_update_prio(node);
++	return 0;
 +}
 +
 +/*
-+ * _pi_node_update - update the chain
++ * Remove a waiter from a lock
 + *
-+ * We loop through up to MAX_PI_DEPENDENCIES times looking for stale entries
-+ * that need to propagate up the chain.  This is a step-wise process where we
-+ * have to be careful about locking and preemption.  By trying MAX_PI_DEPs
-+ * times, we guarantee that this update routine is an effective barrier...
-+ * all modifications made prior to the call to this barrier will have completed.
-+ *
-+ * Deadlock avoidance: This node may participate in a chain of nodes which
-+ * form a graph of arbitrary structure.  While the graph should technically
-+ * never close on itself barring any bugs, we still want to protect against
-+ * a theoretical ABBA deadlock (if for nothing else, to prevent lockdep
-+ * from detecting this potential).  To do this, we employ a dual-locking
-+ * scheme where we can carefully control the order.  That is: node->lock
-+ * protects most of the node's internal state, but it will never be held
-+ * across a chain update.  sinkref->lock, on the other hand, can be held
-+ * across a boost/deboost, and also guarantees proper execution order. Also
-+ * note that no locks are held across an snk->update.
++ * Must be called with lock->wait_lock held
 + */
-+static int
-+_pi_node_update(struct pi_sink *snk, unsigned int flags)
++static void remove_waiter(struct rt_mutex *lock,
++			   struct rt_mutex_waiter *waiter)
 +{
-+	struct pi_node    *node = node_of(snk);
-+	struct pi_sinkref *sinkref;
-+	unsigned long      iflags;
-+	int                count = 0;
-+	int                i;
++	struct task_struct *p = waiter->task;
 +
-+	struct updater {
-+		int update;
-+		struct pi_sinkref *sinkref;
-+		struct pi_sink *snk;
-+	} updaters[MAX_PI_DEPENDENCIES];
++	plist_del(&waiter->list_entry, &lock->wait_list);
++	waiter->task = NULL;
 +
-+	spin_lock_irqsave(&node->lock, iflags);
++	if (waiter->pi.boosted)
++		deboost_lock(lock, waiter, p);
++}
 +
-+	list_for_each_entry(sinkref, &node->snks, list) {
-+		/*
-+		 * If the priority is changing, or if this is a
-+		 * BOOST/DEBOOST, we consider this sink "stale"
-+		 */
-+		if (sinkref->prio != node->prio
-+		    || sinkref->state != pi_state_boosted) {
-+			struct updater *iter = &updaters[count++];
-+
-+			BUG_ON(!atomic_read(&sinkref->snk->refs));
-+			_pi_sink_addref(sinkref);
-+			sinkref->prio = node->prio;
-+
-+			iter->update  = 1;
-+			iter->sinkref = sinkref;
-+			iter->snk     = sinkref->snk;
-+		}
-+	}
-+
-+	spin_unlock(&node->lock);
-+
-+	for (i = 0; i < count; ++i) {
-+		struct updater    *iter = &updaters[i];
-+		unsigned int       lflags = PI_FLAG_DEFER_UPDATE;
-+		struct pi_sink    *snk;
-+
-+		sinkref = iter->sinkref;
-+		snk = iter->snk;
-+
-+		spin_lock(&sinkref->lock);
-+
-+		switch (sinkref->state) {
-+		case pi_state_boost:
-+			sinkref->state = pi_state_boosted;
-+			/* Fall through */
-+		case pi_state_boosted:
-+			snk->boost(snk, &sinkref->src, lflags);
-+			break;
-+		case pi_state_deboost:
-+			snk->deboost(snk, &sinkref->src, lflags);
-+			sinkref->state = pi_state_free;
++/*
+  * Wake up the next waiter on the lock.
+  *
+  * Remove the top waiter from the current tasks waiter list and from
+@@ -558,6 +594,24 @@ static int adaptive_wait(struct rt_mutex_waiter *waiter,
+ 		if (orig_owner != rt_mutex_owner(waiter->lock))
+ 			return 0;
+ 
++		/* Special handling for when we are not in pi-boost mode */
++		if (!waiter->pi.boosted) {
++			/*
++			 * Are we higher priority than the owner?  If so
++			 * we should bail out immediately so that we can
++			 * pi boost them.
++			 */
++			if (current->prio < orig_owner->prio)
++				return 0;
 +
 +			/*
-+			 * drop the ref that we took when the sinkref
-+			 * was allocated.  We still hold a ref from
-+			 * the above.
++			 * Did our priority change? If so, we need to
++			 * requeue our position in the list
 +			 */
-+			_pi_sink_dropref_all(node, sinkref);
-+			break;
-+		case pi_state_free:
-+			iter->update = 0;
-+			break;
-+		default:
-+			panic("illegal sinkref type: %d", sinkref->state);
++			if (waiter->pi.prio != current->prio)
++				return 0;
 +		}
 +
-+		spin_unlock(&sinkref->lock);
+ 		/* Owner went to bed, so should we */
+ 		if (!task_is_current(orig_owner))
+ 			return 1;
+@@ -599,6 +653,7 @@ rt_spin_lock_slowlock(struct rt_mutex *lock)
+ 	unsigned long saved_state, state, flags;
+ 	struct task_struct *orig_owner;
+ 	int missed = 0;
++	int boosted = 0;
+ 
+ 	init_waiter(&waiter);
+ 
+@@ -631,26 +686,54 @@ rt_spin_lock_slowlock(struct rt_mutex *lock)
+ 		}
+ 		missed = 1;
+ 
++		orig_owner = rt_mutex_owner(lock);
++
+ 		/*
+ 		 * waiter.task is NULL the first time we come here and
+ 		 * when we have been woken up by the previous owner
+ 		 * but the lock got stolen by an higher prio task.
+ 		 */
+-		if (!waiter.task) {
+-			add_waiter(lock, &waiter, &flags);
++		if (!waiter.task)
++			_add_waiter(lock, &waiter);
 +
 +		/*
-+		 * We will drop the sinkref reference while still holding the
-+		 * preempt/irqs off so that the memory is returned synchronously
-+		 * to the system.
++		 * We only need to pi-boost the owner if they are lower
++		 * priority than us.  We dont care if this is racy
++		 * against priority changes as we will break out of
++		 * the adaptive spin anytime any priority changes occur
++		 * without boosting enabled.
 +		 */
-+		_pi_sink_dropref_local(node, sinkref);
++		if (!waiter.pi.boosted && current->prio < orig_owner->prio) {
++			boost_lock(lock, &waiter);
++			boosted = 1;
 +
-+		/*
-+		 * The sinkref is no longer valid since we dropped the reference
-+		 * above, so symbolically drop it here too to make it more
-+		 * obvious if we try to use it later
++			spin_unlock_irqrestore(&lock->wait_lock, flags);
++			task_pi_update(current, 0);
++			spin_lock_irqsave(&lock->wait_lock, flags);
++
+ 			/* Wakeup during boost ? */
+ 			if (unlikely(!waiter.task))
+ 				continue;
+ 		}
+ 
+ 		/*
++		 * If we are not currently pi-boosting the lock, we have to
++		 * monitor whether our priority changed since the last
++		 * time it was recorded and requeue ourselves if it moves.
 +		 */
-+		iter->sinkref = NULL;
-+	}
++		if (!waiter.pi.boosted && waiter.pi.prio != current->prio) {
++			waiter.pi.prio = current->prio;
 +
-+	local_irq_restore(iflags);
-+
-+	/*
-+	 * Note: At this point, sinkref is invalid since we dropref'd
-+	 * it above, but snk is valid since we still hold the remote
-+	 * reference.  This is key to the design because it allows us
-+	 * to synchronously free the sinkref object, yet maintain a
-+	 * reference to the sink across the update
-+	 */
-+	for (i = 0; i < count; ++i) {
-+		struct updater *iter = &updaters[i];
-+
-+		if (iter->update)
-+			iter->snk->update(iter->snk, 0);
-+	}
-+
-+	/*
-+	 * We perform all the free opertations together at the end, using
-+	 * only automatic/stack variables since any one of these operations
-+	 * could result in our node object being deallocated
-+	 */
-+	for (i = 0; i < count; ++i) {
-+		struct updater *iter = &updaters[i];
-+
-+		pi_sink_dropref(iter->snk, 0);
-+	}
-+
-+	return 0;
-+}
-+
-+static void
-+_pi_del_sinkref(struct pi_node *node, struct pi_sinkref *sinkref)
-+{
-+	struct pi_sink *snk = sinkref->snk;
-+	int             remove = 0;
-+	unsigned long   iflags;
-+
-+	local_irq_save(iflags);
-+	spin_lock(&sinkref->lock);
-+
-+	switch (sinkref->state) {
-+	case pi_state_boost:
-+		/*
-+		 * This state indicates the sink was never formally
-+		 * boosted so we can just delete it immediately
-+		 */
-+		remove = 1;
-+		break;
-+	case pi_state_boosted:
-+		if (snk->deboost)
-+			/*
-+			 * If the sink supports deboost notification,
-+			 * schedule it for deboost at the next update
-+			 */
-+			sinkref->state = pi_state_deboost;
-+		else
-+			/*
-+			 * ..otherwise schedule it for immediate
-+			 * removal
-+			 */
-+			remove = 1;
-+		break;
-+	default:
-+		break;
-+	}
-+
-+	if (remove) {
-+		/*
-+		 * drop the ref that we took when the sinkref
-+		 * was allocated.  We still hold a ref from
-+		 * when the caller performed the lookup
-+		 */
-+		_pi_sink_dropref_all(node, sinkref);
-+		sinkref->state = pi_state_free;
-+	}
-+
-+	spin_unlock(&sinkref->lock);
-+
-+	_pi_sink_dropref_local(node, sinkref);
-+	local_irq_restore(iflags);
-+
-+	pi_sink_dropref(snk, 0);
-+}
-+
-+static int
-+_pi_node_boost(struct pi_sink *snk, struct pi_source *src,
-+	       unsigned int flags)
-+{
-+	struct pi_node *node = node_of(snk);
-+	unsigned long   iflags;
-+
-+	spin_lock_irqsave(&node->lock, iflags);
-+	if (src->boosted)
-+		__pi_deboost(node, src);
-+	__pi_boost(node, src);
-+	spin_unlock_irqrestore(&node->lock, iflags);
-+
-+	if (!(flags & PI_FLAG_DEFER_UPDATE))
-+		_pi_node_update(snk, 0);
-+
-+	return 0;
-+}
-+
-+static int
-+_pi_node_deboost(struct pi_sink *snk, struct pi_source *src,
-+		 unsigned int flags)
-+{
-+	struct pi_node *node = node_of(snk);
-+	unsigned long   iflags;
-+
-+	spin_lock_irqsave(&node->lock, iflags);
-+	__pi_deboost(node, src);
-+	spin_unlock_irqrestore(&node->lock, iflags);
-+
-+	if (!(flags & PI_FLAG_DEFER_UPDATE))
-+		_pi_node_update(snk, 0);
-+
-+	return 0;
-+}
-+
-+static int
-+_pi_node_free(struct pi_sink *snk, unsigned int flags)
-+{
-+	struct pi_node    *node = node_of(snk);
-+	struct pi_sinkref *sinkref;
-+	struct pi_sinkref *sinkrefs[MAX_PI_DEPENDENCIES];
-+	unsigned long      iflags;
-+	int                count = 0;
-+	int                i;
-+
-+	spin_lock_irqsave(&node->lock, iflags);
-+
-+	/*
-+	 * When the node is freed, we should perform an implicit
-+	 * del_sink on any remaining sinks we may have
-+	 */
-+	list_for_each_entry(sinkref, &node->snks, list) {
-+		_pi_sink_addref(sinkref);
-+		sinkrefs[count++] = sinkref;
-+	}
-+
-+	spin_unlock_irqrestore(&node->lock, iflags);
-+
-+	for (i = 0; i < count; ++i)
-+		_pi_del_sinkref(node, sinkrefs[i]);
-+
-+	if (!(flags & PI_FLAG_DEFER_UPDATE))
-+		_pi_node_update(&node->snk, 0);
-+
-+	return 0;
-+}
-+
-+static struct pi_sink pi_node_snk = {
-+    .boost   = _pi_node_boost,
-+    .deboost = _pi_node_deboost,
-+    .update  = _pi_node_update,
-+    .free    = _pi_node_free,
-+};
-+
-+void pi_node_init(struct pi_node *node)
-+{
-+	spin_lock_init(&node->lock);
-+	node->prio = MAX_PRIO;
-+	node->snk = pi_node_snk;
-+	pi_sinkref_pool_init(&node->sinkref_pool);
-+	INIT_LIST_HEAD(&node->snks);
-+	plist_head_init(&node->srcs, &node->lock);
-+	atomic_set(&node->snk.refs, 1);
-+}
-+
-+int pi_add_sink(struct pi_node *node, struct pi_sink *snk, unsigned int flags)
-+{
-+	struct pi_sinkref *sinkref;
-+	int                ret = 0;
-+	unsigned long      iflags;
-+
-+	spin_lock_irqsave(&node->lock, iflags);
-+
-+	if (!atomic_read(&node->snk.refs)) {
-+		ret = -EINVAL;
-+		goto out;
-+	}
-+
-+	sinkref = pi_sinkref_alloc(&node->sinkref_pool);
-+	if (!sinkref) {
-+		ret = -ENOMEM;
-+		goto out;
-+	}
-+
-+	spin_lock_init(&sinkref->lock);
-+	INIT_LIST_HEAD(&sinkref->list);
-+
-+	if (flags & PI_FLAG_ALREADY_BOOSTED)
-+		sinkref->state = pi_state_boosted;
-+	else
-+		/*
-+		 * Schedule it for addition at the next update
-+		 */
-+		sinkref->state = pi_state_boost;
-+
-+	sinkref->prio = node->prio;
-+	pi_source_init(&sinkref->src, &sinkref->prio);
-+	sinkref->snk = snk;
-+
-+	/* set one ref from ourselves.  It will be dropped on del_sink */
-+	atomic_inc(&sinkref->snk->refs);
-+	atomic_set(&sinkref->refs, 1);
-+
-+	list_add_tail(&sinkref->list, &node->snks);
-+
-+	spin_unlock_irqrestore(&node->lock, iflags);
-+
-+	if (!(flags & PI_FLAG_DEFER_UPDATE))
-+		_pi_node_update(&node->snk, 0);
-+
-+	return 0;
-+
-+ out:
-+	spin_unlock_irqrestore(&node->lock, iflags);
-+
-+	return ret;
-+}
-+
-+int pi_del_sink(struct pi_node *node, struct pi_sink *snk, unsigned int flags)
-+{
-+	struct pi_sinkref *sinkref;
-+	struct pi_sinkref *sinkrefs[MAX_PI_DEPENDENCIES];
-+	unsigned long      iflags;
-+	int                count = 0;
-+	int                i;
-+
-+	spin_lock_irqsave(&node->lock, iflags);
-+
-+	/*
-+	 * There may be multiple matches to snk because sometimes a
-+	 * deboost/free may still be pending an update when the same
-+	 * node has been added.  So we want to process all instances
-+	 */
-+	list_for_each_entry(sinkref, &node->snks, list) {
-+		if (sinkref->snk == snk) {
-+			_pi_sink_addref(sinkref);
-+			sinkrefs[count++] = sinkref;
++			requeue_waiter(lock, &waiter);
 +		}
-+	}
 +
-+	spin_unlock_irqrestore(&node->lock, iflags);
++		/*
+ 		 * Prevent schedule() to drop BKL, while waiting for
+ 		 * the lock ! We restore lock_depth when we come back.
+ 		 */
+ 		saved_flags = current->flags & PF_NOSCHED;
+ 		current->lock_depth = -1;
+ 		current->flags &= ~PF_NOSCHED;
+-		orig_owner = rt_mutex_owner(lock);
+ 		get_task_struct(orig_owner);
+ 		spin_unlock_irqrestore(&lock->wait_lock, flags);
+ 
+@@ -664,6 +747,24 @@ rt_spin_lock_slowlock(struct rt_mutex *lock)
+ 			 * barrier which we rely upon to ensure current->state
+ 			 * is visible before we test waiter.task.
+ 			 */
++			if (waiter.task && !waiter.pi.boosted) {
++				spin_lock_irqsave(&lock->wait_lock, flags);
 +
-+	for (i = 0; i < count; ++i)
-+		_pi_del_sinkref(node, sinkrefs[i]);
++				/*
++				 * We get here if we have not yet boosted
++				 * the lock, yet we are going to sleep. If
++				 * we are still pending (waiter.task != 0),
++				 * then go ahead and boost them now
++				 */
++				if (waiter.task) {
++					boost_lock(lock, &waiter);
++					boosted = 1;
++				}
 +
-+	if (!(flags & PI_FLAG_DEFER_UPDATE))
-+		_pi_node_update(&node->snk, 0);
++				spin_unlock_irqrestore(&lock->wait_lock, flags);
++				task_pi_update(current, 0);
++			}
 +
-+	return 0;
-+}
+ 			if (waiter.task)
+ 				schedule_rt_mutex(lock);
+ 		} else
+@@ -696,7 +797,8 @@ rt_spin_lock_slowlock(struct rt_mutex *lock)
+ 	spin_unlock_irqrestore(&lock->wait_lock, flags);
+ 
+ 	/* Undo any pi boosting, if necessary */
+-	task_pi_update(current, 0);
++	if (boosted)
++		task_pi_update(current, 0);
+ 
+ 	debug_rt_mutex_free_waiter(&waiter);
+ }
+@@ -708,6 +810,7 @@ static void  noinline __sched
+ rt_spin_lock_slowunlock(struct rt_mutex *lock)
+ {
+ 	unsigned long flags;
++	int deboost = 0;
+ 
+ 	spin_lock_irqsave(&lock->wait_lock, flags);
+ 
+@@ -721,12 +824,16 @@ rt_spin_lock_slowunlock(struct rt_mutex *lock)
+ 		return;
+ 	}
+ 
++	if (lock->pi.boosters)
++		deboost = 1;
 +
-+
-+
+ 	wakeup_next_waiter(lock, 1);
+ 
+ 	spin_unlock_irqrestore(&lock->wait_lock, flags);
+ 
+-	/* Undo pi boosting when necessary */
+-	task_pi_update(current, 0);
++	if (deboost)
++		/* Undo pi boosting when necessary */
++		task_pi_update(current, 0);
+ }
+ 
+ void __lockfunc rt_spin_lock(spinlock_t *lock)
+diff --git a/kernel/rtmutex_common.h b/kernel/rtmutex_common.h
+index 7bf32d0..34e2381 100644
+--- a/kernel/rtmutex_common.h
++++ b/kernel/rtmutex_common.h
+@@ -55,6 +55,7 @@ struct rt_mutex_waiter {
+ 	struct {
+ 		struct pi_sink   snk;
+ 		int              prio;
++		int              boosted;
+ 	} pi;
+ #ifdef CONFIG_DEBUG_RT_MUTEXES
+ 	unsigned long		ip;
 
