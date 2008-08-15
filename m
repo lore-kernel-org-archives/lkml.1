@@ -1,66 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757583AbYHOMgf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758449AbYHOMhR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757583AbYHOMgf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Aug 2008 08:36:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753829AbYHOMg1
+	id S1758449AbYHOMhR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Aug 2008 08:37:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753829AbYHOMhE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Aug 2008 08:36:27 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:59254 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753660AbYHOMg0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Aug 2008 08:36:26 -0400
-Date: Fri, 15 Aug 2008 08:36:14 -0400
-From: Aristeu Rozanski <arozansk@redhat.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, jvillalo@redhat.com
-Subject: [PATCH] NMI: fix watchdog failure message
-Message-ID: <20080815123610.GU7154@redhat.com>
-References: <20080814203133.GS7154@redhat.com> <20080815115928.GD32726@elte.hu> <20080815121614.GT7154@redhat.com>
-Mime-Version: 1.0
+	Fri, 15 Aug 2008 08:37:04 -0400
+Received: from gv-out-0910.google.com ([216.239.58.185]:19348 "EHLO
+	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755600AbYHOMhB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Aug 2008 08:37:01 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=F1EQFjmi0rMqlnDNcSDsTILfyEuJ7lKbg3ACni8DnNp4pW46+kI7g3Iv/pvstF40W/
+         L4SOZdZ3IRiicFHyafOAfmF6DzP0y0XjMurA/d8AQ10m97zswEHa246/HXe5SmED6rQf
+         +2oCCNUuzP+WtQbW55cYBVyYdGuUollK2SN0Y=
+Date: Fri, 15 Aug 2008 14:36:27 +0200
+From: Marcin Slusarz <marcin.slusarz@gmail.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       David Miller <davem@davemloft.net>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Roland McGrath <roland@redhat.com>, Ulrich Drepper <drepper@redhat.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Gregory Haskins <ghaskins@novell.com>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       "Luis Claudio R. Goncalves" <lclaudio@uudg.org>,
+       Clark Williams <williams@redhat.com>, Bruce Duncan <bwduncan@gmail.com>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [PATCH v2 0/6] ftrace: to kill a daemon (small updates)
+Message-ID: <20080815123624.GC5285@joi>
+References: <20080814194506.233473381@goodmis.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080815121614.GT7154@redhat.com>
-User-Agent: Mutt/1.4.2.2i
+In-Reply-To: <20080814194506.233473381@goodmis.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> it just won't work at boot time - the second logic unit will be stuck:
+On Thu, Aug 14, 2008 at 03:45:06PM -0400, Steven Rostedt wrote:
+>   Note 2: I have found that the changes here are more stable than
+>     the current daemon method, and these patches should be used.
+>     It also solves the resume from suspend to ram bug that was
+>     reported:
 > 
-> Booting processor 1/2 APIC 0x1
-> Initializing CPU#1
-> Calibrating delay using timer specific routine.. 5586.12 BogoMIPS (lpj=2793063)
-> CPU: Trace cache: 12K uops, L1 D cache: 16K
-> CPU: L2 cache: 1024K
-> CPU: Physical Processor ID: 0
-> CPU: Processor Core ID: 1
-> CPU1: Thermal monitoring enabled (TM1)
->               Intel(R) Pentium(R) D CPU 2.80GHz stepping 04
-> Brought up 2 CPUs
-> testing NMI watchdog ... <4>WARNING: CPU#1: NMI appears to be stuck (0->0)!
-while at it...
+>       http://lkml.org/lkml/2008/8/12/234
+>        and
+>       http://lkml.org/lkml/2008/8/12/451
 
-Signed-off-by: Aristeu Rozanski <aris@redhat.com>
+I don't remember testing any patch for my bug... ;)
 
----
- arch/x86/kernel/nmi.c |    4 ++++
- 1 file changed, 4 insertions(+)
+For which tree this patchset is?
+I tried to apply it on rc3, rc3+tip/tip and rc3+tip/master and all failed.
 
---- linus-2.6.orig/arch/x86/kernel/nmi.c	2008-08-12 11:13:35.000000000 -0400
-+++ linus-2.6/arch/x86/kernel/nmi.c	2008-08-15 08:33:57.000000000 -0400
-@@ -142,11 +142,15 @@ int __init check_nmi_watchdog(void)
- 		if (!per_cpu(wd_enabled, cpu))
- 			continue;
- 		if (get_nmi_count(cpu) - prev_nmi_count[cpu] <= 5) {
-+			printk("\n");
- 			printk(KERN_WARNING "WARNING: CPU#%d: NMI "
- 				"appears to be stuck (%d->%d)!\n",
- 				cpu,
- 				prev_nmi_count[cpu],
- 				get_nmi_count(cpu));
-+			printk(KERN_WARNING "Please report this to "
-+			       "linux-kernel@vger.kernel.org and attach "
-+			       "the output of 'dmesg' command.\n");
- 			per_cpu(wd_enabled, cpu) = 0;
- 			atomic_dec(&nmi_active);
- 		}
+Marcin
