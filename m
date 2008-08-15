@@ -1,66 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757040AbYHOIdz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753395AbYHOIeb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757040AbYHOIdz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Aug 2008 04:33:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753428AbYHOIdr
+	id S1753395AbYHOIeb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Aug 2008 04:34:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753483AbYHOIeX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Aug 2008 04:33:47 -0400
-Received: from smtp02.mtn.co.za ([196.11.240.34]:3906 "EHLO smtp02.mtn.co.za"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753071AbYHOIdr convert rfc822-to-8bit (ORCPT
+	Fri, 15 Aug 2008 04:34:23 -0400
+Received: from yx-out-2324.google.com ([74.125.44.29]:50816 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753428AbYHOIeW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Aug 2008 04:33:47 -0400
-X-Greylist: delayed 617 seconds by postgrey-1.27 at vger.kernel.org; Fri, 15 Aug 2008 04:33:46 EDT
-Content-class: urn:content-classes:message
+	Fri, 15 Aug 2008 04:34:22 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=u7Kdf+iGDSDmIGOEvfy19+306Ewb3KvtyjzXXKb1LqfxLmbKpj9EKA5utyhXabuU+X
+         D4ne+CcjVBpj+/S9jMjmZH1P+rAsQ+t1EmyfzOR3Wig+/SlLdIMquQDw4SYVXhUA63Y1
+         y/+S21iDfYW3LjN6ssRjMVxne+QHxWoP8zpco=
+Message-ID: <86802c440808150134x5bf005fmdcb0f557422af365@mail.gmail.com>
+Date: Fri, 15 Aug 2008 01:34:11 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [PATCH 00/07] dyn_array/nr_irqs/sparse_irq support v10 - fix
+Cc: "Thomas Gleixner" <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20080815082735.GC4776@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: POSIX_FADV_DONTNEED
-Date: Fri, 15 Aug 2008 10:23:15 +0200
-Message-ID: <70D00C33FCD1FD4A860DEAC228277C0C048425ED@MTNMAIL1.mtn.co.za>
-In-Reply-To: <20080814091521.e4d9be53.akpm@linux-foundation.org>
-Thread-Topic: POSIX_FADV_DONTNEED
-thread-index: Acj+KQkQ2wOH282MRleeuO5ISrqangAhsEmA
-References: <70D00C33FCD1FD4A860DEAC228277C0C048425D1@MTNMAIL1.mtn.co.za><20080814021703.355b2a76.akpm@linux-foundation.org><70D00C33FCD1FD4A860DEAC228277C0C048425EA@MTNMAIL1.mtn.co.za> <20080814091521.e4d9be53.akpm@linux-foundation.org>
-From: "Trevor Woollacott [ MTN - Innovation Centre ]" <Woolla_T@mtn.co.za>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Cc: <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 15 Aug 2008 08:23:25.0686 (UTC) FILETIME=[3039E960:01C8FEB0]
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1218766832-20476-1-git-send-email-yhlu.kernel@gmail.com>
+	 <20080815082735.GC4776@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-> On Thu, 14 Aug 2008 12:26:28 +0200 "Trevor Woollacott [ MTN -
-Innovation Centre ]" <Woolla_T@mtn.co.za> wrote:
+On Fri, Aug 15, 2008 at 1:27 AM, Ingo Molnar <mingo@elte.hu> wrote:
 >
-> > 
-> > > On Fri, 1 Aug 2008 17:05:39 +0200 "Trevor Woollacott [ MTN - 
-> > > Innovation Centre ]" <Woolla_T@mtn.co.za> wrote:
-> 
-> (please don't top-post).
-> 
-> > > > 
-> > > > Hi all
-> > > > 
-> > > > Does anyone know if posix_fadvise() with POSIX_FADV_DONTNEED is 
-> > > > blocking/unblocking?
-> > > 
-> > > It tries to be nonblocking and will mostly succeed in that.  It 
-> > > might occasionally block on a metadata read or journal congestion 
-> > > or something, so it isn't guaranteed.
-> > >
-> >
-> > Thanks for the response Andrew. Is there a way to check when the 
-> > cached data has been freed after fadvise has been called?
-> > 
+> * Yinghai Lu <yhlu.kernel@gmail.com> wrote:
 >
-> I assume you meant "whether", not "when".
+>>       fix the 32bit with bigsmp
+>>       fix 64 bit with irq migration
+>>       ordering functions in io_apic_xx.c
+>>
+>>
+>> to do:
+>>     merge io_apic_xx.c
 >
-> Not directly.  I believe that the best way of obtaining that 
-> information remains mmap()ing the file then querying the presence of 
-> pages via mincore().
+> applied to tip/irq/sparseirq - thanks Yinghai, great work!
+>
+> What do you think about Eric's abstraction suggestion, that irq_desc's
+> structure should be hidden from all but kernel/irq/* code. I think
+> that's a sane suggestion. We do it in mm/slab.c too: no external code
+> knows the structure of 'struct kmem_cache'.
 
-Thanks for the advice
+current arch code use irq_desc directly..., if need to irq_desc to
+them, need to provide set_irq(..., ...)
 
-NOTE: This e-mail message is subject to the MTN Group disclaimer see http://www.mtn.co.za/default.aspx?pid=34411 
+YH
