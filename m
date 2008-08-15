@@ -1,117 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759444AbYHOVdJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760473AbYHOVet@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759444AbYHOVdJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Aug 2008 17:33:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751995AbYHOVcy
+	id S1760473AbYHOVet (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Aug 2008 17:34:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752178AbYHOVel
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Aug 2008 17:32:54 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:45032 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751945AbYHOVcx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Aug 2008 17:32:53 -0400
-Message-ID: <48A5F5C6.2090204@redhat.com>
-Date: Fri, 15 Aug 2008 23:31:50 +0200
-From: Milan Broz <mbroz@redhat.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Fri, 15 Aug 2008 17:34:41 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:64280 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751995AbYHOVek (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Aug 2008 17:34:40 -0400
+Date: Fri, 15 Aug 2008 17:34:37 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Andi Kleen <andi@firstfloor.org>
+cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, Roland McGrath <roland@redhat.com>,
+       Ulrich Drepper <drepper@redhat.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Gregory Haskins <ghaskins@novell.com>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       "Luis Claudio R. Goncalves" <lclaudio@uudg.org>,
+       Clark Williams <williams@redhat.com>
+Subject: Re: Efficient x86 and x86_64 NOP microbenchmarks
+In-Reply-To: <20080813193715.GQ1366@one.firstfloor.org>
+Message-ID: <alpine.DEB.1.10.0808151535300.24788@gandalf.stny.rr.com>
+References: <alpine.DEB.1.10.0808081750590.16691@gandalf.stny.rr.com> <87tzdv2g05.fsf@basil.nowhere.org> <alpine.DEB.1.10.0808082030500.1396@gandalf.stny.rr.com> <489CE90D.1040902@goop.org> <alpine.LFD.1.10.0808081750060.3462@nehalem.linux-foundation.org>
+ <alpine.DEB.1.10.0808082113090.3707@gandalf.stny.rr.com> <20080813175213.GA8679@Krystal> <alpine.LFD.1.10.0808131119290.3462@nehalem.linux-foundation.org> <20080813184142.GM1366@one.firstfloor.org> <20080813193011.GC15547@Krystal>
+ <20080813193715.GQ1366@one.firstfloor.org>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-CC: Jens Axboe <jens.axboe@oracle.com>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>
-Subject: Mount ext3 with barrier=1 doesn't send real barrier bio?
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-I run some barrier tests over device-mapper (which currently doesn't
-support barrier bio at all) and even if I set barrier=1 in ext3 mount,
-there is never any bio with barrier flag... (in 2.6.27-rc)
+[ Finally got my goodmis email back ]
 
-How is the barrier=1 flag supposed to work in ext3 (JBD) now?
+On Wed, 13 Aug 2008, Andi Kleen wrote:
 
-See:
-If you specify barrier=1, JFS_BARRIER flag is set in ext3_init_journal_params
-	journal->j_flags |= JFS_BARRIER;
+> > Sorry to ask, I feel I must be missing something, but I'm trying to
+> > figure out where you propose to add the "call mcount" ? In the caller or
+> > in the callee ?
+> 
+> callee like gcc. caller would be likely more bloated because
+> there are more calls than functions. Also if it was at the 
+> callee more code would be needed because the function currently
+> executed couldn't be gotten from stack directly.
+> 
+> > Or is it a different scheme I don't see ? I am trying to figure out how
+> > you happen to do all that without dynamic code modification and manage
+> > not to hurt performance.
+> 
+> The dynamic code modification is only needed because there is no
+> global table of the mcount call sites. So instead it discovers
+> them at runtime, but that requires runtime save patching
 
-Now, journal_write_commit_record is called and this happens:
+The new code does not discover the places at runtime. The old code did 
+that. The "to kill a daemon" removed the runtime discovery and replaced it 
+with discovery at compile time.
 
-	if (journal->j_flags & JFS_BARRIER) {
-		set_buffer_ordered(bh);
-		barrier_done = 1;
-	}
-	ret = sync_dirty_buffer(bh);
+> 
+> With a custom call scheme one could just build up a table of 
+> call sites at link time using an ELF section and then when
+> tracing is enabled/disabled always patch them all in one go
+> in a stop_machine(). Then you wouldn't need parallel execution safe
+> patching anymore and it doesn't matter what the nops look like.
 
-	if (barrier_done)
-		clear_buffer_ordered(bh);
+The current patch set, pretty much does exactly this. Yes, I patch
+at boot up all in one go, before the other CPUS are even active.
+This takes all of 6 milliseconds to do. Not much extra time for bootup.
 
-	if (ret == -EOPNOTSUPP && barrier_done) {
-	...
+> 
+> The other advantage is that it would allow getting rid of
+> the frame pointer.
 
->From this code I expect that EOPNOTSUPP is returned if barrier is not
-supported (yes, that exactly does device-mapper now without barrier patches).
+This is the only advantage that you have.
 
-But it *never* happens because:
-
-sync_dirty_buffer always calls 
-	submit_bh(WRITE_SYNC, bh)
-
-and in submit_bh is this test:
-
-	if (buffer_ordered(bh) && (rw == WRITE))
-		rw = WRITE_BARRIER;
-
-but there is rw == WRITE_SYNC, not WRITE !
-
-So the barrier flag for bio is never set and normal sync write
-is performed.
-
-Why it isn't done like in attached patch? Is it intentional or it is bug?
-
-I think it was caused by change in this commit:
-
-commit 18ce3751ccd488c78d3827e9f6bf54e6322676fb
-Author: Jens Axboe <jens.axboe@oracle.com>
-Date:   Tue Jul 1 09:07:34 2008 +0200
-
-    Properly notify block layer of sync writes
-
-Milan
---
-
-Set BIO_RW_BARRIER flag even for submit_bh sync write request.
-
-Signed-off-by: Milan Broz <mbroz@redhat.com>
----
- fs/buffer.c |    8 ++++----
- 1 files changed, 4 insertions(+), 4 deletions(-)
-
---- a/fs/buffer.c
-+++ b/fs/buffer.c
-@@ -2926,16 +2926,16 @@ int submit_bh(int rw, struct buffer_head * bh)
- 	BUG_ON(!buffer_mapped(bh));
- 	BUG_ON(!bh->b_end_io);
- 
--	if (buffer_ordered(bh) && (rw == WRITE))
--		rw = WRITE_BARRIER;
--
- 	/*
- 	 * Only clear out a write error when rewriting, should this
- 	 * include WRITE_SYNC as well?
- 	 */
--	if (test_set_buffer_req(bh) && (rw == WRITE || rw == WRITE_BARRIER))
-+	if (test_set_buffer_req(bh) && rw == WRITE)
- 		clear_buffer_write_io_error(bh);
- 
-+	if (buffer_ordered(bh) && ((rw & RW_MASK) == WRITE))
-+		rw |= (1 << BIO_RW_BARRIER);
-+
- 	/*
- 	 * from here on down, it's all bio -- do the initial mapping,
- 	 * submit_bio -> generic_make_request may further map this bio around
-
-
-
+-- Steve
 
