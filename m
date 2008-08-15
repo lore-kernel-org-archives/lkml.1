@@ -1,61 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760691AbYHOTBU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759905AbYHOTCg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760691AbYHOTBU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Aug 2008 15:01:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758066AbYHOTBD
+	id S1759905AbYHOTCg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Aug 2008 15:02:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758077AbYHOTC2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Aug 2008 15:01:03 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:49832 "EHLO mx2.mail.elte.hu"
+	Fri, 15 Aug 2008 15:02:28 -0400
+Received: from mail.fieldses.org ([66.93.2.214]:51970 "EHLO fieldses.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758030AbYHOTBB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Aug 2008 15:01:01 -0400
-Date: Fri, 15 Aug 2008 21:00:34 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Ulrich Drepper <drepper@gmail.com>
-Cc: Jamie Lokier <jamie@shareable.org>, Arjan van de Ven <arjan@infradead.org>,
-       akpm@linux-foundation.org, hugh@veritas.com, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, briangrant@google.com, cgd@google.com,
-       mbligh@google.com, Linus Torvalds <torvalds@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: pthread_create() slow for many threads; also time to revisit
-	64b context switch optimization?
-Message-ID: <20080815190034.GA15356@elte.hu>
-References: <48A2F157.7000303@redhat.com> <20080813151007.GA8780@elte.hu> <48A2FC17.9070302@redhat.com> <20080813154043.GA11886@elte.hu> <48A303EE.8070002@redhat.com> <20080813160218.GB18037@elte.hu> <20080815155457.GA5210@shareable.org> <48A5B943.1010607@gmail.com> <20080815171913.GB23600@elte.hu> <a36005b50808151023s7baffae5w8e163046209ce9dc@mail.gmail.com>
+	id S1756461AbYHOTC1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Aug 2008 15:02:27 -0400
+Date: Fri, 15 Aug 2008 15:02:21 -0400
+To: Takashi Iwai <tiwai@suse.de>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, Jeff Layton <jlayton@redhat.com>
+Subject: Re: [PATCH] Fix allocation sizes of knfsd raparm hash
+Message-ID: <20080815190221.GB26563@fieldses.org>
+References: <20080815184032.3acd8032.sfr@canb.auug.org.au> <s5hr68q5rm8.wl%tiwai@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <a36005b50808151023s7baffae5w8e163046209ce9dc@mail.gmail.com>
+In-Reply-To: <s5hr68q5rm8.wl%tiwai@suse.de>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Ulrich Drepper <drepper@gmail.com> wrote:
-
-> On Fri, Aug 15, 2008 at 10:19 AM, Ingo Molnar <mingo@elte.hu> wrote:
-> > ( also, just to make sure: all Linux kernel versions will ignore such
-> >  extra flags, so you can just update glibc to use this flag
-> >  unconditionally, correct? )
+On Fri, Aug 15, 2008 at 03:34:39PM +0200, Takashi Iwai wrote:
+> The raparm was allocated in a wrong size in the commit
 > 
-> As soon as the patch hits Linus' tree I can change the code.
+>    ca80290ebda9009aedc4bd93ede5d397cb1853dc
+>    nfsd: permit unauthenticated stat of export root
+> 
+> and thus it resulted in memory corruption, eventually Oopsing.
+> This patch fixes the allocation size.
 
-it's upstream now:
+Whoops, my fault, now fixed; thanks!
 
-| commit cd98a04a59e2f94fa64d5bf1e26498d27427d5e7
-| Author: Ingo Molnar <mingo@elte.hu>
-| Date:   Wed Aug 13 18:02:18 2008 +0200
-|
-|     x86: add MAP_STACK mmap flag
+(Out of curiosity--how did you find this?)
 
-thanks everyone,
+--b.
 
-	Ingo
+> 
+> Signed-off-by: Takashi Iwai <tiwai@suse.de>
+> 
+> ---
+> diff --git a/fs/nfsd/vfs.c b/fs/nfsd/vfs.c
+> index bfa5453..30d606f 100644
+> --- a/fs/nfsd/vfs.c
+> +++ b/fs/nfsd/vfs.c
+> @@ -2093,7 +2093,7 @@ nfsd_racache_init(int cache_size)
+>  
+>  		raparm = &raparm_hash[i].pb_head;
+>  		for (j = 0; j < nperbucket; j++) {
+> -			*raparm = kzalloc(sizeof(*raparm), GFP_KERNEL);
+> +			*raparm = kzalloc(sizeof(**raparm), GFP_KERNEL);
+>  			if (!*raparm)
+>  				goto out_nomem;
+>  			raparm = &(*raparm)->p_next;
