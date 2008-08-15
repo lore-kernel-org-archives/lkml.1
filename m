@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756810AbYHOLht@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756931AbYHOLjN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756810AbYHOLht (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Aug 2008 07:37:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753399AbYHOLhl
+	id S1756931AbYHOLjN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Aug 2008 07:39:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753565AbYHOLi6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Aug 2008 07:37:41 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:48568 "EHLO mx2.mail.elte.hu"
+	Fri, 15 Aug 2008 07:38:58 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:56953 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752921AbYHOLhk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Aug 2008 07:37:40 -0400
-Date: Fri, 15 Aug 2008 13:37:19 +0200
+	id S1753399AbYHOLi5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Aug 2008 07:38:57 -0400
+Date: Fri, 15 Aug 2008 13:38:42 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Vegard Nossum <vegard.nossum@gmail.com>
-Cc: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Jeff Dike <jdike@addtoit.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH -tip] x86_64: uml: fix rename header guard
-Message-ID: <20080815113719.GA31348@elte.hu>
-References: <48A4CD01.9080805@ct.jp.nec.com> <19f34abd0808142333t71ed91a2w9e4f16b8c4e1ee5b@mail.gmail.com>
+To: "Darrick J. Wong" <djwong@us.ibm.com>
+Cc: Jonathan Corbet <corbet@lwn.net>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] msr: Fix NULL pointer deref due to msr_open on
+	nonexistent CPUs
+Message-ID: <20080815113842.GB31348@elte.hu>
+References: <20080814224333.GG28450@tree.beaverton.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <19f34abd0808142333t71ed91a2w9e4f16b8c4e1ee5b@mail.gmail.com>
+In-Reply-To: <20080814224333.GG28450@tree.beaverton.ibm.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -36,22 +36,19 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Vegard Nossum <vegard.nossum@gmail.com> wrote:
+* Darrick J. Wong <djwong@us.ibm.com> wrote:
 
-> On Fri, Aug 15, 2008 at 2:25 AM, Hiroshi Shimamoto
-> <h-shimamoto@ct.jp.nec.com> wrote:
-> > From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-> >
-> > In unistd_64.h, the guard macro _ASM_X86_64_UNISTD_H_ is renamed to
-> > ASM_X86__UNISTD_64_H.
-> >
-> > This change should be applied to arch/um/sys-x86_64/syscall_table.c.
-> >
-> > Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+> msr_open tests for someone trying to open a device for a nonexistent CPU.
+> However, the function always returns 0, not ret like it should, hence userspace
+> can BUG the kernel trivially.  This bug was introduced by the cdev lock_kernel
+> pushdown patch last May.
 > 
-> I guess I screwed up again. Forgot to look for #undefs :-(
+> The BUG can be reproduced with these commands:
+> 
+> # mknod fubar c 202 8 <-- pick a number less than NR_CPUS that is not
+>                           the number of an online CPU
+> # cat fubar
 
-that's OK from a change of this width. And the #undefs are definitely 
-#unnice as well.
+applied to tip/x86/urgent - thanks Darrick.
 
 	Ingo
