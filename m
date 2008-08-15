@@ -1,46 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760027AbYHOQMZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759304AbYHOQPg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760027AbYHOQMZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Aug 2008 12:12:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754793AbYHOQMM
+	id S1759304AbYHOQPg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Aug 2008 12:15:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754490AbYHOQPZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Aug 2008 12:12:12 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:34307 "EHLO mx2.mail.elte.hu"
+	Fri, 15 Aug 2008 12:15:25 -0400
+Received: from mail.vyatta.com ([216.93.170.194]:35957 "EHLO mail.vyatta.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753041AbYHOQMK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Aug 2008 12:12:10 -0400
-Date: Fri, 15 Aug 2008 18:11:52 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: "Gustavo F. Padovan" <gustavo@las.ic.unicamp.br>
-Cc: linux-kernel@vger.kernel.org, x86@kernel.org
-Subject: Re: [PATCH 1/1] x86: coding style fixes to
-	arch/x86/kernel/traps_64.c
-Message-ID: <20080815161150.GK27955@elte.hu>
-References: <gustavo@las.ic.unicamp.br> <1217692237-17603-1-git-send-email-gustavo@las.ic.unicamp.br> <1217692237-17603-2-git-send-email-gustavo@las.ic.unicamp.br>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1217692237-17603-2-git-send-email-gustavo@las.ic.unicamp.br>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: 1.0
-X-ELTE-SpamLevel: s
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=1.0 required=5.9 tests=BAYES_50 autolearn=no SpamAssassin version=3.2.3
-	1.0 BAYES_50               BODY: Bayesian spam probability is 40 to 60%
-	[score: 0.4624]
+	id S1754350AbYHOQPY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Aug 2008 12:15:24 -0400
+X-Spam-Flag: NO
+X-Spam-Score: -1.577
+Date: Fri, 15 Aug 2008 09:15:21 -0700
+From: Stephen Hemminger <shemminger@vyatta.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: netdev@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Jeff Garzik <jeff@garzik.org>, Jesse Barnes <jbarnes@virtuousgeek.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       "Brandeburg, Jesse" <jesse.brandeburg@intel.com>,
+       Stephen Hemminger <stephen.hemminger@vyatta.com>
+Subject: Re: [PATCH 2/3] Adapt the sky2 driver to the reworked PCI PM
+Message-ID: <20080815091521.3f721d68@extreme>
+In-Reply-To: <200808151532.14327.rjw@sisk.pl>
+References: <200808142335.56644.rjw@sisk.pl>
+	<20080814152318.625f8609@extreme>
+	<200808151501.58315.rjw@sisk.pl>
+	<200808151532.14327.rjw@sisk.pl>
+Organization: Vyatta
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 15 Aug 2008 15:32:13 +0200
+"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
 
-* Gustavo F. Padovan <gustavo@las.ic.unicamp.br> wrote:
-
-> Fix coding style of traps_64.c with improvements suggested by Ingo.
+> On Friday, 15 of August 2008, Rafael J. Wysocki wrote:
+> > On Friday, 15 of August 2008, Stephen Hemminger wrote:
+> > > On Thu, 14 Aug 2008 23:38:17 +0200
+> > > "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+> > > 
+> > > > Adapt the sky2 driver to the reworked PCI PM
+> > > > 
+> > > > * Use device_set_wakeup_enable() and friends as needed
+> > > > * Remove an open-coded reference to the standard PCI PM registers
+> > > > * Use pci_prepare_to_sleep() and pci_back_from_sleep() in the
+> > > >   ->suspend() and ->resume() callbacks
+> > > > * Use the observation that it is sufficient to call pci_enable_wake()
+> > > >   once, unless it fails
+> > > > 
+> > > > Tested on Asus M3A32-MVP (Yukon-2 EC Ultra rev 3).
+> > > > 
+> > > > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> > > > ---
+> > > >  drivers/net/sky2.c |   34 ++++++++++------------------------
+> > > >  1 file changed, 10 insertions(+), 24 deletions(-)
+> > > > 
+> > > > Index: linux-2.6/drivers/net/sky2.c
+> > > > ===================================================================
+> > > > --- linux-2.6.orig/drivers/net/sky2.c
+> > > > +++ linux-2.6/drivers/net/sky2.c
+> > > > @@ -3035,7 +3035,8 @@ static int sky2_set_wol(struct net_devic
+> > > >  	struct sky2_port *sky2 = netdev_priv(dev);
+> > > >  	struct sky2_hw *hw = sky2->hw;
+> > > >  
+> > > > -	if (wol->wolopts & ~sky2_wol_supported(sky2->hw))
+> > > > +	if ((wol->wolopts & ~sky2_wol_supported(sky2->hw))
+> > > > +	    || !device_can_wakeup(&hw->pdev->dev))
+> > > >  		return -EOPNOTSUPP;
+> > > >  
+> > > 
+> > > There was a regression in earlier releases caused because some BIOS's
+> > > are wrong, and device can wakeup.
+> > 
+> > device_can_wakeup() returns 'true' if the device is capable of generating PME#
+> > from at least one low power state (this is determined on the basis of the
+> > contents of the device's PCI PM registers - please have a look at
+> > drivers/pci/pci_pm_init() for details) or if ACPI tells us it can wake up.
+> > IOW, the BIOSes opinion doesn't matter if we find that the device is capable of
+> > generating PME#, so the regression must have been related to something else.
+> > I'm very interested in the details, if available.
+> > 
+> > Of course, since we rely on the ability of the device to generate PME# and
+> > device_can_wakeup() returning 'false' means that the device cannot generate
+> > PME# from any state, it's reasonable to check it IMO.
 > 
-> Signed-off-by: Gustavo F. Padovan <gustavo@las.ic.unicamp.br>
+> BTW, if device_can_wakeup(&pdev->dev) returns 'false',
+> pci_enable_wake(pdev, state, true) will fail for any 'state', so the wake-up
+> won't work regardless of the change above.
+> 
+> Thanks,
+> Rafael
 
-applied to tip/x86/cleanups - thanks Gustavo!
-
-	Ingo
+Okay, the problem was false positives from ACPI. It looks like this won't make
+the problem any worse.
