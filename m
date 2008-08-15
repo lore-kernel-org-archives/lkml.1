@@ -1,64 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758597AbYHOJMl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757862AbYHOJSQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758597AbYHOJMl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Aug 2008 05:12:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751924AbYHOJL1
+	id S1757862AbYHOJSQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Aug 2008 05:18:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751635AbYHOJSE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Aug 2008 05:11:27 -0400
-Received: from nwd2mail11.analog.com ([137.71.25.57]:16458 "EHLO
-	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753757AbYHOJL0 (ORCPT
+	Fri, 15 Aug 2008 05:18:04 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:50967 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750920AbYHOJSC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Aug 2008 05:11:26 -0400
-X-IronPort-AV: E=Sophos;i="4.32,214,1217822400"; 
-   d="scan'208";a="58087370"
-From: Bryan Wu <cooloney@kernel.org>
-To: a.zummo@towertech.it, rtc-linux@googlegroups.com
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       Mike Frysinger <vapier.adi@gmail.com>, Bryan Wu <cooloney@kernel.org>
-Subject: [PATCH 4/4] Blackfin RTC Driver: dont let RTC programming in bootloaders randomly cause ~5 second boot delays
-Date: Fri, 15 Aug 2008 17:01:20 +0800
-Message-Id: <1218790880-12477-5-git-send-email-cooloney@kernel.org>
-X-Mailer: git-send-email 1.5.6
-In-Reply-To: <1218790880-12477-1-git-send-email-cooloney@kernel.org>
-References: <1218790880-12477-1-git-send-email-cooloney@kernel.org>
+	Fri, 15 Aug 2008 05:18:02 -0400
+Date: Fri, 15 Aug 2008 10:00:52 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Bryan Wu <cooloney@kernel.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/2] Blackfin serial driver bug fixing
+Message-ID: <20080815100052.0e03d11d@lxorguk.ukuu.org.uk>
+In-Reply-To: <1218788049-7632-1-git-send-email-cooloney@kernel.org>
+References: <1218788049-7632-1-git-send-email-cooloney@kernel.org>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Mike Frysinger <vapier.adi@gmail.com>
+On Fri, 15 Aug 2008 16:14:07 +0800
+Bryan Wu <cooloney@kernel.org> wrote:
 
-Signed-off-by: Mike Frysinger <vapier.adi@gmail.com>
-Signed-off-by: Bryan Wu <cooloney@kernel.org>
----
- drivers/rtc/rtc-bfin.c |    8 ++++++++
- 1 files changed, 8 insertions(+), 0 deletions(-)
+> 
+> Hi Alan,
+> 
+> Here is 2 critical bug fixing patch for Blackfin serial driver.
+> And as you acked the previous 8 Blackfin serial driver patches, need I
+> push them to blackfin-2.6 git tree and ask Linus to pull from that or
+> they were queued in your serial tree?
 
-diff --git a/drivers/rtc/rtc-bfin.c b/drivers/rtc/rtc-bfin.c
-index 9d2da1c..34439ce 100644
---- a/drivers/rtc/rtc-bfin.c
-+++ b/drivers/rtc/rtc-bfin.c
-@@ -363,6 +363,7 @@ static int __devinit bfin_rtc_probe(struct platform_device *pdev)
- 	struct bfin_rtc *rtc;
- 	struct device *dev = &pdev->dev;
- 	int ret = 0;
-+	unsigned long timeout;
- 
- 	dev_dbg_stamp(dev);
- 
-@@ -377,6 +378,13 @@ static int __devinit bfin_rtc_probe(struct platform_device *pdev)
- 	ret = request_irq(IRQ_RTC, bfin_rtc_interrupt, IRQF_SHARED, pdev->name, dev);
- 	if (unlikely(ret))
- 		goto err;
-+	/* sometimes the bootloader touched things, but the write complete was not
-+	 * enabled, so let's just do a quick timeout here since the IRQ will not fire ...
-+	 */
-+	timeout = jiffies + HZ;
-+	while (bfin_read_RTC_ISTAT() & RTC_ISTAT_WRITE_PENDING)
-+		if (time_after(jiffies, timeout))
-+			break;
- 	bfin_rtc_reset(dev, RTC_ISTAT_WRITE_COMPLETE);
- 	bfin_write_RTC_SWCNT(0);
- 
--- 
-1.5.6
+The existing ones were queued for 2.6.28 as I assumed that was what your
+email meant you want to do. If you have critical fixes at this point in
+the -rc series I would send them direct to Linus
