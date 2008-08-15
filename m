@@ -1,64 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756280AbYHOMt2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758343AbYHOMuY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756280AbYHOMt2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Aug 2008 08:49:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753839AbYHOMtS
+	id S1758343AbYHOMuY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Aug 2008 08:50:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754354AbYHOMuH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Aug 2008 08:49:18 -0400
-Received: from web82101.mail.mud.yahoo.com ([209.191.84.214]:27752 "HELO
-	web82101.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753106AbYHOMtS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Aug 2008 08:49:18 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=sbcglobal.net;
-  h=Received:X-Mailer:Date:From:Subject:To:Cc:MIME-Version:Content-Type:Message-ID;
-  b=maBx7kZYOAmDTo9MbP3XTio3KqfQCwE3Wv8Dlik1QBDAAL0QtzwFw7pmnxBsdCXLyC8P5X+bn9iX4x2tQp6VRZdKp/WxYD119E1R+9il3ql1W9xOhaoTSqr1y1D7mjJIulth7DX97N5lIFNygipeUwXUxIdKZyKUEN/K04DI+T8=;
-X-Mailer: YahooMailRC/1042.40 YahooMailWebService/0.7.218
-Date: Fri, 15 Aug 2008 05:49:17 -0700 (PDT)
-From: David Witbrodt <dawitbro@sbcglobal.net>
-Subject: Re: HPET regression in 2.6.26 versus 2.6.25 -- question about NMI watchdog
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Yinghai Lu <yhlu.kernel@gmail.com>, linux-kernel@vger.kernel.org,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       netdev <netdev@vger.kernel.org>
+	Fri, 15 Aug 2008 08:50:07 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:33050 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754299AbYHOMuG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Aug 2008 08:50:06 -0400
+Date: Fri, 15 Aug 2008 14:49:38 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Huang Ying <ying.huang@intel.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Pavel Machek <pavel@ucw.cz>, nigel@nigel.suspend2.net,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Vivek Goyal <vgoyal@redhat.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org,
+       Kexec Mailing List <kexec@lists.infradead.org>
+Subject: Re: [PATCH -v3 6/7] kexec jump: __ftrace_enabled_save/restore
+Message-ID: <20080815124938.GB24663@elte.hu>
+References: <1218510876.24951.45.camel@caritas-dev.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <445817.22956.qm@web82101.mail.mud.yahoo.com>
+Content-Disposition: inline
+In-Reply-To: <1218510876.24951.45.camel@caritas-dev.intel.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+* Huang Ying <ying.huang@intel.com> wrote:
 
-> > I found something very interesting about the commit that first causes 
-> > the lockup (3def3d6d...), and the very next commit (1e934dda...) -- if 
-> > I checkout 1e94... and try to revert the changes made in 3def..., the 
-> > kernel freezes in spite of the revert.
-> > 
-> > Because of this, I would conclude that your patch for 2.6.27-rc3 was 
-> > doomed before you began, and we should look more carefully at the 
-> > commits from February instead of trying to revert at the 2.6.27 HEAD.
-> 
-> i'm still wondering whether we could try to figure out something about 
-> the nature of the hard lockup itself.
-> 
-> Have you tried to activate the NMI watchdog? It _usually_ works fine if 
-> you use a boot option along the lines of:
-> 
->    "lapic nmi_watchdog=2 idle=poll"
+> +/* Ftrace disable/restore without lock. Some synchronization mechanism
+> + * must be used to prevent ftrace_enabled to be changed between
+> + * disable/restore. */
 
-I have to go to work for a few hours right now, but will try this out when
-I get home.  (Actually, I'm late for work as I type this... but I have my
-priorities straight!  ;)
+use the proper comment style please:
 
-Quick question:  a quick browse of 'Documentation/nmi_watchdog.txt' suggests
-that I should use "nmi_watchdog=1", since I have SMP (CPU = Athlon 64 X2,
-with CONFIG_SMP=y).  Should I follow your suggestion later, or follow the
-recommendation of the 'nmi_watchdog.txt' doc?
+/*
+ *
+ */
 
+> +static inline int __ftrace_enabled_save(void)
+> +{
+> +#ifdef CONFIG_FTRACE
+> +	int saved_ftrace_enabled = ftrace_enabled;
+> +	ftrace_enabled = 0;
+> +	return saved_ftrace_enabled;
+> +#else
+> +	return 0;
+> +#endif
+> +}
+> +
+> +static inline void __ftrace_enabled_restore(int enabled)
+> +{
+> +#ifdef CONFIG_FTRACE
+> +	ftrace_enabled = enabled;
+> +#endif
+> +}
 
-Much thanks,
-Dave W.
+hm, what is this used for?
+
+also, instead of such an ugly inline, why not create a proper 
+kernel/trace/* function for this. That would also give it access to all 
+the proper locking mechanisms - instead of relying on some extral 
+mechanism.
+
+	Ingo
