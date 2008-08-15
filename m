@@ -1,107 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757593AbYHOM6p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758545AbYHOM66@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757593AbYHOM6p (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Aug 2008 08:58:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753041AbYHOM6h
+	id S1758545AbYHOM66 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Aug 2008 08:58:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753399AbYHOM6h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Fri, 15 Aug 2008 08:58:37 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:36545 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750953AbYHOM6g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+Received: from extu-mxob-1.symantec.com ([216.10.194.28]:54076 "EHLO
+	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752590AbYHOM6g (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 15 Aug 2008 08:58:36 -0400
-Date: Fri, 15 Aug 2008 14:58:18 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       "David S. Miller" <davem@davemloft.net>
-Subject: Re: [git pull] core fixes
-Message-ID: <20080815125818.GA30597@elte.hu>
-References: <20080811222026.GA20579@elte.hu> <200808121613.24846.nickpiggin@yahoo.com.au> <200808121805.14009.nickpiggin@yahoo.com.au> <200808141445.03936.nickpiggin@yahoo.com.au>
+Date: Fri, 15 Aug 2008 13:58:32 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.site
+To: Ingo Molnar <mingo@elte.hu>
+cc: Andi Kleen <andi@firstfloor.org>, x86@kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] x86: fix /proc/meminfo DirectMap
+Message-ID: <Pine.LNX.4.64.0808151351220.28840@blonde.site>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200808141445.03936.nickpiggin@yahoo.com.au>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Do we actually want these DirectMap lines in the x86 /proc/meminfo?
+I can see they're interesting to CPA developers and TLB optimizers,
+but they don't fit its usual "where has all my memory gone?" usage.
+If they are to stay, here are some fixes.
 
-* Nick Piggin <nickpiggin@yahoo.com.au> wrote:
+1. On x86_32 without PAE, they're not 2M but 4M pages: no need to
+   mess with the internal enum, but show the right name to users.
 
-> On Tuesday 12 August 2008 18:05, Nick Piggin wrote:
-> > On Tuesday 12 August 2008 16:13, Nick Piggin wrote:
-> > > On Tuesday 12 August 2008 08:20, Ingo Molnar wrote:
-> > > > Nick Piggin (1):
-> > > >       generic-ipi: fix stack and rcu interaction bug in
-> > > > smp_call_function_mask()
-> > >
-> > > I'm still not 100% sure that I have this patch right... I might have seen
-> > > a lockup trace implicating the smp call function path... which may have
-> > > been due to some other problem or a different bug in the new call
-> > > function code, but if some more people can take a look at it before
-> > > merging?
-> >
-> > OK indeed it did have a couple of bugs. Firstly, I wasn't freeing the
-> > data properly in the alloc && wait case. Secondly, I wasn't resetting
-> > CSD_FLAG_WAIT in the for each cpu loop (so only the first CPU would
-> > wait).
-> >
-> > After those fixes, the patch boots and runs with the kmalloc commented
-> > out (so it always executes the slowpath).
-> 
-> Hmm, thanks for merging this Ingo, but it didn't get upstream very 
-> nicely (first was merged the one totally broken patch I didn't even 
-> really test let alone propose for inclusion!). Then some window of 
-> other patches, then the incremental patch to fix it.
-> 
-> I know it probably is easiest for your "vacuum the mailing list" mode 
-> of workflow. And it's not that I don't appreciate it, but what I care 
-> about most is the end result and that is suboptimal in this case.
-> 
-> The argument that we lose the "thought process" of coming up with a 
-> correct patch I don't really buy into either. We want to document the 
-> thought process of well thought out, well reviewed and tested patches 
-> -- if they get merged and subsequently found to be broken, it is 
-> really nice to be able to look back at how and why they went wrong[*].
+2. Many machines can never show anything but 0 for DirectMap1G,
+   so suppress that line unless direct_gbpages are really enabled.
 
-generally i agree and replace patches - but in this case i went for the 
-delta because -rc3 was imminent and the previous patch was already 
-well-tested with practical workloads, even though broken in the 
-slowpath. Also, in terms of judging risks, it was easier to look at the 
-delta between the two commits and say "that obviously cannot make it 
-worse than the current code". But it's all a special-case really.
+3. The unit in /proc/meminfo is kB not number of pages: HugePages
+   messed that up, but they're an example to regret not to follow.
 
-> But merging bits and pieces of such raw patches IMO just adds too much 
-> noise to the tree, and breaks bisection too easily. In the case of my 
-> patch, the kernel will still build and mostly run, but that is 
-> actually even a worse way to break the biesection if you are hunting 
-> for some obscure and hard to reproduce bug.
+4. Once we use kB, it's easy to see that 1GB has gone missing (which
+   explains why CONFIG_CPA_DEBUG=y soon wraps DirectMap2M negative):
+   because head_64.S's level2_ident_pgt entries were not counted.
+   My fix is not ideal, but works for more and for less than 1G,
+   and avoids interfering with early bootup pagetable contortions.
 
-Note that the two commits were kept together tightly so the chance of 
-bisection going in the middle of it _and_ hitting the obscure slowpath 
-is reasonably small. What is wrong is to keep them apart (say merge a 
-full upstream release between them) and break bisection on a wide basis.
+Signed-off-by: Hugh Dickins <hugh@veritas.com>
+---
+You might prefer me to split these up?
 
-Btw., we could add "dont bisect into this other commit" markers to later 
-commits. Bisection is a relatively slow operation anyway, so checking a 
-graph of bisection markers would be within its reach without causing any 
-practical slowdown of bisection. (I think.)
+Should we really be using level2_ident_pgt (which needs to avoid NX)
+for the final direct map (which wants to use NX)?  But my attempt
+to build up a fresh pagetable there failed miserably to boot!
 
-> [*] BTW. it would be nice to have some formal regression: and/or link: 
-> tags in git patches which I think would help that kind of analysis and 
-> also help distros to pick up fixes...
+ arch/x86/mm/init_64.c  |    6 +++++-
+ arch/x86/mm/pageattr.c |   18 ++++++++++++------
+ 2 files changed, 17 insertions(+), 7 deletions(-)
 
-yeah. Perhaps also some tags to note their lkml thread identity.
-
-	Ingo
+--- 2.6.27-rc3/arch/x86/mm/init_64.c	2008-07-29 04:24:15.000000000 +0100
++++ linux/arch/x86/mm/init_64.c	2008-08-13 16:37:41.000000000 +0100
+@@ -60,7 +60,7 @@ static unsigned long dma_reserve __initd
+ 
+ DEFINE_PER_CPU(struct mmu_gather, mmu_gathers);
+ 
+-int direct_gbpages __meminitdata
++int direct_gbpages
+ #ifdef CONFIG_DIRECT_GBPAGES
+ 				= 1
+ #endif
+@@ -314,6 +314,7 @@ phys_pmd_init(pmd_t *pmd_page, unsigned 
+ {
+ 	unsigned long pages = 0;
+ 	unsigned long last_map_addr = end;
++	unsigned long start = address;
+ 
+ 	int i = pmd_index(address);
+ 
+@@ -334,6 +335,9 @@ phys_pmd_init(pmd_t *pmd_page, unsigned 
+ 			if (!pmd_large(*pmd))
+ 				last_map_addr = phys_pte_update(pmd, address,
+ 								 end);
++			/* Count entries we're using from level2_ident_pgt */
++			if (start == 0)
++				pages++;
+ 			continue;
+ 		}
+ 
+--- 2.6.27-rc3/arch/x86/mm/pageattr.c	2008-07-29 04:24:15.000000000 +0100
++++ linux/arch/x86/mm/pageattr.c	2008-08-13 04:37:27.000000000 +0100
+@@ -55,13 +55,19 @@ static void split_page_count(int level)
+ 
+ int arch_report_meminfo(char *page)
+ {
+-	int n = sprintf(page, "DirectMap4k:  %8lu\n"
+-			"DirectMap2M:  %8lu\n",
+-			direct_pages_count[PG_LEVEL_4K],
+-			direct_pages_count[PG_LEVEL_2M]);
++	int n = sprintf(page, "DirectMap4k:  %8lu kB\n",
++			direct_pages_count[PG_LEVEL_4K] << 2);
++#if defined(CONFIG_X86_64) || defined(CONFIG_X86_PAE)
++	n += sprintf(page + n, "DirectMap2M:  %8lu kB\n",
++			direct_pages_count[PG_LEVEL_2M] << 11);
++#else
++	n += sprintf(page + n, "DirectMap4M:  %8lu kB\n",
++			direct_pages_count[PG_LEVEL_2M] << 12);
++#endif
+ #ifdef CONFIG_X86_64
+-	n += sprintf(page + n, "DirectMap1G:  %8lu\n",
+-		     direct_pages_count[PG_LEVEL_1G]);
++	if (direct_gbpages)
++		n += sprintf(page + n, "DirectMap1G:  %8lu kB\n",
++			direct_pages_count[PG_LEVEL_1G] << 20);
+ #endif
+ 	return n;
+ }
