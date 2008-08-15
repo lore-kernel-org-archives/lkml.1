@@ -1,70 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754326AbYHOCQl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755304AbYHOCVc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754326AbYHOCQl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Aug 2008 22:16:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752166AbYHOCQc
+	id S1755304AbYHOCVc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Aug 2008 22:21:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752191AbYHOCVW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Aug 2008 22:16:32 -0400
-Received: from senator.holtmann.net ([87.106.208.187]:35488 "EHLO
-	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750999AbYHOCQc (ORCPT
+	Thu, 14 Aug 2008 22:21:22 -0400
+Received: from yx-out-2324.google.com ([74.125.44.28]:17420 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750999AbYHOCVV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Aug 2008 22:16:32 -0400
-Cc: Greg KH <greg@kroah.com>, arjan@linux.intel.com,
-       linux-kernel@vger.kernel.org
-Message-Id: <ECB4FB22-EF4D-4755-AEB8-303E7869EBEC@holtmann.org>
-From: Marcel Holtmann <marcel@holtmann.org>
-To: Rusty Russell <rusty@rustcorp.com.au>
-In-Reply-To: <200808150932.44204.rusty@rustcorp.com.au>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v928.1)
-Subject: Re: Core kernel parameters and /sys/parameters?
-Date: Fri, 15 Aug 2008 04:16:27 +0200
-References: <200807311359.02561.rusty@rustcorp.com.au> <20080814222522.GO30057@kroah.com> <200808150932.44204.rusty@rustcorp.com.au>
-X-Mailer: Apple Mail (2.928.1)
+	Thu, 14 Aug 2008 22:21:21 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
+        b=naJRY7+ZeOeO1erGzyLl/3x9un0REDLYnEmcZvYs4cHDpBM6SS7bUE+css0KJWc+IM
+         SaAGfMXm0/fVvaloGBRpo9EVcns+npkil4CYVeCWPlVeOwRM/gA0OvcRQDBBofU0UZAU
+         +12Ufiteo0E/s1yvHparuYloGjziz/nesLTSQ=
+From: Yinghai Lu <yhlu.kernel@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Yinghai Lu <yhlu.kernel@gmail.com>
+Subject: [PATCH 00/07] dyn_array/nr_irqs/sparse_irq support v10 - fix
+Date: Thu, 14 Aug 2008 19:20:25 -0700
+Message-Id: <1218766832-20476-1-git-send-email-yhlu.kernel@gmail.com>
+X-Mailer: git-send-email 1.5.4.5
+In-Reply-To: <no>
+References: <no>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Rusty,
+	fix the 32bit with bigsmp
+	fix 64 bit with irq migration
+	ordering functions in io_apic_xx.c
 
->>>   Was looking at implementing "core_param" for things like
->>> "initcall_debug" (ie. params with no prefix), and wanted to put  
->>> them in
->>> sysfs of course.  I hacked in a new "kernel" dir, but
->>> /sys/module/kernel/parameters/ is a bit of an odd place for it to  
->>> end up
->>> in.
->>>
->>>   I noticed this comment in params.c:
->>>
->>> * /sys/module/[mod->name]/parameters to /sys/parameters/[mod->name]/
->>>
->>> I like the idea of /sys/parameters/ much better (perhaps even with  
->>> core
->>> parameters at the top level).  Is this obsolete?  Planned?
->>
->> Did I write that comment?  I sure don't remember it, sorry :)
->>
->> I don't have any plans on changing this, but I do know people use the
->> /sys/module/MODULE_NAME/parameters interface today, why change it?
->
-> Well mainly that many of them aren't modules, so if a change was  
-> planned for
-> some other reason I'd support it.
->
-> And as I said, having core parameters (ie. converting things which  
-> are current
-> __setup) appear in /sys/module/kernel/parameters/ is a bit strange.
 
-if you guys dislike /sys/module/kernel/* for core stuff, then you  
-should do the change as soon as possible since userspace relies on it  
-for a lot of tasks. Even I started using it. However I only want one  
-general place for kernel/module parameters. A symlink might help us in  
-the meantime to get the transition done smoothly.
+to do:
+    merge io_apic_xx.c
 
-Regards
+Thanks
 
-Marcel
+Yinghai Lu
 
