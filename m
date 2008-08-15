@@ -1,61 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759238AbYHOQG5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759583AbYHOQIj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759238AbYHOQG5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Aug 2008 12:06:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753574AbYHOQGt
+	id S1759583AbYHOQIj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Aug 2008 12:08:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753630AbYHOQI3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Aug 2008 12:06:49 -0400
-Received: from ns1.suse.de ([195.135.220.2]:59122 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752143AbYHOQGs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Aug 2008 12:06:48 -0400
-Date: Fri, 15 Aug 2008 09:03:55 -0700
-From: Greg KH <gregkh@suse.de>
-To: Tim Hockin <thockin@hockin.org>
-Cc: Joe Perches <joe@perches.com>, schwidefsky@de.ibm.com,
-       linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
-       lf_kernel_messages@lists.linux-foundation.org,
+	Fri, 15 Aug 2008 12:08:29 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:39573 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752973AbYHOQI3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Aug 2008 12:08:29 -0400
+Date: Fri, 15 Aug 2008 09:06:38 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+cc: Ingo Molnar <mingo@elte.hu>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       Harvey Harrison <harvey.harrison@gmail.com>,
+       Andi Kleen <andi@firstfloor.org>, Steven Rostedt <rostedt@goodmis.org>,
+       Steven Rostedt <srostedt@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Michael Holzheu <holzheu@de.ibm.com>, Gerrit Huizenga <gh@us.ibm.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>, Jan Kara <jack@suse.cz>,
-       Pavel Machek <pavel@ucw.cz>, Sam Ravnborg <sam@ravnborg.org>,
-       Jochen =?iso-8859-1?B?Vm/f?= <jochen.voss@googlemail.com>,
-       Kunai Takashi <kunai@linux-foundation.jp>,
-       Tim Bird <tim.bird@am.sony.com>
-Subject: Re: [patch 1/3] kmsg: Kernel message catalog macros.
-Message-ID: <20080815160355.GD23720@suse.de>
-References: <20080730165656.118280544@de.ibm.com> <20080730171156.824640459@de.ibm.com> <b3ece790808121735t21b4a629iaf6a968b30332d74@mail.gmail.com> <1218733457.2651.11.camel@localhost> <b3ece790808141150s3770531bsc88ec387e0f840d3@mail.gmail.com> <1218769739.24527.76.camel@localhost> <20080815034419.GB803@suse.de> <b3ece790808142233y3150b4d1sfeaa0342dbac31a6@mail.gmail.com>
+       David Miller <davem@davemloft.net>, Roland McGrath <roland@redhat.com>,
+       Ulrich Drepper <drepper@redhat.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Gregory Haskins <ghaskins@novell.com>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       "Luis Claudio R. Goncalves" <lclaudio@uudg.org>,
+       Clark Williams <williams@redhat.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH] x86 alternatives : fix LOCK_PREFIX race with preemptible
+ kernel and CPU hotplug
+In-Reply-To: <20080814205815.GA14076@Krystal>
+Message-ID: <alpine.LFD.1.10.0808150854140.3324@nehalem.linux-foundation.org>
+References: <20080814205815.GA14076@Krystal>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <b3ece790808142233y3150b4d1sfeaa0342dbac31a6@mail.gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 14, 2008 at 10:33:10PM -0700, Tim Hockin wrote:
-> On Thu, Aug 14, 2008 at 8:44 PM, Greg KH <gregkh@suse.de> wrote:
-> >
-> > What is wrong with what we have already agreed to standardise on here
-> > people?  dev_printk() for devices!  It uniquely shows the device, what
-> > driver is bound to it (if any), the bus id, and everything else.
-> 
-> Part of the problem, imho, is the "if any" part.  But I am more than happy to
-> build on existing solutions.  All the world is not a dev, though.
 
-No, but way over half the kernel is.
 
-> I'd like to be able to report something like an OOM kill in (roughly)
-> the same way as an ATA error, and I want (though could be talked out
-> of) a way to tell these "events" (for lack of a better word) apart
-> from plain-old-printk()s.
+On Thu, 14 Aug 2008, Mathieu Desnoyers wrote:
+>
+> Changing the 0x90 (single-byte nop) currently used into a 0x3E DS segment
+> override prefix should fix this issue. Since the default of the atomic
+> instructions is to use the DS segment anyway, it should not affect the
+> behavior.
 
-That's great, then create something that can handle both!  Don't throw
-away some wonderful information that way over half the kernel has access
-to just because the minority doesn't.  That would mean that we would
-loose information in those drivers overall.
+Ok, so I think this is an _excellent_ patch, but I'd like to also then use 
+LOCK_PREFIX in include/asm-x86/futex.h.
 
-thanks,
+See commit 9d55b9923a1b7ea8193b8875c57ec940dc2ff027.
 
-greg k-h
+		Linus
