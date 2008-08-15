@@ -1,52 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755029AbYHOLVX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756734AbYHOLVh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755029AbYHOLVX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Aug 2008 07:21:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753057AbYHOLVQ
+	id S1756734AbYHOLVh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Aug 2008 07:21:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753374AbYHOLVR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Aug 2008 07:21:16 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:50959 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752662AbYHOLVP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Aug 2008 07:21:17 -0400
+Received: from mx1.suse.de ([195.135.220.2]:53776 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752930AbYHOLVP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 15 Aug 2008 07:21:15 -0400
-Date: Fri, 15 Aug 2008 12:02:25 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: rmeijer@xs4all.nl
-Cc: capibara@xs4all.nl, david@lang.hm, "Eric Paris" <eparis@redhat.com>,
-       "Theodore Tso" <tytso@mit.edu>, "Rik van Riel" <riel@redhat.com>,
-       davecb@sun.com, linux-security-module@vger.kernel.org,
-       "Adrian Bunk" <bunk@kernel.org>,
-       "Mihai Don??u" <mdontu@bitdefender.com>, linux-kernel@vger.kernel.org,
-       malware-list@lists.printk.net, "Pavel Machek" <pavel@suse.cz>,
-       "Arjan van de Ven" <arjan@infradead.org>
-Subject: Re: [malware-list] [RFC 0/5] [TALPA] Intro to	alinuxinterfaceforon
-      access scanning
-Message-ID: <20080815120225.118d81da@lxorguk.ukuu.org.uk>
-In-Reply-To: <8676.82.95.100.23.1218795012.squirrel@webmail.xs4all.nl>
-References: <8676.82.95.100.23.1218795012.squirrel@webmail.xs4all.nl>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+Date: Fri, 15 Aug 2008 13:21:17 +0200
+From: Jan Blunck <jblunck@suse.de>
+To: Tim Hockin <thockin@hockin.org>
+Cc: Greg KH <gregkh@suse.de>, Joe Perches <joe@perches.com>,
+       schwidefsky@de.ibm.com, linux-kernel@vger.kernel.org,
+       linux-s390@vger.kernel.org,
+       lf_kernel_messages@lists.linux-foundation.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Michael Holzheu <holzheu@de.ibm.com>, Gerrit Huizenga <gh@us.ibm.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>, Jan Kara <jack@suse.cz>,
+       Pavel Machek <pavel@ucw.cz>, Sam Ravnborg <sam@ravnborg.org>,
+       Jochen =?iso-8859-1?B?Vm/f?= <jochen.voss@googlemail.com>,
+       Kunai Takashi <kunai@linux-foundation.jp>,
+       Tim Bird <tim.bird@am.sony.com>
+Subject: Re: [patch 1/3] kmsg: Kernel message catalog macros.
+Message-ID: <20080815112117.GP10078@bolzano.suse.de>
+References: <20080730165656.118280544@de.ibm.com> <20080730171156.824640459@de.ibm.com> <b3ece790808121735t21b4a629iaf6a968b30332d74@mail.gmail.com> <1218733457.2651.11.camel@localhost> <b3ece790808141150s3770531bsc88ec387e0f840d3@mail.gmail.com> <1218769739.24527.76.camel@localhost> <20080815034419.GB803@suse.de> <b3ece790808142233y3150b4d1sfeaa0342dbac31a6@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <b3ece790808142233y3150b4d1sfeaa0342dbac31a6@mail.gmail.com>
+Organization: SUSE LINUX Products GmbH, GF Markus Rex, HRB 16746 (AG Nuernberg)
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> The package manager approach is interesting in that it marks 'trusted',
-> and is thus permissive rather than restrictive. Maybe it would be possible
-> to extend on this and simply define a set of currently unprivileged access
-> as privileged for untrusted applications. That way you could allow
-> untrusted software to run without risk, even if that untrusted software
-> turns out to be malware. That is, it may be possible to solve the malware
-> problem in a much more fundamental way here by just allowing malware to
-> run without the need to know if it is malware, just by running untrusted
-> software with reduced privileges.
-> 
+On Thu, Aug 14, Tim Hockin wrote:
 
-Its called SELinux and SELinux can already do this sort of stuff,
-including things like "only rpm may create files you are permitted to
-execute"
+> On Thu, Aug 14, 2008 at 8:44 PM, Greg KH <gregkh@suse.de> wrote:
+> >
+> > What is wrong with what we have already agreed to standardise on here
+> > people?  dev_printk() for devices!  It uniquely shows the device, what
+> > driver is bound to it (if any), the bus id, and everything else.
+> 
+> Part of the problem, imho, is the "if any" part.  But I am more than happy to
+> build on existing solutions.  All the world is not a dev, though.  I'd like to
+> be able to report something like an OOM kill in (roughly) the same way as an
+> ATA error, and I want (though could be talked out of) a way to tell these
+> "events" (for lack of a better word) apart from plain-old-printk()s.
+
+If I interpret Martins patches correctly he wants to be able to put add
+extended information to specific messages the kernel is printing. This is a
+good way to explain the rational of certain situations to people unwilling to
+read the sources ;)
+
+I don't think that he wants to unify all the printk's in the system. I don't
+think that reporting all errors "in the same way as an ATA error" makes any
+sense. That would just lead to very stupid and unnatural messages for all
+errors that are not like "ATA errors". Annotation of existing errors is a much
+more flexible and feasible solution to that problem.
