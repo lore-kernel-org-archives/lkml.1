@@ -1,55 +1,155 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760441AbYHOVuH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760429AbYHOVy4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760441AbYHOVuH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Aug 2008 17:50:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755234AbYHOVtz
+	id S1760429AbYHOVy4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Aug 2008 17:54:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755209AbYHOVys
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Aug 2008 17:49:55 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:55245 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755209AbYHOVtz (ORCPT
+	Fri, 15 Aug 2008 17:54:48 -0400
+Received: from e34.co.us.ibm.com ([32.97.110.152]:53250 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754921AbYHOVyr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Aug 2008 17:49:55 -0400
-Date: Fri, 15 Aug 2008 23:51:21 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, Roland McGrath <roland@redhat.com>,
-       Ulrich Drepper <drepper@redhat.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Gregory Haskins <ghaskins@novell.com>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       "Luis Claudio R. Goncalves" <lclaudio@uudg.org>,
-       Clark Williams <williams@redhat.com>
-Subject: Re: Efficient x86 and x86_64 NOP microbenchmarks
-Message-ID: <20080815215121.GK19125@one.firstfloor.org>
-References: <alpine.DEB.1.10.0808082030500.1396@gandalf.stny.rr.com> <489CE90D.1040902@goop.org> <alpine.LFD.1.10.0808081750060.3462@nehalem.linux-foundation.org> <alpine.DEB.1.10.0808082113090.3707@gandalf.stny.rr.com> <20080813175213.GA8679@Krystal> <alpine.LFD.1.10.0808131119290.3462@nehalem.linux-foundation.org> <20080813184142.GM1366@one.firstfloor.org> <20080813193011.GC15547@Krystal> <20080813193715.GQ1366@one.firstfloor.org> <alpine.DEB.1.10.0808151535300.24788@gandalf.stny.rr.com>
+	Fri, 15 Aug 2008 17:54:47 -0400
+Subject: Re: [linux-pm] [PATCH 0/5] Container Freezer v6: Reuse Suspend
+	Freezer
+From: Matt Helsley <matthltc@us.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Vivek Kashyap <kashyapv@us.ibm.com>, containers@lists.linux-foundation.org,
+       lizf@cn.fujitsu.com, linux-kernel@vger.kernel.org, menage@google.com,
+       linux-pm@lists.linux-foundation.org
+In-Reply-To: <20080812210859.ff2fa2f4.akpm@linux-foundation.org>
+References: <20080811235323.872291138@us.ibm.com>
+	 <20080812154429.c5377bd0.akpm@linux-foundation.org>
+	 <Pine.WNT.4.64.0808121927320.5336@IBM-8DE7FFDE2AB>
+	 <20080812210859.ff2fa2f4.akpm@linux-foundation.org>
+Content-Type: text/plain
+Organization: IBM Linux Technology Center
+Date: Fri, 15 Aug 2008 14:54:42 -0700
+Message-Id: <1218837282.5237.112.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0808151535300.24788@gandalf.stny.rr.com>
-User-Agent: Mutt/1.4.2.1i
+X-Mailer: Evolution 2.12.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > The other advantage is that it would allow getting rid of
-> > the frame pointer.
+
+On Tue, 2008-08-12 at 21:08 -0700, Andrew Morton wrote:
+> On Tue, 12 Aug 2008 20:47:10 -0700 (Pacific Daylight Time) Vivek Kashyap <kashyapv@us.ibm.com> wrote:
 > 
-> This is the only advantage that you have.
+> > On Tue, 12 Aug 2008, Andrew Morton wrote:
+> > 
+> > > On Mon, 11 Aug 2008 16:53:23 -0700
+> > > Matt Helsley <matthltc@us.ibm.com> wrote:
+> > >
+> > >> This patch series introduces a cgroup subsystem that utilizes the swsusp
+> > >> freezer to freeze a group of tasks. It's immediately useful for batch job
+> > >> management scripts. It should also be useful in the future for implementing
+> > >> container checkpoint/restart.
+> > >
+> > > I don't think that this provides anything like sufficient detail to justify
+> > > merging a whole bunch of stuff into Linux.
+> > >
+> > > What does "It's immediately useful for batch job management scripts."
+> > > mean?  How is it useful?  Examples?  Why would an operator want this
+> > > feature, and how would it be used?  _much_ more information is needed!
+> >
+> > A batch-manager/job scheduler (such as loadleveler)
+> 
+> what's that?
+>
+> > must at times stop all 
+> > tasks associated with a workload being run in a container.
+> 
+> why?
+> 
+> I'm being deliberately obtuse here, but I'm afraid you guys haven't
+> come anywhere into the vague nearby neighbourhood of adequately describing
+> this feature.
+> 
+> Please provide proper and full reasons for merging this code into
+> Linux.  If they exist.  This shouldn't be too hard.
+> 
+> Please put yourself in my position:
+> 
+> me: [patch] <this stuff>
+> Linus: why are you sending me this?
+> me: I have not the faintest idea
+> 
+> trust me - many others will be in my position too.
 
-Ok. But it's a serious one.  It gives slightly more gain as your whole 
-complicated patching exercise.
+Hi Andrew,
 
-Ok maybe it would be better to just properly fix gcc, but the problem
-is it takes forever for the user base to actually start using a new
-gcc :/
+	Sorry for being so quiet. I've been carefully considering your email
+and composing what I hope is a much better description of why the code
+should eventually be merged:
 
--Andi
+	The cgroup freezer is useful to batch job management system which start
+and stop sets of tasks in order to schedule the resources of a machine
+according to the desires of a system administrator. This sort of program
+is often used on HPC clusters to schedule access to the cluster as a
+whole. The cgroup freezer uses cgroups to describe the set of tasks to
+be started/stopped by the batch job management system. It also provides
+a means to start and stop the tasks composing the job.
+
+	The cgroup freezer will also be useful for checkpointing running groups
+of tasks. The freezer allows the checkpoint code to obtain a consistent
+image of the tasks by attempting to force the tasks in a cgroup into a
+quiescent state. Once the tasks are quiescent another task can
+walk /proc or invoke a kernel interface to gather information about the
+quiesced tasks. Checkpointed tasks can be restarted later should a
+recoverable error occur. This also allows the checkpointed tasks to be
+migrated between nodes in a cluster by copying the gathered information
+to another node and restarting the tasks there.
+
+	Sequences of SIGSTOP and SIGCONT are not always sufficient for stopping
+and resuming tasks in userspace. Both of these signals are observable
+from within the tasks we wish to freeze. While SIGSTOP cannot be caught,
+blocked, or ignored it can be seen by waiting or ptracing parent tasks.
+SIGCONT is especially unsuitable since it can be caught by the task. Any
+programs designed to watch for SIGSTOP and SIGCONT could be broken by
+attempting to use SIGSTOP and SIGCONT to stop and resume tasks. We can
+demonstrate this problem using nested bash shells:
+
+	$ echo $$
+	16644
+	$ bash
+	$ echo $$
+	16690
+
+	From a second, unrelated bash shell:
+	$ kill -SIGSTOP 16690
+	$ kill -SIGCONT 16990
+
+	<at this point 16990 exits and causes 16644 to exit too>
+
+	This happens because bash can observe both signals and choose how it
+responds to them.
+
+	Another example of a program which catches and responds to these
+signals is gdb. In fact any program designed to use ptrace is likely to
+have a problem with this method of stopping and resuming tasks.
+
+	 In contrast, the cgroup freezer uses the kernel freezer code to
+prevent the freeze/unfreeze cycle from becoming visible to the tasks
+being frozen. This allows the bash example above and gdb to run as
+expected.
+
+> > The workload may 
+> > constitute of multiple tasks - some of which are in different sessions. 
+> > A signal (STOP/CONT) to the Containers 'init' wont be transmitted to all 
+> > the tasks in the Container. The 'freezer' mechanism allows this control
+> > to be implemented in a clean way.
+> 
+> So why not implement a send-signal-to-all-tasks-in-a-container
+> controller?
+
+	I have posted such a controller to the containers list in the past. For
+the reasons cited above I don't think its suitable as a replacement for
+the freezer controller.
+
+Please let me know if the reasons for merging this code remain unclear.
+
+Cheers,
+	-Matt Helsley
+
