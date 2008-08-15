@@ -1,106 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755366AbYHOCJv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754326AbYHOCQl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755366AbYHOCJv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Aug 2008 22:09:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752166AbYHOCJn
+	id S1754326AbYHOCQl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Aug 2008 22:16:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752166AbYHOCQc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Aug 2008 22:09:43 -0400
-Received: from outbound-dub.frontbridge.com ([213.199.154.16]:63991 "EHLO
-	IE1EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751961AbYHOCJm (ORCPT
+	Thu, 14 Aug 2008 22:16:32 -0400
+Received: from senator.holtmann.net ([87.106.208.187]:35488 "EHLO
+	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750999AbYHOCQc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Aug 2008 22:09:42 -0400
-X-BigFish: VPS-44(zz1432R98dR168aJ936eQ4015M148cM1805M3117Kzz10dck10d3izzz32i6bh61h)
-X-Spam-TCS-SCL: 0:0
-X-WSS-ID: 0K5MDZK-01-VB0-01
-Subject: Re: [PATCH] HPET: Workaround for a BIOS workaround on AMD SB700
-	platform
-From: crane cai <crane.cai@amd.com>
-Reply-To: crane.cai@amd.com
-To: Thomas Gleixner <tglx@linutronix.de>
-CC: vojtech@suse.cz, Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-In-Reply-To: <alpine.LFD.1.10.0808141206130.3243@apollo.tec.linutronix.de>
-References: <1218683616.20466.13.camel@crane-laptop>
-	 <alpine.LFD.1.10.0808141206130.3243@apollo.tec.linutronix.de>
-Content-Type: text/plain
+	Thu, 14 Aug 2008 22:16:32 -0400
+Cc: Greg KH <greg@kroah.com>, arjan@linux.intel.com,
+       linux-kernel@vger.kernel.org
+Message-Id: <ECB4FB22-EF4D-4755-AEB8-303E7869EBEC@holtmann.org>
+From: Marcel Holtmann <marcel@holtmann.org>
+To: Rusty Russell <rusty@rustcorp.com.au>
+In-Reply-To: <200808150932.44204.rusty@rustcorp.com.au>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Content-Transfer-Encoding: 7bit
-Organization: AMD
-Date: Fri, 15 Aug 2008 10:09:26 +0800
-Message-ID: <1218766167.5646.55.camel@crane-laptop>
-MIME-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-X-OriginalArrivalTime: 15 Aug 2008 02:09:28.0528 (UTC) FILETIME=[F2A34D00:01C8FE7B]
+Mime-Version: 1.0 (Apple Message framework v928.1)
+Subject: Re: Core kernel parameters and /sys/parameters?
+Date: Fri, 15 Aug 2008 04:16:27 +0200
+References: <200807311359.02561.rusty@rustcorp.com.au> <20080814222522.GO30057@kroah.com> <200808150932.44204.rusty@rustcorp.com.au>
+X-Mailer: Apple Mail (2.928.1)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Thomas,
+Hi Rusty,
 
-Your modification has been checked OK on our SB700 platform. Thank you.
-Now could you help us to merge your patch to kernel source? Or do I need
-to resubmit a patch on it?
+>>>   Was looking at implementing "core_param" for things like
+>>> "initcall_debug" (ie. params with no prefix), and wanted to put  
+>>> them in
+>>> sysfs of course.  I hacked in a new "kernel" dir, but
+>>> /sys/module/kernel/parameters/ is a bit of an odd place for it to  
+>>> end up
+>>> in.
+>>>
+>>>   I noticed this comment in params.c:
+>>>
+>>> * /sys/module/[mod->name]/parameters to /sys/parameters/[mod->name]/
+>>>
+>>> I like the idea of /sys/parameters/ much better (perhaps even with  
+>>> core
+>>> parameters at the top level).  Is this obsolete?  Planned?
+>>
+>> Did I write that comment?  I sure don't remember it, sorry :)
+>>
+>> I don't have any plans on changing this, but I do know people use the
+>> /sys/module/MODULE_NAME/parameters interface today, why change it?
+>
+> Well mainly that many of them aren't modules, so if a change was  
+> planned for
+> some other reason I'd support it.
+>
+> And as I said, having core parameters (ie. converting things which  
+> are current
+> __setup) appear in /sys/module/kernel/parameters/ is a bit strange.
 
-Best regards,
-- Crane
+if you guys dislike /sys/module/kernel/* for core stuff, then you  
+should do the change as soon as possible since userspace relies on it  
+for a lot of tasks. Even I started using it. However I only want one  
+general place for kernel/module parameters. A symlink might help us in  
+the meantime to get the transition done smoothly.
 
-On Thu, 2008-08-14 at 18:11 +0800, Thomas Gleixner wrote:
+Regards
 
-> Crane,
-> 
-> thanks for debugging this. I think we don't need a quirk for this
-> workaround. Checking the config register value for 0xffffffff is safe
-> on all machines. I simplified your patch to the one below and added a
-> printk in case the check times out.
-> 
-> One thing I'm a bit wary about is the readout of the HPET_PERIOD
-> register. Is the value correct even _before_ the SMM machinery is
-> started ?
-
-> Thanks,
-> 
->         tglx
-> -----
-> diff --git a/arch/x86/kernel/hpet.c b/arch/x86/kernel/hpet.c
-> index ad2b15a..59fd3b6 100644
-> --- a/arch/x86/kernel/hpet.c
-> +++ b/arch/x86/kernel/hpet.c
-> @@ -359,6 +359,7 @@ static int hpet_clocksource_register(void)
->  int __init hpet_enable(void)
->  {
->         unsigned long id;
-> +       int i;
-> 
->         if (!is_hpet_capable())
->                 return 0;
-> @@ -369,6 +370,29 @@ int __init hpet_enable(void)
->          * Read the period and check for a sane value:
->          */
->         hpet_period = hpet_readl(HPET_PERIOD);
-> +
-> +       /*
-> +        * AMD SB700 based systems with spread spectrum enabled use a
-> +        * SMM based HPET emulation to provide proper frequency
-> +        * setting. The SMM code is initialized with the first HPET
-> +        * register access and takes some time to complete. During
-> +        * this time the config register reads 0xffffffff. We check
-> +        * for max. 1000 loops whether the config register reads a non
-> +        * 0xffffffff value to make sure that HPET is up and running
-> +        * before we go further. A counting loop is safe, as the HPET
-> +        * access takes thousands of CPU cycles. On non SB700 based
-> +        * machines this check is only done once and has no side
-> +        * effects.
-> +        */
-> +       for (i = 0; hpet_readl(HPET_CFG) == 0xFFFFFFFF; i++) {
-> +               if (i == 1000) {
-> +                       printk(KERN_WARNING
-> +                              "HPET config register value = 0xFFFFFFFF. "
-> +                              "Disabling HPET\n");
-> +                       goto out_nohpet;
-> +               }
-> +       }
-> +
->         if (hpet_period < HPET_MIN_PERIOD || hpet_period > HPET_MAX_PERIOD)
->                 goto out_nohpet;
-> 
-
+Marcel
 
