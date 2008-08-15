@@ -1,71 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760256AbYHOPdd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759789AbYHOPfA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760256AbYHOPdd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Aug 2008 11:33:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751680AbYHOPdX
+	id S1759789AbYHOPfA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Aug 2008 11:35:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754519AbYHOPet
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Aug 2008 11:33:23 -0400
-Received: from postage-due.permabit.com ([204.246.225.5]:38822 "EHLO
-	postage-due.permabit.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753933AbYHOPdW (ORCPT
+	Fri, 15 Aug 2008 11:34:49 -0400
+Received: from moutng.kundenserver.de ([212.227.126.187]:56474 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751680AbYHOPes (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Aug 2008 11:33:22 -0400
-X-Greylist: delayed 3665 seconds by postgrey-1.27 at vger.kernel.org; Fri, 15 Aug 2008 11:33:22 EDT
-From: Paul Lussier <pll@permabit.com>
-To: linux-kernel@vger.kernel.org
-Subject: Questions about (unstable) clocksources
-Date: Fri, 15 Aug 2008 10:32:15 -0400
-Message-ID: <6ed4kabb80.fsf@ambivalent-optimist.permabit.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	Fri, 15 Aug 2008 11:34:48 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: Adrian Bunk <bunk@kernel.org>
+Subject: Re: [RFC: 2.6 patch] s390: use kernel/uid.c
+Date: Fri, 15 Aug 2008 17:34:43 +0200
+User-Agent: KMail/1.9.9
+Cc: schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com,
+       linux-s390@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20080810204031.GC8399@cs181140183.pp.htv.fi>
+In-Reply-To: <20080810204031.GC8399@cs181140183.pp.htv.fi>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Permabit-Spam: SKIPPED
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200808151734.43710.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1/LVPJCq0pxe5zF/NszyBCcpndF6EZeO8N50wU
+ NuRnDvv7w7bTeh2JSzJ1reuPyszmtQiyeTlBaxo92J4t0Ev+D+
+ 0G2qXO3T0xkAmK4K5Th2Q==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sunday 10 August 2008, Adrian Bunk wrote:
+> Unless I missed a twist the only reason for s390 to not use the code in 
+> kernel/uid.c was that it copied the code from sparc64 (that is now 
+> being changed in a similar way by David).
+> 
+> Signed-off-by: Adrian Bunk <bunk@kernel.org>
+> 
 
-Hi all,
+I tried doing this before but couldn't figure out an easy way,
+but the circumstances may have changed by now.
 
-I'm trying to understand the issues surrounding the recent (2.6.2[456])
-troubles involving unstable clocksources.  Not being a kernel developer
-I'm somewhat in the dark.  Also, if this isn't the correct forum to ask
-these questions, please direct me to the proper place.  I have no wish
-to clutter the channel with off-topic discussion.
+Back then, the basic problem was that CONFIG_UID16 had side-effects
+that break the 64-bit versions of some syscalls. I don't see that
+being the case any more, but from what I can tell, you still need
+to add definitions for __kernel_old_uid_t etc on s390x.
 
-My questions involve the characteristics and manifestations of the
-problems as related to the clocksource when it becomes unstable (whether
-it's tsc, hpet, acpi_pm, etc.)
+If that does the trick, great work!
 
-I'm looking to understand these things:
-
- - When the clocksource goes unstable, what happens from a userspace
-   perspective? i.e How will userspace processes percieve the problem?
-   - Does time move at all?
-   - If so, which way, forwards, backwards, either?
-   - How can I detect this ?
-     (size/magnitude of the delta reported in kern.log?)
-
- - If the TSC clocksource is registered unstable, and the another
-   clocksource is chosen, can it too become unstable?
-   - Based on the code in kernel/time/clocksource.c, it appears that
-     clocksource_ratewd() will report the same basic message that any
-     given clocksource is unstable.  Is that correct?
-
-   - What causes hpet, acpi or jiffies to become unstable?
-     (my understanding of the tsc issue is that it goes unstable in an
-     SMP situation when it gets confused as to which CPU's ticks it's
-     looking at.  What would cause the others to become unstable?
-
-   - What happens if the next clocksource goes unstable?
-     Does it just fallback to the next available clocksource?
-
-And finally, what's the best way to avoid this problem (assuming a
-default clocksource of tsc)?  Is it simply setting clocksource=hpet in
-my grub config file?  Are there other kernel options I ought to
-consider?  I've seen some mention of setting nohz=off, but no
-explanation as to why that helps.
-
-Thanks,
--- 
-Paul
+	Arnd <><
