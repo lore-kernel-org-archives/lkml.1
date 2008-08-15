@@ -1,90 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759225AbYHON3Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759338AbYHON3k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759225AbYHON3Z (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Aug 2008 09:29:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758768AbYHON27
+	id S1759338AbYHON3k (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Aug 2008 09:29:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759146AbYHON3K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Aug 2008 09:28:59 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:59681 "EHLO ogre.sisk.pl"
+	Fri, 15 Aug 2008 09:29:10 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:41295 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758899AbYHON25 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Aug 2008 09:28:57 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Stephen Hemminger <shemminger@vyatta.com>
-Subject: Re: [PATCH 2/3] Adapt the sky2 driver to the reworked PCI PM
-Date: Fri, 15 Aug 2008 15:32:13 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: netdev@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Jeff Garzik <jeff@garzik.org>, Jesse Barnes <jbarnes@virtuousgeek.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       "Brandeburg, Jesse" <jesse.brandeburg@intel.com>,
-       Stephen Hemminger <stephen.hemminger@vyatta.com>
-References: <200808142335.56644.rjw@sisk.pl> <20080814152318.625f8609@extreme> <200808151501.58315.rjw@sisk.pl>
-In-Reply-To: <200808151501.58315.rjw@sisk.pl>
+	id S1759132AbYHON3J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Aug 2008 09:29:09 -0400
+Date: Fri, 15 Aug 2008 15:28:54 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Hugh Dickins <hugh@veritas.com>
+Cc: Andi Kleen <andi@firstfloor.org>, x86@kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86: fix /proc/meminfo DirectMap
+Message-ID: <20080815132854.GG30597@elte.hu>
+References: <Pine.LNX.4.64.0808151351220.28840@blonde.site>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200808151532.14327.rjw@sisk.pl>
+In-Reply-To: <Pine.LNX.4.64.0808151351220.28840@blonde.site>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, 15 of August 2008, Rafael J. Wysocki wrote:
-> On Friday, 15 of August 2008, Stephen Hemminger wrote:
-> > On Thu, 14 Aug 2008 23:38:17 +0200
-> > "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
-> > 
-> > > Adapt the sky2 driver to the reworked PCI PM
-> > > 
-> > > * Use device_set_wakeup_enable() and friends as needed
-> > > * Remove an open-coded reference to the standard PCI PM registers
-> > > * Use pci_prepare_to_sleep() and pci_back_from_sleep() in the
-> > >   ->suspend() and ->resume() callbacks
-> > > * Use the observation that it is sufficient to call pci_enable_wake()
-> > >   once, unless it fails
-> > > 
-> > > Tested on Asus M3A32-MVP (Yukon-2 EC Ultra rev 3).
-> > > 
-> > > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> > > ---
-> > >  drivers/net/sky2.c |   34 ++++++++++------------------------
-> > >  1 file changed, 10 insertions(+), 24 deletions(-)
-> > > 
-> > > Index: linux-2.6/drivers/net/sky2.c
-> > > ===================================================================
-> > > --- linux-2.6.orig/drivers/net/sky2.c
-> > > +++ linux-2.6/drivers/net/sky2.c
-> > > @@ -3035,7 +3035,8 @@ static int sky2_set_wol(struct net_devic
-> > >  	struct sky2_port *sky2 = netdev_priv(dev);
-> > >  	struct sky2_hw *hw = sky2->hw;
-> > >  
-> > > -	if (wol->wolopts & ~sky2_wol_supported(sky2->hw))
-> > > +	if ((wol->wolopts & ~sky2_wol_supported(sky2->hw))
-> > > +	    || !device_can_wakeup(&hw->pdev->dev))
-> > >  		return -EOPNOTSUPP;
-> > >  
-> > 
-> > There was a regression in earlier releases caused because some BIOS's
-> > are wrong, and device can wakeup.
-> 
-> device_can_wakeup() returns 'true' if the device is capable of generating PME#
-> from at least one low power state (this is determined on the basis of the
-> contents of the device's PCI PM registers - please have a look at
-> drivers/pci/pci_pm_init() for details) or if ACPI tells us it can wake up.
-> IOW, the BIOSes opinion doesn't matter if we find that the device is capable of
-> generating PME#, so the regression must have been related to something else.
-> I'm very interested in the details, if available.
-> 
-> Of course, since we rely on the ability of the device to generate PME# and
-> device_can_wakeup() returning 'false' means that the device cannot generate
-> PME# from any state, it's reasonable to check it IMO.
 
-BTW, if device_can_wakeup(&pdev->dev) returns 'false',
-pci_enable_wake(pdev, state, true) will fail for any 'state', so the wake-up
-won't work regardless of the change above.
+* Hugh Dickins <hugh@veritas.com> wrote:
 
-Thanks,
-Rafael
+> Do we actually want these DirectMap lines in the x86 /proc/meminfo? I 
+> can see they're interesting to CPA developers and TLB optimizers, but 
+> they don't fit its usual "where has all my memory gone?" usage. If 
+> they are to stay, here are some fixes.
+
+i think they are borderline useful - so i've applied your fixes to 
+tip/x86/urgent.
+
+> You might prefer me to split these up?
+
+nah.
+
+> Should we really be using level2_ident_pgt (which needs to avoid NX) 
+> for the final direct map (which wants to use NX)?  But my attempt to 
+> build up a fresh pagetable there failed miserably to boot!
+
+hm, exactly what change have you tried? (patch?)
+
+	Ingo
