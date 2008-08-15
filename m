@@ -1,63 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761232AbYHOTC4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761284AbYHOTDh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761232AbYHOTC4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Aug 2008 15:02:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760233AbYHOTCp
+	id S1761284AbYHOTDh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Aug 2008 15:03:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758886AbYHOTD3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Aug 2008 15:02:45 -0400
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:34198 "EHLO smtp4.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760163AbYHOTCp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Aug 2008 15:02:45 -0400
-Date: Fri, 15 Aug 2008 22:00:43 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com,
-       linux-s390@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [RFC: 2.6 patch] s390: use kernel/uid.c
-Message-ID: <20080815190043.GC1973@cs181140183.pp.htv.fi>
-References: <20080810204031.GC8399@cs181140183.pp.htv.fi> <200808151734.43710.arnd@arndb.de>
+	Fri, 15 Aug 2008 15:03:29 -0400
+Received: from wr-out-0506.google.com ([64.233.184.239]:42708 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758831AbYHOTD2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Aug 2008 15:03:28 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=Yo78nGC6noaRdhWqW89HXSnCrF7mYas8RFXD/TPimc72MMRckR8ohwZWxnWkvxKPOG
+         jdcvlxMgb72WrQCpTo58IrtvDU9zejXtAvJFZMgYMd8YHxwj4O6wJ9ly496+qxD6ovHx
+         JB+nZS3UrNT4oie614mk/gfYRaUt6NoNTni/A=
+Date: Fri, 15 Aug 2008 15:03:23 -0400
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Bryan Wu <cooloney@kernel.org>
+Cc: linux-input@vger.kernel.org, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org,
+       Michael Hennerich <michael.hennerich@analog.com>
+Subject: Re: [PATCH 1/1] Input/keyboard: add uctional power management
+	support to Blackfin BF54x keypad driver
+Message-ID: <20080815150301.ZZRA012@mailhub.coreip.homeip.net>
+References: <1218790959-12694-1-git-send-email-cooloney@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200808151734.43710.arnd@arndb.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <1218790959-12694-1-git-send-email-cooloney@kernel.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 15, 2008 at 05:34:43PM +0200, Arnd Bergmann wrote:
-> On Sunday 10 August 2008, Adrian Bunk wrote:
-> > Unless I missed a twist the only reason for s390 to not use the code in 
-> > kernel/uid.c was that it copied the code from sparc64 (that is now 
-> > being changed in a similar way by David).
-> > 
-> > Signed-off-by: Adrian Bunk <bunk@kernel.org>
+On Fri, Aug 15, 2008 at 05:02:39PM +0800, Bryan Wu wrote:
+> From: Michael Hennerich <michael.hennerich@analog.com>
 > 
-> I tried doing this before but couldn't figure out an easy way,
-> but the circumstances may have changed by now.
+> Fix Bug: does nor properply resume after suspend mem
+> Fix for PM_SUSPEND_MEM: Save and restore peripheral base registers
 > 
-> Back then, the basic problem was that CONFIG_UID16 had side-effects
-> that break the 64-bit versions of some syscalls. I don't see that
-> being the case any more, but from what I can tell, you still need
-> to add definitions for __kernel_old_uid_t etc on s390x.
 
-They are already in arch/s390/include/asm/posix_types.h
-
-The one thing I can say about my patch is that it compiles with the 
-defconfig (where the uid16 code is used due to COMPAT=y).
-
-> If that does the trick, great work!
-> 
-> 	Arnd <><
-
-cu
-Adrian
+Applied to 'next', thank you.
 
 -- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+Dmitry
