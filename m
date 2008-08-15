@@ -1,76 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753555AbYHOAoO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754575AbYHOAtm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753555AbYHOAoO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Aug 2008 20:44:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751424AbYHOAn6
+	id S1754575AbYHOAtm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Aug 2008 20:49:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750999AbYHOAtd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Aug 2008 20:43:58 -0400
-Received: from www.church-of-our-saviour.org ([69.25.196.31]:54020 "EHLO
-	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750999AbYHOAn5 (ORCPT
+	Thu, 14 Aug 2008 20:49:33 -0400
+Received: from yx-out-2324.google.com ([74.125.44.29]:52810 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750738AbYHOAtc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Aug 2008 20:43:57 -0400
-Date: Thu, 14 Aug 2008 20:43:35 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Rik van Riel <riel@redhat.com>
-Cc: Pavel Machek <pavel@suse.cz>, "Press, Jonathan" <Jonathan.Press@ca.com>,
-       davecb@sun.com, Adrian Bunk <bunk@kernel.org>,
-       Mihai Don??u <mdontu@bitdefender.com>, linux-kernel@vger.kernel.org,
-       malware-list@lists.printk.net, linux-security-module@vger.kernel.org,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [malware-list] [RFC 0/5] [TALPA] Intro to alinuxinterfaceforon
-	access scanning
-Message-ID: <20080815004335.GF13048@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Rik van Riel <riel@redhat.com>, Pavel Machek <pavel@suse.cz>,
-	"Press, Jonathan" <Jonathan.Press@ca.com>, davecb@sun.com,
-	Adrian Bunk <bunk@kernel.org>,
-	Mihai Don??u <mdontu@bitdefender.com>, linux-kernel@vger.kernel.org,
-	malware-list@lists.printk.net,
-	linux-security-module@vger.kernel.org,
-	Arjan van de Ven <arjan@infradead.org>
-References: <20080813125638.GB6995@ucw.cz> <20080813135207.CC08C3765BC@pmx1.sophos.com> <20080814125410.GA2262@elf.ucw.cz> <2629CC4E1D22A64593B02C43E855530304AE4BE3@USILMS12.ca.com> <20080814223918.GC6370@elf.ucw.cz> <20080814200005.6b363716@bree.surriel.com>
+	Thu, 14 Aug 2008 20:49:32 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=X/IcUm1H+Wyz67i2BIhadlPDV1AqF9oBjdS+A9ewbtbSLqWzhfJsjv7YADi/u6ktQg
+         ABl3hIfTO1mSUpDzvn8v3UbYKMVOE2Zgqrwnf+w8yrmnd9AWvfUiqgXgWBcP8IVReGot
+         NjaKfGZIIbVeqoRKbEX1YA064Gfa89Qezouw0=
+Message-ID: <86802c440808141749l626d59e6h888b802343916df3@mail.gmail.com>
+Date: Thu, 14 Aug 2008 17:49:31 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [PATCH 00/53] dyn_array/nr_irqs/sparse_irq support v10
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org,
+       "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
+       "Andrew Morton" <akpm@linux-foundation.org>
+In-Reply-To: <m1zlnf87d8.fsf@frodo.ebiederm.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080814200005.6b363716@bree.surriel.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+References: <1218705441-21838-1-git-send-email-yhlu.kernel@gmail.com>
+	 <20080814132638.GA18743@elte.hu>
+	 <86802c440808141201o2c66236cwbc5ce37f9675504d@mail.gmail.com>
+	 <m1ljyzcqg4.fsf@frodo.ebiederm.org>
+	 <86802c440808141342k6cb0dc59ud067018b0a171232@mail.gmail.com>
+	 <86802c440808141424u3284f862gcd81e3cc585ddac4@mail.gmail.com>
+	 <m1zlnf87d8.fsf@frodo.ebiederm.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 14, 2008 at 08:00:05PM -0400, Rik van Riel wrote:
-> > Yes, that's the part libmalware.so proposal solves. Given scary number
-> > of 0 Linux viruses in wild, it seems to solve the problem pretty well.
-> 
-> If you're trolling, you're not being very good at it.
-> 
-> Just because you cannot easily infect a Linux system from a
-> user application does not mean malware cannot do all kinds
-> of damage with user privileges.  Think of a key sniffer (using
-> the same interface that the X screensavers use) or a spam bot
-> running with user privileges.
+On Thu, Aug 14, 2008 at 5:11 PM, Eric W. Biederman
+<ebiederm@xmission.com> wrote:
+> "Yinghai Lu" <yhlu.kernel@gmail.com> writes:
+>
+>> find something interesting:
+>>
+>> found new irq_cfg for irq 20
+>>  0 add_pin_to_irq: irq 20 --> apic 0 pin 20
+>> assign_irq_vector: irq 20 vector 0x59 cpu  5
+>> IOAPIC[0]: Set routing entry (0-20 -> 0x59 -> IRQ 20 Mode:1 Active:1)
+>> found new irq_desc for irq 20
+>> pci 0000:00:02.1: PCI INT B -> Link[LUS2] -> GSI 20 (level, low) -> IRQ 20
+>>
+>> IO APIC #0......
+>> .... register #00: 00000000
+>> .......    : physical APIC id: 00
+>> .......    : Delivery Type: 0
+>> .......    : LTS          : 0
+>> .... register #01: 00170011
+>> .......     : max redirection entries: 0017
+>> .......     : PRQ implemented: 0
+>> .......     : IO APIC version: 0011
+>> .... register #02: 00000000
+>> .......     : arbitration: 00
+>> .... IRQ redirection table:
+>>  NR Dst Mask Trig IRR Pol Stat Dmod Deli Vect:
+>> ...
+>>  14 09  1    1    0   1   0    0    0    59
+>> ...
+>>
+>> ehci_hcd 0000:00:02.1: USB 2.0 started, EHCI 1.00, driver 10 Dec 2004
+>> do_IRQ: cannot handle IRQ -1 vector 0x59 cpu 0
+>> ------------[ cut here ]------------
+>> Kernel BUG at 40206b11 [verbose debug info unavailable]
+>> invalid opcode: 0000 [#1] SMP
+>> Modules linked in:
+>>
+>> Pid: 70, comm: kasyncinit Not tainted (2.6.27-rc3-tip-00191-g98ccb89-dirty #23)
+>> EIP: 0060:[<40206b11>] EFLAGS: 00010092 CPU: 0
+>> EIP is at do_IRQ+0x6b/0xae
+>> EAX: 00000032 EBX: 00001d28 ECX: 00003434 EDX: 00000046
+>> ESI: 00000000 EDI: 00000059 EBP: c7a37d3c ESP: c7a37d14
+>>  DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
+>> Process kasyncinit (pid: 70, ti=c7a36000 task=c79c9860 task.ti=c7a36000)
+>> Stack: 40a74317 40814ea0 ffffffff 00000059 00000000 00000000 ffffffff c421bd20
+>>        c7a37d9c c7a37dac c7a37d7c 4020555f c421bd20 00000000 c421bd20 c7a37d9c
+>>        c7a37dac c7a37d7c 40b717f8 0000007b 0000007b 000000d8 ffffffa6 4080db6c
+>> Call Trace:
+>>  [<4020555f>] ? common_interrupt+0x23/0x28
+>>
+>>
+>> it is on 16cores system with 32bit bigsmp, so it is using phy_flat
+>> cpu 5 has apicid 9, and ioapic reg setting right with Dmod= 0 ( phys)
+>>
+>> but io_apic controller deliver that interrupt to cpu0 (with apicid =
+>> 4) instead of cpu 5 (with apic id = 9)
+>>
+>> look at the 64 bit, TARGET_CPUS for phys_flat is cpu_online_map
+>>
+>> and 32bit bigsmp TARGET_CPUS is only one cpu set and rotating with online cpu...
+>>
+>> Change 32bit bigsmp TARGE_CPUS ?
+>
+> Set vector_allocation_domain to CPU_MASK_ALL on 32bit.  That doesn't give us
+> the benefit of per cpu vectors right now, but in my research there has not
+> been a 32bit kernel yet that has needed it.  We have never shared vectors
+> between 2 gsi on 32bit x86, we have only collapsed the irq space.
 
-But Pavel is raising a good question.  In Eric's proposed threat
-model, he claimed the only thing that he was trying to solve was
-"scanning".  Just file scanning.  That implies no root privileges, but
-it also implied that he wasn't worried about malware running with user
-privileges, either.  Presumbly, that would be caught and stopped by
-the file scanner before the malware had a chance to run; that is the
-execve(2) system call would also be blocked until the executable was
-scanned.
+TARGET_CPUS only used by ioapic_xx.c
 
-So if that is the threat model, then the only thing libmalware.so
-doesn't solve is knfsd access, and it should be evaluated on that
-basis.  If the threat model *does* include malware which is **not**
-caught by the AV scanner, and is running with user privileges, then
-there are a whole host of other attacks that we have to worry about.
-So let's be real clear, up front, what the threat model is, and avoid
-changing the model around to rule out solutions that don't fit the
-initially preconceived one.  That's how you get to the TSA
-confiscating water bottles in airport security lines.
+vector_allocator_domain will return cpumask_of_cpu(cpu)..
 
-	     	   	      	      	       - Ted
+>
+> On x86_64 before I did the per cpu vectors there were machines that
+> combined multiple interrupt sources (gsi) into the same irq.  So
+> x86_64 has needed the per cpu vectors.
+>
+> Which means in practice that the irq compression on x86_32 was just a hack to
+> with not having enough irq_desc entries.  I wish I had realized that last
+> time we were talking, as we could have unilaterally ripped out all of that
+> code as completely unnecessary on x86 and just bumped NR_IRQS to 1024 on
+> the boxes that had more than 256 gsis.
+
+now 32bit and 64bit is the same page now... (bigsmp == phys_flat)...
+
+will continue to merge io_apic_xx.c
+
+YH
