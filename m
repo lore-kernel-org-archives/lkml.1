@@ -1,110 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754376AbYHOKP3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755857AbYHOKQY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754376AbYHOKP3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Aug 2008 06:15:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752600AbYHOKPU
+	id S1755857AbYHOKQY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Aug 2008 06:16:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752662AbYHOKQQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Aug 2008 06:15:20 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:34141 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752331AbYHOKPS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Aug 2008 06:15:18 -0400
-Date: Fri, 15 Aug 2008 12:14:49 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       David Miller <davem@davemloft.net>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Gregory Haskins <ghaskins@novell.com>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       "Luis Claudio R. Goncalves" <lclaudio@uudg.org>,
-       Clark Williams <williams@redhat.com>, srostedt@redhat.com,
-       Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: [PATCH 0/3] ftrace: handle kernel code remove
-Message-ID: <20080815101449.GA2354@elte.hu>
-References: <20080815024716.480118113@goodmis.org> <20080815092844.GD22209@elte.hu> <20080815093851.GB9312@elte.hu> <20080815094827.GA21766@elte.hu> <20080815100600.GA29180@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080815100600.GA29180@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Fri, 15 Aug 2008 06:16:16 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:54162 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751995AbYHOKQP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Aug 2008 06:16:15 -0400
+Date: Fri, 15 Aug 2008 10:58:47 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Aristeu Rozanski <aris@redhat.com>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       jirislaby@gmail.com
+Subject: Re: [PATCH] vt: kill tty->count usage (v2)
+Message-ID: <20080815105847.5462746b@lxorguk.ukuu.org.uk>
+In-Reply-To: <20080812145812.GH7154@redhat.com>
+References: <20080808213625.GK20355@redhat.com>
+	<20080808222635.4fe52b51@lxorguk.ukuu.org.uk>
+	<20080812145812.GH7154@redhat.com>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 12 Aug 2008 10:58:12 -0400
+Aristeu Rozanski <aris@redhat.com> wrote:
 
-* Ingo Molnar <mingo@elte.hu> wrote:
-
-> > the problem is that i'm building a 32-bit kernel on a 64-bit host, 
-> > and the scripts/recordmcount.pl script does not create the temporary 
-> > object files in the proper (32-bit) output ELF format.
+> The commit e0426e6a09954d205da2d674a3d368d2715e3afd fixes a real race but
+> still isn't enough to prevent these:
 > 
-> the crude hack below got me going for now - but this needs a proper 
-> solution.
+> kobject_add_internal failed for vcs7 with -EEXIST, don't try to register
+> things with the same name in the same direc.
 
-updated hack - it now works on 64-bit too.
+Ack this. Will want some tweaking for the ttydev tree as it wants to
+switch to using krefs for vc->vc_tty as well now.
 
-( Btw., whoever came up with those fantastic variations of BFD, 
-  architecture name and ELF format names and sprinkled them around 
-  various tools with different command line switches and variants and 
-  underscore versus dash names, must not be let near any serious 
-  open-source code base again, until the end of his life. )
-
-	Ingo
-
-------------->
->From 9f982af9fb45c438415c2c411cda0d8f1e5f1bb7 Mon Sep 17 00:00:00 2001
-From: Ingo Molnar <mingo@elte.hu>
-Date: Mon, 9 Jun 2008 20:54:22 +0200
-Subject: [PATCH] ftrace: scripts/recordmcount.pl cross-build hack
-
-hack around:
-
- ld: Relocatable linking with relocations from format elf32-i386 (init/.tmp_gl_calibrate.o) to format elf64-x86-64 (init/.tmp_mx_calibrate.o) i  CC      arch/x86/mm/extable.o
- objcopy: 'init/.tmp_mx_calibrate.o': No such file
- rm: cannot remove `init/.tmp_mx_calibrate.o': No such file or directory
- ld: Relocatable linking with relocations from format elf32-i386 (arch/x86/mm/extable.o) to format elf64-x86-64 (arch/x86/mm/.tmp_mx_extable.o) is not supported
- mv: cannot stat `arch/x86/mm/.tmp_mx_extable.o': No such file or directory
- ld: Relocatable linking with relocations from format elf32-i386 (arch/x86/mm/fault.o) to format elf64-x86-64 (arch/x86/mm/.tmp_mx_fault.o) is not supported
-
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- scripts/recordmcount.pl |   14 ++++++++++++++
- 1 files changed, 14 insertions(+), 0 deletions(-)
-
-diff --git a/scripts/recordmcount.pl b/scripts/recordmcount.pl
-index 44b4b23..e4922a6 100755
---- a/scripts/recordmcount.pl
-+++ b/scripts/recordmcount.pl
-@@ -108,6 +108,20 @@ if ($#ARGV < 6) {
- 
- my ($arch, $objdump, $objcopy, $cc, $ld, $nm, $rm, $mv, $inputfile) = @ARGV;
- 
-+if ($arch eq "i386") {
-+  $ld = "ld -m elf_i386";
-+  $objdump = "objdump -M i386";
-+  $objcopy = "objcopy -O elf32-i386";
-+  $cc = "gcc -m32";
-+}
-+
-+if ($arch eq "x86_64") {
-+  $ld = "ld -m elf_x86_64";
-+  $objdump = "objdump -M x86-64";
-+  $objcopy = "objcopy -O elf64-x86-64";
-+  $cc = "gcc -m64";
-+}
-+
- $objdump = "objdump" if ((length $objdump) == 0);
- $objcopy = "objcopy" if ((length $objcopy) == 0);
- $cc = "gcc" if ((length $cc) == 0);
+Alan
