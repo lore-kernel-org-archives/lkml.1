@@ -1,49 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760728AbYHOQRj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759751AbYHOQVT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760728AbYHOQRj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Aug 2008 12:17:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760514AbYHOQRV
+	id S1759751AbYHOQVT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Aug 2008 12:21:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754711AbYHOQVL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Aug 2008 12:17:21 -0400
-Received: from outbound-mail-31.bluehost.com ([69.89.18.151]:49871 "HELO
-	outbound-mail-31.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1760430AbYHOQRU (ORCPT
+	Fri, 15 Aug 2008 12:21:11 -0400
+Received: from smtp02.citrix.com ([66.165.176.63]:31196 "EHLO
+	SMTP02.CITRIX.COM" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753574AbYHOQVL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Aug 2008 12:17:20 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
-	b=F5r9t2F9RFe3FSDVtSkBMHf0BQTlLMG0iAvTNbVSlqUkcCIrb9k1sEmYQbMg2xFnxJNwQA0lGXShQP0hd4EPl7xBOZrHIv2meeOMlvoQ2b7S3pZrafI37E9jqxAZIS72;
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Seth Heasley <seth.heasley@intel.com>
-Subject: Re: [PATCH 2.6.26.2][RESEND] irq: irq and pci_ids patch for Intel Ibex Peak DeviceIDs
-Date: Fri, 15 Aug 2008 09:17:11 -0700
-User-Agent: KMail/1.9.9
-Cc: i2c@lm-sensors.org, linux-kernel@vger.kernel.org,
-       linux-pci@vger.kernel.org, khali@linux-fr.org
-References: <200808111701.50662.seth.heasley@intel.com>
-In-Reply-To: <200808111701.50662.seth.heasley@intel.com>
+	Fri, 15 Aug 2008 12:21:11 -0400
+X-IronPort-AV: E=Sophos;i="4.32,216,1217822400"; 
+   d="scan'208";a="16056973"
+Message-ID: <48A5ACFA.7040906@citrix.com>
+Date: Fri, 15 Aug 2008 17:21:14 +0100
+From: Alex Nixon <alex.nixon@citrix.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Ingo Molnar <mingo@elte.hu>
+CC: Jeremy Fitzhardinge <Jeremy.Fitzhardinge@citrix.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH] change init_gdt to update the gdt via write_gdt, rather than
+ a direct write.
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200808150917.12214.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
+X-OriginalArrivalTime: 15 Aug 2008 16:21:05.0289 (UTC) FILETIME=[EAAE4790:01C8FEF2]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, August 11, 2008 5:01 pm Seth Heasley wrote:
-> Resend with proper whitespace.
->
-> This patch adds the Intel Ibex Peak (PCH) LPC and SMBus Controller
-> DeviceIDs.
->
-> Signed-off-by: Seth Heasley <seth.heasley@intel.com>
+From: Alex Nixon <alex.nixon@citrix.com>
+Date: Fri, 15 Aug 2008 11:21:56 +0100
+Subject: [PATCH] change init_gdt to update the gdt via write_gdt, rather than a direct write.
 
-Somehow the whitespace was still damaged, but I fixed it up by hand.  It's 
-applied to my for-linus branch so it'll be included in the next pull request 
-I send to Linus.
+By writing directly, a memory access violation can occur whilst hotplugging a CPU if the entry was previously marked read-only.
 
-Thanks,
-Jesse
+Signed-off-by: Alex Nixon <alex.nixon@citrix.com>
+---
+ arch/x86/kernel/smpcommon.c |    8 ++++----
+ 1 files changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/arch/x86/kernel/smpcommon.c b/arch/x86/kernel/smpcommon.c
+index 99941b3..29f8bf0 100644
+--- a/arch/x86/kernel/smpcommon.c
++++ b/arch/x86/kernel/smpcommon.c
+@@ -13,13 +13,13 @@ EXPORT_PER_CPU_SYMBOL(this_cpu_off);
+    secondary which will soon come up. */
+ __cpuinit void init_gdt(int cpu)
+ {
+-	struct desc_struct *gdt = get_cpu_gdt_table(cpu);
++	struct desc_struct gdt;
+ 
+-	pack_descriptor(&gdt[GDT_ENTRY_PERCPU],
+-			__per_cpu_offset[cpu], 0xFFFFF,
++	pack_descriptor(&gdt, __per_cpu_offset[cpu], 0xFFFFF,
+ 			0x2 | DESCTYPE_S, 0x8);
++	gdt.s = 1;
+ 
+-	gdt[GDT_ENTRY_PERCPU].s = 1;
++	write_gdt_entry(get_cpu_gdt_table(cpu), GDT_ENTRY_PERCPU, &gdt, DESCTYPE_S);
+ 
+ 	per_cpu(this_cpu_off, cpu) = __per_cpu_offset[cpu];
+ 	per_cpu(cpu_number, cpu) = cpu;
+-- 
+1.5.4.3
+
