@@ -1,85 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758102AbYHOM7c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757769AbYHONAE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758102AbYHOM7c (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Aug 2008 08:59:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753399AbYHOM7S
+	id S1757769AbYHONAE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Aug 2008 09:00:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753794AbYHOM7v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Aug 2008 08:59:18 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:59543 "EHLO ogre.sisk.pl"
+	Fri, 15 Aug 2008 08:59:51 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:38184 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753535AbYHOM7Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Aug 2008 08:59:16 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Stephen Hemminger <shemminger@vyatta.com>
-Subject: Re: [PATCH 2/3] Adapt the sky2 driver to the reworked PCI PM
-Date: Fri, 15 Aug 2008 15:01:57 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: netdev@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Jeff Garzik <jeff@garzik.org>, Jesse Barnes <jbarnes@virtuousgeek.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       "Brandeburg, Jesse" <jesse.brandeburg@intel.com>,
-       Stephen Hemminger <stephen.hemminger@vyatta.com>
-References: <200808142335.56644.rjw@sisk.pl> <200808142338.18361.rjw@sisk.pl> <20080814152318.625f8609@extreme>
-In-Reply-To: <20080814152318.625f8609@extreme>
+	id S1753399AbYHOM7u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Aug 2008 08:59:50 -0400
+Date: Fri, 15 Aug 2008 14:59:37 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>
+Cc: mingo@redhat.com, srostedt@redhat.com,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] trace: Fix some mistakes in error messages
+Message-ID: <20080815125937.GB30597@elte.hu>
+References: <48A0B82B.7090200@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-Message-Id: <200808151501.58315.rjw@sisk.pl>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <48A0B82B.7090200@gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, 15 of August 2008, Stephen Hemminger wrote:
-> On Thu, 14 Aug 2008 23:38:17 +0200
-> "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
-> 
-> > Adapt the sky2 driver to the reworked PCI PM
-> > 
-> > * Use device_set_wakeup_enable() and friends as needed
-> > * Remove an open-coded reference to the standard PCI PM registers
-> > * Use pci_prepare_to_sleep() and pci_back_from_sleep() in the
-> >   ->suspend() and ->resume() callbacks
-> > * Use the observation that it is sufficient to call pci_enable_wake()
-> >   once, unless it fails
-> > 
-> > Tested on Asus M3A32-MVP (Yukon-2 EC Ultra rev 3).
-> > 
-> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> > ---
-> >  drivers/net/sky2.c |   34 ++++++++++------------------------
-> >  1 file changed, 10 insertions(+), 24 deletions(-)
-> > 
-> > Index: linux-2.6/drivers/net/sky2.c
-> > ===================================================================
-> > --- linux-2.6.orig/drivers/net/sky2.c
-> > +++ linux-2.6/drivers/net/sky2.c
-> > @@ -3035,7 +3035,8 @@ static int sky2_set_wol(struct net_devic
-> >  	struct sky2_port *sky2 = netdev_priv(dev);
-> >  	struct sky2_hw *hw = sky2->hw;
-> >  
-> > -	if (wol->wolopts & ~sky2_wol_supported(sky2->hw))
-> > +	if ((wol->wolopts & ~sky2_wol_supported(sky2->hw))
-> > +	    || !device_can_wakeup(&hw->pdev->dev))
-> >  		return -EOPNOTSUPP;
-> >  
-> 
-> There was a regression in earlier releases caused because some BIOS's
-> are wrong, and device can wakeup.
 
-device_can_wakeup() returns 'true' if the device is capable of generating PME#
-from at least one low power state (this is determined on the basis of the
-contents of the device's PCI PM registers - please have a look at
-drivers/pci/pci_pm_init() for details) or if ACPI tells us it can wake up.
-IOW, the BIOSes opinion doesn't matter if we find that the device is capable of
-generating PME#, so the regression must have been related to something else.
-I'm very interested in the details, if available.
+* Frédéric Weisbecker <fweisbec@gmail.com> wrote:
 
-Of course, since we rely on the ability of the device to generate PME# and
-device_can_wakeup() returning 'false' means that the device cannot generate
-PME# from any state, it's reasonable to check it IMO.
+> This patch fixes some mistakes on the tracer in warning messages when 
+> debugfs fails to create tracing files. Kernel version: 2.6.27-rc1
 
-Thanks,
-Rafael
+hm, the patch is nice, but it is whitespace damaged. Please resend along 
+the lines of Documentation/email-clients.txt, or as an attachment.
+
+	Ingo
