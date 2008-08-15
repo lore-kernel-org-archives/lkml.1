@@ -1,19 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757905AbYHOJXj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758118AbYHOJY5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757905AbYHOJXj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Aug 2008 05:23:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753071AbYHOJXa
+	id S1758118AbYHOJY5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Aug 2008 05:24:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753684AbYHOJYs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Aug 2008 05:23:30 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:56401 "EHLO mx3.mail.elte.hu"
+	Fri, 15 Aug 2008 05:24:48 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:56634 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752343AbYHOJXa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Aug 2008 05:23:30 -0400
-Date: Fri, 15 Aug 2008 11:22:31 +0200
+	id S1753483AbYHOJYr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Aug 2008 05:24:47 -0400
+Date: Fri, 15 Aug 2008 11:24:12 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Steven Rostedt <rostedt@goodmis.org>, LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
        Peter Zijlstra <peterz@infradead.org>,
        Andrew Morton <akpm@linux-foundation.org>,
        Linus Torvalds <torvalds@linux-foundation.org>,
@@ -21,17 +20,20 @@ Cc: Steven Rostedt <rostedt@goodmis.org>, LKML <linux-kernel@vger.kernel.org>,
        Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
        Roland McGrath <roland@redhat.com>, Ulrich Drepper <drepper@redhat.com>,
        Rusty Russell <rusty@rustcorp.com.au>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
        Gregory Haskins <ghaskins@novell.com>,
        Arnaldo Carvalho de Melo <acme@redhat.com>,
        "Luis Claudio R. Goncalves" <lclaudio@uudg.org>,
-       Clark Williams <williams@redhat.com>, srostedt@redhat.com
-Subject: Re: [PATCH] ftrace: use only 5 byte nops for x86
-Message-ID: <20080815092231.GB22209@elte.hu>
-References: <alpine.DEB.1.10.0808141755030.2911@gandalf.stny.rr.com> <48A4C491.4050301@goop.org>
+       Clark Williams <williams@redhat.com>, Bruce Duncan <bwduncan@gmail.com>,
+       Marcin Slusarz <marcin.slusarz@gmail.com>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [PATCH v2 0/6] ftrace: to kill a daemon (small updates)
+Message-ID: <20080815092412.GC22209@elte.hu>
+References: <20080814194506.233473381@goodmis.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <48A4C491.4050301@goop.org>
+In-Reply-To: <20080814194506.233473381@goodmis.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -46,42 +48,48 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+* Steven Rostedt <rostedt@goodmis.org> wrote:
 
-> Steven Rostedt wrote:
->> Mathieu Desnoyers revealed a bug in the original code. The nop that is
->> used to relpace the mcount caller can be a two part nop. This runs the
->> risk where a process can be preempted after executing the first nop, but
->> before the second part of the nop.
->>
->> The ftrace code calls kstop_machine to keep multiple CPUs from executing
->> code that is being modified, but it does not protect against a task preempting
->> in the middle of a two part nop.
->>
->> If the above preemption happens and the tracer is enabled, after the
->> kstop_machine runs, all those nops will be calls to the trace function.
->> If the preempted process that was preempted between the two nops is executed
->> again, it will execute half of the call to the trace function, and this
->> might crash the system.
->>
->> This patch instead uses what both the latest Intel and AMD spec suggests.
->> That is the P6_NOP5 sequence of "0x0f 0x1f 0x44 0x00 0x00".
->> Note, some older CPUs and QEMU might fault on this nop, so this nop
->> is executed with fault handling first. If it detects a fault, it will then
->> use the code "0x66 0x66 0x66 0x66 0x90". If that faults,
->
-> Seems very unlikely, but go mad ;)
->
->>  it will then
->> default to a simple "jmp 1f; .byte 0x00 0x00 0x00; 1:". The jmp is
->> not optimal but will do if the first two can not be executed.
->>
->> TODO: Examine the cpuid to determine the nop to use.
->>   
->
-> Don't think that will help in general.  qemu claims its a Pentium II.
+> [
+>   Changes since v1:
+> 
+>     regex fix in x86_64 recordmcount.pl. Now it can handle all
+>       mcount+0x... mcount-0x... and mcount, where as the original
+>       only handled mcount+0x...
+> 
+>     Made mcount on start-up to simply return. The current mcount
+>       is set up to be replaced with a call to ftrace_record_ip.
+>       This is no longer necessary.
+> 
+>   Note: This patch series is focusing on how calls to mcount in
+>     the kernel are converted to nops. It does not address what
+>     kind of nop is used. That is a different topic, and should
+>     be in a different patch series.
+> 
+>   Note 2: I have found that the changes here are more stable than
+>     the current daemon method, and these patches should be used.
+>     It also solves the resume from suspend to ram bug that was
+>     reported:
+> 
+>       http://lkml.org/lkml/2008/8/12/234
+>        and
+>       http://lkml.org/lkml/2008/8/12/451
+> 
+>   Note 3: I have already ported this to PowerPC64, but I am waiting
+>     for this to be accepted first before submitting those changes.
+> ]
+> 
+> One of the things that bothered me about the latest ftrace code was 
+> this annoying daemon that would wake up once a second to see if it had 
+> work to do. If it did not, it would go to sleep, otherwise it would do 
+> its work and then go to sleep.
 
-ok. I've applied Steve's patch as it's a good bugfix. The extra paranoia 
-about faulting on 0x90 seems excessive but doesnt hurt ;-)
+i like this concept alot - i've applied the whole lot to 
+tip/tracing/ftrace.
+
+Eventually gcc should be extended to provide a separate section for 
+instrumentation patch sites, instead of us having to disassemble the 
+object code. That would also make the ftrace build faster. Any gcc folks 
+interested in that?
 
 	Ingo
