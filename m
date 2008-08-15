@@ -1,39 +1,60 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759377AbYHNQca (ORCPT <rfc822;ralf@linux-mips.org>);
-	Thu, 14 Aug 2008 12:32:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752898AbYHNQcJ
+	id S1760790AbYHOP4Y (ORCPT <rfc822;ralf@linux-mips.org>);
+	Fri, 15 Aug 2008 11:56:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760597AbYHOPzr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Aug 2008 12:32:09 -0400
-Received: from tomts23.bellnexxia.net ([209.226.175.185]:58941 "EHLO
-	tomts23-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752883AbYHNQcH convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Aug 2008 12:32:07 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AiUlAEb7o0jR4q+H/2dsb2JhbACJcakahGSBSA
-X-Mailer: Openwave WebEngine, version 2.8.11 (webedge20-101-194-20030622)
-X-Originating-IP: [201.251.241.135]
-From: Nokia Mobile =?ISO-8859-1?B?UHJvbW+p?= <createapiece@bellnet.ca>
-Reply-To: uk_nokiamobile02@live.com
-Organization: Nokia Mobile =?ISO-8859-1?B?UHJvbW+p?=
-To: <info@nokia.gov>
-Subject: 2008 Winner
-Date: Thu, 14 Aug 2008 12:31:51 -0400
+	Fri, 15 Aug 2008 11:55:47 -0400
+Received: from Vital-247-18-171-79.vitalhosting.com.tr ([79.171.18.247]:4367
+	"EHLO ASPBILISIM.home" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1760550AbYHOPzq convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Aug 2008 11:55:46 -0400
+X-Greylist: delayed 5643 seconds by postgrey-1.27 at vger.kernel.org; Fri, 15 Aug 2008 11:55:45 EDT
+Reply-To: niyaa35@hotmail.com
+Message-ID: <ad323d52f79e426caa2f6a8c37f44367@hotmail.com>
+From: "=?utf-8?B?QVNQIELdTN3e3U0gVkUg3U5URVJORVQgSN1aTUVUTEVS3Q==?=" 
+	<niyaa35@hotmail.com>
+To: <linux-kernel@vger.kernel.org>
+Subject: =?utf-8?B?QVNQIEhPU1RJTkcnREUgS0FNUEFOWUEgISEhIEtBx0lSSUxNQVo=?=
+Date: Fri, 15 Aug 2008 16:53:33 +0300
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: QUOTED-PRINTABLE
-Message-Id: <20080814163205.PVMD1531.tomts23-srv.bellnexxia.net@toip39-bus.srvr.bell.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1759377AbYHNQca@vger.kernel.org>
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1760790AbYHOP4Y@vger.kernel.org>
 
-You have won =A31,000,000 To claim your prize,Contact Mr Daniel William=
-s with the following informations .Name,Address,Age,Occupation,Country
+KAPMANYALI PAKET=C4=B0M=C4=B0Z=C4=B0 =C4=B0NCELED=C4=B0N=C4=B0Z M=C4=B0=
+ ?
 
-Email uk_nokiamobile02@live.com
-Regards,
-Mrs. Rose Wood.
+
+50 MB alan=20
+
+3 GB ayl=C4=B1k transfer=20
+
+S=C4=B1n=C4=B1rs=C4=B1z POP3 e-mail=20
+
+S=C4=B1n=C4=B1rs=C4=B1z Subdomain=20
+
+1 Mysql veritaban=C4=B1=20
+
+MS Access deste=C4=9Fi=20
+
+SOAP deste=C4=9Fi=20
+
+ASP, ASP.NET, PHP, PERL,PHYTON,AJAX,WAP,XML=20
+
+Y=C4=B1ll=C4=B1k sadece 12 YTL
+
+
+
+ASP Bili=C5=9Fim ve =C4=B0nternet Hizmetleri Ltd.=C5=9Eti.=20
+Web :              www.aspbilisim.net=20
+Msn Destek : destek@aspbilisim.com=20
+E-Mail :         info@aspbilisim.net=20
+Tel :              0232 671 52 56=20
+Gsm :           0506 276 54 37
 
 
 --
