@@ -1,78 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759467AbYHOV0i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759444AbYHOVdJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759467AbYHOV0i (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Aug 2008 17:26:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751995AbYHOV0a
+	id S1759444AbYHOVdJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Aug 2008 17:33:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751995AbYHOVcy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Aug 2008 17:26:30 -0400
-Received: from py-out-1112.google.com ([64.233.166.183]:62713 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751945AbYHOV03 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Aug 2008 17:26:29 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=bM3IVUWydVgaWhYkuSlu1KZiifleAAKOimWtGbA1jdB1R4ZxX+OlLtyxqbo+pfHTB7
-         DTegaQcbkJ637FKsW3/jRsrgSh2XR2g7ngs+ybxXKU2EtQFSyUbxFkhrNI3jW68AU4KK
-         kUzIm9dWZC+S3JonSSDYyA0A86F5EkIKHPF4A=
-Message-ID: <19f34abd0808151426i69256b59m25a9a0676b50a6ba@mail.gmail.com>
-Date: Fri, 15 Aug 2008 23:26:28 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>
-Subject: Re: 2.6.25.11-97.fc9 (P): idr_remove called for id=236 which is not allocated
-Cc: LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080815162848.08ff793c@lxorguk.ukuu.org.uk>
+	Fri, 15 Aug 2008 17:32:54 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:45032 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751945AbYHOVcx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Aug 2008 17:32:53 -0400
+Message-ID: <48A5F5C6.2090204@redhat.com>
+Date: Fri, 15 Aug 2008 23:31:50 +0200
+From: Milan Broz <mbroz@redhat.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+CC: Jens Axboe <jens.axboe@oracle.com>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>
+Subject: Mount ext3 with barrier=1 doesn't send real barrier bio?
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <19f34abd0808150811w2b77479fnead3ae6b527ad4dc@mail.gmail.com>
-	 <19f34abd0808150827m5128c8f6wd517796d95227654@mail.gmail.com>
-	 <20080815162848.08ff793c@lxorguk.ukuu.org.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 15, 2008 at 5:28 PM, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
->> ida_remove called for id=112 which is not allocated.
->> ida_remove called for id=67 which is not allocated.
->> ida_remove called for id=191 which is not allocated.
->> ida_remove called for id=23 which is not allocated.
->>
->> ..and with no backtrace, so I guess it means "not harmful". Sorry for the noise.
->
-> Thats definitely not good and wants digging into further.
-
 Hi,
 
-I've now been digging. This reproduces it accurately:
+I run some barrier tests over device-mapper (which currently doesn't
+support barrier bio at all) and even if I set barrier=1 in ext3 mount,
+there is never any bio with barrier flag... (in 2.6.27-rc)
 
-# mknod fubar c 128 42
-# cat fubar
-<ctrl-c>
+How is the barrier=1 flag supposed to work in ext3 (JBD) now?
 
-idr_remove called for id=42 which is not allocated.
+See:
+If you specify barrier=1, JFS_BARRIER flag is set in ext3_init_journal_params
+	journal->j_flags |= JFS_BARRIER;
 
-Major nr. 128 is UNIX98_PTY_MASTER_MAJOR. The
-Documentation/devices.txt tells us to access these through /dev/ptmx
-only. So when we don't follow that rule, tty_open() is called instead
-of ptmx_open() when the device is opened. ptmx_open() would allocate a
-new id to use. But since we call tty_open(), it will use tty->index
-which is set from get_tty_driver() -- calculated using the minor
-number that we provided!
+Now, journal_write_commit_record is called and this happens:
 
-The only thing I don't understand is why we don't get _two_ errors on
-close() -- I would expect to get one for the slave too. But maybe the
-slave is never created. What do you think of this theory?
+	if (journal->j_flags & JFS_BARRIER) {
+		set_buffer_ordered(bh);
+		barrier_done = 1;
+	}
+	ret = sync_dirty_buffer(bh);
+
+	if (barrier_done)
+		clear_buffer_ordered(bh);
+
+	if (ret == -EOPNOTSUPP && barrier_done) {
+	...
+
+>From this code I expect that EOPNOTSUPP is returned if barrier is not
+supported (yes, that exactly does device-mapper now without barrier patches).
+
+But it *never* happens because:
+
+sync_dirty_buffer always calls 
+	submit_bh(WRITE_SYNC, bh)
+
+and in submit_bh is this test:
+
+	if (buffer_ordered(bh) && (rw == WRITE))
+		rw = WRITE_BARRIER;
+
+but there is rw == WRITE_SYNC, not WRITE !
+
+So the barrier flag for bio is never set and normal sync write
+is performed.
+
+Why it isn't done like in attached patch? Is it intentional or it is bug?
+
+I think it was caused by change in this commit:
+
+commit 18ce3751ccd488c78d3827e9f6bf54e6322676fb
+Author: Jens Axboe <jens.axboe@oracle.com>
+Date:   Tue Jul 1 09:07:34 2008 +0200
+
+    Properly notify block layer of sync writes
+
+Milan
+--
+
+Set BIO_RW_BARRIER flag even for submit_bh sync write request.
+
+Signed-off-by: Milan Broz <mbroz@redhat.com>
+---
+ fs/buffer.c |    8 ++++----
+ 1 files changed, 4 insertions(+), 4 deletions(-)
+
+--- a/fs/buffer.c
++++ b/fs/buffer.c
+@@ -2926,16 +2926,16 @@ int submit_bh(int rw, struct buffer_head * bh)
+ 	BUG_ON(!buffer_mapped(bh));
+ 	BUG_ON(!bh->b_end_io);
+ 
+-	if (buffer_ordered(bh) && (rw == WRITE))
+-		rw = WRITE_BARRIER;
+-
+ 	/*
+ 	 * Only clear out a write error when rewriting, should this
+ 	 * include WRITE_SYNC as well?
+ 	 */
+-	if (test_set_buffer_req(bh) && (rw == WRITE || rw == WRITE_BARRIER))
++	if (test_set_buffer_req(bh) && rw == WRITE)
+ 		clear_buffer_write_io_error(bh);
+ 
++	if (buffer_ordered(bh) && ((rw & RW_MASK) == WRITE))
++		rw |= (1 << BIO_RW_BARRIER);
++
+ 	/*
+ 	 * from here on down, it's all bio -- do the initial mapping,
+ 	 * submit_bio -> generic_make_request may further map this bio around
 
 
-Vegard
 
--- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
+
