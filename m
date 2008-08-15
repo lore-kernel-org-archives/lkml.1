@@ -1,89 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754932AbYHOBbY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755523AbYHOBch@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754932AbYHOBbY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Aug 2008 21:31:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751624AbYHOBbQ
+	id S1755523AbYHOBch (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Aug 2008 21:32:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751705AbYHOBc2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Aug 2008 21:31:16 -0400
-Received: from mail.lang.hm ([64.81.33.126]:49483 "EHLO bifrost.lang.hm"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751213AbYHOBbP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Aug 2008 21:31:15 -0400
-Date: Thu, 14 Aug 2008 18:31:03 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Arjan van de Ven <arjan@infradead.org>
-cc: Eric Paris <eparis@redhat.com>, linux-kernel@vger.kernel.org,
-       malware-list@lists.printk.net, andi@firstfloor.org, riel@redhat.com,
-       greg@kroah.com, tytso@mit.edu, viro@ZenIV.linux.org.uk,
-       alan@lxorguk.ukuu.org.uk, peterz@infradead.org, hch@infradead.org
-Subject: Re: TALPA - a threat model?  well sorta.
-In-Reply-To: <20080813103951.1e3e5827@infradead.org>
-Message-ID: <alpine.DEB.1.10.0808141821150.13400@asgard.lang.hm>
-References: <1218645375.3540.71.camel@localhost.localdomain> <20080813103951.1e3e5827@infradead.org>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	Thu, 14 Aug 2008 21:32:28 -0400
+Received: from serv2.oss.ntt.co.jp ([222.151.198.100]:50013 "EHLO
+	serv2.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751213AbYHOBc1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Aug 2008 21:32:27 -0400
+Subject: Re: [PATCH]lockd: fix handling of grace period after long periods
+	of inactivity
+From: Fernando Luis =?ISO-8859-1?Q?V=E1zquez?= Cao 
+	<fernando@oss.ntt.co.jp>
+To: "J. Bruce Fields" <bfields@fieldses.org>
+Cc: NAKANO Hiroaki <nakano.hiroaki@oss.ntt.co.jp>, Trond.Myklebust@netapp.com,
+       neilb@suse.de, linux-nfs@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20080814190652.GE23859@fieldses.org>
+References: <48A41220.8030203@oss.ntt.co.jp>
+	 <20080814190652.GE23859@fieldses.org>
+Content-Type: text/plain
+Organization: NTT Open Source Software Center
+Date: Fri, 15 Aug 2008 10:32:25 +0900
+Message-Id: <1218763945.5291.19.camel@sebastian.kern.oss.ntt.co.jp>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 13 Aug 2008, Arjan van de Ven wrote:
+Hi Bruce!
 
-> 2) We very likely should have a mechanism for a userspace app to
-> request a scan on a file, both sync or async (O_SYNC flag?). This is
-> useful regardless because it allows the source of many things to do the
-> right thing.
-> 3) we need a mechanism in the kernel to track "scanned with generation
-> X of signatures" that invalidates on any dirty operation. The syscall
-> from 2) will use this as a cache to be quick.
->
-> I think few people will disagree about this.
->
-> Open questions now are
-> 4) do we have the kernel kick off an async scan in open() or do we have
-> glibc do this
+On Thu, 2008-08-14 at 15:06 -0400, J. Bruce Fields wrote:
+> On Thu, Aug 14, 2008 at 08:08:16PM +0900, NAKANO Hiroaki wrote:
+> > lockd uses time_before() to determine whether the grace period has
+> > expired. This would seem to be enough to avoid timer wrap-around issues,
+> > but, unfortunately, that is not the case. The time_* family of
+> > comparison functions can be safely used to compare jiffies relatively
+> > close in time, but they stop working after approximately LONG_MAX/2
+> > ticks. nfsd can suffer this problem because the time_before() comparison
+> > in lockd() is not performed until the first request comes in, which
+> > means that if there is no lockd traffic for more than LONG_MAX/2 ticks
+> > we are screwed.
+> > 
+> > The implication of this is that once time_before() starts misbehaving
+> > any attempt from a NFS client to execute fcntl() will be received with a
+> > NLM_LCK_DENIED_GRACE_PERIOD message for 25 days (assuming HZ=1000). In
+> > other words, the 50 seconds grace period could turn into a grace period
+> > of 50 days or more.
+> > 
+> > This patch corrects this behavior by implementing grace period with a
+> > (retriggerable) timer.
+> > 
+> > Note: This bug was analyzed independently by Oda-san <oda@valinux.co.jp>
+> > and myself.
+> 
+> Good catch!  Did you actually run across this in practice?  I would've
+> thought it relatively unusual to have a lockd that didn't receive its
+> first lock request until 25 days after startup.
+Yes, we did find this problem in production. More often than one would
+wish, installing new software in a system that has been running without
+a hiccup for weeks or months is the only thing you will need to bring
+mayhem.
 
-the kernel should not kick off a scan, instead it should check to see 
-an open/read should not kick off a scan, instead it should check to see if 
-the scan generation tag(s) are current should be enough (remember, you may 
-have more then one type of scanner running on the system)
+> I still have a mild preference for a work struct just in case we end up
+> wanting to do something slightly more complicated to end the grace
+> period, but I don't really have anything in mind.
+For simplicity I think we could we get Nakano-san's patch merged first.
+If needed, moving to a work-based solution should be relatively easily.
 
-> 5) do we have the kernel do the sync scan on read/mmap/.. or do we have
-> glibc do this
+Thank you for you comments!
 
-definantly not the kernel. the intent of this is to keep linux from being 
-a storage repository for malware used by other systems. there is no need 
-to penalize linux-only apps by making them wait for a scan to take place. 
-If it lives in glibc there should be a way for linux apps that know that 
-they will not be exporting files to other systems to tell the library not 
-to do a scan.
+- Fernando
 
-for example, why should a log analysis program looking at apache logs be 
-forced to wait while multiple 'virii scanners' go through several gigs of 
-logs before it can start looking at them.
-
-you are going to need some way to bypass the checks anyway so that you can 
-avoid the recursive case of the scanners triggering scans on files that 
-they open.
-
-by keeping the scans all in userspace it also simplifies things greatly. 
-All the kernel should do is to maintain the tags with the file (posix 
-attributes??) and have a mechanism to clear them when the file is dirtied.
-
-> I think this is where the whole debate is about now.
->
-> And a few hard ones
-> 6) how do we deal with multiple scanning agents in parallel
-
-not a problem, in fact multiple agents scanning in parallel is a good 
-thing, it lets them all see the data with one pass through the disk.
-
-they will all need to set different tags anyway (the fact that agent1 
-blessed the data doesn't mean that it's safe if agent2 hasn't done so)
-
-> 7) how do we prevent malware from pretending to be a virus scanner
-
-this is not part of the threat model.
-
-David Lang
