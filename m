@@ -1,115 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758545AbYHOM66@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758102AbYHOM7c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758545AbYHOM66 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Aug 2008 08:58:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753399AbYHOM6h
+	id S1758102AbYHOM7c (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Aug 2008 08:59:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753399AbYHOM7S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Aug 2008 08:58:37 -0400
-Received: from extu-mxob-1.symantec.com ([216.10.194.28]:54076 "EHLO
-	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752590AbYHOM6g (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Aug 2008 08:58:36 -0400
-Date: Fri, 15 Aug 2008 13:58:32 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.site
-To: Ingo Molnar <mingo@elte.hu>
-cc: Andi Kleen <andi@firstfloor.org>, x86@kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] x86: fix /proc/meminfo DirectMap
-Message-ID: <Pine.LNX.4.64.0808151351220.28840@blonde.site>
+	Fri, 15 Aug 2008 08:59:18 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:59543 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753535AbYHOM7Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Aug 2008 08:59:16 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Stephen Hemminger <shemminger@vyatta.com>
+Subject: Re: [PATCH 2/3] Adapt the sky2 driver to the reworked PCI PM
+Date: Fri, 15 Aug 2008 15:01:57 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: netdev@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Jeff Garzik <jeff@garzik.org>, Jesse Barnes <jbarnes@virtuousgeek.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       "Brandeburg, Jesse" <jesse.brandeburg@intel.com>,
+       Stephen Hemminger <stephen.hemminger@vyatta.com>
+References: <200808142335.56644.rjw@sisk.pl> <200808142338.18361.rjw@sisk.pl> <20080814152318.625f8609@extreme>
+In-Reply-To: <20080814152318.625f8609@extreme>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200808151501.58315.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Do we actually want these DirectMap lines in the x86 /proc/meminfo?
-I can see they're interesting to CPA developers and TLB optimizers,
-but they don't fit its usual "where has all my memory gone?" usage.
-If they are to stay, here are some fixes.
+On Friday, 15 of August 2008, Stephen Hemminger wrote:
+> On Thu, 14 Aug 2008 23:38:17 +0200
+> "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+> 
+> > Adapt the sky2 driver to the reworked PCI PM
+> > 
+> > * Use device_set_wakeup_enable() and friends as needed
+> > * Remove an open-coded reference to the standard PCI PM registers
+> > * Use pci_prepare_to_sleep() and pci_back_from_sleep() in the
+> >   ->suspend() and ->resume() callbacks
+> > * Use the observation that it is sufficient to call pci_enable_wake()
+> >   once, unless it fails
+> > 
+> > Tested on Asus M3A32-MVP (Yukon-2 EC Ultra rev 3).
+> > 
+> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> > ---
+> >  drivers/net/sky2.c |   34 ++++++++++------------------------
+> >  1 file changed, 10 insertions(+), 24 deletions(-)
+> > 
+> > Index: linux-2.6/drivers/net/sky2.c
+> > ===================================================================
+> > --- linux-2.6.orig/drivers/net/sky2.c
+> > +++ linux-2.6/drivers/net/sky2.c
+> > @@ -3035,7 +3035,8 @@ static int sky2_set_wol(struct net_devic
+> >  	struct sky2_port *sky2 = netdev_priv(dev);
+> >  	struct sky2_hw *hw = sky2->hw;
+> >  
+> > -	if (wol->wolopts & ~sky2_wol_supported(sky2->hw))
+> > +	if ((wol->wolopts & ~sky2_wol_supported(sky2->hw))
+> > +	    || !device_can_wakeup(&hw->pdev->dev))
+> >  		return -EOPNOTSUPP;
+> >  
+> 
+> There was a regression in earlier releases caused because some BIOS's
+> are wrong, and device can wakeup.
 
-1. On x86_32 without PAE, they're not 2M but 4M pages: no need to
-   mess with the internal enum, but show the right name to users.
+device_can_wakeup() returns 'true' if the device is capable of generating PME#
+from at least one low power state (this is determined on the basis of the
+contents of the device's PCI PM registers - please have a look at
+drivers/pci/pci_pm_init() for details) or if ACPI tells us it can wake up.
+IOW, the BIOSes opinion doesn't matter if we find that the device is capable of
+generating PME#, so the regression must have been related to something else.
+I'm very interested in the details, if available.
 
-2. Many machines can never show anything but 0 for DirectMap1G,
-   so suppress that line unless direct_gbpages are really enabled.
+Of course, since we rely on the ability of the device to generate PME# and
+device_can_wakeup() returning 'false' means that the device cannot generate
+PME# from any state, it's reasonable to check it IMO.
 
-3. The unit in /proc/meminfo is kB not number of pages: HugePages
-   messed that up, but they're an example to regret not to follow.
-
-4. Once we use kB, it's easy to see that 1GB has gone missing (which
-   explains why CONFIG_CPA_DEBUG=y soon wraps DirectMap2M negative):
-   because head_64.S's level2_ident_pgt entries were not counted.
-   My fix is not ideal, but works for more and for less than 1G,
-   and avoids interfering with early bootup pagetable contortions.
-
-Signed-off-by: Hugh Dickins <hugh@veritas.com>
----
-You might prefer me to split these up?
-
-Should we really be using level2_ident_pgt (which needs to avoid NX)
-for the final direct map (which wants to use NX)?  But my attempt
-to build up a fresh pagetable there failed miserably to boot!
-
- arch/x86/mm/init_64.c  |    6 +++++-
- arch/x86/mm/pageattr.c |   18 ++++++++++++------
- 2 files changed, 17 insertions(+), 7 deletions(-)
-
---- 2.6.27-rc3/arch/x86/mm/init_64.c	2008-07-29 04:24:15.000000000 +0100
-+++ linux/arch/x86/mm/init_64.c	2008-08-13 16:37:41.000000000 +0100
-@@ -60,7 +60,7 @@ static unsigned long dma_reserve __initd
- 
- DEFINE_PER_CPU(struct mmu_gather, mmu_gathers);
- 
--int direct_gbpages __meminitdata
-+int direct_gbpages
- #ifdef CONFIG_DIRECT_GBPAGES
- 				= 1
- #endif
-@@ -314,6 +314,7 @@ phys_pmd_init(pmd_t *pmd_page, unsigned 
- {
- 	unsigned long pages = 0;
- 	unsigned long last_map_addr = end;
-+	unsigned long start = address;
- 
- 	int i = pmd_index(address);
- 
-@@ -334,6 +335,9 @@ phys_pmd_init(pmd_t *pmd_page, unsigned 
- 			if (!pmd_large(*pmd))
- 				last_map_addr = phys_pte_update(pmd, address,
- 								 end);
-+			/* Count entries we're using from level2_ident_pgt */
-+			if (start == 0)
-+				pages++;
- 			continue;
- 		}
- 
---- 2.6.27-rc3/arch/x86/mm/pageattr.c	2008-07-29 04:24:15.000000000 +0100
-+++ linux/arch/x86/mm/pageattr.c	2008-08-13 04:37:27.000000000 +0100
-@@ -55,13 +55,19 @@ static void split_page_count(int level)
- 
- int arch_report_meminfo(char *page)
- {
--	int n = sprintf(page, "DirectMap4k:  %8lu\n"
--			"DirectMap2M:  %8lu\n",
--			direct_pages_count[PG_LEVEL_4K],
--			direct_pages_count[PG_LEVEL_2M]);
-+	int n = sprintf(page, "DirectMap4k:  %8lu kB\n",
-+			direct_pages_count[PG_LEVEL_4K] << 2);
-+#if defined(CONFIG_X86_64) || defined(CONFIG_X86_PAE)
-+	n += sprintf(page + n, "DirectMap2M:  %8lu kB\n",
-+			direct_pages_count[PG_LEVEL_2M] << 11);
-+#else
-+	n += sprintf(page + n, "DirectMap4M:  %8lu kB\n",
-+			direct_pages_count[PG_LEVEL_2M] << 12);
-+#endif
- #ifdef CONFIG_X86_64
--	n += sprintf(page + n, "DirectMap1G:  %8lu\n",
--		     direct_pages_count[PG_LEVEL_1G]);
-+	if (direct_gbpages)
-+		n += sprintf(page + n, "DirectMap1G:  %8lu kB\n",
-+			direct_pages_count[PG_LEVEL_1G] << 20);
- #endif
- 	return n;
- }
+Thanks,
+Rafael
