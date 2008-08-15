@@ -1,71 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757565AbYHONWd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757983AbYHON1W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757565AbYHONWd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Aug 2008 09:22:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753191AbYHONWY
+	id S1757983AbYHON1W (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Aug 2008 09:27:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753452AbYHON1J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Aug 2008 09:22:24 -0400
-Received: from pmx1.sophos.com ([213.31.172.16]:43162 "EHLO pmx1.sophos.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753090AbYHONWX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Aug 2008 09:22:23 -0400
-In-Reply-To: <20080815131621.GK13048@mit.edu>
-To: Theodore Tso <tytso@mit.edu>
-Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       malware-list@lists.printk.net
-Subject: Re: [malware-list] [RFC 0/5] [TALPA] Intro	to	alinuxinterfaceforonaccess
- scanning
-MIME-Version: 1.0
-X-Mailer: Lotus Notes Release 7.0.2 September 26, 2006
-From: douglas.leeder@sophos.com
-Date: Fri, 15 Aug 2008 14:22:27 +0100
-X-MIMETrack: Serialize by Router on Mercury/Servers/Sophos(Release 7.0.3|September 26, 2007) at
- 15/08/2008 14:22:22,
-	Serialize complete at 15/08/2008 14:22:22
-Content-Type: text/plain; charset="US-ASCII"
-Message-Id: <20080815132227.6BF0431678F@pmx1.sophos.com>
+	Fri, 15 Aug 2008 09:27:09 -0400
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:52604 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753399AbYHON1J (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Aug 2008 09:27:09 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Marcin Obara <marcin_obara@users.sourceforge.net>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Marcel Selhorst <tpm@selhorst.net>,
+       Kylene Jo Hall <kjhall@us.ibm.com>, tpmdd-devel@lists.sourceforge.net
+Subject: Re: [PATCH] 2.6.26-mmotm tpm-correct-tpm-timeouts-to-jiffies-conversion-d820-fix.patch
+In-Reply-To: Your message of "Sat, 26 Jul 2008 20:27:33 BST."
+             <ea8d860a0807261227w66e29978uecd12cf1fcb915d1@mail.gmail.com>
+From: Valdis.Kletnieks@vt.edu
+References: <20080725164614.044a526e.akpm@linux-foundation.org> <50684.1217035060@turing-police.cc.vt.edu> <20080725185115.5d1a107d.akpm@linux-foundation.org> <15114.1217045033@turing-police.cc.vt.edu>
+            <ea8d860a0807261227w66e29978uecd12cf1fcb915d1@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1218793144_6209P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7bit
+Date: Fri, 15 Aug 2008 05:39:05 -0400
+Message-ID: <8700.1218793145@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-malware-list-bounces@dmesg.printk.net wrote on 2008-08-15 14:16:21:
+--==_Exmh_1218793144_6209P
+Content-Type: text/plain; charset=us-ascii
 
-> On Fri, Aug 15, 2008 at 08:57:48AM -0400, Press, Jonathan wrote:
-> > That may just be a question of terminology.  If the bits are construed
-> > not as clean/dirty/infected, but as "I care about this file" vs. "I
-> > don't care about this file" then the rubber gloves come off.
-> 
-> Sure, as long as we're very clear about the semantics of the bits.  If
-> the bits are not persistent, but which get dropped if the inode is
-> every evicted from memory, and it's considered OK, or even desirable,
-> to rescan the file when it is brought back into memory, that may be
-> acceptable to the rubber gloves folks (make people go through lots
-> superflous of security scans, even when they are transfering betewen
-> flights --- security is always more important than passengers'
-> convenience!), but perhaps not to other applications such as file
-> indexers, who would view rescanning files that have already been
-> scanned, and not have been modified, as a waste of time, battery, CPU
-> and disk bandwidth, etc.
-> 
-> As I understand it, the TALPA proposal had non-persistent
-> clean/dirty/infected bits.
-> 
->                   - Ted
+On Sat, 26 Jul 2008 20:27:33 BST, Marcin Obara said:
 
-Yes the current proposal has temporary markers in the in-memory 
-representation if inodes.
+> Value in  chip->vendor.duration[TPM_SHORT]  is in jiffies not in  milliseconds.
+>  (As I know it's not the same. Jiffy is in range 1-10 ms.)
+> I know the result may be the same, but it is unclear.
 
-This is a problem for current anti-malware scanning, as virus data updates 
-come every few hours
-(at which point the entire clean/infected state has to be cleared), so the 
-loss after a reboot is 
-limited.
+I suppose I could have worded the comment block better - the intent was to
+point out what the Broadcom chip returns, but by that point in the code
+we're dealing with jiffies...
 
--- 
-Douglas Leeder
+> Maybe... value should be compared (to 1000) before conversion?
 
-Sophos Plc, The Pentagon, Abingdon Science Park, Abingdon,
-OX14 3YP, United Kingdom.
+Actually, that's probably a better idea, because my kernel is built with
+HZ=1000 - usecs_to_jiffies will do something different than ==1 for HZ=100
+or HZ=250 or other odd values.
 
-Company Reg No 2096520. VAT Reg No GB 348 3873 20.
+> If after conversion, there should be something like this:
+>        if (chip->vendor.duration[TPM_SHORT]  < (HZ/100))  /*  less
+> than 10ms ? */
+>                chip->vendor.duration[TPM_SHORT] = HZ;
 
+That's another option as well, that does the right thing for various HZ values.
+
+> What do you think?
+
+Let me go cook up and test another iteration of the patch, will probably be
+a few hours...
+
+
+--==_Exmh_1218793144_6209P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFIpU64cC3lWbTT17ARApXFAKCINS73EsZqct+b0T2BdMPxaM5tngCggvhu
+N099ZDxwjzndDWiwrlsDrm4=
+=A/Wn
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1218793144_6209P--
