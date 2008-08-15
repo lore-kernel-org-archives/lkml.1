@@ -1,82 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754831AbYHOKzZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754810AbYHOLJc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754831AbYHOKzZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Aug 2008 06:55:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752852AbYHOKzN
+	id S1754810AbYHOLJc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Aug 2008 07:09:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753030AbYHOLJW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Aug 2008 06:55:13 -0400
-Received: from s200aog17.obsmtp.com ([207.126.144.131]:57503 "EHLO
-	s200aog17.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752662AbYHOKzL (ORCPT
+	Fri, 15 Aug 2008 07:09:22 -0400
+Received: from rv-out-0506.google.com ([209.85.198.230]:28482 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752911AbYHOLJV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Aug 2008 06:55:11 -0400
-X-Greylist: delayed 1237 seconds by postgrey-1.27 at vger.kernel.org; Fri, 15 Aug 2008 06:55:11 EDT
-Message-Id: <200808151034.CKM57557@mail1.bri.st.com>
-To: perex@perex.cz
-Cc: linux-kernel@vger.kernel.org, trivial@kernel.org
-From: Daniel THOMPSON <daniel.thompson@st.com>
-Date: Fri, 15 Aug 2008 10:53:38 +0100
-Subject: [PATCH] sound: Fix esoteric double free in the dummy sound driver.
+	Fri, 15 Aug 2008 07:09:21 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=YwRLsrpeb3tNLbs6JRLtTlf0hj3s4CH6ij52jEVo7AuVisR37U3vJaYN+MeAPaKgJS
+         nkyf5qw0P8HALTO83xTvf0QFw2MAXoJP98vTEPlOM40dN3UauetckTOnN8Ywgh3yHFQb
+         3z7mRGNN3xkZPvUt/jGZTGHMf1Fvy9zgv8dkI=
+Message-ID: <a4423d670808150409j6df13225o7434fc6c223913f7@mail.gmail.com>
+Date: Fri, 15 Aug 2008 15:09:20 +0400
+From: "Alexander Beregalov" <a.beregalov@gmail.com>
+To: "David Miller" <davem@davemloft.net>
+Subject: Re: Bootmem allocator broken
+Cc: mpatocka@redhat.com, hannes@saeurebad.de, sparclinux@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20080814.162519.181180629.davem@davemloft.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <Pine.LNX.4.64.0808130845290.8416@hs20-bc2-1.build.redhat.com>
+	 <20080813.202559.193705172.davem@davemloft.net>
+	 <Pine.LNX.4.64.0808141855500.15262@hs20-bc2-1.build.redhat.com>
+	 <20080814.162519.181180629.davem@davemloft.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The dummy driver uses runtime->private_free but still frees
-its pcm structures on error paths.
+2008/8/15 David Miller <davem@davemloft.net>:
+> From: Mikulas Patocka <mpatocka@redhat.com>
+> Date: Thu, 14 Aug 2008 19:11:19 -0400 (EDT)
+>
+> [ Adding Alexander back to the CC: as he is seeing this same
+>  exact bug too, please keep him in the loop for testing. ]
 
-This is esoteric because the error paths in question are
-unreachable. Thus the bug is only a problem when someone
-copies this code into other drivers.
+>> This patch fixes it (kernels 2.6.27-rc2 and 2.6.27-rc3 boot ok after the
+>> patch). Johannes, please review the patch and submit it to Linus.
+>>
+>> With the patch it tries to continue at the end of previous allocation only
+>> if the previous allocation ended in the middle of the page.
+>>
+>> Signed-off-by: Mikulas Patocka <mpatocka@redhat.com>
 
-Signed-off-by: Daniel R Thompson <daniel.thompson@st.com>
----
- sound/drivers/dummy.c |   10 ++++------
- 1 files changed, 4 insertions(+), 6 deletions(-)
 
-diff --git a/sound/drivers/dummy.c b/sound/drivers/dummy.c
-index 4e4c69e..90fc1ce 100644
---- a/sound/drivers/dummy.c
-+++ b/sound/drivers/dummy.c
-@@ -354,6 +354,7 @@ static int snd_card_dummy_playback_open(struct snd_pcm_substream *substream)
- 	if ((dpcm = new_pcm_stream(substream)) == NULL)
- 		return -ENOMEM;
- 	runtime->private_data = dpcm;
-+	/* makes the infrastructure responsible for freeing dpcm */
- 	runtime->private_free = snd_card_dummy_runtime_free;
- 	runtime->hw = snd_card_dummy_playback;
- 	if (substream->pcm->device & 1) {
-@@ -362,10 +363,8 @@ static int snd_card_dummy_playback_open(struct snd_pcm_substream *substream)
- 	}
- 	if (substream->pcm->device & 2)
- 		runtime->hw.info &= ~(SNDRV_PCM_INFO_MMAP|SNDRV_PCM_INFO_MMAP_VALID);
--	if ((err = add_playback_constraints(runtime)) < 0) {
--		kfree(dpcm);
-+	if ((err = add_playback_constraints(runtime)) < 0)
- 		return err;
--	}
- 
- 	return 0;
- }
-@@ -379,6 +378,7 @@ static int snd_card_dummy_capture_open(struct snd_pcm_substream *substream)
- 	if ((dpcm = new_pcm_stream(substream)) == NULL)
- 		return -ENOMEM;
- 	runtime->private_data = dpcm;
-+	/* makes the infrastructure responsible for freeing dpcm */
- 	runtime->private_free = snd_card_dummy_runtime_free;
- 	runtime->hw = snd_card_dummy_capture;
- 	if (substream->pcm->device == 1) {
-@@ -387,10 +387,8 @@ static int snd_card_dummy_capture_open(struct snd_pcm_substream *substream)
- 	}
- 	if (substream->pcm->device & 2)
- 		runtime->hw.info &= ~(SNDRV_PCM_INFO_MMAP|SNDRV_PCM_INFO_MMAP_VALID);
--	if ((err = add_capture_constraints(runtime)) < 0) {
--		kfree(dpcm);
-+	if ((err = add_capture_constraints(runtime)) < 0)
- 		return err;
--	}
- 
- 	return 0;
- }
--- 
-1.5.5.1
+It is working! Thanks a lot David and Mikulas!
 
+alexb@sparky ~ $ zgrep LOCKDEP /proc/config.gz
+CONFIG_LOCKDEP_SUPPORT=y
+CONFIG_LOCKDEP=y
+CONFIG_DEBUG_LOCKDEP=y
+alexb@sparky ~ $ uname -a
+Linux sparky 2.6.27-rc3-00171-gb635ace-dirty #3 PREEMPT Fri Aug 15
+14:52:40 MSD 2008 sparc64 sun4u TI UltraSparc IIi (Sabre) GNU/Linux
