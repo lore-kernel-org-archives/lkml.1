@@ -1,71 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759954AbYHOP0m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760089AbYHOP1b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759954AbYHOP0m (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Aug 2008 11:26:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753483AbYHOP0d
+	id S1760089AbYHOP1b (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Aug 2008 11:27:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753574AbYHOP1X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Aug 2008 11:26:33 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:49670 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753296AbYHOP0d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Aug 2008 11:26:33 -0400
-Date: Fri, 15 Aug 2008 17:25:55 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: akpm@osdl.org, mingo@redhat.com, linux-kernel@vger.kernel.org, ak@suse.de,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [PATCH] x86_64: remove empty lines from stack traces/oopses
-Message-ID: <20080815152555.GJ10029@elte.hu>
-References: <20080731235137.GA4816@martell.zuzino.mipt.ru> <20080811170219.GJ4524@elte.hu> <20080811192210.GA5791@martell.zuzino.mipt.ru>
+	Fri, 15 Aug 2008 11:27:23 -0400
+Received: from mail-gx0-f16.google.com ([209.85.217.16]:61561 "EHLO
+	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753483AbYHOP1W (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Aug 2008 11:27:22 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=bdbbgj99RpNVwXi+RG6ztHMeCJjBRj3Q6Mm6xIp7jU4c13aV5Zo9+DwovkRrFTIneb
+         qjc+AUptFimAGfDIqztc2kU+1Q0juwzd+Y6KXDV2QIWNiwPa9zgtLV97VFXx1bQcJl11
+         /YT8RvAYEkMLZtCsaD3ImO5ZhxFSdi5tsH/ZI=
+Message-ID: <19f34abd0808150827m5128c8f6wd517796d95227654@mail.gmail.com>
+Date: Fri, 15 Aug 2008 17:27:20 +0200
+From: "Vegard Nossum" <vegard.nossum@gmail.com>
+To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>
+Subject: Re: 2.6.25.11-97.fc9 (P): idr_remove called for id=236 which is not allocated
+Cc: LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <19f34abd0808150811w2b77479fnead3ae6b527ad4dc@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080811192210.GA5791@martell.zuzino.mipt.ru>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+References: <19f34abd0808150811w2b77479fnead3ae6b527ad4dc@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Aug 15, 2008 at 5:11 PM, Vegard Nossum <vegard.nossum@gmail.com> wrote:
+> Hi,
+>
+> First the confessions: It's fedora-patched kernel, 2.6.25.11-97.fc9,
+> tainted by NVIDIA driver. So feel free to drop to /dev/null until I
+> can reproduce on a clean and recent kernel. (But -rc3 didn't boot for
+> me, and I don't have anything else handy atm.)
 
-* Alexey Dobriyan <adobriyan@gmail.com> wrote:
+I did get -rc3 working with some command line options.
 
-> On Mon, Aug 11, 2008 at 07:02:19PM +0200, Ingo Molnar wrote:
-> > * Alexey Dobriyan <adobriyan@gmail.com> wrote:
-> > 
-> > >  show_trace_log_lvl(struct task_struct *task, struct pt_regs *regs,
-> > >  		unsigned long *stack, unsigned long bp, char *log_lvl)
-> > >  {
-> > > -	printk("\nCall Trace:\n");
-> > > +	printk("Call Trace:\n");
-> > >  	dump_trace(task, regs, stack, bp, &print_trace_ops, log_lvl);
-> > > -	printk("\n");
-> > >  }
-> > 
-> > hm, it's nice to have stack traces stand out a bit, and to not get the 
-> > 'Call Trace' embedded in the middle of a printk (which happens to crash 
-> > or produce a stack dump).
-> 
-> Sometimes all you have is 80x25 or just screenshot from some stupid windows
-> monitoring program.
+>
+> By bashing on random device nodes (with mknod + mmap as root), I got a
+> few messages of this kind:
+>
+> idr_remove called for id=236 which is not allocated.
+> Pid: 3019, comm: a.out Tainted: P         2.6.25.11-97.fc9.i686 #1
+>  [<c04f030c>] idr_remove+0xd5/0x138
+>  [<c0540bfc>] release_dev+0x5bd/0x5cf
+>  [<c04909fd>] ? d_free+0x3b/0x4d
+>  [<c04955d0>] ? mntput_no_expire+0x16/0x69
+>  [<c048309d>] ? __fput+0x149/0x151
+>  [<c0540d8c>] tty_release+0x12/0x1c
+>  [<c0483001>] __fput+0xad/0x151
+>  [<c04830bc>] fput+0x17/0x19
+>  [<c04807df>] filp_close+0x50/0x5a
+>  [<c0480852>] sys_close+0x69/0xa1
+>  [<c0405bf2>] syscall_call+0x7/0xb
+>  [<c0620000>] ? agp_amd64_probe+0x134/0x3ee
+>  =======================
 
-> > just to make sure i get the gist of your change, do you have a 
-> > 'before' and 'after' sample oops, so that we can see the difference?
-> 
-> Any recent oops with and without empty lines after Call trace: and 
-> after calltrace.
+Now it looks more like this (with very frequent messages):
 
-ok - i've queued up your fix in tip/x86/debug.
+ida_remove called for id=112 which is not allocated.
+ida_remove called for id=67 which is not allocated.
+ida_remove called for id=191 which is not allocated.
+ida_remove called for id=23 which is not allocated.
 
-Arjan, can the removal of empty newlines break the kerneloops.org 
-parser?
+..and with no backtrace, so I guess it means "not harmful". Sorry for the noise.
 
-	Ingo
+
+Vegard
+
+-- 
+"The animistic metaphor of the bug that maliciously sneaked in while
+the programmer was not looking is intellectually dishonest as it
+disguises that the error is the programmer's own creation."
+	-- E. W. Dijkstra, EWD1036
