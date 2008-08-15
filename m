@@ -1,77 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757549AbYHOJ3e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758256AbYHOJ35@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757549AbYHOJ3e (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Aug 2008 05:29:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751635AbYHOJ30
+	id S1758256AbYHOJ35 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Aug 2008 05:29:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753937AbYHOJ3r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Aug 2008 05:29:26 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:54011 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750920AbYHOJ3Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Aug 2008 05:29:25 -0400
-Date: Fri, 15 Aug 2008 11:28:44 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       David Miller <davem@davemloft.net>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Gregory Haskins <ghaskins@novell.com>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       "Luis Claudio R. Goncalves" <lclaudio@uudg.org>,
-       Clark Williams <williams@redhat.com>, srostedt@redhat.com
-Subject: Re: [PATCH 0/3] ftrace: handle kernel code remove
-Message-ID: <20080815092844.GD22209@elte.hu>
-References: <20080815024716.480118113@goodmis.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080815024716.480118113@goodmis.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Fri, 15 Aug 2008 05:29:47 -0400
+Received: from smtp.nokia.com ([192.100.122.230]:29393 "EHLO
+	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751635AbYHOJ3q (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Aug 2008 05:29:46 -0400
+From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>,
+       Zoltan Sogor <weth@inf.u-szeged.hu>,
+       Adrian Hunter <ext-adrian.hunter@nokia.com>,
+       linux-kernel@vger.kernel.org
+Date: Fri, 15 Aug 2008 14:07:44 +0300
+Message-Id: <20080815110744.13628.81644.sendpatchset@gollum>
+Subject: [GIT PULL] UBIFS updates for 2.6.27-rc4
+X-OriginalArrivalTime: 15 Aug 2008 09:28:55.0226 (UTC) FILETIME=[566A21A0:01C8FEB9]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Linus,
 
-* Steven Rostedt <rostedt@goodmis.org> wrote:
+please pull from
 
-> The dynamic ftrace feature keeps a table of all the places that call 
-> mcount to either disable them (replacing them with nops) or to enable 
-> them (calling some trace function).
-> 
-> This table of functions is also displayed to the user interface to let 
-> users enable or disable specific functions. This allows users to only 
-> trace some functions within the kernel.
-> 
-> When a module or init sections are removed, the pointers to their 
-> locations still exist in this table.  To protect against faults and 
-> writing over other text, fault handling and code comparing is done. 
-> When the code is update, the code being replaced is calculated and 
-> compared to the actual text that is being replaced, if the code does 
-> not match what is expected to be there, the change is not made.
-> 
-> There is a very small chance that the wrong text (or perhaps a data 
-> section) could match the call to mcount and an inappropriate 
-> modification could be made.
-> 
-> This patch series adds ftrace_release, to allow a module to remove the 
-> pointers to the mcount callers in the module from this table.
-> 
-> Also, __init has "notrace" added to it so that text in the init 
-> section are not traced. The trace currently can not be enabled until 
-> after init anyway, so this should not be a problem.
+git://git.infradead.org/~dedekind/ubifs-2.6.git linux-next
 
-applied to tip/tracing/ftrace - thanks Steve! I merged it into 
-tip/master and started testing it.
+The following changes since commit 30a2f3c60a84092c8084dfe788b710f8d0768cd4:
+  Linus Torvalds (1):
+        Linux 2.6.27-rc3
 
-	Ingo
+are available:
+
+Adrian Hunter (8):
+      UBIFS: fix error return in failure mode
+      UBIFS: ensure UBIFS switches to read-only on error
+      UBIFS: make ubifs_ro_mode() not inline
+      UBIFS: do not union creat_sqnum and del_cmtno
+      UBIFS: fix typos in comments
+      UBIFS: correct orphan deletion order
+      UBIFS: correct spelling of "thrice".
+      UBIFS: always set i_generation to 0
+
+Artem Bityutskiy (18):
+      UBIFS: print volume name as well
+      UBIFS: fix budgeting calculations
+      UBIFS: improve debugging
+      UBIFS: free budget in delete_inode as well
+      UBIFS: do not write orphans back
+      UBIFS: remove unneeded function parameter
+      UBIFS: remove another unneeded function parameter
+      UBIFS: increment commit number earlier
+      UBIFS: optimize deletions
+      UBIFS: improve budgeting checks
+      UBIFS: align inode data to eight
+      UBIFS: print pid in dump function
+      UBIFS: reserve more space for index
+      UBIFS: minor tweaks in commit
+      UBIFS: improve arguments checking in debugging messages
+      UBIFS: few commentary fixes
+      UBIFS: remove unneeded check
+      UBIFS: xattr bugfixes
+
+Sebastian Siewior (1):
+      Documentation: fix typo in ubifs.txt
+
+Zoltan Sogor (2):
+      UBIFS: support splice_write
+      UBIFS: fix budgeting request alignment in xattr code
+
+ Documentation/filesystems/ubifs.txt |    2 +-
+ fs/ubifs/budget.c                   |   33 +++++++--
+ fs/ubifs/commit.c                   |    3 +-
+ fs/ubifs/debug.c                    |   27 ++++---
+ fs/ubifs/debug.h                    |  143 +++++++++++++++++------------------
+ fs/ubifs/dir.c                      |   24 ++----
+ fs/ubifs/file.c                     |    8 +-
+ fs/ubifs/find.c                     |    9 ++-
+ fs/ubifs/io.c                       |   14 ++++
+ fs/ubifs/journal.c                  |  110 ++++++++++++++++++++-------
+ fs/ubifs/log.c                      |    4 +-
+ fs/ubifs/misc.h                     |   16 +----
+ fs/ubifs/orphan.c                   |    4 +-
+ fs/ubifs/super.c                    |   48 +++++++-----
+ fs/ubifs/tnc_commit.c               |   37 +++++-----
+ fs/ubifs/ubifs-media.h              |    4 +-
+ fs/ubifs/ubifs.h                    |   33 ++++++---
+ fs/ubifs/xattr.c                    |   54 ++++++--------
+ 18 files changed, 329 insertions(+), 244 deletions(-)
+
+Note, some commits are not fixes, but rather improvements. But
+2.6.27 is going to be the first kernel release for UBIFS, so I
+this is probably OK in this case.
