@@ -1,74 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761428AbYHOTLJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761054AbYHOTPg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761428AbYHOTLJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Aug 2008 15:11:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758929AbYHOTKc
+	id S1761054AbYHOTPg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Aug 2008 15:15:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757684AbYHOTP2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Aug 2008 15:10:32 -0400
-Received: from fg-out-1718.google.com ([72.14.220.158]:17768 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758252AbYHOTKb (ORCPT
+	Fri, 15 Aug 2008 15:15:28 -0400
+Received: from outbound-mail-32.bluehost.com ([69.89.18.152]:52516 "HELO
+	outbound-mail-32.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1756164AbYHOTP1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Aug 2008 15:10:31 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=references:user-agent:date:from:to:cc:subject:content-disposition
-         :message-id;
-        b=O4s+uIbu/K0spXebsKxB9mjZqjyzxW7X8WuVQTqnih9xi+9yVcF8zMH0hnhkSy+BFP
-         hgsfyLTg0fBqaUlOzn4iwajzdF4i9FG8szZMwK2J9DPpzgfZZgCuBgpP6SLows69JOnp
-         4GwLtZNK6KkgkPj6w6klwPXo1uGTwBpSpDGZU=
-References: <20080815190517.850120473@gmail.com>>
-User-Agent: quilt/0.46-1
-Date: Fri, 15 Aug 2008 23:05:19 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: mingo@elte.hu, macro@linux-mips.org
-Cc: linux-kernel@vger.kernel.org, Cyrill Gorcunov <gorcunov@gmail.com>
-Subject: [patch 2/2] x86: apic - sync_Arb_IDs style fixup
-Content-Disposition: inline; filename=x86-apic-sync_Arb_IDs-style-fix
-Message-ID: <48a5d4a4.0437560a.0857.ffffffb0@mx.google.com>
+	Fri, 15 Aug 2008 15:15:27 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
+	b=TurBqDFGNfCA6pF1bMF5PFlqGLVL1dYljl3555PlW0iexTO6npUKlLPfOj3fVhdabqoX+h5ZiPoLL6Zd3THt/fYyKboklDAKq7+pShcgLx9TXfF1GC/UH3X0fqC8wMMi;
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Jean Delvare <khali@linux-fr.org>
+Subject: Re: [PATCH/RFC] pci: dynids.use_driver_data considered harmful
+Date: Fri, 15 Aug 2008 12:15:01 -0700
+User-Agent: KMail/1.9.9
+Cc: Greg KH <greg@kroah.com>, Milton Miller <miltonm@bga.com>,
+       Michael Ellerman <michael@ellerman.id.au>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-pci@vger.kernel.org
+References: <for-27-patch1-0@bga.com> <200808151046.59590.jbarnes@virtuousgeek.org> <20080815205500.1945916f@hyperion.delvare>
+In-Reply-To: <20080815205500.1945916f@hyperion.delvare>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200808151215.02499.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
----
+On Friday, August 15, 2008 11:55 am Jean Delvare wrote:
+> In fact we can do even better than that. We could accept from
+> user-space only driver_data values which at least one device ID entry in
+> the driver already uses. That should be fairly easy to implement, and
+> would offer a level of safety an order of magnitude above what we have
+> at the moment... And it works both ways: if 0 is not a valid data for
+> some driver, that would force the user to provide a non-zero (and
+> valid) data value. And it guarantees that the user can't ask for
+> something the driver doesn't expect, so drivers don't even need extra
+> checks. And no need for a use_driver_data flag either.
 
-No cnages on binary level
+Meaning a driver audit of the usage?  Yeah that would be great.
 
-Index: linux-2.6.git/arch/x86/kernel/apic_32.c
-===================================================================
---- linux-2.6.git.orig/arch/x86/kernel/apic_32.c	2008-08-15 22:41:52.000000000 +0400
-+++ linux-2.6.git/arch/x86/kernel/apic_32.c	2008-08-15 22:49:09.000000000 +0400
-@@ -913,13 +913,15 @@ void __init sync_Arb_IDs(void)
- 	 */
- 	if (modern_apic() || boot_cpu_data.x86_vendor == X86_VENDOR_AMD)
- 		return;
-+
- 	/*
- 	 * Wait for idle.
- 	 */
- 	apic_wait_icr_idle();
- 
- 	apic_printk(APIC_DEBUG, "Synchronizing Arb IDs.\n");
--	apic_write(APIC_ICR, APIC_DEST_ALLINC | APIC_INT_LEVELTRIG | APIC_DM_INIT);
-+	apic_write(APIC_ICR, APIC_DEST_ALLINC |
-+			APIC_INT_LEVELTRIG | APIC_DM_INIT);
- }
- 
- /*
-Index: linux-2.6.git/arch/x86/kernel/apic_64.c
-===================================================================
---- linux-2.6.git.orig/arch/x86/kernel/apic_64.c	2008-08-15 22:41:53.000000000 +0400
-+++ linux-2.6.git/arch/x86/kernel/apic_64.c	2008-08-15 22:49:07.000000000 +0400
-@@ -763,7 +763,8 @@ void __init sync_Arb_IDs(void)
- 	apic_wait_icr_idle();
- 
- 	apic_printk(APIC_DEBUG, "Synchronizing Arb IDs.\n");
--	apic_write(APIC_ICR, APIC_DEST_ALLINC | APIC_INT_LEVELTRIG | APIC_DM_INIT);
-+	apic_write(APIC_ICR, APIC_DEST_ALLINC |
-+			APIC_INT_LEVELTRIG | APIC_DM_INIT);
- }
- 
- /*
+> The only drawback is that it prevents the user from passing a "new"
+> data value even if it would be valid. But honestly, I don't expect that
+> case to happen frequently... if ever at all. So I'd say the benefits
+> totally outweight the drawback.
+>
+> If the interested people agree with the idea, I'll look into
+> implementing it.
 
+Well the audit would show if user supplied "new" values are needed; otherwise 
+the approach sounds good to me.
+
+Thanks
 -- 
+Jesse Barnes, Intel Open Source Technology Center
