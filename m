@@ -1,25 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756790AbYHOLxU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755967AbYHOL6R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756790AbYHOLxU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Aug 2008 07:53:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752894AbYHOLxM
+	id S1755967AbYHOL6R (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Aug 2008 07:58:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753016AbYHOL6F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Aug 2008 07:53:12 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:35659 "EHLO mx2.mail.elte.hu"
+	Fri, 15 Aug 2008 07:58:05 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:35335 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752877AbYHOLxL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Aug 2008 07:53:11 -0400
-Date: Fri, 15 Aug 2008 13:52:53 +0200
+	id S1752921AbYHOL6D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Aug 2008 07:58:03 -0400
+Date: Fri, 15 Aug 2008 13:57:15 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Dave Jones <davej@redhat.com>, Linux Kernel <linux-kernel@vger.kernel.org>,
-       x86@kernel.org
-Subject: Re: silence mmconfig printk.
-Message-ID: <20080815115253.GB32726@elte.hu>
-References: <20080814190703.GA16862@redhat.com>
+To: Joerg Roedel <joerg.roedel@amd.com>
+Cc: mingo@redhat.com, tglx@linutronix.de, hpa@zytor.com,
+       linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 0/4] AMD IOMMU updates for 2.6.27-rc3
+Message-ID: <20080815115715.GC32726@elte.hu>
+References: <1218736518-25301-1-git-send-email-joerg.roedel@amd.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080814190703.GA16862@redhat.com>
+In-Reply-To: <1218736518-25301-1-git-send-email-joerg.roedel@amd.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -34,12 +36,15 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Dave Jones <davej@redhat.com> wrote:
+* Joerg Roedel <joerg.roedel@amd.com> wrote:
 
-> There's so much broken mmconfig hardware/bios'es out there, that 
-> classing this as an error seems a little extreme. Lower its priority 
-> to KERN_INFO so that it isn't so noisy when booting with 'quiet'
+> Hi Ingo,
+> 
+> here are 4 update patches for AMD IOMMU which should be merged in 
+> 2.6.27. They fix various issues that came up during tests. They also 
+> fix some minor style issues.
 
-applied to tip/x86/urgent - thanks Dave.
+applied to tip/x86/amd-iommu - and merged into tip/x86/urgent as well 
+for v2.6.27. Thanks Joerg,
 
 	Ingo
