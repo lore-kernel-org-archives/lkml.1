@@ -1,79 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757983AbYHON1W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758689AbYHON1h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757983AbYHON1W (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Aug 2008 09:27:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753452AbYHON1J
+	id S1758689AbYHON1h (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Aug 2008 09:27:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753999AbYHON1N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Aug 2008 09:27:09 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:52604 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753399AbYHON1J (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Aug 2008 09:27:09 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Marcin Obara <marcin_obara@users.sourceforge.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Marcel Selhorst <tpm@selhorst.net>,
-       Kylene Jo Hall <kjhall@us.ibm.com>, tpmdd-devel@lists.sourceforge.net
-Subject: Re: [PATCH] 2.6.26-mmotm tpm-correct-tpm-timeouts-to-jiffies-conversion-d820-fix.patch
-In-Reply-To: Your message of "Sat, 26 Jul 2008 20:27:33 BST."
-             <ea8d860a0807261227w66e29978uecd12cf1fcb915d1@mail.gmail.com>
-From: Valdis.Kletnieks@vt.edu
-References: <20080725164614.044a526e.akpm@linux-foundation.org> <50684.1217035060@turing-police.cc.vt.edu> <20080725185115.5d1a107d.akpm@linux-foundation.org> <15114.1217045033@turing-police.cc.vt.edu>
-            <ea8d860a0807261227w66e29978uecd12cf1fcb915d1@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1218793144_6209P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Fri, 15 Aug 2008 05:39:05 -0400
-Message-ID: <8700.1218793145@turing-police.cc.vt.edu>
+	Fri, 15 Aug 2008 09:27:13 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:50153 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753764AbYHON1M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Aug 2008 09:27:12 -0400
+Date: Fri, 15 Aug 2008 15:26:46 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: David Witbrodt <dawitbro@sbcglobal.net>
+Cc: Yinghai Lu <yhlu.kernel@gmail.com>, linux-kernel@vger.kernel.org,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       netdev <netdev@vger.kernel.org>
+Subject: Re: HPET regression in 2.6.26 versus 2.6.25 -- question about NMI
+	watchdog
+Message-ID: <20080815132646.GF30597@elte.hu>
+References: <445817.22956.qm@web82101.mail.mud.yahoo.com>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="zhXaljGHf11kAtnf"
+Content-Disposition: inline
+In-Reply-To: <445817.22956.qm@web82101.mail.mud.yahoo.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1218793144_6209P
+
+--zhXaljGHf11kAtnf
 Content-Type: text/plain; charset=us-ascii
-
-On Sat, 26 Jul 2008 20:27:33 BST, Marcin Obara said:
-
-> Value in  chip->vendor.duration[TPM_SHORT]  is in jiffies not in  milliseconds.
->  (As I know it's not the same. Jiffy is in range 1-10 ms.)
-> I know the result may be the same, but it is unclear.
-
-I suppose I could have worded the comment block better - the intent was to
-point out what the Broadcom chip returns, but by that point in the code
-we're dealing with jiffies...
-
-> Maybe... value should be compared (to 1000) before conversion?
-
-Actually, that's probably a better idea, because my kernel is built with
-HZ=1000 - usecs_to_jiffies will do something different than ==1 for HZ=100
-or HZ=250 or other odd values.
-
-> If after conversion, there should be something like this:
->        if (chip->vendor.duration[TPM_SHORT]  < (HZ/100))  /*  less
-> than 10ms ? */
->                chip->vendor.duration[TPM_SHORT] = HZ;
-
-That's another option as well, that does the right thing for various HZ values.
-
-> What do you think?
-
-Let me go cook up and test another iteration of the patch, will probably be
-a few hours...
+Content-Disposition: inline
 
 
---==_Exmh_1218793144_6209P
-Content-Type: application/pgp-signature
+* David Witbrodt <dawitbro@sbcglobal.net> wrote:
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
+> Quick question: a quick browse of 'Documentation/nmi_watchdog.txt' 
+> suggests that I should use "nmi_watchdog=1", since I have SMP (CPU = 
+> Athlon 64 X2, with CONFIG_SMP=y).  Should I follow your suggestion 
+> later, or follow the recommendation of the 'nmi_watchdog.txt' doc?
 
-iD8DBQFIpU64cC3lWbTT17ARApXFAKCINS73EsZqct+b0T2BdMPxaM5tngCggvhu
-N099ZDxwjzndDWiwrlsDrm4=
-=A/Wn
------END PGP SIGNATURE-----
+you could try both, starting with nmi_watchdog=2 - and trying 
+nmi_watchdog=1 if that doesnt work. The problem with nmi_watchdog=1 is 
+that it disables high-res timers. (because it has to - it piggy-backs on 
+the back of a periodic timer interrupt)
 
---==_Exmh_1218793144_6209P--
+you might even want to test the NMI watchdog with an intentional 
+user-space hard lockup - with the attached lockupcli.c program. 
+(Warning: if you run it as root it will really lock up your box hard. 
+Run it from a VGA text mode console to see any console messages.)
+
+	Ingo
+
+--zhXaljGHf11kAtnf
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: attachment; filename="lockupcli.c"
+
+
+main ()
+{
+	iopl(3);
+	for (;;) asm("cli");
+}
+
+
+--zhXaljGHf11kAtnf--
