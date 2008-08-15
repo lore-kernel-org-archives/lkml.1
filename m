@@ -1,92 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754300AbYHRK7h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752585AbYHRLAB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754300AbYHRK7h (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Aug 2008 06:59:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753869AbYHRK7V
+	id S1752585AbYHRLAB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Aug 2008 07:00:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752235AbYHRK7u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Aug 2008 06:59:21 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:57455 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753058AbYHRK7U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Aug 2008 06:59:20 -0400
-Date: Mon, 18 Aug 2008 11:59:18 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: Adam Litke <agl@us.ibm.com>
-Cc: linux-mm <linux-mm@kvack.org>, linux-kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       nacc <nacc@linux.vnet.ibm.com>, apw <apw@shadowen.org>,
-       agl <agl@linux.vnet.ibm.com>
-Subject: Re: [BUG] __GFP_THISNODE is not always honored
-Message-ID: <20080818105918.GD32113@csn.ul.ie>
-References: <1218837685.12953.11.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+	Mon, 18 Aug 2008 06:59:50 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:4637 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751642AbYHRK7t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Aug 2008 06:59:49 -0400
+Date: Fri, 15 Aug 2008 16:37:04 +0200
+From: Pavel Machek <pavel@suse.cz>
+To: Theodore Tso <tytso@mit.edu>, Eric Paris <eparis@redhat.com>,
+       tvrtko.ursulin@sophos.com, alan@lxorguk.ukuu.org.uk,
+       andi@firstfloor.org, Arjan van de Ven <arjan@infradead.org>,
+       hch@infradead.org, linux-kernel@vger.kernel.org,
+       malware-list@lists.printk.net, malware-list-bounces@dmesg.printk.net,
+       peterz@infradead.org, viro@ZenIV.linux.org.uk
+Subject: Re: [malware-list] TALPA - a threat model?  well sorta.
+Message-ID: <20080815143703.GB8860@ucw.cz>
+References: <20080813192922.GI8232@mit.edu> <20080814093103.6CD102FE8B4@pmx1.sophos.com> <20080814132455.GE6469@mit.edu> <1218721713.3540.125.camel@localhost.localdomain> <20080814155028.GB8256@mit.edu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1218837685.12953.11.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20080814155028.GB8256@mit.edu>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (15/08/08 17:01), Adam Litke didst pronounce:
-> While running the libhugetlbfs test suite on a NUMA machine with 2.6.27-rc3, I
-> discovered some strange behavior with __GFP_THISNODE.  The hugetlb function
-> alloc_fresh_huge_page_node() calls alloc_pages_node() with __GFP_THISNODE but
-> occasionally a page that is not on the requested node is returned. 
-
-That's bad in itself and has wider reaching consequences than hugetlb
-getting its counters wrong. I believe SLUB depends on __GFP_THISNODE
-being obeyed for example. Can you boot the machine in question with
-mminit_loglevel=4 and loglevel=8 set on the command line and send me the
-dmesg please? It should output the zonelists and I might be able to
-figure out what's going wrong. Thanks
-
-> Since the
-> hugetlb code assumes that the page will be on the requested node, badness follows
-> when the page is added to the wrong node's free_list.
+On Thu 2008-08-14 11:50:28, Theodore Tso wrote:
+> On Thu, Aug 14, 2008 at 09:48:33AM -0400, Eric Paris wrote:
+> > 
+> > There needs to be a way to say that an inode in cache needs to be
+> > rescanned.  3 states this flag can be.  Clean, Dirty, Infected.  The
+> > current talpa solution involves a global monotomically increasing
+> > counter every time you change virus defs or make some "interesting"
+> > change.  If global == inode flag we are clean.  If global == negative
+> > inode flag we are infected.  if global > inode flag we are dirty and
+> > need a scan.
 > 
-> There is clearly something wrong with the buddy allocator since __GFP_THISNODE
-> cannot be trusted.  Until that is fixed, the hugetlb code should not assume
-> that the newly allocated page is on the node asked for.  This patch prevents
-> the hugetlb pool counters from being corrupted and allows the code to cope with
-> unbalanced numa allocations.
-> 
-> So far my debugging has led me to get_page_from_freelist() inside the
-> for_each_zone_zonelist() loop.  When buffered_rmqueue() returns a page I
-> compare the value of page_to_nid(page), zone->node and the node that the
-> hugetlb code requested with __GFP_THISNODE.  These all match -- except when the
-> problem triggers.  In that case, zone->node matches the node we asked for but
-> page_to_nid() does not.
-> 
+> "Infected" just means to instantly return an error when the file is
+> opened or if an already opened file descriptor is read or mmap'ed,
+> right?  If file is already mmaped(), what's the plan?  Send a kill -9
 
-Feels like the wrong zonelist is being used. The dmesg with
-mminit_loglevel may tell.
+Me thinks about naming my machine
+host-inline-real-virus-or-at-least-identifiable-part-here.cz, then
+having fun with people not able to access their apache logs.
 
-> Workaround patch:
-> diff --git a/mm/hugetlb.c b/mm/hugetlb.c
-> index 67a7119..7a30a61 100644
-> --- a/mm/hugetlb.c
-> +++ b/mm/hugetlb.c
-> @@ -568,7 +568,7 @@ static struct page *alloc_fresh_huge_page_node(struct hstate *h, int nid)
->  			__free_pages(page, huge_page_order(h));
->  			return NULL;
->  		}
-> -		prep_new_huge_page(h, page, nid);
-> +		prep_new_huge_page(h, page, page_to_nid(page));
->  	}
-
-This will mask the bug for hugetlb but I wonder if this should be a
-VM_BUG_ON(page_to_nid(page) != nid) ?
-
->  
->  	return page;
-> 
-> -- 
-> Adam Litke - (agl at us.ibm.com)
-> IBM Linux Technology Center
-> 
-
+Returning an error when you think you see a virus is a great
+invitation to DoS attack, really.
+							Pavel
 -- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
