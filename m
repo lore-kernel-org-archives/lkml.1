@@ -1,64 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759318AbYHOUHk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760940AbYHOUIa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759318AbYHOUHk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Aug 2008 16:07:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751137AbYHOUHc
+	id S1760940AbYHOUIa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Aug 2008 16:08:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750958AbYHOUIV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Aug 2008 16:07:32 -0400
-Received: from qb-out-0506.google.com ([72.14.204.225]:59550 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750882AbYHOUHb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Aug 2008 16:07:31 -0400
-Message-ID: <e700089d0808151307j27d6c61dw3a1dd174e4e8610c@mail.gmail.com>
-Date: Fri, 15 Aug 2008 16:07:29 -0400
-From: "Yousaf Jindal" <yousaf.jindal@pi.edu.pk>
-To: thomas.winkler@intel.com, linux-kernel@vger.kernel.org
-Subject: Re: [ANNOUNCE] Wifi Link 5300 and 5100 Series
+	Fri, 15 Aug 2008 16:08:21 -0400
+Received: from mail.lang.hm ([64.81.33.126]:44965 "EHLO bifrost.lang.hm"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751285AbYHOUIV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Aug 2008 16:08:21 -0400
+Date: Fri, 15 Aug 2008 13:08:43 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: "Press, Jonathan" <Jonathan.Press@ca.com>
+cc: Peter Zijlstra <peterz@infradead.org>,
+       Helge Hafting <helge.hafting@aitel.hist.no>,
+       linux-kernel@vger.kernel.org, malware-list@lists.printk.net,
+       hch@infradead.org, andi@firstfloor.org, viro@ZenIV.linux.org.uk,
+       alan@lxorguk.ukuu.org.uk, Arjan van de Ven <arjan@infradead.org>
+Subject: RE: [malware-list] TALPA - a threat model?  well sorta.
+In-Reply-To: <2629CC4E1D22A64593B02C43E855530304AE4C15@USILMS12.ca.com>
+Message-ID: <alpine.DEB.1.10.0808151305540.15109@asgard.lang.hm>
+References: <1218645375.3540.71.camel@localhost.localdomain><20080813103951.1e3e5827@infradead.org><1218653864.3540.109.camel@localhost.localdomain><20080813143908.38796217@infradead.org><1218723133.3540.137.camel@localhost.localdomain><48A55574.9070508@aitel.hist.no>
+ <1218796645.10800.242.camel@twins> <2629CC4E1D22A64593B02C43E855530304AE4BF6@USILMS12.ca.com> <alpine.DEB.1.10.0808150924260.15109@asgard.lang.hm> <2629CC4E1D22A64593B02C43E855530304AE4C0C@USILMS12.ca.com> <alpine.DEB.1.10.0808151032121.15109@asgard.lang.hm>
+ <2629CC4E1D22A64593B02C43E855530304AE4C12@USILMS12.ca.com> <alpine.DEB.1.10.0808151042500.15109@asgard.lang.hm> <2629CC4E1D22A64593B02C43E855530304AE4C15@USILMS12.ca.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On 00:11 Thu 14 Aug     , Tomas Winkler wrote:
->> Intel would like to announce Linux support  for Wifi Link 5000 and
->> 5100 Series Adapters under iwlwifi driver (iwlagn.ko)
+On Fri, 15 Aug 2008, Press, Jonathan wrote:
+
+>> -----Original Message-----
+>> From: david@lang.hm [mailto:david@lang.hm]
+>> Sent: Friday, August 15, 2008 1:47 PM
+>> To: Press, Jonathan
+>> Cc: Peter Zijlstra; Helge Hafting; linux-kernel@vger.kernel.org;
+> malware-
+>> list@lists.printk.net; hch@infradead.org; andi@firstfloor.org;
+>> viro@ZenIV.linux.org.uk; alan@lxorguk.ukuu.org.uk; Arjan van de Ven
+>> Subject: RE: [malware-list] TALPA - a threat model? well sorta.
 >>
-> ...
->> The best known working driver can be located in iwl500 branch of
->> iwlwifi-2.6.git
->> git://git.kernel.org/pub/scm/linux/kernel/git/iwlwifi/iwlwifi-2.6.git iwl5000
+>> On Fri, 15 Aug 2008, Press, Jonathan wrote:
+>>> In addition, to generalize from the incorrect idea that the actions
+> of
+>>> root are not being defended against to the idea that the possible
+>>> impacts of an administrator's actions in configuring an application
+>>> should not be accounted for at all in our thinking doesn't make
+> sense to
+>>> me anyway.
+>>
+>> questions had been raised about how this model could defend against
+> all
+>> the tricky things that root can do, the answer was that they are not
+>> trying to defend against root doing tricky things.
+>>
+>> turning off the scanner, letting things get infected, and turning it
+> back
+>> on would fall in the same catagory as marking a file that the scanner
+>> marked as bad as sucessfully scanned.
+>
+> Well, I agree that there are things you can't prevent, that's for sure.
+> But the point is to build the "threat model" and application
+> functionality around the idea that IF they happen, you want to be able
+> to plug the resulting holes as well as you can.  You can't simply close
+> your eyes to the possibility.
 
+correct, and the threat model that was documented as what we are trying to 
+defend against explicity says that actions by root (or other running 
+programs, including running malware) are not part of the threat model they 
+are trying to address (it doesn't mean that they aren't important, just 
+that they are not trying to deal with them). All they are trying to do is 
+to have a way to scan files. Since there is use in having support for this 
+(for security theater, a little real security, and for other purposes like 
+indexing) we are figuing out how to provide tools that would allow this.
 
-
-I am using the iwl500 branch from the above git repository and I am
-also receiving the timeout error. This is on a Wifi Link 5100 on an
-Asus M50VM laptop.
-
-$ dmesg|grep iw
-[    8.574423] iwlagn: Intel(R) Wireless WiFi Link AGN driver for
-Linux, 1.3.27kds
-[    8.574655] iwlagn: Copyright(c) 2003-2008 Intel Corporation
-[    8.575055] iwlagn 0000:03:00.0: PCI INT A -> GSI 17 (level, low) -> IRQ 17
-[    8.575369] iwlagn 0000:03:00.0: setting latency timer to 64
-[    8.575425] iwlagn: Detected Intel Wireless WiFi Link 5100AGN REV=0x54
-[    8.607886] iwlagn: Tunable channels: 13 802.11bg, 24 802.11a channels
-[    8.609136] iwlagn 0000:03:00.0: PCI INT A disabled
-[    8.608701] phy0: Selected rate control algorithm 'iwl-agn-rs'
-[   19.311948] iwlagn 0000:03:00.0: PCI INT A -> GSI 17 (level, low) -> IRQ 17
-[   19.312260] iwlagn 0000:03:00.0: restoring config space at offset
-0x1 (was 0x100002, writing 0x100006)
-[   19.312442] firmware: requesting iwlwifi-5000-1.ucode
-[   23.459172] iwlagn: START_ALIVE timeout after 4000ms.
-[   23.459318] iwlagn 0000:03:00.0: PCI INT A disabled
-
-
--- Yousaf
-
--- 
-Yousaf Jindal
-Director of Technology
-Pakistani Institute
+David Lang
