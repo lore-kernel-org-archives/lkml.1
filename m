@@ -1,73 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760155AbYHORzM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758426AbYHOR4Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760155AbYHORzM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Aug 2008 13:55:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755180AbYHORy5
+	id S1758426AbYHOR4Z (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Aug 2008 13:56:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756484AbYHOR4R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Aug 2008 13:54:57 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:10512 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754583AbYHORy4 (ORCPT
+	Fri, 15 Aug 2008 13:56:17 -0400
+Received: from www.church-of-our-saviour.ORG ([69.25.196.31]:56714 "EHLO
+	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755248AbYHOR4Q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Aug 2008 13:54:56 -0400
-Subject: Re: Btrfs v0.16 released
-From: Chris Mason <chris.mason@oracle.com>
-To: Theodore Tso <tytso@mit.edu>
-Cc: Andi Kleen <andi@firstfloor.org>, Peter Zijlstra <peterz@infradead.org>,
-       linux-btrfs <linux-btrfs@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>
-In-Reply-To: <20080815134545.GM13048@mit.edu>
-References: <1217962876.15342.33.camel@think.oraclecorp.com>
-	 <1218100464.8625.9.camel@twins>
-	 <1218105597.15342.189.camel@think.oraclecorp.com>
-	 <877ias66v4.fsf@basil.nowhere.org>
-	 <1218221293.15342.263.camel@think.oraclecorp.com>
-	 <1218747656.15342.439.camel@think.oraclecorp.com>
-	 <20080814234458.GD13048@mit.edu>
-	 <1218762627.15342.447.camel@think.oraclecorp.com>
-	 <1218804361.15342.470.camel@think.oraclecorp.com>
-	 <20080815134545.GM13048@mit.edu>
-Content-Type: text/plain
-Date: Fri, 15 Aug 2008 13:52:52 -0400
-Message-Id: <1218822772.15342.503.camel@think.oraclecorp.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Fri, 15 Aug 2008 13:56:16 -0400
+Date: Fri, 15 Aug 2008 13:04:41 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: douglas.leeder@sophos.com
+Cc: "Press, Jonathan" <Jonathan.Press@ca.com>, alan@lxorguk.ukuu.org.uk,
+       andi@firstfloor.org, Arjan van de Ven <arjan@infradead.org>,
+       hch@infradead.org, Helge Hafting <helge.hafting@aitel.hist.no>,
+       linux-kernel@vger.kernel.org, malware-list@lists.printk.net,
+       Peter Zijlstra <peterz@infradead.org>, viro@ZenIV.linux.org.uk
+Subject: Re: [malware-list] TALPA - a threat model?  well sorta.
+Message-ID: <20080815170441.GA22395@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>, douglas.leeder@sophos.com,
+	"Press, Jonathan" <Jonathan.Press@ca.com>, alan@lxorguk.ukuu.org.uk,
+	andi@firstfloor.org, Arjan van de Ven <arjan@infradead.org>,
+	hch@infradead.org, Helge Hafting <helge.hafting@aitel.hist.no>,
+	linux-kernel@vger.kernel.org, malware-list@lists.printk.net,
+	Peter Zijlstra <peterz@infradead.org>, viro@ZenIV.linux.org.uk
+References: <2629CC4E1D22A64593B02C43E855530304AE4BF6@USILMS12.ca.com> <20080815131820.053BF31679D@pmx1.sophos.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080815131820.053BF31679D@pmx1.sophos.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-08-15 at 09:45 -0400, Theodore Tso wrote:
-> On Fri, Aug 15, 2008 at 08:46:01AM -0400, Chris Mason wrote:
-> > Whoops the link above is wrong, try:
-> > 
-> > http://oss.oracle.com/~mason/compilebench
-> 
-> Thanks, I figured it out.
-> 
-> > It is worth noting that the end throughput doesn't matter quite as much
-> > as the writeback pattern.  Ext4 is pretty solid on this test, with very
-> > consistent results.
-> 
-> There were two reasons why I wanted to play with compilebench.  The
-> first is we have a fragmentation problem with delayed allocation and
-> small files getting forced out due to memory pressure, that we've been
-> working for the past week. 
+On Fri, Aug 15, 2008 at 02:18:12PM +0100, douglas.leeder@sophos.com wrote:
+> > - New infection makes it onto the machine before the signatures have
+> > caught up with it.  This also happens.  There is an ongoing PR race
+> > among AV vendors about who was faster on the draw to get out signatures
+> > to detect some new malware.  The fact that this race exists reflects
+> > that reality that there is some window during which new malware will
+> > make it onto some number of machines before the scanners catch up.
 
-Have you tried this one:
+Let's go back to the threat model.  The Threat Model which Eric Paris
+has suggested is that we are only trying to solve the Scanning
+Problem.  Just Scanning.
 
-http://article.gmane.org/gmane.linux.file-systems/25560
+That implies if the malware has been written to the disk, we will
+catch it once AV catching is turned on and the user attempts to run or
+otherwise access the file with the bad content.  However, if the
+malware starts running, then regardless of whether the malware is
+running with user privileges, or manages to get root privileges via
+some buffer overflow that wasn't caught via
+LSM/SELinux/AppAmor/whatever, this is out of scope of Eric's proposal.
 
-This bug should cause fragmentation on small files getting forced out
-due to memory pressure in ext4.  But, I wasn't able to really
-demonstrate it with ext4 on my machine.
+Are we agreed on that?  There may be other components of the solution
+such as LSM, SELinux, etc., that will very likely be useful in
+protecting the system once the malware starts running.  But I thought
+Eric's proposal proposed excluding that from the Threat Model for the
+purposes of the interface we are trying to solve.  If that's not true,
+let's deal with it now.
 
--chris
+> Not to mention removable media - it might be old hat, but infected/malware
+> files can come in on floppies, CDs or USB flash discs careless left on the
+> pavement outside an office.
 
+That's not a problem given the scanning model proposed by Eric; when
+you insert removable media, it will get scanned when it is first
+accessed.
 
-
+	  	    	     	     	     - Ted
