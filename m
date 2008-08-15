@@ -1,63 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757004AbYHOKhq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755270AbYHOKoa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757004AbYHOKhq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Aug 2008 06:37:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755351AbYHOKha
+	id S1755270AbYHOKoa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Aug 2008 06:44:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752331AbYHOKoW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Aug 2008 06:37:30 -0400
-Received: from py-out-1112.google.com ([64.233.166.180]:43430 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754106AbYHOKh2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Aug 2008 06:37:28 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=qeb94TwnMDJrroO1vBdEH9kE+aDRoMZh5ZgOWEl8Ql/BctoB0S348Mel8dNGpmEfVn
-         o3sdR6KyP9yHPVIU4JWO+wW6etTDNLvnvebZ9STu6CrOBfIP5/hMqYN7CPHFuIvj4OVE
-         6bTqjIvfhPAbc26aH3drmTh4kHmeFDp1EGNC4=
-Message-ID: <e7d8f83e0808150337t5e699647wcc6ae296b3fa8c23@mail.gmail.com>
-Date: Fri, 15 Aug 2008 20:37:27 +1000
-From: "Peter Dolding" <oiaohm@gmail.com>
-To: "Pavel Machek" <pavel@suse.cz>
-Subject: Re: [PATCH 1/4] integrity: TPM internel kernel interface
-Cc: "Kenneth Goldman" <kgoldman@us.ibm.com>,
-       "Christoph Hellwig" <hch@infradead.org>, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org, "Mimi Zohar" <zohar@us.ibm.com>
-In-Reply-To: <20080814111210.GI6995@ucw.cz>
+	Fri, 15 Aug 2008 06:44:22 -0400
+Received: from pmx1.sophos.com ([213.31.172.16]:58898 "EHLO pmx1.sophos.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751949AbYHOKoV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Aug 2008 06:44:21 -0400
+In-Reply-To: <48A55574.9070508@aitel.hist.no>
+To: Helge Hafting <helge.hafting@aitel.hist.no>
+Cc: alan@lxorguk.ukuu.org.uk, andi@firstfloor.org,
+       Arjan van de Ven <arjan@infradead.org>, Eric Paris <eparis@redhat.com>,
+       greg@kroah.com, hch@infradead.org, linux-kernel@vger.kernel.org,
+       linux-kernel-owner@vger.kernel.org, malware-list@lists.printk.net,
+       peterz@infradead.org, riel@redhat.com, tytso@mit.edu,
+       viro@ZenIV.linux.org.uk
+Subject: Re: TALPA - a threat model?  well sorta.
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080812193031.GD18034@infradead.org>
-	 <OF6C940C00.249617D7-ON852574A3.0071F8B0-852574A3.00732160@us.ibm.com>
-	 <20080814111210.GI6995@ucw.cz>
+X-Mailer: Lotus Notes Release 7.0.2 September 26, 2006
+From: tvrtko.ursulin@sophos.com
+Date: Fri, 15 Aug 2008 11:44:16 +0100
+X-MIMETrack: S/MIME Sign by Notes Client on Tvrtko Ursulin/Dev/UK/Sophos(Release 7.0.2|September
+ 26, 2006) at 15/08/2008 11:44:16,
+	Serialize by Notes Client on Tvrtko Ursulin/Dev/UK/Sophos(Release 7.0.2|September
+ 26, 2006) at 15/08/2008 11:44:16,
+	Serialize complete at 15/08/2008 11:44:16,
+	S/MIME Sign failed at 15/08/2008 11:44:16: The cryptographic key was not
+ found,
+	Serialize by Router on Mercury/Servers/Sophos(Release 7.0.3|September 26, 2007) at
+ 15/08/2008 11:44:17,
+	Serialize complete at 15/08/2008 11:44:17
+Content-Type: text/plain; charset="US-ASCII"
+Message-Id: <20080815104422.9D8812FE93F@pmx1.sophos.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 14, 2008 at 9:12 PM, Pavel Machek <pavel@suse.cz> wrote:
-> Hi!
->
->> > And what happens when the chip simply goes away due to a hotplug action?
->> > Or not even the actual chip goes away but just the chip driver and you
->> > now dereference freed memory?
->>
->> Being a TCG/TPM person, I can only address the first question.  The
->> intent is that the TPM is soldered to the planar/motherboard (the TCG
->> uses the phrase "bound to the platform").  I can't imagine
->> any manufacturer designing a pluggable TPM.  It would subvert PCR
->
-> Only 2 TPMs I've seen were on pluggable modules... which was fortunate
-> because they slowed down boot by 5+ minutes, and broke it completely
-> in other cases. Nickname 'kurvitko' (aka useless trash that breaks
-> stuff). They are currently lying under my table, disconnected.
->
-> (OTOH they were not on PCI, but on some low-count pin header).
->                                                        Pavel
-Remember even soldered on stuff can fail.   How linux handles the
-death of the TPM module needs to be covered.
+Helge Hafting wrote on 15/08/2008 11:07:48:
 
-Peter Dolding
+> It seems to me that this "scan on file open" business is the
+> wrong way to do things - because it reduces performance.
+
+It can never be free - what ever you do it has to happen some time and 
+that can and will clash with something else. So your reason why it is 
+wrong is a bit to simplistic.
+
+> If you scan on file open, then your security sw is too late and
+> getting in the way.
+>
+> It is better to scan in advance. Most machines has lots of idle time.
+> Use that time to scan in advance, and mark the files as "clean".
+> 
+> A "clean" file can be opened without further checking anytime - giving
+> normal high performance.  A file that gets written to becomes "dirty"
+> until checked again. Some mechanism for making a clean copy of a
+> clean file might help avoid excessive "dirtying".
+>
+> "Scan on open" might still be useful for cases when the system
+> haven't kept up with writing, but please don't aim to have
+> this be the _primary_ mode of scanning. A file server
+> where most of the stuff is pre-scanned will likely perform much better
+> than  one scanning everything on open.
+
+The first thing you have to make clear is whether in your vision inode 
+clean-dirty-unknown status is persistent or not? But in any case I think 
+you are making a problem where there isn't one, think about it a bit.
+
+But the idea about the ability to make a clean copy is interesting. So we 
+would need a copy done without userspace intervention and preserving the 
+inode cache status alongside it. Maybe splice or tee could easily do it? 
+Although I am not sure how often copying would happen and whether this 
+would be such a gain.
+
+--
+Tvrtko A. Ursulin
+Senior Software Engineer, Sophos
+
+"Views and opinions expressed in this email are strictly those of the 
+author.
+ The contents has not been reviewed or approved by Sophos."
+ 
+
+Sophos Plc, The Pentagon, Abingdon Science Park, Abingdon,
+OX14 3YP, United Kingdom.
+
+Company Reg No 2096520. VAT Reg No GB 348 3873 20.
+
