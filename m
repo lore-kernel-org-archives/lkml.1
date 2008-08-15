@@ -1,58 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759338AbYHON3k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758287AbYHONcM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759338AbYHON3k (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Aug 2008 09:29:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759146AbYHON3K
+	id S1758287AbYHONcM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Aug 2008 09:32:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753694AbYHONb5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Aug 2008 09:29:10 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:41295 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759132AbYHON3J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Aug 2008 09:29:09 -0400
-Date: Fri, 15 Aug 2008 15:28:54 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Hugh Dickins <hugh@veritas.com>
-Cc: Andi Kleen <andi@firstfloor.org>, x86@kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86: fix /proc/meminfo DirectMap
-Message-ID: <20080815132854.GG30597@elte.hu>
-References: <Pine.LNX.4.64.0808151351220.28840@blonde.site>
-MIME-Version: 1.0
+	Fri, 15 Aug 2008 09:31:57 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:48069 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753399AbYHONb4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Aug 2008 09:31:56 -0400
+Date: Fri, 15 Aug 2008 15:33:22 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Andi Kleen <andi@firstfloor.org>, Ulrich Drepper <drepper@redhat.com>,
+       Arjan van de Ven <arjan@infradead.org>, akpm@linux-foundation.org,
+       hugh@veritas.com, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       briangrant@google.com, cgd@google.com, mbligh@google.com,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: pthread_create() slow for many threads; also time to revisit 64b context switch optimization?
+Message-ID: <20080815133322.GH19125@one.firstfloor.org>
+References: <af8810200808121736q76640cc1kb814385072fe9b29@mail.gmail.com> <af8810200808121745h596c175bk348d0aaeeb9bcb45@mail.gmail.com> <20080813104445.GA24632@elte.hu> <20080813063533.444c650d@infradead.org> <48A2EE07.3040003@redhat.com> <20080813142529.GB21129@elte.hu> <48A2F157.7000303@redhat.com> <20080813151007.GA8780@elte.hu> <87fxp8zlx3.fsf@basil.nowhere.org> <20080815124350.GA26594@elte.hu>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0808151351220.28840@blonde.site>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20080815124350.GA26594@elte.hu>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Aug 15, 2008 at 02:43:50PM +0200, Ingo Molnar wrote:
+> i had such a P4 based 64-bit box and it was painful.
 
-* Hugh Dickins <hugh@veritas.com> wrote:
+I used them as 64bit machines and they weren't painful at all.
 
-> Do we actually want these DirectMap lines in the x86 /proc/meminfo? I 
-> can see they're interesting to CPA developers and TLB optimizers, but 
-> they don't fit its usual "where has all my memory gone?" usage. If 
-> they are to stay, here are some fixes.
+> I'd love to zap MAP_32BIT this very minute from the kernel, but you 
+> originally shaped the whole thing in such a stupid way that makes its 
+> elimination impossible now due to ABI constraints. It would have cost 
 
-i think they are borderline useful - so i've applied your fixes to 
-tip/x86/urgent.
+MAP_32BIT was not actually added for this originally. It 
+was originally added for the X server's old dynamic loader, which
+needed 2GB memory.
 
-> You might prefer me to split these up?
+It's main failing, which I freely admit, was to not call it MAP_31BIT.
 
-nah.
+> you _nothing_ to have added MAP_64BIT_STACK back then, but the quick & 
 
-> Should we really be using level2_ident_pgt (which needs to avoid NX) 
-> for the final direct map (which wants to use NX)?  But my attempt to 
-> build up a fresh pagetable there failed miserably to boot!
+Not sure what the semantics of that would be. For me it would
+seem ugly to hardcode specific semantics in the kernel for this
+("mechanism not policy")
 
-hm, exactly what change have you tried? (patch?)
+But for most possible semantics I can think of the data structure would still 
+need to be fixed I think.
 
-	Ingo
+> The correct solution is to eliminate this flag from glibc right now, and 
+
+IMHO the correct solution is to fix the data structure to not have such
+a bad complexity in this corner case. We typically do this for all
+other data structures as we discover such cases. No reason the VMAs
+should be any different. 
+
+-Andi
+
