@@ -1,100 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759304AbYHOQPg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760208AbYHOQQ6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759304AbYHOQPg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Aug 2008 12:15:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754490AbYHOQPZ
+	id S1760208AbYHOQQ6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Aug 2008 12:16:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755089AbYHOQQt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Aug 2008 12:15:25 -0400
-Received: from mail.vyatta.com ([216.93.170.194]:35957 "EHLO mail.vyatta.com"
+	Fri, 15 Aug 2008 12:16:49 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:42463 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754350AbYHOQPY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Aug 2008 12:15:24 -0400
-X-Spam-Flag: NO
-X-Spam-Score: -1.577
-Date: Fri, 15 Aug 2008 09:15:21 -0700
-From: Stephen Hemminger <shemminger@vyatta.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: netdev@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Jeff Garzik <jeff@garzik.org>, Jesse Barnes <jbarnes@virtuousgeek.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       "Brandeburg, Jesse" <jesse.brandeburg@intel.com>,
-       Stephen Hemminger <stephen.hemminger@vyatta.com>
-Subject: Re: [PATCH 2/3] Adapt the sky2 driver to the reworked PCI PM
-Message-ID: <20080815091521.3f721d68@extreme>
-In-Reply-To: <200808151532.14327.rjw@sisk.pl>
-References: <200808142335.56644.rjw@sisk.pl>
-	<20080814152318.625f8609@extreme>
-	<200808151501.58315.rjw@sisk.pl>
-	<200808151532.14327.rjw@sisk.pl>
-Organization: Vyatta
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1753879AbYHOQQs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Aug 2008 12:16:48 -0400
+Date: Fri, 15 Aug 2008 18:16:29 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: prarit@redhat.com, jbarnes@virtuousgeek.org, joro@8bytes.org,
+       linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org
+Subject: Re: [PATCH]: PCI: GART iommu alignment fixes [v2]
+Message-ID: <20080815161629.GL27955@elte.hu>
+References: <4899B611.4070408@redhat.com> <200808071003.47326.jbarnes@virtuousgeek.org> <489B33D4.1080107@redhat.com> <20080809125116H.fujita.tomonori@lab.ntt.co.jp>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080809125116H.fujita.tomonori@lab.ntt.co.jp>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0008]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 15 Aug 2008 15:32:13 +0200
-"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
 
-> On Friday, 15 of August 2008, Rafael J. Wysocki wrote:
-> > On Friday, 15 of August 2008, Stephen Hemminger wrote:
-> > > On Thu, 14 Aug 2008 23:38:17 +0200
-> > > "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
-> > > 
-> > > > Adapt the sky2 driver to the reworked PCI PM
-> > > > 
-> > > > * Use device_set_wakeup_enable() and friends as needed
-> > > > * Remove an open-coded reference to the standard PCI PM registers
-> > > > * Use pci_prepare_to_sleep() and pci_back_from_sleep() in the
-> > > >   ->suspend() and ->resume() callbacks
-> > > > * Use the observation that it is sufficient to call pci_enable_wake()
-> > > >   once, unless it fails
-> > > > 
-> > > > Tested on Asus M3A32-MVP (Yukon-2 EC Ultra rev 3).
-> > > > 
-> > > > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> > > > ---
-> > > >  drivers/net/sky2.c |   34 ++++++++++------------------------
-> > > >  1 file changed, 10 insertions(+), 24 deletions(-)
-> > > > 
-> > > > Index: linux-2.6/drivers/net/sky2.c
-> > > > ===================================================================
-> > > > --- linux-2.6.orig/drivers/net/sky2.c
-> > > > +++ linux-2.6/drivers/net/sky2.c
-> > > > @@ -3035,7 +3035,8 @@ static int sky2_set_wol(struct net_devic
-> > > >  	struct sky2_port *sky2 = netdev_priv(dev);
-> > > >  	struct sky2_hw *hw = sky2->hw;
-> > > >  
-> > > > -	if (wol->wolopts & ~sky2_wol_supported(sky2->hw))
-> > > > +	if ((wol->wolopts & ~sky2_wol_supported(sky2->hw))
-> > > > +	    || !device_can_wakeup(&hw->pdev->dev))
-> > > >  		return -EOPNOTSUPP;
-> > > >  
-> > > 
-> > > There was a regression in earlier releases caused because some BIOS's
-> > > are wrong, and device can wakeup.
-> > 
-> > device_can_wakeup() returns 'true' if the device is capable of generating PME#
-> > from at least one low power state (this is determined on the basis of the
-> > contents of the device's PCI PM registers - please have a look at
-> > drivers/pci/pci_pm_init() for details) or if ACPI tells us it can wake up.
-> > IOW, the BIOSes opinion doesn't matter if we find that the device is capable of
-> > generating PME#, so the regression must have been related to something else.
-> > I'm very interested in the details, if available.
-> > 
-> > Of course, since we rely on the ability of the device to generate PME# and
-> > device_can_wakeup() returning 'false' means that the device cannot generate
-> > PME# from any state, it's reasonable to check it IMO.
-> 
-> BTW, if device_can_wakeup(&pdev->dev) returns 'false',
-> pci_enable_wake(pdev, state, true) will fail for any 'state', so the wake-up
-> won't work regardless of the change above.
-> 
-> Thanks,
-> Rafael
+* FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
 
-Okay, the problem was false positives from ACPI. It looks like this won't make
-the problem any worse.
+> From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+> Subject: [PATCH] x86 gart: allocate size-aligned address for alloc_coherent
+> 
+> This fixes GART to return a properly aligned address as
+> DMA-mapping.txt defines.
+
+applied to tip/x86/gart, thanks! Any v2.6.27-urgency of this patch?
+
+	Ingo
