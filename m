@@ -1,68 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760863AbYHOP5u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760929AbYHOP60@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760863AbYHOP5u (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Aug 2008 11:57:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760454AbYHOP5f
+	id S1760929AbYHOP60 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Aug 2008 11:58:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757466AbYHOP6R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Aug 2008 11:57:35 -0400
-Received: from nf-out-0910.google.com ([64.233.182.190]:46689 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760298AbYHOP5e (ORCPT
+	Fri, 15 Aug 2008 11:58:17 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:41947 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755312AbYHOP6Q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Aug 2008 11:57:34 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type;
-        b=v7gsouj9HxeN4ecU0amzhpNrdLbeC/5vWZE9Dun0BKLlyn0qJqDwPDyiT2liPEjEc7
-         oci2zH9pWMvfBnax3r0n7fN/7gWH+V8ndgoc1QTVaftXX0dZ0Gt7WyAP8m3fuQkeROKb
-         NrDj1uLuF5It4Q54uUVZ82mRgYFJfEG7sUwok=
-Message-ID: <520f0cf10808150857u5803d86cj205e671f640c81c4@mail.gmail.com>
-Date: Fri, 15 Aug 2008 17:57:32 +0200
-From: "John Kacur" <jkacur@gmail.com>
-To: LKML <linux-kernel@vger.kernel.org>,
-       rt-users <linux-rt-users@vger.kernel.org>
-Subject: [PATCH] Compile problems in locking-selftest.c with CONFIG_DEBUG_PREEMPT
-Cc: "Thomas Gleixner" <tglx@linutronix.de>,
-       "Steven Rostedt" <rostedt@goodmis.org>, "Ingo Molnar" <mingo@elte.hu>
-MIME-Version: 1.0
-Content-Type: multipart/mixed; 
-	boundary="----=_Part_2674_4995668.1218815852547"
+	Fri, 15 Aug 2008 11:58:16 -0400
+Subject: [ANNOUNCE] linux-firmware.git repository.
+From: David Woodhouse <dwmw2@infradead.org>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Date: Fri, 15 Aug 2008 16:58:13 +0100
+Message-Id: <1218815893.3184.107.camel@pmac.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 8bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------=_Part_2674_4995668.1218815852547
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+I have created a git repository containing firmware files for use with
+the Linux kernel. There is a daily script¹ which extracts the contents
+of the firmware/ directory from the kernel itself, which is what has
+seeded the repository:
 
-The attached patch fixes the following compiler error in the rt-kernel
-if CONFIG_DEBUG_PREEMPT is enabled.
+ git://git.kernel.org/pub/scm/linux/kernel/git/dwmw2/linux-firmware.git
+ http://git.kernel.org/?p=linux/kernel/git/dwmw2/linux-firmware.git;a=shortlog
 
-lib/locking-selftest.c: In function 'dotest':
-lib/locking-selftest.c:951: error: incompatible types in initialization
-lib/locking-selftest.c:1003: error: incompatible types in assignment
+We are also able to include other firmware files from vendors who have
+chosen not to contribute their firmware to be distributed as part of the
+GPL'd kernel source tree, but would still like their firmware to be
+readily available to Linux users.
 
-------=_Part_2674_4995668.1218815852547
-Content-Type: text/x-patch; name=locking-selftest-fix.patch
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_fjwzea8f0
-Content-Disposition: attachment; filename=locking-selftest-fix.patch
+Contributions of such firmware are welcome, and some are already in the
+works...
 
-U3ViamVjdDogQ29tcGlsZSBwcm9ibGVtcyBpbiBsb2NraW5nLXNlbGZ0ZXN0LmMgd2l0aCBDT05G
-SUdfREVCVUdfUFJFRU1QVAoKbGliL2xvY2tpbmctc2VsZnRlc3QuYzogSW4gZnVuY3Rpb24g4oCY
-ZG90ZXN04oCZOgpsaWIvbG9ja2luZy1zZWxmdGVzdC5jOjk1MTogZXJyb3I6IGluY29tcGF0aWJs
-ZSB0eXBlcyBpbiBpbml0aWFsaXphdGlvbgpsaWIvbG9ja2luZy1zZWxmdGVzdC5jOjEwMDM6IGVy
-cm9yOiBpbmNvbXBhdGlibGUgdHlwZXMgaW4gYXNzaWdubWVudAoKU2lnbmVkLW9mZi1ieTogSm9o
-biBLYWN1ciA8amthY3VyIGF0IGdtYWlsIGRvdCBjb20+CgpJbmRleDogbGludXgtMi42LjI2LjEt
-cnQxLmprL2xpYi9sb2NraW5nLXNlbGZ0ZXN0LmMKPT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQotLS0gbGludXgtMi42LjI2
-LjEtcnQxLmprLm9yaWcvbGliL2xvY2tpbmctc2VsZnRlc3QuYworKysgbGludXgtMi42LjI2LjEt
-cnQxLmprL2xpYi9sb2NraW5nLXNlbGZ0ZXN0LmMKQEAgLTk0OCw3ICs5NDgsNyBAQCBzdGF0aWMg
-dm9pZCBkb3Rlc3Qodm9pZCAoKnRlc3RjYXNlX2ZuKSh2CiAJdW5zaWduZWQgbG9uZyBzYXZlZF9w
-cmVlbXB0X2NvdW50ID0gcHJlZW1wdF9jb3VudCgpOwogCWludCBleHBlY3RlZF9mYWlsdXJlID0g
-MDsKICNpZiBkZWZpbmVkKENPTkZJR19ERUJVR19QUkVFTVBUKSAmJiBkZWZpbmVkKENPTkZJR19E
-RUJVR19SVF9NVVRFWEVTKQotICAgICAgICBpbnQgc2F2ZWRfbG9ja19jb3VudCA9IGN1cnJlbnQt
-PmxvY2tfY291bnQ7CisgICAgICAgIGF0b21pY190IHNhdmVkX2xvY2tfY291bnQgPSBjdXJyZW50
-LT5sb2NrX2NvdW50OwogI2VuZGlmCiAKIAlXQVJOX09OKGlycXNfZGlzYWJsZWQoKSk7Cg==
-------=_Part_2674_4995668.1218815852547--
+-- 
+David Woodhouse                            Open Source Technology Centre
+David.Woodhouse@intel.com                              Intel Corporation
+
+¹ http://git.kernel.org/?p=linux/kernel/git/dwmw2/misc-git-hacks.git;a=blob;f=extract-firmware-git.sh;hb=HEAD
+
