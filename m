@@ -1,71 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760045AbYHOVkQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753723AbYHOVoz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760045AbYHOVkQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Aug 2008 17:40:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753983AbYHOVkE
+	id S1753723AbYHOVoz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Aug 2008 17:44:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753670AbYHOVor
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Aug 2008 17:40:04 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:58247 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753803AbYHOVkB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Aug 2008 17:40:01 -0400
-Date: Fri, 15 Aug 2008 22:17:14 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Kenneth Goldman <kgoldman@us.ibm.com>
-Cc: "Peter Dolding" <oiaohm@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org
-Subject: Re: [PATCH 1/4] integrity: TPM internel kernel interface
-Message-ID: <20080815221714.50d709ee@lxorguk.ukuu.org.uk>
-In-Reply-To: <OF1D7319B5.AB5A1EFB-ON852574A6.0066E026-852574A6.006775BA@us.ibm.com>
-References: <e7d8f83e0808150337t5e699647wcc6ae296b3fa8c23@mail.gmail.com>
-	<OF1D7319B5.AB5A1EFB-ON852574A6.0066E026-852574A6.006775BA@us.ibm.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 15 Aug 2008 17:44:47 -0400
+Received: from colo.lackof.org ([198.49.126.79]:49296 "EHLO colo.lackof.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752747AbYHOVoq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Aug 2008 17:44:46 -0400
+Date: Fri, 15 Aug 2008 15:44:34 -0600
+From: Grant Grundler <grundler@parisc-linux.org>
+To: John David Anglin <dave@hiauly1.hia.nrc.ca>
+Cc: Adrian Bunk <bunk@kernel.org>, grundler@parisc-linux.org, kyle@mcmartin.ca,
+       matthew@wil.cx, linux-parisc@vger.kernel.org,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org, bdale@hp.com
+Subject: Re: [2.6 patch] binfmt_som.c: add MODULE_LICENSE
+Message-ID: <20080815214434.GB5773@colo.lackof.org>
+References: <20080811104643.GA3338@cs181140183.pp.htv.fi> <20080811145652.100E74E77@hiauly1.hia.nrc.ca>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080811145652.100E74E77@hiauly1.hia.nrc.ca>
+X-Home-Page: http://www.parisc-linux.org/
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 15 Aug 2008 14:50:01 -0400
-Kenneth Goldman <kgoldman@us.ibm.com> wrote:
+On Mon, Aug 11, 2008 at 10:56:51AM -0400, John David Anglin wrote:
+...
+> I don't understand why we are talking about HP here.
 
-> "Peter Dolding" <oiaohm@gmail.com> wrote on 08/15/2008 06:37:27 AM:
+My bad. I thought HP owned the copy right to the bulk of the code
+and Matthew demonstrated they do not.
+
+>  According to
+> Matthew, his last commit to this file occured while he worked for
+> Genedata.  It is my understanding that copyright normally acrues
+> to employers in employment situations.  If Matthew was an employee
+> and not an independent contractor at the time, then why are we not
+> talking about Genedata, or its subsequent owner?  Subsequent
+> employment at HP or their funding of the parisc port shouldn't
+> affect the licensing of a file that was previously contributed.
+
+Correct. I thought the work was done by HP employees and that was wrong.
+
+sorry,
+grant
+
+> The file appears to be a derived work.  This may also affect its
+> copyright status.  The only reason HP should be involved is if the
+> file somehow contains material copyrighted by HP.
 > 
-> > Remember even soldered on stuff can fail.   How linux handles the
-> > death of the TPM module needs to be covered.
+> The whole licensing issue for the linux program and modules,
+> particularly for individual files, appears to be a mess.  The
+> COPYING file is vague on the licensing for files.   The recommended
+> wording suggested by the FSF isn't used.  I can't see that adding
+> MODULE_LICENSE("GPL") lines is going to help much.
 > 
-> Is fault tolerance a requirement just for the TPM, or is it a general>
-> Linux requirement?  Has it always been there, or is it new?
-
-We try very very hard to not crash on failure.
-
-> For example, does kernel software have to gracefully handle
-> failures in the disk controller, processor, memory controller, BIOS
-> flash memory, etc?
-
-Our disk layer will retry, reset, change cable speeds and if that fails
-and you are running raid with multipaths or sufficient mirrors continue.
-We capture processor exceptions and when possible log and continue
-although most CPU failures report with the context corrupt. We log and
-the EDAC layer handles as much as it possible can for memory errors
-(actually we could be a bit more selective here and there are proposals
-to go  further)
-
-> I'd think it would be quite hard to code around motherboard
-> failures in a commodity platform not designed for fault tolerance.
-
-The Linux userbase ranges from fault tolerant systems like Stratus to
-dodgy cheapo boards from iffy cheap and cheerful computer merchants so it
-makes sense to try and be robust.
-
-In your TPM case being robust against the TPM ceasing to respond
-certainly is worthwhile so that at least you return an error on failure
-rather than the box dying. You may well not be able to get the chip back
-in order without a hardware change/reboot.
-
-Alan
+> There are several GPL licenses and versions.  The line isn't
+> going to mean much to a lawyer.  I really think each file should
+> be specific about its licensing in words that can be clearly
+> understood.
+> 
+> Dave
+> -- 
+> J. David Anglin                                  dave.anglin@nrc-cnrc.gc.ca
+> National Research Council of Canada              (613) 990-0752 (FAX: 952-6602)
