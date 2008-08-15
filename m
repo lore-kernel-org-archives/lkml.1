@@ -1,135 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755310AbYHOBNv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754556AbYHOB0y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755310AbYHOBNv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Aug 2008 21:13:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751901AbYHOBNm
+	id S1754556AbYHOB0y (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Aug 2008 21:26:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751768AbYHOB0n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Aug 2008 21:13:42 -0400
-Received: from out02.mta.xmission.com ([166.70.13.232]:44288 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751052AbYHOBNl (ORCPT
+	Thu, 14 Aug 2008 21:26:43 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:18587 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751705AbYHOB0m (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Aug 2008 21:13:41 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: "Yinghai Lu" <yhlu.kernel@gmail.com>
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org,
-       "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
-       "Andrew Morton" <akpm@linux-foundation.org>
-References: <1218705441-21838-1-git-send-email-yhlu.kernel@gmail.com>
-	<20080814132638.GA18743@elte.hu>
-	<86802c440808141201o2c66236cwbc5ce37f9675504d@mail.gmail.com>
-	<m1ljyzcqg4.fsf@frodo.ebiederm.org>
-	<86802c440808141342k6cb0dc59ud067018b0a171232@mail.gmail.com>
-	<86802c440808141424u3284f862gcd81e3cc585ddac4@mail.gmail.com>
-	<m1zlnf87d8.fsf@frodo.ebiederm.org>
-	<86802c440808141749l626d59e6h888b802343916df3@mail.gmail.com>
-Date: Thu, 14 Aug 2008 18:09:32 -0700
-In-Reply-To: <86802c440808141749l626d59e6h888b802343916df3@mail.gmail.com>
-	(Yinghai Lu's message of "Thu, 14 Aug 2008 17:49:31 -0700")
-Message-ID: <m1vdy36q43.fsf@frodo.ebiederm.org>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-SA-Exim-Connect-IP: 24.130.11.59
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa04 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;"Yinghai Lu" <yhlu.kernel@gmail.com>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	*  0.0 BAYES_50 BODY: Bayesian spam probability is 40 to 60%
-	*      [score: 0.4959]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa04 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.4 FVGT_m_MULTI_ODD Contains multiple odd letter combinations
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-Subject: Re: [PATCH 00/53] dyn_array/nr_irqs/sparse_irq support v10
-X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
-X-SA-Exim-Scanned: Yes (on mgr1.xmission.com)
+	Thu, 14 Aug 2008 21:26:42 -0400
+Subject: Re: Btrfs v0.16 released
+From: Chris Mason <chris.mason@oracle.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+       linux-btrfs <linux-btrfs@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>
+In-Reply-To: <20080814211756.GC13814@one.firstfloor.org>
+References: <1217962876.15342.33.camel@think.oraclecorp.com>
+	 <1218100464.8625.9.camel@twins>
+	 <1218105597.15342.189.camel@think.oraclecorp.com>
+	 <877ias66v4.fsf@basil.nowhere.org>
+	 <1218221293.15342.263.camel@think.oraclecorp.com>
+	 <1218747656.15342.439.camel@think.oraclecorp.com>
+	 <20080814211756.GC13814@one.firstfloor.org>
+Content-Type: text/plain
+Date: Thu, 14 Aug 2008 21:25:54 -0400
+Message-Id: <1218763554.15342.460.camel@think.oraclecorp.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Yinghai Lu" <yhlu.kernel@gmail.com> writes:
+On Thu, 2008-08-14 at 23:17 +0200, Andi Kleen wrote:
+> On Thu, Aug 14, 2008 at 05:00:56PM -0400, Chris Mason wrote:
+> > Btrfs defaults                  57.41 MB/s
 
-> On Thu, Aug 14, 2008 at 5:11 PM, Eric W. Biederman
-> <ebiederm@xmission.com> wrote:
->> "Yinghai Lu" <yhlu.kernel@gmail.com> writes:
->>
->>> find something interesting:
->>>
->>> found new irq_cfg for irq 20
->>>  0 add_pin_to_irq: irq 20 --> apic 0 pin 20
->>> assign_irq_vector: irq 20 vector 0x59 cpu  5
->>> IOAPIC[0]: Set routing entry (0-20 -> 0x59 -> IRQ 20 Mode:1 Active:1)
->>> found new irq_desc for irq 20
->>> pci 0000:00:02.1: PCI INT B -> Link[LUS2] -> GSI 20 (level, low) -> IRQ 20
->>>
->>> IO APIC #0......
->>> .... register #00: 00000000
->>> .......    : physical APIC id: 00
->>> .......    : Delivery Type: 0
->>> .......    : LTS          : 0
->>> .... register #01: 00170011
->>> .......     : max redirection entries: 0017
->>> .......     : PRQ implemented: 0
->>> .......     : IO APIC version: 0011
->>> .... register #02: 00000000
->>> .......     : arbitration: 00
->>> .... IRQ redirection table:
->>>  NR Dst Mask Trig IRR Pol Stat Dmod Deli Vect:
->>> ...
->>>  14 09  1    1    0   1   0    0    0    59
->>> ...
->>>
->>> ehci_hcd 0000:00:02.1: USB 2.0 started, EHCI 1.00, driver 10 Dec 2004
->>> do_IRQ: cannot handle IRQ -1 vector 0x59 cpu 0
->>> ------------[ cut here ]------------
->>> Kernel BUG at 40206b11 [verbose debug info unavailable]
->>> invalid opcode: 0000 [#1] SMP
->>> Modules linked in:
->>>
->>> Pid: 70, comm: kasyncinit Not tainted (2.6.27-rc3-tip-00191-g98ccb89-dirty
-> #23)
->>> EIP: 0060:[<40206b11>] EFLAGS: 00010092 CPU: 0
->>> EIP is at do_IRQ+0x6b/0xae
->>> EAX: 00000032 EBX: 00001d28 ECX: 00003434 EDX: 00000046
->>> ESI: 00000000 EDI: 00000059 EBP: c7a37d3c ESP: c7a37d14
->>>  DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
->>> Process kasyncinit (pid: 70, ti=c7a36000 task=c79c9860 task.ti=c7a36000)
->>> Stack: 40a74317 40814ea0 ffffffff 00000059 00000000 00000000 ffffffff
-> c421bd20
->>> c7a37d9c c7a37dac c7a37d7c 4020555f c421bd20 00000000 c421bd20 c7a37d9c
->>> c7a37dac c7a37d7c 40b717f8 0000007b 0000007b 000000d8 ffffffa6 4080db6c
->>> Call Trace:
->>>  [<4020555f>] ? common_interrupt+0x23/0x28
->>>
->>>
->>> it is on 16cores system with 32bit bigsmp, so it is using phy_flat
->>> cpu 5 has apicid 9, and ioapic reg setting right with Dmod= 0 ( phys)
->>>
->>> but io_apic controller deliver that interrupt to cpu0 (with apicid =
->>> 4) instead of cpu 5 (with apic id = 9)
->>>
->>> look at the 64 bit, TARGET_CPUS for phys_flat is cpu_online_map
->>>
->>> and 32bit bigsmp TARGET_CPUS is only one cpu set and rotating with online
-> cpu...
->>>
->>> Change 32bit bigsmp TARGE_CPUS ?
->>
->> Set vector_allocation_domain to CPU_MASK_ALL on 32bit.  That doesn't give us
->> the benefit of per cpu vectors right now, but in my research there has not
->> been a 32bit kernel yet that has needed it.  We have never shared vectors
->> between 2 gsi on 32bit x86, we have only collapsed the irq space.
->
-> TARGET_CPUS only used by ioapic_xx.c
->
-> vector_allocator_domain will return cpumask_of_cpu(cpu)..
+Looks like I can get the btrfs defaults up to 64MB/s with some writeback
+tweaks.
 
-Note: Only vector_allocation_domain matters.  That is where
-we setup the irq to be received.  TARGET_CPUS is just a request
-to send the irq to someplace in that mask.
+> > Btrfs dup no csum               74.59 MB/s 
+> 
+> With duplications checksums seem to be quite costly (CPU bound?)
+> 
 
-Eric
+The async worker threads should be spreading the load across CPUs pretty
+well, and even a single CPU could keep up with 100MB/s checksumming.
+But, the async worker threads do randomize the IO somewhat because the
+IO goes from pdflush -> one worker thread per CPU -> submit_bio.  So,
+maybe that 3rd thread is more than the drive can handle?
+
+btrfsck tells me the total size of the btree is only 20MB larger with
+checksumming on.
+
+> > Btrfs no duplication            76.83 MB/s
+> > Btrfs no dup no csum no inline  76.85 MB/s
+> 
+> But without duplication they are basically free here at least
+> in IO rate. Seems odd?
+> 
+> Does it compute them twice in the duplication case perhaps?
+> 
+
+The duplication happens lower down in the stack, they only get done
+once.
+
+-chris
+
+
