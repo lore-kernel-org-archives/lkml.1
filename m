@@ -1,126 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759100AbYHONgu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757979AbYHONjz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759100AbYHONgu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Aug 2008 09:36:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753715AbYHONgm
+	id S1757979AbYHONjz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Aug 2008 09:39:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753240AbYHONjr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Aug 2008 09:36:42 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:47823 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753794AbYHONgl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Aug 2008 09:36:41 -0400
-Date: Fri, 15 Aug 2008 15:36:28 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Aristeu Rozanski <arozansk@redhat.com>
-Cc: linux-kernel@vger.kernel.org, jvillalo@redhat.com
-Subject: Re: [PATCH] NMI: fix watchdog failure message
-Message-ID: <20080815133628.GA9243@elte.hu>
-References: <20080814203133.GS7154@redhat.com> <20080815115928.GD32726@elte.hu> <20080815121614.GT7154@redhat.com> <20080815123610.GU7154@redhat.com>
+	Fri, 15 Aug 2008 09:39:47 -0400
+Received: from rv-out-0506.google.com ([209.85.198.233]:41178 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753057AbYHONjq convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Aug 2008 09:39:46 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=k+TszmXaypL04t7NeT8FNBTqog7F/xUKbd3rv+MSFD96qMoB14lwRY+xd5/MiA+XeA
+         djfWw+6nTQoXPvxr3ElNBU5lXUYDhxo1cLDUoa9l1bj96bnxv+kpfxrEFSU3dd75xCoO
+         b/kWFD8oW7j4gSmlvqHmpLEjCHHxc6b/mV+0s=
+Message-ID: <b6c5339f0808150639h204234e0pbffcc09bbb43203@mail.gmail.com>
+Date: Fri, 15 Aug 2008 09:39:45 -0400
+From: "Bob Copeland" <me@bobcopeland.com>
+To: "=?ISO-8859-1?Q?J.A._Magall=F3n?=" <jamagallon@ono.com>
+Subject: Re: ath5k on the Acer Aspire One
+Cc: Linux-Kernel <linux-kernel@vger.kernel.org>,
+       "ath5k-devel@lists.ath5k.org" <ath5k-devel@venema.h4ckr.net>
+In-Reply-To: <20080815102151.4859f1ea@werewolf.home>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <20080815123610.GU7154@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+References: <20080815015131.39bb20ef@werewolf.home>
+	 <200808150228.50473.elendil@planet.nl>
+	 <20080815102151.4859f1ea@werewolf.home>
+X-Google-Sender-Auth: 4d3247e6880617c5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Aug 15, 2008 at 4:21 AM, J.A. Magallón <jamagallon@ono.com> wrote:
+> I'm using 2.6.26.2 from Mandriva cooker.
+>
+> I'm also thinking its a soft/encryption problem:
 
-* Aristeu Rozanski <arozansk@redhat.com> wrote:
+The encryption fixes I know about for WPA should already be in 2.6.26.  But
+ath5k uses mac80211 for encryption so if it is encryption related, then it's
+in the interface code between them, or else more wireless cards would have
+the problem.
 
-> > it just won't work at boot time - the second logic unit will be stuck:
-> > 
-> > Booting processor 1/2 APIC 0x1
-> > Initializing CPU#1
-> > Calibrating delay using timer specific routine.. 5586.12 BogoMIPS (lpj=2793063)
-> > CPU: Trace cache: 12K uops, L1 D cache: 16K
-> > CPU: L2 cache: 1024K
-> > CPU: Physical Processor ID: 0
-> > CPU: Processor Core ID: 1
-> > CPU1: Thermal monitoring enabled (TM1)
-> >               Intel(R) Pentium(R) D CPU 2.80GHz stepping 04
-> > Brought up 2 CPUs
-> > testing NMI watchdog ... <4>WARNING: CPU#1: NMI appears to be stuck (0->0)!
-> while at it...
-> 
-> Signed-off-by: Aristeu Rozanski <aris@redhat.com>
+> one:~# wpa_supplicant -iwlan0 -c/etc/wpa_supplicant.conf -Dwext -d
+> Initializing interface 'wlan0' conf '/etc/wpa_supplicant.conf' driver 'wext' ctrl_interface 'N/A' bridge 'N/A'
+> Configuration file '/etc/wpa_supplicant.conf' -> '/etc/wpa_supplicant.conf'
+> Reading configuration file '/etc/wpa_supplicant.conf'
+> ctrl_interface='/var/run/wpa_supplicant'
+> eapol_version=1
+> ap_scan=1
+> fast_reauth=1
+> Line 771: removed CCMP from group cipher list since it was not allowed for pairwise cipher
+> Priority group 0
+>   id=0 ssid='werewolf'
+> Initializing interface (2) 'wlan0'
+> SIOCGIWRANGE: WE(compiled)=22 WE(source)=21 enc_capa=0xf
+>  capabilities: key_mgmt 0xf enc 0xf
+> WEXT: Operstate: linkmode=1, operstate=5
+> Own MAC address: 00:1f:e2:bc:8c:01
+> wpa_driver_wext_set_wpa
+> wpa_driver_wext_set_key: alg=0 key_idx=0 set_tx=0 seq_len=0 key_len=0
+> wpa_driver_wext_set_key: alg=0 key_idx=1 set_tx=0 seq_len=0 key_len=0
+> wpa_driver_wext_set_key: alg=0 key_idx=2 set_tx=0 seq_len=0 key_len=0
+> wpa_driver_wext_set_key: alg=0 key_idx=3 set_tx=0 seq_len=0 key_len=0
+> wpa_driver_wext_set_countermeasures
+> ioctl[SIOCSIWAUTH]: Operation not supported
+> WEXT auth param 4 value 0x0 - wpa_driver_wext_set_drop_unencrypted
+> RSN: flushing PMKID list in the driver
+> Setting scan request: 0 sec 100000 usec
+> EAPOL: SUPP_PAE entering state DISCONNECTED
+> EAPOL: KEY_RX entering state NO_KEY_RECEIVE
+> EAPOL: SUPP_BE entering state INITIALIZE
+> EAP: EAP entering state DISABLED
+> Added interface wlan0
+> RTM_NEWLINK: operstate=0 ifi_flags=0x1003 ([UP])
+> Wireless event: cmd=0x8b06 len=8
+> State: DISCONNECTED -> SCANNING
+> Starting AP scan (broadcast SSID)
+> Trying to get current scan results first without requesting a new scan to speed up initial association
+> Received 0 bytes of scan results (0 BSSes)
+> CTRL-EVENT-SCAN-RESULTS
+> Selecting BSS from priority group 0
+> Try to find WPA-enabled AP
+> Try to find non-WPA AP
+> No suitable AP found.
+> Setting scan request: 0 sec 0 usec
+> Starting AP scan (broadcast SSID)
+> Scan requested (ret=0) - scan timeout 5 seconds
+> EAPOL: disable timer tick
+> RTM_NEWLINK: operstate=0 ifi_flags=0x1003 ([UP])
+> Wireless event: cmd=0x8b19 len=8
+> Received 0 bytes of scan results (0 BSSes)
+> CTRL-EVENT-SCAN-RESULTS
+> Selecting BSS from priority group 0
+> Try to find WPA-enabled AP
+> Try to find non-WPA AP
+> No suitable AP found.
+> ...
 
-applied to tip/x86/urgent, thanks Aristeu.
+It looks like you didn't get any scan results.  Does 'iwlist wlan0 scan'
+work?
 
-I've also done the cleanup below - those ugly linebreaks are gone this 
-way as well.
+CCing ath5k-devel, you'll probably get more help there.
 
-	Ingo
-
----------------------->
->From 8bb851900f5d0a79d3fddac808cc670d9894ef67 Mon Sep 17 00:00:00 2001
-From: Ingo Molnar <mingo@elte.hu>
-Date: Fri, 15 Aug 2008 15:34:32 +0200
-Subject: [PATCH] x86, nmi: clean UP NMI watchdog failure message
-
-clean up the failure message - and redirect people to bugzilla
-instead of lkml.
-
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- arch/x86/kernel/nmi.c |   32 +++++++++++++++++++-------------
- 1 files changed, 19 insertions(+), 13 deletions(-)
-
-diff --git a/arch/x86/kernel/nmi.c b/arch/x86/kernel/nmi.c
-index 919473a..abb78a2 100644
---- a/arch/x86/kernel/nmi.c
-+++ b/arch/x86/kernel/nmi.c
-@@ -114,6 +114,23 @@ static __init void nmi_cpu_busy(void *data)
- }
- #endif
- 
-+static void report_broken_nmi(int cpu, int *prev_nmi_count)
-+{
-+	printk(KERN_CONT "\n");
-+
-+	printk(KERN_WARNING
-+		"WARNING: CPU#%d: NMI appears to be stuck (%d->%d)!\n",
-+			cpu, prev_nmi_count[cpu], get_nmi_count(cpu));
-+
-+	printk(KERN_WARNING
-+		"Please report this to bugzilla.kernel.org,\n");
-+	printk(KERN_WARNING
-+		"and attach the output of the 'dmesg' command.\n");
-+
-+	per_cpu(wd_enabled, cpu) = 0;
-+	atomic_dec(&nmi_active);
-+}
-+
- int __init check_nmi_watchdog(void)
- {
- 	unsigned int *prev_nmi_count;
-@@ -141,19 +158,8 @@ int __init check_nmi_watchdog(void)
- 	for_each_online_cpu(cpu) {
- 		if (!per_cpu(wd_enabled, cpu))
- 			continue;
--		if (get_nmi_count(cpu) - prev_nmi_count[cpu] <= 5) {
--			printk("\n");
--			printk(KERN_WARNING "WARNING: CPU#%d: NMI "
--				"appears to be stuck (%d->%d)!\n",
--				cpu,
--				prev_nmi_count[cpu],
--				get_nmi_count(cpu));
--			printk(KERN_WARNING "Please report this to "
--			       "linux-kernel@vger.kernel.org and attach "
--			       "the output of 'dmesg' command.\n");
--			per_cpu(wd_enabled, cpu) = 0;
--			atomic_dec(&nmi_active);
--		}
-+		if (get_nmi_count(cpu) - prev_nmi_count[cpu] <= 5)
-+			report_broken_nmi(cpu, prev_nmi_count);
- 	}
- 	endflag = 1;
- 	if (!atomic_read(&nmi_active)) {
+-- 
+Bob Copeland %% www.bobcopeland.com
