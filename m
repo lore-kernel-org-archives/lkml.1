@@ -1,88 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760473AbYHOVet@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760045AbYHOVkQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760473AbYHOVet (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Aug 2008 17:34:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752178AbYHOVel
+	id S1760045AbYHOVkQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Aug 2008 17:40:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753983AbYHOVkE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Aug 2008 17:34:41 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:64280 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751995AbYHOVek (ORCPT
+	Fri, 15 Aug 2008 17:40:04 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:58247 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753803AbYHOVkB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Aug 2008 17:34:40 -0400
-Date: Fri, 15 Aug 2008 17:34:37 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Andi Kleen <andi@firstfloor.org>
-cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, Roland McGrath <roland@redhat.com>,
-       Ulrich Drepper <drepper@redhat.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Gregory Haskins <ghaskins@novell.com>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       "Luis Claudio R. Goncalves" <lclaudio@uudg.org>,
-       Clark Williams <williams@redhat.com>
-Subject: Re: Efficient x86 and x86_64 NOP microbenchmarks
-In-Reply-To: <20080813193715.GQ1366@one.firstfloor.org>
-Message-ID: <alpine.DEB.1.10.0808151535300.24788@gandalf.stny.rr.com>
-References: <alpine.DEB.1.10.0808081750590.16691@gandalf.stny.rr.com> <87tzdv2g05.fsf@basil.nowhere.org> <alpine.DEB.1.10.0808082030500.1396@gandalf.stny.rr.com> <489CE90D.1040902@goop.org> <alpine.LFD.1.10.0808081750060.3462@nehalem.linux-foundation.org>
- <alpine.DEB.1.10.0808082113090.3707@gandalf.stny.rr.com> <20080813175213.GA8679@Krystal> <alpine.LFD.1.10.0808131119290.3462@nehalem.linux-foundation.org> <20080813184142.GM1366@one.firstfloor.org> <20080813193011.GC15547@Krystal>
- <20080813193715.GQ1366@one.firstfloor.org>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 15 Aug 2008 17:40:01 -0400
+Date: Fri, 15 Aug 2008 22:17:14 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Kenneth Goldman <kgoldman@us.ibm.com>
+Cc: "Peter Dolding" <oiaohm@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org
+Subject: Re: [PATCH 1/4] integrity: TPM internel kernel interface
+Message-ID: <20080815221714.50d709ee@lxorguk.ukuu.org.uk>
+In-Reply-To: <OF1D7319B5.AB5A1EFB-ON852574A6.0066E026-852574A6.006775BA@us.ibm.com>
+References: <e7d8f83e0808150337t5e699647wcc6ae296b3fa8c23@mail.gmail.com>
+	<OF1D7319B5.AB5A1EFB-ON852574A6.0066E026-852574A6.006775BA@us.ibm.com>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 15 Aug 2008 14:50:01 -0400
+Kenneth Goldman <kgoldman@us.ibm.com> wrote:
 
-[ Finally got my goodmis email back ]
-
-On Wed, 13 Aug 2008, Andi Kleen wrote:
-
-> > Sorry to ask, I feel I must be missing something, but I'm trying to
-> > figure out where you propose to add the "call mcount" ? In the caller or
-> > in the callee ?
+> "Peter Dolding" <oiaohm@gmail.com> wrote on 08/15/2008 06:37:27 AM:
 > 
-> callee like gcc. caller would be likely more bloated because
-> there are more calls than functions. Also if it was at the 
-> callee more code would be needed because the function currently
-> executed couldn't be gotten from stack directly.
+> > Remember even soldered on stuff can fail.   How linux handles the
+> > death of the TPM module needs to be covered.
 > 
-> > Or is it a different scheme I don't see ? I am trying to figure out how
-> > you happen to do all that without dynamic code modification and manage
-> > not to hurt performance.
-> 
-> The dynamic code modification is only needed because there is no
-> global table of the mcount call sites. So instead it discovers
-> them at runtime, but that requires runtime save patching
+> Is fault tolerance a requirement just for the TPM, or is it a general>
+> Linux requirement?  Has it always been there, or is it new?
 
-The new code does not discover the places at runtime. The old code did 
-that. The "to kill a daemon" removed the runtime discovery and replaced it 
-with discovery at compile time.
+We try very very hard to not crash on failure.
 
-> 
-> With a custom call scheme one could just build up a table of 
-> call sites at link time using an ELF section and then when
-> tracing is enabled/disabled always patch them all in one go
-> in a stop_machine(). Then you wouldn't need parallel execution safe
-> patching anymore and it doesn't matter what the nops look like.
+> For example, does kernel software have to gracefully handle
+> failures in the disk controller, processor, memory controller, BIOS
+> flash memory, etc?
 
-The current patch set, pretty much does exactly this. Yes, I patch
-at boot up all in one go, before the other CPUS are even active.
-This takes all of 6 milliseconds to do. Not much extra time for bootup.
+Our disk layer will retry, reset, change cable speeds and if that fails
+and you are running raid with multipaths or sufficient mirrors continue.
+We capture processor exceptions and when possible log and continue
+although most CPU failures report with the context corrupt. We log and
+the EDAC layer handles as much as it possible can for memory errors
+(actually we could be a bit more selective here and there are proposals
+to go  further)
 
-> 
-> The other advantage is that it would allow getting rid of
-> the frame pointer.
+> I'd think it would be quite hard to code around motherboard
+> failures in a commodity platform not designed for fault tolerance.
 
-This is the only advantage that you have.
+The Linux userbase ranges from fault tolerant systems like Stratus to
+dodgy cheapo boards from iffy cheap and cheerful computer merchants so it
+makes sense to try and be robust.
 
--- Steve
+In your TPM case being robust against the TPM ceasing to respond
+certainly is worthwhile so that at least you return an error on failure
+rather than the box dying. You may well not be able to get the chip back
+in order without a hardware change/reboot.
 
+Alan
