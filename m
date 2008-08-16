@@ -1,44 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753488AbYHPTdo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753359AbYHPTg4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753488AbYHPTdo (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Aug 2008 15:33:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751166AbYHPTdh
+	id S1753359AbYHPTg4 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Aug 2008 15:36:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751181AbYHPTgq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Aug 2008 15:33:37 -0400
-Received: from web37602.mail.mud.yahoo.com ([209.191.87.85]:25330 "HELO
-	web37602.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751014AbYHPTdg (ORCPT
+	Sat, 16 Aug 2008 15:36:46 -0400
+Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:1672 "EHLO
+	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751042AbYHPTgp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Aug 2008 15:33:36 -0400
-X-Greylist: delayed 401 seconds by postgrey-1.27 at vger.kernel.org; Sat, 16 Aug 2008 15:33:36 EDT
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=Received:X-Mailer:Date:From:Reply-To:Subject:To:MIME-Version:Content-Type:Message-ID;
-  b=Ss4qVIVchSw9zc5dljcWUvLGqXp6COdgcnY9mKSv/h/wJ0tZz1mNO246cLwJ+DvW2zFQIZp4iYs3ALDxrsEYHDWT1j7GDxEApbOoVAaAFVl4Fx4N1t8YpDWayjzqRaf9Df5Stf4KztorTQSbo8SyzW0xgLgcGSaEtuEBRUAR2wY=;
-X-Mailer: YahooMailWebService/0.7.218
-Date: Sat, 16 Aug 2008 12:26:54 -0700 (PDT)
-From: Alex Dubov <oakad@yahoo.com>
-Reply-To: oakad@yahoo.com
-Subject: Problem with find_first_bit function and kin
-To: Linux kernel mailing list <linux-kernel@vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <865989.50481.qm@web37602.mail.mud.yahoo.com>
+	Sat, 16 Aug 2008 15:36:45 -0400
+Subject: Re: [patch 1/3] kmsg: Kernel message catalog macros.
+From: Joe Perches <joe@perches.com>
+To: schwidefsky@de.ibm.com
+Cc: Greg KH <gregkh@suse.de>, Kay Sievers <kay.sievers@vrfy.org>,
+       linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
+       lf_kernel_messages@lists.linux-foundation.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Michael Holzheu <holzheu@de.ibm.com>, Gerrit Huizenga <gh@us.ibm.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>, Jan Kara <jack@suse.cz>,
+       Pavel Machek <pavel@ucw.cz>, Sam Ravnborg <sam@ravnborg.org>,
+       Jochen =?ISO-8859-1?Q?Vo=DF?= <jochen.voss@googlemail.com>,
+       Kunai Takashi <kunai@linux-foundation.jp>,
+       Tim Bird <tim.bird@am.sony.com>
+In-Reply-To: <1218326902.14983.22.camel@localhost>
+References: <20080730165656.118280544@de.ibm.com>
+	 <20080730171156.824640459@de.ibm.com>
+	 <3ae72650807301502h3e54e80yb405af7192048b89@mail.gmail.com>
+	 <20080730220432.GA24800@suse.de> <1217495404.8555.20.camel@localhost>
+	 <20080805223117.GA6552@suse.de> <1218011716.20769.12.camel@localhost>
+	 <20080806200721.GA30086@suse.de>  <1218097901.1033.10.camel@localhost>
+	 <1218124771.5882.37.camel@localhost>  <1218326902.14983.22.camel@localhost>
+Content-Type: text/plain
+Date: Sat, 16 Aug 2008 12:36:14 -0700
+Message-Id: <1218915375.24527.105.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3-1.3mdv2008.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It's well may be that I'm just missing something obvious.
+On Sun, 2008-08-10 at 02:08 +0200, Martin Schwidefsky wrote:
+> On Thu, 2008-08-07 at 08:59 -0700, Joe Perches wrote:
+> > On Thu, 2008-08-07 at 10:31 +0200, Martin Schwidefsky wrote:
+> > > 1) The message tag is for the user of the system. If it does not have a
+> > > fixed position it gets confusing.
+> > I think the message tag today is not useful for a user.
+> > It seems a barely useful maintainer value.
+> > Perhaps the message tag allows for run-time language
+> > translation and maybe a bit better selective logging.
+> Aehhm, .. what ? If a user does not understand a message directly
+> how can he NOT be interested in the kmsg tag? As a random example
+> consider the situation when the user gets the message
+> 
+> 	monwriter.1: Writing monitor data failed with rc=5
+> 
+> Usually a user will go "Huh?" except if he is a z/VM expert. Looking
+> at the source code won't help too much either:
+> 
+> static int monwrite_diag(struct monwrite_hdr *myhdr, char *buffer, int fcn)
+> {
+>         struct appldata_product_id id;
+>         int rc;
+> 
+>         strcpy(id.prod_nr, "LNXAPPL");
+>         id.prod_fn = myhdr->applid;
+>         id.record_nr = myhdr->record_num;
+>         id.version_nr = myhdr->version;
+>         id.release_nr = myhdr->release;
+>         id.mod_lvl = myhdr->mod_level;
+>         rc = appldata_asm(&id, fcn, (void *) buffer, myhdr->datalen);
+>         if (rc <= 0)
+>                 return rc;
+>         if (rc == 5)
+>                 return -EPERM;
+>         kmsg_err(1,"Writing monitor data failed with rc=%i\n", rc);
+>         return -EINVAL;
+> }
+> 
+> What the user should do is to cut-copy-paste the kmsg tag monwriter.1
+> and pass it to man:
+> 
+> # man monwriter.1
+> 
+> What the user will then get is the man page that has been generated
+> from the kmsg comment with "make D=2":
+> 
+> --- snip
+> monwriter.1(9)                                                  monwriter.1(9)
+> 
+> Message
+>        monwriter.1: Writing monitor data failed with rc=%i
+> 
+> Severity
+>        Error
+> 
+> Parameters
+>        @1: return code
+> 
+> Description
+>        The  monitor  stream  application  device driver used the z/VM diagnose
+>        call DIAG X'DC' to start writing monitor data. z/VM returned  an  error
+>        and  the  monitor data cannot be written. If the return code is 5, your
+>        z/VM guest virtual machine is not authorized to write monitor data.
+> 
+> User action
+>        If the return code is 5, ensure that your z/VM guest virtual  machine's
+>        entry in the z/VM directory includes the OPTION APPLMON statement.  For
+>        other return codes see the section about DIAGNOSE Code X'DC'  in  "z/VM
+>        CP Programming Services".
 
-It seems to me that find_first_bit/find_next_bit functions return their
-offsets "base 1" - first set bit is "1" and last is "bitmap size". This
-means that if only the last bit in the bitmap is set, the returned value
-will be indistinguishable from no bits set situation. Moreover, bit
-manipulation functions appear to use "base 0" bit addresses, adding to the
-inconvenience.
+Doesn't this example better illustrate the barely useful
+user value of such a message and documentation?
 
-Is this a desired behavior? And, if yes, how is one supposed to deal with last bit of the bitmap?
+In your example, monwriter.1 with a return code of 5 isn't possible.
 
 
-
-      
