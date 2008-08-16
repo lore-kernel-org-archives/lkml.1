@@ -1,674 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756774AbYHPFQi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755293AbYHPFTz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756774AbYHPFQi (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Aug 2008 01:16:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752569AbYHPFQV
+	id S1755293AbYHPFTz (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Aug 2008 01:19:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751792AbYHPFTq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Aug 2008 01:16:21 -0400
-Received: from relay03.mail-hub.dodo.com.au ([123.2.6.238]:35110 "EHLO
-	relay03.mail-hub.dodo.com.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754924AbYHPFQT (ORCPT
+	Sat, 16 Aug 2008 01:19:46 -0400
+Received: from py-out-1112.google.com ([64.233.166.182]:28949 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750733AbYHPFTp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Aug 2008 01:16:19 -0400
-From: Grant Coady <grant_lkml@dodo.com.au>
-To: linux-kernel@vger.kernel.org
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: [PATCH 2/3] ATA Kconfig cleanup: sort drivers into one list
-Date: Sat, 16 Aug 2008 15:16:06 +1000
-Organization: http://bugsplatter.id.au/
-Reply-To: Grant Coady <gcoady.lk@gmail.com>
-Message-ID: <akoca4dgk2uh8ps8l289eerku938b83uc2@4ax.com>
-X-Mailer: Forte Agent 2.0/32.652
+	Sat, 16 Aug 2008 01:19:45 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=Z3V6KR+166bkLCl44eWRH0bW4gPcdfgR2Ju2kRwrzDoVPi3YxHcXSZVVux6vQAu0Ox
+         2nv4BeCSVRV87mDEGKxxXskO9lKI+6L2LlbMSt58AhJUC1oa11u0trbBdUgm/V+UMDcj
+         RYQW0h+jsTrCbC5h7UXkAbGctfiZZpzrybEao=
+Message-ID: <e7d8f83e0808152219j50827f49nb9dd48cf44e082d2@mail.gmail.com>
+Date: Sat, 16 Aug 2008 15:19:43 +1000
+From: "Peter Dolding" <oiaohm@gmail.com>
+To: "Arjan van de Ven" <arjan@infradead.org>
+Subject: Re: [malware-list] [RFC 0/5] [TALPA] Intro to alinuxinterfaceforon access scanning
+Cc: david@lang.hm, rmeijer@xs4all.nl, "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
+       capibara@xs4all.nl, "Eric Paris" <eparis@redhat.com>,
+       "Theodore Tso" <tytso@mit.edu>, "Rik van Riel" <riel@redhat.com>,
+       davecb@sun.com, linux-security-module@vger.kernel.org,
+       "Adrian Bunk" <bunk@kernel.org>,
+       "Mihai Don??u" <mdontu@bitdefender.com>, linux-kernel@vger.kernel.org,
+       malware-list@lists.printk.net, "Pavel Machek" <pavel@suse.cz>
+In-Reply-To: <20080815210942.4e342c6c@infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <18129.82.95.100.23.1218802937.squirrel@webmail.xs4all.nl>
+	 <e7d8f83e0808150627m7a5c8738n8ac42d77c45eea76@mail.gmail.com>
+	 <alpine.DEB.1.10.0808151024120.15109@asgard.lang.hm>
+	 <e7d8f83e0808152057h5c607cfbnecdc6f0bd05c5d89@mail.gmail.com>
+	 <20080815210942.4e342c6c@infradead.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, Aug 16, 2008 at 2:09 PM, Arjan van de Ven <arjan@infradead.org> wrote:
+> On Sat, 16 Aug 2008 13:57:50 +1000
+> "Peter Dolding" <oiaohm@gmail.com> wrote:
+>> Anti-Virus has been for years about chasing the threat.   Lets try to
+>> get in front of it.  You thread model needs a major update its
+>> incomplete.
+>>
+>
+> The problem TALPA is trying to solve is only part of the puzzle.
+> Everyone recognizes that. It's a very relevant part of the puzzle (in
+> corporate context at least), but it's very much so not a complete
+> puzzle. Does that mean we shouldn't deal with this just because it's
+> incomplete? Absolutely not!
 
-From: Grant Coady <gcoady.lk@gmail.com>
+TALPA idea I agree with.  As the long term forever solution I don't
+agree with due to its location.
 
-ATA Kconfig cleanup 2/3: Sort the ATA drivers into one list, leaving 
-the PATA_PLATFORM items at the end.
+Lets look at the general disk to memory path.
 
-Signed-off-by: Grant Coady <gcoady.lk@gmail.com>
+[file system driver]
+[file system drivers caches]
+[inode's]  TALPA links in here and basically runs its own scan cache.
 
----
- Kconfig |  464 ++++++++++++++++++++++++++++++++--------------------------------
- 1 files changed, 232 insertions(+), 232 deletions(-)
+Long term TALPA need to move from the inode layor down and the design
+of the file system path needs to change.
 
---- linux-2.6.27-rc3b1/drivers/ata/Kconfig	2008-08-16 14:14:37.766129389 +1000
-+++ linux-2.6.27-rc3b2/drivers/ata/Kconfig	2008-08-16 14:20:08.177922891 +1000
-@@ -56,14 +56,6 @@
- 
- 	  If unsure, say N.
- 
--config SATA_SIL24
--	tristate "Silicon Image 3124/3132 SATA support"
--	depends on PCI
--	help
--	  This option enables support for Silicon Image 3124/3132 Serial ATA.
--
--	  If unsure, say N.
--
- config SATA_FSL
- 	tristate "Freescale 3.0Gbps SATA support"
- 	depends on FSL_SOC
-@@ -73,6 +65,14 @@
- 
- 	  If unsure, say N.
- 
-+config SATA_SIL24
-+	tristate "Silicon Image 3124/3132 SATA support"
-+	depends on PCI
-+	help
-+	  This option enables support for Silicon Image 3124/3132 Serial ATA.
-+
-+	  If unsure, say N.
-+
- config ATA_SFF_SATA
- 	bool "SATA Serial ATA support"
- 	default y
-@@ -112,122 +112,13 @@
- 
- if ATA_SFF
- 
--config SATA_SVW
--	tristate "ServerWorks Frodo / Apple K2 SATA support"
--	depends on ATA_SFF_SATA && PCI
--	help
--	  This option enables support for Broadcom/Serverworks/Apple K2
--	  SATA support.
--
--	  If unsure, say N.
--
--config ATA_PIIX
--	tristate "Intel ESB, ICH, PIIX3, PIIX4 PATA/SATA support"
--	depends on (ATA_SFF_SATA || ATA_SFF_PATA) && PCI
--	help
--	  This option enables support for ICH5/6/7/8 Serial ATA
--	  and support for PATA on the Intel ESB/ICH/PIIX3/PIIX4 series
--	  host controllers.
--
--	  If unsure, say N.
--
--config SATA_MV
--	tristate "Marvell SATA support (HIGHLY EXPERIMENTAL)"
--	depends on ATA_SFF_SATA && EXPERIMENTAL
--	help
--	  This option enables support for the Marvell Serial ATA family.
--	  Currently supports 88SX[56]0[48][01] chips.
--
--	  If unsure, say N.
--
--config SATA_NV
--	tristate "NVIDIA SATA support"
--	depends on ATA_SFF_SATA && PCI
--	help
--	  This option enables support for NVIDIA Serial ATA.
--
--	  If unsure, say N.
--
--config PDC_ADMA
--	tristate "Pacific Digital ADMA support"
--	depends on ATA_SFF_SATA && PCI
--	help
--	  This option enables support for Pacific Digital ADMA controllers
--
--	  If unsure, say N.
--
--config SATA_QSTOR
--	tristate "Pacific Digital SATA QStor support"
--	depends on ATA_SFF_SATA && PCI
--	help
--	  This option enables support for Pacific Digital Serial ATA QStor.
--
--	  If unsure, say N.
--
--config SATA_PROMISE
--	tristate "Promise SATA TX2/TX4 support"
--	depends on ATA_SFF_SATA && PCI
--	help
--	  This option enables support for Promise Serial ATA TX2/TX4.
--
--	  If unsure, say N.
--
--config SATA_SX4
--	tristate "Promise SATA SX4 support"
--	depends on ATA_SFF_SATA && PCI && EXPERIMENTAL
--	help
--	  This option enables support for Promise Serial ATA SX4.
--
--	  If unsure, say N.
--
--config SATA_SIL
--	tristate "Silicon Image SATA support"
--	depends on ATA_SFF_SATA && PCI
--	help
--	  This option enables support for Silicon Image Serial ATA.
--
--	  If unsure, say N.
--
--config SATA_SIS
--	tristate "SiS 964/965/966/180 SATA support"
--	depends on ATA_SFF_SATA && PCI
--	select PATA_SIS
--	help
--	  This option enables support for SiS Serial ATA on
--	  SiS 964/965/966/180 and Parallel ATA on SiS 180.
--	  The PATA support for SiS 180 requires additionally to
--	  enable the PATA_SIS driver in the config.
--	  If unsure, say N.
--
--config SATA_ULI
--	tristate "ULi Electronics SATA support"
--	depends on ATA_SFF_SATA && PCI
--	help
--	  This option enables support for ULi Electronics SATA.
--
--	  If unsure, say N.
--
--config SATA_VIA
--	tristate "VIA SATA support"
--	depends on ATA_SFF_SATA && PCI
--	help
--	  This option enables support for VIA Serial ATA.
--
--	  If unsure, say N.
--
--config SATA_VITESSE
--	tristate "VITESSE VSC-7174 / INTEL 31244 SATA support"
--	depends on ATA_SFF_SATA && PCI
--	help
--	  This option enables support for Vitesse VSC7174 and Intel 31244 Serial ATA.
--
--	  If unsure, say N.
--
--config SATA_INIC162X
--	tristate "Initio 162x SATA support"
--	depends on ATA_SFF_SATA && PCI
-+config PATA_ICSIDE
-+	tristate "Acorn ICS PATA support"
-+	depends on ATA_SFF_PATA && ARM && ARCH_ACORN
- 	help
--	  This option enables support for Initio 162x Serial ATA.
-+	  On Acorn systems, say Y here if you wish to use the ICS PATA
-+	  interface card.  This is not required for ICS partition support.
-+	  If you are unsure, say N to this.
- 
- config PATA_ACPI
- 	tristate "ACPI firmware driver for PATA"
-@@ -282,6 +173,15 @@
- 
- 	  If unsure, say N.
- 
-+config PATA_BF54X
-+	tristate "Blackfin 54x ATAPI support"
-+	depends on ATA_SFF_PATA && (BF542 || BF548 || BF549)
-+	help
-+	  This option enables support for the built-in ATAPI controller on
-+	  Blackfin 54x family chips.
-+
-+	  If unsure, say N.
-+
- config PATA_CMD640_PCI
- 	tristate "CMD640 PCI PATA support (Very Experimental)"
- 	depends on ATA_SFF_PATA && PCI && EXPERIMENTAL
-@@ -301,6 +201,23 @@
- 
- 	  If unsure, say N.
- 
-+config PATA_SIL680
-+	tristate "CMD / Silicon Image 680 PATA support"
-+	depends on ATA_SFF_PATA && PCI
-+	help
-+	  This option enables support for CMD / Silicon Image 680 PATA.
-+
-+	  If unsure, say N.
-+
-+config PATA_TRIFLEX
-+	tristate "Compaq Triflex PATA support"
-+	depends on ATA_SFF_PATA && PCI
-+	help
-+	  Enable support for the Compaq 'Triflex' IDE controller as found
-+	  on many Compaq Pentium-Pro systems, via the new ATA layer.
-+
-+	  If unsure, say N.
-+
- config PATA_CS5520
- 	tristate "CS5510/5520 PATA support"
- 	depends on ATA_SFF_PATA && PCI
-@@ -355,6 +272,15 @@
- 
- 	  If unsure, say N.
- 
-+config PATA_MPC52xx
-+	tristate "Freescale MPC52xx SoC internal IDE"
-+	depends on ATA_SFF_PATA && PPC_MPC52xx
-+	help
-+	  This option enables support for integrated IDE controller
-+	  of the Freescale MPC52xx SoC.
-+
-+	  If unsure, say N.
-+
- config ATA_GENERIC
- 	tristate "Generic ATA support"
- 	depends on ATA_SFF_PATA && PCI
-@@ -364,6 +290,23 @@
- 
- 	  If unsure, say N.
- 
-+config PATA_HPT3X3
-+	tristate "HPT 343/363 PATA support"
-+	depends on ATA_SFF_PATA && PCI
-+	help
-+	  This option enables support for the HPT 343/363
-+	  PATA controllers via the new ATA layer
-+
-+	  If unsure, say N.
-+
-+config PATA_HPT3X3_DMA
-+	bool "HPT 343/363 DMA support (Experimental)"
-+	depends on ATA_SFF_PATA && PATA_HPT3X3
-+	help
-+	  This option enables DMA support for the HPT343/363
-+	  controllers. Enable with care as there are still some
-+	  problems with DMA on this chipset.
-+
- config PATA_HPT366
- 	tristate "HPT 366/368 PATA support"
- 	depends on ATA_SFF_PATA && PCI
-@@ -391,22 +334,46 @@
- 
- 	  If unsure, say N.
- 
--config PATA_HPT3X3
--	tristate "HPT 343/363 PATA support"
-+config SATA_INIC162X
-+	tristate "Initio 162x SATA support"
-+	depends on ATA_SFF_SATA && PCI
-+	help
-+	  This option enables support for Initio 162x Serial ATA.
-+
-+config ATA_PIIX
-+	tristate "Intel ESB, ICH, PIIX3, PIIX4 PATA/SATA support"
-+	depends on (ATA_SFF_SATA || ATA_SFF_PATA) && PCI
-+	help
-+	  This option enables support for ICH5/6/7/8 Serial ATA
-+	  and support for PATA on the Intel ESB/ICH/PIIX3/PIIX4 series
-+	  host controllers.
-+
-+	  If unsure, say N.
-+
-+config PATA_MPIIX
-+	tristate "Intel PATA MPIIX support"
- 	depends on ATA_SFF_PATA && PCI
- 	help
--	  This option enables support for the HPT 343/363
--	  PATA controllers via the new ATA layer
-+	  This option enables support for MPIIX PATA support.
- 
- 	  If unsure, say N.
- 
--config PATA_HPT3X3_DMA
--	bool "HPT 343/363 DMA support (Experimental)"
--	depends on ATA_SFF_PATA && PATA_HPT3X3
-+config PATA_OLDPIIX
-+	tristate "Intel PATA old PIIX support"
-+	depends on ATA_SFF_PATA && PCI
- 	help
--	  This option enables DMA support for the HPT343/363
--	  controllers. Enable with care as there are still some
--	  problems with DMA on this chipset.
-+	  This option enables support for early PIIX PATA support.
-+
-+	  If unsure, say N.
-+
-+config PATA_SCH
-+	tristate "Intel SCH PATA support"
-+	depends on ATA_SFF_PATA && PCI
-+	help
-+	  This option enables support for Intel SCH PATA on the Intel
-+	  SCH (US15W, US15L, UL11L) series host controllers.
-+
-+	  If unsure, say N.
- 
- config PATA_ISAPNP
- 	tristate "ISA Plug and Play PATA support (Experimental)"
-@@ -436,6 +403,16 @@
- 
- 	  If unsure, say N.
- 
-+config PATA_IXP4XX_CF
-+	tristate "IXP4XX Compact Flash support"
-+	depends on ATA_SFF_PATA && ARCH_IXP4XX
-+	help
-+	  This option enables support for a Compact Flash connected on
-+	  the ixp4xx expansion bus. This driver had been written for
-+	  Loft/Avila boards in mind but can work with others.
-+
-+	  If unsure, say N.
-+
- config PATA_JMICRON
- 	tristate "JMicron PATA support"
- 	depends on ATA_SFF_PATA && PCI
-@@ -454,15 +431,6 @@
- 
- 	  If unsure, say N.
- 
--config PATA_TRIFLEX
--	tristate "Compaq Triflex PATA support"
--	depends on ATA_SFF_PATA && PCI
--	help
--	  Enable support for the Compaq 'Triflex' IDE controller as found
--	  on many Compaq Pentium-Pro systems, via the new ATA layer.
--
--	  If unsure, say N.
--
- config PATA_MARVELL
- 	tristate "Marvell PATA support via legacy mode"
- 	depends on ATA_SFF_PATA && PCI
-@@ -472,28 +440,30 @@
- 
- 	  If unsure, say N.
- 
--config PATA_MPC52xx
--	tristate "Freescale MPC52xx SoC internal IDE"
--	depends on ATA_SFF_PATA && PPC_MPC52xx
-+config SATA_MV
-+	tristate "Marvell SATA support (HIGHLY EXPERIMENTAL)"
-+	depends on ATA_SFF_SATA && EXPERIMENTAL
- 	help
--	  This option enables support for integrated IDE controller
--	  of the Freescale MPC52xx SoC.
-+	  This option enables support for the Marvell Serial ATA family.
-+	  Currently supports 88SX[56]0[48][01] chips.
- 
- 	  If unsure, say N.
- 
--config PATA_MPIIX
--	tristate "Intel PATA MPIIX support"
--	depends on ATA_SFF_PATA && PCI
-+config PATA_NS87410
-+	tristate "Nat Semi NS87410 PATA support (Experimental)"
-+	depends on ATA_SFF_PATA && PCI && EXPERIMENTAL
- 	help
--	  This option enables support for MPIIX PATA support.
-+	  This option enables support for the National Semiconductor
-+	  NS87410 PCI-IDE controller.
- 
- 	  If unsure, say N.
- 
--config PATA_OLDPIIX
--	tristate "Intel PATA old PIIX support"
--	depends on ATA_SFF_PATA && PCI
-+config PATA_NS87415
-+	tristate "Nat Semi NS87415 PATA support (Experimental)"
-+	depends on ATA_SFF_PATA && PCI && EXPERIMENTAL
- 	help
--	  This option enables support for early PIIX PATA support.
-+	  This option enables support for the National Semiconductor
-+	  NS87415 PCI-IDE controller.
- 
- 	  If unsure, say N.
- 
-@@ -515,21 +485,11 @@
- 
- 	  If unsure, say N.
- 
--config PATA_NS87410
--	tristate "Nat Semi NS87410 PATA support (Experimental)"
--	depends on ATA_SFF_PATA && PCI && EXPERIMENTAL
--	help
--	  This option enables support for the National Semiconductor
--	  NS87410 PCI-IDE controller.
--
--	  If unsure, say N.
--
--config PATA_NS87415
--	tristate "Nat Semi NS87415 PATA support (Experimental)"
--	depends on ATA_SFF_PATA && PCI && EXPERIMENTAL
-+config SATA_NV
-+	tristate "NVIDIA SATA support"
-+	depends on ATA_SFF_SATA && PCI
- 	help
--	  This option enables support for the National Semiconductor
--	  NS87415 PCI-IDE controller.
-+	  This option enables support for NVIDIA Serial ATA.
- 
- 	  If unsure, say N.
- 
-@@ -552,6 +512,31 @@
- 
- 	  If unsure, say N.
- 
-+config PDC_ADMA
-+	tristate "Pacific Digital ADMA support"
-+	depends on ATA_SFF_SATA && PCI
-+	help
-+	  This option enables support for Pacific Digital ADMA controllers
-+
-+	  If unsure, say N.
-+
-+config SATA_QSTOR
-+	tristate "Pacific Digital SATA QStor support"
-+	depends on ATA_SFF_SATA && PCI
-+	help
-+	  This option enables support for Pacific Digital Serial ATA QStor.
-+
-+	  If unsure, say N.
-+
-+config PATA_RZ1000
-+	tristate "PC Tech RZ1000 PATA support"
-+	depends on ATA_SFF_PATA && PCI
-+	help
-+	  This option enables basic support for the PC Tech RZ1000/1
-+	  PATA controllers via the new ATA layer
-+
-+	  If unsure, say N.
-+
- config PATA_PCMCIA
- 	tristate "PCMCIA PATA support"
- 	depends on ATA_SFF_PATA && PCMCIA
-@@ -561,6 +546,14 @@
- 
- 	  If unsure, say N.
- 
-+config PATA_PDC2027X
-+	tristate "Promise PATA 2027x support"
-+	depends on ATA_SFF_PATA && PCI
-+	help
-+	  This option enables support for Promise PATA pdc20268 to pdc20277 host adapters.
-+
-+	  If unsure, say N.
-+
- config PATA_PDC_OLD
- 	tristate "Older Promise PATA controller support (Experimental)"
- 	depends on ATA_SFF_PATA && PCI && EXPERIMENTAL
-@@ -570,6 +563,22 @@
- 
- 	  If unsure, say N.
- 
-+config SATA_SX4
-+	tristate "Promise SATA SX4 support"
-+	depends on ATA_SFF_SATA && PCI && EXPERIMENTAL
-+	help
-+	  This option enables support for Promise Serial ATA SX4.
-+
-+	  If unsure, say N.
-+
-+config SATA_PROMISE
-+	tristate "Promise SATA TX2/TX4 support"
-+	depends on ATA_SFF_SATA && PCI
-+	help
-+	  This option enables support for Promise Serial ATA TX2/TX4.
-+
-+	  If unsure, say N.
-+
- config PATA_QDI
- 	tristate "QDI VLB PATA support"
- 	depends on ATA_SFF_PATA && ISA
-@@ -594,15 +603,6 @@
- 
- 	  If unsure, say N.
- 
--config PATA_RZ1000
--	tristate "PC Tech RZ1000 PATA support"
--	depends on ATA_SFF_PATA && PCI
--	help
--	  This option enables basic support for the PC Tech RZ1000/1
--	  PATA controllers via the new ATA layer
--
--	  If unsure, say N.
--
- config PATA_SC1200
- 	tristate "SC1200 PATA support (Very Experimental)"
- 	depends on ATA_SFF_PATA && PCI && EXPERIMENTAL
-@@ -612,6 +612,15 @@
- 
- 	  If unsure, say N.
- 
-+config SATA_SVW
-+	tristate "ServerWorks Frodo / Apple K2 SATA support"
-+	depends on ATA_SFF_SATA && PCI
-+	help
-+	  This option enables support for Broadcom/Serverworks/Apple K2
-+	  SATA support.
-+
-+	  If unsure, say N.
-+
- config PATA_SERVERWORKS
- 	tristate "SERVERWORKS OSB4/CSB5/CSB6/HT1000 PATA support"
- 	depends on ATA_SFF_PATA && PCI
-@@ -621,20 +630,23 @@
- 
- 	  If unsure, say N.
- 
--config PATA_PDC2027X
--	tristate "Promise PATA 2027x support"
--	depends on ATA_SFF_PATA && PCI
-+config SATA_SIL
-+	tristate "Silicon Image SATA support"
-+	depends on ATA_SFF_SATA && PCI
- 	help
--	  This option enables support for Promise PATA pdc20268 to pdc20277 host adapters.
-+	  This option enables support for Silicon Image Serial ATA.
- 
- 	  If unsure, say N.
- 
--config PATA_SIL680
--	tristate "CMD / Silicon Image 680 PATA support"
--	depends on ATA_SFF_PATA && PCI
-+config SATA_SIS
-+	tristate "SiS 964/965/966/180 SATA support"
-+	depends on ATA_SFF_SATA && PCI
-+	select PATA_SIS
- 	help
--	  This option enables support for CMD / Silicon Image 680 PATA.
--
-+	  This option enables support for SiS Serial ATA on
-+	  SiS 964/965/966/180 and Parallel ATA on SiS 180.
-+	  The PATA support for SiS 180 requires additionally to
-+	  enable the PATA_SIS driver in the config.
- 	  If unsure, say N.
- 
- config PATA_SIS
-@@ -645,6 +657,23 @@
- 
- 	  If unsure, say N.
- 
-+config PATA_SCC
-+	tristate "Toshiba's Cell Reference Set IDE support"
-+	depends on ATA_SFF_PATA && PCI && PPC_CELLEB
-+	help
-+	  This option enables support for the built-in IDE controller on
-+	  Toshiba Cell Reference Board.
-+
-+	  If unsure, say N.
-+
-+config SATA_ULI
-+	tristate "ULi Electronics SATA support"
-+	depends on ATA_SFF_SATA && PCI
-+	help
-+	  This option enables support for ULi Electronics SATA.
-+
-+	  If unsure, say N.
-+
- config PATA_VIA
- 	tristate "VIA PATA support"
- 	depends on ATA_SFF_PATA && PCI
-@@ -654,6 +683,22 @@
- 
- 	  If unsure, say N.
- 
-+config SATA_VIA
-+	tristate "VIA SATA support"
-+	depends on ATA_SFF_SATA && PCI
-+	help
-+	  This option enables support for VIA Serial ATA.
-+
-+	  If unsure, say N.
-+
-+config SATA_VITESSE
-+	tristate "VITESSE VSC-7174 / INTEL 31244 SATA support"
-+	depends on ATA_SFF_SATA && PCI
-+	help
-+	  This option enables support for Vitesse VSC7174 and Intel 31244 Serial ATA.
-+
-+	  If unsure, say N.
-+
- config PATA_WINBOND
- 	tristate "Winbond SL82C105 PATA support"
- 	depends on ATA_SFF_PATA && PCI
-@@ -697,50 +742,5 @@
- 
- 	  If unsure, say N.
- 
--config PATA_ICSIDE
--	tristate "Acorn ICS PATA support"
--	depends on ATA_SFF_PATA && ARM && ARCH_ACORN
--	help
--	  On Acorn systems, say Y here if you wish to use the ICS PATA
--	  interface card.  This is not required for ICS partition support.
--	  If you are unsure, say N to this.
--
--config PATA_IXP4XX_CF
--	tristate "IXP4XX Compact Flash support"
--	depends on ATA_SFF_PATA && ARCH_IXP4XX
--	help
--	  This option enables support for a Compact Flash connected on
--	  the ixp4xx expansion bus. This driver had been written for
--	  Loft/Avila boards in mind but can work with others.
--
--	  If unsure, say N.
--
--config PATA_SCC
--	tristate "Toshiba's Cell Reference Set IDE support"
--	depends on ATA_SFF_PATA && PCI && PPC_CELLEB
--	help
--	  This option enables support for the built-in IDE controller on
--	  Toshiba Cell Reference Board.
--
--	  If unsure, say N.
--
--config PATA_SCH
--	tristate "Intel SCH PATA support"
--	depends on ATA_SFF_PATA && PCI
--	help
--	  This option enables support for Intel SCH PATA on the Intel
--	  SCH (US15W, US15L, UL11L) series host controllers.
--
--	  If unsure, say N.
--
--config PATA_BF54X
--	tristate "Blackfin 54x ATAPI support"
--	depends on ATA_SFF_PATA && (BF542 || BF548 || BF549)
--	help
--	  This option enables support for the built-in ATAPI controller on
--	  Blackfin 54x family chips.
--
--	  If unsure, say N.
--
- endif # ATA_SFF
- endif # ATA
+[file system driver]
+[generic file system cache]  TALPA enters here and spreads.
+[inodes]
+
+generic file system cache built in a way that it can store all the non
+linux permission and related data that the file system driver needs.
+
+Reasons
+1. That shape even if file system extra permissions are decided to be
+kept hidden from the rest of Linux anti-virus can scanning can see it.
+2. Everything that is in memory  is checked.
+3. Infected files can be removed from consuming memory in the file
+system cache.  So a raw memory scan of Linux will not trip on viruses
+still being present in memory even that TALPA is running.  False
+positive suggesting TALPA has failed is possible due to its current
+location.
+4 share caching of passed and failed with the file system cache.
+
+1 virus removed from a file system cache could equal the complete
+memory price of running TALPA.
+
+Its TALPA location I have major issue with.   Being blind to full set
+of information to make a judgement call is the other.
+
+I see it in the same cat a unionfs fine as a side patch to main
+kernel.   Not fine to enter main kernel due to being in the wrong
+place.  Its the balancing act if we let TALPA will it ever develop
+down to the location where it should be?
+
+Can you say 100 percent that TALPA is in the right location for what
+it is doing.   If it is not its a good temp fix until we can get
+developed the solution in the correct location.  Temp fixes normally
+never get main line.
+
+Be truthful its simply in the wrong place.   Getting it to the correct
+location for most effective memory usage and giving a virus the least
+ammont of distance into linux.  Scanned and 100 percent booted out of
+memory.  Other thing some file system drivers also keep stuff in there
+cache independent to inodes.   So spots at moment can be double
+scanned even that the complete time everything was in memory because
+the inode was freed and the file system cache still had it.
+
+You want the most effective use of CPU? if no go head with TALPA.
+
+Current TALPA fails too many holes and flaws.   All caused by 1 thing
+its location.   Yes its a major job to move it to the correct location
+its a major file system operation rework.
+
+TALPA unfortunately is like trying to build a house on quick sand.
+Foundations it needs to work correctly and 100 percent effectively
+currently not present.   The quick sand of many file system caches had
+to come back and bite at some point.  The blocking of seeing all the
+file system permissions also had to come back and bite at some point.
+
+Fix the foundations TALPA idea will be solid for its section of the
+puzzle.   Sticking head in sand and saying the foundations don't have
+major issues is just fooling to your self.  LIM and others patches
+trying to be put in also have the same quick sand issue.
+
+Peter Dolding
