@@ -1,44 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755163AbYHPUwB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754747AbYHPUy1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755163AbYHPUwB (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Aug 2008 16:52:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751780AbYHPUvw
+	id S1754747AbYHPUy1 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Aug 2008 16:54:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751780AbYHPUyS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Aug 2008 16:51:52 -0400
-Received: from cavan.codon.org.uk ([93.93.128.6]:45753 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751696AbYHPUvv (ORCPT
+	Sat, 16 Aug 2008 16:54:18 -0400
+Received: from mtiwmhc12.worldnet.att.net ([204.127.131.116]:50576 "EHLO
+	mtiwmhc12.worldnet.att.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751155AbYHPUyS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Aug 2008 16:51:51 -0400
-Date: Sat, 16 Aug 2008 21:51:45 +0100
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: linux-kernel@vger.kernel.org, michael_e_brown@dell.com
-Subject: Re: [PATCH 2/2] Add Dell laptop driver
-Message-ID: <20080816205145.GA4498@srcf.ucam.org>
-References: <20080816202452.GA3331@srcf.ucam.org> <20080816202640.GB3331@srcf.ucam.org> <20080816203027.GC3331@srcf.ucam.org> <20080816134752.426bdd8a@infradead.org>
+	Sat, 16 Aug 2008 16:54:18 -0400
+Message-ID: <48A73E78.7040907@lwfinger.net>
+Date: Sat, 16 Aug 2008 15:54:16 -0500
+From: Larry Finger <Larry.Finger@lwfinger.net>
+User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080816134752.426bdd8a@infradead.org>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+Subject: Re: [Bug #11355] Regression in 2.6.27-rc2 when cross-building the
+ kernel
+References: <DLWXHEp37wB.A.duD.yZzpIB@albercik> <sNRO-BDDjQL.A.W2D.4ZzpIB@albercik>
+In-Reply-To: <sNRO-BDDjQL.A.W2D.4ZzpIB@albercik>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Aug 16, 2008 at 01:47:52PM -0700, Arjan van de Ven wrote:
+Rafael J. Wysocki wrote:
+> This message has been generated automatically as a part of a report
+> of recent regressions.
+> 
+> The following bug entry is on the current list of known regressions
+> from 2.6.26.  Please verify if it still should be listed and let me know
+> (either way).
+> 
+> 
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11355
+> Subject		: Regression in 2.6.27-rc2 when cross-building the kernel
+> Submitter	: Larry Finger <Larry.Finger@lwfinger.net>
+> Date		: 2008-08-16 2:38 (1 days old)
+> References	: http://marc.info/?l=linux-kernel&m=121885432118368&w=4
 
-> how does this interact with the backlight control done via ACPI ?
+Yes, bug is still present.
 
-Dell's ACPI implementation appears to be implemented on top of this at a 
-firmware level, so both are consistent. However, in terms of 
-cleanliness, we should wait for Thomas's patches to be merged so this 
-driver can disable the backlight support if there's an ACPI backlight 
-present. The reason I implemented it is that there's no ACPI backlight 
-support on some currently shipping Dells, never mind the older hardware.
-
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+Larry
