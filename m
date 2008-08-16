@@ -1,71 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758720AbYHPUse@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754779AbYHPUtd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758720AbYHPUse (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Aug 2008 16:48:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757155AbYHPUky
+	id S1754779AbYHPUtd (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Aug 2008 16:49:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758077AbYHPUrk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Aug 2008 16:40:54 -0400
-Received: from yx-out-2324.google.com ([74.125.44.28]:54214 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757146AbYHPUkw (ORCPT
+	Sat, 16 Aug 2008 16:47:40 -0400
+Received: from casper.infradead.org ([85.118.1.10]:39401 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758571AbYHPUrj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Aug 2008 16:40:52 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=QvPMFUbQzstgKnbwniRBYOPZTdGZq+HMnQuZuiU0yWoE7wsjC1Len8KusQ3qKtATBA
-         81cm0BCdMAZWzCnLX+3yLvmj7SoEq5+Wsr36BXPK4pV8UAVcLpboEWGdiiUklAiWRwYX
-         sWgkUFnxYpeK3A4jNDZwBfKcdVGxlGCNcwpbo=
-Message-ID: <b3ece790808161340x4b03b91er6f0bfcc46c6fb3ad@mail.gmail.com>
-Date: Sat, 16 Aug 2008 13:40:50 -0700
-From: "Tim Hockin" <thockin@hockin.org>
-To: schwidefsky@de.ibm.com
-Subject: Re: [patch 1/3] kmsg: Kernel message catalog macros.
-Cc: "Rusty Russell" <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org,
-       linux-s390@vger.kernel.org,
-       lf_kernel_messages@lists.linux-foundation.org,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Michael Holzheu" <holzheu@de.ibm.com>,
-       "Gerrit Huizenga" <gh@us.ibm.com>,
-       "Greg Kroah-Hartman" <gregkh@suse.de>,
-       "Randy Dunlap" <randy.dunlap@oracle.com>, "Jan Kara" <jack@suse.cz>,
-       "Pavel Machek" <pavel@ucw.cz>, "Sam Ravnborg" <sam@ravnborg.org>,
-       "Joe Perches" <joe@perches.com>,
-       "=?UTF-8?Q?Jochen_Vo=C3=9F?=" <jochen.voss@googlemail.com>,
-       "Kunai Takashi" <kunai@linux-foundation.jp>,
-       "Tim Bird" <tim.bird@am.sony.com>
-In-Reply-To: <1218908985.6037.12.camel@localhost>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+	Sat, 16 Aug 2008 16:47:39 -0400
+Date: Sat, 16 Aug 2008 13:47:52 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: linux-kernel@vger.kernel.org, michael_e_brown@dell.com
+Subject: Re: [PATCH 2/2] Add Dell laptop driver
+Message-ID: <20080816134752.426bdd8a@infradead.org>
+In-Reply-To: <20080816203027.GC3331@srcf.ucam.org>
+References: <20080816202452.GA3331@srcf.ucam.org>
+	<20080816202640.GB3331@srcf.ucam.org>
+	<20080816203027.GC3331@srcf.ucam.org>
+Organization: Intel
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080730165656.118280544@de.ibm.com>
-	 <200808131433.02966.rusty@rustcorp.com.au>
-	 <1218733623.2651.14.camel@localhost>
-	 <200808150922.23277.rusty@rustcorp.com.au>
-	 <1218908985.6037.12.camel@localhost>
-X-Google-Sender-Auth: 2dd910a81aa04bca
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Aug 16, 2008 at 10:49 AM, Martin Schwidefsky
-<schwidefsky@de.ibm.com> wrote:
+On Sat, 16 Aug 2008 21:30:27 +0100
+Matthew Garrett <mjg59@srcf.ucam.org> wrote:
 
->> > > Can you hash the format string to generate the id?  6 hex digits should
->> > > be enough, and your tool can check for clashes.  As it's bad form to have
->> > > identical strings for different semantics anyway, this seems to make
->> > > sense.
+> This driver provides in-kernel control for the backlight and rfkill 
+> functionality on Dell laptops. It's based on the publically available 
+> information in the libsmbios package.
 
-> Ok, so  a specialized version of printk will do the work to calculate
-> the hash. Only, what will we do if there ever is a conflict? The message
-> tag has to be unique. The shorter the hash is, the more likely a
-> collision gets. Don't know if 6 hash digits is enough to just ignore the
-> problem.
 
-And if you ever need to change the text that is in the format string?
-The hash changes.  That seems exactly counter to your goal...
+how does this interact with the backlight control done via ACPI ?
 
-Tim
+
+-- 
+If you want to reach me at my work email, use arjan@linux.intel.com
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
