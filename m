@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755216AbYHPCg4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755443AbYHPChp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755216AbYHPCg4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Aug 2008 22:36:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751995AbYHPCgr
+	id S1755443AbYHPChp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Aug 2008 22:37:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751741AbYHPChf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Aug 2008 22:36:47 -0400
-Received: from rv-out-0506.google.com ([209.85.198.227]:44141 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751799AbYHPCgq (ORCPT
+	Fri, 15 Aug 2008 22:37:35 -0400
+Received: from wa-out-1112.google.com ([209.85.146.183]:54834 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750928AbYHPChe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Aug 2008 22:36:46 -0400
+	Fri, 15 Aug 2008 22:37:34 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer;
-        b=LQcTcjNJNBIHyIDboz727t4FWfPqOOuKzBZnx829lefcEYioDU1bIgoeRq0FxczNzH
-         U1PVtavLPHCT57Mscp0HJI8a3uk2EMtl31H+4wuERx9L1xJUlVJko3cn58X7QIRoTYag
-         SRO2JTbWER+pcFXIDjq6UlQzRtKiQQoWpNnwU=
+        b=fGuxO/w7yKJU4B75fTprbqaRsK903BNTfnR532APjbtCWmrTEru3fUxFCztqvp2Vhc
+         7O5cUwqAew8e2bZIfaqV56XE/zqN2yuS+YwQYbSXivFK7EUEG6agSBpEVC6+S2kEmpAT
+         uE7yXFgZh/GK3syw8t1xlLAeTjeOE1BlYV+pU=
 From: Yinghai Lu <yhlu.kernel@gmail.com>
 To: Jesse Barnes <jbarnes@virtuousgeek.org>,
        James Bottomley <James.Bottomley@hansenpartnership.com>,
@@ -25,9 +25,9 @@ To: Jesse Barnes <jbarnes@virtuousgeek.org>,
        Andrew Morton <akpm@linux-foundation.org>
 Cc: linux-kernel@vger.kernel.org, Yinghai Lu <yhlu.kernel@gmail.com>,
        Andrew Vasquez <andrew.vasquez@qlogic.com>
-Subject: 
-Date: Fri, 15 Aug 2008 19:35:52 -0700
-Message-Id: <1218854152-2305-1-git-send-email-yhlu.kernel@gmail.com>
+Subject: [PATCH] pci: change msi-x vector to 32bit
+Date: Fri, 15 Aug 2008 19:36:45 -0700
+Message-Id: <1218854205-2375-1-git-send-email-yhlu.kernel@gmail.com>
 X-Mailer: git-send-email 1.5.4.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
