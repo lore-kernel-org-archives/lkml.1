@@ -1,123 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758421AbYHPUtv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755163AbYHPUwB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758421AbYHPUtv (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Aug 2008 16:49:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754881AbYHPUtH
+	id S1755163AbYHPUwB (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Aug 2008 16:52:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751780AbYHPUvw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Aug 2008 16:49:07 -0400
-Received: from mu-out-0910.google.com ([209.85.134.190]:57568 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756287AbYHPUtF (ORCPT
+	Sat, 16 Aug 2008 16:51:52 -0400
+Received: from cavan.codon.org.uk ([93.93.128.6]:45753 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751696AbYHPUvv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Aug 2008 16:49:05 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=P0tM8yyaNHhg8aeavkaQgLLtx06DDPuDn+Y4cfy0zxFF7v6qMpqBnXqecZjjTrmy45
-         hu9jduw3brbktmBB712wnsLr4uM4fqO/dxQo6i09p+aHhurrrcdDUWrR7Y4ZnIpGaZMr
-         rgZDpaM5Gka7+7Mi4jwWknUMm2g+ztrO0WnIg=
-Date: Sun, 17 Aug 2008 00:48:55 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: torvalds@osdl.org, akpm@osdl.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] De-macro spin_trylock_irq, spin_trylock_irqsave,
-	write_trylock_irqsave
-Message-ID: <20080816204855.GA5151@martell.zuzino.mipt.ru>
-References: <20080816095951.GA19926@martell.zuzino.mipt.ru> <48A6D694.4070302@gmail.com>
+	Sat, 16 Aug 2008 16:51:51 -0400
+Date: Sat, 16 Aug 2008 21:51:45 +0100
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: linux-kernel@vger.kernel.org, michael_e_brown@dell.com
+Subject: Re: [PATCH 2/2] Add Dell laptop driver
+Message-ID: <20080816205145.GA4498@srcf.ucam.org>
+References: <20080816202452.GA3331@srcf.ucam.org> <20080816202640.GB3331@srcf.ucam.org> <20080816203027.GC3331@srcf.ucam.org> <20080816134752.426bdd8a@infradead.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <48A6D694.4070302@gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <20080816134752.426bdd8a@infradead.org>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Aug 16, 2008 at 03:31:00PM +0200, Jiri Slaby wrote:
-> On 08/16/2008 11:59 AM, Alexey Dobriyan wrote:
->> 1) de-macro, remove ({ usages as side-effect,
->> 2) change calling convention to not accept "flags" by value -- trylock
->>    functions can modify them, so by-value is misleading, and number of 
->> users
->>    is relatively low.
->> 3) de-macro spin_trylock_irq() for a change.
->
-> Doesn't this break on sparc -- is it tested there?
+On Sat, Aug 16, 2008 at 01:47:52PM -0700, Arjan van de Ven wrote:
 
-What's so special about sparc?
+> how does this interact with the backlight control done via ACPI ?
 
-If you mean compile-tested, yes, compile-tested on
+Dell's ACPI implementation appears to be implemented on top of this at a 
+firmware level, so both are consistent. However, in terms of 
+cleanliness, we should wait for Thomas's patches to be merged so this 
+driver can disable the backlight support if there's an ACPI backlight 
+present. The reason I implemented it is that there's no ACPI backlight 
+support on some currently shipping Dells, never mind the older hardware.
 
-	sparc-allnoconfig
-	sparc-defconfig
-	sparc-smp-n-debug-n
-	sparc-smp-n-debug-y
-	sparc-smp-y-debug-n
-	sparc-smp-y-debug-y
-
-> Shouldn't all that be __always_inline?
-
-I don't know, likely nobody cares if they are inline or not.
-
->> --- a/include/linux/spinlock.h
->> +++ b/include/linux/spinlock.h
->> @@ -320,26 +320,38 @@ do {						\
->>   #define spin_trylock_bh(lock)	__cond_lock(lock, _spin_trylock_bh(lock))
->>  -#define spin_trylock_irq(lock) \
->> -({ \
->> -	local_irq_disable(); \
->> -	spin_trylock(lock) ? \
->> -	1 : ({ local_irq_enable(); 0;  }); \
->> -})
->> -
->> -#define spin_trylock_irqsave(lock, flags) \
->> -({ \
->> -	local_irq_save(flags); \
->> -	spin_trylock(lock) ? \
->> -	1 : ({ local_irq_restore(flags); 0; }); \
->> -})
->> -
->> -#define write_trylock_irqsave(lock, flags) \
->> -({ \
->> -	local_irq_save(flags); \
->> -	write_trylock(lock) ? \
->> -	1 : ({ local_irq_restore(flags); 0; }); \
->> -})
->> +static inline int spin_trylock_irq(spinlock_t *lock)
->> +{
->> +	local_irq_disable();
->> +	if (spin_trylock(lock))
->> +		return 1;
->> +	else {
->> +		local_irq_enable();
->> +		return 0;
->> +	}
->> +}
->> +
->> +static inline int spin_trylock_irqsave(spinlock_t *lock, unsigned long 
->> *flags)
->> +{
->> +	local_irq_save(*flags);
->> +	if (spin_trylock(lock))
->> +		return 1;
->> +	else {
->> +		local_irq_restore(*flags);
->> +		return 0;
->> +	}
->> +}
->> +
->> +static inline int write_trylock_irqsave(rwlock_t *lock, unsigned long 
->> *flags)
->> +{
->> +	local_irq_save(*flags);
->> +	if (write_trylock(lock))
->> +		return 1;
->> +	else {
->> +		local_irq_restore(*flags);
->> +		return 0;
->> +	}
->> +}
->>   /*
->>   * Pull the atomic_t declaration:
-
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
