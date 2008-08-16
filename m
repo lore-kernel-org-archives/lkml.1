@@ -1,67 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753441AbYHPKB0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753487AbYHPKDt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753441AbYHPKB0 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Aug 2008 06:01:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752520AbYHPKBS
+	id S1753487AbYHPKDt (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Aug 2008 06:03:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752452AbYHPKDl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Aug 2008 06:01:18 -0400
-Received: from aun.it.uu.se ([130.238.12.36]:57929 "EHLO aun.it.uu.se"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752475AbYHPKBR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Aug 2008 06:01:17 -0400
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18598.42334.73411.476062@harpo.it.uu.se>
-Date: Sat, 16 Aug 2008 12:01:02 +0200
-From: Mikael Pettersson <mikpe@it.uu.se>
-To: Grant Coady <gcoady.lk@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH 1/3] ATA Kconfig cleanup: hide ATA_SFF and add SATA/PATA menu items
-In-Reply-To: <qjoca411hv4hm25keq70ul5pnbi7747d13@4ax.com>
-References: <qjoca411hv4hm25keq70ul5pnbi7747d13@4ax.com>
-X-Mailer: VM 7.17 under Emacs 20.7.1
+	Sat, 16 Aug 2008 06:03:41 -0400
+Received: from smtp.ono.com ([62.42.230.12]:2837 "EHLO resmaa01.ono.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752154AbYHPKDk convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 16 Aug 2008 06:03:40 -0400
+Date: Sat, 16 Aug 2008 12:03:14 +0200
+From: "J.A. =?UTF-8?B?TWFnYWxsw7Nu?=" <jamagallon@ono.com>
+To: Linux-Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: ath5k on the Acer Aspire One
+Message-ID: <20080816120314.07d0bf57@werewolf.home>
+In-Reply-To: <20080815015131.39bb20ef@werewolf.home>
+References: <20080815015131.39bb20ef@werewolf.home>
+X-Mailer: Claws Mail 3.5.0cvs31 (GTK+ 2.13.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Grant Coady writes:
- > 
- > From: Grant Coady <gcoady.lk@gmail.com>
- > 
- > ATA Kconfig cleanup 1/3: Hide ATA_SFF, add PATA and SATA driver menu
- > enable items, and add dependency on the enabled PATA/SATA lines to 
- > all the ATA drivers except the PATA_PLATFORM items.
+On Fri, 15 Aug 2008 01:51:31 +0200, "J.A. Magallón" <jamagallon@ono.com> wrote:
 
-...
+> Hi...
+> 
+> I have just got a One, and have installed a standard distro (not Linpus),
+> Mandriva in my case.
+> 
+> Everything works pretty nicely but WiFi. Hardware is:
+> 
+> 03:00.0 Ethernet controller: Atheros Communications Inc. AR242x 802.11abg Wireless PCI Express Adapter (rev 01)
+> 
+> The driver used is ath5k. On load, it logs this:
+> 
+> 
+> Aug 15 01:13:57 one klogd: ath5k_pci 0000:03:00.0: registered as 'phy0'
+> Aug 15 01:13:57 one klogd: ath5k phy0: Support for RF2425 is under development.
+> Aug 15 01:13:57 one klogd: ath5k phy0: Atheros AR2425 chip found (MAC: 0xe2, PHY: 0x70)
+> 
 
- > @@ -147,7 +166,7 @@
- >  
- >  config SATA_PROMISE
- >  	tristate "Promise SATA TX2/TX4 support"
- > -	depends on PCI
- > +	depends on ATA_SFF_SATA && PCI
- >  	help
- >  	  This option enables support for Promise Serial ATA TX2/TX4.
+Thanks to everyone that answered, probably the solution is an update to
+the driver, hardware support for this chip was added in 27-rc.
+My distro still uses 26.2.
 
-As I told you last time this came up, sata_promise drives both
-sata and pata ports. One board has 4 pata ports, a couple have
-two sata ports and one pata port, and a couple have 4 sata ports.
-It's the same ata engine, however.
+I'm going on holydays for a week now, will make more tests on return,
+and continue the thread.
 
-So at least give sata_promise the same treatment you gave ata_piix:
+Thanks everyone.
 
- > @@ -104,7 +123,7 @@
- >  
- >  config ATA_PIIX
- >  	tristate "Intel ESB, ICH, PIIX3, PIIX4 PATA/SATA support"
- > -	depends on PCI
- > +	depends on (ATA_SFF_SATA || ATA_SFF_PATA) && PCI
- >  	help
- >  	  This option enables support for ICH5/6/7/8 Serial ATA
- >  	  and support for PATA on the Intel ESB/ICH/PIIX3/PIIX4 series
- > @@ -114,7 +133,7 @@
-
-I suspect sata_via will want this too.
-
-/Mikael
+-- 
+J.A. Magallon <jamagallon()ono!com>     \               Software is like sex:
+                                         \         It's better when it's free
+Mandriva Linux release 2009.0 (Cooker) for i586
+Linux 2.6.25-jam18 (gcc 4.3.1 20080626 (GCC) #1 SMP
