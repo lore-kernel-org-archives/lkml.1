@@ -1,99 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753278AbYHPSG6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753304AbYHPSM6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753278AbYHPSG6 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Aug 2008 14:06:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751729AbYHPSGu
+	id S1753304AbYHPSM6 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Aug 2008 14:12:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752212AbYHPSMs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Aug 2008 14:06:50 -0400
-Received: from mtagate3.de.ibm.com ([195.212.29.152]:38785 "EHLO
-	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751708AbYHPSGt (ORCPT
+	Sat, 16 Aug 2008 14:12:48 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:11726 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751708AbYHPSMr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Aug 2008 14:06:49 -0400
-Subject: Re: [patch 1/3] kmsg: Kernel message catalog macros.
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Reply-To: schwidefsky@de.ibm.com
-To: Tim Hockin <thockin@hockin.org>
-Cc: Greg KH <gregkh@suse.de>, Joe Perches <joe@perches.com>,
-       linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
-       lf_kernel_messages@lists.linux-foundation.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Michael Holzheu <holzheu@de.ibm.com>, Gerrit Huizenga <gh@us.ibm.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>, Jan Kara <jack@suse.cz>,
-       Pavel Machek <pavel@ucw.cz>, Sam Ravnborg <sam@ravnborg.org>,
-       Jochen =?ISO-8859-1?Q?Vo=DF?= <jochen.voss@googlemail.com>,
-       Kunai Takashi <kunai@linux-foundation.jp>,
-       Tim Bird <tim.bird@am.sony.com>
-In-Reply-To: <b3ece790808151003o24e518a1ra217010f6658c2c6@mail.gmail.com>
-References: <20080730165656.118280544@de.ibm.com>
-	 <20080730171156.824640459@de.ibm.com>
-	 <b3ece790808121735t21b4a629iaf6a968b30332d74@mail.gmail.com>
-	 <1218733457.2651.11.camel@localhost>
-	 <b3ece790808141150s3770531bsc88ec387e0f840d3@mail.gmail.com>
-	 <1218769739.24527.76.camel@localhost> <20080815034419.GB803@suse.de>
-	 <b3ece790808142233y3150b4d1sfeaa0342dbac31a6@mail.gmail.com>
-	 <20080815160355.GD23720@suse.de>
-	 <b3ece790808151003o24e518a1ra217010f6658c2c6@mail.gmail.com>
+	Sat, 16 Aug 2008 14:12:47 -0400
+Subject: Re: Btrfs v0.16 released
+From: Chris Mason <chris.mason@oracle.com>
+To: Theodore Tso <tytso@mit.edu>
+Cc: Andi Kleen <andi@firstfloor.org>, Peter Zijlstra <peterz@infradead.org>,
+       linux-btrfs <linux-btrfs@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>
+In-Reply-To: <1218832622.19495.14.camel@think.oraclecorp.com>
+References: <1218100464.8625.9.camel@twins>
+	 <1218105597.15342.189.camel@think.oraclecorp.com>
+	 <877ias66v4.fsf@basil.nowhere.org>
+	 <1218221293.15342.263.camel@think.oraclecorp.com>
+	 <1218747656.15342.439.camel@think.oraclecorp.com>
+	 <20080814234458.GD13048@mit.edu>
+	 <1218762627.15342.447.camel@think.oraclecorp.com>
+	 <1218804361.15342.470.camel@think.oraclecorp.com>
+	 <20080815134545.GM13048@mit.edu>
+	 <1218822772.15342.503.camel@think.oraclecorp.com>
+	 <20080815195941.GB22395@mit.edu>
+	 <1218832622.19495.14.camel@think.oraclecorp.com>
 Content-Type: text/plain
-Organization: IBM Corporation
-Date: Sat, 16 Aug 2008 20:06:30 +0200
-Message-Id: <1218909990.6037.28.camel@localhost>
+Date: Sat, 16 Aug 2008 14:10:10 -0400
+Message-Id: <1218910210.19495.25.camel@think.oraclecorp.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+X-Mailer: Evolution 2.22.2 
 Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-08-15 at 10:03 -0700, Tim Hockin wrote:
-> On Fri, Aug 15, 2008 at 9:03 AM, Greg KH <gregkh@suse.de> wrote:
-> >> I'd like to be able to report something like an OOM kill in (roughly)
-> >> the same way as an ATA error, and I want (though could be talked out
-> >> of) a way to tell these "events" (for lack of a better word) apart
-> >> from plain-old-printk()s.
-> >
-> > That's great, then create something that can handle both!  Don't throw
-> > away some wonderful information that way over half the kernel has access
-> > to just because the minority doesn't.  That would mean that we would
-> > loose information in those drivers overall.
+On Fri, 2008-08-15 at 16:37 -0400, Chris Mason wrote:
+> On Fri, 2008-08-15 at 15:59 -0400, Theodore Tso wrote:
+> > On Fri, Aug 15, 2008 at 01:52:52PM -0400, Chris Mason wrote:
+> > > Have you tried this one:
+> > > 
+> > > http://article.gmane.org/gmane.linux.file-systems/25560
+> > > 
+> > > This bug should cause fragmentation on small files getting forced out
+> > > due to memory pressure in ext4.  But, I wasn't able to really
+> > > demonstrate it with ext4 on my machine.
+> > 
+> > I've been able to use compilebench to see the fragmentation problem
+> > very easily.
+> > 
+> > Annesh has been workign on it, and has some fixes that he queued up.
+> > I'll have to point him at your proposed fix, thanks.  This is what he
+> > came up with in the common code.  What do you think?
+> > 
 > 
-> Sorry, I never meant to imply that dev_printk() was to be ignored, my
-> examples was meant to be trivial to demonstrate :)  dev_printk() is
-> good.  We should keep it :)
+> It sounds like ext4 would show the writeback_index bug with
+> fragmentation on disk and btrfs would show it with seeks during the
+> benchmark.  I was only watching the throughput numbers and not looking
+> at filefrag results.
+> 
 
-The invention of dev_printk was a good thing. It adds structure to the
-messages if it is about a device. Before we had a simple printk that did
-or did not include information about the device driver and the device
-name. dev_printk makes sure that this information is always added.
-BUT, what dev_printk does not do is to make sure that the message can be
-uniquely identified so that the description of the message can be found
-in the message catalog. Our approach is to combine the driver name and a
-simple index into a message tag. The original dev_printk remains almost
-unchanged. A typical hunk in the code looks like this:
+I tried just the writeback_index patch and got only 4 fragmented files
+on ext4 after a compilebench run.  Then I tried again and got 1200.
+Seems there is something timing dependent in here ;)
 
-@@ -24,8 +27,8 @@ static int zfcp_ccw_probe(struct ccw_dev
+By default compilebench uses 256k buffers for writing (see compilebench
+-b) and btrfs_file_write will lock down up to 512 pages at a time during
+a single write.  This means that for most small files, compilebench will
+send the whole file down in one write() and btrfs_file_write will lock
+down pages for the entire write() call while working on it.
 
-        down(&zfcp_data.config_sema);
-        if (zfcp_adapter_enqueue(ccw_device)) {
--               dev_err(&ccw_device->dev,
--                       "Setup of data structures failed.\n");
-+               kmsg_dev_err(73, &ccw_device->dev,
-+                            "Setup of data structures failed.\n");
-                retval = -EINVAL;
-        }
-        up(&zfcp_data.config_sema);
+So, even if pdflush tries to jump in and do the wrong thing, the pages
+will be locked by btrfs_file_write and pdflush will end up skipping
+them.
 
-The kmsg_dev_printk still has almost the same structure, only the
-message id is added. There is one real difference though:
-the driver name is specified with KMSG_COMPONENT and not via
-dev_driver_string(dev). We do that so that the kmsg-doc script can
-actually find the driver name. The dev_driver_string(dev) is dynamic and
-a static tool has a hard time to find the actual driver string.  
+With the generic file write routines, pages are locked one at a time,
+giving pdflush more windows to trigger delalloc while a write is still
+ongoing.
 
--- 
-blue skies,
-  Martin.
-
-"Reality continues to ruin my life." - Calvin.
+-chris
 
 
