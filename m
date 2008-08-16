@@ -1,43 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754841AbYHPCxJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755084AbYHPC5e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754841AbYHPCxJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Aug 2008 22:53:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751913AbYHPCw4
+	id S1755084AbYHPC5e (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Aug 2008 22:57:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751967AbYHPC5Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Aug 2008 22:52:56 -0400
-Received: from nfitmail.nfit.au.dk ([130.225.31.129]:14101 "EHLO
-	smtp.nfit.au.dk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751967AbYHPCwz (ORCPT
+	Fri, 15 Aug 2008 22:57:25 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:43749
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751650AbYHPC5Z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Aug 2008 22:52:55 -0400
-To: Lukas Hejtmanek <xhejtman@ics.muni.cz>
-Cc: linux-kernel@vger.kernel.org, mingo@redhat.com
-Subject: Re: sysprof in 2.6.27 kernel
-References: <20080813083953.GF19333@ics.muni.cz>
-	<ye8myjg7b4r.fsf@camel10.daimi.au.dk>
-	<20080814115620.GD4674@ics.muni.cz>
-From: Soeren Sandmann <sandmann@daimi.au.dk>
-Date: 16 Aug 2008 04:52:54 +0200
-In-Reply-To: <20080814115620.GD4674@ics.muni.cz>
-Message-ID: <ye8zlnd6589.fsf@camel28.daimi.au.dk>
-User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.4
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 15 Aug 2008 22:57:25 -0400
+Date: Fri, 15 Aug 2008 19:57:24 -0700 (PDT)
+Message-Id: <20080815.195724.238982506.davem@davemloft.net>
+To: michael@ellerman.id.au
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: bug in lmb_enforce_memory_limit()
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1218847582.7576.6.camel@localhost>
+References: <1218713213.10673.17.camel@localhost>
+	<20080815.152501.193746275.davem@davemloft.net>
+	<1218847582.7576.6.camel@localhost>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Lukas Hejtmanek <xhejtman@ics.muni.cz> writes:
+From: Michael Ellerman <michael@ellerman.id.au>
+Date: Sat, 16 Aug 2008 10:46:22 +1000
 
-> On Thu, Aug 14, 2008 at 01:23:16AM +0200, Soeren Sandmann wrote:
-> > It's somewhat rough still. If you try it out, I will be interested in
-> > any feedback you have.
+> On Fri, 2008-08-15 at 15:25 -0700, David Miller wrote:
+> > Sounds great.  Mind if I push the following to Linus?
 > 
-> and another one. sysproc gui reads user addresses from the sysprof pipe with
-> null pointers. is this ok or is this a bug in sysprof kernel module?
+> Looks good to me.
+> 
+> I'll test it on Monday. I don't know if I have a system with memory
+> holes to test on, but I take it you do?
+> 
+> I notice some of our 32-bit code is using lmb_enforce_memory_limit() to
+> enforce an address limit, which is technically broken, but is probably
+> fine because it doesn't need to worry about holes.
 
-That is not ok, but it could happen if the process in question was not
-compiled with framepointers. Or it could be a bug in the kernel code.
+Sounds like fun :-)
 
+> Acked-by: Michael Ellerman <michael@ellerman.id.au>
 
-Soren
+Thanks for reviewing Michael.
