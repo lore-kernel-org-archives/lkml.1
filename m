@@ -1,84 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753632AbYHPLjv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753020AbYHPL5j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753632AbYHPLjv (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Aug 2008 07:39:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751444AbYHPLjm
+	id S1753020AbYHPL5j (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Aug 2008 07:57:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751560AbYHPL5a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Aug 2008 07:39:42 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:45819 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751098AbYHPLjl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Aug 2008 07:39:41 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Date: Sat, 16 Aug 2008 13:39:26 +0200 (CEST)
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: [patch 3/3] ieee1394: sbp2: let nodemgr retry node updates during bus
- reset series
-To: linux1394-devel@lists.sourceforge.net
-cc: linux-kernel@vger.kernel.org, damien_benoist@yahoo.com
-In-Reply-To: <tkrat.a3ef08493991acb0@s5r6.in-berlin.de>
-Message-ID: <tkrat.5bc1689ebb141ddb@s5r6.in-berlin.de>
-References: <994096.81924.qm@web50505.mail.re2.yahoo.com>
- <48A5A80A.90506@s5r6.in-berlin.de> <48A6BA6F.2030000@s5r6.in-berlin.de>
- <tkrat.bdb066b22ec930a0@s5r6.in-berlin.de>
- <tkrat.a3ef08493991acb0@s5r6.in-berlin.de>
+	Sat, 16 Aug 2008 07:57:30 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:35827 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751279AbYHPL53 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 16 Aug 2008 07:57:29 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Subject: Re: [Bug #11276] build error: CONFIG_OPTIMIZE_INLINING=y causes gcc 4.2 to do stupid things
+Date: Sat, 16 Aug 2008 14:00:31 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       "Ingo Molnar" <mingo@elte.hu>, "Randy Dunlap" <randy.dunlap@oracle.com>
+References: <VYYCiQF4qDI.A.BPH.KCjnIB@albercik> <cX_-nNkxKaF.A.Fg.4CjnIB@albercik> <200808151721.08175.bjorn.helgaas@hp.com>
+In-Reply-To: <200808151721.08175.bjorn.helgaas@hp.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; CHARSET=us-ascii
-Content-Disposition: INLINE
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200808161400.32209.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-sbp2 was too quick to run away screaming "Failed to reconnect to sbp2
-device!" when additional nodes on the same bus came online.
+On Saturday, 16 of August 2008, Bjorn Helgaas wrote:
+> On Saturday 09 August 2008 04:43:51 pm Rafael J. Wysocki wrote:
+> > The following bug entry is on the current list of known regressions
+> > from 2.6.26.  Please verify if it still should be listed and let me know
+> > (either way).
+> > 
+> > 
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11276
+> > Subject		: build error: CONFIG_OPTIMIZE_INLINING=y causes gcc 4.2 to do stupid things
+> > Submitter	: Randy Dunlap <randy.dunlap@oracle.com>
+> > Date		: 2008-08-06 17:18 (4 days old)
+> > References	: http://marc.info/?l=linux-kernel&m=121804329014332&w=4
+> > 		  http://lkml.org/lkml/2008/7/22/353
+> > Handled-By	: Bjorn Helgaas <bjorn.helgaas@hp.com>
+> > Patch		: http://lkml.org/lkml/2008/7/22/364
+> 
+> Since I supplied a patch, I assume I don't need to do anything more.
+> Let me know if my assumption is incorrect.
 
-Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
----
- drivers/ieee1394/sbp2.c |   25 ++++++++++++++++++-------
- 1 file changed, 18 insertions(+), 7 deletions(-)
+You don't need to do anything more, but please let me know when the patch gets
+into to Linus' tree (please ignore the subsequent "should it still be listed"
+messages until that happens).
 
-Index: linux/drivers/ieee1394/sbp2.c
-===================================================================
---- linux.orig/drivers/ieee1394/sbp2.c
-+++ linux/drivers/ieee1394/sbp2.c
-@@ -733,15 +733,26 @@ static int sbp2_update(struct unit_direc
- {
- 	struct sbp2_lu *lu = ud->device.driver_data;
- 
--	if (sbp2_reconnect_device(lu)) {
--		/* Reconnect has failed. Perhaps we didn't reconnect fast
--		 * enough. Try a regular login, but first log out just in
--		 * case of any weirdness. */
-+	if (sbp2_reconnect_device(lu) != 0) {
-+		/*
-+		 * Reconnect failed.  If another bus reset happened,
-+		 * let nodemgr proceed and call sbp2_update again later
-+		 * (or sbp2_remove if this node went away).
-+		 */
-+		if (!hpsb_node_entry_valid(lu->ne))
-+			return 0;
-+		/*
-+		 * Or the target rejected the reconnect because we weren't
-+		 * fast enough.  Try a regular login, but first log out
-+		 * just in case of any weirdness.
-+		 */
- 		sbp2_logout_device(lu);
- 
--		if (sbp2_login_device(lu)) {
--			/* Login failed too, just fail, and the backend
--			 * will call our sbp2_remove for us */
-+		if (sbp2_login_device(lu) != 0) {
-+			if (!hpsb_node_entry_valid(lu->ne))
-+				return 0;
-+
-+			/* Maybe another initiator won the login. */
- 			SBP2_ERR("Failed to reconnect to sbp2 device!");
- 			return -EBUSY;
- 		}
-
--- 
-Stefan Richter
--=====-==--- =--- =----
-http://arcgraph.de/sr/
-
+Thanks,
+Rafael
