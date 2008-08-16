@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754771AbYHPWkU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755993AbYHPWkl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754771AbYHPWkU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Aug 2008 18:40:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753594AbYHPWj7
+	id S1755993AbYHPWkl (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Aug 2008 18:40:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753848AbYHPWkZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Aug 2008 18:39:59 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:46969 "EHLO mx2.suse.de"
+	Sat, 16 Aug 2008 18:40:25 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:46999 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752530AbYHPWj6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Aug 2008 18:39:58 -0400
-Subject: patch uml-physical-memory-shouldn-t-include-initial-stack.patch added to 2.6.25-stable tree
-To: jdike@addtoit.com, akpm@linux-foundation.org, caker@theshore.net,
-       gregkh@suse.de, jdike@linux.intel.com, linux-kernel@vger.kernel.org,
+	id S1755249AbYHPWkX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 16 Aug 2008 18:40:23 -0400
+Subject: patch uml-track-and-make-up-lost-ticks.patch added to 2.6.25-stable tree
+To: jdike@addtoit.com, akpm@linux-foundation.org, gregkh@suse.de,
+       jdike@linux.intel.com, linux-kernel@vger.kernel.org, nix@esperi.org.uk,
        torvalds@linux-foundation.org,
-       user-mode-linux-devel@lists.sourceforge.net, xiyou.wangcong@gmail.com
+       user-mode-linux-devel@lists.sourceforge.net
 Cc: <stable@kernel.org>, <stable-commits@vger.kernel.org>
 From: <gregkh@suse.de>
-Date: Sat, 16 Aug 2008 15:32:46 -0700
-In-Reply-To: <20080805201404.GA11782@c2.user-mode-linux.org>
-Message-Id: <20080816223956.6F6171454450@imap.suse.de>
+Date: Sat, 16 Aug 2008 15:32:47 -0700
+In-Reply-To: <20080805201405.GA11784@c2.user-mode-linux.org>
+Message-Id: <20080816224020.6F7E41454450@imap.suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -26,65 +26,177 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 This is a note to let you know that we have just queued up the patch titled
 
-    Subject: uml: physical memory shouldn't include initial stack
+    Subject: uml: track and make up lost ticks
 
 to the 2.6.25-stable tree.  Its filename is
 
-    uml-physical-memory-shouldn-t-include-initial-stack.patch
+    uml-track-and-make-up-lost-ticks.patch
 
 A git repo of this tree can be found at 
     http://www.kernel.org/git/?p=linux/kernel/git/stable/stable-queue.git;a=summary
 
 
->From stable-bounces@linux.kernel.org Tue Aug  5 13:14:54 2008
+>From stable-bounces@linux.kernel.org Tue Aug  5 13:14:23 2008
 From: Jeff Dike <jdike@addtoit.com>
-Date: Tue, 5 Aug 2008 16:14:04 -0400
-Subject: uml: physical memory shouldn't include initial stack
+Date: Tue, 5 Aug 2008 16:14:05 -0400
+Subject: uml: track and make up lost ticks
 To: stable@kernel.org
 Cc: LKML <linux-kernel@vger.kernel.org>, uml-devel <user-mode-linux-devel@lists.sourceforge.net>
-Message-ID: <20080805201404.GA11782@c2.user-mode-linux.org>
+Message-ID: <20080805201405.GA11784@c2.user-mode-linux.org>
 Content-Disposition: inline
 
 From: Jeff Dike <jdike@addtoit.com>
 
-commit 60a2988aea701a6424809a5432bf068667aac177 upstream
+commit fe2cc53ee013a4d4d0317d418e7019fe6533a5a8 upstream
 
-The top of physical memory should be below the initial process stack, not the
-top of the address space, at least for as long as the stack isn't known to the
-kernel VM system and appropriately reserved.
+Alarm delivery could be noticably late in the !CONFIG_NOHZ case because lost
+ticks weren't being taken into account.  This is now treated more carefully,
+with the time between ticks being calculated and the appropriate number of
+ticks delivered to the timekeeping system.
 
-Cc: "Christopher S. Aker" <caker@theshore.net>
+Cc: Nix <nix@esperi.org.uk>
 Signed-off-by: Jeff Dike <jdike@linux.intel.com>
-Cc: WANG Cong <xiyou.wangcong@gmail.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/um/kernel/um_arch.c |    5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+ arch/um/include/process.h |    4 +--
+ arch/um/os-Linux/signal.c |    1 
+ arch/um/os-Linux/time.c   |   54 ++++++++++++++++++++++++++++++++++++++++++----
+ 3 files changed, 53 insertions(+), 6 deletions(-)
 
---- a/arch/um/kernel/um_arch.c
-+++ b/arch/um/kernel/um_arch.c
-@@ -259,6 +259,7 @@ int __init linux_main(int argc, char **a
- 	unsigned long avail, diff;
- 	unsigned long virtmem_size, max_physmem;
- 	unsigned int i, add;
-+	unsigned long stack;
- 	char * mode;
+--- a/arch/um/include/process.h
++++ b/arch/um/include/process.h
+@@ -8,8 +8,8 @@
  
- 	for (i = 1; i < argc; i++) {
-@@ -347,7 +348,9 @@ int __init linux_main(int argc, char **a
- 	}
+ #include <signal.h>
  
- 	virtmem_size = physmem_size;
--	avail = TASK_SIZE - start_vm;
-+	stack = (unsigned long) argv;
-+	stack &= ~(1024 * 1024 - 1);
-+	avail = stack - start_vm;
- 	if (physmem_size > avail)
- 		virtmem_size = avail;
- 	end_vm = start_vm + virtmem_size;
+-extern void sig_handler(int sig, struct sigcontext sc);
+-extern void alarm_handler(int sig, struct sigcontext sc);
++extern void sig_handler(int sig, struct sigcontext *sc);
++extern void alarm_handler(int sig, struct sigcontext *sc);
+ 
+ #endif
+ 
+--- a/arch/um/os-Linux/signal.c
++++ b/arch/um/os-Linux/signal.c
+@@ -12,6 +12,7 @@
+ #include "as-layout.h"
+ #include "kern_util.h"
+ #include "os.h"
++#include "process.h"
+ #include "sysdep/barrier.h"
+ #include "sysdep/sigcontext.h"
+ #include "user.h"
+--- a/arch/um/os-Linux/time.c
++++ b/arch/um/os-Linux/time.c
+@@ -9,7 +9,9 @@
+ #include <time.h>
+ #include <sys/time.h>
+ #include "kern_constants.h"
++#include "kern_util.h"
+ #include "os.h"
++#include "process.h"
+ #include "user.h"
+ 
+ int set_interval(void)
+@@ -58,12 +60,17 @@ static inline long long timeval_to_ns(co
+ long long disable_timer(void)
+ {
+ 	struct itimerval time = ((struct itimerval) { { 0, 0 }, { 0, 0 } });
++	int remain, max = UM_NSEC_PER_SEC / UM_HZ;
+ 
+ 	if (setitimer(ITIMER_VIRTUAL, &time, &time) < 0)
+ 		printk(UM_KERN_ERR "disable_timer - setitimer failed, "
+ 		       "errno = %d\n", errno);
+ 
+-	return timeval_to_ns(&time.it_value);
++	remain = timeval_to_ns(&time.it_value);
++	if (remain > max)
++		remain = max;
++
++	return remain;
+ }
+ 
+ long long os_nsecs(void)
+@@ -79,7 +86,44 @@ static int after_sleep_interval(struct t
+ {
+ 	return 0;
+ }
++
++static void deliver_alarm(void)
++{
++	alarm_handler(SIGVTALRM, NULL);
++}
++
++static unsigned long long sleep_time(unsigned long long nsecs)
++{
++	return nsecs;
++}
++
+ #else
++unsigned long long last_tick;
++unsigned long long skew;
++
++static void deliver_alarm(void)
++{
++	unsigned long long this_tick = os_nsecs();
++	int one_tick = UM_NSEC_PER_SEC / UM_HZ;
++
++	if (last_tick == 0)
++		last_tick = this_tick - one_tick;
++
++	skew += this_tick - last_tick;
++
++	while (skew >= one_tick) {
++		alarm_handler(SIGVTALRM, NULL);
++		skew -= one_tick;
++	}
++
++	last_tick = this_tick;
++}
++
++static unsigned long long sleep_time(unsigned long long nsecs)
++{
++	return nsecs > skew ? nsecs - skew : 0;
++}
++
+ static inline long long timespec_to_us(const struct timespec *ts)
+ {
+ 	return ((long long) ts->tv_sec * UM_USEC_PER_SEC) +
+@@ -102,6 +146,8 @@ static int after_sleep_interval(struct t
+ 	 */
+ 	if (start_usecs > usec)
+ 		start_usecs = usec;
++
++	start_usecs -= skew / UM_NSEC_PER_USEC;
+ 	tv = ((struct timeval) { .tv_sec  = start_usecs / UM_USEC_PER_SEC,
+ 				 .tv_usec = start_usecs % UM_USEC_PER_SEC });
+ 	interval = ((struct itimerval) { { 0, usec }, tv });
+@@ -113,8 +159,6 @@ static int after_sleep_interval(struct t
+ }
+ #endif
+ 
+-extern void alarm_handler(int sig, struct sigcontext *sc);
+-
+ void idle_sleep(unsigned long long nsecs)
+ {
+ 	struct timespec ts;
+@@ -126,10 +170,12 @@ void idle_sleep(unsigned long long nsecs
+ 	 */
+ 	if (nsecs == 0)
+ 		nsecs = UM_NSEC_PER_SEC / UM_HZ;
++
++	nsecs = sleep_time(nsecs);
+ 	ts = ((struct timespec) { .tv_sec	= nsecs / UM_NSEC_PER_SEC,
+ 				  .tv_nsec	= nsecs % UM_NSEC_PER_SEC });
+ 
+ 	if (nanosleep(&ts, &ts) == 0)
+-		alarm_handler(SIGVTALRM, NULL);
++		deliver_alarm();
+ 	after_sleep_interval(&ts);
+ }
 
 
 Patches currently in stable-queue which might be from jdike@addtoit.com are
