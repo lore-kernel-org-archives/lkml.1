@@ -1,47 +1,372 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753544AbYHPNgU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752839AbYHPNhv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753544AbYHPNgU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Aug 2008 09:36:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752141AbYHPNgM
+	id S1752839AbYHPNhv (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Aug 2008 09:37:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750920AbYHPNhj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Aug 2008 09:36:12 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:33415 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751946AbYHPNgM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Aug 2008 09:36:12 -0400
-Date: Sat, 16 Aug 2008 15:35:54 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/5] merge io_apic_xx.c -- fix
-Message-ID: <20080816133554.GB11063@elte.hu>
-References: <1218881249-3028-1-git-send-email-yhlu.kernel@gmail.com>
+	Sat, 16 Aug 2008 09:37:39 -0400
+Received: from yx-out-2324.google.com ([74.125.44.29]:14160 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750869AbYHPNhi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 16 Aug 2008 09:37:38 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=kQx7CLlZsa9c/qGGiMqYvB7QFgHLYui6h0w1A3cwv31UlW9HA6tbA7YzPUz0SJ6iy3
+         4brNWNbDxYPYgBFkCF1lqTcX0emF6djFCW0jPOlr4QZdTDKm+mdfQPxJzUcXfA7pHVEA
+         LWHzTspDcH5sGMeSe2BOX/n/cXmBiIO/AeblA=
+Message-ID: <6278d2220808160637h1c096c1akdf929820f2cbd23d@mail.gmail.com>
+Date: Sat, 16 Aug 2008 14:37:37 +0100
+From: "Daniel J Blueman" <daniel.blueman@gmail.com>
+To: "Takashi Iwai" <tiwai@suse.de>
+Subject: Re: ALC883 recording troubles...
+Cc: "Vegard Nossum" <vegard.nossum@gmail.com>,
+       "Romano Giannetti" <romano@dea.icai.upcomillas.es>,
+       "Linux Kernel" <linux-kernel@vger.kernel.org>
+In-Reply-To: <s5hwsihnym4.wl%tiwai@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1218881249-3028-1-git-send-email-yhlu.kernel@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+References: <6278d2220806091259t47c9b070v269da0f5855ef014@mail.gmail.com>
+	 <6278d2220806111200g4f802885wfc5f0fd6c0405efb@mail.gmail.com>
+	 <s5hiqwf0vyr.wl%tiwai@suse.de>
+	 <6278d2220806271705v5bd5fec3l86c3560283063092@mail.gmail.com>
+	 <19f34abd0806280311s115062e6vc6d0f304cb744934@mail.gmail.com>
+	 <6278d2220806280329j2f77c52dp8fbae78420c136c1@mail.gmail.com>
+	 <6278d2220808141210p3c612feen6fe779bc84a4ae78@mail.gmail.com>
+	 <s5hfxp65ohr.wl%tiwai@suse.de>
+	 <6278d2220808151501i207e5cccg733e20b8fa1d227d@mail.gmail.com>
+	 <s5hwsihnym4.wl%tiwai@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Takashi and thanks,
 
-* Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+On Sat, Aug 16, 2008 at 9:38 AM, Takashi Iwai <tiwai@suse.de> wrote:
+> At Fri, 15 Aug 2008 23:01:42 +0100,
+> Daniel J Blueman wrote:
+>>
+>> Hi Takashi,
+>>
+>> On Fri, Aug 15, 2008 at 3:42 PM, Takashi Iwai <tiwai@suse.de> wrote:
+>> > At Thu, 14 Aug 2008 20:10:03 +0100,
+>> > Daniel J Blueman wrote:
+>> >>
+>> >> Hi Takashi,
+>> >>
+>> >> I am still finding this recording +ve saturation on my ALC883 Intel
+>> >> HDA sound device with 2.6.27-rc3 (ie ALSA 1.0.17 drivers) and ALSA
+>> >> 1.0.16-1 libraries on Ubuntu Intrepid.
+>> >>
+>> >> The previous workaround still 'gets us out of jail':
+>> >>
+>> >> # ./hda-verb /dev/snd/hwC0D0 0x23 SET_AMP_GAIN_MUTE 0x7180
+>> >> nid = 0x23, verb = 0x300, param = 0x7180
+>> >> value = 0x0
+>> >
+>> > Could you try the patch below?  With this patch, unused connections
+>> > will be disabled.  Let me know if it really works so that I can merge
+>> > it to git tree.
+>> >
+>> > Takashi
+>> >
+>> > ---
+>> > diff --git a/sound/pci/hda/patch_realtek.c b/sound/pci/hda/patch_realtek.c
+>> > index 9473abb..6f0485a 100644
+>> > --- a/sound/pci/hda/patch_realtek.c
+>> > +++ b/sound/pci/hda/patch_realtek.c
+>> > @@ -6442,6 +6442,40 @@ static void alc882_auto_init_analog_input(struct hda_codec *codec)
+>> >        }
+>> >  }
+>> >
+>> > +static void alc882_auto_init_input_src(struct hda_codec *codec)
+>> > +{
+>> > +       struct alc_spec *spec = codec->spec;
+>> > +       const struct hda_input_mux *imux = spec->input_mux;
+>> > +       int c;
+>> > +
+>> > +       for (c = 0; c < spec->num_adc_nids; c++) {
+>> > +               hda_nid_t conn_list[10];
+>> > +               hda_nid_t nid = spec->capsrc_nids[c];
+>> > +               int conns, mute, idx, item;
+>> > +
+>> > +               conns = snd_hda_get_connections(codec, nid, conn_list,
+>> > +                                               ARRAY_SIZE(conn_list));
+>> > +               if (conns < 0)
+>> > +                       continue;
+>> > +               mute = HDA_AMP_MUTE;
+>> > +               for (idx = 0; idx < conns; idx++) {
+>> > +                       /* if the current connection is the selected one,
+>> > +                        * unmute it as default - otherwise mute it
+>> > +                        */
+>> > +                       for (item = 0; item < imux->num_items; item++) {
+>> > +                               if (imux->items[item].index == idx) {
+>> > +                                       if (spec->cur_mux[c] == item)
+>> > +                                               mute = 0;
+>> > +                                       break;
+>> > +                               }
+>> > +                       }
+>> > +                       snd_hda_codec_amp_stereo(codec, nid, HDA_INPUT,
+>> > +                                                idx, HDA_AMP_MUTE, mute);
+>> > +               }
+>> > +
+>> > +       }
+>> > +}
+>> > +
+>> >  /* add mic boosts if needed */
+>> >  static int alc_auto_add_mic_boost(struct hda_codec *codec)
+>> >  {
+>> > @@ -6496,6 +6530,7 @@ static void alc882_auto_init(struct hda_codec *codec)
+>> >        alc882_auto_init_multi_out(codec);
+>> >        alc882_auto_init_hp_out(codec);
+>> >        alc882_auto_init_analog_input(codec);
+>> > +       alc882_auto_init_input_src(codec);
+>> >        if (spec->unsol_event)
+>> >                alc_sku_automute(codec);
+>> >  }
+>> > @@ -8290,6 +8325,8 @@ static void alc883_auto_init_analog_input(struct hda_codec *codec)
+>> >        }
+>> >  }
+>> >
+>> > +#define alc883_auto_init_input_src     alc882_auto_init_input_src
+>> > +
+>> >  /* almost identical with ALC880 parser... */
+>> >  static int alc883_parse_auto_config(struct hda_codec *codec)
+>> >  {
+>> > @@ -8320,6 +8357,7 @@ static void alc883_auto_init(struct hda_codec *codec)
+>> >        alc883_auto_init_multi_out(codec);
+>> >        alc883_auto_init_hp_out(codec);
+>> >        alc883_auto_init_analog_input(codec);
+>> > +       alc883_auto_init_input_src(codec);
+>> >        if (spec->unsol_event)
+>> >                alc_sku_automute(codec);
+>> >  }
+>> > @@ -9703,6 +9741,7 @@ static int alc262_parse_auto_config(struct hda_codec *codec)
+>> >  #define alc262_auto_init_multi_out     alc882_auto_init_multi_out
+>> >  #define alc262_auto_init_hp_out                alc882_auto_init_hp_out
+>> >  #define alc262_auto_init_analog_input  alc882_auto_init_analog_input
+>> > +#define alc262_auto_init_input_src     alc882_auto_init_input_src
+>> >
+>> >
+>> >  /* init callback for auto-configuration model -- overriding the default init */
+>> > @@ -9712,6 +9751,7 @@ static void alc262_auto_init(struct hda_codec *codec)
+>> >        alc262_auto_init_multi_out(codec);
+>> >        alc262_auto_init_hp_out(codec);
+>> >        alc262_auto_init_analog_input(codec);
+>> > +       alc262_auto_init_input_src(codec);
+>> >        if (spec->unsol_event)
+>> >                alc_sku_automute(codec);
+>> >  }
+>> > @@ -13382,6 +13422,8 @@ static void alc861vd_auto_init_analog_input(struct hda_codec *codec)
+>> >        }
+>> >  }
+>> >
+>> > +#define alc861vd_auto_init_input_src   alc882_auto_init_input_src
+>> > +
+>> >  #define alc861vd_idx_to_mixer_vol(nid)         ((nid) + 0x02)
+>> >  #define alc861vd_idx_to_mixer_switch(nid)      ((nid) + 0x0c)
+>> >
+>> > @@ -13564,6 +13606,7 @@ static void alc861vd_auto_init(struct hda_codec *codec)
+>> >        alc861vd_auto_init_multi_out(codec);
+>> >        alc861vd_auto_init_hp_out(codec);
+>> >        alc861vd_auto_init_analog_input(codec);
+>> > +       alc861vd_auto_init_input_src(codec);
+>> >        if (spec->unsol_event)
+>> >                alc_sku_automute(codec);
+>> >  }
+>> > @@ -14729,6 +14772,8 @@ static void alc662_auto_init_analog_input(struct hda_codec *codec)
+>> >        }
+>> >  }
+>> >
+>> > +#define alc662_auto_init_input_src     alc882_auto_init_input_src
+>> > +
+>> >  static int alc662_parse_auto_config(struct hda_codec *codec)
+>> >  {
+>> >        struct alc_spec *spec = codec->spec;
+>> > @@ -14785,6 +14830,7 @@ static void alc662_auto_init(struct hda_codec *codec)
+>> >        alc662_auto_init_multi_out(codec);
+>> >        alc662_auto_init_hp_out(codec);
+>> >        alc662_auto_init_analog_input(codec);
+>> > +       alc662_auto_init_input_src(codec);
+>> >        if (spec->unsol_event)
+>> >                alc_sku_automute(codec);
+>> >  }
+>>
+>> There were a couple of issues: getting the mute logic right from
+>> moving the assignment and increasing the number of inputs beyond the
+>> 11 required here to avoid the 'Too many connections' message and
+>> fixing the last input being skipped.
+>
+> Oh I should have more carefully checked.
+>
+>> With the updated patch, the problem is fully addressed; no resulting
+>> DC offset, so recording quality is great. This seems logically safe
+>> and a hopeful for 2.6.27-rc4...
+>>
+>> The updated patch is against 2.6.27-rc3.
+>
+> Thanks.  There is another problem in the current patch.
+> It should use snd_hda_codec_write() without caching.  Otherwise
+> it breaks the suspend/resume.
+>
+> The revised patch is below.  Please test and report back if it works
+> so that I can push it to the upstream.
+>
+>
+> thanks,
+>
+> Takashi
+>
+> ===
+> commit 340c6e7d8bc26354313fe8bacc636ca18f71995e
+> Author: Takashi Iwai <tiwai@suse.de>
+> Date:   Fri Aug 15 16:46:42 2008 +0200
+>
+>    ALSA: hda - Fix capture source widgets on ALC codecs
+>
+>    On some Realtek codecs like ALC882 or ALC883, the capture source is
+>    no mux but sum widget.  We have to initialize all channels properly
+>    for this type, otherwise noises may come in from the unused route.
+>
+>    The patch assures to mute unused routes, and unmute the currently
+>    selected route.
+>
+>    Signed-off-by: Takashi Iwai <tiwai@suse.de>
+>
+> diff --git a/sound/pci/hda/patch_realtek.c b/sound/pci/hda/patch_realtek.c
+> index add4e87..56d899f 100644
+> --- a/sound/pci/hda/patch_realtek.c
+> +++ b/sound/pci/hda/patch_realtek.c
+> @@ -6437,6 +6437,40 @@ static void alc882_auto_init_analog_input(struct hda_codec *codec)
+>        }
+>  }
+>
+> +static void alc882_auto_init_input_src(struct hda_codec *codec)
+> +{
+> +       struct alc_spec *spec = codec->spec;
+> +       const struct hda_input_mux *imux = spec->input_mux;
+> +       int c;
+> +
+> +       for (c = 0; c < spec->num_adc_nids; c++) {
+> +               hda_nid_t conn_list[10];
+> +               hda_nid_t nid = spec->capsrc_nids[c];
+> +               int conns, mute, idx, item;
+> +
+> +               conns = snd_hda_get_connections(codec, nid, conn_list,
+> +                                               ARRAY_SIZE(conn_list));
+> +               if (conns < 0)
+> +                       continue;
+> +               mute = HDA_AMP_MUTE;
+> +               for (idx = 0; idx < conns; idx++) {
+> +                       /* if the current connection is the selected one,
+> +                        * unmute it as default - otherwise mute it
+> +                        */
+> +                       for (item = 0; item < imux->num_items; item++) {
+> +                               if (imux->items[item].index == idx) {
+> +                                       if (spec->cur_mux[c] == item)
+> +                                               mute = 0;
+> +                                       break;
+> +                               }
+> +                       }
+> +                       snd_hda_codec_amp_stereo(codec, nid, HDA_INPUT,
+> +                                                idx, HDA_AMP_MUTE, mute);
+> +               }
+> +
+> +       }
+> +}
+> +
+>  /* add mic boosts if needed */
+>  static int alc_auto_add_mic_boost(struct hda_codec *codec)
+>  {
+> @@ -6491,6 +6525,7 @@ static void alc882_auto_init(struct hda_codec *codec)
+>        alc882_auto_init_multi_out(codec);
+>        alc882_auto_init_hp_out(codec);
+>        alc882_auto_init_analog_input(codec);
+> +       alc882_auto_init_input_src(codec);
+>        if (spec->unsol_event)
+>                alc_sku_automute(codec);
+>  }
+> @@ -8285,6 +8320,8 @@ static void alc883_auto_init_analog_input(struct hda_codec *codec)
+>        }
+>  }
+>
+> +#define alc883_auto_init_input_src     alc882_auto_init_input_src
+> +
+>  /* almost identical with ALC880 parser... */
+>  static int alc883_parse_auto_config(struct hda_codec *codec)
+>  {
+> @@ -8315,6 +8352,7 @@ static void alc883_auto_init(struct hda_codec *codec)
+>        alc883_auto_init_multi_out(codec);
+>        alc883_auto_init_hp_out(codec);
+>        alc883_auto_init_analog_input(codec);
+> +       alc883_auto_init_input_src(codec);
+>        if (spec->unsol_event)
+>                alc_sku_automute(codec);
+>  }
+> @@ -9663,6 +9701,7 @@ static int alc262_parse_auto_config(struct hda_codec *codec)
+>  #define alc262_auto_init_multi_out     alc882_auto_init_multi_out
+>  #define alc262_auto_init_hp_out                alc882_auto_init_hp_out
+>  #define alc262_auto_init_analog_input  alc882_auto_init_analog_input
+> +#define alc262_auto_init_input_src     alc882_auto_init_input_src
+>
+>
+>  /* init callback for auto-configuration model -- overriding the default init */
+> @@ -9672,6 +9711,7 @@ static void alc262_auto_init(struct hda_codec *codec)
+>        alc262_auto_init_multi_out(codec);
+>        alc262_auto_init_hp_out(codec);
+>        alc262_auto_init_analog_input(codec);
+> +       alc262_auto_init_input_src(codec);
+>        if (spec->unsol_event)
+>                alc_sku_automute(codec);
+>  }
+> @@ -13330,6 +13370,8 @@ static void alc861vd_auto_init_analog_input(struct hda_codec *codec)
+>        }
+>  }
+>
+> +#define alc861vd_auto_init_input_src   alc882_auto_init_input_src
+> +
+>  #define alc861vd_idx_to_mixer_vol(nid)         ((nid) + 0x02)
+>  #define alc861vd_idx_to_mixer_switch(nid)      ((nid) + 0x0c)
+>
+> @@ -13512,6 +13554,7 @@ static void alc861vd_auto_init(struct hda_codec *codec)
+>        alc861vd_auto_init_multi_out(codec);
+>        alc861vd_auto_init_hp_out(codec);
+>        alc861vd_auto_init_analog_input(codec);
+> +       alc861vd_auto_init_input_src(codec);
+>        if (spec->unsol_event)
+>                alc_sku_automute(codec);
+>  }
+> @@ -14677,6 +14720,8 @@ static void alc662_auto_init_analog_input(struct hda_codec *codec)
+>        }
+>  }
+>
+> +#define alc662_auto_init_input_src     alc882_auto_init_input_src
+> +
+>  static int alc662_parse_auto_config(struct hda_codec *codec)
+>  {
+>        struct alc_spec *spec = codec->spec;
+> @@ -14733,6 +14778,7 @@ static void alc662_auto_init(struct hda_codec *codec)
+>        alc662_auto_init_multi_out(codec);
+>        alc662_auto_init_hp_out(codec);
+>        alc662_auto_init_analog_input(codec);
+> +       alc662_auto_init_input_src(codec);
+>        if (spec->unsol_event)
+>                alc_sku_automute(codec);
+>  }
 
->     merge io_apic_xx.c
-> 
-> Thanks
+This patch is first one you sent, except differing line numbers
+(rediffed against 2.6.27-rc3?).
 
-applied to tip/irq/sparseirq - thanks!
+You could try attaching the patch to the mail too, to avoid the line
+wrapping, silent whitespace conversion and any gmail/mailer 'hide
+quoted text' mangling...
 
-	Ingo
+Thanks,
+  Daniel
+-- 
+Daniel J Blueman
