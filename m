@@ -1,71 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755878AbYHPIHP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754357AbYHPIXZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755878AbYHPIHP (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Aug 2008 04:07:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752119AbYHPIG6
+	id S1754357AbYHPIXZ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Aug 2008 04:23:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752000AbYHPIXP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Aug 2008 04:06:58 -0400
-Received: from mail.ukfsn.org ([77.75.108.10]:53175 "EHLO mail.ukfsn.org"
+	Sat, 16 Aug 2008 04:23:15 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:57983 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751961AbYHPIG4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Aug 2008 04:06:56 -0400
-Date: Sat, 16 Aug 2008 09:06:54 +0100
-From: Nick Warne <nick@ukfsn.org>
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-Subject: Re: [PATCH] Fixup KERN_INFO in tmscsim.c
-Message-ID: <20080816090654.4a5188e2@sauron.linicks.net>
-In-Reply-To: <Pine.LNX.4.64.0808152202440.7852@axis700.grange>
-References: <20080815121045.48ca37e4@sauron.linicks.net>
- <Pine.LNX.4.64.0808152202440.7852@axis700.grange>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.9; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1751140AbYHPIXP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 16 Aug 2008 04:23:15 -0400
+Date: Sat, 16 Aug 2008 10:22:58 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: [PATCH] x86: io_apic.c, build fix
+Message-ID: <20080816082258.GA5915@elte.hu>
+References: <1218843762-14650-1-git-send-email-yhlu.kernel@gmail.com> <1218843762-14650-2-git-send-email-yhlu.kernel@gmail.com> <1218843762-14650-3-git-send-email-yhlu.kernel@gmail.com> <1218843762-14650-4-git-send-email-yhlu.kernel@gmail.com> <1218843762-14650-5-git-send-email-yhlu.kernel@gmail.com> <1218843762-14650-6-git-send-email-yhlu.kernel@gmail.com> <1218843762-14650-7-git-send-email-yhlu.kernel@gmail.com> <20080816080221.GA8415@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080816080221.GA8415@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 15 Aug 2008 22:17:57 +0200 (CEST)
-Guennadi Liakhovetski <g.liakhovetski@gmx.de> wrote:
 
-> On Fri, 15 Aug 2008, Nick Warne wrote:
-> Wow, are you sure you need the tmscsim driver on your new amd64
-> system?:-)
+>From 306bb46f92d326c5afae3fa04860bdccb879b6b8 Mon Sep 17 00:00:00 2001
+From: Ingo Molnar <mingo@elte.hu>
+Date: Sat, 16 Aug 2008 10:18:31 +0200
+Subject: [PATCH] x86: io_apic.c, build fix
 
-I don't know :-)  A new distro (Slackware 12.1) has almost everything
-set as modules, so I am currently building new kernel removing them as I
-go - just the first couple of log scans revealed this...
+fix:
 
-> I do not know why your
-> syslogd / klogd converts a TAB to "^I". 
+ arch/x86/kernel/io_apic.c: In function 'MPBIOS_trigger':
+ arch/x86/kernel/io_apic.c:1105: error: implicit declaration of function 'default_MCA_trigger'
 
-Mystery to me too...
+the MCA defines got lost in the unification.
 
-> So, please, redo as above, create with "-p1" format, fix your Sob line
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ arch/x86/kernel/io_apic.c |    6 ++++++
+ 1 files changed, 6 insertions(+), 0 deletions(-)
 
-Thanks.
-
-Nick
-
-New patch attached.
-
-Signed off by: Nick Warne nick@ukfsn.org
-
---- linux-2.6.26.y/drivers/scsi/tmscsim.cORIG	2008-08-15 10:30:47.000000000 +0100
-+++ linux-2.6.26.y/drivers/scsi/tmscsim.c	2008-08-16 08:45:43.000000000 +0100
-@@ -2573,8 +2573,8 @@
- static int __init dc390_module_init(void)
- {
- 	if (!disable_clustering)
--		printk(KERN_INFO "DC390: clustering now enabled by default. If you get problems load\n"
--		       "\twith \"disable_clustering=1\" and report to maintainers\n");
-+		printk(KERN_INFO "DC390: clustering now enabled by default. If you get problems load\n");
-+		printk(KERN_INFO "	with \"disable_clustering=1\" and report to maintainers\n");
+diff --git a/arch/x86/kernel/io_apic.c b/arch/x86/kernel/io_apic.c
+index 2043cd8..929429f 100644
+--- a/arch/x86/kernel/io_apic.c
++++ b/arch/x86/kernel/io_apic.c
+@@ -1025,6 +1025,12 @@ static int EISA_ELCR(unsigned int irq)
+ #define default_EISA_trigger(idx)       (EISA_ELCR(mp_irqs[idx].mp_srcbusirq))
+ #define default_EISA_polarity(idx)      default_ISA_polarity(idx)
  
- 	if (tmscsim[0] == -1 || tmscsim[0] > 15) {
- 		tmscsim[0] = 7;
-
-
--- 
-Free Software Foundation Associate Member 5508
++/* MCA interrupts are always polarity zero level triggered,
++ * when listed as conforming in the MP table. */
++
++#define default_MCA_trigger(idx)	(1)
++#define default_MCA_polarity(idx)	default_ISA_polarity(idx)
++
+ 
+ static int MPBIOS_polarity(int idx)
+ {
