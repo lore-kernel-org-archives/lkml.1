@@ -1,133 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753678AbYHPLEc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752856AbYHPLhV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753678AbYHPLEc (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Aug 2008 07:04:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752692AbYHPLEY
+	id S1752856AbYHPLhV (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Aug 2008 07:37:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751098AbYHPLhI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Aug 2008 07:04:24 -0400
-Received: from smtp-vbr3.xs4all.nl ([194.109.24.23]:4015 "EHLO
-	smtp-vbr3.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752142AbYHPLEX (ORCPT
+	Sat, 16 Aug 2008 07:37:08 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:45775 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750958AbYHPLhH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Aug 2008 07:04:23 -0400
-From: Hans Verkuil <hverkuil@xs4all.nl>
-To: David Woodhouse <dwmw2@infradead.org>
-Subject: Re: [PATCH] Fix header export of videodev2.h, ivtv.h, ivtvfb.h
-Date: Sat, 16 Aug 2008 13:04:11 +0200
-User-Agent: KMail/1.9.9
-Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       mchehab@infradead.org
-References: <1218884104.3184.215.camel@pmac.infradead.org>
-In-Reply-To: <1218884104.3184.215.camel@pmac.infradead.org>
+	Sat, 16 Aug 2008 07:37:07 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Date: Sat, 16 Aug 2008 13:36:47 +0200 (CEST)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: [patch 1/3] ieee1394: regression in 2.6.25: updates should happen
+ before probes
+To: linux1394-devel@lists.sourceforge.net
+cc: linux-kernel@vger.kernel.org, damien_benoist@yahoo.com,
+       Dave Young <hidave.darkstar@gmail.com>
+In-Reply-To: <48A6BA6F.2030000@s5r6.in-berlin.de>
+Message-ID: <tkrat.bdb066b22ec930a0@s5r6.in-berlin.de>
+References: <994096.81924.qm@web50505.mail.re2.yahoo.com>
+ <48A5A80A.90506@s5r6.in-berlin.de> <48A6BA6F.2030000@s5r6.in-berlin.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200808161304.11678.hverkuil@xs4all.nl>
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-Disposition: INLINE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 16 August 2008 12:55:04 David Woodhouse wrote:
-> The exported copy of videodev2.h contains this line:
->
-> 	#define #include <sys/time.h>
->
-> This is because for some reason it defines __user for itself --
-> despite the fact that we remove all instances of __user when
-> exporting headers. _All_ pointers in userspace are user pointers. Fix
-> it by removing the unnecessary '#define __user' from the file.
->
-> The new headers ivtv.h and ivtvfb.h would have the same problem... if
-> whoever put them there had actually remembered to add them to the
-> Kbuild file while he was at it. Fix those too, and export them as was
-> presumably intended.
+Regression since commit 73cf60232ef16e1f8a64defa97214a1722db1e6c,
+"ieee1394: use class iteration api":  The two loops for (1.) driver
+updates and (2.) driver probes were replaced by a single loop with
+bogus needs_probe checks.  Hence updates and probes were now intermixed,
+and especially sbp2 updates (reconnects) held up longer than necessary.
 
-Yes, that was indeed the intention. I didn't know until quite recently 
-about the Kbuild file. And I was just about to make a patch adding 
-these headers when your email arrived :-)
+While we fix it, change the needs_probe flag to bool type for clarity.
 
-So here is my SoB for the ivtv headers:
+Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+---
 
-Signed-off-by: Hans Verkuil <hverkuil@xs4all.nl>
+I will make sure that this goes into -stable too.
 
-Thanks!
+Dave, I won't Cc you on patch 2/3 and 3/3 of this series because they
+are not related to the loop regression.
 
-	Hans
+ drivers/ieee1394/nodemgr.c |   14 ++++++++------
+ drivers/ieee1394/nodemgr.h |    2 +-
+ 2 files changed, 9 insertions(+), 7 deletions(-)
 
->
-> Note that includes of <linux/compiler.h> are also stripped by the
-> header export process, so those don't need to be conditional.
->
-> Signed-off-by: David Woodhouse <David.Woodhouse@intel.com>
-> Signed-off-by: Mauro Carvalho Chehab <mchehab@infradead.org>
->
-> diff --git a/include/linux/Kbuild b/include/linux/Kbuild
-> index 327f606..7d97067 100644
-> --- a/include/linux/Kbuild
-> +++ b/include/linux/Kbuild
-> @@ -250,6 +250,8 @@ unifdef-y += isdn.h
->  unifdef-y += isdnif.h
->  unifdef-y += isdn_divertif.h
->  unifdef-y += isdn_ppp.h
-> +unifdef-y += ivtv.h
-> +unifdef-y += ivtvfb.h
->  unifdef-y += joystick.h
->  unifdef-y += kdev_t.h
->  unifdef-y += kd.h
-> diff --git a/include/linux/ivtv.h b/include/linux/ivtv.h
-> index 794b8da..17ca64b 100644
-> --- a/include/linux/ivtv.h
-> +++ b/include/linux/ivtv.h
-> @@ -21,11 +21,7 @@
->  #ifndef __LINUX_IVTV_H__
->  #define __LINUX_IVTV_H__
->
-> -#ifdef __KERNEL__
-> -#include <linux/compiler.h> /* need __user */
-> -#else
-> -#define __user
-> -#endif
-> +#include <linux/compiler.h>
->  #include <linux/types.h>
->
->  /* ivtv knows several distinct output modes: MPEG streaming,
-> diff --git a/include/linux/ivtvfb.h b/include/linux/ivtvfb.h
-> index e980ba6..e20af47 100644
-> --- a/include/linux/ivtvfb.h
-> +++ b/include/linux/ivtvfb.h
-> @@ -21,11 +21,7 @@
->  #ifndef __LINUX_IVTVFB_H__
->  #define __LINUX_IVTVFB_H__
->
-> -#ifdef __KERNEL__
-> -#include <linux/compiler.h> /* need __user */
-> -#else
-> -#define __user
-> -#endif
-> +#include <linux/compiler.h>
->  #include <linux/types.h>
->
->  /* Framebuffer external API */
-> diff --git a/include/linux/videodev2.h b/include/linux/videodev2.h
-> index e466bd5..e65a6be 100644
-> --- a/include/linux/videodev2.h
-> +++ b/include/linux/videodev2.h
-> @@ -55,13 +55,13 @@
->   */
->  #ifndef __LINUX_VIDEODEV2_H
->  #define __LINUX_VIDEODEV2_H
-> +
->  #ifdef __KERNEL__
->  #include <linux/time.h>     /* need struct timeval */
-> -#include <linux/compiler.h> /* need __user */
->  #else
-> -#define __user
->  #include <sys/time.h>
->  #endif
-> +#include <linux/compiler.h>
->  #include <linux/ioctl.h>
->  #include <linux/types.h>
+Index: linux/drivers/ieee1394/nodemgr.c
+===================================================================
+--- linux.orig/drivers/ieee1394/nodemgr.c
++++ linux/drivers/ieee1394/nodemgr.c
+@@ -843,7 +843,7 @@ static struct node_entry *nodemgr_create
+ 	ne->host = host;
+ 	ne->nodeid = nodeid;
+ 	ne->generation = generation;
+-	ne->needs_probe = 1;
++	ne->needs_probe = true;
+ 
+ 	ne->guid = guid;
+ 	ne->guid_vendor_id = (guid >> 40) & 0xffffff;
+@@ -1141,7 +1141,7 @@ static void nodemgr_process_root_directo
+ 	struct csr1212_keyval *kv, *vendor_name_kv = NULL;
+ 	u8 last_key_id = 0;
+ 
+-	ne->needs_probe = 0;
++	ne->needs_probe = false;
+ 
+ 	csr1212_for_each_dir_entry(ne->csr, kv, ne->csr->root_kv, dentry) {
+ 		switch (kv->key.id) {
+@@ -1292,7 +1292,7 @@ static void nodemgr_update_node(struct n
+ 		nodemgr_update_bus_options(ne);
+ 
+ 		/* Mark the node as new, so it gets re-probed */
+-		ne->needs_probe = 1;
++		ne->needs_probe = true;
+ 	} else {
+ 		/* old cache is valid, so update its generation */
+ 		struct nodemgr_csr_info *ci = ne->csr->private;
+@@ -1560,6 +1560,7 @@ static void nodemgr_probe_ne(struct host
+ struct probe_param {
+ 	struct host_info *hi;
+ 	int generation;
++	bool probe_now;
+ };
+ 
+ static int __nodemgr_node_probe(struct device *dev, void *data)
+@@ -1568,9 +1569,7 @@ static int __nodemgr_node_probe(struct d
+ 	struct node_entry *ne;
+ 
+ 	ne = container_of(dev, struct node_entry, node_dev);
+-	if (!ne->needs_probe)
+-		nodemgr_probe_ne(param->hi, ne, param->generation);
+-	if (ne->needs_probe)
++	if (ne->needs_probe == param->probe_now)
+ 		nodemgr_probe_ne(param->hi, ne, param->generation);
+ 	return 0;
+ }
+@@ -1591,6 +1590,9 @@ static void nodemgr_node_probe(struct ho
+ 	 * while probes are time-consuming. (Well, those probes need some
+ 	 * improvement...) */
+ 
++	param.probe_now = false;
++	class_for_each_device(&nodemgr_ne_class, &param, __nodemgr_node_probe);
++	param.probe_now = true;
+ 	class_for_each_device(&nodemgr_ne_class, &param, __nodemgr_node_probe);
+ 
+ 	/* If we had a bus reset while we were scanning the bus, it is
+Index: linux/drivers/ieee1394/nodemgr.h
+===================================================================
+--- linux.orig/drivers/ieee1394/nodemgr.h
++++ linux/drivers/ieee1394/nodemgr.h
+@@ -97,7 +97,7 @@ struct node_entry {
+ 	struct hpsb_host *host;		/* Host this node is attached to */
+ 	nodeid_t nodeid;		/* NodeID */
+ 	struct bus_options busopt;	/* Bus Options */
+-	int needs_probe;
++	bool needs_probe;
+ 	unsigned int generation;	/* Synced with hpsb generation */
+ 
+ 	/* The following is read from the config rom */
 
+-- 
+Stefan Richter
+-=====-==--- =--- =----
+http://arcgraph.de/sr/
 
