@@ -1,33 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758029AbYHPEIz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758055AbYHPEJ2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758029AbYHPEIz (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Aug 2008 00:08:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753638AbYHPEFy
+	id S1758055AbYHPEJ2 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Aug 2008 00:09:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753762AbYHPEFz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Aug 2008 00:05:54 -0400
-Received: from 166-70-238-42.ip.xmission.com ([166.70.238.42]:33291 "EHLO
+	Sat, 16 Aug 2008 00:05:55 -0400
+Received: from 166-70-238-42.ip.xmission.com ([166.70.238.42]:33289 "EHLO
 	ns1.wolfmountaingroup.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751398AbYHPEFl (ORCPT
+	with ESMTP id S1751340AbYHPEFl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Sat, 16 Aug 2008 00:05:41 -0400
 Date: Fri, 15 Aug 2008 21:41:46 -0600
 From: jmerkey@wolfmountaingroup.com
-Message-Id: <200808160341.m7G3fkwr022557@wolfmountaingroup.com>
+Message-Id: <200808160341.m7G3fkxH022555@wolfmountaingroup.com>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 2.6.27-rc3 11/28] mdb: add includes and external defines for keyboard specific code
+Subject: [PATCH 2.6.27-rc3 9/28] mdb: add includes and external function prototypes for ia32 specific code
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-added includes and external defines for keyboard specific code
+added includes and external function prototypes for ia32 specific code
 
 
 Signed-off-by: Jeffrey Vernon Merkey (jmerkey@wolfmountaingroup.com)
 
---- a/debug/mdb/mdb-keyboard.h	1969-12-31 17:00:00.000000000 -0700
-+++ b/debug/mdb/mdb-keyboard.h	2008-08-15 15:41:57.000000000 -0600
-@@ -0,0 +1,137 @@
-+
+--- a/debug/mdb/mdb-ia32-proc.h	1969-12-31 17:00:00.000000000 -0700
++++ b/debug/mdb/mdb-ia32-proc.h	2008-08-15 15:41:57.000000000 -0600
+@@ -0,0 +1,511 @@
 +
 +/***************************************************************************
 +*
@@ -62,105 +61,480 @@ Signed-off-by: Jeffrey Vernon Merkey (jmerkey@wolfmountaingroup.com)
 +*
 +***************************************************************************/
 +
-+#undef KBD_REPORT_ERR			/* Report keyboard errors */
-+#define KBD_REPORT_UNKN			/* Report unknown scan codes */
-+#define KBD_REPORT_TIMEOUTS		/* Report keyboard timeouts */
-+#undef KBD_IS_FOCUS_9000		/* We have the brain-damaged FOCUS-9000 keyboard */
-+#undef INITIALIZE_MOUSE			/* Define if your PS/2 mouse needs initialization. */
++#ifndef _MDB_IA32_PROC_H
++#define _MDB_IA32_PROC_H
++
++#define EXT_NMI_PORT             0x0461
++#define NMI_IO_PORT              0x0462
++#define NMI_CONTROL_PORT         0x0C6E
++#define NMI_PORT                 0x61
++#define PIC1_DEBUG_MASK          0xFC
++#define PIC2_DEBUG_MASK          0xFF
++#define EXCEPTION_ENTRIES        19
++#define RESUME                   0x00010000
++#define NESTED_TASK              0x00004000
++#define SINGLE_STEP              0x00000100
++#define INVALID_EXPRESSION       0
++#define NUMERIC_EXPRESSION       1
++#define BOOLEAN_EXPRESSION       2
++
++/* DR7 Breakpoint Type and Length Fields */
++
++#define BREAK_EXECUTE    0
++#define BREAK_WRITE      1
++#define BREAK_IOPORT     2
++#define BREAK_READWRITE  3
++#define ONE_BYTE_FIELD   0
++#define TWO_BYTE_FIELD   1
++#define UNDEFINED_FIELD  2
++#define FOUR_BYTE_FIELD  3
++
++/* DR7 Register */
++
++#define L0_BIT   0x00000001
++#define G0_BIT   0x00000002
++#define L1_BIT   0x00000004
++#define G1_BIT   0x00000008
++#define L2_BIT   0x00000010
++#define G2_BIT   0x00000020
++#define L3_BIT   0x00000040
++#define G3_BIT   0x00000080
++#define LEXACT   0x00000100
++#define GEXACT   0x00000200
++#define GDETECT  0x00002000
++#define DR7DEF   0x00000400
++
++/* DR6 Register */
++
++#define B0_BIT   0x00000001
++#define B1_BIT   0x00000002
++#define B2_BIT   0x00000004
++#define B3_BIT   0x00000008
++
++#define BD_BIT   0x00002000
++#define BS_BIT   0x00004000
++#define BT_BIT   0x00008000
++
++/* Memory Type Range Registers (MTRR) */
++
++#define MTRR_PHYS_BASE_0    0x200
++#define MTRR_PHYS_MASK_0    0x201
++#define MTRR_PHYS_BASE_1    0x202
++#define MTRR_PHYS_MASK_1    0x203
++#define MTRR_PHYS_BASE_2    0x204
++#define MTRR_PHYS_MASK_2    0x205
++#define MTRR_PHYS_BASE_3    0x206
++#define MTRR_PHYS_MASK_3    0x207
++#define MTRR_PHYS_BASE_4    0x208
++#define MTRR_PHYS_MASK_4    0x209
++#define MTRR_PHYS_BASE_5    0x20A
++#define MTRR_PHYS_MASK_5    0x20B
++#define MTRR_PHYS_BASE_6    0x20C
++#define MTRR_PHYS_MASK_6    0x20D
++#define MTRR_PHYS_BASE_7    0x20E
++#define MTRR_PHYS_MASK_7    0x20F
++
++/* IA32 flags settings */
++
++#define   CF_FLAG      0x00000001
++#define   PF_FLAG      0x00000004
++#define   AF_FLAG      0x00000010
++#define   ZF_FLAG      0x00000040
++#define   SF_FLAG      0x00000080
++#define   TF_FLAG      0x00000100  /* ss flag */
++#define   IF_FLAG      0x00000200
++#define   DF_FLAG      0x00000400
++#define   OF_FLAG      0x00000800
++#define   NT_FLAG      0x00004000
++#define   RF_FLAG      0x00010000  /* resume flag */
++#define   VM_FLAG      0x00020000
++#define   AC_FLAG      0x00040000
++#define   VIF_FLAG     0x00080000
++#define   VIP_FLAG     0x00100000
++#define   ID_FLAGS     0x00200000
++
++typedef struct _GDT {
++    unsigned short Limit;    /*	0xFFFF */
++    unsigned short Base1;    /*  0 */
++    unsigned char Base2;     /*	0 */
++    unsigned char GDTType;   /*	10010010b */
++    unsigned char OtherType; /*	11001111b */
++    unsigned char Base3;     /*	0 */
++} GDT;
++
++typedef struct _IDT {
++    unsigned short IDTLow;     /*	0 */
++    unsigned short IDTSegment; /*	0x08 */
++    unsigned char IDTSkip;     /*	0 */
++    unsigned char IDTFlags;    /*	10001110b */
++    unsigned short IDTHigh;    /*	0 */
++} IDT;
++
++typedef struct _TSS {
++    unsigned short TSSLimit;	/* 0x0080 */
++    unsigned short TSSBase1;	/* 0 */
++    unsigned char TSSBase2;	/* 0 */
++    unsigned char TSSType;	/* 10001001b */
++    unsigned char TSSOtherType;	/* 00000000b */
++    unsigned char TSSBase3;	/* 0 */
++} TSS;
++
++typedef struct _TSS_GATE {
++    unsigned short TSSRes1;	/* 0 */
++    unsigned short TSSSelector;	/* 0 */
++    unsigned char TSSRes2;	/* 0 */
++    unsigned char TSSFlags;	/* 10000101b */
++    unsigned short TSSRes3;	/* 0 */
++} TSS_GATE;
++
++typedef struct _LDT {
++    unsigned short LDTLimit;	/* 0xFFFF */
++    unsigned short LDTBase1;	/* 0 */
++    unsigned char LDTBase2;	/* 0 */
++    unsigned char LDTGDTType;	/* 10000010b */
++    unsigned char LDTOtherType;	/* 10001111b */
++    unsigned char LDTBase3;	/* 0 */
++} LDT;
++
++extern unsigned long ReadDR0(void);
++extern unsigned long ReadDR1(void);
++extern unsigned long ReadDR2(void);
++extern unsigned long ReadDR3(void);
++extern unsigned long ReadDR6(void);
++extern unsigned long ReadDR7(void);
++extern void WriteDR0(unsigned long);
++extern void WriteDR1(unsigned long);
++extern void WriteDR2(unsigned long);
++extern void WriteDR3(unsigned long);
++extern void WriteDR6(unsigned long);
++extern void WriteDR7(unsigned long);
++extern unsigned long ReadCR0(void);
++extern unsigned long ReadCR2(void);
++extern unsigned long ReadCR3(void);
++extern unsigned long ReadCR4(void);
++extern void ReadGDTR(unsigned long *);
++extern void ReadIDTR(unsigned long *);
++extern unsigned long ReadLDTR(void);
++extern unsigned long ReadTR(void);
++
++extern void ReadMSR(unsigned long msr, unsigned long *val1, unsigned long *val2);
++extern void WriteMSR(unsigned long msr, unsigned long *val1, unsigned long *val2);
++extern void MTRROpen(void);
++extern void MTRRClose(void);
++extern void save_npx(NUMERIC_FRAME *npx);
++extern void load_npx(NUMERIC_FRAME *npx);
++
++extern unsigned long get_processor_id(void);
++extern unsigned long get_physical_processor(void);
++extern unsigned long fpu_present(void);
++
++extern void DisplayTSS(StackFrame *stackFrame);
++extern void DisplayGeneralRegisters(StackFrame *stackFrame);
++extern void DisplaySegmentRegisters(StackFrame *stackFrame);
++extern void DisplayControlRegisters(unsigned long processor, StackFrame *stackFrame);
++extern double ldexp(double v, int e);
++extern void DisplayNPXRegisters(unsigned long processor);
++
++extern unsigned long processProceedACC(unsigned long key, void *stackFrame,
++		  ACCELERATOR *accel);
++extern unsigned long processTraceACC(unsigned long key, void *stackFrame,
++		  ACCELERATOR *accel);
++extern unsigned long processTraceSSBACC(unsigned long key, void *stackFrame,
++		  ACCELERATOR *accel);
++extern unsigned long processGoACC(unsigned long key, void *stackFrame,
++		  ACCELERATOR *accel);
++
++extern unsigned long executeCommandHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser);
++extern unsigned long processProceed(unsigned char *cmd,
++		    StackFrame *stackFrame, unsigned long Exception,
++		    DEBUGGER_PARSER *parser);
++extern unsigned long processTrace(unsigned char *cmd,
++		  StackFrame *stackFrame, unsigned long Exception,
++		  DEBUGGER_PARSER *parser);
++extern unsigned long processTraceSSB(unsigned char *cmd,
++		  StackFrame *stackFrame, unsigned long Exception,
++		  DEBUGGER_PARSER *parser);
++extern unsigned long processGo(unsigned char *cmd,
++	       StackFrame *stackFrame, unsigned long Exception,
++	       DEBUGGER_PARSER *parser);
 +
 +
-+#define KBD_INIT_TIMEOUT 1000		/* Timeout in ms for initializing the keyboard */
-+#define KBC_TIMEOUT 250			/* Timeout in ms for sending to keyboard controller */
-+#define KBD_TIMEOUT 1000		/* Timeout in ms for keyboard command acknowledge */
++extern unsigned long processorCommandHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser);
++extern unsigned long breakProcessor(unsigned char *cmd,
++		    StackFrame *stackFrame, unsigned long Exception,
++		    DEBUGGER_PARSER *parser);
++extern unsigned long TSSDisplayHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser);
++extern unsigned long TSSDisplay(unsigned char *cmd,
++                    StackFrame *stackFrame, unsigned long Exception,
++		    DEBUGGER_PARSER *parser);
 +
-+/*
-+ *	Keyboard Controller Registers on normal PCs.
-+ */
++extern unsigned long displayEAXHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser);
++extern unsigned long ChangeEAXRegister(unsigned char *cmd,
++		       StackFrame *stackFrame, unsigned long Exception,
++		       DEBUGGER_PARSER *parser);
++extern unsigned long ChangeORIGEAXRegister(unsigned char *cmd,
++		       StackFrame *stackFrame, unsigned long Exception,
++		       DEBUGGER_PARSER *parser);
 +
-+#define KBD_STATUS_REG		0x64	/* Status register (R) */
-+#define KBD_CNTL_REG		0x64	/* Controller command register (W) */
-+#define KBD_DATA_REG		0x60	/* Keyboard data register (R/W) */
++extern unsigned long displayEBXHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser);
++extern unsigned long ChangeEBXRegister(unsigned char *cmd,
++		       StackFrame *stackFrame, unsigned long Exception,
++		       DEBUGGER_PARSER *parser);
 +
-+/*
-+ *	Keyboard Controller Commands
-+ */
++extern unsigned long displayECXHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser);
++extern unsigned long ChangeECXRegister(unsigned char *cmd,
++		       StackFrame *stackFrame, unsigned long Exception,
++		       DEBUGGER_PARSER *parser);
 +
-+#define KBD_CCMD_READ_MODE	0x20	/* Read mode bits */
-+#define KBD_CCMD_WRITE_MODE	0x60	/* Write mode bits */
-+#define KBD_CCMD_GET_VERSION	0xA1	/* Get controller version */
-+#define KBD_CCMD_MOUSE_DISABLE	0xA7	/* Disable mouse interface */
-+#define KBD_CCMD_MOUSE_ENABLE	0xA8	/* Enable mouse interface */
-+#define KBD_CCMD_TEST_MOUSE	0xA9	/* Mouse interface test */
-+#define KBD_CCMD_SELF_TEST	0xAA	/* Controller self test */
-+#define KBD_CCMD_KBD_TEST	0xAB	/* Keyboard interface test */
-+#define KBD_CCMD_KBD_DISABLE	0xAD	/* Keyboard interface disable */
-+#define KBD_CCMD_KBD_ENABLE	0xAE	/* Keyboard interface enable */
-+#define KBD_CCMD_WRITE_AUX_OBUF	0xD3    /* Write to output buffer as if
-+					   initiated by the auxiliary device */
-+#define KBD_CCMD_WRITE_MOUSE	0xD4	/* Write the following byte to the mouse */
++extern unsigned long displayEDXHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser);
++extern unsigned long ChangeEDXRegister(unsigned char *cmd,
++		       StackFrame *stackFrame, unsigned long Exception,
++		       DEBUGGER_PARSER *parser);
 +
-+/*
-+ *	Keyboard Commands
-+ */
++extern unsigned long displayESIHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser);
++extern unsigned long ChangeESIRegister(unsigned char *cmd,
++		       StackFrame *stackFrame, unsigned long Exception,
++		       DEBUGGER_PARSER *parser);
 +
-+#define KBD_CMD_SET_LEDS	0xED	/* Set keyboard leds */
-+#define KBD_CMD_SET_RATE	0xF3	/* Set typematic rate */
-+#define KBD_CMD_ENABLE		0xF4	/* Enable scanning */
-+#define KBD_CMD_DISABLE		0xF5	/* Disable scanning */
-+#define KBD_CMD_RESET		0xFF	/* Reset */
++extern unsigned long displayEDIHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser);
++extern unsigned long ChangeEDIRegister(unsigned char *cmd,
++		       StackFrame *stackFrame, unsigned long Exception,
++		       DEBUGGER_PARSER *parser);
 +
-+/*
-+ *	Keyboard Replies
-+ */
++extern unsigned long displayEBPHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser);
++extern unsigned long ChangeEBPRegister(unsigned char *cmd,
++	       StackFrame *stackFrame, unsigned long Exception,
++	       DEBUGGER_PARSER *parser);
 +
-+#define KBD_REPLY_POR		0xAA	/* Power on reset */
-+#define KBD_REPLY_ACK		0xFA	/* Command ACK */
-+#define KBD_REPLY_RESEND	0xFE	/* Command NACK, send the cmd again */
++extern unsigned long displayESPHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser);
++extern unsigned long ChangeESPRegister(unsigned char *cmd,
++		       StackFrame *stackFrame, unsigned long Exception,
++		       DEBUGGER_PARSER *parser);
 +
-+/*
-+ *	Status Register Bits
-+ */
++extern unsigned long displayEIPHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser);
++extern unsigned long ChangeEIPRegister(unsigned char *cmd,
++		       StackFrame *stackFrame, unsigned long Exception,
++		       DEBUGGER_PARSER *parser);
 +
-+#define KBD_STAT_OBF		0x01	/* Keyboard output buffer full */
-+#define KBD_STAT_IBF		0x02	/* Keyboard input buffer full */
-+#define KBD_STAT_SELFTEST	0x04	/* Self test successful */
-+#define KBD_STAT_CMD		0x08	/* Last write was a command write (0=data) */
-+#define KBD_STAT_UNLOCKED	0x10	/* Zero if keyboard locked */
-+#define KBD_STAT_MOUSE_OBF	0x20	/* Mouse output buffer full */
-+#define KBD_STAT_GTO		0x40	/* General receive/xmit timeout */
-+#define KBD_STAT_PERR		0x80	/* Parity error */
++extern unsigned long displayCSHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser);
++extern unsigned long ChangeCSRegister(unsigned char *cmd,
++		      StackFrame *stackFrame, unsigned long Exception,
++		      DEBUGGER_PARSER *parser);
 +
-+#define AUX_STAT_OBF (KBD_STAT_OBF | KBD_STAT_MOUSE_OBF)
++extern unsigned long displayDSHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser);
++extern unsigned long ChangeDSRegister(unsigned char *cmd,
++		      StackFrame *stackFrame, unsigned long Exception,
++		      DEBUGGER_PARSER *parser);
 +
-+/*
-+ *	Controller Mode Register Bits
-+ */
++extern unsigned long displayESHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser);
++extern unsigned long ChangeESRegister(unsigned char *cmd,
++		      StackFrame *stackFrame, unsigned long Exception,
++		      DEBUGGER_PARSER *parser);
 +
-+#define KBD_MODE_KBD_INT	0x01	/* Keyboard data generate IRQ1 */
-+#define KBD_MODE_MOUSE_INT	0x02	/* Mouse data generate IRQ12 */
-+#define KBD_MODE_SYS		0x04	/* The system flag (?) */
-+#define KBD_MODE_NO_KEYLOCK	0x08	/* The keylock doesn't affect the keyboard if set */
-+#define KBD_MODE_DISABLE_KBD	0x10	/* Disable keyboard interface */
-+#define KBD_MODE_DISABLE_MOUSE	0x20	/* Disable mouse interface */
-+#define KBD_MODE_KCC		0x40	/* Scan code conversion to PC format */
-+#define KBD_MODE_RFU		0x80
++extern unsigned long displayFSHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser);
++extern unsigned long ChangeFSRegister(unsigned char *cmd,
++		      StackFrame *stackFrame, unsigned long Exception,
++		      DEBUGGER_PARSER *parser);
 +
-+/*
-+ *	Mouse Commands
-+ */
++extern unsigned long displayGSHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser);
++extern unsigned long ChangeGSRegister(unsigned char *cmd,
++		      StackFrame *stackFrame, unsigned long Exception,
++		      DEBUGGER_PARSER *parser);
 +
-+#define AUX_SET_RES		0xE8	/* Set resolution */
-+#define AUX_SET_SCALE11		0xE6	/* Set 1:1 scaling */
-+#define AUX_SET_SCALE21		0xE7	/* Set 2:1 scaling */
-+#define AUX_GET_SCALE		0xE9	/* Get scaling factor */
-+#define AUX_SET_STREAM		0xEA	/* Set stream mode */
-+#define AUX_SET_SAMPLE		0xF3	/* Set sample rate */
-+#define AUX_ENABLE_DEV		0xF4	/* Enable aux device */
-+#define AUX_DISABLE_DEV		0xF5	/* Disable aux device */
-+#define AUX_RESET		0xFF	/* Reset aux device */
-+#define AUX_ACK			0xFA	/* Command byte ACK. */
++extern unsigned long displaySSHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser);
++extern unsigned long ChangeSSRegister(unsigned char *cmd,
++		      StackFrame *stackFrame, unsigned long Exception,
++		      DEBUGGER_PARSER *parser);
 +
-+#define AUX_BUF_SIZE		2048	/* This might be better divisible by
-+					   three to make overruns stay in sync
-+					   but then the read function would need
-+					   a lock etc - ick */
++extern unsigned long displayRFHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser);
++extern unsigned long ChangeRFFlag(unsigned char *cmd,
++		  StackFrame *stackFrame, unsigned long Exception,
++		  DEBUGGER_PARSER *parser);
++
++extern unsigned long displayTFHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser);
++extern unsigned long ChangeTFFlag(unsigned char *cmd,
++		  StackFrame *stackFrame, unsigned long Exception,
++		  DEBUGGER_PARSER *parser);
++
++extern unsigned long displayZFHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser);
++extern unsigned long ChangeZFFlag(unsigned char *cmd,
++		  StackFrame *stackFrame, unsigned long Exception,
++		  DEBUGGER_PARSER *parser);
++
++extern unsigned long displaySFHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser);
++extern unsigned long ChangeSFFlag(unsigned char *cmd,
++		  StackFrame *stackFrame, unsigned long Exception,
++		  DEBUGGER_PARSER *parser);
++
++extern unsigned long displayPFHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser);
++extern unsigned long ChangePFFlag(unsigned char *cmd,
++		  StackFrame *stackFrame, unsigned long Exception,
++		  DEBUGGER_PARSER *parser);
++
++extern unsigned long displayCFHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser);
++extern unsigned long ChangeCFFlag(unsigned char *cmd,
++		  StackFrame *stackFrame, unsigned long Exception,
++		  DEBUGGER_PARSER *parser);
++
++extern unsigned long displayOFHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser);
++extern unsigned long ChangeOFFlag(unsigned char *cmd,
++		  StackFrame *stackFrame, unsigned long Exception,
++		  DEBUGGER_PARSER *parser);
++
++extern unsigned long displayIFHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser);
++extern unsigned long ChangeIFFlag(unsigned char *cmd,
++		  StackFrame *stackFrame, unsigned long Exception,
++		  DEBUGGER_PARSER *parser);
++
++extern unsigned long displayIDHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser);
++extern unsigned long ChangeIDFlag(unsigned char *cmd,
++		  StackFrame *stackFrame, unsigned long Exception,
++		  DEBUGGER_PARSER *parser);
++
++extern unsigned long displayDFHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser);
++extern unsigned long ChangeDFFlag(unsigned char *cmd,
++		  StackFrame *stackFrame, unsigned long Exception,
++		  DEBUGGER_PARSER *parser);
++
++extern unsigned long displayNTHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser);
++extern unsigned long ChangeNTFlag(unsigned char *cmd,
++		  StackFrame *stackFrame, unsigned long Exception,
++		  DEBUGGER_PARSER *parser);
++
++extern unsigned long displayVMHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser);
++extern unsigned long ChangeVMFlag(unsigned char *cmd,
++	       StackFrame *stackFrame, unsigned long Exception,
++	       DEBUGGER_PARSER *parser);
++
++extern unsigned long displayVIFHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser);
++extern unsigned long ChangeVIFFlag(unsigned char *cmd,
++		   StackFrame *stackFrame, unsigned long Exception,
++		   DEBUGGER_PARSER *parser);
++
++extern unsigned long displayVIPHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser);
++extern unsigned long ChangeVIPFlag(unsigned char *cmd,
++		   StackFrame *stackFrame, unsigned long Exception,
++		   DEBUGGER_PARSER *parser);
++
++extern unsigned long displayAFHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser);
++extern unsigned long ChangeAFFlag(unsigned char *cmd,
++		  StackFrame *stackFrame, unsigned long Exception,
++		  DEBUGGER_PARSER *parser);
++
++extern unsigned long displayACHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser);
++extern unsigned long ChangeACFlag(unsigned char *cmd,
++		  StackFrame *stackFrame, unsigned long Exception,
++		  DEBUGGER_PARSER *parser);
++
++extern unsigned long displayMTRRHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser);
++extern unsigned long DisplayMTRRRegisters(unsigned char *cmd,
++			  StackFrame *stackFrame, unsigned long Exception,
++			  DEBUGGER_PARSER *parser);
++
++extern unsigned long displayGDTHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser);
++extern unsigned long displayGDT(unsigned char *cmd,
++		StackFrame *stackFrame, unsigned long Exception,
++		DEBUGGER_PARSER *parser);
++
++extern unsigned long displayIDTHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser);
++extern unsigned long displayIDT(unsigned char *cmd,
++		   StackFrame *stackFrame, unsigned long Exception,
++		   DEBUGGER_PARSER *parser);
++
++extern unsigned long evaluateExpressionHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser);
++extern unsigned long evaluateExpression(unsigned char *cmd,
++		   StackFrame *stackFrame, unsigned long Exception,
++		   DEBUGGER_PARSER *parser);
++
++extern unsigned long displayDOSTableHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser);
++extern unsigned long displayDOSTable(unsigned char *cmd,
++		   StackFrame *stackFrame, unsigned long Exception,
++		   DEBUGGER_PARSER *parser);
++
++extern unsigned long portCommandHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser);
++extern unsigned long inputWordPort(unsigned char *cmd,
++		   StackFrame *stackFrame, unsigned long Exception,
++		   DEBUGGER_PARSER *parser);
++extern unsigned long inputDoublePort(unsigned char *cmd,
++		   StackFrame *stackFrame, unsigned long Exception,
++		   DEBUGGER_PARSER *parser);
++extern unsigned long inputBytePort(unsigned char *cmd,
++		   StackFrame *stackFrame, unsigned long Exception,
++		   DEBUGGER_PARSER *parser);
++extern unsigned long inputPort(unsigned char *cmd,
++		   StackFrame *stackFrame, unsigned long Exception,
++		   DEBUGGER_PARSER *parser);
++extern unsigned long outputWordPort(unsigned char *cmd,
++		   StackFrame *stackFrame, unsigned long Exception,
++		   DEBUGGER_PARSER *parser);
++extern unsigned long outputDoublePort(unsigned char *cmd,
++		   StackFrame *stackFrame, unsigned long Exception,
++		   DEBUGGER_PARSER *parser);
++extern unsigned long outputBytePort(unsigned char *cmd,
++		   StackFrame *stackFrame, unsigned long Exception,
++		   DEBUGGER_PARSER *parser);
++extern unsigned long outputPort(unsigned char *cmd,
++		   StackFrame *stackFrame, unsigned long Exception,
++		   DEBUGGER_PARSER *parser);
++
++
++extern unsigned long breakpointCommandHelp(unsigned char *commandLine, DEBUGGER_PARSER *parser);
++extern unsigned long breakpointClearAll(unsigned char *cmd,
++			StackFrame *stackFrame, unsigned long Exception,
++			DEBUGGER_PARSER *parser);
++extern unsigned long breakpointClear(unsigned char *cmd,
++		     StackFrame *stackFrame, unsigned long Exception,
++		     DEBUGGER_PARSER *parser);
++extern unsigned long breakpointMask(unsigned char *cmd,
++		    StackFrame *stackFrame, unsigned long Exception,
++		    DEBUGGER_PARSER *parser);
++extern unsigned long breakpointWord1(unsigned char *cmd,
++		     StackFrame *stackFrame, unsigned long Exception,
++		     DEBUGGER_PARSER *parser);
++extern unsigned long breakpointWord2(unsigned char *cmd,
++		     StackFrame *stackFrame, unsigned long Exception,
++		     DEBUGGER_PARSER *parser);
++extern unsigned long breakpointWord4(unsigned char *cmd,
++		     StackFrame *stackFrame, unsigned long Exception,
++		     DEBUGGER_PARSER *parser);
++extern unsigned long breakpointWord(unsigned char *cmd,
++		    StackFrame *stackFrame, unsigned long Exception,
++		    DEBUGGER_PARSER *parser);
++extern unsigned long breakpointRead1(unsigned char *cmd,
++		     StackFrame *stackFrame, unsigned long Exception,
++		     DEBUGGER_PARSER *parser);
++extern unsigned long breakpointRead2(unsigned char *cmd,
++		     StackFrame *stackFrame, unsigned long Exception,
++		     DEBUGGER_PARSER *parser);
++extern unsigned long breakpointRead4(unsigned char *cmd,
++		   StackFrame *stackFrame, unsigned long Exception,
++		   DEBUGGER_PARSER *parser);
++extern unsigned long breakpointRead(unsigned char *cmd,
++		   StackFrame *stackFrame, unsigned long Exception,
++		   DEBUGGER_PARSER *parser);
++extern unsigned long breakpointIO1(unsigned char *cmd,
++		   StackFrame *stackFrame, unsigned long Exception,
++		   DEBUGGER_PARSER *parser);
++extern unsigned long breakpointIO2(unsigned char *cmd,
++		   StackFrame *stackFrame, unsigned long Exception,
++		   DEBUGGER_PARSER *parser);
++extern unsigned long breakpointIO4(unsigned char *cmd,
++		   StackFrame *stackFrame, unsigned long Exception,
++		   DEBUGGER_PARSER *parser);
++extern unsigned long breakpointIO(unsigned char *cmd,
++		   StackFrame *stackFrame, unsigned long Exception,
++		   DEBUGGER_PARSER *parser);
++extern unsigned long breakpointExecute(unsigned char *cmd,
++		   StackFrame *stackFrame, unsigned long Exception,
++		   DEBUGGER_PARSER *parser);
++extern unsigned long breakpointShowTemp(unsigned char *cmd,
++			StackFrame *stackFrame, unsigned long Exception,
++			DEBUGGER_PARSER *parser);
++extern unsigned long dump_ef(unsigned char *cmd,
++		     StackFrame *stackFrame, unsigned long Exception,
++		     DEBUGGER_PARSER *parser);
++extern unsigned long dump_uf(unsigned char *cmd,
++		     StackFrame *stackFrame, unsigned long Exception,
++		     DEBUGGER_PARSER *parser);
++
++#endif
