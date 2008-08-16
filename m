@@ -1,169 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753850AbYHPXRS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754369AbYHPXVu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753850AbYHPXRS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Aug 2008 19:17:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751766AbYHPXRH
+	id S1754369AbYHPXVu (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Aug 2008 19:21:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751878AbYHPXVn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Aug 2008 19:17:07 -0400
-Received: from wf-out-1314.google.com ([209.85.200.171]:28438 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751190AbYHPXRG (ORCPT
+	Sat, 16 Aug 2008 19:21:43 -0400
+Received: from wx-out-0506.google.com ([66.249.82.237]:52418 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751663AbYHPXVm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Aug 2008 19:17:06 -0400
+	Sat, 16 Aug 2008 19:21:42 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=YBndg+qNl+X1/m04v77sF7zcwI3ojcQ+CobkBCJzh3BwT/Mi8K5hHCrasjKAnTJcdw
-         Nir/rK6xwrgBBq4ZDMfdxxR03QEdUGWOVR/EsI0I8eitETusaBs0w8wUKJNiLY/OcuJb
-         t+VJo6JrUBb+J0F0zXJwC+Dp2YTmiPXSsOUWE=
-Message-ID: <82e4877d0808161617k5404f4ectf6d502de5b7fea4c@mail.gmail.com>
-Date: Sat, 16 Aug 2008 19:17:05 -0400
-From: "Parag Warudkar" <parag.warudkar@gmail.com>
-To: mjg59@srcf.ucam.org
-Subject: Re: [PATCH 2/2] Add Dell laptop driver
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=xMj8BHY07zNnXqER+lGX2vf9yGmWR85zLUzlMjp6Tw3GgzwBoi+uZDA/CwYRUmW+lo
+         8Kh3d7FhEuDMKSKkN2UFmzJZvCMpwNVnLFQGC9Tkyi663PB/sINn1OPTZXfGJe5bbskr
+         q6EDbEVIMJ6c6Q2tTtvdFDp/Pq1qDozTbPRek=
+Message-ID: <86802c440808161621m71512c6ao8634034f275c4fec@mail.gmail.com>
+Date: Sat, 16 Aug 2008 16:21:41 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "James Bottomley" <James.Bottomley@hansenpartnership.com>
+Subject: Re: [PATCH] pci: change msi-x vector to 32bit
+Cc: "Alan Cox" <alan@lxorguk.ukuu.org.uk>, "H. Peter Anvin" <hpa@zytor.com>,
+       "Jesse Barnes" <jbarnes@virtuousgeek.org>,
+       "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org,
+       "Andrew Vasquez" <andrew.vasquez@qlogic.com>
+In-Reply-To: <1218928162.3940.62.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
+References: <200808160326.m7G3QR1G012726@terminus.zytor.com>
+	 <1218898238.3940.6.camel@localhost.localdomain>
+	 <20080816163945.74d487e9@lxorguk.ukuu.org.uk>
+	 <1218903209.3940.14.camel@localhost.localdomain>
+	 <86802c440808161156rf48f23ai9d77ce3cab36f02a@mail.gmail.com>
+	 <1218918341.3940.49.camel@localhost.localdomain>
+	 <86802c440808161334q75a7d019ofade0b6cabf3f74d@mail.gmail.com>
+	 <1218919547.3940.57.camel@localhost.localdomain>
+	 <86802c440808161517y1eaa5a4eo817b8a1bf75945be@mail.gmail.com>
+	 <1218928162.3940.62.camel@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matthew Garrett <mjg59 <at> srcf.ucam.org> writes:
+On Sat, Aug 16, 2008 at 4:09 PM, James Bottomley
+<James.Bottomley@hansenpartnership.com> wrote:
+> On Sat, 2008-08-16 at 15:17 -0700, Yinghai Lu wrote:
+>> On Sat, Aug 16, 2008 at 1:45 PM, James Bottomley
+>> <James.Bottomley@hansenpartnership.com> wrote:
+>> >> > What I still don't quite get is the benefit of large IRQ spaces ...
+>> >> > particularly if you encode things the system doesn't really need to know
+>> >> > in them.
+>> >>
+>> >> then set nr_irqs = nr_cpu_ids * NR_VECTORS))
+>> >> and count down for msi/msi-x?
+>> >
+>> > No, what I mean is that msis can trip directly to CPUs, so this is an
+>> > affinity thing (that MSI is directly bound to that CPU now), so in the
+>> > matrixed way we display this in show_interrupts() with the CPU along the
+>> > top and the IRQ down the side, it doesn't make sense to me to encode IRQ
+>> > affinity in the irq number again.   So it makes more sense to assign the
+>> > vectors based on both the irq number and the CPU affinity so that if the
+>> > PCI MSI for qla is assigned to CPU4 you can reassign it to CPU5 and so
+>> > on.
+>>
+>> msi-x entry index, cpu_vector, irq number...
+>>
+>> you want to different cpus have same vector?
+>
+> Obviously I'm not communicating very well.  Your apparent assumption is
+> that irq number == vector.  What I'm saying is that's not what we've
+> done for individually vectored CPU interrupts in other architectures.
+> In those we did (cpu no, irq) == vector.  i.e. the affinity and the irq
+> number identify the vector.  For non-numa systems, this is effectively
+> what you're interested in doing anyway.  For numa systems, it just
+> becomes a sparse matrix.
+>
+msix_entry.vector == irq.
 
+and cpu have per_cpu(vector_irq), and use that cpu get irq number.
 
+when irq migratition, different cpu could use different vector for same irq.
+or say phys_flat mode, same vector in different cpus could server different irq.
+it seems x86 (64 bit) and ia64 already did that.
 
-> diff --git a/drivers/misc/dell-laptop.c b/drivers/misc/dell-laptop.c
-> new file mode 100644
-> index 0000000..ab09a69
-> --- /dev/null
-> +++ b/drivers/misc/dell-laptop.c
-
-[Snip]
-
-> +	da_command_address = table->cmdIOAddress;
-> +	da_command_code = table->cmdIOCode;
-> +
-> +	da_tokens = krealloc(da_tokens, (da_num_tokens + tokens) *
-> +			     sizeof(struct calling_interface_token),
-> +			     GFP_KERNEL);
-
-Isn't a NULL check required here?
-
-> +
-> +	memcpy(da_tokens+da_num_tokens, table->tokens,
-> +	       sizeof(struct calling_interface_token) * tokens);
-> +
-
-> +static struct calling_interface_buffer *dell_send_request(
-> +	struct calling_interface_buffer *buffer, int class, int select)
-> +{
-> +	struct smi_cmd *command = kzalloc(sizeof(struct smi_cmd), GFP_KERNEL);
-
-NULL check - Here too.
-
-> +	command->magic = SMI_CMD_MAGIC;
-> +	command->command_address = da_command_address;
-> +	command->command_code = da_command_code;
-> +	command->ebx = virt_to_phys(buffer);
-> +	command->ecx = 0x42534931;
-> +
-
-> +
-> +static int dell_rfkill_set(int radio, enum rfkill_state state)
-> +{
-> +	struct calling_interface_buffer *buffer =
-> +		kzalloc(sizeof(struct calling_interface_buffer), GFP_KERNEL);
-
-Ditto.
-
-> +	int disable = (state == RFKILL_STATE_UNBLOCKED) ? 0 : 1;
-> +	buffer->input[0] = (1 | (radio<<8) | (disable << 16));
-> +	dell_send_request(buffer, 17, 11);
-> +	kfree(buffer);
-> +	return 0;
-> +}
-
-> +static int dell_rfkill_get(int bit, enum rfkill_state *state)
-> +{
-> +	struct calling_interface_buffer *buffer =
-> +		kzalloc(sizeof(struct calling_interface_buffer), GFP_KERNEL);
-
-This makes me confident there is code in the kernel that always
-succeeds allocations by mjg59.
-Just got to find where it's hidden :)
-
-
-> +static int dell_wifi_get(void *data, enum rfkill_state *state)
-> +{
-> +	return dell_rfkill_get(17, state);
-> +}
-> +
-> +static int dell_bluetooth_get(void *data, enum rfkill_state *state)
-> +{
-> +	return dell_rfkill_get(18, state);
-> +}
-> +
-> +static int dell_wwan_get(void *data, enum rfkill_state *state)
-> +{
-> +	return dell_rfkill_get(19, state);
-> +}
-> +
-> +static void dell_setup_rfkill(void)
-> +{
-> +	struct calling_interface_buffer *buffer =
-> +		kzalloc(sizeof(struct calling_interface_buffer), GFP_KERNEL);
-
-Once more.
-
-> +
-> +static int dell_send_intensity(struct backlight_device *bd)
-> +{
-> +	int intensity = bd->props.brightness;
-> +	struct calling_interface_buffer *buffer =
-> +		kzalloc(sizeof(struct calling_interface_buffer), GFP_KERNEL);
-
-Stopped counting!
-
-> +
-> +	buffer->input[0] = find_token_location(0x7d);
-> +	buffer->input[1] = intensity;
-> +
-> +	if (buffer->input[0] == -1) {
-> +		kfree(buffer);
-> +		return -ENODEV;
-> +	}
-
-
-> +
-> +static int dell_get_intensity(struct backlight_device *bd)
-> +{
-> +	struct calling_interface_buffer *buffer =
-> +		kzalloc(sizeof(struct calling_interface_buffer), GFP_KERNEL);
-
-count_prev++;
-
-> +	if (!dmi_check_system(dell_device_table))
-> +		return -ENODEV;
-> +
-> +	dmi_walk(find_tokens);
-> +
-> +	if (!da_tokens)
-> +		return -ENODEV;
-> +
-> +	buffer = kzalloc(sizeof(struct calling_interface_buffer), GFP_KERNEL);
-
-One last.
-
-> +	buffer->input[0] = find_token_location(0x7d);
-> +
-> +	if (buffer->input[0] != -1) {
-> +		dell_send_request(buffer, 2, 1);
-> +		max_intensity = buffer->output[3];
-> +	}
-> +
-
-
-Parag
+YH
