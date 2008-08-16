@@ -1,99 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754057AbYHPV24@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754292AbYHPVdT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754057AbYHPV24 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Aug 2008 17:28:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751500AbYHPV2s
+	id S1754292AbYHPVdT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Aug 2008 17:33:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751837AbYHPVdL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Aug 2008 17:28:48 -0400
-Received: from server03.ke-net.com ([84.19.168.8]:58459 "EHLO
-	server03.ke-net.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751353AbYHPV2r (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Aug 2008 17:28:47 -0400
-Subject: Re: SCHED_FIFO and SCHED_RR broken by cfs
-From: Stefani Seibold <stefani@seibold.net>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: linux-kernel@vger.kernel.org, mingo@redhat.com
-In-Reply-To: <1218898413.10800.252.camel@twins>
-References: <1218880552.11912.9.camel@matrix>
-	 <1218898413.10800.252.camel@twins>
-Content-Type: text/plain
-Date: Sat, 16 Aug 2008 23:29:50 +0200
-Message-Id: <1218922190.3747.6.camel@matrix>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Sat, 16 Aug 2008 17:33:11 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:37758 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751696AbYHPVdK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 16 Aug 2008 17:33:10 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Greg KH <greg@kroah.com>, "Langsdorf, Mark" <mark.langsdorf@amd.com>
+Subject: Re: Warning in during hotplug on 2.6.27-rc2-git5
+Date: Sat, 16 Aug 2008 23:34:12 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>
+References: <200808141753.58547.rjw@sisk.pl> <200808162128.25330.rjw@sisk.pl> <20080816201813.GA30715@kroah.com>
+In-Reply-To: <20080816201813.GA30715@kroah.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200808162334.13620.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-After disabling kernel support for "Group CPU scheduler" and applying
-'echo -1 > /proc/sys/kernel/sched_rt_runtime_us' the behaviour is as
-expected.
-
-chrt -f 99 ./a.out
-
- average:13 usec
- min. jitter:0 usec
- max. jitter:29 usec
-
-chrt -o 0 ./a.out 
- average:153 usec
- min. jitter:0 usec
- max. jitter:37035 usec
-
-So the problem is located first in the new sched_rt_runtime_us default
-value and second in the "Group CPU scheduler".
-
-A last question: I though that the kernel will never break user space.
-Would it not better to make the old behaviour as the default?
-
-Greetings from Munich/Germany
-Stefani
-
-Am Samstag, den 16.08.2008, 16:53 +0200 schrieb Peter Zijlstra:
-> On Sat, 2008-08-16 at 11:55 +0200, Stefani Seibold wrote:
-> > Hi kernel hackers,
+On Saturday, 16 of August 2008, Greg KH wrote:
+> On Sat, Aug 16, 2008 at 09:28:24PM +0200, Rafael J. Wysocki wrote:
+> > On Thursday, 14 of August 2008, Langsdorf, Mark wrote:
+> > > > On Thu, Aug 14, 2008 at 05:53:57PM +0200, Rafael J. Wysocki wrote:
+> > > > > On Wednesday, 13 of August 2008, Mark Langsdorf wrote:
+> > > > > > I'm seeing the following error message when I hotunplug and replug
+> > > > > > a cpu in 2.6.27-rc2-git5.  The system becomes unstable almost
+> > > > > > immediately afterwards.
+> > > > > 
+> > > > > Hm, it seems that MCE is involved somehow.  Andi, can you 
+> > > > have a look at this,
+> > > > > please?
+> > > > 
+> > > > FWIW the mce code here actually hasn't changed for a long time.
+> > > > 
+> > > > 
+> > > > > > ------------[ cut here ]------------
+> > > > > > WARNING: at fs/sysfs/dir.c:463 sysfs_add_one+0x33/0x39()
+> > > > > > sysfs: duplicate filename 'machinecheck4' can not be created
+> > > > 
+> > > > The only way I could see that happening if CPU_DEAD/CPU_ONLINE
+> > > > is not properly balanced.
+> > > 
+> > > I'm still seeing it on 2.6.27-rc2, even with the 
+> > > patch here http://lkml.org/lkml/2008/7/30/171 and the
+> > > wbinvd_halt code patch applied.  Maybe something else
+> > > broke in some of the recent hotplug changes?
 > > 
-> > it seems that the new completely fair scheduler breaks the SCHED_RR and
-> > SCHED_FIFO realtime scheduler.
-> > 
-> > In my opinion a high priority real time user process with SCHED_FIFO
-> > should be only interrupted by the kernel or a process with an higher
-> > priority. So a user process running under SCHED_FIFO and priority 99
-> > should never be interrupted by any other process.  This was true under
-> > kernel 2.6.20. 
-> > 
-> > On my pentium/celeron III/400 MHz system with kernel 2.6.20 a busy loop
-> > using the "time stamp counter" of the x86 cpu for delaying, this was
-> > very accurate. The max. jitter of the delaying was about 5 microseconds.
-> > 
-> > With the new kernel 2.6.26 the jitter is about 51177 microseconds or in
-> > other words 51 milliseconds or more the 10000 times greater than kernel
-> > 2.6.20. This huge latency is far away from realtime.
-> > 
-> > Below are the results of the attached test program. Maybe somebody else
-> > can confirm this results. All measurements was done with no other
-> > process running, only the busybox 1.11.1 shell and the init process was
-> > there.
+> > My guess is that MCE does somthing that is not allowed by sysfs any more.
 > 
-> Has nothing to do with CFS, but everything to do with the fact that we
-> now have a 95% bandwidth control by default.
-> 
-> Does doing:
-> 
-> echo -1 > /proc/sys/kernel/sched_rt_runtime_us
-> 
-> fix it?
-> 
-> So, up to 95% cpu usage (per sched_rt_period_us) FIFO and RR behave like
-> they always did, once they cross that line, they'll be throttled.
-> 
-> 95% seemed like a sane default in that it leaves a little room to
-> recover from a run-away rt process (esp handy now that !root users can
-> also use RT scheduling classes), and should be enough for most
-> applications as they usually don't consume all that much time.
-> 
-> 
-> 
+> Hm, sysfs hasn't changed any in 2.6.27-rcX that I know of.
 
+Hmm.  Mark, what kind of a system is this?  Is it a 2 quad-core CPU system
+or similar ('machinecheck4' in your trace seems to imply something like this)?
+
+Rafael
