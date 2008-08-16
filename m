@@ -1,48 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754177AbYHPU0Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754470AbYHPU0k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754177AbYHPU0Y (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Aug 2008 16:26:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752222AbYHPUZ6
+	id S1754470AbYHPU0k (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Aug 2008 16:26:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754126AbYHPU0S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Aug 2008 16:25:58 -0400
-Received: from fg-out-1718.google.com ([72.14.220.154]:33899 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752970AbYHPUZ5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Aug 2008 16:25:57 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=date:to:cc:subject:message-id:reply-to:mail-followup-to:references
-         :mime-version:content-type:content-disposition:in-reply-to
-         :user-agent:from;
-        b=gVNzlK9XeL6yj72Kd3SduHNS6+d4Nk64SgbirJVHFm+Q1mnmNPAqxM+dyy146BomOq
-         Ar7RwST2sqbY2/nnURIhSaMC7J/oGpU8k/4D//kLlCNMoBiddEqpCQ01Yr2V1YA+MpUh
-         fre8HXAHRtrK41M2PnHmnfn6Swi+FDfOeyrCc=
-Date: Sat, 16 Aug 2008 22:26:00 +0200
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-Subject: Re: [PATCH 03/18] ide-cd: cdrom_decode_status: factor out block pc
-	error handling code
-Message-ID: <20080816202600.GA13726@gollum.tnic>
-Reply-To: petkovbb@gmail.com
-Mail-Followup-To: petkovbb@gmail.com,
-	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-	linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-References: <1213252870-20474-1-git-send-email-petkovbb@gmail.com> <1213252870-20474-4-git-send-email-petkovbb@gmail.com> <200806141929.21329.bzolnier@gmail.com> <20080815073413.GA9906@gollum.tnic>
+	Sat, 16 Aug 2008 16:26:18 -0400
+Received: from kirk.serum.com.pl ([213.77.9.205]:63170 "EHLO serum.com.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752883AbYHPU0R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 16 Aug 2008 16:26:17 -0400
+Date: Sat, 16 Aug 2008 21:25:37 +0100 (BST)
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+To: Arjan van de Ven <arjan@infradead.org>
+cc: Cyrill Gorcunov <gorcunov@gmail.com>, mingo@elte.hu, hpa@zytor.com,
+       tglx@linutronix.de, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/6] x86: apic - unify lapic_resume
+In-Reply-To: <20080816130008.349b031d@infradead.org>
+Message-ID: <Pine.LNX.4.55.0808162113280.17944@cliff.in.clinika.pl>
+References: <1218914515-26377-1-git-send-email-gorcunov@gmail.com>
+ <f87881899957b7aa08b827cdc6b5dd8cf53e4730.1218914042.git.gorcunov@gmail.com>
+ <722b5bc0303212ca203cadeedae5ede3e23eccb7.1218914042.git.gorcunov@gmail.com>
+ <Pine.LNX.4.55.0808162041190.17944@cliff.in.clinika.pl>
+ <20080816130008.349b031d@infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080815073413.GA9906@gollum.tnic>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-From: Borislav Petkov <petkovbb@googlemail.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[.. ]
+On Sat, 16 Aug 2008, Arjan van de Ven wrote:
 
-> here's a first attempt at that. These are only RFC of nature, please take a look
-> when there's time. They've been lightly tested but I'll do more later since this
-> path is not hit that often and a special test case will be required.
+> it's not like you can/want to go over 128 cpus on a 32 bit kernel
+> though..
 
-Yep, this one has problems as I just noticed. Reworking... 
+ That's a quantitative rather than a qualitative limitation though.  I can
+see no reason why limiting the number of CPUs would preclude the use of
+the x2APIC mode altogether -- the extra CPUs will simply be ignored and
+never waken up.  And with smaller systems and a 32-bit kernel one may
+still want to get the small performance gain from using the MSRs rather
+than going through the TLB for example.
+
+ Similarly there is some RAM size limitation with the 32-bit configuration
+too, but that does not prevent us from using however much we can in the
+32-bit mode either. ;)
+
+  Maciej
