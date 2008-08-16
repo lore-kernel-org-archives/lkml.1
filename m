@@ -1,87 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754311AbYHPCgd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755216AbYHPCg4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754311AbYHPCgd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Aug 2008 22:36:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751799AbYHPCgW
+	id S1755216AbYHPCg4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Aug 2008 22:36:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751995AbYHPCgr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Aug 2008 22:36:22 -0400
-Received: from moutng.kundenserver.de ([212.227.126.171]:61340 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751444AbYHPCgV convert rfc822-to-8bit (ORCPT
+	Fri, 15 Aug 2008 22:36:47 -0400
+Received: from rv-out-0506.google.com ([209.85.198.227]:44141 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751799AbYHPCgq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Aug 2008 22:36:21 -0400
-Subject: Re: linux-next: Tree for August 14 (sysfs/acpi errors)
-From: Kay Sievers <kay.sievers@vrfy.org>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, gregkh <greg@kroah.com>,
-       ak@linux.intel.com, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, linux-acpi@vger.kernel.org
-In-Reply-To: <20080815085836.67e420f1.randy.dunlap@oracle.com>
-References: <20080814172945.250a27f2.sfr@canb.auug.org.au>
-	 <20080814083828.d10e126d.randy.dunlap@oracle.com>
-	 <3ae72650808150427q364842ccicf0a0978b30ca98c@mail.gmail.com>
-	 <20080815085836.67e420f1.randy.dunlap@oracle.com>
-Content-Type: text/plain; charset=utf-8
-Date: Sat, 16 Aug 2008 04:36:59 +0200
-Message-Id: <1218854219.3629.30.camel@lgn.site>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1.1 
-Content-Transfer-Encoding: 8BIT
-X-Provags-ID: V01U2FsdGVkX19t3hAw+HQDa575LcAJfiRAH9/Wdbmu1IBwZD6
- Av88VuIyuDnMNAUcOB8lCBJ+iIYCipU+ccOrmu4fKIGldph5Sl
- nQ/c/PFDspZlPtVjsbxq2f6GB7bJy8M
+	Fri, 15 Aug 2008 22:36:46 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=LQcTcjNJNBIHyIDboz727t4FWfPqOOuKzBZnx829lefcEYioDU1bIgoeRq0FxczNzH
+         U1PVtavLPHCT57Mscp0HJI8a3uk2EMtl31H+4wuERx9L1xJUlVJko3cn58X7QIRoTYag
+         SRO2JTbWER+pcFXIDjq6UlQzRtKiQQoWpNnwU=
+From: Yinghai Lu <yhlu.kernel@gmail.com>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>,
+       James Bottomley <James.Bottomley@hansenpartnership.com>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Yinghai Lu <yhlu.kernel@gmail.com>,
+       Andrew Vasquez <andrew.vasquez@qlogic.com>
+Subject: 
+Date: Fri, 15 Aug 2008 19:35:52 -0700
+Message-Id: <1218854152-2305-1-git-send-email-yhlu.kernel@gmail.com>
+X-Mailer: git-send-email 1.5.4.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-08-15 at 08:58 -0700, Randy Dunlap wrote:
-> On Fri, 15 Aug 2008 13:27:00 +0200 Kay Sievers wrote:
-> 
-> > On Thu, Aug 14, 2008 at 17:38, Randy Dunlap <randy.dunlap@oracle.com> wrote:
-> > > calling  param_sysfs_init+0x0/0x1e7
-> > > ------------[ cut here ]------------
-> > > WARNING: at fs/sysfs/dir.c:463 sysfs_add_one+0x35/0x3d()
-> > > sysfs: duplicate filename 'acpi' can not be created
-> > 
-> > Hi Randy,
-> > care to add a printk to the module sysfs setup, and post dmesg again?
-> > 
-> > --- a/kernel/params.c
-> > +++ b/kernel/params.c
-> > @@ -603,6 +603,8 @@ static void __init param_sysfs_builtin(void)
-> >  		}
-> >  		name_len = dot - kp->name;
-> > 
-> > +		printk("XXX adding modparam:'%s' %i (%p)\n", kp->name, i, kp);
-> > +
-> >   		/* new kbuild_modname? */
-> >  		if (strlen(modname) != name_len
-> >  		    || strncmp(modname, kp->name, name_len) != 0) {
-> > 
-> > I might show the order of registering the /sys/modules/ directory, and
-> > if there is possibly another "acpi" section, which tries to add
-> > parameter names.
+we are using 28bit pci (bus/dev/fn + 12 bits) as irq number, so the
+cache for irq number should be 32 bit too.
 
-> Extract is:
-> 
-> XXX adding modparam:'acpi.power_nocheck' 34 (ffffffff806a4cf0)
-...
-> XXX adding modparam:'acpi.acpica_version' 45 (ffffffff806a4ea8)
+Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: Andrew Vasquez <andrew.vasquez@qlogic.com>
 
-Two different "modules" use the same prefix, which does not work with
-the current logic, they need to live next to each other in the sequence
-of options.
+---
+ drivers/scsi/qla2xxx/qla_def.h |    2 +-
+ include/linux/pci.h            |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-This adds a new option:
-  http://git.kernel.org/?p=linux/kernel/git/sfr/linux-next.git;a=commitdiff;h=1382827e93799ec07790849e361267993cfe549e
-﻿which specifies ﻿MODULE_PARAM_PREFIX="acpi." in:
-  drivers/acpi/power.c
-In the same way as:
-  drivers/acpi/system.c
-
-Seems, two different modules should not declare parameters in different
-locations, and use the same MODULE_PARAM_PREFIX.
-
-Thanks,
-Kay
-
+Index: linux-2.6/drivers/scsi/qla2xxx/qla_def.h
+===================================================================
+--- linux-2.6.orig/drivers/scsi/qla2xxx/qla_def.h
++++ linux-2.6/drivers/scsi/qla2xxx/qla_def.h
+@@ -2109,7 +2109,7 @@ struct scsi_qla_host;
+ 
+ struct qla_msix_entry {
+ 	int have_irq;
+-	uint16_t msix_vector;
++	uint32_t msix_vector;
+ 	uint16_t msix_entry;
+ };
+ 
+Index: linux-2.6/include/linux/pci.h
+===================================================================
+--- linux-2.6.orig/include/linux/pci.h
++++ linux-2.6/include/linux/pci.h
+@@ -730,7 +730,7 @@ enum pci_dma_burst_strategy {
+ };
+ 
+ struct msix_entry {
+-	u16 	vector;	/* kernel uses to write allocated vector */
++	u32	vector;	/* kernel uses to write allocated vector */
+ 	u16	entry;	/* driver uses to specify entry, OS writes */
+ };
+ 
