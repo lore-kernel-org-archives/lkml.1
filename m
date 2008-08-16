@@ -1,69 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753809AbYHPUMf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752935AbYHPUV1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753809AbYHPUMf (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Aug 2008 16:12:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751347AbYHPUM1
+	id S1752935AbYHPUV1 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Aug 2008 16:21:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751347AbYHPUVT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Aug 2008 16:12:27 -0400
-Received: from qb-out-0506.google.com ([72.14.204.231]:28165 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751282AbYHPUM0 (ORCPT
+	Sat, 16 Aug 2008 16:21:19 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:49074 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751332AbYHPUVS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Aug 2008 16:12:26 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=qzktk03joKnUlL2gprnQcIrOKyByUcrDNZ75YvcATlhB/1MisVr1yyjhvR8IYRQ3yp
-         AGnUfECe4W8PcD/Fpcf8UP9EVNwA7R8kQ4DGSJEcCDIWQ+7tdOHnFlixvXQztaC3IJPO
-         W9BTnTPEmcGLr8RdLm7dXM1uK+Et+E3cs4tQ4=
-Date: Sun, 17 Aug 2008 00:12:35 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: "Maciej W. Rozycki" <macro@linux-mips.org>, mingo@elte.hu, hpa@zytor.com,
-       tglx@linutronix.de, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/6] x86: apic - unify lapic_resume
-Message-ID: <20080816201235.GB7182@lenovo>
-References: <1218914515-26377-1-git-send-email-gorcunov@gmail.com> <f87881899957b7aa08b827cdc6b5dd8cf53e4730.1218914042.git.gorcunov@gmail.com> <722b5bc0303212ca203cadeedae5ede3e23eccb7.1218914042.git.gorcunov@gmail.com> <Pine.LNX.4.55.0808162041190.17944@cliff.in.clinika.pl> <20080816130008.349b031d@infradead.org>
+	Sat, 16 Aug 2008 16:21:18 -0400
+Date: Sat, 16 Aug 2008 13:18:13 -0700
+From: Greg KH <greg@kroah.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: "Langsdorf, Mark" <mark.langsdorf@amd.com>,
+       Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Warning in during hotplug on 2.6.27-rc2-git5
+Message-ID: <20080816201813.GA30715@kroah.com>
+References: <200808141753.58547.rjw@sisk.pl> <20080814163450.GA13814@one.firstfloor.org> <6453C3CB8E2B3646B0D020C112613273C5AC71@sausexmb4.amd.com> <200808162128.25330.rjw@sisk.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080816130008.349b031d@infradead.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <200808162128.25330.rjw@sisk.pl>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Arjan van de Ven - Sat, Aug 16, 2008 at 01:00:08PM -0700]
-| On Sat, 16 Aug 2008 20:52:07 +0100 (BST)
-| "Maciej W. Rozycki" <macro@linux-mips.org> wrote:
-| 
-| > On Sat, 16 Aug 2008, Cyrill Gorcunov wrote:
-| > 
-| > > +#ifdef CONFIG_X86_64
-| > > +	if (x2apic)
-| > > +		enable_x2apic();
-| > > +	else
-| > > +#endif
-| > 
-| >  Hmm, x86-64 hardware can run a 32-bit kernel, so it might be a good
-| > idea to take the opportunity of the merge and extend x2APIC support
-| > to the 32-bit configuration too.  It should be mostly a mechanical
-| > change.  Just a suggestion though -- feel free to ignore if you'd
-| > rather not dive into it. ;)
-| 
-| it's not like you can/want to go over 128 cpus on a 32 bit kernel
-| though..
-| -- 
-| If you want to reach me at my work email, use arjan@linux.intel.com
-| For development, discussion and tips for power savings, 
-| visit http://www.lesswatts.org
-| 
+On Sat, Aug 16, 2008 at 09:28:24PM +0200, Rafael J. Wysocki wrote:
+> On Thursday, 14 of August 2008, Langsdorf, Mark wrote:
+> > > On Thu, Aug 14, 2008 at 05:53:57PM +0200, Rafael J. Wysocki wrote:
+> > > > On Wednesday, 13 of August 2008, Mark Langsdorf wrote:
+> > > > > I'm seeing the following error message when I hotunplug and replug
+> > > > > a cpu in 2.6.27-rc2-git5.  The system becomes unstable almost
+> > > > > immediately afterwards.
+> > > > 
+> > > > Hm, it seems that MCE is involved somehow.  Andi, can you 
+> > > have a look at this,
+> > > > please?
+> > > 
+> > > FWIW the mce code here actually hasn't changed for a long time.
+> > > 
+> > > 
+> > > > > ------------[ cut here ]------------
+> > > > > WARNING: at fs/sysfs/dir.c:463 sysfs_add_one+0x33/0x39()
+> > > > > sysfs: duplicate filename 'machinecheck4' can not be created
+> > > 
+> > > The only way I could see that happening if CPU_DEAD/CPU_ONLINE
+> > > is not properly balanced.
+> > 
+> > I'm still seeing it on 2.6.27-rc2, even with the 
+> > patch here http://lkml.org/lkml/2008/7/30/171 and the
+> > wbinvd_halt code patch applied.  Maybe something else
+> > broke in some of the recent hotplug changes?
+> 
+> My guess is that MCE does somthing that is not allowed by sysfs any more.
 
-Arjan,
+Hm, sysfs hasn't changed any in 2.6.27-rcX that I know of.
 
-it seems this limit is not APIC related since iirc 82489DX allows
-to address 2^14 bits, x2APIC - more then 128 entities too. So I suspect
-it somehow cpu bitmap related. Am I wrong (I didn't _check_ the code)?
+thanks,
 
-		- Cyrill -
+greg k-h
