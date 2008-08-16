@@ -1,76 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761394AbYHPEQl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753847AbYHPEsk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761394AbYHPEQl (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Aug 2008 00:16:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758530AbYHPEJ6
+	id S1753847AbYHPEsk (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Aug 2008 00:48:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751340AbYHPEs3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Aug 2008 00:09:58 -0400
-Received: from casper.infradead.org ([85.118.1.10]:34804 "EHLO
+	Sat, 16 Aug 2008 00:48:29 -0400
+Received: from casper.infradead.org ([85.118.1.10]:33401 "EHLO
 	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758611AbYHPEJz (ORCPT
+	with ESMTP id S1751070AbYHPEs2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Aug 2008 00:09:55 -0400
-Date: Fri, 15 Aug 2008 21:09:42 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: "Peter Dolding" <oiaohm@gmail.com>
-Cc: david@lang.hm, rmeijer@xs4all.nl, "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
-       capibara@xs4all.nl, "Eric Paris" <eparis@redhat.com>,
-       "Theodore Tso" <tytso@mit.edu>, "Rik van Riel" <riel@redhat.com>,
-       davecb@sun.com, linux-security-module@vger.kernel.org,
-       "Adrian Bunk" <bunk@kernel.org>,
-       "Mihai Don??u" <mdontu@bitdefender.com>, linux-kernel@vger.kernel.org,
-       malware-list@lists.printk.net, "Pavel Machek" <pavel@suse.cz>
-Subject: Re: [malware-list] [RFC 0/5] [TALPA] Intro to alinuxinterfaceforon
- access scanning
-Message-ID: <20080815210942.4e342c6c@infradead.org>
-In-Reply-To: <e7d8f83e0808152057h5c607cfbnecdc6f0bd05c5d89@mail.gmail.com>
-References: <18129.82.95.100.23.1218802937.squirrel@webmail.xs4all.nl>
-	<e7d8f83e0808150627m7a5c8738n8ac42d77c45eea76@mail.gmail.com>
-	<alpine.DEB.1.10.0808151024120.15109@asgard.lang.hm>
-	<e7d8f83e0808152057h5c607cfbnecdc6f0bd05c5d89@mail.gmail.com>
-Organization: Intel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Sat, 16 Aug 2008 00:48:28 -0400
+Date: Fri, 15 Aug 2008 21:47:14 -0700
+From: Greg KH <greg@kroah.com>
+To: Andi Kleen <ak@linux.intel.com>
+Cc: Kay Sievers <kay.sievers@vrfy.org>, Randy Dunlap <randy.dunlap@oracle.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, linux-acpi@vger.kernel.org,
+       rusty@rustcorp.com.au
+Subject: Re: linux-next: Tree for August 14 (sysfs/acpi errors)
+Message-ID: <20080816044714.GA19886@kroah.com>
+References: <20080814172945.250a27f2.sfr@canb.auug.org.au> <20080814083828.d10e126d.randy.dunlap@oracle.com> <3ae72650808150427q364842ccicf0a0978b30ca98c@mail.gmail.com> <20080815085836.67e420f1.randy.dunlap@oracle.com> <1218854219.3629.30.camel@lgn.site> <48A64235.2030108@linux.intel.com> <1218856798.3629.45.camel@lgn.site> <48A64E0A.8090408@linux.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <48A64E0A.8090408@linux.intel.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 16 Aug 2008 13:57:50 +1000
-"Peter Dolding" <oiaohm@gmail.com> wrote:
-> Anti-Virus has been for years about chasing the threat.   Lets try to
-> get in front of it.  You thread model needs a major update its
-> incomplete.
-> 
+On Sat, Aug 16, 2008 at 05:48:26AM +0200, Andi Kleen wrote:
+>
+>> They have been module options, not prefixed kernel parameters so far,
+>> and the prefix was just the module name.
+>> So it just strikes back, that acpi uses generic names for the modules,
+>> there would have been no problem if "power" would be called "acpi_power"
+>> and the options would just be ﻿"acpi.acpica_version" and
+>> "acpi_power.nocheck".
+>> But well, there are driver modules just called "option", so acpi is not
+>> that bad. :)
+>>> I think the generic params code should be fixed to handle this.
+>> We could try to look up existing directories to use instead of expecting
+>> that we need to create and own them. I guess,
+>
+> sysfs does this anyways, doesn't it. We would just need to teach it
+> to not BUG() in this case, perhaps with a special entry point.
+> Also a BUG() in general seems a little harsh for this, surely a WARN_ON
+> should be enough.
 
-The problem TALPA is trying to solve is only part of the puzzle.
-Everyone recognizes that. It's a very relevant part of the puzzle (in
-corporate context at least), but it's very much so not a complete
-puzzle. Does that mean we shouldn't deal with this just because it's
-incomplete? Absolutely not!
-(nor should we do something that has no value.. but that's not the case;
-the model that Erik described is quite well defined as 
-"do not give ''bad' content to applications/exec".
-There is clearly value in that (even though it's not defined what 'bad'
-is other than 'program X or Y says so', but for now we have to live
-with that; if it bothers you just think "clamAV").
+It is a WARN() call, not a BUG().
 
-The implementation idea (have a flag/generationnr in the inode for
-'known good', block on read() and mmap(), and schedule async scans in
-open or on dirty) seems to be quite solid although several details
-(async queueing model for example but also the general dirty
-notification system) need to be worked out.
+thanks,
 
-Sadly what you're doing is throwing up smoke and just saying "it
-doesn't solve world hunger as well so it's bad". Please do yourself a
-favor and stop that before people totally start ignoring you.
-
-
--- 
-If you want to reach me at my work email, use arjan@linux.intel.com
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
-
+greg k-h
