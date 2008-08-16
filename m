@@ -1,55 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753214AbYHPJgY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753106AbYHPJkr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753214AbYHPJgY (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Aug 2008 05:36:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752298AbYHPJgQ
+	id S1753106AbYHPJkr (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Aug 2008 05:40:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752154AbYHPJki
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Aug 2008 05:36:16 -0400
-Received: from wf-out-1314.google.com ([209.85.200.175]:43731 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751708AbYHPJgO (ORCPT
+	Sat, 16 Aug 2008 05:40:38 -0400
+Received: from www.church-of-our-saviour.org ([69.25.196.31]:57800 "EHLO
+	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751955AbYHPJkg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Aug 2008 05:36:14 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=hN2xDnyQBghrW/bkH6BNG2SL4Oj4YO2QOi6yDeXtSRVUWD5CvSsUXEM/8mYmUj52Mb
-         5GQm7MzgbybUOZ/eDHzN7J9AV61AHNW5uVG87puPQvV7eWGTFam4Bic+yVRA76M4AYkU
-         ZvtBJ0Ln+XRxOdHNSXFWtc1Ano7INRFhuFeqY=
-Message-ID: <8db1092f0808160236o63c42de4k3c455c349d3e9da6@mail.gmail.com>
-Date: Sat, 16 Aug 2008 11:36:13 +0200
-From: "Maciej Rutecki" <maciej.rutecki@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [2.6.26.*] boot problem (ahci/irq related?)
-Cc: "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
-       "Yinghai Lu" <yhlu.kernel@gmail.com>, "Ingo Molnar" <mingo@elte.hu>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       linux-ide@vger.kernel.org, "Jeff Garzik" <jgarzik@pobox.com>,
-       tj@kernel.org, andi@firstfloor.org,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "Jesse Barnes" <jbarnes@virtuousgeek.org>
-In-Reply-To: <8db1092f0808130040u25876f45gbb4fa641959f5110@mail.gmail.com>
+	Sat, 16 Aug 2008 05:40:36 -0400
+Date: Sat, 16 Aug 2008 05:39:52 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Peter Dolding <oiaohm@gmail.com>
+Cc: Arjan van de Ven <arjan@infradead.org>, david@lang.hm, rmeijer@xs4all.nl,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, capibara@xs4all.nl,
+       Eric Paris <eparis@redhat.com>, Rik van Riel <riel@redhat.com>,
+       davecb@sun.com, linux-security-module@vger.kernel.org,
+       Adrian Bunk <bunk@kernel.org>, Mihai Don??u <mdontu@bitdefender.com>,
+       linux-kernel@vger.kernel.org, malware-list@lists.printk.net,
+       Pavel Machek <pavel@suse.cz>
+Subject: Re: [malware-list] [RFC 0/5] [TALPA] Intro to alinuxinterfaceforon
+	access scanning
+Message-ID: <20080816093952.GF22395@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Peter Dolding <oiaohm@gmail.com>,
+	Arjan van de Ven <arjan@infradead.org>, david@lang.hm,
+	rmeijer@xs4all.nl, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+	capibara@xs4all.nl, Eric Paris <eparis@redhat.com>,
+	Rik van Riel <riel@redhat.com>, davecb@sun.com,
+	linux-security-module@vger.kernel.org,
+	Adrian Bunk <bunk@kernel.org>,
+	Mihai Don??u <mdontu@bitdefender.com>, linux-kernel@vger.kernel.org,
+	malware-list@lists.printk.net, Pavel Machek <pavel@suse.cz>
+References: <18129.82.95.100.23.1218802937.squirrel@webmail.xs4all.nl> <e7d8f83e0808150627m7a5c8738n8ac42d77c45eea76@mail.gmail.com> <alpine.DEB.1.10.0808151024120.15109@asgard.lang.hm> <e7d8f83e0808152057h5c607cfbnecdc6f0bd05c5d89@mail.gmail.com> <20080815210942.4e342c6c@infradead.org> <e7d8f83e0808152219j50827f49nb9dd48cf44e082d2@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <8db1092f0808111312x3baf819bxbb05030c05693065@mail.gmail.com>
-	 <20080812081632.303de380@lxorguk.ukuu.org.uk>
-	 <8db1092f0808120107k1f8a65f4sf406fa3a89125870@mail.gmail.com>
-	 <200808121645.37539.rjw@sisk.pl>
-	 <8db1092f0808130040u25876f45gbb4fa641959f5110@mail.gmail.com>
+In-Reply-To: <e7d8f83e0808152219j50827f49nb9dd48cf44e082d2@mail.gmail.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I test few versions of linux kernel and 2.6.26-rc3 hangs during boot,
-2.6.26-rc2 (propably) is good. I wrote "propably" because bug is not
-100% reproducible and must have more time to be sure. After I will try
-bisect. Any suggestions?
+On Sat, Aug 16, 2008 at 03:19:43PM +1000, Peter Dolding wrote:
+> Lets look at the general disk to memory path.
+> 
+> [file system driver]
+> [file system drivers caches]
+> [inode's]  TALPA links in here and basically runs its own scan cache.
+> 
+> Long term TALPA need to move from the inode layor down and the design
+> of the file system path needs to change.
 
--- 
-Maciej Rutecki
-http://www.maciek.unixy.pl
+Huh?  What are you talking about?  In Linux just about all of the
+serious filesystems the only caching for file data happens in the page
+cache layer.  So what you're saying doesn't make much sense, unless
+you're talking about the user space samba daemon --- but even there,
+Samba doesn't do any shortcut routing of data; as far as I know
+everything goes from Samba, into the filesystem, before it gets served
+out to other clients via Samba back out from the filesystem.  So
+everything goes through the page cache.
+
+> Reasons
+> 1. That shape even if file system extra permissions are decided to be
+> kept hidden from the rest of Linux anti-virus can scanning can see it
+
+No one else is taking about checking permissions; I thought this was
+all about file *data* that we've been talking about.
+
+If your argument means that we have to take every single
+$Proprietary_OS's wacky permissions system, and push them into to core
+Linux system so the AV system can evaluate it, I'm pretty sure
+everyone is going to vomit all over such a proposal (and over you).
+
+	    	     	       	    	   - Ted
