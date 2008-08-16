@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755564AbYHPUea@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755806AbYHPUes@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755564AbYHPUea (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Aug 2008 16:34:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754377AbYHPUcF
+	id S1755806AbYHPUes (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Aug 2008 16:34:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752700AbYHPUcH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Aug 2008 16:32:05 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:37250 "EHLO ogre.sisk.pl"
+	Sat, 16 Aug 2008 16:32:07 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:37247 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754981AbYHPUcA convert rfc822-to-8bit (ORCPT
+	id S1754974AbYHPUcA convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Sat, 16 Aug 2008 16:32:00 -0400
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Josh Boyer" <jwboyer@linux.vnet.ibm.com>
+       "Zdenek Kabelac" <zdenek.kabelac@gmail.com>
 References: <DLWXHEp37wB.A.duD.yZzpIB@albercik>
 In-Reply-To: <DLWXHEp37wB.A.duD.yZzpIB@albercik>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -19,10 +19,10 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <sNRO-BDDjQL.A.GoG.CczpIB@albercik>
-Subject: [Bug #11230] Kconfig no longer outputs a .config with freshly updated defconfigs
+Message-ID: <sNRO-BDDjQL.A.c7G.UczpIB@albercik>
+Subject: [Bug #11219] KVM modules break emergency reboot
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Date: Sat, 16 Aug 2008 21:02:48 +0200 (CEST)
+Date: Sat, 16 Aug 2008 21:02:47 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -35,10 +35,10 @@ from 2.6.26.  Please verify if it still should be listed and let me know
 (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11230
-Subject		: Kconfig no longer outputs a .config with freshly updated defconfigs
-Submitter	: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Date		: 2008-08-02 16:03 (15 days old)
-References	: http://marc.info/?l=linux-kernel&m=121769306319391&w=4
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11219
+Subject		: KVM modules break emergency reboot
+Submitter	: Zdenek Kabelac <zdenek.kabelac@gmail.com>
+Date		: 2008-08-01 20:25 (16 days old)
+References	: http://marc.info/?l=linux-kernel&m=121762241105336&w=4
 
 
