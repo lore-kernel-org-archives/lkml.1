@@ -1,46 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753465AbYHPP57@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753944AbYHPQAy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753465AbYHPP57 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Aug 2008 11:57:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752193AbYHPP5v
+	id S1753944AbYHPQAy (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Aug 2008 12:00:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752324AbYHPQAp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Aug 2008 11:57:51 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:40366 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752167AbYHPP5u (ORCPT
+	Sat, 16 Aug 2008 12:00:45 -0400
+Received: from mcbehr.de ([81.169.141.90]:44998 "EHLO
+	h1328092.stratoserver.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752307AbYHPQAp convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Aug 2008 11:57:50 -0400
-Date: Sat, 16 Aug 2008 16:39:45 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: Yinghai Lu <yhlu.kernel@gmail.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Andrew Vasquez <andrew.vasquez@qlogic.com>
-Subject: Re: [PATCH] pci: change msi-x vector to 32bit
-Message-ID: <20080816163945.74d487e9@lxorguk.ukuu.org.uk>
-In-Reply-To: <1218898238.3940.6.camel@localhost.localdomain>
-References: <200808160326.m7G3QR1G012726@terminus.zytor.com>
-	<86802c440808152342m772d5eabs59a9c93ffe4cf557@mail.gmail.com>
-	<1218898238.3940.6.camel@localhost.localdomain>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 16 Aug 2008 12:00:45 -0400
+X-Greylist: delayed 1659 seconds by postgrey-1.27 at vger.kernel.org; Sat, 16 Aug 2008 12:00:44 EDT
+From: "Matthias Behr" <linux@mcbehr.de>
+To: "'Gregory Haskins'" <ghaskins@novell.com>
+Cc: <linux-kernel@vger.kernel.org>, <linux-rt-users@vger.kernel.org>,
+       <gregory.haskins@gmail.com>, <mingo@elte.hu>, <David.Holmes@sun.com>,
+       <jkacur@gmail.com>, <paulmck@linux.vnet.ibm.com>,
+       <peterz@infradead.org>, <tglx@linutronix.de>, <rostedt@goodmis.org>
+References: <20080815202408.668.23736.stgit@dev.haskins.net> <20080815202823.668.26199.stgit@dev.haskins.net>
+In-Reply-To: <20080815202823.668.26199.stgit@dev.haskins.net>
+Subject: AW: [PATCH RT RFC v4 1/8] add generalized priority-inheritance interface
+Date: Sat, 16 Aug 2008 17:32:55 +0200
+Message-ID: <073b01c8ffb5$5c597870$150c6950$@de>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+X-Mailer: Microsoft Office Outlook 12.0
+Thread-Index: Acj/FeazwmQMzANPS3iMNyqhaQyC6gAiwiSA
+Content-Language: de
+X-Spam_score: 0.1
+X-Spam_score_int: 1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Where exactly is this code in the kernel?  Most arches assume the irq is
-> an index to a compact table bounded by NR_IRQS, so something like this
-> would violate that assumption.
+Hi Greg,
 
-Yes, which is no bad thing for some platforms. There are some driver
-assumptions like that but those have also been stomped.
+I got a few review comments/questions. Pls see below.
 
-Alan
+Best Regards,
+Matthias
+
+P.S. I'm a kernel newbie so don't hesitate to tell me if I'm wrong ;-)
+
+> +/**
+> + * pi_sink_init - initialize a pi_sink before use
+> + * @sink: a sink context
+> + * @ops: pointer to an pi_sink_ops structure
+> + */
+> +static inline void
+> +pi_sink_init(struct pi_sink *sink, struct pi_sink_ops *ops)
+> +{
+> +	atomic_set(&sink->refs, 0);
+> +	sink->ops = ops;
+> +}
+
+Shouldn't ops be tested for 0 here? (ASSERT/BUG_ON/...) (get's dereferenced later quite often in the form "if (sink->ops->...)".
+
+> +/**
+> + * pi_sink_put - down the reference count, freeing the sink if 0
+> + * @node: the node context
+> + * @flags: optional flags to modify behavior.  Reserved, must be 0.
+> + *
+> + * Returns: none
+> + */
+> +static inline void
+> +pi_sink_put(struct pi_sink *sink, unsigned int flags)
+> +{
+> +	if (atomic_dec_and_test(&sink->refs)) {
+> +		if (sink->ops->free)
+> +			sink->ops->free(sink, flags);
+> +	}
+> +}
+
+Shouldn't the atomic/locked part cover the ...->free(...) as well? A pi_get right after the atomic_dec_and_test but before the free() could lead to a free() with refs>0?
+
+
+
