@@ -1,346 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753505AbYHPPwf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753465AbYHPP57@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753505AbYHPPwf (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Aug 2008 11:52:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752183AbYHPPw0
+	id S1753465AbYHPP57 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Aug 2008 11:57:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752193AbYHPP5v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Aug 2008 11:52:26 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:48617 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752167AbYHPPwZ (ORCPT
+	Sat, 16 Aug 2008 11:57:51 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:40366 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752167AbYHPP5u (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Aug 2008 11:52:25 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Date: Sat, 16 Aug 2008 17:52:04 +0200 (CEST)
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: Re: [RFC patch 2/3] ieee1394: raw1394: narrow down the state_mutex
- protected region
-To: linux1394-devel@lists.sourceforge.net
-cc: linux-kernel@vger.kernel.org
-In-Reply-To: <tkrat.39c930f50f011685@s5r6.in-berlin.de>
-Message-ID: <tkrat.009094a6920fb574@s5r6.in-berlin.de>
-References: <tkrat.0df9cff587ba5fed@s5r6.in-berlin.de>
- <tkrat.39c930f50f011685@s5r6.in-berlin.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; CHARSET=us-ascii
-Content-Disposition: INLINE
+	Sat, 16 Aug 2008 11:57:50 -0400
+Date: Sat, 16 Aug 2008 16:39:45 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Yinghai Lu <yhlu.kernel@gmail.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Andrew Vasquez <andrew.vasquez@qlogic.com>
+Subject: Re: [PATCH] pci: change msi-x vector to 32bit
+Message-ID: <20080816163945.74d487e9@lxorguk.ukuu.org.uk>
+In-Reply-To: <1218898238.3940.6.camel@localhost.localdomain>
+References: <200808160326.m7G3QR1G012726@terminus.zytor.com>
+	<86802c440808152342m772d5eabs59a9c93ffe4cf557@mail.gmail.com>
+	<1218898238.3940.6.camel@localhost.localdomain>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I wrote:
-> -static long do_raw1394_ioctl(struct file *file, unsigned int cmd,
-> -							unsigned long arg)
+> Where exactly is this code in the kernel?  Most arches assume the irq is
+> an index to a compact table bounded by NR_IRQS, so something like this
+> would violate that assumption.
 
-This compiles a lot better with the following two hunks added:
+Yes, which is no bad thing for some platforms. There are some driver
+assumptions like that but those have also been stomped.
 
-@@ -2710,7 +2721,7 @@ static long raw1394_iso_xmit_recv_packet
- 	    !copy_from_user(&infos32, &arg->infos, sizeof infos32)) {
- 		infos = compat_ptr(infos32);
- 		if (!copy_to_user(&dst->infos, &infos, sizeof infos))
--			err = do_raw1394_ioctl(file, cmd, (unsigned long)dst);
-+			err = raw1394_ioctl(file, cmd, (unsigned long)dst);
- 	}
- 	return err;
- }
-@@ -2751,7 +2761,7 @@ static long raw1394_compat_ioctl(struct 
- 	case RAW1394_IOC_ISO_GET_STATUS:
- 	case RAW1394_IOC_ISO_SHUTDOWN:
- 	case RAW1394_IOC_ISO_QUEUE_ACTIVITY:
--		err = do_raw1394_ioctl(file, cmd, arg);
-+		err = raw1394_ioctl(file, cmd, arg);
- 		break;
- 	/* These request have different format. */
- 	case RAW1394_IOC_ISO_RECV_PACKETS32:
-
-
--------- 8< --------
-
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: ieee1394: raw1394: narrow down the state_mutex protected region
-
-Refactor the ioctl dispatcher in order to move a fraction of it out of
-the section which is serialized by fi->state_mutex.  This is not so much
-about performance but more about self-documentation:  The mutex_lock()/
-mutex_unlock() calls are now closer to the data accesses which the mutex
-protects, i.e. to the iso_state switch.
-
-Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
----
- drivers/ieee1394/raw1394.c |  211 +++++++++++++++++++------------------
- 1 file changed, 110 insertions(+), 101 deletions(-)
-
-Index: linux-2.6.27-rc3/drivers/ieee1394/raw1394.c
-===================================================================
---- linux-2.6.27-rc3.orig/drivers/ieee1394/raw1394.c
-+++ linux-2.6.27-rc3/drivers/ieee1394/raw1394.c
-@@ -2556,102 +2556,106 @@ static int raw1394_mmap(struct file *fil
- 	return ret;
- }
- 
--/* ioctl is only used for rawiso operations */
--static long do_raw1394_ioctl(struct file *file, unsigned int cmd,
--							unsigned long arg)
-+static long raw1394_ioctl_inactive(struct file_info *fi, unsigned int cmd,
-+				   void __user *argp)
-+{
-+	switch (cmd) {
-+	case RAW1394_IOC_ISO_XMIT_INIT:
-+		return raw1394_iso_xmit_init(fi, argp);
-+	case RAW1394_IOC_ISO_RECV_INIT:
-+		return raw1394_iso_recv_init(fi, argp);
-+	default:
-+		return -EINVAL;
-+	}
-+}
-+
-+static long raw1394_ioctl_recv(struct file_info *fi, unsigned int cmd,
-+			       unsigned long arg)
- {
--	struct file_info *fi = file->private_data;
- 	void __user *argp = (void __user *)arg;
- 
--	switch (fi->iso_state) {
--	case RAW1394_ISO_INACTIVE:
--		switch (cmd) {
--		case RAW1394_IOC_ISO_XMIT_INIT:
--			return raw1394_iso_xmit_init(fi, argp);
--		case RAW1394_IOC_ISO_RECV_INIT:
--			return raw1394_iso_recv_init(fi, argp);
--		default:
--			break;
-+	switch (cmd) {
-+	case RAW1394_IOC_ISO_RECV_START:{
-+			int args[3];
-+
-+			if (copy_from_user(&args[0], argp, sizeof(args)))
-+				return -EFAULT;
-+			return hpsb_iso_recv_start(fi->iso_handle,
-+						   args[0], args[1], args[2]);
- 		}
--		break;
--	case RAW1394_ISO_RECV:
--		switch (cmd) {
--		case RAW1394_IOC_ISO_RECV_START:{
--				/* copy args from user-space */
--				int args[3];
--				if (copy_from_user
--				    (&args[0], argp, sizeof(args)))
--					return -EFAULT;
--				return hpsb_iso_recv_start(fi->iso_handle,
--							   args[0], args[1],
--							   args[2]);
--			}
--		case RAW1394_IOC_ISO_XMIT_RECV_STOP:
--			hpsb_iso_stop(fi->iso_handle);
--			return 0;
--		case RAW1394_IOC_ISO_RECV_LISTEN_CHANNEL:
--			return hpsb_iso_recv_listen_channel(fi->iso_handle,
--							    arg);
--		case RAW1394_IOC_ISO_RECV_UNLISTEN_CHANNEL:
--			return hpsb_iso_recv_unlisten_channel(fi->iso_handle,
--							      arg);
--		case RAW1394_IOC_ISO_RECV_SET_CHANNEL_MASK:{
--				/* copy the u64 from user-space */
--				u64 mask;
--				if (copy_from_user(&mask, argp, sizeof(mask)))
--					return -EFAULT;
--				return hpsb_iso_recv_set_channel_mask(fi->
--								      iso_handle,
--								      mask);
--			}
--		case RAW1394_IOC_ISO_GET_STATUS:
--			return raw1394_iso_get_status(fi, argp);
--		case RAW1394_IOC_ISO_RECV_PACKETS:
--			return raw1394_iso_recv_packets(fi, argp);
--		case RAW1394_IOC_ISO_RECV_RELEASE_PACKETS:
--			return hpsb_iso_recv_release_packets(fi->iso_handle,
--							     arg);
--		case RAW1394_IOC_ISO_RECV_FLUSH:
--			return hpsb_iso_recv_flush(fi->iso_handle);
--		case RAW1394_IOC_ISO_SHUTDOWN:
--			raw1394_iso_shutdown(fi);
--			return 0;
--		case RAW1394_IOC_ISO_QUEUE_ACTIVITY:
--			queue_rawiso_event(fi);
--			return 0;
-+	case RAW1394_IOC_ISO_XMIT_RECV_STOP:
-+		hpsb_iso_stop(fi->iso_handle);
-+		return 0;
-+	case RAW1394_IOC_ISO_RECV_LISTEN_CHANNEL:
-+		return hpsb_iso_recv_listen_channel(fi->iso_handle, arg);
-+	case RAW1394_IOC_ISO_RECV_UNLISTEN_CHANNEL:
-+		return hpsb_iso_recv_unlisten_channel(fi->iso_handle, arg);
-+	case RAW1394_IOC_ISO_RECV_SET_CHANNEL_MASK:{
-+			u64 mask;
-+
-+			if (copy_from_user(&mask, argp, sizeof(mask)))
-+				return -EFAULT;
-+			return hpsb_iso_recv_set_channel_mask(fi->iso_handle,
-+							      mask);
- 		}
--		break;
--	case RAW1394_ISO_XMIT:
--		switch (cmd) {
--		case RAW1394_IOC_ISO_XMIT_START:{
--				/* copy two ints from user-space */
--				int args[2];
--				if (copy_from_user
--				    (&args[0], argp, sizeof(args)))
--					return -EFAULT;
--				return hpsb_iso_xmit_start(fi->iso_handle,
--							   args[0], args[1]);
--			}
--		case RAW1394_IOC_ISO_XMIT_SYNC:
--			return hpsb_iso_xmit_sync(fi->iso_handle);
--		case RAW1394_IOC_ISO_XMIT_RECV_STOP:
--			hpsb_iso_stop(fi->iso_handle);
--			return 0;
--		case RAW1394_IOC_ISO_GET_STATUS:
--			return raw1394_iso_get_status(fi, argp);
--		case RAW1394_IOC_ISO_XMIT_PACKETS:
--			return raw1394_iso_send_packets(fi, argp);
--		case RAW1394_IOC_ISO_SHUTDOWN:
--			raw1394_iso_shutdown(fi);
--			return 0;
--		case RAW1394_IOC_ISO_QUEUE_ACTIVITY:
--			queue_rawiso_event(fi);
--			return 0;
-+	case RAW1394_IOC_ISO_GET_STATUS:
-+		return raw1394_iso_get_status(fi, argp);
-+	case RAW1394_IOC_ISO_RECV_PACKETS:
-+		return raw1394_iso_recv_packets(fi, argp);
-+	case RAW1394_IOC_ISO_RECV_RELEASE_PACKETS:
-+		return hpsb_iso_recv_release_packets(fi->iso_handle, arg);
-+	case RAW1394_IOC_ISO_RECV_FLUSH:
-+		return hpsb_iso_recv_flush(fi->iso_handle);
-+	case RAW1394_IOC_ISO_SHUTDOWN:
-+		raw1394_iso_shutdown(fi);
-+		return 0;
-+	case RAW1394_IOC_ISO_QUEUE_ACTIVITY:
-+		queue_rawiso_event(fi);
-+		return 0;
-+	default:
-+		return -EINVAL;
-+	}
-+}
-+
-+static long raw1394_ioctl_xmit(struct file_info *fi, unsigned int cmd,
-+			       void __user *argp)
-+{
-+	switch (cmd) {
-+	case RAW1394_IOC_ISO_XMIT_START:{
-+			int args[2];
-+
-+			if (copy_from_user(&args[0], argp, sizeof(args)))
-+				return -EFAULT;
-+			return hpsb_iso_xmit_start(fi->iso_handle,
-+						   args[0], args[1]);
- 		}
--		break;
-+	case RAW1394_IOC_ISO_XMIT_SYNC:
-+		return hpsb_iso_xmit_sync(fi->iso_handle);
-+	case RAW1394_IOC_ISO_XMIT_RECV_STOP:
-+		hpsb_iso_stop(fi->iso_handle);
-+		return 0;
-+	case RAW1394_IOC_ISO_GET_STATUS:
-+		return raw1394_iso_get_status(fi, argp);
-+	case RAW1394_IOC_ISO_XMIT_PACKETS:
-+		return raw1394_iso_send_packets(fi, argp);
-+	case RAW1394_IOC_ISO_SHUTDOWN:
-+		raw1394_iso_shutdown(fi);
-+		return 0;
-+	case RAW1394_IOC_ISO_QUEUE_ACTIVITY:
-+		queue_rawiso_event(fi);
-+		return 0;
- 	default:
--		break;
-+		return -EINVAL;
- 	}
-+}
-+
-+/* ioctl is only used for rawiso operations */
-+static long raw1394_ioctl(struct file *file, unsigned int cmd,
-+			  unsigned long arg)
-+{
-+	struct file_info *fi = file->private_data;
-+	void __user *argp = (void __user *)arg;
-+	long ret;
- 
- 	/* state-independent commands */
- 	switch(cmd) {
-@@ -2661,18 +2665,25 @@ static long do_raw1394_ioctl(struct file
- 		break;
- 	}
- 
--	return -EINVAL;
--}
-+	mutex_lock(&fi->state_mutex);
- 
--static long raw1394_ioctl(struct file *file, unsigned int cmd,
--							unsigned long arg)
--{
--	struct file_info *fi = file->private_data;
--	long ret;
-+	switch (fi->iso_state) {
-+	case RAW1394_ISO_INACTIVE:
-+		ret = raw1394_ioctl_inactive(fi, cmd, argp);
-+		break;
-+	case RAW1394_ISO_RECV:
-+		ret = raw1394_ioctl_recv(fi, cmd, arg);
-+		break;
-+	case RAW1394_ISO_XMIT:
-+		ret = raw1394_ioctl_xmit(fi, cmd, argp);
-+		break;
-+	default:
-+		ret = -EINVAL;
-+		break;
-+	}
- 
--	mutex_lock(&fi->state_mutex);
--	ret = do_raw1394_ioctl(file, cmd, arg);
- 	mutex_unlock(&fi->state_mutex);
-+
- 	return ret;
- }
- 
-@@ -2710,7 +2721,7 @@ static long raw1394_iso_xmit_recv_packet
- 	    !copy_from_user(&infos32, &arg->infos, sizeof infos32)) {
- 		infos = compat_ptr(infos32);
- 		if (!copy_to_user(&dst->infos, &infos, sizeof infos))
--			err = do_raw1394_ioctl(file, cmd, (unsigned long)dst);
-+			err = raw1394_ioctl(file, cmd, (unsigned long)dst);
- 	}
- 	return err;
- }
-@@ -2734,7 +2745,6 @@ static long raw1394_compat_ioctl(struct 
- 	void __user *argp = (void __user *)arg;
- 	long err;
- 
--	mutex_lock(&fi->state_mutex);
- 	switch (cmd) {
- 	/* These requests have same format as long as 'int' has same size. */
- 	case RAW1394_IOC_ISO_RECV_INIT:
-@@ -2751,7 +2761,7 @@ static long raw1394_compat_ioctl(struct 
- 	case RAW1394_IOC_ISO_GET_STATUS:
- 	case RAW1394_IOC_ISO_SHUTDOWN:
- 	case RAW1394_IOC_ISO_QUEUE_ACTIVITY:
--		err = do_raw1394_ioctl(file, cmd, arg);
-+		err = raw1394_ioctl(file, cmd, arg);
- 		break;
- 	/* These request have different format. */
- 	case RAW1394_IOC_ISO_RECV_PACKETS32:
-@@ -2767,7 +2777,6 @@ static long raw1394_compat_ioctl(struct 
- 		err = -EINVAL;
- 		break;
- 	}
--	mutex_unlock(&fi->state_mutex);
- 
- 	return err;
- }
-
--- 
-Stefan Richter
--=====-==--- =--- =----
-http://arcgraph.de/sr/
-
+Alan
