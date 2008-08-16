@@ -1,82 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752798AbYHPOuz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753105AbYHPOxd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752798AbYHPOuz (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Aug 2008 10:50:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751640AbYHPOur
+	id S1753105AbYHPOxd (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Aug 2008 10:53:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751862AbYHPOxZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Aug 2008 10:50:47 -0400
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:51247 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751285AbYHPOuq (ORCPT
+	Sat, 16 Aug 2008 10:53:25 -0400
+Received: from casper.infradead.org ([85.118.1.10]:46668 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751660AbYHPOxY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Aug 2008 10:50:46 -0400
-Subject: Re: [PATCH] pci: change msi-x vector to 32bit
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Andrew Vasquez <andrew.vasquez@qlogic.com>
-In-Reply-To: <86802c440808152342m772d5eabs59a9c93ffe4cf557@mail.gmail.com>
-References: <200808160326.m7G3QR1G012726@terminus.zytor.com>
-	 <86802c440808152342m772d5eabs59a9c93ffe4cf557@mail.gmail.com>
+	Sat, 16 Aug 2008 10:53:24 -0400
+Subject: Re: SCHED_FIFO and SCHED_RR broken by cfs
+From: Peter Zijlstra <peterz@infradead.org>
+To: Stefani Seibold <stefani@seibold.net>
+Cc: linux-kernel@vger.kernel.org, mingo@redhat.com
+In-Reply-To: <1218880552.11912.9.camel@matrix>
+References: <1218880552.11912.9.camel@matrix>
 Content-Type: text/plain
-Date: Sat, 16 Aug 2008 09:50:38 -0500
-Message-Id: <1218898238.3940.6.camel@localhost.localdomain>
+Date: Sat, 16 Aug 2008 16:53:33 +0200
+Message-Id: <1218898413.10800.252.camel@twins>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-08-15 at 23:42 -0700, Yinghai Lu wrote:
-> On Fri, Aug 15, 2008 at 8:26 PM, H. Peter Anvin <hpa@zytor.com> wrote:
-> > The 28 bits aren't enough, are they: we need domain as well (and surely we can have more than 16 domains?)
+On Sat, 2008-08-16 at 11:55 +0200, Stefani Seibold wrote:
+> Hi kernel hackers,
 > 
-> current code
-> static unsigned int build_irq_for_pci_dev(struct pci_dev *dev)
-> {
->         unsigned int irq;
+> it seems that the new completely fair scheduler breaks the SCHED_RR and
+> SCHED_FIFO realtime scheduler.
 > 
->         irq = dev->bus->number;
->         irq <<= 8;
->         irq |= dev->devfn;
->         irq <<= 12;
+> In my opinion a high priority real time user process with SCHED_FIFO
+> should be only interrupted by the kernel or a process with an higher
+> priority. So a user process running under SCHED_FIFO and priority 99
+> should never be interrupted by any other process.  This was true under
+> kernel 2.6.20. 
 > 
->         return irq;
-> }
+> On my pentium/celeron III/400 MHz system with kernel 2.6.20 a busy loop
+> using the "time stamp counter" of the x86 cpu for delaying, this was
+> very accurate. The max. jitter of the delaying was about 5 microseconds.
+> 
+> With the new kernel 2.6.26 the jitter is about 51177 microseconds or in
+> other words 51 milliseconds or more the 10000 times greater than kernel
+> 2.6.20. This huge latency is far away from realtime.
+> 
+> Below are the results of the attached test program. Maybe somebody else
+> can confirm this results. All measurements was done with no other
+> process running, only the busybox 1.11.1 shell and the init process was
+> there.
 
-Where exactly is this code in the kernel?  Most arches assume the irq is
-an index to a compact table bounded by NR_IRQS, so something like this
-would violate that assumption.
+Has nothing to do with CFS, but everything to do with the fact that we
+now have a 95% bandwidth control by default.
 
-This is also the reason why it doesn't matter to assign a u32 irq to a
-u16 vector.  The u32 irq is a historical thing; it used to be u16 but
-then sparc used a vector mapping scheme for the irq number, which I
-don't believe it does any more.
+Does doing:
 
-> int arch_setup_msi_irq(struct pci_dev *dev, struct msi_desc *desc)
-> {
->         unsigned int irq;
->         int ret;
->         unsigned int irq_want;
-> 
->         irq_want = build_irq_for_pci_dev(dev) + 0x100;
-> 
->         irq = create_irq(irq_want);
-> 
-> domain is not used yet.
-> 
-> need to make vecter_irq to vector_domain_irq
-> 
-> irq_desc(irq) change to domain_irq_desc(domain, irq)
+echo -1 > /proc/sys/kernel/sched_rt_runtime_us
 
-So the assumption underlying this is that the same bus/dev/function on
-different domains would share irq space ... that sounds possible but a
-bit strange.
+fix it?
 
-James
+So, up to 95% cpu usage (per sched_rt_period_us) FIFO and RR behave like
+they always did, once they cross that line, they'll be throttled.
+
+95% seemed like a sane default in that it leaves a little room to
+recover from a run-away rt process (esp handy now that !root users can
+also use RT scheduling classes), and should be enough for most
+applications as they usually don't consume all that much time.
+
 
 
