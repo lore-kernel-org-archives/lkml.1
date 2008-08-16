@@ -1,58 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754302AbYHPVVz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754057AbYHPV24@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754302AbYHPVVz (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Aug 2008 17:21:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751500AbYHPVVr
+	id S1754057AbYHPV24 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Aug 2008 17:28:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751500AbYHPV2s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Aug 2008 17:21:47 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:60092 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751195AbYHPVVq (ORCPT
+	Sat, 16 Aug 2008 17:28:48 -0400
+Received: from server03.ke-net.com ([84.19.168.8]:58459 "EHLO
+	server03.ke-net.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751353AbYHPV2r (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Aug 2008 17:21:46 -0400
-Date: Sat, 16 Aug 2008 14:21:41 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Alexey Dobriyan <adobriyan@gmail.com>
-cc: Jiri Slaby <jirislaby@gmail.com>, akpm@linuxfoundation.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "David S. Miller" <davem@davemloft.net>
-Subject: Re: [PATCH] De-macro spin_trylock_irq, spin_trylock_irqsave,
- write_trylock_irqsave
-In-Reply-To: <20080816204855.GA5151@martell.zuzino.mipt.ru>
-Message-ID: <alpine.LFD.1.10.0808161417400.3324@nehalem.linux-foundation.org>
-References: <20080816095951.GA19926@martell.zuzino.mipt.ru> <48A6D694.4070302@gmail.com> <20080816204855.GA5151@martell.zuzino.mipt.ru>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sat, 16 Aug 2008 17:28:47 -0400
+Subject: Re: SCHED_FIFO and SCHED_RR broken by cfs
+From: Stefani Seibold <stefani@seibold.net>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: linux-kernel@vger.kernel.org, mingo@redhat.com
+In-Reply-To: <1218898413.10800.252.camel@twins>
+References: <1218880552.11912.9.camel@matrix>
+	 <1218898413.10800.252.camel@twins>
+Content-Type: text/plain
+Date: Sat, 16 Aug 2008 23:29:50 +0200
+Message-Id: <1218922190.3747.6.camel@matrix>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+After disabling kernel support for "Group CPU scheduler" and applying
+'echo -1 > /proc/sys/kernel/sched_rt_runtime_us' the behaviour is as
+expected.
 
+chrt -f 99 ./a.out
 
-On Sun, 17 Aug 2008, Alexey Dobriyan wrote:
+ average:13 usec
+ min. jitter:0 usec
+ max. jitter:29 usec
 
-> On Sat, Aug 16, 2008 at 03:31:00PM +0200, Jiri Slaby wrote:
-> >
-> > Doesn't this break on sparc -- is it tested there?
+chrt -o 0 ./a.out 
+ average:153 usec
+ min. jitter:0 usec
+ max. jitter:37035 usec
+
+So the problem is located first in the new sched_rt_runtime_us default
+value and second in the "Group CPU scheduler".
+
+A last question: I though that the kernel will never break user space.
+Would it not better to make the old behaviour as the default?
+
+Greetings from Munich/Germany
+Stefani
+
+Am Samstag, den 16.08.2008, 16:53 +0200 schrieb Peter Zijlstra:
+> On Sat, 2008-08-16 at 11:55 +0200, Stefani Seibold wrote:
+> > Hi kernel hackers,
+> > 
+> > it seems that the new completely fair scheduler breaks the SCHED_RR and
+> > SCHED_FIFO realtime scheduler.
+> > 
+> > In my opinion a high priority real time user process with SCHED_FIFO
+> > should be only interrupted by the kernel or a process with an higher
+> > priority. So a user process running under SCHED_FIFO and priority 99
+> > should never be interrupted by any other process.  This was true under
+> > kernel 2.6.20. 
+> > 
+> > On my pentium/celeron III/400 MHz system with kernel 2.6.20 a busy loop
+> > using the "time stamp counter" of the x86 cpu for delaying, this was
+> > very accurate. The max. jitter of the delaying was about 5 microseconds.
+> > 
+> > With the new kernel 2.6.26 the jitter is about 51177 microseconds or in
+> > other words 51 milliseconds or more the 10000 times greater than kernel
+> > 2.6.20. This huge latency is far away from realtime.
+> > 
+> > Below are the results of the attached test program. Maybe somebody else
+> > can confirm this results. All measurements was done with no other
+> > process running, only the busybox 1.11.1 shell and the init process was
+> > there.
 > 
-> What's so special about sparc?
+> Has nothing to do with CFS, but everything to do with the fact that we
+> now have a 95% bandwidth control by default.
+> 
+> Does doing:
+> 
+> echo -1 > /proc/sys/kernel/sched_rt_runtime_us
+> 
+> fix it?
+> 
+> So, up to 95% cpu usage (per sched_rt_period_us) FIFO and RR behave like
+> they always did, once they cross that line, they'll be throttled.
+> 
+> 95% seemed like a sane default in that it leaves a little room to
+> recover from a run-away rt process (esp handy now that !root users can
+> also use RT scheduling classes), and should be enough for most
+> applications as they usually don't consume all that much time.
+> 
+> 
+> 
 
-Sparc _used_ to save/restore the whole processor flags word with the irq 
-flags. That includes, iirc, things like the register window crap, so if 
-you did a save/restore flags in a function, it would get all that wrong 
-and things would blow up.
-
-However, I don't think sparc has actually done that for a _loong_ time 
-now, due to it always being problematic.
-
-> >> +static inline int spin_trylock_irqsave(spinlock_t *lock, unsigned long  *flags)
-
-However, I refuse to see this crap.
-
-Like it or not, the 'flags' argument has always been pass-by-reference, 
-and not a pointer. It does that because it used to make a huge difference 
-for gcc code generation and for making it easy to do as a direct inline 
-asm. We're not going to change that.
-
-		Linus
