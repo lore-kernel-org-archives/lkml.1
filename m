@@ -1,24 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754453AbYHPWhb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753876AbYHPWhr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754453AbYHPWhb (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Aug 2008 18:37:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751896AbYHPWhO
+	id S1753876AbYHPWhr (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Aug 2008 18:37:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751896AbYHPWhh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Aug 2008 18:37:14 -0400
-Received: from mail.suse.de ([195.135.220.2]:43742 "EHLO mx1.suse.de"
+	Sat, 16 Aug 2008 18:37:37 -0400
+Received: from ns2.suse.de ([195.135.220.15]:46852 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752486AbYHPWhM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Aug 2008 18:37:12 -0400
-Subject: patch uml-fix-build-when-slob-is-enabled.patch added to 2.6.25-stable tree
-To: jdike@addtoit.com, akpm@linux-foundation.org, gregkh@suse.de,
-       jdike@linux.intel.com, linux-kernel@vger.kernel.org,
+	id S1752235AbYHPWhg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 16 Aug 2008 18:37:36 -0400
+Subject: patch uml-fix-gcc-ices-and-unresolved-externs.patch added to 2.6.25-stable tree
+To: jdike@addtoit.com, bhalevy@panasas.com, bunk@kernel.org,
+       drepper@redhat.com, gregkh@suse.de, jdike@linux.intel.com,
+       linux-kernel@vger.kernel.org, mingo@elte.hu,
        torvalds@linux-foundation.org,
-       user-mode-linux-devel@lists.sourceforge.net, xiyou.wangcong@gmail.com
+       user-mode-linux-devel@lists.sourceforge.net
 Cc: <stable@kernel.org>, <stable-commits@vger.kernel.org>
 From: <gregkh@suse.de>
-Date: Sat, 16 Aug 2008 15:32:41 -0700
-In-Reply-To: <20080805201403.GA11778@c2.user-mode-linux.org>
-Message-Id: <20080816223708.70D9E1454450@imap.suse.de>
+Date: Sat, 16 Aug 2008 15:32:42 -0700
+In-Reply-To: <20080805201410.GA11794@c2.user-mode-linux.org>
+Message-Id: <20080816223733.205181454450@imap.suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -26,299 +27,96 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 This is a note to let you know that we have just queued up the patch titled
 
-    Subject: uml: fix build when SLOB is enabled
+    Subject: uml: fix gcc ICEs and unresolved externs
 
 to the 2.6.25-stable tree.  Its filename is
 
-    uml-fix-build-when-slob-is-enabled.patch
+    uml-fix-gcc-ices-and-unresolved-externs.patch
 
 A git repo of this tree can be found at 
     http://www.kernel.org/git/?p=linux/kernel/git/stable/stable-queue.git;a=summary
 
 
->From stable-bounces@linux.kernel.org Tue Aug  5 13:14:54 2008
+>From stable-bounces@linux.kernel.org Tue Aug  5 13:14:46 2008
 From: Jeff Dike <jdike@addtoit.com>
-Date: Tue, 5 Aug 2008 16:14:03 -0400
-Subject: uml: fix build when SLOB is enabled
+Date: Tue, 5 Aug 2008 16:14:10 -0400
+Subject: uml: fix gcc ICEs and unresolved externs
 To: stable@kernel.org
 Cc: LKML <linux-kernel@vger.kernel.org>, uml-devel <user-mode-linux-devel@lists.sourceforge.net>
-Message-ID: <20080805201403.GA11778@c2.user-mode-linux.org>
+Message-ID: <20080805201410.GA11794@c2.user-mode-linux.org>
 Content-Disposition: inline
 
 From: Jeff Dike <jdike@addtoit.com>
 
-commit 43f5b3085fdd27c4edf535d938b2cb0ccead4f75 upstream
+commit 4f81c5350b44bcc501ab6f8a089b16d064b4d2f6 upstream
 
-Reintroduce uml_kmalloc for the benefit of UML libc code.  The
-previous tactic of declaring __kmalloc so it could be called directly
-from the libc side of the house turned out to be getting too intimate
-with slab, and it doesn't work with slob.
+There are various constraints on the use of unit-at-a-time:
+ - i386 uses no-unit-at-a-time for pre-4.0 (not 4.3)
+ - x86_64 uses unit-at-a-time always
 
-So, the uml_kmalloc wrapper is back.  It calls kmalloc or whatever
-that translates into, and libc code calls it.
+Uli reported a crash on x86_64 with gcc 4.1.2 with unit-at-a-time,
+resulting in commit c0a18111e571138747a98af18b3a2124df56a0d1
 
-kfree is left alone since that still works, leaving a somewhat
-inconsistent API.
+Ingo reported a gcc internal error with gcc 4.3 with no-unit-at-a-timem,
+resulting in 22eecde2f9034764a3fd095eecfa3adfb8ec9a98
+
+Benny Halevy is seeing extern inlines not resolved with gcc 4.3 with
+no-unit-at-a-time
+
+This patch reintroduces unit-at-a-time for gcc >= 4.0, bringing back the
+possibility of Uli's crash.  If that happens, we'll debug it.
+
+I started seeing both the internal compiler errors and unresolved
+inlines on Fedora 9.  This patch fixes both problems, without so far
+reintroducing the crash reported by Uli.
 
 Signed-off-by: Jeff Dike <jdike@linux.intel.com>
-Cc: WANG Cong <xiyou.wangcong@gmail.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Cc: Benny Halevy <bhalevy@panasas.com>
+Cc: Adrian Bunk <bunk@kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Ulrich Drepper <drepper@redhat.com>
 Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/um/drivers/chan_user.c              |    1 +
- arch/um/drivers/cow_sys.h                |    2 +-
- arch/um/drivers/daemon_user.c            |    4 ++--
- arch/um/drivers/fd.c                     |    2 +-
- arch/um/drivers/mcast_user.c             |    3 ++-
- arch/um/drivers/net_user.c               |    2 +-
- arch/um/drivers/port_user.c              |    2 +-
- arch/um/drivers/pty.c                    |    2 +-
- arch/um/drivers/slip_user.c              |    2 +-
- arch/um/drivers/tty.c                    |    2 +-
- arch/um/drivers/xterm.c                  |    2 +-
- arch/um/include/um_malloc.h              |    9 +++------
- arch/um/kernel/mem.c                     |    5 +++++
- arch/um/os-Linux/drivers/ethertap_user.c |    4 ++--
- arch/um/os-Linux/helper.c                |    4 ++--
- arch/um/os-Linux/main.c                  |    2 +-
- arch/um/os-Linux/sigio.c                 |    4 ++--
- 17 files changed, 28 insertions(+), 24 deletions(-)
+ arch/um/Makefile        |    1 -
+ arch/um/Makefile-i386   |    7 +++++++
+ arch/um/Makefile-x86_64 |    3 +++
+ 3 files changed, 10 insertions(+), 1 deletion(-)
 
---- a/arch/um/drivers/chan_user.c
-+++ b/arch/um/drivers/chan_user.c
-@@ -11,6 +11,7 @@
- #include <termios.h>
- #include <sys/ioctl.h>
- #include "chan_user.h"
-+#include "kern_constants.h"
- #include "os.h"
- #include "um_malloc.h"
- #include "user.h"
---- a/arch/um/drivers/cow_sys.h
-+++ b/arch/um/drivers/cow_sys.h
-@@ -8,7 +8,7 @@
+--- a/arch/um/Makefile
++++ b/arch/um/Makefile
+@@ -77,7 +77,6 @@ include $(srctree)/$(ARCH_DIR)/Makefile-
+ KERNEL_DEFINES = $(strip -Derrno=kernel_errno -Dsigprocmask=kernel_sigprocmask \
+ 			 -Dmktime=kernel_mktime $(ARCH_KERNEL_DEFINES))
+ KBUILD_CFLAGS += $(KERNEL_DEFINES)
+-KBUILD_CFLAGS += $(call cc-option,-fno-unit-at-a-time,)
  
- static inline void *cow_malloc(int size)
- {
--	return kmalloc(size, UM_GFP_KERNEL);
-+	return uml_kmalloc(size, UM_GFP_KERNEL);
- }
+ PHONY += linux
  
- static inline void cow_free(void *ptr)
---- a/arch/um/drivers/daemon_user.c
-+++ b/arch/um/drivers/daemon_user.c
-@@ -34,7 +34,7 @@ static struct sockaddr_un *new_addr(void
- {
- 	struct sockaddr_un *sun;
+--- a/arch/um/Makefile-i386
++++ b/arch/um/Makefile-i386
+@@ -32,4 +32,11 @@ cflags-y += $(call cc-option,-mpreferred
+ # an unresolved reference.
+ cflags-y += -ffreestanding
  
--	sun = kmalloc(sizeof(struct sockaddr_un), UM_GFP_KERNEL);
-+	sun = uml_kmalloc(sizeof(struct sockaddr_un), UM_GFP_KERNEL);
- 	if (sun == NULL) {
- 		printk(UM_KERN_ERR "new_addr: allocation of sockaddr_un "
- 		       "failed\n");
-@@ -83,7 +83,7 @@ static int connect_to_switch(struct daem
- 		goto out_close;
- 	}
- 
--	sun = kmalloc(sizeof(struct sockaddr_un), UM_GFP_KERNEL);
-+	sun = uml_kmalloc(sizeof(struct sockaddr_un), UM_GFP_KERNEL);
- 	if (sun == NULL) {
- 		printk(UM_KERN_ERR "new_addr: allocation of sockaddr_un "
- 		       "failed\n");
---- a/arch/um/drivers/fd.c
-+++ b/arch/um/drivers/fd.c
-@@ -40,7 +40,7 @@ static void *fd_init(char *str, int devi
- 		return NULL;
- 	}
- 
--	data = kmalloc(sizeof(*data), UM_GFP_KERNEL);
-+	data = uml_kmalloc(sizeof(*data), UM_GFP_KERNEL);
- 	if (data == NULL)
- 		return NULL;
- 
---- a/arch/um/drivers/mcast_user.c
-+++ b/arch/um/drivers/mcast_user.c
-@@ -15,6 +15,7 @@
- #include <unistd.h>
- #include <errno.h>
- #include <netinet/in.h>
-+#include "kern_constants.h"
- #include "mcast.h"
- #include "net_user.h"
- #include "um_malloc.h"
-@@ -24,7 +25,7 @@ static struct sockaddr_in *new_addr(char
- {
- 	struct sockaddr_in *sin;
- 
--	sin = kmalloc(sizeof(struct sockaddr_in), UM_GFP_KERNEL);
-+	sin = uml_kmalloc(sizeof(struct sockaddr_in), UM_GFP_KERNEL);
- 	if (sin == NULL) {
- 		printk(UM_KERN_ERR "new_addr: allocation of sockaddr_in "
- 		       "failed\n");
---- a/arch/um/drivers/net_user.c
-+++ b/arch/um/drivers/net_user.c
-@@ -222,7 +222,7 @@ static void change(char *dev, char *what
- 		netmask[2], netmask[3]);
- 
- 	output_len = UM_KERN_PAGE_SIZE;
--	output = kmalloc(output_len, UM_GFP_KERNEL);
-+	output = uml_kmalloc(output_len, UM_GFP_KERNEL);
- 	if (output == NULL)
- 		printk(UM_KERN_ERR "change : failed to allocate output "
- 		       "buffer\n");
---- a/arch/um/drivers/port_user.c
-+++ b/arch/um/drivers/port_user.c
-@@ -47,7 +47,7 @@ static void *port_init(char *str, int de
- 	if (kern_data == NULL)
- 		return NULL;
- 
--	data = kmalloc(sizeof(*data), UM_GFP_KERNEL);
-+	data = uml_kmalloc(sizeof(*data), UM_GFP_KERNEL);
- 	if (data == NULL)
- 		goto err;
- 
---- a/arch/um/drivers/pty.c
-+++ b/arch/um/drivers/pty.c
-@@ -29,7 +29,7 @@ static void *pty_chan_init(char *str, in
- {
- 	struct pty_chan *data;
- 
--	data = kmalloc(sizeof(*data), UM_GFP_KERNEL);
-+	data = uml_kmalloc(sizeof(*data), UM_GFP_KERNEL);
- 	if (data == NULL)
- 		return NULL;
- 
---- a/arch/um/drivers/slip_user.c
-+++ b/arch/um/drivers/slip_user.c
-@@ -96,7 +96,7 @@ static int slip_tramp(char **argv, int f
- 	pid = err;
- 
- 	output_len = UM_KERN_PAGE_SIZE;
--	output = kmalloc(output_len, UM_GFP_KERNEL);
-+	output = uml_kmalloc(output_len, UM_GFP_KERNEL);
- 	if (output == NULL) {
- 		printk(UM_KERN_ERR "slip_tramp : failed to allocate output "
- 		       "buffer\n");
---- a/arch/um/drivers/tty.c
-+++ b/arch/um/drivers/tty.c
-@@ -29,7 +29,7 @@ static void *tty_chan_init(char *str, in
- 	}
- 	str++;
- 
--	data = kmalloc(sizeof(*data), UM_GFP_KERNEL);
-+	data = uml_kmalloc(sizeof(*data), UM_GFP_KERNEL);
- 	if (data == NULL)
- 		return NULL;
- 	*data = ((struct tty_chan) { .dev 	= str,
---- a/arch/um/drivers/xterm.c
-+++ b/arch/um/drivers/xterm.c
-@@ -30,7 +30,7 @@ static void *xterm_init(char *str, int d
- {
- 	struct xterm_chan *data;
- 
--	data = kmalloc(sizeof(*data), UM_GFP_KERNEL);
-+	data = uml_kmalloc(sizeof(*data), UM_GFP_KERNEL);
- 	if (data == NULL)
- 		return NULL;
- 	*data = ((struct xterm_chan) { .pid 		= -1,
---- a/arch/um/include/um_malloc.h
-+++ b/arch/um/include/um_malloc.h
-@@ -8,15 +8,12 @@
- 
- #include "kern_constants.h"
- 
--extern void *__kmalloc(int size, int flags);
--static inline void *kmalloc(int size, int flags)
--{
--	return __kmalloc(size, flags);
--}
--
-+extern void *uml_kmalloc(int size, int flags);
- extern void kfree(const void *ptr);
- 
- extern void *vmalloc(unsigned long size);
- extern void vfree(void *ptr);
- 
- #endif /* __UM_MALLOC_H__ */
++# Disable unit-at-a-time mode on pre-gcc-4.0 compilers, it makes gcc use
++# a lot more stack due to the lack of sharing of stacklots.  Also, gcc
++# 4.3.0 needs -funit-at-a-time for extern inline functions.
++KBUILD_CFLAGS += $(shell if [ $(call cc-version) -lt 0400 ] ; then \
++			echo $(call cc-option,-fno-unit-at-a-time); \
++			else echo $(call cc-option,-funit-at-a-time); fi ;)
 +
+ KBUILD_CFLAGS += $(cflags-y)
+--- a/arch/um/Makefile-x86_64
++++ b/arch/um/Makefile-x86_64
+@@ -21,3 +21,6 @@ HEADER_ARCH := x86
+ 
+ LINK-$(CONFIG_LD_SCRIPT_DYN) += -Wl,-rpath,/lib64
+ LINK-y += -m64
 +
---- a/arch/um/kernel/mem.c
-+++ b/arch/um/kernel/mem.c
-@@ -375,3 +375,8 @@ pmd_t *pmd_alloc_one(struct mm_struct *m
- 	return pmd;
- }
- #endif
-+
-+void *uml_kmalloc(int size, int flags)
-+{
-+	return kmalloc(size, flags);
-+}
---- a/arch/um/os-Linux/drivers/ethertap_user.c
-+++ b/arch/um/os-Linux/drivers/ethertap_user.c
-@@ -52,7 +52,7 @@ static void etap_change(int op, unsigned
- 		return;
- 	}
- 
--	output = kmalloc(UM_KERN_PAGE_SIZE, UM_GFP_KERNEL);
-+	output = uml_kmalloc(UM_KERN_PAGE_SIZE, UM_GFP_KERNEL);
- 	if (output == NULL)
- 		printk(UM_KERN_ERR "etap_change : Failed to allocate output "
- 		       "buffer\n");
-@@ -165,7 +165,7 @@ static int etap_open(void *data)
- 	err = etap_tramp(pri->dev_name, pri->gate_addr, control_fds[0],
- 			 control_fds[1], data_fds[0], data_fds[1]);
- 	output_len = UM_KERN_PAGE_SIZE;
--	output = kmalloc(output_len, UM_GFP_KERNEL);
-+	output = uml_kmalloc(output_len, UM_GFP_KERNEL);
- 	read_output(control_fds[0], output, output_len);
- 
- 	if (output == NULL)
---- a/arch/um/os-Linux/helper.c
-+++ b/arch/um/os-Linux/helper.c
-@@ -70,8 +70,8 @@ int run_helper(void (*pre_exec)(void *),
- 	data.pre_data = pre_data;
- 	data.argv = argv;
- 	data.fd = fds[1];
--	data.buf = __cant_sleep() ? kmalloc(PATH_MAX, UM_GFP_ATOMIC) :
--					kmalloc(PATH_MAX, UM_GFP_KERNEL);
-+	data.buf = __cant_sleep() ? uml_kmalloc(PATH_MAX, UM_GFP_ATOMIC) :
-+					uml_kmalloc(PATH_MAX, UM_GFP_KERNEL);
- 	pid = clone(helper_child, (void *) sp, CLONE_VM, &data);
- 	if (pid < 0) {
- 		ret = -errno;
---- a/arch/um/os-Linux/main.c
-+++ b/arch/um/os-Linux/main.c
-@@ -199,7 +199,7 @@ void *__wrap_malloc(int size)
- 		return __real_malloc(size);
- 	else if (size <= UM_KERN_PAGE_SIZE)
- 		/* finding contiguous pages can be hard*/
--		ret = kmalloc(size, UM_GFP_KERNEL);
-+		ret = uml_kmalloc(size, UM_GFP_KERNEL);
- 	else ret = vmalloc(size);
- 
- 	/*
---- a/arch/um/os-Linux/sigio.c
-+++ b/arch/um/os-Linux/sigio.c
-@@ -109,7 +109,7 @@ static int need_poll(struct pollfds *pol
- 	if (n <= polls->size)
- 		return 0;
- 
--	new = kmalloc(n * sizeof(struct pollfd), UM_GFP_ATOMIC);
-+	new = uml_kmalloc(n * sizeof(struct pollfd), UM_GFP_ATOMIC);
- 	if (new == NULL) {
- 		printk(UM_KERN_ERR "need_poll : failed to allocate new "
- 		       "pollfds\n");
-@@ -243,7 +243,7 @@ static struct pollfd *setup_initial_poll
- {
- 	struct pollfd *p;
- 
--	p = kmalloc(sizeof(struct pollfd), UM_GFP_KERNEL);
-+	p = uml_kmalloc(sizeof(struct pollfd), UM_GFP_KERNEL);
- 	if (p == NULL) {
- 		printk(UM_KERN_ERR "setup_initial_poll : failed to allocate "
- 		       "poll\n");
++# Do unit-at-a-time unconditionally on x86_64, following the host
++KBUILD_CFLAGS += $(call cc-option,-funit-at-a-time)
 
 
 Patches currently in stable-queue which might be from jdike@addtoit.com are
