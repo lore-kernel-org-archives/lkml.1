@@ -1,92 +1,346 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753304AbYHPSM6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752159AbYHPS5N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753304AbYHPSM6 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Aug 2008 14:12:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752212AbYHPSMs
+	id S1752159AbYHPS5N (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Aug 2008 14:57:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750975AbYHPS45
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Aug 2008 14:12:48 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:11726 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751708AbYHPSMr (ORCPT
+	Sat, 16 Aug 2008 14:56:57 -0400
+Received: from wr-out-0506.google.com ([64.233.184.224]:41130 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750913AbYHPS4z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Aug 2008 14:12:47 -0400
-Subject: Re: Btrfs v0.16 released
-From: Chris Mason <chris.mason@oracle.com>
-To: Theodore Tso <tytso@mit.edu>
-Cc: Andi Kleen <andi@firstfloor.org>, Peter Zijlstra <peterz@infradead.org>,
-       linux-btrfs <linux-btrfs@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>
-In-Reply-To: <1218832622.19495.14.camel@think.oraclecorp.com>
-References: <1218100464.8625.9.camel@twins>
-	 <1218105597.15342.189.camel@think.oraclecorp.com>
-	 <877ias66v4.fsf@basil.nowhere.org>
-	 <1218221293.15342.263.camel@think.oraclecorp.com>
-	 <1218747656.15342.439.camel@think.oraclecorp.com>
-	 <20080814234458.GD13048@mit.edu>
-	 <1218762627.15342.447.camel@think.oraclecorp.com>
-	 <1218804361.15342.470.camel@think.oraclecorp.com>
-	 <20080815134545.GM13048@mit.edu>
-	 <1218822772.15342.503.camel@think.oraclecorp.com>
-	 <20080815195941.GB22395@mit.edu>
-	 <1218832622.19495.14.camel@think.oraclecorp.com>
-Content-Type: text/plain
-Date: Sat, 16 Aug 2008 14:10:10 -0400
-Message-Id: <1218910210.19495.25.camel@think.oraclecorp.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
+	Sat, 16 Aug 2008 14:56:55 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=n0Oz5v49ZHu8at0+4Ah7tjC0Iseknki3rR0xl4uTS2d2w9cBf3Ny9qqjXVHGfPAbzA
+         Pd+q3js7b3+VuyFTx3MqMjGf+RnoARejXQPt1o08XE724sHZqD2BOBx0HqfR96Bwl5Lr
+         VyFmhHGX1ce5jhdkdlg2XN+PTQXI2Q8ZQmnRg=
+Message-ID: <86802c440808161156rf48f23ai9d77ce3cab36f02a@mail.gmail.com>
+Date: Sat, 16 Aug 2008 11:56:54 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "James Bottomley" <James.Bottomley@hansenpartnership.com>
+Subject: Re: [PATCH] pci: change msi-x vector to 32bit
+Cc: "Alan Cox" <alan@lxorguk.ukuu.org.uk>, "H. Peter Anvin" <hpa@zytor.com>,
+       "Jesse Barnes" <jbarnes@virtuousgeek.org>,
+       "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org,
+       "Andrew Vasquez" <andrew.vasquez@qlogic.com>
+In-Reply-To: <1218903209.3940.14.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Disposition: inline
+References: <200808160326.m7G3QR1G012726@terminus.zytor.com>
+	 <86802c440808152342m772d5eabs59a9c93ffe4cf557@mail.gmail.com>
+	 <1218898238.3940.6.camel@localhost.localdomain>
+	 <20080816163945.74d487e9@lxorguk.ukuu.org.uk>
+	 <1218903209.3940.14.camel@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-08-15 at 16:37 -0400, Chris Mason wrote:
-> On Fri, 2008-08-15 at 15:59 -0400, Theodore Tso wrote:
-> > On Fri, Aug 15, 2008 at 01:52:52PM -0400, Chris Mason wrote:
-> > > Have you tried this one:
-> > > 
-> > > http://article.gmane.org/gmane.linux.file-systems/25560
-> > > 
-> > > This bug should cause fragmentation on small files getting forced out
-> > > due to memory pressure in ext4.  But, I wasn't able to really
-> > > demonstrate it with ext4 on my machine.
-> > 
-> > I've been able to use compilebench to see the fragmentation problem
-> > very easily.
-> > 
-> > Annesh has been workign on it, and has some fixes that he queued up.
-> > I'll have to point him at your proposed fix, thanks.  This is what he
-> > came up with in the common code.  What do you think?
-> > 
-> 
-> It sounds like ext4 would show the writeback_index bug with
-> fragmentation on disk and btrfs would show it with seeks during the
-> benchmark.  I was only watching the throughput numbers and not looking
-> at filefrag results.
-> 
+On Sat, Aug 16, 2008 at 9:13 AM, James Bottomley
+<James.Bottomley@hansenpartnership.com> wrote:
+> On Sat, 2008-08-16 at 16:39 +0100, Alan Cox wrote:
+>> > Where exactly is this code in the kernel?  Most arches assume the irq is
+>> > an index to a compact table bounded by NR_IRQS, so something like this
+>> > would violate that assumption.
+>>
+>> Yes, which is no bad thing for some platforms. There are some driver
+>> assumptions like that but those have also been stomped.
+>
+> I'm not saying we couldn't do this, or even that we shouldn't; I'm just
+> asking why would we want to?
+>
+> All arches currently seem to have show_interrupts() which loop over
+> 0..NR_IRQS where the interrupt is printed as %d.  In this encoded scheme
+> they would show up with rather nastily large numbers that have no
+> visible meaning unless we switch to hex for displaying them.
+>
+> What I'm really saying is that irq as the interrupt number is really the
+> *user's* handle for the interrupt not the machine's, so it needs to be
+> something the user is comfortable with.  We could overcome this
+> objection by encoding the number to something meaningful for the
+> user ... I'm just asking if there's any benefit to doing this?
+>
+the code is tip/irq/sparseirq or tip/master
 
-I tried just the writeback_index patch and got only 4 fragmented files
-on ext4 after a compilebench run.  Then I tried again and got 1200.
-Seems there is something timing dependent in here ;)
+story:
+1. for x86_64: first we have NR_IRQS = NR_CPUS * NR_VECTORS, because
+it already supports per_cpu vector
+2. SGI want MAX_SMP support: NR_CPUS=4096, so everything is broken.
+3. Mike spent some time to make every array [NR_CPUS]  to per_cpu
+define as possible.
+4. Mike or someone else reduce NR_IRQS to 224, because NR=256*4096,
+will make kstat_irqs[NR_CPUS][NR_VECTORS*NR_VECTORS] too big, and it
+could be complied.
+5. IBM guys report their one server is broken, that system GSI > 256,
+so some irq can not work.
+6. Yinghai tried one patch change NR_IRQS=32*NR_CPUS., but sgi said it
+still broke their system.  --- for 2.6.27
+7. Eric provide one patch NR_IRQS = min(32*NR_CPUS, NR_VECTORS *
+MAX_IO_APICS) --- for 2.6.27
+8. For 2.6.28 later, Yinghai add code dyn_array, and probe nr_irqs, so
+NR_IRQS related will be dynamically allocated after nr_irqs is probed.
+9. Eric said using dyn_array still waste ram, because a lot of
+irq_desc is not used. when MSI-X is involved, some card could use 256
+vectors or 4096 in theory.
+10. Eric said he had one dyn irq_desc, with 90% done. but didn't have
+time to work it out left 10%
+11. Yinghai add sparese_irq support. those array will be increased by
+32, and be claimed one by one.
+12. according to Eric, we could have irq spread out [0, -1U), irq =
+bus/dev/fn + entry_of_msix
+13. with sparseirq, /proc/interrupts will have irq_number in hex.
 
-By default compilebench uses 256k buffers for writing (see compilebench
--b) and btrfs_file_write will lock down up to 512 pages at a time during
-a single write.  This means that for most small files, compilebench will
-send the whole file down in one write() and btrfs_file_write will lock
-down pages for the entire write() call while working on it.
+but msix current cached irq number, and it only use 16bit to store
+unsigned int irq., and later cards will call request_irq with
+truncated irq_number...card will fallback to MSI or INTa
 
-So, even if pdflush tries to jump in and do the wrong thing, the pages
-will be locked by btrfs_file_write and pdflush will end up skipping
-them.
+only two places need to be changed about that.
 
-With the generic file write routines, pages are locked one at a time,
-giving pdflush more windows to trigger delalloc while a write is still
-ongoing.
+BTW, any reason qlogic card need to cache that irq number second times?
 
--chris
+YH
 
 
+system with qlogic and lpfc
+
+LBSuse:~ # cat /proc/interrupts
+           CPU0       CPU1       CPU2       CPU3       CPU4       CPU5
+      CPU6       CPU7       CPU8       CPU9       CPU10      CPU11
+ CPU12      CPU13      CPU14      CPU15
+0x0:        111          0          0          0          0          0
+         0          0          0          0          0          0
+    0          0          0          0   IO-APIC-edge      timer
+0x4:        450          0          0          0          0          0
+         0          0          0          0          0          0
+    0          0          0          0   IO-APIC-edge      serial
+0x7:          1          0          0          0          0          0
+         0          0          0          0          0          0
+    0          0          0          0   IO-APIC-edge
+0x8:          1          0          0          0          0          0
+         0          0          0          0          0          0
+    0          0          0          0   IO-APIC-edge      rtc0
+0x9:          0          0          0          0          0          0
+         0          0          0          0          0          0
+    0          0          0          0   IO-APIC-fasteoi   acpi
+0x17:          0          0          0          0          0
+0          0          0          0          0          0          0
+      0          0          0          0   IO-APIC-fasteoi   sata_nv
+0x16:        140          0          0          0          0
+0          0          0          0          0          0          0
+      0          0          0          0   IO-APIC-fasteoi
+ohci_hcd:usb2, sata_nv
+0x15:        384          0          0          0          0
+0          0          0          0          0          0          0
+      0          0          0          0   IO-APIC-fasteoi
+ehci_hcd:usb1
+0x14:          0          0          0          0          0
+0          0          0          0          0          0          0
+      0          0          0          0   IO-APIC-fasteoi   sata_nv
+0x10:       1083          0          0          0          0
+0          0          0          0          0          0          0
+      0          0          0          0   IO-APIC-fasteoi   aacraid
+0x2e:          0          0          0          0          0
+0          0          0          0          0          0          0
+      0          0          0          0   IO-APIC-fasteoi   sata_nv
+0x2d:          0          0          0          0          0
+0          0          0          0          0          0          0
+      0          0          0          0   IO-APIC-fasteoi   sata_nv
+0x2c:          0          0          0          0          0
+0          0          0          0          0          0          0
+      0          0          0          0   IO-APIC-fasteoi   sata_nv
+0x50100:          0          0          0          0          0
+  0          0          0          0          0          0          0
+        0          0          0          0   PCI-MSI-edge      aerdrv
+0x70100:          0          0          0          0          0
+  0          0          0          0          0          0          0
+        0          0          0          0   PCI-MSI-edge      aerdrv
+0x78100:          0          0          0          0          0
+  0          0          0          0          0          0          0
+        0          0          0          0   PCI-MSI-edge      aerdrv
+0x8058100:          0          0          0          0          0
+    0          0          0          0          0          0
+0          0          0          0          0   PCI-MSI-edge
+aerdrv
+0x8070100:          0          0          0          0          0
+    0          0          0          0          0          0
+0          0          0          0          0   PCI-MSI-edge
+aerdrv
+0x8078100:          0          0          0          0          0
+    0          0          0          0          0          0
+0          0          0          0          0   PCI-MSI-edge
+aerdrv
+0x8300100:         41          0          0          0          0
+    0          0          0          0          0          0
+0          0          0          0          0   PCI-MSI-edge
+qla2xxx (default)
+0x83000ff:          0          0          0          0          0
+    0          0          0          0          0          0
+0          0          0          0          0   PCI-MSI-edge
+qla2xxx (rsp_q)
+0x8301100:         41          0          0          0          0
+    0          0          0          0          0          0
+0          0          0          0          0   PCI-MSI-edge
+qla2xxx (default)
+0x83010ff:          0          0          0          0          0
+    0          0          0          0          0          0
+0          0          0          0          0   PCI-MSI-edge
+qla2xxx (rsp_q)
+0x300100:          2          0          0          0          0
+   0          0          0          0          0          0          0
+         0          0          0          0   PCI-MSI-edge      lpfc
+0x301100:          2          0          0          0          0
+   0          0          0          0          0          0          0
+         0          0          0          0   PCI-MSI-edge      lpfc
+0x40100:        326          0          0          0          0
+  0          0          0          0          0          0          0
+        0          0          0          0      none-edge
+0x48100:        328          0          0          0          0
+  0          0          0          0          0          0          0
+        0          0          0          0      none-edge
+0x8040100:       2222          0          0          0          0
+    0          0          0          0          0          0
+0          0          0          0          0   PCI-MSI-edge      eth2
+0x8048100:        326          0          0          0          0
+    0          0          0          0          0          0
+0          0          0          0          0      none-edge
+NMI:          0          0          0          0          0          0
+         0          0          0          0          0          0
+    0          0          0          0   Non-maskable interrupts
+LOC:       8782       5209       3029       3222       4556       3328
+      2862       2782       2730       3218       2742       2655
+ 3664       3099       3146       3356   Local timer interrupts
+RES:        904       2930         98         65       1083       3723
+       158         84         46       1899        157         60
+ 2476        971        114         97   Rescheduling interrupts
+CAL:         12         89         71         65         65        142
+        77         66         65        118         77         67
+   66        106         72         67   function call interrupts
+TLB:          7         90         18          5          3        115
+        16         10          3        123         19          5
+    2        157         18          3   TLB shootdowns
+TRM:          0          0          0          0          0          0
+         0          0          0          0          0          0
+    0          0          0          0   Thermal event interrupts
+THR:          0          0          0          0          0          0
+         0          0          0          0          0          0
+    0          0          0          0   Threshold APIC interrupts
+SPU:          0          0          0          0          0          0
+         0          0          0          0          0          0
+    0          0          0          0   Spurious interrupts
+ERR:          1
+
+system with neptune:
+LBSuse:~ # cat /proc/interrupts
+           CPU0       CPU1       CPU2       CPU3       CPU4       CPU5
+      CPU6       CPU7
+0x0:         92          0          0          0          0          0
+         0          1   IO-APIC-edge      timer
+0x4:          0          0          0          0          0          0
+         1        532   IO-APIC-edge      serial
+0x7:          1          0          0          0          0          0
+         0          0   IO-APIC-edge
+0x8:          0          0          0          0          0          0
+         0          1   IO-APIC-edge      rtc0
+0x9:          0          0          0          0          0          0
+         0          0   IO-APIC-fasteoi   acpi
+0x17:          0          0          0          0          0
+0          0          0   IO-APIC-fasteoi   sata_nv
+0x16:          0          0          0          0          0
+0          2        105   IO-APIC-fasteoi   ohci_hcd:usb2
+0x15:          0          0          0          0          0
+0          0       1014   IO-APIC-fasteoi   ehci_hcd:usb1
+0x14:          0          0          0          0          0
+0          0          1   IO-APIC-fasteoi   sata_nv, sata_nv
+0x2e:          0          0          0          0          0
+0          0          0   IO-APIC-fasteoi   sata_nv
+0x2d:          0          0          0          0          0
+0          0          0   IO-APIC-fasteoi   sata_nv
+0x2c:          0          0          0          0          0
+0          0          0   IO-APIC-fasteoi   sata_nv
+0x50100:          0          0          0          0          0
+  0          0          0   PCI-MSI-edge      aerdrv
+0x70100:          0          0          0          0          0
+  0          0          0   PCI-MSI-edge      aerdrv
+0x78100:          0          0          0          0          0
+  0          0          0   PCI-MSI-edge      aerdrv
+0x8058100:          0          0          0          0          0
+    0          0          0   PCI-MSI-edge      aerdrv
+0x8070100:          0          0          0          0          0
+    0          0          0   PCI-MSI-edge      aerdrv
+0x8078100:          0          0          0          0          0
+    0          0          0   PCI-MSI-edge      aerdrv
+0x8301100:          0          0          0          0          0
+    0          0          0   PCI-MSI-edge      eth5
+0x83010ff:          0          0          0          0          0
+    0          0          0   PCI-MSI-edge      eth5
+0x83010fe:          0          0          0          0          0
+    0          0          0   PCI-MSI-edge      eth5
+0x83010fd:          0          0          0          0          0
+    0          0          0   PCI-MSI-edge      eth5
+0x83010fc:          0          0          0          0          0
+    0          0          0   PCI-MSI-edge      eth5
+0x83010fb:          0          0          0          0          0
+    0          0          0   PCI-MSI-edge      eth5
+0x83010fa:          0          0          0          0          0
+    0          0          0   PCI-MSI-edge      eth5
+0x83010f9:          0          0          0          0          0
+    0          0          0   PCI-MSI-edge      eth5
+0x83010f8:          0          0          0          0          0
+    0          0          0   PCI-MSI-edge      eth5
+0x83010f7:          0          0          0          0          0
+    0          0          0   PCI-MSI-edge      eth5
+0x83010f6:          0          0          0          0          0
+    0          0          0   PCI-MSI-edge      eth5
+0x83010f5:          0          0          0          0          0
+    0          0          0   PCI-MSI-edge      eth5
+0x83010f4:          0          0          0          0          0
+    0          0          0   PCI-MSI-edge      eth5
+0x83010f3:          0          0          0          0          0
+    0          0          0   PCI-MSI-edge      eth5
+0x83010f2:          0          0          0          0          0
+    0          0          0   PCI-MSI-edge      eth5
+0x83010f1:          0          0          0          0          0
+    0          0          0   PCI-MSI-edge      eth5
+0x83010f0:          0          0          0          0          0
+    0          0          0   PCI-MSI-edge      eth5
+0x83010ef:          0          0          0          0          0
+    0          0          0   PCI-MSI-edge      eth5
+0x83010ee:          0          0          0          0          0
+    0          0          0   PCI-MSI-edge      eth5
+0x83010ed:          0          0          0          0          0
+    0          0          0   PCI-MSI-edge      eth5
+0x83010ec:          0          0          0          0          0
+    0          0          0   PCI-MSI-edge      eth5
+0x40100:          0          0          0          0          0
+  0          9       5352   PCI-MSI-edge      eth0
+0x48100:          0          0          0          0          0
+  0          4        148      none-edge
+0x8040100:          0          0          0        154          0
+    0          0          0      none-edge
+0x8048100:          0          0          0        154          0
+    0          0          0      none-edge
+NMI:          0          0          0          0          0          0
+         0          0   Non-maskable interrupts
+LOC:       4780       4021       2441       2831       3978       3672
+      2576       4601   Local timer interrupts
+RES:        647       4295        485        282       1324       3561
+       620       1902   Rescheduling interrupts
+CAL:         18         92         53         44         33         53
+        47         39   function call interrupts
+TLB:         23        176         65         41         48        274
+        95         62   TLB shootdowns
+TRM:          0          0          0          0          0          0
+         0          0   Thermal event interrupts
+THR:          0          0          0          0          0          0
+         0          0   Threshold APIC interrupts
+SPU:          0          0          0          0          0          0
+         0          0   Spurious interrupts
+ERR:          1
