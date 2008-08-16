@@ -1,57 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752724AbYHPUFn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753304AbYHPUIP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752724AbYHPUFn (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Aug 2008 16:05:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751062AbYHPUFe
+	id S1753304AbYHPUIP (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Aug 2008 16:08:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751181AbYHPUIA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Aug 2008 16:05:34 -0400
-Received: from qb-out-0506.google.com ([72.14.204.229]:23992 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750913AbYHPUFe (ORCPT
+	Sat, 16 Aug 2008 16:08:00 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:56063 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750913AbYHPUH7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Aug 2008 16:05:34 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=sLIB+onIeQeohhAU02ZBNt7/mnWUZUbPn2LYNY56rsybpZmEn2BvX5Kzr3SJ6n0Nue
-         LeDn+f1GnJ61ehwYnHvX1j7CwcCdb91E4Hm/nxNGTKQfTGW+S9T0x9p3XOp/iG0iUVj6
-         Ory8MUCJrt7N2Cg70tW02peWTmUcGGHauzMqo=
-Date: Sun, 17 Aug 2008 00:05:43 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: "Maciej W. Rozycki" <macro@linux-mips.org>
-Cc: mingo@elte.hu, hpa@zytor.com, tglx@linutronix.de,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/6] x86: apic - unify lapic_resume
-Message-ID: <20080816200543.GA7182@lenovo>
-References: <1218914515-26377-1-git-send-email-gorcunov@gmail.com> <f87881899957b7aa08b827cdc6b5dd8cf53e4730.1218914042.git.gorcunov@gmail.com> <722b5bc0303212ca203cadeedae5ede3e23eccb7.1218914042.git.gorcunov@gmail.com> <Pine.LNX.4.55.0808162041190.17944@cliff.in.clinika.pl>
+	Sat, 16 Aug 2008 16:07:59 -0400
+Date: Sat, 16 Aug 2008 13:07:51 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Rusty Russell <rusty@rustcorp.com.au>
+cc: Alexey Dobriyan <adobriyan@gmail.com>, torvalds@linuxfoundation.org,
+       akpm@linuxfoundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] BUILD_BUG_ON sucks
+In-Reply-To: <200808162055.45136.rusty@rustcorp.com.au>
+Message-ID: <alpine.LFD.1.10.0808161305170.3324@nehalem.linux-foundation.org>
+References: <20080816100948.GB19926@martell.zuzino.mipt.ru> <200808162055.45136.rusty@rustcorp.com.au>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.55.0808162041190.17944@cliff.in.clinika.pl>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Maciej W. Rozycki - Sat, Aug 16, 2008 at 08:52:07PM +0100]
-| On Sat, 16 Aug 2008, Cyrill Gorcunov wrote:
-| 
-| > +#ifdef CONFIG_X86_64
-| > +	if (x2apic)
-| > +		enable_x2apic();
-| > +	else
-| > +#endif
-| 
-|  Hmm, x86-64 hardware can run a 32-bit kernel, so it might be a good idea
-| to take the opportunity of the merge and extend x2APIC support to the
-| 32-bit configuration too.  It should be mostly a mechanical change.  Just
-| a suggestion though -- feel free to ignore if you'd rather not dive into
-| it. ;)
-| 
-|   Maciej
-| 
 
-yes, I thought about this - will take a look, thanks!
 
-		- Cyrill -
+On Sat, 16 Aug 2008, Rusty Russell wrote:
+> 
+> Interesting idea, but I've come to actually like the semantic explicitness of 
+> BUILD_BUG_ON.  There's a difference between "we should never get here" 
+> and "this should never exist".
+
+Agreed. I think Alexey's patch is broken.
+
+The thing is, BUILD_BUG_ON() is a different thing. It says "this is a 
+build error", while BUG_ON() says "this is an error if we reach it".
+
+Very different.
+
+The fact that you broke BUG_ON(1) should have made you think. Sometimes 
+the "1" isn't necessarily a constant one. It might be
+
+	if (something_that_can_never_happen_in_some_configuration) {
+		...
+		BUG_ON(CONFIG_XYZZY);
+		...
+	}
+
+where the BUG_ON(1) is absolutely *not* the same thing as BUILD_BUG_ON().
+
+			Linus
