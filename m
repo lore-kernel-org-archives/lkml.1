@@ -1,59 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753921AbYHPTco@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753488AbYHPTdo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753921AbYHPTco (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Aug 2008 15:32:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751166AbYHPTce
+	id S1753488AbYHPTdo (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Aug 2008 15:33:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751166AbYHPTdh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Aug 2008 15:32:34 -0400
-Received: from emh01.mail.saunalahti.fi ([62.142.5.107]:33555 "EHLO
-	emh01.mail.saunalahti.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751155AbYHPTcd (ORCPT
+	Sat, 16 Aug 2008 15:33:37 -0400
+Received: from web37602.mail.mud.yahoo.com ([209.191.87.85]:25330 "HELO
+	web37602.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751014AbYHPTdg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Aug 2008 15:32:33 -0400
-X-Greylist: delayed 539 seconds by postgrey-1.27 at vger.kernel.org; Sat, 16 Aug 2008 15:32:32 EDT
-Date: Sat, 16 Aug 2008 22:26:04 +0300 (MET DST)
-From: Szabolcs Szakacsits <szaka@ntfs-3g.org>
-X-X-Sender: szaka@dhcppc2
-To: Chris Mason <chris.mason@oracle.com>
-cc: linux-btrfs <linux-btrfs@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>
-Subject: Re: Btrfs v0.16 released
-In-Reply-To: <1218805256.15342.484.camel@think.oraclecorp.com>
-Message-ID: <Pine.LNX.4.61.0808162215320.4532@dhcppc2>
-References: <1217962876.15342.33.camel@think.oraclecorp.com> 
- <1218100464.8625.9.camel@twins>  <1218105597.15342.189.camel@think.oraclecorp.com>
-  <877ias66v4.fsf@basil.nowhere.org>  <1218221293.15342.263.camel@think.oraclecorp.com>
-  <1218747656.15342.439.camel@think.oraclecorp.com>  <20080814211756.GC13814@one.firstfloor.org>
-  <1218763554.15342.460.camel@think.oraclecorp.com>  <20080815013934.GE19125@one.firstfloor.org>
- <1218805256.15342.484.camel@think.oraclecorp.com>
+	Sat, 16 Aug 2008 15:33:36 -0400
+X-Greylist: delayed 401 seconds by postgrey-1.27 at vger.kernel.org; Sat, 16 Aug 2008 15:33:36 EDT
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=Received:X-Mailer:Date:From:Reply-To:Subject:To:MIME-Version:Content-Type:Message-ID;
+  b=Ss4qVIVchSw9zc5dljcWUvLGqXp6COdgcnY9mKSv/h/wJ0tZz1mNO246cLwJ+DvW2zFQIZp4iYs3ALDxrsEYHDWT1j7GDxEApbOoVAaAFVl4Fx4N1t8YpDWayjzqRaf9Df5Stf4KztorTQSbo8SyzW0xgLgcGSaEtuEBRUAR2wY=;
+X-Mailer: YahooMailWebService/0.7.218
+Date: Sat, 16 Aug 2008 12:26:54 -0700 (PDT)
+From: Alex Dubov <oakad@yahoo.com>
+Reply-To: oakad@yahoo.com
+Subject: Problem with find_first_bit function and kin
+To: Linux kernel mailing list <linux-kernel@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Antivirus: VAMS
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <865989.50481.qm@web37602.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+It's well may be that I'm just missing something obvious.
 
-On Fri, 15 Aug 2008, Chris Mason wrote:
+It seems to me that find_first_bit/find_next_bit functions return their
+offsets "base 1" - first set bit is "1" and last is "bitmap size". This
+means that if only the last bit in the bitmap is set, the returned value
+will be indistinguishable from no bits set situation. Moreover, bit
+manipulation functions appear to use "base 0" bit addresses, adding to the
+inconvenience.
 
-> Ext3 and XFS score somewhere between 10-15MB/s on the same test...
+Is this a desired behavior? And, if yes, how is one supposed to deal with last bit of the bitmap?
 
-Interesting (and cool animations). 
 
-We tried compilebench (-i 30 -r 0) just for fun using kernel 2.6.26, 
-freshly formatted partition, with defaults. Results:
 
-              MB/s    Runtime (s)
-             -----    -----------
-  ext3       13.24        877
-  btrfs      12.33        793
-  ntfs-3g     8.55        865
-  reiserfs    8.38        966
-  xfs         1.88       3901
-
-Regards,
-	    Szaka
-
--- 
-NTFS-3G:  http://ntfs-3g.org
+      
