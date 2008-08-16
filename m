@@ -1,80 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753106AbYHPJkr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753095AbYHPJrl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753106AbYHPJkr (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Aug 2008 05:40:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752154AbYHPJki
+	id S1753095AbYHPJrl (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Aug 2008 05:47:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752154AbYHPJrc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Aug 2008 05:40:38 -0400
-Received: from www.church-of-our-saviour.org ([69.25.196.31]:57800 "EHLO
-	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751955AbYHPJkg (ORCPT
+	Sat, 16 Aug 2008 05:47:32 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:36721 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751632AbYHPJrb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Aug 2008 05:40:36 -0400
-Date: Sat, 16 Aug 2008 05:39:52 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Peter Dolding <oiaohm@gmail.com>
-Cc: Arjan van de Ven <arjan@infradead.org>, david@lang.hm, rmeijer@xs4all.nl,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, capibara@xs4all.nl,
-       Eric Paris <eparis@redhat.com>, Rik van Riel <riel@redhat.com>,
+	Sat, 16 Aug 2008 05:47:31 -0400
+Date: Sat, 16 Aug 2008 10:28:46 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: david@lang.hm
+Cc: Arjan van de Ven <arjan@infradead.org>, Peter Dolding <oiaohm@gmail.com>,
+       rmeijer@xs4all.nl, capibara@xs4all.nl, Eric Paris <eparis@redhat.com>,
+       Theodore Tso <tytso@mit.edu>, Rik van Riel <riel@redhat.com>,
        davecb@sun.com, linux-security-module@vger.kernel.org,
        Adrian Bunk <bunk@kernel.org>, Mihai Don??u <mdontu@bitdefender.com>,
        linux-kernel@vger.kernel.org, malware-list@lists.printk.net,
        Pavel Machek <pavel@suse.cz>
 Subject: Re: [malware-list] [RFC 0/5] [TALPA] Intro to alinuxinterfaceforon
-	access scanning
-Message-ID: <20080816093952.GF22395@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Peter Dolding <oiaohm@gmail.com>,
-	Arjan van de Ven <arjan@infradead.org>, david@lang.hm,
-	rmeijer@xs4all.nl, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-	capibara@xs4all.nl, Eric Paris <eparis@redhat.com>,
-	Rik van Riel <riel@redhat.com>, davecb@sun.com,
-	linux-security-module@vger.kernel.org,
-	Adrian Bunk <bunk@kernel.org>,
-	Mihai Don??u <mdontu@bitdefender.com>, linux-kernel@vger.kernel.org,
-	malware-list@lists.printk.net, Pavel Machek <pavel@suse.cz>
-References: <18129.82.95.100.23.1218802937.squirrel@webmail.xs4all.nl> <e7d8f83e0808150627m7a5c8738n8ac42d77c45eea76@mail.gmail.com> <alpine.DEB.1.10.0808151024120.15109@asgard.lang.hm> <e7d8f83e0808152057h5c607cfbnecdc6f0bd05c5d89@mail.gmail.com> <20080815210942.4e342c6c@infradead.org> <e7d8f83e0808152219j50827f49nb9dd48cf44e082d2@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <e7d8f83e0808152219j50827f49nb9dd48cf44e082d2@mail.gmail.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+ access scanning
+Message-ID: <20080816102846.37b104a7@lxorguk.ukuu.org.uk>
+In-Reply-To: <alpine.DEB.1.10.0808152115210.12859@asgard.lang.hm>
+References: <18129.82.95.100.23.1218802937.squirrel@webmail.xs4all.nl>
+	<e7d8f83e0808150627m7a5c8738n8ac42d77c45eea76@mail.gmail.com>
+	<alpine.DEB.1.10.0808151024120.15109@asgard.lang.hm>
+	<e7d8f83e0808152057h5c607cfbnecdc6f0bd05c5d89@mail.gmail.com>
+	<20080815210942.4e342c6c@infradead.org>
+	<alpine.DEB.1.10.0808152115210.12859@asgard.lang.hm>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Aug 16, 2008 at 03:19:43PM +1000, Peter Dolding wrote:
-> Lets look at the general disk to memory path.
+> I really think that we need to avoid trying to have a single 'known good' 
+> flag/generationnrwith the inode.
+
+I don't think we should have anything in the inode. We don't want to
+bloat inode objects for this cornercase.
+
+> if you store generation numbers for individual apps (in posix attributes 
+> to pick something that could be available across a variety of 
+> filesystems), you push this policy decision into userspace (where it
+
+Agreed
+ 
+> 1. define a tag namespace associated with the file that is reserved for 
+> this purpose for example "scanned-by-*"
+
+What controls somewhat writing such a tag on media remotely ? Locally you
+can do this (although you are way too specialized in design - an LSM hook
+for controlling tag setting or a general tag reservation sysfs interface
+is more flexible than thinking just about scanners.
+
+> 2. have an kernel option that will clear out this namespace whenever a 
+> file is dirtied
+
+That will generate enormous amounts of load if not carefully handled.
+
+> 3. have a kernel mechanism to say "set this namespace tag if this other 
+> namespace tag is set" (this allows a scanner to set a 'scanning' tag when 
+> it starts and only set the 'blessed' tag if the file was not dirtied while 
+
+User space problem. Set flags 'dirty', then set bit 'scanning'
+clear 'dirty' then clear 'scanning' when finished. If the dirty flag got
+set while you were scanning it will still be set now you've cleared you
+scanning flag. Your access policy depends upon your level of paranoia (eg
+"dirty|scanning == BAD")
+
+> programs can set the "scanned-by-*" flags on that the 'libmalware' library 
+
+We've already proved libmalware doesn't make sense
+
+> L. the fact that knfsd would not use this can be worked around by running 
+> FUSE (which would do the checks) and then exporting the result via knfsdw
+
+Not if you want to get any work done.
+
+> what did I over complicate in this design? or is it the minimum feature 
+> set needed?
 > 
-> [file system driver]
-> [file system drivers caches]
-> [inode's]  TALPA links in here and basically runs its own scan cache.
-> 
-> Long term TALPA need to move from the inode layor down and the design
-> of the file system path needs to change.
+> are any of the features I list impossible to implement?
 
-Huh?  What are you talking about?  In Linux just about all of the
-serious filesystems the only caching for file data happens in the page
-cache layer.  So what you're saying doesn't make much sense, unless
-you're talking about the user space samba daemon --- but even there,
-Samba doesn't do any shortcut routing of data; as far as I know
-everything goes from Samba, into the filesystem, before it gets served
-out to other clients via Samba back out from the filesystem.  So
-everything goes through the page cache.
+Go write it and see, provide benchmarks ?  I don't see from this how you
+handled shared mmap ?
 
-> Reasons
-> 1. That shape even if file system extra permissions are decided to be
-> kept hidden from the rest of Linux anti-virus can scanning can see it
 
-No one else is taking about checking permissions; I thought this was
-all about file *data* that we've been talking about.
-
-If your argument means that we have to take every single
-$Proprietary_OS's wacky permissions system, and push them into to core
-Linux system so the AV system can evaluate it, I'm pretty sure
-everyone is going to vomit all over such a proposal (and over you).
-
-	    	     	       	    	   - Ted
