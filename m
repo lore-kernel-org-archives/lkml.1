@@ -1,52 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753879AbYHPWif@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755437AbYHPWit@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753879AbYHPWif (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Aug 2008 18:38:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755035AbYHPWiP
+	id S1755437AbYHPWit (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Aug 2008 18:38:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755184AbYHPWiY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Aug 2008 18:38:15 -0400
-Received: from relay04.mail-hub.dodo.com.au ([123.2.6.239]:40028 "EHLO
-	relay04.mail-hub.dodo.com.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752145AbYHPWiN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Aug 2008 18:38:13 -0400
-From: Grant Coady <grant_lkml@dodo.com.au>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Peter Zijlstra" <peterz@infradead.org>
-Subject: Re: [Bug #11278] 2.6.27-rc2: Very odd top: '5124095h kthreadd' display
-Date: Sun, 17 Aug 2008 08:37:55 +1000
-Organization: http://bugsplatter.id.au/
-Reply-To: Grant Coady <gcoady.lk@gmail.com>
-Message-ID: <hklea496mukvmcee8ruvls6q8er55029ue@4ax.com>
-References: <DLWXHEp37wB.A.duD.yZzpIB@albercik> <sNRO-BDDjQL.A.i3F.PbzpIB@albercik>
-In-Reply-To: <sNRO-BDDjQL.A.i3F.PbzpIB@albercik>
-X-Mailer: Forte Agent 2.0/32.652
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Sat, 16 Aug 2008 18:38:24 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:46903 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755193AbYHPWiX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 16 Aug 2008 18:38:23 -0400
+Subject: patch uml-missing-export-of-csum_partial-on-uml-amd64.patch added to 2.6.25-stable tree
+To: viro@ftp.linux.org.uk, gregkh@suse.de, jdike@addtoit.com,
+       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
+       user-mode-linux-devel@lists.sourceforge.net, viro@zeniv.linux.org.uk
+Cc: <stable@kernel.org>, <stable-commits@vger.kernel.org>
+From: <gregkh@suse.de>
+Date: Sat, 16 Aug 2008 15:32:44 -0700
+In-Reply-To: <20080805201407.GA11790@c2.user-mode-linux.org>
+Message-Id: <20080816223821.8D32C1454450@imap.suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 16 Aug 2008 21:02:51 +0200 (CEST), "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
 
->This message has been generated automatically as a part of a report
->of recent regressions.
->
->The following bug entry is on the current list of known regressions
->from 2.6.26.  Please verify if it still should be listed and let me know
->(either way).
->
->
->Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11278
->Subject		: 2.6.27-rc2: Very odd top: '5124095h kthreadd' display
->Submitter	: Grant Coady <grant_lkml@dodo.com.au>
->Date		: 2008-08-07 7:03 (10 days old)
->References	: http://marc.info/?l=linux-kernel&m=121809267318795&w=4
->Handled-By	: Peter Zijlstra <peterz@infradead.org>
->
-The problem is not evident in 2.6.27-rc3
+This is a note to let you know that we have just queued up the patch titled
 
-Grant.
+    Subject: uml: missing export of csum_partial() on uml/amd64
+
+to the 2.6.25-stable tree.  Its filename is
+
+    uml-missing-export-of-csum_partial-on-uml-amd64.patch
+
+A git repo of this tree can be found at 
+    http://www.kernel.org/git/?p=linux/kernel/git/stable/stable-queue.git;a=summary
+
+
+>From stable-bounces@linux.kernel.org Tue Aug  5 13:14:50 2008
+From: Al Viro <viro@ftp.linux.org.uk>
+Date: Tue, 5 Aug 2008 16:14:07 -0400
+Subject: uml: missing export of csum_partial() on uml/amd64
+To: stable@kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>, uml-devel <user-mode-linux-devel@lists.sourceforge.net>
+Message-ID: <20080805201407.GA11790@c2.user-mode-linux.org>
+Content-Disposition: inline
+
+From: Al Viro <viro@ftp.linux.org.uk>
+
+commit 3e3b48e5198544dd90e27265a70c1a834139e025 upstream
+
+Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
+Cc: Jeff Dike <jdike@addtoit.com>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
+---
+ arch/um/sys-x86_64/ksyms.c |    1 +
+ 1 file changed, 1 insertion(+)
+
+--- a/arch/um/sys-x86_64/ksyms.c
++++ b/arch/um/sys-x86_64/ksyms.c
+@@ -14,3 +14,4 @@ EXPORT_SYMBOL(__up_wakeup);
+ 
+ /*XXX: we need them because they would be exported by x86_64 */
+ EXPORT_SYMBOL(__memcpy);
++EXPORT_SYMBOL(csum_partial);
+
+
+Patches currently in stable-queue which might be from viro@ftp.linux.org.uk are
+
+queue-2.6.25/uml-missed-kmalloc-in-pcap_user.c.patch
+queue-2.6.25/uml-missing-export-of-csum_partial-on-uml-amd64.patch
