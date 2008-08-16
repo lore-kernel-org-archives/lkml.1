@@ -1,544 +1,669 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753838AbYHPKUD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753506AbYHPK0e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753838AbYHPKUD (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Aug 2008 06:20:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752154AbYHPKTy
+	id S1753506AbYHPK0e (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Aug 2008 06:26:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752154AbYHPK0Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Aug 2008 06:19:54 -0400
-Received: from server03.ke-net.com ([84.19.168.8]:39091 "EHLO
-	server03.ke-net.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752142AbYHPKTw (ORCPT
+	Sat, 16 Aug 2008 06:26:25 -0400
+Received: from qb-out-0506.google.com ([72.14.204.235]:65027 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751864AbYHPK0X (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Aug 2008 06:19:52 -0400
-X-Greylist: delayed 1500 seconds by postgrey-1.27 at vger.kernel.org; Sat, 16 Aug 2008 06:19:51 EDT
-Subject: SCHED_FIFO and SCHED_RR broken by cfs
-From: Stefani Seibold <stefani@seibold.net>
-To: linux-kernel@vger.kernel.org, mingo@redhat.com
-Content-Type: text/plain
-Date: Sat, 16 Aug 2008 11:55:52 +0200
-Message-Id: <1218880552.11912.9.camel@matrix>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Sat, 16 Aug 2008 06:26:23 -0400
+Message-ID: <e700089d0808160326k337cec2dm65271b38812a4263@mail.gmail.com>
+Date: Sat, 16 Aug 2008 06:26:20 -0400
+From: "Yousaf Jindal" <yousaf.jindal@pi.edu.pk>
+To: tomas.winkler@intel.com, linux-kernel@vger.kernel.org
+Subject: Re: [ANNOUNCE] Wifi Link 5300 and 5100 Series
+In-Reply-To: <e700089d0808151307j27d6c61dw3a1dd174e4e8610c@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <e700089d0808151307j27d6c61dw3a1dd174e4e8610c@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi kernel hackers,
+On Fri, Aug 15, 2008 at 4:07 PM, Yousaf Jindal <yousaf.jindal@pi.edu.pk> wrote:
+>> On 00:11 Thu 14 Aug     , Tomas Winkler wrote:
+>>> Intel would like to announce Linux support  for Wifi Link 5000 and
+>>> 5100 Series Adapters under iwlwifi driver (iwlagn.ko)
+>>>
+>> ...
+>>> The best known working driver can be located in iwl500 branch of
+>>> iwlwifi-2.6.git
+>>> git://git.kernel.org/pub/scm/linux/kernel/git/iwlwifi/iwlwifi-2.6.git iwl5000
+>
+>
+>
+> I am using the iwl500 branch from the above git repository and I am
+> also receiving the timeout error. This is on a Wifi Link 5100 on an
+> Asus M50VM laptop.
+>
+> $ dmesg|grep iw
+>
+>
+> -- Yousaf
+>
+> --
+> Yousaf Jindal
+> Director of Technology
+> Pakistani Institute
+>
 
-it seems that the new completely fair scheduler breaks the SCHED_RR and
-SCHED_FIFO realtime scheduler.
+Here is a kernel log with full debugging output enabled for the iwl drivers:
 
-In my opinion a high priority real time user process with SCHED_FIFO
-should be only interrupted by the kernel or a process with an higher
-priority. So a user process running under SCHED_FIFO and priority 99
-should never be interrupted by any other process.  This was true under
-kernel 2.6.20. 
+[    8.881684] asus-laptop:   M50Vm model detected
+[    8.901015] acpi device:1e: registered as cooling_device2
+[    8.901307] input: Video Bus as /class/input/input7
+[    8.902500] Registered led device: asus::mail
+[    8.902689] Registered led device: asus::touchpad
+[    8.964753] ACPI: Video Device [VGA] (multi-head: yes  rom: no  post: no)
+[    9.030505] iwlagn: Intel(R) Wireless WiFi Link AGN driver for
+Linux, 1.3.27kds
+[    9.030709] iwlagn: Copyright(c) 2003-2008 Intel Corporation
+[    9.030944] ieee80211 phy0: U iwl4965_pci_probe *** LOAD DRIVER ***
+[    9.031165] iwlagn 0000:03:00.0: PCI INT A -> GSI 17 (level, low) -> IRQ 17
+[    9.031378] iwlagn 0000:03:00.0: setting latency timer to 64
+[    9.031403] ieee80211 phy0: U iwl4965_pci_probe pci_resource_len = 0x00002000
+[    9.031588] ieee80211 phy0: U iwl4965_pci_probe pci_resource_base =
+ffffc2000065c000
+[    9.031821] iwlagn: Detected Intel Wireless WiFi Link 5100AGN REV=0x54
+[    9.032029] ieee80211 phy0: U __iwl_set_bit set_bit(0x00000100,
+0x20000000) = 0x27800200
+[    9.032252] ieee80211 phy0: U __iwl_set_bit set_bit(0x00000100,
+0x00800000) = 0x27800200
+[    9.032508] ieee80211 phy0: U __iwl_set_bit set_bit(0x00000240,
+0xFFFF0000) = 0xFFFF0500
+[    9.032736] ieee80211 phy0: U __iwl_set_bit set_bit(0x00000000,
+0x00080000) = 0x00080000
+[    9.032972] ieee80211 phy0: U __iwl_set_bit set_bit(0x0000020C,
+0x00880300) = 0x00880300
+[    9.033215] ieee80211 phy0: U __iwl_set_bit set_bit(0x00000024,
+0x00000004) = 0x080003D4
+[    9.043384] ieee80211 phy0: U __iwl_poll_bit poll_bit(0x00000024,
+0x00000001, 0x00000001) - - drivers/net/wireless/iwlwifi/iwl-5000.c
+112
+[    9.043590] ieee80211 phy0: U __iwl_grab_nic_access grabbing nic
+access - drivers/net/wireless/iwlwifi/iwl-5000.c 118
+[    9.043868] ieee80211 phy0: U __iwl_release_nic_access releasing
+nic access - drivers/net/wireless/iwlwifi/iwl-5000.c 131
+[    9.044076] ieee80211 phy0: U __iwl_read32
+read_direct32(0x00000030) - drivers/net/wireless/iwlwifi/iwl-eeprom.c
+213
+[    9.044286] ieee80211 phy0: U __iwl_read32
+read_direct32(0x00000030) - drivers/net/wireless/iwlwifi/iwl-eeprom.c
+147
+[    9.044496] ieee80211 phy0: U __iwl_set_bit set_bit(0x00000000,
+0x00200000) = 0x00280000
+[    9.044702] ieee80211 phy0: U __iwl_poll_bit poll_bit(0x00000000,
+0x00200000, 0x00200000) - - drivers/net/wireless/iwlwifi/iwl-eeprom.c
+176
+[    9.044913] ieee80211 phy0: U iwlcore_eeprom_acquire_semaphore
+Acquired semaphore after 1 tries.
+[    9.067496] ieee80211 phy0: U __iwl_clear_bit clear_bit(0x00000000,
+0x00200000) = 0x00080000
+[    9.067700] ieee80211 phy0: U iwl4965_pci_probe MAC address:
+00:16:ea:65:05:b8
+[    9.067900] ieee80211 phy0: U iwl_set_rxon_chain rx chain 2806
+[    9.068082] ieee80211 phy0: U iwl_reset_qos set QoS to default
+[    9.068267] ieee80211 phy0: U iwl_init_channel_map Initializing
+regulatory info from EEPROM
+[    9.068467] ieee80211 phy0: U iwl_init_channel_map Parsing data for
+56 channels.
+[    9.068668] ieee80211 phy0: U iwl_init_channel_map Ch. 1 [2.4GHz]
+VALID IBSS ACTIVE WIDE (0x6f 15dBm): Ad-Hoc supported
+[    9.068874] ieee80211 phy0: U iwl_init_channel_map Ch. 2 [2.4GHz]
+VALID IBSS ACTIVE WIDE (0x6f 15dBm): Ad-Hoc supported
+[    9.069085] ieee80211 phy0: U iwl_init_channel_map Ch. 3 [2.4GHz]
+VALID IBSS ACTIVE WIDE (0x6f 15dBm): Ad-Hoc supported
+[    9.069289] ieee80211 phy0: U iwl_init_channel_map Ch. 4 [2.4GHz]
+VALID IBSS ACTIVE WIDE (0x6f 15dBm): Ad-Hoc supported
+[    9.069492] ieee80211 phy0: U iwl_init_channel_map Ch. 5 [2.4GHz]
+VALID IBSS ACTIVE WIDE (0x6f 15dBm): Ad-Hoc supported
+[    9.069696] ieee80211 phy0: U iwl_init_channel_map Ch. 6 [2.4GHz]
+VALID IBSS ACTIVE WIDE (0x6f 15dBm): Ad-Hoc supported
+[    9.069899] ieee80211 phy0: U iwl_init_channel_map Ch. 7 [2.4GHz]
+VALID IBSS ACTIVE WIDE (0x6f 15dBm): Ad-Hoc supported
+[    9.070181] ieee80211 phy0: U iwl_init_channel_map Ch. 8 [2.4GHz]
+VALID IBSS ACTIVE WIDE (0x6f 15dBm): Ad-Hoc supported
+[    9.070385] ieee80211 phy0: U iwl_init_channel_map Ch. 9 [2.4GHz]
+VALID IBSS ACTIVE WIDE (0x6f 15dBm): Ad-Hoc supported
+[    9.070588] ieee80211 phy0: U iwl_init_channel_map Ch. 10 [2.4GHz]
+VALID IBSS ACTIVE WIDE (0x6f 15dBm): Ad-Hoc supported
+[    9.070792] ieee80211 phy0: U iwl_init_channel_map Ch. 11 [2.4GHz]
+VALID IBSS ACTIVE WIDE (0x6f 15dBm): Ad-Hoc supported
+[    9.070998] ieee80211 phy0: U iwl_init_channel_map Ch. 12 [2.4GHz]
+VALID WIDE (0x61 15dBm): Ad-Hoc not supported
+[    9.071200] ieee80211 phy0: U iwl_init_channel_map Ch. 13 [2.4GHz]
+VALID WIDE (0x61 15dBm): Ad-Hoc not supported
+[    9.071403] ieee80211 phy0: U iwl_init_channel_map Ch. 14 Flags 0
+[2.4GHz] - No traffic
+[    9.071601] ieee80211 phy0: U iwl_init_channel_map Ch. 183 Flags 0
+[5.2GHz] - No traffic
+[    9.071800] ieee80211 phy0: U iwl_init_channel_map Ch. 184 Flags 0
+[5.2GHz] - No traffic
+[    9.072001] ieee80211 phy0: U iwl_init_channel_map Ch. 185 Flags 0
+[5.2GHz] - No traffic
+[    9.072201] ieee80211 phy0: U iwl_init_channel_map Ch. 187 Flags 0
+[5.2GHz] - No traffic
+[    9.082868] ieee80211 phy0: U iwl_init_channel_map Ch. 188 Flags 0
+[5.2GHz] - No traffic
+[    9.098864] ieee80211 phy0: U iwl_init_channel_map Ch. 189 Flags 0
+[5.2GHz] - No traffic
+[    9.099063] ieee80211 phy0: U iwl_init_channel_map Ch. 192 Flags 0
+[5.2GHz] - No traffic
+[    9.099262] ieee80211 phy0: U iwl_init_channel_map Ch. 196 Flags 0
+[5.2GHz] - No traffic
+[    9.099461] ieee80211 phy0: U iwl_init_channel_map Ch. 7 Flags 0
+[5.2GHz] - No traffic
+[    9.099660] ieee80211 phy0: U iwl_init_channel_map Ch. 8 Flags 0
+[5.2GHz] - No traffic
+[    9.099858] ieee80211 phy0: U iwl_init_channel_map Ch. 11 Flags 0
+[5.2GHz] - No traffic
+[    9.100059] ieee80211 phy0: U iwl_init_channel_map Ch. 12 Flags 0
+[5.2GHz] - No traffic
+[    9.100258] ieee80211 phy0: U iwl_init_channel_map Ch. 16 Flags 0
+[5.2GHz] - No traffic
+[    9.100457] ieee80211 phy0: U iwl_init_channel_map Ch. 34 Flags 0
+[5.2GHz] - No traffic
+[    9.100656] ieee80211 phy0: U iwl_init_channel_map Ch. 36 [5.2GHz]
+VALID WIDE DFS (0xe1 15dBm): Ad-Hoc not supported
+[    9.100861] ieee80211 phy0: U iwl_init_channel_map Ch. 38 Flags 0
+[5.2GHz] - No traffic
+[    9.101060] ieee80211 phy0: U iwl_init_channel_map Ch. 40 [5.2GHz]
+VALID WIDE DFS (0xe1 15dBm): Ad-Hoc not supported
+[    9.101265] ieee80211 phy0: U iwl_init_channel_map Ch. 42 Flags 0
+[5.2GHz] - No traffic
+[    9.101465] ieee80211 phy0: U iwl_init_channel_map Ch. 44 [5.2GHz]
+VALID WIDE DFS (0xe1 15dBm): Ad-Hoc not supported
+[    9.101670] ieee80211 phy0: U iwl_init_channel_map Ch. 46 Flags 0
+[5.2GHz] - No traffic
+[    9.101871] ieee80211 phy0: U iwl_init_channel_map Ch. 48 [5.2GHz]
+VALID WIDE DFS (0xe1 15dBm): Ad-Hoc not supported
+[    9.101871] ieee80211 phy0: U iwl_init_channel_map Ch. 52 [5.2GHz]
+VALID RADAR WIDE (0x31 15dBm): Ad-Hoc not supported
+[    9.101871] ieee80211 phy0: U iwl_init_channel_map Ch. 56 [5.2GHz]
+VALID RADAR WIDE (0x31 15dBm): Ad-Hoc not supported
+[    9.101871] ieee80211 phy0: U iwl_init_channel_map Ch. 60 [5.2GHz]
+VALID RADAR WIDE (0x31 15dBm): Ad-Hoc not supported
+[    9.101871] ieee80211 phy0: U iwl_init_channel_map Ch. 64 [5.2GHz]
+VALID RADAR WIDE (0x31 15dBm): Ad-Hoc not supported
+[    9.101871] ieee80211 phy0: U iwl_init_channel_map Ch. 100 [5.2GHz]
+VALID RADAR WIDE (0x31 15dBm): Ad-Hoc not supported
+[    9.101871] ieee80211 phy0: U iwl_init_channel_map Ch. 104 [5.2GHz]
+VALID RADAR WIDE (0x31 15dBm): Ad-Hoc not supported
+[    9.101871] ieee80211 phy0: U iwl_init_channel_map Ch. 108 [5.2GHz]
+VALID RADAR WIDE (0x31 15dBm): Ad-Hoc not supported
+[    9.101871] ieee80211 phy0: U iwl_init_channel_map Ch. 112 [5.2GHz]
+VALID RADAR WIDE (0x31 15dBm): Ad-Hoc not supported
+[    9.101871] ieee80211 phy0: U iwl_init_channel_map Ch. 116 [5.2GHz]
+VALID RADAR WIDE (0x31 15dBm): Ad-Hoc not supported
+[    9.101871] ieee80211 phy0: U iwl_init_channel_map Ch. 120 [5.2GHz]
+VALID RADAR WIDE (0x31 15dBm): Ad-Hoc not supported
+[    9.101871] ieee80211 phy0: U iwl_init_channel_map Ch. 124 [5.2GHz]
+VALID RADAR WIDE (0x31 15dBm): Ad-Hoc not supported
+[    9.101871] ieee80211 phy0: U iwl_init_channel_map Ch. 128 [5.2GHz]
+VALID RADAR WIDE (0x31 15dBm): Ad-Hoc not supported
+[    9.101871] ieee80211 phy0: U iwl_init_channel_map Ch. 132 [5.2GHz]
+VALID RADAR WIDE (0x31 15dBm): Ad-Hoc not supported
+[    9.101871] ieee80211 phy0: U iwl_init_channel_map Ch. 136 [5.2GHz]
+VALID RADAR WIDE (0x31 15dBm): Ad-Hoc not supported
+[    9.101871] ieee80211 phy0: U iwl_init_channel_map Ch. 140 [5.2GHz]
+VALID RADAR WIDE (0x31 15dBm): Ad-Hoc not supported
+[    9.101871] ieee80211 phy0: U iwl_init_channel_map Ch. 145 Flags 0
+[5.2GHz] - No traffic
+[    9.101871] ieee80211 phy0: U iwl_init_channel_map Ch. 149 [5.2GHz]
+VALID WIDE DFS (0xa1 15dBm): Ad-Hoc not supported
+[    9.101871] ieee80211 phy0: U iwl_init_channel_map Ch. 153 [5.2GHz]
+VALID WIDE DFS (0xa1 15dBm): Ad-Hoc not supported
+[    9.101871] ieee80211 phy0: U iwl_init_channel_map Ch. 157 [5.2GHz]
+VALID WIDE DFS (0xa1 15dBm): Ad-Hoc not supported
+[    9.101871] ieee80211 phy0: U iwl_init_channel_map Ch. 161 [5.2GHz]
+VALID WIDE DFS (0xa1 15dBm): Ad-Hoc not supported
+[    9.101871] ieee80211 phy0: U iwl_init_channel_map Ch. 165 [5.2GHz]
+VALID WIDE DFS (0xa1 15dBm): Ad-Hoc not supported
+[    9.101871] ieee80211 phy0: U iwl_set_fat_chan_info FAT Ch. 1
+[2.4GHz] IBSS ACTIVE WIDE (0x6f 10dBm): Ad-Hoc supported
+[    9.101871] ieee80211 phy0: U iwl_set_fat_chan_info FAT Ch. 5
+[2.4GHz] IBSS ACTIVE WIDE (0x6f 10dBm): Ad-Hoc supported
+[    9.101871] ieee80211 phy0: U iwl_set_fat_chan_info FAT Ch. 2
+[2.4GHz] IBSS ACTIVE WIDE (0x6f 15dBm): Ad-Hoc supported
+[    9.102085] ieee80211 phy0: U iwl_set_fat_chan_info FAT Ch. 6
+[2.4GHz] IBSS ACTIVE WIDE (0x6f 15dBm): Ad-Hoc supported
+[    9.102288] ieee80211 phy0: U iwl_set_fat_chan_info FAT Ch. 3
+[2.4GHz] IBSS ACTIVE WIDE (0x6f 15dBm): Ad-Hoc supported
+[    9.102492] ieee80211 phy0: U iwl_set_fat_chan_info FAT Ch. 7
+[2.4GHz] IBSS ACTIVE WIDE (0x6f 15dBm): Ad-Hoc supported
+[    9.102697] ieee80211 phy0: U iwl_set_fat_chan_info FAT Ch. 4
+[2.4GHz] IBSS ACTIVE WIDE (0x6f 15dBm): Ad-Hoc supported
+[    9.102900] ieee80211 phy0: U iwl_set_fat_chan_info FAT Ch. 8
+[2.4GHz] IBSS ACTIVE WIDE (0x6f 15dBm): Ad-Hoc supported
+[    9.103103] ieee80211 phy0: U iwl_set_fat_chan_info FAT Ch. 5
+[2.4GHz] IBSS ACTIVE WIDE (0x6f 15dBm): Ad-Hoc supported
+[    9.103306] ieee80211 phy0: U iwl_set_fat_chan_info FAT Ch. 9
+[2.4GHz] IBSS ACTIVE WIDE (0x6f 15dBm): Ad-Hoc supported
+[    9.103510] ieee80211 phy0: U iwl_set_fat_chan_info FAT Ch. 6
+[2.4GHz] IBSS ACTIVE WIDE (0x6f 15dBm): Ad-Hoc supported
+[    9.103717] ieee80211 phy0: U iwl_set_fat_chan_info FAT Ch. 10
+[2.4GHz] IBSS ACTIVE WIDE (0x6f 15dBm): Ad-Hoc supported
+[    9.103920] ieee80211 phy0: U iwl_set_fat_chan_info FAT Ch. 7
+[2.4GHz] IBSS ACTIVE WIDE (0x6f 13dBm): Ad-Hoc supported
+[    9.104033] ieee80211 phy0: U iwl_set_fat_chan_info FAT Ch. 11
+[2.4GHz] IBSS ACTIVE WIDE (0x6f 13dBm): Ad-Hoc supported
+[    9.104033] ieee80211 phy0: U iwl_set_fat_chan_info FAT Ch. 36
+[5.2GHz] WIDE DFS (0xe1 14dBm): Ad-Hoc not supported
+[    9.104033] ieee80211 phy0: U iwl_set_fat_chan_info FAT Ch. 40
+[5.2GHz] WIDE DFS (0xe1 14dBm): Ad-Hoc not supported
+[    9.104033] ieee80211 phy0: U iwl_set_fat_chan_info FAT Ch. 44
+[5.2GHz] WIDE DFS (0xe1 15dBm): Ad-Hoc not supported
+[    9.104036] ieee80211 phy0: U iwl_set_fat_chan_info FAT Ch. 48
+[5.2GHz] WIDE DFS (0xe1 15dBm): Ad-Hoc not supported
+[    9.104128] ieee80211 phy0: U iwl_set_fat_chan_info FAT Ch. 52
+[5.2GHz] RADAR WIDE (0x31 15dBm): Ad-Hoc not supported
+[    9.104128] ieee80211 phy0: U iwl_set_fat_chan_info FAT Ch. 56
+[5.2GHz] RADAR WIDE (0x31 15dBm): Ad-Hoc not supported
+[    9.104128] ieee80211 phy0: U iwl_set_fat_chan_info FAT Ch. 60
+[5.2GHz] RADAR WIDE (0x31 14dBm): Ad-Hoc not supported
+[    9.104128] ieee80211 phy0: U iwl_set_fat_chan_info FAT Ch. 64
+[5.2GHz] RADAR WIDE (0x31 14dBm): Ad-Hoc not supported
+[    9.104337] ieee80211 phy0: U iwl_set_fat_chan_info FAT Ch. 100
+[5.2GHz] RADAR WIDE (0x31 15dBm): Ad-Hoc not supported
+[    9.104541] ieee80211 phy0: U iwl_set_fat_chan_info FAT Ch. 104
+[5.2GHz] RADAR WIDE (0x31 15dBm): Ad-Hoc not supported
+[    9.104744] ieee80211 phy0: U iwl_set_fat_chan_info FAT Ch. 108
+[5.2GHz] RADAR WIDE (0x31 15dBm): Ad-Hoc not supported
+[    9.104948] ieee80211 phy0: U iwl_set_fat_chan_info FAT Ch. 112
+[5.2GHz] RADAR WIDE (0x31 15dBm): Ad-Hoc not supported
+[    9.105153] ieee80211 phy0: U iwl_set_fat_chan_info FAT Ch. 116
+[5.2GHz] RADAR WIDE (0x31 15dBm): Ad-Hoc not supported
+[    9.105357] ieee80211 phy0: U iwl_set_fat_chan_info FAT Ch. 120
+[5.2GHz] RADAR WIDE (0x31 15dBm): Ad-Hoc not supported
+[    9.105560] ieee80211 phy0: U iwl_set_fat_chan_info FAT Ch. 124
+[5.2GHz] RADAR WIDE (0x31 15dBm): Ad-Hoc not supported
+[    9.105764] ieee80211 phy0: U iwl_set_fat_chan_info FAT Ch. 128
+[5.2GHz] RADAR WIDE (0x31 15dBm): Ad-Hoc not supported
+[    9.105968] ieee80211 phy0: U iwl_set_fat_chan_info FAT Ch. 132
+[5.2GHz] RADAR WIDE (0x31 15dBm): Ad-Hoc not supported
+[    9.106174] ieee80211 phy0: U iwl_set_fat_chan_info FAT Ch. 136
+[5.2GHz] RADAR WIDE (0x31 15dBm): Ad-Hoc not supported
+[    9.106544] ieee80211 phy0: U iwl_set_fat_chan_info FAT Ch. 149
+[5.2GHz] WIDE (0x61 15dBm): Ad-Hoc not supported
+[    9.106749] ieee80211 phy0: U iwl_set_fat_chan_info FAT Ch. 153
+[5.2GHz] WIDE (0x61 15dBm): Ad-Hoc not supported
+[    9.106955] ieee80211 phy0: U iwl_set_fat_chan_info FAT Ch. 157
+[5.2GHz] WIDE (0x61 15dBm): Ad-Hoc not supported
+[    9.107160] ieee80211 phy0: U iwl_set_fat_chan_info FAT Ch. 161
+[5.2GHz] WIDE (0x61 15dBm): Ad-Hoc not supported
+[    9.107370] ieee80211 phy0: U iwlcore_init_geos Channel 1
+Freq=2412[2.4GHz] valid flag=0x20
+[    9.107583] ieee80211 phy0: U iwlcore_init_geos Channel 2
+Freq=2417[2.4GHz] valid flag=0x20
+[    9.107782] ieee80211 phy0: U iwlcore_init_geos Channel 3
+Freq=2422[2.4GHz] valid flag=0x20
+[    9.107985] ieee80211 phy0: U iwlcore_init_geos Channel 4
+Freq=2427[2.4GHz] valid flag=0x20
+[    9.108192] ieee80211 phy0: U iwlcore_init_geos Channel 5
+Freq=2432[2.4GHz] valid flag=0x0
+[    9.108392] ieee80211 phy0: U iwlcore_init_geos Channel 6
+Freq=2437[2.4GHz] valid flag=0x0
+[    9.108591] ieee80211 phy0: U iwlcore_init_geos Channel 7
+Freq=2442[2.4GHz] valid flag=0x0
+[    9.108791] ieee80211 phy0: U iwlcore_init_geos Channel 8
+Freq=2447[2.4GHz] valid flag=0x10
+[    9.108991] ieee80211 phy0: U iwlcore_init_geos Channel 9
+Freq=2452[2.4GHz] valid flag=0x10
+[    9.109192] ieee80211 phy0: U iwlcore_init_geos Channel 10
+Freq=2457[2.4GHz] valid flag=0x10
+[    9.109392] ieee80211 phy0: U iwlcore_init_geos Channel 11
+Freq=2462[2.4GHz] valid flag=0x10
+[    9.109591] ieee80211 phy0: U iwlcore_init_geos Channel 12
+Freq=2467[2.4GHz] valid flag=0x36
+[    9.109791] ieee80211 phy0: U iwlcore_init_geos Channel 13
+Freq=2472[2.4GHz] valid flag=0x36
+[    9.109993] ieee80211 phy0: U iwlcore_init_geos Channel 36
+Freq=5180[5.2GHz] valid flag=0x26
+[    9.110194] ieee80211 phy0: U iwlcore_init_geos Channel 40
+Freq=5200[5.2GHz] valid flag=0x16
+[    9.110394] ieee80211 phy0: U iwlcore_init_geos Channel 44
+Freq=5220[5.2GHz] valid flag=0x26
+[    9.124490] ieee80211 phy0: U iwlcore_init_geos Channel 48
+Freq=5240[5.2GHz] valid flag=0x16
+[    9.124690] ieee80211 phy0: U iwlcore_init_geos Channel 52
+Freq=5260[5.2GHz] valid flag=0x2E
+[    9.124889] ieee80211 phy0: U iwlcore_init_geos Channel 56
+Freq=5280[5.2GHz] valid flag=0x1E
+[    9.125089] ieee80211 phy0: U iwlcore_init_geos Channel 60
+Freq=5300[5.2GHz] valid flag=0x2E
+[    9.125288] ieee80211 phy0: U iwlcore_init_geos Channel 64
+Freq=5320[5.2GHz] valid flag=0x1E
+[    9.125311] ieee80211 phy0: U iwlcore_init_geos Channel 100
+Freq=5500[5.2GHz] valid flag=0x2E
+[    9.125311] ieee80211 phy0: U iwlcore_init_geos Channel 104
+Freq=5520[5.2GHz] valid flag=0x1E
+[    9.125311] ieee80211 phy0: U iwlcore_init_geos Channel 108
+Freq=5540[5.2GHz] valid flag=0x2E
+[    9.125311] ieee80211 phy0: U iwlcore_init_geos Channel 112
+Freq=5560[5.2GHz] valid flag=0x1E
+[    9.125311] ieee80211 phy0: U iwlcore_init_geos Channel 116
+Freq=5580[5.2GHz] valid flag=0x2E
+[    9.125311] ieee80211 phy0: U iwlcore_init_geos Channel 120
+Freq=5600[5.2GHz] valid flag=0x1E
+[    9.125311] ieee80211 phy0: U iwlcore_init_geos Channel 124
+Freq=5620[5.2GHz] valid flag=0x2E
+[    9.125311] ieee80211 phy0: U iwlcore_init_geos Channel 128
+Freq=5640[5.2GHz] valid flag=0x1E
+[    9.125311] ieee80211 phy0: U iwlcore_init_geos Channel 132
+Freq=5660[5.2GHz] valid flag=0x2E
+[    9.125314] ieee80211 phy0: U iwlcore_init_geos Channel 136
+Freq=5680[5.2GHz] valid flag=0x1E
+[    9.125515] ieee80211 phy0: U iwlcore_init_geos Channel 140
+Freq=5700[5.2GHz] valid flag=0x3E
+[    9.125715] ieee80211 phy0: U iwlcore_init_geos Channel 149
+Freq=5745[5.2GHz] valid flag=0x26
+[    9.125920] ieee80211 phy0: U iwlcore_init_geos Channel 153
+Freq=5765[5.2GHz] valid flag=0x16
+[    9.126123] ieee80211 phy0: U iwlcore_init_geos Channel 157
+Freq=5785[5.2GHz] valid flag=0x26
+[    9.126344] ieee80211 phy0: U iwlcore_init_geos Channel 161
+Freq=5805[5.2GHz] valid flag=0x16
+[    9.126544] ieee80211 phy0: U iwlcore_init_geos Channel 165
+Freq=5825[5.2GHz] valid flag=0x36
+[    9.126743] iwlagn: Tunable channels: 13 802.11bg, 24 802.11a channels
+[    9.126928] ieee80211 phy0: U __iwl_write32 write32(0x0000000C,
+0x00000000) - drivers/net/wireless/iwlwifi/iwl-agn.c 1511
+[    9.127131] ieee80211 phy0: U __iwl_write32 write32(0x00000008,
+0xFFFFFFFF) - drivers/net/wireless/iwlwifi/iwl-agn.c 1515
+[    9.127335] ieee80211 phy0: U __iwl_write32 write32(0x00000010,
+0xFFFFFFFF) - drivers/net/wireless/iwlwifi/iwl-agn.c 1516
+[    9.127538] ieee80211 phy0: U iwl4965_disable_interrupts Disabled interrupts
+[    9.128536] iwlagn 0000:03:00.0: PCI INT A disabled
+[    9.128965] phy0: Selected rate control algorithm 'iwl-agn-rs'
+[    9.201198] HDA Intel 0000:00:1b.0: PCI INT A -> GSI 22 (level,
+low) -> IRQ 22
+[    9.201443] HDA Intel 0000:00:1b.0: setting latency timer to 64
+[    9.235420] ieee80211 phy0: U iwl_rfkill_init Initializing RFKILL.
+[    9.235628] ieee80211 phy0: U iwl_rfkill_init RFKILL initialization complete.
+[    9.235841] ieee80211 phy0: U iwl_power_init_handle Initialize power
+[    9.236031] ieee80211 phy0: U iwl_power_init_handle adjust power
+command flags
+[    9.233802] hda_codec: Unknown model for ALC662, trying auto-probe
+from BIOS...
+[   10.925499] EXT3 FS on sda2, internal journal
+[   11.445609] loop: module loaded
+[   12.904663] r8169: eth0: link down
+[   16.274090] pnp: the driver 'parport_pc' has been registered
+[   16.294503] lp: driver loaded but no devices found
+[   16.326502] ppdev: user-space parallel port driver
+[   16.921526] NET: Registered protocol family 10
+[   16.922076] lo: Disabled Privacy Extensions
+[   16.922614] ADDRCONF(NETDEV_UP): eth0: link is not ready
+[   17.408019] warning: `avahi-daemon' uses 32-bit capabilities
+(legacy support in use)
+[   19.102741] Bluetooth: L2CAP ver 2.10
+[   19.102928] Bluetooth: L2CAP socket layer initialized
+[   19.159165] Bluetooth: RFCOMM socket layer initialized
+[   19.159378] Bluetooth: RFCOMM TTY layer initialized
+[   19.159568] Bluetooth: RFCOMM ver 1.10
+[   19.541239] ieee80211 phy0: U iwl4965_mac_start enter
+[   19.541436] iwlagn 0000:03:00.0: PCI INT A -> GSI 17 (level, low) -> IRQ 17
+[   19.541781] iwlagn 0000:03:00.0: restoring config space at offset
+0x1 (was 0x100002, writing 0x100006)
+[   19.541974] firmware: requesting iwlwifi-5000-1.ucode
+[   19.686248] ieee80211 phy0: U iwl4965_read_ucode Got firmware
+'iwlwifi-5000-1.ucode' file (345008 bytes) from disk
+[   19.686458] ieee80211 phy0: U iwl4965_read_ucode f/w package hdr
+ucode version = 0x5040110
+[   19.686691] ieee80211 phy0: U iwl4965_read_ucode f/w package hdr
+runtime inst size = 128504
+[   19.686990] ieee80211 phy0: U iwl4965_read_ucode f/w package hdr
+runtime data size = 49152
+[   19.687297] ieee80211 phy0: U iwl4965_read_ucode f/w package hdr
+init inst size = 118176
+[   19.687533] ieee80211 phy0: U iwl4965_read_ucode f/w package hdr
+init data size = 49152
+[   19.687771] ieee80211 phy0: U iwl4965_read_ucode f/w package hdr
+boot inst size = 0
+[   19.688090] ieee80211 phy0: U iwl4965_read_ucode Copying (but not
+loading) uCode instr len 128504
+[   19.688362] ieee80211 phy0: U iwl4965_read_ucode uCode instr buf
+vaddr = 0xffff88013e500000, paddr = 0x3e500000
+[   19.688607] ieee80211 phy0: U iwl4965_read_ucode Copying (but not
+loading) uCode data len 49152
+[   19.688859] ieee80211 phy0: U iwl4965_read_ucode Copying (but not
+loading) init instr len 118176
+[   19.689114] ieee80211 phy0: U iwl4965_read_ucode Copying (but not
+loading) init data len 49152
+[   19.689361] ieee80211 phy0: U iwl4965_read_ucode Copying (but not
+loading) boot instr len 0
+[   19.689634] ieee80211 phy0: U __iwl_read32
+read_direct32(0x00000024) - drivers/net/wireless/iwlwifi/iwl-agn.c
+2235
+[   19.689848] ieee80211 phy0: U __iwl_write32 write32(0x00000008,
+0xFFFFFFFF) - drivers/net/wireless/iwlwifi/iwl-agn.c 2247
+[   19.690144] ieee80211 phy0: U __iwl_set_bit set_bit(0x00000100,
+0x20000000) = 0x27800200
+[   19.690391] ieee80211 phy0: U __iwl_set_bit set_bit(0x00000100,
+0x00800000) = 0x27800200
+[   19.690641] ieee80211 phy0: U __iwl_set_bit set_bit(0x00000240,
+0xFFFF0000) = 0xFFFF0000
+[   19.690911] ieee80211 phy0: U __iwl_set_bit set_bit(0x00000000,
+0x00080000) = 0x00080000
+[   19.691159] ieee80211 phy0: U __iwl_set_bit set_bit(0x0000020C,
+0x00880300) = 0x00880300
+[   19.691411] ieee80211 phy0: U __iwl_set_bit set_bit(0x00000024,
+0x00000004) = 0x080403C5
+[   19.691660] ieee80211 phy0: U __iwl_poll_bit poll_bit(0x00000024,
+0x00000001, 0x00000001) - - drivers/net/wireless/iwlwifi/iwl-5000.c
+112
+[   19.691915] ieee80211 phy0: U __iwl_grab_nic_access grabbing nic
+access - drivers/net/wireless/iwlwifi/iwl-5000.c 118
+[   19.692190] ieee80211 phy0: U __iwl_release_nic_access releasing
+nic access - drivers/net/wireless/iwlwifi/iwl-5000.c 131
+[   19.692399] ieee80211 phy0: U __iwl_write32 write32(0x00000004,
+0x00000010) - drivers/net/wireless/iwlwifi/iwl-core.c 236
+[   19.692702] ieee80211 phy0: U __iwl_grab_nic_access grabbing nic
+access - drivers/net/wireless/iwlwifi/iwl-agn.c 1271
+[   19.692981] ieee80211 phy0: U __iwl_release_nic_access releasing
+nic access - drivers/net/wireless/iwlwifi/iwl-agn.c 1290
+[   19.693239] ieee80211 phy0: U __iwl_set_bit set_bit(0x0000003C,
+0x00000002) = 0x00080046
+[   19.693477] ieee80211 phy0: U __iwl_set_bit set_bit(0x00000000,
+0x00000003) = 0x00080003
+[   19.693725] ieee80211 phy0: U __iwl_set_bit set_bit(0x00000000,
+0x00000300) = 0x00080303
+[   19.693968] ieee80211 phy0: U __iwl_grab_nic_access grabbing nic
+access - drivers/net/wireless/iwlwifi/iwl-5000.c 244
+[   19.694221] ieee80211 phy0: U __iwl_release_nic_access releasing
+nic access - drivers/net/wireless/iwlwifi/iwl-5000.c 248
+[   19.694813] ieee80211 phy0: U __iwl_write32 write32(0x00001BC8,
+0x000000F8) - drivers/net/wireless/iwlwifi/iwl-rx.c 159
+[   19.695037] ieee80211 phy0: U __iwl_grab_nic_access grabbing nic
+access - drivers/net/wireless/iwlwifi/iwl-rx.c 382
+[   19.695324] ieee80211 phy0: U __iwl_release_nic_access releasing
+nic access - drivers/net/wireless/iwlwifi/iwl-rx.c 420
+[   19.695541] ieee80211 phy0: U __iwl_write32 write32(0x00001BC8,
+0x000000F8) - drivers/net/wireless/iwlwifi/iwl-rx.c 159
+[   19.695838] ieee80211 phy0: U __iwl_grab_nic_access grabbing nic
+access - drivers/net/wireless/iwlwifi/iwl-tx.c 500
+[   19.696094] ieee80211 phy0: U __iwl_release_nic_access releasing
+nic access - drivers/net/wireless/iwlwifi/iwl-tx.c 509
+[   19.696345] ieee80211 phy0: U __iwl_grab_nic_access grabbing nic
+access - drivers/net/wireless/iwlwifi/iwl-core.c 188
+[   19.696600] ieee80211 phy0: U __iwl_release_nic_access releasing
+nic access - drivers/net/wireless/iwlwifi/iwl-core.c 194
+[   19.696886] ieee80211 phy0: U __iwl_grab_nic_access grabbing nic
+access - drivers/net/wireless/iwlwifi/iwl-tx.c 381
+[   19.697098] ieee80211 phy0: U __iwl_release_nic_access releasing
+nic access - drivers/net/wireless/iwlwifi/iwl-tx.c 396
+[   19.697426] ieee80211 phy0: U __iwl_grab_nic_access grabbing nic
+access - drivers/net/wireless/iwlwifi/iwl-tx.c 381
+[   19.697636] ieee80211 phy0: U __iwl_release_nic_access releasing
+nic access - drivers/net/wireless/iwlwifi/iwl-tx.c 396
+[   19.697977] ieee80211 phy0: U __iwl_grab_nic_access grabbing nic
+access - drivers/net/wireless/iwlwifi/iwl-tx.c 381
+[   19.698188] ieee80211 phy0: U __iwl_release_nic_access releasing
+nic access - drivers/net/wireless/iwlwifi/iwl-tx.c 396
+[   19.698513] ieee80211 phy0: U __iwl_grab_nic_access grabbing nic
+access - drivers/net/wireless/iwlwifi/iwl-tx.c 381
+[   19.698725] ieee80211 phy0: U __iwl_release_nic_access releasing
+nic access - drivers/net/wireless/iwlwifi/iwl-tx.c 396
+[   19.699042] ieee80211 phy0: U __iwl_grab_nic_access grabbing nic
+access - drivers/net/wireless/iwlwifi/iwl-tx.c 381
+[   19.699260] ieee80211 phy0: U __iwl_release_nic_access releasing
+nic access - drivers/net/wireless/iwlwifi/iwl-tx.c 396
+[   19.699585] ieee80211 phy0: U __iwl_grab_nic_access grabbing nic
+access - drivers/net/wireless/iwlwifi/iwl-tx.c 381
+[   19.699796] ieee80211 phy0: U __iwl_release_nic_access releasing
+nic access - drivers/net/wireless/iwlwifi/iwl-tx.c 396
+[   19.700134] ieee80211 phy0: U __iwl_grab_nic_access grabbing nic
+access - drivers/net/wireless/iwlwifi/iwl-tx.c 381
+[   19.700345] ieee80211 phy0: U __iwl_release_nic_access releasing
+nic access - drivers/net/wireless/iwlwifi/iwl-tx.c 396
+[   19.700670] ieee80211 phy0: U __iwl_grab_nic_access grabbing nic
+access - drivers/net/wireless/iwlwifi/iwl-tx.c 381
+[   19.700881] ieee80211 phy0: U __iwl_release_nic_access releasing
+nic access - drivers/net/wireless/iwlwifi/iwl-tx.c 396
+[   19.701237] ieee80211 phy0: U __iwl_grab_nic_access grabbing nic
+access - drivers/net/wireless/iwlwifi/iwl-tx.c 381
+[   19.701449] ieee80211 phy0: U __iwl_release_nic_access releasing
+nic access - drivers/net/wireless/iwlwifi/iwl-tx.c 396
+[   19.701795] ieee80211 phy0: U __iwl_grab_nic_access grabbing nic
+access - drivers/net/wireless/iwlwifi/iwl-tx.c 381
+[   19.702006] ieee80211 phy0: U __iwl_release_nic_access releasing
+nic access - drivers/net/wireless/iwlwifi/iwl-tx.c 396
+[   19.702331] ieee80211 phy0: U __iwl_grab_nic_access grabbing nic
+access - drivers/net/wireless/iwlwifi/iwl-tx.c 381
+[   19.702542] ieee80211 phy0: U __iwl_release_nic_access releasing
+nic access - drivers/net/wireless/iwlwifi/iwl-tx.c 396
+[   19.702913] ieee80211 phy0: U __iwl_grab_nic_access grabbing nic
+access - drivers/net/wireless/iwlwifi/iwl-tx.c 381
+[   19.703125] ieee80211 phy0: U __iwl_release_nic_access releasing
+nic access - drivers/net/wireless/iwlwifi/iwl-tx.c 396
+[   19.703458] ieee80211 phy0: U __iwl_grab_nic_access grabbing nic
+access - drivers/net/wireless/iwlwifi/iwl-tx.c 381
+[   19.703668] ieee80211 phy0: U __iwl_release_nic_access releasing
+nic access - drivers/net/wireless/iwlwifi/iwl-tx.c 396
+[   19.704000] ieee80211 phy0: U __iwl_grab_nic_access grabbing nic
+access - drivers/net/wireless/iwlwifi/iwl-tx.c 381
+[   19.704212] ieee80211 phy0: U __iwl_release_nic_access releasing
+nic access - drivers/net/wireless/iwlwifi/iwl-tx.c 396
+[   19.704551] ieee80211 phy0: U __iwl_grab_nic_access grabbing nic
+access - drivers/net/wireless/iwlwifi/iwl-tx.c 381
+[   19.704793] ieee80211 phy0: U __iwl_release_nic_access releasing
+nic access - drivers/net/wireless/iwlwifi/iwl-tx.c 396
+[   19.705112] ieee80211 phy0: U __iwl_grab_nic_access grabbing nic
+access - drivers/net/wireless/iwlwifi/iwl-tx.c 381
+[   19.705324] ieee80211 phy0: U __iwl_release_nic_access releasing
+nic access - drivers/net/wireless/iwlwifi/iwl-tx.c 396
+[   19.705657] ieee80211 phy0: U __iwl_grab_nic_access grabbing nic
+access - drivers/net/wireless/iwlwifi/iwl-tx.c 381
+[   19.720006] ieee80211 phy0: U __iwl_release_nic_access releasing
+nic access - drivers/net/wireless/iwlwifi/iwl-tx.c 396
+[   19.720354] ieee80211 phy0: U __iwl_grab_nic_access grabbing nic
+access - drivers/net/wireless/iwlwifi/iwl-tx.c 381
+[   19.720567] ieee80211 phy0: U __iwl_release_nic_access releasing
+nic access - drivers/net/wireless/iwlwifi/iwl-tx.c 396
+[   19.720917] ieee80211 phy0: U __iwl_grab_nic_access grabbing nic
+access - drivers/net/wireless/iwlwifi/iwl-tx.c 381
+[   19.721131] ieee80211 phy0: U __iwl_release_nic_access releasing
+nic access - drivers/net/wireless/iwlwifi/iwl-tx.c 396
+[   19.721457] ieee80211 phy0: U __iwl_grab_nic_access grabbing nic
+access - drivers/net/wireless/iwlwifi/iwl-tx.c 381
+[   19.721670] ieee80211 phy0: U __iwl_release_nic_access releasing
+nic access - drivers/net/wireless/iwlwifi/iwl-tx.c 396
+[   19.721971] ieee80211 phy0: U __iwl_write32 write32(0x0000005C,
+0x00000002) - drivers/net/wireless/iwlwifi/iwl-agn.c 2262
+[   19.722218] ieee80211 phy0: U __iwl_write32 write32(0x0000005C,
+0x00000004) - drivers/net/wireless/iwlwifi/iwl-agn.c 2264
+[   19.722471] ieee80211 phy0: U __iwl_write32 write32(0x00000008,
+0xFFFFFFFF) - drivers/net/wireless/iwlwifi/iwl-agn.c 2267
+[   19.722709] ieee80211 phy0: U iwl4965_enable_interrupts Enabling interrupts
+[   19.722952] ieee80211 phy0: U __iwl_write32 write32(0x0000000C,
+0xAA00008B) - drivers/net/wireless/iwlwifi/iwl-agn.c 1495
+[   19.723183] ieee80211 phy0: U __iwl_write32 write32(0x0000005C,
+0x00000002) - drivers/net/wireless/iwlwifi/iwl-agn.c 2271
+[   19.723423] ieee80211 phy0: U __iwl_write32 write32(0x0000005C,
+0x00000002) - drivers/net/wireless/iwlwifi/iwl-agn.c 2272
+[   19.723676] ieee80211 phy0: U iwl5000_load_ucode Init ucode found.
+Loading init ucode...
+[   19.723910] ieee80211 phy0: U __iwl_grab_nic_access grabbing nic
+access - drivers/net/wireless/iwlwifi/iwl-5000.c 564
+[   19.724160] ieee80211 phy0: U __iwl_release_nic_access releasing
+nic access - drivers/net/wireless/iwlwifi/iwl-5000.c 601
+[   19.724411] ieee80211 phy0: U iwl5000_load_given_ucode INST uCode
+section being loaded...
+[   19.723452] ieee80211 phy0: I __iwl_read32
+read_direct32(0x0000000C) - drivers/net/wireless/iwlwifi/iwl-agn.c
+1753
+[   19.723662] ieee80211 phy0: I __iwl_write32 write32(0x0000000C,
+0x00000000) - drivers/net/wireless/iwlwifi/iwl-agn.c 1754
+[   19.723866] ieee80211 phy0: I __iwl_read32
+read_direct32(0x00000008) - drivers/net/wireless/iwlwifi/iwl-agn.c
+1757
+[   19.724073] ieee80211 phy0: I __iwl_read32
+read_direct32(0x00000010) - drivers/net/wireless/iwlwifi/iwl-agn.c
+1758
+[   19.724298] ieee80211 phy0: I iwl4965_isr ISR inta 0x08000000,
+enabled 0xaa00008b, fh 0x00000001
+[   19.724500] ieee80211 phy0: I __iwl_read32
+read_direct32(0x00000008) - drivers/net/wireless/iwlwifi/iwl-agn.c
+1591
+[   19.724706] ieee80211 phy0: I __iwl_write32 write32(0x00000008,
+0x08000000) - drivers/net/wireless/iwlwifi/iwl-agn.c 1592
+[   19.724910] ieee80211 phy0: I __iwl_read32
+read_direct32(0x00000010) - drivers/net/wireless/iwlwifi/iwl-agn.c
+1597
+[   19.725117] ieee80211 phy0: I __iwl_write32 write32(0x00000010,
+0x00000001) - drivers/net/wireless/iwlwifi/iwl-agn.c 1598
+[   19.725320] ieee80211 phy0: I iwl4965_irq_tasklet Tx interrupt
+[   19.725505] ieee80211 phy0: I iwl4965_enable_interrupts Enabling interrupts
+[   19.725696] ieee80211 phy0: I __iwl_write32 write32(0x0000000C,
+0xAA00008B) - drivers/net/wireless/iwlwifi/iwl-agn.c 1495
+[   19.728437] ieee80211 phy0: U __iwl_grab_nic_access grabbing nic
+access - drivers/net/wireless/iwlwifi/iwl-5000.c 564
+[   19.728722] ieee80211 phy0: U __iwl_release_nic_access releasing
+nic access - drivers/net/wireless/iwlwifi/iwl-5000.c 601
+[   19.729005] ieee80211 phy0: U iwl5000_load_given_ucode DATA uCode
+section being loaded...
+[   19.729819] ieee80211 phy0: I __iwl_read32
+read_direct32(0x0000000C) - drivers/net/wireless/iwlwifi/iwl-agn.c
+1753
+[   19.730044] ieee80211 phy0: I __iwl_write32 write32(0x0000000C,
+0x00000000) - drivers/net/wireless/iwlwifi/iwl-agn.c 1754
+[   19.730248] ieee80211 phy0: I __iwl_read32
+read_direct32(0x00000008) - drivers/net/wireless/iwlwifi/iwl-agn.c
+1757
+[   19.730454] ieee80211 phy0: I __iwl_read32
+read_direct32(0x00000010) - drivers/net/wireless/iwlwifi/iwl-agn.c
+1758
+[   19.730663] ieee80211 phy0: I iwl4965_isr ISR inta 0x08000000,
+enabled 0xaa00008b, fh 0x00000001
+[   19.730886] ieee80211 phy0: I __iwl_read32
+read_direct32(0x00000008) - drivers/net/wireless/iwlwifi/iwl-agn.c
+1591
+[   19.731094] ieee80211 phy0: I __iwl_write32 write32(0x00000008,
+0x08000000) - drivers/net/wireless/iwlwifi/iwl-agn.c 1592
+[   19.731297] ieee80211 phy0: I __iwl_read32
+read_direct32(0x00000010) - drivers/net/wireless/iwlwifi/iwl-agn.c
+1597
+[   19.731504] ieee80211 phy0: I __iwl_write32 write32(0x00000010,
+0x00000001) - drivers/net/wireless/iwlwifi/iwl-agn.c 1598
+[   19.731706] ieee80211 phy0: I iwl4965_irq_tasklet Tx interrupt
+[   19.731893] ieee80211 phy0: I iwl4965_enable_interrupts Enabling interrupts
+[   19.732078] ieee80211 phy0: I __iwl_write32 write32(0x0000000C,
+0xAA00008B) - drivers/net/wireless/iwlwifi/iwl-agn.c 1495
+[   19.729832] ieee80211 phy0: U iwl5000_load_ucode Init ucode load complete.
+[   19.730041] ieee80211 phy0: U __iwl_write32 write32(0x00000020,
+0x00000000) - drivers/net/wireless/iwlwifi/iwl-agn.c 1816
+[   19.730274] ieee80211 phy0: U __iwl4965_up iwlagn is coming up
+[   19.730492] ieee80211 phy0: U iwl4965_mac_start Start UP work done.
+[   23.727121] iwlagn: START_ALIVE timeout after 4000ms.
+[   23.727262] iwlagn 0000:03:00.0: PCI INT A disabled
+[   23.727264] ieee80211 phy0: U iwl4965_mac_start leave - failed
 
-On my pentium/celeron III/400 MHz system with kernel 2.6.20 a busy loop
-using the "time stamp counter" of the x86 cpu for delaying, this was
-very accurate. The max. jitter of the delaying was about 5 microseconds.
-
-With the new kernel 2.6.26 the jitter is about 51177 microseconds or in
-other words 51 milliseconds or more the 10000 times greater than kernel
-2.6.20. This huge latency is far away from realtime.
-
-Below are the results of the attached test program. Maybe somebody else
-can confirm this results. All measurements was done with no other
-process running, only the busybox 1.11.1 shell and the init process was
-there.
-
-kernel 2.6.20
--------------
-
-reported cpufreq: 398816000 Hz
-
-time chrt -f 99 /tmp/a.out      time chrt -o 0 /tmp/a.out
- average: 0                      average: 0
- min. jitter: 0 usec             min. jitter: 0 usec
- max. jitter: 5 usec             max. jitter: 113 usec
-real    0m 5.02s                real    0m 5.02s
-user    0m 5.00s                user    0m 5.01s
-sys     0m 0.01s                sys     0m 0.01s
-
-kernel 2.6.26
--------------
-
-reported cpufreq: 400000000 Hz
-
-time chrt -f 99 /tmp/a.out      time chrt -o 0 /tmp/a.out
- average: 189                    average: 1
- min. jitter: 0 use              min. jitter: 0 usec
- max. jitter: 51177 us           max. jitter: 368 usec
-real    0m 5.21s                real    0m 5.03s
-user    0m 4.99s                user    0m 5.00s
-sys     0m 0.01s                sys     0m 0.02s
-
-I tried the test also on a pentium-m 2,267 GHz notebook with the kernel
-2.6.26 and 2.6.27-rc3-git2 and the behavior is the same. The process
-started the SCHED_OTHER has less max. jitter than the process started
-with SCHED_FIFO.
-
-Below the attached test program and an extract of my kernel 2.6.26
-configuration.
-
-<---test program starts here
-
-#include <errno.h>
-#include <limits.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <time.h>
-#include <sys/time.h>
-
-#define	USECS	1000000ULL
-
-typedef unsigned long long	u64;
-
-static u64	cpufreq;
-
-static inline void getCPUfreq(void)
-{
-	FILE *	file;
-	char	buffer[32];
-
-	file=popen("cat /proc/cpuinfo|grep 'cpu MHz'|cut -f2 -d':'","r");
-
-	if (file==NULL) {
-		fprintf(stderr,"get cpuinfo failed\n");
-		abort();
-	}
-	if (fgets(buffer,sizeof(buffer),file)==NULL) {
-		fprintf(stderr,"read cpuinfo data failed\n");
-		abort();
-	}
-	fclose(file);
-
-	cpufreq=atof(buffer)*USECS;
-
-	printf("cpufreq: %llu Hz\n",cpufreq);
-}
-
-static inline u64 readtsc(void)
-{
-	u64 val;
-	
-	__asm__ __volatile__ ("rdtsc" : "=&A" (val));
-	
-	return val;
-}
-
-static inline int usleep(long usec)
-{
-	u64	start;
-	u64	end;
-
-	start=readtsc();
-
-	for(end=(cpufreq*usec)/USECS;(readtsc()-start)<=end;);
-
-	return 0;
-}
-
-static inline struct timeval subtimeval(const struct timeval *t1,const
-struct timeval *t2)
-{
-	struct timeval	t;
-
-	if (t1->tv_usec<t2->tv_usec) {
-		t.tv_sec =t1->tv_sec -t2->tv_sec-1;
-		t.tv_usec=t1->tv_usec-t2->tv_usec+USECS;
-	}
-	else {
-		t.tv_sec =t1->tv_sec -t2->tv_sec;
-		t.tv_usec=t1->tv_usec-t2->tv_usec;
-	}
-	return t;
-}
-
-int main(void)
-{
-	long		elapsed,usec,jitter;
-	long		min_jitter=LONG_MAX,max_jitter=0;
-	struct timeval	overhead,tv1,tv2,delta;
-	unsigned long	cnt=0,sum=0;
-
-	getCPUfreq();
-
-	/* calculate gettimeofday overhead */
-	gettimeofday(&tv1,NULL);
-	for(cnt=0;cnt<9998;cnt++)
-		gettimeofday(&overhead,NULL);
-	gettimeofday(&tv2,NULL);
-
-	overhead=subtimeval(&tv2,&tv1);
-	overhead.tv_usec/=cnt/2+1;
-	overhead.tv_sec=0;
-	printf("gettimeofday() call overhead:%ld\n",overhead.tv_usec);
-
-	/* measure busywait usleep() function */
-	for(cnt=1;cnt<=1000;cnt++) {
-		usec=cnt*10;
-
-		gettimeofday(&tv1,NULL);
-		usleep(usec);
-		gettimeofday(&tv2,NULL);
-
-		delta=subtimeval(&tv2,&tv1);
-		delta=subtimeval(&delta,&overhead);	/* subtract gettimeofday call
-overhead */
-
-		elapsed=delta.tv_sec*USECS+delta.tv_usec;
-
-		if (elapsed<usec) {
-			/* usleep early returned? */
-			if (elapsed+overhead.tv_usec<usec) {
-				fprintf(stderr,"invalid timing - usec: %ld elapsed: %ld
-\n",usec,elapsed);
-				abort();
-			}
-			/* fix if overhead measurement was not accurate enough */ 
-			elapsed=usec;
-		}
-		jitter=elapsed-usec;
-
-		if (jitter>max_jitter)
-			max_jitter=jitter;
-		if (jitter<min_jitter)
-			min_jitter=jitter;
-
-		sum+=jitter;
-	}
-	printf("result:\n average:%lu usec\n min. jitter:%ld usec\n max.
-jitter:%ld usec\n",sum/cnt,min_jitter,max_jitter);
-	return 0;
-}
-
-sample source ends here--->
-
-<---extract of my kernel 2.6.26 config
-#
-# Automatically generated make config: don't edit
-# Linux kernel version: 2.6.26
-# Fri Jul 25 11:22:39 2008
-#
-# CONFIG_64BIT is not set
-CONFIG_X86_32=y
-# CONFIG_X86_64 is not set
-CONFIG_X86=y
-CONFIG_ARCH_DEFCONFIG="arch/x86/configs/i386_defconfig"
-# CONFIG_GENERIC_LOCKBREAK is not set
-CONFIG_GENERIC_TIME=y
-CONFIG_GENERIC_CMOS_UPDATE=y
-CONFIG_CLOCKSOURCE_WATCHDOG=y
-CONFIG_GENERIC_CLOCKEVENTS=y
-CONFIG_LOCKDEP_SUPPORT=y
-CONFIG_STACKTRACE_SUPPORT=y
-CONFIG_HAVE_LATENCYTOP_SUPPORT=y
-CONFIG_FAST_CMPXCHG_LOCAL=y
-CONFIG_MMU=y
-CONFIG_ZONE_DMA=y
-CONFIG_GENERIC_ISA_DMA=y
-CONFIG_GENERIC_IOMAP=y
-CONFIG_GENERIC_HWEIGHT=y
-# CONFIG_GENERIC_GPIO is not set
-CONFIG_ARCH_MAY_HAVE_PC_FDC=y
-# CONFIG_RWSEM_GENERIC_SPINLOCK is not set
-CONFIG_RWSEM_XCHGADD_ALGORITHM=y
-# CONFIG_ARCH_HAS_ILOG2_U32 is not set
-# CONFIG_ARCH_HAS_ILOG2_U64 is not set
-CONFIG_ARCH_HAS_CPU_IDLE_WAIT=y
-CONFIG_GENERIC_CALIBRATE_DELAY=y
-# CONFIG_GENERIC_TIME_VSYSCALL is not set
-CONFIG_ARCH_HAS_CPU_RELAX=y
-CONFIG_ARCH_HAS_CACHE_LINE_SIZE=y
-# CONFIG_HAVE_SETUP_PER_CPU_AREA is not set
-# CONFIG_HAVE_CPUMASK_OF_CPU_MAP is not set
-CONFIG_ARCH_HIBERNATION_POSSIBLE=y
-CONFIG_ARCH_SUSPEND_POSSIBLE=y
-# CONFIG_ZONE_DMA32 is not set
-CONFIG_ARCH_POPULATES_NODE_MAP=y
-# CONFIG_AUDIT_ARCH is not set
-CONFIG_ARCH_SUPPORTS_AOUT=y
-CONFIG_ARCH_SUPPORTS_OPTIMIZED_INLINING=y
-CONFIG_GENERIC_HARDIRQS=y
-CONFIG_GENERIC_IRQ_PROBE=y
-CONFIG_X86_BIOS_REBOOT=y
-CONFIG_KTIME_SCALAR=y
-CONFIG_DEFCONFIG_LIST="/lib/modules/$UNAME_RELEASE/.config"
-
-#
-# General setup
-#
-CONFIG_EXPERIMENTAL=y
-CONFIG_BROKEN_ON_SMP=y
-CONFIG_LOCK_KERNEL=y
-CONFIG_INIT_ENV_ARG_LIMIT=32
-CONFIG_LOCALVERSION=""
-# CONFIG_LOCALVERSION_AUTO is not set
-# CONFIG_SWAP is not set
-CONFIG_SYSVIPC=y
-CONFIG_SYSVIPC_SYSCTL=y
-CONFIG_POSIX_MQUEUE=y
-# CONFIG_BSD_PROCESS_ACCT is not set
-# CONFIG_TASKSTATS is not set
-# CONFIG_AUDIT is not set
-# CONFIG_IKCONFIG is not set
-CONFIG_LOG_BUF_SHIFT=16
-# CONFIG_CGROUPS is not set
-CONFIG_HAVE_UNSTABLE_SCHED_CLOCK=y
-# CONFIG_GROUP_SCHED is not set
-CONFIG_SYSFS_DEPRECATED=y
-CONFIG_SYSFS_DEPRECATED_V2=y
-# CONFIG_RELAY is not set
-# CONFIG_NAMESPACES is not set
-CONFIG_BLK_DEV_INITRD=y
-CONFIG_INITRAMFS_SOURCE=""
-CONFIG_CC_OPTIMIZE_FOR_SIZE=y
-CONFIG_SYSCTL=y
-CONFIG_EMBEDDED=y
-CONFIG_UID16=y
-CONFIG_SYSCTL_SYSCALL=y
-CONFIG_SYSCTL_SYSCALL_CHECK=y
-# CONFIG_KALLSYMS is not set
-CONFIG_HOTPLUG=y
-CONFIG_PRINTK=y
-# CONFIG_BUG is not set
-CONFIG_ELF_CORE=y
-# CONFIG_PCSPKR_PLATFORM is not set
-CONFIG_COMPAT_BRK=y
-CONFIG_BASE_FULL=y
-CONFIG_FUTEX=y
-CONFIG_ANON_INODES=y
-# CONFIG_EPOLL is not set
-CONFIG_SIGNALFD=y
-CONFIG_TIMERFD=y
-CONFIG_EVENTFD=y
-# CONFIG_SHMEM is not set
-# CONFIG_VM_EVENT_COUNTERS is not set
-# CONFIG_SLAB is not set
-# CONFIG_SLUB is not set
-CONFIG_SLOB=y
-# CONFIG_PROFILING is not set
-# CONFIG_MARKERS is not set
-CONFIG_HAVE_OPROFILE=y
-CONFIG_HAVE_KPROBES=y
-CONFIG_HAVE_KRETPROBES=y
-# CONFIG_HAVE_DMA_ATTRS is not set
-# CONFIG_PROC_PAGE_MONITOR is not set
-CONFIG_RT_MUTEXES=y
-CONFIG_TINY_SHMEM=y
-CONFIG_BASE_SMALL=0
-CONFIG_MODULES=y
-# CONFIG_MODULE_FORCE_LOAD is not set
-CONFIG_MODULE_UNLOAD=y
-CONFIG_MODULE_FORCE_UNLOAD=y
-# CONFIG_MODVERSIONS is not set
-# CONFIG_MODULE_SRCVERSION_ALL is not set
-# CONFIG_KMOD is not set
-CONFIG_BLOCK=y
-# CONFIG_LBD is not set
-# CONFIG_BLK_DEV_IO_TRACE is not set
-# CONFIG_LSF is not set
-# CONFIG_BLK_DEV_BSG is not set
-
-#
-# IO Schedulers
-#
-CONFIG_IOSCHED_NOOP=y
-# CONFIG_IOSCHED_AS is not set
-# CONFIG_IOSCHED_DEADLINE is not set
-# CONFIG_IOSCHED_CFQ is not set
-# CONFIG_DEFAULT_AS is not set
-# CONFIG_DEFAULT_DEADLINE is not set
-# CONFIG_DEFAULT_CFQ is not set
-CONFIG_DEFAULT_NOOP=y
-CONFIG_DEFAULT_IOSCHED="noop"
-CONFIG_CLASSIC_RCU=y
-
-#
-# Processor type and features
-#
-CONFIG_TICK_ONESHOT=y
-# CONFIG_NO_HZ is not set
-CONFIG_HIGH_RES_TIMERS=y
-CONFIG_GENERIC_CLOCKEVENTS_BUILD=y
-# CONFIG_SMP is not set
-CONFIG_X86_PC=y
-# CONFIG_X86_ELAN is not set
-# CONFIG_X86_VOYAGER is not set
-# CONFIG_X86_NUMAQ is not set
-# CONFIG_X86_SUMMIT is not set
-# CONFIG_X86_BIGSMP is not set
-# CONFIG_X86_VISWS is not set
-# CONFIG_X86_GENERICARCH is not set
-# CONFIG_X86_ES7000 is not set
-# CONFIG_X86_RDC321X is not set
-# CONFIG_X86_VSMP is not set
-CONFIG_SCHED_NO_NO_OMIT_FRAME_POINTER=y
-# CONFIG_PARAVIRT_GUEST is not set
-# CONFIG_M386 is not set
-# CONFIG_M486 is not set
-# CONFIG_M586 is not set
-# CONFIG_M586TSC is not set
-# CONFIG_M586MMX is not set
-# CONFIG_M686 is not set
-# CONFIG_MPENTIUMII is not set
-CONFIG_MPENTIUMIII=y
-# CONFIG_MPENTIUMM is not set
-# CONFIG_MPENTIUM4 is not set
-# CONFIG_MK6 is not set
-# CONFIG_MK7 is not set
-# CONFIG_MK8 is not set
-# CONFIG_MCRUSOE is not set
-# CONFIG_MEFFICEON is not set
-# CONFIG_MWINCHIPC6 is not set
-# CONFIG_MWINCHIP2 is not set
-# CONFIG_MWINCHIP3D is not set
-# CONFIG_MGEODEGX1 is not set
-# CONFIG_MGEODE_LX is not set
-# CONFIG_MCYRIXIII is not set
-# CONFIG_MVIAC3_2 is not set
-# CONFIG_MVIAC7 is not set
-# CONFIG_MPSC is not set
-# CONFIG_MCORE2 is not set
-# CONFIG_GENERIC_CPU is not set
-# CONFIG_X86_GENERIC is not set
-CONFIG_X86_CPU=y
-CONFIG_X86_CMPXCHG=y
-CONFIG_X86_L1_CACHE_SHIFT=5
-CONFIG_X86_XADD=y
-CONFIG_X86_WP_WORKS_OK=y
-CONFIG_X86_INVLPG=y
-CONFIG_X86_BSWAP=y
-CONFIG_X86_POPAD_OK=y
-CONFIG_X86_GOOD_APIC=y
-CONFIG_X86_INTEL_USERCOPY=y
-CONFIG_X86_USE_PPRO_CHECKSUM=y
-CONFIG_X86_P6_NOP=y
-CONFIG_X86_TSC=y
-CONFIG_X86_CMOV=y
-CONFIG_X86_MINIMUM_CPU_FAMILY=6
-CONFIG_X86_DEBUGCTLMSR=y
-CONFIG_HPET_TIMER=y
-CONFIG_HPET_EMULATE_RTC=y
-CONFIG_DMI=y
-# CONFIG_IOMMU_HELPER is not set
-# CONFIG_PREEMPT_NONE is not set
-# CONFIG_PREEMPT_VOLUNTARY is not set
-CONFIG_PREEMPT=y
-# CONFIG_PREEMPT_RCU is not set
-# CONFIG_X86_UP_APIC is not set
-# CONFIG_X86_MCE is not set
-# CONFIG_VM86 is not set
-# CONFIG_TOSHIBA is not set
-# CONFIG_I8K is not set
-# CONFIG_X86_REBOOTFIXUPS is not set
-# CONFIG_MICROCODE is not set
-# CONFIG_X86_MSR is not set
-# CONFIG_X86_CPUID is not set
-CONFIG_NOHIGHMEM=y
-# CONFIG_HIGHMEM4G is not set
-# CONFIG_HIGHMEM64G is not set
-CONFIG_VMSPLIT_3G=y
-# CONFIG_VMSPLIT_3G_OPT is not set
-# CONFIG_VMSPLIT_2G is not set
-# CONFIG_VMSPLIT_2G_OPT is not set
-# CONFIG_VMSPLIT_1G is not set
-CONFIG_PAGE_OFFSET=0xC0000000
-# CONFIG_X86_PAE is not set
-CONFIG_ARCH_FLATMEM_ENABLE=y
-CONFIG_ARCH_SPARSEMEM_ENABLE=y
-CONFIG_ARCH_SELECT_MEMORY_MODEL=y
-CONFIG_SELECT_MEMORY_MODEL=y
-CONFIG_FLATMEM_MANUAL=y
-# CONFIG_DISCONTIGMEM_MANUAL is not set
-# CONFIG_SPARSEMEM_MANUAL is not set
-CONFIG_FLATMEM=y
-CONFIG_FLAT_NODE_MEM_MAP=y
-CONFIG_SPARSEMEM_STATIC=y
-# CONFIG_SPARSEMEM_VMEMMAP_ENABLE is not set
-CONFIG_PAGEFLAGS_EXTENDED=y
-CONFIG_SPLIT_PTLOCK_CPUS=4
-# CONFIG_RESOURCES_64BIT is not set
-CONFIG_ZONE_DMA_FLAG=1
-CONFIG_BOUNCE=y
-CONFIG_VIRT_TO_BUS=y
-# CONFIG_MATH_EMULATION is not set
-CONFIG_MTRR=y
-# CONFIG_X86_PAT is not set
-# CONFIG_EFI is not set
-# CONFIG_SECCOMP is not set
-# CONFIG_HZ_100 is not set
-CONFIG_HZ_250=y
-# CONFIG_HZ_300 is not set
-# CONFIG_HZ_1000 is not set
-CONFIG_HZ=250
-CONFIG_SCHED_HRTICK=y
-CONFIG_KEXEC=y
-CONFIG_PHYSICAL_START=0x100000
-# CONFIG_RELOCATABLE is not set
-CONFIG_PHYSICAL_ALIGN=0x100000
-CONFIG_COMPAT_VDSO=y
-
-#
-# Power management options
-#
-CONFIG_PM=y
-# CONFIG_PM_DEBUG is not set
-# CONFIG_SUSPEND is not set
-CONFIG_ACPI=y
-CONFIG_ACPI_PROCFS=y
-CONFIG_ACPI_PROCFS_POWER=y
-CONFIG_ACPI_SYSFS_POWER=y
-CONFIG_ACPI_PROC_EVENT=y
-# CONFIG_ACPI_AC is not set
-# CONFIG_ACPI_BATTERY is not set
-CONFIG_ACPI_BUTTON=y
-# CONFIG_ACPI_FAN is not set
-# CONFIG_ACPI_DOCK is not set
-CONFIG_ACPI_PROCESSOR=y
-CONFIG_ACPI_THERMAL=y
-# CONFIG_ACPI_WMI is not set
-# CONFIG_ACPI_ASUS is not set
-# CONFIG_ACPI_TOSHIBA is not set
-# CONFIG_ACPI_CUSTOM_DSDT is not set
-CONFIG_ACPI_BLACKLIST_YEAR=0
-# CONFIG_ACPI_DEBUG is not set
-CONFIG_ACPI_EC=y
-CONFIG_ACPI_POWER=y
-CONFIG_ACPI_SYSTEM=y
-# CONFIG_X86_PM_TIMER is not set
-# CONFIG_ACPI_CONTAINER is not set
-# CONFIG_ACPI_SBS is not set
-
-#
-# CPU Frequency scaling
-#
-# CONFIG_CPU_FREQ is not set
-# CONFIG_CPU_IDLE is not set
-
-#
-# Bus options (PCI etc.)
-#
-CONFIG_PCI=y
-# CONFIG_PCI_GOBIOS is not set
-# CONFIG_PCI_GOMMCONFIG is not set
-CONFIG_PCI_GODIRECT=y
-# CONFIG_PCI_GOOLPC is not set
-# CONFIG_PCI_GOANY is not set
-CONFIG_PCI_DIRECT=y
-CONFIG_PCI_DOMAINS=y
-# CONFIG_PCIEPORTBUS is not set
-# CONFIG_ARCH_SUPPORTS_MSI is not set
-CONFIG_PCI_LEGACY=y
-CONFIG_ISA_DMA_API=y
-# CONFIG_ISA is not set
-# CONFIG_MCA is not set
-# CONFIG_SCx200 is not set
-# CONFIG_OLPC is not set
-# CONFIG_PCCARD is not set
-# CONFIG_HOTPLUG_PCI is not set
-end of extract of my kernel config--->
-
-
+-- 
+Yousaf Jindal
+Director of Technology
+Pakistani Institute
