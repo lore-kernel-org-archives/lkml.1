@@ -1,138 +1,169 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754086AbYHPXLG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753850AbYHPXRS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754086AbYHPXLG (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Aug 2008 19:11:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751952AbYHPXKy
+	id S1753850AbYHPXRS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Aug 2008 19:17:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751766AbYHPXRH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Aug 2008 19:10:54 -0400
-Received: from E23SMTP01.au.ibm.com ([202.81.18.162]:36838 "EHLO
-	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751190AbYHPXKx (ORCPT
+	Sat, 16 Aug 2008 19:17:07 -0400
+Received: from wf-out-1314.google.com ([209.85.200.171]:28438 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751190AbYHPXRG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Aug 2008 19:10:53 -0400
-Message-ID: <48A75E72.7050508@linux.vnet.ibm.com>
-Date: Sun, 17 Aug 2008 04:40:42 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-User-Agent: Thunderbird 1.5.0.14ubu (X11/20080724)
+	Sat, 16 Aug 2008 19:17:06 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=YBndg+qNl+X1/m04v77sF7zcwI3ojcQ+CobkBCJzh3BwT/Mi8K5hHCrasjKAnTJcdw
+         Nir/rK6xwrgBBq4ZDMfdxxR03QEdUGWOVR/EsI0I8eitETusaBs0w8wUKJNiLY/OcuJb
+         t+VJo6JrUBb+J0F0zXJwC+Dp2YTmiPXSsOUWE=
+Message-ID: <82e4877d0808161617k5404f4ectf6d502de5b7fea4c@mail.gmail.com>
+Date: Sat, 16 Aug 2008 19:17:05 -0400
+From: "Parag Warudkar" <parag.warudkar@gmail.com>
+To: mjg59@srcf.ucam.org
+Subject: Re: [PATCH 2/2] Add Dell laptop driver
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
 MIME-Version: 1.0
-To: Christoph Lameter <cl@linux-foundation.org>
-CC: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       linux-mm@kvack.org, Andy Whitcroft <apw@shadowen.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>
-Subject: Re: [BUG] linux-next: Tree for August 11/12 - powerpc - oops at __kmalloc_node_track_caller
- ()
-References: <20080812185345.d7496513.sfr@canb.auug.org.au> <48A1C924.6020000@linux.vnet.ibm.com> <48A1D65A.8000600@linux-foundation.org>
-In-Reply-To: <48A1D65A.8000600@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Lameter wrote:
-> Reboot and switch on debugging by either specifying slub_debug as a kernel
-> command line parameter or setting CONFIG_SLUB_DEBUG_ON. This looks like the
-> freelists are corrupted. Could be a use after free or something.
-> 
-> 
-Sorry for the delayed response, after passing the slub_debug as the command
-line parameter while booting the kernel oops, the kernel faults with message
+Matthew Garrett <mjg59 <at> srcf.ucam.org> writes:
 
-Kernel command line: root=/dev/sdb1 selinux=0 elevator=cfq slub_debug IDENT=1218735938 
-.
-.
-<snip>
-.
-.
-Unable to handle kernel paging request for data at address 0x6b6b6b6b6b6b6be3
-Faulting instruction address: 0xc0000000002afb98
-Oops: Kernel access of bad area, sig: 11 [#1]
-SMP NR_CPUS=128 NUMA pSeries
-Modules linked in:
-NIP: c0000000002afb98 LR: c0000000002afb84 CTR: 0000000000000000
-REGS: c00000077ccc7a80 TRAP: 0300   Not tainted  (2.6.27-rc2-next-20080812-autotest)
-MSR: 8000000000009032 <EE,ME,IR,DR>  CR: 84004044  XER: 00000000
-DAR: 6b6b6b6b6b6b6be3, DSISR: 0000000040000000
-TASK = c00000077cb9daa0[881] 'khvcd' THREAD: c00000077ccc4000 CPU: 2
-GPR00: c0000000002afb84 c00000077ccc7d00 c000000000871068 c00000077cfd18d8 
-GPR04: 0000000000000000 00000000000000f7 c0000000008bc448 0000000000000002 
-GPR08: 0000000000000010 6b6b6b6b6b6b6b6b 0000000000000002 0000000000000000 
-GPR12: 000000000000d032 c0000000008a4700 0000000000000000 c00000000063ad18 
-GPR16: 4000000003a00000 c0000000006395b0 0000000000000000 00000000002b1000 
-GPR20: 000000000411ff10 c00000000071ff10 0000000000000000 0000000000000001 
-GPR24: 0000000000000000 0000000004500000 c0000000008b5920 c00000077ce78898 
-GPR28: c00000077e0bf6d8 c00000077cfd18d8 c0000000007f7b00 c00000077cfd18f8 
-NIP [c0000000002afb98] .tty_wakeup+0x40/0xa4
-LR [c0000000002afb84] .tty_wakeup+0x2c/0xa4
-Call Trace:
-[c00000077ccc7d00] [c0000000002afb84] .tty_wakeup+0x2c/0xa4 (unreliable)
-[c00000077ccc7d90] [c0000000002cd3a0] .hvc_poll+0x240/0x2d4
-[c00000077ccc7e70] [c0000000002cd570] .khvcd+0x6c/0x184
-[c00000077ccc7f00] [c000000000070450] .kthread+0x78/0xc4
-[c00000077ccc7f90] [c000000000025854] .kernel_thread+0x4c/0x68
-Instruction dump:
-f8010010 f821ff71 60000000 e80300b0 7809dfe3 41820050 48008c81 60000000 
-7c7f1b79 41820040 e93f0000 7fa3eb78 <e9290078> 2fa90000 419e0020 e8090000 
----[ end trace 839b2deb5e384ce9 ]---
-BUG: soft lockup - CPU#0 stuck for 61s! [touch:3162]
-Modules linked in:
-NIP: c0000000004d86c4 LR: c000000000013dbc CTR: 0000000000000000
-REGS: c00000077ca5fa70 TRAP: 0901   Tainted: G      D    (2.6.27-rc2-next-20080812-autotest)
-MSR: 8000000000009032 <EE,ME,IR,DR>  CR: 24000484  XER: 20000000
-TASK = c00000077e3e5aa0[3162] 'touch' THREAD: c00000077ca5c000 CPU: 0
-GPR00: 0000020000000000 c00000077ca5fcf0 c000000000871068 0000000000000000 
-GPR04: 00000000ff86e868 0000000000000000 0000000000000000 0000000000000002 
-GPR08: 0000000000000000 0000000000000000 0000000000000200 0000000080000001 
-GPR12: 000000000000f032 c0000000008a4300 
-NIP [c0000000004d86c4] .lock_kernel+0x7c/0xb8
-LR [c000000000013dbc] .compat_sys_sysctl+0xc4/0x1a8
-Call Trace:
-[c00000077ca5fcf0] [c00000077ca5fe30] 0xc00000077ca5fe30 (unreliable)
-[c00000077ca5fd70] [c000000000013dbc] .compat_sys_sysctl+0xc4/0x1a8
-[c00000077ca5fe30] [c0000000000086ac] syscall_exit+0x0/0x40
-Instruction dump:
-40a2fff0 4c00012c 2fab0000 41be003c 7c210b78 e92d0000 e8090008 78097fe1 
-41820010 e87e8000 4bb5a70d 60000000 <e93e8000> 80090000 2fa00000 40beffd4 
 
-The git-bisect points to 
-git-bisect start
-# good: [0967d61ea0d8e8a7826bd8949cd93dd1e829ac55] Linux 2.6.27-rc2
-git-bisect good 0967d61ea0d8e8a7826bd8949cd93dd1e829ac55
-# bad: [8a7363ad1b105ba8e979a1b00fada5cb6dbfc84e] Add linux-next specific files for 20080812
-git-bisect bad 8a7363ad1b105ba8e979a1b00fada5cb6dbfc84e
-# good: [771310c770214cd879d30d0825fb5e140cd74866] KVM: s390: Fix kvm on IBM System z10
-git-bisect good 771310c770214cd879d30d0825fb5e140cd74866
-# good: [4802ad47115e469f1dfe7a19086d9b14c059f5bc] Merge commit 'sh/master'
-git-bisect good 4802ad47115e469f1dfe7a19086d9b14c059f5bc
-# good: [cde62a78e433323f5b3bf0fbb42073209102edb4] Merge commit 'mtd/master'
-git-bisect good cde62a78e433323f5b3bf0fbb42073209102edb4
-# good: [c4e1eb40bc64f1127ae3d631702fa4f38aa6100c] Revert "UBIFS: add NFS support"
-git-bisect good c4e1eb40bc64f1127ae3d631702fa4f38aa6100c
-# good: [a59766bbf8b44caafc1c16539b90f77aed757765] Merge commit 'kmemcheck/auto-kmemcheck-next'
-git-bisect good a59766bbf8b44caafc1c16539b90f77aed757765
-# bad: [0806d59f07a0fb258ec92fcf236364a9424dc4bb] Merge branch 'quilt/ttydev'
-git-bisect bad 0806d59f07a0fb258ec92fcf236364a9424dc4bb
-# good: [da250c4bb64a4b3cec3b723ead8e9ebc3f9462af] Merge commit 'drm/drm-next'
-git-bisect good da250c4bb64a4b3cec3b723ead8e9ebc3f9462af
-# good: [3e0301ea47644782e0c0432b66fffd9da86323cc] tty-fix-pty-termios-race
-git-bisect good 3e0301ea47644782e0c0432b66fffd9da86323cc
-# bad: [618f77c709473bf8c57b2be76f2c728349da1749] tty-kref-stallion
-git-bisect bad 618f77c709473bf8c57b2be76f2c728349da1749
-# bad: [a2148160bbc82db03e874cca505a74de134df8ba] tty-move-write
-git-bisect bad a2148160bbc82db03e874cca505a74de134df8ba
-# bad: [b18540aa6f5cf3c12b14c3ab9a6cc4492a6eb930] tty-kref-modcount
-git-bisect bad b18540aa6f5cf3c12b14c3ab9a6cc4492a6eb930
-# bad: [d43a0b46168489882b40798bd1b2bb69ccdf5d99] tty-kref
-git-bisect bad d43a0b46168489882b40798bd1b2bb69ccdf5d99
 
-I was not able to reproduce this oops with next-20080813/14/15, hope some fixes have
-gone into the next releases.
+> diff --git a/drivers/misc/dell-laptop.c b/drivers/misc/dell-laptop.c
+> new file mode 100644
+> index 0000000..ab09a69
+> --- /dev/null
+> +++ b/drivers/misc/dell-laptop.c
 
--- 
-Thanks & Regards,
-Kamalesh Babulal,
-Linux Technology Center,
-IBM, ISTL.
+[Snip]
 
+> +	da_command_address = table->cmdIOAddress;
+> +	da_command_code = table->cmdIOCode;
+> +
+> +	da_tokens = krealloc(da_tokens, (da_num_tokens + tokens) *
+> +			     sizeof(struct calling_interface_token),
+> +			     GFP_KERNEL);
+
+Isn't a NULL check required here?
+
+> +
+> +	memcpy(da_tokens+da_num_tokens, table->tokens,
+> +	       sizeof(struct calling_interface_token) * tokens);
+> +
+
+> +static struct calling_interface_buffer *dell_send_request(
+> +	struct calling_interface_buffer *buffer, int class, int select)
+> +{
+> +	struct smi_cmd *command = kzalloc(sizeof(struct smi_cmd), GFP_KERNEL);
+
+NULL check - Here too.
+
+> +	command->magic = SMI_CMD_MAGIC;
+> +	command->command_address = da_command_address;
+> +	command->command_code = da_command_code;
+> +	command->ebx = virt_to_phys(buffer);
+> +	command->ecx = 0x42534931;
+> +
+
+> +
+> +static int dell_rfkill_set(int radio, enum rfkill_state state)
+> +{
+> +	struct calling_interface_buffer *buffer =
+> +		kzalloc(sizeof(struct calling_interface_buffer), GFP_KERNEL);
+
+Ditto.
+
+> +	int disable = (state == RFKILL_STATE_UNBLOCKED) ? 0 : 1;
+> +	buffer->input[0] = (1 | (radio<<8) | (disable << 16));
+> +	dell_send_request(buffer, 17, 11);
+> +	kfree(buffer);
+> +	return 0;
+> +}
+
+> +static int dell_rfkill_get(int bit, enum rfkill_state *state)
+> +{
+> +	struct calling_interface_buffer *buffer =
+> +		kzalloc(sizeof(struct calling_interface_buffer), GFP_KERNEL);
+
+This makes me confident there is code in the kernel that always
+succeeds allocations by mjg59.
+Just got to find where it's hidden :)
+
+
+> +static int dell_wifi_get(void *data, enum rfkill_state *state)
+> +{
+> +	return dell_rfkill_get(17, state);
+> +}
+> +
+> +static int dell_bluetooth_get(void *data, enum rfkill_state *state)
+> +{
+> +	return dell_rfkill_get(18, state);
+> +}
+> +
+> +static int dell_wwan_get(void *data, enum rfkill_state *state)
+> +{
+> +	return dell_rfkill_get(19, state);
+> +}
+> +
+> +static void dell_setup_rfkill(void)
+> +{
+> +	struct calling_interface_buffer *buffer =
+> +		kzalloc(sizeof(struct calling_interface_buffer), GFP_KERNEL);
+
+Once more.
+
+> +
+> +static int dell_send_intensity(struct backlight_device *bd)
+> +{
+> +	int intensity = bd->props.brightness;
+> +	struct calling_interface_buffer *buffer =
+> +		kzalloc(sizeof(struct calling_interface_buffer), GFP_KERNEL);
+
+Stopped counting!
+
+> +
+> +	buffer->input[0] = find_token_location(0x7d);
+> +	buffer->input[1] = intensity;
+> +
+> +	if (buffer->input[0] == -1) {
+> +		kfree(buffer);
+> +		return -ENODEV;
+> +	}
+
+
+> +
+> +static int dell_get_intensity(struct backlight_device *bd)
+> +{
+> +	struct calling_interface_buffer *buffer =
+> +		kzalloc(sizeof(struct calling_interface_buffer), GFP_KERNEL);
+
+count_prev++;
+
+> +	if (!dmi_check_system(dell_device_table))
+> +		return -ENODEV;
+> +
+> +	dmi_walk(find_tokens);
+> +
+> +	if (!da_tokens)
+> +		return -ENODEV;
+> +
+> +	buffer = kzalloc(sizeof(struct calling_interface_buffer), GFP_KERNEL);
+
+One last.
+
+> +	buffer->input[0] = find_token_location(0x7d);
+> +
+> +	if (buffer->input[0] != -1) {
+> +		dell_send_request(buffer, 2, 1);
+> +		max_intensity = buffer->output[3];
+> +	}
+> +
+
+
+Parag
