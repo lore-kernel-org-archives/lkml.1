@@ -1,53 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754221AbYHPRrx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753938AbYHPRuI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754221AbYHPRrx (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Aug 2008 13:47:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752351AbYHPRro
+	id S1753938AbYHPRuI (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Aug 2008 13:50:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751500AbYHPRt4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Aug 2008 13:47:44 -0400
-Received: from casper.infradead.org ([85.118.1.10]:35787 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752323AbYHPRrn (ORCPT
+	Sat, 16 Aug 2008 13:49:56 -0400
+Received: from mtagate1.de.ibm.com ([195.212.29.150]:32840 "EHLO
+	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751447AbYHPRtz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Aug 2008 13:47:43 -0400
-Date: Sat, 16 Aug 2008 10:47:29 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Jens Axboe <jens.axboe@oracle.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Christian Borntraeger <cborntra@de.ibm.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH RFC 1/3] Add a trigger API for efficient non-blocking
- waiting
-Message-ID: <20080816104729.036fa748@infradead.org>
-In-Reply-To: <48A70185.2020600@goop.org>
-References: <48A70185.2020600@goop.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
+	Sat, 16 Aug 2008 13:49:55 -0400
+Subject: Re: [patch 1/3] kmsg: Kernel message catalog macros.
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Reply-To: schwidefsky@de.ibm.com
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
+       lf_kernel_messages@lists.linux-foundation.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Michael Holzheu <holzheu@de.ibm.com>, Gerrit Huizenga <gh@us.ibm.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Randy Dunlap <randy.dunlap@oracle.com>, Jan Kara <jack@suse.cz>,
+       Pavel Machek <pavel@ucw.cz>, Sam Ravnborg <sam@ravnborg.org>,
+       Joe Perches <joe@perches.com>,
+       Jochen =?ISO-8859-1?Q?Vo=DF?= <jochen.voss@googlemail.com>,
+       Kunai Takashi <kunai@linux-foundation.jp>,
+       Tim Bird <tim.bird@am.sony.com>
+In-Reply-To: <200808150922.23277.rusty@rustcorp.com.au>
+References: <20080730165656.118280544@de.ibm.com>
+	 <200808131433.02966.rusty@rustcorp.com.au>
+	 <1218733623.2651.14.camel@localhost>
+	 <200808150922.23277.rusty@rustcorp.com.au>
+Content-Type: text/plain
+Organization: IBM Corporation
+Date: Sat, 16 Aug 2008 19:49:45 +0200
+Message-Id: <1218908985.6037.12.camel@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 16 Aug 2008 09:34:13 -0700
-Jeremy Fitzhardinge <jeremy@goop.org> wrote:
-
+On Fri, 2008-08-15 at 09:22 +1000, Rusty Russell wrote:
+> On Friday 15 August 2008 03:07:03 Martin Schwidefsky wrote:
+> > On Wed, 2008-08-13 at 14:33 +1000, Rusty Russell wrote:
+> > > On Thursday 31 July 2008 02:56:57 Martin Schwidefsky wrote:
+> > > > From: Michael Holzheu <holzheu@de.ibm.com>
+> > > > From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+> > > >
+> > > > Introduce a new family of printk macros which prefixes each kmsg
+> > > > message with a component name and allows to tag the printk with a
+> > > > message id.
+> > >
+> > > Can you hash the format string to generate the id?  6 hex digits should
+> > > be enough, and your tool can check for clashes.  As it's bad form to have
+> > > identical strings for different semantics anyway, this seems to make
+> > > sense.
+> >
+> > First, how do you do that with the C preprocessor? Second the kmsg-doc
+> > script will check that the message format strings match if a kmsg with a
+> > specific id is used in multiple locations.
 > 
-> The trigger API is simple:
-> 
-> To initialize a trigger, you can either do it statically with:
+> Well, why would you do it with the preprocessor?  It's simplest to spit it out 
+> at runtime.
 
-it looks a lot like a spinning completion ;-)
+Ok, so  a specialized version of printk will do the work to calculate
+the hash. Only, what will we do if there ever is a conflict? The message
+tag has to be unique. The shorter the hash is, the more likely a
+collision gets. Don't know if 6 hash digits is enough to just ignore the
+problem. 
 
-can we make it more simple by just having spinning versions of the wait
-for completion functions?
+> The (offline) catalogger will need to generate them, of course.
+> Rusty.
+
+Sounds doable to me.
 
 -- 
-If you want to reach me at my work email, use arjan@linux.intel.com
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+blue skies,
+  Martin.
+
+"Reality continues to ruin my life." - Calvin.
+
+
