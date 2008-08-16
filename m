@@ -1,80 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753944AbYHPQAy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753391AbYHPQNq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753944AbYHPQAy (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Aug 2008 12:00:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752324AbYHPQAp
+	id S1753391AbYHPQNq (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Aug 2008 12:13:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752243AbYHPQNh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Aug 2008 12:00:45 -0400
-Received: from mcbehr.de ([81.169.141.90]:44998 "EHLO
-	h1328092.stratoserver.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752307AbYHPQAp convert rfc822-to-8bit (ORCPT
+	Sat, 16 Aug 2008 12:13:37 -0400
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:41109 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752193AbYHPQNh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Aug 2008 12:00:45 -0400
-X-Greylist: delayed 1659 seconds by postgrey-1.27 at vger.kernel.org; Sat, 16 Aug 2008 12:00:44 EDT
-From: "Matthias Behr" <linux@mcbehr.de>
-To: "'Gregory Haskins'" <ghaskins@novell.com>
-Cc: <linux-kernel@vger.kernel.org>, <linux-rt-users@vger.kernel.org>,
-       <gregory.haskins@gmail.com>, <mingo@elte.hu>, <David.Holmes@sun.com>,
-       <jkacur@gmail.com>, <paulmck@linux.vnet.ibm.com>,
-       <peterz@infradead.org>, <tglx@linutronix.de>, <rostedt@goodmis.org>
-References: <20080815202408.668.23736.stgit@dev.haskins.net> <20080815202823.668.26199.stgit@dev.haskins.net>
-In-Reply-To: <20080815202823.668.26199.stgit@dev.haskins.net>
-Subject: AW: [PATCH RT RFC v4 1/8] add generalized priority-inheritance interface
-Date: Sat, 16 Aug 2008 17:32:55 +0200
-Message-ID: <073b01c8ffb5$5c597870$150c6950$@de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-X-Mailer: Microsoft Office Outlook 12.0
-Thread-Index: Acj/FeazwmQMzANPS3iMNyqhaQyC6gAiwiSA
-Content-Language: de
-X-Spam_score: 0.1
-X-Spam_score_int: 1
+	Sat, 16 Aug 2008 12:13:37 -0400
+Subject: Re: [PATCH] pci: change msi-x vector to 32bit
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Yinghai Lu <yhlu.kernel@gmail.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Andrew Vasquez <andrew.vasquez@qlogic.com>
+In-Reply-To: <20080816163945.74d487e9@lxorguk.ukuu.org.uk>
+References: <200808160326.m7G3QR1G012726@terminus.zytor.com>
+	 <86802c440808152342m772d5eabs59a9c93ffe4cf557@mail.gmail.com>
+	 <1218898238.3940.6.camel@localhost.localdomain>
+	 <20080816163945.74d487e9@lxorguk.ukuu.org.uk>
+Content-Type: text/plain
+Date: Sat, 16 Aug 2008 11:13:29 -0500
+Message-Id: <1218903209.3940.14.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Greg,
+On Sat, 2008-08-16 at 16:39 +0100, Alan Cox wrote:
+> > Where exactly is this code in the kernel?  Most arches assume the irq is
+> > an index to a compact table bounded by NR_IRQS, so something like this
+> > would violate that assumption.
+> 
+> Yes, which is no bad thing for some platforms. There are some driver
+> assumptions like that but those have also been stomped.
 
-I got a few review comments/questions. Pls see below.
+I'm not saying we couldn't do this, or even that we shouldn't; I'm just
+asking why would we want to?
 
-Best Regards,
-Matthias
+All arches currently seem to have show_interrupts() which loop over
+0..NR_IRQS where the interrupt is printed as %d.  In this encoded scheme
+they would show up with rather nastily large numbers that have no
+visible meaning unless we switch to hex for displaying them.
 
-P.S. I'm a kernel newbie so don't hesitate to tell me if I'm wrong ;-)
+What I'm really saying is that irq as the interrupt number is really the
+*user's* handle for the interrupt not the machine's, so it needs to be
+something the user is comfortable with.  We could overcome this
+objection by encoding the number to something meaningful for the
+user ... I'm just asking if there's any benefit to doing this?
 
-> +/**
-> + * pi_sink_init - initialize a pi_sink before use
-> + * @sink: a sink context
-> + * @ops: pointer to an pi_sink_ops structure
-> + */
-> +static inline void
-> +pi_sink_init(struct pi_sink *sink, struct pi_sink_ops *ops)
-> +{
-> +	atomic_set(&sink->refs, 0);
-> +	sink->ops = ops;
-> +}
-
-Shouldn't ops be tested for 0 here? (ASSERT/BUG_ON/...) (get's dereferenced later quite often in the form "if (sink->ops->...)".
-
-> +/**
-> + * pi_sink_put - down the reference count, freeing the sink if 0
-> + * @node: the node context
-> + * @flags: optional flags to modify behavior.  Reserved, must be 0.
-> + *
-> + * Returns: none
-> + */
-> +static inline void
-> +pi_sink_put(struct pi_sink *sink, unsigned int flags)
-> +{
-> +	if (atomic_dec_and_test(&sink->refs)) {
-> +		if (sink->ops->free)
-> +			sink->ops->free(sink, flags);
-> +	}
-> +}
-
-Shouldn't the atomic/locked part cover the ...->free(...) as well? A pi_get right after the atomic_dec_and_test but before the free() could lead to a free() with refs>0?
-
+James
 
 
