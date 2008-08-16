@@ -1,32 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757525AbYHPEHx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757839AbYHPEIj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757525AbYHPEHx (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Aug 2008 00:07:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752925AbYHPEFr
+	id S1757839AbYHPEIj (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Aug 2008 00:08:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753550AbYHPEFx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Aug 2008 00:05:47 -0400
-Received: from 166-70-238-42.ip.xmission.com ([166.70.238.42]:33286 "EHLO
+	Sat, 16 Aug 2008 00:05:53 -0400
+Received: from 166-70-238-42.ip.xmission.com ([166.70.238.42]:33288 "EHLO
 	ns1.wolfmountaingroup.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751188AbYHPEFk (ORCPT
+	with ESMTP id S1751312AbYHPEFk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Sat, 16 Aug 2008 00:05:40 -0400
 Date: Fri, 15 Aug 2008 21:41:46 -0600
 From: jmerkey@wolfmountaingroup.com
-Message-Id: <200808160341.m7G3fkWU022552@wolfmountaingroup.com>
+Message-Id: <200808160341.m7G3fkMd022554@wolfmountaingroup.com>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 2.6.27-rc3 6/28] mdb: add main include configuration file
+Subject: [PATCH 2.6.27-rc3 8/28] mdb: add includes and external defines for ia32 specific code
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-add top level mdb.h include file.  added focus processor internal tracing
-and debugging defines.
+added includes and external defines for ia32 specific code
+
 
 Signed-off-by: Jeffrey Vernon Merkey (jmerkey@wolfmountaingroup.com)
 
---- a/debug/mdb/mdb.h	1969-12-31 17:00:00.000000000 -0700
-+++ b/debug/mdb/mdb.h	2008-08-15 15:41:57.000000000 -0600
-@@ -0,0 +1,54 @@
+--- a/debug/mdb/mdb-ia32.h	1969-12-31 17:00:00.000000000 -0700
++++ b/debug/mdb/mdb-ia32.h	2008-08-15 15:41:57.000000000 -0600
+@@ -0,0 +1,172 @@
 +
 +/***************************************************************************
 +*
@@ -61,23 +61,141 @@ Signed-off-by: Jeffrey Vernon Merkey (jmerkey@wolfmountaingroup.com)
 +*
 +***************************************************************************/
 +
-+#ifndef _MDB_H
-+#define _MDB_H
++#ifndef _MDB_IA32_H
++#define _MDB_IA32_H
 +
-+/* screen output function */
-+extern int mdb_printf(char *s, ...);
-+#define DBGPrint   mdb_printf
++typedef struct _StackFrame {
++   unsigned long tReserved[7];
++   unsigned long *tCR3;
++   unsigned long tEIP;
++   unsigned long tSystemFlags;
++   unsigned long tEAX;
++   unsigned long tECX;
++   unsigned long tEDX;
++   unsigned long tEBX;
++   unsigned long tESP;
++   unsigned long tEBP;
++   unsigned long tESI;
++   unsigned long tEDI;
++   unsigned short tES;
++   unsigned short Res1;
++   unsigned short tCS;
++   unsigned short Res2;
++   unsigned short tSS;
++   unsigned short Res3;
++   unsigned short tDS;
++   unsigned short Res4;
++   unsigned short tFS;
++   unsigned short Res5;
++   unsigned short tGS;
++   unsigned short Res6;
++   unsigned short tLDT;
++   unsigned short Res7;
++   unsigned long tIOMap;
++} StackFrame;
 +
-+/* external entry points used by linux */
-+#define DEBUGGER_EXCEPTION        1
-+#define NMI_EXCEPTION             2
-+#define BREAKPOINT_EXCEPTION      3
-+#define GENERAL_PROTECTION       13
-+#define PAGE_FAULT_EXCEPTION     14
-+#define KEYBOARD_ENTRY           19
-+#define SOFTWARE_EXCEPTION       22
++/*  128 bytes total size numeric register context */
 +
-+/* internal trace messages */ 
-+#define MDB_DEBUG_DEBUGGER       0
++typedef struct _NPXREG {
++  unsigned short sig0;        /*  10 bytes total size this structure */
++  unsigned short sig1;
++  unsigned short sig2;
++  unsigned short sig3;
++  unsigned short exponent:15;
++  unsigned short sign:1;
++} NUMERIC_REGISTER_CONTEXT;
++
++typedef struct _NPX {
++  unsigned long control;
++  unsigned long status;
++  unsigned long tag;
++  unsigned long eip;
++  unsigned long cs;
++  unsigned long dataptr;
++  unsigned long datasel;
++  NUMERIC_REGISTER_CONTEXT reg[8];    /* 80 bytes */
++  unsigned long pad[5];
++} NUMERIC_FRAME;
++
++/*  128 bytes total size register context */
++
++typedef struct _CONTEXT_FRAME {
++    unsigned short cBackLink;
++    unsigned short cTSSReserved;
++    unsigned long cESP0;
++    unsigned short cSS0;
++    unsigned short cSS0res;
++    unsigned long cESP1;
++    unsigned short cSS1;
++    unsigned short cSS1res;
++    unsigned long cESP2;
++    unsigned short cSS2;
++    unsigned short cSS2res;
++    unsigned long cCR3;
++    unsigned long cEIP;
++    unsigned long cSystemFlags;
++    unsigned long cEAX;
++    unsigned long cECX;
++    unsigned long cEDX;
++    unsigned long cEBX;
++    unsigned long cESP;
++    unsigned long cEBP;
++    unsigned long cESI;
++    unsigned long cEDI;
++    unsigned long cES;
++    unsigned long cCS;
++    unsigned long cSS;
++    unsigned long cDS;
++    unsigned long cFS;
++    unsigned long cGS;
++    unsigned long cLDT;
++    unsigned long cIOPermissMap;
++    unsigned long pad[6];
++} CONTEXT_FRAME;
++
++static inline void _cli(void)
++{
++	__asm__ __volatile__("cli" : : : "memory");
++}
++
++static inline void _sti(void)
++{
++	__asm__ __volatile__("sti" : : : "memory");
++}
++
++static inline unsigned long get_flags(void)
++{
++	unsigned long flags;
++
++	__asm__ __volatile__(
++		"pushfl ; popl %0"
++		: "=g" (flags)
++		: /* no input */
++	);
++	return flags;
++}
++
++static inline unsigned long save_flags(void)
++{
++	unsigned long flags;
++
++	__asm__ __volatile__(
++		"pushfl ; popl %0"
++		: "=g" (flags)
++		: /* no input */
++	);
++	__asm__ __volatile__("cli" : : : "memory");
++	return flags;
++}
++
++static inline void restore_flags(unsigned long flags)
++{
++	__asm__ __volatile__(
++		"pushl %0 ; popfl"
++		:
++		:"g" (flags)
++		:"memory", "cc"
++	);
++}
 +
 +#endif
