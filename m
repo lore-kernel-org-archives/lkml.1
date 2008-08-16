@@ -1,557 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754312AbYHPKKa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753853AbYHPKOm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754312AbYHPKKa (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Aug 2008 06:10:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754110AbYHPKJ4
+	id S1753853AbYHPKOm (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Aug 2008 06:14:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752154AbYHPKOd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Aug 2008 06:09:56 -0400
-Received: from nf-out-0910.google.com ([64.233.182.188]:33654 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754034AbYHPKJx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Aug 2008 06:09:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=goNdceC8CtVCP4bDQpOuLJkuV9CZmiiMM7bR1LHl1malqVrbTerhnQMsRfDstmk1J/
-         CpDn2CooTFFKezUJhBYKeJHfTpGcUj8HLXHh1GAfNRSLFyIvCcVWkPf402ummfzOrDWC
-         L3meOYNdX28NsAjF2Hzw4hekw9ER52PKOSG2M=
-Date: Sat, 16 Aug 2008 14:09:48 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: torvalds@osdl.org, akpm@osdl.org, rusty@rustcorp.com.au
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] BUILD_BUG_ON sucks
-Message-ID: <20080816100948.GB19926@martell.zuzino.mipt.ru>
+	Sat, 16 Aug 2008 06:14:33 -0400
+Received: from mail.lang.hm ([64.81.33.126]:52065 "EHLO bifrost.lang.hm"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751864AbYHPKOc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 16 Aug 2008 06:14:32 -0400
+Date: Sat, 16 Aug 2008 03:14:17 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+cc: Arjan van de Ven <arjan@infradead.org>, Peter Dolding <oiaohm@gmail.com>,
+       rmeijer@xs4all.nl, capibara@xs4all.nl, Eric Paris <eparis@redhat.com>,
+       Theodore Tso <tytso@mit.edu>, Rik van Riel <riel@redhat.com>,
+       davecb@sun.com, linux-security-module@vger.kernel.org,
+       Adrian Bunk <bunk@kernel.org>, Mihai Don??u <mdontu@bitdefender.com>,
+       linux-kernel@vger.kernel.org, malware-list@lists.printk.net,
+       Pavel Machek <pavel@suse.cz>
+Subject: Re: [malware-list] [RFC 0/5] [TALPA] Intro to alinuxinterfaceforon
+ access scanning
+In-Reply-To: <20080816102846.37b104a7@lxorguk.ukuu.org.uk>
+Message-ID: <alpine.DEB.1.10.0808160248340.12859@asgard.lang.hm>
+References: <18129.82.95.100.23.1218802937.squirrel@webmail.xs4all.nl> <e7d8f83e0808150627m7a5c8738n8ac42d77c45eea76@mail.gmail.com> <alpine.DEB.1.10.0808151024120.15109@asgard.lang.hm> <e7d8f83e0808152057h5c607cfbnecdc6f0bd05c5d89@mail.gmail.com>
+ <20080815210942.4e342c6c@infradead.org> <alpine.DEB.1.10.0808152115210.12859@asgard.lang.hm> <20080816102846.37b104a7@lxorguk.ukuu.org.uk>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-BUILD_BUG_ON should have never existed -- BUG_ON could upgrade itself to
-compile-breaking version if compiler has enough information and this is
-what patch does.
+On Sat, 16 Aug 2008, Alan Cox wrote:
 
-The only downside is that one can't write BUG_ON(1) anymore.
+>> I really think that we need to avoid trying to have a single 'known good'
+>> flag/generationnrwith the inode.
+>
+> I don't think we should have anything in the inode. We don't want to
+> bloat inode objects for this cornercase.
 
-Note: this compile-breaks jbd, jbd2, tipc,
-      what this code is supposed to do?
+no problem
 
-	journal = handle->h_transaction->t_journal;
-	if (!journal_set_features(journal, 0, 0, JFS_FEATURE_INCOMPAT_REVOKE)) {
-		J_ASSERT (!"Cannot set revoke feature!");
-			 ^^^^
-		return -EINVAL;
-        }
+>> if you store generation numbers for individual apps (in posix attributes
+>> to pick something that could be available across a variety of
+>> filesystems), you push this policy decision into userspace (where it
+>
+> Agreed
+>
+>> 1. define a tag namespace associated with the file that is reserved for
+>> this purpose for example "scanned-by-*"
+>
+> What controls somewhat writing such a tag on media remotely ? Locally you
+> can do this (although you are way too specialized in design - an LSM hook
+> for controlling tag setting or a general tag reservation sysfs interface
+> is more flexible than thinking just about scanners.
 
-Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
----
+there are multiple approaches to this (i.e. a policy issue that belongs in 
+userspace)
 
- arch/cris/arch-v10/kernel/io_interface_mux.c |    8 ++++----
- arch/powerpc/include/asm/bug.h               |    3 +--
- drivers/infiniband/core/cma.c                |    2 +-
- drivers/infiniband/core/mad.c                |    2 +-
- drivers/infiniband/hw/amso1100/c2_ae.c       |    2 +-
- drivers/infiniband/hw/cxgb3/cxio_hal.c       |    2 +-
- drivers/infiniband/hw/cxgb3/iwch_cm.c        |    6 +++---
- drivers/mmc/host/wbsd.c                      |    2 +-
- drivers/net/wireless/b43legacy/b43legacy.h   |    2 ++
- drivers/net/wireless/b43legacy/main.c        |   12 ++++++------
- drivers/net/wireless/b43legacy/phy.c         |    2 +-
- drivers/net/wireless/b43legacy/radio.c       |   22 +++++++++++-----------
- drivers/net/wireless/b43legacy/xmit.c        |   12 ++++++------
- drivers/scsi/device_handler/scsi_dh_emc.c    |    2 +-
- drivers/ssb/scan.c                           |    4 ++--
- drivers/ssb/ssb_private.h                    |    2 ++
- fs/jbd2/journal.c                            |    2 +-
- include/asm-generic/bug.h                    |    8 +++++++-
- include/asm-mips/bug.h                       |    5 ++++-
- kernel/sched.c                               |    2 +-
- net/bluetooth/rfcomm/tty.c                   |    2 +-
- 21 files changed, 58 insertions(+), 46 deletions(-)
+1. you trust the machines the media comes from, so you trust the scan 
+results.
 
---- a/arch/cris/arch-v10/kernel/io_interface_mux.c
-+++ b/arch/cris/arch-v10/kernel/io_interface_mux.c
-@@ -650,7 +650,7 @@ int cris_request_io_interface(enum cris_io_interface ioif, const char *device_id
- 			if_group_use = interfaces[ioif].group_f;
- 			break;
- 		default:
--			BUG_ON(1);
-+			BUG();
- 		}
- 
- 		if (if_group_use & grp->used) {
-@@ -799,7 +799,7 @@ int cris_request_io_interface(enum cris_io_interface ioif, const char *device_id
- 			if_group_use = interfaces[ioif].group_f;
- 			break;
- 		default:
--			BUG_ON(1);
-+			BUG();
- 		}
- 		grp->used |= if_group_use;
- 
-@@ -891,11 +891,11 @@ void cris_free_io_interface(enum cris_io_interface ioif)
- 			if_group_use = interfaces[ioif].group_f;
- 			break;
- 		default:
--			BUG_ON(1);
-+			BUG();
- 		}
- 
- 		if ((grp->used & if_group_use) != if_group_use)
--			BUG_ON(1);
-+			BUG();
- 		grp->used = grp->used & ~if_group_use;
- 
- 		group_set = clear_group_from_set(group_set, grp);
---- a/arch/powerpc/include/asm/bug.h
-+++ b/arch/powerpc/include/asm/bug.h
-@@ -71,8 +71,7 @@
- 
- #define BUG_ON(x) do {						\
- 	if (__builtin_constant_p(x)) {				\
--		if (x)						\
--			BUG();					\
-+		(void)sizeof(char[1 - 2 * !!(x)]);		\
- 	} else {						\
- 		__asm__ __volatile__(				\
- 		"1:	"PPC_TLNEI"	%4,0\n"			\
---- a/drivers/infiniband/core/cma.c
-+++ b/drivers/infiniband/core/cma.c
-@@ -1252,7 +1252,7 @@ static int cma_iw_handler(struct iw_cm_id *iw_id, struct iw_cm_event *iw_event)
- 		event.event = RDMA_CM_EVENT_ESTABLISHED;
- 		break;
- 	default:
--		BUG_ON(1);
-+		BUG();
- 	}
- 
- 	event.status = iw_event->status;
---- a/drivers/infiniband/core/mad.c
-+++ b/drivers/infiniband/core/mad.c
-@@ -2249,7 +2249,7 @@ static void ib_mad_completion_handler(struct work_struct *work)
- 				ib_mad_recv_done_handler(port_priv, &wc);
- 				break;
- 			default:
--				BUG_ON(1);
-+				BUG();
- 				break;
- 			}
- 		} else
---- a/drivers/infiniband/hw/amso1100/c2_ae.c
-+++ b/drivers/infiniband/hw/amso1100/c2_ae.c
-@@ -256,7 +256,7 @@ void c2_ae_event(struct c2_dev *c2dev, u32 mq_index)
- 				cm_id->event_handler(cm_id, &cm_event);
- 			break;
- 		default:
--			BUG_ON(1);
-+			BUG();
- 			pr_debug("%s:%d Unexpected event_id=%d on QP=%p, "
- 				"CM_ID=%p\n",
- 				__func__, __LINE__,
---- a/drivers/infiniband/hw/cxgb3/cxio_hal.c
-+++ b/drivers/infiniband/hw/cxgb3/cxio_hal.c
-@@ -109,7 +109,7 @@ int cxio_hal_cq_op(struct cxio_rdev *rdev_p, struct t3_cq *cq,
- 		while (!CQ_VLD_ENTRY(rptr, cq->size_log2, cqe)) {
- 			udelay(1);
- 			if (i++ > 1000000) {
--				BUG_ON(1);
-+				BUG();
- 				printk(KERN_ERR "%s: stalled rnic\n",
- 				       rdev_p->dev_name);
- 				return -EIO;
---- a/drivers/infiniband/hw/cxgb3/iwch_cm.c
-+++ b/drivers/infiniband/hw/cxgb3/iwch_cm.c
-@@ -1493,7 +1493,7 @@ static int peer_close(struct t3cdev *tdev, struct sk_buff *skb, void *ctx)
- 		disconnect = 0;
- 		break;
- 	default:
--		BUG_ON(1);
-+		BUG();
- 	}
- 	spin_unlock_irqrestore(&ep->com.lock, flags);
- 	if (disconnect)
-@@ -1590,7 +1590,7 @@ static int peer_abort(struct t3cdev *tdev, struct sk_buff *skb, void *ctx)
- 		spin_unlock_irqrestore(&ep->com.lock, flags);
- 		return CPL_RET_BUF_DONE;
- 	default:
--		BUG_ON(1);
-+		BUG();
- 		break;
- 	}
- 	dst_confirm(ep->dst);
-@@ -1653,7 +1653,7 @@ static int close_con_rpl(struct t3cdev *tdev, struct sk_buff *skb, void *ctx)
- 	case DEAD:
- 		break;
- 	default:
--		BUG_ON(1);
-+		BUG();
- 		break;
- 	}
- 	spin_unlock_irqrestore(&ep->com.lock, flags);
---- a/drivers/mmc/host/wbsd.c
-+++ b/drivers/mmc/host/wbsd.c
-@@ -1416,7 +1416,7 @@ kfree:
- 	/*
- 	 * If we've gotten here then there is some kind of alignment bug
- 	 */
--	BUG_ON(1);
-+	BUG();
- 
- 	dma_unmap_single(mmc_dev(host->mmc), host->dma_addr,
- 		WBSD_DMA_SIZE, DMA_BIDIRECTIONAL);
---- a/drivers/net/wireless/b43legacy/b43legacy.h
-+++ b/drivers/net/wireless/b43legacy/b43legacy.h
-@@ -342,12 +342,14 @@ enum {
- 			BUG_ON(expr);					\
- 		}							\
- 	} while (0)
-+# define B43legacy_BUG()	BUG()
- # define B43legacy_DEBUG	1
- #else
- /* This will evaluate the argument even if debugging is disabled. */
- static inline bool __b43legacy_warn_on_dummy(bool x) { return x; }
- # define B43legacy_WARN_ON(x)	__b43legacy_warn_on_dummy(unlikely(!!(x)))
- # define B43legacy_BUG_ON(x)	do { /* nothing */ } while (0)
-+# define B43legacy_BUG()	do {} while (0)
- # define B43legacy_DEBUG	0
- #endif
- 
---- a/drivers/net/wireless/b43legacy/main.c
-+++ b/drivers/net/wireless/b43legacy/main.c
-@@ -649,7 +649,7 @@ void b43legacy_dummy_transmission(struct b43legacy_wldev *dev)
- 		buffer[0] = 0x000B846E;
- 		break;
- 	default:
--		B43legacy_BUG_ON(1);
-+		B43legacy_BUG();
- 		return;
- 	}
- 
-@@ -2010,7 +2010,7 @@ static void b43legacy_rate_memory_init(struct b43legacy_wldev *dev)
- 		b43legacy_rate_memory_write(dev, B43legacy_CCK_RATE_11MB, 0);
- 		break;
- 	default:
--		B43legacy_BUG_ON(1);
-+		B43legacy_BUG();
- 	}
- }
- 
-@@ -2032,7 +2032,7 @@ static void b43legacy_mgmtframe_txantenna(struct b43legacy_wldev *dev,
- 		ant |= B43legacy_TX4_PHY_ANTLAST;
- 		break;
- 	default:
--		B43legacy_BUG_ON(1);
-+		B43legacy_BUG();
- 	}
- 
- 	/* FIXME We also need to set the other flags of the PHY control
-@@ -2442,7 +2442,7 @@ static const char *phymode_to_string(unsigned int phymode)
- 	case B43legacy_PHYMODE_G:
- 		return "G";
- 	default:
--		B43legacy_BUG_ON(1);
-+		B43legacy_BUG();
- 	}
- 	return "";
- }
-@@ -2887,7 +2887,7 @@ static int b43legacy_phy_versioning(struct b43legacy_wldev *dev)
- 			unsupported = 1;
- 		break;
- 	default:
--		B43legacy_BUG_ON(1);
-+		B43legacy_BUG();
- 	}
- 	if (unsupported) {
- 		b43legacyerr(dev->wl, "FOUND UNSUPPORTED RADIO "
-@@ -3563,7 +3563,7 @@ static int b43legacy_wireless_core_attach(struct b43legacy_wldev *dev)
- 			have_gphy = 1;
- 			break;
- 		default:
--			B43legacy_BUG_ON(1);
-+			B43legacy_BUG();
- 		}
- 	}
- 	dev->phy.gmode = (have_gphy || have_bphy);
---- a/drivers/net/wireless/b43legacy/phy.c
-+++ b/drivers/net/wireless/b43legacy/phy.c
-@@ -1760,7 +1760,7 @@ static s8 b43legacy_phy_estimate_power_out(struct b43legacy_wldev *dev, s8 tssi)
- 		dbm = phy->tssi2dbm[tmp];
- 		break;
- 	default:
--		B43legacy_BUG_ON(1);
-+		B43legacy_BUG();
- 	}
- 
- 	return dbm;
---- a/drivers/net/wireless/b43legacy/radio.c
-+++ b/drivers/net/wireless/b43legacy/radio.c
-@@ -131,7 +131,7 @@ u16 b43legacy_radio_read16(struct b43legacy_wldev *dev, u16 offset)
- 		offset |= 0x80;
- 		break;
- 	default:
--		B43legacy_BUG_ON(1);
-+		B43legacy_BUG();
- 	}
- 
- 	b43legacy_write16(dev, B43legacy_MMIO_RADIO_CONTROL, offset);
-@@ -811,7 +811,7 @@ void b43legacy_calc_nrssi_slope(struct b43legacy_wldev *dev)
- 		b43legacy_calc_nrssi_threshold(dev);
- 		break;
- 	default:
--		B43legacy_BUG_ON(1);
-+		B43legacy_BUG();
- 	}
- }
- 
-@@ -910,7 +910,7 @@ void b43legacy_calc_nrssi_threshold(struct b43legacy_wldev *dev)
- 		}
- 		break;
- 	default:
--		B43legacy_BUG_ON(1);
-+		B43legacy_BUG();
- 	}
- }
- 
-@@ -946,7 +946,7 @@ static u16 _stack_restore(u32 *stackptr,
- 			continue;
- 		return ((*stackptr & 0xFFFF0000) >> 16);
- 	}
--	B43legacy_BUG_ON(1);
-+	B43legacy_BUG();
- 
- 	return 0;
- }
-@@ -1227,7 +1227,7 @@ b43legacy_radio_interference_mitigation_enable(struct b43legacy_wldev *dev,
- 		b43legacy_calc_nrssi_slope(dev);
- 		break;
- 	default:
--		B43legacy_BUG_ON(1);
-+		B43legacy_BUG();
- 	}
- }
- 
-@@ -1325,7 +1325,7 @@ b43legacy_radio_interference_mitigation_disable(struct b43legacy_wldev *dev,
- 		b43legacy_calc_nrssi_slope(dev);
- 		break;
- 	default:
--		B43legacy_BUG_ON(1);
-+		B43legacy_BUG();
- 	}
- }
- 
-@@ -1419,7 +1419,7 @@ static u16 b43legacy_get_812_value(struct b43legacy_wldev *dev, u8 lpd)
- 			case LPD(1, 0, 0):
- 				return 0x30B3;
- 			default:
--				B43legacy_BUG_ON(1);
-+				B43legacy_BUG();
- 			}
- 		} else {
- 			switch (lpd) {
-@@ -1432,7 +1432,7 @@ static u16 b43legacy_get_812_value(struct b43legacy_wldev *dev, u8 lpd)
- 			case LPD(1, 0, 0):
- 				return 0x20B3;
- 			default:
--				B43legacy_BUG_ON(1);
-+				B43legacy_BUG();
- 			}
- 		}
- 	} else {
-@@ -1474,7 +1474,7 @@ static u16 b43legacy_get_812_value(struct b43legacy_wldev *dev, u8 lpd)
- 			case LPD(1, 0, 0):
- 				return (0x2093 | loop_or);
- 			default:
--				B43legacy_BUG_ON(1);
-+				B43legacy_BUG();
- 			}
- 		} else {
- 			switch (lpd) {
-@@ -1486,7 +1486,7 @@ static u16 b43legacy_get_812_value(struct b43legacy_wldev *dev, u8 lpd)
- 			case LPD(1, 0, 0):
- 				return (0x0093 | loop_or);
- 			default:
--				B43legacy_BUG_ON(1);
-+				B43legacy_BUG();
- 			}
- 		}
- 	}
-@@ -2111,7 +2111,7 @@ void b43legacy_radio_turn_on(struct b43legacy_wldev *dev)
- 		B43legacy_WARN_ON(err);
- 		break;
- 	default:
--		B43legacy_BUG_ON(1);
-+		B43legacy_BUG();
- 	}
- 	phy->radio_on = 1;
- }
---- a/drivers/net/wireless/b43legacy/xmit.c
-+++ b/drivers/net/wireless/b43legacy/xmit.c
-@@ -49,7 +49,7 @@ static u8 b43legacy_plcp_get_bitrate_idx_cck(struct b43legacy_plcp_hdr6 *plcp)
- 	case 0x6E:
- 		return 3;
- 	}
--	B43legacy_BUG_ON(1);
-+	B43legacy_BUG();
- 	return -1;
- }
- 
-@@ -77,7 +77,7 @@ static u8 b43legacy_plcp_get_bitrate_idx_ofdm(struct b43legacy_plcp_hdr6 *plcp,
- 	case 0xC:
- 		return base + 7;
- 	}
--	B43legacy_BUG_ON(1);
-+	B43legacy_BUG();
- 	return -1;
- }
- 
-@@ -93,7 +93,7 @@ u8 b43legacy_plcp_get_ratecode_cck(const u8 bitrate)
- 	case B43legacy_CCK_RATE_11MB:
- 		return 0x6E;
- 	}
--	B43legacy_BUG_ON(1);
-+	B43legacy_BUG();
- 	return 0;
- }
- 
-@@ -117,7 +117,7 @@ u8 b43legacy_plcp_get_ratecode_ofdm(const u8 bitrate)
- 	case B43legacy_OFDM_RATE_54MB:
- 		return 0xC;
- 	}
--	B43legacy_BUG_ON(1);
-+	B43legacy_BUG();
- 	return 0;
- }
- 
-@@ -180,7 +180,7 @@ static u8 b43legacy_calc_fallback_rate(u8 bitrate)
- 	case B43legacy_OFDM_RATE_54MB:
- 		return B43legacy_OFDM_RATE_48MB;
- 	}
--	B43legacy_BUG_ON(1);
-+	B43legacy_BUG();
- 	return 0;
- }
- 
-@@ -289,7 +289,7 @@ static int generate_txhdr_fw3(struct b43legacy_wldev *dev,
- 		phy_ctl |= B43legacy_TX4_PHY_ANT1;
- 		break;
- 	default:
--		B43legacy_BUG_ON(1);
-+		B43legacy_BUG();
- 	}
- 
- 	/* MAC control */
---- a/drivers/scsi/device_handler/scsi_dh_emc.c
-+++ b/drivers/scsi/device_handler/scsi_dh_emc.c
-@@ -298,7 +298,7 @@ static struct request *get_req(struct scsi_device *sdev, int cmd,
- 		memset(buffer, 0, len);
- 		break;
- 	default:
--		BUG_ON(1);
-+		BUG();
- 		break;
- 	}
- 
---- a/drivers/ssb/scan.c
-+++ b/drivers/ssb/scan.c
-@@ -203,7 +203,7 @@ void ssb_iounmap(struct ssb_bus *bus)
- #ifdef CONFIG_SSB_PCIHOST
- 		pci_iounmap(bus->host_pci, bus->mmio);
- #else
--		SSB_BUG_ON(1); /* Can't reach this code. */
-+		SSB_BUG(); /* Can't reach this code. */
- #endif
- 		break;
- 	}
-@@ -227,7 +227,7 @@ static void __iomem *ssb_ioremap(struct ssb_bus *bus,
- #ifdef CONFIG_SSB_PCIHOST
- 		mmio = pci_iomap(bus->host_pci, 0, ~0UL);
- #else
--		SSB_BUG_ON(1); /* Can't reach this code. */
-+		SSB_BUG(); /* Can't reach this code. */
- #endif
- 		break;
- 	}
---- a/drivers/ssb/ssb_private.h
-+++ b/drivers/ssb/ssb_private.h
-@@ -23,10 +23,12 @@
- #ifdef CONFIG_SSB_DEBUG
- # define SSB_WARN_ON(x)		WARN_ON(x)
- # define SSB_BUG_ON(x)		BUG_ON(x)
-+# define SSB_BUG()		BUG()
- #else
- static inline int __ssb_do_nothing(int x) { return x; }
- # define SSB_WARN_ON(x)		__ssb_do_nothing(unlikely(!!(x)))
- # define SSB_BUG_ON(x)		__ssb_do_nothing(unlikely(!!(x)))
-+# define SSB_BUG()		do {} while (0)
- #endif
- 
- 
---- a/fs/jbd2/journal.c
-+++ b/fs/jbd2/journal.c
-@@ -731,7 +731,7 @@ static int jbd2_seq_history_show(struct seq_file *seq, void *v)
- 				ts->u.chp.cs_written, ts->u.chp.cs_dropped,
- 				ts->u.chp.cs_forced_to_close);
- 	else
--		J_ASSERT(0);
-+		BUG();
- 	return 0;
- }
- 
---- a/include/asm-generic/bug.h
-+++ b/include/asm-generic/bug.h
-@@ -28,7 +28,13 @@ struct bug_entry {
- #endif
- 
- #ifndef HAVE_ARCH_BUG_ON
--#define BUG_ON(condition) do { if (unlikely(condition)) BUG(); } while(0)
-+#define BUG_ON(condition)						\
-+	do {								\
-+		if (__builtin_constant_p(condition))			\
-+			(void)sizeof(char[1 - 2 * !!(condition)]);	\
-+		else if (unlikely(condition))				\
-+			BUG();						\
-+	} while (0)
- #endif
- 
- #ifndef __WARN
---- a/include/asm-mips/bug.h
-+++ b/include/asm-mips/bug.h
-@@ -18,7 +18,10 @@ do {									\
- 
- #define BUG_ON(condition)						\
- do {									\
--	__asm__ __volatile__("tne $0, %0, %1"				\
-+	if (__builtin_constant_p(condition))				\
-+		(void)sizeof(char[1 - 2 * !!(condition)]);		\
-+	else
-+		__asm__ __volatile__("tne $0, %0, %1"			\
- 			     : : "r" (condition), "i" (BRK_BUG));	\
- } while (0)
- 
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -2798,7 +2798,7 @@ static int double_lock_balance(struct rq *this_rq, struct rq *busiest)
- 	if (unlikely(!irqs_disabled())) {
- 		/* printk() doesn't work good under rq->lock */
- 		spin_unlock(&this_rq->lock);
--		BUG_ON(1);
-+		BUG();
- 	}
- 	if (unlikely(!spin_trylock(&busiest->lock))) {
- 		if (busiest < this_rq) {
---- a/net/bluetooth/rfcomm/tty.c
-+++ b/net/bluetooth/rfcomm/tty.c
-@@ -331,7 +331,7 @@ static void rfcomm_dev_del(struct rfcomm_dev *dev)
- 	BT_DBG("dev %p", dev);
- 
- 	if (test_bit(RFCOMM_TTY_RELEASED, &dev->flags))
--		BUG_ON(1);
-+		BUG();
- 	else
- 		set_bit(RFCOMM_TTY_RELEASED, &dev->flags);
- 
+2. you don't trust the remote machines and you then either extend this 
+model into a per filesystem approach (and invalidate/increment/change the 
+genration key on the new media that's loaded), or you tryand make the 
+generation key be cryptograhicly random, so that the odds of the 
+generation key on the media being valid for the machine it's plugged into 
+is next to impossible (generating a good GUID as the generation key as the 
+signature/scanner is loaded would be pretty close to random for example)
 
+you could do a LSM hook, but in many (if not most) cases it makes sense to 
+have the tags stored across boots, so if you do it through LSM you have to 
+figure out how/where to store it. if you can put it in posix extended 
+attibutes most filesystems will handle it for you.
+
+>> 2. have an kernel option that will clear out this namespace whenever a
+>> file is dirtied
+>
+> That will generate enormous amounts of load if not carefully handled.
+
+will it? if it's already empty trying to clear it should be cheap. it's 
+like maintaining the dirty bit on a chunk of memory.
+
+>> 3. have a kernel mechanism to say "set this namespace tag if this other
+>> namespace tag is set" (this allows a scanner to set a 'scanning' tag when
+>> it starts and only set the 'blessed' tag if the file was not dirtied while
+>
+> User space problem. Set flags 'dirty', then set bit 'scanning'
+> clear 'dirty' then clear 'scanning' when finished. If the dirty flag got
+> set while you were scanning it will still be set now you've cleared you
+> scanning flag. Your access policy depends upon your level of paranoia (eg
+> "dirty|scanning == BAD")
+
+this still leaves a window between the time you last check that the dirty 
+flag is still set, while you clear the dirty flag and set the clean flag 
+that modifications could be made to the file and it will still get marked 
+clean. if this race is small enough this feature can be skipped
+
+>> programs can set the "scanned-by-*" flags on that the 'libmalware' library
+>
+> We've already proved libmalware doesn't make sense
+
+I missed that part of the discussion. what I was reading was that people 
+were saying that it worked for everything except staticly compiled 
+binaries and knfsd.
+
+why would it not make sense to have the checking in a userspace library 
+(libmalware could be seperate or loaded from glibc or be part of glibc, 
+depending on your level of concern
+
+>> L. the fact that knfsd would not use this can be worked around by running
+>> FUSE (which would do the checks) and then exporting the result via knfsdw
+>
+> Not if you want to get any work done.
+>
+>> what did I over complicate in this design? or is it the minimum feature
+>> set needed?
+>>
+>> are any of the features I list impossible to implement?
+>
+> Go write it and see, provide benchmarks ?  I don't see from this how you
+> handled shared mmap ?
+
+the kernel detects writes to mmap and dirties the file (clearing the 
+flags), the next time the file is accessed it will be re-scanned (assuming 
+that the background scanner doesn't get there first) do the checks at the 
+time of mmap, don't try to do it for each memory read.
+
+as for two programs having the file open at the same time and the risk of 
+passing bad data from one to the other. the risk model specifies we are 
+not trying to protect against running programs. shared mmap is a 
+communications channel between them just like a pipe, we aren't trying to 
+protect inter-process communication (just like we aren't trying to protect 
+network communication)
+
+there are probably better answers, but I'm leaving that up to the folks 
+who want to write all the scanning tools. I'm just trying to help by 
+assembling the ideas different people mentioned during this thread into a 
+minimaly invasive set of hooks that are useful beyond the AV space into 
+other things that are needed (like HSM, indexing, or for that matter a 
+backup daemon could gather the list of files it needs for an incrimental 
+backup by listening for the kernel to tell it every file that changes 
+instead of needing to scan TB worth of filesystems for them)
+
+David Lang
