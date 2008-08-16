@@ -1,132 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755293AbYHPFTz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754469AbYHPFZn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755293AbYHPFTz (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Aug 2008 01:19:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751792AbYHPFTq
+	id S1754469AbYHPFZn (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Aug 2008 01:25:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751792AbYHPFZd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Aug 2008 01:19:46 -0400
-Received: from py-out-1112.google.com ([64.233.166.182]:28949 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750733AbYHPFTp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Aug 2008 01:19:45 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=Z3V6KR+166bkLCl44eWRH0bW4gPcdfgR2Ju2kRwrzDoVPi3YxHcXSZVVux6vQAu0Ox
-         2nv4BeCSVRV87mDEGKxxXskO9lKI+6L2LlbMSt58AhJUC1oa11u0trbBdUgm/V+UMDcj
-         RYQW0h+jsTrCbC5h7UXkAbGctfiZZpzrybEao=
-Message-ID: <e7d8f83e0808152219j50827f49nb9dd48cf44e082d2@mail.gmail.com>
-Date: Sat, 16 Aug 2008 15:19:43 +1000
-From: "Peter Dolding" <oiaohm@gmail.com>
-To: "Arjan van de Ven" <arjan@infradead.org>
-Subject: Re: [malware-list] [RFC 0/5] [TALPA] Intro to alinuxinterfaceforon access scanning
-Cc: david@lang.hm, rmeijer@xs4all.nl, "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
-       capibara@xs4all.nl, "Eric Paris" <eparis@redhat.com>,
-       "Theodore Tso" <tytso@mit.edu>, "Rik van Riel" <riel@redhat.com>,
-       davecb@sun.com, linux-security-module@vger.kernel.org,
-       "Adrian Bunk" <bunk@kernel.org>,
-       "Mihai Don??u" <mdontu@bitdefender.com>, linux-kernel@vger.kernel.org,
-       malware-list@lists.printk.net, "Pavel Machek" <pavel@suse.cz>
-In-Reply-To: <20080815210942.4e342c6c@infradead.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Sat, 16 Aug 2008 01:25:33 -0400
+Received: from smtpout3.tre.se ([80.251.192.228]:48036 "EHLO smtpout3.tre.se"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751632AbYHPFZc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 16 Aug 2008 01:25:32 -0400
+Date: Sat, 16 Aug 2008 07:25:52 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Andi Kleen <ak@linux.intel.com>, Kay Sievers <kay.sievers@vrfy.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, gregkh <greg@kroah.com>,
+       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       linux-acpi@vger.kernel.org
+Subject: Re: linux-next: Tree for August 14 (sysfs/acpi errors)
+Message-ID: <20080816052552.GA21668@uranus.ravnborg.org>
+References: <20080814172945.250a27f2.sfr@canb.auug.org.au> <1218854219.3629.30.camel@lgn.site> <48A64235.2030108@linux.intel.com> <200808161347.41253.rusty@rustcorp.com.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <18129.82.95.100.23.1218802937.squirrel@webmail.xs4all.nl>
-	 <e7d8f83e0808150627m7a5c8738n8ac42d77c45eea76@mail.gmail.com>
-	 <alpine.DEB.1.10.0808151024120.15109@asgard.lang.hm>
-	 <e7d8f83e0808152057h5c607cfbnecdc6f0bd05c5d89@mail.gmail.com>
-	 <20080815210942.4e342c6c@infradead.org>
+In-Reply-To: <200808161347.41253.rusty@rustcorp.com.au>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Aug 16, 2008 at 2:09 PM, Arjan van de Ven <arjan@infradead.org> wrote:
-> On Sat, 16 Aug 2008 13:57:50 +1000
-> "Peter Dolding" <oiaohm@gmail.com> wrote:
->> Anti-Virus has been for years about chasing the threat.   Lets try to
->> get in front of it.  You thread model needs a major update its
->> incomplete.
->>
->
-> The problem TALPA is trying to solve is only part of the puzzle.
-> Everyone recognizes that. It's a very relevant part of the puzzle (in
-> corporate context at least), but it's very much so not a complete
-> puzzle. Does that mean we shouldn't deal with this just because it's
-> incomplete? Absolutely not!
+On Sat, Aug 16, 2008 at 01:47:40PM +1000, Rusty Russell wrote:
+> On Saturday 16 August 2008 12:57:57 Andi Kleen wrote:
+> > >> Extract is:
+> > >>
+> > >> XXX adding modparam:'acpi.power_nocheck' 34 (ffffffff806a4cf0)
+> > >
+> > > ...
+> > >
+> > >> XXX adding modparam:'acpi.acpica_version' 45 (ffffffff806a4ea8)
+> > >
+> > > Two different "modules" use the same prefix, which does not work with
+> > > the current logic, they need to live next to each other in the sequence
+> > > of options.
+> >
+> > Sequence of options being defined by link order?
+> 
+> Simplest fix is to shuffle Makefile.  But better is to create an acpi "module"
+> so the namespacing just works, something like below.  Overriding MODULE_PREFIX
+> only works for builtin code anyway.  (Which makes sense: moving a parameter
+> from one module to another isn't a change we can cover up).
+> 
+> (Sam: foo-objs-y would make this neater)
 
-TALPA idea I agree with.  As the long term forever solution I don't
-agree with due to its location.
+foo-y is even neater and works today.
 
-Lets look at the general disk to memory path.
+> 
+> diff -r 5f7194400572 drivers/acpi/Makefile
+> --- a/drivers/acpi/Makefile	Sat Aug 16 13:23:26 2008 +1000
+> +++ b/drivers/acpi/Makefile	Sat Aug 16 13:44:17 2008 +1000
+> @@ -21,10 +21,18 @@ obj-$(CONFIG_X86)		+= blacklist.o
+>  #
+>  # ACPI Core Subsystem (Interpreter)
+>  #
+> -obj-y				+= osl.o utils.o reboot.o\
+> +obj-y				+= osl.o utils.o reboot.o acpi.o \
+>  				   dispatcher/ events/ executer/ hardware/ \
+>  				   namespace/ parser/ resources/ tables/ \
+>  				   utilities/
+> +
+> +# "acpi." module_param namespace.
+> +ifdef CONFIG_ACPI_POWER
+> +acpi-objs	+= power.o
+> +endif
 
-[file system driver]
-[file system drivers caches]
-[inode's]  TALPA links in here and basically runs its own scan cache.
+becomes:
+acpi-y += power.o
 
-Long term TALPA need to move from the inode layor down and the design
-of the file system path needs to change.
+> +ifdef CONFIG_ACPI_SYSTEM
+> +acpi-objs	+= system.o event.o
+> +endif
+acpi-y += system.o event.o
 
-[file system driver]
-[generic file system cache]  TALPA enters here and spreads.
-[inodes]
+[Assuming both config symbols are bool]
 
-generic file system cache built in a way that it can store all the non
-linux permission and related data that the file system driver needs.
-
-Reasons
-1. That shape even if file system extra permissions are decided to be
-kept hidden from the rest of Linux anti-virus can scanning can see it.
-2. Everything that is in memory  is checked.
-3. Infected files can be removed from consuming memory in the file
-system cache.  So a raw memory scan of Linux will not trip on viruses
-still being present in memory even that TALPA is running.  False
-positive suggesting TALPA has failed is possible due to its current
-location.
-4 share caching of passed and failed with the file system cache.
-
-1 virus removed from a file system cache could equal the complete
-memory price of running TALPA.
-
-Its TALPA location I have major issue with.   Being blind to full set
-of information to make a judgement call is the other.
-
-I see it in the same cat a unionfs fine as a side patch to main
-kernel.   Not fine to enter main kernel due to being in the wrong
-place.  Its the balancing act if we let TALPA will it ever develop
-down to the location where it should be?
-
-Can you say 100 percent that TALPA is in the right location for what
-it is doing.   If it is not its a good temp fix until we can get
-developed the solution in the correct location.  Temp fixes normally
-never get main line.
-
-Be truthful its simply in the wrong place.   Getting it to the correct
-location for most effective memory usage and giving a virus the least
-ammont of distance into linux.  Scanned and 100 percent booted out of
-memory.  Other thing some file system drivers also keep stuff in there
-cache independent to inodes.   So spots at moment can be double
-scanned even that the complete time everything was in memory because
-the inode was freed and the file system cache still had it.
-
-You want the most effective use of CPU? if no go head with TALPA.
-
-Current TALPA fails too many holes and flaws.   All caused by 1 thing
-its location.   Yes its a major job to move it to the correct location
-its a major file system operation rework.
-
-TALPA unfortunately is like trying to build a house on quick sand.
-Foundations it needs to work correctly and 100 percent effectively
-currently not present.   The quick sand of many file system caches had
-to come back and bite at some point.  The blocking of seeing all the
-file system permissions also had to come back and bite at some point.
-
-Fix the foundations TALPA idea will be solid for its section of the
-puzzle.   Sticking head in sand and saying the foundations don't have
-major issues is just fooling to your self.  LIM and others patches
-trying to be put in also have the same quick sand issue.
-
-Peter Dolding
+	Sam
