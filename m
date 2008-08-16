@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752844AbYHPN6M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754169AbYHPN6r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752844AbYHPN6M (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Aug 2008 09:58:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750869AbYHPN55
+	id S1754169AbYHPN6r (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Aug 2008 09:58:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752141AbYHPN6i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Aug 2008 09:57:57 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:53592 "EHLO mx3.mail.elte.hu"
+	Sat, 16 Aug 2008 09:58:38 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:53638 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751285AbYHPN54 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Aug 2008 09:57:56 -0400
-Date: Sat, 16 Aug 2008 15:57:43 +0200
+	id S1750920AbYHPN6h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 16 Aug 2008 09:58:37 -0400
+Date: Sat, 16 Aug 2008 15:58:23 +0200
 From: Ingo Molnar <mingo@elte.hu>
 To: Linus Torvalds <torvalds@linux-foundation.org>
 Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
        Andrew Morton <akpm@linux-foundation.org>
-Subject: [git pull] core kernel fixes for v2.6.27
-Message-ID: <20080816135743.GA9268@elte.hu>
+Subject: [git pull] scheduler fixes for v2.6.27
+Message-ID: <20080816135823.GA10277@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -34,153 +34,72 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Linus,
 
-Please pull the latest core-fixes-for-linus git tree from:
+Please pull the latest sched-fixes-for-linus git tree from:
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git core-fixes-for-linus
+   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git sched-fixes-for-linus
 
 Thanks,
 
 	Ingo
 
 ------------------>
-Andrew Morton (1):
-      lockdep: spin_lock_nest_lock(), checkpatch fixes
+Peter Zijlstra (2):
+      sched: fix rt-bandwidth hotplug race
+      sched: scale sysctl_sched_shares_ratelimit with nr_cpus
 
-Arjan van de Ven (1):
-      lockdep: use WARN() in kernel/lockdep.c
-
-Ingo Molnar (1):
-      lockdep: build fix
-
-Stephen Hemminger (1):
-      lockdep: fix build if CONFIG_PROVE_LOCKING not defined
+Zhang, Yanmin (1):
+      sched: fix the race between walk_tg_tree and sched_create_group
 
 
- kernel/lockdep.c           |    6 ++----
- kernel/lockdep_internals.h |   13 +++++++++++++
- kernel/lockdep_proc.c      |   12 ++++++------
- kernel/spinlock.c          |    3 ---
- 4 files changed, 21 insertions(+), 13 deletions(-)
+ kernel/sched.c    |    8 +++++---
+ kernel/sched_rt.c |    2 +-
+ 2 files changed, 6 insertions(+), 4 deletions(-)
 
-diff --git a/kernel/lockdep.c b/kernel/lockdep.c
-index 1aa91fd..77fa776 100644
---- a/kernel/lockdep.c
-+++ b/kernel/lockdep.c
-@@ -1759,11 +1759,10 @@ static void check_chain_key(struct task_struct *curr)
- 		hlock = curr->held_locks + i;
- 		if (chain_key != hlock->prev_chain_key) {
- 			debug_locks_off();
--			printk("hm#1, depth: %u [%u], %016Lx != %016Lx\n",
-+			WARN(1, "hm#1, depth: %u [%u], %016Lx != %016Lx\n",
- 				curr->lockdep_depth, i,
- 				(unsigned long long)chain_key,
- 				(unsigned long long)hlock->prev_chain_key);
--			WARN_ON(1);
- 			return;
- 		}
- 		id = hlock->class_idx - 1;
-@@ -1778,11 +1777,10 @@ static void check_chain_key(struct task_struct *curr)
- 	}
- 	if (chain_key != curr->curr_chain_key) {
- 		debug_locks_off();
--		printk("hm#2, depth: %u [%u], %016Lx != %016Lx\n",
-+		WARN(1, "hm#2, depth: %u [%u], %016Lx != %016Lx\n",
- 			curr->lockdep_depth, i,
- 			(unsigned long long)chain_key,
- 			(unsigned long long)curr->curr_chain_key);
--		WARN_ON(1);
- 	}
- #endif
- }
-diff --git a/kernel/lockdep_internals.h b/kernel/lockdep_internals.h
-index 55db193..56b1969 100644
---- a/kernel/lockdep_internals.h
-+++ b/kernel/lockdep_internals.h
-@@ -50,8 +50,21 @@ extern unsigned int nr_process_chains;
- extern unsigned int max_lockdep_depth;
- extern unsigned int max_recursion_depth;
+diff --git a/kernel/sched.c b/kernel/sched.c
+index d601fb0..0408071 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -808,9 +808,9 @@ const_debug unsigned int sysctl_sched_nr_migrate = 32;
  
-+#ifdef CONFIG_PROVE_LOCKING
- extern unsigned long lockdep_count_forward_deps(struct lock_class *);
- extern unsigned long lockdep_count_backward_deps(struct lock_class *);
-+#else
-+static inline unsigned long
-+lockdep_count_forward_deps(struct lock_class *class)
-+{
-+	return 0;
-+}
-+static inline unsigned long
-+lockdep_count_backward_deps(struct lock_class *class)
-+{
-+	return 0;
-+}
-+#endif
- 
- #ifdef CONFIG_DEBUG_LOCKDEP
  /*
-diff --git a/kernel/lockdep_proc.c b/kernel/lockdep_proc.c
-index fa19aee..4b194d3 100644
---- a/kernel/lockdep_proc.c
-+++ b/kernel/lockdep_proc.c
-@@ -82,7 +82,6 @@ static void print_name(struct seq_file *m, struct lock_class *class)
+  * ratelimit for updating the group shares.
+- * default: 0.5ms
++ * default: 0.25ms
+  */
+-const_debug unsigned int sysctl_sched_shares_ratelimit = 500000;
++unsigned int sysctl_sched_shares_ratelimit = 250000;
  
- static int l_show(struct seq_file *m, void *v)
- {
--	unsigned long nr_forward_deps, nr_backward_deps;
- 	struct lock_class *class = v;
- 	struct lock_list *entry;
- 	char c1, c2, c3, c4;
-@@ -96,11 +95,10 @@ static int l_show(struct seq_file *m, void *v)
- #ifdef CONFIG_DEBUG_LOCKDEP
- 	seq_printf(m, " OPS:%8ld", class->ops);
- #endif
--	nr_forward_deps = lockdep_count_forward_deps(class);
--	seq_printf(m, " FD:%5ld", nr_forward_deps);
--
--	nr_backward_deps = lockdep_count_backward_deps(class);
--	seq_printf(m, " BD:%5ld", nr_backward_deps);
-+#ifdef CONFIG_PROVE_LOCKING
-+	seq_printf(m, " FD:%5ld", lockdep_count_forward_deps(class));
-+	seq_printf(m, " BD:%5ld", lockdep_count_backward_deps(class));
-+#endif
+ /*
+  * period over which we measure -rt task cpu usage in us.
+@@ -5740,6 +5740,8 @@ static inline void sched_init_granularity(void)
+ 		sysctl_sched_latency = limit;
  
- 	get_usage_chars(class, &c1, &c2, &c3, &c4);
- 	seq_printf(m, " %c%c%c%c", c1, c2, c3, c4);
-@@ -325,7 +323,9 @@ static int lockdep_stats_show(struct seq_file *m, void *v)
- 		if (class->usage_mask & LOCKF_ENABLED_HARDIRQS_READ)
- 			nr_hardirq_read_unsafe++;
- 
-+#ifdef CONFIG_PROVE_LOCKING
- 		sum_forward_deps += lockdep_count_forward_deps(class);
-+#endif
- 	}
- #ifdef CONFIG_DEBUG_LOCKDEP
- 	DEBUG_LOCKS_WARN_ON(debug_atomic_read(&nr_unused_locks) != nr_unused);
-diff --git a/kernel/spinlock.c b/kernel/spinlock.c
-index 44baeea..29ab207 100644
---- a/kernel/spinlock.c
-+++ b/kernel/spinlock.c
-@@ -290,7 +290,6 @@ void __lockfunc _spin_lock_nested(spinlock_t *lock, int subclass)
- 	spin_acquire(&lock->dep_map, subclass, 0, _RET_IP_);
- 	LOCK_CONTENDED(lock, _raw_spin_trylock, _raw_spin_lock);
+ 	sysctl_sched_wakeup_granularity *= factor;
++
++	sysctl_sched_shares_ratelimit *= factor;
  }
--
- EXPORT_SYMBOL(_spin_lock_nested);
  
- unsigned long __lockfunc _spin_lock_irqsave_nested(spinlock_t *lock, int subclass)
-@@ -312,7 +311,6 @@ unsigned long __lockfunc _spin_lock_irqsave_nested(spinlock_t *lock, int subclas
- #endif
- 	return flags;
- }
--
- EXPORT_SYMBOL(_spin_lock_irqsave_nested);
+ #ifdef CONFIG_SMP
+@@ -8462,8 +8464,8 @@ struct task_group *sched_create_group(struct task_group *parent)
+ 	WARN_ON(!parent); /* root should already exist */
  
- void __lockfunc _spin_lock_nest_lock(spinlock_t *lock,
-@@ -322,7 +320,6 @@ void __lockfunc _spin_lock_nest_lock(spinlock_t *lock,
- 	spin_acquire_nest(&lock->dep_map, 0, 0, nest_lock, _RET_IP_);
- 	LOCK_CONTENDED(lock, _raw_spin_trylock, _raw_spin_lock);
- }
--
- EXPORT_SYMBOL(_spin_lock_nest_lock);
+ 	tg->parent = parent;
+-	list_add_rcu(&tg->siblings, &parent->children);
+ 	INIT_LIST_HEAD(&tg->children);
++	list_add_rcu(&tg->siblings, &parent->children);
+ 	spin_unlock_irqrestore(&task_group_lock, flags);
  
- #endif
+ 	return tg;
+diff --git a/kernel/sched_rt.c b/kernel/sched_rt.c
+index 6163e4c..998ba54 100644
+--- a/kernel/sched_rt.c
++++ b/kernel/sched_rt.c
+@@ -298,7 +298,7 @@ static void __disable_runtime(struct rq *rq)
+ 			struct rt_rq *iter = sched_rt_period_rt_rq(rt_b, i);
+ 			s64 diff;
+ 
+-			if (iter == rt_rq)
++			if (iter == rt_rq || iter->rt_runtime == RUNTIME_INF)
+ 				continue;
+ 
+ 			spin_lock(&iter->rt_runtime_lock);
