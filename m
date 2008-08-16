@@ -1,61 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755721AbYHPG7S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754833AbYHPHNw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755721AbYHPG7S (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Aug 2008 02:59:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752311AbYHPG7G
+	id S1754833AbYHPHNw (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Aug 2008 03:13:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752543AbYHPHNn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Aug 2008 02:59:06 -0400
-Received: from 166-70-238-42.ip.xmission.com ([166.70.238.42]:54954 "EHLO
-	ns1.wolfmountaingroup.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750928AbYHPG7F (ORCPT
+	Sat, 16 Aug 2008 03:13:43 -0400
+Received: from ozlabs.org ([203.10.76.45]:35824 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752504AbYHPHNn convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Aug 2008 02:59:05 -0400
-Message-ID: <39687.166.70.238.45.1218868509.squirrel@webmail.wolfmountaingroup.com>
-In-Reply-To: <87ljyxxybv.fsf@basil.nowhere.org>
-References: <200808160341.m7G3flG1022571@wolfmountaingroup.com>
-    <87ljyxxybv.fsf@basil.nowhere.org>
-Date: Sat, 16 Aug 2008 00:35:09 -0600 (MDT)
-Subject: Re: [PATCH 2.6.27-rc3 21/28] mdb: disable console warnings if the 
-     debugger is present.
-From: jmerkey@wolfmountaingroup.com
-To: "Andi Kleen" <andi@firstfloor.org>
-Cc: jmerkey@wolfmountaingroup.com, linux-kernel@vger.kernel.org
-User-Agent: SquirrelMail/1.4.6
+	Sat, 16 Aug 2008 03:13:43 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Fernando Luis =?utf-8?q?V=C3=A1zquez_Cao?= 
+	<fernando@oss.ntt.co.jp>
+Subject: Re: request->ioprio
+Date: Sat, 16 Aug 2008 17:13:36 +1000
+User-Agent: KMail/1.9.9
+Cc: Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
+       =?utf-8?q?=E5=90=89=E5=B7=9D_=E6=8B=93=E5=93=89?= 
+	<yoshikawa.takuya@oss.ntt.co.jp>,
+       dpshah@google.com
+References: <1218014196.4419.44.camel@sebastian.kern.oss.ntt.co.jp> <200808141216.33688.rusty@rustcorp.com.au> <1218779462.5291.59.camel@sebastian.kern.oss.ntt.co.jp>
+In-Reply-To: <1218779462.5291.59.camel@sebastian.kern.oss.ntt.co.jp>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200808161713.37146.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> jmerkey@wolfmountaingroup.com writes:
->>
->>  /* Some debug stub to catch some of the obvious races in the VT code */
->> +
->> +#if defined(CONFIG_MDB) || defined(CONFIG_MDB_MODULE)
->> +#define WARN_CONSOLE_UNLOCKED()
->> +#else
->>  #if 1
->>  #define WARN_CONSOLE_UNLOCKED()	WARN_ON(!is_console_locked() &&
->> !oops_in_progress)
->>  #else
->>  #define WARN_CONSOLE_UNLOCKED()
->>  #endif
->> +#endif /* CONFIG_MDB */
+On Friday 15 August 2008 15:51:02 Fernando Luis Vázquez Cao wrote:
+> On Thu, 2008-08-14 at 12:16 +1000, Rusty Russell wrote:
+> > On Wednesday 13 August 2008 17:06:03 Fernando Luis Vázquez Cao wrote:
+> > > Besides, I guess that accessing the io context information (such as
+> > > ioprio) of a request through elevator-specific private structures is
+> > > not something we want virtio_blk (or future users) to do.
+> >
+> > The only semantic I assumed was "higher is better".  The server (ie.
+> > host) can really only use the information to schedule between I/Os for
+> > that particular guest anyway.
 >
-> The obvious alternative would be to just set oops_in_progress
-> while the debugger runs.
->
-> -Andi
->
+> Does that mean you are not going to incorporate the prio class system
+> that is used in Linux?
 
-Also added to the list.  that would remove the need for this patch, which
-would also benefit kdb since it also has a similar patch in this file too.
+Actually, since it's unused at the moment, we can define it however we want.  
+But note that this is an ABI; while the kernel-internal definitions are 
+fluid, this semantic must stay the same (even if the actual values differ).
 
-I will roll these fixes into the rc4 patch.
+So we should probably put an explicit mapping function there anyway.
 
-Jeff
-
-
+Thanks,
+Rusty.
