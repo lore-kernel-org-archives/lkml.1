@@ -1,44 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758610AbYHPUrp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756431AbYHPUsu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758610AbYHPUrp (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Aug 2008 16:47:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755311AbYHPUeZ
+	id S1756431AbYHPUsu (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Aug 2008 16:48:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757194AbYHPUpg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Aug 2008 16:34:25 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:37399 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754987AbYHPUeY convert rfc822-to-8bit (ORCPT
+	Sat, 16 Aug 2008 16:45:36 -0400
+Received: from zone0.gcu-squad.org ([212.85.147.21]:19157 "EHLO
+	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756987AbYHPUpe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Aug 2008 16:34:24 -0400
-Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Frans Pop" <elendil@planet.nl>
+	Sat, 16 Aug 2008 16:45:34 -0400
+Date: Sat, 16 Aug 2008 22:45:26 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       "Andi Kleen" <andi@firstfloor.org>
+Subject: Re: [Bug #11346] kernel BUG at arch/x86/mm/pat.c:233!
+Message-ID: <20080816224526.43145f77@hyperion.delvare>
+In-Reply-To: <sNRO-BDDjQL.A.99D.9ZzpIB@albercik>
 References: <DLWXHEp37wB.A.duD.yZzpIB@albercik>
-In-Reply-To: <DLWXHEp37wB.A.duD.yZzpIB@albercik>
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Disposition: inline
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Message-ID: <sNRO-BDDjQL.A.byD.2ZzpIB@albercik>
-Subject: [Bug #11356] Linux 2.6.27-rc3 - build failure: undefined reference to `.lockdep_count_forward_deps'
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Date: Sat, 16 Aug 2008 21:02:57 +0200 (CEST)
+	<sNRO-BDDjQL.A.99D.9ZzpIB@albercik>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This message has been generated automatically as a part of a report
-of recent regressions.
+Hi Rafael,
 
-The following bug entry is on the current list of known regressions
-from 2.6.26.  Please verify if it still should be listed and let me know
-(either way).
+On Sat, 16 Aug 2008 21:02:56 +0200 (CEST), Rafael J. Wysocki wrote:
+> This message has been generated automatically as a part of a report
+> of recent regressions.
+> 
+> The following bug entry is on the current list of known regressions
+> from 2.6.26.  Please verify if it still should be listed and let me know
+> (either way).
+> 
+> 
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11346
+> Subject	: kernel BUG at arch/x86/mm/pat.c:233!
+> Submitter	: Jean Delvare <khali@linux-fr.org>
+> Date		: 2008-08-15 02:10 (2 days old)
+> Handled-By	: Andi Kleen <andi@firstfloor.org>
+> Patch		: http://bugzilla.kernel.org/attachment.cgi?id=17270&action=view
 
+Andi's patch still needs to be pushed to Linus.
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11356
-Subject		: Linux 2.6.27-rc3 - build failure: undefined reference to `.lockdep_count_forward_deps'
-Submitter	: Frans Pop <elendil@planet.nl>
-Date		: 2008-08-16 19:11 (1 days old)
-References	: http://marc.info/?l=linux-kernel&m=121891396320127&w=4
-
-
+-- 
+Jean Delvare
