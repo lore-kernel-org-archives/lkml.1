@@ -1,72 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753428AbYHPRp2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752530AbYHPRpo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753428AbYHPRp2 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Aug 2008 13:45:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752105AbYHPRpO
+	id S1752530AbYHPRpo (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Aug 2008 13:45:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752577AbYHPRpT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Aug 2008 13:45:14 -0400
-Received: from mtagate4.de.ibm.com ([195.212.29.153]:45788 "EHLO
-	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751500AbYHPRpN (ORCPT
+	Sat, 16 Aug 2008 13:45:19 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:39262 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752491AbYHPRpR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Aug 2008 13:45:13 -0400
-Subject: Re: [patch 1/3] kmsg: Kernel message catalog macros.
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Reply-To: schwidefsky@de.ibm.com
-To: Rick Troth <rmt@casita.net>
-Cc: Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org,
-       linux-s390@vger.kernel.org,
-       lf_kernel_messages@lists.linux-foundation.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Michael Holzheu <holzheu@de.ibm.com>, Gerrit Huizenga <gh@us.ibm.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Randy Dunlap <randy.dunlap@oracle.com>, Jan Kara <jack@suse.cz>,
-       Pavel Machek <pavel@ucw.cz>, Sam Ravnborg <sam@ravnborg.org>,
-       Joe Perches <joe@perches.com>,
-       Jochen =?ISO-8859-1?Q?Vo=DF?= <jochen.voss@googlemail.com>,
-       Kunai Takashi <kunai@linux-foundation.jp>,
-       Tim Bird <tim.bird@am.sony.com>
-In-Reply-To: <Pine.LNX.4.58.0808130921180.14304@jeremiah.casita.net>
-References: <20080730165656.118280544@de.ibm.com>
-	 <20080730171156.824640459@de.ibm.com>
-	 <200808131433.02966.rusty@rustcorp.com.au>
-	 <Pine.LNX.4.58.0808130921180.14304@jeremiah.casita.net>
-Content-Type: text/plain
-Organization: IBM Corporation
-Date: Sat, 16 Aug 2008 19:45:05 +0200
-Message-Id: <1218908705.6037.6.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Sat, 16 Aug 2008 13:45:17 -0400
+Date: Sat, 16 Aug 2008 10:44:29 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Ulrich Drepper <drepper@redhat.com>
+cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: [PATCH] VMA comment fixes
+In-Reply-To: <200808160934.m7G9YgWs028953@hs20-bc2-1.build.redhat.com>
+Message-ID: <alpine.LFD.1.10.0808161033350.3324@nehalem.linux-foundation.org>
+References: <200808160934.m7G9YgWs028953@hs20-bc2-1.build.redhat.com>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-08-15 at 16:05 -0400, Rick Troth wrote:
-> On Wed, 13 Aug 2008, Rusty Russell wrote:
-> > Can you hash the format string to generate the id?  6 hex digits should be
-> > enough, and your tool can check for clashes.  As it's bad form to have
-> > identical strings for different semantics anyway, this seems to make sense.
-> 
-> I second this suggestion (or propose something like it).
-> A short hash or even an index into some off-line table
-> lets the user hit the right page when looking for an explanation.
-
-The kmsg id is just that, an index into the table of message for a
-particular component.
-
-> I've been using a similar (and perhaps ugly to some eyes)
-> numeric message catalog for years (with token substitution and all).
-> The catalogs can be translated and then replaced with local language
-> so the users don't have to learn English (or French, or German,
-> or Japanese, or Chinese).
-
-That is what we are trying to achieve as well.
-
--- 
-blue skies,
-  Martin.
-
-"Reality continues to ruin my life." - Calvin.
 
 
+On Sat, 16 Aug 2008, Ulrich Drepper wrote:
+>
+> These seem to be two tiny problems in comments related to VMA data
+> structures.  Am I correct?
+
+No.
+
+> diff --git a/include/linux/mm_types.h b/include/linux/mm_types.h
+> -	unsigned long vm_flags;		/* Flags, listed below. */
+> +	unsigned long vm_flags;		/* Flags, see vmalloc.h. */
+
+It's "see mm.h" for the primary one. The vmalloc.h ones are only used for 
+vmalloc'ed areas, no for regular _user_ mappings.
+
+That said, I agree that it's damn confusing that we have two different 
+sets of flags, both called VM_xyz. We use the "vm_area_struct" for the 
+normal user virtual mappings (mmap) tracking, and we use the "vm_struct" 
+for the kernel virtual mappings (vmalloc).
+
+Both have a flags field, and both use VM_xyz for their field names.
+
+> diff --git a/include/linux/vmalloc.h b/include/linux/vmalloc.h
+> -/* bits in vm_struct->flags */
+> +/* bits in vm_area_struct->flags */
+
+See above. The vmalloc ones really are in "vm_struct->flags".
+
+The confusion comes at least partly because
+
+ - I think historically we _used_ to use vm_area_struct for both, if I 
+   recall correctly
+
+and because
+
+ - we actually have some mixing of the two (for example 
+   "remap_vmalloc_range()" will remap a vmalloc mapping _into_ a user 
+   mapping, so it takes a _user_ mapping (a "vm_area_struct") _and_ a 
+   vmalloc address (internally using a "struct vm_struct") and copies from 
+   one to the other.
+
+it might be a good idea to call the vmalloc flags somethign else than 
+VM_xyz. But I'm not sure it's worth the churn. I don't remember there 
+having ever been any _actual_ confusion by the VM people who have to deal 
+with both (because you really very seldom can confuse them).
+
+		Linus
