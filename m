@@ -1,105 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754169AbYHPN6r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752798AbYHPOuz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754169AbYHPN6r (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Aug 2008 09:58:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752141AbYHPN6i
+	id S1752798AbYHPOuz (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Aug 2008 10:50:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751640AbYHPOur
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Aug 2008 09:58:38 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:53638 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750920AbYHPN6h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Aug 2008 09:58:37 -0400
-Date: Sat, 16 Aug 2008 15:58:23 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [git pull] scheduler fixes for v2.6.27
-Message-ID: <20080816135823.GA10277@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Sat, 16 Aug 2008 10:50:47 -0400
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:51247 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751285AbYHPOuq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 16 Aug 2008 10:50:46 -0400
+Subject: Re: [PATCH] pci: change msi-x vector to 32bit
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Andrew Vasquez <andrew.vasquez@qlogic.com>
+In-Reply-To: <86802c440808152342m772d5eabs59a9c93ffe4cf557@mail.gmail.com>
+References: <200808160326.m7G3QR1G012726@terminus.zytor.com>
+	 <86802c440808152342m772d5eabs59a9c93ffe4cf557@mail.gmail.com>
+Content-Type: text/plain
+Date: Sat, 16 Aug 2008 09:50:38 -0500
+Message-Id: <1218898238.3940.6.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
+On Fri, 2008-08-15 at 23:42 -0700, Yinghai Lu wrote:
+> On Fri, Aug 15, 2008 at 8:26 PM, H. Peter Anvin <hpa@zytor.com> wrote:
+> > The 28 bits aren't enough, are they: we need domain as well (and surely we can have more than 16 domains?)
+> 
+> current code
+> static unsigned int build_irq_for_pci_dev(struct pci_dev *dev)
+> {
+>         unsigned int irq;
+> 
+>         irq = dev->bus->number;
+>         irq <<= 8;
+>         irq |= dev->devfn;
+>         irq <<= 12;
+> 
+>         return irq;
+> }
 
-Please pull the latest sched-fixes-for-linus git tree from:
+Where exactly is this code in the kernel?  Most arches assume the irq is
+an index to a compact table bounded by NR_IRQS, so something like this
+would violate that assumption.
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git sched-fixes-for-linus
+This is also the reason why it doesn't matter to assign a u32 irq to a
+u16 vector.  The u32 irq is a historical thing; it used to be u16 but
+then sparc used a vector mapping scheme for the irq number, which I
+don't believe it does any more.
 
-Thanks,
+> int arch_setup_msi_irq(struct pci_dev *dev, struct msi_desc *desc)
+> {
+>         unsigned int irq;
+>         int ret;
+>         unsigned int irq_want;
+> 
+>         irq_want = build_irq_for_pci_dev(dev) + 0x100;
+> 
+>         irq = create_irq(irq_want);
+> 
+> domain is not used yet.
+> 
+> need to make vecter_irq to vector_domain_irq
+> 
+> irq_desc(irq) change to domain_irq_desc(domain, irq)
 
-	Ingo
+So the assumption underlying this is that the same bus/dev/function on
+different domains would share irq space ... that sounds possible but a
+bit strange.
 
------------------->
-Peter Zijlstra (2):
-      sched: fix rt-bandwidth hotplug race
-      sched: scale sysctl_sched_shares_ratelimit with nr_cpus
-
-Zhang, Yanmin (1):
-      sched: fix the race between walk_tg_tree and sched_create_group
+James
 
 
- kernel/sched.c    |    8 +++++---
- kernel/sched_rt.c |    2 +-
- 2 files changed, 6 insertions(+), 4 deletions(-)
-
-diff --git a/kernel/sched.c b/kernel/sched.c
-index d601fb0..0408071 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -808,9 +808,9 @@ const_debug unsigned int sysctl_sched_nr_migrate = 32;
- 
- /*
-  * ratelimit for updating the group shares.
-- * default: 0.5ms
-+ * default: 0.25ms
-  */
--const_debug unsigned int sysctl_sched_shares_ratelimit = 500000;
-+unsigned int sysctl_sched_shares_ratelimit = 250000;
- 
- /*
-  * period over which we measure -rt task cpu usage in us.
-@@ -5740,6 +5740,8 @@ static inline void sched_init_granularity(void)
- 		sysctl_sched_latency = limit;
- 
- 	sysctl_sched_wakeup_granularity *= factor;
-+
-+	sysctl_sched_shares_ratelimit *= factor;
- }
- 
- #ifdef CONFIG_SMP
-@@ -8462,8 +8464,8 @@ struct task_group *sched_create_group(struct task_group *parent)
- 	WARN_ON(!parent); /* root should already exist */
- 
- 	tg->parent = parent;
--	list_add_rcu(&tg->siblings, &parent->children);
- 	INIT_LIST_HEAD(&tg->children);
-+	list_add_rcu(&tg->siblings, &parent->children);
- 	spin_unlock_irqrestore(&task_group_lock, flags);
- 
- 	return tg;
-diff --git a/kernel/sched_rt.c b/kernel/sched_rt.c
-index 6163e4c..998ba54 100644
---- a/kernel/sched_rt.c
-+++ b/kernel/sched_rt.c
-@@ -298,7 +298,7 @@ static void __disable_runtime(struct rq *rq)
- 			struct rt_rq *iter = sched_rt_period_rt_rq(rt_b, i);
- 			s64 diff;
- 
--			if (iter == rt_rq)
-+			if (iter == rt_rq || iter->rt_runtime == RUNTIME_INF)
- 				continue;
- 
- 			spin_lock(&iter->rt_runtime_lock);
