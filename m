@@ -1,156 +1,153 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756404AbYHQTv6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754850AbYHQT4R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756404AbYHQTv6 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Aug 2008 15:51:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751354AbYHQTvv
+	id S1754850AbYHQT4R (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Aug 2008 15:56:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751280AbYHQTz6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Aug 2008 15:51:51 -0400
-Received: from server.drzeus.cx ([85.8.24.28]:46445 "EHLO smtp.drzeus.cx"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751084AbYHQTvu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Aug 2008 15:51:50 -0400
-Date: Sun, 17 Aug 2008 21:51:41 +0200
-From: Pierre Ossman <drzeus-list@drzeus.cx>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [GIT PULL] MMC fixes for 2.6.27-rc4
-Message-ID: <20080817215141.72e3b676@mjolnir.drzeus.cx>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.13.6; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=PGP-SHA1; boundary="=_freyr.drzeus.cx-8918-1219002709-0001-2"
+	Sun, 17 Aug 2008 15:55:58 -0400
+Received: from fg-out-1718.google.com ([72.14.220.154]:16970 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750886AbYHQTz5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Aug 2008 15:55:57 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:date:message-id:subject;
+        b=TKsSjmEMPm6wQlxiBqzboXZpuVmVTO5/s98aMPJCbUTKUp/mhnZaPcTw4ox4+E3obo
+         fwZOiXnEiZC7THdqt9QrRNhQs3V73caaQEZ8jksIPAwun0QDsKIdBnx0c4FWJfS+1QBW
+         dDE1Ghh2y1Z3SsTfaJN0XEUHYNDNtgSGdiSh8=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: linux-ide@vger.kernel.org
+Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       linux-kernel@vger.kernel.org
+Date: Sun, 17 Aug 2008 21:53:36 +0200
+Message-Id: <20080817195336.13393.86030.sendpatchset@localhost.localdomain>
+Subject: [PATCH 1/9] ide: fix HDIO_DRIVE_TASK[FILE] ioctls for CHS commands on LBA devices
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
+Add IDE_DFLAG_LBA device flag and use it instead of ->select.b.lba.
 
---=_freyr.drzeus.cx-8918-1219002709-0001-2
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+Since ->tf_load uses ->select.all for ATA Device/Head register this
+fixes HDIO_DRIVE_TASK[FILE] ioctls for CHS commands on LBA devices.
 
-Linus, please pull from
+Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+---
+moar patches (on top of pata tree + previous 9)
 
-        git://git.kernel.org/pub/scm/linux/kernel/git/drzeus/mmc.git for-li=
-nus
+ drivers/ide/ide-disk.c |   33 ++++++++++++++++++++-------------
+ drivers/ide/ide-io.c   |    4 ++--
+ include/linux/ide.h    |    1 +
+ 3 files changed, 23 insertions(+), 15 deletions(-)
 
-to receive the following updates:
-
- drivers/mmc/host/s3cmci.c     |   17 ++++++++++-------
- drivers/mmc/host/sdricoh_cs.c |    1 -
- 2 files changed, 10 insertions(+), 8 deletions(-)
-
-Ben Dooks (2):
-      s3cmci: fix sparse errors from non-exported functions
-      s3cmci: attach get_cd host ops
-
-Huang Weiyi (1):
-      sdricoh_cs: removed unused #include <version.h>
-
-diff --git a/drivers/mmc/host/s3cmci.c b/drivers/mmc/host/s3cmci.c
-index 7c994e1..ae16d84 100644
---- a/drivers/mmc/host/s3cmci.c
-+++ b/drivers/mmc/host/s3cmci.c
-@@ -595,8 +595,9 @@ static irqreturn_t s3cmci_irq_cd(int irq, void *dev_id)
- 	return IRQ_HANDLED;
- }
-=20
--void s3cmci_dma_done_callback(struct s3c2410_dma_chan *dma_ch, void *buf_i=
-d,
--			      int size, enum s3c2410_dma_buffresult result)
-+static void s3cmci_dma_done_callback(struct s3c2410_dma_chan *dma_ch,
-+				     void *buf_id, int size,
-+				     enum s3c2410_dma_buffresult result)
+Index: b/drivers/ide/ide-disk.c
+===================================================================
+--- a/drivers/ide/ide-disk.c
++++ b/drivers/ide/ide-disk.c
+@@ -156,7 +156,7 @@ static ide_startstop_t __ide_do_rw_disk(
+ 	memset(&task, 0, sizeof(task));
+ 	task.tf_flags = IDE_TFLAG_TF | IDE_TFLAG_DEVICE;
+ 
+-	if (drive->select.b.lba) {
++	if (drive->dev_flags & IDE_DFLAG_LBA) {
+ 		if (lba48) {
+ 			pr_debug("%s: LBA=0x%012llx\n", drive->name,
+ 					(unsigned long long)block);
+@@ -181,6 +181,8 @@ static ide_startstop_t __ide_do_rw_disk(
+ 			tf->lbah   = block >>= 8;
+ 			tf->device = (block >> 8) & 0xf;
+ 		}
++
++		tf->device |= ATA_LBA;
+ 	} else {
+ 		unsigned int sect, head, cyl, track;
+ 
+@@ -378,28 +380,32 @@ static void idedisk_check_hpa(ide_drive_
+ static void init_idedisk_capacity(ide_drive_t *drive)
  {
- 	struct s3cmci_host *host =3D buf_id;
- 	unsigned long iflags;
-@@ -740,8 +741,8 @@ request_done:
- 	mmc_request_done(host->mmc, mrq);
- }
-=20
--
--void s3cmci_dma_setup(struct s3cmci_host *host, enum s3c2410_dmasrc source)
-+static void s3cmci_dma_setup(struct s3cmci_host *host,
-+			     enum s3c2410_dmasrc source)
- {
- 	static enum s3c2410_dmasrc last_source =3D -1;
- 	static int setup_ok;
-@@ -1003,8 +1004,9 @@ static void s3cmci_send_request(struct mmc_host *mmc)
- 	enable_irq(host->irq);
- }
-=20
--static int s3cmci_card_present(struct s3cmci_host *host)
-+static int s3cmci_card_present(struct mmc_host *mmc)
- {
-+	struct s3cmci_host *host =3D mmc_priv(mmc);
- 	struct s3c24xx_mci_pdata *pdata =3D host->pdata;
- 	int ret;
-=20
-@@ -1023,7 +1025,7 @@ static void s3cmci_request(struct mmc_host *mmc, stru=
-ct mmc_request *mrq)
- 	host->cmd_is_stop =3D 0;
- 	host->mrq =3D mrq;
-=20
--	if (s3cmci_card_present(host) =3D=3D 0) {
-+	if (s3cmci_card_present(mmc) =3D=3D 0) {
- 		dbg(host, dbg_err, "%s: no medium present\n", __func__);
- 		host->mrq->cmd->error =3D -ENOMEDIUM;
- 		mmc_request_done(mmc, mrq);
-@@ -1138,6 +1140,7 @@ static struct mmc_host_ops s3cmci_ops =3D {
- 	.request	=3D s3cmci_request,
- 	.set_ios	=3D s3cmci_set_ios,
- 	.get_ro		=3D s3cmci_get_ro,
-+	.get_cd		=3D s3cmci_card_present,
- };
-=20
- static struct s3c24xx_mci_pdata s3cmci_def_pdata =3D {
-@@ -1206,7 +1209,7 @@ static int __devinit s3cmci_probe(struct platform_dev=
-ice *pdev, int is2440)
+ 	u16 *id = drive->id;
+-	/*
+-	 * If this drive supports the Host Protected Area feature set,
+-	 * then we may need to change our opinion about the drive's capacity.
+-	 */
+-	int hpa = ata_id_hpa_enabled(id);
++	int lba;
+ 
+ 	if (ata_id_lba48_enabled(id)) {
+ 		/* drive speaks 48-bit LBA */
+-		drive->select.b.lba = 1;
++		lba = 1;
+ 		drive->capacity64 = ata_id_u64(id, ATA_ID_LBA_CAPACITY_2);
+-		if (hpa)
+-			idedisk_check_hpa(drive);
+ 	} else if (ata_id_has_lba(id) && ata_id_is_lba_capacity_ok(id)) {
+ 		/* drive speaks 28-bit LBA */
+-		drive->select.b.lba = 1;
++		lba = 1;
+ 		drive->capacity64 = ata_id_u32(id, ATA_ID_LBA_CAPACITY);
+-		if (hpa)
+-			idedisk_check_hpa(drive);
+ 	} else {
+ 		/* drive speaks boring old 28-bit CHS */
++		lba = 0;
+ 		drive->capacity64 = drive->cyl * drive->head * drive->sect;
  	}
-=20
- 	host->base =3D ioremap(host->mem->start, RESSIZE(host->mem));
--	if (host->base =3D=3D 0) {
-+	if (!host->base) {
- 		dev_err(&pdev->dev, "failed to ioremap() io memory region.\n");
- 		ret =3D -EINVAL;
- 		goto probe_free_mem_region;
-diff --git a/drivers/mmc/host/sdricoh_cs.c b/drivers/mmc/host/sdricoh_cs.c
-index f99e9f7..1df44d9 100644
---- a/drivers/mmc/host/sdricoh_cs.c
-+++ b/drivers/mmc/host/sdricoh_cs.c
-@@ -29,7 +29,6 @@
- #include <linux/pci.h>
- #include <linux/ioport.h>
- #include <linux/scatterlist.h>
--#include <linux/version.h>
-=20
- #include <pcmcia/cs_types.h>
- #include <pcmcia/cs.h>
-
-
-
---=20
-     -- Pierre Ossman
-
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  rdesktop, core developer          http://www.rdesktop.org
-
-  WARNING: This correspondence is being monitored by the
-  Swedish government. Make sure your server uses encryption
-  for SMTP traffic and consider using PGP for end-to-end
-  encryption.
-
---=_freyr.drzeus.cx-8918-1219002709-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-
-iEYEARECAAYFAkiogVIACgkQ7b8eESbyJLiX9ACg26yjT/8wOPTAuhOalGYfNnGX
-Y7kAoI6hxBjsTrqtGviomPq/AqrUvTvX
-=1Zyb
------END PGP SIGNATURE-----
-
---=_freyr.drzeus.cx-8918-1219002709-0001-2--
++
++	if (lba) {
++		drive->dev_flags |= IDE_DFLAG_LBA;
++
++		/*
++		* If this device supports the Host Protected Area feature set,
++		* then we may need to change our opinion about its capacity.
++		*/
++		if (ata_id_hpa_enabled(id))
++			idedisk_check_hpa(drive);
++	}
+ }
+ 
+ static sector_t idedisk_capacity(ide_drive_t *drive)
+@@ -1105,7 +1111,8 @@ static int ide_disk_probe(ide_drive_t *d
+ 	drive->driver_data = idkp;
+ 
+ 	idedisk_setup(drive);
+-	if ((!drive->head || drive->head > 16) && !drive->select.b.lba) {
++	if ((drive->dev_flags & IDE_DFLAG_LBA) == 0 &&
++	    (drive->head == 0 || drive->head > 16)) {
+ 		printk(KERN_ERR "%s: INVALID GEOMETRY: %d PHYSICAL HEADS?\n",
+ 			drive->name, drive->head);
+ 		drive->dev_flags &= ~IDE_DFLAG_ATTACH;
+Index: b/drivers/ide/ide-io.c
+===================================================================
+--- a/drivers/ide/ide-io.c
++++ b/drivers/ide/ide-io.c
+@@ -383,7 +383,7 @@ static ide_startstop_t ide_ata_error(ide
+ 	} else if (stat & ATA_ERR) {
+ 		/* err has different meaning on cdrom and tape */
+ 		if (err == ATA_ABORTED) {
+-			if (drive->select.b.lba &&
++			if ((drive->dev_flags & IDE_DFLAG_LBA) &&
+ 			    /* some newer drives don't support ATA_CMD_INIT_DEV_PARAMS */
+ 			    hwif->tp_ops->read_status(hwif) == ATA_CMD_INIT_DEV_PARAMS)
+ 				return ide_stopped;
+@@ -513,7 +513,7 @@ static void ide_tf_set_specify_cmd(ide_d
+ 	tf->lbal    = drive->sect;
+ 	tf->lbam    = drive->cyl;
+ 	tf->lbah    = drive->cyl >> 8;
+-	tf->device  = ((drive->head - 1) | drive->select.all) & ~ATA_LBA;
++	tf->device  = (drive->head - 1) | drive->select.all;
+ 	tf->command = ATA_CMD_INIT_DEV_PARAMS;
+ }
+ 
+Index: b/include/linux/ide.h
+===================================================================
+--- a/include/linux/ide.h
++++ b/include/linux/ide.h
+@@ -500,6 +500,7 @@ enum {
+ 	IDE_DFLAG_NOWERR		= (1 << 24),
+ 	/* retrying in PIO */
+ 	IDE_DFLAG_DMA_PIO_RETRY		= (1 << 25),
++	IDE_DFLAG_LBA			= (1 << 26),
+ };
+ 
+ struct ide_drive_s {
