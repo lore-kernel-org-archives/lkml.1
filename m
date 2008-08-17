@@ -1,197 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755580AbYHQVof@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755577AbYHQVug@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755580AbYHQVof (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Aug 2008 17:44:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751280AbYHQVo3
+	id S1755577AbYHQVug (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Aug 2008 17:50:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752235AbYHQVu3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Aug 2008 17:44:29 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:41655 "EHLO ogre.sisk.pl"
+	Sun, 17 Aug 2008 17:50:29 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:41676 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750886AbYHQVo2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Aug 2008 17:44:28 -0400
+	id S1752156AbYHQVu3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Aug 2008 17:50:29 -0400
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: "Yinghai Lu" <yhlu.kernel@gmail.com>
-Subject: Re: [PATCH] net: forcedeth use pci_choose_state instead of PCI_D3hot - v2
-Date: Sun, 17 Aug 2008 23:47:35 +0200
+To: "Langsdorf, Mark" <mark.langsdorf@amd.com>
+Subject: Re: Warning in during hotplug on 2.6.27-rc2-git5
+Date: Sun, 17 Aug 2008 23:53:53 +0200
 User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: "Jeff Garzik" <jgarzik@redhat.com>, "Ingo Molnar" <mingo@elte.hu>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, netdev <netdev@vger.kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-References: <1218954333-12819-1-git-send-email-yhlu.kernel@gmail.com> <200808172134.20230.rjw@sisk.pl> <86802c440808171358y55361a52pa6d0aacf44a1875f@mail.gmail.com>
-In-Reply-To: <86802c440808171358y55361a52pa6d0aacf44a1875f@mail.gmail.com>
+Cc: "Andi Kleen" <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       "Greg KH" <greg@kroah.com>, "Ingo Molnar" <mingo@elte.hu>,
+       "Andrew Morton" <akpm@linux-foundation.org>
+References: <200808141753.58547.rjw@sisk.pl> <20080814163450.GA13814@one.firstfloor.org> <6453C3CB8E2B3646B0D020C112613273C5AC71@sausexmb4.amd.com>
+In-Reply-To: <6453C3CB8E2B3646B0D020C112613273C5AC71@sausexmb4.amd.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200808172347.36582.rjw@sisk.pl>
+Message-Id: <200808172353.54479.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday, 17 of August 2008, Yinghai Lu wrote:
-> On Sun, Aug 17, 2008 at 12:34 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > On Sunday, 17 of August 2008, Rafael J. Wysocki wrote:
-> >> On Sunday, 17 of August 2008, Yinghai Lu wrote:
-> >> > On Sun, Aug 17, 2008 at 9:55 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> >> > > On Sunday, 17 of August 2008, Rafael J. Wysocki wrote:
-> >> > >> On Sunday, 17 of August 2008, Yinghai Lu wrote:
-> >> > >> > after
-> >> > >> >
-> >> > >> > | commit f735a2a1a4f2a0f5cd823ce323e82675990469e2
-> >> > >> > | Author: Tobias Diedrich <ranma+kernel@tdiedrich.de>
-> >> > >> > | Date:   Sun May 18 15:02:37 2008 +0200
-> >> > >> > |
-> >> > >> > |    [netdrvr] forcedeth: setup wake-on-lan before shutting down
-> >> > >> > |
-> >> > >> > |    When hibernating in 'shutdown' mode, after saving the image the suspend hook
-> >> > >> > |    is not called again.
-> >> > >> > |    However, if the device is in promiscous mode, wake-on-lan will not work.
-> >> > >> > |    This adds a shutdown hook to setup wake-on-lan before the final shutdown.
-> >> > >> > |
-> >> > >> > |    Signed-off-by: Tobias Diedrich <ranma+kernel@tdiedrich.de>
-> >> > >> > |    Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
-> >> > >> >
-> >> > >> > my servers with nvidia mcp55 nic doesn't work with msi in second kernel by kexec
-> >> > >> >
-> >> > >> > after remove pci_set_power_state(, PCI_D3hot) that nic/msi will work again.
-> >> > >> >
-> >> > >> > check with e1000 is using pci_choose_state in _shutdown.
-> >> > >
-> >> > > This is wrong.
-> >> > >
-> >> > >> > So change that pci_choose_state(pdev, ...), and it works.
-> >> > >>
-> >> > >> Well, this doesn't look like a good solution to me, because you're putting
-> >> > >> PMSG_SUSPEND in there, which is not correct for shutdown.  The right thing to
-> >> > >> do would be to avoid changing the device power state if nv_shutdown() is
-> >> > >> used for kexec or to rework the initialization of the adapter to handle the
-> >> > >> case when it's initially in D3.
-> >> > >>
-> >> > >> Does it help if you just remove the pci_set_power_state(pdev, PCI_D3hot)
-> >> > >> altogether?
-> >> > >
-> >> > > Ah, sorry.  I see it does.
-> >> > >
-> >> > > Actually, I think you can use pci_prepare_to_sleep() instead of
-> >> > > pci_enable_wake() / pci_set_power_state() combo.  It wasn't designed for this
-> >> > > purpose, but should work nevertheless.
-> >> > >
-> >> > > Can you please check if the appended patch works instead of your one?
-> >> > >
-> >> > > Rafael
-> >> > >
-> >> > > ---
-> >> > > Fix the problem that boxes with NVidia MCP55 don't work with MSI
-> >> > > in a kexeced kernel.
-> >> > >
-> >> > > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> >> > > ---
-> >> > >  drivers/net/forcedeth.c |    4 +---
-> >> > >  1 file changed, 1 insertion(+), 3 deletions(-)
-> >> > >
-> >> > > Index: linux-2.6/drivers/net/forcedeth.c
-> >> > > ===================================================================
-> >> > > --- linux-2.6.orig/drivers/net/forcedeth.c
-> >> > > +++ linux-2.6/drivers/net/forcedeth.c
-> >> > > @@ -5975,10 +5975,8 @@ static void nv_shutdown(struct pci_dev *
-> >> > >        if (netif_running(dev))
-> >> > >                nv_close(dev);
-> >> > >
-> >> > > -       pci_enable_wake(pdev, PCI_D3hot, np->wolenabled);
-> >> > > -       pci_enable_wake(pdev, PCI_D3cold, np->wolenabled);
-> >> > >        pci_disable_device(pdev);
-> >> > > -       pci_set_power_state(pdev, PCI_D3hot);
-> >> > > +       pci_prepare_to_sleep(pdev);
-> >> > >  }
-> >> > >  #else
-> >> > >  #define nv_suspend NULL
-> >> > >
-> >> > >
-> >> >
-> >> > your patch doesn't work...  it seems that silicon has problem with D3Hot
-> >>
-> >> Okay, so perhaps it's better to do something like this:
-> >>
-> >> ---
-> >>  drivers/net/forcedeth.c |    8 +++++---
-> >>  1 file changed, 5 insertions(+), 3 deletions(-)
-> >>
-> >> Index: linux-2.6/drivers/net/forcedeth.c
-> >> ===================================================================
-> >> --- linux-2.6.orig/drivers/net/forcedeth.c
-> >> +++ linux-2.6/drivers/net/forcedeth.c
-> >> @@ -5975,10 +5975,12 @@ static void nv_shutdown(struct pci_dev *
-> >>       if (netif_running(dev))
-> >>               nv_close(dev);
-> >>
-> >> -     pci_enable_wake(pdev, PCI_D3hot, np->wolenabled);
-> >> -     pci_enable_wake(pdev, PCI_D3cold, np->wolenabled);
-> >>       pci_disable_device(pdev);
-> >> -     pci_set_power_state(pdev, PCI_D3hot);
-> >> +     if (system_state == SYS_POWER_OFF) {
-> >
-> > Sorry, it should be SYSTEM_POWER_OFF here.  Corrected patch is appended.
-> >
-> >> +             if (pci_enable_wake(pdev, PCI_D3cold, np->wolenabled))
-> >> +                     pci_enable_wake(pdev, PCI_D3hot, np->wolenabled);
-> >> +             pci_set_power_state(pdev, PCI_D3hot);
-> >> +     }
-> >>  }
-> >>  #else
-> >>  #define nv_suspend NULL
-> >> --
-> >
-> > ---
-> >  drivers/net/forcedeth.c |    8 +++++---
-> >  1 file changed, 5 insertions(+), 3 deletions(-)
-> >
-> > Index: linux-2.6/drivers/net/forcedeth.c
-> > ===================================================================
-> > --- linux-2.6.orig/drivers/net/forcedeth.c
-> > +++ linux-2.6/drivers/net/forcedeth.c
-> > @@ -5975,10 +5975,12 @@ static void nv_shutdown(struct pci_dev *
-> >        if (netif_running(dev))
-> >                nv_close(dev);
-> >
-> > -       pci_enable_wake(pdev, PCI_D3hot, np->wolenabled);
-> > -       pci_enable_wake(pdev, PCI_D3cold, np->wolenabled);
-> >        pci_disable_device(pdev);
-> > -       pci_set_power_state(pdev, PCI_D3hot);
-> > +       if (system_state == SYSTEM_POWER_OFF) {
-> > +               if (pci_enable_wake(pdev, PCI_D3cold, np->wolenabled))
-> > +                       pci_enable_wake(pdev, PCI_D3hot, np->wolenabled);
-> > +               pci_set_power_state(pdev, PCI_D3hot);
-> > +       }
-> >  }
-> >  #else
-> >  #define nv_suspend NULL
-> >
+On Thursday, 14 of August 2008, Langsdorf, Mark wrote:
+> > On Thu, Aug 14, 2008 at 05:53:57PM +0200, Rafael J. Wysocki wrote:
+> > > On Wednesday, 13 of August 2008, Mark Langsdorf wrote:
+> > > > I'm seeing the following error message when I hotunplug and replug
+> > > > a cpu in 2.6.27-rc2-git5.  The system becomes unstable almost
+> > > > immediately afterwards.
+> > > 
+> > > Hm, it seems that MCE is involved somehow.  Andi, can you 
+> > have a look at this,
+> > > please?
+> > 
+> > FWIW the mce code here actually hasn't changed for a long time.
+> > 
+> > 
+> > > > ------------[ cut here ]------------
+> > > > WARNING: at fs/sysfs/dir.c:463 sysfs_add_one+0x33/0x39()
+> > > > sysfs: duplicate filename 'machinecheck4' can not be created
+> > 
+> > The only way I could see that happening if CPU_DEAD/CPU_ONLINE
+> > is not properly balanced.
 > 
-> why not like e1000 to
-> pci_set_power_state(pdev, pci_choose_state(pdev, PMSG_SUSPEND));
-> 
-> pci_choose_state would check if platform support those state...
+> I'm still seeing it on 2.6.27-rc2, even with the 
+> patch here http://lkml.org/lkml/2008/7/30/171 and the
+> wbinvd_halt code patch applied.  Maybe something else
+> broke in some of the recent hotplug changes?
 
-... but ->shutdown() only involves the platform in the
-'system_state == SYSTEM_POWER_OFF' case!
+Mark, have you tried to test with commit 34ae7f35a21694aa5cb8829dc5142c39d73d6ba0
+(your "preregister support for powernow-k8" patch) reverted and MCE enabled?
 
-In fact, using pci_choose_state() in ->shutdown() is a very convoluted way of
-checking the 'system_state' value, and not a 100% reliable one. :-)
-
-Namely, the fact that pci_choose_state() returns you D0 instead of D3hot for
-'system_state != SYSTEM_POWER_OFF' is a pure coincidence (accidentally, there
-is an ACPI handle for the device, but there need not be one) and you should
-not rely on that in general.  Generally speaking, pci_choose_state() is not to
-be used outside of the drivers' ->suspend() routines.
-
-[Yes, this means e1000 will have to be fixed, as I said before.]
-
-Apart from this, pci_choose_state() is broken and will shortly be deprecated.
-Moreover, in future all direct references to PMSG_SUSPEND from the drivers
-will be removed.
-
-Thanks,
 Rafael
