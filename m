@@ -1,70 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754652AbYHQPRD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754267AbYHQPcm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754652AbYHQPRD (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Aug 2008 11:17:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751961AbYHQPQx
+	id S1754267AbYHQPcm (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Aug 2008 11:32:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751870AbYHQPce
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Aug 2008 11:16:53 -0400
-Received: from out2.smtp.messagingengine.com ([66.111.4.26]:42632 "EHLO
-	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751619AbYHQPQx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Aug 2008 11:16:53 -0400
-X-Sasl-enc: ZrHuYazo6M/w4BLVJqqyt5b7oVmHP0eU50GT1pST0tSm 1218986211
-Message-ID: <48A840D6.8020906@imap.cc>
-Date: Sun, 17 Aug 2008 17:16:38 +0200
-From: Tilman Schmidt <tilman@imap.cc>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
+	Sun, 17 Aug 2008 11:32:34 -0400
+Received: from ra.tuxdriver.com ([70.61.120.52]:3690 "EHLO ra.tuxdriver.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751619AbYHQPcd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Aug 2008 11:32:33 -0400
+Date: Sun, 17 Aug 2008 11:02:42 -0400
+From: "John W. Linville" <linville@tuxdriver.com>
+To: Tomas Winkler <tomasw@gmail.com>
+Cc: Mirco Tischler <mt-ml@gmx.de>, Leonid Podolny <leonidp.lists@gmail.com>,
+       linux-kernel@vger.kernel.org, yi.zhu@intel.com,
+       reinette.chatre@intel.com, linux-wireless@vger.kernel.org,
+       IvDoorn@gmail.com
+Subject: Re: CPU load after killing iwlagn with RF kill switch
+Message-ID: <20080817150242.GA23926@tuxdriver.com>
+References: <48A5EC02.4070303@gmail.com> <20080817035921.4d35ae0e@mtlp.12thdimension> <1ba2fa240808170004p63b76db1l1fdfb1cf1cb41636@mail.gmail.com>
 MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-CC: Pavel Machek <pavel@suse.cz>, Andrew Morton <akpm@osdl.org>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Trivial patch monkey <trivial@kernel.org>
-Subject: Re: PM_TRACE is no longer experimental
-References: <20080814151833.GA23300@elf.ucw.cz> <48A5B8C8.6040504@imap.cc> <20080817093309.GA8368@atrey.karlin.mff.cuni.cz> <200808171223.41893.rjw@sisk.pl>
-In-Reply-To: <200808171223.41893.rjw@sisk.pl>
-X-Enigmail-Version: 0.95.6
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigB149CC89A66CF3601CBFB50E"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1ba2fa240808170004p63b76db1l1fdfb1cf1cb41636@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigB149CC89A66CF3601CBFB50E
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On Sun, Aug 17, 2008 at 10:04:12AM +0300, Tomas Winkler wrote:
 
-Rafael J. Wysocki schrieb:
-> On Sunday, 17 of August 2008, Pavel Machek wrote:
+> There is gap in current rfkill implementation that we didn't close
+> yet.  There were also few patches that were not signed by Intel and
+> are apparently wrong.
 
->> Given that it is enabled in both 32-bit and 64-bit defconfig, I don't
->> think we can call it experimental.
->=20
-> I agree.
->=20
->> Plus IIRC it needs command line option to thrash RTC.
->=20
-> That's correct.
+Can you be more specific?  Do you know which patches are wrong (even
+if you don't know how to fix them)?
 
-Alright, I withdraw my objection.
-
-T.
-
-
---------------enigB149CC89A66CF3601CBFB50E
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.4-svn0 (GNU/Linux)
-Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
-
-iD8DBQFIqEDfQ3+did9BuFsRAlQgAJ0abngD6fBOBdGfLWmvecISpV0jxACffsrF
-2Nvw5ew9JGpXOCxYqn1aC24=
-=knkN
------END PGP SIGNATURE-----
-
---------------enigB149CC89A66CF3601CBFB50E--
+John
+-- 
+John W. Linville
+linville@tuxdriver.com
