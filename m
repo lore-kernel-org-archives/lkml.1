@@ -1,94 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755945AbYHQW2m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756050AbYHQWan@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755945AbYHQW2m (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Aug 2008 18:28:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751855AbYHQW2e
+	id S1756050AbYHQWan (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Aug 2008 18:30:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751855AbYHQWaf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Aug 2008 18:28:34 -0400
-Received: from ms01.sssup.it ([193.205.80.99]:39566 "EHLO sssup.it"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751758AbYHQW2e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Aug 2008 18:28:34 -0400
-Subject: Re: [RFC 0/1][PATCH] POSIX SCHED_SPORADIC implementation for tasks
-	and groups
-From: Dario Faggioli <raistlin@linux.it>
-To: Ulrich Drepper <drepper@redhat.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Steven Rostedt <rostedt@goodmis.org>, Andrew Morton <akpm@osdl.org>
-In-Reply-To: <48A0741F.60901@redhat.com>
-References: <1218462574.6450.24.camel@Palanthas>
-	 <48A0487B.7080600@redhat.com>  <1218464753.10800.92.camel@twins>
-	 <1218471794.6450.87.camel@Palanthas> <1218472252.10800.107.camel@twins>
-	 <48A0741F.60901@redhat.com>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-jIEH6uqDGSKEHj/hMICS"
-Date: Mon, 18 Aug 2008 00:27:31 +0200
-Message-Id: <1219012051.25992.31.camel@Palanthas>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Sun, 17 Aug 2008 18:30:35 -0400
+Received: from mail.lang.hm ([64.81.33.126]:37206 "EHLO bifrost.lang.hm"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751493AbYHQWae (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Aug 2008 18:30:34 -0400
+Date: Sun, 17 Aug 2008 15:30:10 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Pavel Machek <pavel@suse.cz>
+cc: rmeijer@xs4all.nl, Peter Dolding <oiaohm@gmail.com>,
+       Theodore Tso <tytso@mit.edu>, Arjan van de Ven <arjan@infradead.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, capibara@xs4all.nl,
+       Eric Paris <eparis@redhat.com>, Rik van Riel <riel@redhat.com>,
+       davecb@sun.com, linux-security-module@vger.kernel.org,
+       Adrian Bunk <bunk@kernel.org>, Mihai Don??u <mdontu@bitdefender.com>,
+       linux-kernel@vger.kernel.org, malware-list@lists.printk.net
+Subject: Re: [malware-list] [RFC 0/5] [TALPA] Intro to alinuxinterfaceforon
+ access scanning
+In-Reply-To: <20080817215822.GA21112@atrey.karlin.mff.cuni.cz>
+Message-ID: <alpine.DEB.1.10.0808171524350.12859@asgard.lang.hm>
+References: <6746.82.95.100.23.1218969200.squirrel@webmail.xs4all.nl> <alpine.DEB.1.10.0808170345300.12859@asgard.lang.hm> <20080817215822.GA21112@atrey.karlin.mff.cuni.cz>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, 17 Aug 2008, Pavel Machek wrote:
 
---=-jIEH6uqDGSKEHj/hMICS
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+>>>> you are arguing with the wrong people here. we are not trying to define
+>>>> the future of anti-virus technologies, we are trying to figure out how to
+>>>> provide the hooks so that people and companies can go off and do the
+>>>> research and experimentation and try different approaches.
+>>>
+>>> Given recent demonstrations that show how easy it apparently is to bypass
+>>> blacklist base approaches, providing hooks to allow these blacklist
+>>> approaches may I feel be rather futile. Focusing only on hooks for white
+>>> list approaches in combination with hooks for least authority approaches
+>>> like the powerbox would IMHO seem like a much more reasonable approach
+>>> given the current state of things and knowledge concerning the blacklist
+>>> technologies. Explicitly adding support for technology that is quickly
+>>> becoming obsolete would seem like a waste of time and resources.
+>>
+>> we are not providing hooks for blacklists or whitelists, we are providing
+>> hooks for scanning. it's up to the software that doesn the scanning to
+>> implement the blacklist or whitelist.
+>
+> Actually, I don't think so.
+>
+> If we wanted to whitelist permitted binaries, approach would be
+> something like "lets sign them"... and it seems IBM is working on
+> something like that with TPM infrastructure.
 
-On Mon, 2008-08-11 at 10:17 -0700, Ulrich Drepper wrote:
-> > Well, a new version of glibc could use those to implement the posix
-> > interface. Because as I understand it, glibc can break ABI on certain
-> > version bumps.
->=20
-> In theory.  But this hasn't happened so far and I don't expect it to
-> happen any time soon.  New interfaces are not a real problem for me, thou=
-gh.
->=20
-Ok, we'll see.
-I still think that SCHED_SPORADIC task (but specially group!) scheduling
-could be useful, even with a non fully-POSIX interface.
+the structure I proposed would support this as well.
 
-This mail only to say that I'm actively working on it, i.e., I'm
-rewriting it with the new sched_param2/sched_setscheduler2 interface and
-fixing some very glaring bugs that was present in my first code. :-P
+your 'scanner' program would do the signature and store it somewhere and 
+mark the file as being scanned.
 
-Unfortunately, I'll be off the PC till September 4th... If you are still
-interested in, we will talk about it at that time, when I'll post the
-new version of the RFC.
-I also hope, by then, to be able to show you some test cases and
-overhead estimation.
+on access the checking software would see that you have marked it as being 
+scanned and can avoid the overhead of reading the entire file to check 
+it's signature (or you can configure it to do the full check again)
 
-Thanks all of you for minding me, and sorry if I wasted some of your
-time. :-)
+if the file gets written to the tag would get cleared and the file would 
+not be used without being blessed by your scanner again (and your scanner 
+my bless it if what happened was an OS update where the new file matches a 
+known signature)
 
-Best Regards,
-Dario
+not quite as straightforward as you were probably thinking (you were 
+probably thinking somthing like 'store the signature and have the kernel 
+check it each time the file is opened'), but this would have the option of 
+being faster by skipping the signature check if the file was tagged as 
+already being checked.
 
---=20
-<<This happens because I choose it to happen!>>
-(Raistlin Majere, DragonLance Chronicles -Dragons of Spring Drawning-)
-----------------------------------------------------------------------
-Dario Faggioli
-GNU/Linux Registered User: #340657
-Web: http://www.linux.it/~raistlin
-Blog: http://blog.linux.it/raistlin
-SIP Account: dario.faggioli@sipproxy.wengo.fr or
-             raistlin@ekiga.net
-Jabber Account: dario.faggioli@jabber.org/WengoPhone
-GnuPG Key ID: 4DC83AC4
-GnuPG Key Fingerprint: 2A78 AD5D B9CF A082 0836 08AD 9385 DA04 4DC8 3AC4
-
---=-jIEH6uqDGSKEHj/hMICS
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBIqKXSk4XaBE3IOsQRAplEAJ49mHe9YPlM4UDzd60gyOfSusOgvACcCc0V
-YdoUP3WZCYT3wZcVYSHBk70=
-=eUC7
------END PGP SIGNATURE-----
-
---=-jIEH6uqDGSKEHj/hMICS--
-
+David Lang
