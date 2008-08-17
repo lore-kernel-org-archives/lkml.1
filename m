@@ -1,65 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755542AbYHQT0b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751506AbYHQT0E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755542AbYHQT0b (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Aug 2008 15:26:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755422AbYHQT0N
+	id S1751506AbYHQT0E (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Aug 2008 15:26:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751149AbYHQTZw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Aug 2008 15:26:13 -0400
-Received: from fg-out-1718.google.com ([72.14.220.159]:6886 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751729AbYHQT0J (ORCPT
+	Sun, 17 Aug 2008 15:25:52 -0400
+Received: from wr-out-0506.google.com ([64.233.184.234]:30218 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754842AbYHQTZt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Aug 2008 15:26:09 -0400
+	Sun, 17 Aug 2008 15:25:49 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=CcyMMNX7qiTfv1Cd1RQLr3t+3jgpDf2g8oWEMDNC07RysbneCY9ohtdpN4YV4jxq1b
-         xl2JRjo8bhBzFku4fmsHjyX8gt8cjpYJzP3r5V0nMFrMoOJ2eYINoIxGLw5bLz05E1v5
-         za3xAx8qRdxyv9AaOvQD34o4qfX8gd8P9+EJY=
-Message-ID: <f2b895370808171226l13728b1dg7e79051c158e21f3@mail.gmail.com>
-Date: Sun, 17 Aug 2008 21:26:07 +0200
-From: "Marc Villemade" <mastachand@gmail.com>
-To: "Rik van Riel" <riel@redhat.com>
-Subject: Re: [Follow-up] Physical memory disappeared from /proc/meminfo
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20080817145906.06ccd795@riellaptop.surriel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <f2b895370808171059x4bd0296frf50b07ae7af21375@mail.gmail.com>
-	 <20080817145906.06ccd795@riellaptop.surriel.com>
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=JD7irnQdWTb7y9QukIxmwskb1cDk95SAmAQy7GD5fHh+vLDpkhoRUY+tTcZuURCa/y
+         K122PLhkf2zPu/4toLqTEYWtGOa0FlQYdoGRYjmbkSnPRHaJ6SkjkYFpbrpDoAe2EssM
+         bM9lYcPoFvKqmibRnrKNdihkXxMsw8xfOFyqE=
+From: Dmitry Baryshkov <dbaryshkov@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: dbrownell@users.sourceforge.net, Dmitry Baryshkov <dbaryshkov@gmail.com>,
+       Juergen Beisert <j.beisert@pengutronix.de>,
+       Guennadi Liakhovetski <g.liakhovetski@pengutronix.de>,
+       Russell King <rmk@arm.linux.org.uk>
+Subject: [PATCH] max7301: fix the race between chip addition and pins reconfiguration
+Date: Sun, 17 Aug 2008 23:24:18 +0400
+Message-Id: <1219001058-25107-1-git-send-email-dbaryshkov@gmail.com>
+X-Mailer: git-send-email 1.5.6.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-hey
+There is a small race and code ugliness in max7301: pins are
+reconfigured after the chip is registered. Swap these calls
+so that the device is registered in correct state.
 
-Thanks for your answer, but it still doesn't come close. I'm up to 1.5
-Gig adding what i said. and PageTables + VMallocTotal equals 160 Mo.
-Sounds unlikely to me that something unaccounted for might go up to
-1.4 Gig, don't you think ? Or maybe it is accounted somewhere else
-than /proc/meminfo ? Please point me to the right place if so.
+Also this fixes the comile-time warning about unchecked gpiochip_remove.
 
-Cheers
+Signed-off-by: Dmitry Baryshkov <dbaryshkov@gmail.com>
+Cc: Juergen Beisert <j.beisert@pengutronix.de>
+Cc: Guennadi Liakhovetski <g.liakhovetski@pengutronix.de>
+Cc: Russell King <rmk@arm.linux.org.uk>
+---
+ drivers/gpio/max7301.c |   18 ++++++++----------
+ 1 files changed, 8 insertions(+), 10 deletions(-)
 
-Marc Villemade
+diff --git a/drivers/gpio/max7301.c b/drivers/gpio/max7301.c
+index 39c795a..c34f408 100644
+--- a/drivers/gpio/max7301.c
++++ b/drivers/gpio/max7301.c
+@@ -255,10 +255,6 @@ static int __devinit max7301_probe(struct spi_device *spi)
+ 	ts->chip.dev = &spi->dev;
+ 	ts->chip.owner = THIS_MODULE;
+ 
+-	ret = gpiochip_add(&ts->chip);
+-	if (ret)
+-		goto exit_destroy;
+-
+ 	/*
+ 	 * tristate all pins in hardware and cache the
+ 	 * register values for later use.
+@@ -269,17 +265,19 @@ static int __devinit max7301_probe(struct spi_device *spi)
+ 		max7301_write(spi, 0x08 + i, 0xAA);
+ 		ts->port_config[i] = 0xAA;
+ 		for (j = 0; j < 4; j++) {
+-			int idx = ts->chip.base + (i - 1) * 4 + j;
+-			ret = gpio_direction_input(idx);
++			int offset = (i - 1) * 4 + j;
++			ret = max7301_direction_input(&ts->chip, offset);
+ 			if (ret)
+-				goto exit_remove;
+-			gpio_free(idx);
++				goto exit_destroy;
+ 		}
+ 	}
++
++	ret = gpiochip_add(&ts->chip);
++	if (ret)
++		goto exit_destroy;
++
+ 	return ret;
+ 
+-exit_remove:
+-	gpiochip_remove(&ts->chip);
+ exit_destroy:
+ 	dev_set_drvdata(&spi->dev, NULL);
+ 	mutex_destroy(&ts->lock);
+-- 
+1.5.6.3
 
-
-On Sun, Aug 17, 2008 at 8:59 PM, Rik van Riel <riel@redhat.com> wrote:
-> On Sun, 17 Aug 2008 19:59:10 +0200
-> "Marc Villemade" <mastachand@gmail.com> wrote:
->
->> I'm having exactly the same issue but on a 2.6.20.4 vanilla kernel
->> (x86). /proc/meminfo shows that
->> MemFree+Buffers+cached+AnonPages+Slab+Mapped != MemTotal, which AFAIK
->> should be the case.
->
-> There are also page tables, vmalloc memory and various
-> unaccounted kernel allocations.
->
-> --
-> All rights reversed.
->
