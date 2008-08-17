@@ -1,53 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755367AbYHQRWj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755456AbYHQRYI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755367AbYHQRWj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Aug 2008 13:22:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752609AbYHQRWb
+	id S1755456AbYHQRYI (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Aug 2008 13:24:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752940AbYHQRXs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Aug 2008 13:22:31 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:40781 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751663AbYHQRWa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Aug 2008 13:22:30 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Andi Kleen <andi@firstfloor.org>
-Subject: Re: Warning in during hotplug on 2.6.27-rc2-git5
-Date: Sun, 17 Aug 2008 19:25:47 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Greg KH <greg@kroah.com>, "Langsdorf, Mark" <mark.langsdorf@amd.com>,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <200808141753.58547.rjw@sisk.pl> <20080816201813.GA30715@kroah.com> <20080817022323.GN19125@one.firstfloor.org>
-In-Reply-To: <20080817022323.GN19125@one.firstfloor.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200808171925.48584.rjw@sisk.pl>
+	Sun, 17 Aug 2008 13:23:48 -0400
+Received: from fg-out-1718.google.com ([72.14.220.159]:33388 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752629AbYHQRXr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Aug 2008 13:23:47 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=to:cc:subject:date:message-id:x-mailer:from;
+        b=CmgH45mxHI6HmcU16iPwkvQ84JKztlWO5jmRS0Agvacqvh/Mure12iYYYyVXeYvR4M
+         dSxN8VWSBkpwRZMloX3p6kEsKoKp2k6VXZQe6iICQSZljgNB0Sm/8mdRwJpgXqwvrPg2
+         GCxYodztvzgGiyHHLofHPaj8E+1s/uW54lP+w=
+To: Bartlomiej@gollum.tnic, Zolnierkiewicz@gollum.tnic, <bzolnier@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+       Borislav Petkov <petkovbb@gmail.com>
+Subject: [PATCH 0/5] ide debugging macros
+Date: Sun, 17 Aug 2008 19:23:41 +0200
+Message-Id: <1218993826-4571-1-git-send-email-petkovbb@gmail.com>
+X-Mailer: git-send-email 1.5.5.1
+From: Borislav Petkov <petkovbb@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday, 17 of August 2008, Andi Kleen wrote:
-> > > > I'm still seeing it on 2.6.27-rc2, even with the 
-> > > > patch here http://lkml.org/lkml/2008/7/30/171 and the
-> > > > wbinvd_halt code patch applied.  Maybe something else
-> > > > broke in some of the recent hotplug changes?
-> > > 
-> > > My guess is that MCE does somthing that is not allowed by sysfs any more.
-> > 
-> > Hm, sysfs hasn't changed any in 2.6.27-rcX that I know of.
-> 
-> mce hasn't either in this regard. My current theory is that the CPU 
-> up/down notifiers are not balanced anymore (as in duplicated up events) 
+Hi Bart,
 
-It doesn't look like this is the case.  Moreover, had that been the case, we'd
-have had many reports from people doing suspend/hibernation, but it doesn't
-happen.
+here's something i've been wanting to do for a long time: debugging macros. The
+reason for it is that i got tired of adding debug printk's everytime i'm testing
+something so here we go.
 
-I think that cpu_down() fails for some reason and that causes the subsequent
-onlining to fail.  I'd like to find out what's the root cause of that.
+The debugging macro is similar to the old ones but is one for all drivers
+(currently only ide-floppy), is nice on branch prediction and is controlled by a
+drive->debug_mask switch which is a module parameter and as such can be set at
+module load time, of course. I've been thinking of adding also a sysfs attribute
+too but can't seem to find quite the justification for it so no sysfs for now :)
 
-Thanks,
-Rafael
+In addition, one can still optimize away all the debug calls in the old manner
+and i'm sure those will be removed completely too when ide generic conversion is
+done.
+
+Please tell me what you think, what can be changed/improved and after we've
+figured out the details I'll do the other drivers too.
+
+Thanks.
+
+ drivers/ide/ide-cd.c     |   17 ++---
+ drivers/ide/ide-floppy.c |  168 +++++++++++++++++++++++++---------------------
+ drivers/ide/ide-tape.c   |   23 ++----
+ include/linux/ide.h      |   31 ++++++++-
+ 4 files changed, 135 insertions(+), 104 deletions(-)
