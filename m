@@ -1,53 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752545AbYHQTbs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754299AbYHQTem@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752545AbYHQTbs (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Aug 2008 15:31:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751002AbYHQTbj
+	id S1754299AbYHQTem (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Aug 2008 15:34:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751179AbYHQTef
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Aug 2008 15:31:39 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:41240 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750950AbYHQTbi convert rfc822-to-8bit (ORCPT
+	Sun, 17 Aug 2008 15:34:35 -0400
+Received: from clem.clem-digital.net ([68.16.168.10]:51349 "EHLO
+	clem.clem-digital.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750930AbYHQTee (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Aug 2008 15:31:38 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: "=?utf-8?q?Rafa=C5=82?= =?utf-8?q?_Mi=C5=82ecki?=" <zajec5@gmail.com>
-Subject: Re: [Bug #11313] Plugging HDMI causes "unable to handle kernel paging request"
-Date: Sun, 17 Aug 2008 21:35:13 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Kernel Testers List" <kernel-testers@vger.kernel.org>,
-       "Ingo Molnar" <mingo@elte.hu>
-References: <DLWXHEp37wB.A.duD.yZzpIB@albercik> <sNRO-BDDjQL.A.DYF.sazpIB@albercik> <b170af450808171228i37951c6vd77071da7584669b@mail.gmail.com>
-In-Reply-To: <b170af450808171228i37951c6vd77071da7584669b@mail.gmail.com>
+	Sun, 17 Aug 2008 15:34:34 -0400
+From: Pete Clements <clem@clem.clem-digital.net>
+Message-Id: <200808171934.m7HJYWsv016921@clem.clem-digital.net>
+Subject: 27-rc3-git4 fails compile -- security.h
+To: linux-kernel@vger.kernel.org (linux-kernel)
+Date: Sun, 17 Aug 2008 15:34:32 -0400 (EDT)
+X-Mailer: ELM [version 2.5 PL7]
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200808172135.13869.rjw@sisk.pl>
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday, 17 of August 2008, Rafał Miłecki wrote:
-> 2008/8/16, Rafael J. Wysocki <rjw@sisk.pl>:
-> > This message has been generated automatically as a part of a report
-> > of recent regressions.
-> >
-> > The following bug entry is on the current list of known regressions
-> > from 2.6.26.  Please verify if it still should be listed and let me know
-> > (either way).
-> >
-> >
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11313
-> > Subject		: Plugging HDMI causes "unable to handle kernel paging request"
-> > Submitter	: Rafał Miłecki <zajec5@gmail.com>
-> > Date		: 2008-08-12 14:30 (5 days old)
-> 
-> Bug still exists in current git (tested 15 minutes ago).
-> 
+Fyi:
+2.6.27-rc3-git4 fails compile:
 
-Thanks for the update.
+  CC      arch/x86/kernel/asm-offsets.s
+  GEN     include/asm/asm-offsets.h
+  CALL    scripts/checksyscalls.sh
+  CC      scripts/mod/empty.o
+  HOSTCC  scripts/mod/mk_elfconfig
+  MKELF   scripts/mod/elfconfig.h
+  HOSTCC  scripts/mod/file2alias.o
+  HOSTCC  scripts/mod/modpost.o
+  HOSTCC  scripts/mod/sumversion.o
+  HOSTLD  scripts/mod/modpost
+  HOSTCC  scripts/kallsyms
+  HOSTCC  scripts/conmakehash
+  CC      init/main.o
+In file included from init/main.c:32:
+include/linux/security.h: In function 'security_ptrace_traceme':
+include/linux/security.h:1760: error: 'parent' undeclared (first use in this function)
+include/linux/security.h:1760: error: (Each undeclared identifier is reported only once
+include/linux/security.h:1760: error: for each function it appears in.)
+make[1]: *** [init/main.o] Error 1
+make: *** [init] Error 2
 
-Rafael
+-- 
+Pete Clements 
