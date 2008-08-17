@@ -1,66 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753797AbYHQL6R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754004AbYHQL7g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753797AbYHQL6R (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Aug 2008 07:58:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752525AbYHQL6D
+	id S1754004AbYHQL7g (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Aug 2008 07:59:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752573AbYHQL71
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Aug 2008 07:58:03 -0400
-Received: from out2.smtp.messagingengine.com ([66.111.4.26]:39660 "EHLO
-	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752501AbYHQL6C (ORCPT
+	Sun, 17 Aug 2008 07:59:27 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:42778 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752525AbYHQL70 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Aug 2008 07:58:02 -0400
-Message-Id: <1218974280.18151.1269040199@webmail.messagingengine.com>
-X-Sasl-Enc: z+kl5+iRgWWg2zQNvGCmekdua+AUjbyNcYhn9s4EAmjH 1218974280
-From: "Alexander van Heukelum" <heukelum@fastmail.fm>
-To: oakad@yahoo.com,
-       "Linux kernel mailing list" <linux-kernel@vger.kernel.org>
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset="UTF-8"
+	Sun, 17 Aug 2008 07:59:26 -0400
+Date: Sun, 17 Aug 2008 21:59:19 +1000
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Harvey Harrison <harvey.harrison@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linux Crypto Mailing List <linux-crypto@vger.kernel.org>
+Subject: Re: [PATCH] crypto: use kernel-provided bitops, unaligned access helpers
+Message-ID: <20080817115919.GA25517@gondor.apana.org.au>
+References: <1215119038.16647.23.camel@brick> <20080704114315.GA6266@gondor.apana.org.au>
 MIME-Version: 1.0
-X-Mailer: MessagingEngine.com Webmail Interface
-References: <865989.50481.qm@web37602.mail.mud.yahoo.com>
-Subject: Re: Problem with find_first_bit function and kin
-In-Reply-To: <865989.50481.qm@web37602.mail.mud.yahoo.com>
-Date: Sun, 17 Aug 2008 13:58:00 +0200
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080704114315.GA6266@gondor.apana.org.au>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 16 Aug 2008 12:26:54 -0700 (PDT), "Alex Dubov" <oakad@yahoo.com>
-said:
-> It's well may be that I'm just missing something obvious.
+On Fri, Jul 04, 2008 at 07:43:15PM +0800, Herbert Xu wrote:
+> On Thu, Jul 03, 2008 at 02:03:57PM -0700, Harvey Harrison wrote:
+> > Remove the private implementation of 32-bit rotation and unaligned
+> > access with byteswapping.
+> > 
+> > As a bonus, fixes sparse warnings:
+> > crypto/camellia.c:602:2: warning: cast to restricted __be32
+> > crypto/camellia.c:603:2: warning: cast to restricted __be32
+> > crypto/camellia.c:604:2: warning: cast to restricted __be32
+> > crypto/camellia.c:605:2: warning: cast to restricted __be32
+> > crypto/camellia.c:710:2: warning: cast to restricted __be32
+> > crypto/camellia.c:711:2: warning: cast to restricted __be32
+> > crypto/camellia.c:712:2: warning: cast to restricted __be32
+> > crypto/camellia.c:713:2: warning: cast to restricted __be32
+> > crypto/camellia.c:714:2: warning: cast to restricted __be32
+> > crypto/camellia.c:715:2: warning: cast to restricted __be32
+> > crypto/camellia.c:716:2: warning: cast to restricted __be32
+> > crypto/camellia.c:717:2: warning: cast to restricted __be32
+> > 
+> > Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
 > 
-> It seems to me that find_first_bit/find_next_bit functions return their
-> offsets "base 1" - first set bit is "1" and last is "bitmap size". This
-> means that if only the last bit in the bitmap is set, the returned value
-> will be indistinguishable from no bits set situation. Moreover, bit
-> manipulation functions appear to use "base 0" bit addresses, adding to
-> the
-> inconvenience.
-> 
-> Is this a desired behavior? And, if yes, how is one supposed to deal with
-> last bit of the bitmap?
+> Patch applied.  BTW, this driver should perhaps use align mask
+> instead rather than handling unaligned data on its own.
 
-Hi Alex,
+Hmm, camellia is now failing the tcrypt self-test.  Harvey,
+could you have a look at this?
 
-If this is the behaviour you observe, it's a bug. How did you
-find out?
-
-The intended behaviour is that the bits are enumerated in "base 0"
-style. If only the last bit in the bitmap is set it should return
-bitmapsize-1 and if no bit is set it should return bitmapsize.
-Some architecture-specific code gets the last detail wrong, they
-return a value that is slightly larger than the bitmap size in
-some cases.
-
-Greetings,
-    Alexander
+Thanks,
 -- 
-  Alexander van Heukelum
-  heukelum@fastmail.fm
-
--- 
-http://www.fastmail.fm - A no graphics, no pop-ups email service
-
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
