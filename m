@@ -1,55 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752570AbYHQSkn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754034AbYHQSk4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752570AbYHQSkn (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Aug 2008 14:40:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750870AbYHQSkg
+	id S1754034AbYHQSk4 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Aug 2008 14:40:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750947AbYHQSkg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Sun, 17 Aug 2008 14:40:36 -0400
-Received: from smtp239.poczta.interia.pl ([217.74.64.239]:1907 "EHLO
-	smtp239.poczta.interia.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750806AbYHQSkf (ORCPT
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:34285 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750827AbYHQSkf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 17 Aug 2008 14:40:35 -0400
-Date: Sun, 17 Aug 2008 20:46:23 +0200
-From: Krzysztof Helt <krzysztof.h1@poczta.fm>
-To: Bryan Wu <cooloney@kernel.org>
-Cc: adaplas@gmail.com, linux-fbdev-devel@lists.sourceforge.net,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       Michael Hennerich <michael.hennerich@analog.com>
-Subject: Re: [Linux-fbdev-devel] [PATCH 1/1] Video/Framebuffer: add
- fuctional power management support to Blackfin BF54x LQ043 framebuffer
- driver
-Message-Id: <20080817204623.47fd24a1.krzysztof.h1@poczta.fm>
-In-Reply-To: <1218791228-12974-1-git-send-email-cooloney@kernel.org>
-References: <1218791228-12974-1-git-send-email-cooloney@kernel.org>
-X-Mailer: Sylpheed 2.4.3 (GTK+ 2.11.0; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-EMID: f2e2b138
+Date: Sun, 17 Aug 2008 11:39:36 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+cc: Rusty Russell <rusty@rustcorp.com.au>,
+       Alexey Dobriyan <adobriyan@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: [PATCH] debug: fix BUILD_BUG_ON() for non-constant expressions
+In-Reply-To: <20080817173319.GA2450@elte.hu>
+Message-ID: <alpine.LFD.1.10.0808171129350.3324@nehalem.linux-foundation.org>
+References: <20080816100948.GB19926@martell.zuzino.mipt.ru> <200808162055.45136.rusty@rustcorp.com.au> <alpine.LFD.1.10.0808161305170.3324@nehalem.linux-foundation.org> <20080817103241.GB21303@elte.hu> <alpine.LFD.1.10.0808170936260.3324@nehalem.linux-foundation.org>
+ <20080817173319.GA2450@elte.hu>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 15 Aug 2008 17:07:08 +0800
-Bryan Wu <cooloney@kernel.org> wrote:
 
-> From: Michael Hennerich <michael.hennerich@analog.com>
+
+On Sun, 17 Aug 2008, Ingo Molnar wrote:
 > 
-> Fix bug: does nor properply resume after suspend mem
-> Fix for PM_SUSPEND_MEM: Save and restore peripheral base and DMA registers
-> 
-> Signed-off-by: Michael Hennerich <michael.hennerich@analog.com>
-> Signed-off-by: Bryan Wu <cooloney@kernel.org>
-> ---
->  drivers/video/bf54x-lq043fb.c |   15 ++++++++++++---
->  1 files changed, 12 insertions(+), 3 deletions(-)
-> 
+> try the patch below - it only gives this error during build:
 
-Acked-by: Krzysztof Helt <krzysztof.h1@wp.pl>
+Well, you didn't do it right:
 
-----------------------------------------------------------------------
-Igrzyska z nagrodami! Kliknij>>>> http://link.interia.pl/f1edb 
+> +#define __BBO(c)                sizeof(const char[1 - 2*!!(c)])
+> +#define __BBONC(c)              __BBO(!__builtin_constant_p(c))
+> +#define BUILD_BUG_ON_ZERO2(c)    (__BBO(c) - __BBONC(c))
+> +#define BUILD_BUG_ON2(c)         (void)BUILD_BUG_ON_ZERO(c)
 
- 	
+Look at the #define of BUILD_BUG_ON2 a bit more.
 
+Hint: you're using the _wrong_ BUILD_BUG_ON_ZERO. The old one, not the v2 
+one!
+
+That said, with that fixed, there's still something wrong. It does seem 
+like gcc has some very odd interaction there with __builtin_constant_p. 
+Odd.
+
+			Linus
