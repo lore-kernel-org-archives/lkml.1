@@ -1,137 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753272AbYHQTZr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755542AbYHQT0b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753272AbYHQTZr (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Aug 2008 15:25:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750950AbYHQTZg
+	id S1755542AbYHQT0b (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Aug 2008 15:26:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755422AbYHQT0N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Aug 2008 15:25:36 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:41179 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750943AbYHQTZf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Aug 2008 15:25:35 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: "Yinghai Lu" <yhlu.kernel@gmail.com>
-Subject: Re: [PATCH] net: forcedeth use pci_choose_state instead of PCI_D3hot - v2
-Date: Sun, 17 Aug 2008 21:29:01 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: "Jeff Garzik" <jgarzik@redhat.com>, "Ingo Molnar" <mingo@elte.hu>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, netdev <netdev@vger.kernel.org>
-References: <1218954333-12819-1-git-send-email-yhlu.kernel@gmail.com> <200808171855.58384.rjw@sisk.pl> <86802c440808171216s1d87c4e3t965b3a93bf4b87f4@mail.gmail.com>
-In-Reply-To: <86802c440808171216s1d87c4e3t965b3a93bf4b87f4@mail.gmail.com>
+	Sun, 17 Aug 2008 15:26:13 -0400
+Received: from fg-out-1718.google.com ([72.14.220.159]:6886 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751729AbYHQT0J (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Aug 2008 15:26:09 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=CcyMMNX7qiTfv1Cd1RQLr3t+3jgpDf2g8oWEMDNC07RysbneCY9ohtdpN4YV4jxq1b
+         xl2JRjo8bhBzFku4fmsHjyX8gt8cjpYJzP3r5V0nMFrMoOJ2eYINoIxGLw5bLz05E1v5
+         za3xAx8qRdxyv9AaOvQD34o4qfX8gd8P9+EJY=
+Message-ID: <f2b895370808171226l13728b1dg7e79051c158e21f3@mail.gmail.com>
+Date: Sun, 17 Aug 2008 21:26:07 +0200
+From: "Marc Villemade" <mastachand@gmail.com>
+To: "Rik van Riel" <riel@redhat.com>
+Subject: Re: [Follow-up] Physical memory disappeared from /proc/meminfo
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20080817145906.06ccd795@riellaptop.surriel.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200808172129.02135.rjw@sisk.pl>
+References: <f2b895370808171059x4bd0296frf50b07ae7af21375@mail.gmail.com>
+	 <20080817145906.06ccd795@riellaptop.surriel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday, 17 of August 2008, Yinghai Lu wrote:
-> On Sun, Aug 17, 2008 at 9:55 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > On Sunday, 17 of August 2008, Rafael J. Wysocki wrote:
-> >> On Sunday, 17 of August 2008, Yinghai Lu wrote:
-> >> > after
-> >> >
-> >> > | commit f735a2a1a4f2a0f5cd823ce323e82675990469e2
-> >> > | Author: Tobias Diedrich <ranma+kernel@tdiedrich.de>
-> >> > | Date:   Sun May 18 15:02:37 2008 +0200
-> >> > |
-> >> > |    [netdrvr] forcedeth: setup wake-on-lan before shutting down
-> >> > |
-> >> > |    When hibernating in 'shutdown' mode, after saving the image the suspend hook
-> >> > |    is not called again.
-> >> > |    However, if the device is in promiscous mode, wake-on-lan will not work.
-> >> > |    This adds a shutdown hook to setup wake-on-lan before the final shutdown.
-> >> > |
-> >> > |    Signed-off-by: Tobias Diedrich <ranma+kernel@tdiedrich.de>
-> >> > |    Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
-> >> >
-> >> > my servers with nvidia mcp55 nic doesn't work with msi in second kernel by kexec
-> >> >
-> >> > after remove pci_set_power_state(, PCI_D3hot) that nic/msi will work again.
-> >> >
-> >> > check with e1000 is using pci_choose_state in _shutdown.
-> >
-> > This is wrong.
-> >
-> >> > So change that pci_choose_state(pdev, ...), and it works.
-> >>
-> >> Well, this doesn't look like a good solution to me, because you're putting
-> >> PMSG_SUSPEND in there, which is not correct for shutdown.  The right thing to
-> >> do would be to avoid changing the device power state if nv_shutdown() is
-> >> used for kexec or to rework the initialization of the adapter to handle the
-> >> case when it's initially in D3.
-> >>
-> >> Does it help if you just remove the pci_set_power_state(pdev, PCI_D3hot)
-> >> altogether?
-> >
-> > Ah, sorry.  I see it does.
-> >
-> > Actually, I think you can use pci_prepare_to_sleep() instead of
-> > pci_enable_wake() / pci_set_power_state() combo.  It wasn't designed for this
-> > purpose, but should work nevertheless.
-> >
-> > Can you please check if the appended patch works instead of your one?
-> >
-> > Rafael
-> >
-> > ---
-> > Fix the problem that boxes with NVidia MCP55 don't work with MSI
-> > in a kexeced kernel.
-> >
-> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> > ---
-> >  drivers/net/forcedeth.c |    4 +---
-> >  1 file changed, 1 insertion(+), 3 deletions(-)
-> >
-> > Index: linux-2.6/drivers/net/forcedeth.c
-> > ===================================================================
-> > --- linux-2.6.orig/drivers/net/forcedeth.c
-> > +++ linux-2.6/drivers/net/forcedeth.c
-> > @@ -5975,10 +5975,8 @@ static void nv_shutdown(struct pci_dev *
-> >        if (netif_running(dev))
-> >                nv_close(dev);
-> >
-> > -       pci_enable_wake(pdev, PCI_D3hot, np->wolenabled);
-> > -       pci_enable_wake(pdev, PCI_D3cold, np->wolenabled);
-> >        pci_disable_device(pdev);
-> > -       pci_set_power_state(pdev, PCI_D3hot);
-> > +       pci_prepare_to_sleep(pdev);
-> >  }
-> >  #else
-> >  #define nv_suspend NULL
-> >
-> >
-> 
-> your patch doesn't work...  it seems that silicon has problem with D3Hot
+hey
 
-Okay, so perhaps it's better to do something like this:
+Thanks for your answer, but it still doesn't come close. I'm up to 1.5
+Gig adding what i said. and PageTables + VMallocTotal equals 160 Mo.
+Sounds unlikely to me that something unaccounted for might go up to
+1.4 Gig, don't you think ? Or maybe it is accounted somewhere else
+than /proc/meminfo ? Please point me to the right place if so.
 
----
- drivers/net/forcedeth.c |    8 +++++---
- 1 file changed, 5 insertions(+), 3 deletions(-)
+Cheers
 
-Index: linux-2.6/drivers/net/forcedeth.c
-===================================================================
---- linux-2.6.orig/drivers/net/forcedeth.c
-+++ linux-2.6/drivers/net/forcedeth.c
-@@ -5975,10 +5975,12 @@ static void nv_shutdown(struct pci_dev *
- 	if (netif_running(dev))
- 		nv_close(dev);
- 
--	pci_enable_wake(pdev, PCI_D3hot, np->wolenabled);
--	pci_enable_wake(pdev, PCI_D3cold, np->wolenabled);
- 	pci_disable_device(pdev);
--	pci_set_power_state(pdev, PCI_D3hot);
-+	if (system_state == SYS_POWER_OFF) {
-+		if (pci_enable_wake(pdev, PCI_D3cold, np->wolenabled))
-+			pci_enable_wake(pdev, PCI_D3hot, np->wolenabled);
-+		pci_set_power_state(pdev, PCI_D3hot);
-+	}
- }
- #else
- #define nv_suspend NULL
+Marc Villemade
+
+
+On Sun, Aug 17, 2008 at 8:59 PM, Rik van Riel <riel@redhat.com> wrote:
+> On Sun, 17 Aug 2008 19:59:10 +0200
+> "Marc Villemade" <mastachand@gmail.com> wrote:
+>
+>> I'm having exactly the same issue but on a 2.6.20.4 vanilla kernel
+>> (x86). /proc/meminfo shows that
+>> MemFree+Buffers+cached+AnonPages+Slab+Mapped != MemTotal, which AFAIK
+>> should be the case.
+>
+> There are also page tables, vmalloc memory and various
+> unaccounted kernel allocations.
+>
+> --
+> All rights reversed.
+>
