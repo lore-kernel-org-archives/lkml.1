@@ -1,118 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754739AbYHQB7m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754739AbYHQCV7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754739AbYHQB7m (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Aug 2008 21:59:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751179AbYHQB7d
+	id S1754739AbYHQCV7 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Aug 2008 22:21:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751154AbYHQCVv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Aug 2008 21:59:33 -0400
-Received: from mail.gmx.net ([213.165.64.20]:58133 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751100AbYHQB7c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Aug 2008 21:59:32 -0400
-X-Authenticated: #44953887
-X-Provags-ID: V01U2FsdGVkX1/ZzkEbSV/ZehXfmP5fh+QQPfhGeSoAu/j/pm8sQd
-	XBo3vMziEbxmTw
-Date: Sun, 17 Aug 2008 03:59:21 +0200
-From: Mirco Tischler <mt-ml@gmx.de>
-To: Leonid Podolny <leonidp.lists@gmail.com>
-Cc: linux-kernel@vger.kernel.org, yi.zhu@intel.com, reinette.chatre@intel.com,
-       linux-wireless@vger.kernel.org, IvDoorn@gmail.com
-Subject: Re: CPU load after killing iwlagn with RF kill switch
-Message-ID: <20080817035921.4d35ae0e@mtlp.12thdimension>
-In-Reply-To: <48A5EC02.4070303@gmail.com>
-References: <48A5EC02.4070303@gmail.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
+	Sat, 16 Aug 2008 22:21:51 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:53364 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751100AbYHQCVu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 16 Aug 2008 22:21:50 -0400
+Date: Sun, 17 Aug 2008 04:23:23 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Greg KH <greg@kroah.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "Langsdorf, Mark" <mark.langsdorf@amd.com>,
+       Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Warning in during hotplug on 2.6.27-rc2-git5
+Message-ID: <20080817022323.GN19125@one.firstfloor.org>
+References: <200808141753.58547.rjw@sisk.pl> <20080814163450.GA13814@one.firstfloor.org> <6453C3CB8E2B3646B0D020C112613273C5AC71@sausexmb4.amd.com> <200808162128.25330.rjw@sisk.pl> <20080816201813.GA30715@kroah.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="Sig_/qHOd7Y=YbGYmgOtZO=/4E=X";
- protocol="application/pgp-signature"; micalg=PGP-SHA1
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.52
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080816201813.GA30715@kroah.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Sig_/qHOd7Y=YbGYmgOtZO=/4E=X
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+> > > I'm still seeing it on 2.6.27-rc2, even with the 
+> > > patch here http://lkml.org/lkml/2008/7/30/171 and the
+> > > wbinvd_halt code patch applied.  Maybe something else
+> > > broke in some of the recent hotplug changes?
+> > 
+> > My guess is that MCE does somthing that is not allowed by sysfs any more.
+> 
+> Hm, sysfs hasn't changed any in 2.6.27-rcX that I know of.
 
-On Fri, 15 Aug 2008 23:50:10 +0300, Leonid Podolny wrote:
-> Hi,
-> With a new iwlagn driver and 2.6.27-rc3, if I turn off the wireless=20
-> (intel 4965ag) by RF kill switch, the CPU utilization of ksoftirqd=20
-> process raises to 100% and stays there until I rmmod the module.
-> Please let me know what further information I can provide.
+mce hasn't either in this regard. My current theory is that the CPU 
+up/down notifiers are not balanced anymore (as in duplicated up events) 
 
-Hi
+Would need to add printk to verify that.
 
-Same on my machine with same chip and same kernel.
-If I use the switch on the side of my laptop to turn off wlan, ksoftirqd ea=
-ts
-up one core of my cpu til I switch it on again or rmmod the iwlagn module. =
-But
-when I switch it on before the device loses connection and then off a second
-time, I now get a (the) second ksoftirqd process eating up the other core t=
-oo.
-This only happens if a connection is established, though.
-I'm not sure if this problem existed in 2.6.26 but I doubt it. (Will check =
-if I
-find the time).
-
-My dmesg shows me this:
-
-[48067.257539] iwlagn: Radio Frequency Kill Switch is On:
-[48067.257539] Kill switch must be turned off for wireless networking to wo=
-rk.
-[48071.295154] wlan0: No ProbeResp from current AP 00:c0:a8:e5:e5:a5 - assu=
-me
-out of range=20
-[48072.099173] iwlagn: Error sending REPLY_ADD_STA: enqueue_hcmd failed: -5=
-=20
-[48072.099260] mac80211-phy1: failed to remove key (0, 00:c0:a8:e5:e5:a5) f=
-rom
-hardware (-5)=20
-[48072.206028] iwlagn: Error sending REPLY_ADD_STA: enqueue_hcmd failed: -5=
-=20
-[48072.206028] mac80211-phy1: failed to remove key (1, ff:ff:ff:ff:ff:ff) f=
-rom
-hardware (-5)
-
-The probably interesting parts of my config look like that:
-
-CONFIG_IWLWIFI=3Dm
-CONFIG_IWLCORE=3Dm
-CONFIG_IWLWIFI_LEDS=3Dy
-CONFIG_IWLWIFI_RFKILL=3Dy
-# CONFIG_IWLWIFI_DEBUG is not set
-CONFIG_IWLAGN=3Dm
-CONFIG_IWLAGN_SPECTRUM_MEASUREMENT=3Dy
-CONFIG_IWLAGN_LEDS=3Dy
-CONFIG_IWL4965=3Dy
-# CONFIG_IWL5000 is not set
-# CONFIG_IWL3945 is not set
-
-CONFIG_RFKILL=3Dm
-# CONFIG_RFKILL_INPUT is not set
-CONFIG_RFKILL_LEDS=3Dy
-CONFIG_IWLWIFI_RFKILL=3Dy
-
-I can recompile with debug options set if this helps. Just haven't found the
-time.
-
-Thanks
-Mirco
-
-P.S.: added some cc's for iwlwifi and rfkill.
-
---Sig_/qHOd7Y=YbGYmgOtZO=/4E=X
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-
-iEYEARECAAYFAkinhgEACgkQz+diZ7c2xfjaQACfb5c/stFKRA1LvjSCFsBUn02N
-/YkAn2TOIdhb6M1vjH6k/uTw5edgUIYL
-=C0io
------END PGP SIGNATURE-----
-
---Sig_/qHOd7Y=YbGYmgOtZO=/4E=X--
+-Andi
