@@ -1,90 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754238AbYHQPLe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754652AbYHQPRD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754238AbYHQPLe (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Aug 2008 11:11:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751870AbYHQPL0
+	id S1754652AbYHQPRD (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Aug 2008 11:17:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751961AbYHQPQx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Aug 2008 11:11:26 -0400
-Received: from smtp-vbr12.xs4all.nl ([194.109.24.32]:2775 "EHLO
-	smtp-vbr12.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751619AbYHQPLZ (ORCPT
+	Sun, 17 Aug 2008 11:16:53 -0400
+Received: from out2.smtp.messagingengine.com ([66.111.4.26]:42632 "EHLO
+	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751619AbYHQPQx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Aug 2008 11:11:25 -0400
-From: Hans Verkuil <hverkuil@xs4all.nl>
-To: v4l <video4linux-list@redhat.com>
-Subject: V4L2: switch to register_chrdev_region: needs testing/review of release() handling
-Date: Sun, 17 Aug 2008 17:09:51 +0200
-User-Agent: KMail/1.9.9
-Cc: Hans de Goede <j.w.r.degoede@hhs.nl>,
-       Laurent Pinchart <laurent.pinchart@skynet.be>, david@identd.dyndns.org,
-       Mauro Carvalho Chehab <mchehab@infradead.org>,
-       linux-kernel@vger.kernel.org, Mike Isely <isely@isely.net>
+	Sun, 17 Aug 2008 11:16:53 -0400
+X-Sasl-enc: ZrHuYazo6M/w4BLVJqqyt5b7oVmHP0eU50GT1pST0tSm 1218986211
+Message-ID: <48A840D6.8020906@imap.cc>
+Date: Sun, 17 Aug 2008 17:16:38 +0200
+From: Tilman Schmidt <tilman@imap.cc>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200808171709.51258.hverkuil@xs4all.nl>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Pavel Machek <pavel@suse.cz>, Andrew Morton <akpm@osdl.org>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Trivial patch monkey <trivial@kernel.org>
+Subject: Re: PM_TRACE is no longer experimental
+References: <20080814151833.GA23300@elf.ucw.cz> <48A5B8C8.6040504@imap.cc> <20080817093309.GA8368@atrey.karlin.mff.cuni.cz> <200808171223.41893.rjw@sisk.pl>
+In-Reply-To: <200808171223.41893.rjw@sisk.pl>
+X-Enigmail-Version: 0.95.6
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enigB149CC89A66CF3601CBFB50E"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enigB149CC89A66CF3601CBFB50E
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-As part of my ongoing cleanup of the v4l subsystem I've been looking 
-into converting v4l from register_chrdev to register_chrdev_region. The 
-latter is more flexible and allows for a larger range of minor numbers. 
-In addition it allows us to intercept the release callback when the 
-char device's refcount reaches 0.
+Rafael J. Wysocki schrieb:
+> On Sunday, 17 of August 2008, Pavel Machek wrote:
 
-This is very useful for hotpluggable devices like USB webcams. Currently 
-usb video drivers need to do the refcounting themselves, but with this 
-patch they can rely on the release callback since it will only be 
-called when the last user has closed the device. Since current usb 
-drivers do the refcounting in varying degrees of competency (from 'not' 
-to 'if you're lucky' to 'buggy' to 'perfect') it would be nice to have 
-the v4l framework take care of this.
+>> Given that it is enabled in both 32-bit and 64-bit defconfig, I don't
+>> think we can call it experimental.
+>=20
+> I agree.
+>=20
+>> Plus IIRC it needs command line option to thrash RTC.
+>=20
+> That's correct.
 
-So on a disconnect the driver can call video_unregister_device() even if 
-an application still has the device open. Only when the application 
-closes as well will the release be called and the driver can do the 
-final cleanup.
+Alright, I withdraw my objection.
 
-In fact, I think with this change it should even be possible to 
-reconnect the webcam even while some application is still using the old 
-char device. In that case a new minor number will be chosen since the 
-old one is still in use, but otherwise the webcam should just work as 
-usual. This is untested, though.
+T.
 
-Note that right now I basically copy the old release callback as 
-installed by cdev_init() and install our own v4l callback instead (to 
-be precise, I replace the ktype pointer with our own kobj_type).
 
-It would be much cleaner if chardev.c would allow one to set a callback 
-explicitly. It's not difficult to do that, but before doing that I 
-first have to know whether my approach is working correctly.
+--------------enigB149CC89A66CF3601CBFB50E
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
-The v4l-dvb repository with my changes is here:
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.4-svn0 (GNU/Linux)
+Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
 
-http://linuxtv.org/hg/~hverkuil/v4l-dvb-cdev2/
+iD8DBQFIqEDfQ3+did9BuFsRAlQgAJ0abngD6fBOBdGfLWmvecISpV0jxACffsrF
+2Nvw5ew9JGpXOCxYqn1aC24=
+=knkN
+-----END PGP SIGNATURE-----
 
-To see the diff in question:
-
-http://linuxtv.org/hg/~hverkuil/v4l-dvb-cdev2/rev/98acd2c1dea1
-
-I have tested myself with the quickcam_messenger webcam. For this driver 
-this change actually fixed a bug: disconnecting while a capture was in 
-progress and then trying to use /dev/video0 would lock that second 
-application.
-
-I also tested with gspca: I could find no differences here, it all 
-worked as before.
-
-There are a lot more USB video devices and it would be great if people 
-could test with their devices to see if this doesn't break anything. 
-Having a release callback that is called when it is really safe to free 
-everything should make life a lot easier I think.
-
-Regards,
-
-	Hans
+--------------enigB149CC89A66CF3601CBFB50E--
