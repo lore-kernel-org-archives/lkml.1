@@ -1,52 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754996AbYHQW11@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755945AbYHQW2m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754996AbYHQW11 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Aug 2008 18:27:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751758AbYHQW1T
+	id S1755945AbYHQW2m (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Aug 2008 18:28:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751855AbYHQW2e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Aug 2008 18:27:19 -0400
-Received: from fg-out-1718.google.com ([72.14.220.157]:60629 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750806AbYHQW1S (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Aug 2008 18:27:18 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=VIu1DzTLpRlfDO1R9MAtgaft1GHtnIIyMXZxM9m1dQm+QAntHcgw8wRfnM+VJ1eZbp
-         sutF2I3O8svmg1iGx2TJlrzpTn2WUTvDgIr55sWr8UU+H+4Z4Os0JPVp1h+FrIa2Qp/O
-         BJ/8TGXi8oahs0sVi4ZRGsZ+an/lr+FXIAsD4=
-Message-ID: <30353c3d0808171527n6c4c6546iddf8f55253373508@mail.gmail.com>
-Date: Sun, 17 Aug 2008 18:27:17 -0400
-From: "David Ellingsworth" <david@identd.dyndns.org>
-To: "Hans Verkuil" <hverkuil@xs4all.nl>
-Subject: Re: V4L2: switch to register_chrdev_region: needs testing/review of release() handling
-Cc: "Hans de Goede" <j.w.r.degoede@hhs.nl>, v4l <video4linux-list@redhat.com>,
-       "Laurent Pinchart" <laurent.pinchart@skynet.be>,
-       "Mauro Carvalho Chehab" <mchehab@infradead.org>,
-       linux-kernel@vger.kernel.org, "Mike Isely" <isely@isely.net>
-In-Reply-To: <200808172340.02280.hverkuil@xs4all.nl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200808171709.51258.hverkuil@xs4all.nl>
-	 <200808172146.45683.hverkuil@xs4all.nl> <48A8981E.3060808@hhs.nl>
-	 <200808172340.02280.hverkuil@xs4all.nl>
-X-Google-Sender-Auth: 4acccd03a6559c85
+	Sun, 17 Aug 2008 18:28:34 -0400
+Received: from ms01.sssup.it ([193.205.80.99]:39566 "EHLO sssup.it"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751758AbYHQW2e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Aug 2008 18:28:34 -0400
+Subject: Re: [RFC 0/1][PATCH] POSIX SCHED_SPORADIC implementation for tasks
+	and groups
+From: Dario Faggioli <raistlin@linux.it>
+To: Ulrich Drepper <drepper@redhat.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Steven Rostedt <rostedt@goodmis.org>, Andrew Morton <akpm@osdl.org>
+In-Reply-To: <48A0741F.60901@redhat.com>
+References: <1218462574.6450.24.camel@Palanthas>
+	 <48A0487B.7080600@redhat.com>  <1218464753.10800.92.camel@twins>
+	 <1218471794.6450.87.camel@Palanthas> <1218472252.10800.107.camel@twins>
+	 <48A0741F.60901@redhat.com>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-jIEH6uqDGSKEHj/hMICS"
+Date: Mon, 18 Aug 2008 00:27:31 +0200
+Message-Id: <1219012051.25992.31.camel@Palanthas>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I like what you've done with this, it's very close to the patch I had
-in mind. I especially like the way you hijacked cdev's kobj release..
-I hadn't considered that. I would have sent you my version, but it was
-based on the old videodev.c and needed to be redone after the videodev
-split. The associated patch which moves cdev_del to video_release is
-definitely the right thing to do. I don't know if it means much, but I
-ACK this patch with the associated patch that moves cdev_del to
-video_release.
 
-ACKed by David Ellingsworth
+--=-jIEH6uqDGSKEHj/hMICS
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
+
+On Mon, 2008-08-11 at 10:17 -0700, Ulrich Drepper wrote:
+> > Well, a new version of glibc could use those to implement the posix
+> > interface. Because as I understand it, glibc can break ABI on certain
+> > version bumps.
+>=20
+> In theory.  But this hasn't happened so far and I don't expect it to
+> happen any time soon.  New interfaces are not a real problem for me, thou=
+gh.
+>=20
+Ok, we'll see.
+I still think that SCHED_SPORADIC task (but specially group!) scheduling
+could be useful, even with a non fully-POSIX interface.
+
+This mail only to say that I'm actively working on it, i.e., I'm
+rewriting it with the new sched_param2/sched_setscheduler2 interface and
+fixing some very glaring bugs that was present in my first code. :-P
+
+Unfortunately, I'll be off the PC till September 4th... If you are still
+interested in, we will talk about it at that time, when I'll post the
+new version of the RFC.
+I also hope, by then, to be able to show you some test cases and
+overhead estimation.
+
+Thanks all of you for minding me, and sorry if I wasted some of your
+time. :-)
+
+Best Regards,
+Dario
+
+--=20
+<<This happens because I choose it to happen!>>
+(Raistlin Majere, DragonLance Chronicles -Dragons of Spring Drawning-)
+----------------------------------------------------------------------
+Dario Faggioli
+GNU/Linux Registered User: #340657
+Web: http://www.linux.it/~raistlin
+Blog: http://blog.linux.it/raistlin
+SIP Account: dario.faggioli@sipproxy.wengo.fr or
+             raistlin@ekiga.net
+Jabber Account: dario.faggioli@jabber.org/WengoPhone
+GnuPG Key ID: 4DC83AC4
+GnuPG Key Fingerprint: 2A78 AD5D B9CF A082 0836 08AD 9385 DA04 4DC8 3AC4
+
+--=-jIEH6uqDGSKEHj/hMICS
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBIqKXSk4XaBE3IOsQRAplEAJ49mHe9YPlM4UDzd60gyOfSusOgvACcCc0V
+YdoUP3WZCYT3wZcVYSHBk70=
+=eUC7
+-----END PGP SIGNATURE-----
+
+--=-jIEH6uqDGSKEHj/hMICS--
+
