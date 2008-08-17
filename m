@@ -1,58 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754085AbYHQPDo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754238AbYHQPLe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754085AbYHQPDo (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Aug 2008 11:03:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751671AbYHQPDg
+	id S1754238AbYHQPLe (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Aug 2008 11:11:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751870AbYHQPL0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Aug 2008 11:03:36 -0400
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:51018 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751486AbYHQPDf (ORCPT
+	Sun, 17 Aug 2008 11:11:26 -0400
+Received: from smtp-vbr12.xs4all.nl ([194.109.24.32]:2775 "EHLO
+	smtp-vbr12.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751619AbYHQPLZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Aug 2008 11:03:35 -0400
-Subject: Re: [Bug #11260] Regression: USB memory stick triggers several USB
-	resets before settling with bogus capacity
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Hugh Dickins <hugh@veritas.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Alex Villacis Lasso <avillaci@ceibo.fiec.espol.edu.ec>
-In-Reply-To: <Pine.LNX.4.64.0808170028550.25704@blonde.site>
-References: <DLWXHEp37wB.A.duD.yZzpIB@albercik>
-	 <sNRO-BDDjQL.A.pSG.rbzpIB@albercik>
-	 <Pine.LNX.4.64.0808170028550.25704@blonde.site>
-Content-Type: text/plain
-Date: Sun, 17 Aug 2008 10:03:27 -0500
-Message-Id: <1218985407.3917.1.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+	Sun, 17 Aug 2008 11:11:25 -0400
+From: Hans Verkuil <hverkuil@xs4all.nl>
+To: v4l <video4linux-list@redhat.com>
+Subject: V4L2: switch to register_chrdev_region: needs testing/review of release() handling
+Date: Sun, 17 Aug 2008 17:09:51 +0200
+User-Agent: KMail/1.9.9
+Cc: Hans de Goede <j.w.r.degoede@hhs.nl>,
+       Laurent Pinchart <laurent.pinchart@skynet.be>, david@identd.dyndns.org,
+       Mauro Carvalho Chehab <mchehab@infradead.org>,
+       linux-kernel@vger.kernel.org, Mike Isely <isely@isely.net>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200808171709.51258.hverkuil@xs4all.nl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2008-08-17 at 00:33 +0100, Hugh Dickins wrote:
-> On Sat, 16 Aug 2008, Rafael J. Wysocki wrote:
-> > 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11260
-> > Subject		: Regression: USB memory stick triggers several USB resets before settling with bogus capacity
-> > Submitter	: Alex Villacis Lasso <avillaci@ceibo.fiec.espol.edu.ec>
-> > Date		: 2008-08-06 13:33 (11 days old)
-> > Handled-By	: Hugh Dickins <hugh@veritas.com>
-> > Patch		: http://marc.info/?l=linux-kernel&m=121804333614405&w=2
-> 
-> James has this fix queued in his scsi-rc-fixes for 2.6.27
-> 
-> http://git.kernel.org/?p=linux/kernel/git/jejb/scsi-rc-fixes-2.6.git;a=commit;h=d211f052fa58a053639bc51501cb64421157d362
-> 
-> but hasn't asked Linus to pull for a while: I'm hoping it'll get into -rc4.
+Hi all,
 
-Yes ... sure.  linux-next has slowed my push to rcs because it's in
-there as soon as it's in my git tree.  However, give it a couple of days
-to test out the rest of the fixes in the tree and I'll send a push
-request.
+As part of my ongoing cleanup of the v4l subsystem I've been looking 
+into converting v4l from register_chrdev to register_chrdev_region. The 
+latter is more flexible and allows for a larger range of minor numbers. 
+In addition it allows us to intercept the release callback when the 
+char device's refcount reaches 0.
 
-James
+This is very useful for hotpluggable devices like USB webcams. Currently 
+usb video drivers need to do the refcounting themselves, but with this 
+patch they can rely on the release callback since it will only be 
+called when the last user has closed the device. Since current usb 
+drivers do the refcounting in varying degrees of competency (from 'not' 
+to 'if you're lucky' to 'buggy' to 'perfect') it would be nice to have 
+the v4l framework take care of this.
 
+So on a disconnect the driver can call video_unregister_device() even if 
+an application still has the device open. Only when the application 
+closes as well will the release be called and the driver can do the 
+final cleanup.
 
+In fact, I think with this change it should even be possible to 
+reconnect the webcam even while some application is still using the old 
+char device. In that case a new minor number will be chosen since the 
+old one is still in use, but otherwise the webcam should just work as 
+usual. This is untested, though.
+
+Note that right now I basically copy the old release callback as 
+installed by cdev_init() and install our own v4l callback instead (to 
+be precise, I replace the ktype pointer with our own kobj_type).
+
+It would be much cleaner if chardev.c would allow one to set a callback 
+explicitly. It's not difficult to do that, but before doing that I 
+first have to know whether my approach is working correctly.
+
+The v4l-dvb repository with my changes is here:
+
+http://linuxtv.org/hg/~hverkuil/v4l-dvb-cdev2/
+
+To see the diff in question:
+
+http://linuxtv.org/hg/~hverkuil/v4l-dvb-cdev2/rev/98acd2c1dea1
+
+I have tested myself with the quickcam_messenger webcam. For this driver 
+this change actually fixed a bug: disconnecting while a capture was in 
+progress and then trying to use /dev/video0 would lock that second 
+application.
+
+I also tested with gspca: I could find no differences here, it all 
+worked as before.
+
+There are a lot more USB video devices and it would be great if people 
+could test with their devices to see if this doesn't break anything. 
+Having a release callback that is called when it is really safe to free 
+everything should make life a lot easier I think.
+
+Regards,
+
+	Hans
