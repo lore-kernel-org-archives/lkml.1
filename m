@@ -1,72 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753906AbYHQDLv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754094AbYHQDbQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753906AbYHQDLv (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Aug 2008 23:11:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751493AbYHQDLn
+	id S1754094AbYHQDbQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Aug 2008 23:31:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751572AbYHQDa4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Aug 2008 23:11:43 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:54058 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751445AbYHQDLn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Aug 2008 23:11:43 -0400
-Message-ID: <48A79690.1090600@cn.fujitsu.com>
-Date: Sun, 17 Aug 2008 11:10:08 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: "IKEDA, Munehiro" <m-ikeda@ds.jp.nec.com>
-CC: linux-kernel@vger.kernel.org, menage@google.com,
-       Linux Containers <containers@lists.linux-foundation.org>,
-       balbir@linux.vnet.ibm.com
-Subject: Re: [PATCH] cgroup: memory.force_empty can make system slowdown
-References: <48A63AD1.3010907@ds.jp.nec.com> <48A77BBB.7050305@cn.fujitsu.com>
-In-Reply-To: <48A77BBB.7050305@cn.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Sat, 16 Aug 2008 23:30:56 -0400
+Received: from wa-out-1112.google.com ([209.85.146.181]:25625 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751445AbYHQDaz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 16 Aug 2008 23:30:55 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=qfLPc0hwhVKr+KLS6Tz7Tqpj9pfKBdKeUoEmd+foilDtML2mgllERlxAMIpgNZRWXP
+         6oHlCvix5YCRoccP0ltnKFmOXILZT8PkKNdtb2Qtgor771a+BJBQ44Zz2EoKJDboZRR0
+         e/pBpBIwTQv9C5gEmvdRGS/ANrLdGk2DbzZVs=
+From: Yinghai Lu <yhlu.kernel@gmail.com>
+To: Jeff Garzik <jgarzik@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, netdev <netdev@vger.kernel.org>,
+       Yinghai Lu <yhlu.kernel@gmail.com>
+Subject: [PATCH] net: forcedeth call restore mac addr in nv_shutdown patch
+Date: Sat, 16 Aug 2008 20:30:04 -0700
+Message-Id: <1218943804-6198-1-git-send-email-yhlu.kernel@gmail.com>
+X-Mailer: git-send-email 1.5.4.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Li Zefan wrote:
-> IKEDA, Munehiro wrote:
->> Cgroup's memory controller has a control file "memory.force_empty"
->> to reset usage account charged to a cgroup.  The account shouldn't
->> be reset if one or more processes are attached to the cgroup (at
->> least for memory controller, IMHO).  So mem_cgroup_force_empty()
->> is implemented to return -EBUSY and do nothing if so.
->> However, cgroup on hierarchy root faultily might be a exception.
->> Even if processes are attached to root cgroup (which is a "default"
->> cgroup for processes), forcing-empty can run by writing something to
->> memory.force_empty and it'll never end.
->>
-> 
-> I found this bug last week, and I've made patches to fix it, but then
-> I was on vacation. I'll send the patches out soon.
-> 
->> Following patch prevents this issue.
->>
->> This patch is for cgroup infrastructure code.  The issue can be
->> measured by modifying memory controller code also, namely to change
->> mem_cgroup_force_empty() to see CSS_ROOT bit of css->flags.
->> I believe cgroup->count approach like the patch below is rather
->> generic and reasonable, how does that sound?
->>
-> 
-> It's ok for the top_group's count to be 0 due to the top_cgroup hack.
-> With this patch, the top cgroup's count will be always >0, even if it
-> has no tasks in it, so writing to top_cgroup's force_empty will always
-> return -EBUSY.
-> 
+after
 
-I thought cgrp->css_sets will be empty when there are no tasks in the top cgroup,
-but I was wrong, because init_css_set's refcount will always >0,
-so cgroup_task_count() won't return 0 for the top cgroup:
+| commit f735a2a1a4f2a0f5cd823ce323e82675990469e2
+| Author: Tobias Diedrich <ranma+kernel@tdiedrich.de>
+| Date:   Sun May 18 15:02:37 2008 +0200
+|
+|    [netdrvr] forcedeth: setup wake-on-lan before shutting down
+|
+|    When hibernating in 'shutdown' mode, after saving the image the suspend hook
+|    is not called again.
+|    However, if the device is in promiscous mode, wake-on-lan will not work.
+|    This adds a shutdown hook to setup wake-on-lan before the final shutdown.
+|
+|    Signed-off-by: Tobias Diedrich <ranma+kernel@tdiedrich.de>
+|    Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
 
-# mount -t cgroup -o debug xxx /mnt
-# mkdir /mnt/sub
-# for pid in `cat /mnt/tasks`; do echo $pid > /mnt/sub/tasks; done
-# cat /mnt/tasks
-# cat /mnt/debug.taskcount
-3
+my servers with nvidia ck804 and mcp55 will reverse mac address with kexec.
 
+it turns out need to restore mac addr in nv_shutdown.
 
+Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+
+---
+ drivers/net/forcedeth.c |   17 +++++++++++++----
+ 1 file changed, 13 insertions(+), 4 deletions(-)
+
+Index: linux-2.6/drivers/net/forcedeth.c
+===================================================================
+--- linux-2.6.orig/drivers/net/forcedeth.c
++++ linux-2.6/drivers/net/forcedeth.c
+@@ -5643,6 +5643,7 @@ static int __devinit nv_probe(struct pci
+ 		dev->dev_addr[4] = (np->orig_mac[0] >>  8) & 0xff;
+ 		dev->dev_addr[5] = (np->orig_mac[0] >>  0) & 0xff;
+ 		writel(txreg|NVREG_TRANSMITPOLL_MAC_ADDR_REV, base + NvRegTransmitPoll);
++		printk(KERN_DEBUG "nv_probe: set workarund bit for reversed mac addr\n");
+ 	}
+ 	memcpy(dev->perm_addr, dev->dev_addr, dev->addr_len);
+ 
+@@ -5890,14 +5891,12 @@ static void nv_restore_phy(struct net_de
+ 	}
+ }
+ 
+-static void __devexit nv_remove(struct pci_dev *pci_dev)
++static void nv_restore_mac_addr(struct pci_dev *pci_dev)
+ {
+ 	struct net_device *dev = pci_get_drvdata(pci_dev);
+ 	struct fe_priv *np = netdev_priv(dev);
+ 	u8 __iomem *base = get_hwbase(dev);
+ 
+-	unregister_netdev(dev);
+-
+ 	/* special op: write back the misordered MAC address - otherwise
+ 	 * the next nv_probe would see a wrong address.
+ 	 */
+@@ -5905,6 +5904,15 @@ static void __devexit nv_remove(struct p
+ 	writel(np->orig_mac[1], base + NvRegMacAddrB);
+ 	writel(readl(base + NvRegTransmitPoll) & ~NVREG_TRANSMITPOLL_MAC_ADDR_REV,
+ 	       base + NvRegTransmitPoll);
++}
++
++static void __devexit nv_remove(struct pci_dev *pci_dev)
++{
++	struct net_device *dev = pci_get_drvdata(pci_dev);
++
++	unregister_netdev(dev);
++
++	nv_restore_mac_addr(pci_dev);
+ 
+ 	/* restore any phy related changes */
+ 	nv_restore_phy(dev);
+@@ -5970,11 +5978,12 @@ static int nv_resume(struct pci_dev *pde
+ static void nv_shutdown(struct pci_dev *pdev)
+ {
+ 	struct net_device *dev = pci_get_drvdata(pdev);
+-	struct fe_priv *np = netdev_priv(dev);
+ 
+ 	if (netif_running(dev))
+ 		nv_close(dev);
+ 
++	nv_restore_mac_addr(pdev);
++
+ 	pci_enable_wake(pdev, PCI_D3hot, np->wolenabled);
+ 	pci_enable_wake(pdev, PCI_D3cold, np->wolenabled);
+ 	pci_disable_device(pdev);
