@@ -1,105 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753934AbYHQQxA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754101AbYHQQ5Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753934AbYHQQxA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Aug 2008 12:53:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751986AbYHQQwu
+	id S1754101AbYHQQ5Q (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Aug 2008 12:57:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752491AbYHQQ5E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Aug 2008 12:52:50 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:40656 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751961AbYHQQwt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Aug 2008 12:52:49 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Subject: Re: [PATCH] net: forcedeth use pci_choose_state instead of PCI_D3hot - v2
-Date: Sun, 17 Aug 2008 18:55:57 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Jeff Garzik <jgarzik@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       netdev <netdev@vger.kernel.org>
-References: <1218954333-12819-1-git-send-email-yhlu.kernel@gmail.com> <200808171502.02946.rjw@sisk.pl>
-In-Reply-To: <200808171502.02946.rjw@sisk.pl>
+	Sun, 17 Aug 2008 12:57:04 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:54001 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752454AbYHQQ5C (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Aug 2008 12:57:02 -0400
+Date: Sun, 17 Aug 2008 09:56:35 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+cc: Rusty Russell <rusty@rustcorp.com.au>,
+       Alexey Dobriyan <adobriyan@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: [PATCH] debug: fix BUILD_BUG_ON() for non-constant expressions
+In-Reply-To: <20080817103241.GB21303@elte.hu>
+Message-ID: <alpine.LFD.1.10.0808170936260.3324@nehalem.linux-foundation.org>
+References: <20080816100948.GB19926@martell.zuzino.mipt.ru> <200808162055.45136.rusty@rustcorp.com.au> <alpine.LFD.1.10.0808161305170.3324@nehalem.linux-foundation.org> <20080817103241.GB21303@elte.hu>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200808171855.58384.rjw@sisk.pl>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday, 17 of August 2008, Rafael J. Wysocki wrote:
-> On Sunday, 17 of August 2008, Yinghai Lu wrote:
-> > after
-> > 
-> > | commit f735a2a1a4f2a0f5cd823ce323e82675990469e2
-> > | Author: Tobias Diedrich <ranma+kernel@tdiedrich.de>
-> > | Date:   Sun May 18 15:02:37 2008 +0200
-> > |
-> > |    [netdrvr] forcedeth: setup wake-on-lan before shutting down
-> > |
-> > |    When hibernating in 'shutdown' mode, after saving the image the suspend hook
-> > |    is not called again.
-> > |    However, if the device is in promiscous mode, wake-on-lan will not work.
-> > |    This adds a shutdown hook to setup wake-on-lan before the final shutdown.
-> > |
-> > |    Signed-off-by: Tobias Diedrich <ranma+kernel@tdiedrich.de>
-> > |    Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
-> > 
-> > my servers with nvidia mcp55 nic doesn't work with msi in second kernel by kexec
-> > 
-> > after remove pci_set_power_state(, PCI_D3hot) that nic/msi will work again.
-> > 
-> > check with e1000 is using pci_choose_state in _shutdown.
 
-This is wrong.
 
-> > So change that pci_choose_state(pdev, ...), and it works.
-> 
-> Well, this doesn't look like a good solution to me, because you're putting
-> PMSG_SUSPEND in there, which is not correct for shutdown.  The right thing to
-> do would be to avoid changing the device power state if nv_shutdown() is
-> used for kexec or to rework the initialization of the adapter to handle the
-> case when it's initially in D3.
-> 
-> Does it help if you just remove the pci_set_power_state(pdev, PCI_D3hot)
-> altogether?
+On Sun, 17 Aug 2008, Ingo Molnar wrote:
+> +/*
+> + * Force a compilation error if condition is true [array index becomes
+> + * negative], and a linker error if condition is not constant [non-defined
+> + * variable is used as an array index]:
+> + *
+> + * ( The linker trick relies on gcc optimizing out a multiplication with
+> + *   constant zero - which should be reasonable enough. )
+> + */
+> +extern unsigned int __BUILD_BUG_ON_non_constant;
+> +
+> +#define BUILD_BUG_ON(condition)					\
+> +do {								\
+> +	(void)sizeof(char[1 - 2*!!(condition)]);		\
+> +	if (!__builtin_constant_p(condition))			\
+> +		__BUILD_BUG_ON_non_constant++;			\
+> +} while (0)
 
-Ah, sorry.  I see it does.
+Gag me now.
 
-Actually, I think you can use pci_prepare_to_sleep() instead of
-pci_enable_wake() / pci_set_power_state() combo.  It wasn't designed for this
-purpose, but should work nevertheless.
+Why not just do
 
-Can you please check if the appended patch works instead of your one?
+ #define __BBO(c)                sizeof(const char[1 - 2*!!(c)])
+ #define __BBONC(c)              __BBO(!__builtin_constant_p(c))
+ #define BUILD_BUG_ON_ZERO(c)    (__BBO(c) - __BBONC(c))
+ #define BUILD_BUG_ON(c)         (void)BUILD_BUG_ON_ZERO(c)
 
-Rafael
+and be done with it?
 
----
-Fix the problem that boxes with NVidia MCP55 don't work with MSI
-in a kexeced kernel.
+The rules are trivial:
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- drivers/net/forcedeth.c |    4 +---
- 1 file changed, 1 insertion(+), 3 deletions(-)
+ - __BBO() causes a warning if 'c' is a constant non-zero, returns a
+   (size_t) 1 otherwise
 
-Index: linux-2.6/drivers/net/forcedeth.c
-===================================================================
---- linux-2.6.orig/drivers/net/forcedeth.c
-+++ linux-2.6/drivers/net/forcedeth.c
-@@ -5975,10 +5975,8 @@ static void nv_shutdown(struct pci_dev *
- 	if (netif_running(dev))
- 		nv_close(dev);
- 
--	pci_enable_wake(pdev, PCI_D3hot, np->wolenabled);
--	pci_enable_wake(pdev, PCI_D3cold, np->wolenabled);
- 	pci_disable_device(pdev);
--	pci_set_power_state(pdev, PCI_D3hot);
-+	pci_prepare_to_sleep(pdev);
- }
- #else
- #define nv_suspend NULL
+ - __BBONC() causes a warning if 'c' is not a constant, returns a
+   (size_t) 1 otherwise
 
+And then BUILD_BUG_ON[_ZERO] are totally _trivial_ on top of those.
+
+Yeah, yeah, I didn't test this, but it looks a hell of a lot simpler, and 
+gives the warning about non-constant issues at compile time with line 
+numbers rather than at link-time.
+
+		Linus
