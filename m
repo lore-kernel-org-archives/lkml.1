@@ -1,28 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755367AbYHQMqU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755520AbYHQMrL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755367AbYHQMqU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Aug 2008 08:46:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753345AbYHQMqD
+	id S1755520AbYHQMrL (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Aug 2008 08:47:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753345AbYHQMq4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Aug 2008 08:46:03 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:35137 "EHLO mx2.mail.elte.hu"
+	Sun, 17 Aug 2008 08:46:56 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:35215 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755279AbYHQMqB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Aug 2008 08:46:01 -0400
-Date: Sun, 17 Aug 2008 14:45:40 +0200
+	id S1753111AbYHQMqz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Aug 2008 08:46:55 -0400
+Date: Sun, 17 Aug 2008 14:46:39 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Cyrill Gorcunov <gorcunov@gmail.com>
-Cc: hpa@zytor.com, tglx@linutronix.de, macro@linux-mips.org,
-       linux-kernel@vger.kernel.org, Suresh Siddha <suresh.b.siddha@intel.com>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: one more apic merging preliminary series
-Message-ID: <20080817124540.GF21434@elte.hu>
-References: <1218914515-26377-1-git-send-email-gorcunov@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Jean Delvare <khali@linux-fr.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Andi Kleen <andi@firstfloor.org>
+Subject: Re: [Bug #11346] kernel BUG at arch/x86/mm/pat.c:233!
+Message-ID: <20080817124639.GG21434@elte.hu>
+References: <DLWXHEp37wB.A.duD.yZzpIB@albercik> <sNRO-BDDjQL.A.99D.9ZzpIB@albercik> <20080816224526.43145f77@hyperion.delvare> <200808171435.57225.rjw@sisk.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1218914515-26377-1-git-send-email-gorcunov@gmail.com>
+In-Reply-To: <200808171435.57225.rjw@sisk.pl>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -37,21 +37,31 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Cyrill Gorcunov <gorcunov@gmail.com> wrote:
+* Rafael J. Wysocki <rjw@sisk.pl> wrote:
 
-> Please review - any comments are welcome!
+> On Saturday, 16 of August 2008, Jean Delvare wrote:
+> > Hi Rafael,
+> > 
+> > On Sat, 16 Aug 2008 21:02:56 +0200 (CEST), Rafael J. Wysocki wrote:
+> > > This message has been generated automatically as a part of a report
+> > > of recent regressions.
+> > > 
+> > > The following bug entry is on the current list of known regressions
+> > > from 2.6.26.  Please verify if it still should be listed and let me know
+> > > (either way).
+> > > 
+> > > 
+> > > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11346
+> > > Subject	: kernel BUG at arch/x86/mm/pat.c:233!
+> > > Submitter	: Jean Delvare <khali@linux-fr.org>
+> > > Date		: 2008-08-15 02:10 (2 days old)
+> > > Handled-By	: Andi Kleen <andi@firstfloor.org>
+> > > Patch		: http://bugzilla.kernel.org/attachment.cgi?id=17270&action=view
+> > 
+> > Andi's patch still needs to be pushed to Linus.
 > 
-> For now it's like code bloating - but it's just preliminary series to 
-> make apic_*.c code more or less similar. And it's still a bit far from 
-> being ready to be merged down.
+> Thanks for the update.
 
-applied to tip/x86/apic - thanks Cyrill.
-
-Maciej's point about cleaning up the x2apic impact is very much true - 
-i've Cc:-ed Suresh and Venki. Even if we wont truly use x2apic in 32-bit 
-kernels, it's a piece of glue hardware that does not depend on which 
-mode the CPU is in, so support for it should be bitsize agnostic. It 
-will also obviously be good for test coverage, once x2apic capable hw 
-will be more widespread.
+now upstream as commit e213e8778.
 
 	Ingo
