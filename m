@@ -1,86 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754995AbYHQBGr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754870AbYHQBRa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754995AbYHQBGr (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Aug 2008 21:06:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754481AbYHQBGj
+	id S1754870AbYHQBRa (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Aug 2008 21:17:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751154AbYHQBRW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Aug 2008 21:06:39 -0400
-Received: from saeurebad.de ([85.214.36.134]:34306 "EHLO saeurebad.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754479AbYHQBGi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Aug 2008 21:06:38 -0400
-From: Johannes Weiner <hannes@saeurebad.de>
-To: Hugh Dickins <hugh@veritas.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>
-Subject: [PATCH] mm: make unmap_vmas() handle non-page-aligned boundary addresses
-References: <DLWXHEp37wB.A.duD.yZzpIB@albercik>
-	<sNRO-BDDjQL.A.spE.VazpIB@albercik>
-	<Pine.LNX.4.64.0808170036400.25704@blonde.site>
-Date: Sun, 17 Aug 2008 03:06:12 +0200
-In-Reply-To: <Pine.LNX.4.64.0808170036400.25704@blonde.site> (Hugh Dickins's
-	message of "Sun, 17 Aug 2008 00:38:35 +0100 (BST)")
-Message-ID: <87fxp4pi0r.fsf_-_@skyscraper.fehenstaub.lan>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	Sat, 16 Aug 2008 21:17:22 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:61428 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751086AbYHQBRV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 16 Aug 2008 21:17:21 -0400
+Message-ID: <48A77BBB.7050305@cn.fujitsu.com>
+Date: Sun, 17 Aug 2008 09:15:39 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
+To: "IKEDA, Munehiro" <m-ikeda@ds.jp.nec.com>
+CC: menage@google.com, balbir@linux.vnet.ibm.com,
+       Linux Containers <containers@lists.linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] cgroup: memory.force_empty can make system slowdown
+References: <48A63AD1.3010907@ds.jp.nec.com>
+In-Reply-To: <48A63AD1.3010907@ds.jp.nec.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-zap_pte_range() overruns the page tables if the distance between the
-start and end is not a multiple of the pagesize.  Because then,
-`start' will never be equal to `end' and we will keep looping.
+IKEDA, Munehiro wrote:
+> Cgroup's memory controller has a control file "memory.force_empty"
+> to reset usage account charged to a cgroup.  The account shouldn't
+> be reset if one or more processes are attached to the cgroup (at
+> least for memory controller, IMHO).  So mem_cgroup_force_empty()
+> is implemented to return -EBUSY and do nothing if so.
+> However, cgroup on hierarchy root faultily might be a exception.
+> Even if processes are attached to root cgroup (which is a "default"
+> cgroup for processes), forcing-empty can run by writing something to
+> memory.force_empty and it'll never end.
+> 
 
-To fix this, round the boundary addresses to exclude partial pages from
-the range completely, we must not unmap them anyway.
+I found this bug last week, and I've made patches to fix it, but then
+I was on vacation. I'll send the patches out soon.
 
-Signed-off-by: Johannes Weiner <hannes@saeurebad.de>
----
+> Following patch prevents this issue.
+> 
+> This patch is for cgroup infrastructure code.  The issue can be
+> measured by modifying memory controller code also, namely to change
+> mem_cgroup_force_empty() to see CSS_ROOT bit of css->flags.
+> I believe cgroup->count approach like the patch below is rather
+> generic and reasonable, how does that sound?
+> 
 
-Hugh Dickins <hugh@veritas.com> writes:
+It's ok for the top_group's count to be 0 due to the top_cgroup hack.
+With this patch, the top cgroup's count will be always >0, even if it
+has no tasks in it, so writing to top_cgroup's force_empty will always
+return -EBUSY.
 
-> On Sat, 16 Aug 2008, Rafael J. Wysocki wrote:
->> 
->> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11335
->> Subject		: 2.6.27-rc2-git5 BUG: unable to handle kernel paging request
->> Submitter	: Randy Dunlap <randy.dunlap@oracle.com>
->> Date		: 2008-08-12 4:18 (5 days old)
->> References	: http://marc.info/?l=linux-kernel&m=121851477201960&w=4
->> Handled-By	: Hugh Dickins <hugh@veritas.com>
->
-> This should still be listed for now, it's interesting,
-> but I doubt we'll make any progress unless it can be reproduced.
-
-I think this patch fixes it.  exit_mmap() even calls unmap_vmas() with
-an ending address of -1UL which is not page-aligned in my book and on my
-architecture :)
-
-It is a similar problem to what we had with gup some weeks ago.
-
-diff --git a/mm/memory.c b/mm/memory.c
-index 1002f47..483c5d0 100644
---- a/mm/memory.c
-+++ b/mm/memory.c
-@@ -896,11 +896,17 @@ unsigned long unmap_vmas(struct mmu_gather **tlbp,
- 	long zap_work = ZAP_BLOCK_SIZE;
- 	unsigned long tlb_start = 0;	/* For tlb_finish_mmu */
- 	int tlb_start_valid = 0;
--	unsigned long start = start_addr;
-+	unsigned long start;
- 	spinlock_t *i_mmap_lock = details? details->i_mmap_lock: NULL;
- 	int fullmm = (*tlbp)->fullmm;
- 	struct mm_struct *mm = vma->vm_mm;
- 
-+	/* Preserve partial pages */
-+	start_addr = PAGE_ALIGN(start_addr);
-+	end_addr &= PAGE_MASK;
-+
-+	start = start_addr;
-+
- 	mmu_notifier_invalidate_range_start(mm, start_addr, end_addr);
- 	for ( ; vma && vma->vm_start < end_addr; vma = vma->vm_next) {
- 		unsigned long end;
+> Paul, Balbir?
+> 
+> 
+> 
+> Signed-off-by: Munehiro "Muuhh" Ikeda <m-ikeda@ds.jp.nec.com>
+> 
+> diff -uNrp linux-2.6.27-rc3.orig/kernel/cgroup.c linux-2.6.27-rc3/kernel/cgroup.c
+> --- linux-2.6.27-rc3.orig/kernel/cgroup.c	2008-08-12 21:55:39.000000000 -0400
+> +++ linux-2.6.27-rc3/kernel/cgroup.c	2008-08-15 20:52:52.000000000 -0400
+> @@ -2264,8 +2264,10 @@ static void init_cgroup_css(struct cgrou
+>  	css->cgroup = cgrp;
+>  	atomic_set(&css->refcnt, 0);
+>  	css->flags = 0;
+> -	if (cgrp == dummytop)
+> +	if (cgrp == dummytop) {
+>  		set_bit(CSS_ROOT, &css->flags);
+> +		atomic_set(&css->cgroup->count, 1);
+> +	}
+>  	BUG_ON(cgrp->subsys[ss->subsys_id]);
+>  	cgrp->subsys[ss->subsys_id] = css;
+>  }
+> 
+> 
+> 
