@@ -1,137 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755846AbYHQVSx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755712AbYHQVZ3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755846AbYHQVSx (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Aug 2008 17:18:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752047AbYHQVSq
+	id S1755712AbYHQVZ3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Aug 2008 17:25:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751661AbYHQVZV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Aug 2008 17:18:46 -0400
-Received: from smtp2.versatel.nl ([62.58.50.89]:35066 "EHLO smtp2.versatel.nl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751661AbYHQVSp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Aug 2008 17:18:45 -0400
-Message-ID: <48A8981E.3060808@hhs.nl>
-Date: Sun, 17 Aug 2008 23:29:02 +0200
-From: Hans de Goede <j.w.r.degoede@hhs.nl>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Sun, 17 Aug 2008 17:25:21 -0400
+Received: from mtiwmhc11.worldnet.att.net ([204.127.131.115]:62033 "EHLO
+	mtiwmhc11.worldnet.att.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751454AbYHQVZU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Aug 2008 17:25:20 -0400
+Message-ID: <48A8973F.1090303@lwfinger.net>
+Date: Sun, 17 Aug 2008 16:25:19 -0500
+From: Larry Finger <Larry.Finger@lwfinger.net>
+User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
 MIME-Version: 1.0
-To: Hans Verkuil <hverkuil@xs4all.nl>
-CC: v4l <video4linux-list@redhat.com>,
-       Laurent Pinchart <laurent.pinchart@skynet.be>, david@identd.dyndns.org,
-       Mauro Carvalho Chehab <mchehab@infradead.org>,
-       linux-kernel@vger.kernel.org, Mike Isely <isely@isely.net>
-Subject: Re: V4L2: switch to register_chrdev_region: needs testing/review
- of release() handling
-References: <200808171709.51258.hverkuil@xs4all.nl> <48A86E3B.4060105@hhs.nl> <200808172146.45683.hverkuil@xs4all.nl>
-In-Reply-To: <200808172146.45683.hverkuil@xs4all.nl>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+Subject: Re: [Bug #11228] p54usb broken by commit b19fa1f
+References: <DLWXHEp37wB.A.duD.yZzpIB@albercik> <sNRO-BDDjQL.A.1tG.EczpIB@albercik>
+In-Reply-To: <sNRO-BDDjQL.A.1tG.EczpIB@albercik>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hans Verkuil wrote:
->> Anyways I've reviewed your patch and in general I like it, I only see
->> one problem:
->>
->> @@ -99,7 +130,8 @@ static void video_release(struct device
->> {
->> struct video_device *vfd = container_of(cd, struct video_device,
->> dev); -#if 1 /* keep */
->> + return;
->> +#if 1 /* keep */
->> /* needed until all drivers are fixed */
->> if (!vfd->release)
->> return;
->> @@ -107,6 +139,7 @@ static void video_release(struct device
->> vfd->release(vfd);
->> }
->> +
->> static struct class video_class = {
->> .name = VIDEO_NAME,
->> #if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 19)
->>
->>
->> Here you basicly make the release callback of the video class device
->> a no-op. First of all I think it would be better to just delete it
->> then to add a return, which sort of hides its an empty function now.
+Rafael J. Wysocki wrote:
+> This message has been generated automatically as a part of a report
+> of recent regressions.
 > 
-> I thought so as well, but without a release function the low-level class 
-> code in the kernel starts complaining about the missing release.
+> The following bug entry is on the current list of known regressions
+> from 2.6.26.  Please verify if it still should be listed and let me know
+> (either way).
 > 
-
-I wasn't clear with delete I only meant the body.
-
->> More importantly, its wrong to make this a no-op. When a driver
->> unregisters a v4l device, and all cdev usage has stopped there can
->> still be open references to sysfs files of the video class device,
->> but in this case currently the video_unregister_device call will lead
->> to the vfd->release callback getting called freeing the vfd struct,
->> which contains the class device.
 > 
-> You might have gotten confused here: video_release() didn't call the 
-> main release callback: there was a return in front. I'd forgotten to 
-> remove that test code.
-> 
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11228
+> Subject		: p54usb broken by commit b19fa1f
+> Submitter	: Larry Finger <Larry.Finger@lwfinger.net>
+> Date		: 2008-08-02 3:06 (15 days old)
+> References	: http://marc.info/?l=linux-kernel&m=121764647801783&w=4
+> Handled-By	: Larry Finger <Larry.Finger@lwfinger.net>
+> Patch		: http://marc.info/?l=linux-kernel&m=121779445431434&w=4
 
-I'm not talking about video_release, I'm talking about the following call chain:
-video_device_unregister
-cdev_del
-kobj_put
-v4l2_chardev_release
-vfd->release
-
-Which could happen in your old version (before the cdev_del was moved) even 
-when a class device sysfs file was still open, and thus sysfs read / write 
-callbacks which may use the (now released) vfd could still be made after the 
-release.
-
-> I've also tested what happens when you keep a sysfs file open: it seems 
-> to work OK in that video_release is called even though the sysfs file 
-> is still open.
-
-That should not happen, if a process holds a sysfs file open the release 
-callback for the device which owns the sysfs file should not get called, are 
-you sure this is happening, if the device then does a read / write on this file 
-mayhem could happen, or does the kernel catch this now a days and just returns 
--ENODEV?
-
-> That said, I've moved the cdev_del call from 
-> video_unregister_device() to the video_release() function. It makes 
-> sense not to delete the char device until that callback is called.
->
-
-Yes, that will fix the problem I was trying to describe too.
-
-> This patch is here: 
-> http://linuxtv.org/hg/~hverkuil/v4l-dvb-cdev2/rev/575997018499
-> 
->> I believe the way to fix this is todo a get on the kobj contained in
->> the cdev in video_register_device before registering the class
->> device, and then in the class device release callback do a put on
->> this kobj.
-> 
-> There is no need to do an additional get: cdev_init does that already, 
-> so the char dev stays alive at least until the cdev_del (longer if apps 
-> still keep it open).
-> 
-
-Well since the code was registering a class device which shared the same in 
-memory struct, we needed an additional put on the cdev kobj, as once the 
-refcount for that got to 0 the entire vfd struct including the class device 
-would get released.
-
-But now that you've moved the cdev_del this is moot, as now the ref_count won't 
-reach zero until all users of the class device are done with it.
-
-> I would be very curious to hear how well it works with the gspca driver. 
-> In particular if you can indeed reconnect while an application still 
-> has a char device open from before the disconnect. Currently the gspca 
-> own locking seems to disallow that (the new device doesn't appear until 
-> all applications stopped using the old one).
-> 
-
-This is on my todo, but not very high atm.
-
-Regards,
-
-Hans
+The fix was pushed from wireless (Linville) to networks (davem) on 8/17.
