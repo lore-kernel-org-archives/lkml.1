@@ -1,113 +1,167 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755533AbYHQT3R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755334AbYHQTbU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755533AbYHQT3R (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Aug 2008 15:29:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751124AbYHQT27
+	id S1755334AbYHQTbU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Aug 2008 15:31:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751167AbYHQTbE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Aug 2008 15:28:59 -0400
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:41836 "EHLO smtp4.pp.htv.fi"
+	Sun, 17 Aug 2008 15:31:04 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:41229 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751291AbYHQT25 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Aug 2008 15:28:57 -0400
-Date: Sun, 17 Aug 2008 22:26:45 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>,
-       lkml <linux-kernel@vger.kernel.org>, Greg Donald <gdonald@gmail.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: INFO: task blocked for more than 120 seconds
-Message-ID: <20080817192644.GE24619@cs181140183.pp.htv.fi>
-References: <20080811112712.f858d77c.randy.dunlap@oracle.com> <20080812181735.GA6476@skywalker>
+	id S1751124AbYHQTbB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Aug 2008 15:31:01 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: "Yinghai Lu" <yhlu.kernel@gmail.com>
+Subject: Re: [PATCH] net: forcedeth use pci_choose_state instead of PCI_D3hot - v2
+Date: Sun, 17 Aug 2008 21:34:19 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: "Jeff Garzik" <jgarzik@redhat.com>, "Ingo Molnar" <mingo@elte.hu>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, netdev <netdev@vger.kernel.org>
+References: <1218954333-12819-1-git-send-email-yhlu.kernel@gmail.com> <86802c440808171216s1d87c4e3t965b3a93bf4b87f4@mail.gmail.com> <200808172129.02135.rjw@sisk.pl>
+In-Reply-To: <200808172129.02135.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080812181735.GA6476@skywalker>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200808172134.20230.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 12, 2008 at 11:47:35PM +0530, Aneesh Kumar K.V wrote:
-> On Mon, Aug 11, 2008 at 11:27:12AM -0700, Randy Dunlap wrote:
-> > On 2.6.27-rc2-git4 and several previous kernels, I see several
-> > of these messages.  E.g.:
+On Sunday, 17 of August 2008, Rafael J. Wysocki wrote:
+> On Sunday, 17 of August 2008, Yinghai Lu wrote:
+> > On Sun, Aug 17, 2008 at 9:55 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > > On Sunday, 17 of August 2008, Rafael J. Wysocki wrote:
+> > >> On Sunday, 17 of August 2008, Yinghai Lu wrote:
+> > >> > after
+> > >> >
+> > >> > | commit f735a2a1a4f2a0f5cd823ce323e82675990469e2
+> > >> > | Author: Tobias Diedrich <ranma+kernel@tdiedrich.de>
+> > >> > | Date:   Sun May 18 15:02:37 2008 +0200
+> > >> > |
+> > >> > |    [netdrvr] forcedeth: setup wake-on-lan before shutting down
+> > >> > |
+> > >> > |    When hibernating in 'shutdown' mode, after saving the image the suspend hook
+> > >> > |    is not called again.
+> > >> > |    However, if the device is in promiscous mode, wake-on-lan will not work.
+> > >> > |    This adds a shutdown hook to setup wake-on-lan before the final shutdown.
+> > >> > |
+> > >> > |    Signed-off-by: Tobias Diedrich <ranma+kernel@tdiedrich.de>
+> > >> > |    Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
+> > >> >
+> > >> > my servers with nvidia mcp55 nic doesn't work with msi in second kernel by kexec
+> > >> >
+> > >> > after remove pci_set_power_state(, PCI_D3hot) that nic/msi will work again.
+> > >> >
+> > >> > check with e1000 is using pci_choose_state in _shutdown.
+> > >
+> > > This is wrong.
+> > >
+> > >> > So change that pci_choose_state(pdev, ...), and it works.
+> > >>
+> > >> Well, this doesn't look like a good solution to me, because you're putting
+> > >> PMSG_SUSPEND in there, which is not correct for shutdown.  The right thing to
+> > >> do would be to avoid changing the device power state if nv_shutdown() is
+> > >> used for kexec or to rework the initialization of the adapter to handle the
+> > >> case when it's initially in D3.
+> > >>
+> > >> Does it help if you just remove the pci_set_power_state(pdev, PCI_D3hot)
+> > >> altogether?
+> > >
+> > > Ah, sorry.  I see it does.
+> > >
+> > > Actually, I think you can use pci_prepare_to_sleep() instead of
+> > > pci_enable_wake() / pci_set_power_state() combo.  It wasn't designed for this
+> > > purpose, but should work nevertheless.
+> > >
+> > > Can you please check if the appended patch works instead of your one?
+> > >
+> > > Rafael
+> > >
+> > > ---
+> > > Fix the problem that boxes with NVidia MCP55 don't work with MSI
+> > > in a kexeced kernel.
+> > >
+> > > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> > > ---
+> > >  drivers/net/forcedeth.c |    4 +---
+> > >  1 file changed, 1 insertion(+), 3 deletions(-)
+> > >
+> > > Index: linux-2.6/drivers/net/forcedeth.c
+> > > ===================================================================
+> > > --- linux-2.6.orig/drivers/net/forcedeth.c
+> > > +++ linux-2.6/drivers/net/forcedeth.c
+> > > @@ -5975,10 +5975,8 @@ static void nv_shutdown(struct pci_dev *
+> > >        if (netif_running(dev))
+> > >                nv_close(dev);
+> > >
+> > > -       pci_enable_wake(pdev, PCI_D3hot, np->wolenabled);
+> > > -       pci_enable_wake(pdev, PCI_D3cold, np->wolenabled);
+> > >        pci_disable_device(pdev);
+> > > -       pci_set_power_state(pdev, PCI_D3hot);
+> > > +       pci_prepare_to_sleep(pdev);
+> > >  }
+> > >  #else
+> > >  #define nv_suspend NULL
+> > >
+> > >
 > > 
-> > INFO: task kjournald:665 blocked for more than 120 seconds.
-> > INFO: task stress:17797 blocked for more than 120 seconds.
-> > INFO: task stress:17805 blocked for more than 120 seconds.
-> > 
-> > 
-> > Has anyone tracked this down?  Should I attempt to bisect it?
-> > (on x86_64, SMP, 8 GB RAM)
-> > 
-> > 
-> > 
-> > INFO: task kjournald:665 blocked for more than 120 seconds.
-> > "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
-> > kjournald     D ffff88027e04be30  4592   665      2
-> >  ffff88027e04bdd0 0000000000000046 ffff88027e04bd90 ffffffff8022b5f8
-> >  ffff88027e703090 ffff880178c91bc0 ffff88027e7033d0 0000000178c91c08
-> >  ffff88027e04bdb0 ffff88027e04be30 ffff88017eaf80f0 0000000000000246
-> > Call Trace:
-> >  [<ffffffff8022b5f8>] ? __wake_up_common+0x41/0x74
-> >  [<ffffffff802f6eef>] journal_commit_transaction+0xe9/0xd7e
-> >  [<ffffffff8023db06>] ? lock_timer_base+0x26/0x4a
-> >  [<ffffffff80247240>] ? autoremove_wake_function+0x0/0x38
-> >  [<ffffffff8023db80>] ? try_to_del_timer_sync+0x56/0x62
-> >  [<ffffffff802fa388>] kjournald+0xc3/0x1fb
-> >  [<ffffffff80247240>] ? autoremove_wake_function+0x0/0x38
-> >  [<ffffffff802fa2c5>] ? kjournald+0x0/0x1fb
-> >  [<ffffffff80247107>] kthread+0x49/0x76
-> >  [<ffffffff8020ce39>] child_rip+0xa/0x11
-> >  [<ffffffff802470be>] ? kthread+0x0/0x76
-> >  [<ffffffff8020ce2f>] ? child_rip+0x0/0x11
-> > 
-> > INFO: task stress:17797 blocked for more than 120 seconds.
-> > "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
-> > stress        D ffff88017eaf8024  5088 17797  17795
-> >  ffff8801f4055cd8 0000000000000082 0000000000000086 ffff88027e04bec0
-> >  ffff880178c93090 ffff88017faf75f0 ffff880178c933d0 0000000300000001
-> >  0000000000000292 ffff8801f4055ce8 ffff88017eaf80a8 0000000000000246
-> > Call Trace:
-> >  [<ffffffff802f9c04>] log_wait_commit+0xa4/0xf4
-> >  [<ffffffff80247240>] ? autoremove_wake_function+0x0/0x38
-> >  [<ffffffff802f5798>] journal_stop+0x17c/0x1a9
-> >  [<ffffffff802f5fe6>] journal_force_commit+0x23/0x25
-> >  [<ffffffff802eee53>] ext3_force_commit+0x26/0x28
-> >  [<ffffffff802e91d2>] ext3_write_inode+0x39/0x3f
-> >  [<ffffffff802b58cf>] __writeback_single_inode+0x180/0x284
-> >  [<ffffffff80247278>] ? wake_bit_function+0x0/0x2a
-> >  [<ffffffff802b5db1>] generic_sync_sb_inodes+0x1c3/0x29e
-> >  [<ffffffff802b5e95>] sync_sb_inodes+0x9/0xb
-> >  [<ffffffff802b5f2c>] sync_inodes_sb+0x95/0x9c
-> >  [<ffffffff802b5f95>] __sync_inodes+0x62/0xaf
-> >  [<ffffffff802b6010>] sync_inodes+0x2e/0x33
-> >  [<ffffffff802b8908>] do_sync+0x34/0x59
-> >  [<ffffffff802b893b>] sys_sync+0xe/0x13
-> >  [<ffffffff8020beeb>] system_call_fastpath+0x16/0x1b
-> > 
+> > your patch doesn't work...  it seems that silicon has problem with D3Hot
 > 
-> Committing a transaction would means writing rest of the meta-data in
-> the transaction. And that would imply forcing most of the buffer_heads
-> to disk in ordered mode. This can result a lot of seeks and make take
-> more thatn 120 seconds.
+> Okay, so perhaps it's better to do something like this:
+> 
+> ---
+>  drivers/net/forcedeth.c |    8 +++++---
+>  1 file changed, 5 insertions(+), 3 deletions(-)
+> 
+> Index: linux-2.6/drivers/net/forcedeth.c
+> ===================================================================
+> --- linux-2.6.orig/drivers/net/forcedeth.c
+> +++ linux-2.6/drivers/net/forcedeth.c
+> @@ -5975,10 +5975,12 @@ static void nv_shutdown(struct pci_dev *
+>  	if (netif_running(dev))
+>  		nv_close(dev);
+>  
+> -	pci_enable_wake(pdev, PCI_D3hot, np->wolenabled);
+> -	pci_enable_wake(pdev, PCI_D3cold, np->wolenabled);
+>  	pci_disable_device(pdev);
+> -	pci_set_power_state(pdev, PCI_D3hot);
+> +	if (system_state == SYS_POWER_OFF) {
 
+Sorry, it should be SYSTEM_POWER_OFF here.  Corrected patch is appended.
 
-Both Randy and Greg reported getting this for 2.6.27-rc but not
-for 2.6.26.
+> +		if (pci_enable_wake(pdev, PCI_D3cold, np->wolenabled))
+> +			pci_enable_wake(pdev, PCI_D3hot, np->wolenabled);
+> +		pci_set_power_state(pdev, PCI_D3hot);
+> +	}
+>  }
+>  #else
+>  #define nv_suspend NULL
+> --
 
-Why are people getting such messages for 2.6.27-rc but not for 2.6.26?
+---
+ drivers/net/forcedeth.c |    8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
 
-
-> -aneesh
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+Index: linux-2.6/drivers/net/forcedeth.c
+===================================================================
+--- linux-2.6.orig/drivers/net/forcedeth.c
++++ linux-2.6/drivers/net/forcedeth.c
+@@ -5975,10 +5975,12 @@ static void nv_shutdown(struct pci_dev *
+ 	if (netif_running(dev))
+ 		nv_close(dev);
+ 
+-	pci_enable_wake(pdev, PCI_D3hot, np->wolenabled);
+-	pci_enable_wake(pdev, PCI_D3cold, np->wolenabled);
+ 	pci_disable_device(pdev);
+-	pci_set_power_state(pdev, PCI_D3hot);
++	if (system_state == SYSTEM_POWER_OFF) {
++		if (pci_enable_wake(pdev, PCI_D3cold, np->wolenabled))
++			pci_enable_wake(pdev, PCI_D3hot, np->wolenabled);
++		pci_set_power_state(pdev, PCI_D3hot);
++	}
+ }
+ #else
+ #define nv_suspend NULL
