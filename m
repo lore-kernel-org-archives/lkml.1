@@ -1,155 +1,197 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755283AbYHQVmV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755580AbYHQVof@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755283AbYHQVmV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Aug 2008 17:42:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751619AbYHQVmN
+	id S1755580AbYHQVof (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Aug 2008 17:44:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751280AbYHQVo3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Aug 2008 17:42:13 -0400
-Received: from smtp-vbr1.xs4all.nl ([194.109.24.21]:4417 "EHLO
-	smtp-vbr1.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751493AbYHQVmM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Aug 2008 17:42:12 -0400
-From: Hans Verkuil <hverkuil@xs4all.nl>
-To: Hans de Goede <j.w.r.degoede@hhs.nl>
-Subject: Re: V4L2: switch to register_chrdev_region: needs testing/review of release() handling
-Date: Sun, 17 Aug 2008 23:40:02 +0200
-User-Agent: KMail/1.9.9
-Cc: v4l <video4linux-list@redhat.com>,
-       Laurent Pinchart <laurent.pinchart@skynet.be>, david@identd.dyndns.org,
-       Mauro Carvalho Chehab <mchehab@infradead.org>,
-       linux-kernel@vger.kernel.org, Mike Isely <isely@isely.net>
-References: <200808171709.51258.hverkuil@xs4all.nl> <200808172146.45683.hverkuil@xs4all.nl> <48A8981E.3060808@hhs.nl>
-In-Reply-To: <48A8981E.3060808@hhs.nl>
+	Sun, 17 Aug 2008 17:44:29 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:41655 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750886AbYHQVo2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Aug 2008 17:44:28 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: "Yinghai Lu" <yhlu.kernel@gmail.com>
+Subject: Re: [PATCH] net: forcedeth use pci_choose_state instead of PCI_D3hot - v2
+Date: Sun, 17 Aug 2008 23:47:35 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: "Jeff Garzik" <jgarzik@redhat.com>, "Ingo Molnar" <mingo@elte.hu>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, netdev <netdev@vger.kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
+References: <1218954333-12819-1-git-send-email-yhlu.kernel@gmail.com> <200808172134.20230.rjw@sisk.pl> <86802c440808171358y55361a52pa6d0aacf44a1875f@mail.gmail.com>
+In-Reply-To: <86802c440808171358y55361a52pa6d0aacf44a1875f@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="utf-8"
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200808172340.02280.hverkuil@xs4all.nl>
+Message-Id: <200808172347.36582.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 17 August 2008 23:29:02 Hans de Goede wrote:
-> Hans Verkuil wrote:
-> >> Anyways I've reviewed your patch and in general I like it, I only
-> >> see one problem:
+On Sunday, 17 of August 2008, Yinghai Lu wrote:
+> On Sun, Aug 17, 2008 at 12:34 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > On Sunday, 17 of August 2008, Rafael J. Wysocki wrote:
+> >> On Sunday, 17 of August 2008, Yinghai Lu wrote:
+> >> > On Sun, Aug 17, 2008 at 9:55 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> >> > > On Sunday, 17 of August 2008, Rafael J. Wysocki wrote:
+> >> > >> On Sunday, 17 of August 2008, Yinghai Lu wrote:
+> >> > >> > after
+> >> > >> >
+> >> > >> > | commit f735a2a1a4f2a0f5cd823ce323e82675990469e2
+> >> > >> > | Author: Tobias Diedrich <ranma+kernel@tdiedrich.de>
+> >> > >> > | Date:   Sun May 18 15:02:37 2008 +0200
+> >> > >> > |
+> >> > >> > |    [netdrvr] forcedeth: setup wake-on-lan before shutting down
+> >> > >> > |
+> >> > >> > |    When hibernating in 'shutdown' mode, after saving the image the suspend hook
+> >> > >> > |    is not called again.
+> >> > >> > |    However, if the device is in promiscous mode, wake-on-lan will not work.
+> >> > >> > |    This adds a shutdown hook to setup wake-on-lan before the final shutdown.
+> >> > >> > |
+> >> > >> > |    Signed-off-by: Tobias Diedrich <ranma+kernel@tdiedrich.de>
+> >> > >> > |    Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
+> >> > >> >
+> >> > >> > my servers with nvidia mcp55 nic doesn't work with msi in second kernel by kexec
+> >> > >> >
+> >> > >> > after remove pci_set_power_state(, PCI_D3hot) that nic/msi will work again.
+> >> > >> >
+> >> > >> > check with e1000 is using pci_choose_state in _shutdown.
+> >> > >
+> >> > > This is wrong.
+> >> > >
+> >> > >> > So change that pci_choose_state(pdev, ...), and it works.
+> >> > >>
+> >> > >> Well, this doesn't look like a good solution to me, because you're putting
+> >> > >> PMSG_SUSPEND in there, which is not correct for shutdown.  The right thing to
+> >> > >> do would be to avoid changing the device power state if nv_shutdown() is
+> >> > >> used for kexec or to rework the initialization of the adapter to handle the
+> >> > >> case when it's initially in D3.
+> >> > >>
+> >> > >> Does it help if you just remove the pci_set_power_state(pdev, PCI_D3hot)
+> >> > >> altogether?
+> >> > >
+> >> > > Ah, sorry.  I see it does.
+> >> > >
+> >> > > Actually, I think you can use pci_prepare_to_sleep() instead of
+> >> > > pci_enable_wake() / pci_set_power_state() combo.  It wasn't designed for this
+> >> > > purpose, but should work nevertheless.
+> >> > >
+> >> > > Can you please check if the appended patch works instead of your one?
+> >> > >
+> >> > > Rafael
+> >> > >
+> >> > > ---
+> >> > > Fix the problem that boxes with NVidia MCP55 don't work with MSI
+> >> > > in a kexeced kernel.
+> >> > >
+> >> > > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> >> > > ---
+> >> > >  drivers/net/forcedeth.c |    4 +---
+> >> > >  1 file changed, 1 insertion(+), 3 deletions(-)
+> >> > >
+> >> > > Index: linux-2.6/drivers/net/forcedeth.c
+> >> > > ===================================================================
+> >> > > --- linux-2.6.orig/drivers/net/forcedeth.c
+> >> > > +++ linux-2.6/drivers/net/forcedeth.c
+> >> > > @@ -5975,10 +5975,8 @@ static void nv_shutdown(struct pci_dev *
+> >> > >        if (netif_running(dev))
+> >> > >                nv_close(dev);
+> >> > >
+> >> > > -       pci_enable_wake(pdev, PCI_D3hot, np->wolenabled);
+> >> > > -       pci_enable_wake(pdev, PCI_D3cold, np->wolenabled);
+> >> > >        pci_disable_device(pdev);
+> >> > > -       pci_set_power_state(pdev, PCI_D3hot);
+> >> > > +       pci_prepare_to_sleep(pdev);
+> >> > >  }
+> >> > >  #else
+> >> > >  #define nv_suspend NULL
+> >> > >
+> >> > >
+> >> >
+> >> > your patch doesn't work...  it seems that silicon has problem with D3Hot
 > >>
-> >> @@ -99,7 +130,8 @@ static void video_release(struct device
-> >> {
-> >> struct video_device *vfd = container_of(cd, struct video_device,
-> >> dev); -#if 1 /* keep */
-> >> + return;
-> >> +#if 1 /* keep */
-> >> /* needed until all drivers are fixed */
-> >> if (!vfd->release)
-> >> return;
-> >> @@ -107,6 +139,7 @@ static void video_release(struct device
-> >> vfd->release(vfd);
-> >> }
-> >> +
-> >> static struct class video_class = {
-> >> .name = VIDEO_NAME,
-> >> #if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 19)
+> >> Okay, so perhaps it's better to do something like this:
 > >>
+> >> ---
+> >>  drivers/net/forcedeth.c |    8 +++++---
+> >>  1 file changed, 5 insertions(+), 3 deletions(-)
 > >>
-> >> Here you basicly make the release callback of the video class
-> >> device a no-op. First of all I think it would be better to just
-> >> delete it then to add a return, which sort of hides its an empty
-> >> function now.
+> >> Index: linux-2.6/drivers/net/forcedeth.c
+> >> ===================================================================
+> >> --- linux-2.6.orig/drivers/net/forcedeth.c
+> >> +++ linux-2.6/drivers/net/forcedeth.c
+> >> @@ -5975,10 +5975,12 @@ static void nv_shutdown(struct pci_dev *
+> >>       if (netif_running(dev))
+> >>               nv_close(dev);
+> >>
+> >> -     pci_enable_wake(pdev, PCI_D3hot, np->wolenabled);
+> >> -     pci_enable_wake(pdev, PCI_D3cold, np->wolenabled);
+> >>       pci_disable_device(pdev);
+> >> -     pci_set_power_state(pdev, PCI_D3hot);
+> >> +     if (system_state == SYS_POWER_OFF) {
 > >
-> > I thought so as well, but without a release function the low-level
-> > class code in the kernel starts complaining about the missing
-> > release.
->
-> I wasn't clear with delete I only meant the body.
->
-> >> More importantly, its wrong to make this a no-op. When a driver
-> >> unregisters a v4l device, and all cdev usage has stopped there can
-> >> still be open references to sysfs files of the video class device,
-> >> but in this case currently the video_unregister_device call will
-> >> lead to the vfd->release callback getting called freeing the vfd
-> >> struct, which contains the class device.
+> > Sorry, it should be SYSTEM_POWER_OFF here.  Corrected patch is appended.
 > >
-> > You might have gotten confused here: video_release() didn't call
-> > the main release callback: there was a return in front. I'd
-> > forgotten to remove that test code.
->
-> I'm not talking about video_release, I'm talking about the following
-> call chain: video_device_unregister
-> cdev_del
-> kobj_put
-> v4l2_chardev_release
-> vfd->release
->
-> Which could happen in your old version (before the cdev_del was
-> moved) even when a class device sysfs file was still open, and thus
-> sysfs read / write callbacks which may use the (now released) vfd
-> could still be made after the release.
->
-> > I've also tested what happens when you keep a sysfs file open: it
-> > seems to work OK in that video_release is called even though the
-> > sysfs file is still open.
->
-> That should not happen, if a process holds a sysfs file open the
-> release callback for the device which owns the sysfs file should not
-> get called, are you sure this is happening, if the device then does a
-> read / write on this file mayhem could happen, or does the kernel
-> catch this now a days and just returns -ENODEV?
-
-I have a simple test prog that opens a file and then just sleeps. I did 
-that with some of the sysfs attribute files, 
-e.g.: /sys/class/video4linux/video0/name. The video_release is called 
-even though I have the file still open. And reading from it after 
-video_release was called results in EOF, which is correct.
-
-I think my first version was probably OK, but perhaps more through luck 
-than wisdom. Moving the cdev_del call definitely feels a lot safer.
-
-Regards,
-
-	Hans
-
->
-> > That said, I've moved the cdev_del call from
-> > video_unregister_device() to the video_release() function. It makes
-> > sense not to delete the char device until that callback is called.
->
-> Yes, that will fix the problem I was trying to describe too.
->
-> > This patch is here:
-> > http://linuxtv.org/hg/~hverkuil/v4l-dvb-cdev2/rev/575997018499
+> >> +             if (pci_enable_wake(pdev, PCI_D3cold, np->wolenabled))
+> >> +                     pci_enable_wake(pdev, PCI_D3hot, np->wolenabled);
+> >> +             pci_set_power_state(pdev, PCI_D3hot);
+> >> +     }
+> >>  }
+> >>  #else
+> >>  #define nv_suspend NULL
+> >> --
 > >
-> >> I believe the way to fix this is todo a get on the kobj contained
-> >> in the cdev in video_register_device before registering the class
-> >> device, and then in the class device release callback do a put on
-> >> this kobj.
+> > ---
+> >  drivers/net/forcedeth.c |    8 +++++---
+> >  1 file changed, 5 insertions(+), 3 deletions(-)
 > >
-> > There is no need to do an additional get: cdev_init does that
-> > already, so the char dev stays alive at least until the cdev_del
-> > (longer if apps still keep it open).
->
-> Well since the code was registering a class device which shared the
-> same in memory struct, we needed an additional put on the cdev kobj,
-> as once the refcount for that got to 0 the entire vfd struct
-> including the class device would get released.
->
-> But now that you've moved the cdev_del this is moot, as now the
-> ref_count won't reach zero until all users of the class device are
-> done with it.
->
-> > I would be very curious to hear how well it works with the gspca
-> > driver. In particular if you can indeed reconnect while an
-> > application still has a char device open from before the
-> > disconnect. Currently the gspca own locking seems to disallow that
-> > (the new device doesn't appear until all applications stopped using
-> > the old one).
->
-> This is on my todo, but not very high atm.
->
-> Regards,
->
-> Hans
+> > Index: linux-2.6/drivers/net/forcedeth.c
+> > ===================================================================
+> > --- linux-2.6.orig/drivers/net/forcedeth.c
+> > +++ linux-2.6/drivers/net/forcedeth.c
+> > @@ -5975,10 +5975,12 @@ static void nv_shutdown(struct pci_dev *
+> >        if (netif_running(dev))
+> >                nv_close(dev);
+> >
+> > -       pci_enable_wake(pdev, PCI_D3hot, np->wolenabled);
+> > -       pci_enable_wake(pdev, PCI_D3cold, np->wolenabled);
+> >        pci_disable_device(pdev);
+> > -       pci_set_power_state(pdev, PCI_D3hot);
+> > +       if (system_state == SYSTEM_POWER_OFF) {
+> > +               if (pci_enable_wake(pdev, PCI_D3cold, np->wolenabled))
+> > +                       pci_enable_wake(pdev, PCI_D3hot, np->wolenabled);
+> > +               pci_set_power_state(pdev, PCI_D3hot);
+> > +       }
+> >  }
+> >  #else
+> >  #define nv_suspend NULL
+> >
+> 
+> why not like e1000 to
+> pci_set_power_state(pdev, pci_choose_state(pdev, PMSG_SUSPEND));
+> 
+> pci_choose_state would check if platform support those state...
 
+... but ->shutdown() only involves the platform in the
+'system_state == SYSTEM_POWER_OFF' case!
 
+In fact, using pci_choose_state() in ->shutdown() is a very convoluted way of
+checking the 'system_state' value, and not a 100% reliable one. :-)
+
+Namely, the fact that pci_choose_state() returns you D0 instead of D3hot for
+'system_state != SYSTEM_POWER_OFF' is a pure coincidence (accidentally, there
+is an ACPI handle for the device, but there need not be one) and you should
+not rely on that in general.  Generally speaking, pci_choose_state() is not to
+be used outside of the drivers' ->suspend() routines.
+
+[Yes, this means e1000 will have to be fixed, as I said before.]
+
+Apart from this, pci_choose_state() is broken and will shortly be deprecated.
+Moreover, in future all direct references to PMSG_SUSPEND from the drivers
+will be removed.
+
+Thanks,
+Rafael
