@@ -1,51 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755467AbYHQSCw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753973AbYHQSNX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755467AbYHQSCw (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Aug 2008 14:02:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752491AbYHQSCo
+	id S1753973AbYHQSNX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Aug 2008 14:13:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751758AbYHQSNN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Aug 2008 14:02:44 -0400
-Received: from server.drzeus.cx ([85.8.24.28]:42555 "EHLO smtp.drzeus.cx"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751155AbYHQSCo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Aug 2008 14:02:44 -0400
-Date: Sun, 17 Aug 2008 20:02:39 +0200
-From: Pierre Ossman <drzeus-mmc@drzeus.cx>
-To: Huang Weiyi <weiyi.huang@gmail.com>
-Cc: linux-kernel@vger.kernel.org, saschasommer@freenet.de
-Subject: Re: [MMC] removed unused #include <version.h>
-Message-ID: <20080817200239.668f5091@mjolnir.drzeus.cx>
-In-Reply-To: <20080817070801.1622.WEIYI.HUANG@gmail.com>
-References: <20080817070801.1622.WEIYI.HUANG@gmail.com>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.13.6; i386-redhat-linux-gnu)
+	Sun, 17 Aug 2008 14:13:13 -0400
+Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:2695 "EHLO
+	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751661AbYHQSNN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Aug 2008 14:13:13 -0400
+Subject: Re: [PATCH 3/5] ide: add a driver-wide debugging macro
+From: Joe Perches <joe@perches.com>
+To: Borislav Petkov <petkovbb@googlemail.com>
+Cc: Bartlomiej@gollum.tnic, Zolnierkiewicz@gollum.tnic, bzolnier@gmail.com,
+       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+       Borislav Petkov <petkovbb@gmail.com>
+In-Reply-To: <1218993826-4571-4-git-send-email-petkovbb@gmail.com>
+References: <1218993826-4571-1-git-send-email-petkovbb@gmail.com>
+	 <1218993826-4571-4-git-send-email-petkovbb@gmail.com>
+Content-Type: text/plain
+Date: Sun, 17 Aug 2008 11:13:06 -0700
+Message-Id: <1218996786.24527.115.camel@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.12.3-1.3mdv2008.0 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 17 Aug 2008 07:51:10 +0800
-Huang Weiyi <weiyi.huang@gmail.com> wrote:
+On Sun, 2008-08-17 at 19:23 +0200, Borislav Petkov wrote:
+> diff --git a/include/linux/ide.h b/include/linux/ide.h
+> index c161840..b6d714d 100644
+> --- a/include/linux/ide.h
+> +++ b/include/linux/ide.h
+> []
+> +/* DRV_NAME has to be defined in the driver before using the macro below */
+> +#define __ide_debug_log(lvl, fmt, args...)			\
+> +{								\
+> +	if (unlikely(drive->debug_mask & lvl))			\
+> +		printk(KERN_INFO DRV_NAME ": " fmt, ## args);	\
+> +}
 
-> The drivers below do not use LINUX_VERSION_CODE nor KERNEL_VERSION.
->   drivers/mmc/host/sdricoh_cs.c
-> 
-> This patch removes the said #include <version.h>.
-> 
-> Signed-off-by: Huang Weiyi <weiyi.huang@gmail.com>
-> 
+Shouldn't a debug printk use KERN_DEBUG?
 
-This was a really trivial patch, so I've applied it. But you really
-should cc the driver maintainer in the future.
-
--- 
-     -- Pierre Ossman
-
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  rdesktop, core developer          http://www.rdesktop.org
-
-  WARNING: This correspondence is being monitored by the
-  Swedish government. Make sure your server uses encryption
-  for SMTP traffic and consider using PGP for end-to-end
-  encryption.
