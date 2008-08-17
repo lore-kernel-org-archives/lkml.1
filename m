@@ -1,79 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754345AbYHQDkc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754588AbYHQDnA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754345AbYHQDkc (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Aug 2008 23:40:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751631AbYHQDkY
+	id S1754588AbYHQDnA (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Aug 2008 23:43:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751631AbYHQDmw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Aug 2008 23:40:24 -0400
-Received: from planb.casita.net ([69.55.228.155]:4413 "EHLO planb.casita.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751572AbYHQDkY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Aug 2008 23:40:24 -0400
-Date: Sat, 16 Aug 2008 23:39:03 -0400 (EDT)
-From: Rick Troth <rmt@casita.net>
-To: Tim Hockin <thockin@hockin.org>
-cc: schwidefsky@de.ibm.com, Rusty Russell <rusty@rustcorp.com.au>,
-       linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
-       lf_kernel_messages@lists.linux-foundation.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Michael Holzheu <holzheu@de.ibm.com>, Gerrit Huizenga <gh@us.ibm.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Randy Dunlap <randy.dunlap@oracle.com>, Jan Kara <jack@suse.cz>,
-       Pavel Machek <pavel@ucw.cz>, Sam Ravnborg <sam@ravnborg.org>,
-       Joe Perches <joe@perches.com>,
-       =?UTF-8?Q?Jochen_Vo=C3=9F?= <jochen.voss@googlemail.com>,
-       Kunai Takashi <kunai@linux-foundation.jp>,
-       Tim Bird <tim.bird@am.sony.com>
-Subject: Re: [patch 1/3] kmsg: Kernel message catalog macros.
-In-Reply-To: <b3ece790808161340x4b03b91er6f0bfcc46c6fb3ad@mail.gmail.com>
-Message-ID: <Pine.LNX.4.58.0808162317050.10939@jeremiah.casita.net>
-References: <20080730165656.118280544@de.ibm.com>  <200808131433.02966.rusty@rustcorp.com.au>
-  <1218733623.2651.14.camel@localhost>  <200808150922.23277.rusty@rustcorp.com.au>
-  <1218908985.6037.12.camel@localhost> <b3ece790808161340x4b03b91er6f0bfcc46c6fb3ad@mail.gmail.com>
+	Sat, 16 Aug 2008 23:42:52 -0400
+Received: from casper.infradead.org ([85.118.1.10]:43919 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751445AbYHQDmv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 16 Aug 2008 23:42:51 -0400
+Date: Sat, 16 Aug 2008 20:40:51 -0700
+From: Greg KH <greg@kroah.com>
+To: Andi Kleen <ak@linux.intel.com>
+Cc: Kay Sievers <kay.sievers@vrfy.org>, Randy Dunlap <randy.dunlap@oracle.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, linux-acpi@vger.kernel.org,
+       rusty@rustcorp.com.au
+Subject: Re: linux-next: Tree for August 14 (sysfs/acpi errors)
+Message-ID: <20080817034051.GA26849@kroah.com>
+References: <20080814172945.250a27f2.sfr@canb.auug.org.au> <20080814083828.d10e126d.randy.dunlap@oracle.com> <3ae72650808150427q364842ccicf0a0978b30ca98c@mail.gmail.com> <20080815085836.67e420f1.randy.dunlap@oracle.com> <1218854219.3629.30.camel@lgn.site> <48A64235.2030108@linux.intel.com> <1218856798.3629.45.camel@lgn.site> <48A64E0A.8090408@linux.intel.com> <20080816044714.GA19886@kroah.com> <48A78D4A.70609@linux.intel.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <48A78D4A.70609@linux.intel.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is really an easy thing to do.
-It can be achieved without a huge retro-fit.
-It can happen even without yet another macro.
-(Not saying that there should not be a new macro or new function,
-just that we can enjoy unique message IDs without those mechanisms.)
+On Sun, Aug 17, 2008 at 04:30:34AM +0200, Andi Kleen wrote:
+> Greg KH wrote:
+>> On Sat, Aug 16, 2008 at 05:48:26AM +0200, Andi Kleen wrote:
+>>>> They have been module options, not prefixed kernel parameters so far,
+>>>> and the prefix was just the module name.
+>>>> So it just strikes back, that acpi uses generic names for the modules,
+>>>> there would have been no problem if "power" would be called "acpi_power"
+>>>> and the options would just be ﻿"acpi.acpica_version" and
+>>>> "acpi_power.nocheck".
+>>>> But well, there are driver modules just called "option", so acpi is not
+>>>> that bad. :)
+>>>>> I think the generic params code should be fixed to handle this.
+>>>> We could try to look up existing directories to use instead of expecting
+>>>> that we need to create and own them. I guess,
+>>> sysfs does this anyways, doesn't it. We would just need to teach it
+>>> to not BUG() in this case, perhaps with a special entry point.
+>>> Also a BUG() in general seems a little harsh for this, surely a WARN_ON
+>>> should be enough.
+>> It is a WARN() call, not a BUG().
+>
+> Ok. Can we remove it? Or add a new entry point that allows to disable it?
 
-Martin Schwidefsky said:
-> > Ok, so  a specialized version of printk will do the work to calculate
-> > the hash. Only, what will we do if there ever is a conflict? The message
-> > tag has to be unique. The shorter the hash is, the more likely a
-> > collision gets. Don't know if 6 hash digits is enough to just ignore the
-> > problem.
+No!
 
-Point to note: the message tag has to be unique.
-The tag is what's relevant, what gets catalogued.
+What you are doing here is wrong, trying to create two files with the
+same name.  You just should not be doing that at all, it's that simple.
+Fix the broken code/link order, don't paper it over in the sysfs layer.
 
-I don't really see the value of a hash per se.
-What Martin has suggested (unless I have misunderstood) is
-the driver name combined with some index number ==> unique msg id.
-That's not exactly a "hash".  (One can generate a hash from it,
-but why bother?  You've got a unique string already.)
+thanks,
 
-Then Tim Hockin wrote:
-> And if you ever need to change the text that is in the format string?
-> The hash changes.  That seems exactly counter to your goal...
-
-Whether hashed or not, what's needed is premeditated reporting,
-intentional dividing between variable content (like device ID)
-and the explanatory text arround it.  Prefix each line with a token
-(or as most are calling it, a "tag") that can be looked up off-line.
-
-I hope no one is thinking gettext in this thread.
-Don't clutter the kernel with something like gettext.
-
-And don't burden the kernel with run-time text crunching.
-Message codes go in when the module is written.
-They get looked up either in user space or off-line.
-Easy!  Almost trivial!
-
--- R;   <><
-
+greg k-h
