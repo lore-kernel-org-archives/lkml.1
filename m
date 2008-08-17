@@ -1,69 +1,167 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753470AbYHQKr0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753429AbYHQLNy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753470AbYHQKr0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Aug 2008 06:47:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752462AbYHQKrS
+	id S1753429AbYHQLNy (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Aug 2008 07:13:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752477AbYHQLNq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Aug 2008 06:47:18 -0400
-Received: from mail.lang.hm ([64.81.33.126]:53127 "EHLO bifrost.lang.hm"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752423AbYHQKrR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Aug 2008 06:47:17 -0400
-Date: Sun, 17 Aug 2008 03:46:27 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: rmeijer@xs4all.nl
-cc: Peter Dolding <oiaohm@gmail.com>, Theodore Tso <tytso@mit.edu>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, capibara@xs4all.nl,
-       Eric Paris <eparis@redhat.com>, Rik van Riel <riel@redhat.com>,
-       davecb@sun.com, linux-security-module@vger.kernel.org,
-       Adrian Bunk <bunk@kernel.org>, Mihai Don??u <mdontu@bitdefender.com>,
-       linux-kernel@vger.kernel.org, malware-list@lists.printk.net,
-       Pavel Machek <pavel@suse.cz>
-Subject: Re: [malware-list] [RFC 0/5] [TALPA] Intro to alinuxinterfaceforon
-      access scanning
-In-Reply-To: <6746.82.95.100.23.1218969200.squirrel@webmail.xs4all.nl>
-Message-ID: <alpine.DEB.1.10.0808170345300.12859@asgard.lang.hm>
-References: <6746.82.95.100.23.1218969200.squirrel@webmail.xs4all.nl>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Sun, 17 Aug 2008 07:13:46 -0400
+Received: from yx-out-2324.google.com ([74.125.44.29]:41674 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752444AbYHQLNp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Aug 2008 07:13:45 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=W+IirZhlpjiGNcFHSGj4fgMHCAoiKH+P20AN/FvZrcg4j36728tUkt/xbUp1qDa9np
+         FfREFxLLHLoMOAaRNSOtj6as4Hdkm+LU6bqB+EKw0ZwuiWkdeoYVzpZSqc6zR6UiEB+p
+         oFyg1bqOfr41gbhsv4pmoOLZ5AGR3E8Y/kGWU=
+Message-ID: <93655eb70808170413w43e62311i713166beb38a4897@mail.gmail.com>
+Date: Sun, 17 Aug 2008 16:43:44 +0530
+From: "Satish Eerpini" <eerpini@gmail.com>
+To: Valdis.Kletnieks@vt.edu
+Subject: Re: patching kdb to Centos kernel : error
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <23408.1218955331@turing-police.cc.vt.edu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <93655eb70808162300i4286eac9p9aa34cf23359ff72@mail.gmail.com>
+	 <23408.1218955331@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 17 Aug 2008, Rob Meijer wrote:
+i am patching kdb-v4.4-2.6.18-common-1 and kdb-v4.4-2.6.18-i386-1
 
-> On Sun, August 17, 2008 10:58, david@lang.hm wrote:
->> On Sun, 17 Aug 2008, Peter Dolding wrote:
->>> Instead swap across to the shorter white list to process and sort.
->>> Quarantining for black list scanning so performance of machine is hit
->>> with the least ammount.  Some areas like email, p2p for people using
->>> formats that should not contain macros or executable code white list
->>> scanning there is all that is needed before either blocking or asking
->>> user if black list scanning should be preformed or the file just
->>> deleted.  Lets close the door's on these malware writers without hurt
->>> end users any more than we have to.  What is the point of running a full
->>> black list across a file the user will delete because it was not what
->>> they thought it was.
->>
->> you are arguing with the wrong people here. we are not trying to define
->> the future of anti-virus technologies, we are trying to figure out how to
->> provide the hooks so that people and companies can go off and do the
->> research and experimentation and try different approaches.
+and following are the rejects i got , ... and nowhere could i make
+sense for the above mentioned errors , ... am i missing on something
+over here ?
+
+include/linux/sysctl.h.rej from kdb-v4.4-2.6.18-common-1 ( i could fix
+this, or so i think , ... by manually adding the macro definitions to
+the header file , .... and i agree i am totally unaware of the
+consequences )
+
+***************
+*** 150,155 ****
+  	KERN_IA64_UNALIGNED=72, /* int: ia64 unaligned userland trap enable */
+  	KERN_COMPAT_LOG=73,	/* int: print compat layer  messages */
+  	KERN_MAX_LOCK_DEPTH=74,
+  };
+
+
+--- 150,156 ----
+  	KERN_IA64_UNALIGNED=72, /* int: ia64 unaligned userland trap enable */
+  	KERN_COMPAT_LOG=73,	/* int: print compat layer  messages */
+  	KERN_MAX_LOCK_DEPTH=74,
++ 	KERN_KDB=75,		/* int: kdb on/off */
+  };
+
+
+arch/i386/kernel/traps.c.rej from  kdb-v4.4-2.6.18-i386-1 :
+
+***************
+*** 786,791 ****
+  	printk(" on CPU%d, eip %08lx, registers:\n",
+  		smp_processor_id(), regs->eip);
+  	show_registers(regs);
+  	printk(KERN_EMERG "console shuts up ...\n");
+  	console_silent();
+  	spin_unlock(&nmi_print_lock);
+--- 797,805 ----
+  	printk(" on CPU%d, eip %08lx, registers:\n",
+  		smp_processor_id(), regs->eip);
+  	show_registers(regs);
++ #ifdef	CONFIG_KDB
++ 	kdb(KDB_REASON_NMI, 0, regs);
++ #endif	/* CONFIG_KDB */
+  	printk(KERN_EMERG "console shuts up ...\n");
+  	console_silent();
+  	spin_unlock(&nmi_print_lock);
+
+arch/i386/kernel/vmlinux.lds.S.rej from kdb-v4.4-2.6.18-i386-1 :
+
+***************
+*** 134,139 ****
+  	*(.con_initcall.init)
+    }
+    __con_initcall_end = .;
+    SECURITY_INIT
+    . = ALIGN(4);
+    __alt_instructions = .;
+--- 134,144 ----
+  	*(.con_initcall.init)
+    }
+    __con_initcall_end = .;
++   __kdb_initcall_start = .;
++   .kdb_initcall.init : AT(ADDR(.kdb_initcall.init) - LOAD_OFFSET) {
++ 	*(.kdb_initcall.init)
++   }
++   __kdb_initcall_end = .;
+    SECURITY_INIT
+    . = ALIGN(4);
+    __alt_instructions = .;
+
+
+, .... i seem to be using the correct kdb patch but the rejects seem
+to be the result of the fact that redhat guys have a lot of custom
+patches which are added to get the redhat/CentOS kernel . Also because
+i could patch kernel 2.6.18.4 without any problems what so ever .
+
+
+
+Thanks
+Satish
+
+  On Sun, Aug 17, 2008 at 12:12 PM,  <Valdis.Kletnieks@vt.edu> wrote:
+> On Sun, 17 Aug 2008 11:30:41 +0530, Satish Eerpini said:
+>> hi everyone , i was trying to patch kdb with CentOS 5.0 kernel
+>> (2.6.18-8)
 >
-> Given recent demonstrations that show how easy it apparently is to bypass
-> blacklist base approaches, providing hooks to allow these blacklist
-> approaches may I feel be rather futile. Focusing only on hooks for white
-> list approaches in combination with hooks for least authority approaches
-> like the powerbox would IMHO seem like a much more reasonable approach
-> given the current state of things and knowledge concerning the blacklist
-> technologies. Explicitly adding support for technology that is quickly
-> becoming obsolete would seem like a waste of time and resources.
+> You might want to make sure you're using a 2.6.18-vintage kdb patch, as
+> trying to fit a 2.6.26 kdb onto a 2.6.18 kernel is unlikely to bring joy.
+>
+>> resolve) ,.... but apart from the rejects during the kernel
+>> compilation i got the following error which does not seem to have
+>> anything to do with the rejects ............
+>
+> No, the rejects during the patch are almost certainly related to your
+> compile errors...
+>
+>>  the code(in kdb/modules/kdbm_pg.c) which is causing the second error
+>> is something like this :
+>>
+>>              iaddr += offsetof(struct inode, u);
+>>
+>> what i am not able to understand is that if 'u' is not a correct
+>> member of the inode , .. then what did they( whoever wrote this piece
+>> code) intend by 'u' ? , .....
+>
+> Your kdb patch probably includes a patch to include/linux/fs.h that adds a
+> member 'u' to a 'struct inode'.  If this generated a reject, then the member 'u'
+> won't be in the struct, and your compile dies...
+>
+>> and for the first error , ... i just checked out the code ....
+>> according to the line no shown in the error .....the code is :
+>>
+>>              kdb_page_flags(page, Checked);
+>>
+>> and i don't see any function PageChecked ....! so what can the error
+>> actually mean ??
+>
+> kdb_page_flags is probably a macro that does something like:
+>
+> #define kdb_page_flags(a,b) (..... Page##b)
+>
+> The 'implicit declaration' is most likely a missing #include someplace,
+> which again hints at the rejects from a misapplied patch...
+>
 
-we are not providing hooks for blacklists or whitelists, we are providing 
-hooks for scanning. it's up to the software that doesn the scanning to 
-implement the blacklist or whitelist.
 
-David Lang
+
+-- 
+http://satish.playdrupal.com
