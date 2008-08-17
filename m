@@ -1,53 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754574AbYHQNKV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754860AbYHQNMP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754574AbYHQNKV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Aug 2008 09:10:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752780AbYHQNKI
+	id S1754860AbYHQNMP (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Aug 2008 09:12:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752856AbYHQNMA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Aug 2008 09:10:08 -0400
-Received: from tundra.namei.org ([65.99.196.166]:46516 "EHLO tundra.namei.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752724AbYHQNKI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Aug 2008 09:10:08 -0400
-Date: Sun, 17 Aug 2008 23:08:26 +1000 (EST)
-From: James Morris <jmorris@namei.org>
-To: Alexander Beregalov <a.beregalov@gmail.com>
-cc: David Howells <dhowells@redhat.com>, "Serge E. Hallyn" <serue@us.ibm.com>,
-       Casey Schaufler <casey@schaufler-ca.com>, morgan@kernel.org,
-       viro@zeniv.linux.org.uk, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [GIT] Re: [PATCH] security.h: fix build failure 
-In-Reply-To: <alpine.LRH.1.10.0808172242480.13264@tundra.namei.org>
-Message-ID: <alpine.LRH.1.10.0808172307170.13513@tundra.namei.org>
-References: <20080817013420.GA7622@orion> <alpine.LRH.1.10.0808172242480.13264@tundra.namei.org>
-User-Agent: Alpine 1.10 (LRH 962 2008-03-14)
+	Sun, 17 Aug 2008 09:12:00 -0400
+Received: from fg-out-1718.google.com ([72.14.220.154]:20412 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752780AbYHQNL7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Aug 2008 09:11:59 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=W8pDR54yMPkQfZbkJsZNQ6sk/+kyLwdyY2cGaVcF135cJHNbB5/0IwlqriIeK6stwV
+         glkTrlnjhbzVZQjfwPeHLC0OL1fTHhqYrufpjSHrYirwEMDcNMVWrpzqsEEiH6Qpr+Mn
+         Q1Eeqo0pH+pphSIjk9NmA5TyhWD2xZWZKPVUQ=
+Date: Sun, 17 Aug 2008 17:12:04 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: hpa@zytor.com, tglx@linutronix.de, macro@linux-mips.org,
+       linux-kernel@vger.kernel.org, Suresh Siddha <suresh.b.siddha@intel.com>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: one more apic merging preliminary series
+Message-ID: <20080817131204.GB7418@lenovo>
+References: <1218914515-26377-1-git-send-email-gorcunov@gmail.com> <20080817124540.GF21434@elte.hu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080817124540.GF21434@elte.hu>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There's a pullable version here:
+[Ingo Molnar - Sun, Aug 17, 2008 at 02:45:40PM +0200]
+| 
+| * Cyrill Gorcunov <gorcunov@gmail.com> wrote:
+| 
+| > Please review - any comments are welcome!
+| > 
+| > For now it's like code bloating - but it's just preliminary series to 
+| > make apic_*.c code more or less similar. And it's still a bit far from 
+| > being ready to be merged down.
+| 
+| applied to tip/x86/apic - thanks Cyrill.
+| 
+| Maciej's point about cleaning up the x2apic impact is very much true - 
+| i've Cc:-ed Suresh and Venki. Even if we wont truly use x2apic in 32-bit 
+| kernels, it's a piece of glue hardware that does not depend on which 
+| mode the CPU is in, so support for it should be bitsize agnostic. It 
+| will also obviously be good for test coverage, once x2apic capable hw 
+| will be more widespread.
+| 
+| 	Ingo
+| 
 
-The following changes since commit 
-b09c3e3f1710b554348c98e78fbf4a661918779a:
-  Huang Weiyi (1):
-        removed unused #include <version.h>
+Thanks Ingo. I found a bit obscure point in APIC 32bit code -
+disable_esr variable to be clear. Code reading didn't answer
+me the question "for what is needed". 82489DX doesn't have ESR
+register indeed I presumed that the variable is needed to set
+'absence-flag' of a such register on some platform but it seems
+the only code snippet where we use this flag is 32bit lapic_setup_esr.
+Moreover others 32bit writers don't check for this feature but
+just writting to ESR register...
 
-are available in the git repository at:
-
-  
-git://git.kernel.org/pub/scm/linux/kernel/git/jmorris/security-testing-2.6 for-linus
-
-Alexander Beregalov (1):
-      security.h: fix build failure
-
- include/linux/security.h |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-
-
-
--- 
-James Morris
-<jmorris@namei.org>
+		- Cyrill -
