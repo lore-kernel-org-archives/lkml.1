@@ -1,44 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755132AbYHQMjz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754842AbYHQMo3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755132AbYHQMjz (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Aug 2008 08:39:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752687AbYHQMjr
+	id S1754842AbYHQMo3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Aug 2008 08:44:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752699AbYHQMoV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Aug 2008 08:39:47 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:39867 "EHLO ogre.sisk.pl"
+	Sun, 17 Aug 2008 08:44:21 -0400
+Received: from minas.ics.muni.cz ([147.251.4.40]:34988 "EHLO minas.ics.muni.cz"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751663AbYHQMjq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Aug 2008 08:39:46 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Martin Michlmayr <tbm@cyrius.com>
-Subject: Re: [Bug #11333] Rewrite SSB DMA API breaks compilation on ARM
-Date: Sun, 17 Aug 2008 14:43:12 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       Michael Buesch <mb@bu3sch.de>
-References: <DLWXHEp37wB.A.duD.yZzpIB@albercik> <sNRO-BDDjQL.A.N4E.aazpIB@albercik> <20080817122134.GG5486@deprecation.cyrius.com>
-In-Reply-To: <20080817122134.GG5486@deprecation.cyrius.com>
+	id S1752671AbYHQMoV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Aug 2008 08:44:21 -0400
+Date: Sun, 17 Aug 2008 14:44:04 +0200
+From: Lukas Hejtmanek <xhejtman@ics.muni.cz>
+To: Soeren Sandmann <sandmann@daimi.au.dk>
+Cc: linux-kernel@vger.kernel.org, mingo@redhat.com
+Subject: Re: sysprof in 2.6.27 kernel
+Message-ID: <20080817124404.GR4674@ics.muni.cz>
+References: <20080813083953.GF19333@ics.muni.cz> <ye8myjg7b4r.fsf@camel10.daimi.au.dk> <20080814115620.GD4674@ics.muni.cz> <ye8zlnd6589.fsf@camel28.daimi.au.dk>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-2
 Content-Disposition: inline
-Message-Id: <200808171443.12941.rjw@sisk.pl>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <ye8zlnd6589.fsf@camel28.daimi.au.dk>
+X-echelon: NSA, CIA, CI5, MI5, FBI, KGB, BIS, Plutonium, Bin Laden, bomb
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Muni-Spam-TestIP: 81.31.45.161
+X-Muni-Envelope-From: xhejtman@anubis.ics.muni.cz
+X-Muni-Virus-Test: Clean
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (minas.ics.muni.cz [147.251.4.35]); Sun, 17 Aug 2008 14:44:04 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday, 17 of August 2008, Martin Michlmayr wrote:
-> * Rafael J. Wysocki <rjw@sisk.pl> [2008-08-16 21:02]:
-> > The following bug entry is on the current list of known regressions
-> > from 2.6.26.  Please verify if it still should be listed and let me know
-> > (either way).
+On Sat, Aug 16, 2008 at 04:52:54AM +0200, Soeren Sandmann wrote:
+> > and another one. sysproc gui reads user addresses from the sysprof pipe with
+> > null pointers. is this ok or is this a bug in sysprof kernel module?
 > 
-> This just got fixed by "[ARM] dma-mapping: provide sync_range APIs":
-> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=9dd428680573d7867ee5e40fa3f059a98301d416
+> That is not ok, but it could happen if the process in question was not
+> compiled with framepointers. Or it could be a bug in the kernel code.
 
-Thanks, closed.
+I tried to put printf in case that sysprof gui receives non null address from
+the kernel. None print was displayed, so it seems ti receives only null
+addresses.
 
-Rafael
+-- 
+Luká¹ Hejtmánek
