@@ -1,89 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753095AbYHQGmV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752840AbYHQHEY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753095AbYHQGmV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Aug 2008 02:42:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751604AbYHQGmN
+	id S1752840AbYHQHEY (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Aug 2008 03:04:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751676AbYHQHEP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Aug 2008 02:42:13 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:33315 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751584AbYHQGmN (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Aug 2008 02:42:13 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Satish Eerpini <eerpini@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: patching kdb to Centos kernel : error
-In-Reply-To: Your message of "Sun, 17 Aug 2008 11:30:41 +0530."
-             <93655eb70808162300i4286eac9p9aa34cf23359ff72@mail.gmail.com>
-From: Valdis.Kletnieks@vt.edu
-References: <93655eb70808162300i4286eac9p9aa34cf23359ff72@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1218955331_14862P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+	Sun, 17 Aug 2008 03:04:15 -0400
+Received: from fg-out-1718.google.com ([72.14.220.159]:39621 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751605AbYHQHEO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Aug 2008 03:04:14 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=rHVsacMc7nYar5fheQAnHe2N9xBNvCncAiEMSXRO4vwDbbD8hg5Md8iWd1xitKlVxx
+         M2t6TqMLkqKNJuOGPD7lvhp/E3sUC/96H/rQKSzPNgC2d5FxvXPbYh8xm7NPlde5aH+5
+         OXwS7caVP589uYwvql8JP0E5yBTL1f6f8h4vs=
+Message-ID: <1ba2fa240808170004p63b76db1l1fdfb1cf1cb41636@mail.gmail.com>
+Date: Sun, 17 Aug 2008 10:04:12 +0300
+From: "Tomas Winkler" <tomasw@gmail.com>
+To: "Mirco Tischler" <mt-ml@gmx.de>
+Subject: Re: CPU load after killing iwlagn with RF kill switch
+Cc: "Leonid Podolny" <leonidp.lists@gmail.com>, linux-kernel@vger.kernel.org,
+       yi.zhu@intel.com, reinette.chatre@intel.com,
+       linux-wireless@vger.kernel.org, IvDoorn@gmail.com
+In-Reply-To: <20080817035921.4d35ae0e@mtlp.12thdimension>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Date: Sun, 17 Aug 2008 02:42:11 -0400
-Message-ID: <23408.1218955331@turing-police.cc.vt.edu>
+Content-Disposition: inline
+References: <48A5EC02.4070303@gmail.com>
+	 <20080817035921.4d35ae0e@mtlp.12thdimension>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1218955331_14862P
-Content-Type: text/plain; charset="us-ascii"
-Content-Id: <23394.1218955319.1@turing-police.cc.vt.edu>
+On Sun, Aug 17, 2008 at 4:59 AM, Mirco Tischler <mt-ml@gmx.de> wrote:
+> On Fri, 15 Aug 2008 23:50:10 +0300, Leonid Podolny wrote:
+>> Hi,
+>> With a new iwlagn driver and 2.6.27-rc3, if I turn off the wireless
+>> (intel 4965ag) by RF kill switch, the CPU utilization of ksoftirqd
+>> process raises to 100% and stays there until I rmmod the module.
+>> Please let me know what further information I can provide.
+>
+> Hi
+>
+> Same on my machine with same chip and same kernel.
+> If I use the switch on the side of my laptop to turn off wlan, ksoftirqd eats
+> up one core of my cpu til I switch it on again or rmmod the iwlagn module. But
+> when I switch it on before the device loses connection and then off a second
+> time, I now get a (the) second ksoftirqd process eating up the other core too.
+> This only happens if a connection is established, though.
+> I'm not sure if this problem existed in 2.6.26 but I doubt it. (Will check if I
+> find the time).
+>
+> My dmesg shows me this:
+>
+> [48067.257539] iwlagn: Radio Frequency Kill Switch is On:
+> [48067.257539] Kill switch must be turned off for wireless networking to work.
+> [48071.295154] wlan0: No ProbeResp from current AP 00:c0:a8:e5:e5:a5 - assume
+> out of range
+> [48072.099173] iwlagn: Error sending REPLY_ADD_STA: enqueue_hcmd failed: -5
+> [48072.099260] mac80211-phy1: failed to remove key (0, 00:c0:a8:e5:e5:a5) from
+> hardware (-5)
+> [48072.206028] iwlagn: Error sending REPLY_ADD_STA: enqueue_hcmd failed: -5
+> [48072.206028] mac80211-phy1: failed to remove key (1, ff:ff:ff:ff:ff:ff) from
+> hardware (-5)
+>
+> The probably interesting parts of my config look like that:
+>
+> CONFIG_IWLWIFI=m
+> CONFIG_IWLCORE=m
+> CONFIG_IWLWIFI_LEDS=y
+> CONFIG_IWLWIFI_RFKILL=y
+> # CONFIG_IWLWIFI_DEBUG is not set
+> CONFIG_IWLAGN=m
+> CONFIG_IWLAGN_SPECTRUM_MEASUREMENT=y
+> CONFIG_IWLAGN_LEDS=y
+> CONFIG_IWL4965=y
+> # CONFIG_IWL5000 is not set
+> # CONFIG_IWL3945 is not set
+>
+> CONFIG_RFKILL=m
+> # CONFIG_RFKILL_INPUT is not set
+> CONFIG_RFKILL_LEDS=y
+> CONFIG_IWLWIFI_RFKILL=y
+>
+> I can recompile with debug options set if this helps. Just haven't found the
+> time.
 
-On Sun, 17 Aug 2008 11:30:41 +0530, Satish Eerpini said:
-> hi everyone , i was trying to patch kdb with CentOS 5.0 kernel
-> (2.6.18-8) 
+There is gap in current rfkill implementation that we didn't close
+yet.  There were also few patches that were not signed by Intel and
+are apparently wrong.
+Tomas.
 
-You might want to make sure you're using a 2.6.18-vintage kdb patch, as
-trying to fit a 2.6.26 kdb onto a 2.6.18 kernel is unlikely to bring joy.
 
-> resolve) ,.... but apart from the rejects during the kernel
-> compilation i got the following error which does not seem to have
-> anything to do with the rejects ............
-
-No, the rejects during the patch are almost certainly related to your
-compile errors...
-
->  the code(in kdb/modules/kdbm_pg.c) which is causing the second error
-> is something like this :
-> 
->              iaddr += offsetof(struct inode, u);
-> 
-> what i am not able to understand is that if 'u' is not a correct
-> member of the inode , .. then what did they( whoever wrote this piece
-> code) intend by 'u' ? , .....
-
-Your kdb patch probably includes a patch to include/linux/fs.h that adds a
-member 'u' to a 'struct inode'.  If this generated a reject, then the member 'u'
-won't be in the struct, and your compile dies...
-
-> and for the first error , ... i just checked out the code ....
-> according to the line no shown in the error .....the code is :
-> 
->              kdb_page_flags(page, Checked);
-> 
-> and i don't see any function PageChecked ....! so what can the error
-> actually mean ??
-
-kdb_page_flags is probably a macro that does something like:
-
-#define kdb_page_flags(a,b) (..... Page##b)
-
-The 'implicit declaration' is most likely a missing #include someplace,
-which again hints at the rejects from a misapplied patch...
-
---==_Exmh_1218955331_14862P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFIp8hDcC3lWbTT17ARAhN7AKC8tXzZOv/Xvkd8zkt4UQDp7orkVACgjkem
-UHLdUL/7I0oW3R2Stp3aNuE=
-=YAks
------END PGP SIGNATURE-----
-
---==_Exmh_1218955331_14862P--
+> Thanks
+> Mirco
+>
+> P.S.: added some cc's for iwlwifi and rfkill.
+>
