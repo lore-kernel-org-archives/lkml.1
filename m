@@ -1,69 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756289AbYHQWPG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756588AbYHQWPp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756289AbYHQWPG (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Aug 2008 18:15:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751887AbYHQWOz
+	id S1756588AbYHQWPp (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Aug 2008 18:15:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752411AbYHQWPh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Aug 2008 18:14:55 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:56643 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751961AbYHQWOz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Aug 2008 18:14:55 -0400
-Date: Mon, 18 Aug 2008 00:14:53 +0200
-From: Pavel Machek <pavel@suse.cz>
-To: david@lang.hm
-Cc: Eric Paris <eparis@redhat.com>, Theodore Tso <tytso@mit.edu>,
-       Rik van Riel <riel@redhat.com>, davecb@sun.com,
-       linux-security-module@vger.kernel.org, Adrian Bunk <bunk@kernel.org>,
-       Mihai Don??u <mdontu@bitdefender.com>, linux-kernel@vger.kernel.org,
-       malware-list@lists.printk.net, Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [malware-list] [RFC 0/5] [TALPA] Intro to	alinuxinterfaceforon access scanning
-Message-ID: <20080817221453.GD21112@atrey.karlin.mff.cuni.cz>
-References: <20080813125638.GB6995@ucw.cz> <20080813135207.CC08C3765BC@pmx1.sophos.com> <20080814125410.GA2262@elf.ucw.cz> <2629CC4E1D22A64593B02C43E855530304AE4BE3@USILMS12.ca.com> <20080814223918.GC6370@elf.ucw.cz> <20080814200005.6b363716@bree.surriel.com> <20080815004335.GF13048@mit.edu> <1218769209.16613.31.camel@localhost.localdomain> <alpine.DEB.1.10.0808142212430.12859@asgard.lang.hm>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0808142212430.12859@asgard.lang.hm>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Sun, 17 Aug 2008 18:15:37 -0400
+Received: from ms01.sssup.it ([193.205.80.99]:40625 "EHLO sssup.it"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751855AbYHQWPg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Aug 2008 18:15:36 -0400
+Subject: Re: SCHED_FIFO and SCHED_RR broken by cfs
+From: Dario Faggioli <raistlin@linux.it>
+To: Stefani Seibold <stefani@seibold.net>
+Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+       mingo@redhat.com
+In-Reply-To: <1218922190.3747.6.camel@matrix>
+References: <1218880552.11912.9.camel@matrix>
+	 <1218898413.10800.252.camel@twins>  <1218922190.3747.6.camel@matrix>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-7JOx75FXGPoxnNgO/obs"
+Date: Mon, 18 Aug 2008 00:15:26 +0200
+Message-Id: <1219011326.25992.19.camel@Palanthas>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Thu, 14 Aug 2008, Eric Paris wrote:
-> 
-> >>But Pavel is raising a good question.  In Eric's proposed threat
-> >>model, he claimed the only thing that he was trying to solve was
-> >>"scanning".  Just file scanning.  That implies no root privileges, but
-> >>it also implied that he wasn't worried about malware running with user
-> >>privileges, either.  Presumbly, that would be caught and stopped by
-> >>the file scanner before the malware had a chance to run; that is the
-> >>execve(2) system call would also be blocked until the executable was
-> >>scanned.
-> >>
-> >>So if that is the threat model, then the only thing libmalware.so
-> >>doesn't solve is knfsd access, and it should be evaluated on that
-> >>basis.  If the threat model *does* include malware which is **not**
-> >>caught by the AV scanner, and is running with user privileges, then
-> >>there are a whole host of other attacks that we have to worry about.
-> >>So let's be real clear, up front, what the threat model is, and avoid
-> >>changing the model around to rule out solutions that don't fit the
-> >>initially preconceived one.  That's how you get to the TSA
-> >>confiscating water bottles in airport security lines.
-> >
-> >No, I'm not claiming to protect against running processes.  I'll leave
-> >that for SELinux.
-> >
-> >I haven't seen this supposed libmalware.so so take anything I say with a
-> >grain of sand.  But I take it that the solutions to the problems are
-> >'don't do that.'
-> 
-> libmalware.so is shorthand for 'have a userspace library do the scanning 
-> and handle the open'
 
-(snip). Agreed, you explained it better than I would.
-								Pavel
+--=-7JOx75FXGPoxnNgO/obs
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+On Sat, 2008-08-16 at 23:29 +0200, Stefani Seibold wrote:
+> After disabling kernel support for "Group CPU scheduler" and applying
+> 'echo -1 > /proc/sys/kernel/sched_rt_runtime_us' the behaviour is as
+> expected.
+>=20
+> chrt -f 99 ./a.out
+>=20
+>  average:13 usec
+>  min. jitter:0 usec
+>  max. jitter:29 usec
+>=20
+> chrt -o 0 ./a.out=20
+>  average:153 usec
+>  min. jitter:0 usec
+>  max. jitter:37035 usec
+>=20
+> So the problem is located first in the new sched_rt_runtime_us default
+> value and second in the "Group CPU scheduler".
+Well, if you have group scheduling configured I think you should do both
+# echo -1 > /proc/sys/kernel/sched_rt_runtime_us
+# echo -1 > /dev/cgroup/cpu.rt_runtime_us
+
+if /dev/cgroup is the mount point of the cgroup file system.
+
+In situations like the one you are describing, this worked for me...
+Hope that it also helps you! :-)
+
+Regards,
+Dario
+
+--=20
+<<This happens because I choose it to happen!>>
+(Raistlin Majere, DragonLance Chronicles -Dragons of Spring Drawning-)
+----------------------------------------------------------------------
+Dario Faggioli
+GNU/Linux Registered User: #340657
+Web: http://www.linux.it/~raistlin
+Blog: http://blog.linux.it/raistlin
+SIP Account: dario.faggioli@sipproxy.wengo.fr or
+             raistlin@ekiga.net
+Jabber Account: dario.faggioli@jabber.org/WengoPhone
+GnuPG Key ID: 4DC83AC4
+GnuPG Key Fingerprint: 2A78 AD5D B9CF A082 0836 08AD 9385 DA04 4DC8 3AC4
+
+--=-7JOx75FXGPoxnNgO/obs
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBIqKL+k4XaBE3IOsQRAkj8AKCVioKlm8iWuoZOxSRe3toJS2tdjgCePHAG
++R0rI7q84cV6pPpN5TyVnCE=
+=Cndj
+-----END PGP SIGNATURE-----
+
+--=-7JOx75FXGPoxnNgO/obs--
+
