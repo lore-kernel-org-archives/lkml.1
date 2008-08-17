@@ -1,71 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756332AbYHQWun@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755295AbYHQW6z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756332AbYHQWun (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Aug 2008 18:50:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752359AbYHQWug
+	id S1755295AbYHQW6z (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Aug 2008 18:58:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750930AbYHQW6q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Aug 2008 18:50:36 -0400
-Received: from xenotime.net ([66.160.160.81]:60723 "HELO xenotime.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752062AbYHQWug (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Aug 2008 18:50:36 -0400
-Date: Sun, 17 Aug 2008 15:50:58 -0700
-From: Randy Dunlap <rdunlap@xenotime.net>
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: akpm <akpm@linux-foundation.org>,
-       Uwe =?ISO-8859-1?Q?Kleine-K=F6nig?= <Uwe.Kleine-Koenig@digi.com>
-Subject: [PATCH] kernel.h: fix kernel-doc for might_sleep
-Message-Id: <20080817155058.022baa96.rdunlap@xenotime.net>
-Organization: YPO4
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 17 Aug 2008 18:58:46 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:51683 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751758AbYHQW6p (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Aug 2008 18:58:45 -0400
+Date: Mon, 18 Aug 2008 00:58:44 +0200
+From: Pavel Machek <pavel@suse.cz>
+To: david@lang.hm
+Cc: Eric Paris <eparis@redhat.com>, Theodore Tso <tytso@mit.edu>,
+       Rik van Riel <riel@redhat.com>, davecb@sun.com,
+       linux-security-module@vger.kernel.org, Adrian Bunk <bunk@kernel.org>,
+       Mihai Don??u <mdontu@bitdefender.com>, linux-kernel@vger.kernel.org,
+       malware-list@lists.printk.net, Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [malware-list] [RFC 0/5] [TALPA] Intro to alinuxinterfaceforon access scanning
+Message-ID: <20080817225844.GE21112@atrey.karlin.mff.cuni.cz>
+References: <20080813125638.GB6995@ucw.cz> <20080813135207.CC08C3765BC@pmx1.sophos.com> <20080814125410.GA2262@elf.ucw.cz> <2629CC4E1D22A64593B02C43E855530304AE4BE3@USILMS12.ca.com> <20080814223918.GC6370@elf.ucw.cz> <20080814200005.6b363716@bree.surriel.com> <20080815004335.GF13048@mit.edu> <1218769209.16613.31.camel@localhost.localdomain> <20080817221258.GC21112@atrey.karlin.mff.cuni.cz> <alpine.DEB.1.10.0808171542160.12859@asgard.lang.hm>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.1.10.0808171542160.12859@asgard.lang.hm>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+Hi!
 
-Put the kernel-doc for might_sleep() _immediately_ before the macro
-(no intervening lines).  Otherwise kernel-doc complains like so:
+> >>And I still don't get this 'mmap problem' that I don't solve that
+> >>libmalware magically solves.  What?  don't use mmap?  I certainly hope
+> >>not.
+> >
+> >Don't use mmap, it is as simple as that. AFAICS mmap(MAP_SHARED) --
+> >which is basically shared memory -- is fundamentally incompatible with
+> >reliable virus scanning.
+> >
+> >...or do you have a reasonable solution for mmap?
+> 
+> 
+> mmap has a few different problems
+> 
+> 1. intercepting reads and writes to take action at that time
+> 
+> 2. the fact that two programs can use it as an inter-process communication 
+> mechanism.
 
-Warning(linux-2.6.27-rc3-git2//include/linux/kernel.h:129): No description found for parameter 'file'
-Warning(linux-2.6.27-rc3-git2//include/linux/kernel.h:129): No description found for parameter 'line'
+...can and will use it as an IPC. So we need to modify some
+applications.
 
-because kernel-doc is looking at the wrong function prototype
-(i.e., __might_sleep).  [Yes, I have a todo note to myself to
-check/warn for that inconsistency in scripts/kernel-doc.]
+Rather than modify all the applications using mmap (you can't tell if
+the other side is going to use it for shared memory... right?), we
+could simply modify all the Windows-facing applications using mmap.
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-cc: Uwe Kleine-K_nig <Uwe.Kleine-Koenig@digi.com>
----
- include/linux/kernel.h |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+> if you are worried about the IPC aspects, all you can do is forbid it, 
 
---- linux-2.6.27-rc3-git4.orig/include/linux/kernel.h
-+++ linux-2.6.27-rc3-git4/include/linux/kernel.h
-@@ -115,6 +115,8 @@ extern int _cond_resched(void);
- # define might_resched() do { } while (0)
- #endif
- 
-+#ifdef CONFIG_DEBUG_SPINLOCK_SLEEP
-+  void __might_sleep(char *file, int line);
- /**
-  * might_sleep - annotation for functions that can sleep
-  *
-@@ -125,8 +127,6 @@ extern int _cond_resched(void);
-  * be bitten later when the calling function happens to sleep when it is not
-  * supposed to.
-  */
--#ifdef CONFIG_DEBUG_SPINLOCK_SLEEP
--  void __might_sleep(char *file, int line);
- # define might_sleep() \
- 	do { __might_sleep(__FILE__, __LINE__); might_resched(); } while (0)
- #else
+Can you automatically tell if applications are using mmap for IPC?
 
-
----
-~Randy
-Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
-http://linuxplumbersconf.org/
+BTW in another mail you wanted to include /var/log/syslog from
+scanning. You should not be doing that if syslog is exported to
+Windows systems. Of course, you can get away with scanning syslog when
+Windows client tries to read it, which should be acceptable...
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
