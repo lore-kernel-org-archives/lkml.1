@@ -1,82 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755400AbYHQPzb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753724AbYHQQSR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755400AbYHQPzb (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Aug 2008 11:55:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752724AbYHQPzX
+	id S1753724AbYHQQSR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Aug 2008 12:18:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751423AbYHQQSD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Aug 2008 11:55:23 -0400
-Received: from sh.osrg.net ([192.16.179.4]:57738 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752403AbYHQPzW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Aug 2008 11:55:22 -0400
-Date: Mon, 18 Aug 2008 00:54:54 +0900
-To: fujita.tomonori@lab.ntt.co.jp
-Cc: mingo@elte.hu, prarit@redhat.com, jbarnes@virtuousgeek.org,
-       joro@8bytes.org, linux-kernel@vger.kernel.org,
-       linux-pci@vger.kernel.org
-Subject: Re: [PATCH]: PCI: GART iommu alignment fixes [v2]
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20080818004844G.fujita.tomonori@lab.ntt.co.jp>
-References: <20080818003648M.fujita.tomonori@lab.ntt.co.jp>
-	<20080817154213.GB6411@elte.hu>
-	<20080818004844G.fujita.tomonori@lab.ntt.co.jp>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20080818005517X.fujita.tomonori@lab.ntt.co.jp>
+	Sun, 17 Aug 2008 12:18:03 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:44203 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751310AbYHQQSB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Aug 2008 12:18:01 -0400
+Date: Sun, 17 Aug 2008 09:17:02 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+cc: "H. Peter Anvin" <hpa@zytor.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Joe Perches <joe@perches.com>, linux-kernel@vger.kernel.org
+Subject: Re: [RFC PATCH] Fair low-latency rwlock v3
+In-Reply-To: <20080817075335.GA25019@Krystal>
+Message-ID: <alpine.LFD.1.10.0808170909420.3324@nehalem.linux-foundation.org>
+References: <20080816073926.GA19546@Krystal> <48A6EC77.8080904@zytor.com> <20080816154330.GA5880@Krystal> <alpine.LFD.1.10.0808161014300.3324@nehalem.linux-foundation.org> <20080816211954.GB7358@Krystal> <alpine.LFD.1.10.0808161422290.3324@nehalem.linux-foundation.org>
+ <20080817075335.GA25019@Krystal>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 18 Aug 2008 00:48:05 +0900
-FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
-
-> On Sun, 17 Aug 2008 17:42:13 +0200
-> Ingo Molnar <mingo@elte.hu> wrote:
-> 
-> > 
-> > * FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
-> > 
-> > > The above commit log of Prarit's patch is completely wrong (so I wrote 
-> > > this patch). To avoid misunderstanding, can you apply this patch with 
-> > > a proper description like this:
-> > 
-> > sure, i've created the commit below - is that fine?
-> > 
-> > 	Ingo
-> 
-> I think that 'v2' in the subject is unnecessary. The rest looks fine.
-> 
-> Thanks,
-> 
-> 
-> > --------------->
-> > From 3f18931be15856db01a216995670412e4421f3c9 Mon Sep 17 00:00:00 2001
-> > From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-> > Date: Mon, 18 Aug 2008 00:36:18 +0900
-> > Subject: [PATCH] x86 gart: allocate size-aligned address for alloc_coherent, v2
-> > 
-> > This patch changes GART IOMMU to return a size aligned address wrt
-> > dma_alloc_coherent, as DMA-mapping.txt defines:
-> > 
-> > The cpu return address and the DMA bus master address are both
-> > guaranteed to be aligned to the smallest PAGE_SIZE order which
-> > is greater than or equal to the requested size.  This invariant
-> > exists (for example) to guarantee that if you allocate a chunk
-> > which is smaller than or equal to 64 kilobytes, the extent of the
-> > buffer you receive will not cross a 64K boundary.
-
-Ops, can you remove the following part? I confused
-segment_boundary_mask with max_segment_size. A device needs to set
-segment_boundary_mask properly if it doesn't want a buffer that
-crosses a 64K boundary. We set the default boundary to 4G.
 
 
-> > But it is very unlikely that this matters. As DMA-mapping.txt
-> > explains, This invariant is to avoid the boundary problem (such as
-> > 64K). Now the majority of IOMMUs including GART (except for Intel
-> > IOMMU) don't allocate a buffer that crosses a 64K boundary wrt all the
-> > DMA mapping interfaces (dma_alloc_coherent, dma_map_sg, and
-> > dma_map_single) because of segment_boundary_mask in struct
-> > device_dma_parameters.
+On Sun, 17 Aug 2008, Mathieu Desnoyers wrote:
+> +/*
+> + * Uncontended fastpath.
+> + */
+> +static int fair_write_lock_irq_fast(struct fair_rwlock *rwlock)
 
+So first off, you should call this "trylock", since it doesn't necessarily 
+get the lock at all. It has nothing to do with fast.
+
+Secondly:
+
+> +	value = atomic_long_read(&rwlock->value);
+> +	if (likely(!value)) {
+> +		/* no other reader nor writer present, try to take the lock */
+> +		local_bh_disable();
+> +		local_irq_disable();
+> +		if (likely(atomic_long_cmpxchg(&rwlock->value, value,
+
+This is actually potentially very slow. 
+
+Why? If the lock is uncontended, but is not in the current CPU's caches, 
+the read -> rmw operation generates multiple cache coherency protocol 
+events. First it gets the line in shared mode (for the read), and then 
+later it turns it into exclusive mode.
+
+So if it's likely that the value is zero (or even if it's just the only 
+case we really care about), then you really should do the
+
+	atomic_long_cmpxchg(&rwlock->value, 0, newvalue);
+
+thing as the _first_ access to the lock.
+
+Yeah, yeah, that means that you need to do the local_bh_disable etc first 
+too, and undo it if it fails, but the failure path should be the unusual 
+one. 
+
+			Linus
