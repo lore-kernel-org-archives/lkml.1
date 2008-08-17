@@ -1,69 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752576AbYHQGAv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752716AbYHQGXz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752576AbYHQGAv (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Aug 2008 02:00:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751310AbYHQGAn
+	id S1752716AbYHQGXz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Aug 2008 02:23:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751605AbYHQGXn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Aug 2008 02:00:43 -0400
-Received: from yx-out-2324.google.com ([74.125.44.30]:43957 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751225AbYHQGAm (ORCPT
+	Sun, 17 Aug 2008 02:23:43 -0400
+Received: from wa-out-1112.google.com ([209.85.146.181]:41051 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751594AbYHQGXm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Aug 2008 02:00:42 -0400
+	Sun, 17 Aug 2008 02:23:42 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=b6Vq1GMa1nAaIRR89ipsoa/4woiUckOSJvD0/DsrS6+yWrtQlMqFPAAuXlUrNI/eSA
-         lHLN69fAuka2gRWKhx4DEw/ThX1uA6HFGkWaBuMUBuj4J6ugwKaeEjaJRTaeIo/9DIJs
-         ZxlMOhstlbzs6qnCPy9gBDJxaz/IdCKFYRsfU=
-Message-ID: <93655eb70808162300i4286eac9p9aa34cf23359ff72@mail.gmail.com>
-Date: Sun, 17 Aug 2008 11:30:41 +0530
-From: "Satish Eerpini" <eerpini@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: patching kdb to Centos kernel : error
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=xfQA0wpJDOC+rnB6JHk2lxaYLePpvf1apK06dOG2slaeWC53TER9hsYD5J1kYzt3ks
+         jxlxCMjok43Wv7MBg/lh0j5RxTrPJqO5cSh37cKsLAmeyUGkeNkGM/bbsXORE1t9pg+U
+         gQDdGQ5twQPmnV9R39SHBdlgLHLnhKaMpQORk=
+From: Yinghai Lu <yhlu.kernel@gmail.com>
+To: Jeff Garzik <jgarzik@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, netdev <netdev@vger.kernel.org>,
+       Yinghai Lu <yhlu.kernel@gmail.com>
+Subject: [PATCH] net: forcedeth use pci_choose_state instead of PCI_D3hot
+Date: Sat, 16 Aug 2008 23:22:53 -0700
+Message-Id: <1218954173-12628-1-git-send-email-yhlu.kernel@gmail.com>
+X-Mailer: git-send-email 1.5.4.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-hi everyone , i was trying to patch kdb with CentOS 5.0 kernel
-(2.6.18-8) , and had a few rejects ( which i am still trying to
-resolve) ,.... but apart from the rejects during the kernel
-compilation i got the following error which does not seem to have
-anything to do with the rejects ............
-i have got an error in a kdb module, which has nothing to do with the
-rejected patches ( or so i guess ) :
+after
 
-              kdb/modules/kdbm_pg.c: In function 'kdbm_show_page':
-              kdb/modules/kdbm_pg.c:349: error: implicit declaration
-of function 'PageChecked'
-              kdb/modules/kdbm_pg.c: In function 'kdbm_inode':
-              kdb/modules/kdbm_pg.c:507: error: 'struct inode' has no
-member named 'u'
+| commit f735a2a1a4f2a0f5cd823ce323e82675990469e2
+| Author: Tobias Diedrich <ranma+kernel@tdiedrich.de>
+| Date:   Sun May 18 15:02:37 2008 +0200
+|
+|    [netdrvr] forcedeth: setup wake-on-lan before shutting down
+|
+|    When hibernating in 'shutdown' mode, after saving the image the suspend hook
+|    is not called again.
+|    However, if the device is in promiscous mode, wake-on-lan will not work.
+|    This adds a shutdown hook to setup wake-on-lan before the final shutdown.
+|
+|    Signed-off-by: Tobias Diedrich <ranma+kernel@tdiedrich.de>
+|    Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
 
- the code(in kdb/modules/kdbm_pg.c) which is causing the second error
-is something like this :
+my servers with nvidia mcp55 will nic doesn't work with msi.
 
-             iaddr += offsetof(struct inode, u);
+after remove pci_set_power_state(, PCI_D3hot) that nic/msi will work again.
 
-what i am not able to understand is that if 'u' is not a correct
-member of the inode , .. then what did they( whoever wrote this piece
-code) intend by 'u' ? , .....
+check with e1000 is using pci_choose_state in _shutdown.
 
-....
-and for the first error , ... i just checked out the code ....
-according to the line no shown in the error .....the code is :
+So change that pci_choose_state(pdev, ...), and it works.
 
-             kdb_page_flags(page, Checked);
+Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
 
-and i don't see any function PageChecked ....! so what can the error
-actually mean ??
+---
+ drivers/net/forcedeth.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Thanks in advance
-Satish
---
-http://satish.playdrupal.com
+Index: linux-2.6/drivers/net/forcedeth.c
+===================================================================
+--- linux-2.6.orig/drivers/net/forcedeth.c
++++ linux-2.6/drivers/net/forcedeth.c
+@@ -5988,7 +5988,7 @@ static void nv_shutdown(struct pci_dev *
+ 	pci_enable_wake(pdev, PCI_D3hot, np->wolenabled);
+ 	pci_enable_wake(pdev, PCI_D3cold, np->wolenabled);
+ 	pci_disable_device(pdev);
+-	pci_set_power_state(pdev, PCI_D3hot);
++	pci_set_power_state(pdev, pci_choose_state(pdev, PMSG_SUSPEND));
+ }
+ #else
+ #define nv_suspend NULL
