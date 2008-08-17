@@ -1,74 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755323AbYHQRZu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755655AbYHQR14@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755323AbYHQRZu (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Aug 2008 13:25:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752716AbYHQRX5
+	id S1755655AbYHQR14 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Aug 2008 13:27:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752589AbYHQR1r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Aug 2008 13:23:57 -0400
-Received: from fg-out-1718.google.com ([72.14.220.158]:37405 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753111AbYHQRXt (ORCPT
+	Sun, 17 Aug 2008 13:27:47 -0400
+Received: from mtagate4.de.ibm.com ([195.212.29.153]:42473 "EHLO
+	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751986AbYHQR1p (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Aug 2008 13:23:49 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=to:cc:subject:date:message-id:x-mailer:in-reply-to:references:from;
-        b=mdvvuvfGObagHpjSLJKtTz8sCEnmKFCaB9dsavIcvB++3WGWnGRieZkGQBwHq2g1ET
-         vBq6lT067hg4ZlDLeNtaQFnUD8kkpjvijgivT8kwa8r+bjDCtl46A9Yni3WXy8SZs6dn
-         7GmNSdxBxj6vVh9iXSVLsvqhe7/Ky9CSAlgIY=
-To: Bartlomiej@gollum.tnic, Zolnierkiewicz@gollum.tnic, <bzolnier@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
-       Borislav Petkov <petkovbb@gmail.com>
-Subject: [PATCH 5/5] ide-floppy: add a debug_mask module parameter
-Date: Sun, 17 Aug 2008 19:23:46 +0200
-Message-Id: <1218993826-4571-6-git-send-email-petkovbb@gmail.com>
-X-Mailer: git-send-email 1.5.5.1
-In-Reply-To: <1218993826-4571-1-git-send-email-petkovbb@gmail.com>
-References: <1218993826-4571-1-git-send-email-petkovbb@gmail.com>
-From: Borislav Petkov <petkovbb@googlemail.com>
+	Sun, 17 Aug 2008 13:27:45 -0400
+Subject: Re: [patch 1/3] kmsg: Kernel message catalog macros.
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Reply-To: schwidefsky@de.ibm.com
+To: Joe Perches <joe@perches.com>
+Cc: Greg KH <gregkh@suse.de>, Kay Sievers <kay.sievers@vrfy.org>,
+       linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
+       lf_kernel_messages@lists.linux-foundation.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Michael Holzheu <holzheu@de.ibm.com>, Gerrit Huizenga <gh@us.ibm.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>, Jan Kara <jack@suse.cz>,
+       Pavel Machek <pavel@ucw.cz>, Sam Ravnborg <sam@ravnborg.org>,
+       Jochen =?ISO-8859-1?Q?Vo=DF?= <jochen.voss@googlemail.com>,
+       Kunai Takashi <kunai@linux-foundation.jp>,
+       Tim Bird <tim.bird@am.sony.com>
+In-Reply-To: <1218915375.24527.105.camel@localhost>
+References: <20080730165656.118280544@de.ibm.com>
+	 <20080730171156.824640459@de.ibm.com>
+	 <3ae72650807301502h3e54e80yb405af7192048b89@mail.gmail.com>
+	 <20080730220432.GA24800@suse.de> <1217495404.8555.20.camel@localhost>
+	 <20080805223117.GA6552@suse.de> <1218011716.20769.12.camel@localhost>
+	 <20080806200721.GA30086@suse.de>  <1218097901.1033.10.camel@localhost>
+	 <1218124771.5882.37.camel@localhost>  <1218326902.14983.22.camel@localhost>
+	 <1218915375.24527.105.camel@localhost>
+Content-Type: text/plain
+Organization: IBM Corporation
+Date: Sun, 17 Aug 2008 19:27:39 +0200
+Message-Id: <1218994059.20098.4.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-... with which to control to verbosity of debug messages on module load time.
+On Sat, 2008-08-16 at 12:36 -0700, Joe Perches wrote:
+> Doesn't this example better illustrate the barely useful
+> user value of such a message and documentation?
+> 
+> In your example, monwriter.1 with a return code of 5 isn't possible.
 
-Signed-off-by: Borislav Petkov <petkovbb@gmail.com>
----
- drivers/ide/ide-floppy.c |    7 +++++++
- 1 files changed, 7 insertions(+), 0 deletions(-)
+That is true, thanks for pointing out this bug. I doesn't change
+anything about the need for a message documentation though, it only
+proves that the documentation can have errors. At least the customers
+running linux on System z want to have the documentation.
 
-diff --git a/drivers/ide/ide-floppy.c b/drivers/ide/ide-floppy.c
-index 3de9478..85022b8 100644
---- a/drivers/ide/ide-floppy.c
-+++ b/drivers/ide/ide-floppy.c
-@@ -49,6 +49,9 @@
- 
- #include "ide-floppy.h"
- 
-+/* module parameters */
-+static unsigned long debug_mask = 0x0;
-+
- /* define to see debug info */
- #define IDEFLOPPY_DEBUG_LOG	0
- 
-@@ -679,6 +682,8 @@ static ide_driver_t idefloppy_driver = {
- #endif
- };
- 
-+module_param(debug_mask, ulong, 0644);
-+
- static int idefloppy_open(struct inode *inode, struct file *filp)
- {
- 	struct gendisk *disk = inode->i_bdev->bd_disk;
-@@ -692,6 +697,8 @@ static int idefloppy_open(struct inode *inode, struct file *filp)
- 
- 	drive = floppy->drive;
- 
-+	drive->debug_mask = debug_mask;
-+
- 	ide_debug_log(IDE_DBG_FUNC, "Call %s\n", __func__);
- 
- 	floppy->openers++;
 -- 
-1.5.5.4
+blue skies,
+  Martin.
+
+"Reality continues to ruin my life." - Calvin.
+
 
