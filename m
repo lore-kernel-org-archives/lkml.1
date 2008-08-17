@@ -1,75 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756215AbYHQRdp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756348AbYHQReN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756215AbYHQRdp (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Aug 2008 13:33:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752908AbYHQRdg
+	id S1756348AbYHQReN (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Aug 2008 13:34:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753006AbYHQRd5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Aug 2008 13:33:36 -0400
-Received: from mtagate4.de.ibm.com ([195.212.29.153]:48664 "EHLO
-	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752609AbYHQRdf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Aug 2008 13:33:35 -0400
-Subject: Re: [patch 1/3] kmsg: Kernel message catalog macros.
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Reply-To: schwidefsky@de.ibm.com
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Tim Hockin <thockin@hockin.org>, linux-kernel@vger.kernel.org,
-       linux-s390@vger.kernel.org,
-       lf_kernel_messages@lists.linux-foundation.org,
+	Sun, 17 Aug 2008 13:33:57 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:37530 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755320AbYHQRd4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Aug 2008 13:33:56 -0400
+Date: Sun, 17 Aug 2008 19:33:19 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Rusty Russell <rusty@rustcorp.com.au>,
+       Alexey Dobriyan <adobriyan@gmail.com>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Michael Holzheu <holzheu@de.ibm.com>, Gerrit Huizenga <gh@us.ibm.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Randy Dunlap <randy.dunlap@oracle.com>, Jan Kara <jack@suse.cz>,
-       Pavel Machek <pavel@ucw.cz>, Sam Ravnborg <sam@ravnborg.org>,
-       Joe Perches <joe@perches.com>,
-       Jochen =?ISO-8859-1?Q?Vo=DF?= <jochen.voss@googlemail.com>,
-       Kunai Takashi <kunai@linux-foundation.jp>,
-       Tim Bird <tim.bird@am.sony.com>
-In-Reply-To: <200808171511.09346.rusty@rustcorp.com.au>
-References: <20080730165656.118280544@de.ibm.com>
-	 <1218908985.6037.12.camel@localhost>
-	 <b3ece790808161340x4b03b91er6f0bfcc46c6fb3ad@mail.gmail.com>
-	 <200808171511.09346.rusty@rustcorp.com.au>
-Content-Type: text/plain
-Organization: IBM Corporation
-Date: Sun, 17 Aug 2008 19:33:00 +0200
-Message-Id: <1218994380.20098.10.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: [PATCH] debug: fix BUILD_BUG_ON() for non-constant expressions
+Message-ID: <20080817173319.GA2450@elte.hu>
+References: <20080816100948.GB19926@martell.zuzino.mipt.ru> <200808162055.45136.rusty@rustcorp.com.au> <alpine.LFD.1.10.0808161305170.3324@nehalem.linux-foundation.org> <20080817103241.GB21303@elte.hu> <alpine.LFD.1.10.0808170936260.3324@nehalem.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <alpine.LFD.1.10.0808170936260.3324@nehalem.linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2008-08-17 at 15:11 +1000, Rusty Russell wrote:
-> > > Ok, so  a specialized version of printk will do the work to calculate
-> > > the hash. Only, what will we do if there ever is a conflict? The message
-> > > tag has to be unique. The shorter the hash is, the more likely a
-> > > collision gets. Don't know if 6 hash digits is enough to just ignore the
-> > > problem.
-> >
-> > And if you ever need to change the text that is in the format string?
-> > The hash changes.  That seems exactly counter to your goal...
+
+* Linus Torvalds <torvalds@linux-foundation.org> wrote:
+
 > 
-> You need to catalogue them all anyway, so you can detect clashes at build 
-> time.  Yes, you have to change the new string in that case, but that's easy.
+> 
+> On Sun, 17 Aug 2008, Ingo Molnar wrote:
+> > +/*
+> > + * Force a compilation error if condition is true [array index becomes
+> > + * negative], and a linker error if condition is not constant [non-defined
+> > + * variable is used as an array index]:
+> > + *
+> > + * ( The linker trick relies on gcc optimizing out a multiplication with
+> > + *   constant zero - which should be reasonable enough. )
+> > + */
+> > +extern unsigned int __BUILD_BUG_ON_non_constant;
+> > +
+> > +#define BUILD_BUG_ON(condition)					\
+> > +do {								\
+> > +	(void)sizeof(char[1 - 2*!!(condition)]);		\
+> > +	if (!__builtin_constant_p(condition))			\
+> > +		__BUILD_BUG_ON_non_constant++;			\
+> > +} while (0)
+> 
+> Gag me now.
+> 
+> Why not just do
+> 
+>  #define __BBO(c)                sizeof(const char[1 - 2*!!(c)])
+>  #define __BBONC(c)              __BBO(!__builtin_constant_p(c))
+>  #define BUILD_BUG_ON_ZERO(c)    (__BBO(c) - __BBONC(c))
+>  #define BUILD_BUG_ON(c)         (void)BUILD_BUG_ON_ZERO(c)
+> 
+> and be done with it?
 
-Is the suggestion that in case of a clash just change the message string
-slightly to avoid the clash ? 
+yeah, i first tried a few variants of that (compile-time warnings are 
+much better than link time warnings), but none worked when i tested 
+various failure modes.
 
-> And the number changing as the message changes is arguably a feature.  You 
-> shouldn't (and we generally don't) idly change kernel messages.
+try the patch below - it only gives this error during build:
 
-This is very true. If a message is touched most likely the message
-description has to be changed as well. If the message hash then changes
-the tools can warn about it. The small thing now only is the matter of
-actually implementing the hash and changing the script to work on them..
+ kernel/sched.c: In function ‘test':
+ kernel/sched.c:9193: error: size of array ‘type name' is negative
+ make[1]: *** [kernel/sched.o] Error 1
 
--- 
-blue skies,
-  Martin.
+it doesnt notice the error on the next line. I suspect this is because 
+__builtin_constant_p() is special (or broken). I tried it with gcc 4.2.3 
+and 4.3.0.
 
-"Reality continues to ruin my life." - Calvin.
+	Ingo
 
-
+Index: linux/kernel/sched.c
+===================================================================
+--- linux.orig/kernel/sched.c
++++ linux/kernel/sched.c
+@@ -9181,3 +9181,16 @@ struct cgroup_subsys cpuacct_subsys = {
+ 	.subsys_id = cpuacct_subsys_id,
+ };
+ #endif	/* CONFIG_CGROUP_CPUACCT */
++
++#define __BBO(c)                sizeof(const char[1 - 2*!!(c)])
++#define __BBONC(c)              __BBO(!__builtin_constant_p(c))
++#define BUILD_BUG_ON_ZERO2(c)    (__BBO(c) - __BBONC(c))
++#define BUILD_BUG_ON2(c)         (void)BUILD_BUG_ON_ZERO(c)
++
++void test(void)
++{
++	BUILD_BUG_ON2(0);
++	BUILD_BUG_ON2(1);
++	BUILD_BUG_ON2(panic_timeout);
++}
++
