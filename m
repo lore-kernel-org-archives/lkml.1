@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754843AbYHQMiS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755320AbYHQMib@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754843AbYHQMiS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Aug 2008 08:38:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752668AbYHQMiI
+	id S1755320AbYHQMib (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Aug 2008 08:38:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753996AbYHQMiP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Aug 2008 08:38:08 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:44483 "EHLO mx2.mail.elte.hu"
+	Sun, 17 Aug 2008 08:38:15 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:36218 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752580AbYHQMiI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Aug 2008 08:38:08 -0400
-Date: Sun, 17 Aug 2008 14:37:50 +0200
+	id S1753909AbYHQMiO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Aug 2008 08:38:14 -0400
+Date: Sun, 17 Aug 2008 14:38:01 +0200
 From: Ingo Molnar <mingo@elte.hu>
 To: Yinghai Lu <yhlu.kernel@gmail.com>
 Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
        Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86: print local APIC of APs one by one
-Message-ID: <20080817123750.GD21434@elte.hu>
-References: <1218959766-13653-1-git-send-email-yhlu.kernel@gmail.com>
+Subject: Re: [PATCH] x86: remove first_free_entry/pin_map_size
+Message-ID: <20080817123801.GE21434@elte.hu>
+References: <1218954710-13223-1-git-send-email-yhlu.kernel@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1218959766-13653-1-git-send-email-yhlu.kernel@gmail.com>
+In-Reply-To: <1218954710-13223-1-git-send-email-yhlu.kernel@gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -37,7 +37,7 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 * Yinghai Lu <yhlu.kernel@gmail.com> wrote:
 
-> instead of print that of all APs at the time
+> no user now
 
 applied to tip/irq/sparseirq - thanks Yinghai.
 
