@@ -1,63 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754540AbYHQQVM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753953AbYHQQav@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754540AbYHQQVM (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Aug 2008 12:21:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751671AbYHQQU5
+	id S1753953AbYHQQav (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Aug 2008 12:30:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752202AbYHQQan
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Aug 2008 12:20:57 -0400
-Received: from fg-out-1718.google.com ([72.14.220.152]:11092 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751546AbYHQQU4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Aug 2008 12:20:56 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=lYnVdDBtosJSl5Sm2+/5Ma9pzc7tEsQncOxmUO9+jBjmFiGoZkvosUOsDkBJzOXlAc
-         Q/WVuyF/3lfEmoM3F/nf/u3FCAWgtXoyXbhULM7IhzrLglQAymkPmDgndORqS7o6/mCX
-         vBoKOOvopkSa9IXVqzTz8SpF8IEA+PT9bqcaI=
-Message-ID: <1ba2fa240808170920r67e11567h2da8b396b18729dd@mail.gmail.com>
-Date: Sun, 17 Aug 2008 19:20:54 +0300
-From: "Tomas Winkler" <tomasw@gmail.com>
-To: "John W. Linville" <linville@tuxdriver.com>
-Subject: Re: CPU load after killing iwlagn with RF kill switch
-Cc: "Mirco Tischler" <mt-ml@gmx.de>,
-       "Leonid Podolny" <leonidp.lists@gmail.com>,
-       linux-kernel@vger.kernel.org, yi.zhu@intel.com,
-       reinette.chatre@intel.com, linux-wireless@vger.kernel.org,
-       IvDoorn@gmail.com
-In-Reply-To: <20080817150242.GA23926@tuxdriver.com>
+	Sun, 17 Aug 2008 12:30:43 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:40618 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751986AbYHQQam (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Aug 2008 12:30:42 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Theodore Tso <tytso@mit.edu>
+Subject: Re: 2.6.27-rc3-git3: Reported regressions from 2.6.26
+Date: Sun, 17 Aug 2008 18:33:51 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Adrian Bunk <bunk@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+References: <DLWXHEp37wB.A.duD.yZzpIB@albercik> <20080817135134.GA8162@mit.edu>
+In-Reply-To: <20080817135134.GA8162@mit.edu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <48A5EC02.4070303@gmail.com>
-	 <20080817035921.4d35ae0e@mtlp.12thdimension>
-	 <1ba2fa240808170004p63b76db1l1fdfb1cf1cb41636@mail.gmail.com>
-	 <20080817150242.GA23926@tuxdriver.com>
+Message-Id: <200808171833.52278.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Aug 17, 2008 at 6:02 PM, John W. Linville
-<linville@tuxdriver.com> wrote:
-> On Sun, Aug 17, 2008 at 10:04:12AM +0300, Tomas Winkler wrote:
->
->> There is gap in current rfkill implementation that we didn't close
->> yet.  There were also few patches that were not signed by Intel and
->> are apparently wrong.
->
-> Can you be more specific?  Do you know which patches are wrong (even
-> if you don't know how to fix them)?
->
+On Sunday, 17 of August 2008, Theodore Tso wrote:
+> On Sat, Aug 16, 2008 at 09:00:39PM +0200, Rafael J. Wysocki wrote:
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11341
+> > Subject		: 2.6.27-rc1 - ext4 e2fsck false prompting for fixing i_size of Inode
+> > Submitter	: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+> > Date		: 2008-08-13 6:56 (4 days old)
+> > References	: http://marc.info/?l=linux-kernel&m=121861058720051&w=4
+> 
+> This wasn't a regression because it wasn't a kernel bug (and so by
+> definition it existed on prior kernel versions :-).  I've just checked
+> in a fix into the e2fsprogs repository, and I've included the
+> e2fsprogs patch in the bugzilla record for the user's convenience.
 
-80fcc9e28cf3a209fbfb39a7bbddc313c59c7424
-This one  is wrong and there are more then are not acked even though
-they cause no problem. In general I would prefer that patches will be
-acked by Yi or me.
-I will try to rebase our rfkill fixes ASAP from iwlwifi-2.6. iwl5000 branch.
+Thanks a lot for handling this.
 
-Thanks
-Tomas
+Rafael
