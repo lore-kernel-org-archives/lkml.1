@@ -1,185 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754557AbYHQMWp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754822AbYHQMXT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754557AbYHQMWp (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Aug 2008 08:22:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752676AbYHQMWh
+	id S1754822AbYHQMXT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Aug 2008 08:23:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752758AbYHQMXJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Aug 2008 08:22:37 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:60689 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752658AbYHQMWg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Aug 2008 08:22:36 -0400
-Date: Sun, 17 Aug 2008 22:22:33 +1000
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Neil Horman <nhorman@tuxdriver.com>
-Cc: linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org,
-       davem@davemloft.net
-Subject: Re: crypto: skcipher - Use RNG interface instead of get_random_bytes
-Message-ID: <20080817122233.GA26195@gondor.apana.org.au>
-References: <20080811202607.GA11527@hmsreliant.think-freely.org> <20080814115137.GA5721@gondor.apana.org.au> <20080814122331.GA21061@gondor.apana.org.au>
+	Sun, 17 Aug 2008 08:23:09 -0400
+Received: from saeurebad.de ([85.214.36.134]:37535 "EHLO saeurebad.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752740AbYHQMXH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Aug 2008 08:23:07 -0400
+From: Johannes Weiner <hannes@saeurebad.de>
+To: Hugh Dickins <hugh@veritas.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>
+Subject: Re: [PATCH] mm: make unmap_vmas() handle non-page-aligned boundary addresses
+References: <DLWXHEp37wB.A.duD.yZzpIB@albercik>
+	<sNRO-BDDjQL.A.spE.VazpIB@albercik>
+	<Pine.LNX.4.64.0808170036400.25704@blonde.site>
+	<87fxp4pi0r.fsf_-_@skyscraper.fehenstaub.lan>
+	<Pine.LNX.4.64.0808171151190.13521@blonde.site>
+Date: Sun, 17 Aug 2008 14:22:42 +0200
+In-Reply-To: <Pine.LNX.4.64.0808171151190.13521@blonde.site> (Hugh Dickins's
+	message of "Sun, 17 Aug 2008 12:30:34 +0100 (BST)")
+Message-ID: <8763pzygod.fsf@skyscraper.fehenstaub.lan>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080814122331.GA21061@gondor.apana.org.au>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 14, 2008 at 10:23:31PM +1000, Herbert Xu wrote:
-> 
-> And here is the IV generator patch on top.
+Hi Hugh,
 
-This also dead-locked if built as modules.  I've split out the
-IV generators from crypto_blkcipher so it doesn't interfere with
-cryptomgr.
+Hugh Dickins <hugh@veritas.com> writes:
 
-commit 106475b7c368794f22493fc67d98b874eb0f9383
-Author: Herbert Xu <herbert@gondor.apana.org.au>
-Date:   Sun Aug 17 18:04:30 2008 +1000
+> On Sun, 17 Aug 2008, Johannes Weiner wrote:
+>> zap_pte_range() overruns the page tables if the distance between the
+>> start and end is not a multiple of the pagesize.  Because then,
+>> `start' will never be equal to `end' and we will keep looping.
+>> 
+>> To fix this, round the boundary addresses to exclude partial pages from
+>> the range completely, we must not unmap them anyway.
+>
+> You've a good idea here, but no.
+>
+>> 
+>> Signed-off-by: Johannes Weiner <hannes@saeurebad.de>
+>> ---
+>> 
+>> Hugh Dickins <hugh@veritas.com> writes:
+>> 
+>> > On Sat, 16 Aug 2008, Rafael J. Wysocki wrote:
+>> >> 
+>> >> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11335
+>> >> Subject		: 2.6.27-rc2-git5 BUG: unable to handle kernel paging request
+>> >> Submitter	: Randy Dunlap <randy.dunlap@oracle.com>
+>> >> Date		: 2008-08-12 4:18 (5 days old)
+>> >> References	: http://marc.info/?l=linux-kernel&m=121851477201960&w=4
+>> >> Handled-By	: Hugh Dickins <hugh@veritas.com>
+>> >
+>> > This should still be listed for now, it's interesting,
+>> > but I doubt we'll make any progress unless it can be reproduced.
+>> 
+>> I think this patch fixes it.  exit_mmap() even calls unmap_vmas() with
+>> an ending address of -1UL which is not page-aligned in my book and on my
+>> architecture :)
+>
+> You need to take into consideration that gazillions of calls to
+> exit_mmap(), unmap_vmas() and zap_pte_range() have been succeeding
+> since we reworked those loops three years ago.  exit_mmap() calls
+> unmap_vmas() with a start_addr of 0 (so your patch won't help that),
+> and the (unsigned long) end_addr of -1 is simply an upper bound on
+> on how far the vma loop goes, it doesn't need the alignment your
+> patch enforces.
 
-    crypto: skcipher - Move IV generators into their own modules
-    
-    This patch moves the default IV generators into their own modules
-    in order to break a dependency loop between cryptomgr, rng, and
-    blkcipher.
-    
-    Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
+Now that you say it, yes, I don't see any way how the upper bound of
+-1UL could break it as vm_end is most probably lower than that :)
 
-diff --git a/crypto/Makefile b/crypto/Makefile
-index 42e3980..ed2be05 100644
---- a/crypto/Makefile
-+++ b/crypto/Makefile
-@@ -13,9 +13,9 @@ obj-$(CONFIG_CRYPTO_AEAD) += aead.o
- 
- crypto_blkcipher-objs := ablkcipher.o
- crypto_blkcipher-objs += blkcipher.o
--crypto_blkcipher-objs += chainiv.o
--crypto_blkcipher-objs += eseqiv.o
- obj-$(CONFIG_CRYPTO_BLKCIPHER) += crypto_blkcipher.o
-+obj-$(CONFIG_CRYPTO_BLKCIPHER) += chainiv.o
-+obj-$(CONFIG_CRYPTO_BLKCIPHER) += eseqiv.o
- obj-$(CONFIG_CRYPTO_SEQIV) += seqiv.o
- 
- crypto_hash-objs := hash.o
-diff --git a/crypto/blkcipher.c b/crypto/blkcipher.c
-index 185f955..4a7e65c 100644
---- a/crypto/blkcipher.c
-+++ b/crypto/blkcipher.c
-@@ -696,34 +696,5 @@ void skcipher_geniv_exit(struct crypto_tfm *tfm)
- }
- EXPORT_SYMBOL_GPL(skcipher_geniv_exit);
- 
--static int __init blkcipher_module_init(void)
--{
--	int err;
--
--	err = chainiv_module_init();
--	if (err)
--		goto out;
--
--	err = eseqiv_module_init();
--	if (err)
--		goto eseqiv_err;
--
--out:
--	return err;
--
--eseqiv_err:
--	chainiv_module_exit();
--	goto out;
--}
--
--static void __exit blkcipher_module_exit(void)
--{
--	eseqiv_module_exit();
--	chainiv_module_exit();
--}
--
--module_init(blkcipher_module_init);
--module_exit(blkcipher_module_exit);
--
- MODULE_LICENSE("GPL");
- MODULE_DESCRIPTION("Generic block chaining cipher type");
-diff --git a/crypto/chainiv.c b/crypto/chainiv.c
-index 9affade..cf68d43 100644
---- a/crypto/chainiv.c
-+++ b/crypto/chainiv.c
-@@ -320,12 +320,18 @@ static struct crypto_template chainiv_tmpl = {
- 	.module = THIS_MODULE,
- };
- 
--int __init chainiv_module_init(void)
-+static int __init chainiv_module_init(void)
- {
- 	return crypto_register_template(&chainiv_tmpl);
- }
- 
--void chainiv_module_exit(void)
-+static void chainiv_module_exit(void)
- {
- 	crypto_unregister_template(&chainiv_tmpl);
- }
-+
-+module_init(chainiv_module_init);
-+module_exit(chainiv_module_exit);
-+
-+MODULE_LICENSE("GPL");
-+MODULE_DESCRIPTION("Chain IV Generator");
-diff --git a/crypto/eseqiv.c b/crypto/eseqiv.c
-index 881d309..f5def21 100644
---- a/crypto/eseqiv.c
-+++ b/crypto/eseqiv.c
-@@ -248,12 +248,18 @@ static struct crypto_template eseqiv_tmpl = {
- 	.module = THIS_MODULE,
- };
- 
--int __init eseqiv_module_init(void)
-+static int __init eseqiv_module_init(void)
- {
- 	return crypto_register_template(&eseqiv_tmpl);
- }
- 
--void __exit eseqiv_module_exit(void)
-+static void __exit eseqiv_module_exit(void)
- {
- 	crypto_unregister_template(&eseqiv_tmpl);
- }
-+
-+module_init(eseqiv_module_init);
-+module_exit(eseqiv_module_exit);
-+
-+MODULE_LICENSE("GPL");
-+MODULE_DESCRIPTION("Encrypted Sequence Number IV Generator");
-diff --git a/include/crypto/internal/skcipher.h b/include/crypto/internal/skcipher.h
-index ccc32ba..2ba42cd 100644
---- a/include/crypto/internal/skcipher.h
-+++ b/include/crypto/internal/skcipher.h
-@@ -15,7 +15,6 @@
- 
- #include <crypto/algapi.h>
- #include <crypto/skcipher.h>
--#include <linux/init.h>
- #include <linux/types.h>
- 
- struct rtattr;
-@@ -65,11 +64,6 @@ void skcipher_geniv_free(struct crypto_instance *inst);
- int skcipher_geniv_init(struct crypto_tfm *tfm);
- void skcipher_geniv_exit(struct crypto_tfm *tfm);
- 
--int __init eseqiv_module_init(void);
--void __exit eseqiv_module_exit(void);
--int __init chainiv_module_init(void);
--void chainiv_module_exit(void);
--
- static inline struct crypto_ablkcipher *skcipher_geniv_cipher(
- 	struct crypto_ablkcipher *geniv)
- {
+However:
 
-> Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+		start = max(vma->vm_start, start_addr);
+		end = min(vma->vm_end, end_addr);
+
+The overrun *is* possible if the given ending address is lower than the
+vm_end.
+
+The same goes for a broken start if it is higher than vm_start.
+
+> That's a great idea that overrunning a pagetable may account for
+> Randy's apparent pagetable corruption: I (and please, you too) need
+> to go back over the info he's given with that hypothesis in mind,
+> it certainly fits well the fact that 6 out of 7 entries were found
+> bad at the _start_ of a pagetable before collapsing - though OTOH
+> I don't think it does fit with the two processes seeing similar
+> but different corruption, or the general protection faults.
+> But definitely worth pursuing, it hadn't crossed my mind.
+
+Frankly, I didn't look too much at what Randy reported.  I ran off a bit
+quick when I saw that the fault came on an empty PMD within this code as
+this overrun issue was still in the back of my head and I knew there
+were similar loops involved.
+
+I will try and help debugging this further.
+
+> But if a pagetable is being overrun in that way, doesn't that mean
+> that a vma->vm_start (or vma->vm_end?) has got corrupted, and then
+> we'll need to work that out.  vm_start and vm_end (unless corrupted)
+> are always page aligned, and there's lots of code which assumes that:
+> or have you noticed somewhere that's not so?
+
+No, I have not.
+
+But an overrun condition also does not require broken VMA bounds.
+Although that could be a possibility, too, of course.
+
+>> It is a similar problem to what we had with gup some weeks ago.
+>
+> You're right that those pgd_addr_end() etc. loops have an implicit
+> and fragile dependence on the page alignment of addr and end.  They
+> were written that way to maximize efficiency and be homogeneous
+> across the levels, while handling the wrapped end 0 case.  But both
+> fast gup and pagewalk have stumbled on those assumptions recently.
+
+Yeah, especially since they could cause silent page table corruption :(
+
+In this respect, I still think that my patch has a point.  Because yes,
+the looping depends on page aligned boundaries, but we don't check for
+this required dependency and values leading to overruns are able to pass
+through, as explained above.
+
+> Hugh
+
+	Hannes
