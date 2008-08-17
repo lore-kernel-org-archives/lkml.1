@@ -1,75 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756141AbYHQX0k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755260AbYHQX3u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756141AbYHQX0k (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Aug 2008 19:26:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751986AbYHQX0c
+	id S1755260AbYHQX3u (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Aug 2008 19:29:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751758AbYHQX3m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Aug 2008 19:26:32 -0400
-Received: from casper.infradead.org ([85.118.1.10]:43376 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751758AbYHQX0c (ORCPT
+	Sun, 17 Aug 2008 19:29:42 -0400
+Received: from twinlark.arctic.org ([208.69.40.136]:50461 "EHLO
+	twinlark.arctic.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751493AbYHQX3l (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Aug 2008 19:26:32 -0400
-Date: Sun, 17 Aug 2008 16:26:03 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Eric Paris <eparis@redhat.com>
-Cc: Jan Harkes <jaharkes@cs.cmu.edu>, Rik van Riel <riel@redhat.com>,
-       "Press, Jonathan" <Jonathan.Press@ca.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, peterz@infradead.org,
-       linux-kernel@vger.kernel.org, malware-list@lists.printk.net,
-       hch@infradead.org, andi@firstfloor.org, viro@ZenIV.linux.org.uk
-Subject: Re: [malware-list] TALPA - a threat model?  well sorta.
-Message-ID: <20080817162603.065c756f@infradead.org>
-In-Reply-To: <1219015177.27389.1.camel@localhost.localdomain>
-References: <1218645375.3540.71.camel@localhost.localdomain>
-	<20080813172437.3ed90b0d@lxorguk.ukuu.org.uk>
-	<1218646065.3540.75.camel@localhost.localdomain>
-	<20080813173722.13c9c306@lxorguk.ukuu.org.uk>
-	<1218646833.3540.82.camel@localhost.localdomain>
-	<20080813205906.559d3f37@lxorguk.ukuu.org.uk>
-	<2629CC4E1D22A64593B02C43E855530304AE4BC2@USILMS12.ca.com>
-	<20080813173529.7069b5f1@cuia.bos.redhat.com>
-	<20080815201622.GD31584@cs.cmu.edu>
-	<20080815150509.20ffb91d@infradead.org>
-	<1219015177.27389.1.camel@localhost.localdomain>
-Organization: Intel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 17 Aug 2008 19:29:41 -0400
+Message-ID: <48A8B44E.4090908@kernel.org>
+Date: Sun, 17 Aug 2008 16:29:18 -0700
+From: "Andrew G. Morgan" <morgan@kernel.org>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080707)
+MIME-Version: 1.0
+To: Ken Chen <kenchen@google.com>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [patch] fix NPTL thread iterator construct in cap_set_pg()
+References: <b040c32a0808150924h2b93529aj803e0b923e1f96f3@mail.gmail.com>
+In-Reply-To: <b040c32a0808150924h2b93529aj803e0b923e1f96f3@mail.gmail.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 17 Aug 2008 19:19:37 -0400
-Eric Paris <eparis@redhat.com> wrote:
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-> On Fri, 2008-08-15 at 15:05 -0700, Arjan van de Ven wrote:
-> > On Fri, 15 Aug 2008 16:16:22 -0400
-> > Jan Harkes <jaharkes@cs.cmu.edu> wrote:
-> > 
-> > > > I believe we really do need the block-on-open.  
-> > 
-> > I believe more that we need block-on-read ;-)
-> > (on open we can start an async scan to cut latency)
-> > 
-> > read() (or mmap etc) is where the actual use/transfer of
-> > contaminated data happens, not in the open.
+Ken,
+
+In 2.2.0, pre-LSM and NPTL, this code looked like this:
+
+     read_lock(&tasklist_lock);
+     for_each_task(target) {
+             if (target->pgrp != pgrp)
+                     continue;
+             target->cap_effective   = *effective;
+             target->cap_inheritable = *inheritable;
+             target->cap_permitted   = *permitted;
+     }
+     read_unlock(&tasklist_lock);
+
+that is, if a process is in the process group, it got its capabilities
+changed.
+
+So far as I can tell, I've not touched this code since it looked like
+the above, so I can't really comment on the motivation for the thread
+iterator changes. I'm also going to have to read up on NPTL to say
+anything credible on this front.
+
+In general, its very hard to get a system state in which this code is
+run, so it wouldn't surprise me if these thread iterator changes have
+never been tested.
+
+Finally, I've very much in favor of deleting any code that modifies the
+capabilities of another process/thread; see the #if[n]def
+CONFIG_SECURITY_FILE_CAPABILITIES sections of this file, so any fix for
+this (which, if needed, should be adopted) may also be short-lived...
+
+Cheers
+
+Andrew
+
+Ken Chen wrote:
+> The usage of while_each_pid_task() construct in cap_set_pg() looks incorrect.
+> The macro is meant to form 'do ... while' loop instead of a simple while loop.
+> I think currently it will skip thread leader of a NPTL process.
 > 
-> I could probably buy that, but I don't know how an HSM would work.
-> Would we have everything we need at open for them to fire off?
-> 
-> /me is HSM clueless and trying to include their needs is proving a
-> challenge.
+> Fix by convert to 'do ... while' style.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.2.6 (GNU/Linux)
 
-I bet it's the same; until you read/mmap... no need to get the data.
-
-you wouldn't want an "ls -l" or "find" to restore your entire system
-from tape after all :)
-
--- 
-If you want to reach me at my work email, use arjan@linux.intel.com
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+iD8DBQFIqLRO+bHCR3gb8jsRAnFGAJoDm9VxcpmOYqEuaWmaVrnNWkb9owCgzOPH
+6tG3n4GMsW8oNX4MiNiJ3FQ=
+=obJY
+-----END PGP SIGNATURE-----
