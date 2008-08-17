@@ -1,58 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752580AbYHQMbH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754655AbYHQMcR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752580AbYHQMbH (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Aug 2008 08:31:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752647AbYHQMaz
+	id S1754655AbYHQMcR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Aug 2008 08:32:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752687AbYHQMcE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Aug 2008 08:30:55 -0400
-Received: from saeurebad.de ([85.214.36.134]:37569 "EHLO saeurebad.de"
+	Sun, 17 Aug 2008 08:32:04 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:39820 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751693AbYHQMay (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Aug 2008 08:30:54 -0400
-From: Johannes Weiner <hannes@saeurebad.de>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Alexey Dobriyan <adobriyan@gmail.com>, torvalds@osdl.org, akpm@osdl.org,
-       linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [PATCH] De-macro spin_trylock_irq, spin_trylock_irqsave, write_trylock_irqsave
-References: <20080816095951.GA19926@martell.zuzino.mipt.ru>
-	<20080816134600.GC20652@elte.hu>
-	<20080816210439.GB5151@martell.zuzino.mipt.ru>
-	<87pro8psk1.fsf@skyscraper.fehenstaub.lan>
-	<20080817093114.GA21303@elte.hu>
-Date: Sun, 17 Aug 2008 14:30:30 +0200
-In-Reply-To: <20080817093114.GA21303@elte.hu> (Ingo Molnar's message of "Sun,
-	17 Aug 2008 11:31:15 +0200")
-Message-ID: <871w0nygbd.fsf@skyscraper.fehenstaub.lan>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	id S1752647AbYHQMcC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Aug 2008 08:32:02 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Martin Michlmayr <tbm@cyrius.com>
+Subject: Re: [Bug #11334] myri10ge: use ioremap_wc: compilation failure on ARM
+Date: Sun, 17 Aug 2008 14:35:14 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Brice Goglin <brice@myri.com>
+References: <DLWXHEp37wB.A.duD.yZzpIB@albercik> <sNRO-BDDjQL.A.ZxE.XazpIB@albercik> <20080817062724.GA2563@deprecation.cyrius.com>
+In-Reply-To: <20080817062724.GA2563@deprecation.cyrius.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Bogosity: Ham, tests=bogofilter, spamicity=0.000005, version=1.1.3
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200808171435.15446.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ingo,
+On Sunday, 17 of August 2008, Martin Michlmayr wrote:
+> * Rafael J. Wysocki <rjw@sisk.pl> [2008-08-16 21:02]:
+> > The following bug entry is on the current list of known regressions
+> > from 2.6.26.  Please verify if it still should be listed and let me know
+> > (either way).
+> 
+> This is still there.
 
-Ingo Molnar <mingo@elte.hu> writes:
+Thanks for the update.
 
-> * Johannes Weiner <hannes@saeurebad.de> wrote:
->
->> >> (but it would also be hugely invasive, with not much upside with 
->> >> tons of downside like years of migration fallout and having to 
->> >> rewrite hundreds of kernel hacking books ;-) )
->> >
->> > I want my money back for scheduler chapter from "Understanding the 
->> > Linux Kernel"!
->> 
->> I agree that this argument of Ingo's is not a very good one... ;)
->
-> i see the smiley, but still - there's a huge difference between the 
-> "pain" caused by a much better scheduler [ hey, did you expect me to say 
-> anything else? ;-) ] and a rather arbitrary value->pointer parametering 
-> change to a core API that is used _everywhere_.
+Rafael
 
-I just meant the thing about the books.  What you said about the
-invasive manner, the migration costs and the missing upside I fully
-agree with.
-
-	Hannes
