@@ -1,53 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755534AbYHQAVu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754995AbYHQBGr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755534AbYHQAVu (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Aug 2008 20:21:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752222AbYHQAVm
+	id S1754995AbYHQBGr (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Aug 2008 21:06:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754481AbYHQBGj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Aug 2008 20:21:42 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:57975 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751855AbYHQAVm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Aug 2008 20:21:42 -0400
-Date: Sat, 16 Aug 2008 17:21:31 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Frans Pop <elendil@planet.nl>
-cc: davem@davemloft.net, Andreas Schwab <schwab@suse.de>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Linux 2.6.27-rc3 - build failure: undefined reference to
- `.lockdep_count_forward_deps'
-In-Reply-To: <200808162111.23914.elendil@planet.nl>
-Message-ID: <alpine.LFD.1.10.0808161720470.3324@nehalem.linux-foundation.org>
-References: <alpine.LFD.1.10.0808121914270.3462@nehalem.linux-foundation.org> <alpine.LFD.1.10.0808121914270.3462@nehalem.linux-foundation.org> <jefxp8ofmz.fsf@sykes.suse.de> <200808162111.23914.elendil@planet.nl>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Sat, 16 Aug 2008 21:06:39 -0400
+Received: from saeurebad.de ([85.214.36.134]:34306 "EHLO saeurebad.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754479AbYHQBGi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 16 Aug 2008 21:06:38 -0400
+From: Johannes Weiner <hannes@saeurebad.de>
+To: Hugh Dickins <hugh@veritas.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>
+Subject: [PATCH] mm: make unmap_vmas() handle non-page-aligned boundary addresses
+References: <DLWXHEp37wB.A.duD.yZzpIB@albercik>
+	<sNRO-BDDjQL.A.spE.VazpIB@albercik>
+	<Pine.LNX.4.64.0808170036400.25704@blonde.site>
+Date: Sun, 17 Aug 2008 03:06:12 +0200
+In-Reply-To: <Pine.LNX.4.64.0808170036400.25704@blonde.site> (Hugh Dickins's
+	message of "Sun, 17 Aug 2008 00:38:35 +0100 (BST)")
+Message-ID: <87fxp4pi0r.fsf_-_@skyscraper.fehenstaub.lan>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+zap_pte_range() overruns the page tables if the distance between the
+start and end is not a multiple of the pagesize.  Because then,
+`start' will never be equal to `end' and we will keep looping.
 
+To fix this, round the boundary addresses to exclude partial pages from
+the range completely, we must not unmap them anyway.
 
-On Sat, 16 Aug 2008, Frans Pop wrote:
+Signed-off-by: Johannes Weiner <hannes@saeurebad.de>
+---
 
-> Andreas Schwab wrote:
-> >> David Miller (3):
-> >>       lockdep: fix combinatorial explosion in lock subgraph traversal
-> > 
-> > lockdep_count_forward_deps is only defined if CONFIG_PROVE_LOCKING but
-> > used unconditionally in lockdep_proc.c.
-> > 
-> > kernel/built-in.o: In function `.lockdep_stats_show':
-> > lockdep_proc.c:(.text+0x3fea8): undefined reference to `.lockdep_count_forward_deps'
-> > kernel/built-in.o: In function `.l_show': 
-> > lockdep_proc.c:(.text+0x401f0): undefined reference to `.lockdep_count_forward_deps'
-> > lockdep_proc.c:(.text+0x40210): undefined reference to `.lockdep_count_backward_deps'
-> 
-> I have so far been unable to build -rc3 because of this same error.
-> Just tried again with current git HEAD. Failing config attached.
+Hugh Dickins <hugh@veritas.com> writes:
 
-Ok, I think this one is fixed by df60a8441866153d691ae69b77934904c2de5e0d, 
-just pushed out.
+> On Sat, 16 Aug 2008, Rafael J. Wysocki wrote:
+>> 
+>> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11335
+>> Subject		: 2.6.27-rc2-git5 BUG: unable to handle kernel paging request
+>> Submitter	: Randy Dunlap <randy.dunlap@oracle.com>
+>> Date		: 2008-08-12 4:18 (5 days old)
+>> References	: http://marc.info/?l=linux-kernel&m=121851477201960&w=4
+>> Handled-By	: Hugh Dickins <hugh@veritas.com>
+>
+> This should still be listed for now, it's interesting,
+> but I doubt we'll make any progress unless it can be reproduced.
 
-		Linus
+I think this patch fixes it.  exit_mmap() even calls unmap_vmas() with
+an ending address of -1UL which is not page-aligned in my book and on my
+architecture :)
+
+It is a similar problem to what we had with gup some weeks ago.
+
+diff --git a/mm/memory.c b/mm/memory.c
+index 1002f47..483c5d0 100644
+--- a/mm/memory.c
++++ b/mm/memory.c
+@@ -896,11 +896,17 @@ unsigned long unmap_vmas(struct mmu_gather **tlbp,
+ 	long zap_work = ZAP_BLOCK_SIZE;
+ 	unsigned long tlb_start = 0;	/* For tlb_finish_mmu */
+ 	int tlb_start_valid = 0;
+-	unsigned long start = start_addr;
++	unsigned long start;
+ 	spinlock_t *i_mmap_lock = details? details->i_mmap_lock: NULL;
+ 	int fullmm = (*tlbp)->fullmm;
+ 	struct mm_struct *mm = vma->vm_mm;
+ 
++	/* Preserve partial pages */
++	start_addr = PAGE_ALIGN(start_addr);
++	end_addr &= PAGE_MASK;
++
++	start = start_addr;
++
+ 	mmu_notifier_invalidate_range_start(mm, start_addr, end_addr);
+ 	for ( ; vma && vma->vm_start < end_addr; vma = vma->vm_next) {
+ 		unsigned long end;
