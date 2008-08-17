@@ -1,64 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755655AbYHQR14@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755866AbYHQR3I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755655AbYHQR14 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Aug 2008 13:27:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752589AbYHQR1r
+	id S1755866AbYHQR3I (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Aug 2008 13:29:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752653AbYHQR2z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Aug 2008 13:27:47 -0400
-Received: from mtagate4.de.ibm.com ([195.212.29.153]:42473 "EHLO
-	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751986AbYHQR1p (ORCPT
+	Sun, 17 Aug 2008 13:28:55 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:40817 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752589AbYHQR2z convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Aug 2008 13:27:45 -0400
-Subject: Re: [patch 1/3] kmsg: Kernel message catalog macros.
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Reply-To: schwidefsky@de.ibm.com
-To: Joe Perches <joe@perches.com>
-Cc: Greg KH <gregkh@suse.de>, Kay Sievers <kay.sievers@vrfy.org>,
-       linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
-       lf_kernel_messages@lists.linux-foundation.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Michael Holzheu <holzheu@de.ibm.com>, Gerrit Huizenga <gh@us.ibm.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>, Jan Kara <jack@suse.cz>,
-       Pavel Machek <pavel@ucw.cz>, Sam Ravnborg <sam@ravnborg.org>,
-       Jochen =?ISO-8859-1?Q?Vo=DF?= <jochen.voss@googlemail.com>,
-       Kunai Takashi <kunai@linux-foundation.jp>,
-       Tim Bird <tim.bird@am.sony.com>
-In-Reply-To: <1218915375.24527.105.camel@localhost>
-References: <20080730165656.118280544@de.ibm.com>
-	 <20080730171156.824640459@de.ibm.com>
-	 <3ae72650807301502h3e54e80yb405af7192048b89@mail.gmail.com>
-	 <20080730220432.GA24800@suse.de> <1217495404.8555.20.camel@localhost>
-	 <20080805223117.GA6552@suse.de> <1218011716.20769.12.camel@localhost>
-	 <20080806200721.GA30086@suse.de>  <1218097901.1033.10.camel@localhost>
-	 <1218124771.5882.37.camel@localhost>  <1218326902.14983.22.camel@localhost>
-	 <1218915375.24527.105.camel@localhost>
-Content-Type: text/plain
-Organization: IBM Corporation
-Date: Sun, 17 Aug 2008 19:27:39 +0200
-Message-Id: <1218994059.20098.4.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Sun, 17 Aug 2008 13:28:55 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: 2.6.27-rc3-git4: Multiple implicit declarations in log2.h
+Date: Sun, 17 Aug 2008 19:32:20 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200808171932.21337.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2008-08-16 at 12:36 -0700, Joe Perches wrote:
-> Doesn't this example better illustrate the barely useful
-> user value of such a message and documentation?
-> 
-> In your example, monwriter.1 with a return code of 5 isn't possible.
+Hi,
 
-That is true, thanks for pointing out this bug. I doesn't change
-anything about the need for a message documentation though, it only
-proves that the documentation can have errors. At least the customers
-running linux on System z want to have the documentation.
+I see this compiling the current mainline on x86-64:
 
--- 
-blue skies,
-  Martin.
+  AS      arch/x86/boot/compressed/head_64.o
+In file included from /home/rafael/src/linux-2.6/include/linux/kernel.h:16,
+                 from /home/rafael/src/linux-2.6/arch/x86/boot/memory.c:16:
+/home/rafael/src/linux-2.6/include/linux/log2.h: In function ‘__ilog2_u32’:
+/home/rafael/src/linux-2.6/include/linux/log2.h:34: warning: implicit declaration of function ‘fls’
+/home/rafael/src/linux-2.6/include/linux/log2.h: In function ‘__ilog2_u64’:
+/home/rafael/src/linux-2.6/include/linux/log2.h:42: warning: implicit declaration of function ‘fls64’
+/home/rafael/src/linux-2.6/include/linux/log2.h: In function ‘__roundup_pow_of_two’:
+/home/rafael/src/linux-2.6/include/linux/log2.h:63: warning: implicit declaration of function ‘fls_long’
+  CC      arch/x86/boot/compressed/misc.o
 
-"Reality continues to ruin my life." - Calvin.
+I guess there's a missing #include or something?
 
-
+Rafael
