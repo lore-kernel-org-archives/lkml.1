@@ -1,30 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754094AbYHQDbQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754321AbYHQDf7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754094AbYHQDbQ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Aug 2008 23:31:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751572AbYHQDa4
+	id S1754321AbYHQDf7 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Aug 2008 23:35:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751563AbYHQDft
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Aug 2008 23:30:56 -0400
-Received: from wa-out-1112.google.com ([209.85.146.181]:25625 "EHLO
+	Sat, 16 Aug 2008 23:35:49 -0400
+Received: from wa-out-1112.google.com ([209.85.146.176]:28042 "EHLO
 	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751445AbYHQDaz (ORCPT
+	with ESMTP id S1751605AbYHQDfs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Aug 2008 23:30:55 -0400
+	Sat, 16 Aug 2008 23:35:48 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer;
-        b=qfLPc0hwhVKr+KLS6Tz7Tqpj9pfKBdKeUoEmd+foilDtML2mgllERlxAMIpgNZRWXP
-         6oHlCvix5YCRoccP0ltnKFmOXILZT8PkKNdtb2Qtgor771a+BJBQ44Zz2EoKJDboZRR0
-         e/pBpBIwTQv9C5gEmvdRGS/ANrLdGk2DbzZVs=
+        b=saS+D8m/XNUIduWAk/bhbOutEMSOs7m+c2dxg6KV3omvtUNiTzLed++p7w9TvgapXV
+         SGvvvLNxPslt2DQAAteW3FiLZXKIAgtZ9YKBe+w28cMYUmxOFH07C9F0WWFu29Sy2KZO
+         KryseLodkJSr1uhKYNGVRfdCDv6eobZP87cF0=
 From: Yinghai Lu <yhlu.kernel@gmail.com>
 To: Jeff Garzik <jgarzik@redhat.com>, Ingo Molnar <mingo@elte.hu>,
        "Eric W. Biederman" <ebiederm@xmission.com>,
        Andrew Morton <akpm@linux-foundation.org>
 Cc: linux-kernel@vger.kernel.org, netdev <netdev@vger.kernel.org>,
        Yinghai Lu <yhlu.kernel@gmail.com>
-Subject: [PATCH] net: forcedeth call restore mac addr in nv_shutdown patch
-Date: Sat, 16 Aug 2008 20:30:04 -0700
-Message-Id: <1218943804-6198-1-git-send-email-yhlu.kernel@gmail.com>
+Subject: [PATCH] net: forcedeth call restore mac addr in nv_shutdown path -v2
+Date: Sat, 16 Aug 2008 20:34:59 -0700
+Message-Id: <1218944099-8705-1-git-send-email-yhlu.kernel@gmail.com>
 X-Mailer: git-send-email 1.5.4.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -53,8 +53,8 @@ it turns out need to restore mac addr in nv_shutdown.
 Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
 
 ---
- drivers/net/forcedeth.c |   17 +++++++++++++----
- 1 file changed, 13 insertions(+), 4 deletions(-)
+ drivers/net/forcedeth.c |   16 +++++++++++++---
+ 1 file changed, 13 insertions(+), 3 deletions(-)
 
 Index: linux-2.6/drivers/net/forcedeth.c
 ===================================================================
@@ -100,12 +100,7 @@ Index: linux-2.6/drivers/net/forcedeth.c
  
  	/* restore any phy related changes */
  	nv_restore_phy(dev);
-@@ -5970,11 +5978,12 @@ static int nv_resume(struct pci_dev *pde
- static void nv_shutdown(struct pci_dev *pdev)
- {
- 	struct net_device *dev = pci_get_drvdata(pdev);
--	struct fe_priv *np = netdev_priv(dev);
- 
+@@ -5975,6 +5983,8 @@ static void nv_shutdown(struct pci_dev *
  	if (netif_running(dev))
  		nv_close(dev);
  
