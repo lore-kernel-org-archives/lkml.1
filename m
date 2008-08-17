@@ -1,63 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754230AbYHQQeS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753934AbYHQQxA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754230AbYHQQeS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Aug 2008 12:34:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751961AbYHQQeI
+	id S1753934AbYHQQxA (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Aug 2008 12:53:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751986AbYHQQwu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Aug 2008 12:34:08 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:56731 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751921AbYHQQeH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Aug 2008 12:34:07 -0400
-Date: Sun, 17 Aug 2008 09:33:09 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Theodore Tso <tytso@mit.edu>
-Cc: Alexey Dobriyan <adobriyan@gmail.com>, torvalds@linuxfoundation.org,
-       rusty@rustcorp.com.au, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] BUILD_BUG_ON sucks
-Message-Id: <20080817093309.a5d68eb0.akpm@linux-foundation.org>
-In-Reply-To: <20080817121906.GE8774@mit.edu>
-References: <20080816100948.GB19926@martell.zuzino.mipt.ru>
-	<20080816104658.dcdfb0db.akpm@linux-foundation.org>
-	<20080817121906.GE8774@mit.edu>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 17 Aug 2008 12:52:50 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:40656 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751961AbYHQQwt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Aug 2008 12:52:49 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Subject: Re: [PATCH] net: forcedeth use pci_choose_state instead of PCI_D3hot - v2
+Date: Sun, 17 Aug 2008 18:55:57 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Jeff Garzik <jgarzik@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       netdev <netdev@vger.kernel.org>
+References: <1218954333-12819-1-git-send-email-yhlu.kernel@gmail.com> <200808171502.02946.rjw@sisk.pl>
+In-Reply-To: <200808171502.02946.rjw@sisk.pl>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200808171855.58384.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 17 Aug 2008 08:19:06 -0400 Theodore Tso <tytso@mit.edu> wrote:
-
-> On Sat, Aug 16, 2008 at 10:46:58AM -0700, Andrew Morton wrote:
-> > >       what this code is supposed to do?
-> > > 
-> > > 	journal = handle->h_transaction->t_journal;
-> > > 	if (!journal_set_features(journal, 0, 0, JFS_FEATURE_INCOMPAT_REVOKE)) {
-> > > 		J_ASSERT (!"Cannot set revoke feature!");
-> > > 			 ^^^^
+On Sunday, 17 of August 2008, Rafael J. Wysocki wrote:
+> On Sunday, 17 of August 2008, Yinghai Lu wrote:
+> > after
 > > 
-> > lol.  It's been there since I merged ext3 in 2.4.15.  Probably it was
-> > in sct's ext3 patches in the RH kernel.
+> > | commit f735a2a1a4f2a0f5cd823ce323e82675990469e2
+> > | Author: Tobias Diedrich <ranma+kernel@tdiedrich.de>
+> > | Date:   Sun May 18 15:02:37 2008 +0200
+> > |
+> > |    [netdrvr] forcedeth: setup wake-on-lan before shutting down
+> > |
+> > |    When hibernating in 'shutdown' mode, after saving the image the suspend hook
+> > |    is not called again.
+> > |    However, if the device is in promiscous mode, wake-on-lan will not work.
+> > |    This adds a shutdown hook to setup wake-on-lan before the final shutdown.
+> > |
+> > |    Signed-off-by: Tobias Diedrich <ranma+kernel@tdiedrich.de>
+> > |    Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
 > > 
-> > Don't change it - it might be important!
-> 
-> Heh!  Well, it does the right thing, and doesn't take any extra text
-> space assuming a vaguely competent C compiler optimizer.  :-)
-> 
-> I'm pretty sure that back in the 2.4 days, we didn't have BUG_ON.  We
-> should do a s/J_ASSERT/BUG_ON/g pass over all of fs/jbd and fs/jbd2.
-> I'll submit patches for application when the 2.6.27 merge window opens
-> up --- or is this an obvious enough and safe enough transformation
-> that it will get accepted mainline at this point?
-> 
+> > my servers with nvidia mcp55 nic doesn't work with msi in second kernel by kexec
+> > 
+> > after remove pci_set_power_state(, PCI_D3hot) that nic/msi will work again.
+> > 
+> > check with e1000 is using pci_choose_state in _shutdown.
 
-May as well get it over and done with.
+This is wrong.
 
-We presently have a mix of J_ASSERT, J_ASSERT_JH and J_ASSERT_BH.  That
-will become BUG_ON, J_ASSERT_JH and J_ASSERT_BH.  Which a is slightly
-unpleasing loss of consistency but whatever.
+> > So change that pci_choose_state(pdev, ...), and it works.
+> 
+> Well, this doesn't look like a good solution to me, because you're putting
+> PMSG_SUSPEND in there, which is not correct for shutdown.  The right thing to
+> do would be to avoid changing the device power state if nv_shutdown() is
+> used for kexec or to rework the initialization of the adapter to handle the
+> case when it's initially in D3.
+> 
+> Does it help if you just remove the pci_set_power_state(pdev, PCI_D3hot)
+> altogether?
 
+Ah, sorry.  I see it does.
+
+Actually, I think you can use pci_prepare_to_sleep() instead of
+pci_enable_wake() / pci_set_power_state() combo.  It wasn't designed for this
+purpose, but should work nevertheless.
+
+Can you please check if the appended patch works instead of your one?
+
+Rafael
+
+---
+Fix the problem that boxes with NVidia MCP55 don't work with MSI
+in a kexeced kernel.
+
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ drivers/net/forcedeth.c |    4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
+
+Index: linux-2.6/drivers/net/forcedeth.c
+===================================================================
+--- linux-2.6.orig/drivers/net/forcedeth.c
++++ linux-2.6/drivers/net/forcedeth.c
+@@ -5975,10 +5975,8 @@ static void nv_shutdown(struct pci_dev *
+ 	if (netif_running(dev))
+ 		nv_close(dev);
+ 
+-	pci_enable_wake(pdev, PCI_D3hot, np->wolenabled);
+-	pci_enable_wake(pdev, PCI_D3cold, np->wolenabled);
+ 	pci_disable_device(pdev);
+-	pci_set_power_state(pdev, PCI_D3hot);
++	pci_prepare_to_sleep(pdev);
+ }
+ #else
+ #define nv_suspend NULL
 
