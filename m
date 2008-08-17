@@ -1,59 +1,313 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754699AbYHQMTc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754514AbYHQMVB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754699AbYHQMTc (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Aug 2008 08:19:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753421AbYHQMTQ
+	id S1754514AbYHQMVB (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Aug 2008 08:21:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752625AbYHQMUx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Aug 2008 08:19:16 -0400
-Received: from www.church-of-our-saviour.org ([69.25.196.31]:36772 "EHLO
-	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753246AbYHQMTP (ORCPT
+	Sun, 17 Aug 2008 08:20:53 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:60684 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752523AbYHQMUv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Aug 2008 08:19:15 -0400
-Date: Sun, 17 Aug 2008 08:19:06 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Alexey Dobriyan <adobriyan@gmail.com>, torvalds@linuxfoundation.org,
-       rusty@rustcorp.com.au, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] BUILD_BUG_ON sucks
-Message-ID: <20080817121906.GE8774@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Alexey Dobriyan <adobriyan@gmail.com>, torvalds@linuxfoundation.org,
-	rusty@rustcorp.com.au, linux-kernel@vger.kernel.org
-References: <20080816100948.GB19926@martell.zuzino.mipt.ru> <20080816104658.dcdfb0db.akpm@linux-foundation.org>
+	Sun, 17 Aug 2008 08:20:51 -0400
+Date: Sun, 17 Aug 2008 22:20:47 +1000
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Neil Horman <nhorman@tuxdriver.com>
+Cc: linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org,
+       davem@davemloft.net
+Subject: Re: [PATCH] crypto: obscure state information on free
+Message-ID: <20080817122047.GA26084@gondor.apana.org.au>
+References: <20080811202607.GA11527@hmsreliant.think-freely.org> <20080814115137.GA5721@gondor.apana.org.au> <20080814122137.GA10969@hmsendeavour.rdu.redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080816104658.dcdfb0db.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+In-Reply-To: <20080814122137.GA10969@hmsendeavour.rdu.redhat.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Aug 16, 2008 at 10:46:58AM -0700, Andrew Morton wrote:
-> >       what this code is supposed to do?
-> > 
-> > 	journal = handle->h_transaction->t_journal;
-> > 	if (!journal_set_features(journal, 0, 0, JFS_FEATURE_INCOMPAT_REVOKE)) {
-> > 		J_ASSERT (!"Cannot set revoke feature!");
-> > 			 ^^^^
+On Thu, Aug 14, 2008 at 08:21:37AM -0400, Neil Horman wrote:
 > 
-> lol.  It's been there since I merged ext3 in 2.4.15.  Probably it was
-> in sct's ext3 patches in the RH kernel.
-> 
-> Don't change it - it might be important!
+> Looks great to me.  Thanks Herbert!
 
-Heh!  Well, it does the right thing, and doesn't take any extra text
-space assuming a vaguely competent C compiler optimizer.  :-)
+Unfortunately it didn't quite work :)
 
-I'm pretty sure that back in the 2.4 days, we didn't have BUG_ON.  We
-should do a s/J_ASSERT/BUG_ON/g pass over all of fs/jbd and fs/jbd2.
-I'll submit patches for application when the 2.6.27 merge window opens
-up --- or is this an obvious enough and safe enough transformation
-that it will get accepted mainline at this point?
+First of all there was a module dependency loop between cryptomgr,
+rng and crypto_blkcipher.  This is fixed by putting krng in its
+own module.  Also I made a typo in the rng_reset helper so it
+ended up calling itself over and over again.
 
-     	     	 	  	      	   - Ted
+Here is an incremental patch to fix this up.  I've also renamed
+rngapi.c to rng.c for consistency.
+
+There is also a new global rng object for everyone to use rather
+than having it allocated by every user separately.
+
+Cheers,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+--
+diff --git a/crypto/Makefile b/crypto/Makefile
+index a14ed7d..42e3980 100644
+--- a/crypto/Makefile
++++ b/crypto/Makefile
+@@ -24,8 +24,6 @@ obj-$(CONFIG_CRYPTO_HASH) += crypto_hash.o
+ 
+ cryptomgr-objs := algboss.o testmgr.o
+ 
+-rng-objs := rngapi.o krng.o
+-
+ obj-$(CONFIG_CRYPTO_MANAGER) += cryptomgr.o
+ obj-$(CONFIG_CRYPTO_HMAC) += hmac.o
+ obj-$(CONFIG_CRYPTO_XCBC) += xcbc.o
+@@ -74,6 +72,7 @@ obj-$(CONFIG_CRYPTO_CRC32C) += crc32c.o
+ obj-$(CONFIG_CRYPTO_AUTHENC) += authenc.o
+ obj-$(CONFIG_CRYPTO_LZO) += lzo.o
+ obj-$(CONFIG_CRYPTO_RNG) += rng.o
++obj-$(CONFIG_CRYPTO_RNG) += krng.o
+ obj-$(CONFIG_CRYPTO_ANSI_CPRNG) += ansi_cprng.o
+ obj-$(CONFIG_CRYPTO_TEST) += tcrypt.o
+ 
+diff --git a/crypto/krng.c b/crypto/krng.c
+index 8ef62a9..4328bb3 100644
+--- a/crypto/krng.c
++++ b/crypto/krng.c
+@@ -62,5 +62,5 @@ module_init(krng_mod_init);
+ module_exit(krng_mod_fini);
+ 
+ MODULE_LICENSE("GPL");
+-MODULE_DESCRIPTION("Random Number Generator API");
++MODULE_DESCRIPTION("Kernel Random Number Generator");
+ MODULE_ALIAS("stdrng");
+diff --git a/crypto/rng.c b/crypto/rng.c
+new file mode 100644
+index 0000000..6e94bc7
+--- /dev/null
++++ b/crypto/rng.c
+@@ -0,0 +1,126 @@
++/*
++ * Cryptographic API.
++ *
++ * RNG operations.
++ *
++ * Copyright (c) 2008 Neil Horman <nhorman@tuxdriver.com>
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License as published by the Free
++ * Software Foundation; either version 2 of the License, or (at your option)
++ * any later version.
++ *
++ */
++
++#include <asm/atomic.h>
++#include <crypto/internal/rng.h>
++#include <linux/err.h>
++#include <linux/module.h>
++#include <linux/mutex.h>
++#include <linux/random.h>
++#include <linux/seq_file.h>
++#include <linux/string.h>
++
++static DEFINE_MUTEX(crypto_default_rng_lock);
++struct crypto_rng *crypto_default_rng;
++EXPORT_SYMBOL_GPL(crypto_default_rng);
++static int crypto_default_rng_refcnt;
++
++static int rngapi_reset(struct crypto_rng *tfm, u8 *seed, unsigned int slen)
++{
++	u8 *buf = NULL;
++	int err;
++
++	if (!seed && slen) {
++		buf = kmalloc(slen, GFP_KERNEL);
++		if (!buf)
++			return -ENOMEM;
++
++		get_random_bytes(buf, slen);
++		seed = buf;
++	}
++
++	err = crypto_rng_alg(tfm)->rng_reset(tfm, seed, slen);
++
++	kfree(buf);
++	return err;
++}
++
++static int crypto_init_rng_ops(struct crypto_tfm *tfm, u32 type, u32 mask)
++{
++	struct rng_alg *alg = &tfm->__crt_alg->cra_rng;
++	struct rng_tfm *ops = &tfm->crt_rng;
++
++	ops->rng_gen_random = alg->rng_make_random;
++	ops->rng_reset = rngapi_reset;
++
++	return 0;
++}
++
++static void crypto_rng_show(struct seq_file *m, struct crypto_alg *alg)
++	__attribute__ ((unused));
++static void crypto_rng_show(struct seq_file *m, struct crypto_alg *alg)
++{
++	seq_printf(m, "type         : rng\n");
++	seq_printf(m, "seedsize     : %u\n", alg->cra_rng.seedsize);
++}
++
++static unsigned int crypto_rng_ctxsize(struct crypto_alg *alg, u32 type,
++				       u32 mask)
++{
++	return alg->cra_ctxsize;
++}
++
++const struct crypto_type crypto_rng_type = {
++	.ctxsize = crypto_rng_ctxsize,
++	.init = crypto_init_rng_ops,
++#ifdef CONFIG_PROC_FS
++	.show = crypto_rng_show,
++#endif
++};
++EXPORT_SYMBOL_GPL(crypto_rng_type);
++
++int crypto_get_default_rng(void)
++{
++	struct crypto_rng *rng;
++	int err;
++
++	mutex_lock(&crypto_default_rng_lock);
++	if (!crypto_default_rng) {
++		rng = crypto_alloc_rng("stdrng", 0, 0);
++		err = PTR_ERR(rng);
++		if (IS_ERR(rng))
++			goto unlock;
++
++		err = crypto_rng_reset(rng, NULL, crypto_rng_seedsize(rng));
++		if (err) {
++			crypto_free_rng(rng);
++			goto unlock;
++		}
++
++		crypto_default_rng = rng;
++	}
++
++	crypto_default_rng_refcnt++;
++	err = 0;
++
++unlock:
++	mutex_unlock(&crypto_default_rng_lock);
++
++	return err;
++}
++EXPORT_SYMBOL_GPL(crypto_get_default_rng);
++
++void crypto_put_default_rng(void)
++{
++	mutex_lock(&crypto_default_rng_lock);
++	if (!--crypto_default_rng_refcnt) {
++		crypto_free_rng(crypto_default_rng);
++		crypto_default_rng = NULL;
++	}
++	mutex_unlock(&crypto_default_rng_lock);
++}
++EXPORT_SYMBOL_GPL(crypto_put_default_rng);
++
++MODULE_LICENSE("GPL");
++MODULE_DESCRIPTION("Random Number Genertor");
+diff --git a/crypto/rngapi.c b/crypto/rngapi.c
+deleted file mode 100644
+index ea57697..0000000
+--- a/crypto/rngapi.c
++++ /dev/null
+@@ -1,74 +0,0 @@
+-/*
+- * Cryptographic API.
+- *
+- * RNG operations.
+- *
+- * Copyright (c) 2008 Neil Horman <nhorman@tuxdriver.com>
+- *
+- * This program is free software; you can redistribute it and/or modify it
+- * under the terms of the GNU General Public License as published by the Free
+- * Software Foundation; either version 2 of the License, or (at your option)
+- * any later version.
+- *
+- */
+-
+-#include <crypto/internal/rng.h>
+-#include <linux/errno.h>
+-#include <linux/module.h>
+-#include <linux/random.h>
+-#include <linux/seq_file.h>
+-#include <linux/string.h>
+-
+-static int rngapi_reset(struct crypto_rng *tfm, u8 *seed, unsigned int slen)
+-{
+-	u8 *buf = NULL;
+-	int err;
+-
+-	if (!seed && slen) {
+-		buf = kmalloc(slen, GFP_KERNEL);
+-		if (!buf)
+-			return -ENOMEM;
+-
+-		get_random_bytes(buf, slen);
+-		seed = buf;
+-	}
+-
+-	err = crypto_rng_crt(tfm)->rng_reset(tfm, seed, slen);
+-
+-	kfree(buf);
+-	return err;
+-}
+-
+-static int crypto_init_rng_ops(struct crypto_tfm *tfm, u32 type, u32 mask)
+-{
+-	struct rng_alg *alg = &tfm->__crt_alg->cra_rng;
+-	struct rng_tfm *ops = &tfm->crt_rng;
+-
+-	ops->rng_gen_random = alg->rng_make_random;
+-	ops->rng_reset = rngapi_reset;
+-
+-	return 0;
+-}
+-
+-static void crypto_rng_show(struct seq_file *m, struct crypto_alg *alg)
+-	__attribute__ ((unused));
+-static void crypto_rng_show(struct seq_file *m, struct crypto_alg *alg)
+-{
+-	seq_printf(m, "type         : rng\n");
+-	seq_printf(m, "seedsize     : %u\n", alg->cra_rng.seedsize);
+-}
+-
+-static unsigned int crypto_rng_ctxsize(struct crypto_alg *alg, u32 type,
+-				       u32 mask)
+-{
+-	return alg->cra_ctxsize;
+-}
+-
+-const struct crypto_type crypto_rng_type = {
+-	.ctxsize = crypto_rng_ctxsize,
+-	.init = crypto_init_rng_ops,
+-#ifdef CONFIG_PROC_FS
+-	.show = crypto_rng_show,
+-#endif
+-};
+-EXPORT_SYMBOL_GPL(crypto_rng_type);
+diff --git a/include/crypto/rng.h b/include/crypto/rng.h
+index f234e87..c93f9b9 100644
+--- a/include/crypto/rng.h
++++ b/include/crypto/rng.h
+@@ -15,6 +15,11 @@
+ 
+ #include <linux/crypto.h>
+ 
++extern struct crypto_rng *crypto_default_rng;
++
++int crypto_get_default_rng(void);
++void crypto_put_default_rng(void);
++
+ static inline struct crypto_rng *__crypto_rng_cast(struct crypto_tfm *tfm)
+ {
+ 	return (struct crypto_rng *)tfm;
