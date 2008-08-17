@@ -1,113 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754840AbYHQRTZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756336AbYHQRTx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754840AbYHQRTZ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Aug 2008 13:19:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754824AbYHQRSF
+	id S1756336AbYHQRTx (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Aug 2008 13:19:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755439AbYHQRST
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Aug 2008 13:18:05 -0400
-Received: from fg-out-1718.google.com ([72.14.220.153]:31116 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755391AbYHQRSD (ORCPT
+	Sun, 17 Aug 2008 13:18:19 -0400
+Received: from mu-out-0910.google.com ([209.85.134.184]:30781 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755173AbYHQRSR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Aug 2008 13:18:03 -0400
+	Sun, 17 Aug 2008 13:18:17 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:date:message-id:in-reply-to:references:subject;
-        b=Lsry1ZMplSrprOscHbGtN381XghEIOqR/imieNhD8xfk15T2T/9+SIczIRZseT6Hwk
-         K2y+ppSVwkcwQOb9SsM3u0UYjUwelKKVwVWx4UkIb1L5rFqUVqATQ0+15uklA8RuGA0f
-         fXSYKZsHatydOdWabBUkUEWILKKy68dPF/JF4=
+        b=QhYbwFEMG8S26D8pfhsdXekM9silA8tYGfz40zp4qN9hFzNO9Qt9E7Dt6koFXcAGww
+         mq+KfDI0SmxmParXdTF7m5y2D3Zz5vUpfVtg8uJjiVLFc1dJtUuGVOtUYYaoru2B+3gL
+         7ZK5w23Jd8zrKBR4jH+CfTj+0vG8mdyP598kw=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: linux-ide@vger.kernel.org
 Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
        linux-kernel@vger.kernel.org
-Date: Sun, 17 Aug 2008 19:15:36 +0200
-Message-Id: <20080817171536.27943.15794.sendpatchset@localhost.localdomain>
+Date: Sun, 17 Aug 2008 19:15:56 +0200
+Message-Id: <20080817171556.27943.29369.sendpatchset@localhost.localdomain>
 In-Reply-To: <20080817171454.27943.37234.sendpatchset@localhost.localdomain>
 References: <20080817171454.27943.37234.sendpatchset@localhost.localdomain>
-Subject: [PATCH 7/9] ide: remove superfluous ->media field from ide_driver_t
+Subject: [PATCH 9/9] ide: remove superfluous ->waiting_for_dma checks
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- drivers/ide/ide-cd.c     |    1 -
- drivers/ide/ide-disk.c   |    1 -
- drivers/ide/ide-floppy.c |    1 -
- drivers/ide/ide-tape.c   |    1 -
- drivers/scsi/ide-scsi.c  |    1 -
- include/linux/ide.h      |    1 -
- 6 files changed, 6 deletions(-)
+ drivers/ide/ide-dma.c         |    4 +---
+ drivers/ide/mips/au1xxx-ide.c |    6 +-----
+ drivers/ide/pci/hpt366.c      |    3 ---
+ drivers/ide/pci/scc_pata.c    |    3 ---
+ drivers/ide/ppc/pmac.c        |    3 ---
+ 5 files changed, 2 insertions(+), 17 deletions(-)
 
-Index: b/drivers/ide/ide-cd.c
+Index: b/drivers/ide/ide-dma.c
 ===================================================================
---- a/drivers/ide/ide-cd.c
-+++ b/drivers/ide/ide-cd.c
-@@ -1967,7 +1967,6 @@ static ide_driver_t ide_cdrom_driver = {
- 	.probe			= ide_cd_probe,
- 	.remove			= ide_cd_remove,
- 	.version		= IDECD_VERSION,
--	.media			= ide_cdrom,
- 	.do_request		= ide_cd_do_request,
- 	.end_request		= ide_end_request,
- 	.error			= __ide_error,
-Index: b/drivers/ide/ide-disk.c
+--- a/drivers/ide/ide-dma.c
++++ b/drivers/ide/ide-dma.c
+@@ -578,9 +578,7 @@ int ide_dma_test_irq(ide_drive_t *drive)
+ 	/* return 1 if INTR asserted */
+ 	if ((dma_stat & 4) == 4)
+ 		return 1;
+-	if (!drive->waiting_for_dma)
+-		printk(KERN_WARNING "%s: (%s) called while not waiting\n",
+-			drive->name, __func__);
++
+ 	return 0;
+ }
+ EXPORT_SYMBOL_GPL(ide_dma_test_irq);
+Index: b/drivers/ide/mips/au1xxx-ide.c
 ===================================================================
---- a/drivers/ide/ide-disk.c
-+++ b/drivers/ide/ide-disk.c
-@@ -932,7 +932,6 @@ static ide_driver_t idedisk_driver = {
- 	.resume			= ide_disk_resume,
- 	.shutdown		= ide_device_shutdown,
- 	.version		= IDEDISK_VERSION,
--	.media			= ide_disk,
- 	.do_request		= ide_do_rw_disk,
- 	.end_request		= ide_end_request,
- 	.error			= __ide_error,
-Index: b/drivers/ide/ide-floppy.c
+--- a/drivers/ide/mips/au1xxx-ide.c
++++ b/drivers/ide/mips/au1xxx-ide.c
+@@ -322,11 +322,7 @@ static int auide_dma_setup(ide_drive_t *
+ }
+ 
+ static int auide_dma_test_irq(ide_drive_t *drive)
+-{	
+-	if (drive->waiting_for_dma == 0)
+-		printk(KERN_WARNING "%s: ide_dma_test_irq \
+-                                     called while not waiting\n", drive->name);
+-
++{
+ 	/* If dbdma didn't execute the STOP command yet, the
+ 	 * active bit is still set
+ 	 */
+Index: b/drivers/ide/pci/hpt366.c
 ===================================================================
---- a/drivers/ide/ide-floppy.c
-+++ b/drivers/ide/ide-floppy.c
-@@ -664,7 +664,6 @@ static ide_driver_t idefloppy_driver = {
- 	.probe			= ide_floppy_probe,
- 	.remove			= ide_floppy_remove,
- 	.version		= IDEFLOPPY_VERSION,
--	.media			= ide_floppy,
- 	.do_request		= idefloppy_do_request,
- 	.end_request		= idefloppy_end_request,
- 	.error			= __ide_error,
-Index: b/drivers/ide/ide-tape.c
+--- a/drivers/ide/pci/hpt366.c
++++ b/drivers/ide/pci/hpt366.c
+@@ -861,9 +861,6 @@ static int hpt374_dma_test_irq(ide_drive
+ 	if (dma_stat & 4)
+ 		return 1;
+ 
+-	if (!drive->waiting_for_dma)
+-		printk(KERN_WARNING "%s: (%s) called while not waiting\n",
+-				drive->name, __func__);
+ 	return 0;
+ }
+ 
+Index: b/drivers/ide/pci/scc_pata.c
 ===================================================================
---- a/drivers/ide/ide-tape.c
-+++ b/drivers/ide/ide-tape.c
-@@ -2324,7 +2324,6 @@ static ide_driver_t idetape_driver = {
- 	.probe			= ide_tape_probe,
- 	.remove			= ide_tape_remove,
- 	.version		= IDETAPE_VERSION,
--	.media			= ide_tape,
- 	.do_request		= idetape_do_request,
- 	.end_request		= idetape_end_request,
- 	.error			= __ide_error,
-Index: b/drivers/scsi/ide-scsi.c
+--- a/drivers/ide/pci/scc_pata.c
++++ b/drivers/ide/pci/scc_pata.c
+@@ -509,9 +509,6 @@ static int scc_dma_test_irq(ide_drive_t 
+ 	if (int_stat & INTSTS_IOIRQS)
+ 		return 1;
+ 
+-	if (!drive->waiting_for_dma)
+-		printk(KERN_WARNING "%s: (%s) called while not waiting\n",
+-			drive->name, __func__);
+ 	return 0;
+ }
+ 
+Index: b/drivers/ide/ppc/pmac.c
 ===================================================================
---- a/drivers/scsi/ide-scsi.c
-+++ b/drivers/scsi/ide-scsi.c
-@@ -437,7 +437,6 @@ static ide_driver_t idescsi_driver = {
- 	.probe			= ide_scsi_probe,
- 	.remove			= ide_scsi_remove,
- 	.version		= IDESCSI_VERSION,
--	.media			= ide_scsi,
- 	.do_request		= idescsi_do_request,
- 	.end_request		= idescsi_end_request,
- 	.error                  = idescsi_atapi_error,
-Index: b/include/linux/ide.h
-===================================================================
---- a/include/linux/ide.h
-+++ b/include/linux/ide.h
-@@ -998,7 +998,6 @@ enum {
-  */
- struct ide_driver_s {
- 	const char			*version;
--	u8				media;
- 	ide_startstop_t	(*do_request)(ide_drive_t *, struct request *, sector_t);
- 	int		(*end_request)(ide_drive_t *, int, int);
- 	ide_startstop_t	(*error)(ide_drive_t *, struct request *rq, u8, u8);
+--- a/drivers/ide/ppc/pmac.c
++++ b/drivers/ide/ppc/pmac.c
+@@ -1672,9 +1672,6 @@ pmac_ide_dma_test_irq (ide_drive_t *driv
+ 	status = readl(&dma->status);
+ 	if (!(status & ACTIVE))
+ 		return 1;
+-	if (!drive->waiting_for_dma)
+-		printk(KERN_WARNING "ide%d, ide_dma_test_irq \
+-			called while not waiting\n", HWIF(drive)->index);
+ 
+ 	/* If dbdma didn't execute the STOP command yet, the
+ 	 * active bit is still set. We consider that we aren't
