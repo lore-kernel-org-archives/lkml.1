@@ -1,71 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755992AbYHQVyE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755984AbYHQV6c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755992AbYHQVyE (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Aug 2008 17:54:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752386AbYHQVxz
+	id S1755984AbYHQV6c (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Aug 2008 17:58:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752235AbYHQV6Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Aug 2008 17:53:55 -0400
-Received: from rv-out-0506.google.com ([209.85.198.228]:8298 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752332AbYHQVxy (ORCPT
+	Sun, 17 Aug 2008 17:58:24 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:50956 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750886AbYHQV6X (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Aug 2008 17:53:54 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=pL/UGikCRX51Ov/0mm9wfbEpuIgliomSO6cHj3JI758hyTHlSqz2IQ9FD03IXPZH7I
-         874CPAyAkoKCjT9LTcMD6tovo1qnudQknw7joc64kaChuAl3Jpvr2r6Zu6o2s3BVu1Ox
-         Z1uJ374bdvSvZDwRzefDCxRwhXDhLzV/joQJM=
-Message-ID: <86802c440808171453i2869a7f3x1db27307dbec4db7@mail.gmail.com>
-Date: Sun, 17 Aug 2008 14:53:54 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Cyrill Gorcunov" <gorcunov@gmail.com>
-Subject: Re: [PATCH 0/9] -tip/apic merging one more series
-Cc: hpa@zytor.com, mingo@elte.hu, tglx@linutronix.de, macro@linux-mips.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <1219002107-21832-1-git-send-email-gorcunov@gmail.com>
+	Sun, 17 Aug 2008 17:58:23 -0400
+Date: Sun, 17 Aug 2008 23:58:22 +0200
+From: Pavel Machek <pavel@suse.cz>
+To: david@lang.hm
+Cc: rmeijer@xs4all.nl, Peter Dolding <oiaohm@gmail.com>,
+       Theodore Tso <tytso@mit.edu>, Arjan van de Ven <arjan@infradead.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, capibara@xs4all.nl,
+       Eric Paris <eparis@redhat.com>, Rik van Riel <riel@redhat.com>,
+       davecb@sun.com, linux-security-module@vger.kernel.org,
+       Adrian Bunk <bunk@kernel.org>, Mihai Don??u <mdontu@bitdefender.com>,
+       linux-kernel@vger.kernel.org, malware-list@lists.printk.net
+Subject: Re: [malware-list] [RFC 0/5] [TALPA] Intro to alinuxinterfaceforon access scanning
+Message-ID: <20080817215822.GA21112@atrey.karlin.mff.cuni.cz>
+References: <6746.82.95.100.23.1218969200.squirrel@webmail.xs4all.nl> <alpine.DEB.1.10.0808170345300.12859@asgard.lang.hm>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <1219002107-21832-1-git-send-email-gorcunov@gmail.com>
+In-Reply-To: <alpine.DEB.1.10.0808170345300.12859@asgard.lang.hm>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-please check if you need { } otherwise you broke 64 bit
+Hi!
 
+> >>you are arguing with the wrong people here. we are not trying to define
+> >>the future of anti-virus technologies, we are trying to figure out how to
+> >>provide the hooks so that people and companies can go off and do the
+> >>research and experimentation and try different approaches.
+> >
+> >Given recent demonstrations that show how easy it apparently is to bypass
+> >blacklist base approaches, providing hooks to allow these blacklist
+> >approaches may I feel be rather futile. Focusing only on hooks for white
+> >list approaches in combination with hooks for least authority approaches
+> >like the powerbox would IMHO seem like a much more reasonable approach
+> >given the current state of things and knowledge concerning the blacklist
+> >technologies. Explicitly adding support for technology that is quickly
+> >becoming obsolete would seem like a waste of time and resources.
+> 
+> we are not providing hooks for blacklists or whitelists, we are providing 
+> hooks for scanning. it's up to the software that doesn the scanning to 
+> implement the blacklist or whitelist.
 
-static int lapic_resume(struct sys_device *dev)
-{
-        unsigned int l, h;
-        unsigned long flags;
-        int maxlvt;
+Actually, I don't think so.
 
-        if (!apic_pm_state.active)
-                return 0;
-
-        maxlvt = lapic_get_maxlvt();
-
-        local_irq_save(flags);
-
-#ifdef CONFIG_X86_64
-        if (x2apic)
-                enable_x2apic();
-        else
-#endif
-                /*
-                 * Make sure the APICBASE points to the right address
-                 *
-                 * FIXME! This will be wrong if we ever support suspend on
-                 * SMP! We'll need to do this as part of the CPU restore!
-                 */
-                rdmsr(MSR_IA32_APICBASE, l, h);
-                l &= ~MSR_IA32_APICBASE_BASE;
-                l |= MSR_IA32_APICBASE_ENABLE | mp_lapic_addr;
-                wrmsr(MSR_IA32_APICBASE, l, h);
-
-
-YH
+If we wanted to whitelist permitted binaries, approach would be
+something like "lets sign them"... and it seems IBM is working on
+something like that with TPM infrastructure.
+							Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
