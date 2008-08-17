@@ -1,91 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755293AbYHQPvZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755495AbYHQPvo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755293AbYHQPvZ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Aug 2008 11:51:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752403AbYHQPvR
+	id S1755495AbYHQPvo (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Aug 2008 11:51:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752403AbYHQPve
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Aug 2008 11:51:17 -0400
+	Sun, 17 Aug 2008 11:51:34 -0400
 Received: from fg-out-1718.google.com ([72.14.220.158]:8838 "EHLO
 	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752062AbYHQPvQ (ORCPT
+	with ESMTP id S1752633AbYHQPve (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Aug 2008 11:51:16 -0400
+	Sun, 17 Aug 2008 11:51:34 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=Nqnf/dv0PiGH5J20NY/34b7XfZmRNnabmrqnNrAKkt+MLusze8Y0JDf5l1oFlGC6w7
-         1ICpIK35zF8UBYcp292nfE7eQLdujA5Dr+VlYkKxuydQovjApTZCSer0GkR4bAPQxFOF
-         Z+xHCbnqoZQ4MXJXDxMSXZiQevsXwvPO5425w=
+        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
+        b=m8STCW5QG4LPE+8WBatJCI8b92ktvtQoNF6ve2dU/ny2/V/h+eQ1AYiGemvP8x5z4W
+         aDdoJVRIYsC+kabtADa2FceeCI/zfMkOEgHDMW/wXOrARit+R+b7zpBazRooqYWX00Fo
+         CkFMuL90BojOGLKg93ug0ZzoUKwQ6+o+TzvE8=
 From: Marcin Slusarz <marcin.slusarz@gmail.com>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Mike Travis <travis@sgi.com>, Ingo Molnar <mingo@elte.hu>,
        Thomas Gleixner <tglx@linutronix.de>
-Subject: [PATCH] x86/percpu: silence section mismatch warnings related to EARLY_PER_CPU variables
-Date: Sun, 17 Aug 2008 17:50:50 +0200
-Message-Id: <1218988252-17932-1-git-send-email-marcin.slusarz@gmail.com>
+Subject: [PATCH] x86: silence section mismatch warning - get_local_pda
+Date: Sun, 17 Aug 2008 17:50:51 +0200
+Message-Id: <1218988252-17932-2-git-send-email-marcin.slusarz@gmail.com>
 X-Mailer: git-send-email 1.5.4.5
+In-Reply-To: <1218988252-17932-1-git-send-email-marcin.slusarz@gmail.com>
+References: <1218988252-17932-1-git-send-email-marcin.slusarz@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Mike Travis in "x86: cleanup early per cpu variables/accesses v4"
-(23ca4bba3e20c6c3cb11c1bb0ab4770b724d39ac):
+Take out part of get_local_pda referencing __init function (free_bootmem)
+to new (static) function marked as __ref. It's safe to do because free_bootmem
+is called before __init sections are dropped.
 
-    The DEFINE macro defines the per_cpu variable as well as the early
-    map and pointer.  It also initializes the per_cpu variable and map
-    elements to "_initvalue".  The early_* macros provide access to
-    the initial map (usually setup during system init) and the early
-    pointer.  This pointer is initialized to point to the early map
-    but is then NULL'ed when the actual per_cpu areas are setup.  After
-    that the per_cpu variable is the correct access to the variable.
-
-As these variables are NULL'ed before __init sections are dropped
-(in setup_per_cpu_maps), they can be safely annotated as __ref.
-
-This change silences following section mismatch warnings:
-
-WARNING: vmlinux.o(.data+0x46c0): Section mismatch in reference from the variable x86_cpu_to_apicid_early_ptr to the variable .init.data:x86_cpu_to_apicid_early_map
-The variable x86_cpu_to_apicid_early_ptr references
-the variable __initdata x86_cpu_to_apicid_early_map
-If the reference is valid then annotate the
-variable with __init* (see linux/init.h) or name the variable:
-*driver, *_template, *_timer, *_sht, *_ops, *_probe, *_probe_one, *_console,
-
-WARNING: vmlinux.o(.data+0x46c8): Section mismatch in reference from the variable x86_bios_cpu_apicid_early_ptr to the variable .init.data:x86_bios_cpu_apicid_early_map
-The variable x86_bios_cpu_apicid_early_ptr references
-the variable __initdata x86_bios_cpu_apicid_early_map
-If the reference is valid then annotate the
-variable with __init* (see linux/init.h) or name the variable:
-*driver, *_template, *_timer, *_sht, *_ops, *_probe, *_probe_one, *_console,
-
-WARNING: vmlinux.o(.data+0x46d0): Section mismatch in reference from the variable x86_cpu_to_node_map_early_ptr to the variable .init.data:x86_cpu_to_node_map_early_map
-The variable x86_cpu_to_node_map_early_ptr references
-the variable __initdata x86_cpu_to_node_map_early_map
-If the reference is valid then annotate the
-variable with __init* (see linux/init.h) or name the variable:
-*driver, *_template, *_timer, *_sht, *_ops, *_probe, *_probe_one, *_console,
+WARNING: vmlinux.o(.cpuinit.text+0x3cd7): Section mismatch in reference from the function get_local_pda() to the function .init.text:free_bootmem()
+The function __cpuinit get_local_pda() references
+a function __init free_bootmem().
+If free_bootmem is only used by get_local_pda then
+annotate free_bootmem with a matching annotation.
 
 Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
 Cc: Mike Travis <travis@sgi.com>
 Cc: Ingo Molnar <mingo@elte.hu>
 Cc: Thomas Gleixner <tglx@linutronix.de>
 ---
- include/asm-x86/percpu.h |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ arch/x86/kernel/smpboot.c |   11 +++++++++--
+ 1 files changed, 9 insertions(+), 2 deletions(-)
 
-diff --git a/include/asm-x86/percpu.h b/include/asm-x86/percpu.h
-index 4e91ee1..f643a3a 100644
---- a/include/asm-x86/percpu.h
-+++ b/include/asm-x86/percpu.h
-@@ -182,7 +182,7 @@ do {							\
- 	DEFINE_PER_CPU(_type, _name) = _initvalue;			\
- 	__typeof__(_type) _name##_early_map[NR_CPUS] __initdata =	\
- 				{ [0 ... NR_CPUS-1] = _initvalue };	\
--	__typeof__(_type) *_name##_early_ptr = _name##_early_map
-+	__typeof__(_type) *_name##_early_ptr __refdata = _name##_early_map
+diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
+index 91055d7..47dbf98 100644
+--- a/arch/x86/kernel/smpboot.c
++++ b/arch/x86/kernel/smpboot.c
+@@ -756,6 +756,14 @@ static void __cpuinit do_fork_idle(struct work_struct *work)
+ }
  
- #define EXPORT_EARLY_PER_CPU_SYMBOL(_name)			\
- 	EXPORT_PER_CPU_SYMBOL(_name)
+ #ifdef CONFIG_X86_64
++
++/* __ref because it's safe to call free_bootmem when after_bootmem == 0. */
++static void __ref free_bootmem_pda(struct x8664_pda *oldpda)
++{
++	if (!after_bootmem)
++		free_bootmem((unsigned long)oldpda, sizeof(*oldpda));
++}
++
+ /*
+  * Allocate node local memory for the AP pda.
+  *
+@@ -784,8 +792,7 @@ int __cpuinit get_local_pda(int cpu)
+ 
+ 	if (oldpda) {
+ 		memcpy(newpda, oldpda, size);
+-		if (!after_bootmem)
+-			free_bootmem((unsigned long)oldpda, size);
++		free_bootmem_pda(oldpda);
+ 	}
+ 
+ 	newpda->in_bootmem = 0;
 -- 
 1.5.4.5
 
