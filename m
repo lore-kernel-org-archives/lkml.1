@@ -1,67 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752727AbYHQFN1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752576AbYHQGAv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752727AbYHQFN1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Aug 2008 01:13:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751399AbYHQFNS
+	id S1752576AbYHQGAv (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Aug 2008 02:00:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751310AbYHQGAn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Aug 2008 01:13:18 -0400
-Received: from ozlabs.org ([203.10.76.45]:41768 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751310AbYHQFNR convert rfc822-to-8bit (ORCPT
+	Sun, 17 Aug 2008 02:00:43 -0400
+Received: from yx-out-2324.google.com ([74.125.44.30]:43957 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751225AbYHQGAm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Aug 2008 01:13:17 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Andi Kleen <ak@linux.intel.com>
-Subject: Re: linux-next: Tree for August 14 (sysfs/acpi errors)
-Date: Sun, 17 Aug 2008 15:13:13 +1000
-User-Agent: KMail/1.9.9
-Cc: Greg KH <greg@kroah.com>, Kay Sievers <kay.sievers@vrfy.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, linux-acpi@vger.kernel.org
-References: <20080814172945.250a27f2.sfr@canb.auug.org.au> <20080816044714.GA19886@kroah.com> <48A78D4A.70609@linux.intel.com>
-In-Reply-To: <48A78D4A.70609@linux.intel.com>
+	Sun, 17 Aug 2008 02:00:42 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=b6Vq1GMa1nAaIRR89ipsoa/4woiUckOSJvD0/DsrS6+yWrtQlMqFPAAuXlUrNI/eSA
+         lHLN69fAuka2gRWKhx4DEw/ThX1uA6HFGkWaBuMUBuj4J6ugwKaeEjaJRTaeIo/9DIJs
+         ZxlMOhstlbzs6qnCPy9gBDJxaz/IdCKFYRsfU=
+Message-ID: <93655eb70808162300i4286eac9p9aa34cf23359ff72@mail.gmail.com>
+Date: Sun, 17 Aug 2008 11:30:41 +0530
+From: "Satish Eerpini" <eerpini@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: patching kdb to Centos kernel : error
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200808171513.13611.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 17 August 2008 12:30:34 Andi Kleen wrote:
-> Greg KH wrote:
-> > On Sat, Aug 16, 2008 at 05:48:26AM +0200, Andi Kleen wrote:
-> >>> They have been module options, not prefixed kernel parameters so far,
-> >>> and the prefix was just the module name.
-> >>> So it just strikes back, that acpi uses generic names for the modules,
-> >>> there would have been no problem if "power" would be called
-> >>> "acpi_power" and the options would just be ﻿"acpi.acpica_version" and
-> >>> "acpi_power.nocheck".
-> >>> But well, there are driver modules just called "option", so acpi is not
-> >>> that bad. :)
-> >>>
-> >>>> I think the generic params code should be fixed to handle this.
-> >>>
-> >>> We could try to look up existing directories to use instead of
-> >>> expecting that we need to create and own them. I guess,
-> >>
-> >> sysfs does this anyways, doesn't it. We would just need to teach it
-> >> to not BUG() in this case, perhaps with a special entry point.
-> >> Also a BUG() in general seems a little harsh for this, surely a WARN_ON
-> >> should be enough.
-> >
-> > It is a WARN() call, not a BUG().
->
-> Ok. Can we remove it? Or add a new entry point that allows to disable it?
->
-> I don't think relying on link order like Rusty proposes is a good long term
-> solution.
+hi everyone , i was trying to patch kdb with CentOS 5.0 kernel
+(2.6.18-8) , and had a few rejects ( which i am still trying to
+resolve) ,.... but apart from the rejects during the kernel
+compilation i got the following error which does not seem to have
+anything to do with the rejects ............
+i have got an error in a kdb module, which has nothing to do with the
+rejected patches ( or so i guess ) :
 
-To be clear, I agree with Andi.  If this is for current kernel I'd just fix 
-link order, for longer term we need something cleverer.
+              kdb/modules/kdbm_pg.c: In function 'kdbm_show_page':
+              kdb/modules/kdbm_pg.c:349: error: implicit declaration
+of function 'PageChecked'
+              kdb/modules/kdbm_pg.c: In function 'kdbm_inode':
+              kdb/modules/kdbm_pg.c:507: error: 'struct inode' has no
+member named 'u'
 
-Cheers,
-Rusty.
+ the code(in kdb/modules/kdbm_pg.c) which is causing the second error
+is something like this :
+
+             iaddr += offsetof(struct inode, u);
+
+what i am not able to understand is that if 'u' is not a correct
+member of the inode , .. then what did they( whoever wrote this piece
+code) intend by 'u' ? , .....
+
+....
+and for the first error , ... i just checked out the code ....
+according to the line no shown in the error .....the code is :
+
+             kdb_page_flags(page, Checked);
+
+and i don't see any function PageChecked ....! so what can the error
+actually mean ??
+
+Thanks in advance
+Satish
+--
+http://satish.playdrupal.com
