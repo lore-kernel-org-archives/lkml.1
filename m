@@ -1,30 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756050AbYHQWan@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754559AbYHQWrt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756050AbYHQWan (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Aug 2008 18:30:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751855AbYHQWaf
+	id S1754559AbYHQWrt (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Aug 2008 18:47:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751483AbYHQWrl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Aug 2008 18:30:35 -0400
-Received: from mail.lang.hm ([64.81.33.126]:37206 "EHLO bifrost.lang.hm"
+	Sun, 17 Aug 2008 18:47:41 -0400
+Received: from mail.lang.hm ([64.81.33.126]:49557 "EHLO bifrost.lang.hm"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751493AbYHQWae (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Aug 2008 18:30:34 -0400
-Date: Sun, 17 Aug 2008 15:30:10 -0700 (PDT)
+	id S1750930AbYHQWrl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Aug 2008 18:47:41 -0400
+Date: Sun, 17 Aug 2008 15:47:41 -0700 (PDT)
 From: david@lang.hm
 X-X-Sender: dlang@asgard.lang.hm
 To: Pavel Machek <pavel@suse.cz>
-cc: rmeijer@xs4all.nl, Peter Dolding <oiaohm@gmail.com>,
-       Theodore Tso <tytso@mit.edu>, Arjan van de Ven <arjan@infradead.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, capibara@xs4all.nl,
-       Eric Paris <eparis@redhat.com>, Rik van Riel <riel@redhat.com>,
-       davecb@sun.com, linux-security-module@vger.kernel.org,
-       Adrian Bunk <bunk@kernel.org>, Mihai Don??u <mdontu@bitdefender.com>,
-       linux-kernel@vger.kernel.org, malware-list@lists.printk.net
+cc: Eric Paris <eparis@redhat.com>, Theodore Tso <tytso@mit.edu>,
+       Rik van Riel <riel@redhat.com>, davecb@sun.com,
+       linux-security-module@vger.kernel.org, Adrian Bunk <bunk@kernel.org>,
+       Mihai Don??u <mdontu@bitdefender.com>, linux-kernel@vger.kernel.org,
+       malware-list@lists.printk.net, Arjan van de Ven <arjan@infradead.org>
 Subject: Re: [malware-list] [RFC 0/5] [TALPA] Intro to alinuxinterfaceforon
  access scanning
-In-Reply-To: <20080817215822.GA21112@atrey.karlin.mff.cuni.cz>
-Message-ID: <alpine.DEB.1.10.0808171524350.12859@asgard.lang.hm>
-References: <6746.82.95.100.23.1218969200.squirrel@webmail.xs4all.nl> <alpine.DEB.1.10.0808170345300.12859@asgard.lang.hm> <20080817215822.GA21112@atrey.karlin.mff.cuni.cz>
+In-Reply-To: <20080817221258.GC21112@atrey.karlin.mff.cuni.cz>
+Message-ID: <alpine.DEB.1.10.0808171542160.12859@asgard.lang.hm>
+References: <20080813125638.GB6995@ucw.cz> <20080813135207.CC08C3765BC@pmx1.sophos.com> <20080814125410.GA2262@elf.ucw.cz> <2629CC4E1D22A64593B02C43E855530304AE4BE3@USILMS12.ca.com> <20080814223918.GC6370@elf.ucw.cz> <20080814200005.6b363716@bree.surriel.com>
+ <20080815004335.GF13048@mit.edu> <1218769209.16613.31.camel@localhost.localdomain> <20080817221258.GC21112@atrey.karlin.mff.cuni.cz>
 User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
@@ -32,50 +31,37 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 17 Aug 2008, Pavel Machek wrote:
+On Mon, 18 Aug 2008, Pavel Machek wrote:
 
->>>> you are arguing with the wrong people here. we are not trying to define
->>>> the future of anti-virus technologies, we are trying to figure out how to
->>>> provide the hooks so that people and companies can go off and do the
->>>> research and experimentation and try different approaches.
->>>
->>> Given recent demonstrations that show how easy it apparently is to bypass
->>> blacklist base approaches, providing hooks to allow these blacklist
->>> approaches may I feel be rather futile. Focusing only on hooks for white
->>> list approaches in combination with hooks for least authority approaches
->>> like the powerbox would IMHO seem like a much more reasonable approach
->>> given the current state of things and knowledge concerning the blacklist
->>> technologies. Explicitly adding support for technology that is quickly
->>> becoming obsolete would seem like a waste of time and resources.
->>
->> we are not providing hooks for blacklists or whitelists, we are providing
->> hooks for scanning. it's up to the software that doesn the scanning to
->> implement the blacklist or whitelist.
+> Hi!
 >
-> Actually, I don't think so.
+>> And I still don't get this 'mmap problem' that I don't solve that
+>> libmalware magically solves.  What?  don't use mmap?  I certainly hope
+>> not.
 >
-> If we wanted to whitelist permitted binaries, approach would be
-> something like "lets sign them"... and it seems IBM is working on
-> something like that with TPM infrastructure.
+> Don't use mmap, it is as simple as that. AFAICS mmap(MAP_SHARED) --
+> which is basically shared memory -- is fundamentally incompatible with
+> reliable virus scanning.
+>
+> ...or do you have a reasonable solution for mmap?
 
-the structure I proposed would support this as well.
 
-your 'scanner' program would do the signature and store it somewhere and 
-mark the file as being scanned.
+mmap has a few different problems
 
-on access the checking software would see that you have marked it as being 
-scanned and can avoid the overhead of reading the entire file to check 
-it's signature (or you can configure it to do the full check again)
+1. intercepting reads and writes to take action at that time
 
-if the file gets written to the tag would get cleared and the file would 
-not be used without being blessed by your scanner again (and your scanner 
-my bless it if what happened was an OS update where the new file matches a 
-known signature)
+2. the fact that two programs can use it as an inter-process communication 
+mechanism.
 
-not quite as straightforward as you were probably thinking (you were 
-probably thinking somthing like 'store the signature and have the kernel 
-check it each time the file is opened'), but this would have the option of 
-being faster by skipping the signature check if the file was tagged as 
-already being checked.
+if you are worried about the IPC aspects, all you can do is forbid it, 
+along with shared memory, pipes, network connections, etc. none of these 
+provide you with a 'final result' that can be scanned, and as others have 
+pointed out there are too many ways to do things that get assembled by the 
+far side to try and catch all malware in them.
+
+as for intercepting reads and writes. the approach I outlined addresses 
+this by having the kernel mark thefile as dirty if any writes happen, and 
+checking the file status at the time of doing the mmap instead of trying 
+to do it when the file is accessed after the mmap.
 
 David Lang
