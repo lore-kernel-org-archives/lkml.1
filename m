@@ -1,30 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752716AbYHQGXz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753179AbYHQG0c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752716AbYHQGXz (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Aug 2008 02:23:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751605AbYHQGXn
+	id S1753179AbYHQG0c (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Aug 2008 02:26:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751584AbYHQG0X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Aug 2008 02:23:43 -0400
-Received: from wa-out-1112.google.com ([209.85.146.181]:41051 "EHLO
+	Sun, 17 Aug 2008 02:26:23 -0400
+Received: from wa-out-1112.google.com ([209.85.146.180]:44805 "EHLO
 	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751594AbYHQGXm (ORCPT
+	with ESMTP id S1751399AbYHQG0W (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Aug 2008 02:23:42 -0400
+	Sun, 17 Aug 2008 02:26:22 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer;
-        b=xfQA0wpJDOC+rnB6JHk2lxaYLePpvf1apK06dOG2slaeWC53TER9hsYD5J1kYzt3ks
-         jxlxCMjok43Wv7MBg/lh0j5RxTrPJqO5cSh37cKsLAmeyUGkeNkGM/bbsXORE1t9pg+U
-         gQDdGQ5twQPmnV9R39SHBdlgLHLnhKaMpQORk=
+        b=H+mgpv5FMdt4Yw0vN3hIEuCpuWcJ5G0XTz2IT3Fp0hRy/mp7mjOT8i2cJpcRhv+nwy
+         dA3WLEf1PXwIYKexcToBfDT0ejL4ql8wAM5esWyNP7U2QRFae7UOVsUhvNxNzpRFrkx3
+         fsq5K8IqRLphcu9AMMQefHw5ZRlwqqJDQZfqE=
 From: Yinghai Lu <yhlu.kernel@gmail.com>
 To: Jeff Garzik <jgarzik@redhat.com>, Ingo Molnar <mingo@elte.hu>,
        "Eric W. Biederman" <ebiederm@xmission.com>,
        Andrew Morton <akpm@linux-foundation.org>
 Cc: linux-kernel@vger.kernel.org, netdev <netdev@vger.kernel.org>,
        Yinghai Lu <yhlu.kernel@gmail.com>
-Subject: [PATCH] net: forcedeth use pci_choose_state instead of PCI_D3hot
-Date: Sat, 16 Aug 2008 23:22:53 -0700
-Message-Id: <1218954173-12628-1-git-send-email-yhlu.kernel@gmail.com>
+Subject: [PATCH] net: forcedeth use pci_choose_state instead of PCI_D3hot - v2
+Date: Sat, 16 Aug 2008 23:25:33 -0700
+Message-Id: <1218954333-12819-1-git-send-email-yhlu.kernel@gmail.com>
 X-Mailer: git-send-email 1.5.4.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -46,7 +46,7 @@ after
 |    Signed-off-by: Tobias Diedrich <ranma+kernel@tdiedrich.de>
 |    Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
 
-my servers with nvidia mcp55 will nic doesn't work with msi.
+my servers with nvidia mcp55 nic doesn't work with msi in second kernel by kexec
 
 after remove pci_set_power_state(, PCI_D3hot) that nic/msi will work again.
 
