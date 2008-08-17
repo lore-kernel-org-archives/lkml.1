@@ -1,60 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756087AbYHQRcs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756215AbYHQRdp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756087AbYHQRcs (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Aug 2008 13:32:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752908AbYHQRcj
+	id S1756215AbYHQRdp (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Aug 2008 13:33:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752908AbYHQRdg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Aug 2008 13:32:39 -0400
-Received: from ra.tuxdriver.com ([70.61.120.52]:3388 "EHLO ra.tuxdriver.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752672AbYHQRci (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Aug 2008 13:32:38 -0400
-Date: Sun, 17 Aug 2008 13:07:14 -0400
-From: "John W. Linville" <linville@tuxdriver.com>
-To: Tomas Winkler <tomasw@gmail.com>
-Cc: Mirco Tischler <mt-ml@gmx.de>, Leonid Podolny <leonidp.lists@gmail.com>,
-       linux-kernel@vger.kernel.org, yi.zhu@intel.com,
-       reinette.chatre@intel.com, linux-wireless@vger.kernel.org,
-       IvDoorn@gmail.com
-Subject: Re: CPU load after killing iwlagn with RF kill switch
-Message-ID: <20080817170714.GA29938@tuxdriver.com>
-References: <48A5EC02.4070303@gmail.com> <20080817035921.4d35ae0e@mtlp.12thdimension> <1ba2fa240808170004p63b76db1l1fdfb1cf1cb41636@mail.gmail.com> <20080817150242.GA23926@tuxdriver.com> <1ba2fa240808170920r67e11567h2da8b396b18729dd@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1ba2fa240808170920r67e11567h2da8b396b18729dd@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Sun, 17 Aug 2008 13:33:36 -0400
+Received: from mtagate4.de.ibm.com ([195.212.29.153]:48664 "EHLO
+	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752609AbYHQRdf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Aug 2008 13:33:35 -0400
+Subject: Re: [patch 1/3] kmsg: Kernel message catalog macros.
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Reply-To: schwidefsky@de.ibm.com
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Tim Hockin <thockin@hockin.org>, linux-kernel@vger.kernel.org,
+       linux-s390@vger.kernel.org,
+       lf_kernel_messages@lists.linux-foundation.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Michael Holzheu <holzheu@de.ibm.com>, Gerrit Huizenga <gh@us.ibm.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Randy Dunlap <randy.dunlap@oracle.com>, Jan Kara <jack@suse.cz>,
+       Pavel Machek <pavel@ucw.cz>, Sam Ravnborg <sam@ravnborg.org>,
+       Joe Perches <joe@perches.com>,
+       Jochen =?ISO-8859-1?Q?Vo=DF?= <jochen.voss@googlemail.com>,
+       Kunai Takashi <kunai@linux-foundation.jp>,
+       Tim Bird <tim.bird@am.sony.com>
+In-Reply-To: <200808171511.09346.rusty@rustcorp.com.au>
+References: <20080730165656.118280544@de.ibm.com>
+	 <1218908985.6037.12.camel@localhost>
+	 <b3ece790808161340x4b03b91er6f0bfcc46c6fb3ad@mail.gmail.com>
+	 <200808171511.09346.rusty@rustcorp.com.au>
+Content-Type: text/plain
+Organization: IBM Corporation
+Date: Sun, 17 Aug 2008 19:33:00 +0200
+Message-Id: <1218994380.20098.10.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Aug 17, 2008 at 07:20:54PM +0300, Tomas Winkler wrote:
-> On Sun, Aug 17, 2008 at 6:02 PM, John W. Linville
-> <linville@tuxdriver.com> wrote:
-> > On Sun, Aug 17, 2008 at 10:04:12AM +0300, Tomas Winkler wrote:
+On Sun, 2008-08-17 at 15:11 +1000, Rusty Russell wrote:
+> > > Ok, so  a specialized version of printk will do the work to calculate
+> > > the hash. Only, what will we do if there ever is a conflict? The message
+> > > tag has to be unique. The shorter the hash is, the more likely a
+> > > collision gets. Don't know if 6 hash digits is enough to just ignore the
+> > > problem.
 > >
-> >> There is gap in current rfkill implementation that we didn't close
-> >> yet.  There were also few patches that were not signed by Intel and
-> >> are apparently wrong.
-> >
-> > Can you be more specific?  Do you know which patches are wrong (even
-> > if you don't know how to fix them)?
-> >
+> > And if you ever need to change the text that is in the format string?
+> > The hash changes.  That seems exactly counter to your goal...
 > 
-> 80fcc9e28cf3a209fbfb39a7bbddc313c59c7424
-> This one  is wrong and there are more then are not acked even though
-> they cause no problem. In general I would prefer that patches will be
-> acked by Yi or me.
+> You need to catalogue them all anyway, so you can detect clashes at build 
+> time.  Yes, you have to change the new string in that case, but that's easy.
 
-And in general, they are.  In general I would prefer if you would
-work upstream instead of working in iwlwifi-2.6 and periodically
-dumping a dozen or more patches on me all at once.  C'est la vie...
+Is the suggestion that in case of a clash just change the message string
+slightly to avoid the clash ? 
 
-> I will try to rebase our rfkill fixes ASAP from iwlwifi-2.6. iwl5000 branch.
+> And the number changing as the message changes is arguably a feature.  You 
+> shouldn't (and we generally don't) idly change kernel messages.
 
-Thanks!
+This is very true. If a message is touched most likely the message
+description has to be changed as well. If the message hash then changes
+the tools can warn about it. The small thing now only is the matter of
+actually implementing the hash and changing the script to work on them..
 
-John
 -- 
-John W. Linville
-linville@tuxdriver.com
+blue skies,
+  Martin.
+
+"Reality continues to ruin my life." - Calvin.
+
+
