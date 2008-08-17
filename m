@@ -1,93 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754219AbYHQRR1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752930AbYHQRRm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754219AbYHQRR1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Aug 2008 13:17:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752608AbYHQRRQ
+	id S1752930AbYHQRRm (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Aug 2008 13:17:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753420AbYHQRRX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Aug 2008 13:17:16 -0400
+	Sun, 17 Aug 2008 13:17:23 -0400
 Received: from fg-out-1718.google.com ([72.14.220.153]:31116 "EHLO
 	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752583AbYHQRRP (ORCPT
+	with ESMTP id S1753141AbYHQRRW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Aug 2008 13:17:15 -0400
+	Sun, 17 Aug 2008 13:17:22 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:to:cc:date:message-id:subject;
-        b=Iwh5U9j04Rq/r1//GbCaQfygXggv6SGsoI8drVyAIdquQQT28CHpil2bJkqUwAroS2
-         MmlrEf1n61eJnlnK87ZkDgbk9VzfQxZfptu6xExF2Lc1jw15NLv1UhCImlgMcJnRAVhB
-         x5i3r7D7+7lyMXMqYCysurqYxqb/TaGyZYqAE=
+        h=from:to:cc:date:message-id:in-reply-to:references:subject;
+        b=wMKq7h31UPfxQC2q3sop/o/K8Y4BFyktDSv6cIGvhXTHB0Jxi5rvVjVNulFhRaiyhk
+         uRgqHok8vU515WyiBdSDq+iMkgx/WB7ANZ2e7j9X3vf2Wc9KCEMdDbUOrVyldgTa3RI3
+         ZjDmr6nOwYte2NJAORWgiSl7xEzIV+ddNzlX0=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: linux-ide@vger.kernel.org
 Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
        linux-kernel@vger.kernel.org
-Date: Sun, 17 Aug 2008 19:14:54 +0200
-Message-Id: <20080817171454.27943.37234.sendpatchset@localhost.localdomain>
-Subject: [PATCH 1/9] ide: fix IDE ACPI for slave device-only configurations
+Date: Sun, 17 Aug 2008 19:15:01 +0200
+Message-Id: <20080817171501.27943.57473.sendpatchset@localhost.localdomain>
+In-Reply-To: <20080817171454.27943.37234.sendpatchset@localhost.localdomain>
+References: <20080817171454.27943.37234.sendpatchset@localhost.localdomain>
+Subject: [PATCH 2/9] ide-disk: set_addressing() fixes
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-ACPI _GTM / _PS0 / _STM were not called if only slave device was present.
+* Return -EIO if arg > 0 and LBA48 is unsupported.
+
+* No need to reset ->addressing.
+
+* Make ->addressing a single bit flag.
 
 Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- drivers/ide/ide.c |   21 ++++++++++-----------
- 1 file changed, 10 insertions(+), 11 deletions(-)
+ drivers/ide/ide-disk.c |   11 +++++------
+ include/linux/ide.h    |    2 +-
+ 2 files changed, 6 insertions(+), 7 deletions(-)
 
-Index: b/drivers/ide/ide.c
+Index: b/drivers/ide/ide-disk.c
 ===================================================================
---- a/drivers/ide/ide.c
-+++ b/drivers/ide/ide.c
-@@ -365,15 +365,15 @@ __IDE_DEVSET(pio_mode, 0, NULL, set_pio_
+--- a/drivers/ide/ide-disk.c
++++ b/drivers/ide/ide-disk.c
+@@ -694,14 +694,13 @@ static int set_addressing(ide_drive_t *d
+ 	if (arg < 0 || arg > 2)
+ 		return -EINVAL;
  
- static int generic_ide_suspend(struct device *dev, pm_message_t mesg)
- {
--	ide_drive_t *drive = dev->driver_data;
-+	ide_drive_t *drive = dev->driver_data, *pair = ide_get_pair_dev(drive);
- 	ide_hwif_t *hwif = HWIF(drive);
- 	struct request *rq;
- 	struct request_pm_state rqpm;
- 	ide_task_t args;
- 	int ret;
+-	drive->addressing =  0;
+-
+-	if (drive->hwif->host_flags & IDE_HFLAG_NO_LBA48)
+-		return 0;
+-
+-	if (ata_id_lba48_enabled(drive->id) == 0)
++	if (arg && ((drive->hwif->host_flags & IDE_HFLAG_NO_LBA48) ||
++	    ata_id_lba48_enabled(drive->id) == 0))
+ 		return -EIO;
  
--	/* Call ACPI _GTM only once */
--	if (!(drive->dn % 2))
-+	/* call ACPI _GTM only once */
-+	if ((drive->dn & 1) == 0 || pair == NULL)
- 		ide_acpi_get_timing(hwif);
- 
- 	memset(&rqpm, 0, sizeof(rqpm));
-@@ -389,26 +389,25 @@ static int generic_ide_suspend(struct de
- 
- 	ret = blk_execute_rq(drive->queue, NULL, rq, 0);
- 	blk_put_request(rq);
--	/* only call ACPI _PS3 after both drivers are suspended */
--	if (!ret && (((drive->dn % 2) && hwif->drives[0].present
--		 && hwif->drives[1].present)
--		 || !hwif->drives[0].present
--		 || !hwif->drives[1].present))
++	if (arg == 2)
++		arg = 0;
 +
-+	/* call ACPI _PS3 only after both devices are suspended */
-+	if (ret == 0 && ((drive->dn & 1) || pair == NULL))
- 		ide_acpi_set_state(hwif, 0);
-+
- 	return ret;
- }
+ 	drive->addressing = arg;
  
- static int generic_ide_resume(struct device *dev)
- {
--	ide_drive_t *drive = dev->driver_data;
-+	ide_drive_t *drive = dev->driver_data, *pair = ide_get_pair_dev(drive);
- 	ide_hwif_t *hwif = HWIF(drive);
- 	struct request *rq;
- 	struct request_pm_state rqpm;
- 	ide_task_t args;
- 	int err;
+ 	return 0;
+Index: b/include/linux/ide.h
+===================================================================
+--- a/include/linux/ide.h
++++ b/include/linux/ide.h
+@@ -507,7 +507,7 @@ struct ide_drive_s {
+ 	unsigned sleeping	: 1;	/* 1=sleeping & sleep field valid */
+ 	unsigned post_reset	: 1;
+ 	unsigned udma33_warned	: 1;
+-	unsigned addressing	: 2;	/* 0=28-bit, 1=48-bit, 2=48-bit doing 28-bit */
++	unsigned addressing	: 1;	/* 0=28-bit, 1=48-bit */
+ 	unsigned wcache		: 1;	/* status of write cache */
+ 	unsigned nowerr		: 1;	/* used for ignoring ATA_DF */
  
--	/* Call ACPI _STM only once */
--	if (!(drive->dn % 2)) {
-+	/* call ACPI _PS0 / _STM only once */
-+	if ((drive->dn & 1) == 0 || pair == NULL) {
- 		ide_acpi_set_state(hwif, 1);
- 		ide_acpi_push_timing(hwif);
- 	}
