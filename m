@@ -1,65 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757453AbYHRQvH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755455AbYHRQyi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757453AbYHRQvH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Aug 2008 12:51:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753565AbYHRQqC
+	id S1755455AbYHRQyi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Aug 2008 12:54:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752398AbYHRQy2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Aug 2008 12:46:02 -0400
-Received: from fg-out-1718.google.com ([72.14.220.152]:24576 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755329AbYHRQpx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Aug 2008 12:45:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=RgktRZlxh958qBFUilwgCi7ZvdEfYU6CwFg+Oh+7tGM6ZmEaEGd/0FnTt7MIFRpRts
-         fiZqL3vub4nM5uzqHQDSsXlF7rZRZWeg1opuzg1DzShs3sqpjcTqOru7aacacavCBPFR
-         9HHqvNpSKwG8bcx/QUuz5ep7g8F45On1k5ZnM=
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: mingo@elte.hu, macro@linux-mips.org
-Cc: hpa@zytor.com, tglx@linutronix.de, linux-kernel@vger.kernel.org,
-       Cyrill Gorcunov <gorcunov@gmail.com>
-Subject: [PATCH 15/15] x86: apic - lapic_resume 32bit - unification fix
-Date: Mon, 18 Aug 2008 20:46:03 +0400
-Message-Id: <03de4451f6ba98351f4974309517e79907a59791.1219073223.git.gorcunov@gmail.com>
-X-Mailer: git-send-email 1.6.0.rc1.34.g0fe8c
-In-Reply-To: <1219077963-22883-1-git-send-email-gorcunov@gmail.com>
-References: <1219077963-22883-1-git-send-email-gorcunov@gmail.com>
-In-Reply-To: <8d555f8d496693d05b9e0836f18f62b1adb313c8.1219073223.git.gorcunov@gmail.com>
-References: <8d555f8d496693d05b9e0836f18f62b1adb313c8.1219073223.git.gorcunov@gmail.com>
+	Mon, 18 Aug 2008 12:54:28 -0400
+Received: from pmx1.sophos.com ([213.31.172.16]:43036 "EHLO pmx1.sophos.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751502AbYHRQy2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Aug 2008 12:54:28 -0400
+In-Reply-To: <20080818171500.78590801@lxorguk.ukuu.org.uk>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, malware-list@lists.printk.net
+Subject: Re: [malware-list] scanner interface proposal was: [TALPA] Intro	to a linux
+ interface for on access scanning
+MIME-Version: 1.0
+X-Mailer: Lotus Notes Release 7.0.2 September 26, 2006
+From: douglas.leeder@sophos.com
+Date: Mon, 18 Aug 2008 17:54:34 +0100
+X-MIMETrack: Serialize by Router on Mercury/Servers/Sophos(Release 7.0.3|September 26, 2007) at
+ 18/08/2008 17:53:31,
+	Serialize complete at 18/08/2008 17:53:31
+Content-Type: text/plain; charset="US-ASCII"
+Message-Id: <20080818165432.4E51C3F608D@pmx1.sophos.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Just add parenthesis to be identical of current
-64bit implementation (so diff will not complain).
+malware-list-bounces@dmesg.printk.net wrote on 2008-08-18 17:15:00:
 
-Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
----
- arch/x86/kernel/apic_32.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+> > On async notification we fire a message to everything that registered
+> > 'simultaneously.' On blocking we fire a message to everything in
+> > priority order and block until we get a response.  That response 
+should
+> > be of the form ALLOW/DENY and should include "mark result"/"don't mark
+> > result."
+> 
+> No can do - you get stuck with recursive events with the virus checker
+> trying to stop the indexer from indexing a worm.
 
-diff --git a/arch/x86/kernel/apic_32.c b/arch/x86/kernel/apic_32.c
-index 885e306..e975562 100644
---- a/arch/x86/kernel/apic_32.c
-+++ b/arch/x86/kernel/apic_32.c
-@@ -1646,6 +1646,7 @@ static int lapic_resume(struct sys_device *dev)
- 		enable_x2apic();
- 	else
- #endif
-+	{
- 		/*
- 		 * Make sure the APICBASE points to the right address
- 		 *
-@@ -1656,6 +1657,7 @@ static int lapic_resume(struct sys_device *dev)
- 		l &= ~MSR_IA32_APICBASE_BASE;
- 		l |= MSR_IA32_APICBASE_ENABLE | mp_lapic_addr;
- 		wrmsr(MSR_IA32_APICBASE, l, h);
-+	}
+And the opposite approach can't work because the AV scanner + the index 
+scanner 
+need the HSM to do its work before they can scan.
+
+I guess the only way it could work is to have levels:
+e.g.
+HSM agent is Level 1
+AV scanner is Level 2
+Index scanner is Level 3
+
+When you register at Level N, you are excluded from all blocking/scanning 
+at Levels >= N,
+but your ops are still passed to Level < N.
+
+An example is a little hard to craft because HSM and indexing catch 
+different operations. :-)
  
- 	apic_write(APIC_LVTERR, ERROR_APIC_VECTOR | APIC_LVT_MASKED);
- 	apic_write(APIC_ID, apic_pm_state.apic_id);
 -- 
-1.6.0.rc1.34.g0fe8c
+Douglas Leeder
+
+Sophos Plc, The Pentagon, Abingdon Science Park, Abingdon,
+OX14 3YP, United Kingdom.
+
+Company Reg No 2096520. VAT Reg No GB 348 3873 20.
 
