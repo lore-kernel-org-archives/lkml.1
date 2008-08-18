@@ -1,330 +1,436 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755555AbYHRSPB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754911AbYHRSPw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755555AbYHRSPB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Aug 2008 14:15:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751837AbYHRSOx
+	id S1754911AbYHRSPw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Aug 2008 14:15:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753641AbYHRSPm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Aug 2008 14:14:53 -0400
-Received: from rv-out-0506.google.com ([209.85.198.226]:25185 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751502AbYHRSOw (ORCPT
+	Mon, 18 Aug 2008 14:15:42 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:42395 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751837AbYHRSPk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Aug 2008 14:14:52 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:references;
-        b=gHrwnMdYVb5cQWOHYiEeQrQfgqTnSRPrdRW99tAcF+/4rYdeUl1iqn4eI3sleRqbYs
-         N5ovNNIdYmRx505cE6GEWS/XTRUPFJyKmIxXkOmeuSwhSLDT2gaLhEpp6QnedPQnNC2Z
-         uL1c7qFfPkmCom2BlZaonAeQCkxiGXCx+vUF4=
-Message-ID: <86802c440808181114v478d786cwc7a20b25d47d7ffe@mail.gmail.com>
-Date: Mon, 18 Aug 2008 11:14:51 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [PATCH 2/2] irq: rename irq_desc() to to_irq_desc()
-Cc: "Thomas Gleixner" <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20080818073747.GC30694@elte.hu>
+	Mon, 18 Aug 2008 14:15:40 -0400
+Date: Mon, 18 Aug 2008 12:15:24 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Jeff Garzik <jgarzik@pobox.com>
+Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+       Matt_Domsch@dell.com, Matthew Wilcox <willy@linux.intel.com>
+Subject: Re: [PATCH] ata: Add support for Long Logical Sectors and Long Physical Sectors
+Message-ID: <20080818181523.GG677@parisc-linux.org>
+References: <1217957207-23116-1-git-send-email-matthew@wil.cx> <1217957207-23116-3-git-send-email-matthew@wil.cx> <48A8B211.8030103@pobox.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; 
-	boundary="----=_Part_73793_6753697.1219083291597"
-References: <1219032749-9312-1-git-send-email-yhlu.kernel@gmail.com>
-	 <1219032749-9312-2-git-send-email-yhlu.kernel@gmail.com>
-	 <1219032749-9312-3-git-send-email-yhlu.kernel@gmail.com>
-	 <20080818073747.GC30694@elte.hu>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48A8B211.8030103@pobox.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------=_Part_73793_6753697.1219083291597
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+On Sun, Aug 17, 2008 at 07:19:45PM -0400, Jeff Garzik wrote:
+> Matthew Wilcox wrote:
+> >From: Matthew Wilcox <willy@linux.intel.com>
+> >
+> >ATA 8 adds support for devices that have sector sizes larger than 512
+> >bytes.  We record the sector size in the ata_device and use it instead
+> >of the ATA_SECT_SIZE when the data transfer is a multiple of sectors.
+> >
+> >Signed-off-by: Matthew Wilcox <willy@linux.intel.com>
+> >---
+> > drivers/ata/libata-core.c |  127 
+> > +++++++++++++++++++++++++++++++++++++++++++++
+> > drivers/ata/libata-scsi.c |   52 +++++++++++++-----
+> > include/linux/libata.h    |    4 +-
+> > 3 files changed, 168 insertions(+), 15 deletions(-)
+> 
+> Was this ever updated regarding Alan's final comments?
+> 
+> I only have this patch (the one initiating the email sub-thread).
 
-On Mon, Aug 18, 2008 at 12:37 AM, Ingo Molnar <mingo@elte.hu> wrote:
->
-> * Yinghai Lu <yhlu.kernel@gmail.com> wrote:
->
->> So could revert back to use irq_desc[] for other arch except x86
->>
->> Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
->
-> great!
->
-> could we get rid of the remaining non-x86 arch changes too, please?
->
-> - __do_IRQ(): why is the change needed? Architectures that want to use
->  sparse IRQs should first properly convert to genirq (i.e. should get
->  rid of their __do_IRQ() use).
+I didn't update it fully; I moved onto something else.  I didn't change
+the first of the two patches, so I'll just include the new version of
+the second one in this mail.  I think it addresses all of Alan's comments.
+I'll have a git tree up soon for you to pull from.
 
-please check attacch patch
+commit dfde7a888bae3b36113b19f37e9edb29be9ae803
+Author: Matthew Wilcox <willy@linux.intel.com>
+Date:   Tue Aug 5 02:25:57 2008 -0400
 
->
-> - kstat_cpu / kstat_irqs_cpu: seems unnecessary now?
+    ata: Add support for Long Logical Sectors and Long Physical Sectors
+    
+    ATA 8 permits devices that have sector sizes larger than 512 bytes.
+    We support this by recording the sector size in the ata_device and use
+    it instead of the ATA_SECT_SIZE when the data transfer is a multiple
+    of sectors.  Drivers must indicate their support for sector sizes other
+    than 512 by implementing the 'sector_size_supported' port operation.
+    
+    Signed-off-by: Matthew Wilcox <willy@linux.intel.com>
 
-that is needed
+diff --git a/drivers/ata/libata-core.c b/drivers/ata/libata-core.c
+index 5ba96c5..31e359e 100644
+--- a/drivers/ata/libata-core.c
++++ b/drivers/ata/libata-core.c
+@@ -446,6 +446,113 @@ void ata_tf_from_fis(const u8 *fis, struct ata_taskfile *tf)
+ 	tf->hob_nsect	= fis[13];
+ }
+ 
++/**
++ * ata_sect_size - Returns the sector size to use for a command
++ * @command: The ATA command byte
++ * @dev_sect_size: The size of the drive's sectors
++ *
++ * Some commands are specified to transfer (a multiple of) 512 bytes of data
++ * while others transfer a multiple of the number of bytes in a sector.  This
++ * function knows which commands transfer how much data.
++ */
++unsigned ata_sect_size(u8 command, unsigned dev_sect_size)
++{
++	enum {
++		UNKNOWN = 0,
++		FIVE_TWELVE = 1,
++		DEVICE = 2,
++	};
++
++	static const char command_sect_size[256] = {
++		[ ATA_CMD_CFA_TRANSLATE_SECTOR ] = DEVICE,
++		[ ATA_CMD_CFA_WRITE_MULTI_WITHOUT_ERASE ] = DEVICE,
++		[ ATA_CMD_CFA_WRITE_SECTORS_WITHOUT_ERASE ] = DEVICE,
++		[ ATA_CMD_READ ] = DEVICE,
++		[ ATA_CMD_READ_EXT ] = DEVICE,
++		[ ATA_CMD_READ_QUEUED ] = DEVICE,
++		[ ATA_CMD_READ_QUEUED_EXT ] = DEVICE,
++		[ ATA_CMD_FPDMA_READ ] = DEVICE,
++		[ ATA_CMD_READ_MULTI ] = DEVICE,
++		[ ATA_CMD_READ_MULTI_EXT ] = DEVICE,
++		[ ATA_CMD_PIO_READ ] = DEVICE,
++		[ ATA_CMD_PIO_READ_EXT ] = DEVICE,
++		[ ATA_CMD_READ_STREAM_DMA_EXT ] = DEVICE,
++		[ ATA_CMD_READ_STREAM_EXT ] = DEVICE,
++		[ ATA_CMD_VERIFY ] = DEVICE,
++		[ ATA_CMD_VERIFY_EXT ] = DEVICE, /* XXX: not listed in rev 5 */
++		[ ATA_CMD_WRITE ] = DEVICE,
++		[ ATA_CMD_WRITE_EXT ] = DEVICE,
++		[ ATA_CMD_WRITE_FUA_EXT ] = DEVICE,
++		[ ATA_CMD_WRITE_DMA_QUEUED ] = DEVICE,
++		[ ATA_CMD_WRITE_DMA_QUEUED_EXT ] = DEVICE,
++		[ ATA_CMD_WRITE_DMA_QUEUED_FUA_EXT ] = DEVICE,
++		[ ATA_CMD_FPDMA_WRITE ] = DEVICE,
++		[ ATA_CMD_WRITE_MULTI ] = DEVICE,
++		[ ATA_CMD_WRITE_MULTI_EXT ] = DEVICE,
++		[ ATA_CMD_WRITE_MULTI_FUA_EXT ] = DEVICE,
++		[ ATA_CMD_PIO_WRITE ] = DEVICE,
++		[ ATA_CMD_PIO_WRITE_EXT ] = DEVICE,
++		[ ATA_CMD_WRITE_STREAM_DMA_EXT ] = DEVICE,
++		[ ATA_CMD_WRITE_STREAM_EXT ] = DEVICE,
++		[ ATA_CMD_CFA_ERASE_SECTORS ] = FIVE_TWELVE,
++		[ ATA_CMD_CFA_REQUEST_EXT_ERROR ] = FIVE_TWELVE,
++		[ ATA_CMD_CHK_MEDIA_CARD_TYPE ] = FIVE_TWELVE,
++		[ ATA_CMD_CHK_POWER ] = FIVE_TWELVE,
++		[ ATA_CMD_CONFIG_STREAM ] = FIVE_TWELVE,
++		[ ATA_CMD_CONF_OVERLAY ] = FIVE_TWELVE,
++		[ ATA_CMD_DEV_RESET ] = FIVE_TWELVE,
++		[ ATA_CMD_DLOAD_MCODE ] = FIVE_TWELVE,
++		[ ATA_CMD_EDD ] = FIVE_TWELVE,
++		[ ATA_CMD_FLUSH ] = FIVE_TWELVE,
++		[ ATA_CMD_FLUSH_EXT ] = FIVE_TWELVE,
++		[ ATA_CMD_ID_ATA ] = FIVE_TWELVE,
++		[ ATA_CMD_ID_ATAPI ] = FIVE_TWELVE,
++		[ ATA_CMD_IDLE ] = FIVE_TWELVE,
++		[ ATA_CMD_IDLEIMMEDIATE ] = FIVE_TWELVE,
++		[ ATA_CMD_NVCACHE ] = FIVE_TWELVE,
++		[ ATA_CMD_NOP ] = FIVE_TWELVE,
++		[ ATA_CMD_PACKET ] = FIVE_TWELVE,
++		[ ATA_CMD_PMP_READ ] = FIVE_TWELVE,
++		[ ATA_CMD_READ_LOG_EXT ] = FIVE_TWELVE,
++		[ ATA_CMD_READ_LOG_DMA_EXT ] = FIVE_TWELVE,
++		[ ATA_CMD_READ_NATIVE_MAX ] = FIVE_TWELVE,
++		[ ATA_CMD_READ_NATIVE_MAX_EXT ] = FIVE_TWELVE,
++		[ ATA_CMD_SEC_DISABLE_PASSWORD ] = FIVE_TWELVE,
++		[ ATA_CMD_SEC_ERASE_PREPARE ] = FIVE_TWELVE,
++		[ ATA_CMD_SEC_ERASE_UNIT ] = FIVE_TWELVE,
++		[ ATA_CMD_SEC_FREEZE_LOCK ] = FIVE_TWELVE,
++		[ ATA_CMD_SEC_SET_PASSWORD ] = FIVE_TWELVE,
++		[ ATA_CMD_SEC_UNLOCK ] = FIVE_TWELVE,
++		[ ATA_CMD_SERVICE ] = FIVE_TWELVE,
++		[ ATA_CMD_SET_FEATURES ] = FIVE_TWELVE,
++		[ ATA_CMD_SET_MAX ] = FIVE_TWELVE,
++		[ ATA_CMD_SET_MAX_EXT ] = FIVE_TWELVE,
++		[ ATA_CMD_SET_MULTI ] = FIVE_TWELVE,
++		[ ATA_CMD_SLEEP ] = FIVE_TWELVE,
++		[ ATA_CMD_SMART ] = FIVE_TWELVE,
++		[ ATA_CMD_STANDBY ] = FIVE_TWELVE,
++		[ ATA_CMD_STANDBYNOW1 ] = FIVE_TWELVE,
++		[ ATA_CMD_TRUSTED_NON_DATA ] = FIVE_TWELVE,
++		[ ATA_CMD_TRUSTED_RECEIVE ] = FIVE_TWELVE,
++		[ ATA_CMD_TRUSTED_RECEIVE_DMA ] = FIVE_TWELVE,
++		[ ATA_CMD_TRUSTED_SEND ] = FIVE_TWELVE,
++		[ ATA_CMD_TRUSTED_SEND_DMA ] = FIVE_TWELVE,
++		[ ATA_CMD_PMP_WRITE ] = FIVE_TWELVE,
++		[ ATA_CMD_WRITE_LOG_EXT ] = FIVE_TWELVE,
++		[ ATA_CMD_WRITE_LOG_DMA_EXT ] = FIVE_TWELVE,
++		[ ATA_CMD_WRITE_UNCORRECTABLE_EXT ] = FIVE_TWELVE,
++		[ ATA_CMD_INIT_DEV_PARAMS ] = FIVE_TWELVE,
++	};
++
++	char size = command_sect_size[command];
++	if (size == DEVICE)
++		return dev_sect_size;
++	if (size == UNKNOWN && printk_ratelimit())
++		printk("Unknown ata cmd %d, assuming 512 byte sector size\n",
++				command);
++	return 512;
++}
++
+ static const u8 ata_rw_cmds[] = {
+ 	/* pio multi */
+ 	ATA_CMD_READ_MULTI,
+@@ -1190,6 +1297,25 @@ static u64 ata_id_n_sectors(const u16 *id)
+ 	}
+ }
+ 
++/*
++ * ATA supports sector sizes up to 2^33 - 1.  The reported sector size may
++ * not be a power of two.  The extra bytes are used for user-visible data
++ * integrity calculations.  Note this is not the same as the ECC which is
++ * accessed through the SCT Command Transport or READ / WRITE LONG.
++ */
++static u64 ata_id_sect_size(const u16 *id)
++{
++	u16 word_106 = id[106];
++	u64 sz;
++
++	if ((word_106 & 0xc000) != 0x4000)
++		return ATA_SECT_SIZE;
++	if (!(word_106 & (1 << 12)))
++		return ATA_SECT_SIZE;
++	sz = (id[117] | ((u64)id[118] << 16)) * 2;
++	return sz;
++}
++
+ u64 ata_tf_to_lba48(const struct ata_taskfile *tf)
+ {
+ 	u64 sectors = 0;
+@@ -2117,6 +2243,20 @@ static void ata_dev_config_ncq(struct ata_device *dev,
+ 		snprintf(desc, desc_sz, "NCQ (depth %d/%d)", hdepth, ddepth);
+ }
+ 
++static int ata_check_sect_size(struct ata_device *dev)
++{
++	/* Every device can handle 512 byte sectors */
++	if (dev->sect_size == 512)
++		return 0;
++	/* Linux doesn't handle sectors above 4GB.  This may be a problem
++	 * around 2050 or so.  Deal with it then.  */
++	if (dev->sect_size > 0xffffffffULL)
++		return -EINVAL;
++	if (!dev->link->ap->ops->sector_size_supported)
++		return -EINVAL;
++	return dev->link->ap->ops->sector_size_supported(dev) ? 0 : -EINVAL;
++}
++
+ /**
+  *	ata_dev_configure - Configure the specified ATA/ATAPI device
+  *	@dev: Target device to configure
+@@ -2196,6 +2336,7 @@ int ata_dev_configure(struct ata_device *dev)
+ 	dev->max_sectors = 0;
+ 	dev->cdb_len = 0;
+ 	dev->n_sectors = 0;
++	dev->sect_size = ATA_SECT_SIZE;
+ 	dev->cylinders = 0;
+ 	dev->heads = 0;
+ 	dev->sectors = 0;
+@@ -2235,6 +2376,13 @@ int ata_dev_configure(struct ata_device *dev)
+ 		}
+ 
+ 		dev->n_sectors = ata_id_n_sectors(id);
++		dev->sect_size = ata_id_sect_size(id);
++		rc = ata_check_sect_size(dev);
++		if (rc) {
++			ata_dev_printk(dev, KERN_ERR, "sector size %lld not "
++					"supported.\n", dev->sect_size);
++			goto err_out_nosup;
++		}
+ 
+ 		if (dev->id[59] & 0x100)
+ 			dev->multi_count = dev->id[59] & 0xff;
+diff --git a/drivers/ata/libata-scsi.c b/drivers/ata/libata-scsi.c
+index b9d3ba4..145ea08 100644
+--- a/drivers/ata/libata-scsi.c
++++ b/drivers/ata/libata-scsi.c
+@@ -49,7 +49,6 @@
+ 
+ #include "libata.h"
+ 
+-#define SECTOR_SIZE		512
+ #define ATA_SCSI_RBUF_SIZE	4096
+ 
+ static DEFINE_SPINLOCK(ata_scsi_rbuf_lock);
+@@ -347,7 +346,7 @@ static int ata_get_identity(struct scsi_device *sdev, void __user *arg)
+ 
+ /**
+  *	ata_cmd_ioctl - Handler for HDIO_DRIVE_CMD ioctl
+- *	@scsidev: Device to which we are issuing command
++ *	@sdev: Device to which we are issuing command
+  *	@arg: User provided data for issuing command
+  *
+  *	LOCKING:
+@@ -356,7 +355,7 @@ static int ata_get_identity(struct scsi_device *sdev, void __user *arg)
+  *	RETURNS:
+  *	Zero on success, negative errno on error.
+  */
+-int ata_cmd_ioctl(struct scsi_device *scsidev, void __user *arg)
++int ata_cmd_ioctl(struct scsi_device *sdev, void __user *arg)
+ {
+ 	int rc = 0;
+ 	u8 scsi_cmd[MAX_COMMAND_SIZE];
+@@ -378,7 +377,8 @@ int ata_cmd_ioctl(struct scsi_device *scsidev, void __user *arg)
+ 	memset(scsi_cmd, 0, sizeof(scsi_cmd));
+ 
+ 	if (args[3]) {
+-		argsize = SECTOR_SIZE * args[3];
++		unsigned sect_size = ata_sect_size(args[0], sdev->sector_size);
++		argsize = sect_size * args[3];
+ 		argbuf = kmalloc(argsize, GFP_KERNEL);
+ 		if (argbuf == NULL) {
+ 			rc = -ENOMEM;
+@@ -410,7 +410,7 @@ int ata_cmd_ioctl(struct scsi_device *scsidev, void __user *arg)
+ 
+ 	/* Good values for timeout and retries?  Values below
+ 	   from scsi_ioctl_send_command() for default case... */
+-	cmd_result = scsi_execute(scsidev, scsi_cmd, data_dir, argbuf, argsize,
++	cmd_result = scsi_execute(sdev, scsi_cmd, data_dir, argbuf, argsize,
+ 				  sensebuf, (10*HZ), 5, 0);
+ 
+ 	if (driver_byte(cmd_result) == DRIVER_SENSE) {/* sense data available */
+@@ -1493,6 +1493,7 @@ nothing_to_do:
+ static unsigned int ata_scsi_rw_xlat(struct ata_queued_cmd *qc)
+ {
+ 	struct scsi_cmnd *scmd = qc->scsicmd;
++	struct ata_device *dev = qc->dev;
+ 	const u8 *cdb = scmd->cmnd;
+ 	unsigned int tf_flags = 0;
+ 	u64 block;
+@@ -1549,9 +1550,9 @@ static unsigned int ata_scsi_rw_xlat(struct ata_queued_cmd *qc)
+ 		goto nothing_to_do;
+ 
+ 	qc->flags |= ATA_QCFLAG_IO;
+-	qc->nbytes = n_block * ATA_SECT_SIZE;
++	qc->nbytes = n_block * dev->sect_size;
+ 
+-	rc = ata_build_rw_tf(&qc->tf, qc->dev, block, n_block, tf_flags,
++	rc = ata_build_rw_tf(&qc->tf, dev, block, n_block, tf_flags,
+ 			     qc->tag);
+ 	if (likely(rc == 0))
+ 		return 0;
+@@ -2217,10 +2218,25 @@ saving_not_supp:
+  */
+ static unsigned int ata_scsiop_read_cap(struct ata_scsi_args *args, u8 *rbuf)
+ {
+-	u64 last_lba = args->dev->n_sectors - 1; /* LBA of the last block */
++	struct ata_device *dev = args->dev;
++	u64 last_lba = dev->n_sectors - 1; /* LBA of the last block */
++	u32 sector_size;
++	u8 log_per_phys = 1;
++	u16 first_sector_offset = 0;
++	u16 word_106 = dev->id[106];
+ 
+ 	VPRINTK("ENTER\n");
+ 
++	if ((word_106 & 0xc000) == 0x4000) {
++		/* Number and offset of logical sectors per physical sector */
++		if (word_106 & (1 << 13))
++			log_per_phys = word_106 & 0xf;
++		if ((dev->id[209] & 0xc000) == 0x4000)
++			first_sector_offset = dev->id[209] & 0x3fff;
++	}
++
++	sector_size = dev->sect_size;
++
+ 	if (args->cmd->cmnd[0] == READ_CAPACITY) {
+ 		if (last_lba >= 0xffffffffULL)
+ 			last_lba = 0xffffffff;
+@@ -2231,9 +2247,10 @@ static unsigned int ata_scsiop_read_cap(struct ata_scsi_args *args, u8 *rbuf)
+ 		rbuf[2] = last_lba >> (8 * 1);
+ 		rbuf[3] = last_lba;
+ 
+-		/* sector size */
+-		rbuf[6] = ATA_SECT_SIZE >> 8;
+-		rbuf[7] = ATA_SECT_SIZE & 0xff;
++		rbuf[4] = sector_size >> (8 * 3);
++		rbuf[5] = sector_size >> (8 * 2);
++		rbuf[6] = sector_size >> (8 * 1);
++		rbuf[7] = sector_size;
+ 	} else {
+ 		/* sector count, 64-bit */
+ 		rbuf[0] = last_lba >> (8 * 7);
+@@ -2246,8 +2263,15 @@ static unsigned int ata_scsiop_read_cap(struct ata_scsi_args *args, u8 *rbuf)
+ 		rbuf[7] = last_lba;
+ 
+ 		/* sector size */
+-		rbuf[10] = ATA_SECT_SIZE >> 8;
+-		rbuf[11] = ATA_SECT_SIZE & 0xff;
++		rbuf[8] = sector_size >> (8 * 3);
++		rbuf[9] = sector_size >> (8 * 2);
++		rbuf[10] = sector_size >> (8 * 1);
++		rbuf[11] = sector_size;
++
++		rbuf[12] = 0;
++		rbuf[13] = log_per_phys;
++		rbuf[14] = first_sector_offset >> 8;
++		rbuf[15] = first_sector_offset;
+ 	}
+ 
+ 	return 0;
+@@ -2721,7 +2745,7 @@ static unsigned int ata_scsi_pass_thru(struct ata_queued_cmd *qc)
+ 	}
+ 
+ 	/* READ/WRITE LONG use a non-standard sect_size */
+-	qc->sect_size = ATA_SECT_SIZE;
++	qc->sect_size = ata_sect_size(tf->command, dev->sect_size);
+ 	switch (tf->command) {
+ 	case ATA_CMD_READ_LONG:
+ 	case ATA_CMD_READ_LONG_ONCE:
+diff --git a/include/linux/libata.h b/include/linux/libata.h
+index 06b8033..16a2132 100644
+--- a/include/linux/libata.h
++++ b/include/linux/libata.h
+@@ -553,8 +553,8 @@ struct ata_ering {
+ struct ata_device {
+ 	struct ata_link		*link;
+ 	unsigned int		devno;		/* 0 or 1 */
+-	unsigned long		flags;		/* ATA_DFLAG_xxx */
+ 	unsigned int		horkage;	/* List of broken features */
++	unsigned long		flags;		/* ATA_DFLAG_xxx */
+ 	struct scsi_device	*sdev;		/* attached SCSI device */
+ #ifdef CONFIG_ATA_ACPI
+ 	acpi_handle		acpi_handle;
+@@ -562,6 +562,7 @@ struct ata_device {
+ #endif
+ 	/* n_sector is used as CLEAR_OFFSET, read comment above CLEAR_OFFSET */
+ 	u64			n_sectors;	/* size of device, if ATA */
++	u64			sect_size;	/* Logical, not physical */
+ 	unsigned int		class;		/* ATA_DEV_xxx */
+ 
+ 	u8			pio_mode;
+@@ -753,6 +754,7 @@ struct ata_port_operations {
+ 	unsigned int (*read_id)(struct ata_device *dev, struct ata_taskfile *tf, u16 *id);
+ 
+ 	void (*dev_config)(struct ata_device *dev);
++	bool (*sector_size_supported)(struct ata_device *dev);
+ 
+ 	void (*freeze)(struct ata_port *ap);
+ 	void (*thaw)(struct ata_port *ap);
+@@ -956,6 +958,7 @@ extern unsigned int ata_do_dev_read_id(struct ata_device *dev,
+ 					struct ata_taskfile *tf, u16 *id);
+ extern void ata_qc_complete(struct ata_queued_cmd *qc);
+ extern int ata_qc_complete_multiple(struct ata_port *ap, u32 qc_active);
++extern unsigned ata_sect_size(u8 command, unsigned dev_sect_size);
+ extern void ata_scsi_simulate(struct ata_device *dev, struct scsi_cmnd *cmd,
+ 			      void (*done)(struct scsi_cmnd *));
+ extern int ata_std_bios_param(struct scsi_device *sdev,
 
->
-> - create_irq prototype return value change: cannot we limit the irq
->  space to 0..INT_MAX, and leave the prototype alone?
->
-> - create_irq(int) argument change: how about introducing a new
->  create_irq_nr(int) variant, while the create_irq(void) function would
->  just call create_irq_nr(0) ?
-
-will send out another patch later
-
-YH
-
-------=_Part_73793_6753697.1219083291597
-Content-Type: text/x-patch; name=irq_desc__to_irq_desc_fix1.patch
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_fk1enw4l0
-Content-Disposition: attachment; filename=irq_desc__to_irq_desc_fix1.patch
-
-W1BBVENIXSBpcnE6IHJlbmFtZSBpcnFfZGVzYygpIHRvIHRvX2lycV9kZXNjKCkgLSBmaXgKCnNv
-bWUgbGVmdCBvdmVycy4KClNpZ25lZC1vZmYtYnk6IFlpbmdoYWkgTHUgPHlobHUua2VybmVsQGdt
-YWlsLmNvbT4KCi0tLQogYXJjaC9hbHBoYS9rZXJuZWwvaXJxLmMgICAgICAgICAgICAgICB8ICAg
-IDIgKy0KIGFyY2gvYXJtL2tlcm5lbC9pcnEuYyAgICAgICAgICAgICAgICAgfCAgIDEwICsrKyst
-LS0tLS0KIGFyY2gvYXZyMzIva2VybmVsL2lycS5jICAgICAgICAgICAgICAgfCAgICA4ICsrKy0t
-LS0tCiBhcmNoL2NyaXMva2VybmVsL2lycS5jICAgICAgICAgICAgICAgIHwgICAgMiArLQogYXJj
-aC9oODMwMC9rZXJuZWwvaXJxLmMgICAgICAgICAgICAgICB8ICAgIDIgKy0KIGFyY2gvaWE2NC9r
-ZXJuZWwvaW9zYXBpYy5jICAgICAgICAgICAgfCAgICAyICstCiBhcmNoL2lhNjQva2VybmVsL21z
-aV9pYTY0LmMgICAgICAgICAgIHwgICAgMiArLQogYXJjaC9pYTY0L3NuL2tlcm5lbC9pcnEuYyAg
-ICAgICAgICAgICB8ICAgIDIgKy0KIGFyY2gvaWE2NC9zbi9rZXJuZWwvbXNpX3NuLmMgICAgICAg
-ICAgfCAgICAyICstCiBhcmNoL20zMnIva2VybmVsL2lycS5jICAgICAgICAgICAgICAgIHwgICAg
-MiArLQogYXJjaC9tNjhrbm9tbXUva2VybmVsL2lycS5jICAgICAgICAgICB8ICAgIDIgKy0KIGFy
-Y2gvcGFyaXNjL2tlcm5lbC9pcnEuYyAgICAgICAgICAgICAgfCAgICAyICstCiBhcmNoL3Bvd2Vy
-cGMvcGxhdGZvcm1zL3Bvd2VybWFjL3BpYy5jIHwgICAgMiArLQogYXJjaC91bS9rZXJuZWwvaXJx
-LmMgICAgICAgICAgICAgICAgICB8ICAgIDIgKy0KIGFyY2gveDg2L2tlcm5lbC9pb19hcGljLmMg
-ICAgICAgICAgICAgfCAgICA0ICstLS0KIGRyaXZlcnMvcGFyaXNjL2Rpbm8uYyAgICAgICAgICAg
-ICAgICAgfCAgICAzICstLQogZHJpdmVycy9wYXJpc2MvZWlzYS5jICAgICAgICAgICAgICAgICB8
-ICAgIDQgKy0tLQogZHJpdmVycy9wYXJpc2MvZ3NjLmMgICAgICAgICAgICAgICAgICB8ICAgIDMg
-Ky0tCiBkcml2ZXJzL3BhcmlzYy9zdXBlcmlvLmMgICAgICAgICAgICAgIHwgICAgNCArLS0tCiBk
-cml2ZXJzL3hlbi9ldmVudHMuYyAgICAgICAgICAgICAgICAgIHwgICAgMiArLQogaW5jbHVkZS9s
-aW51eC9pcnEuaCAgICAgICAgICAgICAgICAgICB8ICAgMTAgKysrKystLS0tLQoga2VybmVsL2ly
-cS9oYW5kbGUuYyAgICAgICAgICAgICAgICAgICB8ICAgIDMgKystCiBrZXJuZWwvaXJxL21pZ3Jh
-dGlvbi5jICAgICAgICAgICAgICAgIHwgICAgNCArKystCiAyMyBmaWxlcyBjaGFuZ2VkLCAzNSBp
-bnNlcnRpb25zKCspLCA0NCBkZWxldGlvbnMoLSkKCkluZGV4OiBsaW51eC0yLjYvYXJjaC9hbHBo
-YS9rZXJuZWwvaXJxLmMKPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PQotLS0gbGludXgtMi42Lm9yaWcvYXJjaC9hbHBoYS9r
-ZXJuZWwvaXJxLmMKKysrIGxpbnV4LTIuNi9hcmNoL2FscGhhL2tlcm5lbC9pcnEuYwpAQCAtMTU2
-LDYgKzE1Niw2IEBAIGhhbmRsZV9pcnEoaW50IGlycSkKIAkgKiBhdCBJUEwgMC4KIAkgKi8KIAls
-b2NhbF9pcnFfZGlzYWJsZSgpOwotCV9fZG9fSVJRKGlycSwgJmlycV9kZXNjW2lycV0pOworCV9f
-ZG9fSVJRKGlycSk7CiAJaXJxX2V4aXQoKTsKIH0KSW5kZXg6IGxpbnV4LTIuNi9hcmNoL2FybS9r
-ZXJuZWwvaXJxLmMKPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PQotLS0gbGludXgtMi42Lm9yaWcvYXJjaC9hcm0va2VybmVs
-L2lycS5jCisrKyBsaW51eC0yLjYvYXJjaC9hcm0va2VybmVsL2lycS5jCkBAIC02OSwyNCArNjks
-MjIgQEAgaW50IHNob3dfaW50ZXJydXB0cyhzdHJ1Y3Qgc2VxX2ZpbGUgKnAsCiAJfQogCiAJaWYg
-KGkgPCBOUl9JUlFTKSB7Ci0JCXN0cnVjdCBpcnFfZGVzYyAqZGVzYyA9IGlycV9kZXNjKGkpOwot
-Ci0JCXNwaW5fbG9ja19pcnFzYXZlKCZkZXNjLT5sb2NrLCBmbGFncyk7Ci0JCWFjdGlvbiA9IGRl
-c2MtPmFjdGlvbjsKKwkJc3Bpbl9sb2NrX2lycXNhdmUoJmlycV9kZXNjW2ldLmxvY2ssIGZsYWdz
-KTsKKwkJYWN0aW9uID0gaXJxX2Rlc2NbaV0uYWN0aW9uOwogCQlpZiAoIWFjdGlvbikKIAkJCWdv
-dG8gdW5sb2NrOwogCiAJCXNlcV9wcmludGYocCwgIiUzZDogIiwgaSk7CiAJCWZvcl9lYWNoX3By
-ZXNlbnRfY3B1KGNwdSkKIAkJCXNlcV9wcmludGYocCwgIiUxMHUgIiwga3N0YXRfaXJxc19jcHUo
-aSwgY3B1KSk7Ci0JCXNlcV9wcmludGYocCwgIiAlMTBzIiwgZGVzYy0+Y2hpcC0+bmFtZSA/IDog
-Ii0iKTsKKwkJc2VxX3ByaW50ZihwLCAiICUxMHMiLCBpcnFfZGVzY1tpXS5jaGlwLT5uYW1lID8g
-OiAiLSIpOwogCQlzZXFfcHJpbnRmKHAsICIgICVzIiwgYWN0aW9uLT5uYW1lKTsKIAkJZm9yIChh
-Y3Rpb24gPSBhY3Rpb24tPm5leHQ7IGFjdGlvbjsgYWN0aW9uID0gYWN0aW9uLT5uZXh0KQogCQkJ
-c2VxX3ByaW50ZihwLCAiLCAlcyIsIGFjdGlvbi0+bmFtZSk7CiAKIAkJc2VxX3B1dGMocCwgJ1xu
-Jyk7CiB1bmxvY2s6Ci0JCXNwaW5fdW5sb2NrX2lycXJlc3RvcmUoJmRlc2MtPmxvY2ssIGZsYWdz
-KTsKKwkJc3Bpbl91bmxvY2tfaXJxcmVzdG9yZSgmaXJxX2Rlc2NbaV0ubG9jaywgZmxhZ3MpOwog
-CX0gZWxzZSBpZiAoaSA9PSBOUl9JUlFTKSB7CiAjaWZkZWYgQ09ORklHX0FSQ0hfQUNPUk4KIAkJ
-c2hvd19maXFfbGlzdChwLCB2KTsKSW5kZXg6IGxpbnV4LTIuNi9hcmNoL2F2cjMyL2tlcm5lbC9p
-cnEuYwo9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09Ci0tLSBsaW51eC0yLjYub3JpZy9hcmNoL2F2cjMyL2tlcm5lbC9pcnEu
-YworKysgbGludXgtMi42L2FyY2gvYXZyMzIva2VybmVsL2lycS5jCkBAIC01MSwxMCArNTEsOCBA
-QCBpbnQgc2hvd19pbnRlcnJ1cHRzKHN0cnVjdCBzZXFfZmlsZSAqcCwKIAl9CiAKIAlpZiAoaSA8
-IE5SX0lSUVMpIHsKLQkJc3RydWN0IGlycV9kZXNjICpkZXNjID0gaXJxX2Rlc2MoaSk7Ci0KLQkJ
-c3Bpbl9sb2NrX2lycXNhdmUoJmRlc2MtPmxvY2ssIGZsYWdzKTsKLQkJYWN0aW9uID0gZGVzYy0+
-YWN0aW9uOworCQlzcGluX2xvY2tfaXJxc2F2ZSgmaXJxX2Rlc2NbaV0ubG9jaywgZmxhZ3MpOwor
-CQlhY3Rpb24gPSBpcnFfZGVzY1tpXS5hY3Rpb247CiAJCWlmICghYWN0aW9uKQogCQkJZ290byB1
-bmxvY2s7CiAKQEAgLTY4LDcgKzY2LDcgQEAgaW50IHNob3dfaW50ZXJydXB0cyhzdHJ1Y3Qgc2Vx
-X2ZpbGUgKnAsCiAKIAkJc2VxX3B1dGMocCwgJ1xuJyk7CiAJdW5sb2NrOgotCQlzcGluX3VubG9j
-a19pcnFyZXN0b3JlKCZkZXNjLT5sb2NrLCBmbGFncyk7CisJCXNwaW5fdW5sb2NrX2lycXJlc3Rv
-cmUoJmlycV9kZXNjW2ldLmxvY2ssIGZsYWdzKTsKIAl9CiAKIAlyZXR1cm4gMDsKSW5kZXg6IGxp
-bnV4LTIuNi9hcmNoL2NyaXMva2VybmVsL2lycS5jCj09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KLS0tIGxpbnV4LTIuNi5v
-cmlnL2FyY2gvY3Jpcy9rZXJuZWwvaXJxLmMKKysrIGxpbnV4LTIuNi9hcmNoL2NyaXMva2VybmVs
-L2lycS5jCkBAIC05OSw3ICs5OSw3IEBAIGFzbWxpbmthZ2Ugdm9pZCBkb19JUlEoaW50IGlycSwg
-c3RydWN0IHAKIAkJcHJpbnRrKCJkb19JUlE6IHN0YWNrIG92ZXJmbG93OiAlbFhcbiIsIHNwKTsK
-IAkJc2hvd19zdGFjayhOVUxMLCAodW5zaWduZWQgbG9uZyAqKXNwKTsKIAl9Ci0JX19kb19JUlEo
-aXJxLCAmaXJxX2Rlc2NbaXJxXSk7CisJX19kb19JUlEoaXJxKTsKICAgICAgICAgaXJxX2V4aXQo
-KTsKIAlzZXRfaXJxX3JlZ3Mob2xkX3JlZ3MpOwogfQpJbmRleDogbGludXgtMi42L2FyY2gvaDgz
-MDAva2VybmVsL2lycS5jCj09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT0KLS0tIGxpbnV4LTIuNi5vcmlnL2FyY2gvaDgzMDAv
-a2VybmVsL2lycS5jCisrKyBsaW51eC0yLjYvYXJjaC9oODMwMC9rZXJuZWwvaXJxLmMKQEAgLTE3
-Niw3ICsxNzYsNyBAQCB2b2lkIF9faW5pdCBpbml0X0lSUSh2b2lkKQogYXNtbGlua2FnZSB2b2lk
-IGRvX0lSUShpbnQgaXJxKQogewogCWlycV9lbnRlcigpOwotCV9fZG9fSVJRKGlycSwgJmlycV9k
-ZXNjW2lycV0pOworCV9fZG9fSVJRKGlycSk7CiAJaXJxX2V4aXQoKTsKIH0KIApJbmRleDogbGlu
-dXgtMi42L2FyY2gvaWE2NC9rZXJuZWwvaW9zYXBpYy5jCj09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KLS0tIGxpbnV4LTIu
-Ni5vcmlnL2FyY2gvaWE2NC9rZXJuZWwvaW9zYXBpYy5jCisrKyBsaW51eC0yLjYvYXJjaC9pYTY0
-L2tlcm5lbC9pb3NhcGljLmMKQEAgLTQ1Miw3ICs0NTIsNyBAQCBpb3NhcGljX2Fja19lZGdlX2ly
-cSAodW5zaWduZWQgaW50IGlycSkKIAlpcnFfZGVzY190ICppZGVzYyA9IGlycV9kZXNjICsgaXJx
-OwogCiAJaXJxX2NvbXBsZXRlX21vdmUoaXJxKTsKLQltb3ZlX25hdGl2ZV9pcnEoaXJxLCBpZGVz
-Yyk7CisJbW92ZV9uYXRpdmVfaXJxKGlycSk7CiAJLyoKIAkgKiBPbmNlIHdlIGhhdmUgcmVjb3Jk
-ZWQgSVJRX1BFTkRJTkcgYWxyZWFkeSwgd2UgY2FuIG1hc2sgdGhlCiAJICogaW50ZXJydXB0IGZv
-ciByZWFsLiBUaGlzIHByZXZlbnRzIElSUSBzdG9ybXMgZnJvbSB1bmhhbmRsZWQKSW5kZXg6IGxp
-bnV4LTIuNi9hcmNoL2lhNjQva2VybmVsL21zaV9pYTY0LmMKPT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQotLS0gbGludXgt
-Mi42Lm9yaWcvYXJjaC9pYTY0L2tlcm5lbC9tc2lfaWE2NC5jCisrKyBsaW51eC0yLjYvYXJjaC9p
-YTY0L2tlcm5lbC9tc2lfaWE2NC5jCkBAIC0xMjAsNyArMTIwLDcgQEAgdm9pZCBpYTY0X3RlYXJk
-b3duX21zaV9pcnEodW5zaWduZWQgaW50CiBzdGF0aWMgdm9pZCBpYTY0X2Fja19tc2lfaXJxKHVu
-c2lnbmVkIGludCBpcnEpCiB7CiAJaXJxX2NvbXBsZXRlX21vdmUoaXJxKTsKLQltb3ZlX25hdGl2
-ZV9pcnEoaXJxLCAmaXJxX2Rlc2NbaXJxXSk7CisJbW92ZV9uYXRpdmVfaXJxKGlycSk7CiAJaWE2
-NF9lb2koKTsKIH0KIApJbmRleDogbGludXgtMi42L2FyY2gvaWE2NC9zbi9rZXJuZWwvaXJxLmMK
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PQotLS0gbGludXgtMi42Lm9yaWcvYXJjaC9pYTY0L3NuL2tlcm5lbC9pcnEuYwor
-KysgbGludXgtMi42L2FyY2gvaWE2NC9zbi9rZXJuZWwvaXJxLmMKQEAgLTExMCw3ICsxMTAsNyBA
-QCBzdGF0aWMgdm9pZCBzbl9hY2tfaXJxKHVuc2lnbmVkIGludCBpcnEpCiAJSFVCX1MoKHU2NCop
-TE9DQUxfTU1SX0FERFIoU0hfRVZFTlRfT0NDVVJSRURfQUxJQVMpLCBtYXNrKTsKIAlfX3NldF9i
-aXQoaXJxLCAodm9sYXRpbGUgdm9pZCAqKXBkYS0+c25faW5fc2VydmljZV9pdmVjcyk7CiAKLQlt
-b3ZlX25hdGl2ZV9pcnEoaXJxLCAmaXJxX2Rlc2NbaXJxXSk7CisJbW92ZV9uYXRpdmVfaXJxKGly
-cSk7CiB9CiAKIHN0YXRpYyB2b2lkIHNuX2VuZF9pcnEodW5zaWduZWQgaW50IGlycSkKSW5kZXg6
-IGxpbnV4LTIuNi9hcmNoL2lhNjQvc24va2VybmVsL21zaV9zbi5jCj09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KLS0tIGxp
-bnV4LTIuNi5vcmlnL2FyY2gvaWE2NC9zbi9rZXJuZWwvbXNpX3NuLmMKKysrIGxpbnV4LTIuNi9h
-cmNoL2lhNjQvc24va2VybmVsL21zaV9zbi5jCkBAIC0yMTAsNyArMjEwLDcgQEAgc3RhdGljIHZv
-aWQgc25fc2V0X21zaV9pcnFfYWZmaW5pdHkodW5zaQogCiBzdGF0aWMgdm9pZCBzbl9hY2tfbXNp
-X2lycSh1bnNpZ25lZCBpbnQgaXJxKQogewotCW1vdmVfbmF0aXZlX2lycShpcnEsICZpcnFfZGVz
-Y1tpcnFdKTsKKwltb3ZlX25hdGl2ZV9pcnEoaXJxKTsKIAlpYTY0X2VvaSgpOwogfQogCkluZGV4
-OiBsaW51eC0yLjYvYXJjaC9tMzJyL2tlcm5lbC9pcnEuYwo9PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09Ci0tLSBsaW51eC0y
-LjYub3JpZy9hcmNoL20zMnIva2VybmVsL2lycS5jCisrKyBsaW51eC0yLjYvYXJjaC9tMzJyL2tl
-cm5lbC9pcnEuYwpAQCAtODQsNyArODQsNyBAQCBhc21saW5rYWdlIHVuc2lnbmVkIGludCBkb19J
-UlEoaW50IGlycSwKICNpZmRlZiBDT05GSUdfREVCVUdfU1RBQ0tPVkVSRkxPVwogCS8qIEZJWE1F
-IE0zMlIgKi8KICNlbmRpZgotCV9fZG9fSVJRKGlycSwgJmlycV9kZXNjW2lycV0pOworCV9fZG9f
-SVJRKGlycSk7CiAJaXJxX2V4aXQoKTsKIAlzZXRfaXJxX3JlZ3Mob2xkX3JlZ3MpOwogCkluZGV4
-OiBsaW51eC0yLjYvYXJjaC9tNjhrbm9tbXUva2VybmVsL2lycS5jCj09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KLS0tIGxp
-bnV4LTIuNi5vcmlnL2FyY2gvbTY4a25vbW11L2tlcm5lbC9pcnEuYworKysgbGludXgtMi42L2Fy
-Y2gvbTY4a25vbW11L2tlcm5lbC9pcnEuYwpAQCAtMjMsNyArMjMsNyBAQCBhc21saW5rYWdlIHZv
-aWQgZG9fSVJRKGludCBpcnEsIHN0cnVjdCBwCiAJc3RydWN0IHB0X3JlZ3MgKm9sZHJlZ3MgPSBz
-ZXRfaXJxX3JlZ3MocmVncyk7CiAKIAlpcnFfZW50ZXIoKTsKLQlfX2RvX0lSUShpcnEsICZpcnFf
-ZGVzY1tpcnFdKTsKKwlfX2RvX0lSUShpcnEpOwogCWlycV9leGl0KCk7CiAKIAlzZXRfaXJxX3Jl
-Z3Mob2xkcmVncyk7CkluZGV4OiBsaW51eC0yLjYvYXJjaC9wYXJpc2Mva2VybmVsL2lycS5jCj09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT0KLS0tIGxpbnV4LTIuNi5vcmlnL2FyY2gvcGFyaXNjL2tlcm5lbC9pcnEuYworKysg
-bGludXgtMi42L2FyY2gvcGFyaXNjL2tlcm5lbC9pcnEuYwpAQCAtMzYzLDcgKzM2Myw3IEBAIHZv
-aWQgZG9fY3B1X2lycV9tYXNrKHN0cnVjdCBwdF9yZWdzICpyZWcKIAkJZ290byBzZXRfb3V0Owog
-CX0KICNlbmRpZgotCV9fZG9fSVJRKGlycSwgaXJxX2Rlc2MpOworCV9fZG9fSVJRKGlycSk7CiAK
-ICBvdXQ6CiAJaXJxX2V4aXQoKTsKSW5kZXg6IGxpbnV4LTIuNi9hcmNoL3Bvd2VycGMvcGxhdGZv
-cm1zL3Bvd2VybWFjL3BpYy5jCj09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KLS0tIGxpbnV4LTIuNi5vcmlnL2FyY2gvcG93
-ZXJwYy9wbGF0Zm9ybXMvcG93ZXJtYWMvcGljLmMKKysrIGxpbnV4LTIuNi9hcmNoL3Bvd2VycGMv
-cGxhdGZvcm1zL3Bvd2VybWFjL3BpYy5jCkBAIC0yMjEsNyArMjIxLDcgQEAgc3RhdGljIGlycXJl
-dHVybl90IGdhdHdpY2tfYWN0aW9uKGludCBjcAogCQkJY29udGludWU7CiAJCWlycSArPSBfX2ls
-b2cyKGJpdHMpOwogCQlzcGluX3VubG9ja19pcnFyZXN0b3JlKCZwbWFjX3BpY19sb2NrLCBmbGFn
-cyk7Ci0JCV9fZG9fSVJRKGlycSwgJmlycV9kZXNjW2lycV0pOworCQlfX2RvX0lSUShpcnEpOwog
-CQlzcGluX2xvY2tfaXJxc2F2ZSgmcG1hY19waWNfbG9jaywgZmxhZ3MpOwogCQlyYyA9IElSUV9I
-QU5ETEVEOwogCX0KSW5kZXg6IGxpbnV4LTIuNi9hcmNoL3VtL2tlcm5lbC9pcnEuYwo9PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09Ci0tLSBsaW51eC0yLjYub3JpZy9hcmNoL3VtL2tlcm5lbC9pcnEuYworKysgbGludXgtMi42
-L2FyY2gvdW0va2VybmVsL2lycS5jCkBAIC0zMzIsNyArMzMyLDcgQEAgdW5zaWduZWQgaW50IGRv
-X0lSUShpbnQgaXJxLCBzdHJ1Y3QgdW1sXwogewogCXN0cnVjdCBwdF9yZWdzICpvbGRfcmVncyA9
-IHNldF9pcnFfcmVncygoc3RydWN0IHB0X3JlZ3MgKilyZWdzKTsKIAlpcnFfZW50ZXIoKTsKLQlf
-X2RvX0lSUShpcnEsICZpcnFfZGVzY1tpcnFdKTsKKwlfX2RvX0lSUShpcnEpOwogCWlycV9leGl0
-KCk7CiAJc2V0X2lycV9yZWdzKG9sZF9yZWdzKTsKIAlyZXR1cm4gMTsKSW5kZXg6IGxpbnV4LTIu
-Ni9kcml2ZXJzL3BhcmlzYy9kaW5vLmMKPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQotLS0gbGludXgtMi42Lm9yaWcvZHJp
-dmVycy9wYXJpc2MvZGluby5jCisrKyBsaW51eC0yLjYvZHJpdmVycy9wYXJpc2MvZGluby5jCkBA
-IC0zODksMTAgKzM4OSw5IEBAIGlscl9hZ2FpbjoKIAlkbyB7CiAJCWludCBsb2NhbF9pcnEgPSBf
-X2ZmcyhtYXNrKTsKIAkJaW50IGlycSA9IGRpbm9fZGV2LT5nbG9iYWxfaXJxW2xvY2FsX2lycV07
-Ci0JCXN0cnVjdCBpcnFfZGVzYyAqZGVzYyA9IHRvX2lycV9kZXNjKGlycSk7CiAJCURCRyhLRVJO
-X0RFQlVHICIlcyglZCwgJXApIG1hc2sgMHgleFxuIiwKIAkJCV9fZnVuY19fLCBpcnEsIGludHJf
-ZGV2LCBtYXNrKTsKLQkJX19kb19JUlEoaXJxLCBkZXNjKTsKKwkJX19kb19JUlEoaXJxKTsKIAkJ
-bWFzayAmPSB+KDEgPDwgbG9jYWxfaXJxKTsKIAl9IHdoaWxlIChtYXNrKTsKIApJbmRleDogbGlu
-dXgtMi42L2RyaXZlcnMvcGFyaXNjL2Vpc2EuYwo9PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09Ci0tLSBsaW51eC0yLjYub3Jp
-Zy9kcml2ZXJzL3BhcmlzYy9laXNhLmMKKysrIGxpbnV4LTIuNi9kcml2ZXJzL3BhcmlzYy9laXNh
-LmMKQEAgLTIwMiw3ICsyMDIsNiBAQCBzdGF0aWMgaXJxcmV0dXJuX3QgZWlzYV9pcnEoaW50IHdh
-eF9pcnEsCiB7CiAJaW50IGlycSA9IGdzY19yZWFkYigweGZjMDFmMDAwKTsgLyogRUlTQSBzdXBw
-b3J0cyAxNiBpcnFzICovCiAJdW5zaWduZWQgbG9uZyBmbGFnczsKLQlzdHJ1Y3QgaXJxX2Rlc2Mg
-KmRlc2M7CiAgICAgICAgIAogCXNwaW5fbG9ja19pcnFzYXZlKCZlaXNhX2lycV9sb2NrLCBmbGFn
-cyk7CiAJLyogcmVhZCBJUlIgY29tbWFuZCAqLwpAQCAtMjM0LDggKzIzMyw3IEBAIHN0YXRpYyBp
-cnFyZXR1cm5fdCBlaXNhX2lycShpbnQgd2F4X2lycSwKIAl9CiAJc3Bpbl91bmxvY2tfaXJxcmVz
-dG9yZSgmZWlzYV9pcnFfbG9jaywgZmxhZ3MpOwogCi0JZGVzYyA9IHRvX2lycV9kZXNjKGlycSk7
-Ci0JX19kb19JUlEoaXJxLCBkZXNjKTsKKwlfX2RvX0lSUShpcnEpOwogICAgCiAJc3Bpbl9sb2Nr
-X2lycXNhdmUoJmVpc2FfaXJxX2xvY2ssIGZsYWdzKTsKIAkvKiB1bm1hc2sgKi8KSW5kZXg6IGxp
-bnV4LTIuNi9kcml2ZXJzL3BhcmlzYy9nc2MuYwo9PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09Ci0tLSBsaW51eC0yLjYub3Jp
-Zy9kcml2ZXJzL3BhcmlzYy9nc2MuYworKysgbGludXgtMi42L2RyaXZlcnMvcGFyaXNjL2dzYy5j
-CkBAIC04Nyw4ICs4Nyw3IEBAIGlycXJldHVybl90IGdzY19hc2ljX2ludHIoaW50IGdzY19hc2lj
-X2kKIAlkbyB7CiAJCWludCBsb2NhbF9pcnEgPSBfX2ZmcyhpcnIpOwogCQl1bnNpZ25lZCBpbnQg
-aXJxID0gZ3NjX2FzaWMtPmdsb2JhbF9pcnFbbG9jYWxfaXJxXTsKLQkJc3RydWN0IGlycV9kZXNj
-ICpkZXNjID0gdG9faXJxX2Rlc2MoaXJxKTsKLQkJX19kb19JUlEoaXJxLCBkZXNjKTsKKwkJX19k
-b19JUlEoaXJxKTsKIAkJaXJyICY9IH4oMSA8PCBsb2NhbF9pcnEpOwogCX0gd2hpbGUgKGlycik7
-CiAKSW5kZXg6IGxpbnV4LTIuNi9kcml2ZXJzL3BhcmlzYy9zdXBlcmlvLmMKPT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQot
-LS0gbGludXgtMi42Lm9yaWcvZHJpdmVycy9wYXJpc2Mvc3VwZXJpby5jCisrKyBsaW51eC0yLjYv
-ZHJpdmVycy9wYXJpc2Mvc3VwZXJpby5jCkBAIC05OSw3ICs5OSw2IEBAIHN1cGVyaW9faW50ZXJy
-dXB0KGludCBwYXJlbnRfaXJxLCB2b2lkICoKIHsKIAl1OCByZXN1bHRzOwogCXU4IGxvY2FsX2ly
-cTsKLQlzdHJ1Y3QgaXJxX2Rlc2MgKmRlc2M7CiAKIAkvKiBQb2xsIHRoZSA4MjU5IHRvIHNlZSBp
-ZiB0aGVyZSdzIGFuIGludGVycnVwdC4gKi8KIAlvdXRiIChPQ1czX1BPTEwsSUNfUElDMSswKTsK
-QEAgLTE0MCw4ICsxMzksNyBAQCBzdXBlcmlvX2ludGVycnVwdChpbnQgcGFyZW50X2lycSwgdm9p
-ZCAqCiAJfQogCiAJLyogQ2FsbCB0aGUgYXBwcm9wcmlhdGUgZGV2aWNlJ3MgaW50ZXJydXB0ICov
-Ci0JZGVzYyA9IHRvX2lycV9kZXNjKGxvY2FsX2lycSk7Ci0JX19kb19JUlEobG9jYWxfaXJxLCBk
-ZXNjKTsKKwlfX2RvX0lSUShsb2NhbF9pcnEpOwogCiAJLyogc2V0IEVPSSAtIGZvcmNlcyBhIG5l
-dyBpbnRlcnJ1cHQgaWYgYSBsb3dlciBwcmlvcml0eSBkZXZpY2UKIAkgKiBzdGlsbCBuZWVkcyBz
-ZXJ2aWNlLgpJbmRleDogbGludXgtMi42L2RyaXZlcnMveGVuL2V2ZW50cy5jCj09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0K
-LS0tIGxpbnV4LTIuNi5vcmlnL2RyaXZlcnMveGVuL2V2ZW50cy5jCisrKyBsaW51eC0yLjYvZHJp
-dmVycy94ZW4vZXZlbnRzLmMKQEAgLTY0MCw3ICs2NDAsNyBAQCBzdGF0aWMgdm9pZCBhY2tfZHlu
-aXJxKHVuc2lnbmVkIGludCBpcnEpCiB7CiAJaW50IGV2dGNobiA9IGV2dGNobl9mcm9tX2lycShp
-cnEpOwogCi0JbW92ZV9uYXRpdmVfaXJxKGlycSwgdG9faXJxX2Rlc2MoaXJxKSk7CisJbW92ZV9u
-YXRpdmVfaXJxKGlycSk7CiAKIAlpZiAoVkFMSURfRVZUQ0hOKGV2dGNobikpCiAJCWNsZWFyX2V2
-dGNobihldnRjaG4pOwpJbmRleDogbGludXgtMi42L2luY2x1ZGUvbGludXgvaXJxLmgKPT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PQotLS0gbGludXgtMi42Lm9yaWcvaW5jbHVkZS9saW51eC9pcnEuaAorKysgbGludXgtMi42
-L2luY2x1ZGUvbGludXgvaXJxLmgKQEAgLTI0NCw3ICsyNDQsNyBAQCBleHRlcm4gaW50IHNldHVw
-X2lycSh1bnNpZ25lZCBpbnQgaXJxLCBzCiAjaWZkZWYgQ09ORklHX0dFTkVSSUNfUEVORElOR19J
-UlEKIAogdm9pZCBzZXRfcGVuZGluZ19pcnEodW5zaWduZWQgaW50IGlycSwgY3B1bWFza190IG1h
-c2spOwotdm9pZCBtb3ZlX25hdGl2ZV9pcnEoaW50IGlycSwgc3RydWN0IGlycV9kZXNjICpkZXNj
-KTsKK3ZvaWQgbW92ZV9uYXRpdmVfaXJxKGludCBpcnEpOwogdm9pZCBtb3ZlX21hc2tlZF9pcnEo
-aW50IGlycSwgc3RydWN0IGlycV9kZXNjICpkZXNjKTsKIAogI2Vsc2UgLyogQ09ORklHX0dFTkVS
-SUNfUEVORElOR19JUlEgKi8KQEAgLTI1Myw3ICsyNTMsNyBAQCBzdGF0aWMgaW5saW5lIHZvaWQg
-bW92ZV9pcnEoaW50IGlycSkKIHsKIH0KIAotc3RhdGljIGlubGluZSB2b2lkIG1vdmVfbmF0aXZl
-X2lycShpbnQgaXJxLCBzdHJ1Y3QgaXJxX2Rlc2MgKmRlc2MpCitzdGF0aWMgaW5saW5lIHZvaWQg
-bW92ZV9uYXRpdmVfaXJxKGludCBpcnEpCiB7CiB9CiAKQEAgLTI2OSw3ICsyNjksNyBAQCBzdGF0
-aWMgaW5saW5lIHZvaWQgc2V0X3BlbmRpbmdfaXJxKHVuc2lnCiAKICNlbHNlIC8qIENPTkZJR19T
-TVAgKi8KIAotI2RlZmluZSBtb3ZlX25hdGl2ZV9pcnEoeCwgeSkKKyNkZWZpbmUgbW92ZV9uYXRp
-dmVfaXJxKHgpCiAjZGVmaW5lIG1vdmVfbWFza2VkX2lycSh4LCB5KQogCiAjZW5kaWYgLyogQ09O
-RklHX1NNUCAqLwpAQCAtMzAyLDcgKzMwMiw3IEBAIGV4dGVybiB2b2lkIGhhbmRsZV9iYWRfaXJx
-KHVuc2lnbmVkIGludAogICogTW9ub2xpdGhpYyBkb19JUlEgaW1wbGVtZW50YXRpb24uCiAgKi8K
-ICNpZm5kZWYgQ09ORklHX0dFTkVSSUNfSEFSRElSUVNfTk9fX0RPX0lSUQotZXh0ZXJuIHVuc2ln
-bmVkIGludCBfX2RvX0lSUSh1bnNpZ25lZCBpbnQgaXJxLCBzdHJ1Y3QgaXJxX2Rlc2MgKmRlc2Mp
-OworZXh0ZXJuIHVuc2lnbmVkIGludCBfX2RvX0lSUSh1bnNpZ25lZCBpbnQgaXJxKTsKICNlbmRp
-ZgogCiAvKgpAQCAtMzE5LDcgKzMxOSw3IEBAIHN0YXRpYyBpbmxpbmUgdm9pZCBnZW5lcmljX2hh
-bmRsZV9pcnFfZGUKIAlpZiAobGlrZWx5KGRlc2MtPmhhbmRsZV9pcnEpKQogCQlkZXNjLT5oYW5k
-bGVfaXJxKGlycSwgZGVzYyk7CiAJZWxzZQotCQlfX2RvX0lSUShpcnEsIGRlc2MpOworCQlfX2Rv
-X0lSUShpcnEpOwogI2VuZGlmCiB9CiAKSW5kZXg6IGxpbnV4LTIuNi9rZXJuZWwvaXJxL2hhbmRs
-ZS5jCj09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT0KLS0tIGxpbnV4LTIuNi5vcmlnL2tlcm5lbC9pcnEvaGFuZGxlLmMKKysr
-IGxpbnV4LTIuNi9rZXJuZWwvaXJxL2hhbmRsZS5jCkBAIC0zODUsMTAgKzM4NSwxMSBAQCBpcnFy
-ZXR1cm5fdCBoYW5kbGVfSVJRX2V2ZW50KHVuc2lnbmVkIGluCiAgKiBUaGlzIGlzIHRoZSBvcmln
-aW5hbCB4ODYgaW1wbGVtZW50YXRpb24gd2hpY2ggaXMgdXNlZCBmb3IgZXZlcnkKICAqIGludGVy
-cnVwdCB0eXBlLgogICovCi11bnNpZ25lZCBpbnQgX19kb19JUlEodW5zaWduZWQgaW50IGlycSwg
-c3RydWN0IGlycV9kZXNjICpkZXNjKQordW5zaWduZWQgaW50IF9fZG9fSVJRKHVuc2lnbmVkIGlu
-dCBpcnEpCiB7CiAJc3RydWN0IGlycWFjdGlvbiAqYWN0aW9uOwogCXVuc2lnbmVkIGludCBzdGF0
-dXM7CisJc3RydWN0IGlycV9kZXNjICpkZXNjID0gdG9faXJxX2Rlc2MoaXJxKTsKIAogCWtzdGF0
-X2lycXNfdGhpc19jcHUoZGVzYykrKzsKIAlpZiAoQ0hFQ0tfSVJRX1BFUl9DUFUoZGVzYy0+c3Rh
-dHVzKSkgewpJbmRleDogbGludXgtMi42L2tlcm5lbC9pcnEvbWlncmF0aW9uLmMKPT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PQotLS0gbGludXgtMi42Lm9yaWcva2VybmVsL2lycS9taWdyYXRpb24uYworKysgbGludXgtMi42
-L2tlcm5lbC9pcnEvbWlncmF0aW9uLmMKQEAgLTU3LDggKzU3LDEwIEBAIHZvaWQgbW92ZV9tYXNr
-ZWRfaXJxKGludCBpcnEsIHN0cnVjdCBpcnEKIAljcHVzX2NsZWFyKGRlc2MtPnBlbmRpbmdfbWFz
-ayk7CiB9CiAKLXZvaWQgbW92ZV9uYXRpdmVfaXJxKGludCBpcnEsIHN0cnVjdCBpcnFfZGVzYyAq
-ZGVzYykKK3ZvaWQgbW92ZV9uYXRpdmVfaXJxKGludCBpcnEpCiB7CisJc3RydWN0IGlycV9kZXNj
-ICpkZXNjID0gdG9faXJxX2Rlc2MoaXJxKTsKKwogCWlmIChsaWtlbHkoIShkZXNjLT5zdGF0dXMg
-JiBJUlFfTU9WRV9QRU5ESU5HKSkpCiAJCXJldHVybjsKIApJbmRleDogbGludXgtMi42L2FyY2gv
-eDg2L2tlcm5lbC9pb19hcGljLmMKPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQotLS0gbGludXgtMi42Lm9yaWcvYXJjaC94
-ODYva2VybmVsL2lvX2FwaWMuYworKysgbGludXgtMi42L2FyY2gveDg2L2tlcm5lbC9pb19hcGlj
-LmMKQEAgLTI0MjYsMTAgKzI0MjYsOCBAQCBzdGF0aWMgdm9pZCBhY2tfeDJhcGljX2VkZ2UodW5z
-aWduZWQgaW50CiAKIHN0YXRpYyB2b2lkIGFja19hcGljX2VkZ2UodW5zaWduZWQgaW50IGlycSkK
-IHsKLQlzdHJ1Y3QgaXJxX2Rlc2MgKmRlc2MgPSB0b19pcnFfZGVzYyhpcnEpOwotCiAJaXJxX2Nv
-bXBsZXRlX21vdmUoaXJxKTsKLQltb3ZlX25hdGl2ZV9pcnEoaXJxLCBkZXNjKTsKKwltb3ZlX25h
-dGl2ZV9pcnEoaXJxKTsKIAlhY2tfQVBJQ19pcnEoKTsKIH0KIAo=
-------=_Part_73793_6753697.1219083291597--
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
