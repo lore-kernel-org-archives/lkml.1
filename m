@@ -1,148 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753023AbYHRAnU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752982AbYHRAvt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753023AbYHRAnU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Aug 2008 20:43:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750950AbYHRAnI
+	id S1752982AbYHRAvt (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Aug 2008 20:51:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750955AbYHRAvl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Aug 2008 20:43:08 -0400
-Received: from smtp101.prem.mail.sp1.yahoo.com ([98.136.44.56]:26764 "HELO
-	smtp101.prem.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750858AbYHRAnH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Aug 2008 20:43:07 -0400
-X-YMail-OSG: ODgqU3MVM1nbOD1WkrF1r0q.t1c2MpW1LDTeOBN1t6WZQC93y7YD3Pp0Hcvo6U85z_iavtTNCPQd2HcO918feoV6JxjXp2fdqj8ViN2aYYkT5B55osBsN7p1KwiEdmJGAfDF_jUeaaAe1auLmK4QP_81
-X-Yahoo-Newman-Property: ymail-3
-Message-ID: <48A8C58C.7030208@schaufler-ca.com>
-Date: Sun, 17 Aug 2008 17:42:52 -0700
-From: Casey Schaufler <casey@schaufler-ca.com>
-User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
+	Sun, 17 Aug 2008 20:51:41 -0400
+Received: from mail.suse.de ([195.135.220.2]:45955 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750870AbYHRAvk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Aug 2008 20:51:40 -0400
+From: Neil Brown <neilb@suse.de>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Date: Mon, 18 Aug 2008 10:51:33 +1000
 MIME-Version: 1.0
-To: david@lang.hm
-CC: Pavel Machek <pavel@suse.cz>, Eric Paris <eparis@redhat.com>,
-       Theodore Tso <tytso@mit.edu>, Rik van Riel <riel@redhat.com>,
-       davecb@sun.com, linux-security-module@vger.kernel.org,
-       Adrian Bunk <bunk@kernel.org>, Mihai Don??u <mdontu@bitdefender.com>,
-       linux-kernel@vger.kernel.org, malware-list@lists.printk.net,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [malware-list] [RFC 0/5] [TALPA] Intro to alinuxinterfaceforon
- access scanning
-References: <20080813125638.GB6995@ucw.cz> <20080813135207.CC08C3765BC@pmx1.sophos.com> <20080814125410.GA2262@elf.ucw.cz> <2629CC4E1D22A64593B02C43E855530304AE4BE3@USILMS12.ca.com> <20080814223918.GC6370@elf.ucw.cz> <20080814200005.6b363716@bree.surriel.com> <20080815004335.GF13048@mit.edu> <1218769209.16613.31.camel@localhost.localdomain> <20080817221258.GC21112@atrey.karlin.mff.cuni.cz> <alpine.DEB.1.10.0808171542160.12859@asgard.lang.hm> <20080817225844.GE21112@atrey.karlin.mff.cuni.cz> <48A8BBBA.6070206@schaufler-ca.com> <alpine.DEB.1.10.0808171708230.12859@asgard.lang.hm>
-In-Reply-To: <alpine.DEB.1.10.0808171708230.12859@asgard.lang.hm>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <18600.51093.613662.435395@notabene.brown>
+Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH/RFC]  Resolve 2 year old issue with different demands
+	on EVIOCGRAB
+In-Reply-To: message from Dmitry Torokhov on Thursday August 14
+References: <18596.58273.713075.332009@notabene.brown>
+	<20080815022453.GA9438@anvil.corenet.prv>
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-david@lang.hm wrote:
-> On Sun, 17 Aug 2008, Casey Schaufler wrote:
->
->> Pavel Machek wrote:
->>>>>> And I still don't get this 'mmap problem' that I don't solve that
->>>>>> libmalware magically solves.  What?  don't use mmap?  I certainly 
->>>>>> hope
->>>>>> not.
->>>>>>
->>>>> Don't use mmap, it is as simple as that. AFAICS mmap(MAP_SHARED) --
->>>>> which is basically shared memory -- is fundamentally incompatible 
->>>>> with
->>>>> reliable virus scanning.
->>>>>
->>>>> ...or do you have a reasonable solution for mmap?
->>>>>
->>>> mmap has a few different problems
->>>>
->>>> 1. intercepting reads and writes to take action at that time
->>>>
->>>> 2. the fact that two programs can use it as an inter-process 
->>>> communication mechanism.
->>>>
->>>
->>> ...can and will use it as an IPC. So we need to modify some
->>> applications.
->>>
->>> Rather than modify all the applications using mmap (you can't tell if
->>> the other side is going to use it for shared memory... right?), we
->>> could simply modify all the Windows-facing applications using mmap.
->>>
->>>
->>>> if you are worried about the IPC aspects, all you can do is forbid it, 
->>>
->>> Can you automatically tell if applications are using mmap for IPC?
->>>
->>> BTW in another mail you wanted to include /var/log/syslog from
->>> scanning. You should not be doing that if syslog is exported to
->>> Windows systems. Of course, you can get away with scanning syslog when
->>> Windows client tries to read it, which should be acceptable...
->>>                                     Pavel
->>>
->>
->> There is a solution to this whole scanning thing, but I've been
->> reluctant to suggest it, and it will be pretty obvious why y'all
->> probably don't want to try it. Just to be sure the options are
->> out on the table, here goes.
->>
->> Define an xattr, let's call it "UNSCANNED", which has as its value
->> a timestamp. A regular file with this attribute cannot be executed
->> or opened,(exec or open hangs or fails, either behavior has merit
->> and downsides) and it requires privilege (perhaps CAP_MAC_ADMIN)
->> to remove the attribute. File creation attaches the attribute. Any
->> open for write attaches the attribute.
->>
->> Your scanner runs with privilege (say CAP_MAC_OVERRIDE) and passes
->> judgment on files with this attribute, removing either the file, if
->> it is Evil, or the attribute, if it is Good. The scanner is invoked
->> when a file that was open with write access is closed. This can be
->> done using mechanisms already discussed on this thread.
->>
->> If you like, you could use a "SCANNED" attribute instead of an
->> "UNSCANNED" attribute, and reverse the sense of the test. The
->> major difference will show up on filesystems that don't support
->> xattrs. The implications should be obvious.
->>
->> Now at the beginning I said that you wouldn't like this scheme,
->> and it shouldn't take a security expert to see the usability problems.
->> This is how an old school trusted systems junkie (like me) would do
->> it, and I don't see a better way that would actually achieve the
->> stated goals. If you wanted you could implement an LSM to do the
->> labeling bit in a day or two, the notification in about the same
->> time, which would leave the scanner as the long pole in your
->> development schedule.
->
-> did you read the proposal I wrote up? it's similar to (but more 
-> flexible than) what you are saying
+On Thursday August 14, dmitry.torokhov@gmail.com wrote:
+> Hi Neil,
+> 
+> On Fri, Aug 15, 2008 at 12:02:09PM +1000, Neil Brown wrote:
+> > 
+> > I'll let the comments in the patch below to most of the talking.
+> > This came up because I wanted to use EVIOCGRAB in some code on an
+> > Openmoko Freerunner, and found that EVIOCGRAG does different things on
+> > that kernel to elsewhere.  I looked into why, and found that there was
+> > a good reason but that the issues hadn't been completely resolved.  I
+> > hope to help resolve the issues so that EVIOCGRAB can behave the same
+> > everywhere, and still meet everybody's needs.
+> > 
+> > I would have Cc:ed to Magnus Vigerlof who wrote the original patch on
+> > which this is based, but his Email address doesn't appear in lkml.org.
+> > 
+> 
+> I don't think this is a viable solution - there are other "good"
+> handlers beisdes evdev, such as rfkill-input, which will still get
+> disabled by the "lightweight" grabs.
+> 
+> Overall I think it is application's responsibility to not use
+> multiplexing devices if they use evdev, bit I can consider adding a new
+> interface (maybe another ioctl) that would disable event delivery though
+> certain interfaces for a device.
 
-Sorry, I must have missed it. My bad.
+Hi,
 
-> it would allow for multiple 'scanned' tags (to allow for multiple 
-> scanning programs). the kernel would clear the tags when the file is 
-> dirtied (not when it is closed, the file may not be closed for weeks 
-> after all), there is a mechanism to tell the scanner(s) that a file 
-> was modified (rather then having to scan the entire filesystem), and 
-> if the scan was not done yet when a file is opened the scanner(s) can 
-> be invoked at that time.
->
+ I think you are saying that if the X server (for example) uses evdev
+ at all, it should use evdev exclusively for getting events, and not
+ use /dev/mice or whatever the equivalent is for keyboard (/dev/tty??).
+ But the X server still needs to know a little bit about /dev/tty to
+ make sure that control-C doesn't get delivered the wrong way.  That's
+ awkward.
+ It also negates much of the power of the input layer (easy hot-plug).
+ I don't much like that approach.
 
-One xattr, multiple xattrs, all would work. It's simpler to clear the
-"scanned" attribute on open than on dirty, a your scheme means looking
-at writes, seeks, ioctls, fcntls, and so on.
- 
->> P.S. - Library based security doesn't work.
->
-> why not? (with the appropriate kernel support)
+ I think your 'can consider' option involves the application (X
+ server) saying  "I want to use both /dev/input/eventX and
+ /dev/input/mice, so I'll break the connection between those so as not
+ to cause problems".
 
-If you have kernel support it aint library based.
+ I can probably work with that, though it isn't clear how to request
+ this break.  Should we tell /dev/input/mice not to listen on (the
+ device served by) /dev/input/eventX, or tell (the device served by)
+ /dev/input/eventX not to pass events to /dev/input/mice.
+ The first seems to make more sense to me as /dev/input/mice is in a
+ position to know about devices and disconnect individual devices.
+ But how would you tell it, and what name would you use?  Any how
+ would the device get back under the control of /dev/input/mice when
+ the X server lets go of it?
 
-> it actually wouldn't be hard to have the kernel check the xattr, what 
-> would be hard is hving the kernel know when it should then invoke the 
-> scanner(s) and when it shouldn't. This is a policy decision that 
-> doesn't belong in the kernel.
+ As I've been thinking through this problem I keep coming back to
+ /dev/input/mice and /dev/tty.  They are where the issue lies.  They
+ are both a strength and a weakness.  It seems to me that the right
+ approach might be to special-case them.
 
-I'm old school. I say that all policy decisions regarding objects that
-the kernel maintains belong in the kernel. That's why I say that any time
-a file is closed with scanned unset (or unscanned set) the scanner should
-be invoked or notified. The scanner can choose to ignore or queue the
-notification, but the kernel will be done at that point. The kernel have
-done all that it can and it's up to the scanner from then on.
+ i.e.  keep the three-level grab that I proposed before (none, shared,
+ exclusive), but change the 'shared' option to mean
+     Send the events to everybody except /dev/input/mice or /dev/tty
 
+ This would be implemented by those to drivers declaring themselves as
+ "hotplug muxing" drivers which are only really interested in events
+ that no-one else wants.
+ There would then need to be two flavours of input_grab_device, one
+ which grabs it for the given handle, and one which simply disables
+ passing events to "hotplug muxing" drivers.
+
+ Would you be happy with that degree of special-casing?  If so I can
+ try to put together a patch.  I suspect an extra field in 'struct
+ input_handle' to say "this is a muxing device", then input_pass_event
+ checks if the device has a shared-grab and if it does, skip any
+ handler which is muxing.
+
+NeilBrown
 
