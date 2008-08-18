@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757732AbYHRSqN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758029AbYHRSqz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757732AbYHRSqN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Aug 2008 14:46:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753763AbYHRSp4
+	id S1758029AbYHRSqz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Aug 2008 14:46:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754109AbYHRSqo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Aug 2008 14:45:56 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:34458 "EHLO mx2.suse.de"
+	Mon, 18 Aug 2008 14:46:44 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:34549 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754569AbYHRSpz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Aug 2008 14:45:55 -0400
-Date: Mon, 18 Aug 2008 11:41:29 -0700
+	id S1756117AbYHRSqn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Aug 2008 14:46:43 -0400
+Date: Mon, 18 Aug 2008 11:41:34 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -23,13 +23,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
        alan@lxorguk.ukuu.org.uk,
+       HighPoint Linux Team <linux@highpoint-tech.com>,
        James Bottomley <James.Bottomley@HansenPartnership.com>
-Subject: [patch 03/60] SCSI: scsi_transport_spi: fix oops in revalidate
-Message-ID: <20080818184129.GD29394@suse.de>
+Subject: [patch 05/60] SCSI: hptiop: add more PCI device IDs
+Message-ID: <20080818184134.GF29394@suse.de>
 References: <20080818183230.966310219@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="scsi-scsi_transport_spi-fix-oops-in-revalidate.patch"
+Content-Disposition: inline; filename="scsi-hptiop-add-more-pci-device-ids.patch"
 In-Reply-To: <20080818184035.GA29394@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -39,42 +40,35 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.26-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
+From: HighPoint Linux Team <linux@highpoint-tech.com>
 
-commit e8bac9e0647dd04c83fd0bfe7cdfe2f6dfb100d0 upstream
+commit dd07428b44944b42f699408fe31af47977f1e733 upstream
 
-The class_device->device conversion is causing an oops in revalidate
-because it's assuming that the device_for_each_child iterator will only
-return struct scsi_device children.  The conversion made all former
-class_devices children of the device as well, so this assumption is
-broken.  Fix it.
+Add PCI device ID for new adapter models.
 
+Signed-off-by: HighPoint Linux Team <linux@highpoint-tech.com>
 Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/scsi/scsi_transport_spi.c |    8 +++++---
- 1 file changed, 5 insertions(+), 3 deletions(-)
+ drivers/scsi/hptiop.c |    7 +++++++
+ 1 file changed, 7 insertions(+)
 
---- a/drivers/scsi/scsi_transport_spi.c
-+++ b/drivers/scsi/scsi_transport_spi.c
-@@ -366,12 +366,14 @@ spi_transport_rd_attr(rti, "%d\n");
- spi_transport_rd_attr(pcomp_en, "%d\n");
- spi_transport_rd_attr(hold_mcs, "%d\n");
- 
--/* we only care about the first child device so we return 1 */
-+/* we only care about the first child device that's a real SCSI device
-+ * so we return 1 to terminate the iteration when we find it */
- static int child_iter(struct device *dev, void *data)
- {
--	struct scsi_device *sdev = to_scsi_device(dev);
-+	if (!scsi_is_sdev_device(dev))
-+		return 0;
- 
--	spi_dv_device(sdev);
-+	spi_dv_device(to_scsi_device(dev));
- 	return 1;
- }
- 
+--- a/drivers/scsi/hptiop.c
++++ b/drivers/scsi/hptiop.c
+@@ -1249,6 +1249,13 @@ static struct pci_device_id hptiop_id_ta
+ 	{ PCI_VDEVICE(TTI, 0x3522), (kernel_ulong_t)&hptiop_itl_ops },
+ 	{ PCI_VDEVICE(TTI, 0x3410), (kernel_ulong_t)&hptiop_itl_ops },
+ 	{ PCI_VDEVICE(TTI, 0x3540), (kernel_ulong_t)&hptiop_itl_ops },
++	{ PCI_VDEVICE(TTI, 0x3530), (kernel_ulong_t)&hptiop_itl_ops },
++	{ PCI_VDEVICE(TTI, 0x3560), (kernel_ulong_t)&hptiop_itl_ops },
++	{ PCI_VDEVICE(TTI, 0x4322), (kernel_ulong_t)&hptiop_itl_ops },
++	{ PCI_VDEVICE(TTI, 0x4210), (kernel_ulong_t)&hptiop_itl_ops },
++	{ PCI_VDEVICE(TTI, 0x4211), (kernel_ulong_t)&hptiop_itl_ops },
++	{ PCI_VDEVICE(TTI, 0x4310), (kernel_ulong_t)&hptiop_itl_ops },
++	{ PCI_VDEVICE(TTI, 0x4311), (kernel_ulong_t)&hptiop_itl_ops },
+ 	{ PCI_VDEVICE(TTI, 0x3120), (kernel_ulong_t)&hptiop_mv_ops },
+ 	{ PCI_VDEVICE(TTI, 0x3122), (kernel_ulong_t)&hptiop_mv_ops },
+ 	{ PCI_VDEVICE(TTI, 0x3020), (kernel_ulong_t)&hptiop_mv_ops },
 
 -- 
