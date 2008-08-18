@@ -1,49 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754264AbYHRMzu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754057AbYHRM7V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754264AbYHRMzu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Aug 2008 08:55:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752570AbYHRMzl
+	id S1754057AbYHRM7V (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Aug 2008 08:59:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752545AbYHRM7N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Aug 2008 08:55:41 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:34797 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752549AbYHRMzk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Aug 2008 08:55:40 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <20080818100151.c2e9e508.sfr@canb.auug.org.au>
-References: <20080818100151.c2e9e508.sfr@canb.auug.org.au>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: dhowells@redhat.com, Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-next@vger.kernel.org, David Fries <david@fries.net>,
-       James Morris <jmorris@namei.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: linux-next: origin tree build failure
-X-Mailer: MH-E 8.0.3+cvs; nmh 1.3; GNU Emacs 23.0.50
-Date: Mon, 18 Aug 2008 13:55:30 +0100
-Message-ID: <17141.1219064130@redhat.com>
+	Mon, 18 Aug 2008 08:59:13 -0400
+Received: from SpacedOut.fries.net ([67.64.210.234]:41391 "EHLO
+	SpacedOut.fries.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752462AbYHRM7M (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Aug 2008 08:59:12 -0400
+Date: Mon, 18 Aug 2008 07:58:03 -0500
+From: David Fries <david@fries.net>
+To: "Maciej W. Rozycki" <macro@linux-mips.org>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Pavel Machek <pavel@ucw.cz>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH] Fix i486 suspend to disk CR4 oops
+Message-ID: <20080818125803.GC17528@spacedout.fries.net>
+References: <20080818040340.GB17528@spacedout.fries.net> <Pine.LNX.4.55.0808180510480.26857@cliff.in.clinika.pl>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080818064120.GA28941@elte.hu>
+User-Agent: Mutt/1.5.4i
+X-Greylist: Sender is SPF-compliant, not delayed by milter-greylist-3.0 (SpacedOut.fries.net [127.0.0.1]); Mon, 18 Aug 2008 07:58:10 -0500 (CDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stephen Rothwell <sfr@canb.auug.org.au> wrote:
-
-> As expected (reported by David Fries), today's linux-next build (powerpc
-> ppc64_defconfig) failed like this:
+On Mon, Aug 18, 2008 at 05:14:50AM +0100, Maciej W. Rozycki wrote:
+> On Sun, 17 Aug 2008, David Fries wrote:
+> > +	/* cr4 was introduced in the Pentium CPU */
 > 
-> In file included from include/linux/tracehook.h:52,
->                  from arch/powerpc/kernel/signal.c:13:
-> include/linux/security.h: In function 'security_ptrace_traceme':
-> include/linux/security.h:1760: error: 'parent' undeclared (first use in this function)
+>  NACK.  Later i486 chips do have CR4 -- for PSE, VME, etc. (the set of
+> features varies across the line).  Use a fixup as elsewhere or something.
 > 
-> Caused by commit 5cd9c58fbe9ec92b45b27e131719af4f2bd9eb40 ("security: Fix
-> setting of PF_SUPERPRIV by __capable()").  The version of this commit
-> that has been in the linux-next tree from Aug 8 to Aug 15 is correct, so
-> I have no idea what happened.
+>   Maciej
 
-I accidentally posted an old patch which James, maybe, substituted for the
-good one that he had.
+That's what I get for reading the Intel instruction set reference,
+"The CR4 register was added to the Intel Architecture beginning with
+the Pentium processor."
 
-David
+Ingo Molnar, thanks, I'll try the read_cr4_safe() version tonight (the
+computer is in the trunk of my car and I'm about ready to head to
+work).
+
+In light of the above, how about updating the comments
+-       /* cr4 was introduced in the Pentium CPU */
+-       jecxz   1f      # cr4 Pentium and higher, skip if zero
++       /* cr4 not in i386 only some i486, skip if zero */
++       jecxz   1f      # cr4 not in i386 only some i486, skip if zero
+
+I'm not being bit by arch/x86/kernel/relocate_kernel_32.S, but it is
+using cr4.  Should that be fixed up as well?
+
+-- 
+David Fries <david@fries.net>
+http://fries.net/~david/ (PGP encryption key available)
