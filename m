@@ -1,121 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934256AbYHRTt7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934290AbYHRTvC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934256AbYHRTt7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Aug 2008 15:49:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933752AbYHRTp3
+	id S934290AbYHRTvC (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Aug 2008 15:51:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763162AbYHRTqG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Aug 2008 15:45:29 -0400
-Received: from mx2.suse.de ([195.135.220.15]:42615 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932771AbYHRTp1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Aug 2008 15:45:27 -0400
-Date: Mon, 18 Aug 2008 12:21:07 -0700
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
-       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
-       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Andrew Vasquez <andrew.vasquez@qlogic.com>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>
-Subject: [patch 49/49] qla2xxx: Set an rports dev_loss_tmo value in a
-	consistent manner.
-Message-ID: <20080818192107.GX10350@suse.de>
-References: <20080818191012.663450219@mini.kroah.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="qla2xxx-set-an-rport-s-dev_loss_tmo-value-in-a-consistent-manner.patch"
-In-Reply-To: <20080818191834.GA10350@suse.de>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Mon, 18 Aug 2008 15:46:06 -0400
+Received: from smtp.wellnetcz.com ([212.24.148.102]:43696 "EHLO
+	smtp.wellnetcz.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933840AbYHRTqC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Aug 2008 15:46:02 -0400
+From: Jiri Slaby <jirislaby@gmail.com>
+To: linville@tuxdriver.com
+Cc: linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org,
+       ath5k-devel@venema.h4ckr.net, Jiri Slaby <jirislaby@gmail.com>,
+       Nick Kossifidis <mickflemm@gmail.com>,
+       "Luis R. Rodriguez" <mcgrof@gmail.com>
+Subject: [PATCH 1/2] Ath5k: lock beacons
+Date: Mon, 18 Aug 2008 21:45:27 +0200
+Message-Id: <1219088728-10363-1-git-send-email-jirislaby@gmail.com>
+X-Mailer: git-send-email 1.5.6.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2.6.25-stable review patch.  If anyone has any objections, please let us know.
+Beacons setup and config was racy with beacon send. Ensure that
+ISR and reset functions see consistent state of bbuf.
 
-------------------
+Use also dev_kfree_skb_any in ath5k_txbuf_free since we call it
+from atomic now.
 
-From: Andrew Vasquez <andrew.vasquez@qlogic.com>
-
-[ Upstream commit 85821c906cf3563a00a3d98fa380a2581a7a5ff1 ]
-
-As there's no point in adding a fixed-fudge value (originally 5
-seconds), honor the user settings only.  We also remove the
-driver's dead-callback get_rport_dev_loss_tmo function
-(qla2x00_get_rport_loss_tmo()).
-
-Signed-off-by: Andrew Vasquez <andrew.vasquez@qlogic.com>
-Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
+Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+Cc: Nick Kossifidis <mickflemm@gmail.com>
+Cc: Luis R. Rodriguez <mcgrof@gmail.com>
 ---
- drivers/scsi/qla2xxx/qla_attr.c |   20 ++------------------
- drivers/scsi/qla2xxx/qla_os.c   |    2 +-
- 2 files changed, 3 insertions(+), 19 deletions(-)
+ drivers/net/wireless/ath5k/base.c |   15 ++++++++++++---
+ drivers/net/wireless/ath5k/base.h |    1 +
+ 2 files changed, 13 insertions(+), 3 deletions(-)
 
---- a/drivers/scsi/qla2xxx/qla_attr.c
-+++ b/drivers/scsi/qla2xxx/qla_attr.c
-@@ -947,26 +947,12 @@ qla2x00_get_starget_port_id(struct scsi_
+diff --git a/drivers/net/wireless/ath5k/base.c b/drivers/net/wireless/ath5k/base.c
+index fdfa4b8..b8178c7 100644
+--- a/drivers/net/wireless/ath5k/base.c
++++ b/drivers/net/wireless/ath5k/base.c
+@@ -253,7 +253,7 @@ static inline void ath5k_txbuf_free(struct ath5k_softc *sc,
+ 		return;
+ 	pci_unmap_single(sc->pdev, bf->skbaddr, bf->skb->len,
+ 			PCI_DMA_TODEVICE);
+-	dev_kfree_skb(bf->skb);
++	dev_kfree_skb_any(bf->skb);
+ 	bf->skb = NULL;
  }
  
- static void
--qla2x00_get_rport_loss_tmo(struct fc_rport *rport)
--{
--	struct Scsi_Host *host = rport_to_shost(rport);
--	scsi_qla_host_t *ha = shost_priv(host);
--
--	rport->dev_loss_tmo = ha->port_down_retry_count + 5;
--}
--
--static void
- qla2x00_set_rport_loss_tmo(struct fc_rport *rport, uint32_t timeout)
+@@ -468,6 +468,7 @@ ath5k_pci_probe(struct pci_dev *pdev,
+ 	mutex_init(&sc->lock);
+ 	spin_lock_init(&sc->rxbuflock);
+ 	spin_lock_init(&sc->txbuflock);
++	spin_lock_init(&sc->block);
+ 
+ 	/* Set private data */
+ 	pci_set_drvdata(pdev, hw);
+@@ -2148,8 +2149,11 @@ ath5k_beacon_config(struct ath5k_softc *sc)
+ 
+ 		sc->imask |= AR5K_INT_SWBA;
+ 
+-		if (ath5k_hw_hasveol(ah))
++		if (ath5k_hw_hasveol(ah)) {
++			spin_lock(&sc->block);
+ 			ath5k_beacon_send(sc);
++			spin_unlock(&sc->block);
++		}
+ 	}
+ 	/* TODO else AP */
+ 
+@@ -2349,7 +2353,9 @@ ath5k_intr(int irq, void *dev_id)
+ 						  TSF_TO_TU(tsf),
+ 						  (unsigned long long) tsf);
+ 				} else {
++					spin_lock(&sc->block);
+ 					ath5k_beacon_send(sc);
++					spin_unlock(&sc->block);
+ 				}
+ 			}
+ 			if (status & AR5K_INT_RXEOL) {
+@@ -3015,6 +3021,7 @@ static int
+ ath5k_beacon_update(struct ieee80211_hw *hw, struct sk_buff *skb)
  {
--	struct Scsi_Host *host = rport_to_shost(rport);
--	scsi_qla_host_t *ha = shost_priv(host);
--
- 	if (timeout)
--		ha->port_down_retry_count = timeout;
-+		rport->dev_loss_tmo = timeout;
- 	else
--		ha->port_down_retry_count = 1;
--
--	rport->dev_loss_tmo = ha->port_down_retry_count + 5;
-+		rport->dev_loss_tmo = 1;
- }
+ 	struct ath5k_softc *sc = hw->priv;
++	unsigned long flags;
+ 	int ret;
  
- static void
-@@ -1249,7 +1235,6 @@ struct fc_function_template qla2xxx_tran
- 	.get_starget_port_id  = qla2x00_get_starget_port_id,
- 	.show_starget_port_id = 1,
+ 	ath5k_debug_dump_skb(sc, skb, "BC  ", 1);
+@@ -3024,12 +3031,14 @@ ath5k_beacon_update(struct ieee80211_hw *hw, struct sk_buff *skb)
+ 		goto end;
+ 	}
  
--	.get_rport_dev_loss_tmo = qla2x00_get_rport_loss_tmo,
- 	.set_rport_dev_loss_tmo = qla2x00_set_rport_loss_tmo,
- 	.show_rport_dev_loss_tmo = 1,
++	spin_lock_irqsave(&sc->block, flags);
+ 	ath5k_txbuf_free(sc, sc->bbuf);
+ 	sc->bbuf->skb = skb;
+ 	ret = ath5k_beacon_setup(sc, sc->bbuf);
+ 	if (ret)
+ 		sc->bbuf->skb = NULL;
+-	else {
++	spin_unlock_irqrestore(&sc->block, flags);
++	if (!ret) {
+ 		ath5k_beacon_config(sc);
+ 		mmiowb();
+ 	}
+diff --git a/drivers/net/wireless/ath5k/base.h b/drivers/net/wireless/ath5k/base.h
+index d7e03e6..7ec2f37 100644
+--- a/drivers/net/wireless/ath5k/base.h
++++ b/drivers/net/wireless/ath5k/base.h
+@@ -172,6 +172,7 @@ struct ath5k_softc {
+ 	struct tasklet_struct	txtq;		/* tx intr tasklet */
+ 	struct ath5k_led	tx_led;		/* tx led */
  
-@@ -1294,7 +1279,6 @@ struct fc_function_template qla2xxx_tran
- 	.get_starget_port_id  = qla2x00_get_starget_port_id,
- 	.show_starget_port_id = 1,
- 
--	.get_rport_dev_loss_tmo = qla2x00_get_rport_loss_tmo,
- 	.set_rport_dev_loss_tmo = qla2x00_set_rport_loss_tmo,
- 	.show_rport_dev_loss_tmo = 1,
- 
---- a/drivers/scsi/qla2xxx/qla_os.c
-+++ b/drivers/scsi/qla2xxx/qla_os.c
-@@ -1194,7 +1194,7 @@ qla2xxx_slave_configure(struct scsi_devi
- 	else
- 		scsi_deactivate_tcq(sdev, ha->max_q_depth);
- 
--	rport->dev_loss_tmo = ha->port_down_retry_count + 5;
-+	rport->dev_loss_tmo = ha->port_down_retry_count;
- 
- 	return 0;
- }
-
++	spinlock_t		block;		/* protects beacon */
+ 	struct ath5k_buf	*bbuf;		/* beacon buffer */
+ 	unsigned int		bhalq,		/* SW q for outgoing beacons */
+ 				bmisscount,	/* missed beacon transmits */
 -- 
+1.5.6.5
+
