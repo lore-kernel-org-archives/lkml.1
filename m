@@ -1,41 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754870AbYHROly@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753487AbYHROnN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754870AbYHROly (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Aug 2008 10:41:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752840AbYHROlr
+	id S1753487AbYHROnN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Aug 2008 10:43:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753087AbYHROm6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Aug 2008 10:41:47 -0400
-Received: from kirk.serum.com.pl ([213.77.9.205]:61888 "EHLO serum.com.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752762AbYHROlq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Aug 2008 10:41:46 -0400
-Date: Mon, 18 Aug 2008 15:41:23 +0100 (BST)
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-To: Ingo Molnar <mingo@elte.hu>
-cc: David Fries <david@fries.net>, linux-kernel@vger.kernel.org,
-       Pavel Machek <pavel@ucw.cz>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] Fix i486 suspend to disk CR4 oops
-In-Reply-To: <20080818132559.GA19578@elte.hu>
-Message-ID: <Pine.LNX.4.55.0808181540400.29123@cliff.in.clinika.pl>
-References: <20080818040340.GB17528@spacedout.fries.net>
- <Pine.LNX.4.55.0808180510480.26857@cliff.in.clinika.pl>
- <20080818125803.GC17528@spacedout.fries.net> <20080818132559.GA19578@elte.hu>
+	Mon, 18 Aug 2008 10:42:58 -0400
+Received: from smtprelay10.ispgateway.de ([80.67.29.24]:48572 "EHLO
+	smtprelay10.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753153AbYHROm4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Aug 2008 10:42:56 -0400
+From: Ingo Oeser <ioe-lkml@rameria.de>
+To: Jan Kara <jack@suse.cz>
+Subject: Re: [PATCH REVIEW] udf: Fix lock inversion between iprune_mutex and alloc_mutex (v2)
+Date: Mon, 18 Aug 2008 16:34:29 +0200
+User-Agent: KMail/1.9.9
+Cc: LKML <linux-kernel@vger.kernel.org>
+References: <12190639982548-git-send-email-jack@suse.cz>
+In-Reply-To: <12190639982548-git-send-email-jack@suse.cz>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200808181634.29724.ioe-lkml@rameria.de>
+X-Df-Sender: 849595
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 18 Aug 2008, Ingo Molnar wrote:
+Hi Jan,
 
-> the version i committed (reproduced below) should work fine. It uses cr4 
-> opportunistically (we get a fault if it does not exist), and we write it 
-> back if the cr4 value is non-zero. (which it must always be on a 
-> CR4-enabled processor)
-> 
-> agreed?
+On Monday 18 August 2008, Jan Kara wrote:
+> A memory allocation inside alloc_mutex must not recurse back into the
+> filesystem itself because that leads to lock inversion between iprune_mutex and
+> alloc_mutex (and thus to deadlocks - see traces below). alloc_mutex is actually
+> needed only to update allocation statistics in the superblock so we can drop it
+> before we start allocating memory for the inode.
 
-Acked-by: Maciej W. Rozycki <macro@linux-mips.org>
+On a quick review, this is correct.
 
-  Maciej
+
+Best Regards
+
+Ingo Oeser
