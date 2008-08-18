@@ -1,76 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754392AbYHRR7U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755638AbYHRSCD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754392AbYHRR7U (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Aug 2008 13:59:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754111AbYHRR7B
+	id S1755638AbYHRSCD (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Aug 2008 14:02:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754044AbYHRSBy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Aug 2008 13:59:01 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:39218 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753387AbYHRR7A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Aug 2008 13:59:00 -0400
-From: michaelc@cs.wisc.edu
-To: linux-kernel@vger.kernel.org
-Cc: Mike Christie <michaelc@cs.wisc.edu>,
-       Shyam Kumar Iyer <shyam_iyer@dell.com>,
-       Konrad Rzeszutek <konrad@virtualiron.com>
-Subject: [PATCH 1/1] ibft: fix target info parsing in ibft module
-Date: Mon, 18 Aug 2008 12:58:48 -0500
-Message-Id: <1219082328-11010-1-git-send-email-michaelc@cs.wisc.edu>
-X-Mailer: git-send-email 1.5.4.1
+	Mon, 18 Aug 2008 14:01:54 -0400
+Received: from wolverine02.qualcomm.com ([199.106.114.251]:48637 "EHLO
+	wolverine02.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754040AbYHRSBx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Aug 2008 14:01:53 -0400
+X-IronPort-AV: E=McAfee;i="5200,2160,5363"; a="5632484"
+Message-ID: <48A9B906.7090201@qualcomm.com>
+Date: Mon, 18 Aug 2008 11:01:42 -0700
+From: Max Krasnyansky <maxk@qualcomm.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+CC: Peter Zijlstra <peterz@infradead.org>,
+       "Torvalds, Linus" <torvalds@linux-foundation.org>,
+       Stefani Seibold <stefani@seibold.net>, linux-kernel@vger.kernel.org,
+       mingo@redhat.com
+Subject: Re: SCHED_FIFO and SCHED_RR broken by cfs
+References: <1218880552.11912.9.camel@matrix> <200808182124.17359.nickpiggin@yahoo.com.au> <1219060315.10800.338.camel@twins> <200808182214.08942.nickpiggin@yahoo.com.au>
+In-Reply-To: <200808182214.08942.nickpiggin@yahoo.com.au>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Mike Christie <michaelc@cs.wisc.edu>
+Nick Piggin wrote:
+> On Monday 18 August 2008 21:51, Peter Zijlstra wrote:
+>> On Mon, 2008-08-18 at 21:24 +1000, Nick Piggin wrote:
+>>> Really, you think the enterprise distros will willingly break POSIX
+>>> and their own backwards compatiblity by default? I wouldn't have
+>>> thought so, but anyway I guess they are free to make that choice, so
+>>> where's the problem?
+>> I'm not seeing why you're making such a big fuss over this - IMO its not
+>> such a significant breakage. Esp since very few realtime apps will
+>> require such large amounts of time to ever run into the throttle.
+>>
+>> If their usage is 95%+ cpu they must have magic WCET estamates - or like
+>> in this case, be a benchmark app which IMHO just abuses the real-time
+>> class.
+> 
+> Note that this certainly does not have to be the case. It is perfectly
+> valid to dynamically scale the work performed according to the amount
+> of CPU time available but still be sensitive to latency.
+> 
+> video decoding would be a really simple example. But you can't just
+> "know" how all RT apps are coded and think this is no problem.
+> 
+> 
+>> It's like running your real-time code on a 5% slower cpu - if it runs
+>> correctly on the 5% slower cpu, it will run correctly here too.
+> 
+> Aside from the latency issue which makes this statement incorrect...
+> If the code does not run correctly on a 5% slower CPU, it will break.
+> How is that OK?
+> 
+> You might expect many systems would include at least a 5% margin of
+> error, but if the kernel takes 5%, then that's 5% of the safety
+> margin gone, so while the app might "work", it might no longer
+> meet requirements.
+> 
+> 
+>> Note that correctness from a RT pov is making your deadline.
+> 
+> Correctness from the kernel's POV is implementing APIs as advertised,
+> and just as importantly, not changing them. We can argue about how RT
+> apps work, but there is no argument that the kernel has broken
+> backwards compatibility and standards.
 
-I got this patch through Red Hat's bugzilla from the bug
-submitter and patch creator. I have just fixed it up so it applies without
-fuzz to upstream kernels.
+Just wanted to mention that I'm with Nick on this one. I pointed this 
+(ie POSIX breakage) out as soon as the change went in. I do have a valid 
+  (which some people disagree with ;-)) workload that uses 100% of the 
+CPU. So my unit-tests caught this right away.
 
-Original patch and description from Shyam kumar Iyer:
+Anyway, "RT bandwidth throttling" has been in and enabled be default 
+since 2.6.25. So I'm not sure if it makes sense to revert the default at 
+this point.
+If we do change the default maybe we can add a CONFIG_ option for this 
+so that it can be compiled out completely.
 
-The issue [ibft module not displaying targets with short names]
-is because of an offset calculatation error in the iscsi_ibft.c
-code.  Due to this error directory structure for the target
-in /sys/firmware/ibft does not get created and so the initiator is unable to
-connect to the target.
-
-Note that this bug surfaced only with an name that had a short section at the
-end.
-eg: "iqn.1984-05.com.dell:dell".
-It did not surface when the iqn's had a longer section at the end.
-eg: "iqn.2001-04.com.example:storage.disk2.sys1.xyz"
-
-So, the eot_offset was calculated such that an extra 48 bytes i.e. the size of
-the ibft_header which has already been accounted was subtracted twice.
-
-This was not evident with longer iqn names because they would overshoot the
-total ibft length more than 48 bytes and thus would escape the bug.
-
-Signed-off-by: Shyam Kumar Iyer <shyam_iyer@dell.com>
-Signed-off-by: Mike Christie <michaelc@cs.wisc.edu>
-Cc: Konrad Rzeszutek <konrad@virtualiron.com>
+Max
 
 
----
- drivers/firmware/iscsi_ibft.c |    3 +--
- 1 files changed, 1 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/firmware/iscsi_ibft.c b/drivers/firmware/iscsi_ibft.c
-index 8024e3b..b91ef63 100644
---- a/drivers/firmware/iscsi_ibft.c
-+++ b/drivers/firmware/iscsi_ibft.c
-@@ -669,8 +669,7 @@ static int __init ibft_register_kobjects(struct ibft_table_header *header,
- 
- 	control = (void *)header + sizeof(*header);
- 	end = (void *)control + control->hdr.length;
--	eot_offset = (void *)header + header->length -
--		     (void *)control - sizeof(*header);
-+	eot_offset = (void *)header + header->length - (void *)control;
- 	rc = ibft_verify_hdr("control", (struct ibft_hdr *)control, id_control,
- 			     sizeof(*control));
- 
--- 
-1.5.4.1
 
