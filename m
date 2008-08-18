@@ -1,60 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753904AbYHRVWS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754497AbYHRVXQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753904AbYHRVWS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Aug 2008 17:22:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752143AbYHRVWG
+	id S1754497AbYHRVXQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Aug 2008 17:23:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752159AbYHRVXA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Aug 2008 17:22:06 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:42601 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752071AbYHRVWF (ORCPT
+	Mon, 18 Aug 2008 17:23:00 -0400
+Received: from gv-out-0910.google.com ([216.239.58.185]:31787 "EHLO
+	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752143AbYHRVW7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Aug 2008 17:22:05 -0400
-Date: Mon, 18 Aug 2008 14:21:42 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: andreas.herrmann3@amd.com, hannes@saeurebad.de, mingo@elte.hu,
-       npiggin@suse.de, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] alloc_bootmem_core: fix misaligned allocation of 1G
- page
-Message-Id: <20080818142142.ad065339.akpm@linux-foundation.org>
-In-Reply-To: <20080818141718.bec87aa6.akpm@linux-foundation.org>
-References: <20080812095336.GE5952@alberich.amd.com>
-	<877iam41bk.fsf@skyscraper.fehenstaub.lan>
-	<20080813164121.GA5985@alberich.amd.com>
-	<87tzdo93tv.fsf@skyscraper.fehenstaub.lan>
-	<20080813193158.GB5985@alberich.amd.com>
-	<20080818141718.bec87aa6.akpm@linux-foundation.org>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 18 Aug 2008 17:22:59 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=A/7SNrBnbB0cyKhZwHXl9/vs5ClzCJng7uzzzaiq5CxcMtgGhPkd93wjKuv1hB+piP
+         EffiwznSvsGNbXN6M0oc7dHPIxA5EEVRL+rYRcrW0kmc3A/NHKki2GrLCLuBAleG8wpl
+         eHH7JQw5I5wmWCp0ROoqD8VV4GJuu0W2ew+Oo=
+Message-ID: <48A9E82E.3060009@gmail.com>
+Date: Mon, 18 Aug 2008 23:22:54 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080720)
+MIME-Version: 1.0
+To: balbir@linux.vnet.ibm.com
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       containers@lists.linux-foundation.org, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/1] mm_owner: fix cgroup null dereference
+References: <1218745013-9537-1-git-send-email-jirislaby@gmail.com> <48A49C78.7070100@linux.vnet.ibm.com>
+In-Reply-To: <48A49C78.7070100@linux.vnet.ibm.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 18 Aug 2008 14:17:18 -0700
-Andrew Morton <akpm@linux-foundation.org> wrote:
+On 08/14/2008 10:58 PM, Balbir Singh wrote:
+> Jiri Slaby wrote:
+>> Hi,
+>>
+>> found this in mmotm, a fix for
+>> mm-owner-fix-race-between-swap-and-exit.patch
+>>
+> 
+> Thanks for catching this
 
-> On Wed, 13 Aug 2008 21:31:58 +0200
-> Andreas Herrmann <andreas.herrmann3@amd.com> wrote:
-> 
-> > > Attached is a version that should be easier to read.  Please
-> > > double-check.
-> > 
-> > Nice.
-> > That's the preferred solution and should replace my initial fix.
-> > 
-> > Reviewed-and-tested-by: Andreas Herrmann <andreas.herrmann3@amd.com>
-> 
-> Johannes, I'm unsure whether that patch was the final version.  Could
-> you please resend it (or its successor)?
-> 
-> With a more complete changelog, please.  This:
-> 
->     bootmem: fix aligning of node-relative indexes and offsets
-> 
-> doesn't explain what needed fixing, nor how it was fixed, nor the
-> consequences of leaving it unfixed, etc.
-> 
+Hmm, unfortunately there is one more issue with this patch.
+memrlimit_cgroup_subsys doesn't expect NULL new cgroup and NULL task.
+memrlimit_cgroup_mm_owner_changed blows up (called from
+cgroup_mm_owner_callbacks as ss->mm_owner_changed).
 
-ah, OK, I found it.  please ignore.
+I'm out for few days, please solve it somehow. Full oops message follows.
+
+BUG: unable to handle kernel NULL pointer dereference at 00000000000004ac
+IP: [<ffffffff8056c469>] _spin_lock+0x9/0x20
+PGD 3ef84067 PUD 0
+Oops: 0002 [2] SMP
+last sysfs file: /sys/devices/platform/coretemp.1/temp1_input
+CPU 0
+Modules linked in: usblp ath5k mac80211 cfg80211 arc4 ecb cryptomgr aead
+crypto_blkcipher crypto_algapi usbhid ohci1394 hid led_class ieee1394 evdev
+rtc_cmos floppy ff_memless [last unloaded: cfg80211]
+Pid: 27360, comm: automount Tainted: G      D W 2.6.27-rc3-mm1_64 #441
+RIP: 0010:[<ffffffff8056c469>]  [<ffffffff8056c469>] _spin_lock+0x9/0x20
+RSP: 0018:ffff88007839fd98  EFLAGS: 00010282
+RAX: 0000000000000100 RBX: 0000000000000000 RCX: 0000000000000000
+RDX: 0000000000000000 RSI: ffffffff807d5f28 RDI: 00000000000004ac
+RBP: ffff88007839fd98 R08: 00000000cc62b515 R09: 00000000f8f36e74
+R10: 0000000000000001 R11: 0000000000000000 R12: 00000000000004ac
+R13: ffffffff807d5f28 R14: ffff880047e2e500 R15: ffff880047e2e680
+FS:  00007fca50fa66f0(0000) GS:ffffffff8070a480(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+CR2: 00000000000004ac CR3: 000000004510f000 CR4: 00000000000006e0
+DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+Process automount (pid: 27360, threadinfo ffff88007839e000, task ffff880047e2e500)
+Stack:  ffff88007839fdb8 ffffffff80238ab3 ffffffff80589750 0000000000000000
+ ffff88007839fde8 ffffffff802b3f4b ffff8800010205b0 ffffffff80589750
+ 0000000000000000 0000000000000000 ffff88007839fe18 ffffffff80270446
+Call Trace:
+ [<ffffffff80238ab3>] get_task_mm+0x23/0x60
+ [<ffffffff802b3f4b>] memrlimit_cgroup_mm_owner_changed+0x1b/0x80
+ [<ffffffff80270446>] cgroup_mm_owner_callbacks+0x76/0x90
+ [<ffffffff8023d4d4>] mm_update_next_owner+0x1c4/0x240
+ [<ffffffff8023d65a>] exit_mm+0x10a/0x150
+ [<ffffffff8023f2ac>] do_exit+0x1dc/0x940
+ [<ffffffff8023375b>] ? wake_up_state+0xb/0x10
+ [<ffffffff802485c8>] ? signal_wake_up+0x38/0x40
+ [<ffffffff8023fa50>] do_group_exit+0x40/0xb0
+ [<ffffffff8023fad2>] sys_exit_group+0x12/0x20
+ [<ffffffff8020c65b>] system_call_fastpath+0x16/0x1b
+Code: 00 00 55 48 89 e5 fa f0 81 2f 00 00 00 01 74 05 e8 dd 17 de ff c9 c3 66 66
+2e 0f 1f 84 00 00 00 00 00 55 b8 00 01 00 00 48 89 e5 <f0> 66 0f c1 07 38 e0 74
+06 f3 90 8a 07 eb f6 c9 c3 66 0f 1f 44
+RIP  [<ffffffff8056c469>] _spin_lock+0x9/0x20
+ RSP <ffff88007839fd98>
+CR2: 00000000000004ac
+---[ end trace 4eaa2a86a8e2da22 ]---
