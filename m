@@ -1,50 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754041AbYHROUN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754516AbYHROUe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754041AbYHROUN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Aug 2008 10:20:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752629AbYHROUA
+	id S1754516AbYHROUe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Aug 2008 10:20:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753286AbYHROUJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Aug 2008 10:20:00 -0400
-Received: from kirk.serum.com.pl ([213.77.9.205]:61732 "EHLO serum.com.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752544AbYHROUA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Aug 2008 10:20:00 -0400
-Date: Mon, 18 Aug 2008 15:19:05 +0100 (BST)
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-To: Cyrill Gorcunov <gorcunov@gmail.com>
-cc: Arjan van de Ven <arjan@infradead.org>, mingo@elte.hu, hpa@zytor.com,
-       tglx@linutronix.de, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/6] x86: apic - unify lapic_resume
-In-Reply-To: <20080816201235.GB7182@lenovo>
-Message-ID: <Pine.LNX.4.55.0808181506230.29123@cliff.in.clinika.pl>
-References: <1218914515-26377-1-git-send-email-gorcunov@gmail.com>
- <f87881899957b7aa08b827cdc6b5dd8cf53e4730.1218914042.git.gorcunov@gmail.com>
- <722b5bc0303212ca203cadeedae5ede3e23eccb7.1218914042.git.gorcunov@gmail.com>
- <Pine.LNX.4.55.0808162041190.17944@cliff.in.clinika.pl>
- <20080816130008.349b031d@infradead.org> <20080816201235.GB7182@lenovo>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 18 Aug 2008 10:20:09 -0400
+Received: from casper.infradead.org ([85.118.1.10]:56342 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753105AbYHROUH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Aug 2008 10:20:07 -0400
+Subject: BUG: checkpatch
+From: Jaswinder Singh <jaswinder@infradead.org>
+To: LKML <linux-kernel@vger.kernel.org>, davej@codemonkey.org.uk,
+       jschopp@austin.ibm.com, apw@uk.ibm.com,
+       David Woodhouse <dwmw2@infradead.org>,
+       Peter Zijlstra <peterz@infradead.org>
+Content-Type: text/plain
+Date: Mon, 18 Aug 2008 19:50:00 +0530
+Message-Id: <1219069200.3208.4.camel@jaswinder.satnam>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 17 Aug 2008, Cyrill Gorcunov wrote:
+[jsr@jaswinder jaswinder-git]$ cat test.c
+void test(int i, int j, int k)
+{
+	printk(KERN_INFO "/* Testing i, j, k */\n");
+	printk(KERN_INFO "i: %d j: %d k:%d\n", i, j, k);
+}
+[jsr@jaswinder jaswinder-git]$ ./linux-2.6/scripts/checkpatch.pl --file test.c
+ERROR: spaces required around that ':' (ctx:VxW)
+#4: FILE: test.c:4:
++	printk(KERN_INFO "i: %d j: %d k:%d\n", i, j, k);
+ 	                   ^
 
-> it seems this limit is not APIC related since iirc 82489DX allows
-> to address 2^14 bits, x2APIC - more then 128 entities too. So I suspect
-> it somehow cpu bitmap related. Am I wrong (I didn't _check_ the code)?
+ERROR: need consistent spacing around '%' (ctx:WxV)
+#4: FILE: test.c:4:
++	printk(KERN_INFO "i: %d j: %d k:%d\n", i, j, k);
+ 	                     ^
 
- For the record: the 82489DX supports an 8-bit physical unit ID so 256
-distinct values are supported.  Of these I gather 255 is taken for the
-broadcast ID in the physical destination mode, but that is nowhere
-explicitly confirmed in the 82489DX docs (it can be implied from protocol
-description though).  While the ID is indeed 8-bit in the 82489DX, for
-systems where future compatibility was a concern Intel recommended the use
-of IDs from 0 through to 14 only in anticipation of the future integrated
-APIC with the physical mode addressing capability limited to 4 bits only
-(and 15 taken for the broadcast ID).
+ERROR: spaces required around that ':' (ctx:VxW)
+#4: FILE: test.c:4:
++	printk(KERN_INFO "i: %d j: %d k:%d\n", i, j, k);
+ 	                         ^
 
- Full 32 bits are available with the 82489DX for the logical destination 
-mode and only the flat (no cluster) mode is supported.
+ERROR: need consistent spacing around '%' (ctx:WxV)
+#4: FILE: test.c:4:
++	printk(KERN_INFO "i: %d j: %d k:%d\n", i, j, k);
+ 	                           ^
 
-  Maciej
+ERROR: spaces required around that ':' (ctx:VxO)
+#4: FILE: test.c:4:
++	printk(KERN_INFO "i: %d j: %d k:%d\n", i, j, k);
+ 	                               ^
+
+total: 5 errors, 0 warnings, 5 lines checked
+
+test.c has style problems, please review.  If any of these errors
+are false positives report them to the maintainer, see
+CHECKPATCH in MAINTAINERS.
+[jsr@jaswinder jaswinder-git]$ cat test_working.c 
+void test(int i, int j, int k)
+{
+	printk(KERN_INFO "/* Testing i, j, k * /\n");
+	printk(KERN_INFO "i: %d j: %d k:%d\n", i, j, k);
+}
+[jsr@jaswinder jaswinder-git]$ ./linux-2.6/scripts/checkpatch.pl --file test_working.c 
+total: 0 errors, 0 warnings, 5 lines checked
+
+test_working.c has no obvious style problems and is ready for submission.
+[jsr@jaswinder jaswinder-git]$ diff -uN test.c test_working.c 
+--- test.c	2008-08-18 19:38:32.000000000 +0530
++++ test_working.c	2008-08-18 19:38:37.000000000 +0530
+@@ -1,5 +1,5 @@
+ void test(int i, int j, int k)
+ {
+-	printk(KERN_INFO "/* Testing i, j, k */\n");
++	printk(KERN_INFO "/* Testing i, j, k * /\n");
+ 	printk(KERN_INFO "i: %d j: %d k:%d\n", i, j, k);
+ }
+[jsr@jaswinder jaswinder-git]$ cp test.c test
+[jsr@jaswinder jaswinder-git]$ ./linux-2.6/scripts/checkpatch.pl --file test
+total: 0 errors, 0 warnings, 5 lines checked
+
+test has no obvious style problems and is ready for submission.
+[jsr@jaswinder jaswinder-git]$ 
+
+
+
