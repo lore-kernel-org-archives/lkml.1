@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760701AbYHRTZl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760891AbYHRTZ4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760701AbYHRTZl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Aug 2008 15:25:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760012AbYHRTZJ
+	id S1760891AbYHRTZ4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Aug 2008 15:25:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760632AbYHRTZd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Aug 2008 15:25:09 -0400
-Received: from cantor.suse.de ([195.135.220.2]:47200 "EHLO mx1.suse.de"
+	Mon, 18 Aug 2008 15:25:33 -0400
+Received: from ns1.suse.de ([195.135.220.2]:47244 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758966AbYHRTZH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Aug 2008 15:25:07 -0400
-Date: Mon, 18 Aug 2008 12:19:09 -0700
+	id S1760615AbYHRTZb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Aug 2008 15:25:31 -0400
+Date: Mon, 18 Aug 2008 12:19:16 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,15 +22,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Johannes Berg <johannes@sipsolutions.net>,
-       Alan Stern <stern@rowland.harvard.edu>
-Subject: [patch 01/49] USB: usb-storage: quirk around v1.11 firmware on
-	Nikon D4
-Message-ID: <20080818191909.GB10350@suse.de>
+       alan@lxorguk.ukuu.org.uk, Alan Stern <stern@rowland.harvard.edu>
+Subject: [patch 02/49] usb-storage: unusual_devs entries for iRiver T10 and
+	Datafab CF+SM reader
+Message-ID: <20080818191916.GC10350@suse.de>
 References: <20080818191012.663450219@mini.kroah.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="usb-usb-storage-quirk-around-v1.11-firmware-on-nikon-d4.patch"
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline; filename="usb-storage-unusual_devs-entries-for-iriver-t10-and-datafab-cf-sm-reader.patch"
+Content-Transfer-Encoding: 8bit
 In-Reply-To: <20080818191834.GA10350@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -41,46 +41,54 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Dave Jones <davej@redhat.com>
+From: Alan Stern <stern@rowland.harvard.edu>
 
-commit b9a097f26e55968cbc52e30a4a2e73d32d7604ce upstream
+commit 368ee6469c327364ea10082a348f91c1f5ba47f7 upstream
 
-usb-storage: quirk around v1.11 firmware on Nikon D40
+This patch (as1115) adds unusual_devs entries with the IGNORE_RESIDE
+flag for the iRiver T10 and the Simple Tech/Datafab CF+SM card
+reader.  Apparently these devices provide reasonable residue values
+for READ and WRITE operations, but not for others like INQUIRY or READ
+CAPACITY.
 
-https://bugzilla.redhat.com/show_bug.cgi?id=454028
-Just as in earlier firmware versions, we need to perform this
-quirk for the latest version too.
+This fixes the iRiver T10 problem reported in Bugzilla #11125.
 
-Speculatively do the entry for the D80 too, as they seem to
-have the same firmware problems historically.
-
-Signed-off-by: Dave Jones <davej@redhat.com>
-Cc: Johannes Berg <johannes@sipsolutions.net>
-Cc: Alan Stern <stern@rowland.harvard.edu>
+Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/usb/storage/unusual_devs.h |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/usb/storage/unusual_devs.h |   14 ++++++++++++++
+ 1 file changed, 14 insertions(+)
 
 --- a/drivers/usb/storage/unusual_devs.h
 +++ b/drivers/usb/storage/unusual_devs.h
-@@ -357,14 +357,14 @@ UNUSUAL_DEV(  0x04b0, 0x040f, 0x0100, 0x
- 		US_FL_FIX_CAPACITY),
- 
- /* Reported by Emil Larsson <emil@swip.net> */
--UNUSUAL_DEV(  0x04b0, 0x0411, 0x0100, 0x0110,
-+UNUSUAL_DEV(  0x04b0, 0x0411, 0x0100, 0x0111,
- 		"NIKON",
- 		"NIKON DSC D80",
+@@ -1164,6 +1164,13 @@ UNUSUAL_DEV(  0x07c4, 0xa400, 0x0000, 0x
  		US_SC_DEVICE, US_PR_DEVICE, NULL,
- 		US_FL_FIX_CAPACITY),
+ 		US_FL_FIX_INQUIRY ),
  
- /* Reported by Ortwin Glueck <odi@odi.ch> */
--UNUSUAL_DEV(  0x04b0, 0x0413, 0x0110, 0x0110,
-+UNUSUAL_DEV(  0x04b0, 0x0413, 0x0110, 0x0111,
- 		"NIKON",
- 		"NIKON DSC D40",
++/* Reported by Rauch Wolke <rauchwolke@gmx.net> */
++UNUSUAL_DEV(  0x07c4, 0xa4a5, 0x0000, 0xffff,
++		"Simple Tech/Datafab",
++		"CF+SM Reader",
++		US_SC_DEVICE, US_PR_DEVICE, NULL,
++		US_FL_IGNORE_RESIDUE ),
++
+ /* Casio QV 2x00/3x00/4000/8000 digital still cameras are not conformant
+  * to the USB storage specification in two ways:
+  * - They tell us they are using transport protocol CBI. In reality they
+@@ -1705,6 +1712,13 @@ UNUSUAL_DEV(  0x2735, 0x100b, 0x0000, 0x
  		US_SC_DEVICE, US_PR_DEVICE, NULL,
+ 		US_FL_GO_SLOW ),
+ 
++/* Reported by Andrey Rahmatullin <wrar@altlinux.org> */
++UNUSUAL_DEV(  0x4102, 0x1020, 0x0100,  0x0100,
++		"iRiver",
++		"MP3 T10",
++		US_SC_DEVICE, US_PR_DEVICE, NULL,
++		US_FL_IGNORE_RESIDUE ),
++
+ /*
+  * David Härdeman <david@2gen.com>
+  * The key makes the SCSI stack print confusing (but harmless) messages
 
 -- 
