@@ -1,463 +1,575 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758711AbYHRUpx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759116AbYHRUqU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758711AbYHRUpx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Aug 2008 16:45:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752849AbYHRUpm
+	id S1759116AbYHRUqU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Aug 2008 16:46:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753061AbYHRUpo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Aug 2008 16:45:42 -0400
-Received: from yx-out-2324.google.com ([74.125.44.30]:32843 "EHLO
+	Mon, 18 Aug 2008 16:45:44 -0400
+Received: from yx-out-2324.google.com ([74.125.44.28]:33657 "EHLO
 	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752689AbYHRUpk (ORCPT
+	with ESMTP id S1752589AbYHRUpm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Aug 2008 16:45:40 -0400
+	Mon, 18 Aug 2008 16:45:42 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=iKKwf+/tVLXBrTayvqyBBOLjuZiyHvmN42fyF+rdQpy2/Tbziq78NQJdQo//1/HpS3
-         Q0U94I0gDpWoaEEGBNvRkpzyTye9T9SlcmDW5mZYJE7XAJlmTZJ+nKhjr0xf/HBmDo1+
-         NqCDjApsYABs70Sbyb2v4u6H9Dnz/irFqyeFo=
+        b=wPVCOd8UHpEIXsiXLdoXHrc8l8/oMfjgeCx4UvdiJJ6lDRNV1slOpajbecflDEQ6Xb
+         n+kUFIJ0zzh6MevdmX7aA9pGVPPQ3nlnSzl6XE5vVMo0CUDFRmyv1G4ykawk1YJLz/Ga
+         DRhHCBwZq7UW3vEvXvLpC/9ap/1a31hn7YmNE=
 From: Yinghai Lu <yhlu.kernel@gmail.com>
 To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
        "H. Peter Anvin" <hpa@zytor.com>,
        Andrew Morton <akpm@linux-foundation.org>
 Cc: linux-kernel@vger.kernel.org, Yinghai Lu <yhlu.kernel@gmail.com>
-Subject: [PATCH] irq: rename irq_desc() to to_irq_desc() - fix
-Date: Mon, 18 Aug 2008 13:44:48 -0700
-Message-Id: <1219092290-30154-1-git-send-email-yhlu.kernel@gmail.com>
+Subject: [PATCH] irq: rename irq_desc() to to_irq_desc() - fix #2
+Date: Mon, 18 Aug 2008 13:44:49 -0700
+Message-Id: <1219092290-30154-2-git-send-email-yhlu.kernel@gmail.com>
 X-Mailer: git-send-email 1.5.4.5
-In-Reply-To: <no>
+In-Reply-To: <1219092290-30154-1-git-send-email-yhlu.kernel@gmail.com>
 References: <no>
+ <1219092290-30154-1-git-send-email-yhlu.kernel@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-some left overs.
-__do_IRQ not take desc as parameter
+kstat_irqs related, so only CONFIG_DYN_ARRAY/SPARSE_IRQ will have kstat_irqs in irq_desc
+
+other arch still have kstat_irqs in kstat
 
 Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
 
 ---
- arch/alpha/kernel/irq.c               |    2 +-
- arch/arm/kernel/irq.c                 |   10 ++++------
- arch/avr32/kernel/irq.c               |    8 +++-----
- arch/cris/kernel/irq.c                |    2 +-
- arch/h8300/kernel/irq.c               |    2 +-
- arch/ia64/kernel/iosapic.c            |    2 +-
- arch/ia64/kernel/msi_ia64.c           |    2 +-
- arch/ia64/sn/kernel/irq.c             |    2 +-
- arch/ia64/sn/kernel/msi_sn.c          |    2 +-
- arch/m32r/kernel/irq.c                |    2 +-
- arch/m68knommu/kernel/irq.c           |    2 +-
- arch/parisc/kernel/irq.c              |    2 +-
- arch/powerpc/platforms/powermac/pic.c |    2 +-
- arch/um/kernel/irq.c                  |    2 +-
- arch/x86/kernel/io_apic.c             |    4 +---
- drivers/parisc/dino.c                 |    3 +--
- drivers/parisc/eisa.c                 |    4 +---
- drivers/parisc/gsc.c                  |    3 +--
- drivers/parisc/superio.c              |    4 +---
- drivers/xen/events.c                  |    2 +-
- include/linux/irq.h                   |   10 +++++-----
- kernel/irq/handle.c                   |    3 ++-
- kernel/irq/migration.c                |    4 +++-
- 23 files changed, 35 insertions(+), 44 deletions(-)
+ arch/alpha/kernel/irq.c                 |    2 +-
+ arch/alpha/kernel/irq_alpha.c           |    2 +-
+ arch/arm/kernel/irq.c                   |    2 +-
+ arch/arm/mach-ns9xxx/irq.c              |    3 ++-
+ arch/avr32/kernel/irq.c                 |    4 ++--
+ arch/cris/kernel/irq.c                  |    2 +-
+ arch/frv/kernel/irq.c                   |    2 +-
+ arch/h8300/kernel/irq.c                 |    2 +-
+ arch/ia64/kernel/irq.c                  |    2 +-
+ arch/ia64/kernel/irq_ia64.c             |    8 ++++----
+ arch/m32r/kernel/irq.c                  |    2 +-
+ arch/mips/kernel/irq.c                  |    2 +-
+ arch/mips/sgi-ip22/ip22-int.c           |    2 +-
+ arch/mips/sgi-ip22/ip22-time.c          |    2 +-
+ arch/mips/sibyte/bcm1480/smp.c          |    2 +-
+ arch/mips/sibyte/sb1250/smp.c           |    2 +-
+ arch/mn10300/kernel/irq.c               |    2 +-
+ arch/parisc/kernel/irq.c                |    2 +-
+ arch/powerpc/kernel/irq.c               |    2 +-
+ arch/powerpc/platforms/cell/interrupt.c |    2 +-
+ arch/sh/kernel/irq.c                    |    2 +-
+ arch/sparc64/kernel/irq.c               |    2 +-
+ arch/sparc64/kernel/time.c              |    3 +--
+ arch/um/kernel/irq.c                    |    2 +-
+ arch/xtensa/kernel/irq.c                |    2 +-
+ include/linux/irq.h                     |    5 +++++
+ include/linux/kernel_stat.h             |    4 ++--
+ kernel/irq/chip.c                       |   20 ++++++++++++++++++++
+ kernel/irq/handle.c                     |   10 ++++++++++
+ 29 files changed, 67 insertions(+), 32 deletions(-)
 
 Index: linux-2.6/arch/alpha/kernel/irq.c
 ===================================================================
 --- linux-2.6.orig/arch/alpha/kernel/irq.c
 +++ linux-2.6/arch/alpha/kernel/irq.c
-@@ -156,6 +156,6 @@ handle_irq(int irq)
- 	 * at IPL 0.
- 	 */
- 	local_irq_disable();
--	__do_IRQ(irq, &irq_desc[irq]);
-+	__do_IRQ(irq);
- 	irq_exit();
- }
+@@ -89,7 +89,7 @@ show_interrupts(struct seq_file *p, void
+ 		seq_printf(p, "%10u ", kstat_irqs(irq));
+ #else
+ 		for_each_online_cpu(j)
+-			seq_printf(p, "%10u ", kstat_irqs_cpu(irq, j));
++			seq_printf(p, "%10u ", kstat_cpu(j).irqs[irq]);
+ #endif
+ 		seq_printf(p, " %14s", irq_desc[irq].chip->typename);
+ 		seq_printf(p, "  %c%s",
+Index: linux-2.6/arch/alpha/kernel/irq_alpha.c
+===================================================================
+--- linux-2.6.orig/arch/alpha/kernel/irq_alpha.c
++++ linux-2.6/arch/alpha/kernel/irq_alpha.c
+@@ -64,7 +64,7 @@ do_entInt(unsigned long type, unsigned l
+ 		smp_percpu_timer_interrupt(regs);
+ 		cpu = smp_processor_id();
+ 		if (cpu != boot_cpuid) {
+-			irq_desc[RTC_IRQ].kstat_irqs[cpu]++;
++		        kstat_cpu(cpu).irqs[RTC_IRQ]++;
+ 		} else {
+ 			handle_irq(RTC_IRQ);
+ 		}
 Index: linux-2.6/arch/arm/kernel/irq.c
 ===================================================================
 --- linux-2.6.orig/arch/arm/kernel/irq.c
 +++ linux-2.6/arch/arm/kernel/irq.c
-@@ -69,24 +69,22 @@ int show_interrupts(struct seq_file *p,
- 	}
- 
- 	if (i < NR_IRQS) {
--		struct irq_desc *desc = irq_desc(i);
--
--		spin_lock_irqsave(&desc->lock, flags);
--		action = desc->action;
-+		spin_lock_irqsave(&irq_desc[i].lock, flags);
-+		action = irq_desc[i].action;
- 		if (!action)
- 			goto unlock;
+@@ -76,7 +76,7 @@ int show_interrupts(struct seq_file *p,
  
  		seq_printf(p, "%3d: ", i);
  		for_each_present_cpu(cpu)
- 			seq_printf(p, "%10u ", kstat_irqs_cpu(i, cpu));
--		seq_printf(p, " %10s", desc->chip->name ? : "-");
-+		seq_printf(p, " %10s", irq_desc[i].chip->name ? : "-");
+-			seq_printf(p, "%10u ", kstat_irqs_cpu(i, cpu));
++			seq_printf(p, "%10u ", kstat_cpu(cpu).irqs[i]);
+ 		seq_printf(p, " %10s", irq_desc[i].chip->name ? : "-");
  		seq_printf(p, "  %s", action->name);
  		for (action = action->next; action; action = action->next)
- 			seq_printf(p, ", %s", action->name);
+Index: linux-2.6/arch/arm/mach-ns9xxx/irq.c
+===================================================================
+--- linux-2.6.orig/arch/arm/mach-ns9xxx/irq.c
++++ linux-2.6/arch/arm/mach-ns9xxx/irq.c
+@@ -63,6 +63,7 @@ static struct irq_chip ns9xxx_chip = {
+ #else
+ static void handle_prio_irq(unsigned int irq, struct irq_desc *desc)
+ {
++	unsigned int cpu = smp_processor_id();
+ 	struct irqaction *action;
+ 	irqreturn_t action_ret;
  
- 		seq_putc(p, '\n');
- unlock:
--		spin_unlock_irqrestore(&desc->lock, flags);
-+		spin_unlock_irqrestore(&irq_desc[i].lock, flags);
- 	} else if (i == NR_IRQS) {
- #ifdef CONFIG_ARCH_ACORN
- 		show_fiq_list(p, v);
+@@ -71,7 +72,7 @@ static void handle_prio_irq(unsigned int
+ 	BUG_ON(desc->status & IRQ_INPROGRESS);
+ 
+ 	desc->status &= ~(IRQ_REPLAY | IRQ_WAITING);
+-	kstat_irqs_this_cpu(desc)++;
++	kstat_cpu(cpu).irqs[irq]++;
+ 
+ 	action = desc->action;
+ 	if (unlikely(!action || (desc->status & IRQ_DISABLED)))
 Index: linux-2.6/arch/avr32/kernel/irq.c
 ===================================================================
 --- linux-2.6.orig/arch/avr32/kernel/irq.c
 +++ linux-2.6/arch/avr32/kernel/irq.c
-@@ -51,10 +51,8 @@ int show_interrupts(struct seq_file *p,
- 	}
+@@ -58,8 +58,8 @@ int show_interrupts(struct seq_file *p,
  
- 	if (i < NR_IRQS) {
--		struct irq_desc *desc = irq_desc(i);
--
--		spin_lock_irqsave(&desc->lock, flags);
--		action = desc->action;
-+		spin_lock_irqsave(&irq_desc[i].lock, flags);
-+		action = irq_desc[i].action;
- 		if (!action)
- 			goto unlock;
- 
-@@ -68,7 +66,7 @@ int show_interrupts(struct seq_file *p,
- 
- 		seq_putc(p, '\n');
- 	unlock:
--		spin_unlock_irqrestore(&desc->lock, flags);
-+		spin_unlock_irqrestore(&irq_desc[i].lock, flags);
- 	}
- 
- 	return 0;
+ 		seq_printf(p, "%3d: ", i);
+ 		for_each_online_cpu(cpu)
+-			seq_printf(p, "%10u ", kstat_irqs_cpu(i, cpu));
+-		seq_printf(p, " %8s", desc->chip->name ? : "-");
++			seq_printf(p, "%10u ", kstat_cpu(cpu).irqs[i]);
++		seq_printf(p, " %8s", irq_desc[i].chip->name ? : "-");
+ 		seq_printf(p, "  %s", action->name);
+ 		for (action = action->next; action; action = action->next)
+ 			seq_printf(p, ", %s", action->name);
 Index: linux-2.6/arch/cris/kernel/irq.c
 ===================================================================
 --- linux-2.6.orig/arch/cris/kernel/irq.c
 +++ linux-2.6/arch/cris/kernel/irq.c
-@@ -99,7 +99,7 @@ asmlinkage void do_IRQ(int irq, struct p
- 		printk("do_IRQ: stack overflow: %lX\n", sp);
- 		show_stack(NULL, (unsigned long *)sp);
- 	}
--	__do_IRQ(irq, &irq_desc[irq]);
-+	__do_IRQ(irq);
-         irq_exit();
- 	set_irq_regs(old_regs);
- }
+@@ -66,7 +66,7 @@ int show_interrupts(struct seq_file *p,
+ 		seq_printf(p, "%10u ", kstat_irqs(i));
+ #else
+ 		for_each_online_cpu(j)
+-			seq_printf(p, "%10u ", kstat_irqs_cpu(i, j));
++			seq_printf(p, "%10u ", kstat_cpu(j).irqs[i]);
+ #endif
+ 		seq_printf(p, " %14s", irq_desc[i].chip->typename);
+ 		seq_printf(p, "  %s", action->name);
+Index: linux-2.6/arch/frv/kernel/irq.c
+===================================================================
+--- linux-2.6.orig/arch/frv/kernel/irq.c
++++ linux-2.6/arch/frv/kernel/irq.c
+@@ -74,7 +74,7 @@ int show_interrupts(struct seq_file *p,
+ 		if (action) {
+ 			seq_printf(p, "%3d: ", i);
+ 			for_each_present_cpu(cpu)
+-				seq_printf(p, "%10u ", kstat_irqs_cpu(i, cpu));
++				seq_printf(p, "%10u ", kstat_cpu(cpu).irqs[i]);
+ 			seq_printf(p, " %10s", irq_desc[i].chip->name ? : "-");
+ 			seq_printf(p, "  %s", action->name);
+ 			for (action = action->next;
 Index: linux-2.6/arch/h8300/kernel/irq.c
 ===================================================================
 --- linux-2.6.orig/arch/h8300/kernel/irq.c
 +++ linux-2.6/arch/h8300/kernel/irq.c
-@@ -176,7 +176,7 @@ void __init init_IRQ(void)
- asmlinkage void do_IRQ(int irq)
- {
- 	irq_enter();
--	__do_IRQ(irq, &irq_desc[irq]);
-+	__do_IRQ(irq);
- 	irq_exit();
- }
- 
-Index: linux-2.6/arch/ia64/kernel/iosapic.c
+@@ -196,7 +196,7 @@ int show_interrupts(struct seq_file *p,
+ 		if (!action)
+ 			goto unlock;
+ 		seq_printf(p, "%3d: ",i);
+-		seq_printf(p, "%10u ", kstat_irqs_cpu(i, j));
++		seq_printf(p, "%10u ", kstat_cpu(j).irqs[i]);
+ 		seq_printf(p, " %14s", irq_desc[i].chip->name);
+ 		seq_printf(p, "-%-8s", irq_desc[i].name);
+ 		seq_printf(p, "  %s", action->name);
+Index: linux-2.6/arch/ia64/kernel/irq.c
 ===================================================================
---- linux-2.6.orig/arch/ia64/kernel/iosapic.c
-+++ linux-2.6/arch/ia64/kernel/iosapic.c
-@@ -452,7 +452,7 @@ iosapic_ack_edge_irq (unsigned int irq)
- 	irq_desc_t *idesc = irq_desc + irq;
- 
- 	irq_complete_move(irq);
--	move_native_irq(irq, idesc);
-+	move_native_irq(irq);
- 	/*
- 	 * Once we have recorded IRQ_PENDING already, we can mask the
- 	 * interrupt for real. This prevents IRQ storms from unhandled
-Index: linux-2.6/arch/ia64/kernel/msi_ia64.c
+--- linux-2.6.orig/arch/ia64/kernel/irq.c
++++ linux-2.6/arch/ia64/kernel/irq.c
+@@ -80,7 +80,7 @@ int show_interrupts(struct seq_file *p,
+ 		seq_printf(p, "%10u ", kstat_irqs(i));
+ #else
+ 		for_each_online_cpu(j) {
+-			seq_printf(p, "%10u ", kstat_irqs_cpu(i, j));
++			seq_printf(p, "%10u ", kstat_cpu(j).irqs[i]);
+ 		}
+ #endif
+ 		seq_printf(p, " %14s", irq_desc[i].chip->name);
+Index: linux-2.6/arch/ia64/kernel/irq_ia64.c
 ===================================================================
---- linux-2.6.orig/arch/ia64/kernel/msi_ia64.c
-+++ linux-2.6/arch/ia64/kernel/msi_ia64.c
-@@ -120,7 +120,7 @@ void ia64_teardown_msi_irq(unsigned int
- static void ia64_ack_msi_irq(unsigned int irq)
- {
- 	irq_complete_move(irq);
--	move_native_irq(irq, &irq_desc[irq]);
-+	move_native_irq(irq);
- 	ia64_eoi();
- }
+--- linux-2.6.orig/arch/ia64/kernel/irq_ia64.c
++++ linux-2.6/arch/ia64/kernel/irq_ia64.c
+@@ -495,9 +495,9 @@ ia64_handle_irq (ia64_vector vector, str
+ 	while (vector != IA64_SPURIOUS_INT_VECTOR) {
+ 		if (unlikely(IS_LOCAL_TLB_FLUSH(vector))) {
+ 			smp_local_flush_tlb();
+-			kstat_irqs_this_cpu(&irq_desc[vector])++;
++			kstat_this_cpu.irqs[vector]++;
+ 		} else if (unlikely(IS_RESCHEDULE(vector)))
+-			kstat_irqs_this_cpu(&irq_desc[vector])++;
++			kstat_this_cpu.irqs[vector]++;
+ 		else {
+ 			int irq = local_vector_to_irq(vector);
  
-Index: linux-2.6/arch/ia64/sn/kernel/irq.c
-===================================================================
---- linux-2.6.orig/arch/ia64/sn/kernel/irq.c
-+++ linux-2.6/arch/ia64/sn/kernel/irq.c
-@@ -110,7 +110,7 @@ static void sn_ack_irq(unsigned int irq)
- 	HUB_S((u64*)LOCAL_MMR_ADDR(SH_EVENT_OCCURRED_ALIAS), mask);
- 	__set_bit(irq, (volatile void *)pda->sn_in_service_ivecs);
- 
--	move_native_irq(irq, &irq_desc[irq]);
-+	move_native_irq(irq);
- }
- 
- static void sn_end_irq(unsigned int irq)
-Index: linux-2.6/arch/ia64/sn/kernel/msi_sn.c
-===================================================================
---- linux-2.6.orig/arch/ia64/sn/kernel/msi_sn.c
-+++ linux-2.6/arch/ia64/sn/kernel/msi_sn.c
-@@ -210,7 +210,7 @@ static void sn_set_msi_irq_affinity(unsi
- 
- static void sn_ack_msi_irq(unsigned int irq)
- {
--	move_native_irq(irq, &irq_desc[irq]);
-+	move_native_irq(irq);
- 	ia64_eoi();
- }
- 
+@@ -553,9 +553,9 @@ void ia64_process_pending_intr(void)
+ 	while (vector != IA64_SPURIOUS_INT_VECTOR) {
+ 		if (unlikely(IS_LOCAL_TLB_FLUSH(vector))) {
+ 			smp_local_flush_tlb();
+-			kstat_irqs_this_cpu(&irq_desc[vector])++;
++			kstat_this_cpu.irqs[vector]++;
+ 		} else if (unlikely(IS_RESCHEDULE(vector)))
+-			kstat_irqs_this_cpu(&irq_desc[vector])++;
++			kstat_this_cpu.irqs[vector]++;
+ 		else {
+ 			struct pt_regs *old_regs = set_irq_regs(NULL);
+ 			int irq = local_vector_to_irq(vector);
 Index: linux-2.6/arch/m32r/kernel/irq.c
 ===================================================================
 --- linux-2.6.orig/arch/m32r/kernel/irq.c
 +++ linux-2.6/arch/m32r/kernel/irq.c
-@@ -84,7 +84,7 @@ asmlinkage unsigned int do_IRQ(int irq,
- #ifdef CONFIG_DEBUG_STACKOVERFLOW
- 	/* FIXME M32R */
+@@ -52,7 +52,7 @@ int show_interrupts(struct seq_file *p,
+ 		seq_printf(p, "%10u ", kstat_irqs(i));
+ #else
+ 		for_each_online_cpu(j)
+-			seq_printf(p, "%10u ", kstat_irqs_cpu(i, j));
++			seq_printf(p, "%10u ", kstat_cpu(j).irqs[i]);
  #endif
--	__do_IRQ(irq, &irq_desc[irq]);
-+	__do_IRQ(irq);
- 	irq_exit();
- 	set_irq_regs(old_regs);
- 
-Index: linux-2.6/arch/m68knommu/kernel/irq.c
+ 		seq_printf(p, " %14s", irq_desc[i].chip->typename);
+ 		seq_printf(p, "  %s", action->name);
+Index: linux-2.6/arch/mips/kernel/irq.c
 ===================================================================
---- linux-2.6.orig/arch/m68knommu/kernel/irq.c
-+++ linux-2.6/arch/m68knommu/kernel/irq.c
-@@ -23,7 +23,7 @@ asmlinkage void do_IRQ(int irq, struct p
- 	struct pt_regs *oldregs = set_irq_regs(regs);
+--- linux-2.6.orig/arch/mips/kernel/irq.c
++++ linux-2.6/arch/mips/kernel/irq.c
+@@ -108,7 +108,7 @@ int show_interrupts(struct seq_file *p,
+ 		seq_printf(p, "%10u ", kstat_irqs(i));
+ #else
+ 		for_each_online_cpu(j)
+-			seq_printf(p, "%10u ", kstat_irqs_cpu(i, j));
++			seq_printf(p, "%10u ", kstat_cpu(j).irqs[i]);
+ #endif
+ 		seq_printf(p, " %14s", irq_desc[i].chip->name);
+ 		seq_printf(p, "  %s", action->name);
+Index: linux-2.6/arch/mips/sgi-ip22/ip22-int.c
+===================================================================
+--- linux-2.6.orig/arch/mips/sgi-ip22/ip22-int.c
++++ linux-2.6/arch/mips/sgi-ip22/ip22-int.c
+@@ -164,7 +164,7 @@ static void indy_buserror_irq(void)
+ 	int irq = SGI_BUSERR_IRQ;
  
  	irq_enter();
--	__do_IRQ(irq, &irq_desc[irq]);
-+	__do_IRQ(irq);
+-	kstat_irqs_this_cpu(&irq_desc[irq])++;
++	kstat_this_cpu.irqs[irq]++;
+ 	ip22_be_interrupt(irq);
  	irq_exit();
+ }
+Index: linux-2.6/arch/mips/sgi-ip22/ip22-time.c
+===================================================================
+--- linux-2.6.orig/arch/mips/sgi-ip22/ip22-time.c
++++ linux-2.6/arch/mips/sgi-ip22/ip22-time.c
+@@ -186,7 +186,7 @@ void indy_8254timer_irq(void)
+ 	char c;
  
- 	set_irq_regs(oldregs);
+ 	irq_enter();
+-	kstat_irqs_this_cpu(&irq_desc[irq])++;
++	kstat_this_cpu.irqs[irq]++;
+ 	printk(KERN_ALERT "Oops, got 8254 interrupt.\n");
+ 	ArcRead(0, &c, 1, &cnt);
+ 	ArcEnterInteractiveMode();
+Index: linux-2.6/arch/mips/sibyte/bcm1480/smp.c
+===================================================================
+--- linux-2.6.orig/arch/mips/sibyte/bcm1480/smp.c
++++ linux-2.6/arch/mips/sibyte/bcm1480/smp.c
+@@ -180,7 +180,7 @@ void bcm1480_mailbox_interrupt(void)
+ 	int cpu = smp_processor_id();
+ 	unsigned int action;
+ 
+-	irq_desc[K_BCM1480_INT_MBOX_0_0].kstat_irqs[cpu]++;
++	kstat_this_cpu.irqs[K_BCM1480_INT_MBOX_0_0]++;
+ 	/* Load the mailbox register to figure out what we're supposed to do */
+ 	action = (__raw_readq(mailbox_0_regs[cpu]) >> 48) & 0xffff;
+ 
+Index: linux-2.6/arch/mips/sibyte/sb1250/smp.c
+===================================================================
+--- linux-2.6.orig/arch/mips/sibyte/sb1250/smp.c
++++ linux-2.6/arch/mips/sibyte/sb1250/smp.c
+@@ -168,7 +168,7 @@ void sb1250_mailbox_interrupt(void)
+ 	int cpu = smp_processor_id();
+ 	unsigned int action;
+ 
+-	irq_desc[K_INT_MBOX_0].kstat_irqs[cpu]++;
++	kstat_this_cpu.irqs[K_INT_MBOX_0]++;
+ 	/* Load the mailbox register to figure out what we're supposed to do */
+ 	action = (____raw_readq(mailbox_regs[cpu]) >> 48) & 0xffff;
+ 
+Index: linux-2.6/arch/mn10300/kernel/irq.c
+===================================================================
+--- linux-2.6.orig/arch/mn10300/kernel/irq.c
++++ linux-2.6/arch/mn10300/kernel/irq.c
+@@ -201,7 +201,7 @@ int show_interrupts(struct seq_file *p,
+ 		if (action) {
+ 			seq_printf(p, "%3d: ", i);
+ 			for_each_present_cpu(cpu)
+-				seq_printf(p, "%10u ", kstat_irqs_cpu(i, cpu));
++				seq_printf(p, "%10u ", kstat_cpu(cpu).irqs[i]);
+ 			seq_printf(p, " %14s.%u", irq_desc[i].chip->name,
+ 				   (GxICR(i) & GxICR_LEVEL) >>
+ 				   GxICR_LEVEL_SHIFT);
 Index: linux-2.6/arch/parisc/kernel/irq.c
 ===================================================================
 --- linux-2.6.orig/arch/parisc/kernel/irq.c
 +++ linux-2.6/arch/parisc/kernel/irq.c
-@@ -363,7 +363,7 @@ void do_cpu_irq_mask(struct pt_regs *reg
- 		goto set_out;
- 	}
+@@ -183,7 +183,7 @@ int show_interrupts(struct seq_file *p,
+ 		seq_printf(p, "%3d: ", i);
+ #ifdef CONFIG_SMP
+ 		for_each_online_cpu(j)
+-			seq_printf(p, "%10u ", kstat_irqs_cpu(i, j));
++			seq_printf(p, "%10u ", kstat_cpu(j).irqs[i]);
+ #else
+ 		seq_printf(p, "%10u ", kstat_irqs(i));
  #endif
--	__do_IRQ(irq, irq_desc);
-+	__do_IRQ(irq);
- 
-  out:
- 	irq_exit();
-Index: linux-2.6/arch/powerpc/platforms/powermac/pic.c
+Index: linux-2.6/arch/powerpc/kernel/irq.c
 ===================================================================
---- linux-2.6.orig/arch/powerpc/platforms/powermac/pic.c
-+++ linux-2.6/arch/powerpc/platforms/powermac/pic.c
-@@ -221,7 +221,7 @@ static irqreturn_t gatwick_action(int cp
- 			continue;
- 		irq += __ilog2(bits);
- 		spin_unlock_irqrestore(&pmac_pic_lock, flags);
--		__do_IRQ(irq, &irq_desc[irq]);
-+		__do_IRQ(irq);
- 		spin_lock_irqsave(&pmac_pic_lock, flags);
- 		rc = IRQ_HANDLED;
+--- linux-2.6.orig/arch/powerpc/kernel/irq.c
++++ linux-2.6/arch/powerpc/kernel/irq.c
+@@ -190,7 +190,7 @@ int show_interrupts(struct seq_file *p,
+ 		seq_printf(p, "%3d: ", i);
+ #ifdef CONFIG_SMP
+ 		for_each_online_cpu(j)
+-			seq_printf(p, "%10u ", kstat_irqs_cpu(i, j));
++			seq_printf(p, "%10u ", kstat_cpu(j).irqs[i]);
+ #else
+ 		seq_printf(p, "%10u ", kstat_irqs(i));
+ #endif /* CONFIG_SMP */
+Index: linux-2.6/arch/powerpc/platforms/cell/interrupt.c
+===================================================================
+--- linux-2.6.orig/arch/powerpc/platforms/cell/interrupt.c
++++ linux-2.6/arch/powerpc/platforms/cell/interrupt.c
+@@ -254,7 +254,7 @@ static void handle_iic_irq(unsigned int
+ 		goto out_eoi;
  	}
+ 
+-	kstat_irqs_this_cpu(desc)++;
++	kstat_cpu(cpu).irqs[irq]++;
+ 
+ 	/* Mark the IRQ currently in progress.*/
+ 	desc->status |= IRQ_INPROGRESS;
+Index: linux-2.6/arch/sh/kernel/irq.c
+===================================================================
+--- linux-2.6.orig/arch/sh/kernel/irq.c
++++ linux-2.6/arch/sh/kernel/irq.c
+@@ -51,7 +51,7 @@ int show_interrupts(struct seq_file *p,
+ 			goto unlock;
+ 		seq_printf(p, "%3d: ",i);
+ 		for_each_online_cpu(j)
+-			seq_printf(p, "%10u ", kstat_irqs_cpu(i, j));
++			seq_printf(p, "%10u ", kstat_cpu(j).irqs[i]);
+ 		seq_printf(p, " %14s", irq_desc[i].chip->name);
+ 		seq_printf(p, "-%-8s", irq_desc[i].name);
+ 		seq_printf(p, "  %s", action->name);
+Index: linux-2.6/arch/sparc64/kernel/irq.c
+===================================================================
+--- linux-2.6.orig/arch/sparc64/kernel/irq.c
++++ linux-2.6/arch/sparc64/kernel/irq.c
+@@ -185,7 +185,7 @@ int show_interrupts(struct seq_file *p,
+ 		seq_printf(p, "%10u ", kstat_irqs(i));
+ #else
+ 		for_each_online_cpu(j)
+-			seq_printf(p, "%10u ", kstat_irqs_cpu(i, j));
++			seq_printf(p, "%10u ", kstat_cpu(j).irqs[i]);
+ #endif
+ 		seq_printf(p, " %9s", irq_desc[i].chip->typename);
+ 		seq_printf(p, "  %s", action->name);
+Index: linux-2.6/arch/sparc64/kernel/time.c
+===================================================================
+--- linux-2.6.orig/arch/sparc64/kernel/time.c
++++ linux-2.6/arch/sparc64/kernel/time.c
+@@ -16,7 +16,6 @@
+ #include <linux/param.h>
+ #include <linux/string.h>
+ #include <linux/mm.h>
+-#include <linux/irq.h>
+ #include <linux/interrupt.h>
+ #include <linux/time.h>
+ #include <linux/timex.h>
+@@ -943,7 +942,7 @@ void timer_interrupt(int irq, struct pt_
+ 
+ 	irq_enter();
+ 
+-	irq_desc[0].kstat_irqs[0]++;
++	kstat_this_cpu.irqs[0]++;
+ 
+ 	if (unlikely(!evt->event_handler)) {
+ 		printk(KERN_WARNING
 Index: linux-2.6/arch/um/kernel/irq.c
 ===================================================================
 --- linux-2.6.orig/arch/um/kernel/irq.c
 +++ linux-2.6/arch/um/kernel/irq.c
-@@ -332,7 +332,7 @@ unsigned int do_IRQ(int irq, struct uml_
- {
- 	struct pt_regs *old_regs = set_irq_regs((struct pt_regs *)regs);
- 	irq_enter();
--	__do_IRQ(irq, &irq_desc[irq]);
-+	__do_IRQ(irq);
- 	irq_exit();
- 	set_irq_regs(old_regs);
- 	return 1;
-Index: linux-2.6/drivers/parisc/dino.c
+@@ -42,7 +42,7 @@ int show_interrupts(struct seq_file *p,
+ 		seq_printf(p, "%10u ", kstat_irqs(i));
+ #else
+ 		for_each_online_cpu(j)
+-			seq_printf(p, "%10u ", kstat_irqs_cpu(i, j));
++			seq_printf(p, "%10u ", kstat_cpu(j).irqs[i]);
+ #endif
+ 		seq_printf(p, " %14s", irq_desc[i].chip->typename);
+ 		seq_printf(p, "  %s", action->name);
+Index: linux-2.6/arch/xtensa/kernel/irq.c
 ===================================================================
---- linux-2.6.orig/drivers/parisc/dino.c
-+++ linux-2.6/drivers/parisc/dino.c
-@@ -389,10 +389,9 @@ ilr_again:
- 	do {
- 		int local_irq = __ffs(mask);
- 		int irq = dino_dev->global_irq[local_irq];
--		struct irq_desc *desc = to_irq_desc(irq);
- 		DBG(KERN_DEBUG "%s(%d, %p) mask 0x%x\n",
- 			__func__, irq, intr_dev, mask);
--		__do_IRQ(irq, desc);
-+		__do_IRQ(irq);
- 		mask &= ~(1 << local_irq);
- 	} while (mask);
- 
-Index: linux-2.6/drivers/parisc/eisa.c
-===================================================================
---- linux-2.6.orig/drivers/parisc/eisa.c
-+++ linux-2.6/drivers/parisc/eisa.c
-@@ -202,7 +202,6 @@ static irqreturn_t eisa_irq(int wax_irq,
- {
- 	int irq = gsc_readb(0xfc01f000); /* EISA supports 16 irqs */
- 	unsigned long flags;
--	struct irq_desc *desc;
-         
- 	spin_lock_irqsave(&eisa_irq_lock, flags);
- 	/* read IRR command */
-@@ -234,8 +233,7 @@ static irqreturn_t eisa_irq(int wax_irq,
- 	}
- 	spin_unlock_irqrestore(&eisa_irq_lock, flags);
- 
--	desc = to_irq_desc(irq);
--	__do_IRQ(irq, desc);
-+	__do_IRQ(irq);
-    
- 	spin_lock_irqsave(&eisa_irq_lock, flags);
- 	/* unmask */
-Index: linux-2.6/drivers/parisc/gsc.c
-===================================================================
---- linux-2.6.orig/drivers/parisc/gsc.c
-+++ linux-2.6/drivers/parisc/gsc.c
-@@ -87,8 +87,7 @@ irqreturn_t gsc_asic_intr(int gsc_asic_i
- 	do {
- 		int local_irq = __ffs(irr);
- 		unsigned int irq = gsc_asic->global_irq[local_irq];
--		struct irq_desc *desc = to_irq_desc(irq);
--		__do_IRQ(irq, desc);
-+		__do_IRQ(irq);
- 		irr &= ~(1 << local_irq);
- 	} while (irr);
- 
-Index: linux-2.6/drivers/parisc/superio.c
-===================================================================
---- linux-2.6.orig/drivers/parisc/superio.c
-+++ linux-2.6/drivers/parisc/superio.c
-@@ -99,7 +99,6 @@ superio_interrupt(int parent_irq, void *
- {
- 	u8 results;
- 	u8 local_irq;
--	struct irq_desc *desc;
- 
- 	/* Poll the 8259 to see if there's an interrupt. */
- 	outb (OCW3_POLL,IC_PIC1+0);
-@@ -140,8 +139,7 @@ superio_interrupt(int parent_irq, void *
- 	}
- 
- 	/* Call the appropriate device's interrupt */
--	desc = to_irq_desc(local_irq);
--	__do_IRQ(local_irq, desc);
-+	__do_IRQ(local_irq);
- 
- 	/* set EOI - forces a new interrupt if a lower priority device
- 	 * still needs service.
-Index: linux-2.6/drivers/xen/events.c
-===================================================================
---- linux-2.6.orig/drivers/xen/events.c
-+++ linux-2.6/drivers/xen/events.c
-@@ -640,7 +640,7 @@ static void ack_dynirq(unsigned int irq)
- {
- 	int evtchn = evtchn_from_irq(irq);
- 
--	move_native_irq(irq, to_irq_desc(irq));
-+	move_native_irq(irq);
- 
- 	if (VALID_EVTCHN(evtchn))
- 		clear_evtchn(evtchn);
+--- linux-2.6.orig/arch/xtensa/kernel/irq.c
++++ linux-2.6/arch/xtensa/kernel/irq.c
+@@ -99,7 +99,7 @@ int show_interrupts(struct seq_file *p,
+ 		seq_printf(p, "%10u ", kstat_irqs(i));
+ #else
+ 		for_each_online_cpu(j)
+-			seq_printf(p, "%10u ", kstat_irqs_cpu(i, j));
++			seq_printf(p, "%10u ", kstat_cpu(j).irqs[i]);
+ #endif
+ 		seq_printf(p, " %14s", irq_desc[i].chip->typename);
+ 		seq_printf(p, "  %s", action->name);
 Index: linux-2.6/include/linux/irq.h
 ===================================================================
 --- linux-2.6.orig/include/linux/irq.h
 +++ linux-2.6/include/linux/irq.h
-@@ -244,7 +244,7 @@ extern int setup_irq(unsigned int irq, s
- #ifdef CONFIG_GENERIC_PENDING_IRQ
+@@ -219,8 +219,13 @@ extern struct irq_desc *irq_descX;
  
- void set_pending_irq(unsigned int irq, cpumask_t mask);
--void move_native_irq(int irq, struct irq_desc *desc);
-+void move_native_irq(int irq);
- void move_masked_irq(int irq, struct irq_desc *desc);
- 
- #else /* CONFIG_GENERIC_PENDING_IRQ */
-@@ -253,7 +253,7 @@ static inline void move_irq(int irq)
- {
- }
- 
--static inline void move_native_irq(int irq, struct irq_desc *desc)
-+static inline void move_native_irq(int irq)
- {
- }
- 
-@@ -269,7 +269,7 @@ static inline void set_pending_irq(unsig
- 
- #else /* CONFIG_SMP */
- 
--#define move_native_irq(x, y)
-+#define move_native_irq(x)
- #define move_masked_irq(x, y)
- 
- #endif /* CONFIG_SMP */
-@@ -302,7 +302,7 @@ extern void handle_bad_irq(unsigned int
-  * Monolithic do_IRQ implementation.
-  */
- #ifndef CONFIG_GENERIC_HARDIRQS_NO__DO_IRQ
--extern unsigned int __do_IRQ(unsigned int irq, struct irq_desc *desc);
-+extern unsigned int __do_IRQ(unsigned int irq);
  #endif
+ 
++#ifdef CONFIG_HAVE_DYN_ARRAY
+ #define kstat_irqs_this_cpu(DESC) \
+ 	((DESC)->kstat_irqs[smp_processor_id()])
++#else
++#define kstat_irqs_this_cpu(irq) \
++	kstat_this_cpu.irqs[irq]
++#endif
  
  /*
-@@ -319,7 +319,7 @@ static inline void generic_handle_irq_de
- 	if (likely(desc->handle_irq))
- 		desc->handle_irq(irq, desc);
- 	else
--		__do_IRQ(irq, desc);
-+		__do_IRQ(irq);
- #endif
- }
+  * Migration helpers for obsolete names, they will go away:
+Index: linux-2.6/include/linux/kernel_stat.h
+===================================================================
+--- linux-2.6.orig/include/linux/kernel_stat.h
++++ linux-2.6/include/linux/kernel_stat.h
+@@ -28,7 +28,7 @@ struct cpu_usage_stat {
  
+ struct kernel_stat {
+ 	struct cpu_usage_stat	cpustat;
+-#ifndef CONFIG_GENRIC_HARDIRQS
++#ifndef CONFIG_HAVE_DYN_ARRAY
+        unsigned int irqs[NR_IRQS];
+ #endif
+ };
+@@ -41,7 +41,7 @@ DECLARE_PER_CPU(struct kernel_stat, ksta
+ 
+ extern unsigned long long nr_context_switches(void);
+ 
+-#ifndef CONFIG_GENERIC_HARDIRQS
++#ifndef CONFIG_HAVE_DYN_ARRAY
+ static inline unsigned int kstat_irqs_cpu(unsigned int irq, int cpu)
+ {
+        return kstat_cpu(cpu).irqs[irq];
+Index: linux-2.6/kernel/irq/chip.c
+===================================================================
+--- linux-2.6.orig/kernel/irq/chip.c
++++ linux-2.6/kernel/irq/chip.c
+@@ -326,7 +326,11 @@ handle_simple_irq(unsigned int irq, stru
+ 	if (unlikely(desc->status & IRQ_INPROGRESS))
+ 		goto out_unlock;
+ 	desc->status &= ~(IRQ_REPLAY | IRQ_WAITING);
++#ifdef CONFIG_HAVE_DYN_ARRAY
+ 	kstat_irqs_this_cpu(desc)++;
++#else
++	kstat_irqs_this_cpu(irq)++;
++#endif
+ 
+ 	action = desc->action;
+ 	if (unlikely(!action || (desc->status & IRQ_DISABLED)))
+@@ -367,7 +371,11 @@ handle_level_irq(unsigned int irq, struc
+ 	if (unlikely(desc->status & IRQ_INPROGRESS))
+ 		goto out_unlock;
+ 	desc->status &= ~(IRQ_REPLAY | IRQ_WAITING);
++#ifdef CONFIG_HAVE_DYN_ARRAY
+ 	kstat_irqs_this_cpu(desc)++;
++#else
++	kstat_irqs_this_cpu(irq)++;
++#endif
+ 
+ 	/*
+ 	 * If its disabled or no action available
+@@ -414,7 +422,11 @@ handle_fasteoi_irq(unsigned int irq, str
+ 		goto out;
+ 
+ 	desc->status &= ~(IRQ_REPLAY | IRQ_WAITING);
++#ifdef CONFIG_HAVE_DYN_ARRAY
+ 	kstat_irqs_this_cpu(desc)++;
++#else
++	kstat_irqs_this_cpu(irq)++;
++#endif
+ 
+ 	/*
+ 	 * If its disabled or no action available
+@@ -479,7 +491,11 @@ handle_edge_irq(unsigned int irq, struct
+ 		goto out_unlock;
+ 	}
+ 
++#ifdef CONFIG_HAVE_DYN_ARRAY
+ 	kstat_irqs_this_cpu(desc)++;
++#else
++	kstat_irqs_this_cpu(irq)++;
++#endif
+ 
+ 	/* Start handling the irq */
+ 	desc->chip->ack(irq);
+@@ -534,7 +550,11 @@ handle_percpu_irq(unsigned int irq, stru
+ {
+ 	irqreturn_t action_ret;
+ 
++#ifdef CONFIG_HAVE_DYN_ARRAY
+ 	kstat_irqs_this_cpu(desc)++;
++#else
++	kstat_irqs_this_cpu(irq)++;
++#endif
+ 
+ 	if (desc->chip->ack)
+ 		desc->chip->ack(irq);
 Index: linux-2.6/kernel/irq/handle.c
 ===================================================================
 --- linux-2.6.orig/kernel/irq/handle.c
 +++ linux-2.6/kernel/irq/handle.c
-@@ -385,10 +385,11 @@ irqreturn_t handle_IRQ_event(unsigned in
-  * This is the original x86 implementation which is used for every
-  * interrupt type.
-  */
--unsigned int __do_IRQ(unsigned int irq, struct irq_desc *desc)
-+unsigned int __do_IRQ(unsigned int irq)
+@@ -34,7 +34,11 @@ void
+ handle_bad_irq(unsigned int irq, struct irq_desc *desc)
  {
- 	struct irqaction *action;
- 	unsigned int status;
-+	struct irq_desc *desc = to_irq_desc(irq);
- 
+ 	print_irq_desc(irq, desc);
++#ifdef CONFIG_HAVE_DYN_ARRAY
  	kstat_irqs_this_cpu(desc)++;
++#else
++	kstat_irqs_this_cpu(irq)++;
++#endif
+ 	ack_bad_irq(irq);
+ }
+ 
+@@ -391,7 +395,11 @@ unsigned int __do_IRQ(unsigned int irq)
+ 	unsigned int status;
+ 	struct irq_desc *desc = to_irq_desc(irq);
+ 
++#ifdef CONFIG_HAVE_DYN_ARRAY
+ 	kstat_irqs_this_cpu(desc)++;
++#else
++	kstat_irqs_this_cpu(irq)++;
++#endif
  	if (CHECK_IRQ_PER_CPU(desc->status)) {
-Index: linux-2.6/kernel/irq/migration.c
-===================================================================
---- linux-2.6.orig/kernel/irq/migration.c
-+++ linux-2.6/kernel/irq/migration.c
-@@ -57,8 +57,10 @@ void move_masked_irq(int irq, struct irq
- 	cpus_clear(desc->pending_mask);
+ 		irqreturn_t action_ret;
+ 
+@@ -493,10 +501,12 @@ void early_init_irq_lock_class(void)
  }
+ #endif
  
--void move_native_irq(int irq, struct irq_desc *desc)
-+void move_native_irq(int irq)
++#ifdef CONFIG_HAVE_DYN_ARRAY
+ unsigned int kstat_irqs_cpu(unsigned int irq, int cpu)
  {
-+	struct irq_desc *desc = to_irq_desc(irq);
-+
- 	if (likely(!(desc->status & IRQ_MOVE_PENDING)))
- 		return;
- 
-Index: linux-2.6/arch/x86/kernel/io_apic.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/io_apic.c
-+++ linux-2.6/arch/x86/kernel/io_apic.c
-@@ -2426,10 +2426,8 @@ static void ack_x2apic_edge(unsigned int
- 
- static void ack_apic_edge(unsigned int irq)
- {
--	struct irq_desc *desc = to_irq_desc(irq);
--
- 	irq_complete_move(irq);
--	move_native_irq(irq, desc);
-+	move_native_irq(irq);
- 	ack_APIC_irq();
+ 	struct irq_desc *desc = to_irq_desc(irq);
+ 	return desc->kstat_irqs[cpu];
  }
++#endif
+ EXPORT_SYMBOL(kstat_irqs_cpu);
  
