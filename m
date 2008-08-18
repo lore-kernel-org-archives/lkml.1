@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764561AbYHRTcI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762120AbYHRTcz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764561AbYHRTcI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Aug 2008 15:32:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933177AbYHRTbL
+	id S1762120AbYHRTcz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Aug 2008 15:32:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933295AbYHRTcD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Aug 2008 15:31:11 -0400
-Received: from mx2.suse.de ([195.135.220.15]:41000 "EHLO mx2.suse.de"
+	Mon, 18 Aug 2008 15:32:03 -0400
+Received: from ns1.suse.de ([195.135.220.2]:48287 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754552AbYHRTbK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Aug 2008 15:31:10 -0400
-Date: Mon, 18 Aug 2008 12:19:51 -0700
+	id S933290AbYHRTcA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Aug 2008 15:32:00 -0400
+Date: Mon, 18 Aug 2008 12:19:56 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,15 +22,17 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Jean Delvare <khali@linux-fr.org>,
-       Krzysztof Helt <krzysztof.h1@wp.pl>,
-       Petr Vandrovec <VANDROVE@vc.cvut.cz>
-Subject: [patch 16/49] matrox maven: fix a broken error path
-Message-ID: <20080818191951.GQ10350@suse.de>
+       alan@lxorguk.ukuu.org.uk, Petr Tesarik <ptesarik@suse.cz>,
+       Jens Axboe <jens.axboe@oracle.com>, Jan Kara <jack@suse.cz>,
+       Borislav Petkov <petkovbb@gmail.com>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Subject: [patch 18/49] ide-cd: fix endianity for the error message in
+	cdrom_read_capacity
+Message-ID: <20080818191956.GS10350@suse.de>
 References: <20080818191012.663450219@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="matrox-maven-fix-a-broken-error-path.patch"
+Content-Disposition: inline; filename="ide-cd-fix-endianity-for-the-error-message-in-cdrom_read_capacity.patch"
 In-Reply-To: <20080818191834.GA10350@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -41,37 +43,73 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Jean Delvare <khali@linux-fr.org>
+From: Petr Tesarik <ptesarik@suse.cz>
 
-commit 5ede40f87957c6ededf9284c8339722a97b9dfb6 upstream
+commit 938bb03d188a1e688fb0bcae49788f540193e80a uptream
 
-I broke an error path with d03c21ec0be7787ff6b75dcf56c0e96209ccbfbd,
-sorry about that.
+Aesthetic regards aside, commit e8e7b9eb11c34ee18bde8b7011af41938d1ad667
+still leaves a bug in the error message, because it uses the unconverted
+big-endian value for printk.
 
-The machine will crash if the i2c_attach_client() or maven_init_client()
-calls fail, although nobody has yet reported this happening.
+Fix this by using a local variable in machine byte order. The result is
+correct, more readable, and also produces slightly shorter code on i386.
 
-Signed-off-by: Jean Delvare <khali@linux-fr.org>
-Acked-by: Krzysztof Helt <krzysztof.h1@wp.pl>
-Cc: Petr Vandrovec <VANDROVE@vc.cvut.cz>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Petr Tesarik <ptesarik@suse.cz>
+Cc: Jens Axboe <jens.axboe@oracle.com>
+Cc: Jan Kara <jack@suse.cz>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: <stable@kernel.org>
+Acked-by: Borislav Petkov <petkovbb@gmail.com>
+[bart: __u32 -> u32]
+Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/video/matrox/matroxfb_maven.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/ide/ide-cd.c |   18 ++++++++++--------
+ 1 file changed, 10 insertions(+), 8 deletions(-)
 
---- a/drivers/video/matrox/matroxfb_maven.c
-+++ b/drivers/video/matrox/matroxfb_maven.c
-@@ -1266,7 +1266,7 @@ static int maven_detect_client(struct i2
- ERROR4:;
- 	i2c_detach_client(new_client);
- ERROR3:;
--	kfree(new_client);
-+	kfree(data);
- ERROR0:;
- 	return err;
+--- a/drivers/ide/ide-cd.c
++++ b/drivers/ide/ide-cd.c
+@@ -1411,6 +1411,7 @@ static int cdrom_read_capacity(ide_drive
+ 
+ 	int stat;
+ 	struct request req;
++	u32 blocklen;
+ 
+ 	ide_cd_init_rq(drive, &req);
+ 
+@@ -1427,23 +1428,24 @@ static int cdrom_read_capacity(ide_drive
+ 	/*
+ 	 * Sanity check the given block size
+ 	 */
+-	switch (capbuf.blocklen) {
+-	case __constant_cpu_to_be32(512):
+-	case __constant_cpu_to_be32(1024):
+-	case __constant_cpu_to_be32(2048):
+-	case __constant_cpu_to_be32(4096):
++	blocklen = be32_to_cpu(capbuf.blocklen);
++	switch (blocklen) {
++	case 512:
++	case 1024:
++	case 2048:
++	case 4096:
+ 		break;
+ 	default:
+ 		printk(KERN_ERR "%s: weird block size %u\n",
+-			drive->name, capbuf.blocklen);
++			drive->name, blocklen);
+ 		printk(KERN_ERR "%s: default to 2kb block size\n",
+ 			drive->name);
+-		capbuf.blocklen = __constant_cpu_to_be32(2048);
++		blocklen = 2048;
+ 		break;
+ 	}
+ 
+ 	*capacity = 1 + be32_to_cpu(capbuf.lba);
+-	*sectors_per_frame = be32_to_cpu(capbuf.blocklen) >> SECTOR_BITS;
++	*sectors_per_frame = blocklen >> SECTOR_BITS;
+ 	return 0;
  }
+ 
 
 -- 
