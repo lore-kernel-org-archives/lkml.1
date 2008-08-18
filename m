@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757858AbYHRTnZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765484AbYHRTm4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757858AbYHRTnZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Aug 2008 15:43:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932643AbYHRTjb
+	id S1765484AbYHRTm4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Aug 2008 15:42:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761392AbYHRTjG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Aug 2008 15:39:31 -0400
-Received: from mail.suse.de ([195.135.220.2]:49269 "EHLO mx1.suse.de"
+	Mon, 18 Aug 2008 15:39:06 -0400
+Received: from ns1.suse.de ([195.135.220.2]:49197 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758989AbYHRTj2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Aug 2008 15:39:28 -0400
-Date: Mon, 18 Aug 2008 12:20:34 -0700
+	id S932586AbYHRTjE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Aug 2008 15:39:04 -0400
+Date: Mon, 18 Aug 2008 12:20:32 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -24,14 +24,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
        alan@lxorguk.ukuu.org.uk,
        uml-devel <user-mode-linux-devel@lists.sourceforge.net>,
-       Gabriel C <nix.or.die@googlemail.com>,
-       Jeff Dike <jdike@linux.intel.com>
-Subject: [patch 35/49] uml: memcpy export needs to follow host declaration
-Message-ID: <20080818192034.GJ10350@suse.de>
+       Al Viro <viro@zeniv.linux.org.uk>, Jeff Dike <jdike@addtoit.com>
+Subject: [patch 34/49] uml: missing export of csum_partial() on uml/amd64
+Message-ID: <20080818192032.GI10350@suse.de>
 References: <20080818191012.663450219@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="uml-memcpy-export-needs-to-follow-host-declaration.patch"
+Content-Disposition: inline; filename="uml-missing-export-of-csum_partial-on-uml-amd64.patch"
 In-Reply-To: <20080818191834.GA10350@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -42,34 +41,25 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Jeff Dike <jdike@addtoit.com>
+From: Al Viro <viro@ftp.linux.org.uk>
 
-commit 8bfd04b974689f700bbd053ad6e66b0a95fb80c9 upstream
+commit 3e3b48e5198544dd90e27265a70c1a834139e025 upstream
 
-x86_64 defines either memcpy or __memcpy depending on the gcc version, and
-it looks like UML needs to follow that in its exporting.
-
-Cc: Gabriel C <nix.or.die@googlemail.com>
-Signed-off-by: Jeff Dike <jdike@linux.intel.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
+Cc: Jeff Dike <jdike@addtoit.com>
 Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/um/sys-x86_64/ksyms.c |    4 ++++
- 1 file changed, 4 insertions(+)
+ arch/um/sys-x86_64/ksyms.c |    1 +
+ 1 file changed, 1 insertion(+)
 
 --- a/arch/um/sys-x86_64/ksyms.c
 +++ b/arch/um/sys-x86_64/ksyms.c
-@@ -13,5 +13,9 @@ EXPORT_SYMBOL(__down_failed_trylock);
- EXPORT_SYMBOL(__up_wakeup);
+@@ -14,3 +14,4 @@ EXPORT_SYMBOL(__up_wakeup);
  
  /*XXX: we need them because they would be exported by x86_64 */
-+#if (__GNUC__ == 4 && __GNUC_MINOR__ >= 3) || __GNUC__ > 4
-+EXPORT_SYMBOL(memcpy);
-+#else
  EXPORT_SYMBOL(__memcpy);
-+#endif
- EXPORT_SYMBOL(csum_partial);
++EXPORT_SYMBOL(csum_partial);
 
 -- 
