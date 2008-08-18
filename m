@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751502AbYHREpQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752630AbYHREtn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751502AbYHREpQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Aug 2008 00:45:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751940AbYHREo6
+	id S1752630AbYHREtn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Aug 2008 00:49:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750752AbYHREtf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Aug 2008 00:44:58 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:14036 "EHLO
+	Mon, 18 Aug 2008 00:49:35 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:14935 "EHLO
 	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753199AbYHREo5 (ORCPT
+	with ESMTP id S1750741AbYHREte (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Aug 2008 00:44:57 -0400
-Date: Sun, 17 Aug 2008 21:44:56 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
+	Mon, 18 Aug 2008 00:49:34 -0400
+Date: Sun, 17 Aug 2008 21:44:05 -0700
+From: Randy Dunlap <randy.dunlap@ORACLE.COM>
 To: lkml <linux-kernel@vger.kernel.org>
-Cc: akpm <akpm@linux-foundation.org>, sfr@canb.auug.org.au
-Subject: [PATCH 2/2] documentation: split and build dnotify_test program
-Message-Id: <20080817214456.e8c765fa.randy.dunlap@oracle.com>
+Cc: jens.axboe@ORACLE.COM, akpm <akpm@linux-foundation.org>
+Subject: [PATCH] block: add more + fix some block kernel-doc
+Message-Id: <20080817214405.fa1b9eef.randy.dunlap@oracle.com>
 Organization: Oracle Linux Eng.
 X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
@@ -31,119 +31,475 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Randy Dunlap <randy.dunlap@oracle.com>
 
-Make dnotify_test.c source file and add it to Makefile so that
-bitrot can be prevented.
+Add some block/ source files to the kernel-api docbook.
+Fix kernel-doc notation in them as needed.
+Fix changed function parameter names.
+Fix typos/spellos.
+In comments, change REQ_SPECIAL to REQ_TYPE_SPECIAL and
+REQ_BLOCK_PC to REQ_TYPE_BLOCK_PC.
 
 Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-cc: Stephen Rothwell <sfr@canb.auug.org.au>
 ---
- Documentation/filesystems/00-INDEX       |    2 +
- Documentation/filesystems/Makefile       |    2 -
- Documentation/filesystems/dnotify.txt    |   36 -------------------------------
- Documentation/filesystems/dnotify_test.c |   34 +++++++++++++++++++++++++++++
- 4 files changed, 38 insertions(+), 36 deletions(-)
+ Documentation/DocBook/kernel-api.tmpl |    4 +
+ block/blk-core.c                      |   72 +++++++++++++++++-----------------
+ block/blk-exec.c                      |    6 +-
+ block/blk-integrity.c                 |    4 -
+ block/blk-map.c                       |   16 +++----
+ block/blk-settings.c                  |    8 +--
+ block/blk-tag.c                       |    8 +--
+ block/genhd.c                         |    5 +-
+ 8 files changed, 64 insertions(+), 59 deletions(-)
 
---- lin2627-rc3g4-kerndoc.orig/Documentation/filesystems/Makefile
-+++ lin2627-rc3g4-kerndoc/Documentation/filesystems/Makefile
-@@ -2,7 +2,7 @@
- obj- := dummy.o
+--- lin2627-rc3g4-kerndoc.orig/Documentation/DocBook/kernel-api.tmpl
++++ lin2627-rc3g4-kerndoc/Documentation/DocBook/kernel-api.tmpl
+@@ -365,6 +365,10 @@ X!Edrivers/pnp/system.c
+ !Eblock/blk-barrier.c
+ !Eblock/blk-tag.c
+ !Iblock/blk-tag.c
++!Eblock/blk-integrity.c
++!Iblock/blktrace.c
++!Iblock/genhd.c
++!Eblock/genhd.c
+   </chapter>
  
- # List of programs to build
--hostprogs-y := smount
-+hostprogs-y := smount dnotify_test
+   <chapter id="chrdev">
+--- lin2627-rc3g4-kerndoc.orig/block/blk-integrity.c
++++ lin2627-rc3g4-kerndoc/block/blk-integrity.c
+@@ -109,8 +109,8 @@ EXPORT_SYMBOL(blk_rq_map_integrity_sg);
  
- # Tell kbuild to always build the programs
- always := $(hostprogs-y)
---- lin2627-rc3g4-kerndoc.orig/Documentation/filesystems/dnotify.txt
-+++ lin2627-rc3g4-kerndoc/Documentation/filesystems/dnotify.txt
-@@ -62,38 +62,4 @@ disabled, fcntl(fd, F_NOTIFY, ...) will 
+ /**
+  * blk_integrity_compare - Compare integrity profile of two block devices
+- * @b1:		Device to compare
+- * @b2:		Device to compare
++ * @bd1:	Device to compare
++ * @bd2:	Device to compare
+  *
+  * Description: Meta-devices like DM and MD need to verify that all
+  * sub-devices use the same integrity format before advertising to
+--- lin2627-rc3g4-kerndoc.orig/block/genhd.c
++++ lin2627-rc3g4-kerndoc/block/genhd.c
+@@ -213,10 +213,11 @@ void unlink_gendisk(struct gendisk *disk
  
- Example
- -------
--
--	#define _GNU_SOURCE	/* needed to get the defines */
--	#include <fcntl.h>	/* in glibc 2.2 this has the needed
--					   values defined */
--	#include <signal.h>
--	#include <stdio.h>
--	#include <unistd.h>
--
--	static volatile int event_fd;
--
--	static void handler(int sig, siginfo_t *si, void *data)
--	{
--		event_fd = si->si_fd;
--	}
--
--	int main(void)
--	{
--		struct sigaction act;
--		int fd;
--
--		act.sa_sigaction = handler;
--		sigemptyset(&act.sa_mask);
--		act.sa_flags = SA_SIGINFO;
--		sigaction(SIGRTMIN + 1, &act, NULL);
--
--		fd = open(".", O_RDONLY);
--		fcntl(fd, F_SETSIG, SIGRTMIN + 1);
--		fcntl(fd, F_NOTIFY, DN_MODIFY|DN_CREATE|DN_MULTISHOT);
--		/* we will now be notified if any of the files
--		   in "." is modified or new files are created */
--		while (1) {
--			pause();
--			printf("Got event on fd=%d\n", event_fd);
--		}
--	}
-+See Documentation/filesystems/dnotify_test.c for an example.
---- /dev/null
-+++ lin2627-rc3g4-kerndoc/Documentation/filesystems/dnotify_test.c
-@@ -0,0 +1,34 @@
-+#define _GNU_SOURCE	/* needed to get the defines */
-+#include <fcntl.h>	/* in glibc 2.2 this has the needed
-+				   values defined */
-+#include <signal.h>
-+#include <stdio.h>
-+#include <unistd.h>
-+
-+static volatile int event_fd;
-+
-+static void handler(int sig, siginfo_t *si, void *data)
-+{
-+	event_fd = si->si_fd;
-+}
-+
-+int main(void)
-+{
-+	struct sigaction act;
-+	int fd;
-+
-+	act.sa_sigaction = handler;
-+	sigemptyset(&act.sa_mask);
-+	act.sa_flags = SA_SIGINFO;
-+	sigaction(SIGRTMIN + 1, &act, NULL);
-+
-+	fd = open(".", O_RDONLY);
-+	fcntl(fd, F_SETSIG, SIGRTMIN + 1);
-+	fcntl(fd, F_NOTIFY, DN_MODIFY|DN_CREATE|DN_MULTISHOT);
-+	/* we will now be notified if any of the files
-+	   in "." is modified or new files are created */
-+	while (1) {
-+		pause();
-+		printf("Got event on fd=%d\n", event_fd);
-+	}
-+}
---- lin2627-rc3g4-kerndoc.orig/Documentation/filesystems/00-INDEX
-+++ lin2627-rc3g4-kerndoc/Documentation/filesystems/00-INDEX
-@@ -34,6 +34,8 @@ dlmfs.txt
- 	- info on the userspace interface to the OCFS2 DLM.
- dnotify.txt
- 	- info about directory notification in Linux.
-+dnotify_test.c
-+	- example program for dnotify
- ecryptfs.txt
- 	- docs on eCryptfs: stacked cryptographic filesystem for Linux.
- ext2.txt
+ /**
+  * get_gendisk - get partitioning information for a given device
+- * @dev: device to get partitioning information for
++ * @devt: device to get partitioning information for
++ * @part: returned partition index
+  *
+  * This function gets the structure containing partitioning
+- * information for the given device @dev.
++ * information for the given device @devt.
+  */
+ struct gendisk *get_gendisk(dev_t devt, int *part)
+ {
+--- lin2627-rc3g4-kerndoc.orig/block/blk-core.c
++++ lin2627-rc3g4-kerndoc/block/blk-core.c
+@@ -531,7 +531,7 @@ EXPORT_SYMBOL(blk_alloc_queue_node);
+  *    request queue; this lock will be taken also from interrupt context, so irq
+  *    disabling is needed for it.
+  *
+- *    Function returns a pointer to the initialized request queue, or NULL if
++ *    Function returns a pointer to the initialized request queue, or %NULL if
+  *    it didn't succeed.
+  *
+  * Note:
+@@ -915,7 +915,7 @@ void blk_requeue_request(struct request_
+ EXPORT_SYMBOL(blk_requeue_request);
+ 
+ /**
+- * blk_insert_request - insert a special request in to a request queue
++ * blk_insert_request - insert a special request into a request queue
+  * @q:		request queue where request should be inserted
+  * @rq:		request to be inserted
+  * @at_head:	insert request at head or tail of queue
+@@ -925,8 +925,8 @@ EXPORT_SYMBOL(blk_requeue_request);
+  *    Many block devices need to execute commands asynchronously, so they don't
+  *    block the whole kernel from preemption during request execution.  This is
+  *    accomplished normally by inserting aritficial requests tagged as
+- *    REQ_SPECIAL in to the corresponding request queue, and letting them be
+- *    scheduled for actual execution by the request queue.
++ *    REQ_TYPE_SPECIAL in to the corresponding request queue, and letting them
++ *    be scheduled for actual execution by the request queue.
+  *
+  *    We have the option of inserting the head or the tail of the queue.
+  *    Typically we use the tail for new ioctls and so forth.  We use the head
+@@ -1312,7 +1312,7 @@ static inline int bio_check_eod(struct b
+ }
+ 
+ /**
+- * generic_make_request: hand a buffer to its device driver for I/O
++ * generic_make_request - hand a buffer to its device driver for I/O
+  * @bio:  The bio describing the location in memory and on the device.
+  *
+  * generic_make_request() is used to make I/O requests of block
+@@ -1469,13 +1469,13 @@ void generic_make_request(struct bio *bi
+ EXPORT_SYMBOL(generic_make_request);
+ 
+ /**
+- * submit_bio: submit a bio to the block device layer for I/O
++ * submit_bio - submit a bio to the block device layer for I/O
+  * @rw: whether to %READ or %WRITE, or maybe to %READA (read ahead)
+  * @bio: The &struct bio which describes the I/O
+  *
+  * submit_bio() is very similar in purpose to generic_make_request(), and
+  * uses that function to do most of the work. Both are fairly rough
+- * interfaces, @bio must be presetup and ready for I/O.
++ * interfaces; @bio must be presetup and ready for I/O.
+  *
+  */
+ void submit_bio(int rw, struct bio *bio)
+@@ -1517,7 +1517,7 @@ EXPORT_SYMBOL(submit_bio);
+ /**
+  * __end_that_request_first - end I/O on a request
+  * @req:      the request being processed
+- * @error:    0 for success, < 0 for error
++ * @error:    %0 for success, < %0 for error
+  * @nr_bytes: number of bytes to complete
+  *
+  * Description:
+@@ -1525,8 +1525,8 @@ EXPORT_SYMBOL(submit_bio);
+  *     for the next range of segments (if any) in the cluster.
+  *
+  * Return:
+- *     0 - we are done with this request, call end_that_request_last()
+- *     1 - still buffers pending for this request
++ *     %0 - we are done with this request, call end_that_request_last()
++ *     %1 - still buffers pending for this request
+  **/
+ static int __end_that_request_first(struct request *req, int error,
+ 				    int nr_bytes)
+@@ -1537,7 +1537,7 @@ static int __end_that_request_first(stru
+ 	blk_add_trace_rq(req->q, req, BLK_TA_COMPLETE);
+ 
+ 	/*
+-	 * for a REQ_BLOCK_PC request, we want to carry any eventual
++	 * for a REQ_TYPE_BLOCK_PC request, we want to carry any eventual
+ 	 * sense key with us all the way through
+ 	 */
+ 	if (!blk_pc_request(req))
+@@ -1803,11 +1803,11 @@ EXPORT_SYMBOL_GPL(blk_rq_cur_bytes);
+ /**
+  * end_queued_request - end all I/O on a queued request
+  * @rq:		the request being processed
+- * @uptodate:	error value or 0/1 uptodate flag
++ * @uptodate:	error value or %0/%1 uptodate flag
+  *
+  * Description:
+  *     Ends all I/O on a request, and removes it from the block layer queues.
+- *     Not suitable for normal IO completion, unless the driver still has
++ *     Not suitable for normal I/O completion, unless the driver still has
+  *     the request attached to the block layer.
+  *
+  **/
+@@ -1820,7 +1820,7 @@ EXPORT_SYMBOL(end_queued_request);
+ /**
+  * end_dequeued_request - end all I/O on a dequeued request
+  * @rq:		the request being processed
+- * @uptodate:	error value or 0/1 uptodate flag
++ * @uptodate:	error value or %0/%1 uptodate flag
+  *
+  * Description:
+  *     Ends all I/O on a request. The request must already have been
+@@ -1838,14 +1838,14 @@ EXPORT_SYMBOL(end_dequeued_request);
+ /**
+  * end_request - end I/O on the current segment of the request
+  * @req:	the request being processed
+- * @uptodate:	error value or 0/1 uptodate flag
++ * @uptodate:	error value or %0/%1 uptodate flag
+  *
+  * Description:
+  *     Ends I/O on the current segment of a request. If that is the only
+  *     remaining segment, the request is also completed and freed.
+  *
+- *     This is a remnant of how older block drivers handled IO completions.
+- *     Modern drivers typically end IO on the full request in one go, unless
++ *     This is a remnant of how older block drivers handled I/O completions.
++ *     Modern drivers typically end I/O on the full request in one go, unless
+  *     they have a residual value to account for. For that case this function
+  *     isn't really useful, unless the residual just happens to be the
+  *     full current segment. In other words, don't use this function in new
+@@ -1863,12 +1863,12 @@ EXPORT_SYMBOL(end_request);
+ /**
+  * blk_end_io - Generic end_io function to complete a request.
+  * @rq:           the request being processed
+- * @error:        0 for success, < 0 for error
++ * @error:        %0 for success, < %0 for error
+  * @nr_bytes:     number of bytes to complete @rq
+  * @bidi_bytes:   number of bytes to complete @rq->next_rq
+  * @drv_callback: function called between completion of bios in the request
+  *                and completion of the request.
+- *                If the callback returns non 0, this helper returns without
++ *                If the callback returns non %0, this helper returns without
+  *                completion of the request.
+  *
+  * Description:
+@@ -1876,8 +1876,8 @@ EXPORT_SYMBOL(end_request);
+  *     If @rq has leftover, sets it up for the next range of segments.
+  *
+  * Return:
+- *     0 - we are done with this request
+- *     1 - this request is not freed yet, it still has pending buffers.
++ *     %0 - we are done with this request
++ *     %1 - this request is not freed yet, it still has pending buffers.
+  **/
+ static int blk_end_io(struct request *rq, int error, unsigned int nr_bytes,
+ 		      unsigned int bidi_bytes,
+@@ -1912,7 +1912,7 @@ static int blk_end_io(struct request *rq
+ /**
+  * blk_end_request - Helper function for drivers to complete the request.
+  * @rq:       the request being processed
+- * @error:    0 for success, < 0 for error
++ * @error:    %0 for success, < %0 for error
+  * @nr_bytes: number of bytes to complete
+  *
+  * Description:
+@@ -1920,8 +1920,8 @@ static int blk_end_io(struct request *rq
+  *     If @rq has leftover, sets it up for the next range of segments.
+  *
+  * Return:
+- *     0 - we are done with this request
+- *     1 - still buffers pending for this request
++ *     %0 - we are done with this request
++ *     %1 - still buffers pending for this request
+  **/
+ int blk_end_request(struct request *rq, int error, unsigned int nr_bytes)
+ {
+@@ -1932,15 +1932,15 @@ EXPORT_SYMBOL_GPL(blk_end_request);
+ /**
+  * __blk_end_request - Helper function for drivers to complete the request.
+  * @rq:       the request being processed
+- * @error:    0 for success, < 0 for error
++ * @error:    %0 for success, < %0 for error
+  * @nr_bytes: number of bytes to complete
+  *
+  * Description:
+  *     Must be called with queue lock held unlike blk_end_request().
+  *
+  * Return:
+- *     0 - we are done with this request
+- *     1 - still buffers pending for this request
++ *     %0 - we are done with this request
++ *     %1 - still buffers pending for this request
+  **/
+ int __blk_end_request(struct request *rq, int error, unsigned int nr_bytes)
+ {
+@@ -1960,7 +1960,7 @@ EXPORT_SYMBOL_GPL(__blk_end_request);
+ /**
+  * blk_end_bidi_request - Helper function for drivers to complete bidi request.
+  * @rq:         the bidi request being processed
+- * @error:      0 for success, < 0 for error
++ * @error:      %0 for success, < %0 for error
+  * @nr_bytes:   number of bytes to complete @rq
+  * @bidi_bytes: number of bytes to complete @rq->next_rq
+  *
+@@ -1968,8 +1968,8 @@ EXPORT_SYMBOL_GPL(__blk_end_request);
+  *     Ends I/O on a number of bytes attached to @rq and @rq->next_rq.
+  *
+  * Return:
+- *     0 - we are done with this request
+- *     1 - still buffers pending for this request
++ *     %0 - we are done with this request
++ *     %1 - still buffers pending for this request
+  **/
+ int blk_end_bidi_request(struct request *rq, int error, unsigned int nr_bytes,
+ 			 unsigned int bidi_bytes)
+@@ -1981,11 +1981,11 @@ EXPORT_SYMBOL_GPL(blk_end_bidi_request);
+ /**
+  * blk_end_request_callback - Special helper function for tricky drivers
+  * @rq:           the request being processed
+- * @error:        0 for success, < 0 for error
++ * @error:        %0 for success, < %0 for error
+  * @nr_bytes:     number of bytes to complete
+  * @drv_callback: function called between completion of bios in the request
+  *                and completion of the request.
+- *                If the callback returns non 0, this helper returns without
++ *                If the callback returns non %0, this helper returns without
+  *                completion of the request.
+  *
+  * Description:
+@@ -1998,10 +1998,10 @@ EXPORT_SYMBOL_GPL(blk_end_bidi_request);
+  *     Don't use this interface in other places anymore.
+  *
+  * Return:
+- *     0 - we are done with this request
+- *     1 - this request is not freed yet.
+- *         this request still has pending buffers or
+- *         the driver doesn't want to finish this request yet.
++ *     %0 - we are done with this request
++ *     %1 - this request is not freed yet.
++ *          this request still has pending buffers or
++ *          the driver doesn't want to finish this request yet.
+  **/
+ int blk_end_request_callback(struct request *rq, int error,
+ 			     unsigned int nr_bytes,
+--- lin2627-rc3g4-kerndoc.orig/block/blk-map.c
++++ lin2627-rc3g4-kerndoc/block/blk-map.c
+@@ -85,17 +85,17 @@ static int __blk_rq_map_user(struct requ
+ }
+ 
+ /**
+- * blk_rq_map_user - map user data to a request, for REQ_BLOCK_PC usage
++ * blk_rq_map_user - map user data to a request, for REQ_TYPE_BLOCK_PC usage
+  * @q:		request queue where request should be inserted
+  * @rq:		request structure to fill
+  * @ubuf:	the user buffer
+  * @len:	length of user data
+  *
+  * Description:
+- *    Data will be mapped directly for zero copy io, if possible. Otherwise
++ *    Data will be mapped directly for zero copy I/O, if possible. Otherwise
+  *    a kernel bounce buffer is used.
+  *
+- *    A matching blk_rq_unmap_user() must be issued at the end of io, while
++ *    A matching blk_rq_unmap_user() must be issued at the end of I/O, while
+  *    still in process context.
+  *
+  *    Note: The mapped bio may need to be bounced through blk_queue_bounce()
+@@ -154,7 +154,7 @@ unmap_rq:
+ EXPORT_SYMBOL(blk_rq_map_user);
+ 
+ /**
+- * blk_rq_map_user_iov - map user data to a request, for REQ_BLOCK_PC usage
++ * blk_rq_map_user_iov - map user data to a request, for REQ_TYPE_BLOCK_PC usage
+  * @q:		request queue where request should be inserted
+  * @rq:		request to map data to
+  * @iov:	pointer to the iovec
+@@ -162,10 +162,10 @@ EXPORT_SYMBOL(blk_rq_map_user);
+  * @len:	I/O byte count
+  *
+  * Description:
+- *    Data will be mapped directly for zero copy io, if possible. Otherwise
++ *    Data will be mapped directly for zero copy I/O, if possible. Otherwise
+  *    a kernel bounce buffer is used.
+  *
+- *    A matching blk_rq_unmap_user() must be issued at the end of io, while
++ *    A matching blk_rq_unmap_user() must be issued at the end of I/O, while
+  *    still in process context.
+  *
+  *    Note: The mapped bio may need to be bounced through blk_queue_bounce()
+@@ -224,7 +224,7 @@ int blk_rq_map_user_iov(struct request_q
+  * Description:
+  *    Unmap a rq previously mapped by blk_rq_map_user(). The caller must
+  *    supply the original rq->bio from the blk_rq_map_user() return, since
+- *    the io completion may have changed rq->bio.
++ *    the I/O completion may have changed rq->bio.
+  */
+ int blk_rq_unmap_user(struct bio *bio)
+ {
+@@ -250,7 +250,7 @@ int blk_rq_unmap_user(struct bio *bio)
+ EXPORT_SYMBOL(blk_rq_unmap_user);
+ 
+ /**
+- * blk_rq_map_kern - map kernel data to a request, for REQ_BLOCK_PC usage
++ * blk_rq_map_kern - map kernel data to a request, for REQ_TYPE_BLOCK_PC usage
+  * @q:		request queue where request should be inserted
+  * @rq:		request to fill
+  * @kbuf:	the kernel buffer
+--- lin2627-rc3g4-kerndoc.orig/block/blk-settings.c
++++ lin2627-rc3g4-kerndoc/block/blk-settings.c
+@@ -127,7 +127,7 @@ EXPORT_SYMBOL(blk_queue_make_request);
+  *    Different hardware can have different requirements as to what pages
+  *    it can do I/O directly to. A low level driver can call
+  *    blk_queue_bounce_limit to have lower memory pages allocated as bounce
+- *    buffers for doing I/O to pages residing above @page.
++ *    buffers for doing I/O to pages residing above @dma_addr.
+  **/
+ void blk_queue_bounce_limit(struct request_queue *q, u64 dma_addr)
+ {
+@@ -212,7 +212,7 @@ EXPORT_SYMBOL(blk_queue_max_phys_segment
+  * Description:
+  *    Enables a low level driver to set an upper limit on the number of
+  *    hw data segments in a request.  This would be the largest number of
+- *    address/length pairs the host adapter can actually give as once
++ *    address/length pairs the host adapter can actually give at once
+  *    to the device.
+  **/
+ void blk_queue_max_hw_segments(struct request_queue *q,
+@@ -393,7 +393,7 @@ EXPORT_SYMBOL(blk_queue_segment_boundary
+  * @mask:  alignment mask
+  *
+  * description:
+- *    set required memory and length aligment for direct dma transactions.
++ *    set required memory and length alignment for direct dma transactions.
+  *    this is used when buiding direct io requests for the queue.
+  *
+  **/
+@@ -409,7 +409,7 @@ EXPORT_SYMBOL(blk_queue_dma_alignment);
+  * @mask:  alignment mask
+  *
+  * description:
+- *    update required memory and length aligment for direct dma transactions.
++ *    update required memory and length alignment for direct dma transactions.
+  *    If the requested alignment is larger than the current alignment, then
+  *    the current queue alignment is updated to the new value, otherwise it
+  *    is left alone.  The design of this is to allow multiple objects
+--- lin2627-rc3g4-kerndoc.orig/block/blk-exec.c
++++ lin2627-rc3g4-kerndoc/block/blk-exec.c
+@@ -16,7 +16,7 @@
+ /**
+  * blk_end_sync_rq - executes a completion event on a request
+  * @rq: request to complete
+- * @error: end io status of the request
++ * @error: end I/O status of the request
+  */
+ static void blk_end_sync_rq(struct request *rq, int error)
+ {
+@@ -41,7 +41,7 @@ static void blk_end_sync_rq(struct reque
+  * @done:	I/O completion handler
+  *
+  * Description:
+- *    Insert a fully prepared request at the back of the io scheduler queue
++ *    Insert a fully prepared request at the back of the I/O scheduler queue
+  *    for execution.  Don't wait for completion.
+  */
+ void blk_execute_rq_nowait(struct request_queue *q, struct gendisk *bd_disk,
+@@ -72,7 +72,7 @@ EXPORT_SYMBOL_GPL(blk_execute_rq_nowait)
+  * @at_head:    insert request at head or tail of queue
+  *
+  * Description:
+- *    Insert a fully prepared request at the back of the io scheduler queue
++ *    Insert a fully prepared request at the back of the I/O scheduler queue
+  *    for execution and wait for completion.
+  */
+ int blk_execute_rq(struct request_queue *q, struct gendisk *bd_disk,
+--- lin2627-rc3g4-kerndoc.orig/block/blk-tag.c
++++ lin2627-rc3g4-kerndoc/block/blk-tag.c
+@@ -29,7 +29,7 @@ EXPORT_SYMBOL(blk_queue_find_tag);
+  * __blk_free_tags - release a given set of tag maintenance info
+  * @bqt:	the tag map to free
+  *
+- * Tries to free the specified @bqt@.  Returns true if it was
++ * Tries to free the specified @bqt.  Returns true if it was
+  * actually freed and false if there are still references using it
+  */
+ static int __blk_free_tags(struct blk_queue_tag *bqt)
+@@ -77,7 +77,7 @@ void __blk_queue_free_tags(struct reques
+  * blk_free_tags - release a given set of tag maintenance info
+  * @bqt:	the tag map to free
+  *
+- * For externally managed @bqt@ frees the map.  Callers of this
++ * For externally managed @bqt frees the map.  Callers of this
+  * function must guarantee to have released all the queues that
+  * might have been using this tag map.
+  */
+@@ -93,7 +93,7 @@ EXPORT_SYMBOL(blk_free_tags);
+  * @q:  the request queue for the device
+  *
+  *  Notes:
+- *	This is used to disabled tagged queuing to a device, yet leave
++ *	This is used to disable tagged queuing to a device, yet leave
+  *	queue in function.
+  **/
+ void blk_queue_free_tags(struct request_queue *q)
+@@ -271,7 +271,7 @@ EXPORT_SYMBOL(blk_queue_resize_tags);
+  * @rq: the request that has completed
+  *
+  *  Description:
+- *    Typically called when end_that_request_first() returns 0, meaning
++ *    Typically called when end_that_request_first() returns %0, meaning
+  *    all transfers have been done for a request. It's important to call
+  *    this function before end_that_request_last(), as that will put the
+  *    request back on the free list thus corrupting the internal tag list.
 
 
 ---
