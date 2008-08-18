@@ -1,74 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755615AbYHRVLk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755578AbYHRVMd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755615AbYHRVLk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Aug 2008 17:11:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752734AbYHRVLa
+	id S1755578AbYHRVMd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Aug 2008 17:12:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751945AbYHRVMZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Aug 2008 17:11:30 -0400
-Received: from yw-out-2324.google.com ([74.125.46.28]:10101 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752634AbYHRVLa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Aug 2008 17:11:30 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-disposition:message-id:content-type
-         :content-transfer-encoding;
-        b=jW5vgt89+C29vr2ZDei/7F5leFFfTuATw1DRJv8ASMjm70Pt5WikZFe3v0Sf0cf1/C
-         U5hkaGaPVTZRvX+1xQPIgKzzENWNmbzF92PfUdEBXcOXkwqlPeXOPWXiUzXKK7f9e/mp
-         n0gwZ7EwAJixB6hTdo+Wj31m9kzPpDTwkse5w=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Borislav Petkov <petkovbb@googlemail.com>
-Subject: Re: [PATCH 0/5] ide debugging macros
-Date: Mon, 18 Aug 2008 23:08:38 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
-       Borislav Petkov <petkovbb@gmail.com>
-References: <1218993826-4571-1-git-send-email-petkovbb@gmail.com>
-In-Reply-To: <1218993826-4571-1-git-send-email-petkovbb@gmail.com>
+	Mon, 18 Aug 2008 17:12:25 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:47459 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751928AbYHRVMY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Aug 2008 17:12:24 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: "Vegard Nossum" <vegard.nossum@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: oprofile + hibernation = badness
+Date: Mon, 18 Aug 2008 23:15:59 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: "Pavel Machek" <pavel@suse.cz>, "Robert Richter" <robert.richter@amd.com>,
+       "Ingo Molnar" <mingo@elte.hu>, "Andi Kleen" <ak@linux.intel.com>,
+       "Philippe Elie" <phil.el@wanadoo.fr>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+References: <19f34abd0808181332k3c02496auabd04e927bb7cab5@mail.gmail.com> <200808182251.31113.rjw@sisk.pl> <19f34abd0808181408q8a38fc0hfaff02fab6e20681@mail.gmail.com>
+In-Reply-To: <19f34abd0808181408q8a38fc0hfaff02fab6e20681@mail.gmail.com>
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200808182308.38345.bzolnier@gmail.com>
 Content-Type: text/plain;
   charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200808182316.00854.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-Hi,
-
-On Sunday 17 August 2008, Borislav Petkov wrote:
-> Hi Bart,
+On Monday, 18 of August 2008, Vegard Nossum wrote:
+> On Mon, Aug 18, 2008 at 10:51 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > Apparently nmi_suspend() conflicts with oprofile somehow.  Also, the offlining
+> > of non-boot CPUs may confuse it.  It would be helpful to check if the CPU
+> > hotplug works with oprofile.
 > 
-> here's something i've been wanting to do for a long time: debugging macros. The
-> reason for it is that i got tired of adding debug printk's everytime i'm testing
-> something so here we go.
+> That is a good suggestion :-)
 > 
-> The debugging macro is similar to the old ones but is one for all drivers
-> (currently only ide-floppy), is nice on branch prediction and is controlled by a
-> drive->debug_mask switch which is a module parameter and as such can be set at
-> module load time, of course. I've been thinking of adding also a sysfs attribute
-> too but can't seem to find quite the justification for it so no sysfs for now :)
-
-if you look closely you should already find it :)
-
-[ module parameters are exported through sysfs and it uses 0644 mask ]
-
-> In addition, one can still optimize away all the debug calls in the old manner
-> and i'm sure those will be removed completely too when ide generic conversion is
-> done.
+> Here is offlining:
 > 
-> Please tell me what you think, what can be changed/improved and after we've
-> figured out the details I'll do the other drivers too.
+> CPU 1 is now offline
+> lockdep: fixing up alternatives.
+> SMP alternatives: switching to UP code
+> CPU0 attaching NULL sched-domain.
+> WQ on CPU0, prefer CPU1
+> CPU1 attaching NULL sched-domain.
+> CPU0 attaching sched-domain:
+>  domain 0: span 0 level CPU
+>   groups: 0
+> WQ on CPU0, prefer CPU1
+> WQ on CPU0, prefer CPU1
+> WQ on CPU0, prefer CPU1
+> [repeat last message indefinitely]
+> 
+> Here is onlining:
+> 
+> Booting processor 1/1 ip 6000
+> Initializing CPU#1
+> WQ on CPU0, prefer CPU1
+> WQ on CPU0, prefer CPU1
+> Calibrating delay using timer specific routine.. 5986.15 BogoMIPS (lpj=29930790)
+> CPU: Trace cache: 12K uops, L1 D cache: 16K
+> CPU: L2 cache: 2048K
+> CPU: Physical Processor ID: 0
+> Intel machine check architecture supported.
+> Intel machine check reporting enabled on CPU#1.
+> CPU1: Intel P4/Xeon Extended MCE MSRs (24) available
+> CPU1: Thermal monitoring enabled
+> x86 PAT enabled: cpu 1, old 0x7040600070406, new 0x7010600070106
+> CPU1: Intel(R) Pentium(R) 4 CPU 3.00GHz stepping 05
+> checking TSC synchronization [CPU#0 -> CPU#1]:
+> Measured 120 cycles TSC warp between CPUs, turning off TSC clock.
+> Marking TSC unstable due to check_tsc_sync_source failed
+> APIC error on CPU1: 00(40)
+> Clockevents: could not switch to one-shot mode:<7>APIC error on CPU1: 40(40)
+>  lapic is not functional.
+> Could not switch to high resolution mode on CPU 0
+> Clockevents: could not switch to one-shot mode: lapic is not functional.
+> Could not switch to high resolution mode on CPU 1
+> APIC error on CPU1: 40(40)
+> [sched domains messages
+> WQ on CPU0, prefer CPU1
+> APIC error on CPU1: 40(40)
+> [repeat last message 9 times]
+> 
+> Then follows this pattern indefinitely:
+> 
+> WQ on CPU0, prefer CPU1
+> APIC error on CPU1: 40(40)
+> [repeat last message 9 times]
+> 
+> That's basically the same thing as I saw with suspend. So it can be
+> reproduced easily with CPU hotplug.
 
-Looks pretty good to me (after quick look) and I applied to pata tree.
+Well, I don't know who's the right person to ask about the CPU hotplug.
+Andrew, can you help please?
 
-PS I wonder whether we may also want to have global debug_mask for core code
-messages ('drive' is not always available) in the longer-term.  Or maybe even
-only global debug_mask for both core code and driver messages?
-
-Thanks,
-Bart
+Rafael
