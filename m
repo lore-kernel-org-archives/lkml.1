@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933194AbYHRTbV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933253AbYHRTbn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933194AbYHRTbV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Aug 2008 15:31:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761879AbYHRTaX
+	id S933253AbYHRTbn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Aug 2008 15:31:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764522AbYHRTas
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Aug 2008 15:30:23 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:40866 "EHLO mx2.suse.de"
+	Mon, 18 Aug 2008 15:30:48 -0400
+Received: from ns2.suse.de ([195.135.220.15]:40924 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757649AbYHRTaW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Aug 2008 15:30:22 -0400
-Date: Mon, 18 Aug 2008 12:19:46 -0700
+	id S932309AbYHRTaq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Aug 2008 15:30:46 -0400
+Date: Mon, 18 Aug 2008 12:19:48 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,18 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Oleg Nesterov <oleg@tv-sign.ru>,
-       Mark McLoughlin <markmc@redhat.com>,
-       Oliver Pinter <oliver.pntr@gmail.com>,
-       Roland McGrath <roland@redhat.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: [patch 14/49] posix-timers: do_schedule_next_timer: fix the
-	setting of ->si_overrun
-Message-ID: <20080818191946.GO10350@suse.de>
+       alan@lxorguk.ukuu.org.uk,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Subject: [patch 15/49] mlock() fix return values
+Message-ID: <20080818191948.GP10350@suse.de>
 References: <20080818191012.663450219@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="posix-timers-do_schedule_next_timer-fix-the-setting-of-si_overrun.patch"
+Content-Disposition: inline; filename="mlock-fix-return-values.patch"
 In-Reply-To: <20080818191834.GA10350@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -44,35 +40,162 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Oleg Nesterov <oleg@tv-sign.ru>
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
 
-commit 54da1174922cddd4be83d5a364b2e0fdd693f513 upstream
+commit a477097d9c37c1cf289c7f0257dffcfa42d50197 upstream
 
-do_schedule_next_timer() sets info->si_overrun = timr->it_overrun_last,
-this discards the already accumulated overruns.
+Halesh says:
 
-Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: Mark McLoughlin <markmc@redhat.com>
-Cc: Oliver Pinter <oliver.pntr@gmail.com>
-Cc: Roland McGrath <roland@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Please find the below testcase provide to test mlock.
+
+Test Case :
+===========================
+
+#include <sys/resource.h>
+#include <stdio.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
+#include <sys/mman.h>
+#include <fcntl.h>
+#include <errno.h>
+#include <stdlib.h>
+
+int main(void)
+{
+  int fd,ret, i = 0;
+  char *addr, *addr1 = NULL;
+  unsigned int page_size;
+  struct rlimit rlim;
+
+  if (0 != geteuid())
+  {
+   printf("Execute this pgm as root\n");
+   exit(1);
+  }
+
+  /* create a file */
+  if ((fd = open("mmap_test.c",O_RDWR|O_CREAT,0755)) == -1)
+  {
+   printf("cant create test file\n");
+   exit(1);
+  }
+
+  page_size = sysconf(_SC_PAGE_SIZE);
+
+  /* set the MEMLOCK limit */
+  rlim.rlim_cur = 2000;
+  rlim.rlim_max = 2000;
+
+  if ((ret = setrlimit(RLIMIT_MEMLOCK,&rlim)) != 0)
+  {
+   printf("Cant change limit values\n");
+   exit(1);
+  }
+
+  addr = 0;
+  while (1)
+  {
+  /* map a page into memory each time*/
+  if ((addr = (char *) mmap(addr,page_size, PROT_READ |
+PROT_WRITE,MAP_SHARED,fd,0)) == MAP_FAILED)
+  {
+   printf("cant do mmap on file\n");
+   exit(1);
+  }
+
+  if (0 == i)
+    addr1 = addr;
+  i++;
+  errno = 0;
+  /* lock the mapped memory pagewise*/
+  if ((ret = mlock((char *)addr, 1500)) == -1)
+  {
+   printf("errno value is %d\n", errno);
+   printf("cant lock maped region\n");
+   exit(1);
+  }
+  addr = addr + page_size;
+ }
+}
+======================================================
+
+This testcase results in an mlock() failure with errno 14 that is EFAULT,
+but it has nowhere been specified that mlock() will return EFAULT.  When I
+tested the same on older kernels like 2.6.18, I got the correct result i.e
+errno 12 (ENOMEM).
+
+I think in source code mlock(2), setting errno ENOMEM has been missed in
+do_mlock() , on mlock_fixup() failure.
+
+SUSv3 requires the following behavior frmo mlock(2).
+
+[ENOMEM]
+    Some or all of the address range specified by the addr and
+    len arguments does not correspond to valid mapped pages
+    in the address space of the process.
+
+[EAGAIN]
+    Some or all of the memory identified by the operation could not
+    be locked when the call was made.
+
+This rule isn't so nice and slighly strange.  but many people think
+POSIX/SUS compliance is important.
+
+Reported-by: Halesh Sadashiv <halesh.sadashiv@ap.sony.com>
+Tested-by: Halesh Sadashiv <halesh.sadashiv@ap.sony.com>
+Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- kernel/posix-timers.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ mm/memory.c |   16 +++++++++++++---
+ mm/mlock.c  |    2 --
+ 2 files changed, 13 insertions(+), 5 deletions(-)
 
---- a/kernel/posix-timers.c
-+++ b/kernel/posix-timers.c
-@@ -290,7 +290,7 @@ void do_schedule_next_timer(struct sigin
- 		else
- 			schedule_next_timer(timr);
+--- a/mm/memory.c
++++ b/mm/memory.c
+@@ -2618,16 +2618,26 @@ int make_pages_present(unsigned long add
  
--		info->si_overrun = timr->it_overrun_last;
-+		info->si_overrun += timr->it_overrun_last;
- 	}
+ 	vma = find_vma(current->mm, addr);
+ 	if (!vma)
+-		return -1;
++		return -ENOMEM;
+ 	write = (vma->vm_flags & VM_WRITE) != 0;
+ 	BUG_ON(addr >= end);
+ 	BUG_ON(end > vma->vm_end);
+ 	len = DIV_ROUND_UP(end, PAGE_SIZE) - addr/PAGE_SIZE;
+ 	ret = get_user_pages(current, current->mm, addr,
+ 			len, write, 0, NULL, NULL);
+-	if (ret < 0)
++	if (ret < 0) {
++		/*
++		   SUS require strange return value to mlock
++		    - invalid addr generate to ENOMEM.
++		    - out of memory should generate EAGAIN.
++		*/
++		if (ret == -EFAULT)
++			ret = -ENOMEM;
++		else if (ret == -ENOMEM)
++			ret = -EAGAIN;
+ 		return ret;
+-	return ret == len ? 0 : -1;
++	}
++	return ret == len ? 0 : -ENOMEM;
+ }
  
- 	if (timr)
+ #if !defined(__HAVE_ARCH_GATE_AREA)
+--- a/mm/mlock.c
++++ b/mm/mlock.c
+@@ -78,8 +78,6 @@ success:
+ 
+ 	mm->locked_vm -= pages;
+ out:
+-	if (ret == -ENOMEM)
+-		ret = -EAGAIN;
+ 	return ret;
+ }
+ 
 
 -- 
