@@ -1,56 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752800AbYHRHCO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752736AbYHRHFa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752800AbYHRHCO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Aug 2008 03:02:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751049AbYHRHB7
+	id S1752736AbYHRHFa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Aug 2008 03:05:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751156AbYHRHFP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Aug 2008 03:01:59 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:51819 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750885AbYHRHB7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Aug 2008 03:01:59 -0400
-Date: Mon, 18 Aug 2008 09:01:47 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: "Zhang, Yanmin" <yanmin.zhang@intel.com>
-Cc: a.p.zijlstra@chello.nl,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: scale sysctl_sched_shares_ratelimit with nr_cpus
-Message-ID: <20080818070147.GA4801@elte.hu>
-References: <37E52D09333DE2469A03574C88DBF40F024EBD2F@pdsmsx414.ccr.corp.intel.com> <20080818065220.GA2711@elte.hu> <37E52D09333DE2469A03574C88DBF40F024EBD69@pdsmsx414.ccr.corp.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <37E52D09333DE2469A03574C88DBF40F024EBD69@pdsmsx414.ccr.corp.intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Mon, 18 Aug 2008 03:05:15 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:52856
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751243AbYHRHFO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Aug 2008 03:05:14 -0400
+Date: Mon, 18 Aug 2008 00:05:13 -0700 (PDT)
+Message-Id: <20080818.000513.224752343.davem@davemloft.net>
+To: jirislaby@gmail.com
+Cc: linville@tuxdriver.com, linux-wireless@vger.kernel.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       kernel@mkarcher.dialup.fu-berlin.de
+Subject: Re: ath5k text
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <48A91E12.1060901@gmail.com>
+References: <20080817185605.GC30679@tuxdriver.com>
+	<20080817.151251.204370966.davem@davemloft.net>
+	<48A91E12.1060901@gmail.com>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Jiri Slaby <jirislaby@gmail.com>
+Date: Mon, 18 Aug 2008 09:00:34 +0200
 
-* Zhang, Yanmin <yanmin.zhang@intel.com> wrote:
+> On 08/18/2008 12:12 AM, David Miller wrote:
+> > Their commit messages reference SHA IDs but do not give a commit
+> > header line text reference as well.
+> > 
+> >       ath5k: Don't fiddle with MSI on suspend/resume.
+> 
+> John, this is it (even if I don't understand the purpose):
 
-> >>cool. It's already upstream (post-rc3 commit):
-> [YM] But comparing with 2.6.26, volanoMark result still has about 60%
-> regression.
+The purpose is that when patches are backported or moved to
+other GIT trees, the SHA ID is going to be different.
 
-Does a scheduler trace show anything about why that drop happens? Do 
-something like this to trace the scheduler:
+So when you reference just the SHA ID it is not enough
+infomration to universally find the commit you are referring
+to.
 
-assuming debugfs is mounted under /debug and CONFIG_SCHED_TRACER=y:
+Do you understand "the purpose" now? :-)
 
-  echo 1 > /debug/tracing/tracing_cpumask
-  echo sched_switch > /debug/tracing/available_tracers
-  cat /debug/tracing/trace_pipe > trace.txt
-
-( regarding tracing_cpumask: trace only 1 CPU to make sure volanomark is 
-  not disturbed too much by many-CPUs tracing. )
-
-	Ingo
