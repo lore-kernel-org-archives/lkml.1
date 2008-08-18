@@ -1,79 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754134AbYHRQ2g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754713AbYHRQ3h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754134AbYHRQ2g (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Aug 2008 12:28:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751907AbYHRQ21
+	id S1754713AbYHRQ3h (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Aug 2008 12:29:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751966AbYHRQ3a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Aug 2008 12:28:27 -0400
-Received: from pmx1.sophos.com ([213.31.172.16]:40802 "EHLO pmx1.sophos.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751418AbYHRQ20 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Aug 2008 12:28:26 -0400
-In-Reply-To: <20080818142511.GC8184@mit.edu>
-To: Theodore Tso <tytso@mit.edu>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-security-module@vger.kernel.org, malware-list@lists.printk.net
-Subject: Re: [malware-list] scanner interface proposal was: [TALPA] Intro	to	a linux
- interface for on access scanning
+	Mon, 18 Aug 2008 12:29:30 -0400
+Received: from outbound-sin.frontbridge.com ([207.46.51.80]:14187 "EHLO
+	SG2EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751502AbYHRQ33 convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Aug 2008 12:29:29 -0400
+X-BigFish: VPS-37(z21eWz1432R936eQ1805Mzzzz2f39iz32i6bh62h)
+X-Spam-TCS-SCL: 1:0
+X-WSS-ID: 0K5T1SJ-02-2LM-01
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-Class: urn:content-classes:message
 MIME-Version: 1.0
-X-Mailer: Lotus Notes Release 7.0.2 September 26, 2006
-From: douglas.leeder@sophos.com
-Date: Mon, 18 Aug 2008 17:28:32 +0100
-X-MIMETrack: Serialize by Router on Mercury/Servers/Sophos(Release 7.0.3|September 26, 2007) at
- 18/08/2008 17:27:29,
-	Serialize complete at 18/08/2008 17:27:29
-Content-Type: text/plain; charset="US-ASCII"
-Message-Id: <20080818162830.F0BAA3F608F@pmx1.sophos.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: Warning in during hotplug on 2.6.27-rc2-git5
+Date: Mon, 18 Aug 2008 11:29:15 -0500
+Message-ID: <6453C3CB8E2B3646B0D020C112613273C5AC7D@sausexmb4.amd.com>
+In-Reply-To: <200808181638.37707.rjw@sisk.pl>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: Warning in during hotplug on 2.6.27-rc2-git5
+Thread-Index: AckBP7R8eMwIT6WYQZKrttYeCPI52QAD7Bkw
+References: <200808141753.58547.rjw@sisk.pl> <200808172353.54479.rjw@sisk.pl> <6453C3CB8E2B3646B0D020C112613273C5AC7B@sausexmb4.amd.com> <200808181638.37707.rjw@sisk.pl>
+From: "Langsdorf, Mark" <mark.langsdorf@amd.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: "Andi Kleen" <andi@firstfloor.org>, <linux-kernel@vger.kernel.org>,
+       "Greg KH" <greg@kroah.com>, "Ingo Molnar" <mingo@elte.hu>,
+       "Andrew Morton" <akpm@linux-foundation.org>
+X-OriginalArrivalTime: 18 Aug 2008 16:29:17.0232 (UTC) FILETIME=[8F241300:01C9014F]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-malware-list-bounces@dmesg.printk.net wrote on 2008-08-18 15:25:11:
+> > > > I'm still seeing it on 2.6.27-rc2, even with the 
+> > > > patch here http://lkml.org/lkml/2008/7/30/171 and the
+> > > > wbinvd_halt code patch applied.  Maybe something else
+> > > > broke in some of the recent hotplug changes?
+>
+> I have a couple of questions, then:
+> - Does it fail identically for all CPUs or for CPU4 and above only?
+> - Did previous kernels, most importantly 2.6.26, work correctly?
 
-> On Mon, Aug 18, 2008 at 02:15:24PM +0100, tvrtko.ursulin@sophos.com 
-wrote:
-> > Then there is still a question of who allows some binary to declare 
-itself 
-> > exempt. If that decision was a mistake, or it gets compromised 
-security 
-> > will be off. A very powerful mechanism which must not be easily 
-> > accessible.  With a good cache your worries go away even without a 
-scheme 
-> > like this.
-> 
-> I have one word for you --- bittorrent.  If you are downloading a very
-> large torrent (say approximately a gigabyte), and it contains many
-> pdf's that are say a few megabytes a piece, and things are coming in
-> tribbles, having either a indexing scanner or an AV scanner wake up
-> and rescan the file from scratch each time a tiny piece of the pdf
-> comes in is going to eat your machine alive....
+It turns out 2.6.26 also fails.  It is only failing for CPU4+,
+I'm not sure why that would be significant.
 
-What size is a tribble? :-)
+> Also, can you please attach dmesg output, including the 
+> offlining of a CPU that would later lead to the problem
+> with cpu_up(), to the Bugzilla entry at
+> http://bugzilla.kernel.org/show_bug.cgi?id=11337 ?
 
-If we assume that the bittorrent client is closing and re-openning the 
-file 
-each time it's got a nice piece of the file? (Otherwise I don't think
-we'll have a performance problem)
+I did.
 
-Then there maybe room for a optimisation of the following form:
-For a file X.
-If X is only a local disk.
-If X was written from empty by process A and only process A.
-Then don't scan attempts to open by process A.
-
-But that sort of optimisation can either be done in user-space, or in a 
-future 
-kernel modification.
-
-I haven't fully analysed this - it assumes that reading data into process 
-A, that
-process A wrote out is safe, regardless of the data. 
-
--- 
-Douglas Leeder
-
-Sophos Plc, The Pentagon, Abingdon Science Park, Abingdon,
-OX14 3YP, United Kingdom.
-
-Company Reg No 2096520. VAT Reg No GB 348 3873 20.
+-Mark Langsdorf
+Operating System Research Center
+AMD
 
