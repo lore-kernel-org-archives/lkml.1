@@ -1,118 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753090AbYHRIqG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752494AbYHRJN7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753090AbYHRIqG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Aug 2008 04:46:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751758AbYHRIpz
+	id S1752494AbYHRJN7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Aug 2008 05:13:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751455AbYHRJNv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Aug 2008 04:45:55 -0400
-Received: from mga09.intel.com ([134.134.136.24]:28584 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751786AbYHRIpy convert rfc822-to-8bit (ORCPT
+	Mon, 18 Aug 2008 05:13:51 -0400
+Received: from fg-out-1718.google.com ([72.14.220.152]:7675 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751438AbYHRJNu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Aug 2008 04:45:54 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.32,227,1217833200"; 
-   d="scan'208";a="430033744"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Mon, 18 Aug 2008 05:13:50 -0400
+Message-ID: <48A93D49.2000601@colorfullife.com>
+Date: Mon, 18 Aug 2008 11:13:45 +0200
+From: Manfred Spraul <manfred@colorfullife.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: scale sysctl_sched_shares_ratelimit with nr_cpus
-Date: Mon, 18 Aug 2008 16:45:36 +0800
-Message-ID: <37E52D09333DE2469A03574C88DBF40F024EBE2F@pdsmsx414.ccr.corp.intel.com>
-In-Reply-To: <20080818084201.GA25432@elte.hu>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: scale sysctl_sched_shares_ratelimit with nr_cpus
-Thread-Index: AckBDloI65hjPH5bTRS55xVxYp73zAAABEQw
-References: <37E52D09333DE2469A03574C88DBF40F024EBD2F@pdsmsx414.ccr.corp.intel.com> <20080818065220.GA2711@elte.hu> <37E52D09333DE2469A03574C88DBF40F024EBD69@pdsmsx414.ccr.corp.intel.com> <20080818070147.GA4801@elte.hu> <37E52D09333DE2469A03574C88DBF40F024EBE06@pdsmsx414.ccr.corp.intel.com> <20080818084201.GA25432@elte.hu>
-From: "Zhang, Yanmin" <yanmin.zhang@intel.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Cc: <a.p.zijlstra@chello.nl>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 18 Aug 2008 08:45:40.0038 (UTC) FILETIME=[CACD1E60:01C9010E]
+To: paulmck@linux.vnet.ibm.com
+CC: linux-kernel@vger.kernel.org, mingo@elte.hu, akpm@linux-foundation.org,
+       oleg@tv-sign.ru, dipankar@in.ibm.com, rostedt@goodmis.org,
+       dvhltc@us.ibm.com, niv@us.ibm.com
+Subject: Re: [PATCH tip/core/rcu] classic RCU locking and memory-barrier cleanups
+References: <20080805162144.GA8297@linux.vnet.ibm.com> <489936E5.7020509@colorfullife.com> <20080807031806.GA6910@linux.vnet.ibm.com>
+In-Reply-To: <20080807031806.GA6910@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>-----Original Message-----
->>From: Ingo Molnar [mailto:mingo@elte.hu]
->>Sent: Monday, August 18, 2008 4:42 PM
->>To: Zhang, Yanmin
->>Cc: a.p.zijlstra@chello.nl; Linux Kernel Mailing List
->>Subject: Re: scale sysctl_sched_shares_ratelimit with nr_cpus
+Paul E. McKenney wrote:
+>
+>> Right now, I try to understand the current code first - and some of it 
+>> doesn't make much sense.
 >>
+>> There are three per-cpu lists:
+>> ->nxt
+>> ->cur
+>> ->done.
 >>
->>* Zhang, Yanmin <yanmin.zhang@intel.com> wrote:
->>
->>> >>Does a scheduler trace show anything about why that drop happens?
-Do
->>> >>something like this to trace the scheduler:
->>> >>
->>> >>assuming debugfs is mounted under /debug and
-CONFIG_SCHED_TRACER=y:
->>> >>
->>> >>  echo 1 > /debug/tracing/tracing_cpumask
->>> >>  echo sched_switch > /debug/tracing/available_tracers
->>> >>  cat /debug/tracing/trace_pipe > trace.txt
->>> [YM] Thanks for your good pointer. I collected the data and didn't
-find
->>> anything abnormal except the pid about waker.
->>>
->>>     Receiver-197-13665 [00]  1369.966423:  13665:120:R   +
-13607:120:S
->>>     Receiver-197-13665 [00]  1369.966440:  13665:120:R   +
-13611:120:S
->>>     Receiver-197-13665 [00]  1369.966458:  13665:120:R   +
-13615:120:S
->>>     Receiver-197-13665 [00]  1369.966463:  13665:120:R   +
-13619:120:S
->>>     Receiver-197-13665 [00]  1369.966466:  13665:120:R   +
-13623:120:S
->>>     Receiver-197-13665 [00]  1369.966469:  13665:120:R   +
-13627:120:S
->>>     Receiver-197-13665 [00]  1369.966475:  13665:120:R   +
-13631:120:S
->>>     Receiver-197-13665 [00]  1369.966480:  13665:120:R   +
-13635:120:S
->>>     Receiver-197-13665 [00]  1369.966485:  13665:120:R   +
-13639:120:S
->>>     Receiver-197-13665 [00]  1369.966495:  13665:120:R   +
-13643:120:S
->>>     Receiver-197-13665 [00]  1369.966507:  13871:120:R   +
-13647:120:S
->>> Above waker pid is 13871 while the current pid is 13665. I found
-lots of
->>> such mismatch data.
->>>
->>>     Receiver-197-13665 [00]  1369.966513:  13465:120:R   +
-13651:120:S
->>>     Receiver-197-13665 [00]  1369.966516:  13665:120:R   +
-13655:120:S
->>>     Receiver-197-13665 [00]  1369.966521:  13665:120:R   +
-13659:120:S
->>>     Receiver-197-13665 [00]  1369.966530:  13665:120:R   +
-13667:120:S
->>>     Receiver-197-13665 [00]  1369.966544:  13883:120:R   +
-13663:120:S
->>>     Receiver-197-13665 [00]  1369.966549:  13665:120:R ==>
-13667:120:R
->>>       Sender-140-13667 [00]  1369.966573:  13351:120:R   +
-13668:120:S
->>>       Sender-140-13667 [00]  1369.966578:  13667:120:R ==>
-13659:120:R
->>>
->>>
->>> BTW, I analyzed schedstat data and found wake_affine and
->>> load_balance_newidle seem abnormal. 2.6.27-rc has more task pulls. I
->>> set CONFIG_GROUP_SCHED=n with above testing.
->>
->>hm, does this mean there's too much idle time during the testrun,
->>because we dont load-balance agressively enough?
-[YM] With 2.6.26, cpu idle is about 6%; with 2.6.27-rc, idle is about
-0~1%.
-It seems volanoMark prefers some idle. I diff the sched source codes and
-couldn't
-find why load balance pulls more tasks successfully in 2.6.27-rc.
+>> Obviously, there must be a quiescent state between cur and done.
+>> But why does the code require a quiescent state between nxt and cur?
+>> I think that's superflous. The only thing that is required is that all cpus 
+>> have moved their callbacks from nxt to cur. That doesn't need a quiescent 
+>> state, this operation could be done in hard interrupt as well.
+>>     
+>
+> The deal is that we have to put incoming callbacks somewhere while
+> the batch in ->cur waits for an RCU grace period.  That somewhere is
+> ->nxt.  So to be painfully pedantic, the callbacks in ->nxt are not
+> waiting for an RCU grace period.  Instead, they are waiting for the
+> callbacks in ->cur to get out of the way.
+>
+>   
+Ok, thanks.
+If I understand the new code in tip/rcu correctly, you have rewritten 
+that block anyway.
+
+I'll try to implement my proposal - on paper, it looks far simpler than 
+the current code.
+On the one hand, a state machine that keeps track of a global state:
+- collect the callbacks in a nxt list.
+- wait for quiecent
+- destroy the callbacks in the nxt list.
+(actually, there will be 5 states, 2 additional for "start the next rcu 
+cycle immediately")
+
+On the other hand a cpu bitmap that keeps track of the cpus that have 
+completed the work that must be done after a state change.
+The last cpu advances the global state.
+
+The state machine could be seq_lock protected, the cpu bitmap could be 
+either hierarchical or flat or for uniprocessor just a nop.
+
+Do you have any statistics about rcu_check_callbacks? On my single-cpu 
+system, around 2/3 of the calls are from "normal" context, i.e. 
+rcu_qsctr_inc() is called.
+
+--
+    Manfred
