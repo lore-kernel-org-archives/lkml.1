@@ -1,53 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759102AbYHRTIm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763599AbYHRTKp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759102AbYHRTIm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Aug 2008 15:08:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762827AbYHRTFW
+	id S1763599AbYHRTKp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Aug 2008 15:10:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762846AbYHRTFv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Aug 2008 15:05:22 -0400
-Received: from az33egw02.freescale.net ([192.88.158.103]:37742 "EHLO
-	az33egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762817AbYHRTFT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Aug 2008 15:05:19 -0400
-Message-ID: <48A9C5C0.5010705@freescale.com>
-Date: Mon, 18 Aug 2008 13:56:00 -0500
-From: Scott Wood <scottwood@freescale.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.16 (X11/20080724)
+	Mon, 18 Aug 2008 15:05:51 -0400
+Received: from ns1.suse.de ([195.135.220.2]:44282 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757236AbYHRTFu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Aug 2008 15:05:50 -0400
+Date: Mon, 18 Aug 2008 11:45:28 -0700
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
+Cc: Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
+       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
+       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, Jan Beulich <jbeulich@novell.com>,
+       Nick Piggin <npiggin@suse.de>, Ingo Molnar <mingo@elte.hu>
+Subject: [patch 52/60] x86: fix spin_is_contended()
+Message-ID: <20080818184528.GA29394@suse.de>
+References: <20080818183230.966310219@mini.kroah.org>
 MIME-Version: 1.0
-To: Steven Rostedt <rostedt@goodmis.org>
-CC: Eran Liberty <liberty@extricom.com>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       Steven Rostedt <srostedt@redhat.com>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: Re: ftrace introduces instability into kernel 2.6.27(-rc2,-rc3)
-References: <48591941.4070408@extricom.com> <48A92E15.2080709@extricom.com>	<48A9901B.1080900@redhat.com> <20080818154746.GA26835@Krystal>	<48A9AFA7.8080508@freescale.com> <alpine.DEB.1.10.0808181445160.796@gandalf.stny.rr.com>
-In-Reply-To: <alpine.DEB.1.10.0808181445160.796@gandalf.stny.rr.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline; filename="x86-fix-spin_is_contended.patch"
+In-Reply-To: <20080818184035.GA29394@suse.de>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Steven Rostedt wrote:
-> What syntax to do that with?
-> 
->   lwz %1,0(%U2)
->   stu %3, 0(%X2)
-> 
-> I'm new to those. (and the above does not compile)
+2.6.26-stable review patch.  If anyone has any objections, please let us know.
 
-lwz%U2%X2 %1, %2
-stw%U2%X2 %3, %2
+------------------
+From: Jan Beulich <jbeulich@novell.com>
 
->> Why stwu with an offset of zero,
-> 
-> How else to do it?  stwu %3, (%2) does not compile for me.
+commit 7bc069c6bc4ede519a7116be1b9e149a1dbf787a upstream
 
-stw %3, 0(%2)
+The masked difference is what needs to be compared against 1, rather
+than the difference of masked values (which can be negative).
 
-The "u" tells it to write the effective address back to %2 -- but with 
-an offset of zero, the effective address is unchanged.
+Signed-off-by: Jan Beulich <jbeulich@novell.com>
+Acked-by: Nick Piggin <npiggin@suse.de>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
--Scott
+---
+ include/asm-x86/spinlock.h |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+--- a/include/asm-x86/spinlock.h
++++ b/include/asm-x86/spinlock.h
+@@ -65,7 +65,7 @@ static inline int __raw_spin_is_contende
+ {
+ 	int tmp = ACCESS_ONCE(lock->slock);
+ 
+-	return (((tmp >> 8) & 0xff) - (tmp & 0xff)) > 1;
++	return (((tmp >> 8) - tmp) & 0xff) > 1;
+ }
+ 
+ static __always_inline void __raw_spin_lock(raw_spinlock_t *lock)
+@@ -129,7 +129,7 @@ static inline int __raw_spin_is_contende
+ {
+ 	int tmp = ACCESS_ONCE(lock->slock);
+ 
+-	return (((tmp >> 16) & 0xffff) - (tmp & 0xffff)) > 1;
++	return (((tmp >> 16) - tmp) & 0xffff) > 1;
+ }
+ 
+ static __always_inline void __raw_spin_lock(raw_spinlock_t *lock)
+
+-- 
