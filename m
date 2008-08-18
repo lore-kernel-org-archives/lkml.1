@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758654AbYHRTmH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933479AbYHRTmd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758654AbYHRTmH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Aug 2008 15:42:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758493AbYHRTiS
+	id S933479AbYHRTmd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Aug 2008 15:42:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763686AbYHRTim
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Aug 2008 15:38:18 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:41767 "EHLO mx2.suse.de"
+	Mon, 18 Aug 2008 15:38:42 -0400
+Received: from ns1.suse.de ([195.135.220.2]:49118 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757704AbYHRTiR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Aug 2008 15:38:17 -0400
-Date: Mon, 18 Aug 2008 12:20:28 -0700
+	id S1765153AbYHRTik (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Aug 2008 15:38:40 -0400
+Date: Mon, 18 Aug 2008 12:20:30 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -24,13 +24,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
        alan@lxorguk.ukuu.org.uk,
        uml-devel <user-mode-linux-devel@lists.sourceforge.net>,
-       Nix <nix@esperi.org.uk>, Jeff Dike <jdike@linux.intel.com>
-Subject: [patch 32/49] uml: deal with host time going backwards
-Message-ID: <20080818192028.GG10350@suse.de>
+       Tom Spink <tspink@gmail.com>, Jeff Dike <jdike@linux.intel.com>
+Subject: [patch 33/49] uml: deal with inaccessible address space start
+Message-ID: <20080818192030.GH10350@suse.de>
 References: <20080818191012.663450219@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="uml-deal-with-host-time-going-backwards.patch"
+Content-Disposition: inline; filename="uml-deal-with-inaccessible-address-space-start.patch"
 In-Reply-To: <20080818191834.GA10350@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -41,47 +41,139 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Jeff Dike <jdike@addtoit.com>
+From: Tom Spink <tspink@gmail.com>
 
-commit 06e1e4ffbd1932e288839b3140cda6b8141eb684 upstream
+commit 40fb16a360d9c6459afee91dc793c1e3374feb94 upstream
 
-Protection against the host's time going backwards (eg, ntp activity on
-the host) by keeping track of the time at the last tick and if it's
-greater than the current time, keep time stopped until the host catches
-up.
+This patch makes os_get_task_size locate the bottom of the address space,
+as well as the top.  This is for systems which put a lower limit on mmap
+addresses.  It works by manually scanning pages from zero onwards until a
+valid page is found.
 
-Cc: Nix <nix@esperi.org.uk>
+Because the bottom of the address space may not be zero, it's not
+sufficient to assume the top of the address space is the size of the
+address space.  The size is the difference between the top address and
+bottom address.
+
+[jdike@addtoit.com: changed the name to reflect that this function is
+supposed to return the top of the process address space, not its size and
+changed the return value to reflect that.  Also some minor formatting
+changes]
+
+Signed-off-by: Tom Spink <tspink@gmail.com>
 Signed-off-by: Jeff Dike <jdike@linux.intel.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/um/os-Linux/time.c |    7 +++++++
- 1 file changed, 7 insertions(+)
+ arch/um/include/os.h                    |    2 -
+ arch/um/kernel/um_arch.c                |    2 -
+ arch/um/os-Linux/sys-i386/task_size.c   |   38 ++++++++++++++++++++++++--------
+ arch/um/os-Linux/sys-x86_64/task_size.c |    2 -
+ 4 files changed, 32 insertions(+), 12 deletions(-)
 
---- a/arch/um/os-Linux/time.c
-+++ b/arch/um/os-Linux/time.c
-@@ -106,6 +106,10 @@ static void deliver_alarm(void)
- 	unsigned long long this_tick = os_nsecs();
- 	int one_tick = UM_NSEC_PER_SEC / UM_HZ;
+--- a/arch/um/include/os.h
++++ b/arch/um/include/os.h
+@@ -298,6 +298,6 @@ extern int os_arch_prctl(int pid, int co
+ extern int get_pty(void);
  
-+	/* Protection against the host's time going backwards */
-+	if ((last_tick != 0) && (this_tick < last_tick))
-+		this_tick = last_tick;
+ /* sys-$ARCH/task_size.c */
+-extern unsigned long os_get_task_size(void);
++extern unsigned long os_get_top_address(void);
+ 
+ #endif
+--- a/arch/um/kernel/um_arch.c
++++ b/arch/um/kernel/um_arch.c
+@@ -273,7 +273,7 @@ int __init linux_main(int argc, char **a
+ 	if (have_root == 0)
+ 		add_arg(DEFAULT_COMMAND_LINE);
+ 
+-	host_task_size = os_get_task_size();
++	host_task_size = os_get_top_address();
+ 	/*
+ 	 * TASK_SIZE needs to be PGDIR_SIZE aligned or else exit_mmap craps
+ 	 * out
+--- a/arch/um/os-Linux/sys-i386/task_size.c
++++ b/arch/um/os-Linux/sys-i386/task_size.c
+@@ -63,7 +63,7 @@ static int page_ok(unsigned long page)
+ 	return ok;
+ }
+ 
+-unsigned long os_get_task_size(void)
++unsigned long os_get_top_address(void)
+ {
+ 	struct sigaction sa, old;
+ 	unsigned long bottom = 0;
+@@ -76,9 +76,9 @@ unsigned long os_get_task_size(void)
+ 	 * hosts, but shouldn't hurt otherwise.
+ 	 */
+ 	unsigned long top = 0xffffd000 >> UM_KERN_PAGE_SHIFT;
+-	unsigned long test;
++	unsigned long test, original;
+ 
+-	printf("Locating the top of the address space ... ");
++	printf("Locating the bottom of the address space ... ");
+ 	fflush(stdout);
+ 
+ 	/*
+@@ -88,14 +88,32 @@ unsigned long os_get_task_size(void)
+ 	sa.sa_handler = segfault;
+ 	sigemptyset(&sa.sa_mask);
+ 	sa.sa_flags = SA_NODEFER;
+-	sigaction(SIGSEGV, &sa, &old);
++	if (sigaction(SIGSEGV, &sa, &old)) {
++		perror("os_get_top_address");
++		exit(1);
++	}
+ 
+-	if (!page_ok(bottom)) {
+-		fprintf(stderr, "Address 0x%x no good?\n",
+-			bottom << UM_KERN_PAGE_SHIFT);
++	/* Manually scan the address space, bottom-up, until we find
++	 * the first valid page (or run out of them).
++	 */
++	for (bottom = 0; bottom < top; bottom++) {
++		if (page_ok(bottom))
++			break;
++	}
 +
- 	if (last_tick == 0)
- 		last_tick = this_tick - one_tick;
++	/* If we've got this far, we ran out of pages. */
++	if (bottom == top) {
++		fprintf(stderr, "Unable to determine bottom of address "
++			"space.\n");
+ 		exit(1);
+ 	}
  
-@@ -148,6 +152,9 @@ static int after_sleep_interval(struct t
- 		start_usecs = usec;
- 
- 	start_usecs -= skew / UM_NSEC_PER_USEC;
-+	if (start_usecs < 0)
-+		start_usecs = 0;
++	printf("0x%x\n", bottom << UM_KERN_PAGE_SHIFT);
++	printf("Locating the top of the address space ... ");
++	fflush(stdout);
 +
- 	tv = ((struct timeval) { .tv_sec  = start_usecs / UM_USEC_PER_SEC,
- 				 .tv_usec = start_usecs % UM_USEC_PER_SEC });
- 	interval = ((struct itimerval) { { 0, usec }, tv });
++	original = bottom;
++
+ 	/* This could happen with a 4G/4G split */
+ 	if (page_ok(top))
+ 		goto out;
+@@ -110,8 +128,10 @@ unsigned long os_get_task_size(void)
+ 
+ out:
+ 	/* Restore the old SIGSEGV handling */
+-	sigaction(SIGSEGV, &old, NULL);
+-
++	if (sigaction(SIGSEGV, &old, NULL)) {
++		perror("os_get_top_address");
++		exit(1);
++	}
+ 	top <<= UM_KERN_PAGE_SHIFT;
+ 	printf("0x%x\n", top);
+ 	fflush(stdout);
+--- a/arch/um/os-Linux/sys-x86_64/task_size.c
++++ b/arch/um/os-Linux/sys-x86_64/task_size.c
+@@ -1,4 +1,4 @@
+-unsigned long os_get_task_size(unsigned long shift)
++unsigned long os_get_top_address(unsigned long shift)
+ {
+ 	/* The old value of CONFIG_TOP_ADDR */
+ 	return 0x7fc0000000;
 
 -- 
