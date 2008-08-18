@@ -1,38 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753335AbYHRGJW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754506AbYHRGLH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753335AbYHRGJW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Aug 2008 02:09:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751063AbYHRGJO
+	id S1754506AbYHRGLH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Aug 2008 02:11:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751068AbYHRGKz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Aug 2008 02:09:14 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:59569 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751049AbYHRGJO (ORCPT
+	Mon, 18 Aug 2008 02:10:55 -0400
+Received: from wf-out-1314.google.com ([209.85.200.174]:15994 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751042AbYHRGKz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Aug 2008 02:09:14 -0400
-To: "Marc Villemade" <mastachand@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [Follow-up] Physical memory disappeared from /proc/meminfo
-From: Andi Kleen <andi@firstfloor.org>
-References: <f2b895370808171059x4bd0296frf50b07ae7af21375@mail.gmail.com>
-Date: Mon, 18 Aug 2008 08:09:11 +0200
-In-Reply-To: <f2b895370808171059x4bd0296frf50b07ae7af21375@mail.gmail.com> (Marc Villemade's message of "Sun, 17 Aug 2008 19:59:10 +0200")
-Message-ID: <87od3q26t4.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
+	Mon, 18 Aug 2008 02:10:55 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=JQhOyXuCElXxSfk16M1leE0+VnN0Nahmm0S6SQ4iDucCNQV97fPWC1+uPZC0FSLAsr
+         eiSI8yfG7otoYxKShU2slLgitQ1foyuo3G51zBXhcjnv/N8HksZxyt5sBeMMDOyJG33C
+         zr4V76i8pw3IWxM+SjzYTciEpoKTiT8eAR0pk=
+Message-ID: <dd18b0c30808172310u7cf7836ai15e19485908ae0ce@mail.gmail.com>
+Date: Sun, 17 Aug 2008 23:10:54 -0700
+From: "Justin Mattock" <justinmattock@gmail.com>
+To: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+Subject: evdev.c(EVIOCGBIT): Suspicious buffer size 511,
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Marc Villemade" <mastachand@gmail.com> writes:
->
-> I'm having exactly the same issue but on a 2.6.20.4 vanilla kernel
-> (x86). /proc/meminfo shows that
-> MemFree+Buffers+cached+AnonPages+Slab+Mapped != MemTotal, which AFAIK
-> should be the case.
+I'm noticing:
+evdev.c(EVIOCGBIT): Suspicious buffer size 511, limiting output to 64
+bytes. See http://userweb.kernel.org/~dtor/eviocgbit-bug.html
+with rc-3 not with rc2.
+Did the patch to synaptics, seems
+my xorg is not reading /usr/X11R6/lib/modules/input/synaptics_drv.o
+only /usr/lib/xorg/modules/input/synaptics_drv.so
+is there any easy fix, or do I have to recompile xorg?
+regards;
 
-Nope, the equation is not necessarily true. 
-See http://halobates.de/memorywaste.pdf for a detailed discussion.
-
--Andi
+-- 
+Justin P. Mattock
