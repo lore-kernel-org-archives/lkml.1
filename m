@@ -1,268 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752689AbYHRFEm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752019AbYHRFXS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752689AbYHRFEm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Aug 2008 01:04:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750943AbYHRFEe
+	id S1752019AbYHRFXS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Aug 2008 01:23:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750910AbYHRFXF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Aug 2008 01:04:34 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:53170 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750752AbYHRFEd (ORCPT
+	Mon, 18 Aug 2008 01:23:05 -0400
+Received: from smtp116.mail.mud.yahoo.com ([209.191.84.165]:23065 "HELO
+	smtp116.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750885AbYHRFXE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Aug 2008 01:04:33 -0400
-Date: Mon, 18 Aug 2008 01:04:31 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: lkml <linux-kernel@vger.kernel.org>, akpm <akpm@linux-foundation.org>,
-       miklos@szeredi.hu
-Subject: Re: [PATCH 1/2] documentation: split and build smount.c
-Message-ID: <20080818050431.GA20692@infradead.org>
-References: <20080817214442.ca4345ce.randy.dunlap@oracle.com>
+	Mon, 18 Aug 2008 01:23:04 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=nHAlfON/xUbi1KEQOyLKE7V8kVO8EO4ctRr/hJaWoU/ozrq8y29UjeuhAKVN05myTQf+WwIzT2fmpB/4++rpiWXyVSR0CQu0Mk2npea6FLXkSz4rVfj8MLqEgfxZFg/Izy/brqqOEIwIweXVaLOtLMx0wnncpXFsLnVMvwTEmww=  ;
+X-YMail-OSG: p_mY5a4VM1kFCBnf1XxZOuTDFEGDz98Mbo75rKKxnHqcYMNxNHNjb_kclJzUSt6eO6vdgxe_3D0ME561sZK10LaaFUF7cy7i.mmsxiwTdh5Yu_Ba0cgiydQPlZXgxsEnoWazG2wSKpEnPHUbSa0n8FRa
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [git pull] core fixes
+Date: Mon, 18 Aug 2008 15:22:50 +1000
+User-Agent: KMail/1.9.5
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       "David S. Miller" <davem@davemloft.net>
+References: <20080811222026.GA20579@elte.hu> <200808141445.03936.nickpiggin@yahoo.com.au> <20080815125818.GA30597@elte.hu>
+In-Reply-To: <20080815125818.GA30597@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080817214442.ca4345ce.randy.dunlap@oracle.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+Message-Id: <200808181522.50563.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Aug 17, 2008 at 09:44:42PM -0700, Randy Dunlap wrote:
-> From: Randy Dunlap <randy.dunlap@oracle.com>
-> 
-> Make smount.c source file and add that to Makefile so that its
-> build can be checked.
+On Friday 15 August 2008 22:58, Ingo Molnar wrote:
+> * Nick Piggin <nickpiggin@yahoo.com.au> wrote:
 
-Just remove it, and modern /bin/mount handles shared subtrees just fine
+> > The argument that we lose the "thought process" of coming up with a
+> > correct patch I don't really buy into either. We want to document the
+> > thought process of well thought out, well reviewed and tested patches
+> > -- if they get merged and subsequently found to be broken, it is
+> > really nice to be able to look back at how and why they went wrong[*].
+>
+> generally i agree and replace patches - but in this case i went for the
+> delta because -rc3 was imminent and the previous patch was already
+> well-tested with practical workloads, even though broken in the
+> slowpath.
 
-> 
-> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-> cc: Miklos Szeredi <miklos@szeredi.hu>
-> ---
->  Documentation/Makefile                      |    2 
->  Documentation/filesystems/00-INDEX          |    2 
->  Documentation/filesystems/Makefile          |    8 ++
->  Documentation/filesystems/sharedsubtree.txt |   82 +---------------------------
->  Documentation/filesystems/smount.c          |   73 ++++++++++++++++++++++++
->  5 files changed, 88 insertions(+), 79 deletions(-)
-> 
-> --- /dev/null
-> +++ lin2627-rc3g4-kerndoc/Documentation/filesystems/smount.c
-> @@ -0,0 +1,73 @@
-> +//
-> +//this code was developed my Miklos Szeredi <miklos@szeredi.hu>
-> +//and modified by Ram Pai <linuxram@us.ibm.com>
-> +// sample usage:
-> +//              smount /tmp shared
-> +//
-> +#include <stdio.h>
-> +#include <stdlib.h>
-> +#include <unistd.h>
-> +#include <string.h>
-> +#include <sys/mount.h>
-> +#include <sys/fsuid.h>
-> +
-> +#ifndef MS_REC
-> +#define MS_REC		0x4000	/* 16384: Recursive loopback */
-> +#endif
-> +
-> +#ifndef MS_SHARED
-> +#define MS_SHARED		1<<20	/* Shared */
-> +#endif
-> +
-> +#ifndef MS_PRIVATE
-> +#define MS_PRIVATE		1<<18	/* Private */
-> +#endif
-> +
-> +#ifndef MS_SLAVE
-> +#define MS_SLAVE		1<<19	/* Slave */
-> +#endif
-> +
-> +#ifndef MS_UNBINDABLE
-> +#define MS_UNBINDABLE		1<<17	/* Unbindable */
-> +#endif
-> +
-> +int main(int argc, char *argv[])
-> +{
-> +	int type;
-> +	if(argc != 3) {
-> +		fprintf(stderr, "usage: %s dir "
-> +		"<rshared|rslave|rprivate|runbindable|shared|slave"
-> +		"|private|unbindable>\n" , argv[0]);
-> +		return 1;
-> +	}
-> +
-> +	fprintf(stdout, "%s %s %s\n", argv[0], argv[1], argv[2]);
-> +
-> +	if (strcmp(argv[2],"rshared")==0)
-> +		type=(MS_SHARED|MS_REC);
-> +	else if (strcmp(argv[2],"rslave")==0)
-> +		type=(MS_SLAVE|MS_REC);
-> +	else if (strcmp(argv[2],"rprivate")==0)
-> +		type=(MS_PRIVATE|MS_REC);
-> +	else if (strcmp(argv[2],"runbindable")==0)
-> +		type=(MS_UNBINDABLE|MS_REC);
-> +	else if (strcmp(argv[2],"shared")==0)
-> +		type=MS_SHARED;
-> +	else if (strcmp(argv[2],"slave")==0)
-> +		type=MS_SLAVE;
-> +	else if (strcmp(argv[2],"private")==0)
-> +		type=MS_PRIVATE;
-> +	else if (strcmp(argv[2],"unbindable")==0)
-> +		type=MS_UNBINDABLE;
-> +	else {
-> +		fprintf(stderr, "invalid operation: %s\n", argv[2]);
-> +		return 1;
-> +	}
-> +	setfsuid(getuid());
-> +
-> +	if(mount("", argv[1], "dontcare", type, "") == -1) {
-> +		perror("mount");
-> +		return 1;
-> +	}
-> +	return 0;
-> +}
-> --- lin2627-rc3g4-kerndoc.orig/Documentation/filesystems/sharedsubtree.txt
-> +++ lin2627-rc3g4-kerndoc/Documentation/filesystems/sharedsubtree.txt
-> @@ -47,6 +47,7 @@ replicas continue to be exactly same.
->  	note: mount command does not yet support the --make-shared flag.
->  	I have included a small C program which does the same by executing
->  	'smount /mnt shared'
-> +	[see Documentation/filesystems/smount.c]
->  
->  	#mount --bind /mnt /tmp
->  	The above command replicates the mount at /mnt to the mountpoint /tmp
-> @@ -141,87 +142,12 @@ replicas continue to be exactly same.
->  
->  	Currently the mount command is not aware of shared subtree features.
->  	Work is in progress to add the support in mount ( util-linux package ).
-> -	Till then use the following program.
-> +	Until then use the 'smount' program that is located in
-> +	"Documentation/filesystems/smount.c" and build it like:
->  
-> -	------------------------------------------------------------------------
-> -	//
-> -	//this code was developed my Miklos Szeredi <miklos@szeredi.hu>
-> -	//and modified by Ram Pai <linuxram@us.ibm.com>
-> -	// sample usage:
-> -	//              smount /tmp shared
-> -	//
-> -	#include <stdio.h>
-> -	#include <stdlib.h>
-> -	#include <unistd.h>
-> -	#include <string.h>
-> -	#include <sys/mount.h>
-> -	#include <sys/fsuid.h>
-> -
-> -	#ifndef MS_REC
-> -	#define MS_REC		0x4000	/* 16384: Recursive loopback */
-> -	#endif
-> -
-> -	#ifndef MS_SHARED
-> -	#define MS_SHARED		1<<20	/* Shared */
-> -	#endif
-> -
-> -	#ifndef MS_PRIVATE
-> -	#define MS_PRIVATE		1<<18	/* Private */
-> -	#endif
-> -
-> -	#ifndef MS_SLAVE
-> -	#define MS_SLAVE		1<<19	/* Slave */
-> -	#endif
-> -
-> -	#ifndef MS_UNBINDABLE
-> -	#define MS_UNBINDABLE		1<<17	/* Unbindable */
-> -	#endif
-> -
-> -	int main(int argc, char *argv[])
-> -	{
-> -		int type;
-> -		if(argc != 3) {
-> -			fprintf(stderr, "usage: %s dir "
-> -			"<rshared|rslave|rprivate|runbindable|shared|slave"
-> -			"|private|unbindable>\n" , argv[0]);
-> -			return 1;
-> -		}
-> -
-> -		fprintf(stdout, "%s %s %s\n", argv[0], argv[1], argv[2]);
-> -
-> -		if (strcmp(argv[2],"rshared")==0)
-> -			type=(MS_SHARED|MS_REC);
-> -		else if (strcmp(argv[2],"rslave")==0)
-> -			type=(MS_SLAVE|MS_REC);
-> -		else if (strcmp(argv[2],"rprivate")==0)
-> -			type=(MS_PRIVATE|MS_REC);
-> -		else if (strcmp(argv[2],"runbindable")==0)
-> -			type=(MS_UNBINDABLE|MS_REC);
-> -		else if (strcmp(argv[2],"shared")==0)
-> -			type=MS_SHARED;
-> -		else if (strcmp(argv[2],"slave")==0)
-> -			type=MS_SLAVE;
-> -		else if (strcmp(argv[2],"private")==0)
-> -			type=MS_PRIVATE;
-> -		else if (strcmp(argv[2],"unbindable")==0)
-> -			type=MS_UNBINDABLE;
-> -		else {
-> -			fprintf(stderr, "invalid operation: %s\n", argv[2]);
-> -			return 1;
-> -		}
-> -		setfsuid(getuid());
-> -
-> -		if(mount("", argv[1], "dontcare", type, "") == -1) {
-> -			perror("mount");
-> -			return 1;
-> -		}
-> -		return 0;
-> -	}
-> -	-----------------------------------------------------------------------
-> -
-> -	Copy the above code snippet into smount.c
->  	gcc -o smount smount.c
->  
-> +	-----------------------------------------------------------------------
->  
->  	(i) To mark all the mounts under /mnt as shared execute the following
->  	command:
-> --- lin2627-rc3g4-kerndoc.orig/Documentation/Makefile
-> +++ lin2627-rc3g4-kerndoc/Documentation/Makefile
-> @@ -1,3 +1,3 @@
->  obj-m := DocBook/ accounting/ auxdisplay/ connector/ \
-> -	filesystems/configfs/ ia64/ networking/ \
-> +	filesystems/ filesystems/configfs/ ia64/ networking/ \
->  	pcmcia/ spi/ video4linux/ vm/ watchdog/src/
-> --- /dev/null
-> +++ lin2627-rc3g4-kerndoc/Documentation/filesystems/Makefile
-> @@ -0,0 +1,8 @@
-> +# kbuild trick to avoid linker error. Can be omitted if a module is built.
-> +obj- := dummy.o
-> +
-> +# List of programs to build
-> +hostprogs-y := smount
-> +
-> +# Tell kbuild to always build the programs
-> +always := $(hostprogs-y)
-> --- lin2627-rc3g4-kerndoc.orig/Documentation/filesystems/00-INDEX
-> +++ lin2627-rc3g4-kerndoc/Documentation/filesystems/00-INDEX
-> @@ -92,6 +92,8 @@ sharedsubtree.txt
->  	- a description of shared subtrees for namespaces.
->  smbfs.txt
->  	- info on using filesystems with the SMB protocol (Win 3.11 and NT).
-> +smount.c
-> +	- sample source code for mounting shared subtrees
->  spufs.txt
->  	- info and mount options for the SPU filesystem used on Cell.
->  sysfs-pci.txt
-> 
-> 
-> ---
-> ~Randy
-> Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
-> http://linuxplumbersconf.org/
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
----end quoted text---
+But the patch author in this case hadn't proposed it as a fix or
+added his SOB.
+
+> Also, in terms of judging risks, it was easier to look at the 
+> delta between the two commits and say "that obviously cannot make it
+> worse than the current code". But it's all a special-case really.
+
+Which delta do you mean? My first patch did make the current code worse.
+The delta between that and the corrected one fairly obviously didn't
+make it worse because my first patch broke it so badly -- not something
+I think needs to be reflected in upstream changeset.
+
+
+> > But merging bits and pieces of such raw patches IMO just adds too much
+> > noise to the tree, and breaks bisection too easily. In the case of my
+> > patch, the kernel will still build and mostly run, but that is
+> > actually even a worse way to break the biesection if you are hunting
+> > for some obscure and hard to reproduce bug.
+>
+> Note that the two commits were kept together tightly so the chance of
+> bisection going in the middle of it _and_ hitting the obscure slowpath
+> is reasonably small.
+
+Note I hit the obscure slowpath numerous times while testing other
+patches. It wasn't particularly difficult.
+
+
+> What is wrong is to keep them apart (say merge a 
+> full upstream release between them) and break bisection on a wide basis.
+
+Slipperly slope, right? It is slippery in multiple ways. How "obscure"
+and rare does the problem have to be? How large a window is tolerable
+between broken patch and correction? How many people are allowed to
+commit this type of broken patch? (because if everybody does then the
+kernel is always broken regardless if how soon they are corrected).
+
+It is far better just to avoid the whole issue and do the right thing
+and not merge commits like this, than to have a broken tree and justify
+it because the commits are close together.
+
+
+> Btw., we could add "dont bisect into this other commit" markers to later
+> commits. Bisection is a relatively slow operation anyway, so checking a
+> graph of bisection markers would be within its reach without causing any
+> practical slowdown of bisection. (I think.)
+
+Right, things like that could easily make sense for inevitable cases
+where a patch makes it upstream that is later found out to be badly
+broken. But we don't have to make it worse by merging known to be broken
+patches even if we later soon merge the fix.
+
+You didn't at all point to any *upsides* of your merging in this way, so
+I assume there are none?
+
