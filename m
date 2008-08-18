@@ -1,89 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754121AbYHRXNz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754344AbYHRXVA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754121AbYHRXNz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Aug 2008 19:13:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752609AbYHRXNn
+	id S1754344AbYHRXVA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Aug 2008 19:21:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751677AbYHRXUv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Aug 2008 19:13:43 -0400
-Received: from pond.fysh.org ([166.84.7.109]:39984 "EHLO pond.fysh.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752245AbYHRXNm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Aug 2008 19:13:42 -0400
-Date: Tue, 19 Aug 2008 00:13:40 +0100
-From: Athanasius <link@miggy.org>
-To: jacliburn@bellsouth.net
-Cc: Grant Coady <gcoady.lk@gmail.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>, neilb@suse.de,
-       bfields@fieldses.org, linux-nfs@vger.kernel.org
-Subject: Re: NFS regression?  Odd delays and lockups accessing an NFS export.
-Message-ID: <20080818231340.GP20684@miggy.org>
-Mail-Followup-To: jacliburn@bellsouth.net,
-	Grant Coady <gcoady.lk@gmail.com>,
-	linux-kernel <linux-kernel@vger.kernel.org>, neilb@suse.de,
-	bfields@fieldses.org, linux-nfs@vger.kernel.org
-References: <p6lha4te54h04qdbnos1mcemdmn1cfca6s@4ax.com> <20080818185048.GO20684@miggy.org> <48A9CF89.9090304@bellsouth.net>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="byLs0wutDcxFdwtm"
-Content-Disposition: inline
-In-Reply-To: <48A9CF89.9090304@bellsouth.net>
-X-gpg-fingerprint: E218CE1D
-X-gpg-key: http://www.fysh.org/~athan/gpg-key
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Mon, 18 Aug 2008 19:20:51 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:59465 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751260AbYHRXUu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Aug 2008 19:20:50 -0400
+Date: Mon, 18 Aug 2008 16:20:46 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Pavel Emelyanov <xemul@openvz.org>
+Cc: kirill@shutemov.name, linux-kernel@vger.kernel.org,
+       torvalds@linux-foundation.org
+Subject: Re: [PATCH] binfmt_misc.c: avoid potential kernel stack overflow
+Message-Id: <20080818162046.f6c41e84.akpm@linux-foundation.org>
+In-Reply-To: <48A98293.5080109@openvz.org>
+References: <20080818112849.GA4951@localhost.localdomain>
+	<48A98293.5080109@openvz.org>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 18 Aug 2008 18:09:23 +0400
+Pavel Emelyanov <xemul@openvz.org> wrote:
 
---byLs0wutDcxFdwtm
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> (Put lkml in Cc. The original message is beyond)
+> 
+> Oops! My fault. The problem is that in case of modularized binfmt,
+> the appropriate binary handler gets registered _before_ the script
+> one and sets the misc_bang flag even too early.
+> 
+> Thus when we launch a script the load_misc_binary sets this bang,
+> then returns error, since the binary is actually a script, then the
+> load_script_binary successfully loads the script, then it loads the
+> misc binary again, which exits with the -ENOEXEC error due to bang 
+> set.
+> 
+> This patch helped my box, what about yours?
+> 
+> diff --git a/fs/binfmt_misc.c b/fs/binfmt_misc.c
+> index 7562053..8d7e88e 100644
+> --- a/fs/binfmt_misc.c
+> +++ b/fs/binfmt_misc.c
+> @@ -120,8 +120,6 @@ static int load_misc_binary(struct linux_binprm *bprm, struct pt_regs *regs)
+>  	if (bprm->misc_bang)
+>  		goto _ret;
+>  
+> -	bprm->misc_bang = 1;
+> -
+>  	/* to keep locking time low, we copy the interpreter string */
+>  	read_lock(&entries_lock);
+>  	fmt = check_file(bprm);
+> @@ -199,6 +197,8 @@ static int load_misc_binary(struct linux_binprm *bprm, struct pt_regs *regs)
+>  	if (retval < 0)
+>  		goto _error;
+>  
+> +	bprm->misc_bang = 1;
+> +
+>  	retval = search_binary_handler (bprm, regs);
+>  	if (retval < 0)
+>  		goto _error;
 
-On Mon, Aug 18, 2008 at 02:37:45PM -0500, J. K. Cliburn wrote:
-> Athanasius wrote:
-> >  I wonder if this is what I've been seeing.  I've been otherwise too
-> >busy to properly report it, thinking that *someone* else must also be
-> >seeing it and it's being worked on, else it's a subtle configuration
-> >problem my end.
-> >
-> >  I first started seeing this with 2.6.26 on the client end,=20
->=20
-> I see you're running the atl1 driver on your client.  I'm chasing an=20
-> intermittent bug in that driver that seems to be affected by certain=20
-> offload parameters.  Try disabling TSO and see if things improve.
->=20
-> ethtool -K eth0 tso off
->=20
-> Let me know if it helps.
+<scrabble, hunt>
 
-  Indeed it does, and indeed tso was on by default.  I booted up once
-after first trying this, thinking I had things set to apply it
-automatically, but hadn't and ran into the exact same problem.  This 2nd
-time around with the setting definitely applied things appear to be
-working normally.  At least I can actually start Firefox up and have it
-work (lots of /home/users/... access over NFS to the server).
+I put together the below description.  It has no signed-off-by: (yet).
+Has this been sufficiently well tested and checked to be in a merge-ready
+state?
 
-thanks,
+Thanks.
 
--Ath
---=20
-- Athanasius =3D Athanasius(at)miggy.org / http://www.miggy.org/
-                  Finger athan(at)fysh.org for PGP key
-	   "And it's me who is my enemy. Me who beats me up.
-Me who makes the monsters. Me who strips my confidence." Paula Cole - ME
 
---byLs0wutDcxFdwtm
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+From: Pavel Emelyanov <xemul@openvz.org>
 
-iD8DBQFIqgIkSEDmQuIYzh0RApx2AJ4m2Sh3BWGlE9PUygG4bOQ2Cs8kJwCfdr3J
-bOtWRC2AUJ8WOH5q4SDrkHU=
-=aw7P
------END PGP SIGNATURE-----
+Fix a regression introduced by 3a2e7f47d71e1df86acc1dda6826890b6546a4e1
+("binfmt_misc.c: avoid potential kernel stack overflow").
 
---byLs0wutDcxFdwtm--
+In the case of modularized binfmt, the appropriate binary handler gets
+registered _before_ the script one and sets the misc_bang flag even too
+early.
+
+Thus when we launch a script the load_misc_binary sets this bang, then
+returns error, since the binary is actually a script, then the
+load_script_binary successfully loads the script, then it loads the misc
+binary again, which exits with the -ENOEXEC error due to bang set.
+
+Reported-and-tested-by: Kirill A. Shutemov <kirill@shutemov.name>
+Cc: <stable@kernel.org>		[2.6.26.x]
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ fs/binfmt_misc.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff -puN fs/binfmt_misc.c~binfmt_miscc-avoid-potential-kernel-stack-overflow fs/binfmt_misc.c
+--- a/fs/binfmt_misc.c~binfmt_miscc-avoid-potential-kernel-stack-overflow
++++ a/fs/binfmt_misc.c
+@@ -120,8 +120,6 @@ static int load_misc_binary(struct linux
+ 	if (bprm->misc_bang)
+ 		goto _ret;
+ 
+-	bprm->misc_bang = 1;
+-
+ 	/* to keep locking time low, we copy the interpreter string */
+ 	read_lock(&entries_lock);
+ 	fmt = check_file(bprm);
+@@ -199,6 +197,8 @@ static int load_misc_binary(struct linux
+ 	if (retval < 0)
+ 		goto _error;
+ 
++	bprm->misc_bang = 1;
++
+ 	retval = search_binary_handler (bprm, regs);
+ 	if (retval < 0)
+ 		goto _error;
+_
+
