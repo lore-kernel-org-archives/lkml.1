@@ -1,49 +1,174 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753767AbYHRFjS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753266AbYHRFoU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753767AbYHRFjS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Aug 2008 01:39:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751063AbYHRFjG
+	id S1753266AbYHRFoU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Aug 2008 01:44:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750885AbYHRFoN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Aug 2008 01:39:06 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:50020
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1750907AbYHRFjF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Aug 2008 01:39:05 -0400
-Date: Sun, 17 Aug 2008 22:39:04 -0700 (PDT)
-Message-Id: <20080817.223904.186713151.davem@davemloft.net>
-To: torvalds@linux-foundation.org
-CC: akpm@linux-foundation.org, sparclinux@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [GIT]: Sparc
-From: David Miller <davem@davemloft.net>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Mon, 18 Aug 2008 01:44:13 -0400
+Received: from mx2.suse.de ([195.135.220.15]:47635 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750829AbYHRFoM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Aug 2008 01:44:12 -0400
+Date: Mon, 18 Aug 2008 07:44:09 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Andrew Morton <akpm@linux-foundation.org>, cotte@de.ibm.com,
+       borntraeger@de.ibm.com, Jared Hulbert <jaredeh@gmail.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Hugh Dickins <hugh@veritas.com>
+Subject: [patch] mm: xip fix fault vs sparse page invalidate race
+Message-ID: <20080818054409.GB3011@wotan.suse.de>
+References: <20080818053821.GA3011@wotan.suse.de>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080818053821.GA3011@wotan.suse.de>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-The LMB bug fix was OK'd by the powerpc folks and they are the
-only other port which uses that code, so... :-)
+XIP has a race between sparse pages being inserted into page tables, and
+sparse pages being zapped when its time to put a non-sparse page in.
 
-Please pull, thanks a lot!
+What can happen is that a process can be left with a dangling sparse page
+in a MAP_SHARED mapping, while the rest of the world sees the non-sparse
+version. Ie. data corruption. 
 
-The following changes since commit 6f63e781eaf6a741fc65f773017154b20ed4ce3b:
-  David S. Miller (1):
-        sparc64: Handle stack trace attempts before irqstacks are setup.
+Guard these operations with a seqlock, making fault-in-sparse-pages
+the slowpath, and try-to-unmap-sparse-pages the fastpath.
 
-are available in the git repository at:
+Signed-off-by: Nick Piggin <npiggin@suse.de>
+---
 
-  master.kernel.org:/pub/scm/linux/kernel/git/davem/sparc-2.6.git master
-
-David S. Miller (3):
-      sparc64: Fix overshoot in nid_range().
-      sparc64: Fix cmdline_memory_size handling bugs.
-      lmb: Fix reserved region handling in lmb_enforce_memory_limit().
-
- arch/sparc64/mm/init.c |   30 ++++++++++++++++++++++--------
- lib/lmb.c              |    2 ++
- 2 files changed, 24 insertions(+), 8 deletions(-)
+Index: linux-2.6/mm/filemap_xip.c
+===================================================================
+--- linux-2.6.orig/mm/filemap_xip.c	2008-08-18 13:43:53.000000000 +1000
++++ linux-2.6/mm/filemap_xip.c	2008-08-18 15:02:29.000000000 +1000
+@@ -15,6 +15,8 @@
+ #include <linux/rmap.h>
+ #include <linux/mmu_notifier.h>
+ #include <linux/sched.h>
++#include <linux/seqlock.h>
++#include <linux/mutex.h>
+ #include <asm/tlbflush.h>
+ #include <asm/io.h>
+ 
+@@ -22,22 +24,18 @@
+  * We do use our own empty page to avoid interference with other users
+  * of ZERO_PAGE(), such as /dev/zero
+  */
++static DEFINE_MUTEX(xip_sparse_mutex);
++static seqcount_t xip_sparse_seq = SEQCNT_ZERO;
+ static struct page *__xip_sparse_page;
+ 
++/* called under xip_sparse_mutex */
+ static struct page *xip_sparse_page(void)
+ {
+ 	if (!__xip_sparse_page) {
+ 		struct page *page = alloc_page(GFP_HIGHUSER | __GFP_ZERO);
+ 
+-		if (page) {
+-			static DEFINE_SPINLOCK(xip_alloc_lock);
+-			spin_lock(&xip_alloc_lock);
+-			if (!__xip_sparse_page)
+-				__xip_sparse_page = page;
+-			else
+-				__free_page(page);
+-			spin_unlock(&xip_alloc_lock);
+-		}
++		if (page)
++			__xip_sparse_page = page;
+ 	}
+ 	return __xip_sparse_page;
+ }
+@@ -174,11 +172,16 @@ __xip_unmap (struct address_space * mapp
+ 	pte_t pteval;
+ 	spinlock_t *ptl;
+ 	struct page *page;
++	unsigned count;
++	int locked = 0;
++
++	count = read_seqcount_begin(&xip_sparse_seq);
+ 
+ 	page = __xip_sparse_page;
+ 	if (!page)
+ 		return;
+ 
++retry:
+ 	spin_lock(&mapping->i_mmap_lock);
+ 	vma_prio_tree_foreach(vma, &iter, &mapping->i_mmap, pgoff, pgoff) {
+ 		mm = vma->vm_mm;
+@@ -198,6 +201,14 @@ __xip_unmap (struct address_space * mapp
+ 		}
+ 	}
+ 	spin_unlock(&mapping->i_mmap_lock);
++
++	if (locked) {
++		mutex_unlock(&xip_sparse_mutex);
++	} else if (read_seqcount_retry(&xip_sparse_seq, count)) {
++		mutex_lock(&xip_sparse_mutex);
++		locked = 1;
++		goto retry;
++	}
+ }
+ 
+ /*
+@@ -218,7 +229,7 @@ static int xip_file_fault(struct vm_area
+ 	int error;
+ 
+ 	/* XXX: are VM_FAULT_ codes OK? */
+-
++again:
+ 	size = (i_size_read(inode) + PAGE_CACHE_SIZE - 1) >> PAGE_CACHE_SHIFT;
+ 	if (vmf->pgoff >= size)
+ 		return VM_FAULT_SIGBUS;
+@@ -245,6 +256,7 @@ static int xip_file_fault(struct vm_area
+ 		__xip_unmap(mapping, vmf->pgoff);
+ 
+ found:
++		printk("%s insert %lx@%lx\n", current->comm, (unsigned long)vmf->virtual_address, xip_pfn);
+ 		err = vm_insert_mixed(vma, (unsigned long)vmf->virtual_address,
+ 							xip_pfn);
+ 		if (err == -ENOMEM)
+@@ -252,14 +264,34 @@ found:
+ 		BUG_ON(err);
+ 		return VM_FAULT_NOPAGE;
+ 	} else {
++		int err, ret = VM_FAULT_OOM;
++
++		mutex_lock(&xip_sparse_mutex);
++		write_seqcount_begin(&xip_sparse_seq);
++		error = mapping->a_ops->get_xip_mem(mapping, vmf->pgoff, 0,
++							&xip_mem, &xip_pfn);
++		if (unlikely(!error)) {
++			write_seqcount_end(&xip_sparse_seq);
++			mutex_unlock(&xip_sparse_mutex);
++			goto again;
++		}
++		if (error != -ENODATA)
++			goto out;
+ 		/* not shared and writable, use xip_sparse_page() */
+ 		page = xip_sparse_page();
+ 		if (!page)
+-			return VM_FAULT_OOM;
++			goto out;
++		err = vm_insert_page(vma, (unsigned long)vmf->virtual_address,
++							page);
++		if (err == -ENOMEM)
++			goto out;
+ 
+-		page_cache_get(page);
+-		vmf->page = page;
+-		return 0;
++		ret = VM_FAULT_NOPAGE;
++out:
++		write_seqcount_end(&xip_sparse_seq);
++		mutex_unlock(&xip_sparse_mutex);
++
++		return ret;
+ 	}
+ }
+ 
