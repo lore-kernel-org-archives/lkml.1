@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761905AbYHRS7f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756531AbYHRTBj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761905AbYHRS7f (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Aug 2008 14:59:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756386AbYHRS5r
+	id S1756531AbYHRTBj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Aug 2008 15:01:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757854AbYHRS7Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Aug 2008 14:57:47 -0400
-Received: from ns.suse.de ([195.135.220.2]:43240 "EHLO mx1.suse.de"
+	Mon, 18 Aug 2008 14:59:25 -0400
+Received: from mx1.suse.de ([195.135.220.2]:43495 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932131AbYHRS5q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Aug 2008 14:57:46 -0400
-Date: Mon, 18 Aug 2008 11:44:33 -0700
+	id S1757842AbYHRS7X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Aug 2008 14:59:23 -0400
+Date: Mon, 18 Aug 2008 11:44:43 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,15 +22,16 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Marcelo Tosatti <mtosatti@redhat.com>,
-       Avi Kivity <avi@qumranet.com>
-Subject: [patch 32/60] KVM: task switch: use seg regs provided by subarch
-	instead of reading from GDT
-Message-ID: <20080818184433.GG29394@suse.de>
+       alan@lxorguk.ukuu.org.uk, Marcus Sundberg <marcus@ingate.com>,
+       Francois Romieu <romieu@fr.zoreil.com>, Karsten Keil <kkeil@suse.de>
+Subject: [patch 36/60] r8169: avoid thrashing PCI conf space above
+	RTL_GIGA_MAC_VER_06
+Message-ID: <20080818184443.GK29394@suse.de>
 References: <20080818183230.966310219@mini.kroah.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="kvm-task-switch-use-seg-regs-provided-by-subarch-instead-of-reading-from-gdt.patch"
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline; filename="r8169-avoid-thrashing-pci-conf-space-above-rtl_giga_mac_ver_06.patch"
+Content-Transfer-Encoding: 8bit
 In-Reply-To: <20080818184035.GA29394@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,190 +41,60 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.26-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
+From: Marcus Sundberg <marcus@ingate.com>
 
-From: Marcelo Tosatti <mtosatti@redhat.com>
+commit 77332894c21165404496c56763d7df6c15c4bb09 upstream
 
-(cherry-picked from commit 34198bf8426276a2ce1e97056a0f02d43637e5ae)
+The magic write to register 0x82 will often cause PCI config space on
+my 8168 (PCI ID 10ec:8168, revision 2. mounted in an LG P300 laptop)
+to be filled with ones during driver load, and thus breaking NIC
+operation until reboot. If it does not happen on first driver load it
+can easily be reproduced by unloading and loading the driver a few
+times.
 
-There is no guarantee that the old TSS descriptor in the GDT contains
-the proper base address. This is the case for Windows installation's
-reboot-via-triplefault.
+The magic write was added long ago by this commit:
 
-Use guest registers instead. Also translate the address properly.
+Author: François Romieu <romieu@fr.zoreil.com>
+Date:   Sat Jan 10 06:00:46 2004 -0500
 
-Signed-off-by: Marcelo Tosatti <mtosatti@redhat.com>
-Signed-off-by: Avi Kivity <avi@qumranet.com>
+     [netdrvr r8169] Merge of changes done by Realtek to rtl8169_init_one():
+     - phy capability settings allows lower or equal capability as suggested
+       in Realtek's changes;
+     - I/O voodoo;
+     - no need to s/mdio_write/RTL8169_WRITE_GMII_REG/;
+     - s/rtl8169_hw_PHY_config/rtl8169_hw_phy_config/;
+     - rtl8169_hw_phy_config(): ad-hoc struct "phy_magic" to limit duplication
+       of code (yep, the u16 -> int conversions should work as expected);
+     - variable renames and whitepace changes ignored.
+
+As the 8168 wasn't supported by that version this patch simply removes
+the bogus write from mac versions <= RTL_GIGA_MAC_VER_06.
+
+[The change above makes sense for the 8101/8102 too -- Ueimor]
+
+Signed-off-by: Marcus Sundberg <marcus@ingate.com>
+Signed-off-by: Francois Romieu <romieu@fr.zoreil.com>
+Cc: Karsten Keil <kkeil@suse.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/x86/kvm/x86.c |   93 +++++++++++++++++------------------------------------
- 1 file changed, 30 insertions(+), 63 deletions(-)
+ drivers/net/r8169.c |    6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
---- a/arch/x86/kvm/x86.c
-+++ b/arch/x86/kvm/x86.c
-@@ -3251,54 +3251,6 @@ static u32 get_tss_base_addr(struct kvm_
- 	return vcpu->arch.mmu.gva_to_gpa(vcpu, base_addr);
- }
+--- a/drivers/net/r8169.c
++++ b/drivers/net/r8169.c
+@@ -1438,8 +1438,10 @@ static void rtl8169_init_phy(struct net_
  
--static int load_tss_segment32(struct kvm_vcpu *vcpu,
--			      struct desc_struct *seg_desc,
--			      struct tss_segment_32 *tss)
--{
--	u32 base_addr;
--
--	base_addr = get_tss_base_addr(vcpu, seg_desc);
--
--	return kvm_read_guest(vcpu->kvm, base_addr, tss,
--			      sizeof(struct tss_segment_32));
--}
--
--static int save_tss_segment32(struct kvm_vcpu *vcpu,
--			      struct desc_struct *seg_desc,
--			      struct tss_segment_32 *tss)
--{
--	u32 base_addr;
--
--	base_addr = get_tss_base_addr(vcpu, seg_desc);
--
--	return kvm_write_guest(vcpu->kvm, base_addr, tss,
--			       sizeof(struct tss_segment_32));
--}
--
--static int load_tss_segment16(struct kvm_vcpu *vcpu,
--			      struct desc_struct *seg_desc,
--			      struct tss_segment_16 *tss)
--{
--	u32 base_addr;
--
--	base_addr = get_tss_base_addr(vcpu, seg_desc);
--
--	return kvm_read_guest(vcpu->kvm, base_addr, tss,
--			      sizeof(struct tss_segment_16));
--}
--
--static int save_tss_segment16(struct kvm_vcpu *vcpu,
--			      struct desc_struct *seg_desc,
--			      struct tss_segment_16 *tss)
--{
--	u32 base_addr;
--
--	base_addr = get_tss_base_addr(vcpu, seg_desc);
--
--	return kvm_write_guest(vcpu->kvm, base_addr, tss,
--			       sizeof(struct tss_segment_16));
--}
--
- static u16 get_segment_selector(struct kvm_vcpu *vcpu, int seg)
- {
- 	struct kvm_segment kvm_seg;
-@@ -3456,20 +3408,26 @@ static int load_state_from_tss16(struct 
- }
+ 	rtl_hw_phy_config(dev);
  
- int kvm_task_switch_16(struct kvm_vcpu *vcpu, u16 tss_selector,
--		       struct desc_struct *cseg_desc,
-+		       u32 old_tss_base,
- 		       struct desc_struct *nseg_desc)
- {
- 	struct tss_segment_16 tss_segment_16;
- 	int ret = 0;
+-	dprintk("Set MAC Reg C+CR Offset 0x82h = 0x01h\n");
+-	RTL_W8(0x82, 0x01);
++	if (tp->mac_version <= RTL_GIGA_MAC_VER_06) {
++		dprintk("Set MAC Reg C+CR Offset 0x82h = 0x01h\n");
++		RTL_W8(0x82, 0x01);
++	}
  
--	if (load_tss_segment16(vcpu, cseg_desc, &tss_segment_16))
-+	if (kvm_read_guest(vcpu->kvm, old_tss_base, &tss_segment_16,
-+			   sizeof tss_segment_16))
- 		goto out;
+ 	pci_write_config_byte(tp->pci_dev, PCI_LATENCY_TIMER, 0x40);
  
- 	save_state_to_tss16(vcpu, &tss_segment_16);
--	save_tss_segment16(vcpu, cseg_desc, &tss_segment_16);
- 
--	if (load_tss_segment16(vcpu, nseg_desc, &tss_segment_16))
-+	if (kvm_write_guest(vcpu->kvm, old_tss_base, &tss_segment_16,
-+			    sizeof tss_segment_16))
-+		goto out;
-+
-+	if (kvm_read_guest(vcpu->kvm, get_tss_base_addr(vcpu, nseg_desc),
-+			   &tss_segment_16, sizeof tss_segment_16))
- 		goto out;
-+
- 	if (load_state_from_tss16(vcpu, &tss_segment_16))
- 		goto out;
- 
-@@ -3479,20 +3437,26 @@ out:
- }
- 
- int kvm_task_switch_32(struct kvm_vcpu *vcpu, u16 tss_selector,
--		       struct desc_struct *cseg_desc,
-+		       u32 old_tss_base,
- 		       struct desc_struct *nseg_desc)
- {
- 	struct tss_segment_32 tss_segment_32;
- 	int ret = 0;
- 
--	if (load_tss_segment32(vcpu, cseg_desc, &tss_segment_32))
-+	if (kvm_read_guest(vcpu->kvm, old_tss_base, &tss_segment_32,
-+			   sizeof tss_segment_32))
- 		goto out;
- 
- 	save_state_to_tss32(vcpu, &tss_segment_32);
--	save_tss_segment32(vcpu, cseg_desc, &tss_segment_32);
- 
--	if (load_tss_segment32(vcpu, nseg_desc, &tss_segment_32))
-+	if (kvm_write_guest(vcpu->kvm, old_tss_base, &tss_segment_32,
-+			    sizeof tss_segment_32))
-+		goto out;
-+
-+	if (kvm_read_guest(vcpu->kvm, get_tss_base_addr(vcpu, nseg_desc),
-+			   &tss_segment_32, sizeof tss_segment_32))
- 		goto out;
-+
- 	if (load_state_from_tss32(vcpu, &tss_segment_32))
- 		goto out;
- 
-@@ -3507,16 +3471,20 @@ int kvm_task_switch(struct kvm_vcpu *vcp
- 	struct desc_struct cseg_desc;
- 	struct desc_struct nseg_desc;
- 	int ret = 0;
-+	u32 old_tss_base = get_segment_base(vcpu, VCPU_SREG_TR);
-+	u16 old_tss_sel = get_segment_selector(vcpu, VCPU_SREG_TR);
- 
--	get_segment(vcpu, &tr_seg, VCPU_SREG_TR);
-+	old_tss_base = vcpu->arch.mmu.gva_to_gpa(vcpu, old_tss_base);
- 
-+	/* FIXME: Handle errors. Failure to read either TSS or their
-+	 * descriptors should generate a pagefault.
-+	 */
- 	if (load_guest_segment_descriptor(vcpu, tss_selector, &nseg_desc))
- 		goto out;
- 
--	if (load_guest_segment_descriptor(vcpu, tr_seg.selector, &cseg_desc))
-+	if (load_guest_segment_descriptor(vcpu, old_tss_sel, &cseg_desc))
- 		goto out;
- 
--
- 	if (reason != TASK_SWITCH_IRET) {
- 		int cpl;
- 
-@@ -3534,8 +3502,7 @@ int kvm_task_switch(struct kvm_vcpu *vcp
- 
- 	if (reason == TASK_SWITCH_IRET || reason == TASK_SWITCH_JMP) {
- 		cseg_desc.type &= ~(1 << 1); //clear the B flag
--		save_guest_segment_descriptor(vcpu, tr_seg.selector,
--					      &cseg_desc);
-+		save_guest_segment_descriptor(vcpu, old_tss_sel, &cseg_desc);
- 	}
- 
- 	if (reason == TASK_SWITCH_IRET) {
-@@ -3547,10 +3514,10 @@ int kvm_task_switch(struct kvm_vcpu *vcp
- 	kvm_x86_ops->cache_regs(vcpu);
- 
- 	if (nseg_desc.type & 8)
--		ret = kvm_task_switch_32(vcpu, tss_selector, &cseg_desc,
-+		ret = kvm_task_switch_32(vcpu, tss_selector, old_tss_base,
- 					 &nseg_desc);
- 	else
--		ret = kvm_task_switch_16(vcpu, tss_selector, &cseg_desc,
-+		ret = kvm_task_switch_16(vcpu, tss_selector, old_tss_base,
- 					 &nseg_desc);
- 
- 	if (reason == TASK_SWITCH_CALL || reason == TASK_SWITCH_GATE) {
 
 -- 
