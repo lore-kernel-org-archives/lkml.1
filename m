@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757551AbYHRSpm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757732AbYHRSqN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757551AbYHRSpm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Aug 2008 14:45:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757448AbYHRSpc
+	id S1757732AbYHRSqN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Aug 2008 14:46:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753763AbYHRSp4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Aug 2008 14:45:32 -0400
-Received: from ns1.suse.de ([195.135.220.2]:40991 "EHLO mx1.suse.de"
+	Mon, 18 Aug 2008 14:45:56 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:34458 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754688AbYHRSpb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Aug 2008 14:45:31 -0400
-Date: Mon, 18 Aug 2008 11:41:26 -0700
+	id S1754569AbYHRSpz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Aug 2008 14:45:55 -0400
+Date: Mon, 18 Aug 2008 11:41:29 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -24,12 +24,12 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
        alan@lxorguk.ukuu.org.uk,
        James Bottomley <James.Bottomley@HansenPartnership.com>
-Subject: [patch 02/60] SCSI: ses: fix VPD inquiry overrun
-Message-ID: <20080818184126.GC29394@suse.de>
+Subject: [patch 03/60] SCSI: scsi_transport_spi: fix oops in revalidate
+Message-ID: <20080818184129.GD29394@suse.de>
 References: <20080818183230.966310219@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="scsi-ses-fix-vpd-inquiry-overrun.patch"
+Content-Disposition: inline; filename="scsi-scsi_transport_spi-fix-oops-in-revalidate.patch"
 In-Reply-To: <20080818184035.GA29394@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -41,64 +41,40 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 ------------------
 From: James Bottomley <James.Bottomley@HansenPartnership.com>
 
-commit 671a99c8eb2f1dde08ac5538d8cd912047c61ddf upstream
+commit e8bac9e0647dd04c83fd0bfe7cdfe2f6dfb100d0 upstream
 
-There are a few kerneloops.org reports like this one:
-
-http://www.kerneloops.org/search.php?search=ses_match_to_enclosure
-
-That seem to imply we're running off the end of the VPD inquiry data
-(although at 512 bytes, it should be long enough for just about
-anything).  we should be using correctly sized buffers anyway, so put
-those in and hope this oops goes away.
+The class_device->device conversion is causing an oops in revalidate
+because it's assuming that the device_for_each_child iterator will only
+return struct scsi_device children.  The conversion made all former
+class_devices children of the device as well, so this assumption is
+broken.  Fix it.
 
 Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/scsi/ses.c |   18 ++++++++++++++----
- 1 file changed, 14 insertions(+), 4 deletions(-)
+ drivers/scsi/scsi_transport_spi.c |    8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
 
---- a/drivers/scsi/ses.c
-+++ b/drivers/scsi/ses.c
-@@ -345,14 +345,14 @@ static int ses_enclosure_find_by_addr(st
- 	return 0;
+--- a/drivers/scsi/scsi_transport_spi.c
++++ b/drivers/scsi/scsi_transport_spi.c
+@@ -366,12 +366,14 @@ spi_transport_rd_attr(rti, "%d\n");
+ spi_transport_rd_attr(pcomp_en, "%d\n");
+ spi_transport_rd_attr(hold_mcs, "%d\n");
+ 
+-/* we only care about the first child device so we return 1 */
++/* we only care about the first child device that's a real SCSI device
++ * so we return 1 to terminate the iteration when we find it */
+ static int child_iter(struct device *dev, void *data)
+ {
+-	struct scsi_device *sdev = to_scsi_device(dev);
++	if (!scsi_is_sdev_device(dev))
++		return 0;
+ 
+-	spi_dv_device(sdev);
++	spi_dv_device(to_scsi_device(dev));
+ 	return 1;
  }
  
--#define VPD_INQUIRY_SIZE 512
-+#define VPD_INQUIRY_SIZE 36
- 
- static void ses_match_to_enclosure(struct enclosure_device *edev,
- 				   struct scsi_device *sdev)
- {
- 	unsigned char *buf = kmalloc(VPD_INQUIRY_SIZE, GFP_KERNEL);
- 	unsigned char *desc;
--	int len;
-+	u16 vpd_len;
- 	struct efd efd = {
- 		.addr = 0,
- 	};
-@@ -372,9 +372,19 @@ static void ses_match_to_enclosure(struc
- 			     VPD_INQUIRY_SIZE, NULL, SES_TIMEOUT, SES_RETRIES))
- 		goto free;
- 
--	len = (buf[2] << 8) + buf[3];
-+	vpd_len = (buf[2] << 8) + buf[3];
-+	kfree(buf);
-+	buf = kmalloc(vpd_len, GFP_KERNEL);
-+	if (!buf)
-+		return;
-+	cmd[3] = vpd_len >> 8;
-+	cmd[4] = vpd_len & 0xff;
-+	if (scsi_execute_req(sdev, cmd, DMA_FROM_DEVICE, buf,
-+			     vpd_len, NULL, SES_TIMEOUT, SES_RETRIES))
-+		goto free;
-+
- 	desc = buf + 4;
--	while (desc < buf + len) {
-+	while (desc < buf + vpd_len) {
- 		enum scsi_protocol proto = desc[0] >> 4;
- 		u8 code_set = desc[0] & 0x0f;
- 		u8 piv = desc[1] & 0x80;
 
 -- 
