@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932505AbYHRTC7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757756AbYHRTB4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932505AbYHRTC7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Aug 2008 15:02:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932386AbYHRTBE
+	id S1757756AbYHRTB4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Aug 2008 15:01:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761950AbYHRS7t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Aug 2008 15:01:04 -0400
-Received: from ns1.suse.de ([195.135.220.2]:43714 "EHLO mx1.suse.de"
+	Mon, 18 Aug 2008 14:59:49 -0400
+Received: from ns.suse.de ([195.135.220.2]:43571 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932373AbYHRTBB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Aug 2008 15:01:01 -0400
-Date: Mon, 18 Aug 2008 11:44:53 -0700
+	id S1761946AbYHRS7s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Aug 2008 14:59:48 -0400
+Date: Mon, 18 Aug 2008 11:44:45 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -24,13 +24,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
        alan@lxorguk.ukuu.org.uk, Timur Tabi <timur@freescale.com>,
        Takashi Iwai <tiwai@suse.de>
-Subject: [patch 40/60] ALSA: ASoC: fix SNDCTL_DSP_SYNC support in Freescale
-	8610 sound drivers
-Message-ID: <20080818184453.GO29394@suse.de>
+Subject: [patch 37/60] ALSA: asoc: restrict sample rate and size in
+	Freescale MPC8610 sound drivers
+Message-ID: <20080818184445.GL29394@suse.de>
 References: <20080818183230.966310219@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="alsa-asoc-fix-sndctl_dsp_sync-support-in-freescale-8610-sound-drivers.patch"
+Content-Disposition: inline; filename="alsa-asoc-restrict-sample-rate-and-size-in-freescale-mpc8610-sound-drivers.patch"
 In-Reply-To: <20080818184035.GA29394@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,324 +40,178 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.26-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
+
 From: Timur Tabi <timur@freescale.com>
 
-Upstream-commit-id: bf9c8c9ddef7ef761ae9747349175adad0ef16ce
+Upstream-commid-id: be41e941d5f1a48bde7f44d09d56e8d2605f98e1
 
-If an OSS application calls SNDCTL_DSP_SYNC, then ALSA will call the driver's
-_hw_params and _prepare functions again.  On the Freescale MPC8610 DMA ASoC
-driver, this caused the DMA controller to be unneccessarily re-programmed, and
-apparently it doesn't like that.  The DMA will then not operate when
-instructed.  This patch relocates much of the DMA programming to
-fsl_dma_open(), which is called only once.
+The Freescale MPC8610 SSI device has the option of using one clock for both
+transmit and receive (synchronous mode), or independent clocks (asynchronous).
+The SSI driver, however, programs the SSI into synchronous mode and then
+tries to program the clock registers independently.  The result is that the wrong
+sample size is usually generated during recording.
+
+This patch fixes the discrepancy by restricting the sample rate and sample size
+of the playback and capture streams.  The SSI driver remembers which stream
+is opened first.  When a second stream is opened, that stream is constrained
+to the same sample rate and size as the first stream.
+
+A future version of this driver will lift the sample size restriction.
+Supporting independent sample rates is more difficult, because only certain
+codecs provide dual independent clocks.
 
 Signed-off-by: Timur Tabi <timur@freescale.com>
 Signed-off-by: Takashi Iwai <tiwai@suse.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- sound/soc/fsl/fsl_dma.c |  235 +++++++++++++++++++++++++-----------------------
- 1 file changed, 124 insertions(+), 111 deletions(-)
+ sound/soc/fsl/fsl_dma.c |    7 +++-
+ sound/soc/fsl/fsl_ssi.c |   74 +++++++++++++++++++++++++++++++++++++++++-------
+ 2 files changed, 70 insertions(+), 11 deletions(-)
 
 --- a/sound/soc/fsl/fsl_dma.c
 +++ b/sound/soc/fsl/fsl_dma.c
-@@ -327,14 +327,75 @@ static int fsl_dma_new(struct snd_card *
-  * fsl_dma_open: open a new substream.
-  *
-  * Each substream has its own DMA buffer.
+@@ -132,12 +132,17 @@ struct fsl_dma_private {
+  * Since each link descriptor has a 32-bit byte count field, we set
+  * period_bytes_max to the largest 32-bit number.  We also have no maximum
+  * number of periods.
 + *
-+ * ALSA divides the DMA buffer into N periods.  We create NUM_DMA_LINKS link
-+ * descriptors that ping-pong from one period to the next.  For example, if
-+ * there are six periods and two link descriptors, this is how they look
-+ * before playback starts:
-+ *
-+ *      	   The last link descriptor
-+ *   ____________  points back to the first
-+ *  |   	 |
-+ *  V   	 |
-+ *  ___    ___   |
-+ * |   |->|   |->|
-+ * |___|  |___|
-+ *   |      |
-+ *   |      |
-+ *   V      V
-+ *  _________________________________________
-+ * |      |      |      |      |      |      |  The DMA buffer is
-+ * |      |      |      |      |      |      |    divided into 6 parts
-+ * |______|______|______|______|______|______|
-+ *
-+ * and here's how they look after the first period is finished playing:
-+ *
-+ *   ____________
-+ *  |   	 |
-+ *  V   	 |
-+ *  ___    ___   |
-+ * |   |->|   |->|
-+ * |___|  |___|
-+ *   |      |
-+ *   |______________
-+ *          |       |
-+ *          V       V
-+ *  _________________________________________
-+ * |      |      |      |      |      |      |
-+ * |      |      |      |      |      |      |
-+ * |______|______|______|______|______|______|
-+ *
-+ * The first link descriptor now points to the third period.  The DMA
-+ * controller is currently playing the second period.  When it finishes, it
-+ * will jump back to the first descriptor and play the third period.
-+ *
-+ * There are four reasons we do this:
-+ *
-+ * 1. The only way to get the DMA controller to automatically restart the
-+ *    transfer when it gets to the end of the buffer is to use chaining
-+ *    mode.  Basic direct mode doesn't offer that feature.
-+ * 2. We need to receive an interrupt at the end of every period.  The DMA
-+ *    controller can generate an interrupt at the end of every link transfer
-+ *    (aka segment).  Making each period into a DMA segment will give us the
-+ *    interrupts we need.
-+ * 3. By creating only two link descriptors, regardless of the number of
-+ *    periods, we do not need to reallocate the link descriptors if the
-+ *    number of periods changes.
-+ * 4. All of the audio data is still stored in a single, contiguous DMA
-+ *    buffer, which is what ALSA expects.  We're just dividing it into
-+ *    contiguous parts, and creating a link descriptor for each one.
++ * Note that we specify SNDRV_PCM_INFO_JOINT_DUPLEX here, but only because a
++ * limitation in the SSI driver requires the sample rates for playback and
++ * capture to be the same.
   */
- static int fsl_dma_open(struct snd_pcm_substream *substream)
- {
- 	struct snd_pcm_runtime *runtime = substream->runtime;
- 	struct fsl_dma_private *dma_private;
-+	struct ccsr_dma_channel __iomem *dma_channel;
- 	dma_addr_t ld_buf_phys;
-+	u64 temp_link;  	/* Pointer to next link descriptor */
-+	u32 mr;
- 	unsigned int channel;
- 	int ret = 0;
-+	unsigned int i;
+ static const struct snd_pcm_hardware fsl_dma_hardware = {
  
- 	/*
- 	 * Reject any DMA buffer whose size is not a multiple of the period
-@@ -395,68 +456,74 @@ static int fsl_dma_open(struct snd_pcm_s
- 	snd_soc_set_runtime_hwparams(substream, &fsl_dma_hardware);
- 	runtime->private_data = dma_private;
- 
-+	/* Program the fixed DMA controller parameters */
-+
-+	dma_channel = dma_private->dma_channel;
-+
-+	temp_link = dma_private->ld_buf_phys +
-+		sizeof(struct fsl_dma_link_descriptor);
-+
-+	for (i = 0; i < NUM_DMA_LINKS; i++) {
-+		struct fsl_dma_link_descriptor *link = &dma_private->link[i];
-+
-+		link->source_attr = cpu_to_be32(CCSR_DMA_ATR_SNOOP);
-+		link->dest_attr = cpu_to_be32(CCSR_DMA_ATR_SNOOP);
-+		link->next = cpu_to_be64(temp_link);
-+
-+		temp_link += sizeof(struct fsl_dma_link_descriptor);
-+	}
-+	/* The last link descriptor points to the first */
-+	dma_private->link[i - 1].next = cpu_to_be64(dma_private->ld_buf_phys);
-+
-+	/* Tell the DMA controller where the first link descriptor is */
-+	out_be32(&dma_channel->clndar,
-+		CCSR_DMA_CLNDAR_ADDR(dma_private->ld_buf_phys));
-+	out_be32(&dma_channel->eclndar,
-+		CCSR_DMA_ECLNDAR_ADDR(dma_private->ld_buf_phys));
-+
-+	/* The manual says the BCR must be clear before enabling EMP */
-+	out_be32(&dma_channel->bcr, 0);
-+
-+	/*
-+	 * Program the mode register for interrupts, external master control,
-+	 * and source/destination hold.  Also clear the Channel Abort bit.
-+	 */
-+	mr = in_be32(&dma_channel->mr) &
-+		~(CCSR_DMA_MR_CA | CCSR_DMA_MR_DAHE | CCSR_DMA_MR_SAHE);
-+
-+	/*
-+	 * We want External Master Start and External Master Pause enabled,
-+	 * because the SSI is controlling the DMA controller.  We want the DMA
-+	 * controller to be set up in advance, and then we signal only the SSI
-+	 * to start transferring.
-+	 *
-+	 * We want End-Of-Segment Interrupts enabled, because this will generate
-+	 * an interrupt at the end of each segment (each link descriptor
-+	 * represents one segment).  Each DMA segment is the same thing as an
-+	 * ALSA period, so this is how we get an interrupt at the end of every
-+	 * period.
-+	 *
-+	 * We want Error Interrupt enabled, so that we can get an error if
-+	 * the DMA controller is mis-programmed somehow.
-+	 */
-+	mr |= CCSR_DMA_MR_EOSIE | CCSR_DMA_MR_EIE | CCSR_DMA_MR_EMP_EN |
-+		CCSR_DMA_MR_EMS_EN;
-+
-+	/* For playback, we want the destination address to be held.  For
-+	   capture, set the source address to be held. */
-+	mr |= (substream->stream == SNDRV_PCM_STREAM_PLAYBACK) ?
-+		CCSR_DMA_MR_DAHE : CCSR_DMA_MR_SAHE;
-+
-+	out_be32(&dma_channel->mr, mr);
-+
- 	return 0;
- }
- 
- /**
-- * fsl_dma_hw_params: allocate the DMA buffer and the DMA link descriptors.
-- *
-- * ALSA divides the DMA buffer into N periods.  We create NUM_DMA_LINKS link
-- * descriptors that ping-pong from one period to the next.  For example, if
-- * there are six periods and two link descriptors, this is how they look
-- * before playback starts:
-- *
-- *      	   The last link descriptor
-- *   ____________  points back to the first
-- *  |   	 |
-- *  V   	 |
-- *  ___    ___   |
-- * |   |->|   |->|
-- * |___|  |___|
-- *   |      |
-- *   |      |
-- *   V      V
-- *  _________________________________________
-- * |      |      |      |      |      |      |  The DMA buffer is
-- * |      |      |      |      |      |      |    divided into 6 parts
-- * |______|______|______|______|______|______|
-- *
-- * and here's how they look after the first period is finished playing:
-- *
-- *   ____________
-- *  |   	 |
-- *  V   	 |
-- *  ___    ___   |
-- * |   |->|   |->|
-- * |___|  |___|
-- *   |      |
-- *   |______________
-- *          |       |
-- *          V       V
-- *  _________________________________________
-- * |      |      |      |      |      |      |
-- * |      |      |      |      |      |      |
-- * |______|______|______|______|______|______|
-+ * fsl_dma_hw_params: continue initializing the DMA links
-  *
-- * The first link descriptor now points to the third period.  The DMA
-- * controller is currently playing the second period.  When it finishes, it
-- * will jump back to the first descriptor and play the third period.
-- *
-- * There are four reasons we do this:
-- *
-- * 1. The only way to get the DMA controller to automatically restart the
-- *    transfer when it gets to the end of the buffer is to use chaining
-- *    mode.  Basic direct mode doesn't offer that feature.
-- * 2. We need to receive an interrupt at the end of every period.  The DMA
-- *    controller can generate an interrupt at the end of every link transfer
-- *    (aka segment).  Making each period into a DMA segment will give us the
-- *    interrupts we need.
-- * 3. By creating only two link descriptors, regardless of the number of
-- *    periods, we do not need to reallocate the link descriptors if the
-- *    number of periods changes.
-- * 4. All of the audio data is still stored in a single, contiguous DMA
-- *    buffer, which is what ALSA expects.  We're just dividing it into
-- *    contiguous parts, and creating a link descriptor for each one.
-+ * This function obtains hardware parameters about the opened stream and
-+ * programs the DMA controller accordingly.
-  *
-  * Note that due to a quirk of the SSI's STX register, the target address
-  * for the DMA operations depends on the sample size.  So we don't program
-@@ -468,11 +535,8 @@ static int fsl_dma_hw_params(struct snd_
- {
- 	struct snd_pcm_runtime *runtime = substream->runtime;
- 	struct fsl_dma_private *dma_private = runtime->private_data;
--	struct ccsr_dma_channel __iomem *dma_channel = dma_private->dma_channel;
- 
- 	dma_addr_t temp_addr;   /* Pointer to next period */
--	u64 temp_link;  	/* Pointer to next link descriptor */
--	u32 mr; 		/* Temporary variable for MR register */
- 
- 	unsigned int i;
- 
-@@ -490,8 +554,6 @@ static int fsl_dma_hw_params(struct snd_
- 		dma_private->dma_buf_next = dma_private->dma_buf_phys;
- 
- 	/*
--	 * Initialize each link descriptor.
--	 *
- 	 * The actual address in STX0 (destination for playback, source for
- 	 * capture) is based on the sample size, but we don't know the sample
- 	 * size in this function, so we'll have to adjust that later.  See
-@@ -507,16 +569,11 @@ static int fsl_dma_hw_params(struct snd_
- 	 * buffer itself.
- 	 */
- 	temp_addr = substream->dma_buffer.addr;
--	temp_link = dma_private->ld_buf_phys +
--		sizeof(struct fsl_dma_link_descriptor);
- 
- 	for (i = 0; i < NUM_DMA_LINKS; i++) {
- 		struct fsl_dma_link_descriptor *link = &dma_private->link[i];
- 
- 		link->count = cpu_to_be32(period_size);
--		link->source_attr = cpu_to_be32(CCSR_DMA_ATR_SNOOP);
--		link->dest_attr = cpu_to_be32(CCSR_DMA_ATR_SNOOP);
--		link->next = cpu_to_be64(temp_link);
- 
- 		if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK)
- 			link->source_addr = cpu_to_be32(temp_addr);
-@@ -524,51 +581,7 @@ static int fsl_dma_hw_params(struct snd_
- 			link->dest_addr = cpu_to_be32(temp_addr);
- 
- 		temp_addr += period_size;
--		temp_link += sizeof(struct fsl_dma_link_descriptor);
+ 	.info   		= SNDRV_PCM_INFO_INTERLEAVED |
+ 				  SNDRV_PCM_INFO_MMAP |
+-				  SNDRV_PCM_INFO_MMAP_VALID,
++				  SNDRV_PCM_INFO_MMAP_VALID |
++				  SNDRV_PCM_INFO_JOINT_DUPLEX,
+ 	.formats		= FSLDMA_PCM_FORMATS,
+ 	.rates  		= FSLDMA_PCM_RATES,
+ 	.rate_min       	= 5512,
+--- a/sound/soc/fsl/fsl_ssi.c
++++ b/sound/soc/fsl/fsl_ssi.c
+@@ -67,6 +67,8 @@
+  * @ssi: pointer to the SSI's registers
+  * @ssi_phys: physical address of the SSI registers
+  * @irq: IRQ of this SSI
++ * @first_stream: pointer to the stream that was opened first
++ * @second_stream: pointer to second stream
+  * @dev: struct device pointer
+  * @playback: the number of playback streams opened
+  * @capture: the number of capture streams opened
+@@ -79,6 +81,8 @@ struct fsl_ssi_private {
+ 	struct ccsr_ssi __iomem *ssi;
+ 	dma_addr_t ssi_phys;
+ 	unsigned int irq;
++	struct snd_pcm_substream *first_stream;
++	struct snd_pcm_substream *second_stream;
+ 	struct device *dev;
+ 	unsigned int playback;
+ 	unsigned int capture;
+@@ -342,6 +346,49 @@ static int fsl_ssi_startup(struct snd_pc
+ 		 */
  	}
--	/* The last link descriptor points to the first */
--	dma_private->link[i - 1].next = cpu_to_be64(dma_private->ld_buf_phys);
+ 
++	if (!ssi_private->first_stream)
++		ssi_private->first_stream = substream;
++	else {
++		/* This is the second stream open, so we need to impose sample
++		 * rate and maybe sample size constraints.  Note that this can
++		 * cause a race condition if the second stream is opened before
++		 * the first stream is fully initialized.
++		 *
++		 * We provide some protection by checking to make sure the first
++		 * stream is initialized, but it's not perfect.  ALSA sometimes
++		 * re-initializes the driver with a different sample rate or
++		 * size.  If the second stream is opened before the first stream
++		 * has received its final parameters, then the second stream may
++		 * be constrained to the wrong sample rate or size.
++		 *
++		 * FIXME: This code does not handle opening and closing streams
++		 * repeatedly.  If you open two streams and then close the first
++		 * one, you may not be able to open another stream until you
++		 * close the second one as well.
++		 */
++		struct snd_pcm_runtime *first_runtime =
++			ssi_private->first_stream->runtime;
++
++		if (!first_runtime->rate || !first_runtime->sample_bits) {
++			dev_err(substream->pcm->card->dev,
++				"set sample rate and size in %s stream first\n",
++				substream->stream == SNDRV_PCM_STREAM_PLAYBACK
++				? "capture" : "playback");
++			return -EAGAIN;
++		}
++
++		snd_pcm_hw_constraint_minmax(substream->runtime,
++			SNDRV_PCM_HW_PARAM_RATE,
++			first_runtime->rate, first_runtime->rate);
++
++		snd_pcm_hw_constraint_minmax(substream->runtime,
++			SNDRV_PCM_HW_PARAM_SAMPLE_BITS,
++			first_runtime->sample_bits,
++			first_runtime->sample_bits);
++
++		ssi_private->second_stream = substream;
++	}
++
+ 	if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK)
+ 		ssi_private->playback++;
+ 
+@@ -371,18 +418,16 @@ static int fsl_ssi_prepare(struct snd_pc
+ 	struct fsl_ssi_private *ssi_private = rtd->dai->cpu_dai->private_data;
+ 
+ 	struct ccsr_ssi __iomem *ssi = ssi_private->ssi;
+-	u32 wl;
+ 
+-	wl = CCSR_SSI_SxCCR_WL(snd_pcm_format_width(runtime->format));
++	if (substream == ssi_private->first_stream) {
++		u32 wl;
+ 
+-	clrbits32(&ssi->scr, CCSR_SSI_SCR_SSIEN);
++		/* The SSI should always be disabled at this points (SSIEN=0) */
++		wl = CCSR_SSI_SxCCR_WL(snd_pcm_format_width(runtime->format));
+ 
+-	if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK)
++		/* In synchronous mode, the SSI uses STCCR for capture */
+ 		clrsetbits_be32(&ssi->stccr, CCSR_SSI_SxCCR_WL_MASK, wl);
+-	else
+-		clrsetbits_be32(&ssi->srccr, CCSR_SSI_SxCCR_WL_MASK, wl);
 -
--	/* Tell the DMA controller where the first link descriptor is */
--	out_be32(&dma_channel->clndar,
--		CCSR_DMA_CLNDAR_ADDR(dma_private->ld_buf_phys));
--	out_be32(&dma_channel->eclndar,
--		CCSR_DMA_ECLNDAR_ADDR(dma_private->ld_buf_phys));
--
--	/* The manual says the BCR must be clear before enabling EMP */
--	out_be32(&dma_channel->bcr, 0);
--
--	/*
--	 * Program the mode register for interrupts, external master control,
--	 * and source/destination hold.  Also clear the Channel Abort bit.
--	 */
--	mr = in_be32(&dma_channel->mr) &
--		~(CCSR_DMA_MR_CA | CCSR_DMA_MR_DAHE | CCSR_DMA_MR_SAHE);
--
--	/*
--	 * We want External Master Start and External Master Pause enabled,
--	 * because the SSI is controlling the DMA controller.  We want the DMA
--	 * controller to be set up in advance, and then we signal only the SSI
--	 * to start transfering.
--	 *
--	 * We want End-Of-Segment Interrupts enabled, because this will generate
--	 * an interrupt at the end of each segment (each link descriptor
--	 * represents one segment).  Each DMA segment is the same thing as an
--	 * ALSA period, so this is how we get an interrupt at the end of every
--	 * period.
--	 *
--	 * We want Error Interrupt enabled, so that we can get an error if
--	 * the DMA controller is mis-programmed somehow.
--	 */
--	mr |= CCSR_DMA_MR_EOSIE | CCSR_DMA_MR_EIE | CCSR_DMA_MR_EMP_EN |
--		CCSR_DMA_MR_EMS_EN;
--
--	/* For playback, we want the destination address to be held.  For
--	   capture, set the source address to be held. */
--	mr |= (substream->stream == SNDRV_PCM_STREAM_PLAYBACK) ?
--		CCSR_DMA_MR_DAHE : CCSR_DMA_MR_SAHE;
--
--	out_be32(&dma_channel->mr, mr);
+-	setbits32(&ssi->scr, CCSR_SSI_SCR_SSIEN);
++	}
  
  	return 0;
  }
+@@ -407,9 +452,13 @@ static int fsl_ssi_trigger(struct snd_pc
+ 	case SNDRV_PCM_TRIGGER_RESUME:
+ 	case SNDRV_PCM_TRIGGER_PAUSE_RELEASE:
+ 		if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK) {
+-			setbits32(&ssi->scr, CCSR_SSI_SCR_TE);
++			clrbits32(&ssi->scr, CCSR_SSI_SCR_SSIEN);
++			setbits32(&ssi->scr,
++				CCSR_SSI_SCR_SSIEN | CCSR_SSI_SCR_TE);
+ 		} else {
+-			setbits32(&ssi->scr, CCSR_SSI_SCR_RE);
++			clrbits32(&ssi->scr, CCSR_SSI_SCR_SSIEN);
++			setbits32(&ssi->scr,
++				CCSR_SSI_SCR_SSIEN | CCSR_SSI_SCR_RE);
+ 
+ 			/*
+ 			 * I think we need this delay to allow time for the SSI
+@@ -452,6 +501,11 @@ static void fsl_ssi_shutdown(struct snd_
+ 	if (substream->stream == SNDRV_PCM_STREAM_CAPTURE)
+ 		ssi_private->capture--;
+ 
++	if (ssi_private->first_stream == substream)
++		ssi_private->first_stream = ssi_private->second_stream;
++
++	ssi_private->second_stream = NULL;
++
+ 	/*
+ 	 * If this is the last active substream, disable the SSI and release
+ 	 * the IRQ.
 
 -- 
