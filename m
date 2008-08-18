@@ -1,55 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754189AbYHRAXT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754157AbYHRA2U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754189AbYHRAXT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Aug 2008 20:23:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751995AbYHRAXJ
+	id S1754157AbYHRA2U (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Aug 2008 20:28:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751967AbYHRA2I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Aug 2008 20:23:09 -0400
-Received: from mtiwmhc12.worldnet.att.net ([204.127.131.116]:52357 "EHLO
-	mtiwmhc12.worldnet.att.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751758AbYHRAXI (ORCPT
+	Sun, 17 Aug 2008 20:28:08 -0400
+Received: from fk-out-0910.google.com ([209.85.128.185]:62530 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751700AbYHRA2H (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Aug 2008 20:23:08 -0400
-Message-ID: <48A8C0E9.6030300@lwfinger.net>
-Date: Sun, 17 Aug 2008 19:23:05 -0500
-From: Larry Finger <Larry.Finger@lwfinger.net>
-User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
-MIME-Version: 1.0
-To: linville@tuxdriver.com
-CC: David Miller <davem@davemloft.net>, linux-wireless@vger.kernel.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: pull request: wireless-2.6 2008-08-17
-References: <20080817185605.GC30679@tuxdriver.com> <20080817.151251.204370966.davem@davemloft.net>
-In-Reply-To: <20080817.151251.204370966.davem@davemloft.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Sun, 17 Aug 2008 20:28:07 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=TLuNu6TnP7DU5yW3LuXb8DpOiOTE41OFbOXuGp93vMfVSN37WaJ6pthah0FPv+d3Nj
+         hx4ftV5QaoG7CUF5ai8+K9la48wm04JaOOfCUVXnWkazJ5lsTsGepDHyltF3KGBfhO/x
+         z3jvIaBkX4E/LqdUmRv7Pjn7HXFJ3+D462HGI=
+From: Dmitry Baryshkov <dbaryshkov@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: peterz@infradead.org, mingo@redhat.com,
+       Dmitry Baryshkov <dbaryshkov@gmail.com>
+Subject: [PATCH] lockdep: fix spurious 'inconsistent lock state' warning
+Date: Mon, 18 Aug 2008 04:26:37 +0400
+Message-Id: <1219019197-17744-1-git-send-email-dbaryshkov@gmail.com>
+X-Mailer: git-send-email 1.5.6.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller wrote:
-> Their commit messages reference SHA IDs but do not give a commit
-> header line text reference as well.
-> 
->       p54: Fix regression due to commit b19fa1f
+Since f82b217e3513fe3af342c0f3ee1494e86250c21c lockdep can output spurious
+warnings related to hwirqs due to hardirq_off shrinkage from int to bit-sized
+flag. Guard it with double negation to fix the warning.
 
-John,
-
-This commit message should fix the above patch:
-=============
-
-From: Christian Lamparter <chunkeey@web.de>
-
-Commit b19fa1f, entitled "net: Delete NETDEVICES_MULTIQUEUE kconfig
-option" breaks p54pci and p54usb.
-
-Additionally, the old logic always tx'ed cts frames (if enabled)
-with a short preamble when [rate > 3]. (i.e. with any 802.11g rate).
-Of course this isn't that bad, but it's still wrong!
-
-Signed-off-by: Christian Lamparter <chunkeey@web.de>
-Acked-by: Larry Finger <Larry.Finger@lwfinger.net>
-Cc: <stable@kernel.org>         [2.6.25.x, 2.6.26.x]
+Signed-off-by: Dmitry Baryshkov <dbaryshkov@gmail.com>
 ---
+ kernel/lockdep.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Larry
+diff --git a/kernel/lockdep.c b/kernel/lockdep.c
+index 1aa91fd..b298888 100644
+--- a/kernel/lockdep.c
++++ b/kernel/lockdep.c
+@@ -2584,7 +2584,7 @@ static int __lock_acquire(struct lockdep_map *lock, unsigned int subclass,
+ 	hlock->trylock = trylock;
+ 	hlock->read = read;
+ 	hlock->check = check;
+-	hlock->hardirqs_off = hardirqs_off;
++	hlock->hardirqs_off = !!hardirqs_off;
+ #ifdef CONFIG_LOCK_STAT
+ 	hlock->waittime_stamp = 0;
+ 	hlock->holdtime_stamp = sched_clock();
+-- 
+1.5.6.3
+
