@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932291AbYHRS65@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762060AbYHRTA2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932291AbYHRS65 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Aug 2008 14:58:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761580AbYHRS5Y
+	id S1762060AbYHRTA2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Aug 2008 15:00:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932223AbYHRS6f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Aug 2008 14:57:24 -0400
-Received: from mx2.suse.de ([195.135.220.15]:36381 "EHLO mx2.suse.de"
+	Mon, 18 Aug 2008 14:58:35 -0400
+Received: from mx2.suse.de ([195.135.220.15]:36576 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757485AbYHRS5W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Aug 2008 14:57:22 -0400
-Date: Mon, 18 Aug 2008 11:44:31 -0700
+	id S932216AbYHRS6e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Aug 2008 14:58:34 -0400
+Date: Mon, 18 Aug 2008 11:44:38 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -24,12 +24,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
        alan@lxorguk.ukuu.org.uk, Marcelo Tosatti <mtosatti@redhat.com>,
        Avi Kivity <avi@qumranet.com>
-Subject: [patch 31/60] KVM: task switch: segment base is linear address
-Message-ID: <20080818184431.GF29394@suse.de>
+Subject: [patch 34/60] KVM: task switch: translate guest segment limit to
+	virt-extension byte granular field
+Message-ID: <20080818184438.GI29394@suse.de>
 References: <20080818183230.966310219@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="kvm-task-switch-segment-base-is-linear-address.patch"
+Content-Disposition: inline; filename="kvm-task-switch-translate-guest-segment-limit-to-virt-extension-byte-granular-field.patch"
 In-Reply-To: <20080818184035.GA29394@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -42,66 +43,30 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Marcelo Tosatti <mtosatti@redhat.com>
 
-(cherry picked from commit 98899aa0e0bf5de05850082be0eb837058c09ea5)
+(cherry picked from commit c93cd3a58845012df2d658fecd0ac99f7008d753)
 
-The segment base is always a linear address, so translate before
-accessing guest memory.
+If 'g' is one then limit is 4kb granular.
 
 Signed-off-by: Marcelo Tosatti <mtosatti@redhat.com>
 Signed-off-by: Avi Kivity <avi@qumranet.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/x86/kvm/x86.c |   12 +++++++++---
- 1 file changed, 9 insertions(+), 3 deletions(-)
+ arch/x86/kvm/x86.c |    4 ++++
+ 1 file changed, 4 insertions(+)
 
 --- a/arch/x86/kvm/x86.c
 +++ b/arch/x86/kvm/x86.c
-@@ -3207,6 +3207,7 @@ static void get_segment_descritptor_dtab
- static int load_guest_segment_descriptor(struct kvm_vcpu *vcpu, u16 selector,
- 					 struct desc_struct *seg_desc)
- {
-+	gpa_t gpa;
- 	struct descriptor_table dtable;
- 	u16 index = selector >> 3;
- 
-@@ -3216,13 +3217,16 @@ static int load_guest_segment_descriptor
- 		kvm_queue_exception_e(vcpu, GP_VECTOR, selector & 0xfffc);
- 		return 1;
- 	}
--	return kvm_read_guest(vcpu->kvm, dtable.base + index * 8, seg_desc, 8);
-+	gpa = vcpu->arch.mmu.gva_to_gpa(vcpu, dtable.base);
-+	gpa += index * 8;
-+	return kvm_read_guest(vcpu->kvm, gpa, seg_desc, 8);
- }
- 
- /* allowed just for 8 bytes segments */
- static int save_guest_segment_descriptor(struct kvm_vcpu *vcpu, u16 selector,
- 					 struct desc_struct *seg_desc)
- {
-+	gpa_t gpa;
- 	struct descriptor_table dtable;
- 	u16 index = selector >> 3;
- 
-@@ -3230,7 +3234,9 @@ static int save_guest_segment_descriptor
- 
- 	if (dtable.limit < index * 8 + 7)
- 		return 1;
--	return kvm_write_guest(vcpu->kvm, dtable.base + index * 8, seg_desc, 8);
-+	gpa = vcpu->arch.mmu.gva_to_gpa(vcpu, dtable.base);
-+	gpa += index * 8;
-+	return kvm_write_guest(vcpu->kvm, gpa, seg_desc, 8);
- }
- 
- static u32 get_tss_base_addr(struct kvm_vcpu *vcpu,
-@@ -3242,7 +3248,7 @@ static u32 get_tss_base_addr(struct kvm_
- 	base_addr |= (seg_desc->base1 << 16);
- 	base_addr |= (seg_desc->base2 << 24);
- 
--	return base_addr;
-+	return vcpu->arch.mmu.gva_to_gpa(vcpu, base_addr);
- }
- 
- static int load_tss_segment32(struct kvm_vcpu *vcpu,
+@@ -3168,6 +3168,10 @@ static void seg_desct_to_kvm_desct(struc
+ 	kvm_desct->base |= seg_desc->base2 << 24;
+ 	kvm_desct->limit = seg_desc->limit0;
+ 	kvm_desct->limit |= seg_desc->limit << 16;
++	if (seg_desc->g) {
++		kvm_desct->limit <<= 12;
++		kvm_desct->limit |= 0xfff;
++	}
+ 	kvm_desct->selector = selector;
+ 	kvm_desct->type = seg_desc->type;
+ 	kvm_desct->present = seg_desc->p;
 
 -- 
