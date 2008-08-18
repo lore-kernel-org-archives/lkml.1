@@ -1,40 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755714AbYHRQ5x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756041AbYHRQ6i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755714AbYHRQ5x (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Aug 2008 12:57:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753200AbYHRQ5p
+	id S1756041AbYHRQ6i (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Aug 2008 12:58:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753199AbYHRQ63
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Aug 2008 12:57:45 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:59124 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752867AbYHRQ5o (ORCPT
+	Mon, 18 Aug 2008 12:58:29 -0400
+Received: from ug-out-1314.google.com ([66.249.92.168]:5670 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753062AbYHRQ62 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Aug 2008 12:57:44 -0400
-Date: Mon, 18 Aug 2008 17:40:36 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: douglas.leeder@sophos.com
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, malware-list@lists.printk.net
-Subject: Re: [malware-list] scanner interface proposal was: [TALPA] Intro	to
- a linux interface for on access scanning
-Message-ID: <20080818174036.54285857@lxorguk.ukuu.org.uk>
-In-Reply-To: <20080818165432.4E51C3F608D@pmx1.sophos.com>
-References: <20080818171500.78590801@lxorguk.ukuu.org.uk>
-	<20080818165432.4E51C3F608D@pmx1.sophos.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 18 Aug 2008 12:58:28 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:subject
+         :content-type:content-transfer-encoding;
+        b=Pv827ic7o/L8zZh9QgRUKb04ZfuHtnJvUkMGdysyRSLzrwjrSM3YPLueZsmT9rcua1
+         9DAYt5FR277N10S+zybvgQOaBsnGsxzNk5OUMKaMQkqcIhtbQ+h+I8v82FqVhyMsGCvm
+         gdkZ4WXNw9Sv/PbsSdm605jsz5LQw2FuhF47s=
+Message-ID: <48A9FE94.6080905@gmail.com>
+Date: Mon, 18 Aug 2008 18:58:28 -0400
+From: roel kluin <roel.kluin@gmail.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.9 (X11/20080110)
+MIME-Version: 1.0
+To: paul@paulbristow.net, linux-kernel@vger.kernel.org
+Subject: [PATCH] floppy: duplicate FD_RAW_NEED_DISK
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> When you register at Level N, you are excluded from all blocking/scanning 
-> at Levels >= N,
-> but your ops are still passed to Level < N.
+Maybe some other flag was needed? otherwise the
+patch below cleans it up.
+---
+duplicate FD_RAW_NEED_DISK
 
-Something like that would do the trick for any simple dependencies yes.
-
-Alan
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+---
+diff --git a/drivers/block/floppy.c b/drivers/block/floppy.c
+index 395f8ea..c59ae10 100644
+--- a/drivers/block/floppy.c
++++ b/drivers/block/floppy.c
+@@ -2622,8 +2622,7 @@ static int make_raw_rw_request(void)
+ 	set_fdc((long)current_req->rq_disk->private_data);
+ 
+ 	raw_cmd = &default_raw_cmd;
+-	raw_cmd->flags = FD_RAW_SPIN | FD_RAW_NEED_DISK | FD_RAW_NEED_DISK |
+-	    FD_RAW_NEED_SEEK;
++	raw_cmd->flags = FD_RAW_SPIN | FD_RAW_NEED_DISK | FD_RAW_NEED_SEEK;
+ 	raw_cmd->cmd_count = NR_RW;
+ 	if (rq_data_dir(current_req) == READ) {
+ 		raw_cmd->flags |= FD_RAW_READ;
