@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752367AbYHREoV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753178AbYHREo4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752367AbYHREoV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Aug 2008 00:44:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751042AbYHREoN
+	id S1753178AbYHREo4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Aug 2008 00:44:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751051AbYHREos
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Aug 2008 00:44:13 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:60378 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750966AbYHREoM (ORCPT
+	Mon, 18 Aug 2008 00:44:48 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:14016 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751019AbYHREor (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Aug 2008 00:44:12 -0400
-Date: Sun, 17 Aug 2008 21:44:22 -0700
+	Mon, 18 Aug 2008 00:44:47 -0400
+Date: Sun, 17 Aug 2008 21:44:42 -0700
 From: Randy Dunlap <randy.dunlap@oracle.com>
 To: lkml <linux-kernel@vger.kernel.org>
-Cc: chrisw@sous-sol.org, akpm <akpm@linux-foundation.org>
-Subject: [PATCH] security: add/fix security kernel-doc
-Message-Id: <20080817214422.3d7b6c8a.randy.dunlap@oracle.com>
+Cc: akpm <akpm@linux-foundation.org>, miklos@szeredi.hu
+Subject: [PATCH 1/2] documentation: split and build smount.c
+Message-Id: <20080817214442.ca4345ce.randy.dunlap@oracle.com>
 Organization: Oracle Linux Eng.
 X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
@@ -31,138 +31,225 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Randy Dunlap <randy.dunlap@oracle.com>
 
-Add security/inode.c functions to the kernel-api docbook.
-Use '%' on constants in kernel-doc notation.
-Fix several typos/spellos in security function descriptions.
+Make smount.c source file and add that to Makefile so that its
+build can be checked.
 
 Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+cc: Miklos Szeredi <miklos@szeredi.hu>
 ---
- Documentation/DocBook/kernel-api.tmpl |    1 +
- security/inode.c                      |   33 ++++++++++++++++-----------------
- security/security.c                   |    8 ++++----
- 3 files changed, 21 insertions(+), 21 deletions(-)
+ Documentation/Makefile                      |    2 
+ Documentation/filesystems/00-INDEX          |    2 
+ Documentation/filesystems/Makefile          |    8 ++
+ Documentation/filesystems/sharedsubtree.txt |   82 +---------------------------
+ Documentation/filesystems/smount.c          |   73 ++++++++++++++++++++++++
+ 5 files changed, 88 insertions(+), 79 deletions(-)
 
---- lin2627-rc3g4-kerndoc.orig/Documentation/DocBook/kernel-api.tmpl
-+++ lin2627-rc3g4-kerndoc/Documentation/DocBook/kernel-api.tmpl
-@@ -283,6 +283,7 @@ X!Earch/x86/kernel/mca_32.c
-   <chapter id="security">
-      <title>Security Framework</title>
- !Isecurity/security.c
-+!Esecurity/inode.c
-   </chapter>
+--- /dev/null
++++ lin2627-rc3g4-kerndoc/Documentation/filesystems/smount.c
+@@ -0,0 +1,73 @@
++//
++//this code was developed my Miklos Szeredi <miklos@szeredi.hu>
++//and modified by Ram Pai <linuxram@us.ibm.com>
++// sample usage:
++//              smount /tmp shared
++//
++#include <stdio.h>
++#include <stdlib.h>
++#include <unistd.h>
++#include <string.h>
++#include <sys/mount.h>
++#include <sys/fsuid.h>
++
++#ifndef MS_REC
++#define MS_REC		0x4000	/* 16384: Recursive loopback */
++#endif
++
++#ifndef MS_SHARED
++#define MS_SHARED		1<<20	/* Shared */
++#endif
++
++#ifndef MS_PRIVATE
++#define MS_PRIVATE		1<<18	/* Private */
++#endif
++
++#ifndef MS_SLAVE
++#define MS_SLAVE		1<<19	/* Slave */
++#endif
++
++#ifndef MS_UNBINDABLE
++#define MS_UNBINDABLE		1<<17	/* Unbindable */
++#endif
++
++int main(int argc, char *argv[])
++{
++	int type;
++	if(argc != 3) {
++		fprintf(stderr, "usage: %s dir "
++		"<rshared|rslave|rprivate|runbindable|shared|slave"
++		"|private|unbindable>\n" , argv[0]);
++		return 1;
++	}
++
++	fprintf(stdout, "%s %s %s\n", argv[0], argv[1], argv[2]);
++
++	if (strcmp(argv[2],"rshared")==0)
++		type=(MS_SHARED|MS_REC);
++	else if (strcmp(argv[2],"rslave")==0)
++		type=(MS_SLAVE|MS_REC);
++	else if (strcmp(argv[2],"rprivate")==0)
++		type=(MS_PRIVATE|MS_REC);
++	else if (strcmp(argv[2],"runbindable")==0)
++		type=(MS_UNBINDABLE|MS_REC);
++	else if (strcmp(argv[2],"shared")==0)
++		type=MS_SHARED;
++	else if (strcmp(argv[2],"slave")==0)
++		type=MS_SLAVE;
++	else if (strcmp(argv[2],"private")==0)
++		type=MS_PRIVATE;
++	else if (strcmp(argv[2],"unbindable")==0)
++		type=MS_UNBINDABLE;
++	else {
++		fprintf(stderr, "invalid operation: %s\n", argv[2]);
++		return 1;
++	}
++	setfsuid(getuid());
++
++	if(mount("", argv[1], "dontcare", type, "") == -1) {
++		perror("mount");
++		return 1;
++	}
++	return 0;
++}
+--- lin2627-rc3g4-kerndoc.orig/Documentation/filesystems/sharedsubtree.txt
++++ lin2627-rc3g4-kerndoc/Documentation/filesystems/sharedsubtree.txt
+@@ -47,6 +47,7 @@ replicas continue to be exactly same.
+ 	note: mount command does not yet support the --make-shared flag.
+ 	I have included a small C program which does the same by executing
+ 	'smount /mnt shared'
++	[see Documentation/filesystems/smount.c]
  
-   <chapter id="audit">
---- lin2627-rc3g4-kerndoc.orig/security/inode.c
-+++ lin2627-rc3g4-kerndoc/security/inode.c
-@@ -190,7 +190,7 @@ static int create_by_name(const char *na
-  * @name: a pointer to a string containing the name of the file to create.
-  * @mode: the permission that the file should have
-  * @parent: a pointer to the parent dentry for this file.  This should be a
-- *          directory dentry if set.  If this paramater is NULL, then the
-+ *          directory dentry if set.  If this parameter is %NULL, then the
-  *          file will be created in the root of the securityfs filesystem.
-  * @data: a pointer to something that the caller will want to get to later
-  *        on.  The inode.i_private pointer will point to this value on
-@@ -199,18 +199,18 @@ static int create_by_name(const char *na
-  *        this file.
-  *
-  * This is the basic "create a file" function for securityfs.  It allows for a
-- * wide range of flexibility in createing a file, or a directory (if you
-+ * wide range of flexibility in creating a file, or a directory (if you
-  * want to create a directory, the securityfs_create_dir() function is
-- * recommended to be used instead.)
-+ * recommended to be used instead).
-  *
-- * This function will return a pointer to a dentry if it succeeds.  This
-+ * This function returns a pointer to a dentry if it succeeds.  This
-  * pointer must be passed to the securityfs_remove() function when the file is
-  * to be removed (no automatic cleanup happens if your module is unloaded,
-- * you are responsible here.)  If an error occurs, NULL will be returned.
-+ * you are responsible here).  If an error occurs, %NULL is returned.
-  *
-- * If securityfs is not enabled in the kernel, the value -ENODEV will be
-+ * If securityfs is not enabled in the kernel, the value %-ENODEV is
-  * returned.  It is not wise to check for this value, but rather, check for
-- * NULL or !NULL instead as to eliminate the need for #ifdef in the calling
-+ * %NULL or !%NULL instead as to eliminate the need for #ifdef in the calling
-  * code.
-  */
- struct dentry *securityfs_create_file(const char *name, mode_t mode,
-@@ -252,19 +252,19 @@ EXPORT_SYMBOL_GPL(securityfs_create_file
-  * @name: a pointer to a string containing the name of the directory to
-  *        create.
-  * @parent: a pointer to the parent dentry for this file.  This should be a
-- *          directory dentry if set.  If this paramater is NULL, then the
-+ *          directory dentry if set.  If this parameter is %NULL, then the
-  *          directory will be created in the root of the securityfs filesystem.
-  *
-- * This function creates a directory in securityfs with the given name.
-+ * This function creates a directory in securityfs with the given @name.
-  *
-- * This function will return a pointer to a dentry if it succeeds.  This
-+ * This function returns a pointer to a dentry if it succeeds.  This
-  * pointer must be passed to the securityfs_remove() function when the file is
-  * to be removed (no automatic cleanup happens if your module is unloaded,
-- * you are responsible here.)  If an error occurs, NULL will be returned.
-+ * you are responsible here).  If an error occurs, %NULL will be returned.
-  *
-- * If securityfs is not enabled in the kernel, the value -ENODEV will be
-+ * If securityfs is not enabled in the kernel, the value %-ENODEV is
-  * returned.  It is not wise to check for this value, but rather, check for
-- * NULL or !NULL instead as to eliminate the need for #ifdef in the calling
-+ * %NULL or !%NULL instead as to eliminate the need for #ifdef in the calling
-  * code.
-  */
- struct dentry *securityfs_create_dir(const char *name, struct dentry *parent)
-@@ -278,16 +278,15 @@ EXPORT_SYMBOL_GPL(securityfs_create_dir)
- /**
-  * securityfs_remove - removes a file or directory from the securityfs filesystem
-  *
-- * @dentry: a pointer to a the dentry of the file or directory to be
-- *          removed.
-+ * @dentry: a pointer to a the dentry of the file or directory to be removed.
-  *
-  * This function removes a file or directory in securityfs that was previously
-  * created with a call to another securityfs function (like
-  * securityfs_create_file() or variants thereof.)
-  *
-  * This function is required to be called in order for the file to be
-- * removed, no automatic cleanup of files will happen when a module is
-- * removed, you are responsible here.
-+ * removed. No automatic cleanup of files will happen when a module is
-+ * removed; you are responsible here.
-  */
- void securityfs_remove(struct dentry *dentry)
- {
---- lin2627-rc3g4-kerndoc.orig/security/security.c
-+++ lin2627-rc3g4-kerndoc/security/security.c
-@@ -82,8 +82,8 @@ __setup("security=", choose_lsm);
-  *
-  * Return true if:
-  *	-The passed LSM is the one chosen by user at boot time,
-- *	-or user didsn't specify a specific LSM and we're the first to ask
-- *	 for registeration permissoin,
-+ *	-or user didn't specify a specific LSM and we're the first to ask
-+ *	 for registration permission,
-  *	-or the passed LSM is currently loaded.
-  * Otherwise, return false.
-  */
-@@ -101,13 +101,13 @@ int __init security_module_enable(struct
-  * register_security - registers a security framework with the kernel
-  * @ops: a pointer to the struct security_options that is to be registered
-  *
-- * This function is to allow a security module to register itself with the
-+ * This function allows a security module to register itself with the
-  * kernel security subsystem.  Some rudimentary checking is done on the @ops
-  * value passed to this function. You'll need to check first if your LSM
-  * is allowed to register its @ops by calling security_module_enable(@ops).
-  *
-  * If there is already a security module registered with the kernel,
-- * an error will be returned.  Otherwise 0 is returned on success.
-+ * an error will be returned.  Otherwise %0 is returned on success.
-  */
- int register_security(struct security_operations *ops)
- {
+ 	#mount --bind /mnt /tmp
+ 	The above command replicates the mount at /mnt to the mountpoint /tmp
+@@ -141,87 +142,12 @@ replicas continue to be exactly same.
+ 
+ 	Currently the mount command is not aware of shared subtree features.
+ 	Work is in progress to add the support in mount ( util-linux package ).
+-	Till then use the following program.
++	Until then use the 'smount' program that is located in
++	"Documentation/filesystems/smount.c" and build it like:
+ 
+-	------------------------------------------------------------------------
+-	//
+-	//this code was developed my Miklos Szeredi <miklos@szeredi.hu>
+-	//and modified by Ram Pai <linuxram@us.ibm.com>
+-	// sample usage:
+-	//              smount /tmp shared
+-	//
+-	#include <stdio.h>
+-	#include <stdlib.h>
+-	#include <unistd.h>
+-	#include <string.h>
+-	#include <sys/mount.h>
+-	#include <sys/fsuid.h>
+-
+-	#ifndef MS_REC
+-	#define MS_REC		0x4000	/* 16384: Recursive loopback */
+-	#endif
+-
+-	#ifndef MS_SHARED
+-	#define MS_SHARED		1<<20	/* Shared */
+-	#endif
+-
+-	#ifndef MS_PRIVATE
+-	#define MS_PRIVATE		1<<18	/* Private */
+-	#endif
+-
+-	#ifndef MS_SLAVE
+-	#define MS_SLAVE		1<<19	/* Slave */
+-	#endif
+-
+-	#ifndef MS_UNBINDABLE
+-	#define MS_UNBINDABLE		1<<17	/* Unbindable */
+-	#endif
+-
+-	int main(int argc, char *argv[])
+-	{
+-		int type;
+-		if(argc != 3) {
+-			fprintf(stderr, "usage: %s dir "
+-			"<rshared|rslave|rprivate|runbindable|shared|slave"
+-			"|private|unbindable>\n" , argv[0]);
+-			return 1;
+-		}
+-
+-		fprintf(stdout, "%s %s %s\n", argv[0], argv[1], argv[2]);
+-
+-		if (strcmp(argv[2],"rshared")==0)
+-			type=(MS_SHARED|MS_REC);
+-		else if (strcmp(argv[2],"rslave")==0)
+-			type=(MS_SLAVE|MS_REC);
+-		else if (strcmp(argv[2],"rprivate")==0)
+-			type=(MS_PRIVATE|MS_REC);
+-		else if (strcmp(argv[2],"runbindable")==0)
+-			type=(MS_UNBINDABLE|MS_REC);
+-		else if (strcmp(argv[2],"shared")==0)
+-			type=MS_SHARED;
+-		else if (strcmp(argv[2],"slave")==0)
+-			type=MS_SLAVE;
+-		else if (strcmp(argv[2],"private")==0)
+-			type=MS_PRIVATE;
+-		else if (strcmp(argv[2],"unbindable")==0)
+-			type=MS_UNBINDABLE;
+-		else {
+-			fprintf(stderr, "invalid operation: %s\n", argv[2]);
+-			return 1;
+-		}
+-		setfsuid(getuid());
+-
+-		if(mount("", argv[1], "dontcare", type, "") == -1) {
+-			perror("mount");
+-			return 1;
+-		}
+-		return 0;
+-	}
+-	-----------------------------------------------------------------------
+-
+-	Copy the above code snippet into smount.c
+ 	gcc -o smount smount.c
+ 
++	-----------------------------------------------------------------------
+ 
+ 	(i) To mark all the mounts under /mnt as shared execute the following
+ 	command:
+--- lin2627-rc3g4-kerndoc.orig/Documentation/Makefile
++++ lin2627-rc3g4-kerndoc/Documentation/Makefile
+@@ -1,3 +1,3 @@
+ obj-m := DocBook/ accounting/ auxdisplay/ connector/ \
+-	filesystems/configfs/ ia64/ networking/ \
++	filesystems/ filesystems/configfs/ ia64/ networking/ \
+ 	pcmcia/ spi/ video4linux/ vm/ watchdog/src/
+--- /dev/null
++++ lin2627-rc3g4-kerndoc/Documentation/filesystems/Makefile
+@@ -0,0 +1,8 @@
++# kbuild trick to avoid linker error. Can be omitted if a module is built.
++obj- := dummy.o
++
++# List of programs to build
++hostprogs-y := smount
++
++# Tell kbuild to always build the programs
++always := $(hostprogs-y)
+--- lin2627-rc3g4-kerndoc.orig/Documentation/filesystems/00-INDEX
++++ lin2627-rc3g4-kerndoc/Documentation/filesystems/00-INDEX
+@@ -92,6 +92,8 @@ sharedsubtree.txt
+ 	- a description of shared subtrees for namespaces.
+ smbfs.txt
+ 	- info on using filesystems with the SMB protocol (Win 3.11 and NT).
++smount.c
++	- sample source code for mounting shared subtrees
+ spufs.txt
+ 	- info and mount options for the SPU filesystem used on Cell.
+ sysfs-pci.txt
 
 
 ---
