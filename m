@@ -1,62 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758677AbYHRUid@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758647AbYHRUmV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758677AbYHRUid (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Aug 2008 16:38:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757894AbYHRUiH
+	id S1758647AbYHRUmV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Aug 2008 16:42:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754507AbYHRUmL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Aug 2008 16:38:07 -0400
-Received: from rn-out-0910.google.com ([64.233.170.190]:39687 "EHLO
-	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755613AbYHRUiG (ORCPT
+	Mon, 18 Aug 2008 16:42:11 -0400
+Received: from outbound-mail-146.bluehost.com ([67.222.38.36]:38375 "HELO
+	outbound-mail-146.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754250AbYHRUmL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Aug 2008 16:38:06 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version
-         :x-mailer:content-transfer-encoding;
-        b=J8C1FvVxkRE5WeK712qTJ83vmWbFbxABS3IKMcybqhM0Yi22vZK668MfGYSTev4HjI
-         BEMkf6ibdtZc0lXCb/gn/nQAJ+86vAlLQv55b7WkzBrSH10i+rmMWKOvyU5LHNcluPdl
-         XRrClZhIpBm+6TUPBjebg4UUg/e+d+TKMHwuM=
-Subject: [PATCH 2/2] pvrusb2: use proper byteorder interface
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Mauro Carvalho Chehab <mchehab@infradead.org>,
-       v4l-maintainer <v4l-dvb-maintainer@linuxtv.org>
-Content-Type: text/plain
-Date: Mon, 18 Aug 2008 13:38:01 -0700
-Message-Id: <1219091881.23637.6.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Mon, 18 Aug 2008 16:42:11 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
+	b=eruKHVUmLIZawPPbNSvCgIkVDP+B2WtFiDSa36wzUaWxpy0G+FzhWxwUdvikpUv1g/snLgKsUP2gDoW4UeiZTGKzNVaMnixlaZJtake79jnOUw5QyY2WyOqAJWlohlMs;
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Jean Delvare <khali@linux-fr.org>
+Subject: Re: [PATCH/RFC] pci: dynids.use_driver_data considered harmful
+Date: Mon, 18 Aug 2008 13:41:56 -0700
+User-Agent: KMail/1.9.9
+Cc: Greg KH <greg@kroah.com>, Milton Miller <miltonm@bga.com>,
+       Michael Ellerman <michael@ellerman.id.au>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-pci@vger.kernel.org
+References: <for-27-patch1-0@bga.com> <20080816062259.GB20541@kroah.com> <20080817210659.06601a3b@hyperion.delvare>
+In-Reply-To: <20080817210659.06601a3b@hyperion.delvare>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200808181341.56915.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-___swab32 is an internal detail of the implementation.
+On Sunday, August 17, 2008 12:06 pm Jean Delvare wrote:
+> Subject: PCI: Check dynids driver_data value for validity
+>
+> Only accept dynids those driver_data value matches one of the driver's
+> pci_driver_id entry. This prevents the user from accidentally passing
+> values the drivers do not expect.
+>
+> Signed-off-by: Jean Delvare <khali@linux-fr.org>
+> Cc: Jesse Barnes <jbarnes@virtuousgeek.org>
+> Cc: Milton Miller <miltonm@bga.com>
+> Cc: Greg KH <greg@kroah.com>
 
-Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
----
-I really suspect this should be something like be32_to_cpu...if this code
-was written on an x86.
+Applied to linux-next, thanks Jean.
 
- drivers/media/video/pvrusb2/pvrusb2-hdw.c |    3 +--
- 1 files changed, 1 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/media/video/pvrusb2/pvrusb2-hdw.c b/drivers/media/video/pvrusb2/pvrusb2-hdw.c
-index f051c6a..7fa903a 100644
---- a/drivers/media/video/pvrusb2/pvrusb2-hdw.c
-+++ b/drivers/media/video/pvrusb2/pvrusb2-hdw.c
-@@ -1314,8 +1314,7 @@ int pvr2_upload_firmware2(struct pvr2_hdw *hdw)
- 		memcpy(fw_ptr, fw_entry->data + fw_done, bcnt);
- 		/* Usbsnoop log shows that we must swap bytes... */
- 		for (icnt = 0; icnt < bcnt/4 ; icnt++)
--			((u32 *)fw_ptr)[icnt] =
--				___swab32(((u32 *)fw_ptr)[icnt]);
-+			((u32 *)fw_ptr)[icnt] = swab32(((u32 *)fw_ptr)[icnt]);
- 
- 		ret |= usb_bulk_msg(hdw->usb_dev, pipe, fw_ptr,bcnt,
- 				    &actual_length, HZ);
--- 
-1.6.0.274.g8aacc
-
+Jesse
