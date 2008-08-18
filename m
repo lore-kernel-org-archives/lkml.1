@@ -1,83 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752867AbYHRKCn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752583AbYHRKIU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752867AbYHRKCn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Aug 2008 06:02:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751243AbYHRKCf
+	id S1752583AbYHRKIU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Aug 2008 06:08:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751453AbYHRKII
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Aug 2008 06:02:35 -0400
-Received: from embla.aitel.hist.no ([158.38.50.22]:59286 "EHLO
-	embla.aitel.hist.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751083AbYHRKCe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Aug 2008 06:02:34 -0400
-Message-ID: <48A948B7.8040807@aitel.hist.no>
-Date: Mon, 18 Aug 2008 12:02:31 +0200
-From: Helge Hafting <helge.hafting@aitel.hist.no>
-User-Agent: Mozilla-Thunderbird 2.0.0.14 (X11/20080509)
+	Mon, 18 Aug 2008 06:08:08 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:40556 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751243AbYHRKIH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Aug 2008 06:08:07 -0400
+Date: Mon, 18 Aug 2008 11:08:04 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: Marcin Slusarz <marcin.slusarz@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] mm: mminit_loglevel cannot be __meminitdata anymore
+Message-ID: <20080818100803.GA32113@csn.ul.ie>
+References: <20080815210216.GA14783@joi>
 MIME-Version: 1.0
-To: "Press, Jonathan" <Jonathan.Press@ca.com>
-CC: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
-       malware-list@lists.printk.net, hch@infradead.org, andi@firstfloor.org,
-       viro@ZenIV.linux.org.uk, alan@lxorguk.ukuu.org.uk,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [malware-list] TALPA - a threat model?  well sorta.
-References: <1218645375.3540.71.camel@localhost.localdomain><20080813103951.1e3e5827@infradead.org><1218653864.3540.109.camel@localhost.localdomain><20080813143908.38796217@infradead.org><1218723133.3540.137.camel@localhost.localdomain><48A55574.9070508@aitel.hist.no> <1218796645.10800.242.camel@twins> <2629CC4E1D22A64593B02C43E855530304AE4BF6@USILMS12.ca.com>
-In-Reply-To: <2629CC4E1D22A64593B02C43E855530304AE4BF6@USILMS12.ca.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <20080815210216.GA14783@joi>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Press, Jonathan wrote:
->> -----Original Message-----
->> From: malware-list-bounces@dmesg.printk.net [mailto:malware-list-
->> bounces@dmesg.printk.net] On Behalf Of Peter Zijlstra
->> Sent: Friday, August 15, 2008 6:37 AM
->> To: Helge Hafting
->> Cc: linux-kernel@vger.kernel.org; malware-list@lists.printk.net;
->>     
-> hch@infradead.org;
->   
->> andi@firstfloor.org; viro@ZenIV.linux.org.uk;
->>     
-> alan@lxorguk.ukuu.org.uk; Arjan van
->   
->> de Ven
->> Subject: Re: [malware-list] TALPA - a threat model? well sorta.
->>
->> On Fri, 2008-08-15 at 12:07 +0200, Helge Hafting wrote:
->>     
->>> It seems to me that this "scan on file open" business is the
->>> wrong way to do things - because it reduces performance.
->>>
->>> If you scan on file open, then your security sw is too late and
->>> getting in the way.
->>>       
->
-> The problem is that you have to account for the cases where the malware
-> made it onto the system even if you were trying to catch it ahead of
-> time.  For example:
->
-> - Administrator turns off or reduces AV protection for some reason for
-> some period of time.  It happens all the time.
->   
-Everything is "dirty" again when AV sw restarts.
-> - New infection makes it onto the machine before the signatures have
-> caught up with it.  This also happens.  There is an ongoing PR race
-> among AV vendors about who was faster on the draw to get out signatures
-> to detect some new malware.  The fact that this race exists reflects
-> that reality that there is some window during which new malware will
-> make it onto some number of machines before the scanners catch up.
->   
-And when new signatures arrive, everything is dirty again. Well, you can 
-optimize
-and say that everything only need to be checked with the new signatures,
-since they passed the old ones already. Maybe that helps performance a 
-little.
+On (15/08/08 23:02), Marcin Slusarz didst pronounce:
+> mminit_loglevel is now used from mminit_verify_zonelist <- build_all_zonelists <-
+> 
+> 1. online_pages <- memory_block_action <- memory_block_change_state <- store_mem_state (sys handler)
+> 2. numa_zonelist_order_handler (proc handler)
+> 
+> so it cannot be annotated __meminit - drop it
+> 
+> fixes following section mismatch warning:
+> WARNING: vmlinux.o(.text+0x71628): Section mismatch in reference from the function mminit_verify_zonelist() to the variable .meminit.data:mminit_loglevel
+> The function mminit_verify_zonelist() references
+> the variable __meminitdata mminit_loglevel.
+> This is often because mminit_verify_zonelist lacks a __meminitdata
+> annotation or the annotation of mminit_loglevel is wrong.
+> 
+> Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
+> Cc: Mel Gorman <mel@csn.ul.ie>
+> Cc: Andrew Morton <akpm@linux-foundation.org>
 
-The "clean" concept works fine, just make sure dirtying happens in all these
-extra cases.
+Acked-by: Mel Gorman <mel@csn.ul.ie>
+> ---
+>  mm/mm_init.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/mm/mm_init.c b/mm/mm_init.c
+> index 936ef2e..4e0e265 100644
+> --- a/mm/mm_init.c
+> +++ b/mm/mm_init.c
+> @@ -12,7 +12,7 @@
+>  #include "internal.h"
+>  
+>  #ifdef CONFIG_DEBUG_MEMORY_INIT
+> -int __meminitdata mminit_loglevel;
+> +int mminit_loglevel;
+>  
+>  #ifndef SECTIONS_SHIFT
+>  #define SECTIONS_SHIFT	0
+> -- 
+> 1.5.4.5
+> 
 
-
-Helge Hafting
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
