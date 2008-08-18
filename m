@@ -1,70 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755229AbYHRVtq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756061AbYHRVua@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755229AbYHRVtq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Aug 2008 17:49:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752964AbYHRVti
+	id S1756061AbYHRVua (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Aug 2008 17:50:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753741AbYHRVuI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Aug 2008 17:49:38 -0400
-Received: from qb-out-0506.google.com ([72.14.204.233]:51331 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752170AbYHRVti (ORCPT
+	Mon, 18 Aug 2008 17:50:08 -0400
+Received: from adsl-69-107-80-255.dsl.pltn13.pacbell.net ([69.107.80.255]:45350
+	"EHLO mail.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752964AbYHRVuH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Aug 2008 17:49:38 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=mIhwU3ZTP4z50lik9Uez30VUzm97cL+qDnkK6tVgkoSJrT/SN7l2lUpUJpiDiYCfy1
-         +VZQrYONG5B+tp4CuJVaQB0NZhFI+YtQxiLWxIMcqccNuwGaeD+0L/tNPHQk1hO1Qnip
-         LRcQpoJL6ALlNonJhgtfVHIy7xB9GcD0aMbjg=
-Message-ID: <84144f020808181449i546349b9n248b5cf5399e4b0f@mail.gmail.com>
-Date: Tue, 19 Aug 2008 00:49:35 +0300
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Simon Arlott" <simon@fire.lp0.eu>
-Subject: Re: BUG in free_block (tainted)
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       akpm <akpm@linux-foundation.org>,
-       "Christoph Lameter" <cl@linux-foundation.org>
-In-Reply-To: <48A9ECD2.8030801@simon.arlott.org.uk>
+	Mon, 18 Aug 2008 17:50:07 -0400
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <48A9E97B.6060601@simon.arlott.org.uk>
-	 <84144f020808181437n34f3a339j3392ccccfdfd60f9@mail.gmail.com>
-	 <48A9ECD2.8030801@simon.arlott.org.uk>
-X-Google-Sender-Auth: 2f6289bf8c344321
+Subject: [PATCH 0 of 9] x86/smp function calls: convert x86 tlb flushes to use
+	function calls [POST 2]
+Message-Id: <patchbomb.1219083817@localhost>
+Date: Mon, 18 Aug 2008 11:23:37 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: LKML <linux-kernel@vger.kernel.org>, x86@kernel.org,
+       Andi Kleen <andi@firstfloor.org>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Jens Axboe <jens.axboe@oracle.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Simon,
 
-On Tue, Aug 19, 2008 at 12:28 AM, Simon Arlott <simon@fire.lp0.eu> wrote:
->>> http://img169.imageshack.us/img169/1170/1005548cp9.jpg
->>>
->>> 2.6.27-rc3 09873-gb08c7f5
->>>
->>> (Tainted with fglrx, but X hadn't been run...)
+This series:
+ - adds a simple debugfs profiling entry for cross-cpu tlb flushes
+ - converts them to using smp_call_function_mask
+ - unifies 32 and 64-bit tlb flushes
+ - converts smp_call_function to using multiple queues (using the now
+   freed vectors)
+ - allows config-time adjustment of the number of queues
+ - adds a kernel parameter to disable multi-queue in case it causes
+   problems
 
-On 18/08/08 22:37, Pekka Enberg wrote:
->> Looks like SLAB corruption so fglrx could have caused this even if you
->> just loaded the module. Do you have CONFIG_DEBUG_SLAB enabled? If not,
->> you might want to try to reproduce this with it. Of course,
->> reproducing the oops without fglrx would be most helpful. :-)
+The main concern is whether using smp_call_function adds an
+unacceptible performance hit to cross-cpu tlb flushes.  My limited
+measurements show a ~35% regression in latency for a particular flush;
+it would be interesting to try this on a wider range of hardware.  I
+gather the effect tlb flush performance is very application specific
+as well, but I'm not sure what benchmarks show what effects.
 
-On Tue, Aug 19, 2008 at 12:42 AM, Simon Arlott <simon@fire.lp0.eu> wrote:
-> In that case please disregard this completely. It's not yet happened again.
->
-> fglrx completely breaks slab in fantastic ways... I could show you my
-> /proc/slabinfo... the start of it is badly corrupted - but only if X has
-> been started (attached).
->
-> I might try enabling CONFIG_DEBUG_SLAB, perhaps it can detect that bug...
+Trading off agains the latency of a given flush, the smp_function_call
+mechanism allows multiple requests to be queued, and so may improve
+throughput on a system-wide basis.
 
-Aww, apparently the fglrx driver creates tons of SLAB caches with
-really funky names for no good reason... Oh well, one more reason to
-stay away from that crap and help out the nouveau folks instead ;-).
+So, I'd like people to try this out and see what performance effects it
+has.
 
-                         Pekka
+Thanks,
+	J
+
+
