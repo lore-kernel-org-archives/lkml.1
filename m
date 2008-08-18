@@ -1,26 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752819AbYHRHmq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752527AbYHRHqU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752819AbYHRHmq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Aug 2008 03:42:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751179AbYHRHmi
+	id S1752527AbYHRHqU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Aug 2008 03:46:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751105AbYHRHqJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Aug 2008 03:42:38 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:51997 "EHLO mx2.mail.elte.hu"
+	Mon, 18 Aug 2008 03:46:09 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:55289 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750966AbYHRHmi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Aug 2008 03:42:38 -0400
-Date: Mon, 18 Aug 2008 09:42:21 +0200
+	id S1751209AbYHRHqI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Aug 2008 03:46:08 -0400
+Date: Mon, 18 Aug 2008 09:45:39 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Dmitry Baryshkov <dbaryshkov@gmail.com>
-Cc: linux-kernel@vger.kernel.org, peterz@infradead.org, mingo@redhat.com,
-       Alexander Viro <viro@ftp.linux.org.uk>
-Subject: Re: [PATCH] lockdep: fix spurious 'inconsistent lock state' warning
-Message-ID: <20080818074221.GD30694@elte.hu>
-References: <1219019197-17744-1-git-send-email-dbaryshkov@gmail.com>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       dipankar@in.ibm.com, josht@linux.vnet.ibm.com, rostedt@goodmis.org,
+       dvhltc@us.ibm.com, niv@us.ibm.com
+Subject: Re: [PATCH tip/cor/rcu] remove redundant ACCESS_ONCE definition
+	from rcupreempt.c
+Message-ID: <20080818074538.GE30694@elte.hu>
+References: <20080817195036.GA27585@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1219019197-17744-1-git-send-email-dbaryshkov@gmail.com>
+In-Reply-To: <20080817195036.GA27585@linux.vnet.ibm.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -35,22 +37,12 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Dmitry Baryshkov <dbaryshkov@gmail.com> wrote:
+* Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
 
-> Since f82b217e3513fe3af342c0f3ee1494e86250c21c lockdep can output 
-> spurious warnings related to hwirqs due to hardirq_off shrinkage from 
-> int to bit-sized flag. Guard it with double negation to fix the 
-> warning.
-> 
-> Signed-off-by: Dmitry Baryshkov <dbaryshkov@gmail.com>
+> Remove the redundant definition of ACCESS_ONCE() from rcupreempt.c in 
+> favor of the one in compiler.h.  Also merge the comment header from 
+> rcupreempt.c's definition into that in compiler.h.
 
-good spotting! Applied to tip/core/urgent, thanks Dmitry.
-
-I'm wondering, is there any way to teach gcc some sanity here - a safer 
-variant of bitfields, that is just not allowed to overflow into or 
-corrupt nearby fields? The fact that a benign looking hlock->state = 15 
-can corrupt other fields worries me quite a bit. Valid C semantics or 
-not, this is a totally dangerous construct. The space savings are very 
-real though, so it would be nice to get 'safer bitfields', somehow.
+applied to tip/core/rcu, thanks Paul!
 
 	Ingo
