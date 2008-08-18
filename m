@@ -1,137 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755649AbYHRR6r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754392AbYHRR7U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755649AbYHRR6r (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Aug 2008 13:58:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753387AbYHRR6j
+	id S1754392AbYHRR7U (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Aug 2008 13:59:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754111AbYHRR7B
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Aug 2008 13:58:39 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:37744 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753199AbYHRR6j (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Aug 2008 13:58:39 -0400
-Date: Mon, 18 Aug 2008 10:30:48 -0700
-From: Greg KH <greg@kroah.com>
-To: Suresh Siddha <suresh.b.siddha@intel.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>
-Cc: stable@kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [stable] Patch Upstream: x64, fpu: fix possible FPU leakage in
-	error conditions
-Message-ID: <20080818173048.GA16194@kroah.com>
-References: <200808170025.m7H0PAL6026263@hera.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200808170025.m7H0PAL6026263@hera.kernel.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Mon, 18 Aug 2008 13:59:01 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:39218 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753387AbYHRR7A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Aug 2008 13:59:00 -0400
+From: michaelc@cs.wisc.edu
+To: linux-kernel@vger.kernel.org
+Cc: Mike Christie <michaelc@cs.wisc.edu>,
+       Shyam Kumar Iyer <shyam_iyer@dell.com>,
+       Konrad Rzeszutek <konrad@virtualiron.com>
+Subject: [PATCH 1/1] ibft: fix target info parsing in ibft module
+Date: Mon, 18 Aug 2008 12:58:48 -0500
+Message-Id: <1219082328-11010-1-git-send-email-michaelc@cs.wisc.edu>
+X-Mailer: git-send-email 1.5.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Mike Christie <michaelc@cs.wisc.edu>
 
-Suresh, the following patch does not apply to the 2.6.26.2 kernel.  If
-you feel it should be also commited there, can you please provide a
-backported version and send it to stable@kernel.org?
+I got this patch through Red Hat's bugzilla from the bug
+submitter and patch creator. I have just fixed it up so it applies without
+fuzz to upstream kernels.
 
-thanks,
+Original patch and description from Shyam kumar Iyer:
 
-greg k-h
+The issue [ibft module not displaying targets with short names]
+is because of an offset calculatation error in the iscsi_ibft.c
+code.  Due to this error directory structure for the target
+in /sys/firmware/ibft does not get created and so the initiator is unable to
+connect to the target.
 
-> commit: 6ffac1e90a17ea0aded5c581204397421eec91b6
-> From: Suresh Siddha <suresh.b.siddha@intel.com>
-> Date: Thu, 24 Jul 2008 18:07:56 -0700
-> Subject: x64, fpu: fix possible FPU leakage in error conditions
-> 
-> On Thu, Jul 24, 2008 at 03:43:44PM -0700, Linus Torvalds wrote:
-> > So how about this patch as a starting point? This is the RightThing(tm) to
-> > do regardless, and if it then makes it easier to do some other cleanups,
-> > we should do it first. What do you think?
-> 
-> restore_fpu_checking() calls init_fpu() in error conditions.
-> 
-> While this is wrong(as our main intention is to clear the fpu state of
-> the thread), this was benign before commit 92d140e21f1 ("x86: fix taking
-> DNA during 64bit sigreturn").
-> 
-> Post commit 92d140e21f1, live FPU registers may not belong to this
-> process at this error scenario.
-> 
-> In the error condition for restore_fpu_checking() (especially during the
-> 64bit signal return), we are doing init_fpu(), which saves the live FPU
-> register state (possibly belonging to some other process context) into
-> the thread struct (through unlazy_fpu() in init_fpu()). This is wrong
-> and can leak the FPU data.
-> 
-> For the signal handler restore error condition in restore_i387(), clear
-> the fpu state present in the thread struct(before ultimately sending a
-> SIGSEGV for badframe).
-> 
-> For the paranoid error condition check in math_state_restore(), send a
-> SIGSEGV, if we fail to restore the state.
-> 
-> Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
-> Cc: <stable@kernel.org>
-> Cc: Linus Torvalds <torvalds@linux-foundation.org>
-> Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> ---
->  arch/x86/kernel/signal_64.c |   11 ++++++++++-
->  arch/x86/kernel/traps_64.c  |    9 ++++++++-
->  include/asm-x86/i387.h      |    2 --
->  3 files changed, 18 insertions(+), 4 deletions(-)
-> 
-> diff --git a/arch/x86/kernel/signal_64.c b/arch/x86/kernel/signal_64.c
-> index b45ef8d..ca316b5 100644
-> --- a/arch/x86/kernel/signal_64.c
-> +++ b/arch/x86/kernel/signal_64.c
-> @@ -104,7 +104,16 @@ static inline int restore_i387(struct _fpstate __user *buf)
->  		clts();
->  		task_thread_info(current)->status |= TS_USEDFPU;
->  	}
-> -	return restore_fpu_checking((__force struct i387_fxsave_struct *)buf);
-> +	err = restore_fpu_checking((__force struct i387_fxsave_struct *)buf);
-> +	if (unlikely(err)) {
-> +		/*
-> +		 * Encountered an error while doing the restore from the
-> +		 * user buffer, clear the fpu state.
-> +		 */
-> +		clear_fpu(tsk);
-> +		clear_used_math();
-> +	}
-> +	return err;
->  }
->  
->  /*
-> diff --git a/arch/x86/kernel/traps_64.c b/arch/x86/kernel/traps_64.c
-> index 3f18d73..513caac 100644
-> --- a/arch/x86/kernel/traps_64.c
-> +++ b/arch/x86/kernel/traps_64.c
-> @@ -1131,7 +1131,14 @@ asmlinkage void math_state_restore(void)
->  	}
->  
->  	clts();				/* Allow maths ops (or we recurse) */
-> -	restore_fpu_checking(&me->thread.xstate->fxsave);
-> +	/*
-> +	 * Paranoid restore. send a SIGSEGV if we fail to restore the state.
-> +	 */
-> +	if (unlikely(restore_fpu_checking(&me->thread.xstate->fxsave))) {
-> +		stts();
-> +		force_sig(SIGSEGV, me);
-> +		return;
-> +	}
->  	task_thread_info(me)->status |= TS_USEDFPU;
->  	me->fpu_counter++;
->  }
-> diff --git a/include/asm-x86/i387.h b/include/asm-x86/i387.h
-> index 96fa844..0048fb7 100644
-> --- a/include/asm-x86/i387.h
-> +++ b/include/asm-x86/i387.h
-> @@ -62,8 +62,6 @@ static inline int restore_fpu_checking(struct i387_fxsave_struct *fx)
->  #else
->  		     : [fx] "cdaSDb" (fx), "m" (*fx), "0" (0));
->  #endif
-> -	if (unlikely(err))
-> -		init_fpu(current);
->  	return err;
->  }
->  
+Note that this bug surfaced only with an name that had a short section at the
+end.
+eg: "iqn.1984-05.com.dell:dell".
+It did not surface when the iqn's had a longer section at the end.
+eg: "iqn.2001-04.com.example:storage.disk2.sys1.xyz"
+
+So, the eot_offset was calculated such that an extra 48 bytes i.e. the size of
+the ibft_header which has already been accounted was subtracted twice.
+
+This was not evident with longer iqn names because they would overshoot the
+total ibft length more than 48 bytes and thus would escape the bug.
+
+Signed-off-by: Shyam Kumar Iyer <shyam_iyer@dell.com>
+Signed-off-by: Mike Christie <michaelc@cs.wisc.edu>
+Cc: Konrad Rzeszutek <konrad@virtualiron.com>
+
+
+---
+ drivers/firmware/iscsi_ibft.c |    3 +--
+ 1 files changed, 1 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/firmware/iscsi_ibft.c b/drivers/firmware/iscsi_ibft.c
+index 8024e3b..b91ef63 100644
+--- a/drivers/firmware/iscsi_ibft.c
++++ b/drivers/firmware/iscsi_ibft.c
+@@ -669,8 +669,7 @@ static int __init ibft_register_kobjects(struct ibft_table_header *header,
+ 
+ 	control = (void *)header + sizeof(*header);
+ 	end = (void *)control + control->hdr.length;
+-	eot_offset = (void *)header + header->length -
+-		     (void *)control - sizeof(*header);
++	eot_offset = (void *)header + header->length - (void *)control;
+ 	rc = ibft_verify_hdr("control", (struct ibft_hdr *)control, id_control,
+ 			     sizeof(*control));
+ 
+-- 
+1.5.4.1
+
