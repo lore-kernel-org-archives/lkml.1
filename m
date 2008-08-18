@@ -1,94 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754516AbYHROUe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753731AbYHROZn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754516AbYHROUe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Aug 2008 10:20:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753286AbYHROUJ
+	id S1753731AbYHROZn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Aug 2008 10:25:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752623AbYHROZd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Aug 2008 10:20:09 -0400
-Received: from casper.infradead.org ([85.118.1.10]:56342 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753105AbYHROUH (ORCPT
+	Mon, 18 Aug 2008 10:25:33 -0400
+Received: from www.church-of-our-saviour.ORG ([69.25.196.31]:51519 "EHLO
+	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752530AbYHROZc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Aug 2008 10:20:07 -0400
-Subject: BUG: checkpatch
-From: Jaswinder Singh <jaswinder@infradead.org>
-To: LKML <linux-kernel@vger.kernel.org>, davej@codemonkey.org.uk,
-       jschopp@austin.ibm.com, apw@uk.ibm.com,
-       David Woodhouse <dwmw2@infradead.org>,
-       Peter Zijlstra <peterz@infradead.org>
-Content-Type: text/plain
-Date: Mon, 18 Aug 2008 19:50:00 +0530
-Message-Id: <1219069200.3208.4.camel@jaswinder.satnam>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
-Content-Transfer-Encoding: 7bit
+	Mon, 18 Aug 2008 10:25:32 -0400
+Date: Mon, 18 Aug 2008 10:25:11 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: tvrtko.ursulin@sophos.com
+Cc: david@lang.hm, davecb@sun.com, Adrian Bunk <bunk@kernel.org>,
+       Peter Dolding <oiaohm@gmail.com>, rmeijer@xs4all.nl,
+       Mihai Don??u <mdontu@bitdefender.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       malware-list@lists.printk.net, linux-security-module@vger.kernel.org,
+       malware-list-bounces@dmesg.printk.net,
+       Casey Schaufler <casey@schaufler-ca.com>, Pavel Machek <pavel@suse.cz>,
+       capibara@xs4all.nl, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [malware-list] scanner interface proposal was: [TALPA] Intro
+	to a linux interface for on access scanning
+Message-ID: <20080818142511.GC8184@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>, tvrtko.ursulin@sophos.com,
+	david@lang.hm, davecb@sun.com, Adrian Bunk <bunk@kernel.org>,
+	Peter Dolding <oiaohm@gmail.com>, rmeijer@xs4all.nl,
+	Mihai Don??u <mdontu@bitdefender.com>,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	malware-list@lists.printk.net,
+	linux-security-module@vger.kernel.org,
+	malware-list-bounces@dmesg.printk.net,
+	Casey Schaufler <casey@schaufler-ca.com>,
+	Pavel Machek <pavel@suse.cz>, capibara@xs4all.nl,
+	Alan Cox <alan@lxorguk.ukuu.org.uk>,
+	Arjan van de Ven <arjan@infradead.org>
+References: <alpine.DEB.1.10.0808180444390.12859@asgard.lang.hm> <20080818131628.1C2A22FE82F@pmx1.sophos.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080818131628.1C2A22FE82F@pmx1.sophos.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[jsr@jaswinder jaswinder-git]$ cat test.c
-void test(int i, int j, int k)
-{
-	printk(KERN_INFO "/* Testing i, j, k */\n");
-	printk(KERN_INFO "i: %d j: %d k:%d\n", i, j, k);
-}
-[jsr@jaswinder jaswinder-git]$ ./linux-2.6/scripts/checkpatch.pl --file test.c
-ERROR: spaces required around that ':' (ctx:VxW)
-#4: FILE: test.c:4:
-+	printk(KERN_INFO "i: %d j: %d k:%d\n", i, j, k);
- 	                   ^
+On Mon, Aug 18, 2008 at 02:15:24PM +0100, tvrtko.ursulin@sophos.com wrote:
+> Then there is still a question of who allows some binary to declare itself 
+> exempt. If that decision was a mistake, or it gets compromised security 
+> will be off. A very powerful mechanism which must not be easily 
+> accessible.  With a good cache your worries go away even without a scheme 
+> like this.
 
-ERROR: need consistent spacing around '%' (ctx:WxV)
-#4: FILE: test.c:4:
-+	printk(KERN_INFO "i: %d j: %d k:%d\n", i, j, k);
- 	                     ^
+I have one word for you --- bittorrent.  If you are downloading a very
+large torrent (say approximately a gigabyte), and it contains many
+pdf's that are say a few megabytes a piece, and things are coming in
+tribbles, having either a indexing scanner or an AV scanner wake up
+and rescan the file from scratch each time a tiny piece of the pdf
+comes in is going to eat your machine alive....
 
-ERROR: spaces required around that ':' (ctx:VxW)
-#4: FILE: test.c:4:
-+	printk(KERN_INFO "i: %d j: %d k:%d\n", i, j, k);
- 	                         ^
-
-ERROR: need consistent spacing around '%' (ctx:WxV)
-#4: FILE: test.c:4:
-+	printk(KERN_INFO "i: %d j: %d k:%d\n", i, j, k);
- 	                           ^
-
-ERROR: spaces required around that ':' (ctx:VxO)
-#4: FILE: test.c:4:
-+	printk(KERN_INFO "i: %d j: %d k:%d\n", i, j, k);
- 	                               ^
-
-total: 5 errors, 0 warnings, 5 lines checked
-
-test.c has style problems, please review.  If any of these errors
-are false positives report them to the maintainer, see
-CHECKPATCH in MAINTAINERS.
-[jsr@jaswinder jaswinder-git]$ cat test_working.c 
-void test(int i, int j, int k)
-{
-	printk(KERN_INFO "/* Testing i, j, k * /\n");
-	printk(KERN_INFO "i: %d j: %d k:%d\n", i, j, k);
-}
-[jsr@jaswinder jaswinder-git]$ ./linux-2.6/scripts/checkpatch.pl --file test_working.c 
-total: 0 errors, 0 warnings, 5 lines checked
-
-test_working.c has no obvious style problems and is ready for submission.
-[jsr@jaswinder jaswinder-git]$ diff -uN test.c test_working.c 
---- test.c	2008-08-18 19:38:32.000000000 +0530
-+++ test_working.c	2008-08-18 19:38:37.000000000 +0530
-@@ -1,5 +1,5 @@
- void test(int i, int j, int k)
- {
--	printk(KERN_INFO "/* Testing i, j, k */\n");
-+	printk(KERN_INFO "/* Testing i, j, k * /\n");
- 	printk(KERN_INFO "i: %d j: %d k:%d\n", i, j, k);
- }
-[jsr@jaswinder jaswinder-git]$ cp test.c test
-[jsr@jaswinder jaswinder-git]$ ./linux-2.6/scripts/checkpatch.pl --file test
-total: 0 errors, 0 warnings, 5 lines checked
-
-test has no obvious style problems and is ready for submission.
-[jsr@jaswinder jaswinder-git]$ 
-
-
-
+						- Ted
