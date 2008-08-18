@@ -1,235 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753919AbYHRPHq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753704AbYHRPOU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753919AbYHRPHq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Aug 2008 11:07:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751423AbYHRPHi
+	id S1753704AbYHRPOU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Aug 2008 11:14:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751713AbYHRPOE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Aug 2008 11:07:38 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:59304 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751072AbYHRPHh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Aug 2008 11:07:37 -0400
-Message-ID: <48A9901B.1080900@redhat.com>
-Date: Mon, 18 Aug 2008 11:07:07 -0400
-From: Steven Rostedt <srostedt@redhat.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20071019)
-MIME-Version: 1.0
-To: Eran Liberty <liberty@extricom.com>
-CC: linux-kernel@vger.kernel.org,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       linuxppc-dev@ozlabs.org, rostedt@goodmis.org
-Subject: Re: ftrace introduces instability into kernel 2.6.27(-rc2,-rc3)
-References: <48591941.4070408@extricom.com> <48A92E15.2080709@extricom.com>
-In-Reply-To: <48A92E15.2080709@extricom.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Mon, 18 Aug 2008 11:14:04 -0400
+Received: from xenotime.net ([66.160.160.81]:54470 "HELO xenotime.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751028AbYHRPOC convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Aug 2008 11:14:02 -0400
+Date: Mon, 18 Aug 2008 08:14:32 -0700
+From: Randy Dunlap <rdunlap@xenotime.net>
+To: Aivils Stoss <aivils@latnet.lv>
+Cc: lud <linux-usb@vger.kernel.org>,
+       Samuel Thibault <samuel.thibault@ens-lyon.org>,
+       linux-input@vger.kernel.org, jkosina@suse.cz,
+       linux-kernel@vger.kernel.org, linuxconsole-dev@lists.sourceforge.net
+Subject: Re: PROBLEM: USB keyboards works only 4 per PC host port
+Message-Id: <20080818081432.782d9632.rdunlap@xenotime.net>
+In-Reply-To: <200808181642.49489.aivils@latnet.lv>
+References: <200808080702.24969.aivils@latnet.lv>
+	<200808100408.37473.aivils@latnet.lv>
+	<20080814184948.093d2cad.rdunlap@xenotime.net>
+	<200808181642.49489.aivils@latnet.lv>
+Organization: YPO4
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eran Liberty wrote:
-> After compiling a kernel with ftrace I started to experience all sorts 
-> of crashes.
+On Mon, 18 Aug 2008 16:42:49 +0530 Aivils Stoss wrote:
 
-Just to make sure...
+> On Friday 15 August 2008 7:19:48 am Randy Dunlap wrote:
+> > On Sun, 10 Aug 2008 04:08:37 +0100 Aivils Stoss wrote:
+> > > On Saturday 09 August 2008 11:42:26 am Samuel Thibault wrote:
+> > > > Aivils Stoss, le Fri 08 Aug 2008 07:02:24 +0100, a écrit :
+> > > > > I suppose this is Linux kernel bug because i test keyboards under
+> > > > > Windows, which support any schema of cascading of usb hubs.
+> > > >
+> > > > On the very same machine and hubs?
+> > >
+> > > Yes, on same machine. Under Windows i don't have evdev interface,
+> > > checked only how keypress go to console.
+> > > Of course to repeat a try You must have at least 5 keyboards and
+> > > 1 7-port or 2 4-port hubs and kernel 2.6.22 and above. I allways
+> > > got result - 5th, 6th, 7th keyboard does not send events to console
+> > > or evdev.
+> >
+> > [adding linux-usb mailing list]
+> >
+> > Hi,
+> >
+> > I finally got 5 USB keyboards together along with 2 hubs.
+> > I daisy-chained the hubs and connected 1 keyboard to the hub that is
+> > on the notebook computer USB port, then I connected 4 keyboards to the
+> > second hub.  They all worked for me, meaning that I can type on all of
+> > them and have their characters show up on my console.
+> >
+> > I'm testing with 2.6.7-rc2.
+> > 'usbtree' output of the USB subsystem is attached.
+> 
+> Yeah! 2.6.7 is a bit obsolete. At my end 2.6.15 support more than 4
+> keyboards per PC port , but mess up input when is plugged more than
+> 9 keyboards. 10th is capable to send keypress events, but last pressed
+> key will be repeated until ctrl-c . 10th keyboard disturb an auto repeat of 
+> all keyboards.
 
-ftrace enables markers too, and RCU has tracing with the markers. This 
-may not be the problem, but I just want to eliminate as many variables 
-as possible.
-Could you disable ftrace, but keep the markers on too.  Also, could you 
-enable ftrace again and turn on the FTRACE_STARTUP_TEST.
+Sorry, my keyboard made a typo.  I'm testing with 2.6.27-rc2.
 
-Thanks,
+So the problem is now different from your original report, right?
 
--- Steve
 
-> I have a powerpc env which closly resemble mpc8548cds_defconfig.
->
-> I have produced the crash in seconds by issuing:
-> > while [ 1 ] ; do find / > /dev/null ; echo .  ; done
->
-> Liberty
->
-> here are some of the kernel crashes:
-> ---
-> ~ # find /proc/ -name kft
-> find: /proc/150/net/softnet_stat: No such file or direOops: Exception 
-> in kernel mode, sig: 11 [#1]
-> Exsw1600
-> Modules linked in:
-> NIP: c00bd6fc LR: c00bd6fc CTR: 00000000
-> REGS: ddfc3d50 TRAP: 0700   Not tainted  (2.6.27-rc2)
-> MSR: 00029000 <EE,ME>  CR: 20002284  XER: 20000000
-> TASK = ddcccde0[1699] 'find' THREAD: ddfc2000
-> GPR00: 00000000 ddfc3e00 ddcccde0 dd895580 ddfc3e30 c00b5da0 ddfc3e90 
-> 00000003
-> GPR08: c00ece54 00000370 00145505 00000003 80002282 100ad874 10083ca0 
-> 10083cd8
-> GPR16: 10083cd0 00000008 00000000 c00b5da0 ddfc3f18 c00ece54 00000000 
-> df465720
-> GPR24: d7431900 ddfc3e30 dd895580 c0380000 dd895580 ddfc3e30 00000000 
-> ddfc3e00
-> NIP [c00bd6fc] d_lookup+0x40/0x90
-> LR [c00bd6fc] d_lookup+0x40/0x90
-> Call Trace:
-> [ddfc3e00] [c006ade4] rcu_process_callbacks+0x48/0x60 (unreliable)
-> [ddfc3e20] [c00eb514] proc_fill_cache+0x94/0x1b0
-> [ddfc3e80] [c00ef720] proc_task_readdir+0x294/0x3c4
-> [ddfc3ee0] [c00b60fc] vfs_readdir+0xb8/0xd8
-> [ddfc3f10] [c00b619c] sys_getdents64+0x80/0x104
-> [ddfc3f40] [c0010554] ret_from_syscall+0x0/0x3c
-> Instruction dump:
-> 7c0802a6 bf61000c 3f60c038 7c3f0b78 90010024 7c7c1b78 7c9d2378 83db52a0
-> 73c00001 7f83e378 7fa4eb78 4082002f <00000000> 2f830000 409e0030 801b52a0
-> ctory
-> ---[ end trace 6b059a7f5ba5a55a ]---
->
-> ---
->
-> Oops: Exception in kernel mode, sig: 11 [#1]
-> Exsw1600
-> Modules linked in: gplonly_api
-> NIP: c00bd6fc LR: c00bd6fc CTR: 00000000
-> REGS: df52dc40 TRAP: 0700   Not tainted  (2.6.27-rc2)
-> MSR: 00029000 <EE,ME>  CR: 20082422  XER: 20000000
-> TASK = ddc2e060[2294] 'eeprom' THREAD: df52c000
-> GPR00: 00000000 df52dcf0 ddc2e060 dd82c700 df52dd58 df52dd48 dd82c75e 
-> 00000000
-> GPR08: c0800000 000311f0 0000ffff df52dd10 20002488 1001e75c 100b0000 
-> 1008e90c
-> GPR16: bfd15a50 df52de6c df52dd58 fffffff4 c0380000 df52dd50 df52dd48 
-> dd9303fc
-> GPR24: dc3a6800 dd930390 df52dd58 c0380000 dd82c700 df52dd58 00000006 
-> df52dcf0
-> NIP [c00bd6fc] d_lookup+0x40/0x90
-> LR [c00bd6fc] d_lookup+0x40/0x90
-> Call Trace:
-> [df52dcf0] [df52dd48] 0xdf52dd48 (unreliable)
-> [df52dd10] [c00b07a0] do_lookup+0xe8/0x220
-> [df52dd40] [c00b222c] __link_path_walk+0x174/0xd54
-> [df52ddb0] [c00b2e64] path_walk+0x58/0xe0
-> [df52dde0] [c00b2fd4] do_path_lookup+0x78/0x13c
-> [df52de10] [c00b3f3c] __path_lookup_intent_open+0x68/0xdc
-> [df52de40] [c00b3fd8] path_lookup_open+0x28/0x40
-> [df52de50] [c00b4234] do_filp_open+0xa0/0x798
-> [df52df00] [c00a3b80] do_sys_open+0x70/0x114
-> [df52df30] [c00a3c98] sys_open+0x38/0x50
-> [df52df40] [c0010554] ret_from_syscall+0x0/0x3c
-> Instruction dump:
-> 7c0802a6 bf61000c 3f60c038 7c3f0b78 90010024 7c7c1b78 7c9d2378 83db52a0
-> 73c00001 7f83e378 7fa4eb78 4082002f <00000000> 2f830000 409e0030 801b52a0
-> om_version(Canno---[ end trace 0cef3c8cb49d09de ]---
->
-> ---
->
-> Oops: Exception in kernel mode, sig: 11 [#1]
-> Exsw1600
-> Modules linked in: bridge stp llc tun beacon_freescale(P) 80211(P) 
-> shm_freescale(P) ath_remote_regs_freescale(P) exsw 
-> load_local_fpga_freescale 8021q poe_fi
-> NIP: c00bd6fc LR: c00bd6fc CTR: 00000000
-> REGS: dd555c50 TRAP: 0700   Tainted: P           (2.6.27-rc2)
-> MSR: 00029000 <EE,ME>  CR: 24082282  XER: 20000000
-> TASK = df4669a0[4976] 'find' THREAD: dd554000
-> GPR00: 00000000 dd555d00 df4669a0 dd82ae00 dd555d68 dd555d58 dd82ae5b 
-> 100234ec
-> GPR08: c0800000 0002dd0c 0000ffff dd555d20 24000288 100ad874 100936f8 
-> 1008a1d0
-> GPR16: 10083f80 dd555e2c dd555d68 fffffff4 c0380000 dd555d60 dd555d58 
-> dd9565d4
-> GPR24: dc3db480 dd956568 dd555d68 c0380000 dd82ae00 dd555d68 00000000 
-> dd555d00
-> NIP [c00bd6fc] d_lookup+0x40/0x90
-> LR [c00bd6fc] d_lookup+0x40/0x90
-> Call Trace:
-> [dd555d00] [dd555d58] 0xdd555d58 (unreliable)
-> [dd555d20] [c00b07a0] do_lookup+0xe8/0x220
-> [dd555d50] [c00b265c] __link_path_walk+0x5a4/0xd54
-> [dd555dc0] [c00b2e64] path_walk+0x58/0xe0
-> [dd555df0] [c00b2fd4] do_path_lookup+0x78/0x13c
-> [dd555e20] [c00b3cd0] user_path_at+0x64/0xac
-> [dd555e90] [c00aac04] vfs_lstat_fd+0x34/0x74
-> [dd555ec0] [c00aacd8] vfs_lstat+0x30/0x48
-> [dd555ed0] [c00aad20] sys_lstat64+0x30/0x5c
-> [dd555f40] [c0010554] ret_from_syscall+0x0/0x3c
-> Instruction dump:
-> 7c0802a6 bf61000c 3f60c038 7c3f0b78 90010024 7c7c1b78 7c9d2378 83db52a0
-> 73c00001 7f83e378 7fa4eb78 4082002f <00000000> 2f830000 409e0030 801b52a0
-> 76/auxv
-> /proc/4---[ end trace 0deef0827ce9df4b ]---
->
-> ---
-> Oops: Exception in kernel mode, sig: 11 [#1]
-> Exsw1600
-> Modules linked in: bridge stp llc tun beacon_freescale(P) 80211(P) 
-> shm_freescale(P) ath_remote_regs_freescale(P) exsw 
-> load_local_fpga_freescale 8021q poe_fi
-> NIP: c00bd6fc LR: c00bd6fc CTR: 00000000
-> REGS: d57e7c40 TRAP: 0700   Tainted: P           (2.6.27-rc2)
-> MSR: 00029000 <EE,ME>  CR: 24482482  XER: 20000000
-> TASK = db3cc940[2054] 'eapd' THREAD: d57e6000
-> GPR00: 00000000 d57e7cf0 db3cc940 dd82a500 d57e7d58 d57e7d48 dd82a55a 
-> 00000000
-> GPR08: c0800000 00016c64 0000ffff d57e7d10 24422488 1008f700 4802cd38 
-> 100763e8
-> GPR16: 4801d818 d57e7e6c d57e7d58 fffffff4 c0380000 d57e7d50 d57e7d48 
-> dd956c74
-> GPR24: dc3db680 dd956c08 d57e7d58 c0380000 dd82a500 d57e7d58 00000000 
-> d57e7cf0
-> NIP [c00bd6fc] d_lookup+0x40/0x90
-> LR [c00bd6fc] d_lookup+0x40/0x90
-> Call Trace:
-> [d57e7cf0] [d57e7d48] 0xd57e7d48 (unreliable)
-> [d57e7d10] [c00b07a0] do_lookup+0xe8/0x220
-> [d57e7d40] [c00b265c] __link_path_walk+0x5a4/0xd54
-> [d57e7db0] [c00b2e64] path_walk+0x58/0xe0
-> [d57e7de0] [c00b2fd4] do_path_lookup+0x78/0x13c
-> [d57e7e10] [c00b3f3c] __path_lookup_intent_open+0x68/0xdc
-> [d57e7e40] [c00b3fd8] path_lookup_open+0x28/0x40
-> [d57e7e50] [c00b4234] do_filp_open+0xa0/0x798
-> [d57e7f00] [c00a3b80] do_sys_open+0x70/0x114
-> [d57e7f30] [c00a3c98] sys_open+0x38/0x50
-> [d57e7f40] [c0010554] ret_from_syscall+0x0/0x3c
-> Instruction dump:
-> 7c0802a6 bf61000c 3f60c038 7c3f0b78 90010024 7c7c1b78 7c9d2378 83db52a0
-> 73c00001 7f83e378 7fa4eb78 4082002f <00000000> 2f830000 409e0030 801b52a0
-> ---[ end trace ffb4a6e37d78370a ]---
->
-> ---
-> Oops: Exception in kernel mode, sig: 11 [#1]
-> Exsw1600
-> Modules linked in: bridge stp llc tun beacon_freescale(P) 80211(P) 
-> shm_freescale(P) ath_remote_regs_freescale(P) exsw 
-> load_local_fpga_freescale 8021q poe_fi
-> NIP: c00bd6fc LR: c00bd6fc CTR: c00bd6c8
-> REGS: decd5cf0 TRAP: 0700   Tainted: P           (2.6.27-rc2)
-> MSR: 00029000 <EE,ME>  CR: 22228882  XER: 20000000
-> TASK = d9f5a9a0[6897] 'sh' THREAD: decd4000
-> GPR00: 00000000 decd5da0 d9f5a9a0 dd801180 decd5de8 00000000 00000004 
-> fffffff9
-> GPR08: fffffffa 00000000 00d5ca28 decd5d90 2ccc1686 100ad874 1fffb200 
-> 00000000
-> GPR16: 007fff00 decd5ec4 00000008 c02fe298 00200200 00000000 c031aa34 
-> decd5de8
-> GPR24: decd5df4 00001af2 dd507d00 c0380000 dd801180 decd5de8 00000000 
-> decd5da0
-> NIP [c00bd6fc] d_lookup+0x40/0x90
-> LR [c00bd6fc] d_lookup+0x40/0x90
-> Call Trace:
-> [decd5dc0] [c00bd7d8] d_hash_and_lookup+0x8c/0xc4
-> [decd5de0] [c00ed728] proc_flush_task+0xb4/0x268
-> [decd5e40] [c0032894] release_task+0x6c/0x39c
-> [decd5e70] [c0033238] wait_consider_task+0x674/0x920
-> [decd5eb0] [c0033610] do_wait+0x12c/0x3d4
-> [decd5f20] [c0033954] sys_wait4+0x9c/0xe8
-> [decd5f40] [c0010554] ret_from_syscall+0x0/0x3c
-> Instruction dump:
-> 7c0802a6 bf61000c 3f60c038 7c3f0b78 90010024 7c7c1b78 7c9d2378 83db52a0
-> 73c00001 7f83e378 7fa4eb78 4082002f <00000000> 2f830000 409e0030 801b52a0
-> ---[ end trace 00106ff4ec3b9c22 ]---
->
->
->
->
+What speed is the host port that the keyboards are connected to?
+Could it be a USB bus bandwidth limitation?  (not that any code
+checks for that)
 
+I barely found 5 USB keyboards, so I surely can't test 10 or more.  ;)
+I suppose that it will take some USB debug messages to attempt to see
+what is going on...
+
+
+---
+~Randy
+Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
+http://linuxplumbersconf.org/
