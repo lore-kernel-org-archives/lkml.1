@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760210AbYHRSwg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760516AbYHRSxO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760210AbYHRSwg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Aug 2008 14:52:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759907AbYHRSvq
+	id S1760516AbYHRSxO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Aug 2008 14:53:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760048AbYHRSwK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Aug 2008 14:51:46 -0400
-Received: from mx1.suse.de ([195.135.220.2]:41791 "EHLO mx1.suse.de"
+	Mon, 18 Aug 2008 14:52:10 -0400
+Received: from mx2.suse.de ([195.135.220.15]:35112 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758730AbYHRSvo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Aug 2008 14:51:44 -0400
-Date: Mon, 18 Aug 2008 11:43:02 -0700
+	id S1760034AbYHRSwI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Aug 2008 14:52:08 -0400
+Date: Mon, 18 Aug 2008 11:43:05 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,13 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Alan Stern <stern@rowland.harvard.edu>
-Subject: [patch 17/60] usb-serial: dont release unregistered minors
-Message-ID: <20080818184302.GR29394@suse.de>
+       alan@lxorguk.ukuu.org.uk, Frederik Kriewitz <frederik@kriewitz.eu>
+Subject: [patch 18/60] USB: ftdi_sio: add support for Luminance Stellaris
+	Evaluation/Development Kits
+Message-ID: <20080818184305.GS29394@suse.de>
 References: <20080818183230.966310219@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="usb-serial-don-t-release-unregistered-minors.patch"
+Content-Disposition: inline; filename="usb-ftdi_sio-add-support-for-luminance-stellaris-evaluation-development-kits.patch"
 In-Reply-To: <20080818184035.GA29394@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -38,67 +39,50 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.26-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Alan Stern <stern@rowland.harvard.edu>
+From: Frederik Kriewitz <frederik@kriewitz.eu>
 
-commit 0282b7f2a874e72c18fcd5a112ccf67f71ba7f5c upstream
+commit a00c3cadc2bf50b3c925acdb3d0e5789b1650498 upstream
 
-This patch (as1121) fixes a bug in the USB serial core.  When a device
-is unregistered, the core will give back its minors -- even if the
-device hasn't been assigned any!
+The Patch adds support for Luminance Stellaris Evaluation/Development
+Kits (FTDI 2232C based).
+The PIDs were missing.
 
-The patch reserves the highest minor value (255) to mean that no minor
-was assigned.  It also removes some dead code and does a small style
-fixup.
+Successfully tested with a Stellaris LM3S8962 Evaluation kit.
 
-Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
+Signed-off-by: Frederik Kriewitz <frederik@kriewitz.eu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/usb/serial/usb-serial.c |    7 +++----
- include/linux/usb/serial.h      |    3 ++-
- 2 files changed, 5 insertions(+), 5 deletions(-)
+ drivers/usb/serial/ftdi_sio.c |    4 ++++
+ drivers/usb/serial/ftdi_sio.h |    5 +++++
+ 2 files changed, 9 insertions(+)
 
---- a/drivers/usb/serial/usb-serial.c
-+++ b/drivers/usb/serial/usb-serial.c
-@@ -119,9 +119,6 @@ static void return_serial(struct usb_ser
+--- a/drivers/usb/serial/ftdi_sio.c
++++ b/drivers/usb/serial/ftdi_sio.c
+@@ -636,6 +636,10 @@ static struct usb_device_id id_table_com
+ 		.driver_info = (kernel_ulong_t)&ftdi_jtag_quirk },
+ 	{ USB_DEVICE(FTDI_VID, FTDI_OOCDLINK_PID),
+ 		.driver_info = (kernel_ulong_t)&ftdi_jtag_quirk },
++	{ USB_DEVICE(FTDI_VID, LMI_LM3S_DEVEL_BOARD_PID),
++		.driver_info = (kernel_ulong_t)&ftdi_jtag_quirk },
++	{ USB_DEVICE(FTDI_VID, LMI_LM3S_EVAL_BOARD_PID),
++		.driver_info = (kernel_ulong_t)&ftdi_jtag_quirk },
+ 	{ USB_DEVICE(RATOC_VENDOR_ID, RATOC_PRODUCT_ID_USB60F) },
+ 	{ USB_DEVICE(FTDI_VID, FTDI_REU_TINY_PID) },
+ 	{ },					/* Optional parameter entry */
+--- a/drivers/usb/serial/ftdi_sio.h
++++ b/drivers/usb/serial/ftdi_sio.h
+@@ -815,6 +815,11 @@
+ #define OLIMEX_VID			0x15BA
+ #define OLIMEX_ARM_USB_OCD_PID		0x0003
  
- 	dbg("%s", __func__);
++/* Luminary Micro Stellaris Boards, VID = FTDI_VID */
++/* FTDI 2332C Dual channel device, side A=245 FIFO (JTAG), Side B=RS232 UART */
++#define LMI_LM3S_DEVEL_BOARD_PID	0xbcd8
++#define LMI_LM3S_EVAL_BOARD_PID		0xbcd9
++
+ /* www.elsterelectricity.com Elster Unicom III Optical Probe */
+ #define FTDI_ELSTER_UNICOM_PID		0xE700 /* Product Id */
  
--	if (serial == NULL)
--		return;
--
- 	for (i = 0; i < serial->num_ports; ++i) {
- 		serial_table[serial->minor + i] = NULL;
- 	}
-@@ -140,7 +137,8 @@ static void destroy_serial(struct kref *
- 	serial->type->shutdown(serial);
- 
- 	/* return the minor range that this device had */
--	return_serial(serial);
-+	if (serial->minor != SERIAL_TTY_NO_MINOR)
-+		return_serial(serial);
- 
- 	for (i = 0; i < serial->num_ports; ++i)
- 		serial->port[i]->open_count = 0;
-@@ -562,6 +560,7 @@ static struct usb_serial * create_serial
- 	serial->interface = interface;
- 	kref_init(&serial->kref);
- 	mutex_init(&serial->disc_mutex);
-+	serial->minor = SERIAL_TTY_NO_MINOR;
- 
- 	return serial;
- }
---- a/include/linux/usb/serial.h
-+++ b/include/linux/usb/serial.h
-@@ -17,7 +17,8 @@
- #include <linux/mutex.h>
- 
- #define SERIAL_TTY_MAJOR	188	/* Nice legal number now */
--#define SERIAL_TTY_MINORS	255	/* loads of devices :) */
-+#define SERIAL_TTY_MINORS	254	/* loads of devices :) */
-+#define SERIAL_TTY_NO_MINOR	255	/* No minor was assigned */
- 
- /* The maximum number of ports one device can grab at once */
- #define MAX_NUM_PORTS		8
 
 -- 
