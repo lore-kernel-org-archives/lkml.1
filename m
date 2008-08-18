@@ -1,23 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755484AbYHRACQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754609AbYHRAHn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755484AbYHRACQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Aug 2008 20:02:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752021AbYHRACA
+	id S1754609AbYHRAHn (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Aug 2008 20:07:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751985AbYHRAHf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Aug 2008 20:02:00 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:37190 "EHLO smtps.tip.net.au"
+	Sun, 17 Aug 2008 20:07:35 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:57871 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751967AbYHRAB7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Aug 2008 20:01:59 -0400
-Date: Mon, 18 Aug 2008 10:01:51 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-next@vger.kernel.org, David Fries <david@fries.net>,
-       David Howells <dhowells@redhat.com>, James Morris <jmorris@namei.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: linux-next: origin tree build failure
-Message-Id: <20080818100151.c2e9e508.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+	id S1751967AbYHRAHf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Aug 2008 20:07:35 -0400
+Date: Sun, 17 Aug 2008 20:07:39 -0400
+From: Rik van Riel <riel@redhat.com>
+To: Pavel Machek <pavel@suse.cz>
+Cc: david@lang.hm, Eric Paris <eparis@redhat.com>,
+       Theodore Tso <tytso@mit.edu>, davecb@sun.com,
+       linux-security-module@vger.kernel.org, Adrian Bunk <bunk@kernel.org>,
+       Mihai Don??u <mdontu@bitdefender.com>, linux-kernel@vger.kernel.org,
+       malware-list@lists.printk.net, Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [malware-list] [RFC 0/5] [TALPA] Intro to alinuxinterfaceforon
+ access scanning
+Message-ID: <20080817200739.23496033@riellaptop.surriel.com>
+In-Reply-To: <20080817225844.GE21112@atrey.karlin.mff.cuni.cz>
+References: <20080813125638.GB6995@ucw.cz>
+	<20080813135207.CC08C3765BC@pmx1.sophos.com>
+	<20080814125410.GA2262@elf.ucw.cz>
+	<2629CC4E1D22A64593B02C43E855530304AE4BE3@USILMS12.ca.com>
+	<20080814223918.GC6370@elf.ucw.cz>
+	<20080814200005.6b363716@bree.surriel.com>
+	<20080815004335.GF13048@mit.edu>
+	<1218769209.16613.31.camel@localhost.localdomain>
+	<20080817221258.GC21112@atrey.karlin.mff.cuni.cz>
+	<alpine.DEB.1.10.0808171542160.12859@asgard.lang.hm>
+	<20080817225844.GE21112@atrey.karlin.mff.cuni.cz>
+Organization: Red Hat, Inc
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -25,63 +41,25 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+On Mon, 18 Aug 2008 00:58:44 +0200
+Pavel Machek <pavel@suse.cz> wrote:
 
-As expected (reported by David Fries), today's linux-next build (powerpc
-ppc64_defconfig) failed like this:
+> Rather than modify all the applications using mmap (you can't tell if
+> the other side is going to use it for shared memory... right?), we
+> could simply modify all the Windows-facing applications using mmap.
 
-In file included from include/linux/tracehook.h:52,
-                 from arch/powerpc/kernel/signal.c:13:
-include/linux/security.h: In function 'security_ptrace_traceme':
-include/linux/security.h:1760: error: 'parent' undeclared (first use in this function)
+If web browsers, office suites and mail clients on Windows
+have certain kinds of vulnerabilities, it is safe to assume
+that the same programs on Linux will have similar problems.
 
-Caused by commit 5cd9c58fbe9ec92b45b27e131719af4f2bd9eb40 ("security: Fix
-setting of PF_SUPERPRIV by __capable()").  The version of this commit
-that has been in the linux-next tree from Aug 8 to Aug 15 is correct, so
-I have no idea what happened.
+Can we please get rid of the idea that "Windows facing" is
+where the whole malware problem is?
 
-More care needed ...
+As for how to solve it - lets try to come up with a solution
+that is reasonably high performance and can be used for more
+than just malware scanning.  
 
-I applied the following patch from David Fries.
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
-Date: Sat, 16 Aug 2008 20:17:11 -0500
-From: David Fries <david@fries.net>
-To: David Howells <dhowells@redhat.com>
-Cc: sfr@canb.auug.org.au, jmorris@namei.org, linux-kernel@vger.kernel.org,
-        linux-security-module@vger.kernel.org
-Subject: Fix setting of PF_SUPERPRIV by __capable()
-
-The first two submissions this patch had parent for the argument, the third
-one has child then parent and fails to compile with SECURITY disabled.
-Please apply the following patch.
-
-> +static inline int security_ptrace_traceme(struct task_struct *child)
->  {
-> -	return cap_ptrace(parent, child, mode);
-> +	return cap_ptrace_traceme(parent);
->  }
-
-    security_ptrace_traceme error: 'parent' undeclared
-
-    s/child/parent/
-
-    Signed-off-by: David Fries <david@fries.net>
-
-diff --git a/include/linux/security.h b/include/linux/security.h
-index 2ee5ecf..80c4d00 100644
---- a/include/linux/security.h
-+++ b/include/linux/security.h
-@@ -1755,7 +1755,7 @@ static inline int security_ptrace_may_access(struct task_struct *child,
- 	return cap_ptrace_may_access(child, mode);
- }
+Using the same code for things like HSM would be nice.
  
--static inline int security_ptrace_traceme(struct task_struct *child)
-+static inline int security_ptrace_traceme(struct task_struct *parent)
- {
- 	return cap_ptrace_traceme(parent);
- }
-
+-- 
+All rights reversed.
