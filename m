@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760221AbYHRTfg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933194AbYHRTgY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760221AbYHRTfg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Aug 2008 15:35:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761785AbYHRTeE
+	id S933194AbYHRTgY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Aug 2008 15:36:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764931AbYHRTe5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Aug 2008 15:34:04 -0400
-Received: from ns1.suse.de ([195.135.220.2]:48528 "EHLO mx1.suse.de"
+	Mon, 18 Aug 2008 15:34:57 -0400
+Received: from mx2.suse.de ([195.135.220.15]:41427 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764801AbYHRTeA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Aug 2008 15:34:00 -0400
-Date: Mon, 18 Aug 2008 12:20:05 -0700
+	id S1753021AbYHRTe4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Aug 2008 15:34:56 -0400
+Date: Mon, 18 Aug 2008 12:20:10 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,17 +22,16 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Eugene Teo <eugeneteo@kernel.sg>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Gerrit Renker <gerrit@erg.abdn.ac.uk>,
+       alan@lxorguk.ukuu.org.uk, Wei Yongjun <yjwei@cn.fujitsu.com>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
        "David S. Miller" <davem@davemloft.net>
-Subject: [patch 22/49] dccp: change L/R must have at least one byte in the
-	dccpsf_val field
-Message-ID: <20080818192005.GW10350@suse.de>
+Subject: [patch 24/49] ipv6: Fix ip6_xmit to send fragments if ipfragok is
+	true
+Message-ID: <20080818192010.GY10350@suse.de>
 References: <20080818191012.663450219@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="dccp-change-l-r-must-have-at-least-one-byte-in-the-dccpsf_val-field.patch"
+Content-Disposition: inline; filename="ipv6-fix-ip6_xmit-to-send-fragments-if-ipfragok-is-true.patch"
 In-Reply-To: <20080818191834.GA10350@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -43,35 +42,52 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Arnaldo Carvalho de Melo <acme@redhat.com>
+From: Wei Yongjun <yjwei@cn.fujitsu.com>
 
-commit 3e8a0a559c66ee9e7468195691a56fefc3589740 upstream
+[ Upstream commit 77e2f14f71d68d05945f1d30ca55b5194d6ab1ce ]
 
-Thanks to Eugene Teo for reporting this problem.
+SCTP used ip6_xmit() to send fragments after received ICMP packet too
+big message. But while send packet used ip6_xmit, the skb->local_df is
+not initialized. So when skb if enter ip6_fragment(), the following
+code will discard the skb.
 
-Signed-off-by: Eugene Teo <eugeneteo@kernel.sg>
-Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
-Signed-off-by: Gerrit Renker <gerrit@erg.abdn.ac.uk>
+ip6_fragment(...)
+{
+    if (!skb->local_df) {
+        ...
+        return -EMSGSIZE;
+    }
+    ...
+}
+
+SCTP do the following step:
+1. send packet ip6_xmit(skb, ipfragok=0)
+2. received ICMP packet too big message
+3. if PMTUD_ENABLE: ip6_xmit(skb, ipfragok=1)
+
+This patch fixed the problem by set local_df if ipfragok is true.
+
+Signed-off-by: Wei Yongjun <yjwei@cn.fujitsu.com>
+Acked-by: Herbert Xu <herbert@gondor.apana.org.au>
 Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- net/dccp/proto.c |    5 +++++
- 1 file changed, 5 insertions(+)
+ net/ipv6/ip6_output.c |    4 ++++
+ 1 file changed, 4 insertions(+)
 
---- a/net/dccp/proto.c
-+++ b/net/dccp/proto.c
-@@ -477,6 +477,11 @@ static int dccp_setsockopt_change(struct
+--- a/net/ipv6/ip6_output.c
++++ b/net/ipv6/ip6_output.c
+@@ -229,6 +229,10 @@ int ip6_xmit(struct sock *sk, struct sk_
+ 	skb_reset_network_header(skb);
+ 	hdr = ipv6_hdr(skb);
  
- 	if (copy_from_user(&opt, optval, sizeof(opt)))
- 		return -EFAULT;
-+	/*
-+	 * rfc4340: 6.1. Change Options
-+	 */
-+	if (opt.dccpsf_len < 1)
-+		return -EINVAL;
- 
- 	val = kmalloc(opt.dccpsf_len, GFP_KERNEL);
- 	if (!val)
++	/* Allow local fragmentation. */
++	if (ipfragok)
++		skb->local_df = 1;
++
+ 	/*
+ 	 *	Fill in the IPv6 header
+ 	 */
 
 -- 
