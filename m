@@ -1,98 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754750AbYHRMxo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754264AbYHRMzu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754750AbYHRMxo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Aug 2008 08:53:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754140AbYHRMxW
+	id S1754264AbYHRMzu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Aug 2008 08:55:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752570AbYHRMzl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Aug 2008 08:53:22 -0400
-Received: from styx.suse.cz ([82.119.242.94]:50610 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754080AbYHRMxU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Aug 2008 08:53:20 -0400
-From: Jan Kara <jack@suse.cz>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Jan Kara <jack@suse.cz>, Ingo Oeser <ioe-lkml@rameria.de>
-Subject: [PATCH REVIEW] udf: Fix error paths in udf_new_inode()
-Date: Mon, 18 Aug 2008 14:53:18 +0200
-Message-Id: <12190639981625-git-send-email-jack@suse.cz>
-X-Mailer: git-send-email 1.5.2.4
-In-Reply-To: <12190639982548-git-send-email-jack@suse.cz>
-References: y
- <12190639982548-git-send-email-jack@suse.cz>
+	Mon, 18 Aug 2008 08:55:41 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:34797 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752549AbYHRMzk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Aug 2008 08:55:40 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <20080818100151.c2e9e508.sfr@canb.auug.org.au>
+References: <20080818100151.c2e9e508.sfr@canb.auug.org.au>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: dhowells@redhat.com, Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-next@vger.kernel.org, David Fries <david@fries.net>,
+       James Morris <jmorris@namei.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: origin tree build failure
+X-Mailer: MH-E 8.0.3+cvs; nmh 1.3; GNU Emacs 23.0.50
+Date: Mon, 18 Aug 2008 13:55:30 +0100
+Message-ID: <17141.1219064130@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I case we failed to allocate memory for inode when creating it, we did not
-properly free block already allocated for this inode. Move memory allocation
-before the block allocation which fixes this issue. Also remove a few
-superfluous initializations already done in udf_alloc_inode().
+Stephen Rothwell <sfr@canb.auug.org.au> wrote:
 
-CC: Ingo Oeser <ioe-lkml@rameria.de>
-Signed-off-by: Jan Kara <jack@suse.cz>
----
- fs/udf/ialloc.c |   41 ++++++++++++++++++-----------------------
- 1 files changed, 18 insertions(+), 23 deletions(-)
+> As expected (reported by David Fries), today's linux-next build (powerpc
+> ppc64_defconfig) failed like this:
+> 
+> In file included from include/linux/tracehook.h:52,
+>                  from arch/powerpc/kernel/signal.c:13:
+> include/linux/security.h: In function 'security_ptrace_traceme':
+> include/linux/security.h:1760: error: 'parent' undeclared (first use in this function)
+> 
+> Caused by commit 5cd9c58fbe9ec92b45b27e131719af4f2bd9eb40 ("security: Fix
+> setting of PF_SUPERPRIV by __capable()").  The version of this commit
+> that has been in the linux-next tree from Aug 8 to Aug 15 is correct, so
+> I have no idea what happened.
 
-diff --git a/fs/udf/ialloc.c b/fs/udf/ialloc.c
-index c4943c8..a4f2b3c 100644
---- a/fs/udf/ialloc.c
-+++ b/fs/udf/ialloc.c
-@@ -76,11 +76,24 @@ struct inode *udf_new_inode(struct inode *dir, int mode, int *err)
- 	*err = -ENOSPC;
- 
- 	iinfo = UDF_I(inode);
--	iinfo->i_unique = 0;
--	iinfo->i_lenExtents = 0;
--	iinfo->i_next_alloc_block = 0;
--	iinfo->i_next_alloc_goal = 0;
--	iinfo->i_strat4096 = 0;
-+	if (UDF_QUERY_FLAG(inode->i_sb, UDF_FLAG_USE_EXTENDED_FE)) {
-+		iinfo->i_efe = 1;
-+		if (UDF_VERS_USE_EXTENDED_FE > sbi->s_udfrev)
-+			sbi->s_udfrev = UDF_VERS_USE_EXTENDED_FE;
-+		iinfo->i_ext.i_data = kzalloc(inode->i_sb->s_blocksize -
-+					    sizeof(struct extendedFileEntry),
-+					    GFP_KERNEL);
-+	} else {
-+		iinfo->i_efe = 0;
-+		iinfo->i_ext.i_data = kzalloc(inode->i_sb->s_blocksize -
-+					    sizeof(struct fileEntry),
-+					    GFP_KERNEL);
-+	}
-+	if (!iinfo->i_ext.i_data) {
-+		iput(inode);
-+		*err = -ENOMEM;
-+		return NULL;
-+	}
- 
- 	block = udf_new_block(dir->i_sb, NULL,
- 			      dinfo->i_location.partitionReferenceNum,
-@@ -130,24 +143,6 @@ struct inode *udf_new_inode(struct inode *dir, int mode, int *err)
- 	iinfo->i_lenEAttr = 0;
- 	iinfo->i_lenAlloc = 0;
- 	iinfo->i_use = 0;
--	if (UDF_QUERY_FLAG(inode->i_sb, UDF_FLAG_USE_EXTENDED_FE)) {
--		iinfo->i_efe = 1;
--		if (UDF_VERS_USE_EXTENDED_FE > sbi->s_udfrev)
--			sbi->s_udfrev = UDF_VERS_USE_EXTENDED_FE;
--		iinfo->i_ext.i_data = kzalloc(inode->i_sb->s_blocksize -
--					    sizeof(struct extendedFileEntry),
--					    GFP_KERNEL);
--	} else {
--		iinfo->i_efe = 0;
--		iinfo->i_ext.i_data = kzalloc(inode->i_sb->s_blocksize -
--					    sizeof(struct fileEntry),
--					    GFP_KERNEL);
--	}
--	if (!iinfo->i_ext.i_data) {
--		iput(inode);
--		*err = -ENOMEM;
--		return NULL;
--	}
- 	if (UDF_QUERY_FLAG(inode->i_sb, UDF_FLAG_USE_AD_IN_ICB))
- 		iinfo->i_alloc_type = ICBTAG_FLAG_AD_IN_ICB;
- 	else if (UDF_QUERY_FLAG(inode->i_sb, UDF_FLAG_USE_SHORT_AD))
--- 
-1.5.2.4
+I accidentally posted an old patch which James, maybe, substituted for the
+good one that he had.
 
+David
