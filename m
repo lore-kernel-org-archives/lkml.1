@@ -1,75 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763945AbYHRTNw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764050AbYHRTOp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763945AbYHRTNw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Aug 2008 15:13:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763289AbYHRTIq
+	id S1764050AbYHRTOp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Aug 2008 15:14:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757992AbYHRTJ3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Aug 2008 15:08:46 -0400
-Received: from mail.suse.de ([195.135.220.2]:44652 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763282AbYHRTIp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Aug 2008 15:08:45 -0400
-Date: Mon, 18 Aug 2008 11:45:45 -0700
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
-       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
-       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Dean Hildebrand <dhildeb@us.ibm.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: [patch 59/60] PCI: Limit VPD length for Broadcom 5708S
-Message-ID: <20080818184545.GH29394@suse.de>
-References: <20080818183230.966310219@mini.kroah.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="pci-limit-vpd-length-for-broadcom-5708s.patch"
-In-Reply-To: <20080818184035.GA29394@suse.de>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Mon, 18 Aug 2008 15:09:29 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:50918 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1763386AbYHRTJ1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Aug 2008 15:09:27 -0400
+Date: Mon, 18 Aug 2008 19:51:26 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Eric Paris <eparis@redhat.com>
+Cc: davecb@sun.com, david@lang.hm, Adrian Bunk <bunk@kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       malware-list@lists.printk.net, Casey Schaufler <casey@schaufler-ca.com>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [malware-list] scanner interface proposal was: [TALPA]	Intro	to
+ a linux interface for on access scanning
+Message-ID: <20080818195126.7192e34e@lxorguk.ukuu.org.uk>
+In-Reply-To: <1219084246.15566.86.camel@localhost.localdomain>
+References: <20080818153212.6A6FD33687F@pmx1.sophos.com>
+	<1219076143.15566.39.camel@localhost.localdomain>
+	<20080818171500.78590801@lxorguk.ukuu.org.uk>
+	<1219080504.15566.65.camel@localhost.localdomain>
+	<20080818182556.13ced58f@lxorguk.ukuu.org.uk>
+	<1219082097.15566.82.camel@localhost.localdomain>
+	<1219084246.15566.86.camel@localhost.localdomain>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2.6.26-stable review patch.  If anyone has any objections, please let us know.
+> Also not knowing much about sending FD's over AF_UNIX sockets, do they
+> share the same seek offsets or does the new process get a new fd which
 
-------------------
-From: Dean Hildebrand <seattleplus@gmail.com>
+They share the seek offset.
 
-commit 35405f256de924be56ea5edaca4cdc627f1bb0f8 upstream
+> points to the same data?  I wouldn't want to have to count on the
+> indexer to not move the offset around on the bittorrent client.  Like I
+> said, haven't never used sendmsg to pass a socket I don't know what you
+> get on the other end.
 
-BCM5706S wont work correctly unless VPD length truncated to 128
+man pread(). The posix committee long ago figured out that you needed a
+sane way not to get involved with offsets even between processes or in
+threaded apps.
 
-Signed-off-by: Dean Hildebrand <dhildeb@us.ibm.com>
-Signed-off-by: Jesse Barnes <jbarnes@virtuousgeek.org>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
----
- drivers/pci/quirks.c |    7 ++++++-
- 1 file changed, 6 insertions(+), 1 deletion(-)
-
---- a/drivers/pci/quirks.c
-+++ b/drivers/pci/quirks.c
-@@ -1683,9 +1683,14 @@ DECLARE_PCI_FIXUP_EARLY(PCI_VENDOR_ID_VI
-  */
- static void __devinit quirk_brcm_570x_limit_vpd(struct pci_dev *dev)
- {
--	/*  Only disable the VPD capability for 5706, 5708, and 5709 rev. A */
-+	/*
-+	 * Only disable the VPD capability for 5706, 5706S, 5708,
-+	 * 5708S and 5709 rev. A
-+	 */
- 	if ((dev->device == PCI_DEVICE_ID_NX2_5706) ||
-+	    (dev->device == PCI_DEVICE_ID_NX2_5706S) ||
- 	    (dev->device == PCI_DEVICE_ID_NX2_5708) ||
-+  	    (dev->device == PCI_DEVICE_ID_NX2_5708S) ||
- 	    ((dev->device == PCI_DEVICE_ID_NX2_5709) &&
- 	     (dev->revision & 0xf0) == 0x0)) {
- 		if (dev->vpd)
-
--- 
+Alan
