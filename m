@@ -1,55 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754737AbYHRPvO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755150AbYHRPv3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754737AbYHRPvO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Aug 2008 11:51:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752827AbYHRPu7
+	id S1755150AbYHRPv3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Aug 2008 11:51:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754809AbYHRPvS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Aug 2008 11:50:59 -0400
-Received: from mail.windriver.com ([147.11.1.11]:60290 "EHLO mail.wrs.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752809AbYHRPu7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Aug 2008 11:50:59 -0400
-Message-ID: <48A99A68.6010102@windriver.com>
-Date: Mon, 18 Aug 2008 10:51:04 -0500
-From: Jason Wessel <jason.wessel@windriver.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
-MIME-Version: 1.0
-To: amruth_pv@yahoo.com
-CC: linux-kernel@vger.kernel.org
-Subject: Re: KGDB 2..26 fails to wait while booting
-References: <966386.75458.qm@web45216.mail.sp1.yahoo.com>
-In-Reply-To: <966386.75458.qm@web45216.mail.sp1.yahoo.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 18 Aug 2008 11:51:18 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:58953 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754774AbYHRPvR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Aug 2008 11:51:17 -0400
+Date: Mon, 18 Aug 2008 16:33:13 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Eric Paris <eparis@redhat.com>
+Cc: Arjan van de Ven <arjan@infradead.org>, Jan Harkes <jaharkes@cs.cmu.edu>,
+       Rik van Riel <riel@redhat.com>,
+       "Press, Jonathan" <Jonathan.Press@ca.com>, peterz@infradead.org,
+       linux-kernel@vger.kernel.org, malware-list@lists.printk.net,
+       hch@infradead.org, andi@firstfloor.org, viro@ZenIV.linux.org.uk
+Subject: Re: [malware-list] TALPA - a threat model?  well sorta.
+Message-ID: <20080818163313.72927af7@lxorguk.ukuu.org.uk>
+In-Reply-To: <1219015177.27389.1.camel@localhost.localdomain>
+References: <1218645375.3540.71.camel@localhost.localdomain>
+	<20080813172437.3ed90b0d@lxorguk.ukuu.org.uk>
+	<1218646065.3540.75.camel@localhost.localdomain>
+	<20080813173722.13c9c306@lxorguk.ukuu.org.uk>
+	<1218646833.3540.82.camel@localhost.localdomain>
+	<20080813205906.559d3f37@lxorguk.ukuu.org.uk>
+	<2629CC4E1D22A64593B02C43E855530304AE4BC2@USILMS12.ca.com>
+	<20080813173529.7069b5f1@cuia.bos.redhat.com>
+	<20080815201622.GD31584@cs.cmu.edu>
+	<20080815150509.20ffb91d@infradead.org>
+	<1219015177.27389.1.camel@localhost.localdomain>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 18 Aug 2008 15:50:57.0781 (UTC) FILETIME=[348FB250:01C9014A]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> I could probably buy that, but I don't know how an HSM would work.
+> Would we have everything we need at open for them to fire off?
+> 
+> /me is HSM clueless and trying to include their needs is proving a
+> challenge.
 
-amruth wrote:
-> Thanks Jason. I got it working, but is it possible to enable kdb with kgdb. 
-> How can I debug the kernel early. In kdb we have option called as kdb=early, can we do the same in kgdb. I tried to set breakpoint in kgdb at start_kernel, it looks like kgdb executed past the start_kernel code.Hence break point does not work.
-> Please let me know how to enable debug early kernel option in KGDB. 
->
->   
+So don't bother. Its a theoretical use for the most part so we can mangle
+the interface later. 
 
-This is a limitation of the kgdb which in the mainline sources.  The
-kgdb core itself can support early debugging.
-
-The kgdboc I/O module does not support early debugging however because
-it waits for the tty driver to get setup.  There is an 8250_kgdb kernel
-module which supports debugging from an ealier point than the kgdboc
-driver but this is not in the main line sources.  You can get it from
-the kgdb branch.
-
-IE:
-
-http://git.kernel.org/?p=linux/kernel/git/jwessel/linux-2.6-kgdb.git;a=commitdiff_plain;h=2e92260276c0948e260bb8a8399e20dfb5713f70
-
-and
-
-http://git.kernel.org/?p=linux/kernel/git/jwessel/linux-2.6-kgdb.git;a=commitdiff_plain;h=03e9da089af8813ac1947e5a078906652bd2fbb7
-
-Jason.
-
+Alan
